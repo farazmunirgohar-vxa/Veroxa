@@ -1,4 +1,4 @@
-import { CheckSquare, Image, Cpu, Layers, CalendarDays, CheckCircle2, Circle, Clock, Send, Star, ChevronRight } from "lucide-react";
+import { CheckSquare, Image, Cpu, Layers, CalendarDays, CheckCircle2, Circle, Clock, Send, Star, ChevronRight, ScanEye, Lightbulb, PenLine, ShieldCheck, CalendarClock, BarChart3, AlertOctagon } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -108,6 +108,104 @@ export default function TeamPortal() {
                   <ChevronRight className="w-3.5 h-3.5 text-border flex-shrink-0 mx-0.5" />
                 )}
               </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* AI Agent Preview */}
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-4">
+          <h3 className="text-xl font-bold">AI Agent Preview</h3>
+          <Badge variant="outline" className="border-primary/30 bg-primary/10 text-primary text-[10px] font-semibold tracking-wide px-2 py-0.5">
+            Demo Logic Only
+          </Badge>
+        </div>
+        <p className="text-sm text-muted-foreground mb-5">
+          A preview of how Veroxa's AI agents will assist each stage of the content workflow. All outputs below are simulated.
+        </p>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {([
+            {
+              icon: ScanEye,
+              name: "Media Review Agent",
+              status: "Reviewed 12 uploads",
+              purpose: "Scores uploaded media for lighting, blur, food visibility, and duplicate risk.",
+              statusColor: "emerald",
+            },
+            {
+              icon: Lightbulb,
+              name: "Content Strategist Agent",
+              status: "4 concepts prepared",
+              purpose: "Suggests content angles — product spotlight, family meal, behind-the-scenes, review highlight, or promotion.",
+              statusColor: "blue",
+            },
+            {
+              icon: PenLine,
+              name: "Caption Agent",
+              status: "3 draft variants generated",
+              purpose: "Creates Safe, Engagement, and Sales caption options for the selected concept.",
+              statusColor: "violet",
+            },
+            {
+              icon: ShieldCheck,
+              name: "Brand Voice Agent",
+              status: "Tone check passed",
+              purpose: "Checks captions sound premium, clear, restaurant-focused, and not too generic.",
+              statusColor: "emerald",
+            },
+            {
+              icon: CalendarClock,
+              name: "Scheduling Agent",
+              status: "3 posts ready for timing",
+              purpose: "Suggests posting slots based on the client's preferred windows and content balance.",
+              statusColor: "blue",
+            },
+            {
+              icon: BarChart3,
+              name: "Reporting Agent",
+              status: "Weekly summary updated",
+              purpose: "Pulls demo performance signals into weekly update cards for client review.",
+              statusColor: "violet",
+            },
+            {
+              icon: AlertOctagon,
+              name: "Alert Agent",
+              status: "1 content warning active",
+              purpose: "Flags low content supply, failed posts, or client health risks before they escalate.",
+              statusColor: "amber",
+            },
+          ] as const).map((agent) => {
+            const colorMap = {
+              emerald: { bg: "bg-emerald-500/10", text: "text-emerald-500", dot: "bg-emerald-500", badge: "bg-emerald-500/10 text-emerald-500" },
+              blue:    { bg: "bg-blue-500/10",    text: "text-blue-500",    dot: "bg-blue-500",    badge: "bg-blue-500/10 text-blue-500"    },
+              violet:  { bg: "bg-primary/10",     text: "text-primary",     dot: "bg-primary",     badge: "bg-primary/10 text-primary"      },
+              amber:   { bg: "bg-amber-500/10",   text: "text-amber-500",   dot: "bg-amber-500",   badge: "bg-amber-500/10 text-amber-500"  },
+            } as const;
+            const c = colorMap[agent.statusColor];
+            return (
+              <Card
+                key={agent.name}
+                className="bg-card border-border relative overflow-hidden"
+                data-testid={`agent-card-${agent.name.toLowerCase().replace(/\s+/g, '-')}`}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between gap-2 mb-3">
+                    <div className={`p-2 rounded-lg ${c.bg} ${c.text}`}>
+                      <agent.icon className="w-4 h-4" />
+                    </div>
+                    <span className="text-[9px] font-semibold text-muted-foreground/60 uppercase tracking-widest leading-tight text-right">
+                      Simulated
+                    </span>
+                  </div>
+                  <h4 className="text-sm font-semibold text-foreground mb-1 leading-snug">{agent.name}</h4>
+                  <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold ${c.badge} mb-2`}>
+                    <span className={`w-1 h-1 rounded-full ${c.dot}`} />
+                    {agent.status}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">{agent.purpose}</p>
+                </CardContent>
+              </Card>
             );
           })}
         </div>
