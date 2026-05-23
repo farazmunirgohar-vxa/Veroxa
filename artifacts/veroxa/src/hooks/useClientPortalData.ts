@@ -8,6 +8,7 @@ import {
   getClientPostSlots,
   getClientWeeklyReports,
   getClientMonthlyReports,
+  getClientDraftVariants,
 } from "@/lib/supabase";
 import {
   scheduledPosts as demoScheduledPosts,
@@ -64,6 +65,71 @@ export type UseClientPortalDataResult = {
   data: ClientPortalData;
 };
 
+// Statuses shown in the "Upcoming Scheduled Posts" list
+const DISPLAY_STATUSES = new Set(["scheduled", "ready_for_review", "ready_to_schedule"]);
+
+const STATUS_LABELS: Record<string, string> = {
+  scheduled: "Scheduled",
+  ready_for_review: "In Review",
+  ready_to_schedule: "Ready",
+};
+
+function formatScheduledAt(scheduledAt: unknown): string {
+  if (typeof scheduledAt !== "string" || !scheduledAt) return "";
+  try {
+    const d = new Date(scheduledAt);
+    const day = d.getDate();
+    const month = d.toLocaleString("en-GB", { month: "short" });
+    const hours = d.getHours();
+    const minutes = d.getMinutes().toString().padStart(2, "0");
+    const period = hours >= 12 ? "PM" : "AM";
+    const hour12 = hours % 12 === 0 ? 12 : hours % 12;
+    return `${day} ${month} · ${hour12}:${minutes} ${period}`;
+  } catch {
+    return String(scheduledAt);
+  }
+}
+
+function buildScheduledPostsFromSupabase(
+  posts: Record<string, unknown>[],
+  variants: Record<string, unknown>[]
+): ScheduledPostDisplay[] {
+  // Index variants by id for O(1) lookup
+  const variantById = new Map<string, Record<string, unknown>>();
+  for (const v of variants) {
+    if (typeof v.id === "string") variantById.set(v.id, v);
+  }
+
+  const displayable = posts
+    .filter((p) => typeof p.status === "string" && DISPLAY_STATUSES.has(p.status))
+    .sort((a, b) => {
+      const aTime = typeof a.scheduled_at === "string" ? new Date(a.scheduled_at).getTime() : 0;
+      const bTime = typeof b.scheduled_at === "string" ? new Date(b.scheduled_at).getTime() : 0;
+      return aTime - bTime;
+    });
+
+  return displayable.map((p) => {
+    const dateStr = formatScheduledAt(p.scheduled_at);
+
+    const platformRaw = typeof p.platform_name === "string" ? p.platform_name : "";
+    const platform =
+      platformRaw.charAt(0).toUpperCase() + platformRaw.slice(1).toLowerCase();
+
+    const statusRaw = typeof p.status === "string" ? p.status : "";
+    const status = STATUS_LABELS[statusRaw] ?? statusRaw;
+
+    let caption = "Caption pending team review";
+    if (typeof p.draft_variant_id === "string" && p.draft_variant_id) {
+      const variant = variantById.get(p.draft_variant_id);
+      if (variant && typeof variant.caption_text === "string" && variant.caption_text) {
+        caption = variant.caption_text;
+      }
+    }
+
+    return { date: dateStr, caption, platform, status };
+  });
+}
+
 export function useClientPortalData(): UseClientPortalDataResult {
   const [state, setState] = useState<UseClientPortalDataResult>({
     source: "demo",
@@ -77,15 +143,17 @@ export function useClientPortalData(): UseClientPortalDataResult {
 
     async function load() {
       try {
-        const [client, platforms, media, posts, slots, weekly, monthly] = await Promise.all([
-          getClientById(MAMADALI_DEMO_CLIENT_ID),
-          getClientPlatforms(MAMADALI_DEMO_CLIENT_ID),
-          getClientMediaAssets(MAMADALI_DEMO_CLIENT_ID),
-          getClientPosts(MAMADALI_DEMO_CLIENT_ID),
-          getClientPostSlots(MAMADALI_DEMO_CLIENT_ID),
-          getClientWeeklyReports(MAMADALI_DEMO_CLIENT_ID),
-          getClientMonthlyReports(MAMADALI_DEMO_CLIENT_ID),
-        ]);
+        const [client, platforms, media, posts, slots, weekly, monthly, variants] =
+          await Promise.all([
+            getClientById(MAMADALI_DEMO_CLIENT_ID),
+            getClientPlatforms(MAMADALI_DEMO_CLIENT_ID),
+            getClientMediaAssets(MAMADALI_DEMO_CLIENT_ID),
+            getClientPosts(MAMADALI_DEMO_CLIENT_ID),
+            getClientPostSlots(MAMADALI_DEMO_CLIENT_ID),
+            getClientWeeklyReports(MAMADALI_DEMO_CLIENT_ID),
+            getClientMonthlyReports(MAMADALI_DEMO_CLIENT_ID),
+            getClientDraftVariants(MAMADALI_DEMO_CLIENT_ID),
+          ]);
 
         if (cancelled) return;
 
@@ -95,9 +163,10 @@ export function useClientPortalData(): UseClientPortalDataResult {
           (row?.businessName as string | undefined) ??
           mamadaliClient.businessName;
 
-        // Derive scheduled count from live DB rows; captions require a
-        // draft_variants join that is not available yet — keep display list static.
-        const scheduledCount = (posts as Record<string, unknown>[]).filter(
+        const postsTyped = posts as Record<string, unknown>[];
+        const variantsTyped = variants as Record<string, unknown>[];
+
+        const scheduledCount = postsTyped.filter(
           (p) => p.status === "scheduled"
         ).length;
 
@@ -107,13 +176,15 @@ export function useClientPortalData(): UseClientPortalDataResult {
           { label: demoContentSupply[2].label, value: demoContentSupply[2].value, max: demoContentSupply[2].max },
         ];
 
+        const scheduledPosts = buildScheduledPostsFromSupabase(postsTyped, variantsTyped);
+
         setState({
           source: "supabase",
           loading: false,
           error: null,
           data: {
             businessName,
-            scheduledPosts: demoScheduledPosts,
+            scheduledPosts,
             googleMetrics: demoGoogleMetrics,
             contentSupply,
             platformsCount: platforms.length,

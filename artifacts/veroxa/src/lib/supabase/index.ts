@@ -12,4 +12,5 @@ export {
   getClientPostSlots,
   getClientWeeklyReports,
   getClientMonthlyReports,
+  getClientDraftVariants,
 } from "./clientPortalQueries";

@@ -63,7 +63,7 @@ If queries return empty results or permission errors, that is expected behaviour
 
 | Portal | Data source | Notes |
 |---|---|---|
-| **Client Portal** | Supabase with static fallback | Uses `useClientPortalData` hook — reads client, platforms, media assets, posts, slots, weekly reports, and monthly reports from Supabase; falls back to static demo data silently if Supabase is unavailable |
+| **Client Portal** | Supabase with static fallback | Uses `useClientPortalData` hook — reads client, platforms, media assets, posts, post slots, weekly reports, monthly reports, and draft variants from Supabase; scheduled posts list is built from live post + draft_variant rows (caption_text joined via draft_variant_id); falls back to static demo data silently if Supabase is unavailable |
 | Team Portal | Static demo data only | Not yet wired |
 | Operator Portal | Static demo data only | Not yet wired |
 | Owner Portal | Static demo data only | Not yet wired |

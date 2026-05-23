@@ -86,3 +86,13 @@ export async function getClientMonthlyReports(clientId: string) {
     throw new Error(`[supabase] getClientMonthlyReports: ${error.message}`);
   return data ?? [];
 }
+
+export async function getClientDraftVariants(clientId: string) {
+  const { data, error } = await db()
+    .from("draft_variants")
+    .select("*")
+    .eq("client_id", clientId);
+  if (error)
+    throw new Error(`[supabase] getClientDraftVariants: ${error.message}`);
+  return data ?? [];
+}
