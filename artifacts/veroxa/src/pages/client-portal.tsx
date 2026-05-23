@@ -1,9 +1,9 @@
-import { LayoutDashboard, CalendarDays, Globe, FileText, Bell, Clock, TrendingUp, ImageIcon, CheckCircle2, ChevronRight } from "lucide-react";
+import { LayoutDashboard, CalendarDays, Globe, FileText, Bell, Clock, TrendingUp, ImageIcon, CheckCircle2, ChevronRight, Loader2, AlertTriangle } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { scheduledPosts, googleMetrics, contentSupply } from "@/lib/demo-data";
+import { useClientPortalData } from "@/hooks/useClientPortalData";
 
 const sidebarItems = [
   { label: "Dashboard", icon: LayoutDashboard },
@@ -14,14 +14,39 @@ const sidebarItems = [
 ];
 
 export default function ClientPortal() {
+  const { source, loading, error, data } = useClientPortalData();
+
   return (
     <PortalLayout items={sidebarItems} portalName="Client Portal">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-foreground" data-testid="header-welcome">
-            Mamadali Kebab House
-          </h2>
-          <p className="text-muted-foreground mt-1">Here is your content performance and upcoming schedule for this week.</p>
+          <div className="flex items-center gap-2 mb-1">
+            <h2 className="text-3xl font-bold tracking-tight text-foreground" data-testid="header-welcome">
+              {loading ? "Mamadali Kebab House" : data.businessName}
+            </h2>
+            {!loading && (
+              <Badge
+                variant="outline"
+                className={`text-[10px] font-semibold px-2 py-0.5 border-none ${
+                  source === "supabase"
+                    ? "bg-emerald-500/10 text-emerald-400"
+                    : "bg-muted text-muted-foreground"
+                }`}
+              >
+                {source === "supabase" ? "Live demo data" : "Static demo fallback"}
+              </Badge>
+            )}
+            {loading && (
+              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+            )}
+          </div>
+          <p className="text-muted-foreground">Here is your content performance and upcoming schedule for this week.</p>
+          {source === "demo" && error && (
+            <p className="flex items-center gap-1.5 text-xs text-amber-500 mt-1">
+              <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+              Supabase unavailable — showing static demo data.
+            </p>
+          )}
         </div>
         <Badge variant="outline" className="px-3 py-1 bg-card text-card-foreground border-border font-medium self-start md:self-auto">
           May 2026 — Week 3
@@ -30,7 +55,7 @@ export default function ClientPortal() {
 
       {/* Google Metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {googleMetrics.map((metric, i) => (
+        {data.googleMetrics.map((metric, i) => (
           <Card key={i} className="bg-card/50 border-border/50 shadow-sm" data-testid={`google-metric-${i}`}>
             <CardContent className="p-5">
               <p className="text-xs font-medium text-muted-foreground mb-2">{metric.label}</p>
@@ -48,7 +73,7 @@ export default function ClientPortal() {
         <div className="lg:col-span-2 space-y-5">
           <h3 className="text-xl font-bold">Upcoming Scheduled Posts</h3>
           <div className="space-y-3">
-            {scheduledPosts.map((post, i) => (
+            {data.scheduledPosts.map((post, i) => (
               <Card key={i} className="bg-card border-border hover:border-primary/30 transition-colors" data-testid={`post-card-${i}`}>
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between gap-4">
@@ -99,7 +124,7 @@ export default function ClientPortal() {
           <div>
             <h3 className="text-xl font-bold mb-4">Content Supply</h3>
             <div className="space-y-4">
-              {contentSupply.map((item, i) => (
+              {data.contentSupply.map((item, i) => (
                 <Card key={i} className="bg-card border-border" data-testid={`supply-card-${i}`}>
                   <CardContent className="p-4">
                     <div className="flex justify-between text-sm mb-2">

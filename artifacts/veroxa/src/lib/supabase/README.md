@@ -59,6 +59,19 @@ If queries return empty results or permission errors, that is expected behaviour
 
 ---
 
+## Portal wiring status
+
+| Portal | Data source | Notes |
+|---|---|---|
+| **Client Portal** | Supabase with static fallback | Uses `useClientPortalData` hook — reads client, posts, slots, weekly and monthly report counts from Supabase; falls back to static demo data silently if Supabase is unavailable |
+| Team Portal | Static demo data only | Not yet wired |
+| Operator Portal | Static demo data only | Not yet wired |
+| Owner Portal | Static demo data only | Not yet wired |
+
+All connections are read-only and unauthenticated (anon key only).
+
+---
+
 ## Next steps
 
 1. Configure RLS read policies in the Supabase dev project
