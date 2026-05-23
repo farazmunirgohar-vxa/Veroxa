@@ -52,6 +52,8 @@ Run each file in this exact order after all migrations have applied cleanly.
 - [ ] `docs/database/seeds-draft/006_seed_concepts_and_drafts.sql`
 - [ ] `docs/database/seeds-draft/007_wire_post_draft_variants.sql`
 
+> **Note on `007_wire_post_draft_variants.sql`:** This file temporarily disables `trg_posts_lock_guard` before running its UPDATE statements and re-enables it immediately afterward. This is a seed-only bypass required because demo published posts (004–007) are already locked when `007` runs. If you see the error `Cannot modify media_asset_id or draft_variant_id on a locked post`, confirm you are using the current version of `007` which includes the `DISABLE`/`ENABLE TRIGGER` statements.
+
 ---
 
 ## 5. Verification checklist

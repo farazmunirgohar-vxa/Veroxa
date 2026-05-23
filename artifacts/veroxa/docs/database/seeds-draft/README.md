@@ -18,7 +18,7 @@ No Supabase project is connected. No credentials exist. These files are for revi
 | `004_seed_posts_and_slots.sql` | `src/lib/demo-data/posts.ts` | 8 post slots, 7 posts; resolves circular FKs via UPDATE |
 | `005_seed_reports.sql` | `src/lib/demo-data/reports.ts` | 2 weekly reports, 1 monthly report |
 | `006_seed_concepts_and_drafts.sql` | demo captions / concept descriptions | 7 content concepts, 7 draft sets, 21 draft variants |
-| `007_wire_post_draft_variants.sql` | n/a — UPDATE statements only | Wires `posts.draft_variant_id` for 6 posts; wires `draft_variants.used_in_post_id` only for the 4 published/locked posts (scheduled posts 001 and 002 excluded from used_in_post_id) |
+| `007_wire_post_draft_variants.sql` | n/a — UPDATE statements only | Wires `posts.draft_variant_id` for 6 posts; wires `draft_variants.used_in_post_id` only for the 4 published/locked posts (scheduled posts 001 and 002 excluded from used_in_post_id); temporarily disables and re-enables `trg_posts_lock_guard` to allow wiring against already-locked demo posts |
 
 ---
 
