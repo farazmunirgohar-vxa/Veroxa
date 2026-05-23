@@ -58,6 +58,10 @@ function cn(...classes: (string | undefined | null | false)[]) {
 export default function OperatorPortal() {
   return (
     <PortalLayout items={sidebarItems} portalName="Operator Portal">
+      <div className="mb-6 px-3 py-2 rounded-md bg-amber-500/8 border border-amber-500/20 text-amber-400 text-xs font-medium flex items-center gap-2" data-testid="banner-preview">
+        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />
+        Development Preview — sample data only, not a live client account.
+      </div>
       <div className="mb-8">
         <h2 className="text-3xl font-bold tracking-tight text-foreground" data-testid="header-overview">Operations Overview</h2>
         <p className="text-muted-foreground mt-1">Client health, active alerts, failed posts, and reports awaiting your sign-off.</p>

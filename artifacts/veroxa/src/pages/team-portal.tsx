@@ -46,6 +46,10 @@ export default function TeamPortal() {
 
   return (
     <PortalLayout items={sidebarItems} portalName="Team Portal">
+      <div className="mb-6 px-3 py-2 rounded-md bg-amber-500/8 border border-amber-500/20 text-amber-400 text-xs font-medium flex items-center gap-2" data-testid="banner-preview">
+        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />
+        Development Preview — sample data only, not a live client account.
+      </div>
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-foreground" data-testid="header-welcome">Good morning, Jordan</h2>
