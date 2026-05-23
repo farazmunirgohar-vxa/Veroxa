@@ -31,6 +31,7 @@ import OwnerClientHealth from "@/pages/owner-client-health";
 import OwnerAlerts from "@/pages/owner-alerts";
 import OwnerSettings from "@/pages/owner-settings";
 import SupabaseTestPage from "@/pages/supabase-test";
+import LoginPage from "@/pages/login";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +65,7 @@ function Router() {
       <Route path="/demo/owner/alerts" component={OwnerAlerts} />
       <Route path="/demo/owner/settings" component={OwnerSettings} />
       <Route path="/demo/supabase-test" component={SupabaseTestPage} />
+      <Route path="/login" component={LoginPage} />
       <Route component={NotFound} />
     </Switch>
   );

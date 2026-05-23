@@ -72,6 +72,8 @@ If queries return empty results or permission errors, that is expected behaviour
 
 All connections are read-only and unauthenticated (anon key only).
 
+**Login shell note:** `/login` exists as a polished access page but is **demo-only role routing** — it does not use Supabase Auth, does not collect credentials, and does not create sessions. Real auth architecture is documented in [`../../docs/AUTH_ARCHITECTURE_PLAN.md`](../../docs/AUTH_ARCHITECTURE_PLAN.md).
+
 ---
 
 ## Next steps

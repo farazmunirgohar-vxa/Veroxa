@@ -20,11 +20,20 @@ export default function LandingPage() {
           <span className="hover:text-foreground cursor-pointer transition-colors">Pricing</span>
         </div>
 
-        <Link href="/demo" data-testid="btn-nav-demo">
-          <Button variant="default" className="font-semibold shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:shadow-[0_0_30px_rgba(99,102,241,0.5)] transition-shadow">
-            Request Demo
-          </Button>
-        </Link>
+        <div className="flex items-center gap-5">
+          <Link
+            href="/login"
+            className="hidden sm:inline text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            data-testid="link-nav-login"
+          >
+            Login
+          </Link>
+          <Link href="/demo" data-testid="btn-nav-demo">
+            <Button variant="default" className="font-semibold shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:shadow-[0_0_30px_rgba(99,102,241,0.5)] transition-shadow">
+              Request Demo
+            </Button>
+          </Link>
+        </div>
       </nav>
 
       {/* Hero Section */}

@@ -90,17 +90,38 @@
 
 ---
 
+## Demo access shell
+
+- **Login UI shell** added at `/login` — polished role-card layout (Access Veroxa).
+- **Demo role routing only.** No accounts, no passwords, no sessions, no Supabase Auth.
+- Role cards route to the corresponding demo portal:
+  - Client Portal → `/demo/client/dashboard`
+  - Team Portal → `/demo/team/tasks`
+  - Operator Portal → `/demo/operator/overview`
+  - Owner Portal → `/demo/owner/dashboard`
+- A "Portal Login" link was added to the Demo Hub, and a subtle "Login" link to the landing page nav.
+- Architecture documented in [`AUTH_ARCHITECTURE_PLAN.md`](./AUTH_ARCHITECTURE_PLAN.md).
+
+## Demo Veroxa vs Real Veroxa
+
+We are building **Demo Veroxa** and **Real Veroxa** side by side:
+
+- `/demo/*` remains the **preview, sales, and testing layer** — public forever, no auth.
+- Future real authenticated routes will live under `/client/*`, `/team/*`, `/operator/*`, `/owner/*`.
+- No real auth, real sessions, real writes, or production RLS exist today.
+
 ## Next recommended phase
 
-**Auth Architecture Planning + Login UI Shell only.**
+**Real Auth Data Model + Supabase Auth planning** (see `AUTH_ARCHITECTURE_PLAN.md` §8).
 
 Specifically:
 
-- Decide auth provider and session model (Supabase Auth vs. external IdP)
-- Decide tenant / role model (client, team member, operator, owner)
-- Build a login UI shell with no real auth wired up yet (a non-functional sign-in page)
-- Plan how RLS policies will scope by tenant/role in a follow-up phase
-- Do **not** wire real auth, real sessions, real writes, real uploads, AI, or publishing in that phase
+- Finalize `user_profiles` schema (user_id → role → tenant scope)
+- Decide sign-in method (email + password vs magic link)
+- Draft production RLS policies gated on `auth.uid()` and `user_profiles.role`
+- Build a real `/login` form behind a feature flag (UI only, no live auth yet)
+- Build the `<RequireRole>` route guard wrapper (UI only, no live auth yet)
+- Do **not** wire real Supabase Auth sessions, real writes, real uploads, AI, or publishing in that phase
 
 ---
 

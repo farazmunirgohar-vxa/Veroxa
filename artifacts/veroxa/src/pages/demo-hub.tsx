@@ -42,13 +42,22 @@ export default function DemoHub() {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-primary/5 blur-[120px] rounded-full pointer-events-none -z-10" />
 
       <div className="w-full max-w-4xl">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground mb-12 transition-colors group"
-          data-testid="link-back-home"
-        >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Back to Veroxa.com
-        </Link>
+        <div className="flex items-center justify-between mb-12">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors group"
+            data-testid="link-back-home"
+          >
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Back to Veroxa.com
+          </Link>
+          <Link
+            href="/login"
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            data-testid="link-portal-login"
+          >
+            Portal Login →
+          </Link>
+        </div>
 
         <div className="mb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-foreground" data-testid="demo-heading">
