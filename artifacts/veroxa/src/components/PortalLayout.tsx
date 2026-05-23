@@ -76,6 +76,13 @@ export function PortalLayout({ children, items, portalName }: PortalLayoutProps)
         </header>
         <div className="flex-1 p-8 overflow-auto">
           <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div
+              className="px-3 py-2 rounded-md bg-amber-500/8 border border-amber-500/20 text-amber-400 text-xs font-medium flex items-center gap-2"
+              data-testid="banner-preview"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />
+              Development Preview — sample data only, not a live client account.
+            </div>
             {children}
           </div>
         </div>
