@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import {
   MAMADALI_DEMO_CLIENT_ID,
   getClientById,
+  getClientPlatforms,
+  getClientMediaAssets,
   getClientPosts,
   getClientPostSlots,
   getClientWeeklyReports,
@@ -34,6 +36,8 @@ export type ClientPortalData = {
   scheduledPosts: readonly ScheduledPostDisplay[];
   googleMetrics: typeof demoGoogleMetrics;
   contentSupply: ContentSupplyItem[];
+  platformsCount: number;
+  mediaAssetsCount: number;
   postsCount: number;
   postSlotsCount: number;
   weeklyReportsCount: number;
@@ -45,6 +49,8 @@ const DEMO_DATA: ClientPortalData = {
   scheduledPosts: demoScheduledPosts,
   googleMetrics: demoGoogleMetrics,
   contentSupply: demoContentSupply.map((s) => ({ ...s })),
+  platformsCount: 4,
+  mediaAssetsCount: 10,
   postsCount: 7,
   postSlotsCount: 8,
   weeklyReportsCount: 2,
@@ -71,8 +77,10 @@ export function useClientPortalData(): UseClientPortalDataResult {
 
     async function load() {
       try {
-        const [client, posts, slots, weekly, monthly] = await Promise.all([
+        const [client, platforms, media, posts, slots, weekly, monthly] = await Promise.all([
           getClientById(MAMADALI_DEMO_CLIENT_ID),
+          getClientPlatforms(MAMADALI_DEMO_CLIENT_ID),
+          getClientMediaAssets(MAMADALI_DEMO_CLIENT_ID),
           getClientPosts(MAMADALI_DEMO_CLIENT_ID),
           getClientPostSlots(MAMADALI_DEMO_CLIENT_ID),
           getClientWeeklyReports(MAMADALI_DEMO_CLIENT_ID),
@@ -108,6 +116,8 @@ export function useClientPortalData(): UseClientPortalDataResult {
             scheduledPosts: demoScheduledPosts,
             googleMetrics: demoGoogleMetrics,
             contentSupply,
+            platformsCount: platforms.length,
+            mediaAssetsCount: media.length,
             postsCount: posts.length,
             postSlotsCount: slots.length,
             weeklyReportsCount: weekly.length,

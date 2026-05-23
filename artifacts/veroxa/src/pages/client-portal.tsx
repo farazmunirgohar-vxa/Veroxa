@@ -41,6 +41,11 @@ export default function ClientPortal() {
             )}
           </div>
           <p className="text-muted-foreground">Here is your content performance and upcoming schedule for this week.</p>
+          {source === "supabase" && (
+            <p className="text-[10px] text-muted-foreground/50 mt-1">
+              Read check: {data.platformsCount} platforms · {data.mediaAssetsCount} media assets
+            </p>
+          )}
           {source === "demo" && error && (
             <p className="flex items-center gap-1.5 text-xs text-amber-500 mt-1">
               <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
