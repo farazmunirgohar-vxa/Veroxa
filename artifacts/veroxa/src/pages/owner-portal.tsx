@@ -1,4 +1,4 @@
-import { LineChart, DollarSign, Target, Settings, Layers, ArrowUpRight, ArrowDownRight, Activity, AlertTriangle } from "lucide-react";
+import { LineChart, DollarSign, Target, Settings, Layers, ArrowUpRight, ArrowDownRight, Activity, AlertTriangle, TrendingUp, HeartPulse, UserMinus, Sparkles, Siren } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -98,6 +98,84 @@ export default function OwnerPortal() {
             </p>
           </CardContent>
         </Card>
+      </div>
+
+      {/* AI Business Snapshot */}
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-4">
+          <h3 className="text-xl font-bold">AI Business Snapshot</h3>
+          <Badge variant="outline" className="border-primary/30 bg-primary/10 text-primary text-[10px] font-semibold tracking-wide px-2 py-0.5">
+            Demo Logic Only
+          </Badge>
+        </div>
+        <p className="text-sm text-muted-foreground mb-5">
+          A preview of how Veroxa's AI owner assistant will summarise business health at a glance. All signals below are simulated.
+        </p>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          {([
+            {
+              icon: TrendingUp,
+              name: "Revenue Signal",
+              status: "MRR up 8.7%",
+              meaning: "Highlights business-level revenue movement and whether growth is healthy.",
+              color: "emerald",
+            },
+            {
+              icon: HeartPulse,
+              name: "Client Risk Signal",
+              status: "6 clients need attention",
+              meaning: "Summarises client health problems without surfacing daily execution clutter.",
+              color: "amber",
+            },
+            {
+              icon: UserMinus,
+              name: "Retention Watch",
+              status: "2 accounts at elevated churn risk",
+              meaning: "Flags accounts that may need owner awareness due to recurring content, performance, or communication issues.",
+              color: "red",
+            },
+            {
+              icon: Sparkles,
+              name: "Growth Opportunity",
+              status: "3 expansion candidates",
+              meaning: "Identifies clients ready for ads, upsell, referral request, or case study.",
+              color: "violet",
+            },
+            {
+              icon: Siren,
+              name: "Critical Escalation",
+              status: "2 owner-level alerts",
+              meaning: "Surfaces only serious problems that require strategic attention.",
+              color: "red",
+            },
+          ] as const).map((signal) => {
+            const colorMap = {
+              emerald: { bg: "bg-emerald-500/10", text: "text-emerald-500", dot: "bg-emerald-500", badge: "bg-emerald-500/10 text-emerald-500" },
+              amber:   { bg: "bg-amber-500/10",   text: "text-amber-500",   dot: "bg-amber-500",   badge: "bg-amber-500/10 text-amber-500"   },
+              red:     { bg: "bg-red-500/10",      text: "text-red-500",     dot: "bg-red-500",     badge: "bg-red-500/10 text-red-500"       },
+              violet:  { bg: "bg-primary/10",      text: "text-primary",     dot: "bg-primary",     badge: "bg-primary/10 text-primary"       },
+            } as const;
+            const c = colorMap[signal.color];
+            return (
+              <Card key={signal.name} className="bg-card border-border" data-testid={`snapshot-card-${signal.name.toLowerCase().replace(/\s+/g, '-')}`}>
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between gap-2 mb-3">
+                    <div className={`p-2 rounded-lg ${c.bg} ${c.text}`}>
+                      <signal.icon className="w-4 h-4" />
+                    </div>
+                    <span className="text-[9px] font-semibold text-muted-foreground/60 uppercase tracking-widest">Simulated</span>
+                  </div>
+                  <h4 className="text-sm font-semibold text-foreground mb-1 leading-snug">{signal.name}</h4>
+                  <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold ${c.badge} mb-2`}>
+                    <span className={`w-1 h-1 rounded-full ${c.dot}`} />
+                    {signal.status}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">{signal.meaning}</p>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8">
