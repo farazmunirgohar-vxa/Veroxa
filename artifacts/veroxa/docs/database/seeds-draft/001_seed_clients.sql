@@ -32,19 +32,19 @@ INSERT INTO clients (
 ) VALUES (
   '00000000-0000-0000-0000-000000000001',  -- Mamadali Kebab House
   'Mamadali Kebab House',
-  'Mamadali Ltd',
-  'Ali Hassan',
-  '+44 7700 900142',
-  'ali@mamadali.co.uk',
-  'twelve_month',
+  NULL,                          -- legalName: null in TypeScript source
+  'Demo Owner',
+  '+1-555-0100',
+  'demo@mamadali.example.com',
+  'six_month',
   'presence',
   4,
-  '["monday", "wednesday", "friday", "sunday"]',  -- JSONB array of preferred days
-  '["17:00", "18:00"]',                           -- JSONB array of preferred posting times
-  'Europe/London',
-  FALSE,        -- reuse_permission: media cannot be reused once used in a published post
-  'caution',    -- content_health_status: pipeline has partial gaps (demo state)
-  'good',       -- risk_status
+  NULL,                          -- preferredPostDays: null in TypeScript source
+  NULL,                          -- preferredPostTimes: null in TypeScript source
+  'America/Chicago',
+  TRUE,         -- reuse_permission: true in TypeScript source
+  'caution',    -- content_health_status
+  'risk',       -- risk_status
   'active',     -- account_status
   TRUE,         -- onboarding_complete
   '2026-01-15T09:00:00Z',
