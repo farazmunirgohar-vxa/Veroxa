@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { ArrowRight, BarChart2, CheckCircle2, Hexagon, Layers, LayoutDashboard, Users } from "lucide-react";
+import { ArrowRight, BarChart2, Camera, Globe, Hexagon, LayoutDashboard, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function LandingPage() {
@@ -13,7 +13,7 @@ export default function LandingPage() {
           </div>
           <span className="font-bold tracking-tight text-xl">Veroxa</span>
         </Link>
-        
+
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
           <span className="hover:text-foreground cursor-pointer transition-colors">Features</span>
           <span className="hover:text-foreground cursor-pointer transition-colors">Portals</span>
@@ -30,21 +30,21 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="pt-32 pb-24 px-6 lg:px-12 flex flex-col items-center text-center relative overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/20 blur-[120px] rounded-full pointer-events-none -z-10" />
-        
+
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/10 text-primary text-xs font-semibold mb-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
           </span>
-          Veroxa OS 2.0 is now live
+          Veroxa OS 2.0 — Now serving restaurants
         </div>
-        
+
         <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight max-w-4xl leading-[1.1] mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-          The Operating System for <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-400">Growth Agencies</span>
+          The Operating System for <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-400">Restaurant Growth</span>
         </h1>
-        
+
         <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-10 animate-in fade-in slide-in-from-bottom-5 duration-700 delay-150">
-          A dense, intelligent mission control that connects your clients, team, operators, and ownership into one single source of truth.
+          Content production, Google visibility, social scheduling, and client reporting — unified in one premium platform built for agencies that grow restaurants.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-300">
@@ -63,20 +63,20 @@ export default function LandingPage() {
       <section className="border-y border-border/40 bg-card/30 backdrop-blur-sm py-10">
         <div className="max-w-6xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-border/30">
           <div className="text-center">
-            <div className="text-3xl font-bold text-foreground mb-1" data-testid="stat-agencies">120+</div>
-            <div className="text-sm font-medium text-muted-foreground">Agencies</div>
+            <div className="text-3xl font-bold text-foreground mb-1" data-testid="stat-restaurants">340+</div>
+            <div className="text-sm font-medium text-muted-foreground">Restaurants</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-foreground mb-1" data-testid="stat-managed">$2.4B</div>
-            <div className="text-sm font-medium text-muted-foreground">Managed</div>
+            <div className="text-3xl font-bold text-foreground mb-1" data-testid="stat-posts">18,000+</div>
+            <div className="text-sm font-medium text-muted-foreground">Posts Published</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-foreground mb-1" data-testid="stat-retention">98%</div>
-            <div className="text-sm font-medium text-muted-foreground">Retention</div>
+            <div className="text-3xl font-bold text-foreground mb-1" data-testid="stat-retention">96%</div>
+            <div className="text-sm font-medium text-muted-foreground">Client Retention</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-foreground mb-1" data-testid="stat-uptime">99.99%</div>
-            <div className="text-sm font-medium text-muted-foreground">Uptime</div>
+            <div className="text-3xl font-bold text-foreground mb-1" data-testid="stat-visibility">+41%</div>
+            <div className="text-sm font-medium text-muted-foreground">Avg. Google Visibility Lift</div>
           </div>
         </div>
       </section>
@@ -85,15 +85,15 @@ export default function LandingPage() {
       <section className="py-24 px-6 lg:px-12 max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl font-bold mb-4">Four Portals. One Platform.</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">Purpose-built environments for every stakeholder in your agency ecosystem.</p>
+          <p className="text-muted-foreground max-w-2xl mx-auto">Purpose-built environments for every stakeholder in the restaurant growth ecosystem.</p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
           {[
-            { title: "Client Portals", desc: "Give clients a premium window into project status, deliverables, and invoices.", icon: LayoutDashboard },
-            { title: "Team Management", desc: "Equip your team with integrated task tracking, time logging, and collaboration.", icon: Users },
-            { title: "Operator Dashboard", desc: "Run your agency operations with dense data, resource tracking, and high-level project views.", icon: Layers },
-            { title: "Owner Analytics", desc: "Access high-level financials, pipeline health, and MRR metrics in real-time.", icon: BarChart2 }
+            { title: "Client Portal", desc: "Give restaurant owners a clean window into their content calendar, Google performance, weekly updates, and monthly reports.", icon: LayoutDashboard },
+            { title: "Team Portal", desc: "Equip your content team with a structured review pipeline — from raw media upload through AI quality check, draft variants, approval, and scheduling.", icon: Camera },
+            { title: "Operator Dashboard", desc: "Catch problems before they become crises. Monitor client health scores, flag low content pipelines, review failed posts, and approve monthly reports.", icon: Users },
+            { title: "Owner Analytics", desc: "High-level MRR, active client counts, health trends, and critical alerts — everything the agency owner needs to make fast decisions.", icon: BarChart2 }
           ].map((feature, i) => (
             <div key={i} className="group p-8 rounded-2xl border border-border bg-card/40 hover:bg-card/80 transition-colors relative overflow-hidden" data-testid={`feature-card-${i}`}>
               <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity transform group-hover:scale-110 group-hover:-translate-y-2 duration-500">
