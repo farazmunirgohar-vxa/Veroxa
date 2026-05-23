@@ -12,7 +12,8 @@ No Supabase project is connected. No credentials exist. These files are for revi
 
 | File | Purpose |
 |------|---------|
-| `001_create_enums.sql` | All 25 PostgreSQL `CREATE TYPE AS ENUM` declarations |
+| `000_enable_extensions.sql` | Enables `pgcrypto` extension required for `gen_random_uuid()` |
+| `001_create_enums.sql` | All PostgreSQL `CREATE TYPE AS ENUM` declarations |
 | `002_create_tables.sql` | All 13 `CREATE TABLE` statements with PKs, FKs, constraints, and forward-reference FK fixes |
 | `003_create_indexes.sql` | Performance indexes on `client_id` columns, status fields, date fields, and reuse-lock check columns |
 | `004_create_triggers.sql` | `set_updated_at()` trigger on all mutable tables, post lock guard, report snapshot guard, activity_logs append-only guard |
@@ -38,13 +39,14 @@ These SQL drafts are derived from:
 If and when these are applied, run them in sequence:
 
 ```
+000_enable_extensions.sql
 001_create_enums.sql
 002_create_tables.sql
 003_create_indexes.sql
 004_create_triggers.sql
 ```
 
-Do not skip or reorder. Enums must exist before tables. Tables must exist before indexes and triggers.
+Do not skip or reorder. Extensions must be enabled first. Enums must exist before tables. Tables must exist before indexes and triggers.
 
 ---
 
@@ -62,7 +64,7 @@ These files intentionally omit:
 
 ## Next step after review
 
-1. Review all four SQL files against `docs/database/TABLE_MAP.md` and `MIGRATION_NOTES.md`.
+1. Review all five SQL files against `docs/database/TABLE_MAP.md` and `MIGRATION_NOTES.md`.
 2. Create a Supabase dev project.
 3. Apply migrations to the dev project.
 4. Verify table structure in Supabase Table Editor.
