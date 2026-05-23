@@ -1,4 +1,5 @@
-import { TrendingUp, ChevronRight, Loader2, AlertTriangle } from "lucide-react";
+import { Link } from "wouter";
+import { CalendarDays, Globe, FileText, Bell, Loader2, AlertTriangle, ChevronRight, ImageIcon, Layers, BarChart2, ClipboardList } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,11 +7,26 @@ import { Progress } from "@/components/ui/progress";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientPortalData } from "@/hooks/useClientPortalData";
 
+const quickLinks = [
+  { label: "Content Calendar",  icon: CalendarDays, href: "/demo/client/calendar", description: "Scheduled and in-review posts" },
+  { label: "Google Visibility", icon: Globe,        href: "/demo/client/google",   description: "Business Profile performance" },
+  { label: "Reports",           icon: FileText,     href: "/demo/client/reports",  description: "Monthly performance report"   },
+  { label: "Updates",           icon: Bell,         href: "/demo/client/updates",  description: "Weekly update from Veroxa"    },
+];
+
 export default function ClientDashboard() {
   const { source, loading, error, data } = useClientPortalData();
 
+  const summaryCards = [
+    { label: "Upcoming posts",      value: loading ? "—" : String(data.scheduledPosts.length), icon: CalendarDays },
+    { label: "Media assets",        value: loading ? "—" : String(data.mediaAssetsCount),       icon: ImageIcon   },
+    { label: "Platforms connected", value: loading ? "—" : String(data.platformsCount),         icon: Layers      },
+    { label: "Latest report",       value: loading ? "—" : data.monthlyReportPreview.status,    icon: BarChart2   },
+  ];
+
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
+
       {/* Welcome */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -32,7 +48,7 @@ export default function ClientDashboard() {
             )}
             {loading && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
           </div>
-          <p className="text-muted-foreground">Here is your content performance overview for this week.</p>
+          <p className="text-muted-foreground">Welcome back. Here is a quick overview of your account.</p>
           {source === "supabase" && (
             <p className="text-[10px] text-muted-foreground/50 mt-1">
               Read check: {data.platformsCount} platforms · {data.mediaAssetsCount} media assets
@@ -50,69 +66,64 @@ export default function ClientDashboard() {
         </Badge>
       </div>
 
-      {/* Google Metrics */}
+      {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {data.googleMetrics.map((metric, i) => (
-          <Card key={i} className="bg-card/50 border-border/50 shadow-sm" data-testid={`google-metric-${i}`}>
-            <CardContent className="p-5">
-              <p className="text-xs font-medium text-muted-foreground mb-2">{metric.label}</p>
-              <p className="text-2xl font-bold">{metric.value}</p>
-              <p className={`text-xs font-medium mt-1 flex items-center gap-1 ${metric.positive ? "text-emerald-500" : "text-red-500"}`}>
-                <TrendingUp className="w-3 h-3" /> {metric.change} this month
-              </p>
+        {summaryCards.map((card, i) => (
+          <Card key={i} className="bg-card/50 border-border/50 shadow-sm" data-testid={`summary-card-${i}`}>
+            <CardContent className="p-5 flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium text-muted-foreground">{card.label}</p>
+                <card.icon className="w-4 h-4 text-muted-foreground/40" />
+              </div>
+              <p className="text-2xl font-bold">{card.value}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Content Supply + Monthly Report */}
-      <div className="grid lg:grid-cols-2 gap-8">
-        <div>
-          <h3 className="text-xl font-bold mb-4">Content Supply</h3>
-          <div className="space-y-4">
-            {data.contentSupply.map((item, i) => (
-              <Card key={i} className="bg-card border-border" data-testid={`supply-card-${i}`}>
-                <CardContent className="p-4">
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="text-muted-foreground">{item.label}</span>
-                    <span className="font-semibold">{item.value} / {item.max}</span>
-                  </div>
-                  <Progress value={(item.value / item.max) * 100} className="h-1.5" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <h3 className="text-xl font-bold mb-4">Monthly Report</h3>
-          <Card className="bg-card border-border hover:border-primary/30 transition-colors cursor-pointer" data-testid="monthly-report-preview">
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-semibold">{data.monthlyReportPreview.title}</span>
-                <Badge variant="outline" className={`border-none ${
-                  data.monthlyReportPreview.status === "In Review"
-                    ? "bg-amber-500/10 text-amber-500"
-                    : data.monthlyReportPreview.status === "Drafting"
-                    ? "bg-muted text-muted-foreground"
-                    : "bg-emerald-500/10 text-emerald-500"
-                }`}>
-                  {data.monthlyReportPreview.status}
-                </Badge>
-              </div>
-              <div className="space-y-2 text-sm text-muted-foreground">
-                <div className="flex justify-between"><span>Posts published</span><span className="text-foreground font-medium">{data.monthlyReportPreview.postsPublished}</span></div>
-                <div className="flex justify-between"><span>Total reach</span><span className="text-foreground font-medium">41,200</span></div>
-                <div className="flex justify-between"><span>Google impressions</span><span className="text-foreground font-medium">12,580</span></div>
-                <div className="flex justify-between"><span>New reviews</span><span className="text-foreground font-medium">6</span></div>
-              </div>
-              <div className="mt-4 pt-4 border-t border-border/50 flex items-center justify-between text-xs font-semibold text-primary">
-                View full report <ChevronRight className="w-3.5 h-3.5" />
-              </div>
-            </CardContent>
-          </Card>
+      {/* Content Supply — compact snapshot */}
+      <div>
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Content Supply</h3>
+        <div className="grid sm:grid-cols-3 gap-3">
+          {data.contentSupply.map((item, i) => (
+            <Card key={i} className="bg-card border-border" data-testid={`supply-card-${i}`}>
+              <CardContent className="p-4">
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-muted-foreground">{item.label}</span>
+                  <span className="font-semibold text-xs">{item.value}/{item.max}</span>
+                </div>
+                <Progress value={(item.value / item.max) * 100} className="h-1" />
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
+
+      {/* Quick links */}
+      <div>
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Quick Links</h3>
+        <div className="grid sm:grid-cols-2 gap-3">
+          {quickLinks.map((link, i) => (
+            <Link key={i} href={link.href}>
+              <Card className="bg-card border-border hover:border-primary/40 hover:bg-card/80 transition-all cursor-pointer group" data-testid={`quick-link-${i}`}>
+                <CardContent className="p-4 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10 text-primary flex-shrink-0">
+                      <link.icon className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold leading-tight">{link.label}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{link.description}</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-primary transition-colors flex-shrink-0" />
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      </div>
+
     </PortalLayout>
   );
 }
