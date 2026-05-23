@@ -10,6 +10,7 @@ import ClientPortal from "@/pages/client-portal";
 import TeamPortal from "@/pages/team-portal";
 import OperatorPortal from "@/pages/operator-portal";
 import OwnerPortal from "@/pages/owner-portal";
+import SupabaseTestPage from "@/pages/supabase-test";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ function Router() {
       <Route path="/demo/team" component={TeamPortal} />
       <Route path="/demo/operator" component={OperatorPortal} />
       <Route path="/demo/owner" component={OwnerPortal} />
+      <Route path="/demo/supabase-test" component={SupabaseTestPage} />
       <Route component={NotFound} />
     </Switch>
   );
