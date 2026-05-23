@@ -47,6 +47,12 @@ Copy `.env.example` to `.env.local` and fill in your Supabase dev project values
 
 ---
 
+## Column names
+
+Query functions map directly to the verified Supabase SQL schema columns. If a query returns an error or unexpected results, check the column names against `docs/database/migrations-draft/002_create_tables.sql` before debugging elsewhere.
+
+---
+
 ## RLS note
 
 If queries return empty results or permission errors, that is expected behaviour until Supabase Row Level Security read policies are configured. RLS policies are tracked in `docs/database/RLS_PLAN.md` and will be applied in a later phase.

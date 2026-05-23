@@ -48,7 +48,7 @@ export async function getClientPosts(clientId: string) {
     .from("posts")
     .select("*")
     .eq("client_id", clientId)
-    .order("scheduled_for", { ascending: false });
+    .order("scheduled_at", { ascending: false, nullsFirst: false });
   if (error) throw new Error(`[supabase] getClientPosts: ${error.message}`);
   return data ?? [];
 }
@@ -69,7 +69,7 @@ export async function getClientWeeklyReports(clientId: string) {
     .from("weekly_reports")
     .select("*")
     .eq("client_id", clientId)
-    .order("week_start", { ascending: false });
+    .order("week_start_date", { ascending: false });
   if (error)
     throw new Error(`[supabase] getClientWeeklyReports: ${error.message}`);
   return data ?? [];
@@ -80,7 +80,8 @@ export async function getClientMonthlyReports(clientId: string) {
     .from("monthly_reports")
     .select("*")
     .eq("client_id", clientId)
-    .order("month_start", { ascending: false });
+    .order("year", { ascending: false })
+    .order("month", { ascending: false });
   if (error)
     throw new Error(`[supabase] getClientMonthlyReports: ${error.message}`);
   return data ?? [];
