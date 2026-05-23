@@ -10,18 +10,15 @@
 -- this file. That step is not part of this draft.
 --
 -- UUID ranges:
---   content_concepts: 00000000-0000-0000-0008-000000000001 → …005
---   draft_sets:       00000000-0000-0000-0009-000000000001 → …005
---   draft_variants:   00000000-0000-0000-000a-000000000001 → …015
+--   content_concepts: 00000000-0000-0000-0008-000000000001 → …007
+--   draft_sets:       00000000-0000-0000-0009-000000000001 → …007
+--   draft_variants:   00000000-0000-0000-000a-000000000001 → …021
 --
 -- Coverage:
---   Concepts 1–5 cover the 5 requested media assets. Draft variants for
+--   Concepts 1–7 cover all 7 media assets used in posts. Draft variants for
 --   post-001 (variant-001-A), post-002 (variant-002-B), post-004 (variant-004-A),
---   and post-005 (variant-005-A) are included here.
---
---   variant-006-A (opening hours graphic) and variant-007-A (prep day BTS)
---   are not included yet — those concepts will be added when concepts for
---   media-mamadali-006 and media-mamadali-007 are drafted.
+--   post-005 (variant-005-A), post-006 (variant-006-A), and post-007 (variant-007-A)
+--   are all included here.
 -- =============================================================================
 
 
@@ -485,4 +482,224 @@ INSERT INTO draft_variants (
   NULL,
   '2026-05-14T09:30:00Z',
   '2026-05-14T10:00:00Z'
+);
+
+
+-- =============================================================================
+-- Concepts 6–7: Opening hours graphic and Prep day BTS
+-- =============================================================================
+
+INSERT INTO content_concepts (
+  id,
+  client_id,
+  media_asset_id,
+  goal,
+  concept_title,
+  concept_body,
+  status,
+  generated_by_ai,
+  reviewed_by_user_id,
+  reviewed_at,
+  created_at,
+  updated_at
+) VALUES
+
+-- Concept 6: Opening hours graphic
+(
+  '00000000-0000-0000-0008-000000000006',
+  '00000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0003-000000000006',  -- media-mamadali-006
+  'announcement',
+  'New opening hours — Ramadan season update',
+  'Informational post announcing updated opening hours for the Ramadan season. Clear, on-brand graphic. Designed to reach existing followers and reduce missed visits.',
+  'approved',
+  FALSE,
+  NULL,
+  '2026-05-15T10:00:00Z',
+  '2026-05-14T10:00:00Z',
+  '2026-05-15T10:00:00Z'
+),
+
+-- Concept 7: Prep day behind the scenes
+(
+  '00000000-0000-0000-0008-000000000007',
+  '00000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0003-000000000007',  -- media-mamadali-007
+  'engagement',
+  'Behind the scenes: prep day with the team',
+  'Authentic behind-the-scenes image of the team during prep. Shows the effort behind every service. Strong reach signal from local food audience — humanises the brand.',
+  'approved',
+  FALSE,
+  NULL,
+  '2026-05-16T09:00:00Z',
+  '2026-05-15T08:00:00Z',
+  '2026-05-16T09:00:00Z'
+);
+
+
+-- =============================================================================
+-- Draft sets 6–7
+-- =============================================================================
+
+INSERT INTO draft_sets (
+  id,
+  client_id,
+  concept_id,
+  status,
+  generated_at,
+  approved_at,
+  created_at,
+  updated_at
+) VALUES
+
+-- Draft set 6: Opening hours graphic
+(
+  '00000000-0000-0000-0009-000000000006',
+  '00000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0008-000000000006',
+  'approved',
+  '2026-05-15T10:30:00Z',
+  '2026-05-15T11:00:00Z',
+  '2026-05-15T10:30:00Z',
+  '2026-05-15T11:00:00Z'
+),
+
+-- Draft set 7: Prep day BTS
+(
+  '00000000-0000-0000-0009-000000000007',
+  '00000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0008-000000000007',
+  'approved',
+  '2026-05-16T09:30:00Z',
+  '2026-05-16T10:00:00Z',
+  '2026-05-16T09:30:00Z',
+  '2026-05-16T10:00:00Z'
+);
+
+
+-- =============================================================================
+-- Draft variants 016–021 (sets 6–7, 3 variants each)
+--
+-- Key variant → post mapping (for future UPDATE step):
+--   00000000-0000-0000-000a-000000000016  (variant-006-A, safe, used) → post-006
+--   00000000-0000-0000-000a-000000000019  (variant-007-A, safe, used) → post-007
+-- =============================================================================
+
+INSERT INTO draft_variants (
+  id,
+  client_id,
+  draft_set_id,
+  variant_type,
+  caption_text,
+  hashtags,
+  status,
+  used_in_post_id,
+  approved_by_user_id,
+  approved_at,
+  created_at,
+  updated_at
+) VALUES
+
+-- ── Draft set 6: Opening hours graphic ────────────────────────────────────────
+
+-- variant-006-A (safe) — used in published post-006 (locked); status = used
+-- Future step: UPDATE posts SET draft_variant_id = '00000000-0000-0000-000a-000000000016'
+--              WHERE id = '00000000-0000-0000-0005-000000000006'
+(
+  '00000000-0000-0000-000a-000000000016',
+  '00000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0009-000000000006',
+  'safe',
+  'New opening hours for Ramadan season. We''ve updated our schedule so you never miss a meal.',
+  ARRAY['#MamadaliKebab', '#OpeningHours', '#RamadanSeason', '#LondonFood'],
+  'used',
+  NULL,  -- used_in_post_id wired in future UPDATE step
+  NULL,
+  '2026-05-15T11:00:00Z',
+  '2026-05-15T10:30:00Z',
+  '2026-05-19T17:00:58Z'
+),
+
+-- variant-006-B (engagement) — not used
+(
+  '00000000-0000-0000-000a-000000000017',
+  '00000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0009-000000000006',
+  'engagement',
+  'We''re adjusting our hours for Ramadan. Check the graphic and plan your visit.',
+  ARRAY['#MamadaliKebab', '#Ramadan', '#OpenNow', '#LondonEats'],
+  'archived',
+  NULL,
+  NULL,
+  NULL,
+  '2026-05-15T10:30:00Z',
+  '2026-05-15T11:00:00Z'
+),
+
+-- variant-006-C (sales) — not used
+(
+  '00000000-0000-0000-000a-000000000018',
+  '00000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0009-000000000006',
+  'sales',
+  'Don''t miss us this Ramadan. Updated hours now live — book your table before it fills up.',
+  ARRAY['#MamadaliKebab', '#BookNow', '#RamadanDining', '#LondonFood'],
+  'archived',
+  NULL,
+  NULL,
+  NULL,
+  '2026-05-15T10:30:00Z',
+  '2026-05-15T11:00:00Z'
+),
+
+-- ── Draft set 7: Prep day BTS ─────────────────────────────────────────────────
+
+-- variant-007-A (safe) — used in published post-007 (locked); status = used
+-- Future step: UPDATE posts SET draft_variant_id = '00000000-0000-0000-000a-000000000019'
+--              WHERE id = '00000000-0000-0000-0005-000000000007'
+(
+  '00000000-0000-0000-000a-000000000019',
+  '00000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0009-000000000007',
+  'safe',
+  'Behind the scenes: prep day with the team. Every great meal starts here.',
+  ARRAY['#MamadaliKebab', '#BehindTheScenes', '#PrepDay', '#KitchenTeam', '#LondonFood'],
+  'used',
+  NULL,  -- used_in_post_id wired in future UPDATE step
+  NULL,
+  '2026-05-16T10:00:00Z',
+  '2026-05-16T09:30:00Z',
+  '2026-05-20T17:01:11Z'
+),
+
+-- variant-007-B (engagement) — not used
+(
+  '00000000-0000-0000-000a-000000000020',
+  '00000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0009-000000000007',
+  'engagement',
+  'This is what Sunday prep looks like at Mamadali. The team that makes it happen.',
+  ARRAY['#MamadaliKebab', '#TeamWork', '#PrepDay', '#BehindTheBrand'],
+  'archived',
+  NULL,
+  NULL,
+  NULL,
+  '2026-05-16T09:30:00Z',
+  '2026-05-16T10:00:00Z'
+),
+
+-- variant-007-C (sales) — not used
+(
+  '00000000-0000-0000-000a-000000000021',
+  '00000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0009-000000000007',
+  'sales',
+  'All this prep — just for you. Book your table and taste the difference.',
+  ARRAY['#MamadaliKebab', '#BookNow', '#FreshFood', '#LondonDining'],
+  'archived',
+  NULL,
+  NULL,
+  NULL,
+  '2026-05-16T09:30:00Z',
+  '2026-05-16T10:00:00Z'
 );
