@@ -1,18 +1,9 @@
-import { Link } from "wouter";
-import { CalendarDays, Globe, FileText, Bell, Loader2, AlertTriangle, ChevronRight, ImageIcon, Layers, BarChart2, ClipboardList } from "lucide-react";
+import { CalendarDays, ImageIcon, Layers, BarChart2, Loader2, AlertTriangle } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientPortalData } from "@/hooks/useClientPortalData";
-
-const quickLinks = [
-  { label: "Content Calendar",  icon: CalendarDays, href: "/demo/client/calendar", description: "Scheduled and in-review posts" },
-  { label: "Google Visibility", icon: Globe,        href: "/demo/client/google",   description: "Business Profile performance" },
-  { label: "Reports",           icon: FileText,     href: "/demo/client/reports",  description: "Monthly performance report"   },
-  { label: "Updates",           icon: Bell,         href: "/demo/client/updates",  description: "Weekly update from Veroxa"    },
-];
 
 export default function ClientDashboard() {
   const { source, loading, error, data } = useClientPortalData();
@@ -22,6 +13,13 @@ export default function ClientDashboard() {
     { label: "Media assets",        value: loading ? "—" : String(data.mediaAssetsCount),       icon: ImageIcon   },
     { label: "Platforms connected", value: loading ? "—" : String(data.platformsCount),         icon: Layers      },
     { label: "Latest report",       value: loading ? "—" : data.monthlyReportPreview.status,    icon: BarChart2   },
+  ];
+
+  const snapshotItems = [
+    "Your upcoming content is scheduled and ready for review.",
+    "Google visibility data is being tracked for this month.",
+    "Your latest monthly report is available in Reports.",
+    "Veroxa is monitoring your content supply.",
   ];
 
   return (
@@ -81,47 +79,19 @@ export default function ClientDashboard() {
         ))}
       </div>
 
-      {/* Content Supply — compact snapshot */}
+      {/* This week at a glance */}
       <div>
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Content Supply</h3>
-        <div className="grid sm:grid-cols-3 gap-3">
-          {data.contentSupply.map((item, i) => (
-            <Card key={i} className="bg-card border-border" data-testid={`supply-card-${i}`}>
-              <CardContent className="p-4">
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-muted-foreground">{item.label}</span>
-                  <span className="font-semibold text-xs">{item.value}/{item.max}</span>
-                </div>
-                <Progress value={(item.value / item.max) * 100} className="h-1" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-
-      {/* Quick links */}
-      <div>
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Quick Links</h3>
-        <div className="grid sm:grid-cols-2 gap-3">
-          {quickLinks.map((link, i) => (
-            <Link key={i} href={link.href}>
-              <Card className="bg-card border-border hover:border-primary/40 hover:bg-card/80 transition-all cursor-pointer group" data-testid={`quick-link-${i}`}>
-                <CardContent className="p-4 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-primary/10 text-primary flex-shrink-0">
-                      <link.icon className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold leading-tight">{link.label}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{link.description}</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-primary transition-colors flex-shrink-0" />
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">This week at a glance</h3>
+        <Card className="bg-card/50 border-border/50">
+          <CardContent className="p-5 space-y-3">
+            {snapshotItems.map((item, i) => (
+              <div key={i} className="flex items-start gap-2.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary/60 flex-shrink-0 mt-1.5" />
+                <p className="text-sm text-muted-foreground">{item}</p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
       </div>
 
     </PortalLayout>
