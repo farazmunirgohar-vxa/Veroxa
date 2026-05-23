@@ -112,13 +112,15 @@ export default function ClientPortal() {
           {/* Weekly Update */}
           <Card className="bg-card border-border mt-2" data-testid="weekly-update">
             <CardHeader className="pb-3">
-              <CardTitle className="text-base font-semibold">Weekly Update — 19–25 May</CardTitle>
+              <CardTitle className="text-base font-semibold">{data.weeklyUpdate.title}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm text-muted-foreground">
-              <div className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" /><span>4 posts published this week across Instagram and Facebook.</span></div>
-              <div className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" /><span>Google impressions up 18% — your kebab platter post drove the highest reach this month.</span></div>
-              <div className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" /><span>2 new 5-star Google reviews received. Veroxa team prepared suggested responses.</span></div>
-              <div className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" /><span>Next shoot booked for Thursday 29 May at 11am — please have the new menu items ready.</span></div>
+              {data.weeklyUpdate.summaryItems.map((item, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                  <span>{item}</span>
+                </div>
+              ))}
             </CardContent>
           </Card>
         </div>
@@ -149,11 +151,19 @@ export default function ClientPortal() {
             <Card className="bg-card border-border hover:border-primary/30 transition-colors cursor-pointer" data-testid="monthly-report-preview">
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-semibold">April 2026 Report</span>
-                  <Badge variant="outline" className="border-none bg-emerald-500/10 text-emerald-500">Ready</Badge>
+                  <span className="text-sm font-semibold">{data.monthlyReportPreview.title}</span>
+                  <Badge variant="outline" className={`border-none ${
+                    data.monthlyReportPreview.status === "In Review"
+                      ? "bg-amber-500/10 text-amber-500"
+                      : data.monthlyReportPreview.status === "Drafting"
+                      ? "bg-muted text-muted-foreground"
+                      : "bg-emerald-500/10 text-emerald-500"
+                  }`}>
+                    {data.monthlyReportPreview.status}
+                  </Badge>
                 </div>
                 <div className="space-y-2 text-sm text-muted-foreground">
-                  <div className="flex justify-between"><span>Posts published</span><span className="text-foreground font-medium">18</span></div>
+                  <div className="flex justify-between"><span>Posts published</span><span className="text-foreground font-medium">{data.monthlyReportPreview.postsPublished}</span></div>
                   <div className="flex justify-between"><span>Total reach</span><span className="text-foreground font-medium">41,200</span></div>
                   <div className="flex justify-between"><span>Google impressions</span><span className="text-foreground font-medium">12,580</span></div>
                   <div className="flex justify-between"><span>New reviews</span><span className="text-foreground font-medium">6</span></div>

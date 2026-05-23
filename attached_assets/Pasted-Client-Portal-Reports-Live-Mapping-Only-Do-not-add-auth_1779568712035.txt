@@ -1,0 +1,100 @@
+Client Portal Reports Live Mapping Only.
+
+Do not add authentication.
+Do not add login.
+Do not add uploads.
+Do not add AI.
+Do not add automation.
+Do not add publishing integrations.
+Do not add write/update/delete behavior.
+Do not add service role key.
+Do not add real credentials.
+Do not modify Team Portal.
+Do not modify Operator Portal.
+Do not modify Owner Portal.
+Do not redesign UI.
+Do not change routes.
+
+Goal:
+Make the Client Portal weekly update and monthly report preview use Supabase read data when available, with static demo fallback if Supabase fails.
+
+Current context:
+- /demo/client already shows Live demo data.
+- Scheduled posts now come from live Supabase posts + draft_variants.
+- useClientPortalData.ts already fetches weekly_reports and monthly_reports.
+- Client Portal still displays mostly static weekly update and monthly report preview text.
+
+Tasks:
+
+1. Update:
+
+artifacts/veroxa/src/hooks/useClientPortalData.ts
+
+Add these fields to ClientPortalData:
+
+weeklyUpdate:
+- title: string
+- summaryItems: string[]
+
+monthlyReportPreview:
+- title: string
+- status: string
+- postsPublished: number
+- postsPlanned: number
+- completionRate: number
+- summaryText: string | null
+
+2. In Supabase success state:
+
+Use the most recent weekly_reports row:
+- title should be based on week_start_date and week_end_date
+- summaryItems should include:
+  - posts published count
+  - posts planned count
+  - completion rate
+  - summary_text if available
+
+Use the most recent monthly_reports row:
+- title should be based on month/year, like “May 2026 Report”
+- status should use the report status
+- postsPublished from posts_published
+- postsPlanned from posts_planned
+- completionRate from completion_rate
+- summaryText from summary_text
+
+3. In DEMO_DATA fallback:
+Keep the existing visible weekly update and monthly report values as fallback.
+
+4. Update only:
+
+artifacts/veroxa/src/pages/client-portal.tsx
+
+Replace the static Weekly Update section with data.weeklyUpdate.
+
+Replace the static Monthly Report Preview values with data.monthlyReportPreview.
+
+Keep the layout almost exactly the same.
+
+5. Formatting:
+- Convert report status to nice UI labels:
+  published → Published
+  approved → Approved
+  operator_review → In Review
+  drafting → Drafting
+
+6. Do not add new cards.
+Do not change routes.
+Do not add buttons.
+Do not add writes.
+Do not touch other portals.
+
+7. Update:
+
+artifacts/veroxa/src/lib/supabase/README.md
+
+Add note:
+- Client Portal weekly update and monthly report preview now use Supabase report rows when available.
+- Static fallback remains active.
+
+Expected result:
+Client Portal should look almost the same, but weekly update and monthly report preview should now be powered by live Supabase weekly_reports and monthly_reports when Supabase is available.
