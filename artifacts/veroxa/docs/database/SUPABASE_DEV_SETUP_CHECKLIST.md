@@ -95,6 +95,23 @@ Use the Supabase Table Editor or SQL Editor to run these checks.
 
 ---
 
+## 5b. Optional: Apply temporary dev read policies
+
+After verification, you can optionally apply temporary anon read policies to allow the frontend data layer to query the dev database without authentication.
+
+> This step is optional and dev-only. Do not apply in production.
+
+- [ ] Open the Supabase SQL Editor on the **dev project only**
+- [ ] Run `docs/database/rls-draft/001_dev_read_policies.sql`
+- [ ] Confirm no errors in the SQL Editor output
+- [ ] Verify in Supabase **Authentication → Policies** that SELECT policies exist for all 11 tables
+- [ ] Do **not** add any write policies (INSERT, UPDATE, DELETE)
+- [ ] Do **not** run this file on any production Supabase project
+
+These policies allow read-only anon access to Mamadali demo rows only. They must be replaced with authenticated, role-based RLS policies before any real client data is introduced.
+
+---
+
 ## 6. Do not do yet
 
 After verification, stop. The following steps belong to later phases and must not be started until the schema and seed data are confirmed correct.
