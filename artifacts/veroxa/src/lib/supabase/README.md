@@ -2,7 +2,7 @@
 
 ## Status
 
-Read-only. Client Portal only. Not yet wired into the UI.
+Read-only, anon key only. Wired into the Client Portal (via `useClientPortalData`) with static demo fallback. Team, Operator, and Owner portals are routed but remain on static demo data — no Supabase wiring for them yet.
 
 ---
 
