@@ -317,7 +317,7 @@ export function useClientPortalData(): UseClientPortalDataResult {
         const latestMonthly = monthlyTyped[0] ?? null;
         const monthlyReportPreview: MonthlyReportPreview = latestMonthly
           ? {
-              title: formatMonthlyTitle(latestMonthly.year, latestMonthly.year),
+              title: formatMonthlyTitle(latestMonthly.month, latestMonthly.year),
               status: REPORT_STATUS_LABELS[String(latestMonthly.status)] ?? String(latestMonthly.status ?? ""),
               postsPublished: typeof latestMonthly.posts_published === "number" ? latestMonthly.posts_published : DEMO_MONTHLY_PREVIEW.postsPublished,
               postsPlanned: typeof latestMonthly.posts_planned === "number" ? latestMonthly.posts_planned : DEMO_MONTHLY_PREVIEW.postsPlanned,
