@@ -13,8 +13,23 @@ import ClientGoogle from "@/pages/client-google";
 import ClientReports from "@/pages/client-reports";
 import ClientUpdates from "@/pages/client-updates";
 import TeamPortal from "@/pages/team-portal";
+import TeamTasks from "@/pages/team-tasks";
+import TeamMediaReview from "@/pages/team-media-review";
+import TeamAiReview from "@/pages/team-ai-review";
+import TeamDrafts from "@/pages/team-drafts";
+import TeamScheduling from "@/pages/team-scheduling";
 import OperatorPortal from "@/pages/operator-portal";
+import OperatorOverview from "@/pages/operator-overview";
+import OperatorAlerts from "@/pages/operator-alerts";
+import OperatorClientHealth from "@/pages/operator-client-health";
+import OperatorFailedPosts from "@/pages/operator-failed-posts";
+import OperatorReportApprovals from "@/pages/operator-report-approvals";
 import OwnerPortal from "@/pages/owner-portal";
+import OwnerDashboard from "@/pages/owner-dashboard";
+import OwnerRevenue from "@/pages/owner-revenue";
+import OwnerClientHealth from "@/pages/owner-client-health";
+import OwnerAlerts from "@/pages/owner-alerts";
+import OwnerSettings from "@/pages/owner-settings";
 import SupabaseTestPage from "@/pages/supabase-test";
 
 const queryClient = new QueryClient();
@@ -31,8 +46,23 @@ function Router() {
       <Route path="/demo/client/reports" component={ClientReports} />
       <Route path="/demo/client/updates" component={ClientUpdates} />
       <Route path="/demo/team" component={TeamPortal} />
+      <Route path="/demo/team/tasks" component={TeamTasks} />
+      <Route path="/demo/team/media-review" component={TeamMediaReview} />
+      <Route path="/demo/team/ai-review" component={TeamAiReview} />
+      <Route path="/demo/team/drafts" component={TeamDrafts} />
+      <Route path="/demo/team/scheduling" component={TeamScheduling} />
       <Route path="/demo/operator" component={OperatorPortal} />
+      <Route path="/demo/operator/overview" component={OperatorOverview} />
+      <Route path="/demo/operator/alerts" component={OperatorAlerts} />
+      <Route path="/demo/operator/client-health" component={OperatorClientHealth} />
+      <Route path="/demo/operator/failed-posts" component={OperatorFailedPosts} />
+      <Route path="/demo/operator/report-approvals" component={OperatorReportApprovals} />
       <Route path="/demo/owner" component={OwnerPortal} />
+      <Route path="/demo/owner/dashboard" component={OwnerDashboard} />
+      <Route path="/demo/owner/revenue" component={OwnerRevenue} />
+      <Route path="/demo/owner/client-health" component={OwnerClientHealth} />
+      <Route path="/demo/owner/alerts" component={OwnerAlerts} />
+      <Route path="/demo/owner/settings" component={OwnerSettings} />
       <Route path="/demo/supabase-test" component={SupabaseTestPage} />
       <Route component={NotFound} />
     </Switch>

@@ -17,10 +17,13 @@ interface PortalLayoutProps {
 
 function isRouteActive(itemHref: string, location: string): boolean {
   if (location === itemHref) return true;
-  // Treat the portal root (e.g. /demo/client) as active for the dashboard tab
-  if (itemHref.endsWith("/dashboard")) {
-    const root = itemHref.slice(0, itemHref.lastIndexOf("/dashboard"));
-    if (location === root || location === root + "/") return true;
+  // Treat the portal root (e.g. /demo/client) as active for its default tab
+  const defaultSuffixes = ["/dashboard", "/overview", "/tasks"];
+  for (const suffix of defaultSuffixes) {
+    if (itemHref.endsWith(suffix)) {
+      const root = itemHref.slice(0, itemHref.lastIndexOf(suffix));
+      if (location === root || location === root + "/") return true;
+    }
   }
   return false;
 }
