@@ -1,4 +1,4 @@
-import { LayoutDashboard, AlertTriangle, Users, FileX, FileCheck, Briefcase, TrendingDown } from "lucide-react";
+import { LayoutDashboard, AlertTriangle, Users, FileX, FileCheck, Briefcase, TrendingDown, ImageOff, RadioTower, ClipboardCheck, HeartPulse, Siren } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -79,6 +79,84 @@ export default function OperatorPortal() {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      {/* AI Oversight Preview */}
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-4">
+          <h3 className="text-xl font-bold">AI Oversight Preview</h3>
+          <Badge variant="outline" className="border-primary/30 bg-primary/10 text-primary text-[10px] font-semibold tracking-wide px-2 py-0.5">
+            Demo Logic Only
+          </Badge>
+        </div>
+        <p className="text-sm text-muted-foreground mb-5">
+          A preview of how Veroxa's AI oversight layer will surface risk signals for operator review. All signals below are simulated.
+        </p>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          {([
+            {
+              icon: ImageOff,
+              name: "Content Supply Risk",
+              status: "6 clients need attention",
+              meaning: "Flags clients with low usable media supply or an empty upcoming content pipeline.",
+              color: "amber",
+            },
+            {
+              icon: RadioTower,
+              name: "Publishing Risk",
+              status: "3 failed posts detected",
+              meaning: "Highlights failed posts, expired platform access, or posts needing reschedule.",
+              color: "red",
+            },
+            {
+              icon: ClipboardCheck,
+              name: "Report Quality Check",
+              status: "4 reports pending review",
+              meaning: "Prepares report summaries — operator approval still required before client release.",
+              color: "blue",
+            },
+            {
+              icon: HeartPulse,
+              name: "Client Health Watch",
+              status: "5 accounts below threshold",
+              meaning: "Watches content supply, posting consistency, Google visibility, and recurring issues.",
+              color: "violet",
+            },
+            {
+              icon: Siren,
+              name: "Escalation Signal",
+              status: "2 critical alerts",
+              meaning: "Recommends which problems should reach operator or owner-level visibility.",
+              color: "red",
+            },
+          ] as const).map((signal) => {
+            const colorMap = {
+              amber:  { bg: "bg-amber-500/10",  text: "text-amber-500",  dot: "bg-amber-500",  badge: "bg-amber-500/10 text-amber-500"  },
+              red:    { bg: "bg-red-500/10",     text: "text-red-500",    dot: "bg-red-500",    badge: "bg-red-500/10 text-red-500"      },
+              blue:   { bg: "bg-blue-500/10",    text: "text-blue-500",   dot: "bg-blue-500",   badge: "bg-blue-500/10 text-blue-500"    },
+              violet: { bg: "bg-primary/10",     text: "text-primary",    dot: "bg-primary",    badge: "bg-primary/10 text-primary"      },
+            } as const;
+            const c = colorMap[signal.color];
+            return (
+              <Card key={signal.name} className="bg-card border-border" data-testid={`oversight-card-${signal.name.toLowerCase().replace(/\s+/g, '-')}`}>
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between gap-2 mb-3">
+                    <div className={`p-2 rounded-lg ${c.bg} ${c.text}`}>
+                      <signal.icon className="w-4 h-4" />
+                    </div>
+                    <span className="text-[9px] font-semibold text-muted-foreground/60 uppercase tracking-widest">Simulated</span>
+                  </div>
+                  <h4 className="text-sm font-semibold text-foreground mb-1 leading-snug">{signal.name}</h4>
+                  <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold ${c.badge} mb-2`}>
+                    <span className={`w-1 h-1 rounded-full ${c.dot}`} />
+                    {signal.status}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">{signal.meaning}</p>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8">
