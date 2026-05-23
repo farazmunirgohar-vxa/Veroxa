@@ -68,6 +68,8 @@ If queries return empty results or permission errors, that is expected behaviour
 | Operator Portal | Static demo data only | Not yet wired |
 | Owner Portal | Static demo data only | Not yet wired |
 
+**Note:** Client Portal is now split into individual routed pages (`/demo/client/dashboard`, `/calendar`, `/google`, `/reports`, `/updates`). All Client Portal pages use the same `useClientPortalData` hook with read-only Supabase access and static demo fallback. Team, Operator, and Owner portals remain on static demo data.
+
 All connections are read-only and unauthenticated (anon key only).
 
 ---

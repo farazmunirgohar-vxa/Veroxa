@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { ArrowLeft, Hexagon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -15,8 +15,24 @@ interface PortalLayoutProps {
   portalName: string;
 }
 
+function isRouteActive(itemHref: string, location: string): boolean {
+  if (location === itemHref) return true;
+  // Treat the portal root (e.g. /demo/client) as active for the dashboard tab
+  if (itemHref.endsWith("/dashboard")) {
+    const root = itemHref.slice(0, itemHref.lastIndexOf("/dashboard"));
+    if (location === root || location === root + "/") return true;
+  }
+  return false;
+}
+
 export function PortalLayout({ children, items, portalName }: PortalLayoutProps) {
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [location] = useLocation();
+  const [fallbackActive, setFallbackActive] = useState(0);
+
+  const activeItem =
+    items.find((item) =>
+      item.href?.startsWith("/") ? isRouteActive(item.href, location) : false
+    ) ?? items[fallbackActive];
 
   return (
     <div className="flex min-h-screen bg-background text-foreground selection:bg-primary/30">
@@ -37,7 +53,12 @@ export function PortalLayout({ children, items, portalName }: PortalLayoutProps)
           </div>
           <nav className="space-y-1">
             {items.map((item, i) => {
-              const isActive = i === activeIndex;
+              const isActive = item.href?.startsWith("/")
+                ? isRouteActive(item.href, location)
+                : item.href?.startsWith("#")
+                ? false
+                : i === fallbackActive;
+
               const sharedClass = cn(
                 "w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-200 cursor-pointer",
                 isActive
@@ -47,27 +68,26 @@ export function PortalLayout({ children, items, portalName }: PortalLayoutProps)
               const icon = (
                 <item.icon className={cn("w-4 h-4", isActive ? "text-primary" : "text-sidebar-foreground/50")} />
               );
-              if (item.href) {
+              const testId = `sidebar-item-${item.label.toLowerCase().replace(/\s+/g, "-")}`;
+
+              if (item.href?.startsWith("/")) {
                 return (
-                  <a
-                    key={i}
-                    href={item.href}
-                    onClick={() => setActiveIndex(i)}
-                    data-testid={`sidebar-item-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
-                    className={sharedClass}
-                  >
+                  <Link key={i} href={item.href} className={sharedClass} data-testid={testId}>
+                    {icon}
+                    {item.label}
+                  </Link>
+                );
+              }
+              if (item.href?.startsWith("#")) {
+                return (
+                  <a key={i} href={item.href} onClick={() => setFallbackActive(i)} className={sharedClass} data-testid={testId}>
                     {icon}
                     {item.label}
                   </a>
                 );
               }
               return (
-                <button
-                  key={i}
-                  onClick={() => setActiveIndex(i)}
-                  data-testid={`sidebar-item-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
-                  className={sharedClass}
-                >
+                <button key={i} onClick={() => setFallbackActive(i)} className={sharedClass} data-testid={testId}>
                   {icon}
                   {item.label}
                 </button>
@@ -92,7 +112,7 @@ export function PortalLayout({ children, items, portalName }: PortalLayoutProps)
       <main className="flex-1 flex flex-col min-w-0 bg-background/50">
         <header className="h-16 flex items-center px-8 border-b border-border/40 backdrop-blur-md sticky top-0 z-10">
           <h1 className="text-sm font-medium text-muted-foreground" data-testid="header-breadcrumb">
-            {portalName} / {items[activeIndex]?.label ?? "Dashboard"}
+            {portalName} / {activeItem?.label ?? "Dashboard"}
           </h1>
         </header>
         <div className="flex-1 p-8 overflow-auto">
