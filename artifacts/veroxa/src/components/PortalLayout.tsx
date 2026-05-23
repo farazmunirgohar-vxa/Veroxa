@@ -1,12 +1,12 @@
-import React from "react";
-import { Link, useLocation } from "wouter";
+import React, { useState } from "react";
+import { Link } from "wouter";
 import { ArrowLeft, Hexagon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface SidebarItem {
   label: string;
   icon: React.ElementType;
-  href?: string; // Optional since it's just a demo, we might not have all routes
+  href?: string;
 }
 
 interface PortalLayoutProps {
@@ -16,7 +16,7 @@ interface PortalLayoutProps {
 }
 
 export function PortalLayout({ children, items, portalName }: PortalLayoutProps) {
-  const [location] = useLocation();
+  const [activeIndex, setActiveIndex] = useState(0);
 
   return (
     <div className="flex min-h-screen bg-background text-foreground selection:bg-primary/30">
@@ -37,15 +37,16 @@ export function PortalLayout({ children, items, portalName }: PortalLayoutProps)
           </div>
           <nav className="space-y-1">
             {items.map((item, i) => {
-              const isActive = i === 0; // Just mock the first one as active for demo purposes
+              const isActive = i === activeIndex;
               return (
                 <button
                   key={i}
+                  onClick={() => setActiveIndex(i)}
                   data-testid={`sidebar-item-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
                   className={cn(
-                    "w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-200 cursor-default",
-                    isActive 
-                      ? "bg-primary/10 text-primary" 
+                    "w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-200 cursor-pointer",
+                    isActive
+                      ? "bg-primary/10 text-primary"
                       : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                   )}
                 >
@@ -58,8 +59,8 @@ export function PortalLayout({ children, items, portalName }: PortalLayoutProps)
         </div>
 
         <div className="mt-auto p-4 border-t border-sidebar-border">
-          <Link 
-            href="/demo" 
+          <Link
+            href="/demo"
             className="flex items-center gap-2 text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground px-2 py-2 transition-colors rounded-md hover:bg-sidebar-accent"
             data-testid="link-back-demo"
           >
@@ -72,7 +73,9 @@ export function PortalLayout({ children, items, portalName }: PortalLayoutProps)
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0 bg-background/50">
         <header className="h-16 flex items-center px-8 border-b border-border/40 backdrop-blur-md sticky top-0 z-10">
-          <h1 className="text-sm font-medium text-muted-foreground" data-testid="header-breadcrumb">{portalName} / Dashboard</h1>
+          <h1 className="text-sm font-medium text-muted-foreground" data-testid="header-breadcrumb">
+            {portalName} / {items[activeIndex]?.label ?? "Dashboard"}
+          </h1>
         </header>
         <div className="flex-1 p-8 overflow-auto">
           <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
