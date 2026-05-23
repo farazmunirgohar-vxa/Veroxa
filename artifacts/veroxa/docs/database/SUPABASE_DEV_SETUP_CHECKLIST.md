@@ -120,7 +120,7 @@ After verification, stop. The following steps belong to later phases and must no
 - Do not add a Supabase client to the codebase
 - Do not add environment variables or secrets to the app
 - Do not implement authentication or session management
-- Do not apply RLS policies yet
+- Do not apply production/authenticated RLS policies yet (the temporary dev anon read policy from section 5b is the only RLS policy exception at this stage)
 - Do not set up Supabase Storage or file uploads
 - Do not integrate AI, automation, or publishing workflows
 
