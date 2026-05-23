@@ -38,19 +38,37 @@ export function PortalLayout({ children, items, portalName }: PortalLayoutProps)
           <nav className="space-y-1">
             {items.map((item, i) => {
               const isActive = i === activeIndex;
+              const sharedClass = cn(
+                "w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-200 cursor-pointer",
+                isActive
+                  ? "bg-primary/10 text-primary"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+              );
+              const icon = (
+                <item.icon className={cn("w-4 h-4", isActive ? "text-primary" : "text-sidebar-foreground/50")} />
+              );
+              if (item.href) {
+                return (
+                  <a
+                    key={i}
+                    href={item.href}
+                    onClick={() => setActiveIndex(i)}
+                    data-testid={`sidebar-item-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
+                    className={sharedClass}
+                  >
+                    {icon}
+                    {item.label}
+                  </a>
+                );
+              }
               return (
                 <button
                   key={i}
                   onClick={() => setActiveIndex(i)}
                   data-testid={`sidebar-item-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
-                  className={cn(
-                    "w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-200 cursor-pointer",
-                    isActive
-                      ? "bg-primary/10 text-primary"
-                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                  )}
+                  className={sharedClass}
                 >
-                  <item.icon className={cn("w-4 h-4", isActive ? "text-primary" : "text-sidebar-foreground/50")} />
+                  {icon}
                   {item.label}
                 </button>
               );
