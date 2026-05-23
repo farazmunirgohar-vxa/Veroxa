@@ -29,23 +29,39 @@ import type {
 // All `id` fields are strings here; in the real database these become UUID primary keys.
 
 export interface Client {
+  // All `id` fields become UUID primary keys in the real database.
   id: string;
-  restaurantName: string;
-  ownerName: string;
-  email: string;
-  phone: string | null;
-  suburb: string | null;
-  city: string;
-  country: string;
-  status: ClientStatus;
+
+  // Business identity
+  businessName: string;
+  legalName: string | null;
+
+  // Primary contact
+  primaryContactName: string;
+  primaryContactPhone: string;
+  primaryContactEmail: string;
+
+  // Plan and service
   planType: PlanType;
   servicePackage: ServicePackage;
+
+  // Posting schedule preferences — stored as flexible JSON in the DB.
   postingFrequencyWeekly: number;
-  monthlyRetainerCents: number;
+  preferredPostDays: Record<string, unknown> | null;
+  preferredPostTimes: Record<string, unknown> | null;
+  timezone: string;
+
+  // Content permissions
+  reusePermission: boolean;
+
+  // Computed health signals (updated by system jobs, not user input)
   contentHealthStatus: ContentHealthStatus;
   riskStatus: RiskStatus;
-  signedAt: string | null;
-  onboardingCompletedAt: string | null;
+
+  // Lifecycle
+  accountStatus: ClientStatus;
+  onboardingComplete: boolean;
+
   createdAt: string;
   updatedAt: string;
 }

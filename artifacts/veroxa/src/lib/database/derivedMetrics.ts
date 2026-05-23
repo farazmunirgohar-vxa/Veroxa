@@ -37,15 +37,15 @@ export function calculateWeeksOfContentLeft(
  * Derive the ContentHealthStatus from weeks of content remaining.
  *
  * Thresholds:
- *   >= 4 weeks  → healthy
- *   >= 2 weeks  → caution
- *   >= 1 week   → urgent
- *   < 1 week    → broken
+ *   >= 2 weeks           → healthy
+ *   >= 1 and < 2 weeks   → caution
+ *   > 0 and < 1 week     → urgent
+ *   === 0 (or negative)  → broken
  */
 export function calculateContentHealthStatus(weeksOfContentLeft: number): ContentHealthStatus {
-  if (weeksOfContentLeft >= 4) return "healthy";
-  if (weeksOfContentLeft >= 2) return "caution";
-  if (weeksOfContentLeft >= 1) return "urgent";
+  if (weeksOfContentLeft >= 2) return "healthy";
+  if (weeksOfContentLeft >= 1) return "caution";
+  if (weeksOfContentLeft > 0) return "urgent";
   return "broken";
 }
 
