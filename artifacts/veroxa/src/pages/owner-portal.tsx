@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
-import { revenueData, ownerCriticalAlerts as criticalAlerts, clientHealthBands, growthSummary, activities } from "@/lib/demo-data";
+import { revenueData, ownerCriticalAlerts as criticalAlerts, clientHealthBands, growthSummary, activities, ownerSnapshotSignals } from "@/lib/demo-data";
 
 const sidebarItems = [
   { label: "Dashboard", icon: LineChart },
@@ -74,43 +74,15 @@ export default function OwnerPortal() {
           A preview of how Veroxa's AI owner assistant will summarise business health at a glance. All signals below are simulated.
         </p>
         <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-3">
-          {([
-            {
-              icon: TrendingUp,
-              name: "Revenue Signal",
-              status: "MRR up 8.7%",
-              meaning: "Highlights business-level revenue movement and whether growth is healthy.",
-              color: "emerald",
-            },
-            {
-              icon: HeartPulse,
-              name: "Client Risk Signal",
-              status: "6 clients need attention",
-              meaning: "Summarises client health problems without surfacing daily execution clutter.",
-              color: "amber",
-            },
-            {
-              icon: UserMinus,
-              name: "Retention Watch",
-              status: "2 accounts at elevated churn risk",
-              meaning: "Flags accounts that may need owner awareness due to recurring content, performance, or communication issues.",
-              color: "red",
-            },
-            {
-              icon: Sparkles,
-              name: "Growth Opportunity",
-              status: "3 expansion candidates",
-              meaning: "Identifies clients ready for ads, upsell, referral request, or case study.",
-              color: "violet",
-            },
-            {
-              icon: Siren,
-              name: "Critical Escalation",
-              status: "2 owner-level alerts",
-              meaning: "Surfaces only serious problems that require strategic attention.",
-              color: "red",
-            },
-          ] as const).map((signal) => {
+          {ownerSnapshotSignals.map((signal) => {
+            const iconMap = {
+              "revenue-signal":      TrendingUp,
+              "client-risk":         HeartPulse,
+              "retention-watch":     UserMinus,
+              "growth-opportunity":  Sparkles,
+              "critical-escalation": Siren,
+            } as const;
+            const SignalIcon = iconMap[signal.key];
             const colorMap = {
               emerald: { bg: "bg-emerald-500/10", text: "text-emerald-500", dot: "bg-emerald-500", badge: "bg-emerald-500/10 text-emerald-500" },
               amber:   { bg: "bg-amber-500/10",   text: "text-amber-500",   dot: "bg-amber-500",   badge: "bg-amber-500/10 text-amber-500"   },
@@ -123,7 +95,7 @@ export default function OwnerPortal() {
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-2 mb-3">
                     <div className={`p-2 rounded-lg ${c.bg} ${c.text}`}>
-                      <signal.icon className="w-4 h-4" />
+                      <SignalIcon className="w-4 h-4" />
                     </div>
                     <span className="text-[9px] font-semibold text-muted-foreground/60 uppercase tracking-widest">Simulated</span>
                   </div>

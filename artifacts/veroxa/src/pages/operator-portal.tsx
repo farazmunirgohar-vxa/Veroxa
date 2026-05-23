@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { operatorAlerts as alerts, clientHealthDisplay as clientHealth, failedPosts, reportApprovals } from "@/lib/demo-data";
+import { operatorAlerts as alerts, clientHealthDisplay as clientHealth, failedPosts, reportApprovals, operatorOversightSignals } from "@/lib/demo-data";
 
 const sidebarItems = [
   { label: "Overview", icon: LayoutDashboard },
@@ -64,43 +64,15 @@ export default function OperatorPortal() {
           A preview of how Veroxa's AI oversight layer will surface risk signals for operator review. All signals below are simulated.
         </p>
         <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-3">
-          {([
-            {
-              icon: ImageOff,
-              name: "Content Supply Risk",
-              status: "6 clients need attention",
-              meaning: "Flags clients with low usable media supply or an empty upcoming content pipeline.",
-              color: "amber",
-            },
-            {
-              icon: RadioTower,
-              name: "Publishing Risk",
-              status: "3 failed posts detected",
-              meaning: "Highlights failed posts, expired platform access, or posts needing reschedule.",
-              color: "red",
-            },
-            {
-              icon: ClipboardCheck,
-              name: "Report Quality Check",
-              status: "4 reports pending review",
-              meaning: "Prepares report summaries — operator approval still required before client release.",
-              color: "blue",
-            },
-            {
-              icon: HeartPulse,
-              name: "Client Health Watch",
-              status: "5 accounts below threshold",
-              meaning: "Watches content supply, posting consistency, Google visibility, and recurring issues.",
-              color: "violet",
-            },
-            {
-              icon: Siren,
-              name: "Escalation Signal",
-              status: "2 critical alerts",
-              meaning: "Recommends which problems should reach operator or owner-level visibility.",
-              color: "red",
-            },
-          ] as const).map((signal) => {
+          {operatorOversightSignals.map((signal) => {
+            const iconMap = {
+              "content-supply-risk":  ImageOff,
+              "publishing-risk":      RadioTower,
+              "report-quality":       ClipboardCheck,
+              "client-health-watch":  HeartPulse,
+              "escalation-signal":    Siren,
+            } as const;
+            const SignalIcon = iconMap[signal.key];
             const colorMap = {
               amber:  { bg: "bg-amber-500/10",  text: "text-amber-500",  dot: "bg-amber-500",  badge: "bg-amber-500/10 text-amber-500"  },
               red:    { bg: "bg-red-500/10",     text: "text-red-500",    dot: "bg-red-500",    badge: "bg-red-500/10 text-red-500"      },
@@ -113,7 +85,7 @@ export default function OperatorPortal() {
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-2 mb-3">
                     <div className={`p-2 rounded-lg ${c.bg} ${c.text}`}>
-                      <signal.icon className="w-4 h-4" />
+                      <SignalIcon className="w-4 h-4" />
                     </div>
                     <span className="text-[9px] font-semibold text-muted-foreground/60 uppercase tracking-widest">Simulated</span>
                   </div>

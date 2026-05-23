@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { tasks, draftVariants, postReadyQueue, publishedThisWeek } from "@/lib/demo-data";
+import { tasks, draftVariants, postReadyQueue, publishedThisWeek, teamAgentCards } from "@/lib/demo-data";
 
 const sidebarItems = [
   { label: "My Tasks", icon: CheckSquare },
@@ -98,57 +98,17 @@ export default function TeamPortal() {
           A preview of how Veroxa's AI agents will assist each stage of the content workflow. All outputs below are simulated.
         </p>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {([
-            {
-              icon: ScanEye,
-              name: "Media Review Agent",
-              status: "Reviewed 12 uploads",
-              purpose: "Scores uploaded media for lighting, blur, food visibility, and duplicate risk.",
-              statusColor: "emerald",
-            },
-            {
-              icon: Lightbulb,
-              name: "Content Strategist Agent",
-              status: "4 concepts prepared",
-              purpose: "Suggests content angles — product spotlight, family meal, behind-the-scenes, review highlight, or promotion.",
-              statusColor: "blue",
-            },
-            {
-              icon: PenLine,
-              name: "Caption Agent",
-              status: "3 draft variants generated",
-              purpose: "Creates Safe, Engagement, and Sales caption options for the selected concept.",
-              statusColor: "violet",
-            },
-            {
-              icon: ShieldCheck,
-              name: "Brand Voice Agent",
-              status: "Tone check passed",
-              purpose: "Checks captions sound premium, clear, restaurant-focused, and not too generic.",
-              statusColor: "emerald",
-            },
-            {
-              icon: CalendarClock,
-              name: "Scheduling Agent",
-              status: "3 posts ready for timing",
-              purpose: "Suggests posting slots based on the client's preferred windows and content balance.",
-              statusColor: "blue",
-            },
-            {
-              icon: BarChart3,
-              name: "Reporting Agent",
-              status: "Weekly summary updated",
-              purpose: "Pulls demo performance signals into weekly update cards for client review.",
-              statusColor: "violet",
-            },
-            {
-              icon: AlertOctagon,
-              name: "Alert Agent",
-              status: "1 content warning active",
-              purpose: "Flags low content supply, failed posts, or client health risks before they escalate.",
-              statusColor: "amber",
-            },
-          ] as const).map((agent) => {
+          {teamAgentCards.map((agent) => {
+            const iconMap = {
+              "media-review":       ScanEye,
+              "content-strategist": Lightbulb,
+              "caption":            PenLine,
+              "brand-voice":        ShieldCheck,
+              "scheduling":         CalendarClock,
+              "reporting":          BarChart3,
+              "alert":              AlertOctagon,
+            } as const;
+            const AgentIcon = iconMap[agent.key];
             const colorMap = {
               emerald: { bg: "bg-emerald-500/10", text: "text-emerald-500", dot: "bg-emerald-500", badge: "bg-emerald-500/10 text-emerald-500" },
               blue:    { bg: "bg-blue-500/10",    text: "text-blue-500",    dot: "bg-blue-500",    badge: "bg-blue-500/10 text-blue-500"    },
@@ -165,7 +125,7 @@ export default function TeamPortal() {
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-2 mb-3">
                     <div className={`p-2 rounded-lg ${c.bg} ${c.text}`}>
-                      <agent.icon className="w-4 h-4" />
+                      <AgentIcon className="w-4 h-4" />
                     </div>
                     <span className="text-[9px] font-semibold text-muted-foreground/60 uppercase tracking-widest leading-tight text-right">
                       Simulated
