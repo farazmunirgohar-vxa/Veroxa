@@ -1,0 +1,60 @@
+# Veroxa — Supabase Data Access Layer
+
+## Status
+
+Read-only. Client Portal only. Not yet wired into the UI.
+
+---
+
+## What this is
+
+A minimal, read-only Supabase browser client for the Veroxa Client Portal. It provides typed query functions against the Supabase dev database using the public anon key only.
+
+---
+
+## What this is not
+
+- **Not authenticated.** No auth has been implemented yet. All queries run as the anon Supabase role.
+- **Not wired to the UI.** The Client Portal still uses static demo-data imports. This layer is a foundation for a future swap.
+- **Not write-capable.** No insert, update, delete, or upsert operations are present. All query functions are SELECT only.
+- **Not using the service role key.** The service role key must never be used in frontend code. Use only `VITE_SUPABASE_ANON_KEY`.
+
+---
+
+## Initialisation
+
+The client reads two environment variables at runtime:
+
+| Variable | Required |
+|---|---|
+| `VITE_SUPABASE_URL` | Yes |
+| `VITE_SUPABASE_ANON_KEY` | Yes |
+
+If either variable is missing, `getSupabaseClient()` returns `null` and logs a warning. The app will not crash — it will continue to use static demo data until credentials are provided.
+
+Copy `.env.example` to `.env.local` and fill in your Supabase dev project values to activate the client. Do not commit `.env.local` or any file containing real credentials.
+
+---
+
+## Files
+
+| File | Purpose |
+|---|---|
+| `env.ts` | Safe env var readers with missing-var detection |
+| `client.ts` | Lazy singleton Supabase browser client |
+| `clientPortalQueries.ts` | Read-only query functions for Client Portal |
+| `index.ts` | Barrel export |
+
+---
+
+## RLS note
+
+If queries return empty results or permission errors, that is expected behaviour until Supabase Row Level Security read policies are configured. RLS policies are tracked in `docs/database/RLS_PLAN.md` and will be applied in a later phase.
+
+---
+
+## Next steps
+
+1. Configure RLS read policies in the Supabase dev project
+2. Wire `getClientById` and related queries into the Client Portal components, replacing static demo-data imports one by one
+3. Add auth before expanding to Team, Operator, or Owner portals
