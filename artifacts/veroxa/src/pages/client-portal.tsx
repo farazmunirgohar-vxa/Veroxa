@@ -106,7 +106,7 @@ export default function ClientPortal() {
             <CardContent className="space-y-2 text-sm text-muted-foreground">
               <div className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" /><span>4 posts published this week across Instagram and Facebook.</span></div>
               <div className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" /><span>Google impressions up 18% — your kebab platter post drove the highest reach this month.</span></div>
-              <div className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" /><span>2 new 5-star Google reviews received. Response drafted and pending your approval.</span></div>
+              <div className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" /><span>2 new 5-star Google reviews received. Veroxa team prepared suggested responses.</span></div>
               <div className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" /><span>Next shoot booked for Thursday 29 May at 11am — please have the new menu items ready.</span></div>
             </CardContent>
           </Card>

@@ -44,7 +44,7 @@ export default function LandingPage() {
         </h1>
 
         <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-10 animate-in fade-in slide-in-from-bottom-5 duration-700 delay-150">
-          Content production, Google visibility, social scheduling, and client reporting — unified in one premium platform built for agencies that grow restaurants.
+          Content production, Google visibility, social scheduling, and client reporting — unified in one premium platform built specifically for restaurants that want to grow.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-300">
@@ -64,7 +64,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-border/30">
           <div className="text-center">
             <div className="text-3xl font-bold text-foreground mb-1" data-testid="stat-restaurants">340+</div>
-            <div className="text-sm font-medium text-muted-foreground">Restaurants</div>
+            <div className="text-sm font-medium text-muted-foreground">Restaurants Growing</div>
           </div>
           <div className="text-center">
             <div className="text-3xl font-bold text-foreground mb-1" data-testid="stat-posts">18,000+</div>
@@ -93,7 +93,7 @@ export default function LandingPage() {
             { title: "Client Portal", desc: "Give restaurant owners a clean window into their content calendar, Google performance, weekly updates, and monthly reports.", icon: LayoutDashboard },
             { title: "Team Portal", desc: "Equip your content team with a structured review pipeline — from raw media upload through AI quality check, draft variants, approval, and scheduling.", icon: Camera },
             { title: "Operator Dashboard", desc: "Catch problems before they become crises. Monitor client health scores, flag low content pipelines, review failed posts, and approve monthly reports.", icon: Users },
-            { title: "Owner Analytics", desc: "High-level MRR, active client counts, health trends, and critical alerts — everything the agency owner needs to make fast decisions.", icon: BarChart2 }
+            { title: "Owner Analytics", desc: "High-level MRR, active client counts, health trends, and critical alerts — everything the operator needs to make fast decisions.", icon: BarChart2 }
           ].map((feature, i) => (
             <div key={i} className="group p-8 rounded-2xl border border-border bg-card/40 hover:bg-card/80 transition-colors relative overflow-hidden" data-testid={`feature-card-${i}`}>
               <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity transform group-hover:scale-110 group-hover:-translate-y-2 duration-500">

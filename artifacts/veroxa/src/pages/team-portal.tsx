@@ -1,4 +1,4 @@
-import { CheckSquare, Image, Cpu, Layers, CalendarDays, CheckCircle2, Circle, Clock, Send, Star } from "lucide-react";
+import { CheckSquare, Image, Cpu, Layers, CalendarDays, CheckCircle2, Circle, Clock, Send, Star, ChevronRight } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -62,6 +62,55 @@ export default function TeamPortal() {
             </div>
           </div>
         </Card>
+      </div>
+
+      {/* Workflow Stage Pipeline */}
+      <div className="mb-8">
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest mb-4">Content Pipeline</h3>
+        <div className="flex items-center gap-0 overflow-x-auto pb-2">
+          {[
+            "Media Intake",
+            "AI Quality Review",
+            "Team Media Review",
+            "Concept Generation",
+            "3 Draft Variants",
+            "Team Approval",
+            "Post Ready Queue",
+            "Scheduling",
+            "Published This Week",
+            "Reporting Feed",
+          ].map((stage, i) => {
+            const done = i < 4;
+            const active = i === 4;
+            return (
+              <div key={stage} className="flex items-center flex-shrink-0">
+                <div
+                  className={`flex flex-col items-center gap-1.5 px-3 py-2.5 rounded-lg border text-center transition-colors ${
+                    active
+                      ? "bg-primary/15 border-primary/50 text-primary"
+                      : done
+                      ? "bg-emerald-500/8 border-emerald-500/25 text-emerald-500"
+                      : "bg-card/40 border-border/40 text-muted-foreground"
+                  }`}
+                  data-testid={`pipeline-stage-${i}`}
+                >
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    active ? "bg-primary/30" : done ? "bg-emerald-500/20" : "bg-muted/50"
+                  }`}>
+                    {done
+                      ? <CheckCircle2 className="w-3 h-3" />
+                      : <span className="text-[9px] font-bold">{i + 1}</span>
+                    }
+                  </div>
+                  <span className="text-[11px] font-semibold leading-tight whitespace-nowrap">{stage}</span>
+                </div>
+                {i < 9 && (
+                  <ChevronRight className="w-3.5 h-3.5 text-border flex-shrink-0 mx-0.5" />
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8">
