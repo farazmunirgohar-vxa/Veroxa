@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { operatorAlerts as alerts, clientHealthDisplay as clientHealth, failedPosts, reportApprovals } from "@/lib/demo-data";
 
 const sidebarItems = [
   { label: "Overview", icon: LayoutDashboard },
@@ -15,40 +16,10 @@ const sidebarItems = [
 ];
 
 const kpis = [
-  { label: "Active Clients", value: "34", icon: Briefcase, trend: "+3 this month", positive: true },
-  { label: "Avg Health Score", value: "78 / 100", icon: Users, trend: "5 below threshold", positive: false },
-  { label: "Low Content Clients", value: "6", icon: TrendingDown, trend: "Action required", positive: false },
-  { label: "Reports Pending Approval", value: "4", icon: FileCheck, trend: "Due by Friday", positive: null },
-];
-
-const alerts = [
-  { severity: "Critical", client: "Mamadali Kebab House", message: "0 posts scheduled for next week — content pipeline empty.", time: "2 hours ago" },
-  { severity: "Warning", client: "Bayleaf Indian Kitchen", message: "Instagram post failed to publish — account token expired.", time: "4 hours ago" },
-  { severity: "Warning", client: "Rosso Trattoria", message: "No media uploaded in 18 days — shoot overdue.", time: "Yesterday" },
-  { severity: "Info", client: "Sushi Nori Shoreditch", message: "Monthly report ready — awaiting operator approval.", time: "Yesterday" },
-  { severity: "Critical", client: "The Grill House", message: "Google Business Profile disconnected — visibility data paused.", time: "2 days ago" },
-];
-
-const clientHealth = [
-  { name: "Mamadali Kebab House", score: 58, postsThisMonth: 6, scheduled: 0, lastShoot: "12 days ago", status: "At Risk" },
-  { name: "Bayleaf Indian Kitchen", score: 71, postsThisMonth: 14, scheduled: 4, lastShoot: "8 days ago", status: "Warning" },
-  { name: "Rosso Trattoria", score: 44, postsThisMonth: 3, scheduled: 2, lastShoot: "18 days ago", status: "At Risk" },
-  { name: "Sushi Nori Shoreditch", score: 89, postsThisMonth: 19, scheduled: 8, lastShoot: "3 days ago", status: "Healthy" },
-  { name: "The Grill House", score: 35, postsThisMonth: 2, scheduled: 0, lastShoot: "24 days ago", status: "Critical" },
-  { name: "Cafe Levant", score: 94, postsThisMonth: 22, scheduled: 10, lastShoot: "1 day ago", status: "Healthy" },
-];
-
-const failedPosts = [
-  { client: "Bayleaf Indian Kitchen", platform: "Instagram", reason: "Auth token expired", date: "23 May", assignee: "JD" },
-  { client: "The Grill House", platform: "Facebook", reason: "Page role removed", date: "21 May", assignee: "SM" },
-  { client: "Rosso Trattoria", platform: "Instagram", reason: "Media file corrupted", date: "20 May", assignee: "AK" },
-];
-
-const reportApprovals = [
-  { client: "Sushi Nori Shoreditch", period: "April 2026", preparedBy: "Jordan D.", status: "Ready" },
-  { client: "Cafe Levant", period: "April 2026", preparedBy: "Sarah M.", status: "Ready" },
-  { client: "Bayleaf Indian Kitchen", period: "April 2026", preparedBy: "Alex K.", status: "In Review" },
-  { client: "Mamadali Kebab House", period: "April 2026", preparedBy: "Jordan D.", status: "In Review" },
+  { label: "Active Clients",              value: "34",       icon: Briefcase,   trend: "+3 this month",    positive: true  },
+  { label: "Avg Health Score",            value: "78 / 100", icon: Users,       trend: "5 below threshold", positive: false },
+  { label: "Low Content Clients",         value: "6",        icon: TrendingDown, trend: "Action required",  positive: false },
+  { label: "Reports Pending Approval",    value: "4",        icon: FileCheck,   trend: "Due by Friday",    positive: null  },
 ];
 
 function cn(...classes: (string | undefined | null | false)[]) {

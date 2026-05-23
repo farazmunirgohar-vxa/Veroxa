@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
+import { revenueData, ownerCriticalAlerts as criticalAlerts, clientHealthBands, growthSummary, activities } from "@/lib/demo-data";
 
 const sidebarItems = [
   { label: "Dashboard", icon: LineChart },
@@ -11,45 +12,6 @@ const sidebarItems = [
   { label: "Client Health", icon: Target },
   { label: "Alerts", icon: AlertTriangle },
   { label: "Settings", icon: Settings },
-];
-
-const revenueData = [
-  { month: "Dec", rev: 28400 },
-  { month: "Jan", rev: 31200 },
-  { month: "Feb", rev: 33800 },
-  { month: "Mar", rev: 36500 },
-  { month: "Apr", rev: 40100 },
-  { month: "May", rev: 43600 },
-];
-
-const criticalAlerts = [
-  { client: "The Grill House", issue: "Google Business Profile disconnected — visibility paused.", severity: "Critical" },
-  { client: "Mamadali Kebab House", issue: "No posts scheduled next week — pipeline empty.", severity: "Critical" },
-  { client: "Rosso Trattoria", issue: "No media uploaded in 18 days — shoot overdue.", severity: "Warning" },
-];
-
-const clientHealthBands = [
-  { band: "Healthy (80–100)", count: 18, pct: 53 },
-  { band: "Warning (60–79)", count: 10, pct: 29 },
-  { band: "At Risk (40–59)", count: 4, pct: 12 },
-  { band: "Critical (0–39)", count: 2, pct: 6 },
-];
-
-const growthSummary = [
-  { label: "New clients onboarded (May)", value: "3", positive: true },
-  { label: "Churned clients (May)", value: "0", positive: true },
-  { label: "Avg posts per client / month", value: "16.4", positive: true },
-  { label: "Avg Google visibility lift", value: "+38%", positive: true },
-  { label: "Clients below health threshold", value: "6", positive: false },
-  { label: "Failed posts requiring action", value: "3", positive: false },
-];
-
-const activities = [
-  { title: "New client onboarded", target: "Saffron Street Kitchen", time: "1 hour ago", positive: true },
-  { title: "Monthly report approved", target: "Sushi Nori Shoreditch — April 2026", time: "3 hours ago", positive: true },
-  { title: "Critical alert raised", target: "The Grill House — GBP disconnected", time: "2 days ago", positive: false },
-  { title: "MRR milestone reached", target: "Agency crossed $43k MRR", time: "3 days ago", positive: true },
-  { title: "Client health drop detected", target: "Rosso Trattoria — score fell to 44", time: "4 days ago", positive: false },
 ];
 
 export default function OwnerPortal() {
@@ -188,7 +150,7 @@ export default function OwnerPortal() {
             <CardContent>
               <div className="h-[260px] w-full" data-testid="revenue-chart">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <AreaChart data={[...revenueData]} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />

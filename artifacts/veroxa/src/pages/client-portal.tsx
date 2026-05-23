@@ -3,6 +3,7 @@ import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { scheduledPosts, googleMetrics, contentSupply } from "@/lib/demo-data";
 
 const sidebarItems = [
   { label: "Dashboard", icon: LayoutDashboard },
@@ -10,26 +11,6 @@ const sidebarItems = [
   { label: "Google Visibility", icon: Globe },
   { label: "Reports", icon: FileText },
   { label: "Updates", icon: Bell },
-];
-
-const scheduledPosts = [
-  { date: "Mon 26 May", caption: "Slow-cooked lamb shoulder — marinated 24 hours. Available this week only.", platform: "Instagram", status: "Scheduled" },
-  { date: "Wed 28 May", caption: "Family feast deal — feed 4 for under $60. Book your table now.", platform: "Facebook", status: "Scheduled" },
-  { date: "Fri 30 May", caption: "Behind the scenes: how we make our signature kebab sauce from scratch.", platform: "Instagram", status: "In Review" },
-  { date: "Sun 1 Jun", caption: "New on the menu: spiced aubergine dip with fresh lavash bread.", platform: "Instagram", status: "Draft" },
-];
-
-const googleMetrics = [
-  { label: "Search Impressions", value: "14,820", change: "+18%", positive: true },
-  { label: "Profile Views", value: "3,240", change: "+27%", positive: true },
-  { label: "Direction Requests", value: "412", change: "+9%", positive: true },
-  { label: "Review Score", value: "4.7 / 5", change: "+0.2", positive: true },
-];
-
-const contentSupply = [
-  { label: "Photos uploaded this month", value: 24, max: 30 },
-  { label: "Posts scheduled this month", value: 16, max: 20 },
-  { label: "Stories published this week", value: 5, max: 7 },
 ];
 
 export default function ClientPortal() {
