@@ -1,14 +1,21 @@
 -- =============================================================================
 -- 007_wire_post_draft_variants.sql
 -- Veroxa — Draft seed: wire posts.draft_variant_id and
---          draft_variants.used_in_post_id for all approved/used variants
+--          draft_variants.used_in_post_id for approved/published variants
 -- DRAFT ONLY — do not apply to a live database without review
 -- Depends on: 004_seed_posts_and_slots.sql, 006_seed_concepts_and_drafts.sql
 --
 -- Context:
 --   004_seed_posts_and_slots.sql inserted all posts with draft_variant_id = NULL.
 --   006_seed_concepts_and_drafts.sql inserted draft variants with used_in_post_id = NULL.
---   This file resolves both sides of the relationship.
+--   This file resolves both sides of the relationship in two steps.
+--
+-- Key distinction:
+--   posts.draft_variant_id — set for any post that has an approved or used
+--     variant assigned, including scheduled posts not yet published.
+--   draft_variants.used_in_post_id — set ONLY after a post is published/locked.
+--     Scheduled posts (001, 002) have an approved variant assigned to them, but
+--     that variant has not yet been used/published, so used_in_post_id stays NULL.
 --
 -- Post 003 is intentionally excluded — its draft set is still under_review
 -- and no variant has been approved yet. Wire it in a future step once the
@@ -18,14 +25,15 @@
 
 -- =============================================================================
 -- Step 1: Set posts.draft_variant_id
+-- Applies to all 6 wired posts regardless of publish state.
 -- =============================================================================
 
--- post-001 (lamb shoulder, scheduled) → variant-001-A (safe, approved)
+-- post-001 (lamb shoulder, scheduled) → variant-001-A (safe, approved, not yet published)
 UPDATE posts
 SET    draft_variant_id = '00000000-0000-0000-000a-000000000001'
 WHERE  id               = '00000000-0000-0000-0005-000000000001';
 
--- post-002 (family feast, scheduled) → variant-002-B (engagement, approved)
+-- post-002 (family feast, scheduled) → variant-002-B (engagement, approved, not yet published)
 UPDATE posts
 SET    draft_variant_id = '00000000-0000-0000-000a-000000000005'
 WHERE  id               = '00000000-0000-0000-0005-000000000002';
@@ -52,37 +60,32 @@ WHERE  id               = '00000000-0000-0000-0005-000000000007';
 
 
 -- =============================================================================
--- Step 2: Set draft_variants.used_in_post_id (reverse side of relationship)
--- Only variants with status = 'used' need this; approved-but-not-yet-published
--- variants (001-A and 002-B) are also set here for forward consistency.
+-- Step 2: Set draft_variants.used_in_post_id
+-- Only applies to variants whose post has been published and locked.
+-- Variants 001-A and 002-B are excluded — their posts are scheduled but not
+-- yet published, so the variant is approved (assigned) but not yet used.
 -- =============================================================================
 
--- variant-001-A → post-001
-UPDATE draft_variants
-SET    used_in_post_id = '00000000-0000-0000-0005-000000000001'
-WHERE  id              = '00000000-0000-0000-000a-000000000001';
-
--- variant-002-B → post-002
-UPDATE draft_variants
-SET    used_in_post_id = '00000000-0000-0000-0005-000000000002'
-WHERE  id              = '00000000-0000-0000-000a-000000000005';
-
--- variant-004-A → post-004
+-- variant-004-A → post-004 (published 2026-05-17)
 UPDATE draft_variants
 SET    used_in_post_id = '00000000-0000-0000-0005-000000000004'
 WHERE  id              = '00000000-0000-0000-000a-000000000010';
 
--- variant-005-A → post-005
+-- variant-005-A → post-005 (published 2026-05-18)
 UPDATE draft_variants
 SET    used_in_post_id = '00000000-0000-0000-0005-000000000005'
 WHERE  id              = '00000000-0000-0000-000a-000000000013';
 
--- variant-006-A → post-006
+-- variant-006-A → post-006 (published 2026-05-19)
 UPDATE draft_variants
 SET    used_in_post_id = '00000000-0000-0000-0005-000000000006'
 WHERE  id              = '00000000-0000-0000-000a-000000000016';
 
--- variant-007-A → post-007
+-- variant-007-A → post-007 (published 2026-05-20)
 UPDATE draft_variants
 SET    used_in_post_id = '00000000-0000-0000-0005-000000000007'
 WHERE  id              = '00000000-0000-0000-000a-000000000019';
+
+-- variant-001-A and variant-002-B: used_in_post_id intentionally left NULL.
+-- Their posts (001, 002) are scheduled but not yet published. Set used_in_post_id
+-- only after those posts are published and locked.
