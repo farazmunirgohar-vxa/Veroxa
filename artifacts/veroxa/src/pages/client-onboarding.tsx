@@ -308,6 +308,11 @@ export default function ClientOnboarding() {
     setSubmitMessage("Demo only — onboarding is not saved yet.");
   };
 
+  const handleReset = () => {
+    setState(initialState);
+    setSubmitMessage(null);
+  };
+
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
       <div className="flex flex-col gap-2">
@@ -758,21 +763,33 @@ export default function ClientOnboarding() {
 
           <Card className="bg-card border-border">
             <CardContent className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-6">
-              <div className="text-sm text-muted-foreground">
-                Submitting will not save anything. Real onboarding ships after
-                auth, production RLS, and write policies are approved.
+              <div className="text-sm text-muted-foreground max-w-xl">
+                Real onboarding answers will later be saved after auth,
+                production RLS, and audit logs are approved. Submitting today
+                will not save anything.
               </div>
-              <div className="flex flex-col items-start sm:items-end gap-2">
-                <Button
-                  type="submit"
-                  className="w-full sm:w-auto"
-                  data-testid="button-submit-onboarding"
-                >
-                  Save Onboarding — Coming Soon
-                </Button>
+              <div className="flex flex-col items-stretch sm:items-end gap-2 w-full sm:w-auto">
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleReset}
+                    className="w-full sm:w-auto"
+                    data-testid="button-reset-onboarding"
+                  >
+                    Reset demo form
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="w-full sm:w-auto"
+                    data-testid="button-submit-onboarding"
+                  >
+                    Save Onboarding — Coming Soon
+                  </Button>
+                </div>
                 {submitMessage && (
                   <p
-                    className="text-xs text-amber-400"
+                    className="text-xs text-amber-400 sm:text-right"
                     data-testid="text-submit-message"
                     role="status"
                   >

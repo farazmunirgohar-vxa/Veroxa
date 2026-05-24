@@ -164,15 +164,27 @@ We are building **Demo Veroxa** and **Real Veroxa** side by side:
 - **No real upload.** The hidden file input only reads file names / sizes / MIME types into local component state. **No `fetch`, no `FormData`, no Supabase Storage, no API call, no `localStorage`, no cookies.** Selected file list disappears on refresh.
 - **Demo-only notice** rendered on the page: "Real media uploads will require authenticated client access, storage rules, production RLS, and upload validation."
 
+## Onboarding data model + media storage drafts
+
+- **Onboarding data model draft created** under `docs/database/onboarding-draft/` (`001_onboarding_answer_payload_draft.md`, `002_onboarding_items_extension_draft.sql`, `README.md`). Locks down the future `onboarding_items.answer_payload` shape against the six demo sections, with an example payload and validation notes. **No SQL applied.**
+- **Media storage planning draft created** under `docs/database/media-draft/` (`001_media_storage_plan.md`, `002_media_assets_metadata_draft.sql`, `README.md`). Documents the future `veroxa-client-media` private bucket, path layout, allowed MIME types, size limits, upload flow, signed-URL strategy, and `media_assets` metadata extension. **No bucket created. No SQL applied.**
+- **Onboarding / Media demo pages polished but still local-state-only.** Onboarding gained a "Reset demo form" button and a clearer pre-submit note. Media gained a "Future upload pipeline" preview card (Choose files → Validate → Upload to private storage → Create metadata → Notify team) and clearer picker copy ("Selected locally only — not uploaded"). Submit text and `preventDefault` behavior unchanged.
+- **Future real route placeholders expanded** in `App.tsx`. The existing `RequireRole` shell now also serves: `/client/onboarding`, `/client/media`, `/client/calendar`, `/client/reports`, `/team/media-review`, `/team/drafts`, `/team/scheduling`, `/operator/alerts`, `/operator/report-approvals`, `/owner/revenue`, `/owner/client-health`. All render the "Protected Route Preview" card — **no real auth, no session check, no redirect, no real route content.**
+- **Safety audit checklist created** at `docs/SAFETY_AUDIT_CHECKLIST.md` enumerating what is forbidden today and what must be true before real auth, real writes, and real uploads.
+- **Still no real auth.** No Supabase Auth wired, no sessions, no cookies, no `localStorage` tokens, no JWT.
+- **Still no writes.** No `INSERT` / `UPDATE` / `DELETE` / `UPSERT` functions anywhere.
+- **Still no uploads / storage.** No `fetch`, no `FormData`, no Supabase Storage SDK calls, no bucket.
+- **Still no AI / publishing / Google integrations.**
+
 ## Next recommended phase
 
-**Client Onboarding Data Model Draft + Media Storage Planning — docs/SQL draft only.**
+**Real Auth Implementation Readiness Checklist — docs only, then manual decision before applying any SQL.**
 
 Specifically:
 
-- Draft (do not apply) the `onboarding_items.answer_payload` shape (JSON schema) plus per-section keys, mapped to what the `/demo/client/onboarding` form already collects
-- Draft (do not apply) the `media_assets` metadata table (filename, MIME type, size, uploaded_by, status, review tags, client_id) and a planning doc for the eventual Supabase Storage bucket layout, RLS, and signed-URL strategy
-- Keep `/login`, all `/demo/*` routes, the future sign-in form shell, the `<RequireRole>` placeholders, the auth-draft + write-draft SQL files, and the existing Client/Team/Operator/Owner portal pages untouched and unapplied
+- Write a single docs/REAL_AUTH_READINESS_CHECKLIST.md that consolidates the prerequisites from `AUTH_ARCHITECTURE_PLAN.md`, `auth-draft/README.md`, `FIRST_WRITE_SURFACE_PLAN.md`, and `SAFETY_AUDIT_CHECKLIST.md` into one ordered, tickable list
+- Decide manually (outside the build) which Supabase project the first auth migrations will land in, and confirm the dev anon SELECT policies are not reused as production policies
+- Keep `/login`, all `/demo/*` routes, all `/client|/team|/operator|/owner` `RequireRole` placeholders, and all auth-draft / write-draft / onboarding-draft / media-draft SQL files untouched and unapplied
 - Do **not** wire real Supabase Auth sessions, real writes, real uploads, AI, or publishing in that phase
 
 ---

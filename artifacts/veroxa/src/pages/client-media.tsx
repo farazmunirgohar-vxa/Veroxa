@@ -109,7 +109,7 @@ export default function ClientMedia() {
     if (picked.length === 0) return;
     setFiles((prev) => [...prev, ...picked]);
     setPickerMessage(
-      "Demo only — files were not uploaded. Names are shown in local state and will disappear on refresh.",
+      "Selected locally only — not uploaded. Names live in local state and disappear on refresh.",
     );
     if (inputRef.current) inputRef.current.value = "";
   };
@@ -310,6 +310,40 @@ export default function ClientMedia() {
                   </li>
                 ))}
               </ul>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card border-border" data-testid="card-future-pipeline">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-semibold">
+                Future upload pipeline
+              </CardTitle>
+              <p className="text-xs text-muted-foreground">
+                What the real upload flow will look like after auth and
+                storage rules ship. Static / demo only.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <ol className="space-y-2">
+                {[
+                  "Choose files",
+                  "Validate file (type & size)",
+                  "Upload to private storage",
+                  "Create media metadata",
+                  "Notify Veroxa team",
+                ].map((step, i) => (
+                  <li
+                    key={step}
+                    className="flex items-center gap-3 text-sm"
+                    data-testid={`pipeline-step-${i}`}
+                  >
+                    <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-semibold flex items-center justify-center flex-shrink-0">
+                      {i + 1}
+                    </span>
+                    <span>{step}</span>
+                  </li>
+                ))}
+              </ol>
             </CardContent>
           </Card>
 

@@ -1,0 +1,78 @@
+-- =============================================================================
+-- DRAFT ONLY — DO NOT RUN.
+--
+-- Future write surface for client onboarding answers.
+-- Requires:
+--   - real Supabase Auth wired
+--   - user_profiles + veroxa_user_role enum applied
+--   - production SELECT RLS in place
+--   - audit_logs table created
+--   - first write surface policies reviewed
+--
+-- The current /demo/client/onboarding page DOES NOT save anything. It uses
+-- local component state only. No INSERT / UPDATE / UPSERT functions exist
+-- anywhere in the frontend today.
+--
+-- This file documents the *shape* of the future onboarding write surface so
+-- the form, validation, and write policies can be built consistently when
+-- the prerequisites above are met.
+-- =============================================================================
+
+-- -----------------------------------------------------------------------------
+-- Draft: possible new columns on onboarding_items (extension, not recreation)
+-- -----------------------------------------------------------------------------
+-- These are sketched as separate ALTER statements; each one is commented out
+-- and must only be considered after the live schema is inspected.
+--
+-- ALTER TABLE onboarding_items
+--   ADD COLUMN IF NOT EXISTS answer_payload     jsonb        NOT NULL DEFAULT '{}'::jsonb,
+--   ADD COLUMN IF NOT EXISTS completion_status  text         NOT NULL DEFAULT 'not_started',
+--   ADD COLUMN IF NOT EXISTS completed_at       timestamptz,
+--   ADD COLUMN IF NOT EXISTS reviewed_by        uuid REFERENCES user_profiles(user_id),
+--   ADD COLUMN IF NOT EXISTS reviewed_at        timestamptz,
+--   ADD COLUMN IF NOT EXISTS reviewer_notes     text;
+
+-- -----------------------------------------------------------------------------
+-- Draft CHECK constraint
+-- -----------------------------------------------------------------------------
+-- ALTER TABLE onboarding_items
+--   ADD CONSTRAINT onboarding_items_completion_status_check
+--   CHECK (completion_status IN (
+--     'not_started',
+--     'in_progress',
+--     'completed',
+--     'needs_review',
+--     'approved'
+--   ));
+
+-- -----------------------------------------------------------------------------
+-- Draft RLS direction (commented examples only — DO NOT apply)
+-- -----------------------------------------------------------------------------
+-- -- Client may UPDATE their own onboarding answers while not yet approved.
+-- -- CREATE POLICY "client_update_own_onboarding_in_progress"
+-- --   ON onboarding_items FOR UPDATE TO authenticated
+-- --   USING (
+-- --     current_user_role() = 'client'
+-- --     AND client_id = current_client_id()
+-- --     AND completion_status IN ('not_started', 'in_progress', 'needs_review')
+-- --   )
+-- --   WITH CHECK (
+-- --     current_user_role() = 'client'
+-- --     AND client_id = current_client_id()
+-- --     AND completion_status IN ('in_progress', 'completed')
+-- --   );
+-- --
+-- -- Operator may UPDATE review fields (reviewed_by / reviewed_at / reviewer_notes /
+-- -- completion_status -> approved | needs_review). Drafted only.
+-- --
+-- -- Audit log row MUST be written on every UPDATE (see audit_logs draft).
+
+-- -----------------------------------------------------------------------------
+-- Notes
+-- -----------------------------------------------------------------------------
+-- 1. The answer_payload shape lives in
+--    docs/database/onboarding-draft/001_onboarding_answer_payload_draft.md.
+-- 2. Any future write must go through a server-side function (not raw client
+--    UPDATE), so it can also write the matching audit_logs row.
+-- 3. menu_upload_asset_id inside answer_payload must validate against
+--    media_assets.id once that write surface exists.

@@ -260,3 +260,23 @@ Specifically:
 3. Keep all other surfaces (`/login`, `/demo/*` other routes, future-route placeholders, auth-draft and write-draft SQL) untouched and unapplied.
 
 Only after that demo flow is approved should we wire actual Supabase Auth sessions, apply the auth-draft migrations, ship the `audit_logs` table, and begin Priority 1 write surfaces.
+
+---
+
+## 12. Future real route placeholders — expanded
+
+The future real (post-auth) route tree is being prepared **separately** from the existing `/demo/*` tree. Every future route renders the `RequireRole` "Protected Route Preview" card today — there is no real session check, no redirect, and no real route content behind any of them.
+
+Current expanded set, all wired through the existing `RequireRole` shell:
+
+- **Client:** `/client/dashboard`, `/client/onboarding`, `/client/media`, `/client/calendar`, `/client/reports`
+- **Team:** `/team/tasks`, `/team/media-review`, `/team/drafts`, `/team/scheduling`
+- **Operator:** `/operator/overview`, `/operator/alerts`, `/operator/report-approvals`
+- **Owner:** `/owner/dashboard`, `/owner/revenue`, `/owner/client-health`
+
+Rules:
+
+- The onboarding and media real routes (`/client/onboarding`, `/client/media`) are **still placeholders only**. The corresponding `/demo/client/onboarding` and `/demo/client/media` pages remain local-state-only.
+- The real route tree is being prepared **separately** from `/demo/*`. Demo portal content is not copied into real routes.
+- **No production auth has been implemented yet.** `usePlaceholderAuth` always returns unauthenticated, so every placeholder shows the same "Protected Route Preview" card.
+- The only thing that changes when real auth ships is the hook implementation behind `RequireRole` — the call sites stay the same.

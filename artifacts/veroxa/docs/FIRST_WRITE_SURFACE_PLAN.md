@@ -142,3 +142,13 @@ Every Priority 1–3 write **must** create one `audit_logs` row. The draft schem
 - Not a feature spec — UI behavior for each write is designed when that write actually ships.
 - Not an authorization model — that lives in `AUTH_ARCHITECTURE_PLAN.md` and the auth-draft RLS file. This document only lists **what** changes and **in what order**.
 - Not a publishing / AI / uploads spec — those are explicitly excluded from the first write phase.
+
+---
+
+## Onboarding answers + media metadata — planned write surfaces
+
+- **Onboarding answer saves** and **media metadata saves** are planned write surfaces only. Neither is implemented today.
+- **Onboarding answers** belong to **Priority 3 — client-facing writes** (see above). Shape is locked down in `docs/database/onboarding-draft/001_onboarding_answer_payload_draft.md`; draft schema direction in `002_onboarding_items_extension_draft.sql`.
+- **Media metadata** also belongs to **Priority 3 — client-facing writes**. Draft schema direction in `docs/database/media-draft/002_media_assets_metadata_draft.sql`.
+- **Actual file storage / upload is separate** from the metadata write surface and **is not included in the first write phase.** Storage planning lives in `docs/database/media-draft/001_media_storage_plan.md` (private `veroxa-client-media` bucket, server-mediated uploads, short-lived signed URLs).
+- **Current demo pages do not save or upload.** `/demo/client/onboarding` uses local React state only; `/demo/client/media` reads file *names / sizes / MIME types* into local React state and never uploads. No `fetch`, no `FormData`, no Supabase Storage, no API call, no `localStorage`, no cookies.

@@ -1,0 +1,82 @@
+-- =============================================================================
+-- DRAFT ONLY — DO NOT RUN.
+--
+-- Plans future extensions to media_assets so client/team upload metadata,
+-- review state, and (later) AI review fields all live in one row per asset.
+--
+-- This may EXTEND an existing media_assets table rather than recreate it.
+-- Do NOT apply until the live schema is inspected and reconciled.
+--
+-- No real upload exists yet.
+-- No Supabase Storage bucket exists yet (see 001_media_storage_plan.md).
+-- No AI review exists yet; AI fields below are placeholders for later.
+-- =============================================================================
+
+-- -----------------------------------------------------------------------------
+-- Candidate column set (drafted; commented; ordered for readability)
+-- -----------------------------------------------------------------------------
+-- ALTER TABLE media_assets
+--   ADD COLUMN IF NOT EXISTS client_id          uuid REFERENCES clients(id) ON DELETE CASCADE,
+--   ADD COLUMN IF NOT EXISTS uploaded_by        uuid REFERENCES user_profiles(user_id),
+--
+--   ADD COLUMN IF NOT EXISTS storage_bucket     text NOT NULL DEFAULT 'veroxa-client-media',
+--   ADD COLUMN IF NOT EXISTS storage_path       text,
+--   ADD COLUMN IF NOT EXISTS original_filename  text,
+--   ADD COLUMN IF NOT EXISTS safe_filename      text,
+--   ADD COLUMN IF NOT EXISTS mime_type          text,
+--   ADD COLUMN IF NOT EXISTS file_size_bytes    bigint,
+--
+--   ADD COLUMN IF NOT EXISTS media_type         text,   -- see CHECK below
+--   ADD COLUMN IF NOT EXISTS source             text,   -- see CHECK below
+--   ADD COLUMN IF NOT EXISTS review_status      text,   -- see CHECK below
+--   ADD COLUMN IF NOT EXISTS review_tags        text[] NOT NULL DEFAULT '{}',
+--
+--   ADD COLUMN IF NOT EXISTS quality_score      numeric,      -- AI placeholder
+--   ADD COLUMN IF NOT EXISTS ai_review_summary  text,         -- AI placeholder
+--
+--   ADD COLUMN IF NOT EXISTS used_count         integer NOT NULL DEFAULT 0,
+--   ADD COLUMN IF NOT EXISTS created_at         timestamptz NOT NULL DEFAULT now(),
+--   ADD COLUMN IF NOT EXISTS updated_at         timestamptz NOT NULL DEFAULT now();
+
+-- -----------------------------------------------------------------------------
+-- Candidate CHECK constraints (drafted; commented)
+-- -----------------------------------------------------------------------------
+-- ALTER TABLE media_assets
+--   ADD CONSTRAINT media_assets_media_type_check
+--   CHECK (media_type IN ('image', 'video', 'menu_pdf', 'other'));
+--
+-- ALTER TABLE media_assets
+--   ADD CONSTRAINT media_assets_source_check
+--   CHECK (source IN ('client_upload', 'team_upload', 'operator_upload', 'import'));
+--
+-- ALTER TABLE media_assets
+--   ADD CONSTRAINT media_assets_review_status_check
+--   CHECK (review_status IN (
+--     'new',
+--     'needs_review',
+--     'approved',
+--     'needs_better_quality',
+--     'rejected',
+--     'archived'
+--   ));
+
+-- -----------------------------------------------------------------------------
+-- Candidate indexes
+-- -----------------------------------------------------------------------------
+-- CREATE INDEX IF NOT EXISTS media_assets_client_id_idx     ON media_assets (client_id);
+-- CREATE INDEX IF NOT EXISTS media_assets_review_status_idx ON media_assets (review_status);
+-- CREATE INDEX IF NOT EXISTS media_assets_created_at_idx    ON media_assets (created_at DESC);
+
+-- -----------------------------------------------------------------------------
+-- Notes
+-- -----------------------------------------------------------------------------
+-- 1. storage_bucket / storage_path are the link to Supabase Storage. The
+--    storage bucket itself does not exist yet — see 001_media_storage_plan.md.
+-- 2. Inserts MUST go through a server-side function that also writes an
+--    audit_logs row (see ../write-draft/002_audit_log_draft.sql).
+-- 3. The frontend MUST NOT hold the service role key.
+-- 4. quality_score / ai_review_summary are intentionally nullable — AI is
+--    not in scope for the first write phase.
+-- 5. menu_upload_asset_id in onboarding answer_payload (see
+--    ../onboarding-draft/001_onboarding_answer_payload_draft.md) will
+--    reference media_assets.id once this surface ships.

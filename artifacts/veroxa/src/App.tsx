@@ -76,9 +76,20 @@ function Router() {
       <Route path="/login" component={LoginPage} />
       {/* Future authenticated route placeholders — UI shell only, no real auth yet. */}
       <Route path="/client/dashboard" component={RealClientPlaceholder} />
+      <Route path="/client/onboarding" component={RealClientPlaceholder} />
+      <Route path="/client/media" component={RealClientPlaceholder} />
+      <Route path="/client/calendar" component={RealClientPlaceholder} />
+      <Route path="/client/reports" component={RealClientPlaceholder} />
       <Route path="/team/tasks" component={RealTeamPlaceholder} />
+      <Route path="/team/media-review" component={RealTeamPlaceholder} />
+      <Route path="/team/drafts" component={RealTeamPlaceholder} />
+      <Route path="/team/scheduling" component={RealTeamPlaceholder} />
       <Route path="/operator/overview" component={RealOperatorPlaceholder} />
+      <Route path="/operator/alerts" component={RealOperatorPlaceholder} />
+      <Route path="/operator/report-approvals" component={RealOperatorPlaceholder} />
       <Route path="/owner/dashboard" component={RealOwnerPlaceholder} />
+      <Route path="/owner/revenue" component={RealOwnerPlaceholder} />
+      <Route path="/owner/client-health" component={RealOwnerPlaceholder} />
       <Route component={NotFound} />
     </Switch>
   );
