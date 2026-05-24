@@ -96,7 +96,7 @@ export default function LoginPage() {
       if (error) {
         setSignInState({
           kind: "error",
-          message: "Sign-in failed. Check your email and password and try again.",
+          message: `Sign-in failed: ${error.message}`,
         });
         return;
       }
