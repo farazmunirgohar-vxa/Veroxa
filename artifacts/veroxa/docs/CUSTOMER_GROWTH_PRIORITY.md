@@ -56,3 +56,22 @@ Veroxa-shaped** — defer or cut it.
 - [`SOCIAL_PUBLISHING_PLAN.md`](./SOCIAL_PUBLISHING_PLAN.md) —
   publishing exists to put content in front of potential customers,
   never to "look busy" on a dashboard.
+
+## Public Website Pricing and Services
+
+- Public website pricing and services must support the customer-growth
+  positioning. Every section should answer "how does this help the
+  restaurant bring more customers?"
+- Pricing must be presented as a serious restaurant growth system,
+  not random posting. Copy focuses on consistency, visibility, and
+  trust — not vanity metrics.
+- "Complete Online Presence" is the product name. It must not be
+  described as a social media package alone.
+- Ads Management add-on must always be presented as a separate
+  decision from the core content system.
+- Ad spend must always be shown as separate from Veroxa fees.
+- No page may claim guaranteed revenue, guaranteed first-page
+  rankings, guaranteed viral content, or a guaranteed number of
+  customers.
+- See `docs/PUBLIC_PRICING_AND_SERVICES.md` for locked pricing
+  numbers and service lists.

@@ -352,3 +352,23 @@ Specifically:
 - No writes, uploads, storage, service role, or AI API added.
 - Real production routes (`/client/*`, `/team/*`, etc.) remain
   placeholder shells.
+
+## Public Services + Pricing Page
+
+**Status: COMPLETE**
+
+- Landing page rewritten with 8 sections in order: Hero, Stats,
+  What Veroxa Does, Services Included, Pricing Preview, Ads
+  Management, Bundle Pricing, Client Portal Preview, and CTA.
+- Exact pricing added: Complete Online Presence ($997–$1,497/mo),
+  Ads Management (+$1,497 add-on or $1,997 ads-only), Bundle
+  ($1,797–$2,697/mo).
+- Ad spend separate disclaimer shown in Ads Management section.
+- No-guarantees disclaimer in pricing section and footer.
+- Hero CTAs: "Request Restaurant Audit" + "View Client Portal Preview".
+- Client Portal Preview section links only to `/demo/client/dashboard`.
+- Public pages do not expose Team/Operator/Owner demo portal links.
+- Navigation links to Services, Pricing, and Preview anchors.
+- `docs/PUBLIC_PRICING_AND_SERVICES.md` created as locked pricing
+  source of truth.
+- No writes, uploads, storage, auth, or database changes.
