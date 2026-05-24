@@ -1,0 +1,246 @@
+-- =============================================================================
+-- 001_first_write_surface_draft.sql
+-- Veroxa — DRAFT ONLY: first write surface planning (per-table commentary)
+-- =============================================================================
+--
+-- STATUS: DRAFT ONLY — DO NOT RUN YET.
+--
+-- PURPOSE:
+--   Capture, per table, the FIRST write surfaces we intend to open up once
+--   real auth and production RLS are in place. This file is descriptive:
+--   every policy below is commented and serves as a starting point for the
+--   real migration, not as runnable SQL.
+--
+-- DO NOT:
+--   - Apply this file to any Supabase project.
+--   - Add corresponding frontend write code during this planning phase.
+--   - Treat anything here as a final policy — these are sketches.
+--
+-- REQUIRES (when applied later):
+--   - Supabase Auth enabled (auth.users present).
+--   - 001_auth_user_profiles.sql applied (user_profiles + veroxa_user_role).
+--   - 003_team_assignment_schema_draft.sql applied (team_client_assignments).
+--   - 002_production_rls_policy_draft.sql applied (SELECT direction).
+--   - 002_audit_log_draft.sql applied (audit_logs).
+--   - Server-side write function path established for high-risk writes.
+--
+-- READ FIRST:
+--   - docs/FIRST_WRITE_SURFACE_PLAN.md  (priority order, roles × surface)
+--   - docs/AUTH_ARCHITECTURE_PLAN.md    (role boundaries)
+--
+-- CONVENTIONS USED IN COMMENTS BELOW:
+--   - "writable fields"   = columns this role may set/change.
+--   - "immutable fields"  = columns this role MUST NOT change (enforced by
+--                           either a server-side function, a narrow UPDATE
+--                           policy with a column list, or a trigger).
+--   - "scope"             = which rows this role may target.
+--   - Every write referenced here must create an audit_logs row.
+--   - All write policies are sketches. Nothing executes.
+-- =============================================================================
+
+
+-- =============================================================================
+-- notifications  —  Priority 1
+-- =============================================================================
+-- Owner of action     : the recipient of the notification.
+-- Writable fields     : read_at (timestamptz) and/or is_read (bool).
+-- Immutable fields    : everything else — title, body, severity, client_id,
+--                       recipient_user_id, created_at.
+-- Scope               : a user may only update their OWN notification row.
+-- Roles               : client / team / operator / owner (each for their own
+--                       notifications).
+-- Open dependency     : notifications recipient/targeting schema must be
+--                       finalised first (notifications table needs a clear
+--                       recipient_user_id or a recipient join table).
+--                       Until that exists, this policy is deferred.
+-- Audit               : one audit_logs row per mark-read.
+--
+-- DRAFT (only after recipient schema lands):
+--
+-- CREATE POLICY "self_mark_notification_read"
+--   ON notifications FOR UPDATE TO authenticated
+--   USING  (recipient_user_id = auth.uid())
+--   WITH CHECK (recipient_user_id = auth.uid());
+--
+-- (Plus a column-level safeguard or trigger ensuring only read_at/is_read
+--  change; UPDATE policies do not restrict columns on their own.)
+
+
+-- =============================================================================
+-- onboarding_items  —  Priority 1 (status) / Priority 3 (answers)
+-- =============================================================================
+-- Client role:
+--   - Writable fields  : status, answer_payload (jsonb), updated_at.
+--   - Immutable fields : id, client_id, item_key, created_at.
+--   - Scope            : client_id = current_user_client_id().
+-- Team role (assigned):
+--   - Writable fields  : review_status, reviewer_notes.
+--   - Scope            : client_id IN active team_client_assignments.
+-- Operator:
+--   - Writable fields  : review_status, reviewer_notes (override).
+--   - Scope            : all clients.
+-- Owner:
+--   - Read-only in V1.
+-- Audit               : one audit_logs row per status / answer change.
+--
+-- DRAFT (client side shown; team/operator follow the same shape):
+--
+-- CREATE POLICY "client_update_own_onboarding"
+--   ON onboarding_items FOR UPDATE TO authenticated
+--   USING (
+--     current_user_role() = 'client'
+--     AND client_id = current_user_client_id()
+--   )
+--   WITH CHECK (
+--     current_user_role() = 'client'
+--     AND client_id = current_user_client_id()
+--   );
+
+
+-- =============================================================================
+-- content_concepts  —  Priority 2
+-- =============================================================================
+-- Team role (assigned):
+--   - Writable fields  : title, summary, hook, target_platform, status
+--                        (`draft` → `ready_for_review`), updated_at.
+--   - Immutable fields : id, client_id, created_by, created_at.
+--   - Scope            : client_id IN active team_client_assignments.
+-- Operator:
+--   - Writable fields  : status (`ready_for_review` → `approved` / `rejected`),
+--                        reviewer_notes.
+--   - Scope            : all clients.
+-- Client:
+--   - Read-only in V1 (final-content approval is operator-driven; client
+--     gives notes via the `content_notes` surface, not by editing concepts
+--     directly).
+-- Owner:
+--   - Read-only in V1.
+-- Audit               : INSERT, every UPDATE of status, every reviewer_notes
+--                       change.
+
+
+-- =============================================================================
+-- draft_variants  —  Priority 2
+-- =============================================================================
+-- Team role (assigned):
+--   - Writable fields  : variant_text, variant_metadata, status
+--                        (`draft` → `ready_for_review`).
+--   - Immutable fields : id, draft_set_id, client_id, created_by, created_at.
+--   - Scope            : client_id IN active team_client_assignments.
+-- Operator:
+--   - Writable fields  : status (`ready_for_review` → `approved` / `rejected`),
+--                        reviewer_notes.
+--   - Scope            : all clients.
+-- Client:
+--   - Does NOT approve final content in V1. Client feedback goes through
+--     the content notes / comments surface (Priority 3), not by mutating
+--     draft_variants directly.
+-- Owner:
+--   - Read-only in V1.
+-- Audit               : INSERT, every status transition, every approve/reject.
+--
+-- DRAFT (team edit shown):
+--
+-- CREATE POLICY "team_update_assigned_draft_variants"
+--   ON draft_variants FOR UPDATE TO authenticated
+--   USING (
+--     current_user_role() = 'team'
+--     AND client_id IN (
+--       SELECT client_id FROM team_client_assignments
+--       WHERE team_user_id = auth.uid() AND is_active = true
+--     )
+--   )
+--   WITH CHECK (
+--     current_user_role() = 'team'
+--     AND client_id IN (
+--       SELECT client_id FROM team_client_assignments
+--       WHERE team_user_id = auth.uid() AND is_active = true
+--     )
+--   );
+
+
+-- =============================================================================
+-- posts  —  Priority 2 (internal workflow only)
+-- =============================================================================
+-- Team role (assigned):
+--   - Writable fields  : internal_status (`draft` → `ready_for_review` →
+--                        `approved` → `scheduled`), copy fields tied to the
+--                        post, internal notes.
+--   - Immutable fields : id, client_id, created_by, created_at, AND the
+--                        publish-readiness flag, AND any externally-visible
+--                        publishing fields.
+--   - Scope            : client_id IN active team_client_assignments.
+-- Operator:
+--   - Writable fields  : publish-readiness flag, reviewer_notes,
+--                        internal_status overrides.
+-- Client:
+--   - Read-only in V1.
+-- Owner:
+--   - Read-only in V1.
+-- HARD GUARD:
+--   - The actual "post is published to a social platform" state change is
+--     Priority 4 and MUST go through a server-side function with explicit
+--     idempotency, retry, and audit handling. No UPDATE policy in V1
+--     should allow flipping a post into a published / live state.
+-- Audit               : every status transition.
+
+
+-- =============================================================================
+-- post_slots  —  Priority 2
+-- =============================================================================
+-- Team role (assigned):
+--   - Writable fields  : scheduled_at, slot_label, internal_status
+--                        (`open` → `reserved` → `scheduled`).
+--   - Immutable fields : id, client_id, created_by, created_at.
+--   - Scope            : client_id IN active team_client_assignments.
+-- Operator:
+--   - Writable fields  : same as team, with override capability across all
+--                        clients.
+-- Client:
+--   - Read-only in V1. (Client preferred posting windows are a separate
+--     Priority 3 surface — see FIRST_WRITE_SURFACE_PLAN.md.)
+-- Owner:
+--   - Read-only in V1.
+-- HARD GUARD:
+--   - Scheduling a slot in V1 is an internal state change. Actually pushing
+--     content to a social platform is Priority 4 and out of scope.
+-- Audit               : every reservation / schedule change.
+
+
+-- =============================================================================
+-- weekly_reports  —  Priority 2
+-- =============================================================================
+-- Team role (assigned):
+--   - Writable fields  : narrative, highlights, status (`draft` →
+--                        `ready_for_review`).
+--   - Immutable fields : id, client_id, period_start, period_end, created_by.
+--   - Scope            : client_id IN active team_client_assignments.
+-- Operator:
+--   - Writable fields  : status (`ready_for_review` → `approved` /
+--                        `published_to_client`), reviewer_notes, narrative
+--                        edits.
+-- Client:
+--   - Read-only in V1.
+-- Owner:
+--   - Read-only / oversight in V1.
+-- Audit               : every draft submission, every approve, every publish.
+
+
+-- =============================================================================
+-- monthly_reports  —  Priority 2
+-- =============================================================================
+-- Same role matrix as weekly_reports. Approval / publish workflow is
+-- identical. Audit requirements are identical.
+
+
+-- =============================================================================
+-- INSERT / DELETE — out of scope for this file
+-- =============================================================================
+-- INSERT policies are written together with the specific feature that
+-- introduces them (e.g. "team creates a new content concept" ships with the
+-- concept-creation UI, not as a blanket policy).
+--
+-- DELETE policies are intentionally NOT planned for V1. Soft-delete via a
+-- status column or `archived_at` timestamp is preferred over hard delete,
+-- and any hard delete must go through a server-side function.
+-- =============================================================================

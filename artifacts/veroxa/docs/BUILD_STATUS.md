@@ -135,16 +135,26 @@ We are building **Demo Veroxa** and **Real Veroxa** side by side:
 - **Still no real auth.** No Supabase Auth wired, no sessions, no cookies, no localStorage, no JWT, no writes, no real user accounts.
 - See `AUTH_ARCHITECTURE_PLAN.md` §9 for details.
 
+## First write surface plan
+
+- **First write surface plan created** — `docs/FIRST_WRITE_SURFACE_PLAN.md` defines priorities, role × surface matrix, and hard exclusions (publishing, AI, uploads, Google integrations, billing are out of scope for the first write phase).
+- **Write-draft SQL created** — `docs/database/write-draft/001_first_write_surface_draft.sql` covers per-table writable / immutable / scope commentary plus DRAFT-only policy sketches for `notifications`, `onboarding_items`, `content_concepts`, `draft_variants`, `posts`, `post_slots`, `weekly_reports`, `monthly_reports`.
+- **Audit log draft created** — `docs/database/write-draft/002_audit_log_draft.sql` defines `audit_logs` (actor_user_id, actor_role, client_id, action, resource_type, resource_id, metadata jsonb, created_at), three indexes, append-only enforcement, draft SELECT policies (operator/owner read all, client reads own client_id + whitelisted actions only), and an explicit "no client-side INSERT" stance.
+- **Still not applied.** Nothing in `write-draft/` has been run against any Supabase project.
+- **Still no real writes.** The app today has zero `INSERT` / `UPDATE` / `DELETE` / `UPSERT` paths anywhere.
+- **Still no real auth.** No Supabase Auth wired, no sessions, no cookies, no localStorage, no JWT.
+- **Still no upload / publishing / AI / Google integrations.** All explicitly out of scope for the first write phase.
+- See `AUTH_ARCHITECTURE_PLAN.md` §10 for details.
+
 ## Next recommended phase
 
-**First Write Surface Planning — approvals / read flags / actions, draft only** (see `AUTH_ARCHITECTURE_PLAN.md` §10).
+**Client Onboarding Demo Flow — demo UI only, no real writes** (see `AUTH_ARCHITECTURE_PLAN.md` §11).
 
 Specifically:
 
-- Identify the smallest write surface needed to make the first real workflow useful (likely: notification read flags, draft approvals, post-slot status updates)
-- Draft (do not apply) the first `INSERT` / `UPDATE` / `DELETE` RLS policies for those rows, scoped by role and tenant
-- Identify which writes must go through a server-side function with the service role key vs which can safely run client-side under RLS
-- Keep `/demo/*`, the demo `/login` role cards, the future sign-in form shell, the `<RequireRole>` placeholders, and the auth-draft SQL files untouched and unapplied
+- Build a polished onboarding wizard inside `/demo/client/*` (brand basics, voice, posting windows, asset references) — purely demo, no Supabase writes, no real uploads, no AI
+- Use the wizard to nail down the shape of `onboarding_items.answer_payload` and the question vocabulary before any real write surface ships
+- Keep `/login`, other `/demo/*` routes, the future sign-in form shell, the `<RequireRole>` placeholders, and the auth-draft + write-draft SQL files untouched and unapplied
 - Do **not** wire real Supabase Auth sessions, real writes, real uploads, AI, or publishing in that phase
 
 ---

@@ -218,15 +218,45 @@ Each renders only the protected-route preview card from `<RequireRole>`. None ca
 
 ---
 
-## 10. Recommended next phase
+## 10. First Write Surface Planning
 
-**First Write Surface Planning — approvals / read flags / actions, draft only.**
+A plan for the **first write surfaces** now exists, in draft form only, under `docs/FIRST_WRITE_SURFACE_PLAN.md` and `docs/database/write-draft/`. The app today has **zero** `INSERT` / `UPDATE` / `DELETE` / `UPSERT` paths and nothing in this section is wired or applied.
+
+**Guiding rules:**
+- Writes are not implemented yet.
+- First writes should be **workflow / status actions only** — small, reversible, auditable, single-row state flips.
+- **Client stays mostly read-only in V1**, except onboarding answers, preferred posting windows, content notes / comments, and media-upload metadata (Priority 3).
+- **Team** can write only on the clients they are actively assigned to via `team_client_assignments`.
+- **Operator** approves / rejects / publishes reports and post workflow-readiness. No publishing to social platforms in V1.
+- **Owner** has oversight, not daily execution writes.
+- **Audit logs are required before any V1 write ships.** Every write produces one `audit_logs` row, written by a server-side function in the same transaction as the business write. Append-only — no UPDATE/DELETE on `audit_logs`.
+
+**Priority order (do not skip ahead):**
+
+1. **Priority 1 — Safe low-risk internal actions** — mark notification read, mark onboarding item complete, team task status, draft variant approval status, report approval status.
+2. **Priority 2 — Controlled content workflow** — create/edit content concept, draft set, draft variant; schedule post slot; update post internal workflow status.
+3. **Priority 3 — Client-facing writes** — onboarding answers, preferred posting windows, media upload metadata, content notes / comments.
+4. **Priority 4 — Explicitly excluded from the first write phase** — publishing to social platforms, Google Business Profile updates, AI-generated content, automated scheduling decisions, billing / subscription changes, bulk operations, external API mutations.
+
+**Hard prerequisites for any V1 write:**
+real Supabase Auth wired → `user_profiles` applied → `team_client_assignments` applied → production SELECT RLS applied (dev anon read policies dropped) → `audit_logs` applied → `<RequireRole>` swapped to a real session hook → server-side write function path established.
+
+**Draft files (do not run):**
+- `docs/FIRST_WRITE_SURFACE_PLAN.md` — priorities, role × surface matrix, exclusions.
+- `docs/database/write-draft/001_first_write_surface_draft.sql` — per-table writable / immutable / scope commentary and DRAFT policy sketches.
+- `docs/database/write-draft/002_audit_log_draft.sql` — `audit_logs` table, indexes, append-only enforcement, draft SELECT policies, "no client-side INSERT" stance.
+- `docs/database/write-draft/README.md` — directory rationale and prerequisites.
+
+---
+
+## 11. Recommended next phase
+
+**Client Onboarding Demo Flow — demo UI only, no real writes.**
 
 Specifically:
 
-1. Identify the smallest write surface needed to make the first real workflow useful (likely: notification read flags, draft approvals, post-slot status updates).
-2. Draft (do not apply) the first `INSERT` / `UPDATE` / `DELETE` RLS policies for those rows, scoped by role (client / team / operator / owner) and tenant (`client_id` / `team_client_assignments`).
-3. Identify which writes must go through a server-side function with the service role key vs which can safely run client-side under RLS.
-4. Keep `/demo/*`, the demo `/login` role cards, the future sign-in form shell, the `<RequireRole>` placeholders, and the auth-draft SQL files untouched and unapplied.
+1. Build a polished onboarding wizard inside `/demo/client/*` that walks through brand basics, voice, posting windows, and asset references — purely demo, no Supabase writes, no real uploads, no AI.
+2. Use the wizard to nail down the shape of `onboarding_items.answer_payload` and the question vocabulary before any real write surface ships.
+3. Keep all other surfaces (`/login`, `/demo/*` other routes, future-route placeholders, auth-draft and write-draft SQL) untouched and unapplied.
 
-Only after that planning phase is approved should we wire actual Supabase Auth sessions, real sign-in, apply the auth-draft migrations, and replace the `<RequireRole>` placeholder pages with real authenticated portal trees.
+Only after that demo flow is approved should we wire actual Supabase Auth sessions, apply the auth-draft migrations, ship the `audit_logs` table, and begin Priority 1 write surfaces.

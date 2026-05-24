@@ -78,6 +78,8 @@ All connections are read-only and unauthenticated (anon key only).
 
 **Auth shell note:** A frontend auth shell now exists — `src/lib/auth/` (placeholder types + hook), `src/components/auth/RequireRole.tsx` (preview guard), a Future Sign In form on `/login`, and placeholder pages at `/client/dashboard`, `/team/tasks`, `/operator/overview`, `/owner/dashboard`. **No Supabase Auth calls are used** — no `signIn`, `signInWithPassword`, `signInWithOtp`, `getSession`, `onAuthStateChange`, or `signOut`. Supabase here remains anon read-only for the Client Portal demo only.
 
+**Write draft note:** Planning for the first write surfaces now lives under [`../../docs/database/write-draft/`](../../docs/database/write-draft/) and [`../../docs/FIRST_WRITE_SURFACE_PLAN.md`](../../docs/FIRST_WRITE_SURFACE_PLAN.md). **No SQL has been applied.** The current frontend Supabase access remains anon read-only for the Client Portal demo. **No `INSERT` / `UPDATE` / `DELETE` / `UPSERT` functions exist anywhere in the app today.** Future writes require real auth, production RLS, and the `audit_logs` table to be in place first — see the plan doc for the full prerequisite list.
+
 ---
 
 ## Next steps
