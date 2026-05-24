@@ -136,6 +136,20 @@ level, **all not built yet**.
 
 ---
 
+## Media Guidance Engine (related, not an AI agent)
+
+- The Restaurant Media Guidance Engine in
+  [`MEDIA_GUIDANCE_ENGINE_PLAN.md`](./MEDIA_GUIDANCE_ENGINE_PLAN.md)
+  is **currently rule-based and demo-only.** It is not an AI agent
+  and does not call any AI provider.
+- A future **AI Media Review Agent (V2)** may use the engine's
+  rule-based output as one input, alongside actual uploaded media
+  quality, performance signals, and onboarding answers.
+- The AI agent must **not overwhelm clients** with unrealistic
+  capture demands — see the engine plan's safety / ethics section.
+- The engine's rule set remains the safe fallback whenever AI is
+  unavailable or rejected by an operator.
+
 ## Safety principles
 
 - AI **cannot** publish directly in V1 or V2. Publishing requires

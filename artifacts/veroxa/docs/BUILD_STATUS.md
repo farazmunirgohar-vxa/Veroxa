@@ -195,6 +195,17 @@ We are building **Demo Veroxa** and **Real Veroxa** side by side:
 - **Still no AI API.** Every "AI" surface is static / simulated.
 - **Still no publishing or Google integration.**
 
+## Restaurant Media Guidance Engine — demo
+
+- **Static / rule-based guidance data added** in `src/lib/mediaGuidance.ts` covering 13 restaurant types (halal grill, bakery, donut shop, pizza, burger, coffee shop, fine dining, food truck, Mexican, Mediterranean, Asian, dessert shop, general restaurant). Each type carries `bestPhotoIdeas`, `avoid`, `weeklyCapturePlan`, `googleSpecificShots`, and `quickTips`.
+- **`/demo/client/media` now recommends shots by restaurant type.** A new "Restaurant Media Guidance" card sits above the existing upload card with a restaurant-type selector (local state only) plus Recommended Shots, Google Business Profile Shots, What to Avoid, Weekly Capture Plan, and Quick Tips sections.
+- **`/demo/client/onboarding` now explains that cuisine type will later power guidance** via a small helper note under the Cuisine field. No cross-page state is shared; nothing is saved.
+- **`/demo/team/media-review` now shows a static Guidance Match preview** (Grill flame shot → matches halal grill, Family platter → good for weekend promo, Storefront → good for Google, blurry prep → needs better lighting).
+- **New docs:** `docs/MEDIA_GUIDANCE_ENGINE_PLAN.md` and `docs/database/media-draft/003_media_guidance_profile_draft.md`.
+- **Existing docs updated:** `docs/README.md`, `docs/AI_AGENT_ARCHITECTURE_PLAN.md`, `docs/CLIENT_DATA_MAPPING.md`, `docs/SAFETY_AUDIT_CHECKLIST.md`, `src/lib/supabase/README.md`.
+- **Still no AI API.** All guidance is rule-based static data.
+- **Still no uploads / writes / storage.** Upload card behavior is unchanged.
+
 ## Next recommended phase
 
 **Pre-Auth Code Readiness Pass — small refactor only, then manual decision before real Supabase Auth.**

@@ -43,6 +43,10 @@ to every important planning, safety, and architecture doc.
 
 ## AI, publishing, SEO
 
+- [`MEDIA_GUIDANCE_ENGINE_PLAN.md`](./MEDIA_GUIDANCE_ENGINE_PLAN.md)
+  — rule-based restaurant media guidance, restaurant types covered,
+  V1 → V3 rollout, safety principles. Source of truth lives in
+  `src/lib/mediaGuidance.ts`.
 - [`AI_AGENT_ARCHITECTURE_PLAN.md`](./AI_AGENT_ARCHITECTURE_PLAN.md)
   — agent inventory, staged rollout (V1/V1.5/V2/V3), safety
   principles.
@@ -62,7 +66,7 @@ to every important planning, safety, and architecture doc.
   `onboarding_items.answer_payload` shape + draft column extensions.
 - [`database/media-draft/`](./database/media-draft/) — future
   `veroxa-client-media` bucket plan + `media_assets` extension
-  draft.
+  draft + `client_media_guidance_profiles` draft.
 
 > All SQL files in `database/*-draft/` are **commented** and explicitly
 > marked `DO NOT RUN`.

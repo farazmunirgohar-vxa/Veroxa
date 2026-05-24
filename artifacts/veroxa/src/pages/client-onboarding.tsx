@@ -453,6 +453,12 @@ export default function ClientOnboarding() {
                         }
                         placeholder="e.g. Modern Levantine"
                       />
+                      <p
+                        className="text-xs text-muted-foreground mt-1.5"
+                        data-testid="text-cuisine-guidance-hint"
+                      >
+                        Later, Veroxa will use this cuisine type to recommend what photos and videos your team should capture.
+                      </p>
                     </Field>
                     <Field
                       label="Halal / vegetarian / specialty notes"

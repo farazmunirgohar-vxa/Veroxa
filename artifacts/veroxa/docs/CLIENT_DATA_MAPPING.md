@@ -42,6 +42,21 @@ Field-level shapes for each section live in
 - Operator review queue for completed onboarding.
 - Audit log row insertion on save / review / approve.
 
+### Forward link — restaurant type → media guidance
+
+The **`restaurant_type` / `cuisine_type`** value captured in
+`brand_and_positioning` will later drive the **Restaurant Media
+Guidance Engine** (see
+[`MEDIA_GUIDANCE_ENGINE_PLAN.md`](./MEDIA_GUIDANCE_ENGINE_PLAN.md)).
+
+- V1.5: read the value from `onboarding_items.answer_payload` at render
+  time. No extra table.
+- V2: optionally graduate to a dedicated
+  `client_media_guidance_profiles` table — see
+  [`database/media-draft/003_media_guidance_profile_draft.md`](./database/media-draft/003_media_guidance_profile_draft.md).
+- Today: nothing is persisted; the Client Media demo holds the
+  restaurant-type selection in local React state only.
+
 ---
 
 ## Client Media

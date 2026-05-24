@@ -10,6 +10,11 @@ import {
   CheckCircle2,
   Info,
   X,
+  Sparkles,
+  Lightbulb,
+  CalendarDays,
+  MapPin,
+  Ban,
 } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +23,12 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
+import {
+  getDefaultGuidance,
+  getGuidanceForRestaurantType,
+  getRestaurantTypeOptions,
+  type RestaurantType,
+} from "@/lib/mediaGuidance";
 
 interface SelectedFile {
   name: string;
@@ -81,10 +92,26 @@ const toneStyles: Record<string, string> = {
   promo: "text-fuchsia-400 bg-fuchsia-500/10 border-fuchsia-500/30",
 };
 
+const difficultyStyles: Record<string, string> = {
+  easy: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
+  medium: "bg-sky-500/10 text-sky-400 border-sky-500/30",
+  advanced: "bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/30",
+};
+
 export default function ClientMedia() {
   const [files, setFiles] = useState<SelectedFile[]>([]);
   const [pickerMessage, setPickerMessage] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Restaurant Media Guidance — local state only, never persisted.
+  const [restaurantType, setRestaurantType] = useState<RestaurantType>(
+    getDefaultGuidance().type,
+  );
+  const guidance = useMemo(
+    () => getGuidanceForRestaurantType(restaurantType),
+    [restaurantType],
+  );
+  const typeOptions = useMemo(() => getRestaurantTypeOptions(), []);
 
   // Demo "Content Supply Snapshot" values — static demo numbers, plus the
   // locally-selected file count so the snapshot reacts to the demo picker.
@@ -150,7 +177,187 @@ export default function ClientMedia() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 mt-2">
+      {/* Restaurant Media Guidance Engine — rule-based demo, local state only */}
+      <Card className="bg-card border-primary/30 mt-4" data-testid="card-media-guidance">
+        <CardHeader className="pb-3">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Sparkles className="w-5 h-5 text-primary" />
+                <CardTitle className="text-lg font-semibold">Restaurant Media Guidance</CardTitle>
+                <Badge
+                  variant="outline"
+                  className="border-primary/30 bg-primary/10 text-primary text-[10px] font-semibold tracking-wide"
+                  data-testid="badge-guidance-rule-based"
+                >
+                  Rule-based demo — no AI connected
+                </Badge>
+              </div>
+              <p className="text-sm text-muted-foreground max-w-2xl">
+                Choose your restaurant type and Veroxa will recommend what photos and videos to capture this week.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <label htmlFor="guidance-restaurant-type" className="text-xs text-muted-foreground font-medium">
+                Restaurant type
+              </label>
+              <select
+                id="guidance-restaurant-type"
+                value={restaurantType}
+                onChange={(e) => setRestaurantType(e.target.value as RestaurantType)}
+                className="bg-muted/40 border border-border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                data-testid="select-restaurant-type"
+              >
+                {typeOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <p className="text-xs text-muted-foreground" data-testid="text-guidance-note">
+            These recommendations are generated from static Veroxa guidance rules. Real AI guidance may be added later after review.
+          </p>
+
+          {/* Recommended Shots This Week */}
+          <section data-testid="section-recommended-shots">
+            <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+              <Camera className="w-4 h-4 text-primary" />
+              Recommended Shots This Week
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {guidance.bestPhotoIdeas.map((idea, i) => (
+                <div
+                  key={idea.title}
+                  className="p-3 rounded-md border border-border bg-muted/20 space-y-2"
+                  data-testid={`shot-idea-${i}`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-sm font-medium leading-snug">{idea.title}</p>
+                    <span
+                      className={`text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded border ${difficultyStyles[idea.difficulty]}`}
+                    >
+                      {idea.difficulty}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{idea.description}</p>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {idea.bestFor.map((platform) => (
+                      <Badge
+                        key={platform}
+                        variant="outline"
+                        className="text-[10px] font-normal px-1.5 py-0 border-border bg-card"
+                      >
+                        {platform}
+                      </Badge>
+                    ))}
+                    <span className="text-[10px] text-muted-foreground ml-auto">{idea.frequency}</span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground italic border-t border-border/40 pt-2">
+                    Example: {idea.exampleShot}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <Separator />
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Google Business Profile Shots */}
+            <section data-testid="section-google-shots">
+              <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-primary" />
+                Google Business Profile Shots
+              </h3>
+              <ul className="space-y-2">
+                {guidance.googleSpecificShots.map((shot, i) => (
+                  <li
+                    key={shot.category}
+                    className="flex items-start gap-2 text-sm"
+                    data-testid={`google-shot-${i}`}
+                  >
+                    <span className="text-xs font-semibold text-primary min-w-[110px]">{shot.category}</span>
+                    <span className="text-xs text-muted-foreground">{shot.description}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+
+            {/* What to Avoid */}
+            <section data-testid="section-avoid">
+              <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                <Ban className="w-4 h-4 text-amber-400" />
+                What to Avoid
+              </h3>
+              <ul className="space-y-1.5">
+                {guidance.avoid.map((item, i) => (
+                  <li
+                    key={i}
+                    className="flex items-start gap-2 text-xs text-muted-foreground"
+                    data-testid={`avoid-item-${i}`}
+                  >
+                    <X className="w-3.5 h-3.5 text-amber-400 mt-0.5 flex-shrink-0" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          </div>
+
+          <Separator />
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Weekly Capture Plan */}
+            <section data-testid="section-weekly-plan">
+              <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                <CalendarDays className="w-4 h-4 text-primary" />
+                Weekly Capture Plan
+              </h3>
+              <ul className="space-y-2">
+                {guidance.weeklyCapturePlan.map((slot, i) => (
+                  <li
+                    key={`${slot.day}-${i}`}
+                    className="flex items-start gap-3 p-2.5 rounded-md bg-muted/20 border border-border"
+                    data-testid={`weekly-slot-${i}`}
+                  >
+                    <span className="text-xs font-bold text-primary min-w-[68px]">{slot.day}</span>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium leading-snug">{slot.what}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{slot.why}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </section>
+
+            {/* Quick Tips */}
+            <section data-testid="section-quick-tips">
+              <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                <Lightbulb className="w-4 h-4 text-primary" />
+                Quick Tips
+              </h3>
+              <ul className="space-y-2">
+                {guidance.quickTips.map((tip, i) => (
+                  <li
+                    key={tip.title}
+                    className="text-sm"
+                    data-testid={`quick-tip-${i}`}
+                  >
+                    <p className="font-medium leading-snug">{tip.title}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{tip.text}</p>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 mt-6">
         <div className="space-y-6">
           {/* 1. Upload Placeholder */}
           <Card className="bg-card border-border" data-testid="card-upload">

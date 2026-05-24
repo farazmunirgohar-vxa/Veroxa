@@ -88,6 +88,8 @@ All connections are read-only and unauthenticated (anon key only).
 
 **Docs index:** The full set of architecture, safety, and launch docs is indexed in [`../../docs/README.md`](../../docs/README.md). Frontend Supabase access is **read-only** for the Client Portal demo, no mutation functions exist, no Supabase Storage is used, and no auth is wired.
 
+**Restaurant Media Guidance Engine note:** The new media guidance system in [`../mediaGuidance.ts`](../mediaGuidance.ts) is **static / rule-based** and does **not** use Supabase. No guidance data is saved, no per-client profile is persisted, and the restaurant-type selector on `/demo/client/media` lives entirely in local React state. Future persistence is planned in [`../../docs/database/media-draft/003_media_guidance_profile_draft.md`](../../docs/database/media-draft/003_media_guidance_profile_draft.md) but no SQL has been applied.
+
 ---
 
 ## Next steps

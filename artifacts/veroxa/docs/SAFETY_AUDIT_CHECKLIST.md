@@ -23,6 +23,10 @@ a regression and stop.
 - ❌ No Google Business Profile writes.
 - ❌ No real credentials, OAuth client secrets, or third-party API keys
   committed.
+- ❌ No AI-generated media guidance API calls before the AI phase ships
+  (the Restaurant Media Guidance Engine is strictly rule-based today).
+- ❌ No automatic client prompts / notifications ("please upload 2 grill
+  shots") before the notification system exists.
 
 ## Currently allowed in the codebase
 
@@ -38,6 +42,12 @@ a regression and stop.
 - ✅ Future-route placeholder shells under `/client/*`, `/team/*`,
   `/operator/*`, `/owner/*` that always render the `RequireRole`
   "Protected Route Preview" card (no real session check, no redirect).
+- ✅ Static, rule-based Restaurant Media Guidance data in
+  `src/lib/mediaGuidance.ts` and the helper functions it exports.
+- ✅ Local restaurant-type selection on `/demo/client/media` (React
+  `useState` only — never persisted, never sent anywhere).
+- ✅ Static "Guidance Match" preview card on `/demo/team/media-review`
+  (no real media analysis).
 
 ## Before real auth ships
 
