@@ -32,6 +32,10 @@ import OwnerAlerts from "@/pages/owner-alerts";
 import OwnerSettings from "@/pages/owner-settings";
 import SupabaseTestPage from "@/pages/supabase-test";
 import LoginPage from "@/pages/login";
+import RealClientPlaceholder from "@/pages/real-client-placeholder";
+import RealTeamPlaceholder from "@/pages/real-team-placeholder";
+import RealOperatorPlaceholder from "@/pages/real-operator-placeholder";
+import RealOwnerPlaceholder from "@/pages/real-owner-placeholder";
 
 const queryClient = new QueryClient();
 
@@ -66,6 +70,11 @@ function Router() {
       <Route path="/demo/owner/settings" component={OwnerSettings} />
       <Route path="/demo/supabase-test" component={SupabaseTestPage} />
       <Route path="/login" component={LoginPage} />
+      {/* Future authenticated route placeholders — UI shell only, no real auth yet. */}
+      <Route path="/client/dashboard" component={RealClientPlaceholder} />
+      <Route path="/team/tasks" component={RealTeamPlaceholder} />
+      <Route path="/operator/overview" component={RealOperatorPlaceholder} />
+      <Route path="/owner/dashboard" component={RealOwnerPlaceholder} />
       <Route component={NotFound} />
     </Switch>
   );

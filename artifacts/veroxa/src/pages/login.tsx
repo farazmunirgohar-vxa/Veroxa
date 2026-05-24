@@ -1,5 +1,9 @@
+import { useState, type FormEvent } from "react";
 import { Link } from "wouter";
-import { ArrowLeft, ArrowRight, BarChart2, Hexagon, Settings2, ShieldAlert, Users, Utensils } from "lucide-react";
+import { ArrowLeft, ArrowRight, BarChart2, Hexagon, Lock, Mail, Settings2, ShieldAlert, Users, Utensils } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const roles = [
   {
@@ -41,6 +45,17 @@ const roles = [
 ];
 
 export default function LoginPage() {
+  const [showNotice, setShowNotice] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  // Placeholder submit — does NOT call any auth API, does NOT save anything.
+  // No cookies, no localStorage, no network. UI shell only.
+  function handlePlaceholderSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setShowNotice(true);
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col items-center px-6 py-12 relative overflow-hidden">
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[900px] h-[600px] bg-primary/5 blur-[140px] rounded-full pointer-events-none -z-10" />
@@ -116,6 +131,95 @@ export default function LoginPage() {
               </div>
             </Link>
           ))}
+        </div>
+
+        {/* Future Sign In — UI shell only */}
+        <div className="mt-16 animate-in fade-in duration-700" data-testid="future-signin-section">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-widest">
+              Or
+            </span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+
+          <div className="max-w-md mx-auto">
+            <div className="rounded-2xl border border-border bg-card p-7 shadow-sm relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-primary/10 to-transparent blur-3xl rounded-full pointer-events-none" />
+
+              <div className="flex items-start justify-between mb-5 relative">
+                <div>
+                  <h3 className="text-lg font-bold mb-1">Future Sign In</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed max-w-xs">
+                    Real account access will be enabled after Supabase Auth and
+                    production RLS are approved.
+                  </p>
+                </div>
+                <span className="text-[9px] font-semibold text-amber-500 bg-amber-500/10 px-2 py-1 rounded-full uppercase tracking-widest whitespace-nowrap">
+                  Planned
+                </span>
+              </div>
+
+              <form onSubmit={handlePlaceholderSubmit} className="space-y-4 relative" data-testid="form-future-signin">
+                <div className="space-y-1.5">
+                  <Label htmlFor="signin-email" className="text-xs font-semibold text-muted-foreground">
+                    Email
+                  </Label>
+                  <div className="relative">
+                    <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" />
+                    <Input
+                      id="signin-email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="you@restaurant.com"
+                      autoComplete="off"
+                      className="pl-9"
+                      data-testid="input-signin-email"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="signin-password" className="text-xs font-semibold text-muted-foreground">
+                    Password
+                  </Label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" />
+                    <Input
+                      id="signin-password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      autoComplete="off"
+                      className="pl-9"
+                      data-testid="input-signin-password"
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  variant="outline"
+                  className="w-full font-semibold border-dashed text-muted-foreground hover:text-foreground"
+                  data-testid="btn-signin-coming-soon"
+                >
+                  Sign In — Coming Soon
+                </Button>
+
+                {showNotice && (
+                  <div
+                    className="rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-[11px] text-amber-400 flex items-center gap-2 animate-in fade-in slide-in-from-top-1 duration-300"
+                    data-testid="signin-notice"
+                  >
+                    <ShieldAlert className="w-3.5 h-3.5 flex-shrink-0" />
+                    Real authentication is not connected yet.
+                  </div>
+                )}
+              </form>
+            </div>
+          </div>
         </div>
 
         {/* Footer note */}

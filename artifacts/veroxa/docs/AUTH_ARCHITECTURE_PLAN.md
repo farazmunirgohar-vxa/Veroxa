@@ -174,14 +174,49 @@ Team assignment requires its own schema decision (per-table assignment column, c
 
 ---
 
-## 9. Recommended next phase
+## 9. Login Form + Guard Shell Status
 
-**Login Form UI Shell + `RequireRole` Guard Shell — UI only, no live auth.**
+The login form UI shell and the `<RequireRole>` guard shell now exist in the app — UI only, no real auth.
+
+**`/login`:**
+- Still shows the four demo role cards (Client / Team / Operator / Owner) routing to `/demo/*`.
+- Now also shows a polished **Future Sign In** form below the demo cards: Email + Password inputs and a "Sign In — Coming Soon" button.
+- The form **does not authenticate.** Submit calls `preventDefault()` and reveals a small notice: *"Real authentication is not connected yet."* No Supabase Auth call, no network, no cookies, no localStorage.
+
+**Placeholder auth layer (`src/lib/auth/`):**
+- `types.ts` — `VeroxaRole`, `PlaceholderSession`, `AuthStatus`. Types only, no Supabase imports.
+- `usePlaceholderAuth.ts` — always returns `{ status: "unauthenticated", session: null, isDemoOnly: true }`. No network, no storage. When real auth ships, only this hook's implementation changes; call sites stay the same.
+
+**`<RequireRole>` (`src/components/auth/RequireRole.tsx`):**
+- Reads `usePlaceholderAuth()`. Since status is always `unauthenticated`, it renders a polished **"Protected Route Preview"** card with role-specific copy, a Back-to-Login button, and an Open-Demo-Hub button.
+- Does **not** auto-redirect.
+- Is **not** used anywhere on `/demo/*`.
+
+**First future real route placeholders:**
+- `/client/dashboard` → `<RequireRole role="client">`
+- `/team/tasks` → `<RequireRole role="team">`
+- `/operator/overview` → `<RequireRole role="operator">`
+- `/owner/dashboard` → `<RequireRole role="owner">`
+
+Each renders only the protected-route preview card from `<RequireRole>`. None call Supabase.
+
+**What is still NOT in place:**
+- No Supabase Auth has been wired (no `signIn`, `signInWithPassword`, `signInWithOtp`, `getSession`, `onAuthStateChange`, `signOut`).
+- No sessions, cookies, localStorage tokens, or JWT.
+- No real users, no writes, no validation of real credentials.
+- The `user_profiles` table and production RLS policies remain draft-only in `database/auth-draft/` and are not applied.
+
+---
+
+## 10. Recommended next phase
+
+**Team assignment schema decision + production RLS finalization.**
 
 Specifically:
 
-1. Build a real `/login` form (email + password fields, or magic link UI) behind a feature flag. No Supabase Auth wiring; submission does nothing real.
-2. Build a `<RequireRole role="...">` route guard component that reads a placeholder session shape. No real session lookup yet.
-3. Keep `/demo/*` and the existing demo `/login` role-card layout untouched.
+1. Decide the team assignment model (per-table assignment columns, central `team_assignments` table, or `team_client_assignments` mapping — see `database/auth-draft/002_production_rls_policy_draft.sql`).
+2. Finalize the production SELECT RLS policies for team rows based on that decision.
+3. Draft (still not apply) the first write (`INSERT` / `UPDATE` / `DELETE`) policies for the smallest write surface needed (e.g. notifications read flags, draft approvals).
+4. Keep `/demo/*`, the demo `/login` role cards, the future sign-in form shell, and the `<RequireRole>` placeholders untouched.
 
-Only after that UI scaffolding is approved should we wire actual Supabase Auth sessions, real sign-in, and the first `/client/*` real route.
+Only after that planning phase is approved should we wire actual Supabase Auth sessions, real sign-in, apply the auth-draft migrations, and replace the `<RequireRole>` placeholder pages with real authenticated portal trees.

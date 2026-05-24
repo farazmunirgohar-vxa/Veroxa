@@ -72,9 +72,11 @@ If queries return empty results or permission errors, that is expected behaviour
 
 All connections are read-only and unauthenticated (anon key only).
 
-**Login shell note:** `/login` exists as a polished access page but is **demo-only role routing** — it does not use Supabase Auth, does not collect credentials, and does not create sessions. Real auth architecture is documented in [`../../docs/AUTH_ARCHITECTURE_PLAN.md`](../../docs/AUTH_ARCHITECTURE_PLAN.md).
+**Login shell note:** `/login` exists as a polished access page with two sections — demo role cards routing to `/demo/*`, and a "Future Sign In" form UI shell (email + password inputs and a "Sign In — Coming Soon" button). The form **does not authenticate**: submit calls `preventDefault()`, inputs are held in local component state only, and nothing is sent to Supabase Auth or any other service. No sessions, cookies, localStorage tokens, or JWT are created. Real auth architecture is documented in [`../../docs/AUTH_ARCHITECTURE_PLAN.md`](../../docs/AUTH_ARCHITECTURE_PLAN.md).
 
 **Auth draft SQL note:** A draft real-auth data model (`user_profiles` + `veroxa_user_role` enum) and production SELECT-only RLS direction live under [`../../docs/database/auth-draft/`](../../docs/database/auth-draft/). **These files are not applied** to any Supabase project. The current frontend Supabase access remains anon read-only for the Client Portal demo. No service role key and no real auth are used yet.
+
+**Auth shell note:** A frontend auth shell now exists — `src/lib/auth/` (placeholder types + hook), `src/components/auth/RequireRole.tsx` (preview guard), a Future Sign In form on `/login`, and placeholder pages at `/client/dashboard`, `/team/tasks`, `/operator/overview`, `/owner/dashboard`. **No Supabase Auth calls are used** — no `signIn`, `signInWithPassword`, `signInWithOtp`, `getSession`, `onAuthStateChange`, or `signOut`. Supabase here remains anon read-only for the Client Portal demo only.
 
 ---
 

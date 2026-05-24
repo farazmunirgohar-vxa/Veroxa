@@ -119,15 +119,30 @@ We are building **Demo Veroxa** and **Real Veroxa** side by side:
 - Temporary dev anon read policies in `docs/database/rls-draft/001_dev_read_policies.sql` remain the only RLS in effect on dev.
 - See `AUTH_ARCHITECTURE_PLAN.md` §8 for the data model summary.
 
+## Login form + guard shell
+
+- **Future sign-in UI shell added** on `/login` — Email + Password fields and a "Sign In — Coming Soon" button below the existing demo role cards. Submit calls `preventDefault()` and shows *"Real authentication is not connected yet."* No Supabase Auth call, no network, no cookies, no localStorage.
+- **Placeholder auth types added** — `src/lib/auth/types.ts` (`VeroxaRole`, `PlaceholderSession`, `AuthStatus`).
+- **Placeholder auth hook added** — `src/lib/auth/usePlaceholderAuth.ts` always returns `{ status: "unauthenticated", session: null, isDemoOnly: true }`. No network, no storage.
+- **`<RequireRole>` shell added** — `src/components/auth/RequireRole.tsx` renders a polished "Protected Route Preview" card with Back-to-Login and Open-Demo-Hub buttons. No redirects.
+- **Future protected route placeholders added:**
+  - `/client/dashboard` → `<RequireRole role="client">`
+  - `/team/tasks` → `<RequireRole role="team">`
+  - `/operator/overview` → `<RequireRole role="operator">`
+  - `/owner/dashboard` → `<RequireRole role="owner">`
+- **Still no real auth.** No Supabase Auth wired, no sessions, no cookies, no localStorage, no JWT, no writes, no real user accounts.
+- See `AUTH_ARCHITECTURE_PLAN.md` §9 for details.
+
 ## Next recommended phase
 
-**Login Form UI Shell + `RequireRole` Guard Shell — UI only, no live auth** (see `AUTH_ARCHITECTURE_PLAN.md` §9).
+**Team assignment schema decision + production RLS finalization** (see `AUTH_ARCHITECTURE_PLAN.md` §10).
 
 Specifically:
 
-- Build a real `/login` form (email + password fields, or magic link UI) behind a feature flag — no Supabase Auth wiring, submission does nothing real
-- Build a `<RequireRole role="...">` route guard component reading a placeholder session shape — no real session lookup
-- Keep `/demo/*` and the existing demo `/login` role-card layout untouched
+- Decide the team assignment model (per-table assignment columns, central `team_assignments` table, or `team_client_assignments` mapping)
+- Finalize the production SELECT RLS policies for team rows based on that decision
+- Draft (still not apply) the first write (`INSERT` / `UPDATE` / `DELETE`) policies for the smallest write surface needed
+- Keep `/demo/*`, the demo `/login` role cards, the future sign-in form shell, and the `<RequireRole>` placeholders untouched
 - Do **not** wire real Supabase Auth sessions, real writes, real uploads, AI, or publishing in that phase
 
 ---
