@@ -4,6 +4,8 @@ import { ArrowLeft, ArrowRight, BarChart2, Hexagon, Lock, Mail, Settings2, Shiel
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AUTH_MODE } from "@/lib/auth/authMode";
+import { getSupabaseClient } from "@/lib/supabase";
 
 const roles = [
   {
@@ -44,16 +46,70 @@ const roles = [
   },
 ];
 
+type SignInState =
+  | { kind: "idle" }
+  | { kind: "placeholder-notice" }
+  | { kind: "submitting" }
+  | { kind: "success"; message: string }
+  | { kind: "error"; message: string };
+
 export default function LoginPage() {
-  const [showNotice, setShowNotice] = useState(false);
+  const [signInState, setSignInState] = useState<SignInState>({ kind: "idle" });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // Placeholder submit — does NOT call any auth API, does NOT save anything.
-  // No cookies, no localStorage, no network. UI shell only.
-  function handlePlaceholderSubmit(e: FormEvent<HTMLFormElement>) {
+  /**
+   * Sign-in submit handler.
+   *
+   * - When `AUTH_MODE === "placeholder"` (today): preventDefault and
+   *   show the "Real authentication is not connected yet." notice.
+   *   No network call, no auth API, no token storage.
+   * - When `AUTH_MODE === "real"` (later, after manual approval):
+   *   call `supabase.auth.signInWithPassword`. On success, show a
+   *   "Signed in" message without redirecting (redirect / role
+   *   routing lands in a separate prompt). On error, show a safe
+   *   error message.
+   *
+   * Never creates users. Never writes to `user_profiles`. Never
+   * stores tokens manually. Never uses the service role key.
+   */
+  async function handleSignInSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setShowNotice(true);
+
+    if (AUTH_MODE === "placeholder") {
+      setSignInState({ kind: "placeholder-notice" });
+      return;
+    }
+
+    const client = getSupabaseClient();
+    if (!client) {
+      setSignInState({
+        kind: "error",
+        message: "Sign-in unavailable: Supabase env vars missing.",
+      });
+      return;
+    }
+
+    setSignInState({ kind: "submitting" });
+    try {
+      const { error } = await client.auth.signInWithPassword({ email, password });
+      if (error) {
+        setSignInState({
+          kind: "error",
+          message: "Sign-in failed. Check your email and password and try again.",
+        });
+        return;
+      }
+      setSignInState({
+        kind: "success",
+        message: "Signed in. Redirect will be enabled after role routing is approved.",
+      });
+    } catch {
+      setSignInState({
+        kind: "error",
+        message: "Unexpected sign-in error. Please try again later.",
+      });
+    }
   }
 
   return (
@@ -160,7 +216,7 @@ export default function LoginPage() {
                 </span>
               </div>
 
-              <form onSubmit={handlePlaceholderSubmit} className="space-y-4 relative" data-testid="form-future-signin">
+              <form onSubmit={handleSignInSubmit} className="space-y-4 relative" data-testid="form-future-signin">
                 <div className="space-y-1.5">
                   <Label htmlFor="signin-email" className="text-xs font-semibold text-muted-foreground">
                     Email
@@ -202,19 +258,44 @@ export default function LoginPage() {
                 <Button
                   type="submit"
                   variant="outline"
+                  disabled={signInState.kind === "submitting"}
                   className="w-full font-semibold border-dashed text-muted-foreground hover:text-foreground"
                   data-testid="btn-signin-coming-soon"
                 >
-                  Sign In — Coming Soon
+                  {signInState.kind === "submitting"
+                    ? "Signing in…"
+                    : AUTH_MODE === "real"
+                    ? "Sign In"
+                    : "Sign In — Coming Soon"}
                 </Button>
 
-                {showNotice && (
+                {signInState.kind === "placeholder-notice" && (
                   <div
                     className="rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-[11px] text-amber-400 flex items-center gap-2 animate-in fade-in slide-in-from-top-1 duration-300"
                     data-testid="signin-notice"
                   >
                     <ShieldAlert className="w-3.5 h-3.5 flex-shrink-0" />
                     Real authentication is not connected yet.
+                  </div>
+                )}
+
+                {signInState.kind === "success" && (
+                  <div
+                    className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 text-[11px] text-emerald-400 flex items-center gap-2"
+                    data-testid="signin-success"
+                  >
+                    <ShieldAlert className="w-3.5 h-3.5 flex-shrink-0" />
+                    {signInState.message}
+                  </div>
+                )}
+
+                {signInState.kind === "error" && (
+                  <div
+                    className="rounded-lg border border-red-500/20 bg-red-500/5 px-3 py-2 text-[11px] text-red-400 flex items-center gap-2"
+                    data-testid="signin-error"
+                  >
+                    <ShieldAlert className="w-3.5 h-3.5 flex-shrink-0" />
+                    {signInState.message}
                   </div>
                 )}
               </form>

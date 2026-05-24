@@ -1,5 +1,20 @@
 # Draft — Next Prompt: Real Supabase Auth V1
 
+> **Status update:** This draft has now been **partially implemented
+> as an inactive session layer.** `useRealAuth`, `useAuth`,
+> `AUTH_MODE`, the gated `/login` sign-in path, and the
+> `/auth-status` diagnostics page all exist. `AUTH_MODE` is locked
+> to `"placeholder"`, so behavior is unchanged.
+>
+> **The next real step is NOT more auth code.** It is **manual
+> Supabase preparation:** review / apply
+> `database/auth-draft/001_auth_user_profiles.sql`, provision at
+> least one test user per role in Supabase Auth, insert matching
+> `user_profiles` rows, then flip `AUTH_MODE` to `"real"` and
+> validate against `/auth-status`. Only after that should a follow-up
+> prompt extend the layer (e.g. post-login redirect + sign-out).
+
+
 > **This file is a draft of the next prompt.** It is **not** an
 > instruction to execute now. Real Supabase Auth will only ship
 > after explicit manual approval from the project owner.

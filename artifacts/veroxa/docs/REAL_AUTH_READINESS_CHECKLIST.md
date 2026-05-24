@@ -1,8 +1,31 @@
 # Real Auth Implementation Readiness Checklist
 
-> **Docs only.** Nothing in this checklist is wired up. The Veroxa frontend
-> still uses placeholder auth and read-only Supabase access for the Client
-> Portal demo. Real authentication is not implemented.
+> **Status:** Real auth is **wired but inactive by default.** The
+> Real Auth V1 session-layer pass added `useRealAuth`, the unified
+> `useAuth` wrapper, the `AUTH_MODE` toggle, a gated
+> `signInWithPassword` path on `/login`, and the `/auth-status`
+> diagnostics page. While `AUTH_MODE === "placeholder"` (current
+> setting), none of the real-auth code paths execute and the Veroxa
+> frontend continues to use placeholder auth + read-only Supabase
+> access for the Client Portal demo. Activation is a manual
+> decision — every gate below must still be ticked first.
+
+> **Update from the Real Auth V1 session-layer pass:**
+>
+> - `useRealAuth` hook created (`src/lib/auth/useRealAuth.ts`) —
+>   reads `supabase.auth.getSession()`, subscribes to
+>   `onAuthStateChange`, joins `user_profiles`. **Inactive today.**
+> - `useAuth` wrapper created (`src/lib/auth/useAuth.ts`) — selects
+>   placeholder vs real based on `AUTH_MODE`.
+> - `AUTH_MODE` toggle exists (`src/lib/auth/authMode.ts`) and is
+>   **locked to `"placeholder"`**.
+> - `/login` sign-in form is gated and inactive in placeholder mode.
+>   In real mode it would call `signInWithPassword` only — no
+>   redirect, no user creation, no writes.
+> - **No users created yet.** `user_profiles` must be reviewed and
+>   applied manually before `AUTH_MODE` is flipped to `"real"`.
+> - `/auth-status` developer diagnostics page available — never
+>   renders tokens or raw session.
 
 > **Update from the Real MVP Readiness / Pre-Auth Architecture pass:**
 >
@@ -20,20 +43,59 @@
 
 ## Current state
 
-- `/login` is **demo role routing** plus a future sign-in UI shell. The
-  password field is decorative and never submitted anywhere.
-- `RequireRole` uses `usePlaceholderAuth`, which always returns
-  unauthenticated. Every future real route renders the "Protected Route
-  Preview" card.
-- Future real routes under `/client`, `/team`, `/operator`, `/owner` are
-  **protected preview shells only** — no session check, no redirect, no
-  real content.
-- **No Supabase Auth is connected.** No `signInWithPassword`,
-  `signInWithOtp`, `getSession`, `onAuthStateChange`, or `signOut` calls
-  exist anywhere in the frontend.
-- **No real sessions, cookies, `localStorage` tokens, or JWTs exist.**
-- The Supabase frontend client uses the **anon key only**, scoped to
-  read-only Client Portal demo data.
+- `/login` is **demo role routing** plus a real-but-gated sign-in
+  shell. The submit handler branches on `AUTH_MODE`
+  (`src/lib/auth/authMode.ts`):
+  - `"placeholder"` (today): `preventDefault`, shows
+    "Real authentication is not connected yet." — **no network
+    call, no Supabase Auth API call.**
+  - `"real"` (later, manual flip only): calls
+    `supabase.auth.signInWithPassword` and shows
+    "Signed in. Redirect will be enabled after role routing is
+    approved." — **no redirect, no user creation, no writes,
+    no manual token storage.**
+- `RequireRole` reads the unified `useAuth()` wrapper
+  (`src/lib/auth/useAuth.ts`), which currently returns
+  `usePlaceholderAuth` (always unauthenticated) because
+  `AUTH_MODE === "placeholder"`. Every future real route still
+  renders the "Protected Route Preview" card today.
+- Future real routes under `/client`, `/team`, `/operator`,
+  `/owner` are **protected preview shells only** — no session
+  check is exercised today, no redirect, no real content.
+- **The Supabase Auth wiring exists but is inactive.**
+  `useRealAuth` (`src/lib/auth/useRealAuth.ts`) calls
+  `getSession` / `onAuthStateChange` / `from("user_profiles")`
+  only when `AUTH_MODE === "real"`. While locked to
+  `"placeholder"`, none of these calls ever fire.
+- **No real sessions, cookies, `localStorage` tokens, or JWTs
+  are produced today.** The shared Supabase client is configured
+  with `persistSession: false` and `autoRefreshToken: false`;
+  see the "Session persistence" note below for the activation
+  decision required before flipping `AUTH_MODE`.
+- `/auth-status` developer diagnostics page is available and
+  renders only safe fields (`AUTH_MODE`, `status`, `isDemoOnly`,
+  `role`, `clientId`, `userId`, `email`, `displayName`). **Never
+  renders access tokens, refresh tokens, or the raw Supabase
+  session.**
+- The Supabase frontend client uses the **anon key only**, scoped
+  to read-only Client Portal demo data.
+
+## Session persistence — activation decision
+
+Before flipping `AUTH_MODE` to `"real"`, decide intentionally:
+
+- The shared Supabase client (`src/lib/supabase/client.ts`) is
+  currently created with `{ auth: { persistSession: false,
+  autoRefreshToken: false } }`. With these settings, a real
+  session will **not survive a reload** and tokens will **not
+  auto-refresh**. This is the correct posture for the inactive
+  phase.
+- If real auth is activated without changing this, users will be
+  effectively logged out on every page load and access tokens
+  will expire silently. The flip must either accept that or
+  introduce a separate Supabase client (or updated config) for
+  the auth path with `persistSession: true`. Document the
+  choice in `BUILD_STATUS.md` at the time of the flip.
 
 ## Before implementing real auth
 

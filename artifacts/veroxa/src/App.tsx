@@ -34,6 +34,7 @@ import OwnerAlerts from "@/pages/owner-alerts";
 import OwnerSettings from "@/pages/owner-settings";
 import SupabaseTestPage from "@/pages/supabase-test";
 import LoginPage from "@/pages/login";
+import AuthStatusPage from "@/pages/auth-status";
 import RealClientPlaceholder from "@/pages/real-client-placeholder";
 import RealTeamPlaceholder from "@/pages/real-team-placeholder";
 import RealOperatorPlaceholder from "@/pages/real-operator-placeholder";
@@ -74,6 +75,7 @@ function Router() {
       <Route path="/demo/owner/settings" component={OwnerSettings} />
       <Route path="/demo/supabase-test" component={SupabaseTestPage} />
       <Route path="/login" component={LoginPage} />
+      <Route path="/auth-status" component={AuthStatusPage} />
       {/* Future authenticated route placeholders — UI shell only, no real auth yet. */}
       <Route path="/client/dashboard" component={RealClientPlaceholder} />
       <Route path="/client/onboarding" component={RealClientPlaceholder} />

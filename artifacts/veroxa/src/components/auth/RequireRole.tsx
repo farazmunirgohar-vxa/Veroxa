@@ -3,7 +3,7 @@ import { ArrowRight, Hexagon, ShieldAlert } from "lucide-react";
 import type { ReactNode } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { usePlaceholderAuth } from "@/lib/auth/usePlaceholderAuth";
+import { useAuth } from "@/lib/auth/useAuth";
 import { getRoleHomePath, type VeroxaRole } from "@/lib/auth/authContract";
 
 interface RequireRoleProps {
@@ -33,7 +33,7 @@ const roleLabels: Record<VeroxaRole, string> = {
  * Intentionally not used on `/demo/*` routes.
  */
 export function RequireRole({ role, children, title, description }: RequireRoleProps) {
-  const { status } = usePlaceholderAuth();
+  const { status } = useAuth();
 
   if (status === "authenticated") {
     return <>{children}</>;

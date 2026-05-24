@@ -1,6 +1,16 @@
 /**
  * usePlaceholderAuth — placeholder hook, UI shell only.
  *
+ * **Note (Real Auth V1 session-layer pass):** `useRealAuth.ts` now
+ * exists and is fully wired, but `RequireRole` still reaches this
+ * hook through the `useAuth()` wrapper (`./useAuth.ts`) because
+ * `AUTH_MODE` (`./authMode.ts`) is locked to `"placeholder"`. This
+ * prevents accidental route-protection changes before:
+ *   - `user_profiles` is reviewed / applied,
+ *   - at least one test user is provisioned in Supabase Auth,
+ *   - sign-out and redirect behavior are agreed.
+ *
+ *
  * Always returns an unauthenticated state. No Supabase calls, no cookies,
  * no localStorage, no network. This exists purely so that the RequireRole
  * shell and the future `/client`, `/team`, `/operator`, `/owner`

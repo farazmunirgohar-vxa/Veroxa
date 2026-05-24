@@ -230,7 +230,32 @@ The project has shifted from demo expansion into real MVP readiness. This pass i
 - **Still no writes / uploads / storage** — no `INSERT` / `UPDATE` / `DELETE` / `UPSERT`, no `fetch`, no `FormData`, no Supabase Storage.
 - **Still no AI API, no publishing, no Google integration.**
 
+## Real Auth V1 Session Layer — prepared but not active
+
+The real Supabase session-reading layer is now wired into the codebase but **inactive** by default. `AUTH_MODE` is locked to `"placeholder"` and must be flipped manually after `user_profiles` and at least one test user are ready.
+
+- **`src/lib/auth/useRealAuth.ts` created.** Reads `supabase.auth.getSession()`, subscribes to `onAuthStateChange`, joins `user_profiles` by `user_id`, returns the canonical `AuthState`. Gracefully falls back to `unauthenticated` if Supabase env vars are missing or the `user_profiles` table / row is absent — no crash, only `console.warn`.
+- **`src/lib/auth/authMode.ts` created.** Exports `AUTH_MODE: "placeholder" | "real"`, locked to `"placeholder"`. Single switch.
+- **`src/lib/auth/useAuth.ts` created.** Thin wrapper that selects `useRealAuth` when `AUTH_MODE === "real"`, otherwise `usePlaceholderAuth`. Branch is statically known per build.
+- **`RequireRole` now reads `useAuth()`** instead of `usePlaceholderAuth()` directly. Behavior is **unchanged today** because `AUTH_MODE === "placeholder"`.
+- **`/login` updated.** Demo role cards (Client / Team / Operator / Owner) routing to `/demo/*` is unchanged. The "Future Sign In" form is now gated by `AUTH_MODE`:
+  - `"placeholder"` (today): `preventDefault`, shows "Real authentication is not connected yet." — **no network, no auth API call.**
+  - `"real"` (later): calls `supabase.auth.signInWithPassword`, shows "Signed in. Redirect will be enabled after role routing is approved." on success — **no redirect, no user creation, no writes.**
+- **`/auth-status` developer diagnostics page added** (`src/pages/auth-status.tsx`). Shows `AUTH_MODE`, `status`, `isDemoOnly`, `role`, `clientId`, `userId`, `email`, `displayName`. **Never** renders access tokens, refresh tokens, or the raw Supabase session.
+- **No real users created.** No writes. No RLS changes. No SQL applied. **No demo routes protected.**
+- **Existing read-only Client Portal Supabase layer untouched.** Demo behavior identical.
+
 ## Next recommended phase
+
+**Manual Supabase preparation — not more auth code.** Before flipping `AUTH_MODE` to `"real"`:
+
+1. Review and apply `docs/database/auth-draft/001_auth_user_profiles.sql` to the dev Supabase project.
+2. Manually create at least one test user per role (`client`, `team`, `operator`, `owner`) in Supabase Auth and insert matching `user_profiles` rows.
+3. Decide sign-out + post-login redirect behavior.
+4. Review `docs/PRODUCTION_RLS_FINALIZATION_CHECKLIST.md` before any real client data lands.
+5. Only then flip `AUTH_MODE` to `"real"` and validate against `/auth-status`.
+
+## Earlier next phase note (superseded)
 
 **Manual review: Real Auth V1 decision.** If approved, the next prompt should be small and only wire Supabase Auth read-only session handling per [`docs/NEXT_PROMPT_REAL_AUTH_V1_DRAFT.md`](./NEXT_PROMPT_REAL_AUTH_V1_DRAFT.md). Before that prompt runs, every item in [`docs/PRE_AUTH_TECHNICAL_CHECKLIST.md`](./PRE_AUTH_TECHNICAL_CHECKLIST.md) must be ticked.
 

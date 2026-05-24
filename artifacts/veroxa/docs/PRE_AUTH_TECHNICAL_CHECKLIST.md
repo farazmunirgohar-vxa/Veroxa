@@ -11,8 +11,15 @@
       `ROLE_HOME_PATH`, `getRoleHomePath`, `isVeroxaRole`.
 - [x] `usePlaceholderAuth` returns the exact `AuthState` shape so
       its future replacement (`useRealAuth`) is a drop-in swap.
-- [x] `RequireRole` uses one auth hook (`usePlaceholderAuth`) and
-      one role-home-path source (`getRoleHomePath`).
+- [x] `RequireRole` uses one auth hook — now the unified
+      `useAuth()` wrapper (`src/lib/auth/useAuth.ts`) — and one
+      role-home-path source (`getRoleHomePath`).
+- [x] `useAuth()` wrapper exists and selects between
+      `usePlaceholderAuth` and `useRealAuth` based on `AUTH_MODE`.
+- [x] `useRealAuth` hook exists (`src/lib/auth/useRealAuth.ts`)
+      but is **inactive** while `AUTH_MODE === "placeholder"`.
+      Manual decision required before flipping `AUTH_MODE` to
+      `"real"`.
 - [x] Future real routes (`/client/*`, `/team/*`, `/operator/*`,
       `/owner/*`) all flow through `RequireRole` via
       `RealRoutePlaceholder`.
