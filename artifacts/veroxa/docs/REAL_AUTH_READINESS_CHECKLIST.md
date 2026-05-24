@@ -99,22 +99,20 @@
 - The Supabase frontend client uses the **anon key only**, scoped
   to read-only Client Portal demo data.
 
-## Session persistence — activation decision
+## Session persistence — decision made (dev testing)
 
-Before flipping `AUTH_MODE` to `"real"`, decide intentionally:
-
-- The shared Supabase client (`src/lib/supabase/client.ts`) is
-  currently created with `{ auth: { persistSession: false,
-  autoRefreshToken: false } }`. With these settings, a real
-  session will **not survive a reload** and tokens will **not
-  auto-refresh**. This is the correct posture for the inactive
-  phase.
-- If real auth is activated without changing this, users will be
-  effectively logged out on every page load and access tokens
-  will expire silently. The flip must either accept that or
-  introduce a separate Supabase client (or updated config) for
-  the auth path with `persistSession: true`. Document the
-  choice in `BUILD_STATUS.md` at the time of the flip.
+- **Decision made (May 24, 2026):** The shared Supabase client
+  (`src/lib/supabase/client.ts`) now uses
+  `{ persistSession: true, autoRefreshToken: true,
+  detectSessionInUrl: true }`. Sessions survive page reloads,
+  tokens auto-refresh via Supabase's built-in mechanism, and no
+  tokens are stored or displayed manually.
+- This change was made to support dev auth testing so that a
+  successful `/login` remains readable on `/auth-status` after a
+  reload.
+- Supabase manages session storage internally via `localStorage`.
+  No custom token storage was added.
+- This decision is recorded in `BUILD_STATUS.md`.
 
 ## Before implementing real auth
 

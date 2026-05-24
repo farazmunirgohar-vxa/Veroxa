@@ -264,6 +264,15 @@ The real Supabase session-reading layer is now wired into the codebase but **ina
 - **No real users created.** No writes. No RLS changes. No SQL applied. **No demo routes protected.**
 - **Existing read-only Client Portal Supabase layer untouched.** Demo behavior identical.
 
+## Auth session persistence enabled (dev testing)
+
+Supabase client (`src/lib/supabase/client.ts`) updated to
+`{ persistSession: true, autoRefreshToken: true,
+detectSessionInUrl: true }`. Sessions now survive page reloads
+during dev testing. Tokens are managed internally by Supabase — no
+manual token storage, no token display. No writes, no uploads, no
+service role key, no route changes.
+
 ## AUTH_MODE switched to real (dev testing)
 
 `AUTH_MODE` flipped to `"real"` in `src/lib/auth/authMode.ts`.

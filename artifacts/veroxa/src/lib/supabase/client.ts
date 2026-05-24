@@ -16,7 +16,7 @@ export function getSupabaseClient(): SupabaseClient | null {
   }
 
   _client = createClient(state.env.url, state.env.anonKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
   });
 
   return _client;
