@@ -26,7 +26,9 @@
 --   client    → reads only rows where row.client_id = their user_profiles.client_id.
 --   operator  → reads operational tables across all clients.
 --   owner     → reads everything (read-only at this layer).
---   team      → assignment-scoped (TODO — requires assignment schema).
+--   team      → client-scoped via team_client_assignments (V1 decision —
+--               see 003_team_assignment_schema_draft.sql). Resource-level
+--               (per-post / per-draft / per-report) assignment is V2.
 -- =============================================================================
 
 
@@ -74,9 +76,10 @@
 -- =============================================================================
 -- clients
 --
---   - client  → only their own client row.
---   - operator/owner → all rows.
---   - team    → TODO (requires assignment schema).
+--   - client          → only their own client row.
+--   - operator/owner  → all rows.
+--   - team            → only client rows whose id is in their active
+--                       team_client_assignments (V1 decision).
 -- =============================================================================
 
 -- DRAFT:
@@ -92,7 +95,17 @@
 --   ON clients FOR SELECT TO authenticated
 --   USING (current_user_role() IN ('operator', 'owner'));
 --
--- -- TODO: team access is assignment-scoped. Defer until assignment schema exists.
+-- CREATE POLICY "team_read_assigned_clients"
+--   ON clients FOR SELECT TO authenticated
+--   USING (
+--     current_user_role() = 'team'
+--     AND id IN (
+--       SELECT client_id
+--       FROM team_client_assignments
+--       WHERE team_user_id = auth.uid()
+--         AND is_active = true
+--     )
+--   );
 
 
 -- =============================================================================
@@ -127,12 +140,20 @@
 --   ON client_platforms FOR SELECT TO authenticated
 --   USING (current_user_role() IN ('operator', 'owner'));
 --
--- -- TODO (team): assignment-scoped. Requires a per-table or central
--- -- assignment table that maps team user → client (or finer-grained, e.g.
--- -- team user → specific post / draft / report).
+-- CREATE POLICY "team_read_assigned_client_rows"
+--   ON client_platforms FOR SELECT TO authenticated
+--   USING (
+--     current_user_role() = 'team'
+--     AND client_id IN (
+--       SELECT client_id
+--       FROM team_client_assignments
+--       WHERE team_user_id = auth.uid()
+--         AND is_active = true
+--     )
+--   );
 --
--- Repeat the same two policies (client_read_own_rows, operator_owner_read_all)
--- and the same team TODO for:
+-- Repeat the same three policies (client_read_own_rows, operator_owner_read_all,
+-- team_read_assigned_client_rows) for:
 --   onboarding_items
 --   media_assets
 --   posts
@@ -160,27 +181,51 @@
 
 
 -- =============================================================================
--- TEAM ROLE — TODO (deferred)
+-- TEAM ROLE — V1 DECISION: client-scoped via team_client_assignments
 --
--- Team SELECT cannot be finalised without a schema decision:
+-- V1 chooses client-scoped assignment (previously listed as Option C):
 --
---   Option A: per-table assignment columns
---     e.g. posts.assigned_team_user_id uuid references user_profiles(user_id)
+--   A team user has read access to all rows of a specific client_id via the
+--   team_client_assignments(team_user_id, client_id, is_active, ...) table
+--   defined in 003_team_assignment_schema_draft.sql.
 --
---   Option B: central assignment table
---     team_assignments(
---       team_user_id uuid,
---       resource_type text,  -- 'post' | 'draft' | 'report' | ...
---       resource_id uuid,
---       ...
+-- Why:
+--   - Matches how the agency actually delegates work (per-client ownership).
+--   - Identical SELECT pattern reused on every client-scoped table.
+--   - Avoids back-filling assignment rows for every existing post / draft /
+--     report at go-live.
+--   - V2 can layer resource-level (per-post / per-draft / per-report)
+--     assignment on top without breaking V1.
+--
+-- Previously considered:
+--   - Option A: per-table assignment columns (e.g. posts.assigned_team_user_id).
+--     Rejected for V1 — proliferates columns and requires back-fill.
+--   - Option B: a central polymorphic assignment table
+--     (resource_type, resource_id). Rejected for V1 — heavier and harder to
+--     index than a single (team_user_id, client_id) pair.
+--
+-- The team SELECT policy pattern (inlined in each table section above) is:
+--
+--   USING (
+--     current_user_role() = 'team'
+--     AND client_id IN (
+--       SELECT client_id
+--       FROM team_client_assignments
+--       WHERE team_user_id = auth.uid()
+--         AND is_active = true
 --     )
+--   )
 --
---   Option C: client-scope assignment
---     team_user has access to all rows of a specific client_id via a
---     team_client_assignments(team_user_id, client_id) table.
+-- The inline subquery can be replaced with the SECURITY DEFINER helper
+-- current_team_client_ids() drafted in 003_team_assignment_schema_draft.sql:
 --
--- Until that decision lands, team RLS is intentionally omitted. The frontend
--- /team/* portal will continue to use static demo data only.
+--   USING (
+--     current_user_role() = 'team'
+--     AND client_id IN (SELECT current_team_client_ids())
+--   )
+--
+-- The frontend /team/* portal stays static demo-only until real auth and
+-- this RLS are applied together.
 -- =============================================================================
 
 

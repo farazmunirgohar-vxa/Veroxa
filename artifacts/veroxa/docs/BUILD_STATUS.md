@@ -113,9 +113,11 @@ We are building **Demo Veroxa** and **Real Veroxa** side by side:
 ## Auth data model draft
 
 - **Auth data model draft created** — `docs/database/auth-draft/001_auth_user_profiles.sql` defines the `veroxa_user_role` enum and `user_profiles` table (role/`client_id` CHECK, indexes, `updated_at` trigger, RLS enabled).
-- **Production RLS draft created** — `docs/database/auth-draft/002_production_rls_policy_draft.sql` sketches SELECT-only policy direction for `clients`, `client_platforms`, `onboarding_items`, `media_assets`, `posts`, `post_slots`, `weekly_reports`, `monthly_reports`, `content_concepts`, `draft_sets`, `draft_variants`, and `notifications`. Team policies are deferred with explicit `TODO`s.
+- **Production RLS draft created** — `docs/database/auth-draft/002_production_rls_policy_draft.sql` sketches SELECT-only policy direction for `clients`, `client_platforms`, `onboarding_items`, `media_assets`, `posts`, `post_slots`, `weekly_reports`, `monthly_reports`, `content_concepts`, `draft_sets`, `draft_variants`, and `notifications`. Team policies are now sketched as **client-scoped via `team_client_assignments`** (see below).
+- **Team assignment schema draft created** — `docs/database/auth-draft/003_team_assignment_schema_draft.sql` defines `team_client_assignments` (team_user_id, client_id, assignment_role with CHECK, is_active, indexes, unique pair, `updated_at` trigger, draft `current_team_client_ids()` SECURITY DEFINER helper, RLS enabled). **V1 team assignment decision:** client-scoped (a team user is assigned to one or more clients and reads that client's work rows). Resource-level assignment is V2.
 - **Still not applied.** Nothing in `auth-draft/` has been run against any Supabase project.
 - **Still no real auth.** No Supabase Auth wired in the app, no real user accounts, no sessions, no passwords.
+- **Still no Team/Operator/Owner Supabase wiring.** Those portals remain static demo-only.
 - Temporary dev anon read policies in `docs/database/rls-draft/001_dev_read_policies.sql` remain the only RLS in effect on dev.
 - See `AUTH_ARCHITECTURE_PLAN.md` §8 for the data model summary.
 
@@ -135,14 +137,14 @@ We are building **Demo Veroxa** and **Real Veroxa** side by side:
 
 ## Next recommended phase
 
-**Team assignment schema decision + production RLS finalization** (see `AUTH_ARCHITECTURE_PLAN.md` §10).
+**First Write Surface Planning — approvals / read flags / actions, draft only** (see `AUTH_ARCHITECTURE_PLAN.md` §10).
 
 Specifically:
 
-- Decide the team assignment model (per-table assignment columns, central `team_assignments` table, or `team_client_assignments` mapping)
-- Finalize the production SELECT RLS policies for team rows based on that decision
-- Draft (still not apply) the first write (`INSERT` / `UPDATE` / `DELETE`) policies for the smallest write surface needed
-- Keep `/demo/*`, the demo `/login` role cards, the future sign-in form shell, and the `<RequireRole>` placeholders untouched
+- Identify the smallest write surface needed to make the first real workflow useful (likely: notification read flags, draft approvals, post-slot status updates)
+- Draft (do not apply) the first `INSERT` / `UPDATE` / `DELETE` RLS policies for those rows, scoped by role and tenant
+- Identify which writes must go through a server-side function with the service role key vs which can safely run client-side under RLS
+- Keep `/demo/*`, the demo `/login` role cards, the future sign-in form shell, the `<RequireRole>` placeholders, and the auth-draft SQL files untouched and unapplied
 - Do **not** wire real Supabase Auth sessions, real writes, real uploads, AI, or publishing in that phase
 
 ---

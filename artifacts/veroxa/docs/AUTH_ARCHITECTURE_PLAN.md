@@ -73,7 +73,7 @@ user_profiles
 **Access boundaries:**
 
 - **Client users** can only read rows where `client_id = their client_id`.
-- **Team users** can only see work items assigned to them (tasks, drafts, scheduled posts in their queue).
+- **Team users** are assigned to one or more clients via `team_client_assignments` (V1 = client-scoped, not resource-scoped). A team user can see all work rows (tasks, drafts, scheduled posts, reports) for any client they are actively assigned to. Per-post / per-draft / per-report assignment is V2. See §8.
 - **Operator users** can see operational oversight rows across all clients (alerts, failed posts, report approvals) but not agency revenue.
 - **Owner users** can see global business-level dashboards (MRR, growth, critical alerts, full client health).
 
@@ -164,12 +164,22 @@ Four values — `client`, `team`, `operator`, `owner`. Additional roles (admin, 
 - The temporary dev anon read policies in `database/rls-draft/001_dev_read_policies.sql` must be dropped before production.
 - Service role key never reaches the frontend.
 
-**Team RLS — deferred:**
-Team assignment requires its own schema decision (per-table assignment column, central `team_assignments` table, or `team_client_assignments` mapping). Until that lands, team RLS is omitted and `/team/*` stays demo-only.
+**Team Assignment Model — V1 Decision:**
+
+V1 uses **client-scoped** team assignments via a dedicated `team_client_assignments` table.
+
+- **Table:** `team_client_assignments(id, team_user_id → user_profiles, client_id → clients, assignment_role, is_active, created_at, updated_at)` with `UNIQUE (team_user_id, client_id)` and a CHECK on `assignment_role` (`content_team` / `reviewer` / `scheduler` / `reporting_support`).
+- A team user can be assigned to **multiple clients**; the team portal will union work rows across all active assignments.
+- **Team RLS direction:** for every client-scoped table, team users may `SELECT` rows where `row.client_id` is in their active `team_client_assignments`. For the `clients` table itself, team users may `SELECT` only client rows whose `id` is in their assignments.
+- **Why this over resource-level (per-post / per-draft / per-report) in V1:** matches how the agency actually delegates work (per-client ownership), reuses an identical SELECT pattern on every client-scoped table, avoids back-filling assignment rows at go-live, and supports the first real execution workflow without overcomplicating permissions.
+- **V2** may add resource-level assignments for individual posts, drafts, reports, or tasks — layered on top of V1 without breaking it.
+- **Draft SQL** lives in `database/auth-draft/003_team_assignment_schema_draft.sql` (not applied). The team SELECT policy examples on `clients` and `client_platforms` are sketched in `002_production_rls_policy_draft.sql`. A draft `current_team_client_ids()` SECURITY DEFINER helper is also included.
+- **Today:** `/team/*` is static demo-only; nothing in this section is wired or applied.
 
 **Draft SQL files (do not run):**
 - `database/auth-draft/001_auth_user_profiles.sql` — enum, table, constraint, indexes, `updated_at` trigger, `ENABLE ROW LEVEL SECURITY`.
-- `database/auth-draft/002_production_rls_policy_draft.sql` — SELECT-only policy direction across business tables, with team policies explicitly marked `TODO`.
+- `database/auth-draft/002_production_rls_policy_draft.sql` — SELECT-only policy direction across business tables, with team policies sketched as client-scoped via `team_client_assignments`.
+- `database/auth-draft/003_team_assignment_schema_draft.sql` — V1 team assignment table, indexes, `updated_at` trigger, draft `current_team_client_ids()` helper, RLS enabled.
 - `database/auth-draft/README.md` — the rationale and sequencing for the directory.
 
 ---
@@ -210,13 +220,13 @@ Each renders only the protected-route preview card from `<RequireRole>`. None ca
 
 ## 10. Recommended next phase
 
-**Team assignment schema decision + production RLS finalization.**
+**First Write Surface Planning — approvals / read flags / actions, draft only.**
 
 Specifically:
 
-1. Decide the team assignment model (per-table assignment columns, central `team_assignments` table, or `team_client_assignments` mapping — see `database/auth-draft/002_production_rls_policy_draft.sql`).
-2. Finalize the production SELECT RLS policies for team rows based on that decision.
-3. Draft (still not apply) the first write (`INSERT` / `UPDATE` / `DELETE`) policies for the smallest write surface needed (e.g. notifications read flags, draft approvals).
-4. Keep `/demo/*`, the demo `/login` role cards, the future sign-in form shell, and the `<RequireRole>` placeholders untouched.
+1. Identify the smallest write surface needed to make the first real workflow useful (likely: notification read flags, draft approvals, post-slot status updates).
+2. Draft (do not apply) the first `INSERT` / `UPDATE` / `DELETE` RLS policies for those rows, scoped by role (client / team / operator / owner) and tenant (`client_id` / `team_client_assignments`).
+3. Identify which writes must go through a server-side function with the service role key vs which can safely run client-side under RLS.
+4. Keep `/demo/*`, the demo `/login` role cards, the future sign-in form shell, the `<RequireRole>` placeholders, and the auth-draft SQL files untouched and unapplied.
 
 Only after that planning phase is approved should we wire actual Supabase Auth sessions, real sign-in, apply the auth-draft migrations, and replace the `<RequireRole>` placeholder pages with real authenticated portal trees.
