@@ -20,6 +20,18 @@
       but is **inactive** while `AUTH_MODE === "placeholder"`.
       Manual decision required before flipping `AUTH_MODE` to
       `"real"`.
+- [x] Manual auth prep docs created
+      ([`MANUAL_SUPABASE_AUTH_SETUP_GUIDE.md`](./MANUAL_SUPABASE_AUTH_SETUP_GUIDE.md),
+      [`AUTH_QA_CHECKLIST.md`](./AUTH_QA_CHECKLIST.md)).
+- [x] Test user matrix created
+      ([`AUTH_TEST_USER_MATRIX.md`](./AUTH_TEST_USER_MATRIX.md)).
+- [x] Rollback plan created
+      ([`AUTH_ROLLBACK_PLAN.md`](./AUTH_ROLLBACK_PLAN.md)).
+- [x] **`AUTH_MODE` switch must be a separate, one-line prompt** —
+      scope locked in
+      [`AUTH_MODE_SWITCH_PLAN.md`](./AUTH_MODE_SWITCH_PLAN.md). It
+      may not be bundled with refactors, writes, sign-out, or
+      redirect work.
 - [x] Future real routes (`/client/*`, `/team/*`, `/operator/*`,
       `/owner/*`) all flow through `RequireRole` via
       `RealRoutePlaceholder`.
@@ -49,8 +61,11 @@
 ## Manual decision required before
 
 - [ ] Applying any auth SQL.
-- [ ] Wiring Supabase Auth (`signInWithPassword`, `getSession`,
-      `onAuthStateChange`).
+- [ ] Activating Supabase Auth by flipping `AUTH_MODE` to `"real"`
+      (the `signInWithPassword`, `getSession`, and
+      `onAuthStateChange` calls are already wired in code via
+      `src/lib/auth/useRealAuth.ts` and the gated `/login` submit
+      handler — they remain inactive until the flip).
 - [ ] Creating real users.
 - [ ] Removing anon `SELECT` policies from the dev Supabase
       project.

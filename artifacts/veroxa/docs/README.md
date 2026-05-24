@@ -4,11 +4,18 @@ The Veroxa frontend is a **demo platform** plus an **architecture
 package** for the production system that will follow. This index links
 to every important planning, safety, and architecture doc.
 
-> **Demo-safe defaults.** No real auth, no real writes, no real
-> uploads, no Supabase Storage buckets, no AI API integration, no
-> publishing integrations, and no Google Business Profile integration
-> exist today. The Supabase frontend client is anon read-only for the
-> Client Portal demo only.
+> **Demo-safe defaults.** No active real auth, no real writes, no
+> real uploads, no Supabase Storage buckets, no AI API integration,
+> no publishing integrations, and no Google Business Profile
+> integration exist today. The Supabase frontend client is anon
+> read-only for the Client Portal demo only.
+>
+> **Canonical auth state (May 24, 2026):** real Supabase Auth code
+> (`getSession`, `onAuthStateChange`, `user_profiles` lookup, gated
+> `signInWithPassword`) is **wired but inactive** while
+> `AUTH_MODE === "placeholder"` (`src/lib/auth/authMode.ts`).
+> Activation is a separate one-line prompt gated on the manual prep
+> pack — see [`AUTH_MODE_SWITCH_PLAN.md`](./AUTH_MODE_SWITCH_PLAN.md).
 
 ## Status & process
 
@@ -27,6 +34,17 @@ to every important planning, safety, and architecture doc.
   route shells).
 - [`REAL_AUTH_READINESS_CHECKLIST.md`](./REAL_AUTH_READINESS_CHECKLIST.md)
   — gating checklist before wiring real Supabase Auth.
+- [`MANUAL_SUPABASE_AUTH_SETUP_GUIDE.md`](./MANUAL_SUPABASE_AUTH_SETUP_GUIDE.md)
+  — manual Supabase steps the project owner runs by hand before the
+  `AUTH_MODE` flip.
+- [`AUTH_TEST_USER_MATRIX.md`](./AUTH_TEST_USER_MATRIX.md) — per-role
+  test users + expected access scope.
+- [`AUTH_QA_CHECKLIST.md`](./AUTH_QA_CHECKLIST.md) — pre-flip,
+  post-flip, regression, and security checks.
+- [`AUTH_ROLLBACK_PLAN.md`](./AUTH_ROLLBACK_PLAN.md) — safe rollback
+  procedure if real auth misbehaves.
+- [`AUTH_MODE_SWITCH_PLAN.md`](./AUTH_MODE_SWITCH_PLAN.md) — scope
+  contract for the one-line `AUTH_MODE` flip prompt.
 - [`PRODUCTION_RLS_FINALIZATION_CHECKLIST.md`](./PRODUCTION_RLS_FINALIZATION_CHECKLIST.md)
   — RLS requirements, table list, pre-apply test matrix, do-not-apply
   conditions.

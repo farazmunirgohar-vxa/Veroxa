@@ -1,7 +1,18 @@
 # Veroxa — Build Status
 
-**Date:** May 23, 2026
-**Milestone:** Routed Portal Demo + Live Client Read Layer
+**Date:** May 24, 2026
+**Latest milestone:** Real Auth Manual Prep Pack (docs only)
+
+> **How to read this file.** The current state of real auth is
+> defined by the **most recent** sections at the bottom: "Real Auth V1
+> Session Layer" and "Real Auth Manual Prep Pack". The canonical
+> phrasing is: **real auth is wired but inactive while
+> `AUTH_MODE === "placeholder"`**.
+>
+> Earlier sections below are kept as a **dated changelog**. Where
+> they say "Still no real auth", that statement was true at the time
+> of that pass and is now historical — superseded by the V1 session
+> layer. Do not edit those lines retroactively.
 
 ---
 
@@ -74,7 +85,15 @@
 
 ## Not built yet
 
-- Real authentication (login, sessions, user accounts)
+> **Note (updated):** the lines below describe state at the time of
+> the original "Routed Portal Demo" milestone and have **not been
+> rewritten retroactively** (see the "How to read this file" banner
+> at the top). For canonical current status, see "Real Auth V1
+> Session Layer" and "Real Auth Manual Prep Pack" below. In short:
+> real authentication code is **wired but inactive** while
+> `AUTH_MODE === "placeholder"`.
+
+- Real authentication (login, sessions, user accounts) — *now wired but inactive; activation gated on the manual prep pack + `AUTH_MODE` flip*
 - Real user/account model
 - Media uploads
 - Team actions (claim task, mark complete, approve draft, etc.)
@@ -245,15 +264,35 @@ The real Supabase session-reading layer is now wired into the codebase but **ina
 - **No real users created.** No writes. No RLS changes. No SQL applied. **No demo routes protected.**
 - **Existing read-only Client Portal Supabase layer untouched.** Demo behavior identical.
 
+## Real Auth Manual Prep Pack
+
+Docs-only pass — **no code changes.** All five new files are
+instructions for the project owner to follow manually in Supabase
+before the dedicated `AUTH_MODE` flip prompt runs.
+
+- [`MANUAL_SUPABASE_AUTH_SETUP_GUIDE.md`](./MANUAL_SUPABASE_AUTH_SETUP_GUIDE.md) — step-by-step manual Supabase setup.
+- [`AUTH_TEST_USER_MATRIX.md`](./AUTH_TEST_USER_MATRIX.md) — what each test user should and should not see.
+- [`AUTH_QA_CHECKLIST.md`](./AUTH_QA_CHECKLIST.md) — pre-flip, post-flip, regression, and security checks.
+- [`AUTH_ROLLBACK_PLAN.md`](./AUTH_ROLLBACK_PLAN.md) — safe rollback procedure if real auth misbehaves.
+- [`AUTH_MODE_SWITCH_PLAN.md`](./AUTH_MODE_SWITCH_PLAN.md) — explicit scope contract for the future one-line flip prompt.
+
+Still true:
+
+- `AUTH_MODE` remains `"placeholder"`.
+- Real auth is not active.
+- **No users created by code.** **No SQL applied by the app.** **No writes.** **No demo route protection changes.**
+
 ## Next recommended phase
 
-**Manual Supabase preparation — not more auth code.** Before flipping `AUTH_MODE` to `"real"`:
+**Manual Supabase preparation, outside Replit.** Do not run more
+prompts in Replit until these are done by hand:
 
-1. Review and apply `docs/database/auth-draft/001_auth_user_profiles.sql` to the dev Supabase project.
-2. Manually create at least one test user per role (`client`, `team`, `operator`, `owner`) in Supabase Auth and insert matching `user_profiles` rows.
-3. Decide sign-out + post-login redirect behavior.
-4. Review `docs/PRODUCTION_RLS_FINALIZATION_CHECKLIST.md` before any real client data lands.
-5. Only then flip `AUTH_MODE` to `"real"` and validate against `/auth-status`.
+1. Review the draft SQL under `docs/database/auth-draft/`.
+2. Apply `user_profiles` manually in the dev Supabase project — only if approved.
+3. Create the four test users manually in Supabase Auth.
+4. Insert four matching `user_profiles` rows manually.
+5. Tick every box in [`AUTH_QA_CHECKLIST.md`](./AUTH_QA_CHECKLIST.md) → "Before switching".
+6. Then run the dedicated small `AUTH_MODE` switch prompt per [`AUTH_MODE_SWITCH_PLAN.md`](./AUTH_MODE_SWITCH_PLAN.md).
 
 ## Earlier next phase note (superseded)
 

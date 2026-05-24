@@ -10,6 +10,24 @@
 > access for the Client Portal demo. Activation is a manual
 > decision — every gate below must still be ticked first.
 
+> **Update from the Real Auth Manual Prep Pack:**
+>
+> Five new docs now define the manual Supabase preparation that must
+> happen before `AUTH_MODE` can be flipped to `"real"`:
+>
+> - [`MANUAL_SUPABASE_AUTH_SETUP_GUIDE.md`](./MANUAL_SUPABASE_AUTH_SETUP_GUIDE.md)
+>   — manual Supabase steps for the project owner.
+> - [`AUTH_TEST_USER_MATRIX.md`](./AUTH_TEST_USER_MATRIX.md) —
+>   per-role test users + expected access scope.
+> - [`AUTH_QA_CHECKLIST.md`](./AUTH_QA_CHECKLIST.md) — pre-flip,
+>   post-flip, regression, and security checks.
+> - [`AUTH_ROLLBACK_PLAN.md`](./AUTH_ROLLBACK_PLAN.md) — safe
+>   rollback procedure.
+> - [`AUTH_MODE_SWITCH_PLAN.md`](./AUTH_MODE_SWITCH_PLAN.md) —
+>   one-line flip prompt scope contract.
+>
+> No code changes in this pass. `AUTH_MODE` remains `"placeholder"`.
+
 > **Update from the Real Auth V1 session-layer pass:**
 >
 > - `useRealAuth` hook created (`src/lib/auth/useRealAuth.ts`) —
@@ -38,8 +56,9 @@
 >   `/demo/owner/*` should be internal-protected later
 >   (see [`INTERNAL_DEMO_PROTECTION_PLAN.md`](./INTERNAL_DEMO_PROTECTION_PLAN.md)
 >   and [`ROUTE_VISIBILITY_STRATEGY.md`](./ROUTE_VISIBILITY_STRATEGY.md)).
-> - **Still no real auth implemented.** Placeholder auth always
->   returns unauthenticated.
+> - *(Historical note from the pre-auth pass — superseded by the
+>   Real Auth V1 session-layer pass below: real auth is now wired
+>   but inactive while `AUTH_MODE === "placeholder"`.)*
 
 ## Current state
 

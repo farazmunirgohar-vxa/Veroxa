@@ -9,7 +9,7 @@
 - Veroxa today is **read-only**:
   - `/demo/*` routes use static demo data (plus read-only Supabase fallback for Client Portal).
   - The app has **no `INSERT` / `UPDATE` / `DELETE` / `UPSERT` paths anywhere.**
-- `/login` is a demo role router plus a "Future Sign In" UI shell. No real auth is wired.
+- `/login` is a demo role router plus a gated "Future Sign In" form. Real Supabase Auth is **wired but inactive** while `AUTH_MODE === "placeholder"` (`src/lib/auth/authMode.ts`); no real session is produced today.
 - The future authenticated routes (`/client/dashboard`, `/team/tasks`, `/operator/overview`, `/owner/dashboard`) currently render only the `<RequireRole>` preview card.
 - The auth data model (`user_profiles`, `veroxa_user_role`) and the V1 team assignment table (`team_client_assignments`) are **drafted in `docs/database/auth-draft/`** but not applied.
 
@@ -32,7 +32,7 @@
 - ✅ Auth data model drafted (`docs/database/auth-draft/001_auth_user_profiles.sql`).
 - ✅ Production SELECT RLS drafted (`docs/database/auth-draft/002_production_rls_policy_draft.sql`).
 - ✅ V1 team assignment schema drafted (`docs/database/auth-draft/003_team_assignment_schema_draft.sql`).
-- ⬜ Real Supabase Auth wired in the app (sign-in, session lookup, `<RequireRole>` swapped to read a real session).
+- 🟡 Real Supabase Auth **wired but inactive** — sign-in, session lookup, and `<RequireRole>` already read through `useAuth()`. Activation is still blocked on the manual prep pack + the `AUTH_MODE` flip to `"real"` (see [`AUTH_MODE_SWITCH_PLAN.md`](./AUTH_MODE_SWITCH_PLAN.md)).
 - ⬜ Auth data model + team assignment table actually applied to the production Supabase project.
 - ⬜ Production SELECT RLS applied; dev anon read policies dropped.
 - ⬜ `audit_logs` table applied (`docs/database/write-draft/002_audit_log_draft.sql`).

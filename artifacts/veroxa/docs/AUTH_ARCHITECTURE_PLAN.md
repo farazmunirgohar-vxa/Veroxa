@@ -1,9 +1,23 @@
 # Veroxa — Auth Architecture Plan
 
 **Date:** May 23, 2026
-**Status:** Planning only — no real auth implemented.
+**Status (May 24, 2026):** Real Supabase Auth is **wired but
+inactive** while `AUTH_MODE === "placeholder"`
+(`src/lib/auth/authMode.ts`). The original planning content below
+remains the design reference; activation is gated on the manual
+prep pack — see
+[`MANUAL_SUPABASE_AUTH_SETUP_GUIDE.md`](./MANUAL_SUPABASE_AUTH_SETUP_GUIDE.md)
+and [`AUTH_MODE_SWITCH_PLAN.md`](./AUTH_MODE_SWITCH_PLAN.md).
 
-This document captures the intended architecture for real authentication in Veroxa. None of it is implemented yet. The current `/login` page is a **demo role router**, not a real sign-in.
+> **Historical note on the sections below.** Lines that say "No
+> real authentication has been implemented", "no Supabase Auth has
+> been wired", or "UI only, no real auth" describe state at the
+> time of the planning pass and have **not been retroactively
+> rewritten**. For canonical current status see
+> [`BUILD_STATUS.md`](./BUILD_STATUS.md) and
+> [`REAL_AUTH_READINESS_CHECKLIST.md`](./REAL_AUTH_READINESS_CHECKLIST.md).
+
+This document captures the intended architecture for real authentication in Veroxa. As of May 24, 2026 it is **partially wired but inactive** — the session-layer code exists (`useRealAuth`, `useAuth`, gated `/login` submit) but does not run while `AUTH_MODE === "placeholder"`. The current `/login` page is a **demo role router** plus a gated future-sign-in shell, not an active sign-in.
 
 ---
 
