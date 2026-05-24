@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { operatorOversightSignals } from "@/lib/demo-data";
 import { operatorPortalNavItems } from "@/lib/operatorPortalNav";
+import { AgentPreview } from "@/components/AgentPreview";
 
 const kpis = [
   { label: "Active Clients",            value: "34",       icon: Briefcase,    trend: "+3 this month",      positive: true  as boolean | null },
@@ -39,6 +40,11 @@ export default function OperatorOverview() {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      {/* AI Agents */}
+      <div className="mb-8">
+        <AgentPreview />
       </div>
 
       <div>

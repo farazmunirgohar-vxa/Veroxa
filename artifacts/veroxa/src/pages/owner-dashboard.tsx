@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ownerSnapshotSignals, activities } from "@/lib/demo-data";
 import { ownerPortalNavItems } from "@/lib/ownerPortalNav";
+import { AgentPreview } from "@/components/AgentPreview";
 
 export default function OwnerDashboard() {
   return (
@@ -101,6 +102,11 @@ export default function OwnerDashboard() {
             );
           })}
         </div>
+      </div>
+
+      {/* AI Agents */}
+      <div className="mb-8">
+        <AgentPreview />
       </div>
 
       {/* Recent Activity */}
