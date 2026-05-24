@@ -106,3 +106,14 @@ Restaurant owners stay focused on food and service. Veroxa handles the online pr
 - Use system-based trust signals until real client results exist and are verified.
 - Future performance claims require evidence before being added to the public website.
 - If results are not verified, phrase them as system capabilities, goals, or planned outcomes — not proof.
+
+---
+
+## Public Website Structure
+
+- `/` = Home page — introduction only. No full pricing tables, no full services list.
+- `/demo` = Experience page — Client Portal preview only. Internal portals require login.
+- `/services` = Services page — explains what Veroxa delivers.
+- `/pricing` = Pricing page — explains what Veroxa costs.
+- Public pages must only promote Client Portal Preview (`/demo/client/dashboard`), not internal portals.
+- Team, Operator, and Owner demo links must never appear on public pages.

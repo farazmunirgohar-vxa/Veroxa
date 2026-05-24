@@ -99,3 +99,25 @@ match. Today every one of them only renders the `RequireRole`
   "Login Required" for team/operator/owner.
 - Hard rule on the last bullet (no protection until Real Auth V1 decision)
   **superseded**: decision was taken, `InternalDemoGuard` is now in place.
+
+## Update — Public Website Structure V1
+
+Route visibility map (public surface):
+
+| Route | Visibility | Purpose |
+|-------|-----------|---------|
+| `/` | Public | Introduction homepage |
+| `/services` | Public | Services explanation |
+| `/pricing` | Public | Pricing explanation |
+| `/demo` | Public | Client Portal experience entry |
+| `/demo/client/*` | Public | Client Portal preview |
+| `/login` | Public | Role-based sign in |
+| `/demo/team/*` | Login-gated (role=team) | Internal demo |
+| `/demo/operator/*` | Login-gated (role=operator) | Internal demo |
+| `/demo/owner/*` | Login-gated (role=owner) | Internal demo |
+
+Rules:
+- Public pages link only to `/`, `/services`, `/pricing`, `/demo`,
+  `/demo/client/dashboard`, and `/login`.
+- No public page advertises Team, Operator, or Owner demo portals.
+- Login page may show all four role cards as it is the access entry point.

@@ -387,3 +387,23 @@ Specifically:
 - No auth, database, upload, or storage changes.
 - `PUBLIC_PRICING_AND_SERVICES.md` updated with Truthful Public Claims Rule.
 - `CUSTOMER_GROWTH_PRIORITY.md` updated with truthfulness principles.
+
+## Public Website Structure V1
+
+**Status: COMPLETE**
+
+- Public website separated into four pages: Home (`/`), Services
+  (`/services`), Pricing (`/pricing`), and Demo experience (`/demo`).
+- Homepage simplified to introduction only — no full pricing tables or
+  full services list.
+- Demo page positioned as the public client experience with only the
+  Client Portal preview card and an internal-portals-require-login note.
+- `/services` page created with full services breakdown and
+  Ads Management section.
+- `/pricing` page created with exact pricing (Complete Online Presence,
+  Ads Management, Bundle), ad-spend disclaimer, and no-guarantees note.
+- `PublicNav` and `PublicFooter` shared components created.
+- Pricing numbers unchanged from last approved version.
+- Truthfulness rules (no fake stats, no fake claims) preserved.
+- No auth, database, upload, or storage changes.
+- Internal demo guards unchanged.

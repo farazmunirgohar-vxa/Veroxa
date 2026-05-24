@@ -1,81 +1,85 @@
 import { Link } from "wouter";
-import { ArrowLeft, Lock, Utensils } from "lucide-react";
+import { ArrowRight, Lock, Monitor } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import PublicNav from "@/components/public/PublicNav";
+import PublicFooter from "@/components/public/PublicFooter";
 
 export default function DemoHub() {
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 relative overflow-hidden">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-primary/5 blur-[120px] rounded-full pointer-events-none -z-10" />
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <PublicNav />
 
-      <div className="w-full max-w-3xl">
-        <div className="flex items-center justify-between mb-12">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors group"
-            data-testid="link-back-home"
-          >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Back to Veroxa.com
-          </Link>
-          <Link
-            href="/login"
-            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            data-testid="link-portal-login"
-          >
-            Portal Login →
-          </Link>
-        </div>
+      <div className="flex-1 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-primary/5 blur-[120px] rounded-full pointer-events-none -z-10" />
 
-        <div className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-foreground" data-testid="demo-heading">
-            Veroxa Growth OS <span className="text-muted-foreground">— Demo</span>
-          </h1>
-          <p className="text-lg text-muted-foreground">
-            See the restaurant growth operating system from the client's perspective.
-          </p>
-        </div>
+        <div className="w-full max-w-2xl">
+          <div className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500 text-center">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-blue-500/20 bg-blue-500/10 text-blue-400 text-xs font-semibold mb-6">
+              <Monitor className="w-3.5 h-3.5" />
+              Public Experience
+            </div>
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4" data-testid="demo-heading">
+              Veroxa <span className="text-muted-foreground">— Client Portal Demo</span>
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-xl mx-auto">
+              This preview shows what a restaurant owner would experience inside Veroxa — dashboard,
+              calendar, Google visibility, reports, updates, onboarding, and media guidance.
+            </p>
+          </div>
 
-        {/* Public client demo */}
-        <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
-          <Link href="/demo/client" className="block group" data-testid="portal-card-client">
-            <div className="p-8 rounded-2xl border border-border bg-card hover:bg-accent/30 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/5 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-blue-500/20 to-transparent blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          {/* Client Portal Card */}
+          <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 mb-6">
+            <div className="p-8 rounded-2xl border border-border bg-card relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-blue-500/15 to-transparent blur-3xl rounded-full pointer-events-none" />
 
               <div className="flex items-start justify-between mb-6">
-                <div className="w-14 h-14 rounded-xl bg-card border border-border flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300">
-                  <Utensils className="w-7 h-7 text-blue-500" />
+                <div className="w-14 h-14 rounded-xl bg-blue-500/10 border border-border flex items-center justify-center shadow-sm">
+                  <Monitor className="w-7 h-7 text-blue-500" />
                 </div>
                 <span className="text-[10px] font-semibold text-blue-400/70 uppercase tracking-widest mt-2">
-                  Public Preview
+                  No login required
                 </span>
               </div>
 
-              <h2 className="text-2xl font-bold mb-3 group-hover:text-primary transition-colors">Client Portal</h2>
-              <p className="text-muted-foreground leading-relaxed">
-                What a restaurant owner sees — content calendar, Google visibility, weekly updates, and monthly report previews. No login required.
+              <h2 className="text-2xl font-bold mb-3">Client Portal Preview</h2>
+              <p className="text-muted-foreground leading-relaxed mb-8">
+                The full client-side experience — content calendar, Google Business Profile visibility,
+                weekly update feed, monthly performance reports, onboarding checklist, and media
+                guidance guidance. No account needed.
               </p>
-            </div>
-          </Link>
-        </div>
 
-        {/* Internal portals notice */}
-        <div className="mt-8 p-6 rounded-2xl border border-border/60 bg-card/50 animate-in fade-in duration-700" data-testid="internal-portals-notice">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+              <Link href="/demo/client/dashboard" data-testid="btn-enter-client-demo">
+                <Button className="gap-2 font-semibold">
+                  Experience Client Portal <ArrowRight className="w-4 h-4" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          {/* Internal portals note */}
+          <div
+            className="p-5 rounded-xl border border-border/60 bg-card/40 flex items-start gap-3 animate-in fade-in duration-700"
+            data-testid="internal-portals-notice"
+          >
+            <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center flex-shrink-0 mt-0.5">
               <Lock className="w-4 h-4 text-muted-foreground" />
             </div>
-            <p className="text-sm font-semibold text-foreground">Internal Veroxa portals require login</p>
+            <div>
+              <p className="text-sm font-semibold text-foreground mb-1">
+                Internal Team, Operator, and Owner portals require login
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Veroxa staff access is available after signing in with your Veroxa account.{" "}
+                <Link href="/login" className="text-primary hover:underline" data-testid="link-internal-login">
+                  Sign in →
+                </Link>
+              </p>
+            </div>
           </div>
-          <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-            Team, Operator, and Owner portals are available after signing in with your Veroxa account credentials.
-          </p>
-          <Link
-            href="/login"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
-            data-testid="link-internal-login"
-          >
-            Sign in to access internal portals →
-          </Link>
         </div>
       </div>
+
+      <PublicFooter />
     </div>
   );
 }

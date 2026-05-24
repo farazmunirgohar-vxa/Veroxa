@@ -40,6 +40,8 @@ import RealTeamPlaceholder from "@/pages/real-team-placeholder";
 import RealOperatorPlaceholder from "@/pages/real-operator-placeholder";
 import RealOwnerPlaceholder from "@/pages/real-owner-placeholder";
 import InternalDemoGuard from "@/components/auth/InternalDemoGuard";
+import ServicesPage from "@/pages/services";
+import PricingPage from "@/pages/pricing";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +50,8 @@ function Router() {
     <Switch>
       {/* Public routes */}
       <Route path="/" component={LandingPage} />
+      <Route path="/services" component={ServicesPage} />
+      <Route path="/pricing" component={PricingPage} />
       <Route path="/login" component={LoginPage} />
       <Route path="/auth-status" component={AuthStatusPage} />
       <Route path="/demo" component={DemoHub} />
