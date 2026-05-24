@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { clientHealthDisplay as clientHealth } from "@/lib/demo-data";
 import { operatorPortalNavItems } from "@/lib/operatorPortalNav";
+import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 
 function cn(...classes: (string | undefined | null | false)[]) {
   return classes.filter(Boolean).join(" ");
@@ -17,6 +18,8 @@ export default function OperatorClientHealth() {
         <h2 className="text-3xl font-bold tracking-tight text-foreground" data-testid="header-client-health">Client Health</h2>
         <p className="text-muted-foreground mt-1">Per-client health score, posting cadence, and last shoot date.</p>
       </div>
+
+      <DemoOnlyBanner message="Static demo — health scores, cadence, and reasons (low media / inconsistent posting / report delayed / Google rating change) are illustrative only." testId="banner-operator-health" />
 
       <Card className="bg-card border-border overflow-hidden">
         <Table>

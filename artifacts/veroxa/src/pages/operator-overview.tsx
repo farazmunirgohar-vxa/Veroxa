@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { operatorOversightSignals } from "@/lib/demo-data";
 import { operatorPortalNavItems } from "@/lib/operatorPortalNav";
 import { AgentPreview } from "@/components/AgentPreview";
+import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 
 const kpis = [
   { label: "Active Clients",            value: "34",       icon: Briefcase,    trend: "+3 this month",      positive: true  as boolean | null },
@@ -24,6 +25,8 @@ export default function OperatorOverview() {
         <h2 className="text-3xl font-bold tracking-tight text-foreground" data-testid="header-overview">Operations Overview</h2>
         <p className="text-muted-foreground mt-1">Client health, active alerts, failed posts, and reports awaiting your sign-off.</p>
       </div>
+
+      <DemoOnlyBanner message="Static demo — KPI values, alerts, and AI oversight signals are not connected to a backend. They illustrate the future Operator command center." testId="banner-operator-overview" />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {kpis.map((kpi, i) => (

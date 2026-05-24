@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { ownerSnapshotSignals, activities } from "@/lib/demo-data";
 import { ownerPortalNavItems } from "@/lib/ownerPortalNav";
 import { AgentPreview } from "@/components/AgentPreview";
+import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 
 export default function OwnerDashboard() {
   return (
@@ -13,6 +14,8 @@ export default function OwnerDashboard() {
         <h2 className="text-3xl font-bold tracking-tight text-foreground" data-testid="header-owner">Owner Dashboard</h2>
         <p className="text-muted-foreground mt-1">Agency-wide revenue, client health, and critical alerts at a glance.</p>
       </div>
+
+      <DemoOnlyBanner message="Static demo — MRR, client counts, retention risk, and AI snapshot signals are illustrative only. No billing processor or analytics backend is connected." testId="banner-owner-dashboard" />
 
       {/* Top Metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

@@ -152,3 +152,11 @@ Every Priority 1–3 write **must** create one `audit_logs` row. The draft schem
 - **Media metadata** also belongs to **Priority 3 — client-facing writes**. Draft schema direction in `docs/database/media-draft/002_media_assets_metadata_draft.sql`.
 - **Actual file storage / upload is separate** from the metadata write surface and **is not included in the first write phase.** Storage planning lives in `docs/database/media-draft/001_media_storage_plan.md` (private `veroxa-client-media` bucket, server-mediated uploads, short-lived signed URLs).
 - **Current demo pages do not save or upload.** `/demo/client/onboarding` uses local React state only; `/demo/client/media` reads file *names / sizes / MIME types* into local React state and never uploads. No `fetch`, no `FormData`, no Supabase Storage, no API call, no `localStorage`, no cookies.
+
+---
+
+## Cross-references
+
+- [`WORKFLOW_STATE_MACHINES.md`](./WORKFLOW_STATE_MACHINES.md) — every write below is a transition in one of these state machines. Each transition must write a matching `audit_logs` row.
+- [`database/write-draft/002_audit_log_draft.sql`](./database/write-draft/002_audit_log_draft.sql) — the `audit_logs` table draft. **No SQL applied.**
+- [`PRODUCTION_LAUNCH_RUNBOOK.md`](./PRODUCTION_LAUNCH_RUNBOOK.md) — write surfaces are gated by Stages 3–5 of the runbook (onboarding writes → media uploads → team workflow writes).

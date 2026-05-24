@@ -3,6 +3,7 @@ import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { ownerCriticalAlerts as criticalAlerts } from "@/lib/demo-data";
 import { ownerPortalNavItems } from "@/lib/ownerPortalNav";
+import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 
 export default function OwnerAlerts() {
   return (
@@ -11,6 +12,8 @@ export default function OwnerAlerts() {
         <h2 className="text-3xl font-bold tracking-tight text-foreground" data-testid="header-owner-alerts">Critical Alerts</h2>
         <p className="text-muted-foreground mt-1">High-priority business-level risk items requiring attention.</p>
       </div>
+
+      <DemoOnlyBanner message="Static demo — owner-level alerts (high-value client at risk, operator backlog, media supply problems, report delays) are illustrative only. No real notification system is connected." testId="banner-owner-alerts" />
 
       <div className="grid sm:grid-cols-2 gap-3">
         {criticalAlerts.map((alert, i) => (

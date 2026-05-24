@@ -176,16 +176,36 @@ We are building **Demo Veroxa** and **Real Veroxa** side by side:
 - **Still no uploads / storage.** No `fetch`, no `FormData`, no Supabase Storage SDK calls, no bucket.
 - **Still no AI / publishing / Google integrations.**
 
+## Mega safe build — readiness docs + demo depth + launch plan
+
+- **Team / Operator / Owner demo pages deepened.** Every Team, Operator, and Owner page now carries a shared `DemoOnlyBanner` card that calls out the page as static demo and describes which future workflow it illustrates. No real action is wired.
+- **Owner Settings expanded.** Replaces the single "coming soon" card with four explicit sections (Brand settings, Team permissions, Billing settings, Integrations), each labelled "Coming soon". No settings are saved.
+- **Client Portal demo polish.** Client pages were intentionally left untouched in this pass — Onboarding and Media already render their own page-specific "demo only" notices, and Dashboard / Calendar / Google / Reports / Updates already surface a live-vs-demo data badge via `useClientPortalData`. The read-only Supabase layer was not modified.
+- **Workflow state machine plan added** — `docs/WORKFLOW_STATE_MACHINES.md` documents states, transitions, role gating, audit action names, and V1 / V2 / later targeting for Media Asset Review, Content Concept, Draft Variant, Post, Post Slot, Weekly Report, Monthly Report, and Onboarding Item.
+- **AI agent architecture plan added** — `docs/AI_AGENT_ARCHITECTURE_PLAN.md` covers the V1 → V3 rollout, ten agent definitions with risk levels, and safety principles (no direct publishing, no direct GBP edits, human approval gates).
+- **Google / SEO / GBP plan added** — `docs/GOOGLE_SEO_GBP_PLAN.md` covers future GBP tasks, local SEO scope, human-in-the-loop rules, what is **not** promised, and the manual-workflow-first integration sequence.
+- **Social publishing plan added** — `docs/SOCIAL_PUBLISHING_PLAN.md` lays out the three publishing phases (manual → semi-automated → direct API), prerequisites, and the four hard rules (no auto-publish, no frontend tokens, failed posts visible to operator, all publishes auditable).
+- **Production launch runbook added** — `docs/PRODUCTION_LAUNCH_RUNBOOK.md` is a Stage 0 → Stage 8 plan with rollback principles (keep demo separate, back up Supabase, test RLS per user, feature-flag real routes, never remove fallback until stable).
+- **Real auth readiness checklist added** — `docs/REAL_AUTH_READINESS_CHECKLIST.md` with current state, before-implementing list, implementation sequence, and hard stop conditions.
+- **Production RLS finalization checklist added** — `docs/PRODUCTION_RLS_FINALIZATION_CHECKLIST.md` with table list, pre-apply test matrix, and do-not-apply gating.
+- **Client data mapping added** — `docs/CLIENT_DATA_MAPPING.md` maps every demo Onboarding / Media UI section to its future DB field and audit action.
+- **Docs index added** — `docs/README.md` is now the entry point for all planning docs and draft database directories.
+- **Still no real auth.** No Supabase Auth, no sessions, no cookies, no `localStorage` tokens, no JWT.
+- **Still no writes / uploads / storage.** No `INSERT` / `UPDATE` / `DELETE` / `UPSERT`, no `fetch`, no `FormData`, no Supabase Storage SDK calls, no bucket.
+- **Still no AI API.** Every "AI" surface is static / simulated.
+- **Still no publishing or Google integration.**
+
 ## Next recommended phase
 
-**Real Auth Implementation Readiness Checklist — docs only, then manual decision before applying any SQL.**
+**Pre-Auth Code Readiness Pass — small refactor only, then manual decision before real Supabase Auth.**
 
 Specifically:
 
-- Write a single docs/REAL_AUTH_READINESS_CHECKLIST.md that consolidates the prerequisites from `AUTH_ARCHITECTURE_PLAN.md`, `auth-draft/README.md`, `FIRST_WRITE_SURFACE_PLAN.md`, and `SAFETY_AUDIT_CHECKLIST.md` into one ordered, tickable list
-- Decide manually (outside the build) which Supabase project the first auth migrations will land in, and confirm the dev anon SELECT policies are not reused as production policies
-- Keep `/login`, all `/demo/*` routes, all `/client|/team|/operator|/owner` `RequireRole` placeholders, and all auth-draft / write-draft / onboarding-draft / media-draft SQL files untouched and unapplied
-- Do **not** wire real Supabase Auth sessions, real writes, real uploads, AI, or publishing in that phase
+- Audit `usePlaceholderAuth` for the swap site once real auth lands (shape return value to match a future real session hook), without changing today's behavior
+- Confirm the future-route `/client|/team|/operator|/owner` placeholders all read role from a single source so a single hook swap activates them
+- Inventory any `data-testid` attributes on the future placeholder card to keep regression tests stable across the swap
+- Keep `/login`, all `/demo/*` routes, all `RequireRole` placeholders, and all draft SQL / storage / write-draft docs untouched and unapplied
+- Do **not** wire real Supabase Auth, real writes, real uploads, AI, or publishing in that phase
 
 ---
 

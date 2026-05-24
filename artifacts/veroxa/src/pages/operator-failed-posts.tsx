@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { failedPosts } from "@/lib/demo-data";
 import { operatorPortalNavItems } from "@/lib/operatorPortalNav";
+import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 
 export default function OperatorFailedPosts() {
   return (
@@ -11,6 +12,8 @@ export default function OperatorFailedPosts() {
         <h2 className="text-3xl font-bold tracking-tight text-foreground" data-testid="header-failed-posts">Failed Posts</h2>
         <p className="text-muted-foreground mt-1">Posts that did not publish successfully and need follow-up.</p>
       </div>
+
+      <DemoOnlyBanner message="Static demo — no real publishing pipeline is connected. Failure reasons (asset missing, caption not approved, platform disconnected, scheduled time passed) illustrate the future failed-post triage flow." testId="banner-operator-failed" />
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {failedPosts.map((post, i) => (

@@ -280,3 +280,18 @@ Rules:
 - The real route tree is being prepared **separately** from `/demo/*`. Demo portal content is not copied into real routes.
 - **No production auth has been implemented yet.** `usePlaceholderAuth` always returns unauthenticated, so every placeholder shows the same "Protected Route Preview" card.
 - The only thing that changes when real auth ships is the hook implementation behind `RequireRole` — the call sites stay the same.
+
+---
+
+## 13. Readiness checklists
+
+Two dedicated checklists now consolidate the prerequisites for switching from placeholder auth to real Supabase Auth:
+
+- [`REAL_AUTH_READINESS_CHECKLIST.md`](./REAL_AUTH_READINESS_CHECKLIST.md) — current state, before-implementing list, implementation sequence, hard-stop conditions.
+- [`PRODUCTION_RLS_FINALIZATION_CHECKLIST.md`](./PRODUCTION_RLS_FINALIZATION_CHECKLIST.md) — production RLS requirements, table list, pre-apply test matrix, do-not-apply gating.
+
+State of the world:
+
+- **Real auth is still not implemented.** `usePlaceholderAuth` always returns unauthenticated.
+- **Future real routes are placeholders only.** `/client/*`, `/team/*`, `/operator/*`, `/owner/*` all render the "Protected Route Preview" card.
+- The first real swap is documented end-to-end in the two checklists above; no code change ships until that checklist is walked manually.

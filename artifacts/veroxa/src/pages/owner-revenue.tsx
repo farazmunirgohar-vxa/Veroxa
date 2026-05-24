@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { revenueData, growthSummary } from "@/lib/demo-data";
 import { ownerPortalNavItems } from "@/lib/ownerPortalNav";
+import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 
 export default function OwnerRevenue() {
   return (
@@ -11,6 +12,8 @@ export default function OwnerRevenue() {
         <h2 className="text-3xl font-bold tracking-tight text-foreground" data-testid="header-revenue">Revenue</h2>
         <p className="text-muted-foreground mt-1">Monthly recurring revenue trend and growth summary.</p>
       </div>
+
+      <DemoOnlyBanner message="Static demo — revenue numbers, retainers, ad-service revenue, and churn-risk figures are illustrative only. No payment processor or billing system is connected." testId="banner-owner-revenue" />
 
       <Card className="bg-card border-border mb-8">
         <CardHeader>

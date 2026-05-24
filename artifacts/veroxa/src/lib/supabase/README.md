@@ -15,7 +15,7 @@ A minimal, read-only Supabase browser client for the Veroxa Client Portal. It pr
 ## What this is not
 
 - **Not authenticated.** No auth has been implemented yet. All queries run as the anon Supabase role.
-- **Not wired to the UI.** The Client Portal still uses static demo-data imports. This layer is a foundation for a future swap.
+- **Wired to the Client Portal only, read-only.** The Client Portal uses `useClientPortalData` to read from Supabase when available, and falls back to static demo data otherwise. No other portal calls Supabase.
 - **Not write-capable.** No insert, update, delete, or upsert operations are present. All query functions are SELECT only.
 - **Not using the service role key.** The service role key must never be used in frontend code. Use only `VITE_SUPABASE_ANON_KEY`.
 
@@ -85,6 +85,8 @@ All connections are read-only and unauthenticated (anon key only).
 **Media Library demo note:** A polished Media Library demo exists at `/demo/client/media` (`src/pages/client-media.tsx`). The drag-and-drop / file picker reads only file *names*, sizes, and MIME types into **local component state** — **no `fetch`, no `FormData`, no Supabase Storage, no API call, no database mutation, no `localStorage`, no cookies.** The "Choose Files — Coming Soon" button does not initiate a real upload. Supabase frontend access remains anon read-only for the Client Portal demo only.
 
 **Onboarding & media draft docs:** Planning for the future onboarding write surface and the future media storage + metadata surface lives under [`../../docs/database/onboarding-draft/`](../../docs/database/onboarding-draft/) and [`../../docs/database/media-draft/`](../../docs/database/media-draft/). **No SQL applied. No Supabase Storage bucket has been created. No upload, mutation, or storage SDK code exists in the frontend.** The Supabase frontend client remains anon read-only for the Client Portal demo only.
+
+**Docs index:** The full set of architecture, safety, and launch docs is indexed in [`../../docs/README.md`](../../docs/README.md). Frontend Supabase access is **read-only** for the Client Portal demo, no mutation functions exist, no Supabase Storage is used, and no auth is wired.
 
 ---
 

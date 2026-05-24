@@ -3,6 +3,7 @@ import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { teamPortalNavItems } from "@/lib/teamPortalNav";
+import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 
 const mediaItems = [
   { id: 1, title: "Lamb shoulder closeup",   client: "Mamadali Kebab House", quality: "Approved",    note: "Sharp focus, strong lighting"        },
@@ -19,6 +20,8 @@ export default function TeamMediaReview() {
         <h2 className="text-3xl font-bold tracking-tight text-foreground" data-testid="header-media-review">Media Review</h2>
         <p className="text-muted-foreground mt-1">Review and approve media assets from this week's shoot.</p>
       </div>
+
+      <DemoOnlyBanner message="No real uploaded media is being reviewed yet. Tags, status badges, and queue states below are static and illustrate the future review workflow only." testId="banner-team-media" />
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {mediaItems.map((item) => {

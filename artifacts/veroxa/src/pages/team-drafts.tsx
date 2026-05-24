@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { draftVariants } from "@/lib/demo-data";
 import { teamPortalNavItems } from "@/lib/teamPortalNav";
+import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 
 export default function TeamDrafts() {
   return (
@@ -12,6 +13,8 @@ export default function TeamDrafts() {
         <h2 className="text-3xl font-bold tracking-tight text-foreground" data-testid="header-drafts">Caption Draft Variants</h2>
         <p className="text-muted-foreground mt-1">Lamb Shoulder Post — review and approve a variant for scheduling.</p>
       </div>
+
+      <DemoOnlyBanner message="Static demo — no real edit, save, or approval is wired. Draft and approval states illustrate the future Team → Operator flow only." testId="banner-team-drafts" />
 
       <div className="space-y-3">
         {draftVariants.map((variant) => (

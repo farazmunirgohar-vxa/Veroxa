@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { teamAgentCards } from "@/lib/demo-data";
 import { teamPortalNavItems } from "@/lib/teamPortalNav";
+import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 
 export default function TeamAiReview() {
   return (
@@ -19,6 +20,8 @@ export default function TeamAiReview() {
           A preview of how Veroxa's AI agents will assist each stage of the content workflow. All outputs below are simulated.
         </p>
       </div>
+
+      <DemoOnlyBanner message="Simulated preview — no AI API is connected. Each agent card below is a static visual of the future AI capabilities (see docs/AI_AGENT_ARCHITECTURE_PLAN.md)." testId="banner-team-ai" />
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {teamAgentCards.map((agent) => {

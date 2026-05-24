@@ -3,6 +3,7 @@ import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { postReadyQueue, publishedThisWeek } from "@/lib/demo-data";
 import { teamPortalNavItems } from "@/lib/teamPortalNav";
+import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 
 export default function TeamScheduling() {
   return (
@@ -11,6 +12,8 @@ export default function TeamScheduling() {
         <h2 className="text-3xl font-bold tracking-tight text-foreground" data-testid="header-scheduling">Scheduling</h2>
         <p className="text-muted-foreground mt-1">Posts ready to go out and what was published this week.</p>
       </div>
+
+      <DemoOnlyBanner message="Static demo — no real publishing is connected. Slots, recommended times, and published-this-week cards illustrate the future Scheduling workflow only." testId="banner-team-scheduling" />
 
       <div className="grid lg:grid-cols-2 gap-8">
         <div>

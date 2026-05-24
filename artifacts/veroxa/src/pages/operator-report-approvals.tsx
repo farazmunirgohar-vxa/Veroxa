@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { reportApprovals } from "@/lib/demo-data";
 import { operatorPortalNavItems } from "@/lib/operatorPortalNav";
+import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 
 function cn(...classes: (string | undefined | null | false)[]) {
   return classes.filter(Boolean).join(" ");
@@ -15,6 +16,8 @@ export default function OperatorReportApprovals() {
         <h2 className="text-3xl font-bold tracking-tight text-foreground" data-testid="header-report-approvals">Report Approvals</h2>
         <p className="text-muted-foreground mt-1">Monthly client reports awaiting your sign-off before sending.</p>
       </div>
+
+      <DemoOnlyBanner message="Static demo — no real approval action is wired. Statuses (Drafted, Ready for operator, Needs revision, Approved) illustrate the future Report Approval state machine only." testId="banner-operator-approvals" />
 
       <div className="grid sm:grid-cols-2 gap-3">
         {reportApprovals.map((report, i) => (

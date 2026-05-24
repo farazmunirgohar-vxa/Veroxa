@@ -2,6 +2,7 @@ import { PortalLayout } from "@/components/PortalLayout";
 import { Progress } from "@/components/ui/progress";
 import { clientHealthBands } from "@/lib/demo-data";
 import { ownerPortalNavItems } from "@/lib/ownerPortalNav";
+import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 
 export default function OwnerClientHealth() {
   return (
@@ -10,6 +11,8 @@ export default function OwnerClientHealth() {
         <h2 className="text-3xl font-bold tracking-tight text-foreground" data-testid="header-client-health">Client Health</h2>
         <p className="text-muted-foreground mt-1">Distribution of your portfolio across health score bands.</p>
       </div>
+
+      <DemoOnlyBanner message="Static demo — Green / Yellow / Red bands and client examples are illustrative only. No real portfolio analytics are connected." testId="banner-owner-health" />
 
       <div className="space-y-3">
         {clientHealthBands.map((band, i) => (

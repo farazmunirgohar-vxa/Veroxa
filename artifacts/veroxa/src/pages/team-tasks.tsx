@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { tasks } from "@/lib/demo-data";
 import { teamPortalNavItems } from "@/lib/teamPortalNav";
+import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 
 export default function TeamTasks() {
   const today = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
@@ -27,6 +28,8 @@ export default function TeamTasks() {
           </div>
         </Card>
       </div>
+
+      <DemoOnlyBanner message="Static demo — task actions, status updates, and reassignment are not connected to any backend. Statuses below illustrate the future Team workflow only." testId="banner-team-tasks" />
 
       {/* Workflow Stage Pipeline */}
       <div className="mb-8">

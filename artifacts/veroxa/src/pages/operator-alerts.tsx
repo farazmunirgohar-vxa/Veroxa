@@ -3,6 +3,7 @@ import { PortalLayout } from "@/components/PortalLayout";
 import { Badge } from "@/components/ui/badge";
 import { operatorAlerts as alerts } from "@/lib/demo-data";
 import { operatorPortalNavItems } from "@/lib/operatorPortalNav";
+import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 
 function cn(...classes: (string | undefined | null | false)[]) {
   return classes.filter(Boolean).join(" ");
@@ -15,6 +16,8 @@ export default function OperatorAlerts() {
         <h2 className="text-3xl font-bold tracking-tight text-foreground" data-testid="header-alerts">Active Alerts</h2>
         <p className="text-muted-foreground mt-1">Critical and warning-level issues across your client portfolio.</p>
       </div>
+
+      <DemoOnlyBanner message="Static demo — alerts below are illustrative only. No real monitoring, paging, or escalation is connected." testId="banner-operator-alerts" />
 
       <div className="space-y-3">
         {alerts.map((alert, i) => (
