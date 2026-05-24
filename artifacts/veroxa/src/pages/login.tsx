@@ -1,11 +1,12 @@
 import { useState, type FormEvent } from "react";
-import { Link } from "wouter";
-import { ArrowLeft, ArrowRight, BarChart2, Hexagon, Lock, Mail, Settings2, ShieldAlert, Users, Utensils } from "lucide-react";
+import { Link, useLocation } from "wouter";
+import { ArrowLeft, ArrowRight, BarChart2, CheckCircle2, Hexagon, Lock, Mail, Settings2, ShieldAlert, Users, Utensils } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AUTH_MODE } from "@/lib/auth/authMode";
 import { getSupabaseClient } from "@/lib/supabase";
+import { getDemoRoleHomePath, isVeroxaRole } from "@/lib/auth/authContract";
 
 const roles = [
   {
@@ -16,6 +17,8 @@ const roles = [
     iconClass: "bg-blue-500/10 text-blue-500",
     glow: "from-blue-500/15 to-transparent",
     testid: "role-card-client",
+    badge: "Public Preview",
+    badgeClass: "text-blue-400/70",
   },
   {
     href: "/demo/team/tasks",
@@ -25,6 +28,8 @@ const roles = [
     iconClass: "bg-emerald-500/10 text-emerald-500",
     glow: "from-emerald-500/15 to-transparent",
     testid: "role-card-team",
+    badge: "Login Required",
+    badgeClass: "text-amber-400/70",
   },
   {
     href: "/demo/operator/overview",
@@ -34,6 +39,8 @@ const roles = [
     iconClass: "bg-amber-500/10 text-amber-500",
     glow: "from-amber-500/15 to-transparent",
     testid: "role-card-operator",
+    badge: "Login Required",
+    badgeClass: "text-amber-400/70",
   },
   {
     href: "/demo/owner/dashboard",
@@ -43,6 +50,8 @@ const roles = [
     iconClass: "bg-primary/10 text-primary",
     glow: "from-primary/20 to-transparent",
     testid: "role-card-owner",
+    badge: "Login Required",
+    badgeClass: "text-amber-400/70",
   },
 ];
 
@@ -57,21 +66,20 @@ export default function LoginPage() {
   const [signInState, setSignInState] = useState<SignInState>({ kind: "idle" });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [, setLocation] = useLocation();
 
   /**
    * Sign-in submit handler.
    *
-   * - When `AUTH_MODE === "placeholder"` (today): preventDefault and
-   *   show the "Real authentication is not connected yet." notice.
-   *   No network call, no auth API, no token storage.
-   * - When `AUTH_MODE === "real"` (later, after manual approval):
-   *   call `supabase.auth.signInWithPassword`. On success, show a
-   *   "Signed in" message without redirecting (redirect / role
-   *   routing lands in a separate prompt). On error, show a safe
-   *   error message.
+   * - When `AUTH_MODE === "placeholder"`: preventDefault, show notice.
+   * - When `AUTH_MODE === "real"`:
+   *     1. signInWithPassword
+   *     2. Get session → look up user_profiles by user_id
+   *     3. Validate role with isVeroxaRole
+   *     4. Redirect to getDemoRoleHomePath(role)
    *
-   * Never creates users. Never writes to `user_profiles`. Never
-   * stores tokens manually. Never uses the service role key.
+   * Never creates users. Never writes to user_profiles. Never stores
+   * tokens manually. Never uses the service role key.
    */
   async function handleSignInSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -100,10 +108,50 @@ export default function LoginPage() {
         });
         return;
       }
-      setSignInState({
-        kind: "success",
-        message: "Signed in. Redirect will be enabled after role routing is approved.",
-      });
+
+      // Look up user_profiles to resolve role.
+      const { data: sessionData } = await client.auth.getSession();
+      const userId = sessionData.session?.user?.id;
+
+      if (!userId) {
+        setSignInState({
+          kind: "error",
+          message: "Signed in, but no Veroxa profile was found for this user.",
+        });
+        return;
+      }
+
+      const { data: profile, error: profileError } = await client
+        .from("user_profiles")
+        .select("role")
+        .eq("user_id", userId)
+        .maybeSingle<{ role?: unknown }>();
+
+      if (profileError) {
+        setSignInState({
+          kind: "error",
+          message: `Signed in, but profile lookup failed: ${profileError.message}`,
+        });
+        return;
+      }
+
+      if (!profile) {
+        setSignInState({
+          kind: "error",
+          message: "Signed in, but no Veroxa profile was found for this user.",
+        });
+        return;
+      }
+
+      if (!isVeroxaRole(profile.role)) {
+        setSignInState({
+          kind: "error",
+          message: "Signed in, but this Veroxa role is not valid.",
+        });
+        return;
+      }
+
+      setLocation(getDemoRoleHomePath(profile.role));
     } catch {
       setSignInState({
         kind: "error",
@@ -139,7 +187,7 @@ export default function LoginPage() {
         <div className="text-center mb-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/10 text-primary text-[11px] font-semibold tracking-wide mb-6">
             <ShieldAlert className="w-3 h-3" />
-            Development Preview — demo role routing only, not real authentication
+            Role-based access — sign in to enter your portal
           </div>
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4" data-testid="login-heading">
             Access Veroxa
@@ -165,8 +213,8 @@ export default function LoginPage() {
                   <div className={`w-12 h-12 rounded-xl ${role.iconClass} flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300`}>
                     <role.icon className="w-6 h-6" />
                   </div>
-                  <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-widest mt-2">
-                    Demo
+                  <span className={`text-[10px] font-semibold uppercase tracking-widest mt-2 ${role.badgeClass}`}>
+                    {role.badge}
                   </span>
                 </div>
 
@@ -189,7 +237,7 @@ export default function LoginPage() {
           ))}
         </div>
 
-        {/* Future Sign In — UI shell only */}
+        {/* Sign In */}
         <div className="mt-16 animate-in fade-in duration-700" data-testid="future-signin-section">
           <div className="flex items-center gap-4 mb-8">
             <div className="h-px flex-1 bg-border" />
@@ -205,14 +253,14 @@ export default function LoginPage() {
 
               <div className="flex items-start justify-between mb-5 relative">
                 <div>
-                  <h3 className="text-lg font-bold mb-1">Future Sign In</h3>
+                  <h3 className="text-lg font-bold mb-1">Sign In</h3>
                   <p className="text-xs text-muted-foreground leading-relaxed max-w-xs">
-                    Real account access will be enabled after Supabase Auth and
-                    production RLS are approved.
+                    Sign in with your Veroxa account to access your role portal.
                   </p>
                 </div>
-                <span className="text-[9px] font-semibold text-amber-500 bg-amber-500/10 px-2 py-1 rounded-full uppercase tracking-widest whitespace-nowrap">
-                  Planned
+                <span className="text-[9px] font-semibold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-full uppercase tracking-widest whitespace-nowrap flex items-center gap-1">
+                  <CheckCircle2 className="w-2.5 h-2.5" />
+                  Active
                 </span>
               </div>
 
@@ -228,8 +276,8 @@ export default function LoginPage() {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="you@restaurant.com"
-                      autoComplete="off"
+                      placeholder="you@veroxa.com"
+                      autoComplete="email"
                       className="pl-9"
                       data-testid="input-signin-email"
                     />
@@ -248,7 +296,7 @@ export default function LoginPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
-                      autoComplete="off"
+                      autoComplete="current-password"
                       className="pl-9"
                       data-testid="input-signin-password"
                     />
@@ -257,16 +305,11 @@ export default function LoginPage() {
 
                 <Button
                   type="submit"
-                  variant="outline"
                   disabled={signInState.kind === "submitting"}
-                  className="w-full font-semibold border-dashed text-muted-foreground hover:text-foreground"
+                  className="w-full font-semibold"
                   data-testid="btn-signin-coming-soon"
                 >
-                  {signInState.kind === "submitting"
-                    ? "Signing in…"
-                    : AUTH_MODE === "real"
-                    ? "Sign In"
-                    : "Sign In — Coming Soon"}
+                  {signInState.kind === "submitting" ? "Signing in…" : "Sign In"}
                 </Button>
 
                 {signInState.kind === "placeholder-notice" && (
@@ -284,7 +327,7 @@ export default function LoginPage() {
                     className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 text-[11px] text-emerald-400 flex items-center gap-2"
                     data-testid="signin-success"
                   >
-                    <ShieldAlert className="w-3.5 h-3.5 flex-shrink-0" />
+                    <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
                     {signInState.message}
                   </div>
                 )}
@@ -305,11 +348,9 @@ export default function LoginPage() {
 
         {/* Footer note */}
         <p className="text-center text-xs text-muted-foreground/70 mt-12 max-w-md mx-auto leading-relaxed">
-          No accounts, passwords, or sessions are used on this page. Selecting a role
-          routes you to the corresponding demo portal under <code className="text-foreground/80">/demo/*</code>.
-          Real authenticated routes under <code className="text-foreground/80">/client</code>,{" "}
-          <code className="text-foreground/80">/team</code>, <code className="text-foreground/80">/operator</code>,
-          and <code className="text-foreground/80">/owner</code> will be added in a future phase.
+          Sign in with your Veroxa account credentials to be routed to your matching portal.
+          Client Portal preview is publicly accessible.
+          Team, Operator, and Owner portals require login.
         </p>
       </div>
     </div>

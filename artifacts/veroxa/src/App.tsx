@@ -39,14 +39,20 @@ import RealClientPlaceholder from "@/pages/real-client-placeholder";
 import RealTeamPlaceholder from "@/pages/real-team-placeholder";
 import RealOperatorPlaceholder from "@/pages/real-operator-placeholder";
 import RealOwnerPlaceholder from "@/pages/real-owner-placeholder";
+import InternalDemoGuard from "@/components/auth/InternalDemoGuard";
 
 const queryClient = new QueryClient();
 
 function Router() {
   return (
     <Switch>
+      {/* Public routes */}
       <Route path="/" component={LandingPage} />
+      <Route path="/login" component={LoginPage} />
+      <Route path="/auth-status" component={AuthStatusPage} />
       <Route path="/demo" component={DemoHub} />
+
+      {/* Public client demo — sales preview, no login required */}
       <Route path="/demo/client" component={ClientPortal} />
       <Route path="/demo/client/dashboard" component={ClientDashboard} />
       <Route path="/demo/client/calendar" component={ClientCalendar} />
@@ -55,28 +61,70 @@ function Router() {
       <Route path="/demo/client/updates" component={ClientUpdates} />
       <Route path="/demo/client/onboarding" component={ClientOnboarding} />
       <Route path="/demo/client/media" component={ClientMedia} />
-      <Route path="/demo/team" component={TeamPortal} />
-      <Route path="/demo/team/tasks" component={TeamTasks} />
-      <Route path="/demo/team/media-review" component={TeamMediaReview} />
-      <Route path="/demo/team/ai-review" component={TeamAiReview} />
-      <Route path="/demo/team/drafts" component={TeamDrafts} />
-      <Route path="/demo/team/scheduling" component={TeamScheduling} />
-      <Route path="/demo/operator" component={OperatorPortal} />
-      <Route path="/demo/operator/overview" component={OperatorOverview} />
-      <Route path="/demo/operator/alerts" component={OperatorAlerts} />
-      <Route path="/demo/operator/client-health" component={OperatorClientHealth} />
-      <Route path="/demo/operator/failed-posts" component={OperatorFailedPosts} />
-      <Route path="/demo/operator/report-approvals" component={OperatorReportApprovals} />
-      <Route path="/demo/owner" component={OwnerPortal} />
-      <Route path="/demo/owner/dashboard" component={OwnerDashboard} />
-      <Route path="/demo/owner/revenue" component={OwnerRevenue} />
-      <Route path="/demo/owner/client-health" component={OwnerClientHealth} />
-      <Route path="/demo/owner/alerts" component={OwnerAlerts} />
-      <Route path="/demo/owner/settings" component={OwnerSettings} />
+
+      {/* Internal team demo — login required, role = "team" */}
+      <Route path="/demo/team">
+        {() => <InternalDemoGuard role="team"><TeamPortal /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/team/tasks">
+        {() => <InternalDemoGuard role="team"><TeamTasks /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/team/media-review">
+        {() => <InternalDemoGuard role="team"><TeamMediaReview /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/team/ai-review">
+        {() => <InternalDemoGuard role="team"><TeamAiReview /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/team/drafts">
+        {() => <InternalDemoGuard role="team"><TeamDrafts /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/team/scheduling">
+        {() => <InternalDemoGuard role="team"><TeamScheduling /></InternalDemoGuard>}
+      </Route>
+
+      {/* Internal operator demo — login required, role = "operator" */}
+      <Route path="/demo/operator">
+        {() => <InternalDemoGuard role="operator"><OperatorPortal /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/operator/overview">
+        {() => <InternalDemoGuard role="operator"><OperatorOverview /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/operator/alerts">
+        {() => <InternalDemoGuard role="operator"><OperatorAlerts /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/operator/client-health">
+        {() => <InternalDemoGuard role="operator"><OperatorClientHealth /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/operator/failed-posts">
+        {() => <InternalDemoGuard role="operator"><OperatorFailedPosts /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/operator/report-approvals">
+        {() => <InternalDemoGuard role="operator"><OperatorReportApprovals /></InternalDemoGuard>}
+      </Route>
+
+      {/* Internal owner demo — login required, role = "owner" */}
+      <Route path="/demo/owner">
+        {() => <InternalDemoGuard role="owner"><OwnerPortal /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/owner/dashboard">
+        {() => <InternalDemoGuard role="owner"><OwnerDashboard /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/owner/revenue">
+        {() => <InternalDemoGuard role="owner"><OwnerRevenue /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/owner/client-health">
+        {() => <InternalDemoGuard role="owner"><OwnerClientHealth /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/owner/alerts">
+        {() => <InternalDemoGuard role="owner"><OwnerAlerts /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/owner/settings">
+        {() => <InternalDemoGuard role="owner"><OwnerSettings /></InternalDemoGuard>}
+      </Route>
+
       <Route path="/demo/supabase-test" component={SupabaseTestPage} />
-      <Route path="/login" component={LoginPage} />
-      <Route path="/auth-status" component={AuthStatusPage} />
-      {/* Future authenticated route placeholders — UI shell only, no real auth yet. */}
+
+      {/* Future authenticated route placeholders */}
       <Route path="/client/dashboard" component={RealClientPlaceholder} />
       <Route path="/client/onboarding" component={RealClientPlaceholder} />
       <Route path="/client/media" component={RealClientPlaceholder} />

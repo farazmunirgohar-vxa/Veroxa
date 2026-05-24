@@ -80,3 +80,22 @@ match. Today every one of them only renders the `RequireRole`
 - Demo routes + visibility: [`src/lib/demoRoutes.ts`](../src/lib/demoRoutes.ts)
 - Auth contract & role home paths: [`src/lib/auth/authContract.ts`](../src/lib/auth/authContract.ts)
 - Full route architecture: [`ROUTE_ARCHITECTURE.md`](./ROUTE_ARCHITECTURE.md)
+
+## Update — Authenticated Demo Routing V1
+
+- `/demo/client/*` **remains public** (sales preview, anon read only).
+- `/demo/team/*`, `/demo/operator/*`, `/demo/owner/*` are now
+  **login-gated** via `InternalDemoGuard` in `App.tsx`.
+  - Unauthenticated → "Login required" screen with link to `/login`.
+  - Wrong role → "Wrong portal" screen with link to correct demo home.
+  - Correct role → page renders normally.
+- Public website (`/`, `/demo` hub) **no longer advertises** Team,
+  Operator, or Owner demo portals.
+  - `/demo` (Demo Hub) shows Client Portal only + login note for
+    internal portals.
+  - Landing page routes demo traffic to `/demo`, which now self-limits.
+- Login page still lists all four role cards (this is the sign-in
+  entry point) with badge labels: "Public Preview" for client,
+  "Login Required" for team/operator/owner.
+- Hard rule on the last bullet (no protection until Real Auth V1 decision)
+  **superseded**: decision was taken, `InternalDemoGuard` is now in place.

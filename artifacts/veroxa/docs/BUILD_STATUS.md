@@ -330,3 +330,25 @@ Specifically:
 - `pnpm --filter @workspace/veroxa run typecheck` — typecheck (last run: passing)
 - `pnpm --filter @workspace/veroxa run build` — production build (needs workflow-provided `PORT` / `BASE_PATH`; typecheck is the canonical local verification)
 - App workflow: `artifacts/veroxa: web` — running
+
+## Authenticated Demo Routing V1
+
+**Status: COMPLETE**
+
+- Successful login now routes to the matching demo portal by role
+  (`getDemoRoleHomePath` in `authContract.ts`).
+- `/demo/client/*` remains fully public for sales preview.
+- `/demo/team/*`, `/demo/operator/*`, `/demo/owner/*` are now
+  protected by `InternalDemoGuard` (loading / login-required /
+  wrong-role states).
+- Login page: section title is now "Sign In" (was "Future Sign In"),
+  badge is now "Active" (was "Planned"), client card shows
+  "Public Preview", team/operator/owner cards show "Login Required".
+- Public Demo Hub no longer lists Team/Operator/Owner portal cards.
+  It shows the Client Portal preview and a note directing internal
+  users to sign in.
+- `/auth-status` has a safe "Sign Out" button (authenticated state
+  only); calls `supabase.auth.signOut()` then redirects to `/login`.
+- No writes, uploads, storage, service role, or AI API added.
+- Real production routes (`/client/*`, `/team/*`, etc.) remain
+  placeholder shells.

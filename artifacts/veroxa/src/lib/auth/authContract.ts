@@ -58,6 +58,22 @@ export function getRoleHomePath(role: VeroxaRole): string {
   return ROLE_HOME_PATH[role];
 }
 
+/**
+ * Where each role should land after login during the demo/testing phase.
+ * These route into the `/demo/*` portals, which are protected by
+ * `InternalDemoGuard` for team/operator/owner and public for client.
+ */
+export const DEMO_ROLE_HOME_PATH: Readonly<Record<VeroxaRole, string>> = Object.freeze({
+  client:   "/demo/client/dashboard",
+  team:     "/demo/team/tasks",
+  operator: "/demo/operator/overview",
+  owner:    "/demo/owner/dashboard",
+});
+
+export function getDemoRoleHomePath(role: VeroxaRole): string {
+  return DEMO_ROLE_HOME_PATH[role];
+}
+
 const ALL_ROLES: readonly VeroxaRole[] = ["client", "team", "operator", "owner"] as const;
 
 export function isVeroxaRole(value: unknown): value is VeroxaRole {

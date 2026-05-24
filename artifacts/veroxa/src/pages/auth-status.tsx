@@ -1,8 +1,10 @@
-import { Link } from "wouter";
-import { ArrowLeft, Hexagon, ShieldAlert } from "lucide-react";
+import { useLocation, Link } from "wouter";
+import { ArrowLeft, Hexagon, LogOut, ShieldAlert } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth/useAuth";
 import { AUTH_MODE } from "@/lib/auth/authMode";
+import { getSupabaseClient } from "@/lib/supabase";
 
 /**
  * /auth-status — development diagnostics page.
@@ -14,10 +16,20 @@ import { AUTH_MODE } from "@/lib/auth/authMode";
  *   - only renders `userId`, `email`, `role`, `clientId`,
  *     `displayName`, `status`, `isDemoOnly`, and `AUTH_MODE`.
  *
- * No writes. No user creation. No mutations.
+ * Sign-out button: calls supabase.auth.signOut() when authenticated,
+ * then navigates to /login. No writes. No token display.
  */
 export default function AuthStatusPage() {
   const state = useAuth();
+  const [, setLocation] = useLocation();
+
+  async function handleSignOut() {
+    const client = getSupabaseClient();
+    if (client) {
+      await client.auth.signOut();
+    }
+    setLocation("/login");
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col items-center px-6 py-12">
@@ -31,11 +43,25 @@ export default function AuthStatusPage() {
             <ArrowLeft className="w-4 h-4" />
             Back to Veroxa.com
           </Link>
-          <div className="flex items-center gap-2 text-sm">
-            <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-              <Hexagon className="w-4 h-4 fill-primary/20" />
+          <div className="flex items-center gap-3">
+            {state.status === "authenticated" && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSignOut}
+                className="gap-1.5 text-xs"
+                data-testid="btn-sign-out"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                Sign Out
+              </Button>
+            )}
+            <div className="flex items-center gap-2 text-sm">
+              <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                <Hexagon className="w-4 h-4 fill-primary/20" />
+              </div>
+              <span className="font-bold tracking-tight">Veroxa</span>
             </div>
-            <span className="font-bold tracking-tight">Veroxa</span>
           </div>
         </div>
 
@@ -93,9 +119,7 @@ export default function AuthStatusPage() {
         <p className="text-[11px] text-muted-foreground/70 mt-8 leading-relaxed">
           This page reads the same <code className="text-foreground/80">AuthState</code> contract
           (<code className="text-foreground/80">src/lib/auth/authContract.ts</code>) that
-          <code className="text-foreground/80"> RequireRole</code> uses. With{" "}
-          <code className="text-foreground/80">AUTH_MODE = "placeholder"</code>, the hook always
-          reports unauthenticated and <code className="text-foreground/80">isDemoOnly: true</code>.
+          <code className="text-foreground/80"> RequireRole</code> uses.
         </p>
       </div>
     </div>

@@ -80,3 +80,44 @@
       handles storage internally.
 - [ ] No cookies set or read manually for auth.
 - [ ] No frontend code creates Supabase Auth users.
+
+## Authenticated Demo Routing V1 — test cases
+
+### Login redirect by role
+- [ ] owner@veroxa.test login → redirects to `/demo/owner/dashboard`
+- [ ] operator@veroxa.test login → redirects to `/demo/operator/overview`
+- [ ] team@veroxa.test login → redirects to `/demo/team/tasks`
+- [ ] client@veroxa.test login → redirects to `/demo/client/dashboard`
+
+### Profile lookup error states
+- [ ] User with no `user_profiles` row → "Signed in, but no Veroxa
+      profile was found for this user."
+- [ ] User with invalid role in `user_profiles` → "Signed in, but
+      this Veroxa role is not valid."
+
+### InternalDemoGuard — unauthenticated
+- [ ] `/demo/team/tasks` while logged out → "Login required" screen
+- [ ] `/demo/operator/overview` while logged out → "Login required" screen
+- [ ] `/demo/owner/dashboard` while logged out → "Login required" screen
+
+### InternalDemoGuard — wrong role
+- [ ] team user visits `/demo/owner/dashboard` → "Wrong portal" screen
+      with link to `/demo/team/tasks`
+- [ ] owner user visits `/demo/operator/overview` → "Wrong portal" screen
+      with link to `/demo/owner/dashboard`
+
+### Public client demo still works
+- [ ] `/demo/client/dashboard` accessible while logged out
+- [ ] `/demo/client/calendar` accessible while logged out
+- [ ] Client Portal read-only Supabase data still renders correctly
+
+### Public website does not expose internal portals
+- [ ] Landing page has no direct links to `/demo/team`, `/demo/operator`,
+      or `/demo/owner`
+- [ ] Demo Hub (`/demo`) shows only Client Portal card publicly
+- [ ] Demo Hub shows "Internal Veroxa portals require login" notice
+
+### Auth-status sign out
+- [ ] `/auth-status` while authenticated → "Sign Out" button visible
+- [ ] Clicking Sign Out → calls signOut, navigates to `/login`
+- [ ] `/auth-status` while logged out → "Sign Out" button hidden
