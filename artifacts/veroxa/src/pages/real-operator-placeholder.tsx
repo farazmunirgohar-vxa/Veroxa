@@ -1,10 +1,12 @@
-import { RequireRole } from "@/components/auth/RequireRole";
+import { RealRoutePlaceholder } from "@/pages/real-route-placeholder";
 
 export default function RealOperatorPlaceholder() {
   return (
-    <RequireRole role="operator">
-      {/* Future authenticated Operator Portal will render here. */}
-      <></>
-    </RequireRole>
+    <RealRoutePlaceholder
+      role="operator"
+      area="Portal"
+      futurePath="/operator/overview"
+      demoPath="/demo/operator/overview"
+    />
   );
 }

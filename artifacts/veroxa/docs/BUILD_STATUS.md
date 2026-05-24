@@ -206,9 +206,33 @@ We are building **Demo Veroxa** and **Real Veroxa** side by side:
 - **Still no AI API.** All guidance is rule-based static data.
 - **Still no uploads / writes / storage.** Upload card behavior is unchanged.
 
+## Real MVP Readiness / Pre-Auth Architecture Pass
+
+The project has shifted from demo expansion into real MVP readiness. This pass is **architecture + planning only** — no real auth, no writes, no uploads, no storage, no AI, no publishing, no Google integration.
+
+- **Route visibility corrected.** `/demo/client/*` is documented as the public sales / client preview surface. `/demo/team/*`, `/demo/operator/*`, and `/demo/owner/*` are documented as **internal-protect-later** — public during development only. See [`docs/ROUTE_VISIBILITY_STRATEGY.md`](./ROUTE_VISIBILITY_STRATEGY.md).
+- **Auth contract created.** `src/lib/auth/authContract.ts` is now the single source of truth for `VeroxaRole`, `AuthStatus`, `VeroxaSession`, `AuthState`, `ROLE_HOME_PATH`, `getRoleHomePath`, `isVeroxaRole`. `src/lib/auth/types.ts` re-exports these for backward compatibility.
+- **Placeholder auth aligned with future real auth hook shape.** `usePlaceholderAuth` now returns the canonical `AuthState` from the contract, so the future `useRealAuth` is a drop-in swap.
+- **`RequireRole` improved for future swap.** Optional `title` / `description` props, surfaces the role's `getRoleHomePath` value, adds `data-testid="protected-route-preview"`, `required-role`, `role-home-path`.
+- **Generic real-route placeholder created.** `src/pages/real-route-placeholder.tsx` exports `RealRoutePlaceholder` and is now used by `real-client-placeholder.tsx`, `real-team-placeholder.tsx`, `real-operator-placeholder.tsx`, `real-owner-placeholder.tsx` — duplication removed.
+- **Real route registry created.** `src/lib/realRoutes.ts` lists every future authenticated route with role, label, companion demo path, and description; exports `allRealRoutes`, `routesByRole`, `getDemoPathForRealRoute`.
+- **Demo route registry created.** `src/lib/demoRoutes.ts` lists every demo route grouped by portal with explicit `visibility` (`public_sales_preview` vs `internal_demo_protect_later`).
+- **Route architecture doc created** — [`docs/ROUTE_ARCHITECTURE.md`](./ROUTE_ARCHITECTURE.md).
+- **Internal demo protection plan created** — [`docs/INTERNAL_DEMO_PROTECTION_PLAN.md`](./INTERNAL_DEMO_PROTECTION_PLAN.md).
+- **Pre-auth technical checklist created** — [`docs/PRE_AUTH_TECHNICAL_CHECKLIST.md`](./PRE_AUTH_TECHNICAL_CHECKLIST.md).
+- **Real MVP readiness plan created** — [`docs/REAL_MVP_READINESS_PLAN.md`](./REAL_MVP_READINESS_PLAN.md). Defines the 10-step MVP sequence and the MVP boundary.
+- **Adaptive Improvement Engine plan created** — [`docs/ADAPTIVE_IMPROVEMENT_ENGINE_PLAN.md`](./ADAPTIVE_IMPROVEMENT_ENGINE_PLAN.md). Auto-recommend by default; human approval required for anything external, financial, or client-facing.
+- **Customer Growth Priority doc created** — [`docs/CUSTOMER_GROWTH_PRIORITY.md`](./CUSTOMER_GROWTH_PRIORITY.md). Locks in that helping restaurants bring more customers is Veroxa's #1 priority and every feature must pass the customer-growth filter.
+- **Real Auth V1 prompt draft created** — [`docs/NEXT_PROMPT_REAL_AUTH_V1_DRAFT.md`](./NEXT_PROMPT_REAL_AUTH_V1_DRAFT.md). Draft only — do not execute until manual approval.
+- **Visibility correction:** `/demo/client/*` may remain public for sales preview. `/demo/team/*`, `/demo/operator/*`, and `/demo/owner/*` are public during development but should become internal-protected later.
+- **Still no real auth.** Placeholder auth always returns unauthenticated.
+- **Still no sessions / JWT / cookies / `localStorage` tokens.**
+- **Still no writes / uploads / storage** — no `INSERT` / `UPDATE` / `DELETE` / `UPSERT`, no `fetch`, no `FormData`, no Supabase Storage.
+- **Still no AI API, no publishing, no Google integration.**
+
 ## Next recommended phase
 
-**Pre-Auth Code Readiness Pass — small refactor only, then manual decision before real Supabase Auth.**
+**Manual review: Real Auth V1 decision.** If approved, the next prompt should be small and only wire Supabase Auth read-only session handling per [`docs/NEXT_PROMPT_REAL_AUTH_V1_DRAFT.md`](./NEXT_PROMPT_REAL_AUTH_V1_DRAFT.md). Before that prompt runs, every item in [`docs/PRE_AUTH_TECHNICAL_CHECKLIST.md`](./PRE_AUTH_TECHNICAL_CHECKLIST.md) must be ticked.
 
 Specifically:
 

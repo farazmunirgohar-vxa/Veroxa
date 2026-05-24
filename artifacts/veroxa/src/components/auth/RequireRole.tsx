@@ -4,11 +4,15 @@ import type { ReactNode } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { usePlaceholderAuth } from "@/lib/auth/usePlaceholderAuth";
-import type { VeroxaRole } from "@/lib/auth/types";
+import { getRoleHomePath, type VeroxaRole } from "@/lib/auth/authContract";
 
 interface RequireRoleProps {
   role: VeroxaRole;
-  children: ReactNode;
+  children?: ReactNode;
+  /** Optional override for the card heading. Defaults to "{Role} Portal — Coming Soon". */
+  title?: string;
+  /** Optional override for the body description. */
+  description?: string;
 }
 
 const roleLabels: Record<VeroxaRole, string> = {
@@ -23,12 +27,12 @@ const roleLabels: Record<VeroxaRole, string> = {
  *
  * Today this always shows the "Protected Route Preview" card because the
  * placeholder hook always returns unauthenticated. When real auth ships,
- * the only thing that changes is the hook implementation — this component's
- * call sites stay the same.
+ * the only thing that changes is the hook implementation — this
+ * component's call sites stay the same.
  *
- * Intentionally not used on /demo/* routes.
+ * Intentionally not used on `/demo/*` routes.
  */
-export function RequireRole({ role, children }: RequireRoleProps) {
+export function RequireRole({ role, children, title, description }: RequireRoleProps) {
   const { status } = usePlaceholderAuth();
 
   if (status === "authenticated") {
@@ -36,6 +40,8 @@ export function RequireRole({ role, children }: RequireRoleProps) {
   }
 
   const roleLabel = roleLabels[role];
+  const roleHomePath = getRoleHomePath(role);
+  const heading = title ?? `${roleLabel} Portal — Coming Soon`;
 
   return (
     <div
@@ -52,7 +58,10 @@ export function RequireRole({ role, children }: RequireRoleProps) {
         <span className="font-bold tracking-tight text-lg">Veroxa</span>
       </div>
 
-      <Card className="w-full max-w-lg bg-card border-border shadow-2xl shadow-primary/5">
+      <Card
+        className="w-full max-w-lg bg-card border-border shadow-2xl shadow-primary/5"
+        data-testid="protected-route-preview"
+      >
         <CardContent className="p-8">
           <div className="flex justify-center mb-6">
             <div className="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
@@ -65,24 +74,41 @@ export function RequireRole({ role, children }: RequireRoleProps) {
           </div>
 
           <h1 className="text-2xl font-bold tracking-tight text-center mb-3">
-            {roleLabel} Portal — Coming Soon
+            {heading}
           </h1>
 
-          <p className="text-sm text-muted-foreground text-center leading-relaxed mb-2">
-            This real portal route will require authenticated{" "}
-            <span className="text-foreground font-semibold">{roleLabel.toLowerCase()}</span> access.
-          </p>
-          <p className="text-sm text-muted-foreground text-center leading-relaxed mb-7">
-            Authentication is not connected yet.
-          </p>
+          {description ? (
+            <p className="text-sm text-muted-foreground text-center leading-relaxed mb-7">
+              {description}
+            </p>
+          ) : (
+            <>
+              <p className="text-sm text-muted-foreground text-center leading-relaxed mb-2">
+                This real portal route will require authenticated{" "}
+                <span
+                  className="text-foreground font-semibold"
+                  data-testid="required-role"
+                >
+                  {roleLabel.toLowerCase()}
+                </span>{" "}
+                access.
+              </p>
+              <p className="text-sm text-muted-foreground text-center leading-relaxed mb-7">
+                Authentication is not connected yet.
+              </p>
+            </>
+          )}
 
           <div className="rounded-xl border border-border bg-muted/30 p-4 mb-6">
             <p className="text-[11px] text-muted-foreground leading-relaxed">
               When real auth ships, this route will read your Supabase Auth session,
               look up <code className="text-foreground/80">user_profiles.role</code>,
               and only render content if it matches{" "}
-              <code className="text-foreground/80">{role}</code>. Until then, you can
-              preview the same experience in the demo portal.
+              <code className="text-foreground/80" data-testid="required-role-code">{role}</code>.
+              Authenticated <span className="font-semibold text-foreground">{roleLabel.toLowerCase()}s</span> will
+              land at{" "}
+              <code className="text-foreground/80" data-testid="role-home-path">{roleHomePath}</code>.
+              Until then, you can preview the same experience in the demo portal.
             </p>
           </div>
 

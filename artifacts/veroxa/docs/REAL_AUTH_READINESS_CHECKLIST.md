@@ -4,6 +4,20 @@
 > still uses placeholder auth and read-only Supabase access for the Client
 > Portal demo. Real authentication is not implemented.
 
+> **Update from the Real MVP Readiness / Pre-Auth Architecture pass:**
+>
+> - `src/lib/auth/authContract.ts` and the route registries
+>   (`src/lib/realRoutes.ts`, `src/lib/demoRoutes.ts`) now prepare
+>   the codebase for real auth — the real auth hook will be a
+>   drop-in swap behind the same `AuthState` shape.
+> - Demo visibility corrected: `/demo/client/*` may stay public
+>   as a sales preview; `/demo/team/*`, `/demo/operator/*`, and
+>   `/demo/owner/*` should be internal-protected later
+>   (see [`INTERNAL_DEMO_PROTECTION_PLAN.md`](./INTERNAL_DEMO_PROTECTION_PLAN.md)
+>   and [`ROUTE_VISIBILITY_STRATEGY.md`](./ROUTE_VISIBILITY_STRATEGY.md)).
+> - **Still no real auth implemented.** Placeholder auth always
+>   returns unauthenticated.
+
 ## Current state
 
 - `/login` is **demo role routing** plus a future sign-in UI shell. The

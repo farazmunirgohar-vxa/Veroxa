@@ -1,22 +1,22 @@
 /**
- * Placeholder auth types — UI shell only.
+ * Auth types — backward-compatible re-exports.
  *
- * These types describe the SHAPE the real auth layer will use, but no real
- * auth is wired today. Do not import Supabase here. Do not add any runtime
- * code beyond types/constants.
+ * The single source of truth for Veroxa's auth contract is
+ * `./authContract.ts`. This file re-exports those types under the
+ * original names so existing imports (`VeroxaRole`, `AuthStatus`,
+ * `PlaceholderSession`) keep working without churn.
  *
- * See: docs/AUTH_ARCHITECTURE_PLAN.md
- *      docs/database/auth-draft/001_auth_user_profiles.sql
+ * Prefer importing directly from `./authContract` in new code.
+ *
+ * No runtime code. No Supabase. No side effects.
  */
 
-export type VeroxaRole = "client" | "team" | "operator" | "owner";
+export type { VeroxaRole, AuthStatus, VeroxaSession, AuthState } from "./authContract";
 
-export interface PlaceholderSession {
-  userId: string;
-  email: string;
-  role: VeroxaRole;
-  clientId?: string | null;
-  displayName?: string | null;
-}
+import type { VeroxaSession } from "./authContract";
 
-export type AuthStatus = "loading" | "authenticated" | "unauthenticated";
+/**
+ * @deprecated Use `VeroxaSession` from `./authContract` instead.
+ * Kept as an alias for backward compatibility with older imports.
+ */
+export type PlaceholderSession = VeroxaSession;

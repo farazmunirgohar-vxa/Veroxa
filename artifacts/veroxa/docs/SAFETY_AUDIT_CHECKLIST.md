@@ -93,6 +93,41 @@ a regression and stop.
 - [ ] Malware / content moderation strategy considered before real
       production traffic.
 
+## Real MVP Readiness / Pre-Auth Architecture Pass
+
+**Allowed (added in this pass):**
+
+- [x] Auth contract types in `src/lib/auth/authContract.ts`
+      (`VeroxaRole`, `AuthStatus`, `VeroxaSession`, `AuthState`,
+      `ROLE_HOME_PATH`, `getRoleHomePath`, `isVeroxaRole`).
+- [x] Real route registry (`src/lib/realRoutes.ts`) and demo route
+      registry (`src/lib/demoRoutes.ts`) — pure data, no side
+      effects.
+- [x] Generic `RealRoutePlaceholder`
+      (`src/pages/real-route-placeholder.tsx`) used by every real
+      route placeholder.
+- [x] Route-visibility planning
+      (`docs/ROUTE_VISIBILITY_STRATEGY.md`,
+      `docs/ROUTE_ARCHITECTURE.md`).
+- [x] Internal demo protection planning
+      (`docs/INTERNAL_DEMO_PROTECTION_PLAN.md`) — docs only, no
+      protection implemented.
+- [x] Adaptive Improvement Engine planning
+      (`docs/ADAPTIVE_IMPROVEMENT_ENGINE_PLAN.md`).
+- [x] Customer Growth Priority planning
+      (`docs/CUSTOMER_GROWTH_PRIORITY.md`).
+
+**Confirmed forbidden (still):**
+
+- [ ] No Supabase Auth calls (`signInWithPassword`, `signOut`,
+      `getSession`, `onAuthStateChange`) anywhere in the frontend.
+- [ ] No sessions / JWT / cookies / `localStorage` tokens.
+- [ ] No writes (`INSERT` / `UPDATE` / `DELETE` / `UPSERT`).
+- [ ] No uploads (`fetch` / `FormData` / Supabase Storage).
+- [ ] No service-role key in the frontend.
+- [ ] No production protection / RLS / policy changes without
+      explicit approval.
+
 ## Cross-cutting
 
 - [ ] `docs/BUILD_STATUS.md` reflects current state.

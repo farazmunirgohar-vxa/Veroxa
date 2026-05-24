@@ -41,7 +41,32 @@ to every important planning, safety, and architecture doc.
 - [`WORKFLOW_STATE_MACHINES.md`](./WORKFLOW_STATE_MACHINES.md) —
   planned states, transitions, role gating, audit actions per entity.
 
+## Real MVP readiness
+
+- [`REAL_MVP_READINESS_PLAN.md`](./REAL_MVP_READINESS_PLAN.md) — the
+  10-step sequence from demo to real MVP, MVP boundary, and the
+  rule that every future demo feature must justify itself.
+- [`CUSTOMER_GROWTH_PRIORITY.md`](./CUSTOMER_GROWTH_PRIORITY.md) —
+  Veroxa's #1 priority (bring restaurants more customers) and the
+  6-question feature filter.
+- [`ROUTE_VISIBILITY_STRATEGY.md`](./ROUTE_VISIBILITY_STRATEGY.md) —
+  who is supposed to see what URL; `/demo/client` public,
+  `/demo/team` / `/demo/operator` / `/demo/owner`
+  internal-protect-later.
+- [`ROUTE_ARCHITECTURE.md`](./ROUTE_ARCHITECTURE.md) — full map of
+  public, internal demo, and future real routes.
+- [`INTERNAL_DEMO_PROTECTION_PLAN.md`](./INTERNAL_DEMO_PROTECTION_PLAN.md)
+  — options for protecting Team / Operator / Owner demos later.
+- [`PRE_AUTH_TECHNICAL_CHECKLIST.md`](./PRE_AUTH_TECHNICAL_CHECKLIST.md)
+  — every item that must be ticked before proposing Real Auth V1.
+- [`NEXT_PROMPT_REAL_AUTH_V1_DRAFT.md`](./NEXT_PROMPT_REAL_AUTH_V1_DRAFT.md)
+  — draft of the next prompt; do not execute until approved.
+
 ## AI, publishing, SEO
+
+- [`ADAPTIVE_IMPROVEMENT_ENGINE_PLAN.md`](./ADAPTIVE_IMPROVEMENT_ENGINE_PLAN.md)
+  — long-term adaptive growth principle: auto-recommend by default,
+  human approval for anything sensitive.
 
 - [`MEDIA_GUIDANCE_ENGINE_PLAN.md`](./MEDIA_GUIDANCE_ENGINE_PLAN.md)
   — rule-based restaurant media guidance, restaurant types covered,

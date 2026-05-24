@@ -1,10 +1,12 @@
-import { RequireRole } from "@/components/auth/RequireRole";
+import { RealRoutePlaceholder } from "@/pages/real-route-placeholder";
 
 export default function RealClientPlaceholder() {
   return (
-    <RequireRole role="client">
-      {/* Future authenticated Client Portal will render here. */}
-      <></>
-    </RequireRole>
+    <RealRoutePlaceholder
+      role="client"
+      area="Portal"
+      futurePath="/client/dashboard"
+      demoPath="/demo/client/dashboard"
+    />
   );
 }

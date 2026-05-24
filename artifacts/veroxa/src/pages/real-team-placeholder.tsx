@@ -1,10 +1,12 @@
-import { RequireRole } from "@/components/auth/RequireRole";
+import { RealRoutePlaceholder } from "@/pages/real-route-placeholder";
 
 export default function RealTeamPlaceholder() {
   return (
-    <RequireRole role="team">
-      {/* Future authenticated Team Portal will render here. */}
-      <></>
-    </RequireRole>
+    <RealRoutePlaceholder
+      role="team"
+      area="Portal"
+      futurePath="/team/tasks"
+      demoPath="/demo/team/tasks"
+    />
   );
 }
