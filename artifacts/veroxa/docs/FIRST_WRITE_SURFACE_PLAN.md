@@ -77,6 +77,8 @@ The first writes the **client role** is allowed to perform.
 - Client media upload metadata (the **metadata row only** — actual upload pipeline is excluded from V1; see Priority 4 / "out of scope" below).
 - Client content notes / comments (review feedback on drafts).
 
+> **Today (demo-only):** the Client Onboarding flow at `/demo/client/onboarding` collects this information in local component state for design / vocabulary validation. It does **not** save anything. The real "client onboarding answers" write surface is planned as a Priority 3 item and will ship only after the full prerequisite chain (real auth → `user_profiles` → `team_client_assignments` → production RLS → `audit_logs`) is in place.
+
 Why third: these introduce a new actor (the restaurant owner). They require the client role's RLS to be hardened and a clear "you wrote this" audit trail before opening it up.
 
 ### Priority 4 — Later high-risk writes (NOT part of the first write phase)

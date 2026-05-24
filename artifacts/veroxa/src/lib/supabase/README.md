@@ -80,6 +80,8 @@ All connections are read-only and unauthenticated (anon key only).
 
 **Write draft note:** Planning for the first write surfaces now lives under [`../../docs/database/write-draft/`](../../docs/database/write-draft/) and [`../../docs/FIRST_WRITE_SURFACE_PLAN.md`](../../docs/FIRST_WRITE_SURFACE_PLAN.md). **No SQL has been applied.** The current frontend Supabase access remains anon read-only for the Client Portal demo. **No `INSERT` / `UPDATE` / `DELETE` / `UPSERT` functions exist anywhere in the app today.** Future writes require real auth, production RLS, and the `audit_logs` table to be in place first — see the plan doc for the full prerequisite list.
 
+**Client Onboarding demo note:** A polished Client Onboarding demo exists at `/demo/client/onboarding` (`src/pages/client-onboarding.tsx`). The form uses **local component state only** — no Supabase reads or writes, no API calls, no real upload handling (the menu upload area is a visual placeholder), no `localStorage`, no cookies. Submit shows "Demo only — onboarding is not saved yet." Supabase frontend access remains read-only.
+
 ---
 
 ## Next steps

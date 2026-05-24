@@ -12,6 +12,7 @@ import ClientCalendar from "@/pages/client-calendar";
 import ClientGoogle from "@/pages/client-google";
 import ClientReports from "@/pages/client-reports";
 import ClientUpdates from "@/pages/client-updates";
+import ClientOnboarding from "@/pages/client-onboarding";
 import TeamPortal from "@/pages/team-portal";
 import TeamTasks from "@/pages/team-tasks";
 import TeamMediaReview from "@/pages/team-media-review";
@@ -50,6 +51,7 @@ function Router() {
       <Route path="/demo/client/google" component={ClientGoogle} />
       <Route path="/demo/client/reports" component={ClientReports} />
       <Route path="/demo/client/updates" component={ClientUpdates} />
+      <Route path="/demo/client/onboarding" component={ClientOnboarding} />
       <Route path="/demo/team" component={TeamPortal} />
       <Route path="/demo/team/tasks" component={TeamTasks} />
       <Route path="/demo/team/media-review" component={TeamMediaReview} />

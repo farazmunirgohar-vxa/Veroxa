@@ -146,15 +146,25 @@ We are building **Demo Veroxa** and **Real Veroxa** side by side:
 - **Still no upload / publishing / AI / Google integrations.** All explicitly out of scope for the first write phase.
 - See `AUTH_ARCHITECTURE_PLAN.md` §10 for details.
 
+## Client Onboarding demo flow
+
+- **Client Onboarding demo route added** at `/demo/client/onboarding` (`src/pages/client-onboarding.tsx`), registered in `App.tsx`.
+- **Client Portal sidebar** now includes an **Onboarding** item (`ClipboardList` icon) added to `src/lib/clientPortalNav.ts`. Existing items (Dashboard, Content Calendar, Google Visibility, Reports, Updates) are unchanged.
+- **Six sections** rendered as cards: Restaurant Basics, Brand & Positioning, Menu & Offers, Content Preferences, Media Instructions, Google Visibility.
+- **Demo form uses local component state only** (`useState`). No Supabase reads or writes, no API calls, no upload handling, no `localStorage`, no cookies. The Menu section has a visual "Upload menu (placeholder)" area that does not accept files.
+- **Submit button** reads "Save Onboarding — Coming Soon"; `preventDefault()` on submit; displays "Demo only — onboarding is not saved yet."
+- **Launch Readiness side card** computes Pending / In progress / Ready per section from local field state and shows an overall progress bar — entirely derived from local state.
+- **No onboarding writes yet. No uploads yet. No Supabase mutation functions.** The Supabase read-only layer and `useClientPortalData` are untouched.
+
 ## Next recommended phase
 
-**Client Onboarding Demo Flow — demo UI only, no real writes** (see `AUTH_ARCHITECTURE_PLAN.md` §11).
+**Media Upload Demo Flow — demo UI only, no real storage.**
 
 Specifically:
 
-- Build a polished onboarding wizard inside `/demo/client/*` (brand basics, voice, posting windows, asset references) — purely demo, no Supabase writes, no real uploads, no AI
-- Use the wizard to nail down the shape of `onboarding_items.answer_payload` and the question vocabulary before any real write surface ships
-- Keep `/login`, other `/demo/*` routes, the future sign-in form shell, the `<RequireRole>` placeholders, and the auth-draft + write-draft SQL files untouched and unapplied
+- Build a polished demo upload UI (drag-and-drop, thumbnails, captions) inside the Client Portal that does not touch Supabase Storage, S3, or any real upload pipeline
+- Use the demo to lock down the shape of the future `media_assets` metadata write surface before any real write ships
+- Keep `/login`, other `/demo/*` routes, the future sign-in form shell, the `<RequireRole>` placeholders, the auth-draft + write-draft SQL files, and the existing Client/Team/Operator/Owner portal pages untouched and unapplied
 - Do **not** wire real Supabase Auth sessions, real writes, real uploads, AI, or publishing in that phase
 
 ---
