@@ -110,17 +110,24 @@ We are building **Demo Veroxa** and **Real Veroxa** side by side:
 - Future real authenticated routes will live under `/client/*`, `/team/*`, `/operator/*`, `/owner/*`.
 - No real auth, real sessions, real writes, or production RLS exist today.
 
+## Auth data model draft
+
+- **Auth data model draft created** — `docs/database/auth-draft/001_auth_user_profiles.sql` defines the `veroxa_user_role` enum and `user_profiles` table (role/`client_id` CHECK, indexes, `updated_at` trigger, RLS enabled).
+- **Production RLS draft created** — `docs/database/auth-draft/002_production_rls_policy_draft.sql` sketches SELECT-only policy direction for `clients`, `client_platforms`, `onboarding_items`, `media_assets`, `posts`, `post_slots`, `weekly_reports`, `monthly_reports`, `content_concepts`, `draft_sets`, `draft_variants`, and `notifications`. Team policies are deferred with explicit `TODO`s.
+- **Still not applied.** Nothing in `auth-draft/` has been run against any Supabase project.
+- **Still no real auth.** No Supabase Auth wired in the app, no real user accounts, no sessions, no passwords.
+- Temporary dev anon read policies in `docs/database/rls-draft/001_dev_read_policies.sql` remain the only RLS in effect on dev.
+- See `AUTH_ARCHITECTURE_PLAN.md` §8 for the data model summary.
+
 ## Next recommended phase
 
-**Real Auth Data Model + Supabase Auth planning** (see `AUTH_ARCHITECTURE_PLAN.md` §8).
+**Login Form UI Shell + `RequireRole` Guard Shell — UI only, no live auth** (see `AUTH_ARCHITECTURE_PLAN.md` §9).
 
 Specifically:
 
-- Finalize `user_profiles` schema (user_id → role → tenant scope)
-- Decide sign-in method (email + password vs magic link)
-- Draft production RLS policies gated on `auth.uid()` and `user_profiles.role`
-- Build a real `/login` form behind a feature flag (UI only, no live auth yet)
-- Build the `<RequireRole>` route guard wrapper (UI only, no live auth yet)
+- Build a real `/login` form (email + password fields, or magic link UI) behind a feature flag — no Supabase Auth wiring, submission does nothing real
+- Build a `<RequireRole role="...">` route guard component reading a placeholder session shape — no real session lookup
+- Keep `/demo/*` and the existing demo `/login` role-card layout untouched
 - Do **not** wire real Supabase Auth sessions, real writes, real uploads, AI, or publishing in that phase
 
 ---

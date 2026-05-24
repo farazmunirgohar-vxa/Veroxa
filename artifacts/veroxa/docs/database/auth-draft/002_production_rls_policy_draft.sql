@@ -1,0 +1,194 @@
+-- =============================================================================
+-- 002_production_rls_policy_draft.sql
+-- Veroxa — DRAFT ONLY: production RLS direction (SELECT-only)
+-- =============================================================================
+--
+-- STATUS: DRAFT ONLY — DO NOT RUN YET.
+--
+-- PURPOSE:
+--   Sketch the SELECT-only RLS direction for production. These policies will
+--   replace the temporary anon dev read policies in:
+--     ../rls-draft/001_dev_read_policies.sql
+--
+-- HARD CONSTRAINTS:
+--   - Production must drop ALL anon SELECT access on business tables.
+--   - Every production policy must require auth.uid() (no anonymous read).
+--   - Tenant scoping must go through user_profiles (see 001_auth_user_profiles.sql).
+--   - Service role key MUST NEVER be exposed to the frontend.
+--   - INSERT/UPDATE/DELETE policies are intentionally NOT in this file.
+--
+-- SCOPE OF THIS FILE:
+--   - SELECT direction only.
+--   - All policies below are written as commented examples or marked DRAFT.
+--   - Nothing in this file should be executed as-is.
+--
+-- ROLE SUMMARY:
+--   client    → reads only rows where row.client_id = their user_profiles.client_id.
+--   operator  → reads operational tables across all clients.
+--   owner     → reads everything (read-only at this layer).
+--   team      → assignment-scoped (TODO — requires assignment schema).
+-- =============================================================================
+
+
+-- =============================================================================
+-- Helper: current_user_role()
+--
+-- A SECURITY DEFINER helper to avoid repeating the user_profiles join in every
+-- policy. Keeping it as a function makes policies smaller and easier to audit.
+-- =============================================================================
+
+-- DRAFT — do not run:
+--
+-- CREATE OR REPLACE FUNCTION current_user_role()
+-- RETURNS veroxa_user_role
+-- LANGUAGE sql STABLE SECURITY DEFINER
+-- AS $$
+--   SELECT role FROM user_profiles WHERE user_id = auth.uid();
+-- $$;
+--
+-- CREATE OR REPLACE FUNCTION current_user_client_id()
+-- RETURNS uuid
+-- LANGUAGE sql STABLE SECURITY DEFINER
+-- AS $$
+--   SELECT client_id FROM user_profiles WHERE user_id = auth.uid();
+-- $$;
+
+
+-- =============================================================================
+-- user_profiles
+-- =============================================================================
+
+-- DRAFT:
+--   - Every signed-in user can SELECT their own row.
+--   - operator/owner can SELECT all rows (read-only oversight).
+--
+-- CREATE POLICY "self_read_profile"
+--   ON user_profiles FOR SELECT TO authenticated
+--   USING (user_id = auth.uid());
+--
+-- CREATE POLICY "operator_owner_read_all_profiles"
+--   ON user_profiles FOR SELECT TO authenticated
+--   USING (current_user_role() IN ('operator', 'owner'));
+
+
+-- =============================================================================
+-- clients
+--
+--   - client  → only their own client row.
+--   - operator/owner → all rows.
+--   - team    → TODO (requires assignment schema).
+-- =============================================================================
+
+-- DRAFT:
+--
+-- CREATE POLICY "client_read_own_client"
+--   ON clients FOR SELECT TO authenticated
+--   USING (
+--     current_user_role() = 'client'
+--     AND id = current_user_client_id()
+--   );
+--
+-- CREATE POLICY "operator_owner_read_all_clients"
+--   ON clients FOR SELECT TO authenticated
+--   USING (current_user_role() IN ('operator', 'owner'));
+--
+-- -- TODO: team access is assignment-scoped. Defer until assignment schema exists.
+
+
+-- =============================================================================
+-- Client-scoped tables (have a client_id column)
+--
+--   - clients (root, handled above)
+--   - client_platforms
+--   - onboarding_items
+--   - media_assets
+--   - posts
+--   - post_slots
+--   - weekly_reports
+--   - monthly_reports
+--   - content_concepts
+--   - draft_sets
+--   - draft_variants
+--   - notifications
+--
+-- Pattern: identical SELECT policy on each client-scoped table.
+-- =============================================================================
+
+-- DRAFT — apply per table (client_platforms shown; repeat for the rest):
+--
+-- CREATE POLICY "client_read_own_rows"
+--   ON client_platforms FOR SELECT TO authenticated
+--   USING (
+--     current_user_role() = 'client'
+--     AND client_id = current_user_client_id()
+--   );
+--
+-- CREATE POLICY "operator_owner_read_all"
+--   ON client_platforms FOR SELECT TO authenticated
+--   USING (current_user_role() IN ('operator', 'owner'));
+--
+-- -- TODO (team): assignment-scoped. Requires a per-table or central
+-- -- assignment table that maps team user → client (or finer-grained, e.g.
+-- -- team user → specific post / draft / report).
+--
+-- Repeat the same two policies (client_read_own_rows, operator_owner_read_all)
+-- and the same team TODO for:
+--   onboarding_items
+--   media_assets
+--   posts
+--   post_slots
+--   weekly_reports
+--   monthly_reports
+--   content_concepts
+--   draft_sets
+--   draft_variants
+--   notifications
+
+
+-- =============================================================================
+-- Operator-relevant tables
+--
+-- The same pattern above already gives operator/owner full SELECT across every
+-- client-scoped table. No additional operator-only tables are introduced here.
+-- If operator-only oversight tables are added later (e.g. alerts_inbox,
+-- failed_post_log, report_approvals), they should get:
+--
+--   - operator/owner SELECT
+--   - client SELECT scoped to their own client_id ONLY if the row belongs
+--     to them (otherwise client must not see operator inbox rows at all).
+-- =============================================================================
+
+
+-- =============================================================================
+-- TEAM ROLE — TODO (deferred)
+--
+-- Team SELECT cannot be finalised without a schema decision:
+--
+--   Option A: per-table assignment columns
+--     e.g. posts.assigned_team_user_id uuid references user_profiles(user_id)
+--
+--   Option B: central assignment table
+--     team_assignments(
+--       team_user_id uuid,
+--       resource_type text,  -- 'post' | 'draft' | 'report' | ...
+--       resource_id uuid,
+--       ...
+--     )
+--
+--   Option C: client-scope assignment
+--     team_user has access to all rows of a specific client_id via a
+--     team_client_assignments(team_user_id, client_id) table.
+--
+-- Until that decision lands, team RLS is intentionally omitted. The frontend
+-- /team/* portal will continue to use static demo data only.
+-- =============================================================================
+
+
+-- =============================================================================
+-- INSERT / UPDATE / DELETE — out of scope
+--
+-- This file is SELECT direction only. Write policies will be drafted in a
+-- separate phase, alongside the actual write paths in the frontend. Until
+-- then, all mutations go through a server-side function using the service
+-- role key — never the browser client.
+-- =============================================================================

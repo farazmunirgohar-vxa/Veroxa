@@ -142,17 +142,46 @@ Explicitly out of scope for this phase and the next:
 
 ---
 
-## 8. Recommended next phase
+## 8. Auth Data Model Draft
 
-**Real Auth Data Model + Supabase Auth planning.**
+A first pass of the real-auth schema and production RLS direction now lives, in draft form only, under [`database/auth-draft/`](./database/auth-draft/). Nothing in that directory has been applied — current /demo/* behaviour is unchanged.
+
+**`user_profiles` table — purpose:**
+One row per Supabase Auth user. Maps `auth.users.id` to a Veroxa role and, when applicable, a tenant scope (`client_id`). It is the single source of truth that every production RLS policy will join against.
+
+**`veroxa_user_role` enum:**
+Four values — `client`, `team`, `operator`, `owner`. Additional roles (admin, billing, viewer) are explicitly out of scope for V1.
+
+**Role / `client_id` rules in V1:**
+- `client` role **requires** `client_id` (enforced by a CHECK constraint).
+- `team`, `operator`, and `owner` **do not** have a `client_id` — they are unscoped at the profile level.
+
+**Production RLS direction:**
+- Every production policy will require `auth.uid()` — no anonymous access in production.
+- Tenant scoping joins `user_profiles` via helper functions (`current_user_role()`, `current_user_client_id()`) sketched in the draft.
+- `client` role reads only rows where `row.client_id = their user_profiles.client_id`.
+- `operator` / `owner` read across all clients (SELECT only at this layer).
+- The temporary dev anon read policies in `database/rls-draft/001_dev_read_policies.sql` must be dropped before production.
+- Service role key never reaches the frontend.
+
+**Team RLS — deferred:**
+Team assignment requires its own schema decision (per-table assignment column, central `team_assignments` table, or `team_client_assignments` mapping). Until that lands, team RLS is omitted and `/team/*` stays demo-only.
+
+**Draft SQL files (do not run):**
+- `database/auth-draft/001_auth_user_profiles.sql` — enum, table, constraint, indexes, `updated_at` trigger, `ENABLE ROW LEVEL SECURITY`.
+- `database/auth-draft/002_production_rls_policy_draft.sql` — SELECT-only policy direction across business tables, with team policies explicitly marked `TODO`.
+- `database/auth-draft/README.md` — the rationale and sequencing for the directory.
+
+---
+
+## 9. Recommended next phase
+
+**Login Form UI Shell + `RequireRole` Guard Shell — UI only, no live auth.**
 
 Specifically:
 
-1. Finalize the `user_profiles` schema (columns, FKs, indexes).
-2. Decide auth method: email + password vs magic link vs both.
-3. Decide tenant boundary semantics for each role (especially Team).
-4. Draft production RLS policies for the existing tables, gated on `auth.uid()` and `user_profiles.role`.
-5. Build a real `/login` form behind a feature flag (still no live auth — just the UI).
-6. Build the `<RequireRole>` route guard component (still no live auth — just the wrapper).
+1. Build a real `/login` form (email + password fields, or magic link UI) behind a feature flag. No Supabase Auth wiring; submission does nothing real.
+2. Build a `<RequireRole role="...">` route guard component that reads a placeholder session shape. No real session lookup yet.
+3. Keep `/demo/*` and the existing demo `/login` role-card layout untouched.
 
-Only after that planning phase is approved should we wire actual Supabase Auth sessions, real sign-in, and the first `/client/*` real route.
+Only after that UI scaffolding is approved should we wire actual Supabase Auth sessions, real sign-in, and the first `/client/*` real route.
