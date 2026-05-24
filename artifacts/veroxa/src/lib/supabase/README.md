@@ -82,6 +82,8 @@ All connections are read-only and unauthenticated (anon key only).
 
 **Client Onboarding demo note:** A polished Client Onboarding demo exists at `/demo/client/onboarding` (`src/pages/client-onboarding.tsx`). The form uses **local component state only** — no Supabase reads or writes, no API calls, no real upload handling (the menu upload area is a visual placeholder), no `localStorage`, no cookies. Submit shows "Demo only — onboarding is not saved yet." Supabase frontend access remains read-only.
 
+**Media Library demo note:** A polished Media Library demo exists at `/demo/client/media` (`src/pages/client-media.tsx`). The drag-and-drop / file picker reads only file *names*, sizes, and MIME types into **local component state** — **no `fetch`, no `FormData`, no Supabase Storage, no API call, no database mutation, no `localStorage`, no cookies.** The "Choose Files — Coming Soon" button does not initiate a real upload. Supabase frontend access remains anon read-only for the Client Portal demo only.
+
 ---
 
 ## Next steps

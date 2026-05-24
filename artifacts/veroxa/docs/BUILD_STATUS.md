@@ -149,22 +149,30 @@ We are building **Demo Veroxa** and **Real Veroxa** side by side:
 ## Client Onboarding demo flow
 
 - **Client Onboarding demo route added** at `/demo/client/onboarding` (`src/pages/client-onboarding.tsx`), registered in `App.tsx`.
-- **Client Portal sidebar** now includes an **Onboarding** item (`ClipboardList` icon) added to `src/lib/clientPortalNav.ts`. Existing items (Dashboard, Content Calendar, Google Visibility, Reports, Updates) are unchanged.
+- **Client Portal sidebar** now includes an **Onboarding** item (`ClipboardList` icon) in `src/lib/clientPortalNav.ts`. Existing items (Dashboard, Content Calendar, Google Visibility, Reports, Updates) are unchanged.
 - **Six sections** rendered as cards: Restaurant Basics, Brand & Positioning, Menu & Offers, Content Preferences, Media Instructions, Google Visibility.
 - **Demo form uses local component state only** (`useState`). No Supabase reads or writes, no API calls, no upload handling, no `localStorage`, no cookies. The Menu section has a visual "Upload menu (placeholder)" area that does not accept files.
 - **Submit button** reads "Save Onboarding — Coming Soon"; `preventDefault()` on submit; displays "Demo only — onboarding is not saved yet."
 - **Launch Readiness side card** computes Pending / In progress / Ready per section from local field state and shows an overall progress bar — entirely derived from local state.
 - **No onboarding writes yet. No uploads yet. No Supabase mutation functions.** The Supabase read-only layer and `useClientPortalData` are untouched.
 
+## Media Library demo flow
+
+- **Media Library demo route added** at `/demo/client/media` (`src/pages/client-media.tsx`), registered in `App.tsx`.
+- **Client Portal sidebar** now also includes a **Media Library** item (`Images` icon). All other nav items unchanged.
+- **Sections:** Upload (drag-and-drop card with "Choose Files — Coming Soon" button), Upload Guidelines (food close-ups, kitchen/prep, staff/customer moments, menu/specials, avoid blurry/dark), Media Review Preview (static demo statuses: "Ready for editing", "Needs better lighting", "Good for Google post", "Use for weekend promo"), Content Supply Snapshot (available / used / needs review + library utilisation bar + low-content warning).
+- **No real upload.** The hidden file input only reads file names / sizes / MIME types into local component state. **No `fetch`, no `FormData`, no Supabase Storage, no API call, no `localStorage`, no cookies.** Selected file list disappears on refresh.
+- **Demo-only notice** rendered on the page: "Real media uploads will require authenticated client access, storage rules, production RLS, and upload validation."
+
 ## Next recommended phase
 
-**Media Upload Demo Flow — demo UI only, no real storage.**
+**Client Onboarding Data Model Draft + Media Storage Planning — docs/SQL draft only.**
 
 Specifically:
 
-- Build a polished demo upload UI (drag-and-drop, thumbnails, captions) inside the Client Portal that does not touch Supabase Storage, S3, or any real upload pipeline
-- Use the demo to lock down the shape of the future `media_assets` metadata write surface before any real write ships
-- Keep `/login`, other `/demo/*` routes, the future sign-in form shell, the `<RequireRole>` placeholders, the auth-draft + write-draft SQL files, and the existing Client/Team/Operator/Owner portal pages untouched and unapplied
+- Draft (do not apply) the `onboarding_items.answer_payload` shape (JSON schema) plus per-section keys, mapped to what the `/demo/client/onboarding` form already collects
+- Draft (do not apply) the `media_assets` metadata table (filename, MIME type, size, uploaded_by, status, review tags, client_id) and a planning doc for the eventual Supabase Storage bucket layout, RLS, and signed-URL strategy
+- Keep `/login`, all `/demo/*` routes, the future sign-in form shell, the `<RequireRole>` placeholders, the auth-draft + write-draft SQL files, and the existing Client/Team/Operator/Owner portal pages untouched and unapplied
 - Do **not** wire real Supabase Auth sessions, real writes, real uploads, AI, or publishing in that phase
 
 ---

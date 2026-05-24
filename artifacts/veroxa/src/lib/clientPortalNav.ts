@@ -1,4 +1,4 @@
-import { LayoutDashboard, CalendarDays, Globe, FileText, Bell, ClipboardList } from "lucide-react";
+import { LayoutDashboard, CalendarDays, Globe, FileText, Bell, ClipboardList, Images } from "lucide-react";
 import type { SidebarItem } from "@/components/PortalLayout";
 
 export const clientPortalNavItems: SidebarItem[] = [
@@ -8,4 +8,5 @@ export const clientPortalNavItems: SidebarItem[] = [
   { label: "Reports",           icon: FileText,        href: "/demo/client/reports"    },
   { label: "Updates",           icon: Bell,            href: "/demo/client/updates"    },
   { label: "Onboarding",        icon: ClipboardList,   href: "/demo/client/onboarding" },
+  { label: "Media Library",     icon: Images,          href: "/demo/client/media"      },
 ];
