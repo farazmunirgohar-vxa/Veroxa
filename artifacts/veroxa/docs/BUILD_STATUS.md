@@ -264,6 +264,14 @@ The real Supabase session-reading layer is now wired into the codebase but **ina
 - **No real users created.** No writes. No RLS changes. No SQL applied. **No demo routes protected.**
 - **Existing read-only Client Portal Supabase layer untouched.** Demo behavior identical.
 
+## AUTH_MODE switched to real (dev testing)
+
+`AUTH_MODE` flipped to `"real"` in `src/lib/auth/authMode.ts`.
+`useRealAuth` is now active. `/login` will attempt
+`signInWithPassword` when credentials are submitted. `/auth-status`
+shows `AUTH_MODE: real`. No redirects, no sign-out, no writes, no
+demo route changes. Single-file change only.
+
 ## Real Auth Manual Prep Pack
 
 Docs-only pass — **no code changes.** All five new files are

@@ -26,4 +26,4 @@
 
 export type AuthMode = "placeholder" | "real";
 
-export const AUTH_MODE: AuthMode = "placeholder";
+export const AUTH_MODE: AuthMode = "real";
