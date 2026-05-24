@@ -75,3 +75,14 @@ Veroxa-shaped** — defer or cut it.
   customers.
 - See `docs/PUBLIC_PRICING_AND_SERVICES.md` for locked pricing
   numbers and service lists.
+
+## Truthfulness in Public Claims
+
+- Veroxa must sell honestly. Helping restaurants bring customers does not justify exaggerated claims.
+- Public claims must align with amanah (trustworthiness), sidq (truthfulness), ihsan (excellence),
+  adl (fairness), and tawakkul (reliance on sound foundations, not inflated numbers).
+- If results are not verified, phrase them as goals, system capabilities, or planned outcomes —
+  not proof.
+- Do not publish fake client counts, post counts, retention rates, visibility lifts, or case studies
+  on the public website.
+- Trust is built by delivering the system honestly, not by overstating early results.

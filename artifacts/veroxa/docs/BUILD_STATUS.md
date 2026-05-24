@@ -372,3 +372,18 @@ Specifically:
 - `docs/PUBLIC_PRICING_AND_SERVICES.md` created as locked pricing
   source of truth.
 - No writes, uploads, storage, auth, or database changes.
+
+## Public Website Truthfulness Cleanup
+
+**Status: COMPLETE**
+
+- Removed unproven stats from landing page (340+ restaurants, 18,000+ posts,
+  96% retention, +41% Google visibility lift).
+- Replaced Stats Strip with four honest system-based trust signals:
+  Restaurant-Focused System, Role-Based Portal, Google + Social Focus,
+  Reporting Built In.
+- Added honest early-stage positioning phrase in "What Veroxa Does" section.
+- Pricing, services, CTAs, and Client Portal Preview link unchanged.
+- No auth, database, upload, or storage changes.
+- `PUBLIC_PRICING_AND_SERVICES.md` updated with Truthful Public Claims Rule.
+- `CUSTOMER_GROWTH_PRIORITY.md` updated with truthfulness principles.

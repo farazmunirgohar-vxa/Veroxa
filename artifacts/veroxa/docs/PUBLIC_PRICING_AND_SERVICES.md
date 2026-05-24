@@ -93,3 +93,16 @@ Restaurant owners stay focused on food and service. Veroxa handles the online pr
 - Public website must NOT expose Team, Operator, or Owner demo portal links.
 - Login page may show all four role cards because it is the access entry point.
 - Pricing shown publicly must match this document exactly.
+
+---
+
+## Truthful Public Claims Rule
+
+- Do not publish fake client counts.
+- Do not publish fake post counts.
+- Do not publish fake retention rates.
+- Do not publish fake Google visibility lift percentages.
+- Do not publish fake case studies.
+- Use system-based trust signals until real client results exist and are verified.
+- Future performance claims require evidence before being added to the public website.
+- If results are not verified, phrase them as system capabilities, goals, or planned outcomes — not proof.

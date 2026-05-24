@@ -107,24 +107,24 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Stats Strip */}
+      {/* System Trust Signals */}
       <section className="border-y border-border/40 bg-card/30 backdrop-blur-sm py-10">
         <div className="max-w-6xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-border/30">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-foreground mb-1" data-testid="stat-restaurants">340+</div>
-            <div className="text-sm font-medium text-muted-foreground">Restaurants Growing</div>
+          <div className="text-center px-4">
+            <div className="text-sm font-bold text-foreground mb-1" data-testid="signal-restaurant-focused">Restaurant-Focused System</div>
+            <div className="text-xs text-muted-foreground leading-snug">Built specifically around restaurant visibility, content, Google presence, and consistency.</div>
           </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-foreground mb-1" data-testid="stat-posts">18,000+</div>
-            <div className="text-sm font-medium text-muted-foreground">Posts Published</div>
+          <div className="text-center px-4">
+            <div className="text-sm font-bold text-foreground mb-1" data-testid="signal-role-based">Role-Based Portal</div>
+            <div className="text-xs text-muted-foreground leading-snug">Client, Team, Operator, and Owner views keep responsibilities clear.</div>
           </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-foreground mb-1" data-testid="stat-retention">96%</div>
-            <div className="text-sm font-medium text-muted-foreground">Client Retention</div>
+          <div className="text-center px-4">
+            <div className="text-sm font-bold text-foreground mb-1" data-testid="signal-google-social">Google + Social Focus</div>
+            <div className="text-xs text-muted-foreground leading-snug">Online presence support across Google Business Profile, Instagram, Facebook, and TikTok.</div>
           </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-foreground mb-1" data-testid="stat-visibility">+41%</div>
-            <div className="text-sm font-medium text-muted-foreground">Avg. Google Visibility Lift</div>
+          <div className="text-center px-4">
+            <div className="text-sm font-bold text-foreground mb-1" data-testid="signal-reporting">Reporting Built In</div>
+            <div className="text-xs text-muted-foreground leading-snug">Weekly updates and monthly reporting are part of the operating system.</div>
           </div>
         </div>
       </section>
@@ -133,8 +133,11 @@ export default function LandingPage() {
       <section className="py-24 px-6 lg:px-12 max-w-7xl mx-auto w-full">
         <div className="text-center mb-16">
           <h2 className="text-3xl font-bold mb-4">What Veroxa Does</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-muted-foreground max-w-2xl mx-auto mb-4">
             Restaurant owners stay focused on food and service. Veroxa handles the online presence system.
+          </p>
+          <p className="text-sm text-muted-foreground/70 max-w-2xl mx-auto">
+            Veroxa is built as a structured growth system for restaurants — designed to replace random posting with consistent execution, visibility, and reporting.
           </p>
         </div>
 
