@@ -40,6 +40,28 @@ Restaurant owners stay focused on food and service. Veroxa handles the online pr
 | 3-month | $1,197 | Foundation |
 | No-contract | $1,497 | Flexible |
 
+### Starter — Google Presence (on-ramp)
+
+| Plan | Price/month | Label |
+|------|-------------|-------|
+| Starter | $497 | On-ramp |
+
+A simpler entry tier for owners who want consistent Google Business
+Profile updates and regular posting before stepping up to the full
+Complete Online Presence system.
+
+**Included:** Google Business Profile updates, 2 social posts per
+week, monthly performance snapshot, from photos the owner sends —
+no shoot, no concept work.
+
+**Not included** (available on Complete Online Presence): weekly
+capture plan, Restaurant Media Guidance Engine, content concept
+work, weekly client updates, full monthly reporting depth, ads
+management.
+
+Most restaurants graduate to Complete Online Presence within 60–90
+days.
+
 ---
 
 ## Ads Management — Services Included

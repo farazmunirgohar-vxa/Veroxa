@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { ArrowRight, CheckCircle2, Megaphone, Sparkles, Star } from "lucide-react";
+import { ArrowRight, CheckCircle2, Megaphone, Sparkles, Star, Sprout } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
@@ -16,6 +16,13 @@ const BUNDLE_PLANS = [
   { label: "6-month bundle",  price: "$2,097", highlight: "Growth system",        best: false },
   { label: "3-month bundle",  price: "$2,297", highlight: "Foundation",           best: false },
   { label: "No-contract",     price: "$2,697", highlight: "Flexible",             best: false },
+];
+
+const STARTER_INCLUDES = [
+  "Google Business Profile updates",
+  "2 social posts per week",
+  "Monthly performance snapshot",
+  "From photos you send — no shoot, no concept work",
 ];
 
 const PRESENCE_SERVICES = [
@@ -88,6 +95,47 @@ export default function PricingPage() {
           Results depend on restaurant quality, offer, consistency, location, and market demand.
           Veroxa does not guarantee specific revenue results.
         </p>
+
+        {/* Starter / on-ramp tier */}
+        <div
+          className="border border-border/60 rounded-2xl bg-card/30 p-7 max-w-3xl mb-10 flex flex-col md:flex-row md:items-center gap-6"
+          data-testid="pricing-starter"
+        >
+          <div className="md:w-1/3">
+            <div className="flex items-center gap-2 mb-2">
+              <Sprout className="w-4 h-4 text-emerald-400" />
+              <span className="text-[11px] font-semibold uppercase tracking-widest text-emerald-400">
+                On-ramp
+              </span>
+            </div>
+            <h3 className="text-lg font-bold mb-1">Starter — Google Presence</h3>
+            <div className="mb-2">
+              <span className="text-3xl font-extrabold">$497</span>
+              <span className="text-sm text-muted-foreground ml-1">/mo</span>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              A simpler entry point. Designed for owners who want to start with consistent
+              Google updates and regular posting before stepping up to the full system.
+            </p>
+          </div>
+          <div className="md:flex-1 md:border-l md:border-border/40 md:pl-6">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+              What's included
+            </p>
+            <ul className="space-y-2">
+              {STARTER_INCLUDES.map((item) => (
+                <li key={item} className="flex items-start gap-2 text-sm">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="text-[11px] text-muted-foreground/70 mt-3 italic">
+              Most restaurants graduate to Complete Online Presence within 60–90 days for full
+              content production, captures, and reporting depth.
+            </p>
+          </div>
+        </div>
 
         {/* Which plan fits? */}
         <div className="border border-border/60 rounded-2xl bg-card/30 p-7 max-w-xl">
