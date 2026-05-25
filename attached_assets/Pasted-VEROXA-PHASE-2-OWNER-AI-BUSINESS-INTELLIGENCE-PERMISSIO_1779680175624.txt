@@ -1,0 +1,544 @@
+VEROXA PHASE 2 — OWNER + AI + BUSINESS INTELLIGENCE + PERMISSIONS + AUTOMATION READINESS
+
+OBJECTIVE
+
+Expand Veroxa OS into a complete operational demo platform.
+
+This phase should make Veroxa feel like a real software company product.
+
+IMPORTANT:
+
+This remains DEMO ONLY.
+
+DO NOT ADD:
+
+- Database
+- Backend APIs
+- Authentication changes
+- Social media integrations
+- OpenAI integrations
+- Upload systems
+- Publishing systems
+- Scheduling systems
+- External APIs
+
+Use demo/sample data only.
+
+Reuse existing design system.
+
+Maintain premium dark SaaS styling.
+
+====================================================
+SECTION 1 — OWNER EXECUTIVE DASHBOARD
+====================================================
+
+Create a dedicated Owner Dashboard.
+
+Purpose:
+
+High-level business oversight.
+
+Owner should not manage individual posts.
+
+Owner should monitor business health.
+
+Display:
+
+- Total Active Clients
+- Monthly Recurring Revenue
+- Projected Revenue
+- Client Health Average
+- Team Utilization
+- Retention Score
+- Reporting Completion Rate
+- Onboarding Completion Rate
+
+Add:
+
+Revenue trend chart
+
+Client growth chart
+
+Service plan distribution
+
+Client health distribution
+
+Monthly business summary card
+
+Executive action center
+
+Examples:
+
+- 2 clients require attention
+- 4 reports pending validation
+- 1 onboarding issue open
+- Revenue increased 12%
+
+====================================================
+SECTION 2 — OWNER COMMAND CENTER
+====================================================
+
+Create a command center showing:
+
+Business Risks
+
+Growth Opportunities
+
+Team Bottlenecks
+
+Client Risks
+
+Revenue Risks
+
+Operational Warnings
+
+Categories:
+
+Low
+Medium
+High
+Critical
+
+Display recommended actions.
+
+====================================================
+SECTION 3 — AI AGENT SIMULATION V2
+====================================================
+
+Expand AI Agent Preview system.
+
+Create dedicated pages for:
+
+Media Review Agent
+
+Content Strategist Agent
+
+Caption Agent
+
+Brand Voice Agent
+
+Scheduling Agent
+
+Reporting Agent
+
+Risk Monitoring Agent
+
+Operator Assistant
+
+Owner Assistant
+
+Each page should display:
+
+Purpose
+
+Inputs
+
+Outputs
+
+Sample recommendations
+
+Sample activity history
+
+Sample decisions
+
+Static simulation only.
+
+No AI APIs.
+
+====================================================
+SECTION 4 — AGENT WORKFLOW VISUALIZER
+====================================================
+
+Create a visual workflow.
+
+Client uploads media
+
+↓
+
+Media Review Agent
+
+↓
+
+Content Strategist Agent
+
+↓
+
+Caption Agent
+
+↓
+
+Brand Voice Agent
+
+↓
+
+Scheduling Agent
+
+↓
+
+Publishing Stage
+
+↓
+
+Reporting Agent
+
+↓
+
+Risk Monitoring Agent
+
+↓
+
+Operator Assistant
+
+↓
+
+Owner Assistant
+
+Use diagrams/cards.
+
+Demo only.
+
+====================================================
+SECTION 5 — BUSINESS INTELLIGENCE CENTER
+====================================================
+
+Create BI Center.
+
+Show:
+
+Client Growth
+
+Revenue Growth
+
+Retention Metrics
+
+Media Inventory Trends
+
+Content Production Metrics
+
+Reporting Metrics
+
+Client Health Metrics
+
+Use realistic charts.
+
+Demo only.
+
+====================================================
+SECTION 6 — CLIENT ANALYTICS CENTER
+====================================================
+
+Create client analytics section.
+
+Display:
+
+Profile summary
+
+Service plan
+
+Health score
+
+Content activity
+
+Media inventory
+
+Reporting history
+
+Google activity
+
+Trend cards
+
+No real calculations.
+
+====================================================
+SECTION 7 — REPORTING ANALYTICS CENTER
+====================================================
+
+Create reporting intelligence dashboard.
+
+Weekly report metrics
+
+Monthly report metrics
+
+Completion rates
+
+Validation rates
+
+Publishing rates
+
+Historical trends
+
+Use sample data.
+
+====================================================
+SECTION 8 — MEDIA ANALYTICS CENTER
+====================================================
+
+Create media intelligence dashboard.
+
+Show:
+
+Photos received
+
+Videos received
+
+Unused inventory
+
+Inventory aging
+
+Inventory health
+
+Upcoming shortages
+
+Visual charts.
+
+====================================================
+SECTION 9 — OPERATIONS INTELLIGENCE CENTER
+====================================================
+
+Create operational analytics.
+
+Show:
+
+Team workload
+
+Review queue
+
+Approval queue
+
+Content backlog
+
+Reporting backlog
+
+Client responsiveness
+
+Risk distribution
+
+====================================================
+SECTION 10 — ROLE & PERMISSION ARCHITECTURE
+====================================================
+
+Create a demo Permissions Center.
+
+Purpose:
+
+Document Veroxa role architecture.
+
+Roles:
+
+Client
+
+Team
+
+Operator
+
+Owner
+
+Show:
+
+Accessible modules
+
+Restricted modules
+
+Responsibilities
+
+Visibility matrix
+
+Read-only demo.
+
+No auth changes.
+
+====================================================
+SECTION 11 — VISIBILITY MATRIX
+====================================================
+
+Create role visibility table.
+
+Examples:
+
+Client:
+- Own reports
+- Own content
+- Own onboarding
+
+Team:
+- Assigned clients
+- Content queue
+
+Operator:
+- All clients
+- Reports
+- Operations
+
+Owner:
+- Entire business
+
+Display visually.
+
+====================================================
+SECTION 12 — FUTURE AUTOMATION CENTER
+====================================================
+
+Create a roadmap dashboard.
+
+Show future automations:
+
+Media Review Automation
+
+Caption Automation
+
+Scheduling Automation
+
+Publishing Automation
+
+Weekly Reporting Automation
+
+Monthly Reporting Automation
+
+Risk Monitoring Automation
+
+Owner Briefing Automation
+
+Status labels:
+
+Planned
+
+Prototype
+
+Future Build
+
+Demo only.
+
+====================================================
+SECTION 13 — VEROXA SYSTEM MAP
+====================================================
+
+Create a visual system architecture page.
+
+Display:
+
+Client Layer
+
+Team Layer
+
+Operator Layer
+
+Owner Layer
+
+AI Layer
+
+Reporting Layer
+
+Analytics Layer
+
+Future Automation Layer
+
+Connect everything visually.
+
+This should become the master Veroxa OS map.
+
+====================================================
+SECTION 14 — EXECUTIVE DAILY BRIEFING
+====================================================
+
+Create owner briefing panel.
+
+Show:
+
+Business summary
+
+Revenue summary
+
+Risk summary
+
+Client summary
+
+Team summary
+
+Recommendations
+
+Example:
+
+Revenue stable
+
+3 clients need attention
+
+2 reports pending
+
+Media inventory healthy
+
+Expansion opportunity detected
+
+Demo only.
+
+====================================================
+SECTION 15 — CENTRALIZED DATA
+====================================================
+
+Extend demoData.ts only.
+
+Do not create:
+
+mockData.js
+fakeData.js
+sampleData.js
+testData.js
+
+Keep all demo information centralized.
+
+====================================================
+SECTION 16 — UI QUALITY
+====================================================
+
+Premium SaaS feel.
+
+Requirements:
+
+- Consistent spacing
+- Mobile responsive
+- Professional charts
+- Consistent cards
+- No clutter
+- No broken layouts
+- Reuse existing components
+
+====================================================
+SECTION 17 — BUILD SAFETY
+====================================================
+
+Before completion:
+
+Verify:
+
+- No TypeScript errors
+- No missing imports
+- No broken routes
+- No navigation issues
+- No build failures
+
+Project must build successfully.
+
+====================================================
+SUCCESS CRITERIA
+====================================================
+
+Veroxa should feel like a complete SaaS operating system demo.
+
+Owner Dashboard exists.
+
+Business Intelligence Center exists.
+
+AI Agent Simulation V2 exists.
+
+Permissions Center exists.
+
+Automation Roadmap exists.
+
+System Map exists.
+
+Executive Briefing exists.
+
+All pages remain demo-only.
+
+No backend dependencies.
+
+Project builds successfully.

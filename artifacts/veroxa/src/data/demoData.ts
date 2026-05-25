@@ -1464,3 +1464,553 @@ export const demoDailyDigest: DemoDailyDigestSection[] = [
     ],
   },
 ];
+
+// ── Owner / Phase 2 (Owner Executive + BI + AI + Permissions + Automation) ──
+
+// Owner business metrics
+export const demoOwnerMetrics = {
+  totalActiveClients:        4,
+  monthlyRecurringRevenue:   4788,   // 997+1097+1197+1497
+  projectedRevenue:          7785,
+  clientHealthAverage:       79,
+  teamUtilization:           84,
+  retentionScore:            94,
+  reportingCompletionRate:   88,
+  onboardingCompletionRate:  76,
+  monthOverMonthGrowth:      12,     // %
+};
+
+// 6-month revenue + client trend
+export interface DemoRevenuePoint {
+  month:    string;
+  revenue:  number;
+  clients:  number;
+}
+export const demoRevenueTrend: DemoRevenuePoint[] = [
+  { month: "Dec", revenue: 2094, clients: 2 },
+  { month: "Jan", revenue: 2094, clients: 2 },
+  { month: "Feb", revenue: 3191, clients: 3 },
+  { month: "Mar", revenue: 3291, clients: 3 },
+  { month: "Apr", revenue: 4488, clients: 4 },
+  { month: "May", revenue: 4788, clients: 4 },
+];
+
+// Service plan distribution (locked pricing $997 / $1,097 / $1,197 / $1,497)
+export interface DemoPlanRow {
+  plan:    string;
+  price:   number;
+  clients: number;
+  color:   string;
+}
+export const demoServicePlans: DemoPlanRow[] = [
+  { plan: "Essential", price:  997, clients: 1, color: "bg-sky-500"     },
+  { plan: "Growth",    price: 1097, clients: 1, color: "bg-emerald-500" },
+  { plan: "Pro",       price: 1197, clients: 1, color: "bg-amber-500"   },
+  { plan: "Premium",   price: 1497, clients: 1, color: "bg-violet-500"  },
+];
+
+// Client health distribution
+export const demoClientHealthDistribution = [
+  { status: "Excellent", count: 0, color: "bg-emerald-500" },
+  { status: "Healthy",   count: 2, color: "bg-sky-500"     },
+  { status: "Warning",   count: 1, color: "bg-amber-500"   },
+  { status: "Critical",  count: 1, color: "bg-rose-500"    },
+] as const;
+
+// Owner Command Center: business-level risks, opportunities, and warnings
+export type BizSeverity = "Critical" | "High" | "Medium" | "Low";
+export type BizCategory =
+  | "Business Risk"
+  | "Growth Opportunity"
+  | "Team Bottleneck"
+  | "Client Risk"
+  | "Revenue Risk"
+  | "Operational Warning";
+
+export interface DemoOwnerCommandItem {
+  id:                string;
+  category:          BizCategory;
+  severity:          BizSeverity;
+  title:             string;
+  description:       string;
+  recommendedAction: string;
+}
+
+export const demoOwnerCommandItems: DemoOwnerCommandItem[] = [
+  {
+    id: "oc1", category: "Revenue Risk",       severity: "Critical",
+    title: "Al Noor Cafe at risk of churn",
+    description: "Critical health status, onboarding stalled, client unresponsive. $1,097 MRR at risk.",
+    recommendedAction: "Schedule rescue call this week; consider 30-day extension or service downgrade.",
+  },
+  {
+    id: "oc2", category: "Client Risk",         severity: "High",
+    title: "Urban Tacos health declining",
+    description: "Reports overdue, media supply trending down. Health dropped from 82 → 68 this month.",
+    recommendedAction: "Operator intervention plus media-refresh shoot scheduled within 5 business days.",
+  },
+  {
+    id: "oc3", category: "Team Bottleneck",     severity: "High",
+    title: "Reporting workload concentration",
+    description: "60% of weekly reports flow through Priya. Risk of single-point delay.",
+    recommendedAction: "Cross-train Jordan and Ava on Reporting Agent validation by end of month.",
+  },
+  {
+    id: "oc4", category: "Growth Opportunity",  severity: "Medium",
+    title: "Mamadali Kebab House ready for upsell",
+    description: "Healthy metrics, engaged client, 3 months on Growth plan. Upgrade to Pro = +$100/mo.",
+    recommendedAction: "Owner-led upsell conversation about Pro plan benefits and add-on shoot package.",
+  },
+  {
+    id: "oc5", category: "Growth Opportunity",  severity: "Medium",
+    title: "3 qualified leads in late-stage discovery",
+    description: "Discovery calls complete. $3,291 in potential new MRR if all 3 sign.",
+    recommendedAction: "Send personalized proposals within 48 hours; offer 14-day onboarding fast track.",
+  },
+  {
+    id: "oc6", category: "Operational Warning", severity: "Medium",
+    title: "Onboarding completion below target",
+    description: "Portfolio onboarding rate is 76% — below the 90% target. Affects content quality downstream.",
+    recommendedAction: "Audit onboarding checklist; introduce a 14-day onboarding SLA for new clients.",
+  },
+  {
+    id: "oc7", category: "Business Risk",       severity: "Low",
+    title: "Brand asset library aging",
+    description: "Al Noor Cafe brand guidelines flagged for refresh. Low-priority but recurring across portfolio.",
+    recommendedAction: "Annual brand-audit cycle; bundle into onboarding refresh checklist.",
+  },
+  {
+    id: "oc8", category: "Revenue Risk",        severity: "Low",
+    title: "No plan upgrades in last 60 days",
+    description: "Expansion revenue stagnant. Pro plan has zero upgrades since March.",
+    recommendedAction: "Quarterly account-review meetings + upgrade-incentive program.",
+  },
+];
+
+// AI Agents v2 — detailed library (9 agents)
+export interface DemoAgentDetail {
+  id:                  string;
+  name:                string;
+  shortName:           string;
+  category:            "Content" | "Operations" | "Intelligence" | "Executive";
+  purpose:             string;
+  inputs:              string[];
+  outputs:             string[];
+  sampleRecommendations: string[];
+  recentActivity:      { time: string; event: string }[];
+  sampleDecisions:     string[];
+}
+
+export const demoAiAgentsV2: DemoAgentDetail[] = [
+  {
+    id: "media-review", name: "Media Review Agent", shortName: "Media Review", category: "Content",
+    purpose: "Reviews uploaded media for technical quality, brand fit, and capture-plan alignment before it enters the pipeline.",
+    inputs: ["Raw client uploads", "Brand guidelines", "Capture plan", "Restaurant profile"],
+    outputs: ["Quality score", "Approve / reshoot / crop verdict", "Reason notes", "Auto-tags"],
+    sampleRecommendations: [
+      "Storefront shot underexposed — recommend reshoot at golden hour.",
+      "Dessert tray detail strong — crop to 4:5 for Instagram.",
+      "Family platter on-brand — surface for weekend promo slot.",
+    ],
+    recentActivity: [
+      { time: "Today, 10:32 AM", event: "Reviewed 8 items for Mamadali Kebab House" },
+      { time: "Today, 8:15 AM",  event: "Flagged 2 items for reshoot — Urban Tacos" },
+      { time: "Yesterday",        event: "Reviewed 5 items for Crescent Kitchen — all approved" },
+    ],
+    sampleDecisions: [
+      "Approved 6 of 8 items (75%).",
+      "Flagged 2 items with 'needs reshoot' tag.",
+      "Auto-tagged 4 items as 'hero' candidates.",
+    ],
+  },
+  {
+    id: "content-strategist", name: "Content Strategist Agent", shortName: "Content Strategist", category: "Content",
+    purpose: "Plans the content calendar across clients, balancing post types, posting cadence, and growth objectives.",
+    inputs: ["Approved media inventory", "Client growth goals", "Historical performance", "Posting cadence targets"],
+    outputs: ["Weekly content plan", "Post-mix recommendations", "Cadence adjustments"],
+    sampleRecommendations: [
+      "Increase reel-to-photo ratio for Mamadali — reels outperforming by 2.1x.",
+      "Schedule olive-oil reel for Thursday 7 PM window — peak engagement.",
+      "Front-load Friday content for Urban Tacos before weekend rush.",
+    ],
+    recentActivity: [
+      { time: "Today, 9:00 AM",  event: "Drafted 5-post plan for Mamadali — week of May 26" },
+      { time: "Today, 8:42 AM",  event: "Recommended cadence boost for Crescent Kitchen" },
+      { time: "Yesterday",        event: "Surfaced under-utilised BTS clips for Urban Tacos" },
+    ],
+    sampleDecisions: [
+      "Planned 22 posts across the portfolio this week.",
+      "Recommended 3 cadence adjustments.",
+      "Identified 6 underused assets for reactivation.",
+    ],
+  },
+  {
+    id: "caption", name: "Caption Agent", shortName: "Caption", category: "Content",
+    purpose: "Generates 3 caption variants per post in the client's brand voice, optimised for engagement and CTA.",
+    inputs: ["Post media", "Brand voice profile", "Restaurant context", "CTA goals"],
+    outputs: ["3 caption variants", "Hashtag suggestions", "Emoji style hints"],
+    sampleRecommendations: [
+      "Use warmer, story-first tone for Al Noor Cafe — premium positioning.",
+      "Lead with action verb for Urban Tacos — high-energy brand voice.",
+      "Include hijri date reference for Mamadali halal audience.",
+    ],
+    recentActivity: [
+      { time: "Today, 10:48 AM", event: "Drafted 3 captions for Mamadali dinner reel" },
+      { time: "Today, 9:20 AM",  event: "Drafted 3 captions for Crescent olive-oil reel" },
+      { time: "Yesterday",        event: "Drafted 3 captions for Urban Tacos lunch special" },
+    ],
+    sampleDecisions: [
+      "Generated 18 caption variants this week.",
+      "Brand voice match score: 94% average.",
+      "Recommended hashtag pools updated for 3 clients.",
+    ],
+  },
+  {
+    id: "brand-voice", name: "Brand Voice Agent", shortName: "Brand Voice", category: "Content",
+    purpose: "Validates that every caption, post, and reply matches the documented brand voice for the client.",
+    inputs: ["Draft captions", "Brand voice profile", "Tone examples", "Restricted phrases"],
+    outputs: ["Voice match score", "Tone-deviation flags", "Suggested rewrites"],
+    sampleRecommendations: [
+      "Caption B too generic — rewrite with sensory language.",
+      "Avoid corporate phrasing for Al Noor — family-owned brand voice.",
+      "Add Urdu phrase variant for Mamadali audience overlap.",
+    ],
+    recentActivity: [
+      { time: "Today, 10:50 AM", event: "Approved 2 of 3 Mamadali captions — voice match 96%" },
+      { time: "Today, 9:25 AM",  event: "Flagged Caption C for Crescent — too promotional" },
+      { time: "Yesterday",        event: "Updated brand voice profile for Urban Tacos" },
+    ],
+    sampleDecisions: [
+      "Approved 14 captions; flagged 4 for rewrite.",
+      "Maintained 90%+ brand voice match across portfolio.",
+      "Suggested 6 voice-profile refinements.",
+    ],
+  },
+  {
+    id: "scheduling", name: "Scheduling Agent", shortName: "Scheduling", category: "Operations",
+    purpose: "Selects the optimal posting window and platform for each approved post based on audience and engagement data.",
+    inputs: ["Approved post", "Platform analytics", "Audience timezone", "Posting cadence rules"],
+    outputs: ["Recommended slot", "Platform priority", "Conflict warnings"],
+    sampleRecommendations: [
+      "Thursday 7 PM is peak window for Mamadali — schedule dinner reel.",
+      "Avoid Friday morning for Urban Tacos — competing local event.",
+      "Push Crescent olive-oil reel to Sunday brunch window — higher engagement.",
+    ],
+    recentActivity: [
+      { time: "Today, 11:00 AM", event: "Scheduled 4 posts for Mamadali this week" },
+      { time: "Today, 9:30 AM",  event: "Reshuffled Crescent calendar — peak-window optimisation" },
+      { time: "Yesterday",        event: "Flagged scheduling conflict for Urban Tacos Sunday slot" },
+    ],
+    sampleDecisions: [
+      "Locked 18 posting windows this cycle.",
+      "Avoided 3 conflicts based on local events.",
+      "Recommended 2 cadence rebalances.",
+    ],
+  },
+  {
+    id: "reporting", name: "Reporting Agent", shortName: "Reporting", category: "Operations",
+    purpose: "Assembles weekly and monthly reports, validates metrics, and prepares them for operator sign-off.",
+    inputs: ["Posting log", "Engagement metrics", "Client goals", "Prior period baseline"],
+    outputs: ["Weekly report draft", "Monthly report draft", "Highlight + concern callouts"],
+    sampleRecommendations: [
+      "Highlight Mamadali 2.1x reel engagement week-over-week.",
+      "Flag Urban Tacos posting consistency drop in monthly report.",
+      "Surface Crescent menu launch as a 'win of the month' story.",
+    ],
+    recentActivity: [
+      { time: "Today, 7:15 AM",  event: "Drafted weekly report for Mamadali" },
+      { time: "Yesterday",        event: "Drafted weekly report for Urban Tacos — pending validation" },
+      { time: "2 days ago",       event: "Published monthly report for Crescent Kitchen" },
+    ],
+    sampleDecisions: [
+      "Drafted 8 reports this week.",
+      "Auto-validated 6; routed 2 to operator review.",
+      "Surfaced 12 highlight moments across the portfolio.",
+    ],
+  },
+  {
+    id: "risk", name: "Risk Monitoring Agent", shortName: "Risk Monitoring", category: "Intelligence",
+    purpose: "Watches every client signal — media supply, onboarding, posting cadence, client activity — and flags risks early.",
+    inputs: ["All client metrics", "Inventory levels", "Activity logs", "Health thresholds"],
+    outputs: ["Risk score per client", "Severity-ranked alerts", "Forecast warnings"],
+    sampleRecommendations: [
+      "Al Noor Cafe will run out of media in 5 days at current pace.",
+      "Urban Tacos posting consistency below 70% target — intervene.",
+      "Mamadali onboarding 100% — ready for service expansion conversation.",
+    ],
+    recentActivity: [
+      { time: "Today, 8:42 AM",  event: "Raised CRITICAL alert — Al Noor media inventory" },
+      { time: "Today, 7:30 AM",  event: "Raised CRITICAL alert — Al Noor onboarding stalled" },
+      { time: "Yesterday",        event: "Raised HIGH alert — Urban Tacos report overdue" },
+    ],
+    sampleDecisions: [
+      "Raised 8 risk alerts this week (2 critical, 3 high, 3 medium).",
+      "Forecast 1 likely churn event within 30 days if no action.",
+      "Recommended 4 portfolio-level interventions.",
+    ],
+  },
+  {
+    id: "operator-assistant", name: "Operator Assistant", shortName: "Operator Asst.", category: "Executive",
+    purpose: "Synthesises all agent outputs into a daily operator briefing with prioritised actions.",
+    inputs: ["All agent outputs", "Risk alerts", "Team workload", "Daily SLAs"],
+    outputs: ["Prioritised action list", "Daily digest", "Bottleneck warnings"],
+    sampleRecommendations: [
+      "Validate Urban Tacos report first — 28 hours overdue.",
+      "Approve Mamadali dinner reel by noon — Thursday slot.",
+      "Contact Al Noor Cafe today — media emergency.",
+    ],
+    recentActivity: [
+      { time: "Today, 6:00 AM",  event: "Generated operator daily digest" },
+      { time: "Today, 5:55 AM",  event: "Compiled 7 recommended actions for today" },
+      { time: "Yesterday, 6:00 AM", event: "Generated operator daily digest" },
+    ],
+    sampleDecisions: [
+      "Surfaced 4 immediate actions and 3 same-week actions today.",
+      "Identified 2 team-workload bottlenecks.",
+      "Flagged 1 SLA breach risk.",
+    ],
+  },
+  {
+    id: "owner-assistant", name: "Owner Assistant", shortName: "Owner Asst.", category: "Executive",
+    purpose: "Generates the owner's daily executive briefing — business health, revenue trends, top risks, top opportunities.",
+    inputs: ["Operator digest", "Revenue & client metrics", "Risk forecast", "Growth opportunities"],
+    outputs: ["Owner daily briefing", "Strategic recommendations", "Weekly business pulse"],
+    sampleRecommendations: [
+      "Revenue up 12% MoM — celebrate with team.",
+      "Al Noor Cafe rescue call this week — $1,097 MRR at risk.",
+      "3 qualified leads close to signing — prepare proposals.",
+    ],
+    recentActivity: [
+      { time: "Today, 5:30 AM",  event: "Generated owner daily briefing" },
+      { time: "Yesterday, 5:30 AM", event: "Generated owner daily briefing" },
+      { time: "Monday, 5:30 AM",  event: "Generated weekly business pulse" },
+    ],
+    sampleDecisions: [
+      "Identified 2 strategic risks and 3 growth opportunities.",
+      "Flagged $1,097 MRR-at-risk client for immediate attention.",
+      "Surfaced potential $3,291 expansion in next 30 days.",
+    ],
+  },
+];
+
+// Agent workflow (Section 4)
+export interface DemoWorkflowStep {
+  step:        number;
+  label:       string;
+  description: string;
+  type:        "client" | "agent" | "stage" | "team";
+}
+
+export const demoAgentWorkflow: DemoWorkflowStep[] = [
+  { step: 1,  type: "client", label: "Client uploads media",      description: "Photos and videos arrive via client portal."                              },
+  { step: 2,  type: "agent",  label: "Media Review Agent",        description: "Scores quality, matches capture plan, approves or flags reshoots."        },
+  { step: 3,  type: "agent",  label: "Content Strategist Agent",  description: "Plans post-mix and cadence across the week."                              },
+  { step: 4,  type: "agent",  label: "Caption Agent",             description: "Drafts 3 caption variants in the client's brand voice."                   },
+  { step: 5,  type: "agent",  label: "Brand Voice Agent",         description: "Validates tone, flags deviations, suggests rewrites."                     },
+  { step: 6,  type: "team",   label: "Team / Operator Approval",  description: "Human-in-the-loop sign-off before content is scheduled."                  },
+  { step: 7,  type: "agent",  label: "Scheduling Agent",          description: "Selects optimal posting window for each platform."                        },
+  { step: 8,  type: "stage",  label: "Publishing Stage",          description: "Posts are queued and (in production) published to social channels."       },
+  { step: 9,  type: "agent",  label: "Reporting Agent",           description: "Assembles weekly and monthly reports with highlights and callouts."       },
+  { step: 10, type: "agent",  label: "Risk Monitoring Agent",     description: "Watches every signal and raises early-warning alerts."                    },
+  { step: 11, type: "agent",  label: "Operator Assistant",        description: "Synthesises agent outputs into the operator daily digest."                },
+  { step: 12, type: "agent",  label: "Owner Assistant",           description: "Generates the owner executive briefing every morning."                    },
+];
+
+// BI Center metrics (multi-series, 6 months)
+export interface DemoTrendPoint {
+  label: string;
+  value: number;
+}
+export const demoBiMetrics = {
+  clientGrowth:        [{ label:"Dec", value:2 },{ label:"Jan", value:2 },{ label:"Feb", value:3 },{ label:"Mar", value:3 },{ label:"Apr", value:4 },{ label:"May", value:4 }] as DemoTrendPoint[],
+  revenueGrowth:       [{ label:"Dec", value:2094 },{ label:"Jan", value:2094 },{ label:"Feb", value:3191 },{ label:"Mar", value:3291 },{ label:"Apr", value:4488 },{ label:"May", value:4788 }] as DemoTrendPoint[],
+  retention:           [{ label:"Dec", value:100 },{ label:"Jan", value:100 },{ label:"Feb", value:100 },{ label:"Mar", value:100 },{ label:"Apr", value:100 },{ label:"May", value:94  }] as DemoTrendPoint[],
+  mediaInventoryTrend: [{ label:"Dec", value:42 },{ label:"Jan", value:38 },{ label:"Feb", value:46 },{ label:"Mar", value:52 },{ label:"Apr", value:48 },{ label:"May", value:39 }] as DemoTrendPoint[],
+  contentProduction:   [{ label:"Dec", value:24 },{ label:"Jan", value:26 },{ label:"Feb", value:38 },{ label:"Mar", value:42 },{ label:"Apr", value:51 },{ label:"May", value:58 }] as DemoTrendPoint[],
+  reportingCompletion: [{ label:"Dec", value:80 },{ label:"Jan", value:84 },{ label:"Feb", value:86 },{ label:"Mar", value:88 },{ label:"Apr", value:90 },{ label:"May", value:88 }] as DemoTrendPoint[],
+  clientHealthOverTime:[{ label:"Dec", value:84 },{ label:"Jan", value:85 },{ label:"Feb", value:83 },{ label:"Mar", value:82 },{ label:"Apr", value:80 },{ label:"May", value:79 }] as DemoTrendPoint[],
+};
+
+// Media Analytics
+export const demoMediaAnalytics = {
+  photosReceived:    142,
+  videosReceived:    37,
+  unusedInventory:   29,
+  inventoryByAge: [
+    { bucket: "0–7 days",   count: 18, color: "bg-emerald-500" },
+    { bucket: "8–30 days",  count: 24, color: "bg-sky-500"     },
+    { bucket: "31–60 days", count: 14, color: "bg-amber-500"   },
+    { bucket: "60+ days",   count: 12, color: "bg-rose-500"    },
+  ],
+  inventoryByClient: [
+    { clientId: "mamadali", approved: 24, pending: 6, low: false },
+    { clientId: "urban",    approved:  9, pending: 3, low: true  },
+    { clientId: "crescent", approved: 18, pending: 4, low: false },
+    { clientId: "alnoor",   approved:  2, pending: 1, low: true  },
+  ],
+  upcomingShortages: [
+    { clientId: "alnoor", daysRemaining:  5, severity: "Critical" as BizSeverity },
+    { clientId: "urban",  daysRemaining: 14, severity: "Medium"   as BizSeverity },
+  ],
+};
+
+// Operations Intelligence
+export const demoOpsIntelligence = {
+  teamWorkload:        [{ label: "Jordan", value: 16 }, { label: "Priya", value: 14 }, { label: "Marcus", value: 10 }, { label: "Ava", value: 16 }] as DemoTrendPoint[],
+  reviewQueue:         { current: 7, target: 5, status: "above" as "above" | "below" | "on" },
+  approvalQueue:       { current: 3, target: 5, status: "below" as "above" | "below" | "on" },
+  contentBacklog:      { current: 5, target: 10, status: "below" as "above" | "below" | "on" },
+  reportingBacklog:    { current: 2, target: 0, status: "above" as "above" | "below" | "on" },
+  clientResponsiveness:[{ clientId: "mamadali", avgHours:  2.4 }, { clientId: "urban", avgHours: 14.0 }, { clientId: "crescent", avgHours: 4.1 }, { clientId: "alnoor", avgHours: 72.0 }],
+  riskDistribution:    [{ label: "Critical", value: 2, color: "bg-rose-500" }, { label: "High", value: 2, color: "bg-amber-500" }, { label: "Medium", value: 3, color: "bg-yellow-500" }, { label: "Low", value: 2, color: "bg-muted-foreground/40" }],
+};
+
+// Reporting Analytics
+export const demoReportingAnalytics = {
+  weeklyDrafted:        12,
+  weeklyValidationRate: 88,
+  weeklyPublishRate:    94,
+  monthlyDrafted:        4,
+  monthlyPublishRate:  100,
+  avgDraftToPublishHours: 36,
+  historicalCompletion: [{ label:"Dec", value:80 },{ label:"Jan", value:84 },{ label:"Feb", value:86 },{ label:"Mar", value:88 },{ label:"Apr", value:90 },{ label:"May", value:88 }] as DemoTrendPoint[],
+};
+
+// Permissions matrix
+export type RoleAccess = "Full" | "Own Only" | "View" | "None";
+export interface DemoPermissionRow {
+  module:    string;
+  client:    RoleAccess;
+  team:      RoleAccess;
+  operator:  RoleAccess;
+  owner:     RoleAccess;
+}
+export const demoPermissionsMatrix: DemoPermissionRow[] = [
+  { module: "Own onboarding",        client: "Full",     team: "View", operator: "Full", owner: "Full" },
+  { module: "Own content pipeline",  client: "Own Only", team: "Full", operator: "Full", owner: "Full" },
+  { module: "Own weekly reports",    client: "Own Only", team: "View", operator: "Full", owner: "Full" },
+  { module: "Own monthly reports",   client: "Own Only", team: "View", operator: "Full", owner: "Full" },
+  { module: "Own media library",     client: "Own Only", team: "Full", operator: "Full", owner: "Full" },
+  { module: "All clients view",      client: "None",     team: "Full", operator: "Full", owner: "Full" },
+  { module: "Content review queue",  client: "None",     team: "Full", operator: "Full", owner: "View" },
+  { module: "Team work queue",       client: "None",     team: "Full", operator: "Full", owner: "View" },
+  { module: "Report approvals",      client: "None",     team: "View", operator: "Full", owner: "Full" },
+  { module: "Risk & alert center",   client: "None",     team: "View", operator: "Full", owner: "Full" },
+  { module: "AI agent settings",     client: "None",     team: "None", operator: "View", owner: "Full" },
+  { module: "Revenue & billing",     client: "None",     team: "None", operator: "None", owner: "Full" },
+  { module: "Team management",       client: "None",     team: "None", operator: "View", owner: "Full" },
+  { module: "Business intelligence", client: "None",     team: "None", operator: "View", owner: "Full" },
+  { module: "Automation roadmap",    client: "None",     team: "None", operator: "None", owner: "Full" },
+];
+
+export const demoRoleResponsibilities = [
+  { role: "Client",   summary: "Submit media, approve content, view own performance.",          color: "border-sky-500/40 text-sky-300 bg-sky-500/10"      },
+  { role: "Team",     summary: "Execute assigned work — review media, draft captions, publish.", color: "border-emerald-500/40 text-emerald-300 bg-emerald-500/10" },
+  { role: "Operator", summary: "Oversee all client operations, validate reports, manage risks.", color: "border-amber-500/40 text-amber-300 bg-amber-500/10"  },
+  { role: "Owner",    summary: "Lead the business — revenue, growth, strategy, team.",          color: "border-violet-500/40 text-violet-300 bg-violet-500/10" },
+];
+
+// Automation roadmap
+export type AutomationStatus = "Planned" | "Prototype" | "Future Build";
+export interface DemoAutomation {
+  id:          string;
+  name:        string;
+  description: string;
+  status:      AutomationStatus;
+  category:    string;
+  targetEta:   string;
+}
+export const demoAutomationRoadmap: DemoAutomation[] = [
+  { id: "a1",  name: "Media Review Automation",       description: "Auto-score uploaded media and route to reshoot or approval.",  status: "Prototype",    category: "Content",      targetEta: "Q3 2026" },
+  { id: "a2",  name: "Caption Automation",            description: "Generate 3 caption variants per post in client voice.",         status: "Prototype",    category: "Content",      targetEta: "Q3 2026" },
+  { id: "a3",  name: "Scheduling Automation",         description: "Auto-select optimal posting window across platforms.",          status: "Planned",      category: "Operations",   targetEta: "Q4 2026" },
+  { id: "a4",  name: "Publishing Automation",         description: "Direct publishing to social channels with retry logic.",        status: "Future Build", category: "Operations",   targetEta: "Q1 2027" },
+  { id: "a5",  name: "Weekly Reporting Automation",   description: "Auto-assemble weekly reports with operator validation.",        status: "Prototype",    category: "Reporting",    targetEta: "Q3 2026" },
+  { id: "a6",  name: "Monthly Reporting Automation",  description: "Auto-assemble monthly reports with narrative highlights.",      status: "Planned",      category: "Reporting",    targetEta: "Q4 2026" },
+  { id: "a7",  name: "Risk Monitoring Automation",    description: "Continuous monitoring with severity-ranked alerts.",            status: "Planned",      category: "Intelligence", targetEta: "Q4 2026" },
+  { id: "a8",  name: "Owner Briefing Automation",     description: "Daily owner briefing generated automatically every morning.",   status: "Future Build", category: "Executive",    targetEta: "Q1 2027" },
+];
+
+// System map layers
+export interface DemoSystemLayer {
+  id:          string;
+  name:        string;
+  description: string;
+  modules:     string[];
+  color:       string;
+}
+export const demoSystemMap: DemoSystemLayer[] = [
+  { id: "client",     name: "Client Layer",            description: "What clients see and interact with.",                modules: ["Onboarding", "Workspace", "Content Pipeline", "Media", "Reports", "Notifications"],                  color: "border-sky-500/40 bg-sky-500/10"      },
+  { id: "team",       name: "Team Layer",              description: "Execution surface for content + media work.",        modules: ["Tasks", "Media Review", "Caption Drafting", "Scheduling", "Drafts"],                                  color: "border-emerald-500/40 bg-emerald-500/10" },
+  { id: "operator",   name: "Operator Layer",          description: "Oversight, validation, and risk management.",        modules: ["Priority Board", "Action Center", "Risk Center", "Reporting Command", "Team Oversight"],            color: "border-amber-500/40 bg-amber-500/10"   },
+  { id: "owner",      name: "Owner Layer",             description: "Strategic, business, and revenue command.",          modules: ["Executive Dashboard", "Command Center", "Revenue", "Daily Briefing"],                                color: "border-violet-500/40 bg-violet-500/10" },
+  { id: "ai",         name: "AI Layer",                description: "Simulated intelligence orchestrating the workflow.", modules: ["Media Review", "Content Strategist", "Caption", "Brand Voice", "Scheduling", "Reporting", "Risk", "Operator Asst.", "Owner Asst."], color: "border-primary/40 bg-primary/10" },
+  { id: "reporting",  name: "Reporting Layer",         description: "Weekly + monthly report generation and delivery.",   modules: ["Weekly Reports", "Monthly Reports", "Report Approvals", "Historical Archives"],                      color: "border-cyan-500/40 bg-cyan-500/10"     },
+  { id: "analytics",  name: "Analytics Layer",         description: "Cross-portfolio business intelligence.",             modules: ["BI Center", "Client Analytics", "Media Analytics", "Reporting Analytics", "Operations Intelligence"], color: "border-pink-500/40 bg-pink-500/10"     },
+  { id: "automation", name: "Future Automation Layer", description: "Planned automations that will close the loop.",      modules: ["Auto Media Review", "Auto Captions", "Auto Scheduling", "Auto Publishing", "Auto Reporting"],         color: "border-muted-foreground/40 bg-muted/20" },
+];
+
+// Owner Daily Briefing
+export interface DemoOwnerBriefingSection {
+  category: string;
+  summary:  string;
+  items:    string[];
+}
+export const demoOwnerBriefing: DemoOwnerBriefingSection[] = [
+  {
+    category: "Business Summary",
+    summary:  "Revenue up 12% MoM. Portfolio stable with 1 at-risk client.",
+    items: [
+      "MRR: $4,788 (+12% vs. April).",
+      "4 active clients across 4 plans.",
+      "Retention score 94% — slight dip due to Al Noor risk.",
+    ],
+  },
+  {
+    category: "Revenue Summary",
+    summary:  "Solid growth, $1,097 MRR at churn risk.",
+    items: [
+      "Projected MRR: $7,785 if 3 qualified leads close.",
+      "$1,097 at risk if Al Noor churns.",
+      "Net pipeline movement: +$2,997 over next 60 days.",
+    ],
+  },
+  {
+    category: "Risk Summary",
+    summary:  "1 critical, 1 high, 2 medium.",
+    items: [
+      "Al Noor Cafe: media + onboarding + inactivity → escalation needed.",
+      "Urban Tacos: reports overdue, supply trending low → operator intervention.",
+      "Team workload concentration on Priya → cross-train this month.",
+    ],
+  },
+  {
+    category: "Client Summary",
+    summary:  "2 healthy, 1 warning, 1 critical.",
+    items: [
+      "Mamadali Kebab House — Healthy, upsell candidate.",
+      "Crescent Kitchen — Healthy, on track.",
+      "Urban Tacos — Warning, intervention scheduled.",
+      "Al Noor Cafe — Critical, rescue call this week.",
+    ],
+  },
+  {
+    category: "Team Summary",
+    summary:  "Utilisation 84%, no immediate burnout signals.",
+    items: [
+      "4 team members across content, client, media, and captions.",
+      "Reporting workload concentrated on Priya — cross-train.",
+      "Average turnaround 1.2 days — within SLA.",
+    ],
+  },
+  {
+    category: "Recommendations",
+    summary:  "Focus the week on rescue, validation, and upsell.",
+    items: [
+      "Personally call Al Noor Cafe owner today.",
+      "Validate Urban Tacos weekly report this morning.",
+      "Open Pro-plan upsell conversation with Mamadali Kebab House.",
+      "Send proposals to all 3 qualified leads within 48 hours.",
+    ],
+  },
+];

@@ -53,6 +53,19 @@ import OperatorReportingCommand from "@/pages/operator-reporting-command";
 import OperatorRiskCenter from "@/pages/operator-risk-center";
 import OperatorActionCenter from "@/pages/operator-action-center";
 import OperatorDailyDigest from "@/pages/operator-daily-digest";
+import OwnerExecutiveDashboard from "@/pages/owner-executive-dashboard";
+import OwnerCommandCenter from "@/pages/owner-command-center";
+import OwnerAiAgentsV2 from "@/pages/owner-ai-agents-v2";
+import OwnerAgentWorkflow from "@/pages/owner-agent-workflow";
+import OwnerBiCenter from "@/pages/owner-bi-center";
+import OwnerClientAnalytics from "@/pages/owner-client-analytics";
+import OwnerReportingAnalytics from "@/pages/owner-reporting-analytics";
+import OwnerMediaAnalytics from "@/pages/owner-media-analytics";
+import OwnerOpsIntelligence from "@/pages/owner-ops-intelligence";
+import OwnerPermissions from "@/pages/owner-permissions";
+import OwnerAutomationRoadmap from "@/pages/owner-automation-roadmap";
+import OwnerSystemMap from "@/pages/owner-system-map";
+import OwnerDailyBriefing from "@/pages/owner-daily-briefing";
 import TeamDashboard from "@/pages/team-dashboard";
 import TeamWorkQueue from "@/pages/team-work-queue";
 import TeamContentReview from "@/pages/team-content-review";
@@ -240,6 +253,45 @@ function Router() {
       </Route>
       <Route path="/demo/owner/monthly-reports">
         {() => <InternalDemoGuard role="owner"><OwnerMonthlyReports /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/owner/executive-dashboard">
+        {() => <InternalDemoGuard role="owner"><OwnerExecutiveDashboard /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/owner/command-center">
+        {() => <InternalDemoGuard role="owner"><OwnerCommandCenter /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/owner/ai-agents-v2">
+        {() => <InternalDemoGuard role="owner"><OwnerAiAgentsV2 /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/owner/agent-workflow">
+        {() => <InternalDemoGuard role="owner"><OwnerAgentWorkflow /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/owner/bi-center">
+        {() => <InternalDemoGuard role="owner"><OwnerBiCenter /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/owner/client-analytics">
+        {() => <InternalDemoGuard role="owner"><OwnerClientAnalytics /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/owner/reporting-analytics">
+        {() => <InternalDemoGuard role="owner"><OwnerReportingAnalytics /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/owner/media-analytics">
+        {() => <InternalDemoGuard role="owner"><OwnerMediaAnalytics /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/owner/ops-intelligence">
+        {() => <InternalDemoGuard role="owner"><OwnerOpsIntelligence /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/owner/permissions">
+        {() => <InternalDemoGuard role="owner"><OwnerPermissions /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/owner/automation-roadmap">
+        {() => <InternalDemoGuard role="owner"><OwnerAutomationRoadmap /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/owner/system-map">
+        {() => <InternalDemoGuard role="owner"><OwnerSystemMap /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/owner/daily-briefing">
+        {() => <InternalDemoGuard role="owner"><OwnerDailyBriefing /></InternalDemoGuard>}
       </Route>
 
       <Route path="/demo/supabase-test" component={SupabaseTestPage} />
