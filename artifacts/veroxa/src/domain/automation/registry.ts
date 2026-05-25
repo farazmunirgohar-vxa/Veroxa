@@ -1,0 +1,25 @@
+import type { AutomationRule } from "./types";
+
+export const automationRegistry: AutomationRule[] = [
+  { id: "aut-001", category: "Media Review",      name: "Auto-flag low-quality media",
+    description: "Mark submissions failing brand checks for human review.",
+    trigger: { kind: "event", eventKind: "MediaUploaded" }, status: "Planned" },
+  { id: "aut-002", category: "Caption Generation", name: "Draft captions on approval",
+    description: "Generate caption drafts when media is approved.",
+    trigger: { kind: "event", eventKind: "MediaApproved" }, status: "Planned" },
+  { id: "aut-003", category: "Scheduling",        name: "Auto-schedule approved posts",
+    description: "Slot brand-reviewed posts into open calendar windows.",
+    trigger: { kind: "event", eventKind: "WorkflowAdvanced" }, status: "Planned" },
+  { id: "aut-004", category: "Reporting",         name: "Weekly report drafts",
+    description: "Draft weekly reports every Monday 06:00.",
+    trigger: { kind: "schedule", cron: "0 6 * * 1" }, status: "Planned" },
+  { id: "aut-005", category: "Risk Monitoring",   name: "Flag at-risk clients",
+    description: "Raise risk alerts when health drops below 60.",
+    trigger: { kind: "event", eventKind: "ClientStatusChanged" }, status: "Planned" },
+  { id: "aut-006", category: "Client Follow-up",  name: "Nudge stalled requests",
+    description: "Notify operator when client request is open > 5 days.",
+    trigger: { kind: "schedule", cron: "0 9 * * *" }, status: "Planned" },
+  { id: "aut-007", category: "Notifications",     name: "Daily digest emails",
+    description: "Send operator + owner daily digest at 07:30.",
+    trigger: { kind: "schedule", cron: "30 7 * * *" }, status: "Future" },
+];

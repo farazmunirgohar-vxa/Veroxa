@@ -30,3 +30,31 @@ export { NotificationService }                       from "./notifications/servi
 
 export { rolePermissions, can } from "./users/permissions";
 export type { AppRole, AppAction, RolePermission } from "./users/permissions";
+
+// ── Batch A scaffolding ────────────────────────────────────────────
+export { AuthService }                  from "./auth/authService";
+export { SessionService }               from "./auth/sessionService";
+export { PermissionService }            from "./auth/permissionService";
+export { routeAccessMap, ruleFor, isAllowed } from "./auth/routeAccess";
+export type { AuthUser, Session, Credentials, AuthResult, AuthStatus } from "./auth/types";
+export type { RouteRule, RouteAccess } from "./auth/routeAccess";
+
+export { EventBus } from "./events/eventBus";
+export type { AppEvent, AppEventKind } from "./events/types";
+
+export { AuditService } from "./audit/auditService";
+export type { AuditEntry, AuditAction } from "./audit/types";
+
+export { AutomationService } from "./automation/service";
+export { automationRegistry } from "./automation/registry";
+export type { AutomationRule, AutomationCategory, AutomationStatus, AutomationTrigger } from "./automation/types";
+
+export { AgentOrchestrator, agentPipeline } from "./ai/orchestrator";
+export type { AgentNode, AgentRole }        from "./ai/orchestrator";
+
+export { IntegrationService }     from "./integrations/service";
+export { integrationRegistry }    from "./integrations/registry";
+export type { Integration, IntegrationCategory, IntegrationStatus } from "./integrations/types";
+
+export { NotificationEngineV2 } from "./notifications/engineV2";
+export type { NotificationChannel, NotificationPriorityV2, ChannelPreference } from "./notifications/engineV2";

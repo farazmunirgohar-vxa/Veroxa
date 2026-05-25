@@ -78,6 +78,7 @@ import ClientRequests from "@/pages/client-requests";
 import InternalDemoControls from "@/pages/internal-demo-controls";
 import InternalSystemStatus from "@/pages/internal-system-status";
 import InternalArchitecture from "@/pages/internal-architecture";
+import InternalIntegrations from "@/pages/internal-integrations";
 import { ErrorBoundary } from "@/components/common";
 import TeamDashboard from "@/pages/team-dashboard";
 import TeamWorkQueue from "@/pages/team-work-queue";
@@ -341,6 +342,9 @@ function Router() {
       </Route>
       <Route path="/demo/internal/architecture">
         {() => <InternalDemoGuard role="operator"><InternalArchitecture /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/internal/integrations">
+        {() => <InternalDemoGuard role="operator"><InternalIntegrations /></InternalDemoGuard>}
       </Route>
 
       <Route path="/demo/supabase-test" component={SupabaseTestPage} />
