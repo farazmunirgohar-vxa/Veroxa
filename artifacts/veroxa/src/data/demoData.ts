@@ -2271,3 +2271,264 @@ export const demoHealthScores: DemoHealthScore[] = [
   { label: "Team Health",      score: 84, status: "Healthy",   detail: "Utilisation 84% — no burnout signals." },
   { label: "Business Health",  score: 91, status: "Excellent", detail: "MRR +12% MoM, retention 94%." },
 ];
+
+// ── Prompt 14 — Real Operations Layer V1.5 ───────────────────────────────
+
+// Section 1 — Client lifecycle
+export type LifecycleStage =
+  | "Lead" | "Signed" | "Onboarding" | "Active"
+  | "Needs Attention" | "At Risk" | "Paused" | "Completed / Archived";
+
+export type RiskLevel = "Low" | "Medium" | "High" | "Critical";
+
+export interface DemoClientLifecycle {
+  clientId:           string;
+  lifecycleStage:     LifecycleStage;
+  servicePlan:        "Essential" | "Growth" | "Pro" | "Premium";
+  startDate:          string;
+  contractMonths:     number;
+  monthlyFee:         number;
+  healthScore:        number;        // 0-100
+  mediaStatus:        "Healthy" | "Low" | "Critical";
+  reportingStatus:    "On Schedule" | "Delayed" | "Overdue";
+  nextAction:         string;
+  riskLevel:          RiskLevel;
+}
+
+export const demoClientLifecycle: DemoClientLifecycle[] = [
+  { clientId: "mamadali", lifecycleStage: "Active",          servicePlan: "Growth",    startDate: "Feb 2026", contractMonths: 12, monthlyFee: 1097, healthScore: 92, mediaStatus: "Healthy",  reportingStatus: "On Schedule", nextAction: "Approve 3 caption variants for Friday post.",     riskLevel: "Low"      },
+  { clientId: "urban",    lifecycleStage: "Needs Attention", servicePlan: "Pro",       startDate: "Mar 2026", contractMonths: 12, monthlyFee: 1197, healthScore: 64, mediaStatus: "Low",      reportingStatus: "Delayed",     nextAction: "Rewrite flagged caption + chase weekly report.",   riskLevel: "Medium"   },
+  { clientId: "crescent", lifecycleStage: "Active",          servicePlan: "Premium",   startDate: "Dec 2025", contractMonths: 12, monthlyFee: 1497, healthScore: 95, mediaStatus: "Healthy",  reportingStatus: "On Schedule", nextAction: "Final sign-off on Sunday's olive-oil reel.",       riskLevel: "Low"      },
+  { clientId: "alnoor",   lifecycleStage: "At Risk",         servicePlan: "Essential", startDate: "Apr 2026", contractMonths: 12, monthlyFee: 997,  healthScore: 38, mediaStatus: "Critical", reportingStatus: "Overdue",     nextAction: "Rescue plan call + reshoot brief for storefront.", riskLevel: "Critical" },
+];
+
+export const lifecycleStageColor: Record<LifecycleStage, string> = {
+  "Lead":                 "border-sky-500/40 text-sky-300 bg-sky-500/10",
+  "Signed":               "border-violet-500/40 text-violet-300 bg-violet-500/10",
+  "Onboarding":           "border-amber-500/40 text-amber-300 bg-amber-500/10",
+  "Active":               "border-emerald-500/40 text-emerald-300 bg-emerald-500/10",
+  "Needs Attention":      "border-yellow-500/40 text-yellow-300 bg-yellow-500/10",
+  "At Risk":              "border-rose-500/40 text-rose-300 bg-rose-500/10",
+  "Paused":               "border-muted-foreground/40 text-muted-foreground bg-muted/30",
+  "Completed / Archived": "border-muted-foreground/40 text-muted-foreground bg-muted/30",
+};
+
+export const riskLevelColor: Record<RiskLevel, string> = {
+  Low:      "border-emerald-500/40 text-emerald-300 bg-emerald-500/10",
+  Medium:   "border-amber-500/40 text-amber-300 bg-amber-500/10",
+  High:     "border-rose-500/40 text-rose-300 bg-rose-500/10",
+  Critical: "border-rose-500/60 text-rose-200 bg-rose-500/20",
+};
+
+// Section 10 — Internal notes
+export type NoteType = "Client preference" | "Risk note" | "Content note" | "Reporting note" | "Operations note";
+
+export interface DemoInternalNote {
+  id:        string;
+  clientId:  string;
+  type:      NoteType;
+  author:    string;
+  authorRole:"Owner" | "Operator" | "Team";
+  timestamp: string;
+  body:      string;
+}
+
+export const demoInternalNotes: DemoInternalNote[] = [
+  { id: "n1", clientId: "mamadali", type: "Client preference", author: "Lina",   authorRole: "Operator", timestamp: "May 24", body: "Owner prefers reels over carousels. Avoid pricing in captions."           },
+  { id: "n2", clientId: "mamadali", type: "Content note",       author: "Priya",  authorRole: "Team",     timestamp: "May 23", body: "New menu launching June 5 — plan a 3-post teaser series."                },
+  { id: "n3", clientId: "urban",    type: "Risk note",          author: "Daniel", authorRole: "Operator", timestamp: "Today",  body: "Owner unresponsive 4 days. Escalate if no reply by EoD Wed."             },
+  { id: "n4", clientId: "urban",    type: "Reporting note",     author: "Daniel", authorRole: "Operator", timestamp: "May 24", body: "Weekly report drafted, awaiting validation. Push manually if needed."   },
+  { id: "n5", clientId: "crescent", type: "Operations note",    author: "Lina",   authorRole: "Operator", timestamp: "May 22", body: "Olive-oil supplier story is the strongest brand angle this quarter."     },
+  { id: "n6", clientId: "alnoor",   type: "Risk note",          author: "Owner",  authorRole: "Owner",    timestamp: "Today",  body: "Rescue plan: 1-on-1 with owner, reset cadence to bi-weekly until trust returns." },
+  { id: "n7", clientId: "alnoor",   type: "Content note",       author: "Jordan", authorRole: "Team",     timestamp: "May 18", body: "2 of 4 uploads flagged for reshoot. Storefront shot critical."           },
+];
+
+// Section 9 — Client request center
+export type RequestStatus   = "Pending" | "In Progress" | "Completed";
+export type RequestPriority = "High" | "Normal" | "Low";
+
+export interface DemoClientRequest {
+  id:          string;
+  clientId:    string;
+  title:       string;
+  description: string;
+  status:      RequestStatus;
+  priority:    RequestPriority;
+  dueDate:     string;
+}
+
+export const demoClientRequests: DemoClientRequest[] = [
+  { id: "r1", clientId: "mamadali", title: "Upload 6 new food photos",        description: "Hero shots of the new mixed-grill platter + signature kebabs.",  status: "Pending",     priority: "Normal", dueDate: "May 28" },
+  { id: "r2", clientId: "mamadali", title: "Confirm Father's Day special",    description: "Send us the dish name, photo, price (or 'no price'), dates.",   status: "In Progress", priority: "Normal", dueDate: "May 30" },
+  { id: "r3", clientId: "urban",    title: "Upload 8 photos + 2 short reels", description: "Lunch rush footage, taco close-ups, kitchen action.",            status: "Pending",     priority: "High",   dueDate: "Today"  },
+  { id: "r4", clientId: "urban",    title: "Confirm preferred posting windows", description: "Best 3 post times per week based on your foot-traffic data.", status: "Pending",     priority: "Normal", dueDate: "May 29" },
+  { id: "r5", clientId: "crescent", title: "Review restaurant profile",       description: "Quick sign-off on updated bio + opening hours on Google.",       status: "Completed",   priority: "Low",    dueDate: "May 20" },
+  { id: "r6", clientId: "crescent", title: "Confirm 3 menu item details",     description: "Ingredients + allergens for spring lamb, sea bass, mezze.",      status: "In Progress", priority: "Normal", dueDate: "May 31" },
+  { id: "r7", clientId: "alnoor",   title: "Reshoot storefront photo",        description: "Daytime exterior with the new awning. Landscape orientation.",   status: "Pending",     priority: "High",   dueDate: "Today"  },
+  { id: "r8", clientId: "alnoor",   title: "Send seasonal coffee specials",   description: "List of specials with names, prices, and key ingredients.",      status: "Pending",     priority: "High",   dueDate: "May 27" },
+];
+
+export const requestStatusColor: Record<RequestStatus, string> = {
+  Pending:       "border-amber-500/40 text-amber-300 bg-amber-500/10",
+  "In Progress": "border-sky-500/40 text-sky-300 bg-sky-500/10",
+  Completed:     "border-emerald-500/40 text-emerald-300 bg-emerald-500/10",
+};
+
+export const requestPriorityColor: Record<RequestPriority, string> = {
+  High:   "border-rose-500/40 text-rose-300 bg-rose-500/10",
+  Normal: "border-sky-500/40 text-sky-300 bg-sky-500/10",
+  Low:    "border-muted-foreground/40 text-muted-foreground bg-muted/30",
+};
+
+// Section 11 — Role-segmented notifications
+export type NotificationKind = "success" | "info" | "warning" | "reminder";
+export interface DemoRoleNotification {
+  id:        string;
+  title:     string;
+  body:      string;
+  kind:      NotificationKind;
+  timestamp: string;
+  clientId?: string;
+}
+export const demoRoleNotifications: {
+  client:   DemoRoleNotification[];
+  team:     DemoRoleNotification[];
+  operator: DemoRoleNotification[];
+  owner:    DemoRoleNotification[];
+} = {
+  client: [
+    { id: "cn1", title: "Weekly report available",  body: "Your May 13–19 performance summary is ready.", kind: "success",  timestamp: "Yesterday",    clientId: "mamadali" },
+    { id: "cn2", title: "Media needed",             body: "We're running low — please upload more photos this week.", kind: "reminder", timestamp: "Today",   clientId: "urban"    },
+    { id: "cn3", title: "Content scheduled",        body: "Friday dinner reel is locked for 7 PM Thursday.", kind: "info",     timestamp: "Today",        clientId: "mamadali" },
+    { id: "cn4", title: "Onboarding item missing",  body: "We still need your preferred posting windows.",   kind: "warning",  timestamp: "2 days ago",   clientId: "urban"    },
+  ],
+  team: [
+    { id: "tn1", title: "Task assigned",      body: "Review 4 new uploads — Al Noor.",       kind: "info",     timestamp: "Today, 9:14 AM" },
+    { id: "tn2", title: "Review needed",      body: "3 caption variants — Mamadali.",        kind: "reminder", timestamp: "Today, 10:30 AM" },
+    { id: "tn3", title: "Content overdue",    body: "Urban Tacos lunch post — caption rewrite.", kind: "warning",  timestamp: "Today, 11:00 AM" },
+  ],
+  operator: [
+    { id: "on1", title: "Client risk",                  body: "Al Noor inventory critical — 5 days runway.",         kind: "warning",  timestamp: "Today, 8:42 AM" },
+    { id: "on2", title: "Report pending validation",    body: "Urban Tacos weekly — drafted, awaiting sign-off.",     kind: "reminder", timestamp: "Today, 9:00 AM" },
+    { id: "on3", title: "Bottleneck detected",          body: "Brand Review backlog — 2 items > 24h.",               kind: "warning",  timestamp: "Today, 10:12 AM" },
+  ],
+  owner: [
+    { id: "wn1", title: "Business risk",            body: "1 client at critical risk — rescue plan in motion.", kind: "warning",  timestamp: "Today" },
+    { id: "wn2", title: "Revenue change",           body: "MRR +12% MoM. Pro plan signups trending up.",       kind: "success",  timestamp: "Today" },
+    { id: "wn3", title: "Client health trend",      body: "Portfolio average dropped 4 pts week-over-week.",   kind: "info",     timestamp: "Yesterday" },
+  ],
+};
+
+// Section 6 — Bottlenecks
+export type BottleneckType =
+  | "Media Review Overdue" | "Caption Drafting Delayed" | "Report Validation Pending"
+  | "Client Has Not Uploaded" | "Onboarding Incomplete" | "Content Queue Below Target";
+
+export interface DemoBottleneck {
+  id:                string;
+  type:              BottleneckType;
+  clientId:          string;
+  severity:          BizSeverity;
+  detail:            string;
+  recommendedAction: string;
+}
+
+export const demoBottlenecks: DemoBottleneck[] = [
+  { id: "b1", type: "Caption Drafting Delayed",   clientId: "urban",    severity: "High",     detail: "Caption flagged by Brand Voice Agent 22h ago — no rewrite yet.",  recommendedAction: "Reassign to Ava with 4h SLA." },
+  { id: "b2", type: "Client Has Not Uploaded",    clientId: "alnoor",   severity: "Critical", detail: "No uploads in 9 days. 5 days of content runway left.",            recommendedAction: "Trigger reshoot brief and book rescue call." },
+  { id: "b3", type: "Report Validation Pending",  clientId: "urban",    severity: "High",     detail: "Weekly report drafted 36h ago. Validation owner offline.",        recommendedAction: "Reassign validation to Lina (operator)." },
+  { id: "b4", type: "Onboarding Incomplete",      clientId: "urban",    severity: "Medium",   detail: "Posting-window preferences still missing.",                       recommendedAction: "Send client request reminder; followup in 48h." },
+  { id: "b5", type: "Content Queue Below Target", clientId: "alnoor",   severity: "Critical", detail: "Only 2 scheduled posts vs target of 6.",                          recommendedAction: "Block out catch-up cadence after reshoot lands." },
+  { id: "b6", type: "Media Review Overdue",       clientId: "alnoor",   severity: "Medium",   detail: "4 uploads from May 15 still in Media Review.",                    recommendedAction: "Jordan to clear backlog before EoD." },
+];
+
+// Section 8 — Media runway
+export interface DemoMediaRunway {
+  clientId:        string;
+  unusedPhotos:    number;
+  unusedVideos:    number;
+  postsPerWeek:    number;
+  daysRemaining:   number;
+  health:          "Healthy" | "Low" | "Critical";
+  internalAdvice:  string;
+  clientFacing:    string;
+}
+export const demoMediaRunway: DemoMediaRunway[] = [
+  { clientId: "mamadali", unusedPhotos: 24, unusedVideos: 6, postsPerWeek: 5, daysRemaining: 28, health: "Healthy",  internalAdvice: "Inventory healthy. Maintain biweekly shoots.",                            clientFacing: "Your media supply looks great this week." },
+  { clientId: "urban",    unusedPhotos: 8,  unusedVideos: 1, postsPerWeek: 4, daysRemaining: 12, health: "Low",      internalAdvice: "Request 6 photos and 2 short videos within 5 days.",                     clientFacing: "Please upload more photos and short videos this week." },
+  { clientId: "crescent", unusedPhotos: 19, unusedVideos: 5, postsPerWeek: 4, daysRemaining: 32, health: "Healthy",  internalAdvice: "Strong runway. Continue cadence.",                                        clientFacing: "Media is in great shape — no upload needed this week." },
+  { clientId: "alnoor",   unusedPhotos: 3,  unusedVideos: 0, postsPerWeek: 3, daysRemaining: 5,  health: "Critical", internalAdvice: "Critical. Request 8 photos and 3 reels immediately. Trigger reshoot.",  clientFacing: "We urgently need new photos and short videos this week." },
+];
+
+// Section 7 — Reporting operations
+export type ReportOpStatus =
+  | "Not Started" | "Drafting" | "Validation Needed"
+  | "Ready to Publish" | "Published" | "Needs Revision";
+
+export interface DemoReportOp {
+  id:               string;
+  clientId:         string;
+  period:           string;
+  type:             "Weekly" | "Monthly";
+  status:           ReportOpStatus;
+  draftOwner:       string;
+  validationOwner:  string;
+  publishedDate?:   string;
+  metricsSummary:   string;
+  internalValidationNote?: string;
+  clientFacingSummary:     string;
+}
+export const demoReportingOps: DemoReportOp[] = [
+  { id: "rp1", clientId: "mamadali", period: "May 13–19, 2026", type: "Weekly",  status: "Published",         draftOwner: "Priya",  validationOwner: "Lina",   publishedDate: "May 20", metricsSummary: "5 posts · 3.2k impressions · 4.1% engagement", internalValidationNote: "Clean.", clientFacingSummary: "A strong week — your reels drove most of the reach." },
+  { id: "rp2", clientId: "mamadali", period: "May 20–26, 2026", type: "Weekly",  status: "Drafting",          draftOwner: "Priya",  validationOwner: "Lina",                            metricsSummary: "Draft in progress.",                                                            clientFacingSummary: "Coming Wednesday — preview snapshot inside." },
+  { id: "rp3", clientId: "urban",    period: "May 13–19, 2026", type: "Weekly",  status: "Validation Needed", draftOwner: "Daniel", validationOwner: "Lina",                            metricsSummary: "4 posts · 2.1k impressions · 3.4% engagement", internalValidationNote: "Awaiting validation 36h.", clientFacingSummary: "Solid week — see breakdown inside." },
+  { id: "rp4", clientId: "urban",    period: "May 20–26, 2026", type: "Weekly",  status: "Not Started",       draftOwner: "Daniel", validationOwner: "Lina",                            metricsSummary: "—",                                                                              clientFacingSummary: "Will publish Wednesday." },
+  { id: "rp5", clientId: "crescent", period: "May 13–19, 2026", type: "Weekly",  status: "Ready to Publish",  draftOwner: "Priya",  validationOwner: "Lina",                            metricsSummary: "6 posts · 4.8k impressions · 5.2% engagement", internalValidationNote: "Approved.", clientFacingSummary: "Your best week this quarter — full numbers inside." },
+  { id: "rp6", clientId: "crescent", period: "April 2026",      type: "Monthly", status: "Published",         draftOwner: "Priya",  validationOwner: "Lina",   publishedDate: "May 4",  metricsSummary: "22 posts · 18.6k impressions · 4.7% engagement", internalValidationNote: "Clean.", clientFacingSummary: "Strong month — engagement up MoM. Highlights inside." },
+  { id: "rp7", clientId: "alnoor",   period: "May 13–19, 2026", type: "Weekly",  status: "Needs Revision",    draftOwner: "Priya",  validationOwner: "Daniel",                          metricsSummary: "3 posts · 0.9k impressions · 2.1% engagement", internalValidationNote: "Tone needs softening — flagged.", clientFacingSummary: "Quieter week — we'll regroup with you on cadence." },
+  { id: "rp8", clientId: "alnoor",   period: "April 2026",      type: "Monthly", status: "Drafting",          draftOwner: "Priya",  validationOwner: "Daniel",                          metricsSummary: "Draft in progress.",                                                            clientFacingSummary: "Coming next week." },
+];
+
+export const reportOpStatusColor: Record<ReportOpStatus, string> = {
+  "Not Started":       "border-muted-foreground/40 text-muted-foreground bg-muted/30",
+  "Drafting":          "border-sky-500/40 text-sky-300 bg-sky-500/10",
+  "Validation Needed": "border-amber-500/40 text-amber-300 bg-amber-500/10",
+  "Ready to Publish":  "border-violet-500/40 text-violet-300 bg-violet-500/10",
+  "Published":         "border-emerald-500/40 text-emerald-300 bg-emerald-500/10",
+  "Needs Revision":    "border-rose-500/40 text-rose-300 bg-rose-500/10",
+};
+
+// Section 15 — Demo control presets
+export interface DemoControlPreset {
+  id:          string;
+  label:       string;
+  description: string;
+  exampleClient: string;
+}
+export const demoControlPresets: DemoControlPreset[] = [
+  { id: "healthy",      label: "Healthy client",            description: "Strong health score, on-schedule reporting, full media runway.",     exampleClient: "Crescent Grill" },
+  { id: "low-media",    label: "Low-media client",          description: "Inventory dipping below 14-day runway — needs upload request soon.", exampleClient: "Urban Tacos"    },
+  { id: "at-risk",      label: "At-risk client",            description: "Critical health, overdue reports, near-empty media supply.",          exampleClient: "Al Noor Cafe"   },
+  { id: "onboarding",   label: "Onboarding incomplete",     description: "Missing posting windows + one outstanding profile question.",         exampleClient: "Urban Tacos"    },
+  { id: "report-late",  label: "Report overdue client",     description: "Weekly report drafted but stuck awaiting validation > 24h.",          exampleClient: "Urban Tacos"    },
+  { id: "pipeline",     label: "Pipeline delayed client",   description: "Brand-review backlog, captions sitting flagged, queue under target.", exampleClient: "Al Noor Cafe"   },
+];
+
+// Section 16 — System status
+export type SystemStatusState = "Active" | "Not Connected" | "Placeholder";
+export interface DemoSystemStatus {
+  label:  string;
+  state:  SystemStatusState;
+  detail: string;
+}
+export const demoSystemStatus: DemoSystemStatus[] = [
+  { label: "Demo Mode",                   state: "Active",        detail: "All data is sample. No production traffic is served." },
+  { label: "Backend / Database",          state: "Not Connected", detail: "No live database. All reads/writes happen client-side." },
+  { label: "Real AI APIs",                state: "Not Connected", detail: "AI agents are static simulations." },
+  { label: "Media Uploads",               state: "Not Connected", detail: "Upload UI is illustrative — files are not transmitted." },
+  { label: "Publishing Integrations",     state: "Not Connected", detail: "No Instagram / TikTok / Google publishing." },
+  { label: "Scheduling Integrations",     state: "Not Connected", detail: "Calendar is illustrative." },
+  { label: "Email / SMS",                 state: "Not Connected", detail: "No outbound messaging." },
+  { label: "Payments / Stripe",           state: "Not Connected", detail: "No checkout, billing, or invoices." },
+  { label: "Auth",                        state: "Placeholder",   detail: "Internal demo guard only. Production auth not configured." },
+];

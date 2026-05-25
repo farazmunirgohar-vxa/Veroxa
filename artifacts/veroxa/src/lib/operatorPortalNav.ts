@@ -22,9 +22,11 @@ import type { SidebarItem } from "@/components/PortalLayout";
 
 export const operatorPortalNavItems: SidebarItem[] = [
   // Core command
+  { label: "Command Board",      icon: Zap,             href: "/demo/operator/command-board"     },
   { label: "Operations Center",  icon: Zap,             href: "/demo/operator/operations-center" },
   { label: "Workflow Engine",    icon: GitBranch,       href: "/demo/operator/workflow-engine"   },
   { label: "Content Calendar",   icon: ClipboardList,   href: "/demo/operator/content-calendar"  },
+  { label: "Client Detail",      icon: Users,           href: "/demo/operator/client-detail"     },
   { label: "Overview",           icon: LayoutDashboard, href: "/demo/operator/overview"          },
   { label: "Daily Digest",       icon: Sunrise,         href: "/demo/operator/daily-digest"      },
   { label: "Priority Board",     icon: ClipboardList,   href: "/demo/operator/priority-board"    },

@@ -48,6 +48,7 @@ export const ownerPortalNavItems: SidebarItem[] = [
   { label: "System Map",          icon: Network,      href: "/demo/owner/system-map"             },
 
   // Operations
+  { label: "Client Detail",       icon: Building2,    href: "/demo/owner/client-detail"          },
   { label: "Client Health",       icon: Heart,        href: "/demo/owner/client-health"          },
   { label: "Notifications",       icon: Bell,         href: "/demo/owner/alerts"                 },
   { label: "Activity",            icon: Activity,     href: "/demo/owner/activity"               },

@@ -16,7 +16,9 @@ import type { SidebarItem } from "@/components/PortalLayout";
 // or operational labels visible here.
 export const clientPortalNavItems: SidebarItem[] = [
   { label: "Overview",     icon: LayoutDashboard, href: "/demo/client/dashboard"         },
+  { label: "Account",      icon: Briefcase,       href: "/demo/client/account"           },
   { label: "Workspace",    icon: Briefcase,       href: "/demo/client/workspace"         },
+  { label: "Requests",     icon: ClipboardList,   href: "/demo/client/requests"          },
   { label: "Onboarding",   icon: ClipboardList,   href: "/demo/client/onboarding-center" },
   { label: "Content",      icon: Workflow,        href: "/demo/client/content-pipeline"  },
   { label: "Calendar",     icon: CalendarDays,    href: "/demo/client/calendar"          },

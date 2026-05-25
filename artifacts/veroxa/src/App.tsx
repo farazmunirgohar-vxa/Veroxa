@@ -71,6 +71,12 @@ import OperatorWorkflowEngine from "@/pages/operator-workflow-engine";
 import OperatorContentCalendar from "@/pages/operator-content-calendar";
 import TeamTaskEngine from "@/pages/team-task-engine";
 import ClientActivityLog from "@/pages/client-activity-log";
+import InternalClientDetail from "@/pages/internal-client-detail";
+import ClientAccount from "@/pages/client-account";
+import OperatorCommandBoard from "@/pages/operator-command-board";
+import ClientRequests from "@/pages/client-requests";
+import InternalDemoControls from "@/pages/internal-demo-controls";
+import InternalSystemStatus from "@/pages/internal-system-status";
 import TeamDashboard from "@/pages/team-dashboard";
 import TeamWorkQueue from "@/pages/team-work-queue";
 import TeamContentReview from "@/pages/team-content-review";
@@ -311,6 +317,26 @@ function Router() {
         {() => <InternalDemoGuard role="team"><TeamTaskEngine /></InternalDemoGuard>}
       </Route>
       <Route path="/demo/client/activity-log" component={ClientActivityLog} />
+      <Route path="/demo/client/account"      component={ClientAccount} />
+      <Route path="/demo/client/requests"     component={ClientRequests} />
+      <Route path="/demo/operator/command-board">
+        {() => <InternalDemoGuard role="operator"><OperatorCommandBoard /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/operator/client-detail">
+        {() => <InternalDemoGuard role="operator"><InternalClientDetail role="operator" /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/owner/client-detail">
+        {() => <InternalDemoGuard role="owner"><InternalClientDetail role="owner" /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/team/client-detail">
+        {() => <InternalDemoGuard role="team"><InternalClientDetail role="team" /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/internal/demo-controls">
+        {() => <InternalDemoGuard role="operator"><InternalDemoControls /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/internal/system-status">
+        {() => <InternalDemoGuard role="operator"><InternalSystemStatus /></InternalDemoGuard>}
+      </Route>
 
       <Route path="/demo/supabase-test" component={SupabaseTestPage} />
 
