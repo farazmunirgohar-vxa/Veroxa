@@ -104,6 +104,7 @@ import RealOperatorPlaceholder from "@/pages/real-operator-placeholder";
 import RealOwnerPlaceholder from "@/pages/real-owner-placeholder";
 import InternalDemoGuard from "@/components/auth/InternalDemoGuard";
 import InternalDbExplorer from "@/pages/internal-db-explorer";
+import InternalPermissions from "@/pages/internal-permissions";
 import ServicesPage from "@/pages/services";
 import PricingPage from "@/pages/pricing";
 
@@ -369,6 +370,9 @@ function Router() {
       </Route>
       <Route path="/demo/internal/db-explorer">
         {() => <InternalDemoGuard role={["operator", "owner"]}><InternalDbExplorer /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/internal/permissions">
+        {() => <InternalDemoGuard role={["operator", "owner"]}><InternalPermissions /></InternalDemoGuard>}
       </Route>
 
       <Route path="/demo/supabase-test" component={SupabaseTestPage} />
