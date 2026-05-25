@@ -21,11 +21,11 @@
  *     `console.warn`s. The app does not crash.
  *   - **No service role.** Uses only `VITE_SUPABASE_ANON_KEY`.
  *   - **No custom token storage.** Whatever Supabase Auth does
- *     internally for session storage is what we use. The current
- *     shared client has `persistSession: false` /
- *     `autoRefreshToken: false`, which means sessions do not survive
- *     a reload — that is intentional for this inactive phase and will
- *     be revisited when `AUTH_MODE` flips.
+ *     internally for session storage is what we use. The shared
+ *     client (`src/lib/supabase/client.ts`) is configured with
+ *     `persistSession: true`, `autoRefreshToken: true`, and
+ *     `detectSessionInUrl: true` — sessions survive reloads and
+ *     tokens are auto-refreshed.
  *   - **Graceful env handling.** If Supabase env vars are missing,
  *     `getSupabaseClient()` returns `null` and this hook returns
  *     `unauthenticated` without throwing.
