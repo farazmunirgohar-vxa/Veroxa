@@ -77,6 +77,8 @@ import OperatorCommandBoard from "@/pages/operator-command-board";
 import ClientRequests from "@/pages/client-requests";
 import InternalDemoControls from "@/pages/internal-demo-controls";
 import InternalSystemStatus from "@/pages/internal-system-status";
+import InternalArchitecture from "@/pages/internal-architecture";
+import { ErrorBoundary } from "@/components/common";
 import TeamDashboard from "@/pages/team-dashboard";
 import TeamWorkQueue from "@/pages/team-work-queue";
 import TeamContentReview from "@/pages/team-content-review";
@@ -337,6 +339,9 @@ function Router() {
       <Route path="/demo/internal/system-status">
         {() => <InternalDemoGuard role="operator"><InternalSystemStatus /></InternalDemoGuard>}
       </Route>
+      <Route path="/demo/internal/architecture">
+        {() => <InternalDemoGuard role="operator"><InternalArchitecture /></InternalDemoGuard>}
+      </Route>
 
       <Route path="/demo/supabase-test" component={SupabaseTestPage} />
 
@@ -364,12 +369,14 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <Router />
-        </WouterRouter>
-        <Toaster />
-      </TooltipProvider>
+      <ErrorBoundary>
+        <TooltipProvider>
+          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+            <Router />
+          </WouterRouter>
+          <Toaster />
+        </TooltipProvider>
+      </ErrorBoundary>
     </QueryClientProvider>
   );
 }

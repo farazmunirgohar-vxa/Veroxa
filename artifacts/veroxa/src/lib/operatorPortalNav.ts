@@ -17,12 +17,18 @@ import {
   Zap,
   Sunrise,
   ShieldX,
+  Network,
+  ShieldCheck,
+  Wrench,
 } from "lucide-react";
 import type { SidebarItem } from "@/components/PortalLayout";
 
 export const operatorPortalNavItems: SidebarItem[] = [
   // Core command
   { label: "Command Board",      icon: Zap,             href: "/demo/operator/command-board"     },
+  { label: "Architecture",       icon: Network,         href: "/demo/internal/architecture"      },
+  { label: "System Status",      icon: ShieldCheck,     href: "/demo/internal/system-status"     },
+  { label: "Demo Controls",      icon: Wrench,          href: "/demo/internal/demo-controls"     },
   { label: "Operations Center",  icon: Zap,             href: "/demo/operator/operations-center" },
   { label: "Workflow Engine",    icon: GitBranch,       href: "/demo/operator/workflow-engine"   },
   { label: "Content Calendar",   icon: ClipboardList,   href: "/demo/operator/content-calendar"  },
