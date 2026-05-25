@@ -1,0 +1,633 @@
+VEROXA PHASE 3 — SAAS FOUNDATION
+
+OBJECTIVE
+
+Prepare Veroxa for future real-world deployment.
+
+This phase focuses on architecture and future production readiness.
+
+This is NOT a feature expansion phase.
+
+This is a foundation phase.
+
+We are building the structure that will eventually support:
+
+- Real authentication
+- Real database
+- Real uploads
+- Real automation
+- Real AI integrations
+- Real social media integrations
+
+IMPORTANT
+
+DO NOT CONNECT:
+
+- Real database
+- Real OpenAI
+- Real Instagram
+- Real Facebook
+- Real Google APIs
+- Real uploads
+- Real publishing
+- Stripe
+- External services
+
+Build architecture only.
+
+====================================================
+SECTION 1 — AUTHENTICATION READINESS
+====================================================
+
+Create authentication architecture.
+
+Roles:
+
+Client
+Team
+Operator
+Owner
+
+Build:
+
+Auth Models
+Auth Interfaces
+Auth Services
+Permission Services
+
+Create placeholder authentication flow.
+
+Examples:
+
+Login Request
+
+Authentication Check
+
+Role Validation
+
+Session Validation
+
+Permission Check
+
+Everything simulated.
+
+No real auth provider.
+
+====================================================
+SECTION 2 — ROUTE PROTECTION FRAMEWORK
+====================================================
+
+Create route protection architecture.
+
+Public Routes
+
+Client Routes
+
+Team Routes
+
+Operator Routes
+
+Owner Routes
+
+Create role-based access configuration.
+
+Future auth-ready.
+
+Demo mode compatible.
+
+====================================================
+SECTION 3 — USER MANAGEMENT FOUNDATION
+====================================================
+
+Create User domain.
+
+User Model
+
+User Repository
+
+User Service
+
+User Roles
+
+User Permissions
+
+User Status
+
+User Preferences
+
+Demo only.
+
+====================================================
+SECTION 4 — DATABASE READINESS
+====================================================
+
+Prepare repository architecture.
+
+Current:
+
+demoData.ts
+
+Future:
+
+Database Provider
+
+Create:
+
+Repository Interfaces
+
+ClientRepository
+
+MediaRepository
+
+TaskRepository
+
+WorkflowRepository
+
+ReportRepository
+
+NotificationRepository
+
+UserRepository
+
+Future database adapters should be able to replace demo repositories.
+
+====================================================
+SECTION 5 — DATABASE ABSTRACTION LAYER
+====================================================
+
+Create database abstraction.
+
+Examples:
+
+IDataProvider
+
+DemoDataProvider
+
+FutureDatabaseProvider
+
+Application should not depend directly on demo data.
+
+====================================================
+SECTION 6 — MEDIA DOMAIN REBUILD
+====================================================
+
+Create media architecture.
+
+Media Model
+
+Media Repository
+
+Media Service
+
+Media Workflow
+
+Media Status
+
+Statuses:
+
+Pending Review
+
+Approved
+
+Rejected
+
+Scheduled
+
+Published
+
+Archived
+
+Demo only.
+
+====================================================
+SECTION 7 — MEDIA LIBRARY FOUNDATION
+====================================================
+
+Create future media library architecture.
+
+Folders
+
+Tags
+
+Categories
+
+Media Types
+
+Search
+
+Filters
+
+No real uploads.
+
+Demo records only.
+
+====================================================
+SECTION 8 — MEDIA WORKFLOW ENGINE V2
+====================================================
+
+Expand media lifecycle.
+
+Media Received
+
+Review
+
+Content Strategy
+
+Caption Drafting
+
+Brand Review
+
+Scheduling
+
+Publishing
+
+Reporting
+
+Create workflow rules.
+
+====================================================
+SECTION 9 — AUTOMATION FRAMEWORK
+====================================================
+
+Create automation architecture.
+
+Automation Types:
+
+Media Review
+
+Caption Generation
+
+Scheduling
+
+Reporting
+
+Risk Monitoring
+
+Client Follow-up
+
+Notifications
+
+All simulated.
+
+No actual automation.
+
+====================================================
+SECTION 10 — EVENT SYSTEM
+====================================================
+
+Create application event architecture.
+
+Examples:
+
+MediaUploaded
+
+TaskCreated
+
+TaskCompleted
+
+ReportPublished
+
+ClientStatusChanged
+
+InventoryLow
+
+WorkflowAdvanced
+
+Create event models.
+
+====================================================
+SECTION 11 — ACTIVITY STREAM ENGINE
+====================================================
+
+Create centralized activity system.
+
+Everything should generate activity entries.
+
+Client actions
+
+Team actions
+
+Operator actions
+
+Owner actions
+
+Workflow actions
+
+====================================================
+SECTION 12 — AUDIT LOG SYSTEM
+====================================================
+
+Create audit architecture.
+
+Track:
+
+Who
+
+What
+
+When
+
+Why
+
+Demo only.
+
+====================================================
+SECTION 13 — NOTIFICATION ENGINE V2
+====================================================
+
+Create advanced notification architecture.
+
+Role-aware.
+
+Priority-aware.
+
+Category-aware.
+
+Future-ready for:
+
+Email
+
+SMS
+
+In-app
+
+Push
+
+Demo only.
+
+====================================================
+SECTION 14 — INTEGRATION CENTER
+====================================================
+
+Create future integration management area.
+
+Categories:
+
+AI Integrations
+
+Social Integrations
+
+Google Integrations
+
+Communication Integrations
+
+Analytics Integrations
+
+Display:
+
+Not Connected
+
+Planned
+
+Ready
+
+Future
+
+Demo only.
+
+====================================================
+SECTION 15 — AI AGENT FRAMEWORK
+====================================================
+
+Rebuild AI layer around architecture.
+
+Agent Model
+
+Agent Service
+
+Agent Registry
+
+Agent Outputs
+
+Agent History
+
+Agent Recommendations
+
+Still simulated.
+
+====================================================
+SECTION 16 — AGENT ORCHESTRATION LAYER
+====================================================
+
+Create AI workflow orchestration.
+
+Media Review Agent
+
+Strategist Agent
+
+Caption Agent
+
+Brand Agent
+
+Scheduling Agent
+
+Reporting Agent
+
+Risk Agent
+
+Operator Assistant
+
+Owner Assistant
+
+Display agent handoffs.
+
+Demo only.
+
+====================================================
+SECTION 17 — CLIENT PORTAL HARDENING
+====================================================
+
+Audit Client Portal.
+
+Client should NEVER see:
+
+Internal Notes
+
+Risk Scores
+
+Revenue
+
+Profit
+
+Team Metrics
+
+AI Confidence Scores
+
+Operator Tools
+
+Owner Tools
+
+Ensure strict separation.
+
+====================================================
+SECTION 18 — OPERATOR OPERATING SYSTEM
+====================================================
+
+Upgrade Operator dashboard.
+
+Focus on:
+
+Client Health
+
+Workflow Bottlenecks
+
+Reporting Status
+
+Media Runway
+
+Risk Monitoring
+
+Task Completion
+
+====================================================
+SECTION 19 — OWNER BUSINESS OS
+====================================================
+
+Upgrade Owner dashboard.
+
+Focus on:
+
+MRR
+
+Growth
+
+Retention
+
+Risk
+
+Utilization
+
+Operational Health
+
+Client Lifecycle
+
+Business Intelligence
+
+====================================================
+SECTION 20 — APPLICATION STATE REFACTOR
+====================================================
+
+Create centralized stores.
+
+Client Store
+
+Workflow Store
+
+Task Store
+
+Notification Store
+
+Media Store
+
+Report Store
+
+User Store
+
+Agent Store
+
+Demo backed.
+
+====================================================
+SECTION 21 — DESIGN SYSTEM V2
+====================================================
+
+Standardize:
+
+Cards
+
+Tables
+
+Headers
+
+Badges
+
+Status Labels
+
+Progress Components
+
+Empty States
+
+Loading States
+
+Error States
+
+====================================================
+SECTION 22 — PERFORMANCE AUDIT
+====================================================
+
+Audit:
+
+Component duplication
+
+Dead code
+
+Unused imports
+
+Unused routes
+
+Unused demo data
+
+Refactor where necessary.
+
+====================================================
+SECTION 23 — SYSTEM DOCUMENTATION
+====================================================
+
+Create internal architecture documentation page.
+
+Show:
+
+System Layers
+
+Domains
+
+Services
+
+Repositories
+
+Workflows
+
+Agent Architecture
+
+Permission Structure
+
+Future Integrations
+
+====================================================
+SECTION 24 — BUILD STABILITY
+====================================================
+
+Verify:
+
+No TypeScript errors
+
+No build failures
+
+No broken routes
+
+No duplicate architecture
+
+No navigation issues
+
+No mobile regressions
+
+====================================================
+SUCCESS CRITERIA
+====================================================
+
+Veroxa should feel like:
+
+A future SaaS platform architecture
+
+NOT merely a dashboard collection.
+
+The codebase should become ready for future:
+
+- Auth
+- Database
+- Uploads
+- Automation
+- AI
+- Social integrations
+
+without requiring major rewrites later.
