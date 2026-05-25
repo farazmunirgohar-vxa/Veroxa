@@ -46,6 +46,13 @@ import OperatorWeeklyReports from "@/pages/operator-weekly-reports";
 import OperatorMonthlyReports from "@/pages/operator-monthly-reports";
 import ClientWeeklyReport from "@/pages/client-weekly-report";
 import ClientMonthlyReport from "@/pages/client-monthly-report";
+import TeamDashboard from "@/pages/team-dashboard";
+import TeamWorkQueue from "@/pages/team-work-queue";
+import TeamContentReview from "@/pages/team-content-review";
+import TeamReportQueue from "@/pages/team-report-queue";
+import TeamPerformance from "@/pages/team-performance";
+import TeamActivityFeed from "@/pages/team-activity-feed";
+import TeamAlertCenter from "@/pages/team-alert-center";
 import ClientWorkspace from "@/pages/client-workspace";
 import ClientOnboardingCenter from "@/pages/client-onboarding-center";
 import ClientContentPipeline from "@/pages/client-content-pipeline";
@@ -108,6 +115,27 @@ function Router() {
       </Route>
       <Route path="/demo/team/scheduling">
         {() => <InternalDemoGuard role="team"><TeamScheduling /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/team/dashboard">
+        {() => <InternalDemoGuard role="team"><TeamDashboard /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/team/work-queue">
+        {() => <InternalDemoGuard role="team"><TeamWorkQueue /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/team/content-review">
+        {() => <InternalDemoGuard role="team"><TeamContentReview /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/team/report-queue">
+        {() => <InternalDemoGuard role="team"><TeamReportQueue /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/team/performance">
+        {() => <InternalDemoGuard role="team"><TeamPerformance /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/team/activity-feed">
+        {() => <InternalDemoGuard role="team"><TeamActivityFeed /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/team/alerts">
+        {() => <InternalDemoGuard role="team"><TeamAlertCenter /></InternalDemoGuard>}
       </Route>
 
       {/* Internal operator demo — login required, role = "operator" */}

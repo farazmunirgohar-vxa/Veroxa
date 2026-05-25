@@ -896,3 +896,221 @@ export function getMediaRequirements(clientId: string): DemoMediaRequirements | 
 export function getClientNotes(clientId: string): DemoClientNote | undefined {
   return demoClientNotes.find((n) => n.clientId === clientId);
 }
+
+// ── Team Operations Center (Prompt 6) ────────────────────────────
+export const demoTeamMetrics = {
+  activeClients:          4,
+  clientsNeedingAttention: 2,
+  contentWaitingReview:   5,
+  reportsDueThisWeek:     3,
+  mediaInventoryAlerts:   2,
+  tasksDueToday:          7,
+};
+
+// ── Work Queue ───────────────────────────────────────────────────
+export type WorkQueueStatus =
+  | "Healthy"
+  | "Attention Needed"
+  | "Waiting On Client"
+  | "Ready To Post"
+  | "Reporting Due";
+
+export interface DemoWorkQueueItem {
+  clientId:    string;
+  status:      WorkQueueStatus;
+  priority:    "High" | "Medium" | "Low";
+  lastActivity: string;
+  nextAction:  string;
+  assignedTo:  string;
+}
+
+export const demoWorkQueue: DemoWorkQueueItem[] = [
+  {
+    clientId:    "mamadali",
+    status:      "Ready To Post",
+    priority:    "Medium",
+    lastActivity: "Today, 10:48 AM",
+    nextAction:  "Final sign-off on Tuesday dinner reel before scheduling.",
+    assignedTo:  "Jordan",
+  },
+  {
+    clientId:    "urban",
+    status:      "Attention Needed",
+    priority:    "High",
+    lastActivity: "Yesterday, 6:30 PM",
+    nextAction:  "Weekly report pending operator review — follow up today.",
+    assignedTo:  "Priya",
+  },
+  {
+    clientId:    "crescent",
+    status:      "Healthy",
+    priority:    "Low",
+    lastActivity: "Today, 11:02 AM",
+    nextAction:  "Schedule olive-oil reel for Thursday evening slot.",
+    assignedTo:  "Jordan",
+  },
+  {
+    clientId:    "alnoor",
+    status:      "Waiting On Client",
+    priority:    "High",
+    lastActivity: "May 22",
+    nextAction:  "Request 5 new food photos — onboarding still incomplete.",
+    assignedTo:  "Priya",
+  },
+];
+
+// ── Content Review Queue ─────────────────────────────────────────
+export type ContentReviewStatus =
+  | "Pending"
+  | "In Review"
+  | "Approved"
+  | "Needs Revision";
+
+export interface DemoContentReviewItem {
+  id:                string;
+  title:             string;
+  clientId:          string;
+  contentType:       ContentType;
+  stage:             string;
+  aiRecommendation:  string;
+  assignedReviewer:  string;
+  dueDate:           string;
+  status:            ContentReviewStatus;
+}
+
+export const demoContentReviewQueue: DemoContentReviewItem[] = [
+  {
+    id: "cr1", title: "Chicken Shawarma close-up",  clientId: "mamadali", contentType: "Photo",
+    stage: "Team Review",   aiRecommendation: "Strong lighting — approve for dinner-window slot.",
+    assignedReviewer: "Jordan", dueDate: "Today",       status: "In Review",
+  },
+  {
+    id: "cr2", title: "Charcoal grill slow-mo reel", clientId: "mamadali", contentType: "Reel",
+    stage: "Team Review",   aiRecommendation: "Quality passed — caption draft ready.",
+    assignedReviewer: "Jordan", dueDate: "Today",       status: "Pending",
+  },
+  {
+    id: "cr3", title: "BTS — kitchen prep clip",     clientId: "mamadali", contentType: "Story",
+    stage: "Caption Drafting", aiRecommendation: "3 caption variants generated — select preferred.",
+    assignedReviewer: "Jordan", dueDate: "Tomorrow",    status: "Pending",
+  },
+  {
+    id: "cr4", title: "Lunch special reel",          clientId: "urban",    contentType: "Reel",
+    stage: "AI Review",     aiRecommendation: "Minor brightness issue — review before caption.",
+    assignedReviewer: "Priya",  dueDate: "Today",       status: "In Review",
+  },
+  {
+    id: "cr5", title: "Olive oil pour reel",         clientId: "crescent", contentType: "Reel",
+    stage: "Caption Drafting", aiRecommendation: "Editorial caption drafted — tone check passed.",
+    assignedReviewer: "Jordan", dueDate: "Tomorrow",    status: "Approved",
+  },
+  {
+    id: "cr6", title: "Google review highlight",     clientId: "alnoor",   contentType: "Carousel",
+    stage: "Caption Drafting", aiRecommendation: "Caption too generic — rewrite with warmer tone.",
+    assignedReviewer: "Priya",  dueDate: "Tomorrow",    status: "Needs Revision",
+  },
+  {
+    id: "cr7", title: "Cardamom latte morning shot", clientId: "alnoor",   contentType: "Photo",
+    stage: "AI Review",     aiRecommendation: "Lighting strong — proceed to caption stage.",
+    assignedReviewer: "Priya",  dueDate: "May 27",      status: "Pending",
+  },
+];
+
+// ── Team Performance ─────────────────────────────────────────────
+export interface DemoTeamMember {
+  name:               string;
+  role:               string;
+  clientsManaged:     number;
+  reportsCompleted:   number;
+  contentApproved:    number;
+  avgTurnaround:      string;
+  clientHealthScore:  number;
+}
+
+export const demoTeamMembers: DemoTeamMember[] = [
+  {
+    name: "Jordan",   role: "Content Lead",
+    clientsManaged: 2, reportsCompleted: 8, contentApproved: 34,
+    avgTurnaround: "1.2 days", clientHealthScore: 85,
+  },
+  {
+    name: "Priya",    role: "Client Manager",
+    clientsManaged: 2, reportsCompleted: 6, contentApproved: 21,
+    avgTurnaround: "1.6 days", clientHealthScore: 71,
+  },
+  {
+    name: "Marcus",   role: "Media Reviewer",
+    clientsManaged: 3, reportsCompleted: 4, contentApproved: 48,
+    avgTurnaround: "0.9 days", clientHealthScore: 82,
+  },
+  {
+    name: "Ava",      role: "Caption Specialist",
+    clientsManaged: 2, reportsCompleted: 10, contentApproved: 29,
+    avgTurnaround: "1.1 days", clientHealthScore: 90,
+  },
+];
+
+// ── Team Alerts ──────────────────────────────────────────────────
+export type AlertSeverity = "Critical" | "High" | "Medium" | "Low";
+export type AlertCategory = "Media" | "Report" | "Google" | "Onboarding" | "Brand";
+
+export interface DemoTeamAlert {
+  id:          string;
+  title:       string;
+  description: string;
+  clientId?:   string;
+  severity:    AlertSeverity;
+  time:        string;
+  category:    AlertCategory;
+}
+
+export const demoTeamAlerts: DemoTeamAlert[] = [
+  {
+    id: "ta1", severity: "Critical", category: "Media",
+    title: "Media inventory critically low",
+    description: "Al Noor Cafe has only 2 approved items. Next week's posting queue is at risk.",
+    clientId: "alnoor",  time: "Today, 8:42 AM",
+  },
+  {
+    id: "ta2", severity: "Critical", category: "Onboarding",
+    title: "Onboarding stalled — 4 steps missing",
+    description: "Al Noor Cafe onboarding is 55% complete. Menu info and brand guidelines are missing.",
+    clientId: "alnoor",  time: "Today, 7:30 AM",
+  },
+  {
+    id: "ta3", severity: "High", category: "Report",
+    title: "Weekly report overdue — operator not reviewed",
+    description: "Urban Tacos weekly report has been in operator queue for 28 hours without review.",
+    clientId: "urban",   time: "Yesterday, 5:15 PM",
+  },
+  {
+    id: "ta4", severity: "High", category: "Media",
+    title: "Content supply trending low",
+    description: "Urban Tacos media supply dropped to 9 approved items. Recommend scheduling a shoot.",
+    clientId: "urban",   time: "2 days ago",
+  },
+  {
+    id: "ta5", severity: "Medium", category: "Report",
+    title: "Scheduled post requires final approval",
+    description: "Mamadali Kebab House dinner reel is ready but awaiting team sign-off before publish.",
+    clientId: "mamadali", time: "Today, 10:48 AM",
+  },
+  {
+    id: "ta6", severity: "Medium", category: "Google",
+    title: "Google Business Profile update needed",
+    description: "Al Noor Cafe profile photos are 6 months old. Recommend updating with fresh media.",
+    clientId: "alnoor",  time: "3 days ago",
+  },
+  {
+    id: "ta7", severity: "Low", category: "Brand",
+    title: "Brand guideline — logo refresh pending",
+    description: "Al Noor Cafe logo marked for refresh. Brand assets should be updated before next campaign.",
+    clientId: "alnoor",  time: "May 20",
+  },
+  {
+    id: "ta8", severity: "Low", category: "Onboarding",
+    title: "Social media access unconfirmed",
+    description: "Urban Tacos social access status is 'In Progress' — confirm before next posting cycle.",
+    clientId: "urban",   time: "May 21",
+  },
+];
