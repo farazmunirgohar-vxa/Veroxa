@@ -15,24 +15,20 @@ import ClientUpdates from "@/pages/client-updates";
 import ClientOnboarding from "@/pages/client-onboarding";
 import ClientMedia from "@/pages/client-media";
 import TeamPortal from "@/pages/team-portal";
-import TeamTasks from "@/pages/team-tasks";
 import TeamMediaReview from "@/pages/team-media-review";
 import TeamAiReview from "@/pages/team-ai-review";
 import TeamDrafts from "@/pages/team-drafts";
 import TeamScheduling from "@/pages/team-scheduling";
 import OperatorPortal from "@/pages/operator-portal";
-import OperatorOverview from "@/pages/operator-overview";
 import OperatorAlerts from "@/pages/operator-alerts";
 import OperatorClientHealth from "@/pages/operator-client-health";
 import OperatorFailedPosts from "@/pages/operator-failed-posts";
 import OperatorReportApprovals from "@/pages/operator-report-approvals";
 import OwnerPortal from "@/pages/owner-portal";
-import OwnerDashboard from "@/pages/owner-dashboard";
 import OwnerRevenue from "@/pages/owner-revenue";
 import OwnerClientHealth from "@/pages/owner-client-health";
 import OwnerAlerts from "@/pages/owner-alerts";
 import OwnerSettings from "@/pages/owner-settings";
-import OwnerAIAgents from "@/pages/owner-ai-agents";
 import OwnerActivity from "@/pages/owner-activity";
 import OwnerKpis from "@/pages/owner-kpis";
 import OwnerMediaInventory from "@/pages/owner-media-inventory";
@@ -54,7 +50,6 @@ import OperatorRiskCenter from "@/pages/operator-risk-center";
 import OperatorActionCenter from "@/pages/operator-action-center";
 import OperatorDailyDigest from "@/pages/operator-daily-digest";
 import OwnerExecutiveDashboard from "@/pages/owner-executive-dashboard";
-import OwnerCommandCenter from "@/pages/owner-command-center";
 import OwnerAiAgentsV2 from "@/pages/owner-ai-agents-v2";
 import OwnerAgentWorkflow from "@/pages/owner-agent-workflow";
 import OwnerBiCenter from "@/pages/owner-bi-center";
@@ -69,11 +64,9 @@ import OwnerDailyBriefing from "@/pages/owner-daily-briefing";
 import OperatorOperationsCenter from "@/pages/operator-operations-center";
 import OperatorWorkflowEngine from "@/pages/operator-workflow-engine";
 import OperatorContentCalendar from "@/pages/operator-content-calendar";
-import TeamTaskEngine from "@/pages/team-task-engine";
 import ClientActivityLog from "@/pages/client-activity-log";
 import InternalClientDetail from "@/pages/internal-client-detail";
 import ClientAccount from "@/pages/client-account";
-import OperatorCommandBoard from "@/pages/operator-command-board";
 import ClientRequests from "@/pages/client-requests";
 import InternalDemoControls from "@/pages/internal-demo-controls";
 import InternalSystemStatus from "@/pages/internal-system-status";
@@ -141,9 +134,6 @@ function Router() {
       <Route path="/demo/team">
         {() => <InternalDemoGuard role="team"><TeamPortal /></InternalDemoGuard>}
       </Route>
-      <Route path="/demo/team/tasks">
-        {() => <InternalDemoGuard role="team"><TeamTasks /></InternalDemoGuard>}
-      </Route>
       <Route path="/demo/team/media-review">
         {() => <InternalDemoGuard role="team"><TeamMediaReview /></InternalDemoGuard>}
       </Route>
@@ -181,9 +171,6 @@ function Router() {
       {/* Internal operator demo — login required, role = "operator" */}
       <Route path="/demo/operator">
         {() => <InternalDemoGuard role="operator"><OperatorPortal /></InternalDemoGuard>}
-      </Route>
-      <Route path="/demo/operator/overview">
-        {() => <InternalDemoGuard role="operator"><OperatorOverview /></InternalDemoGuard>}
       </Route>
       <Route path="/demo/operator/alerts">
         {() => <InternalDemoGuard role="operator"><OperatorAlerts /></InternalDemoGuard>}
@@ -241,9 +228,6 @@ function Router() {
       <Route path="/demo/owner">
         {() => <InternalDemoGuard role="owner"><OwnerPortal /></InternalDemoGuard>}
       </Route>
-      <Route path="/demo/owner/dashboard">
-        {() => <InternalDemoGuard role="owner"><OwnerDashboard /></InternalDemoGuard>}
-      </Route>
       <Route path="/demo/owner/revenue">
         {() => <InternalDemoGuard role="owner"><OwnerRevenue /></InternalDemoGuard>}
       </Route>
@@ -255,9 +239,6 @@ function Router() {
       </Route>
       <Route path="/demo/owner/settings">
         {() => <InternalDemoGuard role="owner"><OwnerSettings /></InternalDemoGuard>}
-      </Route>
-      <Route path="/demo/owner/ai-agents">
-        {() => <InternalDemoGuard role="owner"><OwnerAIAgents /></InternalDemoGuard>}
       </Route>
       <Route path="/demo/owner/activity">
         {() => <InternalDemoGuard role="owner"><OwnerActivity /></InternalDemoGuard>}
@@ -276,9 +257,6 @@ function Router() {
       </Route>
       <Route path="/demo/owner/executive-dashboard">
         {() => <InternalDemoGuard role="owner"><OwnerExecutiveDashboard /></InternalDemoGuard>}
-      </Route>
-      <Route path="/demo/owner/command-center">
-        {() => <InternalDemoGuard role="owner"><OwnerCommandCenter /></InternalDemoGuard>}
       </Route>
       <Route path="/demo/owner/ai-agents-v2">
         {() => <InternalDemoGuard role="owner"><OwnerAiAgentsV2 /></InternalDemoGuard>}
@@ -322,15 +300,9 @@ function Router() {
       <Route path="/demo/operator/content-calendar">
         {() => <InternalDemoGuard role="operator"><OperatorContentCalendar /></InternalDemoGuard>}
       </Route>
-      <Route path="/demo/team/task-engine">
-        {() => <InternalDemoGuard role="team"><TeamTaskEngine /></InternalDemoGuard>}
-      </Route>
       <Route path="/demo/client/activity-log" component={ClientActivityLog} />
       <Route path="/demo/client/account"      component={ClientAccount} />
       <Route path="/demo/client/requests"     component={ClientRequests} />
-      <Route path="/demo/operator/command-board">
-        {() => <InternalDemoGuard role="operator"><OperatorCommandBoard /></InternalDemoGuard>}
-      </Route>
       <Route path="/demo/operator/client-detail">
         {() => <InternalDemoGuard role="operator"><InternalClientDetail role="operator" /></InternalDemoGuard>}
       </Route>

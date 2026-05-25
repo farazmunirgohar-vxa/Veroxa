@@ -1,3 +1,3 @@
-// /demo/operator → redirects to the overview page
-import OperatorOverview from "./operator-overview";
-export default OperatorOverview;
+// /demo/operator → redirects to the OS page
+import OperatorOS from "./operator-os";
+export default OperatorOS;

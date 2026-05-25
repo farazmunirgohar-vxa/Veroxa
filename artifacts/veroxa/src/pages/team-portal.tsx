@@ -1,3 +1,3 @@
-// /demo/team → redirects to the tasks page
-import TeamTasks from "./team-tasks";
-export default TeamTasks;
+// /demo/team → redirects to the dashboard page
+import TeamDashboard from "./team-dashboard";
+export default TeamDashboard;

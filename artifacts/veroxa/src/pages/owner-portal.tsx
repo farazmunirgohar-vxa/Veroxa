@@ -1,3 +1,3 @@
-// /demo/owner → redirects to the dashboard page
-import OwnerDashboard from "./owner-dashboard";
-export default OwnerDashboard;
+// /demo/owner → redirects to the executive dashboard
+import OwnerExecutiveDashboard from "./owner-executive-dashboard";
+export default OwnerExecutiveDashboard;
