@@ -103,6 +103,7 @@ import RealTeamPlaceholder from "@/pages/real-team-placeholder";
 import RealOperatorPlaceholder from "@/pages/real-operator-placeholder";
 import RealOwnerPlaceholder from "@/pages/real-owner-placeholder";
 import InternalDemoGuard from "@/components/auth/InternalDemoGuard";
+import InternalDbExplorer from "@/pages/internal-db-explorer";
 import ServicesPage from "@/pages/services";
 import PricingPage from "@/pages/pricing";
 
@@ -365,6 +366,9 @@ function Router() {
             <ClientHealthCommand />
           </InternalDemoGuard>
         )}
+      </Route>
+      <Route path="/demo/internal/db-explorer">
+        {() => <InternalDemoGuard role={["operator", "owner"]}><InternalDbExplorer /></InternalDemoGuard>}
       </Route>
 
       <Route path="/demo/supabase-test" component={SupabaseTestPage} />
