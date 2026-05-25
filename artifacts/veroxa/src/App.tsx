@@ -32,6 +32,20 @@ import OwnerRevenue from "@/pages/owner-revenue";
 import OwnerClientHealth from "@/pages/owner-client-health";
 import OwnerAlerts from "@/pages/owner-alerts";
 import OwnerSettings from "@/pages/owner-settings";
+import OwnerAIAgents from "@/pages/owner-ai-agents";
+import OwnerActivity from "@/pages/owner-activity";
+import OwnerKpis from "@/pages/owner-kpis";
+import OwnerMediaInventory from "@/pages/owner-media-inventory";
+import OwnerWeeklyReports from "@/pages/owner-weekly-reports";
+import OwnerMonthlyReports from "@/pages/owner-monthly-reports";
+import OperatorAIAgents from "@/pages/operator-ai-agents";
+import OperatorActivity from "@/pages/operator-activity";
+import OperatorKpis from "@/pages/operator-kpis";
+import OperatorMediaInventory from "@/pages/operator-media-inventory";
+import OperatorWeeklyReports from "@/pages/operator-weekly-reports";
+import OperatorMonthlyReports from "@/pages/operator-monthly-reports";
+import ClientWeeklyReport from "@/pages/client-weekly-report";
+import ClientMonthlyReport from "@/pages/client-monthly-report";
 import SupabaseTestPage from "@/pages/supabase-test";
 import LoginPage from "@/pages/login";
 import AuthStatusPage from "@/pages/auth-status";
@@ -65,6 +79,8 @@ function Router() {
       <Route path="/demo/client/updates" component={ClientUpdates} />
       <Route path="/demo/client/onboarding" component={ClientOnboarding} />
       <Route path="/demo/client/media" component={ClientMedia} />
+      <Route path="/demo/client/weekly-report" component={ClientWeeklyReport} />
+      <Route path="/demo/client/monthly-report" component={ClientMonthlyReport} />
 
       {/* Internal team demo — login required, role = "team" */}
       <Route path="/demo/team">
@@ -105,6 +121,24 @@ function Router() {
       <Route path="/demo/operator/report-approvals">
         {() => <InternalDemoGuard role="operator"><OperatorReportApprovals /></InternalDemoGuard>}
       </Route>
+      <Route path="/demo/operator/ai-agents">
+        {() => <InternalDemoGuard role="operator"><OperatorAIAgents /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/operator/activity">
+        {() => <InternalDemoGuard role="operator"><OperatorActivity /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/operator/kpis">
+        {() => <InternalDemoGuard role="operator"><OperatorKpis /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/operator/media-inventory">
+        {() => <InternalDemoGuard role="operator"><OperatorMediaInventory /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/operator/weekly-reports">
+        {() => <InternalDemoGuard role="operator"><OperatorWeeklyReports /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/operator/monthly-reports">
+        {() => <InternalDemoGuard role="operator"><OperatorMonthlyReports /></InternalDemoGuard>}
+      </Route>
 
       {/* Internal owner demo — login required, role = "owner" */}
       <Route path="/demo/owner">
@@ -124,6 +158,24 @@ function Router() {
       </Route>
       <Route path="/demo/owner/settings">
         {() => <InternalDemoGuard role="owner"><OwnerSettings /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/owner/ai-agents">
+        {() => <InternalDemoGuard role="owner"><OwnerAIAgents /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/owner/activity">
+        {() => <InternalDemoGuard role="owner"><OwnerActivity /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/owner/kpis">
+        {() => <InternalDemoGuard role="owner"><OwnerKpis /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/owner/media-inventory">
+        {() => <InternalDemoGuard role="owner"><OwnerMediaInventory /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/owner/weekly-reports">
+        {() => <InternalDemoGuard role="owner"><OwnerWeeklyReports /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/owner/monthly-reports">
+        {() => <InternalDemoGuard role="owner"><OwnerMonthlyReports /></InternalDemoGuard>}
       </Route>
 
       <Route path="/demo/supabase-test" component={SupabaseTestPage} />
