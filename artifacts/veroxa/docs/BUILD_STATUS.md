@@ -407,3 +407,19 @@ Specifically:
 - Truthfulness rules (no fake stats, no fake claims) preserved.
 - No auth, database, upload, or storage changes.
 - Internal demo guards unchanged.
+
+## Public Copy Polish Pass
+
+**Status: COMPLETE**
+
+- Demo page typo ("media guidance guidance") confirmed already correct
+  in current build — was resolved during the website structure pass.
+- Verified zero internal demo links (/demo/team, /demo/operator,
+  /demo/owner) on any public page (landing, demo-hub, services,
+  pricing, PublicNav, PublicFooter).
+- All public nav links confirmed correct: Home → /, Services →
+  /services, Pricing → /pricing, Demo → /demo, Login → /login,
+  Request Audit → mailto.
+- Pricing numbers unchanged.
+- Typecheck passed clean — zero errors.
+- No auth, database, upload, or storage changes.
