@@ -1,6 +1,6 @@
 import {
-  Users, DollarSign, TrendingUp, Heart, Activity, Award,
-  FileText, ClipboardCheck, ArrowUpRight,
+  Users, DollarSign, Heart, Award,
+  ArrowUpRight,
 } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,74 +24,49 @@ export default function OwnerExecutiveDashboard() {
     <PortalLayout items={ownerPortalNavItems} portalName="Owner Portal">
       <PageHeader
         title="Executive Dashboard"
-        description="High-level business health and growth across the entire portfolio."
+        description="High-level business health and growth across your portfolio."
         testId="header-exec-dashboard"
       />
 
       <DemoOnlyBanner message="Demo only — all metrics are sample data." testId="banner-exec-dashboard" />
 
-      {/* Top metric grid — MetricTile replaces former local Metric component */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-        <MetricTile icon={Users}          label="Active clients"        value={demoOwnerMetrics.totalActiveClients}              testId="tile-active-clients" />
-        <MetricTile icon={DollarSign}     label="MRR"                   value={fmt$(demoOwnerMetrics.monthlyRecurringRevenue)}    accent="text-emerald-400"   testId="tile-mrr" />
-        <MetricTile icon={TrendingUp}     label="Projected MRR"         value={fmt$(demoOwnerMetrics.projectedRevenue)}           accent="text-sky-400"       testId="tile-projected-mrr" />
-        <MetricTile icon={Heart}          label="Client health avg"     value={`${demoOwnerMetrics.clientHealthAverage}%`}        testId="tile-health-avg" />
-        <MetricTile icon={Activity}       label="Team utilisation"      value={`${demoOwnerMetrics.teamUtilization}%`}            testId="tile-utilisation" />
-        <MetricTile icon={Award}          label="Retention score"       value={`${demoOwnerMetrics.retentionScore}%`}             accent="text-emerald-400"   testId="tile-retention" />
-        <MetricTile icon={FileText}       label="Reporting completion"  value={`${demoOwnerMetrics.reportingCompletionRate}%`}    testId="tile-reporting" />
-        <MetricTile icon={ClipboardCheck} label="Onboarding completion" value={`${demoOwnerMetrics.onboardingCompletionRate}%`}   accent="text-amber-400"     testId="tile-onboarding" />
+        <MetricTile icon={Users}      label="Active clients"    value={demoOwnerMetrics.totalActiveClients}                       testId="tile-active-clients" />
+        <MetricTile icon={DollarSign} label="MRR"               value={fmt$(demoOwnerMetrics.monthlyRecurringRevenue)} accent="text-emerald-400" testId="tile-mrr" />
+        <MetricTile icon={Heart}      label="Client health avg" value={`${demoOwnerMetrics.clientHealthAverage}%`}                testId="tile-health-avg" />
+        <MetricTile icon={Award}      label="Retention score"   value={`${demoOwnerMetrics.retentionScore}%`}           accent="text-emerald-400" testId="tile-retention" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-        {/* Revenue trend */}
-        <Card className="bg-card border-border">
-          <CardHeader>
-            <CardTitle className="text-base flex items-center justify-between">
-              Revenue trend
-              <span className="text-xs font-medium text-emerald-400 flex items-center gap-1">
-                <ArrowUpRight className="w-3 h-3" />+{demoOwnerMetrics.monthOverMonthGrowth}% MoM
-              </span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-end gap-3 h-32 mb-2">
-              {demoRevenueTrend.map((p) => (
-                <div key={p.month} className="flex-1 flex flex-col items-center justify-end gap-1.5">
-                  <div className="w-full bg-primary/80 rounded-t-sm relative group" style={{ height: `${(p.revenue / maxRev) * 100}%` }}>
-                    <div className="opacity-0 group-hover:opacity-100 absolute -top-7 left-1/2 -translate-x-1/2 bg-popover border border-border rounded px-1.5 py-0.5 text-[10px] whitespace-nowrap">
-                      {fmt$(p.revenue)}
-                    </div>
+      {/* Revenue trend — full width */}
+      <Card className="bg-card border-border mb-4">
+        <CardHeader>
+          <CardTitle className="text-base flex items-center justify-between">
+            Revenue trend
+            <span className="text-xs font-medium text-emerald-400 flex items-center gap-1">
+              <ArrowUpRight className="w-3 h-3" />+{demoOwnerMetrics.monthOverMonthGrowth}% MoM
+            </span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-end gap-3 h-36 mb-2">
+            {demoRevenueTrend.map((p) => (
+              <div key={p.month} className="flex-1 flex flex-col items-center justify-end gap-1.5">
+                <div className="w-full bg-primary/80 rounded-t-sm relative group" style={{ height: `${(p.revenue / maxRev) * 100}%` }}>
+                  <div className="opacity-0 group-hover:opacity-100 absolute -top-7 left-1/2 -translate-x-1/2 bg-popover border border-border rounded px-1.5 py-0.5 text-[10px] whitespace-nowrap">
+                    {fmt$(p.revenue)}
                   </div>
-                  <span className="text-[10px] text-muted-foreground">{p.month}</span>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Client growth */}
-        <Card className="bg-card border-border">
-          <CardHeader>
-            <CardTitle className="text-base">Client growth</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-end gap-3 h-32 mb-2">
-              {demoRevenueTrend.map((p) => (
-                <div key={p.month} className="flex-1 flex flex-col items-center justify-end gap-1.5">
-                  <div className="w-full bg-emerald-500/80 rounded-t-sm" style={{ height: `${(p.clients / 4) * 100}%` }} />
-                  <span className="text-[10px] text-muted-foreground">{p.month}</span>
-                </div>
-              ))}
-            </div>
-            <p className="text-xs text-muted-foreground">Active clients per month</p>
-          </CardContent>
-        </Card>
-      </div>
+                <span className="text-[10px] text-muted-foreground">{p.month}</span>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
         {/* Service plan distribution */}
         <Card className="bg-card border-border">
-          <CardHeader><CardTitle className="text-base">Service plan distribution</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">Service plans</CardTitle></CardHeader>
           <CardContent className="space-y-3">
             <div className="flex w-full h-3 rounded-full overflow-hidden">
               {demoServicePlans.map((p) => (
@@ -114,7 +89,7 @@ export default function OwnerExecutiveDashboard() {
 
         {/* Client health distribution */}
         <Card className="bg-card border-border">
-          <CardHeader><CardTitle className="text-base">Client health distribution</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">Client health</CardTitle></CardHeader>
           <CardContent className="space-y-2.5">
             {demoClientHealthDistribution.map((h) => {
               const pct = totalHealth === 0 ? 0 : Math.round((h.count / totalHealth) * 100);
@@ -137,26 +112,26 @@ export default function OwnerExecutiveDashboard() {
       {/* Monthly summary + executive action center */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card className="bg-card border-border">
-          <CardHeader><CardTitle className="text-base">Monthly business summary</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">Monthly summary</CardTitle></CardHeader>
           <CardContent>
             <p className="text-sm text-foreground/85 leading-relaxed">
               May brought a steady <span className="text-emerald-400 font-semibold">+12% MoM</span> revenue
               increase and held retention near <span className="font-semibold">94%</span>. Portfolio
-              health is stable with 1 critical client requiring rescue. Three qualified leads in late
+              health is stable with 1 critical client requiring attention. Three qualified leads in late
               discovery position the business for a possible{" "}
               <span className="text-sky-400 font-semibold">${demoOwnerMetrics.projectedRevenue.toLocaleString()}</span> MRR next month.
             </p>
             <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-              <Stat label="MRR"     value={fmt$(demoOwnerMetrics.monthlyRecurringRevenue)} />
-              <Stat label="Clients" value={String(demoOwnerMetrics.totalActiveClients)}    />
-              <Stat label="Health"  value={`${demoOwnerMetrics.clientHealthAverage}%`}     />
-              <Stat label="Reports" value={`${demoOwnerMetrics.reportingCompletionRate}%`} />
+              <Stat label="MRR"       value={fmt$(demoOwnerMetrics.monthlyRecurringRevenue)} />
+              <Stat label="Clients"   value={String(demoOwnerMetrics.totalActiveClients)}    />
+              <Stat label="Health"    value={`${demoOwnerMetrics.clientHealthAverage}%`}     />
+              <Stat label="Retention" value={`${demoOwnerMetrics.retentionScore}%`}          />
             </div>
           </CardContent>
         </Card>
 
         <Card className="bg-card border-primary/30">
-          <CardHeader><CardTitle className="text-base">Executive action center</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">Action items</CardTitle></CardHeader>
           <CardContent>
             <ul className="space-y-2 text-sm">
               {[

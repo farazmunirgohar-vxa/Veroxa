@@ -2,9 +2,6 @@ import { useMemo, useRef, useState, type ChangeEvent } from "react";
 import {
   UploadCloud,
   Camera,
-  ChefHat,
-  Users,
-  Utensils,
   AlertTriangle,
   ImageIcon,
   CheckCircle2,
@@ -35,44 +32,6 @@ interface SelectedFile {
   sizeKb: number;
   kind: string;
 }
-
-const guidelines: Array<{
-  icon: typeof Camera;
-  title: string;
-  description: string;
-  tone: "positive" | "negative";
-}> = [
-  {
-    icon: Utensils,
-    title: "Food close-ups",
-    description: "Plated dishes shot from above or at 45°, natural light when possible.",
-    tone: "positive",
-  },
-  {
-    icon: ChefHat,
-    title: "Kitchen & prep process",
-    description: "Behind-the-scenes shots — plating, grilling, dough work, garnishing.",
-    tone: "positive",
-  },
-  {
-    icon: Users,
-    title: "Staff & customer moments",
-    description: "Team in action, smiling guests, full tables (with permission).",
-    tone: "positive",
-  },
-  {
-    icon: ImageIcon,
-    title: "Menu & specials",
-    description: "Clear shots of new dishes, weekly specials, or seasonal items.",
-    tone: "positive",
-  },
-  {
-    icon: AlertTriangle,
-    title: "Avoid blurry or dark images",
-    description: "Skip low-light phone shots, harsh flash, cluttered backgrounds.",
-    tone: "negative",
-  },
-];
 
 const reviewPreview: Array<{
   title: string;
@@ -447,46 +406,7 @@ export default function ClientMedia() {
             </CardContent>
           </Card>
 
-          {/* 2. Upload Guidelines */}
-          <Card className="bg-card border-border" data-testid="card-guidelines">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base font-semibold">
-                Upload Guidelines
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {guidelines.map((g) => (
-                  <div
-                    key={g.title}
-                    className={`flex gap-3 p-3 rounded-md border ${
-                      g.tone === "positive"
-                        ? "border-border bg-muted/20"
-                        : "border-amber-500/30 bg-amber-500/5"
-                    }`}
-                  >
-                    <div
-                      className={`p-2 rounded-md flex-shrink-0 ${
-                        g.tone === "positive"
-                          ? "bg-primary/10 text-primary"
-                          : "bg-amber-500/10 text-amber-400"
-                      }`}
-                    >
-                      <g.icon className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">{g.title}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {g.description}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 3. Media Review Preview */}
+          {/* 2. Media Review Preview */}
           <Card className="bg-card border-border" data-testid="card-review">
             <CardHeader className="pb-3">
               <CardTitle className="text-base font-semibold">
@@ -520,44 +440,6 @@ export default function ClientMedia() {
             </CardContent>
           </Card>
 
-          <Card className="bg-card border-border" data-testid="card-future-pipeline">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base font-semibold">
-                How uploads will work
-              </CardTitle>
-              <p className="text-xs text-muted-foreground">
-                A preview of the upload flow coming when this feature goes live.
-              </p>
-            </CardHeader>
-            <CardContent>
-              <ol className="space-y-2">
-                {[
-                  "Choose your photos or videos",
-                  "Files are checked for quality",
-                  "Securely uploaded to Veroxa",
-                  "Your media is logged and ready",
-                  "Veroxa team is notified",
-                ].map((step, i) => (
-                  <li
-                    key={step}
-                    className="flex items-center gap-3 text-sm"
-                    data-testid={`pipeline-step-${i}`}
-                  >
-                    <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-semibold flex items-center justify-center flex-shrink-0">
-                      {i + 1}
-                    </span>
-                    <span>{step}</span>
-                  </li>
-                ))}
-              </ol>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-border/60">
-            <CardContent className="pt-6 text-sm text-muted-foreground">
-              Secure uploads are coming soon. For now, send your photos and videos to your Veroxa team directly.
-            </CardContent>
-          </Card>
         </div>
 
         {/* 4. Content Supply Snapshot */}
