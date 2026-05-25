@@ -1,0 +1,285 @@
+PROMPT 7 — OPERATOR COMMAND CENTER (DEMO ONLY)
+
+Objective:
+
+Build the Veroxa Operator Command Center.
+
+The Operator is responsible for overseeing client health, content flow, reporting completion, onboarding completion, and team workload.
+
+This is NOT an Owner dashboard.
+
+This is NOT a Client dashboard.
+
+This is the operational control layer.
+
+------------------------------------------------
+
+RULES
+
+- Demo only
+- No backend
+- No database
+- No uploads
+- No AI APIs
+- No social integrations
+- No automation
+- No scheduling integrations
+- No authentication changes
+- Reuse existing Veroxa design system
+- Maintain dark premium SaaS theme
+
+------------------------------------------------
+
+SECTION 1 — OPERATOR OVERVIEW
+
+Create a command dashboard displaying:
+
+- Total Active Clients
+- Healthy Clients
+- Clients Requiring Attention
+- Weekly Reports Pending
+- Monthly Reports Pending
+- Onboarding Issues
+- Media Inventory Warnings
+- Content Pipeline Delays
+
+Use realistic sample metrics.
+
+------------------------------------------------
+
+SECTION 2 — CLIENT HEALTH CENTER
+
+Create a client health monitoring page.
+
+Each client receives:
+
+Health Status:
+- Excellent
+- Healthy
+- Warning
+- Critical
+
+Health factors:
+
+- Media inventory
+- Posting consistency
+- Reporting completion
+- Onboarding completion
+- Google activity
+- Client responsiveness
+
+Display:
+
+- Client name
+- Health status
+- Risk factors
+- Recommended action
+
+------------------------------------------------
+
+SECTION 3 — CLIENT PRIORITY BOARD
+
+Create priority groups:
+
+Critical
+High
+Normal
+Low
+
+Each client card displays:
+
+- Client name
+- Health status
+- Next action
+- Last update
+- Priority reason
+
+Operator should immediately see who needs attention.
+
+------------------------------------------------
+
+SECTION 4 — TEAM OVERSIGHT
+
+Show:
+
+- Team member
+- Assigned clients
+- Open tasks
+- Completed tasks
+- Content awaiting review
+- Report workload
+
+Demo only.
+
+No employee management system.
+
+------------------------------------------------
+
+SECTION 5 — CONTENT OPERATIONS CENTER
+
+Display pipeline metrics:
+
+- Media Received
+- In Review
+- Drafting
+- Awaiting Approval
+- Scheduled
+- Posted
+
+Add charts and summary cards.
+
+Demo data only.
+
+------------------------------------------------
+
+SECTION 6 — REPORTING COMMAND CENTER
+
+Weekly Reports
+
+Status groups:
+
+- Drafting
+- Validation Needed
+- Ready
+- Published
+
+Monthly Reports
+
+Status groups:
+
+- Drafting
+- Validation Needed
+- Ready
+- Published
+
+Operator can quickly identify bottlenecks.
+
+------------------------------------------------
+
+SECTION 7 — CLIENT RISK CENTER
+
+Create risk monitoring cards.
+
+Example risks:
+
+- Low media inventory
+- Inactive client
+- Missing onboarding items
+- Google profile issue
+- Reporting overdue
+- Content backlog
+
+Severity:
+
+- Low
+- Medium
+- High
+- Critical
+
+------------------------------------------------
+
+SECTION 8 — OPERATOR ACTION CENTER
+
+Create a recommended action feed.
+
+Examples:
+
+- Request more media from Client A
+- Validate Monthly Report for Client B
+- Review Google profile for Client C
+- Resolve onboarding issue for Client D
+
+Demo suggestions only.
+
+------------------------------------------------
+
+SECTION 9 — AI OPERATOR ASSISTANT (SIMULATED)
+
+Create a dedicated AI Operator Assistant panel.
+
+Show demo-only recommendations from:
+
+- Media Review Agent
+- Content Strategist Agent
+- Scheduling Agent
+- Reporting Agent
+- Risk Monitoring Agent
+
+Examples:
+
+"Client inventory may run out within 10 days."
+
+"Monthly report validation required."
+
+"Posting consistency below target."
+
+"Recommend requesting additional video content."
+
+Static demo intelligence only.
+
+No API calls.
+
+------------------------------------------------
+
+SECTION 10 — OPERATOR DAILY DIGEST
+
+Create a daily operational summary.
+
+Show:
+
+Today's priorities
+Urgent alerts
+Clients needing attention
+Reports due
+Media shortages
+Pipeline bottlenecks
+
+Make it feel like an executive briefing.
+
+------------------------------------------------
+
+SECTION 11 — CENTRALIZED DEMO DATA
+
+Extend demoData.ts
+
+Add:
+
+operatorMetrics
+clientHealth
+clientPriorities
+teamOversight
+pipelineMetrics
+riskCenter
+operatorActions
+operatorAssistant
+dailyDigest
+
+Do not create duplicate mock data files.
+
+------------------------------------------------
+
+SECTION 12 — MOBILE QUALITY
+
+Operator dashboard must remain usable on mobile.
+
+No horizontal scrolling.
+
+Cards should stack correctly.
+
+Tables should collapse responsively.
+
+------------------------------------------------
+
+SUCCESS CRITERIA
+
+- Operator Command Center exists
+- Client Health Center exists
+- Priority Board exists
+- Reporting Command Center exists
+- Risk Center exists
+- AI Operator Assistant exists
+- Daily Digest exists
+- Uses centralized demo data
+- No backend dependencies
+- Existing dashboards remain functional
+- Project builds successfully

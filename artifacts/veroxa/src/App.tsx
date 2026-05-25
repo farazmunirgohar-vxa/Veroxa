@@ -46,6 +46,13 @@ import OperatorWeeklyReports from "@/pages/operator-weekly-reports";
 import OperatorMonthlyReports from "@/pages/operator-monthly-reports";
 import ClientWeeklyReport from "@/pages/client-weekly-report";
 import ClientMonthlyReport from "@/pages/client-monthly-report";
+import OperatorPriorityBoard from "@/pages/operator-priority-board";
+import OperatorTeamOversight from "@/pages/operator-team-oversight";
+import OperatorContentOps from "@/pages/operator-content-ops";
+import OperatorReportingCommand from "@/pages/operator-reporting-command";
+import OperatorRiskCenter from "@/pages/operator-risk-center";
+import OperatorActionCenter from "@/pages/operator-action-center";
+import OperatorDailyDigest from "@/pages/operator-daily-digest";
 import TeamDashboard from "@/pages/team-dashboard";
 import TeamWorkQueue from "@/pages/team-work-queue";
 import TeamContentReview from "@/pages/team-content-review";
@@ -174,6 +181,27 @@ function Router() {
       </Route>
       <Route path="/demo/operator/monthly-reports">
         {() => <InternalDemoGuard role="operator"><OperatorMonthlyReports /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/operator/priority-board">
+        {() => <InternalDemoGuard role="operator"><OperatorPriorityBoard /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/operator/team-oversight">
+        {() => <InternalDemoGuard role="operator"><OperatorTeamOversight /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/operator/content-ops">
+        {() => <InternalDemoGuard role="operator"><OperatorContentOps /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/operator/reporting-command">
+        {() => <InternalDemoGuard role="operator"><OperatorReportingCommand /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/operator/risk-center">
+        {() => <InternalDemoGuard role="operator"><OperatorRiskCenter /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/operator/action-center">
+        {() => <InternalDemoGuard role="operator"><OperatorActionCenter /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/operator/daily-digest">
+        {() => <InternalDemoGuard role="operator"><OperatorDailyDigest /></InternalDemoGuard>}
       </Route>
 
       {/* Internal owner demo — login required, role = "owner" */}
