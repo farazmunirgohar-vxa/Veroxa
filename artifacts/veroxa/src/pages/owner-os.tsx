@@ -3,7 +3,10 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
-import { PageHeader, MetricTile, StatusBadge, EmptyState } from "@/components/common";
+import {
+  PageHeader, MetricTile, StatusBadge, EmptyState,
+  SectionCard, StatRow,
+} from "@/components/common";
 import { ClientRepository } from "@/domain/clients/repository";
 import { HealthService, RiskService } from "@/domain/clients/service";
 import { AIRepository } from "@/domain/ai/repository";
@@ -43,134 +46,113 @@ export default function OwnerOS() {
 
       {/* Top KPI tiles */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
-        <MetricTile icon={DollarSign} label="MRR"              value={fmtMoney(demoOwnerMetrics.monthlyRecurringRevenue)} testId="tile-mrr"            accent="text-emerald-300" hint={`Projected ${fmtMoney(demoOwnerMetrics.projectedRevenue)}`} />
-        <MetricTile icon={Users}      label="Active clients"   value={demoOwnerMetrics.totalActiveClients}                testId="tile-active-clients" accent="text-sky-300"   hint={`${demoOwnerKpis.clientsNeedingAttention} need attention`} />
-        <MetricTile icon={TrendingUp} label="Month-over-month" value={`${demoOwnerMetrics.monthOverMonthGrowth}%`}        testId="tile-mom"            accent="text-emerald-300" hint="Demo trailing 6 months" />
-        <MetricTile icon={ShieldAlert} label="At-risk clients" value={atRisk.length}                                       testId="tile-owner-at-risk"  accent="text-rose-300"  hint={`${critical.length} critical alerts`} />
+        <MetricTile icon={DollarSign}  label="MRR"              value={fmtMoney(demoOwnerMetrics.monthlyRecurringRevenue)} accent="text-emerald-300" hint={`Projected ${fmtMoney(demoOwnerMetrics.projectedRevenue)}`} testId="tile-mrr" />
+        <MetricTile icon={Users}       label="Active clients"   value={demoOwnerMetrics.totalActiveClients}                accent="text-sky-300"    hint={`${demoOwnerKpis.clientsNeedingAttention} need attention`} testId="tile-active-clients" />
+        <MetricTile icon={TrendingUp}  label="Month-over-month" value={`${demoOwnerMetrics.monthOverMonthGrowth}%`}        accent="text-emerald-300" hint="Demo trailing 6 months" testId="tile-mom" />
+        <MetricTile icon={ShieldAlert} label="At-risk clients"  value={atRisk.length}                                      accent="text-rose-300"   hint={`${critical.length} critical alerts`} testId="tile-owner-at-risk" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
         {/* Revenue command summary */}
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2"><DollarSign className="w-4 h-4 text-emerald-400" /> Revenue command</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="rounded-md border border-border bg-muted/20 p-3 mb-3 flex items-center justify-between">
-              <div>
-                <p className="text-[11px] text-muted-foreground">This month</p>
-                <p className="text-2xl font-bold tabular-nums">{fmtMoney(last?.revenue ?? 0)}</p>
-                <p className={`text-[11px] ${delta >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{delta >= 0 ? "+" : ""}{delta}% vs last month</p>
-              </div>
-              <div className="text-right">
-                <p className="text-[11px] text-muted-foreground">Retention score</p>
-                <p className="text-2xl font-bold tabular-nums text-emerald-300">{demoOwnerMetrics.retentionScore}%</p>
-              </div>
+        <SectionCard title="Revenue command" icon={DollarSign} iconClass="text-emerald-400" contentClass="">
+          <div className="rounded-md border border-border bg-muted/20 p-3 mb-3 flex items-center justify-between">
+            <div>
+              <p className="text-[11px] text-muted-foreground">This month</p>
+              <p className="text-2xl font-bold tabular-nums">{fmtMoney(last?.revenue ?? 0)}</p>
+              <p className={`text-[11px] ${delta >= 0 ? "text-emerald-300" : "text-rose-300"}`}>{delta >= 0 ? "+" : ""}{delta}% vs last month</p>
             </div>
-            <div className="space-y-1.5">
-              {demoServicePlans.map((p) => (
-                <div key={p.plan} className="flex items-center justify-between text-xs" data-testid={`plan-${p.plan.toLowerCase()}`}>
-                  <span className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${p.color}`} />
-                    {p.plan} · ${p.price}
-                  </span>
-                  <span className="tabular-nums text-muted-foreground">{p.clients} client{p.clients === 1 ? "" : "s"}</span>
-                </div>
-              ))}
+            <div className="text-right">
+              <p className="text-[11px] text-muted-foreground">Retention score</p>
+              <p className="text-2xl font-bold tabular-nums text-emerald-300">{demoOwnerMetrics.retentionScore}%</p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="space-y-1.5">
+            {demoServicePlans.map((p) => (
+              <div key={p.plan} className="flex items-center justify-between text-xs" data-testid={`plan-${p.plan.toLowerCase()}`}>
+                <span className="flex items-center gap-2">
+                  <span className={`w-2 h-2 rounded-full ${p.color}`} />
+                  {p.plan} · ${p.price}
+                </span>
+                <span className="tabular-nums text-muted-foreground">{p.clients} client{p.clients === 1 ? "" : "s"}</span>
+              </div>
+            ))}
+          </div>
+        </SectionCard>
 
         {/* Growth trend */}
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2"><TrendingUp className="w-4 h-4 text-sky-400" /> Growth trend (6 mo)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-6 gap-1.5 mb-2">
-              {demoRevenueTrend.map((p) => {
-                const max = Math.max(...demoRevenueTrend.map((x) => x.revenue));
-                const h = Math.max(8, Math.round((p.revenue / max) * 100));
-                return (
-                  <div key={p.month} className="flex flex-col items-center gap-1" data-testid={`trend-${p.month}`}>
-                    <div className="w-full bg-muted/20 rounded-sm overflow-hidden" style={{ height: 90 }}>
-                      <div className="bg-emerald-500/70 w-full mt-auto" style={{ height: `${h}%` }} />
-                    </div>
-                    <span className="text-[10px] text-muted-foreground">{p.month}</span>
+        <SectionCard title="Growth trend (6 mo)" icon={TrendingUp} iconClass="text-sky-400" contentClass="">
+          <div className="grid grid-cols-6 gap-1.5 mb-2">
+            {demoRevenueTrend.map((p) => {
+              const max = Math.max(...demoRevenueTrend.map((x) => x.revenue));
+              const h = Math.max(8, Math.round((p.revenue / max) * 100));
+              return (
+                <div key={p.month} className="flex flex-col items-center gap-1" data-testid={`trend-${p.month}`}>
+                  <div className="w-full bg-muted/20 rounded-sm overflow-hidden" style={{ height: 90 }}>
+                    <div className="bg-emerald-500/70 w-full mt-auto" style={{ height: `${h}%` }} />
                   </div>
-                );
-              })}
-            </div>
-            <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border/60">
-              <div><p className="text-[10px] text-muted-foreground">Utilization</p><p className="text-sm font-semibold tabular-nums">{demoOwnerMetrics.teamUtilization}%</p></div>
-              <div><p className="text-[10px] text-muted-foreground">Reporting</p><p className="text-sm font-semibold tabular-nums">{demoOwnerMetrics.reportingCompletionRate}%</p></div>
-              <div><p className="text-[10px] text-muted-foreground">Onboarding</p><p className="text-sm font-semibold tabular-nums">{demoOwnerMetrics.onboardingCompletionRate}%</p></div>
-            </div>
-          </CardContent>
-        </Card>
+                  <span className="text-[10px] text-muted-foreground">{p.month}</span>
+                </div>
+              );
+            })}
+          </div>
+          <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border/60">
+            <div><p className="text-[10px] text-muted-foreground">Utilization</p><p className="text-sm font-semibold tabular-nums">{demoOwnerMetrics.teamUtilization}%</p></div>
+            <div><p className="text-[10px] text-muted-foreground">Reporting</p><p className="text-sm font-semibold tabular-nums">{demoOwnerMetrics.reportingCompletionRate}%</p></div>
+            <div><p className="text-[10px] text-muted-foreground">Onboarding</p><p className="text-sm font-semibold tabular-nums">{demoOwnerMetrics.onboardingCompletionRate}%</p></div>
+          </div>
+        </SectionCard>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
         {/* Client risk snapshot */}
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2"><ShieldAlert className="w-4 h-4 text-rose-400" /> Client risk snapshot</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="grid grid-cols-4 gap-1.5 mb-2">
-              {demoClientHealthDistribution.map((d) => (
-                <div key={d.status} className="rounded-md border border-border bg-muted/20 px-2 py-1.5 text-center" data-testid={`dist-${d.status.toLowerCase()}`}>
-                  <p className="text-[10px] text-muted-foreground">{d.status}</p>
-                  <p className="text-lg font-bold tabular-nums">{d.count}</p>
-                </div>
-              ))}
-            </div>
-            {atRisk.length === 0 ? (
-              <EmptyState title="No clients at risk" testId="empty-owner-risk" />
-            ) : (
-              atRisk.map((c) => (
-                <div key={c.clientId} className="rounded-md border border-border bg-muted/20 px-3 py-2 flex items-center justify-between" data-testid={`risk-${c.clientId}`}>
-                  <div>
-                    <p className="text-sm font-semibold">{ClientRepository.nameOf(c.clientId)}</p>
-                    <p className="text-[11px] text-muted-foreground">Health {c.healthScore}% · {c.lifecycleStage}</p>
-                  </div>
-                  <StatusBadge tone={c.riskLevel === "Critical" ? "danger" : "warning"}>{c.riskLevel}</StatusBadge>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
+        <SectionCard title="Client risk snapshot" icon={ShieldAlert} iconClass="text-rose-400">
+          <div className="grid grid-cols-4 gap-1.5 mb-2">
+            {demoClientHealthDistribution.map((d) => (
+              <div key={d.status} className="rounded-md border border-border bg-muted/20 px-2 py-1.5 text-center" data-testid={`dist-${d.status.toLowerCase()}`}>
+                <p className="text-[10px] text-muted-foreground">{d.status}</p>
+                <p className="text-lg font-bold tabular-nums">{d.count}</p>
+              </div>
+            ))}
+          </div>
+          {atRisk.length === 0 ? (
+            <EmptyState title="No clients at risk" testId="empty-owner-risk" />
+          ) : (
+            atRisk.map((c) => (
+              <StatRow
+                key={c.clientId}
+                primary={ClientRepository.nameOf(c.clientId)}
+                secondary={`Health ${c.healthScore}% · ${c.lifecycleStage}`}
+                badge={<StatusBadge tone={c.riskLevel === "Critical" ? "danger" : "warning"}>{c.riskLevel}</StatusBadge>}
+                testId={`risk-${c.clientId}`}
+              />
+            ))
+          )}
+        </SectionCard>
 
-        {/* Critical alerts only */}
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2"><AlertTriangle className="w-4 h-4 text-rose-400" /> Critical alerts only</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {critical.length === 0 ? (
-              <EmptyState title="No critical alerts" message="Portfolio is stable." testId="empty-owner-critical" />
-            ) : (
-              critical.slice(0, 5).map((i) => (
-                <div key={i.id} className="rounded-md border border-border bg-muted/20 px-3 py-2" data-testid={`crit-${i.id}`}>
-                  <div className="flex items-start justify-between gap-2 mb-0.5">
-                    <p className="text-sm font-semibold leading-tight">{i.title}</p>
-                    <StatusBadge tone={i.severity === "Critical" ? "danger" : "warning"}>{i.severity}</StatusBadge>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground">{i.description}</p>
-                  <p className="text-[10px] text-foreground/70 mt-1"><span className="text-muted-foreground">Action:</span> {i.recommendedAction}</p>
+        {/* Critical alerts */}
+        <SectionCard title="Critical alerts only" icon={AlertTriangle} iconClass="text-rose-400">
+          {critical.length === 0 ? (
+            <EmptyState title="No critical alerts" message="Portfolio is stable." testId="empty-owner-critical" />
+          ) : (
+            critical.slice(0, 5).map((i) => (
+              <div key={i.id} className="rounded-md border border-border bg-muted/20 px-3 py-2" data-testid={`crit-${i.id}`}>
+                <div className="flex items-start justify-between gap-2 mb-0.5">
+                  <p className="text-sm font-semibold leading-tight">{i.title}</p>
+                  <StatusBadge tone={i.severity === "Critical" ? "danger" : "warning"}>{i.severity}</StatusBadge>
                 </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
+                <p className="text-[11px] text-muted-foreground">{i.description}</p>
+                <p className="text-[10px] text-foreground/70 mt-1">
+                  <span className="text-muted-foreground">Action:</span> {i.recommendedAction}
+                </p>
+              </div>
+            ))
+          )}
+        </SectionCard>
       </div>
 
       {/* AI system health summary */}
-      <Card className="bg-card border-border">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm flex items-center gap-2"><Bot className="w-4 h-4 text-violet-400" /> AI system health</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <SectionCard title="AI system health" icon={Bot} iconClass="text-violet-400" contentClass="">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div className="rounded-md border border-border bg-muted/20 p-3" data-testid="ai-agents-demo">
             <p className="text-[11px] text-muted-foreground">Agents (demo)</p>
             <p className="text-2xl font-bold tabular-nums">{demoAiAgentSummary.agentsInDemoMode}</p>
@@ -191,8 +173,8 @@ export default function OwnerOS() {
             <Activity className="w-3 h-3" />
             {demoAiAgentSummary.recentPreviewOutputs} preview outputs · {demoAiAgentSummary.alertsGenerated} alerts generated this week.
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </SectionCard>
     </div>
   );
 }

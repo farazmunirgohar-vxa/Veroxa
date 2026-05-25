@@ -4,3 +4,7 @@ export { EmptyState, NoReports, NoContent, NoMedia, NoTasks, NoNotifications } f
 export { PageHeader } from "./PageHeader";
 export { MetricTile } from "./MetricTile";
 export { StatusBadge } from "./StatusBadge";
+export type { StatusBadgeTone } from "./StatusBadge";
+export { SectionCard } from "./SectionCard";
+export { AlertRow } from "./AlertRow";
+export { StatRow } from "./StatRow";

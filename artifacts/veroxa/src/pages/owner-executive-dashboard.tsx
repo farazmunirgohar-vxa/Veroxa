@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { ownerPortalNavItems } from "@/lib/ownerPortalNav";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
+import { PageHeader, MetricTile } from "@/components/common";
 import {
   demoOwnerMetrics, demoRevenueTrend, demoServicePlans,
   demoClientHealthDistribution,
@@ -15,33 +16,30 @@ import {
 const fmt$ = (n: number) => `$${n.toLocaleString()}`;
 
 export default function OwnerExecutiveDashboard() {
-  const maxRev    = Math.max(...demoRevenueTrend.map((p) => p.revenue));
-  const totalPlan = demoServicePlans.reduce((s, p) => s + p.clients, 0);
+  const maxRev      = Math.max(...demoRevenueTrend.map((p) => p.revenue));
+  const totalPlan   = demoServicePlans.reduce((s, p) => s + p.clients, 0);
   const totalHealth = demoClientHealthDistribution.reduce((s, h) => s + h.count, 0);
 
   return (
     <PortalLayout items={ownerPortalNavItems} portalName="Owner Portal">
-      <div className="mb-4">
-        <h2 className="text-2xl md:text-3xl font-bold tracking-tight" data-testid="header-exec-dashboard">
-          Executive Dashboard
-        </h2>
-        <p className="text-muted-foreground mt-1 text-sm md:text-base">
-          High-level business health and growth across the entire portfolio.
-        </p>
-      </div>
+      <PageHeader
+        title="Executive Dashboard"
+        description="High-level business health and growth across the entire portfolio."
+        testId="header-exec-dashboard"
+      />
 
       <DemoOnlyBanner message="Demo only — all metrics are sample data." testId="banner-exec-dashboard" />
 
-      {/* Top metric grid */}
+      {/* Top metric grid — MetricTile replaces former local Metric component */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-        <Metric icon={Users}          label="Active clients"          value={String(demoOwnerMetrics.totalActiveClients)} />
-        <Metric icon={DollarSign}     label="MRR"                     value={fmt$(demoOwnerMetrics.monthlyRecurringRevenue)} accent="text-emerald-400" />
-        <Metric icon={TrendingUp}     label="Projected MRR"           value={fmt$(demoOwnerMetrics.projectedRevenue)}        accent="text-sky-400" />
-        <Metric icon={Heart}          label="Client health avg"       value={`${demoOwnerMetrics.clientHealthAverage}%`} />
-        <Metric icon={Activity}       label="Team utilisation"        value={`${demoOwnerMetrics.teamUtilization}%`} />
-        <Metric icon={Award}          label="Retention score"         value={`${demoOwnerMetrics.retentionScore}%`}          accent="text-emerald-400" />
-        <Metric icon={FileText}       label="Reporting completion"    value={`${demoOwnerMetrics.reportingCompletionRate}%`} />
-        <Metric icon={ClipboardCheck} label="Onboarding completion"   value={`${demoOwnerMetrics.onboardingCompletionRate}%`} accent="text-amber-400" />
+        <MetricTile icon={Users}          label="Active clients"        value={demoOwnerMetrics.totalActiveClients}              testId="tile-active-clients" />
+        <MetricTile icon={DollarSign}     label="MRR"                   value={fmt$(demoOwnerMetrics.monthlyRecurringRevenue)}    accent="text-emerald-400"   testId="tile-mrr" />
+        <MetricTile icon={TrendingUp}     label="Projected MRR"         value={fmt$(demoOwnerMetrics.projectedRevenue)}           accent="text-sky-400"       testId="tile-projected-mrr" />
+        <MetricTile icon={Heart}          label="Client health avg"     value={`${demoOwnerMetrics.clientHealthAverage}%`}        testId="tile-health-avg" />
+        <MetricTile icon={Activity}       label="Team utilisation"      value={`${demoOwnerMetrics.teamUtilization}%`}            testId="tile-utilisation" />
+        <MetricTile icon={Award}          label="Retention score"       value={`${demoOwnerMetrics.retentionScore}%`}             accent="text-emerald-400"   testId="tile-retention" />
+        <MetricTile icon={FileText}       label="Reporting completion"  value={`${demoOwnerMetrics.reportingCompletionRate}%`}    testId="tile-reporting" />
+        <MetricTile icon={ClipboardCheck} label="Onboarding completion" value={`${demoOwnerMetrics.onboardingCompletionRate}%`}   accent="text-amber-400"     testId="tile-onboarding" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
@@ -145,14 +143,14 @@ export default function OwnerExecutiveDashboard() {
               May brought a steady <span className="text-emerald-400 font-semibold">+12% MoM</span> revenue
               increase and held retention near <span className="font-semibold">94%</span>. Portfolio
               health is stable with 1 critical client requiring rescue. Three qualified leads in late
-              discovery position the business for a possible <span className="text-sky-400 font-semibold">
-              ${demoOwnerMetrics.projectedRevenue.toLocaleString()}</span> MRR next month.
+              discovery position the business for a possible{" "}
+              <span className="text-sky-400 font-semibold">${demoOwnerMetrics.projectedRevenue.toLocaleString()}</span> MRR next month.
             </p>
             <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-              <Stat label="MRR"      value={fmt$(demoOwnerMetrics.monthlyRecurringRevenue)} />
-              <Stat label="Clients"  value={String(demoOwnerMetrics.totalActiveClients)}     />
-              <Stat label="Health"   value={`${demoOwnerMetrics.clientHealthAverage}%`}     />
-              <Stat label="Reports"  value={`${demoOwnerMetrics.reportingCompletionRate}%`}  />
+              <Stat label="MRR"     value={fmt$(demoOwnerMetrics.monthlyRecurringRevenue)} />
+              <Stat label="Clients" value={String(demoOwnerMetrics.totalActiveClients)}    />
+              <Stat label="Health"  value={`${demoOwnerMetrics.clientHealthAverage}%`}     />
+              <Stat label="Reports" value={`${demoOwnerMetrics.reportingCompletionRate}%`} />
             </div>
           </CardContent>
         </Card>
@@ -182,19 +180,6 @@ export default function OwnerExecutiveDashboard() {
         </Card>
       </div>
     </PortalLayout>
-  );
-}
-
-function Metric({ icon: Icon, label, value, accent }: { icon: typeof Users; label: string; value: string; accent?: string }) {
-  return (
-    <Card className="bg-card border-border">
-      <CardContent className="p-3">
-        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mb-1">
-          <Icon className="w-3.5 h-3.5" />{label}
-        </div>
-        <p className={`text-2xl font-bold tabular-nums ${accent ?? ""}`}>{value}</p>
-      </CardContent>
-    </Card>
   );
 }
 
