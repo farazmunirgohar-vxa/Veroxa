@@ -117,3 +117,15 @@ Restaurant owners stay focused on food and service. Veroxa handles the online pr
 - `/pricing` = Pricing page — explains what Veroxa costs.
 - Public pages must only promote Client Portal Preview (`/demo/client/dashboard`), not internal portals.
 - Team, Operator, and Owner demo links must never appear on public pages.
+
+---
+
+## QA Pass Confirmation
+
+- Public page purpose map remains unchanged after QA pass:
+  - Home (`/`) = introduction only
+  - Demo (`/demo`) = client portal experience only
+  - Services (`/services`) = what Veroxa delivers
+  - Pricing (`/pricing`) = what Veroxa costs
+- Pricing numbers unchanged after QA pass.
+- No fake stats, fake claims, or internal demo links on any public page.

@@ -84,10 +84,31 @@ export default function PricingPage() {
           ))}
         </div>
 
-        <p className="text-xs text-muted-foreground/60 leading-relaxed max-w-lg">
+        <p className="text-xs text-muted-foreground/60 leading-relaxed max-w-lg mb-10">
           Results depend on restaurant quality, offer, consistency, location, and market demand.
           Veroxa does not guarantee specific revenue results.
         </p>
+
+        {/* Which plan fits? */}
+        <div className="border border-border/60 rounded-2xl bg-card/30 p-7 max-w-xl">
+          <h3 className="text-sm font-bold mb-4 text-foreground">Which plan fits?</h3>
+          <div className="space-y-3">
+            {[
+              { plan: "3-month",    label: "Foundation",          desc: "Get the system running and see early results." },
+              { plan: "7-month",    label: "Growth system",       desc: "Build consistency and visibility over a real growth period." },
+              { plan: "12-month",   label: "Best long-term value", desc: "Lowest monthly rate. Designed for serious long-term growth." },
+              { plan: "No-contract",label: "Flexible",            desc: "No commitment. Start or stop on your own terms." },
+            ].map((row) => (
+              <div key={row.plan} className="flex items-start gap-3">
+                <span className="text-xs font-mono text-primary/70 w-20 flex-shrink-0 pt-0.5">{row.plan}</span>
+                <div>
+                  <span className="text-xs font-semibold text-foreground">{row.label} — </span>
+                  <span className="text-xs text-muted-foreground">{row.desc}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* Ads Management Pricing */}

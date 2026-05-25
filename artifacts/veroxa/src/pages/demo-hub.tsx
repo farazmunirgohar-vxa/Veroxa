@@ -42,11 +42,27 @@ export default function DemoHub() {
               </div>
 
               <h2 className="text-2xl font-bold mb-3">Client Portal Preview</h2>
-              <p className="text-muted-foreground leading-relaxed mb-8">
-                The full client-side experience — content calendar, Google Business Profile visibility,
-                weekly update feed, monthly performance reports, onboarding checklist, and media
-                guidance. No account needed.
+              <p className="text-muted-foreground leading-relaxed mb-6">
+                The full client-side experience — see exactly what a restaurant owner would see
+                inside Veroxa. No account needed.
               </p>
+
+              <div className="grid grid-cols-2 gap-2 mb-8">
+                {[
+                  "Dashboard",
+                  "Content Calendar",
+                  "Google Visibility",
+                  "Reports",
+                  "Updates",
+                  "Onboarding",
+                  "Media Guidance",
+                ].map((item) => (
+                  <div key={item} className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
+                    {item}
+                  </div>
+                ))}
+              </div>
 
               <Link href="/demo/client/dashboard" data-testid="btn-enter-client-demo">
                 <Button className="gap-2 font-semibold">

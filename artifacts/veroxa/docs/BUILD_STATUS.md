@@ -423,3 +423,26 @@ Specifically:
 - Pricing numbers unchanged.
 - Typecheck passed clean — zero errors.
 - No auth, database, upload, or storage changes.
+
+## Public Website QA + Copy Polish Pass
+
+**Status: COMPLETE**
+
+- Home / Demo / Services / Pricing structure reviewed — all pages
+  remain separated by purpose and contain no cross-contamination.
+- Demo page "What you can explore" bullet list added to the Client
+  Portal preview card (Dashboard, Content Calendar, Google Visibility,
+  Reports, Updates, Onboarding, Media Guidance).
+- Pricing page "Which plan fits?" mini guide added below Complete
+  Online Presence pricing cards.
+- Demo page typo confirmed fixed ("media guidance", not doubled).
+- Public link safety scan: zero internal demo links (/demo/team,
+  /demo/operator, /demo/owner) found on any public page.
+- Truthfulness scan: zero fake stats (340+, 18,000+, 96%, +41%) or
+  guaranteed-result claims found on any public page.
+- PublicNav and PublicFooter links verified correct.
+- Authenticated demo routing preserved — login redirects, role guards,
+  wrong-role card, sign-out all unchanged.
+- Pricing numbers unchanged.
+- No auth, database, upload, or storage changes.
+- Typecheck: zero errors.
