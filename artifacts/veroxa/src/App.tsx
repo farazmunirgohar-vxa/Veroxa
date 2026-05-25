@@ -70,6 +70,7 @@ import ClientAccount from "@/pages/client-account";
 import ClientRequests from "@/pages/client-requests";
 import InternalDemoControls from "@/pages/internal-demo-controls";
 import InternalSystemStatus from "@/pages/internal-system-status";
+import OperatorSystemStatus from "@/pages/operator-system-status";
 import InternalArchitecture from "@/pages/internal-architecture";
 import InternalIntegrations from "@/pages/internal-integrations";
 import OperatorMediaLibrary from "@/pages/operator-media-library";
@@ -317,6 +318,9 @@ function Router() {
       </Route>
       <Route path="/demo/internal/system-status">
         {() => <InternalDemoGuard role="operator"><InternalSystemStatus /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/operator/system-status">
+        {() => <InternalDemoGuard role="operator"><OperatorSystemStatus /></InternalDemoGuard>}
       </Route>
       <Route path="/demo/internal/architecture">
         {() => <InternalDemoGuard role="operator"><InternalArchitecture /></InternalDemoGuard>}

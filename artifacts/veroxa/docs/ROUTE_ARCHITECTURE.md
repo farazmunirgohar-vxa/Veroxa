@@ -29,37 +29,67 @@ Client Portal layer (anon `SELECT` only) with a static fallback.
 
 ## Internal demo routes — public during development only
 
-> Documented as **`internal_demo_protect_later`** in
-> [`src/lib/demoRoutes.ts`](../src/lib/demoRoutes.ts). Hide behind
-> login / preview access before any serious public launch — see
+> Each route is tagged in
+> [`src/lib/demoRoutes.ts`](../src/lib/demoRoutes.ts) with one of
+> `visible_nav | hidden_from_nav | legacy_demo | internal_demo |
+> future_protected`. The portal routes below should be hidden behind
+> internal access before any serious public launch — see
 > [`INTERNAL_DEMO_PROTECTION_PLAN.md`](./INTERNAL_DEMO_PROTECTION_PLAN.md).
 
-Team:
+Team (canonical home: `/demo/team/dashboard`):
 
-- `/demo/team` (index)
-- `/demo/team/tasks`
+- `/demo/team` (index alias)
+- `/demo/team/dashboard`
+- `/demo/team/work-queue`
 - `/demo/team/media-review`
-- `/demo/team/ai-review`
 - `/demo/team/drafts`
 - `/demo/team/scheduling`
+- `/demo/team/report-queue`
+- `/demo/team/alerts`
+- `/demo/team/ai-review` (hidden from nav)
+- `/demo/team/tasks` (legacy)
 
-Operator:
+Operator (canonical home: `/demo/operator/operator-os`):
 
-- `/demo/operator` (index)
-- `/demo/operator/overview`
-- `/demo/operator/alerts`
+- `/demo/operator` (index alias)
+- `/demo/operator/operator-os` — Command Center
 - `/demo/operator/client-health`
-- `/demo/operator/failed-posts`
+- `/demo/operator/alerts`
 - `/demo/operator/report-approvals`
+- `/demo/operator/media-library`
+- `/demo/operator/team-oversight`
+- `/demo/operator/system-status` — **new**, wraps the System Status
+  fixture inside the operator `PortalLayout`. Replaces Priority Board
+  as the 7th sidebar item.
+- Hidden-from-nav (still routed): `/demo/operator/priority-board`,
+  `/demo/operator/failed-posts`, `/demo/operator/workflow-engine`,
+  `/demo/operator/operations-center`, `/demo/operator/content-calendar`,
+  `/demo/operator/content-ops`, `/demo/operator/reporting-command`,
+  `/demo/operator/risk-center`, `/demo/operator/action-center`,
+  `/demo/operator/daily-digest`, `/demo/operator/weekly-reports`,
+  `/demo/operator/monthly-reports`, `/demo/operator/ai-agents`,
+  `/demo/operator/kpis`, `/demo/operator/activity`,
+  `/demo/operator/media-inventory`, `/demo/operator/client-detail`
+- Legacy: `/demo/operator/overview`, `/demo/operator/command-board`
 
-Owner:
+Owner (canonical home: `/demo/owner/executive-dashboard`):
 
-- `/demo/owner` (index)
-- `/demo/owner/dashboard`
+- `/demo/owner` (index alias)
+- `/demo/owner/executive-dashboard`
 - `/demo/owner/revenue`
 - `/demo/owner/client-health`
 - `/demo/owner/alerts`
+- `/demo/owner/ai-agents-v2`
+- `/demo/owner/owner-os`
 - `/demo/owner/settings`
+- `/demo/owner/dashboard` (legacy)
+
+Internal-only diagnostics (`/demo/internal/*`):
+
+- `/demo/internal/system-status` — original build-connections diagnostics page
+- `/demo/internal/architecture`
+- `/demo/internal/integrations`
+- `/demo/internal/demo-controls`
 
 All carry a `DemoOnlyBanner` and use static fixtures only.
 

@@ -36,7 +36,7 @@ Restaurant owners stay focused on food and service. Veroxa handles the online pr
 | Plan | Price/month | Label |
 |------|-------------|-------|
 | 12-month | $997 | Best long-term value |
-| 7-month | $1,097 | Growth system |
+| 6-month | $1,097 | Growth system |
 | 3-month | $1,197 | Foundation |
 | No-contract | $1,497 | Flexible |
 
@@ -69,7 +69,7 @@ Restaurant owners stay focused on food and service. Veroxa handles the online pr
 | Plan | Price/month | Label |
 |------|-------------|-------|
 | 12-month bundle | $1,797 | Best long-term value |
-| 7-month bundle | $2,097 | Growth system |
+| 6-month bundle | $2,097 | Growth system |
 | 3-month bundle | $2,297 | Foundation |
 | No-contract bundle | $2,697 | Flexible |
 

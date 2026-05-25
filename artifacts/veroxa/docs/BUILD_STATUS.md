@@ -446,3 +446,60 @@ Specifically:
 - Pricing numbers unchanged.
 - No auth, database, upload, or storage changes.
 - Typecheck: zero errors.
+
+## True Stabilization Build Pass V1.1
+
+**Status: COMPLETE — May 25, 2026**
+
+Stabilization-only pass. No new features, no design changes, no real
+auth activation.
+
+- **`AUTH_MODE` flipped back to `"placeholder"`** in
+  `src/lib/auth/authMode.ts`. Real Supabase auth code remains wired
+  but inactive; `InternalDemoGuard` short-circuits to render demo
+  children directly when `AUTH_MODE === "placeholder"`. No Supabase
+  network calls from the auth layer.
+- **Canonical demo role home paths confirmed** in
+  `src/lib/auth/authContract.ts` (`DEMO_ROLE_HOME_PATH`):
+  client → `/demo/client/dashboard`,
+  team → `/demo/team/dashboard`,
+  operator → `/demo/operator/operator-os`,
+  owner → `/demo/owner/executive-dashboard`.
+  Login role cards in `src/pages/login.tsx` point to the same
+  destinations.
+- **Operator sidebar: Priority Board → System Status.**
+  `src/lib/operatorPortalNav.ts` swaps the 7th nav item for "System
+  Status" (`ShieldCheck` icon, `href: /demo/operator/system-status`).
+  Priority Board remains routed at `/demo/operator/priority-board`
+  but is hidden from nav.
+- **New operator-wrapped System Status page** at
+  `/demo/operator/system-status`
+  (`src/pages/operator-system-status.tsx`). Renders the same
+  `demoSystemStatus` fixture as `/demo/internal/system-status` but
+  inside the operator `PortalLayout` so it carries the operator
+  sidebar. The original `/demo/internal/system-status` diagnostics
+  route is preserved as an internal-only surface.
+- **Operator / owner shells confirmed wrapped in `PortalLayout`.**
+  `operator-os.tsx`, `operator-media-library.tsx`, and `owner-os.tsx`
+  already render their content inside `PortalLayout` with their
+  respective nav items. No further wrapping needed.
+- **`demoRoutes.ts` rewritten** with a richer five-value visibility
+  taxonomy: `visible_nav | hidden_from_nav | legacy_demo |
+  internal_demo | future_protected`. The client, team, operator,
+  owner, internal, and future-protected entries are tagged with
+  their current visibility intent. A future light parity script can
+  compare this registry against `App.tsx` to catch drift.
+- **Pricing labels cleanup.** `docs/PUBLIC_PRICING_AND_SERVICES.md`
+  corrected: the "Growth system" tier now reads `6-month` (was
+  `7-month`) for both Complete Online Presence plans and Bundle
+  plans. Locked monthly prices unchanged ($997 / $1,097 / $1,197 /
+  $1,497 plans; $1,797 / $2,097 / $2,297 / $2,697 bundles; ads
+  add-on $1,497, ads-only $1,997). `src/pages/pricing.tsx` already
+  uses the correct labels.
+- **Docs synced.** This entry + `ROUTE_ARCHITECTURE.md` updated to
+  document the new operator System Status route, the sidebar swap,
+  and the expanded `DemoVisibility` taxonomy.
+- **Still no real auth, real writes, real uploads, real AI, real
+  publishing, or real Google integration.** Supabase remains
+  inactive at runtime via `AUTH_MODE === "placeholder"`.
+- **Typecheck:** zero errors.
