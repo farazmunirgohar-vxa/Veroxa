@@ -63,7 +63,7 @@ function progressRow(label: string, current: number, target: number) {
 }
 
 export default function ClientWorkspace() {
-  const [tab, setTab] = useState<"profile" | "menu" | "brand" | "media" | "notes">(
+  const [tab, setTab] = useState<"profile" | "menu" | "brand" | "media" | "preferences">(
     "profile",
   );
 
@@ -89,8 +89,8 @@ export default function ClientWorkspace() {
           Client Workspace
         </h2>
         <p className="text-muted-foreground mt-1 text-sm md:text-base">
-          Everything Veroxa knows about {getRestaurantName(DEMO_CLIENT_ID)} —
-          profile, menu, brand, media, and internal notes.
+          Your restaurant profile, menu details, brand preferences, and media
+          guidance in one place.
         </p>
       </div>
 
@@ -113,8 +113,8 @@ export default function ClientWorkspace() {
           <TabsTrigger value="media" data-testid="tab-media">
             <Camera className="w-4 h-4 mr-2" />Media
           </TabsTrigger>
-          <TabsTrigger value="notes" data-testid="tab-notes">
-            <StickyNote className="w-4 h-4 mr-2" />Notes
+          <TabsTrigger value="preferences" data-testid="tab-preferences">
+            <StickyNote className="w-4 h-4 mr-2" />Preferences
           </TabsTrigger>
         </TabsList>
 
@@ -347,30 +347,14 @@ export default function ClientWorkspace() {
           )}
         </TabsContent>
 
-        {/* NOTES */}
-        <TabsContent value="notes" className="mt-0">
+        {/* PREFERENCES */}
+        <TabsContent value="preferences" className="mt-0">
           {notes && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <NotesCard title="Client preferences"   items={notes.preferences} />
+              <NotesCard title="Items to promote"      items={notes.bestSellers} />
+              <NotesCard title="Content preferences"   items={notes.preferences} />
               <NotesCard title="Content restrictions"  items={notes.restrictions} />
-              <NotesCard title="Best-selling items"    items={notes.bestSellers} />
               <NotesCard title="Seasonal priorities"   items={notes.seasonalPriorities} />
-              <Card className="bg-card border-border md:col-span-2">
-                <CardHeader>
-                  <CardTitle className="text-lg">Important reminders</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {notes.importantReminders.map((r, i) => (
-                    <div
-                      key={i}
-                      className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-sm"
-                    >
-                      <AlertCircle className="w-4 h-4 mt-0.5 text-amber-400 flex-shrink-0" />
-                      <span>{r}</span>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
             </div>
           )}
         </TabsContent>

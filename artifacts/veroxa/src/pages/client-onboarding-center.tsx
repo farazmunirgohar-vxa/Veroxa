@@ -19,7 +19,6 @@ import {
   getVeroxaNextNeeds,
   getRestaurantName,
   type OnboardingStatus,
-  type OnboardingOwner,
   type OnboardingPriority,
 } from "@/data/demoData";
 
@@ -34,11 +33,6 @@ const statusVisual: Record<
   "Missing":     { color: "text-rose-400",    icon: Circle       },
 };
 
-const ownerColor: Record<OnboardingOwner, string> = {
-  "Client":      "border-sky-500/40 text-sky-300 bg-sky-500/10",
-  "Veroxa Team": "border-violet-500/40 text-violet-300 bg-violet-500/10",
-  "Operator":    "border-cyan-500/40 text-cyan-300 bg-cyan-500/10",
-};
 
 const priorityColor: Record<OnboardingPriority, string> = {
   "High":   "border-rose-500/40 text-rose-300 bg-rose-500/10",
@@ -143,12 +137,6 @@ export default function ClientOnboardingCenter() {
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2 mb-1">
                       <p className="text-sm font-medium">{s.step}</p>
-                      <Badge
-                        variant="outline"
-                        className={`text-[10px] ${ownerColor[s.owner]}`}
-                      >
-                        {s.owner}
-                      </Badge>
                       <Badge
                         variant="outline"
                         className={`text-[10px] ${priorityColor[s.priority]}`}

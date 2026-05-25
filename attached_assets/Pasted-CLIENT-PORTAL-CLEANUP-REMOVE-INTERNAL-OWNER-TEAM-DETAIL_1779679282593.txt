@@ -1,0 +1,101 @@
+CLIENT PORTAL CLEANUP — REMOVE INTERNAL OWNER/TEAM DETAILS
+
+Objective:
+Make the Client Portal feel client-facing, simple, and professional.
+
+Rules:
+- Do not remove Owner/Operator/Team portals
+- Only clean the Client Portal
+- Demo data only
+- No backend changes
+- No redesign
+- Keep dark Veroxa theme
+
+Client Portal should NOT show:
+- Owner
+- Operator
+- Team
+- Assigned role
+- Assigned reviewer
+- Internal notes
+- AI confidence score
+- Internal validation language
+- Work queue language
+- Any employee/team management details
+
+Replace client-facing language:
+
+Instead of “Owner: Team Review”
+Use: “Status: In progress”
+
+Instead of “AI score: 87%”
+Use: “Quality check: Passed”
+
+Instead of “Team Review”
+Use: “Veroxa Review”
+
+Instead of “Internal notes”
+Use: “Client preferences” or hide completely
+
+Instead of “Assigned Operator”
+Use: remove from client view
+
+Client Portal navigation should be simplified to:
+
+- Overview
+- Workspace
+- Onboarding
+- Content
+- Calendar
+- Media
+- Google
+- Reports
+- Notifications
+
+Remove “AI Agents” from Client Portal navigation.
+AI Agents should only appear in Owner, Operator, or Team portals.
+
+Content Pipeline client view should show only:
+- Content title
+- Content type
+- Related menu item
+- Status
+- Suggested posting window
+- Client-facing note
+
+Do not show:
+- Assigned role
+- Internal stage owner
+- AI score
+- Internal workflow notes
+
+Rename pipeline stages for client view:
+
+- Received
+- Being Reviewed
+- Caption In Progress
+- Veroxa Review
+- Scheduled / Posted
+
+Client Workspace should remove or rename:
+- “Everything Veroxa knows about...” 
+Replace with:
+“Your restaurant profile, menu details, brand preferences, and media guidance in one place.”
+
+If there is a Client Notes tab, rename it to:
+“Preferences”
+
+Only show client-safe preferences:
+- Preferred food items to promote
+- Content style preferences
+- Restrictions
+- Seasonal priorities
+
+Do not show internal Veroxa notes.
+
+Success Criteria:
+- Client Portal feels clean and client-facing
+- No Owner/Operator/Team/internal labels visible in Client Portal
+- AI Agents removed from Client Portal navigation
+- Internal dashboards remain unchanged
+- App builds successfully
