@@ -6,14 +6,14 @@ import PublicFooter from "@/components/public/PublicFooter";
 
 const PRESENCE_PLANS = [
   { label: "12-month plan", price: "$997",   highlight: "Best long-term value", best: true },
-  { label: "7-month plan",  price: "$1,097", highlight: "Growth system",        best: false },
+  { label: "6-month plan",  price: "$1,097", highlight: "Growth system",        best: false },
   { label: "3-month plan",  price: "$1,197", highlight: "Foundation",           best: false },
   { label: "No-contract",   price: "$1,497", highlight: "Flexible",             best: false },
 ];
 
 const BUNDLE_PLANS = [
   { label: "12-month bundle", price: "$1,797", highlight: "Best long-term value", best: true },
-  { label: "7-month bundle",  price: "$2,097", highlight: "Growth system",        best: false },
+  { label: "6-month bundle",  price: "$2,097", highlight: "Growth system",        best: false },
   { label: "3-month bundle",  price: "$2,297", highlight: "Foundation",           best: false },
   { label: "No-contract",     price: "$2,697", highlight: "Flexible",             best: false },
 ];
@@ -95,7 +95,7 @@ export default function PricingPage() {
           <div className="space-y-3">
             {[
               { plan: "3-month",    label: "Foundation",          desc: "Get the system running and see early results." },
-              { plan: "7-month",    label: "Growth system",       desc: "Build consistency and visibility over a real growth period." },
+              { plan: "6-month",    label: "Growth system",       desc: "Build consistency and visibility over a real growth period." },
               { plan: "12-month",   label: "Best long-term value", desc: "Lowest monthly rate. Designed for serious long-term growth." },
               { plan: "No-contract",label: "Flexible",            desc: "No commitment. Start or stop on your own terms." },
             ].map((row) => (

@@ -21,7 +21,7 @@ const roles = [
     badgeClass: "text-blue-400/70",
   },
   {
-    href: "/demo/team/tasks",
+    href: "/demo/team/dashboard",
     icon: Users,
     label: "Team Portal",
     description: "Content team workspace — media review, AI quality checks, draft variants, approvals, scheduling.",
@@ -32,7 +32,7 @@ const roles = [
     badgeClass: "text-amber-400/70",
   },
   {
-    href: "/demo/operator/overview",
+    href: "/demo/operator/operator-os",
     icon: Settings2,
     label: "Operator Portal",
     description: "Agency operations — client health, active alerts, failed posts, and report approvals.",
@@ -43,7 +43,7 @@ const roles = [
     badgeClass: "text-amber-400/70",
   },
   {
-    href: "/demo/owner/dashboard",
+    href: "/demo/owner/executive-dashboard",
     icon: BarChart2,
     label: "Owner Portal",
     description: "Agency owner view — MRR, active clients, health trends, and critical alerts.",

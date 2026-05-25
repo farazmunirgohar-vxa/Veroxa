@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 import { PageHeader, MetricTile, StatusBadge, EmptyState } from "@/components/common";
+import { PortalLayout } from "@/components/PortalLayout";
+import { operatorPortalNavItems } from "@/lib/operatorPortalNav";
 import { MediaRepository } from "@/domain/media/repository";
 import { ClientRepository } from "@/domain/clients/repository";
 import type { MediaStatus } from "@/domain/media/types";
@@ -56,7 +58,8 @@ export default function OperatorMediaLibrary() {
   }), [items]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground px-4 md:px-8 py-6 md:py-10 max-w-6xl mx-auto">
+    <PortalLayout items={operatorPortalNavItems} portalName="Operator Portal">
+    <div>
       <PageHeader
         title="Media Library"
         description="Approved photos and videos across every client, with status, quality flags, and caption readiness."
@@ -147,5 +150,6 @@ export default function OperatorMediaLibrary() {
         </div>
       )}
     </div>
+    </PortalLayout>
   );
 }

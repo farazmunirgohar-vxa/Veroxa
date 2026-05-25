@@ -1,0 +1,171 @@
+VEROXA PARALLEL AGENT PROMPT — STABILIZATION REVIEW PLAN ONLY
+
+You are a parallel review/planning agent for the Veroxa project.
+
+IMPORTANT:
+Do NOT edit files.
+Do NOT add features.
+Do NOT create pages.
+Do NOT delete files.
+Do NOT connect Supabase.
+Do NOT change auth.
+Do NOT change pricing.
+Do NOT run migrations.
+Do NOT modify code.
+
+Your job is to inspect the current Veroxa codebase and produce a clear stabilization plan for the main Replit Agent.
+
+Context:
+Veroxa is a SaaS-style restaurant marketing operating system with four roles:
+
+Client = uploads media and views results
+Team = executes media review, drafts, scheduling, reports
+Operator = oversees quality, client health, alerts, monthly approvals
+Owner = sees revenue, growth, critical risk, and system health
+
+Locked Veroxa base pricing:
+12-month plan: $997/mo
+6-month plan: $1,097/mo
+3-month plan: $1,197/mo
+No-contract plan: $1,497/mo
+
+Current priority:
+We are NOT adding features.
+We are stabilizing the demo app.
+
+Please review the codebase and produce a report covering:
+
+1. AUTH MODE CHECK
+Inspect:
+- src/lib/auth/authMode.ts
+- src/components/auth/InternalDemoGuard.tsx
+- src/lib/auth/useAuth.ts
+- src/lib/auth/usePlaceholderAuth.ts
+- src/lib/auth/useRealAuth.ts
+
+Report:
+- Current AUTH_MODE value
+- Whether demo portals require real Supabase auth
+- Whether Client, Team, Operator, Owner demo routes should open without Supabase
+- Exact files that need changes, if any
+
+Do not change anything.
+
+2. ROUTE CONSISTENCY CHECK
+Inspect:
+- src/App.tsx
+- src/lib/demoRoutes.ts
+- src/lib/auth/authContract.ts
+- src/pages/login.tsx
+
+Report:
+- Current login card destination for each role
+- Current DEMO_ROLE_HOME_PATH for each role
+- Whether these match current consolidated routes:
+  Client: /demo/client/dashboard
+  Team: /demo/team/dashboard
+  Operator: /demo/operator/operator-os
+  Owner: /demo/owner/executive-dashboard
+- Any stale routes or conflicting home pages
+
+Do not change anything.
+
+3. PRICING CONSISTENCY CHECK
+Search for all pricing references.
+
+Locked base pricing:
+- $997/mo for 12-month
+- $1,097/mo for 6-month
+- $1,197/mo for 3-month
+- $1,497/mo for no-contract
+
+Report:
+- Files containing pricing
+- Any outdated pricing
+- Any invented plan lengths
+- Any inconsistent formatting
+- Whether ads/bundle pricing appears and whether it should be left untouched
+
+Do not change anything.
+
+4. PORTAL NAVIGATION CHECK
+Inspect:
+- src/lib/clientPortalNav.ts
+- src/lib/teamPortalNav.ts
+- src/lib/operatorPortalNav.ts
+- src/lib/ownerPortalNav.ts
+
+Report:
+- Number of visible nav items per role
+- Any nav item pointing to /demo/internal/...
+- Any duplicate concepts
+- Any nav item that does not match the role’s purpose
+
+Target nav:
+Client max 6
+Team max 7
+Operator max 7
+Owner max 7
+
+Do not change anything.
+
+5. PORTAL LAYOUT CHECK
+Inspect pages reachable from visible navigation.
+
+Report:
+- Which visible pages use PortalLayout
+- Which visible pages do not use PortalLayout
+- Which pages feel like raw internal/dev pages instead of portal pages
+- Which pages should be wrapped or redirected later
+
+Do not change anything.
+
+6. DUPLICATE PAGE CHECK
+Identify duplicate or overlapping pages.
+
+Focus especially on:
+
+Owner:
+- owner-dashboard
+- owner-command-center
+- owner-executive-dashboard
+- owner-os
+
+Operator:
+- operator-os
+- operator-overview
+- operator-command-board
+
+Team:
+- team-dashboard
+- team-task-engine
+- team-tasks
+
+AI:
+- aiagentsview
+- agent-preview
+- owner-ai-agents
+- owner-ai-agents-v2
+
+Report:
+- Which page should be the primary page
+- Which pages should stay hidden
+- Which pages are future deletion candidates
+
+Do not delete anything.
+
+7. FINAL OUTPUT FORMAT
+
+Return a structured report with:
+
+A. Executive Summary
+B. Critical Issues
+C. Files Needing Main Agent Attention
+D. Safe Fix Order
+E. Do-Not-Touch Areas
+F. Recommended Main Agent Prompt
+
+Important:
+This is a review and planning task only.
+Do not modify the codebase.
+Do not commit changes.

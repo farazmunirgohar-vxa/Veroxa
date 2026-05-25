@@ -17,18 +17,16 @@ import {
   FileCheck,
   Images,
   UsersRound,
-  Activity,
 } from "lucide-react";
 import type { SidebarItem } from "@/components/PortalLayout";
 
 export const operatorPortalNavItems: SidebarItem[] = [
   { label: "Command Center",   icon: LayoutDashboard, href: "/demo/operator/operator-os"      },
-  { label: "Client Health",    icon: HeartPulse,      href: "/demo/internal/client-health"    },
+  { label: "Client Health",    icon: HeartPulse,      href: "/demo/operator/client-health"    },
   { label: "Alerts",           icon: ShieldAlert,     href: "/demo/operator/alerts"           },
   { label: "Report Approvals", icon: FileCheck,       href: "/demo/operator/report-approvals" },
   { label: "Media Library",    icon: Images,          href: "/demo/operator/media-library"    },
   { label: "Team Oversight",   icon: UsersRound,      href: "/demo/operator/team-oversight"   },
-  { label: "System Status",    icon: Activity,        href: "/demo/internal/system-status"    },
 ];
 
 // Hidden from nav (routes still active at their original paths):

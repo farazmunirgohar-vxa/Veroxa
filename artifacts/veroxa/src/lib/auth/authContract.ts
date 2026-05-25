@@ -65,9 +65,9 @@ export function getRoleHomePath(role: VeroxaRole): string {
  */
 export const DEMO_ROLE_HOME_PATH: Readonly<Record<VeroxaRole, string>> = Object.freeze({
   client:   "/demo/client/dashboard",
-  team:     "/demo/team/tasks",
-  operator: "/demo/operator/overview",
-  owner:    "/demo/owner/dashboard",
+  team:     "/demo/team/dashboard",
+  operator: "/demo/operator/operator-os",
+  owner:    "/demo/owner/executive-dashboard",
 });
 
 export function getDemoRoleHomePath(role: VeroxaRole): string {

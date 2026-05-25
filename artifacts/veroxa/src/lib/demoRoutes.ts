@@ -48,30 +48,40 @@ export const clientDemoRoutes: DemoRoute[] = [
 ];
 
 export const teamDemoRoutes: DemoRoute[] = [
-  { path: "/demo/team",              portal: "team", label: "Portal Index", visibility: "internal_demo_protect_later", purpose: "Team demo portal index — landing for internal walkthrough." },
-  { path: "/demo/team/tasks",        portal: "team", label: "Tasks",        visibility: "internal_demo_protect_later", purpose: "Team queue of content / media / client work." },
-  { path: "/demo/team/media-review", portal: "team", label: "Media Review", visibility: "internal_demo_protect_later", purpose: "Approve uploaded media and match it to capture plan." },
-  { path: "/demo/team/ai-review",    portal: "team", label: "AI Review",    visibility: "internal_demo_protect_later", purpose: "Review AI-suggested drafts before they reach the client." },
-  { path: "/demo/team/drafts",       portal: "team", label: "Drafts",       visibility: "internal_demo_protect_later", purpose: "Working drafts pending team / operator review." },
-  { path: "/demo/team/scheduling",   portal: "team", label: "Scheduling",   visibility: "internal_demo_protect_later", purpose: "Schedule approved posts to social calendars." },
+  { path: "/demo/team",                portal: "team", label: "Portal Index",  visibility: "internal_demo_protect_later", purpose: "Team demo portal index — landing for internal walkthrough." },
+  { path: "/demo/team/dashboard",      portal: "team", label: "Dashboard",     visibility: "internal_demo_protect_later", purpose: "Team home — priority alerts, queue summary, AI agent status." },
+  { path: "/demo/team/work-queue",     portal: "team", label: "Work Queue",    visibility: "internal_demo_protect_later", purpose: "Active content tasks across all clients." },
+  { path: "/demo/team/media-review",   portal: "team", label: "Media Review",  visibility: "internal_demo_protect_later", purpose: "Approve uploaded media and match it to capture plan." },
+  { path: "/demo/team/drafts",         portal: "team", label: "Drafts",        visibility: "internal_demo_protect_later", purpose: "Working drafts pending team / operator review." },
+  { path: "/demo/team/scheduling",     portal: "team", label: "Scheduling",    visibility: "internal_demo_protect_later", purpose: "Schedule approved posts to social calendars." },
+  { path: "/demo/team/report-queue",   portal: "team", label: "Reports",       visibility: "internal_demo_protect_later", purpose: "Team report queue — drafts awaiting operator approval." },
+  { path: "/demo/team/alerts",         portal: "team", label: "Alerts",        visibility: "internal_demo_protect_later", purpose: "Team-facing alert center — media, post failures, deadlines." },
+  { path: "/demo/team/tasks",          portal: "team", label: "Tasks (legacy)", visibility: "internal_demo_protect_later", purpose: "Legacy task view — redirected to dashboard in auth flow." },
+  { path: "/demo/team/ai-review",      portal: "team", label: "AI Review",     visibility: "internal_demo_protect_later", purpose: "Review AI-suggested drafts before they reach the client." },
 ];
 
 export const operatorDemoRoutes: DemoRoute[] = [
-  { path: "/demo/operator",                  portal: "operator", label: "Portal Index", visibility: "internal_demo_protect_later", purpose: "Operator demo portal index — landing for internal walkthrough." },
-  { path: "/demo/operator/overview",         portal: "operator", label: "Overview",         visibility: "internal_demo_protect_later", purpose: "Cross-client operations view." },
-  { path: "/demo/operator/alerts",           portal: "operator", label: "Alerts",           visibility: "internal_demo_protect_later", purpose: "Failed posts, blocked uploads, escalations." },
-  { path: "/demo/operator/client-health",    portal: "operator", label: "Client Health",    visibility: "internal_demo_protect_later", purpose: "Per-client risk surface." },
-  { path: "/demo/operator/failed-posts",     portal: "operator", label: "Failed Posts",     visibility: "internal_demo_protect_later", purpose: "Posts that failed to publish — retry / triage queue." },
-  { path: "/demo/operator/report-approvals", portal: "operator", label: "Report Approvals", visibility: "internal_demo_protect_later", purpose: "Final approval gate for client-facing reports." },
+  { path: "/demo/operator",                    portal: "operator", label: "Portal Index",    visibility: "internal_demo_protect_later", purpose: "Operator demo portal index — landing for internal walkthrough." },
+  { path: "/demo/operator/operator-os",        portal: "operator", label: "Command Center",  visibility: "internal_demo_protect_later", purpose: "Primary operator overview — health, alerts, reports, AI monitoring." },
+  { path: "/demo/operator/client-health",      portal: "operator", label: "Client Health",   visibility: "internal_demo_protect_later", purpose: "Per-client risk surface with health scores and flag reasons." },
+  { path: "/demo/operator/alerts",             portal: "operator", label: "Alerts",          visibility: "internal_demo_protect_later", purpose: "Failed posts, blocked uploads, escalations." },
+  { path: "/demo/operator/report-approvals",   portal: "operator", label: "Report Approvals",visibility: "internal_demo_protect_later", purpose: "Final approval gate for client-facing reports." },
+  { path: "/demo/operator/media-library",      portal: "operator", label: "Media Library",   visibility: "internal_demo_protect_later", purpose: "All client media — status, quality flags, caption readiness." },
+  { path: "/demo/operator/team-oversight",     portal: "operator", label: "Team Oversight",  visibility: "internal_demo_protect_later", purpose: "Team member workload, task distribution, performance." },
+  { path: "/demo/operator/overview",           portal: "operator", label: "Overview (legacy)",visibility: "internal_demo_protect_later", purpose: "Legacy overview route — replaced by /operator-os." },
+  { path: "/demo/operator/failed-posts",       portal: "operator", label: "Failed Posts",    visibility: "internal_demo_protect_later", purpose: "Posts that failed to publish — retry / triage queue." },
 ];
 
 export const ownerDemoRoutes: DemoRoute[] = [
-  { path: "/demo/owner",               portal: "owner", label: "Portal Index", visibility: "internal_demo_protect_later", purpose: "Owner demo portal index — landing for internal walkthrough." },
-  { path: "/demo/owner/dashboard",     portal: "owner", label: "Dashboard",     visibility: "internal_demo_protect_later", purpose: "Owner-only KPIs." },
-  { path: "/demo/owner/revenue",       portal: "owner", label: "Revenue",       visibility: "internal_demo_protect_later", purpose: "MRR / ARR, plan mix, churn forecast." },
-  { path: "/demo/owner/client-health", portal: "owner", label: "Client Health", visibility: "internal_demo_protect_later", purpose: "Owner-level client health surface." },
-  { path: "/demo/owner/alerts",        portal: "owner", label: "Alerts",        visibility: "internal_demo_protect_later", purpose: "Owner-level alerts (revenue, churn, ops risk)." },
-  { path: "/demo/owner/settings",      portal: "owner", label: "Settings",      visibility: "internal_demo_protect_later", purpose: "Brand, team, billing, integrations settings (all 'coming soon')." },
+  { path: "/demo/owner",                     portal: "owner", label: "Portal Index",       visibility: "internal_demo_protect_later", purpose: "Owner demo portal index — landing for internal walkthrough." },
+  { path: "/demo/owner/executive-dashboard", portal: "owner", label: "Executive Dashboard",visibility: "internal_demo_protect_later", purpose: "Primary owner home — MRR, client health, critical alerts, AI status." },
+  { path: "/demo/owner/revenue",             portal: "owner", label: "Revenue",            visibility: "internal_demo_protect_later", purpose: "MRR / ARR, plan mix, churn forecast." },
+  { path: "/demo/owner/client-health",       portal: "owner", label: "Client Health",      visibility: "internal_demo_protect_later", purpose: "Owner-level client health surface." },
+  { path: "/demo/owner/alerts",             portal: "owner", label: "Critical Alerts",    visibility: "internal_demo_protect_later", purpose: "Owner-level alerts (revenue, churn, ops risk)." },
+  { path: "/demo/owner/ai-agents-v2",        portal: "owner", label: "AI / System Health", visibility: "internal_demo_protect_later", purpose: "AI agent confidence, system integration status, pipeline health." },
+  { path: "/demo/owner/owner-os",            portal: "owner", label: "Growth",             visibility: "internal_demo_protect_later", purpose: "Owner-level growth and retention metrics surface." },
+  { path: "/demo/owner/settings",            portal: "owner", label: "Settings",           visibility: "internal_demo_protect_later", purpose: "Brand, team, billing, integrations settings (all 'coming soon')." },
+  { path: "/demo/owner/dashboard",           portal: "owner", label: "Dashboard (legacy)", visibility: "internal_demo_protect_later", purpose: "Legacy dashboard route — replaced by /executive-dashboard." },
 ];
 
 export const allDemoRoutes: DemoRoute[] = [

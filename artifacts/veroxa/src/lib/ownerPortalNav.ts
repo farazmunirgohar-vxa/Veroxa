@@ -25,7 +25,7 @@ import type { SidebarItem } from "@/components/PortalLayout";
 export const ownerPortalNavItems: SidebarItem[] = [
   { label: "Executive Dashboard", icon: BarChart3,   href: "/demo/owner/executive-dashboard" },
   { label: "Revenue",             icon: DollarSign,  href: "/demo/owner/revenue"             },
-  { label: "Client Health",       icon: HeartPulse,  href: "/demo/internal/client-health"    },
+  { label: "Client Health",       icon: HeartPulse,  href: "/demo/owner/client-health"       },
   { label: "Critical Alerts",     icon: Bell,        href: "/demo/owner/alerts"              },
   { label: "AI / System Health",  icon: Cpu,         href: "/demo/owner/ai-agents-v2"        },
   { label: "Growth",              icon: TrendingUp,  href: "/demo/owner/owner-os"            },

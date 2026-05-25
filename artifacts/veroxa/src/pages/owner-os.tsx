@@ -3,6 +3,8 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
+import { PortalLayout } from "@/components/PortalLayout";
+import { ownerPortalNavItems } from "@/lib/ownerPortalNav";
 import {
   PageHeader, MetricTile, StatusBadge, EmptyState,
   SectionCard, StatRow,
@@ -33,7 +35,8 @@ export default function OwnerOS() {
   const healthyAgents = agents.filter((a) => a.confidence >= 85).length;
 
   return (
-    <div className="min-h-screen bg-background text-foreground px-4 md:px-8 py-6 md:py-10 max-w-6xl mx-auto">
+    <PortalLayout items={ownerPortalNavItems} portalName="Owner Portal">
+    <div>
       <PageHeader
         title="Owner OS"
         description="Executive layer — revenue, growth, retention, risk, AI system health. Designed for above-the-line oversight."
@@ -176,5 +179,6 @@ export default function OwnerOS() {
         </div>
       </SectionCard>
     </div>
+    </PortalLayout>
   );
 }

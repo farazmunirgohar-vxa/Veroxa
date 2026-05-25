@@ -3,6 +3,8 @@ import {
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
+import { PortalLayout } from "@/components/PortalLayout";
+import { operatorPortalNavItems } from "@/lib/operatorPortalNav";
 import {
   PageHeader, MetricTile, StatusBadge, EmptyState,
   SectionCard, AlertRow, StatRow,
@@ -29,7 +31,8 @@ export default function OperatorOS() {
   );
 
   return (
-    <div className="min-h-screen bg-background text-foreground px-4 md:px-8 py-6 md:py-10 max-w-6xl mx-auto">
+    <PortalLayout items={operatorPortalNavItems} portalName="Operator Portal">
+    <div>
       <PageHeader
         title="Operator OS"
         description="Daily oversight surface — health, alerts, low-content clients, reschedule queue, report approvals, AI agent monitoring."
@@ -162,5 +165,6 @@ export default function OperatorOS() {
         </SectionCard>
       </div>
     </div>
+    </PortalLayout>
   );
 }

@@ -28,6 +28,11 @@ interface InternalDemoGuardProps {
 export default function InternalDemoGuard({ role, children }: InternalDemoGuardProps) {
   const auth = useAuth();
 
+  // In placeholder/demo mode, all portals are open for demo walkthrough.
+  if (auth.isDemoOnly) {
+    return <>{children}</>;
+  }
+
   if (auth.status === "loading") {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
