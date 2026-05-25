@@ -1,4 +1,4 @@
-import { CalendarDays, ImageIcon, Layers, BarChart2, Loader2, AlertTriangle } from "lucide-react";
+import { CalendarDays, ImageIcon, Layers, BarChart2 } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,13 +6,13 @@ import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientPortalData } from "@/hooks/useClientPortalData";
 
 export default function ClientDashboard() {
-  const { source, loading, error, data } = useClientPortalData();
+  const { loading, data } = useClientPortalData();
 
   const summaryCards = [
-    { label: "Upcoming posts",      value: loading ? "—" : String(data.scheduledPosts.length), icon: CalendarDays },
-    { label: "Media assets",        value: loading ? "—" : String(data.mediaAssetsCount),       icon: ImageIcon   },
-    { label: "Platforms connected", value: loading ? "—" : String(data.platformsCount),         icon: Layers      },
-    { label: "Latest report",       value: loading ? "—" : data.monthlyReportPreview.status,    icon: BarChart2   },
+    { label: "Upcoming posts",    value: loading ? "—" : String(data.scheduledPosts.length), icon: CalendarDays },
+    { label: "Media assets",      value: loading ? "—" : String(data.mediaAssetsCount),       icon: ImageIcon   },
+    { label: "Social platforms",  value: loading ? "—" : String(data.platformsCount),         icon: Layers      },
+    { label: "Latest report",     value: loading ? "—" : data.monthlyReportPreview.status,    icon: BarChart2   },
   ];
 
   const snapshotItems = [
@@ -28,36 +28,10 @@ export default function ClientDashboard() {
       {/* Welcome */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h2 className="text-3xl font-bold tracking-tight text-foreground" data-testid="header-welcome">
-              {loading ? "Mamadali Kebab House" : data.businessName}
-            </h2>
-            {!loading && (
-              <Badge
-                variant="outline"
-                className={`text-[10px] font-semibold px-2 py-0.5 border-none ${
-                  source === "supabase"
-                    ? "bg-emerald-500/10 text-emerald-400"
-                    : "bg-muted text-muted-foreground"
-                }`}
-              >
-                {source === "supabase" ? "Live demo data" : "Static demo fallback"}
-              </Badge>
-            )}
-            {loading && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
-          </div>
-          <p className="text-muted-foreground">Welcome back. Here is a quick overview of your account.</p>
-          {source === "supabase" && (
-            <p className="text-[10px] text-muted-foreground/50 mt-1">
-              Read check: {data.platformsCount} platforms · {data.mediaAssetsCount} media assets
-            </p>
-          )}
-          {source === "demo" && error && (
-            <p className="flex items-center gap-1.5 text-xs text-amber-500 mt-1">
-              <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
-              Supabase unavailable — showing static demo data.
-            </p>
-          )}
+          <h2 className="text-3xl font-bold tracking-tight text-foreground" data-testid="header-welcome">
+            {loading ? "Mamadali Kebab House" : data.businessName}
+          </h2>
+          <p className="text-muted-foreground mt-1">Welcome back. Here is a quick overview of your account.</p>
         </div>
         <Badge variant="outline" className="px-3 py-1 bg-card text-card-foreground border-border font-medium self-start md:self-auto">
           May 2026 — Week 3

@@ -179,9 +179,6 @@ export default function ClientAccount() {
         </Card>
       </div>
 
-      <p className="text-[10px] text-muted-foreground mt-6 text-center">
-        Sample account view for {getRestaurantName(SHOWCASE_ID)} — demo only.
-      </p>
     </PortalLayout>
   );
 }

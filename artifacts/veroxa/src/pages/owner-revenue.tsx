@@ -8,9 +8,9 @@ import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 export default function OwnerRevenue() {
   return (
     <PortalLayout items={ownerPortalNavItems} portalName="Owner Portal">
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold tracking-tight text-foreground" data-testid="header-revenue">Revenue</h2>
-        <p className="text-muted-foreground mt-1">Monthly recurring revenue trend and growth summary.</p>
+      <div className="mb-4">
+        <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground" data-testid="header-revenue">Revenue</h2>
+        <p className="text-muted-foreground mt-1 text-sm md:text-base">Monthly recurring revenue trend and growth summary.</p>
       </div>
 
       <DemoOnlyBanner message="Static demo — revenue numbers, retainers, ad-service revenue, and churn-risk figures are illustrative only. No payment processor or billing system is connected." testId="banner-owner-revenue" />

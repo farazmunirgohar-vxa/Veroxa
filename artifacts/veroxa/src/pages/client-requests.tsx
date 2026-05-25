@@ -23,7 +23,7 @@ export default function ClientRequests() {
         </p>
       </div>
 
-      <DemoOnlyBanner message="Demo only — sample request list for showcase." testId="banner-client-requests" />
+      <DemoOnlyBanner message="Demo only — request items are illustrative. No notifications or messages are sent." testId="banner-client-requests" />
 
       <Card className="bg-card border-primary/30 mb-4">
         <CardHeader className="pb-3"><CardTitle className="text-sm flex items-center gap-2"><ArrowRight className="w-4 h-4 text-primary" /> Open ({open.length})</CardTitle></CardHeader>

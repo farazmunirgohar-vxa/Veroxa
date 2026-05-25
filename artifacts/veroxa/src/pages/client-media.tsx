@@ -136,7 +136,7 @@ export default function ClientMedia() {
     if (picked.length === 0) return;
     setFiles((prev) => [...prev, ...picked]);
     setPickerMessage(
-      "Selected locally only — not uploaded. Names live in local state and disappear on refresh.",
+      "Files selected — preview only. Nothing is uploaded or stored in this demo.",
     );
     if (inputRef.current) inputRef.current.value = "";
   };
@@ -190,7 +190,7 @@ export default function ClientMedia() {
                   className="border-primary/30 bg-primary/10 text-primary text-[10px] font-semibold tracking-wide"
                   data-testid="badge-guidance-rule-based"
                 >
-                  Rule-based demo — no AI connected
+                  Demo preview
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground max-w-2xl">
@@ -219,7 +219,7 @@ export default function ClientMedia() {
         </CardHeader>
         <CardContent className="space-y-6">
           <p className="text-xs text-muted-foreground" data-testid="text-guidance-note">
-            These recommendations are generated from static Veroxa guidance rules. Real AI guidance may be added later after review.
+            Based on Veroxa's content guidance for your restaurant type.
           </p>
 
           {/* Recommended Shots This Week */}
@@ -405,7 +405,7 @@ export default function ClientMedia() {
                 <div className="mt-5 space-y-2" data-testid="list-selected-files">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-medium">
-                      Selected (demo only — not uploaded)
+                      Selected files (preview only)
                     </p>
                     <Button
                       type="button"
@@ -523,21 +523,20 @@ export default function ClientMedia() {
           <Card className="bg-card border-border" data-testid="card-future-pipeline">
             <CardHeader className="pb-3">
               <CardTitle className="text-base font-semibold">
-                Future upload pipeline
+                How uploads will work
               </CardTitle>
               <p className="text-xs text-muted-foreground">
-                What the real upload flow will look like after auth and
-                storage rules ship. Static / demo only.
+                A preview of the upload flow coming when this feature goes live.
               </p>
             </CardHeader>
             <CardContent>
               <ol className="space-y-2">
                 {[
-                  "Choose files",
-                  "Validate file (type & size)",
-                  "Upload to private storage",
-                  "Create media metadata",
-                  "Notify Veroxa team",
+                  "Choose your photos or videos",
+                  "Files are checked for quality",
+                  "Securely uploaded to Veroxa",
+                  "Your media is logged and ready",
+                  "Veroxa team is notified",
                 ].map((step, i) => (
                   <li
                     key={step}
@@ -556,8 +555,7 @@ export default function ClientMedia() {
 
           <Card className="bg-card border-border/60">
             <CardContent className="pt-6 text-sm text-muted-foreground">
-              Real media uploads will require authenticated client access,
-              storage rules, production RLS, and upload validation.
+              Secure uploads are coming soon. For now, send your photos and videos to your Veroxa team directly.
             </CardContent>
           </Card>
         </div>
@@ -573,7 +571,7 @@ export default function ClientMedia() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Library utilisation</span>
+                  <span>Content supply</span>
                   <span>{supplyPct}%</span>
                 </div>
                 <Progress value={supplyPct} className="h-2" />
@@ -609,7 +607,7 @@ export default function ClientMedia() {
               <div className="flex items-start gap-2 text-xs text-muted-foreground">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-emerald-500" />
                 <span>
-                  No real upload. No Supabase Storage. No database mutation.
+                  Demo preview only — no files are stored.
                 </span>
               </div>
             </CardContent>

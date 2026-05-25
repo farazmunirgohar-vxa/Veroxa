@@ -15,9 +15,9 @@ import {
 const statCards = [
   { label: "Active Clients",            value: demoTeamMetrics.activeClients,           icon: Users,         color: "text-sky-400"     },
   { label: "Clients Needing Attention", value: demoTeamMetrics.clientsNeedingAttention, icon: AlertTriangle, color: "text-amber-400"   },
-  { label: "Content Waiting Review",    value: demoTeamMetrics.contentWaitingReview,    icon: Eye,           color: "text-violet-400"  },
+  { label: "Needs Review",               value: demoTeamMetrics.contentWaitingReview,    icon: Eye,           color: "text-violet-400"  },
   { label: "Reports Due This Week",     value: demoTeamMetrics.reportsDueThisWeek,      icon: FileText,      color: "text-cyan-400"    },
-  { label: "Media Inventory Alerts",    value: demoTeamMetrics.mediaInventoryAlerts,    icon: ImageIcon,     color: "text-rose-400"    },
+  { label: "Media Alerts",              value: demoTeamMetrics.mediaInventoryAlerts,    icon: ImageIcon,     color: "text-rose-400"    },
   { label: "Tasks Due Today",           value: demoTeamMetrics.tasksDueToday,           icon: CheckSquare,   color: "text-emerald-400" },
 ];
 

@@ -10,8 +10,10 @@ export default function ClientCalendar() {
 
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
-      <h2 className="text-3xl font-bold tracking-tight">Content Calendar</h2>
-      <p className="text-muted-foreground -mt-6">Upcoming scheduled and in-review posts.</p>
+      <div className="mb-4">
+        <h2 className="text-2xl md:text-3xl font-bold tracking-tight" data-testid="header-calendar">Content Calendar</h2>
+        <p className="text-muted-foreground mt-1 text-sm md:text-base">Your upcoming posts — scheduled, in review, and waiting on content.</p>
+      </div>
 
       <div className="space-y-3">
         {data.scheduledPosts.map((post, i) => (

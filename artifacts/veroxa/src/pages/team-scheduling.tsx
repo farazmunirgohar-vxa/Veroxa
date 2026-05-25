@@ -8,9 +8,9 @@ import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 export default function TeamScheduling() {
   return (
     <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold tracking-tight text-foreground" data-testid="header-scheduling">Scheduling</h2>
-        <p className="text-muted-foreground mt-1">Posts ready to go out and what was published this week.</p>
+      <div className="mb-4">
+        <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground" data-testid="header-scheduling">Scheduling</h2>
+        <p className="text-muted-foreground mt-1 text-sm md:text-base">Posts approved and queued for publishing, plus what went out this week.</p>
       </div>
 
       <DemoOnlyBanner message="Static demo — no real publishing is connected. Slots, recommended times, and published-this-week cards illustrate the future Scheduling workflow only." testId="banner-team-scheduling" />

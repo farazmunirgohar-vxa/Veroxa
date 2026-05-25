@@ -11,8 +11,10 @@ export default function ClientReports() {
 
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
-      <h2 className="text-3xl font-bold tracking-tight">Monthly Report</h2>
-      <p className="text-muted-foreground -mt-6">Your most recent monthly performance report.</p>
+      <div className="mb-4">
+        <h2 className="text-2xl md:text-3xl font-bold tracking-tight" data-testid="header-reports">Reports</h2>
+        <p className="text-muted-foreground mt-1 text-sm md:text-base">Your most recent monthly performance report.</p>
+      </div>
 
       <div className="max-w-md">
         <Card className="bg-card border-border hover:border-primary/30 transition-colors cursor-pointer" data-testid="monthly-report-preview">

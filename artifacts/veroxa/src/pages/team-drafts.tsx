@@ -9,9 +9,9 @@ import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 export default function TeamDrafts() {
   return (
     <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold tracking-tight text-foreground" data-testid="header-drafts">Caption Draft Variants</h2>
-        <p className="text-muted-foreground mt-1">Lamb Shoulder Post — review and approve a variant for scheduling.</p>
+      <div className="mb-4">
+        <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground" data-testid="header-drafts">Content Drafts</h2>
+        <p className="text-muted-foreground mt-1 text-sm md:text-base">Caption variants ready for review — select the best one to move to scheduling.</p>
       </div>
 
       <DemoOnlyBanner message="Static demo — no real edit, save, or approval is wired. Draft and approval states illustrate the future Team → Operator flow only." testId="banner-team-drafts" />

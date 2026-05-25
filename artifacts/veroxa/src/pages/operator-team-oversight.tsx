@@ -33,10 +33,10 @@ export default function OperatorTeamOversight() {
 
       {/* Summary row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-        <SummaryCard label="Team members"       value={String(demoTeamOversight.length)}                                                    />
-        <SummaryCard label="Total open tasks"   value={String(demoTeamOversight.reduce((s, m) => s + m.openTasks, 0))}                     />
-        <SummaryCard label="Awaiting review"    value={String(demoTeamOversight.reduce((s, m) => s + m.contentAwaitingReview, 0))}          />
-        <SummaryCard label="Report workload"    value={String(demoTeamOversight.reduce((s, m) => s + m.reportWorkload, 0))}                 />
+        <SummaryCard label="Team members"     value={String(demoTeamOversight.length)}                                                    />
+        <SummaryCard label="Open tasks"       value={String(demoTeamOversight.reduce((s, m) => s + m.openTasks, 0))}                     />
+        <SummaryCard label="Awaiting review"  value={String(demoTeamOversight.reduce((s, m) => s + m.contentAwaitingReview, 0))}          />
+        <SummaryCard label="Active reports"   value={String(demoTeamOversight.reduce((s, m) => s + m.reportWorkload, 0))}                 />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -90,7 +90,7 @@ export default function OperatorTeamOversight() {
                   <MetricTile icon={Circle}       label="Open tasks"          value={member.openTasks}             />
                   <MetricTile icon={CheckCircle2} label="Completed"           value={member.completedTasks}        />
                   <MetricTile icon={Eye}          label="Awaiting review"     value={member.contentAwaitingReview} />
-                  <MetricTile icon={FileText}     label="Report workload"     value={member.reportWorkload}        />
+                  <MetricTile icon={FileText}     label="Active reports"      value={member.reportWorkload}        />
                 </div>
 
                 {/* Completion progress */}
@@ -114,7 +114,7 @@ function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
     <Card className="bg-card border-border">
       <CardContent className="p-3 text-center">
-        <p className="text-2xl font-bold tabular-nums">{value}</p>
+        <p className="text-2xl font-bold">{value}</p>
         <p className="text-[11px] text-muted-foreground mt-0.5">{label}</p>
       </CardContent>
     </Card>

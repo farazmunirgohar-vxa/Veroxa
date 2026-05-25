@@ -35,9 +35,9 @@ const mediaItems = [
 export default function TeamMediaReview() {
   return (
     <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold tracking-tight text-foreground" data-testid="header-media-review">Media Review</h2>
-        <p className="text-muted-foreground mt-1">Review and approve media assets from this week's shoot.</p>
+      <div className="mb-4">
+        <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground" data-testid="header-media-review">Media Review</h2>
+        <p className="text-muted-foreground mt-1 text-sm md:text-base">Review and approve media assets from this week's shoot.</p>
       </div>
 
       <DemoOnlyBanner message="No real uploaded media is being reviewed yet. Tags, status badges, and queue states below are static and illustrate the future review workflow only." testId="banner-team-media" />
@@ -49,13 +49,10 @@ export default function TeamMediaReview() {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <Sparkles className="w-5 h-5 text-primary" />
-                <CardTitle className="text-base font-semibold">Guidance Match</CardTitle>
-                <Badge variant="outline" className="border-primary/30 bg-primary/10 text-primary text-[10px] font-semibold tracking-wide" data-testid="badge-guidance-match-demo">
-                  Static demo — no AI / media analysis connected
-                </Badge>
+                <CardTitle className="text-base font-semibold">Content Review Guidance</CardTitle>
               </div>
               <p className="text-sm text-muted-foreground">
-                Static demo showing how Veroxa will compare uploaded media against the recommended capture plan.
+                How each uploaded asset maps to the recommended capture plan for this client.
               </p>
             </div>
           </div>

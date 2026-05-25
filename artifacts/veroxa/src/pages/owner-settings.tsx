@@ -14,7 +14,7 @@ const sections = [
   {
     icon: Users,
     title: "Team permissions",
-    desc: "Role assignments, team-to-client mappings, and operator escalation rules.",
+    desc: "Role assignments, team-to-client access, and permission levels.",
   },
   {
     icon: CreditCard,
@@ -24,7 +24,7 @@ const sections = [
   {
     icon: Plug,
     title: "Integrations",
-    desc: "Supabase, Google Business Profile, Meta, TikTok, and AI providers. None are connected in this demo.",
+    desc: "Google Business Profile, Meta, TikTok, and AI providers. None are connected in this demo.",
   },
 ];
 

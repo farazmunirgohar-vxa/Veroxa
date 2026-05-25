@@ -26,7 +26,7 @@ export default function OwnerAiAgentsV2() {
           AI Agent Library
         </h2>
         <p className="text-muted-foreground mt-1 text-sm md:text-base">
-          The nine simulated agents that orchestrate Veroxa's content, operations, and intelligence layers.
+          A preview of how Veroxa's AI layer handles content, operations, and growth across your client portfolio.
         </p>
       </div>
 
@@ -80,7 +80,7 @@ export default function OwnerAiAgentsV2() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card className="bg-card border-border">
-              <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><ArrowDown className="w-4 h-4 text-sky-400" /> Inputs</CardTitle></CardHeader>
+              <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><ArrowDown className="w-4 h-4 text-sky-400" /> What this agent reads</CardTitle></CardHeader>
               <CardContent>
                 <ul className="space-y-1.5 text-xs text-foreground/85">
                   {agent.inputs.map((i) => (
@@ -90,7 +90,7 @@ export default function OwnerAiAgentsV2() {
               </CardContent>
             </Card>
             <Card className="bg-card border-border">
-              <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><ArrowUp className="w-4 h-4 text-emerald-400" /> Outputs</CardTitle></CardHeader>
+              <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><ArrowUp className="w-4 h-4 text-emerald-400" /> What this agent does</CardTitle></CardHeader>
               <CardContent>
                 <ul className="space-y-1.5 text-xs text-foreground/85">
                   {agent.outputs.map((o) => (

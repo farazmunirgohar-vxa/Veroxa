@@ -6,10 +6,10 @@ import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 import { operatorPortalNavItems } from "@/lib/operatorPortalNav";
 import { demoSystemStatus, type SystemStatusState } from "@/data/demoData";
 
-const stateMeta: Record<SystemStatusState, { color: string; icon: typeof CheckCircle2; bar: string }> = {
-  Active:          { color: "border-emerald-500/40 text-emerald-300 bg-emerald-500/10", icon: CheckCircle2, bar: "border-l-emerald-500" },
-  "Not Connected": { color: "border-rose-500/40 text-rose-300 bg-rose-500/10",          icon: XCircle,      bar: "border-l-rose-500" },
-  Placeholder:     { color: "border-amber-500/40 text-amber-300 bg-amber-500/10",       icon: AlertCircle,  bar: "border-l-amber-500" },
+const stateMeta: Record<SystemStatusState, { color: string; icon: typeof CheckCircle2; bar: string; label: string }> = {
+  Active:          { color: "border-emerald-500/40 text-emerald-300 bg-emerald-500/10", icon: CheckCircle2, bar: "border-l-emerald-500", label: "Live" },
+  "Not Connected": { color: "border-rose-500/40 text-rose-300 bg-rose-500/10",          icon: XCircle,      bar: "border-l-rose-500",    label: "Not live yet" },
+  Placeholder:     { color: "border-amber-500/40 text-amber-300 bg-amber-500/10",       icon: AlertCircle,  bar: "border-l-amber-500",   label: "Demo preview" },
 };
 
 export default function OperatorSystemStatus() {
@@ -28,7 +28,7 @@ export default function OperatorSystemStatus() {
 
       <Card className="bg-card border-border">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2"><ShieldCheck className="w-5 h-5 text-primary" /> Build connections</CardTitle>
+          <CardTitle className="text-base flex items-center gap-2"><ShieldCheck className="w-5 h-5 text-primary" /> Integration status</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
           {demoSystemStatus.map((s) => {
@@ -39,7 +39,7 @@ export default function OperatorSystemStatus() {
                 <div className="flex items-center justify-between gap-2 mb-1 flex-wrap">
                   <p className="text-sm font-semibold">{s.label}</p>
                   <Badge variant="outline" className={`text-[10px] ${m.color}`}>
-                    <Icon className="w-3 h-3 mr-1" />{s.state}
+                    <Icon className="w-3 h-3 mr-1" />{m.label}
                   </Badge>
                 </div>
                 <p className="text-xs text-foreground/80">{s.detail}</p>
@@ -50,7 +50,7 @@ export default function OperatorSystemStatus() {
       </Card>
 
       <p className="text-[10px] text-muted-foreground mt-6 text-center">
-        Demo build {new Date().toISOString().slice(0, 10)} · Veroxa Growth OS
+        Veroxa Growth OS · Demo preview build
       </p>
     </PortalLayout>
   );

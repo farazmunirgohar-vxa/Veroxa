@@ -17,7 +17,7 @@ export default function OperatorReportApprovals() {
         <p className="text-muted-foreground mt-1">Monthly client reports awaiting your sign-off before sending.</p>
       </div>
 
-      <DemoOnlyBanner message="Static demo — no real approval action is wired. Statuses (Drafted, Ready for operator, Needs revision, Approved) illustrate the future Report Approval state machine only." testId="banner-operator-approvals" />
+      <DemoOnlyBanner message="Demo only — no approval actions are wired. Report statuses illustrate the future approval flow only." testId="banner-operator-approvals" />
 
       <div className="grid sm:grid-cols-2 gap-3">
         {reportApprovals.map((report, i) => (

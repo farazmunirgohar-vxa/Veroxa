@@ -11,11 +11,10 @@ export default function OwnerAlerts() {
           className="text-2xl md:text-3xl font-bold tracking-tight text-foreground"
           data-testid="header-owner-alerts"
         >
-          Notification Center
+          Critical Alerts
         </h2>
         <p className="text-muted-foreground mt-1 text-sm md:text-base">
-          Business-level alerts and operational signals across the client
-          portfolio.
+          High-priority business alerts across your client portfolio.
         </p>
       </div>
 
