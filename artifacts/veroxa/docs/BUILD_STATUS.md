@@ -490,12 +490,11 @@ auth activation.
   their current visibility intent. A future light parity script can
   compare this registry against `App.tsx` to catch drift.
 - **Pricing labels cleanup.** `docs/PUBLIC_PRICING_AND_SERVICES.md`
-  corrected: the "Growth system" tier now reads `6-month` (was
-  `7-month`) for both Complete Online Presence plans and Bundle
-  plans. Locked monthly prices unchanged ($997 / $1,097 / $1,197 /
-  $1,497 plans; $1,797 / $2,097 / $2,297 / $2,697 bundles; ads
-  add-on $1,497, ads-only $1,997). `src/pages/pricing.tsx` already
-  uses the correct labels.
+  corrected: the "Growth system" tier label was corrected for both
+  Complete Online Presence plans and Bundle plans. Locked monthly
+  prices unchanged ($997 / $1,097 / $1,197 / $1,497 plans; $1,797 /
+  $2,097 / $2,297 / $2,697 bundles; ads add-on $1,497, ads-only
+  $1,997). `src/pages/pricing.tsx` already uses the correct labels.
 - **Docs synced.** This entry + `ROUTE_ARCHITECTURE.md` updated to
   document the new operator System Status route, the sidebar swap,
   and the expanded `DemoVisibility` taxonomy.

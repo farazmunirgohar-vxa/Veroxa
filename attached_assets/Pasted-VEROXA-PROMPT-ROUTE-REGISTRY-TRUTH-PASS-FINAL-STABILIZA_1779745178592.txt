@@ -1,0 +1,281 @@
+VEROXA PROMPT — ROUTE REGISTRY TRUTH PASS + FINAL STABILIZATION CLEANUP
+
+Objective:
+Make Veroxa’s route registry and documentation accurately reflect the current stabilized demo app.
+
+This is NOT a new feature pass.
+This is NOT a backend pass.
+This is NOT a redesign.
+
+Do NOT add new pages.
+Do NOT add dashboards.
+Do NOT change auth mode.
+Do NOT connect Supabase.
+Do NOT add uploads.
+Do NOT add AI APIs.
+Do NOT add publishing.
+Do NOT change pricing numbers.
+Do NOT remove major routes yet.
+
+This is a truth, consistency, and cleanup pass only.
+
+------------------------------------------------
+
+SOURCE OF TRUTH
+
+Actual visible portal navigation is defined by:
+
+src/lib/clientPortalNav.ts
+src/lib/teamPortalNav.ts
+src/lib/operatorPortalNav.ts
+src/lib/ownerPortalNav.ts
+
+Current intended visible nav:
+
+CLIENT — 6:
+- Dashboard
+- Upload Media
+- Calendar
+- Reports
+- Requests
+- Account
+
+TEAM — 7:
+- Dashboard
+- Work Queue
+- Media Review
+- Drafts
+- Scheduling
+- Reports
+- Alerts
+
+OPERATOR — 7:
+- Command Center
+- Client Health
+- Alerts
+- Report Approvals
+- Media Library
+- Team Oversight
+- System Status
+
+OWNER — 7:
+- Executive Dashboard
+- Revenue
+- Client Health
+- Critical Alerts
+- AI / System Health
+- Growth
+- Settings
+
+------------------------------------------------
+
+PART 1 — FIX demoRoutes.ts VISIBILITY MISMATCH
+
+File:
+src/lib/demoRoutes.ts
+
+Current problem:
+demoRoutes.ts marks some client routes as visible_nav even though they are NOT in clientPortalNav.ts.
+
+Fix client route visibility so it matches actual nav:
+
+These should be visible_nav:
+- /demo/client/dashboard
+- /demo/client/media
+- /demo/client/calendar
+- /demo/client/reports
+- /demo/client/requests
+- /demo/client/account
+
+These should NOT be visible_nav:
+- /demo/client/google
+- /demo/client/updates
+- /demo/client/onboarding
+- /demo/client/workspace
+- /demo/client/onboarding-center
+- /demo/client/content-pipeline
+- /demo/client/ai-agents
+- /demo/client/activity-log
+- /demo/client/weekly-report
+- /demo/client/monthly-report
+
+Mark them as hidden_from_nav unless clearly legacy/internal.
+
+Goal:
+clientDemoRoutes visible_nav count should be exactly 6.
+
+------------------------------------------------
+
+PART 2 — SYNC demoRoutes.ts WITH App.tsx
+
+Compare:
+src/App.tsx
+src/lib/demoRoutes.ts
+
+Goal:
+Every /demo route in App.tsx should either:
+
+- appear in demoRoutes.ts with the correct visibility status
+
+OR
+
+- be intentionally listed in a comment as not tracked yet with a reason
+
+Do not delete routes.
+
+Add missing demo routes from App.tsx into demoRoutes.ts using correct visibility labels:
+
+visible_nav
+hidden_from_nav
+legacy_demo
+internal_demo
+future_protected
+
+Important:
+Visible nav routes must exactly match nav files.
+Everything else should be hidden_from_nav, legacy_demo, internal_demo, or future_protected.
+
+Known missing examples to check:
+- /demo/client/workspace
+- /demo/client/onboarding-center
+- /demo/client/content-pipeline
+- /demo/client/ai-agents
+- /demo/client/activity-log
+- /demo/client/weekly-report
+- /demo/client/monthly-report
+- /demo/team/content-review
+- /demo/team/performance
+- /demo/team/activity-feed
+- /demo/team/client-detail
+- /demo/owner/bi-center
+- /demo/owner/client-analytics
+- /demo/owner/reporting-analytics
+- /demo/owner/media-analytics
+- /demo/owner/ops-intelligence
+- /demo/owner/agent-workflow
+- /demo/owner/automation-roadmap
+- /demo/owner/system-map
+- /demo/owner/permissions
+- /demo/owner/kpis
+- /demo/owner/activity
+- /demo/owner/media-inventory
+- /demo/owner/weekly-reports
+- /demo/owner/monthly-reports
+- /demo/owner/client-detail
+- /demo/internal/db-explorer
+- /demo/internal/permissions
+- /demo/internal/client-health
+- /demo/supabase-test
+
+------------------------------------------------
+
+PART 3 — REMOVE REMAINING 7-MONTH TEXT FROM DOCS
+
+Search the whole project for:
+
+7-month
+
+If any instance remains, remove or reword it.
+
+Do not change pricing numbers.
+
+Correct locked base pricing remains:
+
+12-month: $997/mo
+6-month: $1,097/mo
+3-month: $1,197/mo
+No-contract: $1,497/mo
+
+Google Presence Starter remains:
+
+$497/mo
+
+Do not change ads or bundle pricing in this pass.
+
+------------------------------------------------
+
+PART 4 — ADD ROUTE REGISTRY VALIDATION SCRIPT OR NOTE
+
+If safe and simple, add a lightweight script or doc note to help future agents avoid route drift.
+
+Preferred safe option:
+Create or update documentation explaining:
+
+- App.tsx contains actual route registrations
+- portal nav files define visible sidebars
+- demoRoutes.ts documents visibility intent
+- visible_nav must always match the nav files
+
+Do not create a complex script unless it is low-risk.
+
+If adding a script is easy, add:
+
+scripts/check-demo-routes.ts
+
+that compares:
+- App.tsx demo route strings
+- demoRoutes.ts route strings
+
+and reports missing or extra entries.
+
+Do not wire it into build unless safe.
+
+------------------------------------------------
+
+PART 5 — VERIFY AUTH AND PRICING WERE NOT REGRESSED
+
+Confirm but do not change unless broken:
+
+AUTH_MODE must remain:
+"placeholder"
+
+Pricing page must still show:
+- Google Presence Starter: $497/mo
+- Complete Online Presence:
+  - 12-month $997/mo
+  - 6-month $1,097/mo
+  - 3-month $1,197/mo
+  - No-contract $1,497/mo
+
+No 7-month text.
+
+------------------------------------------------
+
+PART 6 — BUILD / TYPECHECK
+
+Run the project typecheck/build command.
+
+If this repo uses pnpm, run the correct command used in this project.
+
+Fix only errors caused by this pass.
+
+Do not add features to solve build errors.
+
+------------------------------------------------
+
+FINAL REPORT REQUIRED
+
+At completion, report:
+
+1. Files modified
+2. Client demoRoutes visible_nav count
+3. Team demoRoutes visible_nav count
+4. Operator demoRoutes visible_nav count
+5. Owner demoRoutes visible_nav count
+6. Missing App.tsx demo routes now added
+7. Any routes intentionally left untracked
+8. Confirmation that actual nav files were not changed
+9. Confirmation AUTH_MODE is still placeholder
+10. Confirmation no 7-month text remains
+11. Confirmation $497 Starter remains separate from Complete Online Presence
+12. Build/typecheck result
+13. Remaining risks
+14. Recommended next step
+
+PASS STANDARD:
+- demoRoutes.ts visible_nav matches actual nav files exactly
+- demoRoutes.ts is much closer to App.tsx
+- no 7-month text remains
+- auth mode stays placeholder
+- pricing remains locked
+- no new features added
