@@ -1,8 +1,25 @@
 /**
  * Client Portal navigation — simplified cleanup pass.
  *
- * Visible: Dashboard · Upload Media · Calendar · Reports · Requests · Account
- * Hidden (routes still exist): Workspace, Content Pipeline, Google, Activity, Notifications, Onboarding
+ * PRIMARY (surfaced in nav — public, no login required):
+ *   client-dashboard        — primary home
+ *   client-media            — upload media / media library
+ *   client-calendar         — content calendar
+ *   client-reports          — weekly / monthly reports
+ *   client-requests         — client requests
+ *   client-account          — account settings
+ *
+ * SECONDARY (routed but hidden — not linked from nav):
+ *   client-workspace        — workspace surface
+ *   client-onboarding-center — onboarding center
+ *   client-content-pipeline — content pipeline
+ *   client-google           — Google Business Profile
+ *   client-activity-log     — activity log
+ *   client-updates          — updates / notifications
+ *
+ * FUTURE DELETION CANDIDATES:
+ *   None identified — secondary pages are distinct features,
+ *   not duplicates of primary pages.
  */
 import {
   LayoutDashboard,
@@ -24,7 +41,7 @@ export const clientPortalNavItems: SidebarItem[] = [
 ];
 
 // Hidden from nav (routes still active at their original paths):
-// /demo/client/workspace        — Workspace
+// /demo/client/workspace         — Workspace
 // /demo/client/onboarding-center — Onboarding
 // /demo/client/content-pipeline  — Content
 // /demo/client/google            — Google

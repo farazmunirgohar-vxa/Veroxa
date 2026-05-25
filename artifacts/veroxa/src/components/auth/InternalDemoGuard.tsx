@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth/useAuth";
 import type { VeroxaRole } from "@/lib/auth/authContract";
 import { getDemoRoleHomePath } from "@/lib/auth/authContract";
+import { AUTH_MODE } from "@/lib/auth/authMode";
 
 interface InternalDemoGuardProps {
   /** Single role or list of roles allowed to view the page. */
@@ -18,6 +19,7 @@ interface InternalDemoGuardProps {
  * Do NOT use on /demo/client/* — that remains public.
  *
  * Rules:
+ *   - AUTH_MODE === "placeholder" → pass through unconditionally (demo walkthrough)
  *   - loading  → show "Checking Veroxa access…" card
  *   - unauth   → show "Login required" card with link to /login
  *   - authed, matching role → render children
@@ -26,12 +28,15 @@ interface InternalDemoGuardProps {
  * No writes. No token display. No service role.
  */
 export default function InternalDemoGuard({ role, children }: InternalDemoGuardProps) {
-  const auth = useAuth();
-
-  // In placeholder/demo mode, all portals are open for demo walkthrough.
-  if (auth.isDemoOnly) {
+  // Placeholder mode: skip all auth checks so all demo portals open freely.
+  // AUTH_MODE is a module-level constant — this branch is statically known per build.
+  if (AUTH_MODE === "placeholder") {
     return <>{children}</>;
   }
+
+  // Real-auth path below — only reached when AUTH_MODE === "real".
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const auth = useAuth();
 
   if (auth.status === "loading") {
     return (

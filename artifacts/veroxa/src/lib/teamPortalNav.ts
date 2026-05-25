@@ -1,9 +1,27 @@
 /**
  * Team Portal navigation — simplified cleanup pass.
  *
- * Visible: Dashboard · Work Queue · Media Review · Drafts · Scheduling · Reports · Alerts
- * Hidden (routes still exist): Client Health, Task Engine, Client Detail, Content Review,
- *   My Tasks, AI Review, Performance, Activity Feed
+ * PRIMARY (surfaced in nav + login destination):
+ *   team-dashboard      — login destination, primary home
+ *   team-work-queue     — active content tasks across all clients
+ *   team-media-review   — approve uploaded media
+ *   team-drafts         — drafts pending review
+ *   team-scheduling     — schedule approved posts
+ *   team-report-queue   — reports awaiting operator approval
+ *   team-alerts         — alert center
+ *
+ * SECONDARY (routed but hidden — not linked from nav):
+ *   team-task-engine    — Kanban view; future deletion candidate
+ *   team-tasks          — personal task list; future deletion candidate
+ *   team-content-review — content review surface
+ *   team-ai-review      — AI-suggested draft review
+ *   team-performance    — team performance metrics
+ *   team-activity-feed  — activity feed
+ *   team-client-detail  — per-client detail view
+ *
+ * FUTURE DELETION CANDIDATES:
+ *   team-task-engine    — Kanban view not linked, overlaps work-queue
+ *   team-tasks          — personal task list not linked, overlaps dashboard
  */
 import {
   LayoutDashboard,
@@ -27,11 +45,11 @@ export const teamPortalNavItems: SidebarItem[] = [
 ];
 
 // Hidden from nav (routes still active at their original paths):
-// /demo/internal/client-health   — Client Health (accessible directly)
-// /demo/team/task-engine         — Task Engine
+// /demo/internal/client-health   — Client Health (cross-role command center)
+// /demo/team/task-engine         — Task Engine (Kanban) — future deletion candidate
 // /demo/team/client-detail       — Client Detail
 // /demo/team/content-review      — Content Review
-// /demo/team/tasks               — My Tasks
+// /demo/team/tasks               — My Tasks (personal list) — future deletion candidate
 // /demo/team/ai-review           — AI Review
 // /demo/team/performance         — Performance
 // /demo/team/activity-feed       — Activity Feed
