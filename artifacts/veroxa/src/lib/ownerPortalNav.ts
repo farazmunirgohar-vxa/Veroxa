@@ -26,6 +26,7 @@ import type { SidebarItem } from "@/components/PortalLayout";
 export const ownerPortalNavItems: SidebarItem[] = [
   // Executive command
   { label: "Owner OS",            icon: Crosshair,    href: "/demo/owner/owner-os"               },
+  { label: "Client Health",       icon: Heart,        href: "/demo/internal/client-health"       },
   { label: "Integration Center",  icon: Network,      href: "/demo/internal/integrations"        },
   { label: "Command Center",      icon: LineChart,    href: "/demo/owner/dashboard"              },
   { label: "Executive Dashboard", icon: BarChart3,    href: "/demo/owner/executive-dashboard"    },

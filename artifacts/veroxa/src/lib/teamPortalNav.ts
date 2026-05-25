@@ -11,11 +11,13 @@ import {
   BarChart2,
   Activity,
   ShieldAlert,
+  HeartPulse,
 } from "lucide-react";
 import type { SidebarItem } from "@/components/PortalLayout";
 
 export const teamPortalNavItems: SidebarItem[] = [
   { label: "Dashboard",      icon: LayoutDashboard, href: "/demo/team/dashboard"       },
+  { label: "Client Health",  icon: HeartPulse,      href: "/demo/internal/client-health" },
   { label: "Task Engine",    icon: ClipboardList,   href: "/demo/team/task-engine"     },
   { label: "Client Detail",  icon: ClipboardList,   href: "/demo/team/client-detail"   },
   { label: "Work Queue",     icon: ClipboardList,   href: "/demo/team/work-queue"      },

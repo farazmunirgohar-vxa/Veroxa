@@ -1,4 +1,5 @@
 import {
+  HeartPulse,
   LayoutDashboard,
   Bell,
   Users,
@@ -27,6 +28,7 @@ import type { SidebarItem } from "@/components/PortalLayout";
 export const operatorPortalNavItems: SidebarItem[] = [
   // Core command
   { label: "Operator OS",        icon: LayoutDashboard, href: "/demo/operator/operator-os"       },
+  { label: "Client Health",      icon: HeartPulse,      href: "/demo/internal/client-health"     },
   { label: "Command Board",      icon: Zap,             href: "/demo/operator/command-board"     },
   { label: "Media Library",      icon: Images,          href: "/demo/operator/media-library"     },
   { label: "Architecture",       icon: Network,         href: "/demo/internal/architecture"      },

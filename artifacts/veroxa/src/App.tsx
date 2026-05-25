@@ -82,6 +82,7 @@ import InternalIntegrations from "@/pages/internal-integrations";
 import OperatorMediaLibrary from "@/pages/operator-media-library";
 import OperatorOS from "@/pages/operator-os";
 import OwnerOS from "@/pages/owner-os";
+import ClientHealthCommand from "@/pages/client-health-command";
 import { ErrorBoundary } from "@/components/common";
 import TeamDashboard from "@/pages/team-dashboard";
 import TeamWorkQueue from "@/pages/team-work-queue";
@@ -357,6 +358,13 @@ function Router() {
       </Route>
       <Route path="/demo/owner/owner-os">
         {() => <InternalDemoGuard role="owner"><OwnerOS /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/internal/client-health">
+        {() => (
+          <InternalDemoGuard role={["operator", "owner", "team"]}>
+            <ClientHealthCommand />
+          </InternalDemoGuard>
+        )}
       </Route>
 
       <Route path="/demo/supabase-test" component={SupabaseTestPage} />
