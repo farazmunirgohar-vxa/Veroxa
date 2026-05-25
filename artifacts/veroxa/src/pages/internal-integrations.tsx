@@ -1,5 +1,9 @@
-import { Plug, Sparkles, Share2, Search, MessageSquare, BarChart3, HardDrive, CreditCard, type LucideIcon } from "lucide-react";
+import {
+  Plug, Sparkles, Share2, Search, MessageSquare, BarChart3, HardDrive, CreditCard,
+  Clock, type LucideIcon,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 import { PageHeader, MetricTile, StatusBadge } from "@/components/common";
 import { IntegrationService } from "@/domain/integrations/service";
@@ -53,18 +57,34 @@ export default function InternalIntegrations() {
                   <span className="text-[10px] text-muted-foreground ml-1">{items.length}</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {items.map((i) => (
                   <div
                     key={i.id}
-                    className="rounded-md border border-border bg-muted/20 px-3 py-2 flex items-start justify-between gap-2"
+                    className="rounded-md border border-border bg-muted/20 p-3 flex flex-col gap-2"
                     data-testid={`integration-${i.id}`}
                   >
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold truncate">{i.name}</p>
-                      <p className="text-[11px] text-muted-foreground">{i.description}</p>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold truncate">{i.name}</p>
+                        <p className="text-[11px] text-muted-foreground">{i.description}</p>
+                      </div>
+                      <StatusBadge tone={statusTone[i.status]} testId={`status-${i.id}`}>{i.status}</StatusBadge>
                     </div>
-                    <StatusBadge tone={statusTone[i.status]} testId={`status-${i.id}`}>{i.status}</StatusBadge>
+                    <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/60">
+                      <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                        <Clock className="w-3 h-3" /> Last sync: {i.lastSyncAt ?? "—"}
+                      </p>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled
+                        className="h-7 px-2 text-[11px]"
+                        data-testid={`configure-${i.id}`}
+                      >
+                        Configure later
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </CardContent>

@@ -6,7 +6,8 @@ import type { VeroxaRole } from "@/lib/auth/authContract";
 import { getDemoRoleHomePath } from "@/lib/auth/authContract";
 
 interface InternalDemoGuardProps {
-  role: VeroxaRole;
+  /** Single role or list of roles allowed to view the page. */
+  role: VeroxaRole | VeroxaRole[];
   children: React.ReactNode;
 }
 
@@ -60,8 +61,9 @@ export default function InternalDemoGuard({ role, children }: InternalDemoGuardP
   }
 
   const currentRole = auth.session?.role;
+  const allowed = Array.isArray(role) ? role : [role];
 
-  if (currentRole !== role) {
+  if (!currentRole || !allowed.includes(currentRole)) {
     const redirectPath = currentRole ? getDemoRoleHomePath(currentRole) : "/login";
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">

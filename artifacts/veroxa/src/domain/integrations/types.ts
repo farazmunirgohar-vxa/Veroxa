@@ -7,7 +7,8 @@ export interface Integration {
   id:          string;
   category:    IntegrationCategory;
   name:        string;
-  description: string;
+  description: string;     // purpose
   status:      IntegrationStatus;
+  lastSyncAt?: string;     // demo timestamp
   docsHref?:   string;
 }

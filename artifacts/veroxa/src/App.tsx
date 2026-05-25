@@ -79,6 +79,9 @@ import InternalDemoControls from "@/pages/internal-demo-controls";
 import InternalSystemStatus from "@/pages/internal-system-status";
 import InternalArchitecture from "@/pages/internal-architecture";
 import InternalIntegrations from "@/pages/internal-integrations";
+import OperatorMediaLibrary from "@/pages/operator-media-library";
+import OperatorOS from "@/pages/operator-os";
+import OwnerOS from "@/pages/owner-os";
 import { ErrorBoundary } from "@/components/common";
 import TeamDashboard from "@/pages/team-dashboard";
 import TeamWorkQueue from "@/pages/team-work-queue";
@@ -344,7 +347,16 @@ function Router() {
         {() => <InternalDemoGuard role="operator"><InternalArchitecture /></InternalDemoGuard>}
       </Route>
       <Route path="/demo/internal/integrations">
-        {() => <InternalDemoGuard role="operator"><InternalIntegrations /></InternalDemoGuard>}
+        {() => <InternalDemoGuard role={["operator", "owner"]}><InternalIntegrations /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/operator/media-library">
+        {() => <InternalDemoGuard role="operator"><OperatorMediaLibrary /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/operator/operator-os">
+        {() => <InternalDemoGuard role="operator"><OperatorOS /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/owner/owner-os">
+        {() => <InternalDemoGuard role="owner"><OwnerOS /></InternalDemoGuard>}
       </Route>
 
       <Route path="/demo/supabase-test" component={SupabaseTestPage} />

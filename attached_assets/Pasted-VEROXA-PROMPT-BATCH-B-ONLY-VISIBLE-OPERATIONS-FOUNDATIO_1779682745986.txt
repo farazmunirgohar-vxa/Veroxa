@@ -1,0 +1,94 @@
+VEROXA PROMPT — BATCH B ONLY: VISIBLE OPERATIONS FOUNDATION
+
+Objective:
+Now that Batch A architecture scaffolding is complete, build Batch B visible demo pages and portal upgrades.
+
+IMPORTANT:
+Demo UI only.
+Do NOT connect real auth.
+Do NOT connect Supabase.
+Do NOT connect OpenAI/Anthropic.
+Do NOT build real uploads.
+Do NOT build publishing APIs.
+Do NOT build background jobs.
+Do NOT delete or rewrite existing working pages unless absolutely necessary.
+
+Build the following visible sections using demo data only:
+
+1. Integration Center Page
+Create a visible Integration Center route/page.
+Show cards for:
+- Instagram
+- Facebook
+- Google Business Profile
+- TikTok
+- OpenAI / AI Provider
+- Scheduling Provider
+- Reporting/Data Provider
+
+Each card should show:
+- Demo connection status
+- Purpose
+- Last sync demo timestamp
+- “Configure later” disabled/demo button
+
+2. Media Library Foundation
+Create a demo Media Library page.
+Show:
+- Uploaded media cards
+- Status badges: uploaded, ai reviewed, usable, drafted, scheduled, used, rejected
+- Client name
+- Media type
+- Caption hint
+- Demo quality flag
+- Demo filters by status and client
+
+No real upload functionality yet.
+
+3. Operator OS Upgrade
+Improve Operator Portal with:
+- Client health overview
+- Active alerts
+- Low-content clients
+- Failed/reschedule post queue
+- Monthly report approval queue
+- AI agent monitoring summary
+
+Keep operator focused on oversight, not daily execution.
+
+4. Owner OS Upgrade
+Improve Owner Portal with:
+- Revenue command summary
+- Active clients
+- Client risk snapshot
+- Critical alerts only
+- Growth trend demo cards
+- AI system health summary
+
+Keep owner above day-to-day operations.
+
+5. Navigation
+Add navigation links where appropriate:
+- Integration Center
+- Media Library
+- Operator OS
+- Owner OS
+
+Do not clutter the Client Portal.
+Client Portal should remain clean and not expose internal systems.
+
+6. Design Rules
+Maintain Veroxa dark luxury SaaS style.
+Use existing shared components where possible.
+Keep mobile responsive.
+Avoid duplicate components.
+Use demoData only.
+
+7. Final Report
+At completion, report:
+- Files created
+- Files modified
+- Routes added/changed
+- Components reused
+- Build success or errors
+- Anything risky that should be audited next
