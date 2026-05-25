@@ -1,0 +1,394 @@
+VEROXA UNDERSTANDING PROMPT — READ ONLY / BUILD MODE OFF
+
+You are not building right now.
+
+Build Mode is OFF.
+
+Do NOT edit files.
+Do NOT create files.
+Do NOT delete files.
+Do NOT refactor.
+Do NOT run migrations.
+Do NOT connect Supabase.
+Do NOT change auth.
+Do NOT change pricing.
+Do NOT change routes.
+Do NOT commit anything.
+
+Your job is to deeply understand the Veroxa project and produce a clear project understanding report.
+
+------------------------------------------------
+
+WHAT VEROXA IS
+
+Veroxa is a SaaS-style restaurant marketing operating system.
+
+It is not a simple agency website.
+
+It is a structured operating system for restaurant marketing fulfillment.
+
+Core Veroxa flow:
+
+Client uploads real restaurant media
+→ System tracks media supply
+→ AI assists with review, concepts, and captions
+→ Team reviews/refines/approves
+→ System schedules posts
+→ Posts publish
+→ Client is notified
+→ Reports update
+→ Alerts trigger when content supply runs low
+
+Veroxa should feel premium, dark, clean, structured, and high-trust.
+
+------------------------------------------------
+
+LOCKED ROLES
+
+Client:
+Uploads media, views upcoming content, views reports, sends requests, manages account.
+
+Team:
+Executes the work: media review, caption drafts, scheduling, weekly reports, alerts.
+
+Operator:
+Oversees quality, client health, alerts, failed posts, monthly report approvals, and team oversight.
+
+Owner:
+Sees revenue, growth, client risk, retention, critical alerts, and AI/system health.
+
+Strict rule:
+Each role should only see what they need.
+
+Client should not see internal operations.
+Team should not see owner strategy/revenue.
+Operator should not be doing daily execution.
+Owner should not be dragged into daily content tasks.
+
+------------------------------------------------
+
+LOCKED VEROXA BASE PRICING
+
+Complete Online Presence:
+
+12-month plan: $997/mo
+6-month plan: $1,097/mo
+3-month plan: $1,197/mo
+No-contract plan: $1,497/mo
+
+Do NOT use older pricing:
+$1000
+$1100
+$1200
+$1500 as base pricing
+
+Do NOT invent new pricing.
+Do NOT invent a 7-month plan.
+
+------------------------------------------------
+
+CURRENT STRATEGIC PRIORITY
+
+We are not trying to add more features right now.
+
+The current priority is:
+
+1. Stabilize the demo
+2. Reduce unnecessary complexity
+3. Improve role clarity
+4. Fix auth/demo route consistency
+5. Keep pricing consistent
+6. Keep navigation clean
+7. Prepare for real backend later
+
+Do not recommend Supabase implementation yet unless you clearly label it as future work.
+
+Do not recommend real AI APIs yet.
+
+Do not recommend real uploads yet.
+
+Do not recommend publishing integrations yet.
+
+------------------------------------------------
+
+READ AND UNDERSTAND THESE AREAS
+
+Inspect the codebase and documentation.
+
+Focus on:
+
+docs/
+src/App.tsx
+src/pages/
+src/lib/
+src/lib/auth/
+src/lib/demoRoutes.ts
+src/lib/clientPortalNav.ts
+src/lib/teamPortalNav.ts
+src/lib/operatorPortalNav.ts
+src/lib/ownerPortalNav.ts
+src/data/
+src/domain/
+src/components/
+src/components/common/
+src/components/portal/
+
+Also inspect any Veroxa architecture, database, portal, automation, or planning documents inside the repository.
+
+------------------------------------------------
+
+WHAT TO EVALUATE
+
+1. Project Purpose
+
+Explain in your own words:
+
+- What Veroxa is
+- What problem it solves
+- Who uses it
+- Why it is structured by role
+- Why it is not just a marketing website
+
+------------------------------------------------
+
+2. Portal Role Understanding
+
+For each portal, explain:
+
+Client Portal:
+- What it should do
+- What it should not show
+- Whether current pages match that purpose
+
+Team Portal:
+- What it should do
+- What it should not show
+- Whether current pages match that purpose
+
+Operator Portal:
+- What it should do
+- What it should not show
+- Whether current pages match that purpose
+
+Owner Portal:
+- What it should do
+- What it should not show
+- Whether current pages match that purpose
+
+------------------------------------------------
+
+3. Current Codebase Understanding
+
+Report:
+
+- Main folders and what they appear to do
+- Main portal pages
+- Main navigation files
+- Main auth files
+- Main demo data files
+- Main domain folders
+- Any documents that explain the Veroxa system
+
+Do not change anything.
+
+------------------------------------------------
+
+4. Navigation Understanding
+
+Report current visible navigation for:
+
+Client
+Team
+Operator
+Owner
+
+For each role, answer:
+
+- Does nav feel focused?
+- Are there duplicate concepts?
+- Are there too many items?
+- Are any internal pages exposed?
+- Does the nav match the role?
+
+Target nav:
+
+Client:
+Dashboard, Upload Media, Calendar, Reports, Requests, Account
+
+Team:
+Dashboard, Work Queue, Media Review, Drafts, Scheduling, Reports, Alerts
+
+Operator:
+Command Center / Operator OS, Client Health, Alerts, Report Approvals, Media Library, Team Oversight, System Status
+
+Owner:
+Executive Dashboard, Revenue, Client Health, Critical Alerts, AI/System Health, Growth, Settings
+
+------------------------------------------------
+
+5. Auth / Demo Mode Understanding
+
+Inspect auth-related files.
+
+Report:
+
+- Current AUTH_MODE value
+- Whether demo portals require real Supabase auth
+- Whether demo mode is safe
+- Whether real auth is creeping in too early
+- Which files control demo access
+- Which routes should open without real Supabase credentials
+
+Do not modify auth.
+
+------------------------------------------------
+
+6. Pricing Understanding
+
+Search for pricing references.
+
+Report:
+
+- Where pricing appears
+- Whether locked pricing is consistent
+- Any outdated pricing found
+- Any invented plans found
+- Any formatting inconsistencies
+
+Locked pricing:
+
+12-month: $997/mo
+6-month: $1,097/mo
+3-month: $1,197/mo
+No-contract: $1,497/mo
+
+Do not change pricing.
+
+------------------------------------------------
+
+7. Duplicate / Overbuilt Areas
+
+Identify duplicate or overlapping areas.
+
+Focus especially on:
+
+Owner:
+owner-dashboard
+owner-command-center
+owner-executive-dashboard
+owner-os
+
+Operator:
+operator-os
+operator-overview
+operator-command-board
+
+Team:
+team-dashboard
+team-task-engine
+team-tasks
+
+AI:
+aiagentsview
+agent-preview
+owner-ai-agents
+owner-ai-agents-v2
+
+Report:
+
+- Which one should be primary
+- Which ones should remain hidden
+- Which ones may be future deletion candidates
+
+Do not delete anything.
+
+------------------------------------------------
+
+8. Backend Readiness Understanding
+
+Veroxa future backend objects:
+
+clients
+client_platforms
+onboarding_items
+media_assets
+content_concepts
+draft_sets
+draft_variants
+posts
+post_slots
+notifications
+weekly_reports
+monthly_reports
+activity_logs
+
+Report:
+
+- Which objects are already represented in demo/domain/frontend
+- Which objects are missing
+- Which objects are only visual/demo right now
+- Which naming is inconsistent
+- What should be prepared before real Supabase work
+
+Do not build backend.
+
+------------------------------------------------
+
+9. What NOT To Build Yet
+
+Clearly list what should not be built yet.
+
+Include:
+
+- real Supabase auth
+- real uploads
+- real AI APIs
+- real publishing APIs
+- real automation jobs
+- real payment system
+- heavy new dashboards
+- more portal pages
+
+------------------------------------------------
+
+10. Final Output Format
+
+Return a structured report with these sections:
+
+A. Veroxa Summary In Your Own Words
+
+B. Locked Business Rules
+
+C. Locked Role Rules
+
+D. Current Codebase Map
+
+E. Portal-by-Portal Understanding
+
+F. Navigation Review
+
+G. Auth/Demo Mode Review
+
+H. Pricing Review
+
+I. Duplicate/Overbuilt Areas
+
+J. Backend Readiness Review
+
+K. Biggest Risks Right Now
+
+L. What Not To Touch Yet
+
+M. Recommended Next Build Step
+
+N. Recommended Next Replit Build Prompt Draft
+
+------------------------------------------------
+
+REMINDER
+
+Do not edit anything.
+
+This is a read-only understanding pass.
+
+Your goal is to fully understand Veroxa so future build prompts are more accurate, safer, and less random.
