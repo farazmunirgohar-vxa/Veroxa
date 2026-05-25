@@ -16,6 +16,7 @@ import type { SidebarItem } from "@/components/PortalLayout";
 
 export const teamPortalNavItems: SidebarItem[] = [
   { label: "Dashboard",      icon: LayoutDashboard, href: "/demo/team/dashboard"       },
+  { label: "Task Engine",    icon: ClipboardList,   href: "/demo/team/task-engine"     },
   { label: "Work Queue",     icon: ClipboardList,   href: "/demo/team/work-queue"      },
   { label: "Content Review", icon: Eye,             href: "/demo/team/content-review"  },
   { label: "Report Queue",   icon: FileText,        href: "/demo/team/report-queue"    },

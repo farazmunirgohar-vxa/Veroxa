@@ -8,6 +8,7 @@ import {
   Images,
   Briefcase,
   Workflow,
+  Activity,
 } from "lucide-react";
 import type { SidebarItem } from "@/components/PortalLayout";
 
@@ -22,5 +23,6 @@ export const clientPortalNavItems: SidebarItem[] = [
   { label: "Media",        icon: Images,          href: "/demo/client/media"             },
   { label: "Google",       icon: Globe,           href: "/demo/client/google"            },
   { label: "Reports",      icon: FileText,        href: "/demo/client/reports"           },
+  { label: "Activity",     icon: Activity,        href: "/demo/client/activity-log"      },
   { label: "Notifications",icon: Bell,            href: "/demo/client/updates"           },
 ];

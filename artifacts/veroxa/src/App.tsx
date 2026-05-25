@@ -66,6 +66,11 @@ import OwnerPermissions from "@/pages/owner-permissions";
 import OwnerAutomationRoadmap from "@/pages/owner-automation-roadmap";
 import OwnerSystemMap from "@/pages/owner-system-map";
 import OwnerDailyBriefing from "@/pages/owner-daily-briefing";
+import OperatorOperationsCenter from "@/pages/operator-operations-center";
+import OperatorWorkflowEngine from "@/pages/operator-workflow-engine";
+import OperatorContentCalendar from "@/pages/operator-content-calendar";
+import TeamTaskEngine from "@/pages/team-task-engine";
+import ClientActivityLog from "@/pages/client-activity-log";
 import TeamDashboard from "@/pages/team-dashboard";
 import TeamWorkQueue from "@/pages/team-work-queue";
 import TeamContentReview from "@/pages/team-content-review";
@@ -293,6 +298,19 @@ function Router() {
       <Route path="/demo/owner/daily-briefing">
         {() => <InternalDemoGuard role="owner"><OwnerDailyBriefing /></InternalDemoGuard>}
       </Route>
+      <Route path="/demo/operator/operations-center">
+        {() => <InternalDemoGuard role="operator"><OperatorOperationsCenter /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/operator/workflow-engine">
+        {() => <InternalDemoGuard role="operator"><OperatorWorkflowEngine /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/operator/content-calendar">
+        {() => <InternalDemoGuard role="operator"><OperatorContentCalendar /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/team/task-engine">
+        {() => <InternalDemoGuard role="team"><TeamTaskEngine /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/client/activity-log" component={ClientActivityLog} />
 
       <Route path="/demo/supabase-test" component={SupabaseTestPage} />
 

@@ -2014,3 +2014,260 @@ export const demoOwnerBriefing: DemoOwnerBriefingSection[] = [
     ],
   },
 ];
+
+// ── Prompt 13 — Workflow Engine V1 ──────────────────────────────────────
+
+// Canonical workflow stages (Section 1)
+export const demoWorkflowStages = [
+  "Media Submitted",
+  "Media Review",
+  "Content Strategy",
+  "Caption Drafting",
+  "Brand Review",
+  "Scheduling",
+  "Ready To Post",
+  "Posted",
+  "Reporting",
+] as const;
+export type WorkflowStage = typeof demoWorkflowStages[number];
+
+export type ContentItemStatus = "On Track" | "Blocked" | "Waiting" | "Done";
+export type ContentItemType   = "Photo Post" | "Reel" | "Carousel" | "Story";
+
+export interface ContentStageEvent {
+  stage:     WorkflowStage;
+  timestamp: string;     // human-readable
+  actor:     string;     // e.g. "Media Review Agent", "Priya", "Operator"
+  note?:     string;
+}
+
+export interface DemoContentItem {
+  id:           string;
+  title:        string;
+  contentType:  ContentItemType;
+  clientId:     string;
+  createdDate:  string;
+  currentStage: WorkflowStage;
+  status:       ContentItemStatus;
+  lastUpdated:  string;
+  nextAction:   string;
+  history:      ContentStageEvent[];
+}
+
+const stageIdx = (s: WorkflowStage) => demoWorkflowStages.indexOf(s);
+export const progressFromStage = (s: WorkflowStage) =>
+  Math.round(((stageIdx(s) + 1) / demoWorkflowStages.length) * 100);
+export const previousStageOf = (s: WorkflowStage): WorkflowStage | null => {
+  const i = stageIdx(s);
+  return i <= 0 ? null : demoWorkflowStages[i - 1];
+};
+export const nextStageOf = (s: WorkflowStage): WorkflowStage | null => {
+  const i = stageIdx(s);
+  return i < 0 || i >= demoWorkflowStages.length - 1 ? null : demoWorkflowStages[i + 1];
+};
+
+export const demoContentItems: DemoContentItem[] = [
+  {
+    id: "ci-001", title: "Mixed Grill Platter — hero shot", contentType: "Photo Post",
+    clientId: "mamadali", createdDate: "May 22, 2026",
+    currentStage: "Caption Drafting", status: "On Track", lastUpdated: "Today, 10:48 AM",
+    nextAction: "Caption Agent drafting 3 variants — ETA 30 min.",
+    history: [
+      { stage: "Media Submitted",  timestamp: "May 22, 9:14 AM",  actor: "Mamadali Kebab House", note: "Uploaded via client portal." },
+      { stage: "Media Review",     timestamp: "May 22, 10:32 AM", actor: "Media Review Agent",   note: "Quality score 94. Approved." },
+      { stage: "Content Strategy", timestamp: "Today, 9:00 AM",   actor: "Content Strategist Agent", note: "Slotted for Thursday 7 PM hero post." },
+      { stage: "Caption Drafting", timestamp: "Today, 10:48 AM",  actor: "Caption Agent",        note: "Drafting in progress." },
+    ],
+  },
+  {
+    id: "ci-002", title: "Friday dinner reel — Mamadali", contentType: "Reel",
+    clientId: "mamadali", createdDate: "May 24, 2026",
+    currentStage: "Scheduling", status: "On Track", lastUpdated: "Today, 11:00 AM",
+    nextAction: "Scheduling Agent locking Thursday 7 PM slot.",
+    history: [
+      { stage: "Media Submitted",  timestamp: "May 24, 8:00 AM",  actor: "Mamadali Kebab House" },
+      { stage: "Media Review",     timestamp: "May 24, 9:12 AM",  actor: "Media Review Agent",   note: "Approved hero reel candidate." },
+      { stage: "Content Strategy", timestamp: "May 24, 10:30 AM", actor: "Content Strategist Agent" },
+      { stage: "Caption Drafting", timestamp: "May 25, 9:20 AM",  actor: "Caption Agent" },
+      { stage: "Brand Review",     timestamp: "May 25, 10:50 AM", actor: "Brand Voice Agent",    note: "Voice match 96%." },
+      { stage: "Scheduling",       timestamp: "Today, 11:00 AM",  actor: "Scheduling Agent" },
+    ],
+  },
+  {
+    id: "ci-003", title: "Olive oil pour reel — Crescent", contentType: "Reel",
+    clientId: "crescent", createdDate: "May 23, 2026",
+    currentStage: "Ready To Post", status: "On Track", lastUpdated: "Today, 9:30 AM",
+    nextAction: "Awaiting publish window (Sun 11 AM).",
+    history: [
+      { stage: "Media Submitted",  timestamp: "May 23, 7:30 AM",  actor: "Crescent Grill" },
+      { stage: "Media Review",     timestamp: "May 23, 8:45 AM",  actor: "Media Review Agent" },
+      { stage: "Content Strategy", timestamp: "May 23, 11:00 AM", actor: "Content Strategist Agent" },
+      { stage: "Caption Drafting", timestamp: "May 24, 9:25 AM",  actor: "Caption Agent" },
+      { stage: "Brand Review",     timestamp: "May 24, 10:50 AM", actor: "Brand Voice Agent",    note: "Flagged Caption C — rewritten." },
+      { stage: "Scheduling",       timestamp: "May 24, 1:00 PM",  actor: "Scheduling Agent" },
+      { stage: "Ready To Post",    timestamp: "Today, 9:30 AM",   actor: "Operator",             note: "Sign-off complete." },
+    ],
+  },
+  {
+    id: "ci-004", title: "Lunch special — Urban Tacos", contentType: "Photo Post",
+    clientId: "urban", createdDate: "May 20, 2026",
+    currentStage: "Brand Review", status: "Blocked", lastUpdated: "Yesterday, 4:12 PM",
+    nextAction: "Brand Voice Agent flagged tone — rewrite needed.",
+    history: [
+      { stage: "Media Submitted",  timestamp: "May 20, 11:00 AM", actor: "Urban Tacos" },
+      { stage: "Media Review",     timestamp: "May 20, 1:30 PM",  actor: "Media Review Agent" },
+      { stage: "Content Strategy", timestamp: "May 21, 9:00 AM",  actor: "Content Strategist Agent" },
+      { stage: "Caption Drafting", timestamp: "May 22, 9:30 AM",  actor: "Caption Agent" },
+      { stage: "Brand Review",     timestamp: "Yesterday, 4:12 PM", actor: "Brand Voice Agent",  note: "Caption too promotional — rewrite." },
+    ],
+  },
+  {
+    id: "ci-005", title: "Specialty coffee carousel — Al Noor", contentType: "Carousel",
+    clientId: "alnoor", createdDate: "May 15, 2026",
+    currentStage: "Media Review", status: "Waiting", lastUpdated: "May 16",
+    nextAction: "Awaiting fresh media from client — inventory critical.",
+    history: [
+      { stage: "Media Submitted", timestamp: "May 15, 10:00 AM", actor: "Al Noor Cafe" },
+      { stage: "Media Review",    timestamp: "May 16, 11:00 AM", actor: "Media Review Agent",   note: "2 of 4 flagged for reshoot." },
+    ],
+  },
+  {
+    id: "ci-006", title: "Weekend brunch reel — Crescent", contentType: "Reel",
+    clientId: "crescent", createdDate: "May 18, 2026",
+    currentStage: "Posted", status: "Done", lastUpdated: "May 22",
+    nextAction: "Awaiting inclusion in weekly report.",
+    history: [
+      { stage: "Media Submitted",  timestamp: "May 18, 8:00 AM",  actor: "Crescent Grill" },
+      { stage: "Media Review",     timestamp: "May 18, 9:15 AM",  actor: "Media Review Agent" },
+      { stage: "Content Strategy", timestamp: "May 18, 11:00 AM", actor: "Content Strategist Agent" },
+      { stage: "Caption Drafting", timestamp: "May 19, 9:00 AM",  actor: "Caption Agent" },
+      { stage: "Brand Review",     timestamp: "May 19, 10:30 AM", actor: "Brand Voice Agent" },
+      { stage: "Scheduling",       timestamp: "May 19, 1:00 PM",  actor: "Scheduling Agent" },
+      { stage: "Ready To Post",    timestamp: "May 20, 9:00 AM",  actor: "Operator" },
+      { stage: "Posted",           timestamp: "May 22, 11:00 AM", actor: "Publishing Stage" },
+    ],
+  },
+  {
+    id: "ci-007", title: "Family platter story — Mamadali", contentType: "Story",
+    clientId: "mamadali", createdDate: "May 19, 2026",
+    currentStage: "Reporting", status: "Done", lastUpdated: "May 23",
+    nextAction: "Included in next weekly report.",
+    history: [
+      { stage: "Media Submitted",  timestamp: "May 19", actor: "Mamadali Kebab House" },
+      { stage: "Media Review",     timestamp: "May 19", actor: "Media Review Agent" },
+      { stage: "Content Strategy", timestamp: "May 20", actor: "Content Strategist Agent" },
+      { stage: "Caption Drafting", timestamp: "May 20", actor: "Caption Agent" },
+      { stage: "Brand Review",     timestamp: "May 20", actor: "Brand Voice Agent" },
+      { stage: "Scheduling",       timestamp: "May 21", actor: "Scheduling Agent" },
+      { stage: "Ready To Post",    timestamp: "May 21", actor: "Operator" },
+      { stage: "Posted",           timestamp: "May 22", actor: "Publishing Stage" },
+      { stage: "Reporting",        timestamp: "May 23", actor: "Reporting Agent" },
+    ],
+  },
+];
+
+// Tasks (Section 4 + 5)
+export type TaskPriority = "Critical" | "High" | "Medium" | "Low";
+export type TaskStatus   = "Pending" | "In Progress" | "Waiting" | "Completed";
+export type TaskType     =
+  | "Review Media"
+  | "Review Caption"
+  | "Approve Content"
+  | "Generate Weekly Report"
+  | "Generate Monthly Report"
+  | "Review Client Health"
+  | "Request More Media";
+
+export interface DemoTaskV2 {
+  id:            string;
+  type:          TaskType;
+  title:         string;
+  priority:      TaskPriority;
+  dueDate:       string;
+  assignedRole:  "Team" | "Operator";
+  assignedTo:    string;
+  status:        TaskStatus;
+  clientId:      string;
+  linkedItemId?: string;
+}
+
+export const demoTasksV2: DemoTaskV2[] = [
+  { id: "t1",  type: "Review Media",            title: "Review 4 new uploads — Al Noor",            priority: "Critical", dueDate: "Today",      assignedRole: "Team",     assignedTo: "Jordan", status: "Pending",     clientId: "alnoor",   linkedItemId: "ci-005" },
+  { id: "t2",  type: "Review Caption",          title: "Approve 3 caption variants — Mamadali",      priority: "High",     dueDate: "Today",      assignedRole: "Team",     assignedTo: "Marcus", status: "In Progress", clientId: "mamadali", linkedItemId: "ci-001" },
+  { id: "t3",  type: "Approve Content",         title: "Final sign-off — Crescent olive-oil reel",   priority: "High",     dueDate: "Today",      assignedRole: "Operator", assignedTo: "Lina",   status: "Pending",     clientId: "crescent", linkedItemId: "ci-003" },
+  { id: "t4",  type: "Generate Weekly Report",  title: "Weekly report — Urban Tacos",                priority: "Critical", dueDate: "Overdue",    assignedRole: "Operator", assignedTo: "Daniel", status: "In Progress", clientId: "urban"                            },
+  { id: "t5",  type: "Generate Weekly Report",  title: "Weekly report — Mamadali",                   priority: "High",     dueDate: "Tomorrow",   assignedRole: "Team",     assignedTo: "Priya",  status: "Pending",     clientId: "mamadali"                         },
+  { id: "t6",  type: "Generate Monthly Report", title: "Monthly report — Crescent",                  priority: "Medium",   dueDate: "May 30",     assignedRole: "Team",     assignedTo: "Priya",  status: "Pending",     clientId: "crescent"                         },
+  { id: "t7",  type: "Review Client Health",    title: "Health check — Urban Tacos",                 priority: "High",     dueDate: "Today",      assignedRole: "Operator", assignedTo: "Daniel", status: "Waiting",     clientId: "urban"                            },
+  { id: "t8",  type: "Request More Media",      title: "Reshoot request — Al Noor storefront",       priority: "Critical", dueDate: "Today",      assignedRole: "Operator", assignedTo: "Daniel", status: "Pending",     clientId: "alnoor"                           },
+  { id: "t9",  type: "Review Caption",          title: "Rewrite caption — Urban Tacos lunch post",   priority: "Medium",   dueDate: "Tomorrow",   assignedRole: "Team",     assignedTo: "Ava",    status: "In Progress", clientId: "urban",    linkedItemId: "ci-004" },
+  { id: "t10", type: "Review Media",            title: "Review BTS clips — Crescent kitchen",        priority: "Low",      dueDate: "May 29",     assignedRole: "Team",     assignedTo: "Jordan", status: "Pending",     clientId: "crescent"                         },
+  { id: "t11", type: "Approve Content",         title: "Approve story batch — Mamadali",             priority: "Medium",   dueDate: "Yesterday",  assignedRole: "Operator", assignedTo: "Lina",   status: "Completed",   clientId: "mamadali"                         },
+  { id: "t12", type: "Generate Weekly Report",  title: "Weekly report — Crescent",                   priority: "Medium",   dueDate: "May 24",     assignedRole: "Operator", assignedTo: "Lina",   status: "Completed",   clientId: "crescent"                         },
+];
+
+// Activity log (Section 6) per client
+export type ActivityKind = "upload" | "report" | "google" | "schedule" | "warning" | "milestone";
+export interface DemoActivity {
+  id:        string;
+  clientId:  string;
+  kind:      ActivityKind;
+  title:     string;
+  detail?:   string;
+  timestamp: string;
+}
+export const demoActivityLog: DemoActivity[] = [
+  { id: "act1",  clientId: "mamadali", kind: "upload",    title: "Uploaded 8 new media items",        detail: "6 photos, 2 reels.",                       timestamp: "Today, 9:14 AM"        },
+  { id: "act2",  clientId: "mamadali", kind: "schedule",  title: "Content scheduled",                  detail: "Friday dinner reel — Thursday 7 PM slot.", timestamp: "Today, 11:00 AM"       },
+  { id: "act3",  clientId: "mamadali", kind: "report",    title: "Weekly report published",            detail: "Week of May 13 — 5 posts, 3.2k impressions.", timestamp: "Yesterday, 9:00 AM" },
+  { id: "act4",  clientId: "mamadali", kind: "milestone", title: "100% onboarding complete",           detail: "All onboarding milestones signed off.",    timestamp: "Apr 28, 2026"          },
+  { id: "act5",  clientId: "urban",    kind: "warning",   title: "Media inventory warning",            detail: "Below 2-week runway at current cadence.",  timestamp: "Today, 8:42 AM"        },
+  { id: "act6",  clientId: "urban",    kind: "report",    title: "Weekly report overdue",              detail: "Drafted, awaiting validation.",            timestamp: "Yesterday, 4:00 PM"    },
+  { id: "act7",  clientId: "urban",    kind: "schedule",  title: "Content scheduled",                  detail: "Lunch special — Tuesday 12 PM slot.",      timestamp: "May 22, 10:00 AM"      },
+  { id: "act8",  clientId: "crescent", kind: "report",    title: "Monthly report published",           detail: "April performance summary delivered.",     timestamp: "May 4, 2026"           },
+  { id: "act9",  clientId: "crescent", kind: "google",    title: "Google optimisation completed",      detail: "Profile keywords + photo set refreshed.",  timestamp: "May 18, 2026"          },
+  { id: "act10", clientId: "crescent", kind: "upload",    title: "Uploaded 5 media items",             detail: "All approved on first review.",            timestamp: "May 23, 7:30 AM"       },
+  { id: "act11", clientId: "alnoor",   kind: "warning",   title: "Media inventory critical",           detail: "5 days of runway remaining.",              timestamp: "Today, 8:42 AM"        },
+  { id: "act12", clientId: "alnoor",   kind: "warning",   title: "Onboarding stalled",                 detail: "3 outstanding tasks. No client response in 8 days.", timestamp: "Yesterday"     },
+  { id: "act13", clientId: "alnoor",   kind: "upload",    title: "Uploaded 4 media items",             detail: "2 flagged for reshoot by Media Review Agent.", timestamp: "May 15, 10:00 AM"  },
+];
+
+// Calendar (Section 9)
+export type CalendarSlotKind = "scheduled" | "published" | "planned" | "open";
+export interface DemoCalendarSlot {
+  date:      string;          // YYYY-MM-DD
+  time:      string;          // HH:MM
+  kind:      CalendarSlotKind;
+  clientId?: string;
+  title?:    string;
+  itemId?:   string;
+}
+export const demoCalendarSlots: DemoCalendarSlot[] = [
+  { date: "2026-05-25", time: "11:00", kind: "published", clientId: "crescent", title: "Weekend brunch reel",  itemId: "ci-006" },
+  { date: "2026-05-26", time: "12:00", kind: "scheduled", clientId: "urban",    title: "Lunch special",        itemId: "ci-004" },
+  { date: "2026-05-26", time: "19:00", kind: "planned",   clientId: "mamadali", title: "Mixed grill hero"                       },
+  { date: "2026-05-27", time: "10:00", kind: "open"                                                                              },
+  { date: "2026-05-28", time: "19:00", kind: "scheduled", clientId: "mamadali", title: "Friday dinner reel",   itemId: "ci-002" },
+  { date: "2026-05-29", time: "11:00", kind: "open"                                                                              },
+  { date: "2026-05-30", time: "10:00", kind: "scheduled", clientId: "crescent", title: "Olive-oil reel",       itemId: "ci-003" },
+  { date: "2026-05-30", time: "16:00", kind: "planned",   clientId: "mamadali", title: "Family platter story"                   },
+  { date: "2026-05-31", time: "11:00", kind: "open"                                                                              },
+  { date: "2026-06-01", time: "12:00", kind: "open"                                                                              },
+  { date: "2026-06-02", time: "19:00", kind: "planned",   clientId: "urban",    title: "Taco Tuesday reel"                      },
+];
+
+// Composite health scoring (Section 14)
+export interface DemoHealthScore {
+  label:    string;
+  score:    number;
+  status:   "Excellent" | "Healthy" | "Warning" | "Critical";
+  detail:   string;
+}
+export const demoHealthScores: DemoHealthScore[] = [
+  { label: "Client Health",    score: 79, status: "Healthy",   detail: "Portfolio average — 1 critical, 1 warning, 2 healthy." },
+  { label: "Inventory Health", score: 64, status: "Warning",   detail: "2 clients below 14-day runway." },
+  { label: "Workflow Health",  score: 86, status: "Healthy",   detail: "1 blocked item, no SLA breaches today." },
+  { label: "Reporting Health", score: 88, status: "Healthy",   detail: "12 weekly drafted, 88% validation rate." },
+  { label: "Team Health",      score: 84, status: "Healthy",   detail: "Utilisation 84% — no burnout signals." },
+  { label: "Business Health",  score: 91, status: "Excellent", detail: "MRR +12% MoM, retention 94%." },
+];
