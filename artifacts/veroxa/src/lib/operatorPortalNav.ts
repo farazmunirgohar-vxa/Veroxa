@@ -1,64 +1,57 @@
+/**
+ * Operator Portal navigation — simplified cleanup pass.
+ *
+ * Visible: Command Center · Client Health · Alerts · Reports Approval ·
+ *          Media Library · Team Oversight · System Status
+ *
+ * Hidden (routes still exist): Operator OS label (merged into Command Center),
+ *   Architecture, Demo Controls, Integrations, Workflow Engine, Operations Center,
+ *   Daily Digest, Priority Board, Action Center, Content Operations,
+ *   Reporting Command, AI Agents, KPIs, Activity, Failed Posts, Risk Center,
+ *   Weekly/Monthly Reports, Media Inventory
+ */
 import {
   HeartPulse,
   LayoutDashboard,
-  Bell,
-  Users,
-  FileX,
-  FileCheck,
-  Sparkles,
-  Activity,
-  BarChart3,
-  Images,
-  FileText,
-  FileBarChart,
-  ClipboardList,
-  UsersRound,
-  GitBranch,
   ShieldAlert,
-  Zap,
-  Sunrise,
-  ShieldX,
-  Network,
-  ShieldCheck,
-  Wrench,
-  Plug,
+  FileCheck,
+  Images,
+  UsersRound,
+  Activity,
 } from "lucide-react";
 import type { SidebarItem } from "@/components/PortalLayout";
 
 export const operatorPortalNavItems: SidebarItem[] = [
-  // Core command
-  { label: "Operator OS",        icon: LayoutDashboard, href: "/demo/operator/operator-os"       },
-  { label: "Client Health",      icon: HeartPulse,      href: "/demo/internal/client-health"     },
-  { label: "Command Board",      icon: Zap,             href: "/demo/operator/command-board"     },
-  { label: "Media Library",      icon: Images,          href: "/demo/operator/media-library"     },
-  { label: "Architecture",       icon: Network,         href: "/demo/internal/architecture"      },
-  { label: "Integrations",       icon: Plug,            href: "/demo/internal/integrations"      },
-  { label: "System Status",      icon: ShieldCheck,     href: "/demo/internal/system-status"     },
-  { label: "Demo Controls",      icon: Wrench,          href: "/demo/internal/demo-controls"     },
-  { label: "Operations Center",  icon: Zap,             href: "/demo/operator/operations-center" },
-  { label: "Workflow Engine",    icon: GitBranch,       href: "/demo/operator/workflow-engine"   },
-  { label: "Content Calendar",   icon: ClipboardList,   href: "/demo/operator/content-calendar"  },
-  { label: "Client Detail",      icon: Users,           href: "/demo/operator/client-detail"     },
-  { label: "Overview",           icon: LayoutDashboard, href: "/demo/operator/overview"          },
-  { label: "Daily Digest",       icon: Sunrise,         href: "/demo/operator/daily-digest"      },
-  { label: "Priority Board",     icon: ClipboardList,   href: "/demo/operator/priority-board"    },
-  { label: "Action Center",      icon: Zap,             href: "/demo/operator/action-center"     },
-  // Client & health
-  { label: "Client Health",      icon: Users,           href: "/demo/operator/client-health"     },
-  { label: "Risk Center",        icon: ShieldX,         href: "/demo/operator/risk-center"       },
-  { label: "Team Oversight",     icon: UsersRound,      href: "/demo/operator/team-oversight"    },
-  // Content & reporting
-  { label: "Content Operations", icon: GitBranch,       href: "/demo/operator/content-ops"       },
-  { label: "Reporting Command",  icon: FileBarChart,    href: "/demo/operator/reporting-command" },
-  { label: "Weekly Reports",     icon: FileText,        href: "/demo/operator/weekly-reports"    },
-  { label: "Monthly Reports",    icon: FileBarChart,    href: "/demo/operator/monthly-reports"   },
-  { label: "Report Approvals",   icon: FileCheck,       href: "/demo/operator/report-approvals"  },
-  // Monitoring & tools
-  { label: "AI Agents",          icon: Sparkles,        href: "/demo/operator/ai-agents"         },
-  { label: "Media Inventory",    icon: Images,          href: "/demo/operator/media-inventory"   },
-  { label: "KPIs",               icon: BarChart3,       href: "/demo/operator/kpis"              },
-  { label: "Notifications",      icon: Bell,            href: "/demo/operator/alerts"            },
-  { label: "Activity",           icon: Activity,        href: "/demo/operator/activity"          },
-  { label: "Failed Posts",       icon: FileX,           href: "/demo/operator/failed-posts"      },
-  { label: "Alert Center",       icon: ShieldAlert,     href: "/demo/operator/alerts"            },
+  { label: "Command Center",   icon: LayoutDashboard, href: "/demo/operator/operator-os"      },
+  { label: "Client Health",    icon: HeartPulse,      href: "/demo/internal/client-health"    },
+  { label: "Alerts",           icon: ShieldAlert,     href: "/demo/operator/alerts"           },
+  { label: "Report Approvals", icon: FileCheck,       href: "/demo/operator/report-approvals" },
+  { label: "Media Library",    icon: Images,          href: "/demo/operator/media-library"    },
+  { label: "Team Oversight",   icon: UsersRound,      href: "/demo/operator/team-oversight"   },
+  { label: "System Status",    icon: Activity,        href: "/demo/internal/system-status"    },
 ];
+
+// Hidden from nav (routes still active at their original paths):
+// /demo/operator/media-library       — Media Library (kept above, now top-level)
+// /demo/internal/architecture        — Architecture
+// /demo/internal/demo-controls       — Demo Controls
+// /demo/internal/integrations        — Integrations
+// /demo/operator/workflow-engine     — Workflow Engine
+// /demo/operator/operations-center   — Operations Center
+// /demo/operator/content-calendar    — Content Calendar
+// /demo/operator/client-detail       — Client Detail
+// /demo/operator/overview            — Overview
+// /demo/operator/daily-digest        — Daily Digest
+// /demo/operator/priority-board      — Priority Board
+// /demo/operator/action-center       — Action Center
+// /demo/operator/client-health       — (old) Client Health
+// /demo/operator/risk-center         — Risk Center
+// /demo/operator/content-ops         — Content Operations
+// /demo/operator/reporting-command   — Reporting Command
+// /demo/operator/weekly-reports      — Weekly Reports
+// /demo/operator/monthly-reports     — Monthly Reports
+// /demo/operator/ai-agents           — AI Agents
+// /demo/operator/media-inventory     — Media Inventory
+// /demo/operator/kpis                — KPIs
+// /demo/operator/activity            — Activity
+// /demo/operator/failed-posts        — Failed Posts

@@ -1,34 +1,37 @@
+/**
+ * Team Portal navigation — simplified cleanup pass.
+ *
+ * Visible: Dashboard · Work Queue · Media Review · Drafts · Scheduling · Reports · Alerts
+ * Hidden (routes still exist): Client Health, Task Engine, Client Detail, Content Review,
+ *   My Tasks, AI Review, Performance, Activity Feed
+ */
 import {
   LayoutDashboard,
-  CheckSquare,
   Image as ImageIcon,
-  Cpu,
   Layers,
   CalendarDays,
-  ClipboardList,
-  Eye,
   FileText,
-  BarChart2,
-  Activity,
   ShieldAlert,
-  HeartPulse,
+  ListChecks,
 } from "lucide-react";
 import type { SidebarItem } from "@/components/PortalLayout";
 
 export const teamPortalNavItems: SidebarItem[] = [
-  { label: "Dashboard",      icon: LayoutDashboard, href: "/demo/team/dashboard"       },
-  { label: "Client Health",  icon: HeartPulse,      href: "/demo/internal/client-health" },
-  { label: "Task Engine",    icon: ClipboardList,   href: "/demo/team/task-engine"     },
-  { label: "Client Detail",  icon: ClipboardList,   href: "/demo/team/client-detail"   },
-  { label: "Work Queue",     icon: ClipboardList,   href: "/demo/team/work-queue"      },
-  { label: "Content Review", icon: Eye,             href: "/demo/team/content-review"  },
-  { label: "Report Queue",   icon: FileText,        href: "/demo/team/report-queue"    },
-  { label: "My Tasks",       icon: CheckSquare,     href: "/demo/team/tasks"           },
-  { label: "Media Review",   icon: ImageIcon,       href: "/demo/team/media-review"    },
-  { label: "AI Review",      icon: Cpu,             href: "/demo/team/ai-review"       },
-  { label: "Drafts",         icon: Layers,          href: "/demo/team/drafts"          },
-  { label: "Scheduling",     icon: CalendarDays,    href: "/demo/team/scheduling"      },
-  { label: "Performance",    icon: BarChart2,       href: "/demo/team/performance"     },
-  { label: "Activity Feed",  icon: Activity,        href: "/demo/team/activity-feed"   },
-  { label: "Alerts",         icon: ShieldAlert,     href: "/demo/team/alerts"          },
+  { label: "Dashboard",    icon: LayoutDashboard, href: "/demo/team/dashboard"    },
+  { label: "Work Queue",   icon: ListChecks,      href: "/demo/team/work-queue"   },
+  { label: "Media Review", icon: ImageIcon,       href: "/demo/team/media-review" },
+  { label: "Drafts",       icon: Layers,          href: "/demo/team/drafts"       },
+  { label: "Scheduling",   icon: CalendarDays,    href: "/demo/team/scheduling"   },
+  { label: "Reports",      icon: FileText,        href: "/demo/team/report-queue" },
+  { label: "Alerts",       icon: ShieldAlert,     href: "/demo/team/alerts"       },
 ];
+
+// Hidden from nav (routes still active at their original paths):
+// /demo/internal/client-health   — Client Health (accessible directly)
+// /demo/team/task-engine         — Task Engine
+// /demo/team/client-detail       — Client Detail
+// /demo/team/content-review      — Content Review
+// /demo/team/tasks               — My Tasks
+// /demo/team/ai-review           — AI Review
+// /demo/team/performance         — Performance
+// /demo/team/activity-feed       — Activity Feed

@@ -1,65 +1,62 @@
+/**
+ * Owner Portal navigation — simplified cleanup pass.
+ *
+ * Visible: Executive Dashboard · Revenue · Client Health · Critical Alerts ·
+ *          AI / System Health · Growth · Settings
+ *
+ * Hidden (routes still exist): Owner OS, Integration Center, Command Center,
+ *   Daily Briefing, Business Command, BI Center, Client Analytics,
+ *   Reporting Analytics, Media Analytics, Ops Intelligence, AI Agent Library,
+ *   Agent Workflow, AI Agents (summary), Permissions, Automation Roadmap,
+ *   System Map, Client Detail, Notifications, Activity, KPIs,
+ *   Media Inventory, Weekly Reports, Monthly Reports, Risks
+ */
 import {
-  LineChart,
-  DollarSign,
-  Target,
-  Bell,
-  Settings,
-  Sparkles,
-  Activity,
   BarChart3,
-  Images,
-  FileText,
-  FileBarChart,
-  Crosshair,
-  GitBranch,
-  Brain,
-  Building2,
-  AlertTriangle,
-  ShieldCheck,
-  Rocket,
-  Network,
-  Sunrise,
-  Heart,
+  DollarSign,
+  HeartPulse,
+  Bell,
+  Cpu,
+  TrendingUp,
+  Settings,
 } from "lucide-react";
 import type { SidebarItem } from "@/components/PortalLayout";
 
 export const ownerPortalNavItems: SidebarItem[] = [
-  // Executive command
-  { label: "Owner OS",            icon: Crosshair,    href: "/demo/owner/owner-os"               },
-  { label: "Client Health",       icon: Heart,        href: "/demo/internal/client-health"       },
-  { label: "Integration Center",  icon: Network,      href: "/demo/internal/integrations"        },
-  { label: "Command Center",      icon: LineChart,    href: "/demo/owner/dashboard"              },
-  { label: "Executive Dashboard", icon: BarChart3,    href: "/demo/owner/executive-dashboard"    },
-  { label: "Daily Briefing",      icon: Sunrise,      href: "/demo/owner/daily-briefing"         },
-  { label: "Business Command",    icon: Crosshair,    href: "/demo/owner/command-center"         },
-
-  // Intelligence
-  { label: "BI Center",           icon: Brain,        href: "/demo/owner/bi-center"              },
-  { label: "Client Analytics",    icon: Building2,    href: "/demo/owner/client-analytics"       },
-  { label: "Reporting Analytics", icon: FileBarChart, href: "/demo/owner/reporting-analytics"    },
-  { label: "Media Analytics",     icon: Images,       href: "/demo/owner/media-analytics"        },
-  { label: "Ops Intelligence",    icon: Activity,     href: "/demo/owner/ops-intelligence"       },
-
-  // AI
-  { label: "AI Agent Library",    icon: Sparkles,     href: "/demo/owner/ai-agents-v2"           },
-  { label: "Agent Workflow",      icon: GitBranch,    href: "/demo/owner/agent-workflow"         },
-  { label: "AI Agents (summary)", icon: Sparkles,     href: "/demo/owner/ai-agents"              },
-
-  // Architecture
-  { label: "Permissions",         icon: ShieldCheck,  href: "/demo/owner/permissions"            },
-  { label: "Automation Roadmap",  icon: Rocket,       href: "/demo/owner/automation-roadmap"     },
-  { label: "System Map",          icon: Network,      href: "/demo/owner/system-map"             },
-
-  // Operations
-  { label: "Client Detail",       icon: Building2,    href: "/demo/owner/client-detail"          },
-  { label: "Client Health",       icon: Heart,        href: "/demo/owner/client-health"          },
-  { label: "Notifications",       icon: Bell,         href: "/demo/owner/alerts"                 },
-  { label: "Activity",            icon: Activity,     href: "/demo/owner/activity"               },
-  { label: "KPIs",                icon: Target,       href: "/demo/owner/kpis"                   },
-  { label: "Media Inventory",     icon: Images,       href: "/demo/owner/media-inventory"        },
-  { label: "Weekly Reports",      icon: FileText,     href: "/demo/owner/weekly-reports"         },
-  { label: "Monthly Reports",     icon: FileBarChart, href: "/demo/owner/monthly-reports"        },
-  { label: "Risks",               icon: AlertTriangle,href: "/demo/owner/command-center"         },
-  { label: "Revenue",             icon: DollarSign,   href: "/demo/owner/revenue"                },
-  { label: "Settings",            icon: Settings,     href: "/demo/owner/settings"               },
+  { label: "Executive Dashboard", icon: BarChart3,   href: "/demo/owner/executive-dashboard" },
+  { label: "Revenue",             icon: DollarSign,  href: "/demo/owner/revenue"             },
+  { label: "Client Health",       icon: HeartPulse,  href: "/demo/internal/client-health"    },
+  { label: "Critical Alerts",     icon: Bell,        href: "/demo/owner/alerts"              },
+  { label: "AI / System Health",  icon: Cpu,         href: "/demo/owner/ai-agents-v2"        },
+  { label: "Growth",              icon: TrendingUp,  href: "/demo/owner/owner-os"            },
+  { label: "Settings",            icon: Settings,    href: "/demo/owner/settings"            },
 ];
+
+// Hidden from nav (routes still active at their original paths):
+// /demo/owner/owner-os               — Owner OS (surfaced as "Growth")
+// /demo/internal/integrations        — Integration Center
+// /demo/owner/dashboard              — Command Center
+// /demo/owner/executive-dashboard    — kept as primary
+// /demo/owner/daily-briefing         — Daily Briefing
+// /demo/owner/command-center         — Business Command
+// /demo/owner/bi-center              — BI Center
+// /demo/owner/client-analytics       — Client Analytics
+// /demo/owner/reporting-analytics    — Reporting Analytics
+// /demo/owner/media-analytics        — Media Analytics
+// /demo/owner/ops-intelligence       — Ops Intelligence
+// /demo/owner/ai-agents-v2          — kept as "AI / System Health"
+// /demo/owner/agent-workflow         — Agent Workflow
+// /demo/owner/ai-agents              — AI Agents (summary)
+// /demo/owner/permissions            — Permissions
+// /demo/owner/automation-roadmap     — Automation Roadmap
+// /demo/owner/system-map             — System Map
+// /demo/owner/client-detail          — Client Detail
+// /demo/owner/client-health          — Client Health (old)
+// /demo/owner/alerts                 — kept as "Critical Alerts"
+// /demo/owner/activity               — Activity
+// /demo/owner/kpis                   — KPIs
+// /demo/owner/media-inventory        — Media Inventory
+// /demo/owner/weekly-reports         — Weekly Reports
+// /demo/owner/monthly-reports        — Monthly Reports
+// /demo/owner/revenue                — kept
+// /demo/owner/settings               — kept
