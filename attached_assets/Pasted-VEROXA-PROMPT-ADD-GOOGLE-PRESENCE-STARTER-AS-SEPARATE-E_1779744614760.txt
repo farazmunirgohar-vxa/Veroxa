@@ -1,0 +1,148 @@
+VEROXA PROMPT — ADD GOOGLE PRESENCE STARTER AS SEPARATE ENTRY OFFER
+
+Objective:
+Add a $497/mo Google Presence Starter offer as a separate entry-level product without weakening the locked Veroxa Complete Online Presence pricing.
+
+IMPORTANT:
+Do NOT change the locked Complete Online Presence pricing.
+Do NOT replace the main Veroxa offer.
+Do NOT make $497 look like the full Veroxa system.
+Do NOT add backend.
+Do NOT add payments.
+Do NOT add auth changes.
+Do NOT add new dashboards.
+Do NOT add real Google API integration.
+
+This is pricing/positioning UI and demo copy only.
+
+------------------------------------------------
+
+LOCKED CORE PRICING
+
+Complete Online Presence:
+
+12-month plan: $997/mo
+6-month plan: $1,097/mo
+3-month plan: $1,197/mo
+No-contract plan: $1,497/mo
+
+These must remain unchanged.
+
+------------------------------------------------
+
+NEW ENTRY-LEVEL OFFER
+
+Add:
+
+Google Presence Starter
+$497/mo
+
+Position it as a separate Google-only local visibility product.
+
+It is NOT the full Veroxa OS.
+
+Recommended copy:
+
+“For restaurants that need their Google presence cleaned up before moving into the full Veroxa growth system.”
+
+------------------------------------------------
+
+GOOGLE PRESENCE STARTER INCLUDES
+
+- Google Business Profile cleanup
+- Business category and service optimization
+- Menu / link / profile accuracy review
+- Photo and visual guidance
+- Review request guidance
+- Basic local visibility improvements
+- Monthly Google visibility snapshot
+
+------------------------------------------------
+
+GOOGLE PRESENCE STARTER DOES NOT INCLUDE
+
+Clearly show that it does NOT include:
+
+- Instagram posting
+- Facebook posting
+- TikTok posting
+- Full content calendar
+- AI content workflow
+- Team content production
+- Full Veroxa portal operations
+- Ads management
+- Full monthly strategy report
+
+------------------------------------------------
+
+PRICING PAGE STRUCTURE
+
+Update pricing page so the structure is clear:
+
+Section 1:
+Google Presence Starter
+$497/mo
+Google-only entry offer
+
+Section 2:
+Complete Online Presence
+Main Veroxa system
+12-month: $997/mo
+6-month: $1,097/mo
+3-month: $1,197/mo
+No-contract: $1,497/mo
+
+Section 3:
+Ads / Bundle options if already present
+Do not invent new ads pricing unless existing pricing is already in the app.
+
+------------------------------------------------
+
+COPY RULES
+
+Make the $497 plan feel like a starter path, not a discount version of the full plan.
+
+Use language like:
+
+- Google-only
+- local visibility foundation
+- starter path
+- upgrade-ready
+- not full content management
+
+Avoid language like:
+
+- full system
+- complete online presence
+- content engine
+- full Veroxa OS
+
+------------------------------------------------
+
+PORTAL RULES
+
+Do not build a new portal for this plan.
+
+If plan references appear in demo data, mark this as:
+
+service_package: google_presence_starter
+
+or similar.
+
+But do not create new workflows yet.
+
+No database changes.
+
+------------------------------------------------
+
+FINAL REPORT
+
+At completion, report:
+
+1. Files modified
+2. Pricing page changes
+3. Confirmation that Complete Online Presence pricing stayed locked
+4. Where $497 Google Presence Starter was added
+5. Confirmation that $497 is clearly Google-only
+6. Confirmation no backend/payment/auth changes were made
+7. Build result

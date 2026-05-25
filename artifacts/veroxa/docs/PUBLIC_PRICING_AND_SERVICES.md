@@ -31,6 +31,48 @@ Restaurant owners stay focused on food and service. Veroxa handles the online pr
 
 ---
 
+## Google Presence Starter — Separate Entry Offer
+
+**service_package: google_presence_starter**
+
+A Google-only local visibility foundation. This is NOT the full Veroxa OS.
+Not full content management. Upgrade-ready — designed as a starter path
+before moving into Complete Online Presence.
+
+> "For restaurants that need their Google presence cleaned up before moving
+> into the full Veroxa growth system."
+
+| Plan | Price/month | Label |
+|------|-------------|-------|
+| Google Presence Starter | $497 | Google-only entry offer |
+
+### Google Presence Starter — Included
+
+- Google Business Profile cleanup
+- Business category and service optimization
+- Menu / link / profile accuracy review
+- Photo and visual guidance
+- Review request guidance
+- Basic local visibility improvements
+- Monthly Google visibility snapshot
+
+### Google Presence Starter — NOT Included
+
+These are only available in Complete Online Presence:
+
+- Instagram, Facebook, or TikTok posting
+- Full content calendar
+- AI content workflow
+- Team content production
+- Full Veroxa portal operations
+- Ads management
+- Full monthly strategy report
+
+Most restaurants move into Complete Online Presence within 60–90 days once
+their Google presence is stable and they are ready for full content production.
+
+---
+
 ## Complete Online Presence — Pricing
 
 | Plan | Price/month | Label |
@@ -40,27 +82,7 @@ Restaurant owners stay focused on food and service. Veroxa handles the online pr
 | 3-month | $1,197 | Foundation |
 | No-contract | $1,497 | Flexible |
 
-### Starter — Google Presence (on-ramp)
-
-| Plan | Price/month | Label |
-|------|-------------|-------|
-| Starter | $497 | On-ramp |
-
-A simpler entry tier for owners who want consistent Google Business
-Profile updates and regular posting before stepping up to the full
-Complete Online Presence system.
-
-**Included:** Google Business Profile updates, 2 social posts per
-week, monthly performance snapshot, from photos the owner sends —
-no shoot, no concept work.
-
-**Not included** (available on Complete Online Presence): weekly
-capture plan, Restaurant Media Guidance Engine, content concept
-work, weekly client updates, full monthly reporting depth, ads
-management.
-
-Most restaurants graduate to Complete Online Presence within 60–90
-days.
+These prices are locked. Do not change without a formal pricing decision.
 
 ---
 
