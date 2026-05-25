@@ -45,7 +45,7 @@ export default function DemoHub() {
               <p className="text-muted-foreground leading-relaxed mb-8">
                 The full client-side experience — content calendar, Google Business Profile visibility,
                 weekly update feed, monthly performance reports, onboarding checklist, and media
-                guidance guidance. No account needed.
+                guidance. No account needed.
               </p>
 
               <Link href="/demo/client/dashboard" data-testid="btn-enter-client-demo">
