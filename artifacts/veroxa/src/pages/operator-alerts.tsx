@@ -1,54 +1,32 @@
-import { AlertTriangle } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
-import { Badge } from "@/components/ui/badge";
-import { operatorAlerts as alerts } from "@/lib/demo-data";
+import { NotificationCenter } from "@/components/NotificationCenter";
 import { operatorPortalNavItems } from "@/lib/operatorPortalNav";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 
-function cn(...classes: (string | undefined | null | false)[]) {
-  return classes.filter(Boolean).join(" ");
-}
-
 export default function OperatorAlerts() {
   return (
-    <PortalLayout items={operatorPortalNavItems} portalName="Operator Portal">
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold tracking-tight text-foreground" data-testid="header-alerts">Active Alerts</h2>
-        <p className="text-muted-foreground mt-1">Critical and warning-level issues across your client portfolio.</p>
+    <PortalLayout
+      items={operatorPortalNavItems}
+      portalName="Operator Portal"
+    >
+      <div className="mb-6">
+        <h2
+          className="text-2xl md:text-3xl font-bold tracking-tight text-foreground"
+          data-testid="header-alerts"
+        >
+          Notification Center
+        </h2>
+        <p className="text-muted-foreground mt-1 text-sm md:text-base">
+          Operational alerts that the operator should notice quickly.
+        </p>
       </div>
 
-      <DemoOnlyBanner message="Static demo — alerts below are illustrative only. No real monitoring, paging, or escalation is connected." testId="banner-operator-alerts" />
+      <DemoOnlyBanner
+        message="Demo only — notifications are illustrative. No real notification system, paging, or escalation is connected."
+        testId="banner-operator-alerts"
+      />
 
-      <div className="space-y-3">
-        {alerts.map((alert, i) => (
-          <div key={i} className={cn(
-            "flex items-start gap-4 p-4 rounded-xl border",
-            alert.severity === "Critical" ? "border-red-500/30 bg-red-500/5" :
-            alert.severity === "Warning"  ? "border-amber-500/30 bg-amber-500/5" :
-            "border-border bg-card/50"
-          )} data-testid={`alert-row-${i}`}>
-            <AlertTriangle className={cn("w-4 h-4 mt-0.5 flex-shrink-0",
-              alert.severity === "Critical" ? "text-red-500" :
-              alert.severity === "Warning"  ? "text-amber-500" :
-              "text-muted-foreground"
-            )} />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between gap-2 flex-wrap">
-                <span className="text-sm font-semibold text-foreground">{alert.client}</span>
-                <span className="text-xs text-muted-foreground">{alert.time}</span>
-              </div>
-              <p className="text-sm text-muted-foreground mt-0.5">{alert.message}</p>
-            </div>
-            <Badge variant="outline" className={cn("border-none flex-shrink-0",
-              alert.severity === "Critical" ? "bg-red-500/10 text-red-500" :
-              alert.severity === "Warning"  ? "bg-amber-500/10 text-amber-500" :
-              "bg-blue-500/10 text-blue-500"
-            )}>
-              {alert.severity}
-            </Badge>
-          </div>
-        ))}
-      </div>
+      <NotificationCenter viewerRole="operator" />
     </PortalLayout>
   );
 }
