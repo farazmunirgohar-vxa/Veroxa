@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { ArrowLeft, Hexagon, Menu } from "lucide-react";
+import { ArrowLeft, Hexagon, Menu, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { AUTH_MODE } from "@/lib/auth/authMode";
+import { useAuth } from "@/lib/auth/useAuth";
+import { getSupabaseClient } from "@/lib/supabase";
 
 export interface SidebarItem {
   label: string;
@@ -35,6 +38,48 @@ function isRouteActive(itemHref: string, location: string): boolean {
     }
   }
   return false;
+}
+
+/**
+ * Sign-out footer — shown only when AUTH_MODE === "real".
+ * Displays the signed-in user's role + email and a sign-out button.
+ * No writes. No token display.
+ */
+function AuthFooter({ onNavigate }: { onNavigate?: () => void }) {
+  const auth = useAuth();
+  const [, setLocation] = useLocation();
+
+  if (AUTH_MODE !== "real" || auth.status !== "authenticated") return null;
+
+  const { role, email, displayName } = auth.session!;
+
+  async function handleSignOut() {
+    const client = getSupabaseClient();
+    if (client) {
+      await client.auth.signOut();
+    }
+    onNavigate?.();
+    setLocation("/login");
+  }
+
+  return (
+    <div className="px-4 pb-3 space-y-1">
+      <div className="flex flex-col px-2 py-2">
+        <span className="text-xs font-semibold text-sidebar-foreground/80 capitalize">
+          {displayName ?? role}
+        </span>
+        <span className="text-[11px] text-sidebar-foreground/50 truncate">{email}</span>
+      </div>
+      <button
+        onClick={handleSignOut}
+        className="w-full flex items-center gap-2 text-sm text-sidebar-foreground/60 hover:text-red-400 px-2 py-2 transition-colors rounded-md hover:bg-red-500/10"
+        data-testid="btn-sign-out"
+      >
+        <LogOut className="w-4 h-4" />
+        Sign out
+      </button>
+    </div>
+  );
 }
 
 function SidebarNav({
@@ -127,16 +172,19 @@ function SidebarNav({
         </nav>
       </div>
 
-      <div className="p-4 border-t border-sidebar-border shrink-0">
-        <Link
-          href="/demo"
-          className="flex items-center gap-2 text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground px-2 py-2 transition-colors rounded-md hover:bg-sidebar-accent"
-          data-testid="link-back-demo"
-          onClick={onNavigate}
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Demo Hub
-        </Link>
+      <div className="border-t border-sidebar-border shrink-0">
+        <AuthFooter onNavigate={onNavigate} />
+        <div className="p-4 pt-2">
+          <Link
+            href="/demo"
+            className="flex items-center gap-2 text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground px-2 py-2 transition-colors rounded-md hover:bg-sidebar-accent"
+            data-testid="link-back-demo"
+            onClick={onNavigate}
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Demo Hub
+          </Link>
+        </div>
       </div>
     </div>
   );
