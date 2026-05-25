@@ -1,0 +1,318 @@
+PROMPT 5 — CLIENT WORKSPACE + ONBOARDING + CONTENT PIPELINE FOUNDATION (DEMO ONLY)
+
+Objective:
+Expand Veroxa OS into a stronger demo operating system by building three connected demo-only sections:
+
+1. Client Workspace
+2. Onboarding Center
+3. Content Pipeline Preview
+
+Important Rules:
+- Demo/sample data only
+- No backend
+- No database
+- No real uploads
+- No real AI API calls
+- No social media integrations
+- No publishing integrations
+- No authentication changes
+- No major redesign
+- Reuse the existing Veroxa dark theme, layout, cards, badges, and spacing
+- Keep all real protected routes placeholder-only if they already are
+- App must still build successfully
+
+------------------------------------------------
+SECTION 1 — CLIENT WORKSPACE
+------------------------------------------------
+
+Create a Client Workspace area inside the Client Portal navigation.
+
+Add these demo pages or tabs:
+
+1. Restaurant Profile
+Show:
+- Restaurant name
+- Address
+- Phone
+- Website
+- Cuisine type
+- Hours
+- Primary contact
+- Secondary contact
+- Service plan
+- Account status
+
+2. Menu Information
+Show grouped menu data:
+- Featured items
+- Popular items
+- Seasonal items
+
+Each item should include:
+- Item name
+- Category
+- Description
+- Status
+- Suggested promotion angle
+
+3. Brand Guidelines
+Show:
+- Brand voice
+- Preferred content style
+- Things to avoid
+- Primary colors
+- Logo status
+- Tone examples
+- Caption style notes
+
+4. Media Requirements
+Show weekly media guidance:
+- Photos needed
+- Videos needed
+- Product shots needed
+- Behind-the-scenes content needed
+- Team/owner content needed
+
+Add demo progress indicators such as:
+- Photos: 12 / 20
+- Videos: 4 / 10
+- Product shots: 8 / 12
+- BTS clips: 3 / 8
+
+5. Client Notes
+Show demo-only internal notes:
+- Client preferences
+- Content restrictions
+- Best-selling items
+- Seasonal priorities
+- Important reminders
+
+Make it clear this is sample data only.
+
+------------------------------------------------
+SECTION 2 — ONBOARDING CENTER
+------------------------------------------------
+
+Create an Onboarding Center connected to the Client Workspace.
+
+Show a clean onboarding tracker with these steps:
+
+1. Restaurant Information
+2. Menu Information
+3. Brand Guidelines
+4. Initial Media Submitted
+5. Google Business Profile Details
+6. Social Media Access Status
+7. Reporting Preferences
+8. Portal Access Active
+
+Each onboarding item should show:
+- Status: Complete / In Progress / Missing
+- Owner: Client / Veroxa Team / Operator
+- Short description
+- Demo due date
+- Priority badge
+
+Add an overall onboarding progress card:
+- Example: 72% complete
+- Completed steps
+- Missing steps
+- Next required action
+
+Add a “What Veroxa needs next” card:
+Example:
+- Upload 5 more food photos
+- Confirm Google Business Profile access
+- Confirm preferred posting days
+
+Important:
+This is read-only demo display only.
+No form submissions yet.
+No upload functionality yet.
+
+------------------------------------------------
+SECTION 3 — CONTENT PIPELINE PREVIEW
+------------------------------------------------
+
+Create a Content Pipeline Preview section showing how client media moves through Veroxa.
+
+Use five pipeline columns:
+
+1. Media Received
+2. AI Review
+3. Caption Drafting
+4. Team Review
+5. Scheduled / Posted
+
+Each demo content card should show:
+- Media title
+- Content type: Photo / Reel / Story / Carousel
+- Related menu item
+- Current stage
+- Assigned role
+- Status badge
+- Suggested posting window
+- AI confidence/sample score
+- Notes
+
+Add at least 8 realistic sample content cards.
+
+Example cards:
+- Chicken platter close-up
+- Behind-the-scenes kitchen prep
+- Weekend family meal promo
+- Lunch special reel
+- Dessert feature post
+- Owner story clip
+- Google review highlight
+- Catering announcement
+
+Add a small explanation card:
+“Veroxa uses this pipeline to keep content organized from upload to posting. This is demo data only.”
+
+Do not create real drag-and-drop yet unless it already exists and is easy to reuse.
+If drag-and-drop would complicate the build, use static columns only.
+
+------------------------------------------------
+SECTION 4 — AI AGENT PREVIEW CONNECTION
+------------------------------------------------
+
+Connect the existing AI Agent Preview area visually to this workflow.
+
+Add a demo-only “AI Suggestions” panel inside the Content Pipeline Preview.
+
+Show sample suggestions from:
+
+- Media Review Agent
+- Content Strategist Agent
+- Caption Agent
+- Brand Voice Agent
+- Scheduling Agent
+- Reporting Agent
+
+Example suggestions:
+- “Use this chicken platter image for a dinner promotion.”
+- “Caption tone should be warm, family-focused, and local.”
+- “Best posting window: Friday 5:30 PM.”
+- “Media quality is strong enough for Instagram and Google.”
+- “Client has low unused video inventory this week.”
+
+Important:
+These are static/demo suggestions only.
+No real AI calls.
+
+------------------------------------------------
+SECTION 5 — NAVIGATION + STRUCTURE
+------------------------------------------------
+
+Update navigation so the Client Portal clearly includes:
+
+- Overview
+- Client Workspace
+- Onboarding Center
+- Content Pipeline
+- Media Inventory
+- Reports
+- AI Agents
+- Notifications
+
+Do not remove existing pages.
+
+Do not break existing routes.
+
+Use consistent labels:
+- Owner
+- Operator
+- Team
+- Client
+
+Do not use:
+- Admin
+- Super Admin
+- Execution
+
+Replace any visible old wording if found.
+
+------------------------------------------------
+SECTION 6 — DEMO DATA CLEANUP
+------------------------------------------------
+
+If demo data already exists in:
+
+src/data/demoData.ts
+
+then extend that file instead of creating scattered hardcoded data.
+
+Prefer centralized demo data.
+
+Add structured demo data for:
+
+- restaurantProfile
+- menuItems
+- brandGuidelines
+- mediaRequirements
+- onboardingSteps
+- contentPipelineItems
+- aiSuggestions
+- clientNotes
+
+Avoid creating duplicate mock data files.
+
+------------------------------------------------
+SECTION 7 — UI QUALITY
+------------------------------------------------
+
+Make the UI feel premium, clean, and SaaS-like.
+
+Requirements:
+- Dark Veroxa theme
+- Clean cards
+- Subtle borders
+- Clear badges
+- Good spacing
+- Mobile responsive
+- No clutter
+- No oversized sections on mobile
+- No broken horizontal scrolling
+- Reuse existing components where possible
+
+Each major section should have:
+- Page title
+- Short description
+- Status/summary cards
+- Main content cards/tables
+
+------------------------------------------------
+SECTION 8 — BUILD SAFETY
+------------------------------------------------
+
+Before finishing:
+
+- Check for TypeScript errors
+- Check for missing imports
+- Check for broken routes
+- Check for unused bad references
+- Confirm app builds successfully
+
+Do not introduce backend dependencies.
+
+Do not require environment variables.
+
+Do not add new packages unless absolutely necessary.
+
+------------------------------------------------
+SUCCESS CRITERIA
+------------------------------------------------
+
+This prompt is successful when:
+
+1. Client Workspace exists and feels complete
+2. Onboarding Center exists and shows clear progress
+3. Content Pipeline Preview exists with realistic sample content
+4. AI Suggestions appear as demo-only static intelligence
+5. All data is centralized in demoData.ts where possible
+6. Existing dashboards still work
+7. Navigation is clean and role labels are consistent
+8. Mobile layout remains clean
+9. No real backend, uploads, AI, posting, or database features are added
+10. Project builds successfully

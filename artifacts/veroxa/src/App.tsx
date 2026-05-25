@@ -46,6 +46,10 @@ import OperatorWeeklyReports from "@/pages/operator-weekly-reports";
 import OperatorMonthlyReports from "@/pages/operator-monthly-reports";
 import ClientWeeklyReport from "@/pages/client-weekly-report";
 import ClientMonthlyReport from "@/pages/client-monthly-report";
+import ClientWorkspace from "@/pages/client-workspace";
+import ClientOnboardingCenter from "@/pages/client-onboarding-center";
+import ClientContentPipeline from "@/pages/client-content-pipeline";
+import ClientAIAgents from "@/pages/client-ai-agents";
 import SupabaseTestPage from "@/pages/supabase-test";
 import LoginPage from "@/pages/login";
 import AuthStatusPage from "@/pages/auth-status";
@@ -81,6 +85,10 @@ function Router() {
       <Route path="/demo/client/media" component={ClientMedia} />
       <Route path="/demo/client/weekly-report" component={ClientWeeklyReport} />
       <Route path="/demo/client/monthly-report" component={ClientMonthlyReport} />
+      <Route path="/demo/client/workspace" component={ClientWorkspace} />
+      <Route path="/demo/client/onboarding-center" component={ClientOnboardingCenter} />
+      <Route path="/demo/client/content-pipeline" component={ClientContentPipeline} />
+      <Route path="/demo/client/ai-agents" component={ClientAIAgents} />
 
       {/* Internal team demo — login required, role = "team" */}
       <Route path="/demo/team">

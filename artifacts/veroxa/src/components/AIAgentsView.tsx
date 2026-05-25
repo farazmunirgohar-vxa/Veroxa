@@ -22,7 +22,7 @@ import {
 } from "@/data/demoData";
 
 interface AIAgentsViewProps {
-  viewerRole: "owner" | "operator";
+  viewerRole: "owner" | "operator" | "client";
 }
 
 const agentIcon: Record<string, React.ElementType> = {
