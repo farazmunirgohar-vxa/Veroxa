@@ -1,0 +1,516 @@
+VEROXA PROMPT — RLS + MIGRATION READINESS PLAN V1
+
+Objective:
+Prepare Veroxa for future Supabase implementation by drafting Row Level Security policies, migration sequencing, seed strategy, and backend risk controls.
+
+This is still a PLANNING/DOCUMENTATION pass only.
+
+Do NOT run migrations.
+Do NOT move SQL files into supabase/migrations.
+Do NOT connect real data.
+Do NOT activate real auth.
+Do NOT change AUTH_MODE.
+Do NOT change auth guards.
+Do NOT change portal UI.
+Do NOT change pricing.
+Do NOT change navigation.
+Do NOT build uploads.
+Do NOT build AI APIs.
+Do NOT build publishing.
+Do NOT add payment processing.
+
+Keep AUTH_MODE as:
+"placeholder"
+
+Keep pricing unchanged:
+Google Presence Starter: $497/mo
+
+Complete Online Presence:
+12-month: $997/mo
+6-month: $1,097/mo
+3-month: $1,197/mo
+No-contract: $1,497/mo
+
+------------------------------------------------
+
+SOURCE FILES TO READ
+
+Use these planning files as source of truth:
+
+docs/SUPABASE_SCHEMA_DRAFT_V1.md
+docs/sql_drafts/001_veroxa_schema_draft.sql
+docs/DEMO_DATA_MAP.md
+
+Also inspect:
+
+src/data/demo/
+src/lib/auth/
+src/components/auth/
+src/lib/demoRoutes.ts
+src/lib/clientPortalNav.ts
+src/lib/teamPortalNav.ts
+src/lib/operatorPortalNav.ts
+src/lib/ownerPortalNav.ts
+
+------------------------------------------------
+
+PART 1 — CREATE RLS PLANNING DOCUMENT
+
+Create:
+
+docs/SUPABASE_RLS_PLAN_V1.md
+
+This document should explain future Row Level Security rules before any migration is created.
+
+Structure the document by role:
+
+1. Client
+2. Team
+3. Operator
+4. Owner
+5. System / automation
+
+For each role, explain:
+
+- What they can select/view
+- What they can insert/create
+- What they can update
+- What they cannot access
+- Which tables are affected
+- Any helper functions needed
+
+Do not implement the policies yet.
+
+------------------------------------------------
+
+PART 2 — ROLE ACCESS RULES
+
+Use these role rules:
+
+CLIENT
+
+Can view:
+- their own client record
+- their own platform connection status
+- their own onboarding items
+- their own media assets, but not internal rejection notes unless client-safe
+- their own post calendar
+- their own notifications
+- their own weekly reports
+- their own monthly reports
+- their own requests
+
+Can create:
+- media assets for their own client account
+- client requests
+- maybe onboarding item updates for client-owned items
+
+Cannot view:
+- internal draft variants
+- internal team notes
+- other clients
+- owner revenue
+- operator risk comments
+- activity logs not meant for them
+- internal AI agent reasoning
+
+TEAM
+
+Can view:
+- assigned clients
+- assigned media assets
+- concepts/drafts/posts for assigned clients
+- weekly reports for assigned clients
+- relevant notifications and work queues
+
+Can create/update:
+- media review statuses
+- content concepts
+- draft sets
+- draft variants
+- posts before publishing
+- weekly report drafts
+- activity logs through system/app action
+
+Cannot:
+- change pricing
+- change user roles
+- approve monthly reports as final operator approval
+- view owner revenue dashboard unless explicitly allowed
+
+OPERATOR
+
+Can view:
+- all clients
+- all client health
+- all reports
+- all alerts
+- all media oversight
+- all team workload
+
+Can update:
+- risk status
+- monthly report approval status
+- escalation/dismissal of alerts
+- client health review notes
+- team oversight statuses
+
+Cannot:
+- change pricing
+- change owner permissions
+- delete core records casually
+- become required approval gate for every post
+
+OWNER
+
+Can view:
+- everything
+
+Can update:
+- client account status
+- pricing/package fields
+- role permissions
+- internal user access
+- business-level settings
+
+Should be the only role allowed to change:
+- clients.plan_type
+- clients.service_package
+- clients.monthly_fee_cents
+- user_profiles.role
+- account_status if closing/pausing client
+
+SYSTEM / AUTOMATION
+
+Can insert/update:
+- activity_logs
+- notifications
+- derived health snapshots
+- report aggregation updates
+- post publish status after publishing
+- media used status after post publication
+
+System actions should always create activity_logs.
+
+------------------------------------------------
+
+PART 3 — TABLE-BY-TABLE RLS MATRIX
+
+Create a table-by-table matrix.
+
+Tables:
+
+user_profiles
+clients
+client_platforms
+onboarding_items
+media_assets
+content_concepts
+draft_sets
+draft_variants
+posts
+post_slots
+notifications
+weekly_reports
+monthly_reports
+activity_logs
+client_requests
+client_health_snapshots
+ai_agents
+financial_snapshots
+system_status
+
+For each table, specify:
+
+Client:
+select / insert / update / delete
+
+Team:
+select / insert / update / delete
+
+Operator:
+select / insert / update / delete
+
+Owner:
+select / insert / update / delete
+
+System:
+insert / update
+
+Use plain English first.
+
+Example:
+
+clients:
+Client: select own only, limited update fields only
+Team: select assigned clients only
+Operator: select all, update risk fields only
+Owner: select/update all including pricing/account status
+System: update derived health fields only
+
+Do not write final SQL policies yet unless as examples.
+
+------------------------------------------------
+
+PART 4 — HELPER FUNCTION PLAN
+
+Plan helper functions needed for future RLS.
+
+Examples:
+
+current_user_role()
+current_user_client_id()
+is_owner()
+is_operator()
+is_team_member()
+is_assigned_to_client(client_id uuid)
+can_view_client(client_id uuid)
+can_manage_client_operations(client_id uuid)
+can_manage_pricing()
+can_view_owner_metrics()
+
+For each helper, explain:
+
+- Purpose
+- Inputs
+- Return type
+- Which policies would use it
+- Risk if implemented incorrectly
+
+Do not implement them yet.
+
+------------------------------------------------
+
+PART 5 — MIGRATION SEQUENCING PLAN
+
+Create a safe migration sequence.
+
+Recommended:
+
+MIGRATION 001 — Identity foundation
+- user_profiles
+- team_members
+- helper functions
+- basic RLS foundation
+
+MIGRATION 002 — Client foundation
+- clients
+- client_platforms
+- onboarding_items
+- client_requests
+
+MIGRATION 003 — Media foundation
+- media_assets
+- client_health_snapshots
+- notifications
+- activity_logs
+
+MIGRATION 004 — Posting foundation
+- posts
+- post_slots
+
+MIGRATION 005 — Reporting foundation
+- weekly_reports
+- monthly_reports
+
+MIGRATION 006 — Content AI foundation
+- content_concepts
+- draft_sets
+- draft_variants
+- ai_agents
+
+MIGRATION 007 — Business analytics
+- financial_snapshots
+- system_status if needed
+
+For each migration, document:
+
+- Tables included
+- Why this order is safe
+- Dependencies
+- Required RLS policies
+- Seed data needed
+- Test cases needed before moving to next migration
+
+Do not create actual migrations yet.
+
+------------------------------------------------
+
+PART 6 — SEED DATA STRATEGY
+
+Create a seed strategy section.
+
+Use:
+
+src/data/demo/
+
+Map demo data files to future seed files.
+
+Example:
+
+demoClients.ts -> seed_clients.sql or seed_clients.ts
+demoMediaAssets.ts -> seed_media_assets.sql or seed_media_assets.ts
+demoPosts.ts -> seed_posts.sql or seed_posts.ts
+demoNotifications.ts -> seed_notifications.sql or seed_notifications.ts
+
+For each seed group, decide:
+
+- Should it be seeded in dev only?
+- Should it be idempotent?
+- Which IDs must be stable?
+- Which data should never be seeded in production?
+- Which demo data should be excluded from real DB?
+
+Important:
+Do not create seed scripts yet.
+This is planning only.
+
+------------------------------------------------
+
+PART 7 — AUTH ACTIVATION CHECKLIST
+
+Create a checklist for when Veroxa can safely flip:
+
+AUTH_MODE = "real"
+
+Checklist should include:
+
+- Supabase project exists
+- env vars are configured
+- user_profiles table exists
+- RLS policies enabled and tested
+- one user per role exists
+- test client account linked to client user
+- Team user assigned to at least one client
+- Operator user can view all clients but not change pricing
+- Owner user can change pricing/account status
+- Client cannot view other clients
+- Client cannot view internal drafts
+- No public demo route exposes protected data
+- Login/logout tested
+- rollback plan exists
+
+Do not flip AUTH_MODE.
+
+------------------------------------------------
+
+PART 8 — STORAGE / MEDIA RULES PLANNING
+
+Create a section for future Supabase Storage rules.
+
+Plan:
+
+- bucket names
+- folder structure
+- file size limits
+- allowed MIME types
+- per-client folder isolation
+- signed URL strategy
+- who can upload
+- who can view
+- who can delete
+- orphan cleanup strategy
+
+Do not create storage buckets.
+Do not write storage policies yet.
+
+Recommended bucket idea:
+
+client-media
+folder:
+client_id/raw/
+client_id/approved/
+client_id/archive/
+
+But document alternatives if safer.
+
+------------------------------------------------
+
+PART 9 — ACTIVITY LOG STRATEGY
+
+Create a section deciding how activity logs should be written.
+
+Compare:
+
+Option A:
+App writes activity_logs explicitly
+
+Option B:
+Postgres triggers write activity_logs
+
+Option C:
+Hybrid
+
+Recommend the safest V1 approach.
+
+Consider:
+- audit reliability
+- complexity
+- debugging
+- role attribution
+- system actions
+- pricing changes
+- post publication status changes
+- report approval changes
+
+Do not implement triggers yet.
+
+------------------------------------------------
+
+PART 10 — CREATE OPTIONAL POLICY EXAMPLES FILE
+
+If useful, create:
+
+docs/sql_drafts/002_rls_policy_examples.sql
+
+Header must say:
+
+DO NOT RUN — RLS PLANNING EXAMPLES ONLY
+
+Include commented policy examples only.
+
+Do not put this inside supabase/migrations.
+Do not execute it.
+
+Examples may include:
+
+- clients select own
+- clients owner full access
+- media_assets client insert own
+- monthly_reports operator approve
+- pricing fields owner only
+
+Keep examples clearly commented.
+
+------------------------------------------------
+
+PART 11 — FINAL REPORT REQUIRED
+
+At completion, report:
+
+1. Files created
+2. Files modified
+3. RLS plan summary
+4. Table-by-table access matrix summary
+5. Helper functions planned
+6. Migration sequencing summary
+7. Seed strategy summary
+8. Auth activation checklist summary
+9. Storage/media planning summary
+10. Activity log strategy recommendation
+11. SQL examples file created or skipped
+12. Confirmation no migrations were run
+13. Confirmation AUTH_MODE unchanged
+14. Confirmation pricing unchanged
+15. Remaining risks
+16. Recommended next prompt
+
+PASS STANDARD:
+- No backend implemented
+- No migrations run
+- No app behavior changed
+- RLS plan is clear
+- Migration order is clear
+- Auth activation checklist is clear
+- Storage/media rules are planned
+- Activity log strategy is planned
