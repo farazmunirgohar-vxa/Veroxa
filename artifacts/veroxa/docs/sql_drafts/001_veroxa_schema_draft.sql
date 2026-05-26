@@ -1,0 +1,429 @@
+-- =============================================================================
+-- DO NOT RUN — PLANNING DRAFT ONLY
+-- =============================================================================
+-- This file is documentation. It is NOT a migration.
+-- It is NOT located in any supabase/migrations folder.
+-- Do not execute against any database (dev, staging, or production).
+--
+-- See docs/SUPABASE_SCHEMA_DRAFT_V1.md for the full spec, enum lists,
+-- relationships, and RLS planning.
+--
+-- AUTH_MODE remains "placeholder" until the real schema is shipped.
+-- =============================================================================
+
+-- -----------------------------------------------------------------------------
+-- Phase 1 — Identity & root
+-- -----------------------------------------------------------------------------
+
+-- create table user_profiles (
+--   id                    uuid primary key references auth.users(id) on delete cascade,
+--   display_name          text not null,
+--   email                 text not null unique,
+--   role                  text not null check (role in ('client','team','operator','owner')),
+--   client_id             uuid,                 -- FK added after clients exists
+--   avatar_url            text,
+--   is_active             boolean not null default true,
+--   created_at            timestamptz not null default now(),
+--   updated_at            timestamptz not null default now()
+-- );
+
+-- create table team_members (
+--   id                    uuid primary key default gen_random_uuid(),
+--   user_profile_id       uuid not null unique references user_profiles(id) on delete cascade,
+--   role_label            text not null,
+--   assigned_client_ids   uuid[],
+--   created_at            timestamptz not null default now(),
+--   updated_at            timestamptz not null default now()
+-- );
+
+-- create table clients (
+--   id                          uuid primary key default gen_random_uuid(),
+--   business_name               text not null,
+--   legal_name                  text,
+--   primary_contact_name        text not null,
+--   primary_contact_email       text not null,
+--   primary_contact_phone       text,
+--   secondary_contact_name      text,
+--   secondary_contact_email     text,
+--   cuisine_type                text,
+--   address                     text,
+--   website_url                 text,
+--   hours_text                  text,
+--   plan_type                   text not null
+--     check (plan_type in ('twelve_month','six_month','three_month','no_contract','google_presence_starter')),
+--   service_package             text not null
+--     check (service_package in ('google_presence_starter','complete_online_presence','ads_addon','ads_only','bundle')),
+--   monthly_fee_cents           integer not null,
+--   contract_months             integer,
+--   start_date                  date,
+--   posting_frequency_weekly    integer not null default 3,
+--   timezone                    text not null default 'America/Toronto',
+--   assigned_operator_id        uuid references user_profiles(id) on delete set null,
+--   assigned_team_label         text,
+--   account_status              text not null default 'onboarding'
+--     check (account_status in ('lead','signed','onboarding','active','needs_attention','at_risk','paused','closed')),
+--   content_health_status       text not null default 'healthy'
+--     check (content_health_status in ('healthy','caution','urgent','broken')),
+--   risk_status                 text not null default 'low'
+--     check (risk_status in ('low','medium','high','critical')),
+--   onboarding_complete         boolean not null default false,
+--   created_at                  timestamptz not null default now(),
+--   updated_at                  timestamptz not null default now()
+-- );
+
+-- -- Now add user_profiles.client_id FK
+-- -- alter table user_profiles
+-- --   add constraint user_profiles_client_id_fkey
+-- --   foreign key (client_id) references clients(id) on delete set null;
+
+-- create table client_platforms (
+--   id                  uuid primary key default gen_random_uuid(),
+--   client_id           uuid not null references clients(id) on delete cascade,
+--   platform_name       text not null
+--     check (platform_name in ('instagram','facebook','tiktok','google_business','youtube','x')),
+--   access_status       text not null default 'not_connected'
+--     check (access_status in ('not_connected','pending','connected','error','revoked')),
+--   username_or_handle  text,
+--   notes               text,
+--   last_verified_at    timestamptz,
+--   created_at          timestamptz not null default now(),
+--   updated_at          timestamptz not null default now(),
+--   unique (client_id, platform_name)
+-- );
+
+-- create table onboarding_items (
+--   id                    uuid primary key default gen_random_uuid(),
+--   client_id             uuid not null references clients(id) on delete cascade,
+--   item_key              text not null,
+--   item_label            text not null,
+--   description           text,
+--   status                text not null default 'missing'
+--     check (status in ('missing','in_progress','complete')),
+--   owner_role            text not null
+--     check (owner_role in ('client','team','operator','veroxa')),
+--   priority              text not null default 'medium'
+--     check (priority in ('low','medium','high')),
+--   due_label             text,
+--   completed_by_role     text,
+--   completed_by_user_id  uuid references user_profiles(id) on delete set null,
+--   completed_at          timestamptz,
+--   created_at            timestamptz not null default now(),
+--   updated_at            timestamptz not null default now(),
+--   unique (client_id, item_key)
+-- );
+
+-- -----------------------------------------------------------------------------
+-- Phase 2 — Content intake & comms
+-- -----------------------------------------------------------------------------
+
+-- create table media_assets (
+--   id                    uuid primary key default gen_random_uuid(),
+--   client_id             uuid not null references clients(id) on delete cascade,
+--   file_url              text not null,
+--   thumbnail_url         text,
+--   file_type             text not null check (file_type in ('photo','video')),
+--   mime_type             text not null,
+--   width_px              integer,
+--   height_px             integer,
+--   duration_seconds      numeric,
+--   source_type           text not null
+--     check (source_type in ('client_upload','team_shoot','archive_reuse','imported')),
+--   title                 text,
+--   caption_hint          text,
+--   quality_ai_flag       text
+--     check (quality_ai_flag in ('good','blurry','duplicate','low_light','wrong_subject')),
+--   quality_score         integer,
+--   review_status         text not null default 'uploaded'
+--     check (review_status in (
+--       'uploaded','ai_reviewed','team_review_pending','rejected',
+--       'usable','shortlisted','drafted','approved','scheduled','used','reusable_archive'
+--     )),
+--   rejection_reason      text,
+--   reuse_eligible        boolean not null default false,
+--   linked_post_id        uuid,                 -- FK added after posts exists
+--   tags                  text[],
+--   uploaded_at           timestamptz not null default now(),
+--   reviewed_at           timestamptz,
+--   reviewed_by_user_id   uuid references user_profiles(id) on delete set null,
+--   created_at            timestamptz not null default now(),
+--   updated_at            timestamptz not null default now()
+-- );
+
+-- create table notifications (
+--   id                  uuid primary key default gen_random_uuid(),
+--   client_id           uuid references clients(id) on delete cascade,
+--   target_role         text not null check (target_role in ('client','team','operator','owner')),
+--   target_user_id      uuid references user_profiles(id) on delete cascade,
+--   notification_type   text not null
+--     check (notification_type in ('success','info','warning','reminder','critical')),
+--   category            text,
+--   priority            text not null default 'p3' check (priority in ('p1','p2','p3')),
+--   title               text not null,
+--   message_body        text not null,
+--   suggested_action    text,
+--   status              text not null default 'created'
+--     check (status in ('created','sent','seen','dismissed','escalated')),
+--   trigger_source      text not null
+--     check (trigger_source in ('system','agent','operator','team','client_action')),
+--   agent_id            uuid,                   -- FK added after ai_agents exists
+--   seen_at             timestamptz,
+--   created_at          timestamptz not null default now(),
+--   updated_at          timestamptz not null default now()
+-- );
+
+-- create table activity_logs (
+--   id                    uuid primary key default gen_random_uuid(),
+--   entity_type           text not null,
+--   entity_id             uuid not null,
+--   client_id             uuid references clients(id) on delete set null,
+--   action_key            text not null,
+--   description           text,
+--   performed_by_role     text not null
+--     check (performed_by_role in ('client','team','operator','owner','agent','system')),
+--   performed_by_user_id  uuid references user_profiles(id) on delete set null,
+--   old_value_json        jsonb,
+--   new_value_json        jsonb,
+--   created_at            timestamptz not null default now()
+-- );
+
+-- create table client_requests (
+--   id                    uuid primary key default gen_random_uuid(),
+--   client_id             uuid not null references clients(id) on delete cascade,
+--   title                 text not null,
+--   description           text,
+--   status                text not null default 'pending'
+--     check (status in ('pending','in_progress','completed','cancelled')),
+--   priority              text not null default 'normal'
+--     check (priority in ('low','normal','high')),
+--   due_label             text,
+--   due_date              date,
+--   requested_by_user_id  uuid references user_profiles(id) on delete set null,
+--   completed_at          timestamptz,
+--   created_at            timestamptz not null default now(),
+--   updated_at            timestamptz not null default now()
+-- );
+
+-- -----------------------------------------------------------------------------
+-- Phase 3 — Publishing
+-- -----------------------------------------------------------------------------
+
+-- create table posts (
+--   id                       uuid primary key default gen_random_uuid(),
+--   client_id                uuid not null references clients(id) on delete cascade,
+--   media_asset_id           uuid references media_assets(id) on delete set null,
+--   concept_id               uuid,                -- FK added after content_concepts exists
+--   draft_variant_id         uuid,                -- FK added after draft_variants exists
+--   title                    text,
+--   platform_name            text not null
+--     check (platform_name in ('instagram','facebook','tiktok','google_business','youtube','x')),
+--   content_type             text not null check (content_type in ('photo','reel','carousel','story')),
+--   post_status              text not null default 'planning'
+--     check (post_status in (
+--       'planning','awaiting_content','ready_for_review','approved',
+--       'ready_to_schedule','scheduled','published','failed','reschedule_required','archived'
+--     )),
+--   scheduled_for            timestamptz,
+--   published_at             timestamptz,
+--   publish_failure_reason   text,
+--   external_post_id         text,
+--   external_permalink       text,
+--   is_reuse_based           boolean not null default false,
+--   created_at               timestamptz not null default now(),
+--   updated_at               timestamptz not null default now()
+-- );
+
+-- -- Now add media_assets.linked_post_id FK
+-- -- alter table media_assets
+-- --   add constraint media_assets_linked_post_id_fkey
+-- --   foreign key (linked_post_id) references posts(id) on delete set null;
+
+-- create table post_slots (
+--   id                  uuid primary key default gen_random_uuid(),
+--   client_id           uuid not null references clients(id) on delete cascade,
+--   platform_name       text not null,
+--   slot_date           date not null,
+--   slot_time           time not null,
+--   status              text not null default 'open'
+--     check (status in ('open','planned','scheduled','published','cancelled')),
+--   reserved_post_id    uuid references posts(id) on delete set null,
+--   created_at          timestamptz not null default now(),
+--   updated_at          timestamptz not null default now(),
+--   unique (client_id, platform_name, slot_date, slot_time)
+-- );
+
+-- -----------------------------------------------------------------------------
+-- Phase 4 — Reporting & health
+-- -----------------------------------------------------------------------------
+
+-- create table weekly_reports (
+--   id                          uuid primary key default gen_random_uuid(),
+--   client_id                   uuid not null references clients(id) on delete cascade,
+--   week_start                  date not null,
+--   week_end                    date not null,
+--   posts_planned               integer not null default 0,
+--   posts_published             integer not null default 0,
+--   top_post_id                 uuid references posts(id) on delete set null,
+--   status                      text not null default 'drafted'
+--     check (status in ('drafted','validated','published')),
+--   draft_owner_id              uuid references user_profiles(id) on delete set null,
+--   validation_owner_id         uuid references user_profiles(id) on delete set null,
+--   internal_validation_note    text,
+--   client_facing_summary       text,
+--   summary_json                jsonb,
+--   published_at                timestamptz,
+--   created_at                  timestamptz not null default now(),
+--   updated_at                  timestamptz not null default now(),
+--   unique (client_id, week_start)
+-- );
+
+-- create table monthly_reports (
+--   id                    uuid primary key default gen_random_uuid(),
+--   client_id             uuid not null references clients(id) on delete cascade,
+--   month_key             text not null,
+--   status                text not null default 'drafting'
+--     check (status in ('drafting','operator_review','approved','published')),
+--   summary_json          jsonb,
+--   approved_by_user_id   uuid references user_profiles(id) on delete set null,
+--   published_at          timestamptz,
+--   created_at            timestamptz not null default now(),
+--   updated_at            timestamptz not null default now(),
+--   unique (client_id, month_key)
+-- );
+
+-- create table client_health_snapshots (
+--   id                            uuid primary key default gen_random_uuid(),
+--   client_id                     uuid not null references clients(id) on delete cascade,
+--   snapshot_date                 date not null,
+--   level                         text not null check (level in ('healthy','attention','critical')),
+--   score                         integer not null,
+--   priority_level                text not null check (priority_level in ('low','normal','high','critical')),
+--   media_inventory_value         integer,
+--   media_inventory_max           integer,
+--   posting_consistency_status    text check (posting_consistency_status in ('good','warn','bad')),
+--   google_visibility_score       integer,
+--   google_visibility_trend       text check (google_visibility_trend in ('up','flat','down')),
+--   reviews_recent_count          integer,
+--   onboarding_pct                integer,
+--   report_status                 text,
+--   signals_json                  jsonb,
+--   created_at                    timestamptz not null default now(),
+--   unique (client_id, snapshot_date)
+-- );
+
+-- create table financial_snapshots (
+--   id                            uuid primary key default gen_random_uuid(),
+--   month_key                     text not null unique,
+--   active_clients                integer not null,
+--   mrr_cents                     integer not null,
+--   projected_mrr_cents           integer,
+--   client_health_average         integer,
+--   team_utilization_pct          integer,
+--   retention_score               integer,
+--   reporting_completion_rate     integer,
+--   onboarding_completion_rate    integer,
+--   mom_growth_pct                integer,
+--   analytics_json                jsonb,
+--   created_at                    timestamptz not null default now(),
+--   updated_at                    timestamptz not null default now()
+-- );
+
+-- -----------------------------------------------------------------------------
+-- Phase 5 — Creative pipeline
+-- -----------------------------------------------------------------------------
+
+-- create table content_concepts (
+--   id                    uuid primary key default gen_random_uuid(),
+--   client_id             uuid not null references clients(id) on delete cascade,
+--   media_asset_id        uuid references media_assets(id) on delete set null,
+--   additional_media_ids  uuid[],
+--   content_angle         text not null,
+--   content_goal          text check (content_goal in ('awareness','engagement','conversion','branding','recovery')),
+--   hook_style            text check (hook_style in ('question','bold_statement','story','stat','behind_scenes')),
+--   cta_direction         text check (cta_direction in ('visit','order','book','follow','share','none')),
+--   status                text not null default 'proposed'
+--     check (status in ('proposed','approved','archived')),
+--   generated_at          timestamptz,
+--   generated_by_agent    text,
+--   created_at            timestamptz not null default now(),
+--   updated_at            timestamptz not null default now()
+-- );
+
+-- -- Now add posts.concept_id FK
+-- -- alter table posts
+-- --   add constraint posts_concept_id_fkey
+-- --   foreign key (concept_id) references content_concepts(id) on delete set null;
+
+-- create table draft_sets (
+--   id                    uuid primary key default gen_random_uuid(),
+--   concept_id            uuid not null references content_concepts(id) on delete cascade,
+--   generation_version    integer not null default 1,
+--   status                text not null default 'drafting'
+--     check (status in ('drafting','awaiting_review','approved','superseded')),
+--   team_note             text,
+--   generated_at          timestamptz,
+--   generated_by_agent    text,
+--   created_at            timestamptz not null default now(),
+--   updated_at            timestamptz not null default now()
+-- );
+
+-- create table draft_variants (
+--   id                    uuid primary key default gen_random_uuid(),
+--   draft_set_id          uuid not null references draft_sets(id) on delete cascade,
+--   variant_type          text not null check (variant_type in ('safe','engagement','sales')),
+--   caption_body          text not null,
+--   hook_text             text,
+--   cta_text              text,
+--   hashtag_block         text,
+--   brand_voice_score     integer,
+--   status                text not null default 'draft'
+--     check (status in ('draft','approved','rejected','used','superseded')),
+--   used_in_post_id       uuid references posts(id) on delete set null,
+--   created_at            timestamptz not null default now(),
+--   updated_at            timestamptz not null default now()
+-- );
+
+-- -- Now add posts.draft_variant_id FK
+-- -- alter table posts
+-- --   add constraint posts_draft_variant_id_fkey
+-- --   foreign key (draft_variant_id) references draft_variants(id) on delete set null;
+
+-- -----------------------------------------------------------------------------
+-- Phase 6 — AI & system
+-- -----------------------------------------------------------------------------
+
+-- create table ai_agents (
+--   id                    uuid primary key default gen_random_uuid(),
+--   agent_key             text not null unique,
+--   name                  text not null,
+--   category              text not null check (category in ('content','operations','intelligence','executive')),
+--   purpose               text not null,
+--   is_enabled            boolean not null default false,
+--   confidence_baseline   integer,
+--   last_activity_at      timestamptz,
+--   created_at            timestamptz not null default now(),
+--   updated_at            timestamptz not null default now()
+-- );
+
+-- -- Now add notifications.agent_id FK
+-- -- alter table notifications
+-- --   add constraint notifications_agent_id_fkey
+-- --   foreign key (agent_id) references ai_agents(id) on delete set null;
+
+-- create table system_status (
+--   id          uuid primary key default gen_random_uuid(),
+--   label       text not null unique,
+--   state       text not null check (state in ('active','not_connected','placeholder')),
+--   detail      text,
+--   updated_at  timestamptz not null default now()
+-- );
+
+-- -----------------------------------------------------------------------------
+-- RLS planning — placeholder.
+-- -----------------------------------------------------------------------------
+-- All tables above MUST have `alter table ... enable row level security;` plus
+-- explicit policies before this draft becomes a real migration.
+-- See docs/SUPABASE_SCHEMA_DRAFT_V1.md Part 5 for the per-role rules to encode.
+
+-- =============================================================================
+-- END OF PLANNING DRAFT
+-- =============================================================================
