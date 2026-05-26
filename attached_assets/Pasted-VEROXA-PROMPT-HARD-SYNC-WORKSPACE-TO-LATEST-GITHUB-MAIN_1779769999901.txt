@@ -1,0 +1,120 @@
+VEROXA PROMPT — HARD SYNC WORKSPACE TO LATEST GITHUB MAIN
+
+Objective:
+Fix the mismatch between the exported ZIP and GitHub main.
+
+The current exported ZIP is outdated and unsafe. It has AUTH_MODE set to "real" and is missing the latest backend planning/security files.
+
+Do NOT add new features.
+Do NOT create new migration layers.
+Do NOT run migrations.
+Do NOT connect Supabase.
+Do NOT activate real auth.
+Do NOT change pricing.
+Do NOT change navigation.
+Do NOT change portal UI.
+
+Your job is only to sync the Replit workspace/export to the latest GitHub main branch.
+
+------------------------------------------------
+
+SOURCE OF TRUTH
+
+GitHub main should include latest commit:
+
+c0c727ed3641aa1f2fe95b0cfdc228e6fe35c5ba
+
+Commit title:
+Add security and data integrity measures to portal operations
+
+------------------------------------------------
+
+REQUIRED CURRENT STATE
+
+Verify the workspace has:
+
+1. AUTH_MODE set to placeholder:
+
+src/lib/auth/authMode.ts
+
+Must contain:
+
+export const AUTH_MODE: AuthMode = "placeholder";
+
+2. Demo internal access gate exists:
+
+src/components/auth/InternalDemoGuard.tsx
+
+Must contain:
+
+veroxa-preview
+veroxa_demo_internal_access
+DemoInternalGate
+
+3. Login badges say:
+
+Demo Access Required
+
+for Team, Operator, and Owner.
+
+4. These files must exist:
+
+docs/sql_drafts/migrations_review/002_003_004_portal_connect_views_draft.sql
+docs/sql_drafts/migrations_review/003_notifications_status_guard_draft.sql
+docs/sql_drafts/migrations_review/004_post_slot_reset_guard_draft.sql
+docs/sql_drafts/migrations_review/006_content_ai_layer_draft.sql
+docs/MIGRATION_006_TEST_PLAN.md
+docs/PORTAL_QUERY_SAFETY_PLAN.md
+
+5. These files should still exist:
+
+docs/sql_drafts/migrations_review/001_identity_foundation_draft.sql
+docs/sql_drafts/migrations_review/002_client_foundation_draft.sql
+docs/sql_drafts/migrations_review/003_media_foundation_draft.sql
+docs/sql_drafts/migrations_review/004_posting_foundation_draft.sql
+docs/sql_drafts/migrations_review/005_reporting_foundation_draft.sql
+
+6. No files should exist in:
+
+supabase/migrations
+
+7. No migration should be run.
+
+------------------------------------------------
+
+IF WORKSPACE IS BEHIND
+
+Pull/sync from latest GitHub main.
+
+Do not rewrite the project manually if a Git pull/sync is available.
+
+After syncing, verify all required files again.
+
+------------------------------------------------
+
+FINAL REPORT REQUIRED
+
+Report:
+
+1. Current branch
+2. Current commit SHA
+3. Whether it matches GitHub main
+4. AUTH_MODE value
+5. Demo gate files verified
+6. Portal-connect views file verified
+7. Notification guard file verified
+8. Post slot reset guard file verified
+9. M006 SQL draft verified
+10. Portal query safety plan verified
+11. Confirmation no migrations were run
+12. Confirmation no files exist in supabase/migrations
+13. Build/typecheck result if available
+14. Export a new ZIP only after verification
+
+PASS STANDARD:
+- Workspace matches latest GitHub main
+- AUTH_MODE is placeholder
+- Latest backend draft/security files exist
+- Demo access gate exists
+- No migrations run
+- New exported ZIP contains the latest files
