@@ -1,0 +1,338 @@
+VEROXA PROMPT — SUPABASE SCHEMA DRAFT CORRECTION PASS V1.1
+
+Objective:
+Correct and align the Supabase schema draft before any real migration work.
+
+This is still a PLANNING/DOCUMENTATION pass only.
+
+Do NOT run migrations.
+Do NOT move files into supabase/migrations.
+Do NOT connect real data.
+Do NOT change AUTH_MODE.
+Do NOT change auth guards.
+Do NOT change portal UI.
+Do NOT change pricing page.
+Do NOT change navigation.
+Do NOT build uploads.
+Do NOT build AI APIs.
+Do NOT build publishing.
+Do NOT add payment processing.
+
+Keep AUTH_MODE as:
+"placeholder"
+
+Keep pricing unchanged:
+Google Presence Starter: $497/mo
+
+Complete Online Presence:
+12-month: $997/mo
+6-month: $1,097/mo
+3-month: $1,197/mo
+No-contract: $1,497/mo
+
+------------------------------------------------
+
+FILES TO UPDATE
+
+Update only documentation/planning files:
+
+docs/SUPABASE_SCHEMA_DRAFT_V1.md
+docs/sql_drafts/001_veroxa_schema_draft.sql
+
+If needed:
+docs/DEMO_DATA_MAP.md
+
+Do not update app source files unless fixing a documentation import typo.
+
+------------------------------------------------
+
+PART 1 — FIX TIMEZONE DEFAULT
+
+Current issue:
+The schema draft uses America/Toronto as the default timezone.
+
+Fix this.
+
+Preferred real schema rule:
+timezone should be required for every client.
+
+Recommended wording:
+- `timezone` text not null
+- Demo seed value may use `America/Chicago`
+- Do not hard-code Toronto as default
+
+If a default is shown in SQL draft, use:
+`America/Chicago`
+
+Reason:
+Veroxa’s initial market is San Antonio / Texas.
+
+------------------------------------------------
+
+PART 2 — ALIGN ENUM VALUES WITH LOCKED VEROXA OS
+
+Update enum definitions so they match the locked Veroxa OS/database architecture more closely.
+
+Use these values:
+
+clients.plan_type:
+- twelve_month
+- six_month
+- three_month
+- no_contract
+- month_to_month
+
+clients.service_package:
+- google_presence_starter
+- complete_online_presence
+- ads_addon
+- ads_only
+- bundle
+
+clients.account_status:
+- lead
+- signed
+- onboarding
+- active
+- needs_attention
+- at_risk
+- paused
+- closed
+
+clients.content_health_status:
+- healthy
+- caution
+- urgent
+- broken
+
+clients.risk_status:
+- good
+- risk
+- at_risk
+
+client_platforms.platform_name:
+- instagram
+- facebook
+- google_business
+- tiktok
+- other
+
+client_platforms.access_status:
+- pending
+- granted
+- verified
+- revoked
+
+onboarding_items.status:
+- not_started
+- pending
+- complete
+- blocked
+
+media_assets.file_type:
+- image
+- video
+
+media_assets.source_type:
+- client_upload
+- legacy_reuse
+- team_upload
+
+media_assets.quality_ai_flag:
+- likely_usable
+- borderline
+- likely_reject
+
+media_assets.review_status:
+- uploaded
+- ai_reviewed
+- team_review_pending
+- rejected
+- usable
+- shortlisted
+- drafted
+- approved
+- scheduled
+- used
+- reusable_archive
+
+content_concepts.status:
+- generated
+- under_review
+- rejected
+- approved
+
+draft_sets.status:
+- generated
+- under_review
+- needs_regeneration
+- approved
+- archived
+
+draft_variants.variant_type:
+- safe
+- engagement
+- sales
+
+draft_variants.status:
+- generated
+- under_review
+- approved
+- archived
+- used
+
+posts.post_status:
+- planning
+- awaiting_content
+- ready_for_review
+- approved
+- ready_to_schedule
+- scheduled
+- published
+- failed
+- reschedule_required
+- archived
+
+post_slots.status:
+- open
+- reserved
+- scheduled
+- completed
+- skipped
+
+notifications.status:
+- created
+- sent
+- seen
+- dismissed
+- escalated
+
+weekly_reports.status:
+- drafted
+- validated
+- published
+
+monthly_reports.status:
+- drafting
+- operator_review
+- approved
+- published
+
+activity_logs.performed_by_role:
+- system
+- client
+- team
+- operator
+- owner
+
+Do not invent extra enum values unless clearly documented as future extension.
+
+------------------------------------------------
+
+PART 3 — CLARIFY GOOGLE PRESENCE STARTER
+
+Google Presence Starter should be treated as a service package, not a contract duration.
+
+Update schema notes:
+
+- `google_presence_starter` belongs under `service_package`
+- `plan_type` should describe contract term or billing cadence
+- For Google Presence Starter clients, use `service_package = google_presence_starter`
+- If needed, use `plan_type = month_to_month` or `no_contract`
+
+Do not remove the $497 offer from pricing docs.
+
+------------------------------------------------
+
+PART 4 — ADD LOCKED PRICING CENT VALUES
+
+Add a clear pricing reference table inside:
+
+docs/SUPABASE_SCHEMA_DRAFT_V1.md
+
+Include:
+
+Service / Plan | monthly_fee_cents
+
+Google Presence Starter:
+49700
+
+Complete Online Presence:
+12-month: 99700
+6-month: 109700
+3-month: 119700
+No-contract: 149700
+
+Also include existing bundle/ad pricing only if already present and known.
+
+Do not invent new pricing.
+
+Clarify:
+The pricing page remains the source for public display.
+The database stores cents only.
+Owner-only permissions are required to change pricing fields.
+
+------------------------------------------------
+
+PART 5 — UPDATE SQL DRAFT TO MATCH
+
+Update:
+
+docs/sql_drafts/001_veroxa_schema_draft.sql
+
+Make sure the commented SQL draft reflects the corrected:
+
+- timezone rule
+- enum check constraints
+- plan_type/service_package relationship
+- pricing cents comments
+
+Keep the top warning:
+
+DO NOT RUN — PLANNING DRAFT ONLY
+
+Do not move this file into a migration folder.
+
+------------------------------------------------
+
+PART 6 — ADD MIGRATION READINESS NOTE
+
+Add a short section:
+
+"Not Ready For Migration Yet"
+
+Include:
+
+- RLS policies still need review
+- seed data still needs planning
+- user_profiles relationship to auth.users must be tested separately
+- media storage rules not drafted yet
+- activity log trigger strategy not finalized
+- automation/publishing/AI tables should wait
+
+------------------------------------------------
+
+PART 7 — FINAL REPORT REQUIRED
+
+At completion, report:
+
+1. Files modified
+2. Timezone correction made
+3. Enum alignment summary
+4. Google Presence Starter clarification
+5. Pricing cents table added
+6. SQL draft updated
+7. Confirmation no migration was run
+8. Confirmation AUTH_MODE unchanged
+9. Confirmation pricing page unchanged
+10. Remaining schema risks
+11. Recommended next prompt
+
+PASS STANDARD:
+- No app behavior changes
+- No backend connected
+- No migrations run
+- Schema draft aligns with locked Veroxa OS
+- Google Presence Starter is correctly represented
+- Timezone issue fixed
+- Pricing cents are explicit

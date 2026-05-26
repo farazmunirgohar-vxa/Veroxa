@@ -9,6 +9,25 @@
 -- relationships, and RLS planning.
 --
 -- AUTH_MODE remains "placeholder" until the real schema is shipped.
+--
+-- Pricing reference (locked) — values are integer cents in
+-- clients.monthly_fee_cents. The pricing page remains the public display
+-- source of truth. Only the Owner role may write these fields.
+--
+--   Google Presence Starter         service_package='google_presence_starter'
+--                                   plan_type='month_to_month' (or 'no_contract')
+--                                   monthly_fee_cents = 49700
+--
+--   Complete Online Presence 12mo   service_package='complete_online_presence'
+--                                   plan_type='twelve_month'
+--                                   monthly_fee_cents = 99700
+--
+--   Complete Online Presence 6mo    plan_type='six_month'       = 109700
+--   Complete Online Presence 3mo    plan_type='three_month'     = 119700
+--   Complete Online Presence n/c    plan_type='no_contract'     = 149700
+--
+-- Google Presence Starter is a SERVICE PACKAGE, not a contract term. Do not
+-- store it in plan_type.
 -- =============================================================================
 
 -- -----------------------------------------------------------------------------
@@ -50,22 +69,24 @@
 --   website_url                 text,
 --   hours_text                  text,
 --   plan_type                   text not null
---     check (plan_type in ('twelve_month','six_month','three_month','no_contract','google_presence_starter')),
+--     check (plan_type in ('twelve_month','six_month','three_month','no_contract','month_to_month')),
 --   service_package             text not null
 --     check (service_package in ('google_presence_starter','complete_online_presence','ads_addon','ads_only','bundle')),
 --   monthly_fee_cents           integer not null,
 --   contract_months             integer,
 --   start_date                  date,
 --   posting_frequency_weekly    integer not null default 3,
---   timezone                    text not null default 'America/Toronto',
+--   -- timezone is required for every client. NO hard-coded default.
+--   -- Demo seed uses 'America/Chicago' (Veroxa's initial market: San Antonio, TX).
+--   timezone                    text not null,
 --   assigned_operator_id        uuid references user_profiles(id) on delete set null,
 --   assigned_team_label         text,
 --   account_status              text not null default 'onboarding'
 --     check (account_status in ('lead','signed','onboarding','active','needs_attention','at_risk','paused','closed')),
 --   content_health_status       text not null default 'healthy'
 --     check (content_health_status in ('healthy','caution','urgent','broken')),
---   risk_status                 text not null default 'low'
---     check (risk_status in ('low','medium','high','critical')),
+--   risk_status                 text not null default 'good'
+--     check (risk_status in ('good','risk','at_risk')),
 --   onboarding_complete         boolean not null default false,
 --   created_at                  timestamptz not null default now(),
 --   updated_at                  timestamptz not null default now()
@@ -80,9 +101,9 @@
 --   id                  uuid primary key default gen_random_uuid(),
 --   client_id           uuid not null references clients(id) on delete cascade,
 --   platform_name       text not null
---     check (platform_name in ('instagram','facebook','tiktok','google_business','youtube','x')),
---   access_status       text not null default 'not_connected'
---     check (access_status in ('not_connected','pending','connected','error','revoked')),
+--     check (platform_name in ('instagram','facebook','google_business','tiktok','other')),
+--   access_status       text not null default 'pending'
+--     check (access_status in ('pending','granted','verified','revoked')),
 --   username_or_handle  text,
 --   notes               text,
 --   last_verified_at    timestamptz,
@@ -97,8 +118,8 @@
 --   item_key              text not null,
 --   item_label            text not null,
 --   description           text,
---   status                text not null default 'missing'
---     check (status in ('missing','in_progress','complete')),
+--   status                text not null default 'not_started'
+--     check (status in ('not_started','pending','complete','blocked')),
 --   owner_role            text not null
 --     check (owner_role in ('client','team','operator','veroxa')),
 --   priority              text not null default 'medium'
@@ -121,17 +142,17 @@
 --   client_id             uuid not null references clients(id) on delete cascade,
 --   file_url              text not null,
 --   thumbnail_url         text,
---   file_type             text not null check (file_type in ('photo','video')),
+--   file_type             text not null check (file_type in ('image','video')),
 --   mime_type             text not null,
 --   width_px              integer,
 --   height_px             integer,
 --   duration_seconds      numeric,
 --   source_type           text not null
---     check (source_type in ('client_upload','team_shoot','archive_reuse','imported')),
+--     check (source_type in ('client_upload','legacy_reuse','team_upload')),
 --   title                 text,
 --   caption_hint          text,
 --   quality_ai_flag       text
---     check (quality_ai_flag in ('good','blurry','duplicate','low_light','wrong_subject')),
+--     check (quality_ai_flag in ('likely_usable','borderline','likely_reject')),
 --   quality_score         integer,
 --   review_status         text not null default 'uploaded'
 --     check (review_status in (
@@ -179,7 +200,7 @@
 --   action_key            text not null,
 --   description           text,
 --   performed_by_role     text not null
---     check (performed_by_role in ('client','team','operator','owner','agent','system')),
+--     check (performed_by_role in ('system','client','team','operator','owner')),
 --   performed_by_user_id  uuid references user_profiles(id) on delete set null,
 --   old_value_json        jsonb,
 --   new_value_json        jsonb,
@@ -215,7 +236,7 @@
 --   draft_variant_id         uuid,                -- FK added after draft_variants exists
 --   title                    text,
 --   platform_name            text not null
---     check (platform_name in ('instagram','facebook','tiktok','google_business','youtube','x')),
+--     check (platform_name in ('instagram','facebook','google_business','tiktok','other')),
 --   content_type             text not null check (content_type in ('photo','reel','carousel','story')),
 --   post_status              text not null default 'planning'
 --     check (post_status in (
@@ -244,7 +265,7 @@
 --   slot_date           date not null,
 --   slot_time           time not null,
 --   status              text not null default 'open'
---     check (status in ('open','planned','scheduled','published','cancelled')),
+--     check (status in ('open','reserved','scheduled','completed','skipped')),
 --   reserved_post_id    uuid references posts(id) on delete set null,
 --   created_at          timestamptz not null default now(),
 --   updated_at          timestamptz not null default now(),
@@ -340,8 +361,8 @@
 --   content_goal          text check (content_goal in ('awareness','engagement','conversion','branding','recovery')),
 --   hook_style            text check (hook_style in ('question','bold_statement','story','stat','behind_scenes')),
 --   cta_direction         text check (cta_direction in ('visit','order','book','follow','share','none')),
---   status                text not null default 'proposed'
---     check (status in ('proposed','approved','archived')),
+--   status                text not null default 'generated'
+--     check (status in ('generated','under_review','rejected','approved')),
 --   generated_at          timestamptz,
 --   generated_by_agent    text,
 --   created_at            timestamptz not null default now(),
@@ -357,8 +378,8 @@
 --   id                    uuid primary key default gen_random_uuid(),
 --   concept_id            uuid not null references content_concepts(id) on delete cascade,
 --   generation_version    integer not null default 1,
---   status                text not null default 'drafting'
---     check (status in ('drafting','awaiting_review','approved','superseded')),
+--   status                text not null default 'generated'
+--     check (status in ('generated','under_review','needs_regeneration','approved','archived')),
 --   team_note             text,
 --   generated_at          timestamptz,
 --   generated_by_agent    text,
@@ -375,8 +396,8 @@
 --   cta_text              text,
 --   hashtag_block         text,
 --   brand_voice_score     integer,
---   status                text not null default 'draft'
---     check (status in ('draft','approved','rejected','used','superseded')),
+--   status                text not null default 'generated'
+--     check (status in ('generated','under_review','approved','archived','used')),
 --   used_in_post_id       uuid references posts(id) on delete set null,
 --   created_at            timestamptz not null default now(),
 --   updated_at            timestamptz not null default now()

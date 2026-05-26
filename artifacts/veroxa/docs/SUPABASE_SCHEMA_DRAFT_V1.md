@@ -8,6 +8,31 @@ This document is the future-state blueprint for the Veroxa Supabase schema. It i
 
 ---
 
+## Pricing reference (locked)
+
+The public pricing page remains the source of truth for display. The database
+stores money as **integer cents only** in `clients.monthly_fee_cents`. Only the
+Owner role may write to `clients.plan_type`, `clients.service_package`, or
+`clients.monthly_fee_cents` (see Part 5 RLS).
+
+| Service / Plan | `service_package` | `plan_type` | `monthly_fee_cents` |
+|---|---|---|---|
+| Google Presence Starter | `google_presence_starter` | `month_to_month` *(or `no_contract`)* | `49700` |
+| Complete Online Presence — 12 month | `complete_online_presence` | `twelve_month` | `99700` |
+| Complete Online Presence — 6 month | `complete_online_presence` | `six_month` | `109700` |
+| Complete Online Presence — 3 month | `complete_online_presence` | `three_month` | `119700` |
+| Complete Online Presence — no-contract | `complete_online_presence` | `no_contract` | `149700` |
+
+> **Google Presence Starter is a service package, not a contract term.** It is
+> identified by `service_package='google_presence_starter'`. Its billing
+> cadence is captured in `plan_type` (`month_to_month` or `no_contract`),
+> never by overloading `plan_type` with a product name.
+
+No other prices (bundle / ads add-on) are listed here — only the values
+already locked on the public pricing page. Do not invent additional prices.
+
+---
+
 ## Conventions
 
 - **Primary keys:** `id uuid primary key default gen_random_uuid()`
@@ -54,7 +79,7 @@ For each table: purpose, fields (with types), foreign keys, the demo file it map
 | `contract_months` | integer |   |  |
 | `start_date` | date |   |  |
 | `posting_frequency_weekly` | integer | ✓ | default 3 |
-| `timezone` | text | ✓ | default `"America/Toronto"` |
+| `timezone` | text | ✓ | **No hard-coded default.** Required for every client. Demo seed uses `"America/Chicago"` (Veroxa's initial market is San Antonio, TX). |
 | `assigned_operator_id` | uuid |   | FK → `user_profiles.id` |
 | `assigned_team_label` | text |   | "Team A" etc. |
 | `account_status` | text | ✓ | enum |
@@ -138,10 +163,10 @@ For each table: purpose, fields (with types), foreign keys, the demo file it map
 | `width_px` | integer |   |  |
 | `height_px` | integer |   |  |
 | `duration_seconds` | numeric |   | for video only |
-| `source_type` | text | ✓ | enum: `client_upload`, `team_shoot`, `archive_reuse`, `imported` |
+| `source_type` | text | ✓ | enum: `client_upload`, `legacy_reuse`, `team_upload` |
 | `title` | text |   | Display name |
 | `caption_hint` | text |   | Client-provided context |
-| `quality_ai_flag` | text |   | enum: `good`, `blurry`, `duplicate`, `low_light`, `wrong_subject` |
+| `quality_ai_flag` | text |   | enum: `likely_usable`, `borderline`, `likely_reject` |
 | `quality_score` | integer |   | 0–100 |
 | `review_status` | text | ✓ | enum (see Part 3) |
 | `rejection_reason` | text |   |  |
@@ -552,14 +577,19 @@ For each table: purpose, fields (with types), foreign keys, the demo file it map
 
 All enums are stored as `text` with `check (col in (...))` constraints. Values use snake_case.
 
-### `clients.plan_type`
+### `clients.plan_type` — contract term / billing cadence
 - `twelve_month`
 - `six_month`
 - `three_month`
 - `no_contract`
-- `google_presence_starter`
+- `month_to_month`
 
-### `clients.service_package`
+> `plan_type` describes **how long / how often** the client is committed.
+> It does **not** identify the product. Google Presence Starter clients
+> are stored as `service_package='google_presence_starter'` with
+> `plan_type='month_to_month'` (or `'no_contract'`).
+
+### `clients.service_package` — which product the client is on
 - `google_presence_starter`
 - `complete_online_presence`
 - `ads_addon`
@@ -583,31 +613,30 @@ All enums are stored as `text` with `check (col in (...))` constraints. Values u
 - `broken`
 
 ### `clients.risk_status`
-- `low`
-- `medium`
-- `high`
-- `critical`
+- `good`
+- `risk`
+- `at_risk`
 
 ### `client_platforms.platform_name`
-- `instagram` · `facebook` · `tiktok` · `google_business` · `youtube` · `x`
+- `instagram` · `facebook` · `google_business` · `tiktok` · `other`
 
 ### `client_platforms.access_status`
-- `not_connected` · `pending` · `connected` · `error` · `revoked`
+- `pending` · `granted` · `verified` · `revoked`
 
 ### `onboarding_items.status`
-- `missing` · `in_progress` · `complete`
+- `not_started` · `pending` · `complete` · `blocked`
 
 ### `onboarding_items.owner_role`
 - `client` · `team` · `operator` · `veroxa`
 
 ### `media_assets.file_type`
-- `photo` · `video`
+- `image` · `video`
 
 ### `media_assets.source_type`
-- `client_upload` · `team_shoot` · `archive_reuse` · `imported`
+- `client_upload` · `legacy_reuse` · `team_upload`
 
 ### `media_assets.quality_ai_flag`
-- `good` · `blurry` · `duplicate` · `low_light` · `wrong_subject`
+- `likely_usable` · `borderline` · `likely_reject`
 
 ### `media_assets.review_status`
 - `uploaded`
@@ -632,16 +661,16 @@ All enums are stored as `text` with `check (col in (...))` constraints. Values u
 - `visit` · `order` · `book` · `follow` · `share` · `none`
 
 ### `content_concepts.status`
-- `proposed` · `approved` · `archived`
+- `generated` · `under_review` · `rejected` · `approved`
 
 ### `draft_sets.status`
-- `drafting` · `awaiting_review` · `approved` · `superseded`
+- `generated` · `under_review` · `needs_regeneration` · `approved` · `archived`
 
 ### `draft_variants.variant_type`
 - `safe` · `engagement` · `sales`
 
 ### `draft_variants.status`
-- `draft` · `approved` · `rejected` · `used` · `superseded`
+- `generated` · `under_review` · `approved` · `archived` · `used`
 
 ### `posts.content_type`
 - `photo` · `reel` · `carousel` · `story`
@@ -659,7 +688,7 @@ All enums are stored as `text` with `check (col in (...))` constraints. Values u
 - `archived`
 
 ### `post_slots.status`
-- `open` · `planned` · `scheduled` · `published` · `cancelled`
+- `open` · `reserved` · `scheduled` · `completed` · `skipped`
 
 ### `notifications.target_role`
 - `client` · `team` · `operator` · `owner`
@@ -683,7 +712,11 @@ All enums are stored as `text` with `check (col in (...))` constraints. Values u
 - `drafting` · `operator_review` · `approved` · `published`
 
 ### `activity_logs.performed_by_role`
-- `client` · `team` · `operator` · `owner` · `agent` · `system`
+- `system` · `client` · `team` · `operator` · `owner`
+
+> AI-agent actions are recorded with `performed_by_role='system'` plus an
+> `action_key` and `new_value_json.agent_key` payload. No separate `agent` role
+> is needed in the audit log.
 
 ### `user_profiles.role`
 - `client` · `team` · `operator` · `owner`
@@ -850,6 +883,36 @@ Each phase should land with: tables + indexes + RLS policies + seed data fixture
 
 ---
 
+## Not Ready For Migration Yet
+
+This draft is **not** safe to translate into a real migration. Outstanding
+blockers, in rough order of importance:
+
+- **RLS policies still need review.** Part 5 is a plan, not a tested policy
+  set. Every table needs `enable row level security` plus explicit
+  `for select / insert / update / delete` policies and a regression test plan.
+- **Seed data still needs planning.** Each demo file in `src/data/demo/` must
+  be turned into an idempotent SQL fixture (or seed script) before migration.
+- **`user_profiles` ↔ `auth.users` linkage must be tested separately.** The
+  on-signup trigger / sync pattern, role provisioning, and `client_id`
+  back-fill on first login are unproven here.
+- **Media storage rules not drafted yet.** Supabase Storage bucket layout,
+  signed-URL policy, per-client folder rules, MIME and size limits, and
+  cleanup of orphaned files are all undefined.
+- **Activity log trigger strategy not finalized.** Whether `activity_logs`
+  rows are written by app code, by Postgres triggers, or both, is still open.
+  A wrong choice here is expensive to undo.
+- **Automation / publishing / AI tables should wait.** `ai_agents`,
+  `content_concepts`, `draft_sets`, `draft_variants` (Phases 5–6) should land
+  only after the core (Phases 1–4) is stable and exercised by real traffic.
+- **Pricing change audit.** Even with Owner-only RLS, every write to
+  `clients.plan_type / service_package / monthly_fee_cents` should write an
+  `activity_logs` row — this contract is not yet wired.
+
+Treat this document as the contract, not the implementation plan.
+
+---
+
 ## Part 8 — Final report
 
 **Files created in this pass**
@@ -885,3 +948,39 @@ Each phase should land with: tables + indexes + RLS policies + seed data fixture
 **RLS planning:** complete (Part 5) — covers Client, Team, Operator, Owner, System roles, with helper-function sketches
 
 **Next pass (not part of this task):** turn the SQL draft into a real migration set behind `AUTH_MODE='real'`, ship RLS policies alongside, seed from demo fixtures, write `SUPABASE_RLS_V1.md`.
+
+### Correction pass V1.1 — change log
+
+- **Timezone:** removed `America/Toronto` default. `timezone` is required for
+  every client; demo seed uses `America/Chicago` (San Antonio, TX market).
+- **`clients.plan_type`:** dropped `google_presence_starter` value (it is a
+  product, not a term). Added `month_to_month`.
+- **`clients.risk_status`:** simplified from `low/medium/high/critical` to
+  `good/risk/at_risk`.
+- **`client_platforms.platform_name`:** dropped `youtube` and `x`, added
+  `other`. Final set: `instagram / facebook / google_business / tiktok / other`.
+- **`client_platforms.access_status`:** retitled from
+  `not_connected/pending/connected/error/revoked` to
+  `pending/granted/verified/revoked`.
+- **`onboarding_items.status`:** retitled from `missing/in_progress/complete`
+  to `not_started/pending/complete/blocked`.
+- **`media_assets.file_type`:** `photo` → `image`.
+- **`media_assets.source_type`:** consolidated to
+  `client_upload / legacy_reuse / team_upload`.
+- **`media_assets.quality_ai_flag`:** simplified to
+  `likely_usable / borderline / likely_reject`.
+- **`content_concepts.status`:** retitled to
+  `generated / under_review / rejected / approved`.
+- **`draft_sets.status`:** retitled to
+  `generated / under_review / needs_regeneration / approved / archived`.
+- **`draft_variants.status`:** retitled to
+  `generated / under_review / approved / archived / used`.
+- **`post_slots.status`:** retitled to
+  `open / reserved / scheduled / completed / skipped`.
+- **`activity_logs.performed_by_role`:** dropped `agent` (agent actions are
+  written as `system` with the agent_key in the JSON payload).
+- **Pricing:** added an explicit cents table mapping each product to
+  `service_package`, `plan_type`, and `monthly_fee_cents`.
+- **Google Presence Starter:** clarified as a `service_package`, never a
+  `plan_type`.
+- **Added "Not Ready For Migration Yet" section** listing outstanding blockers.
