@@ -50,10 +50,27 @@
 --   id                    uuid primary key default gen_random_uuid(),
 --   user_profile_id       uuid not null unique references user_profiles(id) on delete cascade,
 --   role_label            text not null,
---   assigned_client_ids   uuid[],
+--   -- DEPRECATED: assigned_client_ids uuid[] -- DO NOT USE. Real design lives
+--   -- in team_client_assignments below. Array-of-uuid is hard to index for
+--   -- RLS, can't carry per-assignment role, can't be soft-revoked, and bloats
+--   -- the team_members row on every assignment change.
 --   created_at            timestamptz not null default now(),
 --   updated_at            timestamptz not null default now()
 -- );
+
+-- create table team_client_assignments (
+--   id                uuid primary key default gen_random_uuid(),
+--   team_member_id    uuid not null references team_members(id) on delete cascade,
+--   client_id         uuid not null references clients(id)      on delete cascade,
+--   assignment_role   text not null default 'executor'
+--                       check (assignment_role in ('executor','reviewer','scheduler','reporter','lead')),
+--   is_active         boolean not null default true,
+--   created_at        timestamptz not null default now(),
+--   updated_at        timestamptz not null default now(),
+--   unique (team_member_id, client_id)
+-- );
+-- create index on team_client_assignments (team_member_id, is_active);
+-- create index on team_client_assignments (client_id, is_active);
 
 -- create table clients (
 --   id                          uuid primary key default gen_random_uuid(),

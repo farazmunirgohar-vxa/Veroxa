@@ -1,0 +1,297 @@
+VEROXA PROMPT — PRE-MIGRATION HARDENING PLAN V1
+
+Objective:
+Harden the Supabase schema/RLS planning documents before any real migration files are created.
+
+This is still a PLANNING/DOCUMENTATION pass only.
+
+Do NOT run migrations.
+Do NOT move SQL files into supabase/migrations.
+Do NOT connect real data.
+Do NOT activate real auth.
+Do NOT change AUTH_MODE.
+Do NOT change auth guards.
+Do NOT change portal UI.
+Do NOT change pricing.
+Do NOT change navigation.
+Do NOT build uploads.
+Do NOT build AI APIs.
+Do NOT build publishing.
+Do NOT add payment processing.
+
+Keep AUTH_MODE as:
+"placeholder"
+
+Keep pricing unchanged:
+Google Presence Starter: $497/mo
+
+Complete Online Presence:
+12-month: $997/mo
+6-month: $1,097/mo
+3-month: $1,197/mo
+No-contract: $1,497/mo
+
+------------------------------------------------
+
+SOURCE FILES TO UPDATE
+
+Update planning/docs only:
+
+docs/SUPABASE_SCHEMA_DRAFT_V1.md
+docs/SUPABASE_RLS_PLAN_V1.md
+docs/sql_drafts/001_veroxa_schema_draft.sql
+docs/sql_drafts/002_rls_policy_examples.sql
+
+Do not update app source files unless fixing a documentation typo.
+
+------------------------------------------------
+
+PART 1 — REPLACE ARRAY-BASED TEAM ASSIGNMENTS WITH JOIN TABLE PLAN
+
+Current issue:
+The plan uses:
+
+team_members.assigned_client_ids uuid[]
+
+This is okay for demo thinking, but not ideal for real RLS.
+
+Update the schema/RLS plan to use a dedicated join table:
+
+team_client_assignments
+
+Fields:
+- id uuid primary key default gen_random_uuid()
+- team_member_id uuid not null references team_members(id) on delete cascade
+- client_id uuid not null references clients(id) on delete cascade
+- assignment_role text not null default 'executor'
+- is_active boolean not null default true
+- created_at timestamptz not null default now()
+- updated_at timestamptz not null default now()
+
+Add a unique constraint:
+
+unique(team_member_id, client_id)
+
+Recommended assignment_role values:
+- executor
+- reviewer
+- scheduler
+- reporter
+- lead
+
+Update all references to team assignment logic.
+
+Do not use assigned_client_ids uuid[] as the main real design.
+
+------------------------------------------------
+
+PART 2 — UPDATE HELPER FUNCTION PLAN
+
+Update:
+
+is_assigned_to_client(client_id uuid)
+
+It should now check:
+
+- operator/owner access
+- whether the current team user has an active row in team_client_assignments for that client
+
+Do not use array contains logic as the primary plan.
+
+Update SQL example helper too, but keep it commented planning-only.
+
+------------------------------------------------
+
+PART 3 — ADD CLIENT-SAFE VIEW STRATEGY
+
+RLS controls rows, not columns.
+
+Add a new section to the RLS plan:
+
+Client-safe views
+
+Plan these future views:
+
+client_portal_clients_view
+- safe client account fields only
+- no monthly_fee_cents
+- no internal risk notes
+- no assignment fields
+
+client_portal_media_view
+- client-safe media status
+- no internal rejection_reason details unless rewritten into client-safe wording
+- no team notes
+
+client_portal_reports_view
+- only published reports
+- no internal validation notes
+- no draft/operator fields
+
+client_portal_calendar_view
+- scheduled/published post calendar
+- no internal draft/concept data
+
+client_portal_notifications_view
+- only client-targeted notifications
+
+Clarify:
+Client portal should query views where possible, not raw base tables.
+
+------------------------------------------------
+
+PART 4 — ADD SECURITY DEFINER SAFETY RULES
+
+Update the helper function plan and SQL examples.
+
+Every future security definer helper should include:
+
+- explicit schema
+- stable where appropriate
+- no exception throwing
+- null/false fallback
+- explicit search_path
+- no dynamic SQL
+- no reading from untrusted tables
+- unit tests before use
+
+Add example comment:
+
+security definer helpers must set search_path explicitly.
+
+Do not implement live functions yet.
+
+------------------------------------------------
+
+PART 5 — UPDATE MIGRATION SEQUENCE
+
+Update migration order to include the new join table.
+
+Migration 001 — Identity foundation:
+- user_profiles
+- team_members
+- helper functions needed for role lookup
+
+Migration 002 — Client foundation:
+- clients
+- team_client_assignments
+- client_platforms
+- onboarding_items
+- client_requests
+
+Explain why team_client_assignments belongs in Migration 002:
+because assignments depend on both team_members and clients.
+
+Update all seed strategy sections:
+demo team assignments should seed into team_client_assignments, not assigned_client_ids.
+
+------------------------------------------------
+
+PART 6 — UPDATE RLS MATRIX
+
+Update the table-by-table RLS matrix to include:
+
+team_client_assignments
+
+Rules:
+
+Client:
+- no access
+
+Team:
+- can select their own active assignments
+- cannot modify assignments
+
+Operator:
+- can select all assignments
+- may update assignment status if allowed by future policy
+
+Owner:
+- full access to create/update/deactivate assignments
+
+System:
+- may insert/update through admin workflows only
+
+------------------------------------------------
+
+PART 7 — UPDATE SQL DRAFTS
+
+Update:
+
+docs/sql_drafts/001_veroxa_schema_draft.sql
+
+Add commented CREATE TABLE draft for:
+
+team_client_assignments
+
+Remove or deprecate:
+team_members.assigned_client_ids uuid[]
+
+If keeping it temporarily in comments, mark it deprecated and not recommended.
+
+Update:
+
+docs/sql_drafts/002_rls_policy_examples.sql
+
+Update the commented helper example for:
+
+is_assigned_to_client(client_id uuid)
+
+so it checks team_client_assignments instead of assigned_client_ids array.
+
+Keep both files clearly labeled:
+
+DO NOT RUN — PLANNING DRAFT ONLY
+
+or
+
+DO NOT RUN — RLS PLANNING EXAMPLES ONLY
+
+------------------------------------------------
+
+PART 8 — ADD PRE-MIGRATION CHECKLIST
+
+Add a checklist section:
+
+Before creating real migrations:
+
+- team_client_assignments design confirmed
+- client-safe views planned
+- RLS helper search_path rules documented
+- pricing writes owner-only
+- client cannot query base sensitive fields directly
+- one user per role test plan written
+- seed IDs strategy finalized
+- rollback plan drafted
+- storage rules planned but not implemented
+- activity log write strategy confirmed
+
+------------------------------------------------
+
+PART 9 — FINAL REPORT REQUIRED
+
+At completion, report:
+
+1. Files modified
+2. team_client_assignments added to plan
+3. assigned_client_ids replaced or deprecated
+4. Helper function plan updated
+5. Client-safe views planned
+6. Security definer safety rules added
+7. Migration sequence updated
+8. RLS matrix updated
+9. SQL drafts updated
+10. Confirmation no migrations were run
+11. Confirmation AUTH_MODE unchanged
+12. Confirmation pricing unchanged
+13. Remaining risks
+14. Recommended next prompt
+
+PASS STANDARD:
+- No app behavior changes
+- No backend connected
+- No migrations run
+- team assignment model is safer
+- client-safe views are planned
+- helper function security risks are documented
+- schema/RLS docs are more migration-ready

@@ -14,10 +14,26 @@
 -- -----------------------------------------------------------------------------
 -- Helper functions (sketches — implement in schema `private` later)
 -- -----------------------------------------------------------------------------
+--
+-- SECURITY DEFINER SAFETY RULES — every helper below MUST:
+--   * live in an explicit non-public schema (e.g. `private`)
+--   * be marked `security definer` and `stable` (or `immutable`) where possible
+--   * `set search_path = pg_catalog, public` explicitly to defeat search_path
+--     hijacking by a hostile session
+--   * never raise an exception to the caller — return null/false on missing data
+--   * never use `execute` / dynamic SQL
+--   * read only from schema-controlled tables (`user_profiles`,
+--     `team_members`, `team_client_assignments`, `clients`) — never from a
+--     user-writable table whose contents could be poisoned
+--   * have a unit-test pass against fixtures for: anon, service role, one user
+--     per role, and a user whose row was deleted, BEFORE any policy references
+--     them
+-- -----------------------------------------------------------------------------
 
 -- create or replace function private.current_user_role()
 -- returns text
 -- language sql stable security definer
+-- set search_path = pg_catalog, public
 -- as $$
 --   select role from public.user_profiles where id = auth.uid();
 -- $$;
@@ -25,6 +41,7 @@
 -- create or replace function private.current_user_client_id()
 -- returns uuid
 -- language sql stable security definer
+-- set search_path = pg_catalog, public
 -- as $$
 --   select case
 --     when private.current_user_role() = 'client'
@@ -37,14 +54,22 @@
 
 -- create or replace function private.is_owner()
 -- returns boolean language sql stable security definer
+-- set search_path = pg_catalog, public
 -- as $$ select private.current_user_role() = 'owner' $$;
 
 -- create or replace function private.is_operator()
 -- returns boolean language sql stable security definer
+-- set search_path = pg_catalog, public
 -- as $$ select private.current_user_role() in ('operator','owner') $$;
 
+-- -- Reads team_client_assignments (NOT a uuid[] on team_members).
+-- -- Operator/owner short-circuits true. Team users check the join table for
+-- -- an ACTIVE row. Clients always return false here (they use a different
+-- -- ownership helper).
 -- create or replace function private.is_assigned_to_client(p_client uuid)
--- returns boolean language sql stable security definer
+-- returns boolean
+-- language sql stable security definer
+-- set search_path = pg_catalog, public
 -- as $$
 --   select
 --     private.is_operator()
@@ -53,9 +78,13 @@
 --       where c.id = p_client and c.assigned_operator_id = auth.uid()
 --     )
 --     or exists (
---       select 1 from public.team_members tm
---       join public.user_profiles up on up.id = tm.user_profile_id
---       where up.id = auth.uid() and p_client = any(tm.assigned_client_ids)
+--       select 1
+--       from public.team_client_assignments tca
+--       join public.team_members           tm  on tm.id = tca.team_member_id
+--       join public.user_profiles          up  on up.id = tm.user_profile_id
+--       where up.id        = auth.uid()
+--         and tca.client_id = p_client
+--         and tca.is_active = true
 --     );
 -- $$;
 
@@ -73,6 +102,7 @@
 
 -- alter table public.user_profiles            enable row level security;
 -- alter table public.team_members             enable row level security;
+-- alter table public.team_client_assignments  enable row level security;
 -- alter table public.clients                  enable row level security;
 -- alter table public.client_platforms         enable row level security;
 -- alter table public.onboarding_items         enable row level security;

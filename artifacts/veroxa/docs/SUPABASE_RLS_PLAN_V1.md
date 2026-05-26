@@ -51,6 +51,8 @@ Veroxa has **five** principals at the database level. Four are human (rows in `u
 - Their own `client_requests.status` (`pending` → `in_progress` → `completed`)
 - Their own `onboarding_items.status` (only items where `owner_role='client'`)
 - Their own contact fields on `clients` (name, phone, secondary contacts) — never pricing, status, or assignment fields
+
+> **Important — the client portal should read from client-safe views, not base tables.** RLS controls rows, not columns. To keep sensitive columns (pricing, internal notes, assignment fields) off the wire entirely, the client portal queries `client_portal_*_view` objects rather than the raw base tables. See "Client-safe views" at the end of this part.
 - `notifications.status` for their own notifications (mark seen/dismissed)
 
 **Cannot view:**
@@ -66,13 +68,14 @@ Veroxa has **five** principals at the database level. Four are human (rows in `u
 ### Team
 
 **Can view:**
-- `clients` they are assigned to (via `clients.assigned_operator_id = auth.uid()` OR `team_members.assigned_client_ids` contains the client)
+- `clients` they are assigned to (via `clients.assigned_operator_id = auth.uid()` OR an active row in `team_client_assignments` linking their `team_members.id` to the `client_id`)
 - All operational child rows of assigned clients: `media_assets`, `content_concepts`, `draft_sets`, `draft_variants`, `posts`, `post_slots`, `client_platforms`, `onboarding_items`, `client_requests`, `client_health_snapshots`
 - `weekly_reports` for assigned clients (all statuses)
 - `monthly_reports` for assigned clients (read-only — they cannot approve)
 - `notifications` targeted at `target_role='team'` (theirs)
 - `activity_logs` scoped to assigned clients
 - `team_members` rows for themselves only
+- `team_client_assignments` rows where they are the `team_member_id` AND `is_active=true` (read-only; cannot modify their own assignments)
 
 **Can create / update:**
 - `media_assets.review_status`, `rejection_reason`, `quality_ai_flag` (for assigned clients)
@@ -154,6 +157,7 @@ Legend: **✓** = full, **own** = only own rows, **assigned** = only rows for as
 |---|---|---|---|---|---|
 | `user_profiles` | own / — / partial (display_name, avatar_url) / — | own / — / partial / — | all / — / — / — | all / ✓ / ✓ / — | ✓ / ✓ |
 | `team_members` | — / — / — / — | own / — / — / — | all / — / — / — | all / ✓ / ✓ / — | — / — |
+| `team_client_assignments` | — / — / — / — | own active rows / — / — / — | all / — / partial (`is_active`) / — | all / ✓ / ✓ / — | — / ✓ (admin workflows only) |
 | `clients` | own / — / partial (contact fields) / — | assigned / — / — / — | all / — / partial (status/risk/assignment) / — | all / ✓ / ✓ / — | — / partial (derived fields) |
 | `client_platforms` | own / — / — / — | assigned / ✓ / ✓ / — | all / ✓ / ✓ / — | all / ✓ / ✓ / ✓ | — / ✓ (sync) |
 | `onboarding_items` | own / — / partial (client-owned only) / — | assigned / ✓ / ✓ / — | all / ✓ / ✓ / — | all / ✓ / ✓ / ✓ | — / ✓ (auto-complete) |
@@ -172,6 +176,25 @@ Legend: **✓** = full, **own** = only own rows, **assigned** = only rows for as
 | `ai_agents` | — / — / — / — | — / — / — / — | all (read) / — / — / — | all / ✓ / ✓ / — | — / partial (last_activity_at) |
 | `financial_snapshots` | — / — / — / — | — / — / — / — | all (read) / — / — / — | all / ✓ / ✓ / — | ✓ / ✓ |
 | `system_status` | — / — / — / — | — / — / — / — | all (read) / — / — / — | all / ✓ / ✓ / — | — / ✓ |
+
+### Client-safe views (defense in depth — RLS controls rows, not columns)
+
+RLS gates **rows**. To hide individual **columns** (pricing, internal notes, assignment fields) from a role that can see the row, the safest design is a `security_invoker` view that projects only the safe columns and let the client portal query the view instead of the base table. Base-table SELECT remains available to staff; the client role's grants can even be restricted to the views only.
+
+Planned views (created in the migration that creates the underlying table, with `revoke select on <base_table> from client_role` + `grant select on <view> to client_role`):
+
+| View | Underlying table(s) | Exposes | Hides |
+|---|---|---|---|
+| `client_portal_clients_view` | `clients` | id, business_name, primary contact fields, cuisine_type, address, website_url, hours_text, timezone, account_status, content_health_status | `monthly_fee_cents`, `plan_type`, `service_package`, `risk_status`, `assigned_operator_id`, `assigned_team_label`, internal notes |
+| `client_portal_media_view` | `media_assets` | id, client_id, file_url, file_type, title, review_status, used_in_post_id, created_at | `rejection_reason` (raw), internal `team_note`, raw `quality_score`, `source_type` (just exposed as `is_client_upload` boolean if needed) — rejection text rewritten into a `client_message` field by a `case` in the view |
+| `client_portal_reports_view` | `weekly_reports` + `monthly_reports` (UNION ALL with `report_kind` column) | published reports only (`where status='published'`), client_id, period dates, summary_json (client-safe fields), top_post_id, published_at | `internal_validation_note`, `operator_review_note`, draft-only fields, anything pre-`published` |
+| `client_portal_calendar_view` | `posts` + `post_slots` | scheduled and published posts only, slot_date/time, platform, caption (final), media references | concepts, drafts, variants, internal scheduling notes, pre-publish posts |
+| `client_portal_notifications_view` | `notifications` | id, target_user_id, title, body, status, created_at — filtered to `target_role='client'` AND (`target_user_id = auth.uid()` OR `target_user_id is null`) | internal `trigger_source` payload, staff-routed notifications |
+
+Rules:
+- Views are `security_invoker = true` (Postgres 15+) so the caller's RLS still applies — the view is a column filter, not a privilege escalation.
+- Base-table policies still exist; the views are an additional layer, not a replacement.
+- The client portal frontend should query **only** these views. If a portal page needs a column not exposed, that's a signal to discuss whether it's actually client-safe — never bypass the view.
 
 ### Per-row notes
 - **`user_profiles`:** writes other than `display_name` / `avatar_url` are Owner-only. Role and `is_active` changes must trigger an `activity_logs` insert.
@@ -212,9 +235,9 @@ All helpers live in schema `private` (or `auth_helpers`) and are `security defin
 
 ### `is_assigned_to_client(client_id uuid) returns boolean`
 - **Purpose:** True if the calling user is a team or operator user assigned to that client.
-- **Returns:** true when `clients.assigned_operator_id = auth.uid()` OR the calling user's `team_members.assigned_client_ids` array contains the given id, OR the user is operator/owner.
+- **Returns:** true when `is_operator()`, OR `clients.assigned_operator_id = auth.uid()`, OR an **active** row exists in `team_client_assignments` linking the caller's `team_members.id` to the given `client_id`. (No array-contains anywhere — `team_members.assigned_client_ids` is deprecated and removed from the real design.)
 - **Used by:** every `assigned`-scoped policy on `media_assets`, `content_concepts`, `draft_sets`, `draft_variants`, `posts`, `post_slots`, `client_requests`, `client_platforms`, `onboarding_items`, `client_health_snapshots`, `activity_logs` SELECT.
-- **Risk if wrong:** a permissive bug exposes other clients' rows to the wrong team member. Must default to false for any unknown user.
+- **Risk if wrong:** a permissive bug exposes other clients' rows to the wrong team member. Must default to false for any unknown user, must require `is_active = true`, and must not be tricked by inactive/revoked assignments left in the table for audit purposes.
 
 ### `can_view_client(client_id uuid) returns boolean`
 - **Purpose:** Union of client (own) + team (assigned) + operator + owner.
@@ -237,10 +260,25 @@ All helpers live in schema `private` (or `auth_helpers`) and are `security defin
 - **Purpose:** True when the caller is the service role (no JWT, or `auth.role() = 'service_role'`).
 - **Used by:** insert policies on `activity_logs`, `client_health_snapshots`, `financial_snapshots`.
 
+### Security definer safety rules (apply to every helper)
+Every helper above is `security definer` (runs with the function-owner's
+privileges, not the caller's). That power makes them attack surface; treat
+each one like an internal API:
+
+- **Explicit schema.** Define in `private` (or `auth_helpers`); never in `public`. Reference fully-qualified tables (`public.user_profiles`, not `user_profiles`).
+- **Explicit `set search_path = pg_catalog, public`.** Defeats search-path hijacking — without this, a malicious extension or shadow table on the caller's path can intercept references.
+- **`stable` / `immutable`.** Cache per statement so the planner is sane and the policy isn't recomputed per row.
+- **No exceptions.** Return null/false on missing rows. A raised exception escapes to the user and tells them which row triggered it.
+- **No dynamic SQL.** No `execute`, no string-built queries; only static SQL the planner can verify.
+- **Read only from schema-controlled tables.** `user_profiles`, `team_members`, `team_client_assignments`, `clients`. Never read from a user-writable table whose contents could be poisoned by an attacker (e.g. `media_assets.title`).
+- **Owner = role-creator.** The function owner should be the migration role, not `postgres` superuser, and the function should be `revoke execute from public` then `grant execute to authenticated, service_role` explicitly.
+- **Unit tests before use.** Each helper passes against fixtures for: anon, service role, one user per role, a user whose `user_profiles` row was deleted, and a team user with an inactive `team_client_assignments` row.
+
 ### Risk summary
-- Any helper that consults `user_profiles` must be `stable` so Postgres can cache per statement.
-- Helpers must never raise — null/false on missing data, never an exception that escapes to the user.
-- All helpers should be tested against a fixture set including anon, service role, and one user per role before policies reference them.
+- A permissive `current_user_role()` returns the wrong role → every other policy fails open.
+- An `is_assigned_to_client()` that forgets `is_active=true` → revoked team members still see their old clients.
+- A missing `set search_path` → an attacker who can create a table in their own schema can shadow `public.user_profiles` and lie about their own role.
+- A helper that raises → the error message can leak which client_id was queried.
 
 ---
 
@@ -262,12 +300,12 @@ Each migration is a single PR. **Each migration MUST land with: schema + indexes
   - Owner can UPDATE `role` on a team user, change shows up in next `current_user_role()` call
 
 ### Migration 002 — Client foundation
-- **Tables:** `clients`, `client_platforms`, `onboarding_items`, `client_requests`
+- **Tables:** `clients`, `team_client_assignments`, `client_platforms`, `onboarding_items`, `client_requests`
 - **Helpers added:** `is_assigned_to_client`, `can_view_client`, `can_manage_client_operations`, `can_manage_pricing`
-- **RLS:** all four tables, plus column-level update on `clients` (pricing fields owner-only). `client_requests` allows client INSERT for own `client_id`.
-- **Why safe second:** these are the root identifiers used by every operational table. Needs to land before any media/content table can FK to it.
+- **RLS:** all five tables, plus column-level update on `clients` (pricing fields owner-only). `client_requests` allows client INSERT for own `client_id`. `team_client_assignments`: Owner full CRUD, Operator read + `is_active` toggle, Team read-only-own-active rows.
+- **Why safe second:** these are the root identifiers used by every operational table. `team_client_assignments` belongs here (not 001) because it FKs to both `team_members` (from 001) **and** `clients` (created in this migration); placing it here keeps the dependency one-directional. Needs to land before any media/content table can FK to `clients`, and before `is_assigned_to_client()` is referenced by any other policy.
 - **Dependencies:** Migration 001.
-- **Seed:** `demoClients` (San Antonio fixtures), 1–2 platforms per client, onboarding items per `demoOnboarding`.
+- **Seed:** `demoClients` (San Antonio fixtures), 1–2 platforms per client, onboarding items per `demoOnboarding`, **`team_client_assignments` rows derived from `demoTeam.ts`** (one active row per team member × assigned client, `assignment_role` defaulted to `'executor'`).
 - **Test cases:**
   - Client sees own `clients` row only
   - Team user sees only assigned clients
@@ -275,6 +313,8 @@ Each migration is a single PR. **Each migration MUST land with: schema + indexes
   - Operator can UPDATE `account_status` but not `monthly_fee_cents`
   - Owner can UPDATE `monthly_fee_cents`
   - Client cannot SEE `client_platforms.notes`
+  - A team user with an `is_active=false` row in `team_client_assignments` does **not** see that client's rows (revocation is honored)
+  - Removing an assignment (setting `is_active=false`) cuts SELECT visibility on the next statement, with no per-session caching staleness
 
 ### Migration 003 — Media foundation
 - **Tables:** `media_assets`, `client_health_snapshots`, `notifications`, `activity_logs`
@@ -351,7 +391,8 @@ All seed scripts live under `supabase/seed/` (future) or `scripts/seed/` (TypeSc
 |---|---|---|---|---|
 | `demoClients.ts` | `seed_clients.ts` | yes | yes | Stable UUIDs required — every other seed FKs to these. Use `v5` UUIDs derived from `business_name` slugs. |
 | (implicit) | `seed_user_profiles.ts` | yes | yes | One user per role: `client@…`, `team@…`, `operator@…`, `owner@…`. **Never seed in production.** |
-| `demoTeam.ts` | `seed_team_members.ts` | yes | yes | Maps team users to assigned `client_ids`. |
+| `demoTeam.ts` (members) | `seed_team_members.ts` | yes | yes | One row per internal user with `role_label`. No assignment columns. |
+| `demoTeam.ts` (assignments) | `seed_team_client_assignments.ts` | yes | yes | Derived join rows: one per (team_member, client) pair, `assignment_role='executor'`, `is_active=true`. Idempotent via `unique (team_member_id, client_id)`. |
 | `demoOnboarding.ts` | `seed_onboarding_items.ts` | yes | yes | Idempotent via `unique (client_id, item_key)`. |
 | `demoMediaAssets.ts` | `seed_media_assets.ts` | yes | yes | File URLs point to Supabase Storage dev bucket — pre-uploaded once. |
 | `demoNotifications.ts` | `seed_notifications.ts` | yes | yes | Recent-dated relative to seed-run time. |
@@ -409,7 +450,7 @@ This is the gating checklist for flipping `AUTH_MODE` from `"placeholder"` to `"
 ### Users
 - [ ] One verified user per role exists (`client`, `team`, `operator`, `owner`)
 - [ ] At least one test `clients` row linked to the client user via `user_profiles.client_id`
-- [ ] At least one team user assigned to ≥1 client (via `team_members.assigned_client_ids` AND/OR `clients.assigned_operator_id`)
+- [ ] At least one team user assigned to ≥1 client (via an active row in `team_client_assignments` AND/OR `clients.assigned_operator_id`)
 - [ ] Operator can SELECT all clients but **cannot** UPDATE `monthly_fee_cents`
 - [ ] Owner can UPDATE `monthly_fee_cents`
 
@@ -542,6 +583,27 @@ These triggers do not depend on app code. Even if a future feature forgets to lo
 
 ---
 
+## Part 9b — Pre-migration checklist
+
+Run through this list **before** creating real migration files in `supabase/migrations/`. Every item must be checked off in writing (or explicitly waived with a rationale) — it is the dam between "planning" and "production code".
+
+- [ ] **`team_client_assignments` design confirmed** — replaces the deprecated `team_members.assigned_client_ids` array; FKs, unique constraint, and `assignment_role` enum locked.
+- [ ] **Client-safe views planned** — every protected column on a client-readable table either lives in a `client_portal_*_view` projection or is documented as intentionally exposed.
+- [ ] **Security definer helper rules documented** — explicit schema, `set search_path`, `stable`, no exceptions, no dynamic SQL, restricted EXECUTE grants. Helper unit-test fixture list written.
+- [ ] **Pricing writes Owner-only** — `clients.plan_type`, `clients.service_package`, `clients.monthly_fee_cents` enforced both by RLS policy AND a `before update` trigger that raises on non-owner attempts. Backed by audit-log entry.
+- [ ] **Client cannot query base sensitive tables directly** — `revoke select on <sensitive_base_tables> from client_role` planned; `grant select on <client_portal_*_view> to client_role` listed.
+- [ ] **One-user-per-role test plan written** — explicit fixture list (`client@…`, `team@…`, `operator@…`, `owner@…`) plus the cross-tenant probe set: Client A ↛ Client B's media / posts / reports / notifications; revoked team member ↛ assigned client's rows.
+- [ ] **Seed ID strategy finalized** — `clients.id` and `user_profiles.id` for dev fixtures pinned to deterministic `v5` UUIDs; `ai_agents.agent_key` and `system_status.label` documented as stable text keys.
+- [ ] **Rollback plan drafted** — `AUTH_MODE='placeholder'` flip-back procedure, pre-cutover backup snapshot, on-call contact, and the exact migration `down`-equivalent strategy (or "forward-only + restore from backup" if that's the choice).
+- [ ] **Storage rules planned but not implemented** — `client-media` bucket layout (`{client_id}/raw|approved|archive`), MIME/size limits, signed-URL policy, orphan cleanup cron. No buckets actually created.
+- [ ] **Activity log write strategy confirmed** — Hybrid (Option C): app writes business events; narrow Postgres trigger writes safety-net rows for pricing/role/agent column changes. Trigger column list explicit.
+- [ ] **Demo seed → real seed file mapping reviewed** — every entry in Part 6's table either has a planned seed file or is explicitly marked "computed at query time, never seeded".
+- [ ] **No real-auth env vars wired into the client bundle** — service-role key only ever in server-side secrets; `VITE_*` exposes only the anon key.
+
+If any checkbox can't be ticked, the corresponding plan section is the next thing to write, not the migration itself.
+
+---
+
 ## Part 10 — Final report
 
 **Files created in this pass**
@@ -554,7 +616,7 @@ These triggers do not depend on app code. Even if a future feature forgets to lo
 
 **Table-by-table matrix summary:** All 19 tables covered (Part 3). Clients always own-scoped, Team always assigned-scoped, Operator always all-rows with selective writes, Owner unrestricted, System append-only.
 
-**Helper functions planned:** 10 — `current_user_role`, `current_user_client_id`, `is_owner`, `is_operator`, `is_team_member`, `is_assigned_to_client`, `can_view_client`, `can_manage_client_operations`, `can_manage_pricing`, `can_view_owner_metrics`, `is_system_actor`. All `security definer`, `stable`, default-deny on missing data.
+**Helper functions planned:** 10 — `current_user_role`, `current_user_client_id`, `is_owner`, `is_operator`, `is_team_member`, `is_assigned_to_client`, `can_view_client`, `can_manage_client_operations`, `can_manage_pricing`, `can_view_owner_metrics`, `is_system_actor`. All `security definer`, `stable`, default-deny on missing data, with explicit `set search_path = pg_catalog, public`, no dynamic SQL, no exception throwing, restricted `EXECUTE` grants. `is_assigned_to_client` now reads `team_client_assignments` (join table) — the array-based `team_members.assigned_client_ids` is deprecated and out of the real design.
 
 **Migration sequencing summary:** 7 migrations, each landing schema + indexes + RLS + seed + tests together. Order: identity → clients → media/audit → posting → reporting → content AI → analytics.
 

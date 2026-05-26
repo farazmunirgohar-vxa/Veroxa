@@ -451,9 +451,43 @@ For each table: purpose, fields (with types), foreign keys, the demo file it map
 | `id` | uuid | ✓ | PK |
 | `user_profile_id` | uuid | ✓ | FK → `user_profiles.id` (unique) |
 | `role_label` | text | ✓ | e.g. `"Content Lead"` |
-| `assigned_client_ids` | uuid[] |   | quick-access cache; source of truth is `clients.assigned_operator_id` etc. |
 | `created_at` | timestamptz | ✓ |  |
 | `updated_at` | timestamptz | ✓ |  |
+
+> **Deprecated:** earlier drafts included `assigned_client_ids uuid[]` on this
+> table. That array column is **not** the real-schema design. Assignments now
+> live in a dedicated join table — see `team_client_assignments` below. RLS
+> against a `uuid[]` is painful to index and clunky to revoke; the join table
+> is the only design used by the RLS plan and seed strategy.
+
+---
+
+### 15a. `team_client_assignments` — P2 (join table)
+
+**Purpose:** Many-to-many link between a team member and the clients they work on. Replaces the deprecated `team_members.assigned_client_ids` array. Every RLS check for team scoping reads this table.
+
+**Demo source:** Derived from `demoTeam.ts` (`demoTeamMembers` + assigned-client lists) plus `clients.assignedOperator` in `demoClients.ts`.
+
+**Portal pages:** Operator team oversight, Owner role management, every team-scoped query (drives `is_assigned_to_client()`).
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `id` | uuid | ✓ | PK |
+| `team_member_id` | uuid | ✓ | FK → `team_members.id` `on delete cascade` |
+| `client_id` | uuid | ✓ | FK → `clients.id` `on delete cascade` |
+| `assignment_role` | text | ✓ | enum, default `'executor'` — see Part 3 |
+| `is_active` | boolean | ✓ | default `true` — soft-revoke without deleting the row |
+| `created_at` | timestamptz | ✓ |  |
+| `updated_at` | timestamptz | ✓ |  |
+
+**Unique:** `(team_member_id, client_id)` — one assignment row per pair; revoke by flipping `is_active=false`, do not delete (preserves audit history).
+
+**Why a join table, not an array:**
+- Soft-revoke + audit history via `is_active` / `activity_logs`
+- Per-assignment `assignment_role` (executor vs reviewer vs lead)
+- Indexable both directions (`(team_member_id, is_active)` and `(client_id, is_active)`)
+- RLS check becomes a cheap `exists` instead of an `ANY(array)` scan
+- Owner can add/revoke assignments without rewriting the team_members row
 
 ---
 
@@ -738,6 +772,13 @@ All enums are stored as `text` with `check (col in (...))` constraints. Values u
 
 ### `system_status.state`
 - `active` · `not_connected` · `placeholder`
+
+### `team_client_assignments.assignment_role`
+- `executor` · `reviewer` · `scheduler` · `reporter` · `lead`
+
+> Default value is `'executor'`. Multiple team members may share a client; the
+> Owner role manages assignments. `is_active=false` soft-revokes without
+> losing audit trail.
 
 ---
 
