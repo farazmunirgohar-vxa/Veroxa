@@ -1,0 +1,704 @@
+VEROXA GIGANTIC PROMPT — MIGRATION 004 DRAFT + MIGRATION 005 DRAFT + MIGRATION 006 PLAN
+
+Objective:
+Continue Veroxa backend preparation safely by creating draft-only migration files and planning documents for the next backend layers.
+
+This prompt covers:
+
+1. Migration 004 — Posting Foundation SQL draft
+2. Migration 005 — Reporting Foundation SQL draft
+3. Migration 006 — Content + AI Draft Layer planning document
+
+This is still NOT a live backend implementation.
+
+DO NOT:
+- run migrations
+- place files inside supabase/migrations
+- connect Supabase
+- activate real auth
+- change AUTH_MODE
+- change portal UI
+- change pricing
+- change navigation
+- build real publishing
+- connect social media APIs
+- connect OpenAI / Anthropic
+- add payment processing
+- change visible app behavior
+
+Keep:
+
+AUTH_MODE = "placeholder"
+
+Pricing:
+- Google Presence Starter: $497/mo
+- Complete Online Presence 12-month: $997/mo
+- 6-month: $1,097/mo
+- 3-month: $1,197/mo
+- No-contract: $1,497/mo
+
+All SQL files created in this pass must remain under:
+
+docs/sql_drafts/migrations_review/
+
+Every SQL draft file must include:
+
+DO NOT RUN — MIGRATION REVIEW DRAFT ONLY
+This file is not active.
+It is not in the Supabase migrations folder.
+Review and audit before converting into a real migration.
+AUTH_MODE remains "placeholder".
+
+------------------------------------------------
+SOURCE FILES TO READ FIRST
+------------------------------------------------
+
+Read and align with:
+
+docs/SUPABASE_SCHEMA_DRAFT_V1.md
+docs/SUPABASE_RLS_PLAN_V1.md
+docs/DEMO_DATA_MAP.md
+
+Existing draft/planning files:
+
+docs/sql_drafts/migrations_review/001_identity_foundation_draft.sql
+docs/sql_drafts/migrations_review/002_client_foundation_draft.sql
+docs/sql_drafts/migrations_review/003_media_foundation_draft.sql
+docs/MIGRATION_004_POSTING_FOUNDATION_PLAN.md
+
+If any expected file is missing, report it clearly and continue using the safest available source.
+
+Do not rewrite earlier migrations unless a small correction is required to maintain dependency consistency.
+
+------------------------------------------------
+PHASE 1 — MIGRATION 004 POSTING FOUNDATION SQL DRAFT
+------------------------------------------------
+
+Create:
+
+docs/sql_drafts/migrations_review/004_posting_foundation_draft.sql
+
+Create or update:
+
+docs/MIGRATION_004_TEST_PLAN.md
+
+Migration 004 depends on:
+
+- M001 identity foundation
+- M002 client foundation
+- M003 media foundation
+
+Migration 004 includes only:
+
+- posts
+- post_slots
+- FK addition: media_assets.linked_post_id → posts(id)
+- client-safe calendar view
+- RLS policy drafts
+- indexes
+- updated_at triggers if needed
+
+Do NOT include:
+
+- weekly_reports
+- monthly_reports
+- content_concepts
+- draft_sets
+- draft_variants
+- ai_agents
+- publishing API tables
+- payment tables
+- storage buckets
+- background jobs
+
+POSTS TABLE
+
+Draft table:
+
+posts
+
+Fields:
+
+- id uuid primary key default gen_random_uuid()
+- client_id uuid not null references clients(id) on delete cascade
+- media_asset_id uuid references media_assets(id) on delete set null
+- concept_id uuid nullable
+- draft_variant_id uuid nullable
+- platform_name text not null check in ('instagram','facebook','google_business','tiktok','other')
+- content_type text not null check in ('photo','reel','carousel','story')
+- title text
+- caption_text text
+- post_status text not null default 'planning' check in (
+  'planning',
+  'awaiting_content',
+  'ready_for_review',
+  'approved',
+  'ready_to_schedule',
+  'scheduled',
+  'published',
+  'failed',
+  'reschedule_required',
+  'archived'
+)
+- scheduled_for timestamptz
+- published_at timestamptz
+- publish_failure_reason text
+- is_reuse_based boolean not null default false
+- created_by_user_id uuid references user_profiles(id) on delete set null
+- approved_by_user_id uuid references user_profiles(id) on delete set null
+- created_at timestamptz not null default now()
+- updated_at timestamptz not null default now()
+
+Notes:
+
+- concept_id and draft_variant_id stay nullable until M006.
+- No real publishing API exists.
+- publish_failure_reason is internal only.
+- Client views must hide raw failure/internal workflow details.
+
+POST_SLOTS TABLE
+
+Draft table:
+
+post_slots
+
+Fields:
+
+- id uuid primary key default gen_random_uuid()
+- client_id uuid not null references clients(id) on delete cascade
+- platform_name text not null check in ('instagram','facebook','google_business','tiktok','other')
+- slot_date date not null
+- slot_time time not null
+- timezone text not null
+- status text not null default 'open' check in ('open','reserved','scheduled','completed','skipped')
+- reserved_post_id uuid references posts(id) on delete set null
+- created_at timestamptz not null default now()
+- updated_at timestamptz not null default now()
+
+Constraint:
+
+unique(client_id, platform_name, slot_date, slot_time)
+
+MEDIA LINKAGE
+
+Add draft FK:
+
+media_assets.linked_post_id references posts(id) on delete set null
+
+Comment clearly:
+This FK is added in M004 because posts did not exist in M003.
+
+CLIENT-SAFE VIEW
+
+Draft or stub:
+
+client_portal_calendar_view
+
+Safe fields:
+
+- client_id
+- post_id
+- platform_name
+- content_type
+- client_safe_title
+- scheduled_for
+- published_at
+- status_label
+- thumbnail_url if available
+
+Do not expose:
+
+- concept_id
+- draft_variant_id
+- approved_by_user_id
+- raw publish_failure_reason
+- internal notes
+
+RLS DRAFT
+
+posts:
+- client can view own scheduled/published content only through client-safe view
+- team can create/update assigned-client posts
+- operator can view/update all operational posts
+- owner full access
+- system may update published/failed status later
+- client cannot directly update posts
+
+post_slots:
+- client can view own client-safe calendar slots
+- team can manage assigned-client slots
+- operator can manage all
+- owner full access
+
+INDEXES
+
+Draft:
+
+- posts(client_id)
+- posts(media_asset_id)
+- posts(platform_name)
+- posts(post_status)
+- posts(scheduled_for)
+- posts(published_at)
+- post_slots(client_id)
+- post_slots(platform_name)
+- post_slots(slot_date)
+- post_slots(status)
+- post_slots(reserved_post_id)
+
+TEST PLAN
+
+Create tests for:
+
+- M001/M002/M003 must exist first
+- client sees only own calendar view
+- client cannot see concept_id or draft_variant_id
+- client cannot see raw publish_failure_reason
+- client cannot directly update posts
+- team can create posts for assigned clients
+- team cannot create posts for unassigned clients
+- operator can view/update all posts
+- owner can view/update all posts
+- post slot unique constraint works
+- media_assets.linked_post_id FK works after posts exists
+- scheduled posts do not publish automatically
+- failed status does not call real APIs
+- rollback drops media linked_post FK before dropping posts
+- rollback drops views/policies before tables
+
+------------------------------------------------
+PHASE 2 — MIGRATION 005 REPORTING FOUNDATION SQL DRAFT
+------------------------------------------------
+
+Create:
+
+docs/MIGRATION_005_REPORTING_FOUNDATION_PLAN.md
+docs/sql_drafts/migrations_review/005_reporting_foundation_draft.sql
+docs/MIGRATION_005_TEST_PLAN.md
+
+Migration 005 depends on:
+
+- M001 identity
+- M002 clients
+- M003 media/activity/notifications
+- M004 posts/post slots
+
+Migration 005 includes only:
+
+- weekly_reports
+- monthly_reports
+- client-safe report views
+- RLS drafts
+- indexes
+- updated_at triggers if needed
+
+Do NOT include:
+
+- AI report generation
+- PDF export
+- payments
+- financial snapshots
+- automation jobs
+- email delivery
+- OpenAI/Anthropic calls
+
+WEEKLY_REPORTS TABLE
+
+Draft table:
+
+weekly_reports
+
+Fields:
+
+- id uuid primary key default gen_random_uuid()
+- client_id uuid not null references clients(id) on delete cascade
+- week_start date not null
+- week_end date not null
+- posts_planned integer not null default 0
+- posts_published integer not null default 0
+- top_post_id uuid references posts(id) on delete set null
+- status text not null default 'drafted' check in ('drafted','validated','published')
+- summary_json jsonb
+- client_safe_summary text
+- internal_validation_note text
+- drafted_by_user_id uuid references user_profiles(id) on delete set null
+- validated_by_user_id uuid references user_profiles(id) on delete set null
+- published_at timestamptz
+- created_at timestamptz not null default now()
+- updated_at timestamptz not null default now()
+
+Recommended constraint:
+
+unique(client_id, week_start, week_end)
+
+Notes:
+
+- client only sees published reports through client-safe view
+- internal_validation_note is never client-facing
+- summary_json may contain internal values
+- client_safe_summary powers the client view
+
+MONTHLY_REPORTS TABLE
+
+Draft table:
+
+monthly_reports
+
+Fields:
+
+- id uuid primary key default gen_random_uuid()
+- client_id uuid not null references clients(id) on delete cascade
+- month_key text not null
+- status text not null default 'drafting' check in ('drafting','operator_review','approved','published')
+- summary_json jsonb
+- client_safe_summary text
+- internal_operator_note text
+- approved_by_user_id uuid references user_profiles(id) on delete set null
+- published_at timestamptz
+- created_at timestamptz not null default now()
+- updated_at timestamptz not null default now()
+
+Constraint:
+
+unique(client_id, month_key)
+
+Notes:
+
+- monthly reports require operator approval before publishing
+- client only sees published monthly reports through client-safe view
+- team may draft but not final approve unless later changed
+- owner/operator can see internal notes
+
+CLIENT-SAFE REPORT VIEWS
+
+Draft or stub:
+
+client_portal_weekly_reports_view
+client_portal_monthly_reports_view
+
+Expose:
+
+- report id
+- client_id
+- week range or month_key
+- status
+- client_safe_summary
+- published_at
+- posts_planned
+- posts_published
+- top post reference if safe
+
+Do not expose:
+
+- internal_validation_note
+- internal_operator_note
+- unpublished reports
+- raw internal summary_json unless sanitized
+- draft/operator workflow fields
+
+RLS DRAFT
+
+weekly_reports:
+- client can view own published reports only through client-safe view
+- team can draft/validate assigned-client weekly reports
+- operator can view all and validate/override
+- owner full access
+- system may create draft summaries later
+
+monthly_reports:
+- client can view own published reports only through client-safe view
+- team can draft assigned-client monthly reports
+- operator can approve monthly reports
+- owner full access
+- system may create draft summaries later
+
+INDEXES
+
+Draft:
+
+- weekly_reports(client_id)
+- weekly_reports(week_start)
+- weekly_reports(status)
+- weekly_reports(top_post_id)
+- monthly_reports(client_id)
+- monthly_reports(month_key)
+- monthly_reports(status)
+- monthly_reports(approved_by_user_id)
+
+SEED STRATEGY
+
+Map:
+
+- demoWeeklyReports.ts → weekly_reports
+- demoMonthlyReports.ts → monthly_reports
+
+Rules:
+
+- dev-only
+- stable IDs
+- idempotent
+- no production fake reports
+- only published reports appear in client-safe views
+
+TEST PLAN
+
+Create tests for:
+
+- client sees only own published weekly reports
+- client cannot see draft weekly reports
+- client cannot see internal_validation_note
+- client sees only own published monthly reports
+- client cannot see operator_review monthly reports
+- team can draft assigned-client weekly reports
+- team cannot draft for unassigned clients
+- team cannot final approve monthly reports
+- operator can approve monthly reports
+- owner can view/update all reports
+- unique monthly report per client/month works
+- rollback drops client-safe views before report tables
+
+------------------------------------------------
+PHASE 3 — MIGRATION 006 CONTENT + AI DRAFT LAYER PLAN ONLY
+------------------------------------------------
+
+Create:
+
+docs/MIGRATION_006_CONTENT_AI_LAYER_PLAN.md
+docs/MIGRATION_006_TEST_PLAN_OUTLINE.md
+
+Do NOT create SQL draft yet unless it is only commented/stubbed and clearly planning-only.
+
+Migration 006 depends on:
+
+- M001 identity
+- M002 clients
+- M003 media
+- M004 posts
+- M005 reports
+
+Migration 006 should eventually include:
+
+- content_concepts
+- draft_sets
+- draft_variants
+- ai_agents
+
+Do NOT include:
+
+- real OpenAI calls
+- real Anthropic calls
+- real model selection
+- real publishing APIs
+- payment tables
+- financial snapshots
+- background automation jobs
+
+CONTENT_CONCEPTS PLAN
+
+Document table:
+
+content_concepts
+
+Fields:
+
+- id uuid primary key default gen_random_uuid()
+- client_id uuid not null references clients(id) on delete cascade
+- media_asset_id uuid references media_assets(id) on delete set null
+- content_angle text not null
+- content_goal text check in ('awareness','engagement','conversion','branding','recovery')
+- hook_style text check in ('question','bold_statement','story','stat','behind_scenes')
+- cta_direction text check in ('visit','order','book','follow','share','none')
+- status text not null default 'generated' check in ('generated','under_review','rejected','approved')
+- generated_at timestamptz
+- generated_by_agent text
+- reviewed_by_user_id uuid references user_profiles(id) on delete set null
+- created_at timestamptz not null default now()
+- updated_at timestamptz not null default now()
+
+DRAFT_SETS PLAN
+
+Document table:
+
+draft_sets
+
+Fields:
+
+- id uuid primary key default gen_random_uuid()
+- concept_id uuid not null references content_concepts(id) on delete cascade
+- generation_version integer not null default 1
+- status text not null default 'generated' check in ('generated','under_review','needs_regeneration','approved','archived')
+- team_note text
+- generated_at timestamptz
+- generated_by_agent text
+- created_at timestamptz not null default now()
+- updated_at timestamptz not null default now()
+
+DRAFT_VARIANTS PLAN
+
+Document table:
+
+draft_variants
+
+Fields:
+
+- id uuid primary key default gen_random_uuid()
+- draft_set_id uuid not null references draft_sets(id) on delete cascade
+- variant_type text not null check in ('safe','engagement','sales')
+- caption_body text not null
+- hook_text text
+- cta_text text
+- hashtag_block text
+- brand_voice_score integer
+- status text not null default 'generated' check in ('generated','under_review','approved','archived','used')
+- used_in_post_id uuid references posts(id) on delete set null
+- created_at timestamptz not null default now()
+- updated_at timestamptz not null default now()
+
+AI_AGENTS PLAN
+
+Document table:
+
+ai_agents
+
+Fields:
+
+- id uuid primary key default gen_random_uuid()
+- agent_key text not null unique
+- name text not null
+- category text not null check in ('content','operations','intelligence','executive')
+- purpose text not null
+- is_enabled boolean not null default false
+- mode text not null default 'demo' check in ('demo','rule_based','api_connected')
+- last_run_at timestamptz
+- created_at timestamptz not null default now()
+- updated_at timestamptz not null default now()
+
+Notes:
+
+- real AI APIs are not connected
+- default mode should remain demo or rule_based
+- owner controls enable/disable
+- AI actions should later write activity_logs
+
+POST LINKAGE PLAN
+
+Plan future FK updates:
+
+- posts.concept_id references content_concepts(id)
+- posts.draft_variant_id references draft_variants(id)
+
+RLS PLAN
+
+content_concepts:
+- no client access in V1
+- team can manage concepts for assigned clients
+- operator can oversee all
+- owner full access
+- system/AI can insert later
+
+draft_sets:
+- no client access in V1
+- team can manage assigned-client draft sets
+- operator can review/override
+- owner full access
+- system/AI can insert generated drafts later
+
+draft_variants:
+- no client access in V1
+- team can approve/use assigned-client variants
+- operator can review all
+- owner full access
+- system/AI can generate later
+
+ai_agents:
+- client no access
+- team/operator can view relevant library
+- owner can enable/disable
+- system can update last_run_at
+
+SEED STRATEGY
+
+Map:
+
+- demoAgents.ts → ai_agents
+- demoPosts.ts content pipeline items → content_concepts / draft_sets / draft_variants
+
+Rules:
+
+- dev-only
+- stable IDs
+- no production AI seed except default disabled configs
+- no API keys
+- no model calls
+- no real generated content claims
+
+TEST PLAN OUTLINE
+
+Include:
+
+- client cannot select concepts/drafts/variants
+- team can manage drafts for assigned clients
+- team cannot manage unassigned client drafts
+- operator can view all content workflow
+- owner can enable/disable ai_agents
+- non-owner cannot enable/disable ai_agents
+- system can update last_run_at later
+- post FK additions can be applied safely
+- rollback drops post FKs before draft/concept tables
+- no real AI call occurs
+
+------------------------------------------------
+FINAL SELF-AUDIT
+------------------------------------------------
+
+After all phases, verify:
+
+- no files placed in supabase/migrations
+- no migrations run
+- AUTH_MODE unchanged
+- pricing unchanged
+- navigation unchanged
+- portal UI unchanged
+- no Supabase connection activated
+- no real publishing integration
+- no AI APIs connected
+- all SQL drafts are clearly labeled DO NOT RUN
+- M004 and M005 have test plans
+- M006 is planning-only
+
+FINAL REPORT REQUIRED
+
+Report:
+
+1. Files created
+2. Files modified
+3. M004 draft summary
+4. M004 test plan summary
+5. M005 plan + draft summary
+6. M005 test plan summary
+7. M006 planning summary
+8. RLS/client-safe view decisions
+9. Seed strategy decisions
+10. Confirmation no migrations were run
+11. Confirmation no supabase/migrations files created
+12. Confirmation AUTH_MODE unchanged
+13. Confirmation pricing unchanged
+14. Confirmation navigation unchanged
+15. Remaining risks
+16. Readiness decision for M004
+17. Readiness decision for M005
+18. Planning readiness for M006
+19. Recommended next prompt
+
+PASS STANDARD:
+
+- M004 draft exists only in docs/sql_drafts/migrations_review/
+- M005 draft exists only in docs/sql_drafts/migrations_review/
+- M006 remains planning-only
+- no app behavior changes
+- no backend activation
+- no real auth
+- no real publishing
+- no real AI
+- client-safe views are planned or stubbed
+- RLS risks are documented
