@@ -1,0 +1,272 @@
+VEROXA PROMPT — FINAL PRE-DEV-SUPABASE AUDIT FOR M001–M006
+
+Objective:
+Perform one final audit before Veroxa begins testing Migration 001 in a dev Supabase project.
+
+This is an AUDIT ONLY task.
+
+Do NOT run migrations.
+Do NOT move files into supabase/migrations.
+Do NOT connect Supabase.
+Do NOT activate real auth.
+Do NOT change AUTH_MODE.
+Do NOT change portal UI.
+Do NOT change pricing.
+Do NOT change navigation.
+Do NOT build uploads.
+Do NOT connect AI APIs.
+Do NOT connect publishing APIs.
+Do NOT add payments.
+Do NOT change visible app behavior.
+
+Keep:
+
+AUTH_MODE = "placeholder"
+
+Locked pricing:
+- Google Presence Starter: $497/mo
+- Complete Online Presence 12-month: $997/mo
+- 6-month: $1,097/mo
+- 3-month: $1,197/mo
+- No-contract: $1,497/mo
+
+Primary goal:
+Decide whether Migration 001 is safe to test in a dev Supabase project after human review.
+
+------------------------------------------------
+FILES TO AUDIT
+------------------------------------------------
+
+Review:
+
+src/lib/auth/authMode.ts
+src/components/auth/InternalDemoGuard.tsx
+src/pages/login.tsx
+
+docs/SUPABASE_SCHEMA_DRAFT_V1.md
+docs/SUPABASE_RLS_PLAN_V1.md
+docs/DEMO_DATA_MAP.md
+docs/PORTAL_QUERY_SAFETY_PLAN.md
+
+docs/sql_drafts/migrations_review/001_identity_foundation_draft.sql
+docs/sql_drafts/migrations_review/002_client_foundation_draft.sql
+docs/sql_drafts/migrations_review/003_media_foundation_draft.sql
+docs/sql_drafts/migrations_review/004_posting_foundation_draft.sql
+docs/sql_drafts/migrations_review/005_reporting_foundation_draft.sql
+docs/sql_drafts/migrations_review/002_003_004_portal_connect_views_draft.sql
+docs/sql_drafts/migrations_review/003_notifications_status_guard_draft.sql
+docs/sql_drafts/migrations_review/004_post_slot_reset_guard_draft.sql
+docs/sql_drafts/migrations_review/006_content_ai_layer_draft.sql
+
+docs/MIGRATION_001_TEST_PLAN.md
+docs/MIGRATION_002_TEST_PLAN.md
+docs/MIGRATION_003_TEST_PLAN.md
+docs/MIGRATION_004_TEST_PLAN.md
+docs/MIGRATION_005_TEST_PLAN.md
+docs/MIGRATION_006_TEST_PLAN.md
+
+------------------------------------------------
+PART 1 — SAFETY AUDIT
+------------------------------------------------
+
+Confirm:
+
+- AUTH_MODE is still "placeholder"
+- Demo gate exists for Team / Operator / Owner
+- Client portal remains public
+- No files exist in supabase/migrations
+- No migrations were run
+- Every SQL draft is inside docs/sql_drafts/migrations_review/
+- Every SQL draft has a DO NOT RUN header
+- No real Supabase connection was activated
+- No real auth was activated
+- No AI APIs were connected
+- No publishing APIs were connected
+- Pricing is unchanged
+- Navigation is unchanged
+
+------------------------------------------------
+PART 2 — M001 DEV-TEST READINESS
+------------------------------------------------
+
+Audit Migration 001 specifically.
+
+Check:
+
+- user_profiles table is scoped correctly
+- team_members table is scoped correctly
+- no clients table exists in M001
+- no client data exists in M001
+- no pricing fields exist in M001
+- user_profiles.client_id is nullable and FK deferred to M002
+- role values are only client/team/operator/owner
+- system/service role is not stored as a human user role
+- helper functions use explicit schema and search_path
+- helper functions do not depend on future tables
+- RLS blocks anon
+- users can only see their own profile unless operator/owner
+- owner can manage users
+- non-owner cannot change role
+- self-update only allows safe fields via guard/trigger
+- rollback does not touch auth.users
+
+Decision:
+Is M001 safe to test in a dev Supabase project after human review?
+
+------------------------------------------------
+PART 3 — M002–M006 HOLDING RULES
+------------------------------------------------
+
+Confirm that M002–M006 should NOT be applied until M001 is tested.
+
+For each migration, report the required precondition:
+
+M002:
+Requires M001 green.
+
+M003:
+Requires M001 and M002 green.
+
+M004:
+Requires M001, M002, and M003 green.
+
+Portal-connect views:
+Requires M001–M004 green.
+
+M005:
+Requires M001–M004 green.
+
+M006:
+Requires M001–M004 green, M005 optional depending on final order.
+
+Confirm:
+Real client credentials must NOT be issued until portal-connect views are applied and tested.
+
+------------------------------------------------
+PART 4 — PORTAL-CONNECT READINESS
+------------------------------------------------
+
+Audit:
+
+002_003_004_portal_connect_views_draft.sql
+PORTAL_QUERY_SAFETY_PLAN.md
+
+Confirm the eight views are included:
+
+- client_portal_clients_view
+- client_portal_platforms_view
+- client_portal_onboarding_view
+- client_portal_requests_view
+- client_portal_media_view
+- client_portal_notifications_view
+- client_portal_health_view
+- client_portal_calendar_view
+
+Confirm these views hide sensitive fields:
+
+- monthly_fee_cents
+- assigned_operator_id
+- assigned_team_label
+- internal notes
+- raw rejection_reason
+- quality_score
+- raw publish_failure_reason
+- concept_id
+- draft_variant_id
+- approved_by_user_id
+- raw internal workflow fields
+
+Confirm:
+Client portal must query views, not base tables.
+
+------------------------------------------------
+PART 5 — CORRECTION DRAFT AUDIT
+------------------------------------------------
+
+Audit:
+
+003_notifications_status_guard_draft.sql
+004_post_slot_reset_guard_draft.sql
+
+Confirm notification guard:
+
+- only lets client mark own notification seen/dismissed
+- blocks title/message/priority/target_role/trigger_source edits
+- staff/system paths remain possible as planned
+- test plan includes these checks
+
+Confirm post slot reset:
+
+- resets reserved slots to open when linked post is deleted
+- does not affect unrelated slots
+- does not introduce publishing behavior
+- test plan includes rollback/drop order
+
+------------------------------------------------
+PART 6 — M006 READINESS AUDIT
+------------------------------------------------
+
+Audit:
+
+006_content_ai_layer_draft.sql
+MIGRATION_006_TEST_PLAN.md
+
+Confirm:
+
+- no real AI APIs
+- no API keys
+- no model credentials
+- no background jobs
+- no publishing integrations
+- ai_agents default disabled or inert
+- client has no access to concepts/drafts/variants/ai_agents
+- team access is assigned-client scoped
+- operator can oversee
+- owner controls ai_agents enable/disable
+- posts concept/draft FKs are deferred and safe
+- rollback drops post FKs before concept/draft tables
+
+------------------------------------------------
+PART 7 — FINAL GO / NO-GO DECISION
+------------------------------------------------
+
+Return one decision:
+
+Option A:
+M001 is ready for dev Supabase testing after human review.
+
+Option B:
+M001 needs one more correction pass before dev testing.
+
+Option C:
+Not ready — planning has major conflicts.
+
+Be honest.
+
+Do not overstate readiness.
+
+------------------------------------------------
+FINAL REPORT REQUIRED
+------------------------------------------------
+
+Return:
+
+1. Executive summary
+2. Safety status
+3. M001 readiness score /10
+4. M002–M006 roadmap score /10
+5. Portal-connect view readiness score /10
+6. Correction draft readiness score /10
+7. M006 readiness score /10
+8. Critical blockers
+9. Non-blocking issues
+10. Required fixes before dev Supabase M001 test
+11. Required fixes before real client credentials
+12. Final recommendation: Option A, B, or C
+13. Recommended next prompt
+
+PASS STANDARD:
+- No files changed
+- No migration run
+- Honest readiness decision
+- Clear next step
