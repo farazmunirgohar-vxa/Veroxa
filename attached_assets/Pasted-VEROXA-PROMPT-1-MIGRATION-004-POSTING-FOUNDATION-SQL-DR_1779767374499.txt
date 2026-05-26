@@ -1,0 +1,346 @@
+VEROXA PROMPT 1 — MIGRATION 004 POSTING FOUNDATION SQL DRAFT ONLY
+
+Objective:
+Create a draft-only Migration 004 SQL file for Veroxa’s posting foundation.
+
+This is NOT a live migration.
+This is NOT to be run.
+This is NOT a Supabase activation pass.
+
+Do NOT run migrations.
+Do NOT move files into supabase/migrations.
+Do NOT connect Supabase.
+Do NOT activate real auth.
+Do NOT change AUTH_MODE.
+Do NOT change portal UI.
+Do NOT change pricing.
+Do NOT change navigation.
+Do NOT build real publishing.
+Do NOT connect Instagram/Facebook/TikTok/Google APIs.
+Do NOT add background jobs.
+Do NOT add payment processing.
+
+Keep AUTH_MODE as:
+"placeholder"
+
+Keep pricing unchanged:
+Google Presence Starter: $497/mo
+
+Complete Online Presence:
+12-month: $997/mo
+6-month: $1,097/mo
+3-month: $1,197/mo
+No-contract: $1,497/mo
+
+------------------------------------------------
+
+SOURCE FILES TO READ FIRST
+
+Read:
+
+docs/SUPABASE_SCHEMA_DRAFT_V1.md
+docs/SUPABASE_RLS_PLAN_V1.md
+docs/MIGRATION_004_POSTING_FOUNDATION_PLAN.md
+docs/MIGRATION_003_TEST_PLAN.md
+docs/sql_drafts/migrations_review/003_media_foundation_draft.sql
+docs/DEMO_DATA_MAP.md
+
+Confirm Migration 004 depends on:
+
+- Migration 001 identity foundation
+- Migration 002 client foundation
+- Migration 003 media foundation
+
+Do not proceed if the draft conflicts with these docs.
+
+------------------------------------------------
+
+PART 1 — CREATE MIGRATION 004 DRAFT FILE
+
+Create:
+
+docs/sql_drafts/migrations_review/004_posting_foundation_draft.sql
+
+Add header:
+
+DO NOT RUN — MIGRATION REVIEW DRAFT ONLY
+
+This file is not active.
+It is not in the Supabase migrations folder.
+Review and audit before converting into a real migration.
+AUTH_MODE remains "placeholder".
+No publishing integrations are active.
+
+------------------------------------------------
+
+PART 2 — TABLES TO INCLUDE
+
+Migration 004 should include only:
+
+1. posts
+2. post_slots
+
+Also include:
+
+- deferred FK addition:
+  media_assets.linked_post_id references posts(id) on delete set null
+
+Do NOT include:
+
+- weekly_reports
+- monthly_reports
+- content_concepts
+- draft_sets
+- draft_variants
+- ai_agents
+- financial tables
+- real publishing integrations
+- background jobs
+- storage buckets
+- payment tables
+
+------------------------------------------------
+
+PART 3 — POSTS TABLE DRAFT
+
+Draft table:
+
+posts
+
+Fields:
+
+- id uuid primary key default gen_random_uuid()
+- client_id uuid not null references clients(id) on delete cascade
+- media_asset_id uuid references media_assets(id) on delete set null
+- concept_id uuid nullable
+- draft_variant_id uuid nullable
+- platform_name text not null check in ('instagram','facebook','google_business','tiktok','other')
+- content_type text not null check in ('photo','reel','carousel','story')
+- title text
+- caption_text text
+- post_status text not null default 'planning' check in (
+  'planning',
+  'awaiting_content',
+  'ready_for_review',
+  'approved',
+  'ready_to_schedule',
+  'scheduled',
+  'published',
+  'failed',
+  'reschedule_required',
+  'archived'
+)
+- scheduled_for timestamptz
+- published_at timestamptz
+- publish_failure_reason text
+- is_reuse_based boolean not null default false
+- created_by_user_id uuid references user_profiles(id) on delete set null
+- approved_by_user_id uuid references user_profiles(id) on delete set null
+- created_at timestamptz not null default now()
+- updated_at timestamptz not null default now()
+
+Important notes:
+
+- concept_id and draft_variant_id stay nullable until Migration 006.
+- No real publishing API exists yet.
+- published_at is manual/demo/system-controlled later.
+- publish_failure_reason should be internal only.
+- Client-safe views must hide internal publishing failure details unless rewritten into safe wording.
+
+------------------------------------------------
+
+PART 4 — POST_SLOTS TABLE DRAFT
+
+Draft table:
+
+post_slots
+
+Fields:
+
+- id uuid primary key default gen_random_uuid()
+- client_id uuid not null references clients(id) on delete cascade
+- platform_name text not null check in ('instagram','facebook','google_business','tiktok','other')
+- slot_date date not null
+- slot_time time not null
+- timezone text not null
+- status text not null default 'open' check in ('open','reserved','scheduled','completed','skipped')
+- reserved_post_id uuid references posts(id) on delete set null
+- created_at timestamptz not null default now()
+- updated_at timestamptz not null default now()
+
+Constraint:
+
+unique(client_id, platform_name, slot_date, slot_time)
+
+Notes:
+
+- timezone required.
+- no background scheduler yet.
+- no automatic publishing yet.
+- scheduling preferences can come later.
+
+------------------------------------------------
+
+PART 5 — ADD MEDIA LINKAGE FK
+
+Add deferred FK:
+
+alter table media_assets
+add constraint media_assets_linked_post_id_fkey
+foreign key (linked_post_id)
+references posts(id)
+on delete set null;
+
+Add comment:
+
+This FK is added in Migration 004 because posts table does not exist in Migration 003.
+
+------------------------------------------------
+
+PART 6 — CLIENT-SAFE CALENDAR VIEW
+
+Draft a client-safe view:
+
+client_portal_calendar_view
+
+Fields should include:
+
+- client_id
+- post_id
+- platform_name
+- content_type
+- client_safe_title
+- scheduled_for
+- published_at
+- status_label
+- thumbnail_url if available
+
+Do NOT expose:
+
+- concept_id
+- draft_variant_id
+- approved_by_user_id
+- publish_failure_reason raw text
+- internal team/operator notes
+
+If full SQL view is too early, create a commented stub with exact intended fields.
+
+------------------------------------------------
+
+PART 7 — RLS DRAFT
+
+Enable RLS on:
+
+posts
+post_slots
+
+Draft policies:
+
+posts:
+- client can view own scheduled/published posts only through client-safe view
+- team can create/update posts for assigned clients
+- team cannot create posts for unassigned clients
+- operator can view/update all operationally
+- owner full access
+- system can update published/failed status later
+- client cannot directly update posts
+
+post_slots:
+- client can view own client-safe slots
+- team can manage slots for assigned clients
+- operator can manage all operationally
+- owner full access
+- no public access
+
+No real publishing permission yet.
+
+------------------------------------------------
+
+PART 8 — INDEXES
+
+Draft indexes:
+
+posts(client_id)
+posts(media_asset_id)
+posts(platform_name)
+posts(post_status)
+posts(scheduled_for)
+posts(published_at)
+
+post_slots(client_id)
+post_slots(platform_name)
+post_slots(slot_date)
+post_slots(status)
+post_slots(reserved_post_id)
+
+Do not over-index.
+
+------------------------------------------------
+
+PART 9 — TEST PLAN
+
+Create:
+
+docs/MIGRATION_004_TEST_PLAN.md
+
+Include tests:
+
+- Migration 001, 002, and 003 must exist first
+- client sees only own calendar view
+- client cannot see draft/concept IDs
+- client cannot see raw publish failure reason
+- client cannot directly update posts
+- team can create posts for assigned clients
+- team cannot create posts for unassigned clients
+- operator can view/update all posts
+- owner can view/update all posts
+- post slot unique constraint works
+- media_assets.linked_post_id FK works only after posts exist
+- scheduled posts do not publish automatically
+- failed status does not trigger real API
+- rollback drops media linked_post FK before dropping posts
+- rollback drops policies before tables
+
+------------------------------------------------
+
+PART 10 — SELF-AUDIT
+
+Confirm:
+
+- 004 draft is not inside supabase/migrations
+- 004 draft says DO NOT RUN
+- no migration was run
+- no publishing APIs added
+- no background jobs added
+- no app behavior changed
+- AUTH_MODE unchanged
+- pricing unchanged
+- navigation unchanged
+
+Readiness decision:
+- Ready after human review
+- Needs correction
+- Not ready
+
+------------------------------------------------
+
+FINAL REPORT REQUIRED
+
+Report:
+
+1. Files created
+2. Files modified
+3. Migration 004 tables drafted
+4. media_assets.linked_post_id FK added as draft
+5. Client-safe calendar view created/stubbed
+6. RLS summary
+7. Index summary
+8. Test plan created
+9. Confirmation no migrations were run
+10. Confirmation no supabase/migrations files created
+11. Confirmation AUTH_MODE unchanged
+12. Confirmation pricing unchanged
+13. Confirmation navigation unchanged
+14. Remaining risks
+15. Readiness decision
+16. Recommended next prompt
