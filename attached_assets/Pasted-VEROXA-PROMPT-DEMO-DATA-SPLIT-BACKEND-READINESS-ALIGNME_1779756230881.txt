@@ -1,0 +1,366 @@
+VEROXA PROMPT — DEMO DATA SPLIT + BACKEND READINESS ALIGNMENT V1
+
+Objective:
+Organize Veroxa’s demo data into a cleaner structure that matches the future backend objects, without building the real backend yet.
+
+This is NOT a real database pass.
+This is NOT a Supabase implementation pass.
+This is NOT an auth pass.
+This is NOT a UX redesign.
+
+The goal is to make Veroxa’s current fake/demo data cleaner, easier to maintain, and easier to convert into real Supabase tables later.
+
+------------------------------------------------
+
+ABSOLUTE RULES
+
+Do NOT connect Supabase further.
+Do NOT add real auth.
+Do NOT change AUTH_MODE.
+Do NOT add uploads.
+Do NOT add AI APIs.
+Do NOT add publishing.
+Do NOT add payment processing.
+Do NOT run migrations.
+Do NOT change pricing.
+Do NOT change navigation.
+Do NOT redesign portals.
+Do NOT add new dashboards.
+Do NOT delete major pages.
+Do NOT break current imports.
+
+Keep AUTH_MODE as:
+
+"placeholder"
+
+Keep pricing unchanged:
+
+Google Presence Starter:
+$497/mo
+
+Complete Online Presence:
+12-month: $997/mo
+6-month: $1,097/mo
+3-month: $1,197/mo
+No-contract: $1,497/mo
+
+------------------------------------------------
+
+CURRENT PROBLEM
+
+The current demo data is too concentrated in large files, especially:
+
+src/data/demoData.ts
+
+This makes it harder to:
+
+- understand what data powers each portal
+- map demo data to future database tables
+- maintain demo examples
+- prepare for real Supabase backend
+- avoid duplicate or inconsistent object names
+
+We need to split demo data into cleaner files while preserving the current app behavior.
+
+------------------------------------------------
+
+SOURCE OF TRUTH — FUTURE VEROXA BACKEND OBJECTS
+
+The future Veroxa backend should eventually support these core objects:
+
+1. clients
+2. client_platforms
+3. onboarding_items
+4. media_assets
+5. content_concepts
+6. draft_sets
+7. draft_variants
+8. posts
+9. post_slots
+10. notifications
+11. weekly_reports
+12. monthly_reports
+13. activity_logs
+
+Additional business/demo objects may exist:
+
+- financials
+- ai_agents
+- client_health
+- team_members
+- requests
+- system_status
+- pricing
+
+But the core backend objects above should guide the structure.
+
+------------------------------------------------
+
+PART 1 — INSPECT CURRENT DEMO DATA
+
+Inspect:
+
+src/data/demoData.ts
+src/lib/demo-data/
+all imports from demoData.ts
+all pages/components/domain files that use demo data
+
+Before changing files, identify:
+
+1. All exported constants/types from demoData.ts
+2. Which pages/components import them
+3. Which exports are heavily used
+4. Which exports map to future backend objects
+5. Which exports are business/demo-only helpers
+
+Do not remove exports used by pages.
+
+------------------------------------------------
+
+PART 2 — CREATE NEW DEMO DATA FOLDER STRUCTURE
+
+Create this folder if it does not already exist:
+
+src/data/demo/
+
+Split demo data into logical files.
+
+Recommended structure:
+
+src/data/demo/
+  demoClients.ts
+  demoClientPlatforms.ts
+  demoOnboarding.ts
+  demoMediaAssets.ts
+  demoContentConcepts.ts
+  demoDraftSets.ts
+  demoDraftVariants.ts
+  demoPosts.ts
+  demoPostSlots.ts
+  demoNotifications.ts
+  demoWeeklyReports.ts
+  demoMonthlyReports.ts
+  demoActivityLogs.ts
+  demoClientHealth.ts
+  demoRequests.ts
+  demoFinancials.ts
+  demoAgents.ts
+  demoTeam.ts
+  demoSystemStatus.ts
+  demoPricing.ts
+  index.ts
+
+Only create files that are useful based on existing data.
+
+Do not create empty files unless they are clearly placeholders with comments.
+
+------------------------------------------------
+
+PART 3 — MOVE DATA SAFELY
+
+Move demo data from demoData.ts into the new files gradually.
+
+Rules:
+
+- Preserve export names when possible.
+- Preserve TypeScript types.
+- Preserve existing object shapes unless a tiny naming cleanup is safe.
+- Avoid changing page logic.
+- Avoid breaking imports.
+- Keep behavior visually the same.
+
+If a data object is used in many places and moving it risks breaking the app, you may leave it in demoData.ts for now and document it as a future split candidate.
+
+Safety matters more than perfection.
+
+------------------------------------------------
+
+PART 4 — CREATE BACKWARD-COMPATIBLE EXPORTS
+
+Important:
+Existing pages currently import from:
+
+src/data/demoData.ts
+
+Do not break them.
+
+Use one of these safe approaches:
+
+Option A — Preferred:
+Keep src/data/demoData.ts as a compatibility barrel file.
+
+It should re-export data from the new split files.
+
+Example:
+
+export * from "./demo/demoClients";
+export * from "./demo/demoMediaAssets";
+export * from "./demo/demoPosts";
+
+Option B:
+Update imports across the app to import from src/data/demo.
+
+Only use Option B if it is safe and not too noisy.
+
+Preferred result:
+Existing imports continue working.
+
+------------------------------------------------
+
+PART 5 — ALIGN NAMES WITH FUTURE BACKEND OBJECTS
+
+Where safe, add comments or aliases that connect current demo names to future backend objects.
+
+Examples:
+
+demoRestaurants = future clients
+demoMediaRunway / media library = future media_assets
+demoCalendarSlots = future post_slots / posts
+demoReportingOps = future weekly_reports / monthly_reports
+demoRoleNotifications = future notifications
+demoActivity = future activity_logs
+
+Do not do a large rename across the app unless low-risk.
+
+Use comments and file names to create clarity.
+
+------------------------------------------------
+
+PART 6 — AVOID RISKY CHANGES
+
+Do not change:
+
+- route structure
+- portal nav files
+- pricing page
+- AUTH_MODE
+- Supabase files
+- auth guards
+- upload behavior
+- publishing behavior
+- visual layout
+- domain logic unless required to fix imports
+
+This is a data organization pass only.
+
+------------------------------------------------
+
+PART 7 — ADD A DEMO DATA MAP DOCUMENT
+
+Create or update:
+
+docs/DEMO_DATA_MAP.md
+
+This document should explain:
+
+1. What demo data is
+2. Why it is split
+3. Which file maps to which future backend table
+4. Which demo objects are backend-aligned
+5. Which demo objects are UI-only/business-demo objects
+6. Which data still remains in demoData.ts temporarily
+7. What should happen before real Supabase work
+
+Include a mapping table like:
+
+Demo File | Current Export(s) | Future Backend Object | Notes
+
+Example:
+
+demoClients.ts | demoRestaurants | clients | Restaurant account examples
+demoMediaAssets.ts | demoMediaRunway, media items | media_assets | Needs future file_url/storage fields
+demoPostSlots.ts | demoCalendarSlots | post_slots/posts | Scheduling demo data
+demoNotifications.ts | demoRoleNotifications | notifications | Role-targeted alerts
+demoReports.ts | demoReportingOps | weekly_reports/monthly_reports | Split later if needed
+demoActivityLogs.ts | demoActivity | activity_logs | Audit trail preview
+
+------------------------------------------------
+
+PART 8 — OPTIONAL LIGHT TYPE IMPROVEMENTS
+
+If safe, add simple TypeScript types that prepare for backend alignment.
+
+Examples:
+
+DemoClient
+DemoMediaAsset
+DemoPost
+DemoPostSlot
+DemoNotification
+DemoWeeklyReport
+DemoMonthlyReport
+DemoActivityLog
+
+Do not over-engineer.
+Do not create full database schema types yet.
+Do not introduce validation libraries.
+
+------------------------------------------------
+
+PART 9 — VERIFY CURRENT APP STILL WORKS
+
+After splitting data, verify imports and run the project’s typecheck/build command.
+
+Run the appropriate command for this repo, likely:
+
+pnpm --filter @workspace/veroxa typecheck
+
+or the correct existing project command.
+
+Fix only errors caused by the data split.
+
+Do not add features to fix build errors.
+
+Verify these routes still render:
+
+/login
+/pricing
+/demo/client/dashboard
+/demo/client/media
+/demo/client/account
+/demo/team/dashboard
+/demo/operator/operator-os
+/demo/operator/system-status
+/demo/owner/executive-dashboard
+/demo/owner/owner-os
+
+------------------------------------------------
+
+PART 10 — FINAL REPORT REQUIRED
+
+At completion, report:
+
+1. Files created
+2. Files modified
+3. Data moved from demoData.ts
+4. Data left in demoData.ts and why
+5. Compatibility export strategy used
+6. Current demoData.ts size before/after if available
+7. New demo data folder structure
+8. Mapping to future backend objects
+9. Any naming inconsistencies found
+10. Any imports updated
+11. Confirmation AUTH_MODE unchanged
+12. Confirmation pricing unchanged
+13. Confirmation navigation unchanged
+14. Typecheck/build result
+15. Remaining risks
+16. Recommended next prompt
+
+------------------------------------------------
+
+PASS STANDARD
+
+This pass is successful if:
+
+- The app behavior stays the same
+- Existing pages still render
+- demoData.ts becomes smaller or becomes a compatibility barrel
+- Demo data is organized by future backend object
+- No pricing/auth/nav changes happen
+- No backend is built
+- Typecheck/build passes
+- DEMO_DATA_MAP.md explains the structure clearly
+
+Remember:
+This is preparation for backend clarity, not real backend implementation.
