@@ -315,10 +315,23 @@ create policy user_profiles_owner_all
   using       (private.is_owner())
   with check  (private.is_owner());
 
--- 5. Role-change guard: only Owner may change `role` or `is_active`, and
---    no user may change their own role even with a SELF policy. Enforced
---    by trigger because RLS can't column-restrict UPDATE.
-create or replace function private.user_profiles_guard_role_change()
+-- 5. Column-write guard: enforces "owner-only" writes on sensitive columns
+--    that the `update_self` policy would otherwise allow. RLS can't
+--    column-restrict UPDATE, so this trigger does it.
+--
+--    Sensitive columns (owner-only): role, is_active, client_id, email.
+--      * role + is_active + client_id — protect identity and tenant binding.
+--      * email — drives Supabase Auth password-reset and notifications;
+--        a self-edit would silently redirect those flows. Future verified-
+--        email flow can relax this by routing changes through a separate
+--        controlled function.
+--    Special case: even Owner cannot change their own `role` (anti-lockout
+--    / anti-self-demotion).
+--
+--    The function below replaces an earlier draft named
+--    `user_profiles_guard_role_change` — renamed because it now guards
+--    more than just role.
+create or replace function private.user_profiles_column_write_guard()
 returns trigger
 language plpgsql
 security definer
@@ -346,13 +359,19 @@ begin
     end if;
   end if;
 
+  if new.email is distinct from old.email then
+    if not private.is_owner() then
+      raise exception 'email changes are restricted to owner (use the verified-email flow when available)';
+    end if;
+  end if;
+
   return new;
 end;
 $$;
 
-create trigger user_profiles_guard_role_change_trg
+create trigger user_profiles_column_write_guard_trg
   before update on public.user_profiles
-  for each row execute function private.user_profiles_guard_role_change();
+  for each row execute function private.user_profiles_column_write_guard();
 
 -- team_members ----------------------------------------------------------------
 

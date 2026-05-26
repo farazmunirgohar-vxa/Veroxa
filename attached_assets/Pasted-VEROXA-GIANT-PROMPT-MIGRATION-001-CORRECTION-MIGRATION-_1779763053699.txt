@@ -1,0 +1,650 @@
+VEROXA GIANT PROMPT — MIGRATION 001 CORRECTION + MIGRATION 002 DRAFT PLAN ONLY
+
+Objective:
+First, correct and harden the Migration 001 identity foundation draft if needed.
+Second, create a planning/draft-only outline for Migration 002 client foundation.
+
+This is NOT a live migration.
+This is NOT to be run yet.
+This is NOT a Supabase implementation pass.
+
+Do NOT run migrations.
+Do NOT move files into supabase/migrations.
+Do NOT connect Supabase.
+Do NOT activate real auth.
+Do NOT change AUTH_MODE.
+Do NOT change auth guards.
+Do NOT change portal UI.
+Do NOT change pricing.
+Do NOT change navigation.
+Do NOT build uploads.
+Do NOT add AI APIs.
+Do NOT build publishing.
+Do NOT add payment processing.
+Do NOT change visible app behavior.
+
+Keep AUTH_MODE as:
+
+"placeholder"
+
+Keep pricing unchanged:
+
+Google Presence Starter:
+$497/mo
+
+Complete Online Presence:
+12-month: $997/mo
+6-month: $1,097/mo
+3-month: $1,197/mo
+No-contract: $1,497/mo
+
+------------------------------------------------
+SOURCE FILES TO READ FIRST
+------------------------------------------------
+
+Read and align with:
+
+docs/SUPABASE_SCHEMA_DRAFT_V1.md
+docs/SUPABASE_RLS_PLAN_V1.md
+docs/sql_drafts/001_veroxa_schema_draft.sql
+docs/sql_drafts/002_rls_policy_examples.sql
+docs/sql_drafts/migrations_review/001_identity_foundation_draft.sql
+docs/MIGRATION_001_TEST_PLAN.md
+docs/DEMO_DATA_MAP.md
+
+If any file does not exist, report that clearly and continue with the safest available source.
+
+------------------------------------------------
+PHASE 1 — MIGRATION 001 CORRECTION / HARDENING
+------------------------------------------------
+
+PART 1 — AUDIT MIGRATION 001 DRAFT
+
+Review:
+
+docs/sql_drafts/migrations_review/001_identity_foundation_draft.sql
+
+Confirm:
+
+- File is NOT inside supabase/migrations
+- File clearly says DO NOT RUN
+- No real migration was run
+- Only identity foundation tables are included
+- No clients table yet
+- No media/posts/reports/AI tables yet
+- team_client_assignments is NOT active in Migration 001
+- assigned_client_ids uuid[] is NOT used
+
+------------------------------------------------
+
+PART 2 — CORRECT user_profiles IF NEEDED
+
+Ensure user_profiles draft includes:
+
+- id uuid primary key references auth.users(id) on delete cascade
+- display_name text not null
+- email text not null unique
+- role text not null check role in ('client','team','operator','owner')
+- client_id uuid nullable
+- avatar_url text nullable
+- is_active boolean not null default true
+- created_at timestamptz not null default now()
+- updated_at timestamptz not null default now()
+
+Required comments:
+
+- client_id FK will be added in Migration 002 after clients table exists
+- system/service role is not stored in user_profiles.role
+- role must remain limited to client/team/operator/owner
+
+Do not add system as a role.
+
+------------------------------------------------
+
+PART 3 — CORRECT team_members IF NEEDED
+
+Ensure team_members draft includes:
+
+- id uuid primary key default gen_random_uuid()
+- user_profile_id uuid not null unique references user_profiles(id) on delete cascade
+- role_label text not null
+- is_active boolean not null default true
+- created_at timestamptz not null default now()
+- updated_at timestamptz not null default now()
+
+Required comments:
+
+- client assignments are intentionally excluded from Migration 001
+- team_client_assignments will be created in Migration 002
+- assigned_client_ids uuid[] should not be used in the real design
+
+------------------------------------------------
+
+PART 4 — HARDEN HELPER FUNCTIONS
+
+Review helper function drafts:
+
+private.current_user_role()
+private.current_user_client_id()
+private.is_owner()
+private.is_operator()
+private.is_team_member()
+private.is_system_actor()
+
+Each helper should follow these safety rules:
+
+- explicit private schema
+- stable where appropriate
+- security definer only where justified
+- set search_path explicitly
+- no dynamic SQL
+- null/false fallback
+- no exception throwing
+- no dependency on clients table before Migration 002
+- no dependency on team_client_assignments before Migration 002
+
+Important:
+Do NOT include active is_assigned_to_client() in Migration 001 if it requires clients/team_client_assignments.
+
+If mentioned, mark:
+
+DEFERRED UNTIL MIGRATION 002
+
+------------------------------------------------
+
+PART 5 — HARDEN RLS POLICIES
+
+Review and correct RLS policy drafts for:
+
+user_profiles
+team_members
+
+Required behavior:
+
+user_profiles:
+- anon has no access
+- authenticated user can select own profile
+- owner can select all profiles
+- owner can update all profiles
+- operator can select all profiles
+- operator cannot update role
+- client/team cannot update role
+- non-owner cannot change role
+- public access is not allowed
+
+team_members:
+- team user can select own team_member row
+- operator can select all team_members
+- owner can select/update all team_members
+- non-owner cannot update team_members
+- anon has no access
+- public access is not allowed
+
+Do not create a policy that gives all authenticated users broad select/update access.
+
+------------------------------------------------
+
+PART 6 — UPDATED_AT + INDEX REVIEW
+
+Ensure updated_at trigger is simple and only applies to:
+
+- user_profiles
+- team_members
+
+Ensure indexes are simple:
+
+- user_profiles(role)
+- user_profiles(email)
+- team_members(user_profile_id)
+- team_members(is_active)
+
+Do not over-index.
+
+------------------------------------------------
+
+PART 7 — MIGRATION 001 TEST PLAN CORRECTION
+
+Review and correct:
+
+docs/MIGRATION_001_TEST_PLAN.md
+
+Make sure it covers:
+
+- anon blocked
+- client own profile only
+- team own row only
+- operator read-only visibility
+- owner full management
+- role change owner-only
+- inactive user behavior
+- service role/system behavior
+- helper functions
+- rollback expectation
+- no clients table until Migration 002
+- no team_client_assignments until Migration 002
+
+Add a section:
+
+“Blocking Issues Before Real Migration”
+
+List any remaining problems that must be resolved before moving the draft into a real migration folder.
+
+------------------------------------------------
+PHASE 2 — MIGRATION 002 CLIENT FOUNDATION DRAFT PLAN ONLY
+------------------------------------------------
+
+Important:
+Do NOT create a real Migration 002 SQL file yet unless it is clearly under docs/sql_drafts/migrations_review/ and labeled draft-only.
+
+Preferred output for this phase:
+Create a planning document first.
+
+Create:
+
+docs/MIGRATION_002_CLIENT_FOUNDATION_PLAN.md
+
+This is a planning document, not a migration.
+
+------------------------------------------------
+
+PART 8 — MIGRATION 002 PURPOSE
+
+Migration 002 should introduce the client foundation after identity exists.
+
+Document that Migration 002 depends on Migration 001.
+
+Migration 002 should include:
+
+- clients
+- team_client_assignments
+- client_platforms
+- onboarding_items
+- client_requests
+
+Do NOT include:
+
+- media_assets
+- posts
+- post_slots
+- reports
+- notifications
+- activity_logs
+- AI/content concept tables
+- storage buckets
+- publishing integration tables
+
+Those come later.
+
+------------------------------------------------
+
+PART 9 — CLIENTS TABLE PLAN
+
+Document clients table with these fields:
+
+- id uuid primary key default gen_random_uuid()
+- business_name text not null
+- legal_name text nullable
+- primary_contact_name text not null
+- primary_contact_email text not null
+- primary_contact_phone text nullable
+- secondary_contact_name text nullable
+- secondary_contact_email text nullable
+- cuisine_type text nullable
+- address text nullable
+- website_url text nullable
+- hours_text text nullable
+- plan_type text not null check in ('twelve_month','six_month','three_month','no_contract','month_to_month')
+- service_package text not null check in ('google_presence_starter','complete_online_presence','ads_addon','ads_only','bundle')
+- monthly_fee_cents integer not null
+- contract_months integer nullable
+- start_date date nullable
+- posting_frequency_weekly integer not null default 3
+- timezone text not null
+- assigned_operator_id uuid nullable references user_profiles(id) on delete set null
+- assigned_team_label text nullable
+- account_status text not null default 'onboarding'
+- content_health_status text not null default 'healthy'
+- risk_status text not null default 'good'
+- onboarding_complete boolean not null default false
+- created_at timestamptz not null default now()
+- updated_at timestamptz not null default now()
+
+Important notes:
+- timezone is required; no Toronto default
+- demo seed may use America/Chicago
+- pricing is stored in cents
+- Google Presence Starter is service_package, not plan_type
+- only Owner may change pricing fields
+
+------------------------------------------------
+
+PART 10 — ADD user_profiles.client_id FK PLAN
+
+Document that Migration 002 should add FK:
+
+user_profiles.client_id references clients(id) on delete set null
+
+Explain:
+
+- client users get linked to one client
+- team/operator/owner users usually have null client_id
+- this FK cannot exist in Migration 001 because clients table does not exist yet
+
+------------------------------------------------
+
+PART 11 — team_client_assignments PLAN
+
+Document table:
+
+team_client_assignments
+
+Fields:
+
+- id uuid primary key default gen_random_uuid()
+- team_member_id uuid not null references team_members(id) on delete cascade
+- client_id uuid not null references clients(id) on delete cascade
+- assignment_role text not null default 'executor' check in ('executor','reviewer','scheduler','reporter','lead')
+- is_active boolean not null default true
+- created_at timestamptz not null default now()
+- updated_at timestamptz not null default now()
+
+Constraints:
+
+unique(team_member_id, client_id)
+
+Purpose:
+
+- replaces assigned_client_ids array
+- supports safer RLS
+- supports assignment auditability
+- supports future multi-team workflows
+
+------------------------------------------------
+
+PART 12 — client_platforms PLAN
+
+Document table:
+
+client_platforms
+
+Fields:
+
+- id uuid primary key default gen_random_uuid()
+- client_id uuid not null references clients(id) on delete cascade
+- platform_name text not null check in ('instagram','facebook','google_business','tiktok','other')
+- access_status text not null default 'pending' check in ('pending','granted','verified','revoked')
+- username_or_handle text nullable
+- notes text nullable
+- last_verified_at timestamptz nullable
+- created_at timestamptz not null default now()
+- updated_at timestamptz not null default now()
+
+Security note:
+Client should only see client-safe access status, not internal notes.
+
+------------------------------------------------
+
+PART 13 — onboarding_items PLAN
+
+Document table:
+
+onboarding_items
+
+Fields:
+
+- id uuid primary key default gen_random_uuid()
+- client_id uuid not null references clients(id) on delete cascade
+- item_key text not null
+- item_label text not null
+- description text nullable
+- status text not null default 'not_started' check in ('not_started','pending','complete','blocked')
+- owner_role text not null check in ('client','team','operator','veroxa')
+- priority text not null default 'medium'
+- completed_by_role text nullable
+- completed_at timestamptz nullable
+- created_at timestamptz not null default now()
+- updated_at timestamptz not null default now()
+
+Recommended constraint:
+unique(client_id, item_key)
+
+------------------------------------------------
+
+PART 14 — client_requests PLAN
+
+Document table:
+
+client_requests
+
+Fields:
+
+- id uuid primary key default gen_random_uuid()
+- client_id uuid not null references clients(id) on delete cascade
+- request_type text not null
+- title text not null
+- description text nullable
+- status text not null default 'pending' check in ('pending','in_progress','completed','cancelled')
+- priority text not null default 'normal' check in ('low','normal','high')
+- requested_by_user_id uuid nullable references user_profiles(id) on delete set null
+- assigned_to_role text nullable check in ('team','operator','owner')
+- due_date date nullable
+- created_at timestamptz not null default now()
+- updated_at timestamptz not null default now()
+
+------------------------------------------------
+
+PART 15 — MIGRATION 002 RLS PLAN
+
+In the planning document, describe future RLS rules.
+
+clients:
+- Client can select own client-safe view only, not raw base sensitive fields
+- Team can select assigned clients
+- Operator can select all clients and update operational status/risk fields
+- Owner can select/update all, including pricing
+- System can update derived fields if needed
+
+team_client_assignments:
+- Client no access
+- Team can select own active assignments
+- Operator can select all
+- Owner can create/update/deactivate assignments
+
+client_platforms:
+- Client can select own client-safe fields
+- Team can manage assigned clients’ platform setup
+- Operator can view/manage all operationally
+- Owner full access
+
+onboarding_items:
+- Client can view own items and update client-owned items
+- Team can update assigned client onboarding items
+- Operator/Owner can view all
+
+client_requests:
+- Client can create/select own requests
+- Team can view assigned client requests
+- Operator can view all
+- Owner can view all
+- Client can update own request status only in limited ways
+
+------------------------------------------------
+
+PART 16 — MIGRATION 002 HELPER FUNCTION PLAN
+
+Document helper functions to add in Migration 002:
+
+private.is_assigned_to_client(p_client uuid)
+private.can_view_client(p_client uuid)
+private.can_manage_client_operations(p_client uuid)
+private.can_manage_pricing()
+
+Rules:
+- use team_client_assignments join table
+- no assigned_client_ids array logic
+- explicit search_path
+- stable where appropriate
+- no dynamic SQL
+- false fallback
+
+Do not implement yet unless in draft-only/commented form.
+
+------------------------------------------------
+
+PART 17 — MIGRATION 002 INDEX PLAN
+
+Document likely indexes:
+
+clients(account_status)
+clients(service_package)
+clients(plan_type)
+clients(assigned_operator_id)
+team_client_assignments(team_member_id)
+team_client_assignments(client_id)
+team_client_assignments(is_active)
+client_platforms(client_id)
+client_platforms(platform_name)
+onboarding_items(client_id)
+onboarding_items(status)
+client_requests(client_id)
+client_requests(status)
+
+Do not over-index.
+
+------------------------------------------------
+
+PART 18 — MIGRATION 002 SEED STRATEGY
+
+Document seed strategy from demo data:
+
+demoClients.ts -> clients
+demoOnboarding.ts -> onboarding_items
+demoRequests.ts -> client_requests
+demoClientPlatforms or client platform data -> client_platforms
+demoTeam.ts -> team_client_assignments after user/team fixtures exist
+
+Rules:
+- seed data should be dev-only
+- seed IDs should be stable
+- seeds should be idempotent
+- no real client data in seed
+- no production seed unless explicitly approved
+
+------------------------------------------------
+
+PART 19 — MIGRATION 002 TEST PLAN OUTLINE
+
+In the planning document, outline tests:
+
+- Client sees only own client-safe view
+- Client cannot see monthly_fee_cents through client portal view
+- Team sees only assigned clients
+- Team cannot see unassigned client
+- Operator sees all clients
+- Operator cannot change monthly_fee_cents
+- Owner can change monthly_fee_cents
+- Team assignment active/inactive status works
+- Client can create own request
+- Client cannot create request for another client
+- Onboarding item ownership rules work
+- Client platform internal notes are hidden from client-safe view
+
+------------------------------------------------
+
+PART 20 — OPTIONAL DRAFT SQL FILE FOR MIGRATION 002
+
+If safe, create:
+
+docs/sql_drafts/migrations_review/002_client_foundation_draft.sql
+
+Header:
+
+DO NOT RUN — MIGRATION REVIEW DRAFT ONLY
+This file is not active.
+It is not in the Supabase migrations folder.
+Review and audit before converting into a real migration.
+
+Include commented or draft SQL only for:
+
+- clients
+- alter user_profiles add client_id FK
+- team_client_assignments
+- client_platforms
+- onboarding_items
+- client_requests
+- helper function stubs
+- RLS policy placeholders
+- indexes
+
+Do not run it.
+
+If it feels too risky, skip SQL draft and only create the planning doc.
+
+------------------------------------------------
+PHASE 3 — FINAL SELF-AUDIT
+------------------------------------------------
+
+PART 21 — SAFETY AUDIT
+
+Confirm:
+
+- No files were placed in supabase/migrations
+- No migration was run
+- AUTH_MODE stayed placeholder
+- Pricing stayed unchanged
+- Navigation stayed unchanged
+- Portal UI stayed unchanged
+- No backend was connected
+
+------------------------------------------------
+
+PART 22 — READINESS DECISION
+
+Give two separate readiness decisions:
+
+Migration 001:
+- Ready after human review
+- Needs correction
+- Not ready
+
+Migration 002:
+- Planning complete
+- Needs more planning
+- Not ready for draft
+
+Be honest.
+
+------------------------------------------------
+
+FINAL REPORT REQUIRED
+
+At completion, report:
+
+1. Files created
+2. Files modified
+3. Migration 001 corrections made
+4. Migration 001 remaining risks
+5. Migration 002 planning document created
+6. Migration 002 tables planned
+7. Migration 002 helper functions planned
+8. Migration 002 RLS plan summary
+9. Migration 002 seed strategy summary
+10. Migration 002 test plan summary
+11. Whether 002 draft SQL was created or skipped
+12. Confirmation no migrations were run
+13. Confirmation no supabase/migrations files created
+14. Confirmation AUTH_MODE unchanged
+15. Confirmation pricing unchanged
+16. Confirmation navigation unchanged
+17. Readiness decision for Migration 001
+18. Readiness decision for Migration 002
+19. Recommended next prompt
+
+PASS STANDARD:
+- Migration 001 draft is safer
+- Migration 002 is clearly planned
+- team_client_assignments is properly planned
+- no backend is implemented
+- no app behavior changes
+- no auth/pricing/nav changes
+- no migrations run
