@@ -28,7 +28,7 @@ const roles = [
     iconClass: "bg-emerald-500/10 text-emerald-500",
     glow: "from-emerald-500/15 to-transparent",
     testid: "role-card-team",
-    badge: "Login Required",
+    badge: "Demo Access Required",
     badgeClass: "text-amber-400/70",
   },
   {
@@ -39,7 +39,7 @@ const roles = [
     iconClass: "bg-amber-500/10 text-amber-500",
     glow: "from-amber-500/15 to-transparent",
     testid: "role-card-operator",
-    badge: "Login Required",
+    badge: "Demo Access Required",
     badgeClass: "text-amber-400/70",
   },
   {
@@ -50,7 +50,7 @@ const roles = [
     iconClass: "bg-primary/10 text-primary",
     glow: "from-primary/20 to-transparent",
     testid: "role-card-owner",
-    badge: "Login Required",
+    badge: "Demo Access Required",
     badgeClass: "text-amber-400/70",
   },
 ];
@@ -350,7 +350,7 @@ export default function LoginPage() {
         <p className="text-center text-xs text-muted-foreground/70 mt-12 max-w-md mx-auto leading-relaxed">
           Sign in with your Veroxa account credentials to be routed to your matching portal.
           Client Portal preview is publicly accessible.
-          Team, Operator, and Owner portals require login.
+          Team, Operator, and Owner portals require demo access.
         </p>
       </div>
     </div>

@@ -84,3 +84,24 @@ The switch prompt **must not**:
 larger prep, refactor, or feature work.** Bundling it with anything
 else makes rollback noisy and review hard. Keep the diff to one
 line.
+
+---
+
+## Demo internal access gate (placeholder mode)
+
+**Added:** Team, Operator, and Owner demo portals now require a
+demo-only access code when `AUTH_MODE === "placeholder"`.
+
+- Access code: `veroxa-preview` (demo only — not a real credential)
+- Granted access is stored in `localStorage` under the key
+  `veroxa_demo_internal_access`. Persists across refreshes until
+  cleared.
+- A "Clear demo access" button appears inside the portal for easy
+  reset.
+- Client Portal (`/demo/client/*`) remains fully public — no gate.
+- This is NOT real authentication. It does not touch Supabase, does
+  not call any API, and does not store passwords.
+- When `AUTH_MODE` is switched to `"real"`, `InternalDemoGuard`
+  ignores the localStorage key entirely and falls through to the
+  real-auth path (Supabase session check, role match, wrong-role
+  redirect).
