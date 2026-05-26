@@ -149,13 +149,45 @@ drop view if exists public.client_portal_health_view;
 
 ---
 
+### Notifications client-update column guard
+
+Tests for the BEFORE UPDATE trigger drafted in
+`docs/sql_drafts/migrations_review/003_notifications_status_guard_draft.sql`.
+The trigger MUST be in place before any real client credentials are
+issued. Prerequisite: the guard draft has been applied on top of
+M003 in the dev project.
+
+- [ ] As `client@veroxa.test` on a notification with `target_role='client'` and `client_id=<A>`: `update public.notifications set status='seen' where id=<N>` → succeeds; row now shows `status='seen'`, `updated_at` advanced.
+- [ ] As `client@veroxa.test`: `update public.notifications set status='dismissed' where id=<N>` → succeeds.
+- [ ] As `client@veroxa.test`: `update public.notifications set status='escalated' where id=<N>` → **denied** (`notifications_client_update_guard: ... may only set status to seen or dismissed`).
+- [ ] As `client@veroxa.test`: `update public.notifications set status='created' where id=<N>` → **denied** (only seen/dismissed allowed).
+- [ ] As `client@veroxa.test`: `update public.notifications set title='hacked' where id=<N>` → **denied** (protected column).
+- [ ] As `client@veroxa.test`: `update public.notifications set message_body='hacked' where id=<N>` → **denied**.
+- [ ] As `client@veroxa.test`: `update public.notifications set priority='p1' where id=<N>` → **denied**.
+- [ ] As `client@veroxa.test`: `update public.notifications set notification_type='critical' where id=<N>` → **denied**.
+- [ ] As `client@veroxa.test`: `update public.notifications set trigger_source='operator' where id=<N>` → **denied**.
+- [ ] As `client@veroxa.test`: `update public.notifications set target_role='operator' where id=<N>` → **denied**.
+- [ ] As `client@veroxa.test`: `update public.notifications set target_user_id=<some uuid> where id=<N>` → **denied**.
+- [ ] As `client@veroxa.test`: `update public.notifications set client_id=<other client> where id=<N>` → **denied**.
+- [ ] As `client@veroxa.test`: after a row reaches `status='dismissed'`, `update public.notifications set status='seen'` → **denied** (no backward transition).
+- [ ] As `client@veroxa.test`: targeting a notification owned by client B → **denied** at the RLS layer (the trigger never fires because the UPDATE matches 0 rows).
+- [ ] As `team@veroxa.test`: `update public.notifications set title='ops edit'` → succeeds (staff bypass).
+- [ ] As `operator@veroxa.test`: `update public.notifications set priority='p1'` → succeeds.
+- [ ] As `owner@veroxa.test`: full row UPDATE → succeeds.
+
+### Rollback (notifications status guard)
+- [ ] Drop trigger `notifications_client_update_guard` on `public.notifications` and function `private.notifications_client_update_guard()` → succeeds; behavior reverts to the M003 baseline (client may update any column on own row, the documented audit weakness).
+- [ ] Re-apply the guard draft → succeeds; the audit weakness is closed again.
+
+---
+
 ## Blocking Issues Before Real Migration
 
 | # | Issue | Severity | Resolution |
 |---|---|---|---|
 | D1 | Client-safe views (`client_portal_media_view`, `client_portal_notifications_view`, `client_portal_health_view`) are commented stubs | Blocker for client portal connecting to Supabase; not for M003 promotion to staging | Materialize in the portal-connect pass. Until then, base-table client SELECT exposes all columns to client-role users — acceptable while `AUTH_MODE='placeholder'`. |
 | D2 | `media_assets.linked_post_id` has no FK in M003 | NOT a blocker | FK added in M004 once `posts` exists. |
-| D3 | `notifications` client UPDATE policy permits the row write; column-level restriction (only `status` to `seen`/`dismissed`) relies on the portal mutation layer | Low | Add a BEFORE UPDATE trigger in M005+ if defense-in-depth is wanted. |
+| D3 | `notifications` client UPDATE policy permits the row write; column-level restriction (only `status` to `seen`/`dismissed`) relies on the portal mutation layer | **Closed in draft** | BEFORE UPDATE trigger drafted in `docs/sql_drafts/migrations_review/003_notifications_status_guard_draft.sql`. Test cases above. MUST be applied before real client credentials issued. |
 | D4 | `activity_logs` and `client_health_snapshots` are append-only by convention only against non-owner; `owner_all` policy permits owner UPDATE/DELETE | Low — design choice | Decide: keep "owner trusted" (current draft) OR replace `owner_all` with explicit `for select` + `for insert` owner policies. Document the decision. |
 | D5 | Team allowlist on `activity_logs` is permissive (4 entity_types) | NOT a blocker | Tighten in later migrations as the entity_type space grows. |
 | D6 | Test plan not yet executed | Blocker for promotion | Run on dev project after M002 is green. |

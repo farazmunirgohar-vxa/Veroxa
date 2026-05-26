@@ -188,14 +188,42 @@ production; restore from snapshot instead.
 
 ---
 
+### Post deletion slot reset trigger
+
+Tests for the BEFORE DELETE trigger drafted in
+`docs/sql_drafts/migrations_review/004_post_slot_reset_guard_draft.sql`.
+Prerequisite: the trigger draft has been applied on top of M004 in
+the dev project.
+
+Fixture setup: create a post `<P>` on client A scheduled to a slot
+`<S>` (status=`reserved`, reserved_post_id=`<P>`); also create an
+unrelated slot `<S2>` on client A (status=`reserved`,
+reserved_post_id=`<P2>`); and a slot `<S3>` already in status
+`scheduled` with reserved_post_id=`<P3>` (publishing history).
+
+- [ ] As `operator@veroxa.test`: `delete from public.posts where id='<P>'` → succeeds; row count 1.
+- [ ] After the delete: `select status, reserved_post_id from public.post_slots where id='<S>'` → `status='open'`, `reserved_post_id=NULL`, `updated_at` advanced.
+- [ ] After the delete: slot `<S2>` is unchanged (`status='reserved'`, `reserved_post_id='<P2>'`).
+- [ ] Delete the post backing slot `<S3>` (`<P3>`): `<S3>.status` stays `scheduled` (intentional — publishing history is preserved); `<S3>.reserved_post_id` becomes NULL via the FK's `on delete set null` action.
+- [ ] Bulk delete: `delete from public.posts where client_id='<A>' and post_status='planning'` → every slot that referenced one of those posts and was in `status='reserved'` is now `'open'`.
+- [ ] Re-delete an already-deleted post id (no-op) → 0 rows affected, no error.
+- [ ] As `client@veroxa.test`: `delete from public.posts where id='<any A post>'` → **denied** by RLS (no client DELETE policy on posts); the trigger never fires.
+
+### Rollback (post slot reset trigger)
+- [ ] Drop trigger `posts_before_delete_reset_slot` on `public.posts` and function `private.posts_before_delete_reset_slot()` → succeeds; behavior reverts to the M004 baseline (orphan reserved slots after post deletion — audit issue F4).
+- [ ] Re-apply the trigger draft → succeeds; F4 is closed again.
+- [ ] During any M004 rollback: confirm the trigger is dropped BEFORE `drop table public.posts`.
+
+---
+
 ## Blocking Issues Before Real Migration
 
 | # | Issue | Severity | Resolution |
 |---|---|---|---|
-| F1 | `client_portal_calendar_view` is a commented stub only | Blocker for client calendar lighting up in the portal; NOT a blocker for M004 SQL promotion to staging | Materialize in the portal-connect pass alongside M002/M003 view stubs. |
+| F1 | `client_portal_calendar_view` is a commented stub only | **Closed in draft** | Materialized in `docs/sql_drafts/migrations_review/002_003_004_portal_connect_views_draft.sql` alongside the seven other portal-connect views. Must be applied before the client calendar lights up. |
 | F2 | `posts.concept_id` and `posts.draft_variant_id` are bare uuid placeholders | NOT a blocker | FKs added in Migration 006 when `content_concepts` and `draft_variants` exist. |
 | F3 | No automatic publishing — `post_status='published'` and `published_at` are manual/system-controlled | NOT a blocker for M004 | M004 is pure schema. Real publishing is M008+. The expectation is documented at both the column comment and the test plan. |
-| F4 | Slot deletion cascade does not auto-reset `post_slots.status` when a post is deleted (slot becomes "reserved" status with NULL reserved_post_id) | Low — data hygiene | Add a `before delete on posts` trigger in M005 that flips dependent slots back to `'open'`. For M004, document the expectation that staff manually update the slot after deleting a post. |
+| F4 | Slot deletion cascade does not auto-reset `post_slots.status` when a post is deleted (slot becomes "reserved" status with NULL reserved_post_id) | **Closed in draft** | BEFORE DELETE trigger drafted in `docs/sql_drafts/migrations_review/004_post_slot_reset_guard_draft.sql`. Test cases above. |
 | F5 | Test plan above is not yet executed | Blocker for promotion | Run on dev project after M003 is green. |
 | F6 | M004 draft re-application is not idempotent (no `if not exists` on policies / triggers / constraints) | NOT a blocker if applied via the runner | Same as M001-M003: apply through `supabase db push`, not by piping raw SQL. |
 | F7 | The append-only invariant on `posts` is not enforced — any role with manage permissions can DELETE | Design decision needed | Decide: allow staff to delete posts (current draft) OR replace `posts_manage_assigned` with separate `for select`/`for insert`/`for update` policies. Recommended: leave as-is — deletions are needed during the planning state; archival is the better long-term pattern (`post_status='archived'`). |
