@@ -1,0 +1,466 @@
+VEROXA PROMPT — MIGRATION 001 FINAL HARDENING + MIGRATION 002 SQL DRAFT ONLY
+
+Objective:
+Do one final hardening pass on the Migration 001 identity draft, then create a draft-only Migration 002 client foundation SQL file.
+
+This is NOT a live migration.
+This is NOT to be run yet.
+This is NOT a Supabase implementation pass.
+
+Do NOT run migrations.
+Do NOT move files into supabase/migrations.
+Do NOT connect Supabase.
+Do NOT activate real auth.
+Do NOT change AUTH_MODE.
+Do NOT change auth guards.
+Do NOT change portal UI.
+Do NOT change pricing.
+Do NOT change navigation.
+Do NOT build uploads.
+Do NOT add AI APIs.
+Do NOT build publishing.
+Do NOT add payment processing.
+Do NOT change visible app behavior.
+
+Keep AUTH_MODE as:
+"placeholder"
+
+Keep pricing unchanged:
+Google Presence Starter: $497/mo
+
+Complete Online Presence:
+12-month: $997/mo
+6-month: $1,097/mo
+3-month: $1,197/mo
+No-contract: $1,497/mo
+
+------------------------------------------------
+
+PART 1 — FINAL HARDENING OF MIGRATION 001
+
+Review:
+
+docs/sql_drafts/migrations_review/001_identity_foundation_draft.sql
+docs/MIGRATION_001_TEST_PLAN.md
+
+Do not move or run the draft.
+
+Migration 001 should remain in:
+
+docs/sql_drafts/migrations_review/
+
+Make these hardening improvements if needed:
+
+1. Clarify self-update policy
+
+The policy user_profiles_update_self should be documented as allowing only safe self-profile edits.
+
+Safe self-edit fields:
+- display_name
+- avatar_url
+
+Sensitive fields must remain owner-only:
+- role
+- client_id
+- email
+- is_active
+
+If the trigger already enforces this, add clear comments and test-plan coverage.
+
+If the trigger does not enforce this fully, update the draft trigger.
+
+2. Add explicit test-plan checks
+
+Add tests confirming:
+
+- client can update own display_name
+- client can update own avatar_url
+- client cannot update own role
+- client cannot update own client_id
+- client cannot update own email
+- client cannot update own is_active
+- team/operator cannot update their own role
+- owner cannot accidentally demote their own owner role
+- owner can update another user’s role
+
+3. Confirm helper function safety
+
+Make sure all helper functions have:
+
+- explicit private schema
+- explicit search_path
+- stable where appropriate
+- security definer where needed
+- no dynamic SQL
+- no dependency on Migration 002 tables
+- null/false fallback
+
+4. Confirm Migration 001 still does NOT include:
+
+- clients
+- team_client_assignments
+- media_assets
+- posts
+- reports
+- AI tables
+- storage
+- pricing tables
+
+------------------------------------------------
+
+PART 2 — CREATE MIGRATION 002 SQL DRAFT ONLY
+
+Create:
+
+docs/sql_drafts/migrations_review/002_client_foundation_draft.sql
+
+Important:
+Do NOT put this file inside supabase/migrations.
+Do NOT run it.
+Do NOT apply it.
+
+Add header:
+
+DO NOT RUN — MIGRATION REVIEW DRAFT ONLY
+
+This file is not active.
+It is not in the Supabase migrations folder.
+Review and audit before converting into a real migration.
+AUTH_MODE remains "placeholder".
+
+------------------------------------------------
+
+PART 3 — MIGRATION 002 TABLES
+
+Draft these tables only:
+
+1. clients
+2. team_client_assignments
+3. client_platforms
+4. onboarding_items
+5. client_requests
+
+Also draft:
+
+- alter table user_profiles add FK on client_id references clients(id) on delete set null
+
+Do NOT create:
+
+- media_assets
+- posts
+- post_slots
+- notifications
+- reports
+- activity_logs
+- AI tables
+- financial tables
+- storage tables
+
+------------------------------------------------
+
+PART 4 — clients TABLE DRAFT
+
+Include:
+
+- id uuid primary key default gen_random_uuid()
+- business_name text not null
+- legal_name text
+- primary_contact_name text not null
+- primary_contact_email text not null
+- primary_contact_phone text
+- secondary_contact_name text
+- secondary_contact_email text
+- cuisine_type text
+- address text
+- website_url text
+- hours_text text
+- plan_type text not null check in ('twelve_month','six_month','three_month','no_contract','month_to_month')
+- service_package text not null check in ('google_presence_starter','complete_online_presence','ads_addon','ads_only','bundle')
+- monthly_fee_cents integer not null
+- contract_months integer
+- start_date date
+- posting_frequency_weekly integer not null default 3
+- timezone text not null
+- assigned_operator_id uuid references user_profiles(id) on delete set null
+- assigned_team_label text
+- account_status text not null default 'onboarding'
+- content_health_status text not null default 'healthy'
+- risk_status text not null default 'good'
+- onboarding_complete boolean not null default false
+- created_at timestamptz not null default now()
+- updated_at timestamptz not null default now()
+
+Comments:
+- timezone required
+- demo seed may use America/Chicago
+- Google Presence Starter is service_package, not plan_type
+- pricing is stored in cents
+- only Owner can change pricing fields
+
+------------------------------------------------
+
+PART 5 — team_client_assignments TABLE DRAFT
+
+Include:
+
+- id uuid primary key default gen_random_uuid()
+- team_member_id uuid not null references team_members(id) on delete cascade
+- client_id uuid not null references clients(id) on delete cascade
+- assignment_role text not null default 'executor' check in ('executor','reviewer','scheduler','reporter','lead')
+- is_active boolean not null default true
+- created_at timestamptz not null default now()
+- updated_at timestamptz not null default now()
+
+Constraint:
+unique(team_member_id, client_id)
+
+No assigned_client_ids arrays.
+
+------------------------------------------------
+
+PART 6 — client_platforms TABLE DRAFT
+
+Include:
+
+- id uuid primary key default gen_random_uuid()
+- client_id uuid not null references clients(id) on delete cascade
+- platform_name text not null check in ('instagram','facebook','google_business','tiktok','other')
+- access_status text not null default 'pending' check in ('pending','granted','verified','revoked')
+- username_or_handle text
+- notes text
+- last_verified_at timestamptz
+- created_at timestamptz not null default now()
+- updated_at timestamptz not null default now()
+
+Comment:
+Client-safe views should hide internal notes.
+
+------------------------------------------------
+
+PART 7 — onboarding_items TABLE DRAFT
+
+Include:
+
+- id uuid primary key default gen_random_uuid()
+- client_id uuid not null references clients(id) on delete cascade
+- item_key text not null
+- item_label text not null
+- description text
+- status text not null default 'not_started' check in ('not_started','pending','complete','blocked')
+- owner_role text not null check in ('client','team','operator','veroxa')
+- priority text not null default 'medium'
+- completed_by_role text
+- completed_at timestamptz
+- created_at timestamptz not null default now()
+- updated_at timestamptz not null default now()
+
+Constraint:
+unique(client_id, item_key)
+
+------------------------------------------------
+
+PART 8 — client_requests TABLE DRAFT
+
+Include:
+
+- id uuid primary key default gen_random_uuid()
+- client_id uuid not null references clients(id) on delete cascade
+- request_type text not null
+- title text not null
+- description text
+- status text not null default 'pending' check in ('pending','in_progress','completed','cancelled')
+- priority text not null default 'normal' check in ('low','normal','high')
+- requested_by_user_id uuid references user_profiles(id) on delete set null
+- assigned_to_role text check in ('team','operator','owner')
+- due_date date
+- created_at timestamptz not null default now()
+- updated_at timestamptz not null default now()
+
+------------------------------------------------
+
+PART 9 — MIGRATION 002 HELPER FUNCTION DRAFTS
+
+Draft helper functions:
+
+private.is_assigned_to_client(p_client uuid)
+private.can_view_client(p_client uuid)
+private.can_manage_client_operations(p_client uuid)
+private.can_manage_pricing()
+
+Rules:
+- use team_client_assignments join table
+- no assigned_client_ids array logic
+- explicit search_path
+- stable where appropriate
+- security definer where needed
+- no dynamic SQL
+- false fallback
+
+------------------------------------------------
+
+PART 10 — MIGRATION 002 RLS DRAFT
+
+Enable RLS on:
+
+- clients
+- team_client_assignments
+- client_platforms
+- onboarding_items
+- client_requests
+
+Draft policies:
+
+clients:
+- client select own only
+- team select assigned clients
+- operator select all
+- owner select/update all
+- pricing changes owner-only through trigger guard
+
+team_client_assignments:
+- client no access
+- team select own active assignments only
+- operator select all
+- owner full access
+
+client_platforms:
+- client select own platform status only through future client-safe view
+- team manage assigned client platforms
+- operator manage all
+- owner full access
+
+onboarding_items:
+- client select own
+- client update only client-owned items
+- team update assigned client items
+- operator/owner view all
+
+client_requests:
+- client create/select own
+- client limited update own request status
+- team view assigned client requests
+- operator/owner view all
+
+Add comments where views are required later for column safety.
+
+------------------------------------------------
+
+PART 11 — CLIENT-SAFE VIEW STUBS
+
+Create draft view stubs only if safe:
+
+client_portal_clients_view
+client_portal_platforms_view
+client_portal_onboarding_view
+client_portal_requests_view
+
+These should hide sensitive fields like:
+
+- monthly_fee_cents
+- assigned_operator_id
+- internal notes
+- pricing/package details unless intentionally client-facing
+
+If adding actual view SQL feels too early, add commented stubs and document that they must be finalized before client portal connects to Supabase.
+
+------------------------------------------------
+
+PART 12 — INDEXES
+
+Add draft indexes:
+
+clients(account_status)
+clients(service_package)
+clients(plan_type)
+clients(assigned_operator_id)
+team_client_assignments(team_member_id)
+team_client_assignments(client_id)
+team_client_assignments(is_active)
+client_platforms(client_id)
+client_platforms(platform_name)
+onboarding_items(client_id)
+onboarding_items(status)
+client_requests(client_id)
+client_requests(status)
+
+Do not over-index.
+
+------------------------------------------------
+
+PART 13 — CREATE MIGRATION 002 TEST PLAN
+
+Create:
+
+docs/MIGRATION_002_TEST_PLAN.md
+
+Include test cases:
+
+- Migration 001 must exist first
+- client_id FK works after clients table exists
+- client sees only own client-safe data
+- client cannot see monthly_fee_cents through client portal view
+- team sees only assigned clients
+- inactive team assignment blocks access
+- operator sees all clients
+- operator cannot change monthly_fee_cents
+- owner can change monthly_fee_cents
+- Google Presence Starter uses service_package, not plan_type
+- team_client_assignments unique constraint works
+- client can create own request
+- client cannot create request for another client
+- onboarding item ownership rules work
+- client_platforms internal notes are hidden from client-safe view
+- rollback drops policies before tables
+
+------------------------------------------------
+
+PART 14 — SELF-AUDIT
+
+After creating the draft, audit your own work.
+
+Confirm:
+
+- 002 draft is not inside supabase/migrations
+- 002 draft says DO NOT RUN
+- no migration was run
+- AUTH_MODE unchanged
+- pricing unchanged
+- navigation unchanged
+- no app behavior changed
+- no media/posts/reports/AI tables included
+- team_client_assignments used instead of assigned_client_ids
+- pricing owner-only protection documented
+- client-safe views planned/stubbed
+
+------------------------------------------------
+
+FINAL REPORT REQUIRED
+
+At completion, report:
+
+1. Files created
+2. Files modified
+3. Migration 001 hardening changes
+4. Migration 002 SQL draft created
+5. Migration 002 tables drafted
+6. Migration 002 helper functions drafted
+7. Migration 002 RLS drafted
+8. Client-safe views created or stubbed
+9. Migration 002 test plan created
+10. Confirmation no migrations were run
+11. Confirmation no files placed in supabase/migrations
+12. Confirmation AUTH_MODE unchanged
+13. Confirmation pricing unchanged
+14. Confirmation navigation unchanged
+15. Remaining risks
+16. Readiness decision for Migration 001
+17. Readiness decision for Migration 002
+18. Recommended next prompt
+
+PASS STANDARD:
+- Migration 001 draft is safer
+- Migration 002 draft exists only in docs/sql_drafts/migrations_review/
+- No real migration is run
+- No backend is connected
+- No app behavior changes
+- RLS/client-safe view risks are documented

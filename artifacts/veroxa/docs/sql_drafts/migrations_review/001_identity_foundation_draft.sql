@@ -296,10 +296,16 @@ create policy user_profiles_select_staff
   to authenticated
   using (private.is_operator());
 
--- 3. A user can UPDATE safe fields on their own row.
---    Column-level write-restriction (preventing self role-escalation) is
---    enforced by the `user_profiles_no_self_role_change` trigger below —
---    RLS cannot natively restrict UPDATE per-column.
+-- 3. A user can UPDATE their own row, but only the safe self-edit
+--    fields: display_name, avatar_url. The sensitive fields
+--    (role, client_id, email, is_active) are owner-only — enforced by
+--    the `user_profiles_column_write_guard` trigger below, because
+--    RLS cannot column-restrict UPDATE.
+--
+--    Self-edit allowed/denied matrix (enforced by policy + trigger):
+--      ALLOWED self-edit for any role:  display_name, avatar_url
+--      DENIED for non-owner:            role, client_id, email, is_active
+--      DENIED even for owner on own:    role (anti-self-demotion lockout)
 create policy user_profiles_update_self
   on public.user_profiles
   for update

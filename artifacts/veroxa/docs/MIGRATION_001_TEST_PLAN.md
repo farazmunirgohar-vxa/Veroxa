@@ -230,6 +230,39 @@ needed.
 - [ ] Expired or missing JWT: behaves identically to anon (test 1) — every query denies, every helper returns NULL/false
 - [ ] Helpers do not raise on missing `auth.uid()`
 
+### 24. Self-edit allowed/denied matrix (consolidated)
+
+The policy `user_profiles_update_self` + the trigger
+`user_profiles_column_write_guard` together enforce: any user can edit
+their own `display_name` and `avatar_url`; nobody but owner can edit
+`role`, `client_id`, `email`, or `is_active`; nobody (even owner) can
+change their own `role`.
+
+| Actor | Column | Expected |
+|---|---|---|
+| client (self) | `display_name` | ✓ succeeds |
+| client (self) | `avatar_url` | ✓ succeeds |
+| client (self) | `role` | ✗ denied (`role changes are restricted to owner`) |
+| client (self) | `client_id` | ✗ denied (`client_id changes are restricted to owner`) |
+| client (self) | `email` | ✗ denied (`email changes are restricted to owner`) |
+| client (self) | `is_active` | ✗ denied (`is_active changes are restricted to owner`) |
+| team (self) | `display_name` | ✓ succeeds |
+| team (self) | `role` | ✗ denied |
+| team (self) | `email` | ✗ denied |
+| operator (self) | `display_name` | ✓ succeeds |
+| operator (self) | `role` | ✗ denied |
+| operator (self) | `email` | ✗ denied |
+| operator (other) | any sensitive col | ✗ denied (no operator UPDATE policy on `user_profiles`) |
+| owner (self) | `display_name` | ✓ succeeds |
+| owner (self) | `role` | ✗ denied (`users cannot change their own role`) — anti-lockout |
+| owner (self) | `email` | ✓ succeeds (no self-restriction on email) |
+| owner (other) | `role` | ✓ succeeds — and `current_user_role()` for that user reflects the new role on the next statement |
+| owner (other) | `email` | ✓ succeeds |
+| owner (other) | `is_active` | ✓ succeeds — kill-switch deactivates user immediately |
+| owner (other) | `client_id` | ✓ succeeds (FK enforcement arrives with M002) |
+
+- [ ] Every row of the matrix above runs and produces the expected result.
+
 ---
 
 ## Rollback expectation
