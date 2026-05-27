@@ -89,6 +89,7 @@ import ClientWorkspace from "@/pages/client-workspace";
 import ClientOnboardingCenter from "@/pages/client-onboarding-center";
 import ClientContentPipeline from "@/pages/client-content-pipeline";
 import ClientAIAgents from "@/pages/client-ai-agents";
+import ClientAiDraftPreview from "@/pages/client-ai-draft-preview";
 import SupabaseTestPage from "@/pages/supabase-test";
 import LoginPage from "@/pages/login";
 import AuthStatusPage from "@/pages/auth-status";
@@ -130,6 +131,7 @@ function Router() {
       <Route path="/demo/client/onboarding-center" component={ClientOnboardingCenter} />
       <Route path="/demo/client/content-pipeline" component={ClientContentPipeline} />
       <Route path="/demo/client/ai-agents" component={ClientAIAgents} />
+      <Route path="/demo/client/ai-draft-preview" component={ClientAiDraftPreview} />
 
       {/* Internal team demo — login required, role = "team" */}
       <Route path="/demo/team">

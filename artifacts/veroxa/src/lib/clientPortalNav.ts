@@ -28,16 +28,18 @@ import {
   ClipboardList,
   Images,
   Briefcase,
+  Sparkles,
 } from "lucide-react";
 import type { SidebarItem } from "@/components/PortalLayout";
 
 export const clientPortalNavItems: SidebarItem[] = [
-  { label: "Dashboard",    icon: LayoutDashboard, href: "/demo/client/dashboard"   },
-  { label: "Upload Media", icon: Images,          href: "/demo/client/media"        },
-  { label: "Calendar",     icon: CalendarDays,    href: "/demo/client/calendar"    },
-  { label: "Reports",      icon: FileText,        href: "/demo/client/reports"     },
-  { label: "Requests",     icon: ClipboardList,   href: "/demo/client/requests"    },
-  { label: "Account",      icon: Briefcase,       href: "/demo/client/account"     },
+  { label: "Dashboard",        icon: LayoutDashboard, href: "/demo/client/dashboard"        },
+  { label: "Upload Media",     icon: Images,          href: "/demo/client/media"            },
+  { label: "AI Draft Preview", icon: Sparkles,        href: "/demo/client/ai-draft-preview" },
+  { label: "Calendar",         icon: CalendarDays,    href: "/demo/client/calendar"         },
+  { label: "Reports",          icon: FileText,        href: "/demo/client/reports"          },
+  { label: "Requests",         icon: ClipboardList,   href: "/demo/client/requests"         },
+  { label: "Account",          icon: Briefcase,       href: "/demo/client/account"          },
 ];
 
 // Hidden from nav (routes still active at their original paths):

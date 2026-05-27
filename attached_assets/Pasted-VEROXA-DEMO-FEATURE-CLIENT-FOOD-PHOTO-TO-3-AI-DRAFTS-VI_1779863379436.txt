@@ -1,0 +1,191 @@
+VEROXA DEMO FEATURE — CLIENT FOOD PHOTO TO 3 AI DRAFTS + VISUAL SCHEDULE
+
+Objective:
+Build a demo-only client portal feature where the client can add/upload one food picture, then the demo AI flow automatically turns it into 3 final post drafts with suggested posting schedule.
+
+This is for visual understanding only.
+Do NOT connect real AI.
+Do NOT connect real storage.
+Do NOT connect Supabase.
+Do NOT change AUTH_MODE.
+Do NOT activate real auth.
+Do NOT change pricing.
+Do NOT change role model.
+Do NOT create real publishing.
+Do NOT create real automation.
+Do NOT use real client data.
+
+Hard invariants:
+- AUTH_MODE stays literal "placeholder"
+- Portal remains disconnected from real database
+- Client portal remains demo/fixture-only
+- No OpenAI / Anthropic / Gemini / external AI APIs
+- No Supabase storage upload
+- No real publishing APIs
+- No files under supabase/migrations
+- Demo gate veroxa-preview remains unchanged
+- Roles remain Client, Team, Operator, Owner
+
+Feature goal:
+Inside the Client Portal demo, add a visual workflow that lets the user upload or select ONE food image locally and see Veroxa generate:
+1. Three final post drafts
+2. Caption text for each draft
+3. Content angle for each draft
+4. Platform recommendation
+5. Suggested posting day/time
+6. Visual schedule preview
+
+This should feel like:
+"Upload food picture → Veroxa AI prepares content → scheduled posts are ready."
+
+Important:
+This must be simulated demo AI only.
+Use deterministic mock logic, not an AI API.
+
+Suggested UI location:
+Add this to the Client Portal as a new page or section:
+- Route option: /demo/client/ai-draft-preview
+- Nav label: AI Draft Preview
+OR add it inside existing Client Media page if easier.
+
+Preferred route:
+artifacts/veroxa/src/pages/client/ClientAiDraftPreview.jsx or matching existing project convention.
+
+UI flow:
+
+1. Header:
+Title:
+AI Draft Preview
+
+Subtitle:
+Upload one food photo and see how Veroxa turns it into ready-to-schedule content.
+
+Add small badge:
+Demo Preview — simulated AI only
+
+2. Upload area:
+- Drag/drop or file input
+- Accept image files only
+- Show preview of uploaded image using browser local preview / URL.createObjectURL / FileReader
+- Do not send image anywhere
+- Do not store image in database
+- Do not upload to Supabase
+- If no image is uploaded, show a sample placeholder food image/card
+
+3. Button:
+Generate 3 Drafts
+
+When clicked:
+- Show short simulated loading states:
+  - Reviewing image quality...
+  - Detecting food angle...
+  - Creating captions...
+  - Choosing posting times...
+- Then show 3 draft cards.
+
+4. Draft cards:
+Each card should include:
+- Draft number
+- Content angle
+- Caption
+- CTA
+- Platform
+- Suggested posting time
+- Status badge: Ready to Schedule
+
+Use example outputs like:
+
+Draft 1:
+Angle: Lunch Special
+Caption: Fresh, hot, and ready for your next lunch break. Stop by today and enjoy a plate made with care.
+CTA: Visit us today
+Platform: Instagram
+Suggested time: Friday 11:30 AM
+
+Draft 2:
+Angle: Behind the Scenes
+Caption: A closer look at what goes into every plate before it reaches the table.
+CTA: Follow for more kitchen moments
+Platform: Facebook
+Suggested time: Saturday 2:00 PM
+
+Draft 3:
+Angle: Craving / Dinner Push
+Caption: Dinner plans? This plate is ready when you are.
+CTA: Bring the family tonight
+Platform: Instagram
+Suggested time: Sunday 6:15 PM
+
+5. Visual schedule preview:
+Below the draft cards, show a simple mini calendar/timeline:
+- Friday 11:30 AM — Draft 1 — Instagram
+- Saturday 2:00 PM — Draft 2 — Facebook
+- Sunday 6:15 PM — Draft 3 — Instagram
+
+Make it visually clear that Veroxa took one picture and created a 3-post schedule.
+
+6. Explanation panel:
+Add a small client-friendly explanation:
+"Veroxa uses your uploaded restaurant media to create content angles, captions, and posting times. In the live system, your Veroxa team reviews everything before anything is posted."
+
+7. Safety labels:
+Everywhere needed, label:
+- Demo only
+- Simulated AI
+- Not posted
+- No real upload
+
+8. Data behavior:
+Use local React state only.
+No backend.
+No Supabase.
+No API calls.
+No real file persistence.
+Image preview disappears on refresh.
+Generated drafts are demo objects only.
+
+9. Styling:
+Match current Veroxa premium dark SaaS UI.
+Use existing cards/buttons/badges/layout components where possible.
+Keep mobile responsive.
+The page should look good on iPhone width.
+
+10. Navigation:
+Add a Client Portal nav item:
+AI Draft Preview
+
+Do not add this to Team/Operator/Owner nav unless needed.
+Client Portal should remain simple.
+
+11. Optional polish:
+Add a three-step progress row:
+1. Upload
+2. AI Drafts
+3. Schedule Preview
+
+12. Acceptance criteria:
+- Client can open the AI Draft Preview page
+- Client can choose one local food image
+- Image preview displays
+- Clicking Generate 3 Drafts creates exactly 3 draft cards
+- Each draft has caption, angle, platform, CTA, and suggested time
+- Schedule preview shows all 3 drafts in order
+- No network/API call is made for AI
+- No Supabase upload/storage is used
+- AUTH_MODE remains "placeholder"
+- Portal remains disconnected
+- No pricing changes
+- No role changes
+- No supabase/migrations files added
+- Mobile layout looks clean
+- Typecheck/build passes
+
+Final report required:
+1. Files changed
+2. Route/page added
+3. Nav item added
+4. Confirmation simulated AI only
+5. Confirmation no Supabase/API/storage connection
+6. Confirmation AUTH_MODE unchanged
+7. Confirmation portal remains disconnected
+8. Build/typecheck result
