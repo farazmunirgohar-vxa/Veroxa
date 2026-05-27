@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import {
   ArrowLeft,
@@ -27,8 +27,17 @@ import {
   getClientPortalAccountReadOnly,
 } from "@/lib/data/supabaseReadOnlyData";
 import type { ReadOnlyEnvelope } from "@/lib/data/clientPortalReadOnlyTypes";
-import { getWriteReadinessStatus } from "@/lib/data/writeReadiness";
+import { getWriteReadinessStatus, WRITES_ENABLED } from "@/lib/data/writeReadiness";
 import { getSchemaReadinessStatus } from "@/lib/data/schemaReadiness";
+import { verifyM024ASchema } from "@/lib/data/schemaVerification";
+import { EXPECTED_M024A_TABLES } from "@/lib/data/schemaVerification";
+import {
+  runDevWriteSmokeTests,
+  getDevWriteSmokeTestReadiness,
+} from "@/lib/data/devWriteSmokeTests";
+import { isValidUuid } from "@/lib/data/devClientIdValidation";
+import type { SchemaVerificationResult } from "@/lib/data/schemaVerificationTypes";
+import type { SchemaSmokeTestResult } from "@/lib/data/schemaVerificationTypes";
 
 type CoverageRow = {
   label: string;
@@ -116,6 +125,15 @@ export default function InternalSupabaseReadiness() {
   const [coverageLoading, setCoverageLoading] = useState(true);
   const writeStatus = getWriteReadinessStatus();
   const schemaStatus = getSchemaReadinessStatus();
+  const smokeReadiness = getDevWriteSmokeTestReadiness();
+
+  const [verifyResult, setVerifyResult] = useState<SchemaVerificationResult | null>(null);
+  const [verifying, setVerifying] = useState(false);
+
+  const [smokeResult, setSmokeResult] = useState<SchemaSmokeTestResult | null>(null);
+  const [smokeRunning, setSmokeRunning] = useState(false);
+  const [devClientId, setDevClientId] = useState("");
+  const clientIdRef = useRef<HTMLInputElement>(null);
 
   async function refresh() {
     setLoading(true);
@@ -357,6 +375,190 @@ export default function InternalSupabaseReadiness() {
               <code>src/lib/data/devSupabaseWriteAdapter.ts</code>, and{" "}
               <code>docs/sql-plan/</code>.
             </p>
+          </CardContent>
+        </Card>
+
+        {/* Schema Verification — M024B */}
+        <Card className="bg-card border-border" data-testid="card-schema-verification">
+          <CardContent className="space-y-3 p-4">
+            <div className="flex items-center gap-2">
+              <Database className="w-4 h-4 text-primary" />
+              <h3 className="text-sm font-semibold">Schema Verification</h3>
+              <Badge variant="outline" className="text-[10px] bg-muted/30 text-muted-foreground border-border">
+                M024B
+              </Badge>
+            </div>
+            <ul className="text-xs text-muted-foreground space-y-1 pl-1">
+              <li>• Expected schema version: <code className="text-foreground">M024A_FIRST_CLIENT_METADATA</code></li>
+              <li>• Expected tables: <span className="text-foreground">{EXPECTED_M024A_TABLES.join(", ")}</span></li>
+              <li>• Read-only check — no writes performed during verification.</li>
+            </ul>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={verifying}
+              onClick={async () => {
+                setVerifying(true);
+                setVerifyResult(null);
+                try {
+                  const result = await verifyM024ASchema();
+                  setVerifyResult(result);
+                } finally {
+                  setVerifying(false);
+                }
+              }}
+            >
+              {verifying ? <><Loader2 className="w-3 h-3 mr-1 animate-spin" />Verifying…</> : "Run schema verification"}
+            </Button>
+            {verifyResult && (
+              <div className="space-y-1 text-xs">
+                <p className={verifyResult.ok ? "text-emerald-400" : "text-amber-400"}>
+                  {verifyResult.ok ? <CheckCircle2 className="inline w-3 h-3 mr-1" /> : <AlertTriangle className="inline w-3 h-3 mr-1" />}
+                  {verifyResult.safeMessage}
+                </p>
+                <ul className="pl-2 space-y-0.5">
+                  {verifyResult.tableChecks.map((t) => (
+                    <li key={t.tableName} className="flex items-center gap-1">
+                      {t.status === "passed"
+                        ? <CheckCircle2 className="w-3 h-3 text-emerald-400 flex-shrink-0" />
+                        : <XCircle className="w-3 h-3 text-red-400 flex-shrink-0" />}
+                      <code className="text-muted-foreground">{t.tableName}</code>
+                      <span className="text-muted-foreground/70">— {t.safeMessage}</span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-muted-foreground/50">Checked at: {verifyResult.checkedAt}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Dev Write Smoke Test — M024B */}
+        <Card className="bg-card border-border" data-testid="card-smoke-test">
+          <CardContent className="space-y-3 p-4">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-amber-400" />
+              <h3 className="text-sm font-semibold">Dev Write Smoke Test</h3>
+              <Badge variant="outline" className="text-[10px] bg-amber-500/10 text-amber-300 border-amber-500/30">
+                Internal only
+              </Badge>
+            </div>
+
+            {/* Warnings */}
+            <div className="rounded border border-amber-500/20 bg-amber-500/5 p-2 text-[11px] text-amber-200/80 space-y-0.5">
+              <p>⚠ Do not use real restaurant data in this smoke test.</p>
+              <p>⚠ This does not upload files or test storage.</p>
+              <p>⚠ This does not test production security.</p>
+              <p>⚠ M024A RLS is dev-stage only.</p>
+              <p>⚠ Production RLS and real auth are still incomplete.</p>
+            </div>
+
+            <ul className="text-xs text-muted-foreground space-y-1 pl-1">
+              <li>• Write mode: <span className="text-foreground">{writeStatus.mode}</span></li>
+              <li>• Env flag: <code className="text-foreground">{writeStatus.envFlagName}</code></li>
+              <li>• Writes enabled: <span className={WRITES_ENABLED ? "text-emerald-400" : "text-muted-foreground"}>{WRITES_ENABLED ? "Yes" : "No"}</span></li>
+              <li>• Storage upload: <span className="text-foreground">not connected</span></li>
+              <li>• Requires fictional dev client UUID (created manually in dev Supabase).</li>
+            </ul>
+
+            <div className="space-y-1">
+              <label className="text-[11px] text-muted-foreground">Dev client UUID (fictional only)</label>
+              <input
+                ref={clientIdRef}
+                type="text"
+                value={devClientId}
+                onChange={(e) => setDevClientId(e.target.value)}
+                placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                className="w-full rounded border border-border bg-background px-2 py-1 text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary"
+                spellCheck={false}
+              />
+              {devClientId && !isValidUuid(devClientId) && (
+                <p className="text-[10px] text-red-400">Not a valid UUID format.</p>
+              )}
+            </div>
+
+            <div className="flex gap-2 flex-wrap">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={smokeRunning}
+                onClick={async () => {
+                  setSmokeRunning(true);
+                  setSmokeResult(null);
+                  try {
+                    const result = await runDevWriteSmokeTests({
+                      clientId: devClientId || undefined,
+                      dryRun: true,
+                    });
+                    setSmokeResult(result);
+                  } finally {
+                    setSmokeRunning(false);
+                  }
+                }}
+              >
+                {smokeRunning ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : null}
+                Run dry run
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={
+                  smokeRunning ||
+                  !WRITES_ENABLED ||
+                  !isValidUuid(devClientId)
+                }
+                title={
+                  !WRITES_ENABLED
+                    ? `Set ${writeStatus.envFlagName}="true" to enable`
+                    : !isValidUuid(devClientId)
+                    ? "Provide a valid dev client UUID first"
+                    : "Run metadata smoke test"
+                }
+                onClick={async () => {
+                  setSmokeRunning(true);
+                  setSmokeResult(null);
+                  try {
+                    const result = await runDevWriteSmokeTests({
+                      clientId: devClientId,
+                      dryRun: false,
+                    });
+                    setSmokeResult(result);
+                  } finally {
+                    setSmokeRunning(false);
+                  }
+                }}
+              >
+                {smokeRunning ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : null}
+                Run metadata smoke test
+              </Button>
+            </div>
+            {!WRITES_ENABLED && (
+              <p className="text-[11px] text-amber-300/80">{smokeReadiness.safeMessage}</p>
+            )}
+            {smokeResult && (
+              <div className="space-y-1 text-xs mt-1">
+                <p className={smokeResult.ok ? "text-emerald-400" : smokeResult.status === "dry_run" ? "text-blue-400" : "text-amber-400"}>
+                  {smokeResult.ok || smokeResult.status === "dry_run"
+                    ? <CheckCircle2 className="inline w-3 h-3 mr-1" />
+                    : <AlertTriangle className="inline w-3 h-3 mr-1" />}
+                  {smokeResult.safeMessage}
+                </p>
+                <ul className="pl-2 space-y-0.5">
+                  {smokeResult.steps.map((s, i) => (
+                    <li key={i} className="flex items-center gap-1">
+                      {s.status === "passed" || s.status === "dry_run"
+                        ? <CheckCircle2 className="w-3 h-3 text-emerald-400 flex-shrink-0" />
+                        : s.status === "skipped"
+                        ? <AlertTriangle className="w-3 h-3 text-amber-400 flex-shrink-0" />
+                        : <XCircle className="w-3 h-3 text-red-400 flex-shrink-0" />}
+                      <span className="text-muted-foreground">{s.name}</span>
+                      <span className="text-muted-foreground/60">— {s.safeMessage}</span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-muted-foreground/50">Ran at: {smokeResult.ranAt}</p>
+              </div>
+            )}
           </CardContent>
         </Card>
 

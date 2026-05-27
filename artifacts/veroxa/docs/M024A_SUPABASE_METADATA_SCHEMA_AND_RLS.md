@@ -130,3 +130,15 @@ restaurant.
    flag, keeping local/session as fallback.
 
 Storage upload remains a separate later milestone.
+
+## M024B addition
+
+M024B provides an internal-only verification + smoke test harness
+for this schema:
+
+- Schema verification checks all 5 M024A tables via read-only
+  `SELECT id LIMIT 1` — no writes, safe messages only.
+- Dev write smoke tests are metadata-only, require an explicit button
+  click and a manually-created fictional dev client UUID.
+- No storage upload is tested. Storage remains a separate later
+  milestone.

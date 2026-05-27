@@ -953,3 +953,31 @@ auth activation.
   `reel_idea` → `reel_tiktok_idea` to match migration check
   constraint (callers updated).
 - **Typecheck:** see verification below.
+
+## M024B — Dev migration verification + write smoke test harness
+
+- **Schema verification utilities added:**
+  `src/lib/data/schemaVerificationTypes.ts`,
+  `src/lib/data/schemaVerification.ts` — read-only `SELECT id LIMIT 1`
+  per table; safe messages only; no writes.
+- **Smoke test harness added:**
+  `src/lib/data/devWriteSmokeTestData.ts`,
+  `src/lib/data/devWriteSmokeTests.ts`,
+  `src/lib/data/devClientIdValidation.ts`.
+- Smoke tests require explicit button click (not auto-run), dev
+  write flag enabled, and a manually-provided fictional dev client UUID.
+- Dry-run mode available (no writes; reports what would be tested).
+- **Internal Supabase readiness page** updated:
+  - Schema Verification card with "Run schema verification" button
+    and per-table pass/fail results.
+  - Dev Write Smoke Test card with UUID input, dry-run and live-run
+    buttons (real button disabled when writes off or no valid UUID),
+    and step-by-step result display. Includes 5 warning messages.
+- **No client-facing page connected to writes.**
+- **No new migration added** (M024A migration unchanged).
+- **No storage upload added.**
+- **No AI / publishing / ads / payments added.**
+- Owner/Operator portals still deferred.
+- AUTH_MODE unchanged (`placeholder`). DATA_MODE default unchanged
+  (`fixture`). Pricing unchanged. InternalDemoGuard intact.
+- **Typecheck:** PASS.

@@ -109,3 +109,20 @@ the first real client uses Veroxa in production.
     for per-restaurant scoping).
   - Production RLS tightening (role separation, internal_note
     visibility, per-restaurant binding).
+
+## M024B — Verification and smoke test harness
+
+- ✅ Schema verification utility — reads all 5 M024A tables; safe
+  messages; no writes.
+- ✅ Dev write smoke test harness — explicit button click, requires
+  fictional dev client UUID, dry-run available.
+- ✅ UUID validation helper (`devClientIdValidation.ts`).
+- ✅ Internal readiness page has Schema Verification and Dev Write
+  Smoke Test cards.
+- Still needed:
+  - Apply M024A migration in a dev Supabase project.
+  - Manually create a fictional dev client row; copy its UUID.
+  - Verify schema (all 5 tables pass).
+  - Run dry run, then full metadata smoke test.
+  - Connect selected pages to write adapter (M024C).
+  - Storage upload — separate later milestone.
