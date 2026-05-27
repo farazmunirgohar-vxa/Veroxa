@@ -19,6 +19,14 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
+import { DemoFlowTimeline } from "@/components/demo/DemoVisuals";
+
+const NEXT_STEPS = [
+  { key: "review",   label: "Team review",   caption: "Captions checked" },
+  { key: "schedule", label: "Operator OK",   caption: "Schedule confirmed" },
+  { key: "publish",  label: "Scheduled",     caption: "Queued to platform" },
+  { key: "report",   label: "Report update", caption: "Performance logged" },
+];
 
 type Platform = "Instagram" | "Facebook";
 
@@ -422,8 +430,22 @@ export default function ClientAiDraftPreview() {
               <Card
                 key={draft.number}
                 data-testid={`card-draft-${draft.number}`}
-                className="flex h-full flex-col"
+                className="flex h-full flex-col overflow-hidden"
               >
+                <div
+                  className="aspect-[4/3] w-full overflow-hidden bg-muted/30"
+                  data-testid={`draft-thumb-${draft.number}`}
+                >
+                  {imageUrl ? (
+                    <img
+                      src={imageUrl}
+                      alt={fileName ?? "Uploaded food preview"}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <PlaceholderImage />
+                  )}
+                </div>
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <Badge
@@ -514,6 +536,49 @@ export default function ClientAiDraftPreview() {
                 One photo, three posts, three scheduled moments — simulated for
                 preview only.
               </p>
+            </CardContent>
+          </Card>
+
+          {/* What Veroxa would do next */}
+          <Card className="mt-6" data-testid="card-next-steps">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+                What Veroxa would do next
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div
+                className="flex items-start gap-3 rounded-md border border-amber-500/30 bg-amber-500/5 p-3"
+                data-testid="row-team-review-gate"
+              >
+                <ShieldAlert className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-300" />
+                <div className="text-sm">
+                  <p className="font-medium text-amber-100">
+                    Team review before posting
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    Nothing goes live until your Veroxa team reviews each
+                    caption and approves the schedule. This is a demo
+                    preview — no posting happens here.
+                  </p>
+                </div>
+              </div>
+              <DemoFlowTimeline steps={NEXT_STEPS} testId="next-steps-timeline" />
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="outline" className="border-border text-muted-foreground">
+                  Demo only
+                </Badge>
+                <Badge variant="outline" className="border-border text-muted-foreground">
+                  Simulated AI
+                </Badge>
+                <Badge variant="outline" className="border-border text-muted-foreground">
+                  Not posted
+                </Badge>
+                <Badge variant="outline" className="border-border text-muted-foreground">
+                  No real upload
+                </Badge>
+              </div>
             </CardContent>
           </Card>
         </section>
