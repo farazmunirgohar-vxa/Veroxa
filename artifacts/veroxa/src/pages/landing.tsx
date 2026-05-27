@@ -57,6 +57,25 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Feature highlights strip */}
+      <section className="pb-12 px-6 lg:px-12">
+        <div className="max-w-5xl mx-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          {[
+            { label: "Upload media",     sub: "Phone photos welcome" },
+            { label: "AI drafts captions", sub: "3 angle variants" },
+            { label: "Team reviews",     sub: "Before anything posts" },
+            { label: "Auto-scheduled",   sub: "Right time, right platform" },
+            { label: "Google optimised", sub: "Profile + local SEO" },
+            { label: "Monthly reports",  sub: "In your portal" },
+          ].map((f) => (
+            <div key={f.label} className="rounded-xl border border-border/40 bg-card/30 p-3 text-center">
+              <p className="text-xs font-semibold text-foreground">{f.label}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5 leading-snug">{f.sub}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* System Trust Signals */}
       <section className="border-y border-border/40 bg-card/30 backdrop-blur-sm py-10">
         <div className="max-w-6xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-border/30">

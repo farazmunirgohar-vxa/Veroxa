@@ -30,7 +30,25 @@ const veroxaOsFlow = [
   { key: "review",   label: "Team Review",    caption: "Human approval" },
   { key: "schedule", label: "Schedule",       caption: "Best posting times" },
   { key: "report",   label: "Report",         caption: "Weekly + monthly" },
+  { key: "retain",   label: "Retain",         caption: "Client sees results" },
 ];
+
+const ACTION_ITEMS: Array<{
+  text: string;
+  severity: "critical" | "attention" | "normal";
+}> = [
+  { text: "2 clients require immediate attention", severity: "critical" },
+  { text: "4 reports pending operator validation",  severity: "attention" },
+  { text: "1 onboarding issue open",               severity: "attention" },
+  { text: "Revenue increased 12% MoM",             severity: "normal" },
+  { text: "3 qualified leads ready for proposals", severity: "normal" },
+];
+
+const SEVERITY_STYLE = {
+  critical:  "bg-rose-500    w-2 h-2 rounded-full flex-shrink-0 mt-1",
+  attention: "bg-amber-400   w-2 h-2 rounded-full flex-shrink-0 mt-1",
+  normal:    "bg-primary/60  w-2 h-2 rounded-full flex-shrink-0 mt-1",
+};
 
 const fmt$ = (n: number) => `$${n.toLocaleString()}`;
 
@@ -165,17 +183,24 @@ export default function OwnerExecutiveDashboard() {
         <Card className="bg-card border-primary/30">
           <CardHeader><CardTitle className="text-base">Action items</CardTitle></CardHeader>
           <CardContent>
+            <div className="mb-3 flex flex-wrap gap-2 text-[11px]">
+              {(["critical","attention","normal"] as const).map((s) => {
+                const count = ACTION_ITEMS.filter(i => i.severity === s).length;
+                const cls = s === "critical" ? "border-rose-500/30 bg-rose-500/10 text-rose-300"
+                          : s === "attention" ? "border-amber-500/30 bg-amber-500/10 text-amber-300"
+                          : "border-border bg-muted/20 text-muted-foreground";
+                return (
+                  <span key={s} className={`rounded-full border px-2 py-0.5 font-medium capitalize ${cls}`}>
+                    {count} {s}
+                  </span>
+                );
+              })}
+            </div>
             <ul className="space-y-2 text-sm">
-              {[
-                "2 clients require attention",
-                "4 reports pending validation",
-                "1 onboarding issue open",
-                "Revenue increased 12% MoM",
-                "3 qualified leads ready for proposals",
-              ].map((line) => (
-                <li key={line} className="flex items-start gap-2">
-                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
-                  {line}
+              {ACTION_ITEMS.map((item) => (
+                <li key={item.text} className="flex items-start gap-2">
+                  <span className={SEVERITY_STYLE[item.severity]} />
+                  {item.text}
                 </li>
               ))}
             </ul>

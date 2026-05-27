@@ -31,17 +31,19 @@ import {
   FileText,
   ShieldAlert,
   ListChecks,
+  PenLine,
 } from "lucide-react";
 import type { SidebarItem } from "@/components/PortalLayout";
 
 export const teamPortalNavItems: SidebarItem[] = [
-  { label: "Dashboard",    icon: LayoutDashboard, href: "/demo/team/dashboard"    },
-  { label: "Work Queue",   icon: ListChecks,      href: "/demo/team/work-queue"   },
-  { label: "Media Review", icon: ImageIcon,       href: "/demo/team/media-review" },
-  { label: "Drafts",       icon: Layers,          href: "/demo/team/drafts"       },
-  { label: "Scheduling",   icon: CalendarDays,    href: "/demo/team/scheduling"   },
-  { label: "Reports",      icon: FileText,        href: "/demo/team/report-queue" },
-  { label: "Alerts",       icon: ShieldAlert,     href: "/demo/team/alerts"       },
+  { label: "Dashboard",       icon: LayoutDashboard, href: "/demo/team/dashboard"      },
+  { label: "Work Queue",      icon: ListChecks,      href: "/demo/team/work-queue"     },
+  { label: "Media Review",    icon: ImageIcon,       href: "/demo/team/media-review"   },
+  { label: "Content Review",  icon: PenLine,         href: "/demo/team/content-review" },
+  { label: "Drafts",          icon: Layers,          href: "/demo/team/drafts"         },
+  { label: "Scheduling",      icon: CalendarDays,    href: "/demo/team/scheduling"     },
+  { label: "Reports",         icon: FileText,        href: "/demo/team/report-queue"   },
+  { label: "Alerts",          icon: ShieldAlert,     href: "/demo/team/alerts"         },
 ];
 
 // Hidden from nav (routes still active at their original paths):

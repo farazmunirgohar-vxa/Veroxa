@@ -50,12 +50,13 @@ export default function DemoHub() {
               <div className="grid grid-cols-2 gap-2 mb-8">
                 {[
                   "Dashboard",
+                  "AI Draft Preview",
                   "Content Calendar",
-                  "Google Visibility",
                   "Reports",
-                  "Updates",
-                  "Onboarding",
+                  "Weekly Updates",
+                  "Requests from Veroxa",
                   "Media Guidance",
+                  "Account overview",
                 ].map((item) => (
                   <div key={item} className="flex items-center gap-2 text-sm text-muted-foreground">
                     <span className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />

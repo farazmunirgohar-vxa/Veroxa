@@ -13,10 +13,11 @@
 
 ---
 
-## Current state (audit pass: 2026-05-27)
+## Current state (audit pass: 2026-05-27, polish pass: 2026-05-27)
 
-**Status:** demo / placeholder phase. Documentation and safety
-stabilization only. No runtime backend behavior is active.
+**Status:** demo / placeholder phase. Whole-project polish pass complete. All 4 portals
+surfaced with rich demo content. Public website polished. 64 pasted prompt files removed.
+No runtime backend behavior is active.
 
 - **AUTH_MODE is `"placeholder"`.** Verified in
   `src/lib/auth/authMode.ts`. Real Supabase Auth code exists in the
