@@ -46,7 +46,7 @@ export default function OwnerOS() {
         testId="header-owner-os"
       />
       <DemoOnlyBanner
-        message="Executive snapshot. All figures are demo data and reflect Veroxa's flat pricing model ($477 Starter · $977 Complete Online Presence · $977 Ads Management · $1,497 Bundle — ad spend separate)."
+        message="Executive snapshot. All figures are demo data and reflect Veroxa's current model ($477 Google Optimization · $977 Complete Online Presence · +$497 Ads Add-on · $997 Ads Management Only — ad spend separate. Founding clients 50% off first year)."
         testId="banner-owner-os"
       />
 

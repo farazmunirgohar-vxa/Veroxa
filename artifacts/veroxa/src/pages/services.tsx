@@ -37,17 +37,18 @@ export default function ServicesPage() {
           </div>
           <div className="grid md:grid-cols-2 gap-x-12 gap-y-3">
             {[
-              "Social media content system",
-              "Instagram / Facebook / TikTok posting support",
-              "Google Business Profile optimization",
-              "Local SEO visibility support",
+              "Facebook management",
+              "Instagram management",
+              "TikTok management",
+              "Google Optimization",
+              "Content planning",
+              "Caption / draft creation",
+              "Posting support",
               "Restaurant media guidance",
-              "Weekly client updates",
-              "Monthly performance reports",
-              "Content calendar",
-              "Caption and draft creation",
+              "Weekly updates",
+              "Monthly reports",
               "Team-managed execution",
-              "Online trust and consistency system",
+              "Veroxa Client Portal access",
             ].map((item) => (
               <div key={item} className="flex items-center gap-3 py-2.5 border-b border-border/30 last:border-b-0">
                 <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />
@@ -55,21 +56,28 @@ export default function ServicesPage() {
               </div>
             ))}
           </div>
+          <div className="mt-6 p-4 rounded-xl border border-primary/30 bg-primary/5 text-sm text-foreground/90 leading-relaxed max-w-3xl">
+            <strong>Setup support:</strong> If the restaurant does not already
+            have a needed website, Facebook page, Instagram account, TikTok
+            account, or Google Business Profile, Veroxa will help create/setup
+            the required basic account/page/presence during onboarding. This is
+            not a custom website development package.
+          </div>
         </div>
       </section>
 
-      {/* Google Visibility */}
+      {/* Google Optimization */}
       <section className="py-20 px-6 lg:px-12">
         <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           <div>
             <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center border border-blue-500/20 mb-5">
               <Globe className="w-5 h-5" />
             </div>
-            <h2 className="text-2xl font-bold mb-4">Google Visibility</h2>
+            <h2 className="text-2xl font-bold mb-4">Google Optimization</h2>
             <p className="text-muted-foreground leading-relaxed mb-4">
-              Google Business Profile optimization helps your restaurant appear when customers search
-              for nearby food. Veroxa supports photo consistency, category accuracy, and profile
-              activity to improve local visibility.
+              Google Optimization covers Google Search Engine SEO, Google Maps
+              SEO, Google Business Profile, and Google reviews — so customers
+              searching for nearby food can actually find the restaurant.
             </p>
             <p className="text-sm text-muted-foreground/70 leading-relaxed">
               Veroxa does not guarantee first-page Google rankings. Local search results depend on
@@ -78,10 +86,10 @@ export default function ServicesPage() {
           </div>
           <div className="space-y-4">
             {[
-              "Google Business Profile setup and optimization",
-              "Photo and category consistency",
-              "Local trust and credibility signals",
-              "Profile activity and engagement support",
+              "Google Search Engine SEO",
+              "Google Maps SEO",
+              "Google Business Profile optimization",
+              "Google reviews support",
             ].map((item) => (
               <div key={item} className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card/40">
                 <CheckCircle2 className="w-4 h-4 text-blue-500 flex-shrink-0" />
@@ -168,8 +176,10 @@ export default function ServicesPage() {
             </div>
           </div>
           <p className="text-muted-foreground mb-8 max-w-xl">
-            Add paid advertising management to your Complete Online Presence plan, or start with
-            ads management only.
+            Add paid advertising management to Complete Online Presence
+            (+$497/mo), or run Ads Management on its own ($997/mo). Founding
+            clients receive 50% off for the first year. Ad spend is always
+            separate and paid by the restaurant directly to the ad platform.
           </p>
           <div className="grid md:grid-cols-2 gap-x-12 gap-y-3 mb-8">
             {[

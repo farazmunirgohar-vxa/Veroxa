@@ -1,0 +1,153 @@
+# Veroxa Service Definition — Source of Truth
+
+Last updated: 2026-05-27
+
+This document defines what each Veroxa service actually covers, the order in
+which services are built, and the operating priorities while Veroxa is still
+serving its first 1–3 restaurant clients. Pricing values live in
+[`PRICING_SOURCE_OF_TRUTH.md`](./PRICING_SOURCE_OF_TRUTH.md) and the runtime
+file `src/data/pricing/veroxaPricing.ts`.
+
+---
+
+## Google Optimization — scope
+
+**What it is:** Google-focused visibility for restaurants that need to be
+found better on Google before committing to full content production.
+
+**Included**
+
+- Google Search Engine SEO
+- Google Maps SEO
+- Google Business Profile optimization
+- Google reviews support
+
+**Not included**
+
+- Social media content (Facebook, Instagram, TikTok)
+- Social posting
+- Ads management
+- Full Veroxa content workflow
+
+---
+
+## Complete Online Presence — scope
+
+**What it is:** The core Veroxa system for restaurants that want a managed,
+team-operated online presence across Google and the major social platforms.
+
+**Included**
+
+- Facebook management
+- Instagram management
+- TikTok management
+- Google Optimization
+- Content planning
+- Caption / draft creation
+- Posting support
+- Restaurant media guidance
+- Weekly updates
+- Monthly reports
+- Team-managed execution
+- Veroxa Client Portal access
+- Veroxa Team workflow execution
+
+**Setup support**
+
+If the restaurant does not already have a needed website, Facebook page,
+Instagram account, TikTok account, or Google Business Profile, Veroxa will
+help create/setup the required basic account/page/presence during onboarding.
+
+This is **not** a custom website development package. Use wording like
+"basic website/presence setup if needed", "basic account/page setup if
+needed", or "setup support for required online presence".
+
+---
+
+## Ads Management — scope
+
+**What it is:** Paid advertising management on top of Complete Online
+Presence, or as a standalone service.
+
+**Two options**
+
+- **Ads Add-on** — paired with Complete Online Presence.
+- **Ads Management Only** — standalone, without Complete Online Presence.
+
+**Included (either option)**
+
+- Ad campaign setup
+- Audience and offer targeting
+- Creative direction for ad-specific assets
+- Campaign monitoring and optimization
+- Monthly ad performance reporting
+
+**Ad spend rule**
+
+Ad spend is always separate and paid directly by the restaurant to the ad
+platform. Veroxa manages the advertising system. The restaurant controls and
+pays the actual ad budget.
+
+---
+
+## Founding Client Offer
+
+- 50% off for the first year.
+- Available only to early/founding restaurant partners.
+- After the first year, standard pricing applies.
+- Ad spend is always separate (founding offer does not subsidize ad spend).
+
+---
+
+## First-client operating flow
+
+For the first 1–3 clients, Veroxa runs a deliberately small operating loop.
+The Client Portal and Team Portal are the only portals operated end-to-end.
+Owner and Operator portals are deferred until after the first 1–3 clients.
+
+1. **Client uploads media** (Client Portal — Media page).
+2. **Team reviews media** (Team Portal — Media Review): accept, request a
+   better photo, or mark for reshoot.
+3. **Team prepares content** (Team Portal — Content Review): draft → ready
+   for review → scheduled.
+4. **Client sees schedule, weekly updates, and monthly reports** (Client
+   Portal — Calendar, Updates, Reports).
+5. **Nothing posts without Veroxa team workflow.** No automatic posting, no
+   AI publishing, no third-party API writes during this phase.
+
+All workflow actions in this phase are local/demo only — no real database
+writes, no uploads, no AI calls, no publishing API calls.
+
+---
+
+## Client Portal + Team Portal priority
+
+For the current phase, build effort focuses on:
+
+- **Client Portal:** dashboard, media intake, calendar, reports, updates,
+  requests/action-needed.
+- **Team Portal:** dashboard, work queue, media review, content review,
+  alert center.
+- **Shared workflow model:** see
+  [`M009_M011_FIRST_CLIENT_OPERATING_FLOW.md`](./M009_M011_FIRST_CLIENT_OPERATING_FLOW.md).
+
+---
+
+## Owner / Operator portals — deferred
+
+Owner and Operator portals are **deferred** until Veroxa has 1–3 active
+clients on the Client + Team flow. Visible navigation, copy, and feature
+expansion for those portals is intentionally minimal in this phase.
+
+---
+
+## Things this phase explicitly does NOT include
+
+- Real database writes (insert / update / delete / upsert).
+- Real file uploads to Supabase Storage or any other storage.
+- Real AI calls (OpenAI / Anthropic / Gemini / others).
+- Real publishing to Facebook / Instagram / TikTok / Google APIs.
+- Real payment integration (Stripe, PayPal, checkout, billing).
+- Service-role Supabase keys in frontend code.
+- Migrations under `supabase/migrations`.
+- Custom website development as a deliverable.

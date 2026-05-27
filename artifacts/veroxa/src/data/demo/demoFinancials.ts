@@ -1,13 +1,26 @@
 // demoFinancials.ts — future: billing / analytics aggregates
 // Covers owner business metrics, revenue trend, service plans, and BI analytics.
+//
+// Pricing model reference: src/data/pricing/veroxaPricing.ts
+//   * Google Optimization      = $477/mo (founding $239)
+//   * Complete Online Presence = $977/mo (founding $489)
+//   * Ads Add-on               = +$497/mo (founding +$249)
+//   * Ads Management Only      = $997/mo (founding $499)
+//   * Complete + Ads Add-on    = $1,474/mo before ad spend (founding $738)
+// No separate Bundle plan exists.
 
 import type { BizSeverity } from "./demoOwner";
 
 // ── Owner business metrics ────────────────────────────────────────
+// Demo MRR = $477 + $977 + $977 + $1,474 = $3,905
+//   demo-a: Complete Online Presence       $977
+//   demo-b: Complete Online Presence       $977
+//   demo-c: Complete Online Presence + Ads Add-on $1,474
+//   demo-d: Google Optimization            $477
 export const demoOwnerMetrics = {
   totalActiveClients:       4,
-  monthlyRecurringRevenue:  3928,
-  projectedRevenue:         4948,
+  monthlyRecurringRevenue:  3905,
+  projectedRevenue:         4902,
   clientHealthAverage:      79,
   teamUtilization:          84,
   retentionScore:           94,
@@ -28,8 +41,8 @@ export const demoRevenueTrend: DemoRevenuePoint[] = [
   { month: "Jan", revenue: 1454, clients: 2 },
   { month: "Feb", revenue: 1954, clients: 2 },
   { month: "Mar", revenue: 2431, clients: 3 },
-  { month: "Apr", revenue: 2951, clients: 3 },
-  { month: "May", revenue: 3928, clients: 4 },
+  { month: "Apr", revenue: 2928, clients: 3 },
+  { month: "May", revenue: 3905, clients: 4 },
 ];
 
 // ── Service plans — future: service_plans config ──────────────────
@@ -41,9 +54,9 @@ export interface DemoPlanRow {
 }
 
 export const demoServicePlans: DemoPlanRow[] = [
-  { plan: "Google Presence Starter",  price:  477, clients: 1, color: "bg-emerald-500" },
-  { plan: "Complete Online Presence", price:  977, clients: 2, color: "bg-sky-500"     },
-  { plan: "Bundle",                   price: 1497, clients: 1, color: "bg-violet-500"  },
+  { plan: "Google Optimization",                price:  477, clients: 1, color: "bg-emerald-500" },
+  { plan: "Complete Online Presence",           price:  977, clients: 2, color: "bg-sky-500"     },
+  { plan: "Complete Online Presence + Ads Add-on", price: 1474, clients: 1, color: "bg-violet-500" },
 ];
 
 // ── BI Center trend type ──────────────────────────────────────────
@@ -55,7 +68,7 @@ export interface DemoTrendPoint {
 // ── BI Center multi-series metrics (6 months) ─────────────────────
 export const demoBiMetrics = {
   clientGrowth:        [{ label:"Dec", value:2 },{ label:"Jan", value:2 },{ label:"Feb", value:3 },{ label:"Mar", value:3 },{ label:"Apr", value:4 },{ label:"May", value:4 }] as DemoTrendPoint[],
-  revenueGrowth:       [{ label:"Dec", value: 977 },{ label:"Jan", value:1454 },{ label:"Feb", value:1954 },{ label:"Mar", value:2431 },{ label:"Apr", value:2951 },{ label:"May", value:3928 }] as DemoTrendPoint[],
+  revenueGrowth:       [{ label:"Dec", value: 977 },{ label:"Jan", value:1454 },{ label:"Feb", value:1954 },{ label:"Mar", value:2431 },{ label:"Apr", value:2928 },{ label:"May", value:3905 }] as DemoTrendPoint[],
   retention:           [{ label:"Dec", value:100 },{ label:"Jan", value:100 },{ label:"Feb", value:100 },{ label:"Mar", value:100 },{ label:"Apr", value:100 },{ label:"May", value:94 }] as DemoTrendPoint[],
   mediaInventoryTrend: [{ label:"Dec", value:42 },{ label:"Jan", value:38 },{ label:"Feb", value:46 },{ label:"Mar", value:52 },{ label:"Apr", value:48 },{ label:"May", value:39 }] as DemoTrendPoint[],
   contentProduction:   [{ label:"Dec", value:24 },{ label:"Jan", value:26 },{ label:"Feb", value:38 },{ label:"Mar", value:42 },{ label:"Apr", value:51 },{ label:"May", value:58 }] as DemoTrendPoint[],

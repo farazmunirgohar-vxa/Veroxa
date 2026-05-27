@@ -70,10 +70,10 @@ function categoryFromRunway(totalUnused: number, daysRemaining: number): CHCHeal
 // ── Demo price lookup (locked pricing) ────────────────────────────────────
 
 const demoPlanPrice: Record<string, number> = {
-  "Google Presence Starter":   477,
-  "Complete Online Presence":  977,
-  "Ads Management":            977,
-  "Bundle":                   1497,
+  "Google Optimization":                          477,
+  "Complete Online Presence":                     977,
+  "Complete Online Presence + Ads Add-on":       1474,
+  "Ads Management Only":                          997,
 };
 
 // ── Engine ─────────────────────────────────────────────────────────────────

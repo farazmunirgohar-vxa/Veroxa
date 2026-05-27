@@ -11,8 +11,8 @@ import { demoRestaurants, demoClientPriorities, demoMediaAnalytics, getRestauran
 const clientPlanMap: Record<string, { plan: string; since: string }> = {
   "demo-a": { plan: "Complete Online Presence", since: "Feb 2026" },
   "demo-b": { plan: "Complete Online Presence", since: "Mar 2026" },
-  "demo-c": { plan: "Bundle",                   since: "Dec 2025" },
-  "demo-d": { plan: "Google Presence Starter",  since: "Apr 2026" },
+  "demo-c": { plan: "Complete Online Presence + Ads Add-on", since: "Dec 2025" },
+  "demo-d": { plan: "Google Optimization",                   since: "Apr 2026" },
 };
 
 export default function OwnerClientAnalytics() {

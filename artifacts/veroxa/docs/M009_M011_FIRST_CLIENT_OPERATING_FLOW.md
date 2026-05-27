@@ -13,8 +13,12 @@ can be operated end-to-end against a coherent, demo-only data model.
 - `AUTH_MODE` remains **placeholder** (no real auth flip).
 - `DATA_MODE` default stays **fixture**; M007/M008 read-only adapter
   paths and `<DataSourceBadge />` UX are unchanged.
-- Pricing tiers unchanged: `$477 / $977 / $977 / $1,497` (no edits
-  to `src/data/pricing/*` or `lib/billing/*`).
+- Pricing model now: Google Optimization `$477`, Complete Online Presence
+  `$977`, Ads Add-on `+$497`, Ads Management Only `$997` (founding clients
+  50% off first year). Complete + Ads Add-on combined total = `$1,474` (not
+  a separate plan). See `PRICING_SOURCE_OF_TRUTH.md` and the runtime file
+  `src/data/pricing/veroxaPricing.ts` for the authoritative values. No
+  changes to `lib/billing/*` (no billing integration exists).
 - `InternalDemoGuard` is **not** bypassed.
 - No service-role keys, no Supabase storage upload calls, no
   `.insert / .update / .delete / .upsert / .upload` on the new

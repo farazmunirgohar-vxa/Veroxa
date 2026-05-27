@@ -51,7 +51,11 @@ export interface DemoRestaurantProfile {
   hours: string;
   primaryContact:   { name: string; role: string; email: string };
   secondaryContact: { name: string; role: string; email: string };
-  servicePlan: "Google Presence Starter" | "Complete Online Presence" | "Ads Management" | "Bundle";
+  servicePlan:
+    | "Google Optimization"
+    | "Complete Online Presence"
+    | "Complete Online Presence + Ads Add-on"
+    | "Ads Management Only";
   accountStatus: "Active" | "Onboarding" | "Paused" | "At Risk";
 }
 
@@ -89,7 +93,7 @@ export const demoRestaurantProfiles: DemoRestaurantProfile[] = [
     hours: "Mon–Sat · 5:00 PM – 12:00 AM",
     primaryContact:   { name: "Sofia Owner-C",  role: "Owner / Chef", email: "owner-c@demo.veroxa.test"   },
     secondaryContact: { name: "Karim Manager-C", role: "Operations",   email: "manager-c@demo.veroxa.test" },
-    servicePlan: "Bundle",
+    servicePlan: "Complete Online Presence + Ads Add-on",
     accountStatus: "Active",
   },
   {
@@ -101,7 +105,7 @@ export const demoRestaurantProfiles: DemoRestaurantProfile[] = [
     hours: "Mon–Sun · 7:00 AM – 9:00 PM",
     primaryContact:   { name: "Yusuf Owner-D",  role: "Owner",           email: "owner-d@demo.veroxa.test"   },
     secondaryContact: { name: "Hana Manager-D", role: "Shift supervisor", email: "manager-d@demo.veroxa.test" },
-    servicePlan: "Google Presence Starter",
+    servicePlan: "Google Optimization",
     accountStatus: "At Risk",
   },
 ];
@@ -304,7 +308,11 @@ export type RiskLevel = "Low" | "Medium" | "High" | "Critical";
 export interface DemoClientLifecycle {
   clientId:        string;
   lifecycleStage:  LifecycleStage;
-  servicePlan:     "Google Presence Starter" | "Complete Online Presence" | "Ads Management" | "Bundle";
+  servicePlan:
+    | "Google Optimization"
+    | "Complete Online Presence"
+    | "Complete Online Presence + Ads Add-on"
+    | "Ads Management Only";
   startDate:       string;
   contractMonths:  number;
   monthlyFee:      number;
@@ -318,8 +326,8 @@ export interface DemoClientLifecycle {
 export const demoClientLifecycle: DemoClientLifecycle[] = [
   { clientId: "demo-a", lifecycleStage: "Active",          servicePlan: "Complete Online Presence", startDate: "Feb 2026", contractMonths: 0, monthlyFee:  977, healthScore: 92, mediaStatus: "Healthy",  reportingStatus: "On Schedule", nextAction: "Approve 3 caption variants for Friday post.",     riskLevel: "Low"      },
   { clientId: "demo-b", lifecycleStage: "Needs Attention", servicePlan: "Complete Online Presence", startDate: "Mar 2026", contractMonths: 0, monthlyFee:  977, healthScore: 64, mediaStatus: "Low",      reportingStatus: "Delayed",     nextAction: "Rewrite flagged caption + chase weekly report.",   riskLevel: "Medium"   },
-  { clientId: "demo-c", lifecycleStage: "Active",          servicePlan: "Bundle",                   startDate: "Dec 2025", contractMonths: 0, monthlyFee: 1497, healthScore: 95, mediaStatus: "Healthy",  reportingStatus: "On Schedule", nextAction: "Final sign-off on Sunday's olive-oil reel.",       riskLevel: "Low"      },
-  { clientId: "demo-d", lifecycleStage: "At Risk",         servicePlan: "Google Presence Starter",  startDate: "Apr 2026", contractMonths: 0, monthlyFee:  477, healthScore: 38, mediaStatus: "Critical", reportingStatus: "Overdue",     nextAction: "Rescue plan call + reshoot brief for storefront.", riskLevel: "Critical" },
+  { clientId: "demo-c", lifecycleStage: "Active",          servicePlan: "Complete Online Presence + Ads Add-on", startDate: "Dec 2025", contractMonths: 0, monthlyFee: 1474, healthScore: 95, mediaStatus: "Healthy",  reportingStatus: "On Schedule", nextAction: "Final sign-off on Sunday's olive-oil reel.",       riskLevel: "Low"      },
+  { clientId: "demo-d", lifecycleStage: "At Risk",         servicePlan: "Google Optimization",                   startDate: "Apr 2026", contractMonths: 0, monthlyFee:  477, healthScore: 38, mediaStatus: "Critical", reportingStatus: "Overdue",     nextAction: "Rescue plan call + reshoot brief for storefront.", riskLevel: "Critical" },
 ];
 
 export const lifecycleStageColor: Record<LifecycleStage, string> = {
