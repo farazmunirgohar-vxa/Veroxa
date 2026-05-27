@@ -297,25 +297,29 @@ export default function InternalSupabaseReadiness() {
           </CardContent>
         </Card>
 
-        {/* Write Readiness — M022 */}
+        {/* Write Readiness — M022 / M023B */}
         <Card className="bg-card border-border" data-testid="card-write-readiness">
           <CardContent className="space-y-2 p-4">
             <div className="flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-primary" />
               <h3 className="text-sm font-semibold">Write Readiness</h3>
               <Badge variant="outline" className="text-[10px] bg-muted/30 text-muted-foreground border-border">
-                M022
+                M023B
               </Badge>
             </div>
             <ul className="text-xs text-muted-foreground space-y-1 pl-1">
+              <li>• Write mode: <span className="text-foreground">disabled</span></li>
               <li>• Writes enabled: <span className="text-foreground">No</span></li>
-              <li>• Reason: Real writes are not enabled in this build.</li>
-              <li>• Next step: M023 controlled dev writes behind explicit flag.</li>
-              <li>• No service role key allowed in the frontend.</li>
+              <li>• Current adapter: <span className="text-foreground">disabledWriteAdapter</span></li>
+              <li>• Storage upload: <span className="text-foreground">not connected</span></li>
+              <li>• Service role in frontend: <span className="text-foreground">not allowed</span></li>
+              <li>• Real migrations: <span className="text-foreground">not created in this build</span></li>
+              <li>• Next step: controlled dev Supabase write adapter behind an explicit flag (M023C).</li>
             </ul>
             <p className="text-[11px] text-muted-foreground/70 leading-relaxed">
-              See <code>src/lib/data/writeReadiness.ts</code> and{" "}
-              <code>docs/M023_SUPABASE_WRITES_PLAN_UPLOADS_DIRECTION_REVIEW.md</code>.
+              See <code>src/lib/data/writeReadiness.ts</code>,{" "}
+              <code>src/lib/data/writeAdapter.ts</code>, and{" "}
+              <code>docs/sql-plan/</code>.
             </p>
           </CardContent>
         </Card>

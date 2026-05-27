@@ -1,0 +1,174 @@
+-- M023A — First-client schema planning file.
+-- PLAN ONLY. NOT A MIGRATION. DO NOT MOVE TO supabase/migrations.
+--
+-- Conventions:
+--   - All ids are uuid, default gen_random_uuid() in real migration.
+--   - All timestamps are timestamptz, default now() in real migration.
+--   - All tables get RLS enabled (see M023A_RLS_POLICY_PLAN.md).
+--   - Soft-delete (archived_at timestamptz) added as a follow-up; not
+--     in the first migration to keep surface area small.
+--   - No service role key in the frontend. Ever.
+
+-- ============================================================
+-- 1. restaurants  (a.k.a. clients)
+-- ============================================================
+-- Purpose: one row per restaurant/client.
+CREATE TABLE restaurants (
+  id            uuid PRIMARY KEY,
+  display_name  text NOT NULL,
+  status        text NOT NULL CHECK (status IN ('lead','onboarding','active','paused','churned')),
+  service_plan  text NOT NULL CHECK (service_plan IN ('google_optimization','complete_online_presence','ads_management_only')),
+  created_at    timestamptz NOT NULL,
+  updated_at    timestamptz NOT NULL
+);
+-- Future indexes: (status), (service_plan).
+-- Audit: created_by uuid, updated_by uuid (added when auth is real).
+
+-- ============================================================
+-- 2. restaurant_upload_keys
+-- ============================================================
+-- Purpose: upload-only key access scoped to one restaurant.
+-- Important: STORE THE HASH, never the plaintext key.
+-- Upload key MUST NOT grant access to Team/Owner/Operator data.
+CREATE TABLE restaurant_upload_keys (
+  id            uuid PRIMARY KEY,
+  restaurant_id uuid NOT NULL REFERENCES restaurants(id),
+  key_hash      text NOT NULL,
+  key_label     text,
+  status        text NOT NULL CHECK (status IN ('active','paused','revoked')),
+  created_at    timestamptz NOT NULL,
+  rotated_at    timestamptz,
+  revoked_at    timestamptz
+);
+-- Future indexes: (restaurant_id, status), unique (key_hash).
+-- RLS: see upload_key_session_policies in RLS plan.
+
+-- ============================================================
+-- 3. upload_submissions
+-- ============================================================
+-- Purpose: metadata about a submission through /upload.
+CREATE TABLE upload_submissions (
+  id                  uuid PRIMARY KEY,
+  restaurant_id       uuid NOT NULL REFERENCES restaurants(id),
+  upload_key_id       uuid REFERENCES restaurant_upload_keys(id),
+  category            text NOT NULL,
+  priority            text NOT NULL,
+  note                text,
+  submitted_by_label  text,
+  status              text NOT NULL CHECK (status IN ('received','in_review','accepted','needs_better_photo','saved_for_later')),
+  created_at          timestamptz NOT NULL,
+  updated_at          timestamptz NOT NULL
+);
+-- Future indexes: (restaurant_id, status, created_at DESC).
+-- Audit: reviewed_by uuid, reviewed_at timestamptz (later).
+
+-- ============================================================
+-- 4. media_assets
+-- ============================================================
+-- Purpose: file metadata after storage upload. Storage upload itself
+-- is a separate later build (M023E).
+CREATE TABLE media_assets (
+  id                          uuid PRIMARY KEY,
+  restaurant_id               uuid NOT NULL REFERENCES restaurants(id),
+  upload_submission_id        uuid NOT NULL REFERENCES upload_submissions(id),
+  storage_path                text NOT NULL,
+  file_kind                   text NOT NULL CHECK (file_kind IN ('image','video')),
+  mime_type                   text NOT NULL,
+  file_size_bytes             integer NOT NULL,
+  original_filename_redacted  text,
+  status                      text NOT NULL CHECK (status IN ('pending','usable','rejected')),
+  created_at                  timestamptz NOT NULL
+);
+-- Future indexes: (restaurant_id, status), (upload_submission_id).
+-- Storage: private bucket, signed URLs only. No public bucket for
+-- raw client media.
+
+-- ============================================================
+-- 5. direction_requests
+-- ============================================================
+-- Purpose: client Direction Center submissions.
+CREATE TABLE direction_requests (
+  id                      uuid PRIMARY KEY,
+  restaurant_id           uuid NOT NULL REFERENCES restaurants(id),
+  focus                   text NOT NULL,
+  channel                 text NOT NULL CHECK (channel IN ('organic_social','google','ads','all')),
+  urgency                 text NOT NULL CHECK (urgency IN ('low','normal','high','urgent')),
+  title                   text NOT NULL,
+  client_note             text,
+  preferred_timing_label  text NOT NULL,
+  related_media_id        uuid REFERENCES media_assets(id),
+  avoid_item              text,
+  status                  text NOT NULL CHECK (status IN ('received','interpreted','in_team_review','planned','completed')),
+  created_at              timestamptz NOT NULL,
+  updated_at              timestamptz NOT NULL
+);
+-- Future indexes: (restaurant_id, status, created_at DESC).
+-- Note: client_note MUST be sanitized client-side before insert
+-- (email/phone/handle redaction, length cap).
+
+-- ============================================================
+-- 6. team_review_decisions
+-- ============================================================
+-- Purpose: team review history for uploads/direction/workflow.
+CREATE TABLE team_review_decisions (
+  id                  uuid PRIMARY KEY,
+  restaurant_id       uuid NOT NULL REFERENCES restaurants(id),
+  target_type         text NOT NULL CHECK (target_type IN ('upload_submission','direction_request','content_workflow_item')),
+  target_id           uuid NOT NULL,
+  decision            text NOT NULL,
+  safe_client_status  text NOT NULL,
+  internal_note       text,
+  reviewed_by_user_id uuid,
+  created_at          timestamptz NOT NULL
+);
+-- Future indexes: (target_type, target_id, created_at DESC).
+-- internal_note is internal-only — never surfaced to client reads.
+
+-- ============================================================
+-- 7. content_workflow_items
+-- ============================================================
+-- Purpose: track operational flow after media/direction becomes work.
+CREATE TABLE content_workflow_items (
+  id                     uuid PRIMARY KEY,
+  restaurant_id          uuid NOT NULL REFERENCES restaurants(id),
+  source_type            text NOT NULL CHECK (source_type IN ('upload_submission','direction_request','team_initiative')),
+  source_id              uuid NOT NULL,
+  workflow_type          text NOT NULL,
+  stage                  text NOT NULL CHECK (stage IN ('intake','media_review','draft','approval','scheduled','published','reporting')),
+  priority               text NOT NULL,
+  client_visible_status  text NOT NULL,
+  team_visible_status    text NOT NULL,
+  assigned_role          text,
+  due_at                 timestamptz,
+  created_at             timestamptz NOT NULL,
+  updated_at             timestamptz NOT NULL
+);
+-- Future indexes: (restaurant_id, stage), (assigned_role, due_at).
+
+-- ============================================================
+-- 8. weekly_updates
+-- ============================================================
+-- Purpose: weekly client-facing summary.
+CREATE TABLE weekly_updates (
+  id                  uuid PRIMARY KEY,
+  restaurant_id       uuid NOT NULL REFERENCES restaurants(id),
+  week_start          date NOT NULL,
+  week_end            date NOT NULL,
+  status              text NOT NULL CHECK (status IN ('draft','approved','published')),
+  summary             text NOT NULL,
+  next_recommendation text,
+  created_at          timestamptz NOT NULL,
+  published_at        timestamptz
+);
+-- Future indexes: (restaurant_id, week_start DESC).
+
+-- ============================================================
+-- Future considerations
+-- ============================================================
+-- - Soft-delete: add archived_at timestamptz to all tables once
+--   churn/cleanup flows are live.
+-- - Audit columns: created_by/updated_by uuid once auth is real.
+-- - Append-only audit log table for sensitive mutations.
+-- - RLS: every table above must have RLS enabled with policies
+--   defined in M023A_RLS_POLICY_PLAN.md.
+-- - No service role key in the frontend. Server-side jobs only.

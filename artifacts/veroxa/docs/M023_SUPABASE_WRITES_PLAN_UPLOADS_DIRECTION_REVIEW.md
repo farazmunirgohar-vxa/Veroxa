@@ -4,9 +4,29 @@ The next build that will introduce **controlled, dev-only Supabase
 writes**, behind an explicit feature flag. This plan does NOT add any
 writes itself; it scopes what M023 will do.
 
+## Status
+
+- **M023A — SQL / RLS / write function planning.** Complete. See
+  `docs/sql-plan/` (`README.md`, `M023A_FIRST_CLIENT_SCHEMA_PLAN.sql.txt`,
+  `M023A_RLS_POLICY_PLAN.md`, `M023B_WRITE_FUNCTION_SPEC.md`).
+  Files live under `docs/sql-plan/` on purpose — none of them are
+  active migrations and none of them live in `supabase/migrations/`.
+- **M023B — Disabled write adapter.** Complete. See
+  `src/lib/data/writeAdapterTypes.ts`,
+  `src/lib/data/disabledWriteAdapter.ts`,
+  `src/lib/data/writeAdapter.ts`,
+  and the extended `src/lib/data/writeReadiness.ts`
+  (`CURRENT_WRITE_MODE = "disabled"`).
+- **Writes still off.** `WRITES_ENABLED = false`,
+  `CURRENT_WRITE_MODE = "disabled"`. No migrations created. No
+  Supabase Storage upload connected. No real AI / publishing / ads /
+  payments connected.
+- **Next safe step (M023C).** Controlled dev Supabase metadata
+  writes behind an explicit env flag, no storage yet.
+
 ## Build order
 
-### M023A — SQL planning only (no migrations applied)
+### M023A — SQL planning only (no migrations applied) ✅
 
 Tables to design:
 
@@ -36,7 +56,7 @@ RLS policy plan:
 Audit fields on every table: `created_at`, `updated_at`,
 `created_by`, `updated_by`.
 
-### M023B — Supabase write adapter, disabled by default
+### M023B — Supabase write adapter, disabled by default ✅
 
 - New flag: `VITE_VEROXA_ENABLE_DEV_WRITES=false` (default).
 - New module: `src/lib/data/writes/*.ts` exposing:

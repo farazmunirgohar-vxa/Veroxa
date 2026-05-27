@@ -7,6 +7,7 @@ import {
   UploadCloud,
   X,
 } from "lucide-react";
+import { getWriteSafetyBanner } from "@/lib/data/writeReadiness";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -161,6 +162,13 @@ export function RestaurantUploadFlow({ restaurant, onExit }: RestaurantUploadFlo
           >
             <ArrowLeft className="w-4 h-4 mr-1" /> Exit
           </Button>
+        </div>
+
+        <div
+          className="text-[11px] text-muted-foreground/80 mb-3"
+          data-testid="banner-writes-disabled-upload-flow"
+        >
+          {getWriteSafetyBanner()}
         </div>
 
         {/* Progress dots */}

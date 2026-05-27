@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
+import { getWriteSafetyBanner } from "@/lib/data/writeReadiness";
 import { teamPortalNavItems } from "@/lib/teamPortalNav";
 import { demoUploadCategoryLabels } from "@/data/uploadKeys/demoRestaurantUploadKeys";
 import {
@@ -125,6 +126,13 @@ export default function TeamUploadInbox() {
         </div>
 
         <DemoOnlyBanner message="Demo/local only — no real uploads, no notifications, no database writes. Actions update local state in this browser only." />
+
+        <div
+          className="mt-2 text-[11px] text-muted-foreground/80 px-1"
+          data-testid="banner-writes-disabled-upload-inbox"
+        >
+          {getWriteSafetyBanner()}
+        </div>
 
         <div className="flex flex-wrap items-center justify-between gap-2 mt-2 mb-4 px-1 text-xs text-muted-foreground">
           <span>

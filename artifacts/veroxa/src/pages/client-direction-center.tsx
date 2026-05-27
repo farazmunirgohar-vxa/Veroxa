@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
+import { getWriteSafetyBanner } from "@/lib/data/writeReadiness";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import {
   demoClientDirection,
@@ -155,6 +156,13 @@ export default function ClientDirectionCenter() {
         message="Demo only — direction is stored in local state, no real notifications or database writes."
         testId="banner-direction-center"
       />
+
+      <div
+        className="mt-2 text-[11px] text-muted-foreground/80 px-1"
+        data-testid="banner-writes-disabled-direction-center"
+      >
+        {getWriteSafetyBanner()}
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Submission form */}

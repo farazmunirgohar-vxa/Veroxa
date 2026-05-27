@@ -874,3 +874,30 @@ auth activation.
   DATA_MODE default unchanged, pricing unchanged, InternalDemoGuard
   intact, Owner/Operator not expanded, no `Pasted-*.txt` committed.
 - **Typecheck:** see verification below.
+
+## M023A–M023B — Supabase Write Foundation (planning) + Disabled Adapter
+
+- **M023A — SQL / RLS / write-function planning files.** Added
+  `docs/sql-plan/` with `README.md`,
+  `M023A_FIRST_CLIENT_SCHEMA_PLAN.sql.txt` (8 proposed tables),
+  `M023A_RLS_POLICY_PLAN.md`, and `M023B_WRITE_FUNCTION_SPEC.md`.
+  Planning only — no files under `supabase/migrations/`.
+- **M023B — Disabled write adapter.** Extended
+  `src/lib/data/writeReadiness.ts` with `WriteMode`,
+  `CURRENT_WRITE_MODE = "disabled"`, `getWriteMode()`,
+  `assertWritesDisabled()`, `getWriteSafetyBanner()`. Added
+  `writeAdapterTypes.ts`, `disabledWriteAdapter.ts`,
+  `writeAdapter.ts` (re-exports the disabled adapter as
+  `veroxaWriteAdapter`).
+- **Page messaging.** Subtle write-disabled banner via
+  `getWriteSafetyBanner()` on Restaurant Upload Flow, Client
+  Direction Center, Team Upload Inbox, and Team Direction Queue.
+  Local/session behavior unchanged.
+- **Internal readiness page.** Write Readiness card expanded
+  (mode, adapter, storage, service role, migrations, next step).
+- **Invariants:** writes remain disabled, no migrations created,
+  no Supabase writes/uploads added, no AI / publishing / ads /
+  payments added, no service role in frontend, AUTH_MODE unchanged
+  (`placeholder`), DATA_MODE default unchanged (`fixture`), pricing
+  unchanged, InternalDemoGuard intact, Owner/Operator NOT expanded.
+- **Typecheck:** see verification below.

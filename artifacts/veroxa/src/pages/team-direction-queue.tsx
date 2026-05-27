@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
+import { getWriteSafetyBanner } from "@/lib/data/writeReadiness";
 import { teamPortalNavItems } from "@/lib/teamPortalNav";
 import {
   demoClientDirection,
@@ -232,6 +233,13 @@ export default function TeamDirectionQueue() {
         message="Demo/local only — no real writes, no notifications, no publishing, no ads launched."
         testId="banner-direction-queue"
       />
+
+      <div
+        className="mt-2 text-[11px] text-muted-foreground/80 px-1"
+        data-testid="banner-writes-disabled-direction-queue"
+      >
+        {getWriteSafetyBanner()}
+      </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2 mt-2 mb-4 px-1 text-xs text-muted-foreground">
         <span>

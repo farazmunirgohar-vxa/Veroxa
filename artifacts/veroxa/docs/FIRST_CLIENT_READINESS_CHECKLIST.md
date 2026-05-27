@@ -58,3 +58,17 @@ the first real client uses Veroxa in production.
 - Real publishing (Meta / Google posts / TikTok).
 - Ads platform APIs.
 - Payments / billing automation.
+
+## F. M023A–M023B status
+
+- ✅ Write foundation planning complete (schema + RLS + write
+  function spec, all under `docs/sql-plan/`).
+- ✅ Disabled write adapter complete (`disabledWriteAdapter`,
+  `veroxaWriteAdapter` index, extended `writeReadiness.ts`).
+- Still needed:
+  - Real schema / migrations (after owner approval).
+  - `VITE_VEROXA_ENABLE_DEV_WRITES` flag + dev write adapter.
+  - Upload submission metadata writes.
+  - Direction request writes.
+  - Team review status writes.
+  - Storage upload (separate later build).
