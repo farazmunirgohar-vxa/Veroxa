@@ -1,4 +1,4 @@
-import { CalendarDays, ImageIcon, Layers, BarChart2, Sparkles, ArrowRight } from "lucide-react";
+import { CalendarDays, ImageIcon, Layers, BarChart2, Sparkles, ArrowRight, PlayCircle } from "lucide-react";
 import { Link } from "wouter";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -254,6 +254,32 @@ export default function ClientDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Guided Demo CTA — shown only in demo/placeholder mode */}
+      <Card className="bg-primary/5 border-primary/20" data-testid="card-guided-demo-cta">
+        <CardContent className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <PlayCircle className="h-4 w-4 text-primary" />
+              <p className="text-sm font-semibold text-foreground">New to Veroxa?</p>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Start the guided demo to see how upload, drafts, scheduling, reports, and smart recommendations work together.
+            </p>
+          </div>
+          <Link href="/guided-demo">
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-primary/40 hover:bg-primary/10 flex-shrink-0"
+              data-testid="btn-guided-demo-cta"
+            >
+              Open Guided Demo
+              <ArrowRight className="ml-2 h-3.5 w-3.5" />
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
 
     </PortalLayout>
   );

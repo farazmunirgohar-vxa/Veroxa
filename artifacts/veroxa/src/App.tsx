@@ -103,6 +103,7 @@ import InternalDbExplorer from "@/pages/internal-db-explorer";
 import InternalPermissions from "@/pages/internal-permissions";
 import ServicesPage from "@/pages/services";
 import PricingPage from "@/pages/pricing";
+import GuidedDemo from "@/pages/guided-demo";
 
 const queryClient = new QueryClient();
 
@@ -116,6 +117,7 @@ function Router() {
       <Route path="/login" component={LoginPage} />
       <Route path="/auth-status" component={AuthStatusPage} />
       <Route path="/demo" component={DemoHub} />
+      <Route path="/guided-demo" component={GuidedDemo} />
 
       {/* Public client demo — sales preview, no login required */}
       <Route path="/demo/client" component={ClientPortal} />

@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { ArrowRight, Lock, Monitor } from "lucide-react";
+import { ArrowRight, Lock, Monitor, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
@@ -68,6 +68,30 @@ export default function DemoHub() {
               <Link href="/demo/client/dashboard" data-testid="btn-enter-client-demo">
                 <Button className="gap-2 font-semibold">
                   Experience Client Portal <ArrowRight className="w-4 h-4" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          {/* Guided Demo Card */}
+          <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 mb-6" data-testid="guided-demo-card">
+            <div className="p-6 rounded-2xl border border-primary/30 bg-card relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-primary/10 to-transparent blur-3xl rounded-full pointer-events-none" />
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 border border-border flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold mb-1">Guided Sales Demo</h2>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Walk through the Veroxa story from client upload to AI drafts, team review,
+                    scheduling, reporting, and evidence-based recommendations.
+                  </p>
+                </div>
+              </div>
+              <Link href="/guided-demo" data-testid="btn-start-guided-demo">
+                <Button variant="outline" className="gap-2 font-semibold border-primary/40 hover:bg-primary/10">
+                  Start Guided Demo <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
             </div>

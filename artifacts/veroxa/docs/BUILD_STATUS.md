@@ -17,6 +17,18 @@
 
 ---
 
+## Current state (guided demo pass: 2026-05-27)
+
+**Guided Sales Demo added.** Route `/guided-demo` added as a public page.
+`demoWalkthrough.ts` defines 8 structured steps from client upload through
+evidence-based recommendations. Demo hub (`/demo`) now links to the guided
+demo. Client dashboard has a small "New to Veroxa?" CTA. Portal remains
+placeholder/demo. No backend, payment, AI, or storage connection added.
+`InternalDemoGuard` not bypassed — internal steps (3, 4, 7, 8) still require
+demo access code. `AUTH_MODE` unchanged. Pricing unchanged.
+
+---
+
 ## Current state (stabilization pass: 2026-05-27)
 
 **Status:** demo / placeholder phase. Portal polish and hard stabilization complete.
