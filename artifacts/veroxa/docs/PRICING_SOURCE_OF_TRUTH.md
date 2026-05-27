@@ -55,6 +55,22 @@ Management or the Bundle. No plan includes ad spend.
 - Owner OS banner copy: `src/pages/owner-os.tsx`
 - Owner analytics per-client meta: `src/pages/owner-client-analytics.tsx`
 
+## Payment integration
+
+No payment processing, billing, or checkout system is connected to this app.
+All pricing shown is for sales/quoting purposes only. Do not add Stripe,
+PayPal, or any checkout logic without a formal owner decision.
+
+## Change policy
+
+Do not change any price without explicit owner approval. After approval:
+1. Update `src/data/pricing/veroxaPricing.ts` (canonical runtime file).
+2. Update this document to match.
+3. Update `docs/PUBLIC_PRICING_AND_SERVICES.md`.
+4. Update `src/data/demo/demoFinancials.ts` (demoServicePlans, MRR, trend).
+5. Update `src/data/demo/demoClients.ts` (monthlyFee on affected fixtures).
+6. Update `src/domain/clientHealth/engine.ts` (demoPlanPrice map).
+
 ## Internal demo fixture IDs
 
 Sanitized to neutral IDs — no real restaurant names anywhere in code.

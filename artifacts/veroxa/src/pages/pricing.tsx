@@ -210,7 +210,7 @@ export default function PricingPage() {
             <span className="text-sm text-muted-foreground">{COP.tagline}</span>
             <a href="mailto:hello@veroxa.com?subject=Complete Online Presence Inquiry" data-testid="btn-cop-cta">
               <Button size="lg" className="w-full mt-2">
-                Start with COP <ArrowRight className="ml-2 w-4 h-4" />
+                Start with Complete <ArrowRight className="ml-2 w-4 h-4" />
               </Button>
             </a>
           </div>
@@ -346,10 +346,10 @@ export default function PricingPage() {
           <h2 className="text-2xl font-bold mb-6">Which option fits?</h2>
           <div className="space-y-3">
             {[
-              { plan: "Starter",  label: STARTER.displayPrice + "/mo", desc: "You need your Google presence cleaned up first. Not the full system." },
-              { plan: "COP",      label: COP.displayPrice + "/mo",     desc: "You want the full Veroxa growth system, organic only — no paid ads." },
-              { plan: "Ads",      label: ADS.displayPrice + "/mo",     desc: "You only want paid advertising managed. You handle organic yourself." },
-              { plan: "Bundle",   label: BUNDLE.displayPrice + "/mo",  desc: "You want everything: organic content system + paid ads management." },
+              { plan: "Google Starter",    label: STARTER.displayPrice + "/mo", desc: "You need your Google presence cleaned up first. Not the full system." },
+              { plan: "Complete",          label: COP.displayPrice + "/mo",     desc: "You want the full Veroxa growth system, organic only — no paid ads." },
+              { plan: "Ads Management",    label: ADS.displayPrice + "/mo",     desc: "You only want paid advertising managed. You handle organic yourself." },
+              { plan: "Bundle",            label: BUNDLE.displayPrice + "/mo",  desc: "You want everything: organic content system + paid ads management." },
             ].map((row) => (
               <div key={row.plan} className="flex items-start gap-4 p-4 rounded-lg border border-border/40 bg-card/20">
                 <span className="text-sm font-bold text-primary w-20 flex-shrink-0">{row.plan}</span>

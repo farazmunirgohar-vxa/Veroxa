@@ -1,0 +1,179 @@
+VEROXA FINAL TRUTH POLISH PASS — PRICING WORDING + BUILD STATUS ACCURACY
+
+Objective:
+Perform a small final truth-polish pass after the flat pricing update.
+
+Do not add new features.
+Do not change pricing values.
+Do not connect real systems.
+Do not change auth.
+Do not change roles.
+Do not add payment processing.
+Do not add checkout.
+Do not add database migrations.
+
+This is a small cleanup pass only.
+
+Hard invariants:
+- AUTH_MODE must remain exactly "placeholder"
+- Portal remains disconnected from real Supabase
+- No Stripe / PayPal / checkout / payment integration
+- No OpenAI / Anthropic / Gemini / external AI APIs
+- No Supabase storage upload
+- No real publishing APIs
+- Demo gate veroxa-preview remains unchanged
+- Roles remain exactly Client, Team, Operator, Owner
+- No files added to supabase/migrations
+- No real client/customer/restaurant data
+- Current flat pricing must remain unchanged:
+  - Google Presence Starter: $477/mo
+  - Complete Online Presence: $977/mo
+  - Ads Management: $977/mo
+  - Bundle: $1,497/mo
+
+TASK 1 — Pricing UI wording polish
+
+Update:
+artifacts/veroxa/src/pages/pricing.tsx
+
+In the “Which option fits?” section, replace unclear short labels:
+
+- Starter → Google Starter
+- COP → Complete
+- Ads → Ads Management
+- Bundle → Bundle
+
+Do not change the prices.
+Do not change the plan structure.
+Do not reintroduce monthly tiers.
+
+Also review the page for any wording that says or implies:
+- 12-month
+- 6-month
+- 3-month
+- no-contract
+- term tiers
+- commitment pricing
+
+Remove if used as current pricing.
+
+Current pricing is flat monthly pricing only.
+
+TASK 2 — Pricing source clarity
+
+Update:
+artifacts/veroxa/src/data/pricing/veroxaPricing.ts
+
+Do not change values.
+
+The file currently uses dollar amounts, not cents. Make that clear by either:
+
+Option A:
+Rename/comment the field clearly as dollar amount:
+- priceMonthly: number // USD dollars per month, not cents
+
+OR if easier and safe:
+- add priceMonthlyCents fields while keeping existing priceMonthly working
+
+Do not break imports.
+Do not over-refactor.
+Do not add payment logic.
+
+Add a comment:
+- This file is pricing display/source-of-truth only.
+- No billing or checkout system is connected.
+
+TASK 3 — Build status wording truth fix
+
+Update:
+artifacts/veroxa/docs/BUILD_STATUS.md
+
+Replace overly absolute wording:
+
+Current problematic wording:
+“Portal remains fully disconnected — no backend, no auth, no real publishing.”
+
+Replace with:
+“Portal remains in placeholder/demo mode. No active backend behavior runs in placeholder mode: no real auth session is required for demo, no real publishing runs, no real uploads run, and no production database writes occur.”
+
+Also keep clear:
+- Supabase/auth scaffolding exists but is inactive while AUTH_MODE is placeholder
+- Dev Supabase M001–M006 were applied manually in dev only
+- The app is not production-connected
+- Portal Connect Planning is still planning, not implementation
+
+TASK 4 — Pricing docs final check
+
+Update if needed:
+artifacts/veroxa/docs/PRICING_SOURCE_OF_TRUTH.md
+
+Make sure it says:
+- Current pricing is flat monthly pricing only
+- No term tiers
+- Ad spend is separate
+- No payment integration exists
+- Do not change pricing without owner approval
+
+Do not change the flat prices.
+
+TASK 5 — Pasted prompt cleanup check
+
+Search and delete any pasted prompt text files if they exist:
+
+attached_assets/Pasted-*.txt
+
+Do not delete real image assets.
+Do not delete ZIP files unless clearly accidental.
+
+TASK 6 — Safety audit
+
+Search and confirm:
+- AUTH_MODE remains "placeholder"
+- No Stripe / checkout / payment integration
+- No Supabase connection added
+- No OpenAI / Anthropic / Gemini imports
+- No real AI calls
+- No real publishing APIs
+- No files under supabase/migrations
+- Pricing still matches:
+  - $477
+  - $977
+  - $977
+  - $1,497
+- No current 12/6/3/no-contract pricing tiers remain
+- Demo gate remains veroxa-preview
+- Roles unchanged
+
+TASK 7 — Build/typecheck
+
+Run:
+- typecheck
+- build if available
+- lint if available and not too expensive
+
+Fix only issues caused by this pass.
+
+Acceptance criteria:
+- Pricing page wording is clearer
+- “COP” label removed from pricing page user-facing copy
+- Pricing values unchanged
+- Pricing source file clearly states dollars vs cents / no billing
+- BUILD_STATUS wording is more accurate
+- No pasted prompt files remain
+- AUTH_MODE remains placeholder
+- No payment/backend/AI/storage/publishing integration added
+- Build/typecheck passes
+
+Final report required:
+1. Files changed
+2. Files deleted
+3. Pricing page wording changes
+4. Pricing source comment/field clarification
+5. BUILD_STATUS wording correction
+6. Pricing docs check result
+7. Safety audit result
+8. Confirmation pricing unchanged
+9. Confirmation AUTH_MODE unchanged
+10. Confirmation no payment/backend integration added
+11. Build/typecheck/lint result
+12. Remaining risks

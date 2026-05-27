@@ -2,6 +2,10 @@
 // All UI, demo fixtures, and engine logic that surface plan price values must
 // reference this file. Ad spend is always separate and paid by the restaurant
 // directly to the ad platform.
+//
+// IMPORTANT: This file is for pricing display / source-of-truth only.
+// No billing or checkout system is connected to this app.
+// Do not add payment processing, Stripe, or any checkout logic here.
 
 export type VeroxaPlanId =
   | "google_presence_starter"
@@ -18,7 +22,7 @@ export type VeroxaPlanLabel =
 export interface VeroxaPlan {
   id:           VeroxaPlanId;
   label:        VeroxaPlanLabel;
-  priceMonthly: number;     // USD per month, flat
+  priceMonthly: number;     // USD dollars per month (NOT cents), flat rate
   displayPrice: string;     // "$977" style
   tagline:      string;
   includesAdSpend: false;   // ad spend is always separate

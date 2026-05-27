@@ -22,7 +22,7 @@
 **Status:** demo / placeholder phase. Portal polish and hard stabilization complete.
 Pricing corrected to locked values, demo fixture data sanitized (no real restaurant
 names, addresses, emails, or domains remain), route/nav audit documented.
-Portal remains fully disconnected — no backend, no auth, no real publishing.
+Portal remains in placeholder/demo mode. No active backend behavior runs in placeholder mode: no real auth session is required for demo, no real publishing runs, no real uploads run, and no production database writes occur. Supabase/auth scaffolding exists in the codebase but is inactive while AUTH_MODE is "placeholder". Dev Supabase M001–M006 were applied manually in dev only. The app is not production-connected. Portal Connect Planning is still planning, not implementation.
 
 Next milestone: Portal Connect Planning (requires M001–M006 dev-test gate).
 
