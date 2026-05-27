@@ -15,7 +15,7 @@ export interface DemoAgent {
 
 export const demoAgents: DemoAgent[] = [
   { id: "media-review",       name: "Media Review Agent",       purpose: "Scores uploaded media for lighting, blur, food visibility, and duplicate risk.",                exampleOutput: "Reviewed 12 uploaded photos. 8 approved, 2 blurry, 2 duplicates.",               confidence: 94, lastActivity: "Today, 9:15 AM",     relatedClientId: "mamadali", workflowStage: "Media intake"      },
-  { id: "content-strategist", name: "Content Strategist Agent", purpose: "Suggests content angles — product spotlight, family meal, behind-the-scenes, review highlight.", exampleOutput: "Recommended 4 content angles for Crescent Grill weekend coverage.",                 confidence: 88, lastActivity: "Today, 8:20 AM",     relatedClientId: "crescent", workflowStage: "Planning"          },
+  { id: "content-strategist", name: "Content Strategist Agent", purpose: "Suggests content angles — product spotlight, family meal, behind-the-scenes, review highlight.", exampleOutput: "Recommended 4 content angles for Demo Mediterranean Grill weekend coverage.",                 confidence: 88, lastActivity: "Today, 8:20 AM",     relatedClientId: "crescent", workflowStage: "Planning"          },
   { id: "caption",            name: "Caption Agent",            purpose: "Creates Safe, Engagement, and Sales caption options for the selected concept.",                  exampleOutput: "Generated 3 caption options for Chicken Shawarma lunch promotion.",                confidence: 91, lastActivity: "Yesterday, 6:30 PM", relatedClientId: "mamadali", workflowStage: "Drafting"          },
   { id: "brand-voice",        name: "Brand Voice Agent",        purpose: "Checks captions sound premium, clear, restaurant-focused, and not too generic.",                 exampleOutput: "Tone check passed on 5 of 6 drafts. 1 flagged as too generic.",                   confidence: 90, lastActivity: "Yesterday, 6:35 PM", relatedClientId: "urban",    workflowStage: "Quality check"     },
   { id: "scheduling",         name: "Scheduling Agent",         purpose: "Suggests posting slots based on the client's preferred windows and content balance.",             exampleOutput: "Recommended Tuesday 6:30 PM based on dinner engagement patterns.",                  confidence: 86, lastActivity: "Today, 10:48 AM",    relatedClientId: "mamadali", workflowStage: "Scheduling"        },
@@ -92,9 +92,9 @@ export const demoAiAgentsV2: DemoAgentDetail[] = [
       "Family platter on-brand — surface for weekend promo slot.",
     ],
     recentActivity: [
-      { time: "Today, 10:32 AM", event: "Reviewed 8 items for Mamadali Kebab House" },
-      { time: "Today, 8:15 AM",  event: "Flagged 2 items for reshoot — Urban Tacos" },
-      { time: "Yesterday",        event: "Reviewed 5 items for Crescent Kitchen — all approved" },
+      { time: "Today, 10:32 AM", event: "Reviewed 8 items for Demo Grill House" },
+      { time: "Today, 8:15 AM",  event: "Flagged 2 items for reshoot — Demo Taco Bar" },
+      { time: "Yesterday",        event: "Reviewed 5 items for Demo Mediterranean Grill — all approved" },
     ],
     sampleDecisions: [
       "Approved 6 of 8 items (75%).",
@@ -108,14 +108,14 @@ export const demoAiAgentsV2: DemoAgentDetail[] = [
     inputs:  ["Approved media inventory", "Client growth goals", "Historical performance", "Posting cadence targets"],
     outputs: ["Weekly content plan", "Post-mix recommendations", "Cadence adjustments"],
     sampleRecommendations: [
-      "Increase reel-to-photo ratio for Mamadali — reels outperforming by 2.1x.",
+      "Increase reel-to-photo ratio for Demo Grill House — reels outperforming by 2.1x.",
       "Schedule olive-oil reel for Thursday 7 PM window — peak engagement.",
-      "Front-load Friday content for Urban Tacos before weekend rush.",
+      "Front-load Friday content for Demo Taco Bar before weekend rush.",
     ],
     recentActivity: [
-      { time: "Today, 9:00 AM",  event: "Drafted 5-post plan for Mamadali — week of May 26" },
-      { time: "Today, 8:42 AM",  event: "Recommended cadence boost for Crescent Kitchen" },
-      { time: "Yesterday",        event: "Surfaced under-utilised BTS clips for Urban Tacos" },
+      { time: "Today, 9:00 AM",  event: "Drafted 5-post plan for Demo Grill House — week of May 26" },
+      { time: "Today, 8:42 AM",  event: "Recommended cadence boost for Demo Mediterranean Grill" },
+      { time: "Yesterday",        event: "Surfaced under-utilised BTS clips for Demo Taco Bar" },
     ],
     sampleDecisions: [
       "Planned 22 posts across the portfolio this week.",
@@ -129,14 +129,14 @@ export const demoAiAgentsV2: DemoAgentDetail[] = [
     inputs:  ["Post media", "Brand voice profile", "Restaurant context", "CTA goals"],
     outputs: ["3 caption variants", "Hashtag suggestions", "Emoji style hints"],
     sampleRecommendations: [
-      "Use warmer, story-first tone for Al Noor Cafe — premium positioning.",
-      "Lead with action verb for Urban Tacos — high-energy brand voice.",
-      "Include hijri date reference for Mamadali halal audience.",
+      "Use warmer, story-first tone for Demo Cafe — premium positioning.",
+      "Lead with action verb for Demo Taco Bar — high-energy brand voice.",
+      "Lead with occasion-based angle for Demo Grill House — drives weekend reservation intent.",
     ],
     recentActivity: [
-      { time: "Today, 10:48 AM", event: "Drafted 3 captions for Mamadali dinner reel" },
+      { time: "Today, 10:48 AM", event: "Drafted 3 captions for Demo Grill House dinner reel" },
       { time: "Today, 9:20 AM",  event: "Drafted 3 captions for Crescent olive-oil reel" },
-      { time: "Yesterday",        event: "Drafted 3 captions for Urban Tacos lunch special" },
+      { time: "Yesterday",        event: "Drafted 3 captions for Demo Taco Bar lunch special" },
     ],
     sampleDecisions: [
       "Generated 18 caption variants this week.",
@@ -151,13 +151,13 @@ export const demoAiAgentsV2: DemoAgentDetail[] = [
     outputs: ["Voice match score", "Tone-deviation flags", "Suggested rewrites"],
     sampleRecommendations: [
       "Caption B too generic — rewrite with sensory language.",
-      "Avoid corporate phrasing for Al Noor — family-owned brand voice.",
-      "Add Urdu phrase variant for Mamadali audience overlap.",
+      "Avoid corporate phrasing for Demo Cafe — family-owned brand voice.",
+      "Consider community-language tone variant for Demo Grill House to improve local reach.",
     ],
     recentActivity: [
-      { time: "Today, 10:50 AM", event: "Approved 2 of 3 Mamadali captions — voice match 96%" },
+      { time: "Today, 10:50 AM", event: "Approved 2 of 3 Demo Grill House captions — voice match 96%" },
       { time: "Today, 9:25 AM",  event: "Flagged Caption C for Crescent — too promotional" },
-      { time: "Yesterday",        event: "Updated brand voice profile for Urban Tacos" },
+      { time: "Yesterday",        event: "Updated brand voice profile for Demo Taco Bar" },
     ],
     sampleDecisions: [
       "Approved 14 captions; flagged 4 for rewrite.",
@@ -171,14 +171,14 @@ export const demoAiAgentsV2: DemoAgentDetail[] = [
     inputs:  ["Approved post", "Platform analytics", "Audience timezone", "Posting cadence rules"],
     outputs: ["Recommended slot", "Platform priority", "Conflict warnings"],
     sampleRecommendations: [
-      "Thursday 7 PM is peak window for Mamadali — schedule dinner reel.",
-      "Avoid Friday morning for Urban Tacos — competing local event.",
+      "Thursday 7 PM is peak window for Demo Grill House — schedule dinner reel.",
+      "Avoid Friday morning for Demo Taco Bar — competing local event.",
       "Push Crescent olive-oil reel to Sunday brunch window — higher engagement.",
     ],
     recentActivity: [
-      { time: "Today, 11:00 AM", event: "Scheduled 4 posts for Mamadali this week" },
+      { time: "Today, 11:00 AM", event: "Scheduled 4 posts for Demo Grill House this week" },
       { time: "Today, 9:30 AM",  event: "Reshuffled Crescent calendar — peak-window optimisation" },
-      { time: "Yesterday",        event: "Flagged scheduling conflict for Urban Tacos Sunday slot" },
+      { time: "Yesterday",        event: "Flagged scheduling conflict for Demo Taco Bar Sunday slot" },
     ],
     sampleDecisions: [
       "Locked 18 posting windows this cycle.",
@@ -192,14 +192,14 @@ export const demoAiAgentsV2: DemoAgentDetail[] = [
     inputs:  ["Posting log", "Engagement metrics", "Client goals", "Prior period baseline"],
     outputs: ["Weekly report draft", "Monthly report draft", "Highlight + concern callouts"],
     sampleRecommendations: [
-      "Highlight Mamadali 2.1x reel engagement week-over-week.",
-      "Flag Urban Tacos posting consistency drop in monthly report.",
+      "Highlight Demo Grill House 2.1x reel engagement week-over-week.",
+      "Flag Demo Taco Bar posting consistency drop in monthly report.",
       "Surface Crescent menu launch as a 'win of the month' story.",
     ],
     recentActivity: [
-      { time: "Today, 7:15 AM",  event: "Drafted weekly report for Mamadali" },
-      { time: "Yesterday",        event: "Drafted weekly report for Urban Tacos — pending validation" },
-      { time: "2 days ago",       event: "Published monthly report for Crescent Kitchen" },
+      { time: "Today, 7:15 AM",  event: "Drafted weekly report for Demo Grill House" },
+      { time: "Yesterday",        event: "Drafted weekly report for Demo Taco Bar — pending validation" },
+      { time: "2 days ago",       event: "Published monthly report for Demo Mediterranean Grill" },
     ],
     sampleDecisions: [
       "Drafted 8 reports this week.",
@@ -213,14 +213,14 @@ export const demoAiAgentsV2: DemoAgentDetail[] = [
     inputs:  ["All client metrics", "Inventory levels", "Activity logs", "Health thresholds"],
     outputs: ["Risk score per client", "Severity-ranked alerts", "Forecast warnings"],
     sampleRecommendations: [
-      "Al Noor Cafe will run out of media in 5 days at current pace.",
-      "Urban Tacos posting consistency below 70% target — intervene.",
-      "Mamadali onboarding 100% — ready for service expansion conversation.",
+      "Demo Cafe will run out of media in 5 days at current pace.",
+      "Demo Taco Bar posting consistency below 70% target — intervene.",
+      "Demo Grill House onboarding 100% — ready for service expansion conversation.",
     ],
     recentActivity: [
-      { time: "Today, 8:42 AM",  event: "Raised CRITICAL alert — Al Noor media inventory" },
-      { time: "Today, 7:30 AM",  event: "Raised CRITICAL alert — Al Noor onboarding stalled" },
-      { time: "Yesterday",        event: "Raised HIGH alert — Urban Tacos report overdue" },
+      { time: "Today, 8:42 AM",  event: "Raised CRITICAL alert — Demo Cafe media inventory" },
+      { time: "Today, 7:30 AM",  event: "Raised CRITICAL alert — Demo Cafe onboarding stalled" },
+      { time: "Yesterday",        event: "Raised HIGH alert — Demo Taco Bar report overdue" },
     ],
     sampleDecisions: [
       "Raised 8 risk alerts this week (2 critical, 3 high, 3 medium).",
@@ -234,9 +234,9 @@ export const demoAiAgentsV2: DemoAgentDetail[] = [
     inputs:  ["All agent outputs", "Risk alerts", "Team workload", "Daily SLAs"],
     outputs: ["Prioritised action list", "Daily digest", "Bottleneck warnings"],
     sampleRecommendations: [
-      "Validate Urban Tacos report first — 28 hours overdue.",
-      "Approve Mamadali dinner reel by noon — Thursday slot.",
-      "Contact Al Noor Cafe today — media emergency.",
+      "Validate Demo Taco Bar report first — 28 hours overdue.",
+      "Approve Demo Grill House dinner reel by noon — Thursday slot.",
+      "Contact Demo Cafe today — media emergency.",
     ],
     recentActivity: [
       { time: "Today, 6:00 AM",     event: "Generated operator daily digest" },
@@ -256,7 +256,7 @@ export const demoAiAgentsV2: DemoAgentDetail[] = [
     outputs: ["Owner daily briefing", "Strategic recommendations", "Weekly business pulse"],
     sampleRecommendations: [
       "Revenue up 12% MoM — celebrate with team.",
-      "Al Noor Cafe rescue call this week — $1,097 MRR at risk.",
+      "Demo Cafe rescue call this week — $1,097 MRR at risk.",
       "3 qualified leads close to signing — prepare proposals.",
     ],
     recentActivity: [

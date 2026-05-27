@@ -159,49 +159,49 @@ export interface DemoRiskItem {
 export const demoRiskItems: DemoRiskItem[] = [
   {
     id: "r1", severity: "Critical", category: "Media",
-    title: "Media inventory critically low — Al Noor Cafe",
+    title: "Media inventory critically low — Demo Cafe",
     description: "Only 2 approved media items remain. Cannot sustain next week's schedule without emergency shoot.",
     clientId: "alnoor", time: "Today, 8:42 AM",
   },
   {
     id: "r2", severity: "Critical", category: "Onboarding",
-    title: "Onboarding blocked — Al Noor Cafe",
+    title: "Onboarding blocked — Demo Cafe",
     description: "4 of 8 onboarding steps incomplete, including menu info and brand guidelines. Content quality at risk.",
     clientId: "alnoor", time: "Today, 7:30 AM",
   },
   {
     id: "r3", severity: "High", category: "Reporting",
-    title: "Weekly report overdue — Urban Tacos",
+    title: "Weekly report overdue — Demo Taco Bar",
     description: "Report has been in operator validation queue for 28+ hours. Client visibility window missed.",
     clientId: "urban", time: "Yesterday, 5:15 PM",
   },
   {
     id: "r4", severity: "High", category: "Client",
-    title: "Inactive client — Al Noor Cafe",
+    title: "Inactive client — Demo Cafe",
     description: "No client activity detected in 3 days. Emails unanswered. Escalation recommended.",
     clientId: "alnoor", time: "3 days ago",
   },
   {
     id: "r5", severity: "Medium", category: "Media",
-    title: "Content supply trending low — Urban Tacos",
+    title: "Content supply trending low — Demo Taco Bar",
     description: "9 approved items remaining. At current posting frequency, supply runs out in 14 days.",
     clientId: "urban", time: "2 days ago",
   },
   {
     id: "r6", severity: "Medium", category: "Google",
-    title: "Google profile photos outdated — Al Noor Cafe",
+    title: "Google profile photos outdated — Demo Cafe",
     description: "Profile photos are 6+ months old. Affects Google visibility and first impressions.",
     clientId: "alnoor", time: "3 days ago",
   },
   {
     id: "r7", severity: "Low", category: "Content",
-    title: "Content backlog forming — Crescent Kitchen",
+    title: "Content backlog forming — Demo Mediterranean Grill",
     description: "3 items in caption drafting stage. Minor delay — no immediate risk.",
     clientId: "crescent", time: "Today, 9:00 AM",
   },
   {
     id: "r8", severity: "Low", category: "Brand",
-    title: "Brand guideline refresh pending — Al Noor Cafe",
+    title: "Brand guideline refresh pending — Demo Cafe",
     description: "Logo marked for update. Brand assets should be refreshed before next campaign.",
     clientId: "alnoor", time: "May 20",
   },
@@ -222,43 +222,43 @@ export interface DemoOperatorAction {
 export const demoOperatorActions: DemoOperatorAction[] = [
   {
     id: "oa1", urgency: "Immediate", category: "Client",
-    title: "Contact Al Noor Cafe — media emergency",
+    title: "Contact Demo Cafe — media emergency",
     description: "Request at least 5 new food photos via WhatsApp and email. Media queue critically low.",
     clientId: "alnoor",
   },
   {
     id: "oa2", urgency: "Immediate", category: "Report",
-    title: "Validate Urban Tacos weekly report",
+    title: "Validate Demo Taco Bar weekly report",
     description: "Report sitting in operator queue 28+ hours. Approve and publish to unlock client visibility.",
     clientId: "urban",
   },
   {
     id: "oa3", urgency: "Today", category: "Onboarding",
-    title: "Follow up on Al Noor onboarding blockers",
+    title: "Follow up on Demo Cafe onboarding blockers",
     description: "4 onboarding steps incomplete. Escalate to owner if no response by 5 PM.",
     clientId: "alnoor",
   },
   {
     id: "oa4", urgency: "Today", category: "Content",
-    title: "Approve Mamadali dinner reel",
+    title: "Approve Demo Grill House dinner reel",
     description: "Final sign-off required before Thursday 7 PM posting window. Caption is ready.",
     clientId: "mamadali",
   },
   {
     id: "oa5", urgency: "This Week", category: "Media",
-    title: "Schedule media refresh for Urban Tacos",
+    title: "Schedule media refresh for Demo Taco Bar",
     description: "Content supply dropping. Coordinate a new shoot for next week to replenish 2-week buffer.",
     clientId: "urban",
   },
   {
     id: "oa6", urgency: "This Week", category: "Google",
-    title: "Update Google Business profile — Al Noor Cafe",
+    title: "Update Google Business profile — Demo Cafe",
     description: "Photos are 6 months old. Upload 3–4 new hero images to improve local search visibility.",
     clientId: "alnoor",
   },
   {
     id: "oa7", urgency: "This Week", category: "Report",
-    title: "Review Crescent Kitchen monthly report",
+    title: "Review Demo Mediterranean Grill monthly report",
     description: "Monthly report due end of week. Verify growth metrics and approve before distribution.",
     clientId: "crescent",
   },
@@ -278,32 +278,32 @@ export interface DemoAssistantInsight {
 export const demoOperatorAssistant: DemoAssistantInsight[] = [
   {
     id: "ai1", agent: "Risk Monitoring Agent", severity: "critical",
-    insight: "Al Noor Cafe media inventory may run out within 5 days at current posting frequency.",
+    insight: "Demo Cafe media inventory may run out within 5 days at current posting frequency.",
     clientId: "alnoor",
   },
   {
     id: "ai2", agent: "Reporting Agent", severity: "critical",
-    insight: "Urban Tacos monthly report validation is overdue by 28 hours. Immediate operator action required.",
+    insight: "Demo Taco Bar monthly report validation is overdue by 28 hours. Immediate operator action required.",
     clientId: "urban",
   },
   {
     id: "ai3", agent: "Content Strategist Agent", severity: "warning",
-    insight: "Urban Tacos posting consistency dropped to 3 posts/week vs. 5 target. Recommend scheduling emergency content.",
+    insight: "Demo Taco Bar posting consistency dropped to 3 posts/week vs. 5 target. Recommend scheduling emergency content.",
     clientId: "urban",
   },
   {
     id: "ai4", agent: "Media Review Agent", severity: "warning",
-    insight: "Recommend requesting additional video content for Al Noor Cafe — only photo assets in queue.",
+    insight: "Recommend requesting additional video content for Demo Cafe — only photo assets in queue.",
     clientId: "alnoor",
   },
   {
     id: "ai5", agent: "Scheduling Agent", severity: "info",
-    insight: "Mamadali Kebab House Thursday dinner slot is pre-loaded. Final content sign-off needed by noon.",
+    insight: "Demo Grill House Thursday dinner slot is pre-loaded. Final content sign-off needed by noon.",
     clientId: "mamadali",
   },
   {
     id: "ai6", agent: "Content Strategist Agent", severity: "info",
-    insight: "Crescent Kitchen olive oil reel is on track. Caption approved. No action needed.",
+    insight: "Demo Mediterranean Grill olive oil reel is on track. Caption approved. No action needed.",
     clientId: "crescent",
   },
   {
@@ -326,39 +326,39 @@ export const demoDailyDigest: DemoDailyDigestSection[] = [
   {
     category: "Today's Priorities",
     items: [
-      "Validate Urban Tacos weekly report — 28 hours overdue.",
-      "Approve Mamadali dinner reel before noon (Thursday window).",
-      "Contact Al Noor Cafe re: media emergency — 2 items remaining.",
+      "Validate Demo Taco Bar weekly report — 28 hours overdue.",
+      "Approve Demo Grill House dinner reel before noon (Thursday window).",
+      "Contact Demo Cafe re: media emergency — 2 items remaining.",
     ],
   },
   {
     category: "Urgent Alerts",
     items: [
-      "Al Noor Cafe: media critically low — 2 approved items. Risk of posting gap next week.",
-      "Urban Tacos: weekly report stuck in operator queue.",
-      "Al Noor Cafe: client unresponsive for 3 days — escalation may be needed.",
+      "Demo Cafe: media critically low — 2 approved items. Risk of posting gap next week.",
+      "Demo Taco Bar: weekly report stuck in operator queue.",
+      "Demo Cafe: client unresponsive for 3 days — escalation may be needed.",
     ],
   },
   {
     category: "Clients Needing Attention",
     items: [
-      "Al Noor Cafe — Critical: media low, onboarding incomplete, client inactive.",
-      "Urban Tacos — High: report overdue, content supply trending down.",
+      "Demo Cafe — Critical: media low, onboarding incomplete, client inactive.",
+      "Demo Taco Bar — High: report overdue, content supply trending down.",
     ],
   },
   {
     category: "Reports Due",
     items: [
-      "Urban Tacos weekly report — validate and publish today.",
-      "Mamadali Kebab House weekly report — in draft, review by Friday.",
-      "Crescent Kitchen monthly report — due by end of week.",
+      "Demo Taco Bar weekly report — validate and publish today.",
+      "Demo Grill House weekly report — in draft, review by Friday.",
+      "Demo Mediterranean Grill monthly report — due by end of week.",
     ],
   },
   {
     category: "Media Shortages",
     items: [
-      "Al Noor Cafe: 2 approved items — critical shortage.",
-      "Urban Tacos: 9 items — 14-day supply at current pace.",
+      "Demo Cafe: 2 approved items — critical shortage.",
+      "Demo Taco Bar: 9 items — 14-day supply at current pace.",
     ],
   },
   {

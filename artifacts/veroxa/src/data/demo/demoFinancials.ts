@@ -41,10 +41,10 @@ export interface DemoPlanRow {
 }
 
 export const demoServicePlans: DemoPlanRow[] = [
-  { plan: "Essential", price:  997, clients: 1, color: "bg-sky-500"     },
-  { plan: "Growth",    price: 1097, clients: 1, color: "bg-emerald-500" },
-  { plan: "Pro",       price: 1197, clients: 1, color: "bg-amber-500"   },
-  { plan: "Premium",   price: 1497, clients: 1, color: "bg-violet-500"  },
+  { plan: "Complete · 12-mo",       price:  997, clients: 1, color: "bg-sky-500"     },
+  { plan: "Complete · 6-mo",        price: 1097, clients: 1, color: "bg-emerald-500" },
+  { plan: "Complete · 3-mo",        price: 1197, clients: 1, color: "bg-amber-500"   },
+  { plan: "Complete · No-contract", price: 1497, clients: 1, color: "bg-violet-500"  },
 ];
 
 // ── BI Center trend type ──────────────────────────────────────────

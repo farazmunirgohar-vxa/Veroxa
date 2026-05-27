@@ -13,9 +13,9 @@ const PRESENCE_PLANS = [
 
 const BUNDLE_PLANS = [
   { label: "12-month bundle", price: "$1,797", highlight: "Best long-term value", best: true },
-  { label: "6-month bundle",  price: "$2,097", highlight: "Growth system",        best: false },
-  { label: "3-month bundle",  price: "$2,297", highlight: "Foundation",           best: false },
-  { label: "No-contract",     price: "$2,697", highlight: "Flexible",             best: false },
+  { label: "6-month bundle",  price: "$1,897", highlight: "Growth system",        best: false },
+  { label: "3-month bundle",  price: "$1,997", highlight: "Foundation",           best: false },
+  { label: "No-contract",     price: "$2,297", highlight: "Flexible",             best: false },
 ];
 
 const STARTER_INCLUDES = [
@@ -258,7 +258,7 @@ export default function PricingPage() {
                 Add-on to Complete Presence
               </span>
               <div>
-                <span className="text-3xl font-extrabold">+$1,497</span>
+                <span className="text-3xl font-extrabold">+$1,500</span>
                 <span className="text-sm text-muted-foreground ml-1">/mo</span>
               </div>
             </div>
@@ -267,7 +267,7 @@ export default function PricingPage() {
                 Ads only (no content plan)
               </span>
               <div>
-                <span className="text-3xl font-extrabold">$1,997</span>
+                <span className="text-3xl font-extrabold">$2,000</span>
                 <span className="text-sm text-muted-foreground ml-1">/mo</span>
               </div>
             </div>

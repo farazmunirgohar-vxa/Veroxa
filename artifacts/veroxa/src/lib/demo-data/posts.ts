@@ -1,7 +1,7 @@
 import type { Post, PostSlot } from "../database/models";
 import { PlatformName, PostStatus, PostSlotStatus } from "../database/enums";
 
-// ── Typed demo posts — Mamadali Kebab House ───────────────────────────────────
+// ── Typed demo posts — Demo Grill House (id: mamadali) ────────────────────────
 
 export const mamadaliPosts: Post[] = [
   {
@@ -143,11 +143,11 @@ export const scheduledPosts = [
 // ── Team Portal — Task list ───────────────────────────────────────────────────
 
 export const tasks = [
-  { id: 1, title: "Review raw media batch — Mamadali Kebab House (May shoot)", client: "Mamadali Kebab House", priority: "High",   done: true  },
-  { id: 2, title: "AI quality check passed — approve 3 hero shots for drafts",  client: "Mamadali Kebab House", priority: "High",   done: true  },
-  { id: 3, title: "Generate 3 caption variants for lamb shoulder post",          client: "Mamadali Kebab House", priority: "High",   done: false },
-  { id: 4, title: "Send draft variants to team lead for approval",               client: "Mamadali Kebab House", priority: "Medium", done: false },
-  { id: 5, title: "Schedule approved posts for week of 26 May",                  client: "Mamadali Kebab House", priority: "Medium", done: false },
+  { id: 1, title: "Review raw media batch — Demo Grill House (May shoot)",      client: "Demo Grill House", priority: "High",   done: true  },
+  { id: 2, title: "AI quality check passed — approve 3 hero shots for drafts",  client: "Demo Grill House", priority: "High",   done: true  },
+  { id: 3, title: "Generate 3 caption variants for lamb shoulder post",          client: "Demo Grill House", priority: "High",   done: false },
+  { id: 4, title: "Send draft variants to team lead for approval",               client: "Demo Grill House", priority: "Medium", done: false },
+  { id: 5, title: "Schedule approved posts for week of 26 May",                  client: "Demo Grill House", priority: "Medium", done: false },
   { id: 6, title: "Compile reporting feed for May wrap summary",                 client: "Internal",             priority: "Low",    done: false },
 ] as const;
 
@@ -162,18 +162,18 @@ export const draftVariants = [
 // ── Team Portal — Post-ready queue display ────────────────────────────────────
 
 export const postReadyQueue = [
-  { title: "Lamb shoulder hero shot",   client: "Mamadali Kebab House", platform: "Instagram", date: "Mon 26 May" },
-  { title: "Family feast promo graphic", client: "Mamadali Kebab House", platform: "Facebook",  date: "Wed 28 May" },
-  { title: "Kitchen BTS reel",          client: "Mamadali Kebab House", platform: "Instagram", date: "Fri 30 May" },
+  { title: "Lamb shoulder hero shot",    client: "Demo Grill House", platform: "Instagram", date: "Mon 26 May" },
+  { title: "Family feast promo graphic", client: "Demo Grill House", platform: "Facebook",  date: "Wed 28 May" },
+  { title: "Kitchen BTS reel",           client: "Demo Grill House", platform: "Instagram", date: "Fri 30 May" },
 ] as const;
 
 // ── Team Portal — Published this week display ─────────────────────────────────
 
 export const publishedThisWeek = [
-  { title: "Weekend special: mixed grill platter for 2",   platform: "Instagram", reach: "4,820", client: "Mamadali Kebab House" },
-  { title: "Google review highlight — 5 stars from Ahmed K.", platform: "Facebook",  reach: "2,140", client: "Mamadali Kebab House" },
-  { title: "New opening hours for Ramadan season",          platform: "Instagram", reach: "6,300", client: "Mamadali Kebab House" },
-  { title: "Behind the scenes: prep day with the team",    platform: "Instagram", reach: "3,910", client: "Mamadali Kebab House" },
+  { title: "Weekend special: mixed grill platter for 2",      platform: "Instagram", reach: "4,820", client: "Demo Grill House" },
+  { title: "Google review highlight — 5 stars from a happy customer", platform: "Facebook", reach: "2,140", client: "Demo Grill House" },
+  { title: "New opening hours for spring season",              platform: "Instagram", reach: "6,300", client: "Demo Grill House" },
+  { title: "Behind the scenes: prep day with the team",        platform: "Instagram", reach: "3,910", client: "Demo Grill House" },
 ] as const;
 
 // ── Operator Portal — Failed posts display ────────────────────────────────────

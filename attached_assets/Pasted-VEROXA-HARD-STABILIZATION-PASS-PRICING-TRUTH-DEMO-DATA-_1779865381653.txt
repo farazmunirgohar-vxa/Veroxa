@@ -1,0 +1,217 @@
+VEROXA HARD STABILIZATION PASS — PRICING TRUTH, DEMO DATA SANITATION, DOC CONSISTENCY
+
+Objective:
+Perform a strict stabilization pass across the Veroxa repo before any Portal Connect Planning.
+
+This pass is about correctness, truth, and demo safety.
+Do not add new features.
+Do not connect real systems.
+Do not change auth.
+Do not change database state.
+Do not redesign the UI.
+Do not add new routes.
+Do not remove important routed pages.
+
+Hard invariants:
+- AUTH_MODE must remain exactly "placeholder"
+- Portal remains disconnected from real Supabase
+- No OpenAI / Anthropic / Gemini / external AI APIs
+- No Supabase storage upload
+- No real publishing APIs
+- No payment or billing integrations
+- No real client/customer/restaurant data
+- Demo gate veroxa-preview remains unchanged
+- Roles remain exactly Client, Team, Operator, Owner
+- No files added to supabase/migrations
+
+TASK 1 — Fix all pricing drift
+
+Authoritative locked Veroxa pricing:
+
+Google Presence Starter:
+- $497/mo
+
+Complete Online Presence:
+- 12-month: $997/mo
+- 6-month: $1,097/mo
+- 3-month: $1,197/mo
+- No-contract: $1,497/mo
+
+Ads:
+- Add-on: $1,500/mo
+- Ads only: $2,000/mo
+
+Bundle:
+- 12-month: $1,797/mo
+- 6-month: $1,897/mo
+- 3-month: $1,997/mo
+- No-contract: $2,297/mo
+
+Fix pricing drift in:
+- artifacts/veroxa/src/pages/pricing.tsx
+- artifacts/veroxa/src/data/demo/demoFinancials.ts
+- owner revenue / plan mix cards
+- all docs that mention pricing
+- any public/service/pricing copy that mentions plan values
+
+Known issues to fix:
+- Bundle 6-month is currently wrong if it says $2,097. It must be $1,897.
+- Bundle 3-month is currently wrong if it says $2,297. It must be $1,997.
+- Bundle no-contract is currently wrong if it says $2,697. It must be $2,297.
+- Ads add-on is wrong if it says +$1,497. It must be +$1,500.
+- Ads only is wrong if it says $1,997. It must be $2,000.
+- Any doc saying Starter $499, Pro $799, Elite $1299 is wrong and must be corrected or removed.
+
+Important:
+Do NOT blindly replace every $1,497.
+$1,497 is correct for Complete Online Presence no-contract.
+It is NOT correct for Ads add-on.
+
+Use plan names aligned with Veroxa:
+- Google Presence Starter
+- Complete Online Presence 12-month
+- Complete Online Presence 6-month
+- Complete Online Presence 3-month
+- Complete Online Presence no-contract
+- Ads add-on
+- Ads only
+- Bundle 12-month
+- Bundle 6-month
+- Bundle 3-month
+- Bundle no-contract
+
+TASK 2 — Sanitize demo client data
+
+Remove real or real-looking target data from demo fixtures/UI/docs.
+
+Search for:
+- Mamadali
+- Mamadali Kebab House
+- mamadalikebab
+- real-looking restaurant domains
+- real-looking client emails
+- real-looking addresses
+- real-looking phone numbers
+- Toronto addresses
+- real-looking owner/contact names
+
+Replace with clearly fictional fixture data:
+- Demo Restaurant A
+- Demo Restaurant B
+- Demo Grill House
+- Demo Cafe
+- 100 Demo Street, San Antonio, TX
+- 200 Demo Avenue, San Antonio, TX
+- 300 Demo Road, San Antonio, TX
+- 400 Demo Lane, San Antonio, TX
+- owner-a@demo.veroxa.test
+- owner-b@demo.veroxa.test
+- manager-a@demo.veroxa.test
+- demo-restaurant-a.veroxa.test
+
+Rules:
+- No real restaurant names
+- No real prospect/client names
+- No real-looking domains
+- No real-looking customer/person names unless clearly generic fixture names
+- Use .test domains for emails/websites
+- Client-facing demo can say “Demo Restaurant A” instead of a real business name
+- Keep cuisine/menu examples fictional and generic
+
+Update wherever needed:
+- demoClients
+- demoRestaurantProfiles
+- demoMenuItems
+- demoBrandGuidelines
+- client dashboard loading fallback
+- team pages
+- operator pages
+- owner pages
+- docs that reference fixture restaurants
+
+TASK 3 — Correct documentation truth
+
+Update:
+- artifacts/veroxa/docs/BUILD_STATUS.md
+- artifacts/veroxa/docs/PROJECT_CLEANUP_AND_POLISH_STATUS.md
+- artifacts/veroxa/docs/DEMO_VISUAL_WALKTHROUGH_STATUS.md
+
+Fix overclaims:
+- Do not say “whole-project polish complete” unless every major public/client/team/operator/owner page was actually reviewed and polished.
+- Use accurate wording:
+  “Demo foundation is strong, pricing/data/docs stabilization completed, portal remains placeholder/disconnected.”
+- Clearly say Portal Connect Planning is next only after:
+  pricing consistency fixed,
+  demo data sanitized,
+  route/nav audit completed,
+  and build/typecheck passes.
+
+Remove or correct all incorrect pricing references.
+
+TASK 4 — Route/nav truth audit
+
+Create or update:
+artifacts/veroxa/docs/ROUTE_AND_NAV_AUDIT.md
+
+Include:
+- every visible Client nav item
+- every visible Team nav item
+- every visible Operator nav item
+- every visible Owner nav item
+- routed but hidden pages
+- future deletion candidates
+- broken or duplicate routes if any
+- pages that are too heavy for sales demo
+- recommended simplified demo path for restaurant-owner walkthrough
+
+Do not delete routes in this pass unless a route is clearly broken and unused.
+This is mostly audit/documentation.
+
+TASK 5 — Safety audit
+
+Search and confirm:
+- AUTH_MODE remains "placeholder"
+- No OpenAI / Anthropic / Gemini imports
+- No AI API calls
+- No Supabase storage upload
+- No real publishing API
+- No payment integration
+- No files under supabase/migrations
+- No real client/customer/restaurant data
+- Demo gate remains veroxa-preview
+
+TASK 6 — Build/typecheck
+
+Run:
+- typecheck
+- build if available
+- lint if available and not too expensive
+
+Fix any errors caused by this pass.
+
+Acceptance criteria:
+- All pricing across app/docs matches locked Veroxa pricing
+- No wrong Starter/Pro/Elite $499/$799/$1299 pricing remains
+- No wrong bundle or ads pricing remains
+- Demo client data is clearly fictional
+- No Mamadali or real prospect data remains in demo fixtures/UI/docs
+- Docs no longer overclaim whole-project completion
+- ROUTE_AND_NAV_AUDIT.md exists
+- AUTH_MODE remains "placeholder"
+- Portal remains disconnected
+- No real AI/storage/publishing/payments connected
+- No supabase/migrations files added
+- Build/typecheck passes
+
+Final report required:
+1. Files changed
+2. Pricing fixes made
+3. Demo data sanitation completed
+4. Route/nav audit document created or updated
+5. Documentation truth corrections made
+6. Safety audit results
+7. Confirmation AUTH_MODE unchanged
+8. Confirmation pricing now matches locked values
+9. Confirmation no real data remains
+10. Build/typecheck/lint result
+11. Remaining risks

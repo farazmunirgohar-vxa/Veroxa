@@ -25,13 +25,13 @@ export interface DemoOwnerCommandItem {
 export const demoOwnerCommandItems: DemoOwnerCommandItem[] = [
   {
     id: "oc1", category: "Revenue Risk",       severity: "Critical",
-    title: "Al Noor Cafe at risk of churn",
+    title: "Demo Cafe at risk of churn",
     description: "Critical health status, onboarding stalled, client unresponsive. $1,097 MRR at risk.",
     recommendedAction: "Schedule rescue call this week; consider 30-day extension or service downgrade.",
   },
   {
     id: "oc2", category: "Client Risk",        severity: "High",
-    title: "Urban Tacos health declining",
+    title: "Demo Taco Bar health declining",
     description: "Reports overdue, media supply trending down. Health dropped from 82 → 68 this month.",
     recommendedAction: "Operator intervention plus media-refresh shoot scheduled within 5 business days.",
   },
@@ -43,9 +43,9 @@ export const demoOwnerCommandItems: DemoOwnerCommandItem[] = [
   },
   {
     id: "oc4", category: "Growth Opportunity", severity: "Medium",
-    title: "Mamadali Kebab House ready for upsell",
-    description: "Healthy metrics, engaged client, 3 months on Growth plan. Upgrade to Pro = +$100/mo.",
-    recommendedAction: "Owner-led upsell conversation about Pro plan benefits and add-on shoot package.",
+    title: "Demo Grill House ready for upsell",
+    description: "Healthy metrics, engaged client, 3 months on Complete 6-mo plan. Upgrade to Complete 3-mo = +$100/mo.",
+    recommendedAction: "Owner-led upsell conversation about plan benefits and add-on shoot package.",
   },
   {
     id: "oc5", category: "Growth Opportunity", severity: "Medium",
@@ -62,7 +62,7 @@ export const demoOwnerCommandItems: DemoOwnerCommandItem[] = [
   {
     id: "oc7", category: "Business Risk",      severity: "Low",
     title: "Brand asset library aging",
-    description: "Al Noor Cafe brand guidelines flagged for refresh. Low-priority but recurring across portfolio.",
+    description: "Demo Cafe brand guidelines flagged for refresh. Low-priority but recurring across portfolio.",
     recommendedAction: "Annual brand-audit cycle; bundle into onboarding refresh checklist.",
   },
   {
@@ -166,7 +166,7 @@ export const demoOwnerBriefing: DemoOwnerBriefingSection[] = [
     items: [
       "MRR: $4,788 (+12% vs. April).",
       "4 active clients across 4 plans.",
-      "Retention score 94% — slight dip due to Al Noor risk.",
+      "Retention score 94% — slight dip due to Demo Cafe risk.",
     ],
   },
   {
@@ -174,7 +174,7 @@ export const demoOwnerBriefing: DemoOwnerBriefingSection[] = [
     summary:  "Solid growth, $1,097 MRR at churn risk.",
     items: [
       "Projected MRR: $7,785 if 3 qualified leads close.",
-      "$1,097 at risk if Al Noor churns.",
+      "$1,097 at risk if Demo Cafe churns.",
       "Net pipeline movement: +$2,997 over next 60 days.",
     ],
   },
@@ -182,8 +182,8 @@ export const demoOwnerBriefing: DemoOwnerBriefingSection[] = [
     category: "Risk Summary",
     summary:  "1 critical, 1 high, 2 medium.",
     items: [
-      "Al Noor Cafe: media + onboarding + inactivity → escalation needed.",
-      "Urban Tacos: reports overdue, supply trending low → operator intervention.",
+      "Demo Cafe: media + onboarding + inactivity → escalation needed.",
+      "Demo Taco Bar: reports overdue, supply trending low → operator intervention.",
       "Team workload concentration on Priya → cross-train this month.",
     ],
   },
@@ -191,10 +191,10 @@ export const demoOwnerBriefing: DemoOwnerBriefingSection[] = [
     category: "Client Summary",
     summary:  "2 healthy, 1 warning, 1 critical.",
     items: [
-      "Mamadali Kebab House — Healthy, upsell candidate.",
-      "Crescent Kitchen — Healthy, on track.",
-      "Urban Tacos — Warning, intervention scheduled.",
-      "Al Noor Cafe — Critical, rescue call this week.",
+      "Demo Grill House — Healthy, upsell candidate.",
+      "Demo Mediterranean Grill — Healthy, on track.",
+      "Demo Taco Bar — Warning, intervention scheduled.",
+      "Demo Cafe — Critical, rescue call this week.",
     ],
   },
   {
@@ -210,9 +210,9 @@ export const demoOwnerBriefing: DemoOwnerBriefingSection[] = [
     category: "Recommendations",
     summary:  "Focus the week on rescue, validation, and upsell.",
     items: [
-      "Personally call Al Noor Cafe owner today.",
-      "Validate Urban Tacos weekly report this morning.",
-      "Open Pro-plan upsell conversation with Mamadali Kebab House.",
+      "Personally call Demo Cafe owner today.",
+      "Validate Demo Taco Bar weekly report this morning.",
+      "Open upsell conversation with Demo Grill House.",
       "Send proposals to all 3 qualified leads within 48 hours.",
     ],
   },

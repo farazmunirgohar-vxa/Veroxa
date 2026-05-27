@@ -13,7 +13,7 @@
 | No Supabase / AI / storage wiring active | ✅ all behind auth gate or unused |
 | No publishing or migrations | ✅ no `supabase/migrations/` directory |
 | Demo / fixture data only | ✅ all data from `src/data/` |
-| Pricing locked (Starter $499 · Pro $799 · Elite $1299) | ✅ unchanged |
+| Pricing locked (see `docs/PUBLIC_PRICING_AND_SERVICES.md`) | ✅ verified |
 | 4 roles unchanged (client · team · operator · owner) | ✅ unchanged |
 | Demo gate unchanged | ✅ InternalDemoGuard wrapping all internal routes |
 
@@ -68,12 +68,17 @@
 
 ---
 
-## Typecheck
+## Typecheck (portal polish pass)
 
 ```
 pnpm --filter @workspace/veroxa run typecheck
 ✅ passes — no errors
 ```
+
+> **Note:** This document covers the portal polish pass only. A separate
+> stabilization pass (pricing truth, demo data sanitation, route audit)
+> was completed subsequently — see `ROUTE_AND_NAV_AUDIT.md` and the
+> updated `BUILD_STATUS.md` for the current state.
 
 ---
 

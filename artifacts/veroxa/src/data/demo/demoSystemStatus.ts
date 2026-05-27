@@ -10,12 +10,12 @@ export interface DemoControlPreset {
 }
 
 export const demoControlPresets: DemoControlPreset[] = [
-  { id: "healthy",     label: "Healthy client",           description: "Strong health score, on-schedule reporting, full media runway.",     exampleClient: "Crescent Grill" },
-  { id: "low-media",   label: "Low-media client",         description: "Inventory dipping below 14-day runway — needs upload request soon.", exampleClient: "Urban Tacos"    },
-  { id: "at-risk",     label: "At-risk client",           description: "Critical health, overdue reports, near-empty media supply.",          exampleClient: "Al Noor Cafe"   },
-  { id: "onboarding",  label: "Onboarding incomplete",    description: "Missing posting windows + one outstanding profile question.",         exampleClient: "Urban Tacos"    },
-  { id: "report-late", label: "Report overdue client",    description: "Weekly report drafted but stuck awaiting validation > 24h.",          exampleClient: "Urban Tacos"    },
-  { id: "pipeline",    label: "Pipeline delayed client",  description: "Brand-review backlog, captions sitting flagged, queue under target.", exampleClient: "Al Noor Cafe"   },
+  { id: "healthy",     label: "Healthy client",           description: "Strong health score, on-schedule reporting, full media runway.",     exampleClient: "Demo Mediterranean Grill" },
+  { id: "low-media",   label: "Low-media client",         description: "Inventory dipping below 14-day runway — needs upload request soon.", exampleClient: "Demo Taco Bar"    },
+  { id: "at-risk",     label: "At-risk client",           description: "Critical health, overdue reports, near-empty media supply.",          exampleClient: "Demo Cafe"   },
+  { id: "onboarding",  label: "Onboarding incomplete",    description: "Missing posting windows + one outstanding profile question.",         exampleClient: "Demo Taco Bar"    },
+  { id: "report-late", label: "Report overdue client",    description: "Weekly report drafted but stuck awaiting validation > 24h.",          exampleClient: "Demo Taco Bar"    },
+  { id: "pipeline",    label: "Pipeline delayed client",  description: "Brand-review backlog, captions sitting flagged, queue under target.", exampleClient: "Demo Cafe"   },
 ];
 
 // ── System status — future: system_health / integration status ────

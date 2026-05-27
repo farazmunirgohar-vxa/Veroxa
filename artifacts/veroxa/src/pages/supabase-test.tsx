@@ -31,7 +31,7 @@ type PageState =
   | { status: "error"; message: string };
 
 const EXPECTED: Record<string, number | string> = {
-  "Business name": "Mamadali Kebab House",
+  "Business name": "Demo Grill House",
   "client_portal_platforms_view": 4,
   "client_portal_media_view": 10,
   "client_portal_calendar_view": 7,
@@ -180,7 +180,7 @@ export default function SupabaseTestPage() {
             <div className="flex flex-col gap-1">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-sm font-semibold text-foreground">
-                  Mamadali demo — read results
+                  Demo Grill House — read results
                 </span>
                 <span
                   className={`flex items-center gap-1.5 text-xs font-semibold ${

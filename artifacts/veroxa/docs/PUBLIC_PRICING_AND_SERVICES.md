@@ -101,8 +101,8 @@ These prices are locked. Do not change without a formal pricing decision.
 
 | Option | Price/month |
 |--------|-------------|
-| Add-on to Complete Online Presence | +$1,497 |
-| Ads only (no content plan) | $1,997 |
+| Add-on to Complete Online Presence | +$1,500 |
+| Ads only (no content plan) | $2,000 |
 
 > **Important:** Advertising budget is separate and paid by the restaurant directly to the ad platform.
 
@@ -113,9 +113,9 @@ These prices are locked. Do not change without a formal pricing decision.
 | Plan | Price/month | Label |
 |------|-------------|-------|
 | 12-month bundle | $1,797 | Best long-term value |
-| 6-month bundle | $2,097 | Growth system |
-| 3-month bundle | $2,297 | Foundation |
-| No-contract bundle | $2,697 | Flexible |
+| 6-month bundle | $1,897 | Growth system |
+| 3-month bundle | $1,997 | Foundation |
+| No-contract bundle | $2,297 | Flexible |
 
 > Ad spend is still separate and paid directly by the restaurant, even in the bundle.
 

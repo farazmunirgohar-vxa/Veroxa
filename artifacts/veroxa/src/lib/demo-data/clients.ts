@@ -5,11 +5,11 @@ import { ClientStatus, PlanType, ServicePackage, ContentHealthStatus, RiskStatus
 
 export const mamadaliClient: Client = {
   id: "client-mamadali-001",
-  businessName: "Mamadali Kebab House",
+  businessName: "Demo Grill House",
   legalName: null,
   primaryContactName: "Demo Owner",
   primaryContactPhone: "+1-555-0100",
-  primaryContactEmail: "demo@mamadali.example.com",
+  primaryContactEmail: "owner-a@demo.veroxa.test",
   planType: PlanType.six_month,
   servicePackage: ServicePackage.presence,
   postingFrequencyWeekly: 4,
@@ -45,7 +45,7 @@ export const contentSupply = [
 // ── Operator Portal — Client health table ────────────────────────────────────
 
 export const clientHealthDisplay = [
-  { name: "Mamadali Kebab House", score: 58, postsThisMonth: 6,  scheduled: 0,  lastShoot: "12 days ago", status: "At Risk"  },
+  { name: "Demo Grill House",     score: 58, postsThisMonth: 6,  scheduled: 0,  lastShoot: "12 days ago", status: "At Risk"  },
   { name: "Bayleaf Indian Kitchen", score: 71, postsThisMonth: 14, scheduled: 4,  lastShoot: "8 days ago",  status: "Warning"  },
   { name: "Rosso Trattoria",      score: 44, postsThisMonth: 3,  scheduled: 2,  lastShoot: "18 days ago", status: "At Risk"  },
   { name: "Sushi Nori Shoreditch", score: 89, postsThisMonth: 19, scheduled: 8,  lastShoot: "3 days ago",  status: "Healthy"  },
@@ -56,7 +56,7 @@ export const clientHealthDisplay = [
 // ── Operator Portal — Active alerts ──────────────────────────────────────────
 
 export const operatorAlerts = [
-  { severity: "Critical", client: "Mamadali Kebab House",  message: "0 posts scheduled for next week — content pipeline empty.",       time: "2 hours ago" },
+  { severity: "Critical", client: "Demo Grill House",      message: "0 posts scheduled for next week — content pipeline empty.",       time: "2 hours ago" },
   { severity: "Warning",  client: "Bayleaf Indian Kitchen", message: "Instagram post failed to publish — account token expired.",         time: "4 hours ago" },
   { severity: "Warning",  client: "Rosso Trattoria",        message: "No media uploaded in 18 days — shoot overdue.",                     time: "Yesterday"   },
   { severity: "Info",     client: "Sushi Nori Shoreditch",  message: "Monthly report ready — awaiting operator approval.",               time: "Yesterday"   },

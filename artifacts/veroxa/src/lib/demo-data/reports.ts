@@ -1,7 +1,7 @@
 import type { WeeklyReport, MonthlyReport } from "../database/models";
 import { WeeklyReportStatus, MonthlyReportStatus } from "../database/enums";
 
-// ── Typed demo weekly reports — Mamadali Kebab House ─────────────────────────
+// ── Typed demo weekly reports — Demo Grill House (id: mamadali) ──────────────
 
 export const mamadaliWeeklyReports: WeeklyReport[] = [
   {
@@ -13,7 +13,7 @@ export const mamadaliWeeklyReports: WeeklyReport[] = [
     postsPublished: 4,
     postsPlanned: 4,
     completionRate: 100,
-    summaryText: "4 posts published across Instagram and Facebook. Google impressions up 18%. Kebab platter post drove highest reach. 2 new 5-star reviews. Next shoot booked Thursday 29 May at 11am.",
+    summaryText: "4 posts published across Instagram and Facebook. Google impressions up 18%. Featured grilled platter post drove highest reach. 2 new 5-star reviews. Next shoot booked Thursday 29 May at 11am.",
     generatedAt: "2026-05-23T07:00:00Z",
     publishedAt: "2026-05-23T08:00:00Z",
     createdAt: "2026-05-23T07:00:00Z",
@@ -36,7 +36,7 @@ export const mamadaliWeeklyReports: WeeklyReport[] = [
   },
 ];
 
-// ── Typed demo monthly reports — Mamadali Kebab House ────────────────────────
+// ── Typed demo monthly reports — Demo Grill House (id: mamadali) ─────────────
 
 export const mamadaliMonthlyReports: MonthlyReport[] = [
   {
@@ -63,7 +63,7 @@ export const reportApprovals = [
   { client: "Sushi Nori Shoreditch",  period: "April 2026", preparedBy: "Jordan D.", status: "Ready"     },
   { client: "Cafe Levant",            period: "April 2026", preparedBy: "Sarah M.",  status: "Ready"     },
   { client: "Bayleaf Indian Kitchen", period: "April 2026", preparedBy: "Alex K.",   status: "In Review" },
-  { client: "Mamadali Kebab House",   period: "April 2026", preparedBy: "Jordan D.", status: "In Review" },
+  { client: "Demo Grill House",        period: "April 2026", preparedBy: "Jordan D.", status: "In Review" },
 ] as const;
 
 // ── Owner Portal — MRR trend chart data ──────────────────────────────────────
@@ -81,7 +81,7 @@ export const revenueData = [
 
 export const ownerCriticalAlerts = [
   { client: "The Grill House",       issue: "Google Business Profile disconnected — visibility paused.", severity: "Critical" },
-  { client: "Mamadali Kebab House",  issue: "No posts scheduled next week — pipeline empty.",            severity: "Critical" },
+  { client: "Demo Grill House",      issue: "No posts scheduled next week — pipeline empty.",            severity: "Critical" },
   { client: "Rosso Trattoria",       issue: "No media uploaded in 18 days — shoot overdue.",             severity: "Warning"  },
 ] as const;
 

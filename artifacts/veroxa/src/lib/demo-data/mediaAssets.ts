@@ -1,7 +1,7 @@
 import type { MediaAsset } from "../database/models";
 import { MediaFileType, MediaSourceType, MediaQualityAIFlag, MediaReviewStatus } from "../database/enums";
 
-// ── Demo media assets — Mamadali Kebab House ─────────────────────────────────
+// ── Demo media assets — Demo Grill House (id: mamadali) ──────────────────────
 // All IDs become UUID primary keys in the real database.
 
 export const mamadaliMediaAssets: MediaAsset[] = [

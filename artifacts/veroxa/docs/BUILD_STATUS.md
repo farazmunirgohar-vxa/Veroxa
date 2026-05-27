@@ -13,11 +13,14 @@
 
 ---
 
-## Current state (audit pass: 2026-05-27, polish pass: 2026-05-27)
+## Current state (stabilization pass: 2026-05-27)
 
-**Status:** demo / placeholder phase. Whole-project polish pass complete. All 4 portals
-surfaced with rich demo content. Public website polished. 64 pasted prompt files removed.
-No runtime backend behavior is active.
+**Status:** demo / placeholder phase. Portal polish and hard stabilization complete.
+Pricing corrected to locked values, demo fixture data sanitized (no real restaurant
+names, addresses, emails, or domains remain), route/nav audit documented.
+Portal remains fully disconnected — no backend, no auth, no real publishing.
+
+Next milestone: Portal Connect Planning (requires M001–M006 dev-test gate).
 
 - **AUTH_MODE is `"placeholder"`.** Verified in
   `src/lib/auth/authMode.ts`. Real Supabase Auth code exists in the
@@ -531,8 +534,8 @@ Specifically:
   What Veroxa Does, Services Included, Pricing Preview, Ads
   Management, Bundle Pricing, Client Portal Preview, and CTA.
 - Exact pricing added: Complete Online Presence ($997–$1,497/mo),
-  Ads Management (+$1,497 add-on or $1,997 ads-only), Bundle
-  ($1,797–$2,697/mo).
+  Ads Management (+$1,500 add-on or $2,000 ads-only), Bundle
+  ($1,797–$2,297/mo).
 - Ad spend separate disclaimer shown in Ads Management section.
 - No-guarantees disclaimer in pricing section and footer.
 - Hero CTAs: "Request Restaurant Audit" + "View Client Portal Preview".
@@ -663,8 +666,8 @@ auth activation.
   corrected: the "Growth system" tier label was corrected for both
   Complete Online Presence plans and Bundle plans. Locked monthly
   prices unchanged ($997 / $1,097 / $1,197 / $1,497 plans; $1,797 /
-  $2,097 / $2,297 / $2,697 bundles; ads add-on $1,497, ads-only
-  $1,997). `src/pages/pricing.tsx` already uses the correct labels.
+  $1,897 / $1,997 / $2,297 bundles; ads add-on +$1,500, ads-only
+  $2,000). `src/pages/pricing.tsx` corrected in stabilization pass.
 - **Docs synced.** This entry + `ROUTE_ARCHITECTURE.md` updated to
   document the new operator System Status route, the sidebar swap,
   and the expanded `DemoVisibility` taxonomy.

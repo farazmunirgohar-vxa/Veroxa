@@ -98,7 +98,7 @@ const DEMO_WEEKLY_UPDATE: WeeklyUpdateDisplay = {
   title: "Weekly Update — 19–25 May",
   summaryItems: [
     "4 posts published this week across Instagram and Facebook.",
-    "Google impressions up 18% — your kebab platter post drove the highest reach this month.",
+    "Google impressions up 18% — your featured grilled platter post drove the highest reach this month.",
     "2 new 5-star Google reviews received. Veroxa team prepared suggested responses.",
     "Next shoot booked for Thursday 29 May at 11am — please have the new menu items ready.",
   ],

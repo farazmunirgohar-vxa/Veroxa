@@ -28,11 +28,11 @@ const matchToneStyles: Record<string, string> = {
 };
 
 const mediaItems = [
-  { id: 1, title: "Lamb shoulder closeup",   client: "Mamadali Kebab House", quality: "Approved",    note: "Sharp focus, strong lighting"        },
-  { id: 2, title: "Mixed grill platter",     client: "Mamadali Kebab House", quality: "Approved",    note: "Good plating, on-brand"              },
-  { id: 3, title: "Storefront wide shot",    client: "Mamadali Kebab House", quality: "Needs Reshoot", note: "Underexposed — reshoot at golden hour" },
-  { id: 4, title: "Behind-the-scenes prep",  client: "Mamadali Kebab House", quality: "Approved",    note: "Authentic, hands-on feel"            },
-  { id: 5, title: "Dessert tray detail",     client: "Mamadali Kebab House", quality: "Needs Crop",  note: "Crop to 4:5 for Instagram"           },
+  { id: 1, title: "Lamb shoulder closeup",   client: "Demo Grill House", quality: "Approved",      note: "Sharp focus, strong lighting"          },
+  { id: 2, title: "Mixed grill platter",     client: "Demo Grill House", quality: "Approved",      note: "Good plating, on-brand"                },
+  { id: 3, title: "Storefront wide shot",    client: "Demo Grill House", quality: "Needs Reshoot", note: "Underexposed — reshoot at golden hour" },
+  { id: 4, title: "Behind-the-scenes prep",  client: "Demo Grill House", quality: "Approved",      note: "Authentic, hands-on feel"              },
+  { id: 5, title: "Dessert tray detail",     client: "Demo Grill House", quality: "Needs Crop",    note: "Crop to 4:5 for Instagram"             },
 ];
 
 export default function TeamMediaReview() {
