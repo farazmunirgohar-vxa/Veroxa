@@ -1,3 +1,12 @@
+// TODO(client-health-drift): this page renders the portfolio health center via
+//   <ClientHealthCenter />, which reads `demoClientHealth` directly with the
+//   non-canonical vocabulary `healthy | attention | critical`. The canonical
+//   source is `ClientHealthEngine.profiles()` + `portfolioSummary()` in
+//   `src/domain/clientHealth/engine.ts`, which emits the canonical vocabulary
+//   `Healthy | Caution | Urgent | Broken`. See
+//   `docs/CLIENT_HEALTH_ENGINE_CONTRACT.md` §5.1 (Owner shell) and
+//   `docs/CLIENT_HEALTH_SURFACE_MAP.md` §2 for the full audit. No fix in this
+//   pass — documentation only.
 import { PortalLayout } from "@/components/PortalLayout";
 import { ClientHealthCenter } from "@/components/ClientHealthCenter";
 import { ownerPortalNavItems } from "@/lib/ownerPortalNav";

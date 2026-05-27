@@ -1,3 +1,13 @@
+// TODO(client-health-drift): the per-member "Health score" big number,
+//   "Client health contribution %" progress bar, and "Portfolio health avg"
+//   summary block all derive from `demoTeamMembers[].clientHealthScore` — a
+//   personnel-side metric. This is a label collision with the canonical
+//   client-side health vocabulary emitted by `ClientHealthEngine` in
+//   `src/domain/clientHealth/engine.ts`. The engine does not produce
+//   per-team-member metrics today, so the page cannot align numerically; the
+//   risk is naming confusion (per-member "client health" vs per-client
+//   "client health"). See `docs/CLIENT_HEALTH_ENGINE_CONTRACT.md` §5.2 and
+//   §1.4. No fix in this pass — documentation only.
 import { Trophy, Users, FileText, CheckCircle2, Clock, Heart } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

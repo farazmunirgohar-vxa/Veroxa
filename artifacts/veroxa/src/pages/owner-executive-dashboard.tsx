@@ -1,3 +1,13 @@
+// TODO(client-health-drift): the "Client health avg" tile reads
+//   `demoOwnerMetrics.clientHealthAverage` (a single hard-coded %), and the
+//   "Client health" distribution bars read `demoClientHealthDistribution`
+//   (vocabulary `Excellent | Healthy | Warning | Critical`). The canonical
+//   source is `ClientHealthEngine.portfolioSummary()` in
+//   `src/domain/clientHealth/engine.ts`, which emits counts in
+//   `Healthy | Caution | Urgent | Broken` and does NOT expose a portfolio %.
+//   See `docs/CLIENT_HEALTH_ENGINE_CONTRACT.md` §5.1 (Owner shell). The %
+//   shown today is not derivable from any engine output. No fix in this pass
+//   — documentation only.
 import {
   Users, DollarSign, Heart, Award,
   ArrowUpRight,

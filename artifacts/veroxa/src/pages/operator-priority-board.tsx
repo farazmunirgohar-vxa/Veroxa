@@ -1,3 +1,12 @@
+// TODO(client-health-drift): this page consumes `demoClientPriorities`, a
+//   fixture authored independently of the engine. Priority vocabulary
+//   `Critical | High | Normal | Low` and health-status vocabulary
+//   `Excellent | Healthy | Warning | Critical` are both non-canonical. The
+//   canonical source is `ClientHealthEngine.needingMedia()` /
+//   `profiles()` in `src/domain/clientHealth/engine.ts`, vocabulary
+//   `Healthy | Caution | Urgent | Broken`. See
+//   `docs/CLIENT_HEALTH_ENGINE_CONTRACT.md` §5.2 (Operator/team shell). No
+//   fix in this pass — documentation only.
 import { Building2, ArrowRight, ShieldCheck, ShieldAlert, ShieldX, Shield } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

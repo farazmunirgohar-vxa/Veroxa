@@ -1,3 +1,11 @@
+// TODO(client-health-drift): the header pills render `Health` from
+//   `demoOwnerMetrics.clientHealthAverage` (hard-coded %) and `Risks "2 / 1"`
+//   as a hard-coded literal string. The canonical source is
+//   `ClientHealthEngine.portfolioSummary()` (`atRisk`, `broken`) plus
+//   `ownerRisks()` in `src/domain/clientHealth/engine.ts`. See
+//   `docs/CLIENT_HEALTH_ENGINE_CONTRACT.md` §5.1 (Owner shell). The "2 / 1"
+//   string is not bound to any fixture and can drift silently from other
+//   surfaces. No fix in this pass — documentation only.
 import { Sunrise, TrendingUp, AlertTriangle, Users, UsersRound, Target } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

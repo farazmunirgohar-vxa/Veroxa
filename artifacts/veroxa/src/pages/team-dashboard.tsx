@@ -1,3 +1,11 @@
+// TODO(client-health-drift): this page does not render per-client health, but
+//   the "Clients Needing Attention" tile reads
+//   `demoTeamMetrics.clientsNeedingAttention` (a literal count) which is not
+//   bound to `ClientHealthEngine.portfolioSummary().atRisk` in
+//   `src/domain/clientHealth/engine.ts`. The tile can silently disagree with
+//   the engine count and with other shells. See
+//   `docs/CLIENT_HEALTH_ENGINE_CONTRACT.md` §5.2 (Operator/team shell). No
+//   fix in this pass — documentation only.
 import {
   Users, AlertTriangle, Eye, FileText, ImageIcon, CheckSquare, ArrowRight,
 } from "lucide-react";

@@ -1,0 +1,149 @@
+You are working on the Veroxa Growth OS repo.
+
+The uploaded ZIP/current workspace is authoritative.
+
+A human-dev-test gate is still active.
+
+Humans have NOT yet run M001–M006 on the dev Supabase project.
+
+Until those tests pass, you CANNOT:
+
+- Promote any SQL to `supabase/migrations/`.
+- Flip `AUTH_MODE` to `"real"`.
+- Connect the portal to a real Supabase project.
+- Add any post-execution work that depends on actual M001–M006 results.
+
+Hard invariants — do not violate any of these:
+
+1. `AUTH_MODE` stays the literal string `"placeholder"`.
+2. No file under `supabase/migrations/`. All SQL stays under `artifacts/veroxa/docs/sql_drafts/`.
+3. Portal stays disconnected from any real database.
+4. No real AI provider wired. `ai_agents.is_enabled=true` stays inert.
+5. `ai_agents.config_json` never contains secrets / API keys / bearer tokens / signed URLs.
+6. Demo gate `veroxa-preview` stays in place.
+7. Locked pricing (GPS 49700, COP 12mo 99700, COP 6mo 109700, COP 3mo 119700, COP no-contract 149700) unchanged.
+8. Roles exactly Client / Team / Operator / Owner.
+9. Real client / restaurant / customer data: zero. Fixtures only.
+10. No nav routing or 4-shell changes.
+
+Forbidden scope expansion:
+
+- No AUTH_MODE flip.
+- No real Supabase connection.
+- No migration promotion.
+- No OpenAI, Anthropic, Gemini, Stripe, publishing APIs, storage integrations.
+- No navigation changes.
+- No shell restructuring.
+- No pricing changes.
+- Stop and ask before any deviation.
+
+All SQL must remain under:
+`artifacts/veroxa/docs/sql_drafts/`
+
+Tasks:
+
+T01 — Health surface inventory
+
+Goal:
+Document every page that renders a client health score, category, risk state, or health-derived KPI.
+
+Touch:
+- docs/CLIENT_HEALTH_SURFACE_MAP.md
+
+Acceptance:
+- Every owner/operator/team/client health surface is listed.
+- Document identifies source dataset currently used by each page.
+
+T02 — Canonical health contract
+
+Goal:
+Create a document defining the authoritative outputs of ClientHealthEngine.
+
+Touch:
+- docs/CLIENT_HEALTH_ENGINE_CONTRACT.md
+
+Dependencies:
+- T01
+
+Acceptance:
+- Document defines engine outputs.
+- Document identifies which metrics are authoritative.
+- No runtime behavior changes.
+
+T03 — Owner health drift audit
+
+Goal:
+Audit owner-facing health pages against ClientHealthEngine outputs.
+
+Touch:
+- src/pages/owner-client-health.tsx
+- src/pages/owner-executive-dashboard.tsx
+- src/pages/owner-daily-briefing.tsx
+
+Dependencies:
+- T02
+
+Acceptance:
+- TODO markers identify health-data drift.
+- No UI redesign.
+- No behavior changes.
+
+T04 — Operator/team health drift audit
+
+Goal:
+Audit operator/team health pages against ClientHealthEngine outputs.
+
+Touch:
+- src/pages/operator-client-health.tsx
+- src/pages/operator-priority-board.tsx
+- src/pages/team-dashboard.tsx
+- src/pages/team-performance.tsx
+
+Dependencies:
+- T02
+
+Acceptance:
+- TODO markers identify health-data drift.
+- No behavior changes.
+
+T05 — Latest health audit summary
+
+Goal:
+Document all currently known health-source inconsistencies.
+
+Touch:
+- docs/CLIENT_HEALTH_ENGINE_CONTRACT.md
+
+Dependencies:
+- T03
+- T04
+
+Acceptance:
+- Document contains a latest audit section.
+- Every known health-source inconsistency is listed.
+
+After completing tasks:
+
+1. Run typecheck/build checks appropriate for the repo.
+2. Run an architect/code-review pass.
+3. Report any failures honestly.
+
+Final report must explicitly confirm:
+
+- Confirm invariant 1: AUTH_MODE remains literal "placeholder".
+- Confirm invariant 2: no file added to supabase/migrations/.
+- Confirm invariant 3: portal remains disconnected from any real database.
+- Confirm invariant 4: no real AI provider wired; ai_agents.is_enabled=true remains inert.
+- Confirm invariant 5: ai_agents.config_json contains no secrets, API keys, bearer tokens, or signed URLs.
+- Confirm invariant 6: demo gate veroxa-preview remains in place.
+- Confirm invariant 7: pricing unchanged.
+- Confirm invariant 8: roles remain Client / Team / Operator / Owner.
+- Confirm invariant 9: fixtures only; no real client/customer data added.
+- Confirm invariant 10: no navigation or four-shell changes.
+
+End report with:
+- Files changed
+- Commands run
+- Typecheck result
+- Architect review result
+- Open questions
