@@ -104,6 +104,7 @@ import InternalPermissions from "@/pages/internal-permissions";
 import ServicesPage from "@/pages/services";
 import PricingPage from "@/pages/pricing";
 import GuidedDemo from "@/pages/guided-demo";
+import InternalSupabaseReadiness from "@/pages/internal-supabase-readiness";
 
 const queryClient = new QueryClient();
 
@@ -357,6 +358,9 @@ function Router() {
       </Route>
       <Route path="/demo/internal/permissions">
         {() => <InternalDemoGuard role={["operator", "owner"]}><InternalPermissions /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/internal/supabase-readiness">
+        {() => <InternalDemoGuard role="owner"><InternalSupabaseReadiness /></InternalDemoGuard>}
       </Route>
 
       <Route path="/demo/supabase-test" component={SupabaseTestPage} />

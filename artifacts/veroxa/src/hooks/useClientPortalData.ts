@@ -41,6 +41,7 @@ import {
   getClientMonthlyReports,
 } from "@/lib/supabase";
 import { AUTH_MODE } from "@/lib/auth/authMode";
+import { DATA_MODE } from "@/lib/data/dataMode";
 import {
   scheduledPosts as demoScheduledPosts,
   googleMetrics as demoGoogleMetrics,
@@ -48,7 +49,12 @@ import {
   demoAClient,
 } from "@/lib/demo-data";
 
-export type ClientPortalSource = "supabase" | "demo";
+export type ClientPortalSource =
+  | "supabase"          // legacy alias — supabase real-auth read
+  | "supabase_readonly" // M007 read-only mode succeeded
+  | "fallback"          // M007 read-only mode attempted but fell back to fixtures
+  | "demo"
+  | "fixture";
 
 export type ContentSupplyItem = {
   label: string;
@@ -133,6 +139,16 @@ export type UseClientPortalDataResult = {
   loading: boolean;
   error: string | null;
   data: ClientPortalData;
+  /** Human-friendly description of the active source. Stable for UI badges. */
+  dataSourceMessage: string;
+};
+
+const SOURCE_MESSAGES: Record<ClientPortalSource, string> = {
+  supabase: "Preview data source: Supabase (authenticated)",
+  supabase_readonly: "Preview data source: Supabase read-only",
+  fallback: "Preview data source: Fixture (Supabase read fell back)",
+  demo: "Preview data source: Fixture",
+  fixture: "Preview data source: Fixture",
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -270,25 +286,45 @@ function buildScheduledPostsFromCalendar(
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
 export function useClientPortalData(): UseClientPortalDataResult {
-  // Placeholder-phase short-circuit. While AUTH_MODE === "placeholder"
-  // the client portal MUST NOT call any Supabase helper, even if
-  // VITE_SUPABASE_* env vars are present. The portal is documented as
-  // demo / fixture-first during this phase (see
-  // docs/BUILD_STATUS.md "Current state" and
-  // docs/PORTAL_QUERY_SAFETY_PLAN.md / PORTAL_QUERY_SAFETY_CHECKLIST.md).
-  // Connecting the portal to Supabase is a future, separately-gated
-  // step that only happens after the M001–M006 human dev-test gate is
-  // cleared and AUTH_MODE flips to "real".
-  const initialState: UseClientPortalDataResult =
-    AUTH_MODE === "placeholder"
-      ? { source: "demo", loading: false, error: null, data: DEMO_DATA }
-      : { source: "demo", loading: true, error: null, data: DEMO_DATA };
+  // M007: data source resolution.
+  //
+  // The portal historically short-circuited in placeholder auth mode and used
+  // fixtures only. M007 introduces DATA_MODE — a separate switch that may
+  // request supabase_readonly reads even while AUTH_MODE === "placeholder".
+  //
+  // Resolution rules:
+  //  - DATA_MODE === "fixture"            → fixture data, no network.
+  //  - DATA_MODE === "supabase_readonly"  → attempt client_portal_* view reads,
+  //                                         fall back to fixtures on any failure.
+  //  - AUTH_MODE === "real" + fixture mode → keep current behaviour (existing
+  //                                          Supabase load below).
+  const shouldAttemptSupabase =
+    DATA_MODE === "supabase_readonly" || AUTH_MODE === "real";
+
+  const initialSource: ClientPortalSource =
+    DATA_MODE === "supabase_readonly" ? "supabase_readonly" : "demo";
+
+  const initialState: UseClientPortalDataResult = shouldAttemptSupabase
+    ? {
+        source: initialSource,
+        loading: true,
+        error: null,
+        data: DEMO_DATA,
+        dataSourceMessage: SOURCE_MESSAGES[initialSource],
+      }
+    : {
+        source: "fixture",
+        loading: false,
+        error: null,
+        data: DEMO_DATA,
+        dataSourceMessage: SOURCE_MESSAGES.fixture,
+      };
 
   const [state, setState] = useState<UseClientPortalDataResult>(initialState);
 
   useEffect(() => {
-    // Hard placeholder guard — no Supabase calls in placeholder mode.
-    if (AUTH_MODE === "placeholder") {
+    // Skip network entirely in pure fixture mode.
+    if (!shouldAttemptSupabase) {
       return;
     }
 
@@ -367,10 +403,36 @@ export function useClientPortalData(): UseClientPortalDataResult {
             }
           : DEMO_MONTHLY_PREVIEW;
 
+        // If the read came back empty (most likely RLS-blocked under
+        // placeholder auth), fall back to fixtures so the UI stays usable.
+        const looksEmpty =
+          !client &&
+          platforms.length === 0 &&
+          media.length === 0 &&
+          calendarTyped.length === 0 &&
+          weeklyTyped.length === 0 &&
+          monthlyTyped.length === 0;
+
+        if (looksEmpty) {
+          setState({
+            source: "fallback",
+            loading: false,
+            error:
+              "Supabase read blocked by RLS or missing authenticated session. Fixture fallback remains active.",
+            data: DEMO_DATA,
+            dataSourceMessage: SOURCE_MESSAGES.fallback,
+          });
+          return;
+        }
+
+        const successSource: ClientPortalSource =
+          DATA_MODE === "supabase_readonly" ? "supabase_readonly" : "supabase";
+
         setState({
-          source: "supabase",
+          source: successSource,
           loading: false,
           error: null,
+          dataSourceMessage: SOURCE_MESSAGES[successSource],
           data: {
             businessName,
             scheduledPosts,
@@ -390,18 +452,26 @@ export function useClientPortalData(): UseClientPortalDataResult {
         });
       } catch (err) {
         if (cancelled) return;
+        const message = err instanceof Error ? err.message : String(err);
+        // In M007 supabase_readonly mode any failure becomes a fixture fallback,
+        // not a fatal error — the portal must keep working.
+        const fallbackSource: ClientPortalSource =
+          DATA_MODE === "supabase_readonly" ? "fallback" : "demo";
+        // Best-effort: log a single warning, never expose error details to clients.
+        console.warn("[useClientPortalData] Supabase read failed, using fixtures:", message);
         setState({
-          source: "demo",
+          source: fallbackSource,
           loading: false,
-          error: err instanceof Error ? err.message : String(err),
+          error: message,
           data: DEMO_DATA,
+          dataSourceMessage: SOURCE_MESSAGES[fallbackSource],
         });
       }
     }
 
     load();
     return () => { cancelled = true; };
-  }, []);
+  }, [shouldAttemptSupabase]);
 
   return state;
 }

@@ -17,6 +17,26 @@
 
 ---
 
+## Current state (M007 read-only connection pass: 2026-05-27)
+
+**M007 — Supabase read-only connection layer added (dev only).** Introduces a
+new `DATA_MODE` switch (`fixture` | `supabase_readonly`) separate from
+`AUTH_MODE`. Default remains `fixture`. When `VITE_VEROXA_DATA_MODE=supabase_readonly`,
+the client portal hook attempts reads through the existing `client_portal_*`
+views and falls back to fixtures on any RLS/env/error condition. New
+adapter `src/lib/data/supabaseReadOnlyData.ts` wraps every read with
+`{ ok, source, data, error }`. New diagnostic page at
+`/demo/internal/supabase-readiness` (Owner-guarded) shows env/mode/read
+test status without ever exposing keys. Small internal "data source"
+line added on client dashboard (visible only in non-fixture modes).
+
+No writes, no uploads, no AI, no publishing, no payments. No new
+`supabase/migrations/` files. No service-role key in frontend. RLS
+unchanged. `AUTH_MODE` unchanged. Pricing unchanged. `InternalDemoGuard`
+not bypassed. See `docs/M007_SUPABASE_READONLY_CONNECTION.md`.
+
+---
+
 ## Current state (guided demo pass: 2026-05-27)
 
 **Guided Sales Demo added.** Route `/guided-demo` added as a public page.
