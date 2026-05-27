@@ -110,7 +110,7 @@ export const teamDemoRoutes: DemoRoute[] = [
 ];
 
 // ── Operator Portal ───────────────────────────────────────────────────────────
-// visible_nav count: 23  (must match operatorPortalNav.ts exactly)
+// visible_nav count: 24  (must match operatorPortalNav.ts exactly)
 // Section headers in operatorPortalNav.ts are NOT counted — only routable items.
 
 export const operatorDemoRoutes: DemoRoute[] = [
@@ -127,6 +127,7 @@ export const operatorDemoRoutes: DemoRoute[] = [
   { path: "/demo/operator/priority-board",    portal: "operator", label: "Priority Board",    visibility: "visible_nav",     purpose: "Kanban-style client priority board ranked by urgency and risk." },
   { path: "/demo/operator/risk-center",       portal: "operator", label: "Risk Center",       visibility: "visible_nav",     purpose: "Risk monitoring surface — severity-ranked flags across the portfolio." },
   { path: "/demo/operator/daily-digest",      portal: "operator", label: "Daily Digest",      visibility: "visible_nav",     purpose: "Daily briefing — priorities, alerts, reports due, pipeline bottlenecks." },
+  { path: "/demo/operator/evidence-engine",   portal: "operator", label: "Evidence Engine",   visibility: "visible_nav",     purpose: "Evidence-Based Selection Engine V1 — demo-only deterministic rule engine for media and posting decisions." },
   // ── Visible nav — Operations (5) ─────────────────────────────────────────
   { path: "/demo/operator/content-calendar",  portal: "operator", label: "Content Calendar",  visibility: "visible_nav",     purpose: "Operator-side two-week content calendar across the portfolio." },
   { path: "/demo/operator/content-ops",       portal: "operator", label: "Content Ops",       visibility: "visible_nav",     purpose: "Content operations surface." },

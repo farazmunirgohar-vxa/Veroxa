@@ -76,6 +76,7 @@ import InternalIntegrations from "@/pages/internal-integrations";
 import OperatorMediaLibrary from "@/pages/operator-media-library";
 import OperatorOS from "@/pages/operator-os";
 import OwnerOS from "@/pages/owner-os";
+import OperatorEvidenceEngine from "@/pages/operator-evidence-engine";
 import ClientHealthCommand from "@/pages/client-health-command";
 import { ErrorBoundary } from "@/components/common";
 import TeamDashboard from "@/pages/team-dashboard";
@@ -225,6 +226,9 @@ function Router() {
       </Route>
       <Route path="/demo/operator/daily-digest">
         {() => <InternalDemoGuard role="operator"><OperatorDailyDigest /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/operator/evidence-engine">
+        {() => <InternalDemoGuard role="operator"><OperatorEvidenceEngine /></InternalDemoGuard>}
       </Route>
 
       {/* Internal owner demo — login required, role = "owner" */}

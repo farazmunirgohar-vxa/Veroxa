@@ -13,6 +13,8 @@ import {
   type DemoScheduleItem,
 } from "@/components/demo/DemoVisuals";
 import { getDemoImage } from "@/data/demo/demoImages";
+import { EvidenceRecommendationCard } from "@/components/evidence/EvidenceRecommendationCard";
+import { recommendNextPost } from "@/lib/evidence/evidenceSelectionEngine";
 
 const veroxaWeekFlow = [
   { key: "upload",   label: "You upload",    caption: "Food photos from your phone" },
@@ -75,6 +77,8 @@ const upcomingSchedule: DemoScheduleItem[] = [
     label: "Dinner Push",
   },
 ];
+
+const clientEvidenceRec = recommendNextPost("mamadali");
 
 export default function ClientDashboard() {
   const { loading, data } = useClientPortalData();
@@ -221,6 +225,20 @@ export default function ClientDashboard() {
           </Link>
         </CardContent>
       </Card>
+
+      {/* Smart Recommendation — evidence engine */}
+      <div data-testid="section-smart-recommendation">
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+          Smart recommendation
+        </h3>
+        <EvidenceRecommendationCard
+          recommendation={clientEvidenceRec}
+          variant="client"
+          ctaHref="/demo/client/ai-draft-preview"
+          ctaLabel="Preview Drafts"
+          testId="client-evidence-recommendation"
+        />
+      </div>
 
       {/* This week at a glance */}
       <div>

@@ -4,7 +4,7 @@
  * All items with real hrefs are wired to fully built page components.
  * Items with type:'section' are visual section dividers — no link, no icon.
  *
- * VISIBLE NAV COUNT: 23  (must match operatorDemoRoutes visible_nav entries
+ * VISIBLE NAV COUNT: 24  (must match operatorDemoRoutes visible_nav entries
  * in demoRoutes.ts)
  */
 import {
@@ -21,6 +21,7 @@ import {
   LayoutList,
   ShieldOff,
   Sunrise,
+  Brain,
   // Operations
   CalendarDays,
   Layers,
@@ -51,10 +52,11 @@ export const operatorPortalNavItems: SidebarItem[] = [
 
   // ── Intelligence ──────────────────────────────────────────────────────────
   { label: "Intelligence", type: "section" },
-  { label: "Action Center",    icon: Zap,          href: "/demo/operator/action-center"    },
-  { label: "Priority Board",   icon: LayoutList,   href: "/demo/operator/priority-board"   },
-  { label: "Risk Center",      icon: ShieldOff,    href: "/demo/operator/risk-center"      },
-  { label: "Daily Digest",     icon: Sunrise,      href: "/demo/operator/daily-digest"     },
+  { label: "Action Center",    icon: Zap,          href: "/demo/operator/action-center"      },
+  { label: "Priority Board",   icon: LayoutList,   href: "/demo/operator/priority-board"     },
+  { label: "Risk Center",      icon: ShieldOff,    href: "/demo/operator/risk-center"        },
+  { label: "Daily Digest",     icon: Sunrise,      href: "/demo/operator/daily-digest"       },
+  { label: "Evidence Engine",  icon: Brain,        href: "/demo/operator/evidence-engine"    },
 
   // ── Operations ────────────────────────────────────────────────────────────
   { label: "Operations", type: "section" },

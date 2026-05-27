@@ -1,5 +1,5 @@
 import {
-  DollarSign, Users, TrendingUp, ShieldAlert, AlertTriangle, Bot, Activity,
+  DollarSign, Users, TrendingUp, ShieldAlert, AlertTriangle, Bot, Activity, Brain,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
@@ -16,6 +16,9 @@ import {
   demoOwnerMetrics, demoOwnerKpis, demoRevenueTrend, demoServicePlans,
   demoClientHealthDistribution, demoOwnerCommandItems, demoAiAgentSummary,
 } from "@/data/demoData";
+import { recommendNextPost, recommendOperatorAction } from "@/lib/evidence/evidenceSelectionEngine";
+import { demoEvidenceClientContexts } from "@/data/demo/demoEvidenceMemory";
+import { Link } from "wouter";
 
 const fmtMoney = (n: number) => `$${n.toLocaleString()}`;
 
@@ -152,6 +155,54 @@ export default function OwnerOS() {
           )}
         </SectionCard>
       </div>
+
+      {/* Evidence Intelligence summary */}
+      {(() => {
+        const clientIds = ["mamadali", "urban", "crescent", "alnoor"] as const;
+        const recs = clientIds.map((id) => recommendNextPost(id));
+        const highConfidence = recs.filter((r) => r.confidenceScore >= 80).length;
+        const criticalCtx = demoEvidenceClientContexts.filter((c) => c.recentRisk === "Critical");
+        const topOpportunity = [...demoEvidenceClientContexts].sort((a, b) => b.contentRunwayDays - a.contentRunwayDays)[0];
+        const avgConfidence = Math.round(recs.reduce((s, r) => s + r.confidenceScore, 0) / recs.length);
+        return (
+          <SectionCard title="Evidence Intelligence" icon={Brain} iconClass="text-violet-400" contentClass="">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[11px] text-muted-foreground">
+                Demo-only · simulated rule engine · no AI API connected.
+              </p>
+              <Link
+                href="/demo/operator/evidence-engine"
+                className="text-[11px] text-amber-300 hover:underline"
+                data-testid="link-evidence-engine-owner"
+              >
+                Open Evidence Engine →
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+              <div className="rounded-md border border-border bg-muted/20 p-3" data-testid="evidence-recs-generated">
+                <p className="text-[11px] text-muted-foreground">Recs generated</p>
+                <p className="text-2xl font-bold tabular-nums text-violet-300">{recs.length}</p>
+                <p className="text-[10px] text-muted-foreground">Active clients</p>
+              </div>
+              <div className="rounded-md border border-border bg-muted/20 p-3" data-testid="evidence-high-confidence">
+                <p className="text-[11px] text-muted-foreground">High-confidence</p>
+                <p className="text-2xl font-bold tabular-nums text-emerald-300">{highConfidence}/{recs.length}</p>
+                <p className="text-[10px] text-muted-foreground">≥ 80% threshold</p>
+              </div>
+              <div className="rounded-md border border-border bg-muted/20 p-3" data-testid="evidence-top-opportunity">
+                <p className="text-[11px] text-muted-foreground">Top opportunity</p>
+                <p className="text-sm font-bold text-sky-300 leading-tight mt-0.5">{topOpportunity.clientName}</p>
+                <p className="text-[10px] text-muted-foreground">{topOpportunity.contentRunwayDays}d runway · {topOpportunity.scheduledPostsCount} scheduled</p>
+              </div>
+              <div className="rounded-md border border-border bg-muted/20 p-3" data-testid="evidence-active-risk">
+                <p className="text-[11px] text-muted-foreground">Active risk flags</p>
+                <p className={`text-2xl font-bold tabular-nums ${criticalCtx.length > 0 ? "text-rose-300" : "text-emerald-300"}`}>{criticalCtx.length}</p>
+                <p className="text-[10px] text-muted-foreground">Critical clients · avg {avgConfidence}% confidence</p>
+              </div>
+            </div>
+          </SectionCard>
+        );
+      })()}
 
       {/* AI system health summary */}
       <SectionCard title="AI system health" icon={Bot} iconClass="text-violet-400" contentClass="">

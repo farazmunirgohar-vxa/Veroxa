@@ -1,5 +1,5 @@
 import {
-  Heart, AlertTriangle, Images, FileBarChart, Bot, Activity, Calendar, ShieldAlert,
+  Heart, AlertTriangle, Images, FileBarChart, Bot, Activity, Calendar, ShieldAlert, Brain,
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
@@ -16,6 +16,9 @@ import { ReportService } from "@/domain/reports/service";
 import { AIRepository } from "@/domain/ai/repository";
 import { demoTeamAlerts, demoUpcomingReports, demoOperatorMetrics } from "@/data/demoData";
 import { pickHeroImageFor } from "@/data/demo/demoImages";
+import { recommendNextPost, recommendOperatorAction } from "@/lib/evidence/evidenceSelectionEngine";
+import { demoEvidenceClientContexts } from "@/data/demo/demoEvidenceMemory";
+import { Link } from "wouter";
 
 export default function OperatorOS() {
   const portfolioHealth = HealthService.portfolioAverage();
@@ -178,6 +181,49 @@ export default function OperatorOS() {
           </div>
         </SectionCard>
       </div>
+
+      {/* Evidence-Based Recommendations — compact portfolio summary */}
+      <SectionCard title="Evidence recommendations" icon={Brain} iconClass="text-violet-400" contentClass="">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-[11px] text-muted-foreground">
+            Demo-only rule engine · deterministic fixture data · no AI API connected.
+          </p>
+          <Link
+            href="/demo/operator/evidence-engine"
+            className="text-[11px] text-amber-300 hover:underline"
+            data-testid="link-evidence-engine"
+          >
+            Open Evidence Engine →
+          </Link>
+        </div>
+        <ul className="space-y-2">
+          {demoEvidenceClientContexts.map((ctx) => {
+            const rec = recommendNextPost(ctx.clientId);
+            const opAction = recommendOperatorAction(ctx.clientId);
+            return (
+              <li
+                key={ctx.clientId}
+                className="flex flex-wrap items-start justify-between gap-3 rounded-md border border-border bg-muted/20 px-3 py-2"
+                data-testid={`evidence-row-${ctx.clientId}`}
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold truncate">{ctx.clientName}</p>
+                  <p className="text-[11px] text-muted-foreground leading-snug mt-0.5 line-clamp-1">{rec.recommendationTitle}</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Operator: {opAction.action}</p>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className={`text-xs font-bold tabular-nums ${rec.confidenceScore >= 85 ? "text-emerald-300" : rec.confidenceScore >= 70 ? "text-amber-300" : "text-rose-300"}`}>
+                    {rec.confidenceScore}%
+                  </span>
+                  <StatusBadge tone={opAction.urgency === "Critical" ? "danger" : opAction.urgency === "High" ? "warning" : opAction.urgency === "Medium" ? "info" : "success"}>
+                    {opAction.urgency}
+                  </StatusBadge>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </SectionCard>
     </div>
     </PortalLayout>
   );

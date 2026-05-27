@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { teamPortalNavItems } from "@/lib/teamPortalNav";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 import { getDemoImagesByCategory } from "@/data/demo/demoImages";
+import { EvidenceRecommendationCard } from "@/components/evidence/EvidenceRecommendationCard";
+import { recommendNextPost } from "@/lib/evidence/evidenceSelectionEngine";
 
 const FOOD_IMGS = getDemoImagesByCategory("food");
 
@@ -34,6 +36,8 @@ const mediaItems = [
   { id: 4, title: "Behind-the-scenes prep",  client: "Demo Grill House", quality: "Approved",      note: "Authentic, hands-on feel"              },
   { id: 5, title: "Dessert tray detail",     client: "Demo Grill House", quality: "Needs Crop",    note: "Crop to 4:5 for Instagram"             },
 ];
+
+const teamEvidenceRec = recommendNextPost("mamadali");
 
 export default function TeamMediaReview() {
   return (
@@ -85,6 +89,15 @@ export default function TeamMediaReview() {
           </ul>
         </CardContent>
       </Card>
+
+      {/* Evidence-Based Pick — evidence engine */}
+      <div className="mb-6" data-testid="section-evidence-pick">
+        <EvidenceRecommendationCard
+          recommendation={teamEvidenceRec}
+          variant="team"
+          testId="team-evidence-recommendation"
+        />
+      </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {mediaItems.map((item, idx) => {
