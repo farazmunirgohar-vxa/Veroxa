@@ -7,6 +7,9 @@ import { useClientPortalData } from "@/hooks/useClientPortalData";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 import { demoClientRequests, requestStatusColor, requestPriorityColor } from "@/data/demoData";
+import { demoClientTeamWorkflow } from "@/data/workflows/clientTeamWorkflow";
+import { sortWorkflowItems, isClientActionNeeded } from "@/lib/workflows/workflowStatus";
+import { WorkflowItemCard } from "@/components/workflows/WorkflowItemCard";
 
 const SHOWCASE_ID = "demo-a";
 
@@ -28,6 +31,31 @@ export default function ClientRequests() {
       </div>
 
       <DemoOnlyBanner message="Demo only — request items are illustrative. No notifications or messages are sent." testId="banner-client-requests" />
+
+      {/* Workflow-derived "Action needed" strip — friendly labels only. */}
+      {(() => {
+        const actionItems = sortWorkflowItems(
+          demoClientTeamWorkflow.filter(
+            (i) => i.clientId === SHOWCASE_ID && isClientActionNeeded(i.stage),
+          ),
+        );
+        if (actionItems.length === 0) return null;
+        return (
+          <Card className="bg-amber-500/5 border-amber-500/30 mb-4" data-testid="card-client-action-needed">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <ArrowRight className="w-4 h-4 text-amber-300" />
+                Action needed from you ({actionItems.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {actionItems.map((item) => (
+                <WorkflowItemCard key={item.id} item={item} mode="client" />
+              ))}
+            </CardContent>
+          </Card>
+        );
+      })()}
 
       <Card className="bg-card border-primary/30 mb-4">
         <CardHeader className="pb-3"><CardTitle className="text-sm flex items-center gap-2"><ArrowRight className="w-4 h-4 text-primary" /> Open ({open.length})</CardTitle></CardHeader>

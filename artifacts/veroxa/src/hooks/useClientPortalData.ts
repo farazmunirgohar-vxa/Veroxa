@@ -32,7 +32,7 @@
 
 import { useState, useEffect } from "react";
 import {
-  MAMADALI_DEMO_CLIENT_ID,
+  DEFAULT_DEMO_CLIENT_ID,
   getClientById,
   getClientPlatforms,
   getClientMediaAssets,
@@ -342,12 +342,12 @@ export function useClientPortalData(): UseClientPortalDataResult {
       try {
         const [client, platforms, media, calendar, weekly, monthly] =
           await Promise.all([
-            getClientById(MAMADALI_DEMO_CLIENT_ID),
-            getClientPlatforms(MAMADALI_DEMO_CLIENT_ID),
-            getClientMediaAssets(MAMADALI_DEMO_CLIENT_ID),
-            getClientCalendar(MAMADALI_DEMO_CLIENT_ID),
-            getClientWeeklyReports(MAMADALI_DEMO_CLIENT_ID),
-            getClientMonthlyReports(MAMADALI_DEMO_CLIENT_ID),
+            getClientById(DEFAULT_DEMO_CLIENT_ID),
+            getClientPlatforms(DEFAULT_DEMO_CLIENT_ID),
+            getClientMediaAssets(DEFAULT_DEMO_CLIENT_ID),
+            getClientCalendar(DEFAULT_DEMO_CLIENT_ID),
+            getClientWeeklyReports(DEFAULT_DEMO_CLIENT_ID),
+            getClientMonthlyReports(DEFAULT_DEMO_CLIENT_ID),
           ]);
 
         if (cancelled) return;

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -52,10 +53,30 @@ const typeColor: Record<ContentType, string> = {
   Carousel: "border-cyan-500/40 text-cyan-300 bg-cyan-500/10",
 };
 
+type CaptionDecision = "pending" | "draft_ready" | "sent_to_review" | "scheduled";
+
+const captionDecisionLabel: Record<CaptionDecision, string> = {
+  pending:        "Pending",
+  draft_ready:    "Draft ready",
+  sent_to_review: "Sent to review",
+  scheduled:      "Scheduled",
+};
+const captionDecisionStyle: Record<CaptionDecision, string> = {
+  pending:        "bg-muted/30 text-muted-foreground border-border",
+  draft_ready:    "bg-emerald-500/10 text-emerald-300 border-emerald-500/30",
+  sent_to_review: "bg-sky-500/10 text-sky-300 border-sky-500/30",
+  scheduled:      "bg-violet-500/10 text-violet-300 border-violet-500/30",
+};
+
 export default function TeamContentReview() {
   const pending  = demoContentReviewQueue.filter((i) => i.status === "Pending");
   const inReview = demoContentReviewQueue.filter((i) => i.status === "In Review");
   const done     = demoContentReviewQueue.filter((i) => i.status === "Approved" || i.status === "Needs Revision");
+
+  // Local-only decisions per caption variant. Reset on reload.
+  const [captionDecisions, setCaptionDecisions] = useState<Record<string, CaptionDecision>>({});
+  const setDecision = (key: string, d: CaptionDecision) =>
+    setCaptionDecisions((prev) => ({ ...prev, [key]: d }));
 
   return (
     <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
@@ -85,31 +106,58 @@ export default function TeamContentReview() {
           <span className="text-xs text-muted-foreground">Demo only — no backend persistence</span>
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          {CAPTION_VARIANTS.map((v) => (
-            <Card key={v.angle} className="bg-card/60 border-border overflow-hidden" data-testid={`variant-${v.angle.toLowerCase()}`}>
-              <div className="aspect-[4/3] w-full overflow-hidden bg-muted/30">
-                <img src={v.image.url} alt={v.image.alt} loading="lazy" className="h-full w-full object-cover" />
-              </div>
-              <CardContent className="space-y-2 p-3 text-sm">
-                <div className="flex items-center justify-between gap-2">
-                  <span className={`rounded border px-2 py-0.5 text-[11px] font-semibold ${v.tone}`}>{v.angle}</span>
-                  <span className="text-[11px] text-muted-foreground">{v.platform} · {v.time}</span>
+          {CAPTION_VARIANTS.map((v) => {
+            const decision: CaptionDecision = captionDecisions[v.angle] ?? "pending";
+            return (
+              <Card key={v.angle} className="bg-card/60 border-border overflow-hidden" data-testid={`variant-${v.angle.toLowerCase()}`}>
+                <div className="aspect-[4/3] w-full overflow-hidden bg-muted/30">
+                  <img src={v.image.url} alt={v.image.alt} loading="lazy" className="h-full w-full object-cover" />
                 </div>
-                <p className="text-xs text-muted-foreground line-clamp-3">{v.caption}</p>
-                <div className="flex flex-wrap gap-1.5 border-t border-border/50 pt-2">
-                  <button className="rounded px-2.5 py-1 text-[11px] font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/20 transition-colors" onClick={() => {}}>
-                    Approve Draft
-                  </button>
-                  <button className="rounded px-2.5 py-1 text-[11px] font-medium bg-muted/30 text-muted-foreground border border-border hover:bg-muted/50 transition-colors" onClick={() => {}}>
-                    Edit Caption
-                  </button>
-                  <button className="rounded px-2.5 py-1 text-[11px] font-medium bg-sky-500/10 text-sky-300 border border-sky-500/30 hover:bg-sky-500/20 transition-colors" onClick={() => {}}>
-                    Send to Schedule
-                  </button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                <CardContent className="space-y-2 p-3 text-sm">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className={`rounded border px-2 py-0.5 text-[11px] font-semibold ${v.tone}`}>{v.angle}</span>
+                    <span className="text-[11px] text-muted-foreground">{v.platform} · {v.time}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground line-clamp-3">{v.caption}</p>
+                  <div>
+                    <span
+                      className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded border ${captionDecisionStyle[decision]}`}
+                      data-testid={`variant-decision-${v.angle.toLowerCase()}`}
+                    >
+                      {captionDecisionLabel[decision]}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 border-t border-border/50 pt-2">
+                    <button
+                      type="button"
+                      className="rounded px-2.5 py-1 text-[11px] font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/20 transition-colors"
+                      onClick={() => setDecision(v.angle, "draft_ready")}
+                      data-testid={`btn-draft-ready-${v.angle.toLowerCase()}`}
+                    >
+                      Mark Draft Ready
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded px-2.5 py-1 text-[11px] font-medium bg-sky-500/10 text-sky-300 border border-sky-500/30 hover:bg-sky-500/20 transition-colors"
+                      onClick={() => setDecision(v.angle, "sent_to_review")}
+                      data-testid={`btn-send-review-${v.angle.toLowerCase()}`}
+                    >
+                      Send to Review
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded px-2.5 py-1 text-[11px] font-medium bg-violet-500/10 text-violet-300 border border-violet-500/30 hover:bg-violet-500/20 transition-colors"
+                      onClick={() => setDecision(v.angle, "scheduled")}
+                      data-testid={`btn-scheduled-${v.angle.toLowerCase()}`}
+                    >
+                      Mark Scheduled
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground/70">Demo only — local state. No backend writes.</p>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       </div>
 

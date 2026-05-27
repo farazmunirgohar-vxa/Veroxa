@@ -366,6 +366,27 @@ export default function ClientMedia() {
               </div>
 
               {files.length > 0 && (
+                <div className="mt-4 flex items-center justify-between gap-3 rounded-md border border-primary/30 bg-primary/5 px-3 py-2.5" data-testid="callout-submit-demo">
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-foreground">Ready to send to Veroxa?</p>
+                    <p className="text-[11px] text-muted-foreground">
+                      In the live app, this submits your selection to the Veroxa team for review. In this demo nothing is sent.
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled
+                    data-testid="btn-submit-to-team"
+                    className="flex-shrink-0"
+                  >
+                    Submit to Veroxa Team — Demo
+                  </Button>
+                </div>
+              )}
+
+              {files.length > 0 && (
                 <div className="mt-5 space-y-2" data-testid="list-selected-files">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-medium">

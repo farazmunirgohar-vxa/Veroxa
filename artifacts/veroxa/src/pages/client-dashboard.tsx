@@ -8,6 +8,11 @@ import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientPortalData } from "@/hooks/useClientPortalData";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
 import {
+  demoClientTeamWorkflow,
+} from "@/data/workflows/clientTeamWorkflow";
+import { sortWorkflowItems } from "@/lib/workflows/workflowStatus";
+import { WorkflowItemCard } from "@/components/workflows/WorkflowItemCard";
+import {
   DemoImageCard,
   DemoSchedulePreview,
   DemoFlowTimeline,
@@ -186,6 +191,25 @@ export default function ClientDashboard() {
             </p>
           </CardContent>
         </Card>
+      </div>
+
+      {/* What Veroxa is working on — first-client workflow visibility */}
+      <div data-testid="section-veroxa-working-on">
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+          What Veroxa is working on
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {sortWorkflowItems(
+            demoClientTeamWorkflow.filter((i) => i.clientId === "demo-a"),
+          )
+            .slice(0, 5)
+            .map((item) => (
+              <WorkflowItemCard key={item.id} item={item} mode="client" />
+            ))}
+        </div>
+        <p className="text-[11px] text-muted-foreground/70 mt-2">
+          Demo only — illustrative workflow snapshot. Nothing is published without your approval.
+        </p>
       </div>
 
       {/* How Veroxa is working this week */}

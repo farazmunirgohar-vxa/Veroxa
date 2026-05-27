@@ -18,7 +18,7 @@
  */
 
 import {
-  MAMADALI_DEMO_CLIENT_ID,
+  DEFAULT_DEMO_CLIENT_ID,
   getClientById,
   getClientPlatforms,
   getClientMediaAssets,
@@ -57,7 +57,7 @@ export type ReadOnlyResult<T> =
 const RLS_BLOCKED_MESSAGE =
   "Supabase read blocked by RLS or missing authenticated session. Fixture fallback remains active.";
 
-const DEFAULT_CLIENT_ID = MAMADALI_DEMO_CLIENT_ID;
+const DEFAULT_CLIENT_ID = DEFAULT_DEMO_CLIENT_ID;
 
 // ── Internal helpers ─────────────────────────────────────────────
 

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { ArrowLeft, CheckCircle2, XCircle, Loader2, FlaskConical } from "lucide-react";
 import {
-  MAMADALI_DEMO_CLIENT_ID,
+  DEFAULT_DEMO_CLIENT_ID,
   getClientById,
   getClientPlatforms,
   getClientMediaAssets,
@@ -48,12 +48,12 @@ export default function SupabaseTestPage() {
       try {
         const [client, platforms, media, calendar, weekly, monthly] =
           await Promise.all([
-            getClientById(MAMADALI_DEMO_CLIENT_ID),
-            getClientPlatforms(MAMADALI_DEMO_CLIENT_ID),
-            getClientMediaAssets(MAMADALI_DEMO_CLIENT_ID),
-            getClientCalendar(MAMADALI_DEMO_CLIENT_ID),
-            getClientWeeklyReports(MAMADALI_DEMO_CLIENT_ID),
-            getClientMonthlyReports(MAMADALI_DEMO_CLIENT_ID),
+            getClientById(DEFAULT_DEMO_CLIENT_ID),
+            getClientPlatforms(DEFAULT_DEMO_CLIENT_ID),
+            getClientMediaAssets(DEFAULT_DEMO_CLIENT_ID),
+            getClientCalendar(DEFAULT_DEMO_CLIENT_ID),
+            getClientWeeklyReports(DEFAULT_DEMO_CLIENT_ID),
+            getClientMonthlyReports(DEFAULT_DEMO_CLIENT_ID),
           ]);
 
         setState({

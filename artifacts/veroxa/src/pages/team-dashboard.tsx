@@ -21,6 +21,9 @@ import {
 } from "@/data/demoData";
 import { DemoImageCard } from "@/components/demo/DemoVisuals";
 import { getDemoImage } from "@/data/demo/demoImages";
+import { demoClientTeamWorkflow } from "@/data/workflows/clientTeamWorkflow";
+import { sortWorkflowItems } from "@/lib/workflows/workflowStatus";
+import { WorkflowItemCard } from "@/components/workflows/WorkflowItemCard";
 
 const mediaReviewQueue = [
   {
@@ -106,6 +109,36 @@ export default function TeamDashboard() {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      {/* Today's Client Work — first-client workflow snapshot */}
+      <div className="mb-6" data-testid="section-todays-client-work">
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Today&apos;s Client Work
+          </h3>
+          <Link href="/demo/team/work-queue">
+            <span className="flex items-center gap-1 text-xs text-primary hover:underline cursor-pointer">
+              Open work queue <ArrowRight className="w-3 h-3" />
+            </span>
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+          {sortWorkflowItems(demoClientTeamWorkflow)
+            .filter((i) => i.stage !== "marked_complete")
+            .slice(0, 6)
+            .map((item) => (
+              <WorkflowItemCard
+                key={item.id}
+                item={item}
+                mode="team"
+                clientName={getRestaurantName(item.clientId)}
+              />
+            ))}
+        </div>
+        <p className="text-[11px] text-muted-foreground/60 mt-2">
+          Demo only — local workflow state. No backend writes.
+        </p>
       </div>
 
       {/* Media review queue — demo visual strip */}

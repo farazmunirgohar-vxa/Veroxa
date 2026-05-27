@@ -13,7 +13,7 @@ import { getSupabaseClient } from "./client";
 import { DATA_MODE } from "@/lib/data/dataMode";
 import { AUTH_MODE } from "@/lib/auth/authMode";
 import {
-  MAMADALI_DEMO_CLIENT_ID,
+  DEFAULT_DEMO_CLIENT_ID,
   getClientById,
 } from "./clientPortalQueries";
 
@@ -57,7 +57,7 @@ export async function runReadTest(): Promise<SupabaseReadTestStatus> {
   }
 
   try {
-    const row = await getClientById(MAMADALI_DEMO_CLIENT_ID);
+    const row = await getClientById(DEFAULT_DEMO_CLIENT_ID);
     if (!row) {
       return {
         kind: "blocked",

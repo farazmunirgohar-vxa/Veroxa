@@ -17,6 +17,37 @@
 
 ---
 
+## Current state (M009 + M010 + M011 First-Client Operating Flow: 2026-05-27)
+
+**M009 + M010 + M011 — First-client operating flow landed.** A
+shared client-team workflow model now lives at
+`src/data/workflows/clientTeamWorkflow.ts` with pure label / tone /
+sort / group utilities in `src/lib/workflows/workflowStatus.ts` and
+three reusable components in `src/components/workflows/`
+(`WorkflowStatusBadge`, `WorkflowItemCard`, `WorkflowColumn`). The
+Client Dashboard gains a "What Veroxa is working on" strip; Client
+Requests gains an "Action needed from you" card; the Team Dashboard
+gains a "Today's Client Work" snapshot; and the Team Work Queue is
+rebuilt around five workflow groups (Media Review, Draft Needed,
+Review Ready, Scheduling, Client Action Needed). Team Media Review
+and Team Content Review now wire their existing demo buttons to
+local `useState` decision maps with live summary tiles —
+**decisions never leave the component**. Client Media adds a
+disabled "Submit to Veroxa Team — Demo" callout that appears once
+files are picked. The lingering `MAMADALI_DEMO_CLIENT_ID` was
+renamed to `DEFAULT_DEMO_CLIENT_ID` across the supabase + adapter
+graph (the old name is kept as a `@deprecated` alias for one
+cycle). Hard invariants from M007/M008 preserved: no writes, no
+uploads, no AI, no publishing, no payments, no migrations,
+`AUTH_MODE=placeholder`, `DATA_MODE` defaults to fixture, fixture
+fallback active, pricing unchanged at $477 / $977 / $977 / $1,497,
+`InternalDemoGuard` not bypassed, no service-role in the frontend,
+no `Pasted-*.txt` committed. Full notes:
+`docs/M009_M011_FIRST_CLIENT_OPERATING_FLOW.md`. Owner / Operator
+portals untouched. Typecheck clean.
+
+---
+
 ## Current state (M008 Client Portal read-only connection pass: 2026-05-27)
 
 **M008 — Client Portal read-only Supabase connection wired into every

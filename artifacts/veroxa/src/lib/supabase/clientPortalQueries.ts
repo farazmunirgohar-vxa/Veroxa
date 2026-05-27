@@ -1,6 +1,14 @@
 import { getSupabaseClient } from "./client";
 
-export const MAMADALI_DEMO_CLIENT_ID = "00000000-0000-0000-0000-000000000001";
+/**
+ * Default demo client UUID. The portal seeds a single demo client with this
+ * canonical id; all read-only adapter fallbacks default to it. Previously
+ * named `MAMADALI_DEMO_CLIENT_ID`; the alias is kept for backward compat
+ * within this module's import graph and will be removed in a later pass.
+ */
+export const DEFAULT_DEMO_CLIENT_ID = "00000000-0000-0000-0000-000000000001";
+/** @deprecated Use DEFAULT_DEMO_CLIENT_ID. */
+export const MAMADALI_DEMO_CLIENT_ID = DEFAULT_DEMO_CLIENT_ID;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PORTAL QUERY SAFETY CONTRACT
