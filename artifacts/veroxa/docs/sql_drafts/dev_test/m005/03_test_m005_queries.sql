@@ -14,6 +14,19 @@
 -- Every per-user block ends with `rollback;` so seed data is preserved.
 --
 -- Record PASS / FAIL in 04_m005_test_results.md as you go.
+--
+-- ACCEPTANCE COVERAGE — M005 staff-policy correction
+--   * "Client cannot read draft weekly_reports → 0"
+--     is covered by Test 2 (drafted_count and validated_count both
+--     expected 0 for client@A against WR_A1/WR_A2) AND by Test 2c
+--     below (explicit named acceptance check).
+--   * "Client cannot read operator_review monthly_reports → 0"
+--     is covered by Test 5 (op_review_visible expected 0) AND by
+--     Test 5d below (explicit named acceptance check on MR_A2 by id).
+--   Both rely on weekly_reports_select_staff / monthly_reports_select_staff
+--   using `is_assigned_to_client` instead of `can_view_client`. With the
+--   previous broken policies, the client would have been able to read
+--   own-tenant rows in any status via the staff SELECT short-circuit.
 -- =============================================================================
 
 
@@ -64,6 +77,21 @@ begin;
     'a5000001-0000-4000-a000-000000000001',
     'a5000001-0000-4000-a000-000000000002'
   );
+  -- EXPECTED: 0
+rollback;
+
+-- 2c. ACCEPTANCE — client attempting to read draft weekly reports.
+--     Confirms weekly_reports_select_staff uses is_assigned_to_client
+--     (NOT can_view_client). If this returns > 0, the staff policy is
+--     still broken and the correction in 01_apply_m005.sql has not
+--     been applied.
+begin;
+  set local role authenticated;
+  set local "request.jwt.claims" to '{"sub":"<<CLIENT_A_UUID>>","role":"authenticated"}';
+
+  select count(*) as client_reads_drafted_weekly
+  from public.weekly_reports
+  where status = 'drafted';
   -- EXPECTED: 0
 rollback;
 
@@ -127,6 +155,20 @@ begin;
   from public.monthly_reports
   where status='operator_review';
   -- EXPECTED: 0
+rollback;
+
+-- 5d. ACCEPTANCE — client attempting to read operator_review monthly
+--     reports by id. Confirms monthly_reports_select_staff uses
+--     is_assigned_to_client (NOT can_view_client). If this returns
+--     > 0, the correction in 01_apply_m005.sql has not been applied.
+begin;
+  set local role authenticated;
+  set local "request.jwt.claims" to '{"sub":"<<CLIENT_A_UUID>>","role":"authenticated"}';
+
+  select count(*) as client_reads_op_review_monthly
+  from public.monthly_reports
+  where id = 'a5000002-0000-4000-a000-000000000002';
+  -- EXPECTED: 0  (MR_A2 is operator_review; client of A must not see it)
 rollback;
 
 

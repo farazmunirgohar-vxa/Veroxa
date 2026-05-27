@@ -40,6 +40,7 @@ import {
   getClientWeeklyReports,
   getClientMonthlyReports,
 } from "@/lib/supabase";
+import { AUTH_MODE } from "@/lib/auth/authMode";
 import {
   scheduledPosts as demoScheduledPosts,
   googleMetrics as demoGoogleMetrics,
@@ -269,14 +270,28 @@ function buildScheduledPostsFromCalendar(
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
 export function useClientPortalData(): UseClientPortalDataResult {
-  const [state, setState] = useState<UseClientPortalDataResult>({
-    source: "demo",
-    loading: true,
-    error: null,
-    data: DEMO_DATA,
-  });
+  // Placeholder-phase short-circuit. While AUTH_MODE === "placeholder"
+  // the client portal MUST NOT call any Supabase helper, even if
+  // VITE_SUPABASE_* env vars are present. The portal is documented as
+  // demo / fixture-first during this phase (see
+  // docs/BUILD_STATUS.md "Current state" and
+  // docs/PORTAL_QUERY_SAFETY_PLAN.md / PORTAL_QUERY_SAFETY_CHECKLIST.md).
+  // Connecting the portal to Supabase is a future, separately-gated
+  // step that only happens after the M001–M006 human dev-test gate is
+  // cleared and AUTH_MODE flips to "real".
+  const initialState: UseClientPortalDataResult =
+    AUTH_MODE === "placeholder"
+      ? { source: "demo", loading: false, error: null, data: DEMO_DATA }
+      : { source: "demo", loading: true, error: null, data: DEMO_DATA };
+
+  const [state, setState] = useState<UseClientPortalDataResult>(initialState);
 
   useEffect(() => {
+    // Hard placeholder guard — no Supabase calls in placeholder mode.
+    if (AUTH_MODE === "placeholder") {
+      return;
+    }
+
     let cancelled = false;
 
     async function load() {

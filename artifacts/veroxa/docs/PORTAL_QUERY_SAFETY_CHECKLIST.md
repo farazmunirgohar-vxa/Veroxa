@@ -116,6 +116,38 @@ rg -n 'AUTH_MODE\s*:\s*AuthMode\s*=' artifacts/veroxa/src/lib/auth/authMode.ts
 prints exactly one line with `"placeholder"`. If it prints `"real"`,
 this checklist MUST have been run and passed in the same commit.
 
+## 4b. Placeholder-mode short-circuit — required
+
+While `AUTH_MODE === "placeholder"` the client portal MUST NOT call
+any Supabase helper. The single enforcement point is
+`src/hooks/useClientPortalData.ts`, which:
+
+- Imports `AUTH_MODE` from `src/lib/auth/authMode.ts`.
+- Initialises `useState` to
+  `{ source: "demo", loading: false, error: null, data: DEMO_DATA }`
+  synchronously when `AUTH_MODE === "placeholder"` (no transient
+  loading flicker, no Supabase awaited).
+- Returns early from the `useEffect` body with `if (AUTH_MODE ===
+  "placeholder") return;` BEFORE any `Promise.all` of `getClient*`
+  helpers is constructed.
+
+Confirm with:
+
+```bash
+rg -n 'AUTH_MODE\s*===\s*"placeholder"' artifacts/veroxa/src/hooks/useClientPortalData.ts
+```
+
+Expected: **at least two matches** — one in the initial-state
+expression, one inside the `useEffect` early return.
+
+Companion rule: `clientPortalQueries` may only target
+`client_portal_*` views. Section 1 above is the grep that enforces
+this; do not loosen it. The client portal must not call Supabase in
+placeholder mode — this short-circuit is the canonical enforcement
+point, and any future PR that removes or weakens it must also flip
+`AUTH_MODE` to `"real"` in the same commit and pass every other
+check in this file.
+
 ## 5. When this checklist is mandatory
 
 - Any PR that adds or modifies a file under `artifacts/veroxa/src/`

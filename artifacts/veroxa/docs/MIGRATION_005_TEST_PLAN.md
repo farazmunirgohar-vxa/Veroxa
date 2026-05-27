@@ -111,7 +111,7 @@ Only the `client_safe` subtree may ever surface in the views.
 - [ ] As team: `update ... set status='published' where id=<own validated row>` → **denied** (WITH CHECK fails: 'published' not in ('drafted','validated')).
 - [ ] As team: `update ... set published_at=now() where id=<own validated row>` → **denied** (still constrained by team policy USING/WITH CHECK to non-published statuses).
 - [ ] As `team2@veroxa.test` (assigned B, reporter role): `insert ... <B>` → **denied** (reporter excluded from `can_manage_client_operations`).
-- [ ] As team2 (reporter): can SELECT B's reports → succeeds (reporter can VIEW via `can_view_client`).
+- [ ] As team2 (reporter): can SELECT B's reports → succeeds (reporter can VIEW via `is_assigned_to_client(B)` — reporter role is still an assigned team member; the staff SELECT policy only filters by assignment, not by role).
 
 ### 7. Team cannot approve / publish monthly reports
 - [ ] As team (assigned A): `update public.monthly_reports set status='approved', approved_by_user_id=auth.uid() where id=<A's operator_review row>` → **denied** (target status 'approved' not in team's allowed set; also team USING fails on current status 'operator_review' is allowed but WITH CHECK on new status fails).
@@ -145,7 +145,7 @@ Only the `client_safe` subtree may ever surface in the views.
 
 ### 11. Cross-tenant isolation
 - [ ] As client A: every attempted read of `client_id=<B>` rows in either table or either view → 0 rows.
-- [ ] As team@A: SELECT on B's reports → 0 rows (team policy USING includes `can_manage_client_operations` short-circuit but SELECT also goes through `weekly_reports_select_staff` / `monthly_reports_select_staff` which use `can_view_client` — team is NOT assigned to B so both helpers return false).
+- [ ] As team@A: SELECT on B's reports → 0 rows (team policy USING includes `can_manage_client_operations` short-circuit but SELECT also goes through `weekly_reports_select_staff` / `monthly_reports_select_staff` which use `is_assigned_to_client` — team@A is NOT assigned to B so the helper returns false). NOTE: the staff SELECT policies use `is_assigned_to_client`, NOT `can_view_client`; `can_view_client` would also return true for `current_user_client_id() = client_id`, which would allow a client to read own-tenant rows in any status and defeat the published-only restriction in the client SELECT policy. Mirrors the m003/01c and m004/01c corrections.
 - [ ] As team@A: any UPDATE on B's reports → 0 rows affected.
 
 ### 12. Cascade behavior
@@ -169,7 +169,7 @@ Only the `client_safe` subtree may ever surface in the views.
 - [ ] As operator querying the weekly view: returns all `published` rows across clients (operator's RLS allows it; the view's `where status='published'` is what narrows down further).
 
 ### 16. Helper short-circuits still apply
-- [ ] As operator: `can_view_client(<any>)` is true → operator SELECT on both tables sees all rows in all statuses.
+- [ ] As operator: `is_assigned_to_client(<any>)` short-circuits to true for the operator role → operator SELECT on both tables sees all rows in all statuses.
 - [ ] As team with `team_members.is_active=false`: immediately loses both SELECT and management on next statement.
 
 ---

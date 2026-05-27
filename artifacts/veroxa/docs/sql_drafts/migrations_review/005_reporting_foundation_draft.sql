@@ -201,12 +201,18 @@ create policy weekly_reports_select_own_client
 -- (NO client INSERT / UPDATE / DELETE policy. Clients never write reports.)
 
 -- Staff SELECT — team can see assigned-client reports in all statuses;
--- operator/owner short-circuit via can_view_client.
+-- operator/owner short-circuit via is_assigned_to_client (which
+-- delegates to is_operator/is_owner internally for short-circuit).
+-- IMPORTANT: do NOT use can_view_client here — that helper also
+-- returns true when current_user_client_id() = client_id, which would
+-- match the client's own tenant and defeat the published-only
+-- restriction of weekly_reports_select_own_client. Mirrors the
+-- m003/01c and m004/01c corrections.
 create policy weekly_reports_select_staff
   on public.weekly_reports
   for select
   to authenticated
-  using (private.can_view_client(client_id));
+  using (private.is_assigned_to_client(client_id));
 
 -- Team manage assigned clients up to 'validated'. WITH CHECK blocks
 -- team from inserting or updating a row into status='published';
@@ -263,12 +269,14 @@ create policy monthly_reports_select_own_client
 -- (NO client INSERT / UPDATE / DELETE policy.)
 
 -- Staff SELECT — team sees assigned-client reports in all statuses;
--- operator/owner short-circuit via can_view_client.
+-- operator/owner short-circuit via is_assigned_to_client. See the
+-- comment on weekly_reports_select_staff above for why this is NOT
+-- can_view_client. Mirrors m003/01c and m004/01c corrections.
 create policy monthly_reports_select_staff
   on public.monthly_reports
   for select
   to authenticated
-  using (private.can_view_client(client_id));
+  using (private.is_assigned_to_client(client_id));
 
 -- Team manage assigned clients in 'drafting' or 'operator_review' only.
 -- Team owns drafting -> operator_review; cannot reach 'approved' or

@@ -192,12 +192,24 @@ master dev-test execution order published.
 
 **Open items (not blocking this pass):**
 
-- `useClientPortalData` will still attempt Supabase reads on mount
-  whenever the `VITE_SUPABASE_*` env vars are present, regardless of
-  `AUTH_MODE`. The reads are scoped to client-safe views and fail
-  closed to demo fixtures, so the invariants hold; gating the hook on
-  `AUTH_MODE === "real"` is a future enhancement, deliberately out of
-  scope for this safety pass per the hard invariants.
+- `useClientPortalData` **MUST short-circuit to demo fixtures when
+  `AUTH_MODE === "placeholder"`** — no Supabase helpers may be called
+  in that mode, even if the `VITE_SUPABASE_*` env vars are present.
+  This is enforced in `src/hooks/useClientPortalData.ts` by an early
+  return inside `useEffect` plus an `AUTH_MODE`-aware initial state
+  that sets `loading: false` and `source: "demo"` synchronously.
+  Connecting the portal to Supabase is a future, separately-gated
+  step that only happens after the M001–M006 human dev-test gate is
+  cleared AND `AUTH_MODE` flips to `"real"`. Until then the client
+  portal is documented as demo / fixture-first; no Supabase round-trip
+  is permitted.
+- `clientPortalQueries` may only target `client_portal_*` views, never
+  base tables. This rule is enforced by the §3 grep sweep in
+  `PORTAL_QUERY_SAFETY_CHECKLIST.md` and by code review.
+- The client portal MUST NOT call Supabase in placeholder mode. The
+  hook is the only client-portal data entry point; the
+  `AUTH_MODE === "placeholder"` short-circuit above is the canonical
+  enforcement point.
 
 ## Cross-references
 

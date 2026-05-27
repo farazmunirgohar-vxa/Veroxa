@@ -15,7 +15,7 @@
 - [ ] M004 staff-policy correction applied (`m004/01c`)
 - [ ] M001–M004 fixtures present (clients A + B, posts A1/A2)
 - [ ] M005 apply step succeeded (no errors from `01_apply_m005.sql`)
-- [ ] M005 staff-policy correction applied (`01b_apply_reports_select_staff_correction.sql`)
+- [ ] M005 staff-policy correction is BAKED IN to `01_apply_m005.sql` (no separate 01b step required for fresh runs; `01b_apply_reports_select_staff_correction.sql` is retained only as a no-op re-apply for dev projects that ran the pre-correction apply step)
 - [ ] `pg_policies` confirms `weekly_reports_select_staff` and `monthly_reports_select_staff` both contain `is_assigned_to_client` and NOT `can_view_client`
 - [ ] M005 seed step succeeded (`weekly_reports`=6, `monthly_reports`=6)
 
@@ -25,9 +25,11 @@
 |-----|---------------------------------------------------------------|--------|-------|
 | 1   | Client sees only own published weeklies (view + base = 2 rows)| ☐      |       |
 | 2   | Client cannot see drafted / validated weeklies                | ☐      |       |
+| 2c  | ACCEPTANCE — client reads drafted weeklies → 0 (staff policy uses `is_assigned_to_client`) | ☐ | M005 correction |
 | 3   | Client view does not include `internal_validation_note` col   | ☐      |       |
 | 4   | Client sees only own published monthlies (view = 1 row)       | ☐      |       |
 | 5   | Client cannot see drafting / operator_review / approved monthlies | ☐  |       |
+| 5d  | ACCEPTANCE — client reads operator_review monthly (MR_A2 by id) → 0 (staff policy uses `is_assigned_to_client`) | ☐ | M005 correction |
 | 6a  | team@A INSERT weekly for A → default `drafted`                | ☐      |       |
 | 6b  | team@A UPDATE drafted → validated                             | ☐      |       |
 | 6c  | team@A INSERT weekly for B → denied                           | ☐      |       |

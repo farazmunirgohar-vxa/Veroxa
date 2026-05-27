@@ -128,12 +128,18 @@ create policy weekly_reports_select_own_client
     and status = 'published'
   );
 
--- Staff SELECT — team/operator/owner read for clients they can view.
+-- Staff SELECT — team/operator/owner read for clients they are
+-- explicitly assigned to. Uses is_assigned_to_client (NOT
+-- can_view_client) because can_view_client also returns true for the
+-- client's own tenant, which would defeat the published-only
+-- restriction in weekly_reports_select_own_client. This is the
+-- correction previously shipped as 01b; it is now baked into the
+-- apply step. Mirrors m003/01c and m004/01c.
 create policy weekly_reports_select_staff
   on public.weekly_reports
   for select
   to authenticated
-  using (private.can_view_client(client_id));
+  using (private.is_assigned_to_client(client_id));
 
 -- Team manage assigned clients up to 'validated' only.
 create policy weekly_reports_team_manage_pre_publish
@@ -178,12 +184,15 @@ create policy monthly_reports_select_own_client
     and status = 'published'
   );
 
--- Staff SELECT.
+-- Staff SELECT — assigned-client only. See the comment on
+-- weekly_reports_select_staff above for why this is NOT
+-- can_view_client. This is the correction previously shipped as 01b;
+-- it is now baked into the apply step. Mirrors m003/01c and m004/01c.
 create policy monthly_reports_select_staff
   on public.monthly_reports
   for select
   to authenticated
-  using (private.can_view_client(client_id));
+  using (private.is_assigned_to_client(client_id));
 
 -- Team manage in 'drafting' or 'operator_review' only.
 create policy monthly_reports_team_manage_pre_approval

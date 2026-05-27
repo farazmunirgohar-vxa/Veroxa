@@ -39,18 +39,21 @@ If any precondition is false, STOP. Do not proceed.
 
 | Step | File | Where to run |
 |---|---|---|
-| 1 | `01_apply_m005.sql` | Supabase SQL editor (service-role / postgres context) |
-| 1b | `01b_apply_reports_select_staff_correction.sql` | Supabase SQL editor — closes the `can_view_client` defect on `weekly_reports_select_staff` + `monthly_reports_select_staff`, mirroring `m003/01c` and `m004/01c`. Run BEFORE the seed. |
+| 1 | `01_apply_m005.sql` | Supabase SQL editor (service-role / postgres context). **The `can_view_client` → `is_assigned_to_client` correction for `weekly_reports_select_staff` + `monthly_reports_select_staff` is now baked into this step — it is NOT deferred.** |
+| 1b | `01b_apply_reports_select_staff_correction.sql` | OPTIONAL / no-op for fresh runs. Retained only for dev projects that already executed the pre-correction `01_apply_m005.sql` and need to re-apply the corrected policies idempotently. Safe to skip on a clean dev project. |
 | 2 | `02_seed_m005_dev_data.sql` | Supabase SQL editor (replace UUID placeholders first) |
 | 3 | `03_test_m005_queries.sql` | Supabase SQL editor — run each numbered block separately |
 | 4 | `04_m005_test_results.md` | Fill in pass/fail as you go |
 | 5 | `M005_EXECUTION_SUMMARY.md` | Reference — describes what this package does, stop conditions |
 
 > Unlike M003 and M004, M005 has no `01b` guard trigger (the source
-> draft has no separate trigger-based guard migration). What 01b does
-> here is the staff-policy correction — same defect class as
-> `m003/01c` and `m004/01c`, but applied to the two report staff
-> SELECT policies.
+> draft has no separate trigger-based guard migration). The
+> staff-policy correction — same defect class as `m003/01c` and
+> `m004/01c`, applied to the two report staff SELECT policies — **is
+> now baked into `01_apply_m005.sql` and into the upstream draft
+> `docs/sql_drafts/migrations_review/005_reporting_foundation_draft.sql`.
+> It is included, not deferred.** The `01b_apply_…_correction.sql`
+> file is retained only for legacy/re-apply scenarios.
 
 ## Locked deviations from the originating prompt
 

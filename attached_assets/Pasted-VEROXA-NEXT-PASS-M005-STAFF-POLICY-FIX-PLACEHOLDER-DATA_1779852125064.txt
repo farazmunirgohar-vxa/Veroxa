@@ -1,0 +1,93 @@
+VEROXA NEXT PASS — M005 STAFF POLICY FIX + PLACEHOLDER DATA GUARD
+
+Objective:
+Fix the remaining M005 staff-policy RLS defect and make the client portal explicitly demo-only while AUTH_MODE is placeholder.
+
+Hard rules:
+- Keep AUTH_MODE = "placeholder"
+- Do not add files to supabase/migrations
+- Do not run migrations
+- Do not connect portal to real Supabase
+- Do not activate real auth
+- Do not change pricing
+- Do not change navigation
+- Do not connect AI/publishing/payment APIs
+- Use fixtures only
+
+TASK 1 — Fix M005 staff report policies
+
+Update:
+artifacts/veroxa/docs/sql_drafts/migrations_review/005_reporting_foundation_draft.sql
+
+Find:
+weekly_reports_select_staff
+monthly_reports_select_staff
+
+If either uses:
+private.can_view_client(client_id)
+
+replace it with:
+private.is_assigned_to_client(client_id)
+
+Reason:
+can_view_client also returns true for the client’s own tenant. Staff-only report policies must not match client-role users.
+
+TASK 2 — Update M005 dev-test package
+
+Update:
+artifacts/veroxa/docs/sql_drafts/dev_test/m005/01_apply_m005.sql
+artifacts/veroxa/docs/sql_drafts/dev_test/m005/03_test_m005_queries.sql
+artifacts/veroxa/docs/sql_drafts/dev_test/m005/04_m005_test_results.md
+artifacts/veroxa/docs/sql_drafts/dev_test/m005/README.md
+artifacts/veroxa/docs/sql_drafts/dev_test/m005/M005_EXECUTION_SUMMARY.md
+artifacts/veroxa/docs/MIGRATION_005_TEST_PLAN.md
+
+Acceptance criteria:
+- M005 apply SQL uses is_assigned_to_client for staff SELECT policies
+- M005 tests include client attempting to read draft weekly reports and expecting 0
+- M005 tests include client attempting to read operator_review monthly reports and expecting 0
+- M005 README says this correction is included, not deferred
+
+TASK 3 — Add explicit placeholder guard in client portal data hook
+
+Update:
+artifacts/veroxa/src/hooks/useClientPortalData.ts
+
+Import AUTH_MODE from:
+artifacts/veroxa/src/lib/auth/authMode.ts
+
+Behavior:
+If AUTH_MODE === "placeholder":
+- do not call getClientById
+- do not call getClientPlatforms
+- do not call getClientMediaAssets
+- do not call getClientCalendar
+- do not call getClientWeeklyReports
+- do not call getClientMonthlyReports
+- immediately return/set demo data
+
+The client portal should only call Supabase helpers in a future real-auth/portal-connect phase, not during placeholder mode.
+
+TASK 4 — Update portal query safety docs
+
+Update:
+artifacts/veroxa/docs/PORTAL_QUERY_SAFETY_PLAN.md
+artifacts/veroxa/docs/PORTAL_QUERY_SAFETY_CHECKLIST.md
+
+Add:
+- useClientPortalData must short-circuit to demo data when AUTH_MODE is placeholder
+- clientPortalQueries may only target client_portal_* views
+- client portal must not call Supabase in placeholder mode
+
+Final report required:
+1. Files modified
+2. M005 weekly_reports_select_staff fixed
+3. M005 monthly_reports_select_staff fixed
+4. M005 tests updated
+5. useClientPortalData placeholder guard added
+6. Portal safety docs updated
+7. Confirmation AUTH_MODE unchanged
+8. Confirmation no supabase/migrations files created
+9. Confirmation no migrations run
+10. Confirmation portal not connected to real Supabase
+11. Build/typecheck result

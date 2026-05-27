@@ -33,8 +33,8 @@ isolation.
 | File | Role |
 |---|---|
 | `README.md` | How to run + preconditions + locked deviations + UUID table |
-| `01_apply_m005.sql` | Applies M005 schema, RLS, and the two views |
-| `01b_apply_reports_select_staff_correction.sql` | Closes the `can_view_client` defect on `weekly_reports_select_staff` + `monthly_reports_select_staff` (mirrors `m003/01c` and `m004/01c`). Run BEFORE seed. |
+| `01_apply_m005.sql` | Applies M005 schema, RLS, and the two views. **The `can_view_client` → `is_assigned_to_client` correction for the two staff SELECT policies is baked in here — included, not deferred.** |
+| `01b_apply_reports_select_staff_correction.sql` | OPTIONAL / no-op for fresh runs. Retained only for dev projects that ran the pre-correction `01_apply_m005.sql` and need to re-apply the corrected policies idempotently. |
 | `02_seed_m005_dev_data.sql` | Seeds 6 weekly + 6 monthly fixture rows (replace `<<...>>` placeholders) |
 | `03_test_m005_queries.sql` | 16 tests, 41 numbered checks |
 | `04_m005_test_results.md` | Pass/fail tracker (one row per check) |
@@ -42,9 +42,12 @@ isolation.
 
 > M005 has no `01b` trigger-based guard migration (unlike M003's
 > notifications-status guard or M004's post-slot reset guard). The
-> `01b` step here is a staff-policy correction — same defect class as
-> `m003/01c` and `m004/01c`, applied to the two report staff SELECT
-> policies.
+> staff-policy correction — same defect class as `m003/01c` and
+> `m004/01c`, applied to the two report staff SELECT policies — is
+> now baked into `01_apply_m005.sql` and into the upstream draft
+> `005_reporting_foundation_draft.sql`. The standalone `01b` file
+> is retained only for re-apply scenarios on dev projects that
+> already ran the pre-correction apply step.
 
 ## Fixture overview (after seed)
 
