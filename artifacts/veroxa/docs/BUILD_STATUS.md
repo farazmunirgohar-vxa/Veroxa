@@ -926,3 +926,30 @@ auth activation.
 - AUTH_MODE unchanged (`placeholder`). DATA_MODE default unchanged
   (`fixture`). Pricing unchanged. InternalDemoGuard intact.
 - **Typecheck:** PASS.
+
+## M024A — Supabase metadata schema migration + RLS foundation
+
+- **One migration added:**
+  `supabase/migrations/20260601000000_m024a_first_client_metadata_schema.sql`.
+- Tables: `clients`, `restaurant_upload_keys`, `upload_submissions`,
+  `direction_requests`, `team_review_decisions`.
+- `set_updated_at()` trigger function + triggers for clients,
+  upload_submissions, direction_requests.
+- RLS enabled on all five tables.
+- Conservative dev-stage policies (authenticated read where listed;
+  insert/update for upload_submissions and direction_requests;
+  append-only insert for team_review_decisions). No `anon` writes.
+- **No** storage upload added.
+- **No** page write connection added (pages still use local/session).
+- **No** AI / publishing / ad / payment integration added.
+- **No** seed real data; no real restaurant names; no real upload keys.
+- `src/lib/data/schemaReadiness.ts` added (reports schema version
+  and what is still not ready).
+- Internal readiness page surfaces M024A schema status.
+- Owner/Operator portals still deferred.
+- AUTH_MODE unchanged (`placeholder`); DATA_MODE default unchanged
+  (`fixture`); pricing unchanged; InternalDemoGuard intact.
+- Contracts aligned: `FirstClientUploadPriority` value
+  `reel_idea` → `reel_tiktok_idea` to match migration check
+  constraint (callers updated).
+- **Typecheck:** see verification below.

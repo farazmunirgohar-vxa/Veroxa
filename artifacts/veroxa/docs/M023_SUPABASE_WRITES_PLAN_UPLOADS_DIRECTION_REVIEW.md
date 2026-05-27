@@ -129,3 +129,20 @@ Audit fields on every table: `created_at`, `updated_at`,
   creation, **or** connect adapter to selected pages after schema
   exists.
 - Storage upload remains a separate later milestone.
+
+## M024A status — Metadata schema migration + RLS foundation
+
+- Created one migration:
+  `supabase/migrations/20260601000000_m024a_first_client_metadata_schema.sql`.
+- Tables created: `clients`, `restaurant_upload_keys`,
+  `upload_submissions`, `direction_requests`,
+  `team_review_decisions`.
+- `set_updated_at()` trigger added; RLS enabled on every new table.
+- Policies are dev-stage only — `authenticated` read/write where
+  noted; no `anon` writes; no public wide-open access.
+- M024A does NOT connect frontend writes — pages still use
+  local/session stores.
+- Storage remains a separate later milestone.
+- Production RLS (per-restaurant scoping, role separation,
+  internal_note visibility, upload-key session binding) remains
+  future work.

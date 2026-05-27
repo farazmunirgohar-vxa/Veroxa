@@ -66,7 +66,7 @@ export type FirstClientUploadPriority =
   | "use_next"
   | "save_for_weekend"
   | "google_post"
-  | "reel_idea";
+  | "reel_tiktok_idea";
 
 export type FirstClientUploadStatus =
   | "received"

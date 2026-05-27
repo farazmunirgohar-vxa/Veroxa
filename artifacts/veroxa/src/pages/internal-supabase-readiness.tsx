@@ -28,6 +28,7 @@ import {
 } from "@/lib/data/supabaseReadOnlyData";
 import type { ReadOnlyEnvelope } from "@/lib/data/clientPortalReadOnlyTypes";
 import { getWriteReadinessStatus } from "@/lib/data/writeReadiness";
+import { getSchemaReadinessStatus } from "@/lib/data/schemaReadiness";
 
 type CoverageRow = {
   label: string;
@@ -114,6 +115,7 @@ export default function InternalSupabaseReadiness() {
   const [coverage, setCoverage] = useState<CoverageRow[]>([]);
   const [coverageLoading, setCoverageLoading] = useState(true);
   const writeStatus = getWriteReadinessStatus();
+  const schemaStatus = getSchemaReadinessStatus();
 
   async function refresh() {
     setLoading(true);
@@ -295,6 +297,34 @@ export default function InternalSupabaseReadiness() {
               <strong className="text-foreground/80">Live</strong> = real rows came back from a client_portal_* view.&nbsp;
               <strong className="text-foreground/80">Fallback</strong> = read attempted but RLS/env/error sent us to fixtures.&nbsp;
               <strong className="text-foreground/80">Skipped</strong> = no client-safe view yet, fixture-only by design.
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Schema Readiness — M024A */}
+        <Card className="bg-card border-border" data-testid="card-schema-readiness">
+          <CardContent className="space-y-2 p-4">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-primary" />
+              <h3 className="text-sm font-semibold">Schema Readiness</h3>
+              <Badge variant="outline" className="text-[10px] bg-muted/30 text-muted-foreground border-border">
+                M024A
+              </Badge>
+            </div>
+            <ul className="text-xs text-muted-foreground space-y-1 pl-1" data-testid="list-schema-readiness">
+              <li>• Schema version: <code className="text-foreground">{schemaStatus.schemaVersion}</code></li>
+              <li>• Metadata tables (created by migration): <span className="text-foreground">{schemaStatus.metadataTables.join(", ")}</span></li>
+              <li>• Schema migration drafted: <span className="text-foreground">{schemaStatus.schemaCreated ? "Yes" : "No"}</span></li>
+              <li>• Storage ready: <span className="text-foreground">{schemaStatus.storageReady ? "Yes" : "No"}</span></li>
+              <li>• Real auth ready: <span className="text-foreground">{schemaStatus.realAuthReady ? "Yes" : "No"}</span></li>
+              <li>• Upload-key RLS ready: <span className="text-foreground">{schemaStatus.uploadKeyRlsReady ? "Yes" : "No"}</span></li>
+              <li>• Production RLS ready: <span className="text-foreground">{schemaStatus.productionReady ? "Yes" : "No"}</span></li>
+              <li>• Dev write adapter: available only with <code>VITE_VEROXA_ENABLE_DEV_WRITES="true"</code></li>
+              <li>• Next step: {schemaStatus.nextStep}</li>
+            </ul>
+            <p className="text-[11px] text-muted-foreground/70 leading-relaxed">
+              See <code>supabase/migrations/</code>, <code>src/lib/data/schemaReadiness.ts</code>, and{" "}
+              <code>docs/M024A_SUPABASE_METADATA_SCHEMA_AND_RLS.md</code>.
             </p>
           </CardContent>
         </Card>

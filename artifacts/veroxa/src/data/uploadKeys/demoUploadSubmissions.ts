@@ -22,7 +22,7 @@ export type DemoUploadPriority =
   | "use_next"
   | "save_for_weekend"
   | "google_post"
-  | "reel_idea";
+  | "reel_tiktok_idea";
 
 export type DemoUploadStatus =
   | "received"
@@ -50,7 +50,7 @@ export const demoUploadPriorityLabels: Record<DemoUploadPriority, string> = {
   use_next: "Use this next",
   save_for_weekend: "Save for weekend",
   google_post: "Google post",
-  reel_idea: "Reel / TikTok idea",
+  reel_tiktok_idea: "Reel / TikTok idea",
 };
 
 export const demoUploadStatusLabels: Record<DemoUploadStatus, string> = {
@@ -80,7 +80,7 @@ export const demoUploadSubmissions: DemoUploadSubmission[] = [
     restaurantId: "demo-a",
     restaurantName: "Demo Grill House",
     category: "short_video",
-    priority: "reel_idea",
+    priority: "reel_tiktok_idea",
     note: "Chef preparing kabobs — could be a Reel.",
     fileLabel: "chef-prep-clip.mp4",
     fileKind: "video",

@@ -90,3 +90,22 @@ the first real client uses Veroxa in production.
   - RLS policies for the three metadata tables.
   - Connect selected pages to adapter after schema exists.
   - Storage upload (separate later build).
+
+## M024A — Schema/migration foundation
+
+- ✅ First-client metadata schema migration drafted
+  (`supabase/migrations/20260601000000_m024a_first_client_metadata_schema.sql`).
+- ✅ RLS enabled on every new table; conservative dev-stage policies
+  in place; no `anon` writes.
+- ✅ `set_updated_at()` trigger added.
+- ✅ `schemaReadiness.ts` added; internal readiness page updated.
+- Still needed:
+  - Apply migration in a dev Supabase project.
+  - Verify RLS round-trip with the dev write adapter
+    (`VITE_VEROXA_ENABLE_DEV_WRITES="true"`).
+  - Connect upload / direction / team-review writes to selected pages.
+  - Storage upload (separate later milestone).
+  - Real restaurant upload-key management (custom JWT / signed claims
+    for per-restaurant scoping).
+  - Production RLS tightening (role separation, internal_note
+    visibility, per-restaurant binding).
