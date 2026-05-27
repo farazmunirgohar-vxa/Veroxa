@@ -187,7 +187,7 @@ export default function InternalSupabaseReadiness() {
           <div className="flex items-center gap-2">
             <Database className="w-5 h-5 text-primary" />
             <Badge variant="outline" className="border-amber-500/40 text-amber-400 bg-amber-500/5">
-              DEV ONLY · no writes · no production connection
+              DEV ONLY · writes disabled unless explicit flag · no production data
             </Badge>
           </div>
           <h1 className="text-2xl font-bold">Supabase Readiness (M007)</h1>

@@ -126,3 +126,7 @@ reported as `dry_run`.
 - Do not commit `VITE_VEROXA_ENABLE_DEV_WRITES=true` to `.env` files.
 - Do not leave fictional smoke-test rows in a shared dev project
   without cleanup.
+
+## M025A progression
+
+After M024B verification, M025A connects the Client Direction Center to the dev write adapter safely. The local/session store is always written first; the Supabase write is a best-effort supplementary layer that never breaks the user flow on failure.

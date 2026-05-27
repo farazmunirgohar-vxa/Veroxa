@@ -15,7 +15,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
-import { getWriteSafetyBanner } from "@/lib/data/writeReadiness";
+import { WRITES_ENABLED } from "@/lib/data/writeReadiness";
+import { veroxaWriteAdapter } from "@/lib/data/writeAdapter";
+import { getDevClientIdFromEnv } from "@/lib/data/devClientId";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import {
   demoClientDirection,
@@ -71,6 +73,33 @@ const urgencyTone: Record<DirectionUrgency, string> = {
   urgent: "bg-rose-500/10 text-rose-400 border-rose-500/30",
 };
 
+type SaveStatus =
+  | "idle"
+  | "saving_local"
+  | "local_saved"
+  | "dev_write_attempting"
+  | "dev_write_saved"
+  | "dev_write_skipped"
+  | "dev_write_failed";
+
+function saveStatusMessage(status: SaveStatus): string | null {
+  switch (status) {
+    case "idle":
+    case "saving_local":
+      return null;
+    case "local_saved":
+      return "Direction saved for this demo session. Live database saving is currently disabled.";
+    case "dev_write_attempting":
+      return "Direction saved locally. Saving to dev database…";
+    case "dev_write_saved":
+      return "Direction saved locally and to the dev database.";
+    case "dev_write_skipped":
+      return "Direction saved locally. Dev database save skipped because VITE_VEROXA_DEV_CLIENT_ID is not configured.";
+    case "dev_write_failed":
+      return "Direction saved locally. Dev database save did not complete, so the team can continue in session/demo mode.";
+  }
+}
+
 export default function ClientDirectionCenter() {
   const [focus, setFocus] = useState<DirectionFocus | null>(null);
   const [channel, setChannel] = useState<DirectionChannel>("organic_social");
@@ -80,6 +109,7 @@ export default function ClientDirectionCenter() {
     () => getLocalDirectionRequests().filter((d) => d.clientId === CLIENT_ID),
   );
   const [confirmationId, setConfirmationId] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
 
   useEffect(() => {
     const refresh = () =>
@@ -116,9 +146,12 @@ export default function ClientDirectionCenter() {
     [clientDirection],
   );
 
-  function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!focus) return;
+
+    // Step 1 — always save to local/session store first
+    setSaveStatus("saving_local");
     const created = addLocalDirectionRequest({
       clientId: CLIENT_ID,
       restaurantName: CLIENT_NAME,
@@ -135,7 +168,47 @@ export default function ClientDirectionCenter() {
     setNote("");
     setUrgency("normal");
     setChannel("organic_social");
+
+    // Step 2 — if writes are disabled, stop here
+    if (!WRITES_ENABLED) {
+      setSaveStatus("local_saved");
+      return;
+    }
+
+    // Step 3 — check dev client UUID
+    const devClientId = getDevClientIdFromEnv();
+    if (!devClientId) {
+      setSaveStatus("dev_write_skipped");
+      return;
+    }
+
+    // Step 4 — attempt dev write
+    setSaveStatus("dev_write_attempting");
+    try {
+      const result = await veroxaWriteAdapter.createDirectionRequest({
+        restaurantId: devClientId,
+        focus: focus as import("@/lib/firstClient/firstClientContracts").FirstClientDirectionFocus,
+        channel: channel as import("@/lib/firstClient/firstClientContracts").FirstClientDirectionChannel,
+        urgency: urgency as import("@/lib/firstClient/firstClientContracts").FirstClientDirectionUrgency,
+        title: directionFocusLabels[focus],
+        clientNote: note,
+        preferredTimingLabel: "This week",
+        relatedMediaId: null,
+        avoidItem: null,
+      });
+      if (result.ok) {
+        setSaveStatus("dev_write_saved");
+      } else {
+        setSaveStatus("dev_write_failed");
+      }
+    } catch {
+      setSaveStatus("dev_write_failed");
+    }
   }
+
+  const statusMsg = saveStatusMessage(saveStatus);
+  const statusIsPositive =
+    saveStatus === "dev_write_saved" || saveStatus === "local_saved";
 
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
@@ -156,13 +229,6 @@ export default function ClientDirectionCenter() {
         message="Demo only — direction is stored in local state, no real notifications or database writes."
         testId="banner-direction-center"
       />
-
-      <div
-        className="mt-2 text-[11px] text-muted-foreground/80 px-1"
-        data-testid="banner-writes-disabled-direction-center"
-      >
-        {getWriteSafetyBanner()}
-      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Submission form */}
@@ -291,6 +357,20 @@ export default function ClientDirectionCenter() {
                   interpret and plan — no campaigns or posts publish without team review.
                 </span>
               </div>
+            )}
+
+            {/* Save status — internal/demo-safe messaging */}
+            {statusMsg && (
+              <p
+                className={`mt-2 text-[11px] px-1 ${
+                  statusIsPositive
+                    ? "text-emerald-400/80"
+                    : "text-muted-foreground/80"
+                }`}
+                data-testid="direction-save-status"
+              >
+                {statusMsg}
+              </p>
             )}
           </CardContent>
         </Card>

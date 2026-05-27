@@ -126,3 +126,19 @@ the first real client uses Veroxa in production.
   - Run dry run, then full metadata smoke test.
   - Connect selected pages to write adapter (M024C).
   - Storage upload — separate later milestone.
+
+## M025A — Client Direction Center dev write connection
+
+- ✅ Client Direction Center connected to `veroxaWriteAdapter.createDirectionRequest` with local/session-first fallback.
+- ✅ `VITE_VEROXA_DEV_CLIENT_ID` env var validated before writes.
+- ✅ `"demo-a"` never sent to Supabase.
+- ✅ Dev write failure does not break local/session flow.
+- ✅ `devClientId.ts` helper added.
+- ✅ Internal readiness header wording fixed.
+- Still needed:
+  - Apply M024A migration in dev Supabase.
+  - Create fictional dev client row; set `VITE_VEROXA_DEV_CLIENT_ID`.
+  - Test Direction Center dev write end-to-end.
+  - Connect Team Direction Queue status writes (M025B).
+  - Connect Restaurant Upload metadata writes (M026).
+  - Storage upload — separate later milestone.

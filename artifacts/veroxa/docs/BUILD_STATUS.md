@@ -981,3 +981,33 @@ auth activation.
 - AUTH_MODE unchanged (`placeholder`). DATA_MODE default unchanged
   (`fixture`). Pricing unchanged. InternalDemoGuard intact.
 - **Typecheck:** PASS.
+
+## M025A — Client Direction Center dev write connection
+
+- **Client Direction Center** submit flow connected to write adapter
+  with local/session-first behavior:
+  1. `localDirectionStore` written first (always).
+  2. If `WRITES_ENABLED` false → stops; shows session-mode message.
+  3. If `WRITES_ENABLED` true → reads `VITE_VEROXA_DEV_CLIENT_ID`.
+  4. If env var missing/invalid → skips dev write; shows safe message.
+  5. Calls `veroxaWriteAdapter.createDirectionRequest()`.
+  6. Success → "saved locally and to dev database."
+  7. Failure → safe warning; local/session success kept.
+- Dev writes require `VITE_VEROXA_ENABLE_DEV_WRITES === "true"`.
+- Dev writes require `VITE_VEROXA_DEV_CLIENT_ID` (valid UUID).
+- `"demo-a"` is never sent to Supabase (not a valid UUID).
+- Raw DB errors never reach the user.
+- **New file:** `src/lib/data/devClientId.ts` —
+  `getDevClientIdFromEnv()` / `isDevClientIdReady()`.
+- Internal readiness page header wording fixed: "writes disabled unless
+  explicit flag · no production data".
+- Upload flow still not connected to writes.
+- Team Direction Queue still not connected to writes.
+- Team Upload Inbox still not connected to writes.
+- **No** storage upload added.
+- **No** new migration added.
+- **No** AI / publishing / ads / payments added.
+- Owner/Operator portals still deferred.
+- AUTH_MODE unchanged (`placeholder`). DATA_MODE default unchanged
+  (`fixture`). Pricing unchanged. InternalDemoGuard intact.
+- **Typecheck:** PASS.
