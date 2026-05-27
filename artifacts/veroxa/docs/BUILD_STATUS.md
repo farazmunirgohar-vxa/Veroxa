@@ -27,11 +27,18 @@ stabilization only. No runtime backend behavior is active.
   `artifacts/veroxa/docs/sql_drafts/`. **No file** under
   `supabase/migrations/`. Nothing has been promoted to a real
   migration set.
-- **M001–M006 still require human dev-Supabase execution.** The
-  packages exist as draft SQL plus dev-test trackers. A human must
-  apply them to a development Supabase project and complete the
-  trackers before any post-execution planning can begin. See
-  [`docs/sql_drafts/dev_test/README.md`](./sql_drafts/dev_test/README.md).
+- **M001–M006 applied and seeded on the dev Supabase project.**
+  Human operator has executed every dev-test package against the
+  dev project, applied the M003 notifications status guard + team-
+  scope correction, the M004 post-slot reset guard + posts/post_slots
+  staff-scope correction, the M005 reports staff-scope correction
+  (baked into apply), and manually seeded fixture data across all
+  17 tables. Full database count check passed. See
+  [`docs/DEV_SUPABASE_EXECUTION_CHECKPOINT.md`](./DEV_SUPABASE_EXECUTION_CHECKPOINT.md)
+  for the per-migration status table, seed counts, corrections, and
+  guards. **This is dev-only.** No SQL has been promoted to
+  `supabase/migrations/` and the Replit app is still not connected
+  to Supabase.
 - **The portal remains fixture / demo-first.** The Client Portal
   has read-only Supabase queries scaffolded behind
   `useClientPortalData`, but the demo path uses fixtures and
@@ -79,17 +86,21 @@ Follow this order. Do not skip steps.
 1. **Stay in demo / placeholder mode.** `AUTH_MODE` remains
    `"placeholder"`. No SQL promotion, no real Supabase connection,
    no real provider wiring.
-2. **Human runs M001–M006 dev-test packages manually** against a
-   development Supabase project, following
-   `docs/sql_drafts/dev_test/README.md`. This is human work — the
-   agent does not perform it.
-3. **Human records pass/fail** in the per-package trackers
-   (`m00X/04_m00X_test_results.md`). Every checklist row must be
-   green before step 4.
-4. **Only after green trackers**, consider post-execution work:
-   SQL promotion to `supabase/migrations/`, AUTH_MODE planning,
-   the manual prep pack, and the eventual flip. None of these
-   begin until the trackers are green.
+2. **M001–M006 dev execution: DONE.** The dev Supabase project has
+   M001–M006 applied, all corrections + guards in place, and
+   fixture data seeded. See
+   [`docs/DEV_SUPABASE_EXECUTION_CHECKPOINT.md`](./DEV_SUPABASE_EXECUTION_CHECKPOINT.md).
+3. **Next phase: Portal Connect Planning** — design a read-only
+   repository layer that hides Supabase behind typed query
+   functions and routes all client portal reads through
+   `client_portal_*` views (which must be added in the portal-
+   connect pass; they do not yet exist in the dev DB). **This is
+   planning, not implementation.** The placeholder guard in
+   `useClientPortalData` stays active throughout.
+4. **Do NOT** start production-auth work, do NOT flip `AUTH_MODE`,
+   do NOT create files under `supabase/migrations/`, and do NOT
+   connect the portal to Supabase until a real-auth readiness
+   checklist is written and signed off.
 5. **Separately and in parallel**, safe demo-only work may
    continue: fixture coherence, health-engine consolidation,
    docs/status cleanup, route registry audits, and demo-only UI
@@ -660,3 +671,43 @@ auth activation.
   publishing, or real Google integration.** Supabase remains
   inactive at runtime via `AUTH_MODE === "placeholder"`.
 - **Typecheck:** zero errors.
+
+---
+
+## Changelog entry — Dev Supabase M001–M006 execution checkpoint (2026-05-27)
+
+- **Dev Supabase: M001–M006 applied and seeded.** Human operator
+  executed each dev-test package against the dev Supabase project,
+  in order. Applied M003 notification-status guard (`01b`) and
+  team-scope correction (`01c`); M004 post-slot reset guard (`01b`)
+  and posts/post_slots staff-scope correction (`01c`); M005 reports
+  staff-scope correction (baked into `01_apply_m005`). Manually
+  seeded fixture data across all 17 tables (clients 2,
+  team_client_assignments 1, client_platforms 3, onboarding_items 3,
+  client_requests 2, media_assets 3, notifications 4,
+  client_health_snapshots 2, activity_logs 3, posts 4, post_slots 4,
+  weekly_reports 3, monthly_reports 3, ai_agents 2,
+  content_concepts 2, draft_sets 2, draft_variants 3). Full database
+  count check passed.
+- **Portal still placeholder / disconnected.** `AUTH_MODE` remains
+  `"placeholder"`. `useClientPortalData` continues to short-circuit
+  to fixtures. The Replit app is **not** connected to the dev
+  Supabase project; the dev DB work is purely a backend execution
+  checkpoint, not a portal activation.
+- **Next phase: Portal Connect Plan, not production auth.** Design
+  a read-only repository layer behind typed query functions and
+  plan the `client_portal_*` views (deferred to the portal-connect
+  pass). Do not flip `AUTH_MODE`, do not connect the portal, do not
+  promote SQL to `supabase/migrations/`, and do not wire any real
+  AI / publishing / payment providers until a real-auth readiness
+  checklist is written and signed off.
+- **New doc:** [`docs/DEV_SUPABASE_EXECUTION_CHECKPOINT.md`](./DEV_SUPABASE_EXECUTION_CHECKPOINT.md)
+  — per-migration status table, manual cleanup notes, seed counts,
+  corrections + guards, and the explicit next-phase guidance.
+- **No source code changed.** This pass is documentation-only.
+  Invariants unchanged: AUTH_MODE=`"placeholder"`, no
+  `supabase/migrations/`, portal disconnected, no real AI /
+  publishing / payments, locked pricing
+  (49700 / 99700 / 109700 / 119700 / 149700), four roles
+  (Client / Team / Operator / Owner), no nav / four-shell changes.
+- **Typecheck:** PASS.
