@@ -9,6 +9,34 @@ import {
   type ContentReviewStatus,
   type ContentType,
 } from "@/data/demoData";
+import { getDemoImage } from "@/data/demo/demoImages";
+
+const CAPTION_VARIANTS = [
+  {
+    angle: "Safe",
+    tone: "bg-sky-500/10 text-sky-300 border-sky-500/30",
+    image: getDemoImage("food-grilled-platter")!,
+    caption: "Fresh, hot, and ready for your next lunch break. Stop by today and enjoy a plate made with care.",
+    platform: "Instagram",
+    time: "Friday 11:30 AM",
+  },
+  {
+    angle: "Engagement",
+    tone: "bg-violet-500/10 text-violet-300 border-violet-500/30",
+    image: getDemoImage("food-bowl-hero")!,
+    caption: "A closer look at what goes into every plate before it reaches the table. What's your go-to order?",
+    platform: "Facebook",
+    time: "Saturday 2:00 PM",
+  },
+  {
+    angle: "Sales",
+    tone: "bg-fuchsia-500/10 text-fuchsia-300 border-fuchsia-500/30",
+    image: getDemoImage("food-plated-dinner")!,
+    caption: "Dinner plans? This plate is ready when you are. Bring the family tonight.",
+    platform: "Instagram",
+    time: "Sunday 6:15 PM",
+  },
+];
 
 const statusColor: Record<ContentReviewStatus, string> = {
   "Pending":        "border-muted-foreground/40 text-muted-foreground bg-muted/30",
@@ -47,6 +75,43 @@ export default function TeamContentReview() {
         message="Demo only — read-only review queue. No approvals or revisions are saved."
         testId="banner-content-review"
       />
+
+      {/* Caption variant selector */}
+      <div className="mb-6" data-testid="section-caption-variants">
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Caption variants — select a draft to approve
+          </h3>
+          <span className="text-xs text-muted-foreground">Demo only — no backend persistence</span>
+        </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          {CAPTION_VARIANTS.map((v) => (
+            <Card key={v.angle} className="bg-card/60 border-border overflow-hidden" data-testid={`variant-${v.angle.toLowerCase()}`}>
+              <div className="aspect-[4/3] w-full overflow-hidden bg-muted/30">
+                <img src={v.image.url} alt={v.image.alt} loading="lazy" className="h-full w-full object-cover" />
+              </div>
+              <CardContent className="space-y-2 p-3 text-sm">
+                <div className="flex items-center justify-between gap-2">
+                  <span className={`rounded border px-2 py-0.5 text-[11px] font-semibold ${v.tone}`}>{v.angle}</span>
+                  <span className="text-[11px] text-muted-foreground">{v.platform} · {v.time}</span>
+                </div>
+                <p className="text-xs text-muted-foreground line-clamp-3">{v.caption}</p>
+                <div className="flex flex-wrap gap-1.5 border-t border-border/50 pt-2">
+                  <button className="rounded px-2.5 py-1 text-[11px] font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/20 transition-colors" onClick={() => {}}>
+                    Approve Draft
+                  </button>
+                  <button className="rounded px-2.5 py-1 text-[11px] font-medium bg-muted/30 text-muted-foreground border border-border hover:bg-muted/50 transition-colors" onClick={() => {}}>
+                    Edit Caption
+                  </button>
+                  <button className="rounded px-2.5 py-1 text-[11px] font-medium bg-sky-500/10 text-sky-300 border border-sky-500/30 hover:bg-sky-500/20 transition-colors" onClick={() => {}}>
+                    Send to Schedule
+                  </button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
 
       {/* Summary row */}
       <div className="grid grid-cols-3 gap-3 mb-6">

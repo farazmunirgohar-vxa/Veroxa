@@ -1,9 +1,12 @@
-import { Image as ImageIcon, CheckCircle2, AlertTriangle, Sparkles, Flame, Users as UsersIcon, MapPin, Camera } from "lucide-react";
+import { CheckCircle2, AlertTriangle, Sparkles, Flame, Users as UsersIcon, MapPin, Camera } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { teamPortalNavItems } from "@/lib/teamPortalNav";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
+import { getDemoImagesByCategory } from "@/data/demo/demoImages";
+
+const FOOD_IMGS = getDemoImagesByCategory("food");
 
 const guidanceMatches: Array<{
   icon: typeof Flame;
@@ -84,14 +87,20 @@ export default function TeamMediaReview() {
       </Card>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {mediaItems.map((item) => {
+        {mediaItems.map((item, idx) => {
           const approved = item.quality === "Approved";
+          const img = FOOD_IMGS[idx % FOOD_IMGS.length];
           return (
-            <Card key={item.id} className="bg-card border-border" data-testid={`media-item-${item.id}`}>
-              <CardContent className="p-5">
-                <div className="aspect-video rounded-lg bg-gradient-to-br from-primary/10 via-card to-muted/40 border border-border/40 flex items-center justify-center mb-4">
-                  <ImageIcon className="w-8 h-8 text-muted-foreground/40" />
-                </div>
+            <Card key={item.id} className="bg-card border-border overflow-hidden" data-testid={`media-item-${item.id}`}>
+              <div className="aspect-video w-full overflow-hidden bg-muted/30">
+                <img
+                  src={img.url}
+                  alt={img.alt}
+                  loading="lazy"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <CardContent className="p-5 pt-4">
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <h4 className="text-sm font-semibold leading-snug">{item.title}</h4>
                   <Badge variant="outline" className={`border-none flex-shrink-0 ${
@@ -108,6 +117,28 @@ export default function TeamMediaReview() {
                   }
                   <span>{item.note}</span>
                 </div>
+                {/* Demo-only action row */}
+                <div className="mt-3 flex flex-wrap gap-2 border-t border-border/50 pt-3">
+                  <button
+                    className="rounded px-3 py-1 text-xs font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/20 transition-colors"
+                    onClick={() => {}}
+                  >
+                    Accept
+                  </button>
+                  <button
+                    className="rounded px-3 py-1 text-xs font-medium bg-amber-500/10 text-amber-300 border border-amber-500/30 hover:bg-amber-500/20 transition-colors"
+                    onClick={() => {}}
+                  >
+                    Needs Better Photo
+                  </button>
+                  <button
+                    className="rounded px-3 py-1 text-xs font-medium bg-muted/30 text-muted-foreground border border-border hover:bg-muted/50 transition-colors"
+                    onClick={() => {}}
+                  >
+                    Use Later
+                  </button>
+                </div>
+                <p className="mt-2 text-[10px] text-muted-foreground/70">Demo only — no action is saved</p>
               </CardContent>
             </Card>
           );

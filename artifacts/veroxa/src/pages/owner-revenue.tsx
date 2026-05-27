@@ -4,6 +4,7 @@ import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianG
 import { revenueData, growthSummary } from "@/lib/demo-data";
 import { ownerPortalNavItems } from "@/lib/ownerPortalNav";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
+import { demoServicePlans } from "@/data/demo/demoFinancials";
 
 export default function OwnerRevenue() {
   return (
@@ -43,6 +44,27 @@ export default function OwnerRevenue() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Plan mix cards */}
+      <div className="mb-8">
+        <h3 className="text-xl font-bold mb-4">Active Plan Mix</h3>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3" data-testid="plan-mix-cards">
+          {demoServicePlans.map((p, i) => (
+            <Card key={p.plan} className="bg-card/60 border-border" data-testid={`plan-card-${i}`}>
+              <CardContent className="p-4">
+                <div className={`w-3 h-3 rounded-sm mb-2 ${p.color}`} />
+                <p className="text-xs font-semibold text-foreground">{p.plan}</p>
+                <p className="text-2xl font-bold tabular-nums mt-1">{p.clients}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">clients</p>
+                <p className="text-[11px] text-muted-foreground">${p.price}/mo</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <p className="mt-2 text-[11px] text-muted-foreground">
+          Pricing is locked — demo data only.
+        </p>
+      </div>
 
       <div>
         <h3 className="text-xl font-bold mb-4">Growth Summary — May 2026</h3>

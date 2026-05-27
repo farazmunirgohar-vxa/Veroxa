@@ -1,16 +1,26 @@
-import { CalendarDays, ImageIcon, Layers, BarChart2, Sparkles } from "lucide-react";
+import { CalendarDays, ImageIcon, Layers, BarChart2, Sparkles, ArrowRight } from "lucide-react";
 import { Link } from "wouter";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientPortalData } from "@/hooks/useClientPortalData";
 import {
   DemoImageCard,
   DemoSchedulePreview,
+  DemoFlowTimeline,
   type DemoScheduleItem,
 } from "@/components/demo/DemoVisuals";
 import { getDemoImage } from "@/data/demo/demoImages";
+
+const veroxaWeekFlow = [
+  { key: "upload",   label: "You upload",    caption: "Food photos from your phone" },
+  { key: "ai",       label: "AI drafts",     caption: "Captions + best angles" },
+  { key: "review",   label: "Team checks",   caption: "Human review before anything posts" },
+  { key: "schedule", label: "It schedules",  caption: "Right time, right platform" },
+  { key: "report",   label: "You get a report", caption: "Weekly + monthly results" },
+];
 
 const weekMedia = [
   {
@@ -171,6 +181,46 @@ export default function ClientDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* How Veroxa is working this week */}
+      <div data-testid="section-veroxa-week-flow">
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+          How Veroxa is working this week
+        </h3>
+        <Card className="bg-card/50 border-border/50">
+          <CardContent className="p-4 space-y-4">
+            <DemoFlowTimeline steps={veroxaWeekFlow} testId="client-dashboard-flow" />
+            <p className="text-[11px] text-muted-foreground">
+              Demo only — illustrative flow. Nothing posts without your Veroxa team&apos;s approval.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* CTA card — AI Draft Preview */}
+      <Card className="bg-amber-500/5 border-amber-500/30" data-testid="card-ai-draft-cta">
+        <CardContent className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <Sparkles className="h-4 w-4 text-amber-300" />
+              <p className="text-sm font-semibold text-foreground">See your photo become 3 posts</p>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Upload one food photo and watch Veroxa generate captions, angles, and a schedule.
+            </p>
+          </div>
+          <Link href="/demo/client/ai-draft-preview">
+            <Button
+              size="sm"
+              className="bg-amber-500 text-amber-950 hover:bg-amber-400 flex-shrink-0"
+              data-testid="btn-ai-draft-cta"
+            >
+              Try AI Draft Preview
+              <ArrowRight className="ml-2 h-3.5 w-3.5" />
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
 
       {/* This week at a glance */}
       <div>
