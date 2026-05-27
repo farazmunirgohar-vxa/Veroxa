@@ -141,6 +141,34 @@ export default function ClientMedia() {
         </div>
       </div>
 
+      {/* Restaurant Upload Key — daily content app entry */}
+      <Card className="mt-4 border-primary/30 bg-primary/5" data-testid="card-restaurant-upload-key">
+        <CardContent className="p-5 flex flex-wrap items-start justify-between gap-4">
+          <div className="flex items-start gap-3 max-w-2xl">
+            <div className="w-10 h-10 rounded-lg bg-primary/15 border border-border flex items-center justify-center flex-shrink-0">
+              <UploadCloud className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-base font-semibold mb-1">
+                Need employees to upload daily content?
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Share your restaurant upload key with approved staff so they can submit food
+                photos, prep clips, atmosphere shots, and specials without needing a full
+                account. Each restaurant gets one key — keep it inside your team only.
+              </p>
+            </div>
+          </div>
+          <a
+            href="/upload"
+            className="inline-flex items-center gap-1 px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90"
+            data-testid="btn-open-restaurant-upload"
+          >
+            Open Restaurant Upload
+          </a>
+        </CardContent>
+      </Card>
+
       {/* Restaurant Media Guidance Engine — rule-based demo, local state only */}
       <Card className="bg-card border-primary/30 mt-4" data-testid="card-media-guidance">
         <CardHeader className="pb-3">

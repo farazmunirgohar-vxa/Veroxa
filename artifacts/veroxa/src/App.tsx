@@ -105,6 +105,8 @@ import ServicesPage from "@/pages/services";
 import PricingPage from "@/pages/pricing";
 import GuidedDemo from "@/pages/guided-demo";
 import InternalSupabaseReadiness from "@/pages/internal-supabase-readiness";
+import RestaurantUploadAccess from "@/pages/restaurant-upload-access";
+import TeamUploadInbox from "@/pages/team-upload-inbox";
 
 const queryClient = new QueryClient();
 
@@ -119,6 +121,9 @@ function Router() {
       <Route path="/auth-status" component={AuthStatusPage} />
       <Route path="/demo" component={DemoHub} />
       <Route path="/guided-demo" component={GuidedDemo} />
+
+      {/* Restaurant Upload Key entry — public, demo-only. No login. */}
+      <Route path="/upload" component={RestaurantUploadAccess} />
 
       {/* Public client demo — sales preview, no login required */}
       <Route path="/demo/client" component={ClientPortal} />
@@ -173,6 +178,9 @@ function Router() {
       </Route>
       <Route path="/demo/team/alerts">
         {() => <InternalDemoGuard role="team"><TeamAlertCenter /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/team/upload-inbox">
+        {() => <InternalDemoGuard role="team"><TeamUploadInbox /></InternalDemoGuard>}
       </Route>
 
       {/* Internal operator demo — login required, role = "operator" */}

@@ -93,6 +93,14 @@ export default function TeamMediaReview() {
 
       <DemoOnlyBanner message="Demo only — decisions are kept in local state. No uploads, no database writes, no notifications sent to clients." testId="banner-team-media" />
 
+      <p className="text-xs text-muted-foreground mb-4" data-testid="upload-inbox-cross-link">
+        New restaurant uploads appear in the{" "}
+        <a href="/demo/team/upload-inbox" className="text-primary hover:underline">
+          Upload Inbox
+        </a>{" "}
+        first, then move to Media Review.
+      </p>
+
       {/* Summary tiles — react to local action state */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6" data-testid="section-review-summary">
         <SummaryTile label="Pending"         value={summary.pending}  color="text-muted-foreground" testId="summary-pending"  />

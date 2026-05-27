@@ -32,12 +32,14 @@ import {
   ShieldAlert,
   ListChecks,
   PenLine,
+  Inbox,
 } from "lucide-react";
 import type { SidebarItem } from "@/components/PortalLayout";
 
 export const teamPortalNavItems: SidebarItem[] = [
   { label: "Dashboard",       icon: LayoutDashboard, href: "/demo/team/dashboard"      },
   { label: "Work Queue",      icon: ListChecks,      href: "/demo/team/work-queue"     },
+  { label: "Upload Inbox",    icon: Inbox,           href: "/demo/team/upload-inbox"   },
   { label: "Media Review",    icon: ImageIcon,       href: "/demo/team/media-review"   },
   { label: "Content Review",  icon: PenLine,         href: "/demo/team/content-review" },
   { label: "Drafts",          icon: Layers,          href: "/demo/team/drafts"         },

@@ -141,6 +141,32 @@ expansion for those portals is intentionally minimal in this phase.
 
 ---
 
+## Restaurant Upload Key — app-style intake (M012–M014)
+
+Veroxa includes an **app-style upload flow** for restaurants, not just
+a portal. The goal is to make daily content collection as low-friction
+as possible for the first 1–3 real clients.
+
+- Each restaurant is issued one **Restaurant Upload Key**.
+- Any approved restaurant employee with that key can use `/upload` to
+  submit photos / videos with a category, optional note, and priority
+  hint. **No individual email/password is required** for daily content
+  contributors during the first-client phase.
+- The Team Portal receives these submissions in a dedicated **Upload
+  Inbox** (`/demo/team/upload-inbox`), triaged before moving to the
+  existing Media Review surface.
+- Upload key access is **not** Team / Operator / Owner access. A key
+  only unlocks the upload flow for that one restaurant — no access to
+  pricing, internal notes, financials, analytics, or any other
+  restaurant.
+- Everything in this phase is local/demo only — no Supabase writes, no
+  Storage uploads, no notifications, no AI scoring. See
+  `M012_M014_RESTAURANT_UPLOAD_KEY_AND_TEAM_INBOX.md` for the future
+  real-implementation plan (hashed keys, signed Storage URLs from an
+  Edge Function, rotation/revocation, audit logs, rate limits).
+
+---
+
 ## Things this phase explicitly does NOT include
 
 - Real database writes (insert / update / delete / upsert).

@@ -1,5 +1,20 @@
 > **Historical reference (pre-2026-05-27).** Pricing and fixture-ID values in this document are out of date. Current source of truth: `docs/PRICING_SOURCE_OF_TRUTH.md` and `src/data/pricing/veroxaPricing.ts`. Fixture IDs are now `demo-a` / `demo-b` / `demo-c` / `demo-d`.
 
+## Latest update — M012–M014 Restaurant Upload Key + Team Upload Inbox (2026-05-27)
+
+- M012–M014 restaurant upload key foundation added.
+- App-style upload flow added at `/upload` — local/demo only.
+- Team Upload Inbox added at `/demo/team/upload-inbox` — local/demo
+  only, behind `InternalDemoGuard role="team"`.
+- No real uploads / writes / storage / notifications added.
+- Client + Team remain the priority surfaces.
+- Owner / Operator portals still deferred.
+- Pricing untouched. `AUTH_MODE=placeholder`,
+  `DATA_MODE=fixture` defaults unchanged.
+- Full details: `docs/M012_M014_RESTAURANT_UPLOAD_KEY_AND_TEAM_INBOX.md`.
+
+---
+
 ---
 
 # Veroxa — Build Status

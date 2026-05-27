@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { ArrowRight, Lock, Monitor, Sparkles } from "lucide-react";
+import { ArrowRight, Lock, Monitor, Sparkles, UploadCloud } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
@@ -94,6 +94,31 @@ export default function DemoHub() {
                   Start Guided Demo <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
+            </div>
+          </div>
+
+          {/* Restaurant Upload — app-style demo entry */}
+          <div className="animate-in fade-in duration-700 mb-6" data-testid="restaurant-upload-card">
+            <div className="p-5 rounded-xl border border-border bg-card/60 flex items-start gap-3">
+              <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-border flex items-center justify-center flex-shrink-0">
+                <UploadCloud className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground mb-1">
+                  Restaurant Upload — app-style
+                </p>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Demo of the daily content upload flow restaurant staff use. Enter a restaurant
+                  upload key — no login or account needed.
+                </p>
+                <Link
+                  href="/upload"
+                  className="text-sm text-primary hover:underline inline-flex items-center gap-1"
+                  data-testid="link-restaurant-upload"
+                >
+                  Open Restaurant Upload <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
             </div>
           </div>
 
