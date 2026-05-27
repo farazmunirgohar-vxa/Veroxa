@@ -110,10 +110,11 @@ export const teamDemoRoutes: DemoRoute[] = [
 ];
 
 // ── Operator Portal ───────────────────────────────────────────────────────────
-// visible_nav count: 7 (must match operatorPortalNav.ts exactly)
+// visible_nav count: 23  (must match operatorPortalNav.ts exactly)
+// Section headers in operatorPortalNav.ts are NOT counted — only routable items.
 
 export const operatorDemoRoutes: DemoRoute[] = [
-  // ── Visible nav (7) ──────────────────────────────────────────────────────
+  // ── Visible nav — Core (7) ───────────────────────────────────────────────
   { path: "/demo/operator/operator-os",       portal: "operator", label: "Command Center",    visibility: "visible_nav",     purpose: "Primary operator overview — health, alerts, reports, AI monitoring." },
   { path: "/demo/operator/client-health",     portal: "operator", label: "Client Health",     visibility: "visible_nav",     purpose: "Per-client risk surface with health scores and flag reasons." },
   { path: "/demo/operator/alerts",            portal: "operator", label: "Alerts",            visibility: "visible_nav",     purpose: "Failed posts, blocked uploads, escalations." },
@@ -121,25 +122,29 @@ export const operatorDemoRoutes: DemoRoute[] = [
   { path: "/demo/operator/media-library",     portal: "operator", label: "Media Library",     visibility: "visible_nav",     purpose: "All client media — status, quality flags, caption readiness." },
   { path: "/demo/operator/team-oversight",    portal: "operator", label: "Team Oversight",    visibility: "visible_nav",     purpose: "Team member workload, task distribution, performance." },
   { path: "/demo/operator/system-status",     portal: "operator", label: "System Status",     visibility: "visible_nav",     purpose: "Build connections — what is live vs stubbed in this demo build." },
+  // ── Visible nav — Intelligence (4) ───────────────────────────────────────
+  { path: "/demo/operator/action-center",     portal: "operator", label: "Action Center",     visibility: "visible_nav",     purpose: "Recommended operator actions and AI-generated intelligence." },
+  { path: "/demo/operator/priority-board",    portal: "operator", label: "Priority Board",    visibility: "visible_nav",     purpose: "Kanban-style client priority board ranked by urgency and risk." },
+  { path: "/demo/operator/risk-center",       portal: "operator", label: "Risk Center",       visibility: "visible_nav",     purpose: "Risk monitoring surface — severity-ranked flags across the portfolio." },
+  { path: "/demo/operator/daily-digest",      portal: "operator", label: "Daily Digest",      visibility: "visible_nav",     purpose: "Daily briefing — priorities, alerts, reports due, pipeline bottlenecks." },
+  // ── Visible nav — Operations (5) ─────────────────────────────────────────
+  { path: "/demo/operator/content-calendar",  portal: "operator", label: "Content Calendar",  visibility: "visible_nav",     purpose: "Operator-side two-week content calendar across the portfolio." },
+  { path: "/demo/operator/content-ops",       portal: "operator", label: "Content Ops",       visibility: "visible_nav",     purpose: "Content operations surface." },
+  { path: "/demo/operator/workflow-engine",   portal: "operator", label: "Workflow Engine",   visibility: "visible_nav",     purpose: "Workflow engine surface." },
+  { path: "/demo/operator/operations-center", portal: "operator", label: "Ops Center",        visibility: "visible_nav",     purpose: "Operations center surface." },
+  { path: "/demo/operator/failed-posts",      portal: "operator", label: "Failed Posts",      visibility: "visible_nav",     purpose: "Posts that failed to publish — retry / triage queue." },
+  // ── Visible nav — Reporting (4) ──────────────────────────────────────────
+  { path: "/demo/operator/reporting-command", portal: "operator", label: "Report Command",    visibility: "visible_nav",     purpose: "Reporting command surface — weekly + monthly report pipeline." },
+  { path: "/demo/operator/weekly-reports",    portal: "operator", label: "Weekly Reports",    visibility: "visible_nav",     purpose: "Weekly reports archive." },
+  { path: "/demo/operator/monthly-reports",   portal: "operator", label: "Monthly Reports",   visibility: "visible_nav",     purpose: "Monthly reports archive." },
+  { path: "/demo/operator/kpis",              portal: "operator", label: "KPIs",              visibility: "visible_nav",     purpose: "Operator KPI surface." },
+  // ── Visible nav — Agents & Data (3) ──────────────────────────────────────
+  { path: "/demo/operator/ai-agents",         portal: "operator", label: "AI Agents",         visibility: "visible_nav",     purpose: "Operator view of the AI agent layer — purpose, outputs, confidence." },
+  { path: "/demo/operator/activity",          portal: "operator", label: "Activity",          visibility: "visible_nav",     purpose: "Operator activity feed — chronological audit trail." },
+  { path: "/demo/operator/media-inventory",   portal: "operator", label: "Media Inventory",   visibility: "visible_nav",     purpose: "Media inventory surface." },
   // ── Hidden from nav ───────────────────────────────────────────────────────
   { path: "/demo/operator",                   portal: "operator", label: "Portal Index",      visibility: "hidden_from_nav", purpose: "Operator demo portal index — alias for /demo/operator/operator-os." },
-  { path: "/demo/operator/failed-posts",      portal: "operator", label: "Failed Posts",      visibility: "hidden_from_nav", purpose: "Posts that failed to publish — retry / triage queue." },
-  { path: "/demo/operator/priority-board",    portal: "operator", label: "Priority Board",    visibility: "hidden_from_nav", purpose: "Kanban-style priority board — kept warm; not currently in nav." },
-  { path: "/demo/operator/workflow-engine",   portal: "operator", label: "Workflow Engine",   visibility: "hidden_from_nav", purpose: "Workflow engine surface." },
-  { path: "/demo/operator/operations-center", portal: "operator", label: "Operations Center", visibility: "hidden_from_nav", purpose: "Operations center surface." },
-  { path: "/demo/operator/content-calendar",  portal: "operator", label: "Content Calendar",  visibility: "hidden_from_nav", purpose: "Operator-side content calendar." },
-  { path: "/demo/operator/content-ops",       portal: "operator", label: "Content Ops",       visibility: "hidden_from_nav", purpose: "Content operations surface." },
-  { path: "/demo/operator/reporting-command", portal: "operator", label: "Reporting Command", visibility: "hidden_from_nav", purpose: "Reporting command surface." },
-  { path: "/demo/operator/risk-center",       portal: "operator", label: "Risk Center",       visibility: "hidden_from_nav", purpose: "Risk center surface." },
-  { path: "/demo/operator/action-center",     portal: "operator", label: "Action Center",     visibility: "hidden_from_nav", purpose: "Action center surface." },
-  { path: "/demo/operator/daily-digest",      portal: "operator", label: "Daily Digest",      visibility: "hidden_from_nav", purpose: "Daily digest surface." },
-  { path: "/demo/operator/weekly-reports",    portal: "operator", label: "Weekly Reports",    visibility: "hidden_from_nav", purpose: "Weekly reports archive." },
-  { path: "/demo/operator/monthly-reports",   portal: "operator", label: "Monthly Reports",   visibility: "hidden_from_nav", purpose: "Monthly reports archive." },
-  { path: "/demo/operator/ai-agents",         portal: "operator", label: "AI Agents",         visibility: "hidden_from_nav", purpose: "AI agents surface." },
-  { path: "/demo/operator/kpis",              portal: "operator", label: "KPIs",              visibility: "hidden_from_nav", purpose: "Operator KPIs." },
-  { path: "/demo/operator/activity",          portal: "operator", label: "Activity",          visibility: "hidden_from_nav", purpose: "Operator activity feed." },
-  { path: "/demo/operator/media-inventory",   portal: "operator", label: "Media Inventory",   visibility: "hidden_from_nav", purpose: "Media inventory surface." },
-  { path: "/demo/operator/client-detail",     portal: "operator", label: "Client Detail",     visibility: "hidden_from_nav", purpose: "Per-client detail view." },
+  { path: "/demo/operator/client-detail",     portal: "operator", label: "Client Detail",     visibility: "hidden_from_nav", purpose: "Per-client detail view — accessed via other pages, not top-level nav." },
   // ── Legacy ────────────────────────────────────────────────────────────────
   { path: "/demo/operator/overview",          portal: "operator", label: "Overview",          visibility: "legacy_demo",     purpose: "Legacy overview route — superseded by /demo/operator/operator-os." },
   { path: "/demo/operator/command-board",     portal: "operator", label: "Command Board",     visibility: "legacy_demo",     purpose: "Legacy command board — no clear replacement, deletion candidate." },

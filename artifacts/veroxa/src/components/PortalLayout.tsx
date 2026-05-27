@@ -9,8 +9,10 @@ import { getSupabaseClient } from "@/lib/supabase";
 
 export interface SidebarItem {
   label: string;
-  icon: React.ElementType;
+  icon?: React.ElementType;
   href?: string;
+  /** When set to 'section', renders as a section-header divider (no link, no icon). */
+  type?: 'section';
 }
 
 interface PortalLayoutProps {
@@ -101,6 +103,17 @@ function SidebarNav({
         </div>
         <nav className="space-y-1">
           {items.map((item, i) => {
+            // Section header — renders as a divider label, not a clickable item.
+            if (item.type === 'section') {
+              return (
+                <div key={i} className="pt-4 pb-1 px-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/35">
+                    {item.label}
+                  </p>
+                </div>
+              );
+            }
+
             const isActive = item.href?.startsWith("/")
               ? isRouteActive(item.href, location)
               : item.href?.startsWith("#")
@@ -113,14 +126,14 @@ function SidebarNav({
                 ? "bg-primary/10 text-primary"
                 : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
             );
-            const icon = (
+            const icon = item.icon ? (
               <item.icon
                 className={cn(
                   "w-4 h-4",
                   isActive ? "text-primary" : "text-sidebar-foreground/50"
                 )}
               />
-            );
+            ) : null;
             const testId = `sidebar-item-${item.label.toLowerCase().replace(/\s+/g, "-")}`;
 
             if (item.href?.startsWith("/")) {
