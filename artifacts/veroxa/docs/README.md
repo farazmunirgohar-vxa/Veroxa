@@ -43,6 +43,11 @@ phase" language elsewhere in this index.
   — master M001–M006 dev-test execution order with all
   correction subfiles inserted in the correct position. Human
   execution gate.
+- [`FIXTURE_COHERENCE_AUDIT.md`](./FIXTURE_COHERENCE_AUDIT.md) —
+  planning-only audit of demo fixture domains (clients, health,
+  financials, reports, media, agents, operations, system status),
+  their portal consumers, drift risks, and the safe future
+  cleanup direction. No runtime behavior change.
 
 ## Status & process
 

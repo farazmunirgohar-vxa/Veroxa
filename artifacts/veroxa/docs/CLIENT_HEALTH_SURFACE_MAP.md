@@ -114,3 +114,66 @@ shown in one page is not derivable from any other page.
   hard-invariant violations under the current gate.
 - Does not promote any SQL or backend work — the engine remains
   fixture-driven during the placeholder phase.
+
+---
+
+## 5. Health Vocabulary Drift (planning only — 2026-05-27)
+
+This section is a **planning record**, not a refactor. It mirrors
+the drift summary in `CLIENT_HEALTH_ENGINE_CONTRACT.md` §7 and
+exists so a reader who lands on the surface map first sees the
+same picture as a reader who lands on the engine contract.
+
+### 5.1 Current competing vocabularies (as observed on surfaces)
+
+| Vocabulary | Where it surfaces |
+|---|---|
+| `Healthy` / `Caution` / `Urgent` / `Broken` (`ClientHealthEngine`) | Owner shell pages that consume the engine, per §2 "Owner shell". |
+| `Excellent` / `Healthy` / `Warning` / `Critical` (`demoClientPriorities`) | Owner overview / priority surfaces that bypass the engine, per §2 "Owner shell" rows that reference `demoClientPriorities`. |
+| `healthy` / `attention` / `critical` (`demoClientHealth`) | `ClientHealthCenter` shared component and every page that mounts it (see §2 "Owner shell" and §2 "Operator shell" rows that reference `ClientHealthCenter`). |
+
+These three vocabularies render on the same screens in different
+contexts. Section 3 already lists the values; this section names
+the surfaces so the future migration can be sequenced page-by-page.
+
+### 5.2 Recommended future canonical vocabulary
+
+The recommended canonical vocabulary is
+`Healthy | Caution | Urgent | Broken` — the existing
+`ClientHealthEngine` output. The rationale lives in
+`CLIENT_HEALTH_ENGINE_CONTRACT.md` §7.2. This recommendation is
+advisory and must be re-confirmed before any code change.
+
+### 5.3 Future consolidation sequence (do not run yet)
+
+The full sequence is authored in
+`CLIENT_HEALTH_ENGINE_CONTRACT.md` §7.3. Reproduced here as a
+surface-ordered checklist so a future task can tick pages off
+against this map:
+
+1. **Map all labels** — author the mapping table in the engine
+   contract §4 and freeze it.
+2. **Normalize fixtures** — `demoClientPriorities` and
+   `demoClientHealth` category fields use the canonical
+   vocabulary.
+3. **Update owner surfaces** — every page under §2 "Owner shell"
+   (currently: `owner-dashboard`, `owner-client-health`,
+   `owner-executive-dashboard`, `owner-daily-briefing`,
+   `owner-client-analytics`, `owner-bi-center`).
+4. **Update operator surfaces** — every page under §2
+   "Operator shell" (currently: `operator-client-health`,
+   `operator-priority-board`, `operator-overview`).
+5. **Update team surfaces** — every page under §2 "Team shell"
+   that mounts `ClientHealthCenter` or reads `demoClientHealth`
+   (currently: `team-dashboard`, `team-performance`).
+6. **Verify client-facing labels** — re-render every page under
+   §2 "Client shell" to confirm no client-visible copy has
+   regressed and that the reduced client-facing vocabulary is
+   preserved.
+
+### 5.4 Explicit no-change note for this pass
+
+**No runtime behavior changes in this pass.** This planning
+section is documentation only. No surface was edited, no
+component was edited, no fixture was edited. The hard invariants
+in the top-of-file BUILD_STATUS current-state section still apply.

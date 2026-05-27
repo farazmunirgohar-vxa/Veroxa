@@ -268,3 +268,99 @@ A future task that migrates a non-engine surface to the engine MUST:
 4. Not flip `AUTH_MODE`, not connect to Supabase, not promote any SQL
    to `supabase/migrations/`.
 5. Update §5 of this document to reflect the resolved drift.
+
+---
+
+## 7. Health Vocabulary Drift (planning only — 2026-05-27)
+
+This section documents the current vocabulary drift across the
+codebase and records a **future** consolidation plan. **No runtime
+behavior is changed by this section.** It exists so a future, gated
+remediation task can proceed against a written plan instead of
+inferring intent from grep results.
+
+### 7.1 Current competing vocabularies
+
+Three independent health vocabularies are in use today. They do
+not have an authoritative mapping in code.
+
+| Source | Vocabulary | Used by |
+|---|---|---|
+| `ClientHealthEngine` (`lib/client-health/engine.ts`) | `Healthy` / `Caution` / `Urgent` / `Broken` | Owner and operator surfaces that consume the engine directly (see §2). Canonical for engine consumers. |
+| `demoClientPriorities` (fixture) | `Excellent` / `Healthy` / `Warning` / `Critical` | Owner overview / priority surfaces that read the fixture directly without the engine. |
+| `demoClientHealth` (fixture) | `healthy` / `attention` / `critical` | `ClientHealthCenter` shared component and any page that renders it (owner-client-health, operator-client-health). |
+
+The advisory mapping in §4 is **non-binding** — it exists so
+reviewers can reason about equivalence at audit time, not so code
+can do automatic translation.
+
+### 7.2 Recommended future canonical vocabulary
+
+**Recommendation (not yet implemented):** adopt the
+`ClientHealthEngine` four-state vocabulary
+(`Healthy | Caution | Urgent | Broken`) as the single canonical
+output for every consumer.
+
+**Why this vocabulary:**
+
+- It is the only vocabulary already produced by the
+  `ClientHealthEngine`, the documented source of truth (§1).
+- It has four states, which preserves the actionable granularity
+  of `demoClientPriorities` (`Excellent/Healthy/Warning/Critical`)
+  without losing the "Broken" state that signals data is missing
+  or invalid (which the three-state `demoClientHealth`
+  vocabulary cannot express).
+- It already drives §1.2 acceptance criteria — adopting it as
+  canonical does not require widening the engine contract.
+
+This recommendation is advisory only. A future consolidation task
+must re-confirm it before code edits.
+
+### 7.3 Future consolidation sequence (do not run yet)
+
+A future, separately-gated remediation pass should execute these
+steps **in this order**, and must be split into per-step PRs so
+each step ships with its own acceptance test:
+
+1. **Map all labels.** Produce a complete, authoritative mapping
+   table from every legacy label to the canonical
+   `Healthy | Caution | Urgent | Broken` vocabulary. Land the
+   table here in §4 and freeze it.
+2. **Normalize fixtures.** Update `demoClientPriorities` and
+   `demoClientHealth` so their stored category fields use the
+   canonical vocabulary; keep any human-readable labels as
+   separate display strings. Verify every fixture row's category
+   matches its underlying numeric / risk signals.
+3. **Update owner surfaces.** Migrate every page listed in §5.1
+   (`owner-client-health`, `owner-executive-dashboard`,
+   `owner-daily-briefing`) to render the canonical vocabulary,
+   either by consuming `ClientHealthEngine` directly or by
+   reading the normalized fixture fields from step 2.
+4. **Update operator surfaces.** Migrate every page listed in
+   §5.2 (`operator-client-health`, `operator-priority-board`,
+   `team-dashboard`, `team-performance`).
+5. **Update team surfaces.** Migrate any team-shell consumer of
+   `ClientHealthCenter` or `demoClientHealth` and remove the
+   shared component's internal `healthy/attention/critical`
+   mapping in favor of the canonical vocabulary.
+6. **Verify client-facing labels.** Re-render every client-shell
+   page to confirm no client-visible copy has regressed (the
+   client shell intentionally surfaces fewer health categories;
+   the consolidation must preserve that reduction).
+
+Each step's acceptance gate is the corresponding §5 sub-section
+of this document being updated to "resolved".
+
+### 7.4 Explicit no-change note for this pass
+
+**No runtime behavior changes in this pass.** This planning
+section is documentation only. Specifically:
+
+- No fixture values were edited.
+- No page component was edited.
+- The `ClientHealthEngine` outputs are unchanged.
+- The advisory mapping in §4 remains non-binding.
+- The hard invariants in the top-of-file BUILD_STATUS current-
+  state section still apply: `AUTH_MODE` stays `"placeholder"`,
+  no Supabase connection, no SQL promotion, no real provider
+  wiring, no routing or shell changes.

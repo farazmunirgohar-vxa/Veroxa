@@ -57,6 +57,9 @@ Read these before proposing any auth, SQL, or backend work:
 - [`PORTAL_QUERY_SAFETY_PLAN.md`](./PORTAL_QUERY_SAFETY_PLAN.md) —
   what the portal is allowed to read, scoped grep sweeps, latest
   audit pass.
+- [`PORTAL_QUERY_SAFETY_CHECKLIST.md`](./PORTAL_QUERY_SAFETY_CHECKLIST.md)
+  — exact grep commands that must pass before any portal query
+  change.
 - [`CLIENT_HEALTH_ENGINE_CONTRACT.md`](./CLIENT_HEALTH_ENGINE_CONTRACT.md)
   — authoritative outputs of `ClientHealthEngine` and the latest
   drift audit per page.
