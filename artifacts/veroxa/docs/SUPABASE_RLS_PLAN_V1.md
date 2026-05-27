@@ -187,8 +187,13 @@ Planned views (created in the migration that creates the underlying table, with 
 |---|---|---|---|
 | `client_portal_clients_view` | `clients` | id, business_name, primary contact fields, cuisine_type, address, website_url, hours_text, timezone, account_status, content_health_status | `monthly_fee_cents`, `plan_type`, `service_package`, `risk_status`, `assigned_operator_id`, `assigned_team_label`, internal notes |
 | `client_portal_media_view` | `media_assets` | id, client_id, file_url, file_type, title, review_status, used_in_post_id, created_at | `rejection_reason` (raw), internal `team_note`, raw `quality_score`, `source_type` (just exposed as `is_client_upload` boolean if needed) — rejection text rewritten into a `client_message` field by a `case` in the view |
-| `client_portal_reports_view` | `weekly_reports` + `monthly_reports` (UNION ALL with `report_kind` column) | published reports only (`where status='published'`), client_id, period dates, summary_json (client-safe fields), top_post_id, published_at | `internal_validation_note`, `operator_review_note`, draft-only fields, anything pre-`published` |
-| `client_portal_calendar_view` | `posts` + `post_slots` | scheduled and published posts only, slot_date/time, platform, caption (final), media references | concepts, drafts, variants, internal scheduling notes, pre-publish posts |
+| `client_portal_weekly_reports_view` | `weekly_reports` | published weeklies only (`where status='published'`), client_id, week_start, `summary_json->'client_safe'` projection, top_post_id, published_at | `internal_validation_note`, `draft_owner_id`, `validation_owner_id`, raw `summary_json`, drafted / validated rows |
+| `client_portal_monthly_reports_view` | `monthly_reports` | published monthlies only (`where status='published'`), client_id, month_key, `summary_json->'client_safe'` projection, top_post_id, published_at | `approved_by_user_id`, raw `summary_json`, drafting / operator_review / approved rows |
+| `client_portal_calendar_view` | `posts` + `post_slots` | scheduled and published posts only, slot_date/time, platform, `client_safe_title`, media references | concepts, drafts, variants, internal scheduling notes, pre-publish posts |
+| `client_portal_platforms_view` | `client_platforms` | id, client_id, platform, handle, connected_status, last_synced_at | internal `notes`, raw OAuth state |
+| `client_portal_onboarding_view` | `onboarding_items` | full row (no staff-only columns today, but routed through the view for consistency) | — |
+| `client_portal_requests_view` | `client_requests` | id, client_id, subject, body, status, created_at | `assigned_to_role`, `requested_by_user_id` |
+| `client_portal_health_view` | `client_health_snapshots` | client-safe summary fields | raw `priority_level`, `unresolved_alerts_count` |
 | `client_portal_notifications_view` | `notifications` | id, target_user_id, title, body, status, created_at — filtered to `target_role='client'` AND (`target_user_id = auth.uid()` OR `target_user_id is null`) | internal `trigger_source` payload, staff-routed notifications |
 
 Rules:

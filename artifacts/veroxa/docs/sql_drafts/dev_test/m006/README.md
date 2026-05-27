@@ -56,6 +56,28 @@ If any precondition is false, STOP.
 - RLS + policies on all four tables
 - No client-safe views (all four tables are internal-only)
 
+## `ai_agents.config_json` safety checklist (mandatory before sign-off)
+
+`config_json` is plaintext jsonb readable by any Owner. Anything
+secret-shaped that lands in this column is a leak. Before signing off
+this package, confirm:
+
+- [ ] No API keys (`api_key`, `apiKey`, `api-key`, `x-api-key`) at any depth.
+- [ ] No bearer tokens (`Authorization`, `Bearer `, `bearer`) at any depth.
+- [ ] No provider secrets (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`,
+      `GOOGLE_API_KEY`, `openai_*`, `anthropic_*`, `gemini_*`).
+- [ ] No live model credentials (`sk-...`, `xai-...`, JWT-shaped
+      `eyJ...`, Stripe `sk_live_*` / `pk_live_*`).
+- [ ] No signed URLs (`X-Amz-Signature`, `X-Goog-Signature`, `?token=`).
+- [ ] **`ai_agents.is_enabled=true` is INERT** — there is no runtime
+      in this codebase that reads the flag. Tests 8a, 8b, 11b confirm
+      this is documentary only; flipping the flag has no external
+      effect in this phase.
+
+Failure of any item above is a security incident — rotate any leaked
+value, scrub `config_json`, and do NOT promote M006 SQL to
+`supabase/migrations/`.
+
 ## Locked decisions vs. the originating prompt
 
 1. `ai_agents.config_json` key shape is locked to

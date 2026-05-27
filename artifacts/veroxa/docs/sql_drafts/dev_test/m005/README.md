@@ -40,14 +40,17 @@ If any precondition is false, STOP. Do not proceed.
 | Step | File | Where to run |
 |---|---|---|
 | 1 | `01_apply_m005.sql` | Supabase SQL editor (service-role / postgres context) |
+| 1b | `01b_apply_reports_select_staff_correction.sql` | Supabase SQL editor — closes the `can_view_client` defect on `weekly_reports_select_staff` + `monthly_reports_select_staff`, mirroring `m003/01c` and `m004/01c`. Run BEFORE the seed. |
 | 2 | `02_seed_m005_dev_data.sql` | Supabase SQL editor (replace UUID placeholders first) |
 | 3 | `03_test_m005_queries.sql` | Supabase SQL editor — run each numbered block separately |
 | 4 | `04_m005_test_results.md` | Fill in pass/fail as you go |
 | 5 | `M005_EXECUTION_SUMMARY.md` | Reference — describes what this package does, stop conditions |
 
-> No `01b` guard file in M005 — the source draft has no separate guard
-> migration (unlike M003 notifications-status and M004 post-slot-reset
-> guards). Apply step 2 directly after step 1.
+> Unlike M003 and M004, M005 has no `01b` guard trigger (the source
+> draft has no separate trigger-based guard migration). What 01b does
+> here is the staff-policy correction — same defect class as
+> `m003/01c` and `m004/01c`, but applied to the two report staff
+> SELECT policies.
 
 ## Locked deviations from the originating prompt
 

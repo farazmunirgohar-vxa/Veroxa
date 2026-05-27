@@ -10,6 +10,14 @@ the client portal MUST follow once Supabase is connected.
   views only. Every prior `.from("clients" | "client_platforms" |
   "media_assets" | "posts" | "post_slots" | "weekly_reports" |
   "monthly_reports" | "draft_variants")` call has been removed.
+- **Auth scaffolding is intentionally excluded from this contract.**
+  `src/lib/auth/useRealAuth.ts` and `src/pages/login.tsx` read
+  `public.user_profiles` to resolve the caller's own row during the
+  future `AUTH_MODE='real'` sign-in flow. That path is governed by the
+  M001 `user_profiles` self-row RLS policy, not by the client-portal
+  view contract. The grep sweeps in `PORTAL_QUERY_SAFETY_CHECKLIST.md`
+  pre-exclude those two files. Both files are inert while
+  `AUTH_MODE='placeholder'`.
 - `draft_variants` is now forbidden in the client portal data path.
   `getClientDraftVariants` and `getClientPostSlots` have been removed
   from the supabase library; the calendar view replaces both posts and
@@ -142,12 +150,63 @@ contract activates the moment the portal flips to a real Supabase
 client; both events (view materialization and portal flip) must happen
 in the same release.
 
+## Latest audit pass
+
+This section records the most recent full audit pass against the hard
+invariants. Update it (do not append) when a new pass completes.
+
+**Date:** 2026-05-27
+**Scope:** Narrow safety / drift cleanup pass — `clientPortalQueries.ts`
+views-only refactor, draft-variants removal from `useClientPortalData`,
+M005 staff-policy correction added under `dev_test/m005/01b_*`, M006 AI
+config safety checklist consolidated, RLS plan view-name drift fixed,
+master dev-test execution order published.
+
+**Invariant confirmations (all verified at end of pass):**
+
+- ✅ `AUTH_MODE` is the literal string `"placeholder"` in
+  `src/lib/auth/authMode.ts`.
+- ✅ No file exists under `supabase/migrations/`. All SQL stays under
+  `docs/sql_drafts/`.
+- ✅ The portal is NOT wired to any real database. The hook + page that
+  call into `@/lib/supabase` are inert without env vars and are gated
+  by demo-data fallbacks.
+- ✅ No real AI provider is wired. `ai_agents.is_enabled=true` remains
+  inert because no runtime reads it.
+- ✅ `ai_agents.config_json` contains no secrets, API keys, bearer
+  tokens, or signed URLs — enforced by the consolidated checklist in
+  `MIGRATION_006_TEST_PLAN.md` §11x and `dev_test/m006/README.md`.
+- ✅ Demo gate `veroxa-preview` unchanged.
+- ✅ Locked pricing unchanged: GPS 49700, COP 12mo 99700, COP 6mo
+  109700, COP 3mo 119700, COP no-contract 149700.
+- ✅ Roles are exactly Client / Team / Operator / Owner.
+- ✅ Fixtures only. No real client / restaurant / customer data.
+- ✅ No navigation routing or four-shell changes.
+
+**Sweeps run (both must return zero):**
+
+- Forbidden base-table grep from `PORTAL_QUERY_SAFETY_CHECKLIST.md` §1
+  → 0 matches.
+- Removed library exports grep from `PORTAL_QUERY_SAFETY_CHECKLIST.md`
+  §2 → 0 matches.
+
+**Open items (not blocking this pass):**
+
+- `useClientPortalData` will still attempt Supabase reads on mount
+  whenever the `VITE_SUPABASE_*` env vars are present, regardless of
+  `AUTH_MODE`. The reads are scoped to client-safe views and fail
+  closed to demo fixtures, so the invariants hold; gating the hook on
+  `AUTH_MODE === "real"` is a future enhancement, deliberately out of
+  scope for this safety pass per the hard invariants.
+
 ## Cross-references
 
 - Portal-connect views draft: `docs/sql_drafts/migrations_review/002_003_004_portal_connect_views_draft.sql`
 - M003 notifications status guard: `docs/sql_drafts/migrations_review/003_notifications_status_guard_draft.sql`
 - M004 post-slot reset trigger: `docs/sql_drafts/migrations_review/004_post_slot_reset_guard_draft.sql`
 - M005 (report views shipped): `docs/sql_drafts/migrations_review/005_reporting_foundation_draft.sql`
+- M005 staff-policy correction (dev-test): `docs/sql_drafts/dev_test/m005/01b_apply_reports_select_staff_correction.sql`
 - M006 draft (internal-only tables): `docs/sql_drafts/migrations_review/006_content_ai_layer_draft.sql`
+- Master dev-test execution order: `docs/sql_drafts/dev_test/README.md`
 - Route map: `docs/ROUTE_VISIBILITY_STRATEGY.md`
 - RLS reference: `docs/SUPABASE_RLS_PLAN_V1.md`

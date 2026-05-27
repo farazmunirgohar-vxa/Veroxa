@@ -147,6 +147,35 @@ All agents seeded with `config_json = NULL` initially.
 - [ ] No environment variable for an AI provider key is required to apply M006 or run the seed.
 - [ ] `config_json` for every seeded agent contains no `api_key`, `apiKey`, `Authorization`, bearer-shaped string, or `sk-`-prefixed string.
 
+#### 11x. `ai_agents.config_json` safety checklist (must pass)
+
+`config_json` is plaintext jsonb readable by any Owner. Anything
+secret-shaped that lands in this column is a leak. Before sign-off:
+
+- [ ] **No API keys.** No `api_key`, `apiKey`, `api-key`, or
+      `x-api-key` value at any JSON depth.
+- [ ] **No bearer tokens.** No `Authorization`, `authorization`,
+      `bearer`, or `Bearer ` value at any JSON depth.
+- [ ] **No provider secrets.** No `openai_*`, `anthropic_*`,
+      `gemini_*`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`,
+      `GOOGLE_API_KEY`, or similar provider-prefixed key strings.
+- [ ] **No live model credentials.** No `sk-`-prefixed string, no
+      `xai-`-prefixed string, no `pk_live_` / `sk_live_` Stripe-shaped
+      string, no JWT-shaped string (`eyJ...`).
+- [ ] **No signed URLs.** No `https://...?X-Amz-Signature=`,
+      `?X-Goog-Signature=`, `?token=`, or other pre-signed URL
+      patterns.
+- [ ] **`is_enabled=true` remains inert.** No agent runtime exists in
+      this codebase to read the flag. Flipping the flag in M006 has no
+      external side effect. Test 11b confirms this is documentary.
+- [ ] **`config_json` key shape stays locked** to
+      `{model, temperature, prompt_template_id, max_tokens}`. Any
+      additional key must pass every check above.
+
+Failure of any item above is a security incident, not a test failure
+— rotate any leaked value, scrub `config_json`, and do not promote
+M006 SQL to `supabase/migrations/`.
+
 ### 12. additional_media_ids hygiene (issue E4 follow-up)
 - [ ] Inserting a concept with `additional_media_ids = ARRAY['<media on A>', '<media on A>']::uuid[]` succeeds.
 - [ ] Inserting a concept with `additional_media_ids = ARRAY['<random uuid not in media_assets>']::uuid[]` succeeds (no FK enforcement). Confirms the documented limitation.

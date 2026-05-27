@@ -124,6 +124,37 @@ export default function SupabaseTestPage() {
           </p>
         </div>
 
+        <div className="mb-6 rounded-lg border border-amber-400/30 bg-amber-400/5 p-4 text-xs leading-relaxed text-amber-200/90 animate-in fade-in slide-in-from-bottom-6 duration-600">
+          <p className="font-semibold uppercase tracking-wider text-amber-300 mb-1.5">
+            Placeholder-phase diagnostics only
+          </p>
+          <ul className="space-y-1 list-disc list-inside marker:text-amber-400/50">
+            <li>
+              <code className="text-amber-100">AUTH_MODE</code> remains{" "}
+              <code className="text-amber-100">&quot;placeholder&quot;</code>.
+              This page does NOT activate production auth or backend wiring.
+            </li>
+            <li>
+              No real database connection is required for normal demo use.
+              The portal runs on local fixtures.
+            </li>
+            <li>
+              All client portal query checks must use{" "}
+              <code className="text-amber-100">client_portal_*</code> views
+              only — never base tables. See{" "}
+              <code className="text-amber-100">
+                docs/PORTAL_QUERY_SAFETY_CHECKLIST.md
+              </code>
+              .
+            </li>
+            <li>
+              This is read-only, view-only smoke testing. Do not promote
+              what you learn here to a live integration without the full
+              safety pass.
+            </li>
+          </ul>
+        </div>
+
         <div className="rounded-xl border border-border bg-card p-6 animate-in fade-in slide-in-from-bottom-8 duration-700">
           {state.status === "idle" || state.status === "loading" ? (
             <div className="flex flex-col items-center gap-4 py-10 text-muted-foreground">

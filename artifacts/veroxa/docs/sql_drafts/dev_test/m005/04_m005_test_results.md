@@ -15,6 +15,8 @@
 - [ ] M004 staff-policy correction applied (`m004/01c`)
 - [ ] M001–M004 fixtures present (clients A + B, posts A1/A2)
 - [ ] M005 apply step succeeded (no errors from `01_apply_m005.sql`)
+- [ ] M005 staff-policy correction applied (`01b_apply_reports_select_staff_correction.sql`)
+- [ ] `pg_policies` confirms `weekly_reports_select_staff` and `monthly_reports_select_staff` both contain `is_assigned_to_client` and NOT `can_view_client`
 - [ ] M005 seed step succeeded (`weekly_reports`=6, `monthly_reports`=6)
 
 ## Test results

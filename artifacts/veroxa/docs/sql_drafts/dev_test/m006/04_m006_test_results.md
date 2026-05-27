@@ -18,6 +18,18 @@
 - [ ] M006 seed succeeded (`concepts=4, sets=4, variants=5, agents=5`)
 - [ ] Seed `config_json` audit returned 0 suspicious rows
 
+**`ai_agents.config_json` safety checklist (must all pass before sign-off)**
+
+- [ ] No API keys (`api_key`, `apiKey`, `api-key`, `x-api-key`) in any row
+- [ ] No bearer tokens (`Authorization`, `Bearer `, `bearer`) in any row
+- [ ] No provider secrets (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`,
+      `GOOGLE_API_KEY`, `openai_*`, `anthropic_*`, `gemini_*`)
+- [ ] No live model credentials (`sk-...`, `xai-...`, JWT `eyJ...`,
+      Stripe `sk_live_*` / `pk_live_*`)
+- [ ] No signed URLs (`X-Amz-Signature`, `X-Goog-Signature`, `?token=`)
+- [ ] `ai_agents.is_enabled=true` confirmed INERT — no runtime reads
+      the flag in this codebase; toggling it has no external effect
+
 ## Test results
 
 | #   | Test                                                          | Result | Notes |

@@ -34,13 +34,17 @@ isolation.
 |---|---|
 | `README.md` | How to run + preconditions + locked deviations + UUID table |
 | `01_apply_m005.sql` | Applies M005 schema, RLS, and the two views |
+| `01b_apply_reports_select_staff_correction.sql` | Closes the `can_view_client` defect on `weekly_reports_select_staff` + `monthly_reports_select_staff` (mirrors `m003/01c` and `m004/01c`). Run BEFORE seed. |
 | `02_seed_m005_dev_data.sql` | Seeds 6 weekly + 6 monthly fixture rows (replace `<<...>>` placeholders) |
 | `03_test_m005_queries.sql` | 16 tests, 41 numbered checks |
 | `04_m005_test_results.md` | Pass/fail tracker (one row per check) |
 | `M005_EXECUTION_SUMMARY.md` | This file |
 
-> Unlike M003 and M004 this package has no `01b` guard step. The M005
-> draft has no separate guard migration.
+> M005 has no `01b` trigger-based guard migration (unlike M003's
+> notifications-status guard or M004's post-slot reset guard). The
+> `01b` step here is a staff-policy correction — same defect class as
+> `m003/01c` and `m004/01c`, applied to the two report staff SELECT
+> policies.
 
 ## Fixture overview (after seed)
 

@@ -1,3 +1,35 @@
+// =============================================================================
+// CLIENT PORTAL DATA HOOK — PLACEHOLDER-PHASE GUARDRAIL
+//
+// This hook is the single client-portal data load path. The following rules
+// are non-negotiable and must NOT be bypassed without explicit, documented,
+// future approval:
+//
+//   1. NO base-table reads. Every Supabase read MUST go through a
+//      `client_portal_*` view via the helpers exported from
+//      `@/lib/supabase`. Reading `public.clients`, `public.posts`,
+//      `public.post_slots`, `public.weekly_reports`,
+//      `public.monthly_reports`, `public.media_assets`,
+//      `public.draft_variants`, etc. from here would leak sensitive
+//      internal columns (pricing, staffing, internal notes, raw payloads).
+//
+//   2. NO `AUTH_MODE` flip. This hook must keep working when
+//      `AUTH_MODE === "placeholder"`. Adding code paths that REQUIRE real
+//      auth, or that no-op silently when placeholder is set, is forbidden.
+//
+//   3. NO production-database connection. The portal stays disconnected
+//      from any real Supabase project in this phase. The supabase helpers
+//      called here are inert when no env vars are configured; do not add
+//      code that fails closed in a way that breaks the local demo.
+//
+//   4. NO real client / restaurant / customer data. Fixtures only, both in
+//      the demo-data fallbacks below and in any new code paths added here.
+//
+// See `docs/PORTAL_QUERY_SAFETY_PLAN.md`,
+// `docs/PORTAL_QUERY_SAFETY_CHECKLIST.md`, and the comment block at the
+// top of `src/lib/supabase/clientPortalQueries.ts` for the full contract.
+// =============================================================================
+
 import { useState, useEffect } from "react";
 import {
   MAMADALI_DEMO_CLIENT_ID,

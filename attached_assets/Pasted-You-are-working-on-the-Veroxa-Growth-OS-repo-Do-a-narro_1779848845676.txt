@@ -1,0 +1,202 @@
+You are working on the Veroxa Growth OS repo. Do a narrow safety/drift cleanup pass only. The uploaded ZIP/current workspace is authoritative if it disagrees with GitHub.
+
+Veroxa project context:
+- React + Vite static portal at artifacts/veroxa/ inside a pnpm monorepo.
+- Currently a fixtures-driven demo.
+- Four roles: Client, Team, Operator, Owner.
+- Supabase schema is being designed in SQL drafts but NOT yet applied.
+- The portal is not connected to any real backend in this phase.
+
+Hard invariants — do not violate any of these:
+
+1. `AUTH_MODE` stays the literal string `"placeholder"` in
+   `artifacts/veroxa/src/lib/auth/authMode.ts`.
+2. No file may be added to `supabase/migrations/`. All SQL stays under
+   `artifacts/veroxa/docs/sql_drafts/`.
+3. The portal stays disconnected from any real database in this phase.
+4. No real AI provider (OpenAI / Anthropic / Gemini / etc.) wired up.
+   `ai_agents.is_enabled=true` must remain inert.
+5. `ai_agents.config_json` must never contain secrets, API keys,
+   bearer tokens, or signed URLs.
+6. Demo gate `veroxa-preview` stays in place.
+7. Locked pricing values unchanged (GPS 49700, COP 12mo 99700, COP 6mo
+   109700, COP 3mo 119700, COP no-contract 149700).
+8. Roles are exactly Client / Team / Operator / Owner.
+9. Real client / restaurant / customer data: zero. Fixtures only.
+10. No changes to navigation routing or the four portal shells.
+
+Forbidden scope expansion:
+- Do not flip AUTH_MODE.
+- Do not add files under supabase/migrations/.
+- Do not connect the portal to a real database.
+- Do not wire OpenAI, Anthropic, Gemini, Stripe, publishing APIs, storage uploads, or real auth.
+- Do not touch pricing values.
+- Do not touch navigation routing or the four portal shells.
+- Do not add real client, restaurant, or customer data.
+- Do not rewrite marketing/branding copy.
+- Stop and ask before any deviation.
+
+All new SQL must go under artifacts/veroxa/docs/sql_drafts/ only, never supabase/migrations/.
+
+Tasks in execution order:
+
+T01 — Add an M005 staff-policy correction dev-test file.
+Goal:
+Add an M005 staff-policy correction dev-test file that changes `weekly_reports_select_staff` and `monthly_reports_select_staff` from `can_view_client` to `is_assigned_to_client`.
+
+Touch only:
+- artifacts/veroxa/docs/sql_drafts/dev_test/m005/01b_apply_reports_select_staff_correction.sql
+
+Acceptance criteria:
+- New file exists.
+- It drops/recreates only the two M005 staff SELECT policies.
+- Both recreated policies use `private.is_assigned_to_client(client_id)`.
+- It does not touch `supabase/migrations/`.
+
+T02 — Update M005 dev-test documentation.
+Goal:
+Update M005 dev-test documentation so humans know to run the new correction after `01_apply_m005.sql` and before tests.
+
+Touch only:
+- artifacts/veroxa/docs/sql_drafts/dev_test/m005/README.md
+- artifacts/veroxa/docs/sql_drafts/dev_test/m005/04_m005_test_results.md
+- artifacts/veroxa/docs/sql_drafts/dev_test/m005/M005_EXECUTION_SUMMARY.md
+
+Dependencies:
+- T01
+
+Acceptance criteria:
+- M005 docs list `01b_apply_reports_select_staff_correction.sql` in execution order.
+- Results checklist includes confirmation that both report staff policies use `is_assigned_to_client`.
+- No production migration is implied.
+
+T03 — Update portal-query safety docs.
+Goal:
+Update portal-query safety docs to record that all current client portal data reads use `client_portal_*` views, while auth scaffolding direct `user_profiles` reads are excluded and inactive under placeholder auth.
+
+Touch only:
+- artifacts/veroxa/docs/PORTAL_QUERY_SAFETY_PLAN.md
+- artifacts/veroxa/docs/PORTAL_QUERY_SAFETY_CHECKLIST.md
+
+Acceptance criteria:
+- Docs include current view list.
+- Docs mention auth scaffolding exclusions.
+- Docs include a grep command/check that flags any future client portal `.from()` base-table read.
+
+T04 — Fix RLS plan view-name drift.
+Goal:
+Fix RLS plan view-name drift to match current split client portal views.
+
+Touch only:
+- artifacts/veroxa/docs/SUPABASE_RLS_PLAN_V1.md
+
+Dependencies:
+- T03
+
+Acceptance criteria:
+- RLS plan no longer presents `client_portal_reports_view` as the current portal read shape.
+- RLS plan references the split weekly/monthly/calendar/client/platform/media views consistently.
+
+T05 — Add M006 AI config safety checklist.
+Goal:
+Add an M006 AI config safety checklist so `ai_agents.config_json` remains secret-free and provider-free.
+
+Touch only:
+- artifacts/veroxa/docs/MIGRATION_006_TEST_PLAN.md
+- artifacts/veroxa/docs/sql_drafts/dev_test/m006/README.md
+- artifacts/veroxa/docs/sql_drafts/dev_test/m006/04_m006_test_results.md
+
+Acceptance criteria:
+- Checklist includes no API keys, bearer tokens, signed URLs, provider secrets, or live model credentials in `ai_agents.config_json`.
+- Checklist confirms `ai_agents.is_enabled=true` is inert because no runtime consumes it.
+
+T06 — Add visible warning on Supabase test page.
+Goal:
+Add a visible developer-facing warning on the Supabase test page that it is read-only, view-only, placeholder-phase diagnostics and not production auth/backend activation.
+
+Touch only:
+- artifacts/veroxa/src/pages/supabase-test.tsx
+
+Dependencies:
+- T03
+
+Acceptance criteria:
+- Page visibly states `AUTH_MODE` remains placeholder.
+- Page states no real database connection is required for normal demo.
+- Page states all client portal query checks must use `client_portal_*` views only.
+
+T07 — Add source-level guardrail comments near client portal hook loading.
+Goal:
+Add source-level guardrail comments near client portal hook loading logic warning not to bypass placeholder/demo safety without explicit future approval.
+
+Touch only:
+- artifacts/veroxa/src/hooks/useClientPortalData.ts
+
+Dependencies:
+- T03
+
+Acceptance criteria:
+- Comment exists above the hook/load path.
+- It states no base-table reads, no auth flip, no production connection, and no real client data.
+- No functional behavior changes.
+
+T08 — Run final hygiene checks and document results.
+Goal:
+Run final hygiene checks for invariant-sensitive strings and document results in the current portal safety plan.
+
+Touch only:
+- artifacts/veroxa/docs/PORTAL_QUERY_SAFETY_PLAN.md
+
+Dependencies:
+- T01, T02, T03, T04, T05, T06, T07
+
+Acceptance criteria:
+- Plan includes a final “latest audit pass” section confirming:
+  - `AUTH_MODE="placeholder"`
+  - no `supabase/migrations/`
+  - demo gate unchanged
+  - pricing unchanged
+  - roles unchanged
+  - client portal reads through views
+
+T09 — Prepare human-run dev-test execution order note.
+Goal:
+Prepare a human-run execution order note for M001–M006 that includes correction subfiles in the correct order.
+
+Touch only:
+- artifacts/veroxa/docs/sql_drafts/dev_test/README.md
+
+Dependencies:
+- T01, T02
+
+Acceptance criteria:
+- README lists M001, M002, M003 + 01b/01c, M004 + 01b/01c, M005 + 01b, M006 in order.
+- It says humans run these manually on dev Supabase only.
+
+Important:
+Do not implement T10. T10 is post-execution only and requires actual human dev-test results.
+
+After completing tasks:
+1. Run typecheck/build checks appropriate for this pnpm monorepo. At minimum, inspect package scripts and run the relevant typecheck/build for artifacts/veroxa if available.
+2. Run an architect/code-review pass against the hard invariants.
+3. Do not hide failures. If typecheck/build fails for pre-existing reasons, report the exact command and error.
+
+Final report must include explicit confirmation lines for every hard invariant:
+
+- Confirm invariant 1: AUTH_MODE remains literal "placeholder".
+- Confirm invariant 2: no file added to supabase/migrations/.
+- Confirm invariant 3: portal remains disconnected from any real database in this phase.
+- Confirm invariant 4: no real AI provider wired; ai_agents.is_enabled=true remains inert.
+- Confirm invariant 5: ai_agents.config_json contains no secrets, API keys, bearer tokens, or signed URLs.
+- Confirm invariant 6: demo gate veroxa-preview remains in place.
+- Confirm invariant 7: locked pricing values unchanged: GPS 49700, COP 12mo 99700, COP 6mo 109700, COP 3mo 119700, COP no-contract 149700.
+- Confirm invariant 8: roles remain exactly Client / Team / Operator / Owner.
+- Confirm invariant 9: no real client / restaurant / customer data added; fixtures only.
+- Confirm invariant 10: no navigation routing or four portal shell changes.
+
+End final report with:
+- Files changed.
+- Commands run.
+- Typecheck/build result.
+- Architect/code-review result.
+- Any open questions or blocked items.
