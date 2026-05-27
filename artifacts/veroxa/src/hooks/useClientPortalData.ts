@@ -141,6 +141,10 @@ export type UseClientPortalDataResult = {
   data: ClientPortalData;
   /** Human-friendly description of the active source. Stable for UI badges. */
   dataSourceMessage: string;
+  /** True iff the data on screen came from a real Supabase read (M008). */
+  isReadOnlyLive: boolean;
+  /** Populated when the portal fell back to fixtures. Null when live. */
+  fallbackReason: string | null;
 };
 
 const SOURCE_MESSAGES: Record<ClientPortalSource, string> = {
@@ -311,6 +315,8 @@ export function useClientPortalData(): UseClientPortalDataResult {
         error: null,
         data: DEMO_DATA,
         dataSourceMessage: SOURCE_MESSAGES[initialSource],
+        isReadOnlyLive: false,
+        fallbackReason: null,
       }
     : {
         source: "fixture",
@@ -318,6 +324,8 @@ export function useClientPortalData(): UseClientPortalDataResult {
         error: null,
         data: DEMO_DATA,
         dataSourceMessage: SOURCE_MESSAGES.fixture,
+        isReadOnlyLive: false,
+        fallbackReason: null,
       };
 
   const [state, setState] = useState<UseClientPortalDataResult>(initialState);
@@ -414,13 +422,16 @@ export function useClientPortalData(): UseClientPortalDataResult {
           monthlyTyped.length === 0;
 
         if (looksEmpty) {
+          const reason =
+            "Supabase read blocked by RLS or missing authenticated session. Fixture fallback remains active.";
           setState({
             source: "fallback",
             loading: false,
-            error:
-              "Supabase read blocked by RLS or missing authenticated session. Fixture fallback remains active.",
+            error: reason,
             data: DEMO_DATA,
             dataSourceMessage: SOURCE_MESSAGES.fallback,
+            isReadOnlyLive: false,
+            fallbackReason: reason,
           });
           return;
         }
@@ -433,6 +444,8 @@ export function useClientPortalData(): UseClientPortalDataResult {
           loading: false,
           error: null,
           dataSourceMessage: SOURCE_MESSAGES[successSource],
+          isReadOnlyLive: true,
+          fallbackReason: null,
           data: {
             businessName,
             scheduledPosts,
@@ -465,6 +478,8 @@ export function useClientPortalData(): UseClientPortalDataResult {
           error: message,
           data: DEMO_DATA,
           dataSourceMessage: SOURCE_MESSAGES[fallbackSource],
+          isReadOnlyLive: false,
+          fallbackReason: message,
         });
       }
     }

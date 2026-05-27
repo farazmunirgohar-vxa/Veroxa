@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientPortalData } from "@/hooks/useClientPortalData";
+import { DataSourceBadge } from "@/components/DataSourceBadge";
 
 const EXTRA_CARDS = [
   {
@@ -48,7 +49,7 @@ const EXTRA_CARDS = [
 ];
 
 export default function ClientReports() {
-  const { data } = useClientPortalData();
+  const { data, source, dataSourceMessage } = useClientPortalData();
   const report = data.monthlyReportPreview;
 
   return (
@@ -63,6 +64,7 @@ export default function ClientReports() {
         <p className="text-muted-foreground mt-1 text-sm md:text-base">
           Your performance reports — weekly updates, monthly summaries, and top content.
         </p>
+        <DataSourceBadge source={source} message={dataSourceMessage} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

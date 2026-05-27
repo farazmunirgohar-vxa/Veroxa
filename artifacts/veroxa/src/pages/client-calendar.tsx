@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientPortalData } from "@/hooks/useClientPortalData";
+import { DataSourceBadge } from "@/components/DataSourceBadge";
 import { pickImageForCaption } from "@/data/demo/demoContentMatching";
 
 // Calendar entries in DEMO_DATA are for Demo Grill House (demo-a).
@@ -16,7 +17,7 @@ const STATUS_STYLE: Record<string, string> = {
 };
 
 export default function ClientCalendar() {
-  const { data } = useClientPortalData();
+  const { data, source, dataSourceMessage } = useClientPortalData();
 
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
@@ -27,6 +28,7 @@ export default function ClientCalendar() {
         <p className="text-muted-foreground mt-1 text-sm md:text-base">
           Your upcoming posts — scheduled, in review, and waiting on content.
         </p>
+        <DataSourceBadge source={source} message={dataSourceMessage} />
       </div>
 
       {/* Approval gate note */}

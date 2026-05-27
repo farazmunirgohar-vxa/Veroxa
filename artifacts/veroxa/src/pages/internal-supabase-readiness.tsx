@@ -16,6 +16,50 @@ import {
   getSupabaseHealthReport,
   type SupabaseHealthReport,
 } from "@/lib/supabase/supabaseHealth";
+import {
+  getClientPortalSummaryReadOnly,
+  getClientPortalMediaReadOnly,
+  getClientPortalCalendarReadOnly,
+  getClientPortalReportsReadOnly,
+  getClientPortalRequestsReadOnly,
+  getClientPortalUpdatesReadOnly,
+  getClientPortalGoogleSnapshotReadOnly,
+  getClientPortalAccountReadOnly,
+} from "@/lib/data/supabaseReadOnlyData";
+import type { ReadOnlyEnvelope } from "@/lib/data/clientPortalReadOnlyTypes";
+
+type CoverageRow = {
+  label: string;
+  status: "live" | "fallback" | "skipped" | "loading";
+  message: string;
+};
+
+function envelopeToRow(label: string, env: ReadOnlyEnvelope<unknown>): CoverageRow {
+  if (env.status === "live") return { label, status: "live", message: "Available" };
+  if (env.status === "fallback")
+    return { label, status: "fallback", message: env.error || "Fallback active" };
+  return { label, status: "skipped", message: env.error || "Not implemented" };
+}
+
+function CoverageStatusPill({ status }: { status: CoverageRow["status"] }) {
+  const styles: Record<CoverageRow["status"], string> = {
+    live:     "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
+    fallback: "bg-amber-500/10 text-amber-400 border-amber-500/30",
+    skipped:  "bg-muted/20 text-muted-foreground border-border",
+    loading:  "bg-muted/20 text-muted-foreground border-border",
+  };
+  const labels: Record<CoverageRow["status"], string> = {
+    live: "Live",
+    fallback: "Fallback",
+    skipped: "Skipped",
+    loading: "…",
+  };
+  return (
+    <span className={`text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded border ${styles[status]}`}>
+      {labels[status]}
+    </span>
+  );
+}
 
 function YesNo({ value }: { value: boolean }) {
   return value ? (
@@ -66,14 +110,38 @@ function ReadTestStatus({ report }: { report: SupabaseHealthReport }) {
 export default function InternalSupabaseReadiness() {
   const [report, setReport] = useState<SupabaseHealthReport | null>(null);
   const [loading, setLoading] = useState(true);
+  const [coverage, setCoverage] = useState<CoverageRow[]>([]);
+  const [coverageLoading, setCoverageLoading] = useState(true);
 
   async function refresh() {
     setLoading(true);
+    setCoverageLoading(true);
     try {
-      const r = await getSupabaseHealthReport();
+      const [r, summary, media, calendar, reports, requests, updates, google, account] = await Promise.all([
+        getSupabaseHealthReport(),
+        getClientPortalSummaryReadOnly(),
+        getClientPortalMediaReadOnly(),
+        getClientPortalCalendarReadOnly(),
+        getClientPortalReportsReadOnly(),
+        getClientPortalRequestsReadOnly(),
+        getClientPortalUpdatesReadOnly(),
+        getClientPortalGoogleSnapshotReadOnly(),
+        getClientPortalAccountReadOnly(),
+      ]);
       setReport(r);
+      setCoverage([
+        envelopeToRow("clients (summary)",            summary),
+        envelopeToRow("media_assets",                 media),
+        envelopeToRow("post_slots / calendar",        calendar),
+        envelopeToRow("weekly + monthly reports",     reports),
+        envelopeToRow("client_requests",              requests),
+        envelopeToRow("notifications / updates",      updates),
+        envelopeToRow("google business snapshot",     google),
+        envelopeToRow("account profile",              account),
+      ]);
     } finally {
       setLoading(false);
+      setCoverageLoading(false);
     }
   }
 
@@ -178,6 +246,54 @@ export default function InternalSupabaseReadiness() {
                 </div>
               </>
             )}
+          </CardContent>
+        </Card>
+
+        {/* M008: Client Portal Read-Only Coverage */}
+        <Card className="bg-card border-border" data-testid="readiness-coverage">
+          <CardContent className="p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                  Client Portal Read-Only Coverage
+                </p>
+                <h2 className="text-sm font-semibold text-foreground">
+                  Per-section availability (M008)
+                </h2>
+              </div>
+              <Badge variant="outline" className="text-[10px]">M008</Badge>
+            </div>
+
+            {coverageLoading ? (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground py-3 justify-center">
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                Checking sections…
+              </div>
+            ) : (
+              <div className="rounded-md border border-border divide-y divide-border">
+                {coverage.map((row) => (
+                  <div
+                    key={row.label}
+                    className="flex items-center justify-between gap-3 px-3 py-2"
+                    data-testid={`coverage-row-${row.label.replace(/\s+/g, "-").replace(/[^a-z0-9-]/gi, "").toLowerCase()}`}
+                  >
+                    <span className="text-xs font-mono text-muted-foreground truncate flex-1">
+                      {row.label}
+                    </span>
+                    <span className="text-[11px] text-muted-foreground/70 truncate max-w-[55%]">
+                      {row.message}
+                    </span>
+                    <CoverageStatusPill status={row.status} />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <p className="text-[11px] text-muted-foreground/60 leading-relaxed">
+              <strong className="text-foreground/80">Live</strong> = real rows came back from a client_portal_* view.&nbsp;
+              <strong className="text-foreground/80">Fallback</strong> = read attempted but RLS/env/error sent us to fixtures.&nbsp;
+              <strong className="text-foreground/80">Skipped</strong> = no client-safe view yet, fixture-only by design.
+            </p>
           </CardContent>
         </Card>
 

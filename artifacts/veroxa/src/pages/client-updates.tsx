@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientPortalData } from "@/hooks/useClientPortalData";
+import { DataSourceBadge } from "@/components/DataSourceBadge";
 import { getDemoImagesByCategory } from "@/data/demo/demoImages";
 
 const FOOD_IMGS = getDemoImagesByCategory("food");
@@ -43,7 +44,7 @@ const UPCOMING_ACTIONS = [
 ];
 
 export default function ClientUpdates() {
-  const { data } = useClientPortalData();
+  const { data, source, dataSourceMessage } = useClientPortalData();
 
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
@@ -54,6 +55,7 @@ export default function ClientUpdates() {
         <p className="text-muted-foreground mt-1 text-sm md:text-base">
           What your Veroxa team has been working on — published posts, Google activity, and what's coming next.
         </p>
+        <DataSourceBadge source={source} message={dataSourceMessage} />
       </div>
 
       {/* Current week update */}

@@ -3,12 +3,15 @@ import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
+import { useClientPortalData } from "@/hooks/useClientPortalData";
+import { DataSourceBadge } from "@/components/DataSourceBadge";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 import { demoClientRequests, requestStatusColor, requestPriorityColor } from "@/data/demoData";
 
 const SHOWCASE_ID = "demo-a";
 
 export default function ClientRequests() {
+  const { source, dataSourceMessage } = useClientPortalData();
   const open = demoClientRequests.filter((r) => r.clientId === SHOWCASE_ID && r.status !== "Completed");
   const done = demoClientRequests.filter((r) => r.clientId === SHOWCASE_ID && r.status === "Completed");
 
@@ -18,6 +21,7 @@ export default function ClientRequests() {
         <h2 className="text-2xl md:text-3xl font-bold tracking-tight" data-testid="header-client-requests">
           Requests from Veroxa
         </h2>
+        <DataSourceBadge source={source} message={dataSourceMessage} />
         <p className="text-muted-foreground mt-1 text-sm md:text-base">
           Quick to-dos that help us keep your content fresh and on-brand.
         </p>

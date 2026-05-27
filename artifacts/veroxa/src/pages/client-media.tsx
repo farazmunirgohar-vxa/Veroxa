@@ -20,6 +20,8 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
+import { useClientPortalData } from "@/hooks/useClientPortalData";
+import { DataSourceBadge } from "@/components/DataSourceBadge";
 import {
   getDefaultGuidance,
   getGuidanceForRestaurantType,
@@ -113,9 +115,12 @@ export default function ClientMedia() {
     Math.round((snapshot.used / Math.max(1, snapshot.available)) * 100),
   );
 
+  const { source: portalSource, dataSourceMessage: portalSourceMessage } = useClientPortalData();
+
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
       <div className="flex flex-col gap-2">
+        <DataSourceBadge source={portalSource} message={portalSourceMessage} className="-mb-1" />
         <div className="flex flex-wrap items-center gap-3">
           <h2 className="text-3xl font-bold tracking-tight">Media Library</h2>
           <Badge

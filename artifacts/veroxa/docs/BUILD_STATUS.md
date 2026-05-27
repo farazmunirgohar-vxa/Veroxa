@@ -17,6 +17,29 @@
 
 ---
 
+## Current state (M008 Client Portal read-only connection pass: 2026-05-27)
+
+**M008 — Client Portal read-only Supabase connection wired into every
+page.** Built directly on M007's `DATA_MODE` switch. New normalized
+types (`clientPortalReadOnlyTypes.ts`) + defensive transforms
+(`clientPortalTransforms.ts`) feed an expanded adapter with per-section
+`getClientPortal*ReadOnly` functions returning a `ReadOnlyEnvelope<T>`
+status (live / fallback / skipped). Hook now exposes `isReadOnlyLive`
+and `fallbackReason`. Every client portal page renders a small
+`<DataSourceBadge />` that appears only in non-fixture modes.
+Internal readiness page (`/demo/internal/supabase-readiness`) now
+shows a Client Portal Read-Only Coverage table summarizing per-section
+availability. Fixture fallback remains the default and the always-on
+safety net.
+
+No writes, no uploads, no AI, no publishing, no payments. No new SQL
+files. No service-role key in frontend. RLS unchanged. `AUTH_MODE`
+unchanged. Pricing unchanged ($477 / $977 / $977 / $1,497).
+InternalDemoGuard not bypassed. Portal still not production-live.
+See `docs/M008_CLIENT_PORTAL_READONLY_CONNECTION.md`.
+
+---
+
 ## Current state (M007 read-only connection pass: 2026-05-27)
 
 **M007 — Supabase read-only connection layer added (dev only).** Introduces a

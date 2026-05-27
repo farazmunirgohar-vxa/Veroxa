@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientPortalData } from "@/hooks/useClientPortalData";
+import { DataSourceBadge } from "@/components/DataSourceBadge";
 import {
   DemoImageCard,
   DemoSchedulePreview,
@@ -107,15 +108,7 @@ export default function ClientDashboard() {
             {loading ? "Demo Grill House" : data.businessName}
           </h2>
           <p className="text-muted-foreground mt-1">Welcome back. Here is a quick overview of your account.</p>
-          {source !== "fixture" && source !== "demo" && (
-            <p
-              className="text-[11px] text-muted-foreground/70 mt-1.5 font-mono"
-              data-testid="dashboard-data-source"
-              title="Internal data-source indicator (M007)"
-            >
-              · {dataSourceMessage}
-            </p>
-          )}
+          <DataSourceBadge source={source} message={dataSourceMessage} />
         </div>
         <Badge variant="outline" className="px-3 py-1 bg-card text-card-foreground border-border font-medium self-start md:self-auto">
           May 2026 — Week 3
