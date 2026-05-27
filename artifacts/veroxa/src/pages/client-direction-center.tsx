@@ -1,4 +1,4 @@
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
   Compass,
   Clock,
@@ -35,6 +35,12 @@ import {
 } from "@/lib/intelligence/adaptiveRules";
 import { AdaptiveRecommendationCard } from "@/components/intelligence/AdaptiveRecommendationCard";
 import { WeeklyStrategySnapshot } from "@/components/intelligence/WeeklyStrategySnapshot";
+import {
+  addLocalDirectionRequest,
+  getLocalDirectionRequests,
+  subscribeToLocalDirectionRequests,
+} from "@/lib/direction/localDirectionStore";
+import { getLocalUploadSubmissions } from "@/lib/uploadKeys/localUploadStore";
 
 const CLIENT_ID = "demo-a" as const;
 const CLIENT_NAME = "Demo Grill House";
@@ -69,8 +75,19 @@ export default function ClientDirectionCenter() {
   const [channel, setChannel] = useState<DirectionChannel>("organic_social");
   const [urgency, setUrgency] = useState<DirectionUrgency>("normal");
   const [note, setNote] = useState("");
-  const [localItems, setLocalItems] = useState<DirectionRequest[]>([]);
+  const [localItems, setLocalItems] = useState<DirectionRequest[]>(
+    () => getLocalDirectionRequests().filter((d) => d.clientId === CLIENT_ID),
+  );
   const [confirmationId, setConfirmationId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const refresh = () =>
+      setLocalItems(
+        getLocalDirectionRequests().filter((d) => d.clientId === CLIENT_ID),
+      );
+    refresh();
+    return subscribeToLocalDirectionRequests(refresh);
+  }, []);
 
   const clientDirection = useMemo(
     () => [
@@ -86,7 +103,12 @@ export default function ClientDirectionCenter() {
         buildAdaptiveRecommendations({
           clientId: CLIENT_ID,
           direction: clientDirection,
-          uploads: demoUploadSubmissions.filter((u) => u.restaurantId === CLIENT_ID),
+          uploads: [
+            ...getLocalUploadSubmissions().filter(
+              (u) => u.restaurantId === CLIENT_ID,
+            ),
+            ...demoUploadSubmissions.filter((u) => u.restaurantId === CLIENT_ID),
+          ],
           workflow: demoClientTeamWorkflow.filter((w) => w.clientId === CLIENT_ID),
         }),
       ),
@@ -96,23 +118,18 @@ export default function ClientDirectionCenter() {
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!focus) return;
-    const id = `DIR-DEMO-${String(Math.floor(100 + Math.random() * 900))}`;
-    const newItem: DirectionRequest = {
-      id,
+    const created = addLocalDirectionRequest({
       clientId: CLIENT_ID,
       restaurantName: CLIENT_NAME,
       focus,
       channel,
       urgency,
       title: directionFocusLabels[focus],
-      clientNote: note.trim() || "—",
+      clientNote: note,
       preferredTimingLabel: "This week",
-      status: "received",
       submittedAtLabel: "Just now",
-      demoOnly: true,
-    };
-    setLocalItems((curr) => [newItem, ...curr]);
-    setConfirmationId(id);
+    });
+    setConfirmationId(created.id);
     setFocus(null);
     setNote("");
     setUrgency("normal");

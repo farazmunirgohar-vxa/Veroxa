@@ -297,6 +297,29 @@ export default function InternalSupabaseReadiness() {
           </CardContent>
         </Card>
 
+        {/* Write Readiness — M022 */}
+        <Card className="bg-card border-border" data-testid="card-write-readiness">
+          <CardContent className="space-y-2 p-4">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-primary" />
+              <h3 className="text-sm font-semibold">Write Readiness</h3>
+              <Badge variant="outline" className="text-[10px] bg-muted/30 text-muted-foreground border-border">
+                M022
+              </Badge>
+            </div>
+            <ul className="text-xs text-muted-foreground space-y-1 pl-1">
+              <li>• Writes enabled: <span className="text-foreground">No</span></li>
+              <li>• Reason: Real writes are not enabled in this build.</li>
+              <li>• Next step: M023 controlled dev writes behind explicit flag.</li>
+              <li>• No service role key allowed in the frontend.</li>
+            </ul>
+            <p className="text-[11px] text-muted-foreground/70 leading-relaxed">
+              See <code>src/lib/data/writeReadiness.ts</code> and{" "}
+              <code>docs/M023_SUPABASE_WRITES_PLAN_UPLOADS_DIRECTION_REVIEW.md</code>.
+            </p>
+          </CardContent>
+        </Card>
+
         {/* Safety footer */}
         <div className="rounded-md border border-emerald-500/20 bg-emerald-500/5 p-3 flex items-start gap-2 text-xs text-emerald-200/80">
           <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />

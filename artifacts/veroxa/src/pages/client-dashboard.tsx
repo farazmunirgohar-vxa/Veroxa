@@ -28,7 +28,10 @@ import {
 } from "@/lib/intelligence/adaptiveRules";
 import { demoClientDirection } from "@/data/direction/demoClientDirection";
 import { demoUploadSubmissions } from "@/data/uploadKeys/demoUploadSubmissions";
+import { getLocalDirectionRequests, subscribeToLocalDirectionRequests } from "@/lib/direction/localDirectionStore";
+import { getLocalUploadSubmissions, subscribeToLocalUploadSubmissions } from "@/lib/uploadKeys/localUploadStore";
 import { Compass } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const veroxaWeekFlow = [
   { key: "upload",   label: "You upload",    caption: "Food photos from your phone" },
@@ -94,17 +97,41 @@ const upcomingSchedule: DemoScheduleItem[] = [
 
 const clientEvidenceRec = recommendNextPost("demo-a");
 
-const clientWeeklyRecs = rankRecommendations(
-  buildAdaptiveRecommendations({
-    clientId: "demo-a",
-    direction: demoClientDirection.filter((d) => d.clientId === "demo-a"),
-    uploads: demoUploadSubmissions.filter((u) => u.restaurantId === "demo-a"),
-    workflow: demoClientTeamWorkflow.filter((w) => w.clientId === "demo-a"),
-  }),
-);
+function computeClientWeeklyRecs() {
+  return rankRecommendations(
+    buildAdaptiveRecommendations({
+      clientId: "demo-a",
+      direction: [
+        ...getLocalDirectionRequests().filter((d) => d.clientId === "demo-a"),
+        ...demoClientDirection.filter((d) => d.clientId === "demo-a"),
+      ],
+      uploads: [
+        ...getLocalUploadSubmissions().filter((u) => u.restaurantId === "demo-a"),
+        ...demoUploadSubmissions.filter((u) => u.restaurantId === "demo-a"),
+      ],
+      workflow: demoClientTeamWorkflow.filter((w) => w.clientId === "demo-a"),
+    }),
+  );
+}
+
+function useClientWeeklyRecs() {
+  const [recs, setRecs] = useState(() => computeClientWeeklyRecs());
+  useEffect(() => {
+    const refresh = () => setRecs(computeClientWeeklyRecs());
+    refresh();
+    const u1 = subscribeToLocalDirectionRequests(refresh);
+    const u2 = subscribeToLocalUploadSubmissions(refresh);
+    return () => {
+      u1();
+      u2();
+    };
+  }, []);
+  return recs;
+}
 
 export default function ClientDashboard() {
   const { loading, data, source, dataSourceMessage } = useClientPortalData();
+  const clientWeeklyRecs = useClientWeeklyRecs();
 
   const summaryCards = [
     { label: "Upcoming posts",    value: loading ? "—" : String(data.scheduledPosts.length), icon: CalendarDays },

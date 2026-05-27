@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Brain, AlertTriangle, Sparkles } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,23 +15,59 @@ import { demoClientDirection } from "@/data/direction/demoClientDirection";
 import { demoUploadSubmissions } from "@/data/uploadKeys/demoUploadSubmissions";
 import { demoClientTeamWorkflow } from "@/data/workflows/clientTeamWorkflow";
 import { getAdaptiveMemory } from "@/data/intelligence/demoAdaptiveMemory";
+import {
+  getLocalDirectionRequests,
+  subscribeToLocalDirectionRequests,
+} from "@/lib/direction/localDirectionStore";
+import {
+  getLocalUploadSubmissions,
+  subscribeToLocalUploadSubmissions,
+} from "@/lib/uploadKeys/localUploadStore";
 
 const CLIENT_ID = "demo-a" as const;
 
 export default function TeamAdaptiveIntelligence() {
   const memory = getAdaptiveMemory(CLIENT_ID);
+  const [localDirection, setLocalDirection] = useState(() =>
+    getLocalDirectionRequests().filter((d) => d.clientId === CLIENT_ID),
+  );
+  const [localUploads, setLocalUploads] = useState(() =>
+    getLocalUploadSubmissions().filter((u) => u.restaurantId === CLIENT_ID),
+  );
+  useEffect(() => {
+    const u1 = subscribeToLocalDirectionRequests(() =>
+      setLocalDirection(
+        getLocalDirectionRequests().filter((d) => d.clientId === CLIENT_ID),
+      ),
+    );
+    const u2 = subscribeToLocalUploadSubmissions(() =>
+      setLocalUploads(
+        getLocalUploadSubmissions().filter((u) => u.restaurantId === CLIENT_ID),
+      ),
+    );
+    return () => {
+      u1();
+      u2();
+    };
+  }, []);
   const recommendations = useMemo(
     () =>
       rankRecommendations(
         buildAdaptiveRecommendations({
           clientId: CLIENT_ID,
-          direction: demoClientDirection.filter((d) => d.clientId === CLIENT_ID),
-          uploads: demoUploadSubmissions.filter((u) => u.restaurantId === CLIENT_ID),
+          direction: [
+            ...localDirection,
+            ...demoClientDirection.filter((d) => d.clientId === CLIENT_ID),
+          ],
+          uploads: [
+            ...localUploads,
+            ...demoUploadSubmissions.filter((u) => u.restaurantId === CLIENT_ID),
+          ],
           workflow: demoClientTeamWorkflow.filter((w) => w.clientId === CLIENT_ID),
           memory,
         }),
       ),
-    [memory],
+    [memory, localDirection, localUploads],
   );
 
   return (

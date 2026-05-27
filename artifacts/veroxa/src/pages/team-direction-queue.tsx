@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Compass,
   CheckCircle2,
@@ -9,6 +9,7 @@ import {
   Clock,
   ListTodo,
   AlertTriangle,
+  Trash2,
 } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,6 +34,14 @@ import {
   rankRecommendations,
 } from "@/lib/intelligence/adaptiveRules";
 import { AdaptiveRecommendationCard } from "@/components/intelligence/AdaptiveRecommendationCard";
+import {
+  clearLocalDirectionRequests,
+  getLocalDirectionRequests,
+  isLocalDirectionRequest,
+  subscribeToLocalDirectionRequests,
+  updateLocalDirectionRequestStatus,
+} from "@/lib/direction/localDirectionStore";
+import { getLocalUploadSubmissions } from "@/lib/uploadKeys/localUploadStore";
 
 type GroupKey =
   | "urgent_high"
@@ -151,10 +160,38 @@ function suggestedAction(d: DirectionRequest): string {
 }
 
 export default function TeamDirectionQueue() {
-  const [items, setItems] = useState<DirectionRequest[]>(() => [...demoClientDirection]);
+  const [fixtureItems, setFixtureItems] = useState<DirectionRequest[]>(
+    () => [...demoClientDirection],
+  );
+  const [localItems, setLocalItems] = useState<DirectionRequest[]>(
+    () => getLocalDirectionRequests(),
+  );
+
+  useEffect(() => {
+    const refresh = () => setLocalItems(getLocalDirectionRequests());
+    refresh();
+    return subscribeToLocalDirectionRequests(refresh);
+  }, []);
+
+  const items = useMemo(
+    () => [...localItems, ...fixtureItems],
+    [localItems, fixtureItems],
+  );
 
   function updateStatus(id: string, status: DirectionStatus) {
-    setItems((curr) => curr.map((d) => (d.id === id ? { ...d, status } : d)));
+    if (isLocalDirectionRequest(id)) {
+      updateLocalDirectionRequestStatus(id, status);
+      setLocalItems(getLocalDirectionRequests());
+      return;
+    }
+    setFixtureItems((curr) =>
+      curr.map((d) => (d.id === id ? { ...d, status } : d)),
+    );
+  }
+
+  function handleClearSessionDirection() {
+    clearLocalDirectionRequests();
+    setLocalItems([]);
   }
 
   // Adaptive recommendations for demo-a (the active first client).
@@ -164,7 +201,12 @@ export default function TeamDirectionQueue() {
         buildAdaptiveRecommendations({
           clientId: "demo-a",
           direction: items.filter((d) => d.clientId === "demo-a"),
-          uploads: demoUploadSubmissions.filter((u) => u.restaurantId === "demo-a"),
+          uploads: [
+            ...getLocalUploadSubmissions().filter(
+              (u) => u.restaurantId === "demo-a",
+            ),
+            ...demoUploadSubmissions.filter((u) => u.restaurantId === "demo-a"),
+          ],
           workflow: demoClientTeamWorkflow.filter((w) => w.clientId === "demo-a"),
         }),
       ),
@@ -190,6 +232,24 @@ export default function TeamDirectionQueue() {
         message="Demo/local only — no real writes, no notifications, no publishing, no ads launched."
         testId="banner-direction-queue"
       />
+
+      <div className="flex flex-wrap items-center justify-between gap-2 mt-2 mb-4 px-1 text-xs text-muted-foreground">
+        <span>
+          Direction submitted from the Client Direction Center appears here for
+          this browser session only ({localItems.length} session item
+          {localItems.length === 1 ? "" : "s"}).
+        </span>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-7 text-xs"
+          onClick={handleClearSessionDirection}
+          disabled={localItems.length === 0}
+          data-testid="btn-clear-session-direction"
+        >
+          <Trash2 className="w-3 h-3 mr-1" /> Clear session direction
+        </Button>
+      </div>
 
       {/* Adaptive top-of-queue snapshot */}
       {recommendations.length > 0 && (

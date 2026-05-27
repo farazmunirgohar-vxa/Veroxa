@@ -844,3 +844,33 @@ auth activation.
   routes, Owner/Operator NOT expanded, pricing unchanged, no
   `Pasted-*.txt` committed.
 - **Typecheck:** PASS.
+
+## M020–M022 — Local Cohesion + Write Readiness
+
+- **M020 Shared local direction store.** New
+  `src/lib/direction/localDirectionStore.ts` (sessionStorage,
+  metadata only, note sanitized). Client Direction Center submits
+  through it; Team Direction Queue merges fixture + session items,
+  routes status updates to the correct source, exposes a
+  "Clear session direction" control + session-only note.
+- **Adaptive Intelligence** now reads local/session direction and
+  local/session uploads on Client Dashboard, Team Dashboard,
+  Client Direction Center, Team Direction Queue, and Team Adaptive
+  Intelligence — each surface subscribes to both local stores.
+- **M021 First-client data path + contracts.**
+  `docs/FIRST_CLIENT_DATA_PATH.md`,
+  `src/lib/firstClient/firstClientContracts.ts`,
+  `src/lib/firstClient/visibilityRules.ts`,
+  `docs/FIRST_CLIENT_READINESS_CHECKLIST.md`.
+- **M022 Supabase write readiness plan.**
+  `src/lib/data/writeReadiness.ts` (`WRITES_ENABLED=false`),
+  `docs/M023_SUPABASE_WRITES_PLAN_UPLOADS_DIRECTION_REVIEW.md`,
+  small "Write Readiness" card added to the internal Supabase
+  readiness page.
+- **Invariants:** no Supabase writes, no migrations, no storage
+  uploads, no real AI / publishing / ads / payments, no service
+  role in the frontend, no `FormData` / fetch upload added, no
+  raw file blobs in local/session storage, AUTH_MODE unchanged,
+  DATA_MODE default unchanged, pricing unchanged, InternalDemoGuard
+  intact, Owner/Operator not expanded, no `Pasted-*.txt` committed.
+- **Typecheck:** see verification below.

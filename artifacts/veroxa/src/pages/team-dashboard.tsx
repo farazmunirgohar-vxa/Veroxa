@@ -31,7 +31,10 @@ import {
 import { AdaptiveRecommendationCard } from "@/components/intelligence/AdaptiveRecommendationCard";
 import { demoClientDirection } from "@/data/direction/demoClientDirection";
 import { demoUploadSubmissions } from "@/data/uploadKeys/demoUploadSubmissions";
+import { getLocalDirectionRequests, subscribeToLocalDirectionRequests } from "@/lib/direction/localDirectionStore";
+import { getLocalUploadSubmissions, subscribeToLocalUploadSubmissions } from "@/lib/uploadKeys/localUploadStore";
 import { Brain } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const mediaReviewQueue = [
   {
@@ -132,18 +135,7 @@ export default function TeamDashboard() {
           </Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {rankRecommendations(
-            buildAdaptiveRecommendations({
-              clientId: "demo-a",
-              direction: demoClientDirection.filter((d) => d.clientId === "demo-a"),
-              uploads: demoUploadSubmissions.filter((u) => u.restaurantId === "demo-a"),
-              workflow: demoClientTeamWorkflow.filter((w) => w.clientId === "demo-a"),
-            }),
-          )
-            .slice(0, 3)
-            .map((r) => (
-              <AdaptiveRecommendationCard key={r.id} recommendation={r} audience="team" />
-            ))}
+          <TeamAdaptiveTop3 />
         </div>
         <p className="text-[11px] text-muted-foreground/70 mt-2">
           Rule-based preview — no external AI provider, no real performance data.
@@ -266,5 +258,43 @@ export default function TeamDashboard() {
         </Card>
       </div>
     </PortalLayout>
+  );
+}
+
+function computeTeamTop3() {
+  return rankRecommendations(
+    buildAdaptiveRecommendations({
+      clientId: "demo-a",
+      direction: [
+        ...getLocalDirectionRequests().filter((d) => d.clientId === "demo-a"),
+        ...demoClientDirection.filter((d) => d.clientId === "demo-a"),
+      ],
+      uploads: [
+        ...getLocalUploadSubmissions().filter((u) => u.restaurantId === "demo-a"),
+        ...demoUploadSubmissions.filter((u) => u.restaurantId === "demo-a"),
+      ],
+      workflow: demoClientTeamWorkflow.filter((w) => w.clientId === "demo-a"),
+    }),
+  ).slice(0, 3);
+}
+
+function TeamAdaptiveTop3() {
+  const [recs, setRecs] = useState(() => computeTeamTop3());
+  useEffect(() => {
+    const refresh = () => setRecs(computeTeamTop3());
+    refresh();
+    const u1 = subscribeToLocalDirectionRequests(refresh);
+    const u2 = subscribeToLocalUploadSubmissions(refresh);
+    return () => {
+      u1();
+      u2();
+    };
+  }, []);
+  return (
+    <>
+      {recs.map((r) => (
+        <AdaptiveRecommendationCard key={r.id} recommendation={r} audience="team" />
+      ))}
+    </>
   );
 }

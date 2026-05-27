@@ -198,3 +198,21 @@ as possible for the first 1–3 real clients.
 - Owner / Operator portals are **not** expanded.
 - Pricing, AUTH_MODE, DATA_MODE, InternalDemoGuard, migration policy
   all unchanged.
+
+## M020–M022 — Direction store cohesion + write boundary
+
+- **Client Direction Center is directional input, not direct control.**
+  Clients can flag focus, channel, urgency, and notes. They cannot
+  publish, schedule, or launch ads.
+- **Restaurant Upload Key is upload-only access.** It does not grant
+  Client, Team, Owner, or Operator portal access, and cannot read
+  other restaurants' data.
+- **Team approves and executes.** All routing, content drafting,
+  Google posts, and ads planning is mediated by the Team Portal.
+- **Adaptive Intelligence is rule-based preview** (deterministic
+  rules over fixture + session signals) until real AI is
+  intentionally added in a later, separately scoped build.
+- **Writes remain off.** See `src/lib/data/writeReadiness.ts`
+  (`WRITES_ENABLED=false`) and
+  `docs/M023_SUPABASE_WRITES_PLAN_UPLOADS_DIRECTION_REVIEW.md` for
+  the plan to enable controlled dev writes behind an explicit flag.
