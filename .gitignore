@@ -47,3 +47,10 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Replit "pasted text" prompt drops — should never be committed.
+# These are agent prompt scratch files saved by the workspace; tracking them
+# pollutes git history and re-triggers scan loops. Keep .zip / image uploads
+# in attached_assets/, but never the raw Pasted-*.txt prompt dumps.
+attached_assets/Pasted-*.txt
+**/attached_assets/Pasted-*.txt

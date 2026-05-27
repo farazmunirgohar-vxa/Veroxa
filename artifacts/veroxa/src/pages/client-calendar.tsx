@@ -4,13 +4,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientPortalData } from "@/hooks/useClientPortalData";
-import { getDemoImagesByCategory } from "@/data/demo/demoImages";
+import { pickImageForCaption } from "@/data/demo/demoContentMatching";
 
-const FOOD_IMAGES = getDemoImagesByCategory("food");
-
-function pickImage(idx: number) {
-  return FOOD_IMAGES[idx % FOOD_IMAGES.length];
-}
+// Calendar entries in DEMO_DATA are for Demo Grill House (demo-a).
+const CALENDAR_CLIENT_ID = "demo-a";
 
 const STATUS_STYLE: Record<string, string> = {
   Scheduled:   "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
@@ -46,7 +43,7 @@ export default function ClientCalendar() {
 
       <div className="space-y-3">
         {data.scheduledPosts.map((post, i) => {
-          const img = pickImage(i);
+          const img = pickImageForCaption(post.caption, CALENDAR_CLIENT_ID);
           return (
             <Card
               key={i}

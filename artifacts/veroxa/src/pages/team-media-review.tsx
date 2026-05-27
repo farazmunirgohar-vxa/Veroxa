@@ -4,11 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { teamPortalNavItems } from "@/lib/teamPortalNav";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
-import { getDemoImagesByCategory } from "@/data/demo/demoImages";
+import { pickImageForCaption } from "@/data/demo/demoContentMatching";
 import { EvidenceRecommendationCard } from "@/components/evidence/EvidenceRecommendationCard";
 import { recommendNextPost } from "@/lib/evidence/evidenceSelectionEngine";
 
-const FOOD_IMGS = getDemoImagesByCategory("food");
+// All `mediaItems` below belong to Demo Grill House (demo-a).
+const MEDIA_REVIEW_CLIENT_ID = "demo-a";
 
 const guidanceMatches: Array<{
   icon: typeof Flame;
@@ -100,9 +101,9 @@ export default function TeamMediaReview() {
       </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {mediaItems.map((item, idx) => {
+        {mediaItems.map((item) => {
           const approved = item.quality === "Approved";
-          const img = FOOD_IMGS[idx % FOOD_IMGS.length];
+          const img = pickImageForCaption(item.title, MEDIA_REVIEW_CLIENT_ID);
           return (
             <Card key={item.id} className="bg-card border-border overflow-hidden" data-testid={`media-item-${item.id}`}>
               <div className="aspect-video w-full overflow-hidden bg-muted/30">

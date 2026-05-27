@@ -7,6 +7,11 @@
  * upload, real post, or real publishing event.
  *
  * Keep `demoOnly: true` on every entry as a structural reminder.
+ *
+ * COHERENCE METADATA (foodType / cuisineFit / bestUseCases /
+ * avoidUseCases) is optional and is used by `demoContentMatching.ts`
+ * to pick a believable image for a given caption / client. See
+ * `docs/DEMO_CONTENT_COHERENCE_GUIDE.md`.
  */
 
 export type DemoImageCategory =
@@ -24,6 +29,23 @@ export type DemoImageRoleUse =
   | "owner"
   | "shared";
 
+/** Coarse food family used to filter believable images per caption. */
+export type DemoFoodType =
+  | "grill"
+  | "tacos"
+  | "mediterranean"
+  | "cafe"
+  | "brunch"
+  | "generic";
+
+/** Which demo client cuisines an image realistically fits. */
+export type DemoCuisineFit =
+  | "demo-a"   // Demo Grill House
+  | "demo-b"   // Demo Taco Bar
+  | "demo-c"   // Demo Mediterranean Grill
+  | "demo-d"   // Demo Cafe
+  | "any";
+
 export interface DemoImage {
   id: string;
   title: string;
@@ -32,6 +54,14 @@ export interface DemoImage {
   url: string;
   roleUse: DemoImageRoleUse;
   demoOnly: true;
+  /** Optional — coarse cuisine family. Defaults to "generic". */
+  foodType?: DemoFoodType;
+  /** Optional — which demo clients this image believably fits. */
+  cuisineFit?: DemoCuisineFit[];
+  /** Optional — keywords/slots this image is a good match for. */
+  bestUseCases?: string[];
+  /** Optional — keywords/slots this image should NOT be used for. */
+  avoidUseCases?: string[];
 }
 
 // Stable Unsplash photo IDs. The `?w=600&auto=format&fit=crop&q=70`
@@ -42,7 +72,7 @@ const u = (photoId: string, w = 600): string =>
   `https://images.unsplash.com/${photoId}?w=${w}&auto=format&fit=crop&q=70`;
 
 export const demoImages: DemoImage[] = [
-  // ── Food ──────────────────────────────────────────────────────
+  // ── Food: grill (demo-a / demo-c) ─────────────────────────────
   {
     id: "food-grilled-platter",
     title: "Grilled platter — overhead",
@@ -51,6 +81,10 @@ export const demoImages: DemoImage[] = [
     url: u("photo-1565299624946-b28f40a0ae38"),
     roleUse: "shared",
     demoOnly: true,
+    foodType: "grill",
+    cuisineFit: ["demo-a", "demo-c"],
+    bestUseCases: ["grill", "platter", "lamb", "kebab", "shawarma", "lunch", "dinner"],
+    avoidUseCases: ["latte", "coffee", "croissant", "pastry", "taco"],
   },
   {
     id: "food-bowl-hero",
@@ -60,6 +94,10 @@ export const demoImages: DemoImage[] = [
     url: u("photo-1546069901-ba9599a7e63c"),
     roleUse: "shared",
     demoOnly: true,
+    foodType: "mediterranean",
+    cuisineFit: ["demo-c", "demo-a"],
+    bestUseCases: ["bowl", "rice", "mediterranean", "lunch", "healthy"],
+    avoidUseCases: ["latte", "coffee", "croissant", "taco"],
   },
   {
     id: "food-spread-table",
@@ -69,6 +107,9 @@ export const demoImages: DemoImage[] = [
     url: u("photo-1504674900247-0877df9cc836"),
     roleUse: "shared",
     demoOnly: true,
+    foodType: "generic",
+    cuisineFit: ["any"],
+    bestUseCases: ["family", "feast", "spread", "weekend", "group"],
   },
   {
     id: "food-plated-dinner",
@@ -78,6 +119,10 @@ export const demoImages: DemoImage[] = [
     url: u("photo-1559339352-11d035aa65de"),
     roleUse: "shared",
     demoOnly: true,
+    foodType: "mediterranean",
+    cuisineFit: ["demo-c", "demo-a"],
+    bestUseCases: ["dinner", "plated", "octopus", "premium", "evening"],
+    avoidUseCases: ["latte", "coffee", "taco"],
   },
   {
     id: "food-pancakes",
@@ -87,6 +132,66 @@ export const demoImages: DemoImage[] = [
     url: u("photo-1567620905732-2d1ec7ab7445"),
     roleUse: "shared",
     demoOnly: true,
+    foodType: "brunch",
+    cuisineFit: ["demo-d"],
+    bestUseCases: ["brunch", "pancake", "morning", "weekend"],
+    avoidUseCases: ["grill", "taco", "dinner"],
+  },
+
+  // ── Food: tacos (demo-b) ──────────────────────────────────────
+  {
+    id: "food-tacos-flatlay",
+    title: "Tacos flat-lay",
+    alt: "Demo photo of a flat-lay of tacos with garnishes.",
+    category: "food",
+    url: u("photo-1565299585323-38d6b0865b47"),
+    roleUse: "shared",
+    demoOnly: true,
+    foodType: "tacos",
+    cuisineFit: ["demo-b"],
+    bestUseCases: ["taco", "carnitas", "birria", "lunch", "tuesday"],
+    avoidUseCases: ["coffee", "latte", "grill", "shawarma"],
+  },
+  {
+    id: "food-birria-closeup",
+    title: "Birria cheese-pull close-up",
+    alt: "Demo photo of a birria taco cheese pull close-up.",
+    category: "food",
+    url: u("photo-1599974579688-8dbdd335c77f"),
+    roleUse: "shared",
+    demoOnly: true,
+    foodType: "tacos",
+    cuisineFit: ["demo-b"],
+    bestUseCases: ["birria", "cheese", "texture", "reel", "close-up"],
+    avoidUseCases: ["coffee", "latte", "pastry"],
+  },
+
+  // ── Food: cafe (demo-d) ───────────────────────────────────────
+  {
+    id: "food-latte-art",
+    title: "Specialty latte art",
+    alt: "Demo photo of a latte with leaf-pattern art.",
+    category: "food",
+    url: u("photo-1541167760496-1628856ab772"),
+    roleUse: "shared",
+    demoOnly: true,
+    foodType: "cafe",
+    cuisineFit: ["demo-d"],
+    bestUseCases: ["latte", "coffee", "morning", "cardamom", "beverage"],
+    avoidUseCases: ["grill", "taco", "dinner", "shawarma"],
+  },
+  {
+    id: "food-croissant-pastry",
+    title: "Pistachio croissant — bakery detail",
+    alt: "Demo photo of a flaky pistachio croissant close-up.",
+    category: "food",
+    url: u("photo-1555507036-ab1f4038808a"),
+    roleUse: "shared",
+    demoOnly: true,
+    foodType: "cafe",
+    cuisineFit: ["demo-d"],
+    bestUseCases: ["croissant", "pastry", "bakery", "morning", "pistachio"],
+    avoidUseCases: ["grill", "taco", "dinner"],
   },
 
   // ── Interior ──────────────────────────────────────────────────
@@ -98,6 +203,7 @@ export const demoImages: DemoImage[] = [
     url: u("photo-1414235077428-338989a2e8c0"),
     roleUse: "shared",
     demoOnly: true,
+    cuisineFit: ["any"],
   },
   {
     id: "interior-modern-bar",
@@ -107,6 +213,7 @@ export const demoImages: DemoImage[] = [
     url: u("photo-1517248135467-4c7edcad34c4"),
     roleUse: "shared",
     demoOnly: true,
+    cuisineFit: ["any"],
   },
 
   // ── Kitchen / prep ────────────────────────────────────────────
@@ -118,6 +225,8 @@ export const demoImages: DemoImage[] = [
     url: u("photo-1514933651103-005eec06c04b"),
     roleUse: "shared",
     demoOnly: true,
+    cuisineFit: ["any"],
+    bestUseCases: ["bts", "behind-the-scenes", "prep", "kitchen"],
   },
   {
     id: "kitchen-chef-plate",
@@ -127,6 +236,8 @@ export const demoImages: DemoImage[] = [
     url: u("photo-1556909114-f6e7ad7d3136"),
     roleUse: "shared",
     demoOnly: true,
+    cuisineFit: ["any"],
+    bestUseCases: ["bts", "behind-the-scenes", "plating", "chef", "reel"],
   },
 
   // ── Social post mockups (reuse food shots as preview tiles) ──
