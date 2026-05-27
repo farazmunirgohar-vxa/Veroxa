@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import {
   UploadCloud,
   Camera,
@@ -12,7 +12,14 @@ import {
   CalendarDays,
   MapPin,
   Ban,
+  Inbox,
 } from "lucide-react";
+import {
+  getLocalUploadSubmissions,
+  subscribeToLocalUploadSubmissions,
+} from "@/lib/uploadKeys/localUploadStore";
+import { demoUploadCategoryLabels } from "@/data/uploadKeys/demoRestaurantUploadKeys";
+import type { DemoUploadSubmission } from "@/data/uploadKeys/demoUploadSubmissions";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -168,6 +175,9 @@ export default function ClientMedia() {
           </a>
         </CardContent>
       </Card>
+
+      {/* Recent uploads from this session */}
+      <SessionUploadsSection />
 
       {/* Restaurant Media Guidance Engine — rule-based demo, local state only */}
       <Card className="bg-card border-primary/30 mt-4" data-testid="card-media-guidance">
@@ -551,5 +561,62 @@ export default function ClientMedia() {
         </aside>
       </div>
     </PortalLayout>
+  );
+}
+
+function SessionUploadsSection() {
+  const [items, setItems] = useState<DemoUploadSubmission[]>(() =>
+    getLocalUploadSubmissions().filter((s) => s.restaurantId === "demo-a"),
+  );
+
+  useEffect(() => {
+    const refresh = () =>
+      setItems(getLocalUploadSubmissions().filter((s) => s.restaurantId === "demo-a"));
+    refresh();
+    return subscribeToLocalUploadSubmissions(() => refresh());
+  }, []);
+
+  return (
+    <Card className="mt-4 bg-card border-border" data-testid="card-session-uploads">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base flex items-center gap-2">
+          <Inbox className="w-4 h-4 text-primary" /> Recent uploads from this session
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {items.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No session uploads yet. Open{" "}
+            <a href="/upload" className="text-primary hover:underline">
+              /upload
+            </a>{" "}
+            to send food photos, prep clips, or atmosphere shots.
+          </p>
+        ) : (
+          <ul className="space-y-2">
+            {items.map((s) => (
+              <li
+                key={s.id}
+                className="flex items-center justify-between gap-3 px-3 py-2 rounded-md border border-border bg-muted/20 text-sm"
+                data-testid={`session-upload-${s.id}`}
+              >
+                <div className="min-w-0">
+                  <p className="font-medium truncate">{s.fileLabel}</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {demoUploadCategoryLabels[s.category]} · {s.submittedAtLabel}
+                  </p>
+                </div>
+                <Badge variant="outline" className="text-[10px]">
+                  {s.fileKind}
+                </Badge>
+              </li>
+            ))}
+          </ul>
+        )}
+        <p className="text-[11px] text-muted-foreground mt-3">
+          Session-only — no real files are stored. Clears when you close the browser.
+        </p>
+      </CardContent>
+    </Card>
   );
 }

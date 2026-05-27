@@ -20,6 +20,7 @@ import {
   demoUploadPriorityLabels,
   type DemoUploadPriority,
 } from "@/data/uploadKeys/demoUploadSubmissions";
+import { addLocalUploadSubmission } from "@/lib/uploadKeys/localUploadStore";
 
 interface RestaurantUploadFlowProps {
   restaurant: DemoRestaurantUploadKey;
@@ -100,7 +101,27 @@ export function RestaurantUploadFlow({ restaurant, onExit }: RestaurantUploadFlo
 
   function handleSubmitDemo() {
     // Local demo only — no network, no Supabase write, no Storage upload.
+    // Persist metadata to sessionStorage so the Team Upload Inbox can see
+    // the submission within the same browser session.
     const id = `UP-DEMO-${String(Math.floor(100 + Math.random() * 900))}`;
+    if (category) {
+      const primary = files[0];
+      // Never persist user filenames (may contain names/locations/dates)
+      // or raw notes (may contain emails/phones). The store sanitizes both.
+      const fileKind: "image" | "video" =
+        primary && primary.kind.startsWith("video") ? "video" : "image";
+      addLocalUploadSubmission({
+        id,
+        restaurantId: restaurant.restaurantId,
+        restaurantName: restaurant.restaurantName,
+        category,
+        priority,
+        note,
+        fileCount: files.length,
+        fileKind,
+        submittedAtLabel: "Just now",
+      });
+    }
     setSubmissionId(id);
     setStep(6);
   }

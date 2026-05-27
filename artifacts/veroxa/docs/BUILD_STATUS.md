@@ -820,3 +820,27 @@ auth activation.
   (49700 / 99700 / 109700 / 119700 / 149700), four roles
   (Client / Team / Operator / Owner), no nav / four-shell changes.
 - **Typecheck:** PASS.
+
+## M015–M019 — Direction + Adaptive Intelligence + Local Upload Store
+
+- M015 Client Direction Center: `/demo/client/direction` live with
+  fixture + local submissions; nav entry added; dashboard CTA card.
+- M016 Team Direction Queue: `/demo/team/direction-queue` live,
+  team-guarded, grouped by urgent/content/google/ads/avoid/completed
+  with local action buttons; work-queue cross-link added.
+- M017 Rule-Based Adaptive Intelligence:
+  `/demo/team/adaptive-intelligence` live, team-guarded; engine in
+  `src/lib/intelligence/adaptiveRules.ts`; team dashboard shows
+  top-3 "Adaptive Team Priorities". No external AI provider used.
+- M018 Shared Local Upload Store: sessionStorage at
+  `veroxa.demo.localUploads.v1`; metadata only; `/upload` writes,
+  team upload inbox + client media read; "Clear session uploads"
+  button on team inbox.
+- M019 Weekly Strategy Snapshot: client dashboard + team
+  intelligence page, audience-aware copy.
+- **Invariants:** no Supabase writes, no real AI APIs, no
+  publishing/ads/payments, no migrations, `AUTH_MODE=placeholder`,
+  `DATA_MODE=fixture` default, `InternalDemoGuard` intact on team
+  routes, Owner/Operator NOT expanded, pricing unchanged, no
+  `Pasted-*.txt` committed.
+- **Typecheck:** PASS.

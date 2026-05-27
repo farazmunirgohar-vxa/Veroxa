@@ -29,11 +29,13 @@ import {
   Images,
   Briefcase,
   Sparkles,
+  Compass,
 } from "lucide-react";
 import type { SidebarItem } from "@/components/PortalLayout";
 
 export const clientPortalNavItems: SidebarItem[] = [
   { label: "Dashboard",        icon: LayoutDashboard, href: "/demo/client/dashboard"        },
+  { label: "Direction Center", icon: Compass,         href: "/demo/client/direction"        },
   { label: "Upload Media",     icon: Images,          href: "/demo/client/media"            },
   { label: "AI Draft Preview", icon: Sparkles,        href: "/demo/client/ai-draft-preview" },
   { label: "Calendar",         icon: CalendarDays,    href: "/demo/client/calendar"         },

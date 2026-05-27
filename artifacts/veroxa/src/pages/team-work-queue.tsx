@@ -29,6 +29,18 @@ export default function TeamWorkQueue() {
         testId="banner-work-queue"
       />
 
+      <p className="text-xs text-muted-foreground mb-4">
+        Client direction feeds into this queue after team interpretation. See the{" "}
+        <a
+          href="/demo/team/direction-queue"
+          className="text-primary hover:underline"
+          data-testid="link-direction-queue-from-work-queue"
+        >
+          Direction Queue
+        </a>
+        .
+      </p>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
         {groups.map((group) => (
           <Card

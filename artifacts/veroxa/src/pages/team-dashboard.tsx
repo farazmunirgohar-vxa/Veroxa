@@ -24,6 +24,14 @@ import { getDemoImage } from "@/data/demo/demoImages";
 import { demoClientTeamWorkflow } from "@/data/workflows/clientTeamWorkflow";
 import { sortWorkflowItems } from "@/lib/workflows/workflowStatus";
 import { WorkflowItemCard } from "@/components/workflows/WorkflowItemCard";
+import {
+  buildAdaptiveRecommendations,
+  rankRecommendations,
+} from "@/lib/intelligence/adaptiveRules";
+import { AdaptiveRecommendationCard } from "@/components/intelligence/AdaptiveRecommendationCard";
+import { demoClientDirection } from "@/data/direction/demoClientDirection";
+import { demoUploadSubmissions } from "@/data/uploadKeys/demoUploadSubmissions";
+import { Brain } from "lucide-react";
 
 const mediaReviewQueue = [
   {
@@ -109,6 +117,37 @@ export default function TeamDashboard() {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      {/* Adaptive Team Priorities — top 3 rule-based recommendations */}
+      <div className="mb-6" data-testid="section-adaptive-team-priorities">
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground inline-flex items-center gap-1.5">
+            <Brain className="w-3.5 h-3.5" /> Adaptive Team Priorities
+          </h3>
+          <Link href="/demo/team/adaptive-intelligence">
+            <span className="flex items-center gap-1 text-xs text-primary hover:underline cursor-pointer">
+              Open Adaptive Intelligence <ArrowRight className="w-3 h-3" />
+            </span>
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {rankRecommendations(
+            buildAdaptiveRecommendations({
+              clientId: "demo-a",
+              direction: demoClientDirection.filter((d) => d.clientId === "demo-a"),
+              uploads: demoUploadSubmissions.filter((u) => u.restaurantId === "demo-a"),
+              workflow: demoClientTeamWorkflow.filter((w) => w.clientId === "demo-a"),
+            }),
+          )
+            .slice(0, 3)
+            .map((r) => (
+              <AdaptiveRecommendationCard key={r.id} recommendation={r} audience="team" />
+            ))}
+        </div>
+        <p className="text-[11px] text-muted-foreground/70 mt-2">
+          Rule-based preview — no external AI provider, no real performance data.
+        </p>
       </div>
 
       {/* Today's Client Work — first-client workflow snapshot */}

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
 import {
   Inbox,
@@ -9,6 +9,7 @@ import {
   Clock,
   Bookmark,
   ExternalLink,
+  Trash2,
 } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,6 +26,13 @@ import {
   type DemoUploadStatus,
   type DemoUploadSubmission,
 } from "@/data/uploadKeys/demoUploadSubmissions";
+import {
+  clearLocalUploadSubmissions,
+  getLocalUploadSubmissions,
+  isLocalUploadSubmission,
+  subscribeToLocalUploadSubmissions,
+  updateLocalUploadSubmissionStatus,
+} from "@/lib/uploadKeys/localUploadStore";
 
 const statusToneStyles: Record<DemoUploadStatus, string> = {
   received: "bg-sky-500/10 text-sky-400 border-sky-500/30",
@@ -42,11 +50,25 @@ const statusToneStyles: Record<DemoUploadStatus, string> = {
  * never hit the database or any external API.
  */
 export default function TeamUploadInbox() {
-  // Local copy of submissions so the team can practice the review
-  // actions. Reloading the page resets everything.
-  const [items, setItems] = useState<DemoUploadSubmission[]>(() => [
+  // Fixture submissions stay in component state for local triage practice.
+  const [fixtureItems, setFixtureItems] = useState<DemoUploadSubmission[]>(() => [
     ...demoUploadSubmissions,
   ]);
+  // Session-store submissions (from /upload during this browser session).
+  const [localItems, setLocalItems] = useState<DemoUploadSubmission[]>(
+    () => getLocalUploadSubmissions(),
+  );
+
+  useEffect(() => {
+    const unsub = subscribeToLocalUploadSubmissions((next) => setLocalItems(next));
+    setLocalItems(getLocalUploadSubmissions());
+    return unsub;
+  }, []);
+
+  const items = useMemo(
+    () => [...localItems, ...fixtureItems],
+    [localItems, fixtureItems],
+  );
 
   const grouped = useMemo(() => {
     const map = new Map<string, DemoUploadSubmission[]>();
@@ -59,7 +81,17 @@ export default function TeamUploadInbox() {
   }, [items]);
 
   function updateStatus(id: string, status: DemoUploadStatus) {
-    setItems((curr) => curr.map((s) => (s.id === id ? { ...s, status } : s)));
+    if (isLocalUploadSubmission(id)) {
+      updateLocalUploadSubmissionStatus(id, status);
+      setLocalItems(getLocalUploadSubmissions());
+      return;
+    }
+    setFixtureItems((curr) => curr.map((s) => (s.id === id ? { ...s, status } : s)));
+  }
+
+  function handleClearSession() {
+    clearLocalUploadSubmissions();
+    setLocalItems([]);
   }
 
   return (
@@ -93,6 +125,24 @@ export default function TeamUploadInbox() {
         </div>
 
         <DemoOnlyBanner message="Demo/local only — no real uploads, no notifications, no database writes. Actions update local state in this browser only." />
+
+        <div className="flex flex-wrap items-center justify-between gap-2 mt-2 mb-4 px-1 text-xs text-muted-foreground">
+          <span>
+            Uploads from <span className="font-mono">/upload</span> appear here for this
+            browser session only ({localItems.length} session upload
+            {localItems.length === 1 ? "" : "s"}).
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 text-xs"
+            onClick={handleClearSession}
+            disabled={localItems.length === 0}
+            data-testid="btn-clear-session-uploads"
+          >
+            <Trash2 className="w-3 h-3 mr-1" /> Clear session uploads
+          </Button>
+        </div>
 
         {grouped.length === 0 && (
           <Card>

@@ -1,0 +1,318 @@
+import { useMemo, useState } from "react";
+import {
+  Compass,
+  CheckCircle2,
+  Megaphone,
+  MapPin,
+  ImageIcon,
+  Ban,
+  Clock,
+  ListTodo,
+  AlertTriangle,
+} from "lucide-react";
+import { PortalLayout } from "@/components/PortalLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
+import { teamPortalNavItems } from "@/lib/teamPortalNav";
+import {
+  demoClientDirection,
+  directionChannelLabels,
+  directionFocusLabels,
+  directionStatusTeamLabels,
+  directionUrgencyLabels,
+  type DirectionRequest,
+  type DirectionStatus,
+} from "@/data/direction/demoClientDirection";
+import { demoUploadSubmissions } from "@/data/uploadKeys/demoUploadSubmissions";
+import { demoClientTeamWorkflow } from "@/data/workflows/clientTeamWorkflow";
+import {
+  buildAdaptiveRecommendations,
+  rankRecommendations,
+} from "@/lib/intelligence/adaptiveRules";
+import { AdaptiveRecommendationCard } from "@/components/intelligence/AdaptiveRecommendationCard";
+
+type GroupKey =
+  | "urgent_high"
+  | "content"
+  | "google"
+  | "ads"
+  | "avoid"
+  | "completed";
+
+interface GroupDef {
+  key: GroupKey;
+  title: string;
+  description: string;
+  icon: typeof ListTodo;
+  filter: (d: DirectionRequest) => boolean;
+}
+
+const groups: GroupDef[] = [
+  {
+    key: "urgent_high",
+    title: "Urgent / High priority",
+    description: "Restaurant flagged this as urgent or high.",
+    icon: AlertTriangle,
+    filter: (d) =>
+      (d.urgency === "urgent" || d.urgency === "high") && d.status !== "completed",
+  },
+  {
+    key: "content",
+    title: "Content direction",
+    description: "Organic social / content focus requests.",
+    icon: ImageIcon,
+    filter: (d) =>
+      (d.channel === "organic_social" || d.channel === "all") &&
+      d.focus !== "avoid_item" &&
+      d.focus !== "ads_goal" &&
+      d.focus !== "google_visibility" &&
+      d.status !== "completed",
+  },
+  {
+    key: "google",
+    title: "Google direction",
+    description: "Google profile / posts / visibility.",
+    icon: MapPin,
+    filter: (d) =>
+      (d.channel === "google" || d.focus === "google_visibility") && d.status !== "completed",
+  },
+  {
+    key: "ads",
+    title: "Ads direction",
+    description: "Ads angle requests. No launches happen here.",
+    icon: Megaphone,
+    filter: (d) =>
+      (d.channel === "ads" || d.focus === "ads_goal") && d.status !== "completed",
+  },
+  {
+    key: "avoid",
+    title: "Avoid / blocked items",
+    description: "Things the restaurant asked us not to post.",
+    icon: Ban,
+    filter: (d) => d.focus === "avoid_item" && d.status !== "completed",
+  },
+  {
+    key: "completed",
+    title: "Completed / planned",
+    description: "Closed out or planned for this week.",
+    icon: CheckCircle2,
+    filter: (d) => d.status === "completed" || d.status === "planned",
+  },
+];
+
+const urgencyTone: Record<string, string> = {
+  low: "bg-muted text-muted-foreground border-border",
+  normal: "bg-sky-500/10 text-sky-400 border-sky-500/30",
+  high: "bg-amber-500/10 text-amber-400 border-amber-500/30",
+  urgent: "bg-rose-500/10 text-rose-400 border-rose-500/30",
+};
+
+const statusTone: Record<DirectionStatus, string> = {
+  received: "bg-sky-500/10 text-sky-400 border-sky-500/30",
+  interpreted: "bg-amber-500/10 text-amber-400 border-amber-500/30",
+  in_team_review: "bg-violet-500/10 text-violet-400 border-violet-500/30",
+  planned: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
+  completed: "bg-muted text-muted-foreground border-border",
+};
+
+function suggestedAction(d: DirectionRequest): string {
+  switch (d.focus) {
+    case "lunch_traffic":
+      return "Plan 2 lunch posts + 1 Google lunch post.";
+    case "dinner_traffic":
+      return "Queue dinner-feature post + Reel for weekend evenings.";
+    case "catering":
+      return "Open catering media request + draft 2 catering posts.";
+    case "family_platters":
+    case "weekend_push":
+      return "Schedule Fri teaser + Sat/Sun feature posts.";
+    case "new_item":
+      return "Draft launch post + Google post + Reel.";
+    case "dessert":
+      return "Schedule dessert-focused post for weekend evening.";
+    case "slow_day":
+      return "Plan slow-day organic post + Google post + small offer.";
+    case "google_visibility":
+      return "Draft Google post + request storefront/interior photos.";
+    case "event_or_holiday":
+      return "Add event-themed content + Google event post.";
+    case "ads_goal":
+      return "Draft ads angle for owner/operator approval (no launch).";
+    case "avoid_item":
+      return "Tag item as avoid; pull from drafts and Google posts.";
+    case "use_media_next":
+      return "Move flagged upload to top of scheduling queue.";
+    default:
+      return "Clarify with the restaurant; draft a content angle.";
+  }
+}
+
+export default function TeamDirectionQueue() {
+  const [items, setItems] = useState<DirectionRequest[]>(() => [...demoClientDirection]);
+
+  function updateStatus(id: string, status: DirectionStatus) {
+    setItems((curr) => curr.map((d) => (d.id === id ? { ...d, status } : d)));
+  }
+
+  // Adaptive recommendations for demo-a (the active first client).
+  const recommendations = useMemo(
+    () =>
+      rankRecommendations(
+        buildAdaptiveRecommendations({
+          clientId: "demo-a",
+          direction: items.filter((d) => d.clientId === "demo-a"),
+          uploads: demoUploadSubmissions.filter((u) => u.restaurantId === "demo-a"),
+          workflow: demoClientTeamWorkflow.filter((w) => w.clientId === "demo-a"),
+        }),
+      ),
+    [items],
+  );
+
+  return (
+    <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
+      <div className="mb-4">
+        <h2
+          className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-2"
+          data-testid="header-direction-queue"
+        >
+          <Compass className="w-6 h-6 text-primary" /> Direction Queue
+        </h2>
+        <p className="text-muted-foreground mt-1 text-sm md:text-base max-w-3xl">
+          Restaurant priorities submitted through the Client Direction Center. Review,
+          interpret, and convert into content, Google, or ads actions.
+        </p>
+      </div>
+
+      <DemoOnlyBanner
+        message="Demo/local only — no real writes, no notifications, no publishing, no ads launched."
+        testId="banner-direction-queue"
+      />
+
+      {/* Adaptive top-of-queue snapshot */}
+      {recommendations.length > 0 && (
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+            Adaptive priorities — top 2
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {recommendations.slice(0, 2).map((r) => (
+              <AdaptiveRecommendationCard key={r.id} recommendation={r} audience="team" />
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+        {groups.map((g) => {
+          const groupItems = items.filter(g.filter);
+          const Icon = g.icon;
+          return (
+            <Card key={g.key} className="bg-card border-border" data-testid={`direction-group-${g.key}`}>
+              <CardHeader className="pb-3">
+                <div className="flex items-baseline justify-between gap-2">
+                  <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground inline-flex items-center gap-1.5">
+                    <Icon className="w-3.5 h-3.5" />
+                    {g.title}
+                  </CardTitle>
+                  <span className="text-[11px] text-muted-foreground/70 tabular-nums">
+                    {groupItems.length}
+                  </span>
+                </div>
+                <p className="text-[11px] text-muted-foreground/70 mt-1">{g.description}</p>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {groupItems.length === 0 ? (
+                  <p className="text-xs text-muted-foreground italic">Nothing here right now.</p>
+                ) : (
+                  groupItems.map((d) => (
+                    <div
+                      key={d.id}
+                      className="p-3 rounded-md border border-border bg-muted/20"
+                      data-testid={`direction-card-${d.id}`}
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <p className="text-sm font-semibold leading-tight">{d.title}</p>
+                        <Badge variant="outline" className={`text-[10px] ${urgencyTone[d.urgency]}`}>
+                          {directionUrgencyLabels[d.urgency]}
+                        </Badge>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mb-1">
+                        {d.restaurantName} · {directionFocusLabels[d.focus]} ·{" "}
+                        {directionChannelLabels[d.channel]} · {d.preferredTimingLabel}
+                      </p>
+                      {d.clientNote && d.clientNote !== "—" && (
+                        <p className="text-sm text-foreground/90 mb-2">"{d.clientNote}"</p>
+                      )}
+                      <p className="text-[11px] text-muted-foreground italic mb-2">
+                        Suggested: {suggestedAction(d)}
+                      </p>
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <Badge variant="outline" className={`text-[10px] ${statusTone[d.status]}`}>
+                          {directionStatusTeamLabels[d.status]}
+                        </Badge>
+                        <span className="text-[10px] text-muted-foreground inline-flex items-center gap-1">
+                          <Clock className="w-3 h-3" /> {d.submittedAtLabel}
+                        </span>
+                      </div>
+                      <Separator className="my-2" />
+                      <div className="flex flex-wrap gap-1.5">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-[11px]"
+                          onClick={() => updateStatus(d.id, "interpreted")}
+                          data-testid={`btn-dir-interpret-${d.id}`}
+                        >
+                          Mark Interpreted
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-[11px]"
+                          onClick={() => updateStatus(d.id, "in_team_review")}
+                          data-testid={`btn-dir-content-${d.id}`}
+                        >
+                          Send to Content Plan
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-[11px]"
+                          onClick={() => updateStatus(d.id, "in_team_review")}
+                          data-testid={`btn-dir-google-${d.id}`}
+                        >
+                          Send to Google Action
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-[11px]"
+                          onClick={() => updateStatus(d.id, "in_team_review")}
+                          data-testid={`btn-dir-ads-${d.id}`}
+                        >
+                          Send to Ads Planning
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-[11px]"
+                          onClick={() => updateStatus(d.id, "completed")}
+                          data-testid={`btn-dir-complete-${d.id}`}
+                        >
+                          Mark Completed
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+    </PortalLayout>
+  );
+}

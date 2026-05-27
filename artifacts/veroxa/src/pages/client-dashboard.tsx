@@ -21,6 +21,14 @@ import {
 import { getDemoImage } from "@/data/demo/demoImages";
 import { EvidenceRecommendationCard } from "@/components/evidence/EvidenceRecommendationCard";
 import { recommendNextPost } from "@/lib/evidence/evidenceSelectionEngine";
+import { WeeklyStrategySnapshot } from "@/components/intelligence/WeeklyStrategySnapshot";
+import {
+  buildAdaptiveRecommendations,
+  rankRecommendations,
+} from "@/lib/intelligence/adaptiveRules";
+import { demoClientDirection } from "@/data/direction/demoClientDirection";
+import { demoUploadSubmissions } from "@/data/uploadKeys/demoUploadSubmissions";
+import { Compass } from "lucide-react";
 
 const veroxaWeekFlow = [
   { key: "upload",   label: "You upload",    caption: "Food photos from your phone" },
@@ -86,6 +94,15 @@ const upcomingSchedule: DemoScheduleItem[] = [
 
 const clientEvidenceRec = recommendNextPost("demo-a");
 
+const clientWeeklyRecs = rankRecommendations(
+  buildAdaptiveRecommendations({
+    clientId: "demo-a",
+    direction: demoClientDirection.filter((d) => d.clientId === "demo-a"),
+    uploads: demoUploadSubmissions.filter((u) => u.restaurantId === "demo-a"),
+    workflow: demoClientTeamWorkflow.filter((w) => w.clientId === "demo-a"),
+  }),
+);
+
 export default function ClientDashboard() {
   const { loading, data, source, dataSourceMessage } = useClientPortalData();
 
@@ -133,6 +150,32 @@ export default function ClientDashboard() {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      {/* Direction Center CTA + Weekly Strategy Snapshot */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4" data-testid="section-direction-and-strategy">
+        <Card className="bg-card/50 border-border/50 lg:col-span-1" data-testid="card-direction-cta">
+          <CardContent className="p-5 flex flex-col gap-3">
+            <div className="flex items-center gap-2">
+              <Compass className="w-5 h-5 text-primary" />
+              <p className="text-sm font-semibold">What should Veroxa focus on this week?</p>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              You guide priorities. Veroxa handles the strategy, review, schedule, and
+              execution.
+            </p>
+            <Link
+              href="/demo/client/direction"
+              className="inline-flex items-center gap-1 text-sm text-primary hover:underline self-start"
+              data-testid="link-open-direction-center"
+            >
+              Open Direction Center <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </CardContent>
+        </Card>
+        <div className="lg:col-span-2">
+          <WeeklyStrategySnapshot recommendations={clientWeeklyRecs} audience="client" />
+        </div>
       </div>
 
       {/* This week's media — demo visual strip */}

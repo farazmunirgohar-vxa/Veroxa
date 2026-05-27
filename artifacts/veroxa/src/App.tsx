@@ -107,6 +107,9 @@ import GuidedDemo from "@/pages/guided-demo";
 import InternalSupabaseReadiness from "@/pages/internal-supabase-readiness";
 import RestaurantUploadAccess from "@/pages/restaurant-upload-access";
 import TeamUploadInbox from "@/pages/team-upload-inbox";
+import ClientDirectionCenter from "@/pages/client-direction-center";
+import TeamDirectionQueue from "@/pages/team-direction-queue";
+import TeamAdaptiveIntelligence from "@/pages/team-adaptive-intelligence";
 
 const queryClient = new QueryClient();
 
@@ -182,6 +185,13 @@ function Router() {
       <Route path="/demo/team/upload-inbox">
         {() => <InternalDemoGuard role="team"><TeamUploadInbox /></InternalDemoGuard>}
       </Route>
+      <Route path="/demo/team/direction-queue">
+        {() => <InternalDemoGuard role="team"><TeamDirectionQueue /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/team/adaptive-intelligence">
+        {() => <InternalDemoGuard role="team"><TeamAdaptiveIntelligence /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/client/direction" component={ClientDirectionCenter} />
 
       {/* Internal operator demo — login required, role = "operator" */}
       <Route path="/demo/operator">

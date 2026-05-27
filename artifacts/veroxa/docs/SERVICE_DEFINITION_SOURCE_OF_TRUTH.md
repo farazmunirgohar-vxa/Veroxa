@@ -177,3 +177,24 @@ as possible for the first 1–3 real clients.
 - Service-role Supabase keys in frontend code.
 - Migrations under `supabase/migrations`.
 - Custom website development as a deliverable.
+
+## M015–M019 — Direction, Adaptive Intelligence, Local Upload Store
+
+- **Client Direction Center** (`/demo/client/direction`) — clients
+  guide focus / channel / urgency / note. No publishing power.
+- **Team Direction Queue** (`/demo/team/direction-queue`,
+  team-guarded) — interpretation and routing into work queue, Google
+  actions, or ads planning. Local-only status updates.
+- **Rule-Based Adaptive Intelligence**
+  (`/demo/team/adaptive-intelligence`, team-guarded) — deterministic
+  rules over direction + uploads + workflow + memory fixture.
+  **No external AI provider.**
+- **Weekly Strategy Snapshot** — top recommendations rendered on
+  the Client Dashboard and the team intelligence page.
+- **Shared Local Upload Store** —
+  `src/lib/uploadKeys/localUploadStore.ts`, sessionStorage-backed,
+  metadata only, no file blobs. Used by `/upload`, the Team Upload
+  Inbox, and the client media page.
+- Owner / Operator portals are **not** expanded.
+- Pricing, AUTH_MODE, DATA_MODE, InternalDemoGuard, migration policy
+  all unchanged.
