@@ -2,6 +2,29 @@ import { getSupabaseClient } from "./client";
 
 export const MAMADALI_DEMO_CLIENT_ID = "00000000-0000-0000-0000-000000000001";
 
+// ─────────────────────────────────────────────────────────────────────────────
+// PORTAL QUERY SAFETY CONTRACT
+// ─────────────────────────────────────────────────────────────────────────────
+// Every function in this file MUST read from a `client_portal_*` view only.
+// Direct reads of the following base tables are FORBIDDEN here:
+//   clients, client_platforms, onboarding_items, client_requests,
+//   media_assets, notifications, client_health_snapshots, posts, post_slots,
+//   weekly_reports, monthly_reports, content_concepts, draft_sets,
+//   draft_variants, ai_agents, activity_logs, team_members,
+//   team_client_assignments, user_profiles.
+//
+// Rationale: base-table client RLS scopes ROWS but not COLUMNS, so a raw
+// `.from("clients")` call would leak monthly_fee_cents, risk_status,
+// internal_note, approved_by_user_id, etc. to the client role.
+//
+// See: artifacts/veroxa/docs/PORTAL_QUERY_SAFETY_PLAN.md
+// See: artifacts/veroxa/docs/PORTAL_QUERY_SAFETY_CHECKLIST.md
+//
+// This file is inert while AUTH_MODE === "placeholder" — the portal runs on
+// demo fixtures and never reaches Supabase. The contract activates the
+// moment AUTH_MODE flips to "real".
+// ─────────────────────────────────────────────────────────────────────────────
+
 function db() {
   const client = getSupabaseClient();
   if (!client) {
@@ -15,9 +38,9 @@ function db() {
 
 export async function getClientById(clientId: string) {
   const { data, error } = await db()
-    .from("clients")
+    .from("client_portal_clients_view")
     .select("*")
-    .eq("id", clientId)
+    .eq("client_id", clientId)
     .single();
   if (error) throw new Error(`[supabase] getClientById: ${error.message}`);
   return data;
@@ -25,7 +48,7 @@ export async function getClientById(clientId: string) {
 
 export async function getClientPlatforms(clientId: string) {
   const { data, error } = await db()
-    .from("client_platforms")
+    .from("client_portal_platforms_view")
     .select("*")
     .eq("client_id", clientId);
   if (error) throw new Error(`[supabase] getClientPlatforms: ${error.message}`);
@@ -34,65 +57,63 @@ export async function getClientPlatforms(clientId: string) {
 
 export async function getClientMediaAssets(clientId: string) {
   const { data, error } = await db()
-    .from("media_assets")
+    .from("client_portal_media_view")
     .select("*")
     .eq("client_id", clientId)
-    .order("created_at", { ascending: false });
+    .order("uploaded_at", { ascending: false });
   if (error)
     throw new Error(`[supabase] getClientMediaAssets: ${error.message}`);
   return data ?? [];
 }
 
-export async function getClientPosts(clientId: string) {
+// Replaces the prior getClientPosts + getClientPostSlots base-table reads.
+// The calendar view already filters to post_status in ('scheduled','published')
+// and exposes only client-safe columns (no caption_text, no draft_variant_id,
+// no approved_by_user_id, no publish_failure_reason).
+export async function getClientCalendar(clientId: string) {
   const { data, error } = await db()
-    .from("posts")
+    .from("client_portal_calendar_view")
     .select("*")
     .eq("client_id", clientId)
-    .order("scheduled_at", { ascending: false, nullsFirst: false });
-  if (error) throw new Error(`[supabase] getClientPosts: ${error.message}`);
-  return data ?? [];
-}
-
-export async function getClientPostSlots(clientId: string) {
-  const { data, error } = await db()
-    .from("post_slots")
-    .select("*")
-    .eq("client_id", clientId)
-    .order("slot_date", { ascending: true });
+    .order("scheduled_for", { ascending: true, nullsFirst: false });
   if (error)
-    throw new Error(`[supabase] getClientPostSlots: ${error.message}`);
+    throw new Error(`[supabase] getClientCalendar: ${error.message}`);
   return data ?? [];
 }
 
 export async function getClientWeeklyReports(clientId: string) {
+  // View column is `week_start` (not `week_start_date`). View is filtered to
+  // status='published' and exposes client_safe_summary + client_safe_summary_json
+  // only — raw summary_json, internal_validation_note, and owner ids are hidden.
+  // TODO(M005-view): if the portal ever needs posts_published / posts_planned /
+  // completion_rate from the weekly report row, extend the view rather than
+  // reading from public.weekly_reports here.
   const { data, error } = await db()
-    .from("weekly_reports")
+    .from("client_portal_weekly_reports_view")
     .select("*")
     .eq("client_id", clientId)
-    .order("week_start_date", { ascending: false });
+    .order("week_start", { ascending: false });
   if (error)
     throw new Error(`[supabase] getClientWeeklyReports: ${error.message}`);
   return data ?? [];
 }
 
 export async function getClientMonthlyReports(clientId: string) {
+  // View column is `month_key` (text "YYYY-MM"). Lexicographic DESC ordering
+  // matches chronological DESC because the format is zero-padded.
+  // TODO(M005-view): if the portal ever needs posts_published / posts_planned /
+  // completion_rate / status from the monthly report, extend the view rather
+  // than reading from public.monthly_reports here.
   const { data, error } = await db()
-    .from("monthly_reports")
+    .from("client_portal_monthly_reports_view")
     .select("*")
     .eq("client_id", clientId)
-    .order("year", { ascending: false })
-    .order("month", { ascending: false });
+    .order("month_key", { ascending: false });
   if (error)
     throw new Error(`[supabase] getClientMonthlyReports: ${error.message}`);
   return data ?? [];
 }
 
-export async function getClientDraftVariants(clientId: string) {
-  const { data, error } = await db()
-    .from("draft_variants")
-    .select("*")
-    .eq("client_id", clientId);
-  if (error)
-    throw new Error(`[supabase] getClientDraftVariants: ${error.message}`);
-  return data ?? [];
-}
+// NOTE: getClientDraftVariants and getClientPostSlots were intentionally
+// removed. draft_variants is a staff-only table (M006) and post_slots has
+// no client-safe view by design. The client portal must not read either.

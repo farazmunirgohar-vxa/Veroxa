@@ -6,18 +6,20 @@ import {
   getClientById,
   getClientPlatforms,
   getClientMediaAssets,
-  getClientPosts,
-  getClientPostSlots,
+  getClientCalendar,
   getClientWeeklyReports,
   getClientMonthlyReports,
 } from "@/lib/supabase";
 
+// Read-only smoke test that exercises every client-safe view this portal
+// uses. post_slots intentionally removed — it has no client-safe view by
+// design and the client portal must never read public.post_slots directly.
+// See: docs/PORTAL_QUERY_SAFETY_PLAN.md
 type TestResult = {
   businessName: string;
   platformsCount: number;
   mediaAssetsCount: number;
-  postsCount: number;
-  postSlotsCount: number;
+  calendarCount: number;
   weeklyReportsCount: number;
   monthlyReportsCount: number;
 };
@@ -30,12 +32,11 @@ type PageState =
 
 const EXPECTED: Record<string, number | string> = {
   "Business name": "Mamadali Kebab House",
-  "client_platforms": 4,
-  "media_assets": 10,
-  "posts": 7,
-  "post_slots": 8,
-  "weekly_reports": 2,
-  "monthly_reports": 1,
+  "client_portal_platforms_view": 4,
+  "client_portal_media_view": 10,
+  "client_portal_calendar_view": 7,
+  "client_portal_weekly_reports_view": 2,
+  "client_portal_monthly_reports_view": 1,
 };
 
 export default function SupabaseTestPage() {
@@ -45,13 +46,12 @@ export default function SupabaseTestPage() {
     async function run() {
       setState({ status: "loading" });
       try {
-        const [client, platforms, media, posts, slots, weekly, monthly] =
+        const [client, platforms, media, calendar, weekly, monthly] =
           await Promise.all([
             getClientById(MAMADALI_DEMO_CLIENT_ID),
             getClientPlatforms(MAMADALI_DEMO_CLIENT_ID),
             getClientMediaAssets(MAMADALI_DEMO_CLIENT_ID),
-            getClientPosts(MAMADALI_DEMO_CLIENT_ID),
-            getClientPostSlots(MAMADALI_DEMO_CLIENT_ID),
+            getClientCalendar(MAMADALI_DEMO_CLIENT_ID),
             getClientWeeklyReports(MAMADALI_DEMO_CLIENT_ID),
             getClientMonthlyReports(MAMADALI_DEMO_CLIENT_ID),
           ]);
@@ -65,8 +65,7 @@ export default function SupabaseTestPage() {
               "(unknown)",
             platformsCount: platforms.length,
             mediaAssetsCount: media.length,
-            postsCount: posts.length,
-            postSlotsCount: slots.length,
+            calendarCount: calendar.length,
             weeklyReportsCount: weekly.length,
             monthlyReportsCount: monthly.length,
           },
@@ -85,12 +84,11 @@ export default function SupabaseTestPage() {
     state.status === "success"
       ? [
           { label: "Business name", actual: state.result.businessName, expected: EXPECTED["Business name"] },
-          { label: "client_platforms", actual: state.result.platformsCount, expected: EXPECTED["client_platforms"] },
-          { label: "media_assets", actual: state.result.mediaAssetsCount, expected: EXPECTED["media_assets"] },
-          { label: "posts", actual: state.result.postsCount, expected: EXPECTED["posts"] },
-          { label: "post_slots", actual: state.result.postSlotsCount, expected: EXPECTED["post_slots"] },
-          { label: "weekly_reports", actual: state.result.weeklyReportsCount, expected: EXPECTED["weekly_reports"] },
-          { label: "monthly_reports", actual: state.result.monthlyReportsCount, expected: EXPECTED["monthly_reports"] },
+          { label: "client_portal_platforms_view", actual: state.result.platformsCount, expected: EXPECTED["client_portal_platforms_view"] },
+          { label: "client_portal_media_view", actual: state.result.mediaAssetsCount, expected: EXPECTED["client_portal_media_view"] },
+          { label: "client_portal_calendar_view", actual: state.result.calendarCount, expected: EXPECTED["client_portal_calendar_view"] },
+          { label: "client_portal_weekly_reports_view", actual: state.result.weeklyReportsCount, expected: EXPECTED["client_portal_weekly_reports_view"] },
+          { label: "client_portal_monthly_reports_view", actual: state.result.monthlyReportsCount, expected: EXPECTED["client_portal_monthly_reports_view"] },
         ]
       : [];
 

@@ -4,11 +4,9 @@ import {
   getClientById,
   getClientPlatforms,
   getClientMediaAssets,
-  getClientPosts,
-  getClientPostSlots,
+  getClientCalendar,
   getClientWeeklyReports,
   getClientMonthlyReports,
-  getClientDraftVariants,
 } from "@/lib/supabase";
 import {
   scheduledPosts as demoScheduledPosts,
@@ -116,15 +114,7 @@ const MONTH_SHORT = [
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
 
-const REPORT_STATUS_LABELS: Record<string, string> = {
-  published: "Published",
-  approved: "Approved",
-  operator_review: "In Review",
-  drafting: "Drafting",
-};
-
 function parseDateParts(dateStr: string): { day: number; monthIdx: number } | null {
-  // Expects "YYYY-MM-DD"
   const parts = dateStr.split("-");
   if (parts.length < 3) return null;
   const monthIdx = parseInt(parts[1], 10) - 1;
@@ -147,28 +137,26 @@ function formatWeekTitle(startDate: unknown, endDate: unknown): string {
   return `Weekly Update — ${s.day} ${MONTH_SHORT[s.monthIdx]}–${e.day} ${MONTH_SHORT[e.monthIdx]}`;
 }
 
-function parseSummaryItems(
+function parseWeeklySummaryItems(
   postsPublished: unknown,
   postsPlanned: unknown,
-  completionRate: unknown,
-  summaryText: unknown
+  clientSafeSummary: unknown
 ): string[] {
   const items: string[] = [];
 
+  // The weekly view does not currently expose posts_published / posts_planned;
+  // when the view is extended (see TODO in clientPortalQueries.ts), these
+  // numeric inputs will start being populated and the headline line below
+  // will render.
   const pub = typeof postsPublished === "number" ? postsPublished : null;
   const plan = typeof postsPlanned === "number" ? postsPlanned : null;
-  const rate = typeof completionRate === "number" ? completionRate : null;
-
-  if (pub !== null && plan !== null && rate !== null) {
-    items.push(
-      `${pub} of ${plan} posts published this week (${rate}% completion rate).`
-    );
-  } else if (pub !== null && plan !== null) {
-    items.push(`${pub} of ${plan} posts published this week.`);
+  if (pub !== null && plan !== null) {
+    const rate = plan > 0 ? Math.round((pub / plan) * 100) : 0;
+    items.push(`${pub} of ${plan} posts published this week (${rate}% completion rate).`);
   }
 
-  if (typeof summaryText === "string" && summaryText.trim()) {
-    const sentences = summaryText
+  if (typeof clientSafeSummary === "string" && clientSafeSummary.trim()) {
+    const sentences = clientSafeSummary
       .split(/\.\s+/)
       .map((s) => s.trim())
       .filter(Boolean)
@@ -179,28 +167,36 @@ function parseSummaryItems(
   return items.length > 0 ? items : DEMO_WEEKLY_UPDATE.summaryItems;
 }
 
-function formatMonthlyTitle(month: unknown, year: unknown): string {
-  const m = typeof month === "number" ? month : null;
-  const y = typeof year === "number" ? year : null;
-  if (m === null || y === null) return DEMO_MONTHLY_PREVIEW.title;
-  const monthName = MONTH_NAMES[(m - 1 + 12) % 12] ?? String(m);
-  return `${monthName} ${y} Report`;
+function parseMonthKey(monthKey: unknown): { month: number; year: number } | null {
+  if (typeof monthKey !== "string") return null;
+  const m = /^(\d{4})-(\d{2})$/.exec(monthKey);
+  if (!m) return null;
+  const year = parseInt(m[1], 10);
+  const month = parseInt(m[2], 10);
+  if (isNaN(year) || isNaN(month) || month < 1 || month > 12) return null;
+  return { month, year };
+}
+
+function formatMonthlyTitleFromKey(monthKey: unknown): string {
+  const parsed = parseMonthKey(monthKey);
+  if (!parsed) return DEMO_MONTHLY_PREVIEW.title;
+  const monthName = MONTH_NAMES[parsed.month - 1] ?? String(parsed.month);
+  return `${monthName} ${parsed.year} Report`;
 }
 
 // ── Scheduled posts builder ───────────────────────────────────────────────────
 
-const DISPLAY_STATUSES = new Set(["scheduled", "ready_for_review", "ready_to_schedule"]);
+// status_label is already a client-safe label produced by
+// client_portal_calendar_view ("Scheduled" | "Published"). Pass-through.
+function normalizeStatusLabel(raw: unknown): string {
+  if (typeof raw === "string" && raw.trim()) return raw;
+  return "Scheduled";
+}
 
-const STATUS_LABELS: Record<string, string> = {
-  scheduled: "Scheduled",
-  ready_for_review: "In Review",
-  ready_to_schedule: "Ready",
-};
-
-function formatScheduledAt(scheduledAt: unknown): string {
-  if (typeof scheduledAt !== "string" || !scheduledAt) return "";
+function formatScheduledFor(scheduledFor: unknown): string {
+  if (typeof scheduledFor !== "string" || !scheduledFor) return "";
   try {
-    const d = new Date(scheduledAt);
+    const d = new Date(scheduledFor);
     const day = d.getDate();
     const month = MONTH_SHORT[d.getMonth()] ?? "";
     const hours = d.getHours();
@@ -209,42 +205,32 @@ function formatScheduledAt(scheduledAt: unknown): string {
     const hour12 = hours % 12 === 0 ? 12 : hours % 12;
     return `${day} ${month} · ${hour12}:${minutes} ${period}`;
   } catch {
-    return String(scheduledAt);
+    return String(scheduledFor);
   }
 }
 
-function buildScheduledPostsFromSupabase(
-  posts: Record<string, unknown>[],
-  variants: Record<string, unknown>[]
+// Calendar items only — no draft_variants join. The calendar view exposes
+// `client_safe_title` (post title written for client-safe display) but no
+// caption_text by design. If client_safe_title is missing/blank we fall
+// back to a demo-safe placeholder.
+function buildScheduledPostsFromCalendar(
+  calendar: Record<string, unknown>[]
 ): ScheduledPostDisplay[] {
-  const variantById = new Map<string, Record<string, unknown>>();
-  for (const v of variants) {
-    if (typeof v.id === "string") variantById.set(v.id, v);
-  }
-
-  return posts
-    .filter((p) => typeof p.status === "string" && DISPLAY_STATUSES.has(p.status))
+  return calendar
+    .slice()
     .sort((a, b) => {
-      const aTime = typeof a.scheduled_at === "string" ? new Date(a.scheduled_at).getTime() : 0;
-      const bTime = typeof b.scheduled_at === "string" ? new Date(b.scheduled_at).getTime() : 0;
+      const aTime = typeof a.scheduled_for === "string" ? new Date(a.scheduled_for).getTime() : 0;
+      const bTime = typeof b.scheduled_for === "string" ? new Date(b.scheduled_for).getTime() : 0;
       return aTime - bTime;
     })
     .map((p) => {
-      const dateStr = formatScheduledAt(p.scheduled_at);
+      const date = formatScheduledFor(p.scheduled_for);
       const platformRaw = typeof p.platform_name === "string" ? p.platform_name : "";
       const platform = platformRaw.charAt(0).toUpperCase() + platformRaw.slice(1).toLowerCase();
-      const statusRaw = typeof p.status === "string" ? p.status : "";
-      const status = STATUS_LABELS[statusRaw] ?? statusRaw;
-
-      let caption = "Caption pending team review";
-      if (typeof p.draft_variant_id === "string" && p.draft_variant_id) {
-        const variant = variantById.get(p.draft_variant_id);
-        if (variant && typeof variant.caption_text === "string" && variant.caption_text) {
-          caption = variant.caption_text;
-        }
-      }
-
-      return { date: dateStr, caption, platform, status };
+      const status = normalizeStatusLabel(p.status_label);
+      const titleRaw = typeof p.client_safe_title === "string" ? p.client_safe_title.trim() : "";
+      const caption = titleRaw.length > 0 ? titleRaw : "Post details available in your scheduled posts list";
+      return { date, caption, platform, status };
     });
 }
 
@@ -263,16 +249,14 @@ export function useClientPortalData(): UseClientPortalDataResult {
 
     async function load() {
       try {
-        const [client, platforms, media, posts, slots, weekly, monthly, variants] =
+        const [client, platforms, media, calendar, weekly, monthly] =
           await Promise.all([
             getClientById(MAMADALI_DEMO_CLIENT_ID),
             getClientPlatforms(MAMADALI_DEMO_CLIENT_ID),
             getClientMediaAssets(MAMADALI_DEMO_CLIENT_ID),
-            getClientPosts(MAMADALI_DEMO_CLIENT_ID),
-            getClientPostSlots(MAMADALI_DEMO_CLIENT_ID),
+            getClientCalendar(MAMADALI_DEMO_CLIENT_ID),
             getClientWeeklyReports(MAMADALI_DEMO_CLIENT_ID),
             getClientMonthlyReports(MAMADALI_DEMO_CLIENT_ID),
-            getClientDraftVariants(MAMADALI_DEMO_CLIENT_ID),
           ]);
 
         if (cancelled) return;
@@ -283,46 +267,56 @@ export function useClientPortalData(): UseClientPortalDataResult {
           (row?.businessName as string | undefined) ??
           mamadaliClient.businessName;
 
-        const postsTyped = posts as Record<string, unknown>[];
-        const variantsTyped = variants as Record<string, unknown>[];
+        const calendarTyped = calendar as Record<string, unknown>[];
         const weeklyTyped = weekly as Record<string, unknown>[];
         const monthlyTyped = monthly as Record<string, unknown>[];
 
-        // Content supply — derive scheduled count from live posts
-        const scheduledCount = postsTyped.filter((p) => p.status === "scheduled").length;
+        // Content supply — derive "scheduled" count from the client-safe
+        // calendar view (status_label === "Scheduled" only; published posts
+        // are excluded from the supply queue).
+        const scheduledCount = calendarTyped.filter(
+          (p) => p.status_label === "Scheduled"
+        ).length;
         const contentSupply: ContentSupplyItem[] = [
           { label: demoContentSupply[0].label, value: demoContentSupply[0].value, max: demoContentSupply[0].max },
           { label: demoContentSupply[1].label, value: scheduledCount, max: demoContentSupply[1].max },
           { label: demoContentSupply[2].label, value: demoContentSupply[2].value, max: demoContentSupply[2].max },
         ];
 
-        // Scheduled posts display
-        const scheduledPosts = buildScheduledPostsFromSupabase(postsTyped, variantsTyped);
+        const scheduledPosts = buildScheduledPostsFromCalendar(calendarTyped);
 
-        // Weekly update — most recent row (ordered week_start_date DESC from query)
+        // Weekly update — view fields: week_start, week_end, client_safe_summary,
+        // client_safe_summary_json. posts_published / posts_planned not yet on
+        // the view (see TODO in clientPortalQueries.ts).
         const latestWeekly = weeklyTyped[0] ?? null;
         const weeklyUpdate: WeeklyUpdateDisplay = latestWeekly
           ? {
-              title: formatWeekTitle(latestWeekly.week_start_date, latestWeekly.week_end_date),
-              summaryItems: parseSummaryItems(
+              title: formatWeekTitle(latestWeekly.week_start, latestWeekly.week_end),
+              summaryItems: parseWeeklySummaryItems(
                 latestWeekly.posts_published,
                 latestWeekly.posts_planned,
-                latestWeekly.completion_rate,
-                latestWeekly.summary_text
+                latestWeekly.client_safe_summary
               ),
             }
           : DEMO_WEEKLY_UPDATE;
 
-        // Monthly report preview — most recent row (ordered year DESC, month DESC)
+        // Monthly report preview — view fields: month_key, client_safe_summary,
+        // client_safe_summary_json, published_at. Status / posts_published /
+        // posts_planned / completion_rate not exposed by design (status is
+        // always 'published' for any row the client sees). Fall back to demo
+        // numbers for those visual fields.
         const latestMonthly = monthlyTyped[0] ?? null;
         const monthlyReportPreview: MonthlyReportPreview = latestMonthly
           ? {
-              title: formatMonthlyTitle(latestMonthly.month, latestMonthly.year),
-              status: REPORT_STATUS_LABELS[String(latestMonthly.status)] ?? String(latestMonthly.status ?? ""),
-              postsPublished: typeof latestMonthly.posts_published === "number" ? latestMonthly.posts_published : DEMO_MONTHLY_PREVIEW.postsPublished,
-              postsPlanned: typeof latestMonthly.posts_planned === "number" ? latestMonthly.posts_planned : DEMO_MONTHLY_PREVIEW.postsPlanned,
-              completionRate: typeof latestMonthly.completion_rate === "number" ? latestMonthly.completion_rate : DEMO_MONTHLY_PREVIEW.completionRate,
-              summaryText: typeof latestMonthly.summary_text === "string" ? latestMonthly.summary_text : null,
+              title: formatMonthlyTitleFromKey(latestMonthly.month_key),
+              status: "Published",
+              postsPublished: DEMO_MONTHLY_PREVIEW.postsPublished,
+              postsPlanned: DEMO_MONTHLY_PREVIEW.postsPlanned,
+              completionRate: DEMO_MONTHLY_PREVIEW.completionRate,
+              summaryText:
+                typeof latestMonthly.client_safe_summary === "string"
+                  ? latestMonthly.client_safe_summary
+                  : null,
             }
           : DEMO_MONTHLY_PREVIEW;
 
@@ -339,8 +333,10 @@ export function useClientPortalData(): UseClientPortalDataResult {
             monthlyReportPreview,
             platformsCount: platforms.length,
             mediaAssetsCount: media.length,
-            postsCount: posts.length,
-            postSlotsCount: slots.length,
+            postsCount: calendarTyped.length,
+            // post_slots has no client-safe view by design; report 0 rather
+            // than reading public.post_slots directly.
+            postSlotsCount: 0,
             weeklyReportsCount: weekly.length,
             monthlyReportsCount: monthly.length,
           },

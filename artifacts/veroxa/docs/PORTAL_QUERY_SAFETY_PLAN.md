@@ -1,8 +1,27 @@
 # Portal Query Safety Plan
 
-**Status:** Plan only. No CI / lint is implemented yet. `AUTH_MODE`
-remains `"placeholder"`. This document defines the contract the client
-portal MUST follow once Supabase is connected.
+**Status:** Plan + partial enforcement. No CI / lint is implemented yet.
+`AUTH_MODE` remains `"placeholder"`. This document defines the contract
+the client portal MUST follow once Supabase is connected.
+
+## Current status (portal source)
+
+- `src/lib/supabase/clientPortalQueries.ts` reads from `client_portal_*`
+  views only. Every prior `.from("clients" | "client_platforms" |
+  "media_assets" | "posts" | "post_slots" | "weekly_reports" |
+  "monthly_reports" | "draft_variants")` call has been removed.
+- `draft_variants` is now forbidden in the client portal data path.
+  `getClientDraftVariants` and `getClientPostSlots` have been removed
+  from the supabase library; the calendar view replaces both posts and
+  post_slots reads on the client side.
+- `src/hooks/useClientPortalData.ts` no longer loads draft variants.
+  Calendar captions are derived from `client_safe_title` on
+  `client_portal_calendar_view`, falling back to a demo-safe
+  placeholder when the field is empty.
+- Direct base-table client reads are blocked by code review (the
+  forbidden-table list below) until the future CI / grep check ships.
+- See the companion manual checklist:
+  `docs/PORTAL_QUERY_SAFETY_CHECKLIST.md`.
 
 ## Why this matters
 

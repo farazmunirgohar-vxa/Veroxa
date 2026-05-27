@@ -1,0 +1,103 @@
+VEROXA NEXT BUILD PASS — PORTAL QUERY SAFETY + M005 STAFF POLICY AUDIT
+
+Objective:
+Fix remaining safety gaps before any more dev Supabase testing.
+
+Hard rules:
+- Keep AUTH_MODE = "placeholder"
+- Do not add files to supabase/migrations
+- Do not connect portal to real Supabase
+- Do not activate real auth
+- Do not change pricing
+- Do not change navigation
+- Do not connect AI/publishing/payment APIs
+- Use fixtures only
+
+Context:
+GitHub currently shows AUTH_MODE is correctly "placeholder". However, clientPortalQueries.ts still queries sensitive base tables like clients, media_assets, posts, weekly_reports, monthly_reports, and draft_variants directly, which violates the portal-safe-view strategy. Also review M005 staff report policies for can_view_client usage before dev testing. 
+
+TASK 1 — Fix client portal query safety
+Update:
+artifacts/veroxa/src/lib/supabase/clientPortalQueries.ts
+
+Replace direct client portal reads from sensitive base tables with client-safe views only.
+
+Use:
+- client_portal_clients_view
+- client_portal_platforms_view
+- client_portal_media_view
+- client_portal_calendar_view
+- client_portal_weekly_reports_view
+- client_portal_monthly_reports_view
+
+Do not query:
+- clients
+- client_platforms
+- media_assets
+- posts
+- post_slots
+- weekly_reports
+- monthly_reports
+- draft_variants
+- content_concepts
+- draft_sets
+- activity_logs
+
+If a view does not yet expose a needed field, add a TODO comment instead of querying the base table.
+
+TASK 2 — Remove client draft variant dependency
+Update:
+artifacts/veroxa/src/hooks/useClientPortalData.ts
+
+The client portal must not load draft_variants.
+Remove getClientDraftVariants from the client portal data path.
+Calendar captions should come from client-safe calendar view fields only, or fall back to demo-safe placeholder text.
+
+TASK 3 — M005 RLS audit/correction draft
+Review:
+artifacts/veroxa/docs/sql_drafts/migrations_review/005_reporting_foundation_draft.sql
+
+If weekly_reports_select_staff or monthly_reports_select_staff uses private.can_view_client(client_id), create a correction draft:
+
+artifacts/veroxa/docs/sql_drafts/migrations_review/005_reports_select_staff_correction_draft.sql
+
+Purpose:
+Replace can_view_client with is_assigned_to_client for staff report policies so client-role users cannot match staff policies.
+
+Do not apply it.
+Do not move it to supabase/migrations.
+
+TASK 4 — Update portal query safety docs
+Update:
+artifacts/veroxa/docs/PORTAL_QUERY_SAFETY_PLAN.md
+
+Add current status:
+- clientPortalQueries.ts must use client_portal_* views only
+- draft_variants are forbidden in client portal
+- direct base-table client reads are blocked by code review before real auth
+
+TASK 5 — Add a lightweight grep/checklist doc
+Create:
+artifacts/veroxa/docs/PORTAL_QUERY_SAFETY_CHECKLIST.md
+
+Include manual checks:
+- grep for .from("clients")
+- grep for .from("media_assets")
+- grep for .from("posts")
+- grep for .from("weekly_reports")
+- grep for .from("monthly_reports")
+- grep for .from("draft_variants")
+- confirm no client portal source uses these base tables
+
+Final report required:
+1. Files modified
+2. clientPortalQueries.ts base-table reads removed
+3. useClientPortalData draft_variants dependency removed
+4. M005 correction draft created or skipped with reason
+5. PORTAL_QUERY_SAFETY_PLAN.md updated
+6. PORTAL_QUERY_SAFETY_CHECKLIST.md created
+7. Confirmation AUTH_MODE unchanged
+8. Confirmation no supabase/migrations files created
+9. Confirmation no portal/database connection activated
+10. Confirmation pricing unchanged
+11. Build/typecheck result

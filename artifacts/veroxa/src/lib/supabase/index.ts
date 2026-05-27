@@ -8,9 +8,7 @@ export {
   getClientById,
   getClientPlatforms,
   getClientMediaAssets,
-  getClientPosts,
-  getClientPostSlots,
+  getClientCalendar,
   getClientWeeklyReports,
   getClientMonthlyReports,
-  getClientDraftVariants,
 } from "./clientPortalQueries";
