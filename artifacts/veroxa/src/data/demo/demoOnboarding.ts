@@ -30,10 +30,10 @@ const onboardingTemplate: Omit<DemoOnboardingStep, "id" | "clientId" | "status">
 ];
 
 const onboardingStatusMap: Record<string, OnboardingStatus[]> = {
-  mamadali: ["Complete","Complete","Complete","Complete","Complete",    "Complete",    "Complete",    "Complete"],
-  urban:    ["Complete","Complete","Complete","Complete","In Progress", "Complete",    "In Progress", "Complete"],
-  crescent: ["Complete","Complete","Complete","Complete","Complete",    "Complete",    "Complete",    "Complete"],
-  alnoor:   ["Complete","In Progress","Missing","Missing","Missing",   "In Progress", "Missing",     "Complete"],
+  "demo-a": ["Complete","Complete","Complete","Complete","Complete",    "Complete",    "Complete",    "Complete"],
+  "demo-b":    ["Complete","Complete","Complete","Complete","In Progress", "Complete",    "In Progress", "Complete"],
+  "demo-c": ["Complete","Complete","Complete","Complete","Complete",    "Complete",    "Complete",    "Complete"],
+  "demo-d":   ["Complete","In Progress","Missing","Missing","Missing",   "In Progress", "Missing",     "Complete"],
 };
 
 export const demoOnboardingSteps: DemoOnboardingStep[] = demoRestaurants.flatMap((r) =>

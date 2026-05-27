@@ -37,7 +37,7 @@ const mediaItems = [
   { id: 5, title: "Dessert tray detail",     client: "Demo Grill House", quality: "Needs Crop",    note: "Crop to 4:5 for Instagram"             },
 ];
 
-const teamEvidenceRec = recommendNextPost("mamadali");
+const teamEvidenceRec = recommendNextPost("demo-a");
 
 export default function TeamMediaReview() {
   return (

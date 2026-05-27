@@ -46,7 +46,7 @@ export default function OwnerOS() {
         testId="header-owner-os"
       />
       <DemoOnlyBanner
-        message="Executive snapshot. All figures are demo data and reflect the locked $997 / $1,097 / $1,197 / $1,497 pricing model."
+        message="Executive snapshot. All figures are demo data and reflect Veroxa's flat pricing model ($477 Starter · $977 Complete Online Presence · $977 Ads Management · $1,497 Bundle — ad spend separate)."
         testId="banner-owner-os"
       />
 
@@ -158,7 +158,7 @@ export default function OwnerOS() {
 
       {/* Evidence Intelligence summary */}
       {(() => {
-        const clientIds = ["mamadali", "urban", "crescent", "alnoor"] as const;
+        const clientIds = ["demo-a", "demo-b", "demo-c", "demo-d"] as const;
         const recs = clientIds.map((id) => recommendNextPost(id));
         const highConfidence = recs.filter((r) => r.confidenceScore >= 80).length;
         const criticalCtx = demoEvidenceClientContexts.filter((c) => c.recentRisk === "Critical");

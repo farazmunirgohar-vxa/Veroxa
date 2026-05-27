@@ -19,7 +19,7 @@ export interface DemoWeeklyReport {
 
 export const demoWeeklyReports: DemoWeeklyReport[] = [
   {
-    clientId: "mamadali", weekRange: "May 19 – May 25, 2026", status: "Ready for Client",
+    clientId: "demo-a", weekRange: "May 19 – May 25, 2026", status: "Ready for Client",
     summary: "A strong week — 5 posts published, 3 new Google reviews, and visibility improving across search.",
     metrics: [
       { label: "Posts published",          value: "5"     },
@@ -34,7 +34,7 @@ export const demoWeeklyReports: DemoWeeklyReport[] = [
     notes:        "Client is responsive and onboarding is complete.",
   },
   {
-    clientId: "urban", weekRange: "May 19 – May 25, 2026", status: "Operator Review",
+    clientId: "demo-b", weekRange: "May 19 – May 25, 2026", status: "Operator Review",
     summary: "Mixed week — content supply trending low, but Google visibility held steady.",
     metrics: [
       { label: "Posts published",          value: "2"    },
@@ -49,7 +49,7 @@ export const demoWeeklyReports: DemoWeeklyReport[] = [
     notes:        "Awaiting operator review before client delivery.",
   },
   {
-    clientId: "crescent", weekRange: "May 19 – May 25, 2026", status: "Ready for Client",
+    clientId: "demo-c", weekRange: "May 19 – May 25, 2026", status: "Ready for Client",
     summary: "Excellent week — 4 posts, premium media quality, +9 reviews trend continuing.",
     metrics: [
       { label: "Posts published",          value: "4"     },
@@ -64,7 +64,7 @@ export const demoWeeklyReports: DemoWeeklyReport[] = [
     notes:        "Client engagement is high.",
   },
   {
-    clientId: "alnoor", weekRange: "May 19 – May 25, 2026", status: "Draft",
+    clientId: "demo-d", weekRange: "May 19 – May 25, 2026", status: "Draft",
     summary: "At-risk week — onboarding incomplete and media supply critical. Posting paused.",
     metrics: [
       { label: "Posts published",          value: "0"     },
@@ -82,9 +82,9 @@ export const demoWeeklyReports: DemoWeeklyReport[] = [
 
 // ── Upcoming reports widget ───────────────────────────────────────
 export const demoUpcomingReports = [
-  { clientId: "urban",    type: "Weekly",  status: "Operator Review", due: "Today"  },
-  { clientId: "mamadali", type: "Weekly",  status: "Operator Review", due: "Today"  },
-  { clientId: "crescent", type: "Monthly", status: "Draft",           due: "May 31" },
+  { clientId: "demo-b",    type: "Weekly",  status: "Operator Review", due: "Today"  },
+  { clientId: "demo-a", type: "Weekly",  status: "Operator Review", due: "Today"  },
+  { clientId: "demo-c", type: "Monthly", status: "Draft",           due: "May 31" },
 ];
 
 // ── DemoReportOp — future: weekly_reports / monthly_reports (ops view) ──
@@ -107,14 +107,14 @@ export interface DemoReportOp {
 }
 
 export const demoReportingOps: DemoReportOp[] = [
-  { id: "rp1", clientId: "mamadali", period: "May 13–19, 2026", type: "Weekly",  status: "Published",         draftOwner: "Priya",  validationOwner: "Lina",   publishedDate: "May 20", metricsSummary: "5 posts · 3.2k impressions · 4.1% engagement", internalValidationNote: "Clean.", clientFacingSummary: "A strong week — your reels drove most of the reach." },
-  { id: "rp2", clientId: "mamadali", period: "May 20–26, 2026", type: "Weekly",  status: "Drafting",          draftOwner: "Priya",  validationOwner: "Lina",                            metricsSummary: "Draft in progress.",                            clientFacingSummary: "Coming Wednesday — preview snapshot inside." },
-  { id: "rp3", clientId: "urban",    period: "May 13–19, 2026", type: "Weekly",  status: "Validation Needed", draftOwner: "Daniel", validationOwner: "Lina",                            metricsSummary: "4 posts · 2.1k impressions · 3.4% engagement", internalValidationNote: "Awaiting validation 36h.", clientFacingSummary: "Solid week — see breakdown inside." },
-  { id: "rp4", clientId: "urban",    period: "May 20–26, 2026", type: "Weekly",  status: "Not Started",       draftOwner: "Daniel", validationOwner: "Lina",                            metricsSummary: "—",                                             clientFacingSummary: "Will publish Wednesday." },
-  { id: "rp5", clientId: "crescent", period: "May 13–19, 2026", type: "Weekly",  status: "Ready to Publish",  draftOwner: "Priya",  validationOwner: "Lina",                            metricsSummary: "6 posts · 4.8k impressions · 5.2% engagement", internalValidationNote: "Approved.", clientFacingSummary: "Your best week this quarter — full numbers inside." },
-  { id: "rp6", clientId: "crescent", period: "April 2026",      type: "Monthly", status: "Published",         draftOwner: "Priya",  validationOwner: "Lina",   publishedDate: "May 4",  metricsSummary: "22 posts · 18.6k impressions · 4.7% engagement", internalValidationNote: "Clean.", clientFacingSummary: "Strong month — engagement up MoM. Highlights inside." },
-  { id: "rp7", clientId: "alnoor",   period: "May 13–19, 2026", type: "Weekly",  status: "Needs Revision",    draftOwner: "Priya",  validationOwner: "Daniel",                          metricsSummary: "3 posts · 0.9k impressions · 2.1% engagement", internalValidationNote: "Tone needs softening — flagged.", clientFacingSummary: "Quieter week — we'll regroup with you on cadence." },
-  { id: "rp8", clientId: "alnoor",   period: "April 2026",      type: "Monthly", status: "Drafting",          draftOwner: "Priya",  validationOwner: "Daniel",                          metricsSummary: "Draft in progress.",                            clientFacingSummary: "Coming next week." },
+  { id: "rp1", clientId: "demo-a", period: "May 13–19, 2026", type: "Weekly",  status: "Published",         draftOwner: "Priya",  validationOwner: "Lina",   publishedDate: "May 20", metricsSummary: "5 posts · 3.2k impressions · 4.1% engagement", internalValidationNote: "Clean.", clientFacingSummary: "A strong week — your reels drove most of the reach." },
+  { id: "rp2", clientId: "demo-a", period: "May 20–26, 2026", type: "Weekly",  status: "Drafting",          draftOwner: "Priya",  validationOwner: "Lina",                            metricsSummary: "Draft in progress.",                            clientFacingSummary: "Coming Wednesday — preview snapshot inside." },
+  { id: "rp3", clientId: "demo-b",    period: "May 13–19, 2026", type: "Weekly",  status: "Validation Needed", draftOwner: "Daniel", validationOwner: "Lina",                            metricsSummary: "4 posts · 2.1k impressions · 3.4% engagement", internalValidationNote: "Awaiting validation 36h.", clientFacingSummary: "Solid week — see breakdown inside." },
+  { id: "rp4", clientId: "demo-b",    period: "May 20–26, 2026", type: "Weekly",  status: "Not Started",       draftOwner: "Daniel", validationOwner: "Lina",                            metricsSummary: "—",                                             clientFacingSummary: "Will publish Wednesday." },
+  { id: "rp5", clientId: "demo-c", period: "May 13–19, 2026", type: "Weekly",  status: "Ready to Publish",  draftOwner: "Priya",  validationOwner: "Lina",                            metricsSummary: "6 posts · 4.8k impressions · 5.2% engagement", internalValidationNote: "Approved.", clientFacingSummary: "Your best week this quarter — full numbers inside." },
+  { id: "rp6", clientId: "demo-c", period: "April 2026",      type: "Monthly", status: "Published",         draftOwner: "Priya",  validationOwner: "Lina",   publishedDate: "May 4",  metricsSummary: "22 posts · 18.6k impressions · 4.7% engagement", internalValidationNote: "Clean.", clientFacingSummary: "Strong month — engagement up MoM. Highlights inside." },
+  { id: "rp7", clientId: "demo-d",   period: "May 13–19, 2026", type: "Weekly",  status: "Needs Revision",    draftOwner: "Priya",  validationOwner: "Daniel",                          metricsSummary: "3 posts · 0.9k impressions · 2.1% engagement", internalValidationNote: "Tone needs softening — flagged.", clientFacingSummary: "Quieter week — we'll regroup with you on cadence." },
+  { id: "rp8", clientId: "demo-d",   period: "April 2026",      type: "Monthly", status: "Drafting",          draftOwner: "Priya",  validationOwner: "Daniel",                          metricsSummary: "Draft in progress.",                            clientFacingSummary: "Coming next week." },
 ];
 
 export const reportOpStatusColor: Record<ReportOpStatus, string> = {

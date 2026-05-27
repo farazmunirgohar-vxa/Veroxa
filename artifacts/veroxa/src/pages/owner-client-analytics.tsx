@@ -9,10 +9,10 @@ import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 import { demoRestaurants, demoClientPriorities, demoMediaAnalytics, getRestaurantName } from "@/data/demoData";
 
 const clientPlanMap: Record<string, { plan: string; since: string }> = {
-  mamadali: { plan: "Growth",    since: "Feb 2026" },
-  urban:    { plan: "Pro",       since: "Mar 2026" },
-  crescent: { plan: "Premium",   since: "Dec 2025" },
-  alnoor:   { plan: "Essential", since: "Apr 2026" },
+  "demo-a": { plan: "Complete Online Presence", since: "Feb 2026" },
+  "demo-b": { plan: "Complete Online Presence", since: "Mar 2026" },
+  "demo-c": { plan: "Bundle",                   since: "Dec 2025" },
+  "demo-d": { plan: "Google Presence Starter",  since: "Apr 2026" },
 };
 
 export default function OwnerClientAnalytics() {

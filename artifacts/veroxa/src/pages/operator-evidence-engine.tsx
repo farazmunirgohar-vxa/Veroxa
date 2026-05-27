@@ -22,10 +22,10 @@ import {
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const DEMO_CLIENTS = [
-  { id: "mamadali", label: "Demo Grill House" },
-  { id: "urban",    label: "Demo Taco Bar" },
-  { id: "crescent", label: "Demo Mediterranean Grill" },
-  { id: "alnoor",   label: "Demo Cafe" },
+  { id: "demo-a", label: "Demo Grill House" },
+  { id: "demo-b",    label: "Demo Taco Bar" },
+  { id: "demo-c", label: "Demo Mediterranean Grill" },
+  { id: "demo-d",   label: "Demo Cafe" },
 ] as const;
 
 const URGENCY_TONE: Record<EvidenceUrgency, "danger" | "warning" | "info" | "success"> = {
@@ -46,7 +46,7 @@ const RISK_TONE: Record<string, "danger" | "warning" | "info" | "success"> = {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function OperatorEvidenceEngine() {
-  const [selectedClientId, setSelectedClientId] = useState<string>("mamadali");
+  const [selectedClientId, setSelectedClientId] = useState<string>("demo-a");
 
   const profile       = getEvidenceProfile(selectedClientId);
   const timeline      = getEvidenceTimeline(selectedClientId);

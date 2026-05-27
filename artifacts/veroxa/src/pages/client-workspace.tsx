@@ -32,7 +32,7 @@ import {
   type MenuItemStatus,
 } from "@/data/demoData";
 
-const DEMO_CLIENT_ID = "mamadali";
+const DEMO_CLIENT_ID = "demo-a";
 
 const menuGroupLabel: Record<MenuItemGroup, string> = {
   featured: "Featured items",

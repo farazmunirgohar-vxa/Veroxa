@@ -1,7 +1,9 @@
 # Veroxa Public Pricing & Services
 
-**Source of truth for public-facing pricing and service descriptions.**
-Do not change these without a formal pricing update decision.
+> **Pricing source of truth:** `docs/PRICING_SOURCE_OF_TRUTH.md` and the
+> runtime file `src/data/pricing/veroxaPricing.ts`. All values below must
+> match those two. Do not change pricing without a formal pricing decision
+> and updating those files first.
 
 ---
 
@@ -44,7 +46,7 @@ before moving into Complete Online Presence.
 
 | Plan | Price/month | Label |
 |------|-------------|-------|
-| Google Presence Starter | $497 | Google-only entry offer |
+| Google Presence Starter | $477 | Google-only entry offer |
 
 ### Google Presence Starter — Included
 
@@ -77,12 +79,9 @@ their Google presence is stable and they are ready for full content production.
 
 | Plan | Price/month | Label |
 |------|-------------|-------|
-| 12-month | $997 | Best long-term value |
-| 6-month | $1,097 | Growth system |
-| 3-month | $1,197 | Foundation |
-| No-contract | $1,497 | Flexible |
+| Complete Online Presence | $977 | Flat monthly rate |
 
-These prices are locked. Do not change without a formal pricing decision.
+Flat rate. No term tiers (3/6/12-month or no-contract ladders have been removed).
 
 ---
 
@@ -99,12 +98,12 @@ These prices are locked. Do not change without a formal pricing decision.
 
 ## Ads Management — Pricing
 
-| Option | Price/month |
-|--------|-------------|
-| Add-on to Complete Online Presence | +$1,500 |
-| Ads only (no content plan) | $2,000 |
+| Plan | Price/month | Label |
+|------|-------------|-------|
+| Ads Management | $977 | Flat monthly rate (standalone) |
 
-> **Important:** Advertising budget is separate and paid by the restaurant directly to the ad platform.
+> **Important:** Advertising budget is separate and paid by the restaurant
+> directly to the ad platform.
 
 ---
 
@@ -112,12 +111,13 @@ These prices are locked. Do not change without a formal pricing decision.
 
 | Plan | Price/month | Label |
 |------|-------------|-------|
-| 12-month bundle | $1,797 | Best long-term value |
-| 6-month bundle | $1,897 | Growth system |
-| 3-month bundle | $1,997 | Foundation |
-| No-contract bundle | $2,297 | Flexible |
+| Bundle | $1,497 | Best value (COP + Ads together) |
 
-> Ad spend is still separate and paid directly by the restaurant, even in the bundle.
+Buying COP ($977) + Ads Management ($977) separately = $1,954/mo. Bundle
+saves **$457/mo**.
+
+> Ad spend is still separate and paid directly by the restaurant, even in
+> the bundle.
 
 ---
 

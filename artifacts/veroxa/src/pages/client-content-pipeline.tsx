@@ -12,7 +12,7 @@ import {
   type DemoPipelineItem,
 } from "@/data/demoData";
 
-const DEMO_CLIENT_ID = "mamadali";
+const DEMO_CLIENT_ID = "demo-a";
 
 // Client-facing stage labels — no internal workflow or role names
 const clientStageLabel: Record<PipelineStage, string> = {

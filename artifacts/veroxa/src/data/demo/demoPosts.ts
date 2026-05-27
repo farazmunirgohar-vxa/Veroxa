@@ -36,17 +36,17 @@ export interface DemoPipelineItem {
 }
 
 export const demoContentPipelineItems: DemoPipelineItem[] = [
-  { id: "cp1",  clientId: "mamadali", title: "Chicken Shawarma close-up",   contentType: "Photo",    relatedMenuItem: "Chicken Shawarma Plate",   stage: "Scheduled / Posted", assignedRole: "Scheduling Agent", status: "Scheduled",         postingWindow: "Tue 6:30 PM",    confidence: 94, notes: "Lunch-window post — peak dinner engagement." },
-  { id: "cp2",  clientId: "mamadali", title: "Charcoal grill slow-mo reel", contentType: "Reel",     relatedMenuItem: "Mixed Grill Platter",      stage: "Team Review",        assignedRole: "Team",             status: "Awaiting Approval", postingWindow: "Fri 7:00 PM",    confidence: 91, notes: "Final color grade pending team sign-off." },
-  { id: "cp3",  clientId: "mamadali", title: "BTS — kitchen prep clip",     contentType: "Story",    relatedMenuItem: "Mixed Grill Platter",      stage: "Caption Drafting",   assignedRole: "Caption Agent",    status: "Drafting",          postingWindow: "Wed 5:00 PM",    confidence: 86, notes: "3 caption options generated." },
-  { id: "cp4",  clientId: "urban",    title: "Lunch special reel",          contentType: "Reel",     relatedMenuItem: "Carnitas Tacos",           stage: "AI Review",          assignedRole: "Media Agent",      status: "Reviewing",         postingWindow: "Thu 12:00 PM",   confidence: 88, notes: "Quality check in progress." },
-  { id: "cp5",  clientId: "urban",    title: "Birria cheese-pull close-up", contentType: "Photo",    relatedMenuItem: "Birria Quesatacos",        stage: "Media Received",     assignedRole: "Client",           status: "New",               postingWindow: "Sat 1:00 PM",    confidence: 0,  notes: "Uploaded — awaiting media review." },
-  { id: "cp6",  clientId: "crescent", title: "Mediterranean platter hero",  contentType: "Photo",    relatedMenuItem: "Mediterranean Platter",    stage: "Scheduled / Posted", assignedRole: "Scheduling Agent", status: "Posted",            postingWindow: "Posted Mon 8 PM", confidence: 96, notes: "Strong engagement in first 2 hours." },
-  { id: "cp7",  clientId: "crescent", title: "Olive oil pour reel",         contentType: "Reel",     relatedMenuItem: "Olive Oil Tasting Flight", stage: "Caption Drafting",   assignedRole: "Caption Agent",    status: "Drafting",          postingWindow: "Thu 7:30 PM",    confidence: 90, notes: "Editorial caption with sensory lead-in." },
-  { id: "cp8",  clientId: "crescent", title: "Owner story clip",            contentType: "Story",    relatedMenuItem: "Grilled Octopus",          stage: "Team Review",        assignedRole: "Team",             status: "Approved",          postingWindow: "Fri 8:00 PM",    confidence: 89, notes: "Approved — moving to scheduling." },
-  { id: "cp9",  clientId: "alnoor",   title: "Cardamom latte morning shot", contentType: "Photo",    relatedMenuItem: "Cardamom Latte",           stage: "AI Review",          assignedRole: "Media Agent",      status: "Reviewing",         postingWindow: "Mon 8:30 AM",    confidence: 81, notes: "Lighting good — caption next." },
-  { id: "cp10", clientId: "alnoor",   title: "Google review highlight",     contentType: "Carousel", relatedMenuItem: "Pistachio Croissant",      stage: "Caption Drafting",   assignedRole: "Caption Agent",    status: "Needs Revision",    postingWindow: "Wed 9:00 AM",    confidence: 78, notes: "Caption flagged as too generic." },
-  { id: "cp11", clientId: "alnoor",   title: "Catering announcement",       contentType: "Carousel", relatedMenuItem: "Cardamom Latte",           stage: "Media Received",     assignedRole: "Client",           status: "New",               postingWindow: "Pending",        confidence: 0,  notes: "Awaiting brand-tone review." },
+  { id: "cp1",  clientId: "demo-a", title: "Chicken Shawarma close-up",   contentType: "Photo",    relatedMenuItem: "Chicken Shawarma Plate",   stage: "Scheduled / Posted", assignedRole: "Scheduling Agent", status: "Scheduled",         postingWindow: "Tue 6:30 PM",    confidence: 94, notes: "Lunch-window post — peak dinner engagement." },
+  { id: "cp2",  clientId: "demo-a", title: "Charcoal grill slow-mo reel", contentType: "Reel",     relatedMenuItem: "Mixed Grill Platter",      stage: "Team Review",        assignedRole: "Team",             status: "Awaiting Approval", postingWindow: "Fri 7:00 PM",    confidence: 91, notes: "Final color grade pending team sign-off." },
+  { id: "cp3",  clientId: "demo-a", title: "BTS — kitchen prep clip",     contentType: "Story",    relatedMenuItem: "Mixed Grill Platter",      stage: "Caption Drafting",   assignedRole: "Caption Agent",    status: "Drafting",          postingWindow: "Wed 5:00 PM",    confidence: 86, notes: "3 caption options generated." },
+  { id: "cp4",  clientId: "demo-b",    title: "Lunch special reel",          contentType: "Reel",     relatedMenuItem: "Carnitas Tacos",           stage: "AI Review",          assignedRole: "Media Agent",      status: "Reviewing",         postingWindow: "Thu 12:00 PM",   confidence: 88, notes: "Quality check in progress." },
+  { id: "cp5",  clientId: "demo-b",    title: "Birria cheese-pull close-up", contentType: "Photo",    relatedMenuItem: "Birria Quesatacos",        stage: "Media Received",     assignedRole: "Client",           status: "New",               postingWindow: "Sat 1:00 PM",    confidence: 0,  notes: "Uploaded — awaiting media review." },
+  { id: "cp6",  clientId: "demo-c", title: "Mediterranean platter hero",  contentType: "Photo",    relatedMenuItem: "Mediterranean Platter",    stage: "Scheduled / Posted", assignedRole: "Scheduling Agent", status: "Posted",            postingWindow: "Posted Mon 8 PM", confidence: 96, notes: "Strong engagement in first 2 hours." },
+  { id: "cp7",  clientId: "demo-c", title: "Olive oil pour reel",         contentType: "Reel",     relatedMenuItem: "Olive Oil Tasting Flight", stage: "Caption Drafting",   assignedRole: "Caption Agent",    status: "Drafting",          postingWindow: "Thu 7:30 PM",    confidence: 90, notes: "Editorial caption with sensory lead-in." },
+  { id: "cp8",  clientId: "demo-c", title: "Owner story clip",            contentType: "Story",    relatedMenuItem: "Grilled Octopus",          stage: "Team Review",        assignedRole: "Team",             status: "Approved",          postingWindow: "Fri 8:00 PM",    confidence: 89, notes: "Approved — moving to scheduling." },
+  { id: "cp9",  clientId: "demo-d",   title: "Cardamom latte morning shot", contentType: "Photo",    relatedMenuItem: "Cardamom Latte",           stage: "AI Review",          assignedRole: "Media Agent",      status: "Reviewing",         postingWindow: "Mon 8:30 AM",    confidence: 81, notes: "Lighting good — caption next." },
+  { id: "cp10", clientId: "demo-d",   title: "Google review highlight",     contentType: "Carousel", relatedMenuItem: "Pistachio Croissant",      stage: "Caption Drafting",   assignedRole: "Caption Agent",    status: "Needs Revision",    postingWindow: "Wed 9:00 AM",    confidence: 78, notes: "Caption flagged as too generic." },
+  { id: "cp11", clientId: "demo-d",   title: "Catering announcement",       contentType: "Carousel", relatedMenuItem: "Cardamom Latte",           stage: "Media Received",     assignedRole: "Client",           status: "New",               postingWindow: "Pending",        confidence: 0,  notes: "Awaiting brand-tone review." },
 ];
 
 export const pipelineStages: PipelineStage[] = [
@@ -109,7 +109,7 @@ export const nextStageOf = (s: WorkflowStage): WorkflowStage | null => {
 export const demoContentItems: DemoContentItem[] = [
   {
     id: "ci-001", title: "Mixed Grill Platter — hero shot", contentType: "Photo Post",
-    clientId: "mamadali", createdDate: "May 22, 2026",
+    clientId: "demo-a", createdDate: "May 22, 2026",
     currentStage: "Caption Drafting", status: "On Track", lastUpdated: "Today, 10:48 AM",
     nextAction: "Caption Agent drafting 3 variants — ETA 30 min.",
     history: [
@@ -121,7 +121,7 @@ export const demoContentItems: DemoContentItem[] = [
   },
   {
     id: "ci-002", title: "Friday dinner reel — Demo Grill House", contentType: "Reel",
-    clientId: "mamadali", createdDate: "May 24, 2026",
+    clientId: "demo-a", createdDate: "May 24, 2026",
     currentStage: "Scheduling", status: "On Track", lastUpdated: "Today, 11:00 AM",
     nextAction: "Scheduling Agent locking Thursday 7 PM slot.",
     history: [
@@ -135,7 +135,7 @@ export const demoContentItems: DemoContentItem[] = [
   },
   {
     id: "ci-003", title: "Olive oil pour reel — Crescent", contentType: "Reel",
-    clientId: "crescent", createdDate: "May 23, 2026",
+    clientId: "demo-c", createdDate: "May 23, 2026",
     currentStage: "Ready To Post", status: "On Track", lastUpdated: "Today, 9:30 AM",
     nextAction: "Awaiting publish window (Sun 11 AM).",
     history: [
@@ -150,7 +150,7 @@ export const demoContentItems: DemoContentItem[] = [
   },
   {
     id: "ci-004", title: "Lunch special — Demo Taco Bar", contentType: "Photo Post",
-    clientId: "urban", createdDate: "May 20, 2026",
+    clientId: "demo-b", createdDate: "May 20, 2026",
     currentStage: "Brand Review", status: "Blocked", lastUpdated: "Yesterday, 4:12 PM",
     nextAction: "Brand Voice Agent flagged tone — rewrite needed.",
     history: [
@@ -163,7 +163,7 @@ export const demoContentItems: DemoContentItem[] = [
   },
   {
     id: "ci-005", title: "Specialty coffee carousel — Demo Cafe", contentType: "Carousel",
-    clientId: "alnoor", createdDate: "May 15, 2026",
+    clientId: "demo-d", createdDate: "May 15, 2026",
     currentStage: "Media Review", status: "Waiting", lastUpdated: "May 16",
     nextAction: "Awaiting fresh media from client — inventory critical.",
     history: [
@@ -173,7 +173,7 @@ export const demoContentItems: DemoContentItem[] = [
   },
   {
     id: "ci-006", title: "Weekend brunch reel — Crescent", contentType: "Reel",
-    clientId: "crescent", createdDate: "May 18, 2026",
+    clientId: "demo-c", createdDate: "May 18, 2026",
     currentStage: "Posted", status: "Done", lastUpdated: "May 22",
     nextAction: "Awaiting inclusion in weekly report.",
     history: [
@@ -189,7 +189,7 @@ export const demoContentItems: DemoContentItem[] = [
   },
   {
     id: "ci-007", title: "Family platter story — Demo Grill House", contentType: "Story",
-    clientId: "mamadali", createdDate: "May 19, 2026",
+    clientId: "demo-a", createdDate: "May 19, 2026",
     currentStage: "Reporting", status: "Done", lastUpdated: "May 23",
     nextAction: "Included in next weekly report.",
     history: [
@@ -232,16 +232,16 @@ export interface DemoTaskV2 {
 }
 
 export const demoTasksV2: DemoTaskV2[] = [
-  { id: "t1",  type: "Review Media",           title: "Review 4 new uploads — Demo Cafe",             priority: "Critical", dueDate: "Today",     assignedRole: "Team",     assignedTo: "Jordan", status: "Pending",     clientId: "alnoor",   linkedItemId: "ci-005" },
-  { id: "t2",  type: "Review Caption",         title: "Approve 3 caption variants — Demo Grill House", priority: "High",     dueDate: "Today",     assignedRole: "Team",     assignedTo: "Marcus", status: "In Progress", clientId: "mamadali", linkedItemId: "ci-001" },
-  { id: "t3",  type: "Approve Content",        title: "Final sign-off — Crescent olive-oil reel",  priority: "High",     dueDate: "Today",     assignedRole: "Operator", assignedTo: "Lina",   status: "Pending",     clientId: "crescent", linkedItemId: "ci-003" },
-  { id: "t4",  type: "Generate Weekly Report", title: "Weekly report — Demo Taco Bar",              priority: "Critical", dueDate: "Overdue",   assignedRole: "Operator", assignedTo: "Daniel", status: "In Progress", clientId: "urban"                            },
-  { id: "t5",  type: "Generate Weekly Report", title: "Weekly report — Demo Grill House",           priority: "High",     dueDate: "Tomorrow",  assignedRole: "Team",     assignedTo: "Priya",  status: "Pending",     clientId: "mamadali"                         },
-  { id: "t6",  type: "Generate Monthly Report",title: "Monthly report — Crescent",                 priority: "Medium",   dueDate: "May 30",    assignedRole: "Team",     assignedTo: "Priya",  status: "Pending",     clientId: "crescent"                         },
-  { id: "t7",  type: "Review Client Health",   title: "Health check — Demo Taco Bar",               priority: "High",     dueDate: "Today",     assignedRole: "Operator", assignedTo: "Daniel", status: "Waiting",     clientId: "urban"                            },
-  { id: "t8",  type: "Request More Media",     title: "Reshoot request — Demo Cafe storefront",     priority: "Critical", dueDate: "Today",     assignedRole: "Operator", assignedTo: "Daniel", status: "Pending",     clientId: "alnoor"                           },
-  { id: "t9",  type: "Review Caption",         title: "Rewrite caption — Demo Taco Bar lunch post", priority: "Medium",   dueDate: "Tomorrow",  assignedRole: "Team",     assignedTo: "Ava",    status: "In Progress", clientId: "urban",    linkedItemId: "ci-004" },
-  { id: "t10", type: "Review Media",           title: "Review BTS clips — Crescent kitchen",       priority: "Low",      dueDate: "May 29",    assignedRole: "Team",     assignedTo: "Jordan", status: "Pending",     clientId: "crescent"                         },
-  { id: "t11", type: "Approve Content",        title: "Approve story batch — Demo Grill House",    priority: "Medium",   dueDate: "Yesterday", assignedRole: "Operator", assignedTo: "Lina",   status: "Completed",   clientId: "mamadali"                         },
-  { id: "t12", type: "Generate Weekly Report", title: "Weekly report — Crescent",                  priority: "Medium",   dueDate: "May 24",    assignedRole: "Operator", assignedTo: "Lina",   status: "Completed",   clientId: "crescent"                         },
+  { id: "t1",  type: "Review Media",           title: "Review 4 new uploads — Demo Cafe",             priority: "Critical", dueDate: "Today",     assignedRole: "Team",     assignedTo: "Jordan", status: "Pending",     clientId: "demo-d",   linkedItemId: "ci-005" },
+  { id: "t2",  type: "Review Caption",         title: "Approve 3 caption variants — Demo Grill House", priority: "High",     dueDate: "Today",     assignedRole: "Team",     assignedTo: "Marcus", status: "In Progress", clientId: "demo-a", linkedItemId: "ci-001" },
+  { id: "t3",  type: "Approve Content",        title: "Final sign-off — Crescent olive-oil reel",  priority: "High",     dueDate: "Today",     assignedRole: "Operator", assignedTo: "Lina",   status: "Pending",     clientId: "demo-c", linkedItemId: "ci-003" },
+  { id: "t4",  type: "Generate Weekly Report", title: "Weekly report — Demo Taco Bar",              priority: "Critical", dueDate: "Overdue",   assignedRole: "Operator", assignedTo: "Daniel", status: "In Progress", clientId: "demo-b"                            },
+  { id: "t5",  type: "Generate Weekly Report", title: "Weekly report — Demo Grill House",           priority: "High",     dueDate: "Tomorrow",  assignedRole: "Team",     assignedTo: "Priya",  status: "Pending",     clientId: "demo-a"                         },
+  { id: "t6",  type: "Generate Monthly Report",title: "Monthly report — Crescent",                 priority: "Medium",   dueDate: "May 30",    assignedRole: "Team",     assignedTo: "Priya",  status: "Pending",     clientId: "demo-c"                         },
+  { id: "t7",  type: "Review Client Health",   title: "Health check — Demo Taco Bar",               priority: "High",     dueDate: "Today",     assignedRole: "Operator", assignedTo: "Daniel", status: "Waiting",     clientId: "demo-b"                            },
+  { id: "t8",  type: "Request More Media",     title: "Reshoot request — Demo Cafe storefront",     priority: "Critical", dueDate: "Today",     assignedRole: "Operator", assignedTo: "Daniel", status: "Pending",     clientId: "demo-d"                           },
+  { id: "t9",  type: "Review Caption",         title: "Rewrite caption — Demo Taco Bar lunch post", priority: "Medium",   dueDate: "Tomorrow",  assignedRole: "Team",     assignedTo: "Ava",    status: "In Progress", clientId: "demo-b",    linkedItemId: "ci-004" },
+  { id: "t10", type: "Review Media",           title: "Review BTS clips — Crescent kitchen",       priority: "Low",      dueDate: "May 29",    assignedRole: "Team",     assignedTo: "Jordan", status: "Pending",     clientId: "demo-c"                         },
+  { id: "t11", type: "Approve Content",        title: "Approve story batch — Demo Grill House",    priority: "Medium",   dueDate: "Yesterday", assignedRole: "Operator", assignedTo: "Lina",   status: "Completed",   clientId: "demo-a"                         },
+  { id: "t12", type: "Generate Weekly Report", title: "Weekly report — Crescent",                  priority: "Medium",   dueDate: "May 24",    assignedRole: "Operator", assignedTo: "Lina",   status: "Completed",   clientId: "demo-c"                         },
 ];

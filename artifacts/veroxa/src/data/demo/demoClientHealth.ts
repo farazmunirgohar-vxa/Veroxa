@@ -32,7 +32,7 @@ export interface DemoClientHealth {
 
 export const demoClientHealth: DemoClientHealth[] = [
   {
-    clientId: "mamadali",
+    clientId: "demo-a",
     level: "healthy",
     score: 88,
     mainIssue: "Posting schedule healthy",
@@ -48,7 +48,7 @@ export const demoClientHealth: DemoClientHealth[] = [
     },
   },
   {
-    clientId: "urban",
+    clientId: "demo-b",
     level: "attention",
     score: 64,
     mainIssue: "Weekly report pending operator review",
@@ -64,7 +64,7 @@ export const demoClientHealth: DemoClientHealth[] = [
     },
   },
   {
-    clientId: "crescent",
+    clientId: "demo-c",
     level: "healthy",
     score: 81,
     mainIssue: "Google reviews improving",
@@ -80,7 +80,7 @@ export const demoClientHealth: DemoClientHealth[] = [
     },
   },
   {
-    clientId: "alnoor",
+    clientId: "demo-d",
     level: "critical",
     score: 38,
     mainIssue: "Onboarding missing menu photos, low media inventory",
@@ -160,7 +160,7 @@ export interface DemoClientPriority {
 
 export const demoClientPriorities: DemoClientPriority[] = [
   {
-    clientId:         "alnoor",
+    clientId:         "demo-d",
     healthStatus:     "Critical",
     priorityLevel:    "Critical",
     nextAction:       "Request 5 new food photos and resolve missing onboarding items immediately.",
@@ -170,7 +170,7 @@ export const demoClientPriorities: DemoClientPriority[] = [
     recommendedAction: "Call client, request media, escalate to owner if no response by EOD.",
   },
   {
-    clientId:         "urban",
+    clientId:         "demo-b",
     healthStatus:     "Warning",
     priorityLevel:    "High",
     nextAction:       "Validate weekly report and resolve operator review backlog.",
@@ -180,7 +180,7 @@ export const demoClientPriorities: DemoClientPriority[] = [
     recommendedAction: "Validate report now. Schedule media refresh call within 48 hours.",
   },
   {
-    clientId:         "mamadali",
+    clientId:         "demo-a",
     healthStatus:     "Healthy",
     priorityLevel:    "Normal",
     nextAction:       "Final approval on dinner reel before Thursday post window.",
@@ -190,7 +190,7 @@ export const demoClientPriorities: DemoClientPriority[] = [
     recommendedAction: "Approve reel, confirm Thursday scheduling window.",
   },
   {
-    clientId:         "crescent",
+    clientId:         "demo-c",
     healthStatus:     "Healthy",
     priorityLevel:    "Normal",
     nextAction:       "Schedule olive oil reel and confirm caption.",

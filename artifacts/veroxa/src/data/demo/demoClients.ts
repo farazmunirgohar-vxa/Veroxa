@@ -27,10 +27,10 @@ export interface DemoRestaurant {
 }
 
 export const demoRestaurants: DemoRestaurant[] = [
-  { id: "mamadali", name: "Demo Grill House",         cuisine: "Modern Levantine",    assignedTeam: "Team A", assignedOperator: "Lina"   },
-  { id: "urban",    name: "Demo Taco Bar",             cuisine: "Mexican street food", assignedTeam: "Team B", assignedOperator: "Daniel" },
-  { id: "crescent", name: "Demo Mediterranean Grill", cuisine: "Mediterranean grill", assignedTeam: "Team A", assignedOperator: "Lina"   },
-  { id: "alnoor",   name: "Demo Cafe",                cuisine: "Specialty cafe",      assignedTeam: "Team C", assignedOperator: "Daniel" },
+  { id: "demo-a", name: "Demo Grill House",         cuisine: "Modern Levantine",    assignedTeam: "Team A", assignedOperator: "Lina"   },
+  { id: "demo-b",    name: "Demo Taco Bar",             cuisine: "Mexican street food", assignedTeam: "Team B", assignedOperator: "Daniel" },
+  { id: "demo-c", name: "Demo Mediterranean Grill", cuisine: "Mediterranean grill", assignedTeam: "Team A", assignedOperator: "Lina"   },
+  { id: "demo-d",   name: "Demo Cafe",                cuisine: "Specialty cafe",      assignedTeam: "Team C", assignedOperator: "Daniel" },
 ];
 
 export function getRestaurant(id: string): DemoRestaurant | undefined {
@@ -51,13 +51,13 @@ export interface DemoRestaurantProfile {
   hours: string;
   primaryContact:   { name: string; role: string; email: string };
   secondaryContact: { name: string; role: string; email: string };
-  servicePlan: "Lite" | "Growth" | "Premium" | "Enterprise";
+  servicePlan: "Google Presence Starter" | "Complete Online Presence" | "Ads Management" | "Bundle";
   accountStatus: "Active" | "Onboarding" | "Paused" | "At Risk";
 }
 
 export const demoRestaurantProfiles: DemoRestaurantProfile[] = [
   {
-    clientId: "mamadali",
+    clientId: "demo-a",
     address: "100 Demo Street, San Antonio, TX 78201",
     phone: "+1 (555) 100-0001",
     website: "demo-restaurant-a.veroxa.test",
@@ -65,11 +65,11 @@ export const demoRestaurantProfiles: DemoRestaurantProfile[] = [
     hours: "Mon–Sun · 11:00 AM – 11:00 PM",
     primaryContact:   { name: "Alex Owner-A",   role: "Owner",          email: "owner-a@demo.veroxa.test"   },
     secondaryContact: { name: "Jordan Manager-A", role: "Marketing lead", email: "manager-a@demo.veroxa.test" },
-    servicePlan: "Premium",
+    servicePlan: "Complete Online Presence",
     accountStatus: "Active",
   },
   {
-    clientId: "urban",
+    clientId: "demo-b",
     address: "200 Demo Avenue, San Antonio, TX 78202",
     phone: "+1 (555) 200-0002",
     website: "demo-restaurant-b.veroxa.test",
@@ -77,11 +77,11 @@ export const demoRestaurantProfiles: DemoRestaurantProfile[] = [
     hours: "Tue–Sun · 12:00 PM – 10:00 PM",
     primaryContact:   { name: "Marco Owner-B",  role: "Owner",           email: "owner-b@demo.veroxa.test"   },
     secondaryContact: { name: "Priya Manager-B", role: "General manager", email: "manager-b@demo.veroxa.test" },
-    servicePlan: "Growth",
+    servicePlan: "Complete Online Presence",
     accountStatus: "Active",
   },
   {
-    clientId: "crescent",
+    clientId: "demo-c",
     address: "300 Demo Road, San Antonio, TX 78203",
     phone: "+1 (555) 300-0003",
     website: "demo-restaurant-c.veroxa.test",
@@ -89,11 +89,11 @@ export const demoRestaurantProfiles: DemoRestaurantProfile[] = [
     hours: "Mon–Sat · 5:00 PM – 12:00 AM",
     primaryContact:   { name: "Sofia Owner-C",  role: "Owner / Chef", email: "owner-c@demo.veroxa.test"   },
     secondaryContact: { name: "Karim Manager-C", role: "Operations",   email: "manager-c@demo.veroxa.test" },
-    servicePlan: "Premium",
+    servicePlan: "Bundle",
     accountStatus: "Active",
   },
   {
-    clientId: "alnoor",
+    clientId: "demo-d",
     address: "400 Demo Lane, San Antonio, TX 78204",
     phone: "+1 (555) 400-0004",
     website: "demo-restaurant-d.veroxa.test",
@@ -101,7 +101,7 @@ export const demoRestaurantProfiles: DemoRestaurantProfile[] = [
     hours: "Mon–Sun · 7:00 AM – 9:00 PM",
     primaryContact:   { name: "Yusuf Owner-D",  role: "Owner",           email: "owner-d@demo.veroxa.test"   },
     secondaryContact: { name: "Hana Manager-D", role: "Shift supervisor", email: "manager-d@demo.veroxa.test" },
-    servicePlan: "Lite",
+    servicePlan: "Google Presence Starter",
     accountStatus: "At Risk",
   },
 ];
@@ -126,22 +126,22 @@ export interface DemoMenuItem {
 }
 
 export const demoMenuItems: DemoMenuItem[] = [
-  // Demo Grill House (id: mamadali)
-  { id: "mn1",  clientId: "mamadali", name: "Mixed Grill Platter",      category: "Mains",      group: "featured", description: "Lamb, chicken, kofta, charred vegetables, saffron rice.", status: "Available",    promotionAngle: "Anchor weekend family-dinner promo." },
-  { id: "mn2",  clientId: "mamadali", name: "Chicken Shawarma Plate",   category: "Mains",      group: "popular",  description: "Marinated chicken, garlic sauce, pickles, fresh pita.",   status: "Available",    promotionAngle: "Lunch-window reel with chef hand-shot." },
-  { id: "mn3",  clientId: "mamadali", name: "Saffron Rice Pudding",     category: "Dessert",    group: "seasonal", description: "Cardamom-infused rice pudding with pistachio crumble.",   status: "Limited",      promotionAngle: "Dessert spotlight — short-form video." },
-  // Demo Taco Bar (id: urban)
-  { id: "mn4",  clientId: "urban",    name: "Carnitas Tacos",           category: "Tacos",      group: "popular",  description: "Slow-braised pork, salsa verde, pickled onion, lime.",    status: "Available",    promotionAngle: "Flat-lay photo, Taco Tuesday angle." },
-  { id: "mn5",  clientId: "urban",    name: "Birria Quesatacos",        category: "Tacos",      group: "featured", description: "Cheese-crisped tortillas with rich birria broth dip.",    status: "Available",    promotionAngle: "Cheese pull close-up reel." },
-  { id: "mn6",  clientId: "urban",    name: "Elote Street Corn",        category: "Sides",      group: "seasonal", description: "Grilled corn, cotija, chipotle aioli, fresh lime.",       status: "Limited",      promotionAngle: "Summer-season social push." },
+  // Demo Grill House (id: demo-a)
+  { id: "mn1",  clientId: "demo-a", name: "Mixed Grill Platter",      category: "Mains",      group: "featured", description: "Lamb, chicken, kofta, charred vegetables, saffron rice.", status: "Available",    promotionAngle: "Anchor weekend family-dinner promo." },
+  { id: "mn2",  clientId: "demo-a", name: "Chicken Shawarma Plate",   category: "Mains",      group: "popular",  description: "Marinated chicken, garlic sauce, pickles, fresh pita.",   status: "Available",    promotionAngle: "Lunch-window reel with chef hand-shot." },
+  { id: "mn3",  clientId: "demo-a", name: "Saffron Rice Pudding",     category: "Dessert",    group: "seasonal", description: "Cardamom-infused rice pudding with pistachio crumble.",   status: "Limited",      promotionAngle: "Dessert spotlight — short-form video." },
+  // Demo Taco Bar (id: demo-b)
+  { id: "mn4",  clientId: "demo-b",    name: "Carnitas Tacos",           category: "Tacos",      group: "popular",  description: "Slow-braised pork, salsa verde, pickled onion, lime.",    status: "Available",    promotionAngle: "Flat-lay photo, Taco Tuesday angle." },
+  { id: "mn5",  clientId: "demo-b",    name: "Birria Quesatacos",        category: "Tacos",      group: "featured", description: "Cheese-crisped tortillas with rich birria broth dip.",    status: "Available",    promotionAngle: "Cheese pull close-up reel." },
+  { id: "mn6",  clientId: "demo-b",    name: "Elote Street Corn",        category: "Sides",      group: "seasonal", description: "Grilled corn, cotija, chipotle aioli, fresh lime.",       status: "Limited",      promotionAngle: "Summer-season social push." },
   // Crescent
-  { id: "mn7",  clientId: "crescent", name: "Mediterranean Platter",    category: "Mains",      group: "featured", description: "Grilled lamb, halloumi, fattoush, hummus, warm pita.",    status: "Available",    promotionAngle: "Hero post — magazine-quality photo." },
-  { id: "mn8",  clientId: "crescent", name: "Grilled Octopus",          category: "Starters",   group: "popular",  description: "Charred octopus, lemon, olive oil, smoked paprika.",      status: "Available",    promotionAngle: "Premium tasting menu story." },
-  { id: "mn9",  clientId: "crescent", name: "Olive Oil Tasting Flight", category: "Experience", group: "seasonal", description: "Three single-origin olive oils with warm sourdough.",     status: "Coming soon",  promotionAngle: "Atmospheric reels series — olive oil pour." },
-  // Demo Cafe (id: alnoor)
-  { id: "mn10", clientId: "alnoor",   name: "Cardamom Latte",           category: "Beverages",  group: "featured", description: "Espresso, steamed milk, cardamom syrup, rose petal dust.", status: "Available",   promotionAngle: "Morning ritual content." },
-  { id: "mn11", clientId: "alnoor",   name: "Pistachio Croissant",      category: "Bakery",     group: "popular",  description: "House-laminated croissant with pistachio frangipane.",    status: "Available",    promotionAngle: "Pair with morning beverage feature." },
-  { id: "mn12", clientId: "alnoor",   name: "Spiced Chai Cookies",      category: "Bakery",     group: "seasonal", description: "Brown butter cookies with chai spice blend.",             status: "Out of stock", promotionAngle: "Re-launch announcement once restocked." },
+  { id: "mn7",  clientId: "demo-c", name: "Mediterranean Platter",    category: "Mains",      group: "featured", description: "Grilled lamb, halloumi, fattoush, hummus, warm pita.",    status: "Available",    promotionAngle: "Hero post — magazine-quality photo." },
+  { id: "mn8",  clientId: "demo-c", name: "Grilled Octopus",          category: "Starters",   group: "popular",  description: "Charred octopus, lemon, olive oil, smoked paprika.",      status: "Available",    promotionAngle: "Premium tasting menu story." },
+  { id: "mn9",  clientId: "demo-c", name: "Olive Oil Tasting Flight", category: "Experience", group: "seasonal", description: "Three single-origin olive oils with warm sourdough.",     status: "Coming soon",  promotionAngle: "Atmospheric reels series — olive oil pour." },
+  // Demo Cafe (id: demo-d)
+  { id: "mn10", clientId: "demo-d",   name: "Cardamom Latte",           category: "Beverages",  group: "featured", description: "Espresso, steamed milk, cardamom syrup, rose petal dust.", status: "Available",   promotionAngle: "Morning ritual content." },
+  { id: "mn11", clientId: "demo-d",   name: "Pistachio Croissant",      category: "Bakery",     group: "popular",  description: "House-laminated croissant with pistachio frangipane.",    status: "Available",    promotionAngle: "Pair with morning beverage feature." },
+  { id: "mn12", clientId: "demo-d",   name: "Spiced Chai Cookies",      category: "Bakery",     group: "seasonal", description: "Brown butter cookies with chai spice blend.",             status: "Out of stock", promotionAngle: "Re-launch announcement once restocked." },
 ];
 
 export function getMenuItemsForClient(clientId: string): DemoMenuItem[] {
@@ -162,7 +162,7 @@ export interface DemoBrandGuidelines {
 
 export const demoBrandGuidelines: DemoBrandGuidelines[] = [
   {
-    clientId: "mamadali",
+    clientId: "demo-a",
     brandVoice: "Warm, family-led, confident. Speaks to community and tradition.",
     contentStyle: "Rich, warm lighting. Close-ups on charcoal grill and family-style plating.",
     thingsToAvoid: ["Discount-heavy language", "Generic stock food shots", "Trendy slang"],
@@ -176,7 +176,7 @@ export const demoBrandGuidelines: DemoBrandGuidelines[] = [
     captionStyleNotes: "Short, sensory-led. Lead with the food, end with the experience.",
   },
   {
-    clientId: "urban",
+    clientId: "demo-b",
     brandVoice: "Bold, energetic, street-smart. Speaks to a young weekday-lunch crowd.",
     contentStyle: "High-contrast, daylight shots. Bright salsa colors, hand-held action.",
     thingsToAvoid: ["Overly polished studio shots", "Long captions", "Corporate tone"],
@@ -190,7 +190,7 @@ export const demoBrandGuidelines: DemoBrandGuidelines[] = [
     captionStyleNotes: "Punchy. 1–2 lines. End with a clear hook or offer.",
   },
   {
-    clientId: "crescent",
+    clientId: "demo-c",
     brandVoice: "Premium, calm, considered. Editorial restaurant tone.",
     contentStyle: "Cinematic, low-light, plated close-ups. Olive oil and char detail.",
     thingsToAvoid: ["Casual humour", "Discount messaging", "Cluttered compositions"],
@@ -204,7 +204,7 @@ export const demoBrandGuidelines: DemoBrandGuidelines[] = [
     captionStyleNotes: "Longer-form is OK. Lead with sensory detail; let the food carry the line.",
   },
   {
-    clientId: "alnoor",
+    clientId: "demo-d",
     brandVoice: "Friendly, neighborhood-cafe warmth. Inviting and unfussy.",
     contentStyle: "Soft natural light, latte art close-ups, hands-and-cup framing.",
     thingsToAvoid: ["Overly aspirational copy", "Heavy filters", "Trendy hashtags"],
@@ -235,10 +235,10 @@ export interface DemoMediaRequirements {
 }
 
 export const demoMediaRequirements: DemoMediaRequirements[] = [
-  { clientId: "mamadali", photos: { current: 12, target: 20 }, videos: { current: 4, target: 10 }, productShots: { current: 8,  target: 12 }, btsClips: { current: 3, target: 8 }, teamOwnerContent: { current: 2, target: 4 }, weeklyGuidance: "Strong supply — focus on 2 new charcoal-grill reels this week." },
-  { clientId: "urban",    photos: { current: 6,  target: 20 }, videos: { current: 2, target: 10 }, productShots: { current: 4,  target: 12 }, btsClips: { current: 1, target: 8 }, teamOwnerContent: { current: 0, target: 4 }, weeklyGuidance: "Trending low — schedule a 2-hour shoot to refresh tacos and elote." },
-  { clientId: "crescent", photos: { current: 14, target: 20 }, videos: { current: 6, target: 10 }, productShots: { current: 9,  target: 12 }, btsClips: { current: 4, target: 8 }, teamOwnerContent: { current: 3, target: 4 }, weeklyGuidance: "Healthy supply — capture chef-portrait series next." },
-  { clientId: "alnoor",   photos: { current: 2,  target: 20 }, videos: { current: 0, target: 10 }, productShots: { current: 1,  target: 12 }, btsClips: { current: 0, target: 8 }, teamOwnerContent: { current: 0, target: 4 }, weeklyGuidance: "Critical — request 5 new food photos and 2 latte-art clips immediately." },
+  { clientId: "demo-a", photos: { current: 12, target: 20 }, videos: { current: 4, target: 10 }, productShots: { current: 8,  target: 12 }, btsClips: { current: 3, target: 8 }, teamOwnerContent: { current: 2, target: 4 }, weeklyGuidance: "Strong supply — focus on 2 new charcoal-grill reels this week." },
+  { clientId: "demo-b",    photos: { current: 6,  target: 20 }, videos: { current: 2, target: 10 }, productShots: { current: 4,  target: 12 }, btsClips: { current: 1, target: 8 }, teamOwnerContent: { current: 0, target: 4 }, weeklyGuidance: "Trending low — schedule a 2-hour shoot to refresh tacos and elote." },
+  { clientId: "demo-c", photos: { current: 14, target: 20 }, videos: { current: 6, target: 10 }, productShots: { current: 9,  target: 12 }, btsClips: { current: 4, target: 8 }, teamOwnerContent: { current: 3, target: 4 }, weeklyGuidance: "Healthy supply — capture chef-portrait series next." },
+  { clientId: "demo-d",   photos: { current: 2,  target: 20 }, videos: { current: 0, target: 10 }, productShots: { current: 1,  target: 12 }, btsClips: { current: 0, target: 8 }, teamOwnerContent: { current: 0, target: 4 }, weeklyGuidance: "Critical — request 5 new food photos and 2 latte-art clips immediately." },
 ];
 
 export function getMediaRequirements(clientId: string): DemoMediaRequirements | undefined {
@@ -257,7 +257,7 @@ export interface DemoClientNote {
 
 export const demoClientNotes: DemoClientNote[] = [
   {
-    clientId: "mamadali",
+    clientId: "demo-a",
     preferences: ["Posts go live before 7 PM dinner window", "Family-style plating preferred for hero shots"],
     restrictions: ["No alcohol pairings in copy", "Avoid promoting Friday lunch (slow service day)"],
     bestSellers: ["Mixed Grill Platter", "Chicken Shawarma Plate", "Lamb Kofta"],
@@ -265,7 +265,7 @@ export const demoClientNotes: DemoClientNote[] = [
     importantReminders: ["Owner reviews captions before publish", "Tag location landmark in every post"],
   },
   {
-    clientId: "urban",
+    clientId: "demo-b",
     preferences: ["Bright daytime photography", "Short captions, one CTA"],
     restrictions: ["Avoid corporate tone", "No long-form copy"],
     bestSellers: ["Carnitas Tacos", "Birria Quesatacos"],
@@ -273,7 +273,7 @@ export const demoClientNotes: DemoClientNote[] = [
     importantReminders: ["Coordinate with chef for shoot days", "Tuesday is best for Taco Tuesday campaigns"],
   },
   {
-    clientId: "crescent",
+    clientId: "demo-c",
     preferences: ["Cinematic low-light style", "Editorial captions are welcome"],
     restrictions: ["No discount language", "Avoid casual humour"],
     bestSellers: ["Mediterranean Platter", "Grilled Octopus", "Olive Oil Flight"],
@@ -281,7 +281,7 @@ export const demoClientNotes: DemoClientNote[] = [
     importantReminders: ["Reservations link must appear in bio CTAs", "Tag head chef in chef-feature posts"],
   },
   {
-    clientId: "alnoor",
+    clientId: "demo-d",
     preferences: ["Soft, warm morning lighting", "Conversational captions"],
     restrictions: ["Avoid heavy filters", "Don't promote out-of-stock pastries"],
     bestSellers: ["Cardamom Latte", "Pistachio Croissant"],
@@ -304,7 +304,7 @@ export type RiskLevel = "Low" | "Medium" | "High" | "Critical";
 export interface DemoClientLifecycle {
   clientId:        string;
   lifecycleStage:  LifecycleStage;
-  servicePlan:     "Essential" | "Growth" | "Pro" | "Premium";
+  servicePlan:     "Google Presence Starter" | "Complete Online Presence" | "Ads Management" | "Bundle";
   startDate:       string;
   contractMonths:  number;
   monthlyFee:      number;
@@ -316,10 +316,10 @@ export interface DemoClientLifecycle {
 }
 
 export const demoClientLifecycle: DemoClientLifecycle[] = [
-  { clientId: "mamadali", lifecycleStage: "Active",          servicePlan: "Growth",    startDate: "Feb 2026", contractMonths: 12, monthlyFee: 1097, healthScore: 92, mediaStatus: "Healthy",  reportingStatus: "On Schedule", nextAction: "Approve 3 caption variants for Friday post.",     riskLevel: "Low"      },
-  { clientId: "urban",    lifecycleStage: "Needs Attention", servicePlan: "Pro",       startDate: "Mar 2026", contractMonths: 12, monthlyFee: 1197, healthScore: 64, mediaStatus: "Low",      reportingStatus: "Delayed",     nextAction: "Rewrite flagged caption + chase weekly report.",   riskLevel: "Medium"   },
-  { clientId: "crescent", lifecycleStage: "Active",          servicePlan: "Premium",   startDate: "Dec 2025", contractMonths: 12, monthlyFee: 1497, healthScore: 95, mediaStatus: "Healthy",  reportingStatus: "On Schedule", nextAction: "Final sign-off on Sunday's olive-oil reel.",       riskLevel: "Low"      },
-  { clientId: "alnoor",   lifecycleStage: "At Risk",         servicePlan: "Essential", startDate: "Apr 2026", contractMonths: 12, monthlyFee: 997,  healthScore: 38, mediaStatus: "Critical", reportingStatus: "Overdue",     nextAction: "Rescue plan call + reshoot brief for storefront.", riskLevel: "Critical" },
+  { clientId: "demo-a", lifecycleStage: "Active",          servicePlan: "Complete Online Presence", startDate: "Feb 2026", contractMonths: 0, monthlyFee:  977, healthScore: 92, mediaStatus: "Healthy",  reportingStatus: "On Schedule", nextAction: "Approve 3 caption variants for Friday post.",     riskLevel: "Low"      },
+  { clientId: "demo-b", lifecycleStage: "Needs Attention", servicePlan: "Complete Online Presence", startDate: "Mar 2026", contractMonths: 0, monthlyFee:  977, healthScore: 64, mediaStatus: "Low",      reportingStatus: "Delayed",     nextAction: "Rewrite flagged caption + chase weekly report.",   riskLevel: "Medium"   },
+  { clientId: "demo-c", lifecycleStage: "Active",          servicePlan: "Bundle",                   startDate: "Dec 2025", contractMonths: 0, monthlyFee: 1497, healthScore: 95, mediaStatus: "Healthy",  reportingStatus: "On Schedule", nextAction: "Final sign-off on Sunday's olive-oil reel.",       riskLevel: "Low"      },
+  { clientId: "demo-d", lifecycleStage: "At Risk",         servicePlan: "Google Presence Starter",  startDate: "Apr 2026", contractMonths: 0, monthlyFee:  477, healthScore: 38, mediaStatus: "Critical", reportingStatus: "Overdue",     nextAction: "Rescue plan call + reshoot brief for storefront.", riskLevel: "Critical" },
 ];
 
 export const lifecycleStageColor: Record<LifecycleStage, string> = {

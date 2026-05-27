@@ -22,7 +22,7 @@ import {
   type OnboardingPriority,
 } from "@/data/demoData";
 
-const DEMO_CLIENT_ID = "mamadali";
+const DEMO_CLIENT_ID = "demo-a";
 
 const statusVisual: Record<
   OnboardingStatus,

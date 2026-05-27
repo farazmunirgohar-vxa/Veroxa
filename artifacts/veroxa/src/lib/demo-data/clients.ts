@@ -3,8 +3,8 @@ import { ClientStatus, PlanType, ServicePackage, ContentHealthStatus, RiskStatus
 
 // ── Primary demo client ───────────────────────────────────────────────────────
 
-export const mamadaliClient: Client = {
-  id: "client-mamadali-001",
+export const demoAClient: Client = {
+  id: "client-demo-a-001",
   businessName: "Demo Grill House",
   legalName: null,
   primaryContactName: "Demo Owner",

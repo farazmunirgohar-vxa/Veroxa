@@ -1,16 +1,16 @@
 import type { Post, PostSlot } from "../database/models";
 import { PlatformName, PostStatus, PostSlotStatus } from "../database/enums";
 
-// ── Typed demo posts — Demo Grill House (id: mamadali) ────────────────────────
+// ── Typed demo posts — Demo Grill House (id: demo-a) ────────────────────────
 
-export const mamadaliPosts: Post[] = [
+export const demoAPosts: Post[] = [
   {
-    id: "post-mamadali-001",
-    clientId: "client-mamadali-001",
+    id: "post-demo-a-001",
+    clientId: "client-demo-a-001",
     platformName: PlatformName.instagram,
-    mediaAssetId: "media-mamadali-001",
+    mediaAssetId: "media-demo-a-001",
     draftVariantId: "draft-variant-001-A",
-    postSlotId: "slot-mamadali-001",
+    postSlotId: "slot-demo-a-001",
     status: PostStatus.scheduled,
     scheduledAt: "2026-05-26T17:00:00Z",
     publishedAt: null,
@@ -21,12 +21,12 @@ export const mamadaliPosts: Post[] = [
     updatedAt: "2026-05-22T11:00:00Z",
   },
   {
-    id: "post-mamadali-002",
-    clientId: "client-mamadali-001",
+    id: "post-demo-a-002",
+    clientId: "client-demo-a-001",
     platformName: PlatformName.facebook,
-    mediaAssetId: "media-mamadali-002",
+    mediaAssetId: "media-demo-a-002",
     draftVariantId: "draft-variant-002-B",
-    postSlotId: "slot-mamadali-002",
+    postSlotId: "slot-demo-a-002",
     status: PostStatus.scheduled,
     scheduledAt: "2026-05-28T18:00:00Z",
     publishedAt: null,
@@ -37,12 +37,12 @@ export const mamadaliPosts: Post[] = [
     updatedAt: "2026-05-22T11:00:00Z",
   },
   {
-    id: "post-mamadali-003",
-    clientId: "client-mamadali-001",
+    id: "post-demo-a-003",
+    clientId: "client-demo-a-001",
     platformName: PlatformName.instagram,
-    mediaAssetId: "media-mamadali-003",
+    mediaAssetId: "media-demo-a-003",
     draftVariantId: null,
-    postSlotId: "slot-mamadali-003",
+    postSlotId: "slot-demo-a-003",
     status: PostStatus.ready_for_review,
     scheduledAt: "2026-05-30T17:00:00Z",
     publishedAt: null,
@@ -53,12 +53,12 @@ export const mamadaliPosts: Post[] = [
     updatedAt: "2026-05-22T09:15:00Z",
   },
   {
-    id: "post-mamadali-004",
-    clientId: "client-mamadali-001",
+    id: "post-demo-a-004",
+    clientId: "client-demo-a-001",
     platformName: PlatformName.instagram,
-    mediaAssetId: "media-mamadali-004",
+    mediaAssetId: "media-demo-a-004",
     draftVariantId: "draft-variant-004-A",
-    postSlotId: "slot-mamadali-004",
+    postSlotId: "slot-demo-a-004",
     status: PostStatus.published,
     scheduledAt: "2026-05-17T17:00:00Z",
     publishedAt: "2026-05-17T17:01:22Z",
@@ -69,12 +69,12 @@ export const mamadaliPosts: Post[] = [
     updatedAt: "2026-05-17T17:01:22Z",
   },
   {
-    id: "post-mamadali-005",
-    clientId: "client-mamadali-001",
+    id: "post-demo-a-005",
+    clientId: "client-demo-a-001",
     platformName: PlatformName.facebook,
-    mediaAssetId: "media-mamadali-005",
+    mediaAssetId: "media-demo-a-005",
     draftVariantId: "draft-variant-005-A",
-    postSlotId: "slot-mamadali-005",
+    postSlotId: "slot-demo-a-005",
     status: PostStatus.published,
     scheduledAt: "2026-05-18T18:00:00Z",
     publishedAt: "2026-05-18T18:01:05Z",
@@ -85,12 +85,12 @@ export const mamadaliPosts: Post[] = [
     updatedAt: "2026-05-18T18:01:05Z",
   },
   {
-    id: "post-mamadali-006",
-    clientId: "client-mamadali-001",
+    id: "post-demo-a-006",
+    clientId: "client-demo-a-001",
     platformName: PlatformName.instagram,
-    mediaAssetId: "media-mamadali-006",
+    mediaAssetId: "media-demo-a-006",
     draftVariantId: "draft-variant-006-A",
-    postSlotId: "slot-mamadali-006",
+    postSlotId: "slot-demo-a-006",
     status: PostStatus.published,
     scheduledAt: "2026-05-19T17:00:00Z",
     publishedAt: "2026-05-19T17:00:58Z",
@@ -101,12 +101,12 @@ export const mamadaliPosts: Post[] = [
     updatedAt: "2026-05-19T17:00:58Z",
   },
   {
-    id: "post-mamadali-007",
-    clientId: "client-mamadali-001",
+    id: "post-demo-a-007",
+    clientId: "client-demo-a-001",
     platformName: PlatformName.instagram,
-    mediaAssetId: "media-mamadali-007",
+    mediaAssetId: "media-demo-a-007",
     draftVariantId: "draft-variant-007-A",
-    postSlotId: "slot-mamadali-007",
+    postSlotId: "slot-demo-a-007",
     status: PostStatus.published,
     scheduledAt: "2026-05-20T17:00:00Z",
     publishedAt: "2026-05-20T17:01:11Z",
@@ -120,15 +120,15 @@ export const mamadaliPosts: Post[] = [
 
 // ── Typed demo post slots ─────────────────────────────────────────────────────
 
-export const mamadaliPostSlots: PostSlot[] = [
-  { id: "slot-mamadali-001", clientId: "client-mamadali-001", platformName: PlatformName.instagram, slotDate: "2026-05-26", slotTime: "17:00", status: PostSlotStatus.scheduled,  postId: "post-mamadali-001", createdAt: "2026-05-01T08:00:00Z", updatedAt: "2026-05-22T11:00:00Z" },
-  { id: "slot-mamadali-002", clientId: "client-mamadali-001", platformName: PlatformName.facebook,  slotDate: "2026-05-28", slotTime: "18:00", status: PostSlotStatus.scheduled,  postId: "post-mamadali-002", createdAt: "2026-05-01T08:00:00Z", updatedAt: "2026-05-22T11:00:00Z" },
-  { id: "slot-mamadali-003", clientId: "client-mamadali-001", platformName: PlatformName.instagram, slotDate: "2026-05-30", slotTime: "17:00", status: PostSlotStatus.reserved,   postId: "post-mamadali-003", createdAt: "2026-05-01T08:00:00Z", updatedAt: "2026-05-22T09:15:00Z" },
-  { id: "slot-mamadali-004", clientId: "client-mamadali-001", platformName: PlatformName.instagram, slotDate: "2026-05-17", slotTime: "17:00", status: PostSlotStatus.completed,  postId: "post-mamadali-004", createdAt: "2026-05-01T08:00:00Z", updatedAt: "2026-05-17T17:01:22Z" },
-  { id: "slot-mamadali-005", clientId: "client-mamadali-001", platformName: PlatformName.facebook,  slotDate: "2026-05-18", slotTime: "18:00", status: PostSlotStatus.completed,  postId: "post-mamadali-005", createdAt: "2026-05-01T08:00:00Z", updatedAt: "2026-05-18T18:01:05Z" },
-  { id: "slot-mamadali-006", clientId: "client-mamadali-001", platformName: PlatformName.instagram, slotDate: "2026-05-19", slotTime: "17:00", status: PostSlotStatus.completed,  postId: "post-mamadali-006", createdAt: "2026-05-01T08:00:00Z", updatedAt: "2026-05-19T17:00:58Z" },
-  { id: "slot-mamadali-007", clientId: "client-mamadali-001", platformName: PlatformName.instagram, slotDate: "2026-05-20", slotTime: "17:00", status: PostSlotStatus.completed,  postId: "post-mamadali-007", createdAt: "2026-05-01T08:00:00Z", updatedAt: "2026-05-20T17:01:11Z" },
-  { id: "slot-mamadali-008", clientId: "client-mamadali-001", platformName: PlatformName.instagram, slotDate: "2026-06-01", slotTime: "17:00", status: PostSlotStatus.open,       postId: null,                createdAt: "2026-05-01T08:00:00Z", updatedAt: "2026-05-01T08:00:00Z" },
+export const demoAPostSlots: PostSlot[] = [
+  { id: "slot-demo-a-001", clientId: "client-demo-a-001", platformName: PlatformName.instagram, slotDate: "2026-05-26", slotTime: "17:00", status: PostSlotStatus.scheduled,  postId: "post-demo-a-001", createdAt: "2026-05-01T08:00:00Z", updatedAt: "2026-05-22T11:00:00Z" },
+  { id: "slot-demo-a-002", clientId: "client-demo-a-001", platformName: PlatformName.facebook,  slotDate: "2026-05-28", slotTime: "18:00", status: PostSlotStatus.scheduled,  postId: "post-demo-a-002", createdAt: "2026-05-01T08:00:00Z", updatedAt: "2026-05-22T11:00:00Z" },
+  { id: "slot-demo-a-003", clientId: "client-demo-a-001", platformName: PlatformName.instagram, slotDate: "2026-05-30", slotTime: "17:00", status: PostSlotStatus.reserved,   postId: "post-demo-a-003", createdAt: "2026-05-01T08:00:00Z", updatedAt: "2026-05-22T09:15:00Z" },
+  { id: "slot-demo-a-004", clientId: "client-demo-a-001", platformName: PlatformName.instagram, slotDate: "2026-05-17", slotTime: "17:00", status: PostSlotStatus.completed,  postId: "post-demo-a-004", createdAt: "2026-05-01T08:00:00Z", updatedAt: "2026-05-17T17:01:22Z" },
+  { id: "slot-demo-a-005", clientId: "client-demo-a-001", platformName: PlatformName.facebook,  slotDate: "2026-05-18", slotTime: "18:00", status: PostSlotStatus.completed,  postId: "post-demo-a-005", createdAt: "2026-05-01T08:00:00Z", updatedAt: "2026-05-18T18:01:05Z" },
+  { id: "slot-demo-a-006", clientId: "client-demo-a-001", platformName: PlatformName.instagram, slotDate: "2026-05-19", slotTime: "17:00", status: PostSlotStatus.completed,  postId: "post-demo-a-006", createdAt: "2026-05-01T08:00:00Z", updatedAt: "2026-05-19T17:00:58Z" },
+  { id: "slot-demo-a-007", clientId: "client-demo-a-001", platformName: PlatformName.instagram, slotDate: "2026-05-20", slotTime: "17:00", status: PostSlotStatus.completed,  postId: "post-demo-a-007", createdAt: "2026-05-01T08:00:00Z", updatedAt: "2026-05-20T17:01:11Z" },
+  { id: "slot-demo-a-008", clientId: "client-demo-a-001", platformName: PlatformName.instagram, slotDate: "2026-06-01", slotTime: "17:00", status: PostSlotStatus.open,       postId: null,                createdAt: "2026-05-01T08:00:00Z", updatedAt: "2026-05-01T08:00:00Z" },
 ];
 
 // ── Client Portal — Upcoming scheduled posts display ──────────────────────────

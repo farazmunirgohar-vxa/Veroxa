@@ -1,3 +1,7 @@
+> **Historical reference (pre-2026-05-27).** Pricing and fixture-ID values in this document are out of date. Current source of truth: `docs/PRICING_SOURCE_OF_TRUTH.md` and `src/data/pricing/veroxaPricing.ts`. Fixture IDs are now `demo-a` / `demo-b` / `demo-c` / `demo-d`.
+
+---
+
 # Migration 002 — Client Foundation: Planning Document
 
 **Status:** Planning only. No SQL draft file has been created. No

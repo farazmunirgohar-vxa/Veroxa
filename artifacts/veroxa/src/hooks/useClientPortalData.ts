@@ -45,7 +45,7 @@ import {
   scheduledPosts as demoScheduledPosts,
   googleMetrics as demoGoogleMetrics,
   contentSupply as demoContentSupply,
-  mamadaliClient,
+  demoAClient,
 } from "@/lib/demo-data";
 
 export type ClientPortalSource = "supabase" | "demo";
@@ -114,7 +114,7 @@ const DEMO_MONTHLY_PREVIEW: MonthlyReportPreview = {
 };
 
 const DEMO_DATA: ClientPortalData = {
-  businessName: mamadaliClient.businessName,
+  businessName: demoAClient.businessName,
   scheduledPosts: demoScheduledPosts,
   googleMetrics: demoGoogleMetrics,
   contentSupply: demoContentSupply.map((s) => ({ ...s })),
@@ -312,7 +312,7 @@ export function useClientPortalData(): UseClientPortalDataResult {
         const businessName =
           (row?.business_name as string | undefined) ??
           (row?.businessName as string | undefined) ??
-          mamadaliClient.businessName;
+          demoAClient.businessName;
 
         const calendarTyped = calendar as Record<string, unknown>[];
         const weeklyTyped = weekly as Record<string, unknown>[];

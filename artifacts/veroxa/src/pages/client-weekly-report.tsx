@@ -18,7 +18,7 @@ export default function ClientWeeklyReport() {
         message="Demo only — read-only preview. No real analytics or automation is connected."
         testId="banner-client-weekly-report"
       />
-      <WeeklyReportView viewerRole="client" clientId="mamadali" />
+      <WeeklyReportView viewerRole="client" clientId="demo-a" />
     </PortalLayout>
   );
 }

@@ -17,7 +17,7 @@ export interface DemoMonthlyReport {
 
 export const demoMonthlyReports: DemoMonthlyReport[] = [
   {
-    clientId: "mamadali", monthLabel: "May 2026",
+    clientId: "demo-a", monthLabel: "May 2026",
     growthOverview: "Google visibility improved from 74% to 82%. Reviews increased by 9 this month. 22 posts were published.",
     contentPerformance: [
       { label: "Posts published",     value: "22"                    },
@@ -33,7 +33,7 @@ export const demoMonthlyReports: DemoMonthlyReport[] = [
     nextMonthFocus: ["Test paid reach for top-performing reels", "Plan menu-launch campaign", "Maintain shoot cadence"],
   },
   {
-    clientId: "urban", monthLabel: "May 2026",
+    clientId: "demo-b", monthLabel: "May 2026",
     growthOverview: "Visibility held steady at ~71%. Reviews flat. 12 posts published — under target.",
     contentPerformance: [
       { label: "Posts published",     value: "12"                     },
@@ -49,7 +49,7 @@ export const demoMonthlyReports: DemoMonthlyReport[] = [
     nextMonthFocus: ["Coordinate fresh shoot", "Plan reels strategy", "Operator follow-up call"],
   },
   {
-    clientId: "crescent", monthLabel: "May 2026",
+    clientId: "demo-c", monthLabel: "May 2026",
     growthOverview: "Visibility moved from 70% to 77%. Strong review month (+9). 18 posts published.",
     contentPerformance: [
       { label: "Posts published",     value: "18"                    },
@@ -65,7 +65,7 @@ export const demoMonthlyReports: DemoMonthlyReport[] = [
     nextMonthFocus: ["Expand reels series", "Plan executive case study", "Continue review cadence"],
   },
   {
-    clientId: "alnoor", monthLabel: "May 2026",
+    clientId: "demo-d", monthLabel: "May 2026",
     growthOverview: "At-risk month — visibility down from 64% to 58%. Onboarding incomplete and media supply critical.",
     contentPerformance: [
       { label: "Posts published",     value: "4"              },

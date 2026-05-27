@@ -9,7 +9,7 @@ import {
   demoClientRequests,
 } from "@/data/demoData";
 
-const SHOWCASE_ID = "mamadali";
+const SHOWCASE_ID = "demo-a";
 
 export default function ClientAccount() {
   const client   = demoRestaurants.find((r) => r.id === SHOWCASE_ID)!;

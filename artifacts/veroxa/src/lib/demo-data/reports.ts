@@ -1,12 +1,12 @@
 import type { WeeklyReport, MonthlyReport } from "../database/models";
 import { WeeklyReportStatus, MonthlyReportStatus } from "../database/enums";
 
-// ── Typed demo weekly reports — Demo Grill House (id: mamadali) ──────────────
+// ── Typed demo weekly reports — Demo Grill House (id: demo-a) ──────────────
 
-export const mamadaliWeeklyReports: WeeklyReport[] = [
+export const demoAWeeklyReports: WeeklyReport[] = [
   {
-    id: "weekly-mamadali-w20",
-    clientId: "client-mamadali-001",
+    id: "weekly-demo-a-w20",
+    clientId: "client-demo-a-001",
     weekStartDate: "2026-05-19",
     weekEndDate: "2026-05-25",
     status: WeeklyReportStatus.published,
@@ -20,8 +20,8 @@ export const mamadaliWeeklyReports: WeeklyReport[] = [
     updatedAt: "2026-05-23T08:00:00Z",
   },
   {
-    id: "weekly-mamadali-w19",
-    clientId: "client-mamadali-001",
+    id: "weekly-demo-a-w19",
+    clientId: "client-demo-a-001",
     weekStartDate: "2026-05-12",
     weekEndDate: "2026-05-18",
     status: WeeklyReportStatus.published,
@@ -36,12 +36,12 @@ export const mamadaliWeeklyReports: WeeklyReport[] = [
   },
 ];
 
-// ── Typed demo monthly reports — Demo Grill House (id: mamadali) ─────────────
+// ── Typed demo monthly reports — Demo Grill House (id: demo-a) ─────────────
 
-export const mamadaliMonthlyReports: MonthlyReport[] = [
+export const demoAMonthlyReports: MonthlyReport[] = [
   {
-    id: "monthly-mamadali-apr2026",
-    clientId: "client-mamadali-001",
+    id: "monthly-demo-a-apr2026",
+    clientId: "client-demo-a-001",
     month: 4,
     year: 2026,
     status: MonthlyReportStatus.approved,

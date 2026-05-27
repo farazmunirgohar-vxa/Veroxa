@@ -237,11 +237,11 @@ export interface DemoInternalNote {
 }
 
 export const demoInternalNotes: DemoInternalNote[] = [
-  { id: "n1", clientId: "mamadali", type: "Client preference", author: "Lina",   authorRole: "Operator", timestamp: "May 24", body: "Owner prefers reels over carousels. Avoid pricing in captions."             },
-  { id: "n2", clientId: "mamadali", type: "Content note",       author: "Priya",  authorRole: "Team",     timestamp: "May 23", body: "New menu launching June 5 — plan a 3-post teaser series."                  },
-  { id: "n3", clientId: "urban",    type: "Risk note",          author: "Daniel", authorRole: "Operator", timestamp: "Today",  body: "Owner unresponsive 4 days. Escalate if no reply by EoD Wed."               },
-  { id: "n4", clientId: "urban",    type: "Reporting note",     author: "Daniel", authorRole: "Operator", timestamp: "May 24", body: "Weekly report drafted, awaiting validation. Push manually if needed."     },
-  { id: "n5", clientId: "crescent", type: "Operations note",    author: "Lina",   authorRole: "Operator", timestamp: "May 22", body: "Olive-oil supplier story is the strongest brand angle this quarter."       },
-  { id: "n6", clientId: "alnoor",   type: "Risk note",          author: "Owner",  authorRole: "Owner",    timestamp: "Today",  body: "Rescue plan: 1-on-1 with owner, reset cadence to bi-weekly until trust returns." },
-  { id: "n7", clientId: "alnoor",   type: "Content note",       author: "Jordan", authorRole: "Team",     timestamp: "May 18", body: "2 of 4 uploads flagged for reshoot. Storefront shot critical."             },
+  { id: "n1", clientId: "demo-a", type: "Client preference", author: "Lina",   authorRole: "Operator", timestamp: "May 24", body: "Owner prefers reels over carousels. Avoid pricing in captions."             },
+  { id: "n2", clientId: "demo-a", type: "Content note",       author: "Priya",  authorRole: "Team",     timestamp: "May 23", body: "New menu launching June 5 — plan a 3-post teaser series."                  },
+  { id: "n3", clientId: "demo-b",    type: "Risk note",          author: "Daniel", authorRole: "Operator", timestamp: "Today",  body: "Owner unresponsive 4 days. Escalate if no reply by EoD Wed."               },
+  { id: "n4", clientId: "demo-b",    type: "Reporting note",     author: "Daniel", authorRole: "Operator", timestamp: "May 24", body: "Weekly report drafted, awaiting validation. Push manually if needed."     },
+  { id: "n5", clientId: "demo-c", type: "Operations note",    author: "Lina",   authorRole: "Operator", timestamp: "May 22", body: "Olive-oil supplier story is the strongest brand angle this quarter."       },
+  { id: "n6", clientId: "demo-d",   type: "Risk note",          author: "Owner",  authorRole: "Owner",    timestamp: "Today",  body: "Rescue plan: 1-on-1 with owner, reset cadence to bi-weekly until trust returns." },
+  { id: "n7", clientId: "demo-d",   type: "Content note",       author: "Jordan", authorRole: "Team",     timestamp: "May 18", body: "2 of 4 uploads flagged for reshoot. Storefront shot critical."             },
 ];

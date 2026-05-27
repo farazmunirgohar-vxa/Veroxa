@@ -6,7 +6,7 @@ import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 import { demoClientRequests, requestStatusColor, requestPriorityColor } from "@/data/demoData";
 
-const SHOWCASE_ID = "mamadali";
+const SHOWCASE_ID = "demo-a";
 
 export default function ClientRequests() {
   const open = demoClientRequests.filter((r) => r.clientId === SHOWCASE_ID && r.status !== "Completed");

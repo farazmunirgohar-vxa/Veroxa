@@ -12,12 +12,12 @@ export default function InternalDemoControls() {
   const active = demoControlPresets.find((p) => p.id === activeId)!;
 
   const presetTargets: Record<string, string> = {
-    "healthy":     "crescent",
-    "low-media":   "urban",
-    "at-risk":     "alnoor",
-    "onboarding":  "urban",
-    "report-late": "urban",
-    "pipeline":    "alnoor",
+    "healthy":     "demo-c",
+    "low-media":   "demo-b",
+    "at-risk":     "demo-d",
+    "onboarding":  "demo-b",
+    "report-late": "demo-b",
+    "pipeline":    "demo-d",
   };
 
   const targetClientId = presetTargets[active.id];

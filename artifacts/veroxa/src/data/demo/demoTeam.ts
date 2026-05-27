@@ -38,49 +38,49 @@ export const demoTeamAlerts: DemoTeamAlert[] = [
     id: "ta1", severity: "Critical", category: "Media",
     title: "Media inventory critically low",
     description: "Demo Cafe has only 2 approved items. Next week's posting queue is at risk.",
-    clientId: "alnoor", time: "Today, 8:42 AM",
+    clientId: "demo-d", time: "Today, 8:42 AM",
   },
   {
     id: "ta2", severity: "Critical", category: "Onboarding",
     title: "Onboarding stalled — 4 steps missing",
     description: "Demo Cafe onboarding is 55% complete. Menu info and brand guidelines are missing.",
-    clientId: "alnoor", time: "Today, 7:30 AM",
+    clientId: "demo-d", time: "Today, 7:30 AM",
   },
   {
     id: "ta3", severity: "High", category: "Report",
     title: "Weekly report overdue — operator not reviewed",
     description: "Demo Taco Bar weekly report has been in operator queue for 28 hours without review.",
-    clientId: "urban", time: "Yesterday, 5:15 PM",
+    clientId: "demo-b", time: "Yesterday, 5:15 PM",
   },
   {
     id: "ta4", severity: "High", category: "Media",
     title: "Content supply trending low",
     description: "Demo Taco Bar media supply dropped to 9 approved items. Recommend scheduling a shoot.",
-    clientId: "urban", time: "2 days ago",
+    clientId: "demo-b", time: "2 days ago",
   },
   {
     id: "ta5", severity: "Medium", category: "Report",
     title: "Scheduled post requires final approval",
     description: "Demo Grill House dinner reel is ready but awaiting team sign-off before publish.",
-    clientId: "mamadali", time: "Today, 10:48 AM",
+    clientId: "demo-a", time: "Today, 10:48 AM",
   },
   {
     id: "ta6", severity: "Medium", category: "Google",
     title: "Google Business Profile update needed",
     description: "Demo Cafe profile photos are 6 months old. Recommend updating with fresh media.",
-    clientId: "alnoor", time: "3 days ago",
+    clientId: "demo-d", time: "3 days ago",
   },
   {
     id: "ta7", severity: "Low", category: "Brand",
     title: "Brand guideline — logo refresh pending",
     description: "Demo Cafe logo marked for refresh. Brand assets should be updated before next campaign.",
-    clientId: "alnoor", time: "May 20",
+    clientId: "demo-d", time: "May 20",
   },
   {
     id: "ta8", severity: "Low", category: "Onboarding",
     title: "Social media access unconfirmed",
     description: "Demo Taco Bar social access status is 'In Progress' — confirm before next posting cycle.",
-    clientId: "urban", time: "May 21",
+    clientId: "demo-b", time: "May 21",
   },
 ];
 
@@ -106,8 +106,8 @@ export interface DemoTeamOversightRow {
 }
 
 export const demoTeamOversight: DemoTeamOversightRow[] = [
-  { name: "Jordan", role: "Content Lead",      assignedClientIds: ["mamadali", "crescent"],         openTasks: 4, completedTasks: 12, contentAwaitingReview: 3, reportWorkload: 2 },
-  { name: "Priya",  role: "Client Manager",    assignedClientIds: ["urban", "alnoor"],              openTasks: 6, completedTasks: 8,  contentAwaitingReview: 4, reportWorkload: 3 },
-  { name: "Marcus", role: "Media Reviewer",    assignedClientIds: ["mamadali", "urban", "crescent"],openTasks: 3, completedTasks: 19, contentAwaitingReview: 7, reportWorkload: 1 },
-  { name: "Ava",    role: "Caption Specialist", assignedClientIds: ["mamadali", "alnoor"],           openTasks: 2, completedTasks: 14, contentAwaitingReview: 2, reportWorkload: 4 },
+  { name: "Jordan", role: "Content Lead",      assignedClientIds: ["demo-a", "demo-c"],         openTasks: 4, completedTasks: 12, contentAwaitingReview: 3, reportWorkload: 2 },
+  { name: "Priya",  role: "Client Manager",    assignedClientIds: ["demo-b", "demo-d"],              openTasks: 6, completedTasks: 8,  contentAwaitingReview: 4, reportWorkload: 3 },
+  { name: "Marcus", role: "Media Reviewer",    assignedClientIds: ["demo-a", "demo-b", "demo-c"],openTasks: 3, completedTasks: 19, contentAwaitingReview: 7, reportWorkload: 1 },
+  { name: "Ava",    role: "Caption Specialist", assignedClientIds: ["demo-a", "demo-d"],           openTasks: 2, completedTasks: 14, contentAwaitingReview: 2, reportWorkload: 4 },
 ];

@@ -78,10 +78,10 @@ cap:  100
 
 | Internal ID | Display name | Risk | Runway | Primary goal |
 |---|---|---|---|---|
-| `mamadali` | Demo Grill House | Low | 8 days | Grow Friday evening dinner reservations |
-| `urban` | Demo Taco Bar | High | 4 days | Drive weekday lunch foot traffic |
-| `crescent` | Demo Mediterranean Grill | None | 14 days | Build premium Instagram reputation |
-| `alnoor` | Demo Cafe | Critical | 2 days | Increase morning traffic and discovery |
+| `demo-a` | Demo Grill House | Low | 8 days | Grow Friday evening dinner reservations |
+| `demo-b` | Demo Taco Bar | High | 4 days | Drive weekday lunch foot traffic |
+| `demo-c` | Demo Mediterranean Grill | None | 14 days | Build premium Instagram reputation |
+| `demo-d` | Demo Cafe | Critical | 2 days | Increase morning traffic and discovery |
 
 ---
 

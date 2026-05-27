@@ -1,3 +1,7 @@
+> **Historical reference (pre-2026-05-27).** Pricing and fixture-ID values in this document are out of date. Current source of truth: `docs/PRICING_SOURCE_OF_TRUTH.md` and `src/data/pricing/veroxaPricing.ts`. Fixture IDs are now `demo-a` / `demo-b` / `demo-c` / `demo-d`.
+
+---
+
 # Dev Supabase Execution Checkpoint — M001 through M006
 
 **Date / time:** _<fill in when committing — YYYY-MM-DD HH:MM TZ>_

@@ -68,12 +68,13 @@ Notes:
   as cosmetic until a future scoring rule lands.
 - `mainIssue` and `recommendedAction` come from `demoClientHealth` and
   are not synthesized from runway facts. Treat them as curated text.
-- `revenueAtRisk` uses an internal `demoPlanPrice` lookup that is
-  authoritative for the engine only. It is **not** the locked public
-  pricing surface — pricing for marketing/checkout lives in
-  `pages/pricing.tsx` and the locked invariant values
-  (49700 / 99700 / 109700 / 119700 / 149700). Do not unify these two
-  numbers without first updating the locked-pricing invariant.
+- `revenueAtRisk` uses an internal `demoPlanPrice` lookup that mirrors the
+  flat plan prices. The pricing source of truth lives in
+  `src/data/pricing/veroxaPricing.ts` and is documented in
+  `docs/PRICING_SOURCE_OF_TRUTH.md` ($477 / $977 / $977 / $1,497 for
+  Google Presence Starter, Complete Online Presence, Ads Management, and
+  Bundle respectively). Keep the engine's `demoPlanPrice` map and the
+  source-of-truth file in sync.
 
 ### 1.4 What the engine deliberately does not provide today
 
@@ -162,7 +163,7 @@ items represents a fix in this pass — they are documented drift only.
 - **Engine output ignored:** `ClientHealthEngine.profiles()` and
   `portfolioSummary()`.
 - **Numeric mismatch:** `demoClientHealth` has four entries
-  (mamadali, urban, crescent, alnoor) with levels
+  (`demo-a`, `demo-b`, `demo-c`, `demo-d`) with levels
   `healthy / attention / healthy / critical`. The engine would emit
   categories based on `demoMediaRunway.daysRemaining`, which can
   differ from those levels for the same client.

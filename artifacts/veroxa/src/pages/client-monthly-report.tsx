@@ -18,7 +18,7 @@ export default function ClientMonthlyReport() {
         message="Demo only — read-only preview. No real analytics or exports."
         testId="banner-client-monthly-report"
       />
-      <MonthlyReportView viewerRole="client" clientId="mamadali" />
+      <MonthlyReportView viewerRole="client" clientId="demo-a" />
     </PortalLayout>
   );
 }

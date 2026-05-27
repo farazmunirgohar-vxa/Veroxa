@@ -78,7 +78,7 @@ const upcomingSchedule: DemoScheduleItem[] = [
   },
 ];
 
-const clientEvidenceRec = recommendNextPost("mamadali");
+const clientEvidenceRec = recommendNextPost("demo-a");
 
 export default function ClientDashboard() {
   const { loading, data } = useClientPortalData();
