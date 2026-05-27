@@ -98,3 +98,34 @@ Audit fields on every table: `created_at`, `updated_at`,
   errors to clients.
 - Audit logs persisted server-side (separate work item).
 - Pricing, AUTH_MODE, and InternalDemoGuard untouched by this work.
+
+## M023C status — Dev Supabase write adapter (disabled by default)
+
+- Added real Supabase write adapter behind explicit env flag
+  `VITE_VEROXA_ENABLE_DEV_WRITES` (only the exact string `"true"`).
+- Writes are **disabled by default**. `WRITES_ENABLED = false` unless
+  the flag is set.
+- Write functions are **metadata only**:
+  `createUploadSubmission`, `createDirectionRequest`,
+  `updateUploadReviewStatus`, `updateDirectionStatus`,
+  `createTeamReviewDecision`.
+- **No** storage upload, **no** service role, **no** file blobs,
+  **no** FormData/fetch, **no** AI / publishing / ads / payments.
+- **No** active migrations created in this build. If the env flag is
+  set against a dev project without schema, calls fail safely with a
+  client-safe `failure` envelope; demo flows continue on local/session
+  stores.
+- Supabase writes exist **only** inside
+  `src/lib/data/devSupabaseWriteAdapter.ts`. No page component calls
+  `supabase.from(...).insert/update/upsert/delete`.
+- Errors are safe-mapped via `src/lib/data/writeErrors.ts` — raw DB
+  error text never reaches the client.
+- Notes sanitized via `src/lib/data/writeMappers.ts` (email / phone /
+  `@handle` redaction, 500-char cap).
+
+### Next step after M023C
+
+- **M023D** — schema migration approval and controlled dev table
+  creation, **or** connect adapter to selected pages after schema
+  exists.
+- Storage upload remains a separate later milestone.

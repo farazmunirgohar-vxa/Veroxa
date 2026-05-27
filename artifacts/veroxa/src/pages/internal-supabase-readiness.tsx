@@ -27,6 +27,7 @@ import {
   getClientPortalAccountReadOnly,
 } from "@/lib/data/supabaseReadOnlyData";
 import type { ReadOnlyEnvelope } from "@/lib/data/clientPortalReadOnlyTypes";
+import { getWriteReadinessStatus } from "@/lib/data/writeReadiness";
 
 type CoverageRow = {
   label: string;
@@ -112,6 +113,7 @@ export default function InternalSupabaseReadiness() {
   const [loading, setLoading] = useState(true);
   const [coverage, setCoverage] = useState<CoverageRow[]>([]);
   const [coverageLoading, setCoverageLoading] = useState(true);
+  const writeStatus = getWriteReadinessStatus();
 
   async function refresh() {
     setLoading(true);
@@ -297,28 +299,32 @@ export default function InternalSupabaseReadiness() {
           </CardContent>
         </Card>
 
-        {/* Write Readiness — M022 / M023B */}
+        {/* Write Readiness — M023C */}
         <Card className="bg-card border-border" data-testid="card-write-readiness">
           <CardContent className="space-y-2 p-4">
             <div className="flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-primary" />
               <h3 className="text-sm font-semibold">Write Readiness</h3>
               <Badge variant="outline" className="text-[10px] bg-muted/30 text-muted-foreground border-border">
-                M023B
+                M023C
               </Badge>
             </div>
-            <ul className="text-xs text-muted-foreground space-y-1 pl-1">
-              <li>• Write mode: <span className="text-foreground">disabled</span></li>
-              <li>• Writes enabled: <span className="text-foreground">No</span></li>
-              <li>• Current adapter: <span className="text-foreground">disabledWriteAdapter</span></li>
+            <ul className="text-xs text-muted-foreground space-y-1 pl-1" data-testid="list-write-readiness">
+              <li>• Write mode: <span className="text-foreground">{writeStatus.mode}</span></li>
+              <li>• Writes enabled: <span className="text-foreground">{writeStatus.enabled ? "Yes" : "No"}</span></li>
+              <li>• Env flag: <code className="text-foreground">{writeStatus.envFlagName}</code> (only the exact string <code>"true"</code> enables writes)</li>
+              <li>• Current adapter: <span className="text-foreground">{writeStatus.enabled ? "devSupabaseWriteAdapter" : "disabledWriteAdapter"}</span></li>
               <li>• Storage upload: <span className="text-foreground">not connected</span></li>
               <li>• Service role in frontend: <span className="text-foreground">not allowed</span></li>
               <li>• Real migrations: <span className="text-foreground">not created in this build</span></li>
-              <li>• Next step: controlled dev Supabase write adapter behind an explicit flag (M023C).</li>
+              <li>• Tables expected (may not exist yet): <code>upload_submissions</code>, <code>direction_requests</code>, <code>team_review_decisions</code></li>
+              <li>• Errors are safe-mapped — no raw DB errors reach the client.</li>
+              <li>• Next step: {writeStatus.nextStep}</li>
             </ul>
             <p className="text-[11px] text-muted-foreground/70 leading-relaxed">
               See <code>src/lib/data/writeReadiness.ts</code>,{" "}
-              <code>src/lib/data/writeAdapter.ts</code>, and{" "}
+              <code>src/lib/data/writeAdapter.ts</code>,{" "}
+              <code>src/lib/data/devSupabaseWriteAdapter.ts</code>, and{" "}
               <code>docs/sql-plan/</code>.
             </p>
           </CardContent>

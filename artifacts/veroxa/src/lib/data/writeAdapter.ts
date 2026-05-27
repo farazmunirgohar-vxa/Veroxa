@@ -1,18 +1,31 @@
 /**
- * writeAdapter.ts — M023B
+ * writeAdapter.ts — M023B / M023C
  *
- * Re-export the currently active write adapter. In this build the
- * active adapter is `disabledWriteAdapter`, which never touches the
- * network.
+ * Selects the active write adapter based on `getWriteMode()`:
+ *   - "dev_supabase_writes" → `devSupabaseWriteAdapter` (real
+ *     metadata writes against a dev Supabase project, no storage)
+ *   - "disabled"            → `disabledWriteAdapter` (returns the
+ *     disabled envelope, no network calls)
  *
- * Future M023C/M024 work can swap this re-export behind an explicit
- * feature flag (e.g. `VITE_VEROXA_ENABLE_DEV_WRITES=true`) to point
- * at a real Supabase write adapter — without churn at call sites.
+ * Page components must import `veroxaWriteAdapter` — they never
+ * pick an adapter directly.
+ *
+ * The selection is resolved at module load. `getWriteMode()` reads
+ * `VITE_VEROXA_ENABLE_DEV_WRITES` strictly (only the exact string
+ * "true" enables dev writes); see `writeReadiness.ts`.
  */
 
+import { devSupabaseWriteAdapter } from "./devSupabaseWriteAdapter";
 import { disabledWriteAdapter } from "./disabledWriteAdapter";
 import type { VeroxaWriteAdapter } from "./writeAdapterTypes";
+import { getWriteMode } from "./writeReadiness";
 
-export const veroxaWriteAdapter: VeroxaWriteAdapter = disabledWriteAdapter;
+function selectAdapter(): VeroxaWriteAdapter {
+  return getWriteMode() === "dev_supabase_writes"
+    ? devSupabaseWriteAdapter
+    : disabledWriteAdapter;
+}
+
+export const veroxaWriteAdapter: VeroxaWriteAdapter = selectAdapter();
 
 export type { VeroxaWriteAdapter } from "./writeAdapterTypes";

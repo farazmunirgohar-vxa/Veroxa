@@ -901,3 +901,28 @@ auth activation.
   (`placeholder`), DATA_MODE default unchanged (`fixture`), pricing
   unchanged, InternalDemoGuard intact, Owner/Operator NOT expanded.
 - **Typecheck:** see verification below.
+
+## M023C — Dev Supabase Write Adapter (disabled by default)
+
+- **Real Supabase write adapter added**, dormant behind explicit env
+  flag `VITE_VEROXA_ENABLE_DEV_WRITES` (only exact `"true"` enables).
+- Default mode: `disabled`. `WRITES_ENABLED = false`.
+- Real metadata writes only possible when the env flag is `"true"`.
+- **New files:** `src/lib/data/devSupabaseWriteAdapter.ts`,
+  `src/lib/data/writeMappers.ts`, `src/lib/data/writeErrors.ts`,
+  `docs/M023C_DEV_SUPABASE_WRITE_ADAPTER.md`.
+- **Updated:** `src/lib/data/writeReadiness.ts` (env flag, mode
+  resolver, status object), `src/lib/data/writeAdapter.ts` (selects
+  dev vs disabled adapter), `src/pages/internal-supabase-readiness.tsx`
+  (Write Readiness card now dynamic, shows mode / env flag / current
+  adapter / expected tables).
+- **No** storage upload added.
+- **No** active migrations added.
+- **No** AI / publishing / ads / payments integration.
+- **No** service role used in frontend.
+- **No** page component writes to Supabase — writes live only inside
+  `devSupabaseWriteAdapter.ts`.
+- Owner/Operator portals **not** expanded.
+- AUTH_MODE unchanged (`placeholder`). DATA_MODE default unchanged
+  (`fixture`). Pricing unchanged. InternalDemoGuard intact.
+- **Typecheck:** PASS.

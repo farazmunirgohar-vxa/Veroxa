@@ -72,3 +72,21 @@ the first real client uses Veroxa in production.
   - Direction request writes.
   - Team review status writes.
   - Storage upload (separate later build).
+
+## M023C — Dev write adapter
+
+- ✅ Dev Supabase write adapter created
+  (`devSupabaseWriteAdapter.ts`, `writeMappers.ts`, `writeErrors.ts`).
+- ✅ `VITE_VEROXA_ENABLE_DEV_WRITES` flag wired through
+  `writeReadiness.ts` (exact `"true"` only).
+- ✅ `writeAdapter.ts` selects dev adapter when flag is on, otherwise
+  disabled adapter.
+- ✅ Supabase writes confined to a single file
+  (`devSupabaseWriteAdapter.ts`); no page-level `.insert/.update`.
+- ✅ Notes sanitized (email / phone / `@handle` / length-capped).
+- ✅ Errors safe-mapped — no raw DB error text reaches clients.
+- Still needed:
+  - Actual schema / migrations with owner approval.
+  - RLS policies for the three metadata tables.
+  - Connect selected pages to adapter after schema exists.
+  - Storage upload (separate later build).
