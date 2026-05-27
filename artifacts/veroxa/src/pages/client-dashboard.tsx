@@ -1,9 +1,70 @@
-import { CalendarDays, ImageIcon, Layers, BarChart2 } from "lucide-react";
+import { CalendarDays, ImageIcon, Layers, BarChart2, Sparkles } from "lucide-react";
+import { Link } from "wouter";
 import { PortalLayout } from "@/components/PortalLayout";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientPortalData } from "@/hooks/useClientPortalData";
+import {
+  DemoImageCard,
+  DemoSchedulePreview,
+  type DemoScheduleItem,
+} from "@/components/demo/DemoVisuals";
+import { getDemoImage } from "@/data/demo/demoImages";
+
+const weekMedia = [
+  {
+    id: "wm-1",
+    image: getDemoImage("food-grilled-platter")!,
+    title: "Grilled platter — overhead",
+    subtitle: "Approved for weekend feature",
+    status: "Approved",
+    tone: "good" as const,
+  },
+  {
+    id: "wm-2",
+    image: getDemoImage("food-bowl-hero")!,
+    title: "Signature bowl — hero",
+    subtitle: "Scheduled · Tuesday lunch",
+    status: "Scheduled",
+    tone: "ready" as const,
+  },
+  {
+    id: "wm-3",
+    image: getDemoImage("kitchen-chef-plate")!,
+    title: "Chef plating — Reels clip",
+    subtitle: "Pending Veroxa team review",
+    status: "Pending review",
+    tone: "warn" as const,
+  },
+];
+
+const upcomingSchedule: DemoScheduleItem[] = [
+  {
+    id: "up-1",
+    image: getDemoImage("food-grilled-platter")!,
+    day: "Friday",
+    time: "11:30 AM",
+    platform: "Instagram",
+    label: "Lunch Special",
+  },
+  {
+    id: "up-2",
+    image: getDemoImage("food-bowl-hero")!,
+    day: "Saturday",
+    time: "2:00 PM",
+    platform: "Facebook",
+    label: "Behind the Scenes",
+  },
+  {
+    id: "up-3",
+    image: getDemoImage("food-plated-dinner")!,
+    day: "Sunday",
+    time: "6:15 PM",
+    platform: "Instagram",
+    label: "Dinner Push",
+  },
+];
 
 export default function ClientDashboard() {
   const { loading, data } = useClientPortalData();
@@ -51,6 +112,64 @@ export default function ClientDashboard() {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      {/* This week's media — demo visual strip */}
+      <div data-testid="section-week-media">
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+            This week&apos;s media
+          </h3>
+          <Badge
+            variant="outline"
+            className="border-border text-muted-foreground"
+          >
+            Demo only
+          </Badge>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {weekMedia.map((item) => (
+            <DemoImageCard
+              key={item.id}
+              image={item.image}
+              title={item.title}
+              subtitle={item.subtitle}
+              status={item.status}
+              tone={item.tone}
+              testId={`week-media-${item.id}`}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Upcoming content — schedule preview with thumbnails */}
+      <div data-testid="section-upcoming-content">
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+            Upcoming content
+          </h3>
+          <Link
+            href="/demo/client/ai-draft-preview"
+            className="flex items-center gap-1 text-xs text-amber-300 hover:underline"
+            data-testid="link-ai-draft-preview"
+          >
+            <Sparkles className="h-3 w-3" />
+            See AI Draft Preview
+          </Link>
+        </div>
+        <Card className="bg-card/50 border-border/50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">
+              From one photo to three scheduled posts
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <DemoSchedulePreview items={upcomingSchedule} testId="dashboard-schedule" />
+            <p className="mt-3 text-[11px] text-muted-foreground">
+              Demo only — simulated AI. Nothing posted, nothing uploaded.
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* This week at a glance */}

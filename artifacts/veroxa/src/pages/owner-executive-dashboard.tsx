@@ -22,6 +22,15 @@ import {
   demoOwnerMetrics, demoRevenueTrend, demoServicePlans,
   demoClientHealthDistribution,
 } from "@/data/demoData";
+import { DemoFlowTimeline } from "@/components/demo/DemoVisuals";
+
+const veroxaOsFlow = [
+  { key: "upload",   label: "Client Upload",  caption: "Restaurant adds media" },
+  { key: "ai",       label: "AI Drafts",      caption: "Captions + angles" },
+  { key: "review",   label: "Team Review",    caption: "Human approval" },
+  { key: "schedule", label: "Schedule",       caption: "Best posting times" },
+  { key: "report",   label: "Report",         caption: "Weekly + monthly" },
+];
 
 const fmt$ = (n: number) => `$${n.toLocaleString()}`;
 
@@ -39,6 +48,19 @@ export default function OwnerExecutiveDashboard() {
       />
 
       <DemoOnlyBanner message="Demo only — all metrics are sample data." testId="banner-exec-dashboard" />
+
+      {/* Veroxa OS flow — visual */}
+      <Card className="bg-card border-border mb-4" data-testid="card-veroxa-os-flow">
+        <CardHeader>
+          <CardTitle className="text-base">Veroxa OS flow</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <DemoFlowTimeline steps={veroxaOsFlow} testId="owner-veroxa-flow" />
+          <p className="mt-3 text-[11px] text-muted-foreground">
+            Demo only — illustrative flow. No real automation is running.
+          </p>
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         <MetricTile icon={Users}      label="Active clients"    value={demoOwnerMetrics.totalActiveClients}                       testId="tile-active-clients" />

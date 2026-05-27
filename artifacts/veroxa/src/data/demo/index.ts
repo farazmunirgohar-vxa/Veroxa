@@ -18,4 +18,5 @@ export * from "./demoTeam";
 export * from "./demoOperations";
 export * from "./demoFinancials";
 export * from "./demoOwner";
+export * from "./demoImages";
 export * from "./demoSystemStatus";

@@ -19,6 +19,35 @@ import type { StatusBadgeTone } from "@/components/common";
 import {
   demoTeamMetrics, demoWorkQueue, demoTeamAlerts, getRestaurantName,
 } from "@/data/demoData";
+import { DemoImageCard } from "@/components/demo/DemoVisuals";
+import { getDemoImage } from "@/data/demo/demoImages";
+
+const mediaReviewQueue = [
+  {
+    id: "mrq-1",
+    image: getDemoImage("food-grilled-platter")!,
+    title: "Grilled platter — overhead",
+    subtitle: "Mamadali Kebab House · suggested: weekend feature",
+    status: "Approve",
+    tone: "good" as const,
+  },
+  {
+    id: "mrq-2",
+    image: getDemoImage("kitchen-chef-plate")!,
+    title: "Chef plating clip",
+    subtitle: "Urban Tacos · suggested: Reels — kitchen series",
+    status: "Approve",
+    tone: "good" as const,
+  },
+  {
+    id: "mrq-3",
+    image: getDemoImage("food-pancakes")!,
+    title: "Brunch stack",
+    subtitle: "Mamadali Kebab House · re-shoot suggested",
+    status: "Re-shoot",
+    tone: "warn" as const,
+  },
+];
 
 const statCards = [
   { label: "Active Clients",            value: demoTeamMetrics.activeClients,           icon: Users,         color: "text-sky-400"     },
@@ -77,6 +106,31 @@ export default function TeamDashboard() {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      {/* Media review queue — demo visual strip */}
+      <div className="mb-6" data-testid="section-media-review-queue">
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Media review queue
+          </h3>
+          <span className="text-xs text-muted-foreground">
+            Demo only — sample thumbnails
+          </span>
+        </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {mediaReviewQueue.map((item) => (
+            <DemoImageCard
+              key={item.id}
+              image={item.image}
+              title={item.title}
+              subtitle={item.subtitle}
+              status={item.status}
+              tone={item.tone}
+              testId={`media-review-${item.id}`}
+            />
+          ))}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

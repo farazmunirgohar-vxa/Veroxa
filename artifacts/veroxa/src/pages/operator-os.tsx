@@ -15,6 +15,7 @@ import { MediaService } from "@/domain/media/service";
 import { ReportService } from "@/domain/reports/service";
 import { AIRepository } from "@/domain/ai/repository";
 import { demoTeamAlerts, demoUpcomingReports, demoOperatorMetrics } from "@/data/demoData";
+import { pickHeroImageFor } from "@/data/demo/demoImages";
 
 export default function OperatorOS() {
   const portfolioHealth = HealthService.portfolioAverage();
@@ -54,20 +55,33 @@ export default function OperatorOS() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
         {/* Client health overview */}
         <SectionCard title="Client health overview" icon={Heart} iconClass="text-emerald-400">
-          {ClientRepository.lifecycle().map((c) => (
-            <div key={c.clientId} className="rounded-md border border-border bg-muted/20 px-3 py-2" data-testid={`health-row-${c.clientId}`}>
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-sm font-semibold">{ClientRepository.nameOf(c.clientId)}</p>
-                <StatusBadge tone={c.riskLevel === "Critical" ? "danger" : c.riskLevel === "High" ? "warning" : c.riskLevel === "Medium" ? "info" : "success"}>
-                  {c.riskLevel} risk
-                </StatusBadge>
+          {ClientRepository.lifecycle().map((c) => {
+            const hero = pickHeroImageFor(c.clientId);
+            return (
+              <div key={c.clientId} className="flex items-center gap-3 rounded-md border border-border bg-muted/20 px-3 py-2" data-testid={`health-row-${c.clientId}`}>
+                <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-md bg-muted/30">
+                  <img
+                    src={hero.url}
+                    alt={hero.alt}
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-sm font-semibold truncate">{ClientRepository.nameOf(c.clientId)}</p>
+                    <StatusBadge tone={c.riskLevel === "Critical" ? "danger" : c.riskLevel === "High" ? "warning" : c.riskLevel === "Medium" ? "info" : "success"}>
+                      {c.riskLevel} risk
+                    </StatusBadge>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Progress value={c.healthScore} className="h-1.5 flex-1" />
+                    <span className="text-[11px] tabular-nums text-muted-foreground w-10 text-right">{c.healthScore}%</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Progress value={c.healthScore} className="h-1.5 flex-1" />
-                <span className="text-[11px] tabular-nums text-muted-foreground w-10 text-right">{c.healthScore}%</span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </SectionCard>
 
         {/* Active alerts */}
