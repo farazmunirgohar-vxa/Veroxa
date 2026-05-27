@@ -10,12 +10,39 @@ to every important planning, safety, and architecture doc.
 > integration exist today. The Supabase frontend client is anon
 > read-only for the Client Portal demo only.
 >
-> **Canonical auth state (May 24, 2026):** real Supabase Auth code
-> (`getSession`, `onAuthStateChange`, `user_profiles` lookup, gated
-> `signInWithPassword`) is **wired but inactive** while
-> `AUTH_MODE === "placeholder"` (`src/lib/auth/authMode.ts`).
-> Activation is a separate one-line prompt gated on the manual prep
-> pack — see [`AUTH_MODE_SWITCH_PLAN.md`](./AUTH_MODE_SWITCH_PLAN.md).
+> **Canonical auth state (audit: 2026-05-27):** `AUTH_MODE` is
+> `"placeholder"` (`src/lib/auth/authMode.ts`). Real Supabase Auth
+> code (`getSession`, `onAuthStateChange`, `user_profiles` lookup,
+> gated `signInWithPassword`) is **wired but inactive**. Activation
+> is gated on the human dev-test pass for M001–M006 — see the
+> current-state section in [`BUILD_STATUS.md`](./BUILD_STATUS.md)
+> before acting on any auth-flip plan.
+
+## Current safety / status references
+
+Read these **first** before proposing any auth, SQL, or backend
+work. They reflect the latest audit and override older "next
+phase" language elsewhere in this index.
+
+- [`BUILD_STATUS.md`](./BUILD_STATUS.md) — top section is the
+  authoritative current-state summary, current next-step ladder,
+  and the allowed / forbidden next prompt themes.
+- [`CLIENT_HEALTH_ENGINE_CONTRACT.md`](./CLIENT_HEALTH_ENGINE_CONTRACT.md)
+  — authoritative outputs of `ClientHealthEngine` and latest
+  per-page drift audit.
+- [`CLIENT_HEALTH_SURFACE_MAP.md`](./CLIENT_HEALTH_SURFACE_MAP.md)
+  — per-page inventory of every surface that renders
+  health-derived content.
+- [`PORTAL_QUERY_SAFETY_PLAN.md`](./PORTAL_QUERY_SAFETY_PLAN.md)
+  — what the portal is allowed to read, scoped grep sweeps,
+  latest audit pass.
+- [`PORTAL_QUERY_SAFETY_CHECKLIST.md`](./PORTAL_QUERY_SAFETY_CHECKLIST.md)
+  — the exact grep commands that must pass before any portal
+  query change.
+- [`sql_drafts/dev_test/README.md`](./sql_drafts/dev_test/README.md)
+  — master M001–M006 dev-test execution order with all
+  correction subfiles inserted in the correct position. Human
+  execution gate.
 
 ## Status & process
 

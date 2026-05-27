@@ -1,5 +1,160 @@
 # Veroxa — Build Status
 
+> ⚠️ **READ THIS FIRST — current truth overrides everything below.**
+> The two sections immediately following ("Current state" and
+> "Current next-step ladder") are the **authoritative** statement
+> of where the project is right now. Every other section in this
+> file — including any "next phase" or "real auth flip" language —
+> is a **dated historical changelog entry** that was true at the
+> time of writing and may be superseded by the current-state
+> summary. Do not follow older sections as current instructions.
+> In particular, **do not act on any historical "AUTH_MODE flip"
+> notes** until the human dev-test gate (M001–M006) is cleared.
+
+---
+
+## Current state (audit pass: 2026-05-27)
+
+**Status:** demo / placeholder phase. Documentation and safety
+stabilization only. No runtime backend behavior is active.
+
+- **AUTH_MODE is `"placeholder"`.** Verified in
+  `src/lib/auth/authMode.ts`. Real Supabase Auth code exists in the
+  codebase (`getSession`, `onAuthStateChange`, `user_profiles`
+  lookup, gated `signInWithPassword`) but is **inactive** while
+  `AUTH_MODE !== "real"`. Do not flip it.
+- **SQL is draft / dev-test only.** All SQL lives under
+  `artifacts/veroxa/docs/sql_drafts/`. **No file** under
+  `supabase/migrations/`. Nothing has been promoted to a real
+  migration set.
+- **M001–M006 still require human dev-Supabase execution.** The
+  packages exist as draft SQL plus dev-test trackers. A human must
+  apply them to a development Supabase project and complete the
+  trackers before any post-execution planning can begin. See
+  [`docs/sql_drafts/dev_test/README.md`](./sql_drafts/dev_test/README.md).
+- **The portal remains fixture / demo-first.** The Client Portal
+  has read-only Supabase queries scaffolded behind
+  `useClientPortalData`, but the demo path uses fixtures and
+  falls back to fixtures automatically when env vars are missing
+  or a query fails. The Team, Operator, and Owner portals use
+  fixtures exclusively. The portal is **not** connected to a real
+  production database.
+- **No real backend behavior is active.** No real AI provider is
+  wired (`ai_agents.is_enabled=true` is inert), no publishing
+  integration is wired, no real uploads or Supabase Storage buckets
+  are wired, no Google Business Profile integration is wired, no
+  real database writes happen anywhere in the app. Anything that
+  looks like activation in older sections is documentation /
+  scaffolding, not runtime behavior.
+- **Demo gate `veroxa-preview` remains in place.** Locked pricing,
+  the four-role model (Client / Team / Operator / Owner), the
+  four-shell portal model, and the nav routing all remain unchanged.
+
+### Current safety / status references
+
+Read these before proposing any auth, SQL, or backend work:
+
+- [`PORTAL_QUERY_SAFETY_PLAN.md`](./PORTAL_QUERY_SAFETY_PLAN.md) —
+  what the portal is allowed to read, scoped grep sweeps, latest
+  audit pass.
+- [`CLIENT_HEALTH_ENGINE_CONTRACT.md`](./CLIENT_HEALTH_ENGINE_CONTRACT.md)
+  — authoritative outputs of `ClientHealthEngine` and the latest
+  drift audit per page.
+- [`CLIENT_HEALTH_SURFACE_MAP.md`](./CLIENT_HEALTH_SURFACE_MAP.md)
+  — per-page inventory of every surface that renders health-derived
+  content.
+- [`sql_drafts/dev_test/README.md`](./sql_drafts/dev_test/README.md)
+  — master M001–M006 dev-test execution order with all correction
+  subfiles inserted in the correct position.
+
+---
+
+## Current next-step ladder
+
+Follow this order. Do not skip steps.
+
+1. **Stay in demo / placeholder mode.** `AUTH_MODE` remains
+   `"placeholder"`. No SQL promotion, no real Supabase connection,
+   no real provider wiring.
+2. **Human runs M001–M006 dev-test packages manually** against a
+   development Supabase project, following
+   `docs/sql_drafts/dev_test/README.md`. This is human work — the
+   agent does not perform it.
+3. **Human records pass/fail** in the per-package trackers
+   (`m00X/04_m00X_test_results.md`). Every checklist row must be
+   green before step 4.
+4. **Only after green trackers**, consider post-execution work:
+   SQL promotion to `supabase/migrations/`, AUTH_MODE planning,
+   the manual prep pack, and the eventual flip. None of these
+   begin until the trackers are green.
+5. **Separately and in parallel**, safe demo-only work may
+   continue: fixture coherence, health-engine consolidation,
+   docs/status cleanup, route registry audits, and demo-only UI
+   polish that does not alter routing / nav / the four-shell
+   model. See "Allowed next prompt themes" below.
+
+---
+
+## Allowed next prompt themes
+
+These themes are safe to work on **before** the human dev-test
+gate clears. They do not touch runtime backend behavior, auth,
+SQL promotion, routing, or pricing.
+
+- **Docs / status cleanup** — index updates, drift audits,
+  changelog stabilization, contract documents.
+- **Fixture coherence** — aligning demo fixtures so the same
+  client / period reads identically across all four shells.
+- **Health-engine consolidation** — migrating non-engine
+  consumers onto `ClientHealthEngine` while preserving the
+  canonical vocabulary (`Healthy | Caution | Urgent | Broken`).
+- **Demo-only UI polish** — typography, spacing, micro-interactions,
+  empty-state copy. **Must not alter** routing, navigation, the
+  four-shell model, the demo gate, or pricing.
+- **Route registry audits** — read-only inventory of registered
+  routes and their portal mapping. No route additions, renames,
+  or removals.
+
+## Forbidden next prompt themes
+
+Do **not** propose, plan, or implement any of these in the
+current phase. Stop and ask before any deviation.
+
+- **`AUTH_MODE` flip** to `"real"`.
+- **Supabase connection** — wiring the portal (or anything else)
+  to a real Supabase project, real env vars, or real RLS reads.
+- **SQL promotion** — moving any file from
+  `docs/sql_drafts/` to `supabase/migrations/`.
+- **Real writes / uploads / storage** — Supabase Storage buckets,
+  signed-URL uploads, real INSERT / UPDATE / DELETE from the app.
+- **Real AI provider** — OpenAI, Anthropic, Gemini, OpenRouter,
+  or any other provider; including via Replit AI Integrations.
+- **Publishing or Google integrations** — Instagram, Facebook,
+  TikTok, Google Business Profile, YouTube, scheduling APIs.
+- **Pricing changes** — locked values (GPS 49700, COP 12mo 99700,
+  COP 6mo 109700, COP 3mo 119700, COP no-contract 149700) are
+  fixed.
+- **Role model changes** — roles are exactly Client / Team /
+  Operator / Owner.
+- **Nav / routing changes** — no new routes, no rename, no
+  removal, no shell restructuring.
+
+---
+
+> **How to read this file (legacy header).** The current state of
+> real auth is defined by the **Current state** section at the top
+> of this file (2026-05-27). The earlier-dated header below ("Date:
+> May 24, 2026 — Latest milestone: Real Auth Manual Prep Pack") is
+> retained as a historical changelog entry. Earlier sections that
+> say "Still no real auth" were true at the time of that pass and
+> are superseded by the current-state summary. Do not edit those
+> lines retroactively, and do not act on their "next phase"
+> language.
+
+---
+
+# Historical changelog — entries below are dated history
+
 **Date:** May 24, 2026
 **Latest milestone:** Real Auth Manual Prep Pack (docs only)
 
