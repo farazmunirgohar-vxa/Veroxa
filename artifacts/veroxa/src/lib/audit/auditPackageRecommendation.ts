@@ -37,21 +37,22 @@ export function getRecommendedFirstStepsForPackage(
   packageId: RecommendedPackageId,
   report: RestaurantAuditReport,
 ): string[] {
-  const weakest = report.weakSpots[0]?.title ?? "the weakest stage";
+  const topOpportunity =
+    report.weakSpots[0]?.title ?? "the largest daily customer opportunity";
   switch (packageId) {
     case "google_optimization":
       return [
-        "Audit and clean up Google Business Profile (categories, photos, hours, menu).",
-        "Rebuild local search keyword surface and Google posts cadence.",
-        `Tighten ${weakest} as the first weekly focus.`,
+        "Google Business Profile support — categories, photos, hours, menu visibility.",
+        "Rebuild local search keyword surface and Google post freshness.",
+        `Focus the first weekly rhythm around ${topOpportunity}.`,
         "Set review response cadence and trust-signal cleanup.",
       ];
     case "complete_online_presence":
       return [
-        "Run a full Google + social profile cleanup.",
-        "Build the weekly content theme calendar (lunch / dinner / weekend / catering).",
-        "Set up a content intake / upload system so the restaurant can stay involved without managing posting.",
-        `Begin a 30-day plan focused on ${weakest}.`,
+        "Run a full Google + social profile cleanup and weekly activity update.",
+        "Build the weekly content rhythm (lunch / dinner / weekend / catering).",
+        "Set up media review and upload guidance so the restaurant can stay involved without managing posting.",
+        `Begin a 30-day plan focused on ${topOpportunity}.`,
       ];
     case "complete_plus_ads":
       return [
@@ -228,5 +229,26 @@ export function recommendVeroxaPackage(
     reason,
     whyNotAdsYet,
     firstSteps: getRecommendedFirstStepsForPackage(packageId, report),
+    expectedDirection: getExpectedDirectionForPackage(packageId),
   };
+}
+
+/**
+ * Soft expected-direction wording. Never promises walk-ins, revenue,
+ * rankings, reviews, viral posts, or sales. Results vary by location,
+ * offer, food quality, competition, and execution.
+ */
+export function getExpectedDirectionForPackage(
+  packageId: RecommendedPackageId,
+): string {
+  switch (packageId) {
+    case "google_optimization":
+      return "Designed to improve consistency on Google and support better visibility at the search/Maps decision moment. Results vary by location, offer, food quality, competition, and execution.";
+    case "complete_online_presence":
+      return "Designed to improve consistency online and create more customer reminder moments across Google and social, which may improve recall when nearby customers decide where to eat. Results vary by location, offer, food quality, competition, and execution.";
+    case "complete_plus_ads":
+      return "Designed to layer paid reach on top of a more consistent online foundation. Can support better visibility when foundation work is already in place. Results vary by location, offer, food quality, competition, and execution.";
+    case "ads_management_only":
+      return "Designed to focus campaign discipline on an existing strong foundation. Can support better visibility for specific goals. Results vary by location, offer, food quality, competition, and execution.";
+  }
 }

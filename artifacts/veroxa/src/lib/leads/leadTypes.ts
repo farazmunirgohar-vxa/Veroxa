@@ -280,6 +280,23 @@ export interface AuditLeadPublicAuditSnapshot {
   weakSpotTitles: string[];
 }
 
+/**
+ * Optional fixture-backed restaurant candidate snapshot captured when the
+ * user selected a sample restaurant before generating the audit. This is
+ * local/demo-only — no live Google/Maps lookup is connected. Fields are
+ * all optional so audits generated without a candidate selection still
+ * save normally.
+ */
+export interface AuditLeadSelectedRestaurant {
+  selectedRestaurantId?: string;
+  selectedRestaurantName?: string;
+  selectedCity?: string;
+  selectedState?: string;
+  selectedAddress?: string;
+  selectedCuisineType?: string;
+  selectedMatchConfidence?: "high" | "medium" | "low";
+}
+
 /** Optional internal-only manual flags Veroxa team can set on a prospect. */
 export interface AuditLeadInternalFlags {
   warmRelationship?: boolean;
@@ -303,6 +320,7 @@ export interface AuditLeadRecord {
   publicAudit: AuditLeadPublicAuditSnapshot;
   contact?: AuditLeadContact;
   internalFlags?: AuditLeadInternalFlags;
+  selectedRestaurant?: AuditLeadSelectedRestaurant;
 
   // INTERNAL — never expose on public audit page.
   leadStage: LeadStage;

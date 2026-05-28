@@ -105,6 +105,16 @@ export interface AuditPackageRecommendation {
   reason: string;
   whyNotAdsYet: string | null;
   firstSteps: string[];
+  /**
+   * Soft expected-direction statement. Never a guarantee — see allowed
+   * wording in the free-audit refinement spec.
+   */
+  expectedDirection: string;
+}
+
+export interface VeroxaServiceAlignmentEntry {
+  area: string;
+  veroxaService: string;
 }
 
 export interface RestaurantAuditReport {

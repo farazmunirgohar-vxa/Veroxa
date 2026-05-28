@@ -8,6 +8,11 @@ import {
   ArrowRight,
   ShieldCheck,
   PhoneCall,
+  MapPin,
+  Search,
+  Star,
+  X,
+  Target,
 } from "lucide-react";
 import {
   createAuditLeadFromReport,
@@ -15,8 +20,13 @@ import {
 } from "@/lib/leads/localAuditLeadStore";
 import type {
   AuditLeadContact,
+  AuditLeadSelectedRestaurant,
   PreferredContactMethod,
 } from "@/lib/leads/leadTypes";
+import {
+  searchRestaurantCandidates,
+  type RestaurantSearchCandidate,
+} from "@/data/demo/demoRestaurantSearch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -72,6 +82,60 @@ const confidenceTone: Record<AuditConfidence, string> = {
   strong: "border-emerald-500/40 text-emerald-400 bg-emerald-500/5",
 };
 
+const matchConfidenceTone: Record<
+  RestaurantSearchCandidate["matchConfidence"],
+  string
+> = {
+  high: "border-emerald-500/40 text-emerald-400 bg-emerald-500/5",
+  medium: "border-sky-500/40 text-sky-400 bg-sky-500/5",
+  low: "border-amber-500/40 text-amber-400 bg-amber-500/5",
+};
+
+const matchConfidenceLabel: Record<
+  RestaurantSearchCandidate["matchConfidence"],
+  string
+> = {
+  high: "High match confidence",
+  medium: "Medium match confidence",
+  low: "Low match confidence",
+};
+
+/**
+ * "Where Veroxa fits" mapping. Static reference panel; never claims a
+ * guaranteed outcome — see the audit refinement spec.
+ */
+const VEROXA_SERVICE_ALIGNMENT: { area: string; veroxaService: string }[] = [
+  {
+    area: "Online consistency",
+    veroxaService: "Weekly content rhythm",
+  },
+  {
+    area: "Customer reminders",
+    veroxaService:
+      "Scheduled social posts around lunch / dinner / weekend moments",
+  },
+  {
+    area: "Google walk-in readiness",
+    veroxaService: "Google Business Profile support",
+  },
+  {
+    area: "Craving power",
+    veroxaService: "Media review + food-first captions",
+  },
+  {
+    area: "Weekly visit triggers",
+    veroxaService: "Weekly content angle / promotional planning",
+  },
+  {
+    area: "Customer action path",
+    veroxaService: "Menu / order / contact visibility support",
+  },
+  {
+    area: "Accountability",
+    veroxaService: "Weekly updates + monthly strategy report",
+  },
+];
+
 const emptyContact: AuditLeadContact = {
   contactName: "",
   phone: "",
@@ -87,6 +151,75 @@ export default function FreeAudit() {
   const [contact, setContact] = useState<AuditLeadContact>(emptyContact);
   const [walkthroughSaved, setWalkthroughSaved] = useState(false);
   const [walkthroughError, setWalkthroughError] = useState<string | null>(null);
+
+  // Restaurant candidate search (fixture-backed; no network).
+  const [candidateResults, setCandidateResults] = useState<
+    RestaurantSearchCandidate[]
+  >([]);
+  const [selectedCandidate, setSelectedCandidate] =
+    useState<RestaurantSearchCandidate | null>(null);
+  const [candidateSearchRan, setCandidateSearchRan] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+
+  function buildSelectedRestaurantSnapshot():
+    | AuditLeadSelectedRestaurant
+    | undefined {
+    if (!selectedCandidate) return undefined;
+    return {
+      selectedRestaurantId: selectedCandidate.id,
+      selectedRestaurantName: selectedCandidate.restaurantName,
+      selectedCity: selectedCandidate.city,
+      selectedState: selectedCandidate.state,
+      selectedAddress: selectedCandidate.addressLine,
+      selectedCuisineType: selectedCandidate.cuisineType,
+      selectedMatchConfidence: selectedCandidate.matchConfidence,
+    };
+  }
+
+  function handleFindRestaurant(e: FormEvent) {
+    e.preventDefault();
+    setSearchError(null);
+    if (!input.restaurantName.trim()) {
+      setSearchError(
+        "Add a restaurant name first so the demo search can look for sample matches.",
+      );
+      setCandidateResults([]);
+      setCandidateSearchRan(false);
+      return;
+    }
+    const results = searchRestaurantCandidates({
+      restaurantName: input.restaurantName,
+      city: input.city,
+      state: input.state,
+    });
+    setCandidateResults(results);
+    setCandidateSearchRan(true);
+    setSelectedCandidate(null);
+    setReport(null);
+  }
+
+  function handleSelectCandidate(candidate: RestaurantSearchCandidate) {
+    setSelectedCandidate(candidate);
+    setInput((prev) => ({
+      ...prev,
+      restaurantName: candidate.restaurantName,
+      city: candidate.city,
+      state: candidate.state,
+      cuisineType: candidate.cuisineType || prev.cuisineType,
+      googleListingUrl: candidate.googleListingUrl ?? prev.googleListingUrl,
+      websiteUrl: candidate.websiteUrl ?? prev.websiteUrl,
+      instagramUrl: candidate.instagramUrl ?? prev.instagramUrl,
+      facebookUrl: candidate.facebookUrl ?? prev.facebookUrl,
+      menuOrderingUrl: candidate.menuOrderingUrl ?? prev.menuOrderingUrl,
+    }));
+    setReport(null);
+    setWalkthroughSaved(false);
+  }
+
+  function handleClearSelectedCandidate() {
+    setSelectedCandidate(null);
+    setReport(null);
+  }
 
   function handleContactChange<K extends keyof AuditLeadContact>(
     key: K,
@@ -117,6 +250,7 @@ export default function FreeAudit() {
           note: contact.note?.trim() || undefined,
         },
         initialStage: "walkthrough_requested",
+        selectedRestaurant: buildSelectedRestaurantSnapshot(),
       });
       saveAuditLead(lead);
       setWalkthroughSaved(true);
@@ -130,11 +264,22 @@ export default function FreeAudit() {
     value: RestaurantAuditInput[K],
   ) {
     setInput((prev) => ({ ...prev, [key]: value }));
+    // Editing the identity fields invalidates a previously selected
+    // candidate (and the prior report) — the user should re-search or
+    // continue manually.
+    if (
+      (key === "restaurantName" || key === "city" || key === "state") &&
+      selectedCandidate
+    ) {
+      setSelectedCandidate(null);
+      setReport(null);
+    }
   }
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    // M027A — only the 4 required fields gate submission.
+    // The 4 core fields gate audit generation. Cuisine no longer blocks
+    // the initial restaurant search step (handled separately).
     if (
       !input.restaurantName ||
       !input.city ||
@@ -162,6 +307,9 @@ export default function FreeAudit() {
     if (ex) {
       setInput({ ...initialInput, ...ex.input });
       setReport(null);
+      setSelectedCandidate(null);
+      setCandidateResults([]);
+      setCandidateSearchRan(false);
     }
   }
 
@@ -184,10 +332,10 @@ export default function FreeAudit() {
             Get a Free Restaurant Online Presence Audit
           </h1>
           <p className="text-muted-foreground max-w-3xl">
-            Enter your restaurant name, city, cuisine type, and any links you
-            have. Veroxa will generate a preliminary audit showing where
-            customers may be slipping away online and which Veroxa package may
-            help most.
+            Find your restaurant in the demo search, then add cuisine and any
+            links you have. Veroxa will generate a preliminary audit showing
+            your biggest daily customer opportunities online and which Veroxa
+            service area is the best fit.
           </p>
           <p className="text-[12px] text-muted-foreground/80 max-w-3xl mt-2 italic">
             This audit does not scrape or verify live platform data yet. It
@@ -219,8 +367,9 @@ export default function FreeAudit() {
                 What you receive
               </p>
               <p className="text-[12px] text-muted-foreground">
-                A scored readiness report, your biggest weak spots, a simple
-                30-day plan, and the Veroxa package most likely to fit.
+                A readiness report, your top daily customer opportunities, a
+                simple 30-day plan, and the Veroxa service area most likely to
+                fit.
               </p>
             </CardContent>
           </Card>
@@ -256,6 +405,189 @@ export default function FreeAudit() {
             </Button>
           ))}
         </div>
+
+        {/* Find My Restaurant — fixture-backed candidate search */}
+        <Card
+          className="bg-card border-border mb-4"
+          data-testid="restaurant-search-card"
+        >
+          <CardHeader>
+            <CardTitle className="text-base inline-flex items-center gap-2">
+              <Search className="w-4 h-4 text-primary" />
+              Find your restaurant
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-[12px] text-muted-foreground mb-3">
+              Enter your restaurant name (and city/state if you know them) to
+              look for sample matches. This step helps Veroxa anchor the audit
+              to a specific place before scoring online consistency.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+              <Field
+                label="Restaurant name"
+                testId="restaurant-search-name"
+              >
+                <Input
+                  value={input.restaurantName}
+                  onChange={(e) =>
+                    handleChange("restaurantName", e.target.value)
+                  }
+                  placeholder="e.g. El Sol Tacos"
+                />
+              </Field>
+              <Field label="City (optional)" testId="restaurant-search-city">
+                <Input
+                  value={input.city}
+                  onChange={(e) => handleChange("city", e.target.value)}
+                  placeholder="e.g. San Antonio"
+                />
+              </Field>
+              <Field
+                label="State (optional)"
+                testId="restaurant-search-state"
+              >
+                <Input
+                  value={input.state}
+                  onChange={(e) => handleChange("state", e.target.value)}
+                  placeholder="e.g. TX"
+                />
+              </Field>
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-[11px] text-muted-foreground italic inline-flex items-center gap-1">
+                <Info className="w-3 h-3" /> Demo search only — live
+                Google/Maps lookup is not connected yet.
+              </p>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={handleFindRestaurant}
+                data-testid="btn-find-restaurant"
+              >
+                <Search className="w-3.5 h-3.5 mr-1" /> Find my restaurant
+              </Button>
+            </div>
+            {searchError && (
+              <p
+                className="text-[12px] text-amber-400 mt-3"
+                data-testid="restaurant-search-error"
+              >
+                {searchError}
+              </p>
+            )}
+            {selectedCandidate && (
+              <div
+                className="mt-4 rounded-md border border-emerald-500/40 bg-emerald-500/5 p-3"
+                data-testid="restaurant-search-selected"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wider text-emerald-400">
+                      Selected restaurant
+                    </p>
+                    <p className="text-sm font-semibold mt-0.5">
+                      {selectedCandidate.restaurantName}
+                    </p>
+                    <p className="text-[12px] text-muted-foreground inline-flex items-center gap-1 mt-0.5">
+                      <MapPin className="w-3 h-3" />
+                      {selectedCandidate.addressLine} · {selectedCandidate.city},{" "}
+                      {selectedCandidate.state}
+                    </p>
+                    <p className="text-[12px] text-muted-foreground mt-1">
+                      {selectedCandidate.cuisineType}
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={handleClearSelectedCandidate}
+                    data-testid="btn-clear-selected-restaurant"
+                  >
+                    <X className="w-3.5 h-3.5 mr-1" /> Clear
+                  </Button>
+                </div>
+                <p className="text-[11px] text-muted-foreground italic mt-2">
+                  Confirm the cuisine and any links below are accurate, then
+                  generate your audit.
+                </p>
+              </div>
+            )}
+            {candidateSearchRan && !selectedCandidate && (
+              <div className="mt-4 space-y-2">
+                {candidateResults.length === 0 ? (
+                  <div
+                    className="rounded-md border border-border bg-muted/20 p-3"
+                    data-testid="restaurant-search-empty"
+                  >
+                    <p className="text-sm font-semibold">
+                      No sample matches in the demo dataset.
+                    </p>
+                    <p className="text-[12px] text-muted-foreground mt-1">
+                      You can still continue manually — fill in cuisine and any
+                      links below to generate the audit.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                      Sample matches
+                    </p>
+                    <div
+                      className="grid grid-cols-1 md:grid-cols-2 gap-2"
+                      data-testid="restaurant-search-results"
+                    >
+                      {candidateResults.map((c) => (
+                        <button
+                          key={c.id}
+                          type="button"
+                          className="text-left rounded-md border border-border bg-muted/20 hover:bg-muted/40 transition-colors p-3"
+                          onClick={() => handleSelectCandidate(c)}
+                          data-testid={`restaurant-candidate-${c.id}`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="text-sm font-semibold">
+                              {c.restaurantName}
+                            </p>
+                            <Badge
+                              variant="outline"
+                              className={`shrink-0 ${matchConfidenceTone[c.matchConfidence]}`}
+                            >
+                              {matchConfidenceLabel[c.matchConfidence]}
+                            </Badge>
+                          </div>
+                          <p className="text-[12px] text-muted-foreground inline-flex items-center gap-1 mt-1">
+                            <MapPin className="w-3 h-3" />
+                            {c.addressLine} · {c.city}, {c.state}
+                          </p>
+                          <p className="text-[12px] text-muted-foreground mt-0.5">
+                            {c.cuisineType}
+                          </p>
+                          {typeof c.googleRating === "number" && (
+                            <p className="text-[12px] text-muted-foreground inline-flex items-center gap-1 mt-0.5">
+                              <Star className="w-3 h-3 text-amber-400" />
+                              {c.googleRating.toFixed(1)}
+                              {typeof c.reviewCount === "number" && (
+                                <span className="text-muted-foreground/70">
+                                  · {c.reviewCount} reviews
+                                </span>
+                              )}
+                            </p>
+                          )}
+                          <p className="text-[12px] text-muted-foreground/90 mt-1">
+                            {c.note}
+                          </p>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Form */}
         <Card className="bg-card border-border">
@@ -423,20 +755,19 @@ export default function FreeAudit() {
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                      Customer-Flow Readiness
+                      Online Consistency Readiness · Walk-In Opportunity
                     </p>
                     <p
-                      className="text-4xl font-bold tabular-nums"
+                      className="text-2xl md:text-3xl font-bold mt-1"
+                      data-testid="audit-grade-headline"
+                    >
+                      {report.gradeLabel}
+                    </p>
+                    <p
+                      className="text-[11px] text-muted-foreground mt-1 tabular-nums"
                       data-testid="audit-total-score"
                     >
-                      {report.totalScore}
-                      <span className="text-base text-muted-foreground font-normal">
-                        {" "}
-                        / 100
-                      </span>
-                    </p>
-                    <p className="text-sm font-semibold mt-1">
-                      {report.gradeLabel}
+                      Internal score reference: {report.totalScore} / 100
                     </p>
                     <p className="text-[11px] text-muted-foreground mt-0.5">
                       {report.input.restaurantName} ·{" "}
@@ -463,10 +794,11 @@ export default function FreeAudit() {
                 </div>
                 <Separator className="my-4" />
                 <p className="text-sm text-foreground/90">
-                  This score estimates how prepared your online presence is to
-                  help customers find, trust, remember, and choose your
-                  restaurant. It does not guarantee customer growth or judge
-                  food quality.
+                  This readiness view reflects how consistently your online
+                  presence supports nearby customers finding, remembering, and
+                  choosing your restaurant. It does not guarantee customer
+                  growth or judge food quality, and the numeric score is for
+                  internal reference only.
                 </p>
                 <p className="text-sm text-muted-foreground mt-2">
                   {report.gradeDescription}
@@ -554,12 +886,12 @@ export default function FreeAudit() {
               </CardContent>
             </Card>
 
-            {/* Top weak spots */}
+            {/* Top daily customer opportunities */}
             <Card className="bg-card border-border">
               <CardHeader>
                 <CardTitle className="text-base inline-flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-amber-400" /> Top 3
-                  weak spots and why they matter
+                  <Target className="w-4 h-4 text-primary" /> Top 3 daily
+                  customer opportunities
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -574,18 +906,64 @@ export default function FreeAudit() {
                     </p>
                     <p className="text-[12px] text-muted-foreground mt-1">
                       <span className="font-medium text-foreground/90">
-                        Why it matters:
+                        Opportunity:
+                      </span>{" "}
+                      {w.title}
+                    </p>
+                    <p className="text-[12px] text-muted-foreground mt-1">
+                      <span className="font-medium text-foreground/90">
+                        Why this matters for daily walk-ins:
                       </span>{" "}
                       {w.whyItMatters}
                     </p>
                     <p className="text-[12px] text-muted-foreground mt-1">
                       <span className="font-medium text-foreground/90">
-                        How Veroxa helps:
+                        What Veroxa can do:
                       </span>{" "}
                       {w.howVeroxaHelps}
                     </p>
                   </div>
                 ))}
+              </CardContent>
+            </Card>
+
+            {/* Where Veroxa fits — static service alignment panel */}
+            <Card
+              className="bg-card border-border"
+              data-testid="where-veroxa-fits"
+            >
+              <CardHeader>
+                <CardTitle className="text-base inline-flex items-center gap-2">
+                  <Compass className="w-4 h-4 text-primary" /> Where Veroxa
+                  fits
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-[12px] text-muted-foreground mb-3">
+                  Veroxa focuses on the daily online conditions and customer
+                  reminder moments that influence whether nearby diners
+                  remember and choose your restaurant.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {VEROXA_SERVICE_ALIGNMENT.map((row) => (
+                    <div
+                      key={row.area}
+                      className="rounded-md border border-border bg-muted/20 p-3"
+                    >
+                      <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                        {row.area}
+                      </p>
+                      <p className="text-[12px] text-foreground/90 mt-0.5">
+                        {row.veroxaService}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[11px] text-muted-foreground italic mt-3">
+                  Veroxa does not guarantee walk-ins, revenue, rankings,
+                  reviews, viral posts, or sales. Results vary by location,
+                  offer, food quality, competition, and execution.
+                </p>
               </CardContent>
             </Card>
 
@@ -647,6 +1025,15 @@ export default function FreeAudit() {
                 {report.recommendation.whyNotAdsYet && (
                   <p className="text-[12px] text-amber-400/90 mt-2">
                     {report.recommendation.whyNotAdsYet}
+                  </p>
+                )}
+                {report.recommendation.expectedDirection && (
+                  <p
+                    className="text-[12px] text-muted-foreground italic mt-2"
+                    data-testid="audit-expected-direction"
+                  >
+                    Expected direction (not a guarantee):{" "}
+                    {report.recommendation.expectedDirection}
                   </p>
                 )}
                 <Separator className="my-3" />
@@ -793,7 +1180,8 @@ export default function FreeAudit() {
               <CardContent>
                 <p className="text-sm text-foreground/90 mb-3">
                   Veroxa can manually review this audit with you and explain
-                  which package fits your weak spots best.
+                  which service area best fits the priority opportunities
+                  above.
                 </p>
                 {walkthroughSaved ? (
                   <div

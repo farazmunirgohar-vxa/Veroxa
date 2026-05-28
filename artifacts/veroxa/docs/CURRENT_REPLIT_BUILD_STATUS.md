@@ -1,5 +1,47 @@
 # Current Replit Build Status
 
+> **2026-05-28 — Free Audit refinement: fixture-backed find-then-select +
+> opportunity language + Veroxa service alignment**
+>
+> - `/free-audit` now opens with a "Find your restaurant" step backed by a
+>   pure in-memory fixture (`src/data/demo/demoRestaurantSearch.ts`,
+>   exported via `src/data/demoData.ts`). No network, no Google Places API,
+>   no scraping. The UI labels itself "Demo search only — live Google/Maps
+>   lookup is not connected yet." All candidate IDs use the
+>   `sample-prospect-*` prefix to keep them visibly fake and out of the
+>   demo-client namespace.
+> - Cuisine no longer gates the search; selecting a candidate populates
+>   identity + links, and editing the identity fields after a selection
+>   clears the selection and prior report so the user can re-search.
+> - Audit copy softened across the public surface: grade labels are now
+>   Strong Foundation / Needs Consistency / High Opportunity / Needs
+>   Structure / Needs Immediate Structure; category names are Visibility
+>   Consistency, Customer Reminder Rhythm, Google Walk-In Readiness,
+>   Craving Power, Customer Action Path, Trust Signals, and Weekly Visit
+>   Triggers. "Top 3 weak spots" is now "Top 3 daily customer
+>   opportunities" with Opportunity / Why for walk-ins / What Veroxa can
+>   do. Numeric score is demoted to an internal-reference line; the grade
+>   label is the primary headline.
+> - `AuditPackageRecommendation` gained `expectedDirection`, populated by
+>   `getExpectedDirectionForPackage` per pricing tier. Public copy never
+>   promises walk-ins, revenue, rankings, reviews, viral posts, or sales —
+>   each statement ends with "Results vary by location, offer, food
+>   quality, competition, and execution."
+> - New "Where Veroxa fits" panel renders below the opportunities section,
+>   mapping each opportunity area to a Veroxa service (weekly content
+>   rhythm, Google Business Profile support, media review + food-first
+>   captions, etc.).
+> - Lead capture preserves the selected restaurant snapshot:
+>   `AuditLeadSelectedRestaurant` (id/name/city/state/address/cuisine/match
+>   confidence) on `AuditLeadRecord.selectedRestaurant`, wired through
+>   `createAuditLeadFromReport`. Team-facing pages still read
+>   `report.weakSpots` (internal-only field name kept intact).
+> - Dev login lock unchanged for this batch: `faraz` / `faraz` is the
+>   temporary placeholder credential pair. Auth files were not touched —
+>   this entry documents only.
+> - Guardrails unchanged: AUTH=placeholder, DATA=fixture, demo IDs only,
+>   no writes/auth/AI/scraping/publishing/payments/storage.
+
 > **2026-05-28 — Client/team adaptive recs + team dashboard fully on submission repo**
 >
 > - `/demo/client`, `/demo/team`, and `/demo/team/direction-queue` no longer

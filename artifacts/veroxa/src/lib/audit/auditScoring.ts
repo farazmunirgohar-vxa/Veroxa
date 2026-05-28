@@ -184,7 +184,7 @@ export function scoreAuditCategories(
   return [
     make(
       "search_visibility_readiness",
-      "Search Visibility Readiness",
+      "Visibility Consistency",
       searchScore,
       "How prepared your restaurant is to be found by new customers searching online.",
       "Veroxa improves Google search visibility, local keywords, fresh content, and listing completeness.",
@@ -194,7 +194,7 @@ export function scoreAuditCategories(
     ),
     make(
       "google_maps_conversion_readiness",
-      "Google Maps Conversion Readiness",
+      "Google Walk-In Readiness",
       mapsScore,
       "How well your Google presence turns searchers into visitors, calls, and direction clicks.",
       "Veroxa improves CTAs, photos, hours/menu clarity, and the Google posts that influence the decision moment.",
@@ -204,7 +204,7 @@ export function scoreAuditCategories(
     ),
     make(
       "social_reminder_system",
-      "Social Reminder System",
+      "Customer Reminder Rhythm",
       socialScore,
       "How consistently your restaurant stays top-of-mind with hungry customers across social platforms.",
       "Veroxa improves posting consistency, Reels/TikToks, weekly specials, lunch/dinner reminders, and catering reminders.",
@@ -214,7 +214,7 @@ export function scoreAuditCategories(
     ),
     make(
       "content_persuasion_quality",
-      "Content Persuasion Quality",
+      "Craving Power",
       contentScore,
       "How appetizing, trustworthy, and differentiated your content makes your food look.",
       "Veroxa improves content variety, caption quality, photo/Reel guidance, and weekly themes.",
@@ -224,7 +224,7 @@ export function scoreAuditCategories(
     ),
     make(
       "action_path_clarity",
-      "Action Path Clarity",
+      "Customer Action Path",
       actionScore,
       "How easily customers can call, visit, order, reserve, or inquire after they decide.",
       "Veroxa improves CTA clarity, menu/hours/location visibility, Google buttons, and social link organization.",
@@ -234,7 +234,7 @@ export function scoreAuditCategories(
     ),
     make(
       "review_trust_strength",
-      "Review & Trust Strength",
+      "Trust Signals",
       reviewScore,
       "How much your review presence supports confidence in comparison decisions.",
       "Veroxa supports review response cadence, fresh photos, and trust signals tied to recent activity.",
@@ -244,7 +244,7 @@ export function scoreAuditCategories(
     ),
     make(
       "growth_leverage_opportunity",
-      "Growth Leverage Opportunity",
+      "Weekly Visit Triggers",
       leverageScore,
       "How much room Veroxa sees to improve customer-flow conditions through focused work.",
       "Veroxa concentrates first on the weakest customer-flow stage so improvements compound.",
@@ -258,23 +258,25 @@ export function getAuditGrade(totalScore: number): {
   label: string;
   description: string;
 } {
+  // Public labels use opportunity/readiness language. Internal grade ids
+  // are preserved for compatibility with team-facing pages.
   let grade: AuditGrade;
   let label: string;
   if (totalScore >= 85) {
     grade = "strong_foundation";
-    label = "Strong Customer-Flow Foundation";
+    label = "Strong Foundation";
   } else if (totalScore >= 70) {
     grade = "good_missed_consistency";
-    label = "Good Foundation, Missed Consistency";
+    label = "Needs Consistency";
   } else if (totalScore >= 50) {
     grade = "clear_gap";
-    label = "Clear Customer-Flow Gap";
+    label = "High Opportunity";
   } else if (totalScore >= 30) {
     grade = "underbuilt";
-    label = "Underbuilt Online System";
+    label = "Needs Structure";
   } else {
     grade = "foundational_problem";
-    label = "Foundational Visibility Problem";
+    label = "Needs Immediate Structure";
   }
   return { grade, label, description: getScoreMeaningByGrade(grade) };
 }
@@ -313,7 +315,7 @@ export function getAuditConfidence(input: RestaurantAuditInput): {
     level: "basic",
     label: "Basic",
     explanation:
-      "Few links were provided, so this report focuses on likely weak spots from missing information. Adding links would sharpen the audit, but missing links are themselves a signal Veroxa can act on.",
+      "Few links were provided, so this report focuses on likely opportunities suggested by missing information. Adding links would sharpen the audit, but missing links are themselves a signal Veroxa can act on.",
   };
 }
 
@@ -344,31 +346,31 @@ export function getTopWeakSpots(
     ) {
       return {
         categoryId,
-        title: "Google / Maps visibility may be underbuilt",
+        title: "Google walk-in readiness is an open opportunity",
         whyItMatters:
-          "Customers often make restaurant decisions directly on Google Maps. Without a strong Google presence, calls, direction clicks, and trust signals are largely invisible at the decision moment.",
+          "Many nearby customers decide where to eat directly on Google Maps. Without a strong Google presence, calls, direction clicks, and trust signals are not reaching the decision moment.",
         howVeroxaHelps:
-          "Profile cleanup, fresh photos, weekly Google posts, menu/hours clarity, and review response support.",
+          "Google Business Profile support, fresh photos, weekly Google posts, menu/hours clarity, and review response support.",
       };
     }
     if (categoryId === "action_path_clarity" && !hasWebsiteOrMenu) {
       return {
         categoryId,
-        title: "Customer action path may be unclear",
+        title: "Customer action path can be strengthened",
         whyItMatters:
-          "If people cannot quickly find menu, hours, ordering, or directions, they may choose another restaurant.",
+          "If people cannot quickly find menu, hours, ordering, or directions, they may choose another nearby restaurant in the same moment.",
         howVeroxaHelps:
-          "Menu visibility, CTA clarity, Google/social link alignment, and action-path cleanup.",
+          "Menu visibility, CTA clarity, Google/social link alignment, and customer action path cleanup.",
       };
     }
     if (categoryId === "social_reminder_system" && socialCount === 0) {
       return {
         categoryId,
-        title: "Social reminder system may be missing",
+        title: "Customer reminder rhythm is underused",
         whyItMatters:
-          "Customers may forget about the restaurant when they are hungry if they are not seeing consistent reminders.",
+          "Nearby customers may forget about the restaurant when they are hungry if they are not seeing consistent reminders around lunch, dinner, weekends, and specials.",
         howVeroxaHelps:
-          "Weekly content plan, captions, scheduling, short-form content, and staff upload workflow.",
+          "Weekly content rhythm, captions, scheduled posts around lunch/dinner/weekend moments, and an upload workflow restaurant staff can keep up with.",
       };
     }
     return fallback;
@@ -496,7 +498,7 @@ export function getTopOpportunities(
 export function getCustomerFlowExplanation(
   report: RestaurantAuditReport,
 ): string {
-  return `Customer flow is visibility → trust → reminder → action → retention. Based on the information provided for ${report.input.restaurantName}, the largest leakage point is the ${report.weakSpots[0]?.title ?? "decision moment"}. Veroxa improves the daily online conditions and opportunities that influence this flow. ${report.gradeDescription}`;
+  return `Customer flow is visibility → trust → reminder → action → retention. Based on the information provided for ${report.input.restaurantName}, the most visible daily opportunity is the ${report.weakSpots[0]?.title ?? "decision moment"}. Veroxa improves the daily online conditions and customer reminder moments that influence this flow. ${report.gradeDescription}`;
 }
 
 export function generateRestaurantAudit(
@@ -527,6 +529,7 @@ export function generateRestaurantAudit(
       reason: "",
       whyNotAdsYet: null,
       firstSteps: [],
+      expectedDirection: "",
     },
     customerFlowExplanation: "",
     auditConfidence: confidence.level,

@@ -13,6 +13,7 @@ import type {
   AuditLeadInternalFlags,
   AuditLeadLinks,
   AuditLeadRecord,
+  AuditLeadSelectedRestaurant,
   AuditLeadSummary,
   LeadFollowUpStatus,
   LeadSource,
@@ -108,6 +109,7 @@ export interface CreateAuditLeadOptions {
   contact?: AuditLeadContact;
   internalFlags?: AuditLeadInternalFlags;
   initialStage?: LeadStage;
+  selectedRestaurant?: AuditLeadSelectedRestaurant;
 }
 
 export function createAuditLeadFromReport(
@@ -154,6 +156,7 @@ export function createAuditLeadFromReport(
     },
     contact: options.contact,
     internalFlags: options.internalFlags,
+    selectedRestaurant: options.selectedRestaurant,
     leadStage: initialStage,
     leadPriority: internal.priority,
     internalLeadScore: internal.score,

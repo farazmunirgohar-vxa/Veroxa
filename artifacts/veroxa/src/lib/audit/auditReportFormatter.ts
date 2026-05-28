@@ -7,8 +7,8 @@
 import type { RestaurantAuditReport } from "./auditTypes";
 
 export function formatAuditSummary(report: RestaurantAuditReport): string {
-  const { input, totalScore, gradeLabel } = report;
-  return `${input.restaurantName} (${input.cuisineType}, ${input.city}, ${input.state}) — Customer-Flow Readiness ${totalScore}/100 · ${gradeLabel}.`;
+  const { input, gradeLabel } = report;
+  return `${input.restaurantName} (${input.cuisineType}, ${input.city}, ${input.state}) — Online Consistency Readiness: ${gradeLabel}.`;
 }
 
 export function formatOwnerFriendlyDiagnosis(
@@ -16,7 +16,7 @@ export function formatOwnerFriendlyDiagnosis(
 ): string {
   const top = report.weakSpots[0];
   if (!top) return report.gradeDescription;
-  return `Based on the information provided, the largest customer-flow leak is ${top.title}. ${top.howVeroxaHelps}`;
+  return `Based on the information provided, the biggest daily customer opportunity is ${top.title}. ${top.howVeroxaHelps}`;
 }
 
 export function formatCustomerFlowExplanation(

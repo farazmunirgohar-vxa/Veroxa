@@ -109,16 +109,17 @@ export function getCategoryCustomerFlowImpact(
 }
 
 export function getScoreMeaningByGrade(grade: AuditGrade): string {
+  // Public framing: opportunity / consistency / readiness — never harsh.
   switch (grade) {
     case "strong_foundation":
-      return "Your online presence is well prepared to help customers find, trust, remember, and choose your restaurant. Most weak spots are about consistency rather than missing fundamentals.";
+      return "Your online presence is well prepared to help nearby customers find, trust, remember, and choose your restaurant. Most remaining opportunities are about consistency rather than missing fundamentals.";
     case "good_missed_consistency":
-      return "Your foundation is in place, but consistency gaps may be quietly reducing daily customer-flow opportunities.";
+      return "Your foundation is in place. The biggest opportunity is more consistent reminders so nearby customers think of you when they are deciding where to eat.";
     case "clear_gap":
-      return "There are clear gaps in how prepared your online presence is to convert searchers, remind regulars, and guide action. A focused system would likely change daily customer-flow conditions.";
+      return "There is a high opportunity in how visibly your restaurant shows up online when nearby customers are deciding. A focused weekly system would likely improve daily walk-in conditions.";
     case "underbuilt":
-      return "Several core pieces of an online customer-flow system are missing or weak. Fixing the foundation comes before pushing reach or ads.";
+      return "Some core pieces of an online customer reminder system can be strengthened. Strengthening the foundation comes before pushing reach or ads.";
     case "foundational_problem":
-      return "The basic online foundation customers rely on to find, trust, and choose a restaurant is not yet in place. This is the most impactful place to start.";
+      return "The online presence customers rely on to find, trust, and remember a restaurant is not fully in place yet. This is the most impactful place to start.";
   }
 }

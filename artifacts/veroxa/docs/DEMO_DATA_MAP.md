@@ -26,6 +26,7 @@ imports from `demoData.ts` continue to work without change.
 | `demoOwner.ts` | `owner_alerts`, `rbac_permissions`, `automation_configs`, `internal_notes` | `demoOwnerCommandItems`, `demoPermissionsMatrix`, `demoAutomationRoadmap`, `demoSystemMap`, `demoOwnerBriefing`, `demoInternalNotes`, `BizSeverity` |
 | `demoSystemStatus.ts` | `system_config` / status reference | `demoControlPresets`, `demoSystemStatus`, `SystemStatusState` |
 | `demoClientTeamWork.ts` | `client_team_submissions`, `client_team_messages`, `client_action_items`, `client_team_status_events` | `demoClientTeamSubmissions`, `demoClientTeamMessages`, `demoClientActionItems`, `demoClientTeamStatusEvents`, `ClientTeamSubmission`, `ClientTeamMessage`, `ClientActionItem`, `ClientTeamStatusEvent`, helpers (`getClientTeamSubmissions`, `getSubmissionsForClient`, `getOpenClientActions`, `getTeamInboxSubmissions`, `getBlockedSubmissions`, `getClientTeamMessages`, `getSubmissionMessages`, `getClientTeamWorkSummary`, `getStatusEventsForSubmission`, `getClientVisibleStatusEvents`, `getTeamStatusEvents`, `getLatestStatusEventForSubmission`) |
+| `demoRestaurantSearch.ts` | (none — public `/free-audit` fixture only; not a future table) | `RestaurantSearchCandidate`, `demoRestaurantSearchCandidates`, `searchRestaurantCandidates`, `getRestaurantCandidateById` |
 
 ## Cross-file imports
 
