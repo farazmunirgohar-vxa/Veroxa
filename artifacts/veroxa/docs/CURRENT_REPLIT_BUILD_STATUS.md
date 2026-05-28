@@ -65,7 +65,7 @@ internal preview access code is `veroxa-preview`.
 - `team-content-review` — content review queue.
 - `team-report-queue` — weekly report drafting + validation.
 - `operator-client-health` — per-client health (rendered via
-  `ClientHealthCenter`).
+  `ClientHealthCenter`, now repository-backed).
 - `operator-priority-board` — priority + risk view.
 - `operator-report-approvals` — operator-side report approval.
 
@@ -86,7 +86,14 @@ Files added in this phase:
   `MonthlyReportSummary`, `ActivityEvent` plus enums for role,
   lifecycle, content health, risk, workflow stage, report status).
 - `src/lib/data/veroxaDataSource.ts` — `DataSourceMode = "demo" |
-  "supabase_readonly"`. Default `"demo"`.
+  "supabase_readonly"`. The resolved value comes from
+  `VITE_VEROXA_DATA_SOURCE_MODE`; missing or invalid values fall back
+  to the safe default `"demo"`. The Replit preview leaves the env var
+  unset and therefore resolves to `"demo"`. Real backend behavior
+  (auth, writes, AI, publishing, payments) is **not** activated by
+  flipping this switch — the supabase_readonly mode only permits safe
+  SELECT paths through existing read-only adapters with fixture
+  fallback.
 - `src/lib/supabase/supabaseReadOnlyClient.ts` — safe wrapper around
   the existing Supabase client. Returns an `{ available: false }`
   state if env vars are missing. Never writes.
@@ -119,6 +126,18 @@ write surface.
 - Real publishing integrations (Instagram / Facebook / Google).
 - Real payment integrations (Stripe etc.).
 - Service-role keys (anywhere in the frontend).
+
+## Recent updates (2026-05-28)
+
+- `ClientHealthCenter` shared-widget drift resolved. The component now
+  reads through `healthRepository` (canonical `healthy | caution |
+  urgent | broken` vocabulary) instead of `demoClientHealth` directly.
+  Both `owner-client-health` and `operator-client-health` are remediated
+  via the shared widget; their `TODO(client-health-drift)` blocks are
+  removed. See `docs/CLIENT_HEALTH_SURFACE_MAP.md` §6.
+- `VEROXA_DATA_SOURCE_MODE` is now env-resolved from
+  `VITE_VEROXA_DATA_SOURCE_MODE`. Default remains `"demo"`. No real
+  backend behavior is enabled.
 
 ## Next backend-readiness direction
 

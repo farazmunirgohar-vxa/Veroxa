@@ -42,7 +42,7 @@ Columns:
 
 | Page | Health element rendered | Source dataset used | Engine-aligned? |
 | --- | --- | --- | --- |
-| `pages/owner-client-health.tsx` | Portfolio health center (per-client cards + summary) | `components/ClientHealthCenter.tsx` → `demoClientHealth` (level/score/signals) | no (uses fixture directly, not engine) |
+| `pages/owner-client-health.tsx` | Portfolio health center (per-client cards + summary) | `components/ClientHealthCenter.tsx` → `healthRepository.getAllClientHealthSnapshots()` + `getHealthSummary()` (canonical `healthy / caution / urgent / broken`) | partial (consumes repository layer with canonical vocabulary; not yet wired through `ClientHealthEngine`) |
 | `pages/owner-executive-dashboard.tsx` | "Client health avg" tile, "Client health" distribution bars | `demoOwnerMetrics.clientHealthAverage`, `demoClientHealthDistribution` | no (hard-coded aggregates) |
 | `pages/owner-daily-briefing.tsx` | "Health" pill, "Risks 2 / 1" pill | `demoOwnerMetrics.clientHealthAverage`, hard-coded `"2 / 1"` string | no |
 | `pages/owner-client-analytics.tsx` | "Health status" stat, "Health score" card with progress bar (hard-coded 95/82/60/32 mapping by status) | `demoClientPriorities.healthStatus` | no (separate vocabulary + hard-coded score mapping) |
@@ -53,7 +53,7 @@ Columns:
 
 | Page | Health element rendered | Source dataset used | Engine-aligned? |
 | --- | --- | --- | --- |
-| `pages/operator-client-health.tsx` | Per-client health center (same widget as owner) | `components/ClientHealthCenter.tsx` → `demoClientHealth` | no (same drift as owner-client-health) |
+| `pages/operator-client-health.tsx` | Per-client health center (same widget as owner) | `components/ClientHealthCenter.tsx` → `healthRepository` (canonical `healthy / caution / urgent / broken`) | partial (same remediation as owner-client-health; not yet wired through `ClientHealthEngine`) |
 | `pages/operator-priority-board.tsx` | Priority cards w/ health status icon + label per client; portfolio sort | `demoClientPriorities` (separate fixture; vocabulary `Excellent / Healthy / Warning / Critical`) | no (independent fixture, different vocabulary) |
 
 ### Team shell
@@ -81,7 +81,7 @@ Columns:
 
 | Component | Where it renders | Source dataset used | Engine-aligned? |
 | --- | --- | --- | --- |
-| `components/ClientHealthCenter.tsx` | owner-client-health, operator-client-health | `demoClientHealth` (`healthy / attention / critical`) | no — primary driver of cross-shell drift |
+| `components/ClientHealthCenter.tsx` | owner-client-health, operator-client-health | `healthRepository.getAllClientHealthSnapshots()` + `getHealthSummary()` — canonical `healthy / caution / urgent / broken` | partial — shared-widget drift resolved 2026-05-28; widget no longer reads `demoClientHealth` directly |
 | `components/clientHealth/CommandCard.tsx` | client-health-command | engine types only (`CHCClientProfile`, `CHCHealthCategory`) | yes |
 
 ---
@@ -96,12 +96,15 @@ The app currently uses **three** distinct health vocabularies in parallel:
    `owner-executive-dashboard`, `operator-priority-board`,
    `owner-client-analytics`.
 3. **`demoClientHealth.level`** — `healthy | attention | critical`.
-   Used by `ClientHealthCenter`, therefore by
-   `owner-client-health` and `operator-client-health`.
+   Still present in the raw `demoClientHealth` fixture, but no longer
+   surfaced through `ClientHealthCenter`. The widget now consumes
+   `healthRepository`, which translates the fixture into the canonical
+   `healthy | caution | urgent | broken` vocabulary (resolved 2026-05-28).
 
-These three vocabularies are not mapped to each other in code. This is the
-primary structural drift and the reason a numeric "client health avg"
-shown in one page is not derivable from any other page.
+The remaining drift is between vocabularies (1) and (2): a numeric
+"client health avg" shown in one page is still not derivable from any
+other page until `demoClientPriorities` and the executive aggregates are
+normalized.
 
 ---
 
@@ -177,3 +180,36 @@ against this map:
 section is documentation only. No surface was edited, no
 component was edited, no fixture was edited. The hard invariants
 in the top-of-file BUILD_STATUS current-state section still apply.
+
+---
+
+## 6. Shared-widget drift remediation (2026-05-28)
+
+**Resolved:** the `ClientHealthCenter` shared-widget drift.
+
+- `components/ClientHealthCenter.tsx` no longer imports
+  `demoClientHealth` or any value from `@/data/demoData`.
+- The widget now consumes `healthRepository.getAllClientHealthSnapshots()`
+  and `healthRepository.getHealthSummary()`.
+- Display vocabulary is the canonical `healthy | caution | urgent | broken`
+  (no more `attention` / `critical` labels in the widget).
+- Both `pages/owner-client-health.tsx` and `pages/operator-client-health.tsx`
+  are remediated via this shared widget — no callsite changes were
+  required, and the `TODO(client-health-drift)` blocks at the top of
+  each page have been removed.
+- The legacy `demoClientHealth` fixture is still read **once**, inside
+  `healthRepository.ts`, where it is translated into the canonical
+  vocabulary. The raw fixture is no longer surfaced anywhere in the UI.
+
+**Not resolved in this pass** (still drift):
+
+- `owner-executive-dashboard.tsx` and `owner-client-analytics.tsx`
+  continue to use the `Excellent | Healthy | Warning | Critical`
+  vocabulary via `demoClientPriorities` / `demoClientHealthDistribution`.
+- `operator-priority-board.tsx` continues to use `demoClientPriorities`
+  with its independent vocabulary.
+- Neither owner nor operator client-health pages are wired through
+  `ClientHealthEngine` yet — they consume `healthRepository`, which
+  is fixture-backed and not engine-driven.
+
+These remain captured in §2 and §3 above for the next remediation pass.

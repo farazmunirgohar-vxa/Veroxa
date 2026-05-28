@@ -5,8 +5,8 @@
  * Default: "demo" (uses bundled fixture data, no network).
  *
  * "supabase_readonly" means the read-only Supabase adapter scaffold
- * is allowed to attempt safe SELECT queries. Even in this mode the
- * adapter MUST:
+ * is allowed to attempt safe SELECT queries through existing read-only
+ * adapters. Even in this mode the adapter MUST:
  *   - never call insert / update / delete / upsert / upload
  *   - never use a service-role key
  *   - fall back to demo data on any failure (RLS, missing env, error)
@@ -16,21 +16,28 @@
  * read-only operations foundation can evolve independently of the
  * legacy client-portal queries.
  *
- * For now the default mode is hard-coded to "demo". A future build
- * can wire this to an env flag — until then everything reads fixtures.
+ * The resolved mode is read from `VITE_VEROXA_DATA_SOURCE_MODE`.
+ * Missing or invalid values resolve to "demo" — the safe default.
  */
 
 import { DATA_MODE } from "./dataMode";
 
 export type DataSourceMode = "demo" | "supabase_readonly";
 
-/**
- * Hard-coded default. Do NOT change to "supabase_readonly" without
- * also auditing every repository call path for safe fallback.
- */
 const DEFAULT_DATA_SOURCE_MODE: DataSourceMode = "demo";
 
-export const VEROXA_DATA_SOURCE_MODE: DataSourceMode = DEFAULT_DATA_SOURCE_MODE;
+/**
+ * Parse an arbitrary env string into a valid `DataSourceMode`.
+ * Unknown / missing values resolve to the safe default ("demo").
+ */
+export function resolveDataSourceMode(value: string | undefined): DataSourceMode {
+  if (value === "demo" || value === "supabase_readonly") return value;
+  return DEFAULT_DATA_SOURCE_MODE;
+}
+
+export const VEROXA_DATA_SOURCE_MODE: DataSourceMode = resolveDataSourceMode(
+  import.meta.env.VITE_VEROXA_DATA_SOURCE_MODE as string | undefined,
+);
 
 export function isDemoMode(): boolean {
   return VEROXA_DATA_SOURCE_MODE === "demo";
