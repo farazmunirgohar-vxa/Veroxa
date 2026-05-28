@@ -1,5 +1,8 @@
-// demoRequests.ts — future: client_requests table
-// Covers active requests sent to clients (upload requests, confirmations, approvals).
+// demoRequests.ts — DEPRECATED: client-facing requests are now
+// sourced from `clientTeamWork` fixtures (`demoClientTeamWork.ts`) via
+// `clientTeamWorkRepository`. Keep this file only for data-map
+// completeness and the `DemoClientRequest` type until the last page
+// reference is removed. No new requests should be added here.
 
 export type RequestStatus   = "Pending" | "In Progress" | "Completed";
 export type RequestPriority = "High" | "Normal" | "Low";

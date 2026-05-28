@@ -5,6 +5,12 @@
  * to describe the operational state of work moving between client
  * uploads and scheduled posts.
  *
+ * DEPRECATED: The client-facing workflow display is now owned by the
+ * `clientTeamWork` fixtures (`demoClientTeamWork.ts`) and the
+ * `clientTeamWorkRepository`. Keep this file for internal production
+ * pipeline staging (draft → scheduled → published) only. Do not add
+ * new client-facing "action needed" or "request" items here.
+ *
  * Demo only. All entries reference fictional demo IDs (demo-a … demo-d).
  * No real client/customer data. No writes. No database persistence.
  */
