@@ -1,5 +1,32 @@
 # Current Replit Build Status
 
+> **2026-05-28 — Live restaurant discovery: all-strategy run + corroboration ranking (Free Audit)**
+>
+> - Live restaurant discovery now runs all search strategies before
+>   returning results. No early exit on first weak strategy; raw candidates
+>   are collected from every strategy, then merged and deduped by `placeId`.
+> - Strategy list aligned: `broad_name_city_state`,
+>   `name_restaurant_city_state`, `name_food_city_state`,
+>   `name_near_city_state`, `name_only_location_biased` (when bias
+>   available), `name_only`, `name_cafe_city_state`,
+>   `name_place_city_state`, `name_business_city_state`. Places Autocomplete
+>   (New) still runs as the first discovery pass.
+> - Dedupe now tracks `foundByStrategies[]` per placeId — the set of
+>   strategies that surfaced the same place. Added as a tie-breaker in
+>   ranking so corroborated places (e.g. surfaced by both Autocomplete and
+>   a Text Search) rank above one-hit candidates with equal name/city/
+>   state/food/rating scores.
+> - San Antonio/TX location bias remains in place via `getCityBias()`
+>   helper. Framework is extensible — Austin, Houston, Dallas, LA, Chicago,
+>   NYC, Miami pre-seeded.
+> - UI diagnostics now show three counts: `Strategies tried: X · Candidates
+>   checked: Y · Displayed: Z`. No API key or raw Google error bodies.
+> - Lower-confidence candidates remain visible: "Likely live match" /
+>   "Possible live match" / "Low-confidence live match" badges.
+> - Cuisine remains not required. No scraping, no API key exposure, no
+>   Supabase writes. Owner/Operator portals remain parked. Manual continue
+>   still works.
+
 > **2026-05-28 — Live restaurant discovery: broader fallback strategies + safe diagnostics (Free Audit)**
 >
 > - Live restaurant discovery now shows plausible lower-confidence matches.

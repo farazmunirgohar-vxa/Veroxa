@@ -21,6 +21,8 @@ export interface LiveRestaurantCandidate {
   userRatingCount?: number;
   source: "google_places";
   matchConfidence: "high" | "medium" | "low";
+  /** All strategies that surfaced this place (non-sensitive). */
+  foundByStrategies?: string[];
 }
 
 export interface LiveSearchResponse {

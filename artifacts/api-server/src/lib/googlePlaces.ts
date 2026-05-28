@@ -15,6 +15,8 @@ export interface LiveRestaurantCandidate {
   matchConfidence: "high" | "medium" | "low";
   /** Non-sensitive: which discovery strategy surfaced this candidate. */
   discoveredBy?: string;
+  /** All strategies that surfaced this place (after dedup). */
+  foundByStrategies?: string[];
 }
 
 export interface LiveRestaurantSearchResult {
@@ -313,7 +315,12 @@ function rankCandidates(
       typeof b.rating === "number" && typeof b.userRatingCount === "number"
         ? 0
         : 1;
-    return aHasRating - bHasRating;
+    if (aHasRating !== bHasRating) return aHasRating - bHasRating;
+
+    // Tie-breaker: places surfaced by more strategies rank higher (corroboration)
+    const aFoundCount = a.foundByStrategies?.length ?? 0;
+    const bFoundCount = b.foundByStrategies?.length ?? 0;
+    return bFoundCount - aFoundCount;
   });
 }
 
@@ -492,7 +499,13 @@ function dedupeAndMerge(
   secondary: LiveRestaurantCandidate[],
 ): LiveRestaurantCandidate[] {
   const seen = new Map<string, LiveRestaurantCandidate>();
+  const strategies = new Map<string, Set<string>>();
   for (const c of [...primary, ...secondary]) {
+    // Track every strategy that surfaced this placeId
+    if (c.discoveredBy) {
+      if (!strategies.has(c.placeId)) strategies.set(c.placeId, new Set());
+      strategies.get(c.placeId)!.add(c.discoveredBy);
+    }
     const existing = seen.get(c.placeId);
     if (!existing) {
       seen.set(c.placeId, c);
@@ -511,7 +524,11 @@ function dedupeAndMerge(
       if (cScore > existingScore) seen.set(c.placeId, c);
     }
   }
-  return Array.from(seen.values());
+  // Attach foundByStrategies to each merged candidate
+  return Array.from(seen.values()).map((c) => ({
+    ...c,
+    foundByStrategies: Array.from(strategies.get(c.placeId) ?? []),
+  }));
 }
 
 // ---------------------------------------------------------------------------
@@ -595,28 +612,35 @@ export async function searchRealRestaurants(input: {
           label: "name_near_city_state",
         },
         // name only + location bias (helps when query noise hurts matching)
-        {
-          query: name,
-          label: "name_location_biased",
-          extra: bias ? biasBody : {},
-        },
-        // Without city/state — city suffix can confuse Google for short/ambiguous names
-        { query: `${name} restaurant`, label: "name_restaurant_only", extra: biasBody },
-        { query: `${name} cafe`, label: "name_cafe_only", extra: biasBody },
-        // Explicit two-letter state abbreviation e.g. "Selda San Antonio TX"
-        ...(city && state.length === 2
+        ...(bias
           ? [
               {
-                query: `${name} ${city} ${state.toUpperCase()}`,
-                label: "name_city_state_abbr",
+                query: name,
+                label: "name_only_location_biased",
                 extra: biasBody,
               },
             ]
           : []),
-        // Full state name only e.g. "Selda Texas"
-        ...(state
-          ? [{ query: `${name} ${state}`, label: "name_state_only", extra: biasBody }]
-          : []),
+        // Plain name — no bias, no extra terms (catches places far from city center)
+        { query: name, label: "name_only", extra: {} },
+        // Cafe variant with city/state
+        {
+          query: [name, "cafe", locationSuffix].filter(Boolean).join(" "),
+          label: "name_cafe_city_state",
+          extra: biasBody,
+        },
+        // Generic "place" suffix with city/state (catches non-food classifications)
+        {
+          query: [name, "place", locationSuffix].filter(Boolean).join(" "),
+          label: "name_place_city_state",
+          extra: biasBody,
+        },
+        // Generic "business" suffix with city/state
+        {
+          query: [name, "business", locationSuffix].filter(Boolean).join(" "),
+          label: "name_business_city_state",
+          extra: biasBody,
+        },
       ];
 
     for (const strategy of textStrategies) {

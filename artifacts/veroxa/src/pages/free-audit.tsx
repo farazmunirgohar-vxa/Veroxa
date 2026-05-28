@@ -697,14 +697,19 @@ export default function FreeAudit() {
                       ? "We broadened the search to find more possible matches. Please select the correct restaurant."
                       : "Live Google lookup found possible matches. Please select the correct restaurant."}
                 </p>
-                {(strategiesTried || liveTotalRaw !== undefined) && (
+                {(strategiesTried ||
+                  liveTotalRaw !== undefined ||
+                  liveTotalDisplayed !== undefined) && (
                   <p className="text-[11px] text-muted-foreground/50">
                     {[
                       strategiesTried
-                        ? `Search strategies tried: ${strategiesTried.length}`
+                        ? `Strategies tried: ${strategiesTried.length}`
                         : null,
                       liveTotalRaw !== undefined
                         ? `Candidates checked: ${liveTotalRaw}`
+                        : null,
+                      liveTotalDisplayed !== undefined
+                        ? `Displayed: ${liveTotalDisplayed}`
                         : null,
                     ]
                       .filter(Boolean)
