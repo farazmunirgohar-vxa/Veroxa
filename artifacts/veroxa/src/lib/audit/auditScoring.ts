@@ -12,10 +12,7 @@
  *   "A full Veroxa audit would manually review…"
  */
 
-import {
-  getCategoryCustomerFlowImpact,
-  getScoreMeaningByGrade,
-} from "./customerFlowImpact";
+import { getCategoryCustomerFlowImpact } from "./customerFlowImpact";
 import type {
   AuditCategoryId,
   AuditCategoryScore,
@@ -101,64 +98,90 @@ export function scoreAuditCategories(
   const goalLower = lower(input.currentGoal);
   const strongCuisine = strongCuisineMatch(input);
 
+  // Live scan signals — available when restaurant selected via Google Places.
+  // All optional; fixture/manual mode works unchanged.
+  const isLive = input.restaurantSource === "google_places";
+  const googleConfirmedLive = isLive && has(input.selectedPlaceId);
+  const googleConfirmed = hasGoogle || googleConfirmedLive;
+  const liveWebsiteFound = input.websiteFound === true;
+  const liveMenuFound = input.menuLinkFound === true;
+  const liveOrderFound = input.orderLinkFound === true;
+  const liveContactFound = input.contactPathFound === true;
+  const discoveredSocialLinks = input.discoveredSocialLinks ?? [];
+  const hasLiveSocialSignals = discoveredSocialLinks.length > 0;
+
+  // Effective signals: user-provided OR confirmed from live scan.
+  // Missing signals are not credited; confirmed signals always score.
+  const effectiveWebsite = hasWebsite || liveWebsiteFound;
+  const effectiveMenu = hasMenu || liveMenuFound || liveOrderFound;
+  const liveSocialCount = hasLiveSocialSignals
+    ? Math.min(discoveredSocialLinks.length, 3)
+    : 0;
+  const effectiveSocialCount = Math.max(socialCount, liveSocialCount);
+  const hasVisualSocial = hasIG || hasTT || hasLiveSocialSignals;
+
   // 1. Search Visibility Readiness (20)
-  let searchScore = 12;
-  if (hasGoogle) searchScore += 6;
-  else searchScore -= 6;
-  if (hasWebsite) searchScore += 2;
-  else searchScore -= 1;
-  if (hasMenu) searchScore += 1;
-  if (!hasGoogle && !hasWebsite) searchScore -= 2;
+  // Google presence is important but not enough alone. Website adds meaningful credit.
+  let searchScore = 9;
+  if (googleConfirmed) searchScore += 7;
+  if (effectiveWebsite) searchScore += 3;
+  if (effectiveMenu) searchScore += 1;
+  if (!googleConfirmed && !effectiveWebsite) searchScore -= 2;
   searchScore = clamp(searchScore, 2, 20);
 
   // 2. Google Maps Conversion Readiness (20)
-  let mapsScore = 11;
-  if (hasGoogle) mapsScore += 6;
-  else mapsScore -= 6;
-  if (hasWebsite) mapsScore += 2;
-  if (hasMenu) mapsScore += 2;
+  // Google required for Maps; website and menu/order path strengthen it.
+  let mapsScore = 8;
+  if (googleConfirmed) mapsScore += 7;
+  if (effectiveWebsite) mapsScore += 3;
+  if (effectiveMenu) mapsScore += 2;
+  if (!googleConfirmed && !effectiveWebsite) mapsScore -= 3;
   mapsScore = clamp(mapsScore, 2, 20);
 
   // 3. Social Reminder System (15)
-  let socialScore = 4 + socialCount * 3; // 4..13
-  if (socialCount === 0) socialScore = 2;
-  if (goalLower.includes("social") || goalLower.includes("consistency"))
+  // Each confirmed channel contributes; zero channels is a real gap.
+  let socialScore = 2 + effectiveSocialCount * 4;
+  if (goalLower.includes("social") || goalLower.includes("consistency")) {
     socialScore = Math.max(socialScore - 1, 2);
+  }
   socialScore = clamp(socialScore, 2, 15);
 
   // 4. Content Persuasion Quality (15)
-  let contentScore = 6;
+  // Visual social presence and distinctive cuisine both drive content persuasion.
+  let contentScore = 4;
   if (strongCuisine) contentScore += 3;
-  if (hasIG || hasTT) contentScore += 3;
-  if (!hasIG && !hasTT) contentScore -= 2;
+  if (hasVisualSocial) contentScore += 3;
+  else contentScore -= 2;
   if (hasFB) contentScore += 1;
   contentScore = clamp(contentScore, 2, 14);
 
   // 5. Action Path Clarity (15)
-  let actionScore = 5;
-  if (hasWebsite) actionScore += 3;
-  if (hasMenu) actionScore += 3;
-  if (hasGoogle) actionScore += 2;
-  if (!hasWebsite && !hasMenu && !hasGoogle) actionScore -= 3;
+  // Website, menu/order, and Google all contribute; missing all is a significant gap.
+  let actionScore = 3;
+  if (effectiveWebsite) actionScore += 4;
+  if (effectiveMenu) actionScore += 3;
+  if (googleConfirmed) actionScore += 2;
+  if (liveContactFound) actionScore += 1;
+  if (!effectiveWebsite && !effectiveMenu && !googleConfirmed) actionScore -= 3;
   if (goalLower.match(/order|reserv|call|inquir|catering/)) actionScore += 1;
   actionScore = clamp(actionScore, 2, 14);
 
   // 6. Review & Trust Strength (10)
-  let reviewScore = 4;
-  if (hasGoogle) reviewScore += 3;
+  let reviewScore = 3;
+  if (googleConfirmed) reviewScore += 3;
   if (goalLower.includes("review")) reviewScore += 1;
   if (strongCuisine) reviewScore += 1;
   if (hasOther) reviewScore += 1;
   reviewScore = clamp(reviewScore, 1, 9);
 
   // 7. Growth Leverage Opportunity (5)
-  // Higher when there's clearly room to grow (weak inputs).
+  // Higher when there is more confirmed room to grow with focused work.
   const weakInputCount =
-    (hasGoogle ? 0 : 1) +
-    (hasWebsite || hasMenu ? 0 : 1) +
-    (socialCount === 0 ? 1 : 0) +
+    (googleConfirmed ? 0 : 1) +
+    (effectiveWebsite || effectiveMenu ? 0 : 1) +
+    (effectiveSocialCount === 0 ? 1 : 0) +
     (strongCuisine ? 0 : 1);
-  let leverageScore = 2 + weakInputCount; // 2..6
+  let leverageScore = 2 + weakInputCount;
   leverageScore = clamp(leverageScore, 1, 5);
 
   const make = (
@@ -189,9 +212,9 @@ export function scoreAuditCategories(
       searchScore,
       "How prepared your restaurant is to be found by new customers searching online.",
       "Veroxa improves Google search visibility, local keywords, fresh content, and listing completeness.",
-      hasGoogle
-        ? "Preliminary signal: a Google listing was provided. A full Veroxa audit would manually review keyword presence, category accuracy, photos, and post freshness."
-        : "Preliminary signal: no Google listing was provided. Restaurants without an active Google Business Profile are typically harder to discover in local search.",
+      googleConfirmed
+        ? "Preliminary signal: a Google listing was confirmed. A full Veroxa audit would manually review keyword presence, category accuracy, photos, and post freshness."
+        : "Preliminary signal: no Google listing was confirmed. Restaurants without an active Google Business Profile can be harder to discover in local search.",
     ),
     make(
       "google_maps_conversion_readiness",
@@ -199,9 +222,9 @@ export function scoreAuditCategories(
       mapsScore,
       "How well your Google presence turns searchers into visitors, calls, and direction clicks.",
       "Veroxa improves CTAs, photos, hours/menu clarity, and the Google posts that influence the decision moment.",
-      hasGoogle
+      googleConfirmed
         ? "Based on the information provided, your Maps presence is the most common decision point — sharper photos, hours, and CTAs would likely raise conversion."
-        : "Without a Google listing link, Maps-driven calls and direction clicks are likely a major missed customer-flow opportunity.",
+        : "Without a confirmed Google listing, Maps-driven calls and direction clicks may be a significant missed customer-flow opportunity.",
     ),
     make(
       "social_reminder_system",
@@ -209,9 +232,9 @@ export function scoreAuditCategories(
       socialScore,
       "How consistently your restaurant stays top-of-mind with hungry customers across social platforms.",
       "Veroxa improves posting consistency, Reels/TikToks, weekly specials, lunch/dinner reminders, and catering reminders.",
-      socialCount === 0
-        ? "Preliminary signal: no social channels provided. Reminder-driven flow (lunch, dinner, weekend, catering) is likely underused."
-        : `Based on the information provided, ${socialCount} social channel${socialCount === 1 ? "" : "s"} provided. Consistency and weekly themes are typically the bigger lever than channel count.`,
+      effectiveSocialCount === 0
+        ? "Preliminary signal: no social channels confirmed. Reminder-driven flow (lunch, dinner, weekend, catering) may be underused."
+        : `Based on the information provided, ${effectiveSocialCount} social channel${effectiveSocialCount === 1 ? "" : "s"} confirmed. Consistency and weekly themes are typically the bigger lever than channel count.`,
     ),
     make(
       "content_persuasion_quality",
@@ -229,9 +252,9 @@ export function scoreAuditCategories(
       actionScore,
       "How easily customers can call, visit, order, reserve, or inquire after they decide.",
       "Veroxa improves CTA clarity, menu/hours/location visibility, Google buttons, and social link organization.",
-      hasWebsite || hasMenu
+      effectiveWebsite || effectiveMenu
         ? "Based on the information provided, an action path (website or menu/ordering link) is in place — clarifying menu, hours, and CTAs would likely tighten conversion."
-        : "Preliminary signal: no website or menu/ordering link provided. Customers who want to order, reserve, or check the menu may drop off at the decision moment.",
+        : "Preliminary signal: no website or menu/ordering link confirmed. Customers who want to order, reserve, or check the menu may not be able to act easily.",
     ),
     make(
       "review_trust_strength",
@@ -239,9 +262,9 @@ export function scoreAuditCategories(
       reviewScore,
       "How much your review presence supports confidence in comparison decisions.",
       "Veroxa supports review response cadence, fresh photos, and trust signals tied to recent activity.",
-      hasGoogle
+      googleConfirmed
         ? "A full Veroxa audit would manually review review volume, recency, response rate, and tone."
-        : "Without a Google listing, trust signals through reviews are not visible at the decision moment.",
+        : "Without a confirmed Google listing, trust signals through reviews are not clearly visible at the decision moment.",
     ),
     make(
       "growth_leverage_opportunity",
@@ -249,7 +272,7 @@ export function scoreAuditCategories(
       leverageScore,
       "How much room Veroxa sees to improve customer-flow conditions through focused work.",
       "Veroxa identifies the biggest daily opportunity and focuses early work where the most consistent improvement can happen.",
-      `Based on the information provided, ${leverageScore >= 4 ? "a single focused 30-day plan would likely change multiple signals at the same time." : "most of the foundation is present — refinement, not rebuild, is the leverage."}`,
+      `Based on the information provided, ${leverageScore >= 4 ? "a focused 30-day plan would likely improve multiple signals at the same time." : "most of the foundation is present — refinement, not rebuild, is the leverage."}`,
     ),
   ];
 }
@@ -259,27 +282,43 @@ export function getAuditGrade(totalScore: number): {
   label: string;
   description: string;
 } {
-  // Public labels use opportunity/readiness language. Internal grade ids
-  // are preserved for compatibility with team-facing pages.
+  // Internal grade IDs preserved for team-facing page compatibility.
+  // Public labels and descriptions use consultative, opportunity-framed language.
   let grade: AuditGrade;
   let label: string;
-  if (totalScore >= 85) {
+  let description: string;
+  if (totalScore >= 90) {
+    grade = "strong_foundation";
+    label = "Strong Online Consistency";
+    description =
+      "Strong public signals across Google, website, social, and action paths. Consistent visibility is in place — Veroxa would focus on refinement, content quality, and optimization.";
+  } else if (totalScore >= 80) {
     grade = "strong_foundation";
     label = "Strong Foundation";
+    description =
+      "Strong online presence with most key signals confirmed. Some improvement opportunities remain — Veroxa would focus on content consistency, conversion, and maintaining signal freshness.";
   } else if (totalScore >= 70) {
     grade = "good_missed_consistency";
-    label = "Needs Consistency";
-  } else if (totalScore >= 50) {
+    label = "Good Foundation, Needs Consistency";
+    description =
+      "Decent online presence with key signals in place. Clear opportunities remain to tighten consistency, content rhythm, and customer action paths.";
+  } else if (totalScore >= 60) {
     grade = "clear_gap";
-    label = "High Opportunity";
-  } else if (totalScore >= 30) {
+    label = "Moderate Opportunity";
+    description =
+      "The restaurant has a usable online presence, but there are clear opportunities to tighten consistency, customer action paths, and reminder rhythm.";
+  } else if (totalScore >= 50) {
     grade = "underbuilt";
-    label = "Needs Structure";
+    label = "Major Opportunity";
+    description =
+      "Several important public signals may need setup or manual review. Focused early work on the foundation would likely improve visibility and customer decision moments.";
   } else {
     grade = "foundational_problem";
-    label = "Needs Immediate Structure";
+    label = "Limited Public Signals";
+    description =
+      "Many public signals were not confirmed from available sources. A Veroxa audit would identify the most important signals to establish first.";
   }
-  return { grade, label, description: getScoreMeaningByGrade(grade) };
+  return { grade, label, description };
 }
 
 /** M027B — Audit confidence based on link richness. */
