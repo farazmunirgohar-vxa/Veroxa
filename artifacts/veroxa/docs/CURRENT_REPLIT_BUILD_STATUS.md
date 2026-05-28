@@ -1,5 +1,60 @@
 # Current Replit Build Status
 
+> **2026-05-28 — Client ↔ Team Workflow backend-readiness batch finalized**
+>
+> - `clientTeamWorkRepository` (`src/lib/repositories/clientTeamWorkRepository.ts`)
+>   is now the single normalized source of truth for client↔team work on
+>   both portals. Exposes `ClientWorkItem` / `TeamWorkItem` types plus 12
+>   helpers: client-side `getClient{ActionRequired,InProgress,Completed,
+>   WorkTimeline}Items`, team-side `getTeam{Ready,WaitingOnClient,
+>   InProgress,Completed,Blocked}WorkItems`, and shared
+>   `getSubmissionWorkSummary`, `getSubmissionWorkItemFor{Team,Client}`.
+>   Client helpers strip `internalTeamNote` and team-only messages.
+> - `demoClientTeamWork.ts` carries the optional work-state fields
+>   (`sourceChannel`, `workType`, `teamWorkStatus`, `clientStatusLabel`,
+>   `teamStatusLabel`, `nextTeamAction`, `nextClientAction`) as derivation
+>   helpers (`getSubmissionWorkType`, `getSubmissionTeamWorkStatus`,
+>   `getSubmissionClientStatusLabel`, `getSubmissionTeamStatusLabel`,
+>   `getSubmissionNextTeamAction`, `getSubmissionNextClientAction`) plus
+>   query helpers (`getActiveSubmissionsForClient`,
+>   `getClientActionableSubmissions`, `getTeamReadySubmissions`,
+>   `getTeamWaitingOnClientSubmissions`, `getCompletedSubmissionsForClient`,
+>   `getSubmissionById`). Derivation is preferred over fixture bloat.
+> - Client pages (`client-dashboard`, `client-requests`, `client-updates`,
+>   `client-media`) consume only repository helpers for action / status /
+>   communication sections. Legacy `demoClientRequests`,
+>   `demoClientTeamWorkflow`, and `WorkflowItemCard` are no longer used on
+>   any of those four pages. Disabled message input on `client-requests`
+>   stays exactly: "Live messaging will connect after backend activation."
+> - Team pages all read from `clientTeamWorkRepository` as the single
+>   source of truth: `team-dashboard` and `team-work-queue` consume the
+>   normalized team work-item helpers (`getTeam{Ready,InProgress,
+>   WaitingOnClient,Blocked,Completed}WorkItems`,
+>   `getTeamWorkCommunicationSummary`, `getTeamInbox`,
+>   `getTeamNeedsClientClarification`, `getTeamBlockedItems`).
+>   `team-upload-inbox` uses `getClientSubmissions` (filtered to media)
+>   for the cross-link card, and `team-direction-queue` uses
+>   `getTeamNeedsClientClarification` + `getTeamSubmissionStatusEvents`
+>   for its clarification cross-link — both pages keep their own
+>   non-workflow domains (upload submissions, direction requests) but
+>   pull the client-submission overlay from the repository. The team
+>   work queue has no "Audit Leads once a prospect converts" distraction
+>   line (remaining "Audit Leads" mentions are the legitimate
+>   `/demo/team/audit-leads` nav target).
+> - `docs/CLIENT_TEAM_WORKFLOW_CONTRACT.md` is the canonical future
+>   Supabase contract: purpose, fixture/repository baseline, four future
+>   tables (`client_team_submissions`, `client_team_messages`,
+>   `client_action_items`, `client_team_status_events`), draft fields,
+>   visibility rules, out-of-scope list, and first future write path. No
+>   separate `SUPABASE_TABLE_CONTRACT.md` exists — this doc is the single
+>   place.
+> - `docs/DEMO_DATA_MAP.md` already lists every helper in the
+>   `demoClientTeamWork.ts` row; no map update was needed.
+> - Guardrails unchanged: AUTH=placeholder, DATA=fixture,
+>   VEROXA_DATA_SOURCE_MODE=demo. No backend writes, no Supabase, no
+>   network, no AI, no publishing, no notifications, no storage. Demo
+>   IDs only.
+
 > **2026-05-28 — Temporary role-based dev login preview added**
 >
 > - Login page (`src/pages/login.tsx`) now accepts four temporary
