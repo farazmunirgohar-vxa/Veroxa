@@ -36,6 +36,12 @@ import {
 } from "@/lib/uploadKeys/localUploadStore";
 import { clientTeamWorkRepository } from "@/lib/repositories";
 import { getRestaurantName } from "@/data/demoData";
+import { previewMediaReview } from "@/lib/ai/aiAgentPreviewEngine";
+import {
+  AI_AGENT_STATUS_LABELS,
+  AI_MEDIA_USAGE_LABELS,
+  TEAM_AI_DISCLOSURE,
+} from "@/lib/ai/aiAgentTypes";
 
 const statusToneStyles: Record<DemoUploadStatus, string> = {
   received: "bg-sky-500/10 text-sky-400 border-sky-500/30",
@@ -145,6 +151,72 @@ export default function TeamUploadInbox() {
         >
           {getWriteSafetyBanner()}
         </div>
+
+        {/* AI Media Review previews for active media submissions. */}
+        {(() => {
+          const mediaSubs = clientTeamWorkRepository
+            .getClientSubmissions("demo-a")
+            .concat(
+              clientTeamWorkRepository.getClientSubmissions("demo-b"),
+              clientTeamWorkRepository.getClientSubmissions("demo-c"),
+            )
+            .filter((s) => s.submissionType === "media")
+            .filter((s) => s.status !== "completed" && s.status !== "archived")
+            .slice(0, 3);
+          if (mediaSubs.length === 0) return null;
+          return (
+            <Card className="mt-3 bg-card border-primary/20" data-testid="card-ai-media-review">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">
+                  AI Media Review preview ({mediaSubs.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {mediaSubs.map((s) => {
+                  const review = previewMediaReview(s);
+                  const usageTone =
+                    review.recommendedUsage === "use_now"
+                      ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300"
+                      : review.recommendedUsage === "save_for_later"
+                      ? "border-sky-500/40 bg-sky-500/10 text-sky-300"
+                      : review.recommendedUsage === "needs_context"
+                      ? "border-amber-500/40 bg-amber-500/10 text-amber-300"
+                      : "border-rose-500/40 bg-rose-500/10 text-rose-300";
+                  return (
+                    <div
+                      key={s.id}
+                      className="rounded-md border border-border/60 bg-muted/10 p-3 text-[12px]"
+                      data-testid={`ai-media-review-${s.id}`}
+                    >
+                      <div className="flex items-start justify-between gap-2 flex-wrap mb-1">
+                        <p className="font-semibold text-foreground">{s.title}</p>
+                        <div className="flex gap-1.5 flex-wrap">
+                          <Badge variant="outline" className="border-border bg-muted/30 text-[10px]">
+                            Quality: {review.qualityLabel} · {review.mediaQualityScore}
+                          </Badge>
+                          <Badge variant="outline" className={`${usageTone} text-[10px]`}>
+                            {AI_MEDIA_USAGE_LABELS[review.recommendedUsage]}
+                          </Badge>
+                          <Badge variant="outline" className="border-border bg-muted/30 text-[10px]">
+                            {AI_AGENT_STATUS_LABELS[review.status]}
+                          </Badge>
+                        </div>
+                      </div>
+                      <p className="text-muted-foreground">
+                        <span className="text-foreground font-medium">Suggested angle:</span>{" "}
+                        {review.contentAngle}
+                      </p>
+                      <p className="text-muted-foreground mt-0.5">{review.note}</p>
+                    </div>
+                  );
+                })}
+                <p className="text-[10px] text-muted-foreground italic pt-1">
+                  {TEAM_AI_DISCLOSURE}
+                </p>
+              </CardContent>
+            </Card>
+          );
+        })()}
 
         {/* Related media submissions across the client/team workflow. */}
         {(() => {

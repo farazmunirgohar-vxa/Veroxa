@@ -31,6 +31,11 @@ import { getLocalDirectionRequests, subscribeToLocalDirectionRequests } from "@/
 import { getLocalUploadSubmissions, subscribeToLocalUploadSubmissions } from "@/lib/uploadKeys/localUploadStore";
 import { Brain } from "lucide-react";
 import { useEffect, useState } from "react";
+import {
+  previewOperatorAssistant,
+  previewRiskFlags,
+} from "@/lib/ai/aiAgentPreviewEngine";
+import { TEAM_AI_DISCLOSURE } from "@/lib/ai/aiAgentTypes";
 
 const mediaReviewQueue = [
   { id: "mrq-1", title: "Grilled platter — overhead", subtitle: "Demo Grill House · suggested: weekend feature",      status: "Approve",  tone: "good" as const },
@@ -81,6 +86,89 @@ export default function TeamDashboard() {
         message="Demo only — all metrics and queue data are illustrative sample data."
         testId="banner-team-dashboard"
       />
+
+      {/* AI Operator Assistant — daily command-center snapshot. */}
+      {(() => {
+        const ready = clientTeamWorkRepository.getTeamReadyWorkItems();
+        const blocked = clientTeamWorkRepository.getTeamBlockedWorkItems();
+        const waiting = clientTeamWorkRepository.getTeamWaitingOnClientItems();
+        const inProgress = clientTeamWorkRepository.getTeamInProgressWorkItems();
+        const allActive = [...ready, ...inProgress, ...waiting, ...blocked];
+        const riskFlags = previewRiskFlags(allActive);
+        const snapshot = previewOperatorAssistant({
+          readyForApprovalCount: ready.length,
+          blockedCount: blocked.length,
+          clientInputNeededCount: waiting.filter(
+            (w) => !blocked.some((b) => b.id === w.id),
+          ).length,
+          aiPreparedDraftsCount: inProgress.length,
+          topRiskFlags: riskFlags,
+        });
+        const tiles = [
+          { label: "Ready for approval", value: snapshot.readyForApprovalCount, color: "text-emerald-400" },
+          { label: "Blocked",            value: snapshot.blockedCount,          color: "text-rose-400"    },
+          { label: "Client input needed",value: snapshot.clientInputNeededCount,color: "text-amber-400"   },
+          { label: "AI-prepared drafts", value: snapshot.aiPreparedDraftsCount, color: "text-sky-400"     },
+        ];
+        return (
+          <Card
+            className="bg-card border-primary/20 mb-4"
+            data-testid="card-ai-operator-assistant"
+          >
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Brain className="w-4 h-4 text-primary" />
+                AI Operator Assistant
+                <span className="text-[10px] text-muted-foreground font-normal">
+                  · daily command center
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {tiles.map((t) => (
+                  <div key={t.label} className="rounded-md border border-border/60 bg-muted/10 p-3">
+                    <p className={`text-2xl font-bold tabular-nums ${t.color}`}>{t.value}</p>
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1">
+                      {t.label}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <div className="rounded-md border border-primary/30 bg-primary/5 p-3">
+                <p className="text-[10px] uppercase tracking-wider text-primary font-semibold mb-1">
+                  Top recommendation
+                </p>
+                <p className="text-[12px] text-foreground/90">{snapshot.topRecommendation}</p>
+              </div>
+              {snapshot.riskFlags.length > 0 && (
+                <div className="space-y-1.5">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+                    Risk flags ({snapshot.riskFlags.length})
+                  </p>
+                  {snapshot.riskFlags.map((flag, i) => {
+                    const tone =
+                      flag.level === "critical"
+                        ? "border-rose-500/40 bg-rose-500/10 text-rose-300"
+                        : flag.level === "warning"
+                        ? "border-amber-500/40 bg-amber-500/10 text-amber-300"
+                        : "border-sky-500/40 bg-sky-500/10 text-sky-300";
+                    return (
+                      <div key={i} className={`rounded-md border p-2 text-[11px] ${tone}`}>
+                        <p className="font-semibold">{flag.message}</p>
+                        <p className="opacity-90 mt-0.5">Next: {flag.nextHumanAction}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              <p className="text-[10px] text-muted-foreground italic">
+                {TEAM_AI_DISCLOSURE}
+              </p>
+            </CardContent>
+          </Card>
+        );
+      })()}
 
       {/* Stat grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-6">

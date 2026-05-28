@@ -1,5 +1,55 @@
 # Current Replit Build Status
 
+> **2026-05-28 — AI-first SOP preview layer added across Client and Team portals**
+>
+> - New `src/lib/ai/aiAgentTypes.ts` defines the shared vocabulary: 8 agent
+>   names (Media Review, Content Strategist, Caption Draft, Scheduling
+>   Recommendation, Client Update, Reporting Draft, Risk/Blocker, Team
+>   Operator Assistant), 5 workflow statuses (`ready`,
+>   `needs_human_review`, `approved`, `blocked`, `manual_review_needed`),
+>   and the client-facing simple labels (`Uploaded`, `Being reviewed`,
+>   `Needs your input`, `Prepared by Veroxa`, `Included in report`).
+> - New `src/lib/ai/aiAgentPreviewEngine.ts` is the rule-based, deterministic
+>   preview engine. No live model calls, no network, no Supabase, no
+>   writes. Same input always produces the same output (stable hash over
+>   submission ids) so demo screenshots don't drift. Designed so a real
+>   model call can slot in behind the same interfaces later.
+> - **Client pages** show calm, non-technical AI-assisted workflow surfaces:
+>   - `client-dashboard.tsx` — adds the client-safe AI workflow disclosure
+>     card with the five simple status badges.
+>   - `client-media.tsx` — adds an AI media review preview explaining the
+>     three client-visible outcomes (AI-prepared / needs team review /
+>     needs client context) plus the 3–5/week upload guidance.
+>   - `client-updates.tsx` — adds a compact weekly preview (reviewed /
+>     being prepared / needed from you / next planned action) derived
+>     from `clientTeamWorkRepository` via the engine's `previewClientUpdate`.
+>   - `client-reports.tsx` — adds a "Report draft status" card with
+>     `AI-assisted draft prepared` + `Team review needed` badges and the
+>     placeholder-safe metrics-not-connected line.
+> - **Team pages** show more operational detail:
+>   - `team-dashboard.tsx` — adds the AI Operator Assistant panel: ready
+>     for approval / blocked / client input needed / AI-prepared drafts
+>     counters, a top recommendation, and live risk flags from
+>     `previewRiskFlags`.
+>   - `team-work-queue.tsx` — adds an AI suggestions card showing the top
+>     4 active items with suggested angle, recommended next action,
+>     workflow status badge, and risk flag if any.
+>   - `team-upload-inbox.tsx` — adds the AI Media Review preview with
+>     quality score + label, recommended usage (use now / save for later /
+>     needs context / not recommended), suggested angle, and short note.
+>   - `team-report-queue.tsx` — adds AI report drafts preview (weekly +
+>     monthly) above the kanban tabs, with missing-data flags and the
+>     "human verification required" badge.
+> - New `docs/AI_FIRST_SOP_MODEL.md` documents the operating principle,
+>   what AI can/cannot do, human approval rules, client-safe explanation,
+>   team SOP flow, AI agent vocabulary, and capacity guidance (Manual 3–5
+>   / AI-assisted 6–10 / Mature AI-first 8–12 clients per employee).
+> - AI agents are **simulated and rule-based only.** Humans remain the
+>   final approval layer for anything client-facing. No real OpenAI calls,
+>   Supabase writes, publishing, auto-messaging, storage, payments,
+>   notifications, or Owner/Operator work added. Audit V1 preserved.
+> - Typecheck: pass.
+
 > **2026-05-28 — Audit scoring calibrated: stricter, more meaningful, owner-friendly**
 >
 > - Scoring bases lowered so missing signals produce a meaningfully lower score.

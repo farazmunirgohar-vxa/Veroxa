@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { getRestaurantName } from "@/data/demoData";
 import { clientTeamWorkRepository } from "@/lib/repositories";
 import type { TeamWorkItem } from "@/lib/repositories/clientTeamWorkRepository";
+import { previewWorkItems } from "@/lib/ai/aiAgentPreviewEngine";
+import { AI_AGENT_STATUS_LABELS, TEAM_AI_DISCLOSURE } from "@/lib/ai/aiAgentTypes";
 
 export default function TeamWorkQueue() {
   // Submission-derived sections — single source of truth is the
@@ -112,6 +114,70 @@ export default function TeamWorkQueue() {
         message="Demo only — workflow items are local sample data. No database writes."
         testId="banner-work-queue"
       />
+
+      {/* AI-assisted per-item previews — top 4 active items. */}
+      {(() => {
+        const previews = previewWorkItems(allActive).slice(0, 4);
+        if (previews.length === 0) return null;
+        return (
+          <Card
+            className="bg-card border-primary/20 mb-4"
+            data-testid="card-work-queue-ai-previews"
+          >
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold">
+                AI suggestions for active items
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {previews.map((p) => {
+                const item = allActive.find((i) => i.submissionId === p.submissionId);
+                if (!item) return null;
+                const statusTone =
+                  p.status === "blocked"
+                    ? "border-rose-500/40 bg-rose-500/10 text-rose-300"
+                    : p.status === "needs_human_review"
+                    ? "border-amber-500/40 bg-amber-500/10 text-amber-300"
+                    : p.status === "approved"
+                    ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300"
+                    : "border-sky-500/40 bg-sky-500/10 text-sky-300";
+                return (
+                  <div
+                    key={p.submissionId}
+                    className="rounded-md border border-border/60 bg-muted/10 p-3 text-[12px]"
+                    data-testid={`ai-preview-${p.submissionId}`}
+                  >
+                    <div className="flex items-start justify-between gap-2 flex-wrap mb-1">
+                      <p className="font-semibold text-foreground">{item.title}</p>
+                      <Badge variant="outline" className={`${statusTone} text-[10px]`}>
+                        {AI_AGENT_STATUS_LABELS[p.status]}
+                      </Badge>
+                    </div>
+                    {p.suggestedAngle && (
+                      <p className="text-muted-foreground mb-1">
+                        <span className="text-foreground font-medium">Suggested angle:</span>{" "}
+                        {p.suggestedAngle}
+                      </p>
+                    )}
+                    <p className="text-muted-foreground">
+                      <span className="text-foreground font-medium">Next action:</span>{" "}
+                      {p.recommendedNextAction}
+                    </p>
+                    {p.risk && (
+                      <p className="mt-1 text-amber-300/90">
+                        <span className="font-semibold">Risk:</span> {p.risk.message}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+              <p className="text-[10px] text-muted-foreground italic pt-1">
+                {TEAM_AI_DISCLOSURE} Human actions: approve · revise · ask client · mark blocked · mark complete.
+              </p>
+            </CardContent>
+          </Card>
+        );
+      })()}
 
       <Card
         className="bg-card/50 border-border/50 mb-4"

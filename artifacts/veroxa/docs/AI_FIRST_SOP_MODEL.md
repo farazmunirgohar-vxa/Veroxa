@@ -1,0 +1,128 @@
+# AI-First SOP Model
+
+_Veroxa's operating model for how AI agents and the human team divide work._
+
+> **Status (2026-05-28):** Preview layer only. All AI output in the current
+> build is **simulated and rule-based** — no live model calls, no Supabase
+> writes, no publishing, no client auto-messaging. Humans approve everything
+> that reaches a client.
+
+---
+
+## 1. Operating principle
+
+Veroxa runs an **AI-first, human-approved** workflow.
+
+- AI does the **first draft, sort, score, summary, recommendation, and risk flag**.
+- The Veroxa team **approves, corrects, escalates, or rejects** every AI output before it reaches the client.
+- The client experiences a calm, organized service — not the underlying AI mechanics.
+
+---
+
+## 2. What AI can do
+
+- Sort and triage incoming uploads, messages, and submissions.
+- Score media quality and recommend usage (use now / save / needs context / not recommended).
+- Draft captions, content angles, and posting windows.
+- Draft weekly client updates and monthly report summaries.
+- Surface risk flags and blockers with a recommended next human action.
+- Recommend the team's next best action across the daily queue.
+
+## 3. What AI cannot do
+
+- Publish anything to a client's channels.
+- Send messages directly to clients.
+- Update the database, billing, or storage.
+- Guarantee performance outcomes (reach, engagement, sales).
+- Invent metrics. If real metrics aren't connected, AI output says so.
+- Make final go/no-go decisions on anything client-facing.
+
+## 4. Human approval rules
+
+The Veroxa team is the final approval layer for:
+
+- Anything posted to a client's Instagram, Facebook, Google, or any other public channel.
+- Anything sent to the client (weekly updates, monthly reports, replies).
+- Any change to the client's content strategy or capture plan.
+- Any escalation that requires the client to make a decision.
+
+AI output is **always treated as a draft.** The portal labels show this explicitly: `Ready`, `Needs team review`, `Approved`, `Blocked`, `Manual review needed`.
+
+## 5. Client-safe explanation
+
+The client sees a single, calm disclosure on their portal:
+
+> _Veroxa uses AI-assisted organization to help the team review uploads,
+> prepare content ideas, and keep work moving. Final review stays with the
+> Veroxa team._
+
+Client surfaces only ever show simple status labels:
+
+- **Uploaded** — your file has reached Veroxa.
+- **Being reviewed** — Veroxa is looking at it.
+- **Needs your input** — Veroxa needs a short reply from you.
+- **Prepared by Veroxa** — ready and approved by the team.
+- **Included in report** — closed out and appears in your weekly/monthly summary.
+
+Client surfaces never show:
+
+- Internal AI agent names
+- Risk levels
+- Internal team notes
+- Quality scores or technical labels
+
+## 6. Team SOP flow
+
+```
+Client upload
+   ↓
+AI review        ← scoring, angle suggestion, usage recommendation
+   ↓
+AI draft         ← captions, posting window, weekly update draft
+   ↓
+Team approval    ← approve / revise / ask client / mark blocked / mark complete
+   ↓
+Client update or report
+```
+
+### Team-side labels (more operational detail)
+
+The team portal shows:
+
+- The AI agent that prepared each draft.
+- Suggested content angle and recommended posting window.
+- Risk and blocker flags with a recommended next human action.
+- An **AI Operator Assistant** snapshot on the team dashboard: items ready
+  for approval, blocked, needing client input, fresh AI drafts, and the top
+  next-best action for the day.
+
+### AI agent vocabulary (internal)
+
+- **Media Review Agent** — scores media, recommends usage, suggests angle.
+- **Content Strategist Agent** — chooses the angle and rationale.
+- **Caption Draft Agent** — drafts short caption variants.
+- **Scheduling Recommendation Agent** — suggests post window and reason.
+- **Client Update Agent** — drafts the weekly client summary.
+- **Reporting Draft Agent** — drafts weekly/monthly report structure.
+- **Risk / Blocker Agent** — flags risks with a recommended next human action.
+- **Team Operator Assistant** — surfaces the daily command-center snapshot.
+
+## 7. Capacity guidance
+
+| Mode | Clients per employee | What it looks like |
+|---|---|---|
+| Manual | 3–5 | Team drafts, reviews, schedules, and reports by hand. |
+| AI-assisted (current target) | 6–10 | AI drafts first; team approves and corrects. |
+| Mature AI-first | 8–12 | AI handles routine prep end-to-end; team focuses on exceptions, strategy, and client relationship. |
+
+Capacity scales because AI removes the **drafting cost**, not the **judgement cost**. Final judgement always stays with the team.
+
+## 8. Where this lives in the codebase
+
+- `src/lib/ai/aiAgentTypes.ts` — shared type contracts (agents, statuses, outputs).
+- `src/lib/ai/aiAgentPreviewEngine.ts` — deterministic rule-based engine.
+- `src/pages/client-*.tsx` — client-safe AI-assisted workflow surfaces.
+- `src/pages/team-*.tsx` — team-facing AI operator assistant + per-item previews.
+
+When a real model call is wired later, it should slot in **behind the same
+interfaces** in the engine. The page-level UI contracts should not change.

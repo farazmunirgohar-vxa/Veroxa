@@ -12,6 +12,9 @@ import {
   getRestaurantName,
   type WeeklyReportStatus,
 } from "@/data/demoData";
+import { previewReportDraft } from "@/lib/ai/aiAgentPreviewEngine";
+import { TEAM_AI_DISCLOSURE } from "@/lib/ai/aiAgentTypes";
+import { Brain } from "lucide-react";
 
 const weeklyStatusColor: Record<WeeklyReportStatus, string> = {
   "Draft":              "border-muted-foreground/40 text-muted-foreground bg-muted/30",
@@ -57,6 +60,64 @@ export default function TeamReportQueue() {
         message="Demo only — read-only report queue. No approvals or deliveries are triggered."
         testId="banner-report-queue"
       />
+
+      {/* AI-assisted report drafts preview — Veroxa team verifies before sharing. */}
+      {(() => {
+        const weeklyDraft = previewReportDraft({
+          reportTitle: "This week",
+          cadence: "weekly",
+          hasPublishedPosts: false,
+          hasMetrics: false,
+        });
+        const monthlyDraft = previewReportDraft({
+          reportTitle: "This month",
+          cadence: "monthly",
+          hasPublishedPosts: false,
+          hasMetrics: false,
+        });
+        const drafts = [weeklyDraft, monthlyDraft];
+        return (
+          <Card className="bg-card border-primary/20 mb-4" data-testid="card-ai-report-drafts">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Brain className="w-4 h-4 text-primary" />
+                AI report drafts preview
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {drafts.map((d) => (
+                  <div
+                    key={d.title}
+                    className="rounded-md border border-border/60 bg-muted/10 p-3 text-[12px]"
+                    data-testid={`ai-report-draft-${d.title.toLowerCase().replace(/\s/g, "-")}`}
+                  >
+                    <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
+                      <p className="font-semibold text-foreground">{d.title}</p>
+                      <Badge variant="outline" className="border-amber-500/40 bg-amber-500/10 text-amber-300 text-[10px]">
+                        Human verification required
+                      </Badge>
+                    </div>
+                    <p className="text-foreground/85">{d.draftSummary}</p>
+                    {d.missingDataFlags.length > 0 && (
+                      <ul className="mt-1.5 space-y-0.5">
+                        {d.missingDataFlags.map((flag, i) => (
+                          <li key={i} className="text-[11px] text-amber-300/90">
+                            ⚠ {flag}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-muted-foreground italic pt-1">
+                {TEAM_AI_DISCLOSURE}
+              </p>
+            </CardContent>
+          </Card>
+        );
+      })()}
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)} className="w-full">
         <TabsList className="grid grid-cols-2 w-full max-w-xs mb-4">

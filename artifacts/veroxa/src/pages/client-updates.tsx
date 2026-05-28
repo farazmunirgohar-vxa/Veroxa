@@ -6,6 +6,8 @@ import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientPortalData } from "@/hooks/useClientPortalData";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
 import { clientTeamWorkRepository } from "@/lib/repositories";
+import { previewClientUpdate } from "@/lib/ai/aiAgentPreviewEngine";
+import { Brain } from "lucide-react";
 
 const SHOWCASE_ID = "demo-a";
 
@@ -40,6 +42,65 @@ export default function ClientUpdates() {
         </p>
         <DataSourceBadge source={source} message={dataSourceMessage} />
       </div>
+
+      {/* AI-assisted compact weekly preview — drafts reviewed by Veroxa team. */}
+      {(() => {
+        const inProgress = clientTeamWorkRepository.getClientInProgressItems(SHOWCASE_ID);
+        const action = clientTeamWorkRepository.getClientActionRequiredItems(SHOWCASE_ID);
+        const completed = clientTeamWorkRepository.getClientCompletedItems(SHOWCASE_ID);
+        const draft = previewClientUpdate({
+          inProgressCount: inProgress.length,
+          blockedCount: 0,
+          waitingOnClientCount: action.length,
+          completedThisWeekCount: completed.length,
+          topInProgressTitle: inProgress[0]?.title,
+          topActionNeededTitle: action[0]?.title,
+        });
+        return (
+          <Card
+            className="bg-card border-primary/20 mb-5"
+            data-testid="weekly-update-ai-preview"
+          >
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Brain className="w-4 h-4 text-primary" />
+                Veroxa weekly preview
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[12px]">
+                <div className="rounded-md border border-border/50 bg-muted/10 p-3">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">
+                    What Veroxa reviewed
+                  </p>
+                  <p className="text-foreground/85">{draft.whatVeroxaReviewed}</p>
+                </div>
+                <div className="rounded-md border border-border/50 bg-muted/10 p-3">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">
+                    What's being prepared
+                  </p>
+                  <p className="text-foreground/85">{draft.whatIsBeingPrepared}</p>
+                </div>
+                <div className="rounded-md border border-border/50 bg-muted/10 p-3">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">
+                    What we need from you
+                  </p>
+                  <p className="text-foreground/85">{draft.whatClientNeedsToProvide}</p>
+                </div>
+                <div className="rounded-md border border-border/50 bg-muted/10 p-3">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">
+                    Next planned action
+                  </p>
+                  <p className="text-foreground/85">{draft.nextPlannedAction}</p>
+                </div>
+              </div>
+              <p className="text-[10px] text-muted-foreground italic pt-1">
+                Prepared with AI-assisted organization; reviewed by Veroxa team.
+              </p>
+            </CardContent>
+          </Card>
+        );
+      })()}
 
       {/* Current week update */}
       <Card

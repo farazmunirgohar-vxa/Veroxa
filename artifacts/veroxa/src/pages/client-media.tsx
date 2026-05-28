@@ -36,6 +36,8 @@ import {
   type RestaurantType,
 } from "@/lib/mediaGuidance";
 import { clientTeamWorkRepository } from "@/lib/repositories";
+import { CLIENT_AI_DISCLOSURE } from "@/lib/ai/aiAgentTypes";
+import { Brain } from "lucide-react";
 
 const SHOWCASE_ID = "demo-a";
 
@@ -150,6 +152,55 @@ export default function ClientMedia() {
           <span>Files selected here are not uploaded or stored.</span>
         </div>
       </div>
+
+      {/* AI-assisted media review — client-safe preview. */}
+      <Card
+        className="bg-card border-primary/20 mt-3"
+        data-testid="card-media-ai-preview"
+      >
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2">
+            <Brain className="w-4 h-4 text-primary" />
+            How Veroxa reviews your uploads
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            {CLIENT_AI_DISCLOSURE}
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+            <div className="rounded-md border border-border/60 bg-muted/10 p-3">
+              <p className="text-[10px] uppercase tracking-wider text-emerald-400 font-semibold mb-1">
+                AI-prepared suggestion
+              </p>
+              <p className="text-[11px] text-muted-foreground">
+                Strong shots get a content angle and a draft caption ready for team review.
+              </p>
+            </div>
+            <div className="rounded-md border border-border/60 bg-muted/10 p-3">
+              <p className="text-[10px] uppercase tracking-wider text-amber-400 font-semibold mb-1">
+                Needs team review
+              </p>
+              <p className="text-[11px] text-muted-foreground">
+                Mixed or borderline shots wait for a Veroxa team member to decide.
+              </p>
+            </div>
+            <div className="rounded-md border border-border/60 bg-muted/10 p-3">
+              <p className="text-[10px] uppercase tracking-wider text-sky-400 font-semibold mb-1">
+                Needs client context
+              </p>
+              <p className="text-[11px] text-muted-foreground">
+                If a shot is missing context, Veroxa will ask you a short question.
+              </p>
+            </div>
+          </div>
+          <div className="rounded-md border border-border/40 bg-muted/5 p-3 text-[11px] text-muted-foreground">
+            <span className="font-semibold text-foreground">Tip:</span> upload
+            3–5 real photos or videos per week and add a short note when you
+            can. Veroxa will organize, review, and prepare content ideas.
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Trust strip — what Veroxa needs / what happens after upload */}
       <div

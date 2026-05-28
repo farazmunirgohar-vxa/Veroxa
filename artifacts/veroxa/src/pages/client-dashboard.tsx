@@ -22,6 +22,8 @@ import { getLocalUploadSubmissions, subscribeToLocalUploadSubmissions } from "@/
 import { Compass } from "lucide-react";
 import { useEffect, useState } from "react";
 import { healthRepository, reportRepository, activityRepository, clientTeamWorkRepository } from "@/lib/repositories";
+import { CLIENT_AI_DISCLOSURE } from "@/lib/ai/aiAgentTypes";
+import { Brain } from "lucide-react";
 
 const veroxaWeekFlow = [
   { key: "upload",   label: "You upload",    caption: "Food photos from your phone" },
@@ -126,6 +128,37 @@ export default function ClientDashboard() {
           May 2026 — Week 3
         </Badge>
       </div>
+
+      {/* AI-assisted workflow — client-safe explanation. */}
+      <Card
+        className="bg-card border-primary/20"
+        data-testid="card-client-ai-disclosure"
+      >
+        <CardContent className="flex items-start gap-3 p-4">
+          <div className="rounded-md bg-primary/10 p-2 text-primary flex-shrink-0">
+            <Brain className="w-4 h-4" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-foreground mb-1">
+              Veroxa AI-assisted workflow
+            </p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {CLIENT_AI_DISCLOSURE}
+            </p>
+            <div className="mt-2 flex flex-wrap gap-1.5 text-[10px]">
+              {(["Uploaded", "Being reviewed", "Needs your input", "Prepared by Veroxa", "Included in report"] as const).map((label) => (
+                <Badge
+                  key={label}
+                  variant="outline"
+                  className="border-border bg-muted/20 text-muted-foreground font-normal"
+                >
+                  {label}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Action needed from you — quick callout linking to Requests. */}
       {openClientActions.length > 0 && (
