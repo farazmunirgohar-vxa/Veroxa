@@ -32,11 +32,11 @@ export default function PublicNav() {
         >
           Login
         </Link>
-        <a href="mailto:hello@veroxa.com?subject=Restaurant Audit Request" data-testid="nav-btn-audit">
+        <Link href="/free-audit" data-testid="nav-btn-audit">
           <Button variant="default" className="font-semibold shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:shadow-[0_0_30px_rgba(99,102,241,0.5)] transition-shadow">
-            Request Audit
+            Get Free Audit
           </Button>
-        </a>
+        </Link>
       </div>
     </nav>
   );

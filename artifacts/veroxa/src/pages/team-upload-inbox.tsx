@@ -127,6 +127,15 @@ export default function TeamUploadInbox() {
 
         <DemoOnlyBanner message="Demo/local only — no real uploads, no notifications, no database writes. Actions update local state in this browser only." />
 
+        <p
+          className="mt-2 text-[11px] text-muted-foreground/80 px-1"
+          data-testid="upload-inbox-flow-note"
+        >
+          Restaurant uploads enter here for triage, then accepted items move
+          into Media Review and feed the Client Work Queue for caption,
+          schedule, and approval.
+        </p>
+
         <div
           className="mt-2 text-[11px] text-muted-foreground/80 px-1"
           data-testid="banner-writes-disabled-upload-inbox"

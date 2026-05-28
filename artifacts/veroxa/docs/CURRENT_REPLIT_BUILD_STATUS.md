@@ -1,5 +1,33 @@
 # Current Replit Build Status
 
+> **2026-05-28 — Client acquisition & execution clarity pass**
+>
+> - Public audit CTAs in `PublicNav` and `landing` now route to
+>   `/free-audit` (Link) instead of `mailto:`. CTA label standardized
+>   to "Get Free (Restaurant) Audit".
+> - `/free-audit` gained a trust strip (What Veroxa reviews / What
+>   you receive / What this is not) and a clearer walkthrough success
+>   message. Audit + walkthrough save logic unchanged (still
+>   `localAuditLeadStore`, demo-only).
+> - `/guided-demo` adds quick-start CTAs ("Start with a Free Audit",
+>   "Preview Client Portal") and a short owner-facing flow blurb.
+> - `/demo/client` (dashboard) and `/demo/client/media` and `/upload`
+>   gained "What Veroxa needs from you" + "What happens after upload"
+>   copy. No upload behavior changed — still no real network or
+>   storage writes.
+> - `/demo/team/audit-leads` now shows a visible lead pipeline strip
+>   (New Audit → Ready to Contact → Walkthrough Booked → Proposal
+>   Sent → Won/Lost) with counts and a "Convert to Client Preview"
+>   callout when Won > 0.
+> - `/demo/team/work-queue` cross-links to Audit Leads.
+>   `/demo/team/upload-inbox` adds a one-line note that uploads feed
+>   the execution flow.
+> - Guardrails unchanged: AUTH_MODE=placeholder,
+>   DATA_MODE=fixture, VEROXA_DATA_SOURCE_MODE=demo, only
+>   demo-a..demo-d, no writes/auth/AI/payments/uploads.
+
+
+
 > Status snapshot only. This document describes what exists in the
 > repository today (Replit Phase — Read-Only Operations Foundation).
 > It does NOT claim that real auth, real database writes, real AI

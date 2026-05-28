@@ -317,6 +317,70 @@ export default function TeamAuditLeads() {
         </CardContent>
       </Card>
 
+      {/* Lead pipeline strip */}
+      <Card className="bg-card border-border mb-4" data-testid="audit-pipeline-strip">
+        <CardHeader>
+          <CardTitle className="text-base">Audit Lead Pipeline</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-[12px] text-muted-foreground mb-3">
+            Stages a prospect moves through. Counts reflect current leads.
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            {(
+              [
+                "new_audit",
+                "ready_to_contact",
+                "walkthrough_booked",
+                "proposal_sent",
+                "won",
+                "lost",
+              ] as LeadStage[]
+            ).map((stage, i, arr) => {
+              const count = leads.filter((l) => l.leadStage === stage).length;
+              const tone =
+                stage === "won"
+                  ? "border-emerald-500/40 text-emerald-300 bg-emerald-500/10"
+                  : stage === "lost"
+                    ? "border-muted text-muted-foreground bg-muted/10"
+                    : "border-primary/30 text-foreground bg-primary/5";
+              return (
+                <div key={stage} className="flex items-center gap-2">
+                  <div
+                    className={`px-3 py-1.5 rounded-md border text-xs font-medium ${tone}`}
+                    data-testid={`pipeline-stage-${stage}`}
+                  >
+                    <span>{LEAD_STAGE_LABELS[stage]}</span>
+                    <span className="ml-2 tabular-nums text-muted-foreground">
+                      {count}
+                    </span>
+                  </div>
+                  {i < arr.length - 1 && (
+                    <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/50" />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          {summary.wonCount > 0 && (
+            <div
+              className="mt-3 rounded-md border border-emerald-500/30 bg-emerald-500/5 p-3"
+              data-testid="pipeline-won-callout"
+            >
+              <p className="text-xs font-semibold text-emerald-300 mb-1">
+                Convert to Client Preview
+              </p>
+              <p className="text-[12px] text-muted-foreground">
+                When a lead is marked Won, the next step is to provision a
+                client account, share portal access, and start the upload +
+                direction loop. (Demo only — provisioning is not wired in this
+                preview.)
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Demo seed banner */}
       {showingDemoSeed && leads.length > 0 && (
         <div className="mb-3 rounded-md border border-amber-500/40 bg-amber-500/5 p-3">

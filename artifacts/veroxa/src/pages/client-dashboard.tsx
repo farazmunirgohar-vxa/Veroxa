@@ -293,6 +293,36 @@ export default function ClientDashboard() {
         </p>
       </div>
 
+      {/* Trust strip — what Veroxa needs / what happens after upload */}
+      <div
+        className="grid grid-cols-1 md:grid-cols-2 gap-3"
+        data-testid="dashboard-trust-strip"
+      >
+        <Card className="bg-card/50 border-border/50" data-testid="dashboard-trust-needs">
+          <CardContent className="p-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-1">
+              What Veroxa needs from you
+            </p>
+            <p className="text-[12px] text-muted-foreground">
+              A few phone photos each week, plus a quick note in the Direction
+              Center about what you want to push. Veroxa takes it from there.
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="bg-card/50 border-border/50" data-testid="dashboard-trust-after">
+          <CardContent className="p-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-1">
+              What happens after upload
+            </p>
+            <p className="text-[12px] text-muted-foreground">
+              Photos are reviewed, captions are drafted, and posts are
+              scheduled at the right times. You see everything in your portal
+              and approve before anything goes live.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* How Veroxa is working this week */}
       <div data-testid="section-veroxa-week-flow">
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">

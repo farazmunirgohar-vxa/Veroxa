@@ -39,11 +39,11 @@ export default function LandingPage() {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-300">
-          <a href="mailto:hello@veroxa.com?subject=Restaurant Audit Request" data-testid="btn-hero-audit">
+          <Link href="/free-audit" data-testid="btn-hero-audit">
             <Button size="lg" className="h-14 px-8 text-base font-semibold shadow-[0_0_30px_rgba(99,102,241,0.3)] hover:shadow-[0_0_40px_rgba(99,102,241,0.5)] transition-all">
-              Request Restaurant Audit <ArrowRight className="ml-2 w-5 h-5" />
+              Get Free Restaurant Audit <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
-          </a>
+          </Link>
           <Link href="/demo" data-testid="btn-hero-demo">
             <Button size="lg" variant="outline" className="h-14 px-8 text-base border-border/50 hover:bg-accent/50 transition-colors">
               Experience the Demo
@@ -184,11 +184,11 @@ export default function LandingPage() {
             Request a free restaurant audit, explore the services, or view pricing.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="mailto:hello@veroxa.com?subject=Restaurant Audit Request" data-testid="btn-cta-audit">
+            <Link href="/free-audit" data-testid="btn-cta-audit">
               <Button size="lg" className="h-12 px-7 font-semibold shadow-[0_0_20px_rgba(99,102,241,0.25)]">
-                Request Restaurant Audit <ArrowRight className="ml-2 w-4 h-4" />
+                Get Free Restaurant Audit <ArrowRight className="ml-2 w-4 h-4" />
               </Button>
-            </a>
+            </Link>
             <Link href="/services" data-testid="btn-cta-services">
               <Button size="lg" variant="outline" className="h-12 px-7 border-border/60 hover:bg-accent/50">
                 View Services

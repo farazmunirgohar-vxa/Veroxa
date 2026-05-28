@@ -181,7 +181,7 @@ export default function FreeAudit() {
             className="text-3xl md:text-4xl font-bold tracking-tight mb-2"
             data-testid="header-free-audit"
           >
-            Free Customer-Flow Readiness Audit
+            Get a Free Restaurant Online Presence Audit
           </h1>
           <p className="text-muted-foreground max-w-3xl">
             Enter your restaurant name, city, cuisine type, and any links you
@@ -194,6 +194,48 @@ export default function FreeAudit() {
             uses the information provided to produce a preliminary
             customer-flow readiness report.
           </p>
+        </div>
+
+        {/* Trust strip — what Veroxa reviews / what you receive / what this is not */}
+        <div
+          className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-8"
+          data-testid="audit-trust-strip"
+        >
+          <Card className="bg-card border-border" data-testid="audit-trust-reviews">
+            <CardContent className="p-4">
+              <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-1">
+                What Veroxa reviews
+              </p>
+              <p className="text-[12px] text-muted-foreground">
+                Your Google profile signals, website presence, social
+                consistency, and ordering links — the places customers actually
+                check before deciding.
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="bg-card border-border" data-testid="audit-trust-receive">
+            <CardContent className="p-4">
+              <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-1">
+                What you receive
+              </p>
+              <p className="text-[12px] text-muted-foreground">
+                A scored readiness report, your biggest weak spots, a simple
+                30-day plan, and the Veroxa package most likely to fit.
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="bg-card border-border" data-testid="audit-trust-not">
+            <CardContent className="p-4">
+              <p className="text-xs font-semibold uppercase tracking-wider text-amber-400 mb-1">
+                What this is not
+              </p>
+              <p className="text-[12px] text-muted-foreground">
+                Not a contract, not a charge, and not a guaranteed result. The
+                audit is a preliminary read — Veroxa will not post, change, or
+                contact anyone without you.
+              </p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Demo example loader */}
@@ -759,10 +801,13 @@ export default function FreeAudit() {
                     data-testid="walkthrough-success"
                   >
                     <p className="text-sm font-semibold text-emerald-400">
-                      Walkthrough request saved for this demo.
+                      Thanks — your walkthrough request is saved for this demo.
                     </p>
                     <p className="text-[12px] text-muted-foreground mt-1">
-                      In production, Veroxa would contact you from here.
+                      In production, a Veroxa team member would reach out using
+                      your preferred contact method to walk through this audit
+                      and recommend the best fit. No charge until you decide to
+                      move forward.
                     </p>
                   </div>
                 ) : (

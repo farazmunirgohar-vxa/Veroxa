@@ -148,6 +148,37 @@ export default function ClientMedia() {
         </div>
       </div>
 
+      {/* Trust strip — what Veroxa needs / what happens after upload */}
+      <div
+        className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3"
+        data-testid="media-trust-strip"
+      >
+        <Card className="bg-card border-border" data-testid="media-trust-needs">
+          <CardContent className="p-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-1">
+              What Veroxa needs from you
+            </p>
+            <p className="text-[12px] text-muted-foreground">
+              Phone photos of dishes, prep moments, your space, and specials —
+              raw is fine. Quick captions when you have them. Veroxa handles
+              the editing, captions, and timing.
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="bg-card border-border" data-testid="media-trust-after">
+          <CardContent className="p-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-1">
+              What happens after upload
+            </p>
+            <p className="text-[12px] text-muted-foreground">
+              Veroxa reviews each item, drafts captions and angles, and only
+              then schedules posts at the right times. Nothing goes live
+              without review on your account.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Restaurant Upload Key — daily content app entry */}
       <Card className="mt-4 border-primary/30 bg-primary/5" data-testid="card-restaurant-upload-key">
         <CardContent className="p-5 flex flex-wrap items-start justify-between gap-4">

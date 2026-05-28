@@ -77,7 +77,15 @@ export default function TeamWorkQueue() {
         >
           Direction Queue
         </a>
-        .
+        . New client work originates from{" "}
+        <a
+          href="/demo/team/audit-leads"
+          className="text-primary hover:underline"
+          data-testid="link-audit-leads-from-work-queue"
+        >
+          Audit Leads
+        </a>{" "}
+        once a prospect converts.
       </p>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">

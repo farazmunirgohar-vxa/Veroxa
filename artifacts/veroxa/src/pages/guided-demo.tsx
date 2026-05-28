@@ -147,6 +147,43 @@ export default function GuidedDemo() {
           </p>
         </div>
 
+        {/* Quick-start CTAs */}
+        <div
+          className="flex flex-col sm:flex-row gap-3 justify-center"
+          data-testid="guided-demo-quick-ctas"
+        >
+          <Link href="/free-audit" data-testid="cta-guided-demo-free-audit">
+            <Button size="lg" className="font-semibold gap-1.5">
+              Start with a Free Audit
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </Link>
+          <Link href="/demo/client" data-testid="cta-guided-demo-client-portal">
+            <Button size="lg" variant="outline" className="font-semibold gap-1.5">
+              Preview Client Portal
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </Link>
+        </div>
+
+        {/* How Veroxa works — owner-facing flow blurb */}
+        <Card
+          className="bg-card border-border"
+          data-testid="guided-demo-flow-blurb"
+        >
+          <CardContent className="p-5 space-y-2">
+            <p className="text-sm font-semibold text-foreground">
+              How a restaurant works with Veroxa
+            </p>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              You share direction and upload phone photos. Veroxa drafts the
+              content, reviews it before anything goes live, schedules posts at
+              the right time, and reports back monthly. You stay in charge of
+              the direction; Veroxa handles the execution.
+            </p>
+          </CardContent>
+        </Card>
+
         {/* Safety banner */}
         <div
           className="flex items-start gap-3 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-3"

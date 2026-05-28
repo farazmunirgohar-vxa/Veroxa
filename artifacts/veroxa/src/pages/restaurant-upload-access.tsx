@@ -177,6 +177,21 @@ export default function RestaurantUploadAccess() {
             </div>
           </details>
 
+          {/* What happens after upload */}
+          <div
+            className="mt-8 rounded-lg border border-border bg-muted/20 p-4"
+            data-testid="upload-access-what-happens"
+          >
+            <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-1">
+              What happens after upload
+            </p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Your photos go straight to your restaurant's Veroxa team for
+              review, captioning, and scheduling. Nothing posts automatically
+              — your account stays in control of what goes live.
+            </p>
+          </div>
+
           {/* Scope notice */}
           <div className="mt-8 flex items-start gap-2 text-xs text-muted-foreground">
             <Lock className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
