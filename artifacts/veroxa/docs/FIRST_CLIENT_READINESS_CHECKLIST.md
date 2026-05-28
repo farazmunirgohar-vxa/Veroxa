@@ -185,5 +185,28 @@ the first real client uses Veroxa in production.
   - Save audits as leads (DB).
   - Generate PDF audit reports.
   - AI-assisted audit scoring.
-  - Manual team audit review queue.
   - Live Google / social verification.
+
+## M028–M032 — Self-Selling Lead Engine
+
+- ✅ M028 — Public `/free-audit` now captures opt-in walkthrough
+  requests with contact info. Stored locally (localStorage with
+  sessionStorage fallback). No DB writes, no API calls.
+- ✅ M029 — Internal Veroxa Lead Success Score (100 pts, 8 categories)
+  + priority tiers (A / B / Nurture / Low / Not Target). Internal-only —
+  never appears on the public audit page.
+- ✅ M030 — Team Audit Leads queue at `/demo/team/audit-leads` behind
+  `InternalDemoGuard role="team"`. Summary cards, priority filter,
+  detail panel with outreach guidance, stage updates, internal notes.
+- ✅ M031 — Manual Prospect Scanner at `/demo/team/prospect-scanner`.
+  Generates both public audit summary and private internal lead audit
+  side-by-side. Optional internal-only flags (warm relationship, owner
+  reachability, strategic value). No live scraping.
+- ✅ M032 — First-client readiness polish: Veroxa Financial Health
+  card on the Audit Leads queue (projected MRR, walkthrough requests,
+  won/lost). Self-improving system positioning on `/free-audit`.
+- Still needed later:
+  - Lead persistence via DB (M024A schema + RLS work first).
+  - PDF audit + walkthrough confirmations.
+  - Automated outreach cadence.
+  - Live Google / social verification for lead audits.

@@ -1,5 +1,22 @@
 > **Historical reference (pre-2026-05-27).** Pricing and fixture-ID values in this document are out of date. Current source of truth: `docs/PRICING_SOURCE_OF_TRUTH.md` and `src/data/pricing/veroxaPricing.ts`. Fixture IDs are now `demo-a` / `demo-b` / `demo-c` / `demo-d`.
 
+## Latest update — M028–M032 Self-Selling Lead Engine (2026-05-28)
+
+- `/free-audit` now captures opt-in walkthrough requests (local/session
+  storage only — no DB writes, no APIs).
+- Internal-only Veroxa Lead Success Score (100 pts, 8 categories) added
+  in `src/lib/leads/internalLeadScoring.ts`. Never shown publicly.
+- New Team Audit Leads queue at `/demo/team/audit-leads` with summary
+  tiles, priority filter, detail panel, stage updates, internal notes,
+  and a Veroxa Financial Health card.
+- New Manual Prospect Scanner at `/demo/team/prospect-scanner` —
+  generates public audit + internal lead audit side-by-side.
+- Pricing still read from `VEROXA_PLANS`. `AUTH_MODE=placeholder` /
+  `DATA_MODE=fixture` unchanged. `InternalDemoGuard role="team"` intact.
+- Full details: `docs/M028_M032_SELF_SELLING_LEAD_ENGINE.md`.
+
+---
+
 ## Latest update — M012–M014 Restaurant Upload Key + Team Upload Inbox (2026-05-27)
 
 - M012–M014 restaurant upload key foundation added.

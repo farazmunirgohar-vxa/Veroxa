@@ -35,6 +35,8 @@ import {
   Inbox,
   Compass,
   Brain,
+  PhoneCall,
+  Search,
 } from "lucide-react";
 import type { SidebarItem } from "@/components/PortalLayout";
 
@@ -50,6 +52,8 @@ export const teamPortalNavItems: SidebarItem[] = [
   { label: "Scheduling",      icon: CalendarDays,    href: "/demo/team/scheduling"     },
   { label: "Reports",         icon: FileText,        href: "/demo/team/report-queue"   },
   { label: "Alerts",          icon: ShieldAlert,     href: "/demo/team/alerts"         },
+  { label: "Audit Leads",     icon: PhoneCall,       href: "/demo/team/audit-leads"    },
+  { label: "Prospect Scanner", icon: Search,         href: "/demo/team/prospect-scanner" },
 ];
 
 // Hidden from nav (routes still active at their original paths):

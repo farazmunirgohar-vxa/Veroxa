@@ -1,0 +1,669 @@
+/**
+ * team-audit-leads.tsx — M030
+ *
+ * Internal Veroxa team queue for audit leads. Behind InternalDemoGuard
+ * role="team". All reads/writes are local/session — no Supabase, no API.
+ */
+
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "wouter";
+import {
+  Compass,
+  Sparkles,
+  AlertTriangle,
+  TrendingUp,
+  Users,
+  PhoneCall,
+  ArrowRight,
+} from "lucide-react";
+import { PortalLayout } from "@/components/PortalLayout";
+import { teamPortalNavItems } from "@/lib/teamPortalNav";
+import { PageHeader } from "@/components/common";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import {
+  getAuditLeads,
+  summarizeAuditLeads,
+  updateAuditLeadStage,
+  updateAuditLeadNotes,
+} from "@/lib/leads/localAuditLeadStore";
+import {
+  LEAD_PRIORITY_LABELS,
+  LEAD_STAGE_LABELS,
+  type AuditLeadRecord,
+  type LeadPriority,
+  type LeadStage,
+} from "@/lib/leads/leadTypes";
+import { generateInternalLeadAudit } from "@/lib/leads/internalLeadScoring";
+import { generateRestaurantAudit } from "@/lib/audit/auditScoring";
+
+type FilterTab =
+  | "all"
+  | "priority_a"
+  | "walkthrough_requested"
+  | "ready_to_contact"
+  | "nurture";
+
+const FILTER_TABS: { id: FilterTab; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "priority_a", label: "Priority A" },
+  { id: "walkthrough_requested", label: "Walkthrough Requested" },
+  { id: "ready_to_contact", label: "Ready to Contact" },
+  { id: "nurture", label: "Nurture" },
+];
+
+const STAGE_BUTTONS: { stage: LeadStage; label: string }[] = [
+  { stage: "ready_to_contact", label: "Mark Ready to Contact" },
+  { stage: "contacted", label: "Mark Contacted" },
+  { stage: "walkthrough_booked", label: "Mark Walkthrough Booked" },
+  { stage: "proposal_sent", label: "Mark Proposal Sent" },
+  { stage: "won", label: "Mark Won" },
+  { stage: "lost", label: "Mark Lost" },
+  { stage: "nurture_later", label: "Mark Nurture Later" },
+];
+
+const priorityTone: Record<LeadPriority, string> = {
+  priority_a: "border-emerald-500/40 text-emerald-400 bg-emerald-500/5",
+  priority_b: "border-sky-500/40 text-sky-400 bg-sky-500/5",
+  nurture: "border-amber-500/40 text-amber-400 bg-amber-500/5",
+  low_priority: "border-muted text-muted-foreground bg-muted/10",
+  not_current_target: "border-muted text-muted-foreground bg-muted/10",
+};
+
+function formatUsd(n: number): string {
+  return `$${n.toLocaleString("en-US")}`;
+}
+
+const DEMO_SEED_INPUTS = [
+  {
+    restaurantName: "Demo Grill House",
+    city: "Phoenix",
+    state: "AZ",
+    cuisineType: "Steakhouse",
+    googleListingUrl: "https://maps.google.com/demo-grill",
+    websiteUrl: "https://demogrillhouse.example",
+    instagramUrl: "https://instagram.com/demogrill",
+    menuOrderingUrl: "https://demogrillhouse.example/menu",
+  },
+  {
+    restaurantName: "Demo Momo Kitchen",
+    city: "Austin",
+    state: "TX",
+    cuisineType: "Nepalese",
+    instagramUrl: "https://instagram.com/demomomo",
+    facebookUrl: "https://facebook.com/demomomo",
+  },
+  {
+    restaurantName: "Demo Mediterranean Table",
+    city: "Chicago",
+    state: "IL",
+    cuisineType: "Mediterranean",
+    googleListingUrl: "https://maps.google.com/demo-med",
+    websiteUrl: "https://demomed.example",
+    instagramUrl: "https://instagram.com/demomed",
+    facebookUrl: "https://facebook.com/demomed",
+    tiktokUrl: "https://tiktok.com/@demomed",
+    menuOrderingUrl: "https://demomed.example/order",
+  },
+];
+
+function buildDemoSeedLeads(): AuditLeadRecord[] {
+  const out: AuditLeadRecord[] = [];
+  const baseTime = Date.now();
+  DEMO_SEED_INPUTS.forEach((input, idx) => {
+    const report = generateRestaurantAudit({
+      restaurantName: input.restaurantName,
+      city: input.city,
+      state: input.state,
+      cuisineType: input.cuisineType,
+      googleListingUrl: input.googleListingUrl,
+      websiteUrl: input.websiteUrl,
+      instagramUrl: input.instagramUrl,
+      facebookUrl: input.facebookUrl,
+      tiktokUrl: input.tiktokUrl,
+      menuOrderingUrl: input.menuOrderingUrl,
+    });
+    const links = {
+      googleListingUrl: input.googleListingUrl,
+      websiteUrl: input.websiteUrl,
+      instagramUrl: input.instagramUrl,
+      facebookUrl: input.facebookUrl,
+      tiktokUrl: input.tiktokUrl,
+      menuOrderingUrl: input.menuOrderingUrl,
+    };
+    const internal = generateInternalLeadAudit({
+      report,
+      links,
+      source: "manual_prospect",
+      walkthroughRequested: false,
+    });
+    const stage: LeadStage = idx === 0 ? "walkthrough_requested" : "new_audit";
+    const createdAt = new Date(baseTime - idx * 86_400_000).toISOString();
+    out.push({
+      id: `lead_demo_seed_${idx + 1}`,
+      source: idx === 0 ? "free_audit" : "manual_prospect",
+      createdAt,
+      updatedAt: createdAt,
+      restaurantName: input.restaurantName,
+      city: input.city,
+      state: input.state,
+      cuisineType: input.cuisineType,
+      links,
+      publicAudit: {
+        totalScore: report.totalScore,
+        gradeLabel: report.gradeLabel,
+        auditConfidence: report.auditConfidence,
+        confidenceLabel: report.confidenceLabel,
+        recommendedPackageId: report.recommendation.packageId,
+        recommendedPackageLabel: report.recommendation.packageLabel,
+        standardPriceDisplay: report.recommendation.standardPriceDisplay,
+        foundingPriceDisplay: report.recommendation.foundingPriceDisplay,
+        weakSpotTitles: report.weakSpots.slice(0, 3).map((w) => w.title),
+      },
+      leadStage: stage,
+      leadPriority: internal.priority,
+      internalLeadScore: internal.score,
+      projectedMonthlyMrr: internal.projectedFoundingMonthlyMrr,
+      projectedStandardMonthlyMrr: internal.projectedStandardMonthlyMrr,
+      nextAction: internal.nextAction,
+      followUpStatus:
+        stage === "walkthrough_requested" ? "follow_up_due" : "no_follow_up_needed",
+      internalNotes: [],
+    });
+  });
+  return out;
+}
+
+export default function TeamAuditLeads() {
+  const [leads, setLeads] = useState<AuditLeadRecord[]>([]);
+  const [filter, setFilter] = useState<FilterTab>("all");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [noteDraft, setNoteDraft] = useState("");
+  const [showingDemoSeed, setShowingDemoSeed] = useState(false);
+
+  useEffect(() => {
+    const saved = getAuditLeads();
+    if (saved.length === 0) {
+      const seed = buildDemoSeedLeads();
+      setLeads(seed);
+      setShowingDemoSeed(true);
+    } else {
+      setLeads(saved);
+      setShowingDemoSeed(false);
+    }
+  }, []);
+
+  const summary = useMemo(() => summarizeAuditLeads(leads), [leads]);
+
+  const filtered = useMemo(() => {
+    if (filter === "all") return leads;
+    if (filter === "priority_a") {
+      return leads.filter((l) => l.leadPriority === "priority_a");
+    }
+    if (filter === "nurture") {
+      return leads.filter((l) => l.leadPriority === "nurture");
+    }
+    return leads.filter((l) => l.leadStage === filter);
+  }, [leads, filter]);
+
+  const selected = useMemo(
+    () => leads.find((l) => l.id === selectedId) ?? null,
+    [leads, selectedId],
+  );
+
+  const selectedInternal = useMemo(() => {
+    if (!selected) return null;
+    const report = generateRestaurantAudit({
+      restaurantName: selected.restaurantName,
+      city: selected.city,
+      state: selected.state,
+      cuisineType: selected.cuisineType,
+      ...selected.links,
+    });
+    return generateInternalLeadAudit({
+      report,
+      links: selected.links,
+      contact: selected.contact,
+      internalFlags: selected.internalFlags,
+      source: selected.source,
+      walkthroughRequested:
+        selected.leadStage === "walkthrough_requested" || !!selected.contact,
+    });
+  }, [selected]);
+
+  function handleStageUpdate(stage: LeadStage) {
+    if (!selected) return;
+    if (showingDemoSeed) return;
+    const updated = updateAuditLeadStage(selected.id, stage);
+    if (updated) {
+      setLeads(getAuditLeads());
+    }
+  }
+
+  function handleAddNote() {
+    if (!selected || !noteDraft.trim()) return;
+    if (showingDemoSeed) return;
+    updateAuditLeadNotes(selected.id, noteDraft.trim());
+    setLeads(getAuditLeads());
+    setNoteDraft("");
+  }
+
+  return (
+    <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
+      <PageHeader
+        title="Audit Leads"
+        description="Internal Veroxa queue for restaurants that ran an audit or were manually added as prospects."
+      />
+
+      {/* Summary cards */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+        <SummaryCard label="Total Leads" value={summary.totalLeads} icon={Users} />
+        <SummaryCard
+          label="Walkthrough Requested"
+          value={summary.walkthroughRequested}
+          icon={PhoneCall}
+        />
+        <SummaryCard
+          label="Priority A"
+          value={summary.priorityACount}
+          icon={Sparkles}
+        />
+        <SummaryCard
+          label="Projected Founding MRR"
+          value={formatUsd(summary.projectedFoundingMrr)}
+          icon={TrendingUp}
+        />
+        <SummaryCard
+          label="Follow-up Needed"
+          value={summary.followUpNeeded}
+          icon={AlertTriangle}
+        />
+      </div>
+
+      {/* Veroxa Financial Health (M032) */}
+      <Card className="bg-card border-border mb-4">
+        <CardHeader>
+          <CardTitle className="text-base inline-flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-emerald-400" />
+            Veroxa Financial Health
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-foreground/90 mb-3">
+            Veroxa must also track its own lead flow, projected MRR, follow-up
+            status, and close progress. Healthy lead flow protects the company
+            and helps Veroxa keep serving restaurants.
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-3 text-sm">
+            <MetricCell
+              label="Projected Founding MRR"
+              value={formatUsd(summary.projectedFoundingMrr)}
+            />
+            <MetricCell
+              label="Projected Standard MRR"
+              value={formatUsd(summary.projectedStandardMrr)}
+            />
+            <MetricCell label="Priority A" value={summary.priorityACount} />
+            <MetricCell
+              label="Walkthrough Requests"
+              value={summary.walkthroughRequested}
+            />
+            <MetricCell label="Won" value={summary.wonCount} />
+            <MetricCell label="Lost" value={summary.lostCount} />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Demo seed banner */}
+      {showingDemoSeed && leads.length > 0 && (
+        <div className="mb-3 rounded-md border border-amber-500/40 bg-amber-500/5 p-3">
+          <p className="text-[12px] text-amber-400">
+            Showing fictional demo leads. No saved leads exist yet — run a free
+            audit or add a manual prospect to begin. Stage updates and notes
+            are disabled for demo seed leads.
+          </p>
+        </div>
+      )}
+
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        {FILTER_TABS.map((t) => (
+          <Button
+            key={t.id}
+            size="sm"
+            variant={filter === t.id ? "default" : "outline"}
+            onClick={() => setFilter(t.id)}
+            data-testid={`filter-${t.id}`}
+          >
+            {t.label}
+          </Button>
+        ))}
+        <div className="ml-auto flex gap-2">
+          <Link href="/demo/team/prospect-scanner">
+            <Button size="sm" variant="outline">
+              Manual Prospect Scanner{" "}
+              <ArrowRight className="w-3.5 h-3.5 ml-1" />
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      {leads.length === 0 ? (
+        <Card className="bg-card border-border">
+          <CardContent className="p-6 text-center">
+            <p className="text-sm text-muted-foreground">
+              No audit leads yet. Run a free audit or add a manual prospect.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* List */}
+          <div className="lg:col-span-2 space-y-2">
+            {filtered.length === 0 ? (
+              <p className="text-sm text-muted-foreground px-2">
+                No leads match this filter.
+              </p>
+            ) : (
+              filtered.map((l) => (
+                <Card
+                  key={l.id}
+                  className={`bg-card border-border cursor-pointer transition ${selectedId === l.id ? "ring-1 ring-primary" : ""}`}
+                  onClick={() => setSelectedId(l.id)}
+                  data-testid={`lead-row-${l.id}`}
+                >
+                  <CardContent className="p-3">
+                    <div className="flex items-start justify-between gap-2 flex-wrap">
+                      <div>
+                        <p className="text-sm font-semibold">
+                          {l.restaurantName}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground">
+                          {l.cuisineType} · {l.city}, {l.state}
+                        </p>
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className={priorityTone[l.leadPriority]}
+                      >
+                        {LEAD_PRIORITY_LABELS[l.leadPriority]} ·{" "}
+                        {l.internalLeadScore}/100
+                      </Badge>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2 text-[11px] text-muted-foreground">
+                      <span>
+                        Audit:{" "}
+                        <span className="text-foreground/90">
+                          {l.publicAudit.totalScore}/100
+                        </span>
+                      </span>
+                      <span>
+                        Confidence:{" "}
+                        <span className="text-foreground/90">
+                          {l.publicAudit.confidenceLabel}
+                        </span>
+                      </span>
+                      <span>
+                        Package:{" "}
+                        <span className="text-foreground/90">
+                          {l.publicAudit.recommendedPackageLabel}
+                        </span>
+                      </span>
+                      <span>
+                        Projected:{" "}
+                        <span className="text-foreground/90">
+                          {formatUsd(l.projectedMonthlyMrr)}/mo founding
+                        </span>
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                      Stage:{" "}
+                      <span className="text-foreground/90">
+                        {LEAD_STAGE_LABELS[l.leadStage]}
+                      </span>{" "}
+                      · Next: {l.nextAction}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+
+          {/* Detail */}
+          <div>
+            {selected ? (
+              <Card className="bg-card border-border sticky top-4">
+                <CardHeader>
+                  <CardTitle className="text-base">
+                    {selected.restaurantName}
+                  </CardTitle>
+                  <p className="text-[11px] text-muted-foreground">
+                    {selected.cuisineType} · {selected.city}, {selected.state}
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
+                      Top weak spots
+                    </p>
+                    <ul className="text-[12px] list-disc pl-5 space-y-0.5">
+                      {selected.publicAudit.weakSpotTitles.length === 0 ? (
+                        <li className="text-muted-foreground">None on file</li>
+                      ) : (
+                        selected.publicAudit.weakSpotTitles.map((t, i) => (
+                          <li key={i}>{t}</li>
+                        ))
+                      )}
+                    </ul>
+                  </div>
+
+                  {selectedInternal && (
+                    <>
+                      <Separator />
+                      <div>
+                        <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
+                          Why this lead is strong
+                        </p>
+                        <ul className="text-[12px] list-disc pl-5 space-y-0.5">
+                          {selectedInternal.whyThisLeadIsStrong.map((r, i) => (
+                            <li key={i}>{r}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div>
+                        <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
+                          Risks
+                        </p>
+                        <ul className="text-[12px] list-disc pl-5 space-y-0.5 text-muted-foreground">
+                          {selectedInternal.risks.map((r, i) => (
+                            <li key={i}>{r}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="rounded-md border border-border bg-muted/20 p-2">
+                        <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                          Suggested opener
+                        </p>
+                        <p className="text-[12px] mt-0.5">
+                          {selectedInternal.suggestedOpener}
+                        </p>
+                      </div>
+                      <div className="rounded-md border border-border bg-muted/20 p-2">
+                        <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                          Suggested follow-up
+                        </p>
+                        <p className="text-[12px] mt-0.5">
+                          {selectedInternal.suggestedFollowUp}
+                        </p>
+                      </div>
+                      <div className="rounded-md border border-border bg-muted/20 p-2">
+                        <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                          Likely objection
+                        </p>
+                        <p className="text-[12px] mt-0.5 text-muted-foreground">
+                          {selectedInternal.likelyObjection}
+                        </p>
+                      </div>
+                    </>
+                  )}
+
+                  {selected.contact && (
+                    <div>
+                      <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
+                        Contact
+                      </p>
+                      <p className="text-[12px]">
+                        {selected.contact.contactName ?? "—"}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground">
+                        {selected.contact.phone && (
+                          <>Phone: {selected.contact.phone} · </>
+                        )}
+                        {selected.contact.email && (
+                          <>Email: {selected.contact.email}</>
+                        )}
+                      </p>
+                      {selected.contact.bestTimeToContact && (
+                        <p className="text-[11px] text-muted-foreground">
+                          Best time: {selected.contact.bestTimeToContact}
+                        </p>
+                      )}
+                      {selected.contact.note && (
+                        <p className="text-[11px] text-muted-foreground italic">
+                          “{selected.contact.note}”
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  <Separator />
+
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
+                      Internal notes
+                    </p>
+                    {selected.internalNotes.length === 0 ? (
+                      <p className="text-[12px] text-muted-foreground">
+                        No notes yet.
+                      </p>
+                    ) : (
+                      <ul className="text-[12px] list-disc pl-5 space-y-0.5">
+                        {selected.internalNotes.map((n, i) => (
+                          <li key={i}>{n}</li>
+                        ))}
+                      </ul>
+                    )}
+                    <div className="flex gap-2 mt-2">
+                      <Input
+                        value={noteDraft}
+                        onChange={(e) => setNoteDraft(e.target.value)}
+                        placeholder="Add internal note…"
+                        className="h-8 text-[12px]"
+                        disabled={showingDemoSeed}
+                      />
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleAddNote}
+                        disabled={showingDemoSeed || !noteDraft.trim()}
+                      >
+                        Add
+                      </Button>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">
+                      Stage updates
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {STAGE_BUTTONS.map((b) => (
+                        <Button
+                          key={b.stage}
+                          size="sm"
+                          variant={
+                            selected.leadStage === b.stage
+                              ? "default"
+                              : "outline"
+                          }
+                          onClick={() => handleStageUpdate(b.stage)}
+                          disabled={showingDemoSeed}
+                          className="h-7 text-[11px]"
+                          data-testid={`stage-${b.stage}`}
+                        >
+                          {b.label}
+                        </Button>
+                      ))}
+                    </div>
+                    {showingDemoSeed && (
+                      <p className="text-[11px] text-muted-foreground mt-2 italic">
+                        Stage updates are disabled while showing fictional
+                        demo leads.
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="bg-card border-border">
+                <CardContent className="p-4">
+                  <p className="text-sm text-muted-foreground inline-flex items-center gap-2">
+                    <Compass className="w-4 h-4" /> Select a lead to see the
+                    internal audit.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
+      )}
+    </PortalLayout>
+  );
+}
+
+function SummaryCard({
+  label,
+  value,
+  icon: Icon,
+}: {
+  label: string;
+  value: number | string;
+  icon: React.ComponentType<{ className?: string }>;
+}) {
+  return (
+    <Card className="bg-card border-border">
+      <CardContent className="p-3">
+        <div className="flex items-center justify-between gap-2">
+          <div>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+              {label}
+            </p>
+            <p className="text-xl font-bold tabular-nums">{value}</p>
+          </div>
+          <Icon className="w-4 h-4 text-muted-foreground" />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function MetricCell({
+  label,
+  value,
+}: {
+  label: string;
+  value: number | string;
+}) {
+  return (
+    <div className="rounded-md border border-border bg-muted/20 p-2">
+      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+        {label}
+      </p>
+      <p className="text-sm font-semibold tabular-nums">{value}</p>
+    </div>
+  );
+}

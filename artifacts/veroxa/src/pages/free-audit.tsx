@@ -1,5 +1,4 @@
 import { useState, type FormEvent } from "react";
-import { Link } from "wouter";
 import {
   Sparkles,
   CheckCircle2,
@@ -8,7 +7,16 @@ import {
   Info,
   ArrowRight,
   ShieldCheck,
+  PhoneCall,
 } from "lucide-react";
+import {
+  createAuditLeadFromReport,
+  saveAuditLead,
+} from "@/lib/leads/localAuditLeadStore";
+import type {
+  AuditLeadContact,
+  PreferredContactMethod,
+} from "@/lib/leads/leadTypes";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,9 +72,58 @@ const confidenceTone: Record<AuditConfidence, string> = {
   strong: "border-emerald-500/40 text-emerald-400 bg-emerald-500/5",
 };
 
+const emptyContact: AuditLeadContact = {
+  contactName: "",
+  phone: "",
+  email: "",
+  preferredContactMethod: "any",
+  bestTimeToContact: "",
+  note: "",
+};
+
 export default function FreeAudit() {
   const [input, setInput] = useState<RestaurantAuditInput>(initialInput);
   const [report, setReport] = useState<RestaurantAuditReport | null>(null);
+  const [contact, setContact] = useState<AuditLeadContact>(emptyContact);
+  const [walkthroughSaved, setWalkthroughSaved] = useState(false);
+  const [walkthroughError, setWalkthroughError] = useState<string | null>(null);
+
+  function handleContactChange<K extends keyof AuditLeadContact>(
+    key: K,
+    value: AuditLeadContact[K],
+  ) {
+    setContact((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function handleWalkthroughSubmit(e: FormEvent) {
+    e.preventDefault();
+    setWalkthroughError(null);
+    if (!report) return;
+    const hasPhone = (contact.phone ?? "").trim().length > 0;
+    const hasEmail = (contact.email ?? "").trim().length > 0;
+    if (!hasPhone && !hasEmail) {
+      setWalkthroughError("Please share either a phone number or email so Veroxa can follow up.");
+      return;
+    }
+    try {
+      const lead = createAuditLeadFromReport(report, {
+        source: "free_audit",
+        contact: {
+          contactName: contact.contactName?.trim() || undefined,
+          phone: contact.phone?.trim() || undefined,
+          email: contact.email?.trim() || undefined,
+          preferredContactMethod: contact.preferredContactMethod,
+          bestTimeToContact: contact.bestTimeToContact?.trim() || undefined,
+          note: contact.note?.trim() || undefined,
+        },
+        initialStage: "walkthrough_requested",
+      });
+      saveAuditLead(lead);
+      setWalkthroughSaved(true);
+    } catch {
+      setWalkthroughError("Could not save the walkthrough request in this preview. Please try again.");
+    }
+  }
 
   function handleChange<K extends keyof RestaurantAuditInput>(
     key: K,
@@ -88,6 +145,9 @@ export default function FreeAudit() {
     }
     const result = generateRestaurantAudit(input);
     setReport(result);
+    setWalkthroughSaved(false);
+    setWalkthroughError(null);
+    setContact(emptyContact);
     if (typeof window !== "undefined") {
       window.setTimeout(() => {
         document
@@ -659,24 +719,168 @@ export default function FreeAudit() {
               </CardContent>
             </Card>
 
-            {/* Disclaimer + CTA */}
+            {/* Self-improving system positioning (M032) */}
+            <Card className="bg-card border-border">
+              <CardContent className="p-4 space-y-2">
+                <p className="text-sm text-foreground/90">
+                  Veroxa is designed to be a self-improving restaurant growth
+                  system. The audit is the starting point. If you choose to
+                  work with Veroxa, the system keeps learning from uploads,
+                  direction, content decisions, Google/social activity, and
+                  results to recommend better actions over time.
+                </p>
+                <p className="text-[12px] text-muted-foreground">
+                  For founding clients, Veroxa is intentionally priced to make
+                  a serious online growth system accessible to independent
+                  restaurants.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Walkthrough request form (M028) */}
+            <Card
+              className="bg-card border-border"
+              data-testid="walkthrough-request-card"
+            >
+              <CardHeader>
+                <CardTitle className="text-base inline-flex items-center gap-2">
+                  <PhoneCall className="w-4 h-4 text-primary" />
+                  Request a manual audit walkthrough
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-foreground/90 mb-3">
+                  Veroxa can manually review this audit with you and explain
+                  which package fits your weak spots best.
+                </p>
+                {walkthroughSaved ? (
+                  <div
+                    className="rounded-md border border-emerald-500/40 bg-emerald-500/5 p-3"
+                    data-testid="walkthrough-success"
+                  >
+                    <p className="text-sm font-semibold text-emerald-400">
+                      Walkthrough request saved for this demo.
+                    </p>
+                    <p className="text-[12px] text-muted-foreground mt-1">
+                      In production, Veroxa would contact you from here.
+                    </p>
+                  </div>
+                ) : (
+                  <form
+                    onSubmit={handleWalkthroughSubmit}
+                    className="space-y-3"
+                    data-testid="walkthrough-form"
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <Field label="Contact name" testId="walkthrough-name">
+                        <Input
+                          value={contact.contactName ?? ""}
+                          onChange={(e) =>
+                            handleContactChange("contactName", e.target.value)
+                          }
+                        />
+                      </Field>
+                      <Field
+                        label="Best time to contact"
+                        testId="walkthrough-best-time"
+                      >
+                        <Input
+                          value={contact.bestTimeToContact ?? ""}
+                          onChange={(e) =>
+                            handleContactChange(
+                              "bestTimeToContact",
+                              e.target.value,
+                            )
+                          }
+                          placeholder="Weekday afternoons, after 3pm…"
+                        />
+                      </Field>
+                      <Field label="Phone" testId="walkthrough-phone">
+                        <Input
+                          type="tel"
+                          value={contact.phone ?? ""}
+                          onChange={(e) =>
+                            handleContactChange("phone", e.target.value)
+                          }
+                        />
+                      </Field>
+                      <Field label="Email" testId="walkthrough-email">
+                        <Input
+                          type="email"
+                          value={contact.email ?? ""}
+                          onChange={(e) =>
+                            handleContactChange("email", e.target.value)
+                          }
+                        />
+                      </Field>
+                      <Field
+                        label="Preferred contact method"
+                        testId="walkthrough-preferred"
+                      >
+                        <select
+                          className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
+                          value={contact.preferredContactMethod ?? "any"}
+                          onChange={(e) =>
+                            handleContactChange(
+                              "preferredContactMethod",
+                              e.target.value as PreferredContactMethod,
+                            )
+                          }
+                        >
+                          <option value="any">No preference</option>
+                          <option value="phone">Phone call</option>
+                          <option value="text">Text message</option>
+                          <option value="email">Email</option>
+                        </select>
+                      </Field>
+                      <Field label="Optional note" testId="walkthrough-note">
+                        <Input
+                          value={contact.note ?? ""}
+                          onChange={(e) =>
+                            handleContactChange("note", e.target.value)
+                          }
+                          placeholder="Anything Veroxa should know first"
+                        />
+                      </Field>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      Required: at least a phone number or email so Veroxa can
+                      follow up.
+                    </p>
+                    {walkthroughError && (
+                      <p
+                        className="text-[12px] text-amber-400"
+                        data-testid="walkthrough-error"
+                      >
+                        {walkthroughError}
+                      </p>
+                    )}
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <p className="text-[11px] text-muted-foreground italic">
+                        Demo note: this request is saved locally in this
+                        preview. Production lead capture will be connected
+                        later.
+                      </p>
+                      <Button
+                        type="submit"
+                        data-testid="walkthrough-submit"
+                        className="font-semibold"
+                      >
+                        Request walkthrough{" "}
+                        <ArrowRight className="w-4 h-4 ml-1" />
+                      </Button>
+                    </div>
+                  </form>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Disclaimer */}
             <Card className="bg-card border-border">
               <CardContent className="p-4">
                 <p className="text-[11px] text-muted-foreground italic">
                   {AUDIT_DISCLAIMER}
                 </p>
-                <Separator className="my-3" />
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <p className="text-sm">
-                    Want Veroxa to manually review this audit with you?
-                  </p>
-                  <Link href="/pricing">
-                    <Button data-testid="audit-cta-walkthrough">
-                      Request Audit Walkthrough{" "}
-                      <ArrowRight className="w-4 h-4 ml-1" />
-                    </Button>
-                  </Link>
-                </div>
               </CardContent>
             </Card>
           </div>
