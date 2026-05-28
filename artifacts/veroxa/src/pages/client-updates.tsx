@@ -1,16 +1,13 @@
-import { CalendarDays, CheckCircle2, FileText, Sparkles, Clock, Loader2, ArrowRight, Activity } from "lucide-react";
+import { CalendarDays, CheckCircle2, FileText, Sparkles, Clock, Loader2, ArrowRight, Activity, ImageIcon } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientPortalData } from "@/hooks/useClientPortalData";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
-import { getDemoImagesByCategory } from "@/data/demo/demoImages";
 import { clientTeamWorkRepository } from "@/lib/repositories";
 
 const SHOWCASE_ID = "demo-a";
-
-const FOOD_IMGS = getDemoImagesByCategory("food");
 
 const PAST_UPDATES = [
   {
@@ -72,28 +69,21 @@ export default function ClientUpdates() {
             ))}
           </div>
 
-          {/* Mini media strip — current week sample posts */}
+          {/* Post thumbnail strip — current week */}
           <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border/50">
-            {[0, 1, 2].map((i) => {
-              const img = FOOD_IMGS[i % FOOD_IMGS.length];
-              return (
-                <div
-                  key={i}
-                  className="aspect-square overflow-hidden rounded-md bg-muted/30"
-                  data-testid={`update-photo-${i}`}
-                >
-                  <img
-                    src={img.url}
-                    alt={img.alt}
-                    loading="lazy"
-                    className="h-full w-full object-cover opacity-80 hover:opacity-100 transition-opacity"
-                  />
-                </div>
-              );
-            })}
+            {(["Post 1", "Post 2", "Post 3"] as const).map((label, i) => (
+              <div
+                key={i}
+                className="aspect-square rounded-md bg-muted/20 border border-border/40 flex flex-col items-center justify-center gap-1"
+                data-testid={`update-photo-${i}`}
+              >
+                <ImageIcon className="w-5 h-5 text-muted-foreground/40" />
+                <span className="text-[9px] text-muted-foreground/50">{label}</span>
+              </div>
+            ))}
           </div>
           <p className="text-[11px] text-muted-foreground">
-            Demo only — photos above are illustrative sample images, not your actual posts.
+            Post thumbnails will appear here once your restaurant&apos;s media is connected.
           </p>
         </CardContent>
       </Card>

@@ -1335,7 +1335,43 @@ export default function FreeAudit() {
               </CardContent>
             </Card>
 
-            {/* Growth Report Sections — 12 structured areas */}
+            {/* Top 3 daily customer opportunities — above detailed sections for quick scan */}
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-base inline-flex items-center gap-2">
+                  <Target className="w-4 h-4 text-primary" /> Top 3 daily
+                  customer opportunities
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {report.weakSpots.map((w, i) => (
+                  <div
+                    key={`${w.categoryId}-${i}`}
+                    className="rounded-md border border-border bg-muted/20 p-3"
+                    data-testid={`audit-weak-${w.categoryId}`}
+                  >
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                      Opportunity {i + 1}
+                    </p>
+                    <p className="text-sm font-semibold mt-0.5">{w.title}</p>
+                    <p className="text-[12px] text-muted-foreground mt-1">
+                      <span className="font-medium text-foreground/90">
+                        Why this matters for walk-ins:
+                      </span>{" "}
+                      {w.whyItMatters}
+                    </p>
+                    <p className="text-[12px] text-muted-foreground mt-1">
+                      <span className="font-medium text-foreground/90">
+                        What Veroxa can do:
+                      </span>{" "}
+                      {w.howVeroxaHelps}
+                    </p>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Growth Report Sections — detailed breakdown */}
             <Card className="bg-card border-border" data-testid="growth-report-sections">
               <CardHeader>
                 <CardTitle className="text-base inline-flex items-center gap-2">
@@ -1368,14 +1404,6 @@ export default function FreeAudit() {
                       </span>
                       {sec.currentSignal}
                     </p>
-                    {sec.whatItMeans && (
-                      <p className="text-[12px] text-muted-foreground mb-1">
-                        <span className="font-medium text-foreground/90">
-                          What this means:{" "}
-                        </span>
-                        {sec.whatItMeans}
-                      </p>
-                    )}
                     <p className="text-[12px] text-muted-foreground mb-1">
                       <span className="font-medium text-foreground/90">
                         Why it matters:{" "}
@@ -1602,42 +1630,6 @@ export default function FreeAudit() {
                     </p>
                     <p className="text-[11px] text-muted-foreground/80 mt-1 italic">
                       {c.explanation}
-                    </p>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-
-            {/* Top daily customer opportunities */}
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="text-base inline-flex items-center gap-2">
-                  <Target className="w-4 h-4 text-primary" /> Top 3 daily
-                  customer opportunities
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {report.weakSpots.map((w, i) => (
-                  <div
-                    key={`${w.categoryId}-${i}`}
-                    className="rounded-md border border-border bg-muted/20 p-3"
-                    data-testid={`audit-weak-${w.categoryId}`}
-                  >
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                      Opportunity {i + 1}
-                    </p>
-                    <p className="text-sm font-semibold mt-0.5">{w.title}</p>
-                    <p className="text-[12px] text-muted-foreground mt-1">
-                      <span className="font-medium text-foreground/90">
-                        Why this matters for walk-ins:
-                      </span>{" "}
-                      {w.whyItMatters}
-                    </p>
-                    <p className="text-[12px] text-muted-foreground mt-1">
-                      <span className="font-medium text-foreground/90">
-                        What Veroxa can do:
-                      </span>{" "}
-                      {w.howVeroxaHelps}
                     </p>
                   </div>
                 ))}

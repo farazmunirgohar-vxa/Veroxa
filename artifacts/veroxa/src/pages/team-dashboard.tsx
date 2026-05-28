@@ -20,8 +20,6 @@ import {
   demoTeamMetrics, demoWorkQueue, demoTeamAlerts, getRestaurantName,
 } from "@/data/demoData";
 import { clientTeamWorkRepository } from "@/lib/repositories";
-import { DemoImageCard } from "@/components/demo/DemoVisuals";
-import { getDemoImage } from "@/data/demo/demoImages";
 import {
   buildAdaptiveRecommendations,
   rankRecommendations,
@@ -35,30 +33,9 @@ import { Brain } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const mediaReviewQueue = [
-  {
-    id: "mrq-1",
-    image: getDemoImage("food-grilled-platter")!,
-    title: "Grilled platter — overhead",
-    subtitle: "Demo Grill House · suggested: weekend feature",
-    status: "Approve",
-    tone: "good" as const,
-  },
-  {
-    id: "mrq-2",
-    image: getDemoImage("kitchen-chef-plate")!,
-    title: "Chef plating clip",
-    subtitle: "Demo Taco Bar · suggested: Reels — kitchen series",
-    status: "Approve",
-    tone: "good" as const,
-  },
-  {
-    id: "mrq-3",
-    image: getDemoImage("food-pancakes")!,
-    title: "Brunch stack",
-    subtitle: "Demo Grill House · re-shoot suggested",
-    status: "Re-shoot",
-    tone: "warn" as const,
-  },
+  { id: "mrq-1", title: "Grilled platter — overhead", subtitle: "Demo Grill House · suggested: weekend feature",      status: "Approve",  tone: "good" as const },
+  { id: "mrq-2", title: "Chef plating clip",           subtitle: "Demo Taco Bar · suggested: Reels — kitchen series", status: "Approve",  tone: "good" as const },
+  { id: "mrq-3", title: "Brunch stack",                subtitle: "Demo Grill House · re-shoot suggested",             status: "Re-shoot", tone: "warn" as const },
 ];
 
 const statCards = [
@@ -253,15 +230,24 @@ export default function TeamDashboard() {
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {mediaReviewQueue.map((item) => (
-            <DemoImageCard
+            <div
               key={item.id}
-              image={item.image}
-              title={item.title}
-              subtitle={item.subtitle}
-              status={item.status}
-              tone={item.tone}
-              testId={`media-review-${item.id}`}
-            />
+              className="rounded-md border border-border bg-card/60 p-3 flex items-start gap-3"
+              data-testid={`media-review-${item.id}`}
+            >
+              <div className="p-2 rounded-md bg-muted/30 flex-shrink-0">
+                <ImageIcon className="w-4 h-4 text-muted-foreground/50" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{item.title}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{item.subtitle}</p>
+                <StatusBadge
+                  tone={item.tone === "good" ? "success" : "warning"}
+                >
+                  {item.status}
+                </StatusBadge>
+              </div>
+            </div>
           ))}
         </div>
       </div>

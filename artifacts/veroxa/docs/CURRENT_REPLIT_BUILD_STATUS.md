@@ -1,5 +1,13 @@
 # Current Replit Build Status
 
+> **2026-05-28 — Touch-up pass: fake image removal, report hierarchy, repetition reduction**
+>
+> - `client-updates.tsx`: removed `FOOD_IMGS` demo food-photo strip; replaced with neutral icon placeholder cells. Disclaimer updated to "Post thumbnails will appear here once your restaurant's media is connected."
+> - `client-dashboard.tsx`: removed `DemoImageCard` + `getDemoImage` usage from "This week's media" and "Upcoming content" sections. Media cards now use icon + title/subtitle/status; schedule strip uses `CalendarDays` icon rows. No food images remain in the client portal.
+> - `team-dashboard.tsx`: removed `DemoImageCard` + `getDemoImage` from "Media review queue" section. Replaced with icon-based cards using `StatusBadge` for status tone.
+> - `free-audit.tsx`: (a) moved "Top 3 daily customer opportunities" card to appear immediately after the Audit Signal Summary strip — before the detailed Growth Report Sections — so owners see key findings without scrolling; (b) removed the `whatItMeans` render block from each Growth Report Section card to eliminate repetition with `whyItMatters`; `currentSignal`, `whyItMatters`, and `veroxaRecommendation` remain.
+> - Typecheck: pass.
+
 > **2026-05-28 — T4–T7: Growth report rewrite, live signals, confidence strip, lead badges, 3-phase plan**
 >
 > **T4 — Free-audit page wiring**

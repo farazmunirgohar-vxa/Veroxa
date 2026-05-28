@@ -7,13 +7,7 @@ import { Button } from "@/components/ui/button";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientPortalData } from "@/hooks/useClientPortalData";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
-import {
-  DemoImageCard,
-  DemoSchedulePreview,
-  DemoFlowTimeline,
-  type DemoScheduleItem,
-} from "@/components/demo/DemoVisuals";
-import { getDemoImage } from "@/data/demo/demoImages";
+import { DemoFlowTimeline } from "@/components/demo/DemoVisuals";
 import { EvidenceRecommendationCard } from "@/components/evidence/EvidenceRecommendationCard";
 import { recommendNextPost } from "@/lib/evidence/evidenceSelectionEngine";
 import { WeeklyStrategySnapshot } from "@/components/intelligence/WeeklyStrategySnapshot";
@@ -38,57 +32,15 @@ const veroxaWeekFlow = [
 ];
 
 const weekMedia = [
-  {
-    id: "wm-1",
-    image: getDemoImage("food-grilled-platter")!,
-    title: "Grilled platter — overhead",
-    subtitle: "Approved for weekend feature",
-    status: "Approved",
-    tone: "good" as const,
-  },
-  {
-    id: "wm-2",
-    image: getDemoImage("food-bowl-hero")!,
-    title: "Signature bowl — hero",
-    subtitle: "Scheduled · Tuesday lunch",
-    status: "Scheduled",
-    tone: "ready" as const,
-  },
-  {
-    id: "wm-3",
-    image: getDemoImage("kitchen-chef-plate")!,
-    title: "Chef plating — Reels clip",
-    subtitle: "Pending Veroxa team review",
-    status: "Pending review",
-    tone: "warn" as const,
-  },
+  { id: "wm-1", title: "Grilled platter — overhead", subtitle: "Approved for weekend feature", status: "Approved",       tone: "good"  as const },
+  { id: "wm-2", title: "Signature bowl — hero",       subtitle: "Scheduled · Tuesday lunch",   status: "Scheduled",      tone: "ready" as const },
+  { id: "wm-3", title: "Chef plating — Reels clip",   subtitle: "Pending Veroxa team review",  status: "Pending review", tone: "warn"  as const },
 ];
 
-const upcomingSchedule: DemoScheduleItem[] = [
-  {
-    id: "up-1",
-    image: getDemoImage("food-grilled-platter")!,
-    day: "Friday",
-    time: "11:30 AM",
-    platform: "Instagram",
-    label: "Lunch Special",
-  },
-  {
-    id: "up-2",
-    image: getDemoImage("food-bowl-hero")!,
-    day: "Saturday",
-    time: "2:00 PM",
-    platform: "Facebook",
-    label: "Behind the Scenes",
-  },
-  {
-    id: "up-3",
-    image: getDemoImage("food-plated-dinner")!,
-    day: "Sunday",
-    time: "6:15 PM",
-    platform: "Instagram",
-    label: "Dinner Push",
-  },
+const upcomingSchedule = [
+  { id: "up-1", day: "Friday",   time: "11:30 AM", platform: "Instagram", label: "Lunch Special"     },
+  { id: "up-2", day: "Saturday", time: "2:00 PM",  platform: "Facebook",  label: "Behind the Scenes" },
+  { id: "up-3", day: "Sunday",   time: "6:15 PM",  platform: "Instagram", label: "Dinner Push"       },
 ];
 
 const clientEvidenceRec = recommendNextPost("demo-a");
@@ -264,15 +216,29 @@ export default function ClientDashboard() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {weekMedia.map((item) => (
-            <DemoImageCard
+            <div
               key={item.id}
-              image={item.image}
-              title={item.title}
-              subtitle={item.subtitle}
-              status={item.status}
-              tone={item.tone}
-              testId={`week-media-${item.id}`}
-            />
+              className="rounded-md border border-border bg-card/60 p-3 flex items-start gap-3"
+              data-testid={`week-media-${item.id}`}
+            >
+              <div className="p-2 rounded-md bg-muted/30 flex-shrink-0">
+                <ImageIcon className="w-4 h-4 text-muted-foreground/50" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{item.title}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">{item.subtitle}</p>
+                <Badge
+                  variant="outline"
+                  className={`mt-1.5 text-[10px] ${
+                    item.tone === "good"  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300" :
+                    item.tone === "ready" ? "border-sky-500/30 bg-sky-500/10 text-sky-300" :
+                                           "border-amber-500/30 bg-amber-500/10 text-amber-300"
+                  }`}
+                >
+                  {item.status}
+                </Badge>
+              </div>
+            </div>
           ))}
         </div>
       </div>
@@ -299,7 +265,22 @@ export default function ClientDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <DemoSchedulePreview items={upcomingSchedule} testId="dashboard-schedule" />
+            <div className="space-y-2" data-testid="dashboard-schedule">
+              {upcomingSchedule.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center gap-3 rounded-md border border-border bg-muted/10 px-3 py-2"
+                >
+                  <div className="p-1.5 rounded bg-muted/30">
+                    <CalendarDays className="w-3.5 h-3.5 text-muted-foreground/60" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[12px] font-medium">{item.label}</p>
+                    <p className="text-[11px] text-muted-foreground">{item.day} · {item.time} · {item.platform}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
             <p className="mt-3 text-[11px] text-muted-foreground">
               Demo only — simulated AI. Nothing posted, nothing uploaded.
             </p>
