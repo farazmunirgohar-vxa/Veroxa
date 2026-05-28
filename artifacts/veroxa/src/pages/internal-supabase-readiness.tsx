@@ -35,6 +35,10 @@ import {
   runDevWriteSmokeTests,
   getDevWriteSmokeTestReadiness,
 } from "@/lib/data/devWriteSmokeTests";
+import {
+  getSupabaseReadinessStatus,
+  getReadOnlyConnectionNotes,
+} from "@/lib/repositories/supabaseReadiness";
 import { isValidUuid } from "@/lib/data/devClientIdValidation";
 import type { SchemaVerificationResult } from "@/lib/data/schemaVerificationTypes";
 import type { SchemaSmokeTestResult } from "@/lib/data/schemaVerificationTypes";
@@ -181,6 +185,77 @@ export default function InternalSupabaseReadiness() {
         >
           <ArrowLeft className="w-4 h-4" /> Back to Demo Hub
         </Link>
+
+        {/* Read-only operations foundation — diagnostic block */}
+        <Card
+          className="bg-amber-500/5 border-amber-500/30"
+          data-testid="card-read-only-ops-foundation"
+        >
+          <CardContent className="p-5 space-y-3">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-amber-400" />
+              <h2 className="text-sm font-semibold text-foreground">
+                Read-Only Operations Foundation
+              </h2>
+              <Badge
+                variant="outline"
+                className="text-[10px] bg-amber-500/10 text-amber-300 border-amber-500/30"
+              >
+                Internal only
+              </Badge>
+            </div>
+            <p className="text-[11px] text-amber-200/90 leading-relaxed">
+              Backend is not live. The Veroxa repository layer reads from
+              bundled demo fixtures. Real auth, real AI, real publishing,
+              real payments, and storage uploads are NOT enabled. The
+              read-only Supabase adapter is scaffolded but inactive.
+            </p>
+
+            {(() => {
+              const status = getSupabaseReadinessStatus();
+              const notes = getReadOnlyConnectionNotes();
+              const rows: { label: string; value: boolean | string }[] = [
+                { label: "Data source mode",            value: status.dataSourceModeLabel },
+                { label: "AUTH_MODE",                   value: status.authMode },
+                { label: "Supabase URL configured",     value: status.envUrlConfigured },
+                { label: "Supabase anon key configured",value: status.envAnonKeyConfigured },
+                { label: "Read-only client initialised",value: status.clientInitialised },
+                { label: "Read-only adapter available", value: status.readOnlyAdapterAvailable },
+                { label: "Real auth active",            value: status.realAuthActive },
+                { label: "Writes enabled",              value: status.writesEnabled },
+                { label: "Storage uploads enabled",     value: status.storageUploadsEnabled },
+                { label: "AI APIs enabled",             value: status.aiApisEnabled },
+                { label: "Publishing integrations",     value: status.publishingIntegrationsEnabled },
+                { label: "Payment integrations",        value: status.paymentIntegrationsEnabled },
+              ];
+              return (
+                <>
+                  <div className="rounded-md border border-amber-500/20 divide-y divide-amber-500/20">
+                    {rows.map((r) => (
+                      <div
+                        key={r.label}
+                        className="flex items-center justify-between px-3 py-2 text-xs"
+                        data-testid={`read-only-ops-row-${r.label.replace(/\s+/g, "-").toLowerCase()}`}
+                      >
+                        <span className="text-amber-200/80">{r.label}</span>
+                        {typeof r.value === "boolean" ? (
+                          <YesNo value={r.value} />
+                        ) : (
+                          <span className="text-foreground font-mono text-[11px]">{r.value}</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <ul className="text-[11px] text-amber-200/70 space-y-1 pl-3 list-disc">
+                    {notes.map((n, i) => (
+                      <li key={i}>{n}</li>
+                    ))}
+                  </ul>
+                </>
+              );
+            })()}
+          </CardContent>
+        </Card>
 
         {/* Header */}
         <div className="space-y-2" data-testid="readiness-header">

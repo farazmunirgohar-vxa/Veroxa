@@ -32,6 +32,7 @@ import { getLocalDirectionRequests, subscribeToLocalDirectionRequests } from "@/
 import { getLocalUploadSubmissions, subscribeToLocalUploadSubmissions } from "@/lib/uploadKeys/localUploadStore";
 import { Compass } from "lucide-react";
 import { useEffect, useState } from "react";
+import { healthRepository, reportRepository, activityRepository } from "@/lib/repositories";
 
 const veroxaWeekFlow = [
   { key: "upload",   label: "You upload",    caption: "Food photos from your phone" },
@@ -140,11 +141,21 @@ export default function ClientDashboard() {
     { label: "Latest report",     value: loading ? "—" : data.monthlyReportPreview.status,    icon: BarChart2   },
   ];
 
+  const healthSnapshot = healthRepository.getClientHealthSnapshot("demo-a");
+  const clientReports = reportRepository.getClientReports("demo-a");
+  const recentActivity = activityRepository.getClientVisibleActivity("demo-a");
+
   const snapshotItems = [
-    "Your upcoming content is scheduled and ready for review.",
+    healthSnapshot
+      ? `You have ${healthSnapshot.unusedUsableMediaCount} approved media items ready — roughly ${healthSnapshot.weeksOfContentLeft} weeks of content at your current cadence.`
+      : "Your upcoming content is scheduled and ready for review.",
     "Google visibility data is being tracked for this month.",
-    "Your latest monthly report is available in Reports.",
-    "Veroxa is monitoring your content supply.",
+    clientReports.monthly.length > 0
+      ? `Your latest monthly report (${clientReports.monthly[0].monthKey}) is available in Reports.`
+      : "Your latest monthly report is available in Reports.",
+    recentActivity.length > 0
+      ? `Veroxa is working on your account — ${recentActivity.length} recent updates.`
+      : "Veroxa is monitoring your content supply.",
   ];
 
   return (
