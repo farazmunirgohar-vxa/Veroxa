@@ -7,6 +7,10 @@ import { Label } from "@/components/ui/label";
 import { AUTH_MODE } from "@/lib/auth/authMode";
 import { getSupabaseClient } from "@/lib/supabase";
 import { getDemoRoleHomePath, isVeroxaRole } from "@/lib/auth/authContract";
+import {
+  getDevRouteForRole,
+  validateDevCredentials,
+} from "@/lib/auth/devCredentials";
 
 const roles = [
   {
@@ -57,7 +61,6 @@ const roles = [
 
 type SignInState =
   | { kind: "idle" }
-  | { kind: "placeholder-notice" }
   | { kind: "submitting" }
   | { kind: "success"; message: string }
   | { kind: "error"; message: string };
@@ -85,7 +88,22 @@ export default function LoginPage() {
     e.preventDefault();
 
     if (AUTH_MODE === "placeholder") {
-      setSignInState({ kind: "placeholder-notice" });
+      // TEMPORARY development-only flow. See
+      // src/lib/auth/devCredentials.ts — no Supabase, no network, no
+      // production users. Remove together when real auth is wired.
+      const role = validateDevCredentials(email, password);
+      if (!role) {
+        setSignInState({
+          kind: "error",
+          message: "Invalid development credentials.",
+        });
+        return;
+      }
+      setSignInState({
+        kind: "success",
+        message: `Routing to ${role} preview…`,
+      });
+      setLocation(getDevRouteForRole(role));
       return;
     }
 
@@ -312,15 +330,14 @@ export default function LoginPage() {
                   {signInState.kind === "submitting" ? "Signing in…" : "Sign In"}
                 </Button>
 
-                {signInState.kind === "placeholder-notice" && (
-                  <div
-                    className="rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-[11px] text-amber-400 flex items-center gap-2 animate-in fade-in slide-in-from-top-1 duration-300"
-                    data-testid="signin-notice"
-                  >
-                    <ShieldAlert className="w-3.5 h-3.5 flex-shrink-0" />
-                    Real authentication is not connected yet.
-                  </div>
-                )}
+                <div
+                  className="rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-[11px] text-amber-400 flex items-center gap-2"
+                  data-testid="signin-dev-notice"
+                >
+                  <ShieldAlert className="w-3.5 h-3.5 flex-shrink-0" />
+                  Development access only — production authentication is not
+                  connected yet.
+                </div>
 
                 {signInState.kind === "success" && (
                   <div

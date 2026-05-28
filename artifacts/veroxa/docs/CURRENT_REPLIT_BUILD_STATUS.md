@@ -1,5 +1,35 @@
 # Current Replit Build Status
 
+> **2026-05-28 — Temporary role-based dev login preview added**
+>
+> - Login page (`src/pages/login.tsx`) now accepts four temporary
+>   development credentials while `AUTH_MODE === "placeholder"`:
+>   - Client:   `faraz@client.com` / `farazclient` → `/demo/client/dashboard`
+>   - Team:     `faraz@team.com` / `farazteam` → `/demo/team/dashboard`
+>   - Operator: `faraz@operator.com` / `farazoperator` → `/demo/operator/operator-os`
+>   - Owner:    `faraz@owner.com` / `farazowner` → `/demo/owner/executive-dashboard`
+> - Routing reuses the existing `DEMO_ROLE_HOME_PATH` map in
+>   `src/lib/auth/authContract.ts`; no new routes were invented and
+>   `App.tsx` was not touched.
+> - New helper `src/lib/auth/devCredentials.ts` exports
+>   `DEV_ROLE_CREDENTIALS`, `validateDevCredentials`, and
+>   `getDevRouteForRole`. No Supabase, no network, no hashing, no
+>   secrets, no production users, no service-role key.
+> - Login form shows a persistent dev-access notice: "Development access
+>   only — production authentication is not connected yet." Bad
+>   credentials show "Invalid development credentials." Role separation
+>   is enforced — each credential routes only to its own portal; the
+>   previously documented shared `faraz / faraz` credential is not
+>   accepted (no code accepted it previously, so nothing was removed).
+> - Real-auth Supabase branch in `handleSignInSubmit` is untouched and
+>   inactive — flips on automatically when `AUTH_MODE === "real"`.
+> - Guardrails: AUTH=placeholder, DATA=fixture, VEROXA_DATA_SOURCE_MODE=demo.
+>   No real Supabase auth, no production users, no backend writes,
+>   no AI, no publishing, no payments, no notifications, no storage.
+> - This is development-only. To remove later: delete
+>   `src/lib/auth/devCredentials.ts` and the placeholder branch in
+>   `login.tsx` that uses it.
+
 > **2026-05-28 — Free Audit result copy refined: consultative tone, less scorecard-heavy**
 >
 > - Free Audit result copy refined to be more consultative and less scorecard-heavy.
