@@ -13,13 +13,18 @@ export interface LiveRestaurantCandidate {
   userRatingCount?: number;
   source: "google_places";
   matchConfidence: "high" | "medium" | "low";
+  /** Non-sensitive: which discovery strategy surfaced this candidate. */
+  discoveredBy?: string;
 }
 
 export interface LiveRestaurantSearchResult {
   mode: GooglePlacesMode;
   candidates: LiveRestaurantCandidate[];
   message?: string;
-  searchStrategy?: string;
+  /** Ordered list of strategies that were attempted. */
+  strategiesTried?: string[];
+  /** Total candidates returned (after dedup). */
+  candidateCount?: number;
 }
 
 export interface LiveRestaurantProfile {
@@ -43,6 +48,10 @@ export interface LiveRestaurantDetailsResult {
   message?: string;
 }
 
+// ---------------------------------------------------------------------------
+// Field masks
+// ---------------------------------------------------------------------------
+
 const SEARCH_FIELD_MASK = [
   "places.id",
   "places.displayName",
@@ -52,6 +61,12 @@ const SEARCH_FIELD_MASK = [
   "places.types",
   "places.rating",
   "places.userRatingCount",
+].join(",");
+
+const AUTOCOMPLETE_FIELD_MASK = [
+  "suggestions.placePrediction.placeId",
+  "suggestions.placePrediction.text",
+  "suggestions.placePrediction.structuredFormat",
 ].join(",");
 
 const DETAILS_FIELD_MASK = [
@@ -68,6 +83,10 @@ const DETAILS_FIELD_MASK = [
   "primaryType",
   "types",
 ].join(",");
+
+// ---------------------------------------------------------------------------
+// Food-related type allowlist
+// ---------------------------------------------------------------------------
 
 const FOOD_RELATED_TYPES = new Set([
   "restaurant",
@@ -109,6 +128,100 @@ const FOOD_RELATED_TYPES = new Set([
   "diner",
 ]);
 
+// ---------------------------------------------------------------------------
+// Location bias
+// ---------------------------------------------------------------------------
+
+interface LatLng {
+  latitude: number;
+  longitude: number;
+}
+
+interface CityBias {
+  center: LatLng;
+  radiusMeters: number;
+}
+
+/**
+ * Returns a location bias for well-known cities, extensible for future cities.
+ * Returns null when the city is unknown — callers skip the bias in that case.
+ */
+function getCityBias(city: string, state: string): CityBias | null {
+  const c = city.toLowerCase().replace(/[^a-z ]/g, "").trim();
+  const s = state.toLowerCase().replace(/[^a-z]/g, "").trim();
+
+  // Normalise state abbreviations
+  const stateNorm =
+    s === "tx" || s === "texas"
+      ? "tx"
+      : s === "ca" || s === "california"
+        ? "ca"
+        : s === "ny" || s === "new york"
+          ? "ny"
+          : s === "fl" || s === "florida"
+            ? "fl"
+            : s === "il" || s === "illinois"
+              ? "il"
+              : s;
+
+  const key = `${c}|${stateNorm}`;
+
+  const biases: Record<string, CityBias> = {
+    "san antonio|tx": {
+      center: { latitude: 29.4241, longitude: -98.4936 },
+      radiusMeters: 50_000,
+    },
+    "austin|tx": {
+      center: { latitude: 30.2672, longitude: -97.7431 },
+      radiusMeters: 40_000,
+    },
+    "houston|tx": {
+      center: { latitude: 29.7604, longitude: -95.3698 },
+      radiusMeters: 60_000,
+    },
+    "dallas|tx": {
+      center: { latitude: 32.7767, longitude: -96.797 },
+      radiusMeters: 50_000,
+    },
+    "los angeles|ca": {
+      center: { latitude: 34.0522, longitude: -118.2437 },
+      radiusMeters: 55_000,
+    },
+    "chicago|il": {
+      center: { latitude: 41.8781, longitude: -87.6298 },
+      radiusMeters: 45_000,
+    },
+    "new york|ny": {
+      center: { latitude: 40.7128, longitude: -74.006 },
+      radiusMeters: 35_000,
+    },
+    "miami|fl": {
+      center: { latitude: 25.7617, longitude: -80.1918 },
+      radiusMeters: 40_000,
+    },
+  };
+
+  return biases[key] ?? null;
+}
+
+function buildLocationBiasBody(bias: CityBias): object {
+  return {
+    locationBias: {
+      circle: {
+        center: {
+          latitude: bias.center.latitude,
+          longitude: bias.center.longitude,
+        },
+        radius: bias.radiusMeters,
+      },
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
 function getApiKey(): string | null {
   const key = process.env["GOOGLE_PLACES_API_KEY"];
   if (!key || key.trim() === "") return null;
@@ -141,32 +254,22 @@ function isFoodRelated(p: {
 }
 
 function rankCandidates(
-  places: {
-    id?: string;
-    displayName?: { text?: string };
-    formattedAddress?: string;
-    googleMapsUri?: string;
-    primaryType?: string;
-    types?: string[];
-    rating?: number;
-    userRatingCount?: number;
-  }[],
+  candidates: LiveRestaurantCandidate[],
   input: { restaurantName: string; city: string; state: string },
-): typeof places {
+): LiveRestaurantCandidate[] {
   const cityLower = input.city.toLowerCase();
   const stateLower = input.state.toLowerCase();
+  const stateAbbr = stateLower.length <= 2 ? stateLower : "";
 
-  return [...places].sort((a, b) => {
-    const aName = (a.displayName?.text ?? "").toLowerCase();
-    const bName = (b.displayName?.text ?? "").toLowerCase();
-    const aAddr = (a.formattedAddress ?? "").toLowerCase();
-    const bAddr = (b.formattedAddress ?? "").toLowerCase();
+  return [...candidates].sort((a, b) => {
+    const aName = a.displayName.toLowerCase();
+    const bName = b.displayName.toLowerCase();
+    const aAddr = a.formattedAddress.toLowerCase();
+    const bAddr = b.formattedAddress.toLowerCase();
 
-    const aConf = deriveMatchConfidence(input.restaurantName, aName);
-    const bConf = deriveMatchConfidence(input.restaurantName, bName);
     const confRank = { high: 0, medium: 1, low: 2 };
-    if (confRank[aConf] !== confRank[bConf])
-      return confRank[aConf] - confRank[bConf];
+    if (confRank[a.matchConfidence] !== confRank[b.matchConfidence])
+      return confRank[a.matchConfidence] - confRank[b.matchConfidence];
 
     const aCityMatch =
       cityLower && (aAddr.includes(cityLower) || aName.includes(cityLower))
@@ -179,11 +282,13 @@ function rankCandidates(
     if (aCityMatch !== bCityMatch) return aCityMatch - bCityMatch;
 
     const aStateMatch =
-      stateLower && (aAddr.includes(stateLower) || aAddr.includes(", tx"))
+      (stateLower && aAddr.includes(stateLower)) ||
+      (stateAbbr && aAddr.includes(`, ${stateAbbr}`))
         ? 0
         : 1;
     const bStateMatch =
-      stateLower && (bAddr.includes(stateLower) || bAddr.includes(", tx"))
+      (stateLower && bAddr.includes(stateLower)) ||
+      (stateAbbr && bAddr.includes(`, ${stateAbbr}`))
         ? 0
         : 1;
     if (aStateMatch !== bStateMatch) return aStateMatch - bStateMatch;
@@ -204,6 +309,10 @@ function rankCandidates(
   });
 }
 
+// ---------------------------------------------------------------------------
+// Raw-place type shared by text search and detail normalisation
+// ---------------------------------------------------------------------------
+
 type RawPlace = {
   id?: string;
   displayName?: { text?: string };
@@ -215,38 +324,10 @@ type RawPlace = {
   userRatingCount?: number;
 };
 
-async function runTextSearch(
-  apiKey: string,
-  textQuery: string,
-  signal: AbortSignal,
-): Promise<RawPlace[]> {
-  const res = await fetch(
-    "https://places.googleapis.com/v1/places:searchText",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Goog-Api-Key": apiKey,
-        "X-Goog-FieldMask": SEARCH_FIELD_MASK,
-      },
-      body: JSON.stringify({ textQuery, maxResultCount: 10 }),
-      signal,
-    },
-  );
-  if (!res.ok) {
-    logger.warn(
-      { status: res.status, textQuery },
-      "Google Places search attempt failed",
-    );
-    return [];
-  }
-  const data = (await res.json()) as { places?: RawPlace[] };
-  return Array.isArray(data.places) ? data.places : [];
-}
-
 function buildCandidates(
   places: RawPlace[],
   restaurantName: string,
+  discoveredBy: string,
 ): LiveRestaurantCandidate[] {
   return places
     .filter((p) => p.id && p.displayName?.text)
@@ -266,9 +347,168 @@ function buildCandidates(
             : undefined,
         source: "google_places" as const,
         matchConfidence: deriveMatchConfidence(restaurantName, displayName),
+        discoveredBy,
       };
     });
 }
+
+// ---------------------------------------------------------------------------
+// Text Search
+// ---------------------------------------------------------------------------
+
+async function runTextSearch(
+  apiKey: string,
+  textQuery: string,
+  extraBody: object,
+  signal: AbortSignal,
+): Promise<RawPlace[]> {
+  try {
+    const res = await fetch(
+      "https://places.googleapis.com/v1/places:searchText",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Goog-Api-Key": apiKey,
+          "X-Goog-FieldMask": SEARCH_FIELD_MASK,
+        },
+        body: JSON.stringify({
+          textQuery,
+          maxResultCount: 10,
+          ...extraBody,
+        }),
+        signal,
+      },
+    );
+    if (!res.ok) {
+      logger.warn(
+        { status: res.status, textQuery },
+        "Google Places text search attempt failed",
+      );
+      return [];
+    }
+    const data = (await res.json()) as { places?: RawPlace[] };
+    return Array.isArray(data.places) ? data.places : [];
+  } catch (err) {
+    logger.warn({ err, textQuery }, "Text search threw — continuing");
+    return [];
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Autocomplete (New)
+// ---------------------------------------------------------------------------
+
+interface AutocompletePrediction {
+  placeId?: string;
+  text?: { text?: string };
+  structuredFormat?: {
+    mainText?: { text?: string };
+    secondaryText?: { text?: string };
+  };
+}
+
+async function runAutocomplete(
+  apiKey: string,
+  input: string,
+  extraBody: object,
+  signal: AbortSignal,
+): Promise<AutocompletePrediction[]> {
+  try {
+    const res = await fetch(
+      "https://places.googleapis.com/v1/places:autocomplete",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Goog-Api-Key": apiKey,
+          "X-Goog-FieldMask": AUTOCOMPLETE_FIELD_MASK,
+        },
+        body: JSON.stringify({
+          input,
+          includedRegionCodes: ["us"],
+          ...extraBody,
+        }),
+        signal,
+      },
+    );
+    if (!res.ok) {
+      logger.warn(
+        { status: res.status, input },
+        "Google Places autocomplete attempt failed",
+      );
+      return [];
+    }
+    const data = (await res.json()) as {
+      suggestions?: { placePrediction?: AutocompletePrediction }[];
+    };
+    if (!Array.isArray(data.suggestions)) return [];
+    return data.suggestions
+      .map((s) => s.placePrediction)
+      .filter((p): p is AutocompletePrediction => p != null);
+  } catch (err) {
+    logger.warn({ err, input }, "Autocomplete threw — continuing");
+    return [];
+  }
+}
+
+function autocompletePredictionToCandidate(
+  p: AutocompletePrediction,
+  restaurantName: string,
+): LiveRestaurantCandidate | null {
+  const placeId = p.placeId;
+  if (!placeId) return null;
+
+  const mainText =
+    p.structuredFormat?.mainText?.text ?? p.text?.text ?? "";
+  const secondaryText = p.structuredFormat?.secondaryText?.text ?? "";
+
+  if (!mainText) return null;
+
+  return {
+    placeId,
+    displayName: mainText,
+    formattedAddress: secondaryText,
+    source: "google_places" as const,
+    matchConfidence: deriveMatchConfidence(restaurantName, mainText),
+    discoveredBy: "autocomplete",
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Dedupe + merge
+// ---------------------------------------------------------------------------
+
+function dedupeAndMerge(
+  primary: LiveRestaurantCandidate[],
+  secondary: LiveRestaurantCandidate[],
+): LiveRestaurantCandidate[] {
+  const seen = new Map<string, LiveRestaurantCandidate>();
+  for (const c of [...primary, ...secondary]) {
+    const existing = seen.get(c.placeId);
+    if (!existing) {
+      seen.set(c.placeId, c);
+    } else {
+      // Keep the richer version: prefer the one with more fields set
+      const existingScore =
+        (existing.rating !== undefined ? 1 : 0) +
+        (existing.googleMapsUri ? 1 : 0) +
+        (existing.formattedAddress ? 1 : 0) +
+        (existing.primaryType ? 1 : 0);
+      const cScore =
+        (c.rating !== undefined ? 1 : 0) +
+        (c.googleMapsUri ? 1 : 0) +
+        (c.formattedAddress ? 1 : 0) +
+        (c.primaryType ? 1 : 0);
+      if (cScore > existingScore) seen.set(c.placeId, c);
+    }
+  }
+  return Array.from(seen.values());
+}
+
+// ---------------------------------------------------------------------------
+// Main export: searchRealRestaurants
+// ---------------------------------------------------------------------------
 
 export async function searchRealRestaurants(input: {
   restaurantName: string;
@@ -297,65 +537,104 @@ export async function searchRealRestaurants(input: {
   }
 
   const locationSuffix = [city, state].filter(Boolean).join(" ");
-
-  const strategies: { query: string; label: string }[] = [
-    {
-      query: [name, locationSuffix].filter(Boolean).join(" "),
-      label: "broad_name_city_state",
-    },
-    {
-      query: [name, "restaurant", locationSuffix].filter(Boolean).join(" "),
-      label: "name_restaurant_city_state",
-    },
-    {
-      query: [name, "food", locationSuffix].filter(Boolean).join(" "),
-      label: "name_food_city_state",
-    },
-    {
-      query: city
-        ? `${name} near ${city}${state ? ", " + state : ""}`
-        : `${name} near ${state}`,
-      label: "name_near_city_state",
-    },
-  ];
+  const bias = getCityBias(city, state);
+  const biasBody = bias ? buildLocationBiasBody(bias) : {};
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 20_000);
+  const timeout = setTimeout(() => controller.abort(), 25_000);
+
+  const strategiesTried: string[] = [];
+  const allCandidates: LiveRestaurantCandidate[] = [];
 
   try {
-    for (const strategy of strategies) {
-      let rawPlaces: RawPlace[] = [];
-      try {
-        rawPlaces = await runTextSearch(apiKey, strategy.query, controller.signal);
-      } catch (innerErr) {
-        logger.warn(
-          { innerErr, label: strategy.label },
-          "Search strategy threw — continuing",
-        );
-        continue;
-      }
+    // ---- Strategy 1: Autocomplete -----------------------------------------
+    strategiesTried.push("autocomplete");
+    const autocompleteInput = [name, city, state].filter(Boolean).join(" ");
+    const acPredictions = await runAutocomplete(
+      apiKey,
+      autocompleteInput,
+      biasBody,
+      controller.signal,
+    );
+    const acCandidates = acPredictions
+      .slice(0, 5)
+      .map((p) => autocompletePredictionToCandidate(p, name))
+      .filter((c): c is LiveRestaurantCandidate => c !== null);
+    allCandidates.push(...acCandidates);
 
-      if (rawPlaces.length === 0) continue;
+    // ---- Text search strategies -------------------------------------------
+    const textStrategies: { query: string; label: string; extra?: object }[] =
+      [
+        {
+          query: [name, locationSuffix].filter(Boolean).join(" "),
+          label: "broad_name_city_state",
+          extra: biasBody,
+        },
+        {
+          query: [name, "restaurant", locationSuffix].filter(Boolean).join(" "),
+          label: "name_restaurant_city_state",
+          extra: biasBody,
+        },
+        {
+          query: [name, "food", locationSuffix].filter(Boolean).join(" "),
+          label: "name_food_city_state",
+          extra: biasBody,
+        },
+        {
+          query: city
+            ? `${name} near ${city}${state ? ", " + state : ""}`
+            : `${name} near ${state}`,
+          label: "name_near_city_state",
+        },
+        // name only + location bias (helps when query noise hurts matching)
+        {
+          query: name,
+          label: "name_location_biased",
+          extra: bias ? biasBody : { locationBias: undefined },
+        },
+      ].filter((s) => bias || s.label !== "name_location_biased" || !bias); // only include location biased if bias available
 
-      const ranked = rankCandidates(rawPlaces, input);
-      const candidates = buildCandidates(ranked, name);
+    for (const strategy of textStrategies) {
+      // Stop early if we already have plenty of high-confidence candidates
+      if (allCandidates.length >= 12) break;
 
-      if (candidates.length > 0) {
-        clearTimeout(timeout);
-        return {
-          mode: "live",
-          candidates,
-          searchStrategy: strategy.label,
-        };
+      strategiesTried.push(strategy.label);
+      const extra = strategy.extra ?? {};
+      const rawPlaces = await runTextSearch(
+        apiKey,
+        strategy.query,
+        extra,
+        controller.signal,
+      );
+
+      if (rawPlaces.length > 0) {
+        const candidates = buildCandidates(rawPlaces, name, strategy.label);
+        allCandidates.push(...candidates);
       }
     }
 
     clearTimeout(timeout);
+
+    // ---- Dedupe, rank, cap ------------------------------------------------
+    const deduped = dedupeAndMerge(allCandidates, []);
+    const ranked = rankCandidates(deduped, input);
+    const final = ranked.slice(0, 12);
+
+    if (final.length === 0) {
+      return {
+        mode: "live",
+        candidates: [],
+        message: "No matches found for this restaurant.",
+        strategiesTried,
+        candidateCount: 0,
+      };
+    }
+
     return {
       mode: "live",
-      candidates: [],
-      message: "No matches found for this restaurant.",
-      searchStrategy: "exhausted",
+      candidates: final,
+      strategiesTried,
+      candidateCount: final.length,
     };
   } catch (err) {
     clearTimeout(timeout);
@@ -364,9 +643,14 @@ export async function searchRealRestaurants(input: {
       mode: "error",
       candidates: [],
       message: "Live lookup is temporarily unavailable.",
+      strategiesTried,
     };
   }
 }
+
+// ---------------------------------------------------------------------------
+// Place Details
+// ---------------------------------------------------------------------------
 
 export async function getRealRestaurantDetails(
   placeId: string,

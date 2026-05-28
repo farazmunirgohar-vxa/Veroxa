@@ -1,5 +1,38 @@
 # Current Replit Build Status
 
+> **2026-05-28 — Multi-strategy live restaurant discovery added (Free Audit)**
+>
+> - Live restaurant discovery now runs Places Autocomplete (New) and up to
+>   five Text Search strategies in a single pass, merging and deduplicating
+>   by `placeId` before ranking. Searching "Selda" + "San Antonio" + "TX"
+>   should now return plausible real candidates even when Google does not
+>   classify the business as type `restaurant`.
+> - San Antonio/TX location bias added (lat 29.4241, lng -98.4936, radius
+>   50 km). Bias applied to both Autocomplete and Text Search requests.
+>   Framework is extensible — Austin, Houston, Dallas, LA, Chicago, NYC,
+>   Miami are also pre-seeded. Returns to no-bias gracefully for unknown
+>   cities.
+> - Autocomplete (New) uses `places:autocomplete` endpoint with
+>   `includedRegionCodes: ["us"]`, field mask
+>   `suggestions.placePrediction.placeId/text/structuredFormat`, top-5
+>   predictions converted to candidates (no per-prediction Details call at
+>   search time).
+> - Text Search strategies (in order, early-exit replaced by parallel run):
+>   `broad_name_city_state`, `name_restaurant_city_state`,
+>   `name_food_city_state`, `name_near_city_state`, `name_location_biased`.
+>   No `includedType` restriction.
+> - Dedup: best (richest) version of each `placeId` kept when the same
+>   place appears from multiple strategies.
+> - Up to 12 candidates returned. Ranking: name similarity → city in
+>   address → state in address → food-related type → rating presence.
+> - Non-sensitive diagnostics: `strategiesTried` string array and
+>   `candidateCount` returned in search response. No API key or raw errors.
+> - UI candidate badge: "Live Google match" (high confidence) /
+>   "Possible live match" (medium/low). Preview fallback remains
+>   "Preview fallback result."
+> - Cuisine remains not required. No scraping, no API key in frontend,
+>   no Supabase writes, no Owner/Operator pages touched.
+
 > **2026-05-28 — Live restaurant search recall improved (Free Audit)**
 >
 > - Search no longer depends on `includedType: "restaurant"`. The first

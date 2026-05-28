@@ -236,7 +236,7 @@ export default function FreeAudit() {
   const [searchMode, setSearchMode] = useState<
     "idle" | "live" | "fixture_fallback" | "not_configured"
   >("idle");
-  const [searchStrategy, setSearchStrategy] = useState<string | undefined>(
+  const [strategiesTried, setStrategiesTried] = useState<string[] | undefined>(
     undefined,
   );
   const [isSearching, setIsSearching] = useState(false);
@@ -334,7 +334,7 @@ export default function FreeAudit() {
       });
       if (live.mode === "live" && live.candidates.length > 0) {
         setSearchMode("live");
-        setSearchStrategy(live.searchStrategy);
+        setStrategiesTried(live.strategiesTried);
         setCandidateResults(
           live.candidates.map((c) => ({
             source: "live" as const,
@@ -357,7 +357,7 @@ export default function FreeAudit() {
           city: input.city,
           state: input.state,
         });
-        setSearchStrategy(undefined);
+        setStrategiesTried(undefined);
         setSearchMode(
           live.mode === "not_configured" ? "not_configured" : "fixture_fallback",
         );
@@ -672,7 +672,12 @@ export default function FreeAudit() {
                 className="text-[12px] text-muted-foreground mt-3"
                 data-testid="restaurant-search-mode-note"
               >
-                {searchStrategy && searchStrategy !== "broad_name_city_state"
+                {strategiesTried &&
+                strategiesTried.length > 1 &&
+                strategiesTried.some(
+                  (s) =>
+                    s !== "autocomplete" && s !== "broad_name_city_state",
+                )
                   ? "We broadened the search to find more possible matches."
                   : "Live Google lookup found possible matches."}
               </p>
@@ -707,7 +712,9 @@ export default function FreeAudit() {
                         }
                       >
                         {selectedCandidate.source === "live"
-                          ? "Live Google result"
+                          ? selectedCandidate.matchConfidence === "high"
+                            ? "Live Google match"
+                            : "Possible live match"
                           : "Preview fallback result"}
                       </Badge>
                     </div>
@@ -887,7 +894,9 @@ export default function FreeAudit() {
                                 }
                               >
                                 {c.source === "live"
-                                  ? "Live Google result"
+                                  ? c.matchConfidence === "high"
+                                    ? "Live Google match"
+                                    : "Possible live match"
                                   : "Preview fallback result"}
                               </Badge>
                               <Badge

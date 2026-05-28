@@ -27,13 +27,10 @@ export interface LiveSearchResponse {
   mode: LiveAuditMode;
   candidates: LiveRestaurantCandidate[];
   message?: string;
-  /**
-   * Non-sensitive debug label returned by the server indicating which
-   * search strategy returned results:
-   * "broad_name_city_state" | "name_restaurant_city_state" |
-   * "name_food_city_state" | "name_near_city_state" | "exhausted"
-   */
-  searchStrategy?: string;
+  /** Non-sensitive: ordered list of search strategies that were attempted. */
+  strategiesTried?: string[];
+  /** Total deduplicated candidates returned. */
+  candidateCount?: number;
 }
 
 export interface LiveRestaurantProfile {
@@ -105,9 +102,13 @@ export async function searchLiveRestaurantCandidates(input: {
           : "error",
       candidates: Array.isArray(data.candidates) ? data.candidates : [],
       message: data.message,
-      searchStrategy: typeof data.searchStrategy === "string"
-        ? data.searchStrategy
+      strategiesTried: Array.isArray(data.strategiesTried)
+        ? data.strategiesTried
         : undefined,
+      candidateCount:
+        typeof data.candidateCount === "number"
+          ? data.candidateCount
+          : undefined,
     };
   } catch {
     return {
