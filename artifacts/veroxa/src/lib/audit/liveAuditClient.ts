@@ -27,6 +27,13 @@ export interface LiveSearchResponse {
   mode: LiveAuditMode;
   candidates: LiveRestaurantCandidate[];
   message?: string;
+  /**
+   * Non-sensitive debug label returned by the server indicating which
+   * search strategy returned results:
+   * "broad_name_city_state" | "name_restaurant_city_state" |
+   * "name_food_city_state" | "name_near_city_state" | "exhausted"
+   */
+  searchStrategy?: string;
 }
 
 export interface LiveRestaurantProfile {
@@ -98,6 +105,9 @@ export async function searchLiveRestaurantCandidates(input: {
           : "error",
       candidates: Array.isArray(data.candidates) ? data.candidates : [],
       message: data.message,
+      searchStrategy: typeof data.searchStrategy === "string"
+        ? data.searchStrategy
+        : undefined,
     };
   } catch {
     return {

@@ -1,5 +1,42 @@
 # Current Replit Build Status
 
+> **2026-05-28 — Live restaurant search recall improved (Free Audit)**
+>
+> - Search no longer depends on `includedType: "restaurant"`. The first
+>   attempt uses a broad `${name} ${city} ${state}` text query with no
+>   type restriction.
+> - Four sequential fallback strategies added (stopping at the first that
+>   returns candidates):
+>   1. `broad_name_city_state` — name + city + state, no type filter
+>   2. `name_restaurant_city_state` — adds the word "restaurant"
+>   3. `name_food_city_state` — adds the word "food"
+>   4. `name_near_city_state` — "near city, state" phrasing
+> - Result filtering: candidates are accepted if their `primaryType` or
+>   `types` array includes any food-related type (restaurant, cafe,
+>   bakery, bar, meal_takeaway, meal_delivery, mediterranean_restaurant,
+>   mexican_restaurant, turkish_restaurant, fast_food_restaurant,
+>   pizza_restaurant, sandwich_shop, and ~25 more). Lower-confidence
+>   candidates are kept rather than discarded when they are the best
+>   available result.
+> - Ranking: name similarity → city in address → state in address →
+>   food-related type → rating/review count presence.
+> - Non-sensitive `searchStrategy` field returned in the response
+>   (`broad_name_city_state` | `name_restaurant_city_state` |
+>   `name_food_city_state` | `name_near_city_state` | `exhausted`). No
+>   API key or raw Google errors exposed.
+> - UI messages updated:
+>   - Live match returned on first attempt → "Live Google lookup found
+>     possible matches."
+>   - Live match returned on a broader attempt → "We broadened the
+>     search to find more possible matches."
+>   - No live match at all → "No exact live match found yet — you can
+>     still continue manually and Veroxa can review it." + tip: "try
+>     the main word only, e.g. 'Selda' instead of full name."
+>   - Results header now reads "Possible matches — select the one that
+>     looks right" and includes tip text when live mode.
+> - Cuisine remains not required. No new scraping, no API key exposure,
+>   no Supabase writes. No Owner/Operator pages touched.
+
 > **2026-05-28 — Live Audit Lookup V1 added (Free Audit acquisition milestone)**
 >
 > - The `/free-audit` flow now connects to a real Google Places lookup when

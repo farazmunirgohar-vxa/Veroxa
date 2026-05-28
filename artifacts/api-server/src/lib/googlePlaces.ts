@@ -19,6 +19,7 @@ export interface LiveRestaurantSearchResult {
   mode: GooglePlacesMode;
   candidates: LiveRestaurantCandidate[];
   message?: string;
+  searchStrategy?: string;
 }
 
 export interface LiveRestaurantProfile {
@@ -68,6 +69,46 @@ const DETAILS_FIELD_MASK = [
   "types",
 ].join(",");
 
+const FOOD_RELATED_TYPES = new Set([
+  "restaurant",
+  "cafe",
+  "bakery",
+  "bar",
+  "meal_takeaway",
+  "meal_delivery",
+  "food",
+  "mediterranean_restaurant",
+  "mexican_restaurant",
+  "turkish_restaurant",
+  "fast_food_restaurant",
+  "pizza_restaurant",
+  "sandwich_shop",
+  "american_restaurant",
+  "chinese_restaurant",
+  "french_restaurant",
+  "greek_restaurant",
+  "indian_restaurant",
+  "italian_restaurant",
+  "japanese_restaurant",
+  "korean_restaurant",
+  "seafood_restaurant",
+  "steak_house",
+  "sushi_restaurant",
+  "thai_restaurant",
+  "vietnamese_restaurant",
+  "barbecue_restaurant",
+  "breakfast_restaurant",
+  "brunch_restaurant",
+  "hamburger_restaurant",
+  "ice_cream_shop",
+  "ramen_restaurant",
+  "tapas_bar",
+  "wine_bar",
+  "pub",
+  "food_court",
+  "diner",
+]);
+
 function getApiKey(): string | null {
   const key = process.env["GOOGLE_PLACES_API_KEY"];
   if (!key || key.trim() === "") return null;
@@ -88,6 +129,147 @@ function deriveMatchConfidence(
   return "low";
 }
 
+function isFoodRelated(p: {
+  primaryType?: string;
+  types?: string[];
+}): boolean {
+  if (p.primaryType && FOOD_RELATED_TYPES.has(p.primaryType)) return true;
+  if (Array.isArray(p.types)) {
+    return p.types.some((t) => FOOD_RELATED_TYPES.has(t));
+  }
+  return false;
+}
+
+function rankCandidates(
+  places: {
+    id?: string;
+    displayName?: { text?: string };
+    formattedAddress?: string;
+    googleMapsUri?: string;
+    primaryType?: string;
+    types?: string[];
+    rating?: number;
+    userRatingCount?: number;
+  }[],
+  input: { restaurantName: string; city: string; state: string },
+): typeof places {
+  const cityLower = input.city.toLowerCase();
+  const stateLower = input.state.toLowerCase();
+
+  return [...places].sort((a, b) => {
+    const aName = (a.displayName?.text ?? "").toLowerCase();
+    const bName = (b.displayName?.text ?? "").toLowerCase();
+    const aAddr = (a.formattedAddress ?? "").toLowerCase();
+    const bAddr = (b.formattedAddress ?? "").toLowerCase();
+
+    const aConf = deriveMatchConfidence(input.restaurantName, aName);
+    const bConf = deriveMatchConfidence(input.restaurantName, bName);
+    const confRank = { high: 0, medium: 1, low: 2 };
+    if (confRank[aConf] !== confRank[bConf])
+      return confRank[aConf] - confRank[bConf];
+
+    const aCityMatch =
+      cityLower && (aAddr.includes(cityLower) || aName.includes(cityLower))
+        ? 0
+        : 1;
+    const bCityMatch =
+      cityLower && (bAddr.includes(cityLower) || bName.includes(cityLower))
+        ? 0
+        : 1;
+    if (aCityMatch !== bCityMatch) return aCityMatch - bCityMatch;
+
+    const aStateMatch =
+      stateLower && (aAddr.includes(stateLower) || aAddr.includes(", tx"))
+        ? 0
+        : 1;
+    const bStateMatch =
+      stateLower && (bAddr.includes(stateLower) || bAddr.includes(", tx"))
+        ? 0
+        : 1;
+    if (aStateMatch !== bStateMatch) return aStateMatch - bStateMatch;
+
+    const aFood = isFoodRelated(a) ? 0 : 1;
+    const bFood = isFoodRelated(b) ? 0 : 1;
+    if (aFood !== bFood) return aFood - bFood;
+
+    const aHasRating =
+      typeof a.rating === "number" && typeof a.userRatingCount === "number"
+        ? 0
+        : 1;
+    const bHasRating =
+      typeof b.rating === "number" && typeof b.userRatingCount === "number"
+        ? 0
+        : 1;
+    return aHasRating - bHasRating;
+  });
+}
+
+type RawPlace = {
+  id?: string;
+  displayName?: { text?: string };
+  formattedAddress?: string;
+  googleMapsUri?: string;
+  primaryType?: string;
+  types?: string[];
+  rating?: number;
+  userRatingCount?: number;
+};
+
+async function runTextSearch(
+  apiKey: string,
+  textQuery: string,
+  signal: AbortSignal,
+): Promise<RawPlace[]> {
+  const res = await fetch(
+    "https://places.googleapis.com/v1/places:searchText",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": apiKey,
+        "X-Goog-FieldMask": SEARCH_FIELD_MASK,
+      },
+      body: JSON.stringify({ textQuery, maxResultCount: 10 }),
+      signal,
+    },
+  );
+  if (!res.ok) {
+    logger.warn(
+      { status: res.status, textQuery },
+      "Google Places search attempt failed",
+    );
+    return [];
+  }
+  const data = (await res.json()) as { places?: RawPlace[] };
+  return Array.isArray(data.places) ? data.places : [];
+}
+
+function buildCandidates(
+  places: RawPlace[],
+  restaurantName: string,
+): LiveRestaurantCandidate[] {
+  return places
+    .filter((p) => p.id && p.displayName?.text)
+    .map((p) => {
+      const displayName = p.displayName?.text ?? "";
+      return {
+        placeId: p.id!,
+        displayName,
+        formattedAddress: p.formattedAddress ?? "",
+        googleMapsUri: p.googleMapsUri,
+        primaryType: p.primaryType,
+        types: p.types,
+        rating: typeof p.rating === "number" ? p.rating : undefined,
+        userRatingCount:
+          typeof p.userRatingCount === "number"
+            ? p.userRatingCount
+            : undefined,
+        source: "google_places" as const,
+        matchConfidence: deriveMatchConfidence(restaurantName, displayName),
+      };
+    });
+}
+
 export async function searchRealRestaurants(input: {
   restaurantName: string;
   city: string;
@@ -102,11 +284,11 @@ export async function searchRealRestaurants(input: {
     };
   }
 
-  const query = [input.restaurantName, input.city, input.state]
-    .map((v) => (v ?? "").trim())
-    .filter(Boolean)
-    .join(" ");
-  if (!query) {
+  const name = (input.restaurantName ?? "").trim();
+  const city = (input.city ?? "").trim();
+  const state = (input.state ?? "").trim();
+
+  if (!name) {
     return {
       mode: "error",
       candidates: [],
@@ -114,76 +296,67 @@ export async function searchRealRestaurants(input: {
     };
   }
 
+  const locationSuffix = [city, state].filter(Boolean).join(" ");
+
+  const strategies: { query: string; label: string }[] = [
+    {
+      query: [name, locationSuffix].filter(Boolean).join(" "),
+      label: "broad_name_city_state",
+    },
+    {
+      query: [name, "restaurant", locationSuffix].filter(Boolean).join(" "),
+      label: "name_restaurant_city_state",
+    },
+    {
+      query: [name, "food", locationSuffix].filter(Boolean).join(" "),
+      label: "name_food_city_state",
+    },
+    {
+      query: city
+        ? `${name} near ${city}${state ? ", " + state : ""}`
+        : `${name} near ${state}`,
+      label: "name_near_city_state",
+    },
+  ];
+
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15_000);
+  const timeout = setTimeout(() => controller.abort(), 20_000);
 
   try {
-    const res = await fetch(
-      "https://places.googleapis.com/v1/places:searchText",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Goog-Api-Key": apiKey,
-          "X-Goog-FieldMask": SEARCH_FIELD_MASK,
-        },
-        body: JSON.stringify({
-          textQuery: query,
-          includedType: "restaurant",
-          maxResultCount: 10,
-        }),
-        signal: controller.signal,
-      },
-    );
-    clearTimeout(timeout);
-    if (!res.ok) {
-      logger.warn(
-        { status: res.status },
-        "Google Places search request failed",
-      );
-      return {
-        mode: "error",
-        candidates: [],
-        message: "Live lookup is temporarily unavailable.",
-      };
-    }
-    const data = (await res.json()) as {
-      places?: {
-        id?: string;
-        displayName?: { text?: string };
-        formattedAddress?: string;
-        googleMapsUri?: string;
-        primaryType?: string;
-        types?: string[];
-        rating?: number;
-        userRatingCount?: number;
-      }[];
-    };
-    const places = Array.isArray(data.places) ? data.places : [];
-    const candidates: LiveRestaurantCandidate[] = places
-      .filter((p) => p.id && p.displayName?.text)
-      .map((p) => {
-        const displayName = p.displayName?.text ?? "";
+    for (const strategy of strategies) {
+      let rawPlaces: RawPlace[] = [];
+      try {
+        rawPlaces = await runTextSearch(apiKey, strategy.query, controller.signal);
+      } catch (innerErr) {
+        logger.warn(
+          { innerErr, label: strategy.label },
+          "Search strategy threw — continuing",
+        );
+        continue;
+      }
+
+      if (rawPlaces.length === 0) continue;
+
+      const ranked = rankCandidates(rawPlaces, input);
+      const candidates = buildCandidates(ranked, name);
+
+      if (candidates.length > 0) {
+        clearTimeout(timeout);
         return {
-          placeId: p.id!,
-          displayName,
-          formattedAddress: p.formattedAddress ?? "",
-          googleMapsUri: p.googleMapsUri,
-          primaryType: p.primaryType,
-          types: p.types,
-          rating: typeof p.rating === "number" ? p.rating : undefined,
-          userRatingCount:
-            typeof p.userRatingCount === "number"
-              ? p.userRatingCount
-              : undefined,
-          source: "google_places",
-          matchConfidence: deriveMatchConfidence(
-            input.restaurantName,
-            displayName,
-          ),
+          mode: "live",
+          candidates,
+          searchStrategy: strategy.label,
         };
-      });
-    return { mode: "live", candidates };
+      }
+    }
+
+    clearTimeout(timeout);
+    return {
+      mode: "live",
+      candidates: [],
+      message: "No matches found for this restaurant.",
+      searchStrategy: "exhausted",
+    };
   } catch (err) {
     clearTimeout(timeout);
     logger.warn({ err }, "Google Places search threw");
@@ -264,7 +437,8 @@ export async function getRealRestaurantDetails(
     const ratingPresent = typeof p.rating === "number";
     const reviewsPresent = typeof p.userRatingCount === "number";
     let sourceConfidence: "high" | "medium" | "low" = "low";
-    if (ratingPresent && reviewsPresent && p.websiteUri) sourceConfidence = "high";
+    if (ratingPresent && reviewsPresent && p.websiteUri)
+      sourceConfidence = "high";
     else if (ratingPresent || p.websiteUri) sourceConfidence = "medium";
     return {
       mode: "live",
