@@ -694,8 +694,8 @@ export default function FreeAudit() {
                             s !== "autocomplete" &&
                             s !== "broad_name_city_state",
                         )
-                      ? "We broadened the search to find more possible matches."
-                      : "Live Google lookup found possible matches."}
+                      ? "We broadened the search to find more possible matches. Please select the correct restaurant."
+                      : "Live Google lookup found possible matches. Please select the correct restaurant."}
                 </p>
                 {(strategiesTried || liveTotalRaw !== undefined) && (
                   <p className="text-[11px] text-muted-foreground/50">
@@ -744,8 +744,10 @@ export default function FreeAudit() {
                       >
                         {selectedCandidate.source === "live"
                           ? selectedCandidate.matchConfidence === "high"
-                            ? "Live Google match"
-                            : "Possible live match"
+                            ? "Likely live match"
+                            : selectedCandidate.matchConfidence === "medium"
+                              ? "Possible live match"
+                              : "Low-confidence live match"
                           : "Preview fallback result"}
                       </Badge>
                     </div>
@@ -940,8 +942,10 @@ export default function FreeAudit() {
                               >
                                 {c.source === "live"
                                   ? c.matchConfidence === "high"
-                                    ? "Live Google match"
-                                    : "Possible live match"
+                                    ? "Likely live match"
+                                    : c.matchConfidence === "medium"
+                                      ? "Possible live match"
+                                      : "Low-confidence live match"
                                   : "Preview fallback result"}
                               </Badge>
                               <Badge
