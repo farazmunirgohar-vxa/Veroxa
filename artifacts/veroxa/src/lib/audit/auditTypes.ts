@@ -37,6 +37,21 @@ export type RecommendedPackageId =
 
 export type AuditConfidence = "basic" | "good" | "strong";
 
+export type GrowthReportSourceLabel =
+  | "verified"
+  | "found"
+  | "not found"
+  | "manual review needed";
+
+export interface GrowthReportSection {
+  id: string;
+  title: string;
+  currentSignal: string;
+  whyItMatters: string;
+  veroxaRecommendation: string;
+  sourceLabel: GrowthReportSourceLabel;
+}
+
 export interface RestaurantAuditInput {
   // Required
   restaurantName: string;
@@ -55,6 +70,9 @@ export interface RestaurantAuditInput {
   currentGoal?: string;
   biggestProblem?: string;
   notes?: string;
+  // Optional signals from candidate selection
+  googleRating?: number;
+  reviewCount?: number;
 }
 
 export interface AuditCategoryScore {
@@ -133,4 +151,5 @@ export interface RestaurantAuditReport {
   confidenceLabel: string;
   confidenceExplanation: string;
   generatedAtLabel: string;
+  growthReportSections: GrowthReportSection[];
 }

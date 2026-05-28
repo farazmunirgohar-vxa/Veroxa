@@ -384,6 +384,26 @@ write surface.
 
 ## Recent updates (2026-05-28)
 
+- Free Audit now outputs the **Veroxa Restaurant Growth Report V1**.
+  The report is labeled "Veroxa Restaurant Growth Report" with subtitle
+  "A preliminary look at how this restaurant appears across Google,
+  Maps, website, social media, trust signals, and customer decision
+  paths." Sections covered: Restaurant Identity, Google Search SEO,
+  Google Maps / Local SEO, Google Business Profile Strength, Website +
+  Menu / Order / Contact Path, Social Media Standing, Content
+  Consistency, Reviews + Trust Signals, Ads Readiness, Daily Walk-In
+  Opportunity, and What Veroxa Would Fix First. Each section shows
+  Current signal, Why it matters, Veroxa recommendation, and a source
+  label (found / not found / manual review needed). Ads section is
+  honest — does not claim to verify active campaigns. Numeric score is
+  secondary (labeled "Internal reference"). `googleRating` and
+  `reviewCount` from candidate selection now flow into the report
+  sections. `GrowthReportSection` and `GrowthReportSourceLabel` types
+  added to `auditTypes.ts`. `generateGrowthReportSections` added to
+  `auditScoring.ts` (pure function, no network). No live Google API,
+  scraping, AI, Supabase writes, publishing, payments, notifications,
+  or storage added.
+
 - Client-Team Workflow Backend Readiness batch landed.
   `clientTeamWorkRepository` is now the single normalized source of
   truth for client↔team work on both portals. `demoClientTeamWork.ts`

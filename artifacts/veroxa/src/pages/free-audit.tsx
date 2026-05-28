@@ -13,6 +13,13 @@ import {
   Star,
   X,
   Target,
+  Globe,
+  Link2,
+  Share2,
+  FileText,
+  Megaphone,
+  Users,
+  Wrench,
 } from "lucide-react";
 import {
   createAuditLeadFromReport,
@@ -45,6 +52,7 @@ import { CUSTOMER_FLOW_STAGES } from "@/lib/audit/customerFlowImpact";
 import { demoAuditExamples } from "@/data/audit/demoAuditExamples";
 import type {
   AuditConfidence,
+  GrowthReportSourceLabel,
   RestaurantAuditInput,
   RestaurantAuditReport,
 } from "@/lib/audit/auditTypes";
@@ -98,6 +106,35 @@ const matchConfidenceLabel: Record<
   high: "High match confidence",
   medium: "Medium match confidence",
   low: "Low match confidence",
+};
+
+const sourceLabelTone: Record<GrowthReportSourceLabel, string> = {
+  verified: "border-emerald-500/40 text-emerald-400 bg-emerald-500/5",
+  found: "border-sky-500/40 text-sky-400 bg-sky-500/5",
+  "not found": "border-amber-500/40 text-amber-400 bg-amber-500/5",
+  "manual review needed":
+    "border-muted-foreground/30 text-muted-foreground bg-muted/10",
+};
+
+const sourceLabelText: Record<GrowthReportSourceLabel, string> = {
+  verified: "Verified",
+  found: "Found",
+  "not found": "Not found",
+  "manual review needed": "Manual review needed",
+};
+
+const sectionIcon: Record<string, React.ReactNode> = {
+  identity: <MapPin className="w-4 h-4 text-primary" />,
+  google_search_seo: <Search className="w-4 h-4 text-primary" />,
+  google_maps_seo: <MapPin className="w-4 h-4 text-primary" />,
+  gbp_strength: <Globe className="w-4 h-4 text-primary" />,
+  website_menu_path: <Link2 className="w-4 h-4 text-primary" />,
+  social_standing: <Share2 className="w-4 h-4 text-primary" />,
+  content_consistency: <FileText className="w-4 h-4 text-primary" />,
+  reviews_trust: <Star className="w-4 h-4 text-primary" />,
+  ads_readiness: <Megaphone className="w-4 h-4 text-primary" />,
+  walk_in_opportunity: <Users className="w-4 h-4 text-primary" />,
+  fix_first: <Wrench className="w-4 h-4 text-primary" />,
 };
 
 /**
@@ -188,6 +225,8 @@ export default function FreeAudit() {
       instagramUrl: candidate.instagramUrl ?? prev.instagramUrl,
       facebookUrl: candidate.facebookUrl ?? prev.facebookUrl,
       menuOrderingUrl: candidate.menuOrderingUrl ?? prev.menuOrderingUrl,
+      googleRating: candidate.googleRating ?? prev.googleRating,
+      reviewCount: candidate.reviewCount ?? prev.reviewCount,
     }));
     setReport(null);
     setWalkthroughSaved(false);
@@ -731,23 +770,28 @@ export default function FreeAudit() {
               <CardContent className="p-6">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
-                    <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                      Online Consistency Readiness · Walk-In Opportunity
+                    <p className="text-[11px] uppercase tracking-wider text-primary mb-1">
+                      Veroxa Restaurant Growth Report
                     </p>
                     <p
-                      className="text-2xl md:text-3xl font-bold mt-1"
+                      className="text-2xl md:text-3xl font-bold mt-0.5"
                       data-testid="audit-grade-headline"
                     >
-                      {report.gradeLabel}
+                      {report.input.restaurantName}
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
+                      A preliminary look at how this restaurant appears across
+                      Google, Maps, website, social media, trust signals, and
+                      customer decision paths.
                     </p>
                     <p
-                      className="text-[11px] text-muted-foreground mt-1 tabular-nums"
+                      className="text-[11px] text-muted-foreground mt-2 tabular-nums"
                       data-testid="audit-total-score"
                     >
-                      Internal readiness reference: {report.totalScore} / 100
+                      Readiness: {report.gradeLabel} · Internal reference:{" "}
+                      {report.totalScore} / 100
                     </p>
                     <p className="text-[11px] text-muted-foreground mt-0.5">
-                      {report.input.restaurantName} ·{" "}
                       {report.input.cuisineType} · {report.input.city},{" "}
                       {report.input.state}
                     </p>
@@ -788,6 +832,56 @@ export default function FreeAudit() {
                   Preliminary audit confidence: {report.confidenceLabel}.{" "}
                   {report.confidenceExplanation}
                 </p>
+              </CardContent>
+            </Card>
+
+            {/* Growth Report Sections — 11 structured areas */}
+            <Card className="bg-card border-border" data-testid="growth-report-sections">
+              <CardHeader>
+                <CardTitle className="text-base inline-flex items-center gap-2">
+                  <Globe className="w-4 h-4 text-primary" /> Growth Report
+                  Sections
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                {report.growthReportSections.map((sec) => (
+                  <div
+                    key={sec.id}
+                    className="border-b border-border last:border-0 pb-4 last:pb-0"
+                    data-testid={`growth-section-${sec.id}`}
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                      <p className="text-sm font-semibold inline-flex items-center gap-1.5">
+                        {sectionIcon[sec.id]}
+                        {sec.title}
+                      </p>
+                      <Badge
+                        variant="outline"
+                        className={`text-[10px] ${sourceLabelTone[sec.sourceLabel]}`}
+                      >
+                        {sourceLabelText[sec.sourceLabel]}
+                      </Badge>
+                    </div>
+                    <p className="text-[12px] text-muted-foreground mb-1">
+                      <span className="font-medium text-foreground/90">
+                        Current signal:{" "}
+                      </span>
+                      {sec.currentSignal}
+                    </p>
+                    <p className="text-[12px] text-muted-foreground mb-1">
+                      <span className="font-medium text-foreground/90">
+                        Why it matters:{" "}
+                      </span>
+                      {sec.whyItMatters}
+                    </p>
+                    <p className="text-[12px] text-muted-foreground">
+                      <span className="font-medium text-foreground/90">
+                        Veroxa recommendation:{" "}
+                      </span>
+                      {sec.veroxaRecommendation}
+                    </p>
+                  </div>
+                ))}
               </CardContent>
             </Card>
 

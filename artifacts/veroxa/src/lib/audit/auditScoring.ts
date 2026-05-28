@@ -23,6 +23,7 @@ import type {
   AuditGrade,
   AuditOpportunity,
   AuditWeakSpot,
+  GrowthReportSection,
   RestaurantAuditInput,
   RestaurantAuditReport,
 } from "./auditTypes";
@@ -501,6 +502,187 @@ export function getCustomerFlowExplanation(
   return `Customer flow is visibility → trust → reminder → action → retention. Based on the information provided for ${report.input.restaurantName}, the most visible daily opportunity is the ${report.weakSpots[0]?.title ?? "decision moment"}. Veroxa improves the daily online conditions and customer reminder moments that influence this flow. ${report.gradeDescription}`;
 }
 
+/**
+ * Derive the 11 structured Growth Report sections from input signals.
+ * Pure function — no network, no AI. Language is consultative, not harsh.
+ * Source labels: "found" | "not found" | "manual review needed" (never "verified" without live data).
+ */
+export function generateGrowthReportSections(
+  input: RestaurantAuditInput,
+): GrowthReportSection[] {
+  const hasGoogle = has(input.googleListingUrl);
+  const hasWebsite = has(input.websiteUrl);
+  const hasMenu = has(input.menuOrderingUrl);
+  const hasOther = has(input.otherUrl);
+  const hasIG = has(input.instagramUrl);
+  const hasFB = has(input.facebookUrl);
+  const hasTT = has(input.tiktokUrl);
+  const socialCount = [hasIG, hasFB, hasTT].filter(Boolean).length;
+  const hasSocial = socialCount > 0;
+  const hasWebsiteOrMenu = hasWebsite || hasMenu;
+
+  const ratingStr =
+    typeof input.googleRating === "number"
+      ? `Rating: ${input.googleRating.toFixed(1)}.`
+      : "";
+  const reviewStr =
+    typeof input.reviewCount === "number"
+      ? `${input.reviewCount} reviews.`
+      : "";
+  const googleDetailStr = [ratingStr, reviewStr].filter(Boolean).join(" ");
+
+  const socialSignals: string[] = [];
+  if (hasIG) socialSignals.push("Instagram: found");
+  if (hasFB) socialSignals.push("Facebook: found");
+  if (hasTT) socialSignals.push("TikTok: found");
+
+  const webSignals: string[] = [];
+  if (hasWebsite) webSignals.push("Website: found");
+  else webSignals.push("Website: not provided");
+  if (hasMenu) webSignals.push("Menu/order link: found");
+  else webSignals.push("Menu/order link: not provided");
+  if (hasOther) webSignals.push("Additional link (reservation/catering/other): found");
+
+  const hasAdsSignal = /(ads?|paid|campaign)/i.test(
+    lower(input.currentGoal) + " " + lower(input.notes),
+  );
+
+  return [
+    {
+      id: "identity",
+      title: "Restaurant Identity",
+      currentSignal: `${input.restaurantName} · ${input.cuisineType} · ${input.city}, ${input.state}.`,
+      whyItMatters:
+        "A clear, consistent identity across Google, social media, and your website helps customers recognize and remember you at the decision moment.",
+      veroxaRecommendation:
+        "Veroxa would verify that the restaurant name, cuisine type, and location are consistent across every platform — Google, Instagram, Facebook, TikTok, and your website.",
+      sourceLabel: "found",
+    },
+    {
+      id: "google_search_seo",
+      title: "Google Search SEO",
+      currentSignal: hasGoogle
+        ? "A Google Business Profile link was provided. Keyword coverage, category accuracy, and content freshness need manual review to assess search ranking opportunity."
+        : "No Google Business Profile link was provided. Restaurants without an active, optimized listing are typically harder to discover in local search results.",
+      whyItMatters:
+        "When someone nearby searches for a restaurant — by name, cuisine, or 'restaurants near me' — Google is usually the first stop. A well-optimized listing with the right category, location signals, and fresh content improves the chance of appearing at the right moment.",
+      veroxaRecommendation: hasGoogle
+        ? "Veroxa would manually review keyword presence, category accuracy, business description, and content freshness to strengthen local search visibility."
+        : "Veroxa would prioritize setting up and optimizing a Google Business Profile with the correct name, category, location, description, and regular posts to build local search presence.",
+      sourceLabel: hasGoogle ? "found" : "not found",
+    },
+    {
+      id: "google_maps_seo",
+      title: "Google Maps / Local SEO",
+      currentSignal: hasGoogle
+        ? `Google Maps presence found. ${googleDetailStr ? googleDetailStr + " " : ""}Profile freshness, photo recency, and conversion readiness need manual review.`.trim()
+        : "No Google Maps presence confirmed from the information provided. Local discovery, direction clicks, and call buttons are likely missing from the customer decision moment.",
+      whyItMatters:
+        "Google Maps is where many nearby customers make their final decision — they compare photos, check reviews, tap for directions, or call directly from the result. A weak or missing Maps profile means missing those moments.",
+      veroxaRecommendation: hasGoogle
+        ? "Veroxa would improve Maps conversion readiness: sharper food-first photos, clear hours, menu visibility, and Google posts timed around lunch, dinner, and weekend traffic."
+        : "Veroxa would create and fully optimize a Google Maps presence so the restaurant appears in local discovery and customers can act immediately.",
+      sourceLabel: hasGoogle ? "found" : "not found",
+    },
+    {
+      id: "gbp_strength",
+      title: "Google Business Profile Strength",
+      currentSignal: hasGoogle
+        ? "A Business Profile link was provided. Photos, posts, hours, menu link, and category accuracy require manual review to assess current strength."
+        : "No Google Business Profile link was provided — photos, posts, hours, menu, and categories cannot be assessed without a profile.",
+      whyItMatters:
+        "A strong Google Business Profile is the single most visible signal a local restaurant has online. Photos, operating hours, menu access, and regular posts influence customer decisions before they ever visit the website.",
+      veroxaRecommendation:
+        "Veroxa would improve Google photo freshness with food-first images, set up regular Google posts, confirm category and menu clarity, and maintain accurate hours — all of which support local trust signals.",
+      sourceLabel: hasGoogle ? "found" : "manual review needed",
+    },
+    {
+      id: "website_menu_path",
+      title: "Website + Menu / Order / Contact Path",
+      currentSignal:
+        webSignals.join(". ") +
+        ". Customer friction points and the full action path need manual review.",
+      whyItMatters:
+        "After a customer decides they want to visit, they need to quickly find the menu, confirm hours, place an order, or make a reservation. Every extra step increases the chance they choose somewhere else.",
+      veroxaRecommendation:
+        "Veroxa would improve menu/order/contact visibility across Google and social profiles, clarify the customer action path, and reduce friction between interest and action.",
+      sourceLabel: hasWebsiteOrMenu ? "found" : "not found",
+    },
+    {
+      id: "social_standing",
+      title: "Social Media Standing",
+      currentSignal: hasSocial
+        ? `${socialSignals.join(". ")}. Posting rhythm, consistency, and content quality need manual review.`
+        : "No social media channels were provided. Customer reminder rhythm through Instagram, Facebook, or TikTok appears inactive or unknown.",
+      whyItMatters:
+        "Social media is how restaurants stay top-of-mind between visits. A consistent presence with food-first content, timed around lunch, dinner, and weekend moments, keeps the restaurant in customers' feeds when they are deciding where to eat.",
+      veroxaRecommendation:
+        "Veroxa would establish a weekly content rhythm, food-first captions, media selection guidance, and posting windows aligned to lunch, dinner, and weekend decision moments.",
+      sourceLabel: hasSocial ? "found" : "not found",
+    },
+    {
+      id: "content_consistency",
+      title: "Content Consistency",
+      currentSignal:
+        hasSocial || hasGoogle
+          ? "Some online presence was found. Content consistency, posting rhythm, and cross-platform alignment need manual review to assess."
+          : "No links provided to assess content consistency. Whether the restaurant name, photos, and messaging align across platforms is unknown.",
+      whyItMatters:
+        "Customers compare restaurants across Google, Instagram, Facebook, and TikTok in the same decision moment. Inconsistent photos, mismatched hours, or outdated menus create doubt and friction.",
+      veroxaRecommendation:
+        "Veroxa would ensure the restaurant's name, cuisine identity, photos, hours, and call-to-action links are consistent across every platform — reducing confusion and strengthening the first impression.",
+      sourceLabel: "manual review needed",
+    },
+    {
+      id: "reviews_trust",
+      title: "Reviews + Trust Signals",
+      currentSignal: hasGoogle
+        ? `Google profile found. ${googleDetailStr ? googleDetailStr + " " : ""}Review recency, owner response rate, and trust signal strength need manual review.`.trim()
+        : "No Google profile was provided — reviews and trust signals cannot be assessed at this time.",
+      whyItMatters:
+        "Reviews are a primary trust signal. Nearby customers compare star ratings, read recent reviews, and look at how the restaurant responds. A strong review presence supports the final decision to visit.",
+      veroxaRecommendation:
+        "Veroxa supports review response cadence, fresh photo uploads timed with new reviews, and trust-signal consistency across the Google profile to maintain a strong reputation at the decision moment.",
+      sourceLabel: hasGoogle ? "found" : "not found",
+    },
+    {
+      id: "ads_readiness",
+      title: "Ads Readiness",
+      currentSignal:
+        "Ads usage not publicly verified — manual review needed. Whether the restaurant is currently running Google or social ads cannot be confirmed from the information provided.",
+      whyItMatters:
+        "Paid ads can amplify an already solid online presence, but they send customers to whatever they find — Google profile, website, menu, and content. If those are weak, ads spend more to deliver a poor experience.",
+      veroxaRecommendation: hasAdsSignal
+        ? "An ads-related goal was noted. Veroxa would evaluate offer clarity, landing path, menu/order readiness, and Google/social foundation before recommending an ad strategy. Ads are most effective after the foundation is cleaned up. Veroxa can support ads strategy and service if you choose to move forward — results vary by budget, offer, competition, and execution."
+        : "Veroxa recommends cleaning up the Google presence, content, and action path first. Once the foundation is strong, ads become more efficient and easier to measure. Veroxa can support ads strategy and service at that stage — results vary by budget, offer, competition, and execution.",
+      sourceLabel: "manual review needed",
+    },
+    {
+      id: "walk_in_opportunity",
+      title: "Daily Walk-In Opportunity",
+      currentSignal:
+        "Walk-in opportunity is driven by the full chain of online consistency — not a single platform. How consistently this restaurant appears across search, Maps, and social needs manual assessment.",
+      whyItMatters:
+        "For most independent restaurants, the biggest daily opportunity is improving the chain: consistent online presence → more customer reminders → stronger recall → easier decision to visit. Each link in that chain is something Veroxa can improve.",
+      veroxaRecommendation:
+        "Veroxa focuses on strengthening each step of the daily walk-in chain: keeping Google fresh, posting around the moments customers decide to eat, making the menu and action path easy to reach, and showing up consistently so the restaurant stays in the customer's mind.",
+      sourceLabel: "manual review needed",
+    },
+    {
+      id: "fix_first",
+      title: "What Veroxa Would Fix First",
+      currentSignal: `Based on the preliminary signals: ${hasGoogle ? "Google presence found" : "Google presence not confirmed"} · ${hasWebsiteOrMenu ? "action path present" : "action path not confirmed"} · ${hasSocial ? `${socialCount} social channel${socialCount > 1 ? "s" : ""} found` : "no social channels provided"}.`,
+      whyItMatters:
+        "Starting with the right priorities — rather than trying to fix everything at once — builds momentum and creates early signals to learn from.",
+      veroxaRecommendation:
+        "First 7 days: Google profile and menu/action-path cleanup, content direction setup. " +
+        "First 30 days: weekly posting rhythm, Google updates, food-content system, reporting baseline. " +
+        "Ongoing: weekly updates, monthly strategy report, consistency maintained across Google, social, and content.",
+      sourceLabel: "manual review needed",
+    },
+  ];
+}
+
 export function generateRestaurantAudit(
   input: RestaurantAuditInput,
 ): RestaurantAuditReport {
@@ -536,6 +718,7 @@ export function generateRestaurantAudit(
     confidenceLabel: confidence.label,
     confidenceExplanation: confidence.explanation,
     generatedAtLabel: "Just now",
+    growthReportSections: generateGrowthReportSections(input),
   };
   partial.weakSpots = getTopWeakSpots(partial);
   partial.opportunities = getTopOpportunities(partial);
