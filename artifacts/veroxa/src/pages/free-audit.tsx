@@ -41,6 +41,12 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { generateRestaurantAudit } from "@/lib/audit/auditScoring";
 import {
+  buildAiAuditDraftPayload,
+  generateAiAuditDraftClient,
+  type AiAuditDraft,
+  type AiAuditDraftMode,
+} from "@/lib/audit/aiAuditClient";
+import {
   AUDIT_ADAPTIVE_LEARNING_EXPLANATION,
   AUDIT_DISCLAIMER,
   AUDIT_EXPECTED_IMPACT_TIMELINE,
@@ -162,6 +168,32 @@ const emptyContact: AuditLeadContact = {
 export default function FreeAudit() {
   const [input, setInput] = useState<RestaurantAuditInput>(initialInput);
   const [report, setReport] = useState<RestaurantAuditReport | null>(null);
+  const [aiDraft, setAiDraft] = useState<AiAuditDraft | null>(null);
+  const [aiDraftMode, setAiDraftMode] = useState<AiAuditDraftMode | null>(null);
+  const [aiDraftMessage, setAiDraftMessage] = useState<string>("");
+  const [aiDraftLoading, setAiDraftLoading] = useState(false);
+
+  function resetAiDraftState() {
+    setAiDraft(null);
+    setAiDraftMode(null);
+    setAiDraftMessage("");
+    setAiDraftLoading(false);
+  }
+
+  async function handleGenerateAiDraft() {
+    if (!report || aiDraftLoading) return;
+    setAiDraftLoading(true);
+    setAiDraftMessage("");
+    try {
+      const payload = buildAiAuditDraftPayload(report);
+      const result = await generateAiAuditDraftClient(payload);
+      setAiDraftMode(result.mode);
+      setAiDraft(result.aiDraft);
+      setAiDraftMessage(result.message ?? "");
+    } finally {
+      setAiDraftLoading(false);
+    }
+  }
   const [contact, setContact] = useState<AuditLeadContact>(emptyContact);
   const [walkthroughSaved, setWalkthroughSaved] = useState(false);
   const [walkthroughError, setWalkthroughError] = useState<string | null>(null);
@@ -210,6 +242,7 @@ export default function FreeAudit() {
     setCandidateSearchRan(true);
     setSelectedCandidate(null);
     setReport(null);
+    resetAiDraftState();
   }
 
   function handleSelectCandidate(candidate: RestaurantSearchCandidate) {
@@ -229,12 +262,14 @@ export default function FreeAudit() {
       reviewCount: candidate.reviewCount ?? prev.reviewCount,
     }));
     setReport(null);
+    resetAiDraftState();
     setWalkthroughSaved(false);
   }
 
   function handleClearSelectedCandidate() {
     setSelectedCandidate(null);
     setReport(null);
+    resetAiDraftState();
   }
 
   function handleContactChange<K extends keyof AuditLeadContact>(
@@ -289,6 +324,7 @@ export default function FreeAudit() {
     ) {
       setSelectedCandidate(null);
       setReport(null);
+      resetAiDraftState();
     }
   }
 
@@ -306,6 +342,7 @@ export default function FreeAudit() {
     }
     const result = generateRestaurantAudit(input);
     setReport(result);
+    resetAiDraftState();
     setWalkthroughSaved(false);
     setWalkthroughError(null);
     setContact(emptyContact);
@@ -323,6 +360,7 @@ export default function FreeAudit() {
     if (ex) {
       setInput({ ...initialInput, ...ex.input });
       setReport(null);
+      resetAiDraftState();
       setSelectedCandidate(null);
       setCandidateResults([]);
       setCandidateSearchRan(false);
@@ -882,6 +920,148 @@ export default function FreeAudit() {
                     </p>
                   </div>
                 ))}
+              </CardContent>
+            </Card>
+
+            {/* AI-assisted draft — V1 */}
+            <Card
+              className="bg-card border-border"
+              data-testid="ai-audit-draft-card"
+            >
+              <CardHeader>
+                <CardTitle className="text-base inline-flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                  AI-assisted summary (draft)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-[12px] text-muted-foreground">
+                  Optional: turn the rule-based report above into an
+                  owner-friendly draft. The rule-based report stays the source
+                  of truth.
+                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleGenerateAiDraft}
+                    disabled={aiDraftLoading}
+                    data-testid="generate-ai-audit-draft-button"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                    {aiDraftLoading
+                      ? "Generating…"
+                      : aiDraft
+                        ? "Regenerate AI-assisted summary"
+                        : "Generate AI-assisted summary"}
+                  </Button>
+                  {aiDraftMode === "ai" ? (
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] border-emerald-500/40 text-emerald-400 bg-emerald-500/5"
+                    >
+                      AI-assisted draft
+                    </Badge>
+                  ) : null}
+                </div>
+
+                {aiDraftMode === "not_configured" ? (
+                  <div
+                    className="rounded-md border border-amber-500/40 bg-amber-500/5 p-3 text-[12px] text-amber-300"
+                    data-testid="ai-audit-not-configured"
+                  >
+                    AI summary is not configured yet. The rule-based report is
+                    still available.
+                  </div>
+                ) : null}
+
+                {aiDraftMode === "error" ? (
+                  <div
+                    className="rounded-md border border-rose-500/40 bg-rose-500/5 p-3 text-[12px] text-rose-300"
+                    data-testid="ai-audit-error"
+                  >
+                    {aiDraftMessage ||
+                      "AI draft is temporarily unavailable. The rule-based report is still available below."}
+                  </div>
+                ) : null}
+
+                {aiDraftMode === "ai" && aiDraft ? (
+                  <div
+                    className="space-y-4 rounded-md border border-border bg-muted/20 p-3"
+                    data-testid="ai-audit-draft-panel"
+                  >
+                    <div className="flex items-start gap-2">
+                      <ShieldCheck className="w-3.5 h-3.5 mt-0.5 text-primary shrink-0" />
+                      <p className="text-[11px] text-muted-foreground">
+                        AI-assisted draft — review before sharing. This draft
+                        is generated from the audit signals shown above. It
+                        may need human review before being shared with a
+                        restaurant owner.
+                      </p>
+                    </div>
+
+                    {aiDraft.executiveSummary ? (
+                      <div>
+                        <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
+                          Executive summary
+                        </p>
+                        <p className="text-sm">{aiDraft.executiveSummary}</p>
+                      </div>
+                    ) : null}
+
+                    {aiDraft.topOpportunities.length > 0 ? (
+                      <div>
+                        <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
+                          Top opportunities
+                        </p>
+                        <ul className="text-sm list-disc pl-5 space-y-1">
+                          {aiDraft.topOpportunities.map((item, i) => (
+                            <li key={i}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null}
+
+                    {aiDraft.veroxaFixPlan ? (
+                      <div>
+                        <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
+                          What Veroxa would fix first
+                        </p>
+                        <p className="text-sm">{aiDraft.veroxaFixPlan}</p>
+                      </div>
+                    ) : null}
+
+                    {aiDraft.manualReviewNeeded.length > 0 ? (
+                      <div>
+                        <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
+                          Manual review needed
+                        </p>
+                        <ul className="text-sm list-disc pl-5 space-y-1 text-muted-foreground">
+                          {aiDraft.manualReviewNeeded.map((item, i) => (
+                            <li key={i}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null}
+
+                    {aiDraft.ownerFriendlyClosing ? (
+                      <div>
+                        <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
+                          Owner-friendly closing
+                        </p>
+                        <p className="text-sm">
+                          {aiDraft.ownerFriendlyClosing}
+                        </p>
+                      </div>
+                    ) : null}
+
+                    <p className="text-[10px] text-muted-foreground italic">
+                      Not auto-sent, not saved, not published. The Veroxa
+                      team must review and approve before any client sees
+                      this.
+                    </p>
+                  </div>
+                ) : null}
               </CardContent>
             </Card>
 

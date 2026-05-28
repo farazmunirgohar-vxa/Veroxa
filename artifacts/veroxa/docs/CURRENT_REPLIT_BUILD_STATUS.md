@@ -1,5 +1,41 @@
 # Current Replit Build Status
 
+> **2026-05-28 — AI Audit Report Assistant V1 added**
+>
+> - New optional AI panel on `/free-audit`: button "Generate AI-assisted
+>   summary" turns the existing rule-based Veroxa Restaurant Growth Report
+>   into an owner-friendly DRAFT. The rule-based report remains the source
+>   of truth and is always rendered.
+> - Server-side only: `OPENAI_API_KEY` is read from environment variables /
+>   Replit Secrets inside `artifacts/api-server/src/lib/aiAuditAssistant.ts`
+>   and is never exposed to the browser. Route: `POST /api/audit/ai-draft`
+>   (`artifacts/api-server/src/routes/auditAi.ts`).
+> - Response shape: `{ mode: "ai" | "not_configured" | "error", aiDraft: {
+>   executiveSummary, topOpportunities[], veroxaFixPlan,
+>   manualReviewNeeded[], ownerFriendlyClosing } | null, message? }`.
+>   Missing key → `not_configured` with copy: "AI summary is not
+>   configured yet. The rule-based report is still available." Raw OpenAI
+>   errors are never forwarded to the client.
+> - Prompt rules (system prompt): use ONLY the provided audit signals,
+>   never invent metrics / rankings / ad spend / revenue / reviews /
+>   verification, never guarantee outcomes, preserve uncertainty,
+>   separate found / not found / manual review needed, consultative
+>   lenient tone, draft for human review, no access to ChatGPT history.
+> - Client helper: `src/lib/audit/aiAuditClient.ts` exports
+>   `buildAiAuditDraftPayload(report)` and
+>   `generateAiAuditDraftClient(payload)`. Handles missing / error
+>   states gracefully — never throws into the UI.
+> - UI panel is clearly labeled "AI-assisted draft — review before
+>   sharing" with the safety line: "This draft is generated from the
+>   audit signals shown above. It may need human review before being
+>   shared with a restaurant owner." Draft is not auto-saved, not
+>   auto-sent, not published.
+> - Guardrails unchanged: AUTH_MODE=placeholder, DATA_MODE=fixture,
+>   VEROXA_DATA_SOURCE_MODE=demo. No publishing, no client messaging,
+>   no payments, no Supabase writes, no storage uploads, no DB
+>   migrations, no notifications. Owner/Operator/Client/Team portal
+>   pages untouched.
+
 > **2026-05-28 — Client ↔ Team Workflow backend-readiness batch finalized**
 >
 > - `clientTeamWorkRepository` (`src/lib/repositories/clientTeamWorkRepository.ts`)
