@@ -1,25 +1,88 @@
 import { PortalLayout } from "@/components/PortalLayout";
 import { teamPortalNavItems } from "@/lib/teamPortalNav";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
-import { demoClientTeamWorkflow } from "@/data/workflows/clientTeamWorkflow";
-import { groupWorkflowItemsForTeam } from "@/lib/workflows/workflowStatus";
-import { WorkflowItemCard } from "@/components/workflows/WorkflowItemCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { getRestaurantName } from "@/data/demoData";
-import { workflowRepository, clientTeamWorkRepository } from "@/lib/repositories";
+import { clientTeamWorkRepository } from "@/lib/repositories";
+import type { TeamWorkItem } from "@/lib/repositories/clientTeamWorkRepository";
 
 export default function TeamWorkQueue() {
-  const groups = groupWorkflowItemsForTeam(demoClientTeamWorkflow);
-  const summary = workflowRepository.getWorkflowSummary();
+  // Submission-derived sections — single source of truth is the
+  // clientTeamWorkRepository. The old workflow-derived groups (read from
+  // demoClientTeamWorkflow + workflowRepository.getWorkflowSummary) have
+  // been retired here so this queue reflects the same submission pipeline
+  // the client portal sees, rather than a separate workflow fixture.
+  const ready       = clientTeamWorkRepository.getTeamReadyWorkItems();
+  const inProgress  = clientTeamWorkRepository.getTeamInProgressWorkItems();
+  const blocked     = clientTeamWorkRepository.getTeamBlockedWorkItems();
+  // `getTeamWaitingOnClientItems` includes both `needs_client_clarification`
+  // and `blocked` for the team's "anything paused on the client" view, but
+  // this queue renders Blocked as its own section — so filter blocked out
+  // here to keep sections mutually exclusive and counts honest.
+  const blockedIds  = new Set(blocked.map((b) => b.id));
+  const waiting     = clientTeamWorkRepository
+    .getTeamWaitingOnClientItems()
+    .filter((i) => !blockedIds.has(i.id));
+  const completed   = clientTeamWorkRepository.getTeamCompletedWorkItems();
+  const summary     = clientTeamWorkRepository.getTeamWorkCommunicationSummary();
+
+  const allActive = [...ready, ...inProgress, ...waiting, ...blocked];
+  const urgentOrHigh = allActive.filter(
+    (i) => i.priority === "urgent" || i.priority === "high",
+  ).length;
 
   const summaryTiles: { label: string; value: number; testId: string }[] = [
-    { label: "Total items",       value: summary.total,              testId: "wq-summary-total" },
-    { label: "Urgent",            value: summary.urgent,             testId: "wq-summary-urgent" },
-    { label: "High priority",     value: summary.highPriority,       testId: "wq-summary-high" },
-    { label: "Blocked",           value: summary.blocked,            testId: "wq-summary-blocked" },
-    { label: "Awaiting client",   value: summary.awaitingClient,     testId: "wq-summary-awaiting-client" },
-    { label: "Internal approval", value: summary.inInternalApproval, testId: "wq-summary-internal-approval" },
+    { label: "Ready for team",    value: ready.length,                       testId: "wq-summary-ready" },
+    { label: "In progress",       value: inProgress.length,                  testId: "wq-summary-in-progress" },
+    { label: "Urgent / high",     value: urgentOrHigh,                       testId: "wq-summary-urgent" },
+    { label: "Waiting on client", value: waiting.length,                     testId: "wq-summary-waiting" },
+    { label: "Blocked",           value: blocked.length,                     testId: "wq-summary-blocked" },
+    { label: "Completed",         value: summary.completedCount,             testId: "wq-summary-completed" },
+  ];
+
+  const sections: {
+    key: string;
+    title: string;
+    description: string;
+    items: TeamWorkItem[];
+    tone: string;
+  }[] = [
+    {
+      key: "ready",
+      title: "Ready for team",
+      description: "New submissions and items waiting for team triage.",
+      items: ready,
+      tone: "border-sky-500/30",
+    },
+    {
+      key: "in_progress",
+      title: "In progress",
+      description: "Work the team has accepted and is actively executing.",
+      items: inProgress,
+      tone: "border-primary/30",
+    },
+    {
+      key: "waiting",
+      title: "Waiting on client",
+      description: "Asked the client a question — paused until they reply.",
+      items: waiting,
+      tone: "border-amber-500/30",
+    },
+    {
+      key: "blocked",
+      title: "Blocked by client",
+      description: "Cannot progress without something from the client.",
+      items: blocked,
+      tone: "border-rose-500/30",
+    },
+    {
+      key: "completed",
+      title: "Recently completed",
+      description: "Closed-out submissions for reference.",
+      items: completed.slice(0, 6),
+      tone: "border-emerald-500/30",
+    },
   ];
 
   return (
@@ -33,7 +96,8 @@ export default function TeamWorkQueue() {
             Client Work Queue
           </h2>
           <p className="text-muted-foreground mt-1 text-sm md:text-base">
-            The shared client-team workflow, grouped by what the team needs to do next.
+            Client submissions grouped by what the team needs to do next. Shares the
+            same pipeline the client portal sees.
           </p>
         </div>
         <Badge
@@ -54,7 +118,7 @@ export default function TeamWorkQueue() {
         className="bg-card/50 border-border/50 mb-4"
         data-testid="work-queue-summary-strip"
       >
-        <CardContent className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 p-4">
+        <CardContent className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 p-4" data-testid="work-queue-summary-grid">
           {summaryTiles.map((tile) => (
             <div key={tile.label} data-testid={tile.testId}>
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
@@ -147,34 +211,51 @@ export default function TeamWorkQueue() {
       })()}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-        {groups.map((group) => (
+        {sections.map((section) => (
           <Card
-            key={group.key}
-            className="bg-card border-border"
-            data-testid={`work-group-${group.key}`}
+            key={section.key}
+            className={`bg-card ${section.tone}`}
+            data-testid={`work-group-${section.key}`}
           >
             <CardHeader className="pb-3">
               <div className="flex items-baseline justify-between gap-2">
                 <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                  {group.title}
+                  {section.title}
                 </CardTitle>
                 <span className="text-[11px] text-muted-foreground/70 tabular-nums">
-                  {group.items.length}
+                  {section.items.length}
                 </span>
               </div>
-              <p className="text-[11px] text-muted-foreground/70 mt-1">{group.description}</p>
+              <p className="text-[11px] text-muted-foreground/70 mt-1">{section.description}</p>
             </CardHeader>
             <CardContent className="space-y-2">
-              {group.items.length === 0 ? (
+              {section.items.length === 0 ? (
                 <p className="text-xs text-muted-foreground italic">Nothing here right now.</p>
               ) : (
-                group.items.map((item) => (
-                  <WorkflowItemCard
+                section.items.map((item) => (
+                  <div
                     key={item.id}
-                    item={item}
-                    mode="team"
-                    clientName={getRestaurantName(item.clientId)}
-                  />
+                    className="rounded-md border border-border bg-muted/20 px-3 py-2"
+                    data-testid={`work-item-${item.submissionId}`}
+                  >
+                    <div className="flex items-center justify-between gap-2 mb-1 flex-wrap">
+                      <p className="text-sm font-medium leading-snug">
+                        {getRestaurantName(item.clientId)} — {item.title}
+                      </p>
+                      <Badge variant="outline" className="text-[9px] flex-shrink-0">
+                        {item.teamStatusLabel}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{item.clientVisibleNote}</p>
+                    {item.internalTeamNote && (
+                      <p className="text-[11px] text-muted-foreground/80 italic mt-1">
+                        Internal: {item.internalTeamNote}
+                      </p>
+                    )}
+                    <p className="text-[11px] text-primary/80 mt-1">
+                      Next: {item.nextTeamAction}
+                    </p>
+                  </div>
                 ))
               )}
             </CardContent>

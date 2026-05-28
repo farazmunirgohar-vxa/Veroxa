@@ -126,12 +126,20 @@ export default function TeamDashboard() {
       {/* Client Submissions — workflow/communication snapshot. */}
       {(() => {
         const summary = clientTeamWorkRepository.getTeamWorkCommunicationSummary();
+        const readyForTeam = clientTeamWorkRepository.getTeamReadyWorkItems().length;
+        const urgentOrHigh = clientTeamWorkRepository
+          .getTeamReadyWorkItems()
+          .concat(clientTeamWorkRepository.getTeamInProgressWorkItems())
+          .filter((i) => i.priority === "urgent" || i.priority === "high")
+          .length;
         const tiles: { label: string; value: number; testId: string }[] = [
-          { label: "New submissions",     value: summary.newCount,                   testId: "cts-summary-new" },
-          { label: "Needs clarification", value: summary.needsClarificationCount,    testId: "cts-summary-clarification" },
-          { label: "Blocked by client",   value: summary.blockedCount,               testId: "cts-summary-blocked" },
-          { label: "In progress",         value: summary.inProgressCount,            testId: "cts-summary-in-progress" },
-          { label: "Completed",           value: summary.completedCount,             testId: "cts-summary-completed" },
+          { label: "New submissions",     value: summary.newCount,                testId: "cts-summary-new" },
+          { label: "Ready for team",      value: readyForTeam,                    testId: "cts-summary-ready" },
+          { label: "Urgent / high",       value: urgentOrHigh,                    testId: "cts-summary-urgent" },
+          { label: "Needs clarification", value: summary.needsClarificationCount, testId: "cts-summary-clarification" },
+          { label: "Blocked by client",   value: summary.blockedCount,            testId: "cts-summary-blocked" },
+          { label: "In progress",         value: summary.inProgressCount,         testId: "cts-summary-in-progress" },
+          { label: "Completed",           value: summary.completedCount,          testId: "cts-summary-completed" },
         ];
         return (
           <div className="mb-6" data-testid="section-client-submissions">
@@ -146,7 +154,7 @@ export default function TeamDashboard() {
               </Link>
             </div>
             <Card className="bg-card border-border">
-              <CardContent className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 p-4">
+              <CardContent className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 p-4">
                 {tiles.map((t) => (
                   <div key={t.label} data-testid={t.testId}>
                     <p className="text-[10px] uppercase tracking-wider text-muted-foreground">

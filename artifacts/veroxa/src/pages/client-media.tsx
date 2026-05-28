@@ -229,22 +229,38 @@ export default function ClientMedia() {
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2">
                 <Inbox className="w-4 h-4 text-primary" />
-                Open media items with Veroxa Team ({mediaItems.length})
+                Media items with Veroxa Team ({mediaItems.length})
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              {mediaItems.map((s) => (
-                <div
-                  key={s.id}
-                  className="rounded-md border border-border bg-muted/20 px-3 py-2"
-                  data-testid={`media-open-${s.id}`}
-                >
-                  <p className="text-sm font-medium leading-snug">{s.title}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {s.clientVisibleNote}
-                  </p>
-                </div>
-              ))}
+              {mediaItems.map((s) => {
+                const statusLabel = clientTeamWorkRepository.getSubmissionWorkItemForClient(s.id)?.statusLabel;
+                const nextAction = clientTeamWorkRepository.getSubmissionWorkItemForClient(s.id)?.nextAction;
+                return (
+                  <div
+                    key={s.id}
+                    className="rounded-md border border-border bg-muted/20 px-3 py-2"
+                    data-testid={`media-open-${s.id}`}
+                  >
+                    <div className="flex items-center justify-between gap-2 mb-1 flex-wrap">
+                      <p className="text-sm font-medium leading-snug">{s.title}</p>
+                      {statusLabel && (
+                        <Badge variant="outline" className="text-[9px] flex-shrink-0">
+                          {statusLabel}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {s.clientVisibleNote}
+                    </p>
+                    {nextAction && (
+                      <p className="text-[11px] text-amber-300 mt-1">
+                        What to send: {nextAction}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
             </CardContent>
           </Card>
         );

@@ -133,9 +133,10 @@ export default function TeamUploadInbox() {
           className="mt-2 text-[11px] text-muted-foreground/80 px-1"
           data-testid="upload-inbox-flow-note"
         >
-          Restaurant uploads enter here for triage, then accepted items move
-          into Media Review and feed the Client Work Queue for caption,
-          schedule, and approval.
+          Flow: uploads land here for team triage → accepted items move into
+          Media Review and become work items in the Client Work Queue →
+          re-shoot or clarification requests come back as a client action on
+          the restaurant's portal.
         </p>
 
         <div

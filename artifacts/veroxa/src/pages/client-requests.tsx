@@ -1,4 +1,4 @@
-import { ClipboardCheck, ArrowRight, HelpCircle, Loader2, MessageSquare } from "lucide-react";
+import { ClipboardCheck, ArrowRight, HelpCircle, Loader2, MessageSquare, Activity } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +22,7 @@ export default function ClientRequests() {
   const inProgress = clientTeamWorkRepository.getClientInProgressItems(SHOWCASE_ID);
   const completed = clientTeamWorkRepository.getClientCompletedItems(SHOWCASE_ID).slice(0, 6);
   const conversation = clientTeamWorkRepository.getClientVisibleMessages(SHOWCASE_ID).slice(-6);
+  const recentStatusUpdates = clientTeamWorkRepository.getClientLatestStatusUpdates(SHOWCASE_ID, 5);
 
   // "Questions from Veroxa Team" is the subset of action-required items where
   // Veroxa is explicitly asking for input (not just waiting on materials).
@@ -132,6 +133,47 @@ export default function ClientRequests() {
           )}
         </CardContent>
       </Card>
+
+      {/* Recent status updates — most-recent client-visible status events,
+          using the four friendly buckets (Received / In progress /
+          Waiting on your input / Completed). Internal-only events are
+          filtered out at the repository layer. */}
+      {recentStatusUpdates.length > 0 && (
+        <Card className="bg-card border-border mb-4" data-testid="card-recent-status-updates">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Activity className="w-4 h-4 text-primary" />
+              Recent status updates ({recentStatusUpdates.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {recentStatusUpdates.map((u) => {
+              const labelTone: Record<string, string> =
+                {
+                  "Received":              "border-sky-500/30 bg-sky-500/10 text-sky-300",
+                  "In progress":           "border-primary/30 bg-primary/10 text-primary",
+                  "Waiting on your input": "border-amber-500/30 bg-amber-500/10 text-amber-300",
+                  "Completed":             "border-emerald-500/30 bg-emerald-500/10 text-emerald-300",
+                };
+              return (
+                <div
+                  key={u.id}
+                  className="rounded-md border border-border bg-muted/20 px-3 py-2"
+                  data-testid={`status-update-${u.id}`}
+                >
+                  <div className="flex items-center justify-between gap-2 mb-1 flex-wrap">
+                    <p className="text-sm font-medium leading-snug">{u.submissionTitle}</p>
+                    <Badge variant="outline" className={`text-[9px] ${labelTone[u.label]}`}>
+                      {u.label}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-foreground/80 leading-relaxed">{u.note}</p>
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Recently completed — derived from completed submissions. */}
       <Card className="bg-card border-border mb-4" data-testid="card-recently-completed">

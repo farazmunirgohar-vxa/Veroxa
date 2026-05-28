@@ -23,11 +23,12 @@
 
 ## 2. Future Supabase tables
 
-Three tables, one-to-one with the fixture types:
+Four tables, one-to-one with the fixture types:
 
 1. `client_team_submissions` ← `ClientTeamSubmission`
 2. `client_team_messages` ← `ClientTeamMessage`
 3. `client_action_items` ← `ClientActionItem`
+4. `client_team_status_events` ← `ClientTeamStatusEvent`
 
 The fixture column names map directly (camelCase → snake_case). Migration
 should be a clean rename + connection swap; the repository surface stays the
@@ -92,13 +93,42 @@ same.
 > They will be added when the first write path lands; until then, ordering
 > follows the linked submission's `updated_at`.
 
+### `client_team_status_events`
+
+Captures the audit trail of how a submission moved through statuses.
+`client_visible` is the hard switch the repository layer uses to decide
+whether a client portal can render the event.
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `id` | `uuid` PK | `gen_random_uuid()` |
+| `client_id` | `uuid` FK → `clients.id` | NOT NULL |
+| `submission_id` | `uuid` FK → `client_team_submissions.id` | NOT NULL |
+| `from_status` | `text` | Nullable — enum matches `client_team_submissions.status` |
+| `to_status` | `text` | NOT NULL — enum matches `client_team_submissions.status` |
+| `actor_role` | `text` | enum: `client`, `team`, `system` |
+| `note` | `text` | NOT NULL — short human-readable note |
+| `client_visible` | `boolean` | default `false`. **Client portals only ever render events where this is `true`.** Internal triage / assignment / fallback-plan notes stay `false`. |
+| `created_at` | `timestamptz` | default `now()` |
+
+> Read paths: client portals must go through
+> `getClientLatestStatusUpdates(clientId)` /
+> `getClientVisibleStatusEvents(clientId)` in the repository, which both
+> enforce `client_visible = true` and map status into the four
+> client-friendly buckets: **Received / In progress / Waiting on your
+> input / Completed**. Team surfaces use `getTeamStatusTimeline(clientId)`
+> and `getTeamSubmissionStatusEvents(submissionId)` for the full history.
+
 ## 4. Visibility rules
 
 - A client can read only their own `client_team_submissions`.
 - A client **never** sees `internal_team_note`.
 - A client sees only messages where `visibility = 'client_and_team'`.
-- The team can see assigned client records, including `team_only` messages
-  and `internal_team_note`.
+- A client sees only status events where `client_visible = true`. The
+  internal-only events (e.g. team assignments, fallback plans) are
+  surfaced exclusively through the team-only repository helpers.
+- The team can see assigned client records, including `team_only` messages,
+  `internal_team_note`, and all status events.
 - Operator and Owner read rules are intentionally **parked** and will be
   defined in a later contract.
 

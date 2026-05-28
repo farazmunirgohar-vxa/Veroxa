@@ -1,4 +1,4 @@
-import { CalendarDays, CheckCircle2, FileText, Sparkles, Clock, Loader2, ArrowRight } from "lucide-react";
+import { CalendarDays, CheckCircle2, FileText, Sparkles, Clock, Loader2, ArrowRight, Activity } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -176,6 +176,45 @@ export default function ClientUpdates() {
                 </Card>
               ))}
             </div>
+          </div>
+        );
+      })()}
+
+      {/* Recent Veroxa progress — derived from client-visible status events
+          using the four friendly buckets. Internal-only events stay hidden. */}
+      {(() => {
+        const updates = clientTeamWorkRepository.getClientLatestStatusUpdates(SHOWCASE_ID, 5);
+        if (updates.length === 0) return null;
+        const labelTone: Record<string, string> = {
+          "Received":              "border-sky-500/30 bg-sky-500/10 text-sky-300",
+          "In progress":           "border-primary/30 bg-primary/10 text-primary",
+          "Waiting on your input": "border-amber-500/30 bg-amber-500/10 text-amber-300",
+          "Completed":             "border-emerald-500/30 bg-emerald-500/10 text-emerald-300",
+        };
+        return (
+          <div className="mb-5" data-testid="section-recent-veroxa-progress">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
+              <Activity className="w-3.5 h-3.5" /> Recent Veroxa progress
+            </h3>
+            <Card className="bg-card/60 border-border">
+              <CardContent className="p-4 space-y-2">
+                {updates.map((u) => (
+                  <div
+                    key={u.id}
+                    className="flex items-start justify-between gap-3 border-b border-border/40 last:border-0 pb-2 last:pb-0"
+                    data-testid={`recent-progress-${u.id}`}
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium leading-snug">{u.submissionTitle}</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">{u.note}</p>
+                    </div>
+                    <Badge variant="outline" className={`text-[9px] flex-shrink-0 ${labelTone[u.label]}`}>
+                      {u.label}
+                    </Badge>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
           </div>
         );
       })()}

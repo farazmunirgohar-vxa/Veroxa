@@ -1,5 +1,45 @@
 # Current Replit Build Status
 
+> **2026-05-28 — Client ↔ Team status timeline + work-item parity pass**
+>
+> - `src/data/demo/demoClientTeamWork.ts` now exposes a fourth fixture array,
+>   `demoClientTeamStatusEvents`, modelling the future
+>   `client_team_status_events` table. Each event carries a hard
+>   `clientVisible` switch so internal triage / fallback notes never leak.
+>   New helpers: `getStatusEventsForSubmission`, `getClientVisibleStatusEvents`,
+>   `getTeamStatusEvents`, `getLatestStatusEventForSubmission`.
+> - `clientTeamWorkRepository` gained `getClientLatestStatusUpdates`
+>   (visibility-safe; maps status into Received / In progress / Waiting on
+>   your input / Completed), `getTeamStatusTimeline`, and
+>   `getTeamSubmissionStatusEvents`. `ClientWorkItem`/`TeamWorkItem` now also
+>   expose `description`, `statusLabel`, `nextAction`, and `sourceSubmissionId`
+>   aliases for the Step 7 work-item contract.
+> - `/demo/client/requests` adds a "Recent status updates" card and
+>   `/demo/client/updates` adds a "Recent Veroxa progress" strip — both
+>   read from `getClientLatestStatusUpdates` and only render client-friendly
+>   labels. `/demo/client/media` renamed "Open media items" →
+>   "Media items with Veroxa Team" and now shows the per-item status label
+>   plus next client action.
+> - `/demo/team` Client Submissions summary tiles add **Ready for team** and
+>   **Urgent / high** counters derived from the repo.
+> - `/demo/team/work-queue` is now fully submission-derived — the old
+>   `demoClientTeamWorkflow` / `groupWorkflowItemsForTeam` /
+>   `WorkflowItemCard` path is retired here. Sections: Ready for team /
+>   In progress / Waiting on client / Blocked by client / Recently completed,
+>   each showing status label, client-visible note, internal team note, and
+>   next team action.
+> - `/demo/team/upload-inbox` clarifies the upload → triage → work-item →
+>   client-action loop in the flow note.
+> - `/demo/team/direction-queue` clarification cross-link now embeds the
+>   latest status event for each waiting submission (internal events flagged
+>   as `internal only`).
+> - `docs/CLIENT_TEAM_WORKFLOW_CONTRACT.md` adds the fourth table
+>   (`client_team_status_events`), documents `client_visible` enforcement,
+>   and extends the visibility rules section.
+> - Guardrails unchanged: AUTH_MODE=placeholder, DATA_MODE=fixture,
+>   VEROXA_DATA_SOURCE_MODE=demo. Demo IDs only. No writes /
+>   auth / AI / publishing / payments / uploads / notifications.
+
 > **2026-05-28 — Client ↔ Team workflow is the locked near-term direction**
 >
 > - Client-Team workflow is now the locked near-term build direction. Demo

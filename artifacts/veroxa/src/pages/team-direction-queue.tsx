@@ -339,23 +339,38 @@ export default function TeamDirectionQueue() {
                 Client submissions awaiting clarification ({clarification.length})
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-1.5">
-              {clarification.slice(0, 4).map((s) => (
-                <div
-                  key={s.id}
-                  className="text-xs flex items-start justify-between gap-2"
-                  data-testid={`dir-clarification-${s.id}`}
-                >
-                  <span className="text-foreground/80">
-                    {getRestaurantName(s.clientId)} — {s.title}
-                  </span>
-                  {s.requestedClientAction && (
-                    <Badge variant="outline" className="text-[9px] border-sky-500/30 text-sky-300 flex-shrink-0">
-                      Awaiting reply
-                    </Badge>
-                  )}
-                </div>
-              ))}
+            <CardContent className="space-y-2">
+              {clarification.slice(0, 4).map((s) => {
+                const latestEvent = clientTeamWorkRepository
+                  .getTeamSubmissionStatusEvents(s.id)
+                  .slice(-1)[0];
+                return (
+                  <div
+                    key={s.id}
+                    className="rounded-md border border-border bg-muted/20 px-3 py-2"
+                    data-testid={`dir-clarification-${s.id}`}
+                  >
+                    <div className="flex items-center justify-between gap-2 mb-1 flex-wrap">
+                      <span className="text-sm font-medium text-foreground/90">
+                        {getRestaurantName(s.clientId)} — {s.title}
+                      </span>
+                      {s.requestedClientAction && (
+                        <Badge variant="outline" className="text-[9px] border-sky-500/30 text-sky-300 flex-shrink-0">
+                          Awaiting reply
+                        </Badge>
+                      )}
+                    </div>
+                    {latestEvent && (
+                      <p className="text-[11px] text-muted-foreground/85" data-testid={`dir-clarification-latest-${s.id}`}>
+                        Latest status update: {latestEvent.note}
+                        {!latestEvent.clientVisible && (
+                          <span className="ml-1 text-muted-foreground/60">(internal only)</span>
+                        )}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
               <p className="text-[10px] text-muted-foreground/70 pt-1">
                 Internal — surfaced from client/team workflow. Resolve in Work Queue / Requests.
               </p>

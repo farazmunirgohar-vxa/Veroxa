@@ -24,7 +24,9 @@ import {
   getActiveSubmissionsForClient as _getActiveSubmissionsForClient,
   getClientActionableSubmissions as _getClientActionableSubmissions,
   getClientTeamWorkSummary as _getClientTeamWorkSummary,
+  getClientVisibleStatusEvents as _getClientVisibleStatusEvents,
   getCompletedSubmissionsForClient as _getCompletedSubmissionsForClient,
+  getStatusEventsForSubmission as _getStatusEventsForSubmission,
   getSubmissionById as _getSubmissionById,
   getSubmissionClientStatusLabel,
   getSubmissionNextClientAction,
@@ -33,9 +35,11 @@ import {
   getSubmissionTeamWorkStatus,
   getSubmissionWorkType,
   getTeamReadySubmissions as _getTeamReadySubmissions,
+  getTeamStatusEvents as _getTeamStatusEvents,
   getTeamWaitingOnClientSubmissions as _getTeamWaitingOnClientSubmissions,
   type ClientActionItem,
   type ClientTeamMessage,
+  type ClientTeamStatusEvent,
   type ClientTeamSubmission,
   type ClientTeamSubmissionPriority,
   type ClientTeamSubmissionTeamWorkStatus,
@@ -57,14 +61,21 @@ export type ClientVisibleSubmission = Omit<ClientTeamSubmission, "internalTeamNo
 export interface ClientWorkItem {
   id: string;
   submissionId: string;
+  /** Alias for `submissionId` — matches the Step 7 work-item contract. */
+  sourceSubmissionId: string;
   clientId: string;
   title: string;
+  description: string;
   clientVisibleNote: string;
   clientStatusLabel: string;
+  /** Alias for `clientStatusLabel` — matches the Step 7 work-item contract. */
+  statusLabel: string;
   workType: ClientTeamSubmissionWorkType;
   priority: ClientTeamSubmissionPriority;
   updatedAt: string;
   nextClientAction?: string;
+  /** Alias for `nextClientAction` — matches the Step 7 work-item contract. */
+  nextAction?: string;
   /** True when the submission needs the client to do something. */
   isActionRequired: boolean;
 }
@@ -89,17 +100,23 @@ function toClientVisible(s: ClientTeamSubmission): ClientVisibleSubmission {
 }
 
 function toClientWorkItem(s: ClientTeamSubmission): ClientWorkItem {
+  const statusLabel = getSubmissionClientStatusLabel(s);
+  const nextAction = getSubmissionNextClientAction(s);
   return {
     id: `cwi-${s.id}`,
     submissionId: s.id,
+    sourceSubmissionId: s.id,
     clientId: s.clientId,
     title: s.title,
+    description: s.description,
     clientVisibleNote: s.clientVisibleNote,
-    clientStatusLabel: getSubmissionClientStatusLabel(s),
+    clientStatusLabel: statusLabel,
+    statusLabel,
     workType: getSubmissionWorkType(s),
     priority: s.priority,
     updatedAt: s.updatedAt,
-    nextClientAction: getSubmissionNextClientAction(s),
+    nextClientAction: nextAction,
+    nextAction,
     isActionRequired:
       s.status === "needs_client_clarification" || s.status === "blocked",
   };
@@ -297,4 +314,92 @@ export function getSubmissionWorkItemForClient(
 ): ClientWorkItem | undefined {
   const s = _getSubmissionById(submissionId);
   return s ? toClientWorkItem(s) : undefined;
+}
+
+// ===========================================================================
+// Status timeline helpers — visibility-split.
+// Client surfaces only ever see events with `clientVisible: true`.
+// ===========================================================================
+
+/**
+ * Client-friendly status label for one of the four headline buckets:
+ *   "Received" / "In progress" / "Waiting on your input" / "Completed".
+ * Used by `/demo/client/updates` to render the "Recent Veroxa progress"
+ * strip without leaking internal stage names.
+ */
+export type ClientFriendlyStatusBucket =
+  | "Received"
+  | "In progress"
+  | "Waiting on your input"
+  | "Completed";
+
+export interface ClientStatusUpdate {
+  id: string;
+  submissionId: string;
+  submissionTitle: string;
+  label: ClientFriendlyStatusBucket;
+  note: string;
+  createdAt: string;
+}
+
+function toClientFriendlyBucket(
+  event: ClientTeamStatusEvent,
+): ClientFriendlyStatusBucket {
+  switch (event.toStatus) {
+    case "new":
+    case "needs_review":
+    case "accepted":
+      return "Received";
+    case "in_progress":
+      return "In progress";
+    case "needs_client_clarification":
+    case "blocked":
+      return "Waiting on your input";
+    case "completed":
+    case "archived":
+      return "Completed";
+  }
+}
+
+/**
+ * CLIENT-SAFE: most-recent client-visible status events for a client, mapped
+ * to one of four friendly labels. Strips internal-only events.
+ */
+export function getClientLatestStatusUpdates(
+  clientId: string,
+  limit = 6,
+): ClientStatusUpdate[] {
+  return _getClientVisibleStatusEvents(clientId)
+    .slice(0, limit)
+    .map((event) => {
+      const submission = _getSubmissionById(event.submissionId);
+      return {
+        id: event.id,
+        submissionId: event.submissionId,
+        submissionTitle: submission?.title ?? "Veroxa work",
+        label: toClientFriendlyBucket(event),
+        note: event.note,
+        createdAt: event.createdAt,
+      };
+    });
+}
+
+/**
+ * TEAM-ONLY: full status timeline for a client across all submissions,
+ * newest-first. Includes internal-only events.
+ */
+export function getTeamStatusTimeline(
+  clientId: string,
+): ClientTeamStatusEvent[] {
+  return _getTeamStatusEvents(clientId);
+}
+
+/**
+ * TEAM-ONLY: full status timeline for a single submission, oldest-first.
+ * Includes internal-only events.
+ */
+export function getTeamSubmissionStatusEvents(
+  submissionId: string,
+): ClientTeamStatusEvent[] {
+  return _getStatusEventsForSubmission(submissionId);
 }

@@ -815,3 +815,183 @@ export function getSubmissionById(
 ): ClientTeamSubmission | undefined {
   return demoClientTeamSubmissions.find((s) => s.id === submissionId);
 }
+
+// ---------------------------------------------------------------------------
+// Status history — `client_team_status_events` (future Supabase table).
+// Captures the audit trail of how a submission moved through statuses.
+// `clientVisible` is the hard switch that decides whether a client portal is
+// allowed to render the event. Internal-only events (e.g. assignments,
+// internal triage notes) stay `clientVisible: false`.
+// ---------------------------------------------------------------------------
+
+export type ClientTeamStatusActorRole = "client" | "team" | "system";
+
+export interface ClientTeamStatusEvent {
+  id: string;
+  clientId: ClientTeamDemoClientId;
+  submissionId: string;
+  fromStatus?: ClientTeamSubmissionStatus;
+  toStatus: ClientTeamSubmissionStatus;
+  actorRole: ClientTeamStatusActorRole;
+  note: string;
+  clientVisible: boolean;
+  createdAt: string;
+}
+
+export const demoClientTeamStatusEvents: ClientTeamStatusEvent[] = [
+  // cts-a1 — weekend grill photos
+  {
+    id: "cte-a1-1",
+    clientId: "demo-a",
+    submissionId: "cts-a1",
+    toStatus: "new",
+    actorRole: "client",
+    note: "Weekend grill photos received from owner.",
+    clientVisible: true,
+    createdAt: "2026-05-24T18:20:00Z",
+  },
+  {
+    id: "cte-a1-2",
+    clientId: "demo-a",
+    submissionId: "cts-a1",
+    fromStatus: "new",
+    toStatus: "in_progress",
+    actorRole: "team",
+    note: "Veroxa is drafting captions for the strongest shots.",
+    clientVisible: true,
+    createdAt: "2026-05-25T09:15:00Z",
+  },
+  {
+    id: "cte-a1-3",
+    clientId: "demo-a",
+    submissionId: "cts-a1",
+    fromStatus: "in_progress",
+    toStatus: "in_progress",
+    actorRole: "team",
+    note: "Assigned to Maya for caption drafts; brisket plate flagged for lighting crop.",
+    clientVisible: false,
+    createdAt: "2026-05-25T09:30:00Z",
+  },
+  // cts-a2 — family platter price
+  {
+    id: "cte-a2-1",
+    clientId: "demo-a",
+    submissionId: "cts-a2",
+    toStatus: "needs_client_clarification",
+    actorRole: "team",
+    note: "Veroxa needs the correct family platter price before drafting the weekend promo.",
+    clientVisible: true,
+    createdAt: "2026-05-26T14:00:00Z",
+  },
+  // cts-a5 — dessert photos blocked
+  {
+    id: "cte-a5-1",
+    clientId: "demo-a",
+    submissionId: "cts-a5",
+    fromStatus: "new",
+    toStatus: "blocked",
+    actorRole: "team",
+    note: "Waiting on 2–3 dessert photos to unlock Saturday evening content.",
+    clientVisible: true,
+    createdAt: "2026-05-23T20:00:00Z",
+  },
+  {
+    id: "cte-a5-2",
+    clientId: "demo-a",
+    submissionId: "cts-a5",
+    toStatus: "blocked",
+    actorRole: "system",
+    note: "Fallback plan: swap to evergreen dessert if no reply by Friday.",
+    clientVisible: false,
+    createdAt: "2026-05-25T08:00:00Z",
+  },
+  // cts-b1 — Birria launch
+  {
+    id: "cte-b1-1",
+    clientId: "demo-b",
+    submissionId: "cts-b1",
+    toStatus: "in_progress",
+    actorRole: "team",
+    note: "Drafting launch post, Google post, and Reel for the Birria Special.",
+    clientVisible: true,
+    createdAt: "2026-05-25T13:00:00Z",
+  },
+  // cts-c2 — interior photos
+  {
+    id: "cte-c2-1",
+    clientId: "demo-c",
+    submissionId: "cts-c2",
+    toStatus: "needs_client_clarification",
+    actorRole: "team",
+    note: "Asked for 3–4 fresh interior photos for Google profile refresh.",
+    clientVisible: true,
+    createdAt: "2026-05-24T13:00:00Z",
+  },
+  {
+    id: "cte-c2-2",
+    clientId: "demo-c",
+    submissionId: "cts-c2",
+    toStatus: "needs_client_clarification",
+    actorRole: "system",
+    note: "Last interior shots are 4 months old — will affect Google visibility score.",
+    clientVisible: false,
+    createdAt: "2026-05-24T13:05:00Z",
+  },
+  // cts-a4 — hours change (completed)
+  {
+    id: "cte-a4-1",
+    clientId: "demo-a",
+    submissionId: "cts-a4",
+    fromStatus: "accepted",
+    toStatus: "completed",
+    actorRole: "team",
+    note: "Updated long-weekend hours posted to your Google profile.",
+    clientVisible: true,
+    createdAt: "2026-05-22T09:00:00Z",
+  },
+  // cts-d2 — brand kit
+  {
+    id: "cte-d2-1",
+    clientId: "demo-d",
+    submissionId: "cts-d2",
+    toStatus: "needs_client_clarification",
+    actorRole: "team",
+    note: "Veroxa needs your logo and brand colors before drafting your first posts.",
+    clientVisible: true,
+    createdAt: "2026-05-21T14:00:00Z",
+  },
+];
+
+export function getStatusEventsForSubmission(
+  submissionId: string,
+): ClientTeamStatusEvent[] {
+  return demoClientTeamStatusEvents
+    .filter((e) => e.submissionId === submissionId)
+    .slice()
+    .sort((a, b) => (a.createdAt < b.createdAt ? -1 : 1));
+}
+
+export function getClientVisibleStatusEvents(
+  clientId: string,
+): ClientTeamStatusEvent[] {
+  return demoClientTeamStatusEvents
+    .filter((e) => e.clientId === clientId && e.clientVisible)
+    .slice()
+    .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+}
+
+export function getTeamStatusEvents(
+  clientId: string,
+): ClientTeamStatusEvent[] {
+  return demoClientTeamStatusEvents
+    .filter((e) => e.clientId === clientId)
+    .slice()
+    .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+}
+
+export function getLatestStatusEventForSubmission(
+  submissionId: string,
+): ClientTeamStatusEvent | undefined {
+  const events = getStatusEventsForSubmission(submissionId);
+  return events.length > 0 ? events[events.length - 1] : undefined;
+}
