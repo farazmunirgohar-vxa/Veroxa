@@ -41,6 +41,28 @@ export type ClientTeamSubmissionPriority = "low" | "normal" | "high" | "urgent";
 
 export type ClientTeamSubmissionAuthor = "client" | "team";
 
+export type ClientTeamSubmissionSourceChannel =
+  | "client_portal"
+  | "restaurant_upload"
+  | "team_created"
+  | "system_seeded";
+
+export type ClientTeamSubmissionWorkType =
+  | "content"
+  | "media_review"
+  | "menu_update"
+  | "google_update"
+  | "reporting"
+  | "client_support";
+
+export type ClientTeamSubmissionTeamWorkStatus =
+  | "not_started"
+  | "ready_for_team"
+  | "in_progress"
+  | "waiting_on_client"
+  | "ready_for_review"
+  | "completed";
+
 export interface ClientTeamSubmission {
   id: string;
   clientId: ClientTeamDemoClientId;
@@ -60,6 +82,19 @@ export interface ClientTeamSubmission {
   requestedClientAction?: string;
   linkedMediaId?: string;
   linkedWorkItemId?: string;
+
+  // ---------------------------------------------------------------------------
+  // Optional workflow-typing fields. When omitted, derivation helpers
+  // (`getSubmissionWorkType`, etc.) infer them from existing fields. This
+  // keeps fixtures small while letting individual entries override.
+  // ---------------------------------------------------------------------------
+  sourceChannel?: ClientTeamSubmissionSourceChannel;
+  workType?: ClientTeamSubmissionWorkType;
+  teamWorkStatus?: ClientTeamSubmissionTeamWorkStatus;
+  clientStatusLabel?: string;
+  teamStatusLabel?: string;
+  nextTeamAction?: string;
+  nextClientAction?: string;
 }
 
 export type ClientTeamMessageVisibility = "client_and_team" | "team_only";
@@ -611,3 +646,172 @@ export const clientTeamSubmissionTypeLabels: Record<
   access_info: "Access info",
   general_request: "General request",
 };
+
+// ---------------------------------------------------------------------------
+// Derivation helpers — preferred over bloating every fixture.
+// These map existing `submissionType` + `status` + `submittedBy` to the new
+// workflow-typing fields so client/team pages can read normalized work-item
+// shapes without each fixture having to spell them out.
+// ---------------------------------------------------------------------------
+
+export function getSubmissionWorkType(
+  submission: ClientTeamSubmission,
+): ClientTeamSubmissionWorkType {
+  if (submission.workType) return submission.workType;
+  switch (submission.submissionType) {
+    case "media":
+      return "media_review";
+    case "menu_update":
+      return "menu_update";
+    case "promotion":
+      return "content";
+    case "correction":
+      return "google_update";
+    case "access_info":
+      return "client_support";
+    case "question":
+      return "client_support";
+    case "general_request":
+      return "client_support";
+  }
+}
+
+export function getSubmissionTeamWorkStatus(
+  submission: ClientTeamSubmission,
+): ClientTeamSubmissionTeamWorkStatus {
+  if (submission.teamWorkStatus) return submission.teamWorkStatus;
+  switch (submission.status) {
+    case "new":
+      return "ready_for_team";
+    case "needs_review":
+      return "ready_for_team";
+    case "needs_client_clarification":
+      return "waiting_on_client";
+    case "blocked":
+      return "waiting_on_client";
+    case "accepted":
+      return "in_progress";
+    case "in_progress":
+      return "in_progress";
+    case "completed":
+      return "completed";
+    case "archived":
+      return "completed";
+  }
+}
+
+export function getSubmissionClientStatusLabel(
+  submission: ClientTeamSubmission,
+): string {
+  if (submission.clientStatusLabel) return submission.clientStatusLabel;
+  switch (submission.status) {
+    case "new":
+    case "needs_review":
+      return "Received by Veroxa";
+    case "needs_client_clarification":
+      return "Veroxa needs your input";
+    case "blocked":
+      return "Waiting on you";
+    case "accepted":
+      return "Accepted — in progress";
+    case "in_progress":
+      return "Veroxa is working on it";
+    case "completed":
+      return "Completed";
+    case "archived":
+      return "Closed";
+  }
+}
+
+export function getSubmissionTeamStatusLabel(
+  submission: ClientTeamSubmission,
+): string {
+  if (submission.teamStatusLabel) return submission.teamStatusLabel;
+  return clientTeamSubmissionStatusLabels[submission.status];
+}
+
+export function getSubmissionNextTeamAction(
+  submission: ClientTeamSubmission,
+): string {
+  if (submission.nextTeamAction) return submission.nextTeamAction;
+  switch (submission.status) {
+    case "new":
+      return "Triage and accept or send a clarification.";
+    case "needs_review":
+      return "Review the submission and decide on next steps.";
+    case "needs_client_clarification":
+      return "Wait for client reply, then resume.";
+    case "blocked":
+      return "Follow up with the client; swap to evergreen if no reply.";
+    case "accepted":
+      return "Start execution per the accepted scope.";
+    case "in_progress":
+      return "Continue execution; share draft for client review when ready.";
+    case "completed":
+      return "Confirm with client and close out.";
+    case "archived":
+      return "No action — archived.";
+  }
+}
+
+export function getSubmissionNextClientAction(
+  submission: ClientTeamSubmission,
+): string | undefined {
+  if (submission.nextClientAction) return submission.nextClientAction;
+  if (submission.requestedClientAction) return submission.requestedClientAction;
+  if (submission.status === "blocked" || submission.status === "needs_client_clarification") {
+    return "Reply to Veroxa with the requested info when you can.";
+  }
+  return undefined;
+}
+
+// ---------------------------------------------------------------------------
+// Query helpers — read-only filters over the fixture arrays.
+// ---------------------------------------------------------------------------
+
+export function getActiveSubmissionsForClient(
+  clientId: string,
+): ClientTeamSubmission[] {
+  return demoClientTeamSubmissions.filter(
+    (s) =>
+      s.clientId === clientId &&
+      s.status !== "completed" &&
+      s.status !== "archived",
+  );
+}
+
+export function getClientActionableSubmissions(
+  clientId: string,
+): ClientTeamSubmission[] {
+  return demoClientTeamSubmissions.filter(
+    (s) =>
+      s.clientId === clientId &&
+      (s.status === "needs_client_clarification" || s.status === "blocked"),
+  );
+}
+
+export function getTeamReadySubmissions(): ClientTeamSubmission[] {
+  return demoClientTeamSubmissions.filter(
+    (s) => s.status === "new" || s.status === "needs_review",
+  );
+}
+
+export function getTeamWaitingOnClientSubmissions(): ClientTeamSubmission[] {
+  return demoClientTeamSubmissions.filter(
+    (s) => s.status === "needs_client_clarification" || s.status === "blocked",
+  );
+}
+
+export function getCompletedSubmissionsForClient(
+  clientId: string,
+): ClientTeamSubmission[] {
+  return demoClientTeamSubmissions.filter(
+    (s) => s.clientId === clientId && s.status === "completed",
+  );
+}
+
+export function getSubmissionById(
+  submissionId: string,
+): ClientTeamSubmission | undefined {
+  return demoClientTeamSubmissions.find((s) => s.id === submissionId);
+}

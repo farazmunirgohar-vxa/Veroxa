@@ -10,8 +10,6 @@ import { DataSourceBadge } from "@/components/DataSourceBadge";
 import {
   demoClientTeamWorkflow,
 } from "@/data/workflows/clientTeamWorkflow";
-import { sortWorkflowItems } from "@/lib/workflows/workflowStatus";
-import { WorkflowItemCard } from "@/components/workflows/WorkflowItemCard";
 import {
   DemoImageCard,
   DemoSchedulePreview,
@@ -144,7 +142,11 @@ export default function ClientDashboard() {
   const healthSnapshot = healthRepository.getClientHealthSnapshot("demo-a");
   const clientReports = reportRepository.getClientReports("demo-a");
   const recentActivity = activityRepository.getClientVisibleActivity("demo-a");
-  const openClientActions = clientTeamWorkRepository.getClientOpenActions("demo-a");
+  // Canonical "Action needed from you" source: submission-derived work items.
+  // Includes both `needs_client_clarification` and `blocked` submissions, so
+  // the dashboard tile, /demo/client/requests, and /demo/client/updates all
+  // agree on the same count and the same first item.
+  const openClientActions = clientTeamWorkRepository.getClientActionRequiredItems("demo-a");
 
   const snapshotItems = [
     healthSnapshot
@@ -308,20 +310,47 @@ export default function ClientDashboard() {
         </Card>
       </div>
 
-      {/* What Veroxa is working on — first-client workflow visibility */}
+      {/* What Veroxa is working on — derived from the client-team submission
+          pipeline (single source of truth across client pages). */}
       <div data-testid="section-veroxa-working-on">
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
           What Veroxa is working on
         </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {sortWorkflowItems(
-            demoClientTeamWorkflow.filter((i) => i.clientId === "demo-a"),
-          )
-            .slice(0, 5)
-            .map((item) => (
-              <WorkflowItemCard key={item.id} item={item} mode="client" />
-            ))}
-        </div>
+        {(() => {
+          const inProgress = clientTeamWorkRepository
+            .getClientInProgressItems("demo-a")
+            .slice(0, 6);
+          if (inProgress.length === 0) {
+            return (
+              <p className="text-xs text-muted-foreground italic">
+                Nothing is actively in progress this week.
+              </p>
+            );
+          }
+          return (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {inProgress.map((item) => (
+                <Card
+                  key={item.id}
+                  className="bg-card/60 border-border"
+                  data-testid={`dashboard-in-progress-${item.submissionId}`}
+                >
+                  <CardContent className="p-3.5">
+                    <p className="text-sm font-semibold text-foreground leading-snug mb-1">
+                      {item.title}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground uppercase tracking-wider mb-1.5">
+                      {item.clientStatusLabel}
+                    </p>
+                    <p className="text-xs text-foreground/80 leading-relaxed">
+                      {item.clientVisibleNote}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          );
+        })()}
         <p className="text-[11px] text-muted-foreground/70 mt-2">
           Demo only — illustrative workflow snapshot. Nothing is published without your approval.
         </p>

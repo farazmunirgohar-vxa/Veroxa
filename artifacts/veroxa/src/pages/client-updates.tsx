@@ -1,4 +1,4 @@
-import { CalendarDays, CheckCircle2, Camera, FileText, Sparkles, Clock, Loader2 } from "lucide-react";
+import { CalendarDays, CheckCircle2, FileText, Sparkles, Clock, Loader2, ArrowRight } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -26,23 +26,6 @@ const PAST_UPDATES = [
     posts: 2,
     reach: "8,900",
     status: "Published",
-  },
-];
-
-const UPCOMING_ACTIONS = [
-  {
-    icon: Camera,
-    label: "Upload new food photos",
-    detail: "4–6 photos for the upcoming weekend set. Raw phone photos are perfect.",
-    priority: "This week",
-    priorityClass: "bg-amber-500/10 text-amber-300 border-amber-500/30",
-  },
-  {
-    icon: CheckCircle2,
-    label: "Review draft captions",
-    detail: "3 caption drafts are ready for your review in AI Draft Preview.",
-    priority: "Ready",
-    priorityClass: "bg-emerald-500/10 text-emerald-300 border-emerald-500/30",
   },
 ];
 
@@ -115,41 +98,57 @@ export default function ClientUpdates() {
         </CardContent>
       </Card>
 
-      {/* Actions needed from you */}
-      <div className="mb-5" data-testid="section-upcoming-actions">
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-          What we need from you this week
-        </h3>
-        <div className="grid sm:grid-cols-2 gap-3">
-          {UPCOMING_ACTIONS.map((a, i) => (
-            <Card key={i} className="bg-card/60 border-border" data-testid={`action-item-${i}`}>
-              <CardContent className="flex items-start gap-3 p-4">
-                <div className="p-2 rounded-md bg-primary/10 flex-shrink-0">
-                  <a.icon className="w-4 h-4 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <p className="text-sm font-semibold text-foreground">{a.label}</p>
-                    <Badge
-                      variant="outline"
-                      className={`flex-shrink-0 text-[10px] border ${a.priorityClass}`}
-                    >
-                      {a.priority}
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{a.detail}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-
-      {/* What Veroxa is working on for you — client-visible only. */}
+      {/* Actions needed from you — derived from the submission pipeline so
+          this section agrees with the client dashboard and /requests page. */}
       {(() => {
-        const inProgress = clientTeamWorkRepository
-          .getClientVisibleSubmissions(SHOWCASE_ID)
-          .filter((s) => s.status === "in_progress" || s.status === "accepted");
+        const actions = clientTeamWorkRepository.getClientActionRequiredItems(SHOWCASE_ID);
+        if (actions.length === 0) return null;
+        return (
+          <div className="mb-5" data-testid="section-upcoming-actions">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+              What we need from you this week
+            </h3>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {actions.map((item) => (
+                <Card
+                  key={item.id}
+                  className="bg-card/60 border-border"
+                  data-testid={`action-item-${item.submissionId}`}
+                >
+                  <CardContent className="flex items-start gap-3 p-4">
+                    <div className="p-2 rounded-md bg-amber-500/10 flex-shrink-0">
+                      <ArrowRight className="w-4 h-4 text-amber-300" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <p className="text-sm font-semibold text-foreground">{item.title}</p>
+                        <Badge
+                          variant="outline"
+                          className="flex-shrink-0 text-[10px] border bg-amber-500/10 text-amber-300 border-amber-500/30"
+                        >
+                          {item.clientStatusLabel}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {item.clientVisibleNote}
+                      </p>
+                      {item.nextClientAction && (
+                        <p className="text-[11px] text-amber-300 mt-1.5">
+                          What to send: {item.nextClientAction}
+                        </p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* What Veroxa is working on for you — derived from in-progress work items. */}
+      {(() => {
+        const inProgress = clientTeamWorkRepository.getClientInProgressItems(SHOWCASE_ID);
         if (inProgress.length === 0) return null;
         return (
           <div className="mb-5" data-testid="section-veroxa-working-on">
@@ -157,20 +156,20 @@ export default function ClientUpdates() {
               What Veroxa is working on for you
             </h3>
             <div className="grid sm:grid-cols-2 gap-3">
-              {inProgress.slice(0, 4).map((s) => (
+              {inProgress.slice(0, 4).map((item) => (
                 <Card
-                  key={s.id}
+                  key={item.id}
                   className="bg-card/60 border-border"
-                  data-testid={`working-on-${s.id}`}
+                  data-testid={`working-on-${item.submissionId}`}
                 >
                   <CardContent className="flex items-start gap-3 p-4">
                     <div className="p-2 rounded-md bg-primary/10 flex-shrink-0">
                       <Loader2 className="w-4 h-4 text-primary" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-foreground mb-1">{s.title}</p>
+                      <p className="text-sm font-semibold text-foreground mb-1">{item.title}</p>
                       <p className="text-xs text-muted-foreground leading-relaxed">
-                        {s.clientVisibleNote}
+                        {item.clientVisibleNote}
                       </p>
                     </div>
                   </CardContent>

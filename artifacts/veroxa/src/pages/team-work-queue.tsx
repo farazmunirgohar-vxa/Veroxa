@@ -69,7 +69,8 @@ export default function TeamWorkQueue() {
       </Card>
 
       <p className="text-xs text-muted-foreground mb-4">
-        Client direction feeds into this queue after team interpretation. See the{" "}
+        Signed-client work surfaces here once direction or submissions land.
+        Client direction is interpreted in the{" "}
         <a
           href="/demo/team/direction-queue"
           className="text-primary hover:underline"
@@ -77,15 +78,7 @@ export default function TeamWorkQueue() {
         >
           Direction Queue
         </a>
-        . New client work originates from{" "}
-        <a
-          href="/demo/team/audit-leads"
-          className="text-primary hover:underline"
-          data-testid="link-audit-leads-from-work-queue"
-        >
-          Audit Leads
-        </a>{" "}
-        once a prospect converts.
+        .
       </p>
 
       {/* Client submissions snapshot — surfaces inbound work + internal notes. */}

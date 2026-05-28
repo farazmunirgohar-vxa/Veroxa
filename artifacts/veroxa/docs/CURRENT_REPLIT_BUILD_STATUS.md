@@ -1,5 +1,36 @@
 # Current Replit Build Status
 
+> **2026-05-28 — Client ↔ Team workflow is the locked near-term direction**
+>
+> - Client-Team workflow is now the locked near-term build direction. Demo
+>   polish and Owner/Operator polish are intentionally parked.
+> - `clientTeamWorkRepository` is now the **preferred source** for client/team
+>   submissions, messages, and action items. New normalized helpers expose
+>   visibility-safe `ClientWorkItem` and team-only `TeamWorkItem` shapes:
+>   `getClient{ActionRequired,InProgress,Completed,WorkTimeline}Items`,
+>   `getTeam{Ready,WaitingOnClient,InProgress,Completed,Blocked}WorkItems`,
+>   plus `getSubmissionWorkItemFor{Team,Client}`.
+> - Client action/status surfaces are consolidated around the repository:
+>   `/demo/client`, `/demo/client/requests`, and `/demo/client/updates` now
+>   derive "Action needed", "Questions from Veroxa Team", "Veroxa is working
+>   on", and "Recently completed" from the same submission pipeline. The
+>   parallel `demoClientRequests` and `demoClientTeamWorkflow` displays on
+>   `/demo/client/requests` and the workflow strip on `/demo/client` have
+>   been retired in favor of submission-derived cards.
+> - Team work intake and queues are connected to client-team submissions.
+>   `/demo/team/work-queue` no longer points at Audit Leads as the origin of
+>   signed-client work; the focus is on submissions + direction interpretation.
+> - `docs/CLIENT_TEAM_WORKFLOW_CONTRACT.md` defines the future Supabase
+>   table slice (`client_team_submissions`, `client_team_messages`,
+>   `client_action_items`) with draft fields and the first future write paths.
+> - `src/data/demo/demoClientTeamWork.ts` now exposes optional workflow-typing
+>   fields (`sourceChannel`, `workType`, `teamWorkStatus`, `clientStatusLabel`,
+>   `teamStatusLabel`, `nextTeamAction`, `nextClientAction`) with pure
+>   derivation helpers, so fixtures stay small.
+> - Guardrails unchanged: AUTH_MODE=placeholder, DATA_MODE=fixture,
+>   VEROXA_DATA_SOURCE_MODE=demo. No real auth/backend/AI/publishing/payment/
+>   notification/storage activated. No writes. Demo IDs only.
+
 > **2026-05-28 — Client ↔ Team workflow & communication layer**
 >
 > - New demo fixtures: `src/data/demo/demoClientTeamWork.ts` models
