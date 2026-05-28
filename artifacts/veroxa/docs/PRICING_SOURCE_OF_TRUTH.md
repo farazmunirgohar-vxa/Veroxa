@@ -118,3 +118,10 @@ Audit package recommendations must use locked pricing and recommend based on
 weak spots, not highest price. The audit must never bypass
 `@/data/pricing/veroxaPricing` or hardcode dollar amounts. Foundation comes
 before ads.
+
+## M027 confirmation
+
+Audit recommendations use locked pricing from `@/data/pricing/veroxaPricing`
+and recommend based on weak spots, never the highest price. Even with the
+simplified inputs of M027A, the recommender must not default to a more
+expensive package without weak-spot evidence.

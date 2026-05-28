@@ -1,12 +1,17 @@
 /**
- * demoAuditExamples.ts — M026A
+ * demoAuditExamples.ts — M026A / M027A
  *
  * Fictional-only demo inputs. Never use real restaurant or prospect names.
+ * Uses the simplified M027A input structure (no required currentGoal).
  */
 
 import type { RestaurantAuditInput } from "@/lib/audit/auditTypes";
 
-export const demoAuditExamples: { id: string; label: string; input: RestaurantAuditInput }[] = [
+export const demoAuditExamples: {
+  id: string;
+  label: string;
+  input: RestaurantAuditInput;
+}[] = [
   {
     id: "demo_grill_house",
     label: "Demo Grill House (Mediterranean grill)",
@@ -17,12 +22,8 @@ export const demoAuditExamples: { id: string; label: string; input: RestaurantAu
       cuisineType: "Mediterranean grill, kebab, family platters",
       googleListingUrl: "https://maps.google.com/?q=demo+grill+house",
       websiteUrl: "https://demogrillhouse.example",
+      menuOrderingUrl: "https://demogrillhouse.example/menu",
       instagramUrl: "https://instagram.com/demogrillhouse",
-      facebookUrl: "",
-      tiktokUrl: "",
-      currentGoal: "more dinner traffic and catering inquiries",
-      biggestProblem: "social posts are inconsistent week to week",
-      notes: "Strong lamb platter and family platter sales on weekends.",
     },
   },
   {
@@ -33,14 +34,8 @@ export const demoAuditExamples: { id: string; label: string; input: RestaurantAu
       city: "Demo City",
       state: "NJ",
       cuisineType: "Nepali momo, dumplings, family platters",
-      googleListingUrl: "",
-      websiteUrl: "",
       instagramUrl: "https://instagram.com/demomomo",
-      facebookUrl: "",
       tiktokUrl: "https://tiktok.com/@demomomo",
-      currentGoal: "better Google visibility and lunch traffic",
-      biggestProblem: "people cannot find us on Google",
-      notes: "Want to look professional online before pushing ads.",
     },
   },
   {
@@ -53,12 +48,10 @@ export const demoAuditExamples: { id: string; label: string; input: RestaurantAu
       cuisineType: "Mediterranean, bakery, dessert",
       googleListingUrl: "https://maps.google.com/?q=demo+mediterranean+table",
       websiteUrl: "https://demomedtable.example",
+      menuOrderingUrl: "https://demomedtable.example/order",
       instagramUrl: "https://instagram.com/demomedtable",
       facebookUrl: "https://facebook.com/demomedtable",
       tiktokUrl: "https://tiktok.com/@demomedtable",
-      currentGoal: "consistent social reminders and review trust",
-      biggestProblem: "reviews are not being responded to",
-      notes: "Foundation is decent, want to add ads later in the year.",
     },
   },
 ];

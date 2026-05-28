@@ -1056,3 +1056,30 @@ auth activation.
 - **No** database writes, **no** storage upload, **no** new migration.
 - Pricing unchanged. AUTH_MODE=placeholder. DATA_MODE=fixture default. Owner/Operator not expanded. InternalDemoGuard intact.
 - **Typecheck:** PASS.
+
+## M027A–M027C — Simplified Audit Inputs + Accuracy + Confidence
+
+- Public Free Audit form simplified — only restaurantName, city, state, cuisineType are required.
+- New optional link fields: `menuOrderingUrl`, `otherUrl`.
+- `currentGoal`, `biggestProblem`, `notes` made fully optional (no longer asked publicly).
+- `auditConfidence` ("basic" | "good" | "strong") + label + explanation added to `RestaurantAuditReport`.
+- Scoring engine sharpened for minimal inputs:
+  - menuOrderingUrl improves Action Path Clarity + Maps Conversion.
+  - Missing Google + missing website/menu compound action-path weakness.
+  - Strong cuisine terms + social visual links boost Content Persuasion.
+- Weak-spot explanations reframe by missing-link shape:
+  - "Google / Maps visibility may be underbuilt"
+  - "Customer action path may be unclear"
+  - "Social reminder system may be missing"
+- Opportunities now work without a stated goal — derived from missing/provided links + cuisine.
+- Package recommender:
+  - `currentGoal` fully optional.
+  - **Ads Management Only** stricter (total ≥ 85; goal must mention ads/paid/campaign).
+  - **Complete + Ads Add-on** gated on solid foundation + link count ≥ 4 + ads-leaning text signal.
+  - Default = Complete Online Presence.
+- Demo examples updated to the simplified input structure (Demo Grill House, Demo Momo Kitchen, Demo Mediterranean Table).
+- Page hero, helper copy, and CTA wording updated.
+- **No** AI / scraping / Google or social APIs / payments / ads APIs.
+- **No** database writes, **no** storage upload, **no** new migration.
+- Pricing unchanged. AUTH_MODE=placeholder. DATA_MODE=fixture default. Owner/Operator not expanded.
+- **Typecheck:** PASS.

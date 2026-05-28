@@ -1,9 +1,9 @@
 /**
- * auditScoring.ts — M026A
+ * auditScoring.ts — M026A / M027B
  *
  * Rule-based scoring engine for the Free Customer-Flow Readiness Audit.
  * Pure functions. No network, no AI, no scraping. All signals come from
- * the input fields the user provided.
+ * the input fields the user provided (or did not provide).
  *
  * Careful language:
  *   "Based on the information provided…"
@@ -19,6 +19,7 @@ import {
 import type {
   AuditCategoryId,
   AuditCategoryScore,
+  AuditConfidence,
   AuditGrade,
   AuditOpportunity,
   AuditWeakSpot,
@@ -90,6 +91,8 @@ export function scoreAuditCategories(
 ): AuditCategoryScore[] {
   const hasGoogle = has(input.googleListingUrl);
   const hasWebsite = has(input.websiteUrl);
+  const hasMenu = has(input.menuOrderingUrl);
+  const hasOther = has(input.otherUrl);
   const hasIG = has(input.instagramUrl);
   const hasFB = has(input.facebookUrl);
   const hasTT = has(input.tiktokUrl);
@@ -98,43 +101,44 @@ export function scoreAuditCategories(
   const strongCuisine = strongCuisineMatch(input);
 
   // 1. Search Visibility Readiness (20)
-  // Missing Google URL is a major signal. Missing website compounds it.
-  let searchScore = 14;
-  if (hasGoogle) searchScore += 4;
+  let searchScore = 12;
+  if (hasGoogle) searchScore += 6;
   else searchScore -= 6;
   if (hasWebsite) searchScore += 2;
-  else searchScore -= 2;
+  else searchScore -= 1;
+  if (hasMenu) searchScore += 1;
   if (!hasGoogle && !hasWebsite) searchScore -= 2;
   searchScore = clamp(searchScore, 2, 20);
 
   // 2. Google Maps Conversion Readiness (20)
-  let mapsScore = 12;
+  let mapsScore = 11;
   if (hasGoogle) mapsScore += 6;
   else mapsScore -= 6;
   if (hasWebsite) mapsScore += 2;
-  if (goalLower.includes("google") || goalLower.includes("visibility"))
-    mapsScore += 0;
+  if (hasMenu) mapsScore += 2;
   mapsScore = clamp(mapsScore, 2, 20);
 
   // 3. Social Reminder System (15)
-  let socialScore = 5 + socialCount * 3; // 5..14
+  let socialScore = 4 + socialCount * 3; // 4..13
   if (socialCount === 0) socialScore = 2;
   if (goalLower.includes("social") || goalLower.includes("consistency"))
     socialScore = Math.max(socialScore - 1, 2);
   socialScore = clamp(socialScore, 2, 15);
 
   // 4. Content Persuasion Quality (15)
-  let contentScore = 7;
+  let contentScore = 6;
   if (strongCuisine) contentScore += 3;
-  if (hasIG || hasTT) contentScore += 2;
+  if (hasIG || hasTT) contentScore += 3;
   if (!hasIG && !hasTT) contentScore -= 2;
+  if (hasFB) contentScore += 1;
   contentScore = clamp(contentScore, 2, 14);
 
   // 5. Action Path Clarity (15)
-  let actionScore = 7;
+  let actionScore = 5;
   if (hasWebsite) actionScore += 3;
-  else actionScore -= 3;
+  if (hasMenu) actionScore += 3;
   if (hasGoogle) actionScore += 2;
+  if (!hasWebsite && !hasMenu && !hasGoogle) actionScore -= 3;
   if (goalLower.match(/order|reserv|call|inquir|catering/)) actionScore += 1;
   actionScore = clamp(actionScore, 2, 14);
 
@@ -143,13 +147,14 @@ export function scoreAuditCategories(
   if (hasGoogle) reviewScore += 3;
   if (goalLower.includes("review")) reviewScore += 1;
   if (strongCuisine) reviewScore += 1;
+  if (hasOther) reviewScore += 1;
   reviewScore = clamp(reviewScore, 1, 9);
 
   // 7. Growth Leverage Opportunity (5)
   // Higher when there's clearly room to grow (weak inputs).
   const weakInputCount =
     (hasGoogle ? 0 : 1) +
-    (hasWebsite ? 0 : 1) +
+    (hasWebsite || hasMenu ? 0 : 1) +
     (socialCount === 0 ? 1 : 0) +
     (strongCuisine ? 0 : 1);
   let leverageScore = 2 + weakInputCount; // 2..6
@@ -223,9 +228,9 @@ export function scoreAuditCategories(
       actionScore,
       "How easily customers can call, visit, order, reserve, or inquire after they decide.",
       "Veroxa improves CTA clarity, menu/hours/location visibility, Google buttons, and social link organization.",
-      hasWebsite
-        ? "Based on the information provided, a website is in place — clarifying menu, hours, and CTAs would likely tighten the action path."
-        : "Preliminary signal: no website provided. Customers who want to order, reserve, or check the menu may drop off at the decision moment.",
+      hasWebsite || hasMenu
+        ? "Based on the information provided, an action path (website or menu/ordering link) is in place — clarifying menu, hours, and CTAs would likely tighten conversion."
+        : "Preliminary signal: no website or menu/ordering link provided. Customers who want to order, reserve, or check the menu may drop off at the decision moment.",
     ),
     make(
       "review_trust_strength",
@@ -243,7 +248,7 @@ export function scoreAuditCategories(
       leverageScore,
       "How much room Veroxa sees to improve customer-flow conditions through focused work.",
       "Veroxa concentrates first on the weakest customer-flow stage so improvements compound.",
-      `Based on the information provided, several foundational pieces could move at once. ${leverageScore >= 4 ? "Likely opportunity: a single focused 30-day plan would change multiple signals at the same time." : "Most of the foundation is present — refinement, not rebuild, is the leverage."}`,
+      `Based on the information provided, ${leverageScore >= 4 ? "a single focused 30-day plan would likely change multiple signals at the same time." : "most of the foundation is present — refinement, not rebuild, is the leverage."}`,
     ),
   ];
 }
@@ -274,36 +279,206 @@ export function getAuditGrade(totalScore: number): {
   return { grade, label, description: getScoreMeaningByGrade(grade) };
 }
 
-export function getTopWeakSpots(report: RestaurantAuditReport): AuditWeakSpot[] {
+/** M027B — Audit confidence based on link richness. */
+export function getAuditConfidence(input: RestaurantAuditInput): {
+  level: AuditConfidence;
+  label: string;
+  explanation: string;
+} {
+  const hasGoogle = has(input.googleListingUrl);
+  const hasSiteOrMenu = has(input.websiteUrl) || has(input.menuOrderingUrl);
+  const socialCount = [
+    has(input.instagramUrl),
+    has(input.facebookUrl),
+    has(input.tiktokUrl),
+  ].filter(Boolean).length;
+
+  if (hasGoogle && hasSiteOrMenu && socialCount >= 2) {
+    return {
+      level: "strong",
+      label: "Strong",
+      explanation:
+        "Multiple key links were provided, so the preliminary report has stronger signal. A full Veroxa audit would still manually verify the live profiles.",
+    };
+  }
+  if (hasGoogle && (hasSiteOrMenu || socialCount >= 1)) {
+    return {
+      level: "good",
+      label: "Good",
+      explanation:
+        "Several useful links were provided, so the audit can give more specific direction. A full Veroxa audit would still manually verify the live profiles.",
+    };
+  }
+  return {
+    level: "basic",
+    label: "Basic",
+    explanation:
+      "Few links were provided, so this report focuses on likely weak spots from missing information. Adding links would sharpen the audit, but missing links are themselves a signal Veroxa can act on.",
+  };
+}
+
+export function getTopWeakSpots(
+  report: RestaurantAuditReport,
+): AuditWeakSpot[] {
+  const input = report.input;
+  const hasGoogle = has(input.googleListingUrl);
+  const hasWebsiteOrMenu =
+    has(input.websiteUrl) || has(input.menuOrderingUrl);
+  const socialCount = [
+    has(input.instagramUrl),
+    has(input.facebookUrl),
+    has(input.tiktokUrl),
+  ].filter(Boolean).length;
+
   const ranked = [...report.categories]
     .map((c) => ({ c, pct: c.score / c.maxScore }))
     .sort((a, b) => a.pct - b.pct)
     .slice(0, 3);
-  return ranked.map(({ c }) => ({
-    categoryId: c.id,
-    title: c.label,
-    whyItMatters: c.customerFlowImpact,
-    howVeroxaHelps: c.howVeroxaHelps,
-  }));
+
+  function describe(categoryId: AuditCategoryId, fallback: AuditWeakSpot): AuditWeakSpot {
+    if (
+      (categoryId === "search_visibility_readiness" ||
+        categoryId === "google_maps_conversion_readiness" ||
+        categoryId === "review_trust_strength") &&
+      !hasGoogle
+    ) {
+      return {
+        categoryId,
+        title: "Google / Maps visibility may be underbuilt",
+        whyItMatters:
+          "Customers often make restaurant decisions directly on Google Maps. Without a strong Google presence, calls, direction clicks, and trust signals are largely invisible at the decision moment.",
+        howVeroxaHelps:
+          "Profile cleanup, fresh photos, weekly Google posts, menu/hours clarity, and review response support.",
+      };
+    }
+    if (categoryId === "action_path_clarity" && !hasWebsiteOrMenu) {
+      return {
+        categoryId,
+        title: "Customer action path may be unclear",
+        whyItMatters:
+          "If people cannot quickly find menu, hours, ordering, or directions, they may choose another restaurant.",
+        howVeroxaHelps:
+          "Menu visibility, CTA clarity, Google/social link alignment, and action-path cleanup.",
+      };
+    }
+    if (categoryId === "social_reminder_system" && socialCount === 0) {
+      return {
+        categoryId,
+        title: "Social reminder system may be missing",
+        whyItMatters:
+          "Customers may forget about the restaurant when they are hungry if they are not seeing consistent reminders.",
+        howVeroxaHelps:
+          "Weekly content plan, captions, scheduling, short-form content, and staff upload workflow.",
+      };
+    }
+    return fallback;
+  }
+
+  return ranked.map(({ c }) =>
+    describe(c.id, {
+      categoryId: c.id,
+      title: c.label,
+      whyItMatters: c.customerFlowImpact,
+      howVeroxaHelps: c.howVeroxaHelps,
+    }),
+  );
 }
 
 export function getTopOpportunities(
   report: RestaurantAuditReport,
 ): AuditOpportunity[] {
-  const goal = lower(report.input.currentGoal);
+  const input = report.input;
+  const goal = lower(input.currentGoal);
+  const hasGoogle = has(input.googleListingUrl);
+  const hasWebsiteOrMenu =
+    has(input.websiteUrl) || has(input.menuOrderingUrl);
+  const socialCount = [
+    has(input.instagramUrl),
+    has(input.facebookUrl),
+    has(input.tiktokUrl),
+  ].filter(Boolean).length;
+  const strongCuisine = strongCuisineMatch(input);
+
   const out: AuditOpportunity[] = [];
-  for (const kw of GOAL_KEYWORDS) {
-    if (goal.includes(kw)) {
-      out.push({
-        id: `goal_${kw}`,
-        title: `Direct match for your stated goal: ${kw}`,
-        whyItMatters:
-          "Your current goal directly maps to a customer-flow stage Veroxa can strengthen with weekly actions.",
-        veroxaApproach: `Veroxa would build the 30-day plan around your ${kw} goal first, then expand once early signals appear.`,
-      });
+
+  // Goal-based opportunities (optional path)
+  if (goal) {
+    for (const kw of GOAL_KEYWORDS) {
+      if (goal.includes(kw)) {
+        out.push({
+          id: `goal_${kw}`,
+          title: `Direct match for your stated goal: ${kw}`,
+          whyItMatters:
+            "Your current goal directly maps to a customer-flow stage Veroxa can strengthen with weekly actions.",
+          veroxaApproach: `Veroxa would build the 30-day plan around your ${kw} goal first, then expand once early signals appear.`,
+        });
+      }
+      if (out.length >= 3) break;
     }
-    if (out.length >= 3) break;
   }
+
+  // Link-shape opportunities (always available)
+  if (out.length < 3 && !hasGoogle) {
+    out.push({
+      id: "no_google",
+      title: "Strengthen Google discovery and Maps conversion",
+      whyItMatters:
+        "Without a strong Google presence, the most common restaurant decision moment is invisible.",
+      veroxaApproach:
+        "Veroxa would prioritize Google Business Profile cleanup, photos, posts, hours, menu, and review response cadence.",
+    });
+  }
+  if (out.length < 3 && socialCount === 0) {
+    out.push({
+      id: "no_social",
+      title: "Build a customer reminder system",
+      whyItMatters:
+        "Without social reminders, regulars and nearby customers may forget about the restaurant when they are hungry.",
+      veroxaApproach:
+        "Veroxa would set up a weekly content plan with lunch / dinner / weekend / catering themes.",
+    });
+  }
+  if (out.length < 3 && strongCuisine) {
+    out.push({
+      id: "cuisine_story",
+      title: "Turn cuisine story into customer education",
+      whyItMatters:
+        "Distinctive cuisine signals were detected — story-driven content typically improves persuasion and trust.",
+      veroxaApproach:
+        "Veroxa would frame weekly content around the strongest dishes and cultural story.",
+    });
+  }
+  if (out.length < 3 && !hasWebsiteOrMenu) {
+    out.push({
+      id: "no_menu_order",
+      title: "Clarify the action path",
+      whyItMatters:
+        "If menu, ordering, or hours are not easily reachable, conversion drops at the decision moment.",
+      veroxaApproach:
+        "Veroxa would clarify menu/hours/order CTAs across Google and social profiles.",
+    });
+  }
+  if (out.length < 3 && socialCount > 0 && !hasGoogle) {
+    out.push({
+      id: "social_no_google",
+      title: "Align social attention with Google/Maps discovery",
+      whyItMatters:
+        "Social attention is being earned, but the search/Maps decision moment is not yet capturing it.",
+      veroxaApproach:
+        "Veroxa would set up Google so social attention converts to calls, direction clicks, and visits.",
+    });
+  }
+  if (out.length < 3 && hasGoogle && hasWebsiteOrMenu && socialCount === 0) {
+    out.push({
+      id: "google_site_no_social",
+      title: "Add weekly reminders through social content",
+      whyItMatters:
+        "Foundation is in place, but no consistent reminder signal is reaching customers between visits.",
+      veroxaApproach:
+        "Veroxa would launch a disciplined weekly social cadence with lunch/dinner/weekend themes.",
+    });
+  }
+
   if (out.length === 0) {
     out.push({
       id: "default_visibility",
@@ -314,6 +489,7 @@ export function getTopOpportunities(
         "Veroxa would focus the first 30 days on Google + Maps clarity, then layer social reminders.",
     });
   }
+
   return out.slice(0, 3);
 }
 
@@ -329,6 +505,7 @@ export function generateRestaurantAudit(
   const categories = scoreAuditCategories(input);
   const totalScore = categories.reduce((sum, c) => sum + c.score, 0);
   const { grade, label, description } = getAuditGrade(totalScore);
+  const confidence = getAuditConfidence(input);
 
   const partial: RestaurantAuditReport = {
     input,
@@ -352,6 +529,9 @@ export function generateRestaurantAudit(
       firstSteps: [],
     },
     customerFlowExplanation: "",
+    auditConfidence: confidence.level,
+    confidenceLabel: confidence.label,
+    confidenceExplanation: confidence.explanation,
     generatedAtLabel: "Just now",
   };
   partial.weakSpots = getTopWeakSpots(partial);

@@ -91,7 +91,19 @@ export function getPackageRecommendationReason(
 ): { packageId: RecommendedPackageId; reason: string } {
   const c = report.categories;
   const total = report.totalScore;
-  const goal = (report.input.currentGoal ?? "").toLowerCase();
+  const input = report.input;
+  const goal = (input.currentGoal ?? "").toLowerCase();
+  const notes = (input.notes ?? "").toLowerCase();
+  const otherUrl = (input.otherUrl ?? "").toLowerCase();
+  const adsContext = `${goal} ${notes} ${otherUrl}`.trim();
+  const hasGoal = goal.length > 0;
+  const linkCount =
+    (input.googleListingUrl ? 1 : 0) +
+    (input.websiteUrl ? 1 : 0) +
+    (input.menuOrderingUrl ? 1 : 0) +
+    (input.instagramUrl ? 1 : 0) +
+    (input.facebookUrl ? 1 : 0) +
+    (input.tiktokUrl ? 1 : 0);
   const search = scoreOf(c, "search_visibility_readiness");
   const maps = scoreOf(c, "google_maps_conversion_readiness");
   const social = scoreOf(c, "social_reminder_system");
@@ -99,9 +111,11 @@ export function getPackageRecommendationReason(
   const action = scoreOf(c, "action_path_clarity");
   const review = scoreOf(c, "review_trust_strength");
 
-  // Ads Management Only — strict gate
+  // M027B — Ads Management Only — extremely strict.
+  // currentGoal/notes must explicitly mention ads/paid traffic/campaign mgmt.
   if (
-    total >= 80 &&
+    hasGoal &&
+    total >= 85 &&
     maps >= 15 &&
     content >= 12 &&
     action >= 12 &&
@@ -114,12 +128,15 @@ export function getPackageRecommendationReason(
     };
   }
 
-  // Complete + Ads Add-on — gated on solid foundation + ads-leaning goal
+  // M027B — Complete + Ads Add-on — recommended less often when no goal text.
+  // Requires solid foundation, enough links to trust the foundation, and an
+  // ads-leaning signal somewhere in goal/notes/otherUrl.
   if (
-    total >= 65 &&
+    total >= 70 &&
     content >= 11 &&
     action >= 10 &&
-    ADS_GOAL_RE.test(goal)
+    linkCount >= 4 &&
+    ADS_GOAL_RE.test(adsContext)
   ) {
     return {
       packageId: "complete_plus_ads",

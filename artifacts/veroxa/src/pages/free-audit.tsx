@@ -7,11 +7,11 @@ import {
   Compass,
   Info,
   ArrowRight,
+  ShieldCheck,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { generateRestaurantAudit } from "@/lib/audit/auditScoring";
@@ -26,6 +26,7 @@ import {
 import { CUSTOMER_FLOW_STAGES } from "@/lib/audit/customerFlowImpact";
 import { demoAuditExamples } from "@/data/audit/demoAuditExamples";
 import type {
+  AuditConfidence,
   RestaurantAuditInput,
   RestaurantAuditReport,
 } from "@/lib/audit/auditTypes";
@@ -40,9 +41,8 @@ const initialInput: RestaurantAuditInput = {
   instagramUrl: "",
   facebookUrl: "",
   tiktokUrl: "",
-  currentGoal: "",
-  biggestProblem: "",
-  notes: "",
+  menuOrderingUrl: "",
+  otherUrl: "",
 };
 
 function ScoreBar({ score, max }: { score: number; max: number }) {
@@ -58,6 +58,12 @@ function ScoreBar({ score, max }: { score: number; max: number }) {
   );
 }
 
+const confidenceTone: Record<AuditConfidence, string> = {
+  basic: "border-amber-500/40 text-amber-400 bg-amber-500/5",
+  good: "border-sky-500/40 text-sky-400 bg-sky-500/5",
+  strong: "border-emerald-500/40 text-emerald-400 bg-emerald-500/5",
+};
+
 export default function FreeAudit() {
   const [input, setInput] = useState<RestaurantAuditInput>(initialInput);
   const [report, setReport] = useState<RestaurantAuditReport | null>(null);
@@ -71,12 +77,12 @@ export default function FreeAudit() {
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    // M027A — only the 4 required fields gate submission.
     if (
       !input.restaurantName ||
       !input.city ||
       !input.state ||
-      !input.cuisineType ||
-      !input.currentGoal
+      !input.cuisineType
     ) {
       return;
     }
@@ -94,7 +100,7 @@ export default function FreeAudit() {
   function handleLoadExample(id: string) {
     const ex = demoAuditExamples.find((e) => e.id === id);
     if (ex) {
-      setInput(ex.input);
+      setInput({ ...initialInput, ...ex.input });
       setReport(null);
     }
   }
@@ -118,9 +124,15 @@ export default function FreeAudit() {
             Free Customer-Flow Readiness Audit
           </h1>
           <p className="text-muted-foreground max-w-3xl">
-            See where your restaurant may be losing online visibility, trust,
-            reminders, and customer action opportunities. This audit is
-            preliminary and based on the information you provide.
+            Enter your restaurant name, city, cuisine type, and any links you
+            have. Veroxa will generate a preliminary audit showing where
+            customers may be slipping away online and which Veroxa package may
+            help most.
+          </p>
+          <p className="text-[12px] text-muted-foreground/80 max-w-3xl mt-2 italic">
+            This audit does not scrape or verify live platform data yet. It
+            uses the information provided to produce a preliminary
+            customer-flow readiness report.
           </p>
         </div>
 
@@ -153,118 +165,136 @@ export default function FreeAudit() {
           <CardContent>
             <form
               onSubmit={handleSubmit}
-              className="space-y-4"
+              className="space-y-5"
               data-testid="audit-form"
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <Field label="Restaurant name *" testId="audit-name">
-                  <Input
-                    value={input.restaurantName}
-                    onChange={(e) =>
-                      handleChange("restaurantName", e.target.value)
-                    }
-                    required
-                  />
-                </Field>
-                <Field label="Cuisine type *" testId="audit-cuisine">
-                  <Input
-                    value={input.cuisineType}
-                    onChange={(e) =>
-                      handleChange("cuisineType", e.target.value)
-                    }
-                    required
-                  />
-                </Field>
-                <Field label="City *" testId="audit-city">
-                  <Input
-                    value={input.city}
-                    onChange={(e) => handleChange("city", e.target.value)}
-                    required
-                  />
-                </Field>
-                <Field label="State *" testId="audit-state">
-                  <Input
-                    value={input.state}
-                    onChange={(e) => handleChange("state", e.target.value)}
-                    required
-                  />
-                </Field>
-                <Field label="Google listing link" testId="audit-google">
-                  <Input
-                    value={input.googleListingUrl}
-                    onChange={(e) =>
-                      handleChange("googleListingUrl", e.target.value)
-                    }
-                    placeholder="https://maps.google.com/..."
-                  />
-                </Field>
-                <Field label="Website link" testId="audit-website">
-                  <Input
-                    value={input.websiteUrl}
-                    onChange={(e) =>
-                      handleChange("websiteUrl", e.target.value)
-                    }
-                    placeholder="https://..."
-                  />
-                </Field>
-                <Field label="Instagram link" testId="audit-instagram">
-                  <Input
-                    value={input.instagramUrl}
-                    onChange={(e) =>
-                      handleChange("instagramUrl", e.target.value)
-                    }
-                  />
-                </Field>
-                <Field label="Facebook link" testId="audit-facebook">
-                  <Input
-                    value={input.facebookUrl}
-                    onChange={(e) =>
-                      handleChange("facebookUrl", e.target.value)
-                    }
-                  />
-                </Field>
-                <Field label="TikTok link" testId="audit-tiktok">
-                  <Input
-                    value={input.tiktokUrl}
-                    onChange={(e) =>
-                      handleChange("tiktokUrl", e.target.value)
-                    }
-                  />
-                </Field>
+              {/* Required */}
+              <div>
+                <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">
+                  Required
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <Field label="Restaurant name *" testId="audit-name">
+                    <Input
+                      value={input.restaurantName}
+                      onChange={(e) =>
+                        handleChange("restaurantName", e.target.value)
+                      }
+                      required
+                    />
+                  </Field>
+                  <Field label="Cuisine type *" testId="audit-cuisine">
+                    <Input
+                      value={input.cuisineType}
+                      onChange={(e) =>
+                        handleChange("cuisineType", e.target.value)
+                      }
+                      required
+                    />
+                  </Field>
+                  <Field label="City *" testId="audit-city">
+                    <Input
+                      value={input.city}
+                      onChange={(e) => handleChange("city", e.target.value)}
+                      required
+                    />
+                  </Field>
+                  <Field label="State *" testId="audit-state">
+                    <Input
+                      value={input.state}
+                      onChange={(e) => handleChange("state", e.target.value)}
+                      required
+                    />
+                  </Field>
+                </div>
               </div>
 
-              <Field label="Current goal *" testId="audit-goal">
-                <Textarea
-                  rows={2}
-                  value={input.currentGoal}
-                  onChange={(e) =>
-                    handleChange("currentGoal", e.target.value)
-                  }
-                  placeholder='e.g. "more lunch traffic," "better Google visibility," "ads for catering."'
-                  required
-                />
-              </Field>
+              {/* Optional links */}
+              <div>
+                <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
+                  Optional links
+                </p>
+                <p className="text-[11px] text-muted-foreground/80 mb-2">
+                  Links are optional, but they help Veroxa make the
+                  preliminary audit more useful. If you do not have a link,
+                  leave it blank — missing links may reveal a growth
+                  opportunity.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <Field
+                    label="Google Business Profile link"
+                    testId="audit-google"
+                  >
+                    <Input
+                      value={input.googleListingUrl ?? ""}
+                      onChange={(e) =>
+                        handleChange("googleListingUrl", e.target.value)
+                      }
+                      placeholder="https://maps.google.com/..."
+                    />
+                  </Field>
+                  <Field label="Website link" testId="audit-website">
+                    <Input
+                      value={input.websiteUrl ?? ""}
+                      onChange={(e) =>
+                        handleChange("websiteUrl", e.target.value)
+                      }
+                      placeholder="https://..."
+                    />
+                  </Field>
+                  <Field label="Instagram link" testId="audit-instagram">
+                    <Input
+                      value={input.instagramUrl ?? ""}
+                      onChange={(e) =>
+                        handleChange("instagramUrl", e.target.value)
+                      }
+                    />
+                  </Field>
+                  <Field label="Facebook link" testId="audit-facebook">
+                    <Input
+                      value={input.facebookUrl ?? ""}
+                      onChange={(e) =>
+                        handleChange("facebookUrl", e.target.value)
+                      }
+                    />
+                  </Field>
+                  <Field label="TikTok link" testId="audit-tiktok">
+                    <Input
+                      value={input.tiktokUrl ?? ""}
+                      onChange={(e) =>
+                        handleChange("tiktokUrl", e.target.value)
+                      }
+                    />
+                  </Field>
+                  <Field
+                    label="Menu / Ordering link"
+                    testId="audit-menu"
+                  >
+                    <Input
+                      value={input.menuOrderingUrl ?? ""}
+                      onChange={(e) =>
+                        handleChange("menuOrderingUrl", e.target.value)
+                      }
+                      placeholder="https://..."
+                    />
+                  </Field>
+                  <Field label="Other link" testId="audit-other">
+                    <Input
+                      value={input.otherUrl ?? ""}
+                      onChange={(e) =>
+                        handleChange("otherUrl", e.target.value)
+                      }
+                      placeholder="Reservation, catering, anything else"
+                    />
+                  </Field>
+                </div>
+                <p className="text-[11px] text-muted-foreground/80 mt-2">
+                  Do not worry if you do not have every link. Missing links
+                  can reveal where your online system may need help.
+                </p>
+              </div>
 
-              <Field label="Biggest problem you see right now" testId="audit-problem">
-                <Textarea
-                  rows={2}
-                  value={input.biggestProblem}
-                  onChange={(e) =>
-                    handleChange("biggestProblem", e.target.value)
-                  }
-                  placeholder='e.g. "people cannot find us on Google."'
-                />
-              </Field>
-
-              <Field label="Notes" testId="audit-notes">
-                <Textarea
-                  rows={2}
-                  value={input.notes}
-                  onChange={(e) => handleChange("notes", e.target.value)}
-                />
-              </Field>
-
-              <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
                 <p className="text-[11px] text-muted-foreground inline-flex items-center gap-1">
                   <Info className="w-3 h-3" /> No data is sent anywhere. The
                   audit runs in your browser.
@@ -307,16 +337,27 @@ export default function FreeAudit() {
                       {report.gradeLabel}
                     </p>
                     <p className="text-[11px] text-muted-foreground mt-0.5">
-                      {report.input.restaurantName} · {report.input.cuisineType}{" "}
-                      · {report.input.city}, {report.input.state}
+                      {report.input.restaurantName} ·{" "}
+                      {report.input.cuisineType} · {report.input.city},{" "}
+                      {report.input.state}
                     </p>
                   </div>
-                  <Badge
-                    variant="outline"
-                    className="border-amber-500/40 text-amber-400 bg-amber-500/5"
-                  >
-                    Preliminary
-                  </Badge>
+                  <div className="flex flex-col items-end gap-1">
+                    <Badge
+                      variant="outline"
+                      className="border-amber-500/40 text-amber-400 bg-amber-500/5"
+                    >
+                      Preliminary
+                    </Badge>
+                    <Badge
+                      variant="outline"
+                      className={`inline-flex items-center gap-1 ${confidenceTone[report.auditConfidence]}`}
+                      data-testid="audit-confidence-badge"
+                    >
+                      <ShieldCheck className="w-3 h-3" /> Confidence:{" "}
+                      {report.confidenceLabel}
+                    </Badge>
+                  </div>
                 </div>
                 <Separator className="my-4" />
                 <p className="text-sm text-foreground/90">
@@ -327,6 +368,13 @@ export default function FreeAudit() {
                 </p>
                 <p className="text-sm text-muted-foreground mt-2">
                   {report.gradeDescription}
+                </p>
+                <p
+                  className="text-[12px] text-muted-foreground/80 italic mt-2"
+                  data-testid="audit-confidence-explanation"
+                >
+                  Preliminary audit confidence: {report.confidenceLabel}.{" "}
+                  {report.confidenceExplanation}
                 </p>
               </CardContent>
             </Card>
@@ -415,7 +463,7 @@ export default function FreeAudit() {
               <CardContent className="space-y-3">
                 {report.weakSpots.map((w, i) => (
                   <div
-                    key={w.categoryId}
+                    key={`${w.categoryId}-${i}`}
                     className="rounded-md border border-border bg-muted/20 p-3"
                     data-testid={`audit-weak-${w.categoryId}`}
                   >
@@ -620,7 +668,7 @@ export default function FreeAudit() {
                 <Separator className="my-3" />
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <p className="text-sm">
-                    Want Veroxa to review this with you?
+                    Want Veroxa to manually review this audit with you?
                   </p>
                   <Link href="/pricing">
                     <Button data-testid="audit-cta-walkthrough">

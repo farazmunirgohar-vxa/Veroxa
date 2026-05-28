@@ -174,3 +174,16 @@ the first real client uses Veroxa in production.
   - Manual team audit review queue.
   - Audit score history per restaurant over time.
   - Live Google / social platform integrations.
+
+## M027A–M027C — Simplified Audit Inputs
+
+- ✅ Audit tool simplified for easier outreach (only 4 required fields).
+- ✅ Optional menu/ordering and other link fields added.
+- ✅ Audit Confidence level (Basic / Good / Strong) surfaced on the report.
+- ✅ Package recommender works without a stated goal; ads-leaning plans still gated tightly.
+- Still needed later:
+  - Save audits as leads (DB).
+  - Generate PDF audit reports.
+  - AI-assisted audit scoring.
+  - Manual team audit review queue.
+  - Live Google / social verification.

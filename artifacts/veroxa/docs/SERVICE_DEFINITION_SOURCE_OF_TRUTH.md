@@ -233,3 +233,13 @@ systems that influence customer flow: visibility, trust, reminders, action
 clarity, and retention."
 
 "Every action teaches Veroxa what to do better next time."
+
+## M027 Free Audit simplification
+
+- Free audit required inputs are **only** restaurant name, city, state, cuisine type.
+- All links are optional but improve audit confidence.
+- Audit confidence is surfaced as Basic / Good / Strong.
+- Audit recommends a package based on weak spots, never the highest price.
+- Audit is preliminary and does not claim live Google/social verification.
+- Audit does not guarantee customers.
+- Veroxa improves the online systems that influence customer flow.

@@ -35,17 +35,24 @@ export type RecommendedPackageId =
   | "complete_plus_ads"
   | "ads_management_only";
 
+export type AuditConfidence = "basic" | "good" | "strong";
+
 export interface RestaurantAuditInput {
+  // Required
   restaurantName: string;
   city: string;
   state: string;
   cuisineType: string;
+  // Optional links (M027A)
   googleListingUrl?: string;
   websiteUrl?: string;
   instagramUrl?: string;
   facebookUrl?: string;
   tiktokUrl?: string;
-  currentGoal: string;
+  menuOrderingUrl?: string;
+  otherUrl?: string;
+  // Optional context (kept for compatibility; not required publicly)
+  currentGoal?: string;
   biggestProblem?: string;
   notes?: string;
 }
@@ -112,5 +119,8 @@ export interface RestaurantAuditReport {
   opportunities: AuditOpportunity[];
   recommendation: AuditPackageRecommendation;
   customerFlowExplanation: string;
+  auditConfidence: AuditConfidence;
+  confidenceLabel: string;
+  confidenceExplanation: string;
   generatedAtLabel: string;
 }

@@ -173,3 +173,16 @@ and local competition."
 - Team audit review queue
 - Audit score history over time
 - Live Google/social integrations
+
+## M027 update
+
+- Inputs simplified — only restaurant name, city, state, cuisine type are required.
+- New optional link fields: `menuOrderingUrl`, `otherUrl`.
+- `currentGoal` no longer required (kept as optional context).
+- `auditConfidence` (Basic / Good / Strong) surfaced on the report.
+- Weak-spot explanations reframed when key links are missing.
+- Opportunities work without a stated goal; derived from link shape + cuisine.
+- Package recommender:
+  - Ads Management Only stricter (total ≥ 85 + explicit ads goal).
+  - Complete + Ads Add-on requires link count ≥ 4 + ads-leaning text.
+  - Without a stated goal, neither ads plan is recommended.
