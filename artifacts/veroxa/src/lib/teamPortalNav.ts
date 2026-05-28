@@ -37,6 +37,7 @@ import {
   Brain,
   PhoneCall,
   Search,
+  FlaskConical,
 } from "lucide-react";
 import type { SidebarItem } from "@/components/PortalLayout";
 
@@ -52,8 +53,9 @@ export const teamPortalNavItems: SidebarItem[] = [
   { label: "Scheduling",      icon: CalendarDays,    href: "/demo/team/scheduling"     },
   { label: "Reports",         icon: FileText,        href: "/demo/team/report-queue"   },
   { label: "Alerts",          icon: ShieldAlert,     href: "/demo/team/alerts"         },
-  { label: "Audit Leads",     icon: PhoneCall,       href: "/demo/team/audit-leads"    },
+  { label: "Audit Leads",      icon: PhoneCall,       href: "/demo/team/audit-leads"      },
   { label: "Prospect Scanner", icon: Search,         href: "/demo/team/prospect-scanner" },
+  { label: "Lead Source Lab",  icon: FlaskConical,   href: "/demo/team/lead-source-lab"  },
 ];
 
 // Hidden from nav (routes still active at their original paths):

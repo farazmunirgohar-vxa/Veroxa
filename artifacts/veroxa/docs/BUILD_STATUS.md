@@ -1,5 +1,27 @@
 > **Historical reference (pre-2026-05-27).** Pricing and fixture-ID values in this document are out of date. Current source of truth: `docs/PRICING_SOURCE_OF_TRUTH.md` and `src/data/pricing/veroxaPricing.ts`. Fixture IDs are now `demo-a` / `demo-b` / `demo-c` / `demo-d`.
 
+## Latest update — M033–M037 Adaptive Lead Source Engine (2026-05-28)
+
+- Lead source taxonomy expanded from 5 values to 45+ across 6 categories
+  (direct outreach, website/self-selling, relationship, proof-based,
+  campaign/event, other). Labels and category maps added; backward-safe
+  fallback for legacy values.
+- Internal Lead Source Quality Score (100 pts, 8 categories) added in
+  `leadSourceScoring.ts`. Scores are internal only — never shown to
+  restaurants.
+- Team Lead Source Lab at `/demo/team/lead-source-lab` behind
+  `InternalDemoGuard role="team"`. Sections: Source Health Summary,
+  Performance Table, Recommendations, Experiment Planner, Learning Notes.
+- Source experiment local store (`localLeadSourceExperimentStore.ts`) —
+  create, update, delete experiments tracking source hypothesis/targets.
+- Yield-aligned language added to docs. Lead Engine and Execution Engine
+  are now explicitly defined as competing to improve each other.
+- Pricing, AUTH_MODE, DATA_MODE, InternalDemoGuard, Owner/Operator portals,
+  and public audit page all unchanged. No AI / scraping / DB writes / APIs.
+- Full details: `docs/M033_M037_ADAPTIVE_LEAD_SOURCE_ENGINE.md`.
+
+---
+
 ## Latest update — M028–M032 Self-Selling Lead Engine (2026-05-28)
 
 - `/free-audit` now captures opt-in walkthrough requests (local/session

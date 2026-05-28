@@ -113,6 +113,7 @@ import TeamAdaptiveIntelligence from "@/pages/team-adaptive-intelligence";
 import FreeAudit from "@/pages/free-audit";
 import TeamAuditLeads from "@/pages/team-audit-leads";
 import TeamProspectScanner from "@/pages/team-prospect-scanner";
+import TeamLeadSourceLab from "@/pages/team-lead-source-lab";
 
 const queryClient = new QueryClient();
 
@@ -200,6 +201,9 @@ function Router() {
       </Route>
       <Route path="/demo/team/prospect-scanner">
         {() => <InternalDemoGuard role="team"><TeamProspectScanner /></InternalDemoGuard>}
+      </Route>
+      <Route path="/demo/team/lead-source-lab">
+        {() => <InternalDemoGuard role="team"><TeamLeadSourceLab /></InternalDemoGuard>}
       </Route>
       <Route path="/demo/client/direction" component={ClientDirectionCenter} />
 

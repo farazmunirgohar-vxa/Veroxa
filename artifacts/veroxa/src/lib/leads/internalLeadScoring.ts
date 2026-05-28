@@ -232,14 +232,40 @@ function scoreCompetitiveAdvantage(
 }
 
 // ── 8. Warm Relationship / Strategic Value (5) ──────────────────────
+const RELATIONSHIP_SOURCES = new Set<LeadSource>([
+  "referral",
+  "client_referral",
+  "family_friend_referral",
+  "restaurant_owner_referral",
+  "founder_network",
+  "community_referral",
+  "mosque_community_center",
+  "halal_network",
+  "pakistani_community_network",
+  "turkish_mediterranean_network",
+  "referral_from_success",
+  "vendor_partner",
+  "pos_partner",
+  "accountant_bookkeeper",
+  "commercial_realtor",
+]);
+
+const WALK_IN_SOURCES = new Set<LeadSource>([
+  "walk_in",
+  "grand_opening",
+  "new_restaurant_opening",
+  "food_festival",
+  "local_event",
+]);
+
 function scoreWarmRelationship(
   internalFlags?: AuditLeadInternalFlags,
   source?: LeadSource,
 ): number {
   let pts = 0;
   if (internalFlags?.warmRelationship) pts += 3;
-  if (source === "referral") pts += 3;
-  if (source === "walk_in") pts += 1;
+  if (source && RELATIONSHIP_SOURCES.has(source)) pts += 3;
+  if (source && WALK_IN_SOURCES.has(source)) pts += 1;
   if (
     internalFlags?.strategicValueNote &&
     internalFlags.strategicValueNote.trim().length > 0

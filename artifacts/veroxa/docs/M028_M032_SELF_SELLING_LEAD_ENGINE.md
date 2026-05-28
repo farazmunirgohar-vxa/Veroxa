@@ -118,3 +118,30 @@ auth, payments, or third-party APIs.
 - PDF audit + walkthrough confirmations.
 - Automated outreach cadence + reminders.
 - Live Google / social verification for lead audits.
+
+---
+
+## Yield-aligned lead-source principle (added M037)
+
+The audit is one lead source — not the whole lead engine.
+
+Veroxa must adapt to many lead sources: direct outreach, website tools,
+referrals, community networks, proof assets, and campaigns. Each source
+is tracked and scored internally for quality, not just volume.
+
+**Yield** is the real market scoreboard. Yield means customer actions —
+more reviews, more foot traffic, more online orders for restaurant
+partners. Vanity metrics (followers, impressions, reach) are not yield.
+
+**Lead bringing power must be as strong as execution power.** The Lead
+Engine and Execution Engine should compete to improve each other. A weak
+lead engine starves even the best execution system.
+
+**The Financial Health Engine** protects against weak lead flow and
+bad-fit growth: it surfaces projected MRR, priority pipeline health, and
+won/lost signals so Veroxa avoids taking on clients where execution can't
+produce real customer yield.
+
+Source quality is judged over time by whether sources produce clients
+where Veroxa can create real, measurable customer-flow improvement for
+restaurant partners.

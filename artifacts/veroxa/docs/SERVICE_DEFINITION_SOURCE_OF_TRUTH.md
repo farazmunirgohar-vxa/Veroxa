@@ -243,3 +243,48 @@ clarity, and retention."
 - Audit is preliminary and does not claim live Google/social verification.
 - Audit does not guarantee customers.
 - Veroxa improves the online systems that influence customer flow.
+
+---
+
+## Adaptive Lead Source Engine
+
+Added M033–M037.
+
+**The audit is one lead source — not the whole lead engine.**
+
+Veroxa tracks leads from multiple source categories:
+- Direct outreach (walk-ins, phone calls, cold email, social DMs, area scans)
+- Website / self-selling (Free Audit, Guided Demo, QR codes, health checks)
+- Relationship (founder network, client referrals, community partners, trade
+  networks, vendor partners, accountants, realtors)
+- Proof / case study (before/after reports, client testimonials, result
+  snapshots, social sightings)
+- Campaign / event (Ramadan, Eid, holiday catering, grand openings,
+  food festivals, slow-day campaigns)
+
+**Veroxa scores lead sources by quality, not just volume.**
+
+The internal Lead Source Quality Score (100 pts, 8 categories) measures each
+source by lead quality, walkthrough conversion, close conversion, package
+value, execution fit, yield potential, and retention / referral potential.
+Source quality scores are internal-only — never shown to restaurants.
+
+**Veroxa adapts toward sources that produce healthy clients.**
+
+The goal is sources that produce clients where Veroxa can create strong
+execution fit, real restaurant customer yield, and natural retention and
+referral. Weak sources are paused. Strong sources are scaled.
+
+**Lead bringing power must be as strong as execution power.**
+
+The Lead Engine and Execution Engine are treated as competing systems that
+should improve each other. A weak lead engine starves even the best execution
+system. The Financial Health Engine protects against weak lead flow and
+bad-fit growth.
+
+**Yield is the real market scoreboard.**
+
+Yield means customer actions — more reviews, more foot traffic, more online
+orders for restaurant partners. Vanity metrics (followers, impressions,
+reach) are not yield. Source quality is ultimately judged by whether sources
+produce clients where Veroxa can create measurable customer-flow improvement.

@@ -210,3 +210,28 @@ the first real client uses Veroxa in production.
   - PDF audit + walkthrough confirmations.
   - Automated outreach cadence.
   - Live Google / social verification for lead audits.
+
+## M033–M037 — Adaptive Lead Source Engine
+
+- ✅ M033 — Lead source taxonomy expanded from 5 to 45+ values across 6
+  categories. `LEAD_SOURCE_LABELS`, `LEAD_SOURCE_CATEGORY`, and
+  `LEAD_SOURCE_CATEGORY_LABELS` maps added. Safe fallback label for legacy
+  values. Backward-compatible — existing stored leads render safely.
+- ✅ M034 — Lead Source Quality Score (100 pts, 8 categories) added
+  (`leadSourceScoring.ts`, `leadAnalytics.ts`, `leadSourceTypes.ts`).
+  Internal only — never shown to restaurants.
+- ✅ M035 — Team Lead Source Lab at `/demo/team/lead-source-lab` behind
+  `InternalDemoGuard role="team"`. Source Health Summary, Performance Table,
+  Recommendations, Experiment Planner, and Learning Notes sections.
+- ✅ M036 — Source experiment planner in Lab. Local store
+  (`localLeadSourceExperimentStore.ts`). Create / update / delete / status
+  change. No network, no Supabase.
+- ✅ M037 — Yield-aligned language. Docs updated: `M028_M032_SELF_SELLING_LEAD_ENGINE.md`,
+  `SERVICE_DEFINITION_SOURCE_OF_TRUTH.md`, `BUILD_STATUS.md`,
+  `M033_M037_ADAPTIVE_LEAD_SOURCE_ENGINE.md` (new).
+- Still needed later:
+  - Persist lead sources to database (after M024A + RLS).
+  - Track source URL parameters for automatic attribution.
+  - Connect won clients to actual yield performance.
+  - Add source-to-retention reporting.
+  - Source ROI dashboard.
