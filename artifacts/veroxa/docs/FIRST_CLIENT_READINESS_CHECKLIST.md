@@ -142,3 +142,19 @@ the first real client uses Veroxa in production.
   - Connect Team Direction Queue status writes (M025B).
   - Connect Restaurant Upload metadata writes (M026).
   - Storage upload — separate later milestone.
+
+## M025B — Team Direction Queue dev write connection
+
+- ✅ Team Direction Queue status updates connected to `veroxaWriteAdapter.updateDirectionStatus` with local/session-first fallback.
+- ✅ Non-UUID local/demo direction ids skipped safely via `isValidUuid()`.
+- ✅ Per-card `DirectionWriteStatus` state; no raw DB errors in UI.
+- ✅ `createTeamReviewDecision` deferred (no reliable UUID pair available yet).
+- ✅ Client Direction Center banner wording updated.
+- Still needed:
+  - Apply M024A migration in dev Supabase.
+  - Create fictional dev client row; set `VITE_VEROXA_DEV_CLIENT_ID`.
+  - Test Direction Center dev write end-to-end.
+  - Test Team Direction Queue status write with a UUID-id direction item.
+  - M025C — implement direction id read-back for session-originated items.
+  - M026 — connect Restaurant Upload metadata writes.
+  - Storage upload — separate later milestone.

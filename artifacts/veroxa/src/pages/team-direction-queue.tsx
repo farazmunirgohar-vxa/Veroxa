@@ -17,7 +17,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
-import { getWriteSafetyBanner } from "@/lib/data/writeReadiness";
+import { WRITES_ENABLED } from "@/lib/data/writeReadiness";
+import { veroxaWriteAdapter } from "@/lib/data/writeAdapter";
+import { isValidUuid } from "@/lib/data/devClientIdValidation";
 import { teamPortalNavItems } from "@/lib/teamPortalNav";
 import {
   demoClientDirection,
@@ -43,6 +45,7 @@ import {
   updateLocalDirectionRequestStatus,
 } from "@/lib/direction/localDirectionStore";
 import { getLocalUploadSubmissions } from "@/lib/uploadKeys/localUploadStore";
+import type { FirstClientDirectionStatus } from "@/lib/firstClient/firstClientContracts";
 
 type GroupKey =
   | "urgent_high"
@@ -128,6 +131,19 @@ const statusTone: Record<DirectionStatus, string> = {
   completed: "bg-muted text-muted-foreground border-border",
 };
 
+type DirectionWriteStatusKind =
+  | "idle"
+  | "local_updated"
+  | "dev_write_attempting"
+  | "dev_write_saved"
+  | "dev_write_skipped"
+  | "dev_write_failed";
+
+interface DirectionWriteStatus {
+  status: DirectionWriteStatusKind;
+  message: string;
+}
+
 function suggestedAction(d: DirectionRequest): string {
   switch (d.focus) {
     case "lunch_traffic":
@@ -167,6 +183,7 @@ export default function TeamDirectionQueue() {
   const [localItems, setLocalItems] = useState<DirectionRequest[]>(
     () => getLocalDirectionRequests(),
   );
+  const [writeStatuses, setWriteStatuses] = useState<Record<string, DirectionWriteStatus>>({});
 
   useEffect(() => {
     const refresh = () => setLocalItems(getLocalDirectionRequests());
@@ -179,15 +196,69 @@ export default function TeamDirectionQueue() {
     [localItems, fixtureItems],
   );
 
-  function updateStatus(id: string, status: DirectionStatus) {
+  function setWriteStatus(id: string, s: DirectionWriteStatus) {
+    setWriteStatuses((prev) => ({ ...prev, [id]: s }));
+  }
+
+  async function updateStatus(id: string, status: DirectionStatus) {
+    // Step 1 — update local/session state first (always)
     if (isLocalDirectionRequest(id)) {
       updateLocalDirectionRequestStatus(id, status);
       setLocalItems(getLocalDirectionRequests());
+    } else {
+      setFixtureItems((curr) =>
+        curr.map((d) => (d.id === id ? { ...d, status } : d)),
+      );
+    }
+
+    // Step 2 — if writes are disabled, stop here
+    if (!WRITES_ENABLED) {
+      setWriteStatus(id, {
+        status: "local_updated",
+        message: "Status updated locally. Dev database saving is disabled.",
+      });
       return;
     }
-    setFixtureItems((curr) =>
-      curr.map((d) => (d.id === id ? { ...d, status } : d)),
-    );
+
+    // Step 3 — check whether this direction id is a real UUID
+    if (!isValidUuid(id)) {
+      setWriteStatus(id, {
+        status: "dev_write_skipped",
+        message:
+          "Status updated locally. Dev database update skipped because this item does not have a dev database id.",
+      });
+      return;
+    }
+
+    // Step 4 — attempt dev write
+    setWriteStatus(id, {
+      status: "dev_write_attempting",
+      message: "Status updated locally. Saving to dev database\u2026",
+    });
+
+    try {
+      const result = await veroxaWriteAdapter.updateDirectionStatus({
+        directionId: id,
+        nextStatus: status as FirstClientDirectionStatus,
+        internalNote: "Team direction queue status update.",
+      });
+      if (result.ok) {
+        setWriteStatus(id, {
+          status: "dev_write_saved",
+          message: "Status updated locally and to dev database.",
+        });
+      } else {
+        setWriteStatus(id, {
+          status: "dev_write_failed",
+          message: "Status updated locally. Dev database update did not complete.",
+        });
+      }
+    } catch {
+      setWriteStatus(id, {
+        status: "dev_write_failed",
+        message: "Status updated locally. Dev database update did not complete.",
+      });
+    }
   }
 
   function handleClearSessionDirection() {
@@ -233,13 +304,6 @@ export default function TeamDirectionQueue() {
         message="Demo/local only — no real writes, no notifications, no publishing, no ads launched."
         testId="banner-direction-queue"
       />
-
-      <div
-        className="mt-2 text-[11px] text-muted-foreground/80 px-1"
-        data-testid="banner-writes-disabled-direction-queue"
-      >
-        {getWriteSafetyBanner()}
-      </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2 mt-2 mb-4 px-1 text-xs text-muted-foreground">
         <span>
@@ -295,86 +359,104 @@ export default function TeamDirectionQueue() {
                 {groupItems.length === 0 ? (
                   <p className="text-xs text-muted-foreground italic">Nothing here right now.</p>
                 ) : (
-                  groupItems.map((d) => (
-                    <div
-                      key={d.id}
-                      className="p-3 rounded-md border border-border bg-muted/20"
-                      data-testid={`direction-card-${d.id}`}
-                    >
-                      <div className="flex items-start justify-between gap-2 mb-1">
-                        <p className="text-sm font-semibold leading-tight">{d.title}</p>
-                        <Badge variant="outline" className={`text-[10px] ${urgencyTone[d.urgency]}`}>
-                          {directionUrgencyLabels[d.urgency]}
-                        </Badge>
+                  groupItems.map((d) => {
+                    const ws = writeStatuses[d.id];
+                    return (
+                      <div
+                        key={d.id}
+                        className="p-3 rounded-md border border-border bg-muted/20"
+                        data-testid={`direction-card-${d.id}`}
+                      >
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <p className="text-sm font-semibold leading-tight">{d.title}</p>
+                          <Badge variant="outline" className={`text-[10px] ${urgencyTone[d.urgency]}`}>
+                            {directionUrgencyLabels[d.urgency]}
+                          </Badge>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground mb-1">
+                          {d.restaurantName} · {directionFocusLabels[d.focus]} ·{" "}
+                          {directionChannelLabels[d.channel]} · {d.preferredTimingLabel}
+                        </p>
+                        {d.clientNote && d.clientNote !== "—" && (
+                          <p className="text-sm text-foreground/90 mb-2">"{d.clientNote}"</p>
+                        )}
+                        <p className="text-[11px] text-muted-foreground italic mb-2">
+                          Suggested: {suggestedAction(d)}
+                        </p>
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <Badge variant="outline" className={`text-[10px] ${statusTone[d.status]}`}>
+                            {directionStatusTeamLabels[d.status]}
+                          </Badge>
+                          <span className="text-[10px] text-muted-foreground inline-flex items-center gap-1">
+                            <Clock className="w-3 h-3" /> {d.submittedAtLabel}
+                          </span>
+                        </div>
+
+                        {/* Per-item dev write status message */}
+                        {ws && ws.status !== "idle" && (
+                          <p
+                            className={`text-[10px] mb-1.5 ${
+                              ws.status === "dev_write_saved"
+                                ? "text-emerald-400/80"
+                                : "text-muted-foreground/70"
+                            }`}
+                            data-testid={`direction-write-status-${d.id}`}
+                          >
+                            {ws.message}
+                          </p>
+                        )}
+
+                        <Separator className="my-2" />
+                        <div className="flex flex-wrap gap-1.5">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-[11px]"
+                            onClick={() => updateStatus(d.id, "interpreted")}
+                            data-testid={`btn-dir-interpret-${d.id}`}
+                          >
+                            Mark Interpreted
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-[11px]"
+                            onClick={() => updateStatus(d.id, "in_team_review")}
+                            data-testid={`btn-dir-content-${d.id}`}
+                          >
+                            Send to Content Plan
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-[11px]"
+                            onClick={() => updateStatus(d.id, "in_team_review")}
+                            data-testid={`btn-dir-google-${d.id}`}
+                          >
+                            Send to Google Action
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-[11px]"
+                            onClick={() => updateStatus(d.id, "in_team_review")}
+                            data-testid={`btn-dir-ads-${d.id}`}
+                          >
+                            Send to Ads Planning
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-[11px]"
+                            onClick={() => updateStatus(d.id, "completed")}
+                            data-testid={`btn-dir-complete-${d.id}`}
+                          >
+                            Mark Completed
+                          </Button>
+                        </div>
                       </div>
-                      <p className="text-[11px] text-muted-foreground mb-1">
-                        {d.restaurantName} · {directionFocusLabels[d.focus]} ·{" "}
-                        {directionChannelLabels[d.channel]} · {d.preferredTimingLabel}
-                      </p>
-                      {d.clientNote && d.clientNote !== "—" && (
-                        <p className="text-sm text-foreground/90 mb-2">"{d.clientNote}"</p>
-                      )}
-                      <p className="text-[11px] text-muted-foreground italic mb-2">
-                        Suggested: {suggestedAction(d)}
-                      </p>
-                      <div className="flex items-center justify-between gap-2 mb-2">
-                        <Badge variant="outline" className={`text-[10px] ${statusTone[d.status]}`}>
-                          {directionStatusTeamLabels[d.status]}
-                        </Badge>
-                        <span className="text-[10px] text-muted-foreground inline-flex items-center gap-1">
-                          <Clock className="w-3 h-3" /> {d.submittedAtLabel}
-                        </span>
-                      </div>
-                      <Separator className="my-2" />
-                      <div className="flex flex-wrap gap-1.5">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-7 text-[11px]"
-                          onClick={() => updateStatus(d.id, "interpreted")}
-                          data-testid={`btn-dir-interpret-${d.id}`}
-                        >
-                          Mark Interpreted
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-7 text-[11px]"
-                          onClick={() => updateStatus(d.id, "in_team_review")}
-                          data-testid={`btn-dir-content-${d.id}`}
-                        >
-                          Send to Content Plan
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-7 text-[11px]"
-                          onClick={() => updateStatus(d.id, "in_team_review")}
-                          data-testid={`btn-dir-google-${d.id}`}
-                        >
-                          Send to Google Action
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-7 text-[11px]"
-                          onClick={() => updateStatus(d.id, "in_team_review")}
-                          data-testid={`btn-dir-ads-${d.id}`}
-                        >
-                          Send to Ads Planning
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-7 text-[11px]"
-                          onClick={() => updateStatus(d.id, "completed")}
-                          data-testid={`btn-dir-complete-${d.id}`}
-                        >
-                          Mark Completed
-                        </Button>
-                      </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </CardContent>
             </Card>

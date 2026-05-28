@@ -226,7 +226,7 @@ export default function ClientDirectionCenter() {
       </div>
 
       <DemoOnlyBanner
-        message="Demo only — direction is stored in local state, no real notifications or database writes."
+        message="Demo/dev only — direction is saved locally first. Dev database saving only runs when explicitly enabled."
         testId="banner-direction-center"
       />
 

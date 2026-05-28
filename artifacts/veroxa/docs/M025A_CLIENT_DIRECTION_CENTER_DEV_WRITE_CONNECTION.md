@@ -74,3 +74,7 @@ Raw DB errors never reach the user.
 - M025B — connect Team Direction Queue status updates (updateDirectionStatus) after direction write is verified.
 - M026 — connect Restaurant Upload metadata writes after direction flow is stable.
 - Storage upload is a separate later milestone.
+
+## M025B progression
+
+M025B connects Team Direction Queue status updates to `veroxaWriteAdapter.updateDirectionStatus`, still local/session-first. Non-UUID ids (local/demo) are skipped safely. `createTeamReviewDecision` is deferred to a future build when UUID values are reliably available.

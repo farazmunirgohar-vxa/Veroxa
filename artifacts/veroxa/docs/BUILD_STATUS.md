@@ -1011,3 +1011,31 @@ auth activation.
 - AUTH_MODE unchanged (`placeholder`). DATA_MODE default unchanged
   (`fixture`). Pricing unchanged. InternalDemoGuard intact.
 - **Typecheck:** PASS.
+
+## M025B — Team Direction Queue dev write connection
+
+- **Team Direction Queue** `updateStatus` converted to `async` with
+  local/session-first + optional UUID-gated dev write:
+  1. Local state / `localDirectionStore` updated first (always).
+  2. If `WRITES_ENABLED` false → stops; shows disabled message.
+  3. If direction item id is not a valid UUID → `dev_write_skipped`.
+  4. Calls `veroxaWriteAdapter.updateDirectionStatus()`.
+  5. Success → "updated locally and to dev database."
+  6. Failure → safe warning; local update kept.
+- Per-card `DirectionWriteStatus` state (`Record<string, …>`) with
+  `[10px]` inline message; raw DB errors never shown.
+- `DirectionStatus` → `FirstClientDirectionStatus` cast for type safety.
+- `createTeamReviewDecision` deferred (no reliable UUIDs yet).
+- Client Direction Center banner wording updated (M025B minor fix).
+- Dev writes require `VITE_VEROXA_ENABLE_DEV_WRITES === "true"`.
+- Only valid UUID direction ids are sent to Supabase.
+- Non-UUID local/demo ids skip dev write safely.
+- Upload flow still not connected to writes.
+- Team Upload Inbox still not connected to writes.
+- **No** storage upload added.
+- **No** new migration added.
+- **No** AI / publishing / ads / payments added.
+- Owner/Operator portals still deferred.
+- AUTH_MODE unchanged (`placeholder`). DATA_MODE default unchanged
+  (`fixture`). Pricing unchanged. InternalDemoGuard intact.
+- **Typecheck:** PASS.
