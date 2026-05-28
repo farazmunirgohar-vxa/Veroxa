@@ -1,5 +1,29 @@
 # Current Replit Build Status
 
+> **2026-05-28 — Client/team adaptive recs + team dashboard fully on submission repo**
+>
+> - `/demo/client`, `/demo/team`, and `/demo/team/direction-queue` no longer
+>   feed `demoClientTeamWorkflow` into `buildAdaptiveRecommendations`. The
+>   adaptive rule engine still accepts a `workflow` array, but these surfaces
+>   now pass `[]` because the canonical client/team work pipeline lives in
+>   `clientTeamWorkRepository`.
+> - `/demo/team` "Today's Client Work" tile is now submission-derived from
+>   `getTeamReadyWorkItems` + `getTeamInProgressWorkItems` (top 6). The old
+>   `sortWorkflowItems(demoClientTeamWorkflow)` + `WorkflowItemCard` render
+>   path is retired on this page; cards now show `teamStatusLabel`,
+>   `clientVisibleNote`, and `nextTeamAction` from the repo work-item shape.
+> - All four client surfaces (`/demo/client`, `/demo/client/requests`,
+>   `/demo/client/media`, `/demo/client/updates`) and all four team surfaces
+>   (`/demo/team`, `/demo/team/work-queue`, `/demo/team/upload-inbox`,
+>   `/demo/team/direction-queue`) now read client↔team work exclusively
+>   through `clientTeamWorkRepository`. `demoClientTeamWorkflow` /
+>   `WorkflowItemCard` remain in the codebase only for non-target pages
+>   (client-account, internal-client-detail, client-direction-center,
+>   team-adaptive-intelligence) and the legacy `workflowRepository`.
+> - Disabled messaging input copy unchanged: "Live messaging will connect
+>   after backend activation." Guardrails unchanged: AUTH=placeholder,
+>   DATA=fixture, demo IDs only, no writes/auth/AI/publishing/payments.
+
 > **2026-05-28 — Client ↔ Team status timeline + work-item parity pass**
 >
 > - `src/data/demo/demoClientTeamWork.ts` now exposes a fourth fixture array,

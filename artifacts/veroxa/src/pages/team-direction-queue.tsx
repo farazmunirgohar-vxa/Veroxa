@@ -31,7 +31,6 @@ import {
   type DirectionStatus,
 } from "@/data/direction/demoClientDirection";
 import { demoUploadSubmissions } from "@/data/uploadKeys/demoUploadSubmissions";
-import { demoClientTeamWorkflow } from "@/data/workflows/clientTeamWorkflow";
 import {
   buildAdaptiveRecommendations,
   rankRecommendations,
@@ -281,7 +280,7 @@ export default function TeamDirectionQueue() {
             ),
             ...demoUploadSubmissions.filter((u) => u.restaurantId === "demo-a"),
           ],
-          workflow: demoClientTeamWorkflow.filter((w) => w.clientId === "demo-a"),
+          workflow: [],
         }),
       ),
     [items],

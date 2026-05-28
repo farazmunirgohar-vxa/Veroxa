@@ -8,9 +8,6 @@ import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientPortalData } from "@/hooks/useClientPortalData";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
 import {
-  demoClientTeamWorkflow,
-} from "@/data/workflows/clientTeamWorkflow";
-import {
   DemoImageCard,
   DemoSchedulePreview,
   DemoFlowTimeline,
@@ -108,7 +105,7 @@ function computeClientWeeklyRecs() {
         ...getLocalUploadSubmissions().filter((u) => u.restaurantId === "demo-a"),
         ...demoUploadSubmissions.filter((u) => u.restaurantId === "demo-a"),
       ],
-      workflow: demoClientTeamWorkflow.filter((w) => w.clientId === "demo-a"),
+      workflow: [],
     }),
   );
 }

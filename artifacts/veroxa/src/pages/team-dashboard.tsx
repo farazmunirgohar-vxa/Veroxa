@@ -22,9 +22,6 @@ import {
 import { clientTeamWorkRepository } from "@/lib/repositories";
 import { DemoImageCard } from "@/components/demo/DemoVisuals";
 import { getDemoImage } from "@/data/demo/demoImages";
-import { demoClientTeamWorkflow } from "@/data/workflows/clientTeamWorkflow";
-import { sortWorkflowItems } from "@/lib/workflows/workflowStatus";
-import { WorkflowItemCard } from "@/components/workflows/WorkflowItemCard";
 import {
   buildAdaptiveRecommendations,
   rankRecommendations,
@@ -204,20 +201,43 @@ export default function TeamDashboard() {
           </Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-          {sortWorkflowItems(demoClientTeamWorkflow)
-            .filter((i) => i.stage !== "marked_complete")
+          {[
+            ...clientTeamWorkRepository.getTeamReadyWorkItems(),
+            ...clientTeamWorkRepository.getTeamInProgressWorkItems(),
+          ]
             .slice(0, 6)
             .map((item) => (
-              <WorkflowItemCard
+              <Card
                 key={item.id}
-                item={item}
-                mode="team"
-                clientName={getRestaurantName(item.clientId)}
-              />
+                className="bg-card border-border"
+                data-testid={`today-client-work-${item.id}`}
+              >
+                <CardContent className="p-3 space-y-1.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-semibold truncate">{item.title}</p>
+                    <StatusBadge
+                      tone={item.priority === "urgent" || item.priority === "high" ? "warning" : "info"}
+                    >
+                      {item.teamStatusLabel}
+                    </StatusBadge>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    {getRestaurantName(item.clientId)} · {item.workType.replace("_", " ")}
+                  </p>
+                  {item.clientVisibleNote && (
+                    <p className="text-xs text-foreground/85 line-clamp-2">
+                      {item.clientVisibleNote}
+                    </p>
+                  )}
+                  <p className="text-[11px] text-primary/85">
+                    Next: {item.nextTeamAction}
+                  </p>
+                </CardContent>
+              </Card>
             ))}
         </div>
         <p className="text-[11px] text-muted-foreground/60 mt-2">
-          Demo only — local workflow state. No backend writes.
+          Demo only — submission-derived from the client/team workflow repository.
         </p>
       </div>
 
@@ -322,7 +342,7 @@ function computeTeamTop3() {
         ...getLocalUploadSubmissions().filter((u) => u.restaurantId === "demo-a"),
         ...demoUploadSubmissions.filter((u) => u.restaurantId === "demo-a"),
       ],
-      workflow: demoClientTeamWorkflow.filter((w) => w.clientId === "demo-a"),
+      workflow: [],
     }),
   ).slice(0, 3);
 }
