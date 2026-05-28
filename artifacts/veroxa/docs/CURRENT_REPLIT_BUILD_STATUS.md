@@ -384,6 +384,33 @@ write surface.
 
 ## Recent updates (2026-05-28)
 
+- Client-Team Workflow Backend Readiness batch landed.
+  `clientTeamWorkRepository` is now the single normalized source of
+  truth for client↔team work on both portals. `demoClientTeamWork.ts`
+  carries optional `sourceChannel`, `workType`, `teamWorkStatus`,
+  `clientStatusLabel`, `teamStatusLabel`, `nextTeamAction`,
+  `nextClientAction` (derived via helpers, not bloated fixtures) plus
+  6 query helpers (`getActiveSubmissionsForClient`,
+  `getClientActionableSubmissions`, `getTeamReadySubmissions`,
+  `getTeamWaitingOnClientSubmissions`,
+  `getCompletedSubmissionsForClient`, `getSubmissionById`). The
+  repository exports 12 normalized helpers
+  (`getClient{ActionRequired,InProgress,Completed,WorkTimeline}Items`,
+  `getTeam{Ready,WaitingOnClient,InProgress,Completed,Blocked}WorkItems`,
+  `getSubmissionWorkSummary`,
+  `getSubmissionWorkItemFor{Team,Client}`) with a visibility-safe split
+  so client surfaces never see team-only status text. Client pages
+  (`client-dashboard`, `client-requests`, `client-updates`,
+  `client-media`) and team pages (`team-dashboard`,
+  `team-upload-inbox`, `team-work-queue`, `team-direction-queue`) all
+  consume the new helpers. `demoClientRequests` /
+  `demoClientTeamWorkflow` / `WorkflowItemCard` are no longer used by
+  these pages. Disabled messaging copy on client portal stays
+  exactly "Live messaging will connect after backend activation."
+  Future Supabase contract published in
+  `docs/CLIENT_TEAM_WORKFLOW_CONTRACT.md` (the earlier
+  `SUPABASE_TABLE_CONTRACT.md` is folded into it). No Supabase writes,
+  auth, or AI calls were activated.
 - `ClientHealthCenter` shared-widget drift resolved. The component now
   reads through `healthRepository` (canonical `healthy | caution |
   urgent | broken` vocabulary) instead of `demoClientHealth` directly.

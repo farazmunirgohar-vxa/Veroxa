@@ -9,10 +9,9 @@ import type { TeamWorkItem } from "@/lib/repositories/clientTeamWorkRepository";
 
 export default function TeamWorkQueue() {
   // Submission-derived sections — single source of truth is the
-  // clientTeamWorkRepository. The old workflow-derived groups (read from
-  // demoClientTeamWorkflow + workflowRepository.getWorkflowSummary) have
-  // been retired here so this queue reflects the same submission pipeline
-  // the client portal sees, rather than a separate workflow fixture.
+  // clientTeamWorkRepository. The old workflow-derived groups have been
+  // retired here so this queue reflects the same submission pipeline the
+  // client portal sees, rather than a separate workflow fixture.
   const ready       = clientTeamWorkRepository.getTeamReadyWorkItems();
   const inProgress  = clientTeamWorkRepository.getTeamInProgressWorkItems();
   const blocked     = clientTeamWorkRepository.getTeamBlockedWorkItems();
