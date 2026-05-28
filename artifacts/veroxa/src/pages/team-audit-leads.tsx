@@ -489,6 +489,58 @@ export default function TeamAuditLeads() {
                       </span>{" "}
                       · Next: {l.nextAction}
                     </p>
+                    {l.selectedRestaurant && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        <Badge
+                          variant="outline"
+                          className={
+                            l.selectedRestaurant.selectedSource === "google_places"
+                              ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/5 text-[10px]"
+                              : "border-muted-foreground/30 text-muted-foreground bg-muted/10 text-[10px]"
+                          }
+                        >
+                          {l.selectedRestaurant.selectedSource === "google_places"
+                            ? "Live"
+                            : l.selectedRestaurant.selectedSource === "fixture"
+                              ? "Preview"
+                              : "Manual"}
+                        </Badge>
+                        {l.selectedRestaurant.websiteFound && (
+                          <Badge
+                            variant="outline"
+                            className="border-sky-500/40 text-sky-400 bg-sky-500/5 text-[10px]"
+                          >
+                            Website found
+                          </Badge>
+                        )}
+                        {(l.selectedRestaurant.menuLinkFound ||
+                          l.selectedRestaurant.orderLinkFound) && (
+                          <Badge
+                            variant="outline"
+                            className="border-sky-500/40 text-sky-400 bg-sky-500/5 text-[10px]"
+                          >
+                            Menu/order found
+                          </Badge>
+                        )}
+                        {(l.selectedRestaurant.discoveredSocialLinks?.length ?? 0) >
+                          0 && (
+                          <Badge
+                            variant="outline"
+                            className="border-sky-500/40 text-sky-400 bg-sky-500/5 text-[10px]"
+                          >
+                            Social links found
+                          </Badge>
+                        )}
+                        {l.selectedRestaurant.aiDraftAvailable && (
+                          <Badge
+                            variant="outline"
+                            className="border-primary/40 text-primary bg-primary/5 text-[10px]"
+                          >
+                            AI draft available
+                          </Badge>
+                        )}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ))

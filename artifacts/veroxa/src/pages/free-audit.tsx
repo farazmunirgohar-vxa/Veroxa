@@ -147,6 +147,7 @@ const sectionIcon: Record<string, React.ReactNode> = {
   ads_readiness: <Megaphone className="w-4 h-4 text-primary" />,
   walk_in_opportunity: <Users className="w-4 h-4 text-primary" />,
   fix_first: <Wrench className="w-4 h-4 text-primary" />,
+  veroxa_needs: <CheckCircle2 className="w-4 h-4 text-primary" />,
 };
 
 /**
@@ -552,15 +553,16 @@ export default function FreeAudit() {
             Get a Free Restaurant Online Presence Audit
           </h1>
           <p className="text-muted-foreground max-w-3xl">
-            Find your restaurant in the demo search, then add cuisine and any
-            links you have. Veroxa will generate a preliminary audit showing
-            your biggest daily customer opportunities online and which Veroxa
-            service area is the best fit.
+            Search for your restaurant, select it from the results, then
+            generate your audit. Veroxa will produce a preliminary report
+            covering your biggest daily customer opportunities online and which
+            Veroxa service area is the best fit.
           </p>
           <p className="text-[12px] text-muted-foreground/80 max-w-3xl mt-2 italic">
-            This audit does not scrape or verify live platform data yet. It
-            uses the information provided to produce a preliminary
-            customer-flow readiness report.
+            When live lookup is configured, Veroxa searches Google directly and
+            scans the website for key signals. When not configured, a preview
+            fallback is shown so you can continue. Either way, a full Veroxa
+            plan requires manual review.
           </p>
         </div>
 
@@ -1232,7 +1234,108 @@ export default function FreeAudit() {
               </CardContent>
             </Card>
 
-            {/* Growth Report Sections — 11 structured areas */}
+            {/* Audit Confidence Strip */}
+            <Card
+              className="bg-card border-border"
+              data-testid="audit-confidence-strip"
+            >
+              <CardContent className="p-4">
+                <p className="text-[11px] uppercase tracking-wider text-primary mb-3">
+                  Audit signal summary
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-[11px]">
+                  <div className="rounded-md border border-border bg-muted/10 p-2 text-center">
+                    <p className="text-muted-foreground mb-0.5">Google profile</p>
+                    <p
+                      className={
+                        report.input.selectedPlaceId || report.input.googleListingUrl
+                          ? "text-emerald-400 font-medium"
+                          : "text-muted-foreground/60"
+                      }
+                    >
+                      {report.input.selectedPlaceId
+                        ? "Live confirmed"
+                        : report.input.googleListingUrl
+                          ? "Link provided"
+                          : "Not confirmed"}
+                    </p>
+                  </div>
+                  <div className="rounded-md border border-border bg-muted/10 p-2 text-center">
+                    <p className="text-muted-foreground mb-0.5">Website</p>
+                    <p
+                      className={
+                        report.input.websiteFound || report.input.websiteUrl
+                          ? "text-emerald-400 font-medium"
+                          : "text-muted-foreground/60"
+                      }
+                    >
+                      {report.input.websiteFound
+                        ? "Scanned"
+                        : report.input.websiteUrl
+                          ? "Link provided"
+                          : "Not confirmed"}
+                    </p>
+                  </div>
+                  <div className="rounded-md border border-border bg-muted/10 p-2 text-center">
+                    <p className="text-muted-foreground mb-0.5">Menu / order</p>
+                    <p
+                      className={
+                        report.input.menuLinkFound ||
+                        report.input.orderLinkFound ||
+                        report.input.menuOrderingUrl
+                          ? "text-emerald-400 font-medium"
+                          : "text-muted-foreground/60"
+                      }
+                    >
+                      {report.input.menuLinkFound || report.input.orderLinkFound
+                        ? "Found from scan"
+                        : report.input.menuOrderingUrl
+                          ? "Link provided"
+                          : "Not confirmed"}
+                    </p>
+                  </div>
+                  <div className="rounded-md border border-border bg-muted/10 p-2 text-center">
+                    <p className="text-muted-foreground mb-0.5">Social</p>
+                    <p
+                      className={
+                        (report.input.discoveredSocialLinks?.length ?? 0) > 0 ||
+                        report.input.instagramUrl ||
+                        report.input.facebookUrl ||
+                        report.input.tiktokUrl
+                          ? "text-emerald-400 font-medium"
+                          : "text-muted-foreground/60"
+                      }
+                    >
+                      {(report.input.discoveredSocialLinks?.length ?? 0) > 0
+                        ? `${report.input.discoveredSocialLinks!.length} found from scan`
+                        : report.input.instagramUrl ||
+                            report.input.facebookUrl ||
+                            report.input.tiktokUrl
+                          ? "Links provided"
+                          : "Not confirmed"}
+                    </p>
+                  </div>
+                  <div className="rounded-md border border-border bg-muted/10 p-2 text-center">
+                    <p className="text-muted-foreground mb-0.5">Audit mode</p>
+                    <p
+                      className={
+                        report.input.restaurantSource === "google_places"
+                          ? "text-emerald-400 font-medium"
+                          : "text-muted-foreground/60"
+                      }
+                    >
+                      {report.input.restaurantSource === "google_places"
+                        ? "Live lookup"
+                        : report.input.restaurantSource === "fixture"
+                          ? "Preview match"
+                          : "Manual entry"}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Growth Report Sections — 12 structured areas */}
             <Card className="bg-card border-border" data-testid="growth-report-sections">
               <CardHeader>
                 <CardTitle className="text-base inline-flex items-center gap-2">
@@ -1265,6 +1368,14 @@ export default function FreeAudit() {
                       </span>
                       {sec.currentSignal}
                     </p>
+                    {sec.whatItMeans && (
+                      <p className="text-[12px] text-muted-foreground mb-1">
+                        <span className="font-medium text-foreground/90">
+                          What this means:{" "}
+                        </span>
+                        {sec.whatItMeans}
+                      </p>
+                    )}
                     <p className="text-[12px] text-muted-foreground mb-1">
                       <span className="font-medium text-foreground/90">
                         Why it matters:{" "}

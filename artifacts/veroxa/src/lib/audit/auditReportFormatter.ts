@@ -33,38 +33,42 @@ export function formatThirtyDayPlan(_report: RestaurantAuditReport): {
   return [
     {
       week: 1,
-      title: "Foundation / Google / audit cleanup",
+      title: "First 7 days — Foundation",
       bullets: [
-        "Manually audit Google Business Profile + cleanup.",
-        "Confirm hours, categories, photos, menu link, contact paths.",
-        "Identify the biggest daily customer opportunity and frame the first 30-day plan around it.",
+        "Verify Google profile basics: name, category, hours, photos, menu link.",
+        "Confirm the customer action path: menu, order, call, directions, reservation.",
+        "Identify the best content angles for this specific restaurant.",
+        "Clarify what media the restaurant can provide each week (photos, specials, moments).",
       ],
     },
     {
       week: 2,
-      title: "Content intake / upload system / strategy",
+      title: "First 30 days — Content Rhythm",
       bullets: [
-        "Set up upload key for the restaurant to share photos/videos/notes easily.",
-        "Draft weekly content themes (lunch / dinner / weekend / catering).",
-        "Confirm action paths: call, directions, order, reserve, inquire.",
+        "Build a weekly food-content rhythm across active social channels.",
+        "Establish posting windows aligned to lunch, dinner, and weekend decision moments.",
+        "Draft first content round using real photos and restaurant story details.",
+        "Update Google profile photos and posts with fresh content.",
       ],
     },
     {
       week: 3,
-      title: "Consistent posting / Google updates / customer reminders",
+      title: "First 30 days — Google + Reminder System",
       bullets: [
-        "Begin disciplined posting cadence across the active channels.",
-        "Refresh Google posts and photos weekly.",
-        "Send first reminder-style content (lunch / weekend / catering).",
+        "Keep Google profile active: weekly posts, updated photos, accurate hours.",
+        "Send reminder-style content around lunch, weekend, and any specials.",
+        "Review initial signals: profile views, call clicks, direction requests, social engagement.",
+        "Adjust content angles based on early data.",
       ],
     },
     {
       week: 4,
-      title: "Performance learning / report / next recommendation",
+      title: "Ongoing — Weekly System",
       bullets: [
-        "Review first signals: profile views, calls, direction clicks, social engagement.",
-        "Generate a clear weekly report.",
-        "Adjust the next 30 days based on what the data taught us.",
+        "Maintain weekly content/reporting rhythm.",
+        "Generate monthly strategy report: what is working, what to adjust.",
+        "Review customer behavior signals and refine content based on results.",
+        "Keep Google, social, and action paths consistent and up to date.",
       ],
     },
   ];
@@ -133,4 +137,12 @@ export const AUDIT_ADAPTIVE_LEARNING_EXPLANATION =
   "Veroxa does not treat this audit as a one-time report. The audit becomes the starting point. As Veroxa works, the system learns from uploads, direction, content decisions, Google activity, social performance, review signals, and results. Every week, those signals help Veroxa make better recommendations.";
 
 export const AUDIT_DISCLAIMER =
-  "This preliminary audit is based on provided information and visible online signals. It is not a guarantee of increased customers. A full Veroxa audit includes manual review of Google Business Profile, social platforms, content quality, reviews, menu clarity, customer action paths, and local competition.";
+  "This is a preliminary audit based on available public signals. A final Veroxa plan would require manual review, client access where needed, and actual performance tracking. This audit does not judge the food or the restaurant's quality — it reviews how easy it is for nearby customers to find, remember, trust, and choose the restaurant online.";
+
+export const WHAT_VEROXA_NEEDS_FROM_RESTAURANT: string[] = [
+  "3–5 real photos or short videos per week (dishes, daily specials, behind-the-scenes moments)",
+  "Menu or ordering link",
+  "Any current specials or upcoming events",
+  "Important story details — halal, family-owned, authentic cuisine, local history, or anything that makes the restaurant different",
+  "Access / permission for Google and social work later if the restaurant becomes a Veroxa client",
+];

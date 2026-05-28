@@ -47,6 +47,8 @@ export interface GrowthReportSection {
   id: string;
   title: string;
   currentSignal: string;
+  /** What the current signal means in plain English. */
+  whatItMeans?: string;
   whyItMatters: string;
   veroxaRecommendation: string;
   sourceLabel: GrowthReportSourceLabel;

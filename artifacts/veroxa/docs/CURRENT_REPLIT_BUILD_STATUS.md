@@ -1,5 +1,49 @@
 # Current Replit Build Status
 
+> **2026-05-28 — T4–T7: Growth report rewrite, live signals, confidence strip, lead badges, 3-phase plan**
+>
+> **T4 — Free-audit page wiring**
+> - Hero description updated: removed "Find your restaurant in the demo search" and the stale
+>   "This audit does not scrape or verify live platform data yet" italic note. Replaced with
+>   accurate live/preview language ("When live lookup is configured, Veroxa searches Google
+>   directly and scans the website for key signals. When not configured, a preview fallback is
+>   shown so you can continue.")
+> - `sectionIcon` map extended with `veroxa_needs` → CheckCircle2 icon.
+> - `whatItMeans` field now renders between `currentSignal` and `whyItMatters` in every growth
+>   section card (conditional — only when present).
+> - Audit Signal Summary card added after the report header card: 5-column grid showing Google
+>   profile, Website, Menu/order, Social, and Audit mode — each with live-confirmed / scanned /
+>   link-provided / not-confirmed status in emerald or muted colour.
+>
+> **T5 — Lenient language sweep + live signals in scoring**
+> - `generateGrowthReportSections` in `auditScoring.ts` fully rewritten (12 sections):
+>   - New live-signal variables derived from `restaurantSource`, `websiteFound`, `menuLinkFound`,
+>     `orderLinkFound`, `reservationLinkFound`, `contactPathFound`, `discoveredSocialLinks`,
+>     `selectedPlaceId`, `businessStatus`. All optional — fixture/manual mode works unchanged.
+>   - `whatItMeans` field populated on all 12 sections.
+>   - 12th section `veroxa_needs` added: what Veroxa needs from the restaurant (photos, menu
+>     link, specials, story details, platform access).
+>   - Language is consultative throughout — no "weak", "poor", "critical", "underbuilt" anywhere
+>     in public-facing strings. Audit mode label shown in identity section.
+>   - `discoveredSocialLinks` used in social/content sections and the fix_first summary line.
+> - `formatThirtyDayPlan` in `auditReportFormatter.ts` updated to 3-phase titles:
+>   - Week 1: First 7 days — Foundation
+>   - Week 2: First 30 days — Content Rhythm
+>   - Week 3: First 30 days — Google + Reminder System
+>   - Week 4: Ongoing — Weekly System
+>
+> **T6 — Lead handoff improvements (team-audit-leads)**
+> - Lead list card now shows a badge strip when `selectedRestaurant` data is present:
+>   - Source badge: Live (emerald) for `google_places`, Preview (muted) for `fixture`, Manual (sky).
+>   - Found-status badges: Website found, Menu/order found, Social links found — each shown only
+>     when the signal is true / non-empty.
+>   - AI draft available badge (primary colour) when `aiDraftAvailable === true`.
+>
+> **Typecheck:** `pnpm --filter @workspace/veroxa run typecheck` — passes clean.
+> **API key note:** `GOOGLE_PLACES_API_KEY` is set server-side but the API returns 403 —
+> user must enable "Places API (New)" + billing in Google Cloud Console. Not a code issue.
+> All audit flows work in preview/fixture mode without a live key.
+
 > **2026-05-28 — Live restaurant discovery: all-strategy run + corroboration ranking (Free Audit)**
 >
 > - Live restaurant discovery now runs all search strategies before
