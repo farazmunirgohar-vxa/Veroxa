@@ -1,5 +1,34 @@
 # Current Replit Build Status
 
+> **2026-05-28 — Free Audit result copy refined: consultative tone, less scorecard-heavy**
+>
+> - Free Audit result copy refined to be more consultative and less scorecard-heavy.
+> - Primary result headline stays on grade label (Strong Foundation / Needs Consistency /
+>   High Opportunity / Needs Structure / Needs Immediate Structure). Numeric score is now
+>   labeled "Internal readiness reference" — clearly secondary and for internal use only.
+> - Main result explanation updated to: "This does not judge the food or quality of the
+>   restaurant. It shows how consistently the restaurant appears online when nearby customers
+>   are deciding where to eat. More consistent visibility can create more customer reminder
+>   moments, but results vary by location, offer, food quality, competition, and execution."
+> - "Top 3 daily customer opportunities" cards cleaned up: removed redundant title repetition.
+>   Each card now shows Opportunity (numbered label + title) / Why this matters for walk-ins /
+>   What Veroxa can do. No harsh language (weak, bad, poor, failing, problem, low score,
+>   foundational problem, underbuilt) on any public card.
+> - "Where Veroxa fits" panel is now more action-oriented. Intro: "If this restaurant became
+>   a Veroxa client, the first focus would likely be:" followed by 6 concrete Veroxa actions
+>   (Google profile/photo freshness, weekly food-content rhythm, lunch/dinner/weekend posting
+>   windows, media review + food-first captions, menu/order/contact path clarity, weekly
+>   update + monthly strategy report). No guaranteed outcomes claimed.
+> - Restaurant search disclaimer tightened: "Search preview only — live Google/Maps lookup
+>   is not connected yet." (was "Demo search only…").
+> - `formatThirtyDayPlan` week 1 bullet updated: "Identify the biggest daily customer
+>   opportunity and frame the first 30-day plan around it." (previously referenced "weakest
+>   customer-flow stage").
+> - `growth_leverage_opportunity` howVeroxaHelps updated: "Veroxa identifies the biggest
+>   daily opportunity and focuses early work where the most consistent improvement can happen."
+> - No live lookup, backend, AI, scraping, publishing, payments, notifications, or storage
+>   added. AUTH=placeholder, DATA=fixture, demo IDs only. Auth files not touched.
+
 > **2026-05-28 — Free Audit refinement: fixture-backed find-then-select +
 > opportunity language + Veroxa service alignment**
 >

@@ -37,7 +37,7 @@ export function formatThirtyDayPlan(_report: RestaurantAuditReport): {
       bullets: [
         "Manually audit Google Business Profile + cleanup.",
         "Confirm hours, categories, photos, menu link, contact paths.",
-        "Identify the single weakest customer-flow stage and frame the plan around it.",
+        "Identify the biggest daily customer opportunity and frame the first 30-day plan around it.",
       ],
     },
     {

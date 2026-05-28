@@ -101,39 +101,16 @@ const matchConfidenceLabel: Record<
 };
 
 /**
- * "Where Veroxa fits" mapping. Static reference panel; never claims a
- * guaranteed outcome — see the audit refinement spec.
+ * "Where Veroxa fits" — concrete first-focus actions. Static reference panel;
+ * never claims a guaranteed outcome — see the audit refinement spec.
  */
-const VEROXA_SERVICE_ALIGNMENT: { area: string; veroxaService: string }[] = [
-  {
-    area: "Online consistency",
-    veroxaService: "Weekly content rhythm",
-  },
-  {
-    area: "Customer reminders",
-    veroxaService:
-      "Scheduled social posts around lunch / dinner / weekend moments",
-  },
-  {
-    area: "Google walk-in readiness",
-    veroxaService: "Google Business Profile support",
-  },
-  {
-    area: "Craving power",
-    veroxaService: "Media review + food-first captions",
-  },
-  {
-    area: "Weekly visit triggers",
-    veroxaService: "Weekly content angle / promotional planning",
-  },
-  {
-    area: "Customer action path",
-    veroxaService: "Menu / order / contact visibility support",
-  },
-  {
-    area: "Accountability",
-    veroxaService: "Weekly updates + monthly strategy report",
-  },
+const VEROXA_FIRST_FOCUS_ACTIONS: string[] = [
+  "Google profile and photo freshness — ensuring the listing is complete, active, and accurate.",
+  "Weekly food-content rhythm — consistent posting built around the restaurant's strongest dishes and moments.",
+  "Lunch / dinner / weekend posting windows — content published when nearby customers are actually deciding.",
+  "Media review and food-first captions — photos and Reels that make the food look its best.",
+  "Menu / order / contact path clarity — making sure customers can act easily once they decide.",
+  "Weekly update and monthly strategy report — keeping the restaurant informed and the plan improving.",
 ];
 
 const emptyContact: AuditLeadContact = {
@@ -456,7 +433,7 @@ export default function FreeAudit() {
             </div>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-[11px] text-muted-foreground italic inline-flex items-center gap-1">
-                <Info className="w-3 h-3" /> Demo search only — live
+                <Info className="w-3 h-3" /> Search preview only — live
                 Google/Maps lookup is not connected yet.
               </p>
               <Button
@@ -767,7 +744,7 @@ export default function FreeAudit() {
                       className="text-[11px] text-muted-foreground mt-1 tabular-nums"
                       data-testid="audit-total-score"
                     >
-                      Internal score reference: {report.totalScore} / 100
+                      Internal readiness reference: {report.totalScore} / 100
                     </p>
                     <p className="text-[11px] text-muted-foreground mt-0.5">
                       {report.input.restaurantName} ·{" "}
@@ -794,11 +771,12 @@ export default function FreeAudit() {
                 </div>
                 <Separator className="my-4" />
                 <p className="text-sm text-foreground/90">
-                  This readiness view reflects how consistently your online
-                  presence supports nearby customers finding, remembering, and
-                  choosing your restaurant. It does not guarantee customer
-                  growth or judge food quality, and the numeric score is for
-                  internal reference only.
+                  This does not judge the food or quality of the restaurant. It
+                  shows how consistently the restaurant appears online when
+                  nearby customers are deciding where to eat. More consistent
+                  visibility can create more customer reminder moments, but
+                  results vary by location, offer, food quality, competition,
+                  and execution.
                 </p>
                 <p className="text-sm text-muted-foreground mt-2">
                   {report.gradeDescription}
@@ -901,18 +879,13 @@ export default function FreeAudit() {
                     className="rounded-md border border-border bg-muted/20 p-3"
                     data-testid={`audit-weak-${w.categoryId}`}
                   >
-                    <p className="text-sm font-semibold">
-                      {i + 1}. {w.title}
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                      Opportunity {i + 1}
                     </p>
+                    <p className="text-sm font-semibold mt-0.5">{w.title}</p>
                     <p className="text-[12px] text-muted-foreground mt-1">
                       <span className="font-medium text-foreground/90">
-                        Opportunity:
-                      </span>{" "}
-                      {w.title}
-                    </p>
-                    <p className="text-[12px] text-muted-foreground mt-1">
-                      <span className="font-medium text-foreground/90">
-                        Why this matters for daily walk-ins:
+                        Why this matters for walk-ins:
                       </span>{" "}
                       {w.whyItMatters}
                     </p>
@@ -939,27 +912,22 @@ export default function FreeAudit() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-[12px] text-muted-foreground mb-3">
-                  Veroxa focuses on the daily online conditions and customer
-                  reminder moments that influence whether nearby diners
-                  remember and choose your restaurant.
+                <p className="text-sm text-foreground/90 mb-3">
+                  If this restaurant became a Veroxa client, the first focus
+                  would likely be:
                 </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {VEROXA_SERVICE_ALIGNMENT.map((row) => (
-                    <div
-                      key={row.area}
-                      className="rounded-md border border-border bg-muted/20 p-3"
+                <ul className="space-y-1.5 mb-3">
+                  {VEROXA_FIRST_FOCUS_ACTIONS.map((action) => (
+                    <li
+                      key={action}
+                      className="text-[12px] text-foreground/90 flex items-start gap-2"
                     >
-                      <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                        {row.area}
-                      </p>
-                      <p className="text-[12px] text-foreground/90 mt-0.5">
-                        {row.veroxaService}
-                      </p>
-                    </div>
+                      <span className="mt-[3px] shrink-0 w-1.5 h-1.5 rounded-full bg-primary/60" />
+                      {action}
+                    </li>
                   ))}
-                </div>
-                <p className="text-[11px] text-muted-foreground italic mt-3">
+                </ul>
+                <p className="text-[11px] text-muted-foreground italic">
                   Veroxa does not guarantee walk-ins, revenue, rankings,
                   reviews, viral posts, or sales. Results vary by location,
                   offer, food quality, competition, and execution.

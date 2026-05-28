@@ -247,7 +247,7 @@ export function scoreAuditCategories(
       "Weekly Visit Triggers",
       leverageScore,
       "How much room Veroxa sees to improve customer-flow conditions through focused work.",
-      "Veroxa concentrates first on the weakest customer-flow stage so improvements compound.",
+      "Veroxa identifies the biggest daily opportunity and focuses early work where the most consistent improvement can happen.",
       `Based on the information provided, ${leverageScore >= 4 ? "a single focused 30-day plan would likely change multiple signals at the same time." : "most of the foundation is present — refinement, not rebuild, is the leverage."}`,
     ),
   ];
