@@ -1,5 +1,55 @@
 # Current Replit Build Status
 
+> **2026-05-28 — Live Audit Lookup V1 added (Free Audit acquisition milestone)**
+>
+> - The `/free-audit` flow now connects to a real Google Places lookup when
+>   `GOOGLE_PLACES_API_KEY` is configured server-side, with a graceful
+>   preview fallback when it is not. Server-only routes:
+>   `POST /api/audit/search-restaurants` and
+>   `POST /api/audit/restaurant-details` in
+>   `artifacts/api-server/src/routes/auditLive.ts`.
+> - New server libs (`artifacts/api-server/src/lib/`):
+>   - `googlePlaces.ts` — Places API v1 Text Search + Place Details with
+>     explicit field masks, safe error handling, and a structured
+>     `{ mode: "live" | "not_configured" | "error", ... }` response shape.
+>   - `webPresenceScanner.ts` — opt-in scan of the restaurant's own website
+>     only (no third-party domains), 350 KB / 10 s limits, extracts menu,
+>     ordering, reservation, contact path, and Instagram/Facebook/TikTok
+>     link signals.
+> - Client helper `artifacts/veroxa/src/lib/audit/liveAuditClient.ts`
+>   exports `searchLiveRestaurantCandidates` and
+>   `getLiveRestaurantDetails` — both always return a structured
+>   `{ mode, ... }` value and never throw into the UI.
+> - Free Audit page (`pages/free-audit.tsx`):
+>   - Cuisine is no longer required to find or generate an audit; if left
+>     blank, it is recorded as "Restaurant / Food — category not verified."
+>   - The "Load a demo example" strip is removed. Live results are clearly
+>     labeled "Live Google result"; fallback results are labeled "Preview
+>     fallback result" with an explanatory note when live is unavailable
+>     or not configured.
+>   - Selecting a live candidate fetches details and runs the own-website
+>     scan; the selected card shows phone, rating, website, Google Maps
+>     link, and found-status badges for menu / order / contact / Instagram
+>     / Facebook links.
+> - Lead snapshot (`leadTypes.ts` `AuditLeadSelectedRestaurant`) now
+>   carries optional live fields: placeId, source (`google_places` /
+>   `fixture` / `manual`), phone, rating, website, Google Maps URL,
+>   business status, discovered menu/social links, found-status flags,
+>   scan confidence, and AI-draft availability. `localAuditLeadStore`
+>   already passes the snapshot through unchanged.
+> - Team Audit Leads (`pages/team-audit-leads.tsx`) selected lead detail
+>   panel adds an "Audit lead context" block with Source (Live / Preview /
+>   Manual) badge, AI draft Yes/No badge, address, phone, rating, and
+>   found-status badges (Website / Menu link / Order link / Contact path /
+>   Social links).
+> - Lenient public-facing language: `auditScoring.ts` and
+>   `auditPackageRecommendation.ts` swap "weak / poor / fix the weak
+>   foundation" for "can be strengthened / underused / strengthen the
+>   foundation first" in the publicly rendered strings. Internal scoring
+>   thresholds and grade IDs are unchanged.
+> - Auth remains placeholder, data mode remains `fixture` / `demo`. No
+>   backend writes were added; live lookups read from Google only.
+
 > **2026-05-28 — AI Audit Report Assistant V1 added**
 >
 > - New optional AI panel on `/free-audit`: button "Generate AI-assisted

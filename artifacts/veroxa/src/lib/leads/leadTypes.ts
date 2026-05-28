@@ -281,11 +281,11 @@ export interface AuditLeadPublicAuditSnapshot {
 }
 
 /**
- * Optional fixture-backed restaurant candidate snapshot captured when the
- * user selected a sample restaurant before generating the audit. This is
- * local/demo-only — no live Google/Maps lookup is connected. Fields are
- * all optional so audits generated without a candidate selection still
- * save normally.
+ * Optional restaurant snapshot captured when the user selected a candidate
+ * before generating the audit. Snapshot covers both live Google Places
+ * results (Live Audit Lookup V1) and the fixture/preview fallback. All
+ * fields are optional so audits generated without a selection still save
+ * normally. This is local/demo only — no backend write.
  */
 export interface AuditLeadSelectedRestaurant {
   selectedRestaurantId?: string;
@@ -295,6 +295,23 @@ export interface AuditLeadSelectedRestaurant {
   selectedAddress?: string;
   selectedCuisineType?: string;
   selectedMatchConfidence?: "high" | "medium" | "low";
+  // Live Audit Lookup V1 — optional live profile snapshot.
+  selectedPlaceId?: string;
+  selectedSource?: "google_places" | "fixture" | "manual";
+  selectedPhone?: string;
+  selectedRating?: number;
+  selectedReviewCount?: number;
+  selectedWebsiteUrl?: string;
+  selectedGoogleMapsUrl?: string;
+  selectedBusinessStatus?: string;
+  discoveredMenuLinks?: string[];
+  discoveredSocialLinks?: string[];
+  websiteFound?: boolean;
+  menuLinkFound?: boolean;
+  orderLinkFound?: boolean;
+  contactPathFound?: boolean;
+  scanConfidence?: "high" | "medium" | "low" | "none";
+  aiDraftAvailable?: boolean;
 }
 
 /** Optional internal-only manual flags Veroxa team can set on a prospect. */

@@ -578,7 +578,7 @@ export function generateGrowthReportSections(
         ? `Google Maps presence found. ${googleDetailStr ? googleDetailStr + " " : ""}Profile freshness, photo recency, and conversion readiness need manual review.`.trim()
         : "No Google Maps presence confirmed from the information provided. Local discovery, direction clicks, and call buttons are likely missing from the customer decision moment.",
       whyItMatters:
-        "Google Maps is where many nearby customers make their final decision — they compare photos, check reviews, tap for directions, or call directly from the result. A weak or missing Maps profile means missing those moments.",
+        "Google Maps is where many nearby customers make their final decision — they compare photos, check reviews, tap for directions, or call directly from the result. An underused or incomplete Maps profile is a clear opportunity to capture more of those moments.",
       veroxaRecommendation: hasGoogle
         ? "Veroxa would improve Maps conversion readiness: sharper food-first photos, clear hours, menu visibility, and Google posts timed around lunch, dinner, and weekend traffic."
         : "Veroxa would create and fully optimize a Google Maps presence so the restaurant appears in local discovery and customers can act immediately.",
@@ -651,7 +651,7 @@ export function generateGrowthReportSections(
       currentSignal:
         "Ads usage not publicly verified — manual review needed. Whether the restaurant is currently running Google or social ads cannot be confirmed from the information provided.",
       whyItMatters:
-        "Paid ads can amplify an already solid online presence, but they send customers to whatever they find — Google profile, website, menu, and content. If those are weak, ads spend more to deliver a poor experience.",
+        "Paid ads can amplify an already solid online presence, but they send customers to whatever they find — Google profile, website, menu, and content. If those can be strengthened first, ads spend more efficiently afterward.",
       veroxaRecommendation: hasAdsSignal
         ? "An ads-related goal was noted. Veroxa would evaluate offer clarity, landing path, menu/order readiness, and Google/social foundation before recommending an ad strategy. Ads are most effective after the foundation is cleaned up. Veroxa can support ads strategy and service if you choose to move forward — results vary by budget, offer, competition, and execution."
         : "Veroxa recommends cleaning up the Google presence, content, and action path first. Once the foundation is strong, ads become more efficient and easier to measure. Veroxa can support ads strategy and service at that stage — results vary by budget, offer, competition, and execution.",

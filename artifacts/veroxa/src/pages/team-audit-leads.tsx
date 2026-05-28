@@ -573,6 +573,117 @@ export default function TeamAuditLeads() {
                     </>
                   )}
 
+                  {selected.selectedRestaurant && (
+                    <div>
+                      <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
+                        Audit lead context
+                      </p>
+                      <div className="flex flex-wrap gap-1 mb-1">
+                        <Badge
+                          variant="outline"
+                          className={
+                            selected.selectedRestaurant.selectedSource ===
+                            "google_places"
+                              ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/5 text-[10px]"
+                              : selected.selectedRestaurant.selectedSource ===
+                                  "manual"
+                                ? "border-sky-500/40 text-sky-400 bg-sky-500/5 text-[10px]"
+                                : "border-muted-foreground/30 text-muted-foreground bg-muted/10 text-[10px]"
+                          }
+                        >
+                          Source:{" "}
+                          {selected.selectedRestaurant.selectedSource ===
+                          "google_places"
+                            ? "Live"
+                            : selected.selectedRestaurant.selectedSource ===
+                                "manual"
+                              ? "Manual"
+                              : "Preview"}
+                        </Badge>
+                        {selected.selectedRestaurant.aiDraftAvailable !==
+                          undefined && (
+                          <Badge
+                            variant="outline"
+                            className={
+                              selected.selectedRestaurant.aiDraftAvailable
+                                ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/5 text-[10px]"
+                                : "border-muted-foreground/30 text-muted-foreground bg-muted/10 text-[10px]"
+                            }
+                          >
+                            AI draft:{" "}
+                            {selected.selectedRestaurant.aiDraftAvailable
+                              ? "Yes"
+                              : "No"}
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-muted-foreground">
+                        Audit opportunity: {selected.publicAudit.gradeLabel}
+                      </p>
+                      {selected.selectedRestaurant.selectedAddress && (
+                        <p className="text-[11px] text-muted-foreground">
+                          {selected.selectedRestaurant.selectedAddress}
+                        </p>
+                      )}
+                      {(selected.selectedRestaurant.selectedPhone ||
+                        typeof selected.selectedRestaurant.selectedRating ===
+                          "number") && (
+                        <p className="text-[11px] text-muted-foreground">
+                          {selected.selectedRestaurant.selectedPhone && (
+                            <>
+                              Phone: {selected.selectedRestaurant.selectedPhone}
+                              {typeof selected.selectedRestaurant
+                                .selectedRating === "number"
+                                ? " · "
+                                : ""}
+                            </>
+                          )}
+                          {typeof selected.selectedRestaurant.selectedRating ===
+                            "number" && (
+                            <>
+                              Rating:{" "}
+                              {selected.selectedRestaurant.selectedRating.toFixed(
+                                1,
+                              )}
+                              {typeof selected.selectedRestaurant
+                                .selectedReviewCount === "number"
+                                ? ` (${selected.selectedRestaurant.selectedReviewCount} reviews)`
+                                : ""}
+                            </>
+                          )}
+                        </p>
+                      )}
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {selected.selectedRestaurant.websiteFound && (
+                          <Badge variant="outline" className="text-[10px]">
+                            Website found
+                          </Badge>
+                        )}
+                        {selected.selectedRestaurant.menuLinkFound && (
+                          <Badge variant="outline" className="text-[10px]">
+                            Menu link found
+                          </Badge>
+                        )}
+                        {selected.selectedRestaurant.orderLinkFound && (
+                          <Badge variant="outline" className="text-[10px]">
+                            Order link found
+                          </Badge>
+                        )}
+                        {selected.selectedRestaurant.contactPathFound && (
+                          <Badge variant="outline" className="text-[10px]">
+                            Contact path found
+                          </Badge>
+                        )}
+                        {(selected.selectedRestaurant.discoveredSocialLinks
+                          ?.length ?? 0) > 0 && (
+                          <Badge variant="outline" className="text-[10px]">
+                            Social links found
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   {selected.contact && (
                     <div>
                       <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">

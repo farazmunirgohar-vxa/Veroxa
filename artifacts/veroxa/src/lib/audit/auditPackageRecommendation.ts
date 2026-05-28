@@ -83,7 +83,7 @@ export function getWhyNotAdsYet(
   const foundationWeak =
     search < 14 || maps < 14 || content < 10 || action < 10;
   if (!foundationWeak) return null;
-  return "Ads are not recommended first. Paid traffic amplifies whatever the customer experiences when they arrive — Google profile, content, menu, hours, calls, directions. If those are weak, ads spend more to send people to a leaky experience. Veroxa recommends fixing the foundation first so ads can later carry their full value.";
+  return "Ads are not recommended first. Paid traffic amplifies whatever the customer experiences when they arrive — Google profile, content, menu, hours, calls, directions. If those can be strengthened first, ads spend more efficiently afterward. Veroxa recommends strengthening the foundation first so ads can later carry their full value.";
 }
 
 export function getPackageRecommendationReason(
@@ -125,7 +125,7 @@ export function getPackageRecommendationReason(
     return {
       packageId: "ads_management_only",
       reason:
-        "Ads Management Only is best for restaurants that already have strong online foundations and only need campaign execution. If the foundation is weak, Veroxa usually recommends fixing Google, content, and conversion first.",
+        "Ads Management Only is best for restaurants that already have strong online foundations and only need campaign execution. If the foundation still has room to be strengthened, Veroxa usually recommends improving Google, content, and conversion first.",
     };
   }
 
@@ -142,7 +142,7 @@ export function getPackageRecommendationReason(
     return {
       packageId: "complete_plus_ads",
       reason:
-        "Ads can help amplify a restaurant that already has a decent online foundation. Veroxa would not recommend ads as a replacement for weak Google, content, or conversion basics.",
+        "Ads can help amplify a restaurant that already has a decent online foundation. Veroxa would not recommend ads as a replacement for Google, content, or conversion basics that still need to be strengthened.",
     };
   }
 

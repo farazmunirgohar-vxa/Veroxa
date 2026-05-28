@@ -34,6 +34,13 @@ import {
   searchRestaurantCandidates,
   type RestaurantSearchCandidate,
 } from "@/data/demo/demoRestaurantSearch";
+import {
+  getLiveRestaurantDetails,
+  searchLiveRestaurantCandidates,
+  type LiveAuditMode,
+  type LiveRestaurantProfile,
+  type LiveWebPresenceScan,
+} from "@/lib/audit/liveAuditClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,7 +62,6 @@ import {
   formatWhatVeroxaCannotGuarantee,
 } from "@/lib/audit/auditReportFormatter";
 import { CUSTOMER_FLOW_STAGES } from "@/lib/audit/customerFlowImpact";
-import { demoAuditExamples } from "@/data/audit/demoAuditExamples";
 import type {
   AuditConfidence,
   GrowthReportSourceLabel,
@@ -198,19 +204,73 @@ export default function FreeAudit() {
   const [walkthroughSaved, setWalkthroughSaved] = useState(false);
   const [walkthroughError, setWalkthroughError] = useState<string | null>(null);
 
-  // Restaurant candidate search (fixture-backed; no network).
-  const [candidateResults, setCandidateResults] = useState<
-    RestaurantSearchCandidate[]
-  >([]);
+  // Unified candidate type: covers both live Google Places candidates and
+  // fixture/preview fallback candidates. `source` drives the UI badge.
+  type UnifiedCandidate = {
+    source: "live" | "preview";
+    id: string;
+    placeId?: string;
+    restaurantName: string;
+    addressLine: string;
+    city: string;
+    state: string;
+    cuisineType?: string;
+    googleRating?: number;
+    reviewCount?: number;
+    googleMapsUrl?: string;
+    websiteUrl?: string;
+    instagramUrl?: string;
+    facebookUrl?: string;
+    menuOrderingUrl?: string;
+    matchConfidence: "high" | "medium" | "low";
+    note?: string;
+  };
+
+  const [candidateResults, setCandidateResults] = useState<UnifiedCandidate[]>(
+    [],
+  );
   const [selectedCandidate, setSelectedCandidate] =
-    useState<RestaurantSearchCandidate | null>(null);
+    useState<UnifiedCandidate | null>(null);
   const [candidateSearchRan, setCandidateSearchRan] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [searchMode, setSearchMode] = useState<
+    "idle" | "live" | "fixture_fallback" | "not_configured"
+  >("idle");
+  const [isSearching, setIsSearching] = useState(false);
+  const [liveProfile, setLiveProfile] = useState<LiveRestaurantProfile | null>(
+    null,
+  );
+  const [liveWebPresence, setLiveWebPresence] =
+    useState<LiveWebPresenceScan | null>(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
+  const [detailsMessage, setDetailsMessage] = useState<string>("");
+
+  function adaptFixtureCandidate(c: RestaurantSearchCandidate): UnifiedCandidate {
+    return {
+      source: "preview",
+      id: c.id,
+      restaurantName: c.restaurantName,
+      addressLine: c.addressLine,
+      city: c.city,
+      state: c.state,
+      cuisineType: c.cuisineType,
+      googleRating: c.googleRating,
+      reviewCount: c.reviewCount,
+      websiteUrl: c.websiteUrl,
+      instagramUrl: c.instagramUrl,
+      facebookUrl: c.facebookUrl,
+      menuOrderingUrl: c.menuOrderingUrl,
+      matchConfidence: c.matchConfidence,
+      note: c.note,
+    };
+  }
 
   function buildSelectedRestaurantSnapshot():
     | AuditLeadSelectedRestaurant
     | undefined {
     if (!selectedCandidate) return undefined;
+    const isLive = selectedCandidate.source === "live";
+    const liveOk = isLive && liveProfile !== null;
     return {
       selectedRestaurantId: selectedCandidate.id,
       selectedRestaurantName: selectedCandidate.restaurantName,
@@ -219,55 +279,159 @@ export default function FreeAudit() {
       selectedAddress: selectedCandidate.addressLine,
       selectedCuisineType: selectedCandidate.cuisineType,
       selectedMatchConfidence: selectedCandidate.matchConfidence,
+      selectedPlaceId: selectedCandidate.placeId,
+      selectedSource: isLive ? "google_places" : "fixture",
+      selectedPhone: liveOk ? liveProfile?.phone : undefined,
+      selectedRating: liveOk
+        ? liveProfile?.rating
+        : selectedCandidate.googleRating,
+      selectedReviewCount: liveOk
+        ? liveProfile?.reviewCount
+        : selectedCandidate.reviewCount,
+      selectedWebsiteUrl: liveOk
+        ? liveProfile?.websiteUrl
+        : selectedCandidate.websiteUrl,
+      selectedGoogleMapsUrl: liveOk
+        ? liveProfile?.googleMapsUrl
+        : selectedCandidate.googleMapsUrl,
+      selectedBusinessStatus: liveOk ? liveProfile?.businessStatus : undefined,
+      discoveredMenuLinks: liveWebPresence?.discoveredMenuLinks,
+      discoveredSocialLinks: liveWebPresence?.discoveredSocialLinks,
+      websiteFound: liveWebPresence?.websiteFound,
+      menuLinkFound: liveWebPresence?.menuLinkFound,
+      orderLinkFound: liveWebPresence?.orderLinkFound,
+      contactPathFound: liveWebPresence?.contactPathFound,
+      scanConfidence: liveWebPresence?.scanConfidence,
+      aiDraftAvailable: aiDraft !== null,
     };
   }
 
-  function handleFindRestaurant(e: FormEvent) {
+  async function handleFindRestaurant(e: FormEvent) {
     e.preventDefault();
     setSearchError(null);
     if (!input.restaurantName.trim()) {
       setSearchError(
-        "Add a restaurant name first so the demo search can look for sample matches.",
+        "Add your restaurant name to start the lookup.",
       );
       setCandidateResults([]);
       setCandidateSearchRan(false);
       return;
     }
-    const results = searchRestaurantCandidates({
-      restaurantName: input.restaurantName,
-      city: input.city,
-      state: input.state,
-    });
-    setCandidateResults(results);
-    setCandidateSearchRan(true);
+    setIsSearching(true);
     setSelectedCandidate(null);
+    setLiveProfile(null);
+    setLiveWebPresence(null);
     setReport(null);
     resetAiDraftState();
+    try {
+      const live = await searchLiveRestaurantCandidates({
+        restaurantName: input.restaurantName.trim(),
+        city: input.city.trim(),
+        state: input.state.trim(),
+      });
+      if (live.mode === "live" && live.candidates.length > 0) {
+        setSearchMode("live");
+        setCandidateResults(
+          live.candidates.map((c) => ({
+            source: "live",
+            id: c.placeId,
+            placeId: c.placeId,
+            restaurantName: c.displayName,
+            addressLine: c.formattedAddress,
+            city: input.city.trim(),
+            state: input.state.trim(),
+            cuisineType: c.primaryType?.replace(/_/g, " "),
+            googleRating: c.rating,
+            reviewCount: c.userRatingCount,
+            googleMapsUrl: c.googleMapsUri,
+            matchConfidence: c.matchConfidence,
+          })),
+        );
+      } else {
+        const fixtureResults = searchRestaurantCandidates({
+          restaurantName: input.restaurantName,
+          city: input.city,
+          state: input.state,
+        });
+        setSearchMode(
+          live.mode === "not_configured" ? "not_configured" : "fixture_fallback",
+        );
+        setCandidateResults(fixtureResults.map(adaptFixtureCandidate));
+      }
+      setCandidateSearchRan(true);
+    } finally {
+      setIsSearching(false);
+    }
   }
 
-  function handleSelectCandidate(candidate: RestaurantSearchCandidate) {
+  async function handleSelectCandidate(candidate: UnifiedCandidate) {
     setSelectedCandidate(candidate);
+    setLiveProfile(null);
+    setLiveWebPresence(null);
+    setDetailsMessage("");
     setInput((prev) => ({
       ...prev,
       restaurantName: candidate.restaurantName,
-      city: candidate.city,
-      state: candidate.state,
+      city: candidate.city || prev.city,
+      state: candidate.state || prev.state,
       cuisineType: candidate.cuisineType || prev.cuisineType,
-      googleListingUrl: candidate.googleListingUrl ?? prev.googleListingUrl,
+      googleListingUrl: candidate.googleMapsUrl ?? prev.googleListingUrl,
       websiteUrl: candidate.websiteUrl ?? prev.websiteUrl,
       instagramUrl: candidate.instagramUrl ?? prev.instagramUrl,
       facebookUrl: candidate.facebookUrl ?? prev.facebookUrl,
       menuOrderingUrl: candidate.menuOrderingUrl ?? prev.menuOrderingUrl,
       googleRating: candidate.googleRating ?? prev.googleRating,
       reviewCount: candidate.reviewCount ?? prev.reviewCount,
+      selectedPlaceId: candidate.placeId,
+      restaurantSource: candidate.source === "live" ? "google_places" : "fixture",
     }));
     setReport(null);
     resetAiDraftState();
     setWalkthroughSaved(false);
+
+    if (candidate.source === "live" && candidate.placeId) {
+      setDetailsLoading(true);
+      try {
+        const details = await getLiveRestaurantDetails(candidate.placeId);
+        if (details.mode === "live" && details.profile) {
+          setLiveProfile(details.profile);
+          setLiveWebPresence(details.webPresence);
+          const scan = details.webPresence;
+          setInput((prev) => ({
+            ...prev,
+            restaurantName: details.profile?.name ?? prev.restaurantName,
+            websiteUrl: details.profile?.websiteUrl ?? prev.websiteUrl,
+            googleListingUrl:
+              details.profile?.googleMapsUrl ?? prev.googleListingUrl,
+            googleRating: details.profile?.rating ?? prev.googleRating,
+            reviewCount: details.profile?.reviewCount ?? prev.reviewCount,
+            liveProfileConfidence: details.profile?.sourceConfidence,
+            businessStatus: details.profile?.businessStatus,
+            websiteFound: scan?.websiteFound,
+            menuLinkFound: scan?.menuLinkFound,
+            orderLinkFound: scan?.orderLinkFound,
+            reservationLinkFound: scan?.reservationLinkFound,
+            contactPathFound: scan?.contactPathFound,
+            discoveredMenuLinks: scan?.discoveredMenuLinks,
+            discoveredSocialLinks: scan?.discoveredSocialLinks,
+          }));
+        } else {
+          setDetailsMessage(
+            details.message ??
+              "Live details are temporarily unavailable. You can still continue manually below.",
+          );
+        }
+      } finally {
+        setDetailsLoading(false);
+      }
+    }
   }
 
   function handleClearSelectedCandidate() {
     setSelectedCandidate(null);
+    setLiveProfile(null);
+    setLiveWebPresence(null);
+    setDetailsMessage("");
     setReport(null);
     resetAiDraftState();
   }
@@ -330,17 +494,16 @@ export default function FreeAudit() {
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    // The 4 core fields gate audit generation. Cuisine no longer blocks
-    // the initial restaurant search step (handled separately).
-    if (
-      !input.restaurantName ||
-      !input.city ||
-      !input.state ||
-      !input.cuisineType
-    ) {
+    if (!input.restaurantName || !input.city || !input.state) {
       return;
     }
-    const result = generateRestaurantAudit(input);
+    const cuisineForAudit =
+      input.cuisineType.trim() ||
+      "Restaurant / Food — category not verified";
+    const result = generateRestaurantAudit({
+      ...input,
+      cuisineType: cuisineForAudit,
+    });
     setReport(result);
     resetAiDraftState();
     setWalkthroughSaved(false);
@@ -352,18 +515,6 @@ export default function FreeAudit() {
           .getElementById("audit-report-anchor")
           ?.scrollIntoView({ behavior: "smooth" });
       }, 50);
-    }
-  }
-
-  function handleLoadExample(id: string) {
-    const ex = demoAuditExamples.find((e) => e.id === id);
-    if (ex) {
-      setInput({ ...initialInput, ...ex.input });
-      setReport(null);
-      resetAiDraftState();
-      setSelectedCandidate(null);
-      setCandidateResults([]);
-      setCandidateSearchRan(false);
     }
   }
 
@@ -441,26 +592,7 @@ export default function FreeAudit() {
           </Card>
         </div>
 
-        {/* Demo example loader */}
-        <div className="mb-6 flex flex-wrap gap-2">
-          <span className="text-[11px] uppercase tracking-wider text-muted-foreground self-center mr-1">
-            Load a demo example:
-          </span>
-          {demoAuditExamples.map((ex) => (
-            <Button
-              key={ex.id}
-              size="sm"
-              variant="outline"
-              className="h-7 text-[11px]"
-              onClick={() => handleLoadExample(ex.id)}
-              data-testid={`btn-load-example-${ex.id}`}
-            >
-              {ex.label}
-            </Button>
-          ))}
-        </div>
-
-        {/* Find My Restaurant — fixture-backed candidate search */}
+        {/* Find My Restaurant — live Google Places with preview fallback */}
         <Card
           className="bg-card border-border mb-4"
           data-testid="restaurant-search-card"
@@ -473,13 +605,13 @@ export default function FreeAudit() {
           </CardHeader>
           <CardContent>
             <p className="text-[12px] text-muted-foreground mb-3">
-              Enter your restaurant name (and city/state if you know them) to
-              look for sample matches. This step helps Veroxa anchor the audit
-              to a specific place before scoring online consistency.
+              Enter your restaurant name, city, and state. Veroxa will look up
+              your restaurant on Google when live lookup is configured, or fall
+              back to a preview match so you can continue.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
               <Field
-                label="Restaurant name"
+                label="Restaurant name *"
                 testId="restaurant-search-name"
               >
                 <Input
@@ -490,17 +622,14 @@ export default function FreeAudit() {
                   placeholder="e.g. El Sol Tacos"
                 />
               </Field>
-              <Field label="City (optional)" testId="restaurant-search-city">
+              <Field label="City" testId="restaurant-search-city">
                 <Input
                   value={input.city}
                   onChange={(e) => handleChange("city", e.target.value)}
                   placeholder="e.g. San Antonio"
                 />
               </Field>
-              <Field
-                label="State (optional)"
-                testId="restaurant-search-state"
-              >
+              <Field label="State" testId="restaurant-search-state">
                 <Input
                   value={input.state}
                   onChange={(e) => handleChange("state", e.target.value)}
@@ -510,17 +639,19 @@ export default function FreeAudit() {
             </div>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-[11px] text-muted-foreground italic inline-flex items-center gap-1">
-                <Info className="w-3 h-3" /> Search preview only — live
-                Google/Maps lookup is not connected yet.
+                <Info className="w-3 h-3" /> Live lookup depends on
+                configuration. Some signals may require manual review.
               </p>
               <Button
                 type="button"
                 size="sm"
                 variant="outline"
                 onClick={handleFindRestaurant}
+                disabled={isSearching}
                 data-testid="btn-find-restaurant"
               >
-                <Search className="w-3.5 h-3.5 mr-1" /> Find my restaurant
+                <Search className="w-3.5 h-3.5 mr-1" />
+                {isSearching ? "Searching…" : "Find my restaurant"}
               </Button>
             </div>
             {searchError && (
@@ -531,27 +662,140 @@ export default function FreeAudit() {
                 {searchError}
               </p>
             )}
+            {candidateSearchRan && searchMode !== "live" && !isSearching && (
+              <p
+                className="text-[12px] text-muted-foreground italic mt-3"
+                data-testid="restaurant-search-mode-note"
+              >
+                {searchMode === "not_configured"
+                  ? "Live Google lookup is not configured here yet. Showing preview fallback results so you can continue."
+                  : "Live lookup did not return matches. Showing preview fallback results so you can continue."}
+              </p>
+            )}
             {selectedCandidate && (
               <div
                 className="mt-4 rounded-md border border-emerald-500/40 bg-emerald-500/5 p-3"
                 data-testid="restaurant-search-selected"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="text-[11px] uppercase tracking-wider text-emerald-400">
-                      Selected restaurant
-                    </p>
-                    <p className="text-sm font-semibold mt-0.5">
-                      {selectedCandidate.restaurantName}
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-[11px] uppercase tracking-wider text-emerald-400">
+                        Selected restaurant
+                      </p>
+                      <Badge
+                        variant="outline"
+                        className={
+                          selectedCandidate.source === "live"
+                            ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/5"
+                            : "border-muted-foreground/30 text-muted-foreground bg-muted/10"
+                        }
+                      >
+                        {selectedCandidate.source === "live"
+                          ? "Live Google result"
+                          : "Preview fallback result"}
+                      </Badge>
+                    </div>
+                    <p className="text-sm font-semibold mt-1">
+                      {liveProfile?.name ?? selectedCandidate.restaurantName}
                     </p>
                     <p className="text-[12px] text-muted-foreground inline-flex items-center gap-1 mt-0.5">
                       <MapPin className="w-3 h-3" />
-                      {selectedCandidate.addressLine} · {selectedCandidate.city},{" "}
-                      {selectedCandidate.state}
+                      {liveProfile?.address ?? selectedCandidate.addressLine}
+                      {!liveProfile && selectedCandidate.city
+                        ? ` · ${selectedCandidate.city}, ${selectedCandidate.state}`
+                        : ""}
                     </p>
                     <p className="text-[12px] text-muted-foreground mt-1">
-                      {selectedCandidate.cuisineType}
+                      {selectedCandidate.cuisineType ??
+                        "Restaurant / Food — category not verified"}
                     </p>
+                    {detailsLoading && (
+                      <p className="text-[12px] text-muted-foreground italic mt-2">
+                        Loading live profile and scanning website…
+                      </p>
+                    )}
+                    {detailsMessage && !detailsLoading && (
+                      <p className="text-[12px] text-amber-400 mt-2">
+                        {detailsMessage}
+                      </p>
+                    )}
+                    {liveProfile && !detailsLoading && (
+                      <div className="mt-3 space-y-1 text-[12px] text-muted-foreground">
+                        {liveProfile.phone && (
+                          <p>
+                            <span className="text-foreground/80">Phone:</span>{" "}
+                            {liveProfile.phone}
+                          </p>
+                        )}
+                        {typeof liveProfile.rating === "number" && (
+                          <p className="inline-flex items-center gap-1">
+                            <Star className="w-3 h-3 text-amber-400" />
+                            {liveProfile.rating.toFixed(1)}
+                            {typeof liveProfile.reviewCount === "number" && (
+                              <span>· {liveProfile.reviewCount} reviews</span>
+                            )}
+                          </p>
+                        )}
+                        {liveProfile.websiteUrl && (
+                          <p className="truncate">
+                            <span className="text-foreground/80">Website:</span>{" "}
+                            <a
+                              href={liveProfile.websiteUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="underline"
+                            >
+                              {liveProfile.websiteUrl}
+                            </a>
+                          </p>
+                        )}
+                        {liveProfile.googleMapsUrl && (
+                          <p className="truncate">
+                            <span className="text-foreground/80">
+                              Google Maps:
+                            </span>{" "}
+                            <a
+                              href={liveProfile.googleMapsUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="underline"
+                            >
+                              View listing
+                            </a>
+                          </p>
+                        )}
+                        {liveWebPresence?.websiteFound && (
+                          <div className="flex flex-wrap gap-1 pt-1">
+                            {liveWebPresence.menuLinkFound && (
+                              <Badge variant="outline" className="text-[10px]">
+                                Menu link found
+                              </Badge>
+                            )}
+                            {liveWebPresence.orderLinkFound && (
+                              <Badge variant="outline" className="text-[10px]">
+                                Order link found
+                              </Badge>
+                            )}
+                            {liveWebPresence.contactPathFound && (
+                              <Badge variant="outline" className="text-[10px]">
+                                Contact path found
+                              </Badge>
+                            )}
+                            {liveWebPresence.instagramLinkFound && (
+                              <Badge variant="outline" className="text-[10px]">
+                                Instagram link found
+                              </Badge>
+                            )}
+                            {liveWebPresence.facebookLinkFound && (
+                              <Badge variant="outline" className="text-[10px]">
+                                Facebook link found
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <Button
                     type="button"
@@ -564,8 +808,8 @@ export default function FreeAudit() {
                   </Button>
                 </div>
                 <p className="text-[11px] text-muted-foreground italic mt-2">
-                  Confirm the cuisine and any links below are accurate, then
-                  generate your audit.
+                  Confirm the details and any links below, then generate your
+                  audit.
                 </p>
               </div>
             )}
@@ -577,17 +821,17 @@ export default function FreeAudit() {
                     data-testid="restaurant-search-empty"
                   >
                     <p className="text-sm font-semibold">
-                      No sample matches in the demo dataset.
+                      No matches were returned.
                     </p>
                     <p className="text-[12px] text-muted-foreground mt-1">
-                      You can still continue manually — fill in cuisine and any
-                      links below to generate the audit.
+                      You can still continue manually — fill in any links you
+                      have below to generate the audit.
                     </p>
                   </div>
                 ) : (
                   <>
                     <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                      Sample matches
+                      {searchMode === "live" ? "Live matches" : "Preview matches"}
                     </p>
                     <div
                       className="grid grid-cols-1 md:grid-cols-2 gap-2"
@@ -605,20 +849,39 @@ export default function FreeAudit() {
                             <p className="text-sm font-semibold">
                               {c.restaurantName}
                             </p>
-                            <Badge
-                              variant="outline"
-                              className={`shrink-0 ${matchConfidenceTone[c.matchConfidence]}`}
-                            >
-                              {matchConfidenceLabel[c.matchConfidence]}
-                            </Badge>
+                            <div className="flex flex-col items-end gap-1 shrink-0">
+                              <Badge
+                                variant="outline"
+                                className={
+                                  c.source === "live"
+                                    ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/5"
+                                    : "border-muted-foreground/30 text-muted-foreground bg-muted/10"
+                                }
+                              >
+                                {c.source === "live"
+                                  ? "Live Google result"
+                                  : "Preview fallback result"}
+                              </Badge>
+                              <Badge
+                                variant="outline"
+                                className={matchConfidenceTone[c.matchConfidence]}
+                              >
+                                {matchConfidenceLabel[c.matchConfidence]}
+                              </Badge>
+                            </div>
                           </div>
                           <p className="text-[12px] text-muted-foreground inline-flex items-center gap-1 mt-1">
                             <MapPin className="w-3 h-3" />
-                            {c.addressLine} · {c.city}, {c.state}
+                            {c.addressLine}
+                            {c.source === "preview" && c.city
+                              ? ` · ${c.city}, ${c.state}`
+                              : ""}
                           </p>
-                          <p className="text-[12px] text-muted-foreground mt-0.5">
-                            {c.cuisineType}
-                          </p>
+                          {c.cuisineType && (
+                            <p className="text-[12px] text-muted-foreground mt-0.5">
+                              {c.cuisineType}
+                            </p>
+                          )}
                           {typeof c.googleRating === "number" && (
                             <p className="text-[12px] text-muted-foreground inline-flex items-center gap-1 mt-0.5">
                               <Star className="w-3 h-3 text-amber-400" />
@@ -630,9 +893,11 @@ export default function FreeAudit() {
                               )}
                             </p>
                           )}
-                          <p className="text-[12px] text-muted-foreground/90 mt-1">
-                            {c.note}
-                          </p>
+                          {c.note && (
+                            <p className="text-[12px] text-muted-foreground/90 mt-1">
+                              {c.note}
+                            </p>
+                          )}
                         </button>
                       ))}
                     </div>
@@ -671,13 +936,16 @@ export default function FreeAudit() {
                       required
                     />
                   </Field>
-                  <Field label="Cuisine type *" testId="audit-cuisine">
+                  <Field
+                    label="Cuisine type (optional)"
+                    testId="audit-cuisine"
+                  >
                     <Input
                       value={input.cuisineType}
                       onChange={(e) =>
                         handleChange("cuisineType", e.target.value)
                       }
-                      required
+                      placeholder="Leave blank if unsure — Veroxa will note it as unverified."
                     />
                   </Field>
                   <Field label="City *" testId="audit-city">

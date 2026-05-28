@@ -52,11 +52,18 @@ export interface GrowthReportSection {
   sourceLabel: GrowthReportSourceLabel;
 }
 
+export type RestaurantSourceMode = "google_places" | "fixture" | "manual";
+
 export interface RestaurantAuditInput {
-  // Required
+  // Required for audit generation
   restaurantName: string;
   city: string;
   state: string;
+  /**
+   * Cuisine is no longer required for the initial restaurant search.
+   * If unknown at audit time, callers should default to
+   * "Restaurant / Food — category not verified."
+   */
   cuisineType: string;
   // Optional links (M027A)
   googleListingUrl?: string;
@@ -73,6 +80,19 @@ export interface RestaurantAuditInput {
   // Optional signals from candidate selection
   googleRating?: number;
   reviewCount?: number;
+  // Optional live-mode signals (Live Audit Lookup V1) — all optional so the
+  // audit still works in fixture / manual mode without any of these.
+  selectedPlaceId?: string;
+  restaurantSource?: RestaurantSourceMode;
+  liveProfileConfidence?: "high" | "medium" | "low";
+  websiteFound?: boolean;
+  menuLinkFound?: boolean;
+  orderLinkFound?: boolean;
+  reservationLinkFound?: boolean;
+  contactPathFound?: boolean;
+  discoveredSocialLinks?: string[];
+  discoveredMenuLinks?: string[];
+  businessStatus?: string;
 }
 
 export interface AuditCategoryScore {
