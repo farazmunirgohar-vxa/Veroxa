@@ -301,7 +301,7 @@ export default function TeamDirectionQueue() {
       </div>
 
       <DemoOnlyBanner
-        message="Demo/local only — no real writes, no notifications, no publishing, no ads launched."
+        message="Demo/dev only — team status updates save locally first. Dev database saving only runs when explicitly enabled. No publishing or ads launch from this page."
         testId="banner-direction-queue"
       />
 
@@ -421,7 +421,7 @@ export default function TeamDirectionQueue() {
                             size="sm"
                             variant="outline"
                             className="h-7 text-[11px]"
-                            onClick={() => updateStatus(d.id, "in_team_review")}
+                            onClick={() => updateStatus(d.id, "planned")}
                             data-testid={`btn-dir-content-${d.id}`}
                           >
                             Send to Content Plan
@@ -430,7 +430,7 @@ export default function TeamDirectionQueue() {
                             size="sm"
                             variant="outline"
                             className="h-7 text-[11px]"
-                            onClick={() => updateStatus(d.id, "in_team_review")}
+                            onClick={() => updateStatus(d.id, "planned")}
                             data-testid={`btn-dir-google-${d.id}`}
                           >
                             Send to Google Action
@@ -439,7 +439,7 @@ export default function TeamDirectionQueue() {
                             size="sm"
                             variant="outline"
                             className="h-7 text-[11px]"
-                            onClick={() => updateStatus(d.id, "in_team_review")}
+                            onClick={() => updateStatus(d.id, "planned")}
                             data-testid={`btn-dir-ads-${d.id}`}
                           >
                             Send to Ads Planning

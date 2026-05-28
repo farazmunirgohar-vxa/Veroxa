@@ -1039,3 +1039,20 @@ auth activation.
 - AUTH_MODE unchanged (`placeholder`). DATA_MODE default unchanged
   (`fixture`). Pricing unchanged. InternalDemoGuard intact.
 - **Typecheck:** PASS.
+
+## M026A–M026C — Free Customer-Flow Readiness Audit + Package Recommender + Positioning Polish
+
+- Public `/free-audit` route added.
+- Rule-based local audit engine — `src/lib/audit/{auditTypes,auditScoring,customerFlowImpact,auditPackageRecommendation,auditReportFormatter}.ts`.
+- Fictional demo inputs only — `src/data/audit/demoAuditExamples.ts` (Demo Grill House, Demo Momo Kitchen, Demo Mediterranean Table).
+- Audit total = 100 across 7 categories with weak-spot ranking.
+- Customer-flow framework added: Visibility → Trust → Reminder → Action → Retention.
+- Package recommendation engine added; weak spots decide the package, foundation comes before ads.
+- Pricing read from `@/data/pricing/veroxaPricing` (locked source of truth).
+- "Why not ads yet" surfaces when foundation is weak.
+- 30-day plan, expected impact timeline, adaptive learning explanation, and preliminary disclaimer all rendered on the report page.
+- M026C — Team Direction Queue banner wording fixed and content/google/ads action buttons remapped from `in_team_review` → `planned`.
+- **No** AI integration, scraping, Google/social APIs, payments, ads APIs.
+- **No** database writes, **no** storage upload, **no** new migration.
+- Pricing unchanged. AUTH_MODE=placeholder. DATA_MODE=fixture default. Owner/Operator not expanded. InternalDemoGuard intact.
+- **Typecheck:** PASS.

@@ -158,3 +158,19 @@ the first real client uses Veroxa in production.
   - M025C — implement direction id read-back for session-originated items.
   - M026 — connect Restaurant Upload metadata writes.
   - Storage upload — separate later milestone.
+
+## M026A–M026C — Free Customer-Flow Readiness Audit
+
+- ✅ Free audit tool added as outreach/sales support at `/free-audit`.
+- ✅ Audit recommends package based on weak spots, not highest price.
+- ✅ Uses locked pricing from `@/data/pricing/veroxaPricing`.
+- ✅ Restaurant-facing language only — no first-client fit / close probability / ability to pay / internal sales notes.
+- ✅ Preliminary disclaimer + adaptive learning explanation included.
+- ✅ Team Direction Queue banner + status button mapping polished (M026C).
+- Still needed later:
+  - Save audits as leads (DB).
+  - Generate PDF audit reports.
+  - AI-assisted scoring.
+  - Manual team audit review queue.
+  - Audit score history per restaurant over time.
+  - Live Google / social platform integrations.

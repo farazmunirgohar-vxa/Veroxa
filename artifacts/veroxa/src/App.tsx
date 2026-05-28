@@ -110,6 +110,7 @@ import TeamUploadInbox from "@/pages/team-upload-inbox";
 import ClientDirectionCenter from "@/pages/client-direction-center";
 import TeamDirectionQueue from "@/pages/team-direction-queue";
 import TeamAdaptiveIntelligence from "@/pages/team-adaptive-intelligence";
+import FreeAudit from "@/pages/free-audit";
 
 const queryClient = new QueryClient();
 
@@ -124,6 +125,7 @@ function Router() {
       <Route path="/auth-status" component={AuthStatusPage} />
       <Route path="/demo" component={DemoHub} />
       <Route path="/guided-demo" component={GuidedDemo} />
+      <Route path="/free-audit" component={FreeAudit} />
 
       {/* Restaurant Upload Key entry — public, demo-only. No login. */}
       <Route path="/upload" component={RestaurantUploadAccess} />

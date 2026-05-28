@@ -111,3 +111,10 @@ Sanitized to neutral IDs — no real restaurant names anywhere in code.
 | `demo-d`   | Demo Cafe                 | Google Optimization                          |       $477  |
 
 Resulting demo MRR: $977 + $977 + $1,474 + $477 = **$3,905 / mo**.
+
+## M026 audit-package recommendations
+
+Audit package recommendations must use locked pricing and recommend based on
+weak spots, not highest price. The audit must never bypass
+`@/data/pricing/veroxaPricing` or hardcode dollar amounts. Foundation comes
+before ads.

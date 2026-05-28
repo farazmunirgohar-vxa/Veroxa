@@ -216,3 +216,20 @@ as possible for the first 1–3 real clients.
   (`WRITES_ENABLED=false`) and
   `docs/M023_SUPABASE_WRITES_PLAN_UPLOADS_DIRECTION_REVIEW.md` for
   the plan to enable controlled dev writes behind an explicit flag.
+
+## Veroxa Free Customer-Flow Readiness Audit (M026A–M026C)
+
+- Public tool at `/free-audit`.
+- Audit is **preliminary** unless manually reviewed by Veroxa.
+- Audit is **restaurant-facing** and focused on weak spots — not internal sales qualification.
+- Audit **recommends the package that matches weak spots**, never the highest price by default.
+- Veroxa improves customer-flow readiness but does **not** guarantee exact customer influx.
+- Veroxa is **adaptive** and learns from data over time.
+
+### Locked language
+
+"Veroxa does not guarantee customer influx. Veroxa improves the online
+systems that influence customer flow: visibility, trust, reminders, action
+clarity, and retention."
+
+"Every action teaches Veroxa what to do better next time."
