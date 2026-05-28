@@ -137,7 +137,7 @@ export const AUDIT_ADAPTIVE_LEARNING_EXPLANATION =
   "Veroxa does not treat this audit as a one-time report. The audit becomes the starting point. As Veroxa works, the system learns from uploads, direction, content decisions, Google activity, social performance, review signals, and results. Every week, those signals help Veroxa make better recommendations.";
 
 export const AUDIT_DISCLAIMER =
-  "This is a preliminary audit based on available public signals. A final Veroxa plan would require manual review, client access where needed, and actual performance tracking. This audit does not judge the food or the restaurant's quality — it reviews how easy it is for nearby customers to find, remember, trust, and choose the restaurant online.";
+  "Preliminary audit based on available public signals. Final recommendations require manual review, access where needed, and performance tracking. No results are guaranteed.";
 
 export const WHAT_VEROXA_NEEDS_FROM_RESTAURANT: string[] = [
   "3–5 real photos or short videos per week (dishes, daily specials, behind-the-scenes moments)",
