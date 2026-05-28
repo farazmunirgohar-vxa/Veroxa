@@ -187,8 +187,10 @@ export default function RestaurantUploadAccess() {
             </p>
             <p className="text-xs text-muted-foreground leading-relaxed">
               Your photos go straight to your restaurant's Veroxa team for
-              review, captioning, and scheduling. Nothing posts automatically
-              — your account stays in control of what goes live.
+              review, captioning, and scheduling. The team triages each
+              upload, asks for a re-shoot if needed, and only then schedules
+              posts. Nothing posts automatically — your account stays in
+              control of what goes live.
             </p>
           </div>
 

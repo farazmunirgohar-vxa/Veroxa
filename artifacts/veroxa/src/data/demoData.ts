@@ -20,3 +20,4 @@ export * from "./demo/demoOperations";
 export * from "./demo/demoFinancials";
 export * from "./demo/demoOwner";
 export * from "./demo/demoSystemStatus";
+export * from "./demo/demoClientTeamWork";

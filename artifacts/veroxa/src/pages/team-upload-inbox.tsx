@@ -34,6 +34,8 @@ import {
   subscribeToLocalUploadSubmissions,
   updateLocalUploadSubmissionStatus,
 } from "@/lib/uploadKeys/localUploadStore";
+import { clientTeamWorkRepository } from "@/lib/repositories";
+import { getRestaurantName } from "@/data/demoData";
 
 const statusToneStyles: Record<DemoUploadStatus, string> = {
   received: "bg-sky-500/10 text-sky-400 border-sky-500/30",
@@ -142,6 +144,49 @@ export default function TeamUploadInbox() {
         >
           {getWriteSafetyBanner()}
         </div>
+
+        {/* Related media submissions across the client/team workflow. */}
+        {(() => {
+          const mediaSubs = clientTeamWorkRepository
+            .getClientSubmissions("demo-a")
+            .filter((s) => s.submissionType === "media")
+            .concat(
+              clientTeamWorkRepository
+                .getClientSubmissions("demo-b")
+                .filter((s) => s.submissionType === "media"),
+              clientTeamWorkRepository
+                .getClientSubmissions("demo-c")
+                .filter((s) => s.submissionType === "media"),
+            )
+            .filter((s) => s.status !== "completed" && s.status !== "archived")
+            .slice(0, 4);
+          if (mediaSubs.length === 0) return null;
+          return (
+            <Card className="mt-3 bg-card border-border" data-testid="card-related-media-subs">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">
+                  Related media items from client/team workflow ({mediaSubs.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-1.5">
+                {mediaSubs.map((s) => (
+                  <div
+                    key={s.id}
+                    className="text-xs text-muted-foreground flex items-start justify-between gap-2"
+                    data-testid={`related-media-${s.id}`}
+                  >
+                    <span className="text-foreground/80">
+                      {getRestaurantName(s.clientId)} — {s.title}
+                    </span>
+                    <Badge variant="outline" className="text-[9px] flex-shrink-0">
+                      {s.status.replace(/_/g, " ")}
+                    </Badge>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          );
+        })()}
 
         <div className="flex flex-wrap items-center justify-between gap-2 mt-2 mb-4 px-1 text-xs text-muted-foreground">
           <span>

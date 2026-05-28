@@ -32,7 +32,7 @@ import { getLocalDirectionRequests, subscribeToLocalDirectionRequests } from "@/
 import { getLocalUploadSubmissions, subscribeToLocalUploadSubmissions } from "@/lib/uploadKeys/localUploadStore";
 import { Compass } from "lucide-react";
 import { useEffect, useState } from "react";
-import { healthRepository, reportRepository, activityRepository } from "@/lib/repositories";
+import { healthRepository, reportRepository, activityRepository, clientTeamWorkRepository } from "@/lib/repositories";
 
 const veroxaWeekFlow = [
   { key: "upload",   label: "You upload",    caption: "Food photos from your phone" },
@@ -144,6 +144,7 @@ export default function ClientDashboard() {
   const healthSnapshot = healthRepository.getClientHealthSnapshot("demo-a");
   const clientReports = reportRepository.getClientReports("demo-a");
   const recentActivity = activityRepository.getClientVisibleActivity("demo-a");
+  const openClientActions = clientTeamWorkRepository.getClientOpenActions("demo-a");
 
   const snapshotItems = [
     healthSnapshot
@@ -174,6 +175,39 @@ export default function ClientDashboard() {
           May 2026 — Week 3
         </Badge>
       </div>
+
+      {/* Action needed from you — quick callout linking to Requests. */}
+      {openClientActions.length > 0 && (
+        <Card
+          className="bg-amber-500/5 border-amber-500/30"
+          data-testid="card-dashboard-action-needed"
+        >
+          <CardContent className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-foreground mb-1">
+                Action needed from you ({openClientActions.length})
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {openClientActions[0].title}
+                {openClientActions.length > 1
+                  ? ` · +${openClientActions.length - 1} more`
+                  : ""}
+              </p>
+            </div>
+            <Link href="/demo/client/requests">
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-amber-500/40 hover:bg-amber-500/10 flex-shrink-0"
+                data-testid="btn-dashboard-action-open-requests"
+              >
+                Open Requests
+                <ArrowRight className="ml-2 h-3.5 w-3.5" />
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

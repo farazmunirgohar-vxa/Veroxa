@@ -1,5 +1,36 @@
 # Current Replit Build Status
 
+> **2026-05-28 — Client ↔ Team workflow & communication layer**
+>
+> - New demo fixtures: `src/data/demo/demoClientTeamWork.ts` models
+>   real-life client/team submissions, messages, and action items
+>   (future tables: `client_team_submissions`, `client_team_messages`,
+>   `client_action_items`). Read-only, demo-a..demo-d only. Visibility
+>   split (`client_and_team` vs `team_only`, plus internal team notes).
+> - New repository: `src/lib/repositories/clientTeamWorkRepository.ts`
+>   enforces visibility — `getClientVisibleMessages` drops `team_only`,
+>   `getSubmissionThread` returns both visibilities for team surfaces.
+> - Client surfaces (`/demo/client`, `/demo/client/requests`,
+>   `/demo/client/media`, `/demo/client/updates`): added
+>   "Action needed from you" callout, "Questions from Veroxa Team",
+>   "Veroxa is working on", "Conversation with Veroxa Team" (You /
+>   Veroxa Team labels, disabled "Live messaging will connect after
+>   backend activation." input), "Open media items" tile, and
+>   "What Veroxa is working on for you" recap. Internal notes never
+>   rendered on client pages.
+> - Team surfaces (`/demo/team`, `/demo/team/work-queue`,
+>   `/demo/team/upload-inbox`, `/demo/team/direction-queue`): added
+>   "Client Submissions" summary tiles, "Client submissions snapshot"
+>   with Internal Team Note spotlight on blocked items, "Related
+>   media items from client/team workflow", and a
+>   "Client submissions awaiting clarification" cross-link.
+> - `/upload` access page: extended "What happens after upload" copy
+>   to describe the team triage / re-shoot loop. No upload behavior
+>   changed.
+> - Guardrails unchanged: AUTH_MODE=placeholder, DATA_MODE=fixture,
+>   VEROXA_DATA_SOURCE_MODE=demo, only demo-a..demo-d, no
+>   writes/auth/AI/publishing/payments/uploads.
+
 > **2026-05-28 — Client acquisition & execution clarity pass**
 >
 > - Public audit CTAs in `PublicNav` and `landing` now route to

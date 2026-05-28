@@ -35,6 +35,9 @@ import {
   getRestaurantTypeOptions,
   type RestaurantType,
 } from "@/lib/mediaGuidance";
+import { clientTeamWorkRepository } from "@/lib/repositories";
+
+const SHOWCASE_ID = "demo-a";
 
 interface SelectedFile {
   name: string;
@@ -206,6 +209,46 @@ export default function ClientMedia() {
           </a>
         </CardContent>
       </Card>
+
+      {/* Open media-related items between you and Veroxa Team. */}
+      {(() => {
+        const mediaItems = clientTeamWorkRepository
+          .getClientVisibleSubmissions(SHOWCASE_ID)
+          .filter(
+            (s) =>
+              s.submissionType === "media" &&
+              s.status !== "completed" &&
+              s.status !== "archived",
+          );
+        if (mediaItems.length === 0) return null;
+        return (
+          <Card
+            className="mt-4 border-border bg-card/60"
+            data-testid="card-media-open-items"
+          >
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Inbox className="w-4 h-4 text-primary" />
+                Open media items with Veroxa Team ({mediaItems.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {mediaItems.map((s) => (
+                <div
+                  key={s.id}
+                  className="rounded-md border border-border bg-muted/20 px-3 py-2"
+                  data-testid={`media-open-${s.id}`}
+                >
+                  <p className="text-sm font-medium leading-snug">{s.title}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {s.clientVisibleNote}
+                  </p>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        );
+      })()}
 
       {/* Recent uploads from this session */}
       <SessionUploadsSection />

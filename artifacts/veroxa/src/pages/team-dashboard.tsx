@@ -19,6 +19,7 @@ import type { StatusBadgeTone } from "@/components/common";
 import {
   demoTeamMetrics, demoWorkQueue, demoTeamAlerts, getRestaurantName,
 } from "@/data/demoData";
+import { clientTeamWorkRepository } from "@/lib/repositories";
 import { DemoImageCard } from "@/components/demo/DemoVisuals";
 import { getDemoImage } from "@/data/demo/demoImages";
 import { demoClientTeamWorkflow } from "@/data/workflows/clientTeamWorkflow";
@@ -121,6 +122,46 @@ export default function TeamDashboard() {
           </Card>
         ))}
       </div>
+
+      {/* Client Submissions — workflow/communication snapshot. */}
+      {(() => {
+        const summary = clientTeamWorkRepository.getTeamWorkCommunicationSummary();
+        const tiles: { label: string; value: number; testId: string }[] = [
+          { label: "New submissions",     value: summary.newCount,                   testId: "cts-summary-new" },
+          { label: "Needs clarification", value: summary.needsClarificationCount,    testId: "cts-summary-clarification" },
+          { label: "Blocked by client",   value: summary.blockedCount,               testId: "cts-summary-blocked" },
+          { label: "In progress",         value: summary.inProgressCount,            testId: "cts-summary-in-progress" },
+          { label: "Completed",           value: summary.completedCount,             testId: "cts-summary-completed" },
+        ];
+        return (
+          <div className="mb-6" data-testid="section-client-submissions">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                Client Submissions
+              </h3>
+              <Link href="/demo/team/work-queue">
+                <span className="flex items-center gap-1 text-xs text-primary hover:underline cursor-pointer">
+                  Open work queue <ArrowRight className="w-3 h-3" />
+                </span>
+              </Link>
+            </div>
+            <Card className="bg-card border-border">
+              <CardContent className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 p-4">
+                {tiles.map((t) => (
+                  <div key={t.label} data-testid={t.testId}>
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                      {t.label}
+                    </p>
+                    <p className="text-xl font-semibold tabular-nums text-foreground">
+                      {t.value}
+                    </p>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+        );
+      })()}
 
       {/* Adaptive Team Priorities — top 3 rule-based recommendations */}
       <div className="mb-6" data-testid="section-adaptive-team-priorities">

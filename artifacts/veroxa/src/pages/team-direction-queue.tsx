@@ -45,6 +45,8 @@ import {
   updateLocalDirectionRequestStatus,
 } from "@/lib/direction/localDirectionStore";
 import { getLocalUploadSubmissions } from "@/lib/uploadKeys/localUploadStore";
+import { clientTeamWorkRepository } from "@/lib/repositories";
+import { getRestaurantName } from "@/data/demoData";
 import type { FirstClientDirectionStatus } from "@/lib/firstClient/firstClientContracts";
 
 type GroupKey =
@@ -322,6 +324,45 @@ export default function TeamDirectionQueue() {
           <Trash2 className="w-3 h-3 mr-1" /> Clear session direction
         </Button>
       </div>
+
+      {/* Cross-link to client/team submissions awaiting clarification. */}
+      {(() => {
+        const clarification = clientTeamWorkRepository.getTeamNeedsClientClarification();
+        if (clarification.length === 0) return null;
+        return (
+          <Card
+            className="bg-sky-500/5 border-sky-500/30 mb-4"
+            data-testid="card-direction-needs-clarification"
+          >
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">
+                Client submissions awaiting clarification ({clarification.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1.5">
+              {clarification.slice(0, 4).map((s) => (
+                <div
+                  key={s.id}
+                  className="text-xs flex items-start justify-between gap-2"
+                  data-testid={`dir-clarification-${s.id}`}
+                >
+                  <span className="text-foreground/80">
+                    {getRestaurantName(s.clientId)} — {s.title}
+                  </span>
+                  {s.requestedClientAction && (
+                    <Badge variant="outline" className="text-[9px] border-sky-500/30 text-sky-300 flex-shrink-0">
+                      Awaiting reply
+                    </Badge>
+                  )}
+                </div>
+              ))}
+              <p className="text-[10px] text-muted-foreground/70 pt-1">
+                Internal — surfaced from client/team workflow. Resolve in Work Queue / Requests.
+              </p>
+            </CardContent>
+          </Card>
+        );
+      })()}
 
       {/* Adaptive top-of-queue snapshot */}
       {recommendations.length > 0 && (

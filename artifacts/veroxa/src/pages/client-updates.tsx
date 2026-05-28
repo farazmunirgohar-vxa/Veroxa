@@ -1,4 +1,4 @@
-import { CalendarDays, CheckCircle2, Camera, FileText, Sparkles, Clock } from "lucide-react";
+import { CalendarDays, CheckCircle2, Camera, FileText, Sparkles, Clock, Loader2 } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,6 +6,9 @@ import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientPortalData } from "@/hooks/useClientPortalData";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
 import { getDemoImagesByCategory } from "@/data/demo/demoImages";
+import { clientTeamWorkRepository } from "@/lib/repositories";
+
+const SHOWCASE_ID = "demo-a";
 
 const FOOD_IMGS = getDemoImagesByCategory("food");
 
@@ -141,6 +144,42 @@ export default function ClientUpdates() {
           ))}
         </div>
       </div>
+
+      {/* What Veroxa is working on for you — client-visible only. */}
+      {(() => {
+        const inProgress = clientTeamWorkRepository
+          .getClientVisibleSubmissions(SHOWCASE_ID)
+          .filter((s) => s.status === "in_progress" || s.status === "accepted");
+        if (inProgress.length === 0) return null;
+        return (
+          <div className="mb-5" data-testid="section-veroxa-working-on">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+              What Veroxa is working on for you
+            </h3>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {inProgress.slice(0, 4).map((s) => (
+                <Card
+                  key={s.id}
+                  className="bg-card/60 border-border"
+                  data-testid={`working-on-${s.id}`}
+                >
+                  <CardContent className="flex items-start gap-3 p-4">
+                    <div className="p-2 rounded-md bg-primary/10 flex-shrink-0">
+                      <Loader2 className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-foreground mb-1">{s.title}</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {s.clientVisibleNote}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Past updates */}
       <div data-testid="section-past-updates">

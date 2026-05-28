@@ -17,4 +17,5 @@ export * as workflowRepository from "./workflowRepository";
 export * as healthRepository from "./healthRepository";
 export * as reportRepository from "./reportRepository";
 export * as activityRepository from "./activityRepository";
+export * as clientTeamWorkRepository from "./clientTeamWorkRepository";
 export * as supabaseReadiness from "./supabaseReadiness";
