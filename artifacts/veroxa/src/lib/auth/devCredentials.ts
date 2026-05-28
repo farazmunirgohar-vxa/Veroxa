@@ -1,8 +1,8 @@
 /**
  * devCredentials.ts — TEMPORARY development-only login matcher.
  *
- * Used solely while AUTH_MODE === "placeholder" so the four role portals
- * (Client / Team / Operator / Owner) can be previewed without activating
+ * Used solely while AUTH_MODE === "placeholder" so the active role portals
+ * (Client / Team) can be previewed without activating
  * real Supabase auth. This file is intentionally easy to delete when real
  * auth ships:
  *   - no Supabase
@@ -31,9 +31,8 @@ export interface DevCredential {
  */
 export const DEV_ROLE_CREDENTIALS: readonly DevCredential[] = [
   { role: "client", email: "faraz@client.com", password: "farazclient" },
-  { role: "team", email: "faraz@team.com", password: "farazteam" },
-  { role: "operator", email: "faraz@operator.com", password: "farazoperator" },
-  { role: "owner", email: "faraz@owner.com", password: "farazowner" },
+  { role: "team",   email: "faraz@team.com",   password: "farazteam"   },
+  // operator and owner are parked; credentials removed from active login.
 ] as const;
 
 /**

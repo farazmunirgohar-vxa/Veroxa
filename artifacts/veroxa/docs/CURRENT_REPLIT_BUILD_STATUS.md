@@ -1,5 +1,25 @@
 # Current Replit Build Status
 
+> **2026-05-28 — Login/routing cleanup: Operator/Owner hidden, demo access code removed, Client/Team login streamlined**
+>
+> - Operator and Owner portals hidden from all active product flow and login choices.
+> - Current active portals are Client and Team only.
+> - Demo access code (`veroxa-preview`) removed from the normal email/password login flow.
+>   `InternalDemoGuard` in placeholder mode now auto-grants Team portal access without requiring
+>   a code. Operator/Owner routes show a "Parked — this area is parked for the current build"
+>   message with a link back to login; portal content is not exposed.
+> - Login page now shows only Client and Team portal cards. Operator and Owner cards removed.
+>   `<code>` route path display removed from cards. Badges removed. Footer note updated.
+>   Success message updated from "preview" to "portal" language.
+> - Login routes: `faraz@client.com` / `farazclient` → Client Portal;
+>   `faraz@team.com` / `farazteam` → Team Portal.
+>   Operator/Owner credentials removed from `devCredentials.ts`.
+> - Placeholder/dev auth remains only. No Supabase auth, no production users, no backend writes,
+>   no storage, no payments, no publishing, no notifications.
+> - No Owner/Operator page files deleted.
+> - Free Audit, Client Portal, and Team Portal unaffected.
+> - Typecheck: pass.
+
 > **2026-05-28 — Touch-up pass: fake image removal, report hierarchy, repetition reduction**
 >
 > - `client-updates.tsx`: removed `FOOD_IMGS` demo food-photo strip; replaced with neutral icon placeholder cells. Disclaimer updated to "Post thumbnails will appear here once your restaurant's media is connected."

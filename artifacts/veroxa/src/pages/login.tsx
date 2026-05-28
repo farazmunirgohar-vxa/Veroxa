@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Link, useLocation } from "wouter";
-import { ArrowLeft, ArrowRight, BarChart2, CheckCircle2, Hexagon, Lock, Mail, Settings2, ShieldAlert, Users, Utensils } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Hexagon, Lock, Mail, ShieldAlert, Users, Utensils } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,8 +21,6 @@ const roles = [
     iconClass: "bg-blue-500/10 text-blue-500",
     glow: "from-blue-500/15 to-transparent",
     testid: "role-card-client",
-    badge: "Public Preview",
-    badgeClass: "text-blue-400/70",
   },
   {
     href: "/demo/team/dashboard",
@@ -32,30 +30,6 @@ const roles = [
     iconClass: "bg-emerald-500/10 text-emerald-500",
     glow: "from-emerald-500/15 to-transparent",
     testid: "role-card-team",
-    badge: "Demo Access Required",
-    badgeClass: "text-amber-400/70",
-  },
-  {
-    href: "/demo/operator/operator-os",
-    icon: Settings2,
-    label: "Operator Portal",
-    description: "Agency operations — client health, active alerts, failed posts, and report approvals.",
-    iconClass: "bg-amber-500/10 text-amber-500",
-    glow: "from-amber-500/15 to-transparent",
-    testid: "role-card-operator",
-    badge: "Demo Access Required",
-    badgeClass: "text-amber-400/70",
-  },
-  {
-    href: "/demo/owner/executive-dashboard",
-    icon: BarChart2,
-    label: "Owner Portal",
-    description: "Agency owner view — MRR, active clients, health trends, and critical alerts.",
-    iconClass: "bg-primary/10 text-primary",
-    glow: "from-primary/20 to-transparent",
-    testid: "role-card-owner",
-    badge: "Demo Access Required",
-    badgeClass: "text-amber-400/70",
   },
 ];
 
@@ -101,7 +75,7 @@ export default function LoginPage() {
       }
       setSignInState({
         kind: "success",
-        message: `Routing to ${role} preview…`,
+        message: `Routing to ${role} portal…`,
       });
       setLocation(getDevRouteForRole(role));
       return;
@@ -205,7 +179,7 @@ export default function LoginPage() {
         <div className="text-center mb-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/10 text-primary text-[11px] font-semibold tracking-wide mb-6">
             <ShieldAlert className="w-3 h-3" />
-            Role-based access — sign in to enter your portal
+            Sign in to access your portal
           </div>
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4" data-testid="login-heading">
             Access Veroxa
@@ -227,13 +201,10 @@ export default function LoginPage() {
               <div className="h-full p-7 rounded-2xl border border-border bg-card hover:bg-accent/30 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/5 relative overflow-hidden">
                 <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl ${role.glow} blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
 
-                <div className="flex items-start justify-between mb-5">
+                <div className="mb-5">
                   <div className={`w-12 h-12 rounded-xl ${role.iconClass} flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300`}>
                     <role.icon className="w-6 h-6" />
                   </div>
-                  <span className={`text-[10px] font-semibold uppercase tracking-widest mt-2 ${role.badgeClass}`}>
-                    {role.badge}
-                  </span>
                 </div>
 
                 <h2 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">
@@ -243,10 +214,9 @@ export default function LoginPage() {
                   {role.description}
                 </p>
 
-                <div className="flex items-center justify-between pt-4 border-t border-border/40">
-                  <code className="text-[11px] text-muted-foreground font-mono truncate">{role.href}</code>
+                <div className="flex items-center justify-end pt-4 border-t border-border/40">
                   <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary group-hover:gap-2.5 transition-all">
-                    Preview Portal
+                    Open Portal
                     <ArrowRight className="w-3.5 h-3.5" />
                   </span>
                 </div>
@@ -365,9 +335,8 @@ export default function LoginPage() {
 
         {/* Footer note */}
         <p className="text-center text-xs text-muted-foreground/70 mt-12 max-w-md mx-auto leading-relaxed">
-          Sign in with your Veroxa account credentials to be routed to your matching portal.
-          Client Portal preview is publicly accessible.
-          Team, Operator, and Owner portals require demo access.
+          Sign in with your Veroxa account credentials to be routed to your portal.
+          Client Portal is publicly accessible. Team Portal requires login.
         </p>
       </div>
     </div>
