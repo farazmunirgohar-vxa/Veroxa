@@ -239,6 +239,12 @@ export default function FreeAudit() {
   const [strategiesTried, setStrategiesTried] = useState<string[] | undefined>(
     undefined,
   );
+  const [liveTotalRaw, setLiveTotalRaw] = useState<number | undefined>(
+    undefined,
+  );
+  const [liveTotalDisplayed, setLiveTotalDisplayed] = useState<
+    number | undefined
+  >(undefined);
   const [isSearching, setIsSearching] = useState(false);
   const [liveProfile, setLiveProfile] = useState<LiveRestaurantProfile | null>(
     null,
@@ -335,6 +341,8 @@ export default function FreeAudit() {
       if (live.mode === "live" && live.candidates.length > 0) {
         setSearchMode("live");
         setStrategiesTried(live.strategiesTried);
+        setLiveTotalRaw(live.totalRawCandidates);
+        setLiveTotalDisplayed(live.totalDisplayedCandidates);
         setCandidateResults(
           live.candidates.map((c) => ({
             source: "live" as const,
@@ -358,6 +366,8 @@ export default function FreeAudit() {
           state: input.state,
         });
         setStrategiesTried(undefined);
+        setLiveTotalRaw(undefined);
+        setLiveTotalDisplayed(undefined);
         setSearchMode(
           live.mode === "not_configured" ? "not_configured" : "fixture_fallback",
         );
@@ -668,19 +678,40 @@ export default function FreeAudit() {
               </p>
             )}
             {candidateSearchRan && !isSearching && searchMode === "live" && (
-              <p
-                className="text-[12px] text-muted-foreground mt-3"
-                data-testid="restaurant-search-mode-note"
-              >
-                {strategiesTried &&
-                strategiesTried.length > 1 &&
-                strategiesTried.some(
-                  (s) =>
-                    s !== "autocomplete" && s !== "broad_name_city_state",
-                )
-                  ? "We broadened the search to find more possible matches."
-                  : "Live Google lookup found possible matches."}
-              </p>
+              <div className="mt-3 space-y-1">
+                <p
+                  className="text-[12px] text-muted-foreground"
+                  data-testid="restaurant-search-mode-note"
+                >
+                  {candidateResults.length > 0 &&
+                  candidateResults.every(
+                    (c) => c.source === "live" && c.matchConfidence === "low",
+                  )
+                    ? "We found possible matches. Please select the correct restaurant or continue manually."
+                    : strategiesTried &&
+                        strategiesTried.some(
+                          (s) =>
+                            s !== "autocomplete" &&
+                            s !== "broad_name_city_state",
+                        )
+                      ? "We broadened the search to find more possible matches."
+                      : "Live Google lookup found possible matches."}
+                </p>
+                {(strategiesTried || liveTotalRaw !== undefined) && (
+                  <p className="text-[11px] text-muted-foreground/50">
+                    {[
+                      strategiesTried
+                        ? `Search strategies tried: ${strategiesTried.length}`
+                        : null,
+                      liveTotalRaw !== undefined
+                        ? `Candidates checked: ${liveTotalRaw}`
+                        : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </p>
+                )}
+              </div>
             )}
             {candidateSearchRan && !isSearching && searchMode !== "live" && (
               <p
@@ -843,17 +874,31 @@ export default function FreeAudit() {
                     data-testid="restaurant-search-empty"
                   >
                     <p className="text-sm font-semibold">
-                      No exact live match found.
+                      No live match found yet.
                     </p>
                     <p className="text-[12px] text-muted-foreground mt-1">
-                      No exact live match found yet — you can still continue
-                      manually and Veroxa can review it.
+                      Try a shorter name, alternate spelling, or continue
+                      manually — Veroxa can still review it.
                     </p>
                     <p className="text-[12px] text-muted-foreground/80 mt-1">
-                      Tip: If the restaurant name is not appearing, try the
-                      main word only — for example "Selda" instead of the
-                      full name.
+                      Tip: Some restaurants appear under a different Google
+                      listing name. Try the main word only — for example
+                      "Selda" instead of the full name.
                     </p>
+                    {(strategiesTried || liveTotalRaw !== undefined) && (
+                      <p className="text-[11px] text-muted-foreground/40 mt-2">
+                        {[
+                          strategiesTried
+                            ? `Strategies tried: ${strategiesTried.length}`
+                            : null,
+                          liveTotalRaw !== undefined
+                            ? `Candidates checked: ${liveTotalRaw}`
+                            : null,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </p>
+                    )}
                   </div>
                 ) : (
                   <>

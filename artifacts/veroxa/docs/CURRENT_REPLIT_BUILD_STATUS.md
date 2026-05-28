@@ -1,5 +1,31 @@
 # Current Replit Build Status
 
+> **2026-05-28 — Live restaurant discovery: broader fallback strategies + safe diagnostics (Free Audit)**
+>
+> - Live restaurant discovery now shows plausible lower-confidence matches.
+>   Short or ambiguous names like "Selda" are handled with broader fallback
+>   strategies: `name_restaurant_only`, `name_cafe_only`,
+>   `name_city_state_abbr` (explicit two-letter abbr), `name_state_only`.
+>   All candidates are returned regardless of food-type classification; food
+>   candidates ranked higher but non-food candidates not hidden.
+> - Safe search diagnostics added to API response: `totalRawCandidates`
+>   (pre-dedup), `totalDisplayedCandidates` (post-dedup + cap),
+>   `fallbackReason` (human-readable note when broader strategies were used),
+>   `searchMode: "live_google"`. No API key, no raw Google error bodies.
+> - UI search result messaging updated:
+>   - All-low-confidence candidates → "We found possible matches. Please
+>     select the correct restaurant or continue manually."
+>   - Broader strategies used → "We broadened the search to find more
+>     possible matches."
+>   - Normal → "Live Google lookup found possible matches."
+>   - Empty state → "No live match found yet. Try a shorter name, alternate
+>     spelling, or continue manually."
+>   - Tip: "Some restaurants appear under a different Google listing name."
+> - Small collapsed debug line added below mode note: "Search strategies
+>   tried: X · Candidates checked: Y" — does not expose technical errors.
+> - Cuisine remains not required. No scraping, no API key exposure, no
+>   Supabase writes. Manual continue remains available.
+
 > **2026-05-28 — Multi-strategy live restaurant discovery added (Free Audit)**
 >
 > - Live restaurant discovery now runs Places Autocomplete (New) and up to

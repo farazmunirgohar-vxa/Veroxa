@@ -31,6 +31,14 @@ export interface LiveSearchResponse {
   strategiesTried?: string[];
   /** Total deduplicated candidates returned. */
   candidateCount?: number;
+  /** Total raw candidates before dedup (across all strategies). */
+  totalRawCandidates?: number;
+  /** Total candidates shown after dedup + cap. */
+  totalDisplayedCandidates?: number;
+  /** Human-readable note on why broader strategies were used. */
+  fallbackReason?: string;
+  /** "live_google" on the live path. */
+  searchMode?: "live_google" | "preview_fallback" | "manual";
 }
 
 export interface LiveRestaurantProfile {
@@ -108,6 +116,24 @@ export async function searchLiveRestaurantCandidates(input: {
       candidateCount:
         typeof data.candidateCount === "number"
           ? data.candidateCount
+          : undefined,
+      totalRawCandidates:
+        typeof data.totalRawCandidates === "number"
+          ? data.totalRawCandidates
+          : undefined,
+      totalDisplayedCandidates:
+        typeof data.totalDisplayedCandidates === "number"
+          ? data.totalDisplayedCandidates
+          : undefined,
+      fallbackReason:
+        typeof data.fallbackReason === "string"
+          ? data.fallbackReason
+          : undefined,
+      searchMode:
+        data.searchMode === "live_google" ||
+        data.searchMode === "preview_fallback" ||
+        data.searchMode === "manual"
+          ? data.searchMode
           : undefined,
     };
   } catch {

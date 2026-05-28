@@ -25,6 +25,14 @@ export interface LiveRestaurantSearchResult {
   strategiesTried?: string[];
   /** Total candidates returned (after dedup). */
   candidateCount?: number;
+  /** Total raw candidate objects accumulated across all strategies (pre-dedup). */
+  totalRawCandidates?: number;
+  /** Total candidates shown after dedup + cap. */
+  totalDisplayedCandidates?: number;
+  /** Human-readable note on why broader strategies were used. */
+  fallbackReason?: string;
+  /** Always "live_google" on the live path. */
+  searchMode?: "live_google" | "preview_fallback" | "manual";
 }
 
 export interface LiveRestaurantProfile {
@@ -590,9 +598,26 @@ export async function searchRealRestaurants(input: {
         {
           query: name,
           label: "name_location_biased",
-          extra: bias ? biasBody : { locationBias: undefined },
+          extra: bias ? biasBody : {},
         },
-      ].filter((s) => bias || s.label !== "name_location_biased" || !bias); // only include location biased if bias available
+        // Without city/state — city suffix can confuse Google for short/ambiguous names
+        { query: `${name} restaurant`, label: "name_restaurant_only", extra: biasBody },
+        { query: `${name} cafe`, label: "name_cafe_only", extra: biasBody },
+        // Explicit two-letter state abbreviation e.g. "Selda San Antonio TX"
+        ...(city && state.length === 2
+          ? [
+              {
+                query: `${name} ${city} ${state.toUpperCase()}`,
+                label: "name_city_state_abbr",
+                extra: biasBody,
+              },
+            ]
+          : []),
+        // Full state name only e.g. "Selda Texas"
+        ...(state
+          ? [{ query: `${name} ${state}`, label: "name_state_only", extra: biasBody }]
+          : []),
+      ];
 
     for (const strategy of textStrategies) {
       // Stop early if we already have plenty of high-confidence candidates
@@ -616,9 +641,18 @@ export async function searchRealRestaurants(input: {
     clearTimeout(timeout);
 
     // ---- Dedupe, rank, cap ------------------------------------------------
+    const totalRawCandidates = allCandidates.length;
     const deduped = dedupeAndMerge(allCandidates, []);
     const ranked = rankCandidates(deduped, input);
     const final = ranked.slice(0, 12);
+
+    const broadStrategiesUsed = strategiesTried.filter(
+      (s) => s !== "autocomplete" && s !== "broad_name_city_state",
+    );
+    const fallbackReason =
+      broadStrategiesUsed.length > 0 && final.length > 0
+        ? "Broader search strategies were used to find possible matches."
+        : undefined;
 
     if (final.length === 0) {
       return {
@@ -627,6 +661,9 @@ export async function searchRealRestaurants(input: {
         message: "No matches found for this restaurant.",
         strategiesTried,
         candidateCount: 0,
+        totalRawCandidates,
+        totalDisplayedCandidates: 0,
+        searchMode: "live_google",
       };
     }
 
@@ -635,6 +672,10 @@ export async function searchRealRestaurants(input: {
       candidates: final,
       strategiesTried,
       candidateCount: final.length,
+      totalRawCandidates,
+      totalDisplayedCandidates: final.length,
+      fallbackReason,
+      searchMode: "live_google",
     };
   } catch (err) {
     clearTimeout(timeout);
@@ -644,6 +685,7 @@ export async function searchRealRestaurants(input: {
       candidates: [],
       message: "Live lookup is temporarily unavailable.",
       strategiesTried,
+      searchMode: "live_google",
     };
   }
 }
