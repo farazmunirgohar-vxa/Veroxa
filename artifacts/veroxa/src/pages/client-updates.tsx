@@ -381,8 +381,7 @@ export default function ClientUpdates() {
       </div>
 
       <p className="mt-6 text-center text-[11px] text-muted-foreground">
-        Previous-week figures are illustrative until the reporting backend is
-        connected. Live workflow activity above reflects your real submissions.
+        Figures shown are for illustration. Your recent activity updates as Veroxa works on your account.
       </p>
     </PortalLayout>
   );

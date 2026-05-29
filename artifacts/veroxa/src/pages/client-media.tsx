@@ -39,7 +39,6 @@ import {
 import { clientTeamWorkRepository } from "@/lib/repositories";
 import { CLIENT_AI_DISCLOSURE } from "@/lib/ai/aiAgentTypes";
 import { analyzeRestaurantContent } from "@/lib/content/restaurantContentIntelligence";
-import { Brain } from "lucide-react";
 import { createWorkflowItem } from "@/lib/workflow/workflowRepository";
 
 const SHOWCASE_ID = "demo-a";
@@ -183,7 +182,7 @@ export default function ClientMedia() {
       >
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <Brain className="w-4 h-4 text-primary" />
+            <CheckCircle2 className="w-4 h-4 text-primary" />
             How Veroxa reviews your uploads
           </CardTitle>
         </CardHeader>

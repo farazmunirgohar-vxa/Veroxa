@@ -198,16 +198,14 @@ export default function ClientReports() {
               </div>
             ))}
             <p className="text-[10px] text-muted-foreground italic pt-1">
-              Performance figures connect after the reporting backend is
-              activated.
+              Performance data will appear here once your account reporting is active.
             </p>
           </CardContent>
         </Card>
       )}
 
       <p className="mt-4 text-center text-[11px] text-muted-foreground">
-        Report figures above are illustrative until the reporting backend is
-        connected. Items in “Ready for your report” reflect your real workflow.
+        Report figures shown are for illustration. Items marked ready reflect your real account activity.
       </p>
     </PortalLayout>
   );

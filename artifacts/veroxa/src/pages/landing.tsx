@@ -62,7 +62,7 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {[
             { label: "Upload media",     sub: "Phone photos welcome" },
-            { label: "AI drafts captions", sub: "3 angle variants" },
+            { label: "Captions prepared", sub: "Multiple options ready" },
             { label: "Team reviews",     sub: "Before anything posts" },
             { label: "Auto-scheduled",   sub: "Right time, right platform" },
             { label: "Google optimised", sub: "Profile + local SEO" },
@@ -84,8 +84,8 @@ export default function LandingPage() {
             <div className="text-xs text-muted-foreground leading-snug">Built specifically around restaurant visibility, content, Google presence, and consistency.</div>
           </div>
           <div className="text-center px-4">
-            <div className="text-sm font-bold text-foreground mb-1" data-testid="signal-role-based">Role-Based Portal</div>
-            <div className="text-xs text-muted-foreground leading-snug">Client, Team, Operator, and Owner views keep responsibilities clear.</div>
+            <div className="text-sm font-bold text-foreground mb-1" data-testid="signal-role-based">Client + Team Access</div>
+            <div className="text-xs text-muted-foreground leading-snug">Separate client and team access keep responsibilities clear.</div>
           </div>
           <div className="text-center px-4">
             <div className="text-sm font-bold text-foreground mb-1" data-testid="signal-google-social">Google + Social Focus</div>

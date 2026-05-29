@@ -341,14 +341,13 @@ export default function ClientRequests() {
           <div className="pt-2 border-t border-border/50 space-y-1.5">
             <Input
               type="text"
-              placeholder="Live messaging will connect after backend activation."
+              placeholder="Direct replies coming soon."
               disabled
               className="h-9 text-xs"
               data-testid="input-client-thread-disabled"
             />
             <p className="text-[10px] text-muted-foreground">
-              Live messaging connects after backend activation. To reply now, use
-              the input fields above.
+              Direct replies are coming soon. Use the fields above to respond for now.
             </p>
           </div>
         </CardContent>

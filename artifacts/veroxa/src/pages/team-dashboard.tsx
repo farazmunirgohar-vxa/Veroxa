@@ -194,7 +194,7 @@ export default function TeamDashboard() {
             ))}
         </div>
         <p className="text-[11px] text-muted-foreground/60 mt-2">
-          Derived from the client/team workflow foundation (backend pending).
+          Derived from client submissions in the workflow foundation.
         </p>
       </div>
 
@@ -205,7 +205,7 @@ export default function TeamDashboard() {
             Media review queue
           </h3>
           <span className="text-xs text-muted-foreground">
-            Thumbnails pending storage
+            Thumbnails not yet available
           </span>
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
