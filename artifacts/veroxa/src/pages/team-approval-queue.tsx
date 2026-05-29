@@ -13,6 +13,7 @@ import {
 import {
   PREPARED_ACTION_PRIORITY_LABELS,
   type PreparedAction,
+  type PreparedActionId,
   type PreparedActionPriority,
 } from "@/domain/preparedActions";
 
@@ -61,7 +62,7 @@ export default function TeamApprovalQueue() {
 
   const handlers = {
     onApprove: preparedActionRepository.markApproved,
-    onEditLater: (id: string) => preparedActionRepository.updatePreparedActionStatus(id, "edited"),
+    onEditLater: (id: PreparedActionId) => preparedActionRepository.updatePreparedActionStatus(id, "edited"),
     onAskClient: preparedActionRepository.markNeedsClientConfirmation,
     onSkip: preparedActionRepository.markSkipped,
     onQueueForExecution: preparedActionRepository.markQueuedForExecution,

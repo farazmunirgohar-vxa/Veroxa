@@ -124,7 +124,7 @@ export const demoPreparedActionSeeds: PreparedActionSeed[] = [
   {
     id: "PA-DEMO-006",
     clientId: "demo-a",
-    channel: "internal_task",
+    channel: "social_media",
     type: "daily_customer_push",
     source: "daily_opportunity_engine",
     title: "Lunch push prepared",
