@@ -176,10 +176,10 @@ export default function ServicesPage() {
             </div>
           </div>
           <p className="text-muted-foreground mb-8 max-w-xl">
-            Add paid advertising management to Complete Online Presence
-            (+$497/mo), or run Ads Management on its own ($997/mo). Founding
-            clients receive 50% off for the first year. Ad spend is always
-            separate and paid by the restaurant directly to the ad platform.
+            Add paid advertising management to Complete Online Presence for
+            +$1,500/mo. Ads Management is only available as an add-on to
+            Complete Online Presence. Ad spend is always separate and paid by
+            the restaurant directly to the ad platform.
           </p>
           <div className="grid md:grid-cols-2 gap-x-12 gap-y-3 mb-8">
             {[

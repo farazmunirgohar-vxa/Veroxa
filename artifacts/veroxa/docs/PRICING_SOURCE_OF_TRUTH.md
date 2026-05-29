@@ -1,41 +1,88 @@
 # Veroxa Pricing — Source of Truth
 
-Last updated: 2026-05-27
+Last updated: 2026-05-29
 
 This document is authoritative. All UI copy, demo fixtures, engine logic, and
 docs that mention plan price values must agree with this file. The runtime
 source of truth is `artifacts/veroxa/src/data/pricing/veroxaPricing.ts`.
 
-## Plans
+---
 
-There are four plans. Standard prices apply after the first year. Founding
-client prices are 50% off, available to early/founding restaurant partners
-for the first year only.
+## Active public plans
 
-| Plan ID                    | Label                       | Standard / mo | Founding 1st year / mo | Notes                                                                 |
-|----------------------------|-----------------------------|--------------:|-----------------------:|-----------------------------------------------------------------------|
-| `google_optimization`      | Google Optimization         |          $477 |                  $239  | Google Search SEO, Google Maps SEO, GBP, reviews support.             |
-| `complete_online_presence` | Complete Online Presence    |          $977 |                  $489  | Facebook, Instagram, TikTok, Google Optimization, full team workflow. |
-| `ads_addon`                | Ads Add-on                  |         +$497 |                 +$249  | Paired with Complete Online Presence. Ad spend separate.              |
-| `ads_standalone`           | Ads Management Only         |          $997 |                  $499  | Standalone advertising management. Ad spend separate.                 |
+### Complete Online Presence
 
-## Complete Online Presence + Ads Add-on (combined service total)
+The core Veroxa system. Term-based pricing (same service at all terms):
 
-This is **not** a separate plan. It is the two line items added together so
-sales conversations can quote a single number. Always present it as two line
-items plus a total — never as a standalone bundle.
+| Term          | Monthly price |
+|---------------|:-------------:|
+| 12-month      |      $997     |
+| 6-month       |    $1,097     |
+| 3-month       |    $1,197     |
+| No-contract   |    $1,497     |
 
-| View                     | Complete Online Presence | Ads Add-on | Combined total (before ad spend) |
-|--------------------------|-------------------------:|-----------:|---------------------------------:|
-| Standard                 |                    $977  |     +$497  |                          $1,474  |
-| Founding (first year)    |                    $489  |     +$249  |                            $738  |
+### Ads Management (add-on)
 
-## Founding Client Offer
+Available as an add-on to Complete Online Presence **only** — not sold standalone.
 
-- 50% off for the first year.
-- Available only to early/founding restaurant partners.
-- After the first year, standard pricing applies.
-- Ad spend is always separate (founding offer does not subsidize ad spend).
+| Term          | Monthly price |
+|---------------|:-------------:|
+| All terms     |    $1,500     |
+
+Ads Management carries no term discount — it is a flat $1,500/mo regardless of
+the Complete Online Presence commitment term selected.
+
+### Complete Online Presence + Ads Management (combined totals)
+
+This is **not** a separate "bundle" plan. It is the two line items added
+together so sales conversations can quote a single number.
+
+| Term          | COP     | Ads    | Combined total |
+|---------------|--------:|-------:|---------------:|
+| 12-month      |   $997  | $1,500 |       $1,797   |
+| 6-month       | $1,097  | $1,500 |       $1,897   |
+| 3-month       | $1,197  | $1,500 |       $1,997   |
+| No-contract   | $1,497  | $1,500 |       $2,297   |
+
+---
+
+## Hidden / internal plans
+
+These plan IDs exist in `veroxaPricing.ts` and are referenced by the Free Audit
+recommendation engine and internal lead-scoring. They are **not** shown on the
+public Pricing page or any public copy.
+
+| Plan ID              | Status   | publicVisible | Internal price | Notes                                    |
+|----------------------|----------|:---:|-------:|------------------------------------------|
+| `google_optimization` | retired | false | $477/mo | Free Audit / lead-scoring compat only   |
+| `ads_standalone`      | active  | false | $2,000/mo | Internal reference; dependency audit pending |
+
+### Mapping retired plans to public offers (for audit output display)
+
+If internal audit logic recommends a retired plan, map the customer-facing
+label to the nearest active offer:
+
+| Internal recommendation  | Public label to show                               |
+|--------------------------|----------------------------------------------------|
+| Google Optimization      | Complete Online Presence                           |
+| Ads Management Only      | Ads Management add-on (or COP + Ads if appropriate)|
+
+The internal reason/scoring for the retired plan ID is preserved; only the
+public-facing display label is mapped forward.
+
+---
+
+## Founding-client offer
+
+The 50% first-year founding-client offer **is no longer active** in the current
+public pricing. Remove it from all customer-facing surfaces (pricing page,
+homepage, services page, CTAs, sales copy).
+
+The `priceMonthlyFounding` field and `FOUNDING_CLIENT_OFFER_DISCLAIMER` export
+remain in `veroxaPricing.ts` because internal audit output formatters still
+reference them. Do not surface them publicly.
+
+---
 
 ## Ad spend
 
@@ -43,85 +90,23 @@ Ad spend is **always separate** and is paid by the restaurant directly to the
 ad platform (Google, Meta, TikTok). Veroxa manages the advertising system; the
 restaurant controls and pays the actual ad budget. No plan includes ad spend.
 
+---
+
 ## Complete Online Presence — setup support
 
 If the restaurant does not already have a needed website, Facebook page,
 Instagram account, TikTok account, or Google Business Profile, Veroxa will
 help create/setup the required basic account/page/presence as part of
-onboarding. This is **not** a custom website development package. Wording to
-use: "basic website/presence setup if needed", "basic account/page setup if
-needed", "setup support for required online presence".
+onboarding. This is **not** a custom website development package.
 
-## What was removed (DO NOT reintroduce)
+---
 
-- ❌ Separate **Bundle** plan and `$1,497` bundle price.
-- ❌ Plan label "Google Presence Starter" (renamed to **Google Optimization**).
-- ❌ Plan label "Ads Management" at flat `$977` (replaced by Ads Add-on at
-  `+$497` and Ads Management Only at `$997`).
-- ❌ Term tiers: 3-month / 6-month / 12-month / no-contract price ladders.
-- ❌ Old COP prices: $997, $1,097, $1,197, $1,497 as separate tiers.
-- ❌ Old bundle prices: $1,797, $1,897, $1,997, $2,297.
-- ❌ Old ads pricing: $1,500/mo add-on and $2,000/mo standalone.
-- ❌ Vague tier labels used as pricing tiers: `Lite`, `Growth`, `Pro`,
-  `Premium`, `Essential`, `Enterprise`, `Starter`, `Elite`.
-- ❌ Promising a custom website build.
+## What was removed (DO NOT reintroduce on public pages)
 
-## Where this is referenced
-
-- Runtime: `src/data/pricing/veroxaPricing.ts` (canonical)
-- Public pricing page: `src/pages/pricing.tsx`
-- Public services page: `src/pages/services.tsx`
-- Demo financials: `src/data/demo/demoFinancials.ts` (demoServicePlans, MRR,
-  revenue trend)
-- Demo client fixtures: `src/data/demo/demoClients.ts` (servicePlan,
-  monthlyFee on each demo client)
-- Client health engine: `src/domain/clientHealth/engine.ts`
-  (demoPlanPrice map)
-- Owner OS banner copy: `src/pages/owner-os.tsx`
-- Owner analytics per-client meta: `src/pages/owner-client-analytics.tsx`
-
-## Payment integration
-
-No payment processing, billing, or checkout system is connected to this app.
-All pricing shown is for sales/quoting purposes only. Do not add Stripe,
-PayPal, or any checkout logic without a formal owner decision.
-
-## Change policy
-
-Pricing is owner-locked. Do not change any price without explicit owner
-approval. After approval:
-
-1. Update `src/data/pricing/veroxaPricing.ts` (canonical runtime file).
-2. Update this document to match.
-3. Update `docs/PUBLIC_PRICING_AND_SERVICES.md`.
-4. Update `docs/SERVICE_DEFINITION_SOURCE_OF_TRUTH.md`.
-5. Update `src/data/demo/demoFinancials.ts` (demoServicePlans, MRR, trend).
-6. Update `src/data/demo/demoClients.ts` (monthlyFee on affected fixtures).
-7. Update `src/domain/clientHealth/engine.ts` (demoPlanPrice map).
-
-## Internal demo fixture IDs
-
-Sanitized to neutral IDs — no real restaurant names anywhere in code.
-
-| Fixture ID | Display name              | Plan                                         | Monthly fee |
-|------------|---------------------------|----------------------------------------------|------------:|
-| `demo-a`   | Demo Grill House          | Complete Online Presence                     |       $977  |
-| `demo-b`   | Demo Taco Bar             | Complete Online Presence                     |       $977  |
-| `demo-c`   | Demo Mediterranean Grill  | Complete Online Presence + Ads Add-on        |     $1,474  |
-| `demo-d`   | Demo Cafe                 | Google Optimization                          |       $477  |
-
-Resulting demo MRR: $977 + $977 + $1,474 + $477 = **$3,905 / mo**.
-
-## M026 audit-package recommendations
-
-Audit package recommendations must use locked pricing and recommend based on
-weak spots, not highest price. The audit must never bypass
-`@/data/pricing/veroxaPricing` or hardcode dollar amounts. Foundation comes
-before ads.
-
-## M027 confirmation
-
-Audit recommendations use locked pricing from `@/data/pricing/veroxaPricing`
-and recommend based on weak spots, never the highest price. Even with the
-simplified inputs of M027A, the recommender must not default to a more
-expensive package without weak-spot evidence.
+- ❌ Old flat-rate Complete Online Presence at `$977/mo`.
+- ❌ 50% founding-client first-year offer on public pricing.
+- ❌ Old Ads Add-on at `+$477/mo` or `+$497/mo`.
+- ❌ Combined totals of `$1,454/mo` or `$1,474/mo` or `$965/mo`.
+- ❌ Google Optimization as a standalone public plan.
+- ❌ Ads Management Only as a public offer (hidden until dependency audit).
+- ❌ Separate "Bundle" plan label.
