@@ -44,7 +44,7 @@ export default function LandingPage() {
               Get Free Restaurant Audit <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
           </Link>
-          <Link href="/demo" data-testid="btn-hero-demo">
+          <Link href="/demo/client/dashboard" data-testid="btn-hero-demo">
             <Button size="lg" variant="outline" className="h-14 px-8 text-base border-border/50 hover:bg-accent/50 transition-colors">
               Experience the Demo
             </Button>
@@ -168,7 +168,7 @@ export default function LandingPage() {
             The demo shows what a restaurant owner would see inside Veroxa — dashboard, calendar,
             Google visibility summary, weekly updates, and monthly reports.
           </p>
-          <Link href="/demo" data-testid="btn-experience-demo">
+          <Link href="/demo/client/dashboard" data-testid="btn-experience-demo">
             <Button size="lg" className="h-12 px-8 font-semibold shadow-[0_0_20px_rgba(99,102,241,0.25)]">
               Experience Demo <ArrowRight className="ml-2 w-4 h-4" />
             </Button>

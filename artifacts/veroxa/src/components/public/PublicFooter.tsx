@@ -20,7 +20,7 @@ export default function PublicFooter() {
             <Link href="/pricing" className="hover:text-foreground transition-colors" data-testid="footer-link-pricing">
               Pricing
             </Link>
-            <Link href="/demo" className="hover:text-foreground transition-colors" data-testid="footer-link-demo">
+            <Link href="/demo/client/dashboard" className="hover:text-foreground transition-colors" data-testid="footer-link-demo">
               Demo
             </Link>
             <Link href="/login" className="hover:text-foreground transition-colors" data-testid="footer-link-login">

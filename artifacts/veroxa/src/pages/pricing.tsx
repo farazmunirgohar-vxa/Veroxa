@@ -400,7 +400,7 @@ export default function PricingPage() {
                 Start Complete Online Presence
               </Button>
             </a>
-            <Link href="/demo" data-testid="btn-pricing-cta-demo">
+            <Link href="/demo/client/dashboard" data-testid="btn-pricing-cta-demo">
               <Button
                 size="lg"
                 variant="ghost"

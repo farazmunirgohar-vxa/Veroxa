@@ -214,7 +214,7 @@ export default function ServicesPage() {
                 View Pricing <ArrowRight className="ml-2 w-4 h-4" />
               </Button>
             </Link>
-            <Link href="/demo" data-testid="btn-services-cta-demo">
+            <Link href="/demo/client/dashboard" data-testid="btn-services-cta-demo">
               <Button size="lg" variant="outline" className="h-12 px-7 border-border/60 hover:bg-accent/50">
                 Experience Demo
               </Button>

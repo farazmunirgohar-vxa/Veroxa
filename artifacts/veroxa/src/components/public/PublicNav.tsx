@@ -22,7 +22,7 @@ export default function PublicNav() {
         <Link href="/free-audit" className="hover:text-foreground transition-colors" data-testid="nav-link-free-audit">
           Free Audit
         </Link>
-        <Link href="/demo" className="hover:text-foreground transition-colors" data-testid="nav-link-demo">
+        <Link href="/demo/client/dashboard" className="hover:text-foreground transition-colors" data-testid="nav-link-demo">
           Demo Preview
         </Link>
         <Link href="/login" className="hover:text-foreground transition-colors" data-testid="nav-link-portal-access">
