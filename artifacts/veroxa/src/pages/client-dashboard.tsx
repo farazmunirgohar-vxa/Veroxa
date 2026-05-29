@@ -1,4 +1,4 @@
-import { CalendarDays, ImageIcon, Layers, BarChart2, Sparkles, ArrowRight, PlayCircle } from "lucide-react";
+import { CalendarDays, ImageIcon, Layers, BarChart2, ArrowRight, PlayCircle } from "lucide-react";
 import { Link } from "wouter";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,21 +9,9 @@ import { useClientPortalData } from "@/hooks/useClientPortalData";
 import { ClientKeepMovingCard } from "@/components/ClientExecutionReinforcement";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
 import { DemoFlowTimeline } from "@/components/demo/DemoVisuals";
-import { EvidenceRecommendationCard } from "@/components/evidence/EvidenceRecommendationCard";
-import { recommendNextPost } from "@/lib/evidence/evidenceSelectionEngine";
-import { WeeklyStrategySnapshot } from "@/components/intelligence/WeeklyStrategySnapshot";
-import {
-  buildAdaptiveRecommendations,
-  rankRecommendations,
-} from "@/lib/intelligence/adaptiveRules";
-import { demoClientDirection } from "@/data/direction/demoClientDirection";
-import { demoUploadSubmissions } from "@/data/uploadKeys/demoUploadSubmissions";
-import { getLocalDirectionRequests, subscribeToLocalDirectionRequests } from "@/lib/direction/localDirectionStore";
-import { getLocalUploadSubmissions, subscribeToLocalUploadSubmissions } from "@/lib/uploadKeys/localUploadStore";
-import { Compass } from "lucide-react";
 import { useEffect, useState } from "react";
 import { healthRepository, reportRepository, activityRepository, clientTeamWorkRepository } from "@/lib/repositories";
-import { CLIENT_AI_DISCLOSURE, CLIENT_AUTOMATION_DISCLOSURE } from "@/lib/ai/aiAgentTypes";
+import { CLIENT_AI_DISCLOSURE } from "@/lib/ai/aiAgentTypes";
 import { Brain } from "lucide-react";
 import {
   getClientWorkflowItems,
@@ -76,43 +64,9 @@ const upcomingSchedule = [
   { id: "up-3", day: "Sunday",   time: "6:15 PM",  platform: "Instagram", label: "Dinner Push"       },
 ];
 
-const clientEvidenceRec = recommendNextPost("demo-a");
-
-function computeClientWeeklyRecs() {
-  return rankRecommendations(
-    buildAdaptiveRecommendations({
-      clientId: "demo-a",
-      direction: [
-        ...getLocalDirectionRequests().filter((d) => d.clientId === "demo-a"),
-        ...demoClientDirection.filter((d) => d.clientId === "demo-a"),
-      ],
-      uploads: [
-        ...getLocalUploadSubmissions().filter((u) => u.restaurantId === "demo-a"),
-        ...demoUploadSubmissions.filter((u) => u.restaurantId === "demo-a"),
-      ],
-      workflow: [],
-    }),
-  );
-}
-
-function useClientWeeklyRecs() {
-  const [recs, setRecs] = useState(() => computeClientWeeklyRecs());
-  useEffect(() => {
-    const refresh = () => setRecs(computeClientWeeklyRecs());
-    refresh();
-    const u1 = subscribeToLocalDirectionRequests(refresh);
-    const u2 = subscribeToLocalUploadSubmissions(refresh);
-    return () => {
-      u1();
-      u2();
-    };
-  }, []);
-  return recs;
-}
 
 export default function ClientDashboard() {
   const { loading, data, source, dataSourceMessage } = useClientPortalData();
-  const clientWeeklyRecs = useClientWeeklyRecs();
   const workflowItems = useClientWorkflowItems("demo-a");
   const activeWorkflowItems = workflowItems.filter(
     (i) =>
@@ -186,20 +140,6 @@ export default function ClientDashboard() {
             <p className="text-xs text-muted-foreground leading-relaxed">
               {CLIENT_AI_DISCLOSURE}
             </p>
-            <p className="text-xs text-muted-foreground leading-relaxed mt-1.5">
-              {CLIENT_AUTOMATION_DISCLOSURE}
-            </p>
-            <div className="mt-2 flex flex-wrap gap-1.5 text-[10px]">
-              {(["Uploaded", "Being reviewed", "Needs your input", "Prepared by Veroxa", "Included in report"] as const).map((label) => (
-                <Badge
-                  key={label}
-                  variant="outline"
-                  className="border-border bg-muted/20 text-muted-foreground font-normal"
-                >
-                  {label}
-                </Badge>
-              ))}
-            </div>
           </div>
         </CardContent>
       </Card>
@@ -326,31 +266,6 @@ export default function ClientDashboard() {
         ))}
       </div>
 
-      {/* Direction Center CTA + Weekly Strategy Snapshot */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4" data-testid="section-direction-and-strategy">
-        <Card className="bg-card/50 border-border/50 lg:col-span-1" data-testid="card-direction-cta">
-          <CardContent className="p-5 flex flex-col gap-3">
-            <div className="flex items-center gap-2">
-              <Compass className="w-5 h-5 text-primary" />
-              <p className="text-sm font-semibold">What should Veroxa focus on this week?</p>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              You guide priorities. Veroxa handles the strategy, review, schedule, and
-              execution.
-            </p>
-            <Link
-              href="/client/direction"
-              className="inline-flex items-center gap-1 text-sm text-primary hover:underline self-start"
-              data-testid="link-open-direction-center"
-            >
-              Open Direction Center <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </CardContent>
-        </Card>
-        <div className="lg:col-span-2">
-          <WeeklyStrategySnapshot recommendations={clientWeeklyRecs} audience="client" />
-        </div>
-      </div>
 
       {/* This week's media — demo visual strip */}
       <div data-testid="section-week-media">
@@ -400,14 +315,6 @@ export default function ClientDashboard() {
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
             Upcoming content
           </h3>
-          <Link
-            href="/client/ai-draft-preview"
-            className="flex items-center gap-1 text-xs text-amber-300 hover:underline"
-            data-testid="link-ai-draft-preview"
-          >
-            <Sparkles className="h-3 w-3" />
-            See AI Draft Preview
-          </Link>
         </div>
         <Card className="bg-card/50 border-border/50">
           <CardHeader className="pb-2">
@@ -532,44 +439,7 @@ export default function ClientDashboard() {
         </Card>
       </div>
 
-      {/* CTA card — AI Draft Preview */}
-      <Card className="bg-amber-500/5 border-amber-500/30" data-testid="card-ai-draft-cta">
-        <CardContent className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <Sparkles className="h-4 w-4 text-amber-300" />
-              <p className="text-sm font-semibold text-foreground">See your photo become 3 posts</p>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Upload one food photo and watch Veroxa generate captions, angles, and a schedule.
-            </p>
-          </div>
-          <Link href="/client/ai-draft-preview">
-            <Button
-              size="sm"
-              className="bg-amber-500 text-amber-950 hover:bg-amber-400 flex-shrink-0"
-              data-testid="btn-ai-draft-cta"
-            >
-              Try AI Draft Preview
-              <ArrowRight className="ml-2 h-3.5 w-3.5" />
-            </Button>
-          </Link>
-        </CardContent>
-      </Card>
 
-      {/* Smart Recommendation — evidence engine */}
-      <div data-testid="section-smart-recommendation">
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-          Smart recommendation
-        </h3>
-        <EvidenceRecommendationCard
-          recommendation={clientEvidenceRec}
-          variant="client"
-          ctaHref="/demo/client/ai-draft-preview"
-          ctaLabel="Preview Drafts"
-          testId="client-evidence-recommendation"
-        />
-      </div>
 
       {/* This week at a glance */}
       <div>

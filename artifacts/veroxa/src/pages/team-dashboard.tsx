@@ -343,11 +343,6 @@ export default function TeamDashboard() {
           <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground inline-flex items-center gap-1.5">
             <Brain className="w-3.5 h-3.5" /> Adaptive Team Priorities
           </h3>
-          <Link href="/team/adaptive-intelligence">
-            <span className="flex items-center gap-1 text-xs text-primary hover:underline cursor-pointer">
-              Open Adaptive Intelligence <ArrowRight className="w-3 h-3" />
-            </span>
-          </Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <TeamAdaptiveTop3 />
@@ -480,11 +475,6 @@ export default function TeamDashboard() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg">Active Alerts</CardTitle>
-              <Link href="/team/alerts">
-                <span className="flex items-center gap-1 text-xs text-primary hover:underline cursor-pointer">
-                  View all <ArrowRight className="w-3 h-3" />
-                </span>
-              </Link>
             </div>
           </CardHeader>
           <CardContent className="space-y-2">

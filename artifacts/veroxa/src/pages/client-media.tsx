@@ -164,25 +164,11 @@ export default function ClientMedia() {
         <DataSourceBadge source={portalSource} message={portalSourceMessage} className="-mb-1" />
         <div className="flex flex-wrap items-center gap-3">
           <h2 className="text-3xl font-bold tracking-tight">Media Library</h2>
-          <Badge
-            variant="outline"
-            className="border-amber-500/40 text-amber-400 bg-amber-500/10"
-            data-testid="badge-storage-pending"
-          >
-            Storage pending
-          </Badge>
         </div>
         <p className="text-muted-foreground max-w-3xl">
           Upload photos and videos for the Veroxa team to review and turn into
           content. Submissions are tracked in your workflow.
         </p>
-        <div className="flex items-start gap-2 text-sm text-muted-foreground max-w-3xl">
-          <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
-          <span>
-            Storage pending — files are tracked in your workflow but not yet
-            stored until the storage connection is live.
-          </span>
-        </div>
       </div>
 
       {/* Why your photos matter — calm, blame-free reinforcement (client-safe). */}
@@ -205,32 +191,6 @@ export default function ClientMedia() {
           <p className="text-xs text-muted-foreground leading-relaxed">
             {CLIENT_AI_DISCLOSURE}
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-            <div className="rounded-md border border-border/60 bg-muted/10 p-3">
-              <p className="text-[10px] uppercase tracking-wider text-emerald-400 font-semibold mb-1">
-                AI-prepared suggestion
-              </p>
-              <p className="text-[11px] text-muted-foreground">
-                Strong shots get a content angle and a draft caption ready for team review.
-              </p>
-            </div>
-            <div className="rounded-md border border-border/60 bg-muted/10 p-3">
-              <p className="text-[10px] uppercase tracking-wider text-amber-400 font-semibold mb-1">
-                Needs team review
-              </p>
-              <p className="text-[11px] text-muted-foreground">
-                Mixed or borderline shots wait for a Veroxa team member to decide.
-              </p>
-            </div>
-            <div className="rounded-md border border-border/60 bg-muted/10 p-3">
-              <p className="text-[10px] uppercase tracking-wider text-sky-400 font-semibold mb-1">
-                Needs client context
-              </p>
-              <p className="text-[11px] text-muted-foreground">
-                If a shot is missing context, Veroxa will ask you a short question.
-              </p>
-            </div>
-          </div>
           <div className="rounded-md border border-border/40 bg-muted/5 p-3 text-[11px] text-muted-foreground">
             <span className="font-semibold text-foreground">Tip:</span> upload
             3–5 real photos or videos per week and add a short note when you

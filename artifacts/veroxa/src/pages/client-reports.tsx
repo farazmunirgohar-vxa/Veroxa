@@ -1,4 +1,4 @@
-import { ChevronRight, TrendingUp, Star, BarChart2, CalendarDays } from "lucide-react";
+import { ChevronRight, TrendingUp, Star, BarChart2, CalendarDays, CheckCircle2 } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,8 +6,6 @@ import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientPortalData } from "@/hooks/useClientPortalData";
 import { ClientReportsProgress } from "@/components/ClientExecutionReinforcement";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
-import { previewReportDraft } from "@/lib/ai/aiAgentPreviewEngine";
-import { Brain, CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   getClientWorkflowItems,
@@ -100,53 +98,6 @@ export default function ClientReports() {
         <ClientReportsProgress clientId={SHOWCASE_ID} />
       </div>
 
-      {/* AI-assisted report draft status — drafts always reviewed by Veroxa team. */}
-      {(() => {
-        const draft = previewReportDraft({
-          reportTitle: report.title,
-          cadence: "monthly",
-          hasPublishedPosts: false,
-          hasMetrics: false,
-        });
-        const statusTone =
-          draft.status === "ready"
-            ? "border-emerald-500/40 text-emerald-300 bg-emerald-500/10"
-            : "border-amber-500/40 text-amber-300 bg-amber-500/10";
-        return (
-          <Card
-            className="bg-card border-primary/20 mb-4"
-            data-testid="card-reports-ai-draft"
-          >
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold flex items-center justify-between gap-2 flex-wrap">
-                <span className="flex items-center gap-2">
-                  <Brain className="w-4 h-4 text-primary" />
-                  Report draft status
-                </span>
-                <div className="flex flex-wrap gap-1.5">
-                  <Badge variant="outline" className={`${statusTone} text-[10px]`}>
-                    AI-assisted draft prepared
-                  </Badge>
-                  <Badge variant="outline" className="border-amber-500/40 text-amber-300 bg-amber-500/10 text-[10px]">
-                    Team review needed
-                  </Badge>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <p className="text-[12px] text-foreground/85">{draft.draftSummary}</p>
-              {draft.missingDataFlags.length > 0 && (
-                <p className="text-[11px] text-muted-foreground">
-                  Performance metrics will connect after backend/reporting activation.
-                </p>
-              )}
-              <p className="text-[10px] text-muted-foreground italic">
-                Prepared with AI-assisted organization; final review by the Veroxa team.
-              </p>
-            </CardContent>
-          </Card>
-        );
-      })()}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Monthly report — live data from hook */}
