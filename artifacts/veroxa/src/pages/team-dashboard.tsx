@@ -22,35 +22,6 @@ import {
   demoTeamMetrics, demoWorkQueue, demoTeamAlerts, getRestaurantName,
 } from "@/data/demoData";
 import { clientTeamWorkRepository } from "@/lib/repositories";
-import {
-  buildAdaptiveRecommendations,
-  rankRecommendations,
-} from "@/lib/intelligence/adaptiveRules";
-import { AdaptiveRecommendationCard } from "@/components/intelligence/AdaptiveRecommendationCard";
-import { demoClientDirection } from "@/data/direction/demoClientDirection";
-import { demoUploadSubmissions } from "@/data/uploadKeys/demoUploadSubmissions";
-import { getLocalDirectionRequests, subscribeToLocalDirectionRequests } from "@/lib/direction/localDirectionStore";
-import { getLocalUploadSubmissions, subscribeToLocalUploadSubmissions } from "@/lib/uploadKeys/localUploadStore";
-import { Brain } from "lucide-react";
-import { useEffect, useState } from "react";
-import {
-  previewOperatorAssistant,
-  previewRiskFlags,
-  nextBestAction,
-} from "@/lib/ai/aiAgentPreviewEngine";
-import { TEAM_AI_DISCLOSURE } from "@/lib/ai/aiAgentTypes";
-import { previewAutomationSnapshot } from "@/lib/automation/automationPreviewEngine";
-import { ContentIntelligenceSummaryStrip } from "@/components/ContentIntelligencePanel";
-import {
-  LeadIntelligenceSummaryStrip,
-  LeadGenTasksList,
-  LeadLearningPanel,
-} from "@/components/LeadIntelligencePanel";
-import {
-  ExecutionIntelligenceSummaryStrip,
-  ExecutionHealthList,
-  EngineCompetitionPanel,
-} from "@/components/ExecutionIntelligencePanel";
 
 const mediaReviewQueue = [
   { id: "mrq-1", title: "Grilled platter — overhead", subtitle: "Demo Grill House · suggested: weekend feature",      status: "Approve",  tone: "good" as const },
@@ -67,7 +38,6 @@ const statCards = [
   { label: "Tasks Due Today",           value: demoTeamMetrics.tasksDueToday,           icon: CheckSquare,   color: "text-emerald-400" },
 ];
 
-// Work status → StatusBadge tone
 const workTone: Record<string, StatusBadgeTone> = {
   "Healthy":           "success",
   "Attention Needed":  "warning",
@@ -76,7 +46,6 @@ const workTone: Record<string, StatusBadgeTone> = {
   "Reporting Due":     "danger",
 };
 
-// Alert severity → StatusBadge tone
 const severityTone: Record<string, StatusBadgeTone> = {
   Critical: "danger",
   High:     "warning",
@@ -102,9 +71,7 @@ export default function TeamDashboard() {
         testId="banner-team-dashboard"
       />
 
-      {/* Live workflow command center — driven by the real workflow
-          foundation. Status changes persist (backend pending); nothing is
-          auto-sent, published, or sent to clients without team approval. */}
+      {/* Live workflow command center */}
       <div className="mb-4">
         <TeamWorkflowPanel
           title="Workflow command center"
@@ -113,165 +80,6 @@ export default function TeamDashboard() {
           testId="card-team-workflow-command-center"
           limit={8}
         />
-      </div>
-
-      {/* AI Operator Assistant — daily command-center snapshot. */}
-      {(() => {
-        const ready = clientTeamWorkRepository.getTeamReadyWorkItems();
-        const blocked = clientTeamWorkRepository.getTeamBlockedWorkItems();
-        const waiting = clientTeamWorkRepository.getTeamWaitingOnClientItems();
-        const inProgress = clientTeamWorkRepository.getTeamInProgressWorkItems();
-        const allActive = [...ready, ...inProgress, ...waiting, ...blocked];
-        const riskFlags = previewRiskFlags(allActive);
-        const nba = nextBestAction(allActive);
-        const automation = previewAutomationSnapshot(allActive);
-        const snapshot = previewOperatorAssistant({
-          readyForApprovalCount: ready.length,
-          blockedCount: blocked.length,
-          clientInputNeededCount: waiting.filter(
-            (w) => !blocked.some((b) => b.id === w.id),
-          ).length,
-          aiPreparedDraftsCount: inProgress.length,
-          topRiskFlags: riskFlags,
-        });
-        const tiles = [
-          { label: "Ready for approval", value: snapshot.readyForApprovalCount, color: "text-emerald-400" },
-          { label: "Blocked",            value: snapshot.blockedCount,          color: "text-rose-400"    },
-          { label: "Client input needed",value: snapshot.clientInputNeededCount,color: "text-amber-400"   },
-          { label: "AI-prepared drafts", value: snapshot.aiPreparedDraftsCount, color: "text-sky-400"     },
-        ];
-        return (
-          <Card
-            className="bg-card border-primary/20 mb-4"
-            data-testid="card-ai-operator-assistant"
-          >
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <Brain className="w-4 h-4 text-primary" />
-                AI Operator Assistant
-                <span className="text-[10px] text-muted-foreground font-normal">
-                  · daily command center
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {tiles.map((t) => (
-                  <div key={t.label} className="rounded-md border border-border/60 bg-muted/10 p-3">
-                    <p className={`text-2xl font-bold tabular-nums ${t.color}`}>{t.value}</p>
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1">
-                      {t.label}
-                    </p>
-                  </div>
-                ))}
-              </div>
-              <div className="rounded-md border border-primary/30 bg-primary/5 p-3">
-                <p className="text-[10px] uppercase tracking-wider text-primary font-semibold mb-1">
-                  Top recommendation
-                </p>
-                <p className="text-[12px] text-foreground/90">{snapshot.topRecommendation}</p>
-              </div>
-
-              {/* Next best action — single highest-leverage step. */}
-              <div className="rounded-md border border-emerald-500/30 bg-emerald-500/5 p-3">
-                <p className="text-[10px] uppercase tracking-wider text-emerald-400 font-semibold mb-1">
-                  Next best action · {nba.confidenceLevel} confidence
-                </p>
-                <p className="text-[12px] text-foreground/90">{nba.outputSummary}</p>
-                <p className="text-[11px] text-emerald-300/90 mt-0.5">
-                  Next: {nba.recommendedNextAction}
-                </p>
-              </div>
-
-              {/* Automation preview snapshot — prepared, not executed. */}
-              <div
-                className="rounded-md border border-border/60 bg-muted/10 p-3"
-                data-testid="card-automation-snapshot"
-              >
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">
-                  Automation preview · prepared, never auto-sent
-                </p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                  {[
-                    { label: "Prepared", value: automation.preparedCount, color: "text-emerald-400" },
-                    { label: "Awaiting approval", value: automation.awaitingApprovalCount, color: "text-amber-400" },
-                    { label: "Blocked", value: automation.blockedCount, color: "text-rose-400" },
-                    { label: "Future integration", value: automation.futureIntegrationCount, color: "text-sky-400" },
-                  ].map((t) => (
-                    <div key={t.label} className="rounded-md border border-border/50 bg-background/40 p-2">
-                      <p className={`text-lg font-bold tabular-nums ${t.color}`}>{t.value}</p>
-                      <p className="text-[9px] uppercase tracking-wider text-muted-foreground mt-0.5">
-                        {t.label}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-[10px] text-muted-foreground mt-2">
-                  Veroxa prepares tasks and reminders automatically. Every
-                  client-facing step still requires team approval — nothing is
-                  posted or sent on its own.
-                </p>
-              </div>
-              {snapshot.riskFlags.length > 0 && (
-                <div className="space-y-1.5">
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
-                    Risk flags ({snapshot.riskFlags.length})
-                  </p>
-                  {snapshot.riskFlags.map((flag, i) => {
-                    const tone =
-                      flag.level === "critical"
-                        ? "border-rose-500/40 bg-rose-500/10 text-rose-300"
-                        : flag.level === "warning"
-                        ? "border-amber-500/40 bg-amber-500/10 text-amber-300"
-                        : "border-sky-500/40 bg-sky-500/10 text-sky-300";
-                    return (
-                      <div key={i} className={`rounded-md border p-2 text-[11px] ${tone}`}>
-                        <p className="font-semibold">{flag.message}</p>
-                        <p className="opacity-90 mt-0.5">Next: {flag.nextHumanAction}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-              <p className="text-[10px] text-muted-foreground italic">
-                {TEAM_AI_DISCLOSURE}
-              </p>
-            </CardContent>
-          </Card>
-        );
-      })()}
-
-      {/* Restaurant Content Intelligence — compact pipeline summary across
-          active client submissions. Team-facing; drafts require approval. */}
-      {(() => {
-        const intelSubs = clientTeamWorkRepository
-          .getClientSubmissions("demo-a")
-          .concat(
-            clientTeamWorkRepository.getClientSubmissions("demo-b"),
-            clientTeamWorkRepository.getClientSubmissions("demo-c"),
-          )
-          .filter((s) => s.status !== "completed" && s.status !== "archived");
-        return <ContentIntelligenceSummaryStrip submissions={intelSubs} />;
-      })()}
-
-      {/* Lead Intelligence — rule-based scoring across saved audit leads.
-          Outreach drafts always require human review; nothing auto-sends. */}
-      <div className="mb-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="space-y-4">
-          <LeadIntelligenceSummaryStrip />
-          <LeadGenTasksList limit={4} />
-        </div>
-        <LeadLearningPanel />
-      </div>
-
-      {/* Execution Intelligence — retains clients (vs Lead Intelligence, which
-          brings them). Risk detail is team-only; nothing auto-sends. */}
-      <div className="mb-4">
-        <EngineCompetitionPanel />
-      </div>
-      <div className="mb-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <ExecutionIntelligenceSummaryStrip />
-        <ExecutionHealthList limit={4} />
       </div>
 
       {/* Stat grid */}
@@ -289,7 +97,7 @@ export default function TeamDashboard() {
         ))}
       </div>
 
-      {/* Client Submissions — workflow/communication snapshot. */}
+      {/* Client Submissions — workflow/communication snapshot */}
       {(() => {
         const summary = clientTeamWorkRepository.getTeamWorkCommunicationSummary();
         const readyForTeam = clientTeamWorkRepository.getTeamReadyWorkItems().length;
@@ -337,22 +145,7 @@ export default function TeamDashboard() {
         );
       })()}
 
-      {/* Adaptive Team Priorities — top 3 rule-based recommendations */}
-      <div className="mb-6" data-testid="section-adaptive-team-priorities">
-        <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground inline-flex items-center gap-1.5">
-            <Brain className="w-3.5 h-3.5" /> Adaptive Team Priorities
-          </h3>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <TeamAdaptiveTop3 />
-        </div>
-        <p className="text-[11px] text-muted-foreground/70 mt-2">
-          Rule-based preview — no external AI provider, no real performance data.
-        </p>
-      </div>
-
-      {/* Today's Client Work — first-client workflow snapshot */}
+      {/* Today's Client Work */}
       <div className="mb-6" data-testid="section-todays-client-work">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
@@ -405,7 +198,7 @@ export default function TeamDashboard() {
         </p>
       </div>
 
-      {/* Media review queue — visual strip */}
+      {/* Media review queue */}
       <div className="mb-6" data-testid="section-media-review-queue">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
@@ -428,9 +221,7 @@ export default function TeamDashboard() {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{item.title}</p>
                 <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{item.subtitle}</p>
-                <StatusBadge
-                  tone={item.tone === "good" ? "success" : "warning"}
-                >
+                <StatusBadge tone={item.tone === "good" ? "success" : "warning"}>
                   {item.status}
                 </StatusBadge>
               </div>
@@ -439,8 +230,8 @@ export default function TeamDashboard() {
         </div>
       </div>
 
+      {/* Work Queue + Active Alerts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Work Queue snapshot */}
         <Card className="bg-card border-border">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
@@ -470,12 +261,9 @@ export default function TeamDashboard() {
           </CardContent>
         </Card>
 
-        {/* Alert snapshot */}
         <Card className="bg-card border-border">
           <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">Active Alerts</CardTitle>
-            </div>
+            <CardTitle className="text-lg">Active Alerts</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {criticalAlerts.map((alert) => (
@@ -494,44 +282,7 @@ export default function TeamDashboard() {
           </CardContent>
         </Card>
       </div>
+
     </PortalLayout>
-  );
-}
-
-function computeTeamTop3() {
-  return rankRecommendations(
-    buildAdaptiveRecommendations({
-      clientId: "demo-a",
-      direction: [
-        ...getLocalDirectionRequests().filter((d) => d.clientId === "demo-a"),
-        ...demoClientDirection.filter((d) => d.clientId === "demo-a"),
-      ],
-      uploads: [
-        ...getLocalUploadSubmissions().filter((u) => u.restaurantId === "demo-a"),
-        ...demoUploadSubmissions.filter((u) => u.restaurantId === "demo-a"),
-      ],
-      workflow: [],
-    }),
-  ).slice(0, 3);
-}
-
-function TeamAdaptiveTop3() {
-  const [recs, setRecs] = useState(() => computeTeamTop3());
-  useEffect(() => {
-    const refresh = () => setRecs(computeTeamTop3());
-    refresh();
-    const u1 = subscribeToLocalDirectionRequests(refresh);
-    const u2 = subscribeToLocalUploadSubmissions(refresh);
-    return () => {
-      u1();
-      u2();
-    };
-  }, []);
-  return (
-    <>
-      {recs.map((r) => (
-        <AdaptiveRecommendationCard key={r.id} recommendation={r} audience="team" />
-      ))}
-    </>
   );
 }

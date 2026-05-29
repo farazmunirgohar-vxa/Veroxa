@@ -3,6 +3,7 @@ import { ArrowRight, CheckCircle2, Globe, LayoutDashboard, Megaphone, Monitor } 
 import { Button } from "@/components/ui/button";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
+import { VEROXA_PLANS } from "@/data/pricing/veroxaPricing";
 
 export default function ServicesPage() {
   return (
@@ -176,10 +177,11 @@ export default function ServicesPage() {
             </div>
           </div>
           <p className="text-muted-foreground mb-8 max-w-xl">
-            Add paid advertising management to Complete Online Presence for
-            +$1,500/mo. Ads Management is only available as an add-on to
-            Complete Online Presence. Ad spend is always separate and paid by
-            the restaurant directly to the ad platform.
+            Add paid advertising management to Complete Online Presence for{" "}
+            {VEROXA_PLANS.ads_addon.displayPrice}/mo. Ads Management is only
+            available as an add-on to Complete Online Presence. Ad spend is
+            always separate and paid by the restaurant directly to the ad
+            platform.
           </p>
           <div className="grid md:grid-cols-2 gap-x-12 gap-y-3 mb-8">
             {[

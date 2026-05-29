@@ -187,7 +187,7 @@ export default function LoginPage() {
         <div className="text-center mb-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/10 text-primary text-[11px] font-semibold tracking-wide mb-6">
             <ShieldAlert className="w-3 h-3" />
-            Development access — production authentication pending
+            Veroxa OS · Internal preview
           </div>
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4" data-testid="login-heading">
             Access Veroxa OS
@@ -315,11 +315,11 @@ export default function LoginPage() {
                 </Button>
 
                 <div
-                  className="rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-[11px] text-amber-400 flex items-center gap-2"
+                  className="rounded-lg border border-border/40 bg-muted/20 px-3 py-2 text-[11px] text-muted-foreground flex items-center gap-2"
                   data-testid="signin-dev-notice"
                 >
                   <ShieldAlert className="w-3.5 h-3.5 flex-shrink-0" />
-                  Development access — production authentication pending.
+                  Internal preview environment. Use your Veroxa credentials.
                 </div>
 
                 {signInState.kind === "success" && (

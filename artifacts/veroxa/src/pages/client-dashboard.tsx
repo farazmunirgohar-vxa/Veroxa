@@ -1,18 +1,15 @@
-import { CalendarDays, ImageIcon, Layers, BarChart2, ArrowRight, PlayCircle } from "lucide-react";
+import { CalendarDays, ImageIcon, Layers, BarChart2, ArrowRight } from "lucide-react";
 import { Link } from "wouter";
 import { PortalLayout } from "@/components/PortalLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientPortalData } from "@/hooks/useClientPortalData";
 import { ClientKeepMovingCard } from "@/components/ClientExecutionReinforcement";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
-import { DemoFlowTimeline } from "@/components/demo/DemoVisuals";
 import { useEffect, useState } from "react";
 import { healthRepository, reportRepository, activityRepository, clientTeamWorkRepository } from "@/lib/repositories";
-import { CLIENT_AI_DISCLOSURE } from "@/lib/ai/aiAgentTypes";
-import { Brain } from "lucide-react";
 import {
   getClientWorkflowItems,
   subscribeToWorkflow,
@@ -44,27 +41,6 @@ function useClientWorkflowItems(clientId: string) {
   return items;
 }
 
-const veroxaWeekFlow = [
-  { key: "upload",   label: "You upload",    caption: "Food photos from your phone" },
-  { key: "ai",       label: "AI drafts",     caption: "Captions + best angles" },
-  { key: "review",   label: "Team checks",   caption: "Human review before anything posts" },
-  { key: "schedule", label: "It schedules",  caption: "Right time, right platform" },
-  { key: "report",   label: "You get a report", caption: "Weekly + monthly results" },
-];
-
-const weekMedia = [
-  { id: "wm-1", title: "Grilled platter — overhead", subtitle: "Approved for weekend feature", status: "Approved",       tone: "good"  as const },
-  { id: "wm-2", title: "Signature bowl — hero",       subtitle: "Scheduled · Tuesday lunch",   status: "Scheduled",      tone: "ready" as const },
-  { id: "wm-3", title: "Chef plating — Reels clip",   subtitle: "Pending Veroxa team review",  status: "Pending review", tone: "warn"  as const },
-];
-
-const upcomingSchedule = [
-  { id: "up-1", day: "Friday",   time: "11:30 AM", platform: "Instagram", label: "Lunch Special"     },
-  { id: "up-2", day: "Saturday", time: "2:00 PM",  platform: "Facebook",  label: "Behind the Scenes" },
-  { id: "up-3", day: "Sunday",   time: "6:15 PM",  platform: "Instagram", label: "Dinner Push"       },
-];
-
-
 export default function ClientDashboard() {
   const { loading, data, source, dataSourceMessage } = useClientPortalData();
   const workflowItems = useClientWorkflowItems("demo-a");
@@ -79,25 +55,21 @@ export default function ClientDashboard() {
   })).filter((g) => g.items.length > 0);
 
   const summaryCards = [
-    { label: "Upcoming posts",    value: loading ? "—" : String(data.scheduledPosts.length), icon: CalendarDays },
-    { label: "Media assets",      value: loading ? "—" : String(data.mediaAssetsCount),       icon: ImageIcon   },
-    { label: "Social platforms",  value: loading ? "—" : String(data.platformsCount),         icon: Layers      },
-    { label: "Latest report",     value: loading ? "—" : data.monthlyReportPreview.status,    icon: BarChart2   },
+    { label: "Upcoming posts",   value: loading ? "—" : String(data.scheduledPosts.length), icon: CalendarDays },
+    { label: "Media assets",     value: loading ? "—" : String(data.mediaAssetsCount),       icon: ImageIcon   },
+    { label: "Social platforms", value: loading ? "—" : String(data.platformsCount),         icon: Layers      },
+    { label: "Latest report",    value: loading ? "—" : data.monthlyReportPreview.status,    icon: BarChart2   },
   ];
 
   const healthSnapshot = healthRepository.getClientHealthSnapshot("demo-a");
   const clientReports = reportRepository.getClientReports("demo-a");
   const recentActivity = activityRepository.getClientVisibleActivity("demo-a");
-  // Canonical "Action needed from you" source: submission-derived work items.
-  // Includes both `needs_client_clarification` and `blocked` submissions, so
-  // the dashboard tile, /demo/client/requests, and /demo/client/updates all
-  // agree on the same count and the same first item.
   const openClientActions = clientTeamWorkRepository.getClientActionRequiredItems("demo-a");
 
   const snapshotItems = [
     healthSnapshot
       ? `You have ${healthSnapshot.unusedUsableMediaCount} approved media items ready — roughly ${healthSnapshot.weeksOfContentLeft} weeks of content at your current cadence.`
-      : "Your upcoming content is scheduled and ready for review.",
+      : "Your upcoming content is scheduled and ready.",
     "Google visibility data is being tracked for this month.",
     clientReports.monthly.length > 0
       ? `Your latest monthly report (${clientReports.monthly[0].monthKey}) is available in Reports.`
@@ -124,30 +96,10 @@ export default function ClientDashboard() {
         </Badge>
       </div>
 
-      {/* AI-assisted workflow — client-safe explanation. */}
-      <Card
-        className="bg-card border-primary/20"
-        data-testid="card-client-ai-disclosure"
-      >
-        <CardContent className="flex items-start gap-3 p-4">
-          <div className="rounded-md bg-primary/10 p-2 text-primary flex-shrink-0">
-            <Brain className="w-4 h-4" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-foreground mb-1">
-              Veroxa AI-assisted workflow
-            </p>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {CLIENT_AI_DISCLOSURE}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Keep Veroxa moving — calm, blame-free reinforcement (client-safe). */}
+      {/* Upload reinforcement — keeps content supply visible to the client. */}
       <ClientKeepMovingCard clientId="demo-a" />
 
-      {/* Action needed from you — quick callout linking to Requests. */}
+      {/* Action needed from you */}
       {openClientActions.length > 0 && (
         <Card
           className="bg-amber-500/5 border-amber-500/30"
@@ -180,7 +132,6 @@ export default function ClientDashboard() {
         </Card>
       )}
 
-      {/* Calm empty state — nothing is waiting on the client right now. */}
       {openClientActions.length === 0 && (
         <Card
           className="bg-emerald-500/5 border-emerald-500/20"
@@ -198,8 +149,7 @@ export default function ClientDashboard() {
         </Card>
       )}
 
-      {/* Your workflow with Veroxa — live, grouped by client-safe status,
-          driven by the real workflow foundation (backend pending). */}
+      {/* Your workflow with Veroxa */}
       {workflowGroups.length > 0 && (
         <div data-testid="section-client-workflow">
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
@@ -246,7 +196,7 @@ export default function ClientDashboard() {
             ))}
           </div>
           <p className="text-[11px] text-muted-foreground/70 mt-2">
-            Live workflow status. Nothing is published without your approval.
+            Nothing goes live without Veroxa team review.
           </p>
         </div>
       )}
@@ -266,89 +216,7 @@ export default function ClientDashboard() {
         ))}
       </div>
 
-
-      {/* This week's media — demo visual strip */}
-      <div data-testid="section-week-media">
-        <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-            This week&apos;s media
-          </h3>
-          <Badge
-            variant="outline"
-            className="border-border text-muted-foreground"
-          >
-            Prepared by Veroxa
-          </Badge>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {weekMedia.map((item) => (
-            <div
-              key={item.id}
-              className="rounded-md border border-border bg-card/60 p-3 flex items-start gap-3"
-              data-testid={`week-media-${item.id}`}
-            >
-              <div className="p-2 rounded-md bg-muted/30 flex-shrink-0">
-                <ImageIcon className="w-4 h-4 text-muted-foreground/50" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{item.title}</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">{item.subtitle}</p>
-                <Badge
-                  variant="outline"
-                  className={`mt-1.5 text-[10px] ${
-                    item.tone === "good"  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300" :
-                    item.tone === "ready" ? "border-sky-500/30 bg-sky-500/10 text-sky-300" :
-                                           "border-amber-500/30 bg-amber-500/10 text-amber-300"
-                  }`}
-                >
-                  {item.status}
-                </Badge>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Upcoming content — schedule preview with thumbnails */}
-      <div data-testid="section-upcoming-content">
-        <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-            Upcoming content
-          </h3>
-        </div>
-        <Card className="bg-card/50 border-border/50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">
-              From one photo to three scheduled posts
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2" data-testid="dashboard-schedule">
-              {upcomingSchedule.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center gap-3 rounded-md border border-border bg-muted/10 px-3 py-2"
-                >
-                  <div className="p-1.5 rounded bg-muted/30">
-                    <CalendarDays className="w-3.5 h-3.5 text-muted-foreground/60" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[12px] font-medium">{item.label}</p>
-                    <p className="text-[11px] text-muted-foreground">{item.day} · {item.time} · {item.platform}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <p className="mt-3 text-[11px] text-muted-foreground">
-              Prepared schedule — publishing connection pending. Nothing posts
-              without your approval.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* What Veroxa is working on — derived from the client-team submission
-          pipeline (single source of truth across client pages). */}
+      {/* What Veroxa is working on */}
       <div data-testid="section-veroxa-working-on">
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
           What Veroxa is working on
@@ -389,61 +257,15 @@ export default function ClientDashboard() {
           );
         })()}
         <p className="text-[11px] text-muted-foreground/70 mt-2">
-          Live workflow snapshot. Nothing is published without your approval.
+          Nothing goes live without Veroxa team review.
         </p>
       </div>
 
-      {/* Trust strip — what Veroxa needs / what happens after upload */}
-      <div
-        className="grid grid-cols-1 md:grid-cols-2 gap-3"
-        data-testid="dashboard-trust-strip"
-      >
-        <Card className="bg-card/50 border-border/50" data-testid="dashboard-trust-needs">
-          <CardContent className="p-4">
-            <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-1">
-              What Veroxa needs from you
-            </p>
-            <p className="text-[12px] text-muted-foreground">
-              A few phone photos each week, plus a quick note in the Direction
-              Center about what you want to push. Veroxa takes it from there.
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="bg-card/50 border-border/50" data-testid="dashboard-trust-after">
-          <CardContent className="p-4">
-            <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-1">
-              What happens after upload
-            </p>
-            <p className="text-[12px] text-muted-foreground">
-              Photos are reviewed, captions are drafted, and posts are
-              scheduled at the right times. You see everything in your portal
-              and approve before anything goes live.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* How Veroxa is working this week */}
-      <div data-testid="section-veroxa-week-flow">
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-          How Veroxa is working this week
-        </h3>
-        <Card className="bg-card/50 border-border/50">
-          <CardContent className="p-4 space-y-4">
-            <DemoFlowTimeline steps={veroxaWeekFlow} testId="client-dashboard-flow" />
-            <p className="text-[11px] text-muted-foreground">
-              How your week flows through Veroxa. Nothing posts without your
-              Veroxa team&apos;s approval.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-
-
       {/* This week at a glance */}
       <div>
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">This week at a glance</h3>
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+          This week at a glance
+        </h3>
         <Card className="bg-card/50 border-border/50">
           <CardContent className="p-5 space-y-3">
             {snapshotItems.map((item, i) => (
@@ -455,32 +277,6 @@ export default function ClientDashboard() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Guided Demo CTA — shown only in demo/placeholder mode */}
-      <Card className="bg-primary/5 border-primary/20" data-testid="card-guided-demo-cta">
-        <CardContent className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <PlayCircle className="h-4 w-4 text-primary" />
-              <p className="text-sm font-semibold text-foreground">New to Veroxa?</p>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Start the guided demo to see how upload, drafts, scheduling, reports, and smart recommendations work together.
-            </p>
-          </div>
-          <Link href="/guided-demo">
-            <Button
-              size="sm"
-              variant="outline"
-              className="border-primary/40 hover:bg-primary/10 flex-shrink-0"
-              data-testid="btn-guided-demo-cta"
-            >
-              Open Guided Demo
-              <ArrowRight className="ml-2 h-3.5 w-3.5" />
-            </Button>
-          </Link>
-        </CardContent>
-      </Card>
 
     </PortalLayout>
   );

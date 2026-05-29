@@ -1,29 +1,29 @@
-> **2026-05-29 — Current Pricing + Build Truth Normalization**
+> **2026-05-29 — CORRECTED: Active Founding Client Pricing Model**
 >
-> - Complete Online Presence updated to term-based public pricing:
->   $997 (12-mo) / $1,097 (6-mo) / $1,197 (3-mo) / $1,497 (no-contract).
-> - Ads Management add-on updated to $1,500/mo (flat, all terms).
-> - Bundle totals (COP + Ads): $1,797 / $1,897 / $1,997 / $2,297 by term.
-> - Founding-client 50% first-year offer removed from all public-facing
->   surfaces (pricing page, hero, FAQ, services page). Founding fields
->   retained internally for audit/lead-scoring backward compat.
-> - `google_optimization` (retired, $477) and `ads_standalone` (hidden,
->   $2,000) kept in `veroxaPricing.ts` because Free Audit recommendation
->   engine (`auditPackageRecommendation.ts`) and lead-scoring
->   (`internalLeadScoring.ts`) still reference them. Not shown publicly.
-> - `ads_standalone` marked `publicVisible: false` pending a formal
->   dependency audit. If intentionally reactivated it shows at $2,000/mo.
-> - `PRICING_SOURCE_OF_TRUTH.md` rewritten with new numbers and retired-plan
->   mapping rules.
-> - `services.tsx` Ads section updated to +$1,500/mo, founding copy removed.
-> - `veroxaPricing.ts` now carries `publicVisible` / `status` metadata on
->   every plan and `TermPricing` / `COP_TERM_PRICING` / `BUNDLE_TERM_PRICING`
->   exports. Old flat exports (`COMPLETE_PLUS_ADS_TOTAL_DISPLAY` etc.) kept
->   as backward-compat aliases pointing to the 12-month bundle total.
+> The term-based pricing pass ($997/$1,097/$1,197/$1,497 + $1,500 ads) was
+> a **mistaken temporary change** and has been fully reverted. It is NOT the
+> current pricing. The correct owner-confirmed pricing is:
+>
+> - Complete Online Presence: **$977/mo** standard, **$488/mo** founding first year (50% off)
+> - Ads Management add-on: **+$477/mo** flat — no founding discount on ads
+> - Combined standard total: **$1,454/mo** (COP + Ads, before ad spend)
+> - Combined founding first-year total: **$965/mo** (founding COP + Ads)
+> - Ad spend is always separate
+>
+> Changes made:
+> - `veroxaPricing.ts` updated: COP at $977/$488, ads_addon at $477/$477,
+>   term-based exports removed, combined totals corrected.
+> - `pricing.tsx` rebuilt: founding model with 2-card standard/founding
+>   layout, combined totals 2-row table, updated FAQ.
+> - `services.tsx` Ads section corrected to +$477/mo.
+> - `PRICING_SOURCE_OF_TRUTH.md` and `PUBLIC_PRICING_AND_SERVICES.md`
+>   rewritten to reflect the founding model.
+> - Internal plans `google_optimization` (retired, $477) and `ads_standalone`
+>   (hidden, $2,000) kept in `veroxaPricing.ts` for Free Audit /
+>   lead-scoring backward compat. Not shown publicly.
 > - Typecheck passes: `pnpm --filter @workspace/veroxa run typecheck`.
 > - Files **not** changed: Free Audit engines, Supabase auth/schema, demo
->   fixtures (owner-os.tsx is parked/not routed), backend enums, AI/lead
->   engines, App.tsx routing, nav files.
+>   fixtures, backend enums, AI/lead engines, App.tsx routing, nav files.
 
 > **Historical reference (pre-2026-05-27).** Pricing and fixture-ID values in this document are out of date. Current source of truth: `docs/PRICING_SOURCE_OF_TRUTH.md` and `src/data/pricing/veroxaPricing.ts`. Fixture IDs are now `demo-a` / `demo-b` / `demo-c` / `demo-d`.
 
