@@ -1,5 +1,5 @@
 import {
-  Inbox, Eye, Users, FileText, ImageIcon, ArrowRight, LayoutGrid,
+  Inbox, Eye, Users, FileText, ImageIcon, ArrowRight, LayoutGrid, TrendingUp,
 } from "lucide-react";
 import { Link } from "wouter";
 import { PortalLayout } from "@/components/PortalLayout";
@@ -13,6 +13,8 @@ import {
   demoTeamMetrics, demoWorkQueue, demoTeamAlerts, getRestaurantName,
 } from "@/data/demoData";
 import { clientTeamWorkRepository } from "@/lib/repositories";
+import { getTodaysSuggestedPushes } from "@/domain/dailyOpportunity";
+import type { OpportunityPriority } from "@/domain/dailyOpportunity";
 
 const mediaReviewQueue = [
   { id: "mrq-1", title: "Grilled platter — overhead", subtitle: "Demo Grill House · suggested: weekend feature",      status: "Approve",  tone: "good" as const },
@@ -33,6 +35,18 @@ const severityTone: Record<string, StatusBadgeTone> = {
   High:     "warning",
   Medium:   "caution",
   Low:      "neutral",
+};
+
+const pushPriorityTone: Record<OpportunityPriority, StatusBadgeTone> = {
+  high:   "warning",
+  medium: "info",
+  low:    "neutral",
+};
+
+const pushPriorityLabel: Record<OpportunityPriority, string> = {
+  high:   "High",
+  medium: "Medium",
+  low:    "Low",
 };
 
 export default function TeamDashboard() {
@@ -85,6 +99,9 @@ export default function TeamDashboard() {
     },
   ];
 
+  // Today's suggested pushes — rule-based daily opportunities (team-only).
+  const suggestedPushes = getTodaysSuggestedPushes({}, 3);
+
   return (
     <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
       <PageHeader
@@ -118,6 +135,49 @@ export default function TeamDashboard() {
           </Link>
         ))}
       </div>
+
+      {/* Today's Suggested Push — rule-based daily opportunities (team-only) */}
+      {suggestedPushes.length > 0 && (
+        <div className="mb-6" data-testid="section-suggested-push">
+          <Card className="bg-card border-border">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-primary" />
+                Today&apos;s Suggested Push
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {suggestedPushes.map((push) => (
+                <div
+                  key={push.id}
+                  className="rounded-md border border-border bg-muted/20 p-3"
+                  data-testid={`suggested-push-${push.id}`}
+                >
+                  <div className="flex items-start justify-between gap-2 flex-wrap">
+                    <p className="text-sm font-semibold">{push.title}</p>
+                    <StatusBadge tone={pushPriorityTone[push.priority]}>
+                      {pushPriorityLabel[push.priority]}
+                    </StatusBadge>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">{push.restaurantName}</p>
+                  <p className="text-xs text-foreground/80 mt-1.5">{push.whyItMatters}</p>
+                  <p className="text-[12px] text-primary/85 mt-1.5">
+                    <span className="text-muted-foreground">Next:</span> {push.recommendedAction.label}
+                  </p>
+                  {push.requiredClientInput.needed && push.requiredClientInput.ask && (
+                    <p className="text-[11px] text-amber-300/90 mt-1">
+                      Ask the client: {push.requiredClientInput.ask}
+                    </p>
+                  )}
+                </div>
+              ))}
+              <p className="text-[10px] text-muted-foreground/60 pt-1">
+                Suggested opportunities to help bring more customers today.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Live workflow command center */}
       <div className="mb-6">
