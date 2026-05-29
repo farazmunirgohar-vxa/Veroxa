@@ -25,7 +25,11 @@ export type AiDraftType =
   | "client_update"
   | "report_summary"
   | "clarification_question"
-  | "lead_summary";
+  | "lead_summary"
+  | "lead_outreach_email"
+  | "lead_follow_up_email"
+  | "lead_call_script"
+  | "lead_meeting_agenda";
 
 export interface AiDraftContext {
   restaurantName?: string;
@@ -42,6 +46,11 @@ export interface AiDraftContext {
   websiteFound?: boolean;
   menuLinkFound?: boolean;
   socialFound?: boolean;
+  /** Lead outreach context (cautious, value-based drafts only). */
+  segmentLabel?: string;
+  recommendedSalesAngle?: string;
+  topReasons?: string[];
+  contactMethod?: string;
 }
 
 export interface AiDraftPayload {

@@ -41,6 +41,7 @@ import {
 import { TEAM_AI_DISCLOSURE } from "@/lib/ai/aiAgentTypes";
 import { previewAutomationSnapshot } from "@/lib/automation/automationPreviewEngine";
 import { ContentIntelligenceSummaryStrip } from "@/components/ContentIntelligencePanel";
+import { LeadIntelligenceSummaryStrip } from "@/components/LeadIntelligencePanel";
 
 const mediaReviewQueue = [
   { id: "mrq-1", title: "Grilled platter — overhead", subtitle: "Demo Grill House · suggested: weekend feature",      status: "Approve",  tone: "good" as const },
@@ -243,6 +244,12 @@ export default function TeamDashboard() {
           .filter((s) => s.status !== "completed" && s.status !== "archived");
         return <ContentIntelligenceSummaryStrip submissions={intelSubs} />;
       })()}
+
+      {/* Lead Intelligence — rule-based scoring across saved audit leads.
+          Outreach drafts always require human review; nothing auto-sends. */}
+      <div className="mb-4">
+        <LeadIntelligenceSummaryStrip />
+      </div>
 
       {/* Stat grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-6">

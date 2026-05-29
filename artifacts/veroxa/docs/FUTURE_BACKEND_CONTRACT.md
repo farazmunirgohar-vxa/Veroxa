@@ -107,3 +107,20 @@ today — agent outputs and automation previews are recomputed from fixtures.
 - The current build adds no Supabase writes, storage, publishing,
   auto-messaging, payments, notifications, or new public routes. Audit V1 is
   preserved.
+
+## 5. Lead Intelligence + Outreach (future persistence)
+
+The Lead Intelligence + Outreach Engine is currently deterministic and local
+(`src/lib/leadIntelligence/`). When the backend is activated, these would
+persist behind the **same** interfaces — no UI contract change:
+
+| Table | Key fields | Notes |
+|-------|-----------|-------|
+| `lead_intelligence_profiles` | `leadId`, `segment`, `scoreDims`, `overallScore`, `computedAt` | Snapshot of a rule-based scoring run. |
+| `lead_contact_paths` | `leadId`, `pathType`, `confidence`, `instruction` | Public-only contact methods. |
+| `lead_outreach_drafts` | `leadId`, `channel`, `subject`, `body`, `mode`, `reviewedBy`, `sentBy` | Draft is never auto-sent; `sentBy` is set only after a human sends manually. |
+| `lead_next_actions` | `leadId`, `label`, `detail`, `requiresHumanReview`, `completedAt` | lead → audit → onboarding playbook steps. |
+
+Invariants carry over: no auto-send/call/text, public/audit data only, no
+confirmed-spend claims, human review before any outreach. See
+`OUTREACH_COMPLIANCE_GUARDRAILS.md`.

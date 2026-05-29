@@ -14,6 +14,10 @@ const VALID_DRAFT_TYPES: AiDraftType[] = [
   "report_summary",
   "clarification_question",
   "lead_summary",
+  "lead_outreach_email",
+  "lead_follow_up_email",
+  "lead_call_script",
+  "lead_meeting_agenda",
 ];
 
 interface AiDraftRequestBody {

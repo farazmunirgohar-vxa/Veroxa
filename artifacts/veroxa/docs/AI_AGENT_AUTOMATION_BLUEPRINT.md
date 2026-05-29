@@ -83,3 +83,19 @@ behind the **same** interfaces:
 
 See also `AI_FIRST_SOP_MODEL.md`, `VEROXA_QUALITY_GUARDRAILS.md`, and
 `FUTURE_BACKEND_CONTRACT.md`.
+
+## 7. Lead intelligence + outreach automation (preview only)
+
+The Lead Intelligence + Outreach Engine is a deterministic preview today and
+follows the same automation boundaries:
+
+- No auto-send / auto-call / auto-text of outreach. Drafts only.
+- No private scraping — public/audit data only.
+- "Mark ready for outreach" flags a lead for human review; it sends nothing.
+- Optional AI copy rewrite behind `POST /api/ai/draft` with rule-based
+  fallback; `OPENAI_API_KEY` server-side only.
+
+When the backend is activated, outreach send/call/schedule would map to real
+triggers behind the **same** interfaces, always after explicit human approval.
+See `LEAD_INTELLIGENCE_OUTREACH_ENGINE.md` and
+`OUTREACH_COMPLIANCE_GUARDRAILS.md`.

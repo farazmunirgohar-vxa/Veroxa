@@ -3,6 +3,7 @@ import { teamPortalNavItems } from "@/lib/teamPortalNav";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 import { TeamWorkflowPanel } from "@/components/TeamWorkflowPanel";
 import { ContentIntelligenceDraftsList } from "@/components/ContentIntelligencePanel";
+import { LeadGenTasksList } from "@/components/LeadIntelligencePanel";
 import { ListChecks } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -221,6 +222,13 @@ export default function TeamWorkQueue() {
           .slice(0, 4);
         return <ContentIntelligenceDraftsList submissions={intelSubs} />;
       })()}
+
+      {/* Lead-gen tasks — prospecting + outreach prep for audit leads, kept
+          separate from the client work pipeline above. Every step is a human
+          action; outreach requires review before sending. Nothing auto-sends. */}
+      <div className="mb-4">
+        <LeadGenTasksList />
+      </div>
 
       {/* AI content drafts (compact) — content/media work items. */}
       {(() => {

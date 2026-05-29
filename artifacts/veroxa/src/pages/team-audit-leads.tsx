@@ -55,6 +55,15 @@ import {
   aiDraftModeLabel,
   type AiDraftMode,
 } from "@/lib/ai/aiDraftClient";
+import {
+  analyzeLeadIntelligence,
+  inputFromAuditLead,
+} from "@/lib/leadIntelligence/leadScoringEngine";
+import { buildOutreachDraftSet } from "@/lib/leadIntelligence/outreachDraftEngine";
+import {
+  CONTACT_PATH_LABELS,
+  LEAD_FIT_TIER_LABELS,
+} from "@/lib/leadIntelligence/leadIntelligenceTypes";
 
 type FilterTab =
   | "all"
@@ -206,6 +215,9 @@ export default function TeamAuditLeads() {
     bullets: string[];
   } | null>(null);
   const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
+  const [outreachOpen, setOutreachOpen] = useState(false);
+  const [readyForOutreach, setReadyForOutreach] = useState(false);
+  const [copiedChannel, setCopiedChannel] = useState<string | null>(null);
 
   useEffect(() => {
     const saved = getAuditLeads();
@@ -227,6 +239,9 @@ export default function TeamAuditLeads() {
     }
     setHandoff(getOnboardingHandoff(selectedId));
     setAiSummary(null);
+    setOutreachOpen(false);
+    setReadyForOutreach(false);
+    setCopiedChannel(null);
   }, [selectedId]);
 
   const summary = useMemo(() => summarizeAuditLeads(leads), [leads]);
@@ -266,6 +281,28 @@ export default function TeamAuditLeads() {
         selected.leadStage === "walkthrough_requested" || !!selected.contact,
     });
   }, [selected]);
+
+  const leadIntel = useMemo(() => {
+    if (!selected) return null;
+    return analyzeLeadIntelligence(inputFromAuditLead(selected));
+  }, [selected]);
+
+  const outreachSet = useMemo(() => {
+    if (!leadIntel) return null;
+    return buildOutreachDraftSet(leadIntel);
+  }, [leadIntel]);
+
+  async function handleCopyDraft(channel: string, text: string) {
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+      }
+      setCopiedChannel(channel);
+      window.setTimeout(() => setCopiedChannel(null), 1500);
+    } catch {
+      setCopiedChannel(null);
+    }
+  }
 
   function handleStageUpdate(stage: LeadStage) {
     if (!selected) return;
@@ -943,6 +980,241 @@ export default function TeamAuditLeads() {
 
                   <Separator />
 
+                  {/* Lead Intelligence + Outreach Engine (rule-based). */}
+                  {leadIntel && (
+                    <div data-testid="lead-intelligence-section">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                          Lead intelligence
+                        </p>
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] border-primary/40 text-primary bg-primary/5"
+                          data-testid="lead-intel-segment"
+                        >
+                          {leadIntel.segmentLabel}
+                        </Badge>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mb-2">
+                        {leadIntel.segmentDescription}
+                      </p>
+
+                      <div className="rounded-md border border-border bg-muted/20 p-2 mb-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] text-muted-foreground">
+                            Conversion opportunity
+                          </span>
+                          <span className="text-sm font-bold tabular-nums">
+                            {leadIntel.score.overallConversionOpportunity}/100
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                          Fit: {LEAD_FIT_TIER_LABELS[leadIntel.fitTier]}
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-1.5 mb-2">
+                        <IntelDim
+                          label="Improvement room"
+                          value={leadIntel.score.improvementRoomScore}
+                        />
+                        <IntelDim
+                          label="Possible mktg spend"
+                          value={leadIntel.score.marketingInvestmentSignalScore}
+                        />
+                        <IntelDim
+                          label="Inconsistency"
+                          value={leadIntel.score.inconsistencyScore}
+                        />
+                        <IntelDim
+                          label="Reachability"
+                          value={leadIntel.score.reachabilityScore}
+                        />
+                      </div>
+
+                      {leadIntel.marketingInvestment.possiblePaidServiceSignal && (
+                        <p className="text-[10px] text-amber-400 italic mb-2">
+                          Possible paid-service signal — needs manual
+                          verification. Never treated as confirmed spend.
+                        </p>
+                      )}
+
+                      <div className="mb-2">
+                        <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
+                          Top reasons
+                        </p>
+                        <ul className="text-[12px] list-disc pl-5 space-y-0.5">
+                          {leadIntel.topReasons.map((r, i) => (
+                            <li key={i}>{r}</li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <div className="rounded-md border border-border bg-muted/20 p-2 mb-2">
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                          Recommended sales angle
+                        </p>
+                        <p className="text-[12px] mt-0.5">
+                          {leadIntel.recommendedSalesAngle}
+                        </p>
+                      </div>
+
+                      <div className="mb-2">
+                        <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
+                          Contact-path checklist (public only)
+                        </p>
+                        <ul className="space-y-1">
+                          {leadIntel.contactPaths.map((p, i) => (
+                            <li
+                              key={i}
+                              className="text-[12px] flex items-start gap-2"
+                            >
+                              <Badge
+                                variant="outline"
+                                className={
+                                  p.confidence === "available"
+                                    ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/5 text-[10px] shrink-0"
+                                    : p.confidence === "likely"
+                                      ? "border-sky-500/40 text-sky-400 bg-sky-500/5 text-[10px] shrink-0"
+                                      : "border-amber-500/40 text-amber-400 bg-amber-500/5 text-[10px] shrink-0"
+                                }
+                              >
+                                {CONTACT_PATH_LABELS[p.type]}
+                              </Badge>
+                              <span className="text-muted-foreground">
+                                {p.instruction}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <div className="mb-2">
+                        <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
+                          Next steps (lead → audit → onboarding)
+                        </p>
+                        <ol className="text-[12px] list-decimal pl-5 space-y-0.5">
+                          {leadIntel.nextActions.map((a, i) => (
+                            <li key={i}>
+                              <span className="font-medium">{a.label}</span>
+                              {a.requiresHumanReview && (
+                                <span className="text-[10px] text-amber-400 ml-1">
+                                  (human review)
+                                </span>
+                              )}
+                              <span className="text-muted-foreground">
+                                {" "}
+                                — {a.detail}
+                              </span>
+                            </li>
+                          ))}
+                        </ol>
+                      </div>
+
+                      <div className="flex flex-wrap gap-1.5">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-[11px]"
+                          onClick={() => setOutreachOpen((o) => !o)}
+                          data-testid="btn-prepare-outreach"
+                        >
+                          {outreachOpen
+                            ? "Hide outreach drafts"
+                            : "Prepare outreach drafts"}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={readyForOutreach ? "default" : "outline"}
+                          className="h-7 text-[11px]"
+                          onClick={() => setReadyForOutreach((r) => !r)}
+                          data-testid="btn-ready-for-outreach"
+                        >
+                          {readyForOutreach
+                            ? "Marked ready for outreach"
+                            : "Mark ready for outreach"}
+                        </Button>
+                      </div>
+
+                      {readyForOutreach && (
+                        <p className="text-[10px] text-emerald-400 italic mt-1">
+                          Flagged for a human to review and send manually.
+                          Nothing is sent automatically.
+                        </p>
+                      )}
+
+                      {outreachOpen && outreachSet && (
+                        <div
+                          className="mt-2 space-y-2"
+                          data-testid="outreach-drafts"
+                        >
+                          {outreachSet.drafts.map((d) => {
+                            const copyText = d.subject
+                              ? `Subject: ${d.subject}\n\n${d.body}`
+                              : d.body;
+                            return (
+                              <div
+                                key={d.channel}
+                                className="rounded-md border border-border bg-muted/20 p-2"
+                              >
+                                <div className="flex items-center justify-between gap-2 mb-1">
+                                  <p className="text-[11px] font-semibold">
+                                    {d.label}
+                                  </p>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-6 text-[10px]"
+                                    onClick={() =>
+                                      handleCopyDraft(d.channel, copyText)
+                                    }
+                                    data-testid={`btn-copy-${d.channel}`}
+                                  >
+                                    {copiedChannel === d.channel
+                                      ? "Copied"
+                                      : d.channel === "call_opener"
+                                        ? "Copy call opener"
+                                        : d.channel === "email" ||
+                                            d.channel === "follow_up_email"
+                                          ? "Copy email draft"
+                                          : "Copy"}
+                                  </Button>
+                                </div>
+                                {d.subject && (
+                                  <p className="text-[11px] text-muted-foreground mb-1">
+                                    Subject: {d.subject}
+                                  </p>
+                                )}
+                                <p className="text-[12px] whitespace-pre-line">
+                                  {d.body}
+                                </p>
+                                {d.points && d.points.length > 0 && (
+                                  <ul className="text-[11px] list-disc pl-5 mt-1 text-muted-foreground space-y-0.5">
+                                    {d.points.map((pt, i) => (
+                                      <li key={i}>{pt}</li>
+                                    ))}
+                                  </ul>
+                                )}
+                              </div>
+                            );
+                          })}
+                          <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-2">
+                            <p className="text-[10px] uppercase tracking-wider text-amber-400 mb-1">
+                              Guardrails
+                            </p>
+                            <ul className="text-[11px] list-disc pl-5 text-muted-foreground space-y-0.5">
+                              {outreachSet.guardrails.map((g, i) => (
+                                <li key={i}>{g}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <Separator />
+
                   {/* BUILD 2 — Onboarding handoff (local/session only). */}
                   {handoff && (
                     <div data-testid="onboarding-handoff-section">
@@ -1073,6 +1345,15 @@ function SummaryCard({
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function IntelDim({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-md border border-border bg-muted/10 px-2 py-1.5">
+      <p className="text-[10px] text-muted-foreground">{label}</p>
+      <p className="text-sm font-semibold tabular-nums">{value}/100</p>
+    </div>
   );
 }
 

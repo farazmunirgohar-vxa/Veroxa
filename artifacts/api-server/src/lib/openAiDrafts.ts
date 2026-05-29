@@ -33,7 +33,11 @@ export type AiDraftType =
   | "client_update"
   | "report_summary"
   | "clarification_question"
-  | "lead_summary";
+  | "lead_summary"
+  | "lead_outreach_email"
+  | "lead_follow_up_email"
+  | "lead_call_script"
+  | "lead_meeting_agenda";
 
 export interface AiDraftContext {
   /** Restaurant or client display name. */
@@ -61,6 +65,11 @@ export interface AiDraftContext {
   websiteFound?: boolean;
   menuLinkFound?: boolean;
   socialFound?: boolean;
+  /** Lead outreach context — cautious, value-based drafts only. */
+  segmentLabel?: string;
+  recommendedSalesAngle?: string;
+  topReasons?: string[];
+  contactMethod?: string;
 }
 
 export interface AiDraftPayload {
@@ -195,6 +204,74 @@ function ruleBasedDraft(input: GenerateAiDraftInput): AiDraftPayload {
         ],
       };
     }
+
+    case "lead_outreach_email": {
+      const where = ctx.location ? ` in ${ctx.location}` : "";
+      return {
+        text: `Cold email draft for ${name} (team review required before sending):`,
+        fields: {
+          subject: `A quick idea for ${name}`,
+          body: [
+            `Hi there,`,
+            ``,
+            `I came across ${name}${where} and put together a quick, no-cost look at how the restaurant shows up online.`,
+            ``,
+            `If it's useful, I'd be glad to share what I found — no pressure at all.`,
+            ``,
+            `Would it be alright to send over the short summary?`,
+            ``,
+            `Thank you for your time,`,
+            `[Your name] — Veroxa`,
+          ].join("\n"),
+        },
+      };
+    }
+
+    case "lead_follow_up_email":
+      return {
+        text: `Follow-up email draft for ${name} (team review required):`,
+        fields: {
+          subject: `Following up — ${name}`,
+          body: [
+            `Hi again,`,
+            ``,
+            `Just floating my earlier note back up in case it got buried — no worries if now isn't the right time.`,
+            ``,
+            `Happy to send the short audit summary for ${name} whenever suits you.`,
+            ``,
+            `Best,`,
+            `[Your name] — Veroxa`,
+          ].join("\n"),
+        },
+      };
+
+    case "lead_call_script":
+      return {
+        text: `Call opener for ${name} (team review required before calling):`,
+        items: [
+          `Hi, is the owner or manager around? I'll keep it quick.`,
+          `I'm [Your name] with Veroxa — I help local restaurants show up better online.`,
+          `I took a quick look at ${name} and noticed a couple of small, easy wins.`,
+          `Could I send over a short, free summary for you to look at when you have a minute?`,
+        ],
+        secondaryItems: [
+          "Call during off-peak hours; respect a busy moment.",
+          "Lead with a free summary, not a pitch.",
+          "If now is bad, offer to call back at a better time.",
+        ],
+      };
+
+    case "lead_meeting_agenda":
+      return {
+        text: `Audit walkthrough agenda for ${name} (15–20 min, no obligation):`,
+        items: [
+          "Walk through what the free audit found (the basics first).",
+          "Listen: how is posting and profile upkeep handled today?",
+          "Highlight one or two clear, realistic improvements.",
+          "Explain how Veroxa would take that work off their plate.",
+          "Agree a small, optional next step — no pressure to commit.",
+        ],
+      };
 
     default:
       return { text: `Draft for ${name}.` };

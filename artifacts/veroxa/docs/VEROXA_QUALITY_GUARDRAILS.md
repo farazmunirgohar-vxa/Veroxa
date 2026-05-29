@@ -70,3 +70,20 @@ how the post will perform. Low confidence means "get more context," never
 
 See also `AI_FIRST_SOP_MODEL.md`, `AI_AGENT_AUTOMATION_BLUEPRINT.md`, and
 `FUTURE_BACKEND_CONTRACT.md`.
+
+## 7. Lead intelligence + outreach
+
+The Lead Intelligence + Outreach Engine follows the same honesty and
+human-in-the-loop rules, plus outreach-specific limits:
+
+- Human review is required before any outreach; nothing auto-sends, auto-calls,
+  or auto-texts. "Mark ready for outreach" only flags for human review.
+- Only public or audit/lead-provided data is used — no private scraping.
+- Never claim confirmed agency or marketing spend. Strongest allowed phrasing:
+  "possible paid-service signal" / "likely digital investment", always with
+  "needs manual verification".
+- Never insult a lead's current vendor. Never guarantee results.
+- The conversion-opportunity score is a human prioritization aid, not a promise.
+
+See `OUTREACH_COMPLIANCE_GUARDRAILS.md` and
+`LEAD_INTELLIGENCE_OUTREACH_ENGINE.md`.

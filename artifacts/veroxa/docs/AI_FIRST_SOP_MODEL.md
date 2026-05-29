@@ -183,3 +183,19 @@ and falls back to the rule-based engine when AI is not configured. See
 `AI_DRAFT_ENDPOINT_CONTRACT.md`, `CONTENT_SCHEDULING_PIPELINE.md`, and
 `FUTURE_BACKEND_CONTRACT.md`. When wired further, model calls should slot in
 **behind the same interfaces**; the page-level UI contracts should not change.
+
+## 9. Lead intelligence + outreach in the SOP
+
+Prospecting and outreach prep now follow the same AI-first split: the
+deterministic Lead Intelligence engine drafts first (scores, segments, contact
+paths, outreach copy, next steps), and the team applies judgement and sends
+manually. AI removes the drafting cost; the team keeps the judgement and the
+send decision.
+
+- Engine: `src/lib/leadIntelligence/` (deterministic, rule-based).
+- Optional AI copy rewrite via `POST /api/ai/draft` draft types
+  `lead_outreach_email`, `lead_follow_up_email`, `lead_call_script`,
+  `lead_meeting_agenda`, with rule-based fallback.
+- Human review is required before any outreach. Nothing auto-sends. See
+  `LEAD_INTELLIGENCE_OUTREACH_ENGINE.md` and
+  `OUTREACH_COMPLIANCE_GUARDRAILS.md`.

@@ -504,3 +504,23 @@
 >   `faraz@team.com` / `farazteam` → Team Portal.
 > - Guardrails: AUTH=placeholder, DATA=fixture, VEROXA_DATA_SOURCE_MODE=demo.
 >   No real Supabase auth, no production users, no backend writes.
+
+> **2026-05-29 — Lead Intelligence + Outreach Engine foundation added**
+>
+> - New rule-based engine in `src/lib/leadIntelligence/`: per-lead
+>   conversion-opportunity score, segment, top reasons, recommended sales
+>   angle, public-only contact-path checklist, cautious outreach drafts
+>   (email / follow-up / call opener / voicemail / walk-in / meeting agenda),
+>   and a lead → audit → onboarding next-step playbook.
+> - Surfaces: full panel on Team Audit Leads; summary strip on Team
+>   Dashboard; lead-gen task list on Team Work Queue (separate from the
+>   client work pipeline).
+> - Optional AI rewrite via `POST /api/ai/draft` (new draft types
+>   `lead_outreach_email`, `lead_follow_up_email`, `lead_call_script`,
+>   `lead_meeting_agenda`); deterministic rule-based fallback when AI is
+>   unconfigured. `OPENAI_API_KEY` server-side only.
+> - Guardrails: human review required, no auto-send/call/text, no private
+>   scraping, no payments/notifications, no confirmed-spend claims, no vendor
+>   insults, no guarantees. Free Audit V1 untouched; Owner/Operator parked.
+>   See `LEAD_INTELLIGENCE_OUTREACH_ENGINE.md` and
+>   `OUTREACH_COMPLIANCE_GUARDRAILS.md`.
