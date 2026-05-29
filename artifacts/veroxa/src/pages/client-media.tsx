@@ -13,6 +13,7 @@ import {
   MapPin,
   Ban,
   Inbox,
+  ArrowRight,
 } from "lucide-react";
 import {
   getLocalUploadSubmissions,
@@ -272,6 +273,43 @@ export default function ClientMedia() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Where your media goes — simple client-safe status path. */}
+      <Card
+        className="bg-card/50 border-border/50 mt-3"
+        data-testid="card-media-journey"
+      >
+        <CardContent className="p-4">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+            Where your media goes
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            {[
+              "Submitted",
+              "In review",
+              "Prepared by Veroxa",
+              "Included in report",
+            ].map((label, i, arr) => (
+              <div key={label} className="flex items-center gap-2">
+                <span className="text-xs font-medium px-2.5 py-1 rounded-full border border-border bg-muted/30 text-foreground/80">
+                  {label}
+                </span>
+                {i < arr.length - 1 && (
+                  <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/50" />
+                )}
+              </div>
+            ))}
+          </div>
+          <p className="text-[11px] text-muted-foreground mt-3">
+            Sometimes Veroxa may ask for a little more before a post is ready —
+            you'll see{" "}
+            <span className="font-medium text-foreground/80">
+              "More content needed"
+            </span>{" "}
+            with a short note on what would help.
+          </p>
+        </CardContent>
+      </Card>
 
       {/* Restaurant Upload Key — daily content app entry */}
       <Card className="mt-4 border-primary/30 bg-primary/5" data-testid="card-restaurant-upload-key">

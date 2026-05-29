@@ -7,7 +7,7 @@ import { useClientPortalData } from "@/hooks/useClientPortalData";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
 import { clientTeamWorkRepository } from "@/lib/repositories";
 import { previewClientUpdate } from "@/lib/ai/aiAgentPreviewEngine";
-import { Brain } from "lucide-react";
+import { ClientVisibilityProgressCard } from "@/components/ClientVisibilityProgressCard";
 import { useEffect, useState } from "react";
 import {
   getClientWorkflowItems,
@@ -81,7 +81,7 @@ export default function ClientUpdates() {
         <DataSourceBadge source={source} message={dataSourceMessage} />
       </div>
 
-      {/* AI-assisted compact weekly preview — drafts reviewed by Veroxa team. */}
+      {/* Compact weekly preview — prepared and reviewed by the Veroxa team. */}
       {(() => {
         const inProgress = clientTeamWorkRepository.getClientInProgressItems(SHOWCASE_ID);
         const action = clientTeamWorkRepository.getClientActionRequiredItems(SHOWCASE_ID);
@@ -97,11 +97,11 @@ export default function ClientUpdates() {
         return (
           <Card
             className="bg-card border-primary/20 mb-5"
-            data-testid="weekly-update-ai-preview"
+            data-testid="weekly-update-preview"
           >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <Brain className="w-4 h-4 text-primary" />
+                <CalendarDays className="w-4 h-4 text-primary" />
                 Veroxa weekly preview
               </CardTitle>
             </CardHeader>
@@ -186,6 +186,11 @@ export default function ClientUpdates() {
           </p>
         </CardContent>
       </Card>
+
+      {/* Local visibility progress — client-safe Google/local visibility surface. */}
+      <div className="mb-5">
+        <ClientVisibilityProgressCard clientId={SHOWCASE_ID} />
+      </div>
 
       {/* Actions needed from you — derived from the submission pipeline so
           this section agrees with the client dashboard and /requests page. */}

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientPortalData } from "@/hooks/useClientPortalData";
 import { ClientReportsProgress } from "@/components/ClientExecutionReinforcement";
+import { ClientVisibilityProgressCard } from "@/components/ClientVisibilityProgressCard";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
 import { useEffect, useState } from "react";
 import {
@@ -98,6 +99,10 @@ export default function ClientReports() {
         <ClientReportsProgress clientId={SHOWCASE_ID} />
       </div>
 
+      {/* Local visibility progress — client-safe Google/local visibility surface. */}
+      <div className="mb-4">
+        <ClientVisibilityProgressCard clientId={SHOWCASE_ID} />
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Monthly report — live data from hook */}

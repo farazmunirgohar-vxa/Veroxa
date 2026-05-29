@@ -1,4 +1,15 @@
-import { CalendarDays, ImageIcon, Layers, BarChart2, ArrowRight } from "lucide-react";
+import {
+  CalendarDays,
+  ImageIcon,
+  Layers,
+  BarChart2,
+  ArrowRight,
+  Images,
+  ClipboardList,
+  Bell,
+  FileText,
+  CheckCircle2,
+} from "lucide-react";
 import { Link } from "wouter";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,7 +18,10 @@ import { Button } from "@/components/ui/button";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientPortalData } from "@/hooks/useClientPortalData";
 import { ClientKeepMovingCard } from "@/components/ClientExecutionReinforcement";
+import { ClientVisibilityProgressCard } from "@/components/ClientVisibilityProgressCard";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
+import { workflowItemsToJourneyItems } from "@/lib/clientPortalJourney";
+import { buildClientPortalProgressSummary } from "@/domain/clientPortalJourney";
 import { useEffect, useState } from "react";
 import { healthRepository, reportRepository, activityRepository, clientTeamWorkRepository } from "@/lib/repositories";
 import {
@@ -54,6 +68,17 @@ export default function ClientDashboard() {
     items: activeWorkflowItems.filter((i) => i.clientVisibleStatus === status),
   })).filter((g) => g.items.length > 0);
 
+  const journeyItems = workflowItemsToJourneyItems(workflowItems);
+  const journeySummary = buildClientPortalProgressSummary(journeyItems);
+  const recentProgress = journeySummary.recentProgress.slice(0, 4);
+
+  const quickActions = [
+    { label: "Upload media", href: "/client/media", icon: Images },
+    { label: "Send request", href: "/client/requests", icon: ClipboardList },
+    { label: "View updates", href: "/client/updates", icon: Bell },
+    { label: "View reports", href: "/client/reports", icon: FileText },
+  ];
+
   const summaryCards = [
     { label: "Upcoming posts",   value: loading ? "—" : String(data.scheduledPosts.length), icon: CalendarDays },
     { label: "Media assets",     value: loading ? "—" : String(data.mediaAssetsCount),       icon: ImageIcon   },
@@ -94,6 +119,30 @@ export default function ClientDashboard() {
         <Badge variant="outline" className="px-3 py-1 bg-card text-card-foreground border-border font-medium self-start md:self-auto">
           May 2026 — Week 3
         </Badge>
+      </div>
+
+      {/* Quick actions — the main things a client can do, one tap away. */}
+      <div
+        className="grid grid-cols-2 lg:grid-cols-4 gap-3"
+        data-testid="section-quick-actions"
+      >
+        {quickActions.map((action) => (
+          <Link key={action.href} href={action.href}>
+            <Card
+              className="bg-card/50 border-border/50 hover:border-primary/40 hover:bg-card transition-colors cursor-pointer h-full"
+              data-testid={`quick-action-${action.href.split("/").pop()}`}
+            >
+              <CardContent className="p-4 flex items-center gap-3">
+                <span className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary/10 text-primary flex-shrink-0">
+                  <action.icon className="w-4 h-4" />
+                </span>
+                <span className="text-sm font-medium text-foreground">
+                  {action.label}
+                </span>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
       </div>
 
       {/* Upload reinforcement — keeps content supply visible to the client. */}
@@ -216,6 +265,9 @@ export default function ClientDashboard() {
         ))}
       </div>
 
+      {/* Local visibility progress — client-safe Google/local visibility surface. */}
+      <ClientVisibilityProgressCard clientId="demo-a" />
+
       {/* What Veroxa is working on */}
       <div data-testid="section-veroxa-working-on">
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
@@ -260,6 +312,38 @@ export default function ClientDashboard() {
           Nothing goes live without Veroxa team review.
         </p>
       </div>
+
+      {/* Recent progress — finished and report-included work. */}
+      {recentProgress.length > 0 && (
+        <div data-testid="section-recent-progress">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+            Recent progress
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {recentProgress.map((item) => (
+              <Card
+                key={item.id}
+                className="bg-emerald-500/5 border-emerald-500/20"
+                data-testid={`recent-progress-${item.id}`}
+              >
+                <CardContent className="p-3.5">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500/80 flex-shrink-0 mt-0.5" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-foreground leading-snug">
+                        {item.title}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        {item.status} · {item.updatedLabel}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* This week at a glance */}
       <div>

@@ -1,4 +1,4 @@
-import { ClipboardCheck, ArrowRight, HelpCircle, Loader2, MessageSquare, Activity, Send } from "lucide-react";
+import { ClipboardCheck, ArrowRight, HelpCircle, Loader2, MessageSquare, Activity, Send, Megaphone, CheckCircle2 } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,7 @@ import { clientTeamWorkRepository } from "@/lib/repositories";
 import { useEffect, useState } from "react";
 import {
   addClientClarificationResponse,
+  createWorkflowItem,
   getClientItemsNeedingInput,
   subscribeToWorkflow,
 } from "@/lib/workflow/workflowRepository";
@@ -99,6 +100,115 @@ function WorkflowClarifications({ clientId }: { clientId: string }) {
   );
 }
 
+const BUSINESS_UPDATE_TYPES = [
+  "Hours change",
+  "New or updated menu item",
+  "Temporary closure or holiday hours",
+  "Promotion or special idea",
+  "Photos or video to feature",
+  "Something else",
+];
+
+/**
+ * Client-initiated business update composer. Creates a `client_request`
+ * workflow item locally so the update flows into the same journey the team
+ * sees. No network, no auto-publish: business facts (hours, menu, closures)
+ * are always confirmed by Veroxa before anything changes.
+ */
+function SendBusinessUpdate({ clientId }: { clientId: string }) {
+  const [updateType, setUpdateType] = useState<string>(BUSINESS_UPDATE_TYPES[0]);
+  const [note, setNote] = useState("");
+  const [confirmation, setConfirmation] = useState<string | null>(null);
+
+  const submit = () => {
+    const text = note.trim();
+    if (!text) return;
+    createWorkflowItem({
+      clientId,
+      type: "client_request",
+      title: updateType,
+      clientNote: text,
+      submittedBy: "client",
+    });
+    setNote("");
+    setConfirmation(
+      "Thanks — your update has been sent to the Veroxa team. We'll confirm any business details with you before anything changes.",
+    );
+  };
+
+  return (
+    <Card
+      className="bg-card border-primary/20 mb-4"
+      data-testid="card-send-business-update"
+    >
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm flex items-center gap-2">
+          <Megaphone className="w-4 h-4 text-primary" />
+          Send Veroxa a business update
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          Changed your hours, added a dish, or have a promotion in mind? Let the
+          Veroxa team know and we'll take it from there.
+        </p>
+        <select
+          value={updateType}
+          onChange={(e) => {
+            setUpdateType(e.target.value);
+            setConfirmation(null);
+          }}
+          className="bg-muted/40 border border-border rounded-md px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary w-full sm:w-72"
+          data-testid="select-business-update-type"
+        >
+          {BUSINESS_UPDATE_TYPES.map((t) => (
+            <option key={t} value={t}>
+              {t}
+            </option>
+          ))}
+        </select>
+        <textarea
+          value={note}
+          onChange={(e) => {
+            setNote(e.target.value);
+            setConfirmation(null);
+          }}
+          rows={3}
+          placeholder="Share the details — e.g. new Friday hours, a new dish name, or a promo you'd like to run."
+          className="w-full bg-muted/40 border border-border rounded-md px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+          data-testid="input-business-update-note"
+        />
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <p className="text-[10px] text-muted-foreground max-w-md">
+            Veroxa confirms hours, menu, and other business details with you
+            before anything goes live.
+          </p>
+          <Button
+            type="button"
+            size="sm"
+            onClick={submit}
+            disabled={!note.trim()}
+            data-testid="btn-send-business-update"
+            className="flex-shrink-0"
+          >
+            <Send className="w-3.5 h-3.5 mr-1.5" /> Send to Veroxa
+          </Button>
+        </div>
+        {confirmation && (
+          <div
+            className="flex items-start gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-2.5 text-xs text-emerald-300"
+            role="status"
+            data-testid="text-business-update-confirmation"
+          >
+            <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" />
+            <span>{confirmation}</span>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function ClientRequests() {
   const { source, dataSourceMessage } = useClientPortalData();
 
@@ -139,6 +249,9 @@ export default function ClientRequests() {
           foundation. Responses are saved into your workflow (backend pending).
           No notifications or external messages are sent. */}
       <WorkflowClarifications clientId={SHOWCASE_ID} />
+
+      {/* Client-initiated business updates — the outbound half of the journey. */}
+      <SendBusinessUpdate clientId={SHOWCASE_ID} />
 
       {/* Action needed from you — derived from the submission pipeline. */}
       {actionRequired.length > 0 && (
