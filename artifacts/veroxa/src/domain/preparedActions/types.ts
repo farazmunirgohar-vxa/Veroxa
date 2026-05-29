@@ -79,6 +79,7 @@ export const PREPARED_ACTION_TYPE_LABELS: Record<PreparedActionType, string> = {
 /** What produced the prepared action. */
 export type PreparedActionSource =
   | "automation_audit"
+  | "visibility_audit"
   | "daily_opportunity_engine"
   | "team_manual"
   | "client_request"
@@ -87,6 +88,7 @@ export type PreparedActionSource =
 
 export const PREPARED_ACTION_SOURCE_LABELS: Record<PreparedActionSource, string> = {
   automation_audit: "Automated audit",
+  visibility_audit: "Visibility audit",
   daily_opportunity_engine: "Daily opportunity engine",
   team_manual: "Team",
   client_request: "Client request",

@@ -84,3 +84,14 @@ surfaced heavily in client UI yet.
 Build the **SEO / Google / Website Audit Task Engine** that *produces* prepared
 actions and feeds them into this queue — turning audit findings directly into
 reviewable, approvable actions.
+
+## Visibility Audit Engine hardening note
+
+The Visibility Audit Engine feeds Prepared Actions only through the same local Approval-to-Execution path used by other prepared work. Visibility findings are mapped into prepared-action seeds without setting risk or approval fields directly; `preparedActionStore` derives those fields from the central Prepared Actions rules engine.
+
+Additional guardrails:
+
+- Client confirmation remains required for hours, holiday hours, menu, pricing, catering, dietary claims, health claims, and other business-truth changes.
+- Visibility-prepared actions are capped per restaurant before they enter the Approval Queue, which prevents one restaurant from flooding the queue.
+- Queue wording must not imply live external execution. The current state is preparation, review, confirmation, and later manual or future execution.
+- Client-safe summaries must not expose raw findings, rule evidence, or internal implementation details.

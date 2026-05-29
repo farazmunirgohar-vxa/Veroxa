@@ -29,6 +29,7 @@ import ClientReports from "@/pages/client-reports";
 import InternalDemoGuard from "@/components/auth/InternalDemoGuard";
 import TeamDashboard from "@/pages/team-dashboard";
 import TeamApprovalQueue from "@/pages/team-approval-queue";
+import TeamVisibilityAudit from "@/pages/team-visibility-audit";
 import TeamUploadInbox from "@/pages/team-upload-inbox";
 import TeamWorkQueue from "@/pages/team-work-queue";
 import TeamDirectionQueue from "@/pages/team-direction-queue";
@@ -109,6 +110,13 @@ function Router() {
         {() => (
           <InternalDemoGuard role="team">
             <TeamApprovalQueue />
+          </InternalDemoGuard>
+        )}
+      </Route>
+      <Route path="/team/visibility-audit">
+        {() => (
+          <InternalDemoGuard role="team">
+            <TeamVisibilityAudit />
           </InternalDemoGuard>
         )}
       </Route>

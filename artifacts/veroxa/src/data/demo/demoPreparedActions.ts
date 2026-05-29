@@ -10,6 +10,7 @@
 
 import { getRestaurantName } from "@/data/demo/demoClients";
 import type { PreparedAction } from "@/domain/preparedActions";
+import { getVisibilityPreparedActionSeeds } from "@/lib/visibilityAudit";
 
 type PreparedActionSeed = Omit<
   PreparedAction,
@@ -142,13 +143,38 @@ export const demoPreparedActionSeeds: PreparedActionSeed[] = [
 ];
 
 /** Seeds with the restaurant name resolved. Safety fields are added by the store. */
+function withDemoRestaurant(seed: PreparedActionSeed): PreparedActionSeed & {
+  restaurantName: string;
+  demoOnly: true;
+} {
+  return {
+    ...seed,
+    restaurantName: getRestaurantName(seed.clientId),
+    demoOnly: true as const,
+  };
+}
+
+function dedupePreparedActionSeeds(
+  seeds: (PreparedActionSeed & { restaurantName: string; demoOnly: true })[],
+): (PreparedActionSeed & { restaurantName: string; demoOnly: true })[] {
+  const seen = new Set<string>();
+  return seeds.filter((seed) => {
+    const key = `${seed.clientId}:${seed.channel}:${seed.type}:${seed.title}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 export function getDemoPreparedActionSeeds(): (PreparedActionSeed & {
   restaurantName: string;
   demoOnly: true;
 })[] {
-  return demoPreparedActionSeeds.map((seed) => ({
-    ...seed,
-    restaurantName: getRestaurantName(seed.clientId),
-    demoOnly: true as const,
-  }));
+  return dedupePreparedActionSeeds([
+    ...demoPreparedActionSeeds.map(withDemoRestaurant),
+    ...getVisibilityPreparedActionSeeds().map((seed) => ({
+      ...seed,
+      demoOnly: true as const,
+    })),
+  ]);
 }

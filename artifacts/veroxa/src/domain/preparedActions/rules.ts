@@ -66,7 +66,7 @@ export function isSensitiveBusinessTruth(action: PreparedAction): boolean {
   // Belt-and-braces: if the prepared text mentions a business-truth concept,
   // treat it as sensitive even when the type alone wouldn't.
   const haystack = `${action.title} ${action.reason} ${action.payload.preparedText ?? ""}`.toLowerCase();
-  return /\b(price|pricing|discount|offer|deal|hours|holiday|menu|halal|organic|gluten|vegan|allergy|allergen|health)\b/.test(
+  return /\b(price|pricing|discount|offer|deal|hours|holiday|menu|catering|halal|organic|gluten|vegan|allergy|allergen|health|dietary|ingredient|claim|profile|website link|business link|address|phone)\b/.test(
     haystack,
   );
 }

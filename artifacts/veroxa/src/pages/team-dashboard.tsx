@@ -17,6 +17,7 @@ import { clientTeamWorkRepository } from "@/lib/repositories";
 import { getTodaysSuggestedPushes } from "@/domain/dailyOpportunity";
 import type { OpportunityPriority } from "@/domain/dailyOpportunity";
 import { preparedActionRepository, usePreparedActions } from "@/lib/preparedActions";
+import { getTeamVisibilityAuditSummaries } from "@/lib/visibilityAudit";
 import {
   PREPARED_ACTION_CHANNEL_LABELS,
   APPROVAL_REQUIREMENT_LABELS,
@@ -112,6 +113,11 @@ export default function TeamDashboard() {
   usePreparedActions();
   const pendingApprovals = preparedActionRepository.getPendingApprovalActions();
   const approvalsPreview = pendingApprovals.slice(0, 3);
+
+  // Visibility audit preview — team-only, rule-based review signals.
+  const visibilityAuditPreview = getTeamVisibilityAuditSummaries()
+    .flatMap((result) => result.findings)
+    .slice(0, 3);
 
   return (
     <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
@@ -245,6 +251,52 @@ export default function TeamDashboard() {
               ))}
               <p className="text-[10px] text-muted-foreground/60 pt-1">
                 Nothing is posted or sent until you approve it here.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+
+      {/* Visibility audit preview — team-only issues that can become prepared actions */}
+      {visibilityAuditPreview.length > 0 && (
+        <div className="mb-6" data-testid="section-visibility-audit-preview">
+          <Card className="bg-card border-border">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center justify-between gap-2">
+                <span className="flex items-center gap-2">
+                  <Eye className="w-4 h-4 text-primary" />
+                  Visibility issues
+                </span>
+                <Link href="/team/visibility-audit">
+                  <span className="flex items-center gap-1 text-xs text-primary hover:underline cursor-pointer font-normal">
+                    Open audit <ArrowRight className="w-3 h-3" />
+                  </span>
+                </Link>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {visibilityAuditPreview.map((finding) => (
+                <div
+                  key={finding.id}
+                  className="rounded-md border border-border bg-muted/20 p-3"
+                  data-testid={`visibility-preview-${finding.id}`}
+                >
+                  <div className="flex items-start justify-between gap-2 flex-wrap">
+                    <p className="text-sm font-semibold">{finding.title}</p>
+                    <StatusBadge tone={finding.needsClientConfirmation ? "accent" : "info"}>
+                      {finding.needsClientConfirmation ? "Needs confirmation" : "Ready for review"}
+                    </StatusBadge>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">{finding.restaurantName}</p>
+                  <p className="text-[12px] text-primary/85 mt-1.5">
+                    <span className="text-muted-foreground">Suggested next step:</span>{" "}
+                    {finding.suggestedNextStep}
+                  </p>
+                </div>
+              ))}
+              <p className="text-[10px] text-muted-foreground/60 pt-1">
+                Prepared actions still require Approval Queue review before anything is sent or changed.
               </p>
             </CardContent>
           </Card>
