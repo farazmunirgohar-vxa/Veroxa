@@ -1,25 +1,36 @@
-import { useState, type FormEvent } from "react";
+import { useState, useRef, type FormEvent } from "react";
 import { Link, useLocation } from "wouter";
-import { ArrowLeft, ArrowRight, CheckCircle2, Hexagon, Lock, Mail, ShieldAlert, Users, Utensils } from "lucide-react";
+import {
+  ArrowLeft, ArrowRight, CheckCircle2, ChevronDown,
+  Hexagon, Lock, Mail, ShieldAlert, Users, Utensils,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AUTH_MODE } from "@/lib/auth/authMode";
 import { getSupabaseClient } from "@/lib/supabase";
 import { getRoleHomePath, isVeroxaRole } from "@/lib/auth/authContract";
-import {
-  getDevRouteForRole,
-  validateDevCredentials,
-} from "@/lib/auth/devCredentials";
+import { getDevRouteForRole, validateDevCredentials } from "@/lib/auth/devCredentials";
+import type { VeroxaRole } from "@/lib/auth/authContract";
 
-/**
- * Quick-access portal cards — link directly to the portal (no credential
- * required for the client portal; team portal opens via the sign-in form).
- * These are not demo links — they are the active Veroxa OS review portals.
- */
-const portalCards = [
+type SignInState =
+  | { kind: "idle" }
+  | { kind: "submitting" }
+  | { kind: "success"; message: string }
+  | { kind: "error"; message: string };
+
+const PORTAL_CARDS: {
+  role: VeroxaRole;
+  icon: typeof Utensils;
+  label: string;
+  description: string;
+  iconClass: string;
+  glow: string;
+  testid: string;
+  badge: string | null;
+}[] = [
   {
-    href: "/client/dashboard",
+    role: "client",
     icon: Utensils,
     label: "Client Portal",
     description: "Restaurant owner view — content calendar, Google visibility, weekly updates, and monthly reports.",
@@ -29,7 +40,7 @@ const portalCards = [
     badge: null,
   },
   {
-    href: "/team/dashboard",
+    role: "team",
     icon: Users,
     label: "Team Portal",
     description: "Content team workspace — media review, draft variants, upload inbox, client work queue, and reporting.",
@@ -40,24 +51,29 @@ const portalCards = [
   },
 ];
 
-type SignInState =
-  | { kind: "idle" }
-  | { kind: "submitting" }
-  | { kind: "success"; message: string }
-  | { kind: "error"; message: string };
-
 export default function LoginPage() {
   const [signInState, setSignInState] = useState<SignInState>({ kind: "idle" });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [selectedRole, setSelectedRole] = useState<VeroxaRole | null>(null);
   const [, setLocation] = useLocation();
+  const formRef = useRef<HTMLDivElement>(null);
+
+  function selectPortal(role: VeroxaRole) {
+    setSelectedRole(role);
+    setSignInState({ kind: "idle" });
+    // Scroll sign-in form into view after a brief frame so the state updates first.
+    requestAnimationFrame(() => {
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  }
 
   /**
    * Sign-in submit handler.
    *
-   * - When `AUTH_MODE === "placeholder"`: validates dev credentials, routes to
+   * - When AUTH_MODE === "placeholder": validates dev credentials, routes to
    *   the real portal path (/client/dashboard, /team/dashboard).
-   * - When `AUTH_MODE === "real"`:
+   * - When AUTH_MODE === "real":
    *     1. signInWithPassword
    *     2. Get session → look up user_profiles by user_id
    *     3. Validate role with isVeroxaRole
@@ -70,31 +86,19 @@ export default function LoginPage() {
     e.preventDefault();
 
     if (AUTH_MODE === "placeholder") {
-      // TEMPORARY development-only flow. See
-      // src/lib/auth/devCredentials.ts — no Supabase, no network, no
-      // production users. Remove together when real auth is wired.
       const role = validateDevCredentials(email, password);
       if (!role) {
-        setSignInState({
-          kind: "error",
-          message: "Invalid development credentials.",
-        });
+        setSignInState({ kind: "error", message: "Incorrect credentials. Please try again." });
         return;
       }
-      setSignInState({
-        kind: "success",
-        message: `Routing to ${role} portal…`,
-      });
+      setSignInState({ kind: "success", message: `Routing to ${role} portal…` });
       setLocation(getDevRouteForRole(role));
       return;
     }
 
     const client = getSupabaseClient();
     if (!client) {
-      setSignInState({
-        kind: "error",
-        message: "Sign-in unavailable: Supabase env vars missing.",
-      });
+      setSignInState({ kind: "error", message: "Sign-in unavailable: Supabase env vars missing." });
       return;
     }
 
@@ -102,22 +106,15 @@ export default function LoginPage() {
     try {
       const { error } = await client.auth.signInWithPassword({ email, password });
       if (error) {
-        setSignInState({
-          kind: "error",
-          message: `Sign-in failed: ${error.message}`,
-        });
+        setSignInState({ kind: "error", message: `Sign-in failed: ${error.message}` });
         return;
       }
 
-      // Look up user_profiles to resolve role.
       const { data: sessionData } = await client.auth.getSession();
       const userId = sessionData.session?.user?.id;
 
       if (!userId) {
-        setSignInState({
-          kind: "error",
-          message: "Signed in, but no Veroxa profile was found for this user.",
-        });
+        setSignInState({ kind: "error", message: "Signed in, but no Veroxa profile was found for this user." });
         return;
       }
 
@@ -128,43 +125,35 @@ export default function LoginPage() {
         .maybeSingle<{ role?: unknown }>();
 
       if (profileError) {
-        setSignInState({
-          kind: "error",
-          message: `Signed in, but profile lookup failed: ${profileError.message}`,
-        });
+        setSignInState({ kind: "error", message: `Profile lookup failed: ${profileError.message}` });
         return;
       }
-
       if (!profile) {
-        setSignInState({
-          kind: "error",
-          message: "Signed in, but no Veroxa profile was found for this user.",
-        });
+        setSignInState({ kind: "error", message: "No Veroxa profile found for this user." });
         return;
       }
-
       if (!isVeroxaRole(profile.role)) {
-        setSignInState({
-          kind: "error",
-          message: "Signed in, but this Veroxa role is not valid.",
-        });
+        setSignInState({ kind: "error", message: "This account does not have a valid Veroxa role." });
         return;
       }
 
       setLocation(getRoleHomePath(profile.role));
     } catch {
-      setSignInState({
-        kind: "error",
-        message: "Unexpected sign-in error. Please try again later.",
-      });
+      setSignInState({ kind: "error", message: "Unexpected sign-in error. Please try again." });
     }
   }
+
+  const formTitle =
+    selectedRole === "client" ? "Sign in to Client Portal" :
+    selectedRole === "team"   ? "Sign in to Team Portal"   :
+    "Sign In";
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col items-center px-6 py-12 relative overflow-hidden">
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[900px] h-[600px] bg-primary/5 blur-[140px] rounded-full pointer-events-none -z-10" />
 
       <div className="w-full max-w-5xl">
+
         {/* Top bar */}
         <div className="flex items-center justify-between mb-12">
           <Link
@@ -193,58 +182,93 @@ export default function LoginPage() {
             Access Veroxa OS
           </h1>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-            Sign in to access the Client Portal or Team Portal review environment.
+            Select your portal, then sign in with your Veroxa credentials.
           </p>
         </div>
 
-        {/* Portal cards */}
-        <div className="grid sm:grid-cols-2 gap-5 mt-12 animate-in fade-in slide-in-from-bottom-8 duration-700">
-          {portalCards.map((card) => (
-            <Link
-              key={card.label}
-              href={card.href}
-              className="block group"
-              data-testid={card.testid}
-            >
-              <div className="h-full p-7 rounded-2xl border border-border bg-card hover:bg-accent/30 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/5 relative overflow-hidden">
-                <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl ${card.glow} blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+        {/* Portal selector cards */}
+        <div
+          className="grid sm:grid-cols-2 gap-5 mt-12 animate-in fade-in slide-in-from-bottom-8 duration-700"
+          data-testid="portal-selector"
+        >
+          {PORTAL_CARDS.map((card) => {
+            const isSelected = selectedRole === card.role;
+            return (
+              <div key={card.label} className="flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={() => selectPortal(card.role)}
+                  data-testid={card.testid}
+                  className={[
+                    "w-full text-left group p-7 rounded-2xl border bg-card transition-all duration-300",
+                    "hover:bg-accent/30 hover:shadow-2xl hover:shadow-primary/5 relative overflow-hidden",
+                    isSelected
+                      ? "border-primary/50 ring-1 ring-primary/30 bg-accent/20"
+                      : "border-border",
+                  ].join(" ")}
+                >
+                  <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl ${card.glow} blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
 
-                <div className="mb-5 flex items-start justify-between">
-                  <div className={`w-12 h-12 rounded-xl ${card.iconClass} flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300`}>
-                    <card.icon className="w-6 h-6" />
+                  <div className="mb-5 flex items-start justify-between">
+                    <div className={`w-12 h-12 rounded-xl ${card.iconClass} flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300`}>
+                      <card.icon className="w-6 h-6" />
+                    </div>
+                    {card.badge && (
+                      <span className="text-[9px] font-semibold text-amber-400 bg-amber-500/10 px-2 py-1 rounded-full uppercase tracking-widest whitespace-nowrap flex items-center gap-1">
+                        <Lock className="w-2.5 h-2.5" />
+                        {card.badge}
+                      </span>
+                    )}
+                    {isSelected && (
+                      <span className="text-[9px] font-semibold text-primary bg-primary/10 px-2 py-1 rounded-full uppercase tracking-widest whitespace-nowrap">
+                        Selected
+                      </span>
+                    )}
                   </div>
-                  {card.badge && (
-                    <span className="text-[9px] font-semibold text-amber-400 bg-amber-500/10 px-2 py-1 rounded-full uppercase tracking-widest whitespace-nowrap flex items-center gap-1">
-                      <Lock className="w-2.5 h-2.5" />
-                      {card.badge}
+
+                  <h2 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">
+                    {card.label}
+                  </h2>
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-5">
+                    {card.description}
+                  </p>
+
+                  <div className="flex items-center justify-end pt-4 border-t border-border/40">
+                    <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary group-hover:gap-2.5 transition-all">
+                      {isSelected ? "Selected — sign in below" : "Select & sign in"}
+                      {isSelected
+                        ? <ChevronDown className="w-3.5 h-3.5" />
+                        : <ArrowRight className="w-3.5 h-3.5" />}
                     </span>
-                  )}
-                </div>
+                  </div>
+                </button>
 
-                <h2 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">
-                  {card.label}
-                </h2>
-                <p className="text-sm text-muted-foreground leading-relaxed mb-5">
-                  {card.description}
-                </p>
-
-                <div className="flex items-center justify-end pt-4 border-t border-border/40">
-                  <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary group-hover:gap-2.5 transition-all">
-                    Open Portal
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </span>
-                </div>
+                {/* Demo preview link — Client Portal only */}
+                {card.role === "client" && (
+                  <Link
+                    href="/demo/client/dashboard"
+                    className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors self-start ml-1"
+                    data-testid="link-preview-client-portal"
+                  >
+                    Preview client portal without login
+                    <ArrowRight className="w-3 h-3" />
+                  </Link>
+                )}
               </div>
-            </Link>
-          ))}
+            );
+          })}
         </div>
 
         {/* Sign In */}
-        <div className="mt-16 animate-in fade-in duration-700" data-testid="future-signin-section">
+        <div
+          className="mt-16 animate-in fade-in duration-700"
+          data-testid="signin-section"
+          ref={formRef}
+        >
           <div className="flex items-center gap-4 mb-8">
             <div className="h-px flex-1 bg-border" />
             <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-widest">
-              Or sign in directly
+              Sign in
             </span>
             <div className="h-px flex-1 bg-border" />
           </div>
@@ -255,18 +279,26 @@ export default function LoginPage() {
 
               <div className="flex items-start justify-between mb-5 relative">
                 <div>
-                  <h3 className="text-lg font-bold mb-1">Sign In</h3>
+                  <h3 className="text-lg font-bold mb-1">{formTitle}</h3>
                   <p className="text-xs text-muted-foreground leading-relaxed max-w-xs">
-                    Sign in with your Veroxa credentials to be routed to your portal.
+                    {selectedRole
+                      ? `Enter your Veroxa ${selectedRole} credentials below.`
+                      : "Select a portal above, then enter your Veroxa credentials."}
                   </p>
                 </div>
-                <span className="text-[9px] font-semibold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-full uppercase tracking-widest whitespace-nowrap flex items-center gap-1">
-                  <CheckCircle2 className="w-2.5 h-2.5" />
-                  Active
-                </span>
+                {selectedRole && (
+                  <span className={[
+                    "text-[9px] font-semibold px-2 py-1 rounded-full uppercase tracking-widest whitespace-nowrap",
+                    selectedRole === "client"
+                      ? "text-blue-400 bg-blue-500/10"
+                      : "text-emerald-400 bg-emerald-500/10",
+                  ].join(" ")}>
+                    {selectedRole === "client" ? "Client" : "Team"}
+                  </span>
+                )}
               </div>
 
-              <form onSubmit={handleSignInSubmit} className="space-y-4 relative" data-testid="form-future-signin">
+              <form onSubmit={handleSignInSubmit} className="space-y-4 relative" data-testid="form-signin">
                 <div className="space-y-1.5">
                   <Label htmlFor="signin-email" className="text-xs font-semibold text-muted-foreground">
                     Email
@@ -309,7 +341,7 @@ export default function LoginPage() {
                   type="submit"
                   disabled={signInState.kind === "submitting"}
                   className="w-full font-semibold"
-                  data-testid="btn-signin-coming-soon"
+                  data-testid="btn-signin"
                 >
                   {signInState.kind === "submitting" ? "Signing in…" : "Sign In"}
                 </Button>
@@ -348,9 +380,11 @@ export default function LoginPage() {
 
         {/* Footer note */}
         <p className="text-center text-xs text-muted-foreground/70 mt-12 max-w-md mx-auto leading-relaxed">
-          Sign in with your Veroxa credentials to be routed to your portal.
-          The Client Portal is also directly accessible above. Owner and Operator portals are parked.
+          Demo Preview is available for review.
+          Active client and team access routes through this login page.
+          Owner and Operator portals are deferred.
         </p>
+
       </div>
     </div>
   );

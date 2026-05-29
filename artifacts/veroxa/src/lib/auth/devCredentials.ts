@@ -1,19 +1,35 @@
 /**
- * devCredentials.ts — TEMPORARY development-only login matcher.
+ * devCredentials.ts — TEMPORARY placeholder-only login matcher.
  *
- * Used solely while AUTH_MODE === "placeholder" so the active role portals
- * (Client / Team) can be previewed without activating real Supabase auth.
- * This file is intentionally easy to delete when real auth ships:
- *   - no Supabase
- *   - no network
- *   - no hashing / secrets / service-role key
- *   - no production users
+ * ┌─────────────────────────────────────────────────────────────────────┐
+ * │  PRODUCTION REMOVAL REQUIRED                                        │
+ * │                                                                     │
+ * │  This file MUST be deleted (or replaced with a no-op stub) before  │
+ * │  AUTH_MODE is ever switched to "real". It contains plain-text       │
+ * │  dev passwords that have no place in a production bundle.           │
+ * │                                                                     │
+ * │  Deletion checklist:                                                │
+ * │  1. Delete this file.                                               │
+ * │  2. Remove the placeholder branch in src/pages/login.tsx that      │
+ * │     imports `validateDevCredentials` / `getDevRouteForRole`.        │
+ * │  3. Confirm AUTH_MODE === "real" routes exclusively through the     │
+ * │     Supabase signInWithPassword path in login.tsx.                  │
+ * │  4. Confirm no service-role key appears anywhere in the frontend    │
+ * │     bundle (only VITE_SUPABASE_ANON_KEY is allowed).               │
+ * │                                                                     │
+ * │  AUTH_MODE must NOT be switched to "real" until this file is       │
+ * │  removed and the Supabase manual setup is complete. See:            │
+ * │  docs/AUTH_MODE_SWITCH_PLAN.md                                      │
+ * │  docs/MANUAL_SUPABASE_AUTH_SETUP_GUIDE.md                          │
+ * └─────────────────────────────────────────────────────────────────────┘
+ *
+ * Safe today because:
+ *   - only runs while AUTH_MODE === "placeholder" (compile-time constant)
+ *   - no Supabase client, no network calls, no hashing
+ *   - no production users created or modified
  *   - no backend writes
- *
- * To remove: delete this file and the placeholder branch in
- * `src/pages/login.tsx` that imports `validateDevCredentials` /
- * `getDevRouteForRole`. The real-auth branch already routes via
- * `getRoleHomePath` from `./authContract`.
+ *   - dev passwords are meaningless outside the placeholder flow
+ *   - credentials are never surfaced in the login UI
  */
 
 import { getRoleHomePath, type VeroxaRole } from "./authContract";
@@ -25,19 +41,19 @@ export interface DevCredential {
 }
 
 /**
- * Temporary development credentials. Plain-text by design — this file is
- * never bundled into a real auth flow and contains no production secrets.
+ * Placeholder development credentials for internal review only.
+ * Plain-text by design — no production secrets, no real accounts.
+ * Operator and Owner credentials intentionally omitted (portals parked).
  */
 export const DEV_ROLE_CREDENTIALS: readonly DevCredential[] = [
   { role: "client", email: "faraz@client.com", password: "farazclient" },
   { role: "team",   email: "faraz@team.com",   password: "farazteam"   },
-  // operator and owner are parked; credentials removed from active login.
 ] as const;
 
 /**
- * Returns the matching role if the email + password pair is one of the
- * dev credentials above, otherwise `null`. Email is matched
- * case-insensitively; password is matched exactly.
+ * Returns the matching role if the email+password pair matches a dev
+ * credential, otherwise `null`. Email is matched case-insensitively.
+ * Only called when AUTH_MODE === "placeholder".
  */
 export function validateDevCredentials(
   emailOrId: string,
@@ -52,12 +68,12 @@ export function validateDevCredentials(
 }
 
 /**
- * Where a dev-logged-in role should land — the canonical real-review routes
- * (/client/dashboard, /team/dashboard) rather than /demo/* paths.
+ * Where a dev-logged-in role should land — the canonical real-review
+ * routes (/client/dashboard, /team/dashboard) rather than /demo/* paths.
  * Operator and Owner are parked; they fall back to /login.
+ * Only called when AUTH_MODE === "placeholder".
  */
 export function getDevRouteForRole(role: VeroxaRole): string {
-  // Operator and owner are parked in the current build.
   if (role === "operator" || role === "owner") return "/login";
   return getRoleHomePath(role);
 }
