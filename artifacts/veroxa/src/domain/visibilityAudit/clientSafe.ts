@@ -26,12 +26,26 @@ const CLIENT_SAFE_CATEGORY_LABELS: Record<VisibilityAuditCategory, string> = {
   content_freshness: "Fresh content",
 };
 
+const CLIENT_SAFE_CATEGORY_LINES: Record<VisibilityAuditCategory, string> = {
+  google_business_profile: "Veroxa is preparing a Google visibility update.",
+  local_seo: "Veroxa is improving local search wording.",
+  website: "Veroxa is preparing a website visibility improvement.",
+  reviews: "Veroxa is preparing a review response or review-growth step.",
+  social_profile: "Veroxa is preparing a social profile improvement.",
+  menu_visibility: "Veroxa needs confirmation before updating menu details.",
+  catering_visibility:
+    "Veroxa needs confirmation before updating catering details.",
+  content_freshness: "Veroxa is preparing fresh content for your restaurant.",
+};
+
 /**
  * Whether a finding should ever be shown to a client. We never surface internal
  * profile completeness numbers, broken-link diagnostics, or other "under the
  * hood" items — only positive, action-oriented areas of focus.
  */
-export function shouldShowVisibilityFindingToClient(finding: VisibilityAuditFinding): boolean {
+export function shouldShowVisibilityFindingToClient(
+  finding: VisibilityAuditFinding,
+): boolean {
   // Internal-only diagnostics stay with the team.
   if (finding.source === "manual_team_check") return false;
   if (finding.category === "local_seo") return false;
@@ -39,15 +53,23 @@ export function shouldShowVisibilityFindingToClient(finding: VisibilityAuditFind
   return finding.actionable;
 }
 
-/** A single calm, client-safe line for one finding (no severity, no jargon). */
-export function getClientSafeVisibilityFinding(finding: VisibilityAuditFinding): string {
-  const area = CLIENT_SAFE_CATEGORY_LABELS[finding.category];
-  return `${area}: we're getting an improvement ready for you.`;
+/** A single calm, client-safe line for one finding (no severity, no IDs, no jargon). */
+export function getClientSafeVisibilityFinding(
+  finding: VisibilityAuditFinding,
+): string {
+  if (finding.recommendation.requiresClientConfirmation) {
+    return "Veroxa needs confirmation before updating business details.";
+  }
+  return CLIENT_SAFE_CATEGORY_LINES[finding.category];
 }
 
 /** A reassuring one-line status for the whole audit (no scores or grades). */
-export function getClientSafeVisibilityStatus(result: VisibilityAuditResult): string {
-  const visibleCount = result.findings.filter(shouldShowVisibilityFindingToClient).length;
+export function getClientSafeVisibilityStatus(
+  result: VisibilityAuditResult,
+): string {
+  const visibleCount = result.findings.filter(
+    shouldShowVisibilityFindingToClient,
+  ).length;
   if (visibleCount === 0) {
     return "Your online presence is in good shape — we're keeping it fresh.";
   }

@@ -22,8 +22,8 @@ import {
  *
  * The human gate of the Approval-to-Execution model: prepared actions appear
  * here for Faraz to approve, edit later, ask the client, skip, or queue for
- * execution. Nothing is posted, sent, or changed from this page — execution
- * happens later once connectors exist. Mobile-friendly so review works anywhere.
+ * execution. Nothing changes publicly from this page — approved items are held
+ * safely for later handling. Mobile-friendly so review works anywhere.
  */
 
 const PRIORITY_ORDER: PreparedActionPriority[] = ["high", "medium", "low"];
@@ -62,7 +62,8 @@ export default function TeamApprovalQueue() {
 
   const handlers = {
     onApprove: preparedActionRepository.markApproved,
-    onEditLater: (id: PreparedActionId) => preparedActionRepository.updatePreparedActionStatus(id, "edited"),
+    onEditLater: (id: PreparedActionId) =>
+      preparedActionRepository.updatePreparedActionStatus(id, "edited"),
     onAskClient: preparedActionRepository.markNeedsClientConfirmation,
     onSkip: preparedActionRepository.markSkipped,
     onQueueForExecution: preparedActionRepository.markQueuedForExecution,
@@ -72,20 +73,20 @@ export default function TeamApprovalQueue() {
     <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
       <PageHeader
         title="Approval Queue"
-        description="Review prepared actions before anything is posted, sent, or changed."
+        description="Review prepared actions before anything changes publicly."
         testId="header-approval-queue"
       />
 
       <DemoOnlyBanner
-        message="Nothing here is posted or sent. Approving prepares an action for execution later, once the matching connection is in place."
+        message="Nothing changes publicly from this page. Approval keeps an action ready for later review and handling."
         testId="banner-approval-queue"
       />
 
       {totalOpen === 0 && (
         <Card data-testid="approval-queue-empty">
           <CardContent className="p-8 text-center text-sm text-muted-foreground">
-            Nothing waiting for review right now. Prepared actions will appear here
-            as Veroxa gets work ready.
+            Nothing waiting for review right now. Prepared actions will appear
+            here as Veroxa gets work ready.
           </CardContent>
         </Card>
       )}
@@ -141,8 +142,9 @@ export default function TeamApprovalQueue() {
       )}
 
       <p className="text-[11px] text-muted-foreground/70 mt-6 px-0.5">
-        Approved actions wait safely until execution is connected. Items that need
-        the restaurant&apos;s confirmation are never changed until they confirm.
+        Approved actions wait safely until the team is ready to handle them.
+        Items that need the restaurant&apos;s confirmation are never changed
+        until they confirm.
       </p>
     </PortalLayout>
   );

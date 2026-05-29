@@ -36,11 +36,9 @@ const PUBLIC_FACING_TYPES: ReadonlySet<PreparedActionType> = new Set([
  * prices, menu, dietary/health claims, offers. These need client confirmation
  * before anything is changed.
  */
-const SENSITIVE_BUSINESS_TRUTH_TYPES: ReadonlySet<PreparedActionType> = new Set([
-  "website_copy_update",
-  "menu_visibility_update",
-  "catering_push",
-]);
+const SENSITIVE_BUSINESS_TRUTH_TYPES: ReadonlySet<PreparedActionType> = new Set(
+  ["website_copy_update", "menu_visibility_update", "catering_push"],
+);
 
 /**
  * Action types that are purely internal — audits, drafts, classification,
@@ -62,11 +60,13 @@ export function isPublicFacingAction(action: PreparedAction): boolean {
  * prices, offers, menu, dietary/health claims, catering availability).
  */
 export function isSensitiveBusinessTruth(action: PreparedAction): boolean {
+  if (action.payload.requiresClientConfirmation) return true;
   if (SENSITIVE_BUSINESS_TRUTH_TYPES.has(action.type)) return true;
   // Belt-and-braces: if the prepared text mentions a business-truth concept,
   // treat it as sensitive even when the type alone wouldn't.
-  const haystack = `${action.title} ${action.reason} ${action.payload.preparedText ?? ""}`.toLowerCase();
-  return /\b(price|pricing|discount|offer|deal|hours|holiday|menu|halal|organic|gluten|vegan|allergy|allergen|health)\b/.test(
+  const haystack =
+    `${action.title} ${action.reason} ${action.payload.preparedText ?? ""}`.toLowerCase();
+  return /\b(price|pricing|discount|offer|deal|hours|holiday|menu|catering|availability|halal|organic|gluten|vegan|allergy|allergen|health|complaint|serious|refund|food safety)\b/.test(
     haystack,
   );
 }
@@ -75,7 +75,9 @@ export function isSensitiveBusinessTruth(action: PreparedAction): boolean {
  * The approval a prepared action requires. Order of precedence:
  *   never_automatic > client_confirmation_required > team_approval_required > none.
  */
-export function getApprovalRequirement(action: PreparedAction): ApprovalRequirement {
+export function getApprovalRequirement(
+  action: PreparedAction,
+): ApprovalRequirement {
   // Some action types must never run automatically regardless of content.
   // (Ad budget changes, deletions, legal/health guarantees are not modelled as
   // first-class types here; they would arrive flagged and are handled as
@@ -93,7 +95,8 @@ export function getRiskLevel(action: PreparedAction): ApprovalRiskLevel {
   if (isSensitiveBusinessTruth(action)) return "sensitive";
   if (isPublicFacingAction(action)) {
     // Website + menu edits carry more blast radius than a single post.
-    return action.type === "website_copy_update" || action.type === "menu_visibility_update"
+    return action.type === "website_copy_update" ||
+      action.type === "menu_visibility_update"
       ? "high"
       : "medium";
   }

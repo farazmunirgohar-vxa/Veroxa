@@ -24,16 +24,16 @@ rule over a fixture input, so the same input always yields the same result.
 
 ## Where things live
 
-| Concern | File |
-| --- | --- |
-| Domain types (categories, severities, sources, input, finding, result) | `src/domain/visibilityAudit/types.ts` |
-| Rule engine (`runVisibilityAudit`) | `src/domain/visibilityAudit/engine.ts` |
-| Finding → prepared action mapper | `src/domain/visibilityAudit/preparedActionMapper.ts` |
-| Client-safe translation layer | `src/domain/visibilityAudit/clientSafe.ts` |
-| Domain barrel | `src/domain/visibilityAudit/index.ts` |
-| Demo audit inputs (fixtures) | `src/data/demo/demoVisibilityAudits.ts` |
-| Read-only repository + queue seeds | `src/lib/visibilityAudit/` |
-| Team Visibility Audit page (`/team/visibility-audit`) | `src/pages/team-visibility-audit.tsx` |
+| Concern                                                                | File                                                 |
+| ---------------------------------------------------------------------- | ---------------------------------------------------- |
+| Domain types (categories, severities, sources, input, finding, result) | `src/domain/visibilityAudit/types.ts`                |
+| Rule engine (`runVisibilityAudit`)                                     | `src/domain/visibilityAudit/engine.ts`               |
+| Finding → prepared action mapper                                       | `src/domain/visibilityAudit/preparedActionMapper.ts` |
+| Client-safe translation layer                                          | `src/domain/visibilityAudit/clientSafe.ts`           |
+| Domain barrel                                                          | `src/domain/visibilityAudit/index.ts`                |
+| Demo audit inputs (fixtures)                                           | `src/data/demo/demoVisibilityAudits.ts`              |
+| Read-only repository + queue seeds                                     | `src/lib/visibilityAudit/`                           |
+| Team Visibility Audit page (`/team/visibility-audit`)                  | `src/pages/team-visibility-audit.tsx`                |
 
 ## Flow
 
@@ -65,18 +65,29 @@ The mapper produces **seeds** only — it never sets `riskLevel` or
 prepared-actions **rules engine**, exactly like the hand-written fixtures. This
 keeps one safety gate for the whole queue.
 
-Two consequences worth knowing:
+Three consequences worth knowing:
 
-- **Sensitive business truths** (catering copy, menu visibility, holiday hours,
-  anything mentioning price/hours/menu/halal) are forced to
-  `client_confirmation_required` + `sensitive` by the rules engine's text
-  heuristic — even when the finding's action type would otherwise be lower risk.
-  So holiday-hours and catering findings correctly require the restaurant's
-  confirmation before anything changes.
+- **Sensitive business truths** (hours, holiday hours, menu details, catering
+  availability, offers, discounts, prices, halal/organic/health claims, serious
+  complaint handling, or other unverified business facts) carry a typed
+  `requiresClientConfirmation` payload flag when the audit rule knows the action
+  depends on restaurant-owned facts. The prepared-action rules engine reads that
+  flag and derives `client_confirmation_required` + `sensitive`.
+- **Text heuristics remain as a belt-and-braces fallback** for business-truth
+  language (`price`, `hours`, `menu`, `halal`, `organic`, etc.), but they are no
+  longer the only protection for the visibility-audit mappings.
 - **Local-search wording** maps to `seo_keyword_update`, which the rules engine
   treats as **internal-only** (folded into a content plan), not a public post.
-  This is intentional and consistent with the existing queue; it differs from a
-  literal "team approval" reading but preserves the established gate.
+  This is intentional and consistent with the existing queue; it preserves the
+  established gate and avoids fake public execution.
+
+## Queue noise controls
+
+The audit page can show every visibility issue, but only selected issues become
+prepared actions. `MAX_PREPARED_ACTIONS_PER_AUDIT` caps each restaurant at five
+prepared actions per audit, sorted by severity first. The mapper also deduplicates
+matching `(client, channel, type, title)` action signatures before the cap is
+applied, so one restaurant cannot flood the Approval Queue with repeated work.
 
 ## Demo spread (kept un-noisy)
 
@@ -96,8 +107,14 @@ hand-written prepared-action fixtures:
 client-facing progress and is intentionally **not** surfaced in client UI yet —
 clients never see scores, severities, internals, or the queue.
 
+## Test plan
+
+See [`VISIBILITY_AUDIT_TEST_PLAN.md`](./VISIBILITY_AUDIT_TEST_PLAN.md) for the
+focused domain/UI safety test plan to implement once a lightweight test runner is
+available.
+
 ## Next step
 
-Connect a real audit source (Google profile, website checks) behind the same
-`runVisibilityAudit` surface, and connect execution behind the Approval Queue —
-without changing the gate or the client-safe boundary.
+Connect a real audit source behind the same `runVisibilityAudit` surface, and
+connect execution behind the Approval Queue — without changing the gate or the
+client-safe boundary.
