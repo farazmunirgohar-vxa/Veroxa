@@ -46,6 +46,8 @@ import {
 import { getLocalUploadSubmissions } from "@/lib/uploadKeys/localUploadStore";
 import { clientTeamWorkRepository } from "@/lib/repositories";
 import { getRestaurantName } from "@/data/demoData";
+import { previewClarificationPrompt } from "@/lib/ai/aiAgentPreviewEngine";
+import { TEAM_AI_DISCLOSURE } from "@/lib/ai/aiAgentTypes";
 import type { FirstClientDirectionStatus } from "@/lib/firstClient/firstClientContracts";
 
 type GroupKey =
@@ -367,11 +369,33 @@ export default function TeamDirectionQueue() {
                         )}
                       </p>
                     )}
+                    {(() => {
+                      const prompt = previewClarificationPrompt(s);
+                      return (
+                        <div
+                          className="mt-1.5 rounded border border-primary/20 bg-primary/5 px-2 py-1.5"
+                          data-testid={`dir-clarification-ai-${s.id}`}
+                        >
+                          <p className="text-[10px] uppercase tracking-wider text-primary font-semibold mb-0.5">
+                            AI-prepared suggestion · Team review required
+                          </p>
+                          <p className="text-[11px] text-foreground/85">
+                            Suggested question: {prompt.suggestedQuestion}
+                          </p>
+                          <p className="text-[11px] text-primary/80 mt-0.5">
+                            Next team action: {prompt.nextTeamAction}
+                          </p>
+                        </div>
+                      );
+                    })()}
                   </div>
                 );
               })}
               <p className="text-[10px] text-muted-foreground/70 pt-1">
                 Internal — surfaced from client/team workflow. Resolve in Work Queue / Requests.
+              </p>
+              <p className="text-[10px] text-muted-foreground/60 italic">
+                {TEAM_AI_DISCLOSURE}
               </p>
             </CardContent>
           </Card>

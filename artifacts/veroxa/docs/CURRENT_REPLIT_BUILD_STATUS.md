@@ -1,5 +1,27 @@
 # Current Replit Build Status
 
+> **2026-05-29 — AI-first SOP layer polished and standardized across Client + Team**
+>
+> - **Client dashboard** — added a calm empty state ("Nothing needed from you
+>   right now") that shows when no client action is outstanding, complementing
+>   the existing "Action needed from you" callout.
+> - **Team Direction Queue** — the "awaiting clarification" card now shows an
+>   AI-prepared suggested clarification question plus a recommended next team
+>   action per item, labelled "Team review required" with the team AI
+>   disclosure. New deterministic `previewClarificationPrompt` helper in
+>   `aiAgentPreviewEngine.ts` derives the question from the submission type
+>   (or its existing `requestedClientAction`).
+> - **Docs** — `CLIENT_TEAM_WORKFLOW_CONTRACT.md` documents the future
+>   AI-first SOP persistence fields (`report_draft_status`, `ai_draft_summary`,
+>   `missing_data_flags`, `human_verified_at`, `client_visible_status`) as
+>   planned nullable columns with the "unverified draft never ships" invariant.
+>   `AI_FIRST_SOP_MODEL.md` adds the execution lifecycle mapping
+>   (submission status → team work status → AI agent status → client-safe label).
+> - Still simulated/rule-based only. Humans approve all client-facing work. No
+>   real OpenAI/Supabase writes, publishing, auto-messaging, payments,
+>   notifications, storage, or new routes. Audit V1 preserved.
+> - Typecheck: pass.
+
 > **2026-05-28 — AI-first SOP preview layer added across Client and Team portals**
 >
 > - New `src/lib/ai/aiAgentTypes.ts` defines the shared vocabulary: 8 agent

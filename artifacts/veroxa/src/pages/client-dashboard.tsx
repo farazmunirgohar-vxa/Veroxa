@@ -193,6 +193,24 @@ export default function ClientDashboard() {
         </Card>
       )}
 
+      {/* Calm empty state — nothing is waiting on the client right now. */}
+      {openClientActions.length === 0 && (
+        <Card
+          className="bg-emerald-500/5 border-emerald-500/20"
+          data-testid="card-dashboard-nothing-needed"
+        >
+          <CardContent className="p-4">
+            <p className="text-sm font-semibold text-foreground mb-1">
+              Nothing needed from you right now
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Veroxa is handling this week&apos;s work. We&apos;ll let you know here
+              if we need a quick reply.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {summaryCards.map((card, i) => (

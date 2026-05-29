@@ -96,6 +96,26 @@ The team portal shows:
   for approval, blocked, needing client input, fresh AI drafts, and the top
   next-best action for the day.
 
+### Execution lifecycle mapping
+
+A single submission moves through one lifecycle, surfaced three ways. The
+internal submission `status` is the source of truth; the team status and the
+client-safe label are both **derived** from it (see
+`clientTeamWorkRepository` and `aiAgentPreviewEngine`).
+
+| Submission status | Team work status | AI agent status | Client-safe label |
+|---|---|---|---|
+| `new` / `needs_review` | `ready_for_team` | `ready` | Uploaded |
+| `accepted` / `in_progress` | `in_progress` | `needs_human_review` | Being reviewed |
+| `needs_client_clarification` | `waiting_on_client` | `manual_review_needed` | Needs your input |
+| `blocked` | `waiting_on_client` | `blocked` | Needs your input |
+| (team review stage) | `ready_for_review` | `needs_human_review` | Being reviewed |
+| `completed` / `archived` | `completed` | `approved` | Prepared by Veroxa / Included in report |
+
+> The client never sees the internal or AI columns — only the calm label.
+> Nothing reaches a client until a human moves the item past the team review
+> stage (`Prepared by Veroxa`).
+
 ### AI agent vocabulary (internal)
 
 - **Media Review Agent** — scores media, recommends usage, suggests angle.

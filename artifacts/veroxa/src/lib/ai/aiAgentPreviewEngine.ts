@@ -416,6 +416,51 @@ export function previewOperatorAssistant(input: {
 }
 
 // ---------------------------------------------------------------------------
+// Clarification prompt — AI-prepared suggestion for a submission that is
+// waiting on the client. The Veroxa team reviews and sends the follow-up;
+// nothing is auto-messaged.
+// ---------------------------------------------------------------------------
+
+function clarificationQuestionForSubmission(
+  submission: ClientTeamSubmission,
+): string {
+  const requested = submission.requestedClientAction?.trim();
+  if (requested && requested.length > 0) return requested;
+  switch (submission.submissionType) {
+    case "media":
+      return "Ask for the dish name and the occasion so the caption can be specific.";
+    case "menu_update":
+      return "Confirm the exact item name, price, and whether it replaces an existing item.";
+    case "promotion":
+      return "Confirm the offer wording, the start and end dates, and any fine print.";
+    case "correction":
+      return "Confirm exactly what is wrong and the correct detail to use.";
+    case "question":
+      return "Ask for a one-line answer so the team can proceed.";
+    case "access_info":
+      return "Confirm the account or access detail needed to continue.";
+    case "general_request":
+    default:
+      return "Ask one short clarifying question to confirm scope before drafting.";
+  }
+}
+
+export function previewClarificationPrompt(submission: ClientTeamSubmission): {
+  agent: AiAgentName;
+  status: AiAgentStatus;
+  suggestedQuestion: string;
+  nextTeamAction: string;
+} {
+  return {
+    agent: "client_update",
+    status: "manual_review_needed",
+    suggestedQuestion: clarificationQuestionForSubmission(submission),
+    nextTeamAction:
+      "Send this as a short, friendly client follow-up, then resume once they reply.",
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Risk / Blocker Agent — flat list across all items.
 // ---------------------------------------------------------------------------
 

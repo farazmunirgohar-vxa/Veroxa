@@ -93,6 +93,27 @@ same.
 > They will be added when the first write path lands; until then, ordering
 > follows the linked submission's `updated_at`.
 
+### Future AI-first SOP fields (not yet persisted)
+
+The AI-first SOP layer is currently a deterministic, read-only preview
+(`src/lib/ai/aiAgentPreviewEngine.ts`). When the backend is activated and a
+real model call slots in behind those interfaces, the following **nullable**
+columns are the planned persistence shape. None of these exist as columns
+today — they are computed at read time by the preview engine.
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `report_draft_status` | `text` | **Nullable.** enum: `ready`, `needs_human_review`, `approved`, `blocked`, `manual_review_needed`. Mirrors `AiAgentStatus` for a report draft. |
+| `ai_draft_summary` | `text` | **Nullable.** The AI-assisted draft summary text. Always treated as a draft until a human verifies it. |
+| `missing_data_flags` | `text[]` | **Nullable.** Reasons the draft is incomplete (e.g. metrics not connected, no publishing activity). Empty/null when nothing is missing. |
+| `human_verified_at` | `timestamptz` | **Nullable.** Set when a Veroxa team member approves the AI draft. `NULL` means "AI-assisted draft, not yet verified" — nothing client-facing may ship while null. |
+| `client_visible_status` | `text` | **Nullable.** The calm, client-safe label derived from internal status: `Uploaded`, `Being reviewed`, `Needs your input`, `Prepared by Veroxa`, `Included in report`. |
+
+> Invariant: `human_verified_at IS NULL` ⇒ the item is an unverified
+> AI-assisted draft and must not be surfaced to a client as final. The
+> `client_visible_status` never exposes internal AI agent names, risk levels,
+> or quality scores.
+
 ### `client_team_status_events`
 
 Captures the audit trail of how a submission moved through statuses.
