@@ -20,37 +20,9 @@ presence system.
 
 ---
 
-## Plan 1 — Google Optimization
+## Plan 1 — Complete Online Presence
 
-**Standard:** $477/mo · **Founding first year:** $239/mo
-
-Google-focused visibility for restaurants that need to show up better in
-search and maps.
-
-### Included
-
-- Google Search Engine SEO
-- Google Maps SEO
-- Google Business Profile optimization
-- Google reviews support
-
-### Not included
-
-- Social media content (Facebook, Instagram, TikTok)
-- Social posting
-- Ads management
-- Full Veroxa content workflow
-
-### Positioning
-
-For restaurants that need to be found better on Google before committing to
-full content production.
-
----
-
-## Plan 2 — Complete Online Presence
-
-**Standard:** $977/mo · **Founding first year:** $489/mo
+**Standard:** $977/mo · **Founding first year:** $488/mo
 
 The core Veroxa system for restaurants that want Facebook, Instagram, TikTok,
 Google Optimization, content planning, posting support, media guidance,
@@ -81,16 +53,13 @@ This is **not** a custom website development package.
 
 ---
 
-## Plan 3 — Ads Management
+## Plan 2 — Ads Management (add-on only)
 
-Two options:
+**All clients:** +$477/mo · No founding discount on ads.
 
-| Option                              | Standard | Founding 1st year |
-|-------------------------------------|---------:|------------------:|
-| Ads Add-on (with Complete Online Presence) | +$497/mo |          +$249/mo |
-| Ads Management Only (standalone)    |  $997/mo |           $499/mo |
+Available as an add-on to Complete Online Presence **only** — not sold standalone.
 
-### Included (either option)
+### Included
 
 - Ad campaign setup
 - Audience and offer targeting
@@ -106,27 +75,40 @@ actual ad budget.
 
 ---
 
-## Most common path — Complete Online Presence + Ads Add-on
+## Most common path — Complete Online Presence + Ads Management
 
 This is **not** a separate bundle plan. It is shown only as two line items
 plus a total.
 
-| View                  | Complete Online Presence | Ads Add-on | Combined total (before ad spend) |
-|-----------------------|-------------------------:|-----------:|---------------------------------:|
-| Standard              |                  $977/mo |  +$497/mo  |                        $1,474/mo |
-| Founding first year   |                  $489/mo |  +$249/mo  |                          $738/mo |
+| View                | Complete Online Presence | Ads Management | Combined total (before ad spend) |
+|---------------------|-------------------------:|---------------:|---------------------------------:|
+| Standard            |                  $977/mo |       +$477/mo |                        $1,454/mo |
+| Founding first year |                  $488/mo |       +$477/mo |                          $965/mo |
 
 Most restaurants should start with Complete Online Presence. If they want ads
-managed too, they add Ads Management for +$497/mo.
+managed too, they add Ads Management for +$477/mo.
 
 ---
 
 ## Founding Client Offer
 
-- 50% off for the first year.
-- Available only to early/founding restaurant partners.
-- After the first year, standard pricing applies.
+- **Active** — available to founding/early restaurant partners.
+- 50% off Complete Online Presence for the first year ($488/mo vs $977/mo).
+- After the first year, standard pricing applies ($977/mo).
+- No founding discount on Ads Management — ads are always $477/mo.
 - Ad spend is always separate.
+
+---
+
+## Internal-only plans (not publicly sold)
+
+These exist for internal Free Audit / lead-scoring logic and must NOT appear
+on public pages.
+
+| Plan                 | Internal price           | Notes                            |
+|----------------------|--------------------------|----------------------------------|
+| Google Optimization  | $477/mo (founding $239)  | Retired; audit compat only       |
+| Ads Management Only  | $2,000/mo                | Hidden; dependency audit pending |
 
 ---
 

@@ -12,37 +12,37 @@ source of truth is `artifacts/veroxa/src/data/pricing/veroxaPricing.ts`.
 
 ### Complete Online Presence
 
-The core Veroxa system. Term-based pricing (same service at all terms):
+The core Veroxa system. Flat monthly service — same deliverables at both price points.
 
-| Term          | Monthly price |
-|---------------|:-------------:|
-| 12-month      |      $997     |
-| 6-month       |    $1,097     |
-| 3-month       |    $1,197     |
-| No-contract   |    $1,497     |
+| Pricing                  | Monthly price |
+|--------------------------|:-------------:|
+| Standard                 |      $977     |
+| Founding first year      |      $488     |
+
+The founding first-year offer is **active** — 50% off Complete Online Presence
+for the first year. Available only to founding/early restaurant partners. After
+the first year, standard pricing applies.
 
 ### Ads Management (add-on)
 
 Available as an add-on to Complete Online Presence **only** — not sold standalone.
 
-| Term          | Monthly price |
-|---------------|:-------------:|
-| All terms     |    $1,500     |
+| Pricing      | Monthly price |
+|--------------|:-------------:|
+| All clients  |    +$477      |
 
-Ads Management carries no term discount — it is a flat $1,500/mo regardless of
-the Complete Online Presence commitment term selected.
+Ads Management carries **no founding discount** — it is a flat $477/mo
+regardless of founding status.
 
 ### Complete Online Presence + Ads Management (combined totals)
 
 This is **not** a separate "bundle" plan. It is the two line items added
-together so sales conversations can quote a single number.
+together for sales conversations.
 
-| Term          | COP     | Ads    | Combined total |
-|---------------|--------:|-------:|---------------:|
-| 12-month      |   $997  | $1,500 |       $1,797   |
-| 6-month       | $1,097  | $1,500 |       $1,897   |
-| 3-month       | $1,197  | $1,500 |       $1,997   |
-| No-contract   | $1,497  | $1,500 |       $2,297   |
+| Pricing             | COP    | Ads   | Combined total |
+|---------------------|-------:|------:|---------------:|
+| Standard            |  $977  | $477  |       $1,454   |
+| Founding first year |  $488  | $477  |         $965   |
 
 ---
 
@@ -52,9 +52,9 @@ These plan IDs exist in `veroxaPricing.ts` and are referenced by the Free Audit
 recommendation engine and internal lead-scoring. They are **not** shown on the
 public Pricing page or any public copy.
 
-| Plan ID              | Status   | publicVisible | Internal price | Notes                                    |
-|----------------------|----------|:---:|-------:|------------------------------------------|
-| `google_optimization` | retired | false | $477/mo | Free Audit / lead-scoring compat only   |
+| Plan ID              | Status   | publicVisible | Internal price | Notes                                     |
+|----------------------|----------|:---:|-------:|-------------------------------------------|
+| `google_optimization` | retired | false | $477/mo (founding $239/mo) | Free Audit / lead-scoring compat only |
 | `ads_standalone`      | active  | false | $2,000/mo | Internal reference; dependency audit pending |
 
 ### Mapping retired plans to public offers (for audit output display)
@@ -74,13 +74,11 @@ public-facing display label is mapped forward.
 
 ## Founding-client offer
 
-The 50% first-year founding-client offer **is no longer active** in the current
-public pricing. Remove it from all customer-facing surfaces (pricing page,
-homepage, services page, CTAs, sales copy).
-
-The `priceMonthlyFounding` field and `FOUNDING_CLIENT_OFFER_DISCLAIMER` export
-remain in `veroxaPricing.ts` because internal audit output formatters still
-reference them. Do not surface them publicly.
+- **Active** — available to founding/early restaurant partners.
+- 50% off Complete Online Presence for the first year.
+- After the first year, standard pricing applies.
+- No founding discount on Ads Management ($477/mo flat for all clients).
+- Ad spend is always separate.
 
 ---
 
@@ -101,12 +99,13 @@ onboarding. This is **not** a custom website development package.
 
 ---
 
-## What was removed (DO NOT reintroduce on public pages)
+## What must NOT appear on public pages
 
-- ❌ Old flat-rate Complete Online Presence at `$977/mo`.
-- ❌ 50% founding-client first-year offer on public pricing.
-- ❌ Old Ads Add-on at `+$477/mo` or `+$497/mo`.
-- ❌ Combined totals of `$1,454/mo` or `$1,474/mo` or `$965/mo`.
-- ❌ Google Optimization as a standalone public plan.
-- ❌ Ads Management Only as a public offer (hidden until dependency audit).
-- ❌ Separate "Bundle" plan label.
+- ❌ Term-based pricing tiers: 12-month / 6-month / 3-month / no-contract
+- ❌ Old term prices: $997, $1,097, $1,197, $1,497
+- ❌ Old bundle prices: $1,797, $1,897, $1,997, $2,297
+- ❌ Old ads add-on price: $1,500/mo
+- ❌ Old ads standalone price: $2,000/mo as a public offer
+- ❌ Google Optimization as a standalone public plan
+- ❌ Ads Management Only as a standalone public plan
+- ❌ Any separate "Bundle" plan label

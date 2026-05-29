@@ -1,25 +1,19 @@
 import { Link } from "wouter";
-import { ArrowRight, CheckCircle2, Megaphone, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle2, Megaphone, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 import {
   VEROXA_PLANS,
-  COP_TERM_PRICING,
-  COP_TERM_DISPLAY,
-  COP_TERM_LABELS,
-  BUNDLE_TERM_PRICING,
-  BUNDLE_TERM_DISPLAY,
+  COMPLETE_PLUS_ADS_TOTAL_DISPLAY,
+  COMPLETE_PLUS_ADS_FOUNDING_TOTAL_DISPLAY,
   AD_SPEND_DISCLAIMER,
   COMPLETE_PRESENCE_SETUP_DISCLAIMER,
-  type TermPricing,
+  FOUNDING_CLIENT_OFFER_DISCLAIMER,
 } from "@/data/pricing/veroxaPricing";
 
 const COP = VEROXA_PLANS.complete_online_presence;
-const ADS_ADDON = VEROXA_PLANS.ads_addon;
-
-type TermKey = keyof TermPricing;
-const TERM_KEYS: TermKey[] = ["months12", "months6", "months3", "noContract"];
+const ADS = VEROXA_PLANS.ads_addon;
 
 const COP_INCLUDES = [
   "Facebook management",
@@ -47,7 +41,15 @@ const ADS_INCLUDES = [
 const FAQ_ITEMS = [
   {
     q: "Is Google optimization included?",
-    a: "Yes. Google optimization — Google Search SEO, Google Maps SEO, Google Business Profile, and reviews support — is included in Complete Online Presence.",
+    a: "Yes. Google optimization — Google Search SEO, Google Maps SEO, Google Business Profile, and reviews support — is included in Complete Online Presence at no extra cost.",
+  },
+  {
+    q: "What is the founding client offer?",
+    a: `The founding client offer gives early restaurant partners 50% off Complete Online Presence for the first year — ${COP.displayPriceFounding}/mo instead of ${COP.displayPrice}/mo. After the first year, standard pricing applies. This offer is available only to founding/early partners.`,
+  },
+  {
+    q: "Does the founding discount apply to Ads Management?",
+    a: `No. The founding discount applies only to Complete Online Presence. Ads Management is always ${ADS.displayPrice}/mo regardless of when you join.`,
   },
   {
     q: "Can I buy ads management alone?",
@@ -58,20 +60,12 @@ const FAQ_ITEMS = [
     a: "No. Ad spend is separate and paid directly by the restaurant to the ad platform.",
   },
   {
-    q: "Which social media platforms are included in Complete Online Presence?",
+    q: "Which social media platforms are included?",
     a: "Facebook, Instagram, and TikTok.",
   },
   {
     q: "What if I do not have a website or social media accounts?",
     a: "If you purchase Complete Online Presence, Veroxa will help create/setup the required basic website/presence or account/page needed to operate the service. This is not a custom website development package.",
-  },
-  {
-    q: "What is the difference between the pricing tiers?",
-    a: "The tiers reflect commitment length. A 12-month agreement offers the lowest monthly rate ($997/mo). Shorter terms or month-to-month carry a higher monthly rate. All terms are the same Complete Online Presence service.",
-  },
-  {
-    q: "Does Veroxa offer a separate bundle plan?",
-    a: `No. Pricing is simple: Complete Online Presence starts at ${COP_TERM_DISPLAY.months12}/mo, and Ads Management can be added for ${ADS_ADDON.displayPrice}/mo.`,
   },
   {
     q: "Does Veroxa guarantee more customers?",
@@ -88,16 +82,19 @@ export default function PricingPage() {
       <section className="pt-24 pb-16 px-6 lg:px-12 text-center relative overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-primary/15 blur-[100px] rounded-full pointer-events-none -z-10" />
         <div className="max-w-2xl mx-auto">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-primary/30 bg-primary/5 text-primary text-xs font-semibold uppercase tracking-wider mb-6 animate-in fade-in duration-300">
+            <Star className="w-3 h-3" />
+            Founding client pricing available
+          </div>
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            Flat monthly pricing.{" "}
+            Simple pricing.{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-400">
-              Flexible terms.
+              One core system.
             </span>
           </h1>
           <p className="text-muted-foreground animate-in fade-in slide-in-from-bottom-5 duration-700">
-            One core package — Complete Online Presence — with Google
-            optimization built in. Add Ads Management when you're ready. Ad
-            spend is always separate.
+            Complete Online Presence with Google optimization built in. Add Ads
+            Management when you're ready. Ad spend is always separate.
           </p>
         </div>
       </section>
@@ -111,34 +108,43 @@ export default function PricingPage() {
           guidance, weekly updates, monthly reports, and team-managed execution.
         </p>
 
-        {/* Tier pricing table */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8" data-testid="pricing-cop-tiers">
-          {TERM_KEYS.map((key) => (
-            <div
-              key={key}
-              className={`p-6 rounded-2xl border flex flex-col gap-2 ${
-                key === "months12"
-                  ? "border-primary/50 bg-primary/5"
-                  : "border-border/40 bg-card/20"
-              }`}
-              data-testid={`pricing-cop-${key}`}
-            >
-              <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                {COP_TERM_LABELS[key]}
-              </span>
-              <div>
-                <span className="text-3xl font-extrabold">
-                  {COP_TERM_DISPLAY[key]}
-                </span>
-                <span className="text-sm text-muted-foreground ml-1">/mo</span>
-              </div>
-              {key === "months12" && (
-                <span className="text-[11px] text-primary font-medium">
-                  Best value
-                </span>
-              )}
+        {/* Pricing cards — standard + founding */}
+        <div
+          className="grid sm:grid-cols-2 gap-4 mb-8 max-w-lg"
+          data-testid="pricing-cop-cards"
+        >
+          {/* Standard */}
+          <div
+            className="p-6 rounded-2xl border border-border/40 bg-card/20 flex flex-col gap-2"
+            data-testid="pricing-cop-standard"
+          >
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+              Standard
+            </span>
+            <div>
+              <span className="text-3xl font-extrabold">{COP.displayPrice}</span>
+              <span className="text-sm text-muted-foreground ml-1">/mo</span>
             </div>
-          ))}
+          </div>
+
+          {/* Founding first year */}
+          <div
+            className="p-6 rounded-2xl border border-primary/50 bg-primary/5 flex flex-col gap-2"
+            data-testid="pricing-cop-founding"
+          >
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-primary">
+              Founding first year
+            </span>
+            <div>
+              <span className="text-3xl font-extrabold">
+                {COP.displayPriceFounding}
+              </span>
+              <span className="text-sm text-muted-foreground ml-1">/mo</span>
+            </div>
+            <span className="text-[11px] text-primary font-medium">
+              50% off — founding clients only
+            </span>
+          </div>
         </div>
 
         <div className="grid md:grid-cols-3 gap-5 mb-4">
@@ -170,7 +176,8 @@ export default function PricingPage() {
             </span>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Includes Facebook, Instagram, TikTok, and Google optimization.
-              Starts at {COP_TERM_DISPLAY.months12}/mo on a 12-month term.
+              Founding clients get {COP.displayPriceFounding}/mo for the first
+              year.
             </p>
             <a
               href="mailto:hello@veroxa.com?subject=Complete Online Presence Inquiry"
@@ -189,6 +196,14 @@ export default function PricingPage() {
           data-testid="cop-setup-note"
         >
           <strong>Setup support:</strong> {COMPLETE_PRESENCE_SETUP_DISCLAIMER}
+        </div>
+
+        <div
+          className="mt-3 p-4 rounded-xl border border-border/30 bg-card/20 text-sm text-muted-foreground leading-relaxed max-w-3xl"
+          data-testid="founding-offer-note"
+        >
+          <strong className="text-foreground">Founding client offer:</strong>{" "}
+          {FOUNDING_CLIENT_OFFER_DISCLAIMER}
         </div>
 
         <p className="text-xs text-muted-foreground/60 leading-relaxed max-w-lg mt-6">
@@ -227,16 +242,12 @@ export default function PricingPage() {
                 Add-on · with Complete Online Presence
               </span>
               <div>
-                <span className="text-4xl font-extrabold">
-                  {ADS_ADDON.displayPrice}
-                </span>
+                <span className="text-4xl font-extrabold">{ADS.displayPrice}</span>
                 <span className="text-sm text-muted-foreground ml-1">/mo</span>
               </div>
-              <span className="text-sm text-muted-foreground">
-                {ADS_ADDON.tagline}
-              </span>
+              <span className="text-sm text-muted-foreground">{ADS.tagline}</span>
               <span className="text-xs text-muted-foreground/70">
-                Flat rate — same price at all terms.
+                Flat rate — no founding discount on ads.
               </span>
             </div>
 
@@ -267,33 +278,26 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* ── SECTION 3: Bundle totals ───────────────────────────────── */}
+      {/* ── SECTION 3: Combined totals ──────────────────────────── */}
       <section className="py-16 px-6 lg:px-12 max-w-5xl mx-auto w-full">
-        <div className="flex items-center gap-2 mb-2">
-          <Sparkles className="w-4 h-4 text-primary" />
-          <span className="text-xs font-semibold text-primary uppercase tracking-widest">
-            Most common path
-          </span>
-        </div>
         <h2 className="text-2xl font-bold mb-2">
           Complete Online Presence + Ads Management
         </h2>
         <p className="text-muted-foreground mb-8 text-sm max-w-2xl">
           Most restaurants start with Complete Online Presence. When they want
-          ads managed too, they add Ads Management for {ADS_ADDON.displayPrice}
-          /mo. Below are combined service totals — these are two line items
-          added together, not a separate "bundle" plan.
+          ads managed too, they add Ads Management for {ADS.displayPrice}/mo.
+          These are two line items added together — not a separate plan.
         </p>
 
         <div
-          className="overflow-x-auto rounded-2xl border border-border/40 bg-card/20"
-          data-testid="bundle-pricing-table"
+          className="overflow-x-auto rounded-2xl border border-border/40 bg-card/20 max-w-2xl"
+          data-testid="combined-pricing-table"
         >
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border/40">
                 <th className="text-left px-6 py-4 font-semibold text-muted-foreground">
-                  Term
+                  Pricing
                 </th>
                 <th className="text-right px-6 py-4 font-semibold text-muted-foreground">
                   Complete Online Presence
@@ -307,33 +311,38 @@ export default function PricingPage() {
               </tr>
             </thead>
             <tbody>
-              {TERM_KEYS.map((key, i) => (
-                <tr
-                  key={key}
-                  className={`border-b border-border/20 last:border-b-0 ${
-                    key === "months12" ? "bg-primary/5" : ""
-                  }`}
-                  data-testid={`bundle-row-${key}`}
-                >
-                  <td className="px-6 py-4 font-medium">
-                    {COP_TERM_LABELS[key]}
-                    {i === 0 && (
-                      <span className="ml-2 text-[10px] font-semibold text-primary uppercase tracking-wide">
-                        Best value
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-right text-muted-foreground">
-                    {COP_TERM_DISPLAY[key]}/mo
-                  </td>
-                  <td className="px-6 py-4 text-right text-muted-foreground">
-                    {ADS_ADDON.displayPrice}/mo
-                  </td>
-                  <td className="px-6 py-4 text-right font-bold">
-                    {BUNDLE_TERM_DISPLAY[key]}/mo
-                  </td>
-                </tr>
-              ))}
+              <tr
+                className="border-b border-border/20"
+                data-testid="combined-row-standard"
+              >
+                <td className="px-6 py-4 font-medium">Standard</td>
+                <td className="px-6 py-4 text-right text-muted-foreground">
+                  {COP.displayPrice}/mo
+                </td>
+                <td className="px-6 py-4 text-right text-muted-foreground">
+                  {ADS.displayPrice}/mo
+                </td>
+                <td className="px-6 py-4 text-right font-bold">
+                  {COMPLETE_PLUS_ADS_TOTAL_DISPLAY}/mo
+                </td>
+              </tr>
+              <tr data-testid="combined-row-founding">
+                <td className="px-6 py-4 font-medium">
+                  Founding first year
+                  <span className="ml-2 text-[10px] font-semibold text-primary uppercase tracking-wide">
+                    50% off COP
+                  </span>
+                </td>
+                <td className="px-6 py-4 text-right text-muted-foreground">
+                  {COP.displayPriceFounding}/mo
+                </td>
+                <td className="px-6 py-4 text-right text-muted-foreground">
+                  {ADS.displayPrice}/mo
+                </td>
+                <td className="px-6 py-4 text-right font-bold text-primary">
+                  {COMPLETE_PLUS_ADS_FOUNDING_TOTAL_DISPLAY}/mo
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -353,9 +362,7 @@ export default function PricingPage() {
               key={f.q}
               className="p-5 rounded-xl border border-border/40 bg-card/20"
             >
-              <p className="text-sm font-semibold text-foreground mb-2">
-                {f.q}
-              </p>
+              <p className="text-sm font-semibold text-foreground mb-2">{f.q}</p>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {f.a}
               </p>
@@ -410,8 +417,3 @@ export default function PricingPage() {
     </div>
   );
 }
-
-// Suppress unused-var lint for bundle totals exported from veroxaPricing
-// that are imported for live calculation but not individually referenced here.
-void (BUNDLE_TERM_PRICING satisfies TermPricing);
-void (COP_TERM_PRICING satisfies TermPricing);
