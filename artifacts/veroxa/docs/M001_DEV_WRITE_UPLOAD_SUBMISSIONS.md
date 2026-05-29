@@ -1,5 +1,12 @@
 # M001 — Dev-Flagged Client Upload Submission Write
 
+> **Superseded by M023D.** The implementation now routes through the central
+> `veroxaWriteAdapter` (not a direct `devSupabaseWriteAdapter` import) and uses
+> `VITE_VEROXA_DEV_CLIENT_ID` via `getDevClientIdFromEnv()` (not
+> `VITE_VEROXA_DEV_RESTAURANT_ID`). See `docs/M023D_CLIENT_MEDIA_DEV_WRITE.md`
+> for the current, authoritative description. The schema/table/field facts below
+> remain accurate.
+
 ## What was built
 
 When a client submits media on `/client/media`, the app now:

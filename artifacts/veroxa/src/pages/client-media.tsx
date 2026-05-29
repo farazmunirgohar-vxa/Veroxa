@@ -40,8 +40,8 @@ import { clientTeamWorkRepository } from "@/lib/repositories";
 import { CLIENT_AI_DISCLOSURE } from "@/lib/ai/aiAgentTypes";
 import { analyzeRestaurantContent } from "@/lib/content/restaurantContentIntelligence";
 import { createWorkflowItem } from "@/lib/workflow/workflowRepository";
-import { devSupabaseWriteAdapter } from "@/lib/data/devSupabaseWriteAdapter";
-import { isDevWriteFlagEnabled } from "@/lib/data/writeReadiness";
+import { veroxaWriteAdapter } from "@/lib/data/writeAdapter";
+import { getDevClientIdFromEnv } from "@/lib/data/devClientId";
 
 const SHOWCASE_ID = "demo-a";
 
@@ -108,44 +108,41 @@ export default function ClientMedia() {
       "Your media has been submitted to the Veroxa team. A team member will review it before anything goes live.",
     );
 
-    // Dev-write — best-effort, non-blocking, only active when
-    // VITE_VEROXA_ENABLE_DEV_WRITES="true". Also requires
-    // VITE_VEROXA_DEV_RESTAURANT_ID to be set to a seeded clients.id UUID.
-    // Local workflow behavior above is already complete regardless of this call.
-    if (isDevWriteFlagEnabled()) {
-      const devRestaurantId = (import.meta.env as Record<string, unknown>)
-        .VITE_VEROXA_DEV_RESTAURANT_ID as string | undefined;
-      if (devRestaurantId) {
-        void Promise.all(
-          filesToWrite.map((file) => {
-            const category =
-              file.kind.startsWith("video/") ? ("short_video" as const) :
-              file.kind.startsWith("image/") ? ("food_photo" as const) :
-              ("other" as const);
-            return devSupabaseWriteAdapter.createUploadSubmission({
-              restaurantId: devRestaurantId,
-              uploadKeyId: null,
-              category,
-              priority: "use_anytime",
-              note: noteToWrite || null,
-              submittedByLabel: "client_portal",
-            });
-          }),
-        ).then((results) => {
-          const ok = results.filter((r) => r.ok).length;
-          console.log(
-            `[dev-write] upload_submissions: ${ok}/${filesToWrite.length} row(s) inserted` +
-            ` (workflowRef: ${item.workflowItemId})`,
+    // Opportunistic metadata write through the central write adapter.
+    // The adapter alone decides whether writes are enabled (it returns a
+    // safe disabled envelope with no network call when the dev flag is
+    // off). A valid dev client UUID is required — the local "demo-a" id
+    // is not a UUID and would fail the restaurant_id FK — so the call is
+    // skipped when it is absent. The local workflow above is the source
+    // of truth; any write failure is swallowed and never reaches the client.
+    const devClientId = getDevClientIdFromEnv();
+    if (devClientId) {
+      void Promise.all(
+        filesToWrite.map((file) => {
+          const category =
+            file.kind.startsWith("video/") ? ("short_video" as const) :
+            file.kind.startsWith("image/") ? ("food_photo" as const) :
+            ("other" as const);
+          return veroxaWriteAdapter.createUploadSubmission({
+            restaurantId: devClientId,
+            uploadKeyId: null,
+            category,
+            priority: "use_anytime",
+            note: noteToWrite || null,
+            submittedByLabel: "client_portal",
+          });
+        }),
+      ).then((results) => {
+        const saved = results.filter((r) => r.ok).length;
+        if (saved > 0) {
+          console.info(
+            `[veroxa] upload submission metadata recorded: ${saved}/${filesToWrite.length}` +
+            ` (ref: ${item.workflowItemId})`,
           );
-        }).catch((err: unknown) => {
-          console.warn("[dev-write] upload_submissions: unexpected error", err);
-        });
-      } else {
-        console.log(
-          "[dev-write] VITE_VEROXA_DEV_RESTAURANT_ID not set — Supabase insert skipped." +
-          " Set it to a seeded clients.id UUID to enable dev writes.",
-        );
-      }
+        }
+      }).catch(() => {
+        /* local/demo flow is the source of truth — swallow adapter errors */
+      });
     }
   };
 
