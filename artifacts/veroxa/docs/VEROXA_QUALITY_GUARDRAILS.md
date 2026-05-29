@@ -6,6 +6,14 @@
 > is rule-based and every client-facing step requires human approval. See
 > `REAL_WORKFLOW_FOUNDATION.md`.
 
+> **Update (2026-05-29).** The **Restaurant Content Intelligence Pipeline**
+> (`RESTAURANT_CONTENT_INTELLIGENCE_PIPELINE.md`) enforces these guardrails per
+> upload: captions are drafted **only after** a media/context quality gate
+> passes (otherwise "Needs client context before caption drafting." + a
+> clarification question), no menu/offer/health/halal/"best"/guarantee claims
+> are invented, and clients see only simple statuses while the team sees full
+> reasoning.
+
 ---
 
 ## 1. Human approval is always required

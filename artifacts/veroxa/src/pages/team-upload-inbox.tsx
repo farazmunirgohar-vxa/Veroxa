@@ -48,6 +48,7 @@ import {
   TEAM_AI_DISCLOSURE,
 } from "@/lib/ai/aiAgentTypes";
 import { ContentDraftPipelineCard } from "@/components/ContentDraftPipelineCard";
+import { ContentIntelligenceInboxList } from "@/components/ContentIntelligencePanel";
 import { TeamWorkflowPanel } from "@/components/TeamWorkflowPanel";
 
 const statusToneStyles: Record<DemoUploadStatus, string> = {
@@ -272,6 +273,22 @@ export default function TeamUploadInbox() {
             .filter((s) => s.status !== "completed" && s.status !== "archived")
             .slice(0, 3);
           return <ContentDraftPipelineCard submissions={contentSubs} />;
+        })()}
+
+        {/* Restaurant Content Intelligence — per-upload understanding:
+            media usability, customer moment, content angle, caption gate,
+            and recommended next action. Drafts require team approval. */}
+        {(() => {
+          const intelSubs = clientTeamWorkRepository
+            .getClientSubmissions("demo-a")
+            .concat(
+              clientTeamWorkRepository.getClientSubmissions("demo-b"),
+              clientTeamWorkRepository.getClientSubmissions("demo-c"),
+            )
+            .filter((s) => s.submissionType === "media")
+            .filter((s) => s.status !== "completed" && s.status !== "archived")
+            .slice(0, 3);
+          return <ContentIntelligenceInboxList submissions={intelSubs} />;
         })()}
 
         {/* Related media submissions across the client/team workflow. */}

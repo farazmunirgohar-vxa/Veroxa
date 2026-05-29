@@ -8,6 +8,13 @@ _Veroxa's operating model for how AI agents and the human team divide work._
 > workflow items and humans approve everything that reaches a client. See
 > `REAL_WORKFLOW_FOUNDATION.md`.
 
+> **Update (2026-05-29).** Per-upload reasoning is now consolidated in the
+> **Restaurant Content Intelligence Pipeline**
+> (`RESTAURANT_CONTENT_INTELLIGENCE_PIPELINE.md`): one upload →
+> restaurant/media/customer-moment/angle/platform/timing/risk/next-action, then
+> three strategic caption drafts **only after a quality gate passes**.
+> Still rule-based with a safe fallback; human approval still required.
+
 ---
 
 ## 1. Operating principle

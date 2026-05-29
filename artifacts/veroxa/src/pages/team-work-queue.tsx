@@ -2,6 +2,7 @@ import { PortalLayout } from "@/components/PortalLayout";
 import { teamPortalNavItems } from "@/lib/teamPortalNav";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 import { TeamWorkflowPanel } from "@/components/TeamWorkflowPanel";
+import { ContentIntelligenceDraftsList } from "@/components/ContentIntelligencePanel";
 import { ListChecks } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -202,6 +203,23 @@ export default function TeamWorkQueue() {
             </CardContent>
           </Card>
         );
+      })()}
+
+      {/* Restaurant Content Intelligence — three strategic caption drafts
+          (reach / trust / action) with recommended best, schedule window,
+          claim/risk review, and next action. Gated when context is missing.
+          Drafts only — nothing is published; team approval required. */}
+      {(() => {
+        const intelSubs = clientTeamWorkRepository
+          .getClientSubmissions("demo-a")
+          .concat(
+            clientTeamWorkRepository.getClientSubmissions("demo-b"),
+            clientTeamWorkRepository.getClientSubmissions("demo-c"),
+          )
+          .filter((s) => s.submissionType === "media" || s.submissionType === "promotion")
+          .filter((s) => s.status !== "completed" && s.status !== "archived")
+          .slice(0, 4);
+        return <ContentIntelligenceDraftsList submissions={intelSubs} />;
       })()}
 
       {/* AI content drafts (compact) — content/media work items. */}

@@ -5,6 +5,14 @@
 > Prepared drafts and recommended next actions attach to workflow items and
 > always require human/team approval before anything becomes client-facing.
 
+> **Update (2026-05-29).** Per-upload content reasoning now runs through the
+> **Restaurant Content Intelligence Pipeline**
+> (`RESTAURANT_CONTENT_INTELLIGENCE_PIPELINE.md`). It is rule-based with a safe
+> fallback, gates caption drafting on media/context quality, never invents
+> menu/offer claims, and emits a recommended next human action per upload. If a
+> real model is wired later it must run server-side only (e.g. `OPENAI_API_KEY`
+> never reaches the client) behind the same interface.
+
 > **Purpose.** Describes Veroxa's rule-based automation layer and the future
 > real automation it anticipates. The current build prepares tasks, drafts, and
 > reminders only. It performs **no** real external actions — no publishing, no

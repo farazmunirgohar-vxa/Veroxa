@@ -4,6 +4,13 @@
 > scheduling / publishing-prep flow. The current build is **scheduling prep
 > only** — there is no real publishing, no social APIs, and no auto-posting.
 
+> **Update (2026-05-29).** This single-caption preview is superseded for new
+> per-upload work by the **Restaurant Content Intelligence Pipeline**
+> (`RESTAURANT_CONTENT_INTELLIGENCE_PIPELINE.md`), which understands the upload
+> across restaurant/media/customer-moment/angle/platform/timing/risk and then
+> drafts **three** strategic captions (reach/craving, trust/story, action/visit)
+> — only when a media/context quality gate passes. Scheduling stays prep-only.
+
 ---
 
 ## 1. End-to-end flow

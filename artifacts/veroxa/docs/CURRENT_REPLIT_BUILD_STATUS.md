@@ -1,5 +1,25 @@
 # Current Replit Build Status
 
+> **2026-05-29 — Restaurant Content Intelligence Pipeline**
+>
+> - **Engine** — `src/lib/content/restaurantContentIntelligence.ts` +
+>   `src/lib/content/customerMomentTypes.ts` turn one upload into layered
+>   reasoning (restaurant knowledge → media understanding → customer moment →
+>   content angle → caption drafts → platform/schedule → claim/risk → team
+>   recommendation). Rule-based, deterministic, safe fallback. Captions are
+>   gated: three strategic drafts (reach/craving, trust/story, action/visit)
+>   only when media/context passes; otherwise "Needs client context before
+>   caption drafting." + a clarification question.
+> - **Team UI** — Upload Inbox, Work Queue, and Dashboard surface the full
+>   reasoning via `ContentIntelligencePanel` (`ContentIntelligenceInboxList`,
+>   `ContentIntelligenceDraftsList`, `ContentIntelligenceSummaryStrip`).
+> - **Client UI** — Media/Updates stay simple (plain statuses + short context
+>   request); no scores, agents, angles, or risk flags reach clients.
+> - **Boundaries** — no publishing/social/auto-message/payments/notifications/
+>   fake imagery/guarantees/invented menu-offer claims. Human approval always
+>   required. Any real model stays server-side only. See
+>   `RESTAURANT_CONTENT_INTELLIGENCE_PIPELINE.md`.
+
 > **2026-05-29 — Real workflow foundation: production-shaped data model + repository, Client/Team pages wired, preview language reframed**
 >
 > - **Workflow foundation** — `src/lib/workflow/*` adds a production-shaped

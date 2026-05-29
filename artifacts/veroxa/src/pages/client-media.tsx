@@ -37,7 +37,7 @@ import {
 } from "@/lib/mediaGuidance";
 import { clientTeamWorkRepository } from "@/lib/repositories";
 import { CLIENT_AI_DISCLOSURE } from "@/lib/ai/aiAgentTypes";
-import { previewContentDraftForSubmission } from "@/lib/content/contentDraftPreviewEngine";
+import { analyzeRestaurantContent } from "@/lib/content/restaurantContentIntelligence";
 import { Brain } from "lucide-react";
 import { createWorkflowItem } from "@/lib/workflow/workflowRepository";
 
@@ -318,7 +318,15 @@ export default function ClientMedia() {
               {mediaItems.map((s) => {
                 const statusLabel = clientTeamWorkRepository.getSubmissionWorkItemForClient(s.id)?.statusLabel;
                 const nextAction = clientTeamWorkRepository.getSubmissionWorkItemForClient(s.id)?.nextAction;
-                const contentStatus = previewContentDraftForSubmission(s).clientStatus;
+                const intel = analyzeRestaurantContent(s);
+                const contentStatus = intel.clientStatus;
+                // Client-safe: only surface a short, plain context request when
+                // the pipeline needs more before it can prepare captions. No
+                // scores, agents, angles, or risk flags are shown to clients.
+                const contextRequest =
+                  !intel.mediaUnderstanding.captionDraftingAllowed
+                    ? intel.captionDraftSet.clarificationQuestion
+                    : undefined;
                 return (
                   <div
                     key={s.id}
@@ -348,6 +356,11 @@ export default function ClientMedia() {
                     {nextAction && (
                       <p className="text-[11px] text-amber-300 mt-1">
                         What to send: {nextAction}
+                      </p>
+                    )}
+                    {!nextAction && contextRequest && (
+                      <p className="text-[11px] text-amber-300 mt-1">
+                        What to send: {contextRequest}
                       </p>
                     )}
                   </div>

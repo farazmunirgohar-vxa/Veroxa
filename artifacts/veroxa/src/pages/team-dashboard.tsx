@@ -40,6 +40,7 @@ import {
 } from "@/lib/ai/aiAgentPreviewEngine";
 import { TEAM_AI_DISCLOSURE } from "@/lib/ai/aiAgentTypes";
 import { previewAutomationSnapshot } from "@/lib/automation/automationPreviewEngine";
+import { ContentIntelligenceSummaryStrip } from "@/components/ContentIntelligencePanel";
 
 const mediaReviewQueue = [
   { id: "mrq-1", title: "Grilled platter — overhead", subtitle: "Demo Grill House · suggested: weekend feature",      status: "Approve",  tone: "good" as const },
@@ -228,6 +229,19 @@ export default function TeamDashboard() {
             </CardContent>
           </Card>
         );
+      })()}
+
+      {/* Restaurant Content Intelligence — compact pipeline summary across
+          active client submissions. Team-facing; drafts require approval. */}
+      {(() => {
+        const intelSubs = clientTeamWorkRepository
+          .getClientSubmissions("demo-a")
+          .concat(
+            clientTeamWorkRepository.getClientSubmissions("demo-b"),
+            clientTeamWorkRepository.getClientSubmissions("demo-c"),
+          )
+          .filter((s) => s.status !== "completed" && s.status !== "archived");
+        return <ContentIntelligenceSummaryStrip submissions={intelSubs} />;
       })()}
 
       {/* Stat grid */}
