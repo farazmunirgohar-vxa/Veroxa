@@ -28,6 +28,7 @@ import ClientReports from "@/pages/client-reports";
 // Team Portal (real Veroxa OS review — /team/*, login required)
 import InternalDemoGuard from "@/components/auth/InternalDemoGuard";
 import TeamDashboard from "@/pages/team-dashboard";
+import TeamApprovalQueue from "@/pages/team-approval-queue";
 import TeamUploadInbox from "@/pages/team-upload-inbox";
 import TeamWorkQueue from "@/pages/team-work-queue";
 import TeamDirectionQueue from "@/pages/team-direction-queue";
@@ -101,6 +102,13 @@ function Router() {
         {() => (
           <InternalDemoGuard role="team">
             <TeamAuditLeads />
+          </InternalDemoGuard>
+        )}
+      </Route>
+      <Route path="/team/approval-queue">
+        {() => (
+          <InternalDemoGuard role="team">
+            <TeamApprovalQueue />
           </InternalDemoGuard>
         )}
       </Route>

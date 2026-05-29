@@ -122,3 +122,13 @@ boundaries:
 - No model call, no network, no auto-decision. A human always decides.
 
 See `SELF_IMPROVING_LEAD_ENGINE.md`.
+
+## 9. Approval-to-Execution queue (foundation)
+
+Prepared actions produced by audits and the opportunity engine flow into a Team
+Approval Queue where Faraz approves, edits, asks the client, skips, or queues
+them. The same boundaries apply: no model call, no network, no connector, no
+auto-decision — a human always approves before anything is queued, and sensitive
+business facts require client confirmation. Nothing executes externally yet.
+
+See `APPROVAL_TO_EXECUTION_OS.md`.

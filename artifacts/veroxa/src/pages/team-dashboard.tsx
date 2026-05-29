@@ -1,5 +1,6 @@
 import {
   Inbox, Eye, Users, FileText, ImageIcon, ArrowRight, LayoutGrid, TrendingUp,
+  ClipboardCheck,
 } from "lucide-react";
 import { Link } from "wouter";
 import { PortalLayout } from "@/components/PortalLayout";
@@ -15,6 +16,11 @@ import {
 import { clientTeamWorkRepository } from "@/lib/repositories";
 import { getTodaysSuggestedPushes } from "@/domain/dailyOpportunity";
 import type { OpportunityPriority } from "@/domain/dailyOpportunity";
+import { preparedActionRepository, usePreparedActions } from "@/lib/preparedActions";
+import {
+  PREPARED_ACTION_CHANNEL_LABELS,
+  APPROVAL_REQUIREMENT_LABELS,
+} from "@/domain/preparedActions";
 
 const mediaReviewQueue = [
   { id: "mrq-1", title: "Grilled platter — overhead", subtitle: "Demo Grill House · suggested: weekend feature",      status: "Approve",  tone: "good" as const },
@@ -102,6 +108,11 @@ export default function TeamDashboard() {
   // Today's suggested pushes — rule-based daily opportunities (team-only).
   const suggestedPushes = getTodaysSuggestedPushes({}, 3);
 
+  // Prepared actions waiting for review (the Approval-to-Execution queue).
+  usePreparedActions();
+  const pendingApprovals = preparedActionRepository.getPendingApprovalActions();
+  const approvalsPreview = pendingApprovals.slice(0, 3);
+
   return (
     <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
       <PageHeader
@@ -116,7 +127,22 @@ export default function TeamDashboard() {
       />
 
       {/* Priority cards — what needs my attention today */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
+        <Link href="/team/approval-queue">
+          <Card
+            className="bg-card border-border hover:border-primary/30 transition-colors cursor-pointer h-full"
+            data-testid="priority-approvals-ready"
+          >
+            <CardContent className="p-4">
+              <div className="mb-2 flex items-center justify-between text-emerald-400">
+                <ClipboardCheck className="w-5 h-5" />
+                <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/50" />
+              </div>
+              <p className="text-2xl font-bold tabular-nums">{pendingApprovals.length}</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">Approvals ready</p>
+            </CardContent>
+          </Card>
+        </Link>
         {priorityCards.map(({ label, value, icon: Icon, href, color, testId }) => (
           <Link key={label} href={href}>
             <Card
@@ -173,6 +199,52 @@ export default function TeamDashboard() {
               ))}
               <p className="text-[10px] text-muted-foreground/60 pt-1">
                 Suggested opportunities to help bring more customers today.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Approvals ready — a calm peek at the Approval Queue */}
+      {approvalsPreview.length > 0 && (
+        <div className="mb-6" data-testid="section-approvals-preview">
+          <Card className="bg-card border-border">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center justify-between gap-2">
+                <span className="flex items-center gap-2">
+                  <ClipboardCheck className="w-4 h-4 text-emerald-400" />
+                  Approvals ready
+                </span>
+                <Link href="/team/approval-queue">
+                  <span className="flex items-center gap-1 text-xs text-primary hover:underline cursor-pointer font-normal">
+                    Open queue <ArrowRight className="w-3 h-3" />
+                  </span>
+                </Link>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {approvalsPreview.map((action) => (
+                <div
+                  key={action.id}
+                  className="rounded-md border border-border bg-muted/20 p-3"
+                  data-testid={`approval-preview-${action.id}`}
+                >
+                  <div className="flex items-start justify-between gap-2 flex-wrap">
+                    <p className="text-sm font-semibold">{action.title}</p>
+                    <StatusBadge tone={action.riskLevel === "sensitive" ? "danger" : "info"}>
+                      {APPROVAL_REQUIREMENT_LABELS[action.approvalRequirement]}
+                    </StatusBadge>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    {action.restaurantName} · {PREPARED_ACTION_CHANNEL_LABELS[action.channel]}
+                  </p>
+                  <p className="text-[12px] text-primary/85 mt-1.5">
+                    <span className="text-muted-foreground">Next:</span> {action.suggestedNext}
+                  </p>
+                </div>
+              ))}
+              <p className="text-[10px] text-muted-foreground/60 pt-1">
+                Nothing is posted or sent until you approve it here.
               </p>
             </CardContent>
           </Card>
