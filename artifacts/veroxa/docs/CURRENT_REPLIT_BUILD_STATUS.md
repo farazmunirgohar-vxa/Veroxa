@@ -1,5 +1,31 @@
 # Current Replit Build Status
 
+> **2026-05-29 — Pricing Correction + Active Route Reduction**
+>
+> - Pricing source of truth (`veroxaPricing.ts`) updated to the owner-locked
+>   final model: Complete Online Presence $977/mo standard ($488/mo first
+>   year), Ads Management add-on +$477/mo (no founding discount), combined
+>   $1,454/mo standard / $965/mo first year.
+> - Public Pricing page now shows only Complete Online Presence and the Ads
+>   Management add-on. Google Optimization and Ads-Management-Only are no
+>   longer shown or discounted on the page.
+> - `google_optimization` and `ads_standalone` are intentionally retained in
+>   `veroxaPricing.ts` (NOT deleted) because the internal Free Audit
+>   recommendation engine and lead-scoring still reference them. They are
+>   excluded from the public Pricing page only. Free Audit behavior unchanged.
+> - `App.tsx` reduced to a focused active route map:
+>   Public (`/`, `/services`, `/pricing`, `/free-audit`, `/login`),
+>   Demo preview (`/demo`, `/guided-demo`, `/upload`, `/demo/client/dashboard`),
+>   Client Portal (`/client/dashboard|media|requests|updates|reports`),
+>   Team Portal (`/team/dashboard|upload-inbox|work-queue|direction-queue|report-queue|audit-leads`).
+> - All Owner and Operator imports and routes removed from active routing
+>   (page files left on disk, parked — not deleted). Internal/demo operator,
+>   owner, and team alias routes removed from active routing.
+> - `clientPortalNav.ts` trimmed to 5 items; `teamPortalNav.ts` trimmed to 6.
+> - `PublicNav` simplified: Services, Pricing, Free Audit, Demo Preview,
+>   Portal Access (+ Login link and Get Free Audit button).
+> - Typecheck passes: `pnpm --filter @workspace/veroxa run typecheck`.
+
 > **2026-05-29 — Page Sprawl Stopped / Portal Consolidation**
 >
 > - No new page files created. No new routes added.

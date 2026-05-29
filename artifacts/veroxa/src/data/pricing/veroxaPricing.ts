@@ -3,19 +3,24 @@
 // All UI copy, demo fixtures, and engine logic that surface plan prices
 // must read from this file.
 //
-// IMPORTANT (owner-locked rules):
+// IMPORTANT (owner-locked final pricing):
 //   * Pricing is owner-locked. Do NOT change any price without explicit
 //     owner approval.
-//   * Current model uses Google Optimization, Complete Online Presence,
-//     Ads Add-on (paired with Complete Online Presence), and Ads
-//     Management Only (standalone).
+//   * PUBLICLY OFFERED MODEL (shown on the pricing page):
+//       - Complete Online Presence — the core package.
+//           $977/mo standard, $488/mo first year (50% founding offer).
+//       - Ads Management — add-on to Complete Online Presence ONLY.
+//           +$477/mo. NO founding discount applies to Ads Management.
+//       - Combined (Complete Online Presence + Ads Management):
+//           $1,454/mo standard, $965/mo first year.
+//   * 50% first-year founding offer applies ONLY to Complete Online
+//     Presence, never to Ads Management.
 //   * There is NO separate "Bundle" plan. Complete Online Presence +
-//     Ads Add-on is expressed as the two line items added together; the
-//     combined total ($1,474/mo standard, $738/mo founding first year)
-//     is shown for clarity but is not its own plan.
-//   * Founding Client Offer = 50% off standard pricing for the first
-//     year, for early/founding restaurant partners. After the first
-//     year, standard pricing applies.
+//     Ads Add-on is expressed as two line items added together.
+//   * google_optimization and ads_standalone are NO LONGER publicly
+//     offered packages. They are retained here only because the internal
+//     Free Audit recommendation engine and lead-scoring still reference
+//     them. They MUST NOT be surfaced on the public pricing page.
 //   * Ad spend is ALWAYS separate and paid by the restaurant directly
 //     to the ad platform. No plan includes ad spend.
 //   * No payment, billing, or checkout integration exists. Do not add
@@ -51,6 +56,8 @@ export interface VeroxaPlan {
 }
 
 export const VEROXA_PLANS: Record<VeroxaPlanId, VeroxaPlan> = {
+  // RETIRED from public sale — kept for internal Free Audit / lead-scoring
+  // compatibility only. Not shown on the pricing page.
   google_optimization: {
     id: "google_optimization",
     label: "Google Optimization",
@@ -66,9 +73,9 @@ export const VEROXA_PLANS: Record<VeroxaPlanId, VeroxaPlan> = {
     id: "complete_online_presence",
     label: "Complete Online Presence",
     priceMonthly: 977,
-    priceMonthlyFounding: 489,
+    priceMonthlyFounding: 488,
     displayPrice: "$977",
-    displayPriceFounding: "$489",
+    displayPriceFounding: "$488",
     tagline:
       "Facebook, Instagram, TikTok, Google Optimization, content planning, posting support, weekly updates, monthly reports.",
     includesAdSpend: false,
@@ -76,14 +83,18 @@ export const VEROXA_PLANS: Record<VeroxaPlanId, VeroxaPlan> = {
   ads_addon: {
     id: "ads_addon",
     label: "Ads Add-on",
-    priceMonthly: 497,
-    priceMonthlyFounding: 249,
-    displayPrice: "+$497",
-    displayPriceFounding: "+$249",
+    priceMonthly: 477,
+    // No founding discount applies to Ads Management — founding price
+    // equals the standard price by design.
+    priceMonthlyFounding: 477,
+    displayPrice: "+$477",
+    displayPriceFounding: "+$477",
     tagline:
       "Add advertising management to Complete Online Presence. Ad spend is separate.",
     includesAdSpend: false,
   },
+  // RETIRED from public sale — kept for internal Free Audit / lead-scoring
+  // compatibility only. Not shown on the pricing page.
   ads_standalone: {
     id: "ads_standalone",
     label: "Ads Management Only",
@@ -106,14 +117,14 @@ export const VEROXA_PLANS: Record<VeroxaPlanId, VeroxaPlan> = {
 
 export const COMPLETE_PLUS_ADS_TOTAL_MONTHLY =
   VEROXA_PLANS.complete_online_presence.priceMonthly +
-  VEROXA_PLANS.ads_addon.priceMonthly; // 977 + 497 = 1474
+  VEROXA_PLANS.ads_addon.priceMonthly; // 977 + 477 = 1454
 
 export const COMPLETE_PLUS_ADS_FOUNDING_TOTAL_MONTHLY =
   VEROXA_PLANS.complete_online_presence.priceMonthlyFounding +
-  VEROXA_PLANS.ads_addon.priceMonthlyFounding; // 489 + 249 = 738
+  VEROXA_PLANS.ads_addon.priceMonthlyFounding; // 488 + 477 = 965
 
-export const COMPLETE_PLUS_ADS_TOTAL_DISPLAY = "$1,474";
-export const COMPLETE_PLUS_ADS_FOUNDING_TOTAL_DISPLAY = "$738";
+export const COMPLETE_PLUS_ADS_TOTAL_DISPLAY = "$1,454";
+export const COMPLETE_PLUS_ADS_FOUNDING_TOTAL_DISPLAY = "$965";
 
 // ── Disclaimers and offer copy ───────────────────────────────────────
 
