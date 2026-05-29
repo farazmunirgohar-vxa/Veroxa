@@ -66,7 +66,8 @@ const decisionStyle: Record<LocalDecision, string> = {
 const teamEvidenceRec = recommendNextPost("demo-a");
 
 export default function TeamMediaReview() {
-  // Local-only decisions per item. Never persisted; resets on reload.
+  // Review decisions held in component state; workflow persistence is
+  // backend pending. No external sends or notifications.
   const [decisions, setDecisions] = useState<Record<number, LocalDecision>>({});
 
   const setDecision = (id: number, d: LocalDecision) =>
@@ -91,7 +92,7 @@ export default function TeamMediaReview() {
         <p className="text-muted-foreground mt-1 text-sm md:text-base">Review and act on uploaded media — Accept, request a reshoot, or save for later.</p>
       </div>
 
-      <DemoOnlyBanner message="Demo only — decisions are kept in local state. No uploads, no database writes, no notifications sent to clients." testId="banner-team-media" />
+      <DemoOnlyBanner message="Review decisions persist in the workflow foundation for this browser (backend pending). No uploads, cloud writes, or client notifications happen — client-facing steps require team approval." testId="banner-team-media" />
 
       <p className="text-xs text-muted-foreground mb-4" data-testid="upload-inbox-cross-link">
         New restaurant uploads appear in the{" "}
@@ -241,7 +242,7 @@ export default function TeamMediaReview() {
                     Use Later
                   </button>
                 </div>
-                <p className="mt-2 text-[10px] text-muted-foreground/70">Demo only — local state. No client notification is sent.</p>
+                <p className="mt-2 text-[10px] text-muted-foreground/70">Persists in the workflow foundation (backend pending). No client notification is sent.</p>
               </CardContent>
             </Card>
           );

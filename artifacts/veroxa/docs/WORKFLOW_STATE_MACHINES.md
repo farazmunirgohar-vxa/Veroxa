@@ -1,8 +1,14 @@
 # Veroxa Workflow State Machines — Planning
 
-> **Planning only.** No state machine code is implemented. No writes
-> exist anywhere in the frontend. These states describe the **future**
-> shape of the data once real writes, real RLS, and `audit_logs` ship.
+> **Update (2026-05-29).** The core lifecycle is now implemented in code via
+> `src/lib/workflow/*` (`WorkflowLifecycleStatus` + status derivation) behind a
+> repository and a swappable storage layer (temporary browser persistence,
+> backend pending). See `REAL_WORKFLOW_FOUNDATION.md`. The states below remain
+> the target for real writes, RLS, and `audit_logs` once the backend ships.
+
+> **Planning only (original).** No cloud writes exist anywhere in the frontend.
+> These states describe the **future** shape of the data once real writes, real
+> RLS, and `audit_logs` ship.
 
 For each machine: states, allowed transitions, which role can perform
 each transition (later), the audit action name to write, and whether

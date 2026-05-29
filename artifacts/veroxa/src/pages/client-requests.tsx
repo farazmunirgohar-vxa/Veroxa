@@ -1,15 +1,102 @@
-import { ClipboardCheck, ArrowRight, HelpCircle, Loader2, MessageSquare, Activity } from "lucide-react";
+import { ClipboardCheck, ArrowRight, HelpCircle, Loader2, MessageSquare, Activity, Send } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientPortalData } from "@/hooks/useClientPortalData";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
-import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 import { clientTeamWorkRepository } from "@/lib/repositories";
+import { useEffect, useState } from "react";
+import {
+  addClientClarificationResponse,
+  getClientItemsNeedingInput,
+  subscribeToWorkflow,
+} from "@/lib/workflow/workflowRepository";
+import type { WorkflowItem } from "@/lib/workflow/workflowTypes";
 
 const SHOWCASE_ID = "demo-a";
+
+function WorkflowClarifications({ clientId }: { clientId: string }) {
+  const [items, setItems] = useState<WorkflowItem[]>(() =>
+    getClientItemsNeedingInput(clientId),
+  );
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const refresh = () => setItems(getClientItemsNeedingInput(clientId));
+    refresh();
+    return subscribeToWorkflow(refresh);
+  }, [clientId]);
+
+  if (items.length === 0) return null;
+
+  const submit = (id: string) => {
+    const text = (drafts[id] ?? "").trim();
+    if (!text) return;
+    addClientClarificationResponse(id, text);
+    setDrafts((prev) => ({ ...prev, [id]: "" }));
+  };
+
+  return (
+    <Card
+      className="bg-sky-500/5 border-sky-500/30 mb-4"
+      data-testid="card-workflow-clarifications"
+    >
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm flex items-center gap-2">
+          <HelpCircle className="w-4 h-4 text-sky-300" />
+          Veroxa needs your input ({items.length})
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {items.map((item) => (
+          <div
+            key={item.workflowItemId}
+            className="rounded-md border border-border bg-muted/20 px-3 py-3"
+            data-testid={`clarification-${item.workflowItemId}`}
+          >
+            <p className="text-sm font-medium leading-snug">{item.title}</p>
+            {item.nextClientAction && (
+              <p className="text-[12px] text-sky-200 mt-1">
+                {item.nextClientAction}
+              </p>
+            )}
+            <div className="flex gap-2 mt-2">
+              <Input
+                type="text"
+                value={drafts[item.workflowItemId] ?? ""}
+                onChange={(e) =>
+                  setDrafts((prev) => ({
+                    ...prev,
+                    [item.workflowItemId]: e.target.value,
+                  }))
+                }
+                placeholder="Type your reply to Veroxa…"
+                className="h-9 text-xs"
+                data-testid={`clarification-input-${item.workflowItemId}`}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") submit(item.workflowItemId);
+                }}
+              />
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => submit(item.workflowItemId)}
+                disabled={!(drafts[item.workflowItemId] ?? "").trim()}
+                data-testid={`clarification-send-${item.workflowItemId}`}
+                className="flex-shrink-0"
+              >
+                <Send className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function ClientRequests() {
   const { source, dataSourceMessage } = useClientPortalData();
@@ -42,7 +129,10 @@ export default function ClientRequests() {
         </p>
       </div>
 
-      <DemoOnlyBanner message="Demo only — request items are illustrative. No notifications or messages are sent." testId="banner-client-requests" />
+      {/* Clarifications you can respond to — driven by the real workflow
+          foundation. Responses are saved into your workflow (backend pending).
+          No notifications or external messages are sent. */}
+      <WorkflowClarifications clientId={SHOWCASE_ID} />
 
       {/* Action needed from you — derived from the submission pipeline. */}
       {actionRequired.length > 0 && (
@@ -251,7 +341,8 @@ export default function ClientRequests() {
               data-testid="input-client-thread-disabled"
             />
             <p className="text-[10px] text-muted-foreground">
-              Demo only — messages above are illustrative.
+              Live messaging connects after backend activation. To reply now, use
+              the input fields above.
             </p>
           </div>
         </CardContent>

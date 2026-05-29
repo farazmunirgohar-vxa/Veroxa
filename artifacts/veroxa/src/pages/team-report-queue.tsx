@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { teamPortalNavItems } from "@/lib/teamPortalNav";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
+import { TeamWorkflowPanel } from "@/components/TeamWorkflowPanel";
 import {
   demoWeeklyReports,
   demoMonthlyReports,
@@ -91,9 +92,22 @@ export default function TeamReportQueue() {
       </div>
 
       <DemoOnlyBanner
-        message="Demo only — read-only report queue. No approvals or deliveries are triggered."
+        message="Report sourcing persists in the workflow foundation for this browser (backend pending). Drafts require team verification before they become client-visible — nothing is delivered automatically."
         testId="banner-report-queue"
       />
+
+      {/* Report-source items — completed work eligible for the report, plus
+          report drafts awaiting verification. Inclusion is a team decision;
+          nothing is delivered or made client-visible automatically. */}
+      <div className="mb-4">
+        <TeamWorkflowPanel
+          title="Report-source items"
+          icon={<FileBarChart className="w-4 h-4 text-primary" />}
+          lifecycles={["completed", "report_ready", "included_in_report"]}
+          emptyText="No completed items are ready for the report yet."
+          testId="card-report-queue-workflow"
+        />
+      </div>
 
       {/* AI-assisted report drafts preview — Veroxa team verifies before sharing. */}
       {(() => {

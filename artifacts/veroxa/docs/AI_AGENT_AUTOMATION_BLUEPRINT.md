@@ -1,9 +1,14 @@
 # AI Agent & Automation Blueprint
 
-> **Purpose.** Describes Veroxa's automation **preview** layer and the future
-> real automation it anticipates. The current build is rule-based preview only:
-> it prepares tasks and reminders. It performs **no** real external actions —
-> no publishing, no client auto-messaging, no notifications, no writes.
+> **Update (2026-05-29).** Automation now operates as a prepared, rule-based
+> step inside the real workflow foundation (`REAL_WORKFLOW_FOUNDATION.md`).
+> Prepared drafts and recommended next actions attach to workflow items and
+> always require human/team approval before anything becomes client-facing.
+
+> **Purpose.** Describes Veroxa's rule-based automation layer and the future
+> real automation it anticipates. The current build prepares tasks, drafts, and
+> reminders only. It performs **no** real external actions — no publishing, no
+> client auto-messaging, no notifications, no cloud writes.
 
 ---
 

@@ -8,8 +8,45 @@ import { DataSourceBadge } from "@/components/DataSourceBadge";
 import { clientTeamWorkRepository } from "@/lib/repositories";
 import { previewClientUpdate } from "@/lib/ai/aiAgentPreviewEngine";
 import { Brain } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  getClientWorkflowItems,
+  subscribeToWorkflow,
+} from "@/lib/workflow/workflowRepository";
+import { toClientActivityViews } from "@/lib/workflow/workflowActivity";
+import type { WorkflowItem } from "@/lib/workflow/workflowTypes";
 
 const SHOWCASE_ID = "demo-a";
+
+interface TimelineEntry {
+  id: string;
+  at: string;
+  label: string;
+  itemTitle: string;
+}
+
+function useWorkflowTimeline(clientId: string): TimelineEntry[] {
+  const [items, setItems] = useState<WorkflowItem[]>(() =>
+    getClientWorkflowItems(clientId),
+  );
+  useEffect(() => {
+    const refresh = () => setItems(getClientWorkflowItems(clientId));
+    refresh();
+    return subscribeToWorkflow(refresh);
+  }, [clientId]);
+
+  return items
+    .flatMap((item) =>
+      toClientActivityViews(item.activityEvents).map((view) => ({
+        id: view.id,
+        at: view.at,
+        label: view.label as string,
+        itemTitle: item.title,
+      })),
+    )
+    .sort((a, b) => (a.at < b.at ? 1 : -1))
+    .slice(0, 12);
+}
 
 const PAST_UPDATES = [
   {
@@ -30,6 +67,7 @@ const PAST_UPDATES = [
 
 export default function ClientUpdates() {
   const { data, source, dataSourceMessage } = useClientPortalData();
+  const timeline = useWorkflowTimeline(SHOWCASE_ID);
 
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
@@ -292,6 +330,39 @@ export default function ClientUpdates() {
         );
       })()}
 
+      {/* Activity timeline — client-safe events from the real workflow
+          foundation. Internal-only events are never shown here. */}
+      {timeline.length > 0 && (
+        <div className="mb-5" data-testid="section-workflow-timeline">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
+            <Activity className="w-3.5 h-3.5" /> Activity timeline
+          </h3>
+          <Card className="bg-card/60 border-border">
+            <CardContent className="p-4 space-y-2">
+              {timeline.map((entry) => (
+                <div
+                  key={entry.id}
+                  className="flex items-start justify-between gap-3 border-b border-border/40 last:border-0 pb-2 last:pb-0"
+                  data-testid={`timeline-${entry.id}`}
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium leading-snug">
+                      {entry.itemTitle}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {entry.label}
+                    </p>
+                  </div>
+                  <span className="text-[10px] text-muted-foreground flex-shrink-0">
+                    {new Date(entry.at).toLocaleDateString()}
+                  </span>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Past updates */}
       <div data-testid="section-past-updates">
         <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">
@@ -332,7 +403,8 @@ export default function ClientUpdates() {
       </div>
 
       <p className="mt-6 text-center text-[11px] text-muted-foreground">
-        Demo only — all update items and metrics are illustrative sample data.
+        Previous-week figures are illustrative until the reporting backend is
+        connected. Live workflow activity above reflects your real submissions.
       </p>
     </PortalLayout>
   );

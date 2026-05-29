@@ -13,15 +13,15 @@ export default function TeamAiReview() {
         <div className="flex items-center gap-3 mb-2">
           <h2 className="text-3xl font-bold tracking-tight text-foreground" data-testid="header-ai-review">AI Agent Preview</h2>
           <Badge variant="outline" className="border-primary/30 bg-primary/10 text-primary text-[10px] font-semibold tracking-wide px-2 py-0.5">
-            Demo Logic Only
+            Rule-based · approval required
           </Badge>
         </div>
         <p className="text-sm text-muted-foreground">
-          A preview of how Veroxa's AI agents will assist each stage of the content workflow. All outputs below are simulated.
+          How Veroxa's rule-based AI assists each stage of the content workflow. All outputs below are prepared drafts that require team approval — nothing is auto-sent or published.
         </p>
       </div>
 
-      <DemoOnlyBanner message="Simulated preview — no AI API is connected. Each agent card below is a static visual of the future AI capabilities (see docs/AI_AGENT_ARCHITECTURE_PLAN.md)." testId="banner-team-ai" />
+      <DemoOnlyBanner message="Rule-based AI assistance — no external AI API is connected. Each agent card prepares drafts and recommendations for the team; human approval is required before anything is client-facing (see docs/AI_AGENT_ARCHITECTURE_PLAN.md)." testId="banner-team-ai" />
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {teamAgentCards.map((agent) => {
@@ -49,7 +49,7 @@ export default function TeamAiReview() {
                   <div className={`p-2 rounded-lg ${c.bg} ${c.text}`}>
                     <AgentIcon className="w-4 h-4" />
                   </div>
-                  <span className="text-[9px] font-semibold text-muted-foreground/60 uppercase tracking-widest leading-tight text-right">Simulated</span>
+                  <span className="text-[9px] font-semibold text-muted-foreground/60 uppercase tracking-widest leading-tight text-right">Rule-based</span>
                 </div>
                 <h4 className="text-sm font-semibold text-foreground mb-1 leading-snug">{agent.name}</h4>
                 <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold ${c.badge} mb-2`}>

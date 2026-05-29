@@ -1,6 +1,8 @@
 import { PortalLayout } from "@/components/PortalLayout";
 import { teamPortalNavItems } from "@/lib/teamPortalNav";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
+import { TeamWorkflowPanel } from "@/components/TeamWorkflowPanel";
+import { ListChecks } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { getRestaurantName } from "@/data/demoData";
@@ -109,14 +111,34 @@ export default function TeamWorkQueue() {
           className="self-start border-border bg-muted/20 text-[10px] uppercase tracking-wider text-muted-foreground"
           data-testid="badge-data-source-work-queue"
         >
-          Source: Demo repository layer
+          Source: Workflow foundation
         </Badge>
       </div>
 
       <DemoOnlyBanner
-        message="Demo only — workflow items are local sample data. No database writes."
+        message="Status changes persist in the workflow foundation for this browser (backend pending). No external sends — client-facing steps require team approval."
         testId="banner-work-queue"
       />
+
+      {/* Live lifecycle queue — move items through content prep, scheduling
+          prep, and completion. Every transition is a human decision; nothing
+          is published or sent automatically. */}
+      <div className="mb-4">
+        <TeamWorkflowPanel
+          title="Workflow lifecycle queue"
+          icon={<ListChecks className="w-4 h-4 text-primary" />}
+          lifecycles={[
+            "team_reviewing",
+            "ai_prepared",
+            "ready_for_content_prep",
+            "content_draft_ready",
+            "scheduling_prep_ready",
+            "blocked",
+          ]}
+          emptyText="No items in the active lifecycle queue right now."
+          testId="card-work-queue-workflow"
+        />
+      </div>
 
       {/* AI-assisted per-item previews — top 4 active items. */}
       {(() => {

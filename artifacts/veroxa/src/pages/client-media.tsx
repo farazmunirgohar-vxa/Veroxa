@@ -39,6 +39,7 @@ import { clientTeamWorkRepository } from "@/lib/repositories";
 import { CLIENT_AI_DISCLOSURE } from "@/lib/ai/aiAgentTypes";
 import { previewContentDraftForSubmission } from "@/lib/content/contentDraftPreviewEngine";
 import { Brain } from "lucide-react";
+import { createWorkflowItem } from "@/lib/workflow/workflowRepository";
 
 const SHOWCASE_ID = "demo-a";
 
@@ -75,7 +76,31 @@ const difficultyStyles: Record<string, string> = {
 export default function ClientMedia() {
   const [files, setFiles] = useState<SelectedFile[]>([]);
   const [pickerMessage, setPickerMessage] = useState<string | null>(null);
+  const [submitMessage, setSubmitMessage] = useState<string | null>(null);
+  const [submitNote, setSubmitNote] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleSubmitToTeam = () => {
+    if (files.length === 0) return;
+    const item = createWorkflowItem({
+      clientId: SHOWCASE_ID,
+      type: "media_upload",
+      title:
+        files.length > 1
+          ? `${files.length} media items from your team`
+          : files[0].name,
+      clientNote: submitNote.trim(),
+      fileName: files.length > 1 ? `${files.length} files` : files[0].name,
+      fileCount: files.length,
+      submittedBy: "client",
+    });
+    setFiles([]);
+    setSubmitNote("");
+    setPickerMessage(null);
+    setSubmitMessage(
+      `Submitted to the Veroxa team. Storage pending — your media is tracked in the workflow and a team member will review it. Tracking ref ${item.workflowItemId}.`,
+    );
+  };
 
   // Restaurant Media Guidance — local state only, never persisted.
   const [restaurantType, setRestaurantType] = useState<RestaurantType>(
@@ -100,8 +125,9 @@ export default function ClientMedia() {
   );
 
   const handlePick = (e: ChangeEvent<HTMLInputElement>) => {
-    // DEMO ONLY — file metadata is read into local state and never uploaded.
-    // No fetch, no FormData, no Supabase Storage, no API call.
+    // Storage pending — file metadata is read into local state only; the
+    // file itself is not uploaded yet. No fetch, no FormData, no cloud
+    // storage, no API call until the storage backend is connected.
     const picked = Array.from(e.target.files ?? []).map<SelectedFile>((f) => ({
       name: f.name,
       sizeKb: Math.max(1, Math.round(f.size / 1024)),
@@ -109,8 +135,9 @@ export default function ClientMedia() {
     }));
     if (picked.length === 0) return;
     setFiles((prev) => [...prev, ...picked]);
+    setSubmitMessage(null);
     setPickerMessage(
-      "Files selected — preview only. Nothing is uploaded or stored in this demo.",
+      "Files selected. Storage pending — submit to the Veroxa team to track them in your workflow.",
     );
     if (inputRef.current) inputRef.current.value = "";
   };
@@ -139,18 +166,21 @@ export default function ClientMedia() {
           <Badge
             variant="outline"
             className="border-amber-500/40 text-amber-400 bg-amber-500/10"
-            data-testid="badge-demo-only"
+            data-testid="badge-storage-pending"
           >
-            Demo only — no real uploads
+            Storage pending
           </Badge>
         </div>
         <p className="text-muted-foreground max-w-3xl">
-          Demo preview of how restaurants will upload photos and videos for
-          Veroxa to review.
+          Upload photos and videos for the Veroxa team to review and turn into
+          content. Submissions are tracked in your workflow.
         </p>
         <div className="flex items-start gap-2 text-sm text-muted-foreground max-w-3xl">
           <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
-          <span>Files selected here are not uploaded or stored.</span>
+          <span>
+            Storage pending — files are tracked in your workflow but not yet
+            stored until the storage connection is live.
+          </span>
         </div>
       </div>
 
@@ -525,8 +555,8 @@ export default function ClientMedia() {
                   Drag & drop photos or videos
                 </p>
                 <p className="text-xs text-muted-foreground mt-1 mb-4">
-                  Or choose files from your device. Nothing is uploaded in the
-                  demo.
+                  Or choose files from your device. Storage pending — files are
+                  tracked in your workflow, not yet stored.
                 </p>
                 <input
                   ref={inputRef}
@@ -542,7 +572,7 @@ export default function ClientMedia() {
                   onClick={() => inputRef.current?.click()}
                   data-testid="button-choose-files"
                 >
-                  Choose Files — Coming Soon
+                  Choose Files
                 </Button>
                 {pickerMessage && (
                   <p
@@ -556,23 +586,45 @@ export default function ClientMedia() {
               </div>
 
               {files.length > 0 && (
-                <div className="mt-4 flex items-center justify-between gap-3 rounded-md border border-primary/30 bg-primary/5 px-3 py-2.5" data-testid="callout-submit-demo">
+                <div className="mt-4 space-y-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-2.5" data-testid="callout-submit-team">
                   <div className="min-w-0">
                     <p className="text-xs font-semibold text-foreground">Ready to send to Veroxa?</p>
                     <p className="text-[11px] text-muted-foreground">
-                      In the live app, this submits your selection to the Veroxa team for review. In this demo nothing is sent.
+                      This submits your selection into your Veroxa workflow for
+                      team review. Storage pending — files are tracked, not yet
+                      stored, until the storage connection is live.
                     </p>
                   </div>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    disabled
-                    data-testid="btn-submit-to-team"
-                    className="flex-shrink-0"
-                  >
-                    Submit to Veroxa Team — Demo
-                  </Button>
+                  <textarea
+                    value={submitNote}
+                    onChange={(e) => setSubmitNote(e.target.value)}
+                    placeholder="Add a quick note for the team (optional) — e.g. what the dish is, or when it was taken."
+                    rows={2}
+                    className="w-full bg-muted/40 border border-border rounded-md px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+                    data-testid="input-submit-note"
+                  />
+                  <div className="flex justify-end">
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={handleSubmitToTeam}
+                      data-testid="btn-submit-to-team"
+                      className="flex-shrink-0"
+                    >
+                      Submit to Veroxa Team
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {submitMessage && (
+                <div
+                  className="mt-4 flex items-start gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-2.5 text-xs text-emerald-300"
+                  data-testid="text-submit-message"
+                  role="status"
+                >
+                  <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <span>{submitMessage}</span>
                 </div>
               )}
 
@@ -580,7 +632,7 @@ export default function ClientMedia() {
                 <div className="mt-5 space-y-2" data-testid="list-selected-files">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-medium">
-                      Selected files (preview only)
+                      Selected files (not yet submitted)
                     </p>
                     <Button
                       type="button"
@@ -629,8 +681,7 @@ export default function ClientMedia() {
                 Media Review Preview
               </CardTitle>
               <p className="text-xs text-muted-foreground">
-                Static demo statuses — illustrates how the team would tag
-                uploaded media for downstream use.
+                How the Veroxa team tags reviewed media for downstream use.
               </p>
             </CardHeader>
             <CardContent>
@@ -705,7 +756,8 @@ export default function ClientMedia() {
               <div className="flex items-start gap-2 text-xs text-muted-foreground">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-emerald-500" />
                 <span>
-                  Demo preview only — no files are stored.
+                  Storage pending — files are tracked in your workflow until the
+                  storage connection is live.
                 </span>
               </div>
             </CardContent>

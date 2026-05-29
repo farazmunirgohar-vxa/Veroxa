@@ -1,5 +1,20 @@
 # Current Replit Build Status
 
+> **2026-05-29 — Real workflow foundation: production-shaped data model + repository, Client/Team pages wired, preview language reframed**
+>
+> - **Workflow foundation** — `src/lib/workflow/*` adds a production-shaped
+>   `WorkflowItem`, lifecycle/client-safe/internal status derivation, activity
+>   timeline, a repository, and a swappable storage layer (temporary browser
+>   persistence, backend pending). Pages call the repository only. See
+>   `REAL_WORKFLOW_FOUNDATION.md`.
+> - **Client portal** — media submission, dashboard, updates timeline,
+>   clarification responses, and report-ready views are repo-driven.
+> - **Team portal** — a shared `TeamWorkflowPanel` drives the dashboard, upload
+>   inbox, work queue, direction queue, and report queue with lifecycle actions.
+> - **Language** — "simulator/demo/preview/local-only" reframed to "real
+>   workflow foundation / backend pending / human approval required" across the
+>   active client + team surfaces. AI remains rule-based with no external actions.
+>
 > **2026-05-29 — AI agents + automation foundation: structured outputs, automation preview, portal surfacing**
 >
 > - **Structured AI agent contracts** (BUILD 1) — `src/lib/ai/aiAgentTypes.ts`

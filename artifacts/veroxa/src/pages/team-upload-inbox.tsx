@@ -48,6 +48,7 @@ import {
   TEAM_AI_DISCLOSURE,
 } from "@/lib/ai/aiAgentTypes";
 import { ContentDraftPipelineCard } from "@/components/ContentDraftPipelineCard";
+import { TeamWorkflowPanel } from "@/components/TeamWorkflowPanel";
 
 const statusToneStyles: Record<DemoUploadStatus, string> = {
   received: "bg-sky-500/10 text-sky-400 border-sky-500/30",
@@ -61,8 +62,8 @@ const statusToneStyles: Record<DemoUploadStatus, string> = {
  * /demo/team/upload-inbox — Team Upload Inbox (M014).
  *
  * Shows restaurant uploads submitted through the Restaurant Upload Key
- * flow. Local-only state — review actions update component state and
- * never hit the database or any external API.
+ * flow. Triage actions persist through the workflow foundation (backend
+ * pending) and never hit a cloud database or any external API yet.
  */
 export default function TeamUploadInbox() {
   // Fixture submissions stay in component state for local triage practice.
@@ -139,7 +140,7 @@ export default function TeamUploadInbox() {
           </Link>
         </div>
 
-        <DemoOnlyBanner message="Demo/local only — no real uploads, no notifications, no database writes. Actions update local state in this browser only." />
+        <DemoOnlyBanner message="Triage actions persist in the workflow foundation for this browser (backend pending). No notifications or external sends happen — every client-facing step requires team approval." />
 
         <p
           className="mt-2 text-[11px] text-muted-foreground/80 px-1"
@@ -156,6 +157,24 @@ export default function TeamUploadInbox() {
           data-testid="banner-writes-disabled-upload-inbox"
         >
           {getWriteSafetyBanner()}
+        </div>
+
+        {/* Live media uploads in the real workflow foundation — accept for
+            content prep or ask the client for context. Actions persist
+            (backend pending); nothing is published or sent. */}
+        <div className="mt-3">
+          <TeamWorkflowPanel
+            title="Uploads in the workflow"
+            icon={<Inbox className="w-4 h-4 text-primary" />}
+            lifecycles={[
+              "submitted",
+              "team_reviewing",
+              "ai_prepared",
+              "needs_client_input",
+            ]}
+            emptyText="No new uploads in the workflow right now."
+            testId="card-upload-inbox-workflow"
+          />
         </div>
 
         {/* AI Media Review previews for active media submissions. */}

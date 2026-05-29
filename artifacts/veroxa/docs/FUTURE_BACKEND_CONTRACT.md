@@ -1,8 +1,14 @@
 # Future Backend Contract
 
-> **Purpose.** Captures the future Supabase fields that the current
-> simulated/rule-based build anticipates but does **not** yet persist. Nothing
-> here is implemented as a real write today — these are the planned columns for
+> **Update (2026-05-29).** The workflow data model now exists in code behind a
+> repository + swappable storage layer (`REAL_WORKFLOW_FOUNDATION.md`). Cloud
+> persistence is still pending — today the storage layer uses temporary browser
+> persistence. Swapping to a real backend means re-implementing the storage
+> layer only; pages call the repository and need no changes.
+
+> **Purpose.** Captures the future backend fields that the current rule-based
+> build anticipates but does **not** yet persist to the cloud. Nothing here is
+> implemented as a real cloud write today — these are the planned columns for
 > when the backend is activated. See `CLIENT_TEAM_WORKFLOW_CONTRACT.md` for the
 > client ↔ team work tables.
 

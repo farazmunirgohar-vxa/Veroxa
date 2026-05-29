@@ -6,7 +6,31 @@ import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientPortalData } from "@/hooks/useClientPortalData";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
 import { previewReportDraft } from "@/lib/ai/aiAgentPreviewEngine";
-import { Brain } from "lucide-react";
+import { Brain, CheckCircle2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  getClientWorkflowItems,
+  subscribeToWorkflow,
+} from "@/lib/workflow/workflowRepository";
+import type { WorkflowItem } from "@/lib/workflow/workflowTypes";
+
+const SHOWCASE_ID = "demo-a";
+
+function useReportEligibleItems(clientId: string): WorkflowItem[] {
+  const [items, setItems] = useState<WorkflowItem[]>(() =>
+    getClientWorkflowItems(clientId),
+  );
+  useEffect(() => {
+    const refresh = () => setItems(getClientWorkflowItems(clientId));
+    refresh();
+    return subscribeToWorkflow(refresh);
+  }, [clientId]);
+  return items.filter(
+    (i) =>
+      i.clientVisibleStatus === "Completed" ||
+      i.clientVisibleStatus === "Included in report",
+  );
+}
 
 const EXTRA_CARDS = [
   {
@@ -26,7 +50,7 @@ const EXTRA_CARDS = [
     id: "top-post",
     icon: Star,
     title: "Top Post — May 2026",
-    status: "Demo data",
+    status: "Illustrative",
     statusClass: "bg-amber-500/10 text-amber-400",
     metrics: [
       { label: "Caption angle",       value: "Weekend Grill" },
@@ -53,6 +77,7 @@ const EXTRA_CARDS = [
 export default function ClientReports() {
   const { data, source, dataSourceMessage } = useClientPortalData();
   const report = data.monthlyReportPreview;
+  const reportItems = useReportEligibleItems(SHOWCASE_ID);
 
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
@@ -184,8 +209,48 @@ export default function ClientReports() {
         ))}
       </div>
 
+      {/* Work that's ready for your report — driven by the real workflow
+          foundation. We show completed items honestly; performance metrics
+          stay blank until the reporting backend is connected (no invented
+          numbers). */}
+      {reportItems.length > 0 && (
+        <Card
+          className="bg-card border-emerald-500/20 mt-4"
+          data-testid="card-report-ready-items"
+        >
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              Ready for your report ({reportItems.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {reportItems.map((item) => (
+              <div
+                key={item.workflowItemId}
+                className="flex items-center justify-between gap-3 rounded-md border border-border bg-muted/20 px-3 py-2"
+                data-testid={`report-item-${item.workflowItemId}`}
+              >
+                <p className="text-sm font-medium leading-snug">{item.title}</p>
+                <Badge
+                  variant="outline"
+                  className="text-[9px] border-emerald-500/30 bg-emerald-500/10 text-emerald-300 flex-shrink-0"
+                >
+                  {item.clientVisibleStatus}
+                </Badge>
+              </div>
+            ))}
+            <p className="text-[10px] text-muted-foreground italic pt-1">
+              Performance figures connect after the reporting backend is
+              activated.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       <p className="mt-4 text-center text-[11px] text-muted-foreground">
-        Demo only — all report figures are illustrative sample data.
+        Report figures above are illustrative until the reporting backend is
+        connected. Items in “Ready for your report” reflect your real workflow.
       </p>
     </PortalLayout>
   );

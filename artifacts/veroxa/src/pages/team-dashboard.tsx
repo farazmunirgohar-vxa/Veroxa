@@ -14,6 +14,8 @@ import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { teamPortalNavItems } from "@/lib/teamPortalNav";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
+import { TeamWorkflowPanel } from "@/components/TeamWorkflowPanel";
+import { LayoutGrid } from "lucide-react";
 import { PageHeader, StatusBadge } from "@/components/common";
 import type { StatusBadgeTone } from "@/components/common";
 import {
@@ -85,9 +87,22 @@ export default function TeamDashboard() {
       />
 
       <DemoOnlyBanner
-        message="Demo only — all metrics and queue data are illustrative sample data."
+        message="Portfolio metrics below are illustrative until the reporting backend is connected. The live workflow command center reflects real client submissions."
         testId="banner-team-dashboard"
       />
+
+      {/* Live workflow command center — driven by the real workflow
+          foundation. Status changes persist (backend pending); nothing is
+          auto-sent, published, or sent to clients without team approval. */}
+      <div className="mb-4">
+        <TeamWorkflowPanel
+          title="Workflow command center"
+          icon={<LayoutGrid className="w-4 h-4 text-primary" />}
+          emptyText="No active workflow items right now."
+          testId="card-team-workflow-command-center"
+          limit={8}
+        />
+      </div>
 
       {/* AI Operator Assistant — daily command-center snapshot. */}
       {(() => {
@@ -347,18 +362,18 @@ export default function TeamDashboard() {
             ))}
         </div>
         <p className="text-[11px] text-muted-foreground/60 mt-2">
-          Demo only — submission-derived from the client/team workflow repository.
+          Derived from the client/team workflow foundation (backend pending).
         </p>
       </div>
 
-      {/* Media review queue — demo visual strip */}
+      {/* Media review queue — visual strip */}
       <div className="mb-6" data-testid="section-media-review-queue">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Media review queue
           </h3>
           <span className="text-xs text-muted-foreground">
-            Demo only — sample thumbnails
+            Thumbnails pending storage
           </span>
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">

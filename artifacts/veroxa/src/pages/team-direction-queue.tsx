@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
+import { TeamWorkflowPanel } from "@/components/TeamWorkflowPanel";
 import { WRITES_ENABLED } from "@/lib/data/writeReadiness";
 import { veroxaWriteAdapter } from "@/lib/data/writeAdapter";
 import { isValidUuid } from "@/lib/data/devClientIdValidation";
@@ -304,9 +305,22 @@ export default function TeamDirectionQueue() {
       </div>
 
       <DemoOnlyBanner
-        message="Demo/dev only — team status updates save locally first. Dev database saving only runs when explicitly enabled. No publishing or ads launch from this page."
+        message="Direction updates persist in the workflow foundation for this browser (backend pending). No publishing, ads launch, or external sends happen from this page."
         testId="banner-direction-queue"
       />
+
+      {/* Clarification queue — request input from the client or continue work
+          once they respond. Driven by the real workflow foundation; no
+          notifications are sent. */}
+      <div className="mb-4">
+        <TeamWorkflowPanel
+          title="Items needing client direction"
+          icon={<Compass className="w-4 h-4 text-primary" />}
+          lifecycles={["needs_client_input", "submitted", "team_reviewing"]}
+          emptyText="No items are waiting on client direction right now."
+          testId="card-direction-queue-workflow"
+        />
+      </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2 mt-2 mb-4 px-1 text-xs text-muted-foreground">
         <span>

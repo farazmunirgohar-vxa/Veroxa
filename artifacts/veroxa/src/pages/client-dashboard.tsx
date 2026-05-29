@@ -24,6 +24,36 @@ import { useEffect, useState } from "react";
 import { healthRepository, reportRepository, activityRepository, clientTeamWorkRepository } from "@/lib/repositories";
 import { CLIENT_AI_DISCLOSURE, CLIENT_AUTOMATION_DISCLOSURE } from "@/lib/ai/aiAgentTypes";
 import { Brain } from "lucide-react";
+import {
+  getClientWorkflowItems,
+  subscribeToWorkflow,
+} from "@/lib/workflow/workflowRepository";
+import type {
+  ClientVisibleStatus,
+  WorkflowItem,
+} from "@/lib/workflow/workflowTypes";
+
+const CLIENT_STATUS_ORDER: ClientVisibleStatus[] = [
+  "Needs your input",
+  "Submitted",
+  "Being reviewed",
+  "Prepared by Veroxa",
+  "In progress",
+  "Completed",
+  "Included in report",
+];
+
+function useClientWorkflowItems(clientId: string) {
+  const [items, setItems] = useState<WorkflowItem[]>(() =>
+    getClientWorkflowItems(clientId),
+  );
+  useEffect(() => {
+    const refresh = () => setItems(getClientWorkflowItems(clientId));
+    refresh();
+    return subscribeToWorkflow(refresh);
+  }, [clientId]);
+  return items;
+}
 
 const veroxaWeekFlow = [
   { key: "upload",   label: "You upload",    caption: "Food photos from your phone" },
@@ -82,6 +112,16 @@ function useClientWeeklyRecs() {
 export default function ClientDashboard() {
   const { loading, data, source, dataSourceMessage } = useClientPortalData();
   const clientWeeklyRecs = useClientWeeklyRecs();
+  const workflowItems = useClientWorkflowItems("demo-a");
+  const activeWorkflowItems = workflowItems.filter(
+    (i) =>
+      i.clientVisibleStatus !== "Completed" &&
+      i.clientVisibleStatus !== "Included in report",
+  );
+  const workflowGroups = CLIENT_STATUS_ORDER.map((status) => ({
+    status,
+    items: activeWorkflowItems.filter((i) => i.clientVisibleStatus === status),
+  })).filter((g) => g.items.length > 0);
 
   const summaryCards = [
     { label: "Upcoming posts",    value: loading ? "—" : String(data.scheduledPosts.length), icon: CalendarDays },
@@ -214,6 +254,59 @@ export default function ClientDashboard() {
         </Card>
       )}
 
+      {/* Your workflow with Veroxa — live, grouped by client-safe status,
+          driven by the real workflow foundation (backend pending). */}
+      {workflowGroups.length > 0 && (
+        <div data-testid="section-client-workflow">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+            Your workflow with Veroxa
+          </h3>
+          <div className="space-y-4">
+            {workflowGroups.map((group) => (
+              <div key={group.status} data-testid={`workflow-group-${group.status}`}>
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-primary mb-2">
+                  {group.status} ({group.items.length})
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {group.items.slice(0, 6).map((item) => (
+                    <Card
+                      key={item.workflowItemId}
+                      className="bg-card/60 border-border"
+                      data-testid={`workflow-item-${item.workflowItemId}`}
+                    >
+                      <CardContent className="p-3.5">
+                        <p className="text-sm font-semibold text-foreground leading-snug mb-1">
+                          {item.title}
+                        </p>
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] border-border bg-muted/20 text-muted-foreground mb-1.5"
+                        >
+                          {item.clientVisibleStatus}
+                        </Badge>
+                        {item.clientNote && (
+                          <p className="text-xs text-foreground/80 leading-relaxed">
+                            {item.clientNote}
+                          </p>
+                        )}
+                        {item.nextClientAction && (
+                          <p className="text-[11px] text-amber-300 mt-1.5">
+                            {item.nextClientAction}
+                          </p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-[11px] text-muted-foreground/70 mt-2">
+            Live workflow status. Nothing is published without your approval.
+          </p>
+        </div>
+      )}
+
       {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {summaryCards.map((card, i) => (
@@ -265,7 +358,7 @@ export default function ClientDashboard() {
             variant="outline"
             className="border-border text-muted-foreground"
           >
-            Demo only
+            Prepared by Veroxa
           </Badge>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -336,7 +429,8 @@ export default function ClientDashboard() {
               ))}
             </div>
             <p className="mt-3 text-[11px] text-muted-foreground">
-              Demo only — simulated AI. Nothing posted, nothing uploaded.
+              Prepared schedule — publishing connection pending. Nothing posts
+              without your approval.
             </p>
           </CardContent>
         </Card>
@@ -384,7 +478,7 @@ export default function ClientDashboard() {
           );
         })()}
         <p className="text-[11px] text-muted-foreground/70 mt-2">
-          Demo only — illustrative workflow snapshot. Nothing is published without your approval.
+          Live workflow snapshot. Nothing is published without your approval.
         </p>
       </div>
 
@@ -427,7 +521,8 @@ export default function ClientDashboard() {
           <CardContent className="p-4 space-y-4">
             <DemoFlowTimeline steps={veroxaWeekFlow} testId="client-dashboard-flow" />
             <p className="text-[11px] text-muted-foreground">
-              Demo only — illustrative flow. Nothing posts without your Veroxa team&apos;s approval.
+              How your week flows through Veroxa. Nothing posts without your
+              Veroxa team&apos;s approval.
             </p>
           </CardContent>
         </Card>

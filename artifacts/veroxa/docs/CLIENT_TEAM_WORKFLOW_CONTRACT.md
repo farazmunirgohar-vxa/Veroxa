@@ -1,9 +1,16 @@
 # Client ↔ Team Workflow Contract
 
+> **Update (2026-05-29).** The real workflow foundation now implements this
+> contract in code as a production-shaped data model + repository with a
+> swappable storage layer (temporary browser persistence, backend pending).
+> See `REAL_WORKFLOW_FOUNDATION.md`. The shape below remains the target for the
+> real backend tables.
+
 > **Purpose.** This contract defines the first real backend slice for the
-> Client ↔ Veroxa Team work and communication layer. Today it is implemented
-> entirely as fixtures and a read-only repository. This doc describes the
-> shape that will become real Supabase tables when the backend is activated.
+> Client ↔ Veroxa Team work and communication layer. The lifecycle and status
+> model are now implemented via `src/lib/workflow/*` behind a repository; cloud
+> persistence (e.g. Supabase) is still pending. This doc describes the shape
+> that will become real backend tables when the backend is activated.
 
 ---
 

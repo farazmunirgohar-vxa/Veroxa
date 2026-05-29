@@ -2,10 +2,11 @@
 
 _Veroxa's operating model for how AI agents and the human team divide work._
 
-> **Status (2026-05-28):** Preview layer only. All AI output in the current
-> build is **simulated and rule-based** — no live model calls, no Supabase
-> writes, no publishing, no client auto-messaging. Humans approve everything
-> that reaches a client.
+> **Status (2026-05-29):** Real workflow foundation, backend pending. All AI
+> output in the current build is **rule-based** — no live model calls, no cloud
+> writes, no publishing, no client auto-messaging. Prepared drafts attach to
+> workflow items and humans approve everything that reaches a client. See
+> `REAL_WORKFLOW_FOUNDATION.md`.
 
 ---
 

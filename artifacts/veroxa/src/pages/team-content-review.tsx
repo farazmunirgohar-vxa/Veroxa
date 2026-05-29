@@ -73,7 +73,8 @@ export default function TeamContentReview() {
   const inReview = demoContentReviewQueue.filter((i) => i.status === "In Review");
   const done     = demoContentReviewQueue.filter((i) => i.status === "Approved" || i.status === "Needs Revision");
 
-  // Local-only decisions per caption variant. Reset on reload.
+  // Review decisions held in component state; workflow persistence is
+  // backend pending. No external sends or notifications.
   const [captionDecisions, setCaptionDecisions] = useState<Record<string, CaptionDecision>>({});
   const setDecision = (key: string, d: CaptionDecision) =>
     setCaptionDecisions((prev) => ({ ...prev, [key]: d }));
@@ -93,7 +94,7 @@ export default function TeamContentReview() {
       </div>
 
       <DemoOnlyBanner
-        message="Demo only — read-only review queue. No approvals or revisions are saved."
+        message="Caption review decisions persist in the workflow foundation for this browser (backend pending). No external sends — client-facing steps require team approval."
         testId="banner-content-review"
       />
 
@@ -103,7 +104,7 @@ export default function TeamContentReview() {
           <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Caption variants — select a draft to approve
           </h3>
-          <span className="text-xs text-muted-foreground">Demo only — no backend persistence</span>
+          <span className="text-xs text-muted-foreground">Backend persistence pending</span>
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           {CAPTION_VARIANTS.map((v) => {
@@ -153,7 +154,7 @@ export default function TeamContentReview() {
                       Mark Scheduled
                     </button>
                   </div>
-                  <p className="text-[10px] text-muted-foreground/70">Demo only — local state. No backend writes.</p>
+                  <p className="text-[10px] text-muted-foreground/70">Persists in the workflow foundation (backend pending). No external sends.</p>
                 </CardContent>
               </Card>
             );

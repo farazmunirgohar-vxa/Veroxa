@@ -1,7 +1,9 @@
 /**
  * aiAgentPreviewEngine.ts — rule-based, deterministic AI preview layer.
  *
- * SIMULATED ONLY. No live model calls, no network, no Supabase, no writes.
+ * RULE-BASED ONLY. Deterministic preparation, no live model calls, no
+ * network, no cloud writes. Outputs are prepared drafts/recommendations that
+ * always require human/team approval before anything becomes client-facing.
  * Every function in this module is a pure transformation over existing
  * fixture/work-item shapes. The output is treated as a DRAFT that the
  * Veroxa team must review before anything is shared with a client.

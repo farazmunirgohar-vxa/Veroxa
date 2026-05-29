@@ -1,8 +1,10 @@
 # Veroxa Quality Guardrails
 
 > **Purpose.** The hard rules that keep Veroxa trustworthy. AI agents and
-> automations make work faster, but they never cross these lines. Everything in
-> the current build is rule-based / fixture preview only.
+> automations make work faster, but they never cross these lines. The current
+> build runs on the real workflow foundation (backend pending); all AI output
+> is rule-based and every client-facing step requires human approval. See
+> `REAL_WORKFLOW_FOUNDATION.md`.
 
 ---
 

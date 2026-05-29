@@ -86,7 +86,7 @@ export default function TeamAdaptiveIntelligence() {
       </div>
 
       <DemoOnlyBanner
-        message="Rule-based demo only — no external AI provider, no model API calls, no real performance data, no database writes."
+        message="Rule-based AI only — no external AI provider, no model API calls, no live performance data yet, no cloud writes. Recommendations require team approval."
         testId="banner-adaptive-intelligence"
       />
 
@@ -123,9 +123,9 @@ export default function TeamAdaptiveIntelligence() {
         <CardContent className="p-4 text-sm flex items-start gap-2">
           <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
           <p className="text-amber-200/90">
-            <strong>Rule-based demo only.</strong> No OpenAI, Anthropic, or Gemini calls. No
-            real performance data. Recommendations are deterministic and derived from in-memory
-            fixtures + local component state. Future real implementation will plug in a
+            <strong>Rule-based AI only.</strong> No OpenAI, Anthropic, or Gemini calls. No
+            live performance data yet. Recommendations are deterministic and derived from the
+            workflow foundation (backend pending) and require team approval. A future backend will plug in a
             <code className="mx-1 px-1 py-0.5 rounded bg-amber-500/10">performance_metrics</code>
             table, content history, and an AI provider behind a human-approval workflow.
           </p>
