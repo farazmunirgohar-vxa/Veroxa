@@ -1,0 +1,330 @@
+# Veroxa OS — Locked Operating Model
+
+This document captures the current locked Veroxa OS direction. It is intended for Faraz, Replit, Codex, and future coding agents.
+
+## 1. Correct platform reality
+
+The current operating setup is:
+
+- **Replit Plus-style build capacity** with full-power builds available, but no assumed parallel agent builds.
+- **GPT Pro / Codex capability** available for deeper engineering, architecture review, hardening, PRs, and tests.
+- **GitHub main** is the source of truth.
+- **Supabase** is connected as the future app/data backend, but production writes/auth/storage/RLS must remain staged and intentional.
+- **OpenAI Platform** is connected for future server-side AI work, but no frontend key exposure and no runtime AI calls unless explicitly requested.
+
+Correction: do not assume Replit Pro parallel-agent capabilities. Use Replit for strong single full-power builds, and use Codex/GPT Pro capability for deeper engineering and hardening.
+
+## 2. Product identity
+
+Veroxa is an AI-assisted, automation-powered restaurant online presence and customer-growth operating system.
+
+Veroxa is not just:
+
+- a website
+- a client portal
+- a dashboard
+- a content scheduler
+- a traditional marketing agency
+
+Veroxa is becoming a system that helps restaurants become:
+
+- easier to find
+- easier to trust
+- easier to choose
+- easier to return to
+
+The restaurant partner should feel that Veroxa is handling the online presence without making them manage another complicated system.
+
+## 3. Current active operating model
+
+Active roles today:
+
+1. **Restaurant Partner / Client**
+2. **Veroxa Team / Faraz**
+
+Owner and Operator roles are parked until explicitly requested.
+
+The restaurant partner gives minimal, meaningful input:
+
+- access
+- media when available
+- important business changes
+- confirmation for sensitive business truth
+- corrections when needed
+
+Veroxa does the maximum practical work:
+
+- audits
+- strategy
+- prepared actions
+- content ideas
+- visibility tasks
+- review response drafts
+- Google/profile tasks
+- website/SEO recommendations
+- reports and updates
+- client reminders
+
+## 4. Core OS flow
+
+The locked Veroxa OS flow:
+
+**Veroxa audits -> Veroxa prepares exact action -> action enters Approval Queue -> Faraz approves / edits / skips / asks client -> Veroxa queues for later execution -> future connectors execute approved work -> restaurant partner sees simple progress.**
+
+The system should not merely recommend work. It should prepare work.
+
+Examples:
+
+- Not: "Update Google profile."
+- Yes: "Google visibility update prepared. Review and queue for later."
+
+- Not: "Reply to reviews."
+- Yes: "Review reply prepared. Approve, edit, or skip."
+
+- Not: "Website needs SEO."
+- Yes: "Local search wording prepared. Hold for later or request client confirmation."
+
+## 5. Current built foundations
+
+The repo currently includes these major Veroxa foundations:
+
+- public website foundation
+- locked pricing source of truth
+- Demo Preview separated from Portal Access/Login
+- client portal foundation
+- team portal foundation
+- client media submission foundation
+- central write adapter pattern
+- team Upload Inbox with read-only/fallback foundation
+- mobile-friendly team review card foundation
+- Daily Customer Opportunity Engine
+- Approval-to-Execution Queue
+- Visibility Audit Engine
+- prepared actions feeding the Approval Queue
+- client-safe helper foundations
+- Codex hardening workflow through draft PRs
+
+## 6. Approval Queue as the central engine
+
+The Approval Queue is the center of Veroxa OS.
+
+Current and future prepared-action sources should feed the queue:
+
+- Visibility Audit Engine
+- Daily Customer Opportunity Engine
+- Google/Profile Agent
+- SEO Keyword Agent
+- Review Growth Agent
+- Social Content Agent
+- Website Audit Agent
+- Menu/Catering Visibility Agent
+- Client Reminder Agent
+- Weekly Update Agent
+- Monthly Report Agent
+- future AI caption/image agents
+
+The queue should stay calm, useful, mobile-friendly, and action-focused.
+
+## 7. Client experience rule
+
+The client should not see the machine.
+
+Clients should not see:
+
+- AI agent internals
+- OpenAI
+- Supabase
+- RLS
+- fixture/demo terminology
+- backend/debug language
+- connector/API language
+- raw scoring
+- internal risk levels
+- internal IDs
+- approval logic
+- draft variants that are not ready
+
+Clients should see:
+
+- Submitted
+- In review
+- Prepared by Veroxa
+- Veroxa team review
+- Needs your input
+- Visibility update
+- More content needed
+- Included in report
+- Completed
+
+## 8. Team experience rule
+
+Team means Faraz right now.
+
+The Team portal should help Faraz answer:
+
+- What needs attention today?
+- What media/client submissions came in?
+- What prepared actions need approval?
+- What visibility issues need review?
+- What customer-growth opportunity should be pushed?
+- What client needs follow-up?
+- What report/update is due?
+
+The Team portal should be usable on both mobile and computer:
+
+- mobile = fast review and approval
+- desktop = deeper review and setup
+
+The Team portal should not feel like an AI lab, backend console, or giant agency operations dashboard.
+
+## 9. Approval and safety rules
+
+Internal analysis can be automatic:
+
+- audits
+- keyword analysis
+- content classification
+- visibility findings
+- internal task creation
+- draft preparation
+
+Faraz approval is required before public/customer-visible action:
+
+- Google posts
+- social posts
+- review replies
+- website copy changes
+- client reminders
+- weekly updates
+- monthly reports
+
+Client confirmation is required before business-truth changes:
+
+- hours
+- holiday hours
+- menu changes
+- prices
+- discounts
+- offers
+- catering availability
+- halal/organic/health claims
+- serious complaint responses
+
+Never automatic:
+
+- ad budget changes
+- unverified sensitive claims
+- deleting reviews/comments/content
+- legal/health guarantees
+- unverified religious/dietary claims
+- aggressive complaint responses
+
+## 10. AI and automation direction
+
+AI should be used to reduce work for Faraz and the restaurant partner.
+
+Future AI should prepare:
+
+- captions
+- Google updates
+- review replies
+- website copy
+- local SEO wording
+- weekly updates
+- monthly reports
+- client reminders
+- image quality notes
+- image enhancements later
+
+AI output should be treated as a draft until reviewed.
+
+The client should usually experience AI output only as "Prepared by Veroxa."
+
+## 11. Build cadence
+
+Use Replit for:
+
+- visible builds
+- portal UI
+- approval queue UI
+- dashboards
+- fixture/demo workflow
+- staged feature builds
+- preview iteration
+
+Use Codex/GPT Pro for:
+
+- senior engineering review
+- type safety
+- domain logic hardening
+- tests/test plans
+- backend architecture
+- PR cleanup
+- Supabase/RLS work later
+- server-side AI architecture later
+- connector architecture later
+
+Recommended cadence:
+
+1. Replit builds staged feature layer.
+2. Codex reviews/hardens in a branch and draft PR.
+3. Faraz/ChatGPT review PR.
+4. Merge if safe.
+5. Replit pulls latest origin/main.
+6. Continue.
+
+## 12. High-risk areas
+
+Do not build these unless explicitly requested:
+
+- production auth
+- Supabase RLS changes/migrations
+- storage uploads
+- OpenAI runtime calls
+- image generation/editing
+- Google Business Profile APIs
+- Meta/social publishing APIs
+- website/CMS write integrations
+- payments/checkout
+- ads budget changes
+- Owner/Operator dashboards
+
+## 13. First-client target
+
+The first-client target is a semi-real, high-trust system before full automation.
+
+Manual publishing is acceptable at first.
+
+The important first-client flow is:
+
+1. restaurant gives access / submits media
+2. Veroxa audits visibility
+3. Veroxa prepares actions
+4. Faraz reviews from mobile or computer
+5. Veroxa tracks status and reports progress
+6. client sees simple updates and low-effort requests
+
+Full connector execution comes later.
+
+## 14. Near-term roadmap
+
+Next controlled layers:
+
+1. Codex hardening for Visibility Audit Engine.
+2. Add AGENTS.md / keep agent instructions current.
+3. Team review status write-back behind dev flag.
+4. Client-visible status update after Team action.
+5. Server-side AI health/config check.
+6. AI text drafts for captions, Google posts, review replies, and updates.
+7. Storage/image workflow.
+8. Execution connectors for Google/social/website/reviews after approval gates are stable.
+
+## 15. Locked summary
+
+Veroxa should do the most work possible for restaurant partners.
+
+The restaurant partner should not manage the system.
+
+Faraz should approve prepared work from mobile or computer.
+
+Veroxa should become the restaurant's quiet, AI-assisted growth operating system: simple outside, powerful inside.
