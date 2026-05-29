@@ -1,5 +1,37 @@
 # Current Replit Build Status
 
+> **2026-05-29 — AI agents + automation foundation: structured outputs, automation preview, portal surfacing**
+>
+> - **Structured AI agent contracts** (BUILD 1) — `src/lib/ai/aiAgentTypes.ts`
+>   adds the `AiAgentOutput` envelope so every agent returns a structure, not
+>   just text: output category, confidence level, source inputs, output
+>   summary, recommended next action, `humanApprovalRequired`, approval gate,
+>   categorized risk flags, and automation readiness. All additive — existing
+>   exports untouched. SOP model updated with the structured-output rule.
+> - **Operationally useful agents** (BUILD 2) — `aiAgentPreviewEngine.ts` adds
+>   structured helpers (media review, content angle, caption draft, schedule
+>   recommendation, report draft, categorized risk flags, next best action).
+>   Rule-based / fixture only; existing engine exports reused, nothing removed.
+> - **Automation preview engine** (BUILD 3) — new `src/lib/automation/`
+>   (`automationTypes.ts`, `automationPreviewEngine.ts`) previews 8 rule-based
+>   workflows. No external actions — every run is prepared, gated, and labelled
+>   with the future integration it would need. See
+>   `docs/AI_AGENT_AUTOMATION_BLUEPRINT.md`.
+> - **Team portal surfacing** (BUILD 4) — team dashboard gets a next-best-action
+>   banner and automation snapshot strip; upload inbox, report queue, work
+>   queue, and audit leads show confidence, readiness, next actions, and risk
+>   flags. Full internal detail allowed for the team.
+> - **Client portal kept simple** (BUILD 5) — client dashboard adds a calm,
+>   client-safe automation disclosure line alongside the existing AI workflow
+>   note. No raw scores, no internal AI/automation mechanics on client surfaces.
+> - **Docs + guardrails** (BUILD 6) — new `VEROXA_QUALITY_GUARDRAILS.md`;
+>   `FUTURE_BACKEND_CONTRACT.md` documents the planned `ai_agent_outputs`,
+>   `automation_runs`, `approval_gates`, `human_reviews`, `task_events`,
+>   `external_integration_logs`, and `client_visible_statuses` tables. No
+>   Supabase writes, publishing, social APIs, auto-messaging, payments,
+>   notifications, or new public routes. Audit V1, auth, and Owner/Operator
+>   portals untouched.
+
 > **2026-05-29 — Five OS upgrades: safe AI draft endpoint, lead handoff, content draft pipeline, scheduling prep, reporting drafts**
 >
 > - **Safe AI draft endpoint** — `POST /api/ai/draft` added server-side. The

@@ -28,6 +28,24 @@ Veroxa runs an **AI-first, human-approved** workflow.
 - Surface risk flags and blockers with a recommended next human action.
 - Recommend the team's next best action across the daily queue.
 
+## 2.1 Structured output rule
+
+Every AI agent returns a **structure, not just text**. The standard envelope
+(`AiAgentOutput` in `src/lib/ai/aiAgentTypes.ts`) carries:
+
+- `category` — what kind of output it is.
+- `confidenceLevel` — high / medium / low (never a guarantee of outcome).
+- `sourceInputs` — what the draft was based on.
+- `outputSummary` — the prepared result.
+- `recommendedNextAction` — the next human step.
+- `humanApprovalRequired` — always `true`.
+- `approvalGate` — which gate must be cleared before the work flows on.
+- `riskFlags[]` — categorized risks, each with a next human action.
+- `automationReadiness` — ready / needs review / blocked / not applicable.
+
+This makes every agent operationally useful: the team always sees what was
+produced, how sure the draft is, what to do next, and what is blocking flow.
+
 ## 3. What AI cannot do
 
 - Publish anything to a client's channels.

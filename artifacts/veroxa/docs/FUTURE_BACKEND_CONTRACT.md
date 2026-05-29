@@ -42,7 +42,57 @@ always human-verified before reaching a client.
 | `approvedAt` | `timestamptz` | Nullable. |
 | `clientVisibleAt` | `timestamptz` | When the report became client-visible. |
 
-## 3. Invariants
+## 3. AI agent outputs, automation runs, and approvals
+
+Future fields for persisting the structured agent outputs and automation
+previews the current build produces in memory only. Nothing here is written
+today — agent outputs and automation previews are recomputed from fixtures.
+
+### `ai_agent_outputs`
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `id` | `uuid` | Primary key. |
+| `agentName` | `text` | Which agent produced the output. |
+| `category` | `text` | enum mirrors `AiAgentOutputCategory`. |
+| `confidenceLevel` | `text` | enum: `high`, `medium`, `low`. |
+| `sourceInputs` | `text[]` | What the draft was based on. |
+| `outputSummary` | `text` | Prepared result. |
+| `recommendedNextAction` | `text` | Next human step. |
+| `humanApprovalRequired` | `boolean` | Always `true`. |
+| `approvalGate` | `text` | enum mirrors `AiApprovalGate`, nullable. |
+| `automationReadiness` | `text` | enum mirrors `AiAutomationReadiness`. |
+
+### `automation_runs`
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `id` | `uuid` | Primary key. |
+| `trigger` | `text` | enum mirrors `AutomationTrigger`. |
+| `condition` | `text` | What conditions the run on. |
+| `preparedAction` | `text` | What was prepared (never executed in this build). |
+| `destination` | `text` | enum mirrors `AutomationDestination`. |
+| `status` | `text` | enum mirrors `AutomationStatus`. |
+| `blockedReason` | `text` | Nullable. |
+| `futureIntegration` | `text` | The real integration execution would require. |
+| `auditTrailNote` | `text` | Plain-language record of what happened. |
+
+### `approval_gates`, `human_reviews`, `task_events`
+
+| Table | Key fields | Notes |
+|-------|-----------|-------|
+| `approval_gates` | `gateType`, `subjectId`, `clearedBy`, `clearedAt` | One row per gate cleared. |
+| `human_reviews` | `subjectType`, `subjectId`, `reviewerId`, `decision`, `reviewedAt` | approve / revise / reject / escalate. |
+| `task_events` | `subjectId`, `eventType`, `actor`, `createdAt` | Append-only activity log. |
+
+### `external_integration_logs`, `client_visible_statuses`
+
+| Table | Key fields | Notes |
+|-------|-----------|-------|
+| `external_integration_logs` | `integration`, `direction`, `payloadSummary`, `result`, `createdAt` | Future real publishing/notification calls only. |
+| `client_visible_statuses` | `subjectId`, `clientStatusLabel`, `visibleAt` | The calm, client-safe status derived from internal state. |
+
+## 4. Invariants
 
 - **No AI output is treated as final.** A human verifies every client-facing
   draft before it ships.

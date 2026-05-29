@@ -22,7 +22,7 @@ import { getLocalUploadSubmissions, subscribeToLocalUploadSubmissions } from "@/
 import { Compass } from "lucide-react";
 import { useEffect, useState } from "react";
 import { healthRepository, reportRepository, activityRepository, clientTeamWorkRepository } from "@/lib/repositories";
-import { CLIENT_AI_DISCLOSURE } from "@/lib/ai/aiAgentTypes";
+import { CLIENT_AI_DISCLOSURE, CLIENT_AUTOMATION_DISCLOSURE } from "@/lib/ai/aiAgentTypes";
 import { Brain } from "lucide-react";
 
 const veroxaWeekFlow = [
@@ -144,6 +144,9 @@ export default function ClientDashboard() {
             </p>
             <p className="text-xs text-muted-foreground leading-relaxed">
               {CLIENT_AI_DISCLOSURE}
+            </p>
+            <p className="text-xs text-muted-foreground leading-relaxed mt-1.5">
+              {CLIENT_AUTOMATION_DISCLOSURE}
             </p>
             <div className="mt-2 flex flex-wrap gap-1.5 text-[10px]">
               {(["Uploaded", "Being reviewed", "Needs your input", "Prepared by Veroxa", "Included in report"] as const).map((label) => (

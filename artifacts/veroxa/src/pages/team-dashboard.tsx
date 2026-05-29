@@ -34,8 +34,10 @@ import { useEffect, useState } from "react";
 import {
   previewOperatorAssistant,
   previewRiskFlags,
+  nextBestAction,
 } from "@/lib/ai/aiAgentPreviewEngine";
 import { TEAM_AI_DISCLOSURE } from "@/lib/ai/aiAgentTypes";
+import { previewAutomationSnapshot } from "@/lib/automation/automationPreviewEngine";
 
 const mediaReviewQueue = [
   { id: "mrq-1", title: "Grilled platter — overhead", subtitle: "Demo Grill House · suggested: weekend feature",      status: "Approve",  tone: "good" as const },
@@ -95,6 +97,8 @@ export default function TeamDashboard() {
         const inProgress = clientTeamWorkRepository.getTeamInProgressWorkItems();
         const allActive = [...ready, ...inProgress, ...waiting, ...blocked];
         const riskFlags = previewRiskFlags(allActive);
+        const nba = nextBestAction(allActive);
+        const automation = previewAutomationSnapshot(allActive);
         const snapshot = previewOperatorAssistant({
           readyForApprovalCount: ready.length,
           blockedCount: blocked.length,
@@ -140,6 +144,47 @@ export default function TeamDashboard() {
                   Top recommendation
                 </p>
                 <p className="text-[12px] text-foreground/90">{snapshot.topRecommendation}</p>
+              </div>
+
+              {/* Next best action — single highest-leverage step. */}
+              <div className="rounded-md border border-emerald-500/30 bg-emerald-500/5 p-3">
+                <p className="text-[10px] uppercase tracking-wider text-emerald-400 font-semibold mb-1">
+                  Next best action · {nba.confidenceLevel} confidence
+                </p>
+                <p className="text-[12px] text-foreground/90">{nba.outputSummary}</p>
+                <p className="text-[11px] text-emerald-300/90 mt-0.5">
+                  Next: {nba.recommendedNextAction}
+                </p>
+              </div>
+
+              {/* Automation preview snapshot — prepared, not executed. */}
+              <div
+                className="rounded-md border border-border/60 bg-muted/10 p-3"
+                data-testid="card-automation-snapshot"
+              >
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">
+                  Automation preview · prepared, never auto-sent
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  {[
+                    { label: "Prepared", value: automation.preparedCount, color: "text-emerald-400" },
+                    { label: "Awaiting approval", value: automation.awaitingApprovalCount, color: "text-amber-400" },
+                    { label: "Blocked", value: automation.blockedCount, color: "text-rose-400" },
+                    { label: "Future integration", value: automation.futureIntegrationCount, color: "text-sky-400" },
+                  ].map((t) => (
+                    <div key={t.label} className="rounded-md border border-border/50 bg-background/40 p-2">
+                      <p className={`text-lg font-bold tabular-nums ${t.color}`}>{t.value}</p>
+                      <p className="text-[9px] uppercase tracking-wider text-muted-foreground mt-0.5">
+                        {t.label}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[10px] text-muted-foreground mt-2">
+                  Veroxa prepares tasks and reminders automatically. Every
+                  client-facing step still requires team approval — nothing is
+                  posted or sent on its own.
+                </p>
               </div>
               {snapshot.riskFlags.length > 0 && (
                 <div className="space-y-1.5">

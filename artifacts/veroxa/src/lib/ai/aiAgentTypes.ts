@@ -192,3 +192,143 @@ export const CLIENT_AI_DISCLOSURE =
 
 export const TEAM_AI_DISCLOSURE =
   "AI drafts the structure; Veroxa team verifies before sharing.";
+
+export const CLIENT_AUTOMATION_DISCLOSURE =
+  "Veroxa uses AI-assisted organization and internal automation to help the team prepare work faster. Final review stays with Veroxa before anything is shared or posted.";
+
+// ===========================================================================
+// STRUCTURED AGENT OUTPUT CONTRACT (BUILD 1)
+// ---------------------------------------------------------------------------
+// Every AI agent output should be a STRUCTURE, not just text. This gives the
+// team a consistent surface: what was produced, how confident the draft is,
+// what inputs it used, the recommended next human action, the risks, and
+// whether it's ready to flow into an automation. Human approval is always
+// required for anything client-facing.
+// ===========================================================================
+
+/** Standard agent output categories. */
+export type AiAgentOutputCategory =
+  | "media_review"
+  | "content_angle"
+  | "caption_draft"
+  | "schedule_recommendation"
+  | "client_update_draft"
+  | "report_draft"
+  | "clarification_question"
+  | "lead_summary"
+  | "blocker_review"
+  | "next_best_action";
+
+export const AI_AGENT_OUTPUT_CATEGORY_LABELS: Record<
+  AiAgentOutputCategory,
+  string
+> = {
+  media_review: "Media review",
+  content_angle: "Content angle",
+  caption_draft: "Caption draft",
+  schedule_recommendation: "Schedule recommendation",
+  client_update_draft: "Client update draft",
+  report_draft: "Report draft",
+  clarification_question: "Clarification question",
+  lead_summary: "Lead summary",
+  blocker_review: "Blocker review",
+  next_best_action: "Next best action",
+};
+
+/** Confidence in the draft (never a guarantee of outcome). */
+export type AiConfidenceLevel = "high" | "medium" | "low";
+
+export const AI_CONFIDENCE_LABELS: Record<AiConfidenceLevel, string> = {
+  high: "High confidence",
+  medium: "Medium confidence",
+  low: "Low confidence",
+};
+
+/** Standard risk categories an agent can flag. */
+export type AiRiskCategory =
+  | "missing_client_context"
+  | "unclear_media_quality"
+  | "missing_menu_or_offer"
+  | "report_metrics_missing"
+  | "claim_risk"
+  | "client_response_needed"
+  | "approval_required"
+  | "blocked_workflow"
+  | "low_confidence_ai_output"
+  | "manual_review_required";
+
+export const AI_RISK_CATEGORY_LABELS: Record<AiRiskCategory, string> = {
+  missing_client_context: "Missing client context",
+  unclear_media_quality: "Unclear media quality",
+  missing_menu_or_offer: "Missing menu or offer",
+  report_metrics_missing: "Report metrics missing",
+  claim_risk: "Claim risk",
+  client_response_needed: "Client response needed",
+  approval_required: "Approval required",
+  blocked_workflow: "Blocked workflow",
+  low_confidence_ai_output: "Low-confidence AI output",
+  manual_review_required: "Manual review required",
+};
+
+/** Standard human approval gates — what a human must approve before flow. */
+export type AiApprovalGate =
+  | "content_before_scheduling"
+  | "report_before_client_visible"
+  | "message_before_client_send"
+  | "media_before_use"
+  | "lead_summary_before_outreach"
+  | "claim_before_public_use";
+
+export const AI_APPROVAL_GATE_LABELS: Record<AiApprovalGate, string> = {
+  content_before_scheduling: "Content approved before scheduling",
+  report_before_client_visible: "Report verified before client sees it",
+  message_before_client_send: "Message approved before sending to client",
+  media_before_use: "Media approved before use",
+  lead_summary_before_outreach: "Lead summary reviewed before outreach",
+  claim_before_public_use: "Claims confirmed before public use",
+};
+
+/** Whether the prepared output is ready to flow into an automation step. */
+export type AiAutomationReadiness =
+  | "ready"
+  | "needs_review"
+  | "blocked"
+  | "not_applicable";
+
+export const AI_AUTOMATION_READINESS_LABELS: Record<
+  AiAutomationReadiness,
+  string
+> = {
+  ready: "Automation-ready",
+  needs_review: "Needs team review",
+  blocked: "Blocked",
+  not_applicable: "Not applicable",
+};
+
+/** A typed risk flag tied to a standard category. */
+export interface AiCategorizedRiskFlag {
+  category: AiRiskCategory;
+  level: AiRiskLevel;
+  message: string;
+  nextHumanAction: string;
+  clientInputRequired?: boolean;
+}
+
+/**
+ * The strengthened, structured output every AI agent should return.
+ * Additive to the existing per-agent shapes — agents may carry their
+ * domain payload AND this standard envelope.
+ */
+export interface AiAgentOutput {
+  agentName: AiAgentName;
+  category: AiAgentOutputCategory;
+  status: AiAgentStatus;
+  confidenceLevel: AiConfidenceLevel;
+  sourceInputs: string[];
+  outputSummary: string;
+  recommendedNextAction: string;
+  humanApprovalRequired: true;
+  approvalGate?: AiApprovalGate;
+  riskFlags: AiCategorizedRiskFlag[];
+  automationReadiness: AiAutomationReadiness;
+}

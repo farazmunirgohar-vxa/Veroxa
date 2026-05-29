@@ -12,8 +12,15 @@ import {
   getRestaurantName,
   type WeeklyReportStatus,
 } from "@/data/demoData";
-import { previewReportDraft } from "@/lib/ai/aiAgentPreviewEngine";
-import { TEAM_AI_DISCLOSURE } from "@/lib/ai/aiAgentTypes";
+import {
+  previewReportDraft,
+  reportDraftOutput,
+} from "@/lib/ai/aiAgentPreviewEngine";
+import {
+  TEAM_AI_DISCLOSURE,
+  AI_CONFIDENCE_LABELS,
+  AI_AUTOMATION_READINESS_LABELS,
+} from "@/lib/ai/aiAgentTypes";
 import { Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -103,6 +110,20 @@ export default function TeamReportQueue() {
           hasMetrics: false,
         });
         const drafts = [weeklyDraft, monthlyDraft];
+        const structuredByTitle: Record<string, ReturnType<typeof reportDraftOutput>> = {
+          [weeklyDraft.title]: reportDraftOutput({
+            reportTitle: "This week",
+            cadence: "weekly",
+            hasPublishedPosts: false,
+            hasMetrics: false,
+          }),
+          [monthlyDraft.title]: reportDraftOutput({
+            reportTitle: "This month",
+            cadence: "monthly",
+            hasPublishedPosts: false,
+            hasMetrics: false,
+          }),
+        };
         return (
           <Card className="bg-card border-primary/20 mb-4" data-testid="card-ai-report-drafts">
             <CardHeader className="pb-2">
@@ -144,11 +165,28 @@ export default function TeamReportQueue() {
                   >
                     <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
                       <p className="font-semibold text-foreground">{d.title}</p>
-                      <Badge variant="outline" className="border-amber-500/40 bg-amber-500/10 text-amber-300 text-[10px]">
-                        Human verification required
-                      </Badge>
+                      <div className="flex gap-1.5 flex-wrap">
+                        {structuredByTitle[d.title] && (
+                          <>
+                            <Badge variant="outline" className="border-border bg-muted/30 text-[10px]">
+                              {AI_CONFIDENCE_LABELS[structuredByTitle[d.title].confidenceLevel]}
+                            </Badge>
+                            <Badge variant="outline" className="border-border bg-muted/30 text-[10px]">
+                              {AI_AUTOMATION_READINESS_LABELS[structuredByTitle[d.title].automationReadiness]}
+                            </Badge>
+                          </>
+                        )}
+                        <Badge variant="outline" className="border-amber-500/40 bg-amber-500/10 text-amber-300 text-[10px]">
+                          Human verification required
+                        </Badge>
+                      </div>
                     </div>
                     <p className="text-foreground/85">{d.draftSummary}</p>
+                    {structuredByTitle[d.title] && (
+                      <p className="text-primary/80 mt-1 text-[11px]">
+                        Next: {structuredByTitle[d.title].recommendedNextAction}
+                      </p>
+                    )}
                     {d.missingDataFlags.length > 0 && (
                       <ul className="mt-1.5 space-y-0.5">
                         {d.missingDataFlags.map((flag, i) => (

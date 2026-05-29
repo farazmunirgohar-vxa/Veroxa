@@ -36,10 +36,15 @@ import {
 } from "@/lib/uploadKeys/localUploadStore";
 import { clientTeamWorkRepository } from "@/lib/repositories";
 import { getRestaurantName } from "@/data/demoData";
-import { previewMediaReview } from "@/lib/ai/aiAgentPreviewEngine";
+import {
+  previewMediaReview,
+  mediaReviewOutput,
+} from "@/lib/ai/aiAgentPreviewEngine";
 import {
   AI_AGENT_STATUS_LABELS,
   AI_MEDIA_USAGE_LABELS,
+  AI_CONFIDENCE_LABELS,
+  AI_AUTOMATION_READINESS_LABELS,
   TEAM_AI_DISCLOSURE,
 } from "@/lib/ai/aiAgentTypes";
 import { ContentDraftPipelineCard } from "@/components/ContentDraftPipelineCard";
@@ -175,6 +180,7 @@ export default function TeamUploadInbox() {
               <CardContent className="space-y-2">
                 {mediaSubs.map((s) => {
                   const review = previewMediaReview(s);
+                  const structured = mediaReviewOutput(s);
                   const usageTone =
                     review.recommendedUsage === "use_now"
                       ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300"
@@ -208,6 +214,22 @@ export default function TeamUploadInbox() {
                         {review.contentAngle}
                       </p>
                       <p className="text-muted-foreground mt-0.5">{review.note}</p>
+                      <div className="mt-2 flex gap-1.5 flex-wrap">
+                        <Badge variant="outline" className="border-border bg-muted/30 text-[10px]">
+                          {AI_CONFIDENCE_LABELS[structured.confidenceLevel]}
+                        </Badge>
+                        <Badge variant="outline" className="border-border bg-muted/30 text-[10px]">
+                          {AI_AUTOMATION_READINESS_LABELS[structured.automationReadiness]}
+                        </Badge>
+                      </div>
+                      <p className="text-primary/85 mt-1">
+                        Next: {structured.recommendedNextAction}
+                      </p>
+                      {structured.riskFlags.map((flag, i) => (
+                        <p key={i} className="text-amber-300/90 mt-0.5">
+                          Risk: {flag.message} — {flag.nextHumanAction}
+                        </p>
+                      ))}
                     </div>
                   );
                 })}
