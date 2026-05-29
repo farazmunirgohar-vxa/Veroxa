@@ -188,13 +188,13 @@ export type ClientFacingWorkStatus =
   | "Included in report";
 
 export const CLIENT_AI_DISCLOSURE =
-  "Veroxa uses AI-assisted organization to help the team review uploads, prepare content ideas, and keep work moving. Final review stays with the Veroxa team.";
+  "Veroxa uses assisted tools behind the scenes to help the team review uploads, prepare content ideas, and keep work moving. Final review always stays with the Veroxa team.";
 
 export const TEAM_AI_DISCLOSURE =
   "AI drafts the structure; Veroxa team verifies before sharing.";
 
 export const CLIENT_AUTOMATION_DISCLOSURE =
-  "Veroxa uses AI-assisted organization and internal automation to help the team prepare work faster. Final review stays with Veroxa before anything is shared or posted.";
+  "Veroxa uses assisted tools behind the scenes to help the team prepare work faster. Final review stays with the Veroxa team before anything is shared or posted.";
 
 // ===========================================================================
 // STRUCTURED AGENT OUTPUT CONTRACT (BUILD 1)

@@ -133,7 +133,7 @@ export default function ClientUpdates() {
                 </div>
               </div>
               <p className="text-[10px] text-muted-foreground italic pt-1">
-                Prepared with AI-assisted organization; reviewed by Veroxa team.
+                Prepared by Veroxa; final review stays with the Veroxa team.
               </p>
             </CardContent>
           </Card>

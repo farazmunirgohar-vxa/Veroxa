@@ -147,12 +147,15 @@ export type UseClientPortalDataResult = {
   fallbackReason: string | null;
 };
 
+// Client-safe wording: these are low-key internal dev/QA indicators that only
+// render in non-fixture modes. They intentionally avoid backend/vendor terms
+// (e.g. "Supabase") so a restaurant client never sees technical language.
 const SOURCE_MESSAGES: Record<ClientPortalSource, string> = {
-  supabase: "Preview data source: Supabase (authenticated)",
-  supabase_readonly: "Preview data source: Supabase read-only",
-  fallback: "Preview data source: Fixture (Supabase read fell back)",
-  demo: "Preview data source: Fixture",
-  fixture: "Preview data source: Fixture",
+  supabase: "Preview data source: live (signed in)",
+  supabase_readonly: "Preview data source: live (read-only)",
+  fallback: "Preview data source: sample (live read unavailable)",
+  demo: "Preview data source: sample",
+  fixture: "Preview data source: sample",
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
