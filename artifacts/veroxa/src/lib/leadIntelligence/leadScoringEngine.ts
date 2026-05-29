@@ -193,18 +193,64 @@ function scoreFit(input: LeadIntelligenceInput): number {
   return clamp(fit);
 }
 
+function scoreFoodVisualPotential(input: LeadIntelligenceInput): number {
+  // POSSIBLE upside from better food visuals. A real, operating venue (reviews,
+  // a listing) with thin/inconsistent visual presence has the most room. This
+  // is an opportunity estimate, never a judgement of their current photos.
+  const operating =
+    (input.googleReviewCount ?? 0) >= 10 || input.hasGoogleListing === true;
+  let s = operating ? 40 : 25;
+  if ((input.socialLinkCount ?? 0) === 0) s += 24;
+  else if ((input.socialLinkCount ?? 0) === 1) s += 12;
+  if (input.websiteFound === false) s += 14;
+  if (input.menuLinkFound === false) s += 8;
+  if ((input.auditScore ?? 0) <= 50) s += 10;
+  if ((input.auditScore ?? 0) >= 85) s -= 18; // already polished = less room
+  return clamp(s);
+}
+
+function scoreAuditStrength(input: LeadIntelligenceInput): number {
+  // How strong the public audit already looks. Higher = stronger execution.
+  let s = typeof input.auditScore === "number" ? input.auditScore : 45;
+  if (input.websiteFound) s += 4;
+  if (input.menuLinkFound) s += 3;
+  if ((input.socialLinkCount ?? 0) >= 2) s += 4;
+  if ((input.googleReviewCount ?? 0) >= 50) s += 4;
+  if ((input.weakSpotTitles?.length ?? 0) >= 3) s -= 8;
+  return clamp(s);
+}
+
+function scoreDecisionMakerAccess(input: LeadIntelligenceInput): number {
+  // How likely we can reach an actual owner/manager via public/provided paths.
+  let s = 0;
+  if (input.publicOwnerOrManagerName) s += 30;
+  if (input.warmRelationship) s += 26;
+  if (input.ownerReachability === "high") s += 22;
+  else if (input.ownerReachability === "medium") s += 12;
+  if (input.listedPhone) s += 14;
+  if (input.linkedinPublicProfileProvided) s += 12;
+  if (input.contactAvailable) s += 8;
+  if (input.websiteEmailProvided) s += 6;
+  return clamp(s);
+}
+
 function buildScore(input: LeadIntelligenceInput): ConversionOpportunityScore {
   const improvementRoomScore = scoreImprovementRoom(input);
   const marketingInvestmentSignalScore = scoreMarketingInvestment(input);
   const inconsistencyScore = scoreInconsistency(input);
   const reachabilityScore = scoreReachability(input);
   const fitScore = scoreFit(input);
+  const foodVisualPotentialScore = scoreFoodVisualPotential(input);
+  const auditStrengthScore = scoreAuditStrength(input);
+  const decisionMakerAccessScore = scoreDecisionMakerAccess(input);
   const overallConversionOpportunity = clamp(
-    improvementRoomScore * 0.28 +
-      inconsistencyScore * 0.22 +
-      reachabilityScore * 0.2 +
-      fitScore * 0.2 +
-      marketingInvestmentSignalScore * 0.1,
+    improvementRoomScore * 0.26 +
+      inconsistencyScore * 0.2 +
+      reachabilityScore * 0.18 +
+      fitScore * 0.18 +
+      marketingInvestmentSignalScore * 0.08 +
+      foodVisualPotentialScore * 0.06 +
+      decisionMakerAccessScore * 0.04,
   );
   return {
     improvementRoomScore,
@@ -212,6 +258,9 @@ function buildScore(input: LeadIntelligenceInput): ConversionOpportunityScore {
     inconsistencyScore,
     reachabilityScore,
     fitScore,
+    foodVisualPotentialScore,
+    auditStrengthScore,
+    decisionMakerAccessScore,
     overallConversionOpportunity,
   };
 }

@@ -199,3 +199,18 @@ send decision.
 - Human review is required before any outreach. Nothing auto-sends. See
   `LEAD_INTELLIGENCE_OUTREACH_ENGINE.md` and
   `OUTREACH_COMPLIANCE_GUARDRAILS.md`.
+
+## 10. Self-improving lead engine in the SOP
+
+The SOP now closes the loop: after a human reaches out manually, they **log the
+outcome** (stage reached, response, objection). The deterministic learning layer
+turns those outcomes into cautious signals — prioritisation, bounded score
+adjustments, and targeting/outreach recommendations — so the next pass is sharper
+without removing human judgement.
+
+- Engine: `src/lib/leadIntelligence/selfImprovingLeadEngine.ts`,
+  `leadLearningSignals.ts`, `leadPrioritizationEngine.ts` (deterministic, local).
+- Patterns are signals, not rules; adjustments are bounded and labelled by
+  confidence; weaker segments are "weaker so far", never "bad".
+- Outcome logging contacts no one — it only records a result. See
+  `SELF_IMPROVING_LEAD_ENGINE.md`.

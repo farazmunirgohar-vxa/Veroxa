@@ -14,12 +14,15 @@ outreach draft before any contact happens.
 
 ```
 artifacts/veroxa/src/lib/leadIntelligence/
-  leadIntelligenceTypes.ts   # types + label maps (segments, contact paths, fit tiers)
+  leadIntelligenceTypes.ts   # types + label maps (segments, contact paths, fit tiers, angle ids)
   leadScoringEngine.ts       # analyzeLeadIntelligence(input) + inputFromAuditLead(record)
-  contactPathEngine.ts       # buildContactPaths() from public/audit fields only
-  outreachDraftEngine.ts     # buildOutreachDraftSet() / buildOutreachDraft()
+  contactPathEngine.ts       # buildContactPaths() + computeContactPathQuality() (public only)
+  outreachDraftEngine.ts     # buildOutreachDraftSet() / buildOutreachDraft() (with angle ids)
   leadConversionPlaybook.ts  # buildConversionPlaybook() lead→audit→onboarding steps
 ```
+
+A learning layer builds on top of this (logged outcomes → cautious signals,
+prioritisation, bounded score adjustments). See `SELF_IMPROVING_LEAD_ENGINE.md`.
 
 UI surfaces:
 

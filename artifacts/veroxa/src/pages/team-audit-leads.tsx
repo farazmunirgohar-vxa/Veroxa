@@ -64,6 +64,27 @@ import {
   CONTACT_PATH_LABELS,
   LEAD_FIT_TIER_LABELS,
 } from "@/lib/leadIntelligence/leadIntelligenceTypes";
+import {
+  LEAD_OUTCOME_STAGE_LABELS,
+  OUTREACH_RESPONSE_LABELS,
+  type LeadOutcomeStage,
+  type OutreachResponseStatus,
+} from "@/lib/leadIntelligence/leadOutcomeTypes";
+import {
+  getOutcomesForLead,
+  getLeadOutcomes,
+  recordLeadOutcome,
+  deleteLeadOutcome,
+} from "@/lib/leadIntelligence/localLeadOutcomeStore";
+import { computeLearningSignals } from "@/lib/leadIntelligence/leadLearningSignals";
+import {
+  prioritizeLead,
+  CONVERSION_BAND_LABELS,
+} from "@/lib/leadIntelligence/leadPrioritizationEngine";
+import {
+  OBJECTION_LABELS,
+  type ObjectionType,
+} from "@/lib/leadIntelligence/leadObjectionPatterns";
 
 type FilterTab =
   | "all"
@@ -218,6 +239,15 @@ export default function TeamAuditLeads() {
   const [outreachOpen, setOutreachOpen] = useState(false);
   const [readyForOutreach, setReadyForOutreach] = useState(false);
   const [copiedChannel, setCopiedChannel] = useState<string | null>(null);
+  const [outcomeVersion, setOutcomeVersion] = useState(0);
+  const [outcomeStage, setOutcomeStage] =
+    useState<LeadOutcomeStage>("contacted");
+  const [outcomeResponse, setOutcomeResponse] =
+    useState<OutreachResponseStatus>("no_response");
+  const [outcomeObjection, setOutcomeObjection] = useState<ObjectionType | "">(
+    "",
+  );
+  const [outcomeNote, setOutcomeNote] = useState("");
 
   useEffect(() => {
     const saved = getAuditLeads();
@@ -291,6 +321,53 @@ export default function TeamAuditLeads() {
     if (!leadIntel) return null;
     return buildOutreachDraftSet(leadIntel);
   }, [leadIntel]);
+
+  // Learning signals are derived from ALL logged outcomes (history-aware).
+  // outcomeVersion forces a recompute whenever an outcome is logged/removed.
+  const learningSignals = useMemo(
+    () => computeLearningSignals(getLeadOutcomes()),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [outcomeVersion],
+  );
+
+  const prioritization = useMemo(() => {
+    if (!selected || !leadIntel) return null;
+    return prioritizeLead(
+      leadIntel,
+      inputFromAuditLead(selected),
+      learningSignals,
+    );
+  }, [selected, leadIntel, learningSignals]);
+
+  const leadOutcomes = useMemo(() => {
+    if (!selected) return [];
+    return getOutcomesForLead(selected.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected, outcomeVersion]);
+
+  function handleLogOutcome() {
+    if (!selected || !leadIntel) return;
+    if (showingDemoSeed) return;
+    recordLeadOutcome({
+      leadId: selected.id,
+      segment: leadIntel.segment,
+      outreachAngleId: outreachSet?.drafts[0]?.angleId,
+      responseStatus: outcomeResponse,
+      stageReached: outcomeStage,
+      objection: outcomeObjection || undefined,
+      predictedOpportunityAtOutreach:
+        leadIntel.score.overallConversionOpportunity,
+      note: outcomeNote.trim() || undefined,
+    });
+    setOutcomeNote("");
+    setOutcomeObjection("");
+    setOutcomeVersion((v) => v + 1);
+  }
+
+  function handleDeleteOutcome(id: string) {
+    deleteLeadOutcome(id);
+    setOutcomeVersion((v) => v + 1);
+  }
 
   async function handleCopyDraft(channel: string, text: string) {
     try {
@@ -1013,6 +1090,91 @@ export default function TeamAuditLeads() {
                         </p>
                       </div>
 
+                      {prioritization && (
+                        <div
+                          className="rounded-md border border-primary/30 bg-primary/5 p-2 mb-2 space-y-1.5"
+                          data-testid="lead-prioritization"
+                        >
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <p className="text-[10px] uppercase tracking-wider text-primary">
+                              Prioritization (rule-based)
+                            </p>
+                            <div className="flex items-center gap-1.5">
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] border-primary/40 text-primary bg-primary/5"
+                                data-testid="prioritization-band"
+                              >
+                                {CONVERSION_BAND_LABELS[prioritization.band]} ·{" "}
+                                {prioritization.priorityScore}/100
+                              </Badge>
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] border-muted text-muted-foreground bg-muted/10"
+                                data-testid="prioritization-confidence"
+                              >
+                                {prioritization.confidenceLabel}
+                              </Badge>
+                            </div>
+                          </div>
+                          <p className="text-[12px]">
+                            <span className="font-medium">Recommended: </span>
+                            {prioritization.recommendedLeadActionLabel}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground">
+                            <span className="font-medium text-foreground/80">
+                              Why now:{" "}
+                            </span>
+                            {prioritization.whyNow}
+                          </p>
+                          {prioritization.whyThisLead.length > 0 && (
+                            <ul className="text-[11px] list-disc pl-5 space-y-0.5 text-muted-foreground">
+                              {prioritization.whyThisLead.map((w, i) => (
+                                <li key={i}>{w}</li>
+                              ))}
+                            </ul>
+                          )}
+                          <p className="text-[11px]">
+                            <span className="font-medium">Best angle: </span>
+                            {prioritization.bestOutreachAngleLabel}
+                          </p>
+                          {prioritization.likelyObjectionLabel && (
+                            <p className="text-[11px] text-muted-foreground">
+                              <span className="font-medium text-foreground/80">
+                                Likely objection:{" "}
+                              </span>
+                              {prioritization.likelyObjectionLabel}
+                              {prioritization.likelyObjectionPrep
+                                ? ` — ${prioritization.likelyObjectionPrep}`
+                                : ""}
+                            </p>
+                          )}
+                          {prioritization.manualVerificationNeeded.length > 0 && (
+                            <div>
+                              <p className="text-[10px] uppercase tracking-wider text-amber-400">
+                                Manual verification needed
+                              </p>
+                              <ul className="text-[11px] list-disc pl-5 space-y-0.5 text-muted-foreground">
+                                {prioritization.manualVerificationNeeded.map(
+                                  (m, i) => (
+                                    <li key={i}>{m}</li>
+                                  ),
+                                )}
+                              </ul>
+                            </div>
+                          )}
+                          {prioritization.historicalAdjustment !== 0 && (
+                            <p className="text-[10px] text-muted-foreground italic">
+                              Adjusted{" "}
+                              {prioritization.historicalAdjustment > 0 ? "+" : ""}
+                              {prioritization.historicalAdjustment} from logged
+                              outcomes (small by design). Patterns are signals, not
+                              rules.
+                            </p>
+                          )}
+                        </div>
+                      )}
+
                       <div className="grid grid-cols-2 gap-1.5 mb-2">
                         <IntelDim
                           label="Improvement room"
@@ -1210,6 +1372,151 @@ export default function TeamAuditLeads() {
                           </div>
                         </div>
                       )}
+
+                      {/* Outcome tracking — feeds the self-improving engine.
+                          Local-only logging; NO send/call/text happens here. */}
+                      <div
+                        className="mt-3 rounded-md border border-border bg-muted/10 p-2"
+                        data-testid="lead-outcome-tracking"
+                      >
+                        <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
+                          Log outcome (after a human reaches out)
+                        </p>
+                        <p className="text-[10px] text-muted-foreground mb-2">
+                          Record what actually happened so the engine can learn.
+                          This only saves a result — it never contacts anyone.
+                        </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          <label className="text-[11px] text-muted-foreground">
+                            Furthest stage reached
+                            <select
+                              className="mt-0.5 w-full rounded border border-border bg-background text-foreground text-[12px] p-1"
+                              value={outcomeStage}
+                              onChange={(e) =>
+                                setOutcomeStage(
+                                  e.target.value as LeadOutcomeStage,
+                                )
+                              }
+                              data-testid="select-outcome-stage"
+                            >
+                              {(
+                                Object.keys(
+                                  LEAD_OUTCOME_STAGE_LABELS,
+                                ) as LeadOutcomeStage[]
+                              ).map((s) => (
+                                <option key={s} value={s}>
+                                  {LEAD_OUTCOME_STAGE_LABELS[s]}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                          <label className="text-[11px] text-muted-foreground">
+                            Response
+                            <select
+                              className="mt-0.5 w-full rounded border border-border bg-background text-foreground text-[12px] p-1"
+                              value={outcomeResponse}
+                              onChange={(e) =>
+                                setOutcomeResponse(
+                                  e.target.value as OutreachResponseStatus,
+                                )
+                              }
+                              data-testid="select-outcome-response"
+                            >
+                              {(
+                                Object.keys(
+                                  OUTREACH_RESPONSE_LABELS,
+                                ) as OutreachResponseStatus[]
+                              ).map((r) => (
+                                <option key={r} value={r}>
+                                  {OUTREACH_RESPONSE_LABELS[r]}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                          <label className="text-[11px] text-muted-foreground">
+                            Objection (optional)
+                            <select
+                              className="mt-0.5 w-full rounded border border-border bg-background text-foreground text-[12px] p-1"
+                              value={outcomeObjection}
+                              onChange={(e) =>
+                                setOutcomeObjection(
+                                  e.target.value as ObjectionType | "",
+                                )
+                              }
+                              data-testid="select-outcome-objection"
+                            >
+                              <option value="">None noted</option>
+                              {(
+                                Object.keys(OBJECTION_LABELS) as ObjectionType[]
+                              ).map((o) => (
+                                <option key={o} value={o}>
+                                  {OBJECTION_LABELS[o]}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                          <label className="text-[11px] text-muted-foreground">
+                            Note (optional, internal)
+                            <input
+                              type="text"
+                              className="mt-0.5 w-full rounded border border-border bg-background text-foreground text-[12px] p-1"
+                              value={outcomeNote}
+                              onChange={(e) => setOutcomeNote(e.target.value)}
+                              placeholder="What happened?"
+                              data-testid="input-outcome-note"
+                            />
+                          </label>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-[11px] mt-2"
+                          onClick={handleLogOutcome}
+                          disabled={showingDemoSeed}
+                          data-testid="btn-log-outcome"
+                        >
+                          Log outcome
+                        </Button>
+                        {showingDemoSeed && (
+                          <p className="text-[10px] text-muted-foreground italic mt-1">
+                            Demo seed lead — logging is disabled.
+                          </p>
+                        )}
+
+                        {leadOutcomes.length > 0 && (
+                          <div className="mt-2 space-y-1">
+                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                              Logged outcomes ({leadOutcomes.length})
+                            </p>
+                            {leadOutcomes.map((o) => (
+                              <div
+                                key={o.id}
+                                className="flex items-start justify-between gap-2 text-[11px] rounded border border-border bg-background/40 p-1.5"
+                                data-testid={`outcome-row-${o.id}`}
+                              >
+                                <span className="text-muted-foreground">
+                                  <span className="text-foreground/90">
+                                    {LEAD_OUTCOME_STAGE_LABELS[o.stageReached]}
+                                  </span>{" "}
+                                  · {OUTREACH_RESPONSE_LABELS[o.responseStatus]}
+                                  {o.objection
+                                    ? ` · ${OBJECTION_LABELS[o.objection]}`
+                                    : ""}
+                                  {o.note ? ` — ${o.note}` : ""}
+                                </span>
+                                <button
+                                  type="button"
+                                  className="text-[10px] text-muted-foreground hover:text-destructive shrink-0"
+                                  onClick={() => handleDeleteOutcome(o.id)}
+                                  data-testid={`btn-delete-outcome-${o.id}`}
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
 

@@ -46,3 +46,15 @@ non-negotiable and apply to every surface, draft, and future extension.
 - Scoring and decisions are rule-based and deterministic.
 - If the AI layer is unconfigured or errors, the deterministic draft is used.
 - The conversion-opportunity score is a human prioritization aid, not a promise.
+
+## Self-improving learning layer
+
+- Outcome logging is a human action that only saves a result locally. It never
+  sends, calls, texts, or contacts anyone.
+- Learned patterns are signals, not rules. Score adjustments are capped (±10),
+  only applied past a minimum sample, and damped while a segment is "emerging".
+- Every learned pattern is labelled by confidence; the surface is flagged "Still
+  learning — early signals" below the established sample size.
+- Cautious language carries through: weaker segments are "weaker so far", never
+  "bad"; marketing signals stay "possible — needs manual verification".
+- See `SELF_IMPROVING_LEAD_ENGINE.md`.

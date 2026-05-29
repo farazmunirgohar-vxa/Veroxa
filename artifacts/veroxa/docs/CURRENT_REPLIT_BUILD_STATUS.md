@@ -524,3 +524,24 @@
 >   insults, no guarantees. Free Audit V1 untouched; Owner/Operator parked.
 >   See `LEAD_INTELLIGENCE_OUTREACH_ENGINE.md` and
 >   `OUTREACH_COMPLIANCE_GUARDRAILS.md`.
+
+> **2026-05-29 — Self-improving lead engine added**
+>
+> - Learning layer on top of the lead engine: logged outreach outcomes →
+>   cautious signals. New modules in `src/lib/leadIntelligence/`:
+>   `leadOutcomeTypes.ts`, `localLeadOutcomeStore.ts` (localStorage
+>   `veroxa.lead_outcomes.v1`), `leadObjectionPatterns.ts`,
+>   `leadLearningSignals.ts`, `leadPrioritizationEngine.ts`,
+>   `selfImprovingLeadEngine.ts`.
+> - Extended `ConversionOpportunityScore` with food-visual potential, audit
+>   strength, and decision-maker access dimensions. Outreach drafts now carry
+>   a segment angle id for outcome tracking; contact-path quality scoring added.
+> - Surfaces: per-lead prioritization block + outcome tracking controls on Team
+>   Audit Leads (no Send); `LeadLearningPanel` + prioritised lead-gen tasks on
+>   the Team Dashboard.
+> - Anti-overfit: score adjustments bounded (±10), applied only past a minimum
+>   sample, damped while emerging, and labelled by confidence ("Still learning —
+>   early signals"). Patterns are signals, not rules; a human always decides.
+> - Guardrails unchanged: outcome logging contacts no one, no auto-send/call/
+>   text, public/audit data only, no confirmed-spend claims, no guarantees.
+>   See `SELF_IMPROVING_LEAD_ENGINE.md`.

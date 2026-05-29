@@ -90,6 +90,44 @@ export interface ContactPath {
   knownValue?: string;
 }
 
+/** How good the overall path to a real decision-maker looks. */
+export type ContactPathQualityTier =
+  | "strong"
+  | "workable"
+  | "thin"
+  | "needs_research";
+
+export const CONTACT_PATH_QUALITY_LABELS: Record<
+  ContactPathQualityTier,
+  string
+> = {
+  strong: "Strong contact path",
+  workable: "Workable contact path",
+  thin: "Thin contact path",
+  needs_research: "Needs manual research",
+};
+
+/**
+ * A cautious quality assessment of how reachable a lead is, derived only from
+ * public/provided contact paths. Includes a recommended first method and a
+ * manual verification checklist a human must complete before any outreach.
+ */
+export interface ContactPathQuality {
+  /** 0..100 — higher = a clearer route to a real decision-maker. */
+  score: number;
+  tier: ContactPathQualityTier;
+  tierLabel: string;
+  /** The path type to try first, if any usable path exists. */
+  recommendedFirstMethod?: ContactPathType;
+  recommendedFirstMethodLabel?: string;
+  /** Count of usable (available/likely) paths. */
+  usablePathCount: number;
+  /** Manual steps a human must complete before reaching out. */
+  manualVerificationChecklist: string[];
+  /** Cautious, plain-language summary. */
+  summary: string;
+}
+
 // ---------------------------------------------------------------------------
 // Signals — cautious, observation-only.
 // ---------------------------------------------------------------------------
@@ -136,6 +174,18 @@ export interface ConversionOpportunityScore {
   reachabilityScore: number;
   /** How well the lead fits Veroxa's ideal client profile. */
   fitScore: number;
+  /**
+   * Possible upside from better food visuals/photography (higher = more room).
+   * Inferred cautiously from thin presence + a real, operating venue.
+   */
+  foodVisualPotentialScore: number;
+  /** How strong the public audit already looks (higher = stronger). */
+  auditStrengthScore: number;
+  /**
+   * How likely it is to reach an actual decision-maker (owner/manager)
+   * through public/provided paths (higher = easier).
+   */
+  decisionMakerAccessScore: number;
   /** Blended, weighted overall conversion opportunity (0..100). */
   overallConversionOpportunity: number;
 }
@@ -188,16 +238,45 @@ export interface OutreachDraft {
   body: string;
   /** Optional short talking points / agenda items. */
   points?: string[];
+  /**
+   * Stable id of the outreach ANGLE used (segment-driven). Logged with an
+   * outcome so the learning layer can compare angle performance over time.
+   */
+  angleId: string;
 }
 
 export interface OutreachDraftSet {
   restaurantName: string;
   segment: LeadSegment;
+  /** The segment-driven angle id shared by drafts in this set. */
+  angleId: string;
   drafts: OutreachDraft[];
   /** Standard guardrail reminders shown next to every draft set. */
   guardrails: string[];
   humanReviewRequired: true;
 }
+
+/**
+ * Stable angle ids, one per segment. Used to track which outreach angle was
+ * used so the learning layer can report angle performance. Cautious framing.
+ */
+export const SEGMENT_OUTREACH_ANGLE_ID: Record<LeadSegment, string> = {
+  no_online_presence_lead: "angle_show_up_clearly",
+  inconsistent_owner_managed_lead: "angle_take_consistency_off_plate",
+  agency_spend_opportunity_lead: "angle_complementary_tightening",
+  ads_waste_risk_lead: "angle_strengthen_the_basics",
+  strong_fit_pilot_lead: "angle_audit_to_pilot",
+  already_strong_low_priority: "angle_occasional_useful_idea",
+};
+
+export const OUTREACH_ANGLE_LABELS: Record<string, string> = {
+  angle_show_up_clearly: "Help them show up clearly",
+  angle_take_consistency_off_plate: "Take consistency off their plate",
+  angle_complementary_tightening: "Complementary tightening (never competitive)",
+  angle_strengthen_the_basics: "Strengthen the basics behind promotions",
+  angle_audit_to_pilot: "Audit to a small pilot",
+  angle_occasional_useful_idea: "Occasional useful idea (nurture)",
+};
 
 // ---------------------------------------------------------------------------
 // Next actions — lead → audit → onboarding flow.

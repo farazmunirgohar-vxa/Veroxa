@@ -124,3 +124,23 @@ persist behind the **same** interfaces — no UI contract change:
 Invariants carry over: no auto-send/call/text, public/audit data only, no
 confirmed-spend claims, human review before any outreach. See
 `OUTREACH_COMPLIANCE_GUARDRAILS.md`.
+
+## 6. Self-improving lead engine (future persistence)
+
+The learning layer is currently deterministic and local (logged outcomes →
+cautious signals). It is production-shaped today so a backend can mirror it 1:1
+with no UI contract change. See `SELF_IMPROVING_LEAD_ENGINE.md`.
+
+| Table | Key fields | Notes |
+|-------|-----------|-------|
+| `lead_outcomes` | `leadId`, `segment`, `outreachAngleId`, `channel`, `responseStatus`, `stageReached`, `objection`, `predictedOpportunityAtOutreach`, `loggedBy`, `createdAt` | One row per human-logged outreach result. Mirrors `LeadOutcomeRecord`. |
+| `lead_learning_signals` | `groupType` (segment/angle/channel), `groupKey`, `sample`, `conversionRate`, `confidence`, `computedAt` | Derived; cached snapshot of `computeLearningSignals`. |
+| `lead_score_adjustments` | `segment`, `adjustment`, `confidence`, `applied`, `computedAt` | Bounded (±10) adjustment per segment; `applied=false` below the sample threshold. |
+| `outreach_angle_results` | `outreachAngleId`, `sample`, `conversionRate`, `confidence` | Per-angle outcome rollup for outreach recommendations. |
+| `lead_objection_patterns` | `segment`, `objection`, `count` | Observed objection frequency for cautious preparation guidance. |
+| `lead_prioritization_snapshots` | `leadId`, `priorityScore`, `band`, `recommendedLeadAction`, `confidence`, `historicalAdjustment`, `computedAt` | Snapshot of a prioritisation run. |
+| `suppression_list` | `leadId`, `reason`, `addedBy`, `addedAt` | Hard-no / do-not-contact leads; always excluded from outreach prep. |
+
+Invariants carry over: outcome logging is a human action that contacts no one;
+learned patterns are signals not rules; adjustments are bounded and
+confidence-labelled; cautious language only.

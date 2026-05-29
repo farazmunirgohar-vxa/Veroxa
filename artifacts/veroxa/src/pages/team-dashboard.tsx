@@ -41,7 +41,11 @@ import {
 import { TEAM_AI_DISCLOSURE } from "@/lib/ai/aiAgentTypes";
 import { previewAutomationSnapshot } from "@/lib/automation/automationPreviewEngine";
 import { ContentIntelligenceSummaryStrip } from "@/components/ContentIntelligencePanel";
-import { LeadIntelligenceSummaryStrip } from "@/components/LeadIntelligencePanel";
+import {
+  LeadIntelligenceSummaryStrip,
+  LeadGenTasksList,
+  LeadLearningPanel,
+} from "@/components/LeadIntelligencePanel";
 
 const mediaReviewQueue = [
   { id: "mrq-1", title: "Grilled platter — overhead", subtitle: "Demo Grill House · suggested: weekend feature",      status: "Approve",  tone: "good" as const },
@@ -247,8 +251,12 @@ export default function TeamDashboard() {
 
       {/* Lead Intelligence — rule-based scoring across saved audit leads.
           Outreach drafts always require human review; nothing auto-sends. */}
-      <div className="mb-4">
-        <LeadIntelligenceSummaryStrip />
+      <div className="mb-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="space-y-4">
+          <LeadIntelligenceSummaryStrip />
+          <LeadGenTasksList limit={4} />
+        </div>
+        <LeadLearningPanel />
       </div>
 
       {/* Stat grid */}

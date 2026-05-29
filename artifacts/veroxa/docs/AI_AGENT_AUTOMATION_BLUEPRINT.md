@@ -99,3 +99,19 @@ When the backend is activated, outreach send/call/schedule would map to real
 triggers behind the **same** interfaces, always after explicit human approval.
 See `LEAD_INTELLIGENCE_OUTREACH_ENGINE.md` and
 `OUTREACH_COMPLIANCE_GUARDRAILS.md`.
+
+## 8. Self-improving learning loop (preview only)
+
+The learning layer closes the loop deterministically and locally: logged
+outcomes → cautious signals → prioritisation, bounded score adjustments, and
+targeting/outreach recommendations. It is preview-grade and follows the same
+boundaries:
+
+- Outcome logging is a human action that contacts no one — it records a result.
+- Learned patterns are signals, not rules; adjustments are bounded (±10) and
+  applied only past a minimum sample, damped while emerging.
+- Every learned pattern is labelled by confidence; below the established sample
+  size the surface is flagged "Still learning — early signals".
+- No model call, no network, no auto-decision. A human always decides.
+
+See `SELF_IMPROVING_LEAD_ENGINE.md`.

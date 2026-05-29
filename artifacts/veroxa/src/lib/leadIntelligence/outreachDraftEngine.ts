@@ -13,12 +13,16 @@
 
 import {
   OUTREACH_CHANNEL_LABELS,
+  SEGMENT_OUTREACH_ANGLE_ID,
   type LeadIntelligenceProfile,
   type LeadSegment,
   type OutreachChannel,
   type OutreachDraft,
   type OutreachDraftSet,
 } from "./leadIntelligenceTypes";
+
+/** A channel draft before its segment angle id is attached. */
+type DraftWithoutAngle = Omit<OutreachDraft, "angleId">;
 
 const GUARDRAILS = [
   "Human review required before sending — nothing auto-sends.",
@@ -46,7 +50,7 @@ function valueHook(segment: LeadSegment, name: string): string {
   }
 }
 
-function emailDraft(profile: LeadIntelligenceProfile): OutreachDraft {
+function emailDraft(profile: LeadIntelligenceProfile): DraftWithoutAngle {
   const name = profile.restaurantName;
   const hook = valueHook(profile.segment, name);
   const where = profile.location ? ` in ${profile.location}` : "";
@@ -69,7 +73,7 @@ function emailDraft(profile: LeadIntelligenceProfile): OutreachDraft {
   };
 }
 
-function followUpDraft(profile: LeadIntelligenceProfile): OutreachDraft {
+function followUpDraft(profile: LeadIntelligenceProfile): DraftWithoutAngle {
   const name = profile.restaurantName;
   return {
     channel: "follow_up_email",
@@ -90,7 +94,7 @@ function followUpDraft(profile: LeadIntelligenceProfile): OutreachDraft {
   };
 }
 
-function callOpenerDraft(profile: LeadIntelligenceProfile): OutreachDraft {
+function callOpenerDraft(profile: LeadIntelligenceProfile): DraftWithoutAngle {
   const name = profile.restaurantName;
   return {
     channel: "call_opener",
@@ -110,7 +114,7 @@ function callOpenerDraft(profile: LeadIntelligenceProfile): OutreachDraft {
   };
 }
 
-function voicemailDraft(profile: LeadIntelligenceProfile): OutreachDraft {
+function voicemailDraft(profile: LeadIntelligenceProfile): DraftWithoutAngle {
   const name = profile.restaurantName;
   return {
     channel: "voicemail",
@@ -123,7 +127,7 @@ function voicemailDraft(profile: LeadIntelligenceProfile): OutreachDraft {
   };
 }
 
-function walkInDraft(profile: LeadIntelligenceProfile): OutreachDraft {
+function walkInDraft(profile: LeadIntelligenceProfile): DraftWithoutAngle {
   const name = profile.restaurantName;
   return {
     channel: "walk_in",
@@ -141,7 +145,7 @@ function walkInDraft(profile: LeadIntelligenceProfile): OutreachDraft {
   };
 }
 
-function meetingAgendaDraft(profile: LeadIntelligenceProfile): OutreachDraft {
+function meetingAgendaDraft(profile: LeadIntelligenceProfile): DraftWithoutAngle {
   const name = profile.restaurantName;
   return {
     channel: "meeting_agenda",
@@ -159,7 +163,7 @@ function meetingAgendaDraft(profile: LeadIntelligenceProfile): OutreachDraft {
 
 const BUILDERS: Record<
   OutreachChannel,
-  (profile: LeadIntelligenceProfile) => OutreachDraft
+  (profile: LeadIntelligenceProfile) => DraftWithoutAngle
 > = {
   email: emailDraft,
   follow_up_email: followUpDraft,
@@ -174,7 +178,8 @@ export function buildOutreachDraft(
   profile: LeadIntelligenceProfile,
   channel: OutreachChannel,
 ): OutreachDraft {
-  return BUILDERS[channel](profile);
+  const angleId = SEGMENT_OUTREACH_ANGLE_ID[profile.segment];
+  return { ...BUILDERS[channel](profile), angleId };
 }
 
 /** Build the full set of rule-based outreach drafts for a lead. */
@@ -189,10 +194,12 @@ export function buildOutreachDraftSet(
     "walk_in",
     "meeting_agenda",
   ];
+  const angleId = SEGMENT_OUTREACH_ANGLE_ID[profile.segment];
   return {
     restaurantName: profile.restaurantName,
     segment: profile.segment,
-    drafts: channels.map((c) => BUILDERS[c](profile)),
+    angleId,
+    drafts: channels.map((c) => ({ ...BUILDERS[c](profile), angleId })),
     guardrails: GUARDRAILS,
     humanReviewRequired: true,
   };

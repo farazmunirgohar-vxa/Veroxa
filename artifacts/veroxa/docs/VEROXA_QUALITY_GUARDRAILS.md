@@ -85,5 +85,17 @@ human-in-the-loop rules, plus outreach-specific limits:
 - Never insult a lead's current vendor. Never guarantee results.
 - The conversion-opportunity score is a human prioritization aid, not a promise.
 
-See `OUTREACH_COMPLIANCE_GUARDRAILS.md` and
+## 8. Self-improving lead engine
+
+The learning layer (logged outcomes → cautious signals) follows the same rules:
+
+- Outcomes are logged by a human after a manual outreach; logging only saves a
+  result locally and never contacts anyone.
+- Learned patterns are **signals, not rules**. Score adjustments are small and
+  capped (±10), only applied past a minimum sample, and damped while emerging.
+- Every learned pattern carries a confidence label; below the established sample
+  size the surface is flagged "Still learning — early signals".
+- Weaker segments are "weaker so far", never "bad"; nothing is a guarantee.
+
+See `SELF_IMPROVING_LEAD_ENGINE.md`, `OUTREACH_COMPLIANCE_GUARDRAILS.md`, and
 `LEAD_INTELLIGENCE_OUTREACH_ENGINE.md`.
