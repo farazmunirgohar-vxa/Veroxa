@@ -20,7 +20,13 @@ export default function PublicNav() {
           Pricing
         </Link>
         <Link href="/demo" className="hover:text-foreground transition-colors" data-testid="nav-link-demo">
-          Demo
+          Demo Preview
+        </Link>
+        <Link href="/client/dashboard" className="hover:text-foreground transition-colors" data-testid="nav-link-client-portal">
+          Client Portal
+        </Link>
+        <Link href="/login" className="hover:text-foreground transition-colors" data-testid="nav-link-team-portal">
+          Team Portal
         </Link>
       </div>
 

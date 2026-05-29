@@ -1,5 +1,10 @@
 /**
- * Team Portal navigation — simplified cleanup pass.
+ * Team Portal navigation — real-review and demo-alias paths.
+ *
+ * Hrefs point to /team/* (real Veroxa OS review routes). The same page
+ * components are also served at /demo/team/* as internal demo aliases
+ * — the nav items here are shared by both so clicking them leads to the
+ * canonical /team/* path in all cases.
  *
  * PRIMARY (surfaced in nav + login destination):
  *   team-dashboard      — login destination, primary home
@@ -42,28 +47,27 @@ import {
 import type { SidebarItem } from "@/components/PortalLayout";
 
 export const teamPortalNavItems: SidebarItem[] = [
-  { label: "Dashboard",            icon: LayoutDashboard, href: "/demo/team/dashboard"              },
-  { label: "Direction Queue",      icon: Compass,         href: "/demo/team/direction-queue"        },
-  { label: "Work Queue",           icon: ListChecks,      href: "/demo/team/work-queue"             },
-  { label: "Upload Inbox",         icon: Inbox,           href: "/demo/team/upload-inbox"           },
-  { label: "Adaptive Intelligence", icon: Brain,          href: "/demo/team/adaptive-intelligence"  },
-  { label: "Media Review",    icon: ImageIcon,       href: "/demo/team/media-review"   },
-  { label: "Content Review",  icon: PenLine,         href: "/demo/team/content-review" },
-  { label: "Drafts",          icon: Layers,          href: "/demo/team/drafts"         },
-  { label: "Scheduling",      icon: CalendarDays,    href: "/demo/team/scheduling"     },
-  { label: "Reports",         icon: FileText,        href: "/demo/team/report-queue"   },
-  { label: "Alerts",          icon: ShieldAlert,     href: "/demo/team/alerts"         },
-  { label: "Audit Leads",      icon: PhoneCall,       href: "/demo/team/audit-leads"      },
-  { label: "Prospect Scanner", icon: Search,         href: "/demo/team/prospect-scanner" },
-  { label: "Lead Source Lab",  icon: FlaskConical,   href: "/demo/team/lead-source-lab"  },
+  { label: "Dashboard",            icon: LayoutDashboard, href: "/team/dashboard"              },
+  { label: "Direction Queue",      icon: Compass,         href: "/team/direction-queue"        },
+  { label: "Work Queue",           icon: ListChecks,      href: "/team/work-queue"             },
+  { label: "Upload Inbox",         icon: Inbox,           href: "/team/upload-inbox"           },
+  { label: "Adaptive Intelligence", icon: Brain,          href: "/team/adaptive-intelligence"  },
+  { label: "Media Review",    icon: ImageIcon,       href: "/team/media-review"   },
+  { label: "Content Review",  icon: PenLine,         href: "/team/content-review" },
+  { label: "Drafts",          icon: Layers,          href: "/team/drafts"         },
+  { label: "Scheduling",      icon: CalendarDays,    href: "/team/scheduling"     },
+  { label: "Reports",         icon: FileText,        href: "/team/report-queue"   },
+  { label: "Alerts",          icon: ShieldAlert,     href: "/team/alerts"         },
+  { label: "Audit Leads",      icon: PhoneCall,       href: "/team/audit-leads"      },
+  { label: "Prospect Scanner", icon: Search,         href: "/team/prospect-scanner" },
+  { label: "Lead Source Lab",  icon: FlaskConical,   href: "/team/lead-source-lab"  },
 ];
 
-// Hidden from nav (routes still active at their original paths):
-// /demo/internal/client-health   — Client Health (cross-role command center)
-// /demo/team/task-engine         — Task Engine (Kanban) — future deletion candidate
-// /demo/team/client-detail       — Client Detail
-// /demo/team/content-review      — Content Review
-// /demo/team/tasks               — My Tasks (personal list) — future deletion candidate
-// /demo/team/ai-review           — AI Review
-// /demo/team/performance         — Performance
-// /demo/team/activity-feed       — Activity Feed
+// Hidden from nav (routes still active at their canonical paths):
+// /team/client-detail       — Client Detail
+// /team/content-review      — Content Review
+// /team/tasks               — My Tasks (personal list) — future deletion candidate
+// /team/ai-review           — AI Review
+// /team/performance         — Performance
+// /team/activity-feed       — Activity Feed
+// /demo/internal/client-health — Client Health (cross-role command center)

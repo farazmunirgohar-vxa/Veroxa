@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { ArrowRight, Lock, Monitor, Sparkles, UploadCloud } from "lucide-react";
+import { ArrowRight, Lock, Monitor, Sparkles, UploadCloud, Hexagon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
@@ -16,18 +16,18 @@ export default function DemoHub() {
           <div className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500 text-center">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-blue-500/20 bg-blue-500/10 text-blue-400 text-xs font-semibold mb-6">
               <Monitor className="w-3.5 h-3.5" />
-              Public Experience
+              Public Demo Preview — sample walkthrough only
             </div>
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4" data-testid="demo-heading">
-              Veroxa <span className="text-muted-foreground">— Client Portal Demo</span>
+              Veroxa <span className="text-muted-foreground">Demo Preview</span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-              This preview shows what a restaurant owner would experience inside Veroxa — dashboard,
-              calendar, Google visibility, reports, updates, onboarding, and media guidance.
+              A public sample walkthrough of Veroxa — see what the platform looks like before
+              signing up. This is a preview only, not the live Veroxa OS.
             </p>
           </div>
 
-          {/* Client Portal Card */}
+          {/* Client Portal Preview Card */}
           <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 mb-6">
             <div className="p-8 rounded-2xl border border-border bg-card relative overflow-hidden">
               <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-blue-500/15 to-transparent blur-3xl rounded-full pointer-events-none" />
@@ -37,14 +37,14 @@ export default function DemoHub() {
                   <Monitor className="w-7 h-7 text-blue-500" />
                 </div>
                 <span className="text-[10px] font-semibold text-blue-400/70 uppercase tracking-widest mt-2">
-                  No login required
+                  No login required · sample data
                 </span>
               </div>
 
               <h2 className="text-2xl font-bold mb-3">Client Portal Preview</h2>
               <p className="text-muted-foreground leading-relaxed mb-6">
-                The full client-side experience — see exactly what a restaurant owner would see
-                inside Veroxa. No account needed.
+                A sample walkthrough of the client-side experience — see what a restaurant owner
+                would see inside Veroxa. Sample data only; no account needed.
               </p>
 
               <div className="grid grid-cols-2 gap-2 mb-8">
@@ -67,7 +67,7 @@ export default function DemoHub() {
 
               <Link href="/demo/client/dashboard" data-testid="btn-enter-client-demo">
                 <Button className="gap-2 font-semibold">
-                  Experience Client Portal <ArrowRight className="w-4 h-4" />
+                  Start Client Preview <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
             </div>
@@ -108,7 +108,7 @@ export default function DemoHub() {
                   Restaurant Upload — app-style
                 </p>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Demo of the daily content upload flow restaurant staff use. Enter a restaurant
+                  Sample of the daily content upload flow restaurant staff use. Enter a restaurant
                   upload key — no login or account needed.
                 </p>
                 <Link
@@ -122,6 +122,28 @@ export default function DemoHub() {
             </div>
           </div>
 
+          {/* Veroxa OS Access — real review */}
+          <div
+            className="p-5 rounded-xl border border-primary/20 bg-primary/5 flex items-start gap-3 animate-in fade-in duration-700 mb-4"
+            data-testid="veroxa-os-access-notice"
+          >
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <Hexagon className="w-4 h-4 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-foreground mb-1">
+                Veroxa OS — active review access
+              </p>
+              <p className="text-sm text-muted-foreground mb-2">
+                If you have Veroxa credentials, sign in to access the live Client Portal or Team
+                Portal review environment — not this sample preview.
+              </p>
+              <Link href="/login" className="text-sm text-primary hover:underline inline-flex items-center gap-1" data-testid="link-veroxa-os-login">
+                Sign in to Veroxa OS <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </div>
+
           {/* Internal portals note */}
           <div
             className="p-5 rounded-xl border border-border/60 bg-card/40 flex items-start gap-3 animate-in fade-in duration-700"
@@ -132,10 +154,10 @@ export default function DemoHub() {
             </div>
             <div>
               <p className="text-sm font-semibold text-foreground mb-1">
-                Internal Team, Operator, and Owner portals require login
+                Team Portal requires login
               </p>
               <p className="text-sm text-muted-foreground">
-                Veroxa staff access is available after signing in with your Veroxa account.{" "}
+                Veroxa team access is available after signing in with your Veroxa account.{" "}
                 <Link href="/login" className="text-primary hover:underline" data-testid="link-internal-login">
                   Sign in →
                 </Link>

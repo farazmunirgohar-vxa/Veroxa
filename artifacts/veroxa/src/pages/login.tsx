@@ -6,30 +6,37 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AUTH_MODE } from "@/lib/auth/authMode";
 import { getSupabaseClient } from "@/lib/supabase";
-import { getDemoRoleHomePath, isVeroxaRole } from "@/lib/auth/authContract";
+import { getRoleHomePath, isVeroxaRole } from "@/lib/auth/authContract";
 import {
   getDevRouteForRole,
   validateDevCredentials,
 } from "@/lib/auth/devCredentials";
 
-const roles = [
+/**
+ * Quick-access portal cards — link directly to the portal (no credential
+ * required for the client portal; team portal opens via the sign-in form).
+ * These are not demo links — they are the active Veroxa OS review portals.
+ */
+const portalCards = [
   {
-    href: "/demo/client/dashboard",
+    href: "/client/dashboard",
     icon: Utensils,
     label: "Client Portal",
     description: "Restaurant owner view — content calendar, Google visibility, weekly updates, and monthly reports.",
     iconClass: "bg-blue-500/10 text-blue-500",
     glow: "from-blue-500/15 to-transparent",
     testid: "role-card-client",
+    badge: null,
   },
   {
-    href: "/demo/team/dashboard",
+    href: "/team/dashboard",
     icon: Users,
     label: "Team Portal",
     description: "Content team workspace — media review, AI quality checks, draft variants, approvals, scheduling.",
     iconClass: "bg-emerald-500/10 text-emerald-500",
     glow: "from-emerald-500/15 to-transparent",
     testid: "role-card-team",
+    badge: "Login required",
   },
 ];
 
@@ -48,12 +55,13 @@ export default function LoginPage() {
   /**
    * Sign-in submit handler.
    *
-   * - When `AUTH_MODE === "placeholder"`: preventDefault, show notice.
+   * - When `AUTH_MODE === "placeholder"`: validates dev credentials, routes to
+   *   the real portal path (/client/dashboard, /team/dashboard).
    * - When `AUTH_MODE === "real"`:
    *     1. signInWithPassword
    *     2. Get session → look up user_profiles by user_id
    *     3. Validate role with isVeroxaRole
-   *     4. Redirect to getDemoRoleHomePath(role)
+   *     4. Redirect to getRoleHomePath(role)
    *
    * Never creates users. Never writes to user_profiles. Never stores
    * tokens manually. Never uses the service role key.
@@ -143,7 +151,7 @@ export default function LoginPage() {
         return;
       }
 
-      setLocation(getDemoRoleHomePath(profile.role));
+      setLocation(getRoleHomePath(profile.role));
     } catch {
       setSignInState({
         kind: "error",
@@ -179,39 +187,45 @@ export default function LoginPage() {
         <div className="text-center mb-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/10 text-primary text-[11px] font-semibold tracking-wide mb-6">
             <ShieldAlert className="w-3 h-3" />
-            Sign in to access your portal
+            Development access — production authentication pending
           </div>
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4" data-testid="login-heading">
-            Access Veroxa
+            Access Veroxa OS
           </h1>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-            Role-based portal access for restaurants and Veroxa teams.
+            Sign in to access the Client Portal or Team Portal review environment.
           </p>
         </div>
 
-        {/* Role cards */}
+        {/* Portal cards */}
         <div className="grid sm:grid-cols-2 gap-5 mt-12 animate-in fade-in slide-in-from-bottom-8 duration-700">
-          {roles.map((role) => (
+          {portalCards.map((card) => (
             <Link
-              key={role.label}
-              href={role.href}
+              key={card.label}
+              href={card.href}
               className="block group"
-              data-testid={role.testid}
+              data-testid={card.testid}
             >
               <div className="h-full p-7 rounded-2xl border border-border bg-card hover:bg-accent/30 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/5 relative overflow-hidden">
-                <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl ${role.glow} blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+                <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl ${card.glow} blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
 
-                <div className="mb-5">
-                  <div className={`w-12 h-12 rounded-xl ${role.iconClass} flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300`}>
-                    <role.icon className="w-6 h-6" />
+                <div className="mb-5 flex items-start justify-between">
+                  <div className={`w-12 h-12 rounded-xl ${card.iconClass} flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300`}>
+                    <card.icon className="w-6 h-6" />
                   </div>
+                  {card.badge && (
+                    <span className="text-[9px] font-semibold text-amber-400 bg-amber-500/10 px-2 py-1 rounded-full uppercase tracking-widest whitespace-nowrap flex items-center gap-1">
+                      <Lock className="w-2.5 h-2.5" />
+                      {card.badge}
+                    </span>
+                  )}
                 </div>
 
                 <h2 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">
-                  {role.label}
+                  {card.label}
                 </h2>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-5">
-                  {role.description}
+                  {card.description}
                 </p>
 
                 <div className="flex items-center justify-end pt-4 border-t border-border/40">
@@ -230,7 +244,7 @@ export default function LoginPage() {
           <div className="flex items-center gap-4 mb-8">
             <div className="h-px flex-1 bg-border" />
             <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-widest">
-              Or
+              Or sign in directly
             </span>
             <div className="h-px flex-1 bg-border" />
           </div>
@@ -243,7 +257,7 @@ export default function LoginPage() {
                 <div>
                   <h3 className="text-lg font-bold mb-1">Sign In</h3>
                   <p className="text-xs text-muted-foreground leading-relaxed max-w-xs">
-                    Sign in with your Veroxa account to access your role portal.
+                    Sign in with your Veroxa credentials to be routed to your portal.
                   </p>
                 </div>
                 <span className="text-[9px] font-semibold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-full uppercase tracking-widest whitespace-nowrap flex items-center gap-1">
@@ -305,8 +319,7 @@ export default function LoginPage() {
                   data-testid="signin-dev-notice"
                 >
                   <ShieldAlert className="w-3.5 h-3.5 flex-shrink-0" />
-                  Development access only — production authentication is not
-                  connected yet.
+                  Development access — production authentication pending.
                 </div>
 
                 {signInState.kind === "success" && (
@@ -335,8 +348,8 @@ export default function LoginPage() {
 
         {/* Footer note */}
         <p className="text-center text-xs text-muted-foreground/70 mt-12 max-w-md mx-auto leading-relaxed">
-          Sign in with your Veroxa account credentials to be routed to your portal.
-          Client Portal is publicly accessible. Team Portal requires login.
+          Sign in with your Veroxa credentials to be routed to your portal.
+          The Client Portal is also directly accessible above. Owner and Operator portals are parked.
         </p>
       </div>
     </div>

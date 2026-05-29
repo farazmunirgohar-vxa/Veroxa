@@ -1,7 +1,12 @@
 /**
- * Client Portal navigation — simplified cleanup pass.
+ * Client Portal navigation — real-review and demo-alias paths.
  *
- * PRIMARY (surfaced in nav — public, no login required):
+ * Hrefs point to /client/* (real Veroxa OS review routes). The same page
+ * components are also served at /demo/client/* as public demo preview aliases
+ * — the nav items here are shared by both so clicking them leads to the
+ * canonical /client/* path in all cases.
+ *
+ * PRIMARY (surfaced in nav):
  *   client-dashboard        — primary home
  *   client-media            — upload media / media library
  *   client-calendar         — content calendar
@@ -16,10 +21,6 @@
  *   client-google           — Google Business Profile
  *   client-activity-log     — activity log
  *   client-updates          — updates / notifications
- *
- * FUTURE DELETION CANDIDATES:
- *   None identified — secondary pages are distinct features,
- *   not duplicates of primary pages.
  */
 import {
   LayoutDashboard,
@@ -34,20 +35,20 @@ import {
 import type { SidebarItem } from "@/components/PortalLayout";
 
 export const clientPortalNavItems: SidebarItem[] = [
-  { label: "Dashboard",        icon: LayoutDashboard, href: "/demo/client/dashboard"        },
-  { label: "Direction Center", icon: Compass,         href: "/demo/client/direction"        },
-  { label: "Upload Media",     icon: Images,          href: "/demo/client/media"            },
-  { label: "AI Draft Preview", icon: Sparkles,        href: "/demo/client/ai-draft-preview" },
-  { label: "Calendar",         icon: CalendarDays,    href: "/demo/client/calendar"         },
-  { label: "Reports",          icon: FileText,        href: "/demo/client/reports"          },
-  { label: "Requests",         icon: ClipboardList,   href: "/demo/client/requests"         },
-  { label: "Account",          icon: Briefcase,       href: "/demo/client/account"          },
+  { label: "Dashboard",        icon: LayoutDashboard, href: "/client/dashboard"        },
+  { label: "Direction Center", icon: Compass,         href: "/client/direction"        },
+  { label: "Upload Media",     icon: Images,          href: "/client/media"            },
+  { label: "AI Draft Preview", icon: Sparkles,        href: "/client/ai-draft-preview" },
+  { label: "Calendar",         icon: CalendarDays,    href: "/client/calendar"         },
+  { label: "Reports",          icon: FileText,        href: "/client/reports"          },
+  { label: "Requests",         icon: ClipboardList,   href: "/client/requests"         },
+  { label: "Account",          icon: Briefcase,       href: "/client/account"          },
 ];
 
-// Hidden from nav (routes still active at their original paths):
-// /demo/client/workspace         — Workspace
-// /demo/client/onboarding-center — Onboarding
-// /demo/client/content-pipeline  — Content
-// /demo/client/google            — Google
-// /demo/client/activity-log      — Activity
-// /demo/client/updates           — Notifications
+// Hidden from nav (routes still active at their canonical paths):
+// /client/workspace         — Workspace
+// /client/onboarding-center — Onboarding
+// /client/content-pipeline  — Content
+// /client/google            — Google
+// /client/activity-log      — Activity
+// /client/updates           — Notifications

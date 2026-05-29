@@ -49,7 +49,7 @@ export interface AuthState {
  */
 export const ROLE_HOME_PATH: Readonly<Record<VeroxaRole, string>> = Object.freeze({
   client:   "/client/dashboard",
-  team:     "/team/tasks",
+  team:     "/team/dashboard",
   operator: "/operator/overview",
   owner:    "/owner/dashboard",
 });

@@ -1,5 +1,26 @@
 # Current Replit Build Status
 
+> **2026-05-29 — Demo Preview and Veroxa OS Review Access Separated**
+>
+> - Demo Preview (`/demo`, `/demo/client/*`) remains the public sample
+>   walkthrough — no login required, clearly labeled "Demo Preview / sample
+>   data only".
+> - Temporary login (`faraz@client.com / farazclient`, `faraz@team.com /
+>   farazteam`) now routes to the active Veroxa OS review routes:
+>   `/client/dashboard` and `/team/dashboard`.
+> - All `/client/*` and `/team/*` routes are wired to the real page components.
+>   `/demo/client/*` and `/demo/team/*` remain as compatibility aliases.
+> - Nav items in `clientPortalNav.ts` and `teamPortalNav.ts` now point to
+>   `/client/*` and `/team/*` (not `/demo/*`).
+> - Demo access code removed from temp login (was already removed; confirmed).
+> - `veroxa-preview` is not visible or required anywhere in temp login.
+> - Client/Team portals do not show "sample data only" as the main label on the
+>   temp-login experience — only the DemoHub page carries demo/sample branding.
+> - Owner and Operator remain hidden and parked (no credentials, no nav links).
+> - No Supabase auth, payments, publishing, notifications, or social APIs added.
+> - `PublicNav` now shows "Demo Preview", "Client Portal", and "Team Portal".
+> - Typecheck passes: `pnpm --filter @workspace/veroxa run typecheck`.
+
 > **2026-05-29 — Execution Intelligence Engine + Growth Flywheel**
 >
 > - **Engines** — `src/lib/executionIntelligence/*`

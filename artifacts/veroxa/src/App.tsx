@@ -397,22 +397,91 @@ function Router() {
 
       <Route path="/demo/supabase-test" component={SupabaseTestPage} />
 
-      {/* Future authenticated route placeholders */}
-      <Route path="/client/dashboard" component={RealClientPlaceholder} />
-      <Route path="/client/onboarding" component={RealClientPlaceholder} />
-      <Route path="/client/media" component={RealClientPlaceholder} />
-      <Route path="/client/calendar" component={RealClientPlaceholder} />
-      <Route path="/client/reports" component={RealClientPlaceholder} />
-      <Route path="/team/tasks" component={RealTeamPlaceholder} />
-      <Route path="/team/media-review" component={RealTeamPlaceholder} />
-      <Route path="/team/drafts" component={RealTeamPlaceholder} />
-      <Route path="/team/scheduling" component={RealTeamPlaceholder} />
+      {/* Real Veroxa OS review routes — Client Portal (public, no login).
+          Nav items in clientPortalNav.ts point here (/client/*).
+          /demo/client/* paths remain as public demo-preview aliases. */}
+      <Route path="/client/dashboard"        component={ClientDashboard} />
+      <Route path="/client/media"            component={ClientMedia} />
+      <Route path="/client/reports"          component={ClientReports} />
+      <Route path="/client/requests"         component={ClientRequests} />
+      <Route path="/client/calendar"         component={ClientCalendar} />
+      <Route path="/client/account"          component={ClientAccount} />
+      <Route path="/client/direction"        component={ClientDirectionCenter} />
+      <Route path="/client/ai-draft-preview" component={ClientAiDraftPreview} />
+      <Route path="/client/activity-log"     component={ClientActivityLog} />
+      <Route path="/client/workspace"        component={ClientWorkspace} />
+      <Route path="/client/onboarding-center" component={ClientOnboardingCenter} />
+      <Route path="/client/content-pipeline" component={ClientContentPipeline} />
+      <Route path="/client/onboarding"       component={ClientOnboarding} />
+
+      {/* Real Veroxa OS review routes — Team Portal (InternalDemoGuard).
+          Nav items in teamPortalNav.ts point here (/team/*).
+          /demo/team/* paths remain as internal demo aliases. */}
+      <Route path="/team/dashboard">
+        {() => <InternalDemoGuard role="team"><TeamDashboard /></InternalDemoGuard>}
+      </Route>
+      <Route path="/team/work-queue">
+        {() => <InternalDemoGuard role="team"><TeamWorkQueue /></InternalDemoGuard>}
+      </Route>
+      <Route path="/team/upload-inbox">
+        {() => <InternalDemoGuard role="team"><TeamUploadInbox /></InternalDemoGuard>}
+      </Route>
+      <Route path="/team/direction-queue">
+        {() => <InternalDemoGuard role="team"><TeamDirectionQueue /></InternalDemoGuard>}
+      </Route>
+      <Route path="/team/adaptive-intelligence">
+        {() => <InternalDemoGuard role="team"><TeamAdaptiveIntelligence /></InternalDemoGuard>}
+      </Route>
+      <Route path="/team/media-review">
+        {() => <InternalDemoGuard role="team"><TeamMediaReview /></InternalDemoGuard>}
+      </Route>
+      <Route path="/team/content-review">
+        {() => <InternalDemoGuard role="team"><TeamContentReview /></InternalDemoGuard>}
+      </Route>
+      <Route path="/team/drafts">
+        {() => <InternalDemoGuard role="team"><TeamDrafts /></InternalDemoGuard>}
+      </Route>
+      <Route path="/team/scheduling">
+        {() => <InternalDemoGuard role="team"><TeamScheduling /></InternalDemoGuard>}
+      </Route>
+      <Route path="/team/report-queue">
+        {() => <InternalDemoGuard role="team"><TeamReportQueue /></InternalDemoGuard>}
+      </Route>
+      <Route path="/team/alerts">
+        {() => <InternalDemoGuard role="team"><TeamAlertCenter /></InternalDemoGuard>}
+      </Route>
+      <Route path="/team/audit-leads">
+        {() => <InternalDemoGuard role="team"><TeamAuditLeads /></InternalDemoGuard>}
+      </Route>
+      <Route path="/team/prospect-scanner">
+        {() => <InternalDemoGuard role="team"><TeamProspectScanner /></InternalDemoGuard>}
+      </Route>
+      <Route path="/team/lead-source-lab">
+        {() => <InternalDemoGuard role="team"><TeamLeadSourceLab /></InternalDemoGuard>}
+      </Route>
+      <Route path="/team/client-detail">
+        {() => <InternalDemoGuard role="team"><InternalClientDetail role="team" /></InternalDemoGuard>}
+      </Route>
+      <Route path="/team/ai-review">
+        {() => <InternalDemoGuard role="team"><TeamAiReview /></InternalDemoGuard>}
+      </Route>
+      <Route path="/team/performance">
+        {() => <InternalDemoGuard role="team"><TeamPerformance /></InternalDemoGuard>}
+      </Route>
+      <Route path="/team/activity-feed">
+        {() => <InternalDemoGuard role="team"><TeamActivityFeed /></InternalDemoGuard>}
+      </Route>
+
+      {/* Parked real-auth placeholders — operator / owner (not active). */}
       <Route path="/operator/overview" component={RealOperatorPlaceholder} />
       <Route path="/operator/alerts" component={RealOperatorPlaceholder} />
       <Route path="/operator/report-approvals" component={RealOperatorPlaceholder} />
       <Route path="/owner/dashboard" component={RealOwnerPlaceholder} />
       <Route path="/owner/revenue" component={RealOwnerPlaceholder} />
       <Route path="/owner/client-health" component={RealOwnerPlaceholder} />
+
+      {/* Legacy placeholders kept for any external bookmarks. */}
+      <Route path="/team/tasks" component={RealTeamPlaceholder} />
       <Route component={NotFound} />
     </Switch>
   );

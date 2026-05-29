@@ -2,9 +2,8 @@
  * devCredentials.ts — TEMPORARY development-only login matcher.
  *
  * Used solely while AUTH_MODE === "placeholder" so the active role portals
- * (Client / Team) can be previewed without activating
- * real Supabase auth. This file is intentionally easy to delete when real
- * auth ships:
+ * (Client / Team) can be previewed without activating real Supabase auth.
+ * This file is intentionally easy to delete when real auth ships:
  *   - no Supabase
  *   - no network
  *   - no hashing / secrets / service-role key
@@ -14,10 +13,10 @@
  * To remove: delete this file and the placeholder branch in
  * `src/pages/login.tsx` that imports `validateDevCredentials` /
  * `getDevRouteForRole`. The real-auth branch already routes via
- * `getDemoRoleHomePath` from `./authContract`.
+ * `getRoleHomePath` from `./authContract`.
  */
 
-import { getDemoRoleHomePath, type VeroxaRole } from "./authContract";
+import { getRoleHomePath, type VeroxaRole } from "./authContract";
 
 export interface DevCredential {
   role: VeroxaRole;
@@ -53,9 +52,12 @@ export function validateDevCredentials(
 }
 
 /**
- * Where a dev-logged-in role should land. Reuses the existing demo route
- * map so removing this helper does not orphan a route.
+ * Where a dev-logged-in role should land — the canonical real-review routes
+ * (/client/dashboard, /team/dashboard) rather than /demo/* paths.
+ * Operator and Owner are parked; they fall back to /login.
  */
 export function getDevRouteForRole(role: VeroxaRole): string {
-  return getDemoRoleHomePath(role);
+  // Operator and owner are parked in the current build.
+  if (role === "operator" || role === "owner") return "/login";
+  return getRoleHomePath(role);
 }
