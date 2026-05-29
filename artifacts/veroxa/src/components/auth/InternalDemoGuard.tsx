@@ -3,7 +3,7 @@ import { Lock, AlertTriangle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth/useAuth";
 import type { VeroxaRole } from "@/lib/auth/authContract";
-import { getDemoRoleHomePath } from "@/lib/auth/authContract";
+import { getRoleHomePath } from "@/lib/auth/authContract";
 import { AUTH_MODE } from "@/lib/auth/authMode";
 
 // ---------------------------------------------------------------------------
@@ -114,7 +114,9 @@ export default function InternalDemoGuard({ role, children }: InternalDemoGuardP
   const allowed = Array.isArray(role) ? role : [role];
 
   if (!currentRole || !allowed.includes(currentRole)) {
-    const redirectPath = currentRole ? getDemoRoleHomePath(currentRole) : "/login";
+    // Parked roles (operator, owner) have no active portal; redirect to /login.
+    // Active roles (client, team) go to their real portal home.
+    const redirectPath = currentRole ? getRoleHomePath(currentRole) : "/login";
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <div className="w-full max-w-sm text-center space-y-6">

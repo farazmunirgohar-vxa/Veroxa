@@ -32,7 +32,7 @@ const portalCards = [
     href: "/team/dashboard",
     icon: Users,
     label: "Team Portal",
-    description: "Content team workspace — media review, AI quality checks, draft variants, approvals, scheduling.",
+    description: "Content team workspace — media review, draft variants, upload inbox, client work queue, and reporting.",
     iconClass: "bg-emerald-500/10 text-emerald-500",
     glow: "from-emerald-500/15 to-transparent",
     testid: "role-card-team",

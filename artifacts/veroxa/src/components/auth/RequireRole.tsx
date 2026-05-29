@@ -119,9 +119,9 @@ export function RequireRole({ role, children, title, description }: RequireRoleP
                 <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
             </Link>
-            <Link href="/demo" className="flex-1" data-testid={`link-demo-hub-${role}`}>
+            <Link href="/demo/client/dashboard" className="flex-1" data-testid={`link-demo-hub-${role}`}>
               <Button variant="outline" className="w-full font-semibold">
-                Open Demo Hub
+                Open Demo Preview
               </Button>
             </Link>
           </div>
