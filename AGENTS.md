@@ -92,7 +92,24 @@ Veroxa audits -> Veroxa prepares exact action -> action enters Approval Queue ->
 
 Do not build fake live execution. If connectors are not implemented, use calm language such as "Queue for later" or "Hold for later."
 
-## 8. Client experience rules
+## 8. Google Maps / local search optimization is core
+
+Google Maps optimization is not a side feature. It is a core restaurant customer-acquisition layer inside Veroxa.
+
+Veroxa should help restaurants improve local search and Google Maps readiness through:
+
+- Google Business Profile completeness
+- accurate address, phone, category, hours, holiday hours, menu, ordering links, website links, and social links
+- fresh food photos and videos
+- Google updates/posts prepared for approval
+- review reply drafts and review growth tasks
+- local keyword and menu/catering visibility improvements
+- profile freshness checks
+- calls, directions, website clicks, and profile activity later when data is available
+
+Current and future Google Maps work should feed the Approval Queue as prepared actions. Do not make live Google changes until explicit connector work is requested and approval gates are stable.
+
+## 9. Client experience rules
 
 Clients should not see:
 
@@ -121,7 +138,7 @@ Use client-safe language:
 - More content needed
 - Nothing goes live without Veroxa team review
 
-## 9. Team experience rules
+## 10. Team experience rules
 
 Team can see operational detail, but the Team portal must stay calm and action-focused.
 
@@ -130,6 +147,7 @@ Use terms like:
 - Suggested next step
 - Prepared action
 - Visibility issue
+- Google Maps visibility
 - Ready for review
 - Needs confirmation
 - Queue for later
@@ -137,7 +155,7 @@ Use terms like:
 
 Avoid making the Team portal feel like an AI lab, backend console, or strategy overload screen.
 
-## 10. Approval and safety rules
+## 11. Approval and safety rules
 
 Internal analysis/audits can be automatic.
 
@@ -164,7 +182,7 @@ Never automatic:
 - unverified religious/dietary claims
 - aggressive complaint responses
 
-## 11. Current built foundations
+## 12. Current built foundations
 
 The repo currently includes foundations for:
 
@@ -176,10 +194,11 @@ The repo currently includes foundations for:
 - Daily Customer Opportunity Engine
 - Approval-to-Execution Queue
 - Visibility Audit Engine
+- Google Maps / local visibility optimization foundation through visibility audit findings
 - prepared actions feeding the Approval Queue
 - client-safe helper foundations
 
-## 12. High-risk changes requiring explicit permission
+## 13. High-risk changes requiring explicit permission
 
 Do not add unless explicitly requested:
 
@@ -195,7 +214,7 @@ Do not add unless explicitly requested:
 - ads budget changes
 - Owner/Operator dashboards
 
-## 13. First-client goal
+## 14. First-client goal
 
 Build toward a semi-real first-client system before full automation.
 
