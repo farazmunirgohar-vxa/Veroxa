@@ -383,7 +383,7 @@ export default function TeamWorkQueue() {
         Signed-client work surfaces here once direction or submissions land.
         Client direction is interpreted in the{" "}
         <a
-          href="/demo/team/direction-queue"
+          href="/team/direction-queue"
           className="text-primary hover:underline"
           data-testid="link-direction-queue-from-work-queue"
         >

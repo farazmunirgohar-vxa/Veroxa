@@ -86,7 +86,7 @@ export function ExecutionIntelligenceSummaryStrip() {
           Rule-based scoring. Risk is framed as fixable inputs, never the client's
           fault — and a human always decides on retention.
         </p>
-        <Link href="/demo/team/work-queue">
+        <Link href="/team/work-queue">
           <span className="mt-2 inline-flex items-center gap-1 text-[11px] text-primary cursor-pointer">
             Open work queue <ArrowRight className="w-3 h-3" />
           </span>

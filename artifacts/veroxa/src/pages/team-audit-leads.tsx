@@ -608,7 +608,7 @@ export default function TeamAuditLeads() {
           </Button>
         ))}
         <div className="ml-auto flex gap-2">
-          <Link href="/demo/team/prospect-scanner">
+          <Link href="/team/prospect-scanner">
             <Button size="sm" variant="outline">
               Manual Prospect Scanner{" "}
               <ArrowRight className="w-3.5 h-3.5 ml-1" />

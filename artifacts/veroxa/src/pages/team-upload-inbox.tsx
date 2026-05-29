@@ -123,7 +123,7 @@ export default function TeamUploadInbox() {
               Daily restaurant uploads submitted through restaurant upload keys. Triage here,
               then move accepted items to{" "}
               <Link
-                href="/demo/team/media-review"
+                href="/team/media-review"
                 className="text-primary hover:underline"
                 data-testid="link-to-media-review"
               >

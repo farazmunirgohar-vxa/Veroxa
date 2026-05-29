@@ -225,7 +225,7 @@ export default function ClientDashboard() {
                   : ""}
               </p>
             </div>
-            <Link href="/demo/client/requests">
+            <Link href="/client/requests">
               <Button
                 size="sm"
                 variant="outline"
@@ -339,7 +339,7 @@ export default function ClientDashboard() {
               execution.
             </p>
             <Link
-              href="/demo/client/direction"
+              href="/client/direction"
               className="inline-flex items-center gap-1 text-sm text-primary hover:underline self-start"
               data-testid="link-open-direction-center"
             >
@@ -401,7 +401,7 @@ export default function ClientDashboard() {
             Upcoming content
           </h3>
           <Link
-            href="/demo/client/ai-draft-preview"
+            href="/client/ai-draft-preview"
             className="flex items-center gap-1 text-xs text-amber-300 hover:underline"
             data-testid="link-ai-draft-preview"
           >
@@ -544,7 +544,7 @@ export default function ClientDashboard() {
               Upload one food photo and watch Veroxa generate captions, angles, and a schedule.
             </p>
           </div>
-          <Link href="/demo/client/ai-draft-preview">
+          <Link href="/client/ai-draft-preview">
             <Button
               size="sm"
               className="bg-amber-500 text-amber-950 hover:bg-amber-400 flex-shrink-0"

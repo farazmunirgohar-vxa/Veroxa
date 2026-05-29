@@ -313,7 +313,7 @@ export default function TeamDashboard() {
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                 Client Submissions
               </h3>
-              <Link href="/demo/team/work-queue">
+              <Link href="/team/work-queue">
                 <span className="flex items-center gap-1 text-xs text-primary hover:underline cursor-pointer">
                   Open work queue <ArrowRight className="w-3 h-3" />
                 </span>
@@ -343,7 +343,7 @@ export default function TeamDashboard() {
           <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground inline-flex items-center gap-1.5">
             <Brain className="w-3.5 h-3.5" /> Adaptive Team Priorities
           </h3>
-          <Link href="/demo/team/adaptive-intelligence">
+          <Link href="/team/adaptive-intelligence">
             <span className="flex items-center gap-1 text-xs text-primary hover:underline cursor-pointer">
               Open Adaptive Intelligence <ArrowRight className="w-3 h-3" />
             </span>
@@ -363,7 +363,7 @@ export default function TeamDashboard() {
           <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Today&apos;s Client Work
           </h3>
-          <Link href="/demo/team/work-queue">
+          <Link href="/team/work-queue">
             <span className="flex items-center gap-1 text-xs text-primary hover:underline cursor-pointer">
               Open work queue <ArrowRight className="w-3 h-3" />
             </span>
@@ -450,7 +450,7 @@ export default function TeamDashboard() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg">Work Queue</CardTitle>
-              <Link href="/demo/team/work-queue">
+              <Link href="/team/work-queue">
                 <span className="flex items-center gap-1 text-xs text-primary hover:underline cursor-pointer">
                   View all <ArrowRight className="w-3 h-3" />
                 </span>
@@ -480,7 +480,7 @@ export default function TeamDashboard() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg">Active Alerts</CardTitle>
-              <Link href="/demo/team/alerts">
+              <Link href="/team/alerts">
                 <span className="flex items-center gap-1 text-xs text-primary hover:underline cursor-pointer">
                   View all <ArrowRight className="w-3 h-3" />
                 </span>

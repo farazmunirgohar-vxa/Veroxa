@@ -106,7 +106,7 @@ export function LeadIntelligenceSummaryStrip() {
           Rule-based scoring. Outreach drafts always require human review — nothing
           auto-sends.
         </p>
-        <Link href="/demo/team/audit-leads">
+        <Link href="/team/audit-leads">
           <span className="mt-2 inline-flex items-center gap-1 text-[11px] text-primary cursor-pointer">
             Open lead queue <ArrowRight className="w-3 h-3" />
           </span>
@@ -188,7 +188,7 @@ export function LeadGenTasksList({ limit = 6 }: { limit?: number }) {
             </div>
           );
         })}
-        <Link href="/demo/team/audit-leads">
+        <Link href="/team/audit-leads">
           <span className="inline-flex items-center gap-1 text-[11px] text-primary cursor-pointer">
             Open full lead queue <ArrowRight className="w-3 h-3" />
           </span>

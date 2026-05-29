@@ -1,5 +1,26 @@
 # Current Replit Build Status
 
+> **2026-05-29 — Page Sprawl Stopped / Portal Consolidation**
+>
+> - No new page files created. No new routes added.
+> - Veroxa consolidated around the existing Client Portal (`/client/*`)
+>   and Team Portal (`/team/*`).
+> - Stale `/demo/client/*` and `/demo/team/*` links in all in-scope pages
+>   and shared components updated to the canonical real routes:
+>   `client-dashboard`, `team-dashboard`, `team-work-queue`,
+>   `team-upload-inbox`, `team-audit-leads`, `ExecutionIntelligencePanel`,
+>   `LeadIntelligencePanel`.
+> - Redundant "Upcoming content" section removed from `client-updates.tsx`
+>   (static card restating what the "What Veroxa is working on for you"
+>   section above it already covers from live data).
+> - `aiAgentTypes.ts`, `automationTypes.ts`, `aiAgentPreviewEngine.ts`,
+>   `automationPreviewEngine.ts`, `clientTeamWorkRepository.ts` — all
+>   confirmed clean; no changes needed.
+> - Future builds should prioritise internal engines and shared helpers
+>   over new pages or new routes.
+> - Owner and Operator remain completely hidden.
+> - Typecheck passes: `pnpm --filter @workspace/veroxa run typecheck`.
+
 > **2026-05-29 — Demo Preview and Veroxa OS Review Access Separated**
 >
 > - Demo Preview (`/demo`, `/demo/client/*`) remains the public sample
