@@ -79,8 +79,19 @@ state so the queue re-renders. There are no network writes.
 It is the foundation for future client-visible progress and is intentionally not
 surfaced heavily in client UI yet.
 
+## Sources that feed this queue
+
+- **Hand-written demo fixtures** — `src/data/demo/demoPreparedActions.ts`.
+- **Visibility Audit Engine** — rule-based audit of each restaurant's online
+  presence that turns findings into prepared actions. See
+  [`VISIBILITY_AUDIT_ENGINE.md`](./VISIBILITY_AUDIT_ENGINE.md).
+
+Both produce `ResolvedPreparedActionSeed`s; `preparedActionStore` concatenates
+them and derives `riskLevel` + `approvalRequirement` from the rules engine, so
+the approval gate stays the single source of truth regardless of source.
+
 ## Recommended next step
 
-Build the **SEO / Google / Website Audit Task Engine** that *produces* prepared
-actions and feeds them into this queue — turning audit findings directly into
-reviewable, approvable actions.
+Connect execution behind this queue (per-channel connectors) so that
+`queued_for_execution` can advance to `executed` — without changing the approval
+gate or the client-safe boundary.

@@ -28,3 +28,19 @@ through these repository mutators and extend the rules engine — do not let UI
 components or fixtures decide approval/risk directly. The card mirrors these
 invariants (e.g. it hides "Confirm & Approve" until the client has been asked) so
 buttons never no-op, but the card is the mirror, not the enforcer.
+
+## Multiple seed sources feed one gate
+
+The queue accepts seeds from more than one producer (hand-written demo fixtures
+**and** the rule-based Visibility Audit engine). Every producer emits
+`ResolvedPreparedActionSeed`s that OMIT `riskLevel`/`approvalRequirement`; the
+store derives them so the gate stays the single source of truth regardless of
+source.
+
+**Why:** a new producer that set its own risk/approval would bypass the gate.
+
+**How to apply:** new producers (real audit sources, etc.) must emit seeds only
+and never set risk/approval. Cap per-source volume (the audit uses a shared
+`MAX_PREPARED_ACTIONS_PER_AUDIT`, applied in BOTH the engine's count and the
+mapper output so they never diverge) so one noisy source can't flood the queue —
+the source's own page can still show every finding.

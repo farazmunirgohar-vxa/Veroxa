@@ -11,6 +11,7 @@
  */
 
 import { getDemoPreparedActionSeeds } from "@/data/demo/demoPreparedActions";
+import { getVisibilityAuditPreparedActionSeeds } from "@/lib/visibilityAudit";
 import {
   getApprovalRequirement,
   getRiskLevel,
@@ -20,7 +21,14 @@ import {
 } from "@/domain/preparedActions";
 
 function seedActions(): PreparedAction[] {
-  return getDemoPreparedActionSeeds().map((seed) => {
+  // Two sources feed the same queue: hand-written demo fixtures and the rule-based
+  // Visibility Audit engine. Both produce resolved seeds; the rules engine derives
+  // the safety fields below so the approval gate stays the single source of truth.
+  const seeds = [
+    ...getDemoPreparedActionSeeds(),
+    ...getVisibilityAuditPreparedActionSeeds(),
+  ];
+  return seeds.map((seed) => {
     const base: PreparedAction = {
       ...seed,
       executionStatus: seed.executionStatus ?? "not_started",

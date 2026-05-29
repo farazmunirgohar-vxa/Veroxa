@@ -1,6 +1,6 @@
 import {
   Inbox, Eye, Users, FileText, ImageIcon, ArrowRight, LayoutGrid, TrendingUp,
-  ClipboardCheck,
+  ClipboardCheck, ScanSearch,
 } from "lucide-react";
 import { Link } from "wouter";
 import { PortalLayout } from "@/components/PortalLayout";
@@ -17,6 +17,7 @@ import { clientTeamWorkRepository } from "@/lib/repositories";
 import { getTodaysSuggestedPushes } from "@/domain/dailyOpportunity";
 import type { OpportunityPriority } from "@/domain/dailyOpportunity";
 import { preparedActionRepository, usePreparedActions } from "@/lib/preparedActions";
+import { getVisibilityAuditOverview } from "@/lib/visibilityAudit";
 import {
   PREPARED_ACTION_CHANNEL_LABELS,
   APPROVAL_REQUIREMENT_LABELS,
@@ -113,6 +114,9 @@ export default function TeamDashboard() {
   const pendingApprovals = preparedActionRepository.getPendingApprovalActions();
   const approvalsPreview = pendingApprovals.slice(0, 3);
 
+  // Visibility Audit roll-up — rule-based findings ready to prepare (team-only).
+  const visibilityOverview = getVisibilityAuditOverview();
+
   return (
     <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
       <PageHeader
@@ -161,6 +165,33 @@ export default function TeamDashboard() {
           </Link>
         ))}
       </div>
+
+      {/* Visibility tasks ready — calm link into the Visibility Audit (team-only) */}
+      {visibilityOverview.preparedActionCount > 0 && (
+        <Link href="/team/visibility-audit">
+          <Card
+            className="bg-card border-border hover:border-primary/30 transition-colors cursor-pointer mb-6"
+            data-testid="card-visibility-tasks-ready"
+          >
+            <CardContent className="p-4 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="p-2 rounded-md bg-muted/30 flex-shrink-0">
+                  <ScanSearch className="w-4 h-4 text-sky-400" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold">Visibility tasks ready</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    {visibilityOverview.preparedActionCount} prepared from{" "}
+                    {visibilityOverview.totalFindings} findings across{" "}
+                    {visibilityOverview.auditedCount} restaurants
+                  </p>
+                </div>
+              </div>
+              <ArrowRight className="w-4 h-4 text-muted-foreground/50 flex-shrink-0" />
+            </CardContent>
+          </Card>
+        </Link>
+      )}
 
       {/* Today's Suggested Push — rule-based daily opportunities (team-only) */}
       {suggestedPushes.length > 0 && (

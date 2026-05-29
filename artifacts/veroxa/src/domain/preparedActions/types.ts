@@ -220,3 +220,23 @@ export interface PreparedAction {
   /** Fixtures are always flagged demo-only. */
   demoOnly: true;
 }
+
+/**
+ * A prepared-action "seed" carries the realistic intent + content only. The
+ * safety fields (`riskLevel`, `approvalRequirement`) and `restaurantName` /
+ * `demoOnly` are filled in later so the rules engine stays the single source of
+ * truth for the approval gate. Any source of prepared actions (hand-written
+ * fixtures or the visibility-audit engine) produces seeds in this shape.
+ */
+export type PreparedActionSeed = Omit<
+  PreparedAction,
+  "restaurantName" | "riskLevel" | "approvalRequirement" | "demoOnly" | "executionStatus"
+> & {
+  executionStatus?: ExecutionStatus;
+};
+
+/** A seed with the restaurant name resolved, ready for the store to derive safety fields. */
+export type ResolvedPreparedActionSeed = PreparedActionSeed & {
+  restaurantName: string;
+  demoOnly: true;
+};

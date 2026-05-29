@@ -9,14 +9,10 @@
  */
 
 import { getRestaurantName } from "@/data/demo/demoClients";
-import type { PreparedAction } from "@/domain/preparedActions";
-
-type PreparedActionSeed = Omit<
-  PreparedAction,
-  "restaurantName" | "riskLevel" | "approvalRequirement" | "demoOnly" | "executionStatus"
-> & {
-  executionStatus?: PreparedAction["executionStatus"];
-};
+import type {
+  PreparedActionSeed,
+  ResolvedPreparedActionSeed,
+} from "@/domain/preparedActions";
 
 /**
  * Seeds carry the realistic intent + prepared content. `riskLevel` and
@@ -142,10 +138,7 @@ export const demoPreparedActionSeeds: PreparedActionSeed[] = [
 ];
 
 /** Seeds with the restaurant name resolved. Safety fields are added by the store. */
-export function getDemoPreparedActionSeeds(): (PreparedActionSeed & {
-  restaurantName: string;
-  demoOnly: true;
-})[] {
+export function getDemoPreparedActionSeeds(): ResolvedPreparedActionSeed[] {
   return demoPreparedActionSeeds.map((seed) => ({
     ...seed,
     restaurantName: getRestaurantName(seed.clientId),
