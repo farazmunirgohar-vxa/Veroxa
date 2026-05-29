@@ -13,6 +13,11 @@
  * docs/VISIBILITY_AUDIT_ENGINE.md.
  */
 
+import type {
+  PreparedActionChannel,
+  PreparedActionType,
+} from "@/domain/preparedActions";
+
 export type VisibilityAuditId = string;
 
 /**
@@ -33,7 +38,10 @@ export type VisibilityAuditCategory =
   | "catering_visibility"
   | "content_freshness";
 
-export const VISIBILITY_AUDIT_CATEGORY_LABELS: Record<VisibilityAuditCategory, string> = {
+export const VISIBILITY_AUDIT_CATEGORY_LABELS: Record<
+  VisibilityAuditCategory,
+  string
+> = {
   google_business_profile: "Google Business Profile",
   local_seo: "Local search",
   website: "Website",
@@ -58,14 +66,20 @@ export const VISIBILITY_AUDIT_CATEGORY_ORDER: VisibilityAuditCategory[] = [
 /** How pressing a finding is. */
 export type VisibilityAuditSeverity = "low" | "medium" | "high" | "urgent";
 
-export const VISIBILITY_AUDIT_SEVERITY_LABELS: Record<VisibilityAuditSeverity, string> = {
+export const VISIBILITY_AUDIT_SEVERITY_LABELS: Record<
+  VisibilityAuditSeverity,
+  string
+> = {
   low: "Low",
   medium: "Medium",
   high: "High",
   urgent: "Urgent",
 };
 
-export const VISIBILITY_AUDIT_SEVERITY_ORDER: Record<VisibilityAuditSeverity, number> = {
+export const VISIBILITY_AUDIT_SEVERITY_ORDER: Record<
+  VisibilityAuditSeverity,
+  number
+> = {
   urgent: 0,
   high: 1,
   medium: 2,
@@ -108,9 +122,11 @@ export interface VisibilityAuditRecommendation {
   /** Calm, plain-language next step shown to the team. */
   label: string;
   /** Hint for the mapper: which prepared-action channel this would land in. */
-  preparedChannel?: import("@/domain/preparedActions").PreparedActionChannel;
+  preparedChannel?: PreparedActionChannel;
   /** Hint for the mapper: which prepared-action type to create. */
-  preparedType?: import("@/domain/preparedActions").PreparedActionType;
+  preparedType?: PreparedActionType;
+  /** Set when the prepared content depends on restaurant-owned business facts. */
+  requiresClientConfirmation?: boolean;
   /** Prepared text/content the action would carry (plain text only). */
   preparedText?: string;
   /** Suggested keyword angle for search-related actions. */

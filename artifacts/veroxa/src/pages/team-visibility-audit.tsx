@@ -1,6 +1,11 @@
 import { useMemo, useState } from "react";
 import { Link } from "wouter";
-import { ScanSearch, ArrowRight, ClipboardCheck, CheckCircle2 } from "lucide-react";
+import {
+  ScanSearch,
+  ArrowRight,
+  ClipboardCheck,
+  CheckCircle2,
+} from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { PageHeader, StatusBadge } from "@/components/common";
 import type { StatusBadgeTone } from "@/components/common";
@@ -19,8 +24,7 @@ import {
  *
  * Shows what Veroxa found across each restaurant's Google profile, reviews,
  * website, local search, social, menu, and catering — and how many prepared
- * actions are waiting in the Approval Queue. Nothing is posted, sent, or changed
- * here; findings only turn into prepared actions for review. See
+ * actions are waiting in the Approval Queue. Nothing changes publicly here; findings only turn into prepared actions for review. See
  * docs/VISIBILITY_AUDIT_ENGINE.md.
  */
 
@@ -48,17 +52,20 @@ export default function TeamVisibilityAudit() {
     <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
       <PageHeader
         title="Visibility Audit"
-        description="What we found across each restaurant's online presence — and the actions we've prepared."
+        description="Visibility issues found across each restaurant — and the prepared actions ready for review."
         testId="header-visibility-audit"
       />
 
       <DemoOnlyBanner
-        message="This audit is rule-based and uses sample inputs. Nothing is posted or changed — findings become prepared actions for you to review in the Approval Queue."
+        message="This audit is rule-based and uses sample inputs. Nothing changes publicly — visibility issues become prepared actions for you to review in the Approval Queue."
         testId="banner-visibility-audit"
       />
 
       {/* Restaurant selector */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6" data-testid="audit-restaurant-selector">
+      <div
+        className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6"
+        data-testid="audit-restaurant-selector"
+      >
         {audits.map(({ input, result }) => {
           const isActive = input.clientId === selected?.input.clientId;
           return (
@@ -73,7 +80,9 @@ export default function TeamVisibilityAudit() {
                   : "border-border bg-card hover:border-primary/30"
               }`}
             >
-              <p className="text-sm font-semibold truncate">{result.restaurantName}</p>
+              <p className="text-sm font-semibold truncate">
+                {result.restaurantName}
+              </p>
               <div className="mt-1.5 flex items-center justify-between">
                 <StatusBadge tone={scoreTone(result.overallScore)}>
                   {result.overallScore}/100
@@ -90,11 +99,16 @@ export default function TeamVisibilityAudit() {
       {selected && (
         <>
           {/* Selected audit summary */}
-          <Card className="bg-card border-border mb-4" data-testid="audit-summary">
+          <Card
+            className="bg-card border-border mb-4"
+            data-testid="audit-summary"
+          >
             <CardContent className="p-4">
               <div className="flex items-start justify-between gap-3 flex-wrap">
                 <div className="min-w-0">
-                  <p className="font-semibold">{selected.result.restaurantName}</p>
+                  <p className="font-semibold">
+                    {selected.result.restaurantName}
+                  </p>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {selected.result.headline}
                   </p>
@@ -104,9 +118,11 @@ export default function TeamVisibilityAudit() {
                 </StatusBadge>
               </div>
               <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                <span>{selected.result.findings.length} findings</span>
+                <span>{selected.result.findings.length} visibility issues</span>
                 <span>·</span>
-                <span>{selected.result.preparedActionCount} prepared actions</span>
+                <span>
+                  {selected.result.preparedActionCount} prepared actions
+                </span>
                 <span>·</span>
                 <span>As of {selected.result.generatedAtLabel}</span>
               </div>
@@ -115,11 +131,15 @@ export default function TeamVisibilityAudit() {
 
           {/* Findings */}
           {selected.result.findings.length === 0 ? (
-            <Card className="bg-card border-border" data-testid="audit-no-findings">
+            <Card
+              className="bg-card border-border"
+              data-testid="audit-no-findings"
+            >
               <CardContent className="p-8 text-center">
                 <CheckCircle2 className="w-6 h-6 text-emerald-400 mx-auto mb-2" />
                 <p className="text-sm text-muted-foreground">
-                  Visibility looks strong here — nothing needs attention right now.
+                  Visibility looks strong here — nothing needs attention right
+                  now.
                 </p>
               </CardContent>
             </Card>
@@ -134,7 +154,9 @@ export default function TeamVisibilityAudit() {
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between gap-2 flex-wrap">
                       <div className="min-w-0">
-                        <p className="font-semibold text-sm leading-snug">{finding.title}</p>
+                        <p className="font-semibold text-sm leading-snug">
+                          {finding.title}
+                        </p>
                         <p className="text-[11px] text-muted-foreground mt-0.5">
                           {VISIBILITY_AUDIT_CATEGORY_LABELS[finding.category]}
                         </p>
@@ -152,7 +174,9 @@ export default function TeamVisibilityAudit() {
                       {finding.detail}
                     </p>
                     <p className="text-[12px] text-primary/85 mt-2">
-                      <span className="text-muted-foreground">Recommended:</span>{" "}
+                      <span className="text-muted-foreground">
+                        Suggested next step:
+                      </span>{" "}
                       {finding.recommendation.label}
                     </p>
                   </CardContent>
@@ -163,12 +187,15 @@ export default function TeamVisibilityAudit() {
 
           {/* Link to the Approval Queue */}
           {selected.result.preparedActionCount > 0 && (
-            <Card className="bg-card border-border mt-6" data-testid="audit-queue-link">
+            <Card
+              className="bg-card border-border mt-6"
+              data-testid="audit-queue-link"
+            >
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center justify-between gap-2">
                   <span className="flex items-center gap-2">
                     <ClipboardCheck className="w-4 h-4 text-emerald-400" />
-                    Prepared actions are waiting for review
+                    Prepared actions are ready for review
                   </span>
                   <Link href="/team/approval-queue">
                     <span className="flex items-center gap-1 text-xs text-primary hover:underline cursor-pointer font-normal">
@@ -180,8 +207,9 @@ export default function TeamVisibilityAudit() {
               <CardContent>
                 <p className="text-[11px] text-muted-foreground">
                   {selected.result.preparedActionCount} action
-                  {selected.result.preparedActionCount === 1 ? "" : "s"} prepared for{" "}
-                  {selected.result.restaurantName}. Nothing is posted or sent until you approve it.
+                  {selected.result.preparedActionCount === 1 ? "" : "s"}{" "}
+                  prepared for {selected.result.restaurantName}. Nothing changes
+                  publicly unless it is reviewed and approved.
                 </p>
               </CardContent>
             </Card>
@@ -191,7 +219,8 @@ export default function TeamVisibilityAudit() {
 
       <p className="text-[11px] text-muted-foreground/70 mt-6 px-0.5 flex items-center gap-1.5">
         <ScanSearch className="w-3.5 h-3.5" />
-        Audit results are rule-based on sample inputs. Live checks connect later.
+        Audit results are rule-based on sample inputs. Full checks can be added
+        later.
       </p>
     </PortalLayout>
   );

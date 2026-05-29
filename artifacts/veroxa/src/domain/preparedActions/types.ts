@@ -8,7 +8,7 @@
  *
  * IMPORTANT: this is a planning/domain model only. Nothing here performs an
  * external API call, posts, publishes, or creates any real side effect. There
- * are NO OpenAI/model calls, NO storage, NO connectors. See
+ * are NO OpenAI/model calls, NO storage, NO external execution. See
  * docs/APPROVAL_TO_EXECUTION_OS.md.
  */
 
@@ -25,7 +25,10 @@ export type PreparedActionChannel =
   | "reports"
   | "internal_task";
 
-export const PREPARED_ACTION_CHANNEL_LABELS: Record<PreparedActionChannel, string> = {
+export const PREPARED_ACTION_CHANNEL_LABELS: Record<
+  PreparedActionChannel,
+  string
+> = {
   google_business_profile: "Google Business Profile",
   social_media: "Social media",
   website: "Website",
@@ -85,7 +88,10 @@ export type PreparedActionSource =
   | "review_monitor"
   | "content_pipeline";
 
-export const PREPARED_ACTION_SOURCE_LABELS: Record<PreparedActionSource, string> = {
+export const PREPARED_ACTION_SOURCE_LABELS: Record<
+  PreparedActionSource,
+  string
+> = {
   automation_audit: "Automated audit",
   daily_opportunity_engine: "Daily opportunity engine",
   team_manual: "Team",
@@ -107,7 +113,10 @@ export type PreparedActionStatus =
   | "failed"
   | "archived";
 
-export const PREPARED_ACTION_STATUS_LABELS: Record<PreparedActionStatus, string> = {
+export const PREPARED_ACTION_STATUS_LABELS: Record<
+  PreparedActionStatus,
+  string
+> = {
   prepared: "Prepared",
   needs_review: "Ready for review",
   needs_client_confirmation: "Client confirmation needed",
@@ -137,12 +146,13 @@ export type ApprovalRequirement =
   | "client_confirmation_required"
   | "never_automatic";
 
-export const APPROVAL_REQUIREMENT_LABELS: Record<ApprovalRequirement, string> = {
-  none_internal_only: "Internal only",
-  team_approval_required: "Approval needed",
-  client_confirmation_required: "Client confirmation needed",
-  never_automatic: "Always manual",
-};
+export const APPROVAL_REQUIREMENT_LABELS: Record<ApprovalRequirement, string> =
+  {
+    none_internal_only: "Internal only",
+    team_approval_required: "Approval needed",
+    client_confirmation_required: "Client confirmation needed",
+    never_automatic: "Always manual",
+  };
 
 /** When/how the action would run once approved. */
 export type ExecutionMode =
@@ -168,13 +178,19 @@ export type ExecutionStatus =
 
 export type PreparedActionPriority = "high" | "medium" | "low";
 
-export const PREPARED_ACTION_PRIORITY_ORDER: Record<PreparedActionPriority, number> = {
+export const PREPARED_ACTION_PRIORITY_ORDER: Record<
+  PreparedActionPriority,
+  number
+> = {
   high: 0,
   medium: 1,
   low: 2,
 };
 
-export const PREPARED_ACTION_PRIORITY_LABELS: Record<PreparedActionPriority, string> = {
+export const PREPARED_ACTION_PRIORITY_LABELS: Record<
+  PreparedActionPriority,
+  string
+> = {
   high: "High priority",
   medium: "Medium",
   low: "Low",
@@ -191,6 +207,8 @@ export interface PreparedActionPayload {
   keywordAngle?: string;
   /** A short label describing media that would be used (never bytes). */
   mediaReference?: string;
+  /** True when the action depends on business facts the restaurant must confirm. */
+  requiresClientConfirmation?: boolean;
   /** Free-form structured notes for the team, plain text only. */
   notes?: string;
 }
@@ -230,7 +248,11 @@ export interface PreparedAction {
  */
 export type PreparedActionSeed = Omit<
   PreparedAction,
-  "restaurantName" | "riskLevel" | "approvalRequirement" | "demoOnly" | "executionStatus"
+  | "restaurantName"
+  | "riskLevel"
+  | "approvalRequirement"
+  | "demoOnly"
+  | "executionStatus"
 > & {
   executionStatus?: ExecutionStatus;
 };

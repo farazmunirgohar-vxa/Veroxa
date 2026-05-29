@@ -53,12 +53,14 @@ function buildGoogleFindings(input: VisibilityAuditInput): FindingDraft[] {
       severity: "medium",
       source: "google_profile",
       title: "Google photos need freshness",
-      detail: "No recent photos on the Google profile — fresh images help the listing stand out to nearby diners.",
+      detail:
+        "No recent photos on the Google profile — fresh images help the listing stand out to nearby diners.",
       recommendation: {
         label: "Prepare a fresh photo for the Google profile.",
         preparedChannel: "google_business_profile",
         preparedType: "google_photo_upload",
-        preparedText: "Add a recent, well-lit photo of a best-selling dish to the Google profile.",
+        preparedText:
+          "Add a recent, well-lit photo of a best-selling dish to the Google profile.",
       },
       actionable: true,
     });
@@ -75,7 +77,8 @@ function buildGoogleFindings(input: VisibilityAuditInput): FindingDraft[] {
         label: "Prepare a timely Google update.",
         preparedChannel: "google_business_profile",
         preparedType: "google_post",
-        preparedText: "Share a short, appetising update featuring this week's highlight — dine in or order ahead.",
+        preparedText:
+          "Share a short, appetising update featuring this week's highlight — dine in or order ahead.",
       },
       actionable: true,
     });
@@ -92,7 +95,8 @@ function buildGoogleFindings(input: VisibilityAuditInput): FindingDraft[] {
         label: "Prepare warm replies to the waiting reviews.",
         preparedChannel: "reviews",
         preparedType: "review_reply",
-        preparedText: "Thank you for taking the time to share your experience — we appreciate it and hope to welcome you back soon.",
+        preparedText:
+          "Thank you for taking the time to share your experience — we appreciate it and hope to welcome you back soon.",
       },
       actionable: true,
     });
@@ -104,23 +108,27 @@ function buildGoogleFindings(input: VisibilityAuditInput): FindingDraft[] {
       severity: "high",
       source: "google_profile",
       title: "Holiday hours need confirmation",
-      detail: "Holiday hours are not set. Wrong or missing hours frustrate customers and can hurt the listing.",
+      detail:
+        "Holiday hours are not set. Wrong or missing hours frustrate customers and can hurt the listing.",
       recommendation: {
         label: "Confirm holiday hours with the restaurant before updating.",
         preparedChannel: "google_business_profile",
         preparedType: "profile_audit_fix",
-        preparedText: "Confirm holiday hours so the Google profile shows the correct opening times over the holiday.",
+        preparedText:
+          "Confirm holiday hours with the restaurant so the Google profile can later show the correct opening times over the holiday.",
+        requiresClientConfirmation: true,
       },
       actionable: true,
     });
   }
 
   if (!g.menuLinkWorking || !g.orderingLinkWorking) {
-    const which = !g.menuLinkWorking && !g.orderingLinkWorking
-      ? "menu and ordering links"
-      : !g.menuLinkWorking
-        ? "menu link"
-        : "ordering link";
+    const which =
+      !g.menuLinkWorking && !g.orderingLinkWorking
+        ? "menu and ordering links"
+        : !g.menuLinkWorking
+          ? "menu link"
+          : "ordering link";
     out.push({
       category: "google_business_profile",
       severity: "high",
@@ -129,9 +137,9 @@ function buildGoogleFindings(input: VisibilityAuditInput): FindingDraft[] {
       detail: `The ${which} on the Google profile isn't working — customers may not reach the menu or place an order.`,
       recommendation: {
         label: "Prepare a fix for the broken profile link.",
-        preparedChannel: "website",
-        preparedType: "website_link_fix",
-        preparedText: `Correct the ${which} so customers can reach the menu and order without a dead end.`,
+        preparedChannel: "google_business_profile",
+        preparedType: "profile_audit_fix",
+        preparedText: `Prepare the corrected ${which} for the Google profile so customers can reach the menu and order without a dead end.`,
       },
       actionable: true,
     });
@@ -148,7 +156,8 @@ function buildGoogleFindings(input: VisibilityAuditInput): FindingDraft[] {
         label: "Prepare profile details to complete the listing.",
         preparedChannel: "google_business_profile",
         preparedType: "profile_audit_fix",
-        preparedText: "Complete the remaining Google profile details (categories, attributes, description, photos).",
+        preparedText:
+          "Complete the remaining Google profile details (categories, attributes, description, photos).",
       },
       actionable: false,
     });
@@ -167,7 +176,8 @@ function buildWebsiteFindings(input: VisibilityAuditInput): FindingDraft[] {
       severity: "medium",
       source: "website",
       title: "No website to build on yet",
-      detail: "There is no website connected. A simple, findable page would strengthen local search over time.",
+      detail:
+        "There is no website in place. A simple, findable page would strengthen local search over time.",
       recommendation: { label: "Note website opportunity for a future plan." },
       actionable: false,
     });
@@ -180,12 +190,16 @@ function buildWebsiteFindings(input: VisibilityAuditInput): FindingDraft[] {
       severity: "medium",
       source: "website",
       title: "Catering visibility is weak",
-      detail: "Catering is offered but there's no clear catering section — interested customers can't easily find or request it.",
+      detail:
+        "Catering is offered but there's no clear catering section — interested customers can't easily find or request it.",
       recommendation: {
-        label: "Prepare catering section copy (needs the restaurant's details).",
+        label:
+          "Prepare catering section copy (needs the restaurant's details).",
         preparedChannel: "website",
         preparedType: "website_copy_update",
-        preparedText: "Now offering catering for parties and events — made to order. Ask us about group options and lead times.",
+        preparedText:
+          "Draft catering section copy after the restaurant confirms availability, group options, and lead times.",
+        requiresClientConfirmation: true,
       },
       actionable: true,
     });
@@ -197,12 +211,14 @@ function buildWebsiteFindings(input: VisibilityAuditInput): FindingDraft[] {
       severity: "medium",
       source: "website",
       title: "Ordering path should be clearer",
-      detail: "The ordering link isn't easy to spot. A clear ordering path turns more visitors into orders.",
+      detail:
+        "The ordering link isn't easy to spot. A clear ordering path turns more visitors into orders.",
       recommendation: {
         label: "Prepare a clearer ordering call-to-action.",
         preparedChannel: "website",
         preparedType: "website_link_fix",
-        preparedText: "Make the 'Order now' button clear and prominent so visitors can order in one tap.",
+        preparedText:
+          "Make the 'Order now' button clear and prominent so visitors can order in one tap.",
       },
       actionable: true,
     });
@@ -214,7 +230,8 @@ function buildWebsiteFindings(input: VisibilityAuditInput): FindingDraft[] {
       severity: "low",
       source: "local_seo",
       title: "Website needs local search wording",
-      detail: "The website is missing local search wording (neighborhood + cuisine). Adding it helps nearby customers find it.",
+      detail:
+        "The website is missing local search wording (neighborhood + cuisine). Adding it helps nearby customers find it.",
       recommendation: {
         label: "Prepare local search wording for the website.",
         preparedChannel: "seo",
@@ -231,12 +248,15 @@ function buildWebsiteFindings(input: VisibilityAuditInput): FindingDraft[] {
       severity: "medium",
       source: "menu",
       title: "Best sellers should be easier to find",
-      detail: "Best sellers aren't featured clearly. Highlighting them guides new customers to the dishes that convert.",
+      detail:
+        "Best sellers aren't featured clearly. Highlighting them guides new customers to the dishes that convert.",
       recommendation: {
         label: "Prepare a best-seller highlight (needs menu confirmation).",
         preparedChannel: "website",
         preparedType: "menu_visibility_update",
-        preparedText: "Feature the best-selling dishes near the top of the menu so first-time visitors see them first.",
+        preparedText:
+          "Feature the restaurant-confirmed best-selling dishes near the top of the menu so first-time visitors see them first.",
+        requiresClientConfirmation: true,
       },
       actionable: true,
     });
@@ -253,7 +273,8 @@ function buildWebsiteFindings(input: VisibilityAuditInput): FindingDraft[] {
         label: "Prepare a fix for the broken links.",
         preparedChannel: "website",
         preparedType: "website_link_fix",
-        preparedText: "Repair the broken links so every page and menu item loads correctly.",
+        preparedText:
+          "Repair the broken links so every page and menu item loads correctly.",
       },
       actionable: false,
     });
@@ -277,7 +298,8 @@ function buildSocialFindings(input: VisibilityAuditInput): FindingDraft[] {
         label: "Prepare a fresh social post.",
         preparedChannel: "social_media",
         preparedType: "social_post",
-        preparedText: "A bright, appetising post featuring a popular dish, framed for the next meal window.",
+        preparedText:
+          "A bright, appetising post featuring a popular dish, framed for the next meal window.",
       },
       actionable: true,
     });
@@ -289,12 +311,14 @@ function buildSocialFindings(input: VisibilityAuditInput): FindingDraft[] {
       severity: "low",
       source: "social_profile",
       title: "Social profile should be cleaned up",
-      detail: "The social bio or link needs tidying so visitors can clearly see what's offered and how to order or book.",
+      detail:
+        "The social bio or link needs tidying so visitors can clearly see what's offered and how to order or book.",
       recommendation: {
         label: "Prepare a tidy-up of the social bio and links.",
         preparedChannel: "social_media",
         preparedType: "social_post",
-        preparedText: "Refresh the bio with a clear one-line description plus an ordering/booking link.",
+        preparedText:
+          "Refresh the bio with a clear one-line description plus an ordering/booking link.",
       },
       actionable: false,
     });
@@ -303,7 +327,9 @@ function buildSocialFindings(input: VisibilityAuditInput): FindingDraft[] {
   return out;
 }
 
-function buildReviewAndSeoFindings(input: VisibilityAuditInput): FindingDraft[] {
+function buildReviewAndSeoFindings(
+  input: VisibilityAuditInput,
+): FindingDraft[] {
   const g = input.google;
   const seo = input.seo;
   const out: FindingDraft[] = [];
@@ -319,7 +345,8 @@ function buildReviewAndSeoFindings(input: VisibilityAuditInput): FindingDraft[] 
         label: "Prepare a gentle review-growth push.",
         preparedChannel: "reviews",
         preparedType: "review_growth_push",
-        preparedText: "Invite recent happy guests to leave a quick review — a simple, friendly ask after their visit.",
+        preparedText:
+          "Invite recent happy guests to leave a quick review — a simple, friendly ask after their visit.",
       },
       actionable: true,
     });
@@ -348,12 +375,16 @@ function buildReviewAndSeoFindings(input: VisibilityAuditInput): FindingDraft[] 
       severity: "medium",
       source: "menu",
       title: "Best seller clarity needed",
-      detail: "It's not clear which dishes are the best sellers across the listings. Clear signals help new customers choose.",
+      detail:
+        "It's not clear which dishes are the best sellers across the listings. Clear signals help new customers choose.",
       recommendation: {
-        label: "Prepare a clearer best-seller signal (needs menu confirmation).",
+        label:
+          "Prepare a clearer best-seller signal (needs menu confirmation).",
         preparedChannel: "website",
         preparedType: "menu_visibility_update",
-        preparedText: "Mark the top dishes as best sellers so new customers know what to order first.",
+        preparedText:
+          "Mark restaurant-confirmed top dishes as best sellers so new customers know what to order first.",
+        requiresClientConfirmation: true,
       },
       actionable: false,
     });
@@ -365,12 +396,16 @@ function buildReviewAndSeoFindings(input: VisibilityAuditInput): FindingDraft[] 
       severity: "medium",
       source: "local_seo",
       title: "Catering push opportunity",
-      detail: "Catering is available but barely visible in search and listings — a clear catering message can win group orders.",
+      detail:
+        "Catering is available but barely visible in search and listings — a clear catering message can win group orders.",
       recommendation: {
-        label: "Prepare a catering visibility push (needs the restaurant's details).",
+        label:
+          "Prepare a catering visibility push (needs the restaurant's details).",
         preparedChannel: "seo",
         preparedType: "catering_push",
-        preparedText: "Make catering easy to find for group and event searches, with a clear way to enquire.",
+        preparedText:
+          "Prepare catering visibility wording after the restaurant confirms availability and enquiry details.",
+        requiresClientConfirmation: true,
       },
       actionable: true,
     });
@@ -386,10 +421,12 @@ function summariseCategories(
   for (const category of VISIBILITY_AUDIT_CATEGORY_ORDER) {
     const inCategory = findings.filter((f) => f.category === category);
     if (inCategory.length === 0) continue;
-    const topSeverity = inCategory.reduce<VisibilityAuditSeverity>((top, f) =>
-      VISIBILITY_AUDIT_SEVERITY_ORDER[f.severity] < VISIBILITY_AUDIT_SEVERITY_ORDER[top]
-        ? f.severity
-        : top,
+    const topSeverity = inCategory.reduce<VisibilityAuditSeverity>(
+      (top, f) =>
+        VISIBILITY_AUDIT_SEVERITY_ORDER[f.severity] <
+        VISIBILITY_AUDIT_SEVERITY_ORDER[top]
+          ? f.severity
+          : top,
       "low",
     );
     summaries.push({ category, findingCount: inCategory.length, topSeverity });
@@ -398,14 +435,40 @@ function summariseCategories(
 }
 
 function scoreFromFindings(findings: VisibilityAuditFinding[]): number {
-  const penalty = findings.reduce((sum, f) => sum + SEVERITY_WEIGHT[f.severity], 0);
+  const penalty = findings.reduce(
+    (sum, f) => sum + SEVERITY_WEIGHT[f.severity],
+    0,
+  );
   return Math.max(20, Math.min(100, 100 - penalty));
 }
 
+function countPreparedActionCandidates(
+  findings: VisibilityAuditFinding[],
+): number {
+  const seen = new Set<string>();
+
+  for (const finding of findings) {
+    const { preparedChannel, preparedType } = finding.recommendation;
+    if (!finding.actionable || !preparedChannel || !preparedType) continue;
+    const signature = [
+      preparedChannel,
+      preparedType,
+      finding.title.toLowerCase(),
+    ].join("::");
+    seen.add(signature);
+    if (seen.size >= MAX_PREPARED_ACTIONS_PER_AUDIT) break;
+  }
+
+  return seen.size;
+}
+
 function headlineForScore(score: number, findingCount: number): string {
-  if (findingCount === 0) return "Visibility looks strong — nothing needs attention right now.";
-  if (score >= 80) return "Visibility is solid, with a few quick opportunities to prepare.";
-  if (score >= 60) return "A handful of visibility gaps are ready to turn into prepared actions.";
+  if (findingCount === 0)
+    return "Visibility looks strong — nothing needs attention right now.";
+  if (score >= 80)
+    return "Visibility is solid, with a few quick opportunities to prepare.";
+  if (score >= 60)
+    return "A handful of visibility gaps are ready to turn into prepared actions.";
   return "Several visibility gaps need attention — prepared actions are ready for review.";
 }
 
@@ -413,7 +476,9 @@ function headlineForScore(score: number, findingCount: number): string {
  * Run the visibility audit for one restaurant. Deterministic and offline:
  * findings come only from the rules above, never from a live source.
  */
-export function runVisibilityAudit(input: VisibilityAuditInput): VisibilityAuditResult {
+export function runVisibilityAudit(
+  input: VisibilityAuditInput,
+): VisibilityAuditResult {
   const drafts: FindingDraft[] = [
     ...buildGoogleFindings(input),
     ...buildWebsiteFindings(input),
@@ -428,7 +493,8 @@ export function runVisibilityAudit(input: VisibilityAuditInput): VisibilityAudit
     }))
     .sort(
       (a, b) =>
-        VISIBILITY_AUDIT_SEVERITY_ORDER[a.severity] - VISIBILITY_AUDIT_SEVERITY_ORDER[b.severity],
+        VISIBILITY_AUDIT_SEVERITY_ORDER[a.severity] -
+        VISIBILITY_AUDIT_SEVERITY_ORDER[b.severity],
     );
 
   const overallScore = scoreFromFindings(findings);
@@ -440,10 +506,7 @@ export function runVisibilityAudit(input: VisibilityAuditInput): VisibilityAudit
     headline: headlineForScore(overallScore, findings.length),
     findings,
     categorySummaries: summariseCategories(findings),
-    preparedActionCount: Math.min(
-      findings.filter((f) => f.actionable).length,
-      MAX_PREPARED_ACTIONS_PER_AUDIT,
-    ),
+    preparedActionCount: countPreparedActionCandidates(findings),
     generatedAtLabel: "Today",
     demoOnly: true,
   };

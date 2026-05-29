@@ -22,16 +22,23 @@ import {
   type VisibilityAuditSeverity,
 } from "./types";
 
-const SEVERITY_TO_PRIORITY: Record<VisibilityAuditSeverity, PreparedActionPriority> = {
+const SEVERITY_TO_PRIORITY: Record<
+  VisibilityAuditSeverity,
+  PreparedActionPriority
+> = {
   urgent: "high",
   high: "high",
   medium: "medium",
   low: "low",
 };
 
-/** Internal-only action types hold for internal handling; the rest wait for a connector. */
-function executionModeFor(type: PreparedActionType, channel: PreparedActionChannel): ExecutionMode {
-  if (type === "seo_keyword_update" || type === "internal_follow_up") return "internal_only";
+/** Internal-only action types hold for internal handling; the rest wait safely for later. */
+function executionModeFor(
+  type: PreparedActionType,
+  channel: PreparedActionChannel,
+): ExecutionMode {
+  if (type === "seo_keyword_update" || type === "internal_follow_up")
+    return "internal_only";
   if (channel === "client_communication") return "manual_now";
   return "connector_later";
 }
@@ -41,7 +48,7 @@ function suggestedNextFor(channel: PreparedActionChannel): string {
     case "website":
       return "Review the prepared copy, then approve or ask the client to confirm details.";
     case "reviews":
-      return "Approve to prepare the reply once review replies are connected.";
+      return "Approve to hold this reply for review.";
     case "seo":
       return "Review and fold into the next content plan.";
     case "social_media":
@@ -61,8 +68,14 @@ export function visibilityFindingToPreparedAction(
   finding: VisibilityAuditFinding,
   ctx: { clientId: string; restaurantName: string; generatedAtLabel: string },
 ): ResolvedPreparedActionSeed | null {
-  const { preparedChannel, preparedType, preparedText, keywordAngle, label } =
-    finding.recommendation;
+  const {
+    preparedChannel,
+    preparedType,
+    preparedText,
+    keywordAngle,
+    label,
+    requiresClientConfirmation,
+  } = finding.recommendation;
   if (!finding.actionable || !preparedChannel || !preparedType) return null;
 
   return {
@@ -77,6 +90,7 @@ export function visibilityFindingToPreparedAction(
     payload: {
       ...(preparedText ? { preparedText } : {}),
       ...(keywordAngle ? { keywordAngle } : {}),
+      ...(requiresClientConfirmation ? { requiresClientConfirmation } : {}),
     },
     priority: SEVERITY_TO_PRIORITY[finding.severity],
     status: "needs_review",
@@ -99,8 +113,23 @@ export function generatePreparedActionsFromVisibilityAudit(
     restaurantName: result.restaurantName,
     generatedAtLabel: result.generatedAtLabel,
   };
-  return result.findings
+  const seen = new Set<string>();
+  const deduped: ResolvedPreparedActionSeed[] = [];
+
+  for (const seed of result.findings
     .map((finding) => visibilityFindingToPreparedAction(finding, ctx))
-    .filter((seed): seed is ResolvedPreparedActionSeed => seed !== null)
-    .slice(0, MAX_PREPARED_ACTIONS_PER_AUDIT);
+    .filter((item): item is ResolvedPreparedActionSeed => item !== null)) {
+    const signature = [
+      seed.clientId,
+      seed.channel,
+      seed.type,
+      seed.title.toLowerCase(),
+    ].join("::");
+    if (seen.has(signature)) continue;
+    seen.add(signature);
+    deduped.push(seed);
+    if (deduped.length >= MAX_PREPARED_ACTIONS_PER_AUDIT) break;
+  }
+
+  return deduped;
 }

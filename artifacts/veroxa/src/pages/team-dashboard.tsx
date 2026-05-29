@@ -166,7 +166,7 @@ export default function TeamDashboard() {
         ))}
       </div>
 
-      {/* Visibility tasks ready — calm link into the Visibility Audit (team-only) */}
+      {/* Visibility issues ready — calm link into the Visibility Audit (team-only) */}
       {visibilityOverview.preparedActionCount > 0 && (
         <Link href="/team/visibility-audit">
           <Card
@@ -179,10 +179,10 @@ export default function TeamDashboard() {
                   <ScanSearch className="w-4 h-4 text-sky-400" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold">Visibility tasks ready</p>
+                  <p className="text-sm font-semibold">Visibility issues ready</p>
                   <p className="text-[11px] text-muted-foreground mt-0.5">
                     {visibilityOverview.preparedActionCount} prepared from{" "}
-                    {visibilityOverview.totalFindings} findings across{" "}
+                    {visibilityOverview.totalFindings} visibility issues across{" "}
                     {visibilityOverview.auditedCount} restaurants
                   </p>
                 </div>

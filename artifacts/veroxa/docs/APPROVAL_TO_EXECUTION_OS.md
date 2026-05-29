@@ -10,7 +10,7 @@ real external execution.**
 
 > Audits / opportunities → Veroxa **prepares** an exact action → it appears in the
 > **Team Approval Queue** → Faraz **approves / edits / asks the client / skips /
-> queues for later** → Veroxa executes **later**, once the matching connector exists.
+> queues for later** → Veroxa executes **later**, once a real, approved handling path exists.
 
 ## Two roles
 
@@ -21,16 +21,16 @@ real external execution.**
 
 ## What was built (foundation)
 
-| Layer | Location |
-| --- | --- |
-| Domain types | `src/domain/preparedActions/types.ts` |
-| Permission / risk rules | `src/domain/preparedActions/rules.ts` |
-| Client-safe translation | `src/domain/preparedActions/clientSafe.ts` |
-| Fixtures | `src/data/demo/demoPreparedActions.ts` |
-| Local store + repository + hook | `src/lib/preparedActions/` |
-| Review card | `src/components/PreparedActionCard.tsx` |
-| Approval Queue page | `src/pages/team-approval-queue.tsx` (`/team/approval-queue`) |
-| Dashboard surfacing | `src/pages/team-dashboard.tsx` ("Approvals ready") |
+| Layer                           | Location                                                     |
+| ------------------------------- | ------------------------------------------------------------ |
+| Domain types                    | `src/domain/preparedActions/types.ts`                        |
+| Permission / risk rules         | `src/domain/preparedActions/rules.ts`                        |
+| Client-safe translation         | `src/domain/preparedActions/clientSafe.ts`                   |
+| Fixtures                        | `src/data/demo/demoPreparedActions.ts`                       |
+| Local store + repository + hook | `src/lib/preparedActions/`                                   |
+| Review card                     | `src/components/PreparedActionCard.tsx`                      |
+| Approval Queue page             | `src/pages/team-approval-queue.tsx` (`/team/approval-queue`) |
+| Dashboard surfacing             | `src/pages/team-dashboard.tsx` ("Approvals ready")           |
 
 ## The safety gate (most important part)
 
@@ -39,9 +39,12 @@ These come from `rules.ts` — a single source of truth — not from the fixture
 
 - **Public-facing** (Google, social, website, review replies, customer pushes) →
   at least **team approval required**.
-- **Sensitive business truth** (hours, prices, menu, offers, dietary/health
-  claims, catering availability) → **client confirmation required** before any
-  change.
+- **Sensitive business truth** (business hours, holiday hours, prices, discounts,
+  offers, menu details, catering availability, halal/organic/health claims,
+  serious complaint handling, or other unverified business facts) → **client
+  confirmation required** before any change. Visibility-audit seeds can carry a
+  typed `requiresClientConfirmation` payload flag, and `rules.ts` derives the
+  final approval requirement centrally.
 - **Internal-only** (audits, internal follow-ups, keyword refinement) → no
   approval needed to keep internal; never auto-published.
 
@@ -57,12 +60,12 @@ prepared / needs_review / needs_client_confirmation
      approved        needs_client_confirmation     skipped
         │ queue
         ▼
- queued_for_execution  ──(future, connector)──▶  executed
+ queued_for_execution  ──(future approved handling path)──▶  executed
 ```
 
 ## Hard guardrails (what this foundation does NOT do)
 
-- ❌ No live Google / Meta / website connectors. No posting, sending, or publishing.
+- ❌ No live Google / Meta / website integrations. No posting, sending, or publishing.
 - ❌ No OpenAI / model calls at runtime. No image generation. No Supabase Storage.
 - ❌ No payments / production auth / Owner or Operator dashboards changed.
 - ❌ No pricing change. Locked pricing is unchanged.
@@ -92,6 +95,6 @@ the approval gate stays the single source of truth regardless of source.
 
 ## Recommended next step
 
-Connect execution behind this queue (per-channel connectors) so that
-`queued_for_execution` can advance to `executed` — without changing the approval
-gate or the client-safe boundary.
+Connect future execution behind this queue so that `queued_for_execution` can
+advance to `executed` — without changing the approval gate or the client-safe
+boundary.

@@ -56,7 +56,7 @@ export const demoPreparedActionSeeds: PreparedActionSeed[] = [
     priority: "medium",
     status: "needs_review",
     executionMode: "connector_later",
-    suggestedNext: "Approve to send the reply once review replies are connected.",
+    suggestedNext: "Approve to hold this reply for review.",
     preparedAtLabel: "Today, 9:05 AM",
   },
   {
@@ -71,12 +71,14 @@ export const demoPreparedActionSeeds: PreparedActionSeed[] = [
     payload: {
       preparedText:
         "Now offering catering for parties and events — fresh tacos and sides made to order. Ask us about weekend trays and group options.",
-      notes: "Confirm catering availability, lead time, and any minimums before publishing.",
+      notes:
+        "Confirm catering availability, lead time, and any minimums before anything changes publicly.",
     },
     priority: "medium",
     status: "needs_client_confirmation",
     executionMode: "connector_later",
-    suggestedNext: "Ask the client to confirm catering details before publishing.",
+    suggestedNext:
+      "Ask the client to confirm catering details before anything changes publicly.",
     preparedAtLabel: "Today, 8:50 AM",
   },
   {
@@ -95,7 +97,7 @@ export const demoPreparedActionSeeds: PreparedActionSeed[] = [
     priority: "medium",
     status: "needs_review",
     executionMode: "manual_now",
-    suggestedNext: "Approve to send this simple request to the client.",
+    suggestedNext: "Approve this simple client request.",
     preparedAtLabel: "Today, 8:40 AM",
   },
   {
@@ -127,7 +129,8 @@ export const demoPreparedActionSeeds: PreparedActionSeed[] = [
     reason:
       "Midday is the lunch decision window. Featuring the best seller now helps win nearby lunch traffic.",
     payload: {
-      preparedText: "Quick, appetising shot of the best seller framed as a lunch-ready feature.",
+      preparedText:
+        "Quick, appetising shot of the best seller framed as a lunch-ready feature.",
     },
     priority: "medium",
     status: "needs_review",
