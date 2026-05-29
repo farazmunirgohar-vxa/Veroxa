@@ -1,5 +1,22 @@
 # Current Replit Build Status
 
+> **2026-05-29 — Execution Intelligence Engine + Growth Flywheel**
+>
+> - **Engines** — `src/lib/executionIntelligence/*`
+>   (`executionScoringEngine`, `retentionRiskEngine`, `clientSuccessFitEngine`,
+>   `executionLearningSignals`) + `src/lib/growthFlywheel/*`. Rule-based,
+>   deterministic, local, production-shaped. Mirrors the Lead Intelligence
+>   patterns: Lead brings clients, Execution retains them, both feed each other.
+> - **Lead engine link** — `selfImprovingLeadEngine` now optionally consumes
+>   execution outcomes and exposes `retentionInformedTargeting`.
+> - **Team UI** — `ExecutionIntelligencePanel` (summary strip, health list,
+>   Engine Competition) on the dashboard + work queue; risk detail is team-only.
+> - **Client UI** — `ClientExecutionReinforcement` calm, blame-free sections on
+>   the client dashboard, media, requests, and reports pages (no fake metrics,
+>   no guarantees).
+> - **Validation** — `pnpm --filter @workspace/veroxa run typecheck` passes.
+> - See `EXECUTION_INTELLIGENCE_ENGINE.md` and `VEROXA_GROWTH_FLYWHEEL.md`.
+
 > **2026-05-29 — Restaurant Content Intelligence Pipeline**
 >
 > - **Engine** — `src/lib/content/restaurantContentIntelligence.ts` +

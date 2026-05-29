@@ -4,6 +4,10 @@ import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 import { TeamWorkflowPanel } from "@/components/TeamWorkflowPanel";
 import { ContentIntelligenceDraftsList } from "@/components/ContentIntelligencePanel";
 import { LeadGenTasksList } from "@/components/LeadIntelligencePanel";
+import {
+  ExecutionIntelligenceSummaryStrip,
+  ExecutionHealthList,
+} from "@/components/ExecutionIntelligencePanel";
 import { ListChecks } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -121,6 +125,13 @@ export default function TeamWorkQueue() {
         message="Status changes persist in the workflow foundation for this browser (backend pending). No external sends — client-facing steps require team approval."
         testId="banner-work-queue"
       />
+
+      {/* Execution Intelligence — per-client retention health and the single
+          next action. Risk detail is team-only; nothing auto-sends. */}
+      <div className="mb-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <ExecutionIntelligenceSummaryStrip />
+        <ExecutionHealthList limit={4} />
+      </div>
 
       {/* Live lifecycle queue — move items through content prep, scheduling
           prep, and completion. Every transition is a human decision; nothing

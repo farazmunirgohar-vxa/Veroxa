@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientPortalData } from "@/hooks/useClientPortalData";
+import { ClientKeepMovingCard } from "@/components/ClientExecutionReinforcement";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
 import { DemoFlowTimeline } from "@/components/demo/DemoVisuals";
 import { EvidenceRecommendationCard } from "@/components/evidence/EvidenceRecommendationCard";
@@ -202,6 +203,9 @@ export default function ClientDashboard() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Keep Veroxa moving — calm, blame-free reinforcement (client-safe). */}
+      <ClientKeepMovingCard clientId="demo-a" />
 
       {/* Action needed from you — quick callout linking to Requests. */}
       {openClientActions.length > 0 && (

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientPortalData } from "@/hooks/useClientPortalData";
+import { ClientRequestsClarity } from "@/components/ClientExecutionReinforcement";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
 import { clientTeamWorkRepository } from "@/lib/repositories";
 import { useEffect, useState } from "react";
@@ -127,6 +128,11 @@ export default function ClientRequests() {
         <p className="text-muted-foreground mt-1 text-sm md:text-base">
           Quick to-dos that help us keep your content fresh and on-brand.
         </p>
+      </div>
+
+      {/* What helps us help you — calm, blame-free reinforcement (client-safe). */}
+      <div className="mb-4">
+        <ClientRequestsClarity clientId={SHOWCASE_ID} />
       </div>
 
       {/* Clarifications you can respond to — driven by the real workflow

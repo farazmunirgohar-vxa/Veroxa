@@ -28,6 +28,7 @@ import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientPortalData } from "@/hooks/useClientPortalData";
+import { ClientMediaReinforcement } from "@/components/ClientExecutionReinforcement";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
 import {
   getDefaultGuidance,
@@ -182,6 +183,11 @@ export default function ClientMedia() {
             stored until the storage connection is live.
           </span>
         </div>
+      </div>
+
+      {/* Why your photos matter — calm, blame-free reinforcement (client-safe). */}
+      <div className="mt-3">
+        <ClientMediaReinforcement clientId={SHOWCASE_ID} />
       </div>
 
       {/* AI-assisted media review — client-safe preview. */}

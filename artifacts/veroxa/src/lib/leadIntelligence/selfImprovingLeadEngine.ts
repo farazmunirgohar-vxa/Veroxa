@@ -26,6 +26,10 @@ import {
   type LearningSignals,
 } from "./leadLearningSignals";
 import type { LeadOutcomeRecord } from "./leadOutcomeTypes";
+import {
+  retentionRateBySegment,
+  type ExecutionOutcomeRecord,
+} from "@/lib/executionIntelligence/executionLearningSignals";
 
 /** Maximum the learning layer is ever allowed to move a score, in points. */
 export const MAX_SCORE_ADJUSTMENT = 10;
@@ -157,6 +161,37 @@ export interface SelfImprovementSnapshot {
   insights: string[];
   /** True until enough data exists to trust the signals. */
   stillLearning: boolean;
+  /**
+   * Retention-informed targeting — cautious lessons from execution/retention
+   * outcomes (the Growth Flywheel feeding back into lead targeting). Empty when
+   * no execution outcomes are supplied. Retention proves value; volume does not.
+   */
+  retentionInformedTargeting: TargetingRecommendation[];
+}
+
+function buildRetentionInformedTargeting(
+  executionOutcomes: ExecutionOutcomeRecord[],
+): TargetingRecommendation[] {
+  const recs: TargetingRecommendation[] = [];
+  for (const seg of retentionRateBySegment(executionOutcomes)) {
+    if (seg.sample < LEARNING_THRESHOLDS.emerging) continue;
+    if (seg.retainRate >= 0.6) {
+      recs.push({
+        kind: "do_more",
+        subject: seg.segment,
+        detail: `Retaining ${Math.round(seg.retainRate * 100)}% first-month so far — retention proves value, consider sourcing more like this.`,
+        confidenceLabel: seg.confidenceLabel,
+      });
+    } else if (seg.retainRate <= 0.3) {
+      recs.push({
+        kind: "watch",
+        subject: seg.segment,
+        detail: `Lower-retention so far (${Math.round(seg.retainRate * 100)}%) — strengthen onboarding/expectations before scaling this type.`,
+        confidenceLabel: seg.confidenceLabel,
+      });
+    }
+  }
+  return recs;
 }
 
 function buildTargetingRecommendations(
@@ -234,6 +269,7 @@ function buildOutreachRecommendations(
  */
 export function buildSelfImprovementSnapshot(
   outcomes: LeadOutcomeRecord[],
+  executionOutcomes: ExecutionOutcomeRecord[] = [],
 ): SelfImprovementSnapshot {
   const learning = computeLearningSignals(outcomes);
   const segmentAdjustments = learning.bySegment.map((s) =>
@@ -241,10 +277,18 @@ export function buildSelfImprovementSnapshot(
   );
   const stillLearning = learning.totalOutcomes < LEARNING_THRESHOLDS.established;
 
+  const retentionInformedTargeting =
+    buildRetentionInformedTargeting(executionOutcomes);
+
   const insights = [...learning.insights];
   if (stillLearning) {
     insights.push(
       `Still learning — ${learning.totalOutcomes} outcome(s) logged. Treat patterns as early signals, not rules.`,
+    );
+  }
+  if (retentionInformedTargeting.length > 0) {
+    insights.push(
+      "Retention outcomes are now informing lead targeting — retention proves value, not raw volume.",
     );
   }
 
@@ -255,5 +299,6 @@ export function buildSelfImprovementSnapshot(
     outreachRecommendations: buildOutreachRecommendations(learning),
     insights,
     stillLearning,
+    retentionInformedTargeting,
   };
 }

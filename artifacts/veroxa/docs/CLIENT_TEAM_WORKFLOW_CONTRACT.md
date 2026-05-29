@@ -1,5 +1,13 @@
 # Client ↔ Team Workflow Contract
 
+> **Update (2026-05-29) — Execution Intelligence.** This workflow data now also
+> feeds the Execution Intelligence engine: `executionInputFromClientId()` reads
+> submission state from `clientTeamWorkRepository` (plus client health/media
+> fixtures) to score execution health, retention risk, and client-success fit.
+> The team sees full risk detail; the client sees only calm, blame-free
+> reinforcement. Nothing auto-sends; a human decides retention. See
+> `EXECUTION_INTELLIGENCE_ENGINE.md` and `VEROXA_GROWTH_FLYWHEEL.md`.
+
 > **Update (2026-05-29).** The real workflow foundation now implements this
 > contract in code as a production-shaped data model + repository with a
 > swappable storage layer (temporary browser persistence, backend pending).

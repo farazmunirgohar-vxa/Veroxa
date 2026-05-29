@@ -1,5 +1,12 @@
 # AI Agent & Automation Blueprint
 
+> **Update (2026-05-29) — Execution Intelligence.** The automation blueprint now
+> covers **retention** alongside acquisition and content. Execution Intelligence
+> classifies client health, reads retention risk, and recommends a single next
+> action — all rule-based and prepared, never auto-sent. A **human decides**
+> every retention action; risk detail is team-only and never blames the client.
+> See `EXECUTION_INTELLIGENCE_ENGINE.md` and `VEROXA_GROWTH_FLYWHEEL.md`.
+
 > **Update (2026-05-29).** Automation now operates as a prepared, rule-based
 > step inside the real workflow foundation (`REAL_WORKFLOW_FOUNDATION.md`).
 > Prepared drafts and recommended next actions attach to workflow items and

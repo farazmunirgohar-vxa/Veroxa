@@ -46,6 +46,11 @@ import {
   LeadGenTasksList,
   LeadLearningPanel,
 } from "@/components/LeadIntelligencePanel";
+import {
+  ExecutionIntelligenceSummaryStrip,
+  ExecutionHealthList,
+  EngineCompetitionPanel,
+} from "@/components/ExecutionIntelligencePanel";
 
 const mediaReviewQueue = [
   { id: "mrq-1", title: "Grilled platter — overhead", subtitle: "Demo Grill House · suggested: weekend feature",      status: "Approve",  tone: "good" as const },
@@ -257,6 +262,16 @@ export default function TeamDashboard() {
           <LeadGenTasksList limit={4} />
         </div>
         <LeadLearningPanel />
+      </div>
+
+      {/* Execution Intelligence — retains clients (vs Lead Intelligence, which
+          brings them). Risk detail is team-only; nothing auto-sends. */}
+      <div className="mb-4">
+        <EngineCompetitionPanel />
+      </div>
+      <div className="mb-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <ExecutionIntelligenceSummaryStrip />
+        <ExecutionHealthList limit={4} />
       </div>
 
       {/* Stat grid */}

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientPortalData } from "@/hooks/useClientPortalData";
+import { ClientReportsProgress } from "@/components/ClientExecutionReinforcement";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
 import { previewReportDraft } from "@/lib/ai/aiAgentPreviewEngine";
 import { Brain, CheckCircle2 } from "lucide-react";
@@ -92,6 +93,11 @@ export default function ClientReports() {
           Your performance reports — weekly updates, monthly summaries, and top content.
         </p>
         <DataSourceBadge source={source} message={dataSourceMessage} />
+      </div>
+
+      {/* Your progress at a glance — plain-language, no invented metrics. */}
+      <div className="mb-4">
+        <ClientReportsProgress clientId={SHOWCASE_ID} />
       </div>
 
       {/* AI-assisted report draft status — drafts always reviewed by Veroxa team. */}

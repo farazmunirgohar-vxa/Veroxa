@@ -1,5 +1,14 @@
 # Veroxa Quality Guardrails
 
+> **Update (2026-05-29) — Execution Intelligence.** The retention engines obey
+> the same hard rules and add one more: **execution never blames the client.**
+> Retention risk is always framed as **fixable inputs**, never client fault.
+> Full risk detail (levels, reasons, team-only notes) is **team-only**;
+> client-facing surfaces show calm, respectful language with no risk levels,
+> scores, blame, or guarantees (rankings, walk-ins, revenue, sales). AI
+> classifies/scores/recommends; a **human decides** retention. See
+> `EXECUTION_INTELLIGENCE_ENGINE.md` and `VEROXA_GROWTH_FLYWHEEL.md`.
+
 > **Purpose.** The hard rules that keep Veroxa trustworthy. AI agents and
 > automations make work faster, but they never cross these lines. The current
 > build runs on the real workflow foundation (backend pending); all AI output

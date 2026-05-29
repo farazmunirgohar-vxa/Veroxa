@@ -2,6 +2,14 @@
 
 _Veroxa's operating model for how AI agents and the human team divide work._
 
+> **Update (2026-05-29) — Execution Intelligence.** The AI-first / human-approved
+> model now extends to **retention**, not just acquisition and content.
+> Execution Intelligence scores client health, reads retention risk, and
+> recommends the single best next action — but a **human decides** every
+> retention action. Risk detail is **team-only**; client-facing surfaces stay
+> calm and blame-free (risk is framed as fixable inputs, never client fault).
+> See `EXECUTION_INTELLIGENCE_ENGINE.md` and `VEROXA_GROWTH_FLYWHEEL.md`.
+
 > **Status (2026-05-29):** Real workflow foundation, backend pending. All AI
 > output in the current build is **rule-based** — no live model calls, no cloud
 > writes, no publishing, no client auto-messaging. Prepared drafts attach to

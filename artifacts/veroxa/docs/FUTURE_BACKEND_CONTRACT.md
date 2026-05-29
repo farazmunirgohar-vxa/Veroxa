@@ -1,5 +1,13 @@
 # Future Backend Contract
 
+> **Update (2026-05-29) — Execution Intelligence & Growth Flywheel.** Two new
+> rule-based engines anticipate backend fields they do **not** yet persist:
+> execution health/dimension scores, retention-risk records (level, reason,
+> client-safe + team-only wording, `humanApprovalRequired`), client-success-fit
+> classifications, and `ExecutionOutcomeRecord`s feeding retention-informed
+> targeting. All local/production-shaped today; no real cloud writes. See
+> `EXECUTION_INTELLIGENCE_ENGINE.md` and `VEROXA_GROWTH_FLYWHEEL.md`.
+
 > **Update (2026-05-29).** The workflow data model now exists in code behind a
 > repository + swappable storage layer (`REAL_WORKFLOW_FOUNDATION.md`). Cloud
 > persistence is still pending — today the storage layer uses temporary browser
