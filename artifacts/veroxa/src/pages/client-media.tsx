@@ -40,6 +40,8 @@ import { clientTeamWorkRepository } from "@/lib/repositories";
 import { CLIENT_AI_DISCLOSURE } from "@/lib/ai/aiAgentTypes";
 import { analyzeRestaurantContent } from "@/lib/content/restaurantContentIntelligence";
 import { createWorkflowItem } from "@/lib/workflow/workflowRepository";
+import { devSupabaseWriteAdapter } from "@/lib/data/devSupabaseWriteAdapter";
+import { isDevWriteFlagEnabled } from "@/lib/data/writeReadiness";
 
 const SHOWCASE_ID = "demo-a";
 
@@ -94,12 +96,57 @@ export default function ClientMedia() {
       fileCount: files.length,
       submittedBy: "client",
     });
+
+    // Capture before clearing React state — used by async dev write below.
+    const filesToWrite = [...files];
+    const noteToWrite = submitNote.trim();
+
     setFiles([]);
     setSubmitNote("");
     setPickerMessage(null);
     setSubmitMessage(
-      `Submitted to the Veroxa team. Storage pending — your media is tracked in the workflow and a team member will review it. Tracking ref ${item.workflowItemId}.`,
+      "Your media has been submitted to the Veroxa team. A team member will review it before anything goes live.",
     );
+
+    // Dev-write — best-effort, non-blocking, only active when
+    // VITE_VEROXA_ENABLE_DEV_WRITES="true". Also requires
+    // VITE_VEROXA_DEV_RESTAURANT_ID to be set to a seeded clients.id UUID.
+    // Local workflow behavior above is already complete regardless of this call.
+    if (isDevWriteFlagEnabled()) {
+      const devRestaurantId = (import.meta.env as Record<string, unknown>)
+        .VITE_VEROXA_DEV_RESTAURANT_ID as string | undefined;
+      if (devRestaurantId) {
+        void Promise.all(
+          filesToWrite.map((file) => {
+            const category =
+              file.kind.startsWith("video/") ? ("short_video" as const) :
+              file.kind.startsWith("image/") ? ("food_photo" as const) :
+              ("other" as const);
+            return devSupabaseWriteAdapter.createUploadSubmission({
+              restaurantId: devRestaurantId,
+              uploadKeyId: null,
+              category,
+              priority: "use_anytime",
+              note: noteToWrite || null,
+              submittedByLabel: "client_portal",
+            });
+          }),
+        ).then((results) => {
+          const ok = results.filter((r) => r.ok).length;
+          console.log(
+            `[dev-write] upload_submissions: ${ok}/${filesToWrite.length} row(s) inserted` +
+            ` (workflowRef: ${item.workflowItemId})`,
+          );
+        }).catch((err: unknown) => {
+          console.warn("[dev-write] upload_submissions: unexpected error", err);
+        });
+      } else {
+        console.log(
+          "[dev-write] VITE_VEROXA_DEV_RESTAURANT_ID not set — Supabase insert skipped." +
+          " Set it to a seeded clients.id UUID to enable dev writes.",
+        );
+      }
+    }
   };
 
   // Restaurant Media Guidance — local state only, never persisted.
@@ -137,7 +184,7 @@ export default function ClientMedia() {
     setFiles((prev) => [...prev, ...picked]);
     setSubmitMessage(null);
     setPickerMessage(
-      "Files selected. Storage pending — submit to the Veroxa team to track them in your workflow.",
+      "Files added. Add a note if you like, then submit to the Veroxa team.",
     );
     if (inputRef.current) inputRef.current.value = "";
   };
@@ -533,8 +580,8 @@ export default function ClientMedia() {
                   Drag & drop photos or videos
                 </p>
                 <p className="text-xs text-muted-foreground mt-1 mb-4">
-                  Or choose files from your device. Storage pending — files are
-                  tracked in your workflow, not yet stored.
+                  Or choose files from your device. Files are added to your
+                  workflow for the Veroxa team to review.
                 </p>
                 <input
                   ref={inputRef}
@@ -569,8 +616,8 @@ export default function ClientMedia() {
                     <p className="text-xs font-semibold text-foreground">Ready to send to Veroxa?</p>
                     <p className="text-[11px] text-muted-foreground">
                       This submits your selection into your Veroxa workflow for
-                      team review. Storage pending — files are tracked, not yet
-                      stored, until the storage connection is live.
+                      team review. The Veroxa team will review each item before
+                      anything goes live.
                     </p>
                   </div>
                   <textarea
@@ -734,8 +781,8 @@ export default function ClientMedia() {
               <div className="flex items-start gap-2 text-xs text-muted-foreground">
                 <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-emerald-500" />
                 <span>
-                  Storage pending — files are tracked in your workflow until the
-                  storage connection is live.
+                  Files are added to your workflow for team review before
+                  anything goes live on your account.
                 </span>
               </div>
             </CardContent>
