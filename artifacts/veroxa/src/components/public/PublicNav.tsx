@@ -19,28 +19,19 @@ export default function PublicNav() {
         <Link href="/pricing" className="hover:text-foreground transition-colors" data-testid="nav-link-pricing">
           Pricing
         </Link>
-        <Link href="/free-audit" className="hover:text-foreground transition-colors" data-testid="nav-link-free-audit">
-          Free Audit
-        </Link>
-        <Link href="/demo/client/dashboard" className="hover:text-foreground transition-colors" data-testid="nav-link-demo">
-          Demo Preview
-        </Link>
-        <Link href="/login" className="hover:text-foreground transition-colors" data-testid="nav-link-portal-access">
-          Portal Access
-        </Link>
       </div>
 
-      <div className="flex items-center gap-5">
+      <div className="flex items-center gap-3">
         <Link
-          href="/login"
-          className="hidden sm:inline text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-          data-testid="nav-link-login"
+          href="/demo/client/dashboard"
+          className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-2"
+          data-testid="nav-link-demo"
         >
-          Login
+          Demo
         </Link>
-        <Link href="/free-audit" data-testid="nav-btn-audit">
+        <Link href="/login" data-testid="nav-link-login">
           <Button variant="default" className="font-semibold shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:shadow-[0_0_30px_rgba(99,102,241,0.5)] transition-shadow">
-            Get Free Audit
+            Login
           </Button>
         </Link>
       </div>

@@ -1,8 +1,7 @@
-import { useState, useRef, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { Link, useLocation } from "wouter";
 import {
-  ArrowLeft, ArrowRight, CheckCircle2, ChevronDown,
-  Hexagon, Lock, Mail, ShieldAlert, Users, Utensils,
+  ArrowLeft, CheckCircle2, Hexagon, Lock, Mail, ShieldAlert,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +10,6 @@ import { AUTH_MODE } from "@/lib/auth/authMode";
 import { getSupabaseClient } from "@/lib/supabase";
 import { getRoleHomePath, isVeroxaRole } from "@/lib/auth/authContract";
 import { getDevRouteForRole, validateDevCredentials } from "@/lib/auth/devCredentials";
-import type { VeroxaRole } from "@/lib/auth/authContract";
 
 type SignInState =
   | { kind: "idle" }
@@ -19,60 +17,18 @@ type SignInState =
   | { kind: "success"; message: string }
   | { kind: "error"; message: string };
 
-const PORTAL_CARDS: {
-  role: VeroxaRole;
-  icon: typeof Utensils;
-  label: string;
-  description: string;
-  iconClass: string;
-  glow: string;
-  testid: string;
-  badge: string | null;
-}[] = [
-  {
-    role: "client",
-    icon: Utensils,
-    label: "Client Portal",
-    description: "Restaurant owner view — content calendar, Google visibility, weekly updates, and monthly reports.",
-    iconClass: "bg-blue-500/10 text-blue-500",
-    glow: "from-blue-500/15 to-transparent",
-    testid: "role-card-client",
-    badge: null,
-  },
-  {
-    role: "team",
-    icon: Users,
-    label: "Team Portal",
-    description: "Content team workspace — media review, draft variants, upload inbox, client work queue, and reporting.",
-    iconClass: "bg-emerald-500/10 text-emerald-500",
-    glow: "from-emerald-500/15 to-transparent",
-    testid: "role-card-team",
-    badge: "Login required",
-  },
-];
-
 export default function LoginPage() {
   const [signInState, setSignInState] = useState<SignInState>({ kind: "idle" });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [selectedRole, setSelectedRole] = useState<VeroxaRole | null>(null);
   const [, setLocation] = useLocation();
-  const formRef = useRef<HTMLDivElement>(null);
-
-  function selectPortal(role: VeroxaRole) {
-    setSelectedRole(role);
-    setSignInState({ kind: "idle" });
-    // Scroll sign-in form into view after a brief frame so the state updates first.
-    requestAnimationFrame(() => {
-      formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-    });
-  }
 
   /**
    * Sign-in submit handler.
    *
    * - When AUTH_MODE === "placeholder": validates dev credentials, routes to
-   *   the real portal path (/client/dashboard, /team/dashboard).
+   *   the real portal path based on the validated role (no visible role
+   *   selection required).
    * - When AUTH_MODE === "real":
    *     1. signInWithPassword
    *     2. Get session → look up user_profiles by user_id
@@ -91,7 +47,7 @@ export default function LoginPage() {
         setSignInState({ kind: "error", message: "Incorrect credentials. Please try again." });
         return;
       }
-      setSignInState({ kind: "success", message: `Routing to ${role} portal…` });
+      setSignInState({ kind: "success", message: "Signed in — taking you to your portal…" });
       setLocation(getDevRouteForRole(role));
       return;
     }
@@ -143,16 +99,11 @@ export default function LoginPage() {
     }
   }
 
-  const formTitle =
-    selectedRole === "client" ? "Sign in to Client Portal" :
-    selectedRole === "team"   ? "Sign in to Team Portal"   :
-    "Sign In";
-
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col items-center px-6 py-12 relative overflow-hidden">
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[900px] h-[600px] bg-primary/5 blur-[140px] rounded-full pointer-events-none -z-10" />
 
-      <div className="w-full max-w-5xl">
+      <div className="w-full max-w-md">
 
         {/* Top bar */}
         <div className="flex items-center justify-between mb-12">
@@ -173,217 +124,90 @@ export default function LoginPage() {
         </div>
 
         {/* Heading */}
-        <div className="text-center mb-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/10 text-primary text-[11px] font-semibold tracking-wide mb-6">
-            <ShieldAlert className="w-3 h-3" />
-            Veroxa OS · Internal preview
-          </div>
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4" data-testid="login-heading">
-            Access Veroxa OS
+        <div className="text-center mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-3" data-testid="login-heading">
+            Sign in to Veroxa
           </h1>
-          <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-            Select your portal, then sign in with your Veroxa credentials.
+          <p className="text-muted-foreground">
+            Enter your Veroxa credentials to access your portal.
           </p>
         </div>
 
-        {/* Portal selector cards */}
-        <div
-          className="grid sm:grid-cols-2 gap-5 mt-12 animate-in fade-in slide-in-from-bottom-8 duration-700"
-          data-testid="portal-selector"
-        >
-          {PORTAL_CARDS.map((card) => {
-            const isSelected = selectedRole === card.role;
-            return (
-              <div key={card.label} className="flex flex-col gap-2">
-                <button
-                  type="button"
-                  onClick={() => selectPortal(card.role)}
-                  data-testid={card.testid}
-                  className={[
-                    "w-full text-left group p-7 rounded-2xl border bg-card transition-all duration-300",
-                    "hover:bg-accent/30 hover:shadow-2xl hover:shadow-primary/5 relative overflow-hidden",
-                    isSelected
-                      ? "border-primary/50 ring-1 ring-primary/30 bg-accent/20"
-                      : "border-border",
-                  ].join(" ")}
-                >
-                  <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl ${card.glow} blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
-
-                  <div className="mb-5 flex items-start justify-between">
-                    <div className={`w-12 h-12 rounded-xl ${card.iconClass} flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300`}>
-                      <card.icon className="w-6 h-6" />
-                    </div>
-                    {card.badge && (
-                      <span className="text-[9px] font-semibold text-amber-400 bg-amber-500/10 px-2 py-1 rounded-full uppercase tracking-widest whitespace-nowrap flex items-center gap-1">
-                        <Lock className="w-2.5 h-2.5" />
-                        {card.badge}
-                      </span>
-                    )}
-                    {isSelected && (
-                      <span className="text-[9px] font-semibold text-primary bg-primary/10 px-2 py-1 rounded-full uppercase tracking-widest whitespace-nowrap">
-                        Selected
-                      </span>
-                    )}
-                  </div>
-
-                  <h2 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">
-                    {card.label}
-                  </h2>
-                  <p className="text-sm text-muted-foreground leading-relaxed mb-5">
-                    {card.description}
-                  </p>
-
-                  <div className="flex items-center justify-end pt-4 border-t border-border/40">
-                    <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary group-hover:gap-2.5 transition-all">
-                      {isSelected ? "Selected — sign in below" : "Select & sign in"}
-                      {isSelected
-                        ? <ChevronDown className="w-3.5 h-3.5" />
-                        : <ArrowRight className="w-3.5 h-3.5" />}
-                    </span>
-                  </div>
-                </button>
-
-                {/* Demo preview link — Client Portal only */}
-                {card.role === "client" && (
-                  <Link
-                    href="/demo/client/dashboard"
-                    className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors self-start ml-1"
-                    data-testid="link-preview-client-portal"
-                  >
-                    Preview client portal without login
-                    <ArrowRight className="w-3 h-3" />
-                  </Link>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
         {/* Sign In */}
-        <div
-          className="mt-16 animate-in fade-in duration-700"
-          data-testid="signin-section"
-          ref={formRef}
-        >
-          <div className="flex items-center gap-4 mb-8">
-            <div className="h-px flex-1 bg-border" />
-            <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-widest">
-              Sign in
-            </span>
-            <div className="h-px flex-1 bg-border" />
-          </div>
+        <div className="animate-in fade-in duration-700" data-testid="signin-section">
+          <div className="rounded-2xl border border-border bg-card p-7 shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-primary/10 to-transparent blur-3xl rounded-full pointer-events-none" />
 
-          <div className="max-w-md mx-auto">
-            <div className="rounded-2xl border border-border bg-card p-7 shadow-sm relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-primary/10 to-transparent blur-3xl rounded-full pointer-events-none" />
-
-              <div className="flex items-start justify-between mb-5 relative">
-                <div>
-                  <h3 className="text-lg font-bold mb-1">{formTitle}</h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed max-w-xs">
-                    {selectedRole
-                      ? `Enter your Veroxa ${selectedRole} credentials below.`
-                      : "Select a portal above, then enter your Veroxa credentials."}
-                  </p>
+            <form onSubmit={handleSignInSubmit} className="space-y-4 relative" data-testid="form-signin">
+              <div className="space-y-1.5">
+                <Label htmlFor="signin-email" className="text-xs font-semibold text-muted-foreground">
+                  Email
+                </Label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" />
+                  <Input
+                    id="signin-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@veroxa.com"
+                    autoComplete="email"
+                    className="pl-9"
+                    data-testid="input-signin-email"
+                  />
                 </div>
-                {selectedRole && (
-                  <span className={[
-                    "text-[9px] font-semibold px-2 py-1 rounded-full uppercase tracking-widest whitespace-nowrap",
-                    selectedRole === "client"
-                      ? "text-blue-400 bg-blue-500/10"
-                      : "text-emerald-400 bg-emerald-500/10",
-                  ].join(" ")}>
-                    {selectedRole === "client" ? "Client" : "Team"}
-                  </span>
-                )}
               </div>
 
-              <form onSubmit={handleSignInSubmit} className="space-y-4 relative" data-testid="form-signin">
-                <div className="space-y-1.5">
-                  <Label htmlFor="signin-email" className="text-xs font-semibold text-muted-foreground">
-                    Email
-                  </Label>
-                  <div className="relative">
-                    <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" />
-                    <Input
-                      id="signin-email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="you@veroxa.com"
-                      autoComplete="email"
-                      className="pl-9"
-                      data-testid="input-signin-email"
-                    />
-                  </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="signin-password" className="text-xs font-semibold text-muted-foreground">
+                  Password
+                </Label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" />
+                  <Input
+                    id="signin-password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    autoComplete="current-password"
+                    className="pl-9"
+                    data-testid="input-signin-password"
+                  />
                 </div>
+              </div>
 
-                <div className="space-y-1.5">
-                  <Label htmlFor="signin-password" className="text-xs font-semibold text-muted-foreground">
-                    Password
-                  </Label>
-                  <div className="relative">
-                    <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" />
-                    <Input
-                      id="signin-password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••"
-                      autoComplete="current-password"
-                      className="pl-9"
-                      data-testid="input-signin-password"
-                    />
-                  </div>
-                </div>
+              <Button
+                type="submit"
+                disabled={signInState.kind === "submitting"}
+                className="w-full font-semibold"
+                data-testid="btn-signin"
+              >
+                {signInState.kind === "submitting" ? "Signing in…" : "Sign In"}
+              </Button>
 
-                <Button
-                  type="submit"
-                  disabled={signInState.kind === "submitting"}
-                  className="w-full font-semibold"
-                  data-testid="btn-signin"
-                >
-                  {signInState.kind === "submitting" ? "Signing in…" : "Sign In"}
-                </Button>
-
+              {signInState.kind === "success" && (
                 <div
-                  className="rounded-lg border border-border/40 bg-muted/20 px-3 py-2 text-[11px] text-muted-foreground flex items-center gap-2"
-                  data-testid="signin-dev-notice"
+                  className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 text-[11px] text-emerald-400 flex items-center gap-2"
+                  data-testid="signin-success"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
+                  {signInState.message}
+                </div>
+              )}
+
+              {signInState.kind === "error" && (
+                <div
+                  className="rounded-lg border border-red-500/20 bg-red-500/5 px-3 py-2 text-[11px] text-red-400 flex items-center gap-2"
+                  data-testid="signin-error"
                 >
                   <ShieldAlert className="w-3.5 h-3.5 flex-shrink-0" />
-                  Internal preview environment. Use your Veroxa credentials.
+                  {signInState.message}
                 </div>
-
-                {signInState.kind === "success" && (
-                  <div
-                    className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 text-[11px] text-emerald-400 flex items-center gap-2"
-                    data-testid="signin-success"
-                  >
-                    <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
-                    {signInState.message}
-                  </div>
-                )}
-
-                {signInState.kind === "error" && (
-                  <div
-                    className="rounded-lg border border-red-500/20 bg-red-500/5 px-3 py-2 text-[11px] text-red-400 flex items-center gap-2"
-                    data-testid="signin-error"
-                  >
-                    <ShieldAlert className="w-3.5 h-3.5 flex-shrink-0" />
-                    {signInState.message}
-                  </div>
-                )}
-              </form>
-            </div>
+              )}
+            </form>
           </div>
         </div>
-
-        {/* Footer note */}
-        <p className="text-center text-xs text-muted-foreground/70 mt-12 max-w-md mx-auto leading-relaxed">
-          Demo Preview is available for review.
-          Active client and team access routes through this login page.
-          Owner and Operator portals are deferred.
-        </p>
 
       </div>
     </div>
