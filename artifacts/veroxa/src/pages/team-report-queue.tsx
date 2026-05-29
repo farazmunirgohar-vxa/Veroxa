@@ -15,6 +15,12 @@ import {
 import { previewReportDraft } from "@/lib/ai/aiAgentPreviewEngine";
 import { TEAM_AI_DISCLOSURE } from "@/lib/ai/aiAgentTypes";
 import { Brain } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  generateAiDraftClient,
+  aiDraftModeLabel,
+  type AiDraftMode,
+} from "@/lib/ai/aiDraftClient";
 
 const weeklyStatusColor: Record<WeeklyReportStatus, string> = {
   "Draft":              "border-muted-foreground/40 text-muted-foreground bg-muted/30",
@@ -35,6 +41,27 @@ const weeklyStages: WeeklyReportStatus[] = [
 
 export default function TeamReportQueue() {
   const [tab, setTab] = useState<"weekly" | "monthly">("weekly");
+  const [draftMode, setDraftMode] = useState<AiDraftMode | null>(null);
+  const [generating, setGenerating] = useState(false);
+
+  async function handleGenerateReportDraft() {
+    setGenerating(true);
+    try {
+      const res = await generateAiDraftClient({
+        draftType: "report_summary",
+        context: {
+          cadence: "weekly",
+          hasPublishedPosts: false,
+          hasMetrics: false,
+        },
+      });
+      setDraftMode(res.mode);
+    } catch {
+      setDraftMode("rule_based_fallback");
+    } finally {
+      setGenerating(false);
+    }
+  }
 
   const weeklyByStage = weeklyStages.map((s) => ({
     stage: s,
@@ -79,9 +106,32 @@ export default function TeamReportQueue() {
         return (
           <Card className="bg-card border-primary/20 mb-4" data-testid="card-ai-report-drafts">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <Brain className="w-4 h-4 text-primary" />
-                AI report drafts preview
+              <CardTitle className="text-sm font-semibold flex items-center justify-between gap-2 flex-wrap">
+                <span className="flex items-center gap-2">
+                  <Brain className="w-4 h-4 text-primary" />
+                  AI report drafts preview
+                </span>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {draftMode && (
+                    <Badge
+                      variant="outline"
+                      className="border-primary/40 bg-primary/5 text-primary text-[10px]"
+                      data-testid="report-draft-mode"
+                    >
+                      Mode: {aiDraftModeLabel(draftMode)}
+                    </Badge>
+                  )}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-[11px]"
+                    onClick={handleGenerateReportDraft}
+                    disabled={generating}
+                    data-testid="btn-generate-report-draft"
+                  >
+                    {generating ? "Generating…" : "Generate report draft"}
+                  </Button>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">

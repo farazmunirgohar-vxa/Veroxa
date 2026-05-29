@@ -39,6 +39,22 @@ import {
 } from "@/lib/leads/leadTypes";
 import { generateInternalLeadAudit } from "@/lib/leads/internalLeadScoring";
 import { generateRestaurantAudit } from "@/lib/audit/auditScoring";
+import {
+  HANDOFF_STATUS_LABELS,
+  ONBOARDING_CHECKLIST_ITEMS,
+  type OnboardingHandoffState,
+} from "@/lib/leads/onboardingHandoffTypes";
+import {
+  advanceHandoffStatus,
+  getOnboardingHandoff,
+  toggleChecklistItem,
+} from "@/lib/leads/localOnboardingStore";
+import { buildRuleBasedLeadSummary } from "@/lib/leads/leadSummary";
+import {
+  generateAiDraftClient,
+  aiDraftModeLabel,
+  type AiDraftMode,
+} from "@/lib/ai/aiDraftClient";
 
 type FilterTab =
   | "all"
@@ -183,6 +199,13 @@ export default function TeamAuditLeads() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [noteDraft, setNoteDraft] = useState("");
   const [showingDemoSeed, setShowingDemoSeed] = useState(false);
+  const [handoff, setHandoff] = useState<OnboardingHandoffState | null>(null);
+  const [aiSummary, setAiSummary] = useState<{
+    mode: AiDraftMode;
+    text: string;
+    bullets: string[];
+  } | null>(null);
+  const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
 
   useEffect(() => {
     const saved = getAuditLeads();
@@ -195,6 +218,16 @@ export default function TeamAuditLeads() {
       setShowingDemoSeed(false);
     }
   }, []);
+
+  useEffect(() => {
+    if (!selectedId) {
+      setHandoff(null);
+      setAiSummary(null);
+      return;
+    }
+    setHandoff(getOnboardingHandoff(selectedId));
+    setAiSummary(null);
+  }, [selectedId]);
 
   const summary = useMemo(() => summarizeAuditLeads(leads), [leads]);
 
@@ -249,6 +282,62 @@ export default function TeamAuditLeads() {
     updateAuditLeadNotes(selected.id, noteDraft.trim());
     setLeads(getAuditLeads());
     setNoteDraft("");
+  }
+
+  function handleAdvanceHandoff() {
+    if (!selected) return;
+    setHandoff(advanceHandoffStatus(selected.id));
+  }
+
+  function handleToggleChecklist(key: (typeof ONBOARDING_CHECKLIST_ITEMS)[number]["key"]) {
+    if (!selected) return;
+    setHandoff(toggleChecklistItem(selected.id, key));
+  }
+
+  async function handleGenerateLeadSummary() {
+    if (!selected) return;
+    const fallback = buildRuleBasedLeadSummary(selected);
+    setAiSummaryLoading(true);
+    try {
+      const res = await generateAiDraftClient({
+        draftType: "lead_summary",
+        context: {
+          restaurantName: selected.restaurantName,
+          location: `${selected.city}, ${selected.state}`,
+          opportunityLabel: selected.publicAudit.gradeLabel,
+          recommendedPackage: selected.publicAudit.recommendedPackageLabel,
+          signals: selected.publicAudit.weakSpotTitles,
+          websiteFound: selected.selectedRestaurant?.websiteFound,
+          menuLinkFound: selected.selectedRestaurant?.menuLinkFound,
+          socialFound:
+            (selected.selectedRestaurant?.discoveredSocialLinks?.length ?? 0) > 0,
+        },
+      });
+      if (res.draft && (res.mode === "ai" || res.mode === "rule_based_fallback")) {
+        setAiSummary({
+          mode: res.mode,
+          text: res.draft.text || fallback.headline,
+          bullets:
+            res.draft.items && res.draft.items.length > 0
+              ? res.draft.items
+              : fallback.bullets,
+        });
+      } else {
+        setAiSummary({
+          mode: res.mode,
+          text: fallback.headline,
+          bullets: fallback.bullets,
+        });
+      }
+    } catch {
+      setAiSummary({
+        mode: "rule_based_fallback",
+        text: fallback.headline,
+        bullets: fallback.bullets,
+      });
+    } finally {
+      setAiSummaryLoading(false);
+    }
   }
 
   return (
@@ -800,6 +889,115 @@ export default function TeamAuditLeads() {
                       </Button>
                     </div>
                   </div>
+
+                  <Separator />
+
+                  {/* BUILD 2 — AI-assisted lead summary (server-or-fallback). */}
+                  <div data-testid="lead-summary-section">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                        AI-assisted lead summary
+                      </p>
+                      {aiSummary && (
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] border-primary/40 text-primary bg-primary/5"
+                          data-testid="lead-summary-mode"
+                        >
+                          {aiDraftModeLabel(aiSummary.mode)}
+                        </Badge>
+                      )}
+                    </div>
+                    {aiSummary ? (
+                      <div className="rounded-md border border-border bg-muted/20 p-2">
+                        <p className="text-[12px] mb-1">{aiSummary.text}</p>
+                        <ul className="text-[12px] list-disc pl-5 space-y-0.5 text-muted-foreground">
+                          {aiSummary.bullets.map((b, i) => (
+                            <li key={i}>{b}</li>
+                          ))}
+                        </ul>
+                        <p className="text-[10px] text-muted-foreground italic mt-1">
+                          AI-assisted draft — team review required before use.
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-[12px] text-muted-foreground">
+                        Generate a quick internal summary of this lead.
+                      </p>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-[11px] mt-2"
+                      onClick={handleGenerateLeadSummary}
+                      disabled={aiSummaryLoading}
+                      data-testid="btn-generate-lead-summary"
+                    >
+                      {aiSummaryLoading
+                        ? "Generating…"
+                        : aiSummary
+                          ? "Regenerate summary"
+                          : "Generate lead summary"}
+                    </Button>
+                  </div>
+
+                  <Separator />
+
+                  {/* BUILD 2 — Onboarding handoff (local/session only). */}
+                  {handoff && (
+                    <div data-testid="onboarding-handoff-section">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                          Onboarding handoff
+                        </p>
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] border-sky-500/40 text-sky-300 bg-sky-500/10"
+                          data-testid="handoff-status"
+                        >
+                          {HANDOFF_STATUS_LABELS[handoff.status]}
+                        </Badge>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground mb-2">
+                        Simulated handoff — no account is created, nothing is sent.
+                        Tracks the steps before a won lead becomes an active client.
+                      </p>
+                      <div className="space-y-1">
+                        {ONBOARDING_CHECKLIST_ITEMS.map((item) => {
+                          const done = !!handoff.checklist[item.key];
+                          return (
+                            <label
+                              key={item.key}
+                              className="flex items-start gap-2 text-[12px] cursor-pointer"
+                              data-testid={`handoff-check-${item.key}`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={done}
+                                onChange={() => handleToggleChecklist(item.key)}
+                                className="mt-0.5"
+                              />
+                              <span className={done ? "line-through text-muted-foreground" : ""}>
+                                {item.label}
+                              </span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-[11px] mt-2"
+                        onClick={handleAdvanceHandoff}
+                        disabled={handoff.status === "client_active"}
+                        data-testid="btn-advance-handoff"
+                      >
+                        {handoff.status === "client_active"
+                          ? "Handoff complete"
+                          : "Advance handoff stage"}
+                      </Button>
+                    </div>
+                  )}
 
                   <Separator />
 

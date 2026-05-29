@@ -231,6 +231,28 @@ export default function ClientUpdates() {
         );
       })()}
 
+      {/* Upcoming content — calm, plain-language scheduling status only.
+          No dates promised, no publishing implied. */}
+      {(() => {
+        const inProgress = clientTeamWorkRepository.getClientInProgressItems(SHOWCASE_ID);
+        if (inProgress.length === 0) return null;
+        return (
+          <div className="mb-5" data-testid="section-upcoming-content">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
+              <Activity className="w-3.5 h-3.5" /> Upcoming content
+            </h3>
+            <Card className="bg-card/60 border-border">
+              <CardContent className="p-4">
+                <p className="text-sm text-foreground/90" data-testid="upcoming-content-status">
+                  Veroxa is preparing your upcoming content. We'll plan the best
+                  posting windows and review everything before anything goes out.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        );
+      })()}
+
       {/* Recent Veroxa progress — derived from client-visible status events
           using the four friendly buckets. Internal-only events stay hidden. */}
       {(() => {

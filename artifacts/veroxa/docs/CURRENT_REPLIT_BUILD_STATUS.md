@@ -1,5 +1,41 @@
 # Current Replit Build Status
 
+> **2026-05-29 — Five OS upgrades: safe AI draft endpoint, lead handoff, content draft pipeline, scheduling prep, reporting drafts**
+>
+> - **Safe AI draft endpoint** — `POST /api/ai/draft` added server-side. The
+>   `OPENAI_API_KEY` is read only on the server and never exposed to the
+>   browser. Every response carries a `mode`: `ai`, `rule_based_fallback`,
+>   `not_configured`, or `error`. A deterministic rule-based fallback is baked
+>   in, so the UI degrades gracefully when AI is not configured. Frontend
+>   helper `src/lib/ai/aiDraftClient.ts` never throws into the UI. See
+>   `docs/AI_DRAFT_ENDPOINT_CONTRACT.md`.
+> - **Audit Lead → onboarding handoff** (BUILD 2) — Team Audit Leads detail
+>   panel adds a simulated onboarding handoff (local/session only, no account
+>   created, nothing sent) with a checklist and stage advance, plus an
+>   AI-assisted lead summary (server-or-fallback). Disabled while the demo
+>   seed is showing.
+> - **AI-assisted content draft pipeline** (BUILD 3) — deterministic
+>   `contentDraftPreviewEngine.ts` drives a content draft lifecycle
+>   (media received → AI angle → caption draft → team review → approved for
+>   schedule / needs context / not recommended). Wired into Team Upload Inbox,
+>   Team Work Queue (compact), and Client Media (client-safe statuses only —
+>   no raw scores). Caption-draft safety rules enforced in the engine.
+> - **Scheduling / publishing-prep queue** (BUILD 4) — `schedulePreviewEngine.ts`
+>   prepares slots and readiness only. No real publishing, no social APIs, no
+>   auto-posting. Team Work Queue shows scheduling prep; Client Updates shows a
+>   calm "Upcoming content" status.
+> - **AI-assisted reporting drafts** (BUILD 5) — Team Report Queue adds a
+>   "Generate report draft" action (AI endpoint if configured, rule-based
+>   otherwise) showing source work items, missing-data flags, AI draft mode,
+>   and human verification. Client Reports shows calm plain-language status
+>   only — no internal missing-data flags.
+> - Required AI labels used throughout: "AI-assisted draft," "AI-prepared
+>   suggestion," "Team review required" / "human verification required."
+> - No Supabase writes, no storage, no publishing, no auto-messaging, no
+>   payments, no notifications, no new public routes, no Owner/Operator work.
+>   Audit V1 preserved. App Testing intentionally not run; typecheck only.
+> - Typecheck: pass.
+
 > **2026-05-29 — AI-first SOP layer polished and standardized across Client + Team**
 >
 > - **Client dashboard** — added a calm empty state ("Nothing needed from you

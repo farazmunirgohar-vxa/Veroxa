@@ -37,6 +37,7 @@ import {
 } from "@/lib/mediaGuidance";
 import { clientTeamWorkRepository } from "@/lib/repositories";
 import { CLIENT_AI_DISCLOSURE } from "@/lib/ai/aiAgentTypes";
+import { previewContentDraftForSubmission } from "@/lib/content/contentDraftPreviewEngine";
 import { Brain } from "lucide-react";
 
 const SHOWCASE_ID = "demo-a";
@@ -287,6 +288,7 @@ export default function ClientMedia() {
               {mediaItems.map((s) => {
                 const statusLabel = clientTeamWorkRepository.getSubmissionWorkItemForClient(s.id)?.statusLabel;
                 const nextAction = clientTeamWorkRepository.getSubmissionWorkItemForClient(s.id)?.nextAction;
+                const contentStatus = previewContentDraftForSubmission(s).clientStatus;
                 return (
                   <div
                     key={s.id}
@@ -295,11 +297,20 @@ export default function ClientMedia() {
                   >
                     <div className="flex items-center justify-between gap-2 mb-1 flex-wrap">
                       <p className="text-sm font-medium leading-snug">{s.title}</p>
-                      {statusLabel && (
-                        <Badge variant="outline" className="text-[9px] flex-shrink-0">
-                          {statusLabel}
+                      <div className="flex gap-1.5 flex-wrap">
+                        <Badge
+                          variant="outline"
+                          className="text-[9px] flex-shrink-0 border-sky-500/30 bg-sky-500/10 text-sky-300"
+                          data-testid={`media-content-status-${s.id}`}
+                        >
+                          {contentStatus}
                         </Badge>
-                      )}
+                        {statusLabel && (
+                          <Badge variant="outline" className="text-[9px] flex-shrink-0">
+                            {statusLabel}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                     <p className="text-xs text-muted-foreground">
                       {s.clientVisibleNote}

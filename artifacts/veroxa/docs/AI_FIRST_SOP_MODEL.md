@@ -141,8 +141,19 @@ Capacity scales because AI removes the **drafting cost**, not the **judgement co
 
 - `src/lib/ai/aiAgentTypes.ts` — shared type contracts (agents, statuses, outputs).
 - `src/lib/ai/aiAgentPreviewEngine.ts` — deterministic rule-based engine.
+- `src/lib/ai/aiDraftClient.ts` — frontend helper for the optional server-side
+  AI draft endpoint (`POST /api/ai/draft`). Always returns a structured
+  `{ mode, draft, message }`; never throws into the UI.
+- `src/lib/content/contentDraftPreviewEngine.ts` — deterministic content draft
+  pipeline (media → angle → caption → team review).
+- `src/lib/scheduling/schedulePreviewEngine.ts` — scheduling/publishing-prep
+  (prep only; no real publishing).
 - `src/pages/client-*.tsx` — client-safe AI-assisted workflow surfaces.
 - `src/pages/team-*.tsx` — team-facing AI operator assistant + per-item previews.
 
-When a real model call is wired later, it should slot in **behind the same
-interfaces** in the engine. The page-level UI contracts should not change.
+A real model call is now available **optionally** via the server-side
+`POST /api/ai/draft` endpoint, which reads `OPENAI_API_KEY` server-side only
+and falls back to the rule-based engine when AI is not configured. See
+`AI_DRAFT_ENDPOINT_CONTRACT.md`, `CONTENT_SCHEDULING_PIPELINE.md`, and
+`FUTURE_BACKEND_CONTRACT.md`. When wired further, model calls should slot in
+**behind the same interfaces**; the page-level UI contracts should not change.

@@ -8,6 +8,9 @@ import { clientTeamWorkRepository } from "@/lib/repositories";
 import type { TeamWorkItem } from "@/lib/repositories/clientTeamWorkRepository";
 import { previewWorkItems } from "@/lib/ai/aiAgentPreviewEngine";
 import { AI_AGENT_STATUS_LABELS, TEAM_AI_DISCLOSURE } from "@/lib/ai/aiAgentTypes";
+import { previewCompactContentDraft } from "@/lib/content/contentDraftPreviewEngine";
+import { previewScheduleItems } from "@/lib/scheduling/schedulePreviewEngine";
+import { SCHEDULING_PREP_NOTICES } from "@/lib/scheduling/schedulePreviewTypes";
 
 export default function TeamWorkQueue() {
   // Submission-derived sections — single source of truth is the
@@ -174,6 +177,126 @@ export default function TeamWorkQueue() {
               <p className="text-[10px] text-muted-foreground italic pt-1">
                 {TEAM_AI_DISCLOSURE} Human actions: approve · revise · ask client · mark blocked · mark complete.
               </p>
+            </CardContent>
+          </Card>
+        );
+      })()}
+
+      {/* AI content drafts (compact) — content/media work items. */}
+      {(() => {
+        const contentItems = allActive
+          .filter((i) => i.workType === "content" || i.workType === "media_review")
+          .slice(0, 4);
+        if (contentItems.length === 0) return null;
+        return (
+          <Card
+            className="bg-card border-primary/20 mb-4"
+            data-testid="card-work-queue-content-drafts"
+          >
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold">
+                AI content drafts (review required)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {contentItems.map((item) => {
+                const d = previewCompactContentDraft(item);
+                return (
+                  <div
+                    key={d.submissionId}
+                    className="rounded-md border border-border/60 bg-muted/10 p-3 text-[12px]"
+                    data-testid={`content-draft-compact-${d.submissionId}`}
+                  >
+                    <div className="flex items-start justify-between gap-2 flex-wrap mb-1">
+                      <p className="font-semibold text-foreground">
+                        {getRestaurantName(item.clientId)} — {item.title}
+                      </p>
+                      <div className="flex gap-1.5 flex-wrap">
+                        <Badge variant="outline" className="border-border bg-muted/30 text-[10px]">
+                          Caption: {d.captionStatusLabel}
+                        </Badge>
+                        <Badge variant="outline" className="border-amber-500/40 bg-amber-500/10 text-amber-300 text-[10px]">
+                          Team review required
+                        </Badge>
+                      </div>
+                    </div>
+                    <p className="text-muted-foreground">
+                      <span className="text-foreground font-medium">Angle:</span> {d.suggestedAngle}
+                    </p>
+                    <p className="text-muted-foreground mt-0.5">
+                      <span className="text-foreground font-medium">Caption preview:</span> {d.captionPreview}
+                    </p>
+                    <p className="text-primary/80 mt-0.5">Next: {d.nextHumanAction}</p>
+                  </div>
+                );
+              })}
+              <p className="text-[10px] text-muted-foreground italic pt-1">
+                {TEAM_AI_DISCLOSURE} AI-assisted draft — nothing is published.
+              </p>
+            </CardContent>
+          </Card>
+        );
+      })()}
+
+      {/* Scheduling / publishing-prep queue — PREP ONLY, no real publishing. */}
+      {(() => {
+        const schedulable = allActive
+          .filter((i) => i.workType === "content" || i.workType === "media_review")
+          .slice(0, 5);
+        if (schedulable.length === 0) return null;
+        const slots = previewScheduleItems(schedulable, "");
+        return (
+          <Card
+            className="bg-card border-sky-500/20 mb-4"
+            data-testid="card-scheduling-prep-queue"
+          >
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold">
+                Scheduling / publishing prep
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="flex flex-wrap gap-1.5 mb-1">
+                {SCHEDULING_PREP_NOTICES.map((n) => (
+                  <Badge
+                    key={n}
+                    variant="outline"
+                    className="border-sky-500/40 bg-sky-500/10 text-sky-300 text-[10px]"
+                  >
+                    {n}
+                  </Badge>
+                ))}
+              </div>
+              {slots.map((slot, idx) => {
+                const item = schedulable[idx];
+                return (
+                  <div
+                    key={slot.submissionId}
+                    className="rounded-md border border-border/60 bg-muted/10 p-3 text-[12px]"
+                    data-testid={`schedule-prep-${slot.submissionId}`}
+                  >
+                    <div className="flex items-start justify-between gap-2 flex-wrap mb-1">
+                      <p className="font-semibold text-foreground">
+                        {item ? getRestaurantName(item.clientId) : ""} — {item?.title}
+                      </p>
+                      <div className="flex gap-1.5 flex-wrap">
+                        <Badge variant="outline" className="border-border bg-muted/30 text-[10px]">
+                          {slot.contentTypeLabel}
+                        </Badge>
+                        <Badge variant="outline" className="border-sky-500/40 bg-sky-500/10 text-sky-300 text-[10px]">
+                          {slot.stageLabel}
+                        </Badge>
+                      </div>
+                    </div>
+                    <p className="text-muted-foreground">
+                      <span className="text-foreground font-medium">Suggested window:</span>{" "}
+                      {slot.recommendedWindow}
+                    </p>
+                    <p className="text-muted-foreground mt-0.5">{slot.reason}</p>
+                    <p className="text-amber-300/90 mt-0.5">{slot.approvalState}</p>
+                  </div>
+                );
+              })}
             </CardContent>
           </Card>
         );

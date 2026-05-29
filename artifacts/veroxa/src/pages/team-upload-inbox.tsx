@@ -42,6 +42,7 @@ import {
   AI_MEDIA_USAGE_LABELS,
   TEAM_AI_DISCLOSURE,
 } from "@/lib/ai/aiAgentTypes";
+import { ContentDraftPipelineCard } from "@/components/ContentDraftPipelineCard";
 
 const statusToneStyles: Record<DemoUploadStatus, string> = {
   received: "bg-sky-500/10 text-sky-400 border-sky-500/30",
@@ -216,6 +217,20 @@ export default function TeamUploadInbox() {
               </CardContent>
             </Card>
           );
+        })()}
+
+        {/* AI-assisted content draft pipeline (media → angle → caption → review). */}
+        {(() => {
+          const contentSubs = clientTeamWorkRepository
+            .getClientSubmissions("demo-a")
+            .concat(
+              clientTeamWorkRepository.getClientSubmissions("demo-b"),
+              clientTeamWorkRepository.getClientSubmissions("demo-c"),
+            )
+            .filter((s) => s.submissionType === "media")
+            .filter((s) => s.status !== "completed" && s.status !== "archived")
+            .slice(0, 3);
+          return <ContentDraftPipelineCard submissions={contentSubs} />;
         })()}
 
         {/* Related media submissions across the client/team workflow. */}

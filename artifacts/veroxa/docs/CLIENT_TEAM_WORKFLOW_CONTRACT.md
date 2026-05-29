@@ -185,3 +185,26 @@ When the backend is activated, write paths should land in this order:
 | Normalized client `ClientWorkItem` and team `TeamWorkItem` shapes | ✅ Returned by all the new repo helpers |
 | `linked_work_item_id` / `linked_media_id` ready for FKs | ✅ string IDs in fixtures |
 | Derived fields are pure helpers, not persisted | ✅ `getSubmission{WorkType,TeamWorkStatus,ClientStatusLabel,TeamStatusLabel,NextTeamAction,NextClientAction}` |
+
+## 8. Future reporting workflow fields
+
+AI-assisted reporting drafts (Team Report Queue) anticipate a future
+`client_reports` table. Today drafts are rule-based previews, or AI-assisted
+via `POST /api/ai/draft` when configured, and are always human-verified before
+reaching a client. See `FUTURE_BACKEND_CONTRACT.md` for the full field table.
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `report_type` | `text` | enum: `weekly`, `monthly`. |
+| `source_work_item_ids` | `uuid[]` | Completed work items the draft is based on. |
+| `ai_draft_status` | `text` | Draft lifecycle status. |
+| `ai_draft_mode` | `text` | enum: `ai`, `rule_based_fallback`, `not_configured`, `error`. |
+| `missing_data_flags` | `text[]` | **Internal only** — never rendered on client surfaces. |
+| `human_verification_status` | `text` | enum: `pending`, `verified`. |
+| `approved_by` | `uuid` | Team member who approved. |
+| `approved_at` | `timestamptz` | Nullable. |
+| `client_visible_at` | `timestamptz` | When the report became client-visible. |
+
+> **Invariant.** No AI output is treated as final. Client Reports shows calm
+> plain-language status only; internal missing-data flags are never shown to
+> the client.
