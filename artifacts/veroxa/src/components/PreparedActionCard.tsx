@@ -22,6 +22,7 @@ import {
   type ApprovalRiskLevel,
   type ApprovalRequirement,
   type PreparedAction,
+  type PreparedActionId,
   type PreparedActionStatus,
 } from "@/domain/preparedActions";
 
@@ -71,11 +72,11 @@ interface ActionButton {
 
 export interface PreparedActionCardProps {
   action: PreparedAction;
-  onApprove: (id: string) => void;
-  onEditLater: (id: string) => void;
-  onAskClient: (id: string) => void;
-  onSkip: (id: string) => void;
-  onQueueForExecution: (id: string) => void;
+  onApprove: (id: PreparedActionId) => void;
+  onEditLater: (id: PreparedActionId) => void;
+  onAskClient: (id: PreparedActionId) => void;
+  onSkip: (id: PreparedActionId) => void;
+  onQueueForExecution: (id: PreparedActionId) => void;
   testId?: string;
 }
 
@@ -112,7 +113,7 @@ export function PreparedActionCard({
   if (isApproved) {
     // Approved: the only forward action is to queue it for (future) execution.
     dedupedActions.push({
-      label: "Queue for Execution",
+      label: "Queue for Later",
       icon: <Send className="w-3.5 h-3.5" />,
       variant: "secondary",
       onClick: () => onQueueForExecution(action.id),

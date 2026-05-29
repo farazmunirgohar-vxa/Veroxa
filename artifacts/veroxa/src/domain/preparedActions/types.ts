@@ -114,7 +114,7 @@ export const PREPARED_ACTION_STATUS_LABELS: Record<PreparedActionStatus, string>
   approved: "Approved",
   skipped: "Skipped",
   edited: "Edited",
-  queued_for_execution: "Queued for execution",
+  queued_for_execution: "Queued for later",
   executed: "Done",
   failed: "Needs attention",
   archived: "Archived",
@@ -153,8 +153,8 @@ export type ExecutionMode =
 
 export const EXECUTION_MODE_LABELS: Record<ExecutionMode, string> = {
   manual_now: "Do manually now",
-  connector_later: "Execute later (connector)",
-  ready_for_connector: "Ready for connector",
+  connector_later: "Hold for later",
+  ready_for_connector: "Ready for later",
   internal_only: "Internal only",
 };
 

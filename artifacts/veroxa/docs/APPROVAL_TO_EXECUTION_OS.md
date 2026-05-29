@@ -10,7 +10,7 @@ real external execution.**
 
 > Audits / opportunities → Veroxa **prepares** an exact action → it appears in the
 > **Team Approval Queue** → Faraz **approves / edits / asks the client / skips /
-> queues** → Veroxa executes **later**, once the matching connector exists.
+> queues for later** → Veroxa executes **later**, once the matching connector exists.
 
 ## Two roles
 
