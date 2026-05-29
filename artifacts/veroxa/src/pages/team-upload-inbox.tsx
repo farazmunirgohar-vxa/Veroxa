@@ -36,6 +36,8 @@ import {
 } from "@/lib/uploadKeys/localUploadStore";
 import { clientTeamWorkRepository } from "@/lib/repositories";
 import { getRestaurantName } from "@/data/demoData";
+import { isSupabaseReadonlyMode } from "@/lib/data/dataMode";
+import { readUploadSubmissionsInbox } from "@/lib/data/uploadSubmissionsReadOnly";
 import {
   previewMediaReview,
   mediaReviewOutput,
@@ -75,6 +77,10 @@ export default function TeamUploadInbox() {
   const [localItems, setLocalItems] = useState<DemoUploadSubmission[]>(
     () => getLocalUploadSubmissions(),
   );
+  // Live rows read from upload_submissions when safe read mode is enabled.
+  // Empty by default; populated only on a successful read-only query.
+  const [liveItems, setLiveItems] = useState<DemoUploadSubmission[]>([]);
+  const [liveIds, setLiveIds] = useState<Set<string>>(() => new Set());
 
   useEffect(() => {
     const unsub = subscribeToLocalUploadSubmissions((next) => setLocalItems(next));
@@ -82,9 +88,37 @@ export default function TeamUploadInbox() {
     return unsub;
   }, []);
 
+  // Opportunistic, fail-safe read of real upload_submissions rows. Only
+  // attempts a query when DATA_MODE === "supabase_readonly"; any failure,
+  // missing env, RLS block, or empty result silently leaves the inbox on
+  // fixtures (no raw DB error ever reaches the team UI).
+  useEffect(() => {
+    if (!isSupabaseReadonlyMode()) return;
+    let cancelled = false;
+    void readUploadSubmissionsInbox().then((res) => {
+      if (cancelled) return;
+      if (res.status === "live" && res.items.length > 0) {
+        setLiveItems(res.items);
+        setLiveIds(new Set(res.items.map((i) => i.id)));
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const liveActive = liveItems.length > 0;
+
+  // Fixtures are a true fallback: when a live read succeeds, show live rows
+  // plus this session's real uploads — the demo fixtures drop out. When no
+  // live rows are available, the demo fixtures remain so the inbox is never
+  // empty.
   const items = useMemo(
-    () => [...localItems, ...fixtureItems],
-    [localItems, fixtureItems],
+    () =>
+      liveActive
+        ? [...liveItems, ...localItems]
+        : [...localItems, ...fixtureItems],
+    [liveActive, liveItems, localItems, fixtureItems],
   );
 
   const grouped = useMemo(() => {
@@ -98,6 +132,11 @@ export default function TeamUploadInbox() {
   }, [items]);
 
   function updateStatus(id: string, status: DemoUploadStatus) {
+    // Live (read-only) rows: triage is in-memory only — no DB write.
+    if (liveIds.has(id)) {
+      setLiveItems((curr) => curr.map((s) => (s.id === id ? { ...s, status } : s)));
+      return;
+    }
     if (isLocalUploadSubmission(id)) {
       updateLocalUploadSubmissionStatus(id, status);
       setLocalItems(getLocalUploadSubmissions());
@@ -159,6 +198,17 @@ export default function TeamUploadInbox() {
         >
           {getWriteSafetyBanner()}
         </div>
+
+        {liveActive && (
+          <div
+            className="mt-2 text-[11px] text-sky-400/80 px-1"
+            data-testid="banner-live-uploads-readonly"
+          >
+            Showing {liveItems.length} live upload submission
+            {liveItems.length === 1 ? "" : "s"} (read-only dev data). Triage here is
+            in-memory only — no changes are written back.
+          </div>
+        )}
 
         {/* Live media uploads in the real workflow foundation — accept for
             content prep or ask the client for context. Actions persist
