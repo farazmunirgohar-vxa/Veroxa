@@ -24,7 +24,7 @@
  *    0–39  = Not Current Target
  */
 
-import { VEROXA_PLANS } from "@/data/pricing/veroxaPricing";
+import { getCurrentPublicPlanForLegacyPackage } from "@/data/pricing/veroxaPricing";
 import type {
   AuditPackageRecommendation,
   RecommendedPackageId,
@@ -88,10 +88,7 @@ function countLinks(links: AuditLeadLinks): number {
   );
 }
 
-function categoryScore(
-  report: RestaurantAuditReport,
-  id: string,
-): number {
+function categoryScore(report: RestaurantAuditReport, id: string): number {
   return report.categories.find((c) => c.id === id)?.score ?? 0;
 }
 
@@ -195,9 +192,7 @@ function scoreOwnerReachability(
 }
 
 // ── 7. Competitive / Niche Advantage (5) ────────────────────────────
-function scoreCompetitiveAdvantage(
-  report: RestaurantAuditReport,
-): number {
+function scoreCompetitiveAdvantage(report: RestaurantAuditReport): number {
   // Distinct/specialty cuisine types tend to convert better with content.
   const cuisine = (report.input.cuisineType || "").toLowerCase().trim();
   if (!cuisine) return 1;
@@ -275,11 +270,18 @@ function scoreWarmRelationship(
   return clamp(pts, 5);
 }
 
-export function calculateLeadSuccessScore(
-  input: InternalLeadScoreInput,
-): { total: number; breakdown: InternalLeadScoreBreakdown } {
-  const { report, links, contact, internalFlags, source, walkthroughRequested } =
-    input;
+export function calculateLeadSuccessScore(input: InternalLeadScoreInput): {
+  total: number;
+  breakdown: InternalLeadScoreBreakdown;
+} {
+  const {
+    report,
+    links,
+    contact,
+    internalFlags,
+    source,
+    walkthroughRequested,
+  } = input;
   const breakdown: InternalLeadScoreBreakdown = {
     onlineWeakness: scoreOnlineWeakness(report),
     veroxaImpact: scoreVeroxaImpact(report),
@@ -316,33 +318,9 @@ export function getLeadPriority(score: number): LeadPriority {
 
 export function getProjectedMrrFromRecommendation(
   recommendation: AuditPackageRecommendation,
-): { founding: number; standard: number } {
-  switch (recommendation.packageId) {
-    case "google_optimization":
-      return {
-        founding: VEROXA_PLANS.google_optimization.priceMonthlyFounding,
-        standard: VEROXA_PLANS.google_optimization.priceMonthly,
-      };
-    case "complete_online_presence":
-      return {
-        founding: VEROXA_PLANS.complete_online_presence.priceMonthlyFounding,
-        standard: VEROXA_PLANS.complete_online_presence.priceMonthly,
-      };
-    case "complete_plus_ads":
-      return {
-        founding:
-          VEROXA_PLANS.complete_online_presence.priceMonthlyFounding +
-          VEROXA_PLANS.ads_addon.priceMonthlyFounding,
-        standard:
-          VEROXA_PLANS.complete_online_presence.priceMonthly +
-          VEROXA_PLANS.ads_addon.priceMonthly,
-      };
-    case "ads_management_only":
-      return {
-        founding: VEROXA_PLANS.ads_standalone.priceMonthlyFounding,
-        standard: VEROXA_PLANS.ads_standalone.priceMonthly,
-      };
-  }
+): { current: number; standard: number } {
+  const plan = getCurrentPublicPlanForLegacyPackage(recommendation.packageId);
+  return { current: plan.priceMonthly, standard: plan.priceMonthly };
 }
 
 export function getBestOutreachAngle(input: InternalLeadScoreInput): string {
@@ -352,7 +330,7 @@ export function getBestOutreachAngle(input: InternalLeadScoreInput): string {
   if (weakest) {
     return `Lead with the customer-flow weak spot: "${weakest}". Tie it to ${cuisine} customers slipping away online before they reach the door.`;
   }
-  return `Lead with Veroxa's full customer-flow system for ${cuisine} restaurants and the founding-client pricing window.`;
+  return `Lead with Veroxa's full customer-flow system for ${cuisine} restaurants and the current no-contract plan fit.`;
 }
 
 export function getLikelyObjection(input: InternalLeadScoreInput): string {
@@ -361,7 +339,7 @@ export function getLikelyObjection(input: InternalLeadScoreInput): string {
     return "Owner may feel overwhelmed by how much needs to change. Frame Veroxa as the operating system that handles it for them, not another to-do list.";
   }
   if (report.totalScore >= 80) {
-    return "Owner may feel their online presence is already 'good enough'. Show specific customer-flow gaps and the founding-client window as the reason to act now.";
+    return "Owner may feel their online presence is already 'good enough'. Show specific customer-flow gaps and the current plan fit as the reason to act now.";
   }
   if (!contact?.phone && !contact?.email) {
     return "No contact info yet — first objection is usually 'who is this'. Use a short value-led intro and the audit findings to earn the next 5 minutes.";
@@ -429,7 +407,9 @@ function getWhyStrong(
     );
   }
   if (breakdown.ownerReachability >= 6) {
-    reasons.push("Owner reachability is high — easy to start the conversation.");
+    reasons.push(
+      "Owner reachability is high — easy to start the conversation.",
+    );
   }
   if (breakdown.warmRelationship >= 3) {
     reasons.push(
@@ -486,7 +466,7 @@ export function generateInternalLeadAudit(
     score: total,
     breakdown,
     priority,
-    projectedFoundingMonthlyMrr: mrr.founding,
+    projectedFoundingMonthlyMrr: mrr.current,
     projectedStandardMonthlyMrr: mrr.standard,
     whyThisLeadIsStrong: getWhyStrong(input, breakdown),
     risks: getRisks(input, breakdown),

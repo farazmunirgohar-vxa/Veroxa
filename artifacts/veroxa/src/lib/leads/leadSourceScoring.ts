@@ -80,10 +80,9 @@ function scoreCloseConversion(won: number, lost: number): number {
 }
 
 // ── 5. Package Value (10) ────────────────────────────────────────────────────
-// Average projected founding MRR per lead relative to $489/mo (founding
-// Complete Online Presence — the natural anchor package).
+// Average projected current-plan MRR per lead relative to Essential ($497/mo).
 function scorePackageValue(avgFoundingMrr: number): number {
-  const anchor = 489;
+  const anchor = 497;
   return clamp((avgFoundingMrr / anchor) * 10, 10);
 }
 

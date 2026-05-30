@@ -384,7 +384,7 @@ export default function TeamLeadSourceLab() {
                   value={snapshots.reduce((s, x) => s + x.walkthroughRequested, 0)}
                 />
                 <SummaryCard
-                  label="Projected founding MRR"
+                  label="Projected current MRR"
                   value={fmt(totalProjectedMrr)}
                   sub="Across all active sources"
                 />

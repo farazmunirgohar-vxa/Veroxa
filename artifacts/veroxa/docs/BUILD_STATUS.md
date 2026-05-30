@@ -1,8 +1,23 @@
-> **2026-05-29 — CORRECTED: Active Founding Client Pricing Model**
+> **2026-05-30 — Current locked pricing correction**
 >
-> The term-based pricing pass ($997/$1,097/$1,197/$1,497 + $1,500 ads) was
-> a **mistaken temporary change** and has been fully reverted. It is NOT the
-> current pricing. The correct owner-confirmed pricing is:
+> Current public pricing is now the Essential / Growth / Premium model:
+>
+> - Essential: **$497/mo**
+> - Growth: **$697/mo**
+> - Premium: **$997/mo**
+> - No contract; cancel anytime
+> - Google Optimization and Facebook + Instagram are included in all plans
+> - Maximum 1 post per day, depending on usable client-provided media
+> - Reels / short-form support starts at Growth
+> - Ads management starts at Premium
+> - Ad spend is always separate and paid directly by the restaurant
+>
+> Previous Complete Online Presence / founding-client pricing entries in this
+> document are historical/deprecated only and are not current public pricing.
+
+> **2026-05-29 — Historical/deprecated founding-client pricing model (not current)**
+>
+> Historical note only. This reflected a previous founding-client pricing pass and is now deprecated. It is NOT current public pricing. The historical values were:
 >
 > - Complete Online Presence: **$977/mo** standard, **$488/mo** founding first year (50% off)
 > - Ads Management add-on: **+$477/mo** flat — no founding discount on ads
@@ -11,6 +26,7 @@
 > - Ad spend is always separate
 >
 > Changes made:
+>
 > - `veroxaPricing.ts` updated: COP at $977/$488, ads_addon at $477/$477,
 >   term-based exports removed, combined totals corrected.
 > - `pricing.tsx` rebuilt: founding model with 2-card standard/founding
@@ -22,14 +38,12 @@
 >   (hidden, $2,000) kept in `veroxaPricing.ts` for Free Audit /
 >   lead-scoring backward compat. Not shown publicly.
 > - Typecheck passes: `pnpm --filter @workspace/veroxa run typecheck`.
-> - Files **not** changed: Free Audit engines, Supabase auth/schema, demo
+> - Files **not** changed in that historical pass: Free Audit engines, Supabase auth/schema, demo
 >   fixtures, backend enums, AI/lead engines, App.tsx routing, nav files.
-
 
 > **2026-05-30 — Current active-role model.** Veroxa now has only two active roles: `client` and `team`. Operator and owner references below are historical / legacy-demo notes only and are not active product surfaces unless explicitly requested.
 
 > **Historical reference (pre-2026-05-27).** Pricing and fixture-ID values in this document are out of date. Current source of truth: `docs/PRICING_SOURCE_OF_TRUTH.md` and `src/data/pricing/veroxaPricing.ts`. Fixture IDs are now `demo-a` / `demo-b` / `demo-c` / `demo-d`.
-
 
 ## Latest update — M038–M042 First-Client Operating Flow Hardening (2026-05-30)
 
@@ -449,7 +463,7 @@ current phase. Stop and ask before any deviation.
 > real authentication code is **wired but inactive** while
 > `AUTH_MODE === "placeholder"`.
 
-- Real authentication (login, sessions, user accounts) — *now wired but inactive; activation gated on the manual prep pack + `AUTH_MODE` flip*
+- Real authentication (login, sessions, user accounts) — _now wired but inactive; activation gated on the manual prep pack + `AUTH_MODE` flip_
 - Real user/account model
 - Media uploads
 - Team actions (claim task, mark complete, approve draft, etc.)
@@ -498,7 +512,7 @@ We are building **Demo Veroxa** and **Real Veroxa** side by side:
 
 ## Login form + guard shell
 
-- **Future sign-in UI shell added** on `/login` — Email + Password fields and a "Sign In — Coming Soon" button below the existing demo role cards. Submit calls `preventDefault()` and shows *"Real authentication is not connected yet."* No Supabase Auth call, no network, no cookies, no localStorage.
+- **Future sign-in UI shell added** on `/login` — Email + Password fields and a "Sign In — Coming Soon" button below the existing demo role cards. Submit calls `preventDefault()` and shows _"Real authentication is not connected yet."_ No Supabase Auth call, no network, no cookies, no localStorage.
 - **Placeholder auth types added** — `src/lib/auth/types.ts` (`VeroxaRole`, `PlaceholderSession`, `AuthStatus`).
 - **Placeholder auth hook added** — `src/lib/auth/usePlaceholderAuth.ts` always returns `{ status: "unauthenticated", session: null, isDemoOnly: true }`. No network, no storage.
 - **`<RequireRole>` shell added** — `src/components/auth/RequireRole.tsx` renders a polished "Protected Route Preview" card with Back-to-Login and Open-Demo-Hub buttons. No redirects.
@@ -841,7 +855,7 @@ auth activation.
   respective nav items. No further wrapping needed.
 - **`demoRoutes.ts` rewritten** with a richer five-value visibility
   taxonomy: `visible_nav | hidden_from_nav | legacy_demo |
-  internal_demo | future_protected`. The client, team, operator,
+internal_demo | future_protected`. The client, team, operator,
   owner, internal, and future-protected entries are tagged with
   their current visibility intent. A future light parity script can
   compare this registry against `App.tsx` to catch drift.

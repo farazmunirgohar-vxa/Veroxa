@@ -465,11 +465,8 @@ export default function TeamProspectScanner() {
                 </Badge>
               </div>
               <p className="text-[12px] text-muted-foreground">
-                Projected: $
+                Projected current plan MRR: $
                 {internalAudit.projectedFoundingMonthlyMrr.toLocaleString()}/mo
-                founding · $
-                {internalAudit.projectedStandardMonthlyMrr.toLocaleString()}/mo
-                standard
               </p>
               <Separator />
               <div>

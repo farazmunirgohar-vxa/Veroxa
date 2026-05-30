@@ -681,7 +681,7 @@ export default function TeamAuditLeads() {
                       <span>
                         Projected:{" "}
                         <span className="text-foreground/90">
-                          {formatUsd(l.projectedMonthlyMrr)}/mo founding
+                          {formatUsd(l.projectedMonthlyMrr)}/mo current
                         </span>
                       </span>
                     </div>

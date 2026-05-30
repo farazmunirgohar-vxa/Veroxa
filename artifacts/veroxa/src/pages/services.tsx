@@ -14,7 +14,7 @@ export default function ServicesPage() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-primary/15 blur-[100px] rounded-full pointer-events-none -z-10" />
         <div className="max-w-3xl mx-auto">
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            Complete Online Presence{" "}
+            Online Presence{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-400">
               for Restaurants
             </span>

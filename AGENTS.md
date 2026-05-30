@@ -60,18 +60,41 @@ For Replit:
 
 ## 5. Locked pricing
 
-Do not change pricing unless explicitly instructed by the user.
+Do not change pricing unless explicitly instructed by the user. The user’s newest explicit instruction overrides stale repo docs.
 
-Locked pricing:
+Current locked public pricing:
 
-- Complete Online Presence: $977/month
-- Founding first year: $488/month
-- Ads Management Add-on: +$477/month
-- Complete Online Presence + Ads: $1,454/month standard
-- Founding Complete Online Presence + Ads: $965/month
+- Essential: $497/month
+  - Google Optimization
+  - Facebook + Instagram picture posting
+  - Basic captions
+  - Weekly updates
+  - Monthly performance snapshot
+  - Client Portal access
+- Growth: $697/month
+  - Everything in Essential
+  - Reels / short-form content support
+  - TikTok posting/management if applicable
+  - Enhanced monthly report
+- Premium: $997/month
+  - Everything in Growth
+  - Facebook/Instagram ads management
+  - Google Ads management
+  - Campaign setup and monitoring
+  - Monthly ad performance report
+  - Ad spend is separate and paid directly by the restaurant
+
+Global pricing rules:
+
+- No contract.
+- Cancel anytime.
+- Google Optimization is included in all plans.
+- Facebook + Instagram are included in all plans.
+- Maximum 1 post per day.
+- Posting depends on usable client-provided media.
+- Reels / short-form content support starts at Growth.
+- Ads management starts at Premium.
 - Ad spend is always separate and paid by the restaurant directly to the ad platform.
-
-Google Optimization and Ads Standalone are retired/hidden from public sale unless the user explicitly says otherwise.
 
 ## 6. Routing rules
 
@@ -81,8 +104,8 @@ Do not merge demo and login flows.
 - Portal Access -> /login
 - Login -> /login
 - /demo/client/dashboard remains public preview
-- /team/* remains guarded by InternalDemoGuard until production auth is explicitly requested
-- /client/* remains current review/demo route until production auth is explicitly requested
+- /team/\* remains guarded by InternalDemoGuard until production auth is explicitly requested
+- /client/\* remains current review/demo route until production auth is explicitly requested
 
 ## 7. Core Veroxa OS flow
 

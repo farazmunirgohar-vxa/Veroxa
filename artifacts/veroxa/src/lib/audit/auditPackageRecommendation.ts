@@ -11,7 +11,7 @@
  * `@/data/pricing/veroxaPricing` — never hardcoded here.
  */
 
-import { VEROXA_PLANS } from "@/data/pricing/veroxaPricing";
+import { getCurrentPublicPlanForLegacyPackage } from "@/data/pricing/veroxaPricing";
 import type {
   AuditCategoryId,
   AuditCategoryScore,
@@ -148,10 +148,7 @@ export function getPackageRecommendationReason(
 
   // Google Optimization — when discovery + trust is the dominant gap
   const googleFocusGap =
-    search < 10 ||
-    maps < 10 ||
-    review < 5 ||
-    (action < 10 && social >= 10);
+    search < 10 || maps < 10 || review < 5 || (action < 10 && social >= 10);
   const socialNotMain = social >= 10 && content >= 10;
   if (googleFocusGap && socialNotMain) {
     return {
@@ -161,7 +158,7 @@ export function getPackageRecommendationReason(
     };
   }
 
-  // Default — Complete Online Presence
+  // Default — Growth (legacy package ID retained for audit compatibility).
   return {
     packageId: "complete_online_presence",
     reason:
@@ -174,41 +171,12 @@ function priceDisplayForPackage(packageId: RecommendedPackageId): {
   standardPriceDisplay: string;
   foundingPriceDisplay: string;
 } {
-  switch (packageId) {
-    case "google_optimization": {
-      const p = VEROXA_PLANS.google_optimization;
-      return {
-        label: p.label,
-        standardPriceDisplay: `${p.displayPrice}/mo`,
-        foundingPriceDisplay: `${p.displayPriceFounding}/mo founding first year`,
-      };
-    }
-    case "complete_online_presence": {
-      const p = VEROXA_PLANS.complete_online_presence;
-      return {
-        label: p.label,
-        standardPriceDisplay: `${p.displayPrice}/mo`,
-        foundingPriceDisplay: `${p.displayPriceFounding}/mo founding first year`,
-      };
-    }
-    case "complete_plus_ads": {
-      const a = VEROXA_PLANS.complete_online_presence;
-      const b = VEROXA_PLANS.ads_addon;
-      return {
-        label: "Complete Online Presence + Ads Add-on",
-        standardPriceDisplay: `${a.displayPrice} + ${b.displayPrice} = $${a.priceMonthly + b.priceMonthly}/mo`,
-        foundingPriceDisplay: `${a.displayPriceFounding} + ${b.displayPriceFounding} = $${a.priceMonthlyFounding + b.priceMonthlyFounding}/mo founding first year`,
-      };
-    }
-    case "ads_management_only": {
-      const p = VEROXA_PLANS.ads_standalone;
-      return {
-        label: p.label,
-        standardPriceDisplay: `${p.displayPrice}/mo`,
-        foundingPriceDisplay: `${p.displayPriceFounding}/mo founding first year`,
-      };
-    }
-  }
+  const p = getCurrentPublicPlanForLegacyPackage(packageId);
+  return {
+    label: p.label,
+    standardPriceDisplay: `${p.displayPrice}/mo`,
+    foundingPriceDisplay: "No contract. Cancel anytime.",
+  };
 }
 
 export function recommendVeroxaPackage(

@@ -28,7 +28,7 @@ export function buildRuleBasedLeadSummary(
 
   const bullets: string[] = [];
   bullets.push(
-    `Lead score ${lead.internalLeadScore}/100 · projected ${formatUsd(lead.projectedMonthlyMrr)}/mo founding.`,
+    `Lead score ${lead.internalLeadScore}/100 · projected ${formatUsd(lead.projectedMonthlyMrr)}/mo current plan.`,
   );
   if (publicAudit.weakSpotTitles.length > 0) {
     bullets.push(
