@@ -22,7 +22,12 @@ import { ClientVisibilityProgressCard } from "@/components/ClientVisibilityProgr
 import { DataSourceBadge } from "@/components/DataSourceBadge";
 import { getClientProgressSummary } from "@/domain/clientPortalJourney";
 import { useEffect, useState } from "react";
-import { healthRepository, reportRepository, activityRepository, clientTeamWorkRepository } from "@/lib/repositories";
+import {
+  healthRepository,
+  reportRepository,
+  activityRepository,
+  clientTeamWorkRepository,
+} from "@/lib/repositories";
 import {
   getClientWorkflowItems,
   subscribeToWorkflow,
@@ -31,6 +36,10 @@ import type {
   ClientVisibleStatus,
   WorkflowItem,
 } from "@/lib/workflow/workflowTypes";
+import {
+  getClientContentHealthMessage,
+  type ContentHealthStatus as MvpContentHealthStatus,
+} from "@/domain/veroxa";
 
 const CLIENT_STATUS_ORDER: ClientVisibleStatus[] = [
   "Needs your input",
@@ -78,21 +87,43 @@ export default function ClientDashboard() {
   ];
 
   const summaryCards = [
-    { label: "Upcoming posts",   value: loading ? "—" : String(data.scheduledPosts.length), icon: CalendarDays },
-    { label: "Media assets",     value: loading ? "—" : String(data.mediaAssetsCount),       icon: ImageIcon   },
-    { label: "Social platforms", value: loading ? "—" : String(data.platformsCount),         icon: Layers      },
-    { label: "Latest report",    value: loading ? "—" : data.monthlyReportPreview.status,    icon: BarChart2   },
+    {
+      label: "Upcoming posts",
+      value: loading ? "—" : String(data.scheduledPosts.length),
+      icon: CalendarDays,
+    },
+    {
+      label: "Media assets",
+      value: loading ? "—" : String(data.mediaAssetsCount),
+      icon: ImageIcon,
+    },
+    {
+      label: "Social platforms",
+      value: loading ? "—" : String(data.platformsCount),
+      icon: Layers,
+    },
+    {
+      label: "Latest report",
+      value: loading ? "—" : data.monthlyReportPreview.status,
+      icon: BarChart2,
+    },
   ];
 
   const healthSnapshot = healthRepository.getClientHealthSnapshot("demo-a");
   const clientReports = reportRepository.getClientReports("demo-a");
   const recentActivity = activityRepository.getClientVisibleActivity("demo-a");
-  const openClientActions = clientTeamWorkRepository.getClientActionRequiredItems("demo-a");
+  const openClientActions =
+    clientTeamWorkRepository.getClientActionRequiredItems("demo-a");
+
+  const contentStatusForClient: MvpContentHealthStatus =
+    healthSnapshot?.contentHealthStatus === "broken"
+      ? "broken_pipeline"
+      : (healthSnapshot?.contentHealthStatus ?? "healthy");
 
   const snapshotItems = [
     healthSnapshot
-      ? `You have ${healthSnapshot.unusedUsableMediaCount} approved media items ready — roughly ${healthSnapshot.weeksOfContentLeft} weeks of content at your current cadence.`
-      : "Your upcoming content is scheduled and ready.",
+      ? getClientContentHealthMessage(contentStatusForClient)
+      : "Veroxa is monitoring your content supply.",
     journeySummary.visibilityProgress.nextVisibilityAction,
     clientReports.monthly.length > 0
       ? `Your latest monthly report (${clientReports.monthly[0].monthKey}) is available in Reports.`
@@ -104,17 +135,24 @@ export default function ClientDashboard() {
 
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
-
       {/* Welcome */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-foreground" data-testid="header-welcome">
+          <h2
+            className="text-3xl font-bold tracking-tight text-foreground"
+            data-testid="header-welcome"
+          >
             {loading ? "Demo Grill House" : data.businessName}
           </h2>
-          <p className="text-muted-foreground mt-1">Welcome back. Here is a quick overview of your account.</p>
+          <p className="text-muted-foreground mt-1">
+            Welcome back. Here is a quick overview of your account.
+          </p>
           <DataSourceBadge source={source} message={dataSourceMessage} />
         </div>
-        <Badge variant="outline" className="px-3 py-1 bg-card text-card-foreground border-border font-medium self-start md:self-auto">
+        <Badge
+          variant="outline"
+          className="px-3 py-1 bg-card text-card-foreground border-border font-medium self-start md:self-auto"
+        >
           May 2026 — Week 3
         </Badge>
       </div>
@@ -189,8 +227,8 @@ export default function ClientDashboard() {
               Nothing needed from you right now
             </p>
             <p className="text-xs text-muted-foreground">
-              Veroxa is handling this week&apos;s work. We&apos;ll let you know here
-              if we need a quick reply.
+              Veroxa is handling this week&apos;s work. We&apos;ll let you know
+              here if we need a quick reply.
             </p>
           </CardContent>
         </Card>
@@ -204,7 +242,10 @@ export default function ClientDashboard() {
           </h3>
           <div className="space-y-4">
             {workflowGroups.map((group) => (
-              <div key={group.status} data-testid={`workflow-group-${group.status}`}>
+              <div
+                key={group.status}
+                data-testid={`workflow-group-${group.status}`}
+              >
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-primary mb-2">
                   {group.status} ({group.items.length})
                 </p>
@@ -251,10 +292,16 @@ export default function ClientDashboard() {
       {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {summaryCards.map((card, i) => (
-          <Card key={i} className="bg-card/50 border-border/50 shadow-sm" data-testid={`summary-card-${i}`}>
+          <Card
+            key={i}
+            className="bg-card/50 border-border/50 shadow-sm"
+            data-testid={`summary-card-${i}`}
+          >
             <CardContent className="p-5 flex flex-col gap-3">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-medium text-muted-foreground">{card.label}</p>
+                <p className="text-xs font-medium text-muted-foreground">
+                  {card.label}
+                </p>
                 <card.icon className="w-4 h-4 text-muted-foreground/40" />
               </div>
               <p className="text-2xl font-bold">{card.value}</p>
@@ -359,7 +406,6 @@ export default function ClientDashboard() {
           </CardContent>
         </Card>
       </div>
-
     </PortalLayout>
   );
 }
