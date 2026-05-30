@@ -31,6 +31,7 @@
 // =============================================================================
 
 import { useState, useEffect } from "react";
+import { useActiveClientPortalContext } from "@/lib/clientPortalContext";
 import {
   DEFAULT_DEMO_CLIENT_ID,
   getClientById,
@@ -293,6 +294,9 @@ function buildScheduledPostsFromCalendar(
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
 export function useClientPortalData(): UseClientPortalDataResult {
+  const { activeClientId, isRealClientSession } = useActiveClientPortalContext();
+  const realClientId = AUTH_MODE === "real" && isRealClientSession ? activeClientId : null;
+
   // M007: data source resolution.
   //
   // The portal historically short-circuited in placeholder auth mode and used
@@ -306,7 +310,7 @@ export function useClientPortalData(): UseClientPortalDataResult {
   //  - AUTH_MODE === "real" + fixture mode → keep current behaviour (existing
   //                                          Supabase load below).
   const shouldAttemptSupabase =
-    DATA_MODE === "supabase_readonly" || AUTH_MODE === "real";
+    DATA_MODE === "supabase_readonly" || Boolean(realClientId);
 
   const initialSource: ClientPortalSource =
     DATA_MODE === "supabase_readonly" ? "supabase_readonly" : "demo";
@@ -345,12 +349,12 @@ export function useClientPortalData(): UseClientPortalDataResult {
       try {
         const [client, platforms, media, calendar, weekly, monthly] =
           await Promise.all([
-            getClientById(DEFAULT_DEMO_CLIENT_ID),
-            getClientPlatforms(DEFAULT_DEMO_CLIENT_ID),
-            getClientMediaAssets(DEFAULT_DEMO_CLIENT_ID),
-            getClientCalendar(DEFAULT_DEMO_CLIENT_ID),
-            getClientWeeklyReports(DEFAULT_DEMO_CLIENT_ID),
-            getClientMonthlyReports(DEFAULT_DEMO_CLIENT_ID),
+            getClientById(realClientId ?? DEFAULT_DEMO_CLIENT_ID),
+            getClientPlatforms(realClientId ?? DEFAULT_DEMO_CLIENT_ID),
+            getClientMediaAssets(realClientId ?? DEFAULT_DEMO_CLIENT_ID),
+            getClientCalendar(realClientId ?? DEFAULT_DEMO_CLIENT_ID),
+            getClientWeeklyReports(realClientId ?? DEFAULT_DEMO_CLIENT_ID),
+            getClientMonthlyReports(realClientId ?? DEFAULT_DEMO_CLIENT_ID),
           ]);
 
         if (cancelled) return;
@@ -489,7 +493,7 @@ export function useClientPortalData(): UseClientPortalDataResult {
 
     load();
     return () => { cancelled = true; };
-  }, [shouldAttemptSupabase]);
+  }, [activeClientId, realClientId, shouldAttemptSupabase]);
 
   return state;
 }

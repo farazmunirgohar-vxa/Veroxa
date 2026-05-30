@@ -43,6 +43,7 @@ import { analyzeRestaurantContent } from "@/lib/content/restaurantContentIntelli
 import { createWorkflowItem } from "@/lib/workflow/workflowRepository";
 import { veroxaWriteAdapter } from "@/lib/data/writeAdapter";
 import { getDevClientIdFromEnv } from "@/lib/data/devClientId";
+import { useActiveClientPortalContext } from "@/lib/clientPortalContext";
 import type { ClientJourneyStatus } from "@/domain/clientPortalJourney";
 
 const SHOWCASE_ID = "demo-a";
@@ -94,11 +95,12 @@ export default function ClientMedia() {
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
   const [submitNote, setSubmitNote] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const { activeClientId, isRealClientSession } = useActiveClientPortalContext();
 
   const handleSubmitToTeam = () => {
     if (files.length === 0) return;
     const item = createWorkflowItem({
-      clientId: SHOWCASE_ID,
+      clientId: activeClientId,
       type: "media_upload",
       title:
         files.length > 1
@@ -128,7 +130,7 @@ export default function ClientMedia() {
     // is not a UUID and would fail the restaurant_id FK — so the call is
     // skipped when it is absent. The local workflow above is the source
     // of truth; any write failure is swallowed and never reaches the client.
-    const devClientId = getDevClientIdFromEnv();
+    const devClientId = isRealClientSession ? activeClientId : getDevClientIdFromEnv();
     if (devClientId) {
       void Promise.all(
         filesToWrite.map((file) => {
