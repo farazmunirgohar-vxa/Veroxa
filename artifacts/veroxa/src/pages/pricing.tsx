@@ -210,6 +210,35 @@ export default function PricingPage() {
         </div>
       </section>
 
+      {/* Which plan section */}
+      <section className="pb-8 px-6 lg:px-12 max-w-5xl mx-auto w-full" data-testid="which-plan-section">
+        <div className="rounded-2xl border border-border/40 bg-card/20 px-7 py-6">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">
+            Which plan should I start with?
+          </h3>
+          <div className="grid sm:grid-cols-3 gap-5">
+            <div>
+              <p className="text-sm font-semibold mb-1">Essential</p>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Best if you need consistency and a clean online presence.
+              </p>
+            </div>
+            <div>
+              <p className="text-sm font-semibold mb-1">Growth</p>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Best if you can provide videos and want stronger reach.
+              </p>
+            </div>
+            <div>
+              <p className="text-sm font-semibold mb-1">Premium</p>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Best if you are ready to run ads, with ad spend separate.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Global rules strip */}
       <section className="py-10 px-6 lg:px-12 max-w-5xl mx-auto w-full">
         <div
