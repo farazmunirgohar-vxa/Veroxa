@@ -7,7 +7,7 @@
  *   - These types describe what the UI is allowed to render.
  *   - They must NOT include internal-only fields:
  *       internal_note, raw rejection_reason, staff quality notes,
- *       owner/operator private notes, audit fields, raw activity-log
+ *       internal private notes, audit fields, raw activity-log
  *       JSON, performed_by_user_id, old/new value JSON,
  *       internal database policy details, RLS error details.
  *   - When in doubt, omit the field. A safer, smaller payload is

@@ -1,12 +1,10 @@
 // demoActivityLogs.ts — future: activity_logs table
-// Covers operator activity timeline events and per-client activity log.
+// Covers team activity timeline events and per-client activity log.
 
 // ── Shared role type ──────────────────────────────────────────────
 export type ActivityRole =
   | "client"
   | "team"
-  | "operator"
-  | "owner"
   | "agent"
   | "system";
 
@@ -27,10 +25,10 @@ export const demoActivityEvents: DemoActivityEvent[] = [
   { id: "a3",  timestamp: "Today, 9:20 AM",     eventType: "Review received",          clientId: "demo-d",   description: "3 new Google reviews received (4–5 stars).",                         status: "completed",   role: "system"   },
   { id: "a4",  timestamp: "Today, 9:15 AM",     eventType: "Media reviewed",           clientId: "demo-a", description: "Approved 8 of 12 uploaded photos. 2 blurry, 2 duplicates.",          status: "completed",   role: "agent"    },
   { id: "a5",  timestamp: "Yesterday, 6:30 PM", eventType: "Draft created",            clientId: "demo-b",    description: "Caption Agent generated 3 caption options for taco lunch promo.",     status: "completed",   role: "agent"    },
-  { id: "a6",  timestamp: "Yesterday, 5:15 PM", eventType: "Weekly report generated",  clientId: "demo-b",    description: "Weekly report compiled and queued for operator review.",               status: "in_progress", role: "agent"    },
+  { id: "a6",  timestamp: "Yesterday, 5:15 PM", eventType: "Weekly report generated",  clientId: "demo-b",    description: "Weekly report compiled and queued for Veroxa team review.",               status: "in_progress", role: "agent"    },
   { id: "a7",  timestamp: "Yesterday, 2:00 PM", eventType: "Post published",           clientId: "demo-c", description: "Mediterranean platter post published to Instagram and Facebook.",       status: "completed",   role: "team"     },
   { id: "a8",  timestamp: "May 23",             eventType: "Google profile updated",   clientId: "demo-c", description: "Updated business hours and added 4 new menu photos.",                  status: "completed",   role: "team"     },
-  { id: "a9",  timestamp: "May 22",             eventType: "Operator reviewed report", clientId: "demo-a", description: "Operator approved last week's report and sent to client.",             status: "completed",   role: "operator" },
+  { id: "a9",  timestamp: "May 22",             eventType: "Team reviewed report", clientId: "demo-a", description: "Team approved last week's report and sent to client.",             status: "completed",   role: "team" },
   { id: "a10", timestamp: "May 22",             eventType: "Client notification sent", clientId: "demo-b",    description: "Weekly update email delivered to client contact.",                     status: "completed",   role: "system"   },
 ];
 

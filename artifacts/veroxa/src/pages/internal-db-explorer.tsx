@@ -175,7 +175,7 @@ function severityTone(s: string): StatusBadgeTone {
 
 function weeklyStatusTone(s: string): StatusBadgeTone {
   if (s === "Published" || s === "Ready for Client") return "success";
-  if (s === "Operator Review")                       return "warning";
+  if (s === "Team Review")                       return "warning";
   return "neutral";
 }
 
@@ -394,7 +394,7 @@ export default function InternalDbExplorer() {
           iconClass="text-orange-400"
           name="Alerts"
           count={demoTeamAlerts.length}
-          description="Operational alerts surfaced to team and operator roles"
+          description="Operational alerts surfaced to team roles"
           statuses={Object.entries(alertCounts).map(([label, count]) => ({
             label, count,
             tone: severityTone(label),
@@ -426,7 +426,7 @@ export default function InternalDbExplorer() {
             badge:     r.status,
             tone:      weeklyStatusTone(r.status),
           }))}
-          relations={["Clients", "Activity Log", "Owner Portal"]}
+          relations={["Clients", "Activity Log", "Team Portal"]}
           testId="entity-weekly-reports"
         />
 
@@ -436,7 +436,7 @@ export default function InternalDbExplorer() {
           iconClass="text-pink-400"
           name="Monthly Reports"
           count={demoMonthlyReports.length}
-          description="Monthly performance reports delivered to client and owner"
+          description="Monthly performance reports delivered to client and team"
           statuses={Object.entries(monthlyCounts).map(([label, count]) => ({
             label, count,
             tone: label === "Healthy" ? "success" : label === "Attention" ? "warning" : "danger",
@@ -449,7 +449,7 @@ export default function InternalDbExplorer() {
             tone:      (r.healthSummary.toLowerCase().startsWith("critical") ? "danger" :
                        r.healthSummary.toLowerCase().startsWith("attention") ? "warning" : "success") as StatusBadgeTone,
           }))}
-          relations={["Clients", "Activity Log", "Owner Portal"]}
+          relations={["Clients", "Activity Log", "Team Portal"]}
           testId="entity-monthly-reports"
         />
 

@@ -57,9 +57,9 @@ export const teamAgentCards = [
   },
 ] as const;
 
-// ── Operator Portal — AI Oversight Preview ───────────────────────────────────
+// ── Team Portal — AI Oversight Preview ───────────────────────────────────
 
-export const operatorOversightSignals = [
+export const teamOversightSignals = [
   {
     key: "content-supply-risk",
     name: "Content Supply Risk",
@@ -78,7 +78,7 @@ export const operatorOversightSignals = [
     key: "report-quality",
     name: "Report Quality Check",
     status: "4 reports pending review",
-    meaning: "Prepares report summaries — operator approval still required before client release.",
+    meaning: "Prepares report summaries — Veroxa team review still required before client release.",
     color: "blue" as const,
   },
   {
@@ -92,7 +92,7 @@ export const operatorOversightSignals = [
     key: "escalation-signal",
     name: "Escalation Signal",
     status: "2 critical alerts",
-    meaning: "Recommends which problems should reach operator or owner-level visibility.",
+    meaning: "Recommends which problems should reach team or owner-level visibility.",
     color: "red" as const,
   },
 ] as const;

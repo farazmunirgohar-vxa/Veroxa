@@ -14,7 +14,7 @@ export default function TeamDrafts() {
         <p className="text-muted-foreground mt-1 text-sm md:text-base">Caption variants ready for review — select the best one to move to scheduling.</p>
       </div>
 
-      <DemoOnlyBanner message="Static demo — no real edit, save, or approval is wired. Draft and approval states illustrate the future Team → Operator flow only." testId="banner-team-drafts" />
+      <DemoOnlyBanner message="Static demo — no real edit, save, or approval is wired. Draft and approval states illustrate the future Team/Internal Admin review flow only." testId="banner-team-drafts" />
 
       <div className="space-y-3">
         {draftVariants.map((variant) => (

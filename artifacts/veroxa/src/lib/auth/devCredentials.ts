@@ -43,7 +43,7 @@ export interface DevCredential {
 /**
  * Placeholder development credentials for internal review only.
  * Plain-text by design — no production secrets, no real accounts.
- * Operator and Owner credentials intentionally omitted (portals parked).
+ * Only active Client and Team credentials are present.
  */
 export const DEV_ROLE_CREDENTIALS: readonly DevCredential[] = [
   { role: "client", email: "faraz@client.com", password: "farazclient" },
@@ -70,10 +70,8 @@ export function validateDevCredentials(
 /**
  * Where a dev-logged-in role should land — the canonical real-review
  * routes (/client/dashboard, /team/dashboard) rather than /demo/* paths.
- * Operator and Owner are parked; they fall back to /login.
  * Only called when AUTH_MODE === "placeholder".
  */
 export function getDevRouteForRole(role: VeroxaRole): string {
-  if (role === "operator" || role === "owner") return "/login";
   return getRoleHomePath(role);
 }

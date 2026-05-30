@@ -68,19 +68,19 @@ const agents: Agent[] = [
   {
     name: "Alert Agent",
     status: "Monitoring",
-    description: "Monitors for failed posts, low content, and health score drops — surfaces issues to operators.",
+    description: "Monitors for failed posts, low content, and health score drops — surfaces issues to the Team/Internal Admin portal.",
     icon: ShieldAlert,
   },
   {
-    name: "Operator Assistant",
+    name: "Team Assistant",
     status: "Active",
-    description: "Surfaces prioritised client risk signals and flags report approvals for operator review.",
+    description: "Surfaces prioritised client risk signals and flags report approvals for Team review.",
     icon: Sparkles,
   },
   {
-    name: "Owner Assistant",
+    name: "Team Briefing Assistant",
     status: "Active",
-    description: "Synthesises agency-wide health, MRR trends, and retention risk for owner decision-making.",
+    description: "Synthesises agency-wide health, MRR trends, and retention risk for Team/Internal Admin decision-making.",
     icon: Bot,
   },
 ];

@@ -4,7 +4,7 @@ import type { AppRole } from "@/domain/users/permissions";
 
 interface Props {
   roles:    AppRole[];          // allowed roles
-  current?: AppRole | null;     // demo: defaults to operator (matches InternalDemoGuard demo posture)
+  current?: AppRole | null;     // demo: defaults to team (Internal Admin posture)
   children: ReactNode;
   fallback?: ReactNode;
   testId?:  string;
@@ -17,7 +17,7 @@ interface Props {
  * NOTE: This is the *future* router guard. Existing pages keep their existing
  * InternalDemoGuard — RouteGuard is not retrofitted in Batch A.
  */
-export function RouteGuard({ roles, current = "operator", children, fallback, testId }: Props) {
+export function RouteGuard({ roles, current = "team", children, fallback, testId }: Props) {
   if (current && roles.includes(current)) return <>{children}</>;
   if (fallback) return <>{fallback}</>;
   return (

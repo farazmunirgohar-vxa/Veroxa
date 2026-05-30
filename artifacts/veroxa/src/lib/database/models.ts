@@ -218,8 +218,8 @@ export interface MonthlyReport {
   postsPlanned: number;
   completionRate: number;
   summaryText: string | null;
-  operatorReviewedAt: string | null;
-  approvedAt: string | null;
+  teamReviewedAt: string | null;
+  teamApprovedAt: string | null;
   publishedAt: string | null;
   createdAt: string;
   updatedAt: string;

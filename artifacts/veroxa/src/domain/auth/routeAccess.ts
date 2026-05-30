@@ -13,13 +13,13 @@ export interface RouteRule {
  * this is the future-ready map a real router guard would consult.
  */
 export const routeAccessMap: RouteRule[] = [
-  { pattern: "/",                          access: "public", note: "Marketing landing" },
-  { pattern: "/demo",                      access: "public", note: "Demo hub" },
-  { pattern: "/demo/client/*",             access: "public", note: "Client portal demo — always public in demo mode" },
-  { pattern: "/demo/team/*",               access: { roles: ["team", "operator", "owner"] } },
-  { pattern: "/demo/operator/*",           access: { roles: ["operator", "owner"] } },
-  { pattern: "/demo/owner/*",              access: { roles: ["owner"] } },
-  { pattern: "/demo/internal/*",           access: { roles: ["operator", "owner"] }, note: "Internal architecture, system status, demo controls" },
+  { pattern: "/", access: "public", note: "Marketing landing" },
+  { pattern: "/demo", access: "public", note: "Demo hub" },
+  { pattern: "/demo/client/*", access: "public", note: "Client portal demo — always public in demo mode" },
+  { pattern: "/client/*", access: "public", note: "Current client review/demo route" },
+  { pattern: "/team/*", access: { roles: ["team"] }, note: "Team/Internal Admin portal" },
+  { pattern: "/demo/team/*", access: { roles: ["team"] }, note: "Team/Internal Admin demo" },
+  { pattern: "/demo/internal/*", access: { roles: ["team"] }, note: "Internal architecture and system status" },
 ];
 
 export function ruleFor(path: string): RouteRule | undefined {

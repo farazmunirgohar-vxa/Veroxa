@@ -173,7 +173,7 @@ export default function InternalArchitecture() {
         <Card className="bg-card border-border">
           <CardHeader className="pb-3"><CardTitle className="text-sm flex items-center gap-2"><Bell className="w-4 h-4 text-primary" /> Notification engine</CardTitle></CardHeader>
           <CardContent>
-            <p className="text-xs text-foreground/85">Role-segmented feeds: client, team, operator, owner.</p>
+            <p className="text-xs text-foreground/85">Role-segmented feeds: client and team.</p>
             <p className="text-[10px] text-muted-foreground pt-2">Future: emit → email / SMS / in-app.</p>
           </CardContent>
         </Card>

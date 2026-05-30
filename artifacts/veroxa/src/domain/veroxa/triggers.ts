@@ -24,8 +24,8 @@ export type AutomationTriggerName =
   | "post_failed"
   | "content_supply_low"
   | "weekly_report_generated"
-  | "monthly_report_submitted_for_approval"
-  | "monthly_report_approved";
+  | "monthly_report_submitted_for_team_review"
+  | "monthly_report_team_approved";
 
 export interface TriggerResult<TRecord> {
   trigger: AutomationTriggerName;
@@ -346,52 +346,52 @@ export function onWeeklyReportGenerated(
   );
 }
 
-export function onMonthlyReportSubmittedForApproval(
+export function onMonthlyReportSubmittedForTeamReview(
   report: MonthlyReport,
   now = stamp(),
 ): TriggerResult<MonthlyReport> {
   const record: MonthlyReport = {
     ...report,
-    status: "submitted_for_operator_approval",
+    status: "team_review",
     updatedAt: now,
   };
   return {
-    trigger: "monthly_report_submitted_for_approval",
+    trigger: "monthly_report_submitted_for_team_review",
     record,
     activityLog: activity({
       clientId: report.clientId,
-      trigger: "monthly_report_submitted_for_approval",
+      trigger: "monthly_report_submitted_for_team_review",
       actor: "team",
-      summary: "Monthly report submitted for operator approval.",
+      summary: "Monthly report submitted for Veroxa team review.",
       now,
     }),
     notifications: [
       notification({
         clientId: report.clientId,
-        audience: "operator",
+        audience: "team",
         kind: "monthly_report",
         title: "Monthly report ready",
-        message: "Review and approve the monthly report when ready.",
+        message: "Review the monthly report and mark it ready when approved.",
         now,
       }),
     ],
   };
 }
 
-export function onMonthlyReportApproved(
+export function onMonthlyReportTeamApproved(
   report: MonthlyReport,
   now = stamp(),
 ): TriggerResult<MonthlyReport> {
   const record: MonthlyReport = {
     ...report,
-    status: "operator_approved",
-    operatorApprovedAt: now,
+    status: "team_approved",
+    teamApprovedAt: now,
     updatedAt: now,
   };
   return baseTeamTrigger(
-    "monthly_report_approved",
+    "monthly_report_team_approved",
     record,
-    "Monthly report approved for client-ready preparation.",
+    "Monthly report approved by Veroxa team for client-ready preparation.",
     now,
   );
 }

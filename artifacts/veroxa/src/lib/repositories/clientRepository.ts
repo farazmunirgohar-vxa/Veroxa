@@ -81,7 +81,7 @@ function toClientAccount(r: DemoRestaurant): ClientAccount {
     contentHealthStatus: mapHealthToContentStatus(health),
     riskStatus: mapHealthToRisk(health),
     assignedTeam: r.assignedTeam,
-    assignedOperator: r.assignedOperator,
+    assignedInternalReviewer: r.assignedOperator,
     postingFrequencyWeekly: runway?.postsPerWeek ?? 0,
     timezone: "America/Chicago",
   };

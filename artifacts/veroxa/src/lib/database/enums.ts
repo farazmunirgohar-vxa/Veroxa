@@ -175,8 +175,6 @@ export type PostSlotStatus = (typeof PostSlotStatus)[keyof typeof PostSlotStatus
 export const NotificationTargetRole = {
   client: "client",
   team: "team",
-  operator: "operator",
-  owner: "owner",
 } as const;
 export type NotificationTargetRole = (typeof NotificationTargetRole)[keyof typeof NotificationTargetRole];
 
@@ -198,9 +196,11 @@ export type WeeklyReportStatus = (typeof WeeklyReportStatus)[keyof typeof Weekly
 
 export const MonthlyReportStatus = {
   drafting: "drafting",
-  operator_review: "operator_review",
-  approved: "approved",
+  team_review: "team_review",
+  team_approved: "team_approved",
+  client_ready: "client_ready",
   published: "published",
+  needs_revision: "needs_revision",
 } as const;
 export type MonthlyReportStatus = (typeof MonthlyReportStatus)[keyof typeof MonthlyReportStatus];
 
@@ -220,7 +220,5 @@ export const PerformedByRole = {
   system: "system",
   client: "client",
   team: "team",
-  operator: "operator",
-  owner: "owner",
 } as const;
 export type PerformedByRole = (typeof PerformedByRole)[keyof typeof PerformedByRole];

@@ -32,19 +32,19 @@ import {
 
 const weeklyStatusColor: Record<WeeklyReportStatus, string> = {
   "Draft":              "border-muted-foreground/40 text-muted-foreground bg-muted/30",
-  "Operator Review":    "border-amber-500/40 text-amber-300 bg-amber-500/10",
+  "Team Review":    "border-amber-500/40 text-amber-300 bg-amber-500/10",
   "Ready for Client":   "border-emerald-500/40 text-emerald-300 bg-emerald-500/10",
   "Published":          "border-sky-500/40 text-sky-300 bg-sky-500/10",
 };
 
 const monthlyStatusMap: Record<string, string> = {
   "Draft":           "border-muted-foreground/40 text-muted-foreground bg-muted/30",
-  "Operator Review": "border-amber-500/40 text-amber-300 bg-amber-500/10",
+  "Team Review": "border-amber-500/40 text-amber-300 bg-amber-500/10",
   "Published":       "border-sky-500/40 text-sky-300 bg-sky-500/10",
 };
 
 const weeklyStages: WeeklyReportStatus[] = [
-  "Draft", "Operator Review", "Ready for Client", "Published",
+  "Draft", "Team Review", "Ready for Client", "Published",
 ];
 
 export default function TeamReportQueue() {
@@ -287,7 +287,7 @@ export default function TeamReportQueue() {
                   r.healthSummary.toLowerCase().startsWith("critical")
                     ? "Draft"
                     : r.healthSummary.toLowerCase().startsWith("attention")
-                      ? "Operator Review"
+                      ? "Team Review"
                       : "Published";
 
                 return (

@@ -44,20 +44,20 @@ export const demoAMonthlyReports: MonthlyReport[] = [
     clientId: "client-demo-a-001",
     month: 4,
     year: 2026,
-    status: MonthlyReportStatus.approved,
+    status: MonthlyReportStatus.team_approved,
     postsPublished: 18,
     postsPlanned: 20,
     completionRate: 90,
     summaryText: "April 2026 — 18 posts published. Total reach 41,200. Google impressions 12,580. 6 new reviews.",
-    operatorReviewedAt: "2026-05-03T10:00:00Z",
-    approvedAt: "2026-05-03T11:00:00Z",
+    teamReviewedAt: "2026-05-03T10:00:00Z",
+    teamApprovedAt: "2026-05-03T11:00:00Z",
     publishedAt: "2026-05-03T11:30:00Z",
     createdAt: "2026-05-01T09:00:00Z",
     updatedAt: "2026-05-03T11:30:00Z",
   },
 ];
 
-// ── Operator Portal — Report approvals display ────────────────────────────────
+// ── Team/Internal Admin Portal — Report review display ────────────────────────────────
 
 export const reportApprovals = [
   { client: "Sushi Nori Shoreditch",  period: "April 2026", preparedBy: "Jordan D.", status: "Ready"     },
@@ -66,7 +66,7 @@ export const reportApprovals = [
   { client: "Demo Grill House",        period: "April 2026", preparedBy: "Jordan D.", status: "In Review" },
 ] as const;
 
-// ── Owner Portal — MRR trend chart data ──────────────────────────────────────
+// ── Legacy business metrics demo data (not an active portal) ──────────────────────────────────────
 
 export const revenueData = [
   { month: "Dec", rev: 28400 },
@@ -77,7 +77,7 @@ export const revenueData = [
   { month: "May", rev: 43600 },
 ] as const;
 
-// ── Owner Portal — Critical alerts display ────────────────────────────────────
+// ── Team/Internal Admin Portal — Critical alerts display ────────────────────────────────────
 
 export const ownerCriticalAlerts = [
   { client: "The Grill House",       issue: "Google Business Profile disconnected — visibility paused.", severity: "Critical" },
@@ -85,7 +85,7 @@ export const ownerCriticalAlerts = [
   { client: "Rosso Trattoria",       issue: "No media uploaded in 18 days — shoot overdue.",             severity: "Warning"  },
 ] as const;
 
-// ── Owner Portal — Growth summary display ────────────────────────────────────
+// ── Legacy growth summary demo data (not an active portal) ────────────────────────────────────
 
 export const growthSummary = [
   { label: "New clients onboarded (May)",   value: "3",    positive: true  },

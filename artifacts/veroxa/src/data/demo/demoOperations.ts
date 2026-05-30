@@ -1,5 +1,5 @@
-// demoOperations.ts — future: operator-layer operational data
-// Covers work queue, content review queue, operator metrics, pipeline stages,
+// demoOperations.ts — future: team-layer operational data
+// Covers work queue, content review queue, team metrics, pipeline stages,
 // risk center, action center, AI assistant insights, daily digest, and bottlenecks.
 
 import type { ContentType } from "./demoPosts";
@@ -36,7 +36,7 @@ export const demoWorkQueue: DemoWorkQueueItem[] = [
     status:       "Attention Needed",
     priority:     "High",
     lastActivity: "Yesterday, 6:30 PM",
-    nextAction:   "Weekly report pending operator review — follow up today.",
+    nextAction:   "Weekly report pending Veroxa team review — follow up today.",
     assignedTo:   "Priya",
   },
   {
@@ -114,8 +114,8 @@ export const demoContentReviewQueue: DemoContentReviewItem[] = [
   },
 ];
 
-// ── Operator metrics snapshot ─────────────────────────────────────
-export const demoOperatorMetrics = {
+// ── Team metrics snapshot ─────────────────────────────────────
+export const demoOperationsMetrics = {
   totalActiveClients:        4,
   healthyClients:            2,
   clientsRequiringAttention: 2,
@@ -172,7 +172,7 @@ export const demoRiskItems: DemoRiskItem[] = [
   {
     id: "r3", severity: "High", category: "Reporting",
     title: "Weekly report overdue — Demo Taco Bar",
-    description: "Report has been in operator validation queue for 28+ hours. Client visibility window missed.",
+    description: "Report has been in team validation queue for 28+ hours. Client visibility window missed.",
     clientId: "demo-b", time: "Yesterday, 5:15 PM",
   },
   {
@@ -207,10 +207,10 @@ export const demoRiskItems: DemoRiskItem[] = [
   },
 ];
 
-// ── Operator action center — future: operator_actions ────────────
+// ── Team action center — future: team_actions ────────────
 export type ActionUrgency = "Immediate" | "Today" | "This Week";
 
-export interface DemoOperatorAction {
+export interface DemoTeamAction {
   id:          string;
   title:       string;
   description: string;
@@ -219,7 +219,7 @@ export interface DemoOperatorAction {
   category:    string;
 }
 
-export const demoOperatorActions: DemoOperatorAction[] = [
+export const demoTeamActions: DemoTeamAction[] = [
   {
     id: "oa1", urgency: "Immediate", category: "Client",
     title: "Contact Demo Cafe — media emergency",
@@ -229,7 +229,7 @@ export const demoOperatorActions: DemoOperatorAction[] = [
   {
     id: "oa2", urgency: "Immediate", category: "Report",
     title: "Validate Demo Taco Bar weekly report",
-    description: "Report sitting in operator queue 28+ hours. Approve and publish to unlock client visibility.",
+    description: "Report sitting in team queue 28+ hours. Approve and publish to unlock client visibility.",
     clientId: "demo-b",
   },
   {
@@ -264,7 +264,7 @@ export const demoOperatorActions: DemoOperatorAction[] = [
   },
 ];
 
-// ── AI operator assistant insights ───────────────────────────────
+// ── AI team assistant insights ───────────────────────────────
 export type AssistantSeverity = "info" | "warning" | "critical";
 
 export interface DemoAssistantInsight {
@@ -275,7 +275,7 @@ export interface DemoAssistantInsight {
   severity:  AssistantSeverity;
 }
 
-export const demoOperatorAssistant: DemoAssistantInsight[] = [
+export const demoTeamAssistant: DemoAssistantInsight[] = [
   {
     id: "ai1", agent: "Risk Monitoring Agent", severity: "critical",
     insight: "Demo Cafe media inventory may run out within 5 days at current posting frequency.",
@@ -283,7 +283,7 @@ export const demoOperatorAssistant: DemoAssistantInsight[] = [
   },
   {
     id: "ai2", agent: "Reporting Agent", severity: "critical",
-    insight: "Demo Taco Bar monthly report validation is overdue by 28 hours. Immediate operator action required.",
+    insight: "Demo Taco Bar monthly report validation is overdue by 28 hours. Immediate team action required.",
     clientId: "demo-b",
   },
   {
@@ -312,7 +312,7 @@ export const demoOperatorAssistant: DemoAssistantInsight[] = [
   },
   {
     id: "ai8", agent: "Reporting Agent", severity: "info",
-    insight: "3 weekly reports are pending for this cycle. 1 is operator-ready, 2 need validation.",
+    insight: "3 weekly reports are pending for this cycle. 1 is team-ready, 2 need validation.",
   },
 ];
 
@@ -335,7 +335,7 @@ export const demoDailyDigest: DemoDailyDigestSection[] = [
     category: "Urgent Alerts",
     items: [
       "Demo Cafe: media critically low — 2 approved items. Risk of posting gap next week.",
-      "Demo Taco Bar: weekly report stuck in operator queue.",
+      "Demo Taco Bar: weekly report stuck in team queue.",
       "Demo Cafe: client unresponsive for 3 days — escalation may be needed.",
     ],
   },
@@ -365,7 +365,7 @@ export const demoDailyDigest: DemoDailyDigestSection[] = [
     category: "Pipeline Bottlenecks",
     items: [
       "5 items stuck in 'In Review' — review queue needs attention.",
-      "3 caption items awaiting operator approval before scheduling.",
+      "3 caption items awaiting Veroxa team review before scheduling.",
     ],
   },
 ];
@@ -391,7 +391,7 @@ export interface DemoBottleneck {
 export const demoBottlenecks: DemoBottleneck[] = [
   { id: "b1", type: "Caption Drafting Delayed",   clientId: "demo-b",    severity: "High",     detail: "Caption flagged by Brand Voice Agent 22h ago — no rewrite yet.",  recommendedAction: "Reassign to Ava with 4h SLA."                       },
   { id: "b2", type: "Client Has Not Uploaded",    clientId: "demo-d",   severity: "Critical", detail: "No uploads in 9 days. 5 days of content runway left.",            recommendedAction: "Trigger reshoot brief and book rescue call."          },
-  { id: "b3", type: "Report Validation Pending",  clientId: "demo-b",    severity: "High",     detail: "Weekly report drafted 36h ago. Validation owner offline.",        recommendedAction: "Reassign validation to Lina (operator)."             },
+  { id: "b3", type: "Report Validation Pending",  clientId: "demo-b",    severity: "High",     detail: "Weekly report drafted 36h ago. Validation owner offline.",        recommendedAction: "Reassign validation to Lina (team)."             },
   { id: "b4", type: "Onboarding Incomplete",      clientId: "demo-b",    severity: "Medium",   detail: "Posting-window preferences still missing.",                       recommendedAction: "Send client request reminder; followup in 48h."       },
   { id: "b5", type: "Content Queue Below Target", clientId: "demo-d",   severity: "Critical", detail: "Only 2 scheduled posts vs target of 6.",                          recommendedAction: "Block out catch-up cadence after reshoot lands."      },
   { id: "b6", type: "Media Review Overdue",       clientId: "demo-d",   severity: "Medium",   detail: "4 uploads from May 15 still in Media Review.",                    recommendedAction: "Jordan to clear backlog before EoD."                  },

@@ -170,7 +170,7 @@ function suggestedAction(d: DirectionRequest): string {
     case "event_or_holiday":
       return "Add event-themed content + Google event post.";
     case "ads_goal":
-      return "Draft ads angle for owner/operator approval (no launch).";
+      return "Draft ads angle for Veroxa team review (no launch).";
     case "avoid_item":
       return "Tag item as avoid; pull from drafts and Google posts.";
     case "use_media_next":

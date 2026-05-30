@@ -5,7 +5,8 @@ import type { PermissionResource } from "./resources";
 // ─────────────────────────────────────────────────────────────────────────────
 // Veroxa Portal Permission Matrix
 // Schema/contracts only — not enforced at runtime yet.
-// Future API/auth layer must enforce these same rules server-side.
+// Active human roles are Client and Team/Internal Admin. System remains for
+// automated internal processes only and has no portal experience.
 // ─────────────────────────────────────────────────────────────────────────────
 
 type Matrix = Readonly<
@@ -13,90 +14,50 @@ type Matrix = Readonly<
 >;
 
 export const permissionMatrix: Matrix = {
-
   // ── Client ─────────────────────────────────────────────────────────────────
-  // High-level visibility only. No access to internal team workflow.
+  // Client-safe progress and media submission only. No internal workflow access.
   client: {
-    account_profile:  ["view", "edit"],
-    platform_access:  ["view", "edit"],      // submit/update their own access details
-    media_library:    ["create", "edit"],    // upload before assets enter the review pipeline
-    post_schedule:    ["view"],
-    publish_log:      ["view"],
-    weekly_reports:   ["view"],
-    monthly_reports:  ["view"],
-    alerts:           ["receive_alert"],
-    // Explicitly excluded: content_concepts, draft_sets, draft_variants,
-    // internal rejection reasons, internal comments, team tasks.
+    account_profile: ["view", "edit"],
+    platform_access: ["view", "edit"],
+    media_library: ["create", "edit"],
+    post_schedule: ["view"],
+    publish_log: ["view"],
+    weekly_reports: ["view"],
+    monthly_reports: ["view"],
+    alerts: ["receive_alert"],
   },
 
-  // ── Team ───────────────────────────────────────────────────────────────────
-  // Executes the content workflow. Manages media → concepts → drafts → schedule.
+  // ── Team / Internal Admin ──────────────────────────────────────────────────
+  // Owns internal workflow, report review, alerts, content health, and
+  // automation controls in the two-role architecture.
   team: {
-    account_profile:  ["view"],
-    platform_access:  ["view", "edit"],
-    media_library:    ["view", "edit", "approve"],
-    content_concepts: ["view", "approve"],
-    draft_sets:       ["create", "edit", "approve"],
-    draft_variants:   ["create", "edit", "approve"],
-    post_schedule:    ["create", "edit", "trigger"],
-    publish_log:      ["view"],
-    weekly_reports:   ["trigger"],
-    monthly_reports:  ["create", "edit"],    // drafts only — operator approves
-    alerts:           ["view", "edit"],
-    client_health:    ["view"],
+    account_profile: ["view", "edit"],
+    onboarding: ["view", "edit"],
+    platform_access: ["view", "edit"],
+    media_library: ["view", "create", "edit", "approve"],
+    content_concepts: ["view", "create", "edit", "approve"],
+    draft_sets: ["view", "create", "edit", "approve"],
+    draft_variants: ["view", "create", "edit", "approve"],
+    post_schedule: ["view", "create", "edit", "approve", "trigger"],
+    publish_log: ["view", "create"],
+    weekly_reports: ["view", "create", "edit", "approve", "trigger"],
+    monthly_reports: ["view", "create", "edit", "approve", "trigger"],
+    alerts: ["view", "create", "edit", "trigger", "receive_alert"],
+    client_health: ["view", "edit"],
+    activity_logs: ["view", "create"],
   },
 
-  // ── Operator ────────────────────────────────────────────────────────────────
-  // Oversight layer. Reviews team work, approves reports, manages escalations.
-  // Should NOT approve every post — that belongs to the team workflow.
-  operator: {
-    account_profile:  ["view"],
-    platform_access:  ["view"],
-    media_library:    ["view"],
-    content_concepts: ["view"],
-    draft_sets:       ["view"],
-    draft_variants:   ["view"],
-    post_schedule:    ["view"],
-    publish_log:      ["view"],
-    weekly_reports:   ["view"],
-    monthly_reports:  ["view", "approve"],
-    alerts:           ["view", "edit", "trigger"], // trigger = escalate
-    client_health:    ["view", "edit"],
-  },
-
-  // ── Owner ───────────────────────────────────────────────────────────────────
-  // Strategic layer. High-level visibility and commercial control only.
-  // Should NOT manage daily execution tasks.
-  owner: {
-    account_profile:    ["view", "edit"],   // commercial/lifecycle fields
-    onboarding:         ["view"],
-    platform_access:    ["view"],
-    media_library:      ["view"],
-    content_concepts:   ["view"],
-    draft_sets:         ["view"],
-    draft_variants:     ["view"],
-    post_schedule:      ["view"],
-    publish_log:        ["view"],
-    weekly_reports:     ["view"],
-    monthly_reports:    ["view"],
-    alerts:             ["view", "receive_alert"],
-    client_health:      ["view"],
-    user_admin:         ["create", "edit"],  // internal user management
-    revenue_dashboard:  ["view"],
-    activity_logs:      ["view"],
-  },
-
-  // ── System ──────────────────────────────────────────────────────────────────
+  // ── System ─────────────────────────────────────────────────────────────────
   // Automated processes only. No human portal user.
   system: {
-    activity_logs:    ["create"],
-    alerts:           ["create", "trigger"],  // create + escalate
-    client_health:    ["edit"],               // update derived health scores
-    weekly_reports:   ["create", "edit"],     // aggregate reporting
-    monthly_reports:  ["create", "edit"],     // aggregate reporting
-    media_library:    ["edit"],               // mark status after simulated publish
-    draft_variants:   ["edit"],               // mark as used after simulated publish
-    post_schedule:    ["edit"],               // mark slot status after simulated publish
-    publish_log:      ["create"],
+    activity_logs: ["create"],
+    alerts: ["create", "trigger"],
+    client_health: ["edit"],
+    weekly_reports: ["create", "edit"],
+    monthly_reports: ["create", "edit"],
+    media_library: ["edit"],
+    draft_variants: ["edit"],
+    post_schedule: ["edit"],
+    publish_log: ["create"],
   },
 } as const;

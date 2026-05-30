@@ -221,11 +221,11 @@ export function buildAdaptiveRecommendations(
           clientId,
           "ads_direction",
           "Ads planning (no launch)",
-          "Plan an ads angle aligned with the goal. No campaign will launch until owner approval.",
+          "Plan an ads angle aligned with the goal. No campaign will launch until Veroxa team review.",
           "Direction asks for an ads focus.",
           "medium",
           [{ source: "direction", detail: d.title }],
-          "Draft the ads angle + audience hypothesis; queue for owner/operator approval (not built yet).",
+          "Draft the ads angle + audience hypothesis; queue for Veroxa team review (not built yet).",
           "Veroxa is shaping your ads idea — nothing will launch without your approval.",
         ),
       );

@@ -8,7 +8,7 @@ export type AuditAction =
 export interface AuditEntry {
   id:          string;
   actorId:     string;
-  actorRole:   "client" | "team" | "operator" | "owner" | "system";
+  actorRole:   "client" | "team" | "system";
   action:      AuditAction;
   subjectType: string;     // e.g. "Client", "ContentItem", "Report"
   subjectId:   string;

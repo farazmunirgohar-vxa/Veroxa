@@ -19,13 +19,13 @@ import type {
 } from "@/lib/data/veroxaDataContracts";
 
 function mapRole(r: ActivityRole): VeroxaRole {
-  if (r === "agent") return "system";
-  return r;
+  if (r === "client" || r === "team") return r;
+  return "system";
 }
 
 function fromEvent(e: DemoActivityEvent): ActivityEvent {
   const visibility: ActivityVisibility =
-    e.role === "operator" || e.role === "agent" ? "internal_only" : "client_visible";
+    e.role === "team" || e.role === "agent" ? "internal_only" : "client_visible";
   return {
     eventId: e.id,
     clientId: e.clientId,

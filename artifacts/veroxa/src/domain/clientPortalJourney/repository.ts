@@ -286,7 +286,7 @@ function reportStatusToJourney(status: string): ClientJourneyItem["status"] {
     case "approved":
       return "Included in report";
     case "drafted":
-    case "operator_review":
+    case "team_review":
     default:
       return "Prepared by Veroxa";
   }

@@ -12,11 +12,11 @@ import { ClientHealthEngine } from "@/domain/clientHealth/engine";
 
 // ── Tab bar ─────────────────────────────────────────────────────────────────
 
-type ViewTab = "operator" | "owner" | "team";
+type ViewTab = "team" | "team" | "team";
 
 const tabs: { id: ViewTab; label: string }[] = [
-  { id: "operator", label: "Operator" },
-  { id: "owner",    label: "Owner"    },
+  { id: "team", label: "Team" },
+  { id: "team",    label: "Team"    },
   { id: "team",     label: "Team"     },
 ];
 
@@ -42,12 +42,12 @@ function TabBar({ active, onChange }: { active: ViewTab; onChange: (t: ViewTab) 
   );
 }
 
-// ── Operator view ────────────────────────────────────────────────────────────
+// ── Team/Internal Admin view ────────────────────────────────────────────────────────────
 
-function OperatorView() {
+function TeamInternalAdminView() {
   const profiles = ClientHealthEngine.profiles();
   const summary  = ClientHealthEngine.portfolioSummary();
-  const risks    = ClientHealthEngine.ownerRisks();
+  const risks    = ClientHealthEngine.teamRisks();
   const reportsNeeded = profiles.filter((p) =>
     p.monthlyReportStatus === "Pending" || p.monthlyReportStatus === "Overdue",
   );
@@ -79,7 +79,7 @@ function OperatorView() {
         <Card className="bg-card border-border">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm flex items-center gap-2">
-              <ShieldAlert className="w-4 h-4 text-rose-400" /> Escalations for operator
+              <ShieldAlert className="w-4 h-4 text-rose-400" /> Escalations for team
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
@@ -99,12 +99,12 @@ function OperatorView() {
   );
 }
 
-// ── Owner view ───────────────────────────────────────────────────────────────
+// ── Portfolio view ───────────────────────────────────────────────────────────────
 
-function OwnerView() {
+function PortfolioView() {
   const summary  = ClientHealthEngine.portfolioSummary();
   const profiles = ClientHealthEngine.profiles();
-  const risks    = ClientHealthEngine.ownerRisks();
+  const risks    = ClientHealthEngine.teamRisks();
 
   const atRiskProfiles = profiles.filter(
     (p) => p.healthCategory === "Urgent" || p.healthCategory === "Broken",
@@ -288,7 +288,7 @@ function TeamView() {
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ClientHealthCommand() {
-  const [view, setView] = useState<ViewTab>("operator");
+  const [view, setView] = useState<ViewTab>("team");
   const summary = ClientHealthEngine.portfolioSummary();
 
   return (
@@ -305,8 +305,8 @@ export default function ClientHealthCommand() {
 
       <TabBar active={view} onChange={setView} />
 
-      {view === "operator" && <OperatorView />}
-      {view === "owner"    && <OwnerView    />}
+      {view === "team" && <TeamView />}
+      {view === "team"    && <TeamView    />}
       {view === "team"     && <TeamView     />}
     </div>
   );
