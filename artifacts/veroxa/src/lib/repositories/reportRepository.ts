@@ -24,8 +24,8 @@ function mapWeeklyStatus(s: WeeklyReportStatus): ReportStatus {
   switch (s) {
     case "Draft":
       return "drafted";
-    case "Operator Review":
-      return "operator_review";
+    case "Team Review":
+      return "team_review";
     case "Ready for Client":
       return "approved";
     case "Published":
@@ -76,7 +76,7 @@ function toMonthly(r: DemoMonthlyReport, idx: number): MonthlyReportSummary {
     googleDirections: 0,
     keyInsights: r.strategicNotes,
     nextMonthPlan: r.nextMonthFocus,
-    operatorApprovalRequired: r.healthSummary.toLowerCase().includes("attention") ||
+    teamReviewRequired: r.healthSummary.toLowerCase().includes("attention") ||
       r.healthSummary.toLowerCase().includes("critical"),
   };
 }
@@ -106,7 +106,7 @@ export function getReportsNeedingTeamValidation(): WeeklyReportSummary[] {
 }
 
 export function getMonthlyReportsNeedingOperatorApproval(): MonthlyReportSummary[] {
-  return getMonthlyReports().filter((r) => r.operatorApprovalRequired);
+  return getMonthlyReports().filter((r) => r.teamReviewRequired);
 }
 
 export interface OwnerReportingSummary {
@@ -123,10 +123,10 @@ export function getOwnerReportingSummary(): OwnerReportingSummary {
   const m = getMonthlyReports();
   return {
     weeklyTotal: w.length,
-    weeklyAwaitingOperator: w.filter((r) => r.status === "operator_review").length,
+    weeklyAwaitingOperator: w.filter((r) => r.status === "team_review").length,
     weeklyReadyForClient: w.filter((r) => r.status === "approved").length,
     weeklyPublished: w.filter((r) => r.status === "published").length,
     monthlyTotal: m.length,
-    monthlyNeedingApproval: m.filter((r) => r.operatorApprovalRequired).length,
+    monthlyNeedingApproval: m.filter((r) => r.teamReviewRequired).length,
   };
 }

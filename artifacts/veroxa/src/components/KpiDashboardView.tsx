@@ -1,12 +1,4 @@
 import {
-  Briefcase,
-  Users,
-  CircleDollarSign,
-  CalendarClock,
-  Send,
-  Globe,
-  Star,
-  AlertTriangle,
   CheckCircle2,
   FileBarChart,
   Image as ImageIcon,
@@ -16,10 +8,10 @@ import {
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { demoOwnerKpis, demoOperatorKpis } from "@/data/demoData";
+import { demoTeamKpis } from "@/data/demoData";
 
 interface KpiDashboardViewProps {
-  viewerRole: "owner" | "operator";
+  viewerRole: "team";
 }
 
 interface KpiSpec {
@@ -32,26 +24,14 @@ interface KpiSpec {
 }
 
 export function KpiDashboardView({ viewerRole }: KpiDashboardViewProps) {
-  const kpis: KpiSpec[] =
-    viewerRole === "owner"
-      ? [
-          { label: "Total clients",           value: String(demoOwnerKpis.totalClients),            trend: "+1 this month",         note: "Across portfolio",            icon: Briefcase                          },
-          { label: "Active clients",          value: String(demoOwnerKpis.activeClients),           trend: "All delivering",        note: "Currently in delivery",       icon: Users                              },
-          { label: "Monthly revenue",         value: demoOwnerKpis.monthlyRevenueDemo,              trend: "+8.7% vs last month",   note: "Demo figure",                 icon: CircleDollarSign,  tone: "good"    },
-          { label: "Scheduled posts",         value: String(demoOwnerKpis.scheduledPosts),          trend: "Next 7 days",           note: "Across all clients",          icon: CalendarClock                      },
-          { label: "Published posts",         value: String(demoOwnerKpis.publishedPosts),          trend: "This month",            note: "Cumulative",                  icon: Send                               },
-          { label: "Google visibility",       value: `${demoOwnerKpis.googleVisibilityScore}%`,     trend: "Portfolio average",     note: "Demo signal",                 icon: Globe,            tone: "good"     },
-          { label: "Review growth",           value: `+${demoOwnerKpis.reviewGrowthThisMonth}`,     trend: "New reviews this month", note: "All sources",                 icon: Star,             tone: "good"     },
-          { label: "Needs attention",         value: String(demoOwnerKpis.clientsNeedingAttention), trend: "Attention + critical",  note: "Action required",             icon: AlertTriangle,    tone: "warn"     },
-        ]
-      : [
-          { label: "Tasks completed this week", value: String(demoOperatorKpis.tasksCompletedThisWeek), trend: "On pace",            note: "Across operators",            icon: CheckSquare,       tone: "good"     },
-          { label: "Reports pending review",    value: String(demoOperatorKpis.reportsPendingReview),    trend: "Due by Friday",      note: "Weekly + monthly",            icon: FileBarChart,      tone: "warn"     },
-          { label: "Media items pending review",value: String(demoOperatorKpis.mediaItemsPendingReview), trend: "Action required",    note: "Across all clients",          icon: ImageIcon,         tone: "warn"     },
-          { label: "Approved content ready",    value: String(demoOperatorKpis.approvedContentReady),    trend: "Queued for schedule", note: "Ready to publish",            icon: CheckCircle2,      tone: "good"     },
-          { label: "Posts scheduled this week", value: String(demoOperatorKpis.postsScheduledThisWeek),  trend: "Next 7 days",         note: "Across portfolio",            icon: CalendarCheck2                       },
-          { label: "Client issues open",        value: String(demoOperatorKpis.clientIssuesOpen),        trend: "Owner aware",         note: "Critical + warning",          icon: CircleAlert,       tone: "bad"      },
-        ];
+  const kpis: KpiSpec[] = [
+    { label: "Tasks completed this week", value: String(demoTeamKpis.tasksCompletedThisWeek), trend: "On pace", note: "Across team", icon: CheckSquare, tone: "good" },
+    { label: "Reports pending review", value: String(demoTeamKpis.reportsPendingReview), trend: "Due by Friday", note: "Weekly + monthly", icon: FileBarChart, tone: "warn" },
+    { label: "Media items pending review", value: String(demoTeamKpis.mediaItemsPendingReview), trend: "Action required", note: "Across all clients", icon: ImageIcon, tone: "warn" },
+    { label: "Approved content ready", value: String(demoTeamKpis.approvedContentReady), trend: "Queued for schedule", note: "Ready to publish", icon: CheckCircle2, tone: "good" },
+    { label: "Posts scheduled this week", value: String(demoTeamKpis.postsScheduledThisWeek), trend: "Next 7 days", note: "Across portfolio", icon: CalendarCheck2 },
+    { label: "Client issues open", value: String(demoTeamKpis.clientIssuesOpen), trend: "Team aware", note: "Critical + warning", icon: CircleAlert, tone: "bad" },
+  ];
 
   return (
     <div className="space-y-4">

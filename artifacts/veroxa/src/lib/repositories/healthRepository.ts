@@ -48,7 +48,7 @@ function mapReportStatus(
     case "Approved":
       return "approved";
     case "Pending":
-      return "operator_review";
+      return "team_review";
     case "Draft":
       return "drafted";
     case "Overdue":
@@ -72,11 +72,11 @@ function toSnapshot(h: DemoClientHealth): ClientHealthSnapshot {
   );
   const target = frequency;
   const completion = target > 0 ? Math.min(1, planned / target) : 0;
-  const operatorActionRequired =
+  const teamActionRequired =
     h.level === "attention" ||
     h.level === "critical" ||
     h.signals.reportStatus === "Pending";
-  const ownerEscalationRequired =
+  const internalEscalationRequired =
     h.level === "critical" || h.signals.reportStatus === "Overdue";
   const clientActionRequired = h.signals.onboardingComplete < 100;
 
@@ -89,8 +89,8 @@ function toSnapshot(h: DemoClientHealth): ClientHealthSnapshot {
     contentHealthStatus: contentStatus,
     postingCompletionRate: completion,
     reportStatus: mapReportStatus(h.signals.reportStatus),
-    operatorActionRequired,
-    ownerEscalationRequired,
+    teamActionRequired,
+    internalEscalationRequired,
     clientActionRequired,
     riskReason: h.mainIssue,
   };
@@ -115,11 +115,11 @@ export function getClientsNeedingTeamAction(): ClientHealthSnapshot[] {
 }
 
 export function getClientsNeedingOperatorAction(): ClientHealthSnapshot[] {
-  return getAllClientHealthSnapshots().filter((s) => s.operatorActionRequired);
+  return getAllClientHealthSnapshots().filter((s) => s.teamActionRequired);
 }
 
 export function getOwnerEscalationClients(): ClientHealthSnapshot[] {
-  return getAllClientHealthSnapshots().filter((s) => s.ownerEscalationRequired);
+  return getAllClientHealthSnapshots().filter((s) => s.internalEscalationRequired);
 }
 
 export interface HealthSummary {
@@ -141,8 +141,8 @@ export function getHealthSummary(): HealthSummary {
     caution: all.filter((s) => s.contentHealthStatus === "caution").length,
     urgent: all.filter((s) => s.contentHealthStatus === "urgent").length,
     broken: all.filter((s) => s.contentHealthStatus === "broken").length,
-    operatorActions: all.filter((s) => s.operatorActionRequired).length,
-    ownerEscalations: all.filter((s) => s.ownerEscalationRequired).length,
+    operatorActions: all.filter((s) => s.teamActionRequired).length,
+    ownerEscalations: all.filter((s) => s.internalEscalationRequired).length,
     clientActions: all.filter((s) => s.clientActionRequired).length,
   };
 }

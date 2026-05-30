@@ -17,9 +17,9 @@ export const automationRegistry: AutomationRule[] = [
     description: "Raise risk alerts when health drops below 60.",
     trigger: { kind: "event", eventKind: "ClientStatusChanged" }, status: "Planned" },
   { id: "aut-006", category: "Client Follow-up",  name: "Nudge stalled requests",
-    description: "Notify operator when client request is open > 5 days.",
+    description: "Notify Team/Internal Admin when client request is open > 5 days.",
     trigger: { kind: "schedule", cron: "0 9 * * *" }, status: "Planned" },
   { id: "aut-007", category: "Notifications",     name: "Daily digest emails",
-    description: "Send operator + owner daily digest at 07:30.",
+    description: "Prepare Team/Internal Admin daily digest at 07:30.",
     trigger: { kind: "schedule", cron: "30 7 * * *" }, status: "Future" },
 ];

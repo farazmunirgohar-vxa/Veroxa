@@ -3,10 +3,8 @@ import type { AppRole } from "@/domain/users/permissions";
 
 /** Simulated auth users. Demo only — never used for real access decisions. */
 const demoUsers: ReadonlyArray<AuthUser & { password: string }> = [
-  { id: "u-owner",    name: "Veroxa Owner",   email: "owner@veroxa.demo",    role: "owner",    password: "demo" },
-  { id: "u-operator", name: "Veroxa Ops",     email: "ops@veroxa.demo",      role: "operator", password: "demo" },
-  { id: "u-team",     name: "Veroxa Team",    email: "team@veroxa.demo",     role: "team",     password: "demo" },
-  { id: "u-client",   name: "Demo Client",    email: "client@veroxa.demo",   role: "client",   password: "demo", clientId: "rest-001" },
+  { id: "u-team", name: "Veroxa Team", email: "team@veroxa.demo", role: "team", password: "demo" },
+  { id: "u-client", name: "Demo Client", email: "client@veroxa.demo", role: "client", password: "demo", clientId: "rest-001" },
 ];
 
 const ONE_HOUR = 60 * 60 * 1000;

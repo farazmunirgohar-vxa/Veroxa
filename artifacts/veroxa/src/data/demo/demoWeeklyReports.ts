@@ -1,9 +1,9 @@
 // demoWeeklyReports.ts — future: weekly_reports table
-// Covers weekly report drafts, operator validation state, and reporting operations.
+// Covers weekly report drafts, team validation state, and reporting operations.
 
 // ── DemoWeeklyReport — future: weekly_reports ────────────────────
 export type WeeklyReportStatus =
-  | "Draft" | "Operator Review" | "Ready for Client" | "Published";
+  | "Draft" | "Team Review" | "Ready for Client" | "Published";
 
 export interface DemoWeeklyReport {
   clientId:     string;
@@ -34,7 +34,7 @@ export const demoWeeklyReports: DemoWeeklyReport[] = [
     notes:        "Client is responsive and onboarding is complete.",
   },
   {
-    clientId: "demo-b", weekRange: "May 19 – May 25, 2026", status: "Operator Review",
+    clientId: "demo-b", weekRange: "May 19 – May 25, 2026", status: "Team Review",
     summary: "Mixed week — content supply trending low, but Google visibility held steady.",
     metrics: [
       { label: "Posts published",          value: "2"    },
@@ -46,7 +46,7 @@ export const demoWeeklyReports: DemoWeeklyReport[] = [
     topContent:   { title: "Carnitas Tacos flat-lay", engagement: "Solid lunchtime engagement" },
     mediaStatus:  "Trending low — recommend new shoot.",
     nextWeekPlan: ["Coordinate content shoot", "Plan reels for new salsa", "Operator follow-up call"],
-    notes:        "Awaiting operator review before client delivery.",
+    notes:        "Awaiting team review before client delivery.",
   },
   {
     clientId: "demo-c", weekRange: "May 19 – May 25, 2026", status: "Ready for Client",
@@ -82,8 +82,8 @@ export const demoWeeklyReports: DemoWeeklyReport[] = [
 
 // ── Upcoming reports widget ───────────────────────────────────────
 export const demoUpcomingReports = [
-  { clientId: "demo-b",    type: "Weekly",  status: "Operator Review", due: "Today"  },
-  { clientId: "demo-a", type: "Weekly",  status: "Operator Review", due: "Today"  },
+  { clientId: "demo-b",    type: "Weekly",  status: "Team Review", due: "Today"  },
+  { clientId: "demo-a", type: "Weekly",  status: "Team Review", due: "Today"  },
   { clientId: "demo-c", type: "Monthly", status: "Draft",           due: "May 31" },
 ];
 

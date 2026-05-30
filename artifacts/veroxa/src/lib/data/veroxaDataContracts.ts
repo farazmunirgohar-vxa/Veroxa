@@ -16,7 +16,7 @@
  */
 
 // ── Roles ────────────────────────────────────────────────────────
-export type VeroxaRole = "client" | "team" | "operator" | "owner" | "system";
+export type VeroxaRole = "client" | "team" | "system";
 
 // ── Lifecycle / health / risk vocabularies ───────────────────────
 export type LifecycleStatus =
@@ -60,7 +60,7 @@ export type WorkflowPriority = "low" | "normal" | "high" | "urgent";
 export type ReportStatus =
   | "drafted"
   | "validated"
-  | "operator_review"
+  | "team_review"
   | "approved"
   | "published"
   | "blocked";
@@ -83,7 +83,7 @@ export interface ClientAccount {
   contentHealthStatus: ContentHealthStatus;
   riskStatus: RiskStatus;
   assignedTeam: string;
-  assignedOperator: string;
+  assignedInternalReviewer: string;
   postingFrequencyWeekly: number;
   timezone: string;
 }
@@ -140,8 +140,8 @@ export interface ClientHealthSnapshot {
   contentHealthStatus: ContentHealthStatus;
   postingCompletionRate: number;
   reportStatus: ReportStatus;
-  operatorActionRequired: boolean;
-  ownerEscalationRequired: boolean;
+  teamActionRequired: boolean;
+  internalEscalationRequired: boolean;
   clientActionRequired: boolean;
   riskReason: string;
 }
@@ -177,7 +177,7 @@ export interface MonthlyReportSummary {
   googleDirections: number;
   keyInsights: string[];
   nextMonthPlan: string[];
-  operatorApprovalRequired: boolean;
+  teamReviewRequired: boolean;
 }
 
 // ── Activity event ───────────────────────────────────────────────

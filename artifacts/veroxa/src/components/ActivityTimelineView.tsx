@@ -10,14 +10,12 @@ import {
 } from "@/data/demoData";
 
 interface ActivityTimelineViewProps {
-  viewerRole: "owner" | "operator";
+  viewerRole: "team";
 }
 
 const roleBadge: Record<ActivityRole, string> = {
   client:   "bg-blue-500/10 text-blue-400 border-blue-500/30",
   team:     "bg-violet-500/10 text-violet-400 border-violet-500/30",
-  operator: "bg-amber-500/10 text-amber-400 border-amber-500/30",
-  owner:    "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
   agent:    "bg-primary/10 text-primary border-primary/30",
   system:   "bg-muted text-muted-foreground border-border",
 };

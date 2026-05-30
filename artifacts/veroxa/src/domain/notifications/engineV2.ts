@@ -10,10 +10,10 @@ export interface ChannelPreference {
   enabled: boolean;
 }
 
-const defaultPrefs: ChannelPreference[] = (["client","team","operator","owner"] as Role[]).flatMap((role) => [
+const defaultPrefs: ChannelPreference[] = (["client", "team"] as Role[]).flatMap((role) => [
   { role, channel: "in-app", enabled: true },
   { role, channel: "email",  enabled: role !== "client" },
-  { role, channel: "sms",    enabled: role === "operator" || role === "owner" },
+  { role, channel: "sms",    enabled: role === "team" },
   { role, channel: "push",   enabled: false },
 ]);
 

@@ -5,8 +5,6 @@ import {
   Bot,
   User,
   Cog,
-  Users,
-  Crown,
 } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,8 +19,6 @@ import {
 const roleIcon: Record<ActivityRole, typeof CheckCircle2> = {
   agent:    Bot,
   team:     User,
-  operator: Users,
-  owner:    Crown,
   client:   User,
   system:   Cog,
 };
@@ -30,8 +26,6 @@ const roleIcon: Record<ActivityRole, typeof CheckCircle2> = {
 const roleColor: Record<ActivityRole, string> = {
   agent:    "text-primary bg-primary/10",
   team:     "text-emerald-400 bg-emerald-500/10",
-  operator: "text-cyan-400 bg-cyan-500/10",
-  owner:    "text-amber-400 bg-amber-500/10",
   client:   "text-sky-400 bg-sky-500/10",
   system:   "text-muted-foreground bg-muted/30",
 };

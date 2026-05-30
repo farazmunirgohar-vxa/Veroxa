@@ -8,7 +8,7 @@ import type { EvidenceRecommendation } from "@/lib/evidence/evidenceSelectionEng
 
 interface Props {
   recommendation: EvidenceRecommendation;
-  variant?: "client" | "team" | "operator";
+  variant?: "client" | "team";
   ctaHref?: string;
   ctaLabel?: string;
   testId?: string;
@@ -16,7 +16,7 @@ interface Props {
 
 export function EvidenceRecommendationCard({
   recommendation,
-  variant = "operator",
+  variant = "team",
   ctaHref,
   ctaLabel,
   testId,

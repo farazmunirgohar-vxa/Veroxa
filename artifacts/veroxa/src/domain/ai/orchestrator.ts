@@ -8,8 +8,7 @@ export type AgentRole =
   | "Scheduling Agent"
   | "Reporting Agent"
   | "Risk Agent"
-  | "Operator Assistant"
-  | "Owner Assistant";
+  | "Team Assistant";
 
 export interface AgentNode {
   role:        AgentRole;
@@ -36,13 +35,11 @@ export const agentPipeline: AgentNode[] = [
   { role: "Scheduling Agent",    purpose: "Choose optimal post slot.",
     consumes: ["WorkflowAdvanced"], emits: ["WorkflowAdvanced"], handoffsTo: ["Reporting Agent"], status: "Stubbed" },
   { role: "Reporting Agent",     purpose: "Aggregate KPIs and draft weekly / monthly reports.",
-    consumes: ["ReportDrafted", "WorkflowAdvanced"], emits: ["ReportPublished"], handoffsTo: ["Owner Assistant"], status: "Stubbed" },
+    consumes: ["ReportDrafted", "WorkflowAdvanced"], emits: ["ReportPublished"], handoffsTo: ["Team Assistant"], status: "Stubbed" },
   { role: "Risk Agent",          purpose: "Monitor health and surface at-risk clients.",
-    consumes: ["ClientStatusChanged", "InventoryLow"], emits: ["NotificationDispatched"], handoffsTo: ["Operator Assistant"], status: "Stubbed" },
-  { role: "Operator Assistant",  purpose: "Daily operator briefing + action prompts.",
-    consumes: ["NotificationDispatched", "WorkflowBlocked"], emits: [], handoffsTo: [], status: "Stubbed" },
-  { role: "Owner Assistant",     purpose: "Weekly business briefing + strategic prompts.",
-    consumes: ["ReportPublished"], emits: [], handoffsTo: [], status: "Stubbed" },
+    consumes: ["ClientStatusChanged", "InventoryLow"], emits: ["NotificationDispatched"], handoffsTo: ["Team Assistant"], status: "Stubbed" },
+  { role: "Team Assistant",      purpose: "Daily Team/Internal Admin briefing + action prompts.",
+    consumes: ["NotificationDispatched", "WorkflowBlocked", "ReportPublished"], emits: [], handoffsTo: [], status: "Stubbed" },
 ];
 
 export const AgentOrchestrator = {

@@ -35,40 +35,27 @@ export const clientRoutes: RealRoute[] = [
   { path: "/client/onboarding", role: "client", label: "Onboarding", demoPath: "/demo/client/onboarding", description: "Restaurant brand, audience, dietary notes, best sellers — saved per client." },
   { path: "/client/media",      role: "client", label: "Media",      demoPath: "/demo/client/media",      description: "Upload + browse the client's media library. Private bucket. Reviewed by team." },
   { path: "/client/calendar",   role: "client", label: "Calendar",   demoPath: "/demo/client/calendar",   description: "Scheduled posts and content concepts across platforms." },
-  { path: "/client/reports",    role: "client", label: "Reports",    demoPath: "/demo/client/reports",    description: "Weekly / monthly performance reports for the restaurant owner." },
+  { path: "/client/reports",    role: "client", label: "Reports",    demoPath: "/demo/client/reports",    description: "Weekly / monthly performance reports for the restaurant partner." },
 ];
 
 export const teamRoutes: RealRoute[] = [
-  { path: "/team/tasks",        role: "team", label: "Tasks",        demoPath: "/demo/team/tasks",        description: "Team queue of content, media, and client tasks." },
-  { path: "/team/media-review", role: "team", label: "Media Review", demoPath: "/demo/team/media-review", description: "Review and approve uploaded media, match against capture plan." },
-  { path: "/team/drafts",       role: "team", label: "Drafts",       demoPath: "/demo/team/drafts",       description: "Caption / post drafts pending review." },
-  { path: "/team/scheduling",   role: "team", label: "Scheduling",   demoPath: "/demo/team/scheduling",   description: "Schedule approved posts to social calendars." },
-];
-
-export const operatorRoutes: RealRoute[] = [
-  { path: "/operator/overview",         role: "operator", label: "Overview",         demoPath: "/demo/operator/overview",         description: "Cross-client operations view — workload, risk, throughput." },
-  { path: "/operator/alerts",           role: "operator", label: "Alerts",           demoPath: "/demo/operator/alerts",           description: "Failed posts, blocked uploads, escalations." },
-  { path: "/operator/report-approvals", role: "operator", label: "Report Approvals", demoPath: "/demo/operator/report-approvals", description: "Final approval gate before client-facing reports are sent." },
-];
-
-export const ownerRoutes: RealRoute[] = [
-  { path: "/owner/dashboard",     role: "owner", label: "Dashboard",     demoPath: "/demo/owner/dashboard",     description: "Owner-only KPIs: revenue, client health, growth." },
-  { path: "/owner/revenue",       role: "owner", label: "Revenue",       demoPath: "/demo/owner/revenue",       description: "MRR / ARR, plan mix, churn forecast." },
-  { path: "/owner/client-health", role: "owner", label: "Client Health", demoPath: "/demo/owner/client-health", description: "Owner-level client health & risk surface." },
+  { path: "/team/dashboard",        role: "team", label: "Dashboard",        demoPath: "/demo/team/dashboard",        description: "Team/Internal Admin command center." },
+  { path: "/team/upload-inbox",     role: "team", label: "Upload Inbox",     demoPath: "/demo/team/media-review",   description: "Review uploaded media and client submissions." },
+  { path: "/team/work-queue",       role: "team", label: "Work Queue",       demoPath: "/demo/team/work-queue",      description: "Team queue of content, media, and client tasks." },
+  { path: "/team/direction-queue",  role: "team", label: "Direction Queue",  demoPath: "/demo/team/drafts",          description: "Prepared directions pending internal review." },
+  { path: "/team/report-queue",     role: "team", label: "Report Queue",     demoPath: "/demo/team/report-queue",    description: "Weekly and monthly reports pending Team/Internal Admin review." },
+  { path: "/team/approval-queue",   role: "team", label: "Approval Queue",   demoPath: "/demo/team/content-review",  description: "Prepared actions awaiting Team/Internal Admin approval." },
+  { path: "/team/visibility-audit", role: "team", label: "Visibility Audit", demoPath: "/demo/team/performance",     description: "Google Maps and local visibility readiness review." },
 ];
 
 export const allRealRoutes: RealRoute[] = [
   ...clientRoutes,
   ...teamRoutes,
-  ...operatorRoutes,
-  ...ownerRoutes,
 ];
 
 export const routesByRole: Readonly<Record<VeroxaRole, RealRoute[]>> = Object.freeze({
-  client:   clientRoutes,
-  team:     teamRoutes,
-  operator: operatorRoutes,
-  owner:    ownerRoutes,
+  client: clientRoutes,
+  team: teamRoutes,
 });
 
 export function getDemoPathForRealRoute(path: string): string | null {

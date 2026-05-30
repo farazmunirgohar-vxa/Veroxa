@@ -92,7 +92,7 @@ export type PostSlotStatus =
   | "published"
   | "missed";
 
-export type NotificationAudience = "client" | "team" | "operator" | "owner";
+export type NotificationAudience = "client" | "team";
 export type NotificationStatus = "unread" | "read" | "dismissed";
 export type NotificationKind =
   | "upload_reminder"
@@ -114,18 +114,13 @@ export type WeeklyReportStatus =
 export type MonthlyReportStatus =
   | "drafted"
   | "team_drafted"
-  | "submitted_for_operator_approval"
-  | "operator_approved"
+  | "team_review"
+  | "team_approved"
   | "client_ready"
   | "published"
   | "needs_revision";
 
-export type ActivityLogActor =
-  | "client"
-  | "team"
-  | "operator"
-  | "owner"
-  | "system";
+export type ActivityLogActor = "client" | "team" | "system";
 export type ActivityLogVisibility = "internal" | "client_safe";
 
 export interface TimestampedRecord {
@@ -254,7 +249,7 @@ export interface MonthlyReport extends ClientOwnedRecord {
   nextMonthPlan: string[];
   clientActions: string[];
   metrics: ReportMetric[];
-  operatorApprovedAt?: ISODateTime;
+  teamApprovedAt?: ISODateTime;
   internalDraftNotes?: string;
 }
 

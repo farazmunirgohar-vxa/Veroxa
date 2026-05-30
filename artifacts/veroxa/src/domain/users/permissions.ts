@@ -2,47 +2,48 @@
  * Role permission framework. Read-only architecture — drives future RBAC.
  * Demo today; production tomorrow. UI guards continue to use InternalDemoGuard.
  */
-export type AppRole = "client" | "team" | "operator" | "owner";
+export type AppRole = "client" | "team";
 export type AppAction =
-  | "view_client_detail_internal" | "view_client_detail_safe"
-  | "edit_content" | "approve_content" | "publish_content"
-  | "draft_report" | "validate_report" | "publish_report"
-  | "manage_tasks" | "assign_task" | "complete_task"
-  | "view_revenue" | "view_internal_notes" | "view_ai_confidence"
-  | "view_team_workload" | "manage_permissions" | "view_system_status";
+  | "view_client_safe_progress"
+  | "upload_media"
+  | "manage_content_workflow"
+  | "validate_weekly_report"
+  | "review_monthly_report"
+  | "manage_internal_alerts"
+  | "manage_content_health"
+  | "manage_automation_workflow";
 
 export interface RolePermission {
-  role:            AppRole;
-  label:           string;
-  visibleModules:  string[];
+  role: AppRole;
+  label: string;
+  visibleModules: string[];
   restrictedModules: string[];
-  allowedActions:  AppAction[];
+  allowedActions: AppAction[];
 }
 
 export const rolePermissions: Record<AppRole, RolePermission> = {
   client: {
-    role: "client", label: "Client",
-    visibleModules: ["Account", "Onboarding", "Media", "Content", "Calendar", "Reports", "Requests", "Notifications", "Activity"],
-    restrictedModules: ["Internal Client Detail", "Operations Center", "Command Board", "Team Oversight", "Revenue", "Internal Notes", "AI Confidence", "System Status"],
-    allowedActions: ["view_client_detail_safe", "complete_task"],
+    role: "client",
+    label: "Client Portal",
+    visibleModules: ["Account", "Onboarding", "Media Uploads", "Progress", "Reports", "Requests", "Notifications"],
+    restrictedModules: ["Internal Workflow", "Approval Queue", "Content Health", "Alerts", "Automation Controls", "AI Assist", "Internal Notes"],
+    allowedActions: ["view_client_safe_progress", "upload_media"],
   },
   team: {
-    role: "team", label: "Team",
-    visibleModules: ["Dashboard", "Task Engine", "Work Queue", "Content Review", "Report Queue", "Client Detail (internal)"],
-    restrictedModules: ["Revenue", "Permissions", "System Status (full)"],
-    allowedActions: ["view_client_detail_internal", "edit_content", "draft_report", "complete_task", "view_internal_notes"],
-  },
-  operator: {
-    role: "operator", label: "Operator",
-    visibleModules: ["Command Board", "Operations Center", "Workflow Engine", "Content Calendar", "Client Detail (internal)", "Reporting Command", "Team Oversight", "Risk Center", "Demo Controls", "System Status"],
-    restrictedModules: ["Revenue (limited)", "Permissions"],
-    allowedActions: ["view_client_detail_internal", "edit_content", "approve_content", "validate_report", "publish_report", "assign_task", "manage_tasks", "view_internal_notes", "view_ai_confidence", "view_team_workload", "view_system_status"],
-  },
-  owner: {
-    role: "owner", label: "Owner",
-    visibleModules: ["All operator modules", "Revenue", "Permissions", "Automation Roadmap", "System Map", "Business Health"],
+    role: "team",
+    label: "Team / Internal Admin Portal",
+    visibleModules: ["Dashboard", "Upload Inbox", "Work Queue", "Approval Queue", "Report Queue", "Alerts", "Content Health", "Visibility Audit", "Automation Controls"],
     restrictedModules: [],
-    allowedActions: ["view_client_detail_internal", "edit_content", "approve_content", "publish_content", "draft_report", "validate_report", "publish_report", "assign_task", "manage_tasks", "view_revenue", "view_internal_notes", "view_ai_confidence", "view_team_workload", "manage_permissions", "view_system_status"],
+    allowedActions: [
+      "view_client_safe_progress",
+      "upload_media",
+      "manage_content_workflow",
+      "validate_weekly_report",
+      "review_monthly_report",
+      "manage_internal_alerts",
+      "manage_content_health",
+      "manage_automation_workflow",
+    ],
   },
 };
 

@@ -13,7 +13,7 @@
  *
  * Always returns an unauthenticated state. No Supabase calls, no cookies,
  * no localStorage, no network. This exists purely so that the RequireRole
- * shell and the future `/client`, `/team`, `/operator`, `/owner`
+ * shell and the future `/client` and `/team`
  * placeholder pages can be wired against a stable hook signature today,
  * then swapped to a real implementation later without changing call
  * sites.

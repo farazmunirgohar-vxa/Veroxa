@@ -19,7 +19,7 @@ import {
 } from "@/data/demoData";
 
 interface MediaInventoryViewProps {
-  viewerRole: "client" | "team" | "operator" | "owner";
+  viewerRole: "client" | "team";
   clientId?: string;
 }
 

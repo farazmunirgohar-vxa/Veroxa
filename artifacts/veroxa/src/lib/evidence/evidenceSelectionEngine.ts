@@ -33,7 +33,7 @@ export type EvidenceDecisionType =
   | "content_angle"
   | "platform_choice"
   | "client_action_needed"
-  | "operator_attention"
+  | "team_attention"
   | "team_review_priority";
 
 export type EvidenceReasonType = "performance" | "media" | "schedule" | "health" | "risk";
@@ -241,7 +241,7 @@ export function recommendNextPost(clientId: string): EvidenceRecommendation {
     riskNotes,
     nextStep:
       context.recentRisk === "Critical" || context.recentRisk === "High"
-        ? "Operator action required before scheduling."
+        ? "Team action required before scheduling."
         : "Send to Team for caption drafting.",
     demoOnly: true,
   };
@@ -299,9 +299,9 @@ export function recommendClientAction(clientId: string): EvidenceAction {
 }
 
 /**
- * Returns the operator-facing action recommendation.
+ * Returns the team-facing action recommendation.
  */
-export function recommendOperatorAction(clientId: string): EvidenceAction {
+export function recommendTeamAction(clientId: string): EvidenceAction {
   const ctx = getContext(clientId);
   if (ctx.recentRisk === "Critical") {
     return {
@@ -313,14 +313,14 @@ export function recommendOperatorAction(clientId: string): EvidenceAction {
   if (ctx.lastReportStatus === "Overdue") {
     return {
       action: `Validate and publish the ${ctx.clientName} weekly report — it is overdue.`,
-      reason: "Report has been in the queue for more than 24 hours without operator review.",
+      reason: "Report has been in the queue for more than 24 hours without Veroxa team review.",
       urgency: "High",
     };
   }
   if (ctx.lastReportStatus === "Pending validation") {
     return {
       action: `Review the draft report for ${ctx.clientName} and approve for delivery.`,
-      reason: "Report is ready — pending final operator sign-off.",
+      reason: "Report is ready — pending final team sign-off.",
       urgency: "Medium",
     };
   }

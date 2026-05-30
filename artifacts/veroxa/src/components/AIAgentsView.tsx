@@ -22,7 +22,7 @@ import {
 } from "@/data/demoData";
 
 interface AIAgentsViewProps {
-  viewerRole: "owner" | "operator" | "client";
+  viewerRole: "team" | "client";
 }
 
 const agentIcon: Record<string, React.ElementType> = {
@@ -34,8 +34,8 @@ const agentIcon: Record<string, React.ElementType> = {
   "publishing":         Radio,
   "reporting":          FileBarChart,
   "alert-risk":         AlertOctagon,
-  "operator-assistant": Users,
-  "owner-assistant":    Crown,
+  "team-assistant": Users,
+  "team-briefing-assistant":    Crown,
 };
 
 function AgentCard({ agent }: { agent: DemoAgent }) {

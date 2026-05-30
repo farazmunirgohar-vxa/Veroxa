@@ -20,13 +20,13 @@ import {
 } from "@/data/demoData";
 
 interface WeeklyReportViewProps {
-  viewerRole: "client" | "operator" | "owner";
+  viewerRole: "client" | "team";
   clientId?: string;
 }
 
 const statusStyle: Record<WeeklyReportStatus, string> = {
   "Draft":            "bg-muted text-muted-foreground border-border",
-  "Operator Review":  "bg-amber-500/10 text-amber-400 border-amber-500/30",
+  "Team Review":  "bg-amber-500/10 text-amber-400 border-amber-500/30",
   "Ready for Client": "bg-blue-500/10 text-blue-400 border-blue-500/30",
   "Published":        "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
 };

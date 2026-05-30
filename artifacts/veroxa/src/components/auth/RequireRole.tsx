@@ -18,8 +18,6 @@ interface RequireRoleProps {
 const roleLabels: Record<VeroxaRole, string> = {
   client:   "Client",
   team:     "Team",
-  operator: "Operator",
-  owner:    "Owner",
 };
 
 /**

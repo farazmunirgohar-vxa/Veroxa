@@ -42,7 +42,7 @@ export const contentSupply = [
   { label: "Stories published this week", value: 5,  max: 7  },
 ] as const;
 
-// ── Operator Portal — Client health table ────────────────────────────────────
+// ── Team Portal — Client health table ────────────────────────────────────
 
 export const clientHealthDisplay = [
   { name: "Demo Grill House",     score: 58, postsThisMonth: 6,  scheduled: 0,  lastShoot: "12 days ago", status: "At Risk"  },
@@ -53,13 +53,13 @@ export const clientHealthDisplay = [
   { name: "Cafe Levant",          score: 94, postsThisMonth: 22, scheduled: 10, lastShoot: "1 day ago",   status: "Healthy"  },
 ] as const;
 
-// ── Operator Portal — Active alerts ──────────────────────────────────────────
+// ── Team Portal — Active alerts ──────────────────────────────────────────
 
-export const operatorAlerts = [
+export const teamAlerts = [
   { severity: "Critical", client: "Demo Grill House",      message: "0 posts scheduled for next week — content pipeline empty.",       time: "2 hours ago" },
   { severity: "Warning",  client: "Bayleaf Indian Kitchen", message: "Instagram post failed to publish — account token expired.",         time: "4 hours ago" },
   { severity: "Warning",  client: "Rosso Trattoria",        message: "No media uploaded in 18 days — shoot overdue.",                     time: "Yesterday"   },
-  { severity: "Info",     client: "Sushi Nori Shoreditch",  message: "Monthly report ready — awaiting operator approval.",               time: "Yesterday"   },
+  { severity: "Info",     client: "Sushi Nori Shoreditch",  message: "Monthly report ready — awaiting Veroxa team review.",               time: "Yesterday"   },
   { severity: "Critical", client: "The Grill House",        message: "Google Business Profile disconnected — visibility data paused.",    time: "2 days ago"  },
 ] as const;
 

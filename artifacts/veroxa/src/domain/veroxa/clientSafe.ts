@@ -317,9 +317,9 @@ function monthlyStatusLabel(status: MonthlyReport["status"]): string {
       return "Available";
     case "client_ready":
       return "Ready";
-    case "operator_approved":
-      return "Veroxa team review complete";
-    case "submitted_for_operator_approval":
+    case "team_approved":
+      return "Veroxa team approved";
+    case "team_review":
       return "Veroxa team review";
     case "team_drafted":
     case "drafted":

@@ -51,8 +51,8 @@ export const demoClientHealth: DemoClientHealth[] = [
     clientId: "demo-b",
     level: "attention",
     score: 64,
-    mainIssue: "Weekly report pending operator review",
-    recommendedAction: "Operator should review monthly report",
+    mainIssue: "Weekly report pending Veroxa team review",
+    recommendedAction: "Team should review monthly report",
     lastActivity: "Yesterday, 6:30 PM",
     signals: {
       mediaInventory:     { value: 9, max: 20, note: "Trending low" },
@@ -109,7 +109,7 @@ export const demoOwnerKpis = {
   clientsNeedingAttention: 2,
 };
 
-export const demoOperatorKpis = {
+export const demoTeamKpis = {
   tasksCompletedThisWeek:  23,
   reportsPendingReview:     2,
   mediaItemsPendingReview:  5,
@@ -143,7 +143,7 @@ export const demoHealthScores: DemoHealthScore[] = [
   { label: "Business Health",  score: 91, status: "Excellent", detail: "MRR +12% MoM, retention 94%." },
 ];
 
-// ── Client priority board — future: computed operator priority view
+// ── Client priority board — future: computed team priority view
 export type ClientPriorityLevel = "Critical" | "High" | "Normal" | "Low";
 export type ClientHealthStatus  = "Excellent" | "Healthy" | "Warning" | "Critical";
 
@@ -173,9 +173,9 @@ export const demoClientPriorities: DemoClientPriority[] = [
     clientId:         "demo-b",
     healthStatus:     "Warning",
     priorityLevel:    "High",
-    nextAction:       "Validate weekly report and resolve operator review backlog.",
+    nextAction:       "Validate weekly report and resolve Veroxa team review backlog.",
     lastUpdate:       "Yesterday, 6:30 PM",
-    priorityReason:   "Weekly report in operator queue 28+ hours. Media supply trending low.",
+    priorityReason:   "Weekly report in team queue 28+ hours. Media supply trending low.",
     riskFactors:      ["Reporting overdue", "Media supply dropping"],
     recommendedAction: "Validate report now. Schedule media refresh call within 48 hours.",
   },

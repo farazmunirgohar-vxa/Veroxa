@@ -19,7 +19,7 @@ import type {
 } from "@/lib/data/veroxaDataContracts";
 
 interface ClientHealthCenterProps {
-  viewerRole: "owner" | "operator";
+  viewerRole: "team";
 }
 
 const statusMeta: Record<
@@ -63,15 +63,15 @@ const REPORT_STATUS_LABEL: Record<string, string> = {
   not_started:     "Not started",
   drafted:         "Drafted",
   team_validated:  "Team validated",
-  operator_review: "Operator review",
+  team_review: "Team review",
   approved:        "Approved",
   delivered:       "Delivered",
   blocked:         "Blocked",
 };
 
 function nextActionFor(snapshot: ClientHealthSnapshot): string {
-  if (snapshot.ownerEscalationRequired) return "Owner escalation required";
-  if (snapshot.operatorActionRequired)  return "Operator follow-up required";
+  if (snapshot.internalEscalationRequired) return "Internal escalation required";
+  if (snapshot.teamActionRequired)  return "Team follow-up required";
   if (snapshot.clientActionRequired)    return "Client action required";
   return "Maintain current cadence";
 }
@@ -196,8 +196,8 @@ function HealthCard({ snapshot }: { snapshot: ClientHealthSnapshot }) {
             icon={ClipboardList}
             label="Action flags"
             value={[
-              snapshot.ownerEscalationRequired ? "Owner" : null,
-              snapshot.operatorActionRequired  ? "Operator" : null,
+              snapshot.internalEscalationRequired ? "Internal escalation" : null,
+              snapshot.teamActionRequired  ? "Team" : null,
               snapshot.clientActionRequired    ? "Client" : null,
             ].filter(Boolean).join(" · ") || "None"}
           />

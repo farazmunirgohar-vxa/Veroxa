@@ -5,13 +5,12 @@
  */
 import {
   Shield, Upload, Eye, Pencil, CheckCircle2, Zap, Ban,
-  Users, Building2, Cog, Crown, Lock,
+  Users, Building2, Cog, Lock,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 import { PageHeader } from "@/components/common";
-import { demoRoleResponsibilities } from "@/data/demoData";
 
 // ─── permission vocabulary ────────────────────────────────────────────────────
 
@@ -44,14 +43,12 @@ interface RoleMeta {
   portal:     string;
 }
 
-const ROLE_META: Record<string, RoleMeta> = {
-  Client:   { label: "Client",   icon: Building2, themeClass: "text-sky-300",    headerBg: "bg-sky-500/10 border-sky-500/30",     description: "Restaurant partner",     portal: "Client Portal"   },
-  Team:     { label: "Team",     icon: Users,     themeClass: "text-emerald-300", headerBg: "bg-emerald-500/10 border-emerald-500/30", description: "Content execution",   portal: "Team Portal"     },
-  Operator: { label: "Operator", icon: Cog,       themeClass: "text-amber-300",   headerBg: "bg-amber-500/10 border-amber-500/30",  description: "Operations oversight",   portal: "Operator Portal" },
-  Owner:    { label: "Owner",    icon: Crown,     themeClass: "text-violet-300",  headerBg: "bg-violet-500/10 border-violet-500/30", description: "Business leadership",   portal: "Owner Portal"    },
+const ROLE_META: Record<Role, RoleMeta> = {
+  Client: { label: "Client", icon: Building2, themeClass: "text-sky-300", headerBg: "bg-sky-500/10 border-sky-500/30", description: "Restaurant partner", portal: "Client Portal" },
+  Team: { label: "Team", icon: Users, themeClass: "text-emerald-300", headerBg: "bg-emerald-500/10 border-emerald-500/30", description: "Internal Admin command center", portal: "Team / Internal Admin Portal" },
 };
 
-const ROLES = ["Client", "Team", "Operator", "Owner"] as const;
+const ROLES = ["Client", "Team"] as const;
 type Role = typeof ROLES[number];
 
 // ─── portal action matrix ─────────────────────────────────────────────────────
@@ -62,34 +59,29 @@ interface ActionRow {
   action:   string;
   client:   Permission;
   team:     Permission;
-  operator: Permission;
-  owner:    Permission;
   note?:    string;
 }
 
 const ACTION_MATRIX: ActionRow[] = [
-  // ── Media
-  { category: "Media",    action: "Upload Media",    client: "Trigger",    team: "Edit",       operator: "Edit",       owner: "View",       note: "Clients upload; team reviews and re-shoots if needed." },
-  { category: "Media",    action: "Review Media",    client: "Restricted", team: "Approve",    operator: "Approve",    owner: "View",       note: "Quality gate owned by team and operator." },
-  // ── Content
-  { category: "Content",  action: "Generate Drafts", client: "Restricted", team: "Trigger",    operator: "Trigger",    owner: "View",       note: "AI-assisted; triggered by team or operator." },
-  { category: "Content",  action: "Approve Drafts",  client: "View",       team: "Edit",       operator: "Approve",    owner: "Approve",    note: "Client has visibility; operator holds final sign-off." },
-  // ── Publishing
-  { category: "Publishing", action: "Schedule Posts", client: "Restricted", team: "Trigger",    operator: "Approve",    owner: "View",       note: "Team proposes windows; operator validates." },
-  { category: "Publishing", action: "Publish Posts",  client: "Restricted", team: "Edit",       operator: "Approve",    owner: "View",       note: "Operator approves before any live push." },
+  // ── Client-safe progress
+  { category: "Client-safe Progress", action: "View client-safe progress", client: "View", team: "Edit", note: "Client sees calm progress; Team manages the internal source of truth." },
+  { category: "Client-safe Progress", action: "Upload media", client: "Trigger", team: "Edit", note: "Clients can submit assets; Team reviews quality and next use." },
+  // ── Content workflow
+  { category: "Content Workflow", action: "Manage content workflow", client: "Restricted", team: "Approve", note: "Team owns concepts, drafts, approval queue, and queue-for-later decisions." },
+  { category: "Content Workflow", action: "Manage content health", client: "Restricted", team: "Edit", note: "Team monitors supply, freshness, and client-safe next steps." },
   // ── Reporting
-  { category: "Reporting", action: "View Reports",   client: "View",       team: "View",       operator: "Edit",       owner: "Approve",    note: "Client sees own reports; operator drafts; owner approves." },
-  { category: "Reporting", action: "Approve Reports", client: "Restricted", team: "Restricted", operator: "Approve",    owner: "Approve",    note: "Operator validates, owner confirms before client delivery." },
-  // ── Administration
-  { category: "Admin",    action: "Manage Users",    client: "Restricted", team: "Restricted", operator: "View",       owner: "Approve",    note: "Operator can view team roster; only owner makes changes." },
-  { category: "Admin",    action: "View Revenue",    client: "Restricted", team: "Restricted", operator: "Restricted", owner: "Approve",    note: "Revenue data is owner-only. No exceptions." },
+  { category: "Reporting", action: "Validate weekly report", client: "View", team: "Approve", note: "Team validates report readiness before client-safe delivery." },
+  { category: "Reporting", action: "Review monthly report", client: "View", team: "Approve", note: "Team/Internal Admin is the report review and approval gate." },
+  // ── Internal operations
+  { category: "Internal Operations", action: "Manage internal alerts", client: "Restricted", team: "Trigger", note: "Team receives and resolves internal alerts without exposing internals to clients." },
+  { category: "Internal Operations", action: "Manage automation workflow", client: "Restricted", team: "Trigger", note: "Team controls automation workflow states; no live integrations are implied." },
 ];
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
 function permissionCount(role: Role, level: Permission | Permission[]): number {
   const levels = Array.isArray(level) ? level : [level];
-  return ACTION_MATRIX.filter((r) => levels.includes(r[role.toLowerCase() as keyof Pick<ActionRow, "client"|"team"|"operator"|"owner">] as Permission)).length;
+  return ACTION_MATRIX.filter((r) => levels.includes(r[role.toLowerCase() as keyof Pick<ActionRow, "client" | "team">] as Permission)).length;
 }
 
 // ─── sub-components ───────────────────────────────────────────────────────────
@@ -107,7 +99,7 @@ function PermChip({ perm }: { perm: Permission }) {
 function CategoryDivider({ label }: { label: string }) {
   return (
     <tr className="bg-muted/30">
-      <td colSpan={5} className="px-4 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+      <td colSpan={3} className="px-4 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
         {label}
       </td>
     </tr>
@@ -227,10 +219,8 @@ export default function InternalPermissions() {
                         <td className="px-4 py-2.5 text-[12px] font-medium text-foreground/90 sticky left-0 bg-inherit whitespace-nowrap">
                           {row.action}
                         </td>
-                        <td className="px-3 py-2.5 text-center"><PermChip perm={row.client}   /></td>
-                        <td className="px-3 py-2.5 text-center"><PermChip perm={row.team}     /></td>
-                        <td className="px-3 py-2.5 text-center"><PermChip perm={row.operator} /></td>
-                        <td className="px-3 py-2.5 text-center"><PermChip perm={row.owner}    /></td>
+                        <td className="px-3 py-2.5 text-center"><PermChip perm={row.client} /></td>
+                        <td className="px-3 py-2.5 text-center"><PermChip perm={row.team} /></td>
                         <td className="px-4 py-2.5 text-[10px] text-muted-foreground hidden xl:table-cell max-w-xs">{row.note}</td>
                       </tr>
                     ))}
@@ -260,11 +250,6 @@ export default function InternalPermissions() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {/* Summary from demoData */}
-                <p className="text-[11px] text-foreground/80 leading-relaxed">
-                  {demoRoleResponsibilities.find((d) => d.role === r.role)?.summary}
-                </p>
-                {/* Responsibility groups */}
                 {r.groups.map((g) => (
                   <div key={g.label}>
                     <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">{g.label}</p>
@@ -297,36 +282,17 @@ const ROLE_DETAIL: RoleDetail[] = [
   {
     role: "Client", tagline: "restaurant partner", dotClass: "bg-sky-400",
     groups: [
-      { label: "Can trigger",   items: ["Upload media to their library", "Submit onboarding information"] },
-      { label: "Can view",      items: ["Own content pipeline status", "Own published reports", "Draft approval stage"] },
-      { label: "Cannot access", items: ["Other clients' data", "Team work queues", "Revenue or billing", "Report drafting"] },
+      { label: "Can trigger", items: ["Upload media", "Send requests and input"] },
+      { label: "Can view", items: ["Client-safe progress", "Own published reports", "Prepared updates"] },
+      { label: "Cannot access", items: ["Internal notes", "AI assist internals", "Approval queue logic", "Team alerts"] },
     ],
   },
   {
-    role: "Team", tagline: "content execution", dotClass: "bg-emerald-400",
+    role: "Team", tagline: "internal admin command center", dotClass: "bg-emerald-400",
     groups: [
-      { label: "Can trigger",   items: ["Generate caption drafts via AI", "Propose scheduling windows"] },
-      { label: "Can edit",      items: ["Media review and quality scoring", "Caption drafts before approval", "Publish posts after operator sign-off"] },
-      { label: "Can view",      items: ["All client pipelines", "Published reports (read-only)", "Alert center"] },
-      { label: "Cannot access", items: ["Final report approval", "Revenue data", "User management"] },
-    ],
-  },
-  {
-    role: "Operator", tagline: "operations oversight", dotClass: "bg-amber-400",
-    groups: [
-      { label: "Can approve",   items: ["Media that passes quality check", "Draft captions before scheduling", "Schedule proposals", "Posts before going live", "Weekly and monthly reports"] },
-      { label: "Can edit",      items: ["Report drafts and narrative summaries", "Media library across all clients"] },
-      { label: "Can view",      items: ["Team roster and assignments", "AI agent settings (read-only)", "Business intelligence dashboards"] },
-      { label: "Cannot access", items: ["Revenue and billing data", "Automation roadmap settings"] },
-    ],
-  },
-  {
-    role: "Owner", tagline: "business leadership", dotClass: "bg-violet-400",
-    groups: [
-      { label: "Can approve",   items: ["Final report delivery to clients", "Draft content (as escalation)", "User additions and role changes"] },
-      { label: "Full access",   items: ["Revenue, billing, and MRR dashboard", "All client portfolios", "AI agent configuration", "Automation roadmap"] },
-      { label: "Can view",      items: ["Content pipeline (observer only)", "Post scheduling and publishing"] },
-      { label: "Delegates to",  items: ["Day-to-day media and content ops → Operator", "Execution tasks → Team"] },
+      { label: "Can manage", items: ["Content workflow", "Approval queue", "Report queue", "Content health"] },
+      { label: "Can review", items: ["Weekly reports", "Monthly reports", "Visibility audit findings", "Prepared actions"] },
+      { label: "Can control", items: ["Internal alerts", "Automation workflow states", "Queue for later / hold for later decisions"] },
     ],
   },
 ];

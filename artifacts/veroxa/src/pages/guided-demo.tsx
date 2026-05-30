@@ -17,9 +17,7 @@ import { veroxaGuidedWalkthrough, type DemoWalkthroughStep } from "@/data/demo/d
 const ROLE_STYLE: Record<string, string> = {
   Client:   "bg-blue-500/10 text-blue-300 border-blue-500/30",
   Team:     "bg-violet-500/10 text-violet-300 border-violet-500/30",
-  Operator: "bg-amber-500/10 text-amber-300 border-amber-500/30",
-  Owner:    "bg-fuchsia-500/10 text-fuchsia-300 border-fuchsia-500/30",
-};
+  };
 
 // ── Step card ─────────────────────────────────────────────────────
 
@@ -203,7 +201,7 @@ export default function GuidedDemo() {
         >
           <p>
             <span className="font-semibold text-foreground/80">Steps 1, 2, 5, 6</span> are public — no login required.{" "}
-            <span className="font-semibold text-foreground/80">Steps 3, 4, 7, 8</span> show internal Team, Operator, and Owner views.
+            <span className="font-semibold text-foreground/80">Steps 3, 4, 7, 8</span> show internal Team/Internal Admin views.
             These require the demo access code{" "}
             <span className="font-mono font-semibold text-foreground/80">veroxa-preview</span> when prompted.
             The guided demo does not bypass any existing access controls.

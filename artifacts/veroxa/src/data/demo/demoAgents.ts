@@ -22,7 +22,7 @@ export const demoAgents: DemoAgent[] = [
   { id: "publishing",         name: "Publishing Agent",         purpose: "Coordinates the publish queue and handles retry suggestions for failed posts.",                  exampleOutput: "4 posts queued for publication. 1 post recommended for reschedule.",              confidence: 82, lastActivity: "Today, 11:00 AM",    relatedClientId: "demo-c", workflowStage: "Publishing"        },
   { id: "reporting",          name: "Reporting Agent",          purpose: "Compiles weekly and monthly client reports from demo signals.",                                   exampleOutput: "Weekly visibility improved by an estimated 8.4%.",                                  confidence: 89, lastActivity: "Today, 11:02 AM",    relatedClientId: "demo-b",    workflowStage: "Reporting"         },
   { id: "alert-risk",         name: "Alert & Risk Agent",       purpose: "Flags low content supply, failed posts, or client health risks before they escalate.",           exampleOutput: "Client has fewer than 3 approved media items remaining.",                           confidence: 96, lastActivity: "Today, 8:42 AM",     relatedClientId: "demo-d",   workflowStage: "Risk monitoring"   },
-  { id: "operator-assistant", name: "Operator Assistant",       purpose: "Surfaces what the operator should review next across the portfolio.",                            exampleOutput: "2 reports awaiting your approval. 1 critical media risk to confirm.",             confidence: 87, lastActivity: "Today, 7:55 AM",                               workflowStage: "Operator workflow" },
+  { id: "team-assistant", name: "Team Assistant",       purpose: "Surfaces what the team should review next across the portfolio.",                            exampleOutput: "2 reports awaiting your approval. 1 critical media risk to confirm.",             confidence: 87, lastActivity: "Today, 7:55 AM",                               workflowStage: "Team workflow" },
   { id: "owner-assistant",    name: "Owner Assistant",          purpose: "Summarises portfolio health for the owner in plain language.",                                    exampleOutput: "3 clients healthy, 1 client needs attention because media inventory is low.",      confidence: 93, lastActivity: "Today, 8:00 AM",                               workflowStage: "Executive summary" },
 ];
 
@@ -188,7 +188,7 @@ export const demoAiAgentsV2: DemoAgentDetail[] = [
   },
   {
     id: "reporting", name: "Reporting Agent", shortName: "Reporting", category: "Operations",
-    purpose: "Assembles weekly and monthly reports, validates metrics, and prepares them for operator sign-off.",
+    purpose: "Assembles weekly and monthly reports, validates metrics, and prepares them for team sign-off.",
     inputs:  ["Posting log", "Engagement metrics", "Client goals", "Prior period baseline"],
     outputs: ["Weekly report draft", "Monthly report draft", "Highlight + concern callouts"],
     sampleRecommendations: [
@@ -203,7 +203,7 @@ export const demoAiAgentsV2: DemoAgentDetail[] = [
     ],
     sampleDecisions: [
       "Drafted 8 reports this week.",
-      "Auto-validated 6; routed 2 to operator review.",
+      "Auto-validated 6; routed 2 to Veroxa team review.",
       "Surfaced 12 highlight moments across the portfolio.",
     ],
   },
@@ -229,8 +229,8 @@ export const demoAiAgentsV2: DemoAgentDetail[] = [
     ],
   },
   {
-    id: "operator-assistant", name: "Operator Assistant", shortName: "Operator Asst.", category: "Executive",
-    purpose: "Synthesises all agent outputs into a daily operator briefing with prioritised actions.",
+    id: "team-assistant", name: "Team Assistant", shortName: "Team Asst.", category: "Executive",
+    purpose: "Synthesises all agent outputs into a daily team briefing with prioritised actions.",
     inputs:  ["All agent outputs", "Risk alerts", "Team workload", "Daily SLAs"],
     outputs: ["Prioritised action list", "Daily digest", "Bottleneck warnings"],
     sampleRecommendations: [
@@ -239,9 +239,9 @@ export const demoAiAgentsV2: DemoAgentDetail[] = [
       "Contact Demo Cafe today — media emergency.",
     ],
     recentActivity: [
-      { time: "Today, 6:00 AM",     event: "Generated operator daily digest" },
+      { time: "Today, 6:00 AM",     event: "Generated team daily digest" },
       { time: "Today, 5:55 AM",     event: "Compiled 7 recommended actions for today" },
-      { time: "Yesterday, 6:00 AM", event: "Generated operator daily digest" },
+      { time: "Yesterday, 6:00 AM", event: "Generated team daily digest" },
     ],
     sampleDecisions: [
       "Surfaced 4 immediate actions and 3 same-week actions today.",
@@ -252,7 +252,7 @@ export const demoAiAgentsV2: DemoAgentDetail[] = [
   {
     id: "owner-assistant", name: "Owner Assistant", shortName: "Owner Asst.", category: "Executive",
     purpose: "Generates the owner's daily executive briefing — business health, revenue trends, top risks, top opportunities.",
-    inputs:  ["Operator digest", "Revenue & client metrics", "Risk forecast", "Growth opportunities"],
+    inputs:  ["Team digest", "Revenue & client metrics", "Risk forecast", "Growth opportunities"],
     outputs: ["Owner daily briefing", "Strategic recommendations", "Weekly business pulse"],
     sampleRecommendations: [
       "Revenue up 12% MoM — celebrate with team.",
@@ -286,11 +286,11 @@ export const demoAgentWorkflow: DemoWorkflowStep[] = [
   { step: 3,  type: "agent",  label: "Content Strategist Agent", description: "Plans post-mix and cadence across the week."                             },
   { step: 4,  type: "agent",  label: "Caption Agent",            description: "Drafts 3 caption variants in the client's brand voice."                  },
   { step: 5,  type: "agent",  label: "Brand Voice Agent",        description: "Validates tone, flags deviations, suggests rewrites."                    },
-  { step: 6,  type: "team",   label: "Team / Operator Approval", description: "Human-in-the-loop sign-off before content is scheduled."                 },
+  { step: 6,  type: "team",   label: "Team / Team Approval", description: "Human-in-the-loop sign-off before content is scheduled."                 },
   { step: 7,  type: "agent",  label: "Scheduling Agent",         description: "Selects optimal posting window for each platform."                       },
   { step: 8,  type: "stage",  label: "Publishing Stage",         description: "Posts are queued and (in production) published to social channels."      },
   { step: 9,  type: "agent",  label: "Reporting Agent",          description: "Assembles weekly and monthly reports with highlights and callouts."      },
   { step: 10, type: "agent",  label: "Risk Monitoring Agent",    description: "Watches every signal and raises early-warning alerts."                   },
-  { step: 11, type: "agent",  label: "Operator Assistant",       description: "Synthesises agent outputs into the operator daily digest."               },
+  { step: 11, type: "agent",  label: "Team Assistant",       description: "Synthesises agent outputs into the team daily digest."               },
   { step: 12, type: "agent",  label: "Owner Assistant",          description: "Generates the owner executive briefing every morning."                   },
 ];

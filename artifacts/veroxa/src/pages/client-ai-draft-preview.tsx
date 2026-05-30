@@ -23,7 +23,7 @@ import { DemoFlowTimeline } from "@/components/demo/DemoVisuals";
 
 const NEXT_STEPS = [
   { key: "review",   label: "Team review",   caption: "Captions checked" },
-  { key: "schedule", label: "Operator OK",   caption: "Schedule confirmed" },
+  { key: "schedule", label: "Team OK",   caption: "Schedule confirmed" },
   { key: "publish",  label: "Scheduled",     caption: "Queued to platform" },
   { key: "report",   label: "Report update", caption: "Performance logged" },
 ];

@@ -21,7 +21,7 @@
  *     docs/PRE_AUTH_TECHNICAL_CHECKLIST.md.
  */
 
-export type VeroxaRole = "client" | "team" | "operator" | "owner";
+export type VeroxaRole = "client" | "team";
 
 export type AuthStatus = "loading" | "authenticated" | "unauthenticated";
 
@@ -50,8 +50,6 @@ export interface AuthState {
 export const ROLE_HOME_PATH: Readonly<Record<VeroxaRole, string>> = Object.freeze({
   client:   "/client/dashboard",
   team:     "/team/dashboard",
-  operator: "/operator/overview",
-  owner:    "/owner/dashboard",
 });
 
 export function getRoleHomePath(role: VeroxaRole): string {
@@ -63,8 +61,6 @@ export function getRoleHomePath(role: VeroxaRole): string {
  *
  * - `client`   → `/demo/client/dashboard` — public demo preview (no login).
  * - `team`     → `/team/dashboard`        — real team portal (InternalDemoGuard).
- * - `operator` → `/login`                 — parked; no active route.
- * - `owner`    → `/login`                 — parked; no active route.
  *
  * NOT the post-login real-auth home. For that, use `ROLE_HOME_PATH` /
  * `getRoleHomePath`. These paths are only consulted for wrong-role fallback
@@ -73,15 +69,13 @@ export function getRoleHomePath(role: VeroxaRole): string {
 export const DEMO_ROLE_HOME_PATH: Readonly<Record<VeroxaRole, string>> = Object.freeze({
   client:   "/demo/client/dashboard",
   team:     "/team/dashboard",
-  operator: "/login",
-  owner:    "/login",
 });
 
 export function getDemoRoleHomePath(role: VeroxaRole): string {
   return DEMO_ROLE_HOME_PATH[role];
 }
 
-const ALL_ROLES: readonly VeroxaRole[] = ["client", "team", "operator", "owner"] as const;
+const ALL_ROLES: readonly VeroxaRole[] = ["client", "team"] as const;
 
 export function isVeroxaRole(value: unknown): value is VeroxaRole {
   return typeof value === "string" && (ALL_ROLES as readonly string[]).includes(value);

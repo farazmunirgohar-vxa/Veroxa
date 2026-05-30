@@ -20,7 +20,7 @@ import {
 } from "@/data/demoData";
 
 interface MonthlyReportViewProps {
-  viewerRole: "client" | "operator" | "owner";
+  viewerRole: "client" | "team";
   clientId?: string;
 }
 

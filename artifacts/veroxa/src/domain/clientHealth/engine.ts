@@ -133,7 +133,7 @@ export const ClientHealthEngine = {
     return [...profiles].sort((a, b) => order[a.healthCategory] - order[b.healthCategory]);
   },
 
-  /** Portfolio-level owner summary. */
+  /** Portfolio-level Team/Internal Admin summary. */
   portfolioSummary(): CHCPortfolioSummary {
     const ps = ClientHealthEngine.profiles();
     const healthy = ps.filter((p) => p.healthCategory === "Healthy").length;
@@ -193,8 +193,8 @@ export const ClientHealthEngine = {
     );
   },
 
-  /** Business-level risks for owner view. */
-  ownerRisks() {
+  /** Business-level risks for Team/Internal Admin view. */
+  teamRisks() {
     return demoOwnerCommandItems.filter((i) => i.severity === "Critical" || i.severity === "High");
   },
 };

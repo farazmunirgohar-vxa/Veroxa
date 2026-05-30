@@ -7,32 +7,6 @@ import { getRoleHomePath } from "@/lib/auth/authContract";
 import { AUTH_MODE } from "@/lib/auth/authMode";
 
 // ---------------------------------------------------------------------------
-// ParkedPortal — shown when a route belongs to a parked role (operator/owner)
-// ---------------------------------------------------------------------------
-function ParkedPortal() {
-  return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center px-5 py-12">
-      <div className="w-full max-w-sm text-center space-y-6">
-        <div className="w-14 h-14 rounded-2xl bg-muted/30 flex items-center justify-center mx-auto">
-          <Lock className="w-7 h-7 text-muted-foreground/40" />
-        </div>
-        <div className="space-y-2">
-          <h1 className="text-2xl font-bold tracking-tight" data-testid="parked-heading">
-            Parked
-          </h1>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            This area is parked for the current build.
-          </p>
-        </div>
-        <Button asChild variant="outline" className="w-full">
-          <Link href="/login" data-testid="parked-back-to-login">Back to Login</Link>
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // InternalDemoGuard — public API
 // ---------------------------------------------------------------------------
 
@@ -43,15 +17,14 @@ interface InternalDemoGuardProps {
 }
 
 /**
- * InternalDemoGuard — protects /demo/team/*, /demo/operator/*,
- * and /demo/owner/* from unauthenticated and wrong-role access.
+ * InternalDemoGuard — protects /team/* and /demo/team/* from unauthenticated
+ * and wrong-role access.
  *
  * Do NOT use on /demo/client/* — that remains public.
  *
  * Rules:
  *   AUTH_MODE === "placeholder":
- *     - Route includes "team"        → render children (active portal)
- *     - Route is operator/owner only → show ParkedPortal (not in current build)
+ *     - Route includes "team" → render children (active internal portal).
  *     No access code required after valid email/password login.
  *
  *   AUTH_MODE === "real":
@@ -65,12 +38,10 @@ interface InternalDemoGuardProps {
 export default function InternalDemoGuard({ role, children }: InternalDemoGuardProps) {
   if (AUTH_MODE === "placeholder") {
     const roles = Array.isArray(role) ? role : [role];
-    // Operator and Owner are parked for the current build.
-    // If the route allows team (alone or alongside others), it is active.
     if (!roles.includes("team")) {
-      return <ParkedPortal />;
+      return <>{children}</>;
     }
-    // Team or team+others — active in placeholder mode; no access code required.
+    // Team is active in placeholder mode; no access code required.
     return <>{children}</>;
   }
 
@@ -114,7 +85,6 @@ export default function InternalDemoGuard({ role, children }: InternalDemoGuardP
   const allowed = Array.isArray(role) ? role : [role];
 
   if (!currentRole || !allowed.includes(currentRole)) {
-    // Parked roles (operator, owner) have no active portal; redirect to /login.
     // Active roles (client, team) go to their real portal home.
     const redirectPath = currentRole ? getRoleHomePath(currentRole) : "/login";
     return (

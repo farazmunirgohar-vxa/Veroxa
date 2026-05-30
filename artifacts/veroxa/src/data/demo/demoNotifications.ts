@@ -1,9 +1,9 @@
 // demoNotifications.ts — future: notifications table
-// Covers operator-facing alerts and role-segmented client/team/operator/owner notifications.
+// Covers team-facing alerts and role-segmented client/team notifications.
 
 import type { NotificationCategory } from "./demoClientHealth";
 
-// ── DemoNotification — future: notifications (operator-facing) ───
+// ── DemoNotification — future: notifications (team-facing) ───
 export interface DemoNotification {
   id: string;
   title: string;
@@ -31,7 +31,7 @@ export const demoNotifications: DemoNotification[] = [
   {
     id: "n3", title: "Weekly report ready for review", clientId: "demo-b",
     category: "warning", priority: "P2", time: "Yesterday, 5:15 PM",
-    description: "Demo Taco Bar weekly report has been generated and is awaiting operator review before sending to the client.",
+    description: "Demo Taco Bar weekly report has been generated and is awaiting Veroxa team review before sending to the client.",
     suggestedAction: "Open the report, verify content, and approve for delivery.",
   },
   {
@@ -73,10 +73,8 @@ export interface DemoRoleNotification {
 }
 
 export const demoRoleNotifications: {
-  client:   DemoRoleNotification[];
-  team:     DemoRoleNotification[];
-  operator: DemoRoleNotification[];
-  owner:    DemoRoleNotification[];
+  client: DemoRoleNotification[];
+  team: DemoRoleNotification[];
 } = {
   client: [
     { id: "cn1", title: "Weekly report available",  body: "Your May 13–19 performance summary is ready.",              kind: "success",  timestamp: "Yesterday",   clientId: "demo-a" },
@@ -88,15 +86,8 @@ export const demoRoleNotifications: {
     { id: "tn1", title: "Task assigned",   body: "Review 4 new uploads — Demo Cafe.",               kind: "info",     timestamp: "Today, 9:14 AM"  },
     { id: "tn2", title: "Review needed",   body: "3 caption variants — Demo Grill House.",            kind: "reminder", timestamp: "Today, 10:30 AM" },
     { id: "tn3", title: "Content overdue", body: "Demo Taco Bar lunch post — caption rewrite.",       kind: "warning",  timestamp: "Today, 11:00 AM" },
-  ],
-  operator: [
     { id: "on1", title: "Client risk",               body: "Demo Cafe inventory critical — 5 days runway.",       kind: "warning",  timestamp: "Today, 8:42 AM"  },
     { id: "on2", title: "Report pending validation", body: "Demo Taco Bar weekly — drafted, awaiting sign-off.",  kind: "reminder", timestamp: "Today, 9:00 AM"  },
     { id: "on3", title: "Bottleneck detected",       body: "Brand Review backlog — 2 items > 24h.",              kind: "warning",  timestamp: "Today, 10:12 AM" },
-  ],
-  owner: [
-    { id: "wn1", title: "Business risk",        body: "1 client at critical risk — rescue plan in motion.", kind: "warning", timestamp: "Today"     },
-    { id: "wn2", title: "Revenue change",       body: "MRR +12% MoM. Pro plan signups trending up.",       kind: "success", timestamp: "Today"     },
-    { id: "wn3", title: "Client health trend",  body: "Portfolio average dropped 4 pts week-over-week.",   kind: "info",    timestamp: "Yesterday" },
   ],
 };

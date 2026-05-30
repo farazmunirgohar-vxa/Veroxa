@@ -1,4 +1,5 @@
-// demoOwner.ts — future: owner-layer business data
+// demoOwner.ts — DEPRECATED LEGACY FIXTURE ONLY.
+// Not routed, not active auth, not active permissions, and not an active portal role.
 // Covers business command center, permissions matrix, automation roadmap,
 // system map, daily briefing, and internal operator notes.
 

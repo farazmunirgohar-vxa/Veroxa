@@ -24,12 +24,12 @@ export default function InternalDemoControls() {
   const targetLife     = demoClientLifecycle.find((c) => c.clientId === targetClientId);
 
   const quickLinks = [
-    { label: "Operations Center", href: "/demo/operator/operations-center", icon: Workflow      },
-    { label: "Command Board",     href: "/demo/operator/command-board",     icon: ClipboardList },
-    { label: "Client Detail",     href: "/demo/operator/client-detail",     icon: Building2     },
-    { label: "Media Analytics",   href: "/demo/owner/media-analytics",      icon: Images        },
-    { label: "Reporting Command", href: "/demo/operator/reporting-command", icon: FileText      },
-    { label: "Client Health",     href: "/demo/owner/client-health",        icon: Heart         },
+    { label: "Team Dashboard",    href: "/team/dashboard",         icon: Workflow      },
+    { label: "Approval Queue",    href: "/team/approval-queue",    icon: ClipboardList },
+    { label: "Upload Inbox",      href: "/team/upload-inbox",      icon: Images        },
+    { label: "Report Queue",      href: "/team/report-queue",      icon: FileText      },
+    { label: "Visibility Audit",  href: "/team/visibility-audit",  icon: Heart         },
+    { label: "Client Portal",     href: "/client/dashboard",       icon: Building2     },
   ];
 
   return (

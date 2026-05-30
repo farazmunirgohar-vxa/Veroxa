@@ -22,8 +22,7 @@ interface RealRoutePlaceholderProps {
 }
 
 /**
- * RealRoutePlaceholder — reusable wrapper for every future `/client/*`,
- * `/team/*`, `/operator/*`, `/owner/*` route.
+ * RealRoutePlaceholder — reusable wrapper for future `/client/*` and `/team/*` routes.
  *
  * Today, placeholder auth is always unauthenticated, so this only ever
  * renders the `RequireRole` "Protected Route Preview" card. Once real
