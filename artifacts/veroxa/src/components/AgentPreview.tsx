@@ -68,7 +68,7 @@ const agents: Agent[] = [
   {
     name: "Alert Agent",
     status: "Monitoring",
-    description: "Monitors for failed posts, low content, and health score drops — surfaces issues to operators.",
+    description: "Monitors for failed posts, low content, and health score drops — surfaces issues to the Team/Internal Admin portal.",
     icon: ShieldAlert,
   },
   {

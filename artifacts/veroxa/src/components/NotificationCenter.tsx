@@ -20,7 +20,7 @@ import {
 } from "@/data/demoData";
 
 interface NotificationCenterProps {
-  viewerRole: "owner" | "operator";
+  viewerRole: "team";
 }
 
 type Filter = "all" | NotificationCategory;

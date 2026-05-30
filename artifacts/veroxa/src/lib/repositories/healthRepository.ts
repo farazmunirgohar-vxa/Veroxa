@@ -118,7 +118,7 @@ export function getClientsNeedingOperatorAction(): ClientHealthSnapshot[] {
   return getAllClientHealthSnapshots().filter((s) => s.teamActionRequired);
 }
 
-export function getOwnerEscalationClients(): ClientHealthSnapshot[] {
+export function getTeamEscalationClients(): ClientHealthSnapshot[] {
   return getAllClientHealthSnapshots().filter((s) => s.internalEscalationRequired);
 }
 
@@ -128,8 +128,8 @@ export interface HealthSummary {
   caution: number;
   urgent: number;
   broken: number;
-  operatorActions: number;
-  ownerEscalations: number;
+  teamActions: number;
+  teamEscalations: number;
   clientActions: number;
 }
 
@@ -141,8 +141,8 @@ export function getHealthSummary(): HealthSummary {
     caution: all.filter((s) => s.contentHealthStatus === "caution").length,
     urgent: all.filter((s) => s.contentHealthStatus === "urgent").length,
     broken: all.filter((s) => s.contentHealthStatus === "broken").length,
-    operatorActions: all.filter((s) => s.teamActionRequired).length,
-    ownerEscalations: all.filter((s) => s.internalEscalationRequired).length,
+    teamActions: all.filter((s) => s.teamActionRequired).length,
+    teamEscalations: all.filter((s) => s.internalEscalationRequired).length,
     clientActions: all.filter((s) => s.clientActionRequired).length,
   };
 }
