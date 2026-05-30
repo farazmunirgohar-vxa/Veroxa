@@ -1,14 +1,23 @@
-/**
- * Client Portal Journey — barrel.
- *
- * The single client-safe vocabulary + helpers shared by the /client/* pages.
- * Pure domain layer: no React, no network, no storage. See
- * docs/CLIENT_PORTAL_JOURNEY.md.
- */
+/** Client Portal Journey — barrel for client-safe journey/report foundations. */
 
 export type {
+  ClientJourneyItem,
+  ClientJourneyItemType,
+  ClientJourneyStatus,
+  ClientJourneySource,
+  ClientJourneyPriority,
+  ClientNeedFromClient,
+  ClientProgressSummary,
+  ClientNextStep,
+  ClientVisibilityProgress,
+  ClientLocalVisibilityProgress,
+  ClientReportSummary,
+  ClientWeeklyUpdate,
+  ClientMonthlyReport,
   ClientPortalJourneyStatus,
   ClientPortalJourneyType,
+  ClientPortalJourneySource,
+  ClientPortalJourneyPriority,
   ClientPortalStatusTone,
   ClientPortalJourneyItem,
   ClientPortalNeedFromClient,
@@ -24,4 +33,19 @@ export {
   statusIsInProgress,
   getClientPortalTypeLabel,
   buildClientPortalProgressSummary,
+  createDefaultVisibilityProgress,
+  createDefaultReportSummary,
 } from "./clientSafe";
+
+export {
+  getClientPortalJourney,
+  getClientProgressSummary,
+  getClientNeedsFromYou,
+  getClientRecentProgress,
+  getClientVisibilityProgress,
+  getClientNextSteps,
+} from "./repository";
+
+export { generateClientWeeklyUpdate } from "./weeklyUpdate";
+export { generateClientMonthlyReport } from "./monthlyReport";
+export { getClientLocalVisibilityProgress } from "./localVisibility";
