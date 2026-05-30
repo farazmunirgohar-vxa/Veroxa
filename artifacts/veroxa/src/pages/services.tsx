@@ -1,5 +1,12 @@
 import { Link } from "wouter";
-import { ArrowRight, CheckCircle2, Globe, LayoutDashboard, Megaphone, Monitor } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Globe,
+  LayoutDashboard,
+  Megaphone,
+  Monitor,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
@@ -20,8 +27,9 @@ export default function ServicesPage() {
             </span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto animate-in fade-in slide-in-from-bottom-5 duration-700">
-            Veroxa handles the online presence system restaurants need to stay visible, consistent,
-            and trustworthy.
+            Veroxa handles content posting, captions, page consistency, Google
+            visibility, and online presence management so restaurants stay
+            visible, consistent, and trustworthy.
           </p>
         </div>
       </section>
@@ -40,12 +48,15 @@ export default function ServicesPage() {
               "Google visibility",
               "Facebook + Instagram consistency",
               "Picture posting",
-              "Reels and TikTok available in Growth",
-              "Ads management available in Premium",
+              "TikTok + Reels using client-provided media in Growth",
+              "Ads management available in Premium after readiness",
               "Weekly updates and monthly reporting",
               "Client portal access",
             ].map((item) => (
-              <div key={item} className="flex items-center gap-3 py-2.5 border-b border-border/30 last:border-b-0">
+              <div
+                key={item}
+                className="flex items-center gap-3 py-2.5 border-b border-border/30 last:border-b-0"
+              >
                 <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />
                 <span className="text-sm font-medium">{item}</span>
               </div>
@@ -75,8 +86,8 @@ export default function ServicesPage() {
               searching for nearby food can actually find the restaurant.
             </p>
             <p className="text-sm text-muted-foreground/70 leading-relaxed">
-              Veroxa does not guarantee first-page Google rankings. Local search results depend on
-              many factors outside any agency's control.
+              Veroxa does not guarantee first-page Google rankings. Local search
+              results depend on many factors outside any agency's control.
             </p>
           </div>
           <div className="space-y-4">
@@ -86,7 +97,10 @@ export default function ServicesPage() {
               "Google Business Profile optimization",
               "Google reviews support",
             ].map((item) => (
-              <div key={item} className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card/40">
+              <div
+                key={item}
+                className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card/40"
+              >
                 <CheckCircle2 className="w-4 h-4 text-blue-500 flex-shrink-0" />
                 <span className="text-sm font-medium">{item}</span>
               </div>
@@ -100,12 +114,15 @@ export default function ServicesPage() {
         <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           <div className="order-2 md:order-1 space-y-4">
             {[
-              "Essential focuses on social media picture posting",
-              "Growth adds Reels and TikTok",
+              "Essential includes max 1 picture post per day",
+              "Growth adds TikTok + Reels using provided photos and videos",
               "Caption writing and draft creation",
               "Posting depends on usable media from the restaurant",
             ].map((item) => (
-              <div key={item} className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card/40">
+              <div
+                key={item}
+                className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card/40"
+              >
                 <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
                 <span className="text-sm font-medium">{item}</span>
               </div>
@@ -118,18 +135,33 @@ export default function ServicesPage() {
             <h2 className="text-2xl font-bold mb-4">Social Content System</h2>
             <p className="text-muted-foreground leading-relaxed mb-4">
               Essential focuses on social media picture posting to keep the
-              restaurant active and consistent. Growth adds Reels and TikTok for
-              stronger reach. Veroxa handles content structure, caption creation,
-              and posting so the owner does not manage it day-to-day.
+              restaurant active and consistent. Growth adds TikTok + Reels
+              posting support using the photos and videos you provide. Veroxa
+              handles content structure, caption creation, page consistency, and
+              posting so the owner does not manage it day-to-day.
             </p>
             <p className="text-muted-foreground leading-relaxed mb-4">
-              Posting depends on usable media from the restaurant. Veroxa may post
-              up to once per day when enough usable content is available.
+              Posting depends on usable media from the restaurant and may slow
+              when usable media is unavailable. Premium can reach max 2 content
+              posts per day total — 1 picture post and 1 reel / short video post
+              — after readiness.
             </p>
             <p className="text-sm text-muted-foreground/70 leading-relaxed">
-              Veroxa does not guarantee viral posts or a specific follower count.
+              Veroxa does not guarantee viral posts or a specific follower
+              count.
             </p>
           </div>
+        </div>
+      </section>
+
+      {/* Service boundary */}
+      <section className="py-12 px-6 lg:px-12">
+        <div className="max-w-4xl mx-auto p-5 rounded-xl border border-border/40 bg-card/20 text-sm text-muted-foreground leading-relaxed">
+          <strong className="text-foreground/80">Service boundary:</strong>{" "}
+          Veroxa does not handle comments, DMs, inboxes, complaints, order
+          questions, refunds, or customer-service conversations at launch. The
+          restaurant remains responsible for customer replies and service
+          conversations.
         </div>
       </section>
 
@@ -140,11 +172,14 @@ export default function ServicesPage() {
             <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center border border-amber-500/20 mb-5">
               <LayoutDashboard className="w-5 h-5" />
             </div>
-            <h2 className="text-2xl font-bold mb-4">Reporting and Accountability</h2>
+            <h2 className="text-2xl font-bold mb-4">
+              Reporting and Accountability
+            </h2>
             <p className="text-muted-foreground leading-relaxed">
-              Restaurant owners receive weekly updates and monthly performance reports through the
-              client portal. The reporting system creates visibility into what is being done,
-              builds trust, and makes it easy to see progress without chasing the team for updates.
+              Restaurant owners receive weekly updates and monthly performance
+              reports through the client portal. The reporting system creates
+              visibility into what is being done, builds trust, and makes it
+              easy to see progress without chasing the team for updates.
             </p>
           </div>
           <div className="space-y-4">
@@ -154,7 +189,10 @@ export default function ServicesPage() {
               "Content calendar visibility",
               "Clear record of work done",
             ].map((item) => (
-              <div key={item} className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card/40">
+              <div
+                key={item}
+                className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card/40"
+              >
                 <CheckCircle2 className="w-4 h-4 text-amber-500 flex-shrink-0" />
                 <span className="text-sm font-medium">{item}</span>
               </div>
@@ -171,15 +209,18 @@ export default function ServicesPage() {
               <Megaphone className="w-5 h-5" />
             </div>
             <div>
-              <div className="text-xs font-semibold text-amber-400 uppercase tracking-widest mb-0.5">Included in Premium</div>
+              <div className="text-xs font-semibold text-amber-400 uppercase tracking-widest mb-0.5">
+                Included in Premium
+              </div>
               <h2 className="text-2xl font-bold">Ads Management</h2>
             </div>
           </div>
           <p className="text-muted-foreground mb-8 max-w-xl">
-            Ads management is included in the Premium plan. Veroxa handles
-            campaign setup, targeting, creative direction, monitoring, and
-            reporting. Ad spend is always separate and paid by the restaurant
-            directly to the ad platform.
+            Ads management is included in Premium only after at least 1 month on
+            Essential or Growth, a Veroxa readiness assessment, client approval,
+            and an agreed ad budget. Veroxa handles campaign setup, targeting,
+            creative direction, monitoring, and reporting. Ad spend is always
+            separate and paid by the restaurant directly to the ad platform.
           </p>
           <div className="grid md:grid-cols-2 gap-x-12 gap-y-3 mb-8">
             {[
@@ -190,14 +231,19 @@ export default function ServicesPage() {
               "Monthly ad summary",
               "Optimization recommendations",
             ].map((item) => (
-              <div key={item} className="flex items-center gap-3 py-2.5 border-b border-border/30 last:border-b-0">
+              <div
+                key={item}
+                className="flex items-center gap-3 py-2.5 border-b border-border/30 last:border-b-0"
+              >
                 <CheckCircle2 className="w-4 h-4 text-amber-500 flex-shrink-0" />
                 <span className="text-sm font-medium">{item}</span>
               </div>
             ))}
           </div>
           <div className="p-4 rounded-xl border border-amber-500/20 bg-amber-500/5 text-sm text-amber-400/90 leading-relaxed max-w-xl">
-            Advertising budget is separate and paid by the restaurant directly to the ad platform.
+            Advertising budget is separate and paid by the restaurant directly
+            to the ad platform. Premium readiness can be reviewed after the
+            restaurant foundation is stable.
           </div>
         </div>
       </section>
@@ -205,15 +251,27 @@ export default function ServicesPage() {
       {/* CTA */}
       <section className="py-20 px-6 lg:px-12">
         <div className="max-w-xl mx-auto text-center">
-          <h2 className="text-2xl font-bold mb-6">See pricing or experience the demo</h2>
+          <h2 className="text-2xl font-bold mb-6">
+            See pricing or experience the demo
+          </h2>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/pricing" data-testid="btn-services-cta-pricing">
-              <Button size="lg" className="h-12 px-7 font-semibold shadow-[0_0_20px_rgba(99,102,241,0.25)]">
+              <Button
+                size="lg"
+                className="h-12 px-7 font-semibold shadow-[0_0_20px_rgba(99,102,241,0.25)]"
+              >
                 View Pricing <ArrowRight className="ml-2 w-4 h-4" />
               </Button>
             </Link>
-            <Link href="/demo/client/dashboard" data-testid="btn-services-cta-demo">
-              <Button size="lg" variant="outline" className="h-12 px-7 border-border/60 hover:bg-accent/50">
+            <Link
+              href="/demo/client/dashboard"
+              data-testid="btn-services-cta-demo"
+            >
+              <Button
+                size="lg"
+                variant="outline"
+                className="h-12 px-7 border-border/60 hover:bg-accent/50"
+              >
                 Experience Demo
               </Button>
             </Link>

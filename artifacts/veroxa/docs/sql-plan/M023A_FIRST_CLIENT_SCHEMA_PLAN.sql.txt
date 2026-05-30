@@ -17,11 +17,13 @@ CREATE TABLE restaurants (
   id            uuid PRIMARY KEY,
   display_name  text NOT NULL,
   status        text NOT NULL CHECK (status IN ('lead','onboarding','active','paused','churned')),
-  service_plan  text NOT NULL CHECK (service_plan IN ('google_optimization','complete_online_presence','ads_management_only')),
+  service_plan  text NOT NULL CHECK (service_plan IN ('essential','growth','premium')),
+  -- Legacy aliases (`google_optimization`, `complete_online_presence`, `ads_management_only`,
+  -- `complete_plus_ads`) require a deliberate compatibility migration before real data.
   created_at    timestamptz NOT NULL,
   updated_at    timestamptz NOT NULL
 );
--- Future indexes: (status), (service_plan).
+-- Future indexes: (status), (service_plan). Active public slugs are essential/growth/premium.
 -- Audit: created_by uuid, updated_by uuid (added when auth is real).
 
 -- ============================================================

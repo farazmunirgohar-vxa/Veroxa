@@ -8,9 +8,13 @@
 //   * No contract. Cancel anytime.
 //   * Google Optimization and Facebook + Instagram picture posting are
 //     included in all current public plans.
-//   * Maximum 1 post per day. Posting depends on usable client-provided media.
-//   * Reels / short-form support starts at Growth.
-//   * Ads management starts at Premium.
+//   * Essential allows max 1 picture post/day. Growth adds TikTok + Reels
+//     posting support using the photos and videos the client provides.
+//   * Premium allows max 2 content posts/day total: 1 picture + 1 reel.
+//   * Posting depends on usable client-provided media and may slow when
+//     usable media is unavailable.
+//   * Premium requires 1+ month on Essential/Growth, a Veroxa readiness
+//     assessment, client approval, and an agreed ad budget.
 //   * Ad spend is ALWAYS separate and paid by the restaurant directly to the
 //     ad platform. No plan includes ad spend.
 //   * No payment, billing, or checkout integration exists. Do not add Stripe,
@@ -70,22 +74,23 @@ const essentialIncludes = [
   "Weekly updates",
   "Monthly performance snapshot",
   "Client Portal access",
-  "Maximum 1 post per day, depending on usable client-provided media",
+  "Max 1 picture post per day, depending on usable client-provided media",
 ];
 
 const growthIncludes = [
   "Everything in Essential",
-  "Reels / short-form content support",
-  "TikTok posting/management if applicable",
+  "TikTok + Reels posting support using the photos and videos you provide",
+  "Reels optimization",
   "Enhanced monthly report",
 ];
 
 const premiumIncludes = [
   "Everything in Growth",
-  "Facebook/Instagram ads management",
-  "Google Ads management",
-  "Campaign setup and monitoring",
+  "Google, Facebook, Instagram, and TikTok ads management",
+  "Max 2 content posts per day total: 1 picture post + 1 reel / short video post",
+  "Platform-specific drafting and adaptation",
   "Monthly ad performance report",
+  "Premium requires 1+ month on Essential/Growth, readiness assessment, client approval, and agreed ad budget",
   "Ad spend is separate and paid directly by the restaurant",
 ];
 
@@ -109,7 +114,7 @@ export const VEROXA_PLANS: Record<VeroxaPlanId, VeroxaPlan> = {
     priceMonthly: 697,
     displayPrice: "$697",
     tagline:
-      "Essential visibility plus short-form content support and an enhanced monthly report.",
+      "Essential visibility plus TikTok + Reels posting support using the photos and videos you provide, with an enhanced monthly report.",
     includes: growthIncludes,
     includesAdSpend: false,
     publicVisible: true,
@@ -122,7 +127,7 @@ export const VEROXA_PLANS: Record<VeroxaPlanId, VeroxaPlan> = {
     priceMonthly: 997,
     displayPrice: "$997",
     tagline:
-      "Growth coverage plus Facebook/Instagram and Google Ads management. Ad spend is separate.",
+      "Growth coverage plus ads management after readiness assessment, client approval, and agreed ad budget. Ad spend is separate.",
     includes: premiumIncludes,
     includesAdSpend: false,
     publicVisible: true,
@@ -213,11 +218,14 @@ export const GLOBAL_PRICING_RULES = [
   "Cancel anytime",
   "Google Optimization included in all plans",
   "Facebook + Instagram included in all plans",
-  "Maximum 1 post per day",
-  "Posting depends on usable client-provided media",
-  "Reels / short-form available from Growth",
-  "Ads management available from Premium",
+  "Essential: max 1 picture post per day",
+  "Growth: TikTok + Reels posting support using the photos and videos you provide",
+  "Premium: max 2 content posts per day total — 1 picture post + 1 reel / short video post",
+  "Posting depends on usable client-provided media and may slow when usable media is unavailable",
+  "Premium requires 1+ month on Essential/Growth, Veroxa readiness assessment, client approval, and agreed ad budget",
   "Ad spend is separate and paid directly by the restaurant",
+  "Veroxa does not handle comments, DMs, inboxes, complaints, order questions, refunds, or customer-service conversations at launch",
+  "First clients receive 20% off for 12 months, then keep it as a loyalty discount only while continuously active",
 ];
 
 export const PRICING_NO_CONTRACT_DISCLAIMER = "No contract. Cancel anytime.";
@@ -226,7 +234,16 @@ export const AD_SPEND_DISCLAIMER =
   "Ad spend is separate and paid directly by the restaurant. Veroxa plan pricing does not include ad spend.";
 
 export const MEDIA_DEPENDENCY_DISCLAIMER =
-  "Posting depends on usable client-provided media, with a maximum of 1 post per day.";
+  "Posting depends on usable client-provided media and may slow when usable media is unavailable. Essential allows max 1 picture post/day; Premium allows max 2 content posts/day total: 1 picture + 1 reel.";
+
+export const SERVICE_BOUNDARY_DISCLAIMER =
+  "Veroxa does not handle comments, DMs, inboxes, complaints, order questions, refunds, or customer-service conversations at launch. The restaurant remains responsible for customer replies.";
+
+export const PREMIUM_READINESS_RULE =
+  "Premium requires 1+ month on Essential or Growth, a Veroxa readiness assessment by phone, Zoom, or in person, client approval, and an agreed ad budget.";
+
+export const FIRST_CLIENT_LOYALTY_DISCOUNT_POLICY =
+  "First clients receive 20% off for the first 12 months. After 12 months, that becomes a loyalty discount only while the client remains continuously active; if the client leaves and later returns, the 20% discount is no longer eligible.";
 
 export function getCurrentPublicPlanForLegacyPackage(
   legacyPackageId:

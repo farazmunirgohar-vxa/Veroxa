@@ -641,3 +641,17 @@ manualReviewNeeded[], ownerFriendlyClosing } | null, message? }`.
 > - Guardrails unchanged: outcome logging contacts no one, no auto-send/call/
 >   text, public/audit data only, no confirmed-spend claims, no guarantees.
 >   See `SELF_IMPROVING_LEAD_ENGINE.md`.
+
+---
+
+## 2026-05-30 RR strategy sync note
+
+- Current public packages remain Essential ($497/month), Growth ($697/month), and Premium ($997/month).
+- Growth must not be labeled popular-badge until real client data supports that claim.
+- Growth wording should use: “TikTok + Reels posting support using the photos and videos you provide.”
+- Service boundary: Veroxa does not handle comments, DMs, inboxes, complaints, order questions, refunds, or customer-service conversations at launch.
+- Media dependency: posting depends on usable client-provided media and may slow when usable media is unavailable.
+- Posting limits: Essential allows max 1 picture post/day; Growth adds TikTok + Reels using client-provided media; Premium allows max 2 content posts/day total — 1 picture post + 1 reel / short video post.
+- Premium requires at least 1 month on Essential or Growth, a Veroxa readiness assessment, client approval, and an agreed ad budget.
+- First-client discount: 20% off for 12 months, then loyalty discount only while continuously active; lost if the client leaves and later returns.
+- Build order remains client side first. Team/Internal Admin heavy AI automation comes after client-side clarity and should later become the command center for media review assist, caption drafting, Google/SEO/Maps tasks, reporting generation, Premium readiness checklist, client risk flags, workload tracking, and Pakistan team handoff after 10 clients.

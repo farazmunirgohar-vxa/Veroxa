@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { ArrowRight, CheckCircle2, Shield, Zap, Star } from "lucide-react";
+import { ArrowRight, CheckCircle2, Shield, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
@@ -13,8 +13,8 @@ const PLANS = [
     badge: null,
     includes: [
       "Google Business Profile optimization",
-      "Facebook + Instagram management",
-      "Social media picture posting",
+      "Facebook + Instagram presence management",
+      "Max 1 picture post per day",
       "Basic captions",
       "Weekly updates",
       "Monthly performance snapshot",
@@ -28,13 +28,12 @@ const PLANS = [
     name: "Growth",
     price: "$697",
     tagline: "Everything in Essential, plus stronger reach with video.",
-    highlight: true,
-    badge: "Most Popular",
+    highlight: false,
+    badge: null,
     includes: [
       "Everything in Essential",
-      "Reels posting",
-      "TikTok posting/management",
-      "Short-form content support",
+      "TikTok + Reels posting support using the photos and videos you provide",
+      "Reels optimization",
       "Enhanced monthly report",
     ],
     note: null,
@@ -49,12 +48,12 @@ const PLANS = [
     badge: null,
     includes: [
       "Everything in Growth",
-      "Facebook/Instagram ads management",
-      "Google Ads management",
-      "Campaign setup and monitoring",
+      "Google, Facebook, Instagram, and TikTok ads management",
+      "Max 2 content posts per day total: 1 picture + 1 reel",
+      "Platform-specific drafting/adaptation",
       "Monthly ad performance report",
     ],
-    note: "Ad spend is separate and paid directly by the restaurant to the ad platform.",
+    note: "Ad spend is separate and paid directly by the restaurant to the ad platform. Premium requires 1+ month on Essential/Growth, a Veroxa readiness assessment, client approval, and an agreed ad budget.",
     cta: "Start with Premium",
     ctaSubject: "Premium Plan Inquiry",
   },
@@ -65,9 +64,10 @@ const GLOBAL_RULES = [
   "Cancel anytime",
   "Google Optimization included in all plans",
   "Facebook + Instagram included in all plans",
-  "Maximum 1 post per day",
-  "Reels + TikTok available from Growth",
-  "Ads management available from Premium",
+  "Essential: max 1 picture post/day",
+  "Growth: TikTok + Reels using provided media",
+  "Premium: max 2 posts/day total — 1 picture + 1 reel",
+  "Posting depends on usable client-provided media",
 ];
 
 const FAQ_ITEMS = [
@@ -77,11 +77,11 @@ const FAQ_ITEMS = [
   },
   {
     q: "Which social media platforms are included at each tier?",
-    a: "Essential includes Facebook and Instagram picture posting. Growth adds Reels and TikTok posting/management. Premium includes everything in Growth plus Ads management.",
+    a: "Essential includes Facebook and Instagram picture posting. Growth adds TikTok + Reels posting support using the photos and videos you provide. Premium includes everything in Growth plus ads management after readiness approval.",
   },
   {
     q: "How many posts per day does Veroxa publish?",
-    a: "Veroxa posts a maximum of once per day, when enough usable content is available. Posting volume depends entirely on the quality and quantity of photos and videos the restaurant provides.",
+    a: "Essential allows a maximum of 1 picture post per day. Growth adds TikTok + Reels posting support using provided media. Premium allows up to 2 content posts per day total — 1 picture post and 1 reel / short video post — when enough usable content is available.",
   },
   {
     q: "What if my restaurant doesn't have enough photos or videos?",
@@ -89,7 +89,15 @@ const FAQ_ITEMS = [
   },
   {
     q: "Is ad spend included in Premium?",
-    a: "No. Ad spend is separate and paid directly by the restaurant to the ad platform. The Premium plan covers Veroxa's ads management — campaign setup, targeting, creative direction, monitoring, and reporting.",
+    a: "No. Ad spend is separate and paid directly by the restaurant to the ad platform. Premium requires at least 1 month on Essential or Growth, a Veroxa readiness assessment by phone, Zoom, or in person, client approval, and an agreed ad budget.",
+  },
+  {
+    q: "Does Veroxa handle comments, DMs, inboxes, or customer-service replies?",
+    a: "Not at launch. Veroxa handles content posting, captions, page consistency, Google visibility, online presence, media guidance, weekly updates, monthly snapshots/reports, and ads management only after readiness. The restaurant remains responsible for comments, messages, DMs, orders, complaints, refunds, and customer-service conversations.",
+  },
+  {
+    q: "How does the first-client loyalty discount work?",
+    a: "First clients receive 20% off for the first 12 months. After 12 months, the 20% discount converts into a loyalty discount only while the client remains continuously active. If the client leaves and later returns, the 20% discount is no longer eligible.",
   },
   {
     q: "Is there a contract or minimum commitment?",
@@ -125,8 +133,8 @@ export default function PricingPage() {
             </span>
           </h1>
           <p className="text-muted-foreground animate-in fade-in slide-in-from-bottom-5 duration-700">
-            Google Optimization included in every plan. No contracts, no
-            setup fees, no surprises.
+            Google Optimization included in every plan. No contracts, no setup
+            fees, no surprises.
           </p>
         </div>
       </section>
@@ -147,7 +155,6 @@ export default function PricingPage() {
               {plan.badge && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                   <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-primary text-primary-foreground text-[11px] font-semibold uppercase tracking-wider">
-                    <Star className="w-3 h-3" />
                     {plan.badge}
                   </span>
                 </div>
@@ -160,7 +167,9 @@ export default function PricingPage() {
                 </p>
                 <div className="flex items-end gap-1 mb-1">
                   <span className="text-4xl font-extrabold">{plan.price}</span>
-                  <span className="text-sm text-muted-foreground mb-1">/mo</span>
+                  <span className="text-sm text-muted-foreground mb-1">
+                    /mo
+                  </span>
                 </div>
                 <p className="text-sm text-muted-foreground leading-snug">
                   {plan.tagline}
@@ -176,7 +185,9 @@ export default function PricingPage() {
                         plan.highlight ? "text-primary" : "text-primary/70"
                       }`}
                     />
-                    <span className="text-sm font-medium leading-snug">{item}</span>
+                    <span className="text-sm font-medium leading-snug">
+                      {item}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -211,7 +222,10 @@ export default function PricingPage() {
       </section>
 
       {/* Which plan section */}
-      <section className="pb-8 px-6 lg:px-12 max-w-5xl mx-auto w-full" data-testid="which-plan-section">
+      <section
+        className="pb-8 px-6 lg:px-12 max-w-5xl mx-auto w-full"
+        data-testid="which-plan-section"
+      >
         <div className="rounded-2xl border border-border/40 bg-card/20 px-7 py-6">
           <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">
             Which plan should I start with?
@@ -232,7 +246,8 @@ export default function PricingPage() {
             <div>
               <p className="text-sm font-semibold mb-1">Premium</p>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Best if you are ready to run ads, with ad spend separate.
+                Reviewed after your foundation is stable: requires 1+ month,
+                readiness assessment, approval, and agreed ad budget.
               </p>
             </div>
           </div>
@@ -269,9 +284,24 @@ export default function PricingPage() {
           data-testid="media-note"
         >
           <strong className="text-foreground/80">About posting volume:</strong>{" "}
-          Posting depends on usable media provided by the restaurant. Veroxa may
-          post up to once per day when enough usable content is available.
-          Content volume is limited by available client photos and videos.
+          Posting depends on usable media provided by the restaurant and may
+          slow when usable media is unavailable. Essential allows max 1 picture
+          post/day; Growth adds TikTok + Reels using provided media; Premium
+          allows max 2 content posts/day total — 1 picture + 1 reel.
+        </div>
+      </section>
+
+      {/* Service boundary */}
+      <section className="pb-8 px-6 lg:px-12 max-w-5xl mx-auto w-full">
+        <div
+          className="rounded-xl border border-border/30 bg-card/10 px-6 py-4 text-sm text-muted-foreground leading-relaxed max-w-3xl"
+          data-testid="service-boundary-note"
+        >
+          <strong className="text-foreground/80">Service boundary:</strong>{" "}
+          Veroxa does not handle comments, DMs, inboxes, complaints, order
+          questions, refunds, or customer-service conversations at launch. The
+          restaurant remains responsible for customer replies and service
+          conversations.
         </div>
       </section>
 
@@ -284,7 +314,9 @@ export default function PricingPage() {
               key={f.q}
               className="p-5 rounded-xl border border-border/40 bg-card/20"
             >
-              <p className="text-sm font-semibold text-foreground mb-2">{f.q}</p>
+              <p className="text-sm font-semibold text-foreground mb-2">
+                {f.q}
+              </p>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {f.a}
               </p>
@@ -296,7 +328,9 @@ export default function PricingPage() {
       {/* CTA */}
       <section className="py-20 px-6 lg:px-12 bg-card/10 border-t border-border/30">
         <div className="max-w-xl mx-auto text-center">
-          <h2 className="text-2xl font-bold mb-4">Not sure which plan to start with?</h2>
+          <h2 className="text-2xl font-bold mb-4">
+            Not sure which plan to start with?
+          </h2>
           <p className="text-muted-foreground mb-8">
             Request a free restaurant audit. We'll show you where your online
             presence stands today and recommend the right starting point.
@@ -322,7 +356,10 @@ export default function PricingPage() {
                 Get in Touch
               </Button>
             </a>
-            <Link href="/demo/client/dashboard" data-testid="btn-pricing-cta-demo">
+            <Link
+              href="/demo/client/dashboard"
+              data-testid="btn-pricing-cta-demo"
+            >
               <Button
                 size="lg"
                 variant="ghost"

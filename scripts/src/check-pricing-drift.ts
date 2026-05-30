@@ -73,11 +73,66 @@ for (const required of [
   "$697",
   "Premium",
   "$997",
+  "TikTok + Reels posting support using the photos and videos you provide",
+  "Premium requires at least 1 month on Essential or Growth",
+  "Posting depends on usable media provided by the restaurant",
+  "First clients receive 20% off for the first 12 months",
 ]) {
   if (!pricingPage.includes(required)) {
     failures.push(
       `pricing.tsx is missing current public pricing marker: ${required}`,
     );
+  }
+}
+
+const growthCardMatch = pricingPage.match(/name: "Growth",[\s\S]*?cta:/);
+if (growthCardMatch?.[0].includes("Most Popular")) {
+  failures.push("Growth pricing card must not be labeled Most Popular.");
+}
+if (/complete social media management/i.test(pricingPage)) {
+  failures.push(
+    "pricing.tsx contains risky complete social media management wording.",
+  );
+}
+if (/maximum 1 post per day/i.test(pricingPage)) {
+  failures.push(
+    "pricing.tsx contains global maximum 1 post per day wording without Premium's max 2 posts/day total rule.",
+  );
+}
+if (/(comments|DMs|inboxes|customer-service).*included/i.test(pricingPage)) {
+  failures.push(
+    "pricing.tsx appears to say customer replies/comments/DMs/inboxes are included.",
+  );
+}
+if (
+  /Complete Online Presence[\s\S]{0,120}(only public plan|current public plan)/i.test(
+    pricingPage,
+  )
+) {
+  failures.push(
+    "pricing.tsx appears to present Complete Online Presence as the active/only public plan.",
+  );
+}
+
+const pricingDocs = [
+  "artifacts/veroxa/docs/PRICING_SOURCE_OF_TRUTH.md",
+  "artifacts/veroxa/docs/PUBLIC_PRICING_AND_SERVICES.md",
+].map((file) => [file, readFileSync(join(root, file), "utf8")] as const);
+
+for (const [file, text] of pricingDocs) {
+  for (const required of [
+    "Premium requires",
+    "1 month on Essential or Growth",
+    "readiness assessment",
+    "Posting depends on usable client-provided media",
+    "may slow when usable media is unavailable",
+    "First clients receive 20% off",
+    "loyalty discount",
+    "continuously active",
+  ]) {
+    if (!text.includes(required)) {
+      failures.push(`${file} is missing locked-model rule: ${required}`);
+    }
   }
 }
 
@@ -96,6 +151,13 @@ for (const required of [
   'status: "active"',
   "internalOnly: true",
   'status: "retired"',
+  '"essential"',
+  '"growth"',
+  '"premium"',
+  "TikTok + Reels posting support using the photos and videos you provide",
+  "Premium requires 1+ month on Essential/Growth",
+  "SERVICE_BOUNDARY_DISCLAIMER",
+  "FIRST_CLIENT_LOYALTY_DISCOUNT_POLICY",
 ]) {
   if (!pricingSource.includes(required)) {
     failures.push(
@@ -111,5 +173,5 @@ if (failures.length > 0) {
 }
 
 console.log(
-  "Pricing drift check passed: active pricing surfaces align to Essential/Growth/Premium.",
+  "Pricing drift check passed: active pricing surfaces align to Essential/Growth/Premium locked model.",
 );

@@ -327,4 +327,24 @@ The restaurant partner should not manage the system.
 
 Faraz should approve prepared work from mobile or computer.
 
-Veroxa should become the restaurant's quiet, AI-assisted growth operating system: simple outside, powerful inside.
+## Veroxa should become the restaurant's quiet, AI-assisted growth operating system: simple outside, powerful inside.
+
+## 15. 2026-05-30 locked package and build-order sync
+
+Current public packages remain Essential ($497/month), Growth ($697/month), and Premium ($997/month). Growth must not be labeled popular-badge until real client data supports that claim.
+
+Use precise package language:
+
+- Essential: Google Business Profile optimization, Google Search/Maps SEO basics, Facebook + Instagram presence management, picture-based posting, max 1 picture post/day, weekly updates, monthly snapshot, and Client Portal access.
+- Growth: everything in Essential plus TikTok + Reels posting support using the photos and videos the client provides, Reels optimization, and enhanced monthly report.
+- Premium: everything in Growth plus ads management after readiness, max 2 content posts/day total — 1 picture post + 1 reel / short video post, platform-specific drafting/adaptation, and ad reporting. Ad spend is separate.
+
+Premium is eligible only after at least 1 month on Essential or Growth, a Veroxa readiness assessment by phone, Zoom, or in person, client approval, and an agreed ad budget. Ads should not be recommended until the restaurant foundation is ready.
+
+Veroxa manages posting, captions, page consistency, Google visibility, online presence, media guidance, weekly updates, monthly snapshots/reports, Premium readiness assessment, and ads management only after readiness. Veroxa does not handle comments, DMs, inboxes, complaints, order questions, refunds, or customer-service conversations at launch.
+
+Posting depends on usable client-provided media and may slow when usable media is unavailable. Veroxa does not create real restaurant media from nothing, and professional filming is not included unless separately arranged in the future.
+
+First clients receive 20% off for the first 12 months. After 12 months, the 20% discount converts into a loyalty discount only while the client remains continuously active. If the client leaves and later returns, the 20% discount is no longer eligible.
+
+Build order remains client side first. Team/Internal Admin heavy AI automation comes after client-side clarity. Future Team Portal should become the AI/automation command center and support media review assist, caption drafting, Google/SEO/Maps task engine, reporting generator, Premium readiness checklist, client risk flags, workload tracking, and Pakistan team handoff after 10 clients.

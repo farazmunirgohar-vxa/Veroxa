@@ -65,23 +65,30 @@ Do not change pricing unless explicitly instructed by the user. The user’s new
 Current locked public pricing:
 
 - Essential: $497/month
-  - Google Optimization
-  - Facebook + Instagram picture posting
-  - Basic captions
+  - Google Business Profile optimization
+  - Google Search SEO basics
+  - Google Maps SEO basics
+  - Facebook + Instagram presence management
+  - Picture-based posting
+  - Max 1 picture post per day
+  - Platform-specific captions when applicable
   - Weekly updates
   - Monthly performance snapshot
   - Client Portal access
 - Growth: $697/month
   - Everything in Essential
-  - Reels / short-form content support
   - TikTok posting/management if applicable
+  - Facebook/Instagram Reels
+  - TikTok + Reels posting support using the photos and videos you provide
+  - Reels optimization
   - Enhanced monthly report
 - Premium: $997/month
   - Everything in Growth
-  - Facebook/Instagram ads management
-  - Google Ads management
-  - Campaign setup and monitoring
-  - Monthly ad performance report
+  - Ads management after readiness
+  - Google, Facebook, Instagram, and TikTok ads management
+  - Max 2 content posts per day total: 1 picture post + 1 reel / short video post
+  - Platform-specific drafting/adaptation
+  - Ad reporting
   - Ad spend is separate and paid directly by the restaurant
 
 Global pricing rules:
@@ -90,11 +97,14 @@ Global pricing rules:
 - Cancel anytime.
 - Google Optimization is included in all plans.
 - Facebook + Instagram are included in all plans.
-- Maximum 1 post per day.
-- Posting depends on usable client-provided media.
-- Reels / short-form content support starts at Growth.
-- Ads management starts at Premium.
+- Essential: max 1 picture post per day.
+- Growth: adds TikTok + Reels posting support using the photos and videos the client provides.
+- Premium: max 2 content posts per day total — 1 picture post + 1 reel / short video post.
+- Posting depends on usable client-provided media and may slow when usable media is unavailable.
+- Premium requires 1+ month on Essential/Growth, Veroxa readiness assessment, client approval, and agreed ad budget.
 - Ad spend is always separate and paid by the restaurant directly to the ad platform.
+- Veroxa does not handle comments, DMs, inboxes, complaints, order questions, refunds, or customer-service conversations at launch.
+- First clients receive 20% off for 12 months, then keep it as a loyalty discount only while continuously active; if they leave and later return, the 20% discount is no longer eligible.
 
 ## 6. Routing rules
 

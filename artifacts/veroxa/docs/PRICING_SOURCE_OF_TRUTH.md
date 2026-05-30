@@ -13,9 +13,13 @@ values must agree with this file and with the runtime source of truth at
 
 ### Essential — $497/month
 
-- Google Optimization
-- Facebook + Instagram picture posting
-- Basic captions
+- Google Business Profile optimization
+- Google Search SEO basics
+- Google Maps SEO basics
+- Facebook + Instagram presence management
+- Picture-based posting
+- Max 1 picture post per day
+- Platform-specific captions when applicable
 - Weekly updates
 - Monthly performance snapshot
 - Client Portal access
@@ -23,17 +27,23 @@ values must agree with this file and with the runtime source of truth at
 ### Growth — $697/month
 
 - Everything in Essential
-- Reels / short-form content support
 - TikTok posting/management if applicable
+- Facebook/Instagram Reels
+- TikTok + Reels posting support using the photos and videos you provide
+- Reels optimization
 - Enhanced monthly report
 
 ### Premium — $997/month
 
 - Everything in Growth
-- Facebook/Instagram ads management
-- Google Ads management
-- Campaign setup and monitoring
-- Monthly ad performance report
+- Ads management after readiness
+- Google ads
+- Facebook ads
+- Instagram ads
+- TikTok ads
+- Max 2 content posts per day total: 1 picture post + 1 reel / short video post
+- Platform-specific drafting/adaptation
+- Ad reporting
 - Ad spend is separate and paid directly by the restaurant
 
 ---
@@ -44,11 +54,59 @@ values must agree with this file and with the runtime source of truth at
 - Cancel anytime.
 - Google Optimization is included in all plans.
 - Facebook + Instagram are included in all plans.
-- Maximum 1 post per day.
-- Posting depends on usable client-provided media.
-- Reels / short-form content support starts at Growth.
-- Ads management starts at Premium.
+- Essential: max 1 picture post per day.
+- Growth: adds TikTok + Reels posting support using the photos and videos the client provides.
+- Premium: max 2 content posts per day total — 1 picture post + 1 reel / short video post.
+- Posting depends on usable client-provided media and may slow when usable media is unavailable.
+- Ads management starts at Premium only after readiness.
 - Ad spend is always separate and paid by the restaurant directly to the ad platform.
+
+---
+
+## Service boundary at launch
+
+Veroxa manages posting, captions, page consistency, Google visibility, online
+presence, media guidance, weekly updates, monthly snapshots/reports, Premium
+readiness assessment, and ads management only after readiness.
+
+Veroxa does **not** handle comments, DMs, inbox messages, complaints, order
+questions, refunds, sensitive customer replies, or customer-service
+conversations at launch. The restaurant remains responsible for comments,
+messages, DMs, orders, complaints, refunds, and customer-service conversations.
+
+---
+
+## Media dependency
+
+Posting depends on usable client-provided media. If usable media runs low,
+Veroxa can guide/remind the restaurant, but posting may slow until new usable
+media is provided. Veroxa does not create real restaurant media from nothing.
+No professional filming is included unless separately arranged in the future.
+
+---
+
+## Premium eligibility and readiness
+
+Premium requires at least 1 month on Essential or Growth and is not available
+immediately by default. Premium becomes eligible only after that first month, a
+Veroxa readiness assessment by phone, Zoom, or in person, client approval, and
+an agreed ad budget. Ads should not be recommended until the restaurant
+foundation is ready.
+
+---
+
+## First-client / loyalty discount policy
+
+First clients receive 20% off for the first 12 months. After 12 months, the 20%
+discount converts into a loyalty discount only while the client remains
+continuously active. If the client cancels, leaves, stops service, and later
+returns, the 20% discount is no longer eligible.
+
+Approximate discounted monthly prices:
+
+- Essential: $398/mo
+- Growth: $558/mo
+- Premium: $798/mo
 
 ---
 
@@ -67,21 +125,24 @@ current public plans for customer-facing labels and prices.
 
 ---
 
+## Service-plan schema follow-up before real data
+
+The existing `supabase/migrations/20260601000000_m024a_first_client_metadata_schema.sql`
+file still contains legacy `service_plan` values (`google_optimization`,
+`complete_online_presence`, `ads_management_only`, `complete_plus_ads`). Do not
+rewrite that applied/sensitive migration destructively in routine pricing-copy
+work. Before any real client data is used, a deliberate migration should align
+`service_plan` to active slugs (`essential`, `growth`, `premium`) while
+preserving legacy aliases only where needed for compatibility.
+
+---
+
 ## Ad spend
 
 Ad spend is always separate and is paid by the restaurant directly to the ad
 platform (Google, Meta, TikTok). Veroxa manages the advertising system when ads
-management is included. The restaurant controls and pays the actual ad budget.
-No Veroxa plan includes ad spend.
-
----
-
-## Posting and media dependency
-
-Current plan pricing assumes a maximum of 1 post per day. Posting depends on
-usable client-provided media. Veroxa may guide the restaurant on what to submit,
-but the plan does not imply unlimited posting or automatic posting when usable
-media is unavailable.
+management is included and readiness is approved. The restaurant controls and
+pays the actual ad budget. No Veroxa plan includes ad spend.
 
 ---
 
@@ -109,3 +170,4 @@ These references may remain only in clearly labeled deprecated/history notes.
 - Google Optimization as a standalone public plan
 - Ads Management Only as a standalone public plan
 - Any claim that ad spend is included in a Veroxa plan
+- Any package labeled popular-badge before real client data supports it
