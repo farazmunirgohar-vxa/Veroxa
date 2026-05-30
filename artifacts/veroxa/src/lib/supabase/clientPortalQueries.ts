@@ -2,9 +2,8 @@ import { getSupabaseClient } from "./client";
 
 /**
  * Default demo client UUID. The portal seeds a single demo client with this
- * canonical id; all read-only adapter fallbacks default to it. Previously
- * named `MAMADALI_DEMO_CLIENT_ID`; that alias has now been removed
- * within this module's import graph and will be removed in a later pass.
+ * canonical id; all read-only adapter fallbacks default to this neutral
+ * fixture ID.
  */
 export const DEFAULT_DEMO_CLIENT_ID = "00000000-0000-0000-0000-000000000001";
 

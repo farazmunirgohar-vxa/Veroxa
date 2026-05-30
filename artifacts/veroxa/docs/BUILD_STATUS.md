@@ -25,7 +25,21 @@
 > - Files **not** changed: Free Audit engines, Supabase auth/schema, demo
 >   fixtures, backend enums, AI/lead engines, App.tsx routing, nav files.
 
+
+> **2026-05-30 — Current active-role model.** Veroxa now has only two active roles: `client` and `team`. Operator and owner references below are historical / legacy-demo notes only and are not active product surfaces unless explicitly requested.
+
 > **Historical reference (pre-2026-05-27).** Pricing and fixture-ID values in this document are out of date. Current source of truth: `docs/PRICING_SOURCE_OF_TRUTH.md` and `src/data/pricing/veroxaPricing.ts`. Fixture IDs are now `demo-a` / `demo-b` / `demo-c` / `demo-d`.
+
+
+## Latest update — M038–M042 First-Client Operating Flow Hardening (2026-05-30)
+
+- Shared workflow helpers now drive client-visible progress, client input requests, team priority work, team queue groups, and workflow-derived alerts.
+- Client Dashboard and Client Requests render from `WorkflowItem` helpers with client-safe labels and no internal system language.
+- Team Dashboard, Team Work Queue, and Team Alert Center use the same workflow helper layer for summary counts, review-ready work, client follow-up, queue/hold items, and alert reasons.
+- Team review buttons remain local React state only; no writes, storage, publishing, external APIs, auth changes, data-mode changes, migrations, or pricing changes.
+- Full details: `docs/M038_M042_FIRST_CLIENT_OPS_HARDENING.md`.
+
+---
 
 ## Latest update — M033–M037 Adaptive Lead Source Engine (2026-05-28)
 
@@ -43,7 +57,7 @@
   create, update, delete experiments tracking source hypothesis/targets.
 - Yield-aligned language added to docs. Lead Engine and Execution Engine
   are now explicitly defined as competing to improve each other.
-- Pricing, AUTH_MODE, DATA_MODE, InternalDemoGuard, Owner/Operator portals,
+- Pricing, AUTH_MODE, DATA_MODE, InternalDemoGuard, legacy Owner/Operator demo surfaces,
   and public audit page all unchanged. No AI / scraping / DB writes / APIs.
 - Full details: `docs/M033_M037_ADAPTIVE_LEAD_SOURCE_ENGINE.md`.
 
@@ -74,7 +88,7 @@
   only, behind `InternalDemoGuard role="team"`.
 - No real uploads / writes / storage / notifications added.
 - Client + Team remain the priority surfaces.
-- Owner / Operator portals still deferred.
+- Operator / owner remain legacy-demo only and deferred.
 - Pricing untouched. `AUTH_MODE=placeholder`,
   `DATA_MODE=fixture` defaults unchanged.
 - Full details: `docs/M012_M014_RESTAURANT_UPLOAD_KEY_AND_TEAM_INBOX.md`.
@@ -115,17 +129,15 @@ and Team Content Review now wire their existing demo buttons to
 local `useState` decision maps with live summary tiles —
 **decisions never leave the component**. Client Media adds a
 disabled "Submit to Veroxa Team — Demo" callout that appears once
-files are picked. The lingering `MAMADALI_DEMO_CLIENT_ID` was
-renamed to `DEFAULT_DEMO_CLIENT_ID` across the supabase + adapter
-graph (the old name is kept as a `@deprecated` alias for one
-cycle). Hard invariants from M007/M008 preserved: no writes, no
+files are picked. The deprecated demo client ID alias was removed;
+`DEFAULT_DEMO_CLIENT_ID` is used across the Supabase + adapter
+graph. Hard invariants from M007/M008 preserved: no writes, no
 uploads, no AI, no publishing, no payments, no migrations,
 `AUTH_MODE=placeholder`, `DATA_MODE` defaults to fixture, fixture
 fallback active, pricing unchanged at $477 / $977 / $977 / $1,497,
 `InternalDemoGuard` not bypassed, no service-role in the frontend,
 no `Pasted-*.txt` committed. Full notes:
-`docs/M009_M011_FIRST_CLIENT_OPERATING_FLOW.md`. Owner / Operator
-portals untouched. Typecheck clean.
+`docs/M009_M011_FIRST_CLIENT_OPERATING_FLOW.md`. Operator / owner remain legacy-demo only and untouched. Typecheck clean.
 
 ---
 
@@ -938,7 +950,7 @@ auth activation.
   role in the frontend, no `FormData` / fetch upload added, no
   raw file blobs in local/session storage, AUTH_MODE unchanged,
   DATA_MODE default unchanged, pricing unchanged, InternalDemoGuard
-  intact, Owner/Operator not expanded, no `Pasted-*.txt` committed.
+  intact, operator / owner not expanded beyond legacy-demo surfaces, no `Pasted-*.txt` committed.
 - **Typecheck:** see verification below.
 
 ## M023A–M023B — Supabase Write Foundation (planning) + Disabled Adapter
@@ -1012,7 +1024,7 @@ auth activation.
 - `src/lib/data/schemaReadiness.ts` added (reports schema version
   and what is still not ready).
 - Internal readiness page surfaces M024A schema status.
-- Owner/Operator portals still deferred.
+- Operator / owner remain legacy-demo only and deferred.
 - AUTH_MODE unchanged (`placeholder`); DATA_MODE default unchanged
   (`fixture`); pricing unchanged; InternalDemoGuard intact.
 - Contracts aligned: `FirstClientUploadPriority` value
@@ -1043,7 +1055,7 @@ auth activation.
 - **No new migration added** (M024A migration unchanged).
 - **No storage upload added.**
 - **No AI / publishing / ads / payments added.**
-- Owner/Operator portals still deferred.
+- Operator / owner remain legacy-demo only and deferred.
 - AUTH_MODE unchanged (`placeholder`). DATA_MODE default unchanged
   (`fixture`). Pricing unchanged. InternalDemoGuard intact.
 - **Typecheck:** PASS.
@@ -1073,7 +1085,7 @@ auth activation.
 - **No** storage upload added.
 - **No** new migration added.
 - **No** AI / publishing / ads / payments added.
-- Owner/Operator portals still deferred.
+- Operator / owner remain legacy-demo only and deferred.
 - AUTH_MODE unchanged (`placeholder`). DATA_MODE default unchanged
   (`fixture`). Pricing unchanged. InternalDemoGuard intact.
 - **Typecheck:** PASS.
@@ -1101,7 +1113,7 @@ auth activation.
 - **No** storage upload added.
 - **No** new migration added.
 - **No** AI / publishing / ads / payments added.
-- Owner/Operator portals still deferred.
+- Operator / owner remain legacy-demo only and deferred.
 - AUTH_MODE unchanged (`placeholder`). DATA_MODE default unchanged
   (`fixture`). Pricing unchanged. InternalDemoGuard intact.
 - **Typecheck:** PASS.
@@ -1120,7 +1132,7 @@ auth activation.
 - M026C — Team Direction Queue banner wording fixed and content/google/ads action buttons remapped from `in_team_review` → `planned`.
 - **No** AI integration, scraping, Google/social APIs, payments, ads APIs.
 - **No** database writes, **no** storage upload, **no** new migration.
-- Pricing unchanged. AUTH_MODE=placeholder. DATA_MODE=fixture default. Owner/Operator not expanded. InternalDemoGuard intact.
+- Pricing unchanged. AUTH_MODE=placeholder. DATA_MODE=fixture default. Operator / owner not expanded beyond legacy-demo surfaces. InternalDemoGuard intact.
 - **Typecheck:** PASS.
 
 ## M027A–M027C — Simplified Audit Inputs + Accuracy + Confidence
@@ -1147,5 +1159,5 @@ auth activation.
 - Page hero, helper copy, and CTA wording updated.
 - **No** AI / scraping / Google or social APIs / payments / ads APIs.
 - **No** database writes, **no** storage upload, **no** new migration.
-- Pricing unchanged. AUTH_MODE=placeholder. DATA_MODE=fixture default. Owner/Operator not expanded.
+- Pricing unchanged. AUTH_MODE=placeholder. DATA_MODE=fixture default. Operator / owner not expanded beyond legacy-demo surfaces.
 - **Typecheck:** PASS.

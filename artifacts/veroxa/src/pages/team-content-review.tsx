@@ -73,8 +73,7 @@ export default function TeamContentReview() {
   const inReview = demoContentReviewQueue.filter((i) => i.status === "In Review");
   const done     = demoContentReviewQueue.filter((i) => i.status === "Approved" || i.status === "Needs Revision");
 
-  // Review decisions held in component state; workflow persistence is
-  // backend pending. No external sends or notifications.
+  // Review decisions stay in component state only. No external sends or notifications.
   const [captionDecisions, setCaptionDecisions] = useState<Record<string, CaptionDecision>>({});
   const setDecision = (key: string, d: CaptionDecision) =>
     setCaptionDecisions((prev) => ({ ...prev, [key]: d }));
@@ -94,7 +93,7 @@ export default function TeamContentReview() {
       </div>
 
       <DemoOnlyBanner
-        message="Caption review decisions persist in the workflow foundation for this browser (backend pending). No external sends — client-facing steps require team approval."
+        message="Demo only — caption review choices stay on this page. No external sends or client-facing action happens."
         testId="banner-content-review"
       />
 
@@ -104,7 +103,7 @@ export default function TeamContentReview() {
           <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Caption variants — select a draft to approve
           </h3>
-          <span className="text-xs text-muted-foreground">Backend persistence pending</span>
+          <span className="text-xs text-muted-foreground">Local review only</span>
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           {CAPTION_VARIANTS.map((v) => {
@@ -154,7 +153,7 @@ export default function TeamContentReview() {
                       Mark Scheduled
                     </button>
                   </div>
-                  <p className="text-[10px] text-muted-foreground/70">Persists in the workflow foundation (backend pending). No external sends.</p>
+                  <p className="text-[10px] text-muted-foreground/70">Local review note only. No external sends.</p>
                 </CardContent>
               </Card>
             );
@@ -211,7 +210,7 @@ export default function TeamContentReview() {
               </div>
 
               <div className="mt-2 rounded border border-primary/20 bg-primary/5 px-2.5 py-1.5 text-xs text-foreground/85 leading-relaxed">
-                <span className="font-medium text-primary">AI: </span>
+                <span className="font-medium text-primary">Suggested note: </span>
                 {item.aiRecommendation}
               </div>
             </div>

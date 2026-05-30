@@ -93,5 +93,5 @@ package; the audit never auto-sells the most expensive plan.
 - No real restaurant seeded examples.
 - Pricing unchanged; reads locked source of truth.
 - AUTH_MODE=placeholder unchanged; DATA_MODE=fixture default unchanged.
-- InternalDemoGuard intact. Owner/Operator not expanded.
+- InternalDemoGuard intact. operator / owner not expanded beyond legacy-demo surfaces.
 - Existing `/free-audit` route preserved.

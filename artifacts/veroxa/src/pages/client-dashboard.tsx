@@ -21,61 +21,24 @@ import { ClientKeepMovingCard } from "@/components/ClientExecutionReinforcement"
 import { ClientVisibilityProgressCard } from "@/components/ClientVisibilityProgressCard";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
 import { getClientProgressSummary } from "@/domain/clientPortalJourney";
-import { useEffect, useState } from "react";
 import {
   healthRepository,
   reportRepository,
   activityRepository,
-  clientTeamWorkRepository,
 } from "@/lib/repositories";
-import {
-  getClientWorkflowItems,
-  subscribeToWorkflow,
-} from "@/lib/workflow/workflowRepository";
-import type {
-  ClientVisibleStatus,
-  WorkflowItem,
-} from "@/lib/workflow/workflowTypes";
 import {
   getClientContentHealthMessage,
   type ContentHealthStatus as MvpContentHealthStatus,
 } from "@/domain/veroxa";
-
-const CLIENT_STATUS_ORDER: ClientVisibleStatus[] = [
-  "Needs your input",
-  "Submitted",
-  "Being reviewed",
-  "Prepared by Veroxa",
-  "In progress",
-  "Completed",
-  "Included in report",
-];
-
-function useClientWorkflowItems(clientId: string) {
-  const [items, setItems] = useState<WorkflowItem[]>(() =>
-    getClientWorkflowItems(clientId),
-  );
-  useEffect(() => {
-    const refresh = () => setItems(getClientWorkflowItems(clientId));
-    refresh();
-    return subscribeToWorkflow(refresh);
-  }, [clientId]);
-  return items;
-}
+import { demoClientTeamWorkflow } from "@/data/workflows/clientTeamWorkflow";
+import { WorkflowItemCard } from "@/components/workflows/WorkflowItemCard";
+import {
+  getClientActionNeededItems,
+  getClientVisibleWorkflowItems,
+} from "@/lib/workflows/workflowStatus";
 
 export default function ClientDashboard() {
   const { loading, data, source, dataSourceMessage } = useClientPortalData();
-  const workflowItems = useClientWorkflowItems("demo-a");
-  const activeWorkflowItems = workflowItems.filter(
-    (i) =>
-      i.clientVisibleStatus !== "Completed" &&
-      i.clientVisibleStatus !== "Included in report",
-  );
-  const workflowGroups = CLIENT_STATUS_ORDER.map((status) => ({
-    status,
-    items: activeWorkflowItems.filter((i) => i.clientVisibleStatus === status),
-  })).filter((g) => g.items.length > 0);
-
   const journeySummary = getClientProgressSummary("demo-a");
   const recentProgress = journeySummary.recentProgress.slice(0, 4);
 
@@ -112,8 +75,8 @@ export default function ClientDashboard() {
   const healthSnapshot = healthRepository.getClientHealthSnapshot("demo-a");
   const clientReports = reportRepository.getClientReports("demo-a");
   const recentActivity = activityRepository.getClientVisibleActivity("demo-a");
-  const openClientActions =
-    clientTeamWorkRepository.getClientActionRequiredItems("demo-a");
+  const visibleWorkflowItems = getClientVisibleWorkflowItems(demoClientTeamWorkflow, "demo-a", 5);
+  const openClientActions = getClientActionNeededItems(demoClientTeamWorkflow, "demo-a");
 
   const contentStatusForClient: MvpContentHealthStatus =
     healthSnapshot?.contentHealthStatus === "broken"
@@ -234,61 +197,6 @@ export default function ClientDashboard() {
         </Card>
       )}
 
-      {/* Your workflow with Veroxa */}
-      {workflowGroups.length > 0 && (
-        <div data-testid="section-client-workflow">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-            Your workflow with Veroxa
-          </h3>
-          <div className="space-y-4">
-            {workflowGroups.map((group) => (
-              <div
-                key={group.status}
-                data-testid={`workflow-group-${group.status}`}
-              >
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-primary mb-2">
-                  {group.status} ({group.items.length})
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {group.items.slice(0, 6).map((item) => (
-                    <Card
-                      key={item.workflowItemId}
-                      className="bg-card/60 border-border"
-                      data-testid={`workflow-item-${item.workflowItemId}`}
-                    >
-                      <CardContent className="p-3.5">
-                        <p className="text-sm font-semibold text-foreground leading-snug mb-1">
-                          {item.title}
-                        </p>
-                        <Badge
-                          variant="outline"
-                          className="text-[10px] border-border bg-muted/20 text-muted-foreground mb-1.5"
-                        >
-                          {item.clientVisibleStatus}
-                        </Badge>
-                        {item.clientNote && (
-                          <p className="text-xs text-foreground/80 leading-relaxed">
-                            {item.clientNote}
-                          </p>
-                        )}
-                        {item.nextClientAction && (
-                          <p className="text-[11px] text-amber-300 mt-1.5">
-                            {item.nextClientAction}
-                          </p>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-          <p className="text-[11px] text-muted-foreground/70 mt-2">
-            Nothing goes live without Veroxa team review.
-          </p>
-        </div>
-      )}
-
       {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {summaryCards.map((card, i) => (
@@ -318,41 +226,22 @@ export default function ClientDashboard() {
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
           What Veroxa is working on
         </h3>
-        {(() => {
-          const inProgress = clientTeamWorkRepository
-            .getClientInProgressItems("demo-a")
-            .slice(0, 6);
-          if (inProgress.length === 0) {
-            return (
-              <p className="text-xs text-muted-foreground italic">
-                Nothing is actively in progress this week.
-              </p>
-            );
-          }
-          return (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {inProgress.map((item) => (
-                <Card
-                  key={item.id}
-                  className="bg-card/60 border-border"
-                  data-testid={`dashboard-in-progress-${item.submissionId}`}
-                >
-                  <CardContent className="p-3.5">
-                    <p className="text-sm font-semibold text-foreground leading-snug mb-1">
-                      {item.title}
-                    </p>
-                    <p className="text-[11px] text-muted-foreground uppercase tracking-wider mb-1.5">
-                      {item.clientStatusLabel}
-                    </p>
-                    <p className="text-xs text-foreground/80 leading-relaxed">
-                      {item.clientVisibleNote}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          );
-        })()}
+        {visibleWorkflowItems.length === 0 ? (
+          <p className="text-xs text-muted-foreground italic">
+            Nothing is actively in progress this week.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {visibleWorkflowItems.map((item) => (
+              <WorkflowItemCard
+                key={item.id}
+                item={item}
+                mode="client"
+                className="bg-card/60"
+              />
+            ))}
+          </div>
+        )}
         <p className="text-[11px] text-muted-foreground/70 mt-2">
           Nothing goes live without Veroxa team review.
         </p>
