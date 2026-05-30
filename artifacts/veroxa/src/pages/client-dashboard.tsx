@@ -20,8 +20,7 @@ import { useClientPortalData } from "@/hooks/useClientPortalData";
 import { ClientKeepMovingCard } from "@/components/ClientExecutionReinforcement";
 import { ClientVisibilityProgressCard } from "@/components/ClientVisibilityProgressCard";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
-import { workflowItemsToJourneyItems } from "@/lib/clientPortalJourney";
-import { buildClientPortalProgressSummary } from "@/domain/clientPortalJourney";
+import { getClientProgressSummary } from "@/domain/clientPortalJourney";
 import { useEffect, useState } from "react";
 import { healthRepository, reportRepository, activityRepository, clientTeamWorkRepository } from "@/lib/repositories";
 import {
@@ -68,8 +67,7 @@ export default function ClientDashboard() {
     items: activeWorkflowItems.filter((i) => i.clientVisibleStatus === status),
   })).filter((g) => g.items.length > 0);
 
-  const journeyItems = workflowItemsToJourneyItems(workflowItems);
-  const journeySummary = buildClientPortalProgressSummary(journeyItems);
+  const journeySummary = getClientProgressSummary("demo-a");
   const recentProgress = journeySummary.recentProgress.slice(0, 4);
 
   const quickActions = [
@@ -95,10 +93,10 @@ export default function ClientDashboard() {
     healthSnapshot
       ? `You have ${healthSnapshot.unusedUsableMediaCount} approved media items ready — roughly ${healthSnapshot.weeksOfContentLeft} weeks of content at your current cadence.`
       : "Your upcoming content is scheduled and ready.",
-    "Google visibility data is being tracked for this month.",
+    journeySummary.visibilityProgress.nextVisibilityAction,
     clientReports.monthly.length > 0
       ? `Your latest monthly report (${clientReports.monthly[0].monthKey}) is available in Reports.`
-      : "Your latest monthly report is available in Reports.",
+      : journeySummary.latestReport.summary,
     recentActivity.length > 0
       ? `Veroxa is working on your account — ${recentActivity.length} recent updates.`
       : "Veroxa is monitoring your content supply.",
