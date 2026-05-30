@@ -10,6 +10,7 @@
  * when `source` differs from the fixture defaults.
  */
 
+import { AUTH_MODE } from "@/lib/auth/authMode";
 import type { ClientPortalSource } from "@/hooks/useClientPortalData";
 
 export interface DataSourceBadgeProps {
@@ -19,12 +20,12 @@ export interface DataSourceBadgeProps {
 }
 
 export function DataSourceBadge({ source, message, className }: DataSourceBadgeProps) {
-  if (source === "fixture" || source === "demo") return null;
+  if (AUTH_MODE === "real" || source === "fixture" || source === "demo") return null;
   return (
     <p
       className={`text-[11px] text-muted-foreground/70 mt-1 font-mono ${className ?? ""}`}
       data-testid="portal-data-source"
-      title="Internal data-source indicator (M007/M008)"
+      title="Veroxa review status"
     >
       · {message}
     </p>

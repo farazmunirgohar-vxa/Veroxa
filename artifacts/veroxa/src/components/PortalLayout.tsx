@@ -187,17 +187,19 @@ function SidebarNav({
 
       <div className="border-t border-sidebar-border shrink-0">
         <AuthFooter onNavigate={onNavigate} />
-        <div className="p-4 pt-2">
-          <Link
-            href="/demo"
-            className="flex items-center gap-2 text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground px-2 py-2 transition-colors rounded-md hover:bg-sidebar-accent"
-            data-testid="link-back-demo"
-            onClick={onNavigate}
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Demo Hub
-          </Link>
-        </div>
+        {AUTH_MODE === "placeholder" && (
+          <div className="p-4 pt-2">
+            <Link
+              href="/demo"
+              className="flex items-center gap-2 text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground px-2 py-2 transition-colors rounded-md hover:bg-sidebar-accent"
+              data-testid="link-back-demo"
+              onClick={onNavigate}
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Demo Hub
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -310,13 +312,15 @@ export function PortalLayout({ children, items, portalName }: PortalLayoutProps)
 
         <div className="flex-1 p-4 md:p-8 overflow-auto">
           <div className="max-w-6xl mx-auto space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div
-              className="px-3 py-2 rounded-md bg-amber-500/8 border border-amber-500/20 text-amber-400 text-xs font-medium flex items-center gap-2"
-              data-testid="banner-preview"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />
-              Development Preview — sample data only, not a live client account.
-            </div>
+            {AUTH_MODE === "placeholder" && (
+              <div
+                className="px-3 py-2 rounded-md bg-amber-500/8 border border-amber-500/20 text-amber-400 text-xs font-medium flex items-center gap-2"
+                data-testid="banner-preview"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />
+                Development Preview — sample data only, not a live client account.
+              </div>
+            )}
             {children}
           </div>
         </div>

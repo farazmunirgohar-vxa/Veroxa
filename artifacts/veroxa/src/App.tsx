@@ -27,6 +27,7 @@ import ClientReports from "@/pages/client-reports";
 
 // Team Portal (real Veroxa OS review — /team/*, login required)
 import InternalDemoGuard from "@/components/auth/InternalDemoGuard";
+import ClientPortalGuard from "@/components/auth/ClientPortalGuard";
 import TeamDashboard from "@/pages/team-dashboard";
 import TeamApprovalQueue from "@/pages/team-approval-queue";
 import TeamVisibilityAudit from "@/pages/team-visibility-audit";
@@ -56,12 +57,42 @@ function Router() {
       {/* Public client preview surfaced from the demo hub. */}
       <Route path="/demo/client/dashboard" component={ClientDashboard} />
 
-      {/* ── Client Portal — real Veroxa OS review (public, no login) ── */}
-      <Route path="/client/dashboard" component={ClientDashboard} />
-      <Route path="/client/media" component={ClientMedia} />
-      <Route path="/client/requests" component={ClientRequests} />
-      <Route path="/client/updates" component={ClientUpdates} />
-      <Route path="/client/reports" component={ClientReports} />
+      {/* ── Client Portal — placeholder-open, guarded when real auth is enabled ── */}
+      <Route path="/client/dashboard">
+        {() => (
+          <ClientPortalGuard>
+            <ClientDashboard />
+          </ClientPortalGuard>
+        )}
+      </Route>
+      <Route path="/client/media">
+        {() => (
+          <ClientPortalGuard>
+            <ClientMedia />
+          </ClientPortalGuard>
+        )}
+      </Route>
+      <Route path="/client/requests">
+        {() => (
+          <ClientPortalGuard>
+            <ClientRequests />
+          </ClientPortalGuard>
+        )}
+      </Route>
+      <Route path="/client/updates">
+        {() => (
+          <ClientPortalGuard>
+            <ClientUpdates />
+          </ClientPortalGuard>
+        )}
+      </Route>
+      <Route path="/client/reports">
+        {() => (
+          <ClientPortalGuard>
+            <ClientReports />
+          </ClientPortalGuard>
+        )}
+      </Route>
 
       {/* ── Team Portal — real Veroxa OS review (login required) ──── */}
       <Route path="/team/dashboard">
