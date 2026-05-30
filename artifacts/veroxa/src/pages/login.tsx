@@ -54,7 +54,7 @@ export default function LoginPage() {
 
     const client = getSupabaseClient();
     if (!client) {
-      setSignInState({ kind: "error", message: "Sign-in unavailable: Supabase env vars missing." });
+      setSignInState({ kind: "error", message: "Sign-in is temporarily unavailable. Please try again later." });
       return;
     }
 

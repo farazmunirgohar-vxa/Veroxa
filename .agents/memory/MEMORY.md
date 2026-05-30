@@ -1,5 +1,5 @@
 - [Evidence Engine V1 architecture](evidence-engine-v1.md) — deterministic fixture-only rule engine pattern; demoOnly: true enforced on all recommendation outputs; no AI API.
-- [Veroxa nav count invariant](veroxa-nav-count.md) — visible nav count must stay in sync across operatorPortalNav.ts comment, demoRoutes.ts comment, and the actual route array; currently 24.
+- [Veroxa nav count invariant](veroxa-nav-count.md) — operator visible-nav count must stay synced across operatorPortalNav.ts comment, demoRoutes.ts comment, and the route array; array is source of truth.
 - [Veroxa build containment](veroxa-containment.md) — "no AI/storage/etc" limits new work only (repo already has runtime AI/network); central write adapter + anon read-only + fixture-as-true-fallback conventions.
 - [Veroxa two-role model](veroxa-two-role-model.md) — live model = Client + Team only (no Owner/Operator, no AI shown to clients); CURRENT_REAL_VEROXA_MODEL.md supersedes older docs.
 - [Approval-to-Execution gate](approval-to-execution-gate.md) — prepared-action risk/approval derived from rules.ts (single source), enforced at repo boundary; multiple seed sources (demo + visibility audit) all emit seeds-only and feed one gate, capped per source.
