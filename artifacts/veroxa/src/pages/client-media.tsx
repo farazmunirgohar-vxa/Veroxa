@@ -43,8 +43,20 @@ import { analyzeRestaurantContent } from "@/lib/content/restaurantContentIntelli
 import { createWorkflowItem } from "@/lib/workflow/workflowRepository";
 import { veroxaWriteAdapter } from "@/lib/data/writeAdapter";
 import { getDevClientIdFromEnv } from "@/lib/data/devClientId";
+import type { ClientJourneyStatus } from "@/domain/clientPortalJourney";
 
 const SHOWCASE_ID = "demo-a";
+
+// Client-safe media journey stages, sourced from the shared client portal
+// journey vocabulary so the labels stay consistent across the portal and
+// break at compile time if the journey status union ever changes.
+const MEDIA_JOURNEY_STAGES: ClientJourneyStatus[] = [
+  "Submitted",
+  "In review",
+  "Prepared by Veroxa",
+  "Included in report",
+];
+const MEDIA_MORE_CONTENT_STATUS: ClientJourneyStatus = "More content needed";
 
 interface SelectedFile {
   name: string;
@@ -284,12 +296,7 @@ export default function ClientMedia() {
             Where your media goes
           </p>
           <div className="flex flex-wrap items-center gap-2">
-            {[
-              "Submitted",
-              "In review",
-              "Prepared by Veroxa",
-              "Included in report",
-            ].map((label, i, arr) => (
+            {MEDIA_JOURNEY_STAGES.map((label, i, arr) => (
               <div key={label} className="flex items-center gap-2">
                 <span className="text-xs font-medium px-2.5 py-1 rounded-full border border-border bg-muted/30 text-foreground/80">
                   {label}
@@ -304,7 +311,7 @@ export default function ClientMedia() {
             Sometimes Veroxa may ask for a little more before a post is ready —
             you'll see{" "}
             <span className="font-medium text-foreground/80">
-              "More content needed"
+              "{MEDIA_MORE_CONTENT_STATUS}"
             </span>{" "}
             with a short note on what would help.
           </p>
