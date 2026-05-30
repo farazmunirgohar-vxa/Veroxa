@@ -9,6 +9,7 @@ import {
   Bell,
   FileText,
   CheckCircle2,
+  Inbox,
 } from "lucide-react";
 import { Link } from "wouter";
 import { PortalLayout } from "@/components/PortalLayout";
@@ -36,6 +37,17 @@ import {
   getClientActionNeededItems,
   getClientVisibleWorkflowItems,
 } from "@/lib/workflows/workflowStatus";
+import { ClientAccountSummary } from "@/components/client/ClientAccountSummary";
+import { ClientPortalEmptyState } from "@/components/client/ClientPortalEmptyState";
+
+/** Compute "June 2026 — Week 1" from the real current date. */
+function getCurrentPeriodLabel(): string {
+  const now = new Date();
+  const month = now.toLocaleString("en-US", { month: "long" });
+  const year = now.getFullYear();
+  const week = Math.ceil(now.getDate() / 7);
+  return `${month} ${year} — Week ${week}`;
+}
 
 export default function ClientDashboard() {
   const { loading, data, source, dataSourceMessage } = useClientPortalData();
@@ -116,9 +128,14 @@ export default function ClientDashboard() {
           variant="outline"
           className="px-3 py-1 bg-card text-card-foreground border-border font-medium self-start md:self-auto"
         >
-          May 2026 — Week 3
+          {getCurrentPeriodLabel()}
         </Badge>
       </div>
+
+      {/* Account summary — what Veroxa handles for this restaurant. */}
+      <ClientAccountSummary
+        restaurantName={loading ? undefined : data.businessName}
+      />
 
       {/* Quick actions — the main things a client can do, one tap away. */}
       <div
@@ -227,9 +244,12 @@ export default function ClientDashboard() {
           What Veroxa is working on
         </h3>
         {visibleWorkflowItems.length === 0 ? (
-          <p className="text-xs text-muted-foreground italic">
-            Nothing is actively in progress this week.
-          </p>
+          <ClientPortalEmptyState
+            icon={<Inbox className="w-8 h-8" />}
+            heading="Nothing actively in progress this week."
+            body="Veroxa will show current work items here as they move through your account."
+            testId="empty-state-working-on"
+          />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {visibleWorkflowItems.map((item) => (

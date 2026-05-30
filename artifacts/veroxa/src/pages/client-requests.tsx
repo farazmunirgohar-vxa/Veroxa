@@ -1,7 +1,9 @@
-import { ArrowRight, CheckCircle2, HelpCircle } from "lucide-react";
+import { useState } from "react";
+import { ArrowRight, CheckCircle2, HelpCircle, MessageSquare } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientPortalData } from "@/hooks/useClientPortalData";
 import { ClientRequestsClarity } from "@/components/ClientExecutionReinforcement";
@@ -12,6 +14,8 @@ import {
   getClientRequestHelpText,
   getClientStatusLabel,
 } from "@/lib/workflows/workflowStatus";
+import { createWorkflowItem } from "@/lib/workflow/workflowRepository";
+import { useActiveClientPortalContext } from "@/lib/clientPortalContext";
 
 const SHOWCASE_ID = "demo-a";
 
@@ -32,6 +36,25 @@ const priorityTone = {
 export default function ClientRequests() {
   const { source, dataSourceMessage } = useClientPortalData();
   const actionItems = getClientActionNeededItems(demoClientTeamWorkflow, SHOWCASE_ID);
+  const { activeClientId } = useActiveClientPortalContext();
+  const [noteText, setNoteText] = useState("");
+  const [sentMessage, setSentMessage] = useState<string | null>(null);
+
+  const handleSendNote = () => {
+    const trimmed = noteText.trim();
+    if (!trimmed) return;
+    createWorkflowItem({
+      clientId: activeClientId,
+      type: "client_request",
+      title: trimmed.length > 60 ? `${trimmed.slice(0, 60)}…` : trimmed,
+      clientNote: trimmed,
+      submittedBy: "client",
+    });
+    setNoteText("");
+    setSentMessage(
+      "Your note has been sent to the Veroxa team. We'll follow up here if we need more detail.",
+    );
+  };
 
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
@@ -101,6 +124,65 @@ export default function ClientRequests() {
               Send the requested detail or photo when convenient. Veroxa reviews everything before anything is shown publicly.
             </p>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Send a note — client-initiated communication, local state only. */}
+      <Card className="bg-card border-border" data-testid="card-send-note">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <MessageSquare className="w-4 h-4 text-primary" />
+            Send a note to your Veroxa team
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Share a business update, ask a question, or let us know about
+            anything we should factor into your content — hours, menu changes,
+            upcoming events, or specials.
+          </p>
+
+          {sentMessage ? (
+            <>
+              <div
+                className="flex items-start gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-2.5 text-xs text-emerald-300"
+                data-testid="send-note-confirmation"
+                role="status"
+              >
+                <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                <span>{sentMessage}</span>
+              </div>
+              <button
+                type="button"
+                className="text-xs text-primary hover:underline"
+                onClick={() => setSentMessage(null)}
+                data-testid="btn-send-another"
+              >
+                Send another note
+              </button>
+            </>
+          ) : (
+            <>
+              <textarea
+                value={noteText}
+                onChange={(e) => setNoteText(e.target.value)}
+                placeholder="e.g. We're adding a new dish next week, or we'll be closed on Monday for a private event…"
+                rows={3}
+                className="w-full bg-muted/40 border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+                data-testid="input-send-note"
+              />
+              <div className="flex justify-end">
+                <Button
+                  size="sm"
+                  onClick={handleSendNote}
+                  disabled={!noteText.trim()}
+                  data-testid="btn-send-note"
+                >
+                  Send to Veroxa Team
+                </Button>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
     </PortalLayout>
