@@ -6,6 +6,7 @@ import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientPortalData } from "@/hooks/useClientPortalData";
 import { ClientReportsProgress } from "@/components/ClientExecutionReinforcement";
 import { ClientVisibilityProgressCard } from "@/components/ClientVisibilityProgressCard";
+import { generateClientMonthlyReport } from "@/domain/clientPortalJourney";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
 import { useEffect, useState } from "react";
 import {
@@ -36,47 +37,44 @@ const EXTRA_CARDS = [
   {
     id: "weekly",
     icon: CalendarDays,
-    title: "Weekly Update — Week 3",
+    title: "Weekly update",
     status: "Available",
     statusClass: "bg-emerald-500/10 text-emerald-400",
-    metrics: [
-      { label: "Posts this week",     value: "3" },
-      { label: "Estimated reach",     value: "9,400" },
-      { label: "Engagement rate",     value: "4.2%" },
-      { label: "Next week posts",     value: "3 planned" },
+    lines: [
+      "Weekly progress is summarized in plain language.",
+      "Client input needs are highlighted when needed.",
+      "Local visibility progress is included safely.",
     ],
   },
   {
-    id: "top-post",
+    id: "content",
     icon: Star,
-    title: "Top Post — May 2026",
-    status: "Illustrative",
-    statusClass: "bg-amber-500/10 text-amber-400",
-    metrics: [
-      { label: "Caption angle",       value: "Weekend Grill" },
-      { label: "Platform",            value: "Instagram" },
-      { label: "Estimated reach",     value: "14,200" },
-      { label: "Engagement",          value: "312 interactions" },
+    title: "Media and content",
+    status: "In progress",
+    statusClass: "bg-primary/10 text-primary",
+    lines: [
+      "Fresh media helps upcoming content.",
+      "Prepared content is reviewed before anything goes live.",
+      "More content needs appear clearly when helpful.",
     ],
   },
   {
     id: "consistency",
     icon: BarChart2,
-    title: "Content Consistency",
-    status: "On track",
-    statusClass: "bg-emerald-500/10 text-emerald-400",
-    metrics: [
-      { label: "Posts last 30 days",  value: "11" },
-      { label: "Target posts/month",  value: "12" },
-      { label: "Posting consistency", value: "92%" },
-      { label: "Platform coverage",   value: "IG + FB" },
+    title: "Next focus",
+    status: "Planned",
+    statusClass: "bg-muted text-muted-foreground",
+    lines: [
+      "Local visibility improvement opportunities.",
+      "Review response support.",
+      "Business details confirmation when needed.",
     ],
   },
 ];
 
 export default function ClientReports() {
-  const { data, source, dataSourceMessage } = useClientPortalData();
-  const report = data.monthlyReportPreview;
+  const { source, dataSourceMessage } = useClientPortalData();
+  const monthlyReport = generateClientMonthlyReport(SHOWCASE_ID);
   const reportItems = useReportEligibleItems(SHOWCASE_ID);
 
   return (
@@ -105,7 +103,7 @@ export default function ClientReports() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Monthly report — live data from hook */}
+        {/* Monthly report foundation — client-safe local journey data. */}
         <Card
           className="bg-card border-border hover:border-primary/30 transition-colors cursor-pointer"
           data-testid="monthly-report-preview"
@@ -114,27 +112,28 @@ export default function ClientReports() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-primary" />
-                <CardTitle className="text-base">{report.title}</CardTitle>
+                <CardTitle className="text-base">{monthlyReport.monthLabel} Report</CardTitle>
               </div>
               <Badge
                 variant="outline"
-                className={`border-none text-xs ${
-                  report.status === "In Review"
-                    ? "bg-amber-500/10 text-amber-400"
-                    : report.status === "Drafting"
-                    ? "bg-muted text-muted-foreground"
-                    : "bg-emerald-500/10 text-emerald-400"
-                }`}
+                className="border-none text-xs bg-primary/10 text-primary"
               >
-                {report.status}
+                Prepared by Veroxa
               </Badge>
             </div>
           </CardHeader>
           <CardContent className="space-y-2 text-sm text-muted-foreground">
-            <div className="flex justify-between"><span>Posts published</span><span className="text-foreground font-medium">{report.postsPublished}</span></div>
-            <div className="flex justify-between"><span>Total reach</span><span className="text-foreground font-medium">41,200</span></div>
-            <div className="flex justify-between"><span>Google impressions</span><span className="text-foreground font-medium">12,580</span></div>
-            <div className="flex justify-between"><span>New reviews</span><span className="text-foreground font-medium">6</span></div>
+            {[
+              monthlyReport.executiveSummary,
+              monthlyReport.visibilityProgress.nextVisibilityAction,
+              monthlyReport.mediaAndContentSummary[0],
+              monthlyReport.reviewReputationSummary[0],
+            ].map((line) => (
+              <div key={line} className="flex items-start gap-2">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 flex-shrink-0" />
+                <span>{line}</span>
+              </div>
+            ))}
             <div className="pt-3 border-t border-border/50 flex items-center justify-between text-xs font-semibold text-primary">
               View full report <ChevronRight className="w-3.5 h-3.5" />
             </div>
@@ -160,10 +159,10 @@ export default function ClientReports() {
               </div>
             </CardHeader>
             <CardContent className="space-y-2 text-sm text-muted-foreground">
-              {card.metrics.map((m) => (
-                <div key={m.label} className="flex justify-between">
-                  <span>{m.label}</span>
-                  <span className="text-foreground font-medium">{m.value}</span>
+              {card.lines.map((line) => (
+                <div key={line} className="flex items-start gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 flex-shrink-0" />
+                  <span>{line}</span>
                 </div>
               ))}
             </CardContent>
@@ -173,8 +172,7 @@ export default function ClientReports() {
 
       {/* Work that's ready for your report — driven by the real workflow
           foundation. We show completed items honestly; performance metrics
-          stay blank until the reporting backend is connected (no invented
-          numbers). */}
+          stay blank until account reporting is active (no invented numbers). */}
       {reportItems.length > 0 && (
         <Card
           className="bg-card border-emerald-500/20 mt-4"
@@ -210,7 +208,7 @@ export default function ClientReports() {
       )}
 
       <p className="mt-4 text-center text-[11px] text-muted-foreground">
-        Report figures shown are for illustration. Items marked ready reflect your real account activity.
+        Items marked ready reflect your account activity. Performance metrics will appear once reporting is active.
       </p>
     </PortalLayout>
   );

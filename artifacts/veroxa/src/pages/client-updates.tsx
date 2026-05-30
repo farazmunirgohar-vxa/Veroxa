@@ -1,4 +1,4 @@
-import { CalendarDays, CheckCircle2, FileText, Sparkles, Clock, Loader2, ArrowRight, Activity, ImageIcon } from "lucide-react";
+import { CalendarDays, CheckCircle2, FileText, Clock, Loader2, ArrowRight, Activity, ImageIcon } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,7 +6,6 @@ import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientPortalData } from "@/hooks/useClientPortalData";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
 import { clientTeamWorkRepository } from "@/lib/repositories";
-import { previewClientUpdate } from "@/lib/ai/aiAgentPreviewEngine";
 import { ClientVisibilityProgressCard } from "@/components/ClientVisibilityProgressCard";
 import { useEffect, useState } from "react";
 import {
@@ -15,6 +14,7 @@ import {
 } from "@/lib/workflow/workflowRepository";
 import { toClientActivityViews } from "@/lib/workflow/workflowActivity";
 import type { WorkflowItem } from "@/lib/workflow/workflowTypes";
+import { generateClientWeeklyUpdate } from "@/domain/clientPortalJourney";
 
 const SHOWCASE_ID = "demo-a";
 
@@ -51,23 +51,22 @@ function useWorkflowTimeline(clientId: string): TimelineEntry[] {
 const PAST_UPDATES = [
   {
     week: "Week 2 — May 12–18",
-    summary: "3 posts published across Instagram and Facebook. Google profile updated with 4 new photos. Monthly report prepared for review.",
-    posts: 3,
-    reach: "11,400",
+    summary: "Content and local visibility work moved forward. Monthly report notes were prepared for review.",
+    focus: "Content and visibility",
     status: "Published",
   },
   {
     week: "Week 1 — May 5–11",
-    summary: "2 posts scheduled and published. Instagram engagement up. Capture plan sent for upcoming weekend specials.",
-    posts: 2,
-    reach: "8,900",
+    summary: "Content preparation continued and the next media needs were shared.",
+    focus: "Content preparation",
     status: "Published",
   },
 ];
 
 export default function ClientUpdates() {
-  const { data, source, dataSourceMessage } = useClientPortalData();
+  const { source, dataSourceMessage } = useClientPortalData();
   const timeline = useWorkflowTimeline(SHOWCASE_ID);
+  const weeklyUpdate = generateClientWeeklyUpdate(SHOWCASE_ID);
 
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
@@ -76,69 +75,44 @@ export default function ClientUpdates() {
           Weekly Updates
         </h2>
         <p className="text-muted-foreground mt-1 text-sm md:text-base">
-          What your Veroxa team has been working on — published posts, Google activity, and what's coming next.
+          What your Veroxa team has been working on — content, local visibility, and what's coming next.
         </p>
         <DataSourceBadge source={source} message={dataSourceMessage} />
       </div>
 
-      {/* Compact weekly preview — prepared and reviewed by the Veroxa team. */}
-      {(() => {
-        const inProgress = clientTeamWorkRepository.getClientInProgressItems(SHOWCASE_ID);
-        const action = clientTeamWorkRepository.getClientActionRequiredItems(SHOWCASE_ID);
-        const completed = clientTeamWorkRepository.getClientCompletedItems(SHOWCASE_ID);
-        const draft = previewClientUpdate({
-          inProgressCount: inProgress.length,
-          blockedCount: 0,
-          waitingOnClientCount: action.length,
-          completedThisWeekCount: completed.length,
-          topInProgressTitle: inProgress[0]?.title,
-          topActionNeededTitle: action[0]?.title,
-        });
-        return (
-          <Card
-            className="bg-card border-primary/20 mb-5"
-            data-testid="weekly-update-preview"
-          >
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <CalendarDays className="w-4 h-4 text-primary" />
-                Veroxa weekly preview
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[12px]">
-                <div className="rounded-md border border-border/50 bg-muted/10 p-3">
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">
-                    What Veroxa reviewed
-                  </p>
-                  <p className="text-foreground/85">{draft.whatVeroxaReviewed}</p>
-                </div>
-                <div className="rounded-md border border-border/50 bg-muted/10 p-3">
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">
-                    What's being prepared
-                  </p>
-                  <p className="text-foreground/85">{draft.whatIsBeingPrepared}</p>
-                </div>
-                <div className="rounded-md border border-border/50 bg-muted/10 p-3">
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">
-                    What we need from you
-                  </p>
-                  <p className="text-foreground/85">{draft.whatClientNeedsToProvide}</p>
-                </div>
-                <div className="rounded-md border border-border/50 bg-muted/10 p-3">
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">
-                    Next planned action
-                  </p>
-                  <p className="text-foreground/85">{draft.nextPlannedAction}</p>
-                </div>
+      {/* Weekly update foundation — deterministic, client-safe journey data. */}
+      <Card
+        className="bg-card border-primary/20 mb-5"
+        data-testid="weekly-update-foundation"
+      >
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2">
+            <CalendarDays className="w-4 h-4 text-primary" />
+            {weeklyUpdate.weekLabel}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-foreground/85">{weeklyUpdate.clientSafeSummary}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[12px]">
+            {[
+              ["Completed", weeklyUpdate.completedWork[0]],
+              ["In progress", weeklyUpdate.inProgressWork[0]],
+              ["Needs from you", weeklyUpdate.needsClientInput[0]],
+              ["Next focus", weeklyUpdate.nextWeekFocus[0]],
+            ].map(([label, value]) => (
+              <div key={label} className="rounded-md border border-border/50 bg-muted/10 p-3">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">
+                  {label}
+                </p>
+                <p className="text-foreground/85">{value}</p>
               </div>
-              <p className="text-[10px] text-muted-foreground italic pt-1">
-                Prepared by Veroxa; final review stays with the Veroxa team.
-              </p>
-            </CardContent>
-          </Card>
-        );
-      })()}
+            ))}
+          </div>
+          <p className="text-[10px] text-muted-foreground italic pt-1">
+            Prepared by Veroxa; nothing goes live without Veroxa team review.
+          </p>
+        </CardContent>
+      </Card>
 
       {/* Current week update */}
       <Card
@@ -148,7 +122,7 @@ export default function ClientUpdates() {
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <CardTitle className="text-base font-semibold">
-              {data.weeklyUpdate.title}
+              {weeklyUpdate.headline}
             </CardTitle>
             <Badge
               variant="outline"
@@ -160,7 +134,7 @@ export default function ClientUpdates() {
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="space-y-2">
-            {data.weeklyUpdate.summaryItems.map((item, i) => (
+            {[...weeklyUpdate.completedWork, ...weeklyUpdate.inProgressWork, ...weeklyUpdate.visibilityProgress].slice(0, 6).map((item, i) => (
               <div key={i} className="flex items-start gap-2.5 text-sm text-foreground/85">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
                 <span>{item}</span>
@@ -370,10 +344,10 @@ export default function ClientUpdates() {
                 <p className="text-xs text-muted-foreground leading-relaxed mb-3">{u.summary}</p>
                 <div className="flex items-center gap-4 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
-                    <FileText className="w-3 h-3" /> {u.posts} posts
+                    <FileText className="w-3 h-3" /> Included in updates
                   </span>
                   <span className="flex items-center gap-1">
-                    <Sparkles className="w-3 h-3" /> ~{u.reach} est. reach
+                    <FileText className="w-3 h-3" /> {u.focus}
                   </span>
                   <span className="flex items-center gap-1 text-emerald-400/80">
                     <Clock className="w-3 h-3" /> On schedule
@@ -386,7 +360,7 @@ export default function ClientUpdates() {
       </div>
 
       <p className="mt-6 text-center text-[11px] text-muted-foreground">
-        Figures shown are for illustration. Your recent activity updates as Veroxa works on your account.
+        Your recent activity updates as Veroxa works on your account.
       </p>
     </PortalLayout>
   );
