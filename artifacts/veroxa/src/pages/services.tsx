@@ -3,7 +3,6 @@ import { ArrowRight, CheckCircle2, Globe, LayoutDashboard, Megaphone, Monitor } 
 import { Button } from "@/components/ui/button";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
-import { VEROXA_PLANS } from "@/data/pricing/veroxaPricing";
 
 export default function ServicesPage() {
   return (
@@ -27,29 +26,24 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* Complete Online Presence */}
+      {/* What Veroxa helps with */}
       <section className="py-20 px-6 lg:px-12 bg-card/20 border-y border-border/40">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-3 mb-8">
             <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
               <LayoutDashboard className="w-5 h-5" />
             </div>
-            <h2 className="text-2xl font-bold">Complete Online Presence includes:</h2>
+            <h2 className="text-2xl font-bold">What Veroxa helps with</h2>
           </div>
           <div className="grid md:grid-cols-2 gap-x-12 gap-y-3">
             {[
-              "Facebook management",
-              "Instagram management",
-              "TikTok management",
-              "Google Optimization",
-              "Content planning",
-              "Caption / draft creation",
-              "Posting support",
-              "Restaurant media guidance",
-              "Weekly updates",
-              "Monthly reports",
-              "Team-managed execution",
-              "Veroxa Client Portal access",
+              "Google visibility",
+              "Facebook + Instagram consistency",
+              "Picture posting",
+              "Reels and TikTok available in Growth",
+              "Ads management available in Premium",
+              "Weekly updates and monthly reporting",
+              "Client portal access",
             ].map((item) => (
               <div key={item} className="flex items-center gap-3 py-2.5 border-b border-border/30 last:border-b-0">
                 <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />
@@ -106,10 +100,10 @@ export default function ServicesPage() {
         <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           <div className="order-2 md:order-1 space-y-4">
             {[
-              "Consistent content across Instagram, Facebook, TikTok",
-              "Better use of your restaurant's own media",
+              "Essential focuses on social media picture posting",
+              "Growth adds Reels and TikTok",
               "Caption writing and draft creation",
-              "Platform-specific formatting and posting",
+              "Posting depends on usable media from the restaurant",
             ].map((item) => (
               <div key={item} className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card/40">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
@@ -123,9 +117,14 @@ export default function ServicesPage() {
             </div>
             <h2 className="text-2xl font-bold mb-4">Social Content System</h2>
             <p className="text-muted-foreground leading-relaxed mb-4">
-              Consistent social content helps restaurants stay visible to the customers who are
-              already looking. Veroxa handles content structure, caption creation, and posting
-              so the restaurant stays active without the owner managing it day-to-day.
+              Essential focuses on social media picture posting to keep the
+              restaurant active and consistent. Growth adds Reels and TikTok for
+              stronger reach. Veroxa handles content structure, caption creation,
+              and posting so the owner does not manage it day-to-day.
+            </p>
+            <p className="text-muted-foreground leading-relaxed mb-4">
+              Posting depends on usable media from the restaurant. Veroxa may post
+              up to once per day when enough usable content is available.
             </p>
             <p className="text-sm text-muted-foreground/70 leading-relaxed">
               Veroxa does not guarantee viral posts or a specific follower count.
@@ -172,16 +171,15 @@ export default function ServicesPage() {
               <Megaphone className="w-5 h-5" />
             </div>
             <div>
-              <div className="text-xs font-semibold text-amber-400 uppercase tracking-widest mb-0.5">Optional Add-on</div>
+              <div className="text-xs font-semibold text-amber-400 uppercase tracking-widest mb-0.5">Included in Premium</div>
               <h2 className="text-2xl font-bold">Ads Management</h2>
             </div>
           </div>
           <p className="text-muted-foreground mb-8 max-w-xl">
-            Add paid advertising management to Complete Online Presence for{" "}
-            {VEROXA_PLANS.ads_addon.displayPrice}/mo. Ads Management is only
-            available as an add-on to Complete Online Presence. Ad spend is
-            always separate and paid by the restaurant directly to the ad
-            platform.
+            Ads management is included in the Premium plan. Veroxa handles
+            campaign setup, targeting, creative direction, monitoring, and
+            reporting. Ad spend is always separate and paid by the restaurant
+            directly to the ad platform.
           </p>
           <div className="grid md:grid-cols-2 gap-x-12 gap-y-3 mb-8">
             {[
