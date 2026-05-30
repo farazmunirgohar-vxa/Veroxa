@@ -15,10 +15,9 @@ export interface RouteRule {
 export const routeAccessMap: RouteRule[] = [
   { pattern: "/", access: "public", note: "Marketing landing" },
   { pattern: "/demo", access: "public", note: "Demo hub" },
-  { pattern: "/demo/client/*", access: "public", note: "Client portal demo — always public in demo mode" },
+  { pattern: "/demo/client/dashboard", access: "public", note: "The only public client demo surface" },
   { pattern: "/client/*", access: "public", note: "Current client review/demo route" },
   { pattern: "/team/*", access: { roles: ["team"] }, note: "Team/Internal Admin portal" },
-  { pattern: "/demo/team/*", access: { roles: ["team"] }, note: "Team/Internal Admin demo" },
   { pattern: "/demo/internal/*", access: { roles: ["team"] }, note: "Internal architecture and system status" },
 ];
 

@@ -3,7 +3,7 @@
  *
  * Local-only sample submissions that simulate what restaurants send
  * through the Upload Key flow. Used to seed the Team Upload Inbox
- * (`/demo/team/upload-inbox`) so the team can practice the review
+ * (`/team/upload-inbox`) so the team can practice the review
  * actions even before any real client traffic exists.
  *
  * No database, no Supabase, no real files. The upload form may add

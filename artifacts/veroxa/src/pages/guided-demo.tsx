@@ -61,11 +61,11 @@ function StepCard({ step }: { step: DemoWalkthroughStep }) {
               {isGuarded && (
                 <Badge
                   variant="outline"
-                  className="text-[11px] border-amber-500/30 bg-amber-500/5 text-amber-400 flex items-center gap-1"
+                  className="text-[11px] border-violet-500/30 bg-violet-500/5 text-violet-300 flex items-center gap-1"
                   data-testid={`step-guarded-${step.stepNumber}`}
                 >
                   <Lock className="w-2.5 h-2.5" />
-                  Requires demo access
+                  Internal team step
                 </Badge>
               )}
             </div>
@@ -95,19 +95,19 @@ function StepCard({ step }: { step: DemoWalkthroughStep }) {
 
             {/* CTA */}
             <div className="flex flex-wrap items-center gap-3 pt-1">
-              <Link href={step.route} data-testid={`step-open-${step.stepNumber}`}>
-                <Button
-                  size="sm"
-                  variant={isGuarded ? "outline" : "default"}
-                  className="gap-1.5 font-semibold"
+              {!isGuarded && step.route ? (
+                <Link href={step.route} data-testid={`step-open-${step.stepNumber}`}>
+                  <Button size="sm" variant="default" className="gap-1.5 font-semibold">
+                    Open this step
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Button>
+                </Link>
+              ) : (
+                <p
+                  className="text-[11px] text-muted-foreground"
+                  data-testid={`step-internal-note-${step.stepNumber}`}
                 >
-                  Open this step
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Button>
-              </Link>
-              {isGuarded && (
-                <p className="text-[11px] text-muted-foreground">
-                  Enter code <span className="font-semibold text-foreground/70">veroxa-preview</span> when prompted
+                  Internal Veroxa team view — shown here as part of the story.
                 </p>
               )}
             </div>
@@ -156,7 +156,7 @@ export default function GuidedDemo() {
               <ArrowRight className="w-4 h-4" />
             </Button>
           </Link>
-          <Link href="/demo/client" data-testid="cta-guided-demo-client-portal">
+          <Link href="/demo/client/dashboard" data-testid="cta-guided-demo-client-portal">
             <Button size="lg" variant="outline" className="font-semibold gap-1.5">
               Preview Client Portal
               <ArrowRight className="w-4 h-4" />
@@ -200,11 +200,9 @@ export default function GuidedDemo() {
           data-testid="guided-demo-access-note"
         >
           <p>
-            <span className="font-semibold text-foreground/80">Steps 1, 2, 5, 6</span> are public — no login required.{" "}
-            <span className="font-semibold text-foreground/80">Steps 3, 4, 7, 8</span> show internal Team/Internal Admin views.
-            These require the demo access code{" "}
-            <span className="font-mono font-semibold text-foreground/80">veroxa-preview</span> when prompted.
-            The guided demo does not bypass any existing access controls.
+            <span className="font-semibold text-foreground/80">Steps 1, 2, 5, 6</span> are public — no login required and open the client preview.{" "}
+            <span className="font-semibold text-foreground/80">Steps 3, 4, 7, 8</span> show what the Veroxa team does behind the scenes, included here as part of the story.
+            The guided demo does not bypass any access controls.
           </p>
         </div>
 
@@ -224,7 +222,7 @@ export default function GuidedDemo() {
         <section data-testid="section-internal-steps">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
             <Lock className="w-3.5 h-3.5" />
-            Internal views — demo access required
+            Behind the scenes — what the Veroxa team does
           </h2>
           <div className="space-y-3">
             {internalSteps.map((step) => (

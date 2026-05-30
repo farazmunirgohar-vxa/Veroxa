@@ -6,7 +6,6 @@ export default function RealTeamPlaceholder() {
       role="team"
       area="Portal"
       futurePath="/team/tasks"
-      demoPath="/demo/team/tasks"
     />
   );
 }

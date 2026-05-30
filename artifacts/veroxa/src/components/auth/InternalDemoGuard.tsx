@@ -17,8 +17,8 @@ interface InternalDemoGuardProps {
 }
 
 /**
- * InternalDemoGuard — protects /team/* and /demo/team/* from unauthenticated
- * and wrong-role access.
+ * InternalDemoGuard — protects /team/* from unauthenticated and wrong-role
+ * access.
  *
  * Do NOT use on /demo/client/* — that remains public.
  *

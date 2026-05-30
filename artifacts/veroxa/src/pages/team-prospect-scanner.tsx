@@ -510,7 +510,7 @@ export default function TeamProspectScanner() {
                   >
                     Save as lead
                   </Button>
-                  <Link href="/demo/team/audit-leads">
+                  <Link href="/team/audit-leads">
                     <Button size="sm" variant="outline">
                       Open Audit Leads
                     </Button>

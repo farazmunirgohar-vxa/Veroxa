@@ -6,7 +6,6 @@ export default function RealClientPlaceholder() {
       role="client"
       area="Portal"
       futurePath="/client/dashboard"
-      demoPath="/demo/client/dashboard"
     />
   );
 }

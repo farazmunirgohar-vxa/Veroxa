@@ -42,6 +42,34 @@ function isRouteActive(itemHref: string, location: string): boolean {
   return false;
 }
 
+interface PortalReviewContext {
+  bannerText: string;
+  isPublicDemo: boolean;
+}
+
+/**
+ * Route-aware framing for the placeholder review banner and the demo back-link.
+ *  - /demo/*   → public demo preview (keeps the "Back to Demo Hub" link)
+ *  - /team/*   → internal team portal review (no demo back-link)
+ *  - /client/* → client portal review (default for any other portal route)
+ */
+function getPortalReviewContext(location: string): PortalReviewContext {
+  if (location.startsWith("/demo")) {
+    return { bannerText: "Public Demo Preview — sample data only.", isPublicDemo: true };
+  }
+  if (location.startsWith("/team")) {
+    return {
+      bannerText: "Team Portal Review — internal Veroxa OS workspace under active build.",
+      isPublicDemo: false,
+    };
+  }
+  return {
+    bannerText:
+      "Client Portal Review — Veroxa OS is being built with setup data while live client accounts are prepared.",
+    isPublicDemo: false,
+  };
+}
+
 /**
  * Sign-out footer — shown only when AUTH_MODE === "real".
  * Displays the signed-in user's role + email and a sign-out button.
@@ -187,7 +215,7 @@ function SidebarNav({
 
       <div className="border-t border-sidebar-border shrink-0">
         <AuthFooter onNavigate={onNavigate} />
-        {AUTH_MODE === "placeholder" && (
+        {AUTH_MODE === "placeholder" && getPortalReviewContext(location).isPublicDemo && (
           <div className="p-4 pt-2">
             <Link
               href="/demo"
@@ -312,15 +340,28 @@ export function PortalLayout({ children, items, portalName }: PortalLayoutProps)
 
         <div className="flex-1 p-4 md:p-8 overflow-auto">
           <div className="max-w-6xl mx-auto space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {AUTH_MODE === "placeholder" && (
-              <div
-                className="px-3 py-2 rounded-md bg-amber-500/8 border border-amber-500/20 text-amber-400 text-xs font-medium flex items-center gap-2"
-                data-testid="banner-preview"
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />
-                Development Preview — sample data only, not a live client account.
-              </div>
-            )}
+            {AUTH_MODE === "placeholder" && (() => {
+              const review = getPortalReviewContext(location);
+              return (
+                <div
+                  className={cn(
+                    "px-3 py-2 rounded-md border text-xs font-medium flex items-center gap-2",
+                    review.isPublicDemo
+                      ? "bg-amber-500/8 border-amber-500/20 text-amber-400"
+                      : "bg-primary/5 border-primary/20 text-primary/90"
+                  )}
+                  data-testid="banner-preview"
+                >
+                  <span
+                    className={cn(
+                      "w-1.5 h-1.5 rounded-full flex-shrink-0",
+                      review.isPublicDemo ? "bg-amber-400" : "bg-primary/70"
+                    )}
+                  />
+                  {review.bannerText}
+                </div>
+              );
+            })()}
             {children}
           </div>
         </div>

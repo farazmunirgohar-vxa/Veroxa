@@ -16,9 +16,10 @@ export interface DemoWalkthroughStep {
   stepNumber: number;
   title: string;
   shortExplanation: string;
-  route: string;
+  /** Public steps open a client preview route. Internal steps have no separate route. */
+  route?: string;
   role: DemoWalkthroughRole;
-  /** "public" = no login required. "internal" = requires demo access code. */
+  /** "public" = no login required, opens the client preview. "internal" = behind-the-scenes team step, shown as narrative only. */
   access: DemoWalkthroughAccessLevel;
   visualLabel: string;
   whatToLookFor: string[];
@@ -45,7 +46,7 @@ export const veroxaGuidedWalkthrough: DemoWalkthrough = {
       title: "Client uploads restaurant media",
       shortExplanation:
         "The restaurant owner uploads food photos and short videos through their Veroxa client portal. Veroxa's team then reviews each asset before it enters the content pipeline.",
-      route: "/demo/client/media",
+      route: "/demo/client/dashboard",
       role: "Client",
       access: "public",
       visualLabel: "Media Library",
@@ -62,7 +63,7 @@ export const veroxaGuidedWalkthrough: DemoWalkthrough = {
       title: "Veroxa turns one food photo into 3 posts",
       shortExplanation:
         "Upload a single food photo and watch the simulated AI generate three ready-to-schedule content drafts — each with a different angle, caption, and posting time.",
-      route: "/demo/client/ai-draft-preview",
+      route: "/demo/client/dashboard",
       role: "Client",
       access: "public",
       visualLabel: "AI Draft Preview",
@@ -79,7 +80,6 @@ export const veroxaGuidedWalkthrough: DemoWalkthrough = {
       title: "Team reviews media quality and tags assets",
       shortExplanation:
         "The Veroxa team reviews every uploaded asset, tagging quality, notes, and suggested uses before any caption is written. This is the first human checkpoint.",
-      route: "/demo/team/media-review",
       role: "Team",
       access: "internal",
       visualLabel: "Team Media Review",
@@ -96,7 +96,6 @@ export const veroxaGuidedWalkthrough: DemoWalkthrough = {
       title: "Team selects and approves the best caption",
       shortExplanation:
         "Three caption variants are generated for each post — Safe, Engagement, and Sales angles. The team reviews and approves the best fit for the client's brand before scheduling.",
-      route: "/demo/team/content-review",
       role: "Team",
       access: "internal",
       visualLabel: "Content Review Queue",
@@ -113,7 +112,7 @@ export const veroxaGuidedWalkthrough: DemoWalkthrough = {
       title: "Client sees upcoming content on their calendar",
       shortExplanation:
         "The restaurant owner can see exactly what is scheduled, when, and on which platform — with status badges and thumbnails for each upcoming post.",
-      route: "/demo/client/calendar",
+      route: "/demo/client/dashboard",
       role: "Client",
       access: "public",
       visualLabel: "Content Calendar",
@@ -129,7 +128,7 @@ export const veroxaGuidedWalkthrough: DemoWalkthrough = {
       title: "Client receives weekly updates and reports",
       shortExplanation:
         "Every week, the restaurant owner receives a clear summary of what was posted, what performed well, and what Veroxa is working on next.",
-      route: "/demo/client/updates",
+      route: "/demo/client/dashboard",
       role: "Client",
       access: "public",
       visualLabel: "Updates & Reports",
@@ -145,7 +144,6 @@ export const veroxaGuidedWalkthrough: DemoWalkthrough = {
       title: "Veroxa recommends the next smart action",
       shortExplanation:
         "The Evidence Engine reviews past performance, media quality, content runway, and client goals to recommend the single best next action — for every role on the team.",
-      route: "/team/approval-queue",
       role: "Team",
       access: "internal",
       visualLabel: "Evidence Engine",
@@ -162,7 +160,6 @@ export const veroxaGuidedWalkthrough: DemoWalkthrough = {
       title: "Team sees the Veroxa command center",
       shortExplanation:
         "The Team/Internal Admin command center shows client health, workload, and system-level risks in one calm internal view.",
-      route: "/team/dashboard",
       role: "Team",
       access: "internal",
       visualLabel: "Team Dashboard",

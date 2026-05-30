@@ -101,7 +101,7 @@ export default function TeamMediaReview() {
 
       <p className="text-xs text-muted-foreground mb-4" data-testid="upload-inbox-cross-link">
         New restaurant uploads appear in the{" "}
-        <a href="/demo/team/upload-inbox" className="text-primary hover:underline">
+        <a href="/team/upload-inbox" className="text-primary hover:underline">
           Upload Inbox
         </a>{" "}
         first, then move to Media Review.
