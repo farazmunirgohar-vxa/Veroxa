@@ -49,7 +49,10 @@ export function ClientKeepMovingCard({ clientId }: { clientId: string }) {
   const todos = clientSafeTodos(profile);
 
   return (
-    <Card className="bg-card border-primary/20" data-testid="client-keep-moving">
+    <Card
+      className="bg-card border-primary/20"
+      data-testid="client-keep-moving"
+    >
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-semibold flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-primary" />
@@ -59,8 +62,8 @@ export function ClientKeepMovingCard({ clientId }: { clientId: string }) {
       <CardContent className="space-y-2">
         {todos.length === 0 ? (
           <p className="text-[13px] text-foreground/90">
-            You're all set this week — Veroxa has everything it needs to keep your
-            content moving. Thank you for staying in sync.
+            You're all set this week — Veroxa has everything it needs to keep
+            your content moving. Thank you for staying in sync.
           </p>
         ) : (
           <>
@@ -95,7 +98,10 @@ export function ClientMediaReinforcement({ clientId }: { clientId: string }) {
   const lowSupply = profile.mediaSupply.score < 50;
 
   return (
-    <Card className="bg-card border-border" data-testid="client-media-reinforce">
+    <Card
+      className="bg-card border-border"
+      data-testid="client-media-reinforce"
+    >
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-semibold flex items-center gap-2">
           <Camera className="w-4 h-4 text-primary" />
@@ -109,8 +115,8 @@ export function ClientMediaReinforcement({ clientId }: { clientId: string }) {
             : "Your media supply looks great. Keep sharing the occasional new photo and Veroxa will keep your presence fresh."}
         </p>
         <p className="text-[11px] text-muted-foreground">
-          Upload whenever it's convenient — there's nothing you need to schedule
-          or post yourself.
+          Upload whenever it's convenient. Posting depends on usable media, and
+          may slow when usable photos or videos are unavailable.
         </p>
       </CardContent>
     </Card>
@@ -123,7 +129,10 @@ export function ClientRequestsClarity({ clientId }: { clientId: string }) {
   const todos = clientSafeTodos(profile);
 
   return (
-    <Card className="bg-card border-border" data-testid="client-requests-clarity">
+    <Card
+      className="bg-card border-border"
+      data-testid="client-requests-clarity"
+    >
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-semibold flex items-center gap-2">
           <MessageSquareHeart className="w-4 h-4 text-primary" />
@@ -149,7 +158,9 @@ export function ClientRequestsClarity({ clientId }: { clientId: string }) {
           </ul>
         )}
         <p className="text-[11px] text-muted-foreground">
-          No rush — whenever you have a moment is perfectly fine.
+          No rush — whenever you have a moment is perfectly fine. Restaurant
+          handles customer replies such as comments, DMs, order questions,
+          refunds, and service conversations.
         </p>
       </CardContent>
     </Card>
@@ -165,7 +176,10 @@ export function ClientReportsProgress({ clientId }: { clientId: string }) {
   const dims = profile.dimensions;
 
   return (
-    <Card className="bg-card border-border" data-testid="client-reports-progress">
+    <Card
+      className="bg-card border-border"
+      data-testid="client-reports-progress"
+    >
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-semibold flex items-center gap-2">
           <ClipboardCheck className="w-4 h-4 text-primary" />
@@ -195,7 +209,8 @@ export function ClientReportsProgress({ clientId }: { clientId: string }) {
         </div>
         <p className="text-[11px] text-muted-foreground">
           This is a plain-language summary of activity — not a performance
-          guarantee. Your full report is prepared by your Veroxa team.
+          guarantee. Your full report is prepared by your Veroxa team. Premium
+          readiness can be reviewed after your foundation is stable.
         </p>
       </CardContent>
     </Card>

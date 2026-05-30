@@ -14,8 +14,8 @@ quality, Google visibility, social reminders, and online trust.
 
 Most restaurants do not need random posts. They need a calm system that keeps
 them visible, trustworthy, and consistent where customers are already looking.
-Restaurant owners stay focused on food and service. Veroxa handles the online
-presence system.
+Restaurant owners stay focused on food and service. Veroxa handles content
+posting, captions, page consistency, and online presence management.
 
 ---
 
@@ -27,38 +27,47 @@ For restaurants that need the core visibility rhythm.
 
 Included:
 
-- Google Optimization
-- Facebook + Instagram picture posting
-- Basic captions
+- Google Business Profile optimization
+- Google Search SEO basics
+- Google Maps SEO basics
+- Facebook + Instagram presence management
+- Picture-based posting
+- Max 1 picture post per day
+- Platform-specific captions when applicable
 - Weekly updates
 - Monthly performance snapshot
 - Client Portal access
 
 ### Growth — $697/month
 
-For restaurants that also need short-form content support and a stronger monthly
-reporting layer.
+For restaurants that also need TikTok + Reels posting support using the photos
+and videos they provide, plus a stronger monthly reporting layer.
 
 Included:
 
 - Everything in Essential
-- Reels / short-form content support
 - TikTok posting/management if applicable
+- Facebook/Instagram Reels
+- TikTok + Reels posting support using the photos and videos you provide
+- Reels optimization
 - Enhanced monthly report
 
 ### Premium — $997/month
 
-For restaurants that want Veroxa to manage ads in addition to the Growth online
-presence system.
+For restaurants ready for ads after the foundation is stable.
 
-Included:
+Included after readiness:
 
 - Everything in Growth
-- Facebook/Instagram ads management
-- Google Ads management
-- Campaign setup and monitoring
-- Monthly ad performance report
+- Google, Facebook, Instagram, and TikTok ads management
+- Max 2 content posts per day total: 1 picture post + 1 reel / short video post
+- Platform-specific drafting/adaptation
+- Ad reporting
 - Ad spend is separate and paid directly by the restaurant
+
+Premium requires at least 1 month on Essential or Growth, a Veroxa readiness
+assessment by phone, Zoom, or in person, client approval, and an agreed ad
+budget. Ads should not be recommended until the restaurant foundation is ready.
 
 ---
 
@@ -68,11 +77,49 @@ Included:
 - Cancel anytime.
 - Google Optimization is included in all plans.
 - Facebook + Instagram are included in all plans.
-- Maximum 1 post per day.
-- Posting depends on usable client-provided media.
-- Reels / short-form content support starts at Growth.
-- Ads management starts at Premium.
+- Essential: max 1 picture post per day.
+- Growth: adds TikTok + Reels posting support using the photos and videos the client provides.
+- Premium: max 2 content posts per day total — 1 picture post + 1 reel / short video post.
+- Posting depends on usable client-provided media and may slow when usable media is unavailable.
+- Ads management starts at Premium only after readiness.
 - Ad spend is always separate and paid by the restaurant directly to the ad platform.
+
+---
+
+## Service boundary
+
+Veroxa manages posting, captions, page consistency, Google visibility, online
+presence, media guidance, weekly updates, monthly snapshots/reports, Premium
+readiness assessment, and ads management only after readiness.
+
+Veroxa does **not** handle comments, DMs, inbox messages, complaints, order
+questions, refunds, sensitive customer replies, or customer-service
+conversations at launch. The restaurant remains responsible for comments,
+messages, DMs, orders, complaints, refunds, and customer-service conversations.
+
+---
+
+## Media dependency
+
+Posting depends on usable client-provided media. If usable media runs low,
+Veroxa can guide/remind the restaurant, but posting may slow until new usable
+media is provided. Veroxa does not create real restaurant media from nothing.
+No professional filming is included unless separately arranged in the future.
+
+---
+
+## First-client / loyalty discount
+
+First clients receive 20% off for the first 12 months. After 12 months, the 20%
+discount converts into a loyalty discount only while the client remains
+continuously active. If the client cancels/leaves/stops service and later
+returns, the 20% discount is no longer eligible.
+
+Approximate discounted monthly prices:
+
+- Essential: $398/mo
+- Growth: $558/mo
+- Premium: $798/mo
 
 ---
 
@@ -80,64 +127,13 @@ Included:
 
 If the restaurant does not already have a needed website, Facebook page,
 Instagram account, TikTok account, or Google Business Profile, Veroxa can help
-create/setup the required basic account/page/presence during onboarding.
-
-This is **not** a custom website development package.
-
----
-
-## Internal-only compatibility IDs (not publicly sold)
-
-These exist for internal Free Audit / lead-scoring compatibility and must not
-appear as standalone public offers.
-
-| Legacy/internal package ID | Current public display |
-| -------------------------- | ---------------------- |
-| `google_optimization`      | Essential — $497/mo    |
-| `complete_online_presence` | Growth — $697/mo       |
-| `complete_plus_ads`        | Premium — $997/mo      |
-| `ads_management_only`      | Premium — $997/mo      |
+create/setup the required basic account/page/presence during onboarding. This is
+not a custom website development package.
 
 ---
 
-## Disclaimers
+## Deprecated / historical pricing — not current
 
-- Advertising budget is separate and paid by the restaurant directly to the ad platform.
-- Results depend on restaurant quality, offer, consistency, location, and market demand.
-- Veroxa does not guarantee specific revenue results.
-- Veroxa does not guarantee first-page Google rankings.
-- Veroxa does not guarantee viral posts.
-- Veroxa does not guarantee a specific number of new customers.
-
----
-
-## Public Website Rules
-
-- Public website must only promote Client Portal Preview (`/demo/client/dashboard`).
-- Public website must NOT expose Team, Operator, or Owner demo portal links.
-- Login page may show all four role cards because it is the access entry point.
-- Pricing shown publicly must match this document exactly.
-
----
-
-## Truthful Public Claims Rule
-
-- Do not publish fake client counts.
-- Do not publish fake post counts.
-- Do not publish fake retention rates.
-- Do not publish fake Google visibility lift percentages.
-- Do not publish fake case studies.
-- Use system-based trust signals until real client results exist and are verified.
-- Future performance claims require evidence before being added to the public website.
-- If results are not verified, phrase them as system capabilities, goals, or planned outcomes — not proof.
-
----
-
-## Public Website Structure
-
-- `/` = Home page — introduction only. No full pricing tables, no full services list.
-- `/demo` = Experience page — Client Portal preview only. Internal portals require login.
-- `/services` = Services page — explains what Veroxa delivers.
-- `/pricing` = Pricing page — explains what Veroxa costs.
-- Public pages must only promote Client Portal Preview (`/demo/client/dashboard`), not internal portals.
-- Team, Operator, and Owner demo links must never appear on public pages.
+Older Complete Online Presence, founding-client, $977/$488/$477 pricing, and
+old bundle/add-on language is deprecated/history only. Do not restore it as
+current public pricing.

@@ -18,15 +18,18 @@ export const PlanType = {
 } as const;
 export type PlanType = (typeof PlanType)[keyof typeof PlanType];
 
-// ServicePackage values are legacy database placeholders. Current public pricing
-// is Essential ($497/mo), Growth ($697/mo), and Premium ($997/mo); ad spend is
-// separate. Do not use these enum keys to render public pricing labels.
+// Active public service packages. Legacy aliases remain only for app/demo
+// compatibility and must not be rendered as current public pricing labels.
 export const ServicePackage = {
-  presence: "presence",
-  ads_addon: "ads_addon",
-  ads_only: "ads_only",
+  essential: "essential",
+  growth: "growth",
+  premium: "premium",
+  presence: "growth", // legacy compatibility alias
+  ads_addon: "premium", // legacy compatibility alias
+  ads_only: "premium", // legacy compatibility alias
 } as const;
-export type ServicePackage = (typeof ServicePackage)[keyof typeof ServicePackage];
+export type ServicePackage =
+  (typeof ServicePackage)[keyof typeof ServicePackage];
 
 export const ContentHealthStatus = {
   healthy: "healthy",
@@ -34,7 +37,8 @@ export const ContentHealthStatus = {
   urgent: "urgent",
   broken: "broken",
 } as const;
-export type ContentHealthStatus = (typeof ContentHealthStatus)[keyof typeof ContentHealthStatus];
+export type ContentHealthStatus =
+  (typeof ContentHealthStatus)[keyof typeof ContentHealthStatus];
 
 export const RiskStatus = {
   good: "good",
@@ -58,7 +62,8 @@ export const PlatformAccessStatus = {
   verified: "verified",
   revoked: "revoked",
 } as const;
-export type PlatformAccessStatus = (typeof PlatformAccessStatus)[keyof typeof PlatformAccessStatus];
+export type PlatformAccessStatus =
+  (typeof PlatformAccessStatus)[keyof typeof PlatformAccessStatus];
 
 export const OnboardingItemStatus = {
   not_started: "not_started",
@@ -66,7 +71,8 @@ export const OnboardingItemStatus = {
   complete: "complete",
   blocked: "blocked",
 } as const;
-export type OnboardingItemStatus = (typeof OnboardingItemStatus)[keyof typeof OnboardingItemStatus];
+export type OnboardingItemStatus =
+  (typeof OnboardingItemStatus)[keyof typeof OnboardingItemStatus];
 
 export const MediaFileType = {
   image: "image",
@@ -79,14 +85,16 @@ export const MediaSourceType = {
   legacy_reuse: "legacy_reuse",
   team_upload: "team_upload",
 } as const;
-export type MediaSourceType = (typeof MediaSourceType)[keyof typeof MediaSourceType];
+export type MediaSourceType =
+  (typeof MediaSourceType)[keyof typeof MediaSourceType];
 
 export const MediaQualityAIFlag = {
   likely_usable: "likely_usable",
   borderline: "borderline",
   likely_reject: "likely_reject",
 } as const;
-export type MediaQualityAIFlag = (typeof MediaQualityAIFlag)[keyof typeof MediaQualityAIFlag];
+export type MediaQualityAIFlag =
+  (typeof MediaQualityAIFlag)[keyof typeof MediaQualityAIFlag];
 
 export const MediaReviewStatus = {
   uploaded: "uploaded",
@@ -101,7 +109,8 @@ export const MediaReviewStatus = {
   used: "used",
   reusable_archive: "reusable_archive",
 } as const;
-export type MediaReviewStatus = (typeof MediaReviewStatus)[keyof typeof MediaReviewStatus];
+export type MediaReviewStatus =
+  (typeof MediaReviewStatus)[keyof typeof MediaReviewStatus];
 
 export const ContentGoal = {
   awareness: "awareness",
@@ -127,14 +136,16 @@ export const DraftSetStatus = {
   approved: "approved",
   archived: "archived",
 } as const;
-export type DraftSetStatus = (typeof DraftSetStatus)[keyof typeof DraftSetStatus];
+export type DraftSetStatus =
+  (typeof DraftSetStatus)[keyof typeof DraftSetStatus];
 
 export const DraftVariantType = {
   safe: "safe",
   engagement: "engagement",
   sales: "sales",
 } as const;
-export type DraftVariantType = (typeof DraftVariantType)[keyof typeof DraftVariantType];
+export type DraftVariantType =
+  (typeof DraftVariantType)[keyof typeof DraftVariantType];
 
 export const DraftVariantStatus = {
   generated: "generated",
@@ -143,7 +154,8 @@ export const DraftVariantStatus = {
   archived: "archived",
   used: "used",
 } as const;
-export type DraftVariantStatus = (typeof DraftVariantStatus)[keyof typeof DraftVariantStatus];
+export type DraftVariantStatus =
+  (typeof DraftVariantStatus)[keyof typeof DraftVariantStatus];
 
 export const PostStatus = {
   planning: "planning",
@@ -166,13 +178,15 @@ export const PostSlotStatus = {
   completed: "completed",
   skipped: "skipped",
 } as const;
-export type PostSlotStatus = (typeof PostSlotStatus)[keyof typeof PostSlotStatus];
+export type PostSlotStatus =
+  (typeof PostSlotStatus)[keyof typeof PostSlotStatus];
 
 export const NotificationTargetRole = {
   client: "client",
   team: "team",
 } as const;
-export type NotificationTargetRole = (typeof NotificationTargetRole)[keyof typeof NotificationTargetRole];
+export type NotificationTargetRole =
+  (typeof NotificationTargetRole)[keyof typeof NotificationTargetRole];
 
 export const NotificationStatus = {
   created: "created",
@@ -181,14 +195,16 @@ export const NotificationStatus = {
   dismissed: "dismissed",
   escalated: "escalated",
 } as const;
-export type NotificationStatus = (typeof NotificationStatus)[keyof typeof NotificationStatus];
+export type NotificationStatus =
+  (typeof NotificationStatus)[keyof typeof NotificationStatus];
 
 export const WeeklyReportStatus = {
   drafted: "drafted",
   validated: "validated",
   published: "published",
 } as const;
-export type WeeklyReportStatus = (typeof WeeklyReportStatus)[keyof typeof WeeklyReportStatus];
+export type WeeklyReportStatus =
+  (typeof WeeklyReportStatus)[keyof typeof WeeklyReportStatus];
 
 export const MonthlyReportStatus = {
   drafting: "drafting",
@@ -198,7 +214,8 @@ export const MonthlyReportStatus = {
   published: "published",
   needs_revision: "needs_revision",
 } as const;
-export type MonthlyReportStatus = (typeof MonthlyReportStatus)[keyof typeof MonthlyReportStatus];
+export type MonthlyReportStatus =
+  (typeof MonthlyReportStatus)[keyof typeof MonthlyReportStatus];
 
 export const ActivityEntityType = {
   client: "client",
@@ -210,11 +227,13 @@ export const ActivityEntityType = {
   report: "report",
   notification: "notification",
 } as const;
-export type ActivityEntityType = (typeof ActivityEntityType)[keyof typeof ActivityEntityType];
+export type ActivityEntityType =
+  (typeof ActivityEntityType)[keyof typeof ActivityEntityType];
 
 export const PerformedByRole = {
   system: "system",
   client: "client",
   team: "team",
 } as const;
-export type PerformedByRole = (typeof PerformedByRole)[keyof typeof PerformedByRole];
+export type PerformedByRole =
+  (typeof PerformedByRole)[keyof typeof PerformedByRole];
