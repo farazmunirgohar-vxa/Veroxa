@@ -122,3 +122,33 @@ A future drafting stage may prepare report drafts for Veroxa team review. It mus
 ## Future real metrics stage
 
 A future metrics stage can add real account data such as profile activity, website clicks, calls, directions, review counts, post performance, and content consistency. Until real data is available, the Client Portal should use careful wording such as “work completed,” “support in progress,” and “opportunities,” not fake numbers or guarantees.
+
+## Current hardening layer
+
+The current Client Portal journey foundation is now production-shaped but still local/demo-safe. It provides:
+
+- strongly typed client-safe statuses, sources, priorities, report inclusion state, and local visibility categories
+- deterministic aggregation from local workflow, prepared-action, report, and visibility-review sources
+- stable sorting that puts client input needs first, then active work, then completed/report items
+- duplicate suppression across local sources
+- calm empty states when no records exist
+- a client-safe language denylist utility for generated Client Portal copy
+
+## Current limitations confirmed
+
+- No external APIs are called.
+- No database persistence has been added.
+- No public publishing or live execution has been added.
+- No fake revenue, fake ranking, or fake live performance metrics should appear in client-facing report foundations.
+- Local visibility progress is a client-safe summary, not an exposed audit.
+
+## Next-stage implementation notes
+
+Future stages should keep the existing helper surface and swap in persisted adapters only after approval:
+
+- future Supabase persistence should follow `CLIENT_PORTAL_PERSISTENCE_CONTRACT.md`
+- future report drafting should remain draft-only until Veroxa team review
+- future real metrics should clearly distinguish measured account data from recommendations
+- future Google Maps/profile data integration should feed reviewed client-safe visibility summaries, not expose live integration mechanics
+
+The client should continue seeing only simple progress, requests for input, weekly updates, monthly reports, and local visibility progress.

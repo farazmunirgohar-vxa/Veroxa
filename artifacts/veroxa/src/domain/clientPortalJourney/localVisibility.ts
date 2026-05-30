@@ -4,6 +4,7 @@ import {
 } from "@/domain/visibilityAudit/clientSafe";
 import type { ClientLocalVisibilityProgress } from "./types";
 import { getVisibilityAuditForClient } from "@/lib/visibilityAudit";
+import { getClientById } from "@/lib/repositories/clientRepository";
 
 function hasVisibleCategory(clientId: string, category: string): boolean {
   const audit = getVisibilityAuditForClient(clientId);
@@ -24,6 +25,7 @@ export function getClientLocalVisibilityProgress(
 ): ClientLocalVisibilityProgress {
   const audit = getVisibilityAuditForClient(clientId);
   const summary = audit ? getClientSafeVisibilitySummary(audit.result) : null;
+  const restaurantName = summary?.restaurantName ?? getClientById(clientId)?.businessName;
   const needsBusinessConfirmation = Boolean(
     audit?.result.findings.some(
       (finding) =>
@@ -34,6 +36,7 @@ export function getClientLocalVisibilityProgress(
 
   return {
     clientId,
+    restaurantName,
     googleProfileFreshness: hasVisibleCategory(clientId, "google_business_profile")
       ? "Google profile freshness is being improved."
       : "Google profile freshness is being monitored.",

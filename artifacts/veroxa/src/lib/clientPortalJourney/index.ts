@@ -10,6 +10,7 @@
 import {
   describeClientPortalStatus,
   type ClientPortalJourneyItem,
+  isClientActionNeeded,
   type ClientPortalJourneyStatus,
   type ClientPortalJourneySource,
   type ClientPortalJourneyType,
@@ -17,6 +18,7 @@ import {
 import type {
   ClientVisibleStatus,
   WorkflowItem,
+  ReportInclusionStatus,
   WorkflowItemType,
 } from "@/lib/workflow/workflowTypes";
 
@@ -74,6 +76,17 @@ function mapSource(type: WorkflowItemType): ClientPortalJourneySource {
   }
 }
 
+function mapReportInclusion(status: ReportInclusionStatus): ClientPortalJourneyItem["reportInclusionState"] {
+  switch (status) {
+    case "eligible":
+      return "eligible";
+    case "included":
+      return "included";
+    case "not_applicable":
+      return "not_applicable";
+  }
+}
+
 /** Friendly relative time label, e.g. "Today", "Yesterday", "3 days ago". */
 export function relativeDayLabel(iso: string, now: Date = new Date()): string {
   const then = new Date(iso);
@@ -98,16 +111,23 @@ export function workflowItemToJourneyItem(
   return {
     id: item.workflowItemId,
     clientId: item.clientId,
+    restaurantName: item.restaurantName,
     type: mapType(item.type),
     source: mapSource(item.type),
-    priority: item.clientVisibleStatus === "Needs your input" ? "high" : "normal",
+    priority: isClientActionNeeded(status) ? "high" : "normal",
+    reportInclusionState: mapReportInclusion(item.reportInclusionStatus),
     title: item.title,
+    description: item.clientNote || describeClientPortalStatus(status),
     summary: item.clientNote || describeClientPortalStatus(status),
     status,
+    createdAt: item.submittedAt,
     updatedAt: item.updatedAt,
+    createdLabel: relativeDayLabel(item.submittedAt),
+    submittedLabel: relativeDayLabel(item.submittedAt),
     updatedLabel: relativeDayLabel(item.updatedAt),
-    needsClientInput: item.clientVisibleStatus === "Needs your input",
+    needsClientInput: isClientActionNeeded(status),
     nextStep: item.nextClientAction,
+    actionLabel: item.type === "media_upload" ? "Upload media" : undefined,
     href: item.type === "media_upload" ? "/client/media" : "/client/requests",
   };
 }

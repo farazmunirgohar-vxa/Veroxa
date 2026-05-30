@@ -6,6 +6,8 @@ export type {
   ClientJourneyStatus,
   ClientJourneySource,
   ClientJourneyPriority,
+  ClientReportInclusionState,
+  ClientVisibilityCategory,
   ClientNeedFromClient,
   ClientProgressSummary,
   ClientNextStep,
@@ -27,10 +29,17 @@ export type {
 
 export {
   getClientPortalStatusTone,
+  getClientStatusTone,
   describeClientPortalStatus,
+  getClientStatusDescription,
   statusNeedsClientInput,
+  isClientActionNeeded,
   statusIsComplete,
+  isClientWorkComplete,
   statusIsInProgress,
+  isClientWorkInProgress,
+  isReportEligible,
+  getClientNextActionLabel,
   getClientPortalTypeLabel,
   buildClientPortalProgressSummary,
   createDefaultVisibilityProgress,
@@ -49,3 +58,9 @@ export {
 export { generateClientWeeklyUpdate } from "./weeklyUpdate";
 export { generateClientMonthlyReport } from "./monthlyReport";
 export { getClientLocalVisibilityProgress } from "./localVisibility";
+export {
+  CLIENT_SAFE_COPY_DENYLIST,
+  findClientSafeLanguageViolations,
+  assertClientSafeLanguage,
+  isClientSafeLanguage,
+} from "./languageSafety";

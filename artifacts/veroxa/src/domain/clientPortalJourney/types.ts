@@ -43,6 +43,24 @@ export type ClientJourneySource =
 /** Calm priority for ordering/nudges; never shown as risk or severity. */
 export type ClientJourneyPriority = "high" | "normal" | "low";
 
+/** Report readiness in client-safe terms. */
+export type ClientReportInclusionState =
+  | "not_ready"
+  | "eligible"
+  | "included"
+  | "not_applicable";
+
+/** Optional visibility category for local-search progress. */
+export type ClientVisibilityCategory =
+  | "google_profile_freshness"
+  | "local_visibility"
+  | "visibility_update"
+  | "review_response"
+  | "photo_freshness"
+  | "business_details_confirmation"
+  | "menu_order_link_check"
+  | "local_search_focus";
+
 /** Visual tone for a status — components map this to colour/icon. */
 export type ClientPortalStatusTone =
   | "submitted"
@@ -52,22 +70,30 @@ export type ClientPortalStatusTone =
 
 /** A single item the client can see moving through Veroxa. */
 export interface ClientJourneyItem {
+  /** Stable UI key. Do not render this value to clients. */
   id: string;
   clientId: string;
+  restaurantName?: string;
   type: ClientJourneyItemType;
   source: ClientJourneySource;
-  priority: ClientJourneyPriority;
-  title: string;
-  summary: string;
   status: ClientJourneyStatus;
-  updatedAt: string;
-  /** Friendly relative time, e.g. "Today", "2 days ago". */
+  priority: ClientJourneyPriority;
+  reportInclusionState: ClientReportInclusionState;
+  visibilityCategory?: ClientVisibilityCategory;
+  title: string;
+  /** Canonical client-safe description. */
+  description: string;
+  /** Backward-compatible alias for older cards. Keep equal to description. */
+  summary: string;
+  /** ISO if known; client-safe labels should be used in UI. */
+  createdAt?: string;
+  updatedAt?: string;
+  createdLabel: string;
+  submittedLabel?: string;
   updatedLabel: string;
-  /** True when the client owes Veroxa something to keep moving. */
   needsClientInput: boolean;
-  /** Optional client-safe next-step hint. */
   nextStep?: string;
-  /** Optional route for a page CTA. */
+  actionLabel?: string;
   href?: string;
 }
 
@@ -75,15 +101,14 @@ export interface ClientJourneyItem {
 export interface ClientNeedFromClient {
   id: string;
   clientId: string;
+  restaurantName?: string;
   type: ClientJourneyItemType;
   priority: ClientJourneyPriority;
   title: string;
   /** Why it helps, in friendly language — never blame. */
   description: string;
-  /** CTA label, e.g. "Confirm details" / "Upload media". */
-  actionLabel?: string;
-  /** In-app route for the CTA, e.g. "/client/requests". */
-  href?: string;
+  actionLabel: string;
+  href: string;
 }
 
 /** A single "do this next" nudge, e.g. for the dashboard. */
@@ -97,6 +122,7 @@ export interface ClientNextStep {
 /** Client-safe local visibility summary for dashboard/reports. */
 export interface ClientLocalVisibilityProgress {
   clientId: string;
+  restaurantName?: string;
   googleProfileFreshness: string;
   reviewResponseProgress: string;
   photoFreshnessNeed: string;
@@ -112,6 +138,7 @@ export type ClientVisibilityProgress = ClientLocalVisibilityProgress;
 /** Latest report/update summary for dashboard use. */
 export interface ClientReportSummary {
   clientId: string;
+  restaurantName?: string;
   latestWeeklyUpdateLabel: string;
   latestMonthlyReportLabel: string;
   reportStatus: ClientJourneyStatus;
@@ -122,6 +149,7 @@ export interface ClientReportSummary {
 /** The assembled, client-safe overview the dashboard / updates pages render. */
 export interface ClientProgressSummary {
   clientId: string;
+  restaurantName?: string;
   headline: string;
   workingOn: ClientJourneyItem[];
   needsFromYou: ClientNeedFromClient[];
@@ -130,10 +158,16 @@ export interface ClientProgressSummary {
   latestReport: ClientReportSummary;
   nextSteps: ClientNextStep[];
   nextFocus: string;
+  emptyState: {
+    needsFromYou: string;
+    recentProgress: string;
+    nextStep: string;
+  };
 }
 
 export interface ClientWeeklyUpdate {
   clientId: string;
+  restaurantName?: string;
   weekLabel: string;
   headline: string;
   completedWork: string[];
@@ -148,6 +182,7 @@ export interface ClientWeeklyUpdate {
 
 export interface ClientMonthlyReport {
   clientId: string;
+  restaurantName?: string;
   monthLabel: string;
   executiveSummary: string;
   visibilityProgress: ClientLocalVisibilityProgress;

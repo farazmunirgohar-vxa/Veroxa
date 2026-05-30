@@ -5,6 +5,7 @@ import {
   getClientVisibilityProgress,
 } from "./repository";
 import type { ClientMonthlyReport } from "./types";
+import { assertClientSafeLanguage } from "./languageSafety";
 
 function summaries(items: { title: string; summary: string }[], fallback: string[]): string[] {
   return items.length > 0
@@ -27,8 +28,9 @@ export function generateClientMonthlyReport(clientId: string): ClientMonthlyRepo
   );
   const reputation = journey.filter((item) => item.type === "review_response");
 
-  return {
+  const report: ClientMonthlyReport = {
     clientId,
+    restaurantName: journey.find((item) => item.restaurantName)?.restaurantName,
     monthLabel: "Current month",
     executiveSummary:
       "Veroxa worked on your online presence, local visibility, content preparation, and review support this month.",
@@ -58,4 +60,6 @@ export function generateClientMonthlyReport(clientId: string): ClientMonthlyRepo
       "Let Veroxa know which dishes or services should be emphasized next month.",
     ],
   };
+  assertClientSafeLanguage(report);
+  return report;
 }

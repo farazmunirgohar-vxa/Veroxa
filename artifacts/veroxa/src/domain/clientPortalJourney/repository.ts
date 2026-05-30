@@ -1,6 +1,10 @@
 import {
   buildClientPortalProgressSummary,
-  describeClientPortalStatus,
+  getClientStatusDescription,
+  getClientNextActionLabel,
+  isClientActionNeeded,
+  isClientWorkComplete,
+  isClientWorkInProgress,
 } from "./clientSafe";
 import { getClientLocalVisibilityProgress } from "./localVisibility";
 import type {
@@ -10,13 +14,14 @@ import type {
   ClientNeedFromClient,
   ClientNextStep,
   ClientProgressSummary,
+  ClientReportInclusionState,
   ClientReportSummary,
+  ClientVisibilityCategory,
 } from "./types";
-import {
-  getClientWorkflowItems,
-} from "@/lib/workflow/workflowRepository";
+import { getClientWorkflowItems } from "@/lib/workflow/workflowRepository";
 import type {
   ClientVisibleStatus,
+  ReportInclusionStatus,
   WorkflowItem,
   WorkflowItemType,
 } from "@/lib/workflow/workflowTypes";
@@ -29,13 +34,23 @@ import {
 import type { PreparedAction } from "@/domain/preparedActions";
 import { getVisibilityAuditForClient } from "@/lib/visibilityAudit";
 import { getClientSafeVisibilitySummary } from "@/domain/visibilityAudit/clientSafe";
+import { getClientById } from "@/lib/repositories/clientRepository";
+import { getClientReports } from "@/lib/repositories/reportRepository";
 
-function relativeDayLabel(labelOrIso: string, now: Date = new Date()): string {
-  const then = new Date(labelOrIso);
-  if (Number.isNaN(then.getTime())) return labelOrIso || "Recently";
+const DEFAULT_CLIENT_ID = "unknown-client";
+const ONE_DAY_MS = 86_400_000;
+
+function getRestaurantName(clientId: string): string | undefined {
+  return getClientById(clientId)?.businessName;
+}
+
+function relativeDayLabel(iso: string | undefined, now: Date = new Date()): string {
+  if (!iso) return "Recently";
+  const then = new Date(iso);
+  if (Number.isNaN(then.getTime())) return iso || "Recently";
   const startOfDay = (d: Date) =>
     new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-  const days = Math.round((startOfDay(now) - startOfDay(then)) / 86_400_000);
+  const days = Math.round((startOfDay(now) - startOfDay(then)) / ONE_DAY_MS);
   if (days <= 0) return "Today";
   if (days === 1) return "Yesterday";
   if (days < 7) return `${days} days ago`;
@@ -43,6 +58,16 @@ function relativeDayLabel(labelOrIso: string, now: Date = new Date()): string {
   const weeks = Math.round(days / 7);
   if (weeks < 5) return `${weeks} weeks ago`;
   return then.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
+function sortableTime(item: ClientJourneyItem): number {
+  const candidates = [item.updatedAt, item.createdAt];
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    const parsed = new Date(candidate).getTime();
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return 0;
 }
 
 function workflowStatus(status: ClientVisibleStatus): ClientJourneyItem["status"] {
@@ -97,23 +122,52 @@ function workflowSource(type: WorkflowItemType): ClientJourneyItem["source"] {
   }
 }
 
+function workflowReportState(status: ReportInclusionStatus): ClientReportInclusionState {
+  switch (status) {
+    case "eligible":
+      return "eligible";
+    case "included":
+      return "included";
+    case "not_applicable":
+      return "not_applicable";
+  }
+}
+
+function makeJourneyItem(input: Omit<ClientJourneyItem, "summary"> & { summary?: string }): ClientJourneyItem {
+  const description = input.description.trim() || getClientStatusDescription(input.status);
+  return {
+    ...input,
+    description,
+    summary: input.summary ?? description,
+    actionLabel: input.actionLabel,
+  };
+}
+
 function workflowItemToJourney(item: WorkflowItem): ClientJourneyItem {
   const status = workflowStatus(item.clientVisibleStatus);
-  return {
-    id: item.workflowItemId,
+  const type = workflowType(item.type);
+  const description = item.clientNote || getClientStatusDescription(status);
+  return makeJourneyItem({
+    id: `workflow-${item.workflowItemId}`,
     clientId: item.clientId,
-    type: workflowType(item.type),
+    restaurantName: item.restaurantName,
+    type,
     source: workflowSource(item.type),
-    priority: status === "Needs your input" ? "high" : "normal",
-    title: item.title,
-    summary: item.clientNote || describeClientPortalStatus(status),
     status,
+    priority: isClientActionNeeded(status) ? "high" : "normal",
+    reportInclusionState: workflowReportState(item.reportInclusionStatus),
+    title: item.title,
+    description,
+    createdAt: item.submittedAt,
     updatedAt: item.updatedAt,
+    createdLabel: relativeDayLabel(item.submittedAt),
+    submittedLabel: relativeDayLabel(item.submittedAt),
     updatedLabel: relativeDayLabel(item.updatedAt),
-    needsClientInput: status === "Needs your input",
+    needsClientInput: isClientActionNeeded(status),
     nextStep: item.nextClientAction,
-    href: item.type === "media_upload" ? "/client/media" : "/client/requests",
-  };
+    actionLabel: type === "media_submission" ? "Upload media" : undefined,
+    href: type === "media_submission" ? "/client/media" : "/client/requests",
+  });
 }
 
 function actionType(action: PreparedAction): ClientJourneyItemType {
@@ -131,6 +185,21 @@ function actionType(action: PreparedAction): ClientJourneyItemType {
     case "seo":
     case "internal_task":
       return "content_preparation";
+  }
+}
+
+function actionVisibilityCategory(action: PreparedAction): ClientVisibilityCategory | undefined {
+  switch (action.channel) {
+    case "google_business_profile":
+      return "google_profile_freshness";
+    case "reviews":
+      return "review_response";
+    case "website":
+      return "menu_order_link_check";
+    case "seo":
+      return "local_search_focus";
+    default:
+      return undefined;
   }
 }
 
@@ -162,98 +231,216 @@ function actionPriority(action: PreparedAction): ClientJourneyPriority {
 
 function preparedActionToJourney(action: PreparedAction): ClientJourneyItem {
   const status = actionStatus(action);
-  return {
+  const type = actionType(action);
+  const description = getClientSafeActionSummary(action);
+  return makeJourneyItem({
     id: `prepared-${action.id}`,
     clientId: action.clientId,
-    type: actionType(action),
+    restaurantName: action.restaurantName,
+    type,
     source: action.channel === "google_business_profile" ? "visibility_review" : "veroxa_work",
-    priority: actionPriority(action),
-    title: action.type === "review_reply" ? "Review response support" : action.title,
-    summary: getClientSafeActionSummary(action),
     status,
-    updatedAt: action.preparedAtLabel,
+    priority: actionPriority(action),
+    reportInclusionState: status === "Completed" ? "eligible" : "not_ready",
+    visibilityCategory: actionVisibilityCategory(action),
+    title: action.type === "review_reply" ? "Review response support" : action.title,
+    description,
+    createdLabel: action.preparedAtLabel,
     updatedLabel: action.preparedAtLabel,
-    needsClientInput: status === "Needs your input",
+    needsClientInput: isClientActionNeeded(status),
     nextStep: getClientSafeActionStatus(action),
+    actionLabel: status === "Needs your input" ? "Open request" : "View update",
     href: status === "Needs your input" ? "/client/requests" : "/client/updates",
-  };
+  });
 }
 
 function visibilityJourneyItem(clientId: string): ClientJourneyItem | null {
   const audit = getVisibilityAuditForClient(clientId);
   if (!audit) return null;
   const summary = getClientSafeVisibilitySummary(audit.result);
-  return {
+  const restaurantName = summary.restaurantName || getRestaurantName(clientId);
+  return makeJourneyItem({
     id: `visibility-${clientId}`,
     clientId,
+    restaurantName,
     type: "visibility_update",
     source: "visibility_review",
-    priority: "normal",
-    title: "Local visibility progress",
-    summary: summary.status,
     status: "In progress",
-    updatedAt: "This week",
+    priority: "normal",
+    reportInclusionState: "eligible",
+    visibilityCategory: "local_visibility",
+    title: "Local visibility progress",
+    description: summary.status,
+    createdLabel: "This week",
     updatedLabel: "This week",
     needsClientInput: false,
     nextStep: "A local visibility update is being prepared.",
+    actionLabel: "View update",
     href: "/client/updates",
-  };
+  });
 }
 
-function buildLatestReportSummary(clientId: string): ClientReportSummary {
-  const journey = getClientPortalJourney(clientId);
-  const completedCount = journey.filter(
-    (item) => item.status === "Completed" || item.status === "Included in report",
-  ).length;
+function reportStatusToJourney(status: string): ClientJourneyItem["status"] {
+  switch (status) {
+    case "published":
+    case "approved":
+      return "Included in report";
+    case "drafted":
+    case "operator_review":
+    default:
+      return "Prepared by Veroxa";
+  }
+}
+
+function reportJourneyItems(clientId: string): ClientJourneyItem[] {
+  const restaurantName = getRestaurantName(clientId);
+  const reports = getClientReports(clientId);
+  const weekly = reports.weekly.slice(0, 2).map((report) => {
+    const status = reportStatusToJourney(report.status);
+    return makeJourneyItem({
+      id: `weekly-report-${report.reportId}`,
+      clientId,
+      restaurantName,
+      type: "weekly_update",
+      source: "weekly_update",
+      status,
+      priority: "low" as const,
+      reportInclusionState: status === "Included in report" ? "included" : "eligible",
+      title: "Weekly progress update",
+      description: "Your weekly progress update summarizes recent Veroxa work and what is next.",
+      createdLabel: report.weekStart,
+      updatedLabel: report.weekEnd,
+      needsClientInput: false,
+      actionLabel: "View update",
+      href: "/client/updates",
+    });
+  });
+  const monthly = reports.monthly.slice(0, 2).map((report) => {
+    const status = reportStatusToJourney(report.status);
+    return makeJourneyItem({
+      id: `monthly-report-${report.reportId}`,
+      clientId,
+      restaurantName,
+      type: "monthly_report",
+      source: "monthly_report",
+      status,
+      priority: "low" as const,
+      reportInclusionState: status === "Included in report" ? "included" : "eligible",
+      title: "Monthly progress report",
+      description: "Your monthly report summarizes completed work, visibility progress, and next focus areas.",
+      createdLabel: report.monthKey,
+      updatedLabel: report.monthKey,
+      needsClientInput: false,
+      actionLabel: "View report",
+      href: "/client/reports",
+    });
+  });
+  return [...weekly, ...monthly];
+}
+
+function itemDedupKey(item: ClientJourneyItem): string {
+  return [item.clientId, item.type, item.source, item.title.toLowerCase(), item.status].join("|");
+}
+
+function dedupeJourneyItems(items: ClientJourneyItem[]): ClientJourneyItem[] {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    const key = itemDedupKey(item);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+const PRIORITY_RANK: Record<ClientJourneyPriority, number> = {
+  high: 0,
+  normal: 1,
+  low: 2,
+};
+
+const STATUS_RANK: Record<ClientJourneyItem["status"], number> = {
+  "Needs your input": 0,
+  "More content needed": 1,
+  Submitted: 2,
+  "In review": 3,
+  "Prepared by Veroxa": 4,
+  "In progress": 5,
+  Completed: 6,
+  "Included in report": 7,
+};
+
+function sortJourneyItems(items: ClientJourneyItem[]): ClientJourneyItem[] {
+  return [...items].sort((a, b) => {
+    const priority = PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority];
+    if (priority !== 0) return priority;
+    const status = STATUS_RANK[a.status] - STATUS_RANK[b.status];
+    if (status !== 0) return status;
+    const time = sortableTime(b) - sortableTime(a);
+    if (time !== 0) return time;
+    return a.title.localeCompare(b.title);
+  });
+}
+
+function buildLatestReportSummary(
+  clientId: string,
+  restaurantName: string | undefined,
+  journey: ClientJourneyItem[],
+): ClientReportSummary {
+  const includedCount = journey.filter((item) => item.reportInclusionState === "included").length;
+  const eligibleCount = journey.filter((item) => item.reportInclusionState === "eligible").length;
   return {
     clientId,
+    restaurantName,
     latestWeeklyUpdateLabel: "Current week",
     latestMonthlyReportLabel: "This month",
-    reportStatus: completedCount > 0 ? "Included in report" : "Prepared by Veroxa",
+    reportStatus: includedCount > 0 ? "Included in report" : "Prepared by Veroxa",
     summary:
-      completedCount > 0
-        ? `${completedCount} completed items are ready for your progress report.`
-        : "Your next progress report is being prepared.",
+      includedCount > 0
+        ? `${includedCount} completed items are included in your progress updates.`
+        : eligibleCount > 0
+          ? `${eligibleCount} progress items are ready for your next report.`
+          : "Your next progress report is being prepared.",
     href: "/client/reports",
   };
 }
 
 export function getClientPortalJourney(clientId: string): ClientJourneyItem[] {
-  const workflowItems = getClientWorkflowItems(clientId).map(workflowItemToJourney);
-  const preparedItems = getPreparedActionsForClient(clientId)
+  const normalizedClientId = clientId || DEFAULT_CLIENT_ID;
+  const workflowItems = getClientWorkflowItems(normalizedClientId).map(workflowItemToJourney);
+  const preparedItems = getPreparedActionsForClient(normalizedClientId)
     .filter(shouldShowActionToClient)
     .map(preparedActionToJourney);
-  const visibilityItem = visibilityJourneyItem(clientId);
+  const visibilityItem = visibilityJourneyItem(normalizedClientId);
+  const reports = reportJourneyItems(normalizedClientId);
 
-  return [...workflowItems, ...preparedItems, ...(visibilityItem ? [visibilityItem] : [])]
-    .sort((a, b) => {
-      const priorityOrder: Record<ClientJourneyPriority, number> = { high: 0, normal: 1, low: 2 };
-      if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
-        return priorityOrder[a.priority] - priorityOrder[b.priority];
-      }
-      return a.id.localeCompare(b.id);
-    });
+  return sortJourneyItems(
+    dedupeJourneyItems([
+      ...workflowItems,
+      ...preparedItems,
+      ...(visibilityItem ? [visibilityItem] : []),
+      ...reports,
+    ]),
+  );
 }
 
 export function getClientNeedsFromYou(clientId: string): ClientNeedFromClient[] {
   return getClientPortalJourney(clientId)
-    .filter((item) => item.needsClientInput || item.status === "Needs your input" || item.status === "More content needed")
+    .filter((item) => item.needsClientInput || isClientActionNeeded(item.status))
     .map((item) => ({
       id: item.id,
-      clientId,
+      clientId: item.clientId,
+      restaurantName: item.restaurantName,
       type: item.type,
       priority: item.priority,
       title: item.title,
       description: item.nextStep ?? "Veroxa needs a quick detail from you to keep going.",
-      actionLabel: item.type === "media_submission" ? "Upload media" : "Open request",
+      actionLabel: getClientNextActionLabel(item),
       href: item.href ?? "/client/requests",
     }));
 }
 
 export function getClientRecentProgress(clientId: string): ClientJourneyItem[] {
-  return getClientPortalJourney(clientId).filter(
-    (item) => item.status === "Completed" || item.status === "Included in report",
-  );
+  return getClientPortalJourney(clientId).filter((item) => isClientWorkComplete(item.status));
 }
 
 export function getClientVisibilityProgress(clientId: string) {
@@ -265,7 +452,7 @@ export function getClientNextSteps(clientId: string): ClientNextStep[] {
   if (needs.length > 0) {
     return needs.slice(0, 3).map((need) => ({
       id: `next-${need.id}`,
-      label: need.actionLabel ?? "Open request",
+      label: need.actionLabel,
       description: need.description,
       href: need.href,
     }));
@@ -287,12 +474,15 @@ export function getClientNextSteps(clientId: string): ClientNextStep[] {
 }
 
 export function getClientProgressSummary(clientId: string): ClientProgressSummary {
-  const journey = getClientPortalJourney(clientId);
+  const normalizedClientId = clientId || DEFAULT_CLIENT_ID;
+  const journey = getClientPortalJourney(normalizedClientId);
+  const restaurantName = getRestaurantName(normalizedClientId) ?? journey.find((item) => item.restaurantName)?.restaurantName;
   return buildClientPortalProgressSummary(journey, {
-    clientId,
-    visibilityProgress: getClientVisibilityProgress(clientId),
-    latestReport: buildLatestReportSummary(clientId),
-    nextSteps: getClientNextSteps(clientId),
+    clientId: normalizedClientId,
+    restaurantName,
+    visibilityProgress: getClientVisibilityProgress(normalizedClientId),
+    latestReport: buildLatestReportSummary(normalizedClientId, restaurantName, journey),
+    nextSteps: getClientNextSteps(normalizedClientId),
     nextFocus: "Keep sharing fresh media and important business updates; Veroxa will handle the progress updates.",
   });
 }

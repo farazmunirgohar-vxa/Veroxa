@@ -29,11 +29,13 @@ const STATUS_TONE: Record<ClientJourneyStatus, ClientPortalStatusTone> = {
   "Included in report": "complete",
 };
 
-export function getClientPortalStatusTone(
+export function getClientStatusTone(
   status: ClientJourneyStatus,
 ): ClientPortalStatusTone {
   return STATUS_TONE[status];
 }
+
+export const getClientPortalStatusTone = getClientStatusTone;
 
 const STATUS_DESCRIPTION: Record<ClientJourneyStatus, string> = {
   Submitted: "We've received this and will review it shortly.",
@@ -46,24 +48,36 @@ const STATUS_DESCRIPTION: Record<ClientJourneyStatus, string> = {
   "More content needed": "A little more content would help Veroxa finish this.",
 };
 
-export function describeClientPortalStatus(status: ClientJourneyStatus): string {
+export function getClientStatusDescription(status: ClientJourneyStatus): string {
   return STATUS_DESCRIPTION[status];
 }
 
-export function statusNeedsClientInput(status: ClientJourneyStatus): boolean {
+export const describeClientPortalStatus = getClientStatusDescription;
+
+export function isClientActionNeeded(status: ClientJourneyStatus): boolean {
   return status === "Needs your input" || status === "More content needed";
 }
 
-export function statusIsComplete(status: ClientJourneyStatus): boolean {
+export const statusNeedsClientInput = isClientActionNeeded;
+
+export function isClientWorkComplete(status: ClientJourneyStatus): boolean {
   return status === "Completed" || status === "Included in report";
 }
 
-export function statusIsInProgress(status: ClientJourneyStatus): boolean {
+export const statusIsComplete = isClientWorkComplete;
+
+export function isClientWorkInProgress(status: ClientJourneyStatus): boolean {
   return (
     status === "In review" ||
     status === "Prepared by Veroxa" ||
     status === "In progress"
   );
+}
+
+export const statusIsInProgress = isClientWorkInProgress;
+
+export function isReportEligible(status: ClientJourneyStatus): boolean {
+  return status === "Completed" || status === "Included in report";
 }
 
 const TYPE_LABEL: Record<ClientJourneyItemType, string> = {
@@ -83,11 +97,24 @@ export function getClientPortalTypeLabel(type: ClientJourneyItemType): string {
   return TYPE_LABEL[type];
 }
 
+export function getClientNextActionLabel(item: ClientJourneyItem): string {
+  if (item.actionLabel) return item.actionLabel;
+  if (item.type === "media_submission" || item.status === "More content needed") {
+    return "Upload media";
+  }
+  if (item.status === "Needs your input") return "Open request";
+  if (item.type === "weekly_update") return "View update";
+  if (item.type === "monthly_report") return "View report";
+  return "View details";
+}
+
 export function createDefaultVisibilityProgress(
   clientId: string,
+  restaurantName?: string,
 ): ClientLocalVisibilityProgress {
   return {
     clientId,
+    restaurantName,
     googleProfileFreshness: "Google profile freshness is being reviewed.",
     reviewResponseProgress: "Review response support is in progress.",
     photoFreshnessNeed: "Fresh food photos will help next week's content.",
@@ -98,9 +125,13 @@ export function createDefaultVisibilityProgress(
   };
 }
 
-export function createDefaultReportSummary(clientId: string): ClientReportSummary {
+export function createDefaultReportSummary(
+  clientId: string,
+  restaurantName?: string,
+): ClientReportSummary {
   return {
     clientId,
+    restaurantName,
     latestWeeklyUpdateLabel: "Current week",
     latestMonthlyReportLabel: "This month",
     reportStatus: "Prepared by Veroxa",
@@ -113,11 +144,12 @@ function toNeedFromClient(item: ClientJourneyItem): ClientNeedFromClient {
   return {
     id: item.id,
     clientId: item.clientId,
+    restaurantName: item.restaurantName,
     type: item.type,
     priority: item.priority,
     title: item.title,
-    description: item.nextStep ?? describeClientPortalStatus(item.status),
-    actionLabel: item.type === "media_submission" ? "Upload media" : "Open request",
+    description: item.nextStep ?? getClientStatusDescription(item.status),
+    actionLabel: getClientNextActionLabel(item),
     href: item.href ?? (item.type === "media_submission" ? "/client/media" : "/client/requests"),
   };
 }
@@ -126,6 +158,7 @@ export function buildClientPortalProgressSummary(
   items: ClientJourneyItem[],
   opts?: {
     clientId?: string;
+    restaurantName?: string;
     headline?: string;
     nextFocus?: string;
     visibilityProgress?: ClientLocalVisibilityProgress;
@@ -133,13 +166,14 @@ export function buildClientPortalProgressSummary(
     nextSteps?: ClientNextStep[];
   },
 ): ClientProgressSummary {
-  const clientId = opts?.clientId ?? items[0]?.clientId ?? "demo-a";
+  const clientId = opts?.clientId ?? items[0]?.clientId ?? "unknown-client";
+  const restaurantName = opts?.restaurantName ?? items.find((item) => item.restaurantName)?.restaurantName;
   const needsFromYou: ClientNeedFromClient[] = items
-    .filter((i) => i.needsClientInput || statusNeedsClientInput(i.status))
+    .filter((i) => i.needsClientInput || isClientActionNeeded(i.status))
     .map(toNeedFromClient);
 
-  const workingOn = items.filter((i) => statusIsInProgress(i.status));
-  const recentProgress = items.filter((i) => statusIsComplete(i.status));
+  const workingOn = items.filter((i) => isClientWorkInProgress(i.status));
+  const recentProgress = items.filter((i) => isClientWorkComplete(i.status));
   const nextSteps = opts?.nextSteps ?? [
     {
       id: "upload-fresh-media",
@@ -157,15 +191,21 @@ export function buildClientPortalProgressSummary(
 
   return {
     clientId,
+    restaurantName,
     headline: opts?.headline ?? "Veroxa is handling your online presence.",
     workingOn,
     needsFromYou,
     recentProgress,
-    visibilityProgress: opts?.visibilityProgress ?? createDefaultVisibilityProgress(clientId),
-    latestReport: opts?.latestReport ?? createDefaultReportSummary(clientId),
+    visibilityProgress: opts?.visibilityProgress ?? createDefaultVisibilityProgress(clientId, restaurantName),
+    latestReport: opts?.latestReport ?? createDefaultReportSummary(clientId, restaurantName),
     nextSteps,
     nextFocus:
       opts?.nextFocus ??
       "Upload fresh media when you have it — it helps power next week's plan.",
+    emptyState: {
+      needsFromYou: "Nothing needed from you right now.",
+      recentProgress: "Veroxa will show completed work here as it moves forward.",
+      nextStep: "Upload fresh media when available.",
+    },
   };
 }

@@ -5,6 +5,7 @@ import {
   getClientVisibilityProgress,
 } from "./repository";
 import type { ClientWeeklyUpdate } from "./types";
+import { assertClientSafeLanguage } from "./languageSafety";
 
 function takeOrFallback(items: string[], fallback: string[]): string[] {
   return items.length > 0 ? items.slice(0, 4) : fallback;
@@ -31,8 +32,9 @@ export function generateClientWeeklyUpdate(clientId: string): ClientWeeklyUpdate
   );
   const reviewProgress = journey.filter((item) => item.type === "review_response");
 
-  return {
+  const update: ClientWeeklyUpdate = {
     clientId,
+    restaurantName: journey.find((item) => item.restaurantName)?.restaurantName,
     weekLabel: "Current week",
     headline: "Veroxa is handling this week's online presence work.",
     completedWork: takeOrFallback(
@@ -70,4 +72,6 @@ export function generateClientWeeklyUpdate(clientId: string): ClientWeeklyUpdate
         ? "Veroxa is moving the work forward and needs one quick detail from you."
         : "Veroxa is moving the work forward; nothing is needed from you right now.",
   };
+  assertClientSafeLanguage(update);
+  return update;
 }
