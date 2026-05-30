@@ -66,12 +66,7 @@ export type ReportStatus =
   | "blocked";
 
 // ── Service plan (string union — extend as plans evolve) ─────────
-export type ClientServicePlan =
-  | "Google Optimization"
-  | "Complete Online Presence"
-  | "Complete Online Presence + Ads Add-on"
-  | "Ads Management Only"
-  | "Unknown";
+export type ClientServicePlan = "Essential" | "Growth" | "Premium" | "Unknown";
 
 // ── Client account ───────────────────────────────────────────────
 export interface ClientAccount {

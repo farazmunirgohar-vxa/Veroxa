@@ -112,7 +112,7 @@ export const demoRestaurantUploadKeys: DemoRestaurantUploadKey[] = [
       "other",
     ],
     employeeAccessNote:
-      "Approved managers + chefs only. Pair with Complete Online Presence + Ads Add-on weekly content needs.",
+      "Approved managers + chefs only. Pair with Premium weekly content needs.",
     demoOnly: true,
   },
   {

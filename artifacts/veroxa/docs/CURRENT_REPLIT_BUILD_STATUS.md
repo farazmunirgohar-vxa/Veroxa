@@ -1,18 +1,26 @@
+> **2026-05-30 — Current public Pricing page is the pricing truth**
+>
+> The surfaced public Pricing page now reflects the current locked public
+> pricing truth:
+>
+> - Essential: **$497/mo**
+> - Growth: **$697/mo**
+> - Premium: **$997/mo**
+>
+> Older Complete Online Presence, founding-client, $977/$488/$477 pricing
+> sections below are historical/deprecated only and are not current public
+> pricing. Do not restore them unless the user explicitly requests it.
+
 # Current Replit Build Status
 
-> **2026-05-29 — Pricing Correction + Active Route Reduction**
+> **2026-05-29 — Historical/deprecated pricing correction + active route reduction**
 >
-> - Pricing source of truth (`veroxaPricing.ts`) updated to the owner-locked
->   final model: Complete Online Presence $977/mo standard ($488/mo first
->   year), Ads Management add-on +$477/mo (no founding discount), combined
->   $1,454/mo standard / $965/mo first year.
-> - Public Pricing page now shows only Complete Online Presence and the Ads
->   Management add-on. Google Optimization and Ads-Management-Only are no
->   longer shown or discounted on the page.
+> - Historical pricing note only: this section described a previous Complete Online Presence / founding-client model. It is now deprecated and not current public pricing.
+> - Current correction: the public Pricing page now shows Essential, Growth, and Premium at $497/$697/$997. Do not restore the older Complete Online Presence + Ads add-on page model.
 > - `google_optimization` and `ads_standalone` are intentionally retained in
 >   `veroxaPricing.ts` (NOT deleted) because the internal Free Audit
->   recommendation engine and lead-scoring still reference them. They are
->   excluded from the public Pricing page only. Free Audit behavior unchanged.
+>   recommendation engine and lead-scoring may still reference legacy IDs. They are
+>   excluded from current public pricing display.
 > - `App.tsx` reduced to a focused active route map:
 >   Public (`/`, `/services`, `/pricing`, `/free-audit`, `/login`),
 >   Demo preview (`/demo`, `/guided-demo`, `/upload`, `/demo/client/dashboard`),
@@ -53,7 +61,7 @@
 >   walkthrough — no login required, clearly labeled "Demo Preview / sample
 >   data only".
 > - Temporary login (`faraz@client.com / farazclient`, `faraz@team.com /
->   farazteam`) now routes to the active Veroxa OS review routes:
+farazteam`) now routes to the active Veroxa OS review routes:
 >   `/client/dashboard` and `/team/dashboard`.
 > - All `/client/*` and `/team/*` routes are wired to the real page components.
 >   `/demo/client/*` and `/demo/team/*` remain as compatibility aliases.
@@ -287,7 +295,7 @@
 > - Primary cards (always visible): header, "What Veroxa would fix first," top 3 opportunities,
 >   recommended package, compact 30-day phase strip, walkthrough form, disclaimer.
 > - Collapsed sections (native `<details>`): full signal breakdown (6 grouped section groups
->   + confidence strip), what Veroxa can/cannot do + expected timeline.
+>   - confidence strip), what Veroxa can/cannot do + expected timeline.
 > - Removed: customer-flow explanation, category breakdown, where-veroxa-fits, top growth
 >   opportunities, adaptive learning, self-improving system, 30-day bullet details.
 > - AUDIT_DISCLAIMER shortened to one concise sentence.
@@ -324,6 +332,7 @@
 > **2026-05-28 — T4–T7: Growth report rewrite, live signals, confidence strip, lead badges, 3-phase plan**
 >
 > **T4 — Free-audit page wiring**
+>
 > - Hero description updated: removed "Find your restaurant in the demo search" and the stale
 >   "This audit does not scrape or verify live platform data yet" italic note. Replaced with
 >   accurate live/preview language ("When live lookup is configured, Veroxa searches Google
@@ -337,6 +346,7 @@
 >   link-provided / not-confirmed status in emerald or muted colour.
 >
 > **T5 — Lenient language sweep + live signals in scoring**
+>
 > - `generateGrowthReportSections` in `auditScoring.ts` fully rewritten (12 sections):
 >   - New live-signal variables derived from `restaurantSource`, `websiteFound`, `menuLinkFound`,
 >     `orderLinkFound`, `reservationLinkFound`, `contactPathFound`, `discoveredSocialLinks`,
@@ -354,6 +364,7 @@
 >   - Week 4: Ongoing — Weekly System
 >
 > **T6 — Lead handoff improvements (team-audit-leads)**
+>
 > - Lead list card now shows a badge strip when `selectedRestaurant` data is present:
 >   - Source badge: Live (emerald) for `google_places`, Preview (muted) for `fixture`, Manual (sky).
 >   - Found-status badges: Website found, Menu/order found, Social links found — each shown only
@@ -385,7 +396,7 @@
 >   helper. Framework is extensible — Austin, Houston, Dallas, LA, Chicago,
 >   NYC, Miami pre-seeded.
 > - UI diagnostics now show three counts: `Strategies tried: X · Candidates
->   checked: Y · Displayed: Z`. No API key or raw Google error bodies.
+checked: Y · Displayed: Z`. No API key or raw Google error bodies.
 > - Lower-confidence candidates remain visible: "Likely live match" /
 >   "Possible live match" / "Low-confidence live match" badges.
 > - Cuisine remains not required. No scraping, no API key exposure, no
@@ -549,8 +560,8 @@
 >   and is never exposed to the browser. Route: `POST /api/audit/ai-draft`
 >   (`artifacts/api-server/src/routes/auditAi.ts`).
 > - Response shape: `{ mode: "ai" | "not_configured" | "error", aiDraft: {
->   executiveSummary, topOpportunities[], veroxaFixPlan,
->   manualReviewNeeded[], ownerFriendlyClosing } | null, message? }`.
+executiveSummary, topOpportunities[], veroxaFixPlan,
+manualReviewNeeded[], ownerFriendlyClosing } | null, message? }`.
 >   Missing key → `not_configured` with copy: "AI summary is not
 >   configured yet. The rule-based report is still available." Raw OpenAI
 >   errors are never forwarded to the client.

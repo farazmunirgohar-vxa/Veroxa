@@ -52,10 +52,9 @@ export interface DemoRestaurantProfile {
   primaryContact:   { name: string; role: string; email: string };
   secondaryContact: { name: string; role: string; email: string };
   servicePlan:
-    | "Google Optimization"
-    | "Complete Online Presence"
-    | "Complete Online Presence + Ads Add-on"
-    | "Ads Management Only";
+    | "Essential"
+    | "Growth"
+    | "Premium";
   accountStatus: "Active" | "Onboarding" | "Paused" | "At Risk";
 }
 
@@ -69,7 +68,7 @@ export const demoRestaurantProfiles: DemoRestaurantProfile[] = [
     hours: "Mon–Sun · 11:00 AM – 11:00 PM",
     primaryContact:   { name: "Alex Owner-A",   role: "Owner",          email: "owner-a@demo.veroxa.test"   },
     secondaryContact: { name: "Jordan Manager-A", role: "Marketing lead", email: "manager-a@demo.veroxa.test" },
-    servicePlan: "Complete Online Presence",
+    servicePlan: "Growth",
     accountStatus: "Active",
   },
   {
@@ -81,7 +80,7 @@ export const demoRestaurantProfiles: DemoRestaurantProfile[] = [
     hours: "Tue–Sun · 12:00 PM – 10:00 PM",
     primaryContact:   { name: "Marco Owner-B",  role: "Owner",           email: "owner-b@demo.veroxa.test"   },
     secondaryContact: { name: "Priya Manager-B", role: "General manager", email: "manager-b@demo.veroxa.test" },
-    servicePlan: "Complete Online Presence",
+    servicePlan: "Growth",
     accountStatus: "Active",
   },
   {
@@ -93,7 +92,7 @@ export const demoRestaurantProfiles: DemoRestaurantProfile[] = [
     hours: "Mon–Sat · 5:00 PM – 12:00 AM",
     primaryContact:   { name: "Sofia Owner-C",  role: "Owner / Chef", email: "owner-c@demo.veroxa.test"   },
     secondaryContact: { name: "Karim Manager-C", role: "Operations",   email: "manager-c@demo.veroxa.test" },
-    servicePlan: "Complete Online Presence + Ads Add-on",
+    servicePlan: "Premium",
     accountStatus: "Active",
   },
   {
@@ -105,7 +104,7 @@ export const demoRestaurantProfiles: DemoRestaurantProfile[] = [
     hours: "Mon–Sun · 7:00 AM – 9:00 PM",
     primaryContact:   { name: "Yusuf Owner-D",  role: "Owner",           email: "owner-d@demo.veroxa.test"   },
     secondaryContact: { name: "Hana Manager-D", role: "Shift supervisor", email: "manager-d@demo.veroxa.test" },
-    servicePlan: "Google Optimization",
+    servicePlan: "Essential",
     accountStatus: "At Risk",
   },
 ];
@@ -309,10 +308,9 @@ export interface DemoClientLifecycle {
   clientId:        string;
   lifecycleStage:  LifecycleStage;
   servicePlan:
-    | "Google Optimization"
-    | "Complete Online Presence"
-    | "Complete Online Presence + Ads Add-on"
-    | "Ads Management Only";
+    | "Essential"
+    | "Growth"
+    | "Premium";
   startDate:       string;
   contractMonths:  number;
   monthlyFee:      number;
@@ -324,10 +322,10 @@ export interface DemoClientLifecycle {
 }
 
 export const demoClientLifecycle: DemoClientLifecycle[] = [
-  { clientId: "demo-a", lifecycleStage: "Active",          servicePlan: "Complete Online Presence", startDate: "Feb 2026", contractMonths: 0, monthlyFee:  977, healthScore: 92, mediaStatus: "Healthy",  reportingStatus: "On Schedule", nextAction: "Approve 3 caption variants for Friday post.",     riskLevel: "Low"      },
-  { clientId: "demo-b", lifecycleStage: "Needs Attention", servicePlan: "Complete Online Presence", startDate: "Mar 2026", contractMonths: 0, monthlyFee:  977, healthScore: 64, mediaStatus: "Low",      reportingStatus: "Delayed",     nextAction: "Rewrite flagged caption + chase weekly report.",   riskLevel: "Medium"   },
-  { clientId: "demo-c", lifecycleStage: "Active",          servicePlan: "Complete Online Presence + Ads Add-on", startDate: "Dec 2025", contractMonths: 0, monthlyFee: 1474, healthScore: 95, mediaStatus: "Healthy",  reportingStatus: "On Schedule", nextAction: "Final sign-off on Sunday's olive-oil reel.",       riskLevel: "Low"      },
-  { clientId: "demo-d", lifecycleStage: "At Risk",         servicePlan: "Google Optimization",                   startDate: "Apr 2026", contractMonths: 0, monthlyFee:  477, healthScore: 38, mediaStatus: "Critical", reportingStatus: "Overdue",     nextAction: "Rescue plan call + reshoot brief for storefront.", riskLevel: "Critical" },
+  { clientId: "demo-a", lifecycleStage: "Active",          servicePlan: "Growth", startDate: "Feb 2026", contractMonths: 0, monthlyFee:  697, healthScore: 92, mediaStatus: "Healthy",  reportingStatus: "On Schedule", nextAction: "Approve 3 caption variants for Friday post.",     riskLevel: "Low"      },
+  { clientId: "demo-b", lifecycleStage: "Needs Attention", servicePlan: "Growth", startDate: "Mar 2026", contractMonths: 0, monthlyFee:  697, healthScore: 64, mediaStatus: "Low",      reportingStatus: "Delayed",     nextAction: "Rewrite flagged caption + chase weekly report.",   riskLevel: "Medium"   },
+  { clientId: "demo-c", lifecycleStage: "Active",          servicePlan: "Premium", startDate: "Dec 2025", contractMonths: 0, monthlyFee:  997, healthScore: 95, mediaStatus: "Healthy",  reportingStatus: "On Schedule", nextAction: "Final sign-off on Sunday's olive-oil reel.",       riskLevel: "Low"      },
+  { clientId: "demo-d", lifecycleStage: "At Risk",         servicePlan: "Essential",                   startDate: "Apr 2026", contractMonths: 0, monthlyFee:  497, healthScore: 38, mediaStatus: "Critical", reportingStatus: "Overdue",     nextAction: "Rescue plan call + reshoot brief for storefront.", riskLevel: "Critical" },
 ];
 
 export const lifecycleStageColor: Record<LifecycleStage, string> = {

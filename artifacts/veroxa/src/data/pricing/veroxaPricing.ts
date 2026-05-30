@@ -1,183 +1,261 @@
-// veroxaPricing.ts — single source of truth for Veroxa pricing.
+// veroxaPricing.ts — internal source of truth for Veroxa pricing.
 //
-// All UI copy, demo fixtures, and engine logic that surface plan prices
-// must read from this file.
-//
-// IMPORTANT (owner-locked final pricing — 2026-05-29):
+// IMPORTANT (owner-locked current pricing — 2026-05-30):
 //   * Pricing is owner-locked. Do NOT change any price without explicit
 //     owner approval.
+//   * Current public model: Essential ($497/mo), Growth ($697/mo),
+//     Premium ($997/mo).
+//   * No contract. Cancel anytime.
+//   * Google Optimization and Facebook + Instagram picture posting are
+//     included in all current public plans.
+//   * Maximum 1 post per day. Posting depends on usable client-provided media.
+//   * Reels / short-form support starts at Growth.
+//   * Ads management starts at Premium.
+//   * Ad spend is ALWAYS separate and paid by the restaurant directly to the
+//     ad platform. No plan includes ad spend.
+//   * No payment, billing, or checkout integration exists. Do not add Stripe,
+//     PayPal, or any checkout logic.
 //
-//   * PUBLICLY OFFERED MODEL (shown on the pricing page):
-//
-//       Complete Online Presence — the core package.
-//         Standard:            $977/mo
-//         Founding first year: $488/mo (50% off, founding clients only)
-//
-//       Ads Management — add-on to Complete Online Presence ONLY.
-//         $477/mo — flat rate, no founding discount on ads.
-//
-//       Complete Online Presence + Ads (combined totals):
-//         Standard combined:         $1,454/mo (before ad spend)
-//         Founding first year combo: $965/mo   (before ad spend)
-//
-//   * There is NO separate "Bundle" plan — the combined totals above are
-//     just the two line items added together for convenience.
-//   * google_optimization and ads_standalone are RETIRED/HIDDEN from public
-//     sale. They are retained here ONLY because the internal Free Audit
-//     recommendation engine and lead-scoring still reference them. They
-//     MUST NOT be surfaced on the public pricing page or any public copy.
-//   * Ad spend is ALWAYS separate and paid by the restaurant directly
-//     to the ad platform. No plan includes ad spend.
-//   * No payment, billing, or checkout integration exists. Do not add
-//     Stripe, PayPal, or any checkout logic.
+// Legacy package IDs remain below only as internal Free Audit / lead-scoring
+// compatibility aliases. They are retired, internal-only, and not current
+// public pricing.
 
 // ── Plan IDs and labels ──────────────────────────────────────────────
 
 export type VeroxaPlanId =
-  | "google_optimization"   // RETIRED — internal Free Audit / lead-scoring only
-  | "complete_online_presence"
-  | "ads_addon"
-  | "ads_standalone";       // HIDDEN — internal reference only (publicVisible: false)
+  | "essential"
+  | "growth"
+  | "premium"
+  | "google_optimization" // RETIRED — internal Free Audit / lead-scoring alias for Essential
+  | "complete_online_presence" // RETIRED — internal Free Audit / lead-scoring alias for Growth
+  | "complete_plus_ads" // RETIRED — internal Free Audit / lead-scoring alias for Premium
+  | "ads_management_only"; // RETIRED — internal-only alias for Premium-fit ad leads
 
 export type VeroxaPlanLabel =
+  | "Essential"
+  | "Growth"
+  | "Premium"
   | "Google Optimization"
   | "Complete Online Presence"
-  | "Ads Add-on"
+  | "Complete Online Presence + Ads"
   | "Ads Management Only";
 
 export interface VeroxaPlan {
   id: VeroxaPlanId;
   label: VeroxaPlanLabel;
-  /**
-   * Standard monthly price in USD dollars (not cents).
-   * Used by internal Free Audit and lead-scoring code — do NOT remove.
-   */
+  /** Current monthly price in USD dollars (not cents). */
   priceMonthly: number;
-  /**
-   * Founding first-year monthly price in USD dollars.
-   * Founding offer is active — 50% off Complete Online Presence for the
-   * first year. No founding discount on Ads Management.
-   */
-  priceMonthlyFounding: number;
-  /** Display string for the standard monthly price (e.g. "$977"). */
+  /** Display string for the current monthly price (e.g. "$497"). */
   displayPrice: string;
-  /** Display string for the founding first-year price (e.g. "$488"). */
-  displayPriceFounding: string;
   /** One-line positioning copy. */
   tagline: string;
+  /** Feature list / inclusion notes for internal and public-safe surfaces. */
+  includes: string[];
   /** Always false — ad spend is separate, never included. */
   includesAdSpend: false;
-  /** Whether this plan is shown on the public pricing page. */
+  /** Whether this plan is shown on public pricing surfaces. */
   publicVisible: boolean;
+  /** True for compatibility aliases that are not current public pricing. */
+  internalOnly?: boolean;
+  /** Compatibility note for retired/internal IDs. */
+  legacyNote?: string;
   /** "active" = currently sold; "retired" = internal/legacy only. */
   status: "active" | "retired";
 }
 
+const essentialIncludes = [
+  "Google Optimization",
+  "Facebook + Instagram picture posting",
+  "Basic captions",
+  "Weekly updates",
+  "Monthly performance snapshot",
+  "Client Portal access",
+  "Maximum 1 post per day, depending on usable client-provided media",
+];
+
+const growthIncludes = [
+  "Everything in Essential",
+  "Reels / short-form content support",
+  "TikTok posting/management if applicable",
+  "Enhanced monthly report",
+];
+
+const premiumIncludes = [
+  "Everything in Growth",
+  "Facebook/Instagram ads management",
+  "Google Ads management",
+  "Campaign setup and monitoring",
+  "Monthly ad performance report",
+  "Ad spend is separate and paid directly by the restaurant",
+];
+
 export const VEROXA_PLANS: Record<VeroxaPlanId, VeroxaPlan> = {
-  // RETIRED — kept for internal Free Audit / lead-scoring compatibility only.
+  essential: {
+    id: "essential",
+    label: "Essential",
+    priceMonthly: 497,
+    displayPrice: "$497",
+    tagline:
+      "Core Google Optimization plus Facebook and Instagram picture posting for steady restaurant visibility.",
+    includes: essentialIncludes,
+    includesAdSpend: false,
+    publicVisible: true,
+    status: "active",
+  },
+
+  growth: {
+    id: "growth",
+    label: "Growth",
+    priceMonthly: 697,
+    displayPrice: "$697",
+    tagline:
+      "Essential visibility plus short-form content support and an enhanced monthly report.",
+    includes: growthIncludes,
+    includesAdSpend: false,
+    publicVisible: true,
+    status: "active",
+  },
+
+  premium: {
+    id: "premium",
+    label: "Premium",
+    priceMonthly: 997,
+    displayPrice: "$997",
+    tagline:
+      "Growth coverage plus Facebook/Instagram and Google Ads management. Ad spend is separate.",
+    includes: premiumIncludes,
+    includesAdSpend: false,
+    publicVisible: true,
+    status: "active",
+  },
+
   google_optimization: {
     id: "google_optimization",
     label: "Google Optimization",
-    priceMonthly: 477,
-    priceMonthlyFounding: 239,
-    displayPrice: "$477",
-    displayPriceFounding: "$239",
+    priceMonthly: 497,
+    displayPrice: "$497",
     tagline:
-      "Google Search SEO, Google Maps SEO, Google Business Profile, and reviews support.",
+      "Retired internal alias. Current public recommendation maps this fit to Essential.",
+    includes: essentialIncludes,
     includesAdSpend: false,
     publicVisible: false,
+    internalOnly: true,
+    legacyNote:
+      "Retired compatibility alias only; not current public pricing. Use Essential for public display.",
     status: "retired",
   },
 
   complete_online_presence: {
     id: "complete_online_presence",
     label: "Complete Online Presence",
-    priceMonthly: 977,
-    priceMonthlyFounding: 488,
-    displayPrice: "$977",
-    displayPriceFounding: "$488",
+    priceMonthly: 697,
+    displayPrice: "$697",
     tagline:
-      "Facebook, Instagram, TikTok, Google Optimization, content planning, posting support, weekly updates, monthly reports.",
-    includesAdSpend: false,
-    publicVisible: true,
-    status: "active",
-  },
-
-  ads_addon: {
-    id: "ads_addon",
-    label: "Ads Add-on",
-    priceMonthly: 477,
-    priceMonthlyFounding: 477, // No founding discount on ads.
-    displayPrice: "+$477",
-    displayPriceFounding: "+$477",
-    tagline:
-      "Add advertising management to Complete Online Presence. Ad spend is separate.",
-    includesAdSpend: false,
-    publicVisible: true,
-    status: "active",
-  },
-
-  // HIDDEN (publicVisible: false) — internal reference only.
-  ads_standalone: {
-    id: "ads_standalone",
-    label: "Ads Management Only",
-    priceMonthly: 2000,
-    priceMonthlyFounding: 2000,
-    displayPrice: "$2,000",
-    displayPriceFounding: "$2,000",
-    tagline:
-      "Standalone advertising management without the Complete Online Presence system. Ad spend is separate.",
+      "Retired internal alias. Current public recommendation maps this fit to Growth.",
+    includes: growthIncludes,
     includesAdSpend: false,
     publicVisible: false,
-    status: "active",
+    internalOnly: true,
+    legacyNote:
+      "Retired compatibility alias only; not current public pricing. Use Growth for public display.",
+    status: "retired",
+  },
+
+  complete_plus_ads: {
+    id: "complete_plus_ads",
+    label: "Complete Online Presence + Ads",
+    priceMonthly: 997,
+    displayPrice: "$997",
+    tagline:
+      "Retired internal alias. Current public recommendation maps this fit to Premium.",
+    includes: premiumIncludes,
+    includesAdSpend: false,
+    publicVisible: false,
+    internalOnly: true,
+    legacyNote:
+      "Retired compatibility alias only; not current public pricing. Use Premium for public display.",
+    status: "retired",
+  },
+
+  ads_management_only: {
+    id: "ads_management_only",
+    label: "Ads Management Only",
+    priceMonthly: 997,
+    displayPrice: "$997",
+    tagline:
+      "Retired internal-only alias. Current public recommendation maps this fit to Premium.",
+    includes: premiumIncludes,
+    includesAdSpend: false,
+    publicVisible: false,
+    internalOnly: true,
+    legacyNote:
+      "Retired compatibility alias only; not current public pricing. Use Premium for public display.",
+    status: "retired",
   },
 };
 
-// ── Combined totals ──────────────────────────────────────────────────
+// ── Current public pricing helpers ───────────────────────────────────
 
-/** Standard combined monthly total: COP + Ads = $977 + $477 = $1,454. */
-export const COMPLETE_PLUS_ADS_TOTAL_MONTHLY =
-  VEROXA_PLANS.complete_online_presence.priceMonthly +
-  VEROXA_PLANS.ads_addon.priceMonthly; // 1454
+export const CURRENT_PUBLIC_PLAN_IDS = [
+  "essential",
+  "growth",
+  "premium",
+] as const;
 
-export const COMPLETE_PLUS_ADS_TOTAL_DISPLAY = "$1,454";
+export type CurrentPublicPlanId = (typeof CURRENT_PUBLIC_PLAN_IDS)[number];
 
-/** Founding first-year combined total: $488 + $477 = $965. */
-export const COMPLETE_PLUS_ADS_FOUNDING_TOTAL_MONTHLY =
-  VEROXA_PLANS.complete_online_presence.priceMonthlyFounding +
-  VEROXA_PLANS.ads_addon.priceMonthlyFounding; // 965
+export const CURRENT_PUBLIC_PLANS = CURRENT_PUBLIC_PLAN_IDS.map(
+  (id) => VEROXA_PLANS[id],
+);
 
-export const COMPLETE_PLUS_ADS_FOUNDING_TOTAL_DISPLAY = "$965";
+export const GLOBAL_PRICING_RULES = [
+  "No contract",
+  "Cancel anytime",
+  "Google Optimization included in all plans",
+  "Facebook + Instagram included in all plans",
+  "Maximum 1 post per day",
+  "Posting depends on usable client-provided media",
+  "Reels / short-form available from Growth",
+  "Ads management available from Premium",
+  "Ad spend is separate and paid directly by the restaurant",
+];
 
-// ── Disclaimers ──────────────────────────────────────────────────────
+export const PRICING_NO_CONTRACT_DISCLAIMER = "No contract. Cancel anytime.";
 
 export const AD_SPEND_DISCLAIMER =
-  "Advertising budget is separate and paid by the restaurant directly to the ad platform.";
+  "Ad spend is separate and paid directly by the restaurant. Veroxa plan pricing does not include ad spend.";
 
-export const FOUNDING_CLIENT_OFFER_DISCLAIMER =
-  "Founding Client Offer: 50% off Complete Online Presence for the first year. Available only to founding restaurant partners. After the first year, standard pricing applies. No founding discount on Ads Management. Ad spend is always separate.";
+export const MEDIA_DEPENDENCY_DISCLAIMER =
+  "Posting depends on usable client-provided media, with a maximum of 1 post per day.";
 
-/**
- * Setup support disclaimer for Complete Online Presence.
- *
- * If a restaurant does not already have a needed website, Facebook page,
- * Instagram account, TikTok account, or Google Business Profile, Veroxa
- * will help create/setup the required basic account/page/presence as
- * part of onboarding. This is NOT a custom website development package.
- */
-export const COMPLETE_PRESENCE_SETUP_DISCLAIMER =
-  "If the restaurant does not already have a needed website, Facebook page, Instagram account, TikTok account, or Google Business Profile, Veroxa will help create/setup the required basic account/page/presence during onboarding. This is not a custom website development package.";
+export function getCurrentPublicPlanForLegacyPackage(
+  legacyPackageId:
+    | "google_optimization"
+    | "complete_online_presence"
+    | "complete_plus_ads"
+    | "ads_management_only",
+): VeroxaPlan {
+  switch (legacyPackageId) {
+    case "google_optimization":
+      return VEROXA_PLANS.essential;
+    case "complete_online_presence":
+      return VEROXA_PLANS.growth;
+    case "complete_plus_ads":
+    case "ads_management_only":
+      return VEROXA_PLANS.premium;
+  }
+}
 
-export function getPlanPrice(label: VeroxaPlanLabel): number {
+export function getPlanMonthlyPrice(label: VeroxaPlanLabel): number {
   return (
     Object.values(VEROXA_PLANS).find((p) => p.label === label)?.priceMonthly ??
     0
   );
 }
 
-export function getPlanFoundingPrice(label: VeroxaPlanLabel): number {
+export function getPlanDisplayPrice(label: VeroxaPlanLabel): string {
   return (
-    Object.values(VEROXA_PLANS).find((p) => p.label === label)
-      ?.priceMonthlyFounding ?? 0
+    Object.values(VEROXA_PLANS).find((p) => p.label === label)?.displayPrice ??
+    "$0"
   );
 }

@@ -56,7 +56,7 @@ export interface LeadSourceQualityScore {
   leadQuality: number;              // 20 — average internal lead score
   walkthroughConversion: number;    // 15 — walkthrough requests / total leads
   closeConversion: number;          // 15 — won / (won + lost) ratio
-  packageValue: number;             // 10 — average projected founding MRR per lead
+  packageValue: number;             // 10 — average projected current-plan MRR per lead
   executionFit: number;             // 10 — estimated from lead quality + source category
   yieldPotential: number;           // 10 — estimated from internal lead score + package
   retentionReferralPotential: number; // 5 — conservative estimate from source category

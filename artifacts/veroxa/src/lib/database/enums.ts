@@ -18,13 +18,9 @@ export const PlanType = {
 } as const;
 export type PlanType = (typeof PlanType)[keyof typeof PlanType];
 
-// ServicePackage values map to current Veroxa plans (see PRICING_SOURCE_OF_TRUTH.md):
-//   presence   → Complete Online Presence ($977/mo)
-//   ads_addon  → Ads Add-on (+$497/mo, paired with Complete Online Presence)
-//   ads_only   → Ads Management Only ($997/mo, standalone)
-// Google Optimization is tracked as a separate service_package elsewhere.
-// The legacy "bundle" value was removed: COP + Ads Add-on is expressed as
-// the two service_package rows together, never as a standalone bundle plan.
+// ServicePackage values are legacy database placeholders. Current public pricing
+// is Essential ($497/mo), Growth ($697/mo), and Premium ($997/mo); ad spend is
+// separate. Do not use these enum keys to render public pricing labels.
 export const ServicePackage = {
   presence: "presence",
   ads_addon: "ads_addon",

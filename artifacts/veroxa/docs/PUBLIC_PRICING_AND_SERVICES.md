@@ -1,122 +1,110 @@
 # Veroxa Public Pricing & Services
 
 > **Pricing source of truth:** `docs/PRICING_SOURCE_OF_TRUTH.md` and the
-> runtime file `src/data/pricing/veroxaPricing.ts`. All values below must
-> match those two. Do not change pricing without a formal pricing decision
-> and updating those files first.
+> runtime file `src/data/pricing/veroxaPricing.ts`. All values below must match
+> those two. Do not change pricing without an explicit pricing decision and
+> updating those files first.
 
 ---
 
 ## Customer Growth Priority
 
-Veroxa helps restaurants bring more customers by improving consistency,
-content quality, Google visibility, and online trust.
+Veroxa helps restaurants bring more customers by improving consistency, content
+quality, Google visibility, social reminders, and online trust.
 
-Most restaurants do not need random posts. They need a system that keeps them
-visible, trustworthy, and consistent where customers are already looking.
-
+Most restaurants do not need random posts. They need a calm system that keeps
+them visible, trustworthy, and consistent where customers are already looking.
 Restaurant owners stay focused on food and service. Veroxa handles the online
 presence system.
 
 ---
 
-## Plan 1 — Complete Online Presence
+## Current public plans
 
-**Standard:** $977/mo · **Founding first year:** $488/mo
+### Essential — $497/month
 
-The core Veroxa system for restaurants that want Facebook, Instagram, TikTok,
-Google Optimization, content planning, posting support, media guidance,
-weekly updates, monthly reports, and team-managed execution.
+For restaurants that need the core visibility rhythm.
 
-### Included
+Included:
 
-- Facebook management
-- Instagram management
-- TikTok management
 - Google Optimization
-- Content planning
-- Caption / draft creation
-- Posting support
-- Restaurant media guidance
+- Facebook + Instagram picture posting
+- Basic captions
 - Weekly updates
-- Monthly reports
-- Team-managed execution
-- Veroxa Client Portal access
+- Monthly performance snapshot
+- Client Portal access
 
-### Setup support
+### Growth — $697/month
+
+For restaurants that also need short-form content support and a stronger monthly
+reporting layer.
+
+Included:
+
+- Everything in Essential
+- Reels / short-form content support
+- TikTok posting/management if applicable
+- Enhanced monthly report
+
+### Premium — $997/month
+
+For restaurants that want Veroxa to manage ads in addition to the Growth online
+presence system.
+
+Included:
+
+- Everything in Growth
+- Facebook/Instagram ads management
+- Google Ads management
+- Campaign setup and monitoring
+- Monthly ad performance report
+- Ad spend is separate and paid directly by the restaurant
+
+---
+
+## Current global pricing rules
+
+- No contract.
+- Cancel anytime.
+- Google Optimization is included in all plans.
+- Facebook + Instagram are included in all plans.
+- Maximum 1 post per day.
+- Posting depends on usable client-provided media.
+- Reels / short-form content support starts at Growth.
+- Ads management starts at Premium.
+- Ad spend is always separate and paid by the restaurant directly to the ad platform.
+
+---
+
+## Setup support
 
 If the restaurant does not already have a needed website, Facebook page,
-Instagram account, TikTok account, or Google Business Profile, Veroxa will
-help create/setup the required basic account/page/presence during onboarding.
+Instagram account, TikTok account, or Google Business Profile, Veroxa can help
+create/setup the required basic account/page/presence during onboarding.
 
 This is **not** a custom website development package.
 
 ---
 
-## Plan 2 — Ads Management (add-on only)
+## Internal-only compatibility IDs (not publicly sold)
 
-**All clients:** +$477/mo · No founding discount on ads.
+These exist for internal Free Audit / lead-scoring compatibility and must not
+appear as standalone public offers.
 
-Available as an add-on to Complete Online Presence **only** — not sold standalone.
-
-### Included
-
-- Ad campaign setup
-- Audience and offer targeting
-- Creative direction for ad-specific assets
-- Campaign monitoring and optimization
-- Monthly ad performance reporting
-
-### Ad spend
-
-Ad spend is separate and paid directly by the restaurant to the ad platform.
-Veroxa manages the advertising system. The restaurant controls and pays the
-actual ad budget.
-
----
-
-## Most common path — Complete Online Presence + Ads Management
-
-This is **not** a separate bundle plan. It is shown only as two line items
-plus a total.
-
-| View                | Complete Online Presence | Ads Management | Combined total (before ad spend) |
-|---------------------|-------------------------:|---------------:|---------------------------------:|
-| Standard            |                  $977/mo |       +$477/mo |                        $1,454/mo |
-| Founding first year |                  $488/mo |       +$477/mo |                          $965/mo |
-
-Most restaurants should start with Complete Online Presence. If they want ads
-managed too, they add Ads Management for +$477/mo.
-
----
-
-## Founding Client Offer
-
-- **Active** — available to founding/early restaurant partners.
-- 50% off Complete Online Presence for the first year ($488/mo vs $977/mo).
-- After the first year, standard pricing applies ($977/mo).
-- No founding discount on Ads Management — ads are always $477/mo.
-- Ad spend is always separate.
-
----
-
-## Internal-only plans (not publicly sold)
-
-These exist for internal Free Audit / lead-scoring logic and must NOT appear
-on public pages.
-
-| Plan                 | Internal price           | Notes                            |
-|----------------------|--------------------------|----------------------------------|
-| Google Optimization  | $477/mo (founding $239)  | Retired; audit compat only       |
-| Ads Management Only  | $2,000/mo                | Hidden; dependency audit pending |
+| Legacy/internal package ID | Current public display |
+| -------------------------- | ---------------------- |
+| `google_optimization`      | Essential — $497/mo    |
+| `complete_online_presence` | Growth — $697/mo       |
+| `complete_plus_ads`        | Premium — $997/mo      |
+| `ads_management_only`      | Premium — $997/mo      |
 
 ---
 
 ## Disclaimers
 
 - Advertising budget is separate and paid by the restaurant directly to the ad platform.
-- Results depend on restaurant quality, offer, consistency, location, and
-  market demand. Veroxa does not guarantee specific revenue results.
+- Results depend on restaurant quality, offer, consistency, location, and market demand.
+- Veroxa does not guarantee specific revenue results.
 - Veroxa does not guarantee first-page Google rankings.
 - Veroxa does not guarantee viral posts.
 - Veroxa does not guarantee a specific number of new customers.
