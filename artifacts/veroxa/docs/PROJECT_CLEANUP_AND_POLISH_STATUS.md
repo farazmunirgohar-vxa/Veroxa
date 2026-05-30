@@ -14,7 +14,7 @@
 | No publishing or migrations | ✅ no `supabase/migrations/` directory |
 | Demo / fixture data only | ✅ all data from `src/data/` |
 | Pricing locked (see `docs/PUBLIC_PRICING_AND_SERVICES.md`) | ✅ verified |
-| 4 roles unchanged (client · team · operator · owner) | ✅ unchanged |
+| Active roles locked to client + team | ✅ operator / owner are legacy-demo only and not active surfaces |
 | Demo gate unchanged | ✅ InternalDemoGuard wrapping all internal routes |
 
 ---
@@ -44,8 +44,8 @@
 | Nav | Change |
 |---|---|
 | `teamPortalNav.ts` | Added **Content Review** (`/demo/team/content-review`) — page was polished previously but not wired to nav |
-| `operatorPortalNav.ts` | No structural changes — routes confirmed correct |
-| `ownerPortalNav.ts` | No changes — routes confirmed correct |
+| `operatorPortalNav.ts` | Historical/demo-only route check; operator is not an active role |
+| `ownerPortalNav.ts` | Historical/demo-only route check; owner is not an active role |
 | `clientPortalNav.ts` | No changes needed |
 
 ### Client portal (Task 6)
@@ -54,7 +54,7 @@
 |---|---|
 | `client-updates.tsx` | **Full rewrite** — was 33 lines (single card, massive whitespace). Now: current week update with item checklist + 3-photo media strip, "What we need from you" action cards (2 cards with priority badges), previous-weeks history (2 past updates with metrics), consistent demo labelling |
 
-### Owner portal (Task 9)
+### Legacy owner demo surface (Task 9)
 
 | Page | Change |
 |---|---|
@@ -96,5 +96,5 @@ Both are documentation-only placeholders. No fix in this pass — they require r
 ## What's next (not in this pass)
 
 - Real authentication flip (`AUTH_MODE = "real"`) — awaits M001–M006 dev-test gate (see `BUILD_STATUS.md`)
-- Operator portal hidden pages — several routes exist but are not wired to nav (candidate for next pass)
+- Operator / owner pages are legacy-demo only and should remain parked unless explicitly requested
 - AI / scheduling / posting integrations — behind auth gate, not active
