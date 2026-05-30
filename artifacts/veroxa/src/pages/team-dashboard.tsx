@@ -1,5 +1,5 @@
 import {
-  Inbox, Eye, Users, FileText, ImageIcon, ArrowRight, LayoutGrid, TrendingUp,
+  Inbox, Eye, Users, FileText, ArrowRight, LayoutGrid, TrendingUp,
   ClipboardCheck, ScanSearch,
 } from "lucide-react";
 import { Link } from "wouter";
@@ -10,10 +10,18 @@ import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 import { TeamWorkflowPanel } from "@/components/TeamWorkflowPanel";
 import { PageHeader, StatusBadge } from "@/components/common";
 import type { StatusBadgeTone } from "@/components/common";
+import { getRestaurantName } from "@/data/demoData";
+import { demoClientTeamWorkflow } from "@/data/workflows/clientTeamWorkflow";
+import { WorkflowItemCard } from "@/components/workflows/WorkflowItemCard";
 import {
-  demoTeamMetrics, demoWorkQueue, demoTeamAlerts, getRestaurantName,
-} from "@/data/demoData";
-import { clientTeamWorkRepository } from "@/lib/repositories";
+  getTeamAlertWorkflowItems,
+  getTeamQueueOrHoldItems,
+  getTeamReviewReadyItems,
+  getTeamStatusLabel,
+  getTeamSuggestedNextStep,
+  getTeamTodayQueueItems,
+  getWorkflowSummaryCounts,
+} from "@/lib/workflows/workflowStatus";
 import { getTodaysSuggestedPushes } from "@/domain/dailyOpportunity";
 import type { OpportunityPriority } from "@/domain/dailyOpportunity";
 import { preparedActionRepository, usePreparedActions } from "@/lib/preparedActions";
@@ -22,27 +30,6 @@ import {
   PREPARED_ACTION_CHANNEL_LABELS,
   APPROVAL_REQUIREMENT_LABELS,
 } from "@/domain/preparedActions";
-
-const mediaReviewQueue = [
-  { id: "mrq-1", title: "Grilled platter — overhead", subtitle: "Demo Grill House · suggested: weekend feature",      status: "Approve",  tone: "good" as const },
-  { id: "mrq-2", title: "Chef plating clip",           subtitle: "Demo Taco Bar · suggested: Reels — kitchen series", status: "Approve",  tone: "good" as const },
-  { id: "mrq-3", title: "Brunch stack",                subtitle: "Demo Grill House · re-shoot suggested",             status: "Re-shoot", tone: "warn" as const },
-];
-
-const workTone: Record<string, StatusBadgeTone> = {
-  "Healthy":           "success",
-  "Attention Needed":  "warning",
-  "Waiting On Client": "info",
-  "Ready To Post":     "accent",
-  "Reporting Due":     "danger",
-};
-
-const severityTone: Record<string, StatusBadgeTone> = {
-  Critical: "danger",
-  High:     "warning",
-  Medium:   "caution",
-  Low:      "neutral",
-};
 
 const pushPriorityTone: Record<OpportunityPriority, StatusBadgeTone> = {
   high:   "warning",
@@ -57,13 +44,15 @@ const pushPriorityLabel: Record<OpportunityPriority, string> = {
 };
 
 export default function TeamDashboard() {
-  const criticalAlerts = demoTeamAlerts
-    .filter((a) => a.severity === "Critical" || a.severity === "High")
-    .slice(0, 3);
+  const workflowSummary = getWorkflowSummaryCounts(demoClientTeamWorkflow);
+  const todayQueue = getTeamTodayQueueItems(demoClientTeamWorkflow, 6);
+  const reviewReady = getTeamReviewReadyItems(demoClientTeamWorkflow).slice(0, 3);
+  const waitingOnClient = demoClientTeamWorkflow.filter((item) => item.stage === "needs_client_action" || item.stage === "needs_better_photo");
+  const queueOrHold = getTeamQueueOrHoldItems(demoClientTeamWorkflow);
+  const workflowAlerts = getTeamAlertWorkflowItems(demoClientTeamWorkflow, 3);
 
   // Priority cards — the four questions the team needs answered today,
-  // derived from the live workflow foundation where possible.
-  const summary = clientTeamWorkRepository.getTeamWorkCommunicationSummary();
+  // derived from the shared workflow foundation.
   const priorityCards: {
     label: string;
     value: number;
@@ -73,16 +62,16 @@ export default function TeamDashboard() {
     testId: string;
   }[] = [
     {
-      label: "New submissions",
-      value: summary.newCount,
+      label: "Today's priority work",
+      value: todayQueue.length,
       icon: Inbox,
-      href: "/team/upload-inbox",
+      href: "/team/work-queue",
       color: "text-sky-400",
       testId: "priority-new-submissions",
     },
     {
       label: "Needs review",
-      value: demoTeamMetrics.contentWaitingReview,
+      value: reviewReady.length,
       icon: Eye,
       href: "/team/work-queue",
       color: "text-violet-400",
@@ -90,17 +79,17 @@ export default function TeamDashboard() {
     },
     {
       label: "Client follow-up",
-      value: summary.needsClarificationCount + summary.blockedCount,
+      value: workflowSummary.waitingOnClient,
       icon: Users,
       href: "/team/work-queue",
       color: "text-amber-400",
       testId: "priority-client-follow-up",
     },
     {
-      label: "Reports / updates due",
-      value: demoTeamMetrics.reportsDueThisWeek,
+      label: "Queue / hold later",
+      value: queueOrHold.length,
       icon: FileText,
-      href: "/team/report-queue",
+      href: "/team/work-queue",
       color: "text-cyan-400",
       testId: "priority-reports-due",
     },
@@ -126,7 +115,7 @@ export default function TeamDashboard() {
       />
 
       <DemoOnlyBanner
-        message="The work below reflects real client submissions. Sample numbers are used only where live data isn't connected yet."
+        message="Demo only — today's work is derived from shared workflow items. No write or publishing action is connected."
         testId="banner-team-dashboard"
       />
 
@@ -306,74 +295,40 @@ export default function TeamDashboard() {
           </Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-          {[
-            ...clientTeamWorkRepository.getTeamReadyWorkItems(),
-            ...clientTeamWorkRepository.getTeamInProgressWorkItems(),
-          ]
-            .slice(0, 6)
-            .map((item) => (
-              <Card
-                key={item.id}
-                className="bg-card border-border"
-                data-testid={`today-client-work-${item.id}`}
-              >
-                <CardContent className="p-3 space-y-1.5">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-semibold truncate">{item.title}</p>
-                    <StatusBadge
-                      tone={item.priority === "urgent" || item.priority === "high" ? "warning" : "info"}
-                    >
-                      {item.teamStatusLabel}
-                    </StatusBadge>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground">
-                    {getRestaurantName(item.clientId)} · {item.workType.replace("_", " ")}
-                  </p>
-                  {item.clientVisibleNote && (
-                    <p className="text-xs text-foreground/85 line-clamp-2">
-                      {item.clientVisibleNote}
-                    </p>
-                  )}
-                  <p className="text-[11px] text-primary/85">
-                    Next: {item.nextTeamAction}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
+          {todayQueue.map((item) => (
+            <WorkflowItemCard
+              key={item.id}
+              item={item}
+              mode="team"
+              clientName={getRestaurantName(item.clientId)}
+            />
+          ))}
         </div>
         <p className="text-[11px] text-muted-foreground/60 mt-2">
-          Pulled from the latest client submissions.
+          Pulled from the shared first-client workflow model.
         </p>
       </div>
 
-      {/* Media review queue */}
+      {/* Media and draft review queue */}
       <div className="mb-6" data-testid="section-media-review-queue">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Media review queue
+            Items needing review
           </h3>
-          <span className="text-xs text-muted-foreground">
-            Thumbnails not yet available
-          </span>
+          <Link href="/team/work-queue">
+            <span className="text-xs text-primary hover:underline cursor-pointer">
+              Open board
+            </span>
+          </Link>
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {mediaReviewQueue.map((item) => (
-            <div
+          {reviewReady.map((item) => (
+            <WorkflowItemCard
               key={item.id}
-              className="rounded-md border border-border bg-card/60 p-3 flex items-start gap-3"
-              data-testid={`media-review-${item.id}`}
-            >
-              <div className="p-2 rounded-md bg-muted/30 flex-shrink-0">
-                <ImageIcon className="w-4 h-4 text-muted-foreground/50" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{item.title}</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{item.subtitle}</p>
-                <StatusBadge tone={item.tone === "good" ? "success" : "warning"}>
-                  {item.status}
-                </StatusBadge>
-              </div>
-            </div>
+              item={item}
+              mode="team"
+              clientName={getRestaurantName(item.clientId)}
+            />
           ))}
         </div>
       </div>
@@ -385,27 +340,31 @@ export default function TeamDashboard() {
         </h3>
         <Card className="bg-card border-border">
           <CardContent className="space-y-2 p-4">
-            {criticalAlerts.length === 0 && (
+            {workflowAlerts.length === 0 && (
               <p className="text-xs text-muted-foreground">Nothing urgent right now.</p>
             )}
-            {criticalAlerts.map((alert) => (
+            {workflowAlerts.map((item) => (
               <div
-                key={alert.id}
+                key={item.id}
                 className="rounded-md border border-border bg-muted/20 p-3"
-                data-testid={`dash-alert-${alert.id}`}
+                data-testid={`dash-alert-${item.id}`}
               >
-                <div className="flex items-center gap-2 mb-1">
-                  <StatusBadge tone={severityTone[alert.severity] ?? "neutral"}>{alert.severity}</StatusBadge>
-                  <p className="text-sm font-medium">{alert.title}</p>
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                  <StatusBadge tone={item.priority === "urgent" ? "danger" : item.priority === "high" ? "warning" : "info"}>
+                    {item.priority === "urgent" ? "Critical" : item.priority === "high" ? "High" : "Watch"}
+                  </StatusBadge>
+                  <p className="text-sm font-medium">{item.title}</p>
                 </div>
-                <p className="text-xs text-muted-foreground line-clamp-2">{alert.description}</p>
+                <p className="text-xs text-muted-foreground line-clamp-2">
+                  {getTeamStatusLabel(item.stage)} · {getTeamSuggestedNextStep(item)}
+                </p>
               </div>
             ))}
           </CardContent>
         </Card>
       </div>
 
-      {/* Work queue summary — optional lower section */}
+      {/* Work queue summary — same helper counts used by the queue and alert center. */}
       <div data-testid="section-work-queue-summary">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
@@ -417,21 +376,25 @@ export default function TeamDashboard() {
             </span>
           </Link>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {demoWorkQueue.map((item) => (
-            <div
-              key={item.clientId}
-              className="rounded-md border border-border bg-muted/20 p-3"
-              data-testid={`dash-work-${item.clientId}`}
-            >
-              <div className="flex items-center justify-between gap-2 mb-1">
-                <p className="text-sm font-medium">{getRestaurantName(item.clientId)}</p>
-                <StatusBadge tone={workTone[item.status] ?? "neutral"}>{item.status}</StatusBadge>
-              </div>
-              <p className="text-xs text-muted-foreground truncate">{item.nextAction}</p>
-              <p className="text-[10px] text-muted-foreground mt-1">{item.assignedTo} · {item.lastActivity}</p>
-            </div>
-          ))}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <Card className="bg-muted/20 border-border">
+            <CardContent className="p-3">
+              <p className="text-2xl font-bold tabular-nums">{workflowSummary.teamReviewReady}</p>
+              <p className="text-[11px] text-muted-foreground">Need review</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-muted/20 border-border">
+            <CardContent className="p-3">
+              <p className="text-2xl font-bold tabular-nums">{waitingOnClient.length}</p>
+              <p className="text-[11px] text-muted-foreground">Waiting on client</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-muted/20 border-border">
+            <CardContent className="p-3">
+              <p className="text-2xl font-bold tabular-nums">{queueOrHold.length}</p>
+              <p className="text-[11px] text-muted-foreground">Queue / hold later</p>
+            </CardContent>
+          </Card>
         </div>
       </div>
 

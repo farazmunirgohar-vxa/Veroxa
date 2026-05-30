@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { teamPortalNavItems } from "@/lib/teamPortalNav";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 import { pickImageForCaption } from "@/data/demo/demoContentMatching";
+import { demoClientTeamWorkflow } from "@/data/workflows/clientTeamWorkflow";
+import { getTeamReviewReadyItems } from "@/lib/workflows/workflowStatus";
 import { EvidenceRecommendationCard } from "@/components/evidence/EvidenceRecommendationCard";
 import { recommendNextPost } from "@/lib/evidence/evidenceSelectionEngine";
 
@@ -41,17 +43,21 @@ interface MediaItem {
   note: string;
 }
 
-const mediaItems: MediaItem[] = [
-  { id: 1, title: "Lamb shoulder closeup",   client: "Demo Grill House", initialQuality: "Approved",      note: "Sharp focus, strong lighting"          },
-  { id: 2, title: "Mixed grill platter",     client: "Demo Grill House", initialQuality: "Approved",      note: "Good plating, on-brand"                },
-  { id: 3, title: "Storefront wide shot",    client: "Demo Grill House", initialQuality: "Needs Reshoot", note: "Underexposed — reshoot at golden hour" },
-  { id: 4, title: "Behind-the-scenes prep",  client: "Demo Grill House", initialQuality: "Approved",      note: "Authentic, hands-on feel"              },
-  { id: 5, title: "Dessert tray detail",     client: "Demo Grill House", initialQuality: "Needs Crop",    note: "Crop to 4:5 for Instagram"             },
-];
+const mediaItems: MediaItem[] = getTeamReviewReadyItems(demoClientTeamWorkflow)
+  .filter((item) => item.type === "media")
+  .map((item, index) => ({
+    id: index + 1,
+    title: item.title,
+    client: item.clientId === MEDIA_REVIEW_CLIENT_ID ? "Demo Grill House" : item.clientId,
+    initialQuality: item.stage === "needs_better_photo" ? "Needs Reshoot" : "Approved",
+    note: item.stage === "needs_better_photo"
+      ? "Needs a clearer photo before content use"
+      : "Ready for team review",
+  }));
 
 const decisionLabel: Record<LocalDecision, string> = {
   pending:       "Pending review",
-  accepted:      "Accepted for content",
+  accepted:      "Mark revieweded for content",
   needs_reshoot: "Client reshoot needed",
   saved:         "Saved for later",
 };
@@ -66,8 +72,7 @@ const decisionStyle: Record<LocalDecision, string> = {
 const teamEvidenceRec = recommendNextPost("demo-a");
 
 export default function TeamMediaReview() {
-  // Review decisions held in component state; workflow persistence is
-  // backend pending. No external sends or notifications.
+  // Review decisions stay in component state only. No external sends or notifications.
   const [decisions, setDecisions] = useState<Record<number, LocalDecision>>({});
 
   const setDecision = (id: number, d: LocalDecision) =>
@@ -89,10 +94,10 @@ export default function TeamMediaReview() {
     <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
       <div className="mb-4">
         <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground" data-testid="header-media-review">Media Review</h2>
-        <p className="text-muted-foreground mt-1 text-sm md:text-base">Review and act on uploaded media — Accept, request a reshoot, or save for later.</p>
+        <p className="text-muted-foreground mt-1 text-sm md:text-base">Review and act on uploaded media — Mark reviewed, request a reshoot, or save for later.</p>
       </div>
 
-      <DemoOnlyBanner message="Review decisions persist in the workflow foundation for this browser (backend pending). No uploads, cloud writes, or client notifications happen — client-facing steps require team approval." testId="banner-team-media" />
+      <DemoOnlyBanner message="Demo only — review choices stay on this page. No uploads, cloud writes, or client notifications happen." testId="banner-team-media" />
 
       <p className="text-xs text-muted-foreground mb-4" data-testid="upload-inbox-cross-link">
         New restaurant uploads appear in the{" "}
@@ -105,7 +110,7 @@ export default function TeamMediaReview() {
       {/* Summary tiles — react to local action state */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6" data-testid="section-review-summary">
         <SummaryTile label="Pending"         value={summary.pending}  color="text-muted-foreground" testId="summary-pending"  />
-        <SummaryTile label="Accepted today"  value={summary.accepted} color="text-emerald-400"       testId="summary-accepted" />
+        <SummaryTile label="Reviewed today"  value={summary.accepted} color="text-emerald-400"       testId="summary-accepted" />
         <SummaryTile label="Needs reshoot"   value={summary.reshoot}  color="text-amber-400"         testId="summary-reshoot"  />
         <SummaryTile label="Saved for later" value={summary.saved}    color="text-sky-400"           testId="summary-saved"    />
       </div>
@@ -215,7 +220,7 @@ export default function TeamMediaReview() {
                     onClick={() => setDecision(item.id, "accepted")}
                     data-testid={`btn-accept-${item.id}`}
                   >
-                    Accept
+                    Mark reviewed
                   </button>
                   <button
                     type="button"
@@ -239,10 +244,10 @@ export default function TeamMediaReview() {
                     onClick={() => setDecision(item.id, "saved")}
                     data-testid={`btn-save-${item.id}`}
                   >
-                    Use Later
+                    Hold for later
                   </button>
                 </div>
-                <p className="mt-2 text-[10px] text-muted-foreground/70">Persists in the workflow foundation (backend pending). No client notification is sent.</p>
+                <p className="mt-2 text-[10px] text-muted-foreground/70">Local review note only. No client notification is sent.</p>
               </CardContent>
             </Card>
           );

@@ -30,6 +30,17 @@
 
 > **Historical reference (pre-2026-05-27).** Pricing and fixture-ID values in this document are out of date. Current source of truth: `docs/PRICING_SOURCE_OF_TRUTH.md` and `src/data/pricing/veroxaPricing.ts`. Fixture IDs are now `demo-a` / `demo-b` / `demo-c` / `demo-d`.
 
+
+## Latest update — M038–M042 First-Client Operating Flow Hardening (2026-05-30)
+
+- Shared workflow helpers now drive client-visible progress, client input requests, team priority work, team queue groups, and workflow-derived alerts.
+- Client Dashboard and Client Requests render from `WorkflowItem` helpers with client-safe labels and no internal system language.
+- Team Dashboard, Team Work Queue, and Team Alert Center use the same workflow helper layer for summary counts, review-ready work, client follow-up, queue/hold items, and alert reasons.
+- Team review buttons remain local React state only; no writes, storage, publishing, external APIs, auth changes, data-mode changes, migrations, or pricing changes.
+- Full details: `docs/M038_M042_FIRST_CLIENT_OPS_HARDENING.md`.
+
+---
+
 ## Latest update — M033–M037 Adaptive Lead Source Engine (2026-05-28)
 
 - Lead source taxonomy expanded from 5 values to 45+ across 6 categories
