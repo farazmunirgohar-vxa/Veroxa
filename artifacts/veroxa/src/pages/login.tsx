@@ -62,7 +62,7 @@ export default function LoginPage() {
     try {
       const { error } = await client.auth.signInWithPassword({ email, password });
       if (error) {
-        setSignInState({ kind: "error", message: `Sign-in failed: ${error.message}` });
+        setSignInState({ kind: "error", message: "Sign-in failed. Please check your credentials and try again." });
         return;
       }
 
@@ -70,7 +70,7 @@ export default function LoginPage() {
       const userId = sessionData.session?.user?.id;
 
       if (!userId) {
-        setSignInState({ kind: "error", message: "Signed in, but no Veroxa profile was found for this user." });
+        setSignInState({ kind: "error", message: "This Veroxa account is not fully set up yet. Please contact Veroxa support." });
         return;
       }
 
@@ -81,15 +81,15 @@ export default function LoginPage() {
         .maybeSingle<{ role?: unknown }>();
 
       if (profileError) {
-        setSignInState({ kind: "error", message: `Profile lookup failed: ${profileError.message}` });
+        setSignInState({ kind: "error", message: "We could not finish checking your account access. Please try again later." });
         return;
       }
       if (!profile) {
-        setSignInState({ kind: "error", message: "No Veroxa profile found for this user." });
+        setSignInState({ kind: "error", message: "This Veroxa account is not fully set up yet. Please contact Veroxa support." });
         return;
       }
       if (!isVeroxaRole(profile.role)) {
-        setSignInState({ kind: "error", message: "This account does not have a valid Veroxa role." });
+        setSignInState({ kind: "error", message: "This account does not have the right portal access yet. Please contact Veroxa support." });
         return;
       }
 
