@@ -6,11 +6,30 @@ import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 import { PageHeader, StatusBadge } from "@/components/common";
 import type { StatusBadgeTone } from "@/components/common";
 import {
-  demoTeamAlerts, getRestaurantName,
-  type AlertSeverity, type AlertCategory,
-} from "@/data/demoData";
+  demoClientTeamWorkflow,
+  type WorkflowItem,
+} from "@/data/workflows/clientTeamWorkflow";
+import {
+  getTeamStatusLabel,
+  getWorkflowTone,
+  sortWorkflowItems,
+} from "@/lib/workflows/workflowStatus";
+import { getRestaurantName } from "@/data/demoData";
 
-// Severity → StatusBadge tone (replaces inline severityColor record)
+type AlertSeverity = "Critical" | "High" | "Medium" | "Low";
+type WorkflowAlertCategory = "Media" | "Onboarding";
+
+interface WorkflowAlert {
+  item: WorkflowItem;
+  category: WorkflowAlertCategory;
+  severity: AlertSeverity;
+}
+
+const categoryTone: Record<WorkflowAlertCategory, StatusBadgeTone> = {
+  Media: "info",
+  Onboarding: "success",
+};
+
 const severityTone: Record<AlertSeverity, StatusBadgeTone> = {
   Critical: "danger",
   High:     "warning",
@@ -18,7 +37,6 @@ const severityTone: Record<AlertSeverity, StatusBadgeTone> = {
   Low:      "neutral",
 };
 
-// Left-border accent per severity (kept inline — structural, not a badge)
 const severityBorder: Record<AlertSeverity, string> = {
   Critical: "border-l-rose-500",
   High:     "border-l-amber-500",
@@ -26,37 +44,58 @@ const severityBorder: Record<AlertSeverity, string> = {
   Low:      "border-l-border",
 };
 
-// Category → StatusBadge tone (replaces inline categoryColor record)
-const categoryTone: Record<AlertCategory, StatusBadgeTone> = {
-  Media:      "info",
-  Report:     "accent",
-  Google:     "info",
-  Onboarding: "success",
-  Brand:      "danger",
-};
-
 const severityOrder: AlertSeverity[] = ["Critical", "High", "Medium", "Low"];
 
+function getWorkflowAlertCategory(item: WorkflowItem): WorkflowAlertCategory | null {
+  if (item.type === "media") return "Media";
+  if (item.type === "request") return "Onboarding";
+  return null;
+}
+
+function getWorkflowAlertSeverity(item: WorkflowItem): AlertSeverity {
+  if (item.priority === "urgent") return "Critical";
+  if (item.priority === "high") return "High";
+  if (item.priority === "low") return "Low";
+  return "Medium";
+}
+
+function getWorkflowAlertDescription(item: WorkflowItem): string {
+  const status = getTeamStatusLabel(item.stage);
+  return `${status}. Due: ${item.dueLabel}. Keep in team review; nothing goes live from this demo alert.`;
+}
+
+function getWorkflowAlertTime(item: WorkflowItem): string {
+  return item.dueLabel;
+}
+
+function buildWorkflowAlerts(items: WorkflowItem[]): WorkflowAlert[] {
+  return sortWorkflowItems(items).flatMap((item) => {
+    const category = getWorkflowAlertCategory(item);
+    if (!category) return [];
+    return [{ item, category, severity: getWorkflowAlertSeverity(item) }];
+  });
+}
+
 export default function TeamAlertCenter() {
-  const sorted = [...demoTeamAlerts].sort(
+  const sorted = buildWorkflowAlerts(demoClientTeamWorkflow).sort(
     (a, b) => severityOrder.indexOf(a.severity) - severityOrder.indexOf(b.severity),
   );
 
   const counts = severityOrder.map((s) => ({
     severity: s,
-    count: sorted.filter((a) => a.severity === s).length,
+    count: sorted.filter((alert) => alert.severity === s).length,
   }));
 
   return (
     <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
       <PageHeader
         title="Alert Center"
-        description="All active alerts sorted by severity — client risks, media issues, and reporting delays."
+        description="Active workflow alerts for media and onboarding follow-up — demo only, read-only, and sorted by severity."
         testId="header-alert-center"
       />
 
       <DemoOnlyBanner
-        message="Demo only — alert data is sample. No real monitoring is connected."
+        message="Demo only — alert data is derived from sample workflow items. No real monitoring or publishing is connected."
         testId="banner-alert-center"
       />
 
@@ -89,24 +128,23 @@ export default function TeamAlertCenter() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
-          {sorted.map((alert) => (
+          {sorted.map(({ item, category, severity }) => (
             <div
-              key={alert.id}
-              className={`rounded-md border border-border border-l-4 ${severityBorder[alert.severity]} bg-muted/20 p-3`}
-              data-testid={`alert-${alert.id}`}
+              key={item.id}
+              className={`rounded-md border border-border border-l-4 ${severityBorder[severity]} bg-muted/20 p-3`}
+              data-testid={`alert-${item.id}`}
             >
               <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                <StatusBadge tone={severityTone[alert.severity]}>{alert.severity}</StatusBadge>
-                <StatusBadge tone={categoryTone[alert.category]}>{alert.category}</StatusBadge>
-                <p className="text-sm font-medium">{alert.title}</p>
-                <span className="text-[10px] text-muted-foreground ml-auto">{alert.time}</span>
+                <StatusBadge tone={severityTone[severity]}>{severity}</StatusBadge>
+                <StatusBadge tone={categoryTone[category]}>{category}</StatusBadge>
+                <StatusBadge tone={getWorkflowTone(item.stage)}>{getTeamStatusLabel(item.stage)}</StatusBadge>
+                <p className="text-sm font-medium">{item.title}</p>
+                <span className="text-[10px] text-muted-foreground ml-auto">{getWorkflowAlertTime(item)}</span>
               </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">{alert.description}</p>
-              {alert.clientId && (
-                <p className="text-[10px] text-muted-foreground mt-1.5">
-                  Client: {getRestaurantName(alert.clientId)}
-                </p>
-              )}
+              <p className="text-xs text-muted-foreground leading-relaxed">{getWorkflowAlertDescription(item)}</p>
+              <p className="text-[10px] text-muted-foreground mt-1.5">
+                Client: {getRestaurantName(item.clientId)}
+              </p>
             </div>
           ))}
         </CardContent>

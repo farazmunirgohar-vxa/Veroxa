@@ -115,14 +115,12 @@ serialized off the page.
   model; refactoring it to consume `WorkflowItem` directly is
   deferred to a later milestone to keep the diff scoped.
 
-### Rename: `MAMADALI_DEMO_CLIENT_ID` → `DEFAULT_DEMO_CLIENT_ID`
+### Demo client ID constant cleanup
 
 The lingering client-name constant was renamed to a neutral
 `DEFAULT_DEMO_CLIENT_ID` across:
 
-- `lib/supabase/clientPortalQueries.ts` (source; old name kept as a
-  `@deprecated` alias for one cycle for any downstream code we
-  don't see)
+- `lib/supabase/clientPortalQueries.ts` (source)
 - `lib/supabase/index.ts` (only the new name is re-exported)
 - `lib/supabase/supabaseHealth.ts`
 - `lib/data/supabaseReadOnlyData.ts`
@@ -131,8 +129,7 @@ The lingering client-name constant was renamed to a neutral
 
 The UUID value (`00000000-0000-0000-0000-000000000001`) is
 unchanged, so behavior and any seeded Supabase row continue to
-work identically. Search the repo for the new name; the old
-deprecated alias should not be relied on for new code.
+work identically. Search the repo for `DEFAULT_DEMO_CLIENT_ID`; deprecated aliases should not be reintroduced.
 
 ## What did **not** change
 
@@ -140,7 +137,7 @@ deprecated alias should not be relied on for new code.
 - M007 `DATA_MODE` switch / M008 read-only adapter / fixture
   fallback semantics / `<DataSourceBadge />` placement.
 - `InternalDemoGuard` and any auth gating.
-- Owner Portal, Operator Portal, Internal demo pages.
+- Operator / owner legacy-demo pages and internal demo pages.
 - Existing demo content engines (`recommendNextPost`,
   `EvidenceRecommendationCard`, `DemoSchedulePreview`,
   `DemoFlowTimeline`, restaurant media guidance).
@@ -155,10 +152,6 @@ deprecated alias should not be relied on for new code.
 
 ## Suggested follow-ups (not in this pass)
 
-- Refactor `team-alert-center.tsx` to consume `WorkflowItem` directly
-  for items whose category is `Media` / `Onboarding`.
 - Add a real action handler on `WorkflowItemCard` actions that, in
   a future write-enabled milestone, mutates a server-side workflow
   row and reuses the same label vocabulary.
-- Remove the deprecated `MAMADALI_DEMO_CLIENT_ID` alias once a full
-  repo grep confirms no external consumer references it.
