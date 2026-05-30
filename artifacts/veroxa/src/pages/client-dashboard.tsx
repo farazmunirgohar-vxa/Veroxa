@@ -38,6 +38,7 @@ import {
   getClientVisibleWorkflowItems,
 } from "@/lib/workflows/workflowStatus";
 import { ClientAccountSummary } from "@/components/client/ClientAccountSummary";
+import { ClientPremiumReadinessCard } from "@/components/client/ClientPremiumReadinessCard";
 import { ClientPortalEmptyState } from "@/components/client/ClientPortalEmptyState";
 
 /** Compute "June 2026 — Week 1" from the real current date. */
@@ -237,6 +238,9 @@ export default function ClientDashboard() {
 
       {/* Local visibility progress — client-safe Google/local visibility surface. */}
       <ClientVisibilityProgressCard clientId="demo-a" />
+
+      {/* Premium readiness — light, client-safe concept (demo/local only). */}
+      <ClientPremiumReadinessCard />
 
       {/* What Veroxa is working on */}
       <div data-testid="section-veroxa-working-on">

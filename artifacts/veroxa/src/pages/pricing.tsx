@@ -54,8 +54,8 @@ const PLANS = [
       "Monthly ad performance report",
     ],
     note: "Ad spend is separate and paid directly by the restaurant to the ad platform. Premium requires 1+ month on Essential/Growth, a Veroxa readiness assessment, client approval, and an agreed ad budget.",
-    cta: "Start with Premium",
-    ctaSubject: "Premium Plan Inquiry",
+    cta: "Check Premium Readiness",
+    ctaSubject: "Premium Readiness Inquiry",
   },
 ];
 

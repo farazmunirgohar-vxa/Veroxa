@@ -288,6 +288,20 @@ export default function ClientMedia() {
         </Card>
       </div>
 
+      {/* Media dependency — calm, honest note about how posting relies on media. */}
+      <div
+        className="mt-3 rounded-md border border-border/40 bg-muted/10 px-4 py-3 text-[12px] text-muted-foreground leading-relaxed"
+        data-testid="media-dependency-note"
+      >
+        <span className="font-semibold text-foreground/80">
+          Posting depends on usable media.
+        </span>{" "}
+        Veroxa can guide what to capture, but posting may slow when usable
+        photos or videos run low. Veroxa works with the media you provide and
+        does not create restaurant media from nothing — professional filming
+        isn&apos;t included at launch.
+      </div>
+
       {/* Where your media goes — simple client-safe status path. */}
       <Card
         className="bg-card/50 border-border/50 mt-3"
