@@ -9,33 +9,51 @@ This folder contains the Veroxa permission system as **TypeScript contracts only
 - No protected routes.
 - No login, session, or token handling.
 
-The portal UI is not gated by these contracts yet. When the project moves to a real auth layer, the backend and API middleware should enforce exactly these same rules before they are mirrored client-side.
+The portal UI is not gated by these contracts yet. When the project moves to a
+real auth layer, the backend and API middleware should enforce exactly these same
+rules before they are mirrored client-side.
 
-## Role system
+## Current active role system
+
+Active human roles are only:
 
 | Role | Description |
 |------|-------------|
-| `client` | Restaurant owner. High-level visibility only — scheduled posts, reports, alerts. |
-| `team` | Content team member. Executes the full media → concept → draft → schedule workflow. |
-| `operator` | Agency operations manager. Oversight and report approval. Does not manage daily execution. |
-| `owner` | Agency owner. Strategic view — revenue, client health, commercial account control. |
-| `system` | Automated process. Creates logs, triggers derived values, marks post/media status. |
+| `client` | Restaurant Partner. High-level, client-safe visibility only — media submission, requests, updates, and reports. |
+| `team` | Veroxa Team / Internal Admin. Reviews uploads, prepares work, handles approvals, and manages the active internal workflow. |
+
+`system` remains a non-human automated-process role for internal contract data
+only. It has no portal dashboard or human login.
+
+Operator and Owner are **not active runtime roles** in the current Veroxa model.
+Older permission or planning language that mentioned them is deprecated/historical
+only and must not be reintroduced into active navigation, auth contracts, portal
+routes, or user-facing docs. Do not use Super Admin language.
 
 ## Naming rules
 
-- Roles are always: **Client, Team, Operator, Owner** (and System for automated processes).
-- Never use **Admin**, **Super Admin**, or **Execution Dashboard** — these terms are not part of the Veroxa role system.
+- Current active human role names are **Client / Restaurant Partner** and
+  **Team / Internal Admin**.
+- Do not describe Operator or Owner as active portal roles.
+- Never use **Super Admin** or **Execution Dashboard** — these terms are not part
+  of the current Veroxa role system.
 
 ## Files
 
 | File | Purpose |
 |------|---------|
-| `roles.ts` | Role constants and `UserFacingRole` union type |
+| `roles.ts` | Active role constants and `UserFacingRole` union type |
 | `actions.ts` | `PermissionAction` constants (view, create, edit, approve, trigger, receive_alert) |
 | `resources.ts` | `PermissionResource` constants (all portal modules) |
 | `permissionMatrix.ts` | Typed matrix mapping each role to allowed actions per resource |
 | `helpers.ts` | Pure functions: `can()`, `getAllowedActions()`, `getAllowedResources()` |
 | `index.ts` | Barrel export for the entire permissions folder |
+
+## Current builder model
+
+Codex is the primary engineering/build/hardening partner for this repo. Replit is
+secondary/preview-only unless Faraz explicitly says otherwise. Permission changes
+should stay aligned with `authContract.ts` and the two active human roles.
 
 ## Build order
 
