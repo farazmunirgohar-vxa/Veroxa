@@ -12,6 +12,9 @@ const scanRoots = [
   "artifacts/veroxa/docs/VEROXA_OS_LOCKED_MODEL.md",
   "artifacts/veroxa/docs/FIRST_5_LAUNCH_READINESS_AND_GUARDRAILS.md",
   "artifacts/veroxa/docs/FIRST_5_QA_READINESS_CHECKLIST.md",
+  "artifacts/veroxa/docs/CURRENT_REAL_VEROXA_MODEL.md",
+  ".agents/memory/veroxa-two-role-model.md",
+  "artifacts/veroxa/src/lib/permissions/README.md",
 ];
 const ignoredPathParts = [
   "/dist/",
@@ -69,22 +72,36 @@ function isExemptContext(file: string, line: string): boolean {
     )
   )
     return true;
-  return /deprecated|historical|history|legacy|retired|inactive|internal-only|compatibility alias|must not|do not|never|forbidden|guardrail|denylist|not current|not active/i.test(
+  return /deprecated|historical|history|legacy|retired|inactive|internal-only|compatibility alias|must not|do not|never|forbidden|guardrail|denylist|not current|not active|no active|NO active/i.test(
     line,
   );
 }
 
+
+const riskyCustomerServiceClaim =
+  /Veroxa\s+(handles|manages|replies to|responds to|takes care of)[^\n]*(DMs?|comments?|complaints?|refunds?|order questions?|inboxes?|customer-service conversations?|customer service)/i;
+const serviceBoundarySafe =
+  /does not|doesn't|do not|not handle|not included|outside included services|restaurant remains responsible|customer-service outside/i;
+const activeRoleClaim =
+  /(active|current|runtime|live|human|portal|user-facing)\s+(human\s+)?roles?[^\n]*(Operator|Owner|Super Admin)|roles?\s+(are always|include|includes)[^\n]*(Operator|Owner|Super Admin)|(Operator|Owner|Super Admin)\s+as\s+an?\s+(active|current|runtime|live|human|portal|user-facing)\s+roles?/i;
+
 const forbiddenCopy: Array<[RegExp, string]> = [
   [/\b2 posts per day\b/i, "forbidden posting volume"],
   [/\btwo posts per day\b/i, "forbidden posting volume"],
+  [/up to 2 posts/i, "forbidden posting volume"],
   [/up to 2 content posts/i, "forbidden posting volume"],
   [/\b2 content posts\b/i, "forbidden posting volume"],
+  [/max 2 content posts/i, "forbidden posting volume"],
+  [/Premium increases posting cap/i, "forbidden posting volume"],
   [/unlimited posting/i, "forbidden posting volume"],
   [/Veroxa handles DMs/i, "forbidden service-boundary claim"],
+  [/Veroxa handles comments/i, "forbidden service-boundary claim"],
   [/Veroxa replies to comments/i, "forbidden service-boundary claim"],
+  [/Veroxa handles inboxes/i, "forbidden service-boundary claim"],
   [/Veroxa handles refunds/i, "forbidden service-boundary claim"],
   [/Veroxa handles complaints/i, "forbidden service-boundary claim"],
   [/Veroxa handles order questions/i, "forbidden service-boundary claim"],
+  [/Veroxa handles customer-service conversations/i, "forbidden service-boundary claim"],
   [/Veroxa provides customer service/i, "forbidden service-boundary claim"],
   [
     /Veroxa manages live customer conversations/i,
@@ -104,6 +121,18 @@ for (const file of scanRoots.flatMap(walk)) {
     for (const [pattern, label] of forbiddenCopy) {
       if (pattern.test(line))
         failures.push(`${relative}:${index + 1} ${label}: ${line.trim()}`);
+    }
+
+    if (riskyCustomerServiceClaim.test(line) && !serviceBoundarySafe.test(line)) {
+      failures.push(
+        `${relative}:${index + 1} forbidden service-boundary claim: ${line.trim()}`,
+      );
+    }
+
+    if (activeRoleClaim.test(line)) {
+      failures.push(
+        `${relative}:${index + 1} inactive role appears active: ${line.trim()}`,
+      );
     }
 
     if (

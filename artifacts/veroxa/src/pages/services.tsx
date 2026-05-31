@@ -141,10 +141,11 @@ export default function ServicesPage() {
               posting so the owner does not manage it day-to-day.
             </p>
             <p className="text-muted-foreground leading-relaxed mb-4">
-              Posting depends on usable media from the restaurant and may slow
-              when usable media is unavailable. Premium can reach max 2 content
-              posts per day total — 1 picture post and 1 reel / short video post
-              — after readiness.
+              All active plans remain capped at max 1 post/day, depending on
+              usable client-provided media. Growth adds TikTok + Reels support
+              using provided photos/videos; Premium adds ads management
+              readiness/support after assessment, but does not increase the
+              public posting cap.
             </p>
             <p className="text-sm text-muted-foreground/70 leading-relaxed">
               Veroxa does not guarantee viral posts or a specific follower
