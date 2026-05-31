@@ -9,6 +9,7 @@ import {
   ClipboardCheck,
   ScanSearch,
   AlertTriangle,
+  ShieldCheck,
 } from "lucide-react";
 import { Link } from "wouter";
 import { PortalLayout } from "@/components/PortalLayout";
@@ -61,6 +62,11 @@ import {
   TeamClientOverviewList,
   TeamCommandSummaryGrid,
 } from "@/components/team/TeamOperationalSpine";
+import {
+  getBlockingChecks,
+  getReadinessStatusLabel,
+  getReadinessSummary,
+} from "@/domain/firstClientReadiness";
 
 const pushPriorityTone: Record<OpportunityPriority, StatusBadgeTone> = {
   high: "warning",
@@ -105,6 +111,8 @@ export default function TeamDashboard() {
   const reviewModeSummary = getTeamDailyCommandSummary();
   const reviewModeOverview = getTeamClientOverview();
   const reviewModeActions = getTeamActionQueue();
+  const firstClientReadinessSummary = getReadinessSummary();
+  const firstClientBlockingChecks = getBlockingChecks();
 
   // Priority cards — the four questions the team needs answered today,
   // derived from the shared workflow foundation.
@@ -196,6 +204,38 @@ export default function TeamDashboard() {
         />
       )}
 
+
+      <div className="mb-6" data-testid="card-first-client-readiness-preview">
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-primary" />
+              First-client readiness
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <StatusBadge tone={firstClientBlockingChecks.length > 0 ? "danger" : "info"}>
+                  {getReadinessStatusLabel(firstClientReadinessSummary.overallStatus)}
+                </StatusBadge>
+                <span className="text-sm font-medium">
+                  {firstClientReadinessSummary.completionPercentage}% ready · {firstClientBlockingChecks.length} blocking checks
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {firstClientReadinessSummary.recommendedNextAction}
+              </p>
+            </div>
+            <Link
+              href="/team/first-client-readiness"
+              className="inline-flex items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10"
+            >
+              Review readiness <ArrowRight className="w-4 h-4" />
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
 
       {!canUseFixtureData && (
         <div className="space-y-4 mb-6" data-testid="section-review-mode-command-center">

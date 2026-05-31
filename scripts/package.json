@@ -9,7 +9,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "check-pricing-drift": "tsx ./src/check-pricing-drift.ts",
     "check-portal-separation": "tsx ./src/check-portal-separation.ts",
-    "check-business-guardrails": "tsx ./src/check-business-guardrails.ts"
+    "check-business-guardrails": "tsx ./src/check-business-guardrails.ts",
+    "check-first-client-readiness": "tsx ./src/check-first-client-readiness.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",

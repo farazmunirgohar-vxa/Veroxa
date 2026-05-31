@@ -96,7 +96,7 @@ export const clientDemoRoutes: DemoRoute[] = [
 ];
 
 // ── Team / Internal Admin Portal ─────────────────────────────────────────────
-// visible_nav count: 8 (must match teamPortalNav.ts exactly)
+// visible_nav count: 9 (must match teamPortalNav.ts exactly)
 
 export const teamDemoRoutes: DemoRoute[] = [
   {
@@ -119,6 +119,13 @@ export const teamDemoRoutes: DemoRoute[] = [
     label: "Visibility Audit",
     visibility: "visible_nav",
     purpose: "Google Maps and local visibility readiness review.",
+  },
+  {
+    path: "/team/first-client-readiness",
+    portal: "team",
+    label: "First-Client Readiness",
+    visibility: "visible_nav",
+    purpose: "First-client operating readiness and launch-gate review.",
   },
   {
     path: "/team/upload-inbox",
