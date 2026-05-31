@@ -84,17 +84,8 @@ export function getPremiumEligibilityLabel(status: PremiumEligibilityStatus): st
   }
 }
 
-export function getFirstClientDiscountState(input: ClientPackageReadinessInput): string {
-  if (!input.firstClientDiscountEligible) {
-    return "First-client discount is not active for this account.";
-  }
-  if (!input.continuouslyActive) {
-    return "First-client discount ends if service stops and does not return later.";
-  }
-  if (input.monthsSinceServiceStart < 12) {
-    return "First-client 20% discount is active for the first 12 months.";
-  }
-  return "20% loyalty discount continues while the account stays continuously active.";
+export function getFirstClientDiscountState(_input: ClientPackageReadinessInput): string {
+  return "";
 }
 
 export function buildClientPackageReadiness(input: ClientPackageReadinessInput) {

@@ -89,8 +89,6 @@ export const SERVICE_BOUNDARY_DISCLAIMER =
 export const PREMIUM_READINESS_RULE =
   "Premium requires 1+ month on Essential or Growth, a Veroxa readiness assessment by phone, Zoom, or in person, client approval, and an agreed ad budget.";
 
-export const FIRST_CLIENT_LOYALTY_DISCOUNT_POLICY =
-  "First clients receive 20% off for the first 12 months. After 12 months, that becomes a loyalty discount only while the client remains continuously active; if the client leaves and later returns, the 20% discount is no longer eligible.";
 
 const postingVolumeSummary = "Max 1 post per day, depending on usable client-provided media.";
 const mediaDependencySummary =
@@ -304,7 +302,7 @@ export const GLOBAL_PRICING_RULES = [
   "Premium adds ads management readiness/support; ad spend is separate",
   "Posting depends on usable client-provided media and may slow when usable media is unavailable",
   "Premium requires 1+ month on Essential/Growth, Veroxa readiness assessment, client approval, and agreed ad budget",
-  "First clients receive 20% off for 12 months, then keep it as a loyalty discount only while continuously active",
+
 ];
 
 export function getCurrentPublicPlanForLegacyPackage(

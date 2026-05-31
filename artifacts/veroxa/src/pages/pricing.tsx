@@ -6,7 +6,7 @@ import PublicFooter from "@/components/public/PublicFooter";
 import {
   AD_SPEND_DISCLAIMER,
   CURRENT_PUBLIC_PLANS,
-  FIRST_CLIENT_LOYALTY_DISCOUNT_POLICY,
+
   GLOBAL_PRICING_RULES,
   MEDIA_DEPENDENCY_DISCLAIMER,
   PREMIUM_READINESS_RULE,
@@ -52,10 +52,7 @@ const FAQ_ITEMS = [
     q: "Does Veroxa handle comments, DMs, inboxes, or customer-service replies?",
     a: "Not at launch. Veroxa handles content posting, captions, page consistency, Google visibility, online presence, media guidance, weekly updates, monthly snapshots/reports, and ads management only after readiness. The restaurant remains responsible for comments, messages, DMs, orders, complaints, refunds, and customer-service conversations.",
   },
-  {
-    q: "How does the first-client loyalty discount work?",
-    a: FIRST_CLIENT_LOYALTY_DISCOUNT_POLICY,
-  },
+
   {
     q: "Is there a contract or minimum commitment?",
     a: "No contract. You can cancel anytime. Veroxa works month to month.",
