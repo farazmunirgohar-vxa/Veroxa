@@ -79,6 +79,34 @@ for (const file of scanRoots.flatMap(walk)) {
   });
 }
 
+
+const appSource = readFileSync(join(root, "artifacts/veroxa/src/App.tsx"), "utf8");
+
+function assertRouteBoundary(prefix: "client" | "team") {
+  const routePattern = new RegExp(`<Route path=["']/${prefix}/[^"']+["']>([\\s\\S]*?)</Route>`, "g");
+  let match: RegExpExecArray | null;
+  while ((match = routePattern.exec(appSource)) !== null) {
+    const routeBlock = match[0];
+    if (!routeBlock.includes(`RealPortalDataBoundary portal="${prefix}"`)) {
+      failures.push(`App.tsx real /${prefix} route is missing RealPortalDataBoundary: ${routeBlock.split("\n")[0].trim()}`);
+    }
+  }
+}
+
+assertRouteBoundary("client");
+assertRouteBoundary("team");
+
+for (const file of walk("artifacts/veroxa/src/pages")) {
+  const relative = rel(file);
+  if (!/artifacts\/veroxa\/src\/pages\/(client-|team-)/.test(relative)) continue;
+  const text = readFileSync(file, "utf8");
+  text.split(/\r?\n/).forEach((line, index) => {
+    if (/getFirstFiveClientPortalViewModels\(\)\s*\[\d+\]/.test(line)) {
+      failures.push(`${relative}:${index + 1} hardcoded first-five fixture index in real portal page: ${line.trim()}`);
+    }
+  });
+}
+
 const pricing = readFileSync(join(root, "artifacts/veroxa/src/data/pricing/veroxaPricing.ts"), "utf8");
 for (const required of [
   "All active plans are capped at max 1 post/day",

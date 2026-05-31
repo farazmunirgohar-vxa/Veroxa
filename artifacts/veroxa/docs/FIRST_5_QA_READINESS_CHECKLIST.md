@@ -45,3 +45,10 @@
 - [ ] `pnpm --filter @workspace/scripts run check-portal-separation` passes.
 - [ ] `pnpm --filter @workspace/scripts run check-business-guardrails` passes.
 - [ ] GitHub CI workflow exists.
+
+## Real portal data boundary
+
+- [ ] Real `/client/*` routes show in-review/still-building language when live client data is unavailable.
+- [ ] Real `/team/*` routes do not render demo restaurant names as active clients.
+- [ ] `/demo/client/dashboard` still renders the public sample preview.
+- [ ] Guardrails fail if a real client/team route is registered without `RealPortalDataBoundary`.

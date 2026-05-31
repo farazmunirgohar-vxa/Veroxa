@@ -67,3 +67,9 @@ Static guardrails allow historical/deprecated/legacy/retired/internal-only conte
 ## Legacy retained note
 
 Legacy demo data, migration drafts, and historical planning docs may still mention retired roles or old package aliases. They are retained pending dependency audit and must not be promoted into active navigation, login destinations, public pricing, Client Portal copy, or Team/Internal Admin workflows.
+
+## Real portal data boundary
+
+Real `/client/*` and `/team/*` routes are wrapped by `RealPortalDataBoundary` until live account data is connected. The boundary keeps useful demo and first-five fixtures available to public/demo or development contexts while preventing real review routes from rendering sample restaurant names, hardcoded demo client IDs, or first-five fixture rows as active client data.
+
+When real portal data is unavailable, the real routes stay inside `/client/*` or `/team/*` and show calm “Still Building” / “In review” language instead of redirecting to a demo route or showing sample clients.
