@@ -3,7 +3,7 @@
 ## Purpose
 
 Create the first real Supabase metadata schema for Veroxa, plus a
-conservative dev-stage RLS foundation. This is the schema piece only —
+conservative dev-stage RLS foundation. This is a dev-stage schema piece only —
 no frontend page is connected to writes, no storage is added, and no
 real-data integrations (AI / publishing / ads / payments) are
 introduced.
@@ -36,7 +36,7 @@ TypeScript contracts in
 Highlights:
 
 - `clients.status ∈ {active, paused, archived}`
-- `clients.service_plan ∈ {google_optimization, complete_online_presence, ads_management_only, complete_plus_ads}`
+- `clients.service_plan ∈ {essential, growth, premium}` — the current public plan slugs only.
 - `upload_submissions.category ∈ {food_photo, kitchen_prep, restaurant_atmosphere, menu_special, short_video, other}`
 - `upload_submissions.priority ∈ {use_anytime, use_next, save_for_weekend, google_post, reel_tiktok_idea}`
 - `upload_submissions.status ∈ {received, in_review, accepted, needs_better_photo, saved_for_later}`
@@ -46,6 +46,20 @@ Highlights:
 - `direction_requests.status ∈ {received, interpreted, in_team_review, planned, completed}`
 - `team_review_decisions.target_type ∈ {upload_submission, direction_request, content_workflow_item}`
 - `team_review_decisions.decision ∈ {accepted, needs_better_photo, saved_for_later, interpreted, sent_to_content_plan, sent_to_google_action, sent_to_ads_planning, completed, rejected}`
+
+
+### Service-plan slug policy
+
+M024A is dev-stage, not production-ready. The `clients.service_plan`
+column accepts only the current public Veroxa plan slugs:
+`essential`, `growth`, and `premium`.
+
+Retired/internal compatibility aliases from older pricing models — for
+example `google_optimization`, `complete_online_presence`,
+`ads_management_only`, and `complete_plus_ads` — may appear in old docs
+or adapter mapping notes only as explicitly retired/internal compatibility
+references. They must be mapped to a current slug before any new row is
+written to `clients.service_plan`.
 
 ## Indexes
 

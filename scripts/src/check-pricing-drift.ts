@@ -142,6 +142,50 @@ for (const [file, text] of pricingDocs) {
   }
 }
 
+const m024Migration = readFileSync(
+  join(root, "supabase/migrations/20260601000000_m024a_first_client_metadata_schema.sql"),
+  "utf8",
+);
+for (const required of [
+  "service_plan text not null default 'essential'",
+  "'essential'",
+  "'growth'",
+  "'premium'",
+  "Retired/internal compatibility aliases",
+  "Production RLS must be",
+]) {
+  if (!m024Migration.includes(required)) {
+    failures.push(`M024A migration is missing current plan/dev-stage marker: ${required}`);
+  }
+}
+if (/check \(service_plan in \([\s\S]*complete_online_presence/.test(m024Migration)) {
+  failures.push("M024A migration service_plan constraint must not accept retired Complete Online Presence as a current slug.");
+}
+if (/check \(service_plan in \([\s\S]*google_optimization/.test(m024Migration)) {
+  failures.push("M024A migration service_plan constraint must not accept retired Google Optimization as a current slug.");
+}
+if (/check \(service_plan in \([\s\S]*ads_management_only/.test(m024Migration)) {
+  failures.push("M024A migration service_plan constraint must not accept retired Ads Management Only as a current slug.");
+}
+if (/check \(service_plan in \([\s\S]*complete_plus_ads/.test(m024Migration)) {
+  failures.push("M024A migration service_plan constraint must not accept retired Complete Plus Ads as a current slug.");
+}
+
+const m024Doc = readFileSync(
+  join(root, "artifacts/veroxa/docs/M024A_SUPABASE_METADATA_SCHEMA_AND_RLS.md"),
+  "utf8",
+);
+for (const required of [
+  "clients.service_plan ∈ {essential, growth, premium}",
+  "Service-plan slug policy",
+  "dev-stage, not production-ready",
+  "retired/internal compatibility",
+]) {
+  if (!m024Doc.includes(required)) {
+    failures.push(`M024A docs are missing current plan/dev-stage marker: ${required}`);
+  }
+}
+
 const pricingSource = readFileSync(
   join(root, "artifacts/veroxa/src/data/pricing/veroxaPricing.ts"),
   "utf8",
