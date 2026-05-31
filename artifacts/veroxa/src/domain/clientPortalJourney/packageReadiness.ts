@@ -5,6 +5,8 @@
  * package rules into client-safe labels for the real Client Portal review path.
  */
 
+import { VEROXA_PLANS } from "@/data/pricing/veroxaPricing";
+
 export type ClientPlanSlug = "essential" | "growth" | "premium";
 
 export type PremiumEligibilityStatus =
@@ -27,59 +29,22 @@ export interface ClientPackageReadinessInput {
   continuouslyActive: boolean;
 }
 
-const PLAN_LABELS: Record<ClientPlanSlug, string> = {
-  essential: "Essential",
-  growth: "Growth",
-  premium: "Premium",
-};
 
-const POSTING_LIMIT_SUMMARY: Record<ClientPlanSlug, string> = {
-  essential: "Up to 1 picture post per day when usable media is available.",
-  growth:
-    "Picture posting plus TikTok/Reels support using the photos and videos you provide.",
-  premium:
-    "Up to 2 content posts per day total: 1 picture post and 1 reel or short video post, when usable media is available.",
-};
 
 export function getCurrentPlanLabel(plan: ClientPlanSlug): string {
-  return PLAN_LABELS[plan];
+  return VEROXA_PLANS[plan].label;
 }
 
 export function getPackagePostingLimitSummary(plan: ClientPlanSlug): string {
-  return POSTING_LIMIT_SUMMARY[plan];
+  return VEROXA_PLANS[plan].postingVolumeSummary;
 }
 
 export function getVeroxaResponsibilitySummary(plan: ClientPlanSlug): string[] {
-  const responsibilities = [
-    "Google Business Profile and Google Maps visibility support",
-    "Google Search SEO basics and page consistency",
-    "Facebook + Instagram presence management",
-    "Captions, content preparation, weekly updates, and monthly snapshots",
-    "Media guidance so your restaurant knows what to send next",
-  ];
-
-  if (plan === "growth" || plan === "premium") {
-    responsibilities.push(
-      "TikTok and Reels posting support using restaurant-provided photos and videos",
-    );
-  }
-
-  if (plan === "premium") {
-    responsibilities.push(
-      "Ads management after readiness, approval, and agreed ad budget",
-    );
-  }
-
-  return responsibilities;
+  return VEROXA_PLANS[plan].veroxaResponsibilities;
 }
 
 export function getRestaurantResponsibilitySummary(): string[] {
-  return [
-    "Provide usable photos and videos when content is needed",
-    "Confirm business-truth changes such as hours, menu items, prices, offers, and important details",
-    "Handle customer replies, comments, DMs, order questions, refunds, complaints, and service conversations",
-    "Pay any ad spend directly to the ad platform if Premium ads are approved later",
-  ];
+  return VEROXA_PLANS.essential.clientResponsibilities;
 }
 
 export function getMediaDependencyReminder(usableMediaAvailable: boolean): string {

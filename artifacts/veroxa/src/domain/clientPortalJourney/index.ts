@@ -85,10 +85,23 @@ export {
 export type {
   FirstFiveCondition,
   FirstFiveClientReadinessFixture,
-  FirstFiveReadinessStatus,
+  FirstFiveClientReadinessModel,
+  FirstFiveClientPortalViewModel,
+  FirstFiveTeamViewModel,
+  FirstFiveTeamCommandCenterSummary,
+  MediaRiskLevel,
+  ContentQueueState,
+  ReportReadinessState,
 } from "./firstFiveReadiness";
 export {
   FIRST_FIVE_CLIENT_READINESS_FIXTURES,
   getFirstFiveClientReadinessStatus,
   getFirstFiveReadinessStatuses,
+  buildFirstFiveClientReadinessModel,
+  mapFirstFiveModelToClientView,
+  mapFirstFiveModelToTeamView,
+  getFirstFiveReadinessModels,
+  getFirstFiveClientPortalViewModels,
+  getFirstFiveTeamViewModels,
+  getFirstFiveTeamCommandCenterSummary,
 } from "./firstFiveReadiness";

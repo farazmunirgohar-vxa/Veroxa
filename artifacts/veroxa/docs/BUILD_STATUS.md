@@ -11,7 +11,7 @@
 > - Premium: **$997/mo**
 > - No contract; cancel anytime
 > - Google Optimization and Facebook + Instagram are included in all plans
-> - Essential max 1 picture post/day; Growth adds TikTok + Reels using provided media; Premium max 2 content posts/day total (1 picture + 1 reel)
+> - Essential max 1 picture post/day; Growth adds TikTok + Reels using provided media; Premium max 1 post/day with ads readiness/support and separate ad spend
 > - Posting depends on usable client-provided media and may slow when usable media is unavailable
 > - Premium requires 1+ month on Essential/Growth, readiness assessment, client approval, and agreed ad budget
 > - Ad spend is always separate and paid directly by the restaurant
@@ -1189,7 +1189,7 @@ internal_demo | future_protected`. The client, team, operator,
 - Growth wording should use: “TikTok + Reels posting support using the photos and videos you provide.”
 - Service boundary: Veroxa does not handle comments, DMs, inboxes, complaints, order questions, refunds, or customer-service conversations at launch.
 - Media dependency: posting depends on usable client-provided media and may slow when usable media is unavailable.
-- Posting limits: Essential allows max 1 picture post/day; Growth adds TikTok + Reels using client-provided media; Premium allows max 2 content posts/day total — 1 picture post + 1 reel / short video post.
+- Posting limits: Essential allows max 1 picture post/day; Growth adds TikTok + Reels using client-provided media; Premium follows the same max 1 post/day public posting cap and adds ads management readiness/support with ad spend separate.
 - Premium requires at least 1 month on Essential or Growth, a Veroxa readiness assessment, client approval, and an agreed ad budget.
 - First-client discount: 20% off for 12 months, then loyalty discount only while continuously active; lost if the client leaves and later returns.
 - Build order remains client side first. Team/Internal Admin heavy AI automation comes after client-side clarity and should later support media review assist, caption drafting, Google/SEO/Maps tasks, reporting generation, Premium readiness checklist, client risk flags, workload tracking, and Pakistan team handoff after 10 clients.

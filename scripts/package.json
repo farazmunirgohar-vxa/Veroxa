@@ -8,7 +8,8 @@
     "check-demo-routes": "tsx ./src/check-demo-routes.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "check-pricing-drift": "tsx ./src/check-pricing-drift.ts",
-    "check-portal-separation": "tsx ./src/check-portal-separation.ts"
+    "check-portal-separation": "tsx ./src/check-portal-separation.ts",
+    "check-business-guardrails": "tsx ./src/check-business-guardrails.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",

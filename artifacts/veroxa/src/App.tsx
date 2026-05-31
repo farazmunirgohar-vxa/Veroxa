@@ -28,6 +28,7 @@ import ClientReports from "@/pages/client-reports";
 // Team Portal (real Veroxa OS review — /team/*, login required)
 import InternalDemoGuard from "@/components/auth/InternalDemoGuard";
 import ClientPortalGuard from "@/components/auth/ClientPortalGuard";
+import { RealPortalDataBoundary } from "@/components/auth/RealPortalDataBoundary";
 import TeamDashboard from "@/pages/team-dashboard";
 import TeamApprovalQueue from "@/pages/team-approval-queue";
 import TeamVisibilityAudit from "@/pages/team-visibility-audit";
@@ -61,35 +62,45 @@ function Router() {
       <Route path="/client/dashboard">
         {() => (
           <ClientPortalGuard>
-            <ClientDashboard />
+            <RealPortalDataBoundary portal="client">
+              <ClientDashboard />
+            </RealPortalDataBoundary>
           </ClientPortalGuard>
         )}
       </Route>
       <Route path="/client/media">
         {() => (
           <ClientPortalGuard>
-            <ClientMedia />
+            <RealPortalDataBoundary portal="client">
+              <ClientMedia />
+            </RealPortalDataBoundary>
           </ClientPortalGuard>
         )}
       </Route>
       <Route path="/client/requests">
         {() => (
           <ClientPortalGuard>
-            <ClientRequests />
+            <RealPortalDataBoundary portal="client">
+              <ClientRequests />
+            </RealPortalDataBoundary>
           </ClientPortalGuard>
         )}
       </Route>
       <Route path="/client/updates">
         {() => (
           <ClientPortalGuard>
-            <ClientUpdates />
+            <RealPortalDataBoundary portal="client">
+              <ClientUpdates />
+            </RealPortalDataBoundary>
           </ClientPortalGuard>
         )}
       </Route>
       <Route path="/client/reports">
         {() => (
           <ClientPortalGuard>
-            <ClientReports />
+            <RealPortalDataBoundary portal="client">
+              <ClientReports />
+            </RealPortalDataBoundary>
           </ClientPortalGuard>
         )}
       </Route>
@@ -98,56 +109,72 @@ function Router() {
       <Route path="/team/dashboard">
         {() => (
           <InternalDemoGuard role="team">
-            <TeamDashboard />
+            <RealPortalDataBoundary portal="team">
+              <TeamDashboard />
+            </RealPortalDataBoundary>
           </InternalDemoGuard>
         )}
       </Route>
       <Route path="/team/upload-inbox">
         {() => (
           <InternalDemoGuard role="team">
-            <TeamUploadInbox />
+            <RealPortalDataBoundary portal="team">
+              <TeamUploadInbox />
+            </RealPortalDataBoundary>
           </InternalDemoGuard>
         )}
       </Route>
       <Route path="/team/work-queue">
         {() => (
           <InternalDemoGuard role="team">
-            <TeamWorkQueue />
+            <RealPortalDataBoundary portal="team">
+              <TeamWorkQueue />
+            </RealPortalDataBoundary>
           </InternalDemoGuard>
         )}
       </Route>
       <Route path="/team/direction-queue">
         {() => (
           <InternalDemoGuard role="team">
-            <TeamDirectionQueue />
+            <RealPortalDataBoundary portal="team">
+              <TeamDirectionQueue />
+            </RealPortalDataBoundary>
           </InternalDemoGuard>
         )}
       </Route>
       <Route path="/team/report-queue">
         {() => (
           <InternalDemoGuard role="team">
-            <TeamReportQueue />
+            <RealPortalDataBoundary portal="team">
+              <TeamReportQueue />
+            </RealPortalDataBoundary>
           </InternalDemoGuard>
         )}
       </Route>
       <Route path="/team/audit-leads">
         {() => (
           <InternalDemoGuard role="team">
-            <TeamAuditLeads />
+            <RealPortalDataBoundary portal="team">
+              <TeamAuditLeads />
+            </RealPortalDataBoundary>
           </InternalDemoGuard>
         )}
       </Route>
       <Route path="/team/approval-queue">
         {() => (
           <InternalDemoGuard role="team">
-            <TeamApprovalQueue />
+            <RealPortalDataBoundary portal="team">
+              <TeamApprovalQueue />
+            </RealPortalDataBoundary>
           </InternalDemoGuard>
         )}
       </Route>
       <Route path="/team/visibility-audit">
         {() => (
           <InternalDemoGuard role="team">
-            <TeamVisibilityAudit />
+            <RealPortalDataBoundary portal="team">
+              <TeamVisibilityAudit />
+            </RealPortalDataBoundary>
           </InternalDemoGuard>
         )}
       </Route>

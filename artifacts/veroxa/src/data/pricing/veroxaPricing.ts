@@ -1,30 +1,26 @@
 // veroxaPricing.ts — internal source of truth for Veroxa pricing.
 //
-// IMPORTANT (owner-locked current pricing — 2026-05-30):
+// IMPORTANT (owner-locked current pricing — 2026-05-31):
 //   * Pricing is owner-locked. Do NOT change any price without explicit
 //     owner approval.
 //   * Current public model: Essential ($497/mo), Growth ($697/mo),
 //     Premium ($997/mo).
 //   * No contract. Cancel anytime.
-//   * Google Optimization and Facebook + Instagram picture posting are
-//     included in all current public plans.
-//   * Essential allows max 1 picture post/day. Growth adds TikTok + Reels
-//     posting support using the photos and videos the client provides.
-//   * Premium allows max 2 content posts/day total: 1 picture + 1 reel.
-//   * Posting depends on usable client-provided media and may slow when
+//   * Posting depends on usable restaurant-provided media and may slow when
 //     usable media is unavailable.
-//   * Premium requires 1+ month on Essential/Growth, a Veroxa readiness
-//     assessment, client approval, and an agreed ad budget.
-//   * Ad spend is ALWAYS separate and paid by the restaurant directly to the
-//     ad platform. No plan includes ad spend.
+//   * All active plans are capped at max 1 post/day unless Faraz explicitly
+//     changes this later.
+//   * Premium adds ads management readiness/support after assessment, client
+//     approval, and agreed ad budget. Ad spend is ALWAYS separate and paid by
+//     the restaurant directly to the ad platform.
+//   * Veroxa does not handle customer conversations, including comments, DMs,
+//     refunds, complaints, or order questions, at launch.
 //   * No payment, billing, or checkout integration exists. Do not add Stripe,
 //     PayPal, or any checkout logic.
 //
 // Legacy package IDs remain below only as internal Free Audit / lead-scoring
 // compatibility aliases. They are retired, internal-only, and not current
 // public pricing.
-
-// ── Plan IDs and labels ──────────────────────────────────────────────
 
 export type VeroxaPlanId =
   | "essential"
@@ -57,6 +53,18 @@ export interface VeroxaPlan {
   includes: string[];
   /** Always false — ad spend is separate, never included. */
   includesAdSpend: false;
+  /** Whether the plan includes ads management readiness/support. */
+  adsSupport: boolean;
+  /** Current posting cap language. */
+  postingVolumeSummary: string;
+  /** Required media dependency language. */
+  mediaDependencySummary: string;
+  /** What Veroxa handles under this package. */
+  veroxaResponsibilities: string[];
+  /** What the restaurant remains responsible for. */
+  clientResponsibilities: string[];
+  /** Premium readiness requirement; null for non-Premium plans. */
+  premiumReadinessRequirement: string | null;
   /** Whether this plan is shown on public pricing surfaces. */
   publicVisible: boolean;
   /** True for compatibility aliases that are not current public pricing. */
@@ -67,14 +75,64 @@ export interface VeroxaPlan {
   status: "active" | "retired";
 }
 
+export const PRICING_NO_CONTRACT_DISCLAIMER = "No contract. Cancel anytime.";
+
+export const AD_SPEND_DISCLAIMER =
+  "Ad spend is separate and paid directly by the restaurant. Veroxa plan pricing does not include ad spend.";
+
+export const MEDIA_DEPENDENCY_DISCLAIMER =
+  "Posting depends on usable client-provided media and may slow when usable media is unavailable. All active plans are capped at max 1 post/day unless Faraz explicitly changes this later.";
+
+export const SERVICE_BOUNDARY_DISCLAIMER =
+  "Veroxa does not handle comments, DMs, inboxes, complaints, order questions, refunds, or customer-service conversations at launch. The restaurant remains responsible for customer replies.";
+
+export const PREMIUM_READINESS_RULE =
+  "Premium requires 1+ month on Essential or Growth, a Veroxa readiness assessment by phone, Zoom, or in person, client approval, and an agreed ad budget.";
+
+export const FIRST_CLIENT_LOYALTY_DISCOUNT_POLICY =
+  "First clients receive 20% off for the first 12 months. After 12 months, that becomes a loyalty discount only while the client remains continuously active; if the client leaves and later returns, the 20% discount is no longer eligible.";
+
+const postingVolumeSummary = "Max 1 post per day, depending on usable client-provided media.";
+const mediaDependencySummary =
+  "Posting depends on usable restaurant-provided photos and videos; Veroxa will ask for more when the supply is low.";
+
+const restaurantResponsibilities = [
+  "Provide usable photos and videos when content is needed",
+  "Confirm business-truth changes such as hours, menu items, prices, offers, and important details",
+  "Handle customer replies, comments, DMs, order questions, refunds, complaints, and service conversations",
+  "Pay any approved ad spend directly to the ad platform",
+];
+
+const essentialResponsibilities = [
+  "Google Business Profile and Google Maps visibility support",
+  "Google Search SEO basics and page consistency",
+  "Facebook + Instagram picture posting",
+  "Basic captions, weekly updates, and monthly performance snapshot",
+  "Client Portal access and media guidance",
+];
+
+const growthResponsibilities = [
+  ...essentialResponsibilities,
+  "TikTok + Reels posting support using restaurant-provided photos and videos",
+  "Reels optimization and enhanced monthly report",
+];
+
+const premiumResponsibilities = [
+  ...growthResponsibilities,
+  "Ads management readiness/support after assessment, client approval, and agreed ad budget",
+  "Ad reporting once approved ads are active later",
+];
+
 const essentialIncludes = [
-  "Google Optimization",
+  "Google Business Profile optimization",
+  "Google Search SEO basics",
+  "Google Maps SEO basics",
   "Facebook + Instagram picture posting",
   "Basic captions",
   "Weekly updates",
   "Monthly performance snapshot",
   "Client Portal access",
-  "Max 1 picture post per day, depending on usable client-provided media",
+  postingVolumeSummary,
 ];
 
 const growthIncludes = [
@@ -82,124 +140,147 @@ const growthIncludes = [
   "TikTok + Reels posting support using the photos and videos you provide",
   "Reels optimization",
   "Enhanced monthly report",
+  postingVolumeSummary,
 ];
 
 const premiumIncludes = [
   "Everything in Growth",
-  "Google, Facebook, Instagram, and TikTok ads management",
-  "Max 2 content posts per day total: 1 picture post + 1 reel / short video post",
+  "Ads management support/readiness after assessment, approval, and agreed ad budget",
   "Platform-specific drafting and adaptation",
-  "Monthly ad performance report",
-  "Premium requires 1+ month on Essential/Growth, readiness assessment, client approval, and agreed ad budget",
-  "Ad spend is separate and paid directly by the restaurant",
+  "Ad reporting once approved ads are active later",
+  postingVolumeSummary,
+  PREMIUM_READINESS_RULE,
+  AD_SPEND_DISCLAIMER,
 ];
 
+function buildPlan(input: {
+  id: VeroxaPlanId;
+  label: VeroxaPlanLabel;
+  priceMonthly: number;
+  tagline: string;
+  includes: string[];
+  adsSupport: boolean;
+  veroxaResponsibilities: string[];
+  publicVisible: boolean;
+  status: "active" | "retired";
+  internalOnly?: boolean;
+  legacyNote?: string;
+}): VeroxaPlan {
+  return {
+    ...input,
+    displayPrice: `$${input.priceMonthly}`,
+    includesAdSpend: false,
+    postingVolumeSummary,
+    mediaDependencySummary,
+    clientResponsibilities: restaurantResponsibilities,
+    premiumReadinessRequirement: input.adsSupport ? PREMIUM_READINESS_RULE : null,
+  };
+}
+
 export const VEROXA_PLANS: Record<VeroxaPlanId, VeroxaPlan> = {
-  essential: {
+  essential: buildPlan({
     id: "essential",
     label: "Essential",
     priceMonthly: 497,
-    displayPrice: "$497",
     tagline:
-      "Core Google Optimization plus Facebook and Instagram picture posting for steady restaurant visibility.",
+      "Core Google Business Profile, Google Maps, and Facebook/Instagram picture-posting support for steady restaurant visibility.",
     includes: essentialIncludes,
-    includesAdSpend: false,
+    adsSupport: false,
+    veroxaResponsibilities: essentialResponsibilities,
     publicVisible: true,
     status: "active",
-  },
+  }),
 
-  growth: {
+  growth: buildPlan({
     id: "growth",
     label: "Growth",
     priceMonthly: 697,
-    displayPrice: "$697",
     tagline:
       "Essential visibility plus TikTok + Reels posting support using the photos and videos you provide, with an enhanced monthly report.",
     includes: growthIncludes,
-    includesAdSpend: false,
+    adsSupport: false,
+    veroxaResponsibilities: growthResponsibilities,
     publicVisible: true,
     status: "active",
-  },
+  }),
 
-  premium: {
+  premium: buildPlan({
     id: "premium",
     label: "Premium",
     priceMonthly: 997,
-    displayPrice: "$997",
     tagline:
-      "Growth coverage plus ads management after readiness assessment, client approval, and agreed ad budget. Ad spend is separate.",
+      "Growth-level posting support plus ads management readiness/support. Ad spend is separate and posting remains media-dependent.",
     includes: premiumIncludes,
-    includesAdSpend: false,
+    adsSupport: true,
+    veroxaResponsibilities: premiumResponsibilities,
     publicVisible: true,
     status: "active",
-  },
+  }),
 
-  google_optimization: {
+  google_optimization: buildPlan({
     id: "google_optimization",
     label: "Google Optimization",
     priceMonthly: 497,
-    displayPrice: "$497",
     tagline:
       "Retired internal alias. Current public recommendation maps this fit to Essential.",
     includes: essentialIncludes,
-    includesAdSpend: false,
+    adsSupport: false,
+    veroxaResponsibilities: essentialResponsibilities,
     publicVisible: false,
     internalOnly: true,
     legacyNote:
       "Retired compatibility alias only; not current public pricing. Use Essential for public display.",
     status: "retired",
-  },
+  }),
 
-  complete_online_presence: {
+  complete_online_presence: buildPlan({
     id: "complete_online_presence",
     label: "Complete Online Presence",
     priceMonthly: 697,
-    displayPrice: "$697",
     tagline:
       "Retired internal alias. Current public recommendation maps this fit to Growth.",
     includes: growthIncludes,
-    includesAdSpend: false,
+    adsSupport: false,
+    veroxaResponsibilities: growthResponsibilities,
     publicVisible: false,
     internalOnly: true,
     legacyNote:
       "Retired compatibility alias only; not current public pricing. Use Growth for public display.",
     status: "retired",
-  },
+  }),
 
-  complete_plus_ads: {
+  complete_plus_ads: buildPlan({
     id: "complete_plus_ads",
     label: "Complete Online Presence + Ads",
     priceMonthly: 997,
-    displayPrice: "$997",
     tagline:
       "Retired internal alias. Current public recommendation maps this fit to Premium.",
     includes: premiumIncludes,
-    includesAdSpend: false,
+    adsSupport: true,
+    veroxaResponsibilities: premiumResponsibilities,
     publicVisible: false,
     internalOnly: true,
     legacyNote:
       "Retired compatibility alias only; not current public pricing. Use Premium for public display.",
     status: "retired",
-  },
+  }),
 
-  ads_management_only: {
+  ads_management_only: buildPlan({
     id: "ads_management_only",
     label: "Ads Management Only",
     priceMonthly: 997,
-    displayPrice: "$997",
     tagline:
       "Retired internal-only alias. Current public recommendation maps this fit to Premium.",
     includes: premiumIncludes,
-    includesAdSpend: false,
+    adsSupport: true,
+    veroxaResponsibilities: premiumResponsibilities,
     publicVisible: false,
     internalOnly: true,
     legacyNote:
       "Retired compatibility alias only; not current public pricing. Use Premium for public display.",
     status: "retired",
-  },
+  }),
 };
-
-// ── Current public pricing helpers ───────────────────────────────────
 
 export const CURRENT_PUBLIC_PLAN_IDS = [
   "essential",
@@ -216,34 +297,15 @@ export const CURRENT_PUBLIC_PLANS = CURRENT_PUBLIC_PLAN_IDS.map(
 export const GLOBAL_PRICING_RULES = [
   "No contract",
   "Cancel anytime",
-  "Google Optimization included in all plans",
+  "Google Business Profile and Google Maps support included in all plans",
   "Facebook + Instagram included in all plans",
-  "Essential: max 1 picture post per day",
-  "Growth: TikTok + Reels posting support using the photos and videos you provide",
-  "Premium: max 2 content posts per day total — 1 picture post + 1 reel / short video post",
+  "All active plans are capped at max 1 post/day",
+  "Growth adds TikTok + Reels posting support using the photos and videos you provide",
+  "Premium adds ads management readiness/support; ad spend is separate",
   "Posting depends on usable client-provided media and may slow when usable media is unavailable",
   "Premium requires 1+ month on Essential/Growth, Veroxa readiness assessment, client approval, and agreed ad budget",
-  "Ad spend is separate and paid directly by the restaurant",
-  "Veroxa does not handle comments, DMs, inboxes, complaints, order questions, refunds, or customer-service conversations at launch",
   "First clients receive 20% off for 12 months, then keep it as a loyalty discount only while continuously active",
 ];
-
-export const PRICING_NO_CONTRACT_DISCLAIMER = "No contract. Cancel anytime.";
-
-export const AD_SPEND_DISCLAIMER =
-  "Ad spend is separate and paid directly by the restaurant. Veroxa plan pricing does not include ad spend.";
-
-export const MEDIA_DEPENDENCY_DISCLAIMER =
-  "Posting depends on usable client-provided media and may slow when usable media is unavailable. Essential allows max 1 picture post/day; Premium allows max 2 content posts/day total: 1 picture + 1 reel.";
-
-export const SERVICE_BOUNDARY_DISCLAIMER =
-  "Veroxa does not handle comments, DMs, inboxes, complaints, order questions, refunds, or customer-service conversations at launch. The restaurant remains responsible for customer replies.";
-
-export const PREMIUM_READINESS_RULE =
-  "Premium requires 1+ month on Essential or Growth, a Veroxa readiness assessment by phone, Zoom, or in person, client approval, and an agreed ad budget.";
-
-export const FIRST_CLIENT_LOYALTY_DISCOUNT_POLICY =
-  "First clients receive 20% off for the first 12 months. After 12 months, that becomes a loyalty discount only while the client remains continuously active; if the client leaves and later returns, the 20% discount is no longer eligible.";
 
 export function getCurrentPublicPlanForLegacyPackage(
   legacyPackageId:

@@ -68,18 +68,12 @@ const pricingPage = readFileSync(
   "utf8",
 );
 for (const required of [
-  "Essential",
-  "$497",
-  "Growth",
-  "$697",
-  "Premium",
-  "$997",
-  "TikTok + Reels posting support using the photos and videos you provide",
+  "CURRENT_PUBLIC_PLANS",
+  "GLOBAL_PRICING_RULES",
+  "MEDIA_DEPENDENCY_DISCLAIMER",
+  "FIRST_CLIENT_LOYALTY_DISCOUNT_POLICY",
   "Premium requires at least 1 month on Essential or Growth",
-  "Posting depends on usable media provided by the restaurant",
-  "First clients receive 20% off for the first 12 months",
-  "loyalty discount",
-  "continuously active",
+  "All active plans are capped at max 1 post/day",
 ]) {
   if (!pricingPage.includes(required)) {
     failures.push(
@@ -106,11 +100,6 @@ if (/comments|DMs|inboxes|customer-service conversations/i.test(pricingPage) && 
 if (/complete social media management/i.test(pricingPage)) {
   failures.push(
     "pricing.tsx contains risky complete social media management wording.",
-  );
-}
-if (/maximum 1 post per day/i.test(pricingPage)) {
-  failures.push(
-    "pricing.tsx contains global maximum 1 post per day wording without Premium's max 2 posts/day total rule.",
   );
 }
 if (/(comments|DMs|inboxes|customer-service).*included/i.test(pricingPage)) {
@@ -169,6 +158,7 @@ for (const required of [
   '"growth"',
   '"premium"',
   "TikTok + Reels posting support using the photos and videos you provide",
+  "Premium adds ads management readiness/support",
   "Premium requires 1+ month on Essential/Growth",
   "SERVICE_BOUNDARY_DISCLAIMER",
   "FIRST_CLIENT_LOYALTY_DISCOUNT_POLICY",
