@@ -32,6 +32,7 @@ import { RealPortalDataBoundary } from "@/components/auth/RealPortalDataBoundary
 import TeamDashboard from "@/pages/team-dashboard";
 import TeamApprovalQueue from "@/pages/team-approval-queue";
 import TeamVisibilityAudit from "@/pages/team-visibility-audit";
+import TeamFirstClientReadiness from "@/pages/team-first-client-readiness";
 import TeamUploadInbox from "@/pages/team-upload-inbox";
 import TeamWorkQueue from "@/pages/team-work-queue";
 import TeamDirectionQueue from "@/pages/team-direction-queue";
@@ -174,6 +175,15 @@ function Router() {
           <InternalDemoGuard role="team">
             <RealPortalDataBoundary portal="team">
               <TeamVisibilityAudit />
+            </RealPortalDataBoundary>
+          </InternalDemoGuard>
+        )}
+      </Route>
+      <Route path="/team/first-client-readiness">
+        {() => (
+          <InternalDemoGuard role="team">
+            <RealPortalDataBoundary portal="team">
+              <TeamFirstClientReadiness />
             </RealPortalDataBoundary>
           </InternalDemoGuard>
         )}

@@ -88,6 +88,14 @@ export const teamRoutes: RealRoute[] = [
     description: "Google Maps and local visibility readiness review.",
   },
   {
+    path: "/team/first-client-readiness",
+    role: "team",
+    label: "First-Client Readiness",
+    demoPath: "/demo/client/dashboard",
+    description:
+      "First-client readiness foundation for manual operations and review gates.",
+  },
+  {
     path: "/team/upload-inbox",
     role: "team",
     label: "Upload Inbox",

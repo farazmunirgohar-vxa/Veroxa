@@ -13,6 +13,7 @@ import {
   PhoneCall,
   ClipboardCheck,
   ScanSearch,
+  ShieldCheck,
 } from "lucide-react";
 import type { SidebarItem } from "@/components/PortalLayout";
 
@@ -20,6 +21,7 @@ export const teamPortalNavItems: SidebarItem[] = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/team/dashboard" },
   { label: "Approvals", icon: ClipboardCheck, href: "/team/approval-queue" },
   { label: "Visibility Audit", icon: ScanSearch, href: "/team/visibility-audit" },
+  { label: "First-Client Readiness", icon: ShieldCheck, href: "/team/first-client-readiness" },
   { label: "Upload Inbox", icon: Inbox, href: "/team/upload-inbox" },
   { label: "Work Queue", icon: ListChecks, href: "/team/work-queue" },
   { label: "Direction Queue", icon: Compass, href: "/team/direction-queue" },

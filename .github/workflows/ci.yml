@@ -45,3 +45,6 @@ jobs:
 
       - name: Business rule guardrail
         run: pnpm --filter @workspace/scripts run check-business-guardrails
+
+      - name: First-client readiness guardrail
+        run: pnpm --filter @workspace/scripts run check-first-client-readiness

@@ -27,6 +27,9 @@ phase" language elsewhere in this index.
 - [`BUILD_STATUS.md`](./BUILD_STATUS.md) — top section is the
   authoritative current-state summary, current next-step ladder,
   and the allowed / forbidden next prompt themes.
+- [`FIRST_CLIENT_READINESS_FOUNDATION.md`](./FIRST_CLIENT_READINESS_FOUNDATION.md)
+  — first 1–5 client operating model, manual execution boundary,
+  launch gate, and readiness checklists for Faraz and future builders.
 - [`CLIENT_HEALTH_ENGINE_CONTRACT.md`](./CLIENT_HEALTH_ENGINE_CONTRACT.md)
   — authoritative outputs of `ClientHealthEngine` and latest
   per-page drift audit.
@@ -100,13 +103,13 @@ phase" language elsewhere in this index.
   Veroxa's #1 priority (bring restaurants more customers) and the
   6-question feature filter.
 - [`ROUTE_VISIBILITY_STRATEGY.md`](./ROUTE_VISIBILITY_STRATEGY.md) —
-  who is supposed to see what URL; `/demo/client` public,
-  `/demo/team` / `/demo/operator` / `/demo/owner`
-  internal-protect-later.
+  route visibility history. Current active routing is public pages,
+  `/demo/client/dashboard`, `/client/*`, and guarded `/team/*`.
 - [`ROUTE_ARCHITECTURE.md`](./ROUTE_ARCHITECTURE.md) — full map of
   public, internal demo, and future real routes.
 - [`INTERNAL_DEMO_PROTECTION_PLAN.md`](./INTERNAL_DEMO_PROTECTION_PLAN.md)
-  — options for protecting Team / Operator / Owner demos later.
+  — historical internal-demo protection notes; current active roles are
+  Restaurant Partner / Client and Veroxa Team / Faraz only.
 - [`PRE_AUTH_TECHNICAL_CHECKLIST.md`](./PRE_AUTH_TECHNICAL_CHECKLIST.md)
   — every item that must be ticked before proposing Real Auth V1.
 - [`NEXT_PROMPT_REAL_AUTH_V1_DRAFT.md`](./NEXT_PROMPT_REAL_AUTH_V1_DRAFT.md)
