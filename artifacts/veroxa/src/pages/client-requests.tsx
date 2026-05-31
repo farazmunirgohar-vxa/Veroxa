@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { ArrowRight, CheckCircle2, HelpCircle, MessageSquare } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  HelpCircle,
+  MessageSquare,
+} from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +13,8 @@ import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientPortalData } from "@/hooks/useClientPortalData";
 import { ClientRequestsClarity } from "@/components/ClientExecutionReinforcement";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
+import { RealPortalReviewNotice } from "@/components/RealPortalSafeStates";
+import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary";
 import { demoClientTeamWorkflow } from "@/data/workflows/clientTeamWorkflow";
 import {
   getClientActionNeededItems,
@@ -35,7 +42,12 @@ const priorityTone = {
 
 export default function ClientRequests() {
   const { source, dataSourceMessage } = useClientPortalData();
-  const actionItems = getClientActionNeededItems(demoClientTeamWorkflow, SHOWCASE_ID);
+  const portalDataMode = useRealPortalDataMode();
+  const canUseFixtureData =
+    portalDataMode.allowDemoFixtures || portalDataMode.isLiveDataConnected;
+  const actionItems = canUseFixtureData
+    ? getClientActionNeededItems(demoClientTeamWorkflow, SHOWCASE_ID)
+    : [];
   const { activeClientId } = useActiveClientPortalContext();
   const [noteText, setNoteText] = useState("");
   const [sentMessage, setSentMessage] = useState<string | null>(null);
@@ -43,6 +55,14 @@ export default function ClientRequests() {
   const handleSendNote = () => {
     const trimmed = noteText.trim();
     if (!trimmed) return;
+    if (!canUseFixtureData) {
+      setNoteText("");
+      setSentMessage(
+        "Your note is captured in this review shell. Live account requests will be connected before launch.",
+      );
+      return;
+    }
+
     createWorkflowItem({
       clientId: activeClientId,
       type: "client_request",
@@ -58,8 +78,12 @@ export default function ClientRequests() {
 
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
+      <RealPortalReviewNotice className="mb-4" />
       <div className="mb-4">
-        <h2 className="text-2xl md:text-3xl font-bold tracking-tight" data-testid="header-client-requests">
+        <h2
+          className="text-2xl md:text-3xl font-bold tracking-tight"
+          data-testid="header-client-requests"
+        >
           Requests from Veroxa
         </h2>
         <DataSourceBadge source={source} message={dataSourceMessage} />
@@ -68,11 +92,16 @@ export default function ClientRequests() {
         </p>
       </div>
 
-      <div className="mb-4">
-        <ClientRequestsClarity clientId={SHOWCASE_ID} />
-      </div>
+      {canUseFixtureData && (
+        <div className="mb-4">
+          <ClientRequestsClarity clientId={SHOWCASE_ID} />
+        </div>
+      )}
 
-      <Card className="bg-card border-border mb-4" data-testid="card-client-action-needed">
+      <Card
+        className="bg-card border-border mb-4"
+        data-testid="card-client-action-needed"
+      >
         <CardHeader className="pb-3">
           <CardTitle className="text-sm flex items-center gap-2">
             <HelpCircle className="w-4 h-4 text-primary" />
@@ -84,9 +113,12 @@ export default function ClientRequests() {
             <div className="flex items-start gap-2 rounded-md border border-emerald-500/20 bg-emerald-500/5 px-3 py-3">
               <CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-sm font-medium">Nothing needed from you right now</p>
+                <p className="text-sm font-medium">
+                  Nothing needed from you right now
+                </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Veroxa is handling the current work. We&apos;ll ask here if we need a quick detail.
+                  Veroxa is handling the current work. We&apos;ll ask here if we
+                  need a quick detail.
                 </p>
               </div>
             </div>
@@ -98,8 +130,13 @@ export default function ClientRequests() {
                 data-testid={`client-request-${item.id}`}
               >
                 <div className="flex items-start justify-between gap-2 flex-wrap mb-1.5">
-                  <p className="text-sm font-medium leading-snug">{item.title}</p>
-                  <Badge variant="outline" className={`text-[10px] ${priorityTone[item.priority]}`}>
+                  <p className="text-sm font-medium leading-snug">
+                    {item.title}
+                  </p>
+                  <Badge
+                    variant="outline"
+                    className={`text-[10px] ${priorityTone[item.priority]}`}
+                  >
                     {priorityLabel[item.priority]}
                   </Badge>
                 </div>
@@ -115,13 +152,17 @@ export default function ClientRequests() {
         </CardContent>
       </Card>
 
-      <Card className="bg-primary/5 border-primary/20" data-testid="card-client-request-note">
+      <Card
+        className="bg-primary/5 border-primary/20"
+        data-testid="card-client-request-note"
+      >
         <CardContent className="p-4 flex items-start gap-3">
           <ArrowRight className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
           <div>
             <p className="text-sm font-semibold">How this works</p>
             <p className="text-xs text-muted-foreground leading-relaxed mt-1">
-              Send the requested detail or photo when convenient. Veroxa reviews everything before anything is shown publicly.
+              Send the requested detail or photo when convenient. Veroxa reviews
+              everything before anything is shown publicly.
             </p>
           </div>
         </CardContent>

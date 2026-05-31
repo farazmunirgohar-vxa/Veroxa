@@ -17,6 +17,11 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
+import {
+  RealPortalReviewNotice,
+  SafePortalEmptyCard,
+} from "@/components/RealPortalSafeStates";
+import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary";
 import { teamPortalNavItems } from "@/lib/teamPortalNav";
 import { PageHeader } from "@/components/common";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -125,7 +130,7 @@ function formatUsd(n: number): string {
 
 const DEMO_SEED_INPUTS = [
   {
-    restaurantName: "Demo Grill House",
+    restaurantName: "Launch Readiness Lead 1",
     city: "Phoenix",
     state: "AZ",
     cuisineType: "Steakhouse",
@@ -135,7 +140,7 @@ const DEMO_SEED_INPUTS = [
     menuOrderingUrl: "https://demogrillhouse.example/menu",
   },
   {
-    restaurantName: "Demo Momo Kitchen",
+    restaurantName: "Launch Readiness Lead 2",
     city: "Austin",
     state: "TX",
     cuisineType: "Nepalese",
@@ -143,7 +148,7 @@ const DEMO_SEED_INPUTS = [
     facebookUrl: "https://facebook.com/demomomo",
   },
   {
-    restaurantName: "Demo Mediterranean Table",
+    restaurantName: "Launch Readiness Lead 3",
     city: "Chicago",
     state: "IL",
     cuisineType: "Mediterranean",
@@ -216,7 +221,9 @@ function buildDemoSeedLeads(): AuditLeadRecord[] {
       projectedStandardMonthlyMrr: internal.projectedStandardMonthlyMrr,
       nextAction: internal.nextAction,
       followUpStatus:
-        stage === "walkthrough_requested" ? "follow_up_due" : "no_follow_up_needed",
+        stage === "walkthrough_requested"
+          ? "follow_up_due"
+          : "no_follow_up_needed",
       internalNotes: [],
     });
   });
@@ -224,6 +231,10 @@ function buildDemoSeedLeads(): AuditLeadRecord[] {
 }
 
 export default function TeamAuditLeads() {
+  const portalDataMode = useRealPortalDataMode();
+  const canUseFixtureData =
+    portalDataMode.allowDemoFixtures || portalDataMode.isLiveDataConnected;
+
   const [leads, setLeads] = useState<AuditLeadRecord[]>([]);
   const [filter, setFilter] = useState<FilterTab>("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -403,7 +414,9 @@ export default function TeamAuditLeads() {
     setHandoff(advanceHandoffStatus(selected.id));
   }
 
-  function handleToggleChecklist(key: (typeof ONBOARDING_CHECKLIST_ITEMS)[number]["key"]) {
+  function handleToggleChecklist(
+    key: (typeof ONBOARDING_CHECKLIST_ITEMS)[number]["key"],
+  ) {
     if (!selected) return;
     setHandoff(toggleChecklistItem(selected.id, key));
   }
@@ -424,10 +437,14 @@ export default function TeamAuditLeads() {
           websiteFound: selected.selectedRestaurant?.websiteFound,
           menuLinkFound: selected.selectedRestaurant?.menuLinkFound,
           socialFound:
-            (selected.selectedRestaurant?.discoveredSocialLinks?.length ?? 0) > 0,
+            (selected.selectedRestaurant?.discoveredSocialLinks?.length ?? 0) >
+            0,
         },
       });
-      if (res.draft && (res.mode === "ai" || res.mode === "rule_based_fallback")) {
+      if (
+        res.draft &&
+        (res.mode === "ai" || res.mode === "rule_based_fallback")
+      ) {
         setAiSummary({
           mode: res.mode,
           text: res.draft.text || fallback.headline,
@@ -454,6 +471,19 @@ export default function TeamAuditLeads() {
     }
   }
 
+  if (!canUseFixtureData) {
+    return (
+      <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
+        <RealPortalReviewNotice />
+        <SafePortalEmptyCard
+          title="Audit Leads in review"
+          body="Live audit leads are not connected yet. The real route is ready for Faraz without showing seeded demo restaurants as active leads."
+          testId="empty-team-audit-leads"
+        />
+      </PortalLayout>
+    );
+  }
+
   return (
     <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
       <PageHeader
@@ -463,7 +493,11 @@ export default function TeamAuditLeads() {
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
-        <SummaryCard label="Total Leads" value={summary.totalLeads} icon={Users} />
+        <SummaryCard
+          label="Total Leads"
+          value={summary.totalLeads}
+          icon={Users}
+        />
         <SummaryCard
           label="Walkthrough Requested"
           value={summary.walkthroughRequested}
@@ -521,7 +555,10 @@ export default function TeamAuditLeads() {
       </Card>
 
       {/* Lead pipeline strip */}
-      <Card className="bg-card border-border mb-4" data-testid="audit-pipeline-strip">
+      <Card
+        className="bg-card border-border mb-4"
+        data-testid="audit-pipeline-strip"
+      >
         <CardHeader>
           <CardTitle className="text-base">Audit Lead Pipeline</CardTitle>
         </CardHeader>
@@ -589,8 +626,8 @@ export default function TeamAuditLeads() {
         <div className="mb-3 rounded-md border border-amber-500/40 bg-amber-500/5 p-3">
           <p className="text-[12px] text-amber-400">
             Showing fictional demo leads. No saved leads exist yet — run a free
-            audit or add a manual prospect to begin. Stage updates and notes
-            are disabled for demo seed leads.
+            audit or add a manual prospect to begin. Stage updates and notes are
+            disabled for demo seed leads.
           </p>
         </div>
       )}
@@ -697,12 +734,14 @@ export default function TeamAuditLeads() {
                         <Badge
                           variant="outline"
                           className={
-                            l.selectedRestaurant.selectedSource === "google_places"
+                            l.selectedRestaurant.selectedSource ===
+                            "google_places"
                               ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/5 text-[10px]"
                               : "border-muted-foreground/30 text-muted-foreground bg-muted/10 text-[10px]"
                           }
                         >
-                          {l.selectedRestaurant.selectedSource === "google_places"
+                          {l.selectedRestaurant.selectedSource ===
+                          "google_places"
                             ? "Live"
                             : l.selectedRestaurant.selectedSource === "fixture"
                               ? "Preview"
@@ -725,8 +764,8 @@ export default function TeamAuditLeads() {
                             Menu/order found
                           </Badge>
                         )}
-                        {(l.selectedRestaurant.discoveredSocialLinks?.length ?? 0) >
-                          0 && (
+                        {(l.selectedRestaurant.discoveredSocialLinks?.length ??
+                          0) > 0 && (
                           <Badge
                             variant="outline"
                             className="border-sky-500/40 text-sky-400 bg-sky-500/5 text-[10px]"
@@ -1149,7 +1188,8 @@ export default function TeamAuditLeads() {
                                 : ""}
                             </p>
                           )}
-                          {prioritization.manualVerificationNeeded.length > 0 && (
+                          {prioritization.manualVerificationNeeded.length >
+                            0 && (
                             <div>
                               <p className="text-[10px] uppercase tracking-wider text-amber-400">
                                 Manual verification needed
@@ -1166,10 +1206,12 @@ export default function TeamAuditLeads() {
                           {prioritization.historicalAdjustment !== 0 && (
                             <p className="text-[10px] text-muted-foreground italic">
                               Adjusted{" "}
-                              {prioritization.historicalAdjustment > 0 ? "+" : ""}
+                              {prioritization.historicalAdjustment > 0
+                                ? "+"
+                                : ""}
                               {prioritization.historicalAdjustment} from logged
-                              outcomes (small by design). Patterns are signals, not
-                              rules.
+                              outcomes (small by design). Patterns are signals,
+                              not rules.
                             </p>
                           )}
                         </div>
@@ -1194,7 +1236,8 @@ export default function TeamAuditLeads() {
                         />
                       </div>
 
-                      {leadIntel.marketingInvestment.possiblePaidServiceSignal && (
+                      {leadIntel.marketingInvestment
+                        .possiblePaidServiceSignal && (
                         <p className="text-[10px] text-amber-400 italic mb-2">
                           Possible paid-service signal — needs manual
                           verification. Never treated as confirmed spend.
@@ -1538,8 +1581,9 @@ export default function TeamAuditLeads() {
                         </Badge>
                       </div>
                       <p className="text-[10px] text-muted-foreground mb-2">
-                        Simulated handoff — no account is created, nothing is sent.
-                        Tracks the steps before a won lead becomes an active client.
+                        Simulated handoff — no account is created, nothing is
+                        sent. Tracks the steps before a won lead becomes an
+                        active client.
                       </p>
                       <div className="space-y-1">
                         {ONBOARDING_CHECKLIST_ITEMS.map((item) => {
@@ -1556,7 +1600,13 @@ export default function TeamAuditLeads() {
                                 onChange={() => handleToggleChecklist(item.key)}
                                 className="mt-0.5"
                               />
-                              <span className={done ? "line-through text-muted-foreground" : ""}>
+                              <span
+                                className={
+                                  done
+                                    ? "line-through text-muted-foreground"
+                                    : ""
+                                }
+                              >
                                 {item.label}
                               </span>
                             </label>
@@ -1605,8 +1655,8 @@ export default function TeamAuditLeads() {
                     </div>
                     {showingDemoSeed && (
                       <p className="text-[11px] text-muted-foreground mt-2 italic">
-                        Stage updates are disabled while showing fictional
-                        demo leads.
+                        Stage updates are disabled while showing fictional demo
+                        leads.
                       </p>
                     )}
                   </div>

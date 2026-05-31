@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { FileText, FileBarChart } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
+import {
+  RealPortalReviewNotice,
+  SafePortalEmptyCard,
+} from "@/components/RealPortalSafeStates";
+import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -31,23 +36,31 @@ import {
 } from "@/lib/ai/aiDraftClient";
 
 const weeklyStatusColor: Record<WeeklyReportStatus, string> = {
-  "Draft":              "border-muted-foreground/40 text-muted-foreground bg-muted/30",
-  "Team Review":    "border-amber-500/40 text-amber-300 bg-amber-500/10",
-  "Ready for Client":   "border-emerald-500/40 text-emerald-300 bg-emerald-500/10",
-  "Published":          "border-sky-500/40 text-sky-300 bg-sky-500/10",
+  Draft: "border-muted-foreground/40 text-muted-foreground bg-muted/30",
+  "Team Review": "border-amber-500/40 text-amber-300 bg-amber-500/10",
+  "Ready for Client":
+    "border-emerald-500/40 text-emerald-300 bg-emerald-500/10",
+  Published: "border-sky-500/40 text-sky-300 bg-sky-500/10",
 };
 
 const monthlyStatusMap: Record<string, string> = {
-  "Draft":           "border-muted-foreground/40 text-muted-foreground bg-muted/30",
+  Draft: "border-muted-foreground/40 text-muted-foreground bg-muted/30",
   "Team Review": "border-amber-500/40 text-amber-300 bg-amber-500/10",
-  "Published":       "border-sky-500/40 text-sky-300 bg-sky-500/10",
+  Published: "border-sky-500/40 text-sky-300 bg-sky-500/10",
 };
 
 const weeklyStages: WeeklyReportStatus[] = [
-  "Draft", "Team Review", "Ready for Client", "Published",
+  "Draft",
+  "Team Review",
+  "Ready for Client",
+  "Published",
 ];
 
 export default function TeamReportQueue() {
+  const portalDataMode = useRealPortalDataMode();
+  const canUseFixtureData =
+    portalDataMode.allowDemoFixtures || portalDataMode.isLiveDataConnected;
+
   const [tab, setTab] = useState<"weekly" | "monthly">("weekly");
   const [draftMode, setDraftMode] = useState<AiDraftMode | null>(null);
   const [generating, setGenerating] = useState(false);
@@ -75,6 +88,19 @@ export default function TeamReportQueue() {
     stage: s,
     items: demoWeeklyReports.filter((r) => r.status === s),
   }));
+
+  if (!canUseFixtureData) {
+    return (
+      <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
+        <RealPortalReviewNotice />
+        <SafePortalEmptyCard
+          title="Report Queue in review"
+          body="Live weekly and monthly reports are not connected yet. Report drafts will appear here after real account data is prepared."
+          testId="empty-team-report-queue"
+        />
+      </PortalLayout>
+    );
+  }
 
   return (
     <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
@@ -124,7 +150,10 @@ export default function TeamReportQueue() {
           hasMetrics: false,
         });
         const drafts = [weeklyDraft, monthlyDraft];
-        const structuredByTitle: Record<string, ReturnType<typeof reportDraftOutput>> = {
+        const structuredByTitle: Record<
+          string,
+          ReturnType<typeof reportDraftOutput>
+        > = {
           [weeklyDraft.title]: reportDraftOutput({
             reportTitle: "This week",
             cadence: "weekly",
@@ -139,7 +168,10 @@ export default function TeamReportQueue() {
           }),
         };
         return (
-          <Card className="bg-card border-primary/20 mb-4" data-testid="card-ai-report-drafts">
+          <Card
+            className="bg-card border-primary/20 mb-4"
+            data-testid="card-ai-report-drafts"
+          >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold flex items-center justify-between gap-2 flex-wrap">
                 <span className="flex items-center gap-2">
@@ -182,15 +214,32 @@ export default function TeamReportQueue() {
                       <div className="flex gap-1.5 flex-wrap">
                         {structuredByTitle[d.title] && (
                           <>
-                            <Badge variant="outline" className="border-border bg-muted/30 text-[10px]">
-                              {AI_CONFIDENCE_LABELS[structuredByTitle[d.title].confidenceLevel]}
+                            <Badge
+                              variant="outline"
+                              className="border-border bg-muted/30 text-[10px]"
+                            >
+                              {
+                                AI_CONFIDENCE_LABELS[
+                                  structuredByTitle[d.title].confidenceLevel
+                                ]
+                              }
                             </Badge>
-                            <Badge variant="outline" className="border-border bg-muted/30 text-[10px]">
-                              {AI_AUTOMATION_READINESS_LABELS[structuredByTitle[d.title].automationReadiness]}
+                            <Badge
+                              variant="outline"
+                              className="border-border bg-muted/30 text-[10px]"
+                            >
+                              {
+                                AI_AUTOMATION_READINESS_LABELS[
+                                  structuredByTitle[d.title].automationReadiness
+                                ]
+                              }
                             </Badge>
                           </>
                         )}
-                        <Badge variant="outline" className="border-amber-500/40 bg-amber-500/10 text-amber-300 text-[10px]">
+                        <Badge
+                          variant="outline"
+                          className="border-amber-500/40 bg-amber-500/10 text-amber-300 text-[10px]"
+                        >
                           Human verification required
                         </Badge>
                       </div>
@@ -221,7 +270,11 @@ export default function TeamReportQueue() {
         );
       })()}
 
-      <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)} className="w-full">
+      <Tabs
+        value={tab}
+        onValueChange={(v) => setTab(v as typeof tab)}
+        className="w-full"
+      >
         <TabsList className="grid grid-cols-2 w-full max-w-xs mb-4">
           <TabsTrigger value="weekly">
             <FileText className="w-4 h-4 mr-2" /> Weekly
@@ -235,7 +288,11 @@ export default function TeamReportQueue() {
         <TabsContent value="weekly" className="mt-0">
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
             {weeklyByStage.map(({ stage, items }) => (
-              <Card key={stage} className="bg-card border-border" data-testid={`weekly-col-${stage.replace(/\s/g, "-").toLowerCase()}`}>
+              <Card
+                key={stage}
+                className="bg-card border-border"
+                data-testid={`weekly-col-${stage.replace(/\s/g, "-").toLowerCase()}`}
+              >
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm font-semibold flex items-center justify-between">
                     <span>{stage}</span>
@@ -279,16 +336,19 @@ export default function TeamReportQueue() {
         <TabsContent value="monthly" className="mt-0">
           <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-lg">Monthly reports — {demoMonthlyReports[0]?.monthLabel}</CardTitle>
+              <CardTitle className="text-lg">
+                Monthly reports — {demoMonthlyReports[0]?.monthLabel}
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               {demoMonthlyReports.map((r) => {
-                const statusLabel =
-                  r.healthSummary.toLowerCase().startsWith("critical")
-                    ? "Draft"
-                    : r.healthSummary.toLowerCase().startsWith("attention")
-                      ? "Team Review"
-                      : "Published";
+                const statusLabel = r.healthSummary
+                  .toLowerCase()
+                  .startsWith("critical")
+                  ? "Draft"
+                  : r.healthSummary.toLowerCase().startsWith("attention")
+                    ? "Team Review"
+                    : "Published";
 
                 return (
                   <div
@@ -319,7 +379,10 @@ export default function TeamReportQueue() {
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-0.5 text-[10px] text-muted-foreground mt-1.5">
                       {r.contentPerformance.map((m) => (
                         <span key={m.label}>
-                          {m.label}: <span className="text-foreground/70 font-medium">{m.value}</span>
+                          {m.label}:{" "}
+                          <span className="text-foreground/70 font-medium">
+                            {m.value}
+                          </span>
                         </span>
                       ))}
                     </div>

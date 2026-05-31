@@ -13,6 +13,11 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
+import {
+  RealPortalReviewNotice,
+  SafePortalEmptyCard,
+} from "@/components/RealPortalSafeStates";
+import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -38,7 +43,10 @@ import { clientTeamWorkRepository } from "@/lib/repositories";
 import { getRestaurantName } from "@/data/demoData";
 import { isSupabaseReadonlyMode } from "@/lib/data/dataMode";
 import { readUploadSubmissionsInbox } from "@/lib/data/uploadSubmissionsReadOnly";
-import { previewMediaReview, mediaReviewOutput } from "@/lib/ai/aiAgentPreviewEngine";
+import {
+  previewMediaReview,
+  mediaReviewOutput,
+} from "@/lib/ai/aiAgentPreviewEngine";
 import {
   AI_AGENT_STATUS_LABELS,
   AI_MEDIA_USAGE_LABELS,
@@ -74,18 +82,24 @@ const nextActionByStatus: Record<DemoUploadStatus, string> = {
  * falls back to sample data so the inbox is never empty.
  */
 export default function TeamUploadInbox() {
-  const [fixtureItems, setFixtureItems] = useState<DemoUploadSubmission[]>(() => [
-    ...demoUploadSubmissions,
-  ]);
-  const [localItems, setLocalItems] = useState<DemoUploadSubmission[]>(
-    () => getLocalUploadSubmissions(),
+  const portalDataMode = useRealPortalDataMode();
+  const canUseFixtureData =
+    portalDataMode.allowDemoFixtures || portalDataMode.isLiveDataConnected;
+
+  const [fixtureItems, setFixtureItems] = useState<DemoUploadSubmission[]>(
+    () => [...demoUploadSubmissions],
+  );
+  const [localItems, setLocalItems] = useState<DemoUploadSubmission[]>(() =>
+    getLocalUploadSubmissions(),
   );
   const [liveItems, setLiveItems] = useState<DemoUploadSubmission[]>([]);
   const [liveIds, setLiveIds] = useState<Set<string>>(() => new Set());
   const [showInternalTools, setShowInternalTools] = useState(false);
 
   useEffect(() => {
-    const unsub = subscribeToLocalUploadSubmissions((next) => setLocalItems(next));
+    const unsub = subscribeToLocalUploadSubmissions((next) =>
+      setLocalItems(next),
+    );
     setLocalItems(getLocalUploadSubmissions());
     return unsub;
   }, []);
@@ -130,7 +144,9 @@ export default function TeamUploadInbox() {
   function updateStatus(id: string, status: DemoUploadStatus) {
     // Live (read-only) rows: triage stays in-memory only — no write-back.
     if (liveIds.has(id)) {
-      setLiveItems((curr) => curr.map((s) => (s.id === id ? { ...s, status } : s)));
+      setLiveItems((curr) =>
+        curr.map((s) => (s.id === id ? { ...s, status } : s)),
+      );
       return;
     }
     if (isLocalUploadSubmission(id)) {
@@ -138,7 +154,9 @@ export default function TeamUploadInbox() {
       setLocalItems(getLocalUploadSubmissions());
       return;
     }
-    setFixtureItems((curr) => curr.map((s) => (s.id === id ? { ...s, status } : s)));
+    setFixtureItems((curr) =>
+      curr.map((s) => (s.id === id ? { ...s, status } : s)),
+    );
   }
 
   function handleClearSession() {
@@ -156,6 +174,19 @@ export default function TeamUploadInbox() {
         .slice(0, 3),
     [],
   );
+
+  if (!canUseFixtureData) {
+    return (
+      <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
+        <RealPortalReviewNotice />
+        <SafePortalEmptyCard
+          title="Upload Inbox in review"
+          body="Live upload submissions are not connected yet. New restaurant media submissions will appear here after live account data is prepared."
+          testId="empty-team-upload-inbox"
+        />
+      </PortalLayout>
+    );
+  }
 
   return (
     <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
@@ -184,8 +215,8 @@ export default function TeamUploadInbox() {
       {/* Session controls — subtle */}
       <div className="flex flex-wrap items-center justify-between gap-2 mb-4 text-xs text-muted-foreground">
         <span>
-          {localItems.length} upload{localItems.length === 1 ? "" : "s"} from this
-          browser session.
+          {localItems.length} upload{localItems.length === 1 ? "" : "s"} from
+          this browser session.
         </span>
         <Button
           variant="outline"
@@ -202,7 +233,8 @@ export default function TeamUploadInbox() {
       {grouped.length === 0 && (
         <Card>
           <CardContent className="p-8 text-center text-sm text-muted-foreground">
-            No uploads yet. Restaurant teams can submit content from the upload page.
+            No uploads yet. Restaurant teams can submit content from the upload
+            page.
           </CardContent>
         </Card>
       )}
@@ -235,7 +267,10 @@ export default function TeamUploadInbox() {
                   }
                   context={s.note ? `"${s.note}"` : undefined}
                   suggestedAction={nextActionByStatus[s.status]}
-                  status={{ label: demoUploadStatusLabels[s.status], tone: statusTone[s.status] }}
+                  status={{
+                    label: demoUploadStatusLabels[s.status],
+                    tone: statusTone[s.status],
+                  }}
                   meta={`${demoUploadCategoryLabels[s.category]} · Submitted ${s.submittedAtLabel}`}
                   actions={[
                     {
@@ -270,16 +305,27 @@ export default function TeamUploadInbox() {
         ))}
       </div>
 
-      <p className="text-[11px] text-muted-foreground/70 mt-4 px-0.5" data-testid="upload-inbox-flow-note">
+      <p
+        className="text-[11px] text-muted-foreground/70 mt-4 px-0.5"
+        data-testid="upload-inbox-flow-note"
+      >
         Accepted uploads become work items in the{" "}
-        <Link href="/team/work-queue" className="text-primary hover:underline" data-testid="link-to-work-queue">
+        <Link
+          href="/team/work-queue"
+          className="text-primary hover:underline"
+          data-testid="link-to-work-queue"
+        >
           Work Queue
         </Link>
-        . Re-shoot requests come back to the restaurant as a simple action on their portal.
+        . Re-shoot requests come back to the restaurant as a simple action on
+        their portal.
       </p>
 
       {/* Internal preview tools — collapsed by default so they never dominate. */}
-      <div className="mt-6 border-t border-border pt-4" data-testid="section-internal-preview-tools">
+      <div
+        className="mt-6 border-t border-border pt-4"
+        data-testid="section-internal-preview-tools"
+      >
         <button
           type="button"
           onClick={() => setShowInternalTools((v) => !v)}
@@ -295,7 +341,10 @@ export default function TeamUploadInbox() {
         {showInternalTools && (
           <div className="mt-3 space-y-3">
             {previewMediaSubs.length > 0 && (
-              <Card className="bg-card border-border" data-testid="card-ai-media-review">
+              <Card
+                className="bg-card border-border"
+                data-testid="card-ai-media-review"
+              >
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm">
                     Suggested media notes ({previewMediaSubs.length})
@@ -312,28 +361,45 @@ export default function TeamUploadInbox() {
                         data-testid={`ai-media-review-${s.id}`}
                       >
                         <div className="flex items-start justify-between gap-2 flex-wrap mb-1">
-                          <p className="font-semibold text-foreground">{s.title}</p>
+                          <p className="font-semibold text-foreground">
+                            {s.title}
+                          </p>
                           <div className="flex gap-1.5 flex-wrap">
-                            <Badge variant="outline" className="border-border bg-muted/30 text-[10px]">
+                            <Badge
+                              variant="outline"
+                              className="border-border bg-muted/30 text-[10px]"
+                            >
                               Quality: {review.qualityLabel}
                             </Badge>
-                            <Badge variant="outline" className="border-border bg-muted/30 text-[10px]">
+                            <Badge
+                              variant="outline"
+                              className="border-border bg-muted/30 text-[10px]"
+                            >
                               {AI_MEDIA_USAGE_LABELS[review.recommendedUsage]}
                             </Badge>
-                            <Badge variant="outline" className="border-border bg-muted/30 text-[10px]">
+                            <Badge
+                              variant="outline"
+                              className="border-border bg-muted/30 text-[10px]"
+                            >
                               {AI_AGENT_STATUS_LABELS[review.status]}
                             </Badge>
                           </div>
                         </div>
                         <p className="text-muted-foreground">
-                          <span className="text-foreground font-medium">Suggested angle:</span>{" "}
+                          <span className="text-foreground font-medium">
+                            Suggested angle:
+                          </span>{" "}
                           {review.contentAngle}
                         </p>
-                        <p className="text-primary/85 mt-1">Next: {structured.recommendedNextAction}</p>
+                        <p className="text-primary/85 mt-1">
+                          Next: {structured.recommendedNextAction}
+                        </p>
                       </div>
                     );
                   })}
-                  <p className="text-[10px] text-muted-foreground italic pt-1">{TEAM_AI_DISCLOSURE}</p>
+                  <p className="text-[10px] text-muted-foreground italic pt-1">
+                    {TEAM_AI_DISCLOSURE}
+                  </p>
                 </CardContent>
               </Card>
             )}
@@ -342,7 +408,10 @@ export default function TeamUploadInbox() {
             <ContentIntelligenceInboxList submissions={previewMediaSubs} />
 
             {previewMediaSubs.length > 0 && (
-              <Card className="bg-card border-border" data-testid="card-related-media-subs">
+              <Card
+                className="bg-card border-border"
+                data-testid="card-related-media-subs"
+              >
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm">
                     Related media items ({previewMediaSubs.length})
@@ -358,7 +427,10 @@ export default function TeamUploadInbox() {
                       <span className="text-foreground/80">
                         {getRestaurantName(s.clientId)} — {s.title}
                       </span>
-                      <Badge variant="outline" className="text-[9px] flex-shrink-0">
+                      <Badge
+                        variant="outline"
+                        className="text-[9px] flex-shrink-0"
+                      >
                         {s.status.replace(/_/g, " ")}
                       </Badge>
                     </div>

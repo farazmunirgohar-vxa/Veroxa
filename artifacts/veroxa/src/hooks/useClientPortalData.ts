@@ -32,6 +32,7 @@
 
 import { useState, useEffect } from "react";
 import { useActiveClientPortalContext } from "@/lib/clientPortalContext";
+import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary";
 import {
   DEFAULT_DEMO_CLIENT_ID,
   getClientById,
@@ -51,9 +52,9 @@ import {
 } from "@/lib/demo-data";
 
 export type ClientPortalSource =
-  | "supabase"          // legacy alias — supabase real-auth read
+  | "supabase" // legacy alias — supabase real-auth read
   | "supabase_readonly" // M007 read-only mode succeeded
-  | "fallback"          // M007 read-only mode attempted but fell back to fixtures
+  | "fallback" // M007 read-only mode attempted but fell back to fixtures
   | "demo"
   | "fixture";
 
@@ -162,16 +163,38 @@ const SOURCE_MESSAGES: Record<ClientPortalSource, string> = {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const MONTH_NAMES = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
 const MONTH_SHORT = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
 ];
 
-function parseDateParts(dateStr: string): { day: number; monthIdx: number } | null {
+function parseDateParts(
+  dateStr: string,
+): { day: number; monthIdx: number } | null {
   const parts = dateStr.split("-");
   if (parts.length < 3) return null;
   const monthIdx = parseInt(parts[1], 10) - 1;
@@ -197,7 +220,7 @@ function formatWeekTitle(startDate: unknown, endDate: unknown): string {
 function parseWeeklySummaryItems(
   postsPublished: unknown,
   postsPlanned: unknown,
-  clientSafeSummary: unknown
+  clientSafeSummary: unknown,
 ): string[] {
   const items: string[] = [];
 
@@ -209,7 +232,9 @@ function parseWeeklySummaryItems(
   const plan = typeof postsPlanned === "number" ? postsPlanned : null;
   if (pub !== null && plan !== null) {
     const rate = plan > 0 ? Math.round((pub / plan) * 100) : 0;
-    items.push(`${pub} of ${plan} posts published this week (${rate}% completion rate).`);
+    items.push(
+      `${pub} of ${plan} posts published this week (${rate}% completion rate).`,
+    );
   }
 
   if (typeof clientSafeSummary === "string" && clientSafeSummary.trim()) {
@@ -224,7 +249,9 @@ function parseWeeklySummaryItems(
   return items.length > 0 ? items : DEMO_WEEKLY_UPDATE.summaryItems;
 }
 
-function parseMonthKey(monthKey: unknown): { month: number; year: number } | null {
+function parseMonthKey(
+  monthKey: unknown,
+): { month: number; year: number } | null {
   if (typeof monthKey !== "string") return null;
   const m = /^(\d{4})-(\d{2})$/.exec(monthKey);
   if (!m) return null;
@@ -271,22 +298,37 @@ function formatScheduledFor(scheduledFor: unknown): string {
 // caption_text by design. If client_safe_title is missing/blank we fall
 // back to a demo-safe placeholder.
 function buildScheduledPostsFromCalendar(
-  calendar: Record<string, unknown>[]
+  calendar: Record<string, unknown>[],
 ): ScheduledPostDisplay[] {
   return calendar
     .slice()
     .sort((a, b) => {
-      const aTime = typeof a.scheduled_for === "string" ? new Date(a.scheduled_for).getTime() : 0;
-      const bTime = typeof b.scheduled_for === "string" ? new Date(b.scheduled_for).getTime() : 0;
+      const aTime =
+        typeof a.scheduled_for === "string"
+          ? new Date(a.scheduled_for).getTime()
+          : 0;
+      const bTime =
+        typeof b.scheduled_for === "string"
+          ? new Date(b.scheduled_for).getTime()
+          : 0;
       return aTime - bTime;
     })
     .map((p) => {
       const date = formatScheduledFor(p.scheduled_for);
-      const platformRaw = typeof p.platform_name === "string" ? p.platform_name : "";
-      const platform = platformRaw.charAt(0).toUpperCase() + platformRaw.slice(1).toLowerCase();
+      const platformRaw =
+        typeof p.platform_name === "string" ? p.platform_name : "";
+      const platform =
+        platformRaw.charAt(0).toUpperCase() +
+        platformRaw.slice(1).toLowerCase();
       const status = normalizeStatusLabel(p.status_label);
-      const titleRaw = typeof p.client_safe_title === "string" ? p.client_safe_title.trim() : "";
-      const caption = titleRaw.length > 0 ? titleRaw : "Post details available in your scheduled posts list";
+      const titleRaw =
+        typeof p.client_safe_title === "string"
+          ? p.client_safe_title.trim()
+          : "";
+      const caption =
+        titleRaw.length > 0
+          ? titleRaw
+          : "Post details available in your scheduled posts list";
       return { date, caption, platform, status };
     });
 }
@@ -294,8 +336,49 @@ function buildScheduledPostsFromCalendar(
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
 export function useClientPortalData(): UseClientPortalDataResult {
-  const { activeClientId, isRealClientSession } = useActiveClientPortalContext();
-  const realClientId = AUTH_MODE === "real" && isRealClientSession ? activeClientId : null;
+  const { activeClientId, isRealClientSession } =
+    useActiveClientPortalContext();
+  const portalDataMode = useRealPortalDataMode();
+
+  if (
+    !portalDataMode.allowDemoFixtures &&
+    !portalDataMode.isLiveDataConnected
+  ) {
+    return {
+      source: "fixture",
+      loading: false,
+      error: null,
+      data: {
+        businessName: "Client Portal in review",
+        scheduledPosts: [],
+        googleMetrics: demoGoogleMetrics,
+        contentSupply: [],
+        weeklyUpdate: {
+          title: "Weekly update in review",
+          summaryItems: ["Live account data is being prepared."],
+        },
+        monthlyReportPreview: {
+          title: "Monthly report in review",
+          status: "In review",
+          postsPublished: 0,
+          postsPlanned: 0,
+          completionRate: 0,
+          summaryText: "Live account data is being prepared.",
+        },
+        platformsCount: 0,
+        mediaAssetsCount: 0,
+        postsCount: 0,
+        postSlotsCount: 0,
+        weeklyReportsCount: 0,
+        monthlyReportsCount: 0,
+      },
+      dataSourceMessage: "Live account data is being prepared",
+      isReadOnlyLive: false,
+      fallbackReason: null,
+    };
+  }
+  const realClientId =
+    AUTH_MODE === "real" && isRealClientSession ? activeClientId : null;
 
   // M007: data source resolution.
   //
@@ -373,12 +456,24 @@ export function useClientPortalData(): UseClientPortalDataResult {
         // calendar view (status_label === "Scheduled" only; published posts
         // are excluded from the supply queue).
         const scheduledCount = calendarTyped.filter(
-          (p) => p.status_label === "Scheduled"
+          (p) => p.status_label === "Scheduled",
         ).length;
         const contentSupply: ContentSupplyItem[] = [
-          { label: demoContentSupply[0].label, value: demoContentSupply[0].value, max: demoContentSupply[0].max },
-          { label: demoContentSupply[1].label, value: scheduledCount, max: demoContentSupply[1].max },
-          { label: demoContentSupply[2].label, value: demoContentSupply[2].value, max: demoContentSupply[2].max },
+          {
+            label: demoContentSupply[0].label,
+            value: demoContentSupply[0].value,
+            max: demoContentSupply[0].max,
+          },
+          {
+            label: demoContentSupply[1].label,
+            value: scheduledCount,
+            max: demoContentSupply[1].max,
+          },
+          {
+            label: demoContentSupply[2].label,
+            value: demoContentSupply[2].value,
+            max: demoContentSupply[2].max,
+          },
         ];
 
         const scheduledPosts = buildScheduledPostsFromCalendar(calendarTyped);
@@ -389,11 +484,14 @@ export function useClientPortalData(): UseClientPortalDataResult {
         const latestWeekly = weeklyTyped[0] ?? null;
         const weeklyUpdate: WeeklyUpdateDisplay = latestWeekly
           ? {
-              title: formatWeekTitle(latestWeekly.week_start, latestWeekly.week_end),
+              title: formatWeekTitle(
+                latestWeekly.week_start,
+                latestWeekly.week_end,
+              ),
               summaryItems: parseWeeklySummaryItems(
                 latestWeekly.posts_published,
                 latestWeekly.posts_planned,
-                latestWeekly.client_safe_summary
+                latestWeekly.client_safe_summary,
               ),
             }
           : DEMO_WEEKLY_UPDATE;
@@ -478,7 +576,10 @@ export function useClientPortalData(): UseClientPortalDataResult {
         const fallbackSource: ClientPortalSource =
           DATA_MODE === "supabase_readonly" ? "fallback" : "demo";
         // Best-effort: log a single warning, never expose error details to clients.
-        console.warn("[useClientPortalData] Supabase read failed, using fixtures:", message);
+        console.warn(
+          "[useClientPortalData] Supabase read failed, using fixtures:",
+          message,
+        );
         setState({
           source: fallbackSource,
           loading: false,
@@ -492,7 +593,9 @@ export function useClientPortalData(): UseClientPortalDataResult {
     }
 
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [activeClientId, realClientId, shouldAttemptSupabase]);
 
   return state;

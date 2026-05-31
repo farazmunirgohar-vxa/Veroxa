@@ -13,7 +13,33 @@ const scanRoots = [
   "artifacts/veroxa/docs/FIRST_5_LAUNCH_READINESS_AND_GUARDRAILS.md",
   "artifacts/veroxa/docs/FIRST_5_QA_READINESS_CHECKLIST.md",
 ];
-const ignoredPathParts = ["/dist/", "/node_modules/", "/.git/", "scripts/src/check-business-guardrails.ts"];
+const ignoredPathParts = [
+  "/dist/",
+  "/node_modules/",
+  "/.git/",
+  "scripts/src/check-business-guardrails.ts",
+];
+const activeRealPortalPages = new Set([
+  "artifacts/veroxa/src/pages/client-dashboard.tsx",
+  "artifacts/veroxa/src/pages/client-media.tsx",
+  "artifacts/veroxa/src/pages/client-requests.tsx",
+  "artifacts/veroxa/src/pages/client-updates.tsx",
+  "artifacts/veroxa/src/pages/client-reports.tsx",
+  "artifacts/veroxa/src/pages/team-dashboard.tsx",
+  "artifacts/veroxa/src/pages/team-upload-inbox.tsx",
+  "artifacts/veroxa/src/pages/team-work-queue.tsx",
+  "artifacts/veroxa/src/pages/team-direction-queue.tsx",
+  "artifacts/veroxa/src/pages/team-report-queue.tsx",
+  "artifacts/veroxa/src/pages/team-audit-leads.tsx",
+  "artifacts/veroxa/src/pages/team-approval-queue.tsx",
+  "artifacts/veroxa/src/pages/team-visibility-audit.tsx",
+]);
+const demoRestaurantNames = [
+  "Demo Grill House",
+  "Demo Taco Bar",
+  "Demo Cafe",
+  "Demo Bistro",
+] as const;
 const sourceExtensions = new Set([".ts", ".tsx", ".md"]);
 
 const failures: string[] = [];
@@ -37,8 +63,15 @@ function rel(fullPath: string): string {
 }
 
 function isExemptContext(file: string, line: string): boolean {
-  if (/sql_drafts|migration|MIGRATION_|CODEX_PRICING_CLEANUP_BRIEF|BUILD_STATUS|CURRENT_REPLIT_BUILD_STATUS/i.test(file)) return true;
-  return /deprecated|historical|history|legacy|retired|inactive|internal-only|compatibility alias|must not|do not|never|forbidden|guardrail|denylist|not current|not active/i.test(line);
+  if (
+    /sql_drafts|migration|MIGRATION_|CODEX_PRICING_CLEANUP_BRIEF|BUILD_STATUS|CURRENT_REPLIT_BUILD_STATUS/i.test(
+      file,
+    )
+  )
+    return true;
+  return /deprecated|historical|history|legacy|retired|inactive|internal-only|compatibility alias|must not|do not|never|forbidden|guardrail|denylist|not current|not active/i.test(
+    line,
+  );
 }
 
 const forbiddenCopy: Array<[RegExp, string]> = [
@@ -53,7 +86,10 @@ const forbiddenCopy: Array<[RegExp, string]> = [
   [/Veroxa handles complaints/i, "forbidden service-boundary claim"],
   [/Veroxa handles order questions/i, "forbidden service-boundary claim"],
   [/Veroxa provides customer service/i, "forbidden service-boundary claim"],
-  [/Veroxa manages live customer conversations/i, "forbidden service-boundary claim"],
+  [
+    /Veroxa manages live customer conversations/i,
+    "forbidden service-boundary claim",
+  ],
   [/\/demo\/team/i, "inactive team demo route"],
   [/\/demo\/operator/i, "inactive operator demo route"],
   [/\/demo\/owner/i, "inactive owner demo route"],
@@ -66,29 +102,53 @@ for (const file of scanRoots.flatMap(walk)) {
   text.split(/\r?\n/).forEach((line, index) => {
     if (isExemptContext(relative, line)) return;
     for (const [pattern, label] of forbiddenCopy) {
-      if (pattern.test(line)) failures.push(`${relative}:${index + 1} ${label}: ${line.trim()}`);
+      if (pattern.test(line))
+        failures.push(`${relative}:${index + 1} ${label}: ${line.trim()}`);
     }
 
-    if (/Complete Online Presence|Google Optimization|Complete Plus Ads|Ads Management Only/i.test(line)) {
-      const isActivePublicPricing = /price|\$497|\$697|\$997|current public|active public|plan card|publicVisible:\s*true/i.test(line);
-      const isCurrentGoogleService = /Google Optimization included|Google optimization included|Google Business Profile|Google Maps/i.test(line);
-      if (isActivePublicPricing && !isCurrentGoogleService && !isExemptContext(relative, line)) {
-        failures.push(`${relative}:${index + 1} retired package appears active: ${line.trim()}`);
+    if (
+      /Complete Online Presence|Google Optimization|Complete Plus Ads|Ads Management Only/i.test(
+        line,
+      )
+    ) {
+      const isActivePublicPricing =
+        /price|\$497|\$697|\$997|current public|active public|plan card|publicVisible:\s*true/i.test(
+          line,
+        );
+      const isCurrentGoogleService =
+        /Google Optimization included|Google optimization included|Google Business Profile|Google Maps/i.test(
+          line,
+        );
+      if (
+        isActivePublicPricing &&
+        !isCurrentGoogleService &&
+        !isExemptContext(relative, line)
+      ) {
+        failures.push(
+          `${relative}:${index + 1} retired package appears active: ${line.trim()}`,
+        );
       }
     }
   });
 }
 
-
-const appSource = readFileSync(join(root, "artifacts/veroxa/src/App.tsx"), "utf8");
+const appSource = readFileSync(
+  join(root, "artifacts/veroxa/src/App.tsx"),
+  "utf8",
+);
 
 function assertRouteBoundary(prefix: "client" | "team") {
-  const routePattern = new RegExp(`<Route path=["']/${prefix}/[^"']+["']>([\\s\\S]*?)</Route>`, "g");
+  const routePattern = new RegExp(
+    `<Route path=["']/${prefix}/[^"']+["']>([\\s\\S]*?)</Route>`,
+    "g",
+  );
   let match: RegExpExecArray | null;
   while ((match = routePattern.exec(appSource)) !== null) {
     const routeBlock = match[0];
     if (!routeBlock.includes(`RealPortalDataBoundary portal="${prefix}"`)) {
-      failures.push(`App.tsx real /${prefix} route is missing RealPortalDataBoundary: ${routeBlock.split("\n")[0].trim()}`);
+      failures.push(
+        `App.tsx real /${prefix} route is missing RealPortalDataBoundary: ${routeBlock.split("\n")[0].trim()}`,
+      );
     }
   }
 }
@@ -96,32 +156,110 @@ function assertRouteBoundary(prefix: "client" | "team") {
 assertRouteBoundary("client");
 assertRouteBoundary("team");
 
+const realPortalBoundarySource = readFileSync(
+  join(root, "artifacts/veroxa/src/components/auth/RealPortalDataBoundary.tsx"),
+  "utf8",
+);
+if (!/\{children\}/.test(realPortalBoundarySource)) {
+  failures.push(
+    "RealPortalDataBoundary must render children so real /client/* and /team/* shells remain reachable.",
+  );
+}
+if (
+  /StillBuilding/.test(realPortalBoundarySource) &&
+  !/children/.test(realPortalBoundarySource)
+) {
+  failures.push(
+    "RealPortalDataBoundary appears to replace real routes with StillBuilding instead of providing data mode.",
+  );
+}
+if (
+  !/allowDemoFixtures/.test(realPortalBoundarySource) ||
+  !/isLiveDataConnected/.test(realPortalBoundarySource)
+) {
+  failures.push(
+    "RealPortalDataBoundary must expose live-data/demo-fixture mode flags.",
+  );
+}
+
 for (const file of walk("artifacts/veroxa/src/pages")) {
   const relative = rel(file);
-  if (!/artifacts\/veroxa\/src\/pages\/(client-|team-)/.test(relative)) continue;
-  const text = readFileSync(file, "utf8");
-  text.split(/\r?\n/).forEach((line, index) => {
+  if (!activeRealPortalPages.has(relative)) continue;
+  const pageText = readFileSync(file, "utf8");
+  const hasRealPortalMode =
+    pageText.includes("useRealPortalDataMode") &&
+    pageText.includes("canUseFixtureData");
+  pageText.split(/\r?\n/).forEach((line, index) => {
     if (/getFirstFiveClientPortalViewModels\(\)\s*\[\d+\]/.test(line)) {
-      failures.push(`${relative}:${index + 1} hardcoded first-five fixture index in real portal page: ${line.trim()}`);
+      failures.push(
+        `${relative}:${index + 1} hardcoded first-five fixture index in real portal page: ${line.trim()}`,
+      );
+    }
+    if (/\bhealthy_supply\b/.test(line) && /Low media risk/i.test(line)) {
+      failures.push(
+        `${relative}:${index + 1} healthy media supply is mislabeled as low risk: ${line.trim()}`,
+      );
+    }
+    if (
+      /\bdemo-[a-e]\b/.test(line) &&
+      !hasRealPortalMode &&
+      !/DEMO|SHOWCASE_ID|benchmark|fixture|sample/i.test(line)
+    ) {
+      failures.push(
+        `${relative}:${index + 1} demo client id appears in real portal page without RealPortalDataMode gating: ${line.trim()}`,
+      );
+    }
+    for (const name of demoRestaurantNames) {
+      if (
+        line.includes(name) &&
+        !/DEMO_SEED_INPUTS|DEMO_SEED|Launch readiness benchmark|Not active client data|Used to validate first 5 client scenarios/i.test(
+          line,
+        )
+      ) {
+        failures.push(
+          `${relative}:${index + 1} demo restaurant name appears in real portal page: ${line.trim()}`,
+        );
+      }
     }
   });
 }
 
-const pricing = readFileSync(join(root, "artifacts/veroxa/src/data/pricing/veroxaPricing.ts"), "utf8");
+const firstFiveSource = readFileSync(
+  join(
+    root,
+    "artifacts/veroxa/src/domain/clientPortalJourney/firstFiveReadiness.ts",
+  ),
+  "utf8",
+);
+if (/healthy_supply[\s\S]{0,120}Low media risk/.test(firstFiveSource)) {
+  failures.push(
+    "First-5 healthy_supply must display as Healthy supply / Media healthy, not Low media risk.",
+  );
+}
+
+const pricing = readFileSync(
+  join(root, "artifacts/veroxa/src/data/pricing/veroxaPricing.ts"),
+  "utf8",
+);
 for (const required of [
   "All active plans are capped at max 1 post/day",
   "Premium adds ads management readiness/support",
   "AD_SPEND_DISCLAIMER",
   "SERVICE_BOUNDARY_DISCLAIMER",
 ]) {
-  if (!pricing.includes(required)) failures.push(`veroxaPricing.ts missing business-rule marker: ${required}`);
+  if (!pricing.includes(required))
+    failures.push(`veroxaPricing.ts missing business-rule marker: ${required}`);
 }
 
 if (failures.length) {
   console.error("Business guardrail check failed:");
   for (const failure of failures) console.error(`- ${failure}`);
-  console.error("\nExemptions: historical/deprecated/legacy/retired/internal-only lines are allowed; active public/client/team code is not.");
+  console.error(
+    "\nExemptions: historical/deprecated/legacy/retired/internal-only lines are allowed; active public/client/team code is not.",
+  );
   process.exit(1);
 }
 
-console.log("Business guardrail check passed: active surfaces preserve pricing, service-boundary, and route-role rules.");
+console.log(
+  "Business guardrail check passed: active surfaces preserve pricing, service-boundary, and route-role rules.",
+);

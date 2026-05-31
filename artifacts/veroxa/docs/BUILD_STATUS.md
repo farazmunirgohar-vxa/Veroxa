@@ -130,6 +130,16 @@
 
 ---
 
+## Latest update — Real Portal Boundary V2 + CI Recovery (2026-05-31)
+
+- `RealPortalDataBoundary` now protects real `/client/*` and `/team/*` routes with a data-mode context instead of hiding the full portal shell.
+- Real Client Portal pages can show safe empty/review states while live account data is prepared. They must not show sample restaurant names as active accounts.
+- Real Team/Internal Admin pages stay available as Faraz's solo founder command center for the first 1–10 clients. Demo-driven operational queues stay empty on real routes until live data is connected.
+- First-5 fixtures are launch-readiness benchmarks only. If visible internally, they must be labeled as not active client data and used to validate first 5 client scenarios.
+- Public demo remains `/demo/client/dashboard` only. No real AI, storage uploads, posting APIs, payments, migrations, webhooks, background jobs, or auth-provider changes were added in this stabilization pass.
+
+---
+
 ## Current state (M009 + M010 + M011 First-Client Operating Flow: 2026-05-27)
 
 **M009 + M010 + M011 — First-client operating flow landed.** A

@@ -21,12 +21,15 @@
 
 ## Team/Internal Admin
 
-- [ ] First-5-client readiness is visible.
+- [ ] First-5-client readiness is visible only as a clearly labeled launch-readiness benchmark.
 - [ ] Media risk is visible.
 - [ ] Content queue state is visible.
 - [ ] Report readiness is visible.
 - [ ] Premium assessment candidates are visible.
 - [ ] No active Operator/Owner labels appear in active Team/Internal Admin navigation.
+- [ ] First-5 benchmark says “Not active client data” and “Used to validate first 5 client scenarios.”
+- [ ] `healthy_supply` appears as “Healthy supply” or “Media healthy,” not “Low media risk.”
+- [ ] Team/Internal Admin feels like Faraz’s solo founder command center for first 1–10 clients.
 
 ## Routes
 
@@ -46,9 +49,14 @@
 - [ ] `pnpm --filter @workspace/scripts run check-business-guardrails` passes.
 - [ ] GitHub CI workflow exists.
 
-## Real portal data boundary
+## Real portal data boundary V2
 
-- [ ] Real `/client/*` routes show in-review/still-building language when live client data is unavailable.
-- [ ] Real `/team/*` routes do not render demo restaurant names as active clients.
+- [ ] Real `/client/*` routes render the portal shell, not a full-page replacement.
+- [ ] Real `/client/*` routes show “Client Portal in review” and “Live account data is being prepared” when live data is unavailable.
+- [ ] Real `/client/*` routes do not show demo restaurant names or hardcoded demo client rows as active account data.
+- [ ] Real `/team/*` routes render the Team/Internal Admin shell, not a full-page replacement.
+- [ ] Real `/team/*` routes do not render Demo Grill House, Demo Taco Bar, Demo Cafe, or Demo Bistro as active clients.
+- [ ] First-5 fixtures, when visible to Team/Internal Admin, are labeled launch-readiness benchmark / not active client data.
 - [ ] `/demo/client/dashboard` still renders the public sample preview.
 - [ ] Guardrails fail if a real client/team route is registered without `RealPortalDataBoundary`.
+- [ ] Guardrails fail if `RealPortalDataBoundary` stops rendering children.
