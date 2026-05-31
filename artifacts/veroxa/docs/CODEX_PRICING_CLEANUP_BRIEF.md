@@ -24,7 +24,7 @@ The public pricing page (`artifacts/veroxa/src/pages/pricing.tsx`) now shows:
 - Facebook + Instagram included in all plans
 - Essential max 1 picture post/day
 - Growth adds TikTok + Reels posting support using the photos and videos you provide
-- Premium max 2 content posts/day total — 1 picture + 1 reel
+- Premium max 1 post/day with ads management readiness/support and separate ad spend
 - Premium requires 1+ month on Essential/Growth, readiness assessment, client approval, and agreed ad budget
 - Posting depends on usable client media and may slow when usable media is unavailable
 - Ad spend for Premium is separate — paid directly by the restaurant to the ad platform

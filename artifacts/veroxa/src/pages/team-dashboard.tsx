@@ -1,6 +1,6 @@
 import {
   Inbox, Eye, Users, FileText, ArrowRight, LayoutGrid, TrendingUp,
-  ClipboardCheck, ScanSearch,
+  ClipboardCheck, ScanSearch, AlertTriangle,
 } from "lucide-react";
 import { Link } from "wouter";
 import { PortalLayout } from "@/components/PortalLayout";
@@ -27,6 +27,10 @@ import type { OpportunityPriority } from "@/domain/dailyOpportunity";
 import { preparedActionRepository, usePreparedActions } from "@/lib/preparedActions";
 import { getVisibilityAuditOverview } from "@/lib/visibilityAudit";
 import {
+  getFirstFiveTeamCommandCenterSummary,
+  getFirstFiveTeamViewModels,
+} from "@/domain/clientPortalJourney";
+import {
   PREPARED_ACTION_CHANNEL_LABELS,
   APPROVAL_REQUIREMENT_LABELS,
 } from "@/domain/preparedActions";
@@ -50,6 +54,8 @@ export default function TeamDashboard() {
   const waitingOnClient = demoClientTeamWorkflow.filter((item) => item.stage === "needs_client_action" || item.stage === "needs_better_photo");
   const queueOrHold = getTeamQueueOrHoldItems(demoClientTeamWorkflow);
   const workflowAlerts = getTeamAlertWorkflowItems(demoClientTeamWorkflow, 3);
+  const firstFiveSummary = getFirstFiveTeamCommandCenterSummary();
+  const firstFiveClients = getFirstFiveTeamViewModels();
 
   // Priority cards — the four questions the team needs answered today,
   // derived from the shared workflow foundation.
@@ -118,6 +124,67 @@ export default function TeamDashboard() {
         message="Demo only — today's work is derived from shared workflow items. No write or publishing action is connected."
         testId="banner-team-dashboard"
       />
+
+
+      <div className="mb-6" data-testid="section-first-five-command-center">
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-primary" />
+              First-5 Client Launch Readiness
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+              <div className="rounded-lg border border-border bg-muted/20 p-3">
+                <p className="text-2xl font-bold tabular-nums">{firstFiveSummary.totalClients}</p>
+                <p className="text-[11px] text-muted-foreground">Launch profiles</p>
+              </div>
+              <div className="rounded-lg border border-border bg-muted/20 p-3">
+                <p className="text-2xl font-bold tabular-nums">{firstFiveSummary.clientsNeedingMedia}</p>
+                <p className="text-[11px] text-muted-foreground">Clients needing media</p>
+              </div>
+              <div className="rounded-lg border border-border bg-muted/20 p-3">
+                <p className="text-2xl font-bold tabular-nums">{firstFiveSummary.clientsReadyForContent}</p>
+                <p className="text-[11px] text-muted-foreground">Ready for content</p>
+              </div>
+              <div className="rounded-lg border border-border bg-muted/20 p-3">
+                <p className="text-2xl font-bold tabular-nums">{firstFiveSummary.reportsNeedingReview}</p>
+                <p className="text-[11px] text-muted-foreground">Reports need review</p>
+              </div>
+              <div className="rounded-lg border border-border bg-muted/20 p-3">
+                <p className="text-2xl font-bold tabular-nums">{firstFiveSummary.premiumAssessmentCandidates}</p>
+                <p className="text-[11px] text-muted-foreground">Premium candidates</p>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {firstFiveSummary.firstFiveCoverage}. {firstFiveSummary.workloadSummary}
+            </p>
+            <div className="grid gap-3 lg:grid-cols-2">
+              {firstFiveClients.map((client) => (
+                <div key={client.key} className="rounded-lg border border-border bg-muted/20 p-3" data-testid={`first-five-${client.key}`}>
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-semibold">{client.restaurantName}</p>
+                      <p className="text-[11px] text-muted-foreground">{client.readinessCategory} · {client.packageLabel}</p>
+                    </div>
+                    <StatusBadge tone={client.premiumCandidate ? "accent" : client.mediaRiskLevel === "Needs media" ? "warning" : "info"}>
+                      {client.premiumCandidate ? "Premium assessment candidate" : client.mediaRiskLevel}
+                    </StatusBadge>
+                  </div>
+                  <p className="text-xs text-foreground/80 mt-2">
+                    <span className="text-muted-foreground">Next:</span> {client.nextTeamAction}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    {client.contentQueueState} · {client.reportReadinessState} · {client.recommendedHumanFollowUp}
+                  </p>
+                  <p className="text-[11px] text-primary/80 mt-1">{client.deterministicSuggestion}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Priority cards — what needs my attention today */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">

@@ -86,7 +86,7 @@ Current locked public pricing:
   - Everything in Growth
   - Ads management after readiness
   - Google, Facebook, Instagram, and TikTok ads management
-  - Max 2 content posts per day total: 1 picture post + 1 reel / short video post
+  - Max 1 post per day, depending on usable client-provided media
   - Platform-specific drafting/adaptation
   - Ad reporting
   - Ad spend is separate and paid directly by the restaurant
@@ -99,7 +99,7 @@ Global pricing rules:
 - Facebook + Instagram are included in all plans.
 - Essential: max 1 picture post per day.
 - Growth: adds TikTok + Reels posting support using the photos and videos the client provides.
-- Premium: max 2 content posts per day total — 1 picture post + 1 reel / short video post.
+- Premium: Growth-level posting support plus ads management readiness/support; posting remains max 1 post/day and ad spend is separate.
 - Posting depends on usable client-provided media and may slow when usable media is unavailable.
 - Premium requires 1+ month on Essential/Growth, Veroxa readiness assessment, client approval, and agreed ad budget.
 - Ad spend is always separate and paid by the restaurant directly to the ad platform.

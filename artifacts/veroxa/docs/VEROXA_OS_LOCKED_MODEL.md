@@ -337,7 +337,7 @@ Use precise package language:
 
 - Essential: Google Business Profile optimization, Google Search/Maps SEO basics, Facebook + Instagram presence management, picture-based posting, max 1 picture post/day, weekly updates, monthly snapshot, and Client Portal access.
 - Growth: everything in Essential plus TikTok + Reels posting support using the photos and videos the client provides, Reels optimization, and enhanced monthly report.
-- Premium: everything in Growth plus ads management after readiness, max 2 content posts/day total — 1 picture post + 1 reel / short video post, platform-specific drafting/adaptation, and ad reporting. Ad spend is separate.
+- Premium: everything in Growth plus ads management after readiness, platform-specific drafting/adaptation, and ad reporting. Posting remains max 1 post/day, and ad spend is separate.
 
 Premium is eligible only after at least 1 month on Essential or Growth, a Veroxa readiness assessment by phone, Zoom, or in person, client approval, and an agreed ad budget. Ads should not be recommended until the restaurant foundation is ready.
 

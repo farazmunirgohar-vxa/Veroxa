@@ -5,7 +5,7 @@
 //   * Essential = $497/mo
 //   * Growth    = $697/mo
 //   * Premium   = $997/mo (ad spend separate)
-// No contract. Cancel anytime. Essential max 1 picture post/day; Premium max 2 content posts/day total (1 picture + 1 reel), media-dependent.
+// No contract. Cancel anytime. Essential max 1 picture post/day; Premium max 1 post/day with ads readiness/support and separate ad spend, media-dependent.
 
 import type { BizSeverity } from "./demoOwner";
 
