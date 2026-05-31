@@ -17,6 +17,7 @@ import type { StatusBadgeTone } from "@/components/common";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { teamPortalNavItems } from "@/lib/teamPortalNav";
+import { TeamReviewModeRouteSummary } from "@/components/team/TeamOperationalSpine";
 import { getAllVisibilityAudits } from "@/lib/visibilityAudit";
 import {
   VISIBILITY_AUDIT_CATEGORY_LABELS,
@@ -66,6 +67,7 @@ export default function TeamVisibilityAudit() {
           body="Live Google Maps visibility audits are not connected yet. Findings will appear here after real account data is prepared."
           testId="empty-team-visibility-audit"
         />
+        <TeamReviewModeRouteSummary title="Visibility audit review-mode summary" />
       </PortalLayout>
     );
   }

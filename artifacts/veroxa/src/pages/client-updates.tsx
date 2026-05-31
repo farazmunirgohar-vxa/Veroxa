@@ -19,6 +19,12 @@ import {
   SafePortalEmptyCard,
 } from "@/components/RealPortalSafeStates";
 import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary";
+import { ClientOperationalCard } from "@/components/client/ClientOperationalSpine";
+import {
+  getCurrentClientAccount,
+  getClientContentWorkflow,
+  getClientRiskStatus
+} from "@/lib/operations";
 import { clientTeamWorkRepository } from "@/lib/repositories";
 import { ClientVisibilityProgressCard } from "@/components/ClientVisibilityProgressCard";
 import { useEffect, useState } from "react";
@@ -84,6 +90,9 @@ export default function ClientUpdates() {
   const portalDataMode = useRealPortalDataMode();
   const canUseFixtureData =
     portalDataMode.allowDemoFixtures || portalDataMode.isLiveDataConnected;
+  const reviewAccount = getCurrentClientAccount();
+  const reviewRisk = getClientRiskStatus(reviewAccount.id);
+  const reviewContent = getClientContentWorkflow(reviewAccount.id);
   const fixtureTimeline = useWorkflowTimeline(SHOWCASE_ID);
   const timeline = canUseFixtureData ? fixtureTimeline : [];
   const weeklyUpdate = canUseFixtureData
@@ -104,6 +113,14 @@ export default function ClientUpdates() {
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
       <RealPortalReviewNotice className="mb-4" />
+      {!canUseFixtureData && (
+        <ClientOperationalCard title="Account updates in review">
+          <p>{reviewContent.clientVisibleMessage}</p>
+          <p>{reviewRisk.clientVisibleMessage}</p>
+          <p>Prepared updates will appear here once live account activity is connected.</p>
+        </ClientOperationalCard>
+      )}
+
       <div className="mb-4">
         <h2
           className="text-2xl md:text-3xl font-bold tracking-tight"

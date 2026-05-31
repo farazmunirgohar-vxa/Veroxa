@@ -25,6 +25,7 @@ import { TeamReviewCard } from "@/components/TeamReviewCard";
 import { PageHeader } from "@/components/common";
 import type { StatusBadgeTone } from "@/components/common";
 import { teamPortalNavItems } from "@/lib/teamPortalNav";
+import { TeamReviewModeRouteSummary } from "@/components/team/TeamOperationalSpine";
 import { demoUploadCategoryLabels } from "@/data/uploadKeys/demoRestaurantUploadKeys";
 import {
   demoUploadStatusLabels,
@@ -184,6 +185,7 @@ export default function TeamUploadInbox() {
           body="Live upload submissions are not connected yet. New restaurant media submissions will appear here after live account data is prepared."
           testId="empty-team-upload-inbox"
         />
+        <TeamReviewModeRouteSummary title="Upload inbox pending connection" />
       </PortalLayout>
     );
   }

@@ -30,6 +30,14 @@ interface SidebarNavProps {
   onNavigate?: () => void;
 }
 
+
+function getSafePortalHref(itemHref: string, location: string): string {
+  if (location.startsWith("/demo/client") && itemHref.startsWith("/client/")) {
+    return "/demo/client/dashboard";
+  }
+  return itemHref;
+}
+
 function isRouteActive(itemHref: string, location: string): boolean {
   if (location === itemHref) return true;
   const defaultSuffixes = ["/dashboard", "/overview", "/tasks"];
@@ -165,10 +173,11 @@ function SidebarNav({
             const testId = `sidebar-item-${item.label.toLowerCase().replace(/\s+/g, "-")}`;
 
             if (item.href?.startsWith("/")) {
+              const safeHref = getSafePortalHref(item.href, location);
               return (
                 <Link
                   key={i}
-                  href={item.href}
+                  href={safeHref}
                   className={sharedClass}
                   data-testid={testId}
                   onClick={onNavigate}

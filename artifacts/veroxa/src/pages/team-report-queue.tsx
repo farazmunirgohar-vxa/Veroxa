@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { teamPortalNavItems } from "@/lib/teamPortalNav";
+import { TeamReviewModeRouteSummary } from "@/components/team/TeamOperationalSpine";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 import { TeamWorkflowPanel } from "@/components/TeamWorkflowPanel";
 import {
@@ -98,6 +99,7 @@ export default function TeamReportQueue() {
           body="Live weekly and monthly reports are not connected yet. Report drafts will appear here after real account data is prepared."
           testId="empty-team-report-queue"
         />
+        <TeamReviewModeRouteSummary title="Report queue review-mode summary" />
       </PortalLayout>
     );
   }

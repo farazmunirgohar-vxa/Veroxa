@@ -36,6 +36,11 @@ import {
   SafePortalEmptyCard,
 } from "@/components/RealPortalSafeStates";
 import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary";
+import { ClientOperationalCard } from "@/components/client/ClientOperationalSpine";
+import {
+  getCurrentClientAccount,
+  getClientMediaStatus
+} from "@/lib/operations";
 import {
   getDefaultGuidance,
   getGuidanceForRestaurantType,
@@ -120,6 +125,8 @@ export default function ClientMedia() {
   const portalDataMode = useRealPortalDataMode();
   const canUseFixtureData =
     portalDataMode.allowDemoFixtures || portalDataMode.isLiveDataConnected;
+  const reviewAccount = getCurrentClientAccount();
+  const reviewMedia = getClientMediaStatus(reviewAccount.id);
 
   const handleSubmitToTeam = () => {
     if (files.length === 0) return;
@@ -252,6 +259,15 @@ export default function ClientMedia() {
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
       <RealPortalReviewNotice />
+      {!canUseFixtureData && (
+        <ClientOperationalCard title="Media status">
+          <p>{reviewMedia.clientVisibleMessage}</p>
+          <p>Usable media: <span className="text-foreground">{reviewMedia.usableMediaCount}</span></p>
+          <p>Waiting for Veroxa review: <span className="text-foreground">{reviewMedia.pendingReviewCount}</span></p>
+          <p>{reviewMedia.nextMediaRequest}</p>
+        </ClientOperationalCard>
+      )}
+
       <div className="flex flex-col gap-2">
         <DataSourceBadge
           source={portalSource}

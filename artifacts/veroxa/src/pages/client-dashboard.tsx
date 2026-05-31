@@ -46,6 +46,16 @@ import { ClientAccountSummary } from "@/components/client/ClientAccountSummary";
 import { ClientPremiumReadinessCard } from "@/components/client/ClientPremiumReadinessCard";
 import { ClientPortalEmptyState } from "@/components/client/ClientPortalEmptyState";
 import { StatusBadge } from "@/components/common";
+import { ClientOperationalStatusGrid } from "@/components/client/ClientOperationalSpine";
+import {
+  getClientContentWorkflow,
+  getClientMediaStatus,
+  getClientPlan,
+  getClientPremiumReadiness,
+  getClientReportWorkflow,
+  getClientRiskStatus,
+  getCurrentClientAccount,
+} from "@/lib/operations";
 
 /** Compute "June 2026 — Week 1" from the real current date. */
 function getCurrentPeriodLabel(): string {
@@ -70,12 +80,22 @@ export default function ClientDashboard() {
         (item) => item.key === "growth_reels_ready",
       )
     : null;
+  const reviewAccount = getCurrentClientAccount();
+  const reviewPlan = getClientPlan(reviewAccount.id);
+  const reviewMedia = getClientMediaStatus(reviewAccount.id);
+  const reviewContent = getClientContentWorkflow(reviewAccount.id);
+  const reviewReport = getClientReportWorkflow(reviewAccount.id);
+  const reviewRisk = getClientRiskStatus(reviewAccount.id);
+  const reviewPremium = getClientPremiumReadiness(reviewAccount.id);
 
+  const demoSafeClientHref = portalDataMode.isPublicDemoRoute
+    ? "/demo/client/dashboard"
+    : null;
   const quickActions = [
-    { label: "Upload media", href: "/client/media", icon: Images },
-    { label: "Send request", href: "/client/requests", icon: ClipboardList },
-    { label: "View updates", href: "/client/updates", icon: Bell },
-    { label: "View reports", href: "/client/reports", icon: FileText },
+    { label: "Upload media", href: demoSafeClientHref ?? "/client/media", icon: Images },
+    { label: "Send request", href: demoSafeClientHref ?? "/client/requests", icon: ClipboardList },
+    { label: "View updates", href: demoSafeClientHref ?? "/client/updates", icon: Bell },
+    { label: "View reports", href: demoSafeClientHref ?? "/client/reports", icon: FileText },
   ];
 
   const summaryCards = [
@@ -148,7 +168,7 @@ export default function ClientDashboard() {
             className="text-3xl font-bold tracking-tight text-foreground"
             data-testid="header-welcome"
           >
-            {loading ? "Restaurant Portal" : data.businessName}
+            {canUseFixtureData ? (loading ? "Restaurant Portal" : data.businessName) : reviewAccount.businessName}
           </h2>
           <p className="text-muted-foreground mt-1">
             Welcome back. Here is a quick overview of your account.
@@ -273,7 +293,7 @@ export default function ClientDashboard() {
                   : ""}
               </p>
             </div>
-            <Link href="/client/requests">
+            <Link href={demoSafeClientHref ?? "/client/requests"}>
               <Button
                 size="sm"
                 variant="outline"
@@ -303,6 +323,19 @@ export default function ClientDashboard() {
             </p>
           </CardContent>
         </Card>
+      )}
+
+
+      {!canUseFixtureData && (
+        <ClientOperationalStatusGrid
+          account={reviewAccount}
+          plan={reviewPlan}
+          media={reviewMedia}
+          content={reviewContent}
+          report={reviewReport}
+          risk={reviewRisk}
+          premium={reviewPremium}
+        />
       )}
 
       {/* Summary cards */}

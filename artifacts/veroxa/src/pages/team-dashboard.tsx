@@ -51,6 +51,16 @@ import {
   PREPARED_ACTION_CHANNEL_LABELS,
   APPROVAL_REQUIREMENT_LABELS,
 } from "@/domain/preparedActions";
+import {
+  getTeamActionQueue,
+  getTeamClientOverview,
+  getTeamDailyCommandSummary,
+} from "@/lib/operations";
+import {
+  TeamActionQueueList,
+  TeamClientOverviewList,
+  TeamCommandSummaryGrid,
+} from "@/components/team/TeamOperationalSpine";
 
 const pushPriorityTone: Record<OpportunityPriority, StatusBadgeTone> = {
   high: "warning",
@@ -92,6 +102,9 @@ export default function TeamDashboard() {
     : [];
   const firstFiveSummary = getFirstFiveTeamCommandCenterSummary();
   const firstFiveClients = getFirstFiveTeamViewModels();
+  const reviewModeSummary = getTeamDailyCommandSummary();
+  const reviewModeOverview = getTeamClientOverview();
+  const reviewModeActions = getTeamActionQueue();
 
   // Priority cards — the four questions the team needs answered today,
   // derived from the shared workflow foundation.
@@ -181,6 +194,42 @@ export default function TeamDashboard() {
           body="Live client operations are not connected yet. Active work queues stay empty here instead of showing demo restaurants as real clients."
           testId="empty-team-command-center-shell"
         />
+      )}
+
+
+      {!canUseFixtureData && (
+        <div className="space-y-4 mb-6" data-testid="section-review-mode-command-center">
+          <Card className="bg-card border-border">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Solo founder command center shell</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Review-mode operational records only. Live integrations are not connected yet, and public demo fixtures are not treated as active clients.
+              </p>
+              <TeamCommandSummaryGrid summary={reviewModeSummary} />
+              <p className="text-sm text-muted-foreground">{reviewModeSummary.workloadSummary}</p>
+            </CardContent>
+          </Card>
+          <div className="grid gap-4 xl:grid-cols-2">
+            <Card className="bg-card border-border">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Next human actions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <TeamActionQueueList actions={reviewModeActions} />
+              </CardContent>
+            </Card>
+            <Card className="bg-card border-border">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Review-mode client overview</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <TeamClientOverviewList overview={reviewModeOverview} />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       )}
 
       <div className="mb-6" data-testid="section-first-five-command-center">

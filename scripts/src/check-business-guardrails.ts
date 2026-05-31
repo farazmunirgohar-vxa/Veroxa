@@ -156,6 +156,16 @@ function assertRouteBoundary(prefix: "client" | "team") {
 assertRouteBoundary("client");
 assertRouteBoundary("team");
 
+const portalLayoutSource = readFileSync(
+  join(root, "artifacts/veroxa/src/components/PortalLayout.tsx"),
+  "utf8",
+);
+if (!portalLayoutSource.includes("getSafePortalHref") || !portalLayoutSource.includes("/demo/client/dashboard")) {
+  failures.push(
+    "PortalLayout must keep demo client navigation inside /demo/client/dashboard instead of linking demo users into real /client/* routes.",
+  );
+}
+
 const realPortalBoundarySource = readFileSync(
   join(root, "artifacts/veroxa/src/components/auth/RealPortalDataBoundary.tsx"),
   "utf8",
@@ -207,6 +217,22 @@ for (const file of walk("artifacts/veroxa/src/pages")) {
     ) {
       failures.push(
         `${relative}:${index + 1} demo client id appears in real portal page without RealPortalDataMode gating: ${line.trim()}`,
+      );
+    }
+
+    if (/from ["']@\/data\/demo\//.test(line) && !hasRealPortalMode) {
+      failures.push(
+        `${relative}:${index + 1} imports public demo fixture data without RealPortalDataMode gating: ${line.trim()}`,
+      );
+    }
+    if (/from ["']@\/domain\/clientPortalJourney/.test(line) && /firstFive/i.test(pageText) && !/LaunchReadinessBenchmark|Not active client data|firstFive/i.test(pageText)) {
+      failures.push(
+        `${relative}:${index + 1} may use First-5 benchmark data without clear benchmark labeling: ${line.trim()}`,
+      );
+    }
+    if (/href=\{?["']\/demo\/client/.test(line) && !/public|sales|demoSafeClientHref/i.test(line)) {
+      failures.push(
+        `${relative}:${index + 1} real portal page links directly to demo client route: ${line.trim()}`,
       );
     }
     for (const name of demoRestaurantNames) {

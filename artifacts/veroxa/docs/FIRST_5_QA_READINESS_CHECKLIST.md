@@ -60,3 +60,16 @@
 - [ ] `/demo/client/dashboard` still renders the public sample preview.
 - [ ] Guardrails fail if a real client/team route is registered without `RealPortalDataBoundary`.
 - [ ] Guardrails fail if `RealPortalDataBoundary` stops rendering children.
+
+## Client + Team Ready V1 operational spine QA
+
+- [ ] Real `/client/*` pages consume review-mode operational records when live data is not connected.
+- [ ] Real `/client/*` pages show current package from the central pricing source.
+- [ ] Real `/client/*` pages show media, content, report, risk, and Premium readiness as calm review-mode state.
+- [ ] Premium readiness is assessment/readiness only; it does not imply ads are active.
+- [ ] Real `/team/dashboard` shows the solo-founder command summary from review-mode operational records.
+- [ ] Team subroutes show review-mode operational summaries or safe empty states.
+- [ ] Public demo fixtures are not imported or displayed as active real clients.
+- [ ] First-5 benchmark rows remain clearly labeled “not active client data.”
+- [ ] Demo client navigation does not send users to real `/client/*` routes.
+- [ ] No new real AI, storage, posting, payment, webhook, auth-provider, or background-job integration was added.

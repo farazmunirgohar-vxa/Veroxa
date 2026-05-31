@@ -23,6 +23,7 @@ import {
 } from "@/components/RealPortalSafeStates";
 import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary";
 import { teamPortalNavItems } from "@/lib/teamPortalNav";
+import { TeamReviewModeRouteSummary } from "@/components/team/TeamOperationalSpine";
 import { PageHeader } from "@/components/common";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -480,6 +481,7 @@ export default function TeamAuditLeads() {
           body="Live audit leads are not connected yet. The real route is ready for Faraz without showing seeded demo restaurants as active leads."
           testId="empty-team-audit-leads"
         />
+        <TeamReviewModeRouteSummary title="Audit leads review-mode summary" />
       </PortalLayout>
     );
   }

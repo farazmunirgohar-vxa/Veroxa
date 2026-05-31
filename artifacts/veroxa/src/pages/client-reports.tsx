@@ -20,6 +20,11 @@ import {
   SafePortalEmptyCard,
 } from "@/components/RealPortalSafeStates";
 import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary";
+import { ClientOperationalCard } from "@/components/client/ClientOperationalSpine";
+import {
+  getCurrentClientAccount,
+  getClientReportWorkflow
+} from "@/lib/operations";
 import { useEffect, useState } from "react";
 import {
   getClientWorkflowItems,
@@ -89,6 +94,8 @@ export default function ClientReports() {
   const portalDataMode = useRealPortalDataMode();
   const canUseFixtureData =
     portalDataMode.allowDemoFixtures || portalDataMode.isLiveDataConnected;
+  const reviewAccount = getCurrentClientAccount();
+  const reviewReport = getClientReportWorkflow(reviewAccount.id);
   const monthlyReport = canUseFixtureData
     ? generateClientMonthlyReport(SHOWCASE_ID)
     : null;
@@ -98,6 +105,14 @@ export default function ClientReports() {
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
       <RealPortalReviewNotice className="mb-4" />
+      {!canUseFixtureData && (
+        <ClientOperationalCard title="Report status">
+          <p>{reviewReport.clientVisibleMessage}</p>
+          <p>Weekly update: <span className="text-foreground">{reviewReport.weeklyUpdateStatus.replaceAll("_", " ")}</span></p>
+          <p>Monthly report: <span className="text-foreground">{reviewReport.monthlyReportStatus.replaceAll("_", " ")}</span></p>
+        </ClientOperationalCard>
+      )}
+
       <div className="mb-4">
         <h2
           className="text-2xl md:text-3xl font-bold tracking-tight"

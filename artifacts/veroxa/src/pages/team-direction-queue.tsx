@@ -27,6 +27,7 @@ import { WRITES_ENABLED } from "@/lib/data/writeReadiness";
 import { veroxaWriteAdapter } from "@/lib/data/writeAdapter";
 import { isValidUuid } from "@/lib/data/devClientIdValidation";
 import { teamPortalNavItems } from "@/lib/teamPortalNav";
+import { TeamReviewModeRouteSummary } from "@/components/team/TeamOperationalSpine";
 import {
   demoClientDirection,
   directionChannelLabels,
@@ -314,6 +315,7 @@ export default function TeamDirectionQueue() {
           body="Live client direction requests are not connected yet. Client asks and confirmations will appear here after setup."
           testId="empty-team-direction-queue"
         />
+        <TeamReviewModeRouteSummary title="Direction queue review-mode summary" />
       </PortalLayout>
     );
   }
