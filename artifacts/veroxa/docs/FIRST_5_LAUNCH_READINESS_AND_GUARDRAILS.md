@@ -82,3 +82,16 @@ Current real-route defaults:
 First-5 fixtures are launch-readiness benchmarks only. If they appear in Team/Internal Admin, they must be labeled “Launch readiness benchmark,” “Not active client data,” and “Used to validate first 5 client scenarios.” They are not active real clients.
 
 Public demo remains `/demo/client/dashboard` only. `/demo/*` routes are unaffected by `RealPortalDataBoundary` and may render sample portal data for the public preview.
+
+## Client + Team Ready V1 operational records
+
+The real portal operational spine now distinguishes four data categories:
+
+1. **Public demo fixtures** — sample-only data for `/demo/client/dashboard` and public preview contexts.
+2. **First-5 benchmark fixtures** — launch readiness validation profiles that must be labeled “not active client data.”
+3. **Real portal review-mode operational records** — local, typed, non-demo records used by real `/client/*` and `/team/*` shells while live data is not connected.
+4. **Future live production data** — the eventual Supabase/integration-backed replacement for the review-mode repository.
+
+`RealPortalDataBoundary` V2 continues to render children and provides data-mode flags. Real portals default to `allowDemoFixtures: false` and `isLiveDataConnected: false`, so pages should use review-mode operational records or safe empty states. Public demo routes may still use public demo fixtures.
+
+Team/Internal Admin is Faraz’s solo-founder command center for the first 1–10 clients. It may show operational detail, but it must remain calm, action-focused, and separate from First-5 benchmark rows.

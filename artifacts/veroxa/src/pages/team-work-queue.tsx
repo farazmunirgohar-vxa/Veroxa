@@ -7,6 +7,7 @@ import {
 } from "@/components/RealPortalSafeStates";
 import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary";
 import { teamPortalNavItems } from "@/lib/teamPortalNav";
+import { TeamReviewModeRouteSummary } from "@/components/team/TeamOperationalSpine";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -148,6 +149,7 @@ export default function TeamWorkQueue() {
           body="Live client work items are not connected yet. The queue stays empty here instead of showing demo restaurants as active clients."
           testId="empty-team-work-queue"
         />
+        <TeamReviewModeRouteSummary title="Work queue review-mode summary" />
       </PortalLayout>
     );
   }

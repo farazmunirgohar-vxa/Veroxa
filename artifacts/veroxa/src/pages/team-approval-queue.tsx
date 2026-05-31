@@ -11,6 +11,7 @@ import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 import { Card, CardContent } from "@/components/ui/card";
 import { PreparedActionCard } from "@/components/PreparedActionCard";
 import { teamPortalNavItems } from "@/lib/teamPortalNav";
+import { TeamReviewModeRouteSummary } from "@/components/team/TeamOperationalSpine";
 import {
   preparedActionRepository,
   usePreparedActions,
@@ -87,6 +88,7 @@ export default function TeamApprovalQueue() {
           body="Live prepared actions are not connected yet. Approval items will appear here only after real client operations are connected."
           testId="empty-team-approval-queue"
         />
+        <TeamReviewModeRouteSummary title="Approval queue review-mode summary" />
       </PortalLayout>
     );
   }

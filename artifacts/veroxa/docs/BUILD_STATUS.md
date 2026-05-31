@@ -1203,3 +1203,16 @@ internal_demo | future_protected`. The client, team, operator,
 - Premium requires at least 1 month on Essential or Growth, a Veroxa readiness assessment, client approval, and an agreed ad budget.
 - First-client discount: 20% off for 12 months, then loyalty discount only while continuously active; lost if the client leaves and later returns.
 - Build order remains client side first. Team/Internal Admin heavy AI automation comes after client-side clarity and should later support media review assist, caption drafting, Google/SEO/Maps tasks, reporting generation, Premium readiness checklist, client risk flags, workload tracking, and Pakistan team handoff after 10 clients.
+
+---
+
+## Latest update — Client + Team Ready V1 Operational Spine (2026-05-31)
+
+- Added pure TypeScript operations contracts for real portal review-mode records: client accounts, media status, content workflow, report workflow, client risk, Premium readiness, team overview, and team command summaries.
+- Added a local review-mode operations repository for real `/client/*` and `/team/*` routes. These records are not public demo fixtures, not First-5 benchmark fixtures, and not future live production data.
+- Real Client Portal pages now have structured review-mode account, package, media, content, report, risk, and Premium readiness surfaces while live account data remains disconnected.
+- Real Team/Internal Admin now has a solo-founder command center shell for Faraz with review-mode accounts, action queue summaries, workload, risk flags, media needs, content readiness, reports needing review, and Premium readiness assessment candidates.
+- Team subroutes remain reachable and show safe review-mode operational summaries rather than demo restaurants as active clients.
+- Public demo remains separate at `/demo/client/dashboard`; demo navigation stays in demo context instead of accidentally entering real `/client/*` routes.
+- No real AI calls, storage uploads, posting connectors, Google Business Profile APIs, payments, webhooks, background jobs, auth provider changes, or destructive migrations were added.
+- Codex remains the main builder for this stage. Replit is optional only for surface-level visual QA or explicit preview polish.

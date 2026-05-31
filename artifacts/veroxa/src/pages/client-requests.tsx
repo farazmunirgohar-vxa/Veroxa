@@ -15,6 +15,13 @@ import { ClientRequestsClarity } from "@/components/ClientExecutionReinforcement
 import { DataSourceBadge } from "@/components/DataSourceBadge";
 import { RealPortalReviewNotice } from "@/components/RealPortalSafeStates";
 import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary";
+import { ClientOperationalCard } from "@/components/client/ClientOperationalSpine";
+import {
+  getCurrentClientAccount,
+  getClientMediaStatus,
+  getClientRiskStatus,
+  getClientContentWorkflow
+} from "@/lib/operations";
 import { demoClientTeamWorkflow } from "@/data/workflows/clientTeamWorkflow";
 import {
   getClientActionNeededItems,
@@ -45,6 +52,10 @@ export default function ClientRequests() {
   const portalDataMode = useRealPortalDataMode();
   const canUseFixtureData =
     portalDataMode.allowDemoFixtures || portalDataMode.isLiveDataConnected;
+  const reviewAccount = getCurrentClientAccount();
+  const reviewMedia = getClientMediaStatus(reviewAccount.id);
+  const reviewRisk = getClientRiskStatus(reviewAccount.id);
+  const reviewContent = getClientContentWorkflow(reviewAccount.id);
   const actionItems = canUseFixtureData
     ? getClientActionNeededItems(demoClientTeamWorkflow, SHOWCASE_ID)
     : [];
@@ -79,6 +90,14 @@ export default function ClientRequests() {
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
       <RealPortalReviewNotice className="mb-4" />
+      {!canUseFixtureData && (
+        <ClientOperationalCard title="Next helpful request">
+          <p>{reviewRisk.clientVisibleMessage}</p>
+          <p>{reviewMedia.needsMoreMedia ? reviewMedia.nextMediaRequest : reviewContent.clientVisibleMessage}</p>
+          <p>Nothing goes live without Veroxa team review.</p>
+        </ClientOperationalCard>
+      )}
+
       <div className="mb-4">
         <h2
           className="text-2xl md:text-3xl font-bold tracking-tight"
