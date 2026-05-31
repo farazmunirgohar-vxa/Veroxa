@@ -21,7 +21,10 @@ import { useClientPortalData } from "@/hooks/useClientPortalData";
 import { ClientKeepMovingCard } from "@/components/ClientExecutionReinforcement";
 import { ClientVisibilityProgressCard } from "@/components/ClientVisibilityProgressCard";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
-import { getClientProgressSummary } from "@/domain/clientPortalJourney";
+import {
+  getClientProgressSummary,
+  getFirstFiveClientPortalViewModels,
+} from "@/domain/clientPortalJourney";
 import {
   healthRepository,
   reportRepository,
@@ -40,6 +43,7 @@ import {
 import { ClientAccountSummary } from "@/components/client/ClientAccountSummary";
 import { ClientPremiumReadinessCard } from "@/components/client/ClientPremiumReadinessCard";
 import { ClientPortalEmptyState } from "@/components/client/ClientPortalEmptyState";
+import { StatusBadge } from "@/components/common";
 
 /** Compute "June 2026 — Week 1" from the real current date. */
 function getCurrentPeriodLabel(): string {
@@ -54,6 +58,7 @@ export default function ClientDashboard() {
   const { loading, data, source, dataSourceMessage } = useClientPortalData();
   const journeySummary = getClientProgressSummary("demo-a");
   const recentProgress = journeySummary.recentProgress.slice(0, 4);
+  const firstFiveReadiness = getFirstFiveClientPortalViewModels()[2];
 
   const quickActions = [
     { label: "Upload media", href: "/client/media", icon: Images },
@@ -137,6 +142,42 @@ export default function ClientDashboard() {
       <ClientAccountSummary
         restaurantName={loading ? undefined : data.businessName}
       />
+
+
+      <Card className="bg-card/50 border-border/50" data-testid="card-client-readiness-snapshot">
+        <CardContent className="p-5">
+          <div className="flex items-start justify-between gap-3 mb-4">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Launch readiness snapshot
+              </p>
+              <h3 className="text-base font-bold text-foreground mt-0.5">
+                {firstFiveReadiness.packageLabel} · {firstFiveReadiness.accountStatus}
+              </h3>
+            </div>
+            <StatusBadge tone="info">In review</StatusBadge>
+          </div>
+          <div className="grid gap-3 md:grid-cols-3">
+            <div className="rounded-lg border border-border bg-muted/20 p-3">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Media supply</p>
+              <p className="text-xs text-foreground/85 mt-1 leading-relaxed">{firstFiveReadiness.mediaSupplyStatus}</p>
+            </div>
+            <div className="rounded-lg border border-border bg-muted/20 p-3">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Updates</p>
+              <p className="text-xs text-foreground/85 mt-1 leading-relaxed">
+                {firstFiveReadiness.weeklyUpdateStatus} · {firstFiveReadiness.monthlyReportStatus}
+              </p>
+            </div>
+            <div className="rounded-lg border border-border bg-muted/20 p-3">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Next helpful action</p>
+              <p className="text-xs text-foreground/85 mt-1 leading-relaxed">{firstFiveReadiness.nextHelpfulAction}</p>
+            </div>
+          </div>
+          <p className="mt-3 text-[11px] text-muted-foreground/75 leading-relaxed">
+            {firstFiveReadiness.premiumReadinessLabel}
+          </p>
+        </CardContent>
+      </Card>
 
       {/* Quick actions — the main things a client can do, one tap away. */}
       <div
