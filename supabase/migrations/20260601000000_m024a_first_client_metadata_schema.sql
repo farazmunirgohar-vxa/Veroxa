@@ -42,17 +42,16 @@ create table if not exists public.clients (
   id uuid primary key default gen_random_uuid(),
   display_name text not null,
   status text not null default 'active',
-  service_plan text not null default 'complete_online_presence',
+  service_plan text not null default 'essential',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint clients_status_check
     check (status in ('active', 'paused', 'archived')),
   constraint clients_service_plan_check
     check (service_plan in (
-      'google_optimization',
-      'complete_online_presence',
-      'ads_management_only',
-      'complete_plus_ads'
+      'essential',
+      'growth',
+      'premium'
     ))
 );
 
@@ -64,7 +63,7 @@ create index if not exists clients_service_plan_idx
 comment on table public.clients is
   'Veroxa client (restaurant) registry. Display name only; no PII beyond display_name in this table.';
 comment on column public.clients.service_plan is
-  'Active plan slug. Pricing is sourced from PRICING_SOURCE_OF_TRUTH.md, not this column.';
+  'Current public plan slug only: essential, growth, premium. Retired/internal compatibility aliases from older pricing models must be mapped before writing this column. Pricing is sourced from PRICING_SOURCE_OF_TRUTH.md, not this column.';
 
 -- =============================================================
 -- TASK 4 — restaurant_upload_keys

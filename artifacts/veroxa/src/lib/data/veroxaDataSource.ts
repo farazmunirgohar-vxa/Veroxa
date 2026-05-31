@@ -11,10 +11,10 @@
  *   - never use a service-role key
  *   - fall back to demo data on any failure (RLS, missing env, error)
  *
- * This module is the public switch for the repository layer.
- * It is intentionally separate from `dataMode.ts` (M007) so the
- * read-only operations foundation can evolve independently of the
- * legacy client-portal queries.
+ * This module is the canonical public switch for the repository layer.
+ * `dataMode.ts` is a legacy M007 compatibility wrapper for older
+ * client-portal read helpers; do not flip only `VITE_VEROXA_DATA_MODE`
+ * for new repository work.
  *
  * The resolved mode is read from `VITE_VEROXA_DATA_SOURCE_MODE`.
  * Missing or invalid values resolve to "demo" — the safe default.
@@ -48,8 +48,9 @@ export function isSupabaseReadOnlyMode(): boolean {
 }
 
 /**
- * Returns the underlying M007 `DATA_MODE` value for cross-reference.
- * Useful for diagnostics pages that show both flags side-by-side.
+ * Returns the legacy M007 `DATA_MODE` compatibility value for
+ * cross-reference. New code should make read decisions from
+ * `VEROXA_DATA_SOURCE_MODE`; this is diagnostics-only.
  */
 export function getLegacyDataMode(): typeof DATA_MODE {
   return DATA_MODE;

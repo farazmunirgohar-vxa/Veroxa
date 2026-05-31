@@ -32,6 +32,21 @@ const docFiles = [
 
 const sourceExtensions = new Set([".ts", ".tsx", ".md"]);
 const failures: string[] = [];
+const realPortalPages = [
+  "artifacts/veroxa/src/pages/client-dashboard.tsx",
+  "artifacts/veroxa/src/pages/client-media.tsx",
+  "artifacts/veroxa/src/pages/client-requests.tsx",
+  "artifacts/veroxa/src/pages/client-updates.tsx",
+  "artifacts/veroxa/src/pages/client-reports.tsx",
+  "artifacts/veroxa/src/pages/team-dashboard.tsx",
+  "artifacts/veroxa/src/pages/team-upload-inbox.tsx",
+  "artifacts/veroxa/src/pages/team-work-queue.tsx",
+  "artifacts/veroxa/src/pages/team-direction-queue.tsx",
+  "artifacts/veroxa/src/pages/team-report-queue.tsx",
+  "artifacts/veroxa/src/pages/team-audit-leads.tsx",
+  "artifacts/veroxa/src/pages/team-approval-queue.tsx",
+  "artifacts/veroxa/src/pages/team-visibility-audit.tsx",
+] as const;
 
 function walk(dir: string): string[] {
   const entries = readdirSync(dir, { withFileTypes: true });
@@ -116,6 +131,51 @@ if (/setLocation\([^)]+\/demo\/client\/dashboard/.test(loginAndAuth) || /client:
   failures.push("Placeholder/login contract must not route client login to /demo/client/dashboard.");
 }
 if (/\/demo\/team/.test(loginAndAuth)) failures.push("Placeholder/login contract must not route to /demo/team/*.");
+
+const authModeSource = readFileSync(join(root, "artifacts/veroxa/src/lib/auth/authMode.ts"), "utf8");
+const loginSource = readFileSync(join(root, "artifacts/veroxa/src/pages/login.tsx"), "utf8");
+const devCredentialsSource = readFileSync(join(root, "artifacts/veroxa/src/lib/auth/devCredentials.ts"), "utf8");
+if (/export\s+const\s+AUTH_MODE(?:\s*:\s*AuthMode)?\s*=\s*["']real["']/.test(authModeSource)) {
+  if (/DEV_ROLE_CREDENTIALS|validateDevCredentials|getDevRouteForRole/.test(devCredentialsSource)) {
+    failures.push(
+      "AUTH_MODE is real while placeholder dev credential helpers still exist in devCredentials.ts. Remove the placeholder file/stub before real auth.",
+    );
+  }
+  if (/validateDevCredentials|getDevRouteForRole|AUTH_MODE\s*===\s*["']placeholder["']/.test(loginSource)) {
+    failures.push(
+      "AUTH_MODE is real while login.tsx still contains the placeholder credential branch. Remove the branch before real auth.",
+    );
+  }
+}
+
+const realPortalBoundarySource = readFileSync(
+  join(root, "artifacts/veroxa/src/components/auth/RealPortalDataBoundary.tsx"),
+  "utf8",
+);
+if (!/isPublicDemoRoute[\s\S]*allowDemoFixtures:\s*true/.test(realPortalBoundarySource)) {
+  failures.push("RealPortalDataBoundary must allow demo fixtures only for public demo route context.");
+}
+if (!/isLiveDataConnected:\s*false,\s*\n\s*allowDemoFixtures:\s*false/.test(realPortalBoundarySource)) {
+  failures.push("RealPortalDataBoundary must default real /client/* and /team/* routes to no live data and no demo fixtures.");
+}
+
+for (const file of realPortalPages) {
+  const pageSource = readFileSync(join(root, file), "utf8");
+  const referencesDemoFixtureData =
+    /from ["']@\/data\/(demo|uploadKeys|workflows|direction)/.test(pageSource) ||
+    /\bdemo-[a-e]\b|demoClient|demoUpload|demoWeekly|demoMonthly|DEMO_SEED|fixtureItems|sample fallback/i.test(pageSource);
+  if (!referencesDemoFixtureData) continue;
+
+  if (!pageSource.includes("useRealPortalDataMode")) {
+    failures.push(`${file} references demo/fixture data without reading RealPortalDataBoundary mode.`);
+  }
+  if (!pageSource.includes("allowDemoFixtures") || !pageSource.includes("canUseFixtureData")) {
+    failures.push(`${file} references demo/fixture data without an explicit allowDemoFixtures/canUseFixtureData gate.`);
+  }
+  if (!/!canUseFixtureData|canUseFixtureData\s*\?|canUseFixtureData\s*&&/.test(pageSource)) {
+    failures.push(`${file} references demo/fixture data without an explicit non-fixture empty/review state.`);
+  }
+}
 
 // Docs may mention historical team demo only when explicitly marked.
 for (const file of docFiles) {
