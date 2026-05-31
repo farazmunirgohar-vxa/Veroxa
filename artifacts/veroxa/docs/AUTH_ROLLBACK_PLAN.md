@@ -14,7 +14,7 @@ known-good state.
    `signInWithPassword` path on `/login`, and returns every future
    real route to the protected-preview shell.
 2. **Confirm `/demo/*` still works.** Open
-   `/demo/client/dashboard`, `/demo/team/tasks`,
+   `/demo/client/dashboard`; deprecated/legacy `/demo/team/tasks` is not active,
    `/demo/operator/overview`, `/demo/owner/dashboard`. None should
    regress because demo routes were never gated.
 3. **Confirm future real routes show the protected preview again.**

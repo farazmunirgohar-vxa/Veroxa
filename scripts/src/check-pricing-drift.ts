@@ -23,6 +23,7 @@ const filesToScan = [
 const staleActivePatterns = [
   /\$977\b/,
   /\$488\b/,
+  /\$477\b/,
   /\+\$477\b/,
   /\$965\b/,
   /\$1,454\b/,
@@ -34,7 +35,7 @@ const staleActivePatterns = [
 ];
 
 function isDeprecatedContext(line: string): boolean {
-  return /deprecated|historical|history|not current|must not|must NOT|do not use/i.test(
+  return /deprecated|historical|history|not current|retired|must not|must NOT|do not use/i.test(
     line,
   );
 }
@@ -77,6 +78,8 @@ for (const required of [
   "Premium requires at least 1 month on Essential or Growth",
   "Posting depends on usable media provided by the restaurant",
   "First clients receive 20% off for the first 12 months",
+  "loyalty discount",
+  "continuously active",
 ]) {
   if (!pricingPage.includes(required)) {
     failures.push(
@@ -89,6 +92,17 @@ const growthCardMatch = pricingPage.match(/name: "Growth",[\s\S]*?cta:/);
 if (growthCardMatch?.[0].includes("Most Popular")) {
   failures.push("Growth pricing card must not be labeled Most Popular.");
 }
+
+if (/Most Popular/.test(pricingPage) && /name: "Growth",[\s\S]*?Most Popular/.test(pricingPage)) {
+  failures.push("Growth pricing card must not be labeled Most Popular.");
+}
+if (/comments|DMs|inboxes|customer-service conversations/i.test(pricingPage) && /included|managed|handled/i.test(pricingPage)) {
+  const boundaryOk = /does not handle|not handle|restaurant remains responsible/i.test(pricingPage);
+  if (!boundaryOk) {
+    failures.push("pricing.tsx must keep comments/DMs/customer-service outside included services.");
+  }
+}
+
 if (/complete social media management/i.test(pricingPage)) {
   failures.push(
     "pricing.tsx contains risky complete social media management wording.",

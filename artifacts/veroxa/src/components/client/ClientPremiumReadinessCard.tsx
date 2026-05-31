@@ -1,18 +1,22 @@
 /**
  * ClientPremiumReadinessCard — light, client-safe Premium readiness concept.
  *
- * Demo/local only: no backend reads or writes, no new routes, no ads
- * automation. Communicates how Premium (ads) becomes available without
- * implying it is on by default. Calm, plain, blame-free language.
+ * Local only: no reads or writes, no new routes, no ads automation.
+ * Communicates how Premium (ads) becomes available without implying it is on
+ * by default. Calm, plain, blame-free language.
  */
 
 import { ShieldCheck, CheckCircle2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  DEFAULT_CLIENT_PACKAGE_READINESS,
+  buildClientPackageReadiness,
+} from "@/domain/clientPortalJourney";
 
 const READINESS_POINTS = [
   "Eligible after at least 1 month on Essential or Growth",
-  "Reviewed by your Veroxa team before any ads begin",
+  "Readiness assessment by phone, Zoom, or in person",
   "Starts only with your approval and an agreed ad budget",
   "Ad spend is separate and paid by the restaurant",
 ];
@@ -24,6 +28,8 @@ interface ClientPremiumReadinessCardProps {
 export function ClientPremiumReadinessCard({
   className = "",
 }: ClientPremiumReadinessCardProps) {
+  const readiness = buildClientPackageReadiness(DEFAULT_CLIENT_PACKAGE_READINESS);
+
   return (
     <Card
       className={`bg-card/50 border-border/50 ${className}`}
@@ -48,9 +54,14 @@ export function ClientPremiumReadinessCard({
             variant="outline"
             className="border-border bg-muted/30 text-muted-foreground text-[10px] flex-shrink-0"
           >
-            Reviewed later
+            {readiness.premiumStatus === "eligible_for_assessment"
+              ? "Assessment available"
+              : "Reviewed later"}
           </Badge>
         </div>
+        <p className="text-xs text-foreground/80 leading-relaxed mb-3">
+          {readiness.premiumStatusLabel}
+        </p>
         <div className="grid gap-1.5">
           {READINESS_POINTS.map((point) => (
             <div key={point} className="flex items-start gap-2">

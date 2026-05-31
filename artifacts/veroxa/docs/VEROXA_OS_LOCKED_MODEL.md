@@ -348,3 +348,24 @@ Posting depends on usable client-provided media and may slow when usable media i
 First clients receive 20% off for the first 12 months. After 12 months, the 20% discount converts into a loyalty discount only while the client remains continuously active. If the client leaves and later returns, the 20% discount is no longer eligible.
 
 Build order remains client side first. Team/Internal Admin heavy AI automation comes after client-side clarity. Future Team Portal should become the AI/automation command center and support media review assist, caption drafting, Google/SEO/Maps task engine, reporting generator, Premium readiness checklist, client risk flags, workload tracking, and Pakistan team handoff after 10 clients.
+
+## 12. Portal separation and launch-readiness order
+
+Current active routing is locked as follows:
+
+- Public demo preview: `/demo/client/dashboard` only.
+- Client Portal real review routes: `/client/*`, with login landing on `/client/dashboard`.
+- Team/Internal Admin real review routes: `/team/*`, with login landing on `/team/dashboard`.
+- Team Demo / `/demo/team/*` is deprecated/not active and must not be promoted publicly or used as a login destination.
+
+If a real Client or Team Portal section is incomplete, it should stay inside the real route and show calm “Still Building” language. It should not redirect to a demo route or call the real route a demo.
+
+Client-side launch readiness comes first. Team/Internal Admin heavy AI automation comes later, after the real client portal backbone is safe enough for the first 5 clients.
+
+The first 5 clients are the pre-launch readiness benchmark:
+
+1. Healthy Essential client.
+2. Essential client with low media.
+3. Growth client with reels content.
+4. Growth client with inconsistent uploads.
+5. Client eligible for Premium assessment.

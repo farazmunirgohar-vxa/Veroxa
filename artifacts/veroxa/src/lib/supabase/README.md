@@ -68,7 +68,7 @@ If queries return empty results or permission errors, that is expected behaviour
 | Operator Portal | Static demo data only | Not yet wired |
 | Owner Portal | Static demo data only | Not yet wired |
 
-**Note:** Client Portal is now split into individual routed pages (`/demo/client/dashboard`, `/calendar`, `/google`, `/reports`, `/updates`) and uses the `useClientPortalData` hook with read-only Supabase access and static demo fallback. The public demo is limited to `/demo/client/*` — Team Demo routes (`/demo/team/*`) have been removed. The real team workspace lives under guarded `/team/*` routes and still uses **static demo data only** — no Supabase wiring has been added for it yet.
+**Note:** Client Portal is now split into individual routed pages (`/demo/client/dashboard`, `/calendar`, `/google`, `/reports`, `/updates`) and uses the `useClientPortalData` hook with read-only Supabase access and static demo fallback. The public demo is limited to `/demo/client/dashboard` only. Deprecated/legacy Team Demo routes (`/demo/team/*`) have been removed. The real team workspace lives under guarded `/team/*` routes and still uses local review data only — no Supabase wiring has been added for it yet.
 
 All connections are read-only and unauthenticated (anon key only).
 
