@@ -42,7 +42,7 @@ We are building **Demo Veroxa** and **Real Veroxa** side by side.
 | `/` | Public marketing landing page | None |
 | `/demo` | Demo hub — choose a role | None |
 | `/demo/client/*` | Client Portal demo (read-only Supabase + static fallback) | None |
-| `/demo/team/*` | Team Portal demo (static) | None |
+| `/demo/team/*` | Deprecated/legacy Team Demo route (not active) | None |
 | `/demo/operator/*` | Operator Portal demo (static) | None |
 | `/demo/owner/*` | Owner Portal demo (static) | None |
 | `/login` | Demo access shell (current) → future real sign-in (later) | None today |

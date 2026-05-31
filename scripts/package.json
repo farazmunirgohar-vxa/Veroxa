@@ -7,7 +7,8 @@
     "hello": "tsx ./src/hello.ts",
     "check-demo-routes": "tsx ./src/check-demo-routes.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "check-pricing-drift": "tsx ./src/check-pricing-drift.ts"
+    "check-pricing-drift": "tsx ./src/check-pricing-drift.ts",
+    "check-portal-separation": "tsx ./src/check-portal-separation.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",

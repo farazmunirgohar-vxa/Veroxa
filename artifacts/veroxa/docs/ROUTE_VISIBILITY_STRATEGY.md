@@ -24,7 +24,7 @@ remain publicly accessible long term** — they expose Veroxa's
 operating system and would dilute the product narrative if shown to
 prospects:
 
-- `/demo/team/*`
+- Deprecated/legacy `/demo/team/*`
 - `/demo/operator/*`
 - `/demo/owner/*`
 
@@ -84,7 +84,7 @@ match. Today every one of them only renders the `RequireRole`
 ## Update — Authenticated Demo Routing V1
 
 - `/demo/client/*` **remains public** (sales preview, anon read only).
-- `/demo/team/*`, `/demo/operator/*`, `/demo/owner/*` are now
+- Deprecated/legacy `/demo/team/*`, `/demo/operator/*`, `/demo/owner/*` are now
   **login-gated** via `InternalDemoGuard` in `App.tsx`.
   - Unauthenticated → "Login required" screen with link to `/login`.
   - Wrong role → "Wrong portal" screen with link to correct demo home.
@@ -112,7 +112,7 @@ Route visibility map (public surface):
 | `/demo` | Public | Client Portal experience entry |
 | `/demo/client/*` | Public | Client Portal preview |
 | `/login` | Public | Role-based sign in |
-| `/demo/team/*` | Login-gated (role=team) | Internal demo |
+| `/demo/team/*` | Deprecated/legacy route (not active) | Historical internal demo |
 | `/demo/operator/*` | Login-gated (role=operator) | Internal demo |
 | `/demo/owner/*` | Login-gated (role=owner) | Internal demo |
 

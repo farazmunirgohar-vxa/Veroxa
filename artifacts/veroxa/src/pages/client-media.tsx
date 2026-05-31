@@ -38,7 +38,6 @@ import {
   type RestaurantType,
 } from "@/lib/mediaGuidance";
 import { clientTeamWorkRepository } from "@/lib/repositories";
-import { CLIENT_AI_DISCLOSURE } from "@/lib/ai/aiAgentTypes";
 import { analyzeRestaurantContent } from "@/lib/content/restaurantContentIntelligence";
 import { createWorkflowItem } from "@/lib/workflow/workflowRepository";
 import { veroxaWriteAdapter } from "@/lib/data/writeAdapter";
@@ -234,10 +233,10 @@ export default function ClientMedia() {
         <ClientMediaReinforcement clientId={SHOWCASE_ID} />
       </div>
 
-      {/* AI-assisted media review — client-safe preview. */}
+      {/* Media review explanation — client-safe and route-ready. */}
       <Card
         className="bg-card border-primary/20 mt-3"
-        data-testid="card-media-ai-preview"
+        data-testid="card-media-review-preview"
       >
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -247,7 +246,8 @@ export default function ClientMedia() {
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-xs text-muted-foreground leading-relaxed">
-            {CLIENT_AI_DISCLOSURE}
+            Veroxa reviews uploads to help prepare content ideas, captions, and posting options.
+            Final review always stays with the Veroxa team before anything goes live.
           </p>
           <div className="rounded-md border border-border/40 bg-muted/5 p-3 text-[11px] text-muted-foreground">
             <span className="font-semibold text-foreground">Tip:</span> upload

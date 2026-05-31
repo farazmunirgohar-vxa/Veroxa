@@ -59,15 +59,15 @@ export function getRoleHomePath(role: VeroxaRole): string {
 /**
  * Fallback landing paths used during the placeholder / pre-launch phase.
  *
- * - `client`   → `/demo/client/dashboard` — public demo preview (no login).
- * - `team`     → `/team/dashboard`        — real team portal (InternalDemoGuard).
+ * - `client`   → `/client/dashboard`      — real client portal review path.
+ * - `team`     → `/team/dashboard`        — real team portal review path.
  *
  * NOT the post-login real-auth home. For that, use `ROLE_HOME_PATH` /
  * `getRoleHomePath`. These paths are only consulted for wrong-role fallback
  * redirects inside `InternalDemoGuard` when `AUTH_MODE === "real"`.
  */
 export const DEMO_ROLE_HOME_PATH: Readonly<Record<VeroxaRole, string>> = Object.freeze({
-  client:   "/demo/client/dashboard",
+  client:   "/client/dashboard",
   team:     "/team/dashboard",
 });
 

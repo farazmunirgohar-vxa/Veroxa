@@ -113,9 +113,13 @@ Do not merge demo and login flows.
 - Demo Preview -> /demo/client/dashboard
 - Portal Access -> /login
 - Login -> /login
-- /demo/client/dashboard remains public preview
-- /team/\* remains guarded by InternalDemoGuard until production auth is explicitly requested
-- /client/\* remains current review/demo route until production auth is explicitly requested
+- Client login -> /client/dashboard
+- Team login -> /team/dashboard
+- /demo/client/dashboard remains the only public demo preview
+- /demo/team/* is deprecated/not active and must not be promoted
+- /team/* remains a real Team/Internal Admin review route guarded by InternalDemoGuard until production auth is explicitly requested
+- /client/* remains a real Client Portal review route until production auth is explicitly requested
+- If a real portal section is incomplete, stay inside the real route and show “Still Building” rather than redirecting to demo
 
 ## 7. Core Veroxa OS flow
 
@@ -257,3 +261,8 @@ Faraz should be able to review from mobile or computer.
 Restaurant partners should do the least possible work.
 
 The priority is a working Restaurant Partner <-> Veroxa Team flow that helps restaurants become easier to find, easier to trust, easier to choose, and easier to return to.
+
+
+## 15. First-5-client readiness benchmark
+
+First 5 clients are the pre-launch readiness benchmark: healthy Essential, Essential with low media, Growth with reels content, Growth with inconsistent uploads, and a client eligible for Premium assessment. Build client-side readiness first; heavy Team/Internal Admin AI automation comes later.

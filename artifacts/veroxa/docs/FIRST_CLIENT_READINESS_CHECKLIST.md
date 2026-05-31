@@ -195,10 +195,10 @@ the first real client uses Veroxa in production.
 - ✅ M029 — Internal Veroxa Lead Success Score (100 pts, 8 categories)
   + priority tiers (A / B / Nurture / Low / Not Target). Internal-only —
   never appears on the public audit page.
-- ✅ M030 — Team Audit Leads queue at `/demo/team/audit-leads` behind
+- ✅ M030 — Historical/deprecated Team Audit Leads queue at `/demo/team/audit-leads` behind
   `InternalDemoGuard role="team"`. Summary cards, priority filter,
   detail panel with outreach guidance, stage updates, internal notes.
-- ✅ M031 — Manual Prospect Scanner at `/demo/team/prospect-scanner`.
+- ✅ M031 — Historical/deprecated Manual Prospect Scanner at `/demo/team/prospect-scanner`.
   Generates both public audit summary and private internal lead audit
   side-by-side. Optional internal-only flags (warm relationship, owner
   reachability, strategic value). No live scraping.
@@ -220,7 +220,7 @@ the first real client uses Veroxa in production.
 - ✅ M034 — Lead Source Quality Score (100 pts, 8 categories) added
   (`leadSourceScoring.ts`, `leadAnalytics.ts`, `leadSourceTypes.ts`).
   Internal only — never shown to restaurants.
-- ✅ M035 — Team Lead Source Lab at `/demo/team/lead-source-lab` behind
+- ✅ M035 — Historical/deprecated Team Lead Source Lab at `/demo/team/lead-source-lab` behind
   `InternalDemoGuard role="team"`. Source Health Summary, Performance Table,
   Recommendations, Experiment Planner, and Learning Notes sections.
 - ✅ M036 — Source experiment planner in Lab. Local store
@@ -235,3 +235,22 @@ the first real client uses Veroxa in production.
   - Connect won clients to actual yield performance.
   - Add source-to-retention reporting.
   - Source ROI dashboard.
+
+## First-5-client readiness benchmark
+
+Before launch, Veroxa should safely support these five real-client conditions without new routes, production auth changes, storage uploads, publishing APIs, checkout, or heavy Team automation:
+
+1. Healthy Essential client.
+2. Essential client with low media.
+3. Growth client with reels content.
+4. Growth client with inconsistent uploads.
+5. Client eligible for Premium readiness assessment.
+
+Current route lock:
+
+- Public demo preview is only `/demo/client/dashboard`.
+- Client Portal review paths are `/client/*`.
+- Team/Internal Admin review paths are `/team/*`.
+- Team Demo / `/demo/team/*` is deprecated/not active.
+
+Client-side readiness comes first. Heavy Team/Internal Admin AI automation comes later.
