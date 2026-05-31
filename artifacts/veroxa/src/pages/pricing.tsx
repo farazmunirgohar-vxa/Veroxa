@@ -6,7 +6,7 @@ import PublicFooter from "@/components/public/PublicFooter";
 import {
   AD_SPEND_DISCLAIMER,
   CURRENT_PUBLIC_PLANS,
-
+  FIRST_CLIENT_LOYALTY_DISCOUNT_POLICY,
   GLOBAL_PRICING_RULES,
   MEDIA_DEPENDENCY_DISCLAIMER,
   PREMIUM_READINESS_RULE,
@@ -20,8 +20,14 @@ const PLANS = CURRENT_PUBLIC_PLANS.map((plan) => ({
   highlight: false,
   badge: null,
   includes: plan.includes,
-  note: plan.id === "premium" ? `${AD_SPEND_DISCLAIMER} ${PREMIUM_READINESS_RULE}` : null,
-  cta: plan.id === "premium" ? "Check Premium Readiness" : `Start with ${plan.label}`,
+  note:
+    plan.id === "premium"
+      ? `${AD_SPEND_DISCLAIMER} ${PREMIUM_READINESS_RULE}`
+      : null,
+  cta:
+    plan.id === "premium"
+      ? "Check Premium Readiness"
+      : `Start with ${plan.label}`,
   ctaSubject: `${plan.label} Plan Inquiry`,
 }));
 
@@ -55,7 +61,7 @@ const FAQ_ITEMS = [
 
   {
     q: "Is there a contract or minimum commitment?",
-    a: "No contract. You can cancel anytime. Veroxa works month to month.",
+    a: `No contract. You can cancel anytime. Veroxa works month to month. ${FIRST_CLIENT_LOYALTY_DISCOUNT_POLICY}`,
   },
   {
     q: "What if I do not have a website or social media accounts?",

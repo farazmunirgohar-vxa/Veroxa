@@ -32,6 +32,11 @@ import { useClientPortalData } from "@/hooks/useClientPortalData";
 import { ClientMediaReinforcement } from "@/components/ClientExecutionReinforcement";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
 import {
+  RealPortalReviewNotice,
+  SafePortalEmptyCard,
+} from "@/components/RealPortalSafeStates";
+import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary";
+import {
   getDefaultGuidance,
   getGuidanceForRestaurantType,
   getRestaurantTypeOptions,
@@ -69,10 +74,26 @@ const reviewPreview: Array<{
   status: string;
   tone: "ready" | "warn" | "good" | "promo";
 }> = [
-  { title: "Saffron rice plate — overhead", status: "Ready for editing", tone: "ready" },
-  { title: "Kitchen pass — Friday service", status: "Needs better lighting", tone: "warn" },
-  { title: "Charcoal grill close-up", status: "Good for Google post", tone: "good" },
-  { title: "Family platter — table shot", status: "Use for weekend promo", tone: "promo" },
+  {
+    title: "Saffron rice plate — overhead",
+    status: "Ready for editing",
+    tone: "ready",
+  },
+  {
+    title: "Kitchen pass — Friday service",
+    status: "Needs better lighting",
+    tone: "warn",
+  },
+  {
+    title: "Charcoal grill close-up",
+    status: "Good for Google post",
+    tone: "good",
+  },
+  {
+    title: "Family platter — table shot",
+    status: "Use for weekend promo",
+    tone: "promo",
+  },
 ];
 
 const toneStyles: Record<string, string> = {
@@ -94,12 +115,19 @@ export default function ClientMedia() {
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
   const [submitNote, setSubmitNote] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-  const { activeClientId, isRealClientSession } = useActiveClientPortalContext();
+  const { activeClientId, isRealClientSession } =
+    useActiveClientPortalContext();
+  const portalDataMode = useRealPortalDataMode();
+  const canUseFixtureData =
+    portalDataMode.allowDemoFixtures || portalDataMode.isLiveDataConnected;
 
   const handleSubmitToTeam = () => {
     if (files.length === 0) return;
+    const workflowClientId = canUseFixtureData
+      ? activeClientId
+      : "pending-live-client";
     const item = createWorkflowItem({
-      clientId: activeClientId,
+      clientId: workflowClientId,
       type: "media_upload",
       title:
         files.length > 1
@@ -129,14 +157,17 @@ export default function ClientMedia() {
     // is not a UUID and would fail the restaurant_id FK — so the call is
     // skipped when it is absent. The local workflow above is the source
     // of truth; any write failure is swallowed and never reaches the client.
-    const devClientId = isRealClientSession ? activeClientId : getDevClientIdFromEnv();
+    const devClientId = isRealClientSession
+      ? activeClientId
+      : getDevClientIdFromEnv();
     if (devClientId) {
       void Promise.all(
         filesToWrite.map((file) => {
-          const category =
-            file.kind.startsWith("video/") ? ("short_video" as const) :
-            file.kind.startsWith("image/") ? ("food_photo" as const) :
-            ("other" as const);
+          const category = file.kind.startsWith("video/")
+            ? ("short_video" as const)
+            : file.kind.startsWith("image/")
+              ? ("food_photo" as const)
+              : ("other" as const);
           return veroxaWriteAdapter.createUploadSubmission({
             restaurantId: devClientId,
             uploadKeyId: null,
@@ -146,17 +177,19 @@ export default function ClientMedia() {
             submittedByLabel: "client_portal",
           });
         }),
-      ).then((results) => {
-        const saved = results.filter((r) => r.ok).length;
-        if (saved > 0) {
-          console.info(
-            `[veroxa] upload submission metadata recorded: ${saved}/${filesToWrite.length}` +
-            ` (ref: ${item.workflowItemId})`,
-          );
-        }
-      }).catch(() => {
-        /* local/demo flow is the source of truth — swallow adapter errors */
-      });
+      )
+        .then((results) => {
+          const saved = results.filter((r) => r.ok).length;
+          if (saved > 0) {
+            console.info(
+              `[veroxa] upload submission metadata recorded: ${saved}/${filesToWrite.length}` +
+                ` (ref: ${item.workflowItemId})`,
+            );
+          }
+        })
+        .catch(() => {
+          /* local/demo flow is the source of truth — swallow adapter errors */
+        });
     }
   };
 
@@ -213,12 +246,18 @@ export default function ClientMedia() {
     Math.round((snapshot.used / Math.max(1, snapshot.available)) * 100),
   );
 
-  const { source: portalSource, dataSourceMessage: portalSourceMessage } = useClientPortalData();
+  const { source: portalSource, dataSourceMessage: portalSourceMessage } =
+    useClientPortalData();
 
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
+      <RealPortalReviewNotice />
       <div className="flex flex-col gap-2">
-        <DataSourceBadge source={portalSource} message={portalSourceMessage} className="-mb-1" />
+        <DataSourceBadge
+          source={portalSource}
+          message={portalSourceMessage}
+          className="-mb-1"
+        />
         <div className="flex flex-wrap items-center gap-3">
           <h2 className="text-3xl font-bold tracking-tight">Media Library</h2>
         </div>
@@ -229,9 +268,17 @@ export default function ClientMedia() {
       </div>
 
       {/* Why your photos matter — calm, blame-free reinforcement (client-safe). */}
-      <div className="mt-3">
-        <ClientMediaReinforcement clientId={SHOWCASE_ID} />
-      </div>
+      {canUseFixtureData ? (
+        <div className="mt-3">
+          <ClientMediaReinforcement clientId={SHOWCASE_ID} />
+        </div>
+      ) : (
+        <SafePortalEmptyCard
+          title="Media library in review"
+          body="Live account media counts and previous uploads will appear after the account is connected. You can still review the safe upload shell."
+          testId="empty-media-in-review"
+        />
+      )}
 
       {/* Media review explanation — client-safe and route-ready. */}
       <Card
@@ -246,8 +293,9 @@ export default function ClientMedia() {
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Veroxa reviews uploads to help prepare content ideas, captions, and posting options.
-            Final review always stays with the Veroxa team before anything goes live.
+            Veroxa reviews uploads to help prepare content ideas, captions, and
+            posting options. Final review always stays with the Veroxa team
+            before anything goes live.
           </p>
           <div className="rounded-md border border-border/40 bg-muted/5 p-3 text-[11px] text-muted-foreground">
             <span className="font-semibold text-foreground">Tip:</span> upload
@@ -269,8 +317,8 @@ export default function ClientMedia() {
             </p>
             <p className="text-[12px] text-muted-foreground">
               Phone photos of dishes, prep moments, your space, and specials —
-              raw is fine. Quick captions when you have them. Veroxa handles
-              the editing, captions, and timing.
+              raw is fine. Quick captions when you have them. Veroxa handles the
+              editing, captions, and timing.
             </p>
           </CardContent>
         </Card>
@@ -281,8 +329,8 @@ export default function ClientMedia() {
             </p>
             <p className="text-[12px] text-muted-foreground">
               Veroxa reviews each item, drafts captions and angles, and only
-              then schedules posts at the right times. Nothing goes live
-              without review on your account.
+              then schedules posts at the right times. Nothing goes live without
+              review on your account.
             </p>
           </CardContent>
         </Card>
@@ -335,7 +383,10 @@ export default function ClientMedia() {
       </Card>
 
       {/* Restaurant Upload Key — daily content app entry */}
-      <Card className="mt-4 border-primary/30 bg-primary/5" data-testid="card-restaurant-upload-key">
+      <Card
+        className="mt-4 border-primary/30 bg-primary/5"
+        data-testid="card-restaurant-upload-key"
+      >
         <CardContent className="p-5 flex flex-wrap items-start justify-between gap-4">
           <div className="flex items-start gap-3 max-w-2xl">
             <div className="w-10 h-10 rounded-lg bg-primary/15 border border-border flex items-center justify-center flex-shrink-0">
@@ -346,9 +397,10 @@ export default function ClientMedia() {
                 Need employees to upload daily content?
               </p>
               <p className="text-sm text-muted-foreground">
-                Share your restaurant upload key with approved staff so they can submit food
-                photos, prep clips, atmosphere shots, and specials without needing a full
-                account. Each restaurant gets one key — keep it inside your team only.
+                Share your restaurant upload key with approved staff so they can
+                submit food photos, prep clips, atmosphere shots, and specials
+                without needing a full account. Each restaurant gets one key —
+                keep it inside your team only.
               </p>
             </div>
           </div>
@@ -363,115 +415,138 @@ export default function ClientMedia() {
       </Card>
 
       {/* Open media-related items between you and Veroxa Team. */}
-      {(() => {
-        const mediaItems = clientTeamWorkRepository
-          .getClientVisibleSubmissions(SHOWCASE_ID)
-          .filter(
-            (s) =>
-              s.submissionType === "media" &&
-              s.status !== "completed" &&
-              s.status !== "archived",
-          );
-        if (mediaItems.length === 0) return null;
-        return (
-          <Card
-            className="mt-4 border-border bg-card/60"
-            data-testid="card-media-open-items"
-          >
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <Inbox className="w-4 h-4 text-primary" />
-                Media items with Veroxa Team ({mediaItems.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {mediaItems.map((s) => {
-                const statusLabel = clientTeamWorkRepository.getSubmissionWorkItemForClient(s.id)?.statusLabel;
-                const nextAction = clientTeamWorkRepository.getSubmissionWorkItemForClient(s.id)?.nextAction;
-                const intel = analyzeRestaurantContent(s);
-                const contentStatus = intel.clientStatus;
-                // Client-safe: only surface a short, plain context request when
-                // the pipeline needs more before it can prepare captions. No
-                // scores, agents, angles, or risk flags are shown to clients.
-                const contextRequest =
-                  !intel.mediaUnderstanding.captionDraftingAllowed
+      {canUseFixtureData &&
+        (() => {
+          const mediaItems = clientTeamWorkRepository
+            .getClientVisibleSubmissions(SHOWCASE_ID)
+            .filter(
+              (s) =>
+                s.submissionType === "media" &&
+                s.status !== "completed" &&
+                s.status !== "archived",
+            );
+          if (mediaItems.length === 0) return null;
+          return (
+            <Card
+              className="mt-4 border-border bg-card/60"
+              data-testid="card-media-open-items"
+            >
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Inbox className="w-4 h-4 text-primary" />
+                  Media items with Veroxa Team ({mediaItems.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {mediaItems.map((s) => {
+                  const statusLabel =
+                    clientTeamWorkRepository.getSubmissionWorkItemForClient(
+                      s.id,
+                    )?.statusLabel;
+                  const nextAction =
+                    clientTeamWorkRepository.getSubmissionWorkItemForClient(
+                      s.id,
+                    )?.nextAction;
+                  const intel = analyzeRestaurantContent(s);
+                  const contentStatus = intel.clientStatus;
+                  // Client-safe: only surface a short, plain context request when
+                  // the pipeline needs more before it can prepare captions. No
+                  // scores, agents, angles, or risk flags are shown to clients.
+                  const contextRequest = !intel.mediaUnderstanding
+                    .captionDraftingAllowed
                     ? intel.captionDraftSet.clarificationQuestion
                     : undefined;
-                return (
-                  <div
-                    key={s.id}
-                    className="rounded-md border border-border bg-muted/20 px-3 py-2"
-                    data-testid={`media-open-${s.id}`}
-                  >
-                    <div className="flex items-center justify-between gap-2 mb-1 flex-wrap">
-                      <p className="text-sm font-medium leading-snug">{s.title}</p>
-                      <div className="flex gap-1.5 flex-wrap">
-                        <Badge
-                          variant="outline"
-                          className="text-[9px] flex-shrink-0 border-sky-500/30 bg-sky-500/10 text-sky-300"
-                          data-testid={`media-content-status-${s.id}`}
-                        >
-                          {contentStatus}
-                        </Badge>
-                        {statusLabel && (
-                          <Badge variant="outline" className="text-[9px] flex-shrink-0">
-                            {statusLabel}
+                  return (
+                    <div
+                      key={s.id}
+                      className="rounded-md border border-border bg-muted/20 px-3 py-2"
+                      data-testid={`media-open-${s.id}`}
+                    >
+                      <div className="flex items-center justify-between gap-2 mb-1 flex-wrap">
+                        <p className="text-sm font-medium leading-snug">
+                          {s.title}
+                        </p>
+                        <div className="flex gap-1.5 flex-wrap">
+                          <Badge
+                            variant="outline"
+                            className="text-[9px] flex-shrink-0 border-sky-500/30 bg-sky-500/10 text-sky-300"
+                            data-testid={`media-content-status-${s.id}`}
+                          >
+                            {contentStatus}
                           </Badge>
-                        )}
+                          {statusLabel && (
+                            <Badge
+                              variant="outline"
+                              className="text-[9px] flex-shrink-0"
+                            >
+                              {statusLabel}
+                            </Badge>
+                          )}
+                        </div>
                       </div>
+                      <p className="text-xs text-muted-foreground">
+                        {s.clientVisibleNote}
+                      </p>
+                      {nextAction && (
+                        <p className="text-[11px] text-amber-300 mt-1">
+                          What to send: {nextAction}
+                        </p>
+                      )}
+                      {!nextAction && contextRequest && (
+                        <p className="text-[11px] text-amber-300 mt-1">
+                          What to send: {contextRequest}
+                        </p>
+                      )}
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      {s.clientVisibleNote}
-                    </p>
-                    {nextAction && (
-                      <p className="text-[11px] text-amber-300 mt-1">
-                        What to send: {nextAction}
-                      </p>
-                    )}
-                    {!nextAction && contextRequest && (
-                      <p className="text-[11px] text-amber-300 mt-1">
-                        What to send: {contextRequest}
-                      </p>
-                    )}
-                  </div>
-                );
-              })}
-            </CardContent>
-          </Card>
-        );
-      })()}
+                  );
+                })}
+              </CardContent>
+            </Card>
+          );
+        })()}
 
       {/* Recent uploads from this session */}
-      <SessionUploadsSection />
+      {canUseFixtureData && <SessionUploadsSection />}
 
       {/* Restaurant Media Guidance Engine — rule-based demo, local state only */}
-      <Card className="bg-card border-primary/30 mt-4" data-testid="card-media-guidance">
+      <Card
+        className="bg-card border-primary/30 mt-4"
+        data-testid="card-media-guidance"
+      >
         <CardHeader className="pb-3">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <Sparkles className="w-5 h-5 text-primary" />
-                <CardTitle className="text-lg font-semibold">Restaurant Media Guidance</CardTitle>
+                <CardTitle className="text-lg font-semibold">
+                  Restaurant Media Guidance
+                </CardTitle>
                 <Badge
                   variant="outline"
                   className="border-primary/30 bg-primary/10 text-primary text-[10px] font-semibold tracking-wide"
                   data-testid="badge-guidance-rule-based"
                 >
-                  Demo preview
+                  {canUseFixtureData ? "Demo preview" : "Guidance preview"}
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground max-w-2xl">
-                Choose your restaurant type and Veroxa will recommend what photos and videos to capture this week.
+                Choose your restaurant type and Veroxa will recommend what
+                photos and videos to capture this week.
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <label htmlFor="guidance-restaurant-type" className="text-xs text-muted-foreground font-medium">
+              <label
+                htmlFor="guidance-restaurant-type"
+                className="text-xs text-muted-foreground font-medium"
+              >
                 Restaurant type
               </label>
               <select
                 id="guidance-restaurant-type"
                 value={restaurantType}
-                onChange={(e) => setRestaurantType(e.target.value as RestaurantType)}
+                onChange={(e) =>
+                  setRestaurantType(e.target.value as RestaurantType)
+                }
                 className="bg-muted/40 border border-border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
                 data-testid="select-restaurant-type"
               >
@@ -485,7 +560,10 @@ export default function ClientMedia() {
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          <p className="text-xs text-muted-foreground" data-testid="text-guidance-note">
+          <p
+            className="text-xs text-muted-foreground"
+            data-testid="text-guidance-note"
+          >
             Based on Veroxa's content guidance for your restaurant type.
           </p>
 
@@ -503,14 +581,18 @@ export default function ClientMedia() {
                   data-testid={`shot-idea-${i}`}
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <p className="text-sm font-medium leading-snug">{idea.title}</p>
+                    <p className="text-sm font-medium leading-snug">
+                      {idea.title}
+                    </p>
                     <span
                       className={`text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded border ${difficultyStyles[idea.difficulty]}`}
                     >
                       {idea.difficulty}
                     </span>
                   </div>
-                  <p className="text-xs text-muted-foreground">{idea.description}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {idea.description}
+                  </p>
                   <div className="flex flex-wrap items-center gap-1.5">
                     {idea.bestFor.map((platform) => (
                       <Badge
@@ -521,7 +603,9 @@ export default function ClientMedia() {
                         {platform}
                       </Badge>
                     ))}
-                    <span className="text-[10px] text-muted-foreground ml-auto">{idea.frequency}</span>
+                    <span className="text-[10px] text-muted-foreground ml-auto">
+                      {idea.frequency}
+                    </span>
                   </div>
                   <p className="text-[11px] text-muted-foreground italic border-t border-border/40 pt-2">
                     Example: {idea.exampleShot}
@@ -547,8 +631,12 @@ export default function ClientMedia() {
                     className="flex items-start gap-2 text-sm"
                     data-testid={`google-shot-${i}`}
                   >
-                    <span className="text-xs font-semibold text-primary min-w-[110px]">{shot.category}</span>
-                    <span className="text-xs text-muted-foreground">{shot.description}</span>
+                    <span className="text-xs font-semibold text-primary min-w-[110px]">
+                      {shot.category}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {shot.description}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -591,10 +679,16 @@ export default function ClientMedia() {
                     className="flex items-start gap-3 p-2.5 rounded-md bg-muted/20 border border-border"
                     data-testid={`weekly-slot-${i}`}
                   >
-                    <span className="text-xs font-bold text-primary min-w-[68px]">{slot.day}</span>
+                    <span className="text-xs font-bold text-primary min-w-[68px]">
+                      {slot.day}
+                    </span>
                     <div className="min-w-0">
-                      <p className="text-sm font-medium leading-snug">{slot.what}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{slot.why}</p>
+                      <p className="text-sm font-medium leading-snug">
+                        {slot.what}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {slot.why}
+                      </p>
                     </div>
                   </li>
                 ))}
@@ -615,7 +709,9 @@ export default function ClientMedia() {
                     data-testid={`quick-tip-${i}`}
                   >
                     <p className="font-medium leading-snug">{tip.title}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{tip.text}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {tip.text}
+                    </p>
                   </li>
                 ))}
               </ul>
@@ -669,9 +765,14 @@ export default function ClientMedia() {
               </div>
 
               {files.length > 0 && (
-                <div className="mt-4 space-y-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-2.5" data-testid="callout-submit-team">
+                <div
+                  className="mt-4 space-y-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-2.5"
+                  data-testid="callout-submit-team"
+                >
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold text-foreground">Ready to send to Veroxa?</p>
+                    <p className="text-xs font-semibold text-foreground">
+                      Ready to send to Veroxa?
+                    </p>
                     <p className="text-[11px] text-muted-foreground">
                       This submits your selection into your Veroxa workflow for
                       team review. The Veroxa team will review each item before
@@ -712,7 +813,10 @@ export default function ClientMedia() {
               )}
 
               {files.length > 0 && (
-                <div className="mt-5 space-y-2" data-testid="list-selected-files">
+                <div
+                  className="mt-5 space-y-2"
+                  data-testid="list-selected-files"
+                >
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-medium">
                       Selected files (not yet submitted)
@@ -758,38 +862,45 @@ export default function ClientMedia() {
           </Card>
 
           {/* 2. Media Review Preview */}
-          <Card className="bg-card border-border" data-testid="card-review">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base font-semibold">
-                Media Review Preview
-              </CardTitle>
-              <p className="text-xs text-muted-foreground">
-                How the Veroxa team tags reviewed media for downstream use.
-              </p>
-            </CardHeader>
-            <CardContent>
-              <ul className="divide-y divide-border">
-                {reviewPreview.map((r, i) => (
-                  <li
-                    key={i}
-                    className="flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0"
-                    data-testid={`review-item-${i}`}
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <ImageIcon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                      <span className="text-sm truncate">{r.title}</span>
-                    </div>
-                    <span
-                      className={`text-xs font-medium px-2 py-0.5 rounded-full border ${toneStyles[r.tone]}`}
+          {canUseFixtureData ? (
+            <Card className="bg-card border-border" data-testid="card-review">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-semibold">
+                  Media Review Preview
+                </CardTitle>
+                <p className="text-xs text-muted-foreground">
+                  How the Veroxa team tags reviewed media for downstream use.
+                </p>
+              </CardHeader>
+              <CardContent>
+                <ul className="divide-y divide-border">
+                  {reviewPreview.map((r, i) => (
+                    <li
+                      key={i}
+                      className="flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0"
+                      data-testid={`review-item-${i}`}
                     >
-                      {r.status}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-
+                      <div className="flex items-center gap-2 min-w-0">
+                        <ImageIcon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                        <span className="text-sm truncate">{r.title}</span>
+                      </div>
+                      <span
+                        className={`text-xs font-medium px-2 py-0.5 rounded-full border ${toneStyles[r.tone]}`}
+                      >
+                        {r.status}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          ) : (
+            <SafePortalEmptyCard
+              title="Media review examples hidden"
+              body="Sample reviewed media items stay out of real client routes until live account data exists."
+              testId="empty-media-review-preview"
+            />
+          )}
         </div>
 
         {/* 4. Content Supply Snapshot */}
@@ -804,26 +915,40 @@ export default function ClientMedia() {
               <div className="space-y-2">
                 <div className="flex justify-between text-xs text-muted-foreground">
                   <span>Content supply</span>
-                  <span>{supplyPct}%</span>
+                  <span>
+                    {canUseFixtureData ? `${supplyPct}%` : "In review"}
+                  </span>
                 </div>
-                <Progress value={supplyPct} className="h-2" />
+                <Progress
+                  value={canUseFixtureData ? supplyPct : 0}
+                  className="h-2"
+                />
               </div>
               <Separator />
               <dl className="space-y-3 text-sm">
-                <div className="flex justify-between" data-testid="stat-available">
+                <div
+                  className="flex justify-between"
+                  data-testid="stat-available"
+                >
                   <dt className="text-muted-foreground">Available media</dt>
-                  <dd className="font-medium">{snapshot.available}</dd>
+                  <dd className="font-medium">
+                    {canUseFixtureData ? snapshot.available : "—"}
+                  </dd>
                 </div>
                 <div className="flex justify-between" data-testid="stat-used">
                   <dt className="text-muted-foreground">Used media</dt>
-                  <dd className="font-medium">{snapshot.used}</dd>
+                  <dd className="font-medium">
+                    {canUseFixtureData ? snapshot.used : "—"}
+                  </dd>
                 </div>
                 <div className="flex justify-between" data-testid="stat-review">
                   <dt className="text-muted-foreground">Needs review</dt>
-                  <dd className="font-medium">{snapshot.needsReview}</dd>
+                  <dd className="font-medium">
+                    {canUseFixtureData ? snapshot.needsReview : "—"}
+                  </dd>
                 </div>
               </dl>
-              {snapshot.lowContentWarning && (
+              {canUseFixtureData && snapshot.lowContentWarning && (
                 <div
                   className="flex items-start gap-2 text-xs text-amber-400 bg-amber-500/10 border border-amber-500/30 rounded-md p-2.5"
                   data-testid="low-content-warning"
@@ -858,16 +983,22 @@ function SessionUploadsSection() {
 
   useEffect(() => {
     const refresh = () =>
-      setItems(getLocalUploadSubmissions().filter((s) => s.restaurantId === "demo-a"));
+      setItems(
+        getLocalUploadSubmissions().filter((s) => s.restaurantId === "demo-a"),
+      );
     refresh();
     return subscribeToLocalUploadSubmissions(() => refresh());
   }, []);
 
   return (
-    <Card className="mt-4 bg-card border-border" data-testid="card-session-uploads">
+    <Card
+      className="mt-4 bg-card border-border"
+      data-testid="card-session-uploads"
+    >
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
-          <Inbox className="w-4 h-4 text-primary" /> Recent uploads from this session
+          <Inbox className="w-4 h-4 text-primary" /> Recent uploads from this
+          session
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -890,7 +1021,8 @@ function SessionUploadsSection() {
                 <div className="min-w-0">
                   <p className="font-medium truncate">{s.fileLabel}</p>
                   <p className="text-[11px] text-muted-foreground">
-                    {demoUploadCategoryLabels[s.category]} · {s.submittedAtLabel}
+                    {demoUploadCategoryLabels[s.category]} ·{" "}
+                    {s.submittedAtLabel}
                   </p>
                 </div>
                 <Badge variant="outline" className="text-[10px]">
@@ -901,7 +1033,8 @@ function SessionUploadsSection() {
           </ul>
         )}
         <p className="text-[11px] text-muted-foreground mt-3">
-          Session-only — no real files are stored. Clears when you close the browser.
+          Session-only — no real files are stored. Clears when you close the
+          browser.
         </p>
       </CardContent>
     </Card>

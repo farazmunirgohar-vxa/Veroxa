@@ -12,6 +12,11 @@ import {
   Trash2,
 } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
+import {
+  RealPortalReviewNotice,
+  SafePortalEmptyCard,
+} from "@/components/RealPortalSafeStates";
+import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -74,7 +79,8 @@ const groups: GroupDef[] = [
     description: "Restaurant flagged this as urgent or high.",
     icon: AlertTriangle,
     filter: (d) =>
-      (d.urgency === "urgent" || d.urgency === "high") && d.status !== "completed",
+      (d.urgency === "urgent" || d.urgency === "high") &&
+      d.status !== "completed",
   },
   {
     key: "content",
@@ -94,7 +100,8 @@ const groups: GroupDef[] = [
     description: "Google profile / posts / visibility.",
     icon: MapPin,
     filter: (d) =>
-      (d.channel === "google" || d.focus === "google_visibility") && d.status !== "completed",
+      (d.channel === "google" || d.focus === "google_visibility") &&
+      d.status !== "completed",
   },
   {
     key: "ads",
@@ -102,7 +109,8 @@ const groups: GroupDef[] = [
     description: "Ads angle requests. No launches happen here.",
     icon: Megaphone,
     filter: (d) =>
-      (d.channel === "ads" || d.focus === "ads_goal") && d.status !== "completed",
+      (d.channel === "ads" || d.focus === "ads_goal") &&
+      d.status !== "completed",
   },
   {
     key: "avoid",
@@ -181,13 +189,19 @@ function suggestedAction(d: DirectionRequest): string {
 }
 
 export default function TeamDirectionQueue() {
-  const [fixtureItems, setFixtureItems] = useState<DirectionRequest[]>(
-    () => [...demoClientDirection],
+  const portalDataMode = useRealPortalDataMode();
+  const canUseFixtureData =
+    portalDataMode.allowDemoFixtures || portalDataMode.isLiveDataConnected;
+
+  const [fixtureItems, setFixtureItems] = useState<DirectionRequest[]>(() => [
+    ...demoClientDirection,
+  ]);
+  const [localItems, setLocalItems] = useState<DirectionRequest[]>(() =>
+    getLocalDirectionRequests(),
   );
-  const [localItems, setLocalItems] = useState<DirectionRequest[]>(
-    () => getLocalDirectionRequests(),
-  );
-  const [writeStatuses, setWriteStatuses] = useState<Record<string, DirectionWriteStatus>>({});
+  const [writeStatuses, setWriteStatuses] = useState<
+    Record<string, DirectionWriteStatus>
+  >({});
 
   useEffect(() => {
     const refresh = () => setLocalItems(getLocalDirectionRequests());
@@ -254,13 +268,15 @@ export default function TeamDirectionQueue() {
       } else {
         setWriteStatus(id, {
           status: "dev_write_failed",
-          message: "Status updated locally. Dev database update did not complete.",
+          message:
+            "Status updated locally. Dev database update did not complete.",
         });
       }
     } catch {
       setWriteStatus(id, {
         status: "dev_write_failed",
-        message: "Status updated locally. Dev database update did not complete.",
+        message:
+          "Status updated locally. Dev database update did not complete.",
       });
     }
   }
@@ -289,6 +305,19 @@ export default function TeamDirectionQueue() {
     [items],
   );
 
+  if (!canUseFixtureData) {
+    return (
+      <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
+        <RealPortalReviewNotice />
+        <SafePortalEmptyCard
+          title="Direction Queue in review"
+          body="Live client direction requests are not connected yet. Client asks and confirmations will appear here after setup."
+          testId="empty-team-direction-queue"
+        />
+      </PortalLayout>
+    );
+  }
+
   return (
     <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
       <div className="mb-4">
@@ -299,8 +328,8 @@ export default function TeamDirectionQueue() {
           <Compass className="w-6 h-6 text-primary" /> Direction Queue
         </h2>
         <p className="text-muted-foreground mt-1 text-sm md:text-base max-w-3xl">
-          Restaurant priorities submitted through the Client Direction Center. Review,
-          interpret, and convert into content, Google, or ads actions.
+          Restaurant priorities submitted through the Client Direction Center.
+          Review, interpret, and convert into content, Google, or ads actions.
         </p>
       </div>
 
@@ -342,7 +371,8 @@ export default function TeamDirectionQueue() {
 
       {/* Cross-link to client/team submissions awaiting clarification. */}
       {(() => {
-        const clarification = clientTeamWorkRepository.getTeamNeedsClientClarification();
+        const clarification =
+          clientTeamWorkRepository.getTeamNeedsClientClarification();
         if (clarification.length === 0) return null;
         return (
           <Card
@@ -351,7 +381,8 @@ export default function TeamDirectionQueue() {
           >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm">
-                Client submissions awaiting clarification ({clarification.length})
+                Client submissions awaiting clarification (
+                {clarification.length})
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
@@ -370,16 +401,24 @@ export default function TeamDirectionQueue() {
                         {getRestaurantName(s.clientId)} — {s.title}
                       </span>
                       {s.requestedClientAction && (
-                        <Badge variant="outline" className="text-[9px] border-sky-500/30 text-sky-300 flex-shrink-0">
+                        <Badge
+                          variant="outline"
+                          className="text-[9px] border-sky-500/30 text-sky-300 flex-shrink-0"
+                        >
                           Awaiting reply
                         </Badge>
                       )}
                     </div>
                     {latestEvent && (
-                      <p className="text-[11px] text-muted-foreground/85" data-testid={`dir-clarification-latest-${s.id}`}>
+                      <p
+                        className="text-[11px] text-muted-foreground/85"
+                        data-testid={`dir-clarification-latest-${s.id}`}
+                      >
                         Latest status update: {latestEvent.note}
                         {!latestEvent.clientVisible && (
-                          <span className="ml-1 text-muted-foreground/60">(internal only)</span>
+                          <span className="ml-1 text-muted-foreground/60">
+                            (internal only)
+                          </span>
                         )}
                       </p>
                     )}
@@ -406,7 +445,8 @@ export default function TeamDirectionQueue() {
                 );
               })}
               <p className="text-[10px] text-muted-foreground/70 pt-1">
-                Internal — surfaced from client/team workflow. Resolve in Work Queue / Requests.
+                Internal — surfaced from client/team workflow. Resolve in Work
+                Queue / Requests.
               </p>
               <p className="text-[10px] text-muted-foreground/60 italic">
                 {TEAM_AI_DISCLOSURE}
@@ -424,7 +464,11 @@ export default function TeamDirectionQueue() {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {recommendations.slice(0, 2).map((r) => (
-              <AdaptiveRecommendationCard key={r.id} recommendation={r} audience="team" />
+              <AdaptiveRecommendationCard
+                key={r.id}
+                recommendation={r}
+                audience="team"
+              />
             ))}
           </div>
         </div>
@@ -435,7 +479,11 @@ export default function TeamDirectionQueue() {
           const groupItems = items.filter(g.filter);
           const Icon = g.icon;
           return (
-            <Card key={g.key} className="bg-card border-border" data-testid={`direction-group-${g.key}`}>
+            <Card
+              key={g.key}
+              className="bg-card border-border"
+              data-testid={`direction-group-${g.key}`}
+            >
               <CardHeader className="pb-3">
                 <div className="flex items-baseline justify-between gap-2">
                   <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground inline-flex items-center gap-1.5">
@@ -446,11 +494,15 @@ export default function TeamDirectionQueue() {
                     {groupItems.length}
                   </span>
                 </div>
-                <p className="text-[11px] text-muted-foreground/70 mt-1">{g.description}</p>
+                <p className="text-[11px] text-muted-foreground/70 mt-1">
+                  {g.description}
+                </p>
               </CardHeader>
               <CardContent className="space-y-3">
                 {groupItems.length === 0 ? (
-                  <p className="text-xs text-muted-foreground italic">Nothing here right now.</p>
+                  <p className="text-xs text-muted-foreground italic">
+                    Nothing here right now.
+                  </p>
                 ) : (
                   groupItems.map((d) => {
                     const ws = writeStatuses[d.id];
@@ -461,23 +513,34 @@ export default function TeamDirectionQueue() {
                         data-testid={`direction-card-${d.id}`}
                       >
                         <div className="flex items-start justify-between gap-2 mb-1">
-                          <p className="text-sm font-semibold leading-tight">{d.title}</p>
-                          <Badge variant="outline" className={`text-[10px] ${urgencyTone[d.urgency]}`}>
+                          <p className="text-sm font-semibold leading-tight">
+                            {d.title}
+                          </p>
+                          <Badge
+                            variant="outline"
+                            className={`text-[10px] ${urgencyTone[d.urgency]}`}
+                          >
                             {directionUrgencyLabels[d.urgency]}
                           </Badge>
                         </div>
                         <p className="text-[11px] text-muted-foreground mb-1">
                           {d.restaurantName} · {directionFocusLabels[d.focus]} ·{" "}
-                          {directionChannelLabels[d.channel]} · {d.preferredTimingLabel}
+                          {directionChannelLabels[d.channel]} ·{" "}
+                          {d.preferredTimingLabel}
                         </p>
                         {d.clientNote && d.clientNote !== "—" && (
-                          <p className="text-sm text-foreground/90 mb-2">"{d.clientNote}"</p>
+                          <p className="text-sm text-foreground/90 mb-2">
+                            "{d.clientNote}"
+                          </p>
                         )}
                         <p className="text-[11px] text-muted-foreground italic mb-2">
                           Suggested: {suggestedAction(d)}
                         </p>
                         <div className="flex items-center justify-between gap-2 mb-2">
-                          <Badge variant="outline" className={`text-[10px] ${statusTone[d.status]}`}>
+                          <Badge
+                            variant="outline"
+                            className={`text-[10px] ${statusTone[d.status]}`}
+                          >
                             {directionStatusTeamLabels[d.status]}
                           </Badge>
                           <span className="text-[10px] text-muted-foreground inline-flex items-center gap-1">

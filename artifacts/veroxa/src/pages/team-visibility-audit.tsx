@@ -7,6 +7,11 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
+import {
+  RealPortalReviewNotice,
+  SafePortalEmptyCard,
+} from "@/components/RealPortalSafeStates";
+import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary";
 import { PageHeader, StatusBadge } from "@/components/common";
 import type { StatusBadgeTone } from "@/components/common";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
@@ -42,11 +47,28 @@ function scoreTone(score: number): StatusBadgeTone {
 }
 
 export default function TeamVisibilityAudit() {
+  const portalDataMode = useRealPortalDataMode();
+  const canUseFixtureData =
+    portalDataMode.allowDemoFixtures || portalDataMode.isLiveDataConnected;
+
   const audits = useMemo(() => getAllVisibilityAudits(), []);
   const [selectedId, setSelectedId] = useState(audits[0]?.input.clientId ?? "");
 
   const selected =
     audits.find((a) => a.input.clientId === selectedId) ?? audits[0];
+
+  if (!canUseFixtureData) {
+    return (
+      <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
+        <RealPortalReviewNotice />
+        <SafePortalEmptyCard
+          title="Visibility Audit in review"
+          body="Live Google Maps visibility audits are not connected yet. Findings will appear here after real account data is prepared."
+          testId="empty-team-visibility-audit"
+        />
+      </PortalLayout>
+    );
+  }
 
   return (
     <PortalLayout items={teamPortalNavItems} portalName="Team Portal">

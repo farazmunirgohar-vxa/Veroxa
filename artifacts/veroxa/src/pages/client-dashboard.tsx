@@ -21,6 +21,8 @@ import { useClientPortalData } from "@/hooks/useClientPortalData";
 import { ClientKeepMovingCard } from "@/components/ClientExecutionReinforcement";
 import { ClientVisibilityProgressCard } from "@/components/ClientVisibilityProgressCard";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
+import { RealPortalReviewNotice } from "@/components/RealPortalSafeStates";
+import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary";
 import {
   getClientProgressSummary,
   getFirstFiveClientPortalViewModels,
@@ -56,11 +58,18 @@ function getCurrentPeriodLabel(): string {
 
 export default function ClientDashboard() {
   const { loading, data, source, dataSourceMessage } = useClientPortalData();
-  const journeySummary = getClientProgressSummary("demo-a");
-  const recentProgress = journeySummary.recentProgress.slice(0, 4);
-  const firstFiveReadiness = getFirstFiveClientPortalViewModels().find(
-    (item) => item.key === "growth_reels_ready",
-  );
+  const portalDataMode = useRealPortalDataMode();
+  const canUseFixtureData =
+    portalDataMode.allowDemoFixtures || portalDataMode.isLiveDataConnected;
+  const journeySummary = canUseFixtureData
+    ? getClientProgressSummary("demo-a")
+    : null;
+  const recentProgress = journeySummary?.recentProgress.slice(0, 4) ?? [];
+  const firstFiveReadiness = canUseFixtureData
+    ? getFirstFiveClientPortalViewModels().find(
+        (item) => item.key === "growth_reels_ready",
+      )
+    : null;
 
   const quickActions = [
     { label: "Upload media", href: "/client/media", icon: Images },
@@ -92,11 +101,21 @@ export default function ClientDashboard() {
     },
   ];
 
-  const healthSnapshot = healthRepository.getClientHealthSnapshot("demo-a");
-  const clientReports = reportRepository.getClientReports("demo-a");
-  const recentActivity = activityRepository.getClientVisibleActivity("demo-a");
-  const visibleWorkflowItems = getClientVisibleWorkflowItems(demoClientTeamWorkflow, "demo-a", 5);
-  const openClientActions = getClientActionNeededItems(demoClientTeamWorkflow, "demo-a");
+  const healthSnapshot = canUseFixtureData
+    ? healthRepository.getClientHealthSnapshot("demo-a")
+    : null;
+  const clientReports = canUseFixtureData
+    ? reportRepository.getClientReports("demo-a")
+    : { monthly: [] };
+  const recentActivity = canUseFixtureData
+    ? activityRepository.getClientVisibleActivity("demo-a")
+    : [];
+  const visibleWorkflowItems = canUseFixtureData
+    ? getClientVisibleWorkflowItems(demoClientTeamWorkflow, "demo-a", 5)
+    : [];
+  const openClientActions = canUseFixtureData
+    ? getClientActionNeededItems(demoClientTeamWorkflow, "demo-a")
+    : [];
 
   const contentStatusForClient: MvpContentHealthStatus =
     healthSnapshot?.contentHealthStatus === "broken"
@@ -107,10 +126,12 @@ export default function ClientDashboard() {
     healthSnapshot
       ? getClientContentHealthMessage(contentStatusForClient)
       : "Veroxa is monitoring your content supply.",
-    journeySummary.visibilityProgress.nextVisibilityAction,
+    journeySummary?.visibilityProgress.nextVisibilityAction ??
+      "Live account data is being prepared.",
     clientReports.monthly.length > 0
       ? `Your latest monthly report (${clientReports.monthly[0].monthKey}) is available in Reports.`
-      : journeySummary.latestReport.summary,
+      : (journeySummary?.latestReport.summary ??
+        "Reports will appear once your account setup is ready."),
     recentActivity.length > 0
       ? `Veroxa is working on your account — ${recentActivity.length} recent updates.`
       : "Veroxa is monitoring your content supply.",
@@ -118,6 +139,8 @@ export default function ClientDashboard() {
 
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
+      <RealPortalReviewNotice />
+
       {/* Welcome */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -142,44 +165,68 @@ export default function ClientDashboard() {
 
       {/* Account summary — what Veroxa handles for this restaurant. */}
       <ClientAccountSummary
-        restaurantName={loading ? undefined : data.businessName}
+        restaurantName={
+          loading || !canUseFixtureData ? undefined : data.businessName
+        }
       />
 
-
-      <Card className="bg-card/50 border-border/50" data-testid="card-client-readiness-snapshot">
-        <CardContent className="p-5">
-          <div className="flex items-start justify-between gap-3 mb-4">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Launch readiness snapshot
-              </p>
-              <h3 className="text-base font-bold text-foreground mt-0.5">
-                {firstFiveReadiness?.packageLabel ?? "Growth"} · {firstFiveReadiness?.accountStatus ?? "In review"}
-              </h3>
+      {canUseFixtureData && (
+        <Card
+          className="bg-card/50 border-border/50"
+          data-testid="card-client-readiness-snapshot"
+        >
+          <CardContent className="p-5">
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Launch readiness snapshot
+                </p>
+                <h3 className="text-base font-bold text-foreground mt-0.5">
+                  {firstFiveReadiness?.packageLabel ?? "Growth"} ·{" "}
+                  {firstFiveReadiness?.accountStatus ?? "In review"}
+                </h3>
+              </div>
+              <StatusBadge tone="info">In review</StatusBadge>
             </div>
-            <StatusBadge tone="info">In review</StatusBadge>
-          </div>
-          <div className="grid gap-3 md:grid-cols-3">
-            <div className="rounded-lg border border-border bg-muted/20 p-3">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Media supply</p>
-              <p className="text-xs text-foreground/85 mt-1 leading-relaxed">{firstFiveReadiness?.mediaSupplyStatus ?? "Media supply is in review."}</p>
+            <div className="grid gap-3 md:grid-cols-3">
+              <div className="rounded-lg border border-border bg-muted/20 p-3">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+                  Media supply
+                </p>
+                <p className="text-xs text-foreground/85 mt-1 leading-relaxed">
+                  {firstFiveReadiness?.mediaSupplyStatus ??
+                    "Media supply is in review."}
+                </p>
+              </div>
+              <div className="rounded-lg border border-border bg-muted/20 p-3">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+                  Updates
+                </p>
+                <p className="text-xs text-foreground/85 mt-1 leading-relaxed">
+                  {firstFiveReadiness?.weeklyUpdateStatus ??
+                    "Weekly update in review"}{" "}
+                  ·{" "}
+                  {firstFiveReadiness?.monthlyReportStatus ??
+                    "Monthly report in review"}
+                </p>
+              </div>
+              <div className="rounded-lg border border-border bg-muted/20 p-3">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+                  Next helpful action
+                </p>
+                <p className="text-xs text-foreground/85 mt-1 leading-relaxed">
+                  {firstFiveReadiness?.nextHelpfulAction ??
+                    "Veroxa will ask for anything needed next."}
+                </p>
+              </div>
             </div>
-            <div className="rounded-lg border border-border bg-muted/20 p-3">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Updates</p>
-              <p className="text-xs text-foreground/85 mt-1 leading-relaxed">
-                {firstFiveReadiness?.weeklyUpdateStatus ?? "Weekly update in review"} · {firstFiveReadiness?.monthlyReportStatus ?? "Monthly report in review"}
-              </p>
-            </div>
-            <div className="rounded-lg border border-border bg-muted/20 p-3">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Next helpful action</p>
-              <p className="text-xs text-foreground/85 mt-1 leading-relaxed">{firstFiveReadiness?.nextHelpfulAction ?? "Veroxa will ask for anything needed next."}</p>
-            </div>
-          </div>
-          <p className="mt-3 text-[11px] text-muted-foreground/75 leading-relaxed">
-            {firstFiveReadiness?.premiumReadinessLabel ?? "Premium readiness is reviewed only after the foundation is stable."}
-          </p>
-        </CardContent>
-      </Card>
+            <p className="mt-3 text-[11px] text-muted-foreground/75 leading-relaxed">
+              {firstFiveReadiness?.premiumReadinessLabel ??
+                "Premium readiness is reviewed only after the foundation is stable."}
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Quick actions — the main things a client can do, one tap away. */}
       <div
@@ -206,7 +253,7 @@ export default function ClientDashboard() {
       </div>
 
       {/* Upload reinforcement — keeps content supply visible to the client. */}
-      <ClientKeepMovingCard clientId="demo-a" />
+      {canUseFixtureData && <ClientKeepMovingCard clientId="demo-a" />}
 
       {/* Action needed from you */}
       {openClientActions.length > 0 && (
@@ -280,10 +327,19 @@ export default function ClientDashboard() {
       </div>
 
       {/* Local visibility progress — client-safe Google/local visibility surface. */}
-      <ClientVisibilityProgressCard clientId="demo-a" />
+      {canUseFixtureData ? (
+        <ClientVisibilityProgressCard clientId="demo-a" />
+      ) : (
+        <ClientPortalEmptyState
+          icon={<Inbox className="w-8 h-8" />}
+          heading="Local visibility data is in review."
+          body="Google Maps and local visibility progress will appear after live account data is prepared."
+          testId="empty-state-visibility-progress"
+        />
+      )}
 
       {/* Premium readiness — light, client-safe concept (demo/local only). */}
-      <ClientPremiumReadinessCard />
+      {canUseFixtureData && <ClientPremiumReadinessCard />}
 
       {/* What Veroxa is working on */}
       <div data-testid="section-veroxa-working-on">

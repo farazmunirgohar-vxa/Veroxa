@@ -1,4 +1,11 @@
-import { ChevronRight, TrendingUp, Star, BarChart2, CalendarDays, CheckCircle2 } from "lucide-react";
+import {
+  ChevronRight,
+  TrendingUp,
+  Star,
+  BarChart2,
+  CalendarDays,
+  CheckCircle2,
+} from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +15,11 @@ import { ClientReportsProgress } from "@/components/ClientExecutionReinforcement
 import { ClientVisibilityProgressCard } from "@/components/ClientVisibilityProgressCard";
 import { generateClientMonthlyReport } from "@/domain/clientPortalJourney";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
+import {
+  RealPortalReviewNotice,
+  SafePortalEmptyCard,
+} from "@/components/RealPortalSafeStates";
+import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary";
 import { useEffect, useState } from "react";
 import {
   getClientWorkflowItems,
@@ -74,11 +86,18 @@ const EXTRA_CARDS = [
 
 export default function ClientReports() {
   const { source, dataSourceMessage } = useClientPortalData();
-  const monthlyReport = generateClientMonthlyReport(SHOWCASE_ID);
-  const reportItems = useReportEligibleItems(SHOWCASE_ID);
+  const portalDataMode = useRealPortalDataMode();
+  const canUseFixtureData =
+    portalDataMode.allowDemoFixtures || portalDataMode.isLiveDataConnected;
+  const monthlyReport = canUseFixtureData
+    ? generateClientMonthlyReport(SHOWCASE_ID)
+    : null;
+  const fixtureReportItems = useReportEligibleItems(SHOWCASE_ID);
+  const reportItems = canUseFixtureData ? fixtureReportItems : [];
 
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
+      <RealPortalReviewNotice className="mb-4" />
       <div className="mb-4">
         <h2
           className="text-2xl md:text-3xl font-bold tracking-tight"
@@ -87,20 +106,36 @@ export default function ClientReports() {
           Reports
         </h2>
         <p className="text-muted-foreground mt-1 text-sm md:text-base">
-          Your performance reports — weekly updates, monthly summaries, and top content.
+          Your performance reports — weekly updates, monthly summaries, and top
+          content.
         </p>
         <DataSourceBadge source={source} message={dataSourceMessage} />
       </div>
 
       {/* Your progress at a glance — plain-language, no invented metrics. */}
-      <div className="mb-4">
-        <ClientReportsProgress clientId={SHOWCASE_ID} />
-      </div>
-
-      {/* Local visibility progress — client-safe Google/local visibility surface. */}
-      <div className="mb-4">
-        <ClientVisibilityProgressCard clientId={SHOWCASE_ID} />
-      </div>
+      {canUseFixtureData ? (
+        <>
+          <div className="mb-4">
+            <ClientReportsProgress clientId={SHOWCASE_ID} />
+          </div>
+          <div className="mb-4">
+            <ClientVisibilityProgressCard clientId={SHOWCASE_ID} />
+          </div>
+        </>
+      ) : (
+        <div className="grid gap-4 mb-4 md:grid-cols-2">
+          <SafePortalEmptyCard
+            title="Reports in review"
+            body="Monthly and weekly report data will appear here after live account data is prepared."
+            testId="empty-reports-in-review"
+          />
+          <SafePortalEmptyCard
+            title="Visibility reporting not connected yet"
+            body="Google Maps and local search progress will stay empty until the live account is connected."
+            testId="empty-visibility-reporting"
+          />
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Monthly report foundation — client-safe local journey data. */}
@@ -112,7 +147,9 @@ export default function ClientReports() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-primary" />
-                <CardTitle className="text-base">{monthlyReport.monthLabel} Report</CardTitle>
+                <CardTitle className="text-base">
+                  {monthlyReport?.monthLabel ?? "Monthly"} Report
+                </CardTitle>
               </div>
               <Badge
                 variant="outline"
@@ -124,10 +161,14 @@ export default function ClientReports() {
           </CardHeader>
           <CardContent className="space-y-2 text-sm text-muted-foreground">
             {[
-              monthlyReport.executiveSummary,
-              monthlyReport.visibilityProgress.nextVisibilityAction,
-              monthlyReport.mediaAndContentSummary[0],
-              monthlyReport.reviewReputationSummary[0],
+              monthlyReport?.executiveSummary ??
+                "Live account reporting is being prepared.",
+              monthlyReport?.visibilityProgress.nextVisibilityAction ??
+                "Local visibility reporting will appear after setup.",
+              monthlyReport?.mediaAndContentSummary[0] ??
+                "Media and content summaries will appear here.",
+              monthlyReport?.reviewReputationSummary[0] ??
+                "Review and reputation notes will appear after setup.",
             ].map((line) => (
               <div key={line} className="flex items-start gap-2">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 flex-shrink-0" />
@@ -153,7 +194,10 @@ export default function ClientReports() {
                   <card.icon className="h-4 w-4 text-primary" />
                   <CardTitle className="text-base">{card.title}</CardTitle>
                 </div>
-                <Badge variant="outline" className={`border-none text-xs ${card.statusClass}`}>
+                <Badge
+                  variant="outline"
+                  className={`border-none text-xs ${card.statusClass}`}
+                >
                   {card.status}
                 </Badge>
               </div>
@@ -201,14 +245,16 @@ export default function ClientReports() {
               </div>
             ))}
             <p className="text-[10px] text-muted-foreground italic pt-1">
-              Performance data will appear here once your account reporting is active.
+              Performance data will appear here once your account reporting is
+              active.
             </p>
           </CardContent>
         </Card>
       )}
 
       <p className="mt-4 text-center text-[11px] text-muted-foreground">
-        Items marked ready reflect your account activity. Performance metrics will appear once reporting is active.
+        Items marked ready reflect your account activity. Performance metrics
+        will appear once reporting is active.
       </p>
     </PortalLayout>
   );

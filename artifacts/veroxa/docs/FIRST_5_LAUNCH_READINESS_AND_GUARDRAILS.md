@@ -68,8 +68,17 @@ Static guardrails allow historical/deprecated/legacy/retired/internal-only conte
 
 Legacy demo data, migration drafts, and historical planning docs may still mention retired roles or old package aliases. They are retained pending dependency audit and must not be promoted into active navigation, login destinations, public pricing, Client Portal copy, or Team/Internal Admin workflows.
 
-## Real portal data boundary
+## Real portal data boundary V2
 
-Real `/client/*` and `/team/*` routes are wrapped by `RealPortalDataBoundary` until live account data is connected. The boundary keeps useful demo and first-five fixtures available to public/demo or development contexts while preventing real review routes from rendering sample restaurant names, hardcoded demo client IDs, or first-five fixture rows as active client data.
+Real `/client/*` and `/team/*` routes are wrapped by `RealPortalDataBoundary`, but the boundary must **not** hide the full page shell. It now provides a data-mode contract to portal pages so the route, sidebar, header, and safe UI can remain reachable while live account data is prepared.
 
-When real portal data is unavailable, the real routes stay inside `/client/*` or `/team/*` and show calm “Still Building” / “In review” language instead of redirecting to a demo route or showing sample clients.
+Current real-route defaults:
+
+- `isLiveDataConnected: false`
+- `allowDemoFixtures: false`
+- real Client Portal pages show calm empty/review states such as “Client Portal in review” and “Live account data is being prepared”
+- real Team/Internal Admin pages show Faraz's solo-founder command-center shell without listing demo restaurants as active clients
+
+First-5 fixtures are launch-readiness benchmarks only. If they appear in Team/Internal Admin, they must be labeled “Launch readiness benchmark,” “Not active client data,” and “Used to validate first 5 client scenarios.” They are not active real clients.
+
+Public demo remains `/demo/client/dashboard` only. `/demo/*` routes are unaffected by `RealPortalDataBoundary` and may render sample portal data for the public preview.

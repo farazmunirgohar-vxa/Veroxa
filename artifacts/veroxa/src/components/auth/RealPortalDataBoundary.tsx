@@ -1,47 +1,77 @@
-import type React from "react";
+import { createContext, useContext, type ReactNode } from "react";
 import { useLocation } from "wouter";
-import { PortalLayout } from "@/components/PortalLayout";
-import { StillBuilding } from "@/components/StillBuilding";
-import { clientPortalNavItems } from "@/lib/clientPortalNav";
-import { teamPortalNavItems } from "@/lib/teamPortalNav";
 
-interface RealPortalDataBoundaryProps {
-  portal: "client" | "team";
-  children: React.ReactNode;
+export type RealPortalKind = "client" | "team";
+
+export interface RealPortalDataMode {
+  portal: RealPortalKind;
+  isPublicDemoRoute: boolean;
+  isRealPortalRoute: boolean;
+  isLiveDataConnected: boolean;
+  allowDemoFixtures: boolean;
+  showLaunchReadinessBenchmark: boolean;
+  boundaryMessage: string;
 }
 
-const portalCopy = {
-  client: {
-    portalName: "Client Portal",
-    area: "Client Portal",
-    detail:
-      "This real client route is in review while Veroxa prepares live account data. No sample restaurant data is shown here.",
-  },
-  team: {
-    portalName: "Team Portal",
-    area: "Team Command Center",
-    detail:
-      "This real internal route is in review while live client operations are connected. Launch benchmark fixtures stay out of the active client list.",
-  },
-} as const;
+interface RealPortalDataBoundaryProps {
+  portal: RealPortalKind;
+  children: ReactNode;
+}
+
+const demoMode: RealPortalDataMode = {
+  portal: "client",
+  isPublicDemoRoute: true,
+  isRealPortalRoute: false,
+  isLiveDataConnected: false,
+  allowDemoFixtures: true,
+  showLaunchReadinessBenchmark: true,
+  boundaryMessage: "Public Demo Preview — sample data only.",
+};
+
+const RealPortalDataContext = createContext<RealPortalDataMode>(demoMode);
+
+function getBoundaryMessage(portal: RealPortalKind): string {
+  if (portal === "team") {
+    return "Team Portal in review — live client operations are not connected yet. Use safe empty states or clearly labeled launch-readiness benchmarks only.";
+  }
+
+  return "Client Portal in review — live account data is being prepared. No sample restaurant is shown as an active client.";
+}
 
 /**
- * RealPortalDataBoundary prevents demo/fixture data from leaking into real
- * /client/* and /team/* routes. Public demo routes are not wrapped with this
- * boundary, so /demo/client/dashboard can continue to render the sample portal.
+ * RealPortalDataBoundary separates real portal shells from unsafe fixture data
+ * without hiding the page shell. Public /demo/* routes keep allowing sample
+ * fixtures. Real /client/* and /team/* routes render their children with a
+ * data-mode contract so pages can show calm empty/review states until live
+ * account data is connected.
  */
-export function RealPortalDataBoundary({ portal, children }: RealPortalDataBoundaryProps) {
+export function RealPortalDataBoundary({
+  portal,
+  children,
+}: RealPortalDataBoundaryProps) {
   const [location] = useLocation();
-  const isPublicDemo = location.startsWith("/demo/");
+  const isPublicDemoRoute = location.startsWith("/demo/");
+  const isRealPortalRoute = location.startsWith(`/${portal}/`);
 
-  if (isPublicDemo) return <>{children}</>;
-
-  const copy = portalCopy[portal];
-  const items = portal === "client" ? clientPortalNavItems : teamPortalNavItems;
+  const mode: RealPortalDataMode = isPublicDemoRoute
+    ? { ...demoMode, portal }
+    : {
+        portal,
+        isPublicDemoRoute,
+        isRealPortalRoute,
+        isLiveDataConnected: false,
+        allowDemoFixtures: false,
+        showLaunchReadinessBenchmark: portal === "team",
+        boundaryMessage: getBoundaryMessage(portal),
+      };
 
   return (
-    <PortalLayout items={items} portalName={copy.portalName}>
-      <StillBuilding area={copy.area} detail={copy.detail} />
-    </PortalLayout>
+    <RealPortalDataContext.Provider value={mode}>
+      {children}
+    </RealPortalDataContext.Provider>
   );
+}
+
+export function useRealPortalDataMode(): RealPortalDataMode {
+  return useContext(RealPortalDataContext);
 }

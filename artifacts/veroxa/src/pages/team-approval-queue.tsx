@@ -1,6 +1,11 @@
 import { useMemo } from "react";
 import { ShieldCheck } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
+import {
+  RealPortalReviewNotice,
+  SafePortalEmptyCard,
+} from "@/components/RealPortalSafeStates";
+import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary";
 import { PageHeader } from "@/components/common";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 import { Card, CardContent } from "@/components/ui/card";
@@ -29,6 +34,10 @@ import {
 const PRIORITY_ORDER: PreparedActionPriority[] = ["high", "medium", "low"];
 
 export default function TeamApprovalQueue() {
+  const portalDataMode = useRealPortalDataMode();
+  const canUseFixtureData =
+    portalDataMode.allowDemoFixtures || portalDataMode.isLiveDataConnected;
+
   const actions = usePreparedActions();
 
   // Open items first (still need a decision), grouped by priority. Resolved
@@ -68,6 +77,19 @@ export default function TeamApprovalQueue() {
     onSkip: preparedActionRepository.markSkipped,
     onQueueForExecution: preparedActionRepository.markQueuedForExecution,
   };
+
+  if (!canUseFixtureData) {
+    return (
+      <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
+        <RealPortalReviewNotice />
+        <SafePortalEmptyCard
+          title="Approval Queue in review"
+          body="Live prepared actions are not connected yet. Approval items will appear here only after real client operations are connected."
+          testId="empty-team-approval-queue"
+        />
+      </PortalLayout>
+    );
+  }
 
   return (
     <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
