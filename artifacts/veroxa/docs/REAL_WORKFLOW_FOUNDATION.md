@@ -51,7 +51,7 @@ A `WorkflowItem` carries:
 - Identity + ownership: `workflowItemId`, `clientId`, `clientName`,
   `restaurantName`, `submittedBy`, timestamps.
 - Type: `media_upload | client_request | clarification_response | report_note |
-  content_draft | schedule_prep | report_source`.
+content_draft | schedule_prep | report_source`.
 - Three status views derived from one `lifecycleStatus`:
   - `clientVisibleStatus` — friendly, client-safe label.
   - `internalTeamStatus` — what the team sees.
@@ -77,8 +77,7 @@ submitted
 
 Status derivation lives in `workflowStatus.ts`:
 
-- Client-safe statuses: Submitted, Being reviewed, Needs your input, Prepared by
-  Veroxa, In progress, Completed, Included in report.
+- General client-safe workflow statuses remain calm and plain-language. Media-specific client surfaces use the locked media lifecycle vocabulary: Uploaded, Reviewed, Ready, Scheduled, Posted, with exception labels Needs better media, Saved for later, Waiting for direction, Not usable, and Already used.
 - Internal-only events (e.g. blockers, internal notes) are never surfaced to the
   client side.
 
