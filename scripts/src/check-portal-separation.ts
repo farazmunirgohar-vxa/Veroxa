@@ -130,6 +130,35 @@ for (const publicDemoRoute of [
 }
 if (/path=["']\/demo\/team/.test(app)) failures.push("App.tsx must not expose /demo/team/*.");
 
+function routeBlock(route: string): string {
+  const escaped = route.replaceAll("/", "\\/");
+  return app.match(new RegExp(`<Route path=["']${escaped}["']>[\\s\\S]*?<\\/Route>`))?.[0] ?? "";
+}
+
+for (const route of ["dashboard", "media", "updates", "requests", "reports"]) {
+  const block = routeBlock(`/client/${route}`);
+  if (!block.includes("ClientPortalGuard")) {
+    failures.push(`/client/${route} must remain wrapped by ClientPortalGuard.`);
+  }
+}
+
+for (const route of [
+  "dashboard",
+  "upload-inbox",
+  "work-queue",
+  "direction-queue",
+  "report-queue",
+  "audit-leads",
+  "approval-queue",
+  "visibility-audit",
+  "first-client-readiness",
+]) {
+  const block = routeBlock(`/team/${route}`);
+  if (!block.includes("InternalDemoGuard") || !block.includes('role="team"')) {
+    failures.push(`/team/${route} must remain wrapped by InternalDemoGuard role=team.`);
+  }
+}
+
 // Client Demo nav must stay inside /demo/client/* (no crossover to real /client/*).
 if (!/location\.startsWith\(["']\/demo\/client["']\)[\s\S]{0,200}\/demo\/client\//.test(portalLayout)) {
   failures.push("PortalLayout must keep Client Demo nav inside /demo/client/* (no crossover to login-gated /client/*).");
@@ -185,6 +214,9 @@ for (const clientFile of [
   const text = readFileSync(join(root, clientFile), "utf8");
   if (/const\s+DEMO_CLIENT_ID\s*=\s*["']demo-a["']/.test(text)) {
     failures.push(`${clientFile} must not hardcode demo-a as a page-level client id; use active client context/demo boundary.`);
+  }
+  if (/href=\{?`?["']?\/client\//.test(text) && !text.includes("getClientPortalHref")) {
+    failures.push(`${clientFile} hardcodes an in-page /client/* link without demo-aware getClientPortalHref mapping.`);
   }
 }
 

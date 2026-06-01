@@ -60,6 +60,8 @@ const productionLikeDocs = [
   "artifacts/veroxa/docs/DEPLOYMENT.md",
   "artifacts/veroxa/docs/PRODUCTION.md",
   "artifacts/veroxa/docs/ENVIRONMENT.md",
+  "artifacts/veroxa/docs/PRODUCTION_LAUNCH_RUNBOOK.md",
+  "artifacts/veroxa/docs/DEV_AUTH_AND_WRITE_SAFETY.md",
 ].filter((file) => {
   try { statSync(join(root, file)); return true; } catch { return false; }
 });
@@ -67,6 +69,22 @@ for (const file of productionLikeDocs) {
   const text = readFileSync(join(root, file), "utf8");
   if (/VITE_VEROXA_ENABLE_DEV_WRITES\s*=\s*["']?true["']?/i.test(text) && !/dev-only|local-only|non-production|never production/i.test(text)) {
     failures.push(`${file} implies dev writes can be true without a clear non-production warning.`);
+  }
+  if (/VITE_VEROXA_DEV_(CLIENT|TEAM)_(EMAIL|PASSWORD)/.test(text) && !/preview-only|local-only|do not set|never set|must not be set/i.test(text)) {
+    failures.push(`${file} mentions placeholder credentials without a clear preview-only / do-not-set-in-production warning.`);
+  }
+}
+
+const envLikeFiles = ["artifacts/veroxa/.env.example"].filter((file) => {
+  try { statSync(join(root, file)); return true; } catch { return false; }
+});
+for (const file of envLikeFiles) {
+  const text = readFileSync(join(root, file), "utf8");
+  const activePlaceholderCredential = text
+    .split(/\r?\n/)
+    .some((line) => /^\s*VITE_VEROXA_DEV_(CLIENT|TEAM)_(EMAIL|PASSWORD)\s*=/.test(line));
+  if (activePlaceholderCredential) {
+    failures.push(`${file} must not set preview-only VITE_VEROXA_DEV_* placeholder credentials.`);
   }
 }
 

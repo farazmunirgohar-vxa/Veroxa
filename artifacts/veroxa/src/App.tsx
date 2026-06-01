@@ -69,7 +69,7 @@ function Router() {
         <Route path="/demo/client/requests" component={ClientRequests} />
         <Route path="/demo/client/reports" component={ClientReports} />
 
-        {/* ── Client Portal — placeholder-open, guarded when real auth is enabled ── */}
+        {/* ── Client Portal — login required in placeholder and future real auth ── */}
         <Route path="/client/dashboard">
           {() => (
             <ClientPortalGuard>

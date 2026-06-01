@@ -9,6 +9,12 @@ const app: Express = express();
 app.use(
   pinoHttp({
     logger,
+    redact: [
+      "req.headers.authorization",
+      "req.headers.x-veroxa-api-key",
+      "req.headers[\"x-veroxa-api-key\"]",
+      "req.body.email",
+    ],
     serializers: {
       req(req) {
         return {

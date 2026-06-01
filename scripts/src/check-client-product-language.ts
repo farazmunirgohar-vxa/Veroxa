@@ -38,6 +38,17 @@ if (/ticket|approval|queue/i.test(requests.replace(/getClientWorkflowItems/g, ""
   failures.push("client-requests.tsx should feel like requests, not tickets/approval queues.");
 }
 
+
+const clientDashboard = readFileSync(join(root, "artifacts/veroxa/src/pages/client-dashboard.tsx"), "utf8");
+if (/section-dashboard-quick-links|const\s+quickLinks\s*=|quickLinks\.map/.test(clientDashboard)) {
+  failures.push("client-dashboard.tsx must not render duplicate sidebar shortcut cards for Media, Updates, Requests, and Reports.");
+}
+
+const teamDashboard = readFileSync(join(root, "artifacts/veroxa/src/pages/team-dashboard.tsx"), "utf8");
+if (/section-dashboard-quick-links|const\s+quickLinks\s*=|quickLinks\.map/.test(teamDashboard)) {
+  failures.push("team-dashboard.tsx must not render generic duplicate sidebar shortcut cards.");
+}
+
 const reports = readFileSync(join(root, "artifacts/veroxa/src/pages/client-reports.tsx"), "utf8");
 for (const claim of [/\b\d+%\b/, /guarantee/i, /rankings? up/i, /revenue/i]) {
   if (claim.test(reports)) failures.push(`client-reports.tsx may contain fake/overclaim metric language: ${claim}`);
