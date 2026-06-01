@@ -125,7 +125,7 @@ export default function TeamDashboard() {
     testId: string;
   }[] = [
     {
-      label: "Today's priority work",
+      label: "Ready to schedule",
       value: todayQueue.length,
       icon: Inbox,
       href: "/team/work-queue",
@@ -141,7 +141,7 @@ export default function TeamDashboard() {
       testId: "priority-needs-review",
     },
     {
-      label: "Client follow-up",
+      label: "Client requests",
       value: workflowSummary.waitingOnClient,
       icon: Users,
       href: "/team/work-queue",
@@ -149,7 +149,7 @@ export default function TeamDashboard() {
       testId: "priority-client-follow-up",
     },
     {
-      label: "Queue / hold later",
+      label: "Reports due",
       value: queueOrHold.length,
       icon: FileText,
       href: "/team/work-queue",
@@ -187,7 +187,7 @@ export default function TeamDashboard() {
 
       <PageHeader
         title="Today's Veroxa Work"
-        description="A simple view of what needs review, follow-up, and posting today."
+        description="A simple steering wheel for review, scheduling, client requests, blockers, and reports due."
         testId="header-team-dashboard"
       />
 
@@ -198,12 +198,11 @@ export default function TeamDashboard() {
         />
       ) : (
         <SafePortalEmptyCard
-          title="Solo founder command center shell"
+          title="Team cockpit shell"
           body="Live client operations are not connected yet. Active work queues stay empty here instead of showing demo restaurants as real clients."
           testId="empty-team-command-center-shell"
         />
       )}
-
 
       <div className="mb-6" data-testid="card-first-client-readiness-preview">
         <Card className="bg-card border-border">
@@ -216,11 +215,18 @@ export default function TeamDashboard() {
           <CardContent className="grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
-                <StatusBadge tone={firstClientBlockingChecks.length > 0 ? "danger" : "info"}>
-                  {getReadinessStatusLabel(firstClientReadinessSummary.overallStatus)}
+                <StatusBadge
+                  tone={
+                    firstClientBlockingChecks.length > 0 ? "danger" : "info"
+                  }
+                >
+                  {getReadinessStatusLabel(
+                    firstClientReadinessSummary.overallStatus,
+                  )}
                 </StatusBadge>
                 <span className="text-sm font-medium">
-                  {firstClientReadinessSummary.completionPercentage}% ready · {firstClientBlockingChecks.length} blocking checks
+                  {firstClientReadinessSummary.completionPercentage}% ready ·{" "}
+                  {firstClientBlockingChecks.length} blocking checks
                 </span>
               </div>
               <p className="text-sm text-muted-foreground">
@@ -238,17 +244,24 @@ export default function TeamDashboard() {
       </div>
 
       {!canUseFixtureData && (
-        <div className="space-y-4 mb-6" data-testid="section-review-mode-command-center">
+        <div
+          className="space-y-4 mb-6"
+          data-testid="section-review-mode-command-center"
+        >
           <Card className="bg-card border-border">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Solo founder command center shell</CardTitle>
+              <CardTitle className="text-sm">Team cockpit shell</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Review-mode operational records only. Live integrations are not connected yet, and public demo fixtures are not treated as active clients.
+                Review-mode operational records only. Live integrations are not
+                connected yet, and public demo fixtures are not treated as
+                active clients.
               </p>
               <TeamCommandSummaryGrid summary={reviewModeSummary} />
-              <p className="text-sm text-muted-foreground">{reviewModeSummary.workloadSummary}</p>
+              <p className="text-sm text-muted-foreground">
+                {reviewModeSummary.workloadSummary}
+              </p>
             </CardContent>
           </Card>
           <div className="grid gap-4 xl:grid-cols-2">
@@ -262,7 +275,9 @@ export default function TeamDashboard() {
             </Card>
             <Card className="bg-card border-border">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Review-mode client overview</CardTitle>
+                <CardTitle className="text-sm">
+                  Review-mode client overview
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <TeamClientOverviewList overview={reviewModeOverview} />
@@ -552,11 +567,11 @@ export default function TeamDashboard() {
         </div>
       )}
 
-      {/* Live workflow command center */}
+      {/* Live workflow cockpit */}
       <div className="mb-6">
         {canUseFixtureData ? (
           <TeamWorkflowPanel
-            title="Workflow command center"
+            title="Team cockpit"
             icon={<LayoutGrid className="w-4 h-4 text-primary" />}
             emptyText="No active workflow items right now."
             testId="card-team-workflow-command-center"
@@ -571,11 +586,11 @@ export default function TeamDashboard() {
         )}
       </div>
 
-      {/* Today's Client Work */}
+      {/* Ready to schedule */}
       <div className="mb-6" data-testid="section-todays-client-work">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Today&apos;s Client Work
+            Ready to schedule
           </h3>
           <Link href="/team/work-queue">
             <span className="flex items-center gap-1 text-xs text-primary hover:underline cursor-pointer">
@@ -602,7 +617,7 @@ export default function TeamDashboard() {
       <div className="mb-6" data-testid="section-media-review-queue">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Items needing review
+            Needs review
           </h3>
           <Link href="/team/work-queue">
             <span className="text-xs text-primary hover:underline cursor-pointer">
@@ -625,7 +640,7 @@ export default function TeamDashboard() {
       {/* Active alerts / blockers */}
       <div className="mb-6" data-testid="section-active-alerts">
         <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-          Active alerts &amp; blockers
+          Blocked / needs client input
         </h3>
         <Card className="bg-card border-border">
           <CardContent className="space-y-2 p-4">
@@ -668,11 +683,11 @@ export default function TeamDashboard() {
         </Card>
       </div>
 
-      {/* Work queue summary — same helper counts used by the queue and alert center. */}
+      {/* Cockpit queue summary — same helper counts used by the queue and alert center. */}
       <div data-testid="section-work-queue-summary">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Work queue summary
+            Cockpit queue summary
           </h3>
           <Link href="/team/work-queue">
             <span className="flex items-center gap-1 text-xs text-primary hover:underline cursor-pointer">

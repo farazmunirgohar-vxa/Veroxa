@@ -50,6 +50,11 @@ import {
   contentSupply as demoContentSupply,
   demoAClient,
 } from "@/lib/demo-data";
+import {
+  formatMonthlyTitleFromKey,
+  formatScheduledFor,
+  formatWeekTitle,
+} from "./clientPortalData/formatters";
 
 export type ClientPortalSource =
   | "supabase" // legacy alias — supabase real-auth read
@@ -162,61 +167,6 @@ const SOURCE_MESSAGES: Record<ClientPortalSource, string> = {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-const MONTH_NAMES = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
-
-const MONTH_SHORT = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
-
-function parseDateParts(
-  dateStr: string,
-): { day: number; monthIdx: number } | null {
-  const parts = dateStr.split("-");
-  if (parts.length < 3) return null;
-  const monthIdx = parseInt(parts[1], 10) - 1;
-  const day = parseInt(parts[2], 10);
-  if (isNaN(monthIdx) || isNaN(day)) return null;
-  return { day, monthIdx };
-}
-
-function formatWeekTitle(startDate: unknown, endDate: unknown): string {
-  if (typeof startDate !== "string" || typeof endDate !== "string") {
-    return DEMO_WEEKLY_UPDATE.title;
-  }
-  const s = parseDateParts(startDate);
-  const e = parseDateParts(endDate);
-  if (!s || !e) return DEMO_WEEKLY_UPDATE.title;
-  const sameMonth = s.monthIdx === e.monthIdx;
-  if (sameMonth) {
-    return `Weekly Update — ${s.day}–${e.day} ${MONTH_SHORT[s.monthIdx]}`;
-  }
-  return `Weekly Update — ${s.day} ${MONTH_SHORT[s.monthIdx]}–${e.day} ${MONTH_SHORT[e.monthIdx]}`;
-}
-
 function parseWeeklySummaryItems(
   postsPublished: unknown,
   postsPlanned: unknown,
@@ -224,10 +174,6 @@ function parseWeeklySummaryItems(
 ): string[] {
   const items: string[] = [];
 
-  // The weekly view does not currently expose posts_published / posts_planned;
-  // when the view is extended (see TODO in clientPortalQueries.ts), these
-  // numeric inputs will start being populated and the headline line below
-  // will render.
   const pub = typeof postsPublished === "number" ? postsPublished : null;
   const plan = typeof postsPlanned === "number" ? postsPlanned : null;
   if (pub !== null && plan !== null) {
@@ -240,32 +186,13 @@ function parseWeeklySummaryItems(
   if (typeof clientSafeSummary === "string" && clientSafeSummary.trim()) {
     const sentences = clientSafeSummary
       .split(/\.\s+/)
-      .map((s) => s.trim())
+      .map((sentence) => sentence.trim())
       .filter(Boolean)
-      .map((s) => (s.endsWith(".") ? s : `${s}.`));
+      .map((sentence) => (sentence.endsWith(".") ? sentence : `${sentence}.`));
     items.push(...sentences);
   }
 
   return items.length > 0 ? items : DEMO_WEEKLY_UPDATE.summaryItems;
-}
-
-function parseMonthKey(
-  monthKey: unknown,
-): { month: number; year: number } | null {
-  if (typeof monthKey !== "string") return null;
-  const m = /^(\d{4})-(\d{2})$/.exec(monthKey);
-  if (!m) return null;
-  const year = parseInt(m[1], 10);
-  const month = parseInt(m[2], 10);
-  if (isNaN(year) || isNaN(month) || month < 1 || month > 12) return null;
-  return { month, year };
-}
-
-function formatMonthlyTitleFromKey(monthKey: unknown): string {
-  const parsed = parseMonthKey(monthKey);
-  if (!parsed) return DEMO_MONTHLY_PREVIEW.title;
-  const monthName = MONTH_NAMES[parsed.month - 1] ?? String(parsed.month);
-  return `${monthName} ${parsed.year} Report`;
 }
 
 // ── Scheduled posts builder ───────────────────────────────────────────────────
@@ -275,22 +202,6 @@ function formatMonthlyTitleFromKey(monthKey: unknown): string {
 function normalizeStatusLabel(raw: unknown): string {
   if (typeof raw === "string" && raw.trim()) return raw;
   return "Scheduled";
-}
-
-function formatScheduledFor(scheduledFor: unknown): string {
-  if (typeof scheduledFor !== "string" || !scheduledFor) return "";
-  try {
-    const d = new Date(scheduledFor);
-    const day = d.getDate();
-    const month = MONTH_SHORT[d.getMonth()] ?? "";
-    const hours = d.getHours();
-    const minutes = d.getMinutes().toString().padStart(2, "0");
-    const period = hours >= 12 ? "PM" : "AM";
-    const hour12 = hours % 12 === 0 ? 12 : hours % 12;
-    return `${day} ${month} · ${hour12}:${minutes} ${period}`;
-  } catch {
-    return String(scheduledFor);
-  }
 }
 
 // Calendar items only — no draft_variants join. The calendar view exposes
@@ -487,6 +398,7 @@ export function useClientPortalData(): UseClientPortalDataResult {
               title: formatWeekTitle(
                 latestWeekly.week_start,
                 latestWeekly.week_end,
+                DEMO_WEEKLY_UPDATE.title,
               ),
               summaryItems: parseWeeklySummaryItems(
                 latestWeekly.posts_published,
@@ -504,7 +416,10 @@ export function useClientPortalData(): UseClientPortalDataResult {
         const latestMonthly = monthlyTyped[0] ?? null;
         const monthlyReportPreview: MonthlyReportPreview = latestMonthly
           ? {
-              title: formatMonthlyTitleFromKey(latestMonthly.month_key),
+              title: formatMonthlyTitleFromKey(
+                latestMonthly.month_key,
+                DEMO_MONTHLY_PREVIEW.title,
+              ),
               status: "Published",
               postsPublished: DEMO_MONTHLY_PREVIEW.postsPublished,
               postsPlanned: DEMO_MONTHLY_PREVIEW.postsPlanned,
