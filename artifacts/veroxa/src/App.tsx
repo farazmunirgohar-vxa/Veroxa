@@ -13,7 +13,7 @@ import PricingPage from "@/pages/pricing";
 import LoginPage from "@/pages/login";
 import FreeAudit from "@/pages/free-audit";
 
-// Public demo preview (sample data, no login)
+// Client Demo sample (sample data, no login)
 import DemoHub from "@/pages/demo-hub";
 import GuidedDemo from "@/pages/guided-demo";
 import RestaurantUploadAccess from "@/pages/restaurant-upload-access";
@@ -51,12 +51,12 @@ function Router() {
       <Route path="/login" component={LoginPage} />
       <Route path="/free-audit" component={FreeAudit} />
 
-      {/* ── Public demo preview — sample data only, no login ─────── */}
+      {/* ── Client Demo sample — sample data only, no login ─────── */}
       <Route path="/demo" component={DemoHub} />
       <Route path="/guided-demo" component={GuidedDemo} />
       {/* Restaurant Upload Key entry — public, demo-only. No login. */}
       <Route path="/upload" component={RestaurantUploadAccess} />
-      {/* Public client preview surfaced from the demo hub. */}
+      {/* Public Client Demo surface. */}
       <Route path="/demo/client/dashboard" component={ClientDashboard} />
 
       {/* ── Client Portal — placeholder-open, guarded when real auth is enabled ── */}

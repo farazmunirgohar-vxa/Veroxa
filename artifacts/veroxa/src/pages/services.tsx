@@ -273,7 +273,7 @@ export default function ServicesPage() {
                 variant="outline"
                 className="h-12 px-7 border-border/60 hover:bg-accent/50"
               >
-                Experience Demo
+                Client Demo
               </Button>
             </Link>
           </div>

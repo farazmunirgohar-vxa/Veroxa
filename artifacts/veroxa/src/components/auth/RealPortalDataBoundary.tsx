@@ -25,7 +25,7 @@ const demoMode: RealPortalDataMode = {
   isLiveDataConnected: false,
   allowDemoFixtures: true,
   showLaunchReadinessBenchmark: true,
-  boundaryMessage: "Public Demo Preview — sample data only.",
+  boundaryMessage: "Client Demo — sample data only.",
 };
 
 const RealPortalDataContext = createContext<RealPortalDataMode>(demoMode);

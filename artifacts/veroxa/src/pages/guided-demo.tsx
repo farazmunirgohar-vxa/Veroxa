@@ -135,7 +135,7 @@ export default function GuidedDemo() {
         {/* Header */}
         <div className="text-center space-y-3" data-testid="guided-demo-header">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/10 text-primary text-xs font-semibold">
-            Guided Sales Demo
+            Client Demo
           </div>
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-foreground">
             {title}
@@ -158,7 +158,7 @@ export default function GuidedDemo() {
           </Link>
           <Link href="/demo/client/dashboard" data-testid="cta-guided-demo-client-portal">
             <Button size="lg" variant="outline" className="font-semibold gap-1.5">
-              Preview Client Portal
+              Open Client Demo
               <ArrowRight className="w-4 h-4" />
             </Button>
           </Link>
@@ -189,8 +189,7 @@ export default function GuidedDemo() {
         >
           <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
           <p className="text-sm text-emerald-200/80">
-            This guided demo uses sample data only. No real client account, no real posting,
-            no real AI provider, and no real upload. Everything resets on refresh.
+            This client demo uses sample data only. No real client account, no real posting, and no real upload. Everything resets on refresh.
           </p>
         </div>
 
@@ -200,9 +199,9 @@ export default function GuidedDemo() {
           data-testid="guided-demo-access-note"
         >
           <p>
-            <span className="font-semibold text-foreground/80">Steps 1, 2, 5, 6</span> are public — no login required and open the client preview.{" "}
+            <span className="font-semibold text-foreground/80">Steps 1, 2, 5, 6</span> are public — no login required and open the Client Demo.{" "}
             <span className="font-semibold text-foreground/80">Steps 3, 4, 7, 8</span> show what the Veroxa team does behind the scenes, included here as part of the story.
-            The guided demo does not bypass any access controls.
+            This page does not bypass any access controls.
           </p>
         </div>
 
@@ -236,7 +235,7 @@ export default function GuidedDemo() {
           className="text-center text-[11px] text-muted-foreground pb-4"
           data-testid="guided-demo-footer"
         >
-          Guided Sales Demo · Veroxa · Demo-only fixture data · No AI API connected · No real posting or scheduling
+          Client Demo · Veroxa · Sample data only · No real posting or scheduling
         </p>
       </div>
 

@@ -319,7 +319,7 @@ export default function PricingPage() {
                 variant="ghost"
                 className="h-12 px-7 text-muted-foreground hover:text-foreground"
               >
-                Demo Preview
+                Client Demo
               </Button>
             </Link>
           </div>
