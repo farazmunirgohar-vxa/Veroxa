@@ -49,6 +49,9 @@ export function getClientRequestStatus(status: string): ClientRequestStatus {
   return "Received";
 }
 
+/** Alias for consumers that import the client-facing normaliser by this name. */
+export const toClientRequestStatus = getClientRequestStatus;
+
 export function buildClientRequestTitle(
   type: ClientRequestType,
   note: string,
@@ -68,5 +71,7 @@ export function toTeamRequestPreviewStatus(status: string): string {
       return "Handled";
     case "Waiting for you":
       return "Needs client input";
+    default:
+      return clientStatus;
   }
 }

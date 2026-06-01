@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ClientMediaTracker } from "@/components/client/ClientMediaTracker";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
-import { ClientMediaTracker } from "@/components/client/ClientMediaTracker";
 import {
   RealPortalReviewNotice,
   SafePortalEmptyCard,
@@ -175,10 +174,6 @@ export default function ClientMedia() {
   const uploadedMedia = mediaItems.filter((item) => item.source === "upload");
   const readyMedia = mediaItems.filter((item) => item.source === "ready");
   const postedMedia = mediaItems.filter((item) => item.source === "posted");
-  const selectedMedia =
-    mediaItems.find((item) => item.id === selectedMediaId) ??
-    mediaItems[0] ??
-    null;
 
   const handleSubmitToTeam = async () => {
     if (files.length === 0) return;

@@ -50,9 +50,17 @@ import {
 } from "@/lib/demo-data";
 import {
   formatMonthlyTitleFromKey,
-  formatScheduledFor,
   formatWeekTitle,
 } from "./clientPortalData/formatters";
+import {
+  DEMO_DATA,
+  DEMO_MONTHLY_PREVIEW,
+  DEMO_WEEKLY_UPDATE,
+  SOURCE_MESSAGES,
+  buildReadinessContentSupply,
+  buildScheduledPostsFromCalendar,
+  parseWeeklySummaryItems,
+} from "./clientPortalDataHelpers";
 
 export type ClientPortalSource =
   | "supabase" // legacy alias — supabase real-auth read
@@ -116,7 +124,7 @@ export type UseClientPortalDataResult = {
   fallbackReason: string | null;
 };
 
-// ── Hook helper exports ─────────────────────────────────────────────────────
+// ── Hook helper exports (re-exported from helpers module) ─────────────────────
 
 export {
   DEMO_DATA,
@@ -127,86 +135,7 @@ export {
   formatMonthKeyAsReportTitle,
   formatWeekRangeTitle,
   parseWeeklySummaryItems,
-};
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function parseWeeklySummaryItems(
-  postsPublished: unknown,
-  postsPlanned: unknown,
-  clientSafeSummary: unknown,
-): string[] {
-  const items: string[] = [];
-
-  const pub = typeof postsPublished === "number" ? postsPublished : null;
-  const plan = typeof postsPlanned === "number" ? postsPlanned : null;
-  if (pub !== null && plan !== null) {
-    const rate = plan > 0 ? Math.round((pub / plan) * 100) : 0;
-    items.push(
-      `${pub} of ${plan} posts published this week (${rate}% completion rate).`,
-    );
-  }
-
-  if (typeof clientSafeSummary === "string" && clientSafeSummary.trim()) {
-    const sentences = clientSafeSummary
-      .split(/\.\s+/)
-      .map((sentence) => sentence.trim())
-      .filter(Boolean)
-      .map((sentence) => (sentence.endsWith(".") ? sentence : `${sentence}.`));
-    items.push(...sentences);
-  }
-
-  return items.length > 0 ? items : DEMO_WEEKLY_UPDATE.summaryItems;
-}
-
-// ── Scheduled posts builder ───────────────────────────────────────────────────
-
-// status_label is already a client-safe label produced by
-// client_portal_calendar_view ("Scheduled" | "Published"). Pass-through.
-function normalizeStatusLabel(raw: unknown): string {
-  if (typeof raw === "string" && raw.trim()) return raw;
-  return "Scheduled";
-}
-
-// Calendar items only — no draft_variants join. The calendar view exposes
-// `client_safe_title` (post title written for client-safe display) but no
-// caption_text by design. If client_safe_title is missing/blank we fall
-// back to a demo-safe placeholder.
-function buildScheduledPostsFromCalendar(
-  calendar: Record<string, unknown>[],
-): ScheduledPostDisplay[] {
-  return calendar
-    .slice()
-    .sort((a, b) => {
-      const aTime =
-        typeof a.scheduled_for === "string"
-          ? new Date(a.scheduled_for).getTime()
-          : 0;
-      const bTime =
-        typeof b.scheduled_for === "string"
-          ? new Date(b.scheduled_for).getTime()
-          : 0;
-      return aTime - bTime;
-    })
-    .map((p) => {
-      const date = formatScheduledFor(p.scheduled_for);
-      const platformRaw =
-        typeof p.platform_name === "string" ? p.platform_name : "";
-      const platform =
-        platformRaw.charAt(0).toUpperCase() +
-        platformRaw.slice(1).toLowerCase();
-      const status = normalizeStatusLabel(p.status_label);
-      const titleRaw =
-        typeof p.client_safe_title === "string"
-          ? p.client_safe_title.trim()
-          : "";
-      const caption =
-        titleRaw.length > 0
-          ? titleRaw
-          : "Post details available in your scheduled posts list";
-      return { date, caption, platform, status };
-    });
-}
+} from "./clientPortalDataHelpers";
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
@@ -341,7 +270,7 @@ export function useClientPortalData(): UseClientPortalDataResult {
         const latestWeekly = weeklyTyped[0] ?? null;
         const weeklyUpdate: WeeklyUpdateDisplay = latestWeekly
           ? {
-              title: formatWeekRangeTitle(
+              title: formatWeekTitle(
                 latestWeekly.week_start,
                 latestWeekly.week_end,
                 DEMO_WEEKLY_UPDATE.title,

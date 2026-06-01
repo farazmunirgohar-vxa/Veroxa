@@ -65,7 +65,7 @@ export default function ClientRequests() {
           id: item.id,
           title: item.title,
           note: item.clientVisibleNote,
-          status: getClientRequestStatus(item.status),
+          status: toClientRequestStatus(item.status),
         }))
     : [];
 

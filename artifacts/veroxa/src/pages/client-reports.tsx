@@ -39,7 +39,7 @@ export default function ClientReports() {
 
   const sampleLabel = mode.allowDemoFixtures ? "Sample" : null;
 
-  const weeklyReports: ReportCard[] = weeklyUpdate
+  const weeklyReports: ReportCardModel[] = weeklyUpdate
     ? [
         {
           id: "weekly-current",

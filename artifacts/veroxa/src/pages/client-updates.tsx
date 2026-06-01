@@ -35,7 +35,8 @@ type MediaProgressItem = {
   id: string;
   title: string;
   note: string;
-  status: SimpleStatus;
+  status: ClientMediaDisplayStatus;
+  lane: LaneKey | null;
 };
 
 export default function ClientUpdates() {
