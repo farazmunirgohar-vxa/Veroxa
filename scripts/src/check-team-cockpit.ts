@@ -19,7 +19,7 @@ for (const file of files) {
   const text = readFileSync(join(root, file), "utf8");
   text.split(/\r?\n/).forEach((line, index) => {
     for (const pattern of activeLanguage) {
-      if (pattern.test(line) && !/Avoid adding|against reintroducing/i.test(line)) {
+      if (pattern.test(line) && !/Avoid adding|against reintroducing|Do not turn/i.test(line)) {
         failures.push(`${file}:${index + 1} should avoid cockpit drift language ${pattern}: ${line.trim()}`);
       }
     }
