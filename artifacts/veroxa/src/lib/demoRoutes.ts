@@ -68,16 +68,9 @@ export const clientDemoRoutes: DemoRoute[] = [
   {
     path: "/client/media",
     portal: "client",
-    label: "Upload Media",
+    label: "Media",
     visibility: "visible_nav",
     purpose: "Client-safe media upload and media library surface.",
-  },
-  {
-    path: "/client/requests",
-    portal: "client",
-    label: "Requests",
-    visibility: "visible_nav",
-    purpose: "Simple requests from Veroxa that need client input.",
   },
   {
     path: "/client/updates",
@@ -85,6 +78,13 @@ export const clientDemoRoutes: DemoRoute[] = [
     label: "Updates",
     visibility: "visible_nav",
     purpose: "Client-safe updates on prepared work and progress.",
+  },
+  {
+    path: "/client/requests",
+    portal: "client",
+    label: "Requests",
+    visibility: "visible_nav",
+    purpose: "Simple requests from Veroxa that need client input.",
   },
   {
     path: "/client/reports",

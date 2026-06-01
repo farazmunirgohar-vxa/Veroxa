@@ -17,8 +17,8 @@ import type { SidebarItem } from "@/components/PortalLayout";
 
 export const clientPortalNavItems: SidebarItem[] = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/client/dashboard" },
-  { label: "Upload Media", icon: Images, href: "/client/media" },
-  { label: "Requests", icon: ClipboardList, href: "/client/requests" },
+  { label: "Media", icon: Images, href: "/client/media" },
   { label: "Updates", icon: Bell, href: "/client/updates" },
+  { label: "Requests", icon: ClipboardList, href: "/client/requests" },
   { label: "Reports", icon: FileText, href: "/client/reports" },
 ];
