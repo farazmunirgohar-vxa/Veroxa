@@ -51,15 +51,9 @@ export default function ClientDashboard() {
   const reviewReport = getClientReportWorkflow(reviewAccount.id);
   const reviewRisk = getClientRiskStatus(reviewAccount.id);
   const reviewPremium = getClientPremiumReadiness(reviewAccount.id);
-  const reviewPlan = getClientPlan(reviewAccount.id);
   const demoSafeClientHref = portalDataMode.isPublicDemoRoute
     ? "/demo/client/dashboard"
     : null;
-
-  const source = portalDataMode.isLiveDataConnected ? "live" : "demo";
-  const dataSourceMessage = portalDataMode.isLiveDataConnected
-    ? "Live data connected"
-    : "Demo data";
 
   const mediaItems = canUseFixtureData
     ? clientTeamWorkRepository
