@@ -141,6 +141,11 @@ export default function ClientUpdates() {
                 <p className="mt-0.5 text-xs text-muted-foreground">
                   {item.clientVisibleNote}
                 </p>
+                <Link href="/client/requests">
+                  <span className="mt-2 inline-flex text-xs text-primary hover:underline">
+                    Reply in Requests
+                  </span>
+                </Link>
               </div>
             ))
           )}
@@ -189,6 +194,11 @@ function ProgressLane({
               <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
                 {item.note}
               </p>
+              <Link href={`/client/media?media=${item.id}`}>
+                <span className="mt-1 inline-flex text-[11px] text-primary/80 hover:underline">
+                  Open Media details
+                </span>
+              </Link>
             </div>
           ))}
         </div>

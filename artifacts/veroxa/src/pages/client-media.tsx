@@ -19,6 +19,7 @@ import { WRITES_ENABLED } from "@/lib/data/writeReadiness";
 import { getDevClientIdFromEnv } from "@/lib/data/devClientId";
 import { useActiveClientPortalContext } from "@/lib/clientPortalContext";
 import {
+  getClientMediaNextStepCopy,
   getClientMediaStatusTone,
   normalizeClientMediaDisplayStatus,
   type ClientMediaDisplayStatus,
@@ -123,7 +124,10 @@ export default function ClientMedia() {
   const [submitNote, setSubmitNote] = useState("");
   const [direction, setDirection] = useState("");
   const [localUploads, setLocalUploads] = useState<ClientMediaItem[]>([]);
-  const [selectedMediaId, setSelectedMediaId] = useState<string | null>(null);
+  const [selectedMediaId, setSelectedMediaId] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    return new URLSearchParams(window.location.search).get("media");
+  });
   const inputRef = useRef<HTMLInputElement>(null);
   const { activeClientId, isRealClientSession } =
     useActiveClientPortalContext();
@@ -165,10 +169,9 @@ export default function ClientMedia() {
   }, [activeClientId, canUseFixtureData]);
 
   const mediaItems = [...localUploads, ...repositoryMediaItems];
-  const selectedMedia =
-    mediaItems.find((item) => item.id === selectedMediaId) ??
-    mediaItems[0] ??
-    null;
+  const selectedMedia = selectedMediaId
+    ? (mediaItems.find((item) => item.id === selectedMediaId) ?? null)
+    : null;
   const uploadedMedia = mediaItems.filter((item) => item.source === "upload");
   const readyMedia = mediaItems.filter((item) => item.source === "ready");
   const postedMedia = mediaItems.filter((item) => item.source === "posted");
@@ -525,6 +528,78 @@ export default function ClientMedia() {
   );
 }
 
+function MediaDetailCard({ item }: { item: ClientMediaItem | null }) {
+  return (
+    <Card className="border-primary/20 bg-card" data-testid="card-media-detail">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <ImageIcon className="h-4 w-4 text-primary" /> Media details
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {!item ? (
+          <SafePortalEmptyCard
+            title="No media selected"
+            body="Select a media item to see status details, next step, and Veroxa notes."
+            testId="empty-media-detail"
+          />
+        ) : (
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold">{item.name}</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {item.description}
+                </p>
+              </div>
+              <MediaStatusBadge status={item.status} />
+            </div>
+            <ClientMediaTracker status={item.status} />
+            <div className="grid gap-2 md:grid-cols-2">
+              <div className="rounded-md border border-border bg-muted/20 p-3">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                  Next step
+                </p>
+                <p className="mt-1 text-sm">
+                  {getClientMediaNextStepCopy(item.status)}
+                </p>
+              </div>
+              <div className="rounded-md border border-border bg-muted/20 p-3">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                  Schedule / use
+                </p>
+                <p className="mt-1 text-sm">
+                  {item.status === "Scheduled"
+                    ? "Planned for an upcoming update."
+                    : item.status === "Posted" || item.status === "Already used"
+                      ? "Already used in Veroxa work."
+                      : "No posting date is shown yet."}
+                </p>
+              </div>
+              <div className="rounded-md border border-border bg-muted/20 p-3">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                  Note
+                </p>
+                <p className="mt-1 text-sm">
+                  {item.note || "No extra note yet."}
+                </p>
+              </div>
+              <div className="rounded-md border border-border bg-muted/20 p-3">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                  Direction
+                </p>
+                <p className="mt-1 text-sm">
+                  {item.direction || "No direction added."}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 function MediaSection({
   title,
   items,
@@ -562,7 +637,9 @@ function MediaSection({
                 <button
                   type="button"
                   onClick={() => onSelect(item.id)}
-                  className={`w-full rounded-md border px-3 py-3 text-left transition ${selectedId === item.id ? "border-primary/60 bg-primary/10" : "border-border bg-muted/20 hover:bg-muted/30"}`}
+                  className={`w-full rounded-md border px-3 py-3 text-left transition-colors ${selectedId === item.id ? "border-primary/40 bg-primary/10 ring-1 ring-primary/30" : "border-border bg-muted/20 hover:border-primary/30"}`}
+                  aria-current={selectedId === item.id ? "true" : undefined}
+                  aria-label={`Select ${item.name} for media status details`}
                   data-testid={`media-item-${item.id}`}
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -576,11 +653,19 @@ function MediaSection({
                     </div>
                     <MediaStatusBadge status={item.status} />
                   </div>
-                  {item.direction && (
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      Direction: {item.direction}
-                    </p>
-                  )}
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    {item.direction && (
+                      <Badge
+                        variant="outline"
+                        className="border-primary/20 bg-primary/5 text-[10px] text-primary"
+                      >
+                        {item.direction}
+                      </Badge>
+                    )}
+                    {selectedId === item.id && (
+                      <span className="text-[11px] text-primary">Selected</span>
+                    )}
+                  </div>
                 </button>
               </li>
             ))}

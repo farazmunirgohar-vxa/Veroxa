@@ -17,7 +17,9 @@
     "check-dev-auth-write-safety": "tsx ./src/check-dev-auth-write-safety.ts",
     "check-route-inventory": "tsx ./src/check-route-inventory.ts",
     "check-route-smoke": "tsx ./src/check-route-smoke.ts",
-    "check-public-metadata": "tsx ./src/check-public-metadata.ts"
+    "check-client-product-language": "tsx ./src/check-client-product-language.ts",
+    "check-team-cockpit": "tsx ./src/check-team-cockpit.ts",
+    "check-pilot-positioning": "tsx ./src/check-pilot-positioning.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",

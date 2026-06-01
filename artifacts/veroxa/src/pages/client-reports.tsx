@@ -37,11 +37,13 @@ export default function ClientReports() {
       ["accepted", "in_progress"].includes(item.status),
   );
 
-  const weeklyReports: ReportCardModel[] = weeklyUpdate
+  const sampleLabel = mode.allowDemoFixtures ? "Sample" : null;
+
+  const weeklyReports: ReportCard[] = weeklyUpdate
     ? [
         {
           id: "weekly-current",
-          title: "Weekly Report",
+          title: sampleLabel ? `${sampleLabel} Weekly Report` : "Weekly Report",
           period: "This week",
           sections: [
             { label: "Work completed", body: weeklyUpdate.clientSafeSummary },
@@ -76,7 +78,9 @@ export default function ClientReports() {
     ? [
         {
           id: "monthly-current",
-          title: "Monthly Report",
+          title: sampleLabel
+            ? `${sampleLabel} Monthly Report`
+            : "Monthly Report",
           period: "This month",
           sections: [
             {
@@ -132,12 +136,12 @@ export default function ClientReports() {
         <ReportSection
           title="Weekly Reports"
           reports={weeklyReports}
-          empty="Weekly reports will appear here after Veroxa prepares them."
+          empty="Reports will appear after enough account activity. Weekly summaries will not show invented metrics."
         />
         <ReportSection
           title="Monthly Reports"
           reports={monthlyReports}
-          empty="Monthly reports will appear here after the month is summarized."
+          empty="Reports will appear after enough account activity. Monthly summaries will use trustworthy account data only."
         />
       </div>
     </PortalLayout>
@@ -176,7 +180,14 @@ function ReportSection({
               data-testid={`report-${report.id}`}
             >
               <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
-                <p className="text-sm font-semibold">{report.title}</p>
+                <div>
+                  <p className="text-sm font-semibold">{report.title}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {report.title.startsWith("Sample")
+                      ? "Sample summary for the Client Demo."
+                      : "Simple summary, not an analytics dashboard."}
+                  </p>
+                </div>
                 <Badge
                   variant="outline"
                   className="border-primary/30 bg-primary/10 text-primary"

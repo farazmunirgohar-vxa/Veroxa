@@ -30,6 +30,11 @@ phase" language elsewhere in this index.
 - [`FIRST_CLIENT_READINESS_FOUNDATION.md`](./FIRST_CLIENT_READINESS_FOUNDATION.md)
   — first 1–5 client operating model, manual execution boundary,
   launch gate, and readiness checklists for Faraz and future builders.
+- [`FIRST_CLIENT_PILOT_MODE.md`](./FIRST_CLIENT_PILOT_MODE.md) — current
+  pilot-mode explanation, demo checklist, and blockers before a real client
+  account.
+- [`TEAM_QUEUE_MODEL.md`](./TEAM_QUEUE_MODEL.md) — shared field model and
+  empty-state rules for Team Work, Direction, and Report queues.
 - [`CLIENT_HEALTH_ENGINE_CONTRACT.md`](./CLIENT_HEALTH_ENGINE_CONTRACT.md)
   — authoritative outputs of `ClientHealthEngine` and latest
   per-page drift audit.
