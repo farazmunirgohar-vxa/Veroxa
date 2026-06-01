@@ -9,12 +9,12 @@ import { useActiveClientPortalContext } from "@/lib/clientPortalContext";
 import { generateClientWeeklyUpdate } from "@/domain/clientPortalJourney";
 import { clientTeamWorkRepository } from "@/lib/repositories";
 
-type ReportCard = {
+interface ReportCardModel {
   id: string;
   title: string;
   period: string;
-  sections: Array<{ label: string; value: string }>;
-};
+  sections: Array<{ label: string; body: string }>;
+}
 
 export default function ClientReports() {
   const mode = useRealPortalDataMode();
@@ -25,66 +25,54 @@ export default function ClientReports() {
   const weeklyUpdate = canUseFixtureData
     ? generateClientWeeklyUpdate(activeClientId!)
     : null;
-  const completedItems = canUseFixtureData
-    ? clientTeamWorkRepository
-        .getClientCompletedItems(activeClientId!)
-        .slice(0, 3)
+  const submissions = canUseFixtureData
+    ? clientTeamWorkRepository.getClientVisibleSubmissions(activeClientId!)
     : [];
-  const inProgressItems = canUseFixtureData
-    ? clientTeamWorkRepository
-        .getClientInProgressItems(activeClientId!)
-        .slice(0, 3)
-    : [];
-  const actionItems = canUseFixtureData
-    ? clientTeamWorkRepository
-        .getClientActionRequiredItems(activeClientId!)
-        .slice(0, 2)
-    : [];
+  const completedMedia = submissions.filter(
+    (item) => item.submissionType === "media" && item.status === "completed",
+  );
+  const readyMedia = submissions.filter(
+    (item) =>
+      item.submissionType === "media" &&
+      ["accepted", "in_progress"].includes(item.status),
+  );
 
-  const weeklyReports: ReportCard[] = weeklyUpdate
+  const weeklyReports: ReportCardModel[] = weeklyUpdate
     ? [
         {
           id: "weekly-current",
           title: "Weekly Report",
           period: "This week",
           sections: [
+            { label: "Work completed", body: weeklyUpdate.clientSafeSummary },
             {
-              label: "Work completed",
-              value:
-                completedItems.map((item) => item.title).join("; ") ||
-                weeklyUpdate.clientSafeSummary,
-            },
-            {
-              label: "Media used / posted",
-              value:
-                completedItems
-                  .filter((item) => item.workType === "media_review")
-                  .map((item) => item.title)
-                  .join("; ") || "No posted media is ready to summarize yet.",
+              label: "Media used or posted",
+              body:
+                completedMedia.length > 0
+                  ? completedMedia.map((item) => item.title).join(", ")
+                  : "No posted media is listed for this sample week yet.",
             },
             {
               label: "What is next",
-              value:
-                inProgressItems.map((item) => item.title).join("; ") ||
-                "Veroxa will keep reviewing usable media and preparing the next visibility updates.",
+              body:
+                readyMedia.length > 0
+                  ? "Veroxa has reviewed media ready for the next content pass."
+                  : "Veroxa will continue reviewing usable client-provided media.",
             },
             {
               label: "What Veroxa needs from you",
-              value:
-                actionItems.map((item) => item.title).join("; ") ||
-                "Nothing needed right now.",
+              body: "Keep sending clear photos, short videos, specials, and any menu context that would help.",
             },
             {
               label: "Visibility note",
-              value:
-                "Local visibility work is included when profile updates or Google Maps readiness items are available.",
+              body: "Local visibility work is included when Veroxa has verified updates to summarize.",
             },
           ],
         },
       ]
     : [];
 
-  const monthlyReports: ReportCard[] = canUseFixtureData
+  const monthlyReports: ReportCardModel[] = canUseFixtureData
     ? [
         {
           id: "monthly-current",
@@ -93,38 +81,30 @@ export default function ClientReports() {
           sections: [
             {
               label: "Posts completed",
-              value:
-                completedItems.length > 0
-                  ? `${completedItems.length} completed item${completedItems.length === 1 ? "" : "s"} are ready to summarize.`
-                  : "No completed posting summary is available yet.",
+              body:
+                completedMedia.length > 0
+                  ? `${completedMedia.length} media item${completedMedia.length === 1 ? "" : "s"} marked posted or already used.`
+                  : "Post totals appear here after Veroxa has confirmed completed work.",
             },
             {
               label: "Top content",
-              value:
-                completedItems[0]?.title ||
-                "Top content will appear after Veroxa has enough posted work to compare honestly.",
+              body: "Top content is shown only when reliable performance data is available.",
             },
             {
               label: "Local visibility progress",
-              value:
-                "Profile freshness and Google Maps readiness notes will appear when available.",
+              body: "Google Maps and local search improvements are summarized after Veroxa verifies the work.",
             },
             {
               label: "Summary of improvements",
-              value:
-                "This month will summarize completed work, client input received, and meaningful visibility improvements without invented metrics.",
+              body: "This month focuses on steadier media use, clearer client direction, and safer local visibility updates.",
             },
             {
               label: "Next month focus",
-              value:
-                actionItems.length > 0
-                  ? "More usable media and quick answers will help Veroxa keep momentum."
-                  : "Keep fresh media coming so Veroxa can maintain a steady posting lane.",
+              body: "Keep the media library fresh and confirm any specials, hours, or menu details before Veroxa uses them.",
             },
             {
-              label: "Honest limitation",
-              value:
-                "Performance numbers only appear after trustworthy account data is available.",
+              label: "Honest limitations",
+              body: "No performance metrics are invented. Missing platform data stays blank until it is available.",
             },
           ],
         },
@@ -143,16 +123,16 @@ export default function ClientReports() {
           Reports
         </h2>
         <p className="mt-1 max-w-2xl text-sm md:text-base text-muted-foreground">
-          Weekly and monthly summaries live here. Updates stay focused on
-          day-to-day progress.
+          Weekly and monthly Veroxa reports live here when they are ready.
+          Updates stay focused on day-to-day progress.
         </p>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 xl:grid-cols-2">
         <ReportSection
           title="Weekly Reports"
           reports={weeklyReports}
-          empty="Weekly reports will appear here after Veroxa prepares the week summary."
+          empty="Weekly reports will appear here after Veroxa prepares them."
         />
         <ReportSection
           title="Monthly Reports"
@@ -170,7 +150,7 @@ function ReportSection({
   empty,
 }: {
   title: string;
-  reports: ReportCard[];
+  reports: ReportCardModel[];
   empty: string;
 }) {
   return (
@@ -196,12 +176,7 @@ function ReportSection({
               data-testid={`report-${report.id}`}
             >
               <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
-                <div>
-                  <p className="text-sm font-semibold">{report.title}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Simple summary, not an analytics dashboard.
-                  </p>
-                </div>
+                <p className="text-sm font-semibold">{report.title}</p>
                 <Badge
                   variant="outline"
                   className="border-primary/30 bg-primary/10 text-primary"
@@ -213,18 +188,13 @@ function ReportSection({
                 {report.sections.map((section) => (
                   <div
                     key={section.label}
-                    className="rounded-md border border-border/70 bg-card/50 p-3"
+                    className="rounded-md border border-border/70 bg-card/60 p-3"
                   >
-                    <p className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-                      {section.label.includes("What") ? (
-                        <ListChecks className="h-3 w-3" />
-                      ) : (
-                        <CheckCircle2 className="h-3 w-3" />
-                      )}
+                    <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
                       {section.label}
                     </p>
-                    <p className="mt-1 text-sm text-foreground/85">
-                      {section.value}
+                    <p className="mt-1 text-sm text-foreground/90">
+                      {section.body}
                     </p>
                   </div>
                 ))}

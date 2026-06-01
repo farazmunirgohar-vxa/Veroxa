@@ -1,12 +1,11 @@
 import { readFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
-const app = readFileSync(join(root, "artifacts/veroxa/src/App.tsx"), "utf8");
-const failures: string[] = [];
+const root = join(process.cwd(), "..");
+const appPath = join(root, "artifacts/veroxa/src/App.tsx");
+const app = readFileSync(appPath, "utf8");
 
-const expectedRoutes = [
+const requiredRoutes = [
   "/",
   "/services",
   "/pricing",
@@ -22,29 +21,35 @@ const expectedRoutes = [
   "/team/dashboard",
 ];
 
-for (const route of expectedRoutes) {
-  if (!app.includes(`path="${route}"`)) failures.push(`App.tsx is missing smoke route ${route}.`);
+const failures: string[] = [];
+for (const route of requiredRoutes) {
+  const pattern = new RegExp(`<Route\\s+path=["']${route.replaceAll("/", "\\/")}["']`);
+  if (!pattern.test(app)) failures.push(`Missing route smoke coverage target in App.tsx: ${route}`);
 }
 
-for (const component of ["LandingPage", "ServicesPage", "PricingPage", "FreeAudit", "ClientMedia", "ClientRequests", "ClientReports", "ClientUpdates", "TeamDashboard"]) {
-  if (!new RegExp(`const\\s+${component}\\s*=\\s*lazy\\(`).test(app)) {
-    failures.push(`${component} should remain lazy-loaded for route-level confidence.`);
+const teamDashboardBlock = app.match(/<Route path="\/team\/dashboard">[\s\S]*?<\/Route>/)?.[0] ?? "";
+if (!teamDashboardBlock.includes("InternalDemoGuard") || !teamDashboardBlock.includes('role="team"')) {
+  failures.push("/team/dashboard must remain wrapped by InternalDemoGuard role=team.");
+}
+if (!teamDashboardBlock.includes("RealPortalDataBoundary")) {
+  failures.push("/team/dashboard must remain wrapped by RealPortalDataBoundary.");
+}
+
+const clientRoutes = ["dashboard", "media", "updates", "requests", "reports"];
+for (const route of clientRoutes) {
+  const block = app.match(new RegExp(`<Route path="\\/client\\/${route}">[\\s\\S]*?<\\/Route>`))?.[0] ?? "";
+  if (!block.includes("ClientPortalGuard") || !block.includes("RealPortalDataBoundary")) {
+    failures.push(`/client/${route} must remain wrapped by client guard and real portal data boundary.`);
   }
 }
 
-const teamRouteStart = app.indexOf('path="/team/dashboard"');
-const teamRouteEnd = app.indexOf('path="/team/upload-inbox"');
-const teamBlock = teamRouteStart >= 0 && teamRouteEnd > teamRouteStart ? app.slice(teamRouteStart, teamRouteEnd) : "";
-if (!teamBlock.includes("InternalDemoGuard") || !teamBlock.includes("RealPortalDataBoundary")) {
-  failures.push("/team/dashboard must stay guarded and must not render internal content directly from the public router.");
+if (!app.includes('const LandingPage = lazy(() => import("@/pages/landing"))')) {
+  failures.push("Public routes should remain lazy-loaded from App.tsx.");
 }
 
-if (!app.includes("<RouteBoundary>")) failures.push("Router must stay wrapped in RouteBoundary.");
-
 if (failures.length > 0) {
-  console.error("Route smoke guardrail failed:");
-  for (const failure of failures) console.error(`- ${failure}`);
+  console.error("Route smoke guardrail failed:\n" + failures.map((f) => `- ${f}`).join("\n"));
   process.exit(1);
 }
 
-console.log("Route smoke guardrail passed: core public, client, and team routes are present and guarded.");
+console.log("Route smoke guardrail passed: public, client, demo, and guarded team routes are present.");

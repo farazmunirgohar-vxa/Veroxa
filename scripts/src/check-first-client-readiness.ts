@@ -59,6 +59,7 @@ const dangerousFirstClientLanguage: readonly [RegExp, string][] = [
 ];
 
 const clientUnsafeLanguage: readonly [RegExp, string][] = [
+  [/ticket/i, "client requests must not feel like ticketing"],
   [/OpenAI/i, "client-unsafe implementation term"],
   [/Supabase/i, "client-unsafe implementation term"],
   [/\bRLS\b/i, "client-unsafe implementation term"],
@@ -92,7 +93,12 @@ function walk(path: string): string[] {
 
 function isHistoricalOrDeprecatedContext(file: string, line: string): boolean {
   const context = `${file} ${line}`;
-  if (/no[- ]|not |without |must not|do not|does not|avoid|forbidden|denylist/i.test(context)) return true;
+  if (
+    /no[- ]|not |without |must not|do not|does not|avoid|forbidden|denylist/i.test(
+      context,
+    )
+  )
+    return true;
   return /deprecated|legacy|historical|not active|removed|blocked|parked|future|draft|inactive/i.test(
     context,
   );
@@ -100,9 +106,26 @@ function isHistoricalOrDeprecatedContext(file: string, line: string): boolean {
 
 function isLikelyClientVisibleLine(line: string): boolean {
   const trimmed = line.trim();
-  if (!trimmed || trimmed.startsWith("//") || trimmed.startsWith("/*") || trimmed.startsWith("*")) return false;
-  if (/canUseFixtureData|allowDemoFixtures|isLiveDataConnected|fixture[A-Z]|demo[A-Z]|SHOWCASE_ID|workflowClientId/.test(trimmed)) return false;
-  if (/^(const|let|var|type|interface|import|export|function|return|if|else)\b/.test(trimmed) && !/["'`][^"'`]+["'`]/.test(trimmed)) return false;
+  if (
+    !trimmed ||
+    trimmed.startsWith("//") ||
+    trimmed.startsWith("/*") ||
+    trimmed.startsWith("*")
+  )
+    return false;
+  if (
+    /canUseFixtureData|allowDemoFixtures|isLiveDataConnected|fixture[A-Z]|demo[A-Z]|SHOWCASE_ID|workflowClientId/.test(
+      trimmed,
+    )
+  )
+    return false;
+  if (
+    /^(const|let|var|type|interface|import|export|function|return|if|else)\b/.test(
+      trimmed,
+    ) &&
+    !/["'`][^"'`]+["'`]/.test(trimmed)
+  )
+    return false;
   return true;
 }
 
@@ -125,7 +148,11 @@ for (const absolute of firstClientScanFiles) {
   const file = relative(root, absolute);
   const text = readFileSync(absolute, "utf8");
   text.split(/\r?\n/).forEach((line, index) => {
-    if (isGuardrailDefinition(file) || isHistoricalOrDeprecatedContext(file, line)) return;
+    if (
+      isGuardrailDefinition(file) ||
+      isHistoricalOrDeprecatedContext(file, line)
+    )
+      return;
     for (const [pattern, label] of dangerousFirstClientLanguage) {
       if (pattern.test(line)) report(file, index + 1, label, line);
     }
@@ -137,26 +164,47 @@ for (const activeClientFile of activeClientPortalFiles) {
   if (!existsSync(absolute)) continue;
   const text = readFileSync(absolute, "utf8");
   text.split(/\r?\n/).forEach((line, index) => {
-    if (isHistoricalOrDeprecatedContext(activeClientFile, line) || !isLikelyClientVisibleLine(line)) return;
+    if (
+      isHistoricalOrDeprecatedContext(activeClientFile, line) ||
+      !isLikelyClientVisibleLine(line)
+    )
+      return;
     for (const [pattern, label] of clientUnsafeLanguage) {
       if (pattern.test(line)) report(activeClientFile, index + 1, label, line);
     }
   });
 }
 
-
 const readinessChecklistSource = readFileSync(
   join(root, "artifacts/veroxa/src/domain/firstClientReadiness/checklist.ts"),
   "utf8",
 );
-if (!/real-client-data-pending[\s\S]*status:\s*["']warning["']/.test(readinessChecklistSource)) {
-  failures.push("First-client readiness must keep live client data pending as a warning, not fake-passing launch truth.");
+if (
+  !/real-client-data-pending[\s\S]*status:\s*["']warning["']/.test(
+    readinessChecklistSource,
+  )
+) {
+  failures.push(
+    "First-client readiness must keep live client data pending as a warning, not fake-passing launch truth.",
+  );
 }
-if (!/storage-upload-pending[\s\S]*status:\s*["']warning["']/.test(readinessChecklistSource)) {
-  failures.push("First-client readiness must keep storage upload pending as a warning, not fake-passing launch truth.");
+if (
+  !/storage-upload-pending[\s\S]*status:\s*["']warning["']/.test(
+    readinessChecklistSource,
+  )
+) {
+  failures.push(
+    "First-client readiness must keep storage upload pending as a warning, not fake-passing launch truth.",
+  );
 }
-if (!/production-auth-pending[\s\S]*status:\s*["']warning["']/.test(readinessChecklistSource)) {
-  failures.push("First-client readiness must keep production auth pending as a warning, not fake-passing launch truth.");
+if (
+  !/production-auth-pending[\s\S]*status:\s*["']warning["']/.test(
+    readinessChecklistSource,
+  )
+) {
+  failures.push(
+    "First-client readiness must keep production auth pending as a warning, not fake-passing launch truth.",
+  );
 }
 
 if (failures.length > 0) {
@@ -165,4 +213,6 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-console.log("First-client readiness guardrail passed: active first-client surfaces preserve manual execution, role separation, client-safe language, and launch boundaries.");
+console.log(
+  "First-client readiness guardrail passed: active first-client surfaces preserve manual execution, role separation, client-safe language, and launch boundaries.",
+);

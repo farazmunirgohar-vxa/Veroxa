@@ -130,7 +130,7 @@ export default function TeamDashboard() {
     testId: string;
   }[] = [
     {
-      label: "Today's priority work",
+      label: "Ready to schedule",
       value: todayQueue.length,
       icon: Inbox,
       href: "/team/work-queue",
@@ -146,7 +146,7 @@ export default function TeamDashboard() {
       testId: "priority-needs-review",
     },
     {
-      label: "Client follow-up",
+      label: "Client requests",
       value: workflowSummary.waitingOnClient,
       icon: Users,
       href: "/team/work-queue",
@@ -154,7 +154,7 @@ export default function TeamDashboard() {
       testId: "priority-client-follow-up",
     },
     {
-      label: "Queue / hold later",
+      label: "Reports due",
       value: queueOrHold.length,
       icon: FileText,
       href: "/team/work-queue",
@@ -241,7 +241,7 @@ export default function TeamDashboard() {
 
       <PageHeader
         title="Today's Veroxa Work"
-        description="A simple view of what needs review, follow-up, and posting today."
+        description="A simple steering wheel for review, scheduling, client requests, blockers, and reports due."
         testId="header-team-dashboard"
       />
 
@@ -371,7 +371,7 @@ export default function TeamDashboard() {
       {!canUseFixtureData && (
         <div
           className="space-y-4 mb-6"
-          data-testid="section-review-mode-cockpit"
+          data-testid="section-review-mode-command-center"
         >
           <Card className="bg-card border-border">
             <CardHeader className="pb-2">
@@ -696,7 +696,7 @@ export default function TeamDashboard() {
       <div className="mb-6">
         {canUseFixtureData ? (
           <TeamWorkflowPanel
-            title="Workflow cockpit"
+            title="Team cockpit"
             icon={<LayoutGrid className="w-4 h-4 text-primary" />}
             emptyText="No active workflow items right now."
             testId="card-team-workflow-command-center"
@@ -711,11 +711,11 @@ export default function TeamDashboard() {
         )}
       </div>
 
-      {/* Today's Client Work */}
+      {/* Ready to schedule */}
       <div className="mb-6" data-testid="section-todays-client-work">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Today&apos;s Client Work
+            Ready to schedule
           </h3>
           <Link href="/team/work-queue">
             <span className="flex items-center gap-1 text-xs text-primary hover:underline cursor-pointer">
@@ -742,7 +742,7 @@ export default function TeamDashboard() {
       <div className="mb-6" data-testid="section-media-review-queue">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Items needing review
+            Needs review
           </h3>
           <Link href="/team/work-queue">
             <span className="text-xs text-primary hover:underline cursor-pointer">
@@ -765,7 +765,7 @@ export default function TeamDashboard() {
       {/* Active alerts / blockers */}
       <div className="mb-6" data-testid="section-active-alerts">
         <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-          Active alerts &amp; blockers
+          Blocked / needs client input
         </h3>
         <Card className="bg-card border-border">
           <CardContent className="space-y-2 p-4">
@@ -808,11 +808,11 @@ export default function TeamDashboard() {
         </Card>
       </div>
 
-      {/* Work queue summary — same helper counts used by the queue and alert center. */}
+      {/* Cockpit queue summary — same helper counts used by the queue and alert center. */}
       <div data-testid="section-work-queue-summary">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Work queue summary
+            Cockpit queue summary
           </h3>
           <Link href="/team/work-queue">
             <span className="flex items-center gap-1 text-xs text-primary hover:underline cursor-pointer">

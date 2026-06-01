@@ -8,46 +8,34 @@ export const CLIENT_REQUEST_TYPES = [
 
 export type ClientRequestType = (typeof CLIENT_REQUEST_TYPES)[number];
 
-export type ClientRequestStatus =
-  | "Received"
-  | "In Review"
-  | "Handled"
-  | "Waiting for you";
+export const CLIENT_REQUEST_STATUSES = [
+  "Received",
+  "In Review",
+  "Handled",
+  "Waiting for you",
+] as const;
 
-export function toClientRequestStatus(status: string): ClientRequestStatus {
+export type ClientRequestStatus = (typeof CLIENT_REQUEST_STATUSES)[number];
+
+export function getClientRequestStatus(status: string): ClientRequestStatus {
   const value = status.toLowerCase();
   if (
     value.includes("done") ||
     value.includes("complete") ||
-    value.includes("posted") ||
-    value.includes("handled") ||
-    value.includes("included")
-  ) {
+    value.includes("posted")
+  )
     return "Handled";
-  }
   if (
     value.includes("blocked") ||
     value.includes("client") ||
-    value.includes("waiting") ||
-    value.includes("needs your input")
-  ) {
+    value.includes("waiting")
+  )
     return "Waiting for you";
-  }
   if (
     value.includes("progress") ||
     value.includes("review") ||
-    value.includes("prepar") ||
-    value.includes("ready")
-  ) {
+    value.includes("accepted")
+  )
     return "In Review";
-  }
   return "Received";
-}
-
-export function buildClientRequestTitle(
-  type: ClientRequestType,
-  note: string,
-): string {
-  const trimmed = note.trim();
-  return `${type}: ${trimmed.length > 48 ? `${trimmed.slice(0, 48)}…` : trimmed}`;
 }

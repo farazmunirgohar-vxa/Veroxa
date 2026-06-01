@@ -13,11 +13,9 @@ import {
   getClientWorkflowItems,
 } from "@/lib/workflow/workflowRepository";
 import { useActiveClientPortalContext } from "@/lib/clientPortalContext";
-
 import {
   CLIENT_REQUEST_TYPES,
-  buildClientRequestTitle,
-  toClientRequestStatus,
+  getClientRequestStatus,
   type ClientRequestStatus,
   type ClientRequestType,
 } from "@/lib/clientRequestStatus";
@@ -57,7 +55,7 @@ export default function ClientRequests() {
           id: item.id,
           title: item.title,
           note: item.clientVisibleNote,
-          status: toClientRequestStatus(item.status),
+          status: getClientRequestStatus(item.status),
         }))
     : [];
 
@@ -93,7 +91,7 @@ export default function ClientRequests() {
         clientId: activeClientId,
         type: "client_request",
         title,
-        clientNote: `${requestType} — ${trimmed}`,
+        clientNote: `${requestType}: ${trimmed}`,
         submittedBy: "client",
       });
     }
