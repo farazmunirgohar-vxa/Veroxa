@@ -52,6 +52,15 @@ export default function LoginPage() {
     e.preventDefault();
 
     if (AUTH_MODE === "placeholder") {
+      if (placeholderLoginUnconfigured) {
+        clearPlaceholderSession();
+        setSignInState({
+          kind: "error",
+          message: "Preview credentials are not configured for this environment.",
+        });
+        return;
+      }
+
       const role = validateDevCredentials(email, password);
       if (!role) {
         clearPlaceholderSession();

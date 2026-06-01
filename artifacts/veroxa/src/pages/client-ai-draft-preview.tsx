@@ -80,8 +80,18 @@ const LOADING_STEPS = [
   "Choosing posting times...",
 ];
 
-assertClientSafeLanguage(DEMO_DRAFTS);
-assertClientSafeLanguage(LOADING_STEPS);
+const CLIENT_DRAFT_PREVIEW_SAFE_COPY = [
+  DEMO_DRAFTS,
+  LOADING_STEPS,
+  NEXT_STEPS,
+  "Content Draft Preview",
+  "Demo Preview — simulated content only",
+  "Demo only — simulated content. Nothing is uploaded, posted, or stored. The image preview disappears on refresh.",
+  "3 Veroxa-prepared drafts",
+  "Simulated content",
+] as const;
+
+assertClientSafeLanguage(CLIENT_DRAFT_PREVIEW_SAFE_COPY);
 
 const PLACEHOLDER_LABEL =
   "Sample food photo — no image uploaded yet";
@@ -194,7 +204,7 @@ export default function ClientAiDraftPreview() {
             className="text-2xl md:text-3xl font-bold tracking-tight text-foreground"
             data-testid="header-client-ai-draft-preview"
           >
-            AI Draft Preview
+            Content Draft Preview
           </h2>
           <p className="text-muted-foreground mt-1 text-sm md:text-base">
             Upload one food photo and see how Veroxa turns it into ready-to-schedule content.
@@ -206,12 +216,12 @@ export default function ClientAiDraftPreview() {
           data-testid="badge-demo-preview"
         >
           <Sparkles className="mr-1 h-3 w-3" />
-          Demo Preview — simulated AI only
+          Demo Preview — simulated content only
         </Badge>
       </div>
 
       <DemoOnlyBanner
-        message="Demo only — simulated AI. Nothing is uploaded, posted, or stored. The image preview disappears on refresh."
+        message="Demo only — simulated content. Nothing is uploaded, posted, or stored. The image preview disappears on refresh."
         testId="banner-client-ai-draft-preview"
       />
 
@@ -222,7 +232,7 @@ export default function ClientAiDraftPreview() {
       >
         {[
           { key: "upload", label: "1. Upload", active: stepActive.upload },
-          { key: "drafts", label: "2. AI Drafts", active: stepActive.drafts },
+          { key: "drafts", label: "2. Drafts", active: stepActive.drafts },
           { key: "schedule", label: "3. Schedule Preview", active: stepActive.schedule },
         ].map((step) => (
           <div
@@ -400,7 +410,7 @@ export default function ClientAiDraftPreview() {
                 Demo only
               </Badge>
               <Badge variant="outline" className="border-border text-muted-foreground">
-                Simulated AI
+                Simulated content
               </Badge>
               <Badge variant="outline" className="border-border text-muted-foreground">
                 Not posted
@@ -418,7 +428,7 @@ export default function ClientAiDraftPreview() {
         <section className="mt-8" data-testid="section-drafts">
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-lg font-semibold text-foreground md:text-xl">
-              3 AI-generated drafts
+              3 Veroxa-prepared drafts
             </h3>
             <Button
               type="button"
@@ -574,7 +584,7 @@ export default function ClientAiDraftPreview() {
                   Demo only
                 </Badge>
                 <Badge variant="outline" className="border-border text-muted-foreground">
-                  Simulated AI
+                  Simulated content
                 </Badge>
                 <Badge variant="outline" className="border-border text-muted-foreground">
                   Not posted
