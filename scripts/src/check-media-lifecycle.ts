@@ -32,7 +32,7 @@ for (const forbidden of ["Uploaded. Veroxa has your media", "uploaded successful
     failures.push(`Client media upload copy overpromises storage/persistence: ${forbidden}`);
   }
 }
-if (!clientMediaSource.includes("No file storage is connected yet")) {
+if (!/file storage is not connected yet|No file storage is connected yet/i.test(clientMediaSource)) {
   failures.push("Client media page must clearly avoid implying cloud file storage is connected.");
 }
 if (!clientMediaSource.includes("buildClientSubmissionKey") || !clientMediaSource.includes("duplicate-skipped")) {

@@ -14,6 +14,7 @@ const publicFiles = [
   "artifacts/veroxa/src/pages/pricing.tsx",
   "artifacts/veroxa/src/components/PortalLayout.tsx",
   "artifacts/veroxa/src/components/auth/RealPortalDataBoundary.tsx",
+  "artifacts/veroxa/src/hooks/useDocumentMeta.ts",
 ];
 
 const bannedLabels = [
@@ -28,6 +29,13 @@ const bannedLabels = [
 ];
 
 const failures: string[] = [];
+const metadataSource = readFileSync(join(root, "artifacts/veroxa/src/hooks/useDocumentMeta.ts"), "utf8");
+for (const term of ["Demo Preview", "Guided Demo", "Client Portal Preview", "backend", "Supabase", "OpenAI", "API"]) {
+  if (metadataSource.includes(term)) failures.push(`useDocumentMeta.ts must not seed public metadata with ${term}.`);
+}
+for (const required of ["og:title", "og:description", "twitter:card", "twitter:title", "twitter:description"]) {
+  if (!metadataSource.includes(required)) failures.push(`useDocumentMeta.ts missing social metadata field ${required}.`);
+}
 
 for (const file of publicFiles) {
   const text = readFileSync(join(root, file), "utf8");
