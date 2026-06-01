@@ -1,9 +1,9 @@
 /**
- * Client Portal navigation — real Veroxa OS review routes (/client/*).
+ * Client Portal navigation — real client routes (/client/*).
  *
  * Only the active, focused Client Portal surfaces are linked here. The
  * /client/dashboard component is also served at /demo/client/dashboard as a
- * public demo-preview alias; the nav items here always point to the canonical
+ * public Client Demo alias; the nav items here always point to the canonical
  * /client/* paths.
  */
 import {

@@ -7,7 +7,7 @@
     "build": "pnpm run typecheck && pnpm -r --if-present run build",
     "typecheck:libs": "tsc --build",
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck",
-    "verify:veroxa": "pnpm run typecheck && pnpm --filter @workspace/scripts run check-pricing-drift && pnpm --filter @workspace/scripts run check-portal-separation && pnpm --filter @workspace/scripts run check-business-guardrails && pnpm --filter @workspace/scripts run check-first-client-readiness && pnpm --filter @workspace/scripts run check-media-lifecycle && pnpm --filter @workspace/veroxa run build"
+    "verify:veroxa": "pnpm run typecheck && pnpm --filter @workspace/scripts run check-pricing-drift && pnpm --filter @workspace/scripts run check-portal-separation && pnpm --filter @workspace/scripts run check-business-guardrails && pnpm --filter @workspace/scripts run check-public-cleanup && pnpm --filter @workspace/scripts run check-first-client-readiness && pnpm --filter @workspace/scripts run check-media-lifecycle && pnpm --filter @workspace/veroxa run build"
   },
   "private": true,
   "devDependencies": {

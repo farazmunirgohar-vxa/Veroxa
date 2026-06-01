@@ -96,7 +96,7 @@ for (const file of activeFiles) {
 for (const file of activeFiles) {
   const text = readFileSync(join(root, file), "utf8");
   text.split(/\r?\n/).forEach((line, idx) => {
-    if (line.includes("Back to Demo Hub") && file !== "artifacts/veroxa/src/components/PortalLayout.tsx") {
+    if (line.includes("Back to Client Demo") && file !== "artifacts/veroxa/src/components/PortalLayout.tsx") {
       report(file, idx + 1, "uses demo-hub back link outside the route-aware layout", line);
     }
   });
@@ -104,14 +104,14 @@ for (const file of activeFiles) {
 
 const portalLayout = readFileSync(join(root, "artifacts/veroxa/src/components/PortalLayout.tsx"), "utf8");
 for (const required of [
-  "Public Demo Preview — sample data only.",
-  "Client Portal Review — Veroxa OS is being built with setup data while live client accounts are prepared.",
-  "Team Portal Review — internal Veroxa OS workspace under active build.",
+  "Client Demo — sample data only.",
+  "Client Portal in review — live account details are being prepared.",
+  "Team Portal in review — internal workspace under active build.",
 ]) {
   if (!portalLayout.includes(required)) failures.push(`PortalLayout is missing banner copy: ${required}`);
 }
 if (!/getPortalReviewContext\(location\)\.isPublicDemo/.test(portalLayout)) {
-  failures.push("PortalLayout must gate 'Back to Demo Hub' behind demo-route context.");
+  failures.push("PortalLayout must gate 'Back to Client Demo' behind demo-route context.");
 }
 
 const app = readFileSync(join(root, "artifacts/veroxa/src/App.tsx"), "utf8");

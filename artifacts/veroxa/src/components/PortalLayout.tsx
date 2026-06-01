@@ -57,23 +57,23 @@ interface PortalReviewContext {
 
 /**
  * Route-aware framing for the placeholder review banner and the demo back-link.
- *  - /demo/*   → public demo preview (keeps the "Back to Demo Hub" link)
+ *  - /demo/*   → public Client Demo sample (keeps the back link)
  *  - /team/*   → internal team portal review (no demo back-link)
  *  - /client/* → client portal review (default for any other portal route)
  */
 function getPortalReviewContext(location: string): PortalReviewContext {
   if (location.startsWith("/demo")) {
-    return { bannerText: "Public Demo Preview — sample data only.", isPublicDemo: true };
+    return { bannerText: "Client Demo — sample data only.", isPublicDemo: true };
   }
   if (location.startsWith("/team")) {
     return {
-      bannerText: "Team Portal Review — internal Veroxa OS workspace under active build.",
+      bannerText: "Team Portal in review — internal workspace under active build.",
       isPublicDemo: false,
     };
   }
   return {
     bannerText:
-      "Client Portal Review — Veroxa OS is being built with setup data while live client accounts are prepared.",
+      "Client Portal in review — live account details are being prepared.",
     isPublicDemo: false,
   };
 }
@@ -233,7 +233,7 @@ function SidebarNav({
               onClick={onNavigate}
             >
               <ArrowLeft className="w-4 h-4" />
-              Back to Demo Hub
+              Back to Client Demo
             </Link>
           </div>
         )}
