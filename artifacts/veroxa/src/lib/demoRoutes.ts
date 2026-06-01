@@ -42,7 +42,8 @@ export interface DemoRoute {
 }
 
 // ── Public client preview ───────────────────────────────────────────────────
-// Demo Preview intentionally exposes only the client dashboard sample.
+// Demo Preview exposes the full client portal surface (dashboard, media,
+// updates, requests, reports) with sample data only — no login required.
 
 export const clientPreviewRoutes: DemoRoute[] = [
   {
@@ -51,6 +52,34 @@ export const clientPreviewRoutes: DemoRoute[] = [
     label: "Client Demo Preview",
     visibility: "public_preview",
     purpose: "Public client preview surfaced from the demo hub.",
+  },
+  {
+    path: "/demo/client/media",
+    portal: "client",
+    label: "Client Demo — Media",
+    visibility: "public_preview",
+    purpose: "Public client media preview (sample data only).",
+  },
+  {
+    path: "/demo/client/updates",
+    portal: "client",
+    label: "Client Demo — Updates",
+    visibility: "public_preview",
+    purpose: "Public client updates preview (sample data only).",
+  },
+  {
+    path: "/demo/client/requests",
+    portal: "client",
+    label: "Client Demo — Requests",
+    visibility: "public_preview",
+    purpose: "Public client requests preview (sample data only).",
+  },
+  {
+    path: "/demo/client/reports",
+    portal: "client",
+    label: "Client Demo — Reports",
+    visibility: "public_preview",
+    purpose: "Public client reports preview (sample data only).",
   },
 ];
 

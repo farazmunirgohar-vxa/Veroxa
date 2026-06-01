@@ -189,9 +189,12 @@ const portalLayoutSource = readFileSync(
   join(root, "artifacts/veroxa/src/components/PortalLayout.tsx"),
   "utf8",
 );
-if (!portalLayoutSource.includes("getSafePortalHref") || !portalLayoutSource.includes("/demo/client/dashboard")) {
+if (
+  !portalLayoutSource.includes("getSafePortalHref") ||
+  !/location\.startsWith\(["']\/demo\/client["']\)[\s\S]{0,200}\/demo\/client\//.test(portalLayoutSource)
+) {
   failures.push(
-    "PortalLayout must keep demo client navigation inside /demo/client/dashboard instead of linking demo users into real /client/* routes.",
+    "PortalLayout must keep demo client navigation inside /demo/client/* instead of linking demo users into real /client/* routes.",
   );
 }
 

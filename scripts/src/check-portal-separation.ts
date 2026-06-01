@@ -118,7 +118,22 @@ if (!/getPortalReviewContext\(location\)\.isPublicDemo/.test(portalLayout)) {
 
 const app = readFileSync(join(root, "artifacts/veroxa/src/App.tsx"), "utf8");
 if (!app.includes('path="/demo/client/dashboard"')) failures.push("App.tsx must expose /demo/client/dashboard.");
+for (const publicDemoRoute of [
+  "/demo/client/media",
+  "/demo/client/updates",
+  "/demo/client/requests",
+  "/demo/client/reports",
+]) {
+  if (!app.includes(`path="${publicDemoRoute}"`)) {
+    failures.push(`App.tsx must expose ${publicDemoRoute} as a public client demo route.`);
+  }
+}
 if (/path=["']\/demo\/team/.test(app)) failures.push("App.tsx must not expose /demo/team/*.");
+
+// Client Demo nav must stay inside /demo/client/* (no crossover to real /client/*).
+if (!/location\.startsWith\(["']\/demo\/client["']\)[\s\S]{0,200}\/demo\/client\//.test(portalLayout)) {
+  failures.push("PortalLayout must keep Client Demo nav inside /demo/client/* (no crossover to login-gated /client/*).");
+}
 
 const demoHub = readFileSync(join(root, "artifacts/veroxa/src/pages/demo-hub.tsx"), "utf8");
 if (!demoHub.includes("/demo/client/dashboard")) failures.push("Demo hub must link to /demo/client/dashboard.");
@@ -144,6 +159,20 @@ if (/AUTH_MODE === ["']placeholder["'][\s\S]{0,400}return <>{children}<\/>/.test
 }
 if (!loginAndAuth.includes("createPlaceholderSession") || !internalGuardSource.includes('auth.status === "unauthenticated"')) {
   failures.push("Placeholder team access must require a session marker created after successful login.");
+}
+
+const clientGuardSource = readFileSync(
+  join(root, "artifacts/veroxa/src/components/auth/ClientPortalGuard.tsx"),
+  "utf8",
+);
+if (!clientGuardSource.includes("useAuth()")) {
+  failures.push("ClientPortalGuard must read auth state for client route containment.");
+}
+if (/AUTH_MODE === ["']placeholder["'][\s\S]{0,120}return <>\{children\}<\/>/.test(clientGuardSource)) {
+  failures.push("ClientPortalGuard must not render client children from AUTH_MODE === placeholder alone.");
+}
+if (!clientGuardSource.includes('auth.status === "unauthenticated"')) {
+  failures.push("ClientPortalGuard must show a login-required state for unauthenticated client access.");
 }
 
 for (const clientFile of [

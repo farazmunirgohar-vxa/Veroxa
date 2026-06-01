@@ -52,6 +52,14 @@ export function getDevRoleCredentials(): readonly DevCredential[] {
 }
 
 /**
+ * True when at least one placeholder role has env-supplied credentials.
+ * Used only to clarify preview login copy; never exposes credential values.
+ */
+export function hasConfiguredDevCredentials(): boolean {
+  return getDevRoleCredentials().length > 0;
+}
+
+/**
  * Returns the matching role if the email+password pair matches an env-supplied
  * dev credential, otherwise `null`. Email is matched case-insensitively.
  * Only called when AUTH_MODE === "placeholder".

@@ -9,18 +9,17 @@ interface ClientPortalGuardProps {
 }
 
 /**
- * ClientPortalGuard — protects /client/* only when real auth is enabled.
+ * ClientPortalGuard — protects /client/* in both placeholder and real auth.
  *
- * Placeholder mode remains open for local MVP review with sample data. Public
- * demo routes (for example /demo/client/dashboard) are not wrapped with this
- * guard and remain open regardless of auth mode.
+ * In placeholder mode a client must complete the env-backed login flow (which
+ * creates a placeholder session) before /client/* renders; AUTH_MODE alone never
+ * grants access. Placeholder client sessions carry no clientId, so the clientId
+ * requirement applies only when AUTH_MODE === "real". Public demo routes (for
+ * example /demo/client/dashboard) are not wrapped with this guard and remain
+ * open regardless of auth mode.
  */
 export default function ClientPortalGuard({ children }: ClientPortalGuardProps) {
   const auth = useAuth();
-
-  if (AUTH_MODE === "placeholder") {
-    return <>{children}</>;
-  }
 
   if (auth.status === "loading") {
     return (
@@ -75,7 +74,9 @@ export default function ClientPortalGuard({ children }: ClientPortalGuardProps) 
     );
   }
 
-  if (auth.session?.role !== "client" || !auth.session.clientId) {
+  const isClientSession = auth.session?.role === "client";
+  const realClientReady = AUTH_MODE === "real" ? Boolean(auth.session?.clientId) : true;
+  if (!isClientSession || !realClientReady) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <div className="w-full max-w-sm text-center space-y-6">

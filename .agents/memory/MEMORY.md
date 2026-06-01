@@ -4,3 +4,4 @@
 - [Veroxa two-role model](veroxa-two-role-model.md) — live model = Client + Team only (no Owner/Operator, no AI shown to clients); CURRENT_REAL_VEROXA_MODEL.md supersedes older docs.
 - [Approval-to-Execution gate](approval-to-execution-gate.md) — prepared-action risk/approval derived from rules.ts (single source), enforced at repo boundary; multiple seed sources (demo + visibility audit) all emit seeds-only and feed one gate, capped per source.
 - [Architect review false positives](architect-review-false-positives.md) — code_review subagent can flag "scope creep" not in your diff; verify against git status/diff before acting.
+- [Veroxa placeholder client guard](veroxa-placeholder-client-guard.md) — placeholder client sessions have clientId=null, so gate clientId on AUTH_MODE==="real"; /demo/client/* stays public+unguarded.

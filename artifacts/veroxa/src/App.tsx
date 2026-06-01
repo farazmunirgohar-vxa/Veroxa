@@ -62,8 +62,12 @@ function Router() {
         <Route path="/guided-demo" component={GuidedDemo} />
         {/* Restaurant Upload Key entry — public, demo-only. No login. */}
         <Route path="/upload" component={RestaurantUploadAccess} />
-        {/* Public Client Demo surface. */}
+        {/* Public Client Demo surface — sample data only, no login. */}
         <Route path="/demo/client/dashboard" component={ClientDashboard} />
+        <Route path="/demo/client/media" component={ClientMedia} />
+        <Route path="/demo/client/updates" component={ClientUpdates} />
+        <Route path="/demo/client/requests" component={ClientRequests} />
+        <Route path="/demo/client/reports" component={ClientReports} />
 
         {/* ── Client Portal — placeholder-open, guarded when real auth is enabled ── */}
         <Route path="/client/dashboard">

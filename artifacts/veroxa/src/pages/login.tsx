@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { AUTH_MODE } from "@/lib/auth/authMode";
 import { getSupabaseClient } from "@/lib/supabase";
 import { getRoleHomePath, isVeroxaRole } from "@/lib/auth/authContract";
-import { getDevRouteForRole, validateDevCredentials } from "@/lib/auth/devCredentials";
+import { getDevRouteForRole, validateDevCredentials, hasConfiguredDevCredentials } from "@/lib/auth/devCredentials";
 import { createPlaceholderSession, clearPlaceholderSession } from "@/lib/auth/placeholderSession";
 import { useDocumentMeta } from "@/hooks/useDocumentMeta";
 
@@ -29,6 +29,9 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [, setLocation] = useLocation();
+
+  const placeholderLoginUnconfigured =
+    AUTH_MODE === "placeholder" && !hasConfiguredDevCredentials();
 
   /**
    * Sign-in submit handler.
@@ -146,6 +149,19 @@ export default function LoginPage() {
         <div className="animate-in fade-in duration-700" data-testid="signin-section">
           <div className="rounded-2xl border border-border bg-card p-7 shadow-sm relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-primary/10 to-transparent blur-3xl rounded-full pointer-events-none" />
+
+            {placeholderLoginUnconfigured && (
+              <div
+                className="mb-4 rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-[11px] text-amber-400 flex items-start gap-2 relative"
+                data-testid="signin-config-note"
+              >
+                <ShieldAlert className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                <span>
+                  Preview sign-in isn’t configured yet. Placeholder login only works once the
+                  Veroxa preview credentials are set as environment variables.
+                </span>
+              </div>
+            )}
 
             <form onSubmit={handleSignInSubmit} className="space-y-4 relative" data-testid="form-signin">
               <div className="space-y-1.5">

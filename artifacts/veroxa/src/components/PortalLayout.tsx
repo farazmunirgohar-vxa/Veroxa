@@ -32,8 +32,10 @@ interface SidebarNavProps {
 
 
 function getSafePortalHref(itemHref: string, location: string): string {
+  // Keep Client Demo navigation inside the /demo/client/* space so demo
+  // visitors stay out of the login-gated real client portal.
   if (location.startsWith("/demo/client") && itemHref.startsWith("/client/")) {
-    return "/demo/client/dashboard";
+    return itemHref.replace(/^\/client\//, "/demo/client/");
   }
   return itemHref;
 }
