@@ -43,18 +43,18 @@ export const clientRoutes: RealRoute[] = [
       "Upload and browse the client's media library for Veroxa team review.",
   },
   {
-    path: "/client/requests",
-    role: "client",
-    label: "Requests",
-    demoPath: "/demo/client/dashboard",
-    description: "Simple requests from Veroxa that need client input.",
-  },
-  {
     path: "/client/updates",
     role: "client",
     label: "Updates",
     demoPath: "/demo/client/dashboard",
     description: "Client-safe updates on prepared work and progress.",
+  },
+  {
+    path: "/client/requests",
+    role: "client",
+    label: "Requests",
+    demoPath: "/demo/client/dashboard",
+    description: "Simple requests from Veroxa that need client input.",
   },
   {
     path: "/client/reports",
