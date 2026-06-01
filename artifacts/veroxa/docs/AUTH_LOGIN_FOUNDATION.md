@@ -42,8 +42,8 @@ AUTH_MODE = "placeholder"
 5. Operator/owner credentials removed — returns `/login`
 
 **Dev credentials (placeholder mode only, never shown in UI):**
-- `faraz@client.com` / `farazclient` → `/client/dashboard`
-- `faraz@team.com` / `farazteam` → `/team/dashboard`
+- `VITE_VEROXA_DEV_CLIENT_EMAIL` / `VITE_VEROXA_DEV_CLIENT_PASSWORD` → `/client/dashboard` when supplied in local preview env
+- `VITE_VEROXA_DEV_TEAM_EMAIL` / `VITE_VEROXA_DEV_TEAM_PASSWORD` → `/team/dashboard` when supplied in local preview env
 
 **Route protection:**
 - `/client/*` — **public, no guard** (demo preview accessible without login)

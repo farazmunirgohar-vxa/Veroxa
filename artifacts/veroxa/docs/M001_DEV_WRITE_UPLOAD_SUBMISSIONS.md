@@ -20,6 +20,7 @@ No file bytes are transferred. No Supabase Storage is used. No service-role key 
 
 ```
 VITE_VEROXA_ENABLE_DEV_WRITES="true"
+VITE_VEROXA_DEV_WRITE_ENV="dev"
 ```
 
 Only the exact string `"true"` enables dev writes. Anything else (missing, `"false"`, `"TRUE"`, `"1"`) leaves writes disabled. Controlled by `artifacts/veroxa/src/lib/data/writeReadiness.ts`.
@@ -78,7 +79,7 @@ This must be set to the `id` of a row already seeded in `public.clients`. If it 
 
 ## Rollback instructions
 
-1. Unset or set `VITE_VEROXA_ENABLE_DEV_WRITES` to anything other than `"true"`.
+1. Unset `VITE_VEROXA_ENABLE_DEV_WRITES` or `VITE_VEROXA_DEV_WRITE_ENV`, or set either to anything other than `"true"` / `"dev"` respectively.
 2. Optionally delete inserted rows: `DELETE FROM public.upload_submissions WHERE submitted_by_label = 'client_portal';`
 3. The local workflow flow continues working without any code change.
 

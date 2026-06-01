@@ -7,7 +7,7 @@
  *
  * Every function:
  *   1. Calls `assertWritesAllowed()` first — so this code path is
- *      unreachable unless `VITE_VEROXA_ENABLE_DEV_WRITES === "true"`.
+ *      unreachable unless `VITE_VEROXA_ENABLE_DEV_WRITES === "true"`, `VITE_VEROXA_DEV_WRITE_ENV === "dev"`, and the build is non-production.
  *   2. Maps input via `writeMappers` (which sanitizes notes).
  *   3. Calls `supabase.from(...).insert(...)` or `.update(...)`.
  *   4. Returns a `WriteResult<T>`.

@@ -26,7 +26,7 @@ Local state is always updated first. The Supabase write is best-effort.
 A Supabase failure never rolls back the local status update or breaks
 the team workflow.
 
-## Dev writes only if VITE_VEROXA_ENABLE_DEV_WRITES === "true"
+## Dev writes only if both dev write flags are set in non-production
 
 Only the exact string `"true"` enables the dev write path. Default
 behavior is unchanged.

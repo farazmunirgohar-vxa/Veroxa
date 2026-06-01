@@ -6,7 +6,7 @@
  *
  * This env var is dev-only. It should NEVER be committed to any env
  * file or appear in production builds. It is only used when
- * `VITE_VEROXA_ENABLE_DEV_WRITES === "true"`.
+ * `VITE_VEROXA_ENABLE_DEV_WRITES === "true"`, `VITE_VEROXA_DEV_WRITE_ENV === "dev"`, and a non-production build.
  *
  * Why "demo-a" is not sent to Supabase:
  *   The `direction_requests.restaurant_id` column is a UUID FK

@@ -11,8 +11,9 @@
  * pick an adapter directly.
  *
  * The selection is resolved at module load. `getWriteMode()` reads
- * `VITE_VEROXA_ENABLE_DEV_WRITES` strictly (only the exact string
- * "true" enables dev writes); see `writeReadiness.ts`.
+ * `VITE_VEROXA_ENABLE_DEV_WRITES` strictly together with
+ * `VITE_VEROXA_DEV_WRITE_ENV="dev"` and non-production mode; see
+ * `writeReadiness.ts`.
  */
 
 import { devSupabaseWriteAdapter } from "./devSupabaseWriteAdapter";

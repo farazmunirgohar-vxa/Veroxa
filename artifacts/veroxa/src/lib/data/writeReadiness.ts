@@ -10,9 +10,9 @@
  *
  * M023C changes:
  *   - Read `VITE_VEROXA_ENABLE_DEV_WRITES` from import.meta.env.
- *   - Only the EXACT string "true" enables dev writes.
- *   - Anything else (missing, "false", "TRUE", "1", "yes", etc.)
- *     keeps writes disabled.
+ *   - Dev writes require the EXACT string "true", the second safety
+ *     flag `VITE_VEROXA_DEV_WRITE_ENV="dev"`, and a non-production
+ *     build. Anything else keeps writes disabled.
  *   - `WRITES_ENABLED` is no longer a literal constant — it derives
  *     from the resolved mode at module load.
  */
@@ -20,6 +20,7 @@
 export type WriteMode = "disabled" | "dev_supabase_writes";
 
 export const DEV_WRITES_ENV_FLAG = "VITE_VEROXA_ENABLE_DEV_WRITES" as const;
+export const DEV_WRITE_ENV_FLAG = "VITE_VEROXA_DEV_WRITE_ENV" as const;
 
 /**
  * Strict env flag check. Only the exact string "true" enables dev
@@ -27,7 +28,8 @@ export const DEV_WRITES_ENV_FLAG = "VITE_VEROXA_ENABLE_DEV_WRITES" as const;
  */
 export function isDevWriteFlagEnabled(): boolean {
   const raw = (import.meta.env as Record<string, unknown>)[DEV_WRITES_ENV_FLAG];
-  return raw === "true";
+  const safetyEnv = (import.meta.env as Record<string, unknown>)[DEV_WRITE_ENV_FLAG];
+  return raw === "true" && safetyEnv === "dev" && !import.meta.env.PROD;
 }
 
 function resolveCurrentWriteMode(): WriteMode {
@@ -46,6 +48,7 @@ export interface WriteReadinessStatus {
   enabled: boolean;
   mode: WriteMode;
   envFlagName: typeof DEV_WRITES_ENV_FLAG;
+  safetyEnvFlagName: typeof DEV_WRITE_ENV_FLAG;
   reason: string;
   nextStep: string;
 }
@@ -56,6 +59,7 @@ export function getWriteReadinessStatus(): WriteReadinessStatus {
       enabled: true,
       mode: "dev_supabase_writes",
       envFlagName: DEV_WRITES_ENV_FLAG,
+      safetyEnvFlagName: DEV_WRITE_ENV_FLAG,
       reason:
         "Dev Supabase metadata writes are enabled by the explicit env flag. No storage uploads, no service role.",
       nextStep:
@@ -66,9 +70,10 @@ export function getWriteReadinessStatus(): WriteReadinessStatus {
     enabled: false,
     mode: "disabled",
     envFlagName: DEV_WRITES_ENV_FLAG,
+    safetyEnvFlagName: DEV_WRITE_ENV_FLAG,
     reason: "Real writes are not enabled in this build.",
     nextStep:
-      "Set VITE_VEROXA_ENABLE_DEV_WRITES=\"true\" in a dev environment to enable the dev write adapter.",
+      "Set VITE_VEROXA_ENABLE_DEV_WRITES=\"true\" and VITE_VEROXA_DEV_WRITE_ENV=\"dev\" in a non-production dev environment to enable the dev write adapter.",
   };
 }
 
@@ -77,7 +82,7 @@ export function explainWhyWritesDisabled(): string {
     "No Supabase service role key in the frontend.",
     "No insert/update/delete/upsert calls run unless the dev flag is set.",
     "No real upload storage path connected.",
-    `Set ${DEV_WRITES_ENV_FLAG}="true" in dev to enable the dev write adapter.`,
+    `Set ${DEV_WRITES_ENV_FLAG}="true" and ${DEV_WRITE_ENV_FLAG}="dev" in non-production dev to enable the dev write adapter.`,
   ].join(" ");
 }
 
@@ -101,7 +106,7 @@ export function assertWritesDisabled(): void {
 export function assertWritesAllowed(): void {
   if (!WRITES_ENABLED || CURRENT_WRITE_MODE !== "dev_supabase_writes") {
     throw new Error(
-      `assertWritesAllowed: dev write adapter invoked while ${DEV_WRITES_ENV_FLAG} is not "true".`,
+      `assertWritesAllowed: dev write adapter invoked without ${DEV_WRITES_ENV_FLAG}="true" and ${DEV_WRITE_ENV_FLAG}="dev" in non-production.`,
     );
   }
 }
@@ -112,7 +117,7 @@ export function assertWritesAllowed(): void {
  */
 export function getWriteSafetyBanner(): string {
   if (CURRENT_WRITE_MODE === "dev_supabase_writes") {
-    return "Dev writes are enabled. Submissions may be saved to a dev Supabase project. No file uploads, no production data.";
+    return "Dev writes are enabled for a non-production dev environment. Submissions may be saved to a dev Supabase project. No file uploads, no production data.";
   }
   return "Live saving is not enabled in this build. This demo uses session/local state only.";
 }

@@ -31,6 +31,7 @@ Flow in `handleSubmitToTeam` (`src/pages/client-media.tsx`):
 
 ```
 VITE_VEROXA_ENABLE_DEV_WRITES="true"
+VITE_VEROXA_DEV_WRITE_ENV="dev"
 ```
 
 Only the exact string `"true"` enables writes (`writeReadiness.ts`). The adapter
@@ -87,7 +88,7 @@ Supabase Storage, no FormData/fetch upload, no service-role key.
 
 ## Rollback
 
-1. Unset / set `VITE_VEROXA_ENABLE_DEV_WRITES` to anything other than `"true"`.
+1. Unset / set `VITE_VEROXA_ENABLE_DEV_WRITES` or `VITE_VEROXA_DEV_WRITE_ENV` to anything other than `"true"` / `"dev"` respectively.
 2. Optionally delete test rows: `DELETE FROM public.upload_submissions WHERE submitted_by_label = 'client_portal';`
 3. The local/demo flow continues working with no code change.
 

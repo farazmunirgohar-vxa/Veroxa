@@ -14,6 +14,10 @@ interface AiDraftRequestBody {
   auditSummary?: AiAuditSummary;
 }
 
+function boundedString(value: unknown, maxLength: number): string {
+  return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
+}
+
 router.post("/audit/ai-draft", async (req, res) => {
   const body = (req.body ?? {}) as AiDraftRequestBody;
 
@@ -30,8 +34,13 @@ router.post("/audit/ai-draft", async (req, res) => {
     return;
   }
 
+  const restaurantProfile = {
+    ...body.restaurantProfile,
+    restaurantName: boundedString(body.restaurantProfile.restaurantName, 200),
+  };
+
   const result = await generateAiAuditDraft({
-    restaurantProfile: body.restaurantProfile,
+    restaurantProfile,
     growthReportSections: Array.isArray(body.growthReportSections)
       ? body.growthReportSections
       : [],
