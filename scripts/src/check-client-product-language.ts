@@ -9,6 +9,7 @@ const clientFiles = [
   "artifacts/veroxa/src/pages/client-requests.tsx",
   "artifacts/veroxa/src/pages/client-reports.tsx",
   "artifacts/veroxa/src/pages/client-updates.tsx",
+  "artifacts/veroxa/src/pages/client-ai-draft-preview.tsx",
   "artifacts/veroxa/src/components/client/ClientMediaTracker.tsx",
 ];
 

@@ -23,6 +23,26 @@ const requiredRoutes = [
   "/client/requests",
   "/client/reports",
   "/team/dashboard",
+  "/team/upload-inbox",
+  "/team/work-queue",
+  "/team/direction-queue",
+  "/team/report-queue",
+  "/team/audit-leads",
+  "/team/approval-queue",
+  "/team/visibility-audit",
+  "/team/first-client-readiness",
+];
+
+const teamRoutes = [
+  "dashboard",
+  "upload-inbox",
+  "work-queue",
+  "direction-queue",
+  "report-queue",
+  "audit-leads",
+  "approval-queue",
+  "visibility-audit",
+  "first-client-readiness",
 ];
 
 const failures: string[] = [];
@@ -31,12 +51,14 @@ for (const route of requiredRoutes) {
   if (!pattern.test(app)) failures.push(`Missing route smoke coverage target in App.tsx: ${route}`);
 }
 
-const teamDashboardBlock = app.match(/<Route path="\/team\/dashboard">[\s\S]*?<\/Route>/)?.[0] ?? "";
-if (!teamDashboardBlock.includes("InternalDemoGuard") || !teamDashboardBlock.includes('role="team"')) {
-  failures.push("/team/dashboard must remain wrapped by InternalDemoGuard role=team.");
-}
-if (!teamDashboardBlock.includes("RealPortalDataBoundary")) {
-  failures.push("/team/dashboard must remain wrapped by RealPortalDataBoundary.");
+for (const route of teamRoutes) {
+  const block = app.match(new RegExp(`<Route path="\/team\/${route}">[\\s\\S]*?<\/Route>`))?.[0] ?? "";
+  if (!block.includes("InternalDemoGuard") || !block.includes('role="team"')) {
+    failures.push(`/team/${route} must remain wrapped by InternalDemoGuard role=team.`);
+  }
+  if (!block.includes("RealPortalDataBoundary")) {
+    failures.push(`/team/${route} must remain wrapped by RealPortalDataBoundary.`);
+  }
 }
 
 const clientRoutes = ["dashboard", "media", "updates", "requests", "reports"];
