@@ -26,33 +26,26 @@ export type ClientRequestStatus =
   | "Handled"
   | "Waiting for you";
 
-export function toClientRequestStatus(status: string): ClientRequestStatus {
+export function getClientRequestStatus(status: string): ClientRequestStatus {
   const value = status.toLowerCase();
   if (
     value.includes("done") ||
     value.includes("complete") ||
-    value.includes("posted") ||
-    value.includes("handled") ||
-    value.includes("included")
-  ) {
+    value.includes("posted")
+  )
     return "Handled";
-  }
   if (
     value.includes("blocked") ||
     value.includes("client") ||
-    value.includes("waiting") ||
-    value.includes("needs your input")
-  ) {
+    value.includes("waiting")
+  )
     return "Waiting for you";
-  }
   if (
     value.includes("progress") ||
     value.includes("review") ||
-    value.includes("prepar") ||
-    value.includes("ready")
-  ) {
+    value.includes("accepted")
+  )
     return "In Review";
-  }
   return "Received";
 }
 

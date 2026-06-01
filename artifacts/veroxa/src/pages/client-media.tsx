@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ClientMediaTracker } from "@/components/client/ClientMediaTracker";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
+import { ClientMediaTracker } from "@/components/client/ClientMediaTracker";
 import {
   RealPortalReviewNotice,
   SafePortalEmptyCard,
@@ -174,6 +175,10 @@ export default function ClientMedia() {
   const uploadedMedia = mediaItems.filter((item) => item.source === "upload");
   const readyMedia = mediaItems.filter((item) => item.source === "ready");
   const postedMedia = mediaItems.filter((item) => item.source === "posted");
+  const selectedMedia =
+    mediaItems.find((item) => item.id === selectedMediaId) ??
+    mediaItems[0] ??
+    null;
 
   const handleSubmitToTeam = async () => {
     if (files.length === 0) return;
@@ -215,7 +220,7 @@ export default function ClientMedia() {
     setDirection("");
     setPickerMessage(null);
     setSubmitMessage(
-      "Received. Veroxa can review this session item here and will follow up if anything else is needed.",
+      "Added to this demo session. No file storage is connected yet; Veroxa can review this session item here.",
     );
 
     const devClientId =
@@ -257,15 +262,15 @@ export default function ClientMedia() {
 
     if (results.some((result) => result === "failed")) {
       setSubmitMessage(
-        "Received in this session. The media note could not be saved for later review; please try again if needed.",
+        "Added to this demo session. Could not save the media note to the dev database; please try again.",
       );
     } else if (results.some((result) => result === "saved")) {
       setSubmitMessage(
-        "Received by Veroxa for review. File storage is not connected yet, so this session keeps the tracker visible here.",
+        "Received by Veroxa and saved for this dev review session. No file storage is connected yet.",
       );
     } else if (results.every((result) => result === "duplicate-skipped")) {
       setSubmitMessage(
-        "Already received in this browser session. No duplicate item was created.",
+        "Already submitted in this browser session. No duplicate dev save was created.",
       );
     }
   };
@@ -434,6 +439,66 @@ export default function ClientMedia() {
         </CardContent>
       </Card>
 
+      <Card
+        className="border-primary/20 bg-card"
+        data-testid="card-media-detail"
+      >
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Media detail tracker</CardTitle>
+          <p className="text-xs text-muted-foreground">
+            Click any media item below to see where it is in the Veroxa review
+            path.
+          </p>
+        </CardHeader>
+        <CardContent>
+          {selectedMedia ? (
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p
+                    className="text-sm font-semibold"
+                    data-testid="selected-media-name"
+                  >
+                    {selectedMedia.name}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {selectedMedia.description}
+                  </p>
+                </div>
+                <MediaStatusBadge status={selectedMedia.status} />
+              </div>
+              {(selectedMedia.note || selectedMedia.direction) && (
+                <div className="grid gap-2 md:grid-cols-2">
+                  {selectedMedia.note && (
+                    <div className="rounded-md border border-border bg-muted/20 p-3">
+                      <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                        Note
+                      </p>
+                      <p className="mt-1 text-sm">{selectedMedia.note}</p>
+                    </div>
+                  )}
+                  {selectedMedia.direction && (
+                    <div className="rounded-md border border-border bg-muted/20 p-3">
+                      <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                        Direction
+                      </p>
+                      <p className="mt-1 text-sm">{selectedMedia.direction}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+              <ClientMediaTracker status={selectedMedia.status} />
+            </div>
+          ) : (
+            <SafePortalEmptyCard
+              title="Media tracker"
+              body="Upload media or check back after Veroxa has reviewed your items."
+              testId="empty-media-detail"
+            />
+          )}
+        </CardContent>
+      </Card>
+
       <MediaDetailCard item={selectedMedia} />
 
       <div className="grid gap-4 lg:grid-cols-3">
@@ -441,21 +506,21 @@ export default function ClientMedia() {
           title="Uploaded Media"
           items={uploadedMedia}
           empty="New uploads and items waiting for review appear here."
-          selectedId={selectedMedia?.id ?? null}
+          selectedId={selectedMediaId}
           onSelect={setSelectedMediaId}
         />
         <MediaSection
           title="Ready Media"
           items={readyMedia}
           empty="Reviewed media that is ready or scheduled appears here."
-          selectedId={selectedMedia?.id ?? null}
+          selectedId={selectedMediaId}
           onSelect={setSelectedMediaId}
         />
         <MediaSection
           title="Posted Media"
           items={postedMedia}
           empty="Posted or already-used media appears here."
-          selectedId={selectedMedia?.id ?? null}
+          selectedId={selectedMediaId}
           onSelect={setSelectedMediaId}
         />
       </div>

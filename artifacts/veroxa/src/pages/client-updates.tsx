@@ -8,32 +8,27 @@ import { RealPortalReviewNotice } from "@/components/RealPortalSafeStates";
 import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary";
 import { useActiveClientPortalContext } from "@/lib/clientPortalContext";
 import { clientTeamWorkRepository } from "@/lib/repositories";
-import { normalizeClientMediaDisplayStatus } from "@/lib/clientMediaLifecycle";
+import {
+  normalizeClientMediaDisplayStatus,
+  type ClientMediaDisplayStatus,
+} from "@/lib/clientMediaLifecycle";
 
-type SimpleStatus =
-  | "Reviewed"
-  | "Ready"
-  | "Scheduled"
-  | "Posted"
-  | "Waiting for you";
+type LaneKey = "Reviewed" | "Ready" | "Scheduled" | "Posted";
 
-const statusTone: Record<SimpleStatus, string> = {
+const laneTone: Record<LaneKey, string> = {
   Reviewed: "border-sky-500/30 bg-sky-500/10 text-sky-300",
   Ready: "border-primary/30 bg-primary/10 text-primary",
   Scheduled: "border-violet-500/30 bg-violet-500/10 text-violet-300",
   Posted: "border-emerald-500/30 bg-emerald-500/10 text-emerald-300",
-  "Waiting for you": "border-amber-500/30 bg-amber-500/10 text-amber-300",
 };
 
-function toSimpleStatus(input: string): SimpleStatus {
+function toProgressLane(input: string): LaneKey | null {
   const status = normalizeClientMediaDisplayStatus(input);
   if (status === "Posted" || status === "Already used") return "Posted";
   if (status === "Scheduled") return "Scheduled";
   if (status === "Ready") return "Ready";
-  if (status === "Needs better media" || status === "Waiting for direction") {
-    return "Waiting for you";
-  }
-  return "Reviewed";
+  if (status === "Reviewed") return "Reviewed";
+  return null;
 }
 
 type MediaProgressItem = {
@@ -55,21 +50,15 @@ export default function ClientUpdates() {
 
   const mediaUpdates: MediaProgressItem[] = submissions
     .filter((item) => item.submissionType === "media")
-    .slice(0, 8)
     .map((item) => ({
       id: item.id,
       title: item.title,
       note: item.clientVisibleNote,
-      status: toSimpleStatus(item.status),
+      status: normalizeClientMediaDisplayStatus(item.status),
+      lane: toProgressLane(item.status),
     }));
 
-  const grouped = {
-    Reviewed: mediaUpdates.filter((item) => item.status === "Reviewed"),
-    Ready: mediaUpdates.filter((item) => item.status === "Ready"),
-    Scheduled: mediaUpdates.filter((item) => item.status === "Scheduled"),
-    Posted: mediaUpdates.filter((item) => item.status === "Posted"),
-  };
-
+  const lanes: LaneKey[] = ["Reviewed", "Ready", "Scheduled", "Posted"];
   const waitingItems = canUseFixtureData
     ? clientTeamWorkRepository
         .getClientActionRequiredItems(activeClientId!)
@@ -88,8 +77,8 @@ export default function ClientUpdates() {
           Updates
         </h2>
         <p className="mt-1 max-w-2xl text-sm md:text-base text-muted-foreground">
-          A simple progress lane for media reviewed, ready, scheduled, posted,
-          and anything Veroxa needs from you.
+          A simple progress lane for reviewed, ready, scheduled, and posted
+          media. Reports stay in the Reports tab.
         </p>
       </div>
 
@@ -98,31 +87,25 @@ export default function ClientUpdates() {
         data-testid="card-media-progress"
       >
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <ImageIcon className="h-4 w-4 text-primary" /> Media progress lane
+          <CardTitle className="flex flex-wrap items-center justify-between gap-2 text-base">
+            <span className="flex items-center gap-2">
+              <ImageIcon className="h-4 w-4 text-primary" /> Media progress
+            </span>
+            <Link
+              href="/client/media"
+              className="text-xs font-normal text-primary hover:underline"
+            >
+              Open Media
+            </Link>
           </CardTitle>
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <ProgressLane
-            title="Reviewed"
-            items={grouped.Reviewed}
-            empty="Reviewed items will appear here."
-          />
-          <ProgressLane
-            title="Ready"
-            items={grouped.Ready}
-            empty="Ready media will appear here."
-          />
-          <ProgressLane
-            title="Scheduled"
-            items={grouped.Scheduled}
-            empty="Scheduled items will appear here."
-          />
-          <ProgressLane
-            title="Posted"
-            items={grouped.Posted}
-            empty="Posted media will appear here."
-          />
+          {lanes.map((lane) => {
+            const items = mediaUpdates
+              .filter((item) => item.lane === lane)
+              .slice(0, 3);
+            return <ProgressLane key={lane} lane={lane} items={items} />;
+          })}
         </CardContent>
       </Card>
 
@@ -173,36 +156,41 @@ export default function ClientUpdates() {
 }
 
 function ProgressLane({
-  title,
+  lane,
   items,
-  empty,
 }: {
-  title: SimpleStatus;
-  items: MediaProgressItem[];
-  empty: string;
+  lane: LaneKey;
+  items: Array<{
+    id: string;
+    title: string;
+    note: string;
+    status: ClientMediaDisplayStatus;
+  }>;
 }) {
   return (
     <div
-      className="rounded-md border border-border bg-muted/10 p-3"
-      data-testid={`lane-${title.toLowerCase()}`}
+      className="rounded-lg border border-border bg-muted/10 p-3"
+      data-testid={`progress-lane-${lane.toLowerCase()}`}
     >
       <div className="mb-2 flex items-center justify-between gap-2">
-        <p className="text-sm font-semibold">{title}</p>
-        <Badge variant="outline" className={`text-[10px] ${statusTone[title]}`}>
+        <p className="text-sm font-semibold">{lane}</p>
+        <Badge variant="outline" className={`text-[10px] ${laneTone[lane]}`}>
           {items.length}
         </Badge>
       </div>
       {items.length === 0 ? (
-        <p className="text-xs text-muted-foreground">{empty}</p>
+        <p className="text-xs text-muted-foreground">
+          No media in this step yet.
+        </p>
       ) : (
         <div className="space-y-2">
           {items.map((item) => (
             <div
               key={item.id}
-              className="rounded-md border border-border bg-card/70 px-3 py-2"
+              className="rounded-md border border-border/70 bg-card/60 p-2"
               data-testid={`update-row-${item.id}`}
             >
-              <p className="truncate text-sm font-medium">{item.title}</p>
+              <p className="line-clamp-1 text-sm font-medium">{item.title}</p>
               <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
                 {item.note}
               </p>

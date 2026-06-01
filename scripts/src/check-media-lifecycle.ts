@@ -26,17 +26,58 @@ if (missing.length > 0) {
   failures.push(`Missing client media lifecycle labels: ${missing.join(", ")}`);
 }
 
-const clientMediaSource = readFileSync(join(root, "artifacts/veroxa/src/pages/client-media.tsx"), "utf8");
-for (const forbidden of ["Uploaded. Veroxa has your media", "uploaded successfully", "upload successful"]) {
+const clientMediaSource = readFileSync(
+  join(root, "artifacts/veroxa/src/pages/client-media.tsx"),
+  "utf8",
+);
+for (const forbidden of [
+  "Uploaded. Veroxa has your media",
+  "uploaded successfully",
+  "upload successful",
+]) {
   if (clientMediaSource.toLowerCase().includes(forbidden.toLowerCase())) {
-    failures.push(`Client media upload copy overpromises storage/persistence: ${forbidden}`);
+    failures.push(
+      `Client media upload copy overpromises storage/persistence: ${forbidden}`,
+    );
   }
 }
-if (!/file storage is not connected yet|No file storage is connected yet/i.test(clientMediaSource)) {
-  failures.push("Client media page must clearly avoid implying cloud file storage is connected.");
+if (!clientMediaSource.includes("No file storage is connected yet")) {
+  failures.push(
+    "Client media page must clearly avoid implying cloud file storage is connected.",
+  );
 }
-if (!clientMediaSource.includes("buildClientSubmissionKey") || !clientMediaSource.includes("duplicate-skipped")) {
-  failures.push("Client media dev write path must include simple duplicate retry protection.");
+if (
+  !clientMediaSource.includes("buildClientSubmissionKey") ||
+  !clientMediaSource.includes("duplicate-skipped")
+) {
+  failures.push(
+    "Client media dev write path must include simple duplicate retry protection.",
+  );
+}
+
+const activeClientFiles = [
+  "artifacts/veroxa/src/pages/client-media.tsx",
+  "artifacts/veroxa/src/pages/client-updates.tsx",
+  "artifacts/veroxa/src/components/client/ClientMediaTracker.tsx",
+];
+for (const rel of activeClientFiles) {
+  const text = readFileSync(join(root, rel), "utf8");
+  for (const forbidden of [
+    "Submitted",
+    "Prepared by Veroxa",
+    "Included in report",
+  ]) {
+    if (text.includes(forbidden)) {
+      failures.push(
+        `${rel} must not reintroduce old active client media lifecycle label: ${forbidden}`,
+      );
+    }
+  }
+}
+if (!clientMediaSource.includes("ClientMediaTracker")) {
+  failures.push(
+    "Client media page must include the client-safe media detail tracker.",
+  );
 }
 
 if (failures.length > 0) {

@@ -35,10 +35,34 @@ function upsertMeta(selector: string, attributes: Record<string, string>) {
   };
 }
 
+function setManagedMeta(selector: string, attributes: Record<string, string>): () => void {
+  const existing = document.head.querySelector<HTMLMetaElement>(selector);
+  const element = existing ?? document.createElement("meta");
+  const previousAttributes = new Map<string, string | null>();
+
+  for (const [name, value] of Object.entries(attributes)) {
+    previousAttributes.set(name, element.getAttribute(name));
+    element.setAttribute(name, value);
+  }
+
+  if (!existing) document.head.appendChild(element);
+
+  return () => {
+    if (!existing) {
+      element.remove();
+      return;
+    }
+    for (const [name, value] of previousAttributes) {
+      if (value === null) element.removeAttribute(name);
+      else element.setAttribute(name, value);
+    }
+  };
+}
+
 /**
  * Lightweight per-page document metadata hook.
  *
- * Sets `document.title`, description, and text-only Open Graph/Twitter preview
+ * Sets `document.title`, search description, and text-only Open Graph/Twitter
  * metadata while the page is mounted, restoring previous values on unmount. No
  * external SEO dependency and no generated image requirement.
  */
@@ -53,46 +77,36 @@ export function useDocumentMeta({
     document.title = title;
 
     const cleanups: Array<() => void> = [];
-    const previewTitle = socialTitle ?? title;
-    const previewDescription = socialDescription ?? description;
-
-    cleanups.push(
-      upsertMeta('meta[property="og:title"]', {
-        property: "og:title",
-        content: previewTitle,
-      }),
-      upsertMeta('meta[property="og:type"]', {
-        property: "og:type",
-        content: "website",
-      }),
-      upsertMeta('meta[name="twitter:card"]', {
-        name: "twitter:card",
-        content: "summary",
-      }),
-      upsertMeta('meta[name="twitter:title"]', {
-        name: "twitter:title",
-        content: previewTitle,
-      }),
-    );
 
     if (description !== undefined) {
       cleanups.push(
-        upsertMeta('meta[name="description"]', {
+        setManagedMeta('meta[name="description"]', {
           name: "description",
           content: description,
         }),
-      );
-    }
-
-    if (previewDescription !== undefined) {
-      cleanups.push(
-        upsertMeta('meta[property="og:description"]', {
-          property: "og:description",
-          content: previewDescription,
+        setManagedMeta('meta[property="og:title"]', {
+          property: "og:title",
+          content: title,
         }),
-        upsertMeta('meta[name="twitter:description"]', {
+        setManagedMeta('meta[property="og:description"]', {
+          property: "og:description",
+          content: description,
+        }),
+        setManagedMeta('meta[property="og:type"]', {
+          property: "og:type",
+          content: "website",
+        }),
+        setManagedMeta('meta[name="twitter:card"]', {
+          name: "twitter:card",
+          content: "summary",
+        }),
+        setManagedMeta('meta[name="twitter:title"]', {
+          name: "twitter:title",
+          content: title,
+        }),
+        setManagedMeta('meta[name="twitter:description"]', {
           name: "twitter:description",
-          content: previewDescription,
+          content: description,
         }),
       );
     }
