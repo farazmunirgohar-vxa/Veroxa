@@ -1,93 +1,39 @@
-import {
-  ChevronRight,
-  TrendingUp,
-  Star,
-  BarChart2,
-  CalendarDays,
-  CheckCircle2,
-} from "lucide-react";
+import { CalendarDays, CheckCircle2, FileText, TrendingUp } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientPortalData } from "@/hooks/useClientPortalData";
-import { ClientReportsProgress } from "@/components/ClientExecutionReinforcement";
-import { ClientVisibilityProgressCard } from "@/components/ClientVisibilityProgressCard";
-import { generateClientMonthlyReport } from "@/domain/clientPortalJourney";
-import { DataSourceBadge } from "@/components/DataSourceBadge";
 import {
-  RealPortalReviewNotice,
-  SafePortalEmptyCard,
-} from "@/components/RealPortalSafeStates";
+  generateClientMonthlyReport,
+  generateClientWeeklyUpdate,
+} from "@/domain/clientPortalJourney";
+import { DataSourceBadge } from "@/components/DataSourceBadge";
+import { RealPortalReviewNotice } from "@/components/RealPortalSafeStates";
 import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary";
 import { ClientOperationalCard } from "@/components/client/ClientOperationalSpine";
 import {
   getCurrentClientAccount,
-  getClientReportWorkflow
+  getClientReportWorkflow,
 } from "@/lib/operations";
-import { useEffect, useState } from "react";
-import {
-  getClientWorkflowItems,
-  subscribeToWorkflow,
-} from "@/lib/workflow/workflowRepository";
-import type { WorkflowItem } from "@/lib/workflow/workflowTypes";
 
 const SHOWCASE_ID = "demo-a";
 
-function useReportEligibleItems(clientId: string): WorkflowItem[] {
-  const [items, setItems] = useState<WorkflowItem[]>(() =>
-    getClientWorkflowItems(clientId),
-  );
-  useEffect(() => {
-    const refresh = () => setItems(getClientWorkflowItems(clientId));
-    refresh();
-    return subscribeToWorkflow(refresh);
-  }, [clientId]);
-  return items.filter(
-    (i) =>
-      i.clientVisibleStatus === "Completed" ||
-      i.clientVisibleStatus === "Included in report",
+function ReportList({ items }: { items: string[] }) {
+  return (
+    <div className="space-y-2">
+      {items.map((item) => (
+        <div
+          key={item}
+          className="flex items-start gap-2 text-sm text-muted-foreground"
+        >
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 flex-shrink-0" />
+          <span>{item}</span>
+        </div>
+      ))}
+    </div>
   );
 }
-
-const EXTRA_CARDS = [
-  {
-    id: "weekly",
-    icon: CalendarDays,
-    title: "Weekly update",
-    status: "Available",
-    statusClass: "bg-emerald-500/10 text-emerald-400",
-    lines: [
-      "Weekly progress is summarized in plain language.",
-      "Client input needs are highlighted when needed.",
-      "Local visibility progress is included safely.",
-    ],
-  },
-  {
-    id: "content",
-    icon: Star,
-    title: "Media and content",
-    status: "In progress",
-    statusClass: "bg-primary/10 text-primary",
-    lines: [
-      "Fresh media helps upcoming content.",
-      "Prepared content is reviewed before anything goes live.",
-      "More content needs appear clearly when helpful.",
-    ],
-  },
-  {
-    id: "consistency",
-    icon: BarChart2,
-    title: "Next focus",
-    status: "Planned",
-    statusClass: "bg-muted text-muted-foreground",
-    lines: [
-      "Local visibility improvement opportunities.",
-      "Review response support.",
-      "Business details confirmation when needed.",
-    ],
-  },
-];
 
 export default function ClientReports() {
   const { source, dataSourceMessage } = useClientPortalData();
@@ -96,11 +42,8 @@ export default function ClientReports() {
     portalDataMode.allowDemoFixtures || portalDataMode.isLiveDataConnected;
   const reviewAccount = getCurrentClientAccount();
   const reviewReport = getClientReportWorkflow(reviewAccount.id);
-  const monthlyReport = canUseFixtureData
-    ? generateClientMonthlyReport(SHOWCASE_ID)
-    : null;
-  const fixtureReportItems = useReportEligibleItems(SHOWCASE_ID);
-  const reportItems = canUseFixtureData ? fixtureReportItems : [];
+  const weeklyReport = generateClientWeeklyUpdate(SHOWCASE_ID);
+  const monthlyReport = generateClientMonthlyReport(SHOWCASE_ID);
 
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
@@ -108,8 +51,18 @@ export default function ClientReports() {
       {!canUseFixtureData && (
         <ClientOperationalCard title="Report status">
           <p>{reviewReport.clientVisibleMessage}</p>
-          <p>Weekly update: <span className="text-foreground">{reviewReport.weeklyUpdateStatus.replaceAll("_", " ")}</span></p>
-          <p>Monthly report: <span className="text-foreground">{reviewReport.monthlyReportStatus.replaceAll("_", " ")}</span></p>
+          <p>
+            Weekly update:{" "}
+            <span className="text-foreground">
+              {reviewReport.weeklyUpdateStatus.replaceAll("_", " ")}
+            </span>
+          </p>
+          <p>
+            Monthly report:{" "}
+            <span className="text-foreground">
+              {reviewReport.monthlyReportStatus.replaceAll("_", " ")}
+            </span>
+          </p>
         </ClientOperationalCard>
       )}
 
@@ -121,155 +74,135 @@ export default function ClientReports() {
           Reports
         </h2>
         <p className="text-muted-foreground mt-1 text-sm md:text-base">
-          Your performance reports — weekly updates, monthly summaries, and top
-          content.
+          Weekly and monthly summaries. No live performance metrics are shown
+          until they are available.
         </p>
         <DataSourceBadge source={source} message={dataSourceMessage} />
       </div>
 
-      {/* Your progress at a glance — plain-language, no invented metrics. */}
-      {canUseFixtureData ? (
-        <>
-          <div className="mb-4">
-            <ClientReportsProgress clientId={SHOWCASE_ID} />
-          </div>
-          <div className="mb-4">
-            <ClientVisibilityProgressCard clientId={SHOWCASE_ID} />
-          </div>
-        </>
-      ) : (
-        <div className="grid gap-4 mb-4 md:grid-cols-2">
-          <SafePortalEmptyCard
-            title="Reports in review"
-            body="Monthly and weekly report data will appear here after live account data is prepared."
-            testId="empty-reports-in-review"
-          />
-          <SafePortalEmptyCard
-            title="Visibility reporting not connected yet"
-            body="Google Maps and local search progress will stay empty until the live account is connected."
-            testId="empty-visibility-reporting"
-          />
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Monthly report foundation — client-safe local journey data. */}
+      <div className="grid gap-4 lg:grid-cols-2">
         <Card
-          className="bg-card border-border hover:border-primary/30 transition-colors cursor-pointer"
-          data-testid="monthly-report-preview"
+          className="bg-card border-border"
+          data-testid="weekly-reports-section"
         >
           <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-primary" />
-                <CardTitle className="text-base">
-                  {monthlyReport?.monthLabel ?? "Monthly"} Report
-                </CardTitle>
-              </div>
+            <div className="flex items-start justify-between gap-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <CalendarDays className="w-4 h-4 text-primary" /> Weekly Reports
+              </CardTitle>
               <Badge
                 variant="outline"
-                className="border-none text-xs bg-primary/10 text-primary"
+                className="border-primary/30 bg-primary/10 text-primary text-[10px]"
               >
-                Prepared by Veroxa
+                {weeklyReport.weekLabel}
               </Badge>
             </div>
           </CardHeader>
-          <CardContent className="space-y-2 text-sm text-muted-foreground">
-            {[
-              monthlyReport?.executiveSummary ??
-                "Live account reporting is being prepared.",
-              monthlyReport?.visibilityProgress.nextVisibilityAction ??
-                "Local visibility reporting will appear after setup.",
-              monthlyReport?.mediaAndContentSummary[0] ??
-                "Media and content summaries will appear here.",
-              monthlyReport?.reviewReputationSummary[0] ??
-                "Review and reputation notes will appear after setup.",
-            ].map((line) => (
-              <div key={line} className="flex items-start gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 flex-shrink-0" />
-                <span>{line}</span>
-              </div>
-            ))}
-            <div className="pt-3 border-t border-border/50 flex items-center justify-between text-xs font-semibold text-primary">
-              View full report <ChevronRight className="w-3.5 h-3.5" />
-            </div>
+          <CardContent className="space-y-5">
+            <section>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                Work completed
+              </h3>
+              <ReportList items={weeklyReport.completedWork.slice(0, 4)} />
+            </section>
+            <section>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                Media used or posted
+              </h3>
+              <ReportList items={weeklyReport.contentProgress.slice(0, 3)} />
+            </section>
+            <section>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                Scheduled or next
+              </h3>
+              <ReportList items={weeklyReport.nextWeekFocus.slice(0, 3)} />
+            </section>
+            <section>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                What Veroxa needs from you
+              </h3>
+              <ReportList items={weeklyReport.needsClientInput.slice(0, 3)} />
+            </section>
+            <section className="rounded-md border border-border bg-muted/20 p-3">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+                Local visibility note
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {weeklyReport.visibilityProgress[0]}
+              </p>
+            </section>
           </CardContent>
         </Card>
 
-        {/* Supplementary report cards */}
-        {EXTRA_CARDS.map((card) => (
-          <Card
-            key={card.id}
-            className="bg-card/60 border-border hover:border-primary/30 transition-colors"
-            data-testid={`report-card-${card.id}`}
-          >
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <card.icon className="h-4 w-4 text-primary" />
-                  <CardTitle className="text-base">{card.title}</CardTitle>
-                </div>
-                <Badge
-                  variant="outline"
-                  className={`border-none text-xs ${card.statusClass}`}
-                >
-                  {card.status}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm text-muted-foreground">
-              {card.lines.map((line) => (
-                <div key={line} className="flex items-start gap-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 flex-shrink-0" />
-                  <span>{line}</span>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Work that's ready for your report — driven by the real workflow
-          foundation. We show completed items honestly; performance metrics
-          stay blank until account reporting is active (no invented numbers). */}
-      {reportItems.length > 0 && (
         <Card
-          className="bg-card border-emerald-500/20 mt-4"
-          data-testid="card-report-ready-items"
+          className="bg-card border-primary/20"
+          data-testid="monthly-reports-section"
         >
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              Ready for your report ({reportItems.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {reportItems.map((item) => (
-              <div
-                key={item.workflowItemId}
-                className="flex items-center justify-between gap-3 rounded-md border border-border bg-muted/20 px-3 py-2"
-                data-testid={`report-item-${item.workflowItemId}`}
+            <div className="flex items-start justify-between gap-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-primary" /> Monthly Reports
+              </CardTitle>
+              <Badge
+                variant="outline"
+                className="border-primary/30 bg-primary/10 text-primary text-[10px]"
               >
-                <p className="text-sm font-medium leading-snug">{item.title}</p>
-                <Badge
-                  variant="outline"
-                  className="text-[9px] border-emerald-500/30 bg-emerald-500/10 text-emerald-300 flex-shrink-0"
-                >
-                  {item.clientVisibleStatus}
-                </Badge>
-              </div>
-            ))}
-            <p className="text-[10px] text-muted-foreground italic pt-1">
-              Performance data will appear here once your account reporting is
-              active.
-            </p>
+                {monthlyReport.monthLabel}
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            <section>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                Summary of improvements
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {monthlyReport.executiveSummary}
+              </p>
+            </section>
+            <section>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                Posts completed
+              </h3>
+              <ReportList items={monthlyReport.completedWork.slice(0, 4)} />
+            </section>
+            <section>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                Top content
+              </h3>
+              <ReportList
+                items={monthlyReport.mediaAndContentSummary.slice(0, 3)}
+              />
+            </section>
+            <section className="rounded-md border border-border bg-muted/20 p-3">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+                Google/local visibility progress
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {monthlyReport.visibilityProgress.nextVisibilityAction}
+              </p>
+            </section>
+            <section>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                Next month focus
+              </h3>
+              <ReportList items={monthlyReport.nextMonthFocus.slice(0, 4)} />
+            </section>
+            <section>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                Limitations / what still needs work
+              </h3>
+              <ReportList
+                items={monthlyReport.pendingClientInput.slice(0, 3)}
+              />
+            </section>
           </CardContent>
         </Card>
-      )}
+      </div>
 
-      <p className="mt-4 text-center text-[11px] text-muted-foreground">
-        Items marked ready reflect your account activity. Performance metrics
-        will appear once reporting is active.
+      <p className="mt-4 text-center text-[11px] text-muted-foreground flex items-center justify-center gap-1">
+        <FileText className="w-3 h-3" /> Reports stay plain-language and only
+        include available work.
       </p>
     </PortalLayout>
   );

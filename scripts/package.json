@@ -10,7 +10,8 @@
     "check-pricing-drift": "tsx ./src/check-pricing-drift.ts",
     "check-portal-separation": "tsx ./src/check-portal-separation.ts",
     "check-business-guardrails": "tsx ./src/check-business-guardrails.ts",
-    "check-first-client-readiness": "tsx ./src/check-first-client-readiness.ts"
+    "check-first-client-readiness": "tsx ./src/check-first-client-readiness.ts",
+    "check-media-lifecycle": "tsx ./src/check-media-lifecycle.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",

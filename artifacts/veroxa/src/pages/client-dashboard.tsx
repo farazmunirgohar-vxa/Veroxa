@@ -2,27 +2,43 @@ import {
   ArrowRight,
   Bell,
   CheckCircle2,
-  ClipboardList,
   FileText,
   Images,
-  Send,
+  MessageSquare,
   UploadCloud,
 } from "lucide-react";
 import { Link } from "wouter";
 import { PortalLayout } from "@/components/PortalLayout";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientPortalData } from "@/hooks/useClientPortalData";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
 import { RealPortalReviewNotice } from "@/components/RealPortalSafeStates";
 import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary";
-import { demoClientTeamWorkflow } from "@/data/workflows/clientTeamWorkflow";
-import { getClientActionNeededItems } from "@/lib/workflows/workflowStatus";
+import { ClientPortalEmptyState } from "@/components/client/ClientPortalEmptyState";
+import { ClientOperationalStatusGrid } from "@/components/client/ClientOperationalSpine";
 import {
   getClientMediaStatus,
   getCurrentClientAccount,
+  getClientContentWorkflow,
+  getClientReportWorkflow,
+  getClientRiskStatus,
+  getClientPremiumReadiness,
+  getClientPlan,
 } from "@/lib/operations";
+import { clientTeamWorkRepository } from "@/lib/repositories";
+import { generateClientWeeklyUpdate } from "@/domain/clientPortalJourney";
+import { normalizeClientMediaDisplayStatus } from "@/lib/clientMediaLifecycle";
+
+function getCurrentPeriodLabel(): string {
+  const now = new Date();
+  const month = now.toLocaleString("en-US", { month: "long" });
+  const year = now.getFullYear();
+  const week = Math.ceil(now.getDate() / 7);
+  return `${month} ${year} — Week ${week}`;
+}
 
 export default function ClientDashboard() {
   const { loading, data, source, dataSourceMessage } = useClientPortalData();
@@ -32,218 +48,259 @@ export default function ClientDashboard() {
 
   const reviewAccount = getCurrentClientAccount();
   const reviewMedia = getClientMediaStatus(reviewAccount.id);
+  const reviewPlan = getClientPlan(reviewAccount.id);
+  const reviewContent = getClientContentWorkflow(reviewAccount.id);
+  const reviewReport = getClientReportWorkflow(reviewAccount.id);
+  const reviewRisk = getClientRiskStatus(reviewAccount.id);
+  const reviewPremium = getClientPremiumReadiness(reviewAccount.id);
 
-  // Public demo is a single self-contained preview: keep every link inside it.
   const demoSafeClientHref = portalDataMode.isPublicDemoRoute
     ? "/demo/client/dashboard"
     : null;
-  const uploadHref = demoSafeClientHref ?? "/client/media";
 
-  const businessName = canUseFixtureData
-    ? loading
-      ? "Restaurant Portal"
-      : data.businessName
-    : reviewAccount.businessName;
-
-  // Honest media snapshot — derived only from existing fixture/review data.
-  const mediaStats = canUseFixtureData
-    ? [
-        {
-          label: "Uploaded Media",
-          value: loading ? "—" : String(data.mediaAssetsCount),
-          icon: Images,
-        },
-        {
-          label: "Ready Media",
-          value: loading ? "—" : String(data.scheduledPosts.length),
-          icon: CheckCircle2,
-        },
-        {
-          label: "Posted Media",
-          value: loading ? "—" : String(data.monthlyReportPreview.postsPublished),
-          icon: Send,
-        },
-      ]
-    : [
-        {
-          label: "Uploaded Media",
-          value: String(reviewMedia.usableMediaCount + reviewMedia.pendingReviewCount),
-          icon: Images,
-        },
-        {
-          label: "Ready Media",
-          value: String(reviewMedia.usableMediaCount),
-          icon: CheckCircle2,
-        },
-        { label: "Posted Media", value: "0", icon: Send },
-      ];
+  const mediaItems = canUseFixtureData
+    ? clientTeamWorkRepository
+        .getClientVisibleSubmissions("demo-a")
+        .filter((item) => item.submissionType === "media")
+    : [];
+  const latestMedia = mediaItems[0];
+  const latestMediaStatus = latestMedia
+    ? normalizeClientMediaDisplayStatus(
+        latestMedia.status === "blocked"
+          ? "Needs better media"
+          : latestMedia.status,
+      )
+    : "Uploaded";
 
   const openClientActions = canUseFixtureData
-    ? getClientActionNeededItems(demoClientTeamWorkflow, "demo-a")
+    ? clientTeamWorkRepository.getClientActionRequiredItems("demo-a")
     : [];
-  const reviewNeedsAttention = !canUseFixtureData && reviewMedia.needsMoreMedia;
 
-  const quickLinks = [
-    { label: "Media", href: demoSafeClientHref ?? "/client/media", icon: Images },
-    { label: "Updates", href: demoSafeClientHref ?? "/client/updates", icon: Bell },
-    { label: "Requests", href: demoSafeClientHref ?? "/client/requests", icon: ClipboardList },
-    { label: "Reports", href: demoSafeClientHref ?? "/client/reports", icon: FileText },
+  const weeklyUpdate = generateClientWeeklyUpdate("demo-a");
+
+  const quickCards = [
+    {
+      label: "Upload media",
+      description: "Send fresh photos or videos.",
+      href: demoSafeClientHref ?? "/client/media",
+      icon: UploadCloud,
+      primary: true,
+    },
+    {
+      label: "Send request",
+      description: "Give Veroxa direction.",
+      href: demoSafeClientHref ?? "/client/requests",
+      icon: MessageSquare,
+      primary: false,
+    },
+    {
+      label: "View updates",
+      description: "See recent progress.",
+      href: demoSafeClientHref ?? "/client/updates",
+      icon: Bell,
+      primary: false,
+    },
+    {
+      label: "View reports",
+      description: "Open weekly/monthly reports.",
+      href: demoSafeClientHref ?? "/client/reports",
+      icon: FileText,
+      primary: false,
+    },
   ];
 
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
       <RealPortalReviewNotice />
 
-      {/* Welcome */}
-      <div>
-        <h2
-          className="text-3xl font-bold tracking-tight text-foreground"
-          data-testid="header-welcome"
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2
+            className="text-3xl font-bold tracking-tight text-foreground"
+            data-testid="header-welcome"
+          >
+            {canUseFixtureData
+              ? loading
+                ? "Restaurant Portal"
+                : data.businessName
+              : reviewAccount.businessName}
+          </h2>
+          <p className="text-muted-foreground mt-1">
+            Your simple home base for media, updates, requests, and reports.
+          </p>
+          <DataSourceBadge source={source} message={dataSourceMessage} />
+        </div>
+        <Badge
+          variant="outline"
+          className="px-3 py-1 bg-card text-card-foreground border-border font-medium self-start md:self-auto"
         >
-          {businessName}
-        </h2>
-        <p className="text-muted-foreground mt-1">
-          Welcome back. Here is where your media stands today.
-        </p>
-        <DataSourceBadge source={source} message={dataSourceMessage} />
+          {getCurrentPeriodLabel()}
+        </Badge>
       </div>
 
-      {/* Main action — Upload Media */}
-      <Card
-        className="bg-primary/5 border-primary/30"
-        data-testid="card-upload-media"
-      >
-        <CardContent className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="min-w-0">
-            <h3 className="text-lg font-bold text-foreground">Add new media</h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              Send fresh photos or videos and Veroxa prepares them for posting.
-            </p>
-          </div>
-          <Link href={uploadHref} className="flex-shrink-0">
-            <Button
-              size="lg"
-              className="h-12 px-7 font-semibold shadow-[0_0_24px_rgba(99,102,241,0.3)] hover:shadow-[0_0_32px_rgba(99,102,241,0.5)] transition-shadow w-full sm:w-auto"
-              data-testid="btn-upload-media"
-            >
-              <UploadCloud className="mr-2 h-5 w-5" />
-              Upload Media
-            </Button>
-          </Link>
-        </CardContent>
-      </Card>
+      {!canUseFixtureData && (
+        <ClientOperationalStatusGrid
+          account={reviewAccount}
+          plan={reviewPlan}
+          media={reviewMedia}
+          content={reviewContent}
+          report={reviewReport}
+          risk={reviewRisk}
+          premium={reviewPremium}
+        />
+      )}
 
-      {/* Media status snapshot */}
       <div
-        className="grid grid-cols-1 sm:grid-cols-3 gap-4"
-        data-testid="section-media-snapshot"
+        className="grid gap-3 md:grid-cols-4"
+        data-testid="section-dashboard-quick-actions"
       >
-        {mediaStats.map((stat) => (
-          <Card
-            key={stat.label}
-            className="bg-card/50 border-border/50 shadow-sm"
-            data-testid={`media-stat-${stat.label.split(" ")[0].toLowerCase()}`}
-          >
-            <CardContent className="p-5 flex flex-col gap-3">
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-medium text-muted-foreground">
-                  {stat.label}
+        {quickCards.map((card) => (
+          <Link key={card.label} href={card.href}>
+            <Card
+              className={`h-full cursor-pointer transition-colors ${card.primary ? "border-primary/40 bg-primary/10 hover:bg-primary/15" : "bg-card/60 border-border hover:border-primary/30"}`}
+              data-testid={`quick-card-${card.label.toLowerCase().replaceAll(" ", "-")}`}
+            >
+              <CardContent className="p-4">
+                <card.icon className="w-5 h-5 text-primary mb-3" />
+                <p className="text-sm font-semibold text-foreground">
+                  {card.label}
                 </p>
-                <stat.icon className="w-4 h-4 text-muted-foreground/40" />
-              </div>
-              <p className="text-3xl font-bold">{stat.value}</p>
-            </CardContent>
-          </Card>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {card.description}
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
 
-      {/* Needs attention — only when something actually needs the client */}
-      {openClientActions.length > 0 && (
+      <div className="grid gap-4 lg:grid-cols-3">
         <Card
-          className="bg-amber-500/5 border-amber-500/30"
-          data-testid="card-dashboard-action-needed"
+          className="bg-card border-border"
+          data-testid="card-dashboard-upload-needed"
         >
-          <CardContent className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4">
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-foreground mb-1">
-                Needs your attention ({openClientActions.length})
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {openClientActions[0].title}
-                {openClientActions.length > 1
-                  ? ` · +${openClientActions.length - 1} more`
-                  : ""}
-              </p>
-            </div>
-            <Link href={demoSafeClientHref ?? "/client/requests"}>
-              <Button
-                size="sm"
-                variant="outline"
-                className="border-amber-500/40 hover:bg-amber-500/10 flex-shrink-0"
-                data-testid="btn-dashboard-action-open-requests"
-              >
-                Open Requests
-                <ArrowRight className="ml-2 h-3.5 w-3.5" />
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Images className="w-4 h-4 text-primary" /> Do you need to upload
+              anything?
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              {reviewMedia.needsMoreMedia
+                ? reviewMedia.nextMediaRequest
+                : "Fresh food or atmosphere photos are always helpful when available."}
+            </p>
+            <Link href={demoSafeClientHref ?? "/client/media"}>
+              <Button size="sm" data-testid="btn-dashboard-upload-media">
+                Upload media <ArrowRight className="ml-2 w-3.5 h-3.5" />
               </Button>
             </Link>
           </CardContent>
         </Card>
-      )}
 
-      {reviewNeedsAttention && (
         <Card
-          className="bg-amber-500/5 border-amber-500/30"
-          data-testid="card-dashboard-action-needed-review"
+          className="bg-card border-border"
+          data-testid="card-dashboard-latest-media"
         >
-          <CardContent className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4">
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-foreground mb-1">
-                Needs your attention
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {reviewMedia.nextMediaRequest}
-              </p>
-            </div>
-            <Link href={uploadHref}>
-              <Button
-                size="sm"
-                variant="outline"
-                className="border-amber-500/40 hover:bg-amber-500/10 flex-shrink-0"
-                data-testid="btn-dashboard-action-upload"
-              >
-                Upload Media
-                <ArrowRight className="ml-2 h-3.5 w-3.5" />
-              </Button>
-            </Link>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Latest media
+              status
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {latestMedia ? (
+              <>
+                <p className="text-sm font-medium text-foreground">
+                  {latestMedia.title}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {latestMedia.clientVisibleNote}
+                </p>
+                <Badge
+                  variant="outline"
+                  className="mt-3 border-primary/30 bg-primary/10 text-primary text-[10px]"
+                >
+                  {latestMediaStatus}
+                </Badge>
+              </>
+            ) : (
+              <ClientPortalEmptyState
+                icon={<Images className="w-8 h-8" />}
+                heading="No media status yet."
+                body="Upload media and Veroxa will show progress here."
+                testId="empty-dashboard-media-status"
+              />
+            )}
           </CardContent>
         </Card>
-      )}
 
-      {/* Quick links */}
-      <div data-testid="section-quick-links">
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-          Quick links
-        </h3>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {quickLinks.map((link) => (
-            <Link key={link.label} href={link.href}>
-              <Card
-                className="bg-card/50 border-border/50 hover:border-primary/40 hover:bg-card transition-colors cursor-pointer h-full"
-                data-testid={`quick-link-${link.label.toLowerCase()}`}
-              >
-                <CardContent className="p-4 flex items-center gap-3">
-                  <span className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary/10 text-primary flex-shrink-0">
-                    <link.icon className="w-4 h-4" />
-                  </span>
-                  <span className="text-sm font-medium text-foreground">
-                    {link.label}
-                  </span>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
+        <Card
+          className="bg-card border-border"
+          data-testid="card-dashboard-request-status"
+        >
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <MessageSquare className="w-4 h-4 text-primary" /> Requests
+              needing response
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {openClientActions.length > 0 ? (
+              <div className="space-y-3">
+                <p className="text-sm font-medium text-foreground">
+                  {openClientActions[0].title}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {openClientActions[0].clientVisibleNote}
+                </p>
+                <Link href={demoSafeClientHref ?? "/client/requests"}>
+                  <Button size="sm" variant="outline">
+                    Open Requests
+                  </Button>
+                </Link>
+              </div>
+            ) : (
+              <div className="rounded-md border border-emerald-500/20 bg-emerald-500/5 px-3 py-3">
+                <p className="text-sm font-medium">Nothing needed right now</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Veroxa will ask if a quick answer would help.
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
+
+      <Card
+        className="bg-card border-primary/20"
+        data-testid="card-dashboard-latest-update-report"
+      >
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <FileText className="w-4 h-4 text-primary" /> Latest update/report
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-3 md:grid-cols-2">
+          <div className="rounded-md border border-border bg-muted/20 p-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Latest update
+            </p>
+            <p className="text-sm text-foreground mt-1">
+              {weeklyUpdate.clientSafeSummary}
+            </p>
+          </div>
+          <div className="rounded-md border border-border bg-muted/20 p-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Latest report
+            </p>
+            <p className="text-sm text-foreground mt-1">
+              Reports are organized into Weekly Reports and Monthly Reports.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
     </PortalLayout>
   );
 }

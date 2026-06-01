@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ArrowRight,
   CheckCircle2,
   HelpCircle,
   MessageSquare,
+  Send,
 } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,13 +21,12 @@ import {
   getCurrentClientAccount,
   getClientMediaStatus,
   getClientRiskStatus,
-  getClientContentWorkflow
+  getClientContentWorkflow,
 } from "@/lib/operations";
 import { demoClientTeamWorkflow } from "@/data/workflows/clientTeamWorkflow";
 import {
   getClientActionNeededItems,
   getClientRequestHelpText,
-  getClientStatusLabel,
 } from "@/lib/workflows/workflowStatus";
 import { createWorkflowItem } from "@/lib/workflow/workflowRepository";
 import { useActiveClientPortalContext } from "@/lib/clientPortalContext";
@@ -47,6 +47,13 @@ const priorityTone = {
   low: "border-border bg-muted/20 text-muted-foreground",
 } as const;
 
+function getSimpleRequestStatus(stage: string) {
+  if (stage === "done") return "Handled";
+  if (stage === "needs_client_action") return "Waiting for you";
+  if (stage === "in_progress") return "In Review";
+  return "Received";
+}
+
 export default function ClientRequests() {
   const { source, dataSourceMessage } = useClientPortalData();
   const portalDataMode = useRealPortalDataMode();
@@ -61,7 +68,19 @@ export default function ClientRequests() {
     : [];
   const { activeClientId } = useActiveClientPortalContext();
   const [noteText, setNoteText] = useState("");
+  const [requestType, setRequestType] = useState("general note");
   const [sentMessage, setSentMessage] = useState<string | null>(null);
+  const requestOptions = useMemo(
+    () => [
+      "special push",
+      "use specific media",
+      "save something for later",
+      "event/special announcement",
+      "avoid an item",
+      "general note",
+    ],
+    [],
+  );
 
   const handleSendNote = () => {
     const trimmed = noteText.trim();
@@ -77,11 +96,12 @@ export default function ClientRequests() {
     createWorkflowItem({
       clientId: activeClientId,
       type: "client_request",
-      title: trimmed.length > 60 ? `${trimmed.slice(0, 60)}…` : trimmed,
+      title: `${requestType}: ${trimmed.length > 45 ? `${trimmed.slice(0, 45)}…` : trimmed}`,
       clientNote: trimmed,
       submittedBy: "client",
     });
     setNoteText("");
+    setRequestType("general note");
     setSentMessage(
       "Your note has been sent to the Veroxa team. We'll follow up here if we need more detail.",
     );
@@ -93,7 +113,11 @@ export default function ClientRequests() {
       {!canUseFixtureData && (
         <ClientOperationalCard title="Next helpful request">
           <p>{reviewRisk.clientVisibleMessage}</p>
-          <p>{reviewMedia.needsMoreMedia ? reviewMedia.nextMediaRequest : reviewContent.clientVisibleMessage}</p>
+          <p>
+            {reviewMedia.needsMoreMedia
+              ? reviewMedia.nextMediaRequest
+              : reviewContent.clientVisibleMessage}
+          </p>
           <p>Nothing goes live without Veroxa team review.</p>
         </ClientOperationalCard>
       )}
@@ -103,11 +127,12 @@ export default function ClientRequests() {
           className="text-2xl md:text-3xl font-bold tracking-tight"
           data-testid="header-client-requests"
         >
-          Requests from Veroxa
+          Requests
         </h2>
         <DataSourceBadge source={source} message={dataSourceMessage} />
         <p className="text-muted-foreground mt-1 text-sm md:text-base">
-          Quick to-dos that help us keep your content fresh and on-brand.
+          Tell Veroxa what you want, or answer simple follow-ups when Veroxa
+          needs a detail.
         </p>
       </div>
 
@@ -163,7 +188,7 @@ export default function ClientRequests() {
                   {getClientRequestHelpText(item)}
                 </p>
                 <p className="text-[11px] text-muted-foreground mt-1.5">
-                  Status: {getClientStatusLabel(item.stage)} · {item.dueLabel}
+                  Status: {getSimpleRequestStatus(item.stage)} · {item.dueLabel}
                 </p>
               </div>
             ))
@@ -187,19 +212,19 @@ export default function ClientRequests() {
         </CardContent>
       </Card>
 
-      {/* Send a note — client-initiated communication, local state only. */}
+      {/* Send a request — client-initiated communication, local state only. */}
       <Card className="bg-card border-border" data-testid="card-send-note">
         <CardHeader className="pb-3">
           <CardTitle className="text-sm flex items-center gap-2">
             <MessageSquare className="w-4 h-4 text-primary" />
-            Send a note to your Veroxa team
+            Send a request to Veroxa
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Share a business update, ask a question, or let us know about
-            anything we should factor into your content — hours, menu changes,
-            upcoming events, or specials.
+            Use this for a special push, media direction, an event, an item to
+            avoid, or a general note. Veroxa will review it before anything
+            public changes.
           </p>
 
           {sentMessage ? (
@@ -218,19 +243,33 @@ export default function ClientRequests() {
                 onClick={() => setSentMessage(null)}
                 data-testid="btn-send-another"
               >
-                Send another note
+                Send another request
               </button>
             </>
           ) : (
             <>
-              <textarea
-                value={noteText}
-                onChange={(e) => setNoteText(e.target.value)}
-                placeholder="e.g. We're adding a new dish next week, or we'll be closed on Monday for a private event…"
-                rows={3}
-                className="w-full bg-muted/40 border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary resize-none"
-                data-testid="input-send-note"
-              />
+              <div className="grid gap-2 md:grid-cols-[220px_minmax(0,1fr)]">
+                <select
+                  value={requestType}
+                  onChange={(e) => setRequestType(e.target.value)}
+                  className="bg-muted/40 border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                  data-testid="select-request-type"
+                >
+                  {requestOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option[0].toUpperCase() + option.slice(1)}
+                    </option>
+                  ))}
+                </select>
+                <textarea
+                  value={noteText}
+                  onChange={(e) => setNoteText(e.target.value)}
+                  placeholder="e.g. Use the burger photo this weekend, or please avoid posting the dining room photo."
+                  rows={3}
+                  className="w-full bg-muted/40 border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+                  data-testid="input-send-note"
+                />
+              </div>
               <div className="flex justify-end">
                 <Button
                   size="sm"
@@ -238,7 +277,7 @@ export default function ClientRequests() {
                   disabled={!noteText.trim()}
                   data-testid="btn-send-note"
                 >
-                  Send to Veroxa Team
+                  <Send className="w-3.5 h-3.5 mr-2" /> Send to Veroxa
                 </Button>
               </div>
             </>
