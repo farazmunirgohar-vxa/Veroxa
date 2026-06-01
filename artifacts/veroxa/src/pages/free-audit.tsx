@@ -26,6 +26,7 @@ import {
   saveAuditLead,
 } from "@/lib/leads/localAuditLeadStore";
 import { useDocumentMeta } from "@/hooks/useDocumentMeta";
+import { isClientSafeLanguage } from "@/domain/clientPortalJourney/languageSafety";
 import type {
   AuditLeadContact,
   AuditLeadSelectedRestaurant,
@@ -183,9 +184,17 @@ export default function FreeAudit() {
     try {
       const payload = buildAiAuditDraftPayload(report);
       const result = await generateAiAuditDraftClient(payload);
-      setAiDraftMode(result.mode);
-      setAiDraft(result.aiDraft);
-      setAiDraftMessage(result.message ?? "");
+      if (result.aiDraft !== null && !isClientSafeLanguage(result.aiDraft)) {
+        setAiDraftMode("error");
+        setAiDraft(null);
+        setAiDraftMessage(
+          "The draft contained an unexpected term and was not shown. Please try again.",
+        );
+      } else {
+        setAiDraftMode(result.mode);
+        setAiDraft(result.aiDraft);
+        setAiDraftMessage(result.message ?? "");
+      }
     } finally {
       setAiDraftLoading(false);
     }

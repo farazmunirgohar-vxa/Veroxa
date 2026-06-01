@@ -54,11 +54,12 @@ for (const token of [
   "VEROXA_ENABLE_AI_ROUTES",
   "VEROXA_ENABLE_GOOGLE_ROUTES",
   "VEROXA_ALLOW_UNAUTHENTICATED_DEV_API",
+  "VEROXA_DEV_ENVIRONMENT",
 ]) {
   if (!apiSecurity.includes(token)) failures.push(`api security middleware missing ${token}.`);
 }
-if (!/process\.env\[["']NODE_ENV["']\]\s*===\s*["']development["']/.test(apiSecurity)) {
-  failures.push("missing server-side development-only check for unauthenticated dev API bypass.");
+if (!/envFlag\(["']VEROXA_DEV_ENVIRONMENT["']\)/.test(apiSecurity)) {
+  failures.push("dev API bypass must require explicit VEROXA_DEV_ENVIRONMENT flag, not NODE_ENV alone.");
 }
 if (!/res\.status\(429\)/.test(apiSecurity)) {
   failures.push("protected API rate limiter must return 429 when exceeded.");

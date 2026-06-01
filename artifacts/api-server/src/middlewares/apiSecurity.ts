@@ -22,7 +22,9 @@ function getInternalApiKey(): string | null {
 }
 
 function isSafeDevApiBypassEnabled(): boolean {
-  return process.env["NODE_ENV"] === "development" && envFlag("VEROXA_ALLOW_UNAUTHENTICATED_DEV_API");
+  // Require two explicit opt-in flags so that an accidental NODE_ENV=development
+  // on a staging server cannot silently enable the bypass on its own.
+  return envFlag("VEROXA_DEV_ENVIRONMENT") && envFlag("VEROXA_ALLOW_UNAUTHENTICATED_DEV_API");
 }
 
 function getHeaderValue(req: Request, name: string): string | null {
