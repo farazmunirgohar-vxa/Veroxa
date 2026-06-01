@@ -12,7 +12,7 @@ export interface SidebarItem {
   icon?: React.ElementType;
   href?: string;
   /** When set to 'section', renders as a section-header divider (no link, no icon). */
-  type?: 'section';
+  type?: "section";
 }
 
 interface PortalLayoutProps {
@@ -29,7 +29,6 @@ interface SidebarNavProps {
   portalName: string;
   onNavigate?: () => void;
 }
-
 
 function getSafePortalHref(itemHref: string, location: string): string {
   // Keep Client Demo navigation inside the /demo/client/* space so demo
@@ -52,6 +51,10 @@ function isRouteActive(itemHref: string, location: string): boolean {
   return false;
 }
 
+function isPortalItemRouteActive(itemHref: string, location: string): boolean {
+  return isRouteActive(getSafePortalHref(itemHref, location), location);
+}
+
 interface PortalReviewContext {
   bannerText: string;
   isPublicDemo: boolean;
@@ -65,11 +68,15 @@ interface PortalReviewContext {
  */
 function getPortalReviewContext(location: string): PortalReviewContext {
   if (location.startsWith("/demo")) {
-    return { bannerText: "Client Demo — sample data only.", isPublicDemo: true };
+    return {
+      bannerText: "Client Demo — sample data only.",
+      isPublicDemo: true,
+    };
   }
   if (location.startsWith("/team")) {
     return {
-      bannerText: "Team Portal in review — internal workspace under active build.",
+      bannerText:
+        "Team Portal in review — internal workspace under active build.",
       isPublicDemo: false,
     };
   }
@@ -108,7 +115,9 @@ function AuthFooter({ onNavigate }: { onNavigate?: () => void }) {
         <span className="text-xs font-semibold text-sidebar-foreground/80 capitalize">
           {displayName ?? role}
         </span>
-        <span className="text-[11px] text-sidebar-foreground/50 truncate">{email}</span>
+        <span className="text-[11px] text-sidebar-foreground/50 truncate">
+          {email}
+        </span>
       </div>
       <button
         onClick={handleSignOut}
@@ -142,7 +151,7 @@ function SidebarNav({
         <nav className="space-y-1">
           {items.map((item, i) => {
             // Section header — renders as a divider label, not a clickable item.
-            if (item.type === 'section') {
+            if (item.type === "section") {
               return (
                 <div key={i} className="pt-4 pb-1 px-3">
                   <p className="text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/35">
@@ -153,22 +162,22 @@ function SidebarNav({
             }
 
             const isActive = item.href?.startsWith("/")
-              ? isRouteActive(item.href, location)
+              ? isPortalItemRouteActive(item.href, location)
               : item.href?.startsWith("#")
-              ? false
-              : i === fallbackActive;
+                ? false
+                : i === fallbackActive;
 
             const sharedClass = cn(
               "w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-200 cursor-pointer",
               isActive
                 ? "bg-primary/10 text-primary"
-                : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
             );
             const icon = item.icon ? (
               <item.icon
                 className={cn(
                   "w-4 h-4",
-                  isActive ? "text-primary" : "text-sidebar-foreground/50"
+                  isActive ? "text-primary" : "text-sidebar-foreground/50",
                 )}
               />
             ) : null;
@@ -226,48 +235,56 @@ function SidebarNav({
 
       <div className="border-t border-sidebar-border shrink-0">
         <AuthFooter onNavigate={onNavigate} />
-        {AUTH_MODE === "placeholder" && getPortalReviewContext(location).isPublicDemo && (
-          <div className="p-4 pt-2">
-            <Link
-              href="/demo"
-              className="flex items-center gap-2 text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground px-2 py-2 transition-colors rounded-md hover:bg-sidebar-accent"
-              data-testid="link-back-demo"
-              onClick={onNavigate}
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Client Demo
-            </Link>
-          </div>
-        )}
+        {AUTH_MODE === "placeholder" &&
+          getPortalReviewContext(location).isPublicDemo && (
+            <div className="p-4 pt-2">
+              <Link
+                href="/demo"
+                className="flex items-center gap-2 text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground px-2 py-2 transition-colors rounded-md hover:bg-sidebar-accent"
+                data-testid="link-back-demo"
+                onClick={onNavigate}
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back to Client Demo
+              </Link>
+            </div>
+          )}
       </div>
     </div>
   );
 }
 
-export function PortalLayout({ children, items, portalName }: PortalLayoutProps) {
+export function PortalLayout({
+  children,
+  items,
+  portalName,
+}: PortalLayoutProps) {
   const [location] = useLocation();
   const [fallbackActive, setFallbackActive] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const activeItem =
     items.find((item) =>
-      item.href?.startsWith("/") ? isRouteActive(item.href, location) : false
+      item.href?.startsWith("/")
+        ? isPortalItemRouteActive(item.href, location)
+        : false,
     ) ?? items[fallbackActive];
 
   const logoSlot = (small?: boolean) => (
     <div
       className={cn(
         "rounded-lg bg-primary/10 flex items-center justify-center text-primary",
-        small ? "w-7 h-7" : "w-8 h-8"
+        small ? "w-7 h-7" : "w-8 h-8",
       )}
     >
-      <Hexagon className={cn("fill-primary/20", small ? "w-4 h-4" : "w-5 h-5")} />
+      <Hexagon
+        className={cn("fill-primary/20", small ? "w-4 h-4" : "w-5 h-5")}
+      />
     </div>
   );
 
   return (
     <div className="flex min-h-screen bg-background text-foreground selection:bg-primary/30 overflow-x-hidden">
-
       {/* ── Desktop Sidebar (md+) ─────────────────────────────── */}
       <aside className="hidden md:flex w-64 border-r border-sidebar-border bg-sidebar text-sidebar-foreground flex-col shrink-0 sticky top-0 h-screen">
         <div className="h-16 flex items-center px-6 border-b border-sidebar-border shrink-0">
@@ -293,7 +310,11 @@ export function PortalLayout({ children, items, portalName }: PortalLayoutProps)
 
       {/* ── Mobile Top Header (< md) ──────────────────────────── */}
       <div className="md:hidden fixed top-0 inset-x-0 z-40 h-14 bg-sidebar border-b border-sidebar-border flex items-center justify-between px-4 shrink-0">
-        <Link href="/" className="flex items-center gap-2" data-testid="link-home">
+        <Link
+          href="/"
+          className="flex items-center gap-2"
+          data-testid="link-home"
+        >
           {logoSlot(true)}
           <span className="font-bold tracking-tight">Veroxa</span>
         </Link>
@@ -312,7 +333,11 @@ export function PortalLayout({ children, items, portalName }: PortalLayoutProps)
             className="w-64 p-0 bg-sidebar text-sidebar-foreground border-r border-sidebar-border flex flex-col [&>button]:hidden"
           >
             <div className="h-14 flex items-center px-6 border-b border-sidebar-border shrink-0">
-              <Link href="/" className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
+              <Link
+                href="/"
+                className="flex items-center gap-2"
+                onClick={() => setMobileOpen(false)}
+              >
                 {logoSlot(true)}
                 <span className="font-bold tracking-tight">Veroxa</span>
               </Link>
@@ -331,7 +356,6 @@ export function PortalLayout({ children, items, portalName }: PortalLayoutProps)
 
       {/* ── Main Content ──────────────────────────────────────── */}
       <main className="flex-1 flex flex-col min-w-0 bg-background/50 pt-14 md:pt-0">
-
         {/* Desktop breadcrumb */}
         <header className="hidden md:flex h-16 items-center px-8 border-b border-border/40 backdrop-blur-md sticky top-0 z-10">
           <h1
@@ -344,35 +368,39 @@ export function PortalLayout({ children, items, portalName }: PortalLayoutProps)
 
         {/* Mobile breadcrumb */}
         <div className="md:hidden px-4 pt-3 pb-1">
-          <p className="text-xs text-muted-foreground" data-testid="header-breadcrumb">
+          <p
+            className="text-xs text-muted-foreground"
+            data-testid="header-breadcrumb"
+          >
             {portalName} / {activeItem?.label ?? "Dashboard"}
           </p>
         </div>
 
         <div className="flex-1 p-4 md:p-8 overflow-auto">
           <div className="max-w-6xl mx-auto space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {AUTH_MODE === "placeholder" && (() => {
-              const review = getPortalReviewContext(location);
-              return (
-                <div
-                  className={cn(
-                    "px-3 py-2 rounded-md border text-xs font-medium flex items-center gap-2",
-                    review.isPublicDemo
-                      ? "bg-amber-500/8 border-amber-500/20 text-amber-400"
-                      : "bg-primary/5 border-primary/20 text-primary/90"
-                  )}
-                  data-testid="banner-preview"
-                >
-                  <span
+            {AUTH_MODE === "placeholder" &&
+              (() => {
+                const review = getPortalReviewContext(location);
+                return (
+                  <div
                     className={cn(
-                      "w-1.5 h-1.5 rounded-full flex-shrink-0",
-                      review.isPublicDemo ? "bg-amber-400" : "bg-primary/70"
+                      "px-3 py-2 rounded-md border text-xs font-medium flex items-center gap-2",
+                      review.isPublicDemo
+                        ? "bg-amber-500/8 border-amber-500/20 text-amber-400"
+                        : "bg-primary/5 border-primary/20 text-primary/90",
                     )}
-                  />
-                  {review.bannerText}
-                </div>
-              );
-            })()}
+                    data-testid="banner-preview"
+                  >
+                    <span
+                      className={cn(
+                        "w-1.5 h-1.5 rounded-full flex-shrink-0",
+                        review.isPublicDemo ? "bg-amber-400" : "bg-primary/70",
+                      )}
+                    />
+                    {review.bannerText}
+                  </div>
+                );
+              })()}
             {children}
           </div>
         </div>
