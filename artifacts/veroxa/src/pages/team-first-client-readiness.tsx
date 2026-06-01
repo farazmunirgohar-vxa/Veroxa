@@ -79,7 +79,7 @@ export default function TeamFirstClientReadiness() {
     <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
       <PageHeader
         title="First-client readiness"
-        description="A focused review surface for launching the first 1–5 restaurant clients with manual execution and strict Veroxa team review."
+        description="A benchmark review surface for the first 1–5 restaurant clients. It does not mean production auth, storage uploads, or live account data are fully connected."
         testId="header-first-client-readiness"
       />
 
@@ -95,7 +95,7 @@ export default function TeamFirstClientReadiness() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-3xl font-bold tabular-nums">{summary.completionPercentage}%</p>
-                <p className="text-xs text-muted-foreground">{summary.passingChecks} of {summary.totalChecks} checks passing</p>
+                <p className="text-xs text-muted-foreground">{summary.passingChecks} of {summary.totalChecks} benchmark checks OK</p>
               </div>
               <StatusBadge tone={statusTone[summary.overallStatus]}>
                 {getReadinessStatusLabel(summary.overallStatus)}
@@ -113,7 +113,7 @@ export default function TeamFirstClientReadiness() {
               </div>
               <div className="rounded-lg border border-border bg-muted/20 p-3">
                 <p className="text-xl font-semibold tabular-nums">{summary.passingChecks}</p>
-                <p className="text-[11px] text-muted-foreground">Passing</p>
+                <p className="text-[11px] text-muted-foreground">Benchmark OK</p>
               </div>
             </div>
             <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
@@ -132,11 +132,11 @@ export default function TeamFirstClientReadiness() {
           </CardHeader>
           <CardContent className="space-y-3">
             <StatusBadge tone={launchGate.isReady ? "success" : "danger"}>
-              {launchGate.isReady ? "Ready for Faraz review" : "Needs setup"}
+              {launchGate.isReady ? "Benchmark ready for Faraz review" : "Needs setup"}
             </StatusBadge>
             <p className="text-sm text-muted-foreground">{launchGate.message}</p>
             <p className="text-xs text-muted-foreground">
-              Required gate checks: {launchGate.requiredCheckKeys.length}. Current blockers: {launchGate.blockers.length}.
+              Benchmark gate checks: {launchGate.requiredCheckKeys.length}. Current blockers: {launchGate.blockers.length}.
             </p>
             <Link href="/team/dashboard" className="inline-flex items-center gap-2 text-sm text-primary hover:underline">
               Back to team dashboard <ArrowRight className="w-3 h-3" />
@@ -163,7 +163,7 @@ export default function TeamFirstClientReadiness() {
                   <StatusBadge tone={statusTone[area.status]}>{getReadinessStatusLabel(area.status)}</StatusBadge>
                 </div>
                 <p className="mt-2 text-xs text-muted-foreground">
-                  {area.passingChecks}/{area.totalChecks} passing · {area.blockingChecks} blocking · {area.warningChecks} warning
+                  {area.passingChecks}/{area.totalChecks} benchmark OK · {area.blockingChecks} blocking · {area.warningChecks} warning
                 </p>
               </div>
             ))}

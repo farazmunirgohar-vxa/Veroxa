@@ -37,3 +37,10 @@ Production builds always resolve dev writes to disabled, even if `VITE_VEROXA_EN
 ## Still not connected to production writes
 
 The current dev write path is only for dev Supabase metadata review. It does not add storage uploads, publishing, payment, production auth, or service-role access.
+
+## 2026-06 placeholder access and media honesty note
+
+- Placeholder team access is no longer granted just because `AUTH_MODE` is `placeholder`; `/team/*` requires the current browser tab to complete the env-backed placeholder login flow first.
+- Placeholder credentials remain env-only. Missing credentials fail safely.
+- Client media submission copy must distinguish session/demo tracking from dev metadata saving. No current client copy should imply cloud file storage is connected.
+- Dev media metadata writes use a browser-session submission key to reduce duplicate retry writes; this is not a schema-level uniqueness guarantee.

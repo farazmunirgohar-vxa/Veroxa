@@ -10,6 +10,7 @@ import { AUTH_MODE } from "@/lib/auth/authMode";
 import { getSupabaseClient } from "@/lib/supabase";
 import { getRoleHomePath, isVeroxaRole } from "@/lib/auth/authContract";
 import { getDevRouteForRole, validateDevCredentials } from "@/lib/auth/devCredentials";
+import { createPlaceholderSession, clearPlaceholderSession } from "@/lib/auth/placeholderSession";
 import { useDocumentMeta } from "@/hooks/useDocumentMeta";
 
 type SignInState =
@@ -50,9 +51,11 @@ export default function LoginPage() {
     if (AUTH_MODE === "placeholder") {
       const role = validateDevCredentials(email, password);
       if (!role) {
+        clearPlaceholderSession();
         setSignInState({ kind: "error", message: "Incorrect credentials. Please try again." });
         return;
       }
+      createPlaceholderSession(role, email);
       setSignInState({ kind: "success", message: "Signed in — taking you to your portal…" });
       setLocation(getDevRouteForRole(role));
       return;

@@ -15,13 +15,13 @@ export const READINESS_SAFE_COPY = {
 } as const;
 
 const statusLabels: Record<ReadinessStatus, string> = {
-  passing: "Passing",
+  passing: "Benchmark OK",
   warning: "Needs attention",
   failing: "Needs setup before client launch",
   blocked: "Blocked",
   caution: "Caution",
-  ready_for_review: "Ready for first-client review",
-  ready: "Ready",
+  ready_for_review: "Ready for benchmark review",
+  ready: "Benchmark ready",
 };
 
 const severityLabels: Record<ReadinessSeverity, string> = {

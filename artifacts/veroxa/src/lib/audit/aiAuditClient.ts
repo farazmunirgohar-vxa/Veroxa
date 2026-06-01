@@ -102,7 +102,7 @@ export async function generateAiAuditDraftClient(
   try {
     const response = await fetch("/api/audit/ai-draft", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json" }, // No protected API secret in browser code.
       body: JSON.stringify(payload),
     });
 

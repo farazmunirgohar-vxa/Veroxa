@@ -101,7 +101,7 @@ export async function generateAiDraftClient(
   try {
     const response = await fetch("/api/ai/draft", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json" }, // No protected API secret in browser code.
       body: JSON.stringify(request),
     });
 

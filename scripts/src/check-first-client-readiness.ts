@@ -144,6 +144,21 @@ for (const activeClientFile of activeClientPortalFiles) {
   });
 }
 
+
+const readinessChecklistSource = readFileSync(
+  join(root, "artifacts/veroxa/src/domain/firstClientReadiness/checklist.ts"),
+  "utf8",
+);
+if (!/real-client-data-pending[\s\S]*status:\s*["']warning["']/.test(readinessChecklistSource)) {
+  failures.push("First-client readiness must keep live client data pending as a warning, not fake-passing launch truth.");
+}
+if (!/storage-upload-pending[\s\S]*status:\s*["']warning["']/.test(readinessChecklistSource)) {
+  failures.push("First-client readiness must keep storage upload pending as a warning, not fake-passing launch truth.");
+}
+if (!/production-auth-pending[\s\S]*status:\s*["']warning["']/.test(readinessChecklistSource)) {
+  failures.push("First-client readiness must keep production auth pending as a warning, not fake-passing launch truth.");
+}
+
 if (failures.length > 0) {
   console.error("First-client readiness guardrail failed:\n");
   for (const failure of failures) console.error(`- ${failure}`);

@@ -49,3 +49,9 @@ Do not place either secret in Vite/frontend env. Do not print it in logs.
 ## Operational rule
 
 Real users should not hit AI or Google-powered routes directly. Those routes are for protected internal review workflows only, with feature flags intentionally disabled unless the environment is explicitly prepared for safe use.
+
+## 2026-06 client/frontend alignment note
+
+- `/api/healthz` remains public.
+- `/api/ai/draft`, `/api/audit/ai-draft`, `/api/audit/search-restaurants`, and `/api/audit/restaurant-details` remain protected by the internal API access middleware and feature flags.
+- Browser/client code must not attach the protected API key header. If these routes are unavailable in preview, frontend helpers must fall back to safe local/report states instead of exposing an error or a secret.

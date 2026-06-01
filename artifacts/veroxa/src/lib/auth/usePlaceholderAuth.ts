@@ -11,10 +11,10 @@
  *   - sign-out and redirect behavior are agreed.
  *
  *
- * Always returns an unauthenticated state. No Supabase calls, no cookies,
- * no localStorage, no network. This exists purely so that the RequireRole
- * shell and the future `/client` and `/team`
- * placeholder pages can be wired against a stable hook signature today,
+ * Reads only the temporary placeholder-session marker created by the
+ * env-backed login form. No Supabase calls, no cookies, no network. This
+ * exists purely so that the RequireRole shell and the future `/client` and
+ * `/team` placeholder pages can be wired against a stable hook signature today,
  * then swapped to a real implementation later without changing call
  * sites.
  *
@@ -29,6 +29,7 @@
  */
 
 import type { AuthState } from "./authContract";
+import { readPlaceholderSession } from "./placeholderSession";
 
 /**
  * @deprecated Prefer `AuthState` from `./authContract`. Kept as an
@@ -37,9 +38,10 @@ import type { AuthState } from "./authContract";
 export type PlaceholderAuthState = AuthState;
 
 export function usePlaceholderAuth(): AuthState {
+  const session = readPlaceholderSession();
   return {
-    status: "unauthenticated",
-    session: null,
+    status: session ? "authenticated" : "unauthenticated",
+    session,
     isDemoOnly: true,
   };
 }
