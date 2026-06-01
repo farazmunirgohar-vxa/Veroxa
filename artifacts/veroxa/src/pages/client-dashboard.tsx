@@ -22,6 +22,11 @@ import { ClientOperationalStatusGrid } from "@/components/client/ClientOperation
 import {
   getClientMediaStatus,
   getCurrentClientAccount,
+  getClientContentWorkflow,
+  getClientReportWorkflow,
+  getClientRiskStatus,
+  getClientPremiumReadiness,
+  getClientPlan,
 } from "@/lib/operations";
 import { clientTeamWorkRepository } from "@/lib/repositories";
 import { generateClientWeeklyUpdate } from "@/domain/clientPortalJourney";
