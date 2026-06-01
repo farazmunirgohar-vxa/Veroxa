@@ -44,7 +44,6 @@ as an active runtime role model. Do not use Super Admin language.
   ready, what is blocked, what needs client input, what needs approval, and what
   to do next.
 
-
 ## Client portal operating model
 
 The Client Portal is a simple, premium drop-off / status tracking / pickup lane,
@@ -67,7 +66,9 @@ The client media lifecycle is:
 
 Client-facing media pages should group work as Uploaded Media, Ready Media, and
 Posted Media when that structure is implemented. Each media item may show a
-simple pizza-order-style tracker for the lifecycle above.
+simple pizza-order-style tracker for the lifecycle above. The selected media
+detail view should prioritize media name, current status, tracker, client note,
+client direction, schedule/use context, and one short next step.
 
 Exception statuses are:
 
@@ -85,11 +86,15 @@ for you.
 
 Updates should show simple progress details, especially media progress: recent
 reviewed, ready, scheduled, or posted items and anything Veroxa needs from the
-client. Updates should not become a duplicate analytics/report page.
+client. Updates should link toward Media or Requests when helpful, but should
+not become a duplicate analytics/report page.
 
 Reports stay under one Reports navigation item. Inside Reports, show Weekly
-Reports and Monthly Reports when available. Do not create separate main tabs for
-weekly and monthly reporting.
+Reports and Monthly Reports when available. Weekly reports summarize completed
+work, media used, next steps, client needs, and visibility notes. Monthly reports
+summarize posts completed, top content, local visibility progress, improvements,
+next-month focus, and honest limitations. Do not create separate main tabs for
+weekly and monthly reporting, and do not invent metrics.
 
 Client-facing pages must not expose AI, backend, Supabase, OpenAI, APIs,
 automation internals, risk scoring, internal workflow mechanics, internal IDs,
@@ -122,7 +127,8 @@ overload screen.
 5. Team reports honest progress; no invented performance numbers.
 
 Team review is built on a mobile-friendly foundation — see
-`MOBILE_TEAM_REVIEW_MODEL.md`.
+`MOBILE_TEAM_REVIEW_MODEL.md`. Queue field consistency is documented in
+`TEAM_QUEUE_MODEL.md`.
 
 ## Pricing (locked current public pricing — do not change)
 
@@ -172,3 +178,7 @@ companion stage docs describe what is actually live in the two-role model today.
 - Real `/client/*` routes should use active client context and show safe review/empty states when live account data is not connected; they should not silently present `demo-a` as the active client.
 - Real `/team/*` routes require a successful placeholder login marker or future real auth session before rendering.
 - First-client readiness is a benchmark/checklist surface, not proof that production auth, storage uploads, live account data, or publishing connectors are complete.
+
+## First-client pilot mode
+
+Current pilot positioning is documented in `FIRST_CLIENT_PILOT_MODE.md`. It keeps sample/demo behavior, pending production auth, pending storage upload, pending publishing integration, and manual team review clear for future builders.

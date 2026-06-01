@@ -67,6 +67,7 @@ import {
   TeamClientOverviewList,
   TeamCommandSummaryGrid,
 } from "@/components/team/TeamOperationalSpine";
+import { toTeamRequestPreviewStatus } from "@/lib/clientRequestStatus";
 import {
   getBlockingChecks,
   getReadinessStatusLabel,
@@ -191,6 +192,7 @@ export default function TeamDashboard() {
       href: "/team/work-queue",
       icon: Eye,
       color: "text-violet-400",
+      action: "Open review work",
     },
     {
       label: "Ready to schedule",
@@ -198,6 +200,7 @@ export default function TeamDashboard() {
       href: "/team/work-queue",
       icon: ClipboardCheck,
       color: "text-emerald-400",
+      action: "Open scheduling work",
     },
     {
       label: "Client requests",
@@ -205,6 +208,7 @@ export default function TeamDashboard() {
       href: "/team/direction-queue",
       icon: MessageSquare,
       color: "text-sky-400",
+      action: "Open requests",
     },
     {
       label: "Blocked / needs input",
@@ -215,6 +219,7 @@ export default function TeamDashboard() {
       href: "/team/work-queue",
       icon: Users,
       color: "text-amber-400",
+      action: "Check blockers",
     },
     {
       label: "Reports due",
@@ -222,6 +227,7 @@ export default function TeamDashboard() {
       href: "/team/report-queue",
       icon: FileText,
       color: "text-cyan-400",
+      action: "Open report queue",
     },
   ];
 
@@ -303,22 +309,27 @@ export default function TeamDashboard() {
             <CardTitle className="text-sm">Team cockpit</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-3 lg:grid-cols-5">
-            {cockpitCards.map(({ label, value, href, icon: Icon, color }) => (
-              <Link key={label} href={href}>
-                <div className="h-full rounded-lg border border-border bg-muted/20 p-3 transition-colors hover:border-primary/30">
-                  <div
-                    className={`mb-2 flex items-center justify-between ${color}`}
-                  >
-                    <Icon className="h-4 w-4" />
-                    <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/50" />
+            {cockpitCards.map(
+              ({ label, value, href, icon: Icon, color, action }) => (
+                <Link key={label} href={href}>
+                  <div className="h-full rounded-lg border border-border bg-muted/20 p-3 transition-colors hover:border-primary/30">
+                    <div
+                      className={`mb-2 flex items-center justify-between ${color}`}
+                    >
+                      <Icon className="h-4 w-4" />
+                      <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/50" />
+                    </div>
+                    <p className="text-2xl font-bold tabular-nums">{value}</p>
+                    <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
+                      {label}
+                    </p>
+                    <p className="mt-2 text-[11px] font-medium text-primary">
+                      {action}
+                    </p>
                   </div>
-                  <p className="text-2xl font-bold tabular-nums">{value}</p>
-                  <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
-                    {label}
-                  </p>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              ),
+            )}
           </CardContent>
         </Card>
       </div>
@@ -350,11 +361,11 @@ export default function TeamDashboard() {
                       <p className="text-sm font-semibold">{item.title}</p>
                       <p className="text-[11px] text-muted-foreground">
                         {item.restaurantName} · Client request ·{" "}
-                        {item.internalTeamStatus}
+                        {toTeamRequestPreviewStatus(item.internalTeamStatus)}
                       </p>
                     </div>
                     <StatusBadge tone="info">
-                      {item.internalTeamStatus}
+                      {toTeamRequestPreviewStatus(item.internalTeamStatus)}
                     </StatusBadge>
                   </div>
                   <p className="mt-1.5 text-xs text-foreground/80">

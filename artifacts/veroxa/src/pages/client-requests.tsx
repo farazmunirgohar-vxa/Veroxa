@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { CheckCircle2, MessageSquare, Send } from "lucide-react";
+import {
+  CheckCircle2,
+  Clock,
+  ImageIcon,
+  MessageSquare,
+  Send,
+} from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +22,7 @@ import { useActiveClientPortalContext } from "@/lib/clientPortalContext";
 
 import {
   CLIENT_REQUEST_TYPES,
+  CLIENT_REQUEST_TYPE_DESCRIPTIONS,
   buildClientRequestTitle,
   toClientRequestStatus,
   type ClientRequestStatus,
@@ -39,6 +46,8 @@ export default function ClientRequests() {
   const [requestType, setRequestType] =
     useState<ClientRequestType>("General note");
   const [sentMessage, setSentMessage] = useState<string | null>(null);
+  const [relatedMediaId, setRelatedMediaId] = useState("");
+  const [preferredTiming, setPreferredTiming] = useState("No rush");
   const [localRequests, setLocalRequests] = useState<
     Array<{
       id: string;
@@ -75,6 +84,13 @@ export default function ClientRequests() {
   const actionItems = canUseFixtureData
     ? clientTeamWorkRepository.getClientActionRequiredItems(activeClientId!)
     : [];
+  const relatedMediaOptions = canUseFixtureData
+    ? clientTeamWorkRepository
+        .getClientVisibleSubmissions(activeClientId!)
+        .filter((item) => item.submissionType === "media")
+        .slice(0, 12)
+        .map((item) => ({ id: item.id, title: item.title }))
+    : [];
   const requests = [
     ...localRequests,
     ...workflowRequests,
@@ -87,24 +103,46 @@ export default function ClientRequests() {
   const handleSendNote = () => {
     const trimmed = noteText.trim();
     if (!trimmed) return;
+    const relatedMediaTitle = relatedMediaOptions.find(
+      (item) => item.id === relatedMediaId,
+    )?.title;
+    const context = [
+      requestType,
+      relatedMediaTitle ? `Related media: ${relatedMediaTitle}` : null,
+      preferredTiming ? `Timing: ${preferredTiming}` : null,
+      trimmed,
+    ]
+      .filter(Boolean)
+      .join(" — ");
     const title = buildClientRequestTitle(requestType, trimmed);
     if (canUseFixtureData && activeClientId) {
       createWorkflowItem({
         clientId: activeClientId,
         type: "client_request",
         title,
-        clientNote: `${requestType} — ${trimmed}`,
+        clientNote: context,
         submittedBy: "client",
       });
     }
     setLocalRequests((prev) => [
-      { id: `local-${Date.now()}`, title, note: trimmed, status: "Received" },
+      {
+        id: `local-${Date.now()}`,
+        title,
+        note: relatedMediaTitle
+          ? `${trimmed} · Related media: ${relatedMediaTitle} · Timing: ${preferredTiming}`
+          : `${trimmed} · Timing: ${preferredTiming}`,
+        status: "Received",
+      },
       ...prev,
     ]);
     setNoteText("");
     setRequestType("General note");
+    setRelatedMediaId("");
+    setPreferredTiming("No rush");
     setSentMessage(
-      "Received. Veroxa will review your note and follow up here if needed.",
+      canUseFixtureData
+        ? "Added for Veroxa review in this session."
+        : "Received in this session. Veroxa will review it after your account is connected.",
     );
   };
 
@@ -135,27 +173,82 @@ export default function ClientRequests() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="grid gap-2 md:grid-cols-[220px_minmax(0,1fr)]">
-            <select
-              value={requestType}
-              onChange={(event) =>
-                setRequestType(event.target.value as ClientRequestType)
-              }
-              className="rounded-md border border-border bg-muted/40 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-              data-testid="select-request-type"
-            >
-              {CLIENT_REQUEST_TYPES.map((option) => (
-                <option key={option}>{option}</option>
-              ))}
-            </select>
-            <textarea
-              value={noteText}
-              onChange={(event) => setNoteText(event.target.value)}
-              placeholder="Write a short note for Veroxa."
-              rows={3}
-              className="w-full resize-none rounded-md border border-border bg-muted/40 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-              data-testid="textarea-request-note"
-            />
+          <div className="grid gap-3 lg:grid-cols-[240px_minmax(0,1fr)]">
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-muted-foreground">
+                Request type
+              </label>
+              <select
+                value={requestType}
+                onChange={(event) =>
+                  setRequestType(event.target.value as ClientRequestType)
+                }
+                className="w-full rounded-md border border-border bg-muted/40 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                data-testid="select-request-type"
+              >
+                {CLIENT_REQUEST_TYPES.map((option) => (
+                  <option key={option}>{option}</option>
+                ))}
+              </select>
+              <p className="text-xs text-muted-foreground">
+                {CLIENT_REQUEST_TYPE_DESCRIPTIONS[requestType]}
+              </p>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-muted-foreground">
+                Note
+              </label>
+              <textarea
+                value={noteText}
+                onChange={(event) => setNoteText(event.target.value)}
+                placeholder="Write a short note for Veroxa."
+                rows={3}
+                className="w-full resize-none rounded-md border border-border bg-muted/40 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                data-testid="textarea-request-note"
+              />
+            </div>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="space-y-2">
+              <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                <ImageIcon className="h-3.5 w-3.5" /> Related media
+              </label>
+              <select
+                value={relatedMediaId}
+                onChange={(event) => setRelatedMediaId(event.target.value)}
+                className="w-full rounded-md border border-border bg-muted/40 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                data-testid="select-related-media"
+              >
+                <option value="">No media selected</option>
+                {relatedMediaOptions.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.title}
+                  </option>
+                ))}
+              </select>
+              {relatedMediaOptions.length === 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Media choices appear here after media is available for this
+                  account.
+                </p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                <Clock className="h-3.5 w-3.5" /> Preferred timing
+              </label>
+              <select
+                value={preferredTiming}
+                onChange={(event) => setPreferredTiming(event.target.value)}
+                className="w-full rounded-md border border-border bg-muted/40 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                data-testid="select-preferred-timing"
+              >
+                <option>No rush</option>
+                <option>This week if possible</option>
+                <option>Before the weekend</option>
+                <option>For an upcoming event</option>
+              </select>
+            </div>
           </div>
           <div className="flex justify-end">
             <Button

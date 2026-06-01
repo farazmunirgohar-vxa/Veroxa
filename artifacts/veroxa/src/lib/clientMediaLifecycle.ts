@@ -123,3 +123,30 @@ export function normalizeClientMediaDisplayStatus(
 
   return "Uploaded";
 }
+
+export function getClientMediaNextStepCopy(
+  status: ClientMediaDisplayStatus,
+): string {
+  switch (status) {
+    case "Uploaded":
+      return "Veroxa received it and will review if it is useful for upcoming updates.";
+    case "Reviewed":
+      return "Veroxa checked it and is deciding the best use.";
+    case "Ready":
+      return "Ready for use when it fits the next update.";
+    case "Scheduled":
+      return "Planned for posting or use in an upcoming update.";
+    case "Posted":
+      return "Live or already used in Veroxa work.";
+    case "Needs better media":
+      return "Please provide a clearer version if this item still matters.";
+    case "Waiting for direction":
+      return "Veroxa needs a quick note before using this.";
+    case "Saved for later":
+      return "Saved for a future moment, but not urgent right now.";
+    case "Not usable":
+      return "Not recommended for Veroxa to use as-is.";
+    case "Already used":
+      return "Already posted or used in previous Veroxa work.";
+  }
+}

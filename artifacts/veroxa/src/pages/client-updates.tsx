@@ -1,4 +1,5 @@
 import { CheckCircle2, ImageIcon, MessageSquare } from "lucide-react";
+import { Link } from "wouter";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -157,6 +158,11 @@ export default function ClientUpdates() {
                 <p className="mt-0.5 text-xs text-muted-foreground">
                   {item.clientVisibleNote}
                 </p>
+                <Link href="/client/requests">
+                  <span className="mt-2 inline-flex text-xs text-primary hover:underline">
+                    Reply in Requests
+                  </span>
+                </Link>
               </div>
             ))
           )}
@@ -200,9 +206,11 @@ function ProgressLane({
               <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
                 {item.note}
               </p>
-              <p className="mt-1 text-[11px] text-primary/80">
-                See Media for item details.
-              </p>
+              <Link href={`/client/media?media=${item.id}`}>
+                <span className="mt-1 inline-flex text-[11px] text-primary/80 hover:underline">
+                  Open Media details
+                </span>
+              </Link>
             </div>
           ))}
         </div>

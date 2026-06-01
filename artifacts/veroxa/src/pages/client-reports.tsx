@@ -41,11 +41,13 @@ export default function ClientReports() {
         .slice(0, 2)
     : [];
 
+  const sampleLabel = mode.allowDemoFixtures ? "Sample" : null;
+
   const weeklyReports: ReportCard[] = weeklyUpdate
     ? [
         {
           id: "weekly-current",
-          title: "Weekly Report",
+          title: sampleLabel ? `${sampleLabel} Weekly Report` : "Weekly Report",
           period: "This week",
           sections: [
             {
@@ -88,7 +90,9 @@ export default function ClientReports() {
     ? [
         {
           id: "monthly-current",
-          title: "Monthly Report",
+          title: sampleLabel
+            ? `${sampleLabel} Monthly Report`
+            : "Monthly Report",
           period: "This month",
           sections: [
             {
@@ -152,12 +156,12 @@ export default function ClientReports() {
         <ReportSection
           title="Weekly Reports"
           reports={weeklyReports}
-          empty="Weekly reports will appear here after Veroxa prepares the week summary."
+          empty="Reports will appear after enough account activity. Weekly summaries will not show invented metrics."
         />
         <ReportSection
           title="Monthly Reports"
           reports={monthlyReports}
-          empty="Monthly reports will appear here after the month is summarized."
+          empty="Reports will appear after enough account activity. Monthly summaries will use trustworthy account data only."
         />
       </div>
     </PortalLayout>
@@ -199,7 +203,9 @@ function ReportSection({
                 <div>
                   <p className="text-sm font-semibold">{report.title}</p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Simple summary, not an analytics dashboard.
+                    {report.title.startsWith("Sample")
+                      ? "Sample summary for the Client Demo."
+                      : "Simple summary, not an analytics dashboard."}
                   </p>
                 </div>
                 <Badge
