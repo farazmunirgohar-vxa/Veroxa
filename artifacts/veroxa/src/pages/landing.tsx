@@ -57,29 +57,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="py-24 px-6 lg:px-12 bg-card/20 border-t border-border/40">
-        <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-4">Request a Free Restaurant Audit</h2>
-          <p className="text-muted-foreground mb-10 leading-relaxed">
-            See where your restaurant&apos;s Google visibility, reviews, website, and online
-            presence can improve.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/free-audit" data-testid="btn-cta-audit">
-              <Button size="lg" className="h-12 px-7 font-semibold shadow-[0_0_20px_rgba(99,102,241,0.25)]">
-                Request Free Audit
-              </Button>
-            </Link>
-            <Link href="/services" data-testid="btn-cta-services">
-              <Button size="lg" variant="outline" className="h-12 px-7 border-border/60 hover:bg-accent/50">
-                View Services
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
       <PublicFooter />
     </div>
   );
