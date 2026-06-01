@@ -1,5 +1,6 @@
 import type { ReadinessArea, ReadinessCheck } from "./types";
 
+// This is a first-client benchmark checklist, not proof that production auth, storage, live data, or publishing are connected.
 const readinessChecks: readonly ReadinessCheck[] = [
   {
     key: "client-dashboard-safe-states",
@@ -153,6 +154,34 @@ const readinessChecks: readonly ReadinessCheck[] = [
     status: "passing",
     severity: "blocker",
     recommendedAction: "Ask the client before approving business-truth changes.",
+  },
+
+  {
+    key: "real-client-data-pending",
+    area: "data_readiness",
+    label: "Live client account data is pending",
+    description: "Real /client/* routes show review-safe empty states until live account data is connected.",
+    status: "warning",
+    severity: "warning",
+    recommendedAction: "Connect verified account data before treating the portal as real launch-ready.",
+  },
+  {
+    key: "storage-upload-pending",
+    area: "media_workflow",
+    label: "File storage upload is not connected",
+    description: "Client media submission can be tracked in session/dev metadata, but actual cloud file upload is intentionally not active.",
+    status: "warning",
+    severity: "warning",
+    recommendedAction: "Keep upload copy honest until storage upload work is explicitly requested.",
+  },
+  {
+    key: "production-auth-pending",
+    area: "role_separation",
+    label: "Production auth is not active",
+    description: "Placeholder login can contain previews, but production client/team auth remains a future explicit switch.",
+    status: "warning",
+    severity: "warning",
+    recommendedAction: "Do not launch real client access until production auth setup and review are complete.",
   },
   {
     key: "client-safe-language",

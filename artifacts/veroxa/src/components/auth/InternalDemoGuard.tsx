@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth/useAuth";
 import type { VeroxaRole } from "@/lib/auth/authContract";
 import { getRoleHomePath } from "@/lib/auth/authContract";
-import { AUTH_MODE } from "@/lib/auth/authMode";
 
 // ---------------------------------------------------------------------------
 // InternalDemoGuard — public API
@@ -24,8 +23,8 @@ interface InternalDemoGuardProps {
  *
  * Rules:
  *   AUTH_MODE === "placeholder":
- *     - Route includes "team" → render children (active internal portal).
- *     No access code required after valid email/password login.
+ *     - Team routes require a placeholder session marker created only after
+ *       successful env-backed login. AUTH_MODE alone never grants access.
  *
  *   AUTH_MODE === "real":
  *     - loading  → "Checking Veroxa access…" card
@@ -36,17 +35,6 @@ interface InternalDemoGuardProps {
  * No writes. No token display. No service role.
  */
 export default function InternalDemoGuard({ role, children }: InternalDemoGuardProps) {
-  if (AUTH_MODE === "placeholder") {
-    const roles = Array.isArray(role) ? role : [role];
-    if (!roles.includes("team")) {
-      return <>{children}</>;
-    }
-    // Team is active in placeholder mode; no access code required.
-    return <>{children}</>;
-  }
-
-  // Real-auth path — only reached when AUTH_MODE === "real".
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const auth = useAuth();
 
   if (auth.status === "loading") {

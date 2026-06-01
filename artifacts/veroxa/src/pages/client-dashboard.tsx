@@ -15,10 +15,10 @@ import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientPortalData } from "@/hooks/useClientPortalData";
 import { RealPortalReviewNotice } from "@/components/RealPortalSafeStates";
 import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary";
+import { useActiveClientPortalContext } from "@/lib/clientPortalContext";
 import { clientTeamWorkRepository } from "@/lib/repositories";
 import { normalizeClientMediaDisplayStatus } from "@/lib/clientMediaLifecycle";
 
-const DEMO_CLIENT_ID = "demo-a";
 
 function getCurrentPeriodLabel(): string {
   const now = new Date();
@@ -28,16 +28,17 @@ function getCurrentPeriodLabel(): string {
 export default function ClientDashboard() {
   const { loading, data } = useClientPortalData();
   const mode = useRealPortalDataMode();
-  const canUseFixtureData = mode.allowDemoFixtures || mode.isLiveDataConnected;
+  const { activeClientId } = useActiveClientPortalContext();
+  const canUseFixtureData = Boolean(activeClientId) && (mode.allowDemoFixtures || mode.isLiveDataConnected);
   const mediaHref = mode.isPublicDemoRoute ? "/demo/client/dashboard" : "/client/media";
 
   const mediaItems = canUseFixtureData
     ? clientTeamWorkRepository
-        .getClientVisibleSubmissions(DEMO_CLIENT_ID)
+        .getClientVisibleSubmissions(activeClientId!)
         .filter((item) => item.submissionType === "media")
     : [];
   const actionItems = canUseFixtureData
-    ? clientTeamWorkRepository.getClientActionRequiredItems(DEMO_CLIENT_ID)
+    ? clientTeamWorkRepository.getClientActionRequiredItems(activeClientId!)
     : [];
 
   const mediaCounts = mediaItems.reduce(

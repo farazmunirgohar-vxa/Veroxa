@@ -11,7 +11,6 @@ import { clientTeamWorkRepository } from "@/lib/repositories";
 import { createWorkflowItem } from "@/lib/workflow/workflowRepository";
 import { useActiveClientPortalContext } from "@/lib/clientPortalContext";
 
-const DEMO_CLIENT_ID = "demo-a";
 
 type RequestStatus = "Received" | "In Review" | "Handled" | "Waiting for you";
 
@@ -32,8 +31,8 @@ function getSimpleRequestStatus(status: string): RequestStatus {
 
 export default function ClientRequests() {
   const mode = useRealPortalDataMode();
-  const canUseFixtureData = mode.allowDemoFixtures || mode.isLiveDataConnected;
   const { activeClientId } = useActiveClientPortalContext();
+  const canUseFixtureData = Boolean(activeClientId) && (mode.allowDemoFixtures || mode.isLiveDataConnected);
   const [noteText, setNoteText] = useState("");
   const [requestType, setRequestType] = useState("General note");
   const [sentMessage, setSentMessage] = useState<string | null>(null);
@@ -46,7 +45,7 @@ export default function ClientRequests() {
 
   const sampleRequests = canUseFixtureData
     ? clientTeamWorkRepository
-        .getClientVisibleSubmissions(DEMO_CLIENT_ID)
+        .getClientVisibleSubmissions(activeClientId!)
         .filter((item) => item.submissionType !== "media")
         .slice(0, 4)
         .map((item) => ({
@@ -58,7 +57,7 @@ export default function ClientRequests() {
     : [];
 
   const actionItems = canUseFixtureData
-    ? clientTeamWorkRepository.getClientActionRequiredItems(DEMO_CLIENT_ID)
+    ? clientTeamWorkRepository.getClientActionRequiredItems(activeClientId!)
     : [];
   const requests = [...localRequests, ...sampleRequests];
 
@@ -66,7 +65,7 @@ export default function ClientRequests() {
     const trimmed = noteText.trim();
     if (!trimmed) return;
     const title = `${requestType}: ${trimmed.length > 48 ? `${trimmed.slice(0, 48)}…` : trimmed}`;
-    if (canUseFixtureData) {
+    if (canUseFixtureData && activeClientId) {
       createWorkflowItem({
         clientId: activeClientId,
         type: "client_request",

@@ -13,6 +13,7 @@ const app = read("artifacts/api-server/src/app.ts");
 const routesIndex = read("artifacts/api-server/src/routes/index.ts");
 const apiSecurity = read("artifacts/api-server/src/middlewares/apiSecurity.ts");
 const corsPolicy = read("artifacts/api-server/src/middlewares/corsPolicy.ts");
+const openApiSpec = read("lib/api-spec/openapi.yaml");
 
 if (/app\.use\(cors\(\)\)/.test(app) || /\bcors\(\s*\)/.test(app)) {
   failures.push("api-server app must not mount open cors(); use veroxaCors() allowlist policy.");
@@ -61,6 +62,19 @@ if (!/process\.env\[["']NODE_ENV["']\]\s*===\s*["']development["']/.test(apiSecu
 }
 if (!/res\.status\(429\)/.test(apiSecurity)) {
   failures.push("protected API rate limiter must return 429 when exceeded.");
+}
+
+
+for (const route of [
+  "/ai/draft",
+  "/audit/ai-draft",
+  "/audit/search-restaurants",
+  "/audit/restaurant-details",
+]) {
+  if (!openApiSpec.includes(route)) failures.push(`OpenAPI spec must document protected route ${route}.`);
+}
+if (!openApiSpec.includes("VeroxaInternalApiKey") || !openApiSpec.includes("Server-side/internal use only")) {
+  failures.push("OpenAPI spec must document protected route API-key security as internal/server-side only.");
 }
 
 if (failures.length > 0) {

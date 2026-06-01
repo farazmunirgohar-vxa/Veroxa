@@ -41,7 +41,7 @@ export function getFirstClientLaunchGate(checks: readonly ReadinessCheck[] = get
     requiredCheckKeys: requiredLaunchGateCheckKeys,
     blockers,
     message: isReady
-      ? "First-client launch gate is ready for Faraz review. Manual execution and Veroxa team review still apply."
-      : "First-client launch gate needs setup before client launch.",
+      ? "First-client benchmark gate is ready for Faraz review. Production auth, storage, live data, and manual execution review still apply."
+      : "First-client benchmark gate needs setup before client launch.",
   };
 }

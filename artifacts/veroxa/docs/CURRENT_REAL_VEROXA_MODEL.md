@@ -165,3 +165,10 @@ Preview and Login stay separate from the live portals.
 Many `docs/*` files describe planned or aspirational layers (AI agents, auth,
 publishing, lead engines). They remain as plans. This document and the three
 companion stage docs describe what is actually live in the two-role model today.
+
+## 2026-06 integrity pass notes
+
+- Public Client Demo remains the only public demo route and may use sample `demo-a` data.
+- Real `/client/*` routes should use active client context and show safe review/empty states when live account data is not connected; they should not silently present `demo-a` as the active client.
+- Real `/team/*` routes require a successful placeholder login marker or future real auth session before rendering.
+- First-client readiness is a benchmark/checklist surface, not proof that production auth, storage uploads, live account data, or publishing connectors are complete.

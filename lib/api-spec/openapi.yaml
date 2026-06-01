@@ -10,13 +10,17 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: protected-ai
+    description: Protected AI drafting operations. Browser clients must not provide API keys.
+  - name: protected-audit
+    description: Protected restaurant audit lookup operations. Browser clients must not provide API keys.
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
+      description: Returns server health status. This route is public.
       responses:
         "200":
           description: Healthy
@@ -24,7 +28,132 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /ai/draft:
+    post:
+      operationId: createAiDraft
+      tags: [protected-ai]
+      summary: Create a Veroxa team draft
+      description: Protected and feature-gated server route. The browser app must not attach x-veroxa-api-key; unauthenticated previews should fall back safely.
+      security:
+        - VeroxaInternalApiKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                draftType:
+                  type: string
+                restaurantName:
+                  type: string
+                clientName:
+                  type: string
+                context:
+                  type: object
+                  additionalProperties: true
+              required: [draftType]
+      responses:
+        "200":
+          description: Draft response or fallback envelope
+        "401":
+          description: Missing or invalid protected API access
+        "403":
+          description: AI routes are disabled
+  /audit/ai-draft:
+    post:
+      operationId: createAuditAiDraft
+      tags: [protected-audit]
+      summary: Create an audit draft
+      description: Protected and AI-feature-gated server route. Browser clients should treat this as unavailable unless a safe server-side access pattern exists.
+      security:
+        - VeroxaInternalApiKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                restaurantProfile:
+                  type: object
+                  additionalProperties: true
+                growthReportSections:
+                  type: array
+                  items:
+                    type: object
+                    additionalProperties: true
+                auditSummary:
+                  type: object
+                  additionalProperties: true
+      responses:
+        "200":
+          description: Audit draft response
+        "401":
+          description: Missing or invalid protected API access
+        "403":
+          description: AI routes are disabled
+  /audit/search-restaurants:
+    post:
+      operationId: searchAuditRestaurants
+      tags: [protected-audit]
+      summary: Search restaurants for audit lookup
+      description: Protected and Google-feature-gated server route. Browser clients must not include protected API secrets.
+      security:
+        - VeroxaInternalApiKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                restaurantName:
+                  type: string
+                city:
+                  type: string
+                state:
+                  type: string
+              required: [restaurantName]
+      responses:
+        "200":
+          description: Candidate list or fallback envelope
+        "401":
+          description: Missing or invalid protected API access
+        "403":
+          description: Google routes are disabled
+  /audit/restaurant-details:
+    post:
+      operationId: getAuditRestaurantDetails
+      tags: [protected-audit]
+      summary: Get restaurant details for audit lookup
+      description: Protected and Google-feature-gated server route. Browser clients must not include protected API secrets.
+      security:
+        - VeroxaInternalApiKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                placeId:
+                  type: string
+              required: [placeId]
+      responses:
+        "200":
+          description: Restaurant details response
+        "401":
+          description: Missing or invalid protected API access
+        "403":
+          description: Google routes are disabled
 components:
+  securitySchemes:
+    VeroxaInternalApiKey:
+      type: apiKey
+      in: header
+      name: x-veroxa-api-key
+      description: Server-side/internal use only. Do not expose this header from browser code.
   schemas:
     HealthStatus:
       type: object

@@ -10,6 +10,7 @@ import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary"
 import { clientTeamWorkRepository } from "@/lib/repositories";
 import { createWorkflowItem } from "@/lib/workflow/workflowRepository";
 import { veroxaWriteAdapter } from "@/lib/data/writeAdapter";
+import { WRITES_ENABLED } from "@/lib/data/writeReadiness";
 import { getDevClientIdFromEnv } from "@/lib/data/devClientId";
 import { useActiveClientPortalContext } from "@/lib/clientPortalContext";
 import {
@@ -18,7 +19,6 @@ import {
   type ClientMediaDisplayStatus,
 } from "@/lib/clientMediaLifecycle";
 
-const DEMO_CLIENT_ID = "demo-a";
 
 const DIRECTION_OPTIONS = [
   { value: "", label: "No direction — use where helpful" },
@@ -43,6 +43,39 @@ interface ClientMediaItem {
   note?: string;
   direction?: string;
   source: "upload" | "ready" | "posted";
+}
+
+
+const SUBMISSION_KEY_PREFIX = "veroxa.mediaSubmissionKeys.v1";
+
+function getSubmissionKeyStore(): Set<string> {
+  if (typeof window === "undefined") return new Set();
+  try {
+    const raw = window.sessionStorage.getItem(SUBMISSION_KEY_PREFIX);
+    const parsed = raw ? (JSON.parse(raw) as unknown) : [];
+    return new Set(Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string") : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function saveSubmissionKeyStore(keys: Set<string>): void {
+  if (typeof window === "undefined") return;
+  window.sessionStorage.setItem(SUBMISSION_KEY_PREFIX, JSON.stringify([...keys].slice(-100)));
+}
+
+function buildClientSubmissionKey(clientId: string, file: SelectedFile, note: string): string {
+  return [clientId, file.name, file.sizeKb, file.kind, note].join("|").toLowerCase();
+}
+
+function hasRecordedSubmissionKey(key: string): boolean {
+  return getSubmissionKeyStore().has(key);
+}
+
+function recordSubmissionKey(key: string): void {
+  const keys = getSubmissionKeyStore();
+  keys.add(key);
+  saveSubmissionKeyStore(keys);
 }
 
 const toneStyles: Record<ReturnType<typeof getClientMediaStatusTone>, string> = {
@@ -71,12 +104,12 @@ export default function ClientMedia() {
   const inputRef = useRef<HTMLInputElement>(null);
   const { activeClientId, isRealClientSession } = useActiveClientPortalContext();
   const mode = useRealPortalDataMode();
-  const canUseFixtureData = mode.allowDemoFixtures || mode.isLiveDataConnected;
+  const canUseFixtureData = Boolean(activeClientId) && (mode.allowDemoFixtures || mode.isLiveDataConnected);
 
   const repositoryMediaItems = useMemo<ClientMediaItem[]>(() => {
     if (!canUseFixtureData) return [];
     return clientTeamWorkRepository
-      .getClientVisibleSubmissions(DEMO_CLIENT_ID)
+      .getClientVisibleSubmissions(activeClientId!)
       .filter((submission) => submission.submissionType === "media")
       .map((submission) => {
         const workItem = clientTeamWorkRepository.getSubmissionWorkItemForClient(submission.id);
@@ -98,16 +131,16 @@ export default function ClientMedia() {
                 : "upload",
         };
       });
-  }, [canUseFixtureData]);
+  }, [activeClientId, canUseFixtureData]);
 
   const mediaItems = [...localUploads, ...repositoryMediaItems];
   const uploadedMedia = mediaItems.filter((item) => item.source === "upload");
   const readyMedia = mediaItems.filter((item) => item.source === "ready");
   const postedMedia = mediaItems.filter((item) => item.source === "posted");
 
-  const handleSubmitToTeam = () => {
+  const handleSubmitToTeam = async () => {
     if (files.length === 0) return;
-    const workflowClientId = canUseFixtureData ? activeClientId : "pending-live-client";
+    const workflowClientId = canUseFixtureData && activeClientId ? activeClientId : "pending-live-client";
     const noteWithDirection = [direction, submitNote.trim()].filter(Boolean).join(" — ");
     const item = createWorkflowItem({
       clientId: workflowClientId,
@@ -135,24 +168,37 @@ export default function ClientMedia() {
     setSubmitNote("");
     setDirection("");
     setPickerMessage(null);
-    setSubmitMessage("Uploaded. Veroxa has your media and will review it before anything goes live.");
+    setSubmitMessage("Added to this demo session. No file storage is connected yet; Veroxa can review this session item here.");
 
-    const devClientId = isRealClientSession ? activeClientId : getDevClientIdFromEnv();
-    if (devClientId) {
-      void Promise.all(
-        filesToWrite.map((file) =>
-          veroxaWriteAdapter.createUploadSubmission({
-            restaurantId: devClientId,
-            uploadKeyId: null,
-            category: file.kind.startsWith("video/") ? "short_video" : file.kind.startsWith("image/") ? "food_photo" : "other",
-            priority: "use_anytime",
-            note: noteWithDirection || null,
-            submittedByLabel: "client_portal",
-          }),
-        ),
-      ).catch(() => {
-        /* review flow remains visible even if optional persistence is unavailable */
-      });
+    const devClientId = isRealClientSession && activeClientId ? activeClientId : getDevClientIdFromEnv();
+    if (!WRITES_ENABLED || !devClientId) return;
+
+    const results = await Promise.all(
+      filesToWrite.map(async (file) => {
+        const submissionKey = buildClientSubmissionKey(devClientId, file, noteWithDirection);
+        if (hasRecordedSubmissionKey(submissionKey)) return "duplicate-skipped" as const;
+        const result = await veroxaWriteAdapter.createUploadSubmission({
+          restaurantId: devClientId,
+          uploadKeyId: null,
+          category: file.kind.startsWith("video/") ? "short_video" : file.kind.startsWith("image/") ? "food_photo" : "other",
+          priority: "use_anytime",
+          note: noteWithDirection || null,
+          submittedByLabel: "client_portal",
+        });
+        if (result.ok) {
+          recordSubmissionKey(submissionKey);
+          return "saved" as const;
+        }
+        return result.status === "disabled" ? "disabled" as const : "failed" as const;
+      }),
+    );
+
+    if (results.some((result) => result === "failed")) {
+      setSubmitMessage("Added to this demo session. Could not save the media note to the dev database; please try again.");
+    } else if (results.some((result) => result === "saved")) {
+      setSubmitMessage("Submitted to Veroxa and saved to the dev database. No file storage is connected yet.");
+    } else if (results.every((result) => result === "duplicate-skipped")) {
+      setSubmitMessage("Already submitted in this browser session. No duplicate dev save was created.");
     }
   };
 

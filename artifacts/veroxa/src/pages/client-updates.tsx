@@ -5,10 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { RealPortalReviewNotice } from "@/components/RealPortalSafeStates";
 import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary";
+import { useActiveClientPortalContext } from "@/lib/clientPortalContext";
 import { clientTeamWorkRepository } from "@/lib/repositories";
 import { normalizeClientMediaDisplayStatus } from "@/lib/clientMediaLifecycle";
 
-const DEMO_CLIENT_ID = "demo-a";
 
 type SimpleStatus = "Received" | "In Review" | "Ready" | "Scheduled" | "Posted" | "Waiting for you";
 
@@ -33,9 +33,10 @@ function toSimpleStatus(input: string): SimpleStatus {
 
 export default function ClientUpdates() {
   const mode = useRealPortalDataMode();
-  const canUseFixtureData = mode.allowDemoFixtures || mode.isLiveDataConnected;
+  const { activeClientId } = useActiveClientPortalContext();
+  const canUseFixtureData = Boolean(activeClientId) && (mode.allowDemoFixtures || mode.isLiveDataConnected);
   const submissions = canUseFixtureData
-    ? clientTeamWorkRepository.getClientVisibleSubmissions(DEMO_CLIENT_ID)
+    ? clientTeamWorkRepository.getClientVisibleSubmissions(activeClientId!)
     : [];
 
   const mediaUpdates = submissions
@@ -48,7 +49,7 @@ export default function ClientUpdates() {
       status: toSimpleStatus(item.status),
     }));
   const waitingItems = canUseFixtureData
-    ? clientTeamWorkRepository.getClientActionRequiredItems(DEMO_CLIENT_ID).slice(0, 3)
+    ? clientTeamWorkRepository.getClientActionRequiredItems(activeClientId!).slice(0, 3)
     : [];
 
   return (

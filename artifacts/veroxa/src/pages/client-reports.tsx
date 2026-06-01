@@ -5,14 +5,15 @@ import { Badge } from "@/components/ui/badge";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { RealPortalReviewNotice } from "@/components/RealPortalSafeStates";
 import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary";
+import { useActiveClientPortalContext } from "@/lib/clientPortalContext";
 import { generateClientWeeklyUpdate } from "@/domain/clientPortalJourney";
 
-const DEMO_CLIENT_ID = "demo-a";
 
 export default function ClientReports() {
   const mode = useRealPortalDataMode();
-  const canUseFixtureData = mode.allowDemoFixtures || mode.isLiveDataConnected;
-  const weeklyUpdate = canUseFixtureData ? generateClientWeeklyUpdate(DEMO_CLIENT_ID) : null;
+  const { activeClientId } = useActiveClientPortalContext();
+  const canUseFixtureData = Boolean(activeClientId) && (mode.allowDemoFixtures || mode.isLiveDataConnected);
+  const weeklyUpdate = canUseFixtureData ? generateClientWeeklyUpdate(activeClientId!) : null;
 
   const weeklyReports = weeklyUpdate
     ? [

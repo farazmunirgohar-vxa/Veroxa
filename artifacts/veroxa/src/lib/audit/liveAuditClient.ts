@@ -92,7 +92,7 @@ export async function searchLiveRestaurantCandidates(input: {
   try {
     const res = await fetch("/api/audit/search-restaurants", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json" }, // No protected API secret in browser code.
       body: JSON.stringify(input),
     });
     if (!res.ok) {
@@ -153,7 +153,7 @@ export async function getLiveRestaurantDetails(
   try {
     const res = await fetch("/api/audit/restaurant-details", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json" }, // No protected API secret in browser code.
       body: JSON.stringify({ placeId }),
     });
     if (!res.ok) {

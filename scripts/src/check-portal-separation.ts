@@ -12,6 +12,8 @@ const activeFiles = [
   "artifacts/veroxa/src/components/PortalLayout.tsx",
   "artifacts/veroxa/src/lib/auth/devCredentials.ts",
   "artifacts/veroxa/src/lib/auth/authContract.ts",
+  "artifacts/veroxa/src/lib/auth/placeholderSession.ts",
+  "artifacts/veroxa/src/components/auth/InternalDemoGuard.tsx",
   "artifacts/veroxa/src/lib/demoRoutes.ts",
   "artifacts/veroxa/src/lib/clientPortalNav.ts",
   "artifacts/veroxa/src/lib/teamPortalNav.ts",
@@ -126,11 +128,36 @@ const loginAndAuth = [
   "artifacts/veroxa/src/pages/login.tsx",
   "artifacts/veroxa/src/lib/auth/devCredentials.ts",
   "artifacts/veroxa/src/lib/auth/authContract.ts",
+  "artifacts/veroxa/src/lib/auth/placeholderSession.ts",
 ].map((file) => readFileSync(join(root, file), "utf8")).join("\n");
 if (/setLocation\([^)]+\/demo\/client\/dashboard/.test(loginAndAuth) || /client:\s*["']\/demo\/client\/dashboard/.test(loginAndAuth)) {
   failures.push("Placeholder/login contract must not route client login to /demo/client/dashboard.");
 }
 if (/\/demo\/team/.test(loginAndAuth)) failures.push("Placeholder/login contract must not route to /demo/team/*.");
+
+const internalGuardSource = readFileSync(join(root, "artifacts/veroxa/src/components/auth/InternalDemoGuard.tsx"), "utf8");
+if (!internalGuardSource.includes("useAuth()")) {
+  failures.push("InternalDemoGuard must read auth state for team route containment.");
+}
+if (/AUTH_MODE === ["']placeholder["'][\s\S]{0,400}return <>{children}<\/>/.test(internalGuardSource)) {
+  failures.push("InternalDemoGuard must not render team children from AUTH_MODE === placeholder alone.");
+}
+if (!loginAndAuth.includes("createPlaceholderSession") || !internalGuardSource.includes('auth.status === "unauthenticated"')) {
+  failures.push("Placeholder team access must require a session marker created after successful login.");
+}
+
+for (const clientFile of [
+  "artifacts/veroxa/src/pages/client-dashboard.tsx",
+  "artifacts/veroxa/src/pages/client-media.tsx",
+  "artifacts/veroxa/src/pages/client-requests.tsx",
+  "artifacts/veroxa/src/pages/client-updates.tsx",
+  "artifacts/veroxa/src/pages/client-reports.tsx",
+]) {
+  const text = readFileSync(join(root, clientFile), "utf8");
+  if (/const\s+DEMO_CLIENT_ID\s*=\s*["']demo-a["']/.test(text)) {
+    failures.push(`${clientFile} must not hardcode demo-a as a page-level client id; use active client context/demo boundary.`);
+  }
+}
 
 const authModeSource = readFileSync(join(root, "artifacts/veroxa/src/lib/auth/authMode.ts"), "utf8");
 const loginSource = readFileSync(join(root, "artifacts/veroxa/src/pages/login.tsx"), "utf8");
