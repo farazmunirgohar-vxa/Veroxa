@@ -3,6 +3,7 @@ import {
   Eye,
   Users,
   FileText,
+  MessageSquare,
   ArrowRight,
   LayoutGrid,
   TrendingUp,
@@ -44,6 +45,10 @@ import {
   usePreparedActions,
 } from "@/lib/preparedActions";
 import { getVisibilityAuditOverview } from "@/lib/visibilityAudit";
+import {
+  getTeamWorkflowItems,
+  getTeamWorkflowSnapshot,
+} from "@/lib/workflow/workflowRepository";
 import {
   getFirstFiveTeamCommandCenterSummary,
   getFirstFiveTeamViewModels,
@@ -171,6 +176,55 @@ export default function TeamDashboard() {
   const approvalsPreview = pendingApprovals.slice(0, 3);
 
   // Visibility Audit roll-up — rule-based findings ready to prepare (team-only).
+  const workflowSnapshot = getTeamWorkflowSnapshot();
+  const clientRequestItems = getTeamWorkflowItems()
+    .filter((item) => item.type === "client_request")
+    .slice(0, 3);
+
+  const cockpitCards = [
+    {
+      label: "Needs review",
+      value:
+        pendingApprovals.length +
+        reviewReady.length +
+        workflowSnapshot.needsTeamReview,
+      href: "/team/work-queue",
+      icon: Eye,
+      color: "text-violet-400",
+    },
+    {
+      label: "Ready to schedule",
+      value: queueOrHold.length + workflowSnapshot.schedulePrepReady,
+      href: "/team/work-queue",
+      icon: ClipboardCheck,
+      color: "text-emerald-400",
+    },
+    {
+      label: "Client requests",
+      value: clientRequestItems.length,
+      href: "/team/direction-queue",
+      icon: MessageSquare,
+      color: "text-sky-400",
+    },
+    {
+      label: "Blocked / needs input",
+      value:
+        waitingOnClient.length +
+        workflowSnapshot.needsClientInput +
+        workflowSnapshot.blocked,
+      href: "/team/work-queue",
+      icon: Users,
+      color: "text-amber-400",
+    },
+    {
+      label: "Reports due",
+      value: workflowSnapshot.reportReady,
+      href: "/team/report-queue",
+      icon: FileText,
+      color: "text-cyan-400",
+    },
+  ];
+
   const visibilityOverview = canUseFixtureData
     ? getVisibilityAuditOverview()
     : {
@@ -198,12 +252,11 @@ export default function TeamDashboard() {
         />
       ) : (
         <SafePortalEmptyCard
-          title="Solo founder command center shell"
+          title="Team cockpit shell"
           body="Live client operations are not connected yet. Active work queues stay empty here instead of showing demo restaurants as real clients."
-          testId="empty-team-command-center-shell"
+          testId="empty-team-cockpit-shell"
         />
       )}
-
 
       <div className="mb-6" data-testid="card-first-client-readiness-preview">
         <Card className="bg-card border-border">
@@ -216,11 +269,18 @@ export default function TeamDashboard() {
           <CardContent className="grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
-                <StatusBadge tone={firstClientBlockingChecks.length > 0 ? "danger" : "info"}>
-                  {getReadinessStatusLabel(firstClientReadinessSummary.overallStatus)}
+                <StatusBadge
+                  tone={
+                    firstClientBlockingChecks.length > 0 ? "danger" : "info"
+                  }
+                >
+                  {getReadinessStatusLabel(
+                    firstClientReadinessSummary.overallStatus,
+                  )}
                 </StatusBadge>
                 <span className="text-sm font-medium">
-                  {firstClientReadinessSummary.completionPercentage}% ready · {firstClientBlockingChecks.length} blocking checks
+                  {firstClientReadinessSummary.completionPercentage}% ready ·{" "}
+                  {firstClientBlockingChecks.length} blocking checks
                 </span>
               </div>
               <p className="text-sm text-muted-foreground">
@@ -237,18 +297,96 @@ export default function TeamDashboard() {
         </Card>
       </div>
 
-      {!canUseFixtureData && (
-        <div className="space-y-4 mb-6" data-testid="section-review-mode-command-center">
+      <div className="mb-6" data-testid="section-team-cockpit">
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">Team cockpit</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+            {cockpitCards.map(({ label, value, href, icon: Icon, color }) => (
+              <Link key={label} href={href}>
+                <div className="h-full rounded-lg border border-border bg-muted/20 p-3 transition-colors hover:border-primary/30">
+                  <div
+                    className={`mb-2 flex items-center justify-between ${color}`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/50" />
+                  </div>
+                  <p className="text-2xl font-bold tabular-nums">{value}</p>
+                  <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
+                    {label}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+
+      {clientRequestItems.length > 0 && (
+        <div className="mb-6" data-testid="section-client-requests-cockpit">
           <Card className="bg-card border-border">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Solo founder command center shell</CardTitle>
+              <CardTitle className="text-sm flex items-center justify-between gap-2">
+                <span className="flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4 text-primary" /> Client
+                  requests
+                </span>
+                <Link href="/team/direction-queue">
+                  <span className="text-xs text-primary hover:underline cursor-pointer">
+                    Open direction queue
+                  </span>
+                </Link>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {clientRequestItems.map((item) => (
+                <div
+                  key={item.workflowItemId}
+                  className="rounded-md border border-border bg-muted/20 p-3"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-semibold">{item.title}</p>
+                      <p className="text-[11px] text-muted-foreground">
+                        {item.restaurantName} · Client request ·{" "}
+                        {item.internalTeamStatus}
+                      </p>
+                    </div>
+                    <StatusBadge tone="info">
+                      {item.internalTeamStatus}
+                    </StatusBadge>
+                  </div>
+                  <p className="mt-1.5 text-xs text-foreground/80">
+                    <span className="text-muted-foreground">Next:</span>{" "}
+                    {item.nextTeamAction}
+                  </p>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {!canUseFixtureData && (
+        <div
+          className="space-y-4 mb-6"
+          data-testid="section-review-mode-cockpit"
+        >
+          <Card className="bg-card border-border">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Team cockpit shell</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Review-mode operational records only. Live integrations are not connected yet, and public demo fixtures are not treated as active clients.
+                Review-mode operational records only. Live integrations are not
+                connected yet, and public demo fixtures are not treated as
+                active clients.
               </p>
               <TeamCommandSummaryGrid summary={reviewModeSummary} />
-              <p className="text-sm text-muted-foreground">{reviewModeSummary.workloadSummary}</p>
+              <p className="text-sm text-muted-foreground">
+                {reviewModeSummary.workloadSummary}
+              </p>
             </CardContent>
           </Card>
           <div className="grid gap-4 xl:grid-cols-2">
@@ -262,7 +400,9 @@ export default function TeamDashboard() {
             </Card>
             <Card className="bg-card border-border">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Review-mode client overview</CardTitle>
+                <CardTitle className="text-sm">
+                  Review-mode client overview
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <TeamClientOverviewList overview={reviewModeOverview} />
@@ -272,12 +412,12 @@ export default function TeamDashboard() {
         </div>
       )}
 
-      <div className="mb-6" data-testid="section-first-five-command-center">
+      <div className="mb-6" data-testid="section-first-five-cockpit">
         <Card className="bg-card border-border">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-primary" />
-              First-5 Launch Readiness Benchmark
+              First-5 Launch Readiness
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -552,11 +692,11 @@ export default function TeamDashboard() {
         </div>
       )}
 
-      {/* Live workflow command center */}
+      {/* Live workflow cockpit */}
       <div className="mb-6">
         {canUseFixtureData ? (
           <TeamWorkflowPanel
-            title="Workflow command center"
+            title="Workflow cockpit"
             icon={<LayoutGrid className="w-4 h-4 text-primary" />}
             emptyText="No active workflow items right now."
             testId="card-team-workflow-command-center"
@@ -566,7 +706,7 @@ export default function TeamDashboard() {
           <SafePortalEmptyCard
             title="No active client work connected yet"
             body="Work items will appear here after live client operations are connected."
-            testId="empty-team-workflow-command-center"
+            testId="empty-team-workflow-cockpit"
           />
         )}
       </div>
