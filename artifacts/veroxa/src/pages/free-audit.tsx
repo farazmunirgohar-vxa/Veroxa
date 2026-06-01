@@ -25,6 +25,7 @@ import {
   createAuditLeadFromReport,
   saveAuditLead,
 } from "@/lib/leads/localAuditLeadStore";
+import { useDocumentMeta } from "@/hooks/useDocumentMeta";
 import type {
   AuditLeadContact,
   AuditLeadSelectedRestaurant,
@@ -156,6 +157,11 @@ const emptyContact: AuditLeadContact = {
 };
 
 export default function FreeAudit() {
+  useDocumentMeta({
+    title: "Free Restaurant Audit — Veroxa",
+    description: "Request a free restaurant online presence audit from Veroxa.",
+  });
+
   const [input, setInput] = useState<RestaurantAuditInput>(initialInput);
   const [report, setReport] = useState<RestaurantAuditReport | null>(null);
   const [aiDraft, setAiDraft] = useState<AiAuditDraft | null>(null);

@@ -1,196 +1,203 @@
+import { lazy } from "react";
 import { Switch, Route, Router as WouterRouter } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { ErrorBoundary } from "@/components/common";
+import { ErrorBoundary, RouteBoundary } from "@/components/common";
 import { ScrollToTop } from "@/components/ScrollToTop";
-import NotFound from "@/pages/not-found";
 
-// Public site
-import LandingPage from "@/pages/landing";
-import ServicesPage from "@/pages/services";
-import PricingPage from "@/pages/pricing";
-import LoginPage from "@/pages/login";
-import FreeAudit from "@/pages/free-audit";
-
-// Client Demo sample (sample data, no login)
-import DemoHub from "@/pages/demo-hub";
-import GuidedDemo from "@/pages/guided-demo";
-import RestaurantUploadAccess from "@/pages/restaurant-upload-access";
-
-// Client Portal (real Veroxa OS review — /client/*)
-import ClientDashboard from "@/pages/client-dashboard";
-import ClientMedia from "@/pages/client-media";
-import ClientRequests from "@/pages/client-requests";
-import ClientUpdates from "@/pages/client-updates";
-import ClientReports from "@/pages/client-reports";
-
-// Team Portal (real Veroxa OS review — /team/*, login required)
+// Route guards (small wrappers — kept eager so guard logic runs immediately)
 import InternalDemoGuard from "@/components/auth/InternalDemoGuard";
 import ClientPortalGuard from "@/components/auth/ClientPortalGuard";
 import { RealPortalDataBoundary } from "@/components/auth/RealPortalDataBoundary";
-import TeamDashboard from "@/pages/team-dashboard";
-import TeamApprovalQueue from "@/pages/team-approval-queue";
-import TeamVisibilityAudit from "@/pages/team-visibility-audit";
-import TeamFirstClientReadiness from "@/pages/team-first-client-readiness";
-import TeamUploadInbox from "@/pages/team-upload-inbox";
-import TeamWorkQueue from "@/pages/team-work-queue";
-import TeamDirectionQueue from "@/pages/team-direction-queue";
-import TeamReportQueue from "@/pages/team-report-queue";
-import TeamAuditLeads from "@/pages/team-audit-leads";
+
+// Page components — lazy-loaded so visitors only download the route they open.
+const NotFound = lazy(() => import("@/pages/not-found"));
+
+// Public site
+const LandingPage = lazy(() => import("@/pages/landing"));
+const ServicesPage = lazy(() => import("@/pages/services"));
+const PricingPage = lazy(() => import("@/pages/pricing"));
+const LoginPage = lazy(() => import("@/pages/login"));
+const FreeAudit = lazy(() => import("@/pages/free-audit"));
+
+// Client Demo sample (sample data, no login)
+const DemoHub = lazy(() => import("@/pages/demo-hub"));
+const GuidedDemo = lazy(() => import("@/pages/guided-demo"));
+const RestaurantUploadAccess = lazy(() => import("@/pages/restaurant-upload-access"));
+
+// Client Portal (real Veroxa OS review — /client/*)
+const ClientDashboard = lazy(() => import("@/pages/client-dashboard"));
+const ClientMedia = lazy(() => import("@/pages/client-media"));
+const ClientRequests = lazy(() => import("@/pages/client-requests"));
+const ClientUpdates = lazy(() => import("@/pages/client-updates"));
+const ClientReports = lazy(() => import("@/pages/client-reports"));
+
+// Team Portal (real Veroxa OS review — /team/*, login required)
+const TeamDashboard = lazy(() => import("@/pages/team-dashboard"));
+const TeamApprovalQueue = lazy(() => import("@/pages/team-approval-queue"));
+const TeamVisibilityAudit = lazy(() => import("@/pages/team-visibility-audit"));
+const TeamFirstClientReadiness = lazy(() => import("@/pages/team-first-client-readiness"));
+const TeamUploadInbox = lazy(() => import("@/pages/team-upload-inbox"));
+const TeamWorkQueue = lazy(() => import("@/pages/team-work-queue"));
+const TeamDirectionQueue = lazy(() => import("@/pages/team-direction-queue"));
+const TeamReportQueue = lazy(() => import("@/pages/team-report-queue"));
+const TeamAuditLeads = lazy(() => import("@/pages/team-audit-leads"));
 
 const queryClient = new QueryClient();
 
 function Router() {
   return (
-    <Switch>
-      {/* ── Public site ─────────────────────────────────────────── */}
-      <Route path="/" component={LandingPage} />
-      <Route path="/services" component={ServicesPage} />
-      <Route path="/pricing" component={PricingPage} />
-      <Route path="/login" component={LoginPage} />
-      <Route path="/free-audit" component={FreeAudit} />
+    <RouteBoundary>
+      <Switch>
+        {/* ── Public site ─────────────────────────────────────────── */}
+        <Route path="/" component={LandingPage} />
+        <Route path="/services" component={ServicesPage} />
+        <Route path="/pricing" component={PricingPage} />
+        <Route path="/login" component={LoginPage} />
+        <Route path="/free-audit" component={FreeAudit} />
 
-      {/* ── Client Demo sample — sample data only, no login ─────── */}
-      <Route path="/demo" component={DemoHub} />
-      <Route path="/guided-demo" component={GuidedDemo} />
-      {/* Restaurant Upload Key entry — public, demo-only. No login. */}
-      <Route path="/upload" component={RestaurantUploadAccess} />
-      {/* Public Client Demo surface. */}
-      <Route path="/demo/client/dashboard" component={ClientDashboard} />
+        {/* ── Client Demo sample — sample data only, no login ─────── */}
+        <Route path="/demo" component={DemoHub} />
+        <Route path="/guided-demo" component={GuidedDemo} />
+        {/* Restaurant Upload Key entry — public, demo-only. No login. */}
+        <Route path="/upload" component={RestaurantUploadAccess} />
+        {/* Public Client Demo surface. */}
+        <Route path="/demo/client/dashboard" component={ClientDashboard} />
 
-      {/* ── Client Portal — placeholder-open, guarded when real auth is enabled ── */}
-      <Route path="/client/dashboard">
-        {() => (
-          <ClientPortalGuard>
-            <RealPortalDataBoundary portal="client">
-              <ClientDashboard />
-            </RealPortalDataBoundary>
-          </ClientPortalGuard>
-        )}
-      </Route>
-      <Route path="/client/media">
-        {() => (
-          <ClientPortalGuard>
-            <RealPortalDataBoundary portal="client">
-              <ClientMedia />
-            </RealPortalDataBoundary>
-          </ClientPortalGuard>
-        )}
-      </Route>
-      <Route path="/client/requests">
-        {() => (
-          <ClientPortalGuard>
-            <RealPortalDataBoundary portal="client">
-              <ClientRequests />
-            </RealPortalDataBoundary>
-          </ClientPortalGuard>
-        )}
-      </Route>
-      <Route path="/client/updates">
-        {() => (
-          <ClientPortalGuard>
-            <RealPortalDataBoundary portal="client">
-              <ClientUpdates />
-            </RealPortalDataBoundary>
-          </ClientPortalGuard>
-        )}
-      </Route>
-      <Route path="/client/reports">
-        {() => (
-          <ClientPortalGuard>
-            <RealPortalDataBoundary portal="client">
-              <ClientReports />
-            </RealPortalDataBoundary>
-          </ClientPortalGuard>
-        )}
-      </Route>
+        {/* ── Client Portal — placeholder-open, guarded when real auth is enabled ── */}
+        <Route path="/client/dashboard">
+          {() => (
+            <ClientPortalGuard>
+              <RealPortalDataBoundary portal="client">
+                <ClientDashboard />
+              </RealPortalDataBoundary>
+            </ClientPortalGuard>
+          )}
+        </Route>
+        <Route path="/client/media">
+          {() => (
+            <ClientPortalGuard>
+              <RealPortalDataBoundary portal="client">
+                <ClientMedia />
+              </RealPortalDataBoundary>
+            </ClientPortalGuard>
+          )}
+        </Route>
+        <Route path="/client/requests">
+          {() => (
+            <ClientPortalGuard>
+              <RealPortalDataBoundary portal="client">
+                <ClientRequests />
+              </RealPortalDataBoundary>
+            </ClientPortalGuard>
+          )}
+        </Route>
+        <Route path="/client/updates">
+          {() => (
+            <ClientPortalGuard>
+              <RealPortalDataBoundary portal="client">
+                <ClientUpdates />
+              </RealPortalDataBoundary>
+            </ClientPortalGuard>
+          )}
+        </Route>
+        <Route path="/client/reports">
+          {() => (
+            <ClientPortalGuard>
+              <RealPortalDataBoundary portal="client">
+                <ClientReports />
+              </RealPortalDataBoundary>
+            </ClientPortalGuard>
+          )}
+        </Route>
 
-      {/* ── Team Portal — real Veroxa OS review (login required) ──── */}
-      <Route path="/team/dashboard">
-        {() => (
-          <InternalDemoGuard role="team">
-            <RealPortalDataBoundary portal="team">
-              <TeamDashboard />
-            </RealPortalDataBoundary>
-          </InternalDemoGuard>
-        )}
-      </Route>
-      <Route path="/team/upload-inbox">
-        {() => (
-          <InternalDemoGuard role="team">
-            <RealPortalDataBoundary portal="team">
-              <TeamUploadInbox />
-            </RealPortalDataBoundary>
-          </InternalDemoGuard>
-        )}
-      </Route>
-      <Route path="/team/work-queue">
-        {() => (
-          <InternalDemoGuard role="team">
-            <RealPortalDataBoundary portal="team">
-              <TeamWorkQueue />
-            </RealPortalDataBoundary>
-          </InternalDemoGuard>
-        )}
-      </Route>
-      <Route path="/team/direction-queue">
-        {() => (
-          <InternalDemoGuard role="team">
-            <RealPortalDataBoundary portal="team">
-              <TeamDirectionQueue />
-            </RealPortalDataBoundary>
-          </InternalDemoGuard>
-        )}
-      </Route>
-      <Route path="/team/report-queue">
-        {() => (
-          <InternalDemoGuard role="team">
-            <RealPortalDataBoundary portal="team">
-              <TeamReportQueue />
-            </RealPortalDataBoundary>
-          </InternalDemoGuard>
-        )}
-      </Route>
-      <Route path="/team/audit-leads">
-        {() => (
-          <InternalDemoGuard role="team">
-            <RealPortalDataBoundary portal="team">
-              <TeamAuditLeads />
-            </RealPortalDataBoundary>
-          </InternalDemoGuard>
-        )}
-      </Route>
-      <Route path="/team/approval-queue">
-        {() => (
-          <InternalDemoGuard role="team">
-            <RealPortalDataBoundary portal="team">
-              <TeamApprovalQueue />
-            </RealPortalDataBoundary>
-          </InternalDemoGuard>
-        )}
-      </Route>
-      <Route path="/team/visibility-audit">
-        {() => (
-          <InternalDemoGuard role="team">
-            <RealPortalDataBoundary portal="team">
-              <TeamVisibilityAudit />
-            </RealPortalDataBoundary>
-          </InternalDemoGuard>
-        )}
-      </Route>
-      <Route path="/team/first-client-readiness">
-        {() => (
-          <InternalDemoGuard role="team">
-            <RealPortalDataBoundary portal="team">
-              <TeamFirstClientReadiness />
-            </RealPortalDataBoundary>
-          </InternalDemoGuard>
-        )}
-      </Route>
+        {/* ── Team Portal — real Veroxa OS review (login required) ──── */}
+        <Route path="/team/dashboard">
+          {() => (
+            <InternalDemoGuard role="team">
+              <RealPortalDataBoundary portal="team">
+                <TeamDashboard />
+              </RealPortalDataBoundary>
+            </InternalDemoGuard>
+          )}
+        </Route>
+        <Route path="/team/upload-inbox">
+          {() => (
+            <InternalDemoGuard role="team">
+              <RealPortalDataBoundary portal="team">
+                <TeamUploadInbox />
+              </RealPortalDataBoundary>
+            </InternalDemoGuard>
+          )}
+        </Route>
+        <Route path="/team/work-queue">
+          {() => (
+            <InternalDemoGuard role="team">
+              <RealPortalDataBoundary portal="team">
+                <TeamWorkQueue />
+              </RealPortalDataBoundary>
+            </InternalDemoGuard>
+          )}
+        </Route>
+        <Route path="/team/direction-queue">
+          {() => (
+            <InternalDemoGuard role="team">
+              <RealPortalDataBoundary portal="team">
+                <TeamDirectionQueue />
+              </RealPortalDataBoundary>
+            </InternalDemoGuard>
+          )}
+        </Route>
+        <Route path="/team/report-queue">
+          {() => (
+            <InternalDemoGuard role="team">
+              <RealPortalDataBoundary portal="team">
+                <TeamReportQueue />
+              </RealPortalDataBoundary>
+            </InternalDemoGuard>
+          )}
+        </Route>
+        <Route path="/team/audit-leads">
+          {() => (
+            <InternalDemoGuard role="team">
+              <RealPortalDataBoundary portal="team">
+                <TeamAuditLeads />
+              </RealPortalDataBoundary>
+            </InternalDemoGuard>
+          )}
+        </Route>
+        <Route path="/team/approval-queue">
+          {() => (
+            <InternalDemoGuard role="team">
+              <RealPortalDataBoundary portal="team">
+                <TeamApprovalQueue />
+              </RealPortalDataBoundary>
+            </InternalDemoGuard>
+          )}
+        </Route>
+        <Route path="/team/visibility-audit">
+          {() => (
+            <InternalDemoGuard role="team">
+              <RealPortalDataBoundary portal="team">
+                <TeamVisibilityAudit />
+              </RealPortalDataBoundary>
+            </InternalDemoGuard>
+          )}
+        </Route>
+        <Route path="/team/first-client-readiness">
+          {() => (
+            <InternalDemoGuard role="team">
+              <RealPortalDataBoundary portal="team">
+                <TeamFirstClientReadiness />
+              </RealPortalDataBoundary>
+            </InternalDemoGuard>
+          )}
+        </Route>
 
-      <Route component={NotFound} />
-    </Switch>
+        <Route component={NotFound} />
+      </Switch>
+    </RouteBoundary>
   );
 }
 

@@ -3,6 +3,7 @@ import { ArrowRight, CheckCircle2, Shield, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
+import { useDocumentMeta } from "@/hooks/useDocumentMeta";
 import {
   AD_SPEND_DISCLAIMER,
   CURRENT_PUBLIC_PLANS,
@@ -74,6 +75,11 @@ const FAQ_ITEMS = [
 ];
 
 export default function PricingPage() {
+  useDocumentMeta({
+    title: "Pricing — Veroxa",
+    description: "View Veroxa's simple monthly restaurant growth plans.",
+  });
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <PublicNav />

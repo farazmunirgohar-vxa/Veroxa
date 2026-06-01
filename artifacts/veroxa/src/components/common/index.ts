@@ -1,4 +1,5 @@
 export { ErrorBoundary } from "./ErrorBoundary";
+export { RouteBoundary } from "./RouteBoundary";
 export { LoadingCard, LoadingDashboard, LoadingTable, LoadingTimeline } from "./LoadingCard";
 export { EmptyState, NoReports, NoContent, NoMedia, NoTasks, NoNotifications } from "./EmptyState";
 export { PageHeader } from "./PageHeader";

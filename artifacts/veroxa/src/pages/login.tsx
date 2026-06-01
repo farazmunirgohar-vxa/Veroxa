@@ -10,6 +10,7 @@ import { AUTH_MODE } from "@/lib/auth/authMode";
 import { getSupabaseClient } from "@/lib/supabase";
 import { getRoleHomePath, isVeroxaRole } from "@/lib/auth/authContract";
 import { getDevRouteForRole, validateDevCredentials } from "@/lib/auth/devCredentials";
+import { useDocumentMeta } from "@/hooks/useDocumentMeta";
 
 type SignInState =
   | { kind: "idle" }
@@ -18,6 +19,11 @@ type SignInState =
   | { kind: "error"; message: string };
 
 export default function LoginPage() {
+  useDocumentMeta({
+    title: "Login — Veroxa",
+    description: "Sign in to Veroxa.",
+  });
+
   const [signInState, setSignInState] = useState<SignInState>({ kind: "idle" });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

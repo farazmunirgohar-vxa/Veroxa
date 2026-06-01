@@ -10,8 +10,15 @@ import {
 import { Button } from "@/components/ui/button";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
+import { useDocumentMeta } from "@/hooks/useDocumentMeta";
 
 export default function ServicesPage() {
+  useDocumentMeta({
+    title: "Services — Veroxa",
+    description:
+      "Explore Veroxa services for restaurant online presence, Google visibility, social posting, and reporting.",
+  });
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <PublicNav />

@@ -2,8 +2,15 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
+import { useDocumentMeta } from "@/hooks/useDocumentMeta";
 
 export default function LandingPage() {
+  useDocumentMeta({
+    title: "Veroxa — Restaurant Growth System",
+    description:
+      "Veroxa helps restaurants improve online presence, local visibility, and content consistency.",
+  });
+
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-primary/30 flex flex-col">
       <PublicNav />
