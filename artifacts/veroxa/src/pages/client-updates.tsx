@@ -7,6 +7,7 @@ import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { RealPortalReviewNotice } from "@/components/RealPortalSafeStates";
 import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary";
 import { useActiveClientPortalContext } from "@/lib/clientPortalContext";
+import { getClientPortalHref } from "@/lib/clientPortalRoutes";
 import { clientTeamWorkRepository } from "@/lib/repositories";
 import {
   normalizeClientMediaDisplayStatus,
@@ -45,6 +46,9 @@ export default function ClientUpdates() {
   const canUseFixtureData =
     Boolean(activeClientId) &&
     (mode.allowDemoFixtures || mode.isLiveDataConnected);
+  const mediaHref = getClientPortalHref("media", mode.isPublicDemoRoute);
+  const requestsHref = getClientPortalHref("requests", mode.isPublicDemoRoute);
+
   const submissions = canUseFixtureData
     ? clientTeamWorkRepository.getClientVisibleSubmissions(activeClientId!)
     : [];
@@ -93,7 +97,7 @@ export default function ClientUpdates() {
               <ImageIcon className="h-4 w-4 text-primary" /> Media progress
             </span>
             <Link
-              href="/client/media"
+              href={mediaHref}
               className="text-xs font-normal text-primary hover:underline"
             >
               Open Media
@@ -105,7 +109,14 @@ export default function ClientUpdates() {
             const items = mediaUpdates
               .filter((item) => item.lane === lane)
               .slice(0, 3);
-            return <ProgressLane key={lane} lane={lane} items={items} />;
+            return (
+              <ProgressLane
+                key={lane}
+                lane={lane}
+                items={items}
+                isPublicDemoRoute={mode.isPublicDemoRoute}
+              />
+            );
           })}
         </CardContent>
       </Card>
@@ -142,7 +153,7 @@ export default function ClientUpdates() {
                 <p className="mt-0.5 text-xs text-muted-foreground">
                   {item.clientVisibleNote}
                 </p>
-                <Link href="/client/requests">
+                <Link href={requestsHref}>
                   <span className="mt-2 inline-flex text-xs text-primary hover:underline">
                     Reply in Requests
                   </span>
@@ -159,6 +170,7 @@ export default function ClientUpdates() {
 function ProgressLane({
   lane,
   items,
+  isPublicDemoRoute,
 }: {
   lane: LaneKey;
   items: Array<{
@@ -167,6 +179,7 @@ function ProgressLane({
     note: string;
     status: ClientMediaDisplayStatus;
   }>;
+  isPublicDemoRoute: boolean;
 }) {
   return (
     <div
@@ -195,7 +208,7 @@ function ProgressLane({
               <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
                 {item.note}
               </p>
-              <Link href={`/client/media?media=${item.id}`}>
+              <Link href={getClientPortalHref("media", isPublicDemoRoute, `?media=${item.id}`)}>
                 <span className="mt-1 inline-flex text-[11px] text-primary/80 hover:underline">
                   Open Media details
                 </span>

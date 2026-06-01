@@ -30,19 +30,21 @@ as an active runtime role model. Do not use Super Admin language.
 
 ## Surfaces
 
-- **Demo Preview** — `/demo/client/dashboard` (sample data, clearly labelled).
-  Kept separate from the live client portal.
+- **Client Demo** — five public sample-data routes: `/demo/client/dashboard`,
+  `/demo/client/media`, `/demo/client/updates`, `/demo/client/requests`, and
+  `/demo/client/reports`. These routes are open, clearly labelled as sample
+  data, and must stay separate from the login-gated client portal.
 - **Login** — `/login` (kept separate; no production auth wired in this build).
-- **Client portal** — exactly five active client experiences: Dashboard, Media,
-  Updates, Requests, and Reports. The current route set is `/client/dashboard`,
-  `/client/media`, `/client/updates`, `/client/requests`, and
-  `/client/reports`. Keep one main Reports tab; weekly and monthly reports live
-  inside Reports rather than becoming separate primary navigation items.
+- **Client portal** — exactly five active login-gated client experiences:
+  Dashboard, Media, Updates, Requests, and Reports. The current route set is
+  `/client/dashboard`, `/client/media`, `/client/updates`, `/client/requests`,
+  and `/client/reports`. Keep one main Reports tab; weekly and monthly reports
+  live inside Reports rather than becoming separate primary navigation items.
 - **Team portal** — `/team/dashboard`, `/team/upload-inbox`, `/team/work-queue`,
-  and related review/report queues. The Team portal may have powerful internal
-  logic, but the driver controls should stay simple: what needs review, what is
-  ready, what is blocked, what needs client input, what needs approval, and what
-  to do next.
+  and related review/report queues. `/team/*` requires team login. The Team
+  portal may have powerful internal logic, but the driver controls should stay
+  simple: what needs review, what is ready, what is blocked, what needs client
+  input, what needs approval, and what to do next.
 
 ## Client portal operating model
 
@@ -59,6 +61,18 @@ Active client navigation is locked to:
 3. Updates
 4. Requests
 5. Reports
+
+The left sidebar is the primary portal navigation. Do not duplicate these same
+sidebar destinations as large dashboard shortcut cards. Legitimate action cards
+are fine when they start work or highlight a needed response (for example,
+Upload Media or Needs your input), but generic Media / Updates / Requests /
+Reports shortcut grids should not return.
+
+Any page shared by `/client/*` and `/demo/client/*` must use demo-aware in-page
+links. A visitor already inside `/demo/client/*` should only be sent to
+`/demo/client/dashboard`, `/demo/client/media`, `/demo/client/updates`,
+`/demo/client/requests`, or `/demo/client/reports`; real client sessions should
+continue to use the matching `/client/*` routes.
 
 The client media lifecycle is:
 

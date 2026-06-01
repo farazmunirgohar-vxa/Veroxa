@@ -9,6 +9,7 @@
  */
 
 import { demoVisibilityAuditInputs } from "@/data/demo/demoVisibilityAudits";
+import { getRestaurantName } from "@/data/demo/demoClients";
 import {
   generatePreparedActionsFromVisibilityAudit,
   runVisibilityAudit,
@@ -21,7 +22,7 @@ import type { ResolvedPreparedActionSeed } from "@/domain/preparedActions";
 const audits: VisibilityAudit[] = demoVisibilityAuditInputs.map((input) => ({
   id: `audit-${input.clientId}`,
   input,
-  result: runVisibilityAudit(input),
+  result: runVisibilityAudit(input, { restaurantName: getRestaurantName(input.clientId) }),
 }));
 
 export function getAllVisibilityAudits(): VisibilityAudit[] {

@@ -7,11 +7,11 @@
 
 ## Stage 0 — Current
 
-- Demo platform: `/demo/*` for Client / Team / Operator / Owner.
-- Read-only Client Portal Supabase access (anon key, demo policies).
-- Docs and planning only for everything else.
-- Future real route placeholders behind `RequireRole` (always show the
-  "Protected Route Preview" card).
+- Public Client Demo: `/demo/client/dashboard`, `/demo/client/media`, `/demo/client/updates`, `/demo/client/requests`, and `/demo/client/reports` are sample-data routes and remain separate from real portal routes.
+- Real Client Portal: `/client/*` requires client login and must not render from `AUTH_MODE="placeholder"` alone.
+- Team Portal: `/team/*` requires team login.
+- Docs and planning only for production auth, storage uploads, publishing, payments, and real client data.
+- `VITE_VEROXA_DEV_*` placeholder credentials are preview-only; do not set them in public staging or production builds. Real auth must be reviewed before real client data is connected.
 
 ## Stage 1 — Internal alpha
 

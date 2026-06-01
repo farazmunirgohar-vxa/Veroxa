@@ -22,7 +22,9 @@ The placeholder matcher reads credentials only from Vite env:
 - `VITE_VEROXA_DEV_TEAM_EMAIL`
 - `VITE_VEROXA_DEV_TEAM_PASSWORD`
 
-If any credential pair is missing, that placeholder login simply does not match. Credentials are not printed and are not embedded in source.
+If any credential pair is missing, that placeholder login simply does not match. Credentials are not printed and are not embedded in source. The login page may show a non-secret note that preview sign-in is not configured.
+
+These `VITE_VEROXA_DEV_*` credential variables are **preview-only**. Do not set them in public staging or production builds, and do not connect real client data while `AUTH_MODE` is still `"placeholder"`. Real auth must be reviewed before any real client data is exposed through `/client/*`.
 
 ## Dev writes are disabled by default
 
@@ -30,7 +32,7 @@ The write mode resolves to disabled unless all of these are true:
 
 - `VITE_VEROXA_ENABLE_DEV_WRITES="true"`
 - `VITE_VEROXA_DEV_WRITE_ENV="dev"`
-- the app is not a production build (`import.meta.env.PROD` is false)
+- the app is a non-production build (`import.meta.env.PROD` is false)
 
 Production builds always resolve dev writes to disabled, even if `VITE_VEROXA_ENABLE_DEV_WRITES` is accidentally set to `"true"`.
 

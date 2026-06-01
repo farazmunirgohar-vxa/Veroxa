@@ -8,7 +8,6 @@
  * docs/VISIBILITY_AUDIT_ENGINE.md.
  */
 
-import { getRestaurantName } from "@/data/demo/demoClients";
 import type {
   VisibilityAuditCategory,
   VisibilityAuditCategorySummary,
@@ -474,10 +473,13 @@ function headlineForScore(score: number, findingCount: number): string {
 
 /**
  * Run the visibility audit for one restaurant. Deterministic and offline:
- * findings come only from the rules above, never from a live source.
+ * findings come only from the rules above, never from a live source. The
+ * display name is supplied by the caller so this pure domain engine stays
+ * independent of demo fixtures or future live data sources.
  */
 export function runVisibilityAudit(
   input: VisibilityAuditInput,
+  options: { restaurantName?: string } = {},
 ): VisibilityAuditResult {
   const drafts: FindingDraft[] = [
     ...buildGoogleFindings(input),
@@ -501,7 +503,7 @@ export function runVisibilityAudit(
 
   return {
     clientId: input.clientId,
-    restaurantName: getRestaurantName(input.clientId),
+    restaurantName: options.restaurantName ?? input.clientId,
     overallScore,
     headline: headlineForScore(overallScore, findings.length),
     findings,

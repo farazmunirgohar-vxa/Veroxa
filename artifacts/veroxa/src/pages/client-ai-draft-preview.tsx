@@ -20,6 +20,7 @@ import { Separator } from "@/components/ui/separator";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 import { DemoFlowTimeline } from "@/components/demo/DemoVisuals";
+import { assertClientSafeLanguage } from "@/domain/clientPortalJourney/languageSafety";
 
 const NEXT_STEPS = [
   { key: "review",   label: "Team review",   caption: "Captions checked" },
@@ -78,6 +79,9 @@ const LOADING_STEPS = [
   "Creating captions...",
   "Choosing posting times...",
 ];
+
+assertClientSafeLanguage(DEMO_DRAFTS);
+assertClientSafeLanguage(LOADING_STEPS);
 
 const PLACEHOLDER_LABEL =
   "Sample food photo — no image uploaded yet";

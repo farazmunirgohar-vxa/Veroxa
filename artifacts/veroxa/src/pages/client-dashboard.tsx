@@ -1,11 +1,4 @@
-import {
-  Bell,
-  CheckCircle2,
-  FileText,
-  Images,
-  MessageSquare,
-  UploadCloud,
-} from "lucide-react";
+import { CheckCircle2, MessageSquare, UploadCloud } from "lucide-react";
 import { Link } from "wouter";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,6 +11,7 @@ import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary"
 import { useActiveClientPortalContext } from "@/lib/clientPortalContext";
 import { clientTeamWorkRepository } from "@/lib/repositories";
 import { normalizeClientMediaDisplayStatus } from "@/lib/clientMediaLifecycle";
+import { getClientPortalHref } from "@/lib/clientPortalRoutes";
 
 
 function getCurrentPeriodLabel(): string {
@@ -30,7 +24,8 @@ export default function ClientDashboard() {
   const mode = useRealPortalDataMode();
   const { activeClientId } = useActiveClientPortalContext();
   const canUseFixtureData = Boolean(activeClientId) && (mode.allowDemoFixtures || mode.isLiveDataConnected);
-  const mediaHref = mode.isPublicDemoRoute ? "/demo/client/dashboard" : "/client/media";
+  const mediaHref = getClientPortalHref("media", mode.isPublicDemoRoute);
+  const requestsHref = getClientPortalHref("requests", mode.isPublicDemoRoute);
 
   const mediaItems = canUseFixtureData
     ? clientTeamWorkRepository
@@ -54,12 +49,6 @@ export default function ClientDashboard() {
     { uploaded: 0, ready: 0, posted: 0 },
   );
 
-  const quickLinks = [
-    { label: "Media", href: mediaHref, icon: Images },
-    { label: "Updates", href: mode.isPublicDemoRoute ? "/demo/client/dashboard" : "/client/updates", icon: Bell },
-    { label: "Requests", href: mode.isPublicDemoRoute ? "/demo/client/dashboard" : "/client/requests", icon: MessageSquare },
-    { label: "Reports", href: mode.isPublicDemoRoute ? "/demo/client/dashboard" : "/client/reports", icon: FileText },
-  ];
 
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
@@ -103,7 +92,7 @@ export default function ClientDashboard() {
                 <p className="text-sm text-muted-foreground">{actionItems[0].clientVisibleNote}</p>
               </div>
             </div>
-            <Link href={mode.isPublicDemoRoute ? "/demo/client/dashboard" : "/client/requests"}>
+            <Link href={requestsHref}>
               <Button size="sm" variant="outline">Open Requests</Button>
             </Link>
           </CardContent>
@@ -122,20 +111,6 @@ export default function ClientDashboard() {
         </Card>
       )}
 
-      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" data-testid="section-dashboard-quick-links">
-        {quickLinks.map((item) => (
-          <Link key={item.label} href={item.href}>
-            <Card className="h-full cursor-pointer border-border bg-card/60 transition-colors hover:border-primary/30 hover:bg-card">
-              <CardContent className="flex items-center gap-3 p-4">
-                <div className="rounded-lg border border-border bg-muted/20 p-2 text-primary">
-                  <item.icon className="h-4 w-4" />
-                </div>
-                <span className="text-sm font-semibold">{item.label}</span>
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
-      </section>
     </PortalLayout>
   );
 }
