@@ -20,12 +20,7 @@ import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary"
 import { ClientPortalEmptyState } from "@/components/client/ClientPortalEmptyState";
 import { ClientOperationalStatusGrid } from "@/components/client/ClientOperationalSpine";
 import {
-  getClientContentWorkflow,
   getClientMediaStatus,
-  getClientPlan,
-  getClientPremiumReadiness,
-  getClientReportWorkflow,
-  getClientRiskStatus,
   getCurrentClientAccount,
 } from "@/lib/operations";
 import { clientTeamWorkRepository } from "@/lib/repositories";
@@ -41,12 +36,11 @@ function getCurrentPeriodLabel(): string {
 }
 
 export default function ClientDashboard() {
-  const { loading, data, source, dataSourceMessage } = useClientPortalData();
+  const { loading, data } = useClientPortalData();
   const portalDataMode = useRealPortalDataMode();
   const canUseFixtureData =
     portalDataMode.allowDemoFixtures || portalDataMode.isLiveDataConnected;
   const reviewAccount = getCurrentClientAccount();
-  const reviewPlan = getClientPlan(reviewAccount.id);
   const reviewMedia = getClientMediaStatus(reviewAccount.id);
   const reviewContent = getClientContentWorkflow(reviewAccount.id);
   const reviewReport = getClientReportWorkflow(reviewAccount.id);
