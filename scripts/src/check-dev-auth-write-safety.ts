@@ -1,0 +1,79 @@
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import { dirname, extname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
+const failures: string[] = [];
+const sourceExtensions = new Set([".ts", ".tsx"]);
+
+function walk(relativePath: string): string[] {
+  const full = join(root, relativePath);
+  const stat = statSync(full);
+  if (stat.isFile()) return [full];
+  const out: string[] = [];
+  for (const entry of readdirSync(full, { withFileTypes: true })) {
+    const child = join(full, entry.name);
+    if (child.includes("/node_modules/") || child.includes("/dist/")) continue;
+    if (entry.isDirectory()) out.push(...walk(child.slice(root.length + 1)));
+    else if (sourceExtensions.has(extname(entry.name))) out.push(child);
+  }
+  return out;
+}
+
+function rel(fullPath: string): string {
+  return fullPath.startsWith(root) ? fullPath.slice(root.length + 1) : fullPath;
+}
+
+for (const file of walk("artifacts/veroxa/src")) {
+  const relative = rel(file);
+  const text = readFileSync(file, "utf8");
+  if (/farazclient|farazteam/.test(text)) {
+    failures.push(`${relative} contains a plaintext placeholder password.`);
+  }
+}
+
+const devCredentials = readFileSync(join(root, "artifacts/veroxa/src/lib/auth/devCredentials.ts"), "utf8");
+for (const token of [
+  "VITE_VEROXA_DEV_CLIENT_EMAIL",
+  "VITE_VEROXA_DEV_CLIENT_PASSWORD",
+  "VITE_VEROXA_DEV_TEAM_EMAIL",
+  "VITE_VEROXA_DEV_TEAM_PASSWORD",
+]) {
+  if (!devCredentials.includes(token)) failures.push(`devCredentials.ts must read ${token}.`);
+}
+if (/password:\s*["'][^"']+["']/.test(devCredentials)) {
+  failures.push("devCredentials.ts must not define source plaintext passwords.");
+}
+
+const writeReadiness = readFileSync(join(root, "artifacts/veroxa/src/lib/data/writeReadiness.ts"), "utf8");
+if (!writeReadiness.includes("VITE_VEROXA_DEV_WRITE_ENV")) {
+  failures.push("writeReadiness.ts must require the second dev write safety flag.");
+}
+if (!/!import\.meta\.env\.PROD/.test(writeReadiness)) {
+  failures.push("writeReadiness.ts must force dev writes off in production builds.");
+}
+if (!/raw === ["']true["'] && safetyEnv === ["']dev["'] && !import\.meta\.env\.PROD/.test(writeReadiness)) {
+  failures.push("dev writes must require exact true flag, safety env dev, and non-production mode.");
+}
+
+const productionLikeDocs = [
+  "artifacts/veroxa/docs/DEPLOYMENT.md",
+  "artifacts/veroxa/docs/PRODUCTION.md",
+  "artifacts/veroxa/docs/ENVIRONMENT.md",
+].filter((file) => {
+  try { statSync(join(root, file)); return true; } catch { return false; }
+});
+for (const file of productionLikeDocs) {
+  const text = readFileSync(join(root, file), "utf8");
+  if (/VITE_VEROXA_ENABLE_DEV_WRITES\s*=\s*["']?true["']?/i.test(text) && !/dev-only|local-only|non-production|never production/i.test(text)) {
+    failures.push(`${file} implies dev writes can be true without a clear non-production warning.`);
+  }
+}
+
+if (failures.length > 0) {
+  console.error("Dev auth/write safety guardrail failed:");
+  for (const failure of failures) console.error(`- ${failure}`);
+  process.exit(1);
+}
+
+console.log("Dev auth/write safety guardrail passed: placeholder credentials are env-only and dev writes are production-disabled.");

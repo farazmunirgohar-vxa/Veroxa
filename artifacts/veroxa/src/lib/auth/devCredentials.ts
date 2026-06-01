@@ -1,35 +1,14 @@
 /**
  * devCredentials.ts — TEMPORARY placeholder-only login matcher.
  *
- * ┌─────────────────────────────────────────────────────────────────────┐
- * │  PRODUCTION REMOVAL REQUIRED                                        │
- * │                                                                     │
- * │  This file MUST be deleted (or replaced with a no-op stub) before  │
- * │  AUTH_MODE is ever switched to "real". It contains plain-text       │
- * │  dev passwords that have no place in a production bundle.           │
- * │                                                                     │
- * │  Deletion checklist:                                                │
- * │  1. Delete this file.                                               │
- * │  2. Remove the placeholder branch in src/pages/login.tsx that      │
- * │     imports `validateDevCredentials` / `getDevRouteForRole`.        │
- * │  3. Confirm AUTH_MODE === "real" routes exclusively through the     │
- * │     Supabase signInWithPassword path in login.tsx.                  │
- * │  4. Confirm no service-role key appears anywhere in the frontend    │
- * │     bundle (only VITE_SUPABASE_ANON_KEY is allowed).               │
- * │                                                                     │
- * │  AUTH_MODE must NOT be switched to "real" until this file is       │
- * │  removed and the Supabase manual setup is complete. See:            │
- * │  docs/AUTH_MODE_SWITCH_PLAN.md                                      │
- * │  docs/MANUAL_SUPABASE_AUTH_SETUP_GUIDE.md                          │
- * └─────────────────────────────────────────────────────────────────────┘
+ * Placeholder credentials are preview-only and are read from Vite env at
+ * runtime. The source intentionally contains no usable passwords; missing env
+ * credentials make the placeholder matcher return null (safe invalid login).
  *
- * Safe today because:
- *   - only runs while AUTH_MODE === "placeholder" (compile-time constant)
- *   - no Supabase client, no network calls, no hashing
- *   - no production users created or modified
- *   - no backend writes
- *   - dev passwords are meaningless outside the placeholder flow
- *   - credentials are never surfaced in the login UI
+ * AUTH_MODE must NOT be switched to "real" until this placeholder file and the
+ * placeholder branch in login.tsx are removed. See:
+ *   docs/AUTH_MODE_SWITCH_PLAN.md
+ *   docs/MANUAL_SUPABASE_AUTH_SETUP_GUIDE.md
  */
 
 import { getRoleHomePath, type VeroxaRole } from "./authContract";
@@ -40,19 +19,41 @@ export interface DevCredential {
   password: string;
 }
 
-/**
- * Placeholder development credentials for internal review only.
- * Plain-text by design — no production secrets, no real accounts.
- * Only active Client and Team credentials are present.
- */
-export const DEV_ROLE_CREDENTIALS: readonly DevCredential[] = [
-  { role: "client", email: "faraz@client.com", password: "farazclient" },
-  { role: "team",   email: "faraz@team.com",   password: "farazteam"   },
-] as const;
+const DEV_CLIENT_EMAIL_ENV = "VITE_VEROXA_DEV_CLIENT_EMAIL";
+const DEV_CLIENT_PASSWORD_ENV = "VITE_VEROXA_DEV_CLIENT_PASSWORD";
+const DEV_TEAM_EMAIL_ENV = "VITE_VEROXA_DEV_TEAM_EMAIL";
+const DEV_TEAM_PASSWORD_ENV = "VITE_VEROXA_DEV_TEAM_PASSWORD";
+
+function readViteEnv(name: string): string | null {
+  const value = (import.meta.env as Record<string, unknown>)[name];
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function credentialFromEnv(
+  role: VeroxaRole,
+  emailEnv: string,
+  passwordEnv: string,
+): DevCredential | null {
+  const email = readViteEnv(emailEnv)?.toLowerCase();
+  const password = readViteEnv(passwordEnv);
+  if (!email || !password) return null;
+  return { role, email, password };
+}
 
 /**
- * Returns the matching role if the email+password pair matches a dev
- * credential, otherwise `null`. Email is matched case-insensitively.
+ * Placeholder development credentials for internal review only.
+ * Values must be supplied through Vite env; no source-defined password exists.
+ */
+export function getDevRoleCredentials(): readonly DevCredential[] {
+  return [
+    credentialFromEnv("client", DEV_CLIENT_EMAIL_ENV, DEV_CLIENT_PASSWORD_ENV),
+    credentialFromEnv("team", DEV_TEAM_EMAIL_ENV, DEV_TEAM_PASSWORD_ENV),
+  ].filter((credential): credential is DevCredential => Boolean(credential));
+}
+
+/**
+ * Returns the matching role if the email+password pair matches an env-supplied
+ * dev credential, otherwise `null`. Email is matched case-insensitively.
  * Only called when AUTH_MODE === "placeholder".
  */
 export function validateDevCredentials(
@@ -61,8 +62,8 @@ export function validateDevCredentials(
 ): VeroxaRole | null {
   const normalizedEmail = emailOrId.trim().toLowerCase();
   if (!normalizedEmail || !password) return null;
-  const match = DEV_ROLE_CREDENTIALS.find(
-    (c) => c.email === normalizedEmail && c.password === password,
+  const match = getDevRoleCredentials().find(
+    (credential) => credential.email === normalizedEmail && credential.password === password,
   );
   return match?.role ?? null;
 }

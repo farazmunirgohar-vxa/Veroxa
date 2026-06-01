@@ -104,7 +104,7 @@ reported as `dry_run`.
 
 3. Copy the returned UUID.
 
-4. Set `VITE_VEROXA_ENABLE_DEV_WRITES="true"` in `.env.local` (dev
+4. Set `VITE_VEROXA_ENABLE_DEV_WRITES="true"` and `VITE_VEROXA_DEV_WRITE_ENV="dev"` in `.env.local` (dev
    only — never in production or committed env files).
 
 5. Open `/internal/supabase-readiness`.
@@ -123,7 +123,7 @@ reported as `dry_run`.
 - Do not run against a production Supabase project.
 - Do not expose a service role key in frontend code.
 - Do not add storage upload — it is a separate later milestone.
-- Do not commit `VITE_VEROXA_ENABLE_DEV_WRITES=true` to `.env` files.
+- Do not commit `VITE_VEROXA_ENABLE_DEV_WRITES=true` or `VITE_VEROXA_DEV_WRITE_ENV=dev` to production-like `.env` files.
 - Do not leave fictional smoke-test rows in a shared dev project
   without cleanup.
 

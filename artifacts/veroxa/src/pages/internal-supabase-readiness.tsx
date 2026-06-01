@@ -412,7 +412,7 @@ export default function InternalSupabaseReadiness() {
               <li>• Real auth ready: <span className="text-foreground">{schemaStatus.realAuthReady ? "Yes" : "No"}</span></li>
               <li>• Upload-key RLS ready: <span className="text-foreground">{schemaStatus.uploadKeyRlsReady ? "Yes" : "No"}</span></li>
               <li>• Production RLS ready: <span className="text-foreground">{schemaStatus.productionReady ? "Yes" : "No"}</span></li>
-              <li>• Dev write adapter: available only with <code>VITE_VEROXA_ENABLE_DEV_WRITES="true"</code></li>
+              <li>• Dev write adapter: available only with <code>VITE_VEROXA_ENABLE_DEV_WRITES="true"</code>, <code>VITE_VEROXA_DEV_WRITE_ENV="dev"</code>, and non-production mode</li>
               <li>• Next step: {schemaStatus.nextStep}</li>
             </ul>
             <p className="text-[11px] text-muted-foreground/70 leading-relaxed">

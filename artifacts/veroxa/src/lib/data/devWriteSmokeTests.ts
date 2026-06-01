@@ -7,7 +7,7 @@
  *   - NEVER runs automatically.
  *   - Requires an explicit page button click to invoke.
  *   - Requires an explicit `clientId` (dev-created fictional UUID).
- *   - Requires WRITES_ENABLED === true (env flag set to exact "true").
+ *   - Requires WRITES_ENABLED === true (exact dev write flag, second safety flag, and non-production mode).
  *   - Metadata writes only — no storage, no files, no service role.
  *   - Fictional data only — no real restaurant names.
  *   - Raw errors never returned to UI.
@@ -49,7 +49,7 @@ export function getDevWriteSmokeTestReadiness(): DevWriteSmokeTestReadiness {
       clientConfigured,
       canRun: false,
       safeMessage:
-        'Writes are disabled. Set VITE_VEROXA_ENABLE_DEV_WRITES="true" in dev only.',
+        'Writes are disabled. Set VITE_VEROXA_ENABLE_DEV_WRITES="true" and VITE_VEROXA_DEV_WRITE_ENV="dev" in non-production dev only.',
     };
   }
   if (!clientConfigured) {
@@ -88,13 +88,13 @@ export async function runDevWriteSmokeTests(
     step(
       "Write mode check",
       "skipped",
-      'Writes are disabled. Set VITE_VEROXA_ENABLE_DEV_WRITES="true" in dev only.',
+      'Writes are disabled. Set VITE_VEROXA_ENABLE_DEV_WRITES="true" and VITE_VEROXA_DEV_WRITE_ENV="dev" in non-production dev only.',
     );
     return {
       ok: false,
       status: "skipped",
       safeMessage:
-        'Writes are disabled. Set VITE_VEROXA_ENABLE_DEV_WRITES="true" in dev only.',
+        'Writes are disabled. Set VITE_VEROXA_ENABLE_DEV_WRITES="true" and VITE_VEROXA_DEV_WRITE_ENV="dev" in non-production dev only.',
       ranAt,
       steps,
     };

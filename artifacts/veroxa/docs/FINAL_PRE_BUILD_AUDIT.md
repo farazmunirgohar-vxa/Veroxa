@@ -99,8 +99,8 @@ Pages that exist as files but are not exposed in the team portal navigation: tea
 ### Placeholder credential behavior
 - `AUTH_MODE = "placeholder"` in `src/lib/auth/authMode.ts`
 - `validateDevCredentials()` does local string match — no Supabase, no network
-- `faraz@client.com / farazclient` → `/client/dashboard`
-- `faraz@team.com / farazteam` → `/team/dashboard`
+- `VITE_VEROXA_DEV_CLIENT_EMAIL` / `VITE_VEROXA_DEV_CLIENT_PASSWORD` → `/client/dashboard` when supplied in local preview env
+- `VITE_VEROXA_DEV_TEAM_EMAIL` / `VITE_VEROXA_DEV_TEAM_PASSWORD` → `/team/dashboard` when supplied in local preview env
 - Operator / Owner credentials removed — both redirect to `/login`
 - Dev credentials are NOT shown in UI — form has no autofill hints visible to users
 
@@ -143,7 +143,7 @@ Pages that exist as files but are not exposed in the team portal navigation: tea
 ### What is safe
 - Only `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` appear in frontend env — no service-role key
 - Read-only client (`supabaseReadOnlyClient.ts`) restricts to `.select()` only
-- `devSupabaseWriteAdapter.ts` is behind `VITE_VEROXA_ENABLE_DEV_WRITES === "true"` guard — cannot fire in default state
+- `devSupabaseWriteAdapter.ts` is behind `VITE_VEROXA_ENABLE_DEV_WRITES === "true"`, `VITE_VEROXA_DEV_WRITE_ENV === "dev"`, and non-production mode — cannot fire in default or production state
 - Fixture data contains no real PII or production credentials
 - No accidental production writes exist
 
@@ -171,7 +171,7 @@ Required to activate it:
 | Table: `clients` | Exists in m024a |
 | Table: `restaurant_upload_keys` | Exists in m024a |
 | RLS for `upload_submissions` | Dev-stage policy in m024a (tighten before prod) |
-| Dev flag: `VITE_VEROXA_ENABLE_DEV_WRITES = "true"` | Required — not set by default |
+| Dev flags: `VITE_VEROXA_ENABLE_DEV_WRITES = "true"` and `VITE_VEROXA_DEV_WRITE_ENV = "dev"` | Required in non-production only — not set by default |
 | Client ID: demo-a hardcoded for now | Acceptable for dev write phase |
 | UI trigger: `/client/media` upload submit button | Already exists |
 
@@ -288,7 +288,7 @@ After this audit, the app is clean, consistent, and ready. The recommended next 
 
 ### Step 1 — First dev-write: client upload submission
 **Feature:** When a client submits media on `/client/media`, write a row to `upload_submissions` in Supabase.
-**Flag:** `VITE_VEROXA_ENABLE_DEV_WRITES = "true"` (env var, never default)
+**Flags:** `VITE_VEROXA_ENABLE_DEV_WRITES = "true"` and `VITE_VEROXA_DEV_WRITE_ENV = "dev"` (env vars, never default, non-production only)
 **Scope:** One table, one insert, one UI button. No notifications. No storage. No scheduling.
 **Rollback:** Delete the inserted row.
 

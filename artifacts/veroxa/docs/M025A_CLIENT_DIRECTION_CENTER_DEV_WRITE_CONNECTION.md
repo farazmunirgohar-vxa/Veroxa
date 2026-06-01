@@ -26,7 +26,7 @@ layer **on top of** the existing local/session-first behavior.
 a best-effort supplementary layer. A Supabase failure never rolls back
 the local/session submission or breaks the user flow.
 
-## Dev writes only if VITE_VEROXA_ENABLE_DEV_WRITES === "true"
+## Dev writes only if both dev write flags are set in non-production
 
 The `WRITES_ENABLED` flag is resolved at module load from
 `writeReadiness.ts`. Only the exact string `"true"` enables the dev write

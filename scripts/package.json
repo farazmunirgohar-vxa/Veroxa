@@ -12,7 +12,10 @@
     "check-business-guardrails": "tsx ./src/check-business-guardrails.ts",
     "check-first-client-readiness": "tsx ./src/check-first-client-readiness.ts",
     "check-media-lifecycle": "tsx ./src/check-media-lifecycle.ts",
-    "check-public-cleanup": "tsx ./src/check-public-cleanup.ts"
+    "check-public-cleanup": "tsx ./src/check-public-cleanup.ts",
+    "check-api-security": "tsx ./src/check-api-security.ts",
+    "check-dev-auth-write-safety": "tsx ./src/check-dev-auth-write-safety.ts",
+    "check-route-inventory": "tsx ./src/check-route-inventory.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",
