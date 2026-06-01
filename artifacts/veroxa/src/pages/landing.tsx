@@ -38,9 +38,9 @@ export default function LandingPage() {
               Request Free Audit
             </Button>
           </Link>
-          <Link href="/services" data-testid="btn-hero-services">
+          <Link href="/demo/client/dashboard" data-testid="btn-hero-client-demo">
             <Button size="lg" variant="outline" className="h-14 px-8 text-base border-border/50 hover:bg-accent/50 transition-colors">
-              View Services
+              Client Demo
             </Button>
           </Link>
         </div>
