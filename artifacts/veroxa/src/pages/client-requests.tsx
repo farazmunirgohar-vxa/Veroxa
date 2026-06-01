@@ -8,7 +8,10 @@ import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { RealPortalReviewNotice } from "@/components/RealPortalSafeStates";
 import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary";
 import { clientTeamWorkRepository } from "@/lib/repositories";
-import { createWorkflowItem } from "@/lib/workflow/workflowRepository";
+import {
+  createWorkflowItem,
+  getClientWorkflowItems,
+} from "@/lib/workflow/workflowRepository";
 import { useActiveClientPortalContext } from "@/lib/clientPortalContext";
 import {
   CLIENT_REQUEST_TYPES,
@@ -56,15 +59,33 @@ export default function ClientRequests() {
         }))
     : [];
 
+  const workflowRequests =
+    canUseFixtureData && activeClientId
+      ? getClientWorkflowItems(activeClientId)
+          .filter((item) => item.type === "client_request")
+          .map((item) => ({
+            id: item.workflowItemId,
+            title: item.title,
+            note: item.clientNote || "Veroxa received your request.",
+            status: toClientRequestStatus(item.clientVisibleStatus),
+          }))
+      : [];
   const actionItems = canUseFixtureData
     ? clientTeamWorkRepository.getClientActionRequiredItems(activeClientId!)
     : [];
-  const requests = [...localRequests, ...sampleRequests];
+  const requests = [
+    ...localRequests,
+    ...workflowRequests,
+    ...sampleRequests,
+  ].filter(
+    (item, index, all) =>
+      all.findIndex((candidate) => candidate.id === item.id) === index,
+  );
 
   const handleSendNote = () => {
     const trimmed = noteText.trim();
     if (!trimmed) return;
-    const title = `${requestType}: ${trimmed.length > 48 ? `${trimmed.slice(0, 48)}…` : trimmed}`;
+    const title = buildClientRequestTitle(requestType, trimmed);
     if (canUseFixtureData && activeClientId) {
       createWorkflowItem({
         clientId: activeClientId,

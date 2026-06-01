@@ -5,6 +5,34 @@ interface DocumentMeta {
   title: string;
   /** Optional meta description for search/link previews. */
   description?: string;
+  /** Optional social card title. Defaults to title. */
+  socialTitle?: string;
+  /** Optional social card description. Defaults to description. */
+  socialDescription?: string;
+}
+
+function upsertMeta(selector: string, attributes: Record<string, string>) {
+  const existing = document.head.querySelector<HTMLMetaElement>(selector);
+  const element = existing ?? document.createElement("meta");
+  const previous = new Map<string, string | null>();
+
+  for (const [name, value] of Object.entries(attributes)) {
+    previous.set(name, element.getAttribute(name));
+    element.setAttribute(name, value);
+  }
+
+  if (!existing) document.head.appendChild(element);
+
+  return () => {
+    if (!existing) {
+      element.remove();
+      return;
+    }
+    for (const [name, value] of previous.entries()) {
+      if (value === null) element.removeAttribute(name);
+      else element.setAttribute(name, value);
+    }
+  };
 }
 
 function setManagedMeta(selector: string, attributes: Record<string, string>): () => void {
@@ -38,7 +66,12 @@ function setManagedMeta(selector: string, attributes: Record<string, string>): (
  * metadata while the page is mounted, restoring previous values on unmount. No
  * external SEO dependency and no generated image requirement.
  */
-export function useDocumentMeta({ title, description }: DocumentMeta): void {
+export function useDocumentMeta({
+  title,
+  description,
+  socialTitle,
+  socialDescription,
+}: DocumentMeta): void {
   useEffect(() => {
     const previousTitle = document.title;
     document.title = title;
@@ -82,5 +115,5 @@ export function useDocumentMeta({ title, description }: DocumentMeta): void {
       document.title = previousTitle;
       cleanups.forEach((cleanup) => cleanup());
     };
-  }, [title, description]);
+  }, [title, description, socialTitle, socialDescription]);
 }

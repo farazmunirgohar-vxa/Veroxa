@@ -1,4 +1,4 @@
-import { CalendarDays, FileText } from "lucide-react";
+import { CalendarDays, CheckCircle2, FileText, ListChecks } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

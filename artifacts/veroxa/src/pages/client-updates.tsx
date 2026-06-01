@@ -31,6 +31,13 @@ function toProgressLane(input: string): LaneKey | null {
   return null;
 }
 
+type MediaProgressItem = {
+  id: string;
+  title: string;
+  note: string;
+  status: SimpleStatus;
+};
+
 export default function ClientUpdates() {
   const mode = useRealPortalDataMode();
   const { activeClientId } = useActiveClientPortalContext();
@@ -41,7 +48,7 @@ export default function ClientUpdates() {
     ? clientTeamWorkRepository.getClientVisibleSubmissions(activeClientId!)
     : [];
 
-  const mediaUpdates = submissions
+  const mediaUpdates: MediaProgressItem[] = submissions
     .filter((item) => item.submissionType === "media")
     .map((item) => ({
       id: item.id,

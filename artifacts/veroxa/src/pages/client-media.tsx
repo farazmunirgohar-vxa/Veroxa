@@ -4,6 +4,7 @@ import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ClientMediaTracker } from "@/components/client/ClientMediaTracker";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { ClientMediaTracker } from "@/components/client/ClientMediaTracker";
 import {
@@ -164,6 +165,10 @@ export default function ClientMedia() {
   }, [activeClientId, canUseFixtureData]);
 
   const mediaItems = [...localUploads, ...repositoryMediaItems];
+  const selectedMedia =
+    mediaItems.find((item) => item.id === selectedMediaId) ??
+    mediaItems[0] ??
+    null;
   const uploadedMedia = mediaItems.filter((item) => item.source === "upload");
   const readyMedia = mediaItems.filter((item) => item.source === "ready");
   const postedMedia = mediaItems.filter((item) => item.source === "posted");
@@ -490,6 +495,8 @@ export default function ClientMedia() {
           )}
         </CardContent>
       </Card>
+
+      <MediaDetailCard item={selectedMedia} />
 
       <div className="grid gap-4 lg:grid-cols-3">
         <MediaSection

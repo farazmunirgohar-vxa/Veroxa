@@ -45,9 +45,7 @@ import {
 import { AUTH_MODE } from "@/lib/auth/authMode";
 import { DATA_MODE } from "@/lib/data/dataMode";
 import {
-  scheduledPosts as demoScheduledPosts,
   googleMetrics as demoGoogleMetrics,
-  contentSupply as demoContentSupply,
   demoAClient,
 } from "@/lib/demo-data";
 import {
@@ -105,42 +103,6 @@ export type ClientPortalData = {
   monthlyReportsCount: number;
 };
 
-// ── Static demo fallbacks ─────────────────────────────────────────────────────
-
-const DEMO_WEEKLY_UPDATE: WeeklyUpdateDisplay = {
-  title: "Weekly Update — 19–25 May",
-  summaryItems: [
-    "4 posts published this week across Instagram and Facebook.",
-    "Google impressions up 18% — your featured grilled platter post drove the highest reach this month.",
-    "2 new 5-star Google reviews received. Veroxa team prepared suggested responses.",
-    "Next shoot booked for Thursday 29 May at 11am — please have the new menu items ready.",
-  ],
-};
-
-const DEMO_MONTHLY_PREVIEW: MonthlyReportPreview = {
-  title: "April 2026 Report",
-  status: "Approved",
-  postsPublished: 18,
-  postsPlanned: 20,
-  completionRate: 90,
-  summaryText: null,
-};
-
-const DEMO_DATA: ClientPortalData = {
-  businessName: demoAClient.businessName,
-  scheduledPosts: demoScheduledPosts,
-  googleMetrics: demoGoogleMetrics,
-  contentSupply: demoContentSupply.map((s) => ({ ...s })),
-  weeklyUpdate: DEMO_WEEKLY_UPDATE,
-  monthlyReportPreview: DEMO_MONTHLY_PREVIEW,
-  platformsCount: 4,
-  mediaAssetsCount: 10,
-  postsCount: 7,
-  postSlotsCount: 8,
-  weeklyReportsCount: 2,
-  monthlyReportsCount: 1,
-};
-
 export type UseClientPortalDataResult = {
   source: ClientPortalSource;
   loading: boolean;
@@ -148,21 +110,23 @@ export type UseClientPortalDataResult = {
   data: ClientPortalData;
   /** Human-friendly description of the active source. Stable for UI badges. */
   dataSourceMessage: string;
-  /** True iff the data on screen came from a real Supabase read (M008). */
+  /** True iff the data on screen came from a real client-safe read. */
   isReadOnlyLive: boolean;
   /** Populated when the portal fell back to fixtures. Null when live. */
   fallbackReason: string | null;
 };
 
-// Client-safe wording: these are low-key internal dev/QA indicators that only
-// render in non-fixture modes. They intentionally avoid backend/vendor terms
-// (e.g. "Supabase") so a restaurant client never sees technical language.
-const SOURCE_MESSAGES: Record<ClientPortalSource, string> = {
-  supabase: "Preview data source: live (signed in)",
-  supabase_readonly: "Preview data source: live (read-only)",
-  fallback: "Preview data source: sample (live read unavailable)",
-  demo: "Preview data source: sample",
-  fixture: "Preview data source: sample",
+// ── Hook helper exports ─────────────────────────────────────────────────────
+
+export {
+  DEMO_DATA,
+  DEMO_MONTHLY_PREVIEW,
+  DEMO_WEEKLY_UPDATE,
+  SOURCE_MESSAGES,
+  buildScheduledPostsFromCalendar,
+  formatMonthKeyAsReportTitle,
+  formatWeekRangeTitle,
+  parseWeeklySummaryItems,
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -366,26 +330,8 @@ export function useClientPortalData(): UseClientPortalDataResult {
         // Content supply — derive "scheduled" count from the client-safe
         // calendar view (status_label === "Scheduled" only; published posts
         // are excluded from the supply queue).
-        const scheduledCount = calendarTyped.filter(
-          (p) => p.status_label === "Scheduled",
-        ).length;
-        const contentSupply: ContentSupplyItem[] = [
-          {
-            label: demoContentSupply[0].label,
-            value: demoContentSupply[0].value,
-            max: demoContentSupply[0].max,
-          },
-          {
-            label: demoContentSupply[1].label,
-            value: scheduledCount,
-            max: demoContentSupply[1].max,
-          },
-          {
-            label: demoContentSupply[2].label,
-            value: demoContentSupply[2].value,
-            max: demoContentSupply[2].max,
-          },
-        ];
+        const contentSupply: ContentSupplyItem[] =
+          buildReadinessContentSupply(calendarTyped);
 
         const scheduledPosts = buildScheduledPostsFromCalendar(calendarTyped);
 
@@ -395,7 +341,7 @@ export function useClientPortalData(): UseClientPortalDataResult {
         const latestWeekly = weeklyTyped[0] ?? null;
         const weeklyUpdate: WeeklyUpdateDisplay = latestWeekly
           ? {
-              title: formatWeekTitle(
+              title: formatWeekRangeTitle(
                 latestWeekly.week_start,
                 latestWeekly.week_end,
                 DEMO_WEEKLY_UPDATE.title,
