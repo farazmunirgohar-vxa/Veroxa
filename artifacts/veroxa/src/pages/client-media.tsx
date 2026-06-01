@@ -434,66 +434,6 @@ export default function ClientMedia() {
         </CardContent>
       </Card>
 
-      <Card
-        className="border-primary/20 bg-card"
-        data-testid="card-media-detail"
-      >
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Media detail tracker</CardTitle>
-          <p className="text-xs text-muted-foreground">
-            Click any media item below to see where it is in the Veroxa review
-            path.
-          </p>
-        </CardHeader>
-        <CardContent>
-          {selectedMedia ? (
-            <div className="space-y-4">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p
-                    className="text-sm font-semibold"
-                    data-testid="selected-media-name"
-                  >
-                    {selectedMedia.name}
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {selectedMedia.description}
-                  </p>
-                </div>
-                <MediaStatusBadge status={selectedMedia.status} />
-              </div>
-              {(selectedMedia.note || selectedMedia.direction) && (
-                <div className="grid gap-2 md:grid-cols-2">
-                  {selectedMedia.note && (
-                    <div className="rounded-md border border-border bg-muted/20 p-3">
-                      <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                        Note
-                      </p>
-                      <p className="mt-1 text-sm">{selectedMedia.note}</p>
-                    </div>
-                  )}
-                  {selectedMedia.direction && (
-                    <div className="rounded-md border border-border bg-muted/20 p-3">
-                      <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                        Direction
-                      </p>
-                      <p className="mt-1 text-sm">{selectedMedia.direction}</p>
-                    </div>
-                  )}
-                </div>
-              )}
-              <ClientMediaTracker status={selectedMedia.status} />
-            </div>
-          ) : (
-            <SafePortalEmptyCard
-              title="Media tracker"
-              body="Upload media or check back after Veroxa has reviewed your items."
-              testId="empty-media-detail"
-            />
-          )}
-        </CardContent>
-      </Card>
-
       <MediaDetailCard item={selectedMedia} />
 
       <div className="grid gap-4 lg:grid-cols-3">
@@ -542,7 +482,12 @@ function MediaDetailCard({ item }: { item: ClientMediaItem | null }) {
           <div className="space-y-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold">{item.name}</p>
+                <p
+                  className="truncate text-sm font-semibold"
+                  data-testid="selected-media-name"
+                >
+                  {item.name}
+                </p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {item.description}
                 </p>
