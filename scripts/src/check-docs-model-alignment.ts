@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -11,6 +11,13 @@ const currentDocs = [
   "artifacts/veroxa/docs/CURRENT_REPLIT_BUILD_STATUS.md",
   "artifacts/veroxa/docs/BUILD_STATUS.md",
   "artifacts/veroxa/docs/CURRENT_REAL_VEROXA_MODEL.md",
+];
+
+const controlDocs = [
+  "artifacts/veroxa/docs/VEROXA_OS_5_PHASE_PRELIVE_BUILD_MAP.md",
+  "artifacts/veroxa/docs/VEROXA_ROUTE_SURFACE_MAP.md",
+  "artifacts/veroxa/docs/FIRST_CLIENT_SIMULATION_POLICY.md",
+  "artifacts/veroxa/docs/MANUAL_BROWSER_SMOKE_CHECKLIST.md",
 ];
 
 type Rule = {
@@ -106,7 +113,24 @@ function isFutureOrGatedPlanningLine(line: string): boolean {
 
 const failures: string[] = [];
 
-for (const file of currentDocs) {
+function requireFile(file: string): string {
+  const fullPath = join(root, file);
+  if (!existsSync(fullPath)) {
+    failures.push(`Required documentation file is missing: ${file}`);
+    return "";
+  }
+
+  return readFileSync(fullPath, "utf8");
+}
+
+function requireText(file: string, text: string, label: string): void {
+  const content = requireFile(file);
+  if (!content.includes(text)) {
+    failures.push(`${file} is missing required marker: ${label}`);
+  }
+}
+
+for (const file of [...currentDocs, ...controlDocs]) {
   const fullPath = join(root, file);
   const text = readFileSync(fullPath, "utf8");
   let inHistoricalSection = false;
@@ -137,7 +161,7 @@ for (const file of currentDocs) {
 }
 
 const combinedDocs = currentDocs
-  .map((file) => readFileSync(join(root, file), "utf8"))
+  .map((file) => requireFile(file))
   .join("\n");
 
 for (const marker of requiredCurrentMarkers) {
@@ -148,9 +172,8 @@ for (const marker of requiredCurrentMarkers) {
   }
 }
 
-const twoRoleDoc = readFileSync(
-  join(root, "artifacts/veroxa/docs/CURRENT_TWO_ROLE_OPERATING_MODEL.md"),
-  "utf8",
+const twoRoleDoc = requireFile(
+  "artifacts/veroxa/docs/CURRENT_TWO_ROLE_OPERATING_MODEL.md",
 );
 for (const required of [
   "ClientPortalGuard",
@@ -166,9 +189,8 @@ for (const required of [
   }
 }
 
-const runbook = readFileSync(
-  join(root, "artifacts/veroxa/docs/PRODUCTION_LAUNCH_RUNBOOK.md"),
-  "utf8",
+const runbook = requireFile(
+  "artifacts/veroxa/docs/PRODUCTION_LAUNCH_RUNBOOK.md",
 );
 if (!runbook.includes("Stage 1 — Team/Internal Admin alpha")) {
   failures.push(
@@ -181,6 +203,91 @@ if (/Real auth[^\n]*(?:owner|operator)/i.test(stage1Block)) {
   failures.push(
     "Production launch runbook Stage 1 appears to revive Owner/Operator auth/workflows.",
   );
+}
+
+const buildMapFile =
+  "artifacts/veroxa/docs/VEROXA_OS_5_PHASE_PRELIVE_BUILD_MAP.md";
+const routeSurfaceMapFile =
+  "artifacts/veroxa/docs/VEROXA_ROUTE_SURFACE_MAP.md";
+const firstClientSimulationFile =
+  "artifacts/veroxa/docs/FIRST_CLIENT_SIMULATION_POLICY.md";
+const manualSmokeFile =
+  "artifacts/veroxa/docs/MANUAL_BROWSER_SMOKE_CHECKLIST.md";
+
+for (const requiredPhase of [
+  "Phase 1 — Control Tower + QA Foundation",
+  "Phase 2 — Public Website + Free Audit Readiness",
+  "Phase 3 — Client Portal Pre-Live Completion",
+  "Phase 4 — Team Portal + Internal Workflow Completion",
+  "Phase 5 — Rule-Based Automation + Manual Execution Launch Gate",
+]) {
+  requireText(buildMapFile, requiredPhase, requiredPhase);
+}
+requireText(buildMapFile, "## Hard Blocked Work", "Hard Blocked Work section");
+requireFile(routeSurfaceMapFile);
+requireFile(firstClientSimulationFile);
+requireText(manualSmokeFile, "## Mobile QA", "Mobile QA section");
+
+const activeClaimRules: Rule[] = [
+  {
+    label: "Live AI marked active",
+    pattern:
+      /\blive AI\b[^\n]*(?:active|enabled|connected|available|implemented)/i,
+  },
+  {
+    label: "Live storage marked active",
+    pattern:
+      /\blive storage\b[^\n]*(?:active|enabled|connected|available|implemented)/i,
+  },
+  {
+    label: "Live publishing marked active",
+    pattern:
+      /\blive publishing\b[^\n]*(?:active|enabled|connected|available|implemented)/i,
+  },
+  {
+    label: "Live payments marked active",
+    pattern:
+      /\blive payments\b[^\n]*(?:active|enabled|connected|available|implemented)/i,
+  },
+  {
+    label: "Production auth marked active",
+    pattern:
+      /\bproduction auth\b[^\n]*(?:active|enabled|connected|complete|implemented|live)/i,
+  },
+  {
+    label: "Owner role marked active",
+    pattern: /\bOwner\b[^\n]*(?:active|enabled|current runtime|real runtime)/,
+  },
+  {
+    label: "Operator role marked active",
+    pattern:
+      /\bOperator\b[^\n]*(?:active|enabled|current runtime|real runtime)/,
+  },
+];
+
+for (const file of [...currentDocs, ...controlDocs]) {
+  const text = requireFile(file);
+  let inHistoricalSection = false;
+
+  text.split(/\r?\n/).forEach((line, index) => {
+    if (/^#{1,6}\s/.test(line)) {
+      inHistoricalSection = isClearlyHistoricalOrDeprecated(line);
+    }
+
+    const contextAllowsPlanning =
+      inHistoricalSection ||
+      isClearlyHistoricalOrDeprecated(line) ||
+      isFutureOrGatedPlanningLine(line) ||
+      /blocked|forbidden|not allowed|no live|does not|must not|parked|inactive|restricted|future integration|removed from active|hidden from all active|not proof/i.test(
+        line,
+      );
+
+    for (const rule of activeClaimRules) {
+      if (rule.pattern.test(line) && !contextAllowsPlanning) {
+        failures.push(`${file}:${index + 1} ${rule.label}: ${line.trim()}`);
+      }
+    }
+  });
 }
 
 if (failures.length > 0) {

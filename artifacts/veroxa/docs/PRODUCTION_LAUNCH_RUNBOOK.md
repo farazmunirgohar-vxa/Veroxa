@@ -4,6 +4,8 @@
 > production system. **No stage past Stage 0 is in progress.** Each
 > stage has its own gating prerequisites that must be met before the
 > next stage begins.
+>
+> For the active five-phase pre-live roadmap, see [`VEROXA_OS_5_PHASE_PRELIVE_BUILD_MAP.md`](./VEROXA_OS_5_PHASE_PRELIVE_BUILD_MAP.md).
 
 ## Stage 0 — Current
 

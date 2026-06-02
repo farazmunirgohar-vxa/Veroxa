@@ -4,6 +4,8 @@ _Status: current build. This document describes how Veroxa actually operates
 right now, so future changes stay aligned with the real, simple model instead of
 the larger multi-role system that is parked._
 
+For the active five-phase pre-live roadmap, see [`VEROXA_OS_5_PHASE_PRELIVE_BUILD_MAP.md`](./VEROXA_OS_5_PHASE_PRELIVE_BUILD_MAP.md).
+
 ## The two roles that exist today
 
 Veroxa currently has **two** real roles:
