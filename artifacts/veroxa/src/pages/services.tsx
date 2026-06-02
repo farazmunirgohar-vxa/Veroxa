@@ -1,22 +1,38 @@
 import { Link } from "wouter";
-import {
-  ArrowRight,
-  CheckCircle2,
-  Globe,
-  LayoutDashboard,
-  Megaphone,
-  Monitor,
-} from "lucide-react";
+import { ArrowRight, CheckCircle2, Compass, Megaphone, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 import { useDocumentMeta } from "@/hooks/useDocumentMeta";
+import {
+  AD_SPEND_DISCLAIMER,
+  CURRENT_PUBLIC_PLANS,
+  MEDIA_DEPENDENCY_DISCLAIMER,
+  PREMIUM_READINESS_RULE,
+  SERVICE_BOUNDARY_DISCLAIMER,
+} from "@/data/pricing/veroxaPricing";
+
+const planSummaries = CURRENT_PUBLIC_PLANS.map((plan) => ({
+  name: plan.label,
+  price: plan.displayPrice,
+  tagline: plan.tagline,
+  includes: plan.includes,
+}));
+
+const boundaries = [
+  "Comments",
+  "DMs and inboxes",
+  "Refunds",
+  "Complaints",
+  "Order questions",
+  "Customer-service conversations",
+];
 
 export default function ServicesPage() {
   useDocumentMeta({
     title: "Services — Veroxa",
     description:
-      "Explore Veroxa services for restaurant online presence, Google visibility, social posting, and reporting.",
+      "Explore Veroxa services for restaurant Google visibility, social posting support, media guidance, reporting, and Premium ads readiness.",
   });
 
   return (
@@ -27,260 +43,129 @@ export default function ServicesPage() {
       <section className="pt-24 pb-16 px-6 lg:px-12 text-center relative overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-primary/15 blur-[100px] rounded-full pointer-events-none -z-10" />
         <div className="max-w-3xl mx-auto">
+          <p className="text-xs uppercase tracking-wider text-primary font-semibold mb-4">
+            Restaurant presence, handled calmly
+          </p>
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            Online Presence{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-400">
-              for Restaurants
-            </span>
+            Services that match the real Veroxa offer.
           </h1>
-          <p className="text-lg text-muted-foreground max-w-xl mx-auto animate-in fade-in slide-in-from-bottom-5 duration-700">
-            Veroxa handles content posting, captions, page consistency, Google
-            visibility, and online presence management so restaurants stay
-            visible, consistent, and trustworthy.
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-5 duration-700">
+            Veroxa helps restaurants improve Google Business Profile readiness, Google Search and Maps visibility basics, social posting consistency, media rhythm, updates, and monthly reporting without claiming guaranteed growth.
           </p>
         </div>
       </section>
 
-      {/* What Veroxa helps with */}
-      <section className="py-20 px-6 lg:px-12 bg-card/20 border-y border-border/40">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
-              <LayoutDashboard className="w-5 h-5" />
-            </div>
-            <h2 className="text-2xl font-bold">What Veroxa helps with</h2>
-          </div>
-          <div className="grid md:grid-cols-2 gap-x-12 gap-y-3">
-            {[
-              "Google visibility",
-              "Facebook + Instagram consistency",
-              "Picture posting",
-              "TikTok + Reels using client-provided media in Growth",
-              "Ads management available in Premium after readiness",
-              "Weekly updates and monthly reporting",
-              "Client portal access",
-            ].map((item) => (
-              <div
-                key={item}
-                className="flex items-center gap-3 py-2.5 border-b border-border/30 last:border-b-0"
-              >
-                <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />
-                <span className="text-sm font-medium">{item}</span>
+      {/* Plans */}
+      <section className="py-14 px-6 lg:px-12 max-w-6xl mx-auto w-full">
+        <div className="grid md:grid-cols-3 gap-5" data-testid="services-plan-grid">
+          {planSummaries.map((plan) => (
+            <div
+              key={plan.name}
+              className="rounded-2xl border border-border/40 bg-card/20 p-6 flex flex-col gap-4"
+              data-testid={`services-plan-${plan.name.toLowerCase()}`}
+            >
+              <div>
+                <p className="text-[11px] uppercase tracking-widest text-muted-foreground font-semibold mb-2">
+                  {plan.name}
+                </p>
+                <div className="flex items-end gap-1 mb-2">
+                  <span className="text-3xl font-extrabold">{plan.price}</span>
+                  <span className="text-sm text-muted-foreground mb-1">/month</span>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {plan.tagline}
+                </p>
               </div>
-            ))}
-          </div>
-          <div className="mt-6 p-4 rounded-xl border border-primary/30 bg-primary/5 text-sm text-foreground/90 leading-relaxed max-w-3xl">
-            <strong>Setup support:</strong> If the restaurant does not already
-            have a needed website, Facebook page, Instagram account, TikTok
-            account, or Google Business Profile, Veroxa will help create/setup
-            the required basic account/page/presence during onboarding. This is
-            not a custom website development package.
-          </div>
+              <div className="space-y-2">
+                {plan.includes.map((item) => (
+                  <div key={item} className="flex items-start gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5 text-primary/80" />
+                    <span className="text-sm leading-snug">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* Google Optimization */}
-      <section className="py-20 px-6 lg:px-12">
-        <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-          <div>
-            <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center border border-blue-500/20 mb-5">
-              <Globe className="w-5 h-5" />
-            </div>
-            <h2 className="text-2xl font-bold mb-4">Google Optimization</h2>
-            <p className="text-muted-foreground leading-relaxed mb-4">
-              Google Optimization covers Google Search Engine SEO, Google Maps
-              SEO, Google Business Profile, and Google reviews — so customers
-              searching for nearby food can actually find the restaurant.
-            </p>
-            <p className="text-sm text-muted-foreground/70 leading-relaxed">
-              Veroxa does not guarantee first-page Google rankings. Local search
-              results depend on many factors outside any agency's control.
+      {/* Core layers */}
+      <section className="py-12 px-6 lg:px-12 bg-card/20 border-y border-border/40">
+        <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-5">
+          <div className="rounded-xl border border-border/40 bg-background/40 p-5">
+            <Compass className="w-5 h-5 text-primary mb-3" />
+            <h2 className="font-bold mb-2">Google/local visibility</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Google Business Profile optimization, Google Search SEO basics, Google Maps SEO basics, profile freshness, menu/link consistency, and local visibility opportunities are core to every plan.
             </p>
           </div>
-          <div className="space-y-4">
-            {[
-              "Google Search Engine SEO",
-              "Google Maps SEO",
-              "Google Business Profile optimization",
-              "Google reviews support",
-            ].map((item) => (
-              <div
-                key={item}
-                className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card/40"
-              >
-                <CheckCircle2 className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                <span className="text-sm font-medium">{item}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Social Content */}
-      <section className="py-20 px-6 lg:px-12 bg-card/20 border-y border-border/40">
-        <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-          <div className="order-2 md:order-1 space-y-4">
-            {[
-              "Essential includes max 1 picture post per day",
-              "Growth adds TikTok + Reels using provided photos and videos",
-              "Caption writing and draft creation",
-              "Posting depends on usable media from the restaurant",
-            ].map((item) => (
-              <div
-                key={item}
-                className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card/40"
-              >
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                <span className="text-sm font-medium">{item}</span>
-              </div>
-            ))}
-          </div>
-          <div className="order-1 md:order-2">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center border border-emerald-500/20 mb-5">
-              <Monitor className="w-5 h-5" />
-            </div>
-            <h2 className="text-2xl font-bold mb-4">Social Content System</h2>
-            <p className="text-muted-foreground leading-relaxed mb-4">
-              Essential focuses on social media picture posting to keep the
-              restaurant active and consistent. Growth adds TikTok + Reels
-              posting support using the photos and videos you provide. Veroxa
-              handles content structure, caption creation, page consistency, and
-              posting so the owner does not manage it day-to-day.
+          <div className="rounded-xl border border-border/40 bg-background/40 p-5">
+            <ShieldCheck className="w-5 h-5 text-primary mb-3" />
+            <h2 className="font-bold mb-2">Portal + team workflow</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Restaurant partners use the Client Portal for media and simple status. Veroxa Team review keeps public actions calm, checked, and queued instead of automatic.
             </p>
-            <p className="text-muted-foreground leading-relaxed mb-4">
-              All active plans remain capped at max 1 post/day, depending on
-              usable client-provided media. Growth adds TikTok + Reels support
-              using provided photos/videos; Premium adds ads management
-              readiness/support after assessment, but does not increase the
-              public posting cap.
-            </p>
-            <p className="text-sm text-muted-foreground/70 leading-relaxed">
-              Veroxa does not guarantee viral posts or a specific follower
-              count.
+          </div>
+          <div className="rounded-xl border border-border/40 bg-background/40 p-5">
+            <Megaphone className="w-5 h-5 text-primary mb-3" />
+            <h2 className="font-bold mb-2">Premium ads readiness</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Premium adds ads management readiness/support only after assessment, client approval, and an agreed budget. Ad reporting begins once approved ads are active later.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Service boundary */}
-      <section className="py-12 px-6 lg:px-12">
-        <div className="max-w-4xl mx-auto p-5 rounded-xl border border-border/40 bg-card/20 text-sm text-muted-foreground leading-relaxed">
-          <strong className="text-foreground/80">Service boundary:</strong>{" "}
-          Veroxa does not handle comments, DMs, inboxes, complaints, order
-          questions, refunds, or customer-service conversations at launch. The
-          restaurant remains responsible for customer replies and service
-          conversations.
-        </div>
-      </section>
-
-      {/* Reporting */}
-      <section className="py-20 px-6 lg:px-12">
-        <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-          <div>
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center border border-amber-500/20 mb-5">
-              <LayoutDashboard className="w-5 h-5" />
-            </div>
-            <h2 className="text-2xl font-bold mb-4">
-              Reporting and Accountability
-            </h2>
-            <p className="text-muted-foreground leading-relaxed">
-              Restaurant owners receive weekly updates and monthly performance
-              reports through the client portal. The reporting system creates
-              visibility into what is being done, builds trust, and makes it
-              easy to see progress without chasing the team for updates.
-            </p>
-          </div>
-          <div className="space-y-4">
-            {[
-              "Weekly client update feed",
-              "Monthly performance reports",
-              "Content calendar visibility",
-              "Clear record of work done",
-            ].map((item) => (
-              <div
-                key={item}
-                className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card/40"
-              >
-                <CheckCircle2 className="w-4 h-4 text-amber-500 flex-shrink-0" />
-                <span className="text-sm font-medium">{item}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Ads Management */}
-      <section className="py-20 px-6 lg:px-12 bg-card/20 border-y border-border/40">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center border border-amber-500/20">
-              <Megaphone className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="text-xs font-semibold text-amber-400 uppercase tracking-widest mb-0.5">
-                Included in Premium
-              </div>
-              <h2 className="text-2xl font-bold">Ads Management</h2>
-            </div>
-          </div>
-          <p className="text-muted-foreground mb-8 max-w-xl">
-            Ads management is included in Premium only after at least 1 month on
-            Essential or Growth, a Veroxa readiness assessment, client approval,
-            and an agreed ad budget. Veroxa handles campaign setup, targeting,
-            creative direction, monitoring, and reporting. Ad spend is always
-            separate and paid by the restaurant directly to the ad platform.
+      {/* Boundaries */}
+      <section className="py-14 px-6 lg:px-12">
+        <div className="max-w-5xl mx-auto rounded-2xl border border-border/40 bg-card/20 p-6 md:p-7">
+          <h2 className="text-2xl font-bold mb-3">What is not included at launch</h2>
+          <p className="text-sm text-muted-foreground leading-relaxed mb-5">
+            {SERVICE_BOUNDARY_DISCLAIMER}
           </p>
-          <div className="grid md:grid-cols-2 gap-x-12 gap-y-3 mb-8">
-            {[
-              "Campaign setup support",
-              "Audience and offer strategy",
-              "Creative testing direction",
-              "Ad performance monitoring",
-              "Monthly ad summary",
-              "Optimization recommendations",
-            ].map((item) => (
-              <div
-                key={item}
-                className="flex items-center gap-3 py-2.5 border-b border-border/30 last:border-b-0"
-              >
-                <CheckCircle2 className="w-4 h-4 text-amber-500 flex-shrink-0" />
-                <span className="text-sm font-medium">{item}</span>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-5">
+            {boundaries.map((item) => (
+              <div key={item} className="rounded-lg border border-border/30 bg-background/30 px-3 py-2 text-sm">
+                {item}
               </div>
             ))}
           </div>
-          <div className="p-4 rounded-xl border border-amber-500/20 bg-amber-500/5 text-sm text-amber-400/90 leading-relaxed max-w-xl">
-            Advertising budget is separate and paid by the restaurant directly
-            to the ad platform. Premium readiness can be reviewed after the
-            restaurant foundation is stable.
+          <div className="grid md:grid-cols-2 gap-4 text-sm text-muted-foreground leading-relaxed">
+            <p>
+              {MEDIA_DEPENDENCY_DISCLAIMER}
+            </p>
+            <p>
+              {AD_SPEND_DISCLAIMER} {PREMIUM_READINESS_RULE}
+            </p>
           </div>
         </div>
       </section>
 
       {/* CTA */}
-      <section className="py-20 px-6 lg:px-12">
+      <section className="py-20 px-6 lg:px-12 bg-card/10 border-t border-border/30">
         <div className="max-w-xl mx-auto text-center">
-          <h2 className="text-2xl font-bold mb-6">
-            See pricing or experience the demo
+          <h2 className="text-2xl font-bold mb-4">
+            Start with the Free Audit
           </h2>
+          <p className="text-muted-foreground mb-8">
+            The audit helps identify whether your restaurant should start with Essential, Growth, or Premium readiness review.
+          </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/pricing" data-testid="btn-services-cta-pricing">
+            <Link href="/free-audit" data-testid="btn-services-cta-audit">
               <Button
                 size="lg"
                 className="h-12 px-7 font-semibold shadow-[0_0_20px_rgba(99,102,241,0.25)]"
               >
-                View Pricing <ArrowRight className="ml-2 w-4 h-4" />
+                Start Free Audit <ArrowRight className="ml-2 w-4 h-4" />
               </Button>
             </Link>
-            <Link
-              href="/demo/client/dashboard"
-              data-testid="btn-services-cta-demo"
-            >
+            <Link href="/pricing" data-testid="btn-services-cta-pricing">
               <Button
                 size="lg"
                 variant="outline"
                 className="h-12 px-7 border-border/60 hover:bg-accent/50"
               >
-                Client Demo
+                See Pricing
               </Button>
             </Link>
           </div>

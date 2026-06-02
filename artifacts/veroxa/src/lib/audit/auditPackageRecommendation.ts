@@ -58,15 +58,15 @@ export function getRecommendedFirstStepsForPackage(
       return [
         "Stabilize the complete online presence system for the first 2–3 weeks.",
         "Define ad angles around the goal (catering / lunch / dinner / event).",
-        "Launch a small disciplined test campaign — restaurant pays ad spend directly.",
-        "Learn from early signals before scaling.",
+        "Review Premium readiness with Veroxa before any campaign is activated.",
+        "Confirm client approval and an agreed ad budget; ad spend is paid directly by the restaurant.",
       ];
     case "ads_management_only":
       return [
         "Confirm the existing online presence is healthy enough to support paid traffic.",
-        "Define one primary campaign goal and one secondary.",
-        "Set up disciplined ad structure and reporting cadence.",
-        "Review every 2 weeks; adjust angles based on results.",
+        "Complete Premium readiness assessment before any campaign is activated.",
+        "Define one primary campaign goal, client approval, and an agreed ad budget.",
+        "Restaurant pays ad spend directly to the ad platform; Veroxa reports once approved ads are active later.",
       ];
   }
 }
@@ -125,7 +125,7 @@ export function getPackageRecommendationReason(
     return {
       packageId: "ads_management_only",
       reason:
-        "Ads Management Only is best for restaurants that already have strong online foundations and only need campaign execution. If the foundation still has room to be strengthened, Veroxa usually recommends improving Google, content, and conversion first.",
+        "This is a Premium readiness fit, not an automatic ads activation. Veroxa would first confirm the online foundation, client approval, and an agreed ad budget before any campaign work begins. Ad spend is separate and paid directly by the restaurant.",
     };
   }
 
@@ -142,7 +142,7 @@ export function getPackageRecommendationReason(
     return {
       packageId: "complete_plus_ads",
       reason:
-        "Ads can help amplify a restaurant that already has a decent online foundation. Veroxa would not recommend ads as a replacement for Google, content, or conversion basics that still need to be strengthened.",
+        "Ads interest points to a Premium readiness assessment, not automatic activation. Veroxa would review Google, content, action paths, client approval, and an agreed ad budget first. Ad spend is separate and paid directly by the restaurant.",
     };
   }
 
@@ -215,8 +215,8 @@ export function getExpectedDirectionForPackage(
     case "complete_online_presence":
       return "Designed to improve consistency online and create more customer reminder moments across Google and social, which may improve recall when nearby customers decide where to eat. Results vary by location, offer, food quality, competition, and execution.";
     case "complete_plus_ads":
-      return "Designed to layer paid reach on top of a more consistent online foundation. Can support better visibility when foundation work is already in place. Results vary by location, offer, food quality, competition, and execution.";
+      return "Designed to assess whether paid reach should be layered on top of a more consistent online foundation. Premium requires readiness assessment, client approval, and an agreed ad budget; results vary by location, offer, food quality, competition, and execution.";
     case "ads_management_only":
-      return "Designed to focus campaign discipline on an existing strong foundation. Can support better visibility for specific goals. Results vary by location, offer, food quality, competition, and execution.";
+      return "Designed to assess whether campaign support makes sense for an already strong foundation. Premium requires readiness assessment, client approval, and an agreed ad budget; ad spend is separate and results vary by location, offer, food quality, competition, and execution.";
   }
 }

@@ -12,6 +12,7 @@ const publicFiles = [
   "artifacts/veroxa/src/pages/guided-demo.tsx",
   "artifacts/veroxa/src/pages/services.tsx",
   "artifacts/veroxa/src/pages/pricing.tsx",
+  "artifacts/veroxa/src/pages/free-audit.tsx",
   "artifacts/veroxa/src/components/PortalLayout.tsx",
   "artifacts/veroxa/src/components/auth/RealPortalDataBoundary.tsx",
   "artifacts/veroxa/src/hooks/useDocumentMeta.ts",
@@ -59,6 +60,39 @@ if (auditCount !== 1 || clientDemoCount !== 1) {
 }
 if (/View Services/.test(landing) && /Request Free Audit/.test(landing)) {
   failures.push("landing.tsx must not reintroduce a lower CTA that pairs Request Free Audit with View Services.");
+}
+
+const freeAudit = readFileSync(join(root, "artifacts/veroxa/src/pages/free-audit.tsx"), "utf8");
+for (const required of [
+  "review-mode audit preview",
+  "Live Google/API scanning is not connected here yet",
+  "recommendations are not guarantees",
+  "Premium ads readiness assessment",
+]) {
+  if (!freeAudit.includes(required)) {
+    failures.push(`free-audit.tsx is missing Phase 2 safety wording: ${required}`);
+  }
+}
+for (const risky of [
+  /AI-assisted summary/i,
+  /Generate AI/i,
+  /searches Google directly/i,
+  /Live Google lookup found/i,
+  /Loading live profile/i,
+]) {
+  if (risky.test(freeAudit)) {
+    failures.push(`free-audit.tsx contains public live/AI claim blocked in pre-live mode: ${risky}`);
+  }
+}
+
+for (const file of publicFiles) {
+  const text = readFileSync(join(root, file), "utf8");
+  if (/href=[{]?['"]\/team\//.test(text)) {
+    failures.push(`${file} must not link public visitors directly into guarded /team/* routes.`);
+  }
+  if (/href=[{]?['"]\/client\//.test(text)) {
+    failures.push(`${file} must not link public visitors directly into guarded /client/* routes.`);
+  }
 }
 
 const nav = readFileSync(join(root, "artifacts/veroxa/src/components/public/PublicNav.tsx"), "utf8");

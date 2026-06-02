@@ -26,7 +26,6 @@ import {
   saveAuditLead,
 } from "@/lib/leads/localAuditLeadStore";
 import { useDocumentMeta } from "@/hooks/useDocumentMeta";
-import { isClientSafeLanguage } from "@/domain/clientPortalJourney/languageSafety";
 import type {
   AuditLeadContact,
   AuditLeadSelectedRestaurant,
@@ -36,24 +35,12 @@ import {
   searchRestaurantCandidates,
   type RestaurantSearchCandidate,
 } from "@/data/demo/demoRestaurantSearch";
-import {
-  getLiveRestaurantDetails,
-  searchLiveRestaurantCandidates,
-  type LiveAuditMode,
-  type LiveRestaurantProfile,
-  type LiveWebPresenceScan,
-} from "@/lib/audit/liveAuditClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { generateRestaurantAudit } from "@/lib/audit/auditScoring";
-import {
-  buildAiAuditDraftPayload,
-  generateAiAuditDraftClient,
-  type AiAuditDraft,
-  type AiAuditDraftMode,
-} from "@/lib/audit/aiAuditClient";
 import {
   AUDIT_DISCLAIMER,
   AUDIT_EXPECTED_IMPACT_TIMELINE,
@@ -81,6 +68,9 @@ const initialInput: RestaurantAuditInput = {
   tiktokUrl: "",
   menuOrderingUrl: "",
   otherUrl: "",
+  currentGoal: "",
+  biggestProblem: "",
+  notes: "",
 };
 
 
@@ -165,40 +155,6 @@ export default function FreeAudit() {
 
   const [input, setInput] = useState<RestaurantAuditInput>(initialInput);
   const [report, setReport] = useState<RestaurantAuditReport | null>(null);
-  const [aiDraft, setAiDraft] = useState<AiAuditDraft | null>(null);
-  const [aiDraftMode, setAiDraftMode] = useState<AiAuditDraftMode | null>(null);
-  const [aiDraftMessage, setAiDraftMessage] = useState<string>("");
-  const [aiDraftLoading, setAiDraftLoading] = useState(false);
-
-  function resetAiDraftState() {
-    setAiDraft(null);
-    setAiDraftMode(null);
-    setAiDraftMessage("");
-    setAiDraftLoading(false);
-  }
-
-  async function handleGenerateAiDraft() {
-    if (!report || aiDraftLoading) return;
-    setAiDraftLoading(true);
-    setAiDraftMessage("");
-    try {
-      const payload = buildAiAuditDraftPayload(report);
-      const result = await generateAiAuditDraftClient(payload);
-      if (result.aiDraft !== null && !isClientSafeLanguage(result.aiDraft)) {
-        setAiDraftMode("error");
-        setAiDraft(null);
-        setAiDraftMessage(
-          "The draft contained an unexpected term and was not shown. Please try again.",
-        );
-      } else {
-        setAiDraftMode(result.mode);
-        setAiDraft(result.aiDraft);
-        setAiDraftMessage(result.message ?? "");
-      }
-    } finally {
-      setAiDraftLoading(false);
-    }
-  }
   const [contact, setContact] = useState<AuditLeadContact>(emptyContact);
   const [walkthroughSaved, setWalkthroughSaved] = useState(false);
   const [walkthroughError, setWalkthroughError] = useState<string | null>(null);
@@ -206,7 +162,7 @@ export default function FreeAudit() {
   // Unified candidate type: covers both live Google Places candidates and
   // fixture/preview fallback candidates. `source` drives the UI badge.
   type UnifiedCandidate = {
-    source: "live" | "preview";
+    source: "preview";
     id: string;
     placeId?: string;
     restaurantName: string;
@@ -233,7 +189,7 @@ export default function FreeAudit() {
   const [candidateSearchRan, setCandidateSearchRan] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [searchMode, setSearchMode] = useState<
-    "idle" | "live" | "fixture_fallback" | "not_configured"
+    "idle" | "fixture_fallback" | "not_configured"
   >("idle");
   const [strategiesTried, setStrategiesTried] = useState<string[] | undefined>(
     undefined,
@@ -245,13 +201,6 @@ export default function FreeAudit() {
     number | undefined
   >(undefined);
   const [isSearching, setIsSearching] = useState(false);
-  const [liveProfile, setLiveProfile] = useState<LiveRestaurantProfile | null>(
-    null,
-  );
-  const [liveWebPresence, setLiveWebPresence] =
-    useState<LiveWebPresenceScan | null>(null);
-  const [detailsLoading, setDetailsLoading] = useState(false);
-  const [detailsMessage, setDetailsMessage] = useState<string>("");
 
   function adaptFixtureCandidate(c: RestaurantSearchCandidate): UnifiedCandidate {
     return {
@@ -277,8 +226,6 @@ export default function FreeAudit() {
     | AuditLeadSelectedRestaurant
     | undefined {
     if (!selectedCandidate) return undefined;
-    const isLive = selectedCandidate.source === "live";
-    const liveOk = isLive && liveProfile !== null;
     return {
       selectedRestaurantId: selectedCandidate.id,
       selectedRestaurantName: selectedCandidate.restaurantName,
@@ -287,30 +234,11 @@ export default function FreeAudit() {
       selectedAddress: selectedCandidate.addressLine,
       selectedCuisineType: selectedCandidate.cuisineType,
       selectedMatchConfidence: selectedCandidate.matchConfidence,
-      selectedPlaceId: selectedCandidate.placeId,
-      selectedSource: isLive ? "google_places" : "fixture",
-      selectedPhone: liveOk ? liveProfile?.phone : undefined,
-      selectedRating: liveOk
-        ? liveProfile?.rating
-        : selectedCandidate.googleRating,
-      selectedReviewCount: liveOk
-        ? liveProfile?.reviewCount
-        : selectedCandidate.reviewCount,
-      selectedWebsiteUrl: liveOk
-        ? liveProfile?.websiteUrl
-        : selectedCandidate.websiteUrl,
-      selectedGoogleMapsUrl: liveOk
-        ? liveProfile?.googleMapsUrl
-        : selectedCandidate.googleMapsUrl,
-      selectedBusinessStatus: liveOk ? liveProfile?.businessStatus : undefined,
-      discoveredMenuLinks: liveWebPresence?.discoveredMenuLinks,
-      discoveredSocialLinks: liveWebPresence?.discoveredSocialLinks,
-      websiteFound: liveWebPresence?.websiteFound,
-      menuLinkFound: liveWebPresence?.menuLinkFound,
-      orderLinkFound: liveWebPresence?.orderLinkFound,
-      contactPathFound: liveWebPresence?.contactPathFound,
-      scanConfidence: liveWebPresence?.scanConfidence,
-      aiDraftAvailable: aiDraft !== null,
+      selectedSource: "fixture",
+      selectedRating: selectedCandidate.googleRating,
+      selectedReviewCount: selectedCandidate.reviewCount,
+      selectedWebsiteUrl: selectedCandidate.websiteUrl,
+      selectedGoogleMapsUrl: selectedCandidate.googleMapsUrl,
     };
   }
 
@@ -327,62 +255,26 @@ export default function FreeAudit() {
     }
     setIsSearching(true);
     setSelectedCandidate(null);
-    setLiveProfile(null);
-    setLiveWebPresence(null);
     setReport(null);
-    resetAiDraftState();
     try {
-      const live = await searchLiveRestaurantCandidates({
-        restaurantName: input.restaurantName.trim(),
-        city: input.city.trim(),
-        state: input.state.trim(),
+      const fixtureResults = searchRestaurantCandidates({
+        restaurantName: input.restaurantName,
+        city: input.city,
+        state: input.state,
       });
-      if (live.mode === "live" && live.candidates.length > 0) {
-        setSearchMode("live");
-        setStrategiesTried(live.strategiesTried);
-        setLiveTotalRaw(live.totalRawCandidates);
-        setLiveTotalDisplayed(live.totalDisplayedCandidates);
-        setCandidateResults(
-          live.candidates.map((c) => ({
-            source: "live" as const,
-            id: c.placeId,
-            placeId: c.placeId,
-            restaurantName: c.displayName,
-            addressLine: c.formattedAddress,
-            city: input.city.trim(),
-            state: input.state.trim(),
-            cuisineType: c.primaryType?.replace(/_/g, " "),
-            googleRating: c.rating,
-            reviewCount: c.userRatingCount,
-            googleMapsUrl: c.googleMapsUri,
-            matchConfidence: c.matchConfidence,
-          })),
-        );
-      } else {
-        const fixtureResults = searchRestaurantCandidates({
-          restaurantName: input.restaurantName,
-          city: input.city,
-          state: input.state,
-        });
-        setStrategiesTried(undefined);
-        setLiveTotalRaw(undefined);
-        setLiveTotalDisplayed(undefined);
-        setSearchMode(
-          live.mode === "not_configured" ? "not_configured" : "fixture_fallback",
-        );
-        setCandidateResults(fixtureResults.map(adaptFixtureCandidate));
-      }
+      setStrategiesTried(undefined);
+      setLiveTotalRaw(undefined);
+      setLiveTotalDisplayed(undefined);
+      setSearchMode("fixture_fallback");
+      setCandidateResults(fixtureResults.map(adaptFixtureCandidate));
       setCandidateSearchRan(true);
     } finally {
       setIsSearching(false);
     }
   }
 
-  async function handleSelectCandidate(candidate: UnifiedCandidate) {
+  function handleSelectCandidate(candidate: UnifiedCandidate) {
     setSelectedCandidate(candidate);
-    setLiveProfile(null);
-    setLiveWebPresence(null);
-    setDetailsMessage("");
     setInput((prev) => ({
       ...prev,
       restaurantName: candidate.restaurantName,
@@ -396,58 +288,16 @@ export default function FreeAudit() {
       menuOrderingUrl: candidate.menuOrderingUrl ?? prev.menuOrderingUrl,
       googleRating: candidate.googleRating ?? prev.googleRating,
       reviewCount: candidate.reviewCount ?? prev.reviewCount,
-      selectedPlaceId: candidate.placeId,
-      restaurantSource: candidate.source === "live" ? "google_places" : "fixture",
+      restaurantSource: "fixture",
     }));
     setReport(null);
-    resetAiDraftState();
     setWalkthroughSaved(false);
 
-    if (candidate.source === "live" && candidate.placeId) {
-      setDetailsLoading(true);
-      try {
-        const details = await getLiveRestaurantDetails(candidate.placeId);
-        if (details.mode === "live" && details.profile) {
-          setLiveProfile(details.profile);
-          setLiveWebPresence(details.webPresence);
-          const scan = details.webPresence;
-          setInput((prev) => ({
-            ...prev,
-            restaurantName: details.profile?.name ?? prev.restaurantName,
-            websiteUrl: details.profile?.websiteUrl ?? prev.websiteUrl,
-            googleListingUrl:
-              details.profile?.googleMapsUrl ?? prev.googleListingUrl,
-            googleRating: details.profile?.rating ?? prev.googleRating,
-            reviewCount: details.profile?.reviewCount ?? prev.reviewCount,
-            liveProfileConfidence: details.profile?.sourceConfidence,
-            businessStatus: details.profile?.businessStatus,
-            websiteFound: scan?.websiteFound,
-            menuLinkFound: scan?.menuLinkFound,
-            orderLinkFound: scan?.orderLinkFound,
-            reservationLinkFound: scan?.reservationLinkFound,
-            contactPathFound: scan?.contactPathFound,
-            discoveredMenuLinks: scan?.discoveredMenuLinks,
-            discoveredSocialLinks: scan?.discoveredSocialLinks,
-          }));
-        } else {
-          setDetailsMessage(
-            details.message ??
-              "Live details are temporarily unavailable. You can still continue manually below.",
-          );
-        }
-      } finally {
-        setDetailsLoading(false);
-      }
-    }
   }
 
   function handleClearSelectedCandidate() {
     setSelectedCandidate(null);
-    setLiveProfile(null);
-    setLiveWebPresence(null);
-    setDetailsMessage("");
     setReport(null);
-    resetAiDraftState();
   }
 
   function handleContactChange<K extends keyof AuditLeadContact>(
@@ -502,8 +352,7 @@ export default function FreeAudit() {
     ) {
       setSelectedCandidate(null);
       setReport(null);
-      resetAiDraftState();
-    }
+      }
   }
 
   function handleSubmit(e: FormEvent) {
@@ -519,7 +368,6 @@ export default function FreeAudit() {
       cuisineType: cuisineForAudit,
     });
     setReport(result);
-    resetAiDraftState();
     setWalkthroughSaved(false);
     setWalkthroughError(null);
     setContact(emptyContact);
@@ -544,7 +392,7 @@ export default function FreeAudit() {
         {/* Hero */}
         <div className="mb-8">
           <div className="inline-flex items-center gap-2 text-xs uppercase tracking-wider text-primary mb-2">
-            <Sparkles className="w-3.5 h-3.5" /> Free customer-flow tool
+            <Sparkles className="w-3.5 h-3.5" /> Free review-mode audit
           </div>
           <h1
             className="text-3xl md:text-4xl font-bold tracking-tight mb-2"
@@ -553,16 +401,10 @@ export default function FreeAudit() {
             Get a Free Restaurant Online Presence Audit
           </h1>
           <p className="text-muted-foreground max-w-3xl">
-            Search for your restaurant, select it from the results, then
-            generate your audit. Veroxa will produce a preliminary report
-            covering your biggest daily customer opportunities online and which
-            Veroxa service area is the best fit.
+            Share your restaurant details and generate a review-mode audit preview. Veroxa will review your online presence, identify visibility and consistency opportunities, and recommend a current plan fit for a manual first conversation.
           </p>
           <p className="text-[12px] text-muted-foreground/80 max-w-3xl mt-2 italic">
-            When live lookup is configured, Veroxa searches Google directly and
-            scans the website for key signals. When not configured, a preview
-            fallback is shown so you can continue. Either way, a full Veroxa
-            plan requires manual review.
+            This pre-live Free Audit uses the information you provide and preview matching only. Live Google/API scanning is not connected here yet, and recommendations are not guarantees. A full Veroxa plan requires Veroxa Team review.
           </p>
         </div>
 
@@ -577,9 +419,7 @@ export default function FreeAudit() {
                 What Veroxa reviews
               </p>
               <p className="text-[12px] text-muted-foreground">
-                Your Google profile signals, website presence, social
-                consistency, and ordering links — the places customers actually
-                check before deciding.
+                Google Business Profile links, website/menu paths, social profiles, media readiness, goals, and consistency signals — the places customers usually check before deciding.
               </p>
             </CardContent>
           </Card>
@@ -609,7 +449,7 @@ export default function FreeAudit() {
           </Card>
         </div>
 
-        {/* Find My Restaurant — live Google Places with preview fallback */}
+        {/* Find My Restaurant — preview matching only in pre-live mode */}
         <Card
           className="bg-card border-border mb-4"
           data-testid="restaurant-search-card"
@@ -622,9 +462,7 @@ export default function FreeAudit() {
           </CardHeader>
           <CardContent>
             <p className="text-[12px] text-muted-foreground mb-3">
-              Enter your restaurant name, city, and state. Veroxa will look up
-              your restaurant on Google when live lookup is configured, or fall
-              back to a preview match so you can continue.
+              Enter your restaurant name, city, and state. This pre-live page uses preview matching so you can continue without live Google/API scanning.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
               <Field
@@ -656,8 +494,7 @@ export default function FreeAudit() {
             </div>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-[11px] text-muted-foreground italic inline-flex items-center gap-1">
-                <Info className="w-3 h-3" /> Live lookup depends on
-                configuration. Some signals may require manual review.
+                <Info className="w-3 h-3" /> Preview matching only. Veroxa will manually review real online presence details before any recommendation is treated as final.
               </p>
               <Button
                 type="button"
@@ -668,7 +505,7 @@ export default function FreeAudit() {
                 data-testid="btn-find-restaurant"
               >
                 <Search className="w-3.5 h-3.5 mr-1" />
-                {isSearching ? "Searching…" : "Find my restaurant"}
+                {isSearching ? "Checking…" : "Preview match"}
               </Button>
             </div>
             {searchError && (
@@ -679,55 +516,14 @@ export default function FreeAudit() {
                 {searchError}
               </p>
             )}
-            {candidateSearchRan && !isSearching && searchMode === "live" && (
-              <div className="mt-3 space-y-1">
-                <p
-                  className="text-[12px] text-muted-foreground"
-                  data-testid="restaurant-search-mode-note"
-                >
-                  {candidateResults.length > 0 &&
-                  candidateResults.every(
-                    (c) => c.source === "live" && c.matchConfidence === "low",
-                  )
-                    ? "We found possible matches. Please select the correct restaurant or continue manually."
-                    : strategiesTried &&
-                        strategiesTried.some(
-                          (s) =>
-                            s !== "autocomplete" &&
-                            s !== "broad_name_city_state",
-                        )
-                      ? "We broadened the search to find more possible matches. Please select the correct restaurant."
-                      : "Live Google lookup found possible matches. Please select the correct restaurant."}
-                </p>
-                {(strategiesTried ||
-                  liveTotalRaw !== undefined ||
-                  liveTotalDisplayed !== undefined) && (
-                  <p className="text-[11px] text-muted-foreground/50">
-                    {[
-                      strategiesTried
-                        ? `Strategies tried: ${strategiesTried.length}`
-                        : null,
-                      liveTotalRaw !== undefined
-                        ? `Candidates checked: ${liveTotalRaw}`
-                        : null,
-                      liveTotalDisplayed !== undefined
-                        ? `Displayed: ${liveTotalDisplayed}`
-                        : null,
-                    ]
-                      .filter(Boolean)
-                      .join(" · ")}
-                  </p>
-                )}
-              </div>
-            )}
-            {candidateSearchRan && !isSearching && searchMode !== "live" && (
+            {candidateSearchRan && !isSearching && searchMode !== "idle" && (
               <p
                 className="text-[12px] text-muted-foreground italic mt-3"
                 data-testid="restaurant-search-mode-note"
               >
                 {searchMode === "not_configured"
-                  ? "Live Google lookup is not configured here yet. Showing preview fallback results so you can continue."
-                  : "Live lookup did not return matches. Showing preview fallback results so you can continue."}
+                  ? "Live Google/API scanning is not connected here yet. Showing preview results so you can continue."
+                  : "Preview matching is shown so you can continue."}
               </p>
             )}
             {selectedCandidate && (
@@ -744,27 +540,19 @@ export default function FreeAudit() {
                       <Badge
                         variant="outline"
                         className={
-                          selectedCandidate.source === "live"
-                            ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/5"
-                            : "border-muted-foreground/30 text-muted-foreground bg-muted/10"
+                          "border-muted-foreground/30 text-muted-foreground bg-muted/10"
                         }
                       >
-                        {selectedCandidate.source === "live"
-                          ? selectedCandidate.matchConfidence === "high"
-                            ? "Likely live match"
-                            : selectedCandidate.matchConfidence === "medium"
-                              ? "Possible live match"
-                              : "Low-confidence live match"
-                          : "Preview fallback result"}
+                        {"Preview fallback result"}
                       </Badge>
                     </div>
                     <p className="text-sm font-semibold mt-1">
-                      {liveProfile?.name ?? selectedCandidate.restaurantName}
+                      {selectedCandidate.restaurantName}
                     </p>
                     <p className="text-[12px] text-muted-foreground inline-flex items-center gap-1 mt-0.5">
                       <MapPin className="w-3 h-3" />
-                      {liveProfile?.address ?? selectedCandidate.addressLine}
-                      {!liveProfile && selectedCandidate.city
+                      {selectedCandidate.addressLine}
+                      {selectedCandidate.city
                         ? ` · ${selectedCandidate.city}, ${selectedCandidate.state}`
                         : ""}
                     </p>
@@ -772,92 +560,6 @@ export default function FreeAudit() {
                       {selectedCandidate.cuisineType ??
                         "Restaurant / Food — category not verified"}
                     </p>
-                    {detailsLoading && (
-                      <p className="text-[12px] text-muted-foreground italic mt-2">
-                        Loading live profile and scanning website…
-                      </p>
-                    )}
-                    {detailsMessage && !detailsLoading && (
-                      <p className="text-[12px] text-amber-400 mt-2">
-                        {detailsMessage}
-                      </p>
-                    )}
-                    {liveProfile && !detailsLoading && (
-                      <div className="mt-3 space-y-1 text-[12px] text-muted-foreground">
-                        {liveProfile.phone && (
-                          <p>
-                            <span className="text-foreground/80">Phone:</span>{" "}
-                            {liveProfile.phone}
-                          </p>
-                        )}
-                        {typeof liveProfile.rating === "number" && (
-                          <p className="inline-flex items-center gap-1">
-                            <Star className="w-3 h-3 text-amber-400" />
-                            {liveProfile.rating.toFixed(1)}
-                            {typeof liveProfile.reviewCount === "number" && (
-                              <span>· {liveProfile.reviewCount} reviews</span>
-                            )}
-                          </p>
-                        )}
-                        {liveProfile.websiteUrl && (
-                          <p className="truncate">
-                            <span className="text-foreground/80">Website:</span>{" "}
-                            <a
-                              href={liveProfile.websiteUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="underline"
-                            >
-                              {liveProfile.websiteUrl}
-                            </a>
-                          </p>
-                        )}
-                        {liveProfile.googleMapsUrl && (
-                          <p className="truncate">
-                            <span className="text-foreground/80">
-                              Google Maps:
-                            </span>{" "}
-                            <a
-                              href={liveProfile.googleMapsUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="underline"
-                            >
-                              View listing
-                            </a>
-                          </p>
-                        )}
-                        {liveWebPresence?.websiteFound && (
-                          <div className="flex flex-wrap gap-1 pt-1">
-                            {liveWebPresence.menuLinkFound && (
-                              <Badge variant="outline" className="text-[10px]">
-                                Menu link found
-                              </Badge>
-                            )}
-                            {liveWebPresence.orderLinkFound && (
-                              <Badge variant="outline" className="text-[10px]">
-                                Order link found
-                              </Badge>
-                            )}
-                            {liveWebPresence.contactPathFound && (
-                              <Badge variant="outline" className="text-[10px]">
-                                Contact path found
-                              </Badge>
-                            )}
-                            {liveWebPresence.instagramLinkFound && (
-                              <Badge variant="outline" className="text-[10px]">
-                                Instagram link found
-                              </Badge>
-                            )}
-                            {liveWebPresence.facebookLinkFound && (
-                              <Badge variant="outline" className="text-[10px]">
-                                Facebook link found
-                              </Badge>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    )}
                   </div>
                   <Button
                     type="button"
@@ -883,7 +585,7 @@ export default function FreeAudit() {
                     data-testid="restaurant-search-empty"
                   >
                     <p className="text-sm font-semibold">
-                      No live match found yet.
+                      No preview match found yet.
                     </p>
                     <p className="text-[12px] text-muted-foreground mt-1">
                       Try a shorter name, alternate spelling, or continue
@@ -912,16 +614,8 @@ export default function FreeAudit() {
                 ) : (
                   <>
                     <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                      {searchMode === "live"
-                        ? "Possible matches — select the one that looks right"
-                        : "Preview matches"}
+                      Preview matches
                     </p>
-                    {searchMode === "live" && (
-                      <p className="text-[11px] text-muted-foreground/80">
-                        Tip: If you do not see your restaurant, try a shorter
-                        name or spelling variation, then search again.
-                      </p>
-                    )}
                     <div
                       className="grid grid-cols-1 md:grid-cols-2 gap-2"
                       data-testid="restaurant-search-results"
@@ -942,18 +636,10 @@ export default function FreeAudit() {
                               <Badge
                                 variant="outline"
                                 className={
-                                  c.source === "live"
-                                    ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/5"
-                                    : "border-muted-foreground/30 text-muted-foreground bg-muted/10"
+                                  "border-muted-foreground/30 text-muted-foreground bg-muted/10"
                                 }
                               >
-                                {c.source === "live"
-                                  ? c.matchConfidence === "high"
-                                    ? "Likely live match"
-                                    : c.matchConfidence === "medium"
-                                      ? "Possible live match"
-                                      : "Low-confidence live match"
-                                  : "Preview fallback result"}
+                                {"Preview fallback result"}
                               </Badge>
                               <Badge
                                 variant="outline"
@@ -1143,10 +829,53 @@ export default function FreeAudit() {
                 </p>
               </div>
 
+              {/* Goals and readiness */}
+              <div>
+                <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
+                  Goals and readiness
+                </p>
+                <p className="text-[11px] text-muted-foreground/80 mb-2">
+                  A little context helps Veroxa understand whether you need Google visibility, social consistency, Reels support, or a Premium ads readiness assessment.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <Field label="Main concern or goal" testId="audit-current-goal">
+                    <Textarea
+                      value={input.currentGoal ?? ""}
+                      onChange={(e) =>
+                        handleChange("currentGoal", e.target.value)
+                      }
+                      placeholder="e.g. more consistent Google visibility, cleaner social posting, reels, catering inquiries, ads assessment"
+                      rows={3}
+                    />
+                  </Field>
+                  <Field label="Biggest problem you notice" testId="audit-biggest-problem">
+                    <Textarea
+                      value={input.biggestProblem ?? ""}
+                      onChange={(e) =>
+                        handleChange("biggestProblem", e.target.value)
+                      }
+                      placeholder="e.g. old photos, low media supply, inconsistent posting, menu links hard to find"
+                      rows={3}
+                    />
+                  </Field>
+                  <Field label="Photo/video media supply" testId="audit-media-readiness">
+                    <Textarea
+                      value={input.notes ?? ""}
+                      onChange={(e) => handleChange("notes", e.target.value)}
+                      placeholder="Tell us if you have usable photos/videos now, can send weekly media, or need guidance on what to capture."
+                      rows={3}
+                    />
+                  </Field>
+                  <div className="rounded-md border border-border bg-muted/20 p-3 text-[12px] text-muted-foreground leading-relaxed">
+                    <p className="font-semibold text-foreground/90 mb-1">What Veroxa reviews next</p>
+                    <p>Google/local visibility, social consistency, usable media, Reels readiness, and whether ads should stay parked until Premium assessment, approval, and agreed ad budget.</p>
+                  </div>
+                </div>
+              </div>
+
               <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
                 <p className="text-[11px] text-muted-foreground inline-flex items-center gap-1">
-                  <Info className="w-3 h-3" /> No data is sent anywhere. The
-                  audit runs in your browser.
+                  <Info className="w-3 h-3" /> This preview runs in your browser. Walkthrough requests are saved only for this pre-live review/demo.
                 </p>
                 <Button
                   type="submit"
@@ -1171,7 +900,7 @@ export default function FreeAudit() {
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <p className="text-[11px] uppercase tracking-wider text-primary mb-1">
-                      Veroxa Restaurant Growth Report
+                      Veroxa Review-Mode Restaurant Audit Preview
                     </p>
                     <p
                       className="text-2xl md:text-3xl font-bold mt-0.5"
@@ -1199,7 +928,7 @@ export default function FreeAudit() {
                       variant="outline"
                       className="border-amber-500/40 text-amber-400 bg-amber-500/5"
                     >
-                      Preliminary
+                      Review-mode preview
                     </Badge>
                     <Badge
                       variant="outline"
@@ -1292,7 +1021,7 @@ export default function FreeAudit() {
             <Card className="bg-card border-border">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base">
-                  Recommended Veroxa package
+                  Plan-fit recommendation preview
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -1389,17 +1118,14 @@ export default function FreeAudit() {
                         </p>
                         <p
                           className={
-                            report.input.selectedPlaceId ||
                             report.input.googleListingUrl
                               ? "text-emerald-400 font-medium"
                               : "text-muted-foreground/60"
                           }
                         >
-                          {report.input.selectedPlaceId
-                            ? "Live confirmed"
-                            : report.input.googleListingUrl
-                              ? "Link provided"
-                              : "Not confirmed"}
+                          {report.input.googleListingUrl
+                            ? "Link provided"
+                            : "Not confirmed"}
                         </p>
                       </div>
                       <div className="rounded-md border border-border bg-muted/10 p-2 text-center">
@@ -1412,7 +1138,7 @@ export default function FreeAudit() {
                           }
                         >
                           {report.input.websiteFound
-                            ? "Scanned"
+                            ? "Preview signal"
                             : report.input.websiteUrl
                               ? "Link provided"
                               : "Not confirmed"}
@@ -1433,7 +1159,7 @@ export default function FreeAudit() {
                         >
                           {report.input.menuLinkFound ||
                           report.input.orderLinkFound
-                            ? "Found from scan"
+                            ? "Preview signal"
                             : report.input.menuOrderingUrl
                               ? "Link provided"
                               : "Not confirmed"}
@@ -1453,7 +1179,7 @@ export default function FreeAudit() {
                           }
                         >
                           {(report.input.discoveredSocialLinks?.length ?? 0) > 0
-                            ? `${report.input.discoveredSocialLinks!.length} found from scan`
+                            ? `${report.input.discoveredSocialLinks!.length} preview signal(s)`
                             : report.input.instagramUrl ||
                                 report.input.facebookUrl ||
                                 report.input.tiktokUrl
@@ -1473,7 +1199,7 @@ export default function FreeAudit() {
                           }
                         >
                           {report.input.restaurantSource === "google_places"
-                            ? "Live lookup"
+                            ? "Review mode"
                             : report.input.restaurantSource === "fixture"
                               ? "Preview match"
                               : "Manual entry"}
@@ -1540,133 +1266,7 @@ export default function FreeAudit() {
               </div>
             </details>
 
-            {/* 7. AI-assisted draft */}
-            <Card className="bg-card border-border" data-testid="ai-audit-draft-card">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base inline-flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-primary" />
-                  AI-assisted summary (draft)
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <p className="text-[12px] text-muted-foreground">
-                  Optional: turn the rule-based report above into an
-                  owner-friendly draft. The rule-based report stays the source
-                  of truth.
-                </p>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={handleGenerateAiDraft}
-                    disabled={aiDraftLoading}
-                    data-testid="generate-ai-audit-draft-button"
-                  >
-                    <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-                    {aiDraftLoading
-                      ? "Generating…"
-                      : aiDraft
-                        ? "Regenerate AI-assisted summary"
-                        : "Generate AI-assisted summary"}
-                  </Button>
-                  {aiDraftMode === "ai" ? (
-                    <Badge
-                      variant="outline"
-                      className="text-[10px] border-emerald-500/40 text-emerald-400 bg-emerald-500/5"
-                    >
-                      AI-assisted draft
-                    </Badge>
-                  ) : null}
-                </div>
-                {aiDraftMode === "not_configured" ? (
-                  <div
-                    className="rounded-md border border-amber-500/40 bg-amber-500/5 p-3 text-[12px] text-amber-300"
-                    data-testid="ai-audit-not-configured"
-                  >
-                    AI summary is not configured yet. The rule-based report is
-                    still available.
-                  </div>
-                ) : null}
-                {aiDraftMode === "error" ? (
-                  <div
-                    className="rounded-md border border-rose-500/40 bg-rose-500/5 p-3 text-[12px] text-rose-300"
-                    data-testid="ai-audit-error"
-                  >
-                    {aiDraftMessage ||
-                      "AI draft is temporarily unavailable. The rule-based report is still available below."}
-                  </div>
-                ) : null}
-                {aiDraftMode === "ai" && aiDraft ? (
-                  <div
-                    className="space-y-4 rounded-md border border-border bg-muted/20 p-3"
-                    data-testid="ai-audit-draft-panel"
-                  >
-                    <div className="flex items-start gap-2">
-                      <ShieldCheck className="w-3.5 h-3.5 mt-0.5 text-primary shrink-0" />
-                      <p className="text-[11px] text-muted-foreground">
-                        AI-assisted draft — review before sharing. Generated
-                        from the audit signals above. Needs human review before
-                        sharing with a restaurant owner.
-                      </p>
-                    </div>
-                    {aiDraft.executiveSummary ? (
-                      <div>
-                        <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
-                          Executive summary
-                        </p>
-                        <p className="text-sm">{aiDraft.executiveSummary}</p>
-                      </div>
-                    ) : null}
-                    {aiDraft.topOpportunities.length > 0 ? (
-                      <div>
-                        <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
-                          Top opportunities
-                        </p>
-                        <ul className="text-sm list-disc pl-5 space-y-1">
-                          {aiDraft.topOpportunities.map((item, i) => (
-                            <li key={i}>{item}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    ) : null}
-                    {aiDraft.veroxaFixPlan ? (
-                      <div>
-                        <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
-                          What Veroxa would fix first
-                        </p>
-                        <p className="text-sm">{aiDraft.veroxaFixPlan}</p>
-                      </div>
-                    ) : null}
-                    {aiDraft.manualReviewNeeded.length > 0 ? (
-                      <div>
-                        <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
-                          Manual review needed
-                        </p>
-                        <ul className="text-sm list-disc pl-5 space-y-1 text-muted-foreground">
-                          {aiDraft.manualReviewNeeded.map((item, i) => (
-                            <li key={i}>{item}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    ) : null}
-                    {aiDraft.ownerFriendlyClosing ? (
-                      <div>
-                        <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
-                          Owner-friendly closing
-                        </p>
-                        <p className="text-sm">{aiDraft.ownerFriendlyClosing}</p>
-                      </div>
-                    ) : null}
-                    <p className="text-[10px] text-muted-foreground italic">
-                      Not auto-sent, not saved, not published. Veroxa team
-                      must review and approve before any client sees this.
-                    </p>
-                  </div>
-                ) : null}
-              </CardContent>
-            </Card>
-
-            {/* 8. Can / cannot + timeline — collapsible */}
+            {/* 7. Can / cannot + timeline — collapsible */}
             <details className="group">
               <summary className="flex items-center justify-between cursor-pointer rounded-lg border border-border bg-card px-4 py-3 text-sm font-semibold hover:bg-muted/30 transition-colors list-none">
                 <span className="inline-flex items-center gap-2">
@@ -1738,7 +1338,7 @@ export default function FreeAudit() {
               </div>
             </details>
 
-            {/* 9. Walkthrough form */}
+            {/* 8. Walkthrough form */}
             <Card
               className="bg-card border-border"
               data-testid="walkthrough-request-card"
