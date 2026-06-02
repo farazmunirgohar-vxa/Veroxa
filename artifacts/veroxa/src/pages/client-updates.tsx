@@ -82,9 +82,36 @@ export default function ClientUpdates() {
           Updates
         </h2>
         <p className="mt-1 max-w-2xl text-sm md:text-base text-muted-foreground">
-          A simple progress lane for reviewed, ready, scheduled, and posted
-          media. Reports stay in the Reports tab.
+          A simple weekly progress area for what Veroxa worked on, what is
+          planned next, what Veroxa needs from you, and where media or
+          visibility updates stand.
         </p>
+      </div>
+
+      <div
+        className="grid gap-4 lg:grid-cols-3"
+        data-testid="section-weekly-progress-summary"
+      >
+        <SummaryCard
+          title="Worked on"
+          body={
+            mediaUpdates.length > 0
+              ? "Veroxa reviewed available media and organized it by client-safe status."
+              : "Work summaries appear here after enough review-mode activity."
+          }
+        />
+        <SummaryCard
+          title="Planned next"
+          body="Keep preparing usable media and confirmed business details for the next Veroxa update."
+        />
+        <SummaryCard
+          title="Media health"
+          body={
+            mediaUpdates.length > 0
+              ? "Media is tracked without inventing performance numbers."
+              : "More content needed when no usable media is available."
+          }
+        />
       </div>
 
       <Card
@@ -118,6 +145,22 @@ export default function ClientUpdates() {
               />
             );
           })}
+        </CardContent>
+      </Card>
+
+      <Card
+        className="border-border bg-card"
+        data-testid="card-visibility-progress"
+      >
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Visibility progress</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="rounded-md border border-border bg-muted/20 px-3 py-3 text-sm text-muted-foreground">
+            Google Maps and local visibility updates will be summarized here
+            after Veroxa has verified the work. Missing platform data stays
+            unavailable instead of being guessed.
+          </p>
         </CardContent>
       </Card>
 
@@ -208,7 +251,13 @@ function ProgressLane({
               <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
                 {item.note}
               </p>
-              <Link href={getClientPortalHref("media", isPublicDemoRoute, `?media=${item.id}`)}>
+              <Link
+                href={getClientPortalHref(
+                  "media",
+                  isPublicDemoRoute,
+                  `?media=${item.id}`,
+                )}
+              >
                 <span className="mt-1 inline-flex text-[11px] text-primary/80 hover:underline">
                   Open Media details
                 </span>
@@ -218,5 +267,16 @@ function ProgressLane({
         </div>
       )}
     </div>
+  );
+}
+
+function SummaryCard({ title, body }: { title: string; body: string }) {
+  return (
+    <Card className="border-border bg-card/80">
+      <CardContent className="p-4">
+        <p className="text-sm font-semibold text-foreground">{title}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{body}</p>
+      </CardContent>
+    </Card>
   );
 }

@@ -1,5 +1,13 @@
 import { useMemo, useRef, useState, type ChangeEvent } from "react";
-import { ImageIcon, Inbox, Send, UploadCloud, X } from "lucide-react";
+import {
+  ImageIcon,
+  Inbox,
+  Lightbulb,
+  Send,
+  Sparkles,
+  UploadCloud,
+  X,
+} from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -46,6 +54,8 @@ interface ClientMediaItem {
   status: ClientMediaDisplayStatus;
   note?: string;
   direction?: string;
+  bestUse: string;
+  prepStatus: string;
   source: "upload" | "ready" | "posted";
 }
 
@@ -105,6 +115,34 @@ const toneStyles: Record<
   progress: "border-sky-500/30 bg-sky-500/10 text-sky-300",
 };
 
+function getMediaBestUse(
+  item: Pick<ClientMediaItem, "name" | "direction" | "status">,
+): string {
+  const text = `${item.name} ${item.direction ?? ""}`.toLowerCase();
+  if (text.includes("video") || text.includes("reel") || text.includes("tik"))
+    return "Good for Reels/TikTok support";
+  if (text.includes("event") || text.includes("special"))
+    return "Good for social post";
+  if (item.status === "Needs better media") return "Needs better version";
+  if (item.status === "Posted" || item.status === "Already used")
+    return "Already used";
+  return "Good for Google update";
+}
+
+function getMediaPrepStatus(
+  status: ClientMediaDisplayStatus,
+  direction?: string,
+): string {
+  if (status === "Posted" || status === "Already used")
+    return "Used in Veroxa work";
+  if (status === "Ready" || status === "Scheduled")
+    return "Prepared for Veroxa review";
+  if (status === "Needs better media")
+    return "May need better lighting or angle";
+  if (direction === "Save for later") return "Saved for later";
+  return "Ready for Veroxa review";
+}
+
 function MediaStatusBadge({ status }: { status: ClientMediaDisplayStatus }) {
   return (
     <Badge
@@ -157,6 +195,15 @@ export default function ClientMedia() {
           status,
           note: submission.clientVisibleNote,
           direction: submission.requestedClientAction,
+          bestUse: getMediaBestUse({
+            name: submission.title,
+            direction: submission.requestedClientAction,
+            status,
+          }),
+          prepStatus: getMediaPrepStatus(
+            status,
+            submission.requestedClientAction,
+          ),
           source:
             status === "Posted" || status === "Already used"
               ? "posted"
@@ -205,6 +252,12 @@ export default function ClientMedia() {
       status: "Uploaded",
       note: submitNote.trim() || undefined,
       direction: direction || undefined,
+      bestUse: getMediaBestUse({
+        name: file.name,
+        direction,
+        status: "Uploaded",
+      }),
+      prepStatus: getMediaPrepStatus("Uploaded", direction),
       source: "upload",
     }));
 
@@ -215,7 +268,7 @@ export default function ClientMedia() {
     setDirection("");
     setPickerMessage(null);
     setSubmitMessage(
-      "Added to this demo session. No file storage is connected yet; Veroxa can review this session item here.",
+      "Added to this review session. No file storage is connected yet. Files stay in this browser preview until a live media library is added.",
     );
 
     const devClientId =
@@ -257,15 +310,15 @@ export default function ClientMedia() {
 
     if (results.some((result) => result === "failed")) {
       setSubmitMessage(
-        "Added to this demo session. Could not save the media note to the dev database; please try again.",
+        "Added to this review session. The media note was not saved outside this browser preview; please try again if needed.",
       );
     } else if (results.some((result) => result === "saved")) {
       setSubmitMessage(
-        "Received by Veroxa and saved for this dev review session. No file storage is connected yet.",
+        "Received for this Veroxa review session. No file storage is connected yet. Files stay in this browser preview until a live media library is added.",
       );
     } else if (results.every((result) => result === "duplicate-skipped")) {
       setSubmitMessage(
-        "Already submitted in this browser session. No duplicate dev save was created.",
+        "Already submitted in this browser session. No duplicate review item was created.",
       );
     }
   };
@@ -303,8 +356,8 @@ export default function ClientMedia() {
             Media
           </h2>
           <p className="mt-1 max-w-2xl text-sm md:text-base text-muted-foreground">
-            Drop off photos and videos, then track what is uploaded, ready, or
-            posted.
+            Drop off photos and videos, add quick direction, then track what is
+            uploaded, ready, or posted.
           </p>
         </div>
         <Button
@@ -325,7 +378,8 @@ export default function ClientMedia() {
             <UploadCloud className="h-4 w-4 text-primary" /> Upload media
           </CardTitle>
           <p className="text-xs text-muted-foreground">
-            Add a quick note if Veroxa should know a dish, event, or preference.
+            Raw phone media is welcome. Add a quick note if Veroxa should know a
+            dish, event, or preference.
           </p>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -344,7 +398,8 @@ export default function ClientMedia() {
               Choose restaurant photos or videos
             </p>
             <p className="mb-3 text-xs text-muted-foreground">
-              Raw phone media is fine.
+              Food photos, short prep videos, specials, menu updates, and
+              restaurant atmosphere all help.
             </p>
             <Button
               type="button"
@@ -498,6 +553,18 @@ function MediaDetailCard({ item }: { item: ClientMediaItem | null }) {
             <div className="grid gap-2 md:grid-cols-2">
               <div className="rounded-md border border-border bg-muted/20 p-3">
                 <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                  Best use
+                </p>
+                <p className="mt-1 text-sm">{item.bestUse}</p>
+              </div>
+              <div className="rounded-md border border-border bg-muted/20 p-3">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                  Veroxa prep status
+                </p>
+                <p className="mt-1 text-sm">{item.prepStatus}</p>
+              </div>
+              <div className="rounded-md border border-border bg-muted/20 p-3">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
                   Next step
                 </p>
                 <p className="mt-1 text-sm">
@@ -594,6 +661,12 @@ function MediaSection({
                     <MediaStatusBadge status={item.status} />
                   </div>
                   <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <Badge
+                      variant="outline"
+                      className="border-border bg-muted/20 text-[10px] text-muted-foreground"
+                    >
+                      {item.bestUse}
+                    </Badge>
                     {item.direction && (
                       <Badge
                         variant="outline"

@@ -127,10 +127,27 @@ export default function ClientReports() {
           Reports
         </h2>
         <p className="mt-1 max-w-2xl text-sm md:text-base text-muted-foreground">
-          Weekly and monthly Veroxa reports live here when they are ready.
-          Updates stay focused on day-to-day progress.
+          Weekly and monthly Veroxa summaries live here when they are ready.
+          Reports focus on completed work, useful media, next steps, client
+          needs, and honest limits rather than invented performance numbers.
         </p>
       </div>
+
+      <Card
+        className="border-border bg-card/80"
+        data-testid="card-report-boundaries"
+      >
+        <CardContent className="space-y-2 p-4 md:p-5">
+          <p className="text-sm font-semibold text-foreground">
+            How to read reports
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Veroxa reports show confirmed work and practical next steps. If
+            reach, profile activity, rankings, ad results, or sales data is not
+            available, the report will say so instead of guessing.
+          </p>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4 xl:grid-cols-2">
         <ReportSection
