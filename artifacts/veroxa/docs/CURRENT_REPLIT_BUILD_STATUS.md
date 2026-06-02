@@ -17,6 +17,9 @@
 
 # Current Replit Build Status
 
+For the active five-phase pre-live roadmap, see [`VEROXA_OS_5_PHASE_PRELIVE_BUILD_MAP.md`](./VEROXA_OS_5_PHASE_PRELIVE_BUILD_MAP.md).
+
+
 > **2026-05-29 — Historical/deprecated pricing correction + active route reduction**
 >
 > - Historical pricing note only: this section described a previous Complete Online Presence / founding-client model. It is now deprecated and not current public pricing.

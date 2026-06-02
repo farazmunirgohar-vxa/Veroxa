@@ -127,6 +127,8 @@
 > summary. Do not follow older sections as current instructions.
 > In particular, **do not act on any historical "AUTH_MODE flip"
 > notes** until the human dev-test gate (M001–M006) is cleared.
+>
+> For the active five-phase pre-live roadmap, see [`VEROXA_OS_5_PHASE_PRELIVE_BUILD_MAP.md`](./VEROXA_OS_5_PHASE_PRELIVE_BUILD_MAP.md).
 
 ---
 
