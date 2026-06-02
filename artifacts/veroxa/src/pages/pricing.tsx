@@ -29,7 +29,6 @@ const PLANS = CURRENT_PUBLIC_PLANS.map((plan) => ({
     plan.id === "premium"
       ? "Check Premium Readiness"
       : `Start with ${plan.label}`,
-  ctaSubject: `${plan.label} Plan Inquiry`,
 }));
 
 const GLOBAL_RULES = GLOBAL_PRICING_RULES;
@@ -99,8 +98,7 @@ export default function PricingPage() {
             </span>
           </h1>
           <p className="text-muted-foreground animate-in fade-in slide-in-from-bottom-5 duration-700">
-            Google Optimization included in every plan. No contracts, no setup
-            fees, no surprises.
+            Google Optimization included in every plan. No contract, cancel anytime, no payment checkout here, and no hidden ad spend.
           </p>
         </div>
       </section>
@@ -166,8 +164,8 @@ export default function PricingPage() {
               )}
 
               {/* CTA */}
-              <a
-                href={`mailto:hello@veroxa.com?subject=${encodeURIComponent(plan.ctaSubject)}`}
+              <Link
+                href="/free-audit"
                 data-testid={`btn-plan-cta-${plan.name.toLowerCase()}`}
               >
                 <Button
@@ -181,7 +179,7 @@ export default function PricingPage() {
                 >
                   {plan.cta} <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
-              </a>
+              </Link>
             </div>
           ))}
         </div>
@@ -243,6 +241,18 @@ export default function PricingPage() {
         </div>
       </section>
 
+
+      {/* Trust notes */}
+      <section className="pb-8 px-6 lg:px-12 max-w-5xl mx-auto w-full">
+        <div
+          className="rounded-xl border border-border/30 bg-card/10 px-6 py-4 text-sm text-muted-foreground leading-relaxed max-w-3xl"
+          data-testid="pricing-trust-note"
+        >
+          <strong className="text-foreground/80">No guaranteed outcomes:</strong>{" "}
+          Veroxa does not guarantee rankings, revenue, walk-ins, viral posts, or new customers. Results depend on restaurant quality, market, location, offer, consistency, and usable client-provided media.
+        </div>
+      </section>
+
       {/* Media note */}
       <section className="pb-8 px-6 lg:px-12 max-w-5xl mx-auto w-full">
         <div
@@ -301,31 +311,25 @@ export default function PricingPage() {
                 size="lg"
                 className="h-12 px-7 font-semibold shadow-[0_0_20px_rgba(99,102,241,0.25)]"
               >
-                Request Free Audit <ArrowRight className="ml-2 w-4 h-4" />
+                Start Free Audit <ArrowRight className="ml-2 w-4 h-4" />
               </Button>
             </Link>
-            <a
-              href="mailto:hello@veroxa.com?subject=Pricing%20Inquiry"
-              data-testid="btn-pricing-cta-contact"
-            >
+            <Link href="/demo/client/dashboard" data-testid="btn-pricing-cta-demo">
               <Button
                 size="lg"
                 variant="outline"
                 className="h-12 px-7 border-border/60 hover:bg-accent/50"
               >
-                Get in Touch
+                View Client Demo
               </Button>
-            </a>
-            <Link
-              href="/demo/client/dashboard"
-              data-testid="btn-pricing-cta-demo"
-            >
+            </Link>
+            <Link href="/login" data-testid="btn-pricing-cta-login">
               <Button
                 size="lg"
                 variant="ghost"
                 className="h-12 px-7 text-muted-foreground hover:text-foreground"
               >
-                Client Demo
+                Portal Login
               </Button>
             </Link>
           </div>

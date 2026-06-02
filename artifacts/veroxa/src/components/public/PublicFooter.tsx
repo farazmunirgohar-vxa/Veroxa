@@ -14,6 +14,9 @@ export default function PublicFooter() {
             <Link href="/" className="hover:text-foreground transition-colors" data-testid="footer-link-home">
               Home
             </Link>
+            <Link href="/free-audit" className="hover:text-foreground transition-colors" data-testid="footer-link-free-audit">
+              Free Audit
+            </Link>
             <Link href="/services" className="hover:text-foreground transition-colors" data-testid="footer-link-services">
               Services
             </Link>
@@ -21,10 +24,10 @@ export default function PublicFooter() {
               Pricing
             </Link>
             <Link href="/demo/client/dashboard" className="hover:text-foreground transition-colors" data-testid="footer-link-demo">
-              Demo
+              Client Demo
             </Link>
             <Link href="/login" className="hover:text-foreground transition-colors" data-testid="footer-link-login">
-              Login
+              Portal Login
             </Link>
           </div>
         </div>
