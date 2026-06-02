@@ -1,4 +1,11 @@
-import { ArrowRight, CheckCircle2, CircleAlert, ClipboardCheck, Handshake, ShieldCheck } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  CircleAlert,
+  ClipboardCheck,
+  Handshake,
+  ShieldCheck,
+} from "lucide-react";
 import { Link } from "wouter";
 import { PortalLayout } from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,7 +43,15 @@ const intentionallyManual = [
   "Report interpretation until verified account data is connected.",
 ] as const;
 
-function CheckList({ title, checks, emptyLabel }: { title: string; checks: ReturnType<typeof getFirstClientReadinessChecks>; emptyLabel: string }) {
+function CheckList({
+  title,
+  checks,
+  emptyLabel,
+}: {
+  title: string;
+  checks: ReturnType<typeof getFirstClientReadinessChecks>;
+  emptyLabel: string;
+}) {
   return (
     <Card className="bg-card border-border">
       <CardHeader className="pb-2">
@@ -49,14 +64,25 @@ function CheckList({ title, checks, emptyLabel }: { title: string; checks: Retur
         {checks.length > 0 ? (
           <div className="space-y-3">
             {checks.map((check) => (
-              <div key={check.key} className="rounded-lg border border-border bg-muted/20 p-3">
+              <div
+                key={check.key}
+                className="rounded-lg border border-border bg-muted/20 p-3"
+              >
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="text-sm font-medium">{check.label}</p>
-                  <StatusBadge tone={check.status === "passing" ? "success" : statusTone[check.status]}>
+                  <StatusBadge
+                    tone={
+                      check.status === "passing"
+                        ? "success"
+                        : statusTone[check.status]
+                    }
+                  >
                     {getReadinessStatusLabel(check.status)}
                   </StatusBadge>
                 </div>
-                <p className="mt-1 text-xs text-muted-foreground">{check.recommendedAction}</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {check.recommendedAction}
+                </p>
               </div>
             ))}
           </div>
@@ -94,8 +120,13 @@ export default function TeamFirstClientReadiness() {
           <CardContent className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-3xl font-bold tabular-nums">{summary.completionPercentage}%</p>
-                <p className="text-xs text-muted-foreground">{summary.passingChecks} of {summary.totalChecks} benchmark checks OK</p>
+                <p className="text-3xl font-bold tabular-nums">
+                  {summary.completionPercentage}%
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {summary.passingChecks} of {summary.totalChecks} benchmark
+                  checks OK
+                </p>
               </div>
               <StatusBadge tone={statusTone[summary.overallStatus]}>
                 {getReadinessStatusLabel(summary.overallStatus)}
@@ -104,20 +135,30 @@ export default function TeamFirstClientReadiness() {
             <Progress value={summary.completionPercentage} className="h-2" />
             <div className="grid grid-cols-3 gap-3 text-center">
               <div className="rounded-lg border border-border bg-muted/20 p-3">
-                <p className="text-xl font-semibold tabular-nums">{summary.blockingChecks}</p>
+                <p className="text-xl font-semibold tabular-nums">
+                  {summary.blockingChecks}
+                </p>
                 <p className="text-[11px] text-muted-foreground">Blocking</p>
               </div>
               <div className="rounded-lg border border-border bg-muted/20 p-3">
-                <p className="text-xl font-semibold tabular-nums">{summary.warningChecks}</p>
+                <p className="text-xl font-semibold tabular-nums">
+                  {summary.warningChecks}
+                </p>
                 <p className="text-[11px] text-muted-foreground">Warnings</p>
               </div>
               <div className="rounded-lg border border-border bg-muted/20 p-3">
-                <p className="text-xl font-semibold tabular-nums">{summary.passingChecks}</p>
-                <p className="text-[11px] text-muted-foreground">Benchmark OK</p>
+                <p className="text-xl font-semibold tabular-nums">
+                  {summary.passingChecks}
+                </p>
+                <p className="text-[11px] text-muted-foreground">
+                  Benchmark OK
+                </p>
               </div>
             </div>
             <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Recommended next action</p>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                Recommended next action
+              </p>
               <p className="mt-1 text-sm">{summary.recommendedNextAction}</p>
             </div>
           </CardContent>
@@ -132,13 +173,44 @@ export default function TeamFirstClientReadiness() {
           </CardHeader>
           <CardContent className="space-y-3">
             <StatusBadge tone={launchGate.isReady ? "success" : "danger"}>
-              {launchGate.isReady ? "Benchmark ready for Faraz review" : "Needs setup"}
+              {launchGate.isReady
+                ? "Benchmark ready for Faraz review"
+                : "Needs setup"}
             </StatusBadge>
-            <p className="text-sm text-muted-foreground">{launchGate.message}</p>
-            <p className="text-xs text-muted-foreground">
-              Benchmark gate checks: {launchGate.requiredCheckKeys.length}. Current blockers: {launchGate.blockers.length}.
+            <p className="text-sm text-muted-foreground">
+              {launchGate.message}
             </p>
-            <Link href="/team/dashboard" className="inline-flex items-center gap-2 text-sm text-primary hover:underline">
+            <div className="grid gap-2 text-xs text-muted-foreground">
+              <p>
+                Benchmark gate checks: {launchGate.requiredCheckKeys.length}.
+                Current blockers: {launchGate.blockers.length}.
+              </p>
+              <p>
+                Ready for demo walkthrough:{" "}
+                {launchGate.readyForDemoWalkthrough ? "Yes" : "No"}
+              </p>
+              <p>
+                Ready for unpaid feedback conversations:{" "}
+                {launchGate.readyForFeedbackConversations ? "Yes" : "No"}
+              </p>
+              <p>
+                Ready for first paid client later:{" "}
+                {launchGate.readyForFirstPaidClient
+                  ? "Yes"
+                  : "No — future SaaS foundation required"}
+              </p>
+              <p>
+                Blocked live integrations:{" "}
+                {launchGate.blockedLiveIntegrations.join(" · ")}
+              </p>
+              <p className="text-primary/80">
+                Next required build: {launchGate.nextRequiredBuild}
+              </p>
+            </div>
+            <Link
+              href="/team/dashboard"
+              className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+            >
               Back to team dashboard <ArrowRight className="w-3 h-3" />
             </Link>
           </CardContent>
@@ -146,8 +218,16 @@ export default function TeamFirstClientReadiness() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2 mb-6">
-        <CheckList title="Blocking checks" checks={blockingChecks} emptyLabel="No blocking checks are currently open." />
-        <CheckList title="Warnings and review reminders" checks={warningChecks} emptyLabel="No warnings are currently open." />
+        <CheckList
+          title="Blocking checks"
+          checks={blockingChecks}
+          emptyLabel="No blocking checks are currently open."
+        />
+        <CheckList
+          title="Warnings and review reminders"
+          checks={warningChecks}
+          emptyLabel="No warnings are currently open."
+        />
       </div>
 
       <Card className="bg-card border-border mb-6">
@@ -157,13 +237,21 @@ export default function TeamFirstClientReadiness() {
         <CardContent>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {summary.areaSummaries.map((area) => (
-              <div key={area.area} className="rounded-lg border border-border bg-muted/20 p-3">
+              <div
+                key={area.area}
+                className="rounded-lg border border-border bg-muted/20 p-3"
+              >
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-medium">{getReadinessAreaLabel(area.area)}</p>
-                  <StatusBadge tone={statusTone[area.status]}>{getReadinessStatusLabel(area.status)}</StatusBadge>
+                  <p className="text-sm font-medium">
+                    {getReadinessAreaLabel(area.area)}
+                  </p>
+                  <StatusBadge tone={statusTone[area.status]}>
+                    {getReadinessStatusLabel(area.status)}
+                  </StatusBadge>
                 </div>
                 <p className="mt-2 text-xs text-muted-foreground">
-                  {area.passingChecks}/{area.totalChecks} benchmark OK · {area.blockingChecks} blocking · {area.warningChecks} warning
+                  {area.passingChecks}/{area.totalChecks} benchmark OK ·{" "}
+                  {area.blockingChecks} blocking · {area.warningChecks} warning
                 </p>
               </div>
             ))}
@@ -181,26 +269,41 @@ export default function TeamFirstClientReadiness() {
         <CardContent>
           <div className="grid gap-3 lg:grid-cols-2">
             {firstClientBenchmarkScenarios.map((scenario) => (
-              <div key={scenario.key} className="rounded-lg border border-border bg-muted/20 p-4 space-y-3">
+              <div
+                key={scenario.key}
+                className="rounded-lg border border-border bg-muted/20 p-4 space-y-3"
+              >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="font-medium">{scenario.label}</p>
-                  <StatusBadge tone="info">{scenario.packageFit.replace("_", " ")}</StatusBadge>
+                  <StatusBadge tone="info">
+                    {scenario.packageFit.replace("_", " ")}
+                  </StatusBadge>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Client needs</p>
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                      Client needs
+                    </p>
                     <ul className="mt-1 space-y-1 text-xs text-muted-foreground list-disc pl-4">
-                      {scenario.expectedClientPortalNeeds.map((need) => <li key={need}>{need}</li>)}
+                      {scenario.expectedClientPortalNeeds.map((need) => (
+                        <li key={need}>{need}</li>
+                      ))}
                     </ul>
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Team needs</p>
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                      Team needs
+                    </p>
                     <ul className="mt-1 space-y-1 text-xs text-muted-foreground list-disc pl-4">
-                      {scenario.expectedTeamNeeds.map((need) => <li key={need}>{need}</li>)}
+                      {scenario.expectedTeamNeeds.map((need) => (
+                        <li key={need}>{need}</li>
+                      ))}
                     </ul>
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground">{scenario.premiumReadinessNote}</p>
+                <p className="text-xs text-muted-foreground">
+                  {scenario.premiumReadinessNote}
+                </p>
               </div>
             ))}
           </div>

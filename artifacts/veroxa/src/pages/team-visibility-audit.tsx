@@ -24,6 +24,10 @@ import {
   VISIBILITY_AUDIT_SEVERITY_LABELS,
   type VisibilityAuditSeverity,
 } from "@/domain/visibilityAudit";
+import {
+  getClientConfirmationWorkflow,
+  scoreCustomerOpportunity,
+} from "@/domain/ruleBasedAutomation";
 
 /**
  * /team/visibility-audit — Visibility Audit (team-only, login required).
@@ -57,6 +61,15 @@ export default function TeamVisibilityAudit() {
 
   const selected =
     audits.find((a) => a.input.clientId === selectedId) ?? audits[0];
+  const opportunityScore = selected
+    ? scoreCustomerOpportunity({
+        visibilityIssues: selected.result.findings.length,
+        pendingApprovals: selected.result.preparedActionCount,
+        bestSellerVisible: selected.result.findings.every(
+          (finding) => finding.category !== "menu_visibility",
+        ),
+      })
+    : null;
 
   if (!canUseFixtureData) {
     return (
@@ -153,6 +166,31 @@ export default function TeamVisibilityAudit() {
             </CardContent>
           </Card>
 
+          {opportunityScore && (
+            <Card
+              className="bg-card border-primary/20 mb-4"
+              data-testid="visibility-customer-opportunity"
+            >
+              <CardContent className="p-4 text-xs text-muted-foreground">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="font-medium text-foreground/85">
+                    Customer opportunity signal · {opportunityScore.status}
+                  </p>
+                  <StatusBadge tone={scoreTone(opportunityScore.score)}>
+                    Internal {opportunityScore.score}/100
+                  </StatusBadge>
+                </div>
+                <p className="mt-2">
+                  Main opportunity: {opportunityScore.mainOpportunity}
+                </p>
+                <p>Main blocker: {opportunityScore.mainBlocker}</p>
+                <p className="text-primary/80">
+                  Suggested next step: {opportunityScore.suggestedNextAction}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Findings */}
           {selected.result.findings.length === 0 ? (
             <Card
@@ -203,6 +241,15 @@ export default function TeamVisibilityAudit() {
                       </span>{" "}
                       {finding.recommendation.label}
                     </p>
+                    {getClientConfirmationWorkflow(
+                      `${finding.title} ${finding.detail} ${finding.recommendation.preparedText ?? ""}`,
+                    ).length > 0 && (
+                      <p className="text-[11px] text-amber-300/90 mt-1">
+                        Client confirmation workflow: confirmation needed before
+                        public use; safe fallback is to hold or use general
+                        visibility wording.
+                      </p>
+                    )}
                   </CardContent>
                 </Card>
               ))}

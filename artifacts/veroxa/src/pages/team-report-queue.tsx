@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FileText, FileBarChart } from "lucide-react";
+import { FileText, FileBarChart, ClipboardCheck } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import {
   RealPortalReviewNotice,
@@ -19,22 +19,7 @@ import {
   getRestaurantName,
   type WeeklyReportStatus,
 } from "@/data/demoData";
-import {
-  previewReportDraft,
-  reportDraftOutput,
-} from "@/lib/ai/aiAgentPreviewEngine";
-import {
-  TEAM_AI_DISCLOSURE,
-  AI_CONFIDENCE_LABELS,
-  AI_AUTOMATION_READINESS_LABELS,
-} from "@/lib/ai/aiAgentTypes";
-import { Brain } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  generateAiDraftClient,
-  aiDraftModeLabel,
-  type AiDraftMode,
-} from "@/lib/ai/aiDraftClient";
+import { buildRuleBasedReportDraft } from "@/domain/ruleBasedAutomation";
 
 const weeklyStatusColor: Record<WeeklyReportStatus, string> = {
   Draft: "border-muted-foreground/40 text-muted-foreground bg-muted/30",
@@ -63,28 +48,6 @@ export default function TeamReportQueue() {
     portalDataMode.allowDemoFixtures || portalDataMode.isLiveDataConnected;
 
   const [tab, setTab] = useState<"weekly" | "monthly">("weekly");
-  const [draftMode, setDraftMode] = useState<AiDraftMode | null>(null);
-  const [generating, setGenerating] = useState(false);
-
-  async function handleGenerateReportDraft() {
-    setGenerating(true);
-    try {
-      const res = await generateAiDraftClient({
-        draftType: "report_summary",
-        context: {
-          cadence: "weekly",
-          hasPublishedPosts: false,
-          hasMetrics: false,
-        },
-      });
-      setDraftMode(res.mode);
-    } catch {
-      setDraftMode("rule_based_fallback");
-    } finally {
-      setGenerating(false);
-    }
-  }
-
   const weeklyByStage = weeklyStages.map((s) => ({
     stage: s,
     items: demoWeeklyReports.filter((r) => r.status === s),
@@ -137,136 +100,89 @@ export default function TeamReportQueue() {
         />
       </div>
 
-      {/* AI-assisted report drafts preview — Veroxa team verifies before sharing. */}
+      {/* Rule-based report draft builder — deterministic, no live AI or analytics. */}
       {(() => {
-        const weeklyDraft = previewReportDraft({
-          reportTitle: "This week",
-          cadence: "weekly",
-          hasPublishedPosts: false,
-          hasMetrics: false,
+        const weeklyReport = demoWeeklyReports[0];
+        const monthlyReport = demoMonthlyReports[0];
+        const weeklyDraft = buildRuleBasedReportDraft({
+          reportType: "weekly",
+          restaurantName: getRestaurantName(weeklyReport.clientId),
+          weekly: weeklyReport,
+          workCompleted: [
+            "Reviewed approved work eligible for the weekly update",
+          ],
+          mediaUsed: [weeklyReport.mediaStatus],
         });
-        const monthlyDraft = previewReportDraft({
-          reportTitle: "This month",
-          cadence: "monthly",
-          hasPublishedPosts: false,
-          hasMetrics: false,
+        const monthlyDraft = buildRuleBasedReportDraft({
+          reportType: "monthly",
+          restaurantName: getRestaurantName(monthlyReport.clientId),
+          monthly: monthlyReport,
+          workCompleted: monthlyReport.nextMonthFocus.slice(0, 2),
+          mediaUsed: ["Use only manually verified media/activity notes"],
         });
         const drafts = [weeklyDraft, monthlyDraft];
-        const structuredByTitle: Record<
-          string,
-          ReturnType<typeof reportDraftOutput>
-        > = {
-          [weeklyDraft.title]: reportDraftOutput({
-            reportTitle: "This week",
-            cadence: "weekly",
-            hasPublishedPosts: false,
-            hasMetrics: false,
-          }),
-          [monthlyDraft.title]: reportDraftOutput({
-            reportTitle: "This month",
-            cadence: "monthly",
-            hasPublishedPosts: false,
-            hasMetrics: false,
-          }),
-        };
         return (
           <Card
             className="bg-card border-primary/20 mb-4"
-            data-testid="card-ai-report-drafts"
+            data-testid="card-rule-report-drafts"
           >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold flex items-center justify-between gap-2 flex-wrap">
                 <span className="flex items-center gap-2">
-                  <Brain className="w-4 h-4 text-primary" />
-                  AI report drafts preview
+                  <ClipboardCheck className="w-4 h-4 text-primary" />
+                  Rule-based report draft builder
                 </span>
-                <div className="flex items-center gap-2 flex-wrap">
-                  {draftMode && (
-                    <Badge
-                      variant="outline"
-                      className="border-primary/40 bg-primary/5 text-primary text-[10px]"
-                      data-testid="report-draft-mode"
-                    >
-                      Mode: {aiDraftModeLabel(draftMode)}
-                    </Badge>
-                  )}
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-7 text-[11px]"
-                    onClick={handleGenerateReportDraft}
-                    disabled={generating}
-                    data-testid="btn-generate-report-draft"
-                  >
-                    {generating ? "Generating…" : "Generate report draft"}
-                  </Button>
-                </div>
+                <Badge
+                  variant="outline"
+                  className="border-amber-500/40 bg-amber-500/10 text-amber-300 text-[10px]"
+                >
+                  Human verification required
+                </Badge>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
+            <CardContent className="space-y-3">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {drafts.map((d) => (
+                {drafts.map((draft) => (
                   <div
-                    key={d.title}
+                    key={draft.reportType}
                     className="rounded-md border border-border/60 bg-muted/10 p-3 text-[12px]"
-                    data-testid={`ai-report-draft-${d.title.toLowerCase().replace(/\s/g, "-")}`}
+                    data-testid={`rule-report-draft-${draft.reportType}`}
                   >
-                    <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
-                      <p className="font-semibold text-foreground">{d.title}</p>
-                      <div className="flex gap-1.5 flex-wrap">
-                        {structuredByTitle[d.title] && (
-                          <>
-                            <Badge
-                              variant="outline"
-                              className="border-border bg-muted/30 text-[10px]"
-                            >
-                              {
-                                AI_CONFIDENCE_LABELS[
-                                  structuredByTitle[d.title].confidenceLevel
-                                ]
-                              }
-                            </Badge>
-                            <Badge
-                              variant="outline"
-                              className="border-border bg-muted/30 text-[10px]"
-                            >
-                              {
-                                AI_AUTOMATION_READINESS_LABELS[
-                                  structuredByTitle[d.title].automationReadiness
-                                ]
-                              }
-                            </Badge>
-                          </>
-                        )}
-                        <Badge
-                          variant="outline"
-                          className="border-amber-500/40 bg-amber-500/10 text-amber-300 text-[10px]"
-                        >
-                          Human verification required
-                        </Badge>
-                      </div>
-                    </div>
-                    <p className="text-foreground/85">{d.draftSummary}</p>
-                    {structuredByTitle[d.title] && (
-                      <p className="text-primary/80 mt-1 text-[11px]">
-                        Next: {structuredByTitle[d.title].recommendedNextAction}
+                    <div className="flex items-center justify-between gap-2 flex-wrap mb-2">
+                      <p className="font-semibold text-foreground capitalize">
+                        {draft.reportType} draft
                       </p>
-                    )}
-                    {d.missingDataFlags.length > 0 && (
-                      <ul className="mt-1.5 space-y-0.5">
-                        {d.missingDataFlags.map((flag, i) => (
-                          <li key={i} className="text-[11px] text-amber-300/90">
-                            ⚠ {flag}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
+                      <Badge
+                        variant="outline"
+                        className="border-border bg-muted/30 text-[10px]"
+                      >
+                        {draft.reviewStatus}
+                      </Badge>
+                    </div>
+                    <div className="space-y-2">
+                      {draft.sections.slice(0, 3).map((section) => (
+                        <div key={section.title}>
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground/70">
+                            {section.title}
+                          </p>
+                          <p className="text-foreground/85 leading-snug">
+                            {section.items[0]}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-primary/80 mt-2 text-[11px]">
+                      Next: {draft.nextAction}
+                    </p>
                   </div>
                 ))}
               </div>
-              <p className="text-[10px] text-muted-foreground italic pt-1">
-                {TEAM_AI_DISCLOSURE}
-              </p>
+              <div className="rounded-md border border-border/60 bg-muted/10 p-3 text-[11px] text-muted-foreground">
+                Honest limitation: no fake ROI, rankings, calls, directions,
+                clicks, or social results are added without connected data.
+                Report drafts stay manual and review-mode until Faraz verifies
+                them.
+              </div>
             </CardContent>
           </Card>
         );

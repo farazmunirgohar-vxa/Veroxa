@@ -1,11 +1,5 @@
 import type { ReactNode } from "react";
-import {
-  Check,
-  Pencil,
-  MessageCircle,
-  SkipForward,
-  Send,
-} from "lucide-react";
+import { Check, Pencil, MessageCircle, SkipForward, Send } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/common";
@@ -25,6 +19,7 @@ import {
   type PreparedActionId,
   type PreparedActionStatus,
 } from "@/domain/preparedActions";
+import { buildManualExecutionPack } from "@/domain/ruleBasedAutomation";
 
 /**
  * PreparedActionCard — the Approval Queue review card.
@@ -90,6 +85,7 @@ export function PreparedActionCard({
   testId,
 }: PreparedActionCardProps) {
   const preview = action.payload.preparedText ?? action.payload.keywordAngle;
+  const executionPack = buildManualExecutionPack(action);
   const internalOnly = canExecuteWithoutApproval(action);
   const needsClient = requiresClientConfirmation(action);
 
@@ -132,7 +128,11 @@ export function PreparedActionCard({
 
     // Ask Client for items that need the restaurant's confirmation and haven't
     // been asked yet.
-    if (!internalOnly && needsClient && action.status !== "needs_client_confirmation") {
+    if (
+      !internalOnly &&
+      needsClient &&
+      action.status !== "needs_client_confirmation"
+    ) {
       dedupedActions.push({
         label: "Ask Client",
         icon: <MessageCircle className="w-3.5 h-3.5" />,
@@ -165,7 +165,8 @@ export function PreparedActionCard({
           <div className="min-w-0">
             <p className="font-semibold text-sm leading-snug">{action.title}</p>
             <p className="text-[11px] text-muted-foreground mt-0.5">
-              {action.restaurantName} · {PREPARED_ACTION_CHANNEL_LABELS[action.channel]}
+              {action.restaurantName} ·{" "}
+              {PREPARED_ACTION_CHANNEL_LABELS[action.channel]}
             </p>
           </div>
           <div className="flex gap-1.5 flex-wrap justify-end">
@@ -183,12 +184,15 @@ export function PreparedActionCard({
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground/70 mb-1">
               Prepared action
             </p>
-            <p className="text-[13px] text-foreground/90 leading-snug">{preview}</p>
+            <p className="text-[13px] text-foreground/90 leading-snug">
+              {preview}
+            </p>
           </div>
         )}
 
         <p className="text-xs text-muted-foreground mt-2 leading-snug">
-          <span className="text-foreground/70 font-medium">Why:</span> {action.reason}
+          <span className="text-foreground/70 font-medium">Why:</span>{" "}
+          {action.reason}
         </p>
 
         <div className="mt-2 flex flex-wrap items-center gap-1.5">
@@ -204,8 +208,22 @@ export function PreparedActionCard({
         </div>
 
         <p className="text-[12px] text-primary/85 mt-2">
-          <span className="text-muted-foreground">Suggested next:</span> {action.suggestedNext}
+          <span className="text-muted-foreground">Suggested next:</span>{" "}
+          {action.suggestedNext}
         </p>
+
+        <div className="mt-2 rounded-md border border-border/60 bg-muted/10 p-2.5 text-[11px] text-muted-foreground">
+          <p className="font-medium text-foreground/80">
+            Manual execution pack
+          </p>
+          <p className="mt-1">
+            {executionPack.status} · {executionPack.suggestedPostingWindow} ·{" "}
+            {executionPack.requiredConfirmation}
+          </p>
+          <p className="mt-1">
+            Checklist: {executionPack.manualChecklist.slice(0, 3).join(" → ")}
+          </p>
+        </div>
 
         {dedupedActions.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-2">
