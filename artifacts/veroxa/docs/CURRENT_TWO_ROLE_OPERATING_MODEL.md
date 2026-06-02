@@ -93,9 +93,12 @@ shared or posted without a human (Veroxa team) final review.
 - **Login** → `/login`; placeholder login routes client/team to their correct
   portal afterward.
 - `/demo/client/dashboard` remains the public preview.
-- `/client/*` is the current client review route. **It is not yet protected and
-  must be guarded before production.**
-- `/team/*` stays behind `InternalDemoGuard`.
+- `/client/*` is the current client review route. It is guarded by
+  `ClientPortalGuard` and `RealPortalDataBoundary`. Production auth is still
+  future gated because `AUTH_MODE` remains `"placeholder"`; placeholder preview
+  login is not production auth.
+- `/team/*` stays behind `InternalDemoGuard role="team"` and
+  `RealPortalDataBoundary`. Production auth is still future gated.
 
 Do not make Demo Preview require login, and do not let Portal Access bypass
 login.
@@ -104,5 +107,6 @@ login.
 
 - Owner portal and Owner dashboards
 - Operator portal and Operator dashboards
-- Production auth, publishing, payments, file storage, and live AI calls
+- Production auth, real client data, storage uploads, publishing, payments,
+  live AI calls, Google/Meta connectors, and other production integrations
 - Pricing changes (pricing is locked)

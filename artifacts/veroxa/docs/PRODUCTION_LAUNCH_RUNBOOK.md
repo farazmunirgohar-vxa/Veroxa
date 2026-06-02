@@ -7,19 +7,26 @@
 
 ## Stage 0 — Current
 
-- Public Client Demo: `/demo/client/dashboard`, `/demo/client/media`, `/demo/client/updates`, `/demo/client/requests`, and `/demo/client/reports` are sample-data routes and remain separate from real portal routes.
-- Real Client Portal: `/client/*` requires client login and must not render from `AUTH_MODE="placeholder"` alone.
-- Team Portal: `/team/*` requires team login.
+- Public Client Demo: `/demo/client/dashboard`, `/demo/client/media`,
+  `/demo/client/updates`, `/demo/client/requests`, and `/demo/client/reports`
+  are sample-data routes and remain separate from real portal routes.
+- Real Client Portal: `/client/*` is guarded by `ClientPortalGuard` and
+  `RealPortalDataBoundary`. Placeholder preview login can enter the review
+  portal, but production auth is still not enabled because `AUTH_MODE` remains
+  `"placeholder"`.
+- Team Portal: `/team/*` is guarded by `InternalDemoGuard role="team"` and
+  `RealPortalDataBoundary`. Placeholder team login is not production auth.
 - Docs and planning only for production auth, storage uploads, publishing, payments, and real client data.
 - `VITE_VEROXA_DEV_*` placeholder credentials are preview-only; do not set them in public staging or production builds. Real auth must be reviewed before real client data is connected.
 
-## Stage 1 — Internal alpha
+## Stage 1 — Team/Internal Admin alpha
 
-- Real auth for **owner** and **operator** only (manual user creation
-  in the Supabase dashboard).
-- No client access yet.
-- No writes yet — just read-only operator / owner views built against
-  real auth.
+- Real auth for **Veroxa Team / Internal Admin (Faraz)** first, with manual
+  user creation only after explicit production-auth approval.
+- No Owner or Operator dashboards; those roles remain parked unless Faraz
+  explicitly requests them later.
+- No client writes yet — just guarded Team/Internal Admin review access against
+  real auth once that future gated work is approved.
 
 ## Stage 2 — Client read-only beta
 
@@ -35,7 +42,7 @@
 - First real write surface: onboarding answer saves
   (Priority 3 in `docs/FIRST_WRITE_SURFACE_PLAN.md`).
 - `audit_logs` table live; every onboarding save writes an audit row.
-- Operator review queue for completed onboarding.
+- Team/Internal Admin review queue for completed onboarding.
 
 ## Stage 4 — Media upload beta
 

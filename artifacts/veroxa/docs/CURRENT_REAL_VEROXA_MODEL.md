@@ -34,14 +34,20 @@ as an active runtime role model. Do not use Super Admin language.
   `/demo/client/media`, `/demo/client/updates`, `/demo/client/requests`, and
   `/demo/client/reports`. These routes are open, clearly labelled as sample
   data, and must stay separate from the login-gated client portal.
-- **Login** — `/login` (kept separate; no production auth wired in this build).
-- **Client portal** — exactly five active login-gated client experiences:
+- **Login** — `/login` (kept separate; placeholder preview login only; no
+  production auth wired in this build).
+- **Client portal** — exactly five active guarded client experiences:
   Dashboard, Media, Updates, Requests, and Reports. The current route set is
   `/client/dashboard`, `/client/media`, `/client/updates`, `/client/requests`,
-  and `/client/reports`. Keep one main Reports tab; weekly and monthly reports
+  and `/client/reports`. These routes are wrapped by `ClientPortalGuard` and
+  `RealPortalDataBoundary`; because `AUTH_MODE` remains `"placeholder"`, this is
+  a preview/account guard rather than production auth. Keep one main Reports tab;
+  weekly and monthly reports
   live inside Reports rather than becoming separate primary navigation items.
 - **Team portal** — `/team/dashboard`, `/team/upload-inbox`, `/team/work-queue`,
-  and related review/report queues. `/team/*` requires team login. The Team
+  and related review/report queues. `/team/*` is wrapped by
+  `InternalDemoGuard role="team"` and `RealPortalDataBoundary`; placeholder team
+  login is not production auth. The Team
   portal may have powerful internal logic, but the driver controls should stay
   simple: what needs review, what is ready, what is blocked, what needs client
   input, what needs approval, and what to do next.

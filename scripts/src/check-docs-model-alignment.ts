@@ -1,0 +1,196 @@
+import { readFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
+
+const currentDocs = [
+  "AGENTS.md",
+  "artifacts/veroxa/docs/CURRENT_TWO_ROLE_OPERATING_MODEL.md",
+  "artifacts/veroxa/docs/PRODUCTION_LAUNCH_RUNBOOK.md",
+  "artifacts/veroxa/docs/CURRENT_REPLIT_BUILD_STATUS.md",
+  "artifacts/veroxa/docs/BUILD_STATUS.md",
+  "artifacts/veroxa/docs/CURRENT_REAL_VEROXA_MODEL.md",
+];
+
+type Rule = {
+  label: string;
+  pattern: RegExp;
+};
+
+const dangerousCurrentStateRules: Rule[] = [
+  {
+    label: "/client/* marked unprotected",
+    pattern: /\/client\/\* is not yet protected/i,
+  },
+  {
+    label: "/client/* marked unprotected",
+    pattern: /\/client\/\* is not protected/i,
+  },
+  {
+    label: "owner/operator alpha stage revived",
+    pattern: /owner\s*\/\s*operator alpha/i,
+  },
+  {
+    label: "owner/operator-only active stage revived",
+    pattern: /owner and operator only/i,
+  },
+  {
+    label: "Owner dashboard marked active",
+    pattern: /Owner dashboard is active/i,
+  },
+  {
+    label: "Operator dashboard marked active",
+    pattern: /Operator dashboard is active/i,
+  },
+  {
+    label: "production auth marked complete",
+    pattern: /production auth is complete/i,
+  },
+  { label: "live AI marked connected", pattern: /live AI is connected/i },
+  { label: "OpenAI calls marked live", pattern: /OpenAI calls are live/i },
+  {
+    label: "storage uploads marked connected",
+    pattern: /storage uploads are connected/i,
+  },
+  { label: "publishing marked connected", pattern: /publishing is connected/i },
+  { label: "payments marked connected", pattern: /payments are connected/i },
+  { label: "ad spend marked included", pattern: /ad spend is included/i },
+  { label: "contracts marked required", pattern: /contracts are required/i },
+];
+
+const pricingContradictionRules: Rule[] = [
+  {
+    label: "Essential public price does not match $497",
+    pattern:
+      /\bEssential\b(?:(?!\bGrowth\b|\bPremium\b).){0,80}\$(?!497\b)\d[\d,]*(?:\/month|\/mo|\s*per month|\s*monthly)?/i,
+  },
+  {
+    label: "Growth public price does not match $697",
+    pattern:
+      /\bGrowth\b(?:(?!\bEssential\b|\bPremium\b).){0,80}\$(?!697\b)\d[\d,]*(?:\/month|\/mo|\s*per month|\s*monthly)?/i,
+  },
+  {
+    label: "Premium public price does not match $997",
+    pattern:
+      /\bPremium\b(?:(?!\bEssential\b|\bGrowth\b).){0,80}\$(?!997\b)\d[\d,]*(?:\/month|\/mo|\s*per month|\s*monthly)?/i,
+  },
+];
+
+const requiredCurrentMarkers: Rule[] = [
+  {
+    label: "Essential $497 marker",
+    pattern: /Essential[^\n]*(?:\$497|497\/month|497\/mo)/i,
+  },
+  {
+    label: "Growth $697 marker",
+    pattern: /Growth[^\n]*(?:\$697|697\/month|697\/mo)/i,
+  },
+  {
+    label: "Premium $997 marker",
+    pattern: /Premium[^\n]*(?:\$997|997\/month|997\/mo)/i,
+  },
+];
+
+function isClearlyHistoricalOrDeprecated(line: string): boolean {
+  return /historical|history|deprecated|retired|legacy|not current|do not use|must not appear as active/i.test(
+    line,
+  );
+}
+
+function isFutureOrGatedPlanningLine(line: string): boolean {
+  return /future|gated|not active|parked|planned|pending|not enabled|not wired|not connected|no production auth|before this stage|must be reviewed|requires.*approval/i.test(
+    line,
+  );
+}
+
+const failures: string[] = [];
+
+for (const file of currentDocs) {
+  const fullPath = join(root, file);
+  const text = readFileSync(fullPath, "utf8");
+  let inHistoricalSection = false;
+
+  text.split(/\r?\n/).forEach((line, index) => {
+    if (/^#{1,6}\s/.test(line)) {
+      inHistoricalSection = isClearlyHistoricalOrDeprecated(line);
+    }
+
+    const contextAllowsPlanning =
+      inHistoricalSection ||
+      isClearlyHistoricalOrDeprecated(line) ||
+      isFutureOrGatedPlanningLine(line) ||
+      /\$497\s*\/\s*\$697\s*\/\s*\$997/.test(line);
+
+    for (const rule of dangerousCurrentStateRules) {
+      if (rule.pattern.test(line)) {
+        failures.push(`${file}:${index + 1} ${rule.label}: ${line.trim()}`);
+      }
+    }
+
+    for (const rule of pricingContradictionRules) {
+      if (rule.pattern.test(line) && !contextAllowsPlanning) {
+        failures.push(`${file}:${index + 1} ${rule.label}: ${line.trim()}`);
+      }
+    }
+  });
+}
+
+const combinedDocs = currentDocs
+  .map((file) => readFileSync(join(root, file), "utf8"))
+  .join("\n");
+
+for (const marker of requiredCurrentMarkers) {
+  if (!marker.pattern.test(combinedDocs)) {
+    failures.push(
+      `Current docs are missing required pricing marker: ${marker.label}`,
+    );
+  }
+}
+
+const twoRoleDoc = readFileSync(
+  join(root, "artifacts/veroxa/docs/CURRENT_TWO_ROLE_OPERATING_MODEL.md"),
+  "utf8",
+);
+for (const required of [
+  "ClientPortalGuard",
+  "RealPortalDataBoundary",
+  'InternalDemoGuard role="team"',
+  "AUTH_MODE",
+  "placeholder preview",
+]) {
+  if (!twoRoleDoc.includes(required)) {
+    failures.push(
+      `CURRENT_TWO_ROLE_OPERATING_MODEL.md is missing current guard/auth marker: ${required}`,
+    );
+  }
+}
+
+const runbook = readFileSync(
+  join(root, "artifacts/veroxa/docs/PRODUCTION_LAUNCH_RUNBOOK.md"),
+  "utf8",
+);
+if (!runbook.includes("Stage 1 — Team/Internal Admin alpha")) {
+  failures.push(
+    "Production launch runbook must name Stage 1 as Team/Internal Admin alpha.",
+  );
+}
+const stage1Block =
+  runbook.match(/## Stage 1[\s\S]*?(?=## Stage 2)/)?.[0] ?? "";
+if (/Real auth[^\n]*(?:owner|operator)/i.test(stage1Block)) {
+  failures.push(
+    "Production launch runbook Stage 1 appears to revive Owner/Operator auth/workflows.",
+  );
+}
+
+if (failures.length > 0) {
+  console.error(
+    "Docs/model alignment guardrail failed:\n" +
+      failures.map((failure) => `- ${failure}`).join("\n"),
+  );
+  process.exit(1);
+}
+
+console.log(
+  "Docs/model alignment guardrail passed: current docs match the two-role guarded placeholder-auth model.",
+);

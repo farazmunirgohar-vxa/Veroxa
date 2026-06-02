@@ -19,7 +19,8 @@
     "check-route-smoke": "tsx ./src/check-route-smoke.ts",
     "check-client-product-language": "tsx ./src/check-client-product-language.ts",
     "check-team-cockpit": "tsx ./src/check-team-cockpit.ts",
-    "check-pilot-positioning": "tsx ./src/check-pilot-positioning.ts"
+    "check-pilot-positioning": "tsx ./src/check-pilot-positioning.ts",
+    "check-docs-model-alignment": "tsx ./src/check-docs-model-alignment.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",
