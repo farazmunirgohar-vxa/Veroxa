@@ -10,6 +10,12 @@ It is not just a website, portal, content scheduler, or traditional marketing ag
 
 The restaurant partner should experience Veroxa as simple, premium, calm, and low-effort. Veroxa should do the maximum practical work behind the scenes.
 
+## 1A. Founder OS strategy
+
+Veroxa OS is for Faraz first: the Founder/Team OS is the brain, while the Client Portal and Team Portal are supporting modules that help Faraz review, approve, and communicate work calmly. The Restaurant Opportunity Engine is central; Veroxa exists to help Faraz identify right-fit restaurants and create customer opportunity lift, not chase posting volume.
+
+Public positioning stays: “We help restaurants become easier to find, easier to trust, and easier to choose.” Internally, the target is helping good-fit restaurants realistically move toward 3–5 daily customer opportunities in 60–90 days, but this is never public/client-facing guarantee language. Good-fit restaurants include those already paying more for weak results, weak communication, unclear reporting, or inconsistent execution. Bad-fit restaurants should be rejected or delayed.
+
 ## 2. Current active roles
 
 Active roles today:
@@ -36,7 +42,6 @@ Use Codex mainly for senior engineering, architecture review, hardening, type sa
 ## 4. Default builder workflow
 
 For the active five-phase pre-live roadmap, see `artifacts/veroxa/docs/VEROXA_OS_5_PHASE_PRELIVE_BUILD_MAP.md`.
-
 
 Every Replit or Codex prompt should begin conceptually with:
 
@@ -119,9 +124,9 @@ Do not merge demo and login flows.
 - Client login -> /client/dashboard
 - Team login -> /team/dashboard
 - /demo/client/dashboard remains the only public demo preview
-- /demo/team/* is deprecated/not active and must not be promoted
-- /team/* remains a real Team/Internal Admin review route guarded by InternalDemoGuard until production auth is explicitly requested
-- /client/* remains a real Client Portal review route until production auth is explicitly requested
+- /demo/team/\* is deprecated/not active and must not be promoted
+- /team/\* remains a real Team/Internal Admin review route guarded by InternalDemoGuard until production auth is explicitly requested
+- /client/\* remains a real Client Portal review route until production auth is explicitly requested
 - If a real portal section is incomplete, stay inside the real route and show “Still Building” rather than redirecting to demo
 
 ## 7. Core Veroxa OS flow
@@ -264,7 +269,6 @@ Faraz should be able to review from mobile or computer.
 Restaurant partners should do the least possible work.
 
 The priority is a working Restaurant Partner <-> Veroxa Team flow that helps restaurants become easier to find, easier to trust, easier to choose, and easier to return to.
-
 
 ## 15. First-5-client readiness benchmark
 

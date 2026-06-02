@@ -6,7 +6,6 @@
  */
 
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "wouter";
 import {
   Compass,
   Sparkles,
@@ -58,7 +57,6 @@ import {
 import { buildRuleBasedLeadSummary } from "@/lib/leads/leadSummary";
 import {
   generateAiDraftClient,
-  aiDraftModeLabel,
   type AiDraftMode,
 } from "@/lib/ai/aiDraftClient";
 import {
@@ -127,6 +125,19 @@ const priorityTone: Record<LeadPriority, string> = {
 
 function formatUsd(n: number): string {
   return `$${n.toLocaleString("en-US")}`;
+}
+
+function draftAssistModeLabel(mode: AiDraftMode): string {
+  switch (mode) {
+    case "ai":
+      return "Draft assist";
+    case "rule_based_fallback":
+      return "Rule-based draft";
+    case "not_configured":
+      return "Draft helper not configured";
+    case "error":
+      return "Rule-based draft";
+  }
 }
 
 const DEMO_SEED_INPUTS = [
@@ -478,7 +489,7 @@ export default function TeamAuditLeads() {
         <RealPortalReviewNotice />
         <SafePortalEmptyCard
           title="Audit Leads in review"
-          body="Live audit leads are not connected yet. The real route is ready for Faraz without showing seeded demo restaurants as active leads."
+          body="Audit leads are not connected to external sources yet. The real route is ready for Faraz without showing seeded demo restaurants as active leads."
           testId="empty-team-audit-leads"
         />
         <TeamReviewModeRouteSummary title="Audit leads review-mode summary" />
@@ -646,14 +657,6 @@ export default function TeamAuditLeads() {
             {t.label}
           </Button>
         ))}
-        <div className="ml-auto flex gap-2">
-          <Link href="/team/prospect-scanner">
-            <Button size="sm" variant="outline">
-              Manual Prospect Scanner{" "}
-              <ArrowRight className="w-3.5 h-3.5 ml-1" />
-            </Button>
-          </Link>
-        </div>
       </div>
 
       {leads.length === 0 ? (
@@ -744,10 +747,10 @@ export default function TeamAuditLeads() {
                         >
                           {l.selectedRestaurant.selectedSource ===
                           "google_places"
-                            ? "Live"
+                            ? "Google-source snapshot"
                             : l.selectedRestaurant.selectedSource === "fixture"
-                              ? "Preview"
-                              : "Manual"}
+                              ? "Preview source"
+                              : "External source"}
                         </Badge>
                         {l.selectedRestaurant.websiteFound && (
                           <Badge
@@ -780,7 +783,7 @@ export default function TeamAuditLeads() {
                             variant="outline"
                             className="border-primary/40 text-primary bg-primary/5 text-[10px]"
                           >
-                            AI draft available
+                            Draft assist available
                           </Badge>
                         )}
                       </div>
@@ -890,11 +893,11 @@ export default function TeamAuditLeads() {
                           Source:{" "}
                           {selected.selectedRestaurant.selectedSource ===
                           "google_places"
-                            ? "Live"
+                            ? "Google-source snapshot"
                             : selected.selectedRestaurant.selectedSource ===
                                 "manual"
-                              ? "Manual"
-                              : "Preview"}
+                              ? "External source"
+                              : "Preview source"}
                         </Badge>
                         {selected.selectedRestaurant.aiDraftAvailable !==
                           undefined && (
@@ -906,10 +909,10 @@ export default function TeamAuditLeads() {
                                 : "border-muted-foreground/30 text-muted-foreground bg-muted/10 text-[10px]"
                             }
                           >
-                            AI draft:{" "}
+                            Draft helper:{" "}
                             {selected.selectedRestaurant.aiDraftAvailable
-                              ? "Yes"
-                              : "No"}
+                              ? "Available"
+                              : "Not available"}
                           </Badge>
                         )}
                       </div>
@@ -1047,11 +1050,11 @@ export default function TeamAuditLeads() {
 
                   <Separator />
 
-                  {/* BUILD 2 — AI-assisted lead summary (server-or-fallback). */}
+                  {/* BUILD 2 — Draft-helper lead summary (server-or-fallback). */}
                   <div data-testid="lead-summary-section">
                     <div className="flex items-center justify-between gap-2 mb-1">
                       <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                        AI-assisted lead summary
+                        Draft-helper lead summary
                       </p>
                       {aiSummary && (
                         <Badge
@@ -1059,7 +1062,7 @@ export default function TeamAuditLeads() {
                           className="text-[10px] border-primary/40 text-primary bg-primary/5"
                           data-testid="lead-summary-mode"
                         >
-                          {aiDraftModeLabel(aiSummary.mode)}
+                          {draftAssistModeLabel(aiSummary.mode)}
                         </Badge>
                       )}
                     </div>
@@ -1072,7 +1075,8 @@ export default function TeamAuditLeads() {
                           ))}
                         </ul>
                         <p className="text-[10px] text-muted-foreground italic mt-1">
-                          AI-assisted draft — team review required before use.
+                          Draft helper preview — team review required before
+                          use.
                         </p>
                       </div>
                     ) : (

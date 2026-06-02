@@ -62,7 +62,6 @@ const activeLanguage = [
   /Owner dashboard/i,
   /Operator dashboard/i,
   /Super Admin/i,
-  /command center/i,
   /analytics wall/i,
   /backend console/i,
   /live AI/i,

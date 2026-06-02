@@ -2,6 +2,10 @@
 
 The Team Portal is the powerful Veroxa engine with a simple steering wheel.
 
+The Founder/Team OS is the brain of Veroxa OS for Faraz first. The Team Portal is one supporting module for calm review, approvals, and next actions; the Client Portal is another supporting module for client-safe progress. The Restaurant Opportunity Engine is central, so Team surfaces should prioritize right-fit restaurant opportunity, findability, trust, choice, and customer opportunity lift over posting volume.
+
+Internal planning may target good-fit restaurants moving toward 3–5 daily customer opportunities in 60–90 days, but this is never public/client-facing guarantee language. Strong-fit restaurants may already pay more for weak results, weak communication, unclear reporting, or inconsistent execution. Bad-fit restaurants should be rejected or delayed.
+
 The Team Dashboard should open as a calm mobile-first Today View that answers:
 
 1. What needs my attention today?

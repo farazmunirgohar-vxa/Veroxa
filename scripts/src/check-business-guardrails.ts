@@ -77,7 +77,6 @@ function isExemptContext(file: string, line: string): boolean {
   );
 }
 
-
 const riskyCustomerServiceClaim =
   /Veroxa\s+(handles|manages|replies to|responds to|takes care of)[^\n]*(DMs?|comments?|complaints?|refunds?|order questions?|inboxes?|customer-service conversations?|customer service)/i;
 const serviceBoundarySafe =
@@ -101,7 +100,10 @@ const forbiddenCopy: Array<[RegExp, string]> = [
   [/Veroxa handles refunds/i, "forbidden service-boundary claim"],
   [/Veroxa handles complaints/i, "forbidden service-boundary claim"],
   [/Veroxa handles order questions/i, "forbidden service-boundary claim"],
-  [/Veroxa handles customer-service conversations/i, "forbidden service-boundary claim"],
+  [
+    /Veroxa handles customer-service conversations/i,
+    "forbidden service-boundary claim",
+  ],
   [/Veroxa provides customer service/i, "forbidden service-boundary claim"],
   [
     /Veroxa manages live customer conversations/i,
@@ -123,7 +125,10 @@ for (const file of scanRoots.flatMap(walk)) {
         failures.push(`${relative}:${index + 1} ${label}: ${line.trim()}`);
     }
 
-    if (riskyCustomerServiceClaim.test(line) && !serviceBoundarySafe.test(line)) {
+    if (
+      riskyCustomerServiceClaim.test(line) &&
+      !serviceBoundarySafe.test(line)
+    ) {
       failures.push(
         `${relative}:${index + 1} forbidden service-boundary claim: ${line.trim()}`,
       );
@@ -191,7 +196,9 @@ const portalLayoutSource = readFileSync(
 );
 if (
   !portalLayoutSource.includes("getSafePortalHref") ||
-  !/location\.startsWith\(["']\/demo\/client["']\)[\s\S]{0,200}\/demo\/client\//.test(portalLayoutSource)
+  !/location\.startsWith\(["']\/demo\/client["']\)[\s\S]{0,200}\/demo\/client\//.test(
+    portalLayoutSource,
+  )
 ) {
   failures.push(
     "PortalLayout must keep demo client navigation inside /demo/client/* instead of linking demo users into real /client/* routes.",
@@ -257,12 +264,21 @@ for (const file of walk("artifacts/veroxa/src/pages")) {
         `${relative}:${index + 1} imports public demo fixture data without RealPortalDataMode gating: ${line.trim()}`,
       );
     }
-    if (/from ["']@\/domain\/clientPortalJourney/.test(line) && /firstFive/i.test(pageText) && !/LaunchReadinessBenchmark|Not active client data|firstFive/i.test(pageText)) {
+    if (
+      /from ["']@\/domain\/clientPortalJourney/.test(line) &&
+      /firstFive/i.test(pageText) &&
+      !/LaunchReadinessBenchmark|Not active client data|firstFive/i.test(
+        pageText,
+      )
+    ) {
       failures.push(
         `${relative}:${index + 1} may use First-5 benchmark data without clear benchmark labeling: ${line.trim()}`,
       );
     }
-    if (/href=\{?["']\/demo\/client/.test(line) && !/public|sales|demoSafeClientHref/i.test(line)) {
+    if (
+      /href=\{?["']\/demo\/client/.test(line) &&
+      !/public|sales|demoSafeClientHref/i.test(line)
+    ) {
       failures.push(
         `${relative}:${index + 1} real portal page links directly to demo client route: ${line.trim()}`,
       );
@@ -293,6 +309,29 @@ if (/healthy_supply[\s\S]{0,120}Low media risk/.test(firstFiveSource)) {
   failures.push(
     "First-5 healthy_supply must display as Healthy supply / Media healthy, not Low media risk.",
   );
+}
+
+const publicClientGuaranteeClaims: Array<[RegExp, string]> = [
+  [/3[–-]5 customers/i, "public/client customer guarantee language"],
+  [/guaranteed customers/i, "public/client guarantee language"],
+  [/guaranteed walk-ins/i, "public/client guarantee language"],
+  [/guaranteed revenue/i, "public/client guarantee language"],
+  [/we guarantee rankings/i, "public/client ranking guarantee language"],
+];
+
+for (const file of walk("artifacts/veroxa/src/pages")) {
+  const relative = rel(file);
+  const pageName = relative.split("/").pop() ?? "";
+  if (pageName.startsWith("team-")) continue;
+  const text = readFileSync(file, "utf8");
+  text.split(/\r?\n/).forEach((line, index) => {
+    if (isExemptContext(relative, line)) return;
+    for (const [pattern, label] of publicClientGuaranteeClaims) {
+      if (pattern.test(line)) {
+        failures.push(`${relative}:${index + 1} ${label}: ${line.trim()}`);
+      }
+    }
+  });
 }
 
 const pricing = readFileSync(
