@@ -11,6 +11,15 @@ This document is the master source of truth for the Veroxa OS pre-live build cyc
 - Current surfaces use **demo/review data**, not real client operating data.
 - Live integrations are blocked until explicit future approval from Faraz.
 
+## Founder OS Alignment
+
+- Veroxa OS is for Faraz first; the Founder/Team OS is the brain.
+- The Client Portal and Team Portal are supporting modules, not the product strategy by themselves.
+- The Restaurant Opportunity Engine is central: identify right-fit restaurants and create customer opportunity lift instead of optimizing for posting volume.
+- Public positioning stays: “We help restaurants become easier to find, easier to trust, and easier to choose.”
+- Internal target: help good-fit restaurants move toward 3–5 daily customer opportunities in 60–90 days. This is internal planning language only and never a public/client guarantee.
+- Strong-fit restaurants may already pay more for weak results, weak communication, unclear reporting, or inconsistent execution. Bad-fit restaurants should be rejected or delayed.
+
 ## Active Roles
 
 The active roles are:
