@@ -158,7 +158,8 @@ export default function ClientRequests() {
         </h2>
         <p className="mt-1 max-w-2xl text-sm md:text-base text-muted-foreground">
           Tell Veroxa what you want: use media, save something for later, push a
-          special, avoid an item, or leave a general note.
+          special, avoid an item, ask a question, or leave a general note. This
+          is for guiding Veroxa's work, not live customer-service conversations.
         </p>
       </div>
 
@@ -170,6 +171,11 @@ export default function ClientRequests() {
           <CardTitle className="flex items-center gap-2 text-base">
             <MessageSquare className="h-4 w-4 text-primary" /> Send a request
           </CardTitle>
+          <p className="text-xs text-muted-foreground">
+            Use this for content direction, preferred timing, menu or offer
+            notes, and simple questions for Veroxa. Nothing is sent externally
+            from this page.
+          </p>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid gap-3 lg:grid-cols-[240px_minmax(0,1fr)]">
@@ -249,6 +255,11 @@ export default function ClientRequests() {
               </select>
             </div>
           </div>
+          <p className="rounded-md border border-border bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
+            Statuses stay simple: Received, In Review, Handled, or Waiting for
+            you. Veroxa may ask you to confirm business-truth changes such as
+            hours, menu items, pricing, offers, or claims before using them.
+          </p>
           <div className="flex justify-end">
             <Button
               type="button"
@@ -276,6 +287,10 @@ export default function ClientRequests() {
       >
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Request status</CardTitle>
+          <p className="text-xs text-muted-foreground">
+            A calm view of what Veroxa has received and what may still need your
+            input.
+          </p>
         </CardHeader>
         <CardContent className="space-y-2">
           {actionItems.length === 0 && requests.length === 0 ? (

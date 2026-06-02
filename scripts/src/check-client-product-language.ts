@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const failures: string[] = [];
 const clientFiles = [
+  "artifacts/veroxa/src/pages/client-dashboard.tsx",
   "artifacts/veroxa/src/pages/client-media.tsx",
   "artifacts/veroxa/src/pages/client-requests.tsx",
   "artifacts/veroxa/src/pages/client-reports.tsx",
@@ -19,6 +20,8 @@ const internalClientTerms = [
   /Supabase/i,
   /OpenAI/i,
   /backend/i,
+  /dev database/i,
+  /database/i,
   /raw scoring/i,
   /internal ID/i,
 ];
@@ -33,6 +36,44 @@ for (const file of clientFiles) {
         );
     }
   });
+}
+
+const fakeLiveClaims: Array<{ file: string; pattern: RegExp; label: string }> =
+  [
+    {
+      file: "artifacts/veroxa/src/pages/client-media.tsx",
+      pattern: /uploaded to (?:the )?(?:server|cloud)|stored securely/i,
+      label: "fake live upload/storage claim",
+    },
+    {
+      file: "artifacts/veroxa/src/pages/client-media.tsx",
+      pattern: /live image editing|AI image editing|automatically edited/i,
+      label: "fake live media editing claim",
+    },
+    {
+      file: "artifacts/veroxa/src/pages/client-updates.tsx",
+      pattern: /rankings? improved|reach increased|walk-?ins|revenue/i,
+      label: "fake performance metric claim",
+    },
+    {
+      file: "artifacts/veroxa/src/pages/client-reports.tsx",
+      pattern: /rankings? improved|reach increased|walk-?ins/i,
+      label: "fake report metric claim",
+    },
+    {
+      file: "artifacts/veroxa/src/pages/client-requests.tsx",
+      pattern: /comments|DMs|refunds|complaints|order issues/i,
+      label: "customer-service handling implication",
+    },
+  ];
+
+for (const claim of fakeLiveClaims) {
+  const text = readFileSync(join(root, claim.file), "utf8");
+  if (claim.pattern.test(text)) {
+    failures.push(
+      `${claim.file} may contain a ${claim.label}: ${claim.pattern}`,
+    );
+  }
 }
 
 const mediaPath = "artifacts/veroxa/src/pages/client-media.tsx";
