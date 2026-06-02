@@ -1,5 +1,4 @@
 import {
-  Inbox,
   Eye,
   Users,
   FileText,
@@ -36,7 +35,6 @@ import {
   getTeamStatusLabel,
   getTeamSuggestedNextStep,
   getTeamTodayQueueItems,
-  getWorkflowSummaryCounts,
 } from "@/lib/workflows/workflowStatus";
 import { getTodaysSuggestedPushes } from "@/domain/dailyOpportunity";
 import type { OpportunityPriority } from "@/domain/dailyOpportunity";
@@ -90,9 +88,6 @@ export default function TeamDashboard() {
   const portalDataMode = useRealPortalDataMode();
   const canUseFixtureData =
     portalDataMode.allowDemoFixtures || portalDataMode.isLiveDataConnected;
-  const workflowSummary = canUseFixtureData
-    ? getWorkflowSummaryCounts(demoClientTeamWorkflow)
-    : { teamReviewReady: 0, waitingOnClient: 0 };
   const todayQueue = canUseFixtureData
     ? getTeamTodayQueueItems(demoClientTeamWorkflow, 6)
     : [];
@@ -119,50 +114,6 @@ export default function TeamDashboard() {
   const reviewModeActions = getTeamActionQueue();
   const firstClientReadinessSummary = getReadinessSummary();
   const firstClientBlockingChecks = getBlockingChecks();
-
-  // Priority cards — the four questions the team needs answered today,
-  // derived from the shared workflow foundation.
-  const priorityCards: {
-    label: string;
-    value: number;
-    icon: typeof Inbox;
-    href: string;
-    color: string;
-    testId: string;
-  }[] = [
-    {
-      label: "Ready to schedule",
-      value: todayQueue.length,
-      icon: Inbox,
-      href: "/team/work-queue",
-      color: "text-sky-400",
-      testId: "priority-new-submissions",
-    },
-    {
-      label: "Needs review",
-      value: reviewReady.length,
-      icon: Eye,
-      href: "/team/work-queue",
-      color: "text-violet-400",
-      testId: "priority-needs-review",
-    },
-    {
-      label: "Client requests",
-      value: workflowSummary.waitingOnClient,
-      icon: Users,
-      href: "/team/work-queue",
-      color: "text-amber-400",
-      testId: "priority-client-follow-up",
-    },
-    {
-      label: "Reports due",
-      value: queueOrHold.length,
-      icon: FileText,
-      href: "/team/work-queue",
-      color: "text-cyan-400",
-      testId: "priority-reports-due",
-    },
-  ];
 
   // Today's suggested pushes — rule-based daily opportunities (team-only).
   const suggestedPushes = canUseFixtureData
@@ -241,13 +192,92 @@ export default function TeamDashboard() {
         preparedActionCount: 0,
       };
 
+  const reportPreviewText =
+    workflowSnapshot.reportReady > 0
+      ? `${workflowSnapshot.reportReady} report${workflowSnapshot.reportReady === 1 ? "" : "s"} due for review.`
+      : "No reports need review right now.";
+
+  const startHereAction = (() => {
+    if (pendingApprovals.length > 0) {
+      return {
+        eyebrow: "Start here",
+        title: "Review prepared approvals first",
+        body: `${pendingApprovals.length} prepared action${pendingApprovals.length === 1 ? "" : "s"} need a calm Veroxa team review before anything moves forward.`,
+        href: "/team/approval-queue",
+        cta: "Open approvals",
+        icon: ClipboardCheck,
+        tone: "text-emerald-400",
+      };
+    }
+
+    if (clientRequestItems.length > 0) {
+      return {
+        eyebrow: "Start here",
+        title: "Answer client requests first",
+        body: `${clientRequestItems.length} client request${clientRequestItems.length === 1 ? "" : "s"} need direction or a next step from the Veroxa team.`,
+        href: "/team/direction-queue",
+        cta: "Open requests",
+        icon: MessageSquare,
+        tone: "text-sky-400",
+      };
+    }
+
+    if (workflowAlerts.length > 0 || waitingOnClient.length > 0) {
+      return {
+        eyebrow: "Start here",
+        title: "Clear blocked work",
+        body: "A client input item is slowing down today’s queue. Check what Faraz should ask for next.",
+        href: "/team/work-queue",
+        cta: "Check blockers",
+        icon: Users,
+        tone: "text-amber-400",
+      };
+    }
+
+    if (workflowSnapshot.reportReady > 0) {
+      return {
+        eyebrow: "Start here",
+        title: "Review reports due",
+        body: reportPreviewText,
+        href: "/team/report-queue",
+        cta: "Open reports",
+        icon: FileText,
+        tone: "text-cyan-400",
+      };
+    }
+
+    if (firstClientBlockingChecks.length > 0) {
+      return {
+        eyebrow: "Start here",
+        title: "Review first-client readiness blockers",
+        body: `${firstClientBlockingChecks.length} readiness check${firstClientBlockingChecks.length === 1 ? "" : "s"} still need attention before the first-client flow feels launch-ready.`,
+        href: "/team/first-client-readiness",
+        cta: "Review readiness",
+        icon: ShieldCheck,
+        tone: "text-primary",
+      };
+    }
+
+    return {
+      eyebrow: "Start here",
+      title: "Open the work queue for today’s review",
+      body: "No urgent blocker is at the top. Use the work queue to review prepared work and keep the day moving.",
+      href: "/team/work-queue",
+      cta: "Open work queue",
+      icon: Eye,
+      tone: "text-violet-400",
+    };
+  })();
+
+  const StartHereIcon = startHereAction.icon;
+
   return (
     <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
       <RealPortalReviewNotice />
 
       <PageHeader
         title="Today's Veroxa Work"
-        description="A simple steering wheel for review, scheduling, client requests, blockers, and reports due."
+        description="A calmer Today View for review, scheduling, client requests, blockers, approvals, and reports."
         testId="header-team-dashboard"
       />
 
@@ -258,55 +288,45 @@ export default function TeamDashboard() {
         />
       ) : (
         <SafePortalEmptyCard
-          title="Team cockpit shell"
+          title="Team review shell"
           body="Live client operations are not connected yet. Active work queues stay empty here instead of showing demo restaurants as real clients."
           testId="empty-team-cockpit-shell"
         />
       )}
 
-      <div className="mb-6" data-testid="card-first-client-readiness-preview">
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-primary" />
-              First-client readiness
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
-            <div className="space-y-2">
-              <div className="flex flex-wrap items-center gap-2">
-                <StatusBadge
-                  tone={
-                    firstClientBlockingChecks.length > 0 ? "danger" : "info"
-                  }
-                >
-                  {getReadinessStatusLabel(
-                    firstClientReadinessSummary.overallStatus,
-                  )}
-                </StatusBadge>
-                <span className="text-sm font-medium">
-                  {firstClientReadinessSummary.completionPercentage}% ready ·{" "}
-                  {firstClientBlockingChecks.length} blocking checks
-                </span>
+      <Link href={startHereAction.href}>
+        <Card
+          className="mb-6 border-primary/30 bg-primary/5 transition-colors hover:border-primary/50"
+          data-testid="card-team-start-here"
+        >
+          <CardContent className="flex items-start justify-between gap-3 p-4">
+            <div className="flex min-w-0 gap-3">
+              <div className="rounded-md bg-background/80 p-2">
+                <StartHereIcon className={`h-5 w-5 ${startHereAction.tone}`} />
               </div>
-              <p className="text-sm text-muted-foreground">
-                {firstClientReadinessSummary.recommendedNextAction}
-              </p>
+              <div className="min-w-0 space-y-1">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">
+                  {startHereAction.eyebrow}
+                </p>
+                <p className="text-base font-semibold leading-snug">
+                  {startHereAction.title}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {startHereAction.body}
+                </p>
+              </div>
             </div>
-            <Link
-              href="/team/first-client-readiness"
-              className="inline-flex items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10"
-            >
-              Review readiness <ArrowRight className="w-4 h-4" />
-            </Link>
+            <span className="hidden shrink-0 items-center gap-1 text-sm font-medium text-primary sm:inline-flex">
+              {startHereAction.cta} <ArrowRight className="h-4 w-4" />
+            </span>
           </CardContent>
         </Card>
-      </div>
+      </Link>
 
       <div className="mb-6" data-testid="section-team-cockpit">
         <Card className="bg-card border-border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Team cockpit</CardTitle>
+            <CardTitle className="text-sm">Today at a glance</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-3 lg:grid-cols-5">
             {cockpitCards.map(
@@ -334,106 +354,301 @@ export default function TeamDashboard() {
         </Card>
       </div>
 
-      {clientRequestItems.length > 0 && (
-        <div className="mb-6" data-testid="section-client-requests-cockpit">
+      <div className="mb-6 grid gap-4 lg:grid-cols-2">
+        <Card
+          className="bg-card border-border"
+          data-testid="section-client-requests-cockpit"
+        >
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center justify-between gap-2 text-sm">
+              <span className="flex items-center gap-2">
+                <MessageSquare className="h-4 w-4 text-primary" /> Client
+                requests
+              </span>
+              <Link href="/team/direction-queue">
+                <span className="text-xs font-normal text-primary hover:underline cursor-pointer">
+                  Open requests
+                </span>
+              </Link>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {clientRequestItems.length === 0 && (
+              <p className="text-xs text-muted-foreground">
+                No client requests need review right now.
+              </p>
+            )}
+            {clientRequestItems.map((item) => (
+              <div
+                key={item.workflowItemId}
+                className="rounded-md border border-border bg-muted/20 p-3"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-semibold">{item.title}</p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {item.restaurantName} · Client request ·{" "}
+                      {toTeamRequestPreviewStatus(item.internalTeamStatus)}
+                    </p>
+                  </div>
+                  <StatusBadge tone="info">
+                    {toTeamRequestPreviewStatus(item.internalTeamStatus)}
+                  </StatusBadge>
+                </div>
+                <p className="mt-1.5 text-xs text-foreground/80">
+                  <span className="text-muted-foreground">Next:</span>{" "}
+                  {item.nextTeamAction}
+                </p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        <Card
+          className="bg-card border-border"
+          data-testid="section-active-alerts"
+        >
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <Users className="h-4 w-4 text-amber-400" /> Blocked / needs input
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {workflowAlerts.length === 0 && (
+              <p className="text-xs text-muted-foreground">
+                Nothing urgent is waiting on the client right now.
+              </p>
+            )}
+            {workflowAlerts.map((item) => (
+              <div
+                key={item.id}
+                className="rounded-md border border-border bg-muted/20 p-3"
+                data-testid={`dash-alert-${item.id}`}
+              >
+                <div className="mb-1 flex flex-wrap items-center gap-2">
+                  <StatusBadge
+                    tone={
+                      item.priority === "urgent"
+                        ? "danger"
+                        : item.priority === "high"
+                          ? "warning"
+                          : "info"
+                    }
+                  >
+                    {item.priority === "urgent"
+                      ? "Critical"
+                      : item.priority === "high"
+                        ? "High"
+                        : "Watch"}
+                  </StatusBadge>
+                  <p className="text-sm font-medium">{item.title}</p>
+                </div>
+                <p className="line-clamp-2 text-xs text-muted-foreground">
+                  {getTeamStatusLabel(item.stage)} ·{" "}
+                  {getTeamSuggestedNextStep(item)}
+                </p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="mb-6 grid gap-4 lg:grid-cols-2">
+        <Card
+          className="bg-card border-border"
+          data-testid="section-approvals-preview"
+        >
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center justify-between gap-2 text-sm">
+              <span className="flex items-center gap-2">
+                <ClipboardCheck className="h-4 w-4 text-emerald-400" />{" "}
+                Approvals ready
+              </span>
+              <Link href="/team/approval-queue">
+                <span className="flex items-center gap-1 text-xs font-normal text-primary hover:underline cursor-pointer">
+                  Open queue <ArrowRight className="h-3 w-3" />
+                </span>
+              </Link>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {approvalsPreview.length === 0 && (
+              <p className="text-xs text-muted-foreground">
+                No prepared approvals need review right now.
+              </p>
+            )}
+            {approvalsPreview.map((action) => (
+              <div
+                key={action.id}
+                className="rounded-md border border-border bg-muted/20 p-3"
+                data-testid={`approval-preview-${action.id}`}
+              >
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <p className="text-sm font-semibold">{action.title}</p>
+                  <StatusBadge
+                    tone={action.riskLevel === "sensitive" ? "danger" : "info"}
+                  >
+                    {APPROVAL_REQUIREMENT_LABELS[action.approvalRequirement]}
+                  </StatusBadge>
+                </div>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">
+                  {action.restaurantName} ·{" "}
+                  {PREPARED_ACTION_CHANNEL_LABELS[action.channel]}
+                </p>
+                <p className="mt-1.5 text-[12px] text-primary/85">
+                  <span className="text-muted-foreground">Next:</span>{" "}
+                  {action.suggestedNext}
+                </p>
+              </div>
+            ))}
+            <p className="pt-1 text-[10px] text-muted-foreground/60">
+              Nothing is posted or sent until you approve it here.
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card
+          className="bg-card border-border"
+          data-testid="section-reports-readiness-preview"
+        >
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center justify-between gap-2 text-sm">
+              <span className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-cyan-400" /> Reports due
+              </span>
+              <Link href="/team/report-queue">
+                <span className="flex items-center gap-1 text-xs font-normal text-primary hover:underline cursor-pointer">
+                  Open reports <ArrowRight className="h-3 w-3" />
+                </span>
+              </Link>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-muted-foreground">{reportPreviewText}</p>
+            {visibilityOverview.preparedActionCount > 0 && (
+              <Link href="/team/visibility-audit">
+                <div
+                  className="flex items-center justify-between gap-3 rounded-md border border-border bg-muted/20 p-3 transition-colors hover:border-primary/30"
+                  data-testid="card-visibility-tasks-ready"
+                >
+                  <div className="flex min-w-0 items-center gap-3">
+                    <ScanSearch className="h-4 w-4 shrink-0 text-sky-400" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold">
+                        Visibility issues ready
+                      </p>
+                      <p className="mt-0.5 text-[11px] text-muted-foreground">
+                        {visibilityOverview.preparedActionCount} prepared from{" "}
+                        {visibilityOverview.totalFindings} visibility issues.
+                      </p>
+                    </div>
+                  </div>
+                  <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground/50" />
+                </div>
+              </Link>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="mb-6" data-testid="card-first-client-readiness-preview">
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <ShieldCheck className="h-4 w-4 text-primary" /> First-client
+              readiness
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <StatusBadge
+                  tone={
+                    firstClientBlockingChecks.length > 0 ? "danger" : "info"
+                  }
+                >
+                  {getReadinessStatusLabel(
+                    firstClientReadinessSummary.overallStatus,
+                  )}
+                </StatusBadge>
+                <span className="text-sm font-medium">
+                  {firstClientReadinessSummary.completionPercentage}% ready ·{" "}
+                  {firstClientBlockingChecks.length} blocking checks
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {firstClientReadinessSummary.recommendedNextAction}
+              </p>
+            </div>
+            <Link
+              href="/team/first-client-readiness"
+              className="inline-flex items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10"
+            >
+              Review readiness <ArrowRight className="h-4 w-4" />
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+
+      {suggestedPushes.length > 0 && (
+        <div className="mb-6" data-testid="section-suggested-push">
           <Card className="bg-card border-border">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center justify-between gap-2">
-                <span className="flex items-center gap-2">
-                  <MessageSquare className="w-4 h-4 text-primary" /> Client
-                  requests
-                </span>
-                <Link href="/team/direction-queue">
-                  <span className="text-xs text-primary hover:underline cursor-pointer">
-                    Open direction queue
-                  </span>
-                </Link>
+              <CardTitle className="flex items-center gap-2 text-sm">
+                <TrendingUp className="h-4 w-4 text-primary" /> Today's
+                Suggested Push
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              {clientRequestItems.map((item) => (
+              {suggestedPushes.map((push) => (
                 <div
-                  key={item.workflowItemId}
+                  key={push.id}
                   className="rounded-md border border-border bg-muted/20 p-3"
+                  data-testid={`suggested-push-${push.id}`}
                 >
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div>
-                      <p className="text-sm font-semibold">{item.title}</p>
-                      <p className="text-[11px] text-muted-foreground">
-                        {item.restaurantName} · Client request ·{" "}
-                        {toTeamRequestPreviewStatus(item.internalTeamStatus)}
-                      </p>
-                    </div>
-                    <StatusBadge tone="info">
-                      {toTeamRequestPreviewStatus(item.internalTeamStatus)}
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-sm font-semibold">{push.title}</p>
+                    <StatusBadge tone={pushPriorityTone[push.priority]}>
+                      {pushPriorityLabel[push.priority]}
                     </StatusBadge>
                   </div>
-                  <p className="mt-1.5 text-xs text-foreground/80">
-                    <span className="text-muted-foreground">Next:</span>{" "}
-                    {item.nextTeamAction}
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">
+                    {push.restaurantName}
                   </p>
+                  <p className="mt-1.5 text-xs text-foreground/80">
+                    {push.whyItMatters}
+                  </p>
+                  <p className="mt-1.5 text-[12px] text-primary/85">
+                    <span className="text-muted-foreground">Next:</span>{" "}
+                    {push.recommendedAction.label}
+                  </p>
+                  {push.requiredClientInput.needed &&
+                    push.requiredClientInput.ask && (
+                      <p className="mt-1 text-[11px] text-amber-300/90">
+                        Ask the client: {push.requiredClientInput.ask}
+                      </p>
+                    )}
                 </div>
               ))}
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {!canUseFixtureData && (
-        <div
-          className="space-y-4 mb-6"
-          data-testid="section-review-mode-command-center"
-        >
-          <Card className="bg-card border-border">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Team cockpit shell</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Review-mode operational records only. Live integrations are not
-                connected yet, and public demo fixtures are not treated as
-                active clients.
-              </p>
-              <TeamCommandSummaryGrid summary={reviewModeSummary} />
-              <p className="text-sm text-muted-foreground">
-                {reviewModeSummary.workloadSummary}
+              <p className="pt-1 text-[10px] text-muted-foreground/60">
+                Suggested opportunities to help bring more customers today.
               </p>
             </CardContent>
           </Card>
-          <div className="grid gap-4 xl:grid-cols-2">
-            <Card className="bg-card border-border">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Next human actions</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <TeamActionQueueList actions={reviewModeActions} />
-              </CardContent>
-            </Card>
-            <Card className="bg-card border-border">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">
-                  Review-mode client overview
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <TeamClientOverviewList overview={reviewModeOverview} />
-              </CardContent>
-            </Card>
-          </div>
         </div>
       )}
 
       <div className="mb-6" data-testid="section-first-five-cockpit">
         <Card className="bg-card border-border">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-primary" />
-              First-5 Launch Readiness
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <AlertTriangle className="h-4 w-4 text-primary" /> First-5 Launch
+              Readiness
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <LaunchReadinessBenchmarkNotice />
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
               <div className="rounded-lg border border-border bg-muted/20 p-3">
                 <p className="text-2xl font-bold tabular-nums">
                   {firstFiveSummary.totalClients}
@@ -509,15 +724,15 @@ export default function TeamDashboard() {
                         : client.mediaRiskLevel}
                     </StatusBadge>
                   </div>
-                  <p className="text-xs text-foreground/80 mt-2">
+                  <p className="mt-2 text-xs text-foreground/80">
                     <span className="text-muted-foreground">Next:</span>{" "}
                     {client.nextTeamAction}
                   </p>
-                  <p className="text-[11px] text-muted-foreground mt-1">
+                  <p className="mt-1 text-[11px] text-muted-foreground">
                     {client.contentQueueState} · {client.reportReadinessState} ·{" "}
                     {client.recommendedHumanFollowUp}
                   </p>
-                  <p className="text-[11px] text-primary/80 mt-1">
+                  <p className="mt-1 text-[11px] text-primary/80">
                     {client.deterministicSuggestion}
                   </p>
                 </div>
@@ -527,190 +742,57 @@ export default function TeamDashboard() {
         </Card>
       </div>
 
-      {/* Priority cards — what needs my attention today */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
-        <Link href="/team/approval-queue">
-          <Card
-            className="bg-card border-border hover:border-primary/30 transition-colors cursor-pointer h-full"
-            data-testid="priority-approvals-ready"
-          >
-            <CardContent className="p-4">
-              <div className="mb-2 flex items-center justify-between text-emerald-400">
-                <ClipboardCheck className="w-5 h-5" />
-                <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/50" />
-              </div>
-              <p className="text-2xl font-bold tabular-nums">
-                {pendingApprovals.length}
-              </p>
-              <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
-                Approvals ready
-              </p>
-            </CardContent>
-          </Card>
-        </Link>
-        {priorityCards.map(
-          ({ label, value, icon: Icon, href, color, testId }) => (
-            <Link key={label} href={href}>
-              <Card
-                className="bg-card border-border hover:border-primary/30 transition-colors cursor-pointer h-full"
-                data-testid={testId}
-              >
-                <CardContent className="p-4">
-                  <div
-                    className={`mb-2 flex items-center justify-between ${color}`}
-                  >
-                    <Icon className="w-5 h-5" />
-                    <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/50" />
-                  </div>
-                  <p className="text-2xl font-bold tabular-nums">{value}</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
-                    {label}
-                  </p>
-                </CardContent>
-              </Card>
-            </Link>
-          ),
-        )}
-      </div>
-
-      {/* Visibility issues ready — calm link into the Visibility Audit (team-only) */}
-      {visibilityOverview.preparedActionCount > 0 && (
-        <Link href="/team/visibility-audit">
-          <Card
-            className="bg-card border-border hover:border-primary/30 transition-colors cursor-pointer mb-6"
-            data-testid="card-visibility-tasks-ready"
-          >
-            <CardContent className="p-4 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="p-2 rounded-md bg-muted/30 flex-shrink-0">
-                  <ScanSearch className="w-4 h-4 text-sky-400" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold">
-                    Visibility issues ready
-                  </p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
-                    {visibilityOverview.preparedActionCount} prepared from{" "}
-                    {visibilityOverview.totalFindings} visibility issues across{" "}
-                    {visibilityOverview.auditedCount} restaurants
-                  </p>
-                </div>
-              </div>
-              <ArrowRight className="w-4 h-4 text-muted-foreground/50 flex-shrink-0" />
-            </CardContent>
-          </Card>
-        </Link>
-      )}
-
-      {/* Today's Suggested Push — rule-based daily opportunities (team-only) */}
-      {suggestedPushes.length > 0 && (
-        <div className="mb-6" data-testid="section-suggested-push">
+      {!canUseFixtureData && (
+        <div
+          className="mb-6 space-y-4"
+          data-testid="section-review-mode-operations"
+        >
           <Card className="bg-card border-border">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-primary" />
-                Today&apos;s Suggested Push
-              </CardTitle>
+              <CardTitle className="text-sm">Review-mode operations</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
-              {suggestedPushes.map((push) => (
-                <div
-                  key={push.id}
-                  className="rounded-md border border-border bg-muted/20 p-3"
-                  data-testid={`suggested-push-${push.id}`}
-                >
-                  <div className="flex items-start justify-between gap-2 flex-wrap">
-                    <p className="text-sm font-semibold">{push.title}</p>
-                    <StatusBadge tone={pushPriorityTone[push.priority]}>
-                      {pushPriorityLabel[push.priority]}
-                    </StatusBadge>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
-                    {push.restaurantName}
-                  </p>
-                  <p className="text-xs text-foreground/80 mt-1.5">
-                    {push.whyItMatters}
-                  </p>
-                  <p className="text-[12px] text-primary/85 mt-1.5">
-                    <span className="text-muted-foreground">Next:</span>{" "}
-                    {push.recommendedAction.label}
-                  </p>
-                  {push.requiredClientInput.needed &&
-                    push.requiredClientInput.ask && (
-                      <p className="text-[11px] text-amber-300/90 mt-1">
-                        Ask the client: {push.requiredClientInput.ask}
-                      </p>
-                    )}
-                </div>
-              ))}
-              <p className="text-[10px] text-muted-foreground/60 pt-1">
-                Suggested opportunities to help bring more customers today.
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Review-mode operational records only. Live integrations are not
+                connected yet, and public demo fixtures are not treated as
+                active clients.
+              </p>
+              <TeamCommandSummaryGrid summary={reviewModeSummary} />
+              <p className="text-sm text-muted-foreground">
+                {reviewModeSummary.workloadSummary}
               </p>
             </CardContent>
           </Card>
+          <div className="grid gap-4 xl:grid-cols-2">
+            <Card className="bg-card border-border">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Next human actions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <TeamActionQueueList actions={reviewModeActions} />
+              </CardContent>
+            </Card>
+            <Card className="bg-card border-border">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">
+                  Review-mode client overview
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <TeamClientOverviewList overview={reviewModeOverview} />
+              </CardContent>
+            </Card>
+          </div>
         </div>
       )}
 
-      {/* Approvals ready — a calm peek at the Approval Queue */}
-      {approvalsPreview.length > 0 && (
-        <div className="mb-6" data-testid="section-approvals-preview">
-          <Card className="bg-card border-border">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center justify-between gap-2">
-                <span className="flex items-center gap-2">
-                  <ClipboardCheck className="w-4 h-4 text-emerald-400" />
-                  Approvals ready
-                </span>
-                <Link href="/team/approval-queue">
-                  <span className="flex items-center gap-1 text-xs text-primary hover:underline cursor-pointer font-normal">
-                    Open queue <ArrowRight className="w-3 h-3" />
-                  </span>
-                </Link>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {approvalsPreview.map((action) => (
-                <div
-                  key={action.id}
-                  className="rounded-md border border-border bg-muted/20 p-3"
-                  data-testid={`approval-preview-${action.id}`}
-                >
-                  <div className="flex items-start justify-between gap-2 flex-wrap">
-                    <p className="text-sm font-semibold">{action.title}</p>
-                    <StatusBadge
-                      tone={
-                        action.riskLevel === "sensitive" ? "danger" : "info"
-                      }
-                    >
-                      {APPROVAL_REQUIREMENT_LABELS[action.approvalRequirement]}
-                    </StatusBadge>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
-                    {action.restaurantName} ·{" "}
-                    {PREPARED_ACTION_CHANNEL_LABELS[action.channel]}
-                  </p>
-                  <p className="text-[12px] text-primary/85 mt-1.5">
-                    <span className="text-muted-foreground">Next:</span>{" "}
-                    {action.suggestedNext}
-                  </p>
-                </div>
-              ))}
-              <p className="text-[10px] text-muted-foreground/60 pt-1">
-                Nothing is posted or sent until you approve it here.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Live workflow cockpit */}
       <div className="mb-6">
         {canUseFixtureData ? (
           <TeamWorkflowPanel
-            title="Team cockpit"
-            icon={<LayoutGrid className="w-4 h-4 text-primary" />}
+            title="Workflow preview"
+            icon={<LayoutGrid className="h-4 w-4 text-primary" />}
             emptyText="No active workflow items right now."
-            testId="card-team-workflow-command-center"
+            testId="card-team-workflow-preview"
             limit={8}
           />
         ) : (
@@ -722,7 +804,6 @@ export default function TeamDashboard() {
         )}
       </div>
 
-      {/* Ready to schedule */}
       <div className="mb-6" data-testid="section-todays-client-work">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
@@ -730,11 +811,11 @@ export default function TeamDashboard() {
           </h3>
           <Link href="/team/work-queue">
             <span className="flex items-center gap-1 text-xs text-primary hover:underline cursor-pointer">
-              Open work queue <ArrowRight className="w-3 h-3" />
+              Open work queue <ArrowRight className="h-3 w-3" />
             </span>
           </Link>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
           {todayQueue.map((item) => (
             <WorkflowItemCard
               key={item.id}
@@ -744,12 +825,11 @@ export default function TeamDashboard() {
             />
           ))}
         </div>
-        <p className="text-[11px] text-muted-foreground/60 mt-2">
+        <p className="mt-2 text-[11px] text-muted-foreground/60">
           Pulled from the shared first-client workflow model.
         </p>
       </div>
 
-      {/* Media and draft review queue */}
       <div className="mb-6" data-testid="section-media-review-queue">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
@@ -770,96 +850,6 @@ export default function TeamDashboard() {
               clientName={getRestaurantName(item.clientId)}
             />
           ))}
-        </div>
-      </div>
-
-      {/* Active alerts / blockers */}
-      <div className="mb-6" data-testid="section-active-alerts">
-        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-          Blocked / needs client input
-        </h3>
-        <Card className="bg-card border-border">
-          <CardContent className="space-y-2 p-4">
-            {workflowAlerts.length === 0 && (
-              <p className="text-xs text-muted-foreground">
-                Nothing urgent right now.
-              </p>
-            )}
-            {workflowAlerts.map((item) => (
-              <div
-                key={item.id}
-                className="rounded-md border border-border bg-muted/20 p-3"
-                data-testid={`dash-alert-${item.id}`}
-              >
-                <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <StatusBadge
-                    tone={
-                      item.priority === "urgent"
-                        ? "danger"
-                        : item.priority === "high"
-                          ? "warning"
-                          : "info"
-                    }
-                  >
-                    {item.priority === "urgent"
-                      ? "Critical"
-                      : item.priority === "high"
-                        ? "High"
-                        : "Watch"}
-                  </StatusBadge>
-                  <p className="text-sm font-medium">{item.title}</p>
-                </div>
-                <p className="text-xs text-muted-foreground line-clamp-2">
-                  {getTeamStatusLabel(item.stage)} ·{" "}
-                  {getTeamSuggestedNextStep(item)}
-                </p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Cockpit queue summary — same helper counts used by the queue and alert center. */}
-      <div data-testid="section-work-queue-summary">
-        <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Cockpit queue summary
-          </h3>
-          <Link href="/team/work-queue">
-            <span className="flex items-center gap-1 text-xs text-primary hover:underline cursor-pointer">
-              View all <ArrowRight className="w-3 h-3" />
-            </span>
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <Card className="bg-muted/20 border-border">
-            <CardContent className="p-3">
-              <p className="text-2xl font-bold tabular-nums">
-                {workflowSummary.teamReviewReady}
-              </p>
-              <p className="text-[11px] text-muted-foreground">Need review</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-muted/20 border-border">
-            <CardContent className="p-3">
-              <p className="text-2xl font-bold tabular-nums">
-                {waitingOnClient.length}
-              </p>
-              <p className="text-[11px] text-muted-foreground">
-                Waiting on client
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="bg-muted/20 border-border">
-            <CardContent className="p-3">
-              <p className="text-2xl font-bold tabular-nums">
-                {queueOrHold.length}
-              </p>
-              <p className="text-[11px] text-muted-foreground">
-                Queue / hold later
-              </p>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </PortalLayout>
