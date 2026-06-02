@@ -79,3 +79,5 @@ export type {
   NotificationPriorityV2,
   ChannelPreference,
 } from "./notifications/engineV2";
+
+export * from "./ruleBasedAutomation";

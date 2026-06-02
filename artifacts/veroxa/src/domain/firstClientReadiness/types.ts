@@ -92,4 +92,9 @@ export interface FirstClientLaunchGate {
   requiredCheckKeys: readonly string[];
   blockers: readonly ReadinessCheck[];
   message: string;
+  readyForDemoWalkthrough: boolean;
+  readyForFeedbackConversations: boolean;
+  readyForFirstPaidClient: boolean;
+  blockedLiveIntegrations: readonly string[];
+  nextRequiredBuild: string;
 }

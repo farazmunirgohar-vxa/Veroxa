@@ -11,7 +11,7 @@ import { TeamReviewModeRouteSummary } from "@/components/team/TeamOperationalSpi
 import { DemoOnlyBanner } from "@/components/DemoOnlyBanner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { getRestaurantName } from "@/data/demoData";
+import { demoClientLifecycle, getRestaurantName } from "@/data/demoData";
 import {
   demoClientTeamWorkflow,
   type WorkflowItem,
@@ -25,6 +25,13 @@ import {
   getWorkflowSummaryCounts,
   groupWorkflowItemsForTeam,
 } from "@/lib/workflows/workflowStatus";
+import {
+  buildTeamAlerts,
+  captionDraftTemplates,
+  reviewMediaRules,
+  scoreCustomerOpportunity,
+  suggestManualSchedule,
+} from "@/domain/ruleBasedAutomation";
 
 type LocalDecision =
   | "pending"
@@ -110,6 +117,25 @@ export default function TeamWorkQueue() {
   const [decisions, setDecisions] = useState<Record<string, LocalDecision>>({});
   const groups = groupWorkflowItemsForTeam(demoClientTeamWorkflow);
   const summary = getWorkflowSummaryCounts(demoClientTeamWorkflow);
+  const primaryLifecycle = demoClientLifecycle[0];
+  const customerOpportunity = scoreCustomerOpportunity({
+    mediaHealth: primaryLifecycle?.mediaStatus,
+    healthScore: primaryLifecycle?.healthScore,
+    pendingApprovals: summary.teamReviewReady,
+    waitingOnClient: summary.waitingOnClient,
+    reportOverdue: primaryLifecycle?.reportingStatus === "Overdue",
+    bestSellerVisible: true,
+  });
+  const alerts = buildTeamAlerts({
+    restaurantName: primaryLifecycle
+      ? getRestaurantName(primaryLifecycle.clientId)
+      : "Demo restaurant",
+    mediaHealth: primaryLifecycle?.mediaStatus,
+    pendingApprovals: summary.teamReviewReady,
+    waitingOnClient: summary.waitingOnClient,
+    reportDue: summary.alerts > 0,
+    visibilityIssues: 1,
+  });
 
   const setDecision = (id: string, decision: LocalDecision) => {
     setDecisions((prev) => ({ ...prev, [id]: decision }));
@@ -205,6 +231,69 @@ export default function TeamWorkQueue() {
         review notes only in this demo.
       </div>
 
+      <div className="mb-4 grid gap-3 lg:grid-cols-2">
+        <Card
+          className="bg-card border-primary/20"
+          data-testid="work-rule-alerts"
+        >
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">
+              Rule-based alerts / risk engine
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-xs text-muted-foreground">
+            {alerts.slice(0, 3).map((alert) => (
+              <div
+                key={alert.label}
+                className="rounded-md border border-border/60 bg-muted/10 p-2"
+              >
+                <p className="font-medium text-foreground/85">
+                  {alert.label} · {alert.restaurantName}
+                </p>
+                <p>{alert.whyItMatters}</p>
+                <p className="text-primary/80">
+                  Suggested next action: {alert.suggestedNextAction}
+                </p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+        <Card
+          className="bg-card border-primary/20"
+          data-testid="work-customer-opportunity-score"
+        >
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">
+              Customer opportunity scoring
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-xs text-muted-foreground">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="font-medium text-foreground/85">
+                {customerOpportunity.status}
+              </p>
+              <Badge
+                variant="outline"
+                className="border-border bg-muted/30 text-[10px]"
+              >
+                Internal score {customerOpportunity.score}
+              </Badge>
+            </div>
+            <p>Main opportunity: {customerOpportunity.mainOpportunity}</p>
+            <p>Main blocker: {customerOpportunity.mainBlocker}</p>
+            <p className="text-primary/80">
+              Suggested next action: {customerOpportunity.suggestedNextAction}
+            </p>
+            <p>
+              Caption/draft template ready:{" "}
+              {captionDraftTemplates[0].internalTitle} ·{" "}
+              {captionDraftTemplates[0].suggestedChannel} · Faraz approval
+              required before public use.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
         {groups.map((group) => (
           <Card
@@ -246,9 +335,57 @@ export default function TeamWorkQueue() {
                         actions={actionsForItem(item, setDecision)}
                       />
                       <div className="flex items-start justify-between gap-2 px-1">
-                        <p className="text-[11px] text-muted-foreground leading-relaxed">
-                          Next: {getTeamSuggestedNextStep(item)}
-                        </p>
+                        <div className="text-[11px] text-muted-foreground leading-relaxed space-y-0.5">
+                          <p>Next: {getTeamSuggestedNextStep(item)}</p>
+                          {(() => {
+                            const schedule = suggestManualSchedule({
+                              mediaType: item.type,
+                              contentAngle: item.title,
+                              urgency:
+                                item.priority === "urgent" ||
+                                item.priority === "high"
+                                  ? "high"
+                                  : "medium",
+                              weekendOrEvent: /weekend|sunday|friday/i.test(
+                                item.title,
+                              ),
+                            });
+                            return (
+                              <p>
+                                Manual publishing tracker: Prepared ·{" "}
+                                {schedule.suggestedWindow}
+                              </p>
+                            );
+                          })()}
+                          {item.type === "media" &&
+                            (() => {
+                              const mediaAssist = reviewMediaRules({
+                                type:
+                                  item.title.toLowerCase().includes("reel") ||
+                                  item.title.toLowerCase().includes("video")
+                                    ? "Video"
+                                    : "Photo",
+                                title: item.title,
+                                status:
+                                  item.stage === "needs_better_photo"
+                                    ? "Blurry"
+                                    : item.stage === "media_review_needed"
+                                      ? "Pending Review"
+                                      : "Approved",
+                                qualityNote:
+                                  item.stage === "needs_better_photo"
+                                    ? "Needs better angle/lighting"
+                                    : "Review-mode media note",
+                                suggestedUse: item.title,
+                              });
+                              return (
+                                <p>
+                                  Media assist: {mediaAssist.teamSuggestedUse} ·{" "}
+                                  {mediaAssist.designPrepStatus}
+                                </p>
+                              );
+                            })()}
+                        </div>
                         <span
                           className={`rounded border px-2 py-0.5 text-[10px] font-medium whitespace-nowrap ${decisionTone[decision]}`}
                         >
