@@ -257,3 +257,7 @@ The pre-live cycle has exactly these five phases:
 - Newest Faraz instruction + `AGENTS.md` + this build map are authority sources
 - Future live integrations require explicit approval
 - If a future prompt conflicts with this build map, stop and clarify before building
+
+## Full SaaS Foundation design reference
+
+For the next Full SaaS Foundation design and guardrail plan, see `CLIENT_PORTAL_FULL_SAAS_FOUNDATION_DESIGN.md`. The pre-live build map remains review-mode until a later RR-approved runtime phase enables production SaaS behavior.

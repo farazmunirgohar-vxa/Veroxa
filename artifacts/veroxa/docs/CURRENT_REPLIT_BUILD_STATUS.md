@@ -662,3 +662,7 @@ manualReviewNeeded[], ownerFriendlyClosing } | null, message? }`.
 - Premium requires at least 1 month on Essential or Growth, a Veroxa readiness assessment, client approval, and an agreed ad budget.
 - First-client discount: 20% off for 12 months, then loyalty discount only while continuously active; lost if the client leaves and later returns.
 - Build order remains client side first. Team/Internal Admin heavy AI automation comes after client-side clarity and should later become the command center for media review assist, caption drafting, Google/SEO/Maps tasks, reporting generation, Premium readiness checklist, client risk flags, workload tracking, and Pakistan team handoff after 10 clients.
+
+## Full SaaS Foundation design reference
+
+For the next Full SaaS Foundation design and guardrail plan, see `CLIENT_PORTAL_FULL_SAAS_FOUNDATION_DESIGN.md`. Current Replit build status remains pre-live/review-mode; production SaaS runtime still requires RR-approved implementation.

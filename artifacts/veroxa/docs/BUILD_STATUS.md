@@ -1218,3 +1218,7 @@ internal_demo | future_protected`. The client, team, operator,
 - Public demo remains separate at `/demo/client/dashboard`; demo navigation stays in demo context instead of accidentally entering real `/client/*` routes.
 - No real AI calls, storage uploads, posting connectors, Google Business Profile APIs, payments, webhooks, background jobs, auth provider changes, or destructive migrations were added.
 - Codex remains the main builder for this stage. Replit is optional only for surface-level visual QA or explicit preview polish.
+
+## Full SaaS Foundation design reference
+
+For the next Full SaaS Foundation design and guardrail plan, see `CLIENT_PORTAL_FULL_SAAS_FOUNDATION_DESIGN.md`. This status note does not mark production auth, migrations, storage uploads, live AI, connectors, or payments as built.
