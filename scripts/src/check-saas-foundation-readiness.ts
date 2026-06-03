@@ -18,9 +18,15 @@ const requiredDocs = [
 const foundationAreaPatterns = [
   { label: "account model", pattern: /account model/i },
   { label: "client/team user model", pattern: /client\/team user model/i },
-  { label: "route/data boundary model", pattern: /route\/data boundary model/i },
+  {
+    label: "route/data boundary model",
+    pattern: /route\/data boundary model/i,
+  },
   { label: "RLS/security model", pattern: /RLS\/security model/i },
-  { label: "storage/media lifecycle model", pattern: /storage\/media lifecycle model/i },
+  {
+    label: "storage/media lifecycle model",
+    pattern: /storage\/media lifecycle model/i,
+  },
   { label: "persistence model", pattern: /persistence model/i },
   { label: "activity log model", pattern: /activity log model/i },
   {
@@ -55,10 +61,15 @@ const restrictionPatterns = [
 
 const guaranteePatterns = [
   { label: "3–5 customers", pattern: /3\s*[–-]\s*5\s+customers/i },
+  { label: "guaranteed orders", pattern: /guaranteed\s+orders/i },
+  { label: "guaranteed profit", pattern: /guaranteed\s+profit/i },
+  { label: "guaranteed ROI", pattern: /guaranteed\s+ROI/i },
   { label: "guaranteed customers", pattern: /guaranteed\s+customers/i },
   { label: "guaranteed walk-ins", pattern: /guaranteed\s+walk-ins/i },
   { label: "guaranteed revenue", pattern: /guaranteed\s+revenue/i },
   { label: "guarantee rankings", pattern: /guarantee\s+rankings/i },
+  { label: "exact order target", pattern: /(?:10|15|20|50)\s+orders\/day/i },
+  { label: "profit promise", pattern: /we make restaurants profitable/i },
 ] as const;
 
 const publicClientFilesToScan = [
@@ -114,13 +125,19 @@ for (const restriction of restrictionPatterns) {
   }
 }
 
-if (!/\/client\/\*[^\n]{0,120}\/team\/\*[^\n]{0,160}cannot use demo\/sample fixtures once authenticated real mode is enabled/i.test(combinedDocs)) {
+if (
+  !/\/client\/\*[^\n]{0,120}\/team\/\*[^\n]{0,160}cannot use demo\/sample fixtures once authenticated real mode is enabled/i.test(
+    combinedDocs,
+  )
+) {
   failures.push(
     "SaaS foundation docs must warn that /client/* and /team/* cannot use demo/sample fixtures once authenticated real mode is enabled.",
   );
 }
 
-if (!/No future write should ship without activity logging/i.test(combinedDocs)) {
+if (
+  !/No future write should ship without activity logging/i.test(combinedDocs)
+) {
   failures.push(
     "SaaS foundation docs must state that no future write should ship without activity logging.",
   );

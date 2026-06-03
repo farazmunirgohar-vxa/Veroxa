@@ -152,20 +152,20 @@ Team review is built on a mobile-friendly foundation — see
 
 ## Pricing (locked current public pricing — do not change)
 
-- **Essential: $497/month**
-- **Growth: $697/month**
-- **Premium: $997/month**
+- **Starter: $295/month**
+- **Growth: $495/month**
+- **Premium: $995/month**
 
 Current pricing rules:
 
 - No contract.
 - Cancel anytime.
-- All active plans are capped at max 1 post/day.
+- Starter is capped at up to 3 posts/week; Growth and Premium are capped at up to 1 post/day.
 - Posting depends on usable client-provided media.
-- Growth adds TikTok + Reels posting support using provided photos/videos.
+- Growth is the main recommended package for stronger Google/local and social consistency using client-provided media.
 - Premium adds ads management readiness/support after assessment, but does not
   increase the public posting cap.
-- Premium requires 1+ month on Essential or Growth, a Veroxa readiness assessment,
+- Premium requires a Veroxa readiness assessment,
   client approval, and an agreed ad budget.
 - Ad spend is always separate and paid directly by the restaurant.
 - Veroxa does not handle comments, DMs, inboxes, complaints, refunds, order
@@ -202,3 +202,13 @@ companion stage docs describe what is actually live in the two-role model today.
 ## First-client pilot mode
 
 Current pilot positioning is documented in `FIRST_CLIENT_PILOT_MODE.md`. It keeps sample/demo behavior, pending production auth, pending storage upload, pending publishing integration, and manual team review clear for future builders.
+
+## 2026-06-03 pricing/profit-fit alignment
+
+- Active public pricing is Starter $295/month, Growth $495/month, and Premium $995/month.
+- Growth is the main recommended package for strong-fit restaurants; Starter is the low-friction entry plan; Premium is selective and readiness-gated.
+- Premium requires readiness assessment, client approval, and an agreed ad budget; ad spend is separate.
+- Profit Fit Layer is internal/team-only and uses `requiredDailyOrders = monthlyFee / netMargin / averageTicket / 30` with conservative defaults of $15 average ticket and 5% net margin.
+- Online-influenced orders/actions include online orders, phone/order clicks, direction/address clicks that become visits, menu/order-link clicks, Google profile actions, customer mentions, social content-driven visits, and repeat-customer attention.
+- Public/client surfaces must not promise orders, profit, ROI, customers, revenue, rankings, or exact order targets.
+- This update does not mark production auth, migrations, storage, live AI, connectors, payments, or runtime SaaS wiring as built.

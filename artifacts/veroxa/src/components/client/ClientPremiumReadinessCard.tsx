@@ -15,7 +15,7 @@ import {
 } from "@/domain/clientPortalJourney";
 
 const READINESS_POINTS = [
-  "Eligible after at least 1 month on Essential or Growth",
+  "Eligible after at least 1 month on Starter or Growth",
   "Readiness assessment by phone, Zoom, or in person",
   "Starts only with your approval and an agreed ad budget",
   "Ad spend is separate and paid by the restaurant",
@@ -28,7 +28,9 @@ interface ClientPremiumReadinessCardProps {
 export function ClientPremiumReadinessCard({
   className = "",
 }: ClientPremiumReadinessCardProps) {
-  const readiness = buildClientPackageReadiness(DEFAULT_CLIENT_PACKAGE_READINESS);
+  const readiness = buildClientPackageReadiness(
+    DEFAULT_CLIENT_PACKAGE_READINESS,
+  );
 
   return (
     <Card

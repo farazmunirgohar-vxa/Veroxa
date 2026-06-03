@@ -4,16 +4,16 @@
 >
 > **2026-05-30 — Current locked pricing correction**
 >
-> Current public pricing is now the Essential / Growth / Premium model:
+> Current public pricing is now the Starter / Growth / Premium model:
 >
-> - Essential: **$497/mo**
-> - Growth: **$697/mo**
-> - Premium: **$997/mo**
+> - Starter: **$295/mo**
+> - Growth: **$495/mo**
+> - Premium: **$995/mo**
 > - No contract; cancel anytime
 > - Google Optimization and Facebook + Instagram are included in all plans
-> - Essential max 1 picture post/day; Growth adds TikTok + Reels using provided media; Premium max 1 post/day with ads readiness/support and separate ad spend
+> - Starter max 3 posts/week; Growth is the main package with up to 1 post/day; Premium max 1 post/day with ads readiness/support and separate ad spend
 > - Posting depends on usable client-provided media and may slow when usable media is unavailable
-> - Premium requires 1+ month on Essential/Growth, readiness assessment, client approval, and agreed ad budget
+> - Premium requires readiness assessment, client approval, and agreed ad budget
 > - Ad spend is always separate and paid directly by the restaurant
 >
 > Previous Complete Online Presence / founding-client pricing entries in this
@@ -1196,13 +1196,13 @@ internal_demo | future_protected`. The client, team, operator,
 
 ## 2026-05-30 RR strategy sync note
 
-- Current public packages remain Essential ($497/month), Growth ($697/month), and Premium ($997/month).
+- Current public packages remain Starter ($295/month), Growth ($495/month), and Premium ($995/month).
 - Growth must not be labeled popular-badge until real client data supports that claim.
-- Growth wording should use: “TikTok + Reels posting support using the photos and videos you provide.”
+- Growth wording should position Growth as the main recommended package for serious online presence, with up to 1 post/day depending on usable media.
 - Service boundary: Veroxa does not handle comments, DMs, inboxes, complaints, order questions, refunds, or customer-service conversations at launch.
 - Media dependency: posting depends on usable client-provided media and may slow when usable media is unavailable.
-- Posting limits: Essential allows max 1 picture post/day; Growth adds TikTok + Reels using client-provided media; Premium follows the same max 1 post/day public posting cap and adds ads management readiness/support with ad spend separate.
-- Premium requires at least 1 month on Essential or Growth, a Veroxa readiness assessment, client approval, and an agreed ad budget.
+- Posting limits: Starter allows up to 3 posts/week; Growth is the main package with up to 1 post/day using client-provided media; Premium follows the same max 1 post/day public posting cap and adds ads management readiness/support with ad spend separate.
+- Premium requires a Veroxa readiness assessment, client approval, and an agreed ad budget.
 - First-client discount: 20% off for 12 months, then loyalty discount only while continuously active; lost if the client leaves and later returns.
 - Build order remains client side first. Team/Internal Admin heavy AI automation comes after client-side clarity and should later support media review assist, caption drafting, Google/SEO/Maps tasks, reporting generation, Premium readiness checklist, client risk flags, workload tracking, and Pakistan team handoff after 10 clients.
 
@@ -1222,3 +1222,13 @@ internal_demo | future_protected`. The client, team, operator,
 ## Full SaaS Foundation design reference
 
 For the next Full SaaS Foundation design and guardrail plan, see `CLIENT_PORTAL_FULL_SAAS_FOUNDATION_DESIGN.md`. This status note does not mark production auth, migrations, storage uploads, live AI, connectors, or payments as built.
+
+## 2026-06-03 pricing/profit-fit alignment
+
+- Active public pricing is Starter $295/month, Growth $495/month, and Premium $995/month.
+- Growth is the main recommended package for strong-fit restaurants; Starter is the low-friction entry plan; Premium is selective and readiness-gated.
+- Premium requires readiness assessment, client approval, and an agreed ad budget; ad spend is separate.
+- Profit Fit Layer is internal/team-only and uses `requiredDailyOrders = monthlyFee / netMargin / averageTicket / 30` with conservative defaults of $15 average ticket and 5% net margin.
+- Online-influenced orders/actions include online orders, phone/order clicks, direction/address clicks that become visits, menu/order-link clicks, Google profile actions, customer mentions, social content-driven visits, and repeat-customer attention.
+- Public/client surfaces must not promise orders, profit, ROI, customers, revenue, rankings, or exact order targets.
+- This update does not mark production auth, migrations, storage, live AI, connectors, payments, or runtime SaaS wiring as built.

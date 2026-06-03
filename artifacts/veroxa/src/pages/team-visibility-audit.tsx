@@ -28,6 +28,10 @@ import {
   getClientConfirmationWorkflow,
   scoreCustomerOpportunity,
 } from "@/domain/ruleBasedAutomation";
+import {
+  evaluateProfitFit,
+  PROFIT_FIT_PLAN_MONTHLY_FEES,
+} from "@/domain/profitFit";
 
 /**
  * /team/visibility-audit — Visibility Audit (team-only, login required).
@@ -68,6 +72,15 @@ export default function TeamVisibilityAudit() {
         bestSellerVisible: selected.result.findings.every(
           (finding) => finding.category !== "menu_visibility",
         ),
+      })
+    : null;
+  const profitFit = selected
+    ? evaluateProfitFit({
+        monthlyFee: PROFIT_FIT_PLAN_MONTHLY_FEES.growth,
+        hasCapacityForMoreOrders: undefined,
+        discountDependency: "unknown",
+        deliveryAppDependency: "unknown",
+        repeatCustomerPotential: "unknown",
       })
     : null;
 
@@ -186,6 +199,41 @@ export default function TeamVisibilityAudit() {
                 <p>Main blocker: {opportunityScore.mainBlocker}</p>
                 <p className="text-primary/80">
                   Suggested next step: {opportunityScore.suggestedNextAction}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {profitFit && (
+            <Card
+              className="bg-card border-primary/20 mb-4"
+              data-testid="visibility-profit-fit"
+            >
+              <CardContent className="p-4 text-xs text-muted-foreground">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="font-medium text-foreground/85">
+                    Profit fit · {profitFit.status}
+                  </p>
+                  <StatusBadge tone="caution">Internal only</StatusBadge>
+                </div>
+                <div className="mt-2 grid sm:grid-cols-3 gap-2">
+                  <p>Average ticket used: ${profitFit.averageTicketUsed}</p>
+                  <p>
+                    Net margin assumption:{" "}
+                    {(profitFit.netMarginUsed * 100).toFixed(1)}%
+                  </p>
+                  <p>
+                    Break-even target: {profitFit.requiredOrdersPerDay}{" "}
+                    online-influenced orders/actions/day
+                  </p>
+                </div>
+                <p className="mt-2">Main risk: {profitFit.mainRisk}</p>
+                <p className="text-primary/80">
+                  Suggested next step: {profitFit.suggestedNextAction}
+                </p>
+                <p className="mt-1 italic">
+                  Profit fit uses conservative defaults until average ticket and
+                  margin are confirmed.
                 </p>
               </CardContent>
             </Card>

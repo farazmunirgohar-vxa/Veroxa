@@ -26,7 +26,7 @@ export interface FirstClientRestaurant {
   /** Owner-facing display label (city, region). */
   locationLabel: string;
   /** Subscription tier the restaurant is on. */
-  tier: "essential" | "growth" | "premium";
+  tier: "starter" | "growth" | "premium";
   /** Whether Premium ads management is active after readiness, approval, and agreed ad budget. */
   adsAddon: boolean;
   /** Onboarding state. */

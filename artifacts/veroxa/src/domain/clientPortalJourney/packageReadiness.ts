@@ -7,7 +7,7 @@
 
 import { VEROXA_PLANS } from "@/data/pricing/veroxaPricing";
 
-export type ClientPlanSlug = "essential" | "growth" | "premium";
+export type ClientPlanSlug = "starter" | "growth" | "premium";
 
 export type PremiumEligibilityStatus =
   | "not_eligible_yet"
@@ -29,8 +29,6 @@ export interface ClientPackageReadinessInput {
   continuouslyActive: boolean;
 }
 
-
-
 export function getCurrentPlanLabel(plan: ClientPlanSlug): string {
   return VEROXA_PLANS[plan].label;
 }
@@ -44,10 +42,12 @@ export function getVeroxaResponsibilitySummary(plan: ClientPlanSlug): string[] {
 }
 
 export function getRestaurantResponsibilitySummary(): string[] {
-  return VEROXA_PLANS.essential.clientResponsibilities;
+  return VEROXA_PLANS.starter.clientResponsibilities;
 }
 
-export function getMediaDependencyReminder(usableMediaAvailable: boolean): string {
+export function getMediaDependencyReminder(
+  usableMediaAvailable: boolean,
+): string {
   return usableMediaAvailable
     ? "Posting depends on usable media. Your current supply looks workable, and Veroxa will ask when more content would help."
     : "More content needed: posting depends on usable media and may slow until new photos or videos are provided.";
@@ -65,14 +65,17 @@ export function getPremiumEligibilityState(
   if (input.monthsActiveOnFoundationPlan < 1) return "not_eligible_yet";
   if (!input.foundationStable) return "not_ready_continue_foundation";
   if (!input.readinessAssessmentCompleted) return "eligible_for_assessment";
-  if (!input.clientApprovedPremium || !input.agreedAdBudget) return "assessment_needed";
+  if (!input.clientApprovedPremium || !input.agreedAdBudget)
+    return "assessment_needed";
   return "ready_for_premium";
 }
 
-export function getPremiumEligibilityLabel(status: PremiumEligibilityStatus): string {
+export function getPremiumEligibilityLabel(
+  status: PremiumEligibilityStatus,
+): string {
   switch (status) {
     case "not_eligible_yet":
-      return "Premium can be reviewed after at least 1 month on Essential or Growth.";
+      return "Premium can be reviewed after at least 1 month on Starter or Growth.";
     case "eligible_for_assessment":
       return "Eligible for a Premium readiness assessment by phone, Zoom, or in person.";
     case "assessment_needed":
@@ -84,18 +87,24 @@ export function getPremiumEligibilityLabel(status: PremiumEligibilityStatus): st
   }
 }
 
-export function getFirstClientDiscountState(_input: ClientPackageReadinessInput): string {
+export function getFirstClientDiscountState(
+  _input: ClientPackageReadinessInput,
+): string {
   return "";
 }
 
-export function buildClientPackageReadiness(input: ClientPackageReadinessInput) {
+export function buildClientPackageReadiness(
+  input: ClientPackageReadinessInput,
+) {
   const premiumStatus = getPremiumEligibilityState(input);
   return {
     planLabel: getCurrentPlanLabel(input.plan),
     postingLimitSummary: getPackagePostingLimitSummary(input.plan),
     veroxaResponsibilities: getVeroxaResponsibilitySummary(input.plan),
     restaurantResponsibilities: getRestaurantResponsibilitySummary(),
-    mediaDependencyReminder: getMediaDependencyReminder(input.usableMediaAvailable),
+    mediaDependencyReminder: getMediaDependencyReminder(
+      input.usableMediaAvailable,
+    ),
     premiumStatus,
     premiumStatusLabel: getPremiumEligibilityLabel(premiumStatus),
     discountStatusLabel: getFirstClientDiscountState(input),

@@ -30,6 +30,9 @@ export type AuditCustomerFlowStage =
   | "retention";
 
 export type RecommendedPackageId =
+  | "starter"
+  | "growth"
+  | "premium"
   | "google_optimization"
   | "complete_online_presence"
   | "complete_plus_ads"

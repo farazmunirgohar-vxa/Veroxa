@@ -2,9 +2,9 @@ import type { FirstClientScenario } from "./types";
 
 export const firstClientBenchmarkScenarios: readonly FirstClientScenario[] = [
   {
-    key: "healthy-essential",
-    label: "Healthy Essential client",
-    packageFit: "essential",
+    key: "healthy-starter",
+    label: "Healthy Starter client",
+    packageFit: "starter",
     riskProfile: "healthy",
     mediaState: "steady_photo_supply",
     expectedClientPortalNeeds: [
@@ -26,9 +26,9 @@ export const firstClientBenchmarkScenarios: readonly FirstClientScenario[] = [
     readinessFocusAreas: ["client_portal", "media_workflow", "reports"],
   },
   {
-    key: "essential-low-media",
-    label: "Essential client with low media",
-    packageFit: "essential",
+    key: "starter-low-media",
+    label: "Starter client with low media",
+    packageFit: "starter",
     riskProfile: "media_limited",
     mediaState: "low_photo_supply",
     expectedClientPortalNeeds: [
@@ -46,8 +46,13 @@ export const firstClientBenchmarkScenarios: readonly FirstClientScenario[] = [
       "Explain what slowed because media was unavailable",
       "Keep reporting focused on real work completed",
     ],
-    premiumReadinessNote: "Premium should wait until media supply and readiness improve.",
-    readinessFocusAreas: ["media_workflow", "client_requests", "service_boundaries"],
+    premiumReadinessNote:
+      "Premium should wait until media supply and readiness improve.",
+    readinessFocusAreas: [
+      "media_workflow",
+      "client_requests",
+      "service_boundaries",
+    ],
   },
   {
     key: "growth-reels-ready",
@@ -70,8 +75,13 @@ export const firstClientBenchmarkScenarios: readonly FirstClientScenario[] = [
       "Avoid fake follower or reach language",
       "Note useful next video needs",
     ],
-    premiumReadinessNote: "May become a future Premium candidate after consistent Growth operations.",
-    readinessFocusAreas: ["approval_gates", "client_updates", "workflow_tracking"],
+    premiumReadinessNote:
+      "May become a future Premium candidate after consistent Growth operations.",
+    readinessFocusAreas: [
+      "approval_gates",
+      "client_updates",
+      "workflow_tracking",
+    ],
   },
   {
     key: "growth-inconsistent-uploads",
@@ -94,7 +104,8 @@ export const firstClientBenchmarkScenarios: readonly FirstClientScenario[] = [
       "Avoid fake posting-volume language",
       "Document what client input would help next",
     ],
-    premiumReadinessNote: "Premium should not be assessed until upload consistency improves.",
+    premiumReadinessNote:
+      "Premium should not be assessed until upload consistency improves.",
     readinessFocusAreas: ["media_workflow", "workflow_tracking", "reports"],
   },
   {
@@ -118,7 +129,12 @@ export const firstClientBenchmarkScenarios: readonly FirstClientScenario[] = [
       "Separate readiness notes from ad results",
       "Avoid implying ads are active before approval",
     ],
-    premiumReadinessNote: "Candidate only after assessment, client approval, and agreed ad budget.",
-    readinessFocusAreas: ["pricing_alignment", "approval_gates", "launch_guardrails"],
+    premiumReadinessNote:
+      "Candidate only after assessment, client approval, and agreed ad budget.",
+    readinessFocusAreas: [
+      "pricing_alignment",
+      "approval_gates",
+      "launch_guardrails",
+    ],
   },
 ] as const;

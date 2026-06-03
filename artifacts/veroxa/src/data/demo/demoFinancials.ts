@@ -52,9 +52,9 @@ export interface DemoPlanRow {
 }
 
 export const demoServicePlans: DemoPlanRow[] = [
-  { plan: "Essential", price: 497, clients: 1, color: "bg-emerald-500" },
-  { plan: "Growth", price: 697, clients: 2, color: "bg-sky-500" },
-  { plan: "Premium", price: 997, clients: 1, color: "bg-violet-500" },
+  { plan: "Starter", price: 295, clients: 1, color: "bg-emerald-500" },
+  { plan: "Growth", price: 495, clients: 2, color: "bg-sky-500" },
+  { plan: "Premium", price: 995, clients: 1, color: "bg-violet-500" },
 ];
 
 // ── BI Center trend type ──────────────────────────────────────────
@@ -74,12 +74,12 @@ export const demoBiMetrics = {
     { label: "May", value: 4 },
   ] as DemoTrendPoint[],
   revenueGrowth: [
-    { label: "Dec", value: 697 },
-    { label: "Jan", value: 1194 },
-    { label: "Feb", value: 1891 },
-    { label: "Mar", value: 1891 },
-    { label: "Apr", value: 2391 },
-    { label: "May", value: 2888 },
+    { label: "Dec", value: 495 },
+    { label: "Jan", value: 790 },
+    { label: "Feb", value: 1285 },
+    { label: "Mar", value: 1285 },
+    { label: "Apr", value: 2280 },
+    { label: "May", value: 2575 },
   ] as DemoTrendPoint[],
   retention: [
     { label: "Dec", value: 100 },

@@ -13,7 +13,7 @@ Scope: audit-only review after Phase 1 through Phase 5 and Founder OS alignment 
 The current repository shows a strong pre-live Veroxa OS foundation:
 
 - Public positioning is mostly aligned to “easier to find, easier to trust, and easier to choose.”
-- Pricing is locked to Essential `$497`, Growth `$697`, and Premium `$997` across the pricing source and active public pricing surfaces.
+- Pricing is locked to Starter `$295`, Growth `$495`, and Premium `$995` across the pricing source and active public pricing surfaces.
 - Public, client, demo, and team route separation is guarded.
 - The Team / Founder OS is now more central than the Client Portal and supports Faraz-first review decisions.
 - Phase 5 deterministic automation helpers are intentionally rule-based, review-mode, and manual-execution oriented.
@@ -155,10 +155,10 @@ Pricing is locked, but there is not yet a SaaS account lifecycle with trial/demo
 
 **PASS**
 
-- Essential, Growth, and Premium are locked at `$497`, `$697`, and `$997`.
+- Starter, Growth, and Premium are locked at `$295`, `$495`, and `$995`.
 - No contract / cancel anytime is present.
 - Ad spend is separate.
-- Premium requires prior Essential/Growth time, readiness assessment, client approval, and agreed ad budget.
+- Premium requires readiness assessment, client approval, and agreed ad budget.
 - Comments/DMs/customer-service boundaries are clear.
 - FAQ explicitly rejects guaranteed rankings, revenue, walk-ins, or specific new-customer counts.
 
@@ -651,3 +651,13 @@ Direct `pnpm` commands again failed due the same Corepack/proxy download issue. 
 ## SaaS foundation follow-up reference
 
 For the next Full SaaS Foundation design and guardrail plan, see `CLIENT_PORTAL_FULL_SAAS_FOUNDATION_DESIGN.md`. This is a design/control reference only and does not mark production SaaS runtime, production auth, migrations, storage, live AI, connectors, or payments as built.
+
+## 2026-06-03 pricing/profit-fit alignment
+
+- Active public pricing is Starter $295/month, Growth $495/month, and Premium $995/month.
+- Growth is the main recommended package for strong-fit restaurants; Starter is the low-friction entry plan; Premium is selective and readiness-gated.
+- Premium requires readiness assessment, client approval, and an agreed ad budget; ad spend is separate.
+- Profit Fit Layer is internal/team-only and uses `requiredDailyOrders = monthlyFee / netMargin / averageTicket / 30` with conservative defaults of $15 average ticket and 5% net margin.
+- Online-influenced orders/actions include online orders, phone/order clicks, direction/address clicks that become visits, menu/order-link clicks, Google profile actions, customer mentions, social content-driven visits, and repeat-customer attention.
+- Public/client surfaces must not promise orders, profit, ROI, customers, revenue, rankings, or exact order targets.
+- This update does not mark production auth, migrations, storage, live AI, connectors, payments, or runtime SaaS wiring as built.

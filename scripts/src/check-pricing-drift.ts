@@ -75,8 +75,9 @@ for (const required of [
   "GLOBAL_PRICING_RULES",
   "MEDIA_DEPENDENCY_DISCLAIMER",
   "FIRST_CLIENT_LOYALTY_DISCOUNT_POLICY",
-  "Premium requires at least 1 month on Essential or Growth",
-  "All active plans are capped at max 1 post/day",
+  "Premium requires a Veroxa readiness assessment",
+  "Starter is capped at up to 3 posts/week",
+  "Growth and Premium are capped at up to 1 post/day",
 ]) {
   if (!pricingPage.includes(required)) {
     failures.push(
@@ -85,18 +86,23 @@ for (const required of [
   }
 }
 
-const growthCardMatch = pricingPage.match(/name: "Growth",[\s\S]*?cta:/);
-if (growthCardMatch?.[0].includes("Most Popular")) {
-  failures.push("Growth pricing card must not be labeled Most Popular.");
+if (!/Most recommended/i.test(pricingPage)) {
+  failures.push(
+    "pricing.tsx must position Growth as the most recommended package.",
+  );
 }
-
-if (/Most Popular/.test(pricingPage) && /name: "Growth",[\s\S]*?Most Popular/.test(pricingPage)) {
-  failures.push("Growth pricing card must not be labeled Most Popular.");
-}
-if (/comments|DMs|inboxes|customer-service conversations/i.test(pricingPage) && /included|managed|handled/i.test(pricingPage)) {
-  const boundaryOk = /does not handle|not handle|restaurant remains responsible/i.test(pricingPage);
+if (
+  /comments|DMs|inboxes|customer-service conversations/i.test(pricingPage) &&
+  /included|managed|handled/i.test(pricingPage)
+) {
+  const boundaryOk =
+    /does not handle|not handle|restaurant remains responsible/i.test(
+      pricingPage,
+    );
   if (!boundaryOk) {
-    failures.push("pricing.tsx must keep comments/DMs/customer-service outside included services.");
+    failures.push(
+      "pricing.tsx must keep comments/DMs/customer-service outside included services.",
+    );
   }
 }
 
@@ -128,7 +134,7 @@ const pricingDocs = [
 for (const [file, text] of pricingDocs) {
   for (const required of [
     "Premium requires",
-    "1 month on Essential or Growth",
+    "Growth is the main recommended package",
     "readiness assessment",
     "Posting depends on usable client-provided media",
     "may slow when usable media is unavailable",
@@ -143,7 +149,10 @@ for (const [file, text] of pricingDocs) {
 }
 
 const m024Migration = readFileSync(
-  join(root, "supabase/migrations/20260601000000_m024a_first_client_metadata_schema.sql"),
+  join(
+    root,
+    "supabase/migrations/20260601000000_m024a_first_client_metadata_schema.sql",
+  ),
   "utf8",
 );
 for (const required of [
@@ -155,20 +164,38 @@ for (const required of [
   "Production RLS must be",
 ]) {
   if (!m024Migration.includes(required)) {
-    failures.push(`M024A migration is missing current plan/dev-stage marker: ${required}`);
+    failures.push(
+      `M024A migration is missing current plan/dev-stage marker: ${required}`,
+    );
   }
 }
-if (/check \(service_plan in \([\s\S]*complete_online_presence/.test(m024Migration)) {
-  failures.push("M024A migration service_plan constraint must not accept retired Complete Online Presence as a current slug.");
+if (
+  /check \(service_plan in \([\s\S]*complete_online_presence/.test(
+    m024Migration,
+  )
+) {
+  failures.push(
+    "M024A migration service_plan constraint must not accept retired Complete Online Presence as a current slug.",
+  );
 }
-if (/check \(service_plan in \([\s\S]*google_optimization/.test(m024Migration)) {
-  failures.push("M024A migration service_plan constraint must not accept retired Google Optimization as a current slug.");
+if (
+  /check \(service_plan in \([\s\S]*google_optimization/.test(m024Migration)
+) {
+  failures.push(
+    "M024A migration service_plan constraint must not accept retired Google Optimization as a current slug.",
+  );
 }
-if (/check \(service_plan in \([\s\S]*ads_management_only/.test(m024Migration)) {
-  failures.push("M024A migration service_plan constraint must not accept retired Ads Management Only as a current slug.");
+if (
+  /check \(service_plan in \([\s\S]*ads_management_only/.test(m024Migration)
+) {
+  failures.push(
+    "M024A migration service_plan constraint must not accept retired Ads Management Only as a current slug.",
+  );
 }
 if (/check \(service_plan in \([\s\S]*complete_plus_ads/.test(m024Migration)) {
-  failures.push("M024A migration service_plan constraint must not accept retired Complete Plus Ads as a current slug.");
+  failures.push(
+    "M024A migration service_plan constraint must not accept retired Complete Plus Ads as a current slug.",
+  );
 }
 
 const m024Doc = readFileSync(
@@ -182,7 +209,9 @@ for (const required of [
   "retired/internal compatibility",
 ]) {
   if (!m024Doc.includes(required)) {
-    failures.push(`M024A docs are missing current plan/dev-stage marker: ${required}`);
+    failures.push(
+      `M024A docs are missing current plan/dev-stage marker: ${required}`,
+    );
   }
 }
 
@@ -191,12 +220,12 @@ const pricingSource = readFileSync(
   "utf8",
 );
 for (const required of [
-  'id: "essential"',
+  'id: "starter"',
   'id: "growth"',
   'id: "premium"',
-  "priceMonthly: 497",
-  "priceMonthly: 697",
-  "priceMonthly: 997",
+  "priceMonthly: 295",
+  "priceMonthly: 495",
+  "priceMonthly: 995",
   "publicVisible: true",
   'status: "active"',
   "internalOnly: true",
@@ -204,9 +233,9 @@ for (const required of [
   '"essential"',
   '"growth"',
   '"premium"',
-  "TikTok + Reels posting support using the photos and videos you provide",
+  "Growth is the main recommended package",
   "Premium adds ads management readiness/support",
-  "Premium requires 1+ month on Essential/Growth",
+  "Premium requires readiness assessment",
   "SERVICE_BOUNDARY_DISCLAIMER",
   "FIRST_CLIENT_LOYALTY_DISCOUNT_POLICY",
 ]) {
@@ -224,5 +253,5 @@ if (failures.length > 0) {
 }
 
 console.log(
-  "Pricing drift check passed: active pricing surfaces align to Essential/Growth/Premium locked model.",
+  "Pricing drift check passed: active pricing surfaces align to Starter/Growth/Premium locked model.",
 );

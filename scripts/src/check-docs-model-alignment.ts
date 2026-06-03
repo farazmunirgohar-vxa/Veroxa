@@ -68,34 +68,34 @@ const dangerousCurrentStateRules: Rule[] = [
 
 const pricingContradictionRules: Rule[] = [
   {
-    label: "Essential public price does not match $497",
+    label: "Starter public price does not match $295",
     pattern:
-      /\bEssential\b(?:(?!\bGrowth\b|\bPremium\b).){0,80}\$(?!497\b)\d[\d,]*(?:\/month|\/mo|\s*per month|\s*monthly)?/i,
+      /\bStarter\b(?:(?!\bGrowth\b|\bPremium\b).){0,80}\$(?!295\b)\d[\d,]*(?:\/month|\/mo|\s*per month|\s*monthly)?/i,
   },
   {
-    label: "Growth public price does not match $697",
+    label: "Growth public price does not match $495",
     pattern:
-      /\bGrowth\b(?:(?!\bEssential\b|\bPremium\b).){0,80}\$(?!697\b)\d[\d,]*(?:\/month|\/mo|\s*per month|\s*monthly)?/i,
+      /\bGrowth\b(?:(?!\bStarter\b|\bPremium\b).){0,80}\$(?!495\b)\d[\d,]*(?:\/month|\/mo|\s*per month|\s*monthly)?/i,
   },
   {
-    label: "Premium public price does not match $997",
+    label: "Premium public price does not match $995",
     pattern:
-      /\bPremium\b(?:(?!\bEssential\b|\bGrowth\b).){0,80}\$(?!997\b)\d[\d,]*(?:\/month|\/mo|\s*per month|\s*monthly)?/i,
+      /\bPremium\b(?:(?!\bStarter\b|\bGrowth\b).){0,80}\$(?!995\b)\d[\d,]*(?:\/month|\/mo|\s*per month|\s*monthly)?/i,
   },
 ];
 
 const requiredCurrentMarkers: Rule[] = [
   {
-    label: "Essential $497 marker",
-    pattern: /Essential[^\n]*(?:\$497|497\/month|497\/mo)/i,
+    label: "Starter $295 marker",
+    pattern: /Starter[^\n]*(?:\$295|295\/month|295\/mo)/i,
   },
   {
-    label: "Growth $697 marker",
-    pattern: /Growth[^\n]*(?:\$697|697\/month|697\/mo)/i,
+    label: "Growth $495 marker",
+    pattern: /Growth[^\n]*(?:\$495|495\/month|495\/mo)/i,
   },
   {
-    label: "Premium $997 marker",
-    pattern: /Premium[^\n]*(?:\$997|997\/month|997\/mo)/i,
+    label: "Premium $995 marker",
+    pattern: /Premium[^\n]*(?:\$995|995\/month|995\/mo)/i,
   },
 ];
 
@@ -144,7 +144,7 @@ for (const file of [...currentDocs, ...controlDocs]) {
       inHistoricalSection ||
       isClearlyHistoricalOrDeprecated(line) ||
       isFutureOrGatedPlanningLine(line) ||
-      /\$497\s*\/\s*\$697\s*\/\s*\$997/.test(line);
+      /\$295\s*\/\s*\$495\s*\/\s*\$995/.test(line);
 
     for (const rule of dangerousCurrentStateRules) {
       if (rule.pattern.test(line)) {
@@ -160,9 +160,17 @@ for (const file of [...currentDocs, ...controlDocs]) {
   });
 }
 
-const combinedDocs = currentDocs
-  .map((file) => requireFile(file))
-  .join("\n");
+const combinedDocs = currentDocs.map((file) => requireFile(file)).join("\n");
+
+for (const required of [
+  "Profit Fit Layer",
+  "requiredDailyOrders = monthlyFee / netMargin / averageTicket / 30",
+  "online-influenced orders/actions",
+]) {
+  if (!combinedDocs.includes(required)) {
+    failures.push(`Profit Fit Layer is documented marker missing: ${required}`);
+  }
+}
 
 for (const marker of requiredCurrentMarkers) {
   if (!marker.pattern.test(combinedDocs)) {
@@ -207,8 +215,7 @@ if (/Real auth[^\n]*(?:owner|operator)/i.test(stage1Block)) {
 
 const buildMapFile =
   "artifacts/veroxa/docs/VEROXA_OS_5_PHASE_PRELIVE_BUILD_MAP.md";
-const routeSurfaceMapFile =
-  "artifacts/veroxa/docs/VEROXA_ROUTE_SURFACE_MAP.md";
+const routeSurfaceMapFile = "artifacts/veroxa/docs/VEROXA_ROUTE_SURFACE_MAP.md";
 const firstClientSimulationFile =
   "artifacts/veroxa/docs/FIRST_CLIENT_SIMULATION_POLICY.md";
 const manualSmokeFile =

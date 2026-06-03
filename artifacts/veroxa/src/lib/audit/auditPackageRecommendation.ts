@@ -11,7 +11,7 @@
  * `@/data/pricing/veroxaPricing` — never hardcoded here.
  */
 
-import { getCurrentPublicPlanForLegacyPackage } from "@/data/pricing/veroxaPricing";
+import { getCurrentPublicPlanForPackageId } from "@/data/pricing/veroxaPricing";
 import type {
   AuditCategoryId,
   AuditCategoryScore,
@@ -40,6 +40,7 @@ export function getRecommendedFirstStepsForPackage(
   const topOpportunity =
     report.weakSpots[0]?.title ?? "the largest daily customer opportunity";
   switch (packageId) {
+    case "starter":
     case "google_optimization":
       return [
         "Google Business Profile support — categories, photos, hours, menu visibility.",
@@ -47,6 +48,7 @@ export function getRecommendedFirstStepsForPackage(
         `Focus the first weekly rhythm around ${topOpportunity}.`,
         "Set review response cadence and trust-signal cleanup.",
       ];
+    case "growth":
     case "complete_online_presence":
       return [
         "Run a full Google + social profile cleanup and weekly activity update.",
@@ -54,6 +56,7 @@ export function getRecommendedFirstStepsForPackage(
         "Set up media review and upload guidance so the restaurant can stay involved without managing posting.",
         `Begin a 30-day plan focused on ${topOpportunity}.`,
       ];
+    case "premium":
     case "complete_plus_ads":
       return [
         "Stabilize the complete online presence system for the first 2–3 weeks.",
@@ -123,7 +126,7 @@ export function getPackageRecommendationReason(
     ADS_ONLY_RE.test(goal)
   ) {
     return {
-      packageId: "ads_management_only",
+      packageId: "premium",
       reason:
         "This is a Premium readiness fit, not an automatic ads activation. Veroxa would first confirm the online foundation, client approval, and an agreed ad budget before any campaign work begins. Ad spend is separate and paid directly by the restaurant.",
     };
@@ -140,7 +143,7 @@ export function getPackageRecommendationReason(
     ADS_GOAL_RE.test(adsContext)
   ) {
     return {
-      packageId: "complete_plus_ads",
+      packageId: "premium",
       reason:
         "Ads interest points to a Premium readiness assessment, not automatic activation. Veroxa would review Google, content, action paths, client approval, and an agreed ad budget first. Ad spend is separate and paid directly by the restaurant.",
     };
@@ -152,15 +155,15 @@ export function getPackageRecommendationReason(
   const socialNotMain = social >= 10 && content >= 10;
   if (googleFocusGap && socialNotMain) {
     return {
-      packageId: "google_optimization",
+      packageId: "starter",
       reason:
         "Your biggest customer-flow gap is discovery and trust on Google. Before pushing more social content or ads, Veroxa should strengthen the foundation customers use when they search, compare, call, get directions, or decide where to eat.",
     };
   }
 
-  // Default — Growth (legacy package ID retained for audit compatibility).
+  // Default — Growth is the main recommended package for strong-fit restaurants.
   return {
-    packageId: "complete_online_presence",
+    packageId: "growth",
     reason:
       "Your restaurant would likely benefit most from a complete online presence system, not just one-time posting or Google cleanup. Veroxa would help organize your Google presence, social media consistency, content quality, customer reminders, and weekly recommendations into one system.",
   };
@@ -171,7 +174,7 @@ function priceDisplayForPackage(packageId: RecommendedPackageId): {
   standardPriceDisplay: string;
   foundingPriceDisplay: string;
 } {
-  const p = getCurrentPublicPlanForLegacyPackage(packageId);
+  const p = getCurrentPublicPlanForPackageId(packageId);
   return {
     label: p.label,
     standardPriceDisplay: `${p.displayPrice}/mo`,
@@ -186,7 +189,9 @@ export function recommendVeroxaPackage(
   const { packageId, reason } = getPackageRecommendationReason(report, input);
   const price = priceDisplayForPackage(packageId);
   const whyNotAdsYet =
-    packageId === "complete_plus_ads" || packageId === "ads_management_only"
+    packageId === "premium" ||
+    packageId === "complete_plus_ads" ||
+    packageId === "ads_management_only"
       ? null
       : getWhyNotAdsYet(report, input);
   return {
@@ -210,10 +215,13 @@ export function getExpectedDirectionForPackage(
   packageId: RecommendedPackageId,
 ): string {
   switch (packageId) {
+    case "starter":
     case "google_optimization":
       return "Designed to improve consistency on Google and support better visibility at the search/Maps decision moment. Results vary by location, offer, food quality, competition, and execution.";
+    case "growth":
     case "complete_online_presence":
       return "Designed to improve consistency online and create more customer reminder moments across Google and social, which may improve recall when nearby customers decide where to eat. Results vary by location, offer, food quality, competition, and execution.";
+    case "premium":
     case "complete_plus_ads":
       return "Designed to assess whether paid reach should be layered on top of a more consistent online foundation. Premium requires readiness assessment, client approval, and an agreed ad budget; results vary by location, offer, food quality, competition, and execution.";
     case "ads_management_only":
