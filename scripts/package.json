@@ -25,7 +25,8 @@
     "check-profit-fit": "tsx ./src/check-profit-fit.ts",
     "check-profit-validation-model": "tsx ./src/check-profit-validation-model.ts",
     "check-saas-data-boundary": "tsx ./src/check-saas-data-boundary.ts",
-    "check-repository-contracts": "tsx ./src/check-repository-contracts.ts"
+    "check-repository-contracts": "tsx ./src/check-repository-contracts.ts",
+    "check-vercel-deployment-config": "tsx ./src/check-vercel-deployment-config.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",

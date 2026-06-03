@@ -1266,3 +1266,13 @@ No runtime SaaS implementation is added by this layer: no production auth, datab
 - Integrated non-persisted activity log previews and internal-only profit validation snapshot previews without production writes.
 - Production runtime is still not connected: no production auth enablement, database tables, migrations, RLS policies, storage uploads, payments, live AI, or publishing integrations were added.
 - Next recommended phase: RR-approved production adapter design and test harness planning before any real auth/database/storage wiring.
+
+## 2026-06-03 — Vercel Vite frontend deployment config
+
+- Vercel must deploy Veroxa as a Vite frontend app, not as Vercel Services.
+- Vercel project framework preset should be Vite or Other, not Services.
+- Vercel root directory should remain the repository root.
+- Install command: `pnpm install --frozen-lockfile`.
+- Build command: `pnpm --filter @workspace/veroxa run build`.
+- Output directory: `artifacts/veroxa/dist`.
+- The root `vercel.json` config does not enable production auth, database, storage, AI, payments, backend/serverless functions, or integrations.
