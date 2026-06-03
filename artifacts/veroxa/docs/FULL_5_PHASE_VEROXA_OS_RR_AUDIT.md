@@ -647,3 +647,7 @@ Direct `pnpm` commands again failed due the same Corepack/proxy download issue. 
 8. What external connector should be planned first after SaaS Foundation: Google Business Profile, Meta, TikTok, or none until manual execution is proven?
 9. Should generated report text be fully deterministic at first, or can AI-assisted drafts be introduced only after the SaaS guardrails exist?
 10. What exact manual browser smoke path should be required before Full SaaS Foundation begins?
+
+## SaaS foundation follow-up reference
+
+For the next Full SaaS Foundation design and guardrail plan, see `CLIENT_PORTAL_FULL_SAAS_FOUNDATION_DESIGN.md`. This is a design/control reference only and does not mark production SaaS runtime, production auth, migrations, storage, live AI, connectors, or payments as built.

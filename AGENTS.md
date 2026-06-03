@@ -273,3 +273,7 @@ The priority is a working Restaurant Partner <-> Veroxa Team flow that helps res
 ## 15. First-5-client readiness benchmark
 
 First 5 clients are the pre-launch readiness benchmark: healthy Essential, Essential with low media, Growth with reels content, Growth with inconsistent uploads, and a client eligible for Premium assessment. Build client-side readiness first; heavy Team/Internal Admin AI automation comes later.
+
+## 16. Full SaaS Foundation design control
+
+For the next Full SaaS Foundation design and guardrail plan, see `artifacts/veroxa/docs/CLIENT_PORTAL_FULL_SAAS_FOUNDATION_DESIGN.md`. This reference does not mark production SaaS as built; production auth, migrations, storage uploads, live AI, connectors, and payments still require explicit RR-approved implementation work.
