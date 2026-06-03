@@ -31,7 +31,9 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import {
+  createAuditLeadFromReport,
   getAuditLeads,
+  saveAuditLead,
   summarizeAuditLeads,
   updateAuditLeadStage,
   updateAuditLeadNotes,
@@ -91,6 +93,10 @@ import {
   type ObjectionType,
 } from "@/lib/leadIntelligence/leadObjectionPatterns";
 import { VEROXA_PLANS } from "@/data/pricing/veroxaPricing";
+import {
+  normalizeRestaurantSearchText,
+  searchRestaurantCandidates,
+} from "@/data/demo/demoRestaurantSearch";
 import { evaluateBreakEvenProgress } from "@/domain/breakEvenProgress";
 import {
   STARTER_INTERNAL_MINIMUM_ACTIONS_PER_DAY,
@@ -113,6 +119,13 @@ const FILTER_TABS: { id: FilterTab; label: string }[] = [
   { id: "ready_to_contact", label: "Ready to Contact" },
   { id: "nurture", label: "Nurture" },
 ];
+
+const initialManualLeadInput = {
+  restaurantName: "",
+  city: "San Antonio",
+  state: "TX",
+  cuisineType: "",
+};
 
 const STAGE_BUTTONS: { stage: LeadStage; label: string }[] = [
   { stage: "ready_to_contact", label: "Mark Ready to Contact" },
@@ -258,6 +271,13 @@ export default function TeamAuditLeads() {
 
   const [leads, setLeads] = useState<AuditLeadRecord[]>([]);
   const [filter, setFilter] = useState<FilterTab>("all");
+  const [leadSearchQuery, setLeadSearchQuery] = useState("");
+  const [manualLeadInput, setManualLeadInput] = useState(
+    initialManualLeadInput,
+  );
+  const [manualLeadMessage, setManualLeadMessage] = useState<string | null>(
+    null,
+  );
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [noteDraft, setNoteDraft] = useState("");
   const [showingDemoSeed, setShowingDemoSeed] = useState(false);
@@ -330,6 +350,28 @@ export default function TeamAuditLeads() {
     }
     return leads.filter((l) => l.leadStage === filter);
   }, [leads, filter]);
+
+  const visibleLeads = useMemo(() => {
+    const q = normalizeRestaurantSearchText(leadSearchQuery);
+    if (!q) return filtered;
+    return filtered.filter((lead) =>
+      normalizeRestaurantSearchText(
+        [
+          lead.restaurantName,
+          lead.city,
+          lead.state,
+          lead.cuisineType,
+          lead.source,
+          lead.publicAudit.weakSpotTitles.join(" "),
+        ].join(" "),
+      ).includes(q),
+    );
+  }, [filtered, leadSearchQuery]);
+
+  const manualSearchMatches = useMemo(() => {
+    if (!manualLeadInput.restaurantName.trim()) return [];
+    return searchRestaurantCandidates(manualLeadInput).slice(0, 3);
+  }, [manualLeadInput]);
 
   const selected = useMemo(
     () => leads.find((l) => l.id === selectedId) ?? null,
@@ -425,6 +467,79 @@ export default function TeamAuditLeads() {
     }
   }
 
+  function handleManualLeadField(
+    key: keyof typeof initialManualLeadInput,
+    value: string,
+  ) {
+    setManualLeadInput((prev) => ({ ...prev, [key]: value }));
+    setManualLeadMessage(null);
+  }
+
+  function handleUseManualSearchMatch(
+    match: ReturnType<typeof searchRestaurantCandidates>[number],
+  ) {
+    setManualLeadInput({
+      restaurantName: match.restaurantName,
+      city: match.city,
+      state: match.state,
+      cuisineType: match.cuisineType,
+    });
+    setManualLeadMessage(
+      "Preview match copied into the manual lead form. Confirm details before saving.",
+    );
+  }
+
+  function handleCreateManualLead() {
+    const restaurantName = manualLeadInput.restaurantName.trim();
+    const city = manualLeadInput.city.trim();
+    const state = manualLeadInput.state.trim();
+    if (!restaurantName || !city || !state) {
+      setManualLeadMessage(
+        "Add restaurant name, city, and state before creating a manual audit lead.",
+      );
+      return;
+    }
+
+    const cuisineType =
+      manualLeadInput.cuisineType.trim() ||
+      "Restaurant / Food — category not verified";
+    const report = generateRestaurantAudit({
+      restaurantName,
+      city,
+      state,
+      cuisineType,
+      restaurantSource: "manual",
+      notes:
+        "Manual audit lead created from Team Audit Leads. Weak discoverability or no confident preview match should be reviewed as a potential Veroxa opportunity.",
+    });
+    const lead = createAuditLeadFromReport(report, {
+      source: "manual_prospect",
+      initialStage: "ready_to_contact",
+      selectedRestaurant: {
+        selectedRestaurantId: `manual-${restaurantName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+        selectedRestaurantName: restaurantName,
+        selectedCity: city,
+        selectedState: state,
+        selectedAddress: `${city}, ${state} — address needs manual confirmation`,
+        selectedCuisineType: cuisineType,
+        selectedMatchConfidence: "low",
+        selectedSource: "manual",
+      },
+    });
+    lead.internalNotes.push(
+      "Manual fallback lead. Treat weak discoverability as a possible Veroxa opportunity; verify details before outreach.",
+    );
+    saveAuditLead(lead);
+    const saved = getAuditLeads();
+    setLeads(saved);
+    setShowingDemoSeed(false);
+    setSelectedId(lead.id);
+    setFilter("all");
+    setLeadSearchQuery(restaurantName);
+    setManualLeadInput(initialManualLeadInput);
+    setManualLeadMessage(`${restaurantName} saved as a manual audit lead.`);
+  }
+
   function handleStageUpdate(stage: LeadStage) {
     if (!selected) return;
     if (showingDemoSeed) return;
@@ -507,7 +622,7 @@ export default function TeamAuditLeads() {
   if (!canUseFixtureData) {
     return (
       <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
-      <TeamSaasStatePanel compact={false} />
+        <TeamSaasStatePanel compact={false} />
         <RealPortalReviewNotice />
         <SafePortalEmptyCard
           title="Audit Leads in review"
@@ -525,6 +640,121 @@ export default function TeamAuditLeads() {
         title="Audit Leads"
         description="Internal Veroxa queue for restaurants that ran an audit or were manually added as prospects."
       />
+
+      <Card
+        className="bg-card border-border mb-4"
+        data-testid="audit-lead-search-manual-card"
+      >
+        <CardHeader>
+          <CardTitle className="text-base inline-flex items-center gap-2">
+            <Compass className="w-4 h-4 text-primary" />
+            Search or create audit lead
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid gap-3 md:grid-cols-4">
+            <div className="md:col-span-2">
+              <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Search saved leads
+              </p>
+              <Input
+                value={leadSearchQuery}
+                onChange={(e) => setLeadSearchQuery(e.target.value)}
+                placeholder="Search name, city, cuisine, source…"
+                data-testid="audit-lead-search-input"
+              />
+            </div>
+            <div>
+              <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Manual target
+              </p>
+              <Input
+                value={manualLeadInput.restaurantName}
+                onChange={(e) =>
+                  handleManualLeadField("restaurantName", e.target.value)
+                }
+                placeholder="Mamadali, Selda…"
+                data-testid="manual-lead-name-input"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  City
+                </p>
+                <Input
+                  value={manualLeadInput.city}
+                  onChange={(e) =>
+                    handleManualLeadField("city", e.target.value)
+                  }
+                  placeholder="San Antonio"
+                  data-testid="manual-lead-city-input"
+                />
+              </div>
+              <div>
+                <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  State
+                </p>
+                <Input
+                  value={manualLeadInput.state}
+                  onChange={(e) =>
+                    handleManualLeadField("state", e.target.value)
+                  }
+                  placeholder="TX"
+                  data-testid="manual-lead-state-input"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="grid gap-3 md:grid-cols-[1fr_auto]">
+            <Input
+              value={manualLeadInput.cuisineType}
+              onChange={(e) =>
+                handleManualLeadField("cuisineType", e.target.value)
+              }
+              placeholder="Cuisine fallback, e.g. Mediterranean, Kebab, Halal"
+              data-testid="manual-lead-cuisine-input"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleCreateManualLead}
+              data-testid="btn-create-manual-audit-lead"
+            >
+              Save manual audit lead
+            </Button>
+          </div>
+          {manualSearchMatches.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {manualSearchMatches.map((match) => (
+                <Button
+                  key={match.id}
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => handleUseManualSearchMatch(match)}
+                  data-testid={`manual-search-match-${match.id}`}
+                >
+                  Use {match.restaurantName}
+                </Button>
+              ))}
+            </div>
+          )}
+          <p className="text-[12px] text-muted-foreground">
+            If a warm target is hard to find, treat that as weak discoverability
+            and save a manual lead for verification. This stays local/manual —
+            no scraping, Places API, database write, or live integration.
+          </p>
+          {manualLeadMessage && (
+            <p
+              className="text-[12px] text-amber-300"
+              data-testid="manual-lead-message"
+            >
+              {manualLeadMessage}
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
@@ -740,12 +970,13 @@ export default function TeamAuditLeads() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* List */}
           <div className="lg:col-span-2 space-y-2">
-            {filtered.length === 0 ? (
+            {visibleLeads.length === 0 ? (
               <p className="text-sm text-muted-foreground px-2">
-                No leads match this filter.
+                No leads match this filter/search. If this is a warm target,
+                create a manual audit lead above.
               </p>
             ) : (
-              filtered.map((l) => (
+              visibleLeads.map((l) => (
                 <Card
                   key={l.id}
                   className={`bg-card border-border cursor-pointer transition ${selectedId === l.id ? "ring-1 ring-primary" : ""}`}

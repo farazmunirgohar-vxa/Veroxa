@@ -18,8 +18,6 @@ const PLANS = CURRENT_PUBLIC_PLANS.map((plan) => ({
   name: plan.label,
   price: plan.displayPrice,
   tagline: plan.tagline,
-  highlight: plan.id === "growth",
-  badge: plan.id === "growth" ? "Most recommended" : null,
   includes: plan.includes,
   note:
     plan.id === "premium"
@@ -40,7 +38,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Which social media platforms are included at each tier?",
-    a: "Starter includes Google/local cleanup plus Facebook and Instagram basic posting. Growth is the main package for stronger online consistency and up to 1 post/day when usable media is available. Premium includes everything in Growth plus ads readiness/support after approval.",
+    a: "Starter includes Google/local cleanup plus Facebook and Instagram basic posting. Growth adds stronger online consistency across Facebook, Instagram, TikTok, and up to 1 post/day when usable media is available. Premium includes everything in Growth plus ads readiness/support after approval.",
   },
   {
     q: "How many posts per day does Veroxa publish?",
@@ -112,20 +110,8 @@ export default function PricingPage() {
             <div
               key={plan.name}
               data-testid={`pricing-plan-${plan.name.toLowerCase()}`}
-              className={`relative rounded-2xl border p-7 flex flex-col gap-5 ${
-                plan.highlight
-                  ? "border-primary/60 bg-primary/5 shadow-[0_0_30px_rgba(99,102,241,0.12)]"
-                  : "border-border/40 bg-card/20"
-              }`}
+              className="relative rounded-2xl border border-border/40 bg-card/20 p-7 flex flex-col gap-5"
             >
-              {plan.badge && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-primary text-primary-foreground text-[11px] font-semibold uppercase tracking-wider">
-                    {plan.badge}
-                  </span>
-                </div>
-              )}
-
               {/* Plan name + price */}
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
@@ -146,11 +132,7 @@ export default function PricingPage() {
               <div className="flex-1 space-y-2">
                 {plan.includes.map((item) => (
                   <div key={item} className="flex items-start gap-2.5">
-                    <CheckCircle2
-                      className={`w-4 h-4 flex-shrink-0 mt-0.5 ${
-                        plan.highlight ? "text-primary" : "text-primary/70"
-                      }`}
-                    />
+                    <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5 text-primary/70" />
                     <span className="text-sm font-medium leading-snug">
                       {item}
                     </span>
@@ -172,12 +154,8 @@ export default function PricingPage() {
               >
                 <Button
                   size="lg"
-                  variant={plan.highlight ? "default" : "outline"}
-                  className={`w-full ${
-                    plan.highlight
-                      ? "shadow-[0_0_20px_rgba(99,102,241,0.25)]"
-                      : "border-border/60 hover:bg-accent/50"
-                  }`}
+                  variant="outline"
+                  className="w-full border-border/60 hover:bg-accent/50"
                 >
                   {plan.cta} <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
@@ -207,8 +185,8 @@ export default function PricingPage() {
             <div>
               <p className="text-sm font-semibold mb-1">Growth</p>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Most recommended for serious online presence when there is clear
-                opportunity and enough media/cooperation.
+                Built for restaurants that want stronger online consistency
+                across Google, social content, TikTok, and reporting.
               </p>
             </div>
             <div>

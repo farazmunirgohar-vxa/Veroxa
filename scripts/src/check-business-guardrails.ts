@@ -85,6 +85,89 @@ const serviceBoundarySafe =
 const activeRoleClaim =
   /(active|current|runtime|live|human|portal|user-facing)\s+(human\s+)?roles?[^\n]*(Operator|Owner|Super Admin)|roles?\s+(are always|include|includes)[^\n]*(Operator|Owner|Super Admin)|(Operator|Owner|Super Admin)\s+as\s+an?\s+(active|current|runtime|live|human|portal|user-facing)\s+roles?/i;
 
+const publicMetadataFiles = [
+  "artifacts/veroxa/index.html",
+  "artifacts/veroxa/src/pages/landing.tsx",
+  "artifacts/veroxa/src/pages/services.tsx",
+  "artifacts/veroxa/src/pages/pricing.tsx",
+] as const;
+
+for (const file of publicMetadataFiles) {
+  const text = readFileSync(join(root, file), "utf8");
+  for (const forbidden of ["built on Replit", "Update this description"]) {
+    if (text.includes(forbidden)) {
+      failures.push(
+        `${file} contains placeholder public metadata/copy: ${forbidden}`,
+      );
+    }
+  }
+}
+
+const knownWarmAuditSearchFixtures = [
+  "Mamadali",
+  "Mamdali",
+  "Mamadali Kebab",
+  "Mamadali Kebab House",
+  "Selda",
+  "Selda Mediterranean",
+  "Selda Restaurant",
+  "Selda San Antonio",
+];
+
+const demoRestaurantSearch = readFileSync(
+  join(root, "artifacts/veroxa/src/data/demo/demoRestaurantSearch.ts"),
+  "utf8",
+);
+for (const restaurantName of knownWarmAuditSearchFixtures) {
+  if (!demoRestaurantSearch.includes(restaurantName)) {
+    failures.push(
+      `Known warm audit target fixture/alias missing from search data: ${restaurantName}`,
+    );
+  }
+}
+for (const marker of [
+  "normalizeRestaurantSearchText",
+  "searchAliases",
+  "editDistanceWithinOne",
+  "cuisineType?: string",
+]) {
+  if (!demoRestaurantSearch.includes(marker)) {
+    failures.push(
+      `Audit search normalization/fallback marker missing: ${marker}`,
+    );
+  }
+}
+
+const freeAudit = readFileSync(
+  join(root, "artifacts/veroxa/src/pages/free-audit.tsx"),
+  "utf8",
+);
+for (const marker of [
+  "btn-use-manual-audit-fallback",
+  "weak preview discoverability is a potential Veroxa opportunity",
+  'restaurantSource: candidate.source === "manual" ? "manual" : "fixture"',
+]) {
+  if (!freeAudit.includes(marker)) {
+    failures.push(`Free Audit manual fallback marker missing: ${marker}`);
+  }
+}
+
+const teamAuditLeads = readFileSync(
+  join(root, "artifacts/veroxa/src/pages/team-audit-leads.tsx"),
+  "utf8",
+);
+for (const marker of [
+  "audit-lead-search-input",
+  "btn-create-manual-audit-lead",
+  "searchRestaurantCandidates(manualLeadInput)",
+  'selectedSource: "manual"',
+]) {
+  if (!teamAuditLeads.includes(marker)) {
+    failures.push(
+      `Team Audit Leads search/manual fallback marker missing: ${marker}`,
+    );
+  }
+}
 
 const publicClientGuaranteePatterns: Array<[RegExp, string]> = [
   [/(?:10|15|20|50)\s+orders\/day/i, "exact public/client order target"],
@@ -95,7 +178,10 @@ const publicClientGuaranteePatterns: Array<[RegExp, string]> = [
   [/guaranteed\s+revenue/i, "public/client revenue guarantee"],
   [/guaranteed\s+walk-ins/i, "public/client walk-in guarantee"],
   [/we make restaurants profitable/i, "public/client profit promise"],
-  [/20\s+online-influenced\s+actions/i, "internal proof target on public/client surface"],
+  [
+    /20\s+online-influenced\s+actions/i,
+    "internal proof target on public/client surface",
+  ],
 ];
 
 const publicClientBoundaryFiles = [
@@ -194,7 +280,9 @@ for (const file of publicClientBoundaryFiles) {
   const text = readFileSync(join(root, file), "utf8");
   for (const [pattern, label] of publicClientGuaranteePatterns) {
     if (pattern.test(text)) {
-      failures.push(`${file} contains blocked public/client guarantee language: ${label}`);
+      failures.push(
+        `${file} contains blocked public/client guarantee language: ${label}`,
+      );
     }
   }
 }
@@ -390,10 +478,17 @@ for (const required of [
     failures.push(`veroxaPricing.ts missing business-rule marker: ${required}`);
 }
 
-
-const saasScaffold = readFileSync(join(root, "artifacts/veroxa/src/domain/saas/repositoryProvider.ts"), "utf8");
-for (const marker of ["createSaasRepositoryBundle", "placeholder repository", "demo repository"]) {
-  if (!saasScaffold.includes(marker)) failures.push(`Phase 1 SaaS scaffold marker missing: ${marker}`);
+const saasScaffold = readFileSync(
+  join(root, "artifacts/veroxa/src/domain/saas/repositoryProvider.ts"),
+  "utf8",
+);
+for (const marker of [
+  "createSaasRepositoryBundle",
+  "placeholder repository",
+  "demo repository",
+]) {
+  if (!saasScaffold.includes(marker))
+    failures.push(`Phase 1 SaaS scaffold marker missing: ${marker}`);
 }
 
 if (failures.length) {

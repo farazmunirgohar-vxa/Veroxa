@@ -73,7 +73,6 @@ const initialInput: RestaurantAuditInput = {
   notes: "",
 };
 
-
 const confidenceTone: Record<AuditConfidence, string> = {
   basic: "border-amber-500/40 text-amber-400 bg-amber-500/5",
   good: "border-sky-500/40 text-sky-400 bg-sky-500/5",
@@ -129,14 +128,22 @@ const sectionIcon: Record<string, React.ReactNode> = {
 };
 
 const GROWTH_SECTION_GROUPS: { groupTitle: string; sectionIds: string[] }[] = [
-  { groupTitle: "Google Visibility", sectionIds: ["google_search_seo", "google_maps_seo", "gbp_strength"] },
+  {
+    groupTitle: "Google Visibility",
+    sectionIds: ["google_search_seo", "google_maps_seo", "gbp_strength"],
+  },
   { groupTitle: "Customer Action Path", sectionIds: ["website_menu_path"] },
-  { groupTitle: "Social Reminder Rhythm", sectionIds: ["social_standing", "content_consistency"] },
+  {
+    groupTitle: "Social Reminder Rhythm",
+    sectionIds: ["social_standing", "content_consistency"],
+  },
   { groupTitle: "Trust Signals", sectionIds: ["reviews_trust"] },
   { groupTitle: "Ads Readiness", sectionIds: ["ads_readiness"] },
-  { groupTitle: "Identity & Location", sectionIds: ["identity", "walk_in_opportunity"] },
+  {
+    groupTitle: "Identity & Location",
+    sectionIds: ["identity", "walk_in_opportunity"],
+  },
 ];
-
 
 const emptyContact: AuditLeadContact = {
   contactName: "",
@@ -162,7 +169,7 @@ export default function FreeAudit() {
   // Unified candidate type: covers both live Google Places candidates and
   // fixture/preview fallback candidates. `source` drives the UI badge.
   type UnifiedCandidate = {
-    source: "preview";
+    source: "preview" | "manual";
     id: string;
     placeId?: string;
     restaurantName: string;
@@ -202,7 +209,9 @@ export default function FreeAudit() {
   >(undefined);
   const [isSearching, setIsSearching] = useState(false);
 
-  function adaptFixtureCandidate(c: RestaurantSearchCandidate): UnifiedCandidate {
+  function adaptFixtureCandidate(
+    c: RestaurantSearchCandidate,
+  ): UnifiedCandidate {
     return {
       source: "preview",
       id: c.id,
@@ -234,7 +243,8 @@ export default function FreeAudit() {
       selectedAddress: selectedCandidate.addressLine,
       selectedCuisineType: selectedCandidate.cuisineType,
       selectedMatchConfidence: selectedCandidate.matchConfidence,
-      selectedSource: "fixture",
+      selectedSource:
+        selectedCandidate.source === "manual" ? "manual" : "fixture",
       selectedRating: selectedCandidate.googleRating,
       selectedReviewCount: selectedCandidate.reviewCount,
       selectedWebsiteUrl: selectedCandidate.websiteUrl,
@@ -242,13 +252,44 @@ export default function FreeAudit() {
     };
   }
 
+  function buildManualFallbackCandidate(): UnifiedCandidate {
+    const restaurantName =
+      input.restaurantName.trim() || "Manual restaurant lead";
+    const city = input.city.trim();
+    const state = input.state.trim();
+    return {
+      source: "manual",
+      id: `manual-${restaurantName.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "restaurant"}`,
+      restaurantName,
+      city,
+      state,
+      addressLine:
+        city || state
+          ? `${[city, state].filter(Boolean).join(", ")} — address needs manual confirmation`
+          : "Address needs manual confirmation",
+      cuisineType:
+        input.cuisineType.trim() || "Restaurant / Food — category not verified",
+      googleMapsUrl: input.googleListingUrl || undefined,
+      websiteUrl: input.websiteUrl || undefined,
+      instagramUrl: input.instagramUrl || undefined,
+      facebookUrl: input.facebookUrl || undefined,
+      menuOrderingUrl: input.menuOrderingUrl || undefined,
+      googleRating: input.googleRating,
+      reviewCount: input.reviewCount,
+      matchConfidence: "low",
+      note: "Manual fallback: weak preview discoverability is a potential Veroxa opportunity, not a system failure.",
+    };
+  }
+
+  function handleUseManualFallback() {
+    handleSelectCandidate(buildManualFallbackCandidate());
+  }
+
   async function handleFindRestaurant(e: FormEvent) {
     e.preventDefault();
     setSearchError(null);
     if (!input.restaurantName.trim()) {
-      setSearchError(
-        "Add your restaurant name to start the lookup.",
-      );
+      setSearchError("Add your restaurant name to start the lookup.");
       setCandidateResults([]);
       setCandidateSearchRan(false);
       return;
@@ -261,6 +302,7 @@ export default function FreeAudit() {
         restaurantName: input.restaurantName,
         city: input.city,
         state: input.state,
+        cuisineType: input.cuisineType,
       });
       setStrategiesTried(undefined);
       setLiveTotalRaw(undefined);
@@ -288,11 +330,10 @@ export default function FreeAudit() {
       menuOrderingUrl: candidate.menuOrderingUrl ?? prev.menuOrderingUrl,
       googleRating: candidate.googleRating ?? prev.googleRating,
       reviewCount: candidate.reviewCount ?? prev.reviewCount,
-      restaurantSource: "fixture",
+      restaurantSource: candidate.source === "manual" ? "manual" : "fixture",
     }));
     setReport(null);
     setWalkthroughSaved(false);
-
   }
 
   function handleClearSelectedCandidate() {
@@ -314,7 +355,9 @@ export default function FreeAudit() {
     const hasPhone = (contact.phone ?? "").trim().length > 0;
     const hasEmail = (contact.email ?? "").trim().length > 0;
     if (!hasPhone && !hasEmail) {
-      setWalkthroughError("Please share either a phone number or email so Veroxa can follow up.");
+      setWalkthroughError(
+        "Please share either a phone number or email so Veroxa can follow up.",
+      );
       return;
     }
     try {
@@ -334,7 +377,9 @@ export default function FreeAudit() {
       saveAuditLead(lead);
       setWalkthroughSaved(true);
     } catch {
-      setWalkthroughError("Could not save the walkthrough request in this preview. Please try again.");
+      setWalkthroughError(
+        "Could not save the walkthrough request in this preview. Please try again.",
+      );
     }
   }
 
@@ -352,7 +397,7 @@ export default function FreeAudit() {
     ) {
       setSelectedCandidate(null);
       setReport(null);
-      }
+    }
   }
 
   function handleSubmit(e: FormEvent) {
@@ -361,8 +406,7 @@ export default function FreeAudit() {
       return;
     }
     const cuisineForAudit =
-      input.cuisineType.trim() ||
-      "Restaurant / Food — category not verified";
+      input.cuisineType.trim() || "Restaurant / Food — category not verified";
     const result = generateRestaurantAudit({
       ...input,
       cuisineType: cuisineForAudit,
@@ -383,8 +427,10 @@ export default function FreeAudit() {
   const plan = report ? formatThirtyDayPlan(report) : [];
   const canImprove = formatWhatVeroxaCanImprove();
   const cannotGuarantee = formatWhatVeroxaCannotGuarantee();
-  const fixFirstSection = report?.growthReportSections.find((s) => s.id === "fix_first") ?? null;
-  const veroxaNeedsSection = report?.growthReportSections.find((s) => s.id === "veroxa_needs") ?? null;
+  const fixFirstSection =
+    report?.growthReportSections.find((s) => s.id === "fix_first") ?? null;
+  const veroxaNeedsSection =
+    report?.growthReportSections.find((s) => s.id === "veroxa_needs") ?? null;
 
   return (
     <div className="min-h-screen bg-background">
@@ -401,10 +447,16 @@ export default function FreeAudit() {
             Get a Free Restaurant Online Presence Audit
           </h1>
           <p className="text-muted-foreground max-w-3xl">
-            Share your restaurant details and generate a review-mode audit preview. Veroxa will review your online presence, identify visibility and consistency opportunities, and recommend a current plan fit for a manual first conversation.
+            Share your restaurant details and generate a review-mode audit
+            preview. Veroxa will review your online presence, identify
+            visibility and consistency opportunities, and recommend a current
+            plan fit for a manual first conversation.
           </p>
           <p className="text-[12px] text-muted-foreground/80 max-w-3xl mt-2 italic">
-            This pre-live Free Audit uses the information you provide and preview matching only. Live Google/API scanning is not connected here yet, and recommendations are not guarantees. A full Veroxa plan requires Veroxa Team review.
+            This pre-live Free Audit uses the information you provide and
+            preview matching only. Live Google/API scanning is not connected
+            here yet, and recommendations are not guarantees. A full Veroxa plan
+            requires Veroxa Team review.
           </p>
         </div>
 
@@ -413,17 +465,25 @@ export default function FreeAudit() {
           className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-8"
           data-testid="audit-trust-strip"
         >
-          <Card className="bg-card border-border" data-testid="audit-trust-reviews">
+          <Card
+            className="bg-card border-border"
+            data-testid="audit-trust-reviews"
+          >
             <CardContent className="p-4">
               <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-1">
                 What Veroxa reviews
               </p>
               <p className="text-[12px] text-muted-foreground">
-                Google Business Profile links, website/menu paths, social profiles, media readiness, goals, and consistency signals — the places customers usually check before deciding.
+                Google Business Profile links, website/menu paths, social
+                profiles, media readiness, goals, and consistency signals — the
+                places customers usually check before deciding.
               </p>
             </CardContent>
           </Card>
-          <Card className="bg-card border-border" data-testid="audit-trust-receive">
+          <Card
+            className="bg-card border-border"
+            data-testid="audit-trust-receive"
+          >
             <CardContent className="p-4">
               <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-1">
                 What you receive
@@ -462,13 +522,12 @@ export default function FreeAudit() {
           </CardHeader>
           <CardContent>
             <p className="text-[12px] text-muted-foreground mb-3">
-              Enter your restaurant name, city, and state. This pre-live page uses preview matching so you can continue without live Google/API scanning.
+              Enter your restaurant name, city, and state. This pre-live page
+              uses preview matching so you can continue without live Google/API
+              scanning.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-              <Field
-                label="Restaurant name *"
-                testId="restaurant-search-name"
-              >
+              <Field label="Restaurant name *" testId="restaurant-search-name">
                 <Input
                   value={input.restaurantName}
                   onChange={(e) =>
@@ -494,7 +553,9 @@ export default function FreeAudit() {
             </div>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-[11px] text-muted-foreground italic inline-flex items-center gap-1">
-                <Info className="w-3 h-3" /> Preview matching only. Veroxa will manually review real online presence details before any recommendation is treated as final.
+                <Info className="w-3 h-3" /> Preview matching only. Veroxa will
+                manually review real online presence details before any
+                recommendation is treated as final.
               </p>
               <Button
                 type="button"
@@ -543,7 +604,9 @@ export default function FreeAudit() {
                           "border-muted-foreground/30 text-muted-foreground bg-muted/10"
                         }
                       >
-                        {"Preview fallback result"}
+                        {selectedCandidate.source === "manual"
+                          ? "Manual fallback"
+                          : "Preview fallback result"}
                       </Badge>
                     </div>
                     <p className="text-sm font-semibold mt-1">
@@ -588,14 +651,25 @@ export default function FreeAudit() {
                       No preview match found yet.
                     </p>
                     <p className="text-[12px] text-muted-foreground mt-1">
-                      Try a shorter name, alternate spelling, or continue
-                      manually — Veroxa can still review it.
+                      Try a shorter name, alternate spelling, city/state, or
+                      cuisine. If no confident match exists, continue manually —
+                      Veroxa can still review it.
                     </p>
                     <p className="text-[12px] text-muted-foreground/80 mt-1">
-                      Tip: Some restaurants appear under a different Google
-                      listing name. Try the main word only — for example
-                      "Selda" instead of the full name.
+                      Tip: Some restaurants appear under a different listing
+                      name. A weak or missing match is a discoverability signal
+                      and potential Veroxa opportunity, not a system failure.
                     </p>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="mt-3"
+                      onClick={handleUseManualFallback}
+                      data-testid="btn-use-manual-audit-fallback"
+                    >
+                      Continue as manual audit lead
+                    </Button>
                     {(strategiesTried || liveTotalRaw !== undefined) && (
                       <p className="text-[11px] text-muted-foreground/40 mt-2">
                         {[
@@ -639,11 +713,15 @@ export default function FreeAudit() {
                                   "border-muted-foreground/30 text-muted-foreground bg-muted/10"
                                 }
                               >
-                                {"Preview fallback result"}
+                                {c.source === "manual"
+                                  ? "Manual fallback"
+                                  : "Preview fallback result"}
                               </Badge>
                               <Badge
                                 variant="outline"
-                                className={matchConfidenceTone[c.matchConfidence]}
+                                className={
+                                  matchConfidenceTone[c.matchConfidence]
+                                }
                               >
                                 {matchConfidenceLabel[c.matchConfidence]}
                               </Badge>
@@ -715,10 +793,7 @@ export default function FreeAudit() {
                       required
                     />
                   </Field>
-                  <Field
-                    label="Cuisine type (optional)"
-                    testId="audit-cuisine"
-                  >
+                  <Field label="Cuisine type (optional)" testId="audit-cuisine">
                     <Input
                       value={input.cuisineType}
                       onChange={(e) =>
@@ -750,10 +825,9 @@ export default function FreeAudit() {
                   Optional links
                 </p>
                 <p className="text-[11px] text-muted-foreground/80 mb-2">
-                  Links are optional, but they help Veroxa make the
-                  preliminary audit more useful. If you do not have a link,
-                  leave it blank — missing links may reveal a growth
-                  opportunity.
+                  Links are optional, but they help Veroxa make the preliminary
+                  audit more useful. If you do not have a link, leave it blank —
+                  missing links may reveal a growth opportunity.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <Field
@@ -801,10 +875,7 @@ export default function FreeAudit() {
                       }
                     />
                   </Field>
-                  <Field
-                    label="Menu / Ordering link"
-                    testId="audit-menu"
-                  >
+                  <Field label="Menu / Ordering link" testId="audit-menu">
                     <Input
                       value={input.menuOrderingUrl ?? ""}
                       onChange={(e) =>
@@ -816,16 +887,14 @@ export default function FreeAudit() {
                   <Field label="Other link" testId="audit-other">
                     <Input
                       value={input.otherUrl ?? ""}
-                      onChange={(e) =>
-                        handleChange("otherUrl", e.target.value)
-                      }
+                      onChange={(e) => handleChange("otherUrl", e.target.value)}
                       placeholder="Reservation, catering, anything else"
                     />
                   </Field>
                 </div>
                 <p className="text-[11px] text-muted-foreground/80 mt-2">
-                  Do not worry if you do not have every link. Missing links
-                  can reveal where your online system may need help.
+                  Do not worry if you do not have every link. Missing links can
+                  reveal where your online system may need help.
                 </p>
               </div>
 
@@ -835,10 +904,15 @@ export default function FreeAudit() {
                   Goals and readiness
                 </p>
                 <p className="text-[11px] text-muted-foreground/80 mb-2">
-                  A little context helps Veroxa understand whether you need Google visibility, social consistency, Reels support, or a Premium ads readiness assessment.
+                  A little context helps Veroxa understand whether you need
+                  Google visibility, social consistency, Reels support, or a
+                  Premium ads readiness assessment.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <Field label="Main concern or goal" testId="audit-current-goal">
+                  <Field
+                    label="Main concern or goal"
+                    testId="audit-current-goal"
+                  >
                     <Textarea
                       value={input.currentGoal ?? ""}
                       onChange={(e) =>
@@ -848,7 +922,10 @@ export default function FreeAudit() {
                       rows={3}
                     />
                   </Field>
-                  <Field label="Biggest problem you notice" testId="audit-biggest-problem">
+                  <Field
+                    label="Biggest problem you notice"
+                    testId="audit-biggest-problem"
+                  >
                     <Textarea
                       value={input.biggestProblem ?? ""}
                       onChange={(e) =>
@@ -858,7 +935,10 @@ export default function FreeAudit() {
                       rows={3}
                     />
                   </Field>
-                  <Field label="Photo/video media supply" testId="audit-media-readiness">
+                  <Field
+                    label="Photo/video media supply"
+                    testId="audit-media-readiness"
+                  >
                     <Textarea
                       value={input.notes ?? ""}
                       onChange={(e) => handleChange("notes", e.target.value)}
@@ -867,15 +947,23 @@ export default function FreeAudit() {
                     />
                   </Field>
                   <div className="rounded-md border border-border bg-muted/20 p-3 text-[12px] text-muted-foreground leading-relaxed">
-                    <p className="font-semibold text-foreground/90 mb-1">What Veroxa reviews next</p>
-                    <p>Google/local visibility, social consistency, usable media, Reels readiness, and whether ads should stay parked until Premium assessment, approval, and agreed ad budget.</p>
+                    <p className="font-semibold text-foreground/90 mb-1">
+                      What Veroxa reviews next
+                    </p>
+                    <p>
+                      Google/local visibility, social consistency, usable media,
+                      Reels readiness, and whether ads should stay parked until
+                      Premium assessment, approval, and agreed ad budget.
+                    </p>
                   </div>
                 </div>
               </div>
 
               <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
                 <p className="text-[11px] text-muted-foreground inline-flex items-center gap-1">
-                  <Info className="w-3 h-3" /> This preview runs in your browser. Walkthrough requests are saved only for this pre-live review/demo.
+                  <Info className="w-3 h-3" /> This preview runs in your
+                  browser. Walkthrough requests are saved only for this pre-live
+                  review/demo.
                 </p>
                 <Button
                   type="submit"
@@ -893,7 +981,6 @@ export default function FreeAudit() {
         <div id="audit-report-anchor" />
         {report && (
           <div className="mt-10 space-y-4" data-testid="audit-report">
-
             {/* 1. Overall header */}
             <Card className="bg-card border-border">
               <CardContent className="p-6">
@@ -944,11 +1031,14 @@ export default function FreeAudit() {
             </Card>
 
             {/* 2. What Veroxa would fix first */}
-            <Card className="bg-card border-border" data-testid="fix-plan-summary">
+            <Card
+              className="bg-card border-border"
+              data-testid="fix-plan-summary"
+            >
               <CardHeader className="pb-2">
                 <CardTitle className="text-base inline-flex items-center gap-2">
-                  <Wrench className="w-4 h-4 text-primary" /> What Veroxa
-                  would fix first
+                  <Wrench className="w-4 h-4 text-primary" /> What Veroxa would
+                  fix first
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -1101,7 +1191,10 @@ export default function FreeAudit() {
                   Hide
                 </span>
               </summary>
-              <div className="mt-2 space-y-3" data-testid="growth-report-sections">
+              <div
+                className="mt-2 space-y-3"
+                data-testid="growth-report-sections"
+              >
                 {/* Audit signal summary */}
                 <Card
                   className="bg-card border-border"
