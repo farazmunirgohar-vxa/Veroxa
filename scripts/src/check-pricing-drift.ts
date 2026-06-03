@@ -86,10 +86,12 @@ for (const required of [
   }
 }
 
-if (!/Most recommended/i.test(pricingPage)) {
-  failures.push(
-    "pricing.tsx must position Growth as the most recommended package.",
-  );
+for (const forbidden of [/Most recommended/i, /Most popular/i]) {
+  if (forbidden.test(pricingPage)) {
+    failures.push(
+      `pricing.tsx must not render public pricing badge/positioning text: ${forbidden}`,
+    );
+  }
 }
 if (
   /comments|DMs|inboxes|customer-service conversations/i.test(pricingPage) &&
@@ -134,7 +136,6 @@ const pricingDocs = [
 for (const [file, text] of pricingDocs) {
   for (const required of [
     "Premium requires",
-    "Growth is the main recommended package",
     "readiness assessment",
     "Posting depends on usable client-provided media",
     "may slow when usable media is unavailable",
@@ -233,7 +234,7 @@ for (const required of [
   '"essential"',
   '"growth"',
   '"premium"',
-  "Growth is the main recommended package",
+  "TikTok",
   "Premium adds ads management readiness/support",
   "Premium requires readiness assessment",
   "SERVICE_BOUNDARY_DISCLAIMER",

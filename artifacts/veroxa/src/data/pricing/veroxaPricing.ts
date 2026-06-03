@@ -4,7 +4,7 @@
 //   * Pricing is owner-locked. Do NOT change any price without explicit
 //     owner approval.
 //   * Current public model: Starter ($295/mo), Growth ($495/mo),
-//     Premium ($995/mo). Growth is the main recommended package.
+//     Premium ($995/mo). Growth is the stronger online presence package.
 //   * No contract. Cancel anytime.
 //   * Posting depends on usable restaurant-provided media and may slow when
 //     usable media is unavailable.
@@ -121,7 +121,8 @@ const starterResponsibilities = [
 const growthResponsibilities = [
   ...starterResponsibilities,
   "Stronger Google/local consistency",
-  "Stronger social consistency and best-seller/content rhythm",
+  "Facebook, Instagram, and TikTok consistency using client-provided media",
+  "Stronger best-seller/content rhythm",
   "Weekly progress update and monthly report",
   "Limited content/design prep and stronger client portal workflow",
 ];
@@ -150,7 +151,8 @@ const starterIncludes = [
 const growthIncludes = [
   "Everything in Starter",
   "Stronger Google/local consistency",
-  "Stronger social consistency",
+  "Facebook + Instagram + TikTok posting support",
+  "TikTok posting support using client-provided media",
   "Up to 1 post/day depending on usable media",
   "Stronger best-seller/content rhythm",
   "Weekly progress update",
@@ -221,7 +223,7 @@ export const VEROXA_PLANS: Record<VeroxaPlanId, VeroxaPlan> = {
     label: "Growth",
     priceMonthly: 495,
     tagline:
-      "Most recommended main package for strong-fit restaurants that need stronger online visibility and customer decision confidence.",
+      "For restaurants that want a stronger online presence rhythm across Google, social content, TikTok, weekly updates, and monthly reporting.",
     includes: growthIncludes,
     adsSupport: false,
     veroxaResponsibilities: growthResponsibilities,
