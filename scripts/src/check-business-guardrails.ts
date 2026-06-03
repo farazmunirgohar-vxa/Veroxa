@@ -95,6 +95,7 @@ const publicClientGuaranteePatterns: Array<[RegExp, string]> = [
   [/guaranteed\s+revenue/i, "public/client revenue guarantee"],
   [/guaranteed\s+walk-ins/i, "public/client walk-in guarantee"],
   [/we make restaurants profitable/i, "public/client profit promise"],
+  [/20\s+online-influenced\s+actions/i, "internal proof target on public/client surface"],
 ];
 
 const publicClientBoundaryFiles = [

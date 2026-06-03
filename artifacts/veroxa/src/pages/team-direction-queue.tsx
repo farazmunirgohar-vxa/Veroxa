@@ -57,6 +57,7 @@ import { previewClarificationPrompt } from "@/lib/ai/aiAgentPreviewEngine";
 import { TEAM_AI_DISCLOSURE } from "@/lib/ai/aiAgentTypes";
 import type { FirstClientDirectionStatus } from "@/lib/firstClient/firstClientContracts";
 
+import { TeamSaasStatePanel } from "@/components/team/TeamSaasStatePanel";
 type GroupKey =
   | "urgent_high"
   | "content"
@@ -309,6 +310,7 @@ export default function TeamDirectionQueue() {
   if (!canUseFixtureData) {
     return (
       <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
+      <TeamSaasStatePanel compact={true} />
         <RealPortalReviewNotice />
         <SafePortalEmptyCard
           title="Direction Queue in review"

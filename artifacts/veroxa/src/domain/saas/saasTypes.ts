@@ -421,3 +421,8 @@ export interface CreateActivityLogInput {
   visibility?: ActivityLogVisibility;
   metadata?: Record<string, string | number | boolean | null>;
 }
+
+// Phase 2 aliases keep repository contracts readable while preserving the
+// Phase 1 record shapes. They do not create persistence or new runtime writes.
+export type MediaAssetRecord = MediaAsset;
+export type ClientRequestRecord = ClientRequest;

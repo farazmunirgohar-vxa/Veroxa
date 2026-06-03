@@ -1,61 +1,85 @@
-// demoActivityLogs.ts — future: activity_logs table
-// Covers team activity timeline events and per-client activity log.
+import type { ActivityLogRecord, RestaurantId } from "@/domain/saas/saasTypes";
 
-// ── Shared role type ──────────────────────────────────────────────
-export type ActivityRole =
-  | "client"
-  | "team"
-  | "agent"
-  | "system";
+const DEMO_NOW = "2026-06-03T00:00:00.000Z";
 
-// ── DemoActivityEvent — future: activity_logs (simplified display view) ──
+export const demoActivityLogs: ActivityLogRecord[] = [
+  {
+    id: "demo-activity-map-profile-review",
+    restaurantId: "demo-bistro",
+    dataMode: "demo",
+    entityType: "prepared_action",
+    entityId: "demo-action-map-profile-review",
+    action: "created",
+    actorLabel: "Veroxa demo",
+    summary: "Prepared a Google Maps visibility cleanup action for team review.",
+    visibility: "team_internal",
+    isPersisted: false,
+    createdAt: DEMO_NOW,
+  },
+  {
+    id: "demo-activity-client-safe-media",
+    restaurantId: "demo-bistro",
+    dataMode: "demo",
+    entityType: "media_asset",
+    entityId: "demo-media-best-seller",
+    action: "reviewed",
+    actorLabel: "Veroxa team",
+    summary: "A best-seller photo was marked useful for a future visibility update.",
+    visibility: "client_safe",
+    isPersisted: false,
+    createdAt: DEMO_NOW,
+  },
+  {
+    id: "demo-activity-report-preview",
+    restaurantId: "demo-pizzeria",
+    dataMode: "demo",
+    entityType: "report",
+    entityId: "demo-report-weekly",
+    action: "snapshot_previewed",
+    actorLabel: "Veroxa demo",
+    summary: "Weekly report preview prepared with honest limitations.",
+    visibility: "team_internal",
+    isPersisted: false,
+    createdAt: DEMO_NOW,
+  },
+];
+
+export function getDemoActivityLogs(restaurantId?: RestaurantId): ActivityLogRecord[] {
+  if (!restaurantId) return demoActivityLogs;
+  const exact = demoActivityLogs.filter((log) => log.restaurantId === restaurantId);
+  return exact.length > 0 ? exact : demoActivityLogs.slice(0, 2).map((log) => ({ ...log, restaurantId }));
+}
+
+export type ActivityRole = "client" | "team" | "agent" | "system";
+export type ActivityKind = "upload" | "report" | "google" | "schedule" | "warning" | "milestone";
+
 export interface DemoActivityEvent {
   id: string;
-  timestamp: string;
-  eventType: string;
   clientId: string;
-  description: string;
-  status: "completed" | "in_progress" | "warning";
   role: ActivityRole;
+  eventType: string;
+  description: string;
+  timestamp: string;
+  status: "completed" | "in_progress" | "warning";
+}
+
+export interface DemoActivity {
+  id: string;
+  clientId: string;
+  kind: ActivityKind;
+  title: string;
+  detail?: string;
+  timestamp: string;
 }
 
 export const demoActivityEvents: DemoActivityEvent[] = [
-  { id: "a1",  timestamp: "Today, 11:02 AM",    eventType: "Report generated",         clientId: "demo-c", description: "Weekly report draft created for review.",                            status: "in_progress", role: "agent"    },
-  { id: "a2",  timestamp: "Today, 10:48 AM",    eventType: "Post scheduled",           clientId: "demo-a", description: "Chicken Shawarma reel scheduled for Tuesday 6:30 PM dinner window.", status: "in_progress", role: "team"     },
-  { id: "a3",  timestamp: "Today, 9:20 AM",     eventType: "Review received",          clientId: "demo-d",   description: "3 new Google reviews received (4–5 stars).",                         status: "completed",   role: "system"   },
-  { id: "a4",  timestamp: "Today, 9:15 AM",     eventType: "Media reviewed",           clientId: "demo-a", description: "Approved 8 of 12 uploaded photos. 2 blurry, 2 duplicates.",          status: "completed",   role: "agent"    },
-  { id: "a5",  timestamp: "Yesterday, 6:30 PM", eventType: "Draft created",            clientId: "demo-b",    description: "Caption Agent generated 3 caption options for taco lunch promo.",     status: "completed",   role: "agent"    },
-  { id: "a6",  timestamp: "Yesterday, 5:15 PM", eventType: "Weekly report generated",  clientId: "demo-b",    description: "Weekly report compiled and queued for Veroxa team review.",               status: "in_progress", role: "agent"    },
-  { id: "a7",  timestamp: "Yesterday, 2:00 PM", eventType: "Post published",           clientId: "demo-c", description: "Mediterranean platter post published to Instagram and Facebook.",       status: "completed",   role: "team"     },
-  { id: "a8",  timestamp: "May 23",             eventType: "Google profile updated",   clientId: "demo-c", description: "Updated business hours and added 4 new menu photos.",                  status: "completed",   role: "team"     },
-  { id: "a9",  timestamp: "May 22",             eventType: "Team reviewed report", clientId: "demo-a", description: "Team approved last week's report and sent to client.",             status: "completed",   role: "team" },
-  { id: "a10", timestamp: "May 22",             eventType: "Client notification sent", clientId: "demo-b",    description: "Weekly update email delivered to client contact.",                     status: "completed",   role: "system"   },
+  { id: "demo-event-team-visibility", clientId: "demo-bistro", role: "team", eventType: "visibility_review", description: "Prepared a visibility review for sample account activation.", timestamp: "2026-06-03 09:00", status: "completed" },
+  { id: "demo-event-client-media", clientId: "demo-bistro", role: "client", eventType: "media_direction", description: "Sample client asked Veroxa to review best-seller media direction.", timestamp: "2026-06-03 10:00", status: "in_progress" },
+  { id: "demo-event-system-report", clientId: "demo-pizzeria", role: "system", eventType: "report_preview", description: "Sample report preview entered Veroxa team review.", timestamp: "2026-06-03 11:00", status: "completed" },
 ];
 
-// ── DemoActivity — future: activity_logs (per-client portal view) ─
-export type ActivityKind = "upload" | "report" | "google" | "schedule" | "warning" | "milestone";
-
-export interface DemoActivity {
-  id:        string;
-  clientId:  string;
-  kind:      ActivityKind;
-  title:     string;
-  detail?:   string;
-  timestamp: string;
-}
-
 export const demoActivityLog: DemoActivity[] = [
-  { id: "act1",  clientId: "demo-a", kind: "upload",    title: "Uploaded 8 new media items",   detail: "6 photos, 2 reels.",                                          timestamp: "Today, 9:14 AM"        },
-  { id: "act2",  clientId: "demo-a", kind: "schedule",  title: "Content scheduled",             detail: "Friday dinner reel — Thursday 7 PM slot.",                    timestamp: "Today, 11:00 AM"       },
-  { id: "act3",  clientId: "demo-a", kind: "report",    title: "Weekly report published",       detail: "Week of May 13 — 5 posts, 3.2k impressions.",                 timestamp: "Yesterday, 9:00 AM"    },
-  { id: "act4",  clientId: "demo-a", kind: "milestone", title: "100% onboarding complete",      detail: "All onboarding milestones signed off.",                        timestamp: "Apr 28, 2026"          },
-  { id: "act5",  clientId: "demo-b",    kind: "warning",   title: "Media inventory warning",       detail: "Below 2-week runway at current cadence.",                     timestamp: "Today, 8:42 AM"        },
-  { id: "act6",  clientId: "demo-b",    kind: "report",    title: "Weekly report overdue",         detail: "Drafted, awaiting validation.",                                timestamp: "Yesterday, 4:00 PM"    },
-  { id: "act7",  clientId: "demo-b",    kind: "schedule",  title: "Content scheduled",             detail: "Lunch special — Tuesday 12 PM slot.",                         timestamp: "May 22, 10:00 AM"      },
-  { id: "act8",  clientId: "demo-c", kind: "report",    title: "Monthly report published",      detail: "April performance summary delivered.",                         timestamp: "May 4, 2026"           },
-  { id: "act9",  clientId: "demo-c", kind: "google",    title: "Google optimisation completed", detail: "Profile keywords + photo set refreshed.",                      timestamp: "May 18, 2026"          },
-  { id: "act10", clientId: "demo-c", kind: "upload",    title: "Uploaded 5 media items",        detail: "All approved on first review.",                                timestamp: "May 23, 7:30 AM"       },
-  { id: "act11", clientId: "demo-d",   kind: "warning",   title: "Media inventory critical",      detail: "5 days of runway remaining.",                                  timestamp: "Today, 8:42 AM"        },
-  { id: "act12", clientId: "demo-d",   kind: "warning",   title: "Onboarding stalled",            detail: "3 outstanding tasks. No client response in 8 days.",           timestamp: "Yesterday"             },
-  { id: "act13", clientId: "demo-d",   kind: "upload",    title: "Uploaded 4 media items",        detail: "2 flagged for reshoot by Media Review Agent.",                  timestamp: "May 15, 10:00 AM"      },
+  { id: "demo-log-media", clientId: "demo-bistro", kind: "upload", title: "Media reviewed", detail: "Best-seller photo marked useful for future visibility update.", timestamp: "2026-06-03 09:30" },
+  { id: "demo-log-request", clientId: "demo-bistro", kind: "schedule", title: "Request in review", detail: "Menu link visibility request is waiting for confirmation.", timestamp: "2026-06-03 10:15" },
+  { id: "demo-log-report", clientId: "demo-pizzeria", kind: "report", title: "Report preview", detail: "Weekly report preview prepared with honest limitations.", timestamp: "2026-06-03 11:20" },
 ];

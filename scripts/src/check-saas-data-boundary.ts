@@ -13,6 +13,9 @@ const saasFiles = [
   "artifacts/veroxa/src/domain/saas/repositoryProvider.ts",
   "artifacts/veroxa/src/domain/saas/activityLogScaffold.ts",
   "artifacts/veroxa/src/domain/saas/profitValidationPersistence.ts",
+  "artifacts/veroxa/src/domain/saas/accountActivation.ts",
+  "artifacts/veroxa/src/domain/saas/clientPortalState.ts",
+  "artifacts/veroxa/src/domain/saas/teamPortalState.ts",
 ] as const;
 
 function readRequired(file: string): string {
@@ -40,6 +43,9 @@ for (const marker of [
   "createPlaceholderClientPortalRepository",
   "createPlaceholderTeamPortalRepository",
   "createNoopActivityLogRepository",
+  "getClientPortalPageState",
+  "getTeamPortalRepositoryState",
+  "buildNonPersistedActivityPreview",
 ]) {
   if (!adapters.includes(marker)) failures.push(`Repository adapters missing placeholder marker: ${marker}`);
 }
@@ -59,6 +65,8 @@ for (const [file, text] of texts) {
 }
 
 if (/\bfetch\s*\(/.test(adapters)) failures.push("repositoryAdapters.ts must not call fetch().");
+if (/supabase/i.test(adapters)) failures.push("repositoryAdapters.ts must not reference supabase.");
+if (/dataMode === \"authenticated_client\"[\s\S]{0,400}demo_fixture|dataMode === \"authenticated_team\"[\s\S]{0,400}demo_fixture/.test(adapters)) failures.push("repositoryAdapters.ts appears to use demo fixtures in authenticated modes.");
 if (/localStorage/.test(adapters) && !/demo-only|demo only|safe/i.test(adapters)) {
   failures.push("repositoryAdapters.ts must not use localStorage persistence unless explicitly demo-only and safe.");
 }
@@ -85,6 +93,10 @@ for (const marker of [
   "RestaurantAccount",
   "ActivityLogRecord",
   "ProfitValidationSnapshotRecord",
+  "evaluateAccountActivation",
+  "buildClientPortalPageState",
+  "buildTeamPortalRepositoryState",
+  "buildProfitValidationSnapshot",
   "future production adapter requires RR approval",
 ]) {
   if (!combined.includes(marker)) failures.push(`SaaS scaffolding missing required marker: ${marker}`);

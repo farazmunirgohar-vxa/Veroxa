@@ -98,6 +98,7 @@ import {
 } from "@/domain/onlineInfluencedActions";
 import { evaluateVeroxaProfitValidation } from "@/domain/profitValidation";
 
+import { TeamSaasStatePanel } from "@/components/team/TeamSaasStatePanel";
 type FilterTab =
   | "all"
   | "priority_a"
@@ -506,6 +507,7 @@ export default function TeamAuditLeads() {
   if (!canUseFixtureData) {
     return (
       <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
+      <TeamSaasStatePanel compact={false} />
         <RealPortalReviewNotice />
         <SafePortalEmptyCard
           title="Audit Leads in review"
