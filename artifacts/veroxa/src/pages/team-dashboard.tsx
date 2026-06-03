@@ -10,6 +10,7 @@ import {
   ScanSearch,
   AlertTriangle,
   ShieldCheck,
+  CopyCheck,
 } from "lucide-react";
 import { Link } from "wouter";
 import { PortalLayout } from "@/components/PortalLayout";
@@ -82,6 +83,7 @@ import {
 } from "@/domain/firstClientReadiness";
 import { VEROXA_PLANS } from "@/data/pricing/veroxaPricing";
 import { evaluateVeroxaProfitValidation } from "@/domain/profitValidation";
+import { buildManualExecutionPacks, evaluateManualExecutionLaunchGate } from "@/domain/manualExecution";
 
 import { TeamSaasStatePanel } from "@/components/team/TeamSaasStatePanel";
 const pushPriorityTone: Record<OpportunityPriority, StatusBadgeTone> = {
@@ -149,6 +151,8 @@ export default function TeamDashboard() {
     monthlyFee: VEROXA_PLANS.starter.priceMonthly,
     trackingConfidence: "unknown",
   });
+  const manualExecutionPacks = buildManualExecutionPacks();
+  const manualExecutionGate = evaluateManualExecutionLaunchGate(manualExecutionPacks);
 
   // Today's suggested pushes — rule-based daily opportunities (team-only).
   const suggestedPushes = canUseFixtureData
@@ -316,6 +320,37 @@ export default function TeamDashboard() {
         description="A calmer Today View for review, scheduling, client requests, blockers, approvals, and reports."
         testId="header-team-dashboard"
       />
+
+      <Card className="mb-4 border-primary/20 bg-card" data-testid="card-manual-execution-summary">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-sm">
+            <CopyCheck className="h-4 w-4 text-primary" />
+            Manual Execution Summary
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
+          <div className="grid grid-cols-3 gap-3 text-center text-xs">
+            <div className="rounded-lg border border-border bg-muted/20 p-3">
+              <p className="text-xl font-semibold tabular-nums">{manualExecutionGate.readyToCopyCount}</p>
+              <p className="text-muted-foreground">Ready to copy</p>
+            </div>
+            <div className="rounded-lg border border-border bg-muted/20 p-3">
+              <p className="text-xl font-semibold tabular-nums">{manualExecutionGate.needsClientConfirmationCount}</p>
+              <p className="text-muted-foreground">Needs confirmation</p>
+            </div>
+            <div className="rounded-lg border border-border bg-muted/20 p-3">
+              <p className="text-xl font-semibold tabular-nums">{manualExecutionGate.blockedByMediaOrContextCount}</p>
+              <p className="text-muted-foreground">Blocked</p>
+            </div>
+          </div>
+          <div className="space-y-2 text-sm text-muted-foreground">
+            <p>Prepared work only — nothing publishes automatically.</p>
+            <Link href="/team/manual-execution" className="inline-flex items-center gap-2 text-primary hover:underline">
+              Open Manual Execution <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
 
 
       <Card
