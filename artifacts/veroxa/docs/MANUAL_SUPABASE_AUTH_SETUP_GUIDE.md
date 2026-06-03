@@ -1,8 +1,8 @@
 # Manual Supabase Auth Setup Guide
 
 > **Audience:** the Veroxa project owner. This guide is run **by hand
-> in the Supabase dashboard**, outside Replit, before `AUTH_MODE` can
-> be safely flipped to `"real"`. Nothing in Replit applies SQL,
+> in the Supabase dashboard**, outside the app runtime, before `AUTH_MODE` can
+> be safely flipped to `"real"`. Nothing in the app runtime applies SQL,
 > creates users, or activates auth on your behalf.
 
 ## Current state (snapshot)
@@ -29,12 +29,12 @@ production RLS unless explicitly approved separately.
 
 - [ ] You are signed into the **dev** Supabase project — not
       production.
-- [ ] `VITE_SUPABASE_URL` exists in Replit Secrets and points at the
+- [ ] `VITE_SUPABASE_URL` exists in Vercel environment variables / local env and points at the
       dev project.
-- [ ] `VITE_SUPABASE_ANON_KEY` exists in Replit Secrets and is the
+- [ ] `VITE_SUPABASE_ANON_KEY` exists in Vercel environment variables / local env and is the
       anon key (NOT the service role key).
 - [ ] **No service role key** is present in the frontend or in
-      Replit Secrets accessible to the frontend build.
+      Vercel environment variables / local env accessible to the frontend build.
 
 ### 2. Review draft SQL before applying anything
 
@@ -67,7 +67,7 @@ as you prefer — these are examples only):
 
 Use Supabase Dashboard → Authentication → Users → "Add user". Use
 strong, unique passwords. Save them in a password manager — do not
-paste them into Replit chat.
+paste them into any coding-agent chat.
 
 ### 5. Add matching `user_profiles` rows manually
 

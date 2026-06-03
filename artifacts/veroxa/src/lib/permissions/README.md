@@ -51,9 +51,7 @@ routes, or user-facing docs. Do not use Super Admin language.
 
 ## Current builder model
 
-Codex is the primary engineering/build/hardening partner for this repo. Replit is
-secondary/preview-only unless Faraz explicitly says otherwise. Permission changes
-should stay aligned with `authContract.ts` and the two active human roles.
+The active Veroxa build stack is GitHub + Codex + Vercel. Codex is the primary engineering/build/hardening partner for this repo, Vercel is the deployment target, and browser/manual QA is used for visual checks. Permission changes should stay aligned with `authContract.ts` and the two active human roles.
 
 ## Build order
 

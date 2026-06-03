@@ -8,7 +8,7 @@ const currentDocs = [
   "AGENTS.md",
   "artifacts/veroxa/docs/CURRENT_TWO_ROLE_OPERATING_MODEL.md",
   "artifacts/veroxa/docs/PRODUCTION_LAUNCH_RUNBOOK.md",
-  "artifacts/veroxa/docs/CURRENT_REPLIT_BUILD_STATUS.md",
+  "artifacts/veroxa/docs/CURRENT_BUILD_STATUS.md",
   "artifacts/veroxa/docs/BUILD_STATUS.md",
   "artifacts/veroxa/docs/CURRENT_REAL_VEROXA_MODEL.md",
 ];
@@ -81,6 +81,21 @@ const pricingContradictionRules: Rule[] = [
     label: "Premium public price does not match $995",
     pattern:
       /\bPremium\b(?:(?!\bStarter\b|\bGrowth\b).){0,80}\$(?!995\b)\d[\d,]*(?:\/month|\/mo|\s*per month|\s*monthly)?/i,
+  },
+];
+
+const activeStackMarkerRules: Rule[] = [
+  {
+    label: "GitHub + Codex + Vercel active stack marker",
+    pattern: /GitHub\s*\+\s*Codex\s*\+\s*Vercel/i,
+  },
+  {
+    label: "Codex primary build agent marker",
+    pattern: /Codex is the primary (?:engineering\/build|build|engineering).*agent/i,
+  },
+  {
+    label: "Vercel deployment target marker",
+    pattern: /Vercel is the deployment target/i,
   },
 ];
 
@@ -196,6 +211,14 @@ for (const marker of requiredCurrentMarkers) {
   if (!marker.pattern.test(combinedDocs)) {
     failures.push(
       `Current docs are missing required pricing marker: ${marker.label}`,
+    );
+  }
+}
+
+for (const marker of activeStackMarkerRules) {
+  if (!marker.pattern.test(combinedDocs)) {
+    failures.push(
+      `Current docs are missing active build stack marker: ${marker.label}`,
     );
   }
 }

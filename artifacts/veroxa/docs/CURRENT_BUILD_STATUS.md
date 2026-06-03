@@ -1,10 +1,3 @@
-> **Historical note — not current build workflow**
->
-> This file is retained for older status history only. The current active build
-> stack is GitHub + Codex + Vercel, and the current status file is
-> [`CURRENT_BUILD_STATUS.md`](./CURRENT_BUILD_STATUS.md). Do not use this file
-> as active build instructions.
-
 > **2026-05-30 — Portal separation and first-5-client readiness lock**
 >
 > Current active routing is now: public demo only at `/demo/client/dashboard`, real Client Portal review routes under `/client/*`, and real Team/Internal Admin review routes under `/team/*`. Team Demo / `/demo/team/*` is deprecated/not active and must not be promoted by public pages or used as a login destination. Client-side readiness remains first; heavy Team/Internal Admin AI automation comes later. The first 5 real clients are the pre-launch readiness benchmark.
@@ -22,7 +15,18 @@
 > sections below are historical/deprecated only and are not current public
 > pricing. Do not restore them unless the user explicitly requests it.
 
-# Historical Replit Build Status
+# Current Build Status
+
+
+## Active build stack
+
+The active Veroxa build stack is **GitHub + Codex + Vercel**.
+
+- GitHub main is the source of truth.
+- Codex is the primary engineering/build agent.
+- Vercel is the deployment target.
+- Browser/manual QA is used for visual checks.
+- Replit-specific build workflow notes are historical only and are not part of the active build stack.
 
 For the active five-phase pre-live roadmap, see [`VEROXA_OS_5_PHASE_PRELIVE_BUILD_MAP.md`](./VEROXA_OS_5_PHASE_PRELIVE_BUILD_MAP.md).
 
@@ -672,7 +676,7 @@ manualReviewNeeded[], ownerFriendlyClosing } | null, message? }`.
 
 ## Full SaaS Foundation design reference
 
-For the next Full SaaS Foundation design and guardrail plan, see `CLIENT_PORTAL_FULL_SAAS_FOUNDATION_DESIGN.md`. Historical build status remained pre-live/review-mode; production SaaS runtime still requires RR-approved implementation.
+For the next Full SaaS Foundation design and guardrail plan, see `CLIENT_PORTAL_FULL_SAAS_FOUNDATION_DESIGN.md`. Current build status remains pre-live/review-mode; production SaaS runtime still requires RR-approved implementation.
 
 ## 2026-06-03 pricing/profit-fit alignment
 

@@ -1,6 +1,6 @@
 # Veroxa Agent Instructions
 
-This file is the repo-level operating guide for Codex, Replit Agent, and any coding agent working on Veroxa. If a task prompt conflicts with this file, follow the user's newest explicit instruction. Otherwise, treat this file as the locked Veroxa working model.
+This file is the repo-level operating guide for Codex and any coding agent working on Veroxa. If a task prompt conflicts with this file, follow the user's newest explicit instruction. Otherwise, treat this file as the locked Veroxa working model.
 
 ## 1. Product identity
 
@@ -27,27 +27,26 @@ Team currently means Faraz. The system is being built so Faraz can handle most h
 
 Owner and Operator are parked unless explicitly requested by the user. Do not build Owner/Operator dashboards or workflows unless the user specifically asks.
 
-## 3. Current builder/subscription reality
+## 3. Current active build stack
 
-The user's current builder setup:
+The current active Veroxa build stack is GitHub + Codex + Vercel:
 
-- Replit Plus-style building capacity with full-power builds available, but no assumed parallel agent builds.
-- GPT Pro / Codex capability is available and should be used for senior engineering review, hardening, domain logic, tests, and PRs.
 - GitHub main is the source of truth.
+- Codex is the primary engineering/build agent.
+- Vercel is the deployment target.
+- Browser/manual QA is used for visual checks.
 
-Use Replit mainly for visible/product builds, app UI, portal flows, staged feature builds, and preview iteration.
-
-Use Codex mainly for senior engineering, architecture review, hardening, type safety, tests/test plans, backend/domain logic, PRs, and future production-grade integrations.
-
-## 4. Default builder workflow
+## 4. Default Codex workflow
 
 For the active five-phase pre-live roadmap, see `artifacts/veroxa/docs/VEROXA_OS_5_PHASE_PRELIVE_BUILD_MAP.md`.
 
 Before any large build, also run through `artifacts/veroxa/docs/PRE_BUILD_STABILITY_CHECKLIST.md` to protect Vercel config, temp login, audit search, public pricing, public metadata, and SaaS safety.
 
-Every Replit or Codex prompt should begin conceptually with:
+Every Codex prompt should begin conceptually with:
 
 Pull latest origin/main before making any new changes.
+
+Create a branch for the task.
 
 Read the prompt completely and carefully before making changes.
 Understand all stages of the full prompt.
@@ -58,15 +57,10 @@ Do not rush ahead into features not requested.
 
 For Codex:
 
+- Pull latest origin/main before making any new changes.
 - Create a branch for the task.
 - Do not push directly to main.
-- Open a draft PR when finished.
-
-For Replit:
-
-- Pull latest main before building.
-- Build the staged prompt.
-- Push to GitHub when finished.
+- Open a PR when finished.
 
 ## 5. Locked pricing
 

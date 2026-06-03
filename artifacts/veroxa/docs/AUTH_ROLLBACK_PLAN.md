@@ -37,7 +37,7 @@ known-good state.
    .eq("user_id", session.user.id).maybeSingle()`. If a profile is
    missing or `role` is not one of `client | team | operator |
    owner`, the hook returns unauthenticated by design.
-8. **Confirm Replit Secrets.** `VITE_SUPABASE_URL` and
+8. **Confirm Vercel environment variables / local env.** `VITE_SUPABASE_URL` and
    `VITE_SUPABASE_ANON_KEY` must be present. **No service role
    key.**
 9. **Confirm `user_profiles.user_id` values match `auth.users.id`

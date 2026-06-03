@@ -1,18 +1,17 @@
 # Veroxa OS — Locked Operating Model
 
-This document captures the current locked Veroxa OS direction. It is intended for Faraz, Replit, Codex, and future coding agents.
+This document captures the current locked Veroxa OS direction. It is intended for Faraz, Codex, and future coding agents.
 
 ## 1. Correct platform reality
 
-The current operating setup is:
+The active Veroxa build stack is **GitHub + Codex + Vercel**:
 
-- **Replit Plus-style build capacity** with full-power builds available, but no assumed parallel agent builds.
-- **GPT Pro / Codex capability** available for deeper engineering, architecture review, hardening, PRs, and tests.
 - **GitHub main** is the source of truth.
+- **Codex** is the primary engineering/build agent for engineering, architecture review, hardening, PRs, and tests.
+- **Vercel** is the deployment target.
+- **Browser/manual QA** is used for visual checks.
 - **Supabase** is connected as the future app/data backend, but production writes/auth/storage/RLS must remain staged and intentional.
 - **OpenAI Platform** is connected for future server-side AI work, but no frontend key exposure and no runtime AI calls unless explicitly requested.
-
-Correction: do not assume Replit Pro parallel-agent capabilities. Use Replit for strong single full-power builds, and use Codex/GPT Pro capability for deeper engineering and hardening.
 
 ## 2. Product identity
 
@@ -242,36 +241,30 @@ The client should usually experience AI output only as "Prepared by Veroxa."
 
 ## 11. Build cadence
 
-Use Replit for:
+Use Codex for:
 
-- visible builds
-- portal UI
-- approval queue UI
-- dashboards
-- fixture/demo workflow
-- staged feature builds
-- preview iteration
-
-Use Codex/GPT Pro for:
-
-- senior engineering review
+- engineering/build work
+- source-of-truth updates
+- architecture review
 - type safety
 - domain logic hardening
 - tests/test plans
 - backend architecture
 - PR cleanup
-- Supabase/RLS work later
-- server-side AI architecture later
-- connector architecture later
+- future Supabase/RLS work when explicitly approved
+- future server-side AI architecture when explicitly approved
+- future connector architecture when explicitly approved
+
+Use Vercel as the deployment target and use browser/manual QA for visual checks.
 
 Recommended cadence:
 
-1. Replit builds staged feature layer.
-2. Codex reviews/hardens in a branch and draft PR.
-3. Faraz/ChatGPT review PR.
-4. Merge if safe.
-5. Replit pulls latest origin/main.
-6. Continue.
+1. Codex creates a task branch from the latest source-of-truth state.
+2. Codex builds, reviews, hardens, and tests the staged change.
+3. Codex opens a PR.
+4. Faraz/ChatGPT review PR.
+5. Merge if safe.
+6. Vercel deploys from the configured GitHub flow.
 
 ## 12. High-risk areas
 

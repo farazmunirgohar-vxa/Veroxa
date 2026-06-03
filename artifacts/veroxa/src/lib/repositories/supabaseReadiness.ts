@@ -51,7 +51,7 @@ export function getSupabaseReadinessStatus(): SupabaseReadinessStatus {
     clientInitialised,
     readOnlyAdapterAvailable: isReadOnlySupabaseAvailable(),
     // The following are hard-coded false. The app does not enable
-    // any of these in this Replit phase. Any change to these flags
+    // any of these in this placeholder phase. Any change to these flags
     // requires explicit owner sign-off and a separate prompt.
     realAuthActive: AUTH_MODE !== "placeholder",
     writesEnabled: false,

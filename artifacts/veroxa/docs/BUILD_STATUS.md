@@ -256,7 +256,7 @@ Next milestone: Portal Connect Planning (requires M001–M006 dev-test gate).
   [`docs/DEV_SUPABASE_EXECUTION_CHECKPOINT.md`](./DEV_SUPABASE_EXECUTION_CHECKPOINT.md)
   for the per-migration status table, seed counts, corrections, and
   guards. **This is dev-only.** No SQL has been promoted to
-  `supabase/migrations/` and the Replit app is still not connected
+  `supabase/migrations/` and the app is still not connected
   to Supabase.
 - **The portal remains fixture / demo-first.** The Client Portal
   has read-only Supabase queries scaffolded behind
@@ -361,7 +361,7 @@ current phase. Stop and ask before any deviation.
 - **Real writes / uploads / storage** — Supabase Storage buckets,
   signed-URL uploads, real INSERT / UPDATE / DELETE from the app.
 - **Real AI provider** — OpenAI, Anthropic, Gemini, OpenRouter,
-  or any other provider; including via Replit AI Integrations.
+  or any other provider; including via external AI integrations.
 - **Publishing or Google integrations** — Instagram, Facebook,
   TikTok, Google Business Profile, YouTube, scheduling APIs.
 - **Pricing changes** — locked values (GPS 49700, COP 12mo 99700,
@@ -466,7 +466,7 @@ current phase. Stop and ask before any deviation.
 - **Seeds:** applied manually from `docs/database/seeds-draft/` (including 007 draft variant wiring with trigger bypass)
 - **RLS:** dev read policies applied from `docs/database/rls-draft/001_dev_read_policies.sql`
 - **Client Portal read layer:** working — all 8 queries succeed when env vars are present
-- **Secrets:** `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` expected as Replit Secrets; missing → graceful fallback to static demo
+- **Secrets:** `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` expected as Vercel environment variables / local env; missing → graceful fallback to static demo
 - **Service role key:** never used; anon key only
 
 ---
@@ -689,8 +689,8 @@ Still true:
 
 ## Next recommended phase
 
-**Manual Supabase preparation, outside Replit.** Do not run more
-prompts in Replit until these are done by hand:
+**Manual Supabase preparation, outside the app runtime.** Do not run more
+auth/database implementation prompts until these are done by hand:
 
 1. Review the draft SQL under `docs/database/auth-draft/`.
 2. Apply `user_profiles` manually in the dev Supabase project — only if approved.
@@ -910,7 +910,7 @@ internal_demo | future_protected`. The client, team, operator,
   count check passed.
 - **Portal still placeholder / disconnected.** `AUTH_MODE` remains
   `"placeholder"`. `useClientPortalData` continues to short-circuit
-  to fixtures. The Replit app is **not** connected to the dev
+  to fixtures. The app is **not** connected to the dev
   Supabase project; the dev DB work is purely a backend execution
   checkpoint, not a portal activation.
 - **Next phase: Portal Connect Plan, not production auth.** Design
@@ -1219,7 +1219,7 @@ internal_demo | future_protected`. The client, team, operator,
 - Team subroutes remain reachable and show safe review-mode operational summaries rather than demo restaurants as active clients.
 - Public demo remains separate at `/demo/client/dashboard`; demo navigation stays in demo context instead of accidentally entering real `/client/*` routes.
 - No real AI calls, storage uploads, posting connectors, Google Business Profile APIs, payments, webhooks, background jobs, auth provider changes, or destructive migrations were added.
-- Codex remains the main builder for this stage. Replit is optional only for surface-level visual QA or explicit preview polish.
+- Codex remains the main builder for this stage. Browser/manual QA is used for surface-level visual checks and explicit preview polish.
 
 ## Full SaaS Foundation design reference
 
