@@ -22,6 +22,15 @@ import {
   SafePortalEmptyCard,
 } from "@/components/RealPortalSafeStates";
 import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary";
+import {
+  canUseAuthenticatedClientData,
+  canUseDemoFixtures,
+  getDataModeLabel,
+  mapRealPortalDataModeToSaasDataMode,
+} from "@/domain/saas/dataMode";
+import { createSaasRepositoryBundle } from "@/domain/saas/repositoryProvider";
+import { buildActivityLogPreview } from "@/domain/saas/activityLogScaffold";
+import { buildProfitValidationSnapshot } from "@/domain/saas/profitValidationPersistence";
 import { TeamWorkflowPanel } from "@/components/TeamWorkflowPanel";
 import { PageHeader, StatusBadge } from "@/components/common";
 import type { StatusBadgeTone } from "@/components/common";
@@ -88,6 +97,24 @@ const pushPriorityLabel: Record<OpportunityPriority, string> = {
 
 export default function TeamDashboard() {
   const portalDataMode = useRealPortalDataMode();
+  const saasDataMode = mapRealPortalDataModeToSaasDataMode(portalDataMode);
+  const repositoryBundle = createSaasRepositoryBundle(saasDataMode);
+  const repositoryActivityPreview = buildActivityLogPreview({
+    restaurantId: "placeholder-team",
+    dataMode: saasDataMode,
+    entityType: "prepared_action",
+    entityId: "preview",
+    action: "snapshot_previewed",
+    summary: "Repository boundary preview only; not persisted.",
+  });
+  const repositoryProfitSnapshot = buildProfitValidationSnapshot({
+    restaurantId: "placeholder-team",
+    dataMode: saasDataMode,
+    daysSinceStart: 30,
+    monthlyFee: VEROXA_PLANS.starter.priceMonthly,
+    trackingConfidence: "unknown",
+    createdAt: "2026-06-03T00:00:00.000Z",
+  });
   const canUseFixtureData =
     portalDataMode.allowDemoFixtures || portalDataMode.isLiveDataConnected;
   const todayQueue = canUseFixtureData
@@ -287,6 +314,35 @@ export default function TeamDashboard() {
         description="A calmer Today View for review, scheduling, client requests, blockers, approvals, and reports."
         testId="header-team-dashboard"
       />
+
+
+      <Card
+        className="mb-6 border-sky-500/20 bg-sky-500/5"
+        data-testid="card-team-saas-data-mode"
+      >
+        <CardContent className="grid gap-3 p-4 text-xs md:grid-cols-5">
+          <div>
+            <p className="text-muted-foreground">Data mode</p>
+            <p className="font-semibold">{getDataModeLabel(saasDataMode)}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">Demo fixtures allowed?</p>
+            <p className="font-semibold">{canUseDemoFixtures(saasDataMode) ? "Yes" : "No"}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">Authenticated client data</p>
+            <p className="font-semibold">{canUseAuthenticatedClientData(saasDataMode) ? "Placeholder only" : "Not connected"}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">Repository mode</p>
+            <p className="font-semibold capitalize">{repositoryBundle.repositoryMode}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">Activity / profit hooks</p>
+            <p className="font-semibold">{repositoryActivityPreview.isPersisted ? "Persisted" : "Scaffold only"} · {repositoryProfitSnapshot.validationStatus.replaceAll("_", " ")}</p>
+          </div>
+        </CardContent>
+      </Card>
 
       {canUseFixtureData ? (
         <DemoOnlyBanner

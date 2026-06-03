@@ -308,3 +308,7 @@ First 5 clients are the pre-launch readiness benchmark: healthy Starter, Starter
 ## 16. Full SaaS Foundation design control
 
 For the next Full SaaS Foundation design and guardrail plan, see `artifacts/veroxa/docs/CLIENT_PORTAL_FULL_SAAS_FOUNDATION_DESIGN.md`. This reference does not mark production SaaS as built; production auth, migrations, storage uploads, live AI, connectors, and payments still require explicit RR-approved implementation work.
+
+## 17. Client Portal Full SaaS Foundation Phase 1 scaffold
+
+Phase 1 SaaS foundation scaffolding is present as TypeScript-only contracts and safety boundaries. `artifacts/veroxa/src/domain/saas/` contains `SaasDataMode`, account/user/restaurant models, repository contracts, placeholder repository and demo repository adapters, a `RepositoryBundle` selector, activity log scaffolding, and `ProfitValidationSnapshotRecord` hooks. This is not production SaaS runtime: production DB/auth/storage is still not connected, demo fixture leakage is guarded, and any future production adapter requires RR approval before implementation or wiring.

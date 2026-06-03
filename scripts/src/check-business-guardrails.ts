@@ -389,6 +389,12 @@ for (const required of [
     failures.push(`veroxaPricing.ts missing business-rule marker: ${required}`);
 }
 
+
+const saasScaffold = readFileSync(join(root, "artifacts/veroxa/src/domain/saas/repositoryProvider.ts"), "utf8");
+for (const marker of ["createSaasRepositoryBundle", "placeholder repository", "demo repository"]) {
+  if (!saasScaffold.includes(marker)) failures.push(`Phase 1 SaaS scaffold marker missing: ${marker}`);
+}
+
 if (failures.length) {
   console.error("Business guardrail check failed:");
   for (const failure of failures) console.error(`- ${failure}`);

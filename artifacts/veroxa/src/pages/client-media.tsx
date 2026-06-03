@@ -346,6 +346,13 @@ export default function ClientMedia() {
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
       <RealPortalReviewNotice />
+      {!canUseFixtureData && (
+        <SafePortalEmptyCard
+          title="Live client data is not connected yet"
+          body="This portal will show your media once your account is active. No live media library is connected yet, so selected files stay in this review session."
+          testId="card-client-media-real-empty"
+        />
+      )}
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>

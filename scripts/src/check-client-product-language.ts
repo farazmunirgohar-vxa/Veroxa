@@ -213,6 +213,12 @@ if (
   );
 }
 
+
+const saasScaffold = readFileSync(join(root, "artifacts/veroxa/src/domain/saas/repositoryProvider.ts"), "utf8");
+for (const marker of ["createSaasRepositoryBundle", "placeholder repository", "demo repository"]) {
+  if (!saasScaffold.includes(marker)) failures.push(`Phase 1 SaaS scaffold marker missing: ${marker}`);
+}
+
 if (failures.length > 0) {
   console.error("Client product language guardrail failed:");
   for (const failure of failures) console.error(`- ${failure}`);

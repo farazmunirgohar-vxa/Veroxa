@@ -151,6 +151,22 @@ for (const required of [
   }
 }
 
+
+for (const required of [
+  "SaasDataMode",
+  "RepositoryBundle",
+  "ActivityLogRepository",
+  "assertNoDemoFixturesInAuthenticatedMode",
+  "ProfitValidationSnapshotRecord",
+  "placeholder repository",
+  "demo repository",
+  "future production adapter requires RR approval",
+]) {
+  if (!new RegExp(required.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i").test(combinedDocs)) {
+    failures.push(`SaaS foundation docs are missing Phase 1 marker: ${required}`);
+  }
+}
+
 if (
   !/No future write should ship without activity logging/i.test(combinedDocs)
 ) {

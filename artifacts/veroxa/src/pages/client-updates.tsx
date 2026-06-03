@@ -73,6 +73,13 @@ export default function ClientUpdates() {
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
       <RealPortalReviewNotice />
+      {!canUseFixtureData && (
+        <Card className="border-primary/20 bg-primary/5" data-testid="card-client-updates-real-empty">
+          <CardContent className="p-4 text-sm text-muted-foreground">
+            Live client data is not connected yet. Updates will appear here after Veroxa reviews verified work for your account.
+          </CardContent>
+        </Card>
+      )}
 
       <div>
         <h2
