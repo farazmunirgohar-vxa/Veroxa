@@ -28,6 +28,7 @@ import type { ReadinessStatus } from "@/domain/firstClientReadiness";
 import { VEROXA_PLANS } from "@/data/pricing/veroxaPricing";
 import { evaluateVeroxaProfitValidation } from "@/domain/profitValidation";
 
+import { TeamSaasStatePanel } from "@/components/team/TeamSaasStatePanel";
 const statusTone: Record<ReadinessStatus, StatusBadgeTone> = {
   passing: "success",
   warning: "warning",
@@ -111,6 +112,7 @@ export default function TeamFirstClientReadiness() {
 
   return (
     <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
+      <TeamSaasStatePanel compact={false} />
       <PageHeader
         title="First-client readiness"
         description="A benchmark review surface for the first 1–5 restaurant clients. It does not mean production auth, storage uploads, or live account data are fully connected."

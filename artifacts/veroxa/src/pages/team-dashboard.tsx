@@ -83,6 +83,7 @@ import {
 import { VEROXA_PLANS } from "@/data/pricing/veroxaPricing";
 import { evaluateVeroxaProfitValidation } from "@/domain/profitValidation";
 
+import { TeamSaasStatePanel } from "@/components/team/TeamSaasStatePanel";
 const pushPriorityTone: Record<OpportunityPriority, StatusBadgeTone> = {
   high: "warning",
   medium: "info",
@@ -307,6 +308,7 @@ export default function TeamDashboard() {
 
   return (
     <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
+      <TeamSaasStatePanel compact={false} />
       <RealPortalReviewNotice />
 
       <PageHeader

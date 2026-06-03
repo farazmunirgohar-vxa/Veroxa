@@ -33,6 +33,7 @@ import {
   suggestManualSchedule,
 } from "@/domain/ruleBasedAutomation";
 
+import { TeamSaasStatePanel } from "@/components/team/TeamSaasStatePanel";
 type LocalDecision =
   | "pending"
   | "reviewed"
@@ -169,6 +170,7 @@ export default function TeamWorkQueue() {
   if (!canUseFixtureData) {
     return (
       <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
+      <TeamSaasStatePanel compact={true} />
         <RealPortalReviewNotice />
         <SafePortalEmptyCard
           title="Work Queue in review"

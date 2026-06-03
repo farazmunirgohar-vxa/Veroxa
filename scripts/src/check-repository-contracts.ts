@@ -48,6 +48,24 @@ if (!provider.includes("createSaasRepositoryBundle")) {
   failures.push("repositoryProvider.ts missing createSaasRepositoryBundle.");
 }
 
+for (const marker of [
+  "getClientPortalPageState",
+  "getClientDashboardSummary",
+  "getClientUpdateSummaries",
+  "getClientReportSummaries",
+  "getClientMediaSummary",
+  "getClientRequestSummary",
+  "getTeamPortalRepositoryState",
+  "getAccountActivationSummaries",
+  "getProfitValidationSnapshots",
+  "getActivityLogPreviews",
+  "previewActivityLogs",
+  "buildNonPersistedActivityPreview",
+]) {
+  if (!contracts.includes(marker)) failures.push(`repositoryContracts.ts missing phase 2 method ${marker}`);
+  if (!combined.includes(marker)) failures.push(`Phase 2 repository implementation/docs missing marker ${marker}`);
+}
+
 if (/create(?:Supabase|Database|Db|Prisma|Drizzle).*Repository/.test(combined) && !/future-only|unused|requires RR approval/i.test(combined)) {
   failures.push("Production DB adapter appears without future-only unused labeling.");
 }

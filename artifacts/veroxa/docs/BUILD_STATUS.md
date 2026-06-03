@@ -1255,3 +1255,24 @@ No runtime SaaS implementation is added by this layer: no production auth, datab
 - Production DB/auth/storage is still not connected: no production auth, migrations, RLS policies, storage uploads, live AI, connectors, payments, or real client data writes are enabled.
 - Demo fixture leakage is guarded with `assertNoDemoFixturesInAuthenticatedMode`; `/client/*` and `/team/*` cannot use demo/sample fixtures once authenticated real mode is enabled.
 - A future production adapter requires RR approval before implementation or wiring.
+
+## 2026-06-03 — Client Portal Full SaaS Foundation Phase 2 account/data-flow buildout
+
+- Built the deterministic account activation model for demo-only, prospect review, onboarding, client portal ready, team review ready, active manual service, paused, canceled, and archived states.
+- Built normalized client portal page state and team portal repository state models so UI surfaces can read through repository/data-mode boundaries instead of mixing demo and real-route behavior.
+- Expanded repository contracts and placeholder/demo adapters with client dashboard, media, request, update, report, team repository, activity preview, account activation summary, and profit validation snapshot methods.
+- Updated client portal pages to show richer repository-driven demo states while keeping real guarded routes in premium, client-safe setup states.
+- Updated team portal surfaces to show account/data-mode visibility, demo-vs-placeholder labels, activity log preview status, and internal profit validation snapshot previews.
+- Integrated non-persisted activity log previews and internal-only profit validation snapshot previews without production writes.
+- Production runtime is still not connected: no production auth enablement, database tables, migrations, RLS policies, storage uploads, payments, live AI, or publishing integrations were added.
+- Next recommended phase: RR-approved production adapter design and test harness planning before any real auth/database/storage wiring.
+
+## 2026-06-03 — Vercel Vite frontend deployment config
+
+- Vercel must deploy Veroxa as a Vite frontend app, not as Vercel Services.
+- Vercel project framework preset should be Vite or Other, not Services.
+- Vercel root directory should remain the repository root.
+- Install command: `pnpm install --frozen-lockfile`.
+- Build command: `pnpm --filter @workspace/veroxa run build`.
+- Output directory: `artifacts/veroxa/dist`.
+- The root `vercel.json` config does not enable production auth, database, storage, AI, payments, backend/serverless functions, or integrations.

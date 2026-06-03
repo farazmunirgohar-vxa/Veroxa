@@ -21,6 +21,7 @@ import {
 } from "@/data/demoData";
 import { buildRuleBasedReportDraft } from "@/domain/ruleBasedAutomation";
 
+import { TeamSaasStatePanel } from "@/components/team/TeamSaasStatePanel";
 const weeklyStatusColor: Record<WeeklyReportStatus, string> = {
   Draft: "border-muted-foreground/40 text-muted-foreground bg-muted/30",
   "Team Review": "border-amber-500/40 text-amber-300 bg-amber-500/10",
@@ -56,6 +57,7 @@ export default function TeamReportQueue() {
   if (!canUseFixtureData) {
     return (
       <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
+      <TeamSaasStatePanel compact={true} />
         <RealPortalReviewNotice />
         <SafePortalEmptyCard
           title="Report Queue in review"
