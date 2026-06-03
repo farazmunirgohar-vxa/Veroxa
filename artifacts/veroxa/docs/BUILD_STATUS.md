@@ -1,3 +1,5 @@
+> **Pre-build stability checklist:** see [`docs/PRE_BUILD_STABILITY_CHECKLIST.md`](./PRE_BUILD_STABILITY_CHECKLIST.md) before large builds to protect deploy config, temp login, audit search, pricing, metadata, and SaaS safety.
+>
 > **2026-05-30 — Portal separation and first-5-client readiness lock**
 >
 > Current active routing is now: public demo only at `/demo/client/dashboard`, real Client Portal review routes under `/client/*`, and real Team/Internal Admin review routes under `/team/*`. Team Demo / `/demo/team/*` is deprecated/not active and must not be promoted by public pages or used as a login destination. Client-side readiness remains first; heavy Team/Internal Admin AI automation comes later. The first 5 real clients are the pre-launch readiness benchmark.

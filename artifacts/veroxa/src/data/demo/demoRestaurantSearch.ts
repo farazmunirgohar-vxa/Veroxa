@@ -36,6 +36,8 @@ export interface RestaurantSearchCandidate {
   instagramUrl?: string;
   facebookUrl?: string;
   menuOrderingUrl?: string;
+  tiktokUrl?: string;
+  matchSource?: "fixture" | "fuzzy match" | "manual";
   matchConfidence: RestaurantMatchConfidence;
   onlineConsistencySignal: RestaurantOnlineConsistencySignal;
   walkInOpportunitySignal: RestaurantWalkInOpportunitySignal;
@@ -103,6 +105,8 @@ export const demoRestaurantSearchCandidates: RestaurantSearchCandidate[] = [
       "Mamdali",
       "Mamadali Kebab",
       "Mamadali Kebab House",
+      "Mamadali Kabob",
+      "Mamadali Kebob",
     ],
     city: "San Antonio",
     state: "TX",

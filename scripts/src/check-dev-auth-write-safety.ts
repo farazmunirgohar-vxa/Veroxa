@@ -44,6 +44,35 @@ for (const token of [
 if (/password:\s*["'][^"']+["']/.test(devCredentials)) {
   failures.push("devCredentials.ts must not define source plaintext passwords.");
 }
+for (const marker of [
+  "VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN",
+  "getPlaceholderCredentialStatus",
+  "Preview login configured",
+  "Preview login not configured",
+  "publicPreviewFallbackEnabled",
+]) {
+  if (!devCredentials.includes(marker)) {
+    failures.push(`devCredentials.ts is missing temp-login safety marker: ${marker}`);
+  }
+}
+if (!/import\.meta\.env\.DEV \|\| readViteEnv\(PUBLIC_PREVIEW_LOGIN_FLAG\) === ["']true["']/.test(devCredentials)) {
+  failures.push("public preview fallback login must require local DEV or explicit VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=true.");
+}
+const loginSource = readFileSync(join(root, "artifacts/veroxa/src/pages/login.tsx"), "utf8");
+for (const marker of [
+  "getPlaceholderCredentialStatus",
+  "temp-login-status-note",
+  "placeholderCredentialStatus.statusLabel",
+  "createPlaceholderSession",
+]) {
+  if (!loginSource.includes(marker)) {
+    failures.push(`login.tsx is missing placeholder temp-login marker: ${marker}`);
+  }
+}
+const authModeSource = readFileSync(join(root, "artifacts/veroxa/src/lib/auth/authMode.ts"), "utf8");
+if (!/export\s+const\s+AUTH_MODE(?:\s*:\s*AuthMode)?\s*=\s*["']placeholder["']/.test(authModeSource)) {
+  failures.push("AUTH_MODE must remain placeholder until production auth is explicitly approved.");
+}
 
 const writeReadiness = readFileSync(join(root, "artifacts/veroxa/src/lib/data/writeReadiness.ts"), "utf8");
 if (!writeReadiness.includes("VITE_VEROXA_DEV_WRITE_ENV")) {

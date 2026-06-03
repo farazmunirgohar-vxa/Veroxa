@@ -32,9 +32,10 @@ import type {
   PreferredContactMethod,
 } from "@/lib/leads/leadTypes";
 import {
+  buildManualAuditLeadFallback,
   searchRestaurantCandidates,
   type RestaurantSearchCandidate,
-} from "@/data/demo/demoRestaurantSearch";
+} from "@/lib/audit/restaurantNameMatching";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -170,6 +171,7 @@ export default function FreeAudit() {
   // fixture/preview fallback candidates. `source` drives the UI badge.
   type UnifiedCandidate = {
     source: "preview" | "manual";
+    matchSource?: "fixture" | "fuzzy match" | "manual";
     id: string;
     placeId?: string;
     restaurantName: string;
@@ -226,6 +228,7 @@ export default function FreeAudit() {
       instagramUrl: c.instagramUrl,
       facebookUrl: c.facebookUrl,
       menuOrderingUrl: c.menuOrderingUrl,
+      matchSource: c.matchSource ?? "fixture",
       matchConfidence: c.matchConfidence,
       note: c.note,
     };
@@ -253,31 +256,25 @@ export default function FreeAudit() {
   }
 
   function buildManualFallbackCandidate(): UnifiedCandidate {
-    const restaurantName =
-      input.restaurantName.trim() || "Manual restaurant lead";
-    const city = input.city.trim();
-    const state = input.state.trim();
+    const fallback = buildManualAuditLeadFallback({
+      restaurantName: input.restaurantName,
+      city: input.city,
+      state: input.state,
+      cuisineType: input.cuisineType,
+      googleMapsUrl: input.googleListingUrl,
+      websiteUrl: input.websiteUrl,
+      instagramUrl: input.instagramUrl,
+      facebookUrl: input.facebookUrl,
+      tiktokUrl: input.tiktokUrl,
+      notes: input.notes,
+    });
     return {
+      ...adaptFixtureCandidate(fallback),
       source: "manual",
-      id: `manual-${restaurantName.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "restaurant"}`,
-      restaurantName,
-      city,
-      state,
-      addressLine:
-        city || state
-          ? `${[city, state].filter(Boolean).join(", ")} — address needs manual confirmation`
-          : "Address needs manual confirmation",
-      cuisineType:
-        input.cuisineType.trim() || "Restaurant / Food — category not verified",
-      googleMapsUrl: input.googleListingUrl || undefined,
-      websiteUrl: input.websiteUrl || undefined,
-      instagramUrl: input.instagramUrl || undefined,
-      facebookUrl: input.facebookUrl || undefined,
-      menuOrderingUrl: input.menuOrderingUrl || undefined,
+      matchSource: "manual",
+      googleMapsUrl: fallback.googleListingUrl,
       googleRating: input.googleRating,
       reviewCount: input.reviewCount,
-      matchConfidence: "low",
-      note: "Manual fallback: weak preview discoverability is a potential Veroxa opportunity, not a system failure.",
     };
   }
 
@@ -648,17 +645,13 @@ export default function FreeAudit() {
                     data-testid="restaurant-search-empty"
                   >
                     <p className="text-sm font-semibold">
-                      No preview match found yet.
+                      No confident demo/local lookup match found yet.
                     </p>
                     <p className="text-[12px] text-muted-foreground mt-1">
-                      Try a shorter name, alternate spelling, city/state, or
-                      cuisine. If no confident match exists, continue manually —
-                      Veroxa can still review it.
+                      This review-mode audit preview uses deterministic local/demo lookup only. Try a shorter name, alternate spelling, city/state, or cuisine. If no confident match exists, continue manually — Veroxa can still review it.
                     </p>
                     <p className="text-[12px] text-muted-foreground/80 mt-1">
-                      Tip: Some restaurants appear under a different listing
-                      name. A weak or missing match is a discoverability signal
-                      and potential Veroxa opportunity, not a system failure.
+                      Live Google/API scanning is not connected here yet. Some restaurants appear under a different listing name, so a weak or missing match is a discoverability signal and potential Veroxa opportunity, not a system failure. Audit recommendations are not guarantees; Premium ads readiness assessment is required before any ad-support work.
                     </p>
                     <Button
                       type="button"
@@ -715,7 +708,9 @@ export default function FreeAudit() {
                               >
                                 {c.source === "manual"
                                   ? "Manual fallback"
-                                  : "Preview fallback result"}
+                                  : c.matchSource === "fuzzy match"
+                                    ? "Fuzzy match"
+                                    : "Fixture match"}
                               </Badge>
                               <Badge
                                 variant="outline"

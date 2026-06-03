@@ -94,9 +94,10 @@ import {
 } from "@/lib/leadIntelligence/leadObjectionPatterns";
 import { VEROXA_PLANS } from "@/data/pricing/veroxaPricing";
 import {
+  buildManualAuditLeadFallback,
   normalizeRestaurantSearchText,
   searchRestaurantCandidates,
-} from "@/data/demo/demoRestaurantSearch";
+} from "@/lib/audit/restaurantNameMatching";
 import { evaluateBreakEvenProgress } from "@/domain/breakEvenProgress";
 import {
   STARTER_INTERNAL_MINIMUM_ACTIONS_PER_DAY,
@@ -125,6 +126,12 @@ const initialManualLeadInput = {
   city: "San Antonio",
   state: "TX",
   cuisineType: "",
+  googleMapsUrl: "",
+  websiteUrl: "",
+  instagramUrl: "",
+  facebookUrl: "",
+  tiktokUrl: "",
+  notes: "",
 };
 
 const STAGE_BUTTONS: { stage: LeadStage; label: string }[] = [
@@ -478,12 +485,19 @@ export default function TeamAuditLeads() {
   function handleUseManualSearchMatch(
     match: ReturnType<typeof searchRestaurantCandidates>[number],
   ) {
-    setManualLeadInput({
+    setManualLeadInput((prev) => ({
+      ...prev,
       restaurantName: match.restaurantName,
       city: match.city,
       state: match.state,
       cuisineType: match.cuisineType,
-    });
+      googleMapsUrl: match.googleListingUrl ?? prev.googleMapsUrl,
+      websiteUrl: match.websiteUrl ?? prev.websiteUrl,
+      instagramUrl: match.instagramUrl ?? prev.instagramUrl,
+      facebookUrl: match.facebookUrl ?? prev.facebookUrl,
+      tiktokUrl: match.tiktokUrl ?? prev.tiktokUrl,
+      notes: match.note ?? prev.notes,
+    }));
     setManualLeadMessage(
       "Preview match copied into the manual lead form. Confirm details before saving.",
     );
@@ -500,34 +514,56 @@ export default function TeamAuditLeads() {
       return;
     }
 
-    const cuisineType =
-      manualLeadInput.cuisineType.trim() ||
-      "Restaurant / Food — category not verified";
+    const fallback = buildManualAuditLeadFallback({
+      restaurantName,
+      city,
+      state,
+      cuisineType: manualLeadInput.cuisineType,
+      googleMapsUrl: manualLeadInput.googleMapsUrl,
+      websiteUrl: manualLeadInput.websiteUrl,
+      instagramUrl: manualLeadInput.instagramUrl,
+      facebookUrl: manualLeadInput.facebookUrl,
+      tiktokUrl: manualLeadInput.tiktokUrl,
+      notes: manualLeadInput.notes,
+    });
+    const cuisineType = fallback.cuisineType;
     const report = generateRestaurantAudit({
       restaurantName,
       city,
       state,
       cuisineType,
+      googleListingUrl: manualLeadInput.googleMapsUrl,
+      websiteUrl: manualLeadInput.websiteUrl,
+      instagramUrl: manualLeadInput.instagramUrl,
+      facebookUrl: manualLeadInput.facebookUrl,
+      tiktokUrl: manualLeadInput.tiktokUrl,
       restaurantSource: "manual",
       notes:
-        "Manual audit lead created from Team Audit Leads. Weak discoverability or no confident preview match should be reviewed as a potential Veroxa opportunity.",
+        `${fallback.note} Manual audit lead created from Team Audit Leads. ${manualLeadInput.notes}`.trim(),
     });
     const lead = createAuditLeadFromReport(report, {
       source: "manual_prospect",
       initialStage: "ready_to_contact",
       selectedRestaurant: {
-        selectedRestaurantId: `manual-${restaurantName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+        selectedRestaurantId: fallback.id,
         selectedRestaurantName: restaurantName,
         selectedCity: city,
         selectedState: state,
-        selectedAddress: `${city}, ${state} — address needs manual confirmation`,
+        selectedAddress: fallback.addressLine,
         selectedCuisineType: cuisineType,
         selectedMatchConfidence: "low",
         selectedSource: "manual",
+        selectedWebsiteUrl: manualLeadInput.websiteUrl || undefined,
+        selectedGoogleMapsUrl: manualLeadInput.googleMapsUrl || undefined,
+        discoveredSocialLinks: [
+          manualLeadInput.instagramUrl,
+          manualLeadInput.facebookUrl,
+          manualLeadInput.tiktokUrl,
+        ].filter(Boolean),
       },
     });
     lead.internalNotes.push(
-      "Manual fallback lead. Treat weak discoverability as a possible Veroxa opportunity; verify details before outreach.",
+      "Manual fallback lead. Weak discoverability / name-indexing issue — potential Veroxa opportunity. Source label: manual. Verify details before outreach.",
     );
     saveAuditLead(lead);
     const saved = getAuditLeads();
@@ -724,8 +760,58 @@ export default function TeamAuditLeads() {
               Save manual audit lead
             </Button>
           </div>
+          <div className="grid gap-3 md:grid-cols-3" data-testid="manual-lead-link-fields">
+            <Input
+              value={manualLeadInput.googleMapsUrl}
+              onChange={(e) =>
+                handleManualLeadField("googleMapsUrl", e.target.value)
+              }
+              placeholder="Google Maps URL (optional)"
+              data-testid="manual-lead-google-maps-input"
+            />
+            <Input
+              value={manualLeadInput.websiteUrl}
+              onChange={(e) =>
+                handleManualLeadField("websiteUrl", e.target.value)
+              }
+              placeholder="Website URL (optional)"
+              data-testid="manual-lead-website-input"
+            />
+            <Input
+              value={manualLeadInput.instagramUrl}
+              onChange={(e) =>
+                handleManualLeadField("instagramUrl", e.target.value)
+              }
+              placeholder="Instagram URL (optional)"
+              data-testid="manual-lead-instagram-input"
+            />
+            <Input
+              value={manualLeadInput.facebookUrl}
+              onChange={(e) =>
+                handleManualLeadField("facebookUrl", e.target.value)
+              }
+              placeholder="Facebook URL (optional)"
+              data-testid="manual-lead-facebook-input"
+            />
+            <Input
+              value={manualLeadInput.tiktokUrl}
+              onChange={(e) =>
+                handleManualLeadField("tiktokUrl", e.target.value)
+              }
+              placeholder="TikTok URL (optional)"
+              data-testid="manual-lead-tiktok-input"
+            />
+            <Input
+              value={manualLeadInput.notes}
+              onChange={(e) =>
+                handleManualLeadField("notes", e.target.value)
+              }
+              placeholder="Internal notes (optional)"
+              data-testid="manual-lead-notes-input"
+            />
+          </div>
           {manualSearchMatches.length > 0 && (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2" data-testid="manual-search-match-list">
               {manualSearchMatches.map((match) => (
                 <Button
                   key={match.id}
@@ -736,14 +822,15 @@ export default function TeamAuditLeads() {
                   data-testid={`manual-search-match-${match.id}`}
                 >
                   Use {match.restaurantName}
+                  <span className="ml-2 rounded-full border border-border px-2 py-0.5 text-[10px] text-muted-foreground">
+                    Source: {match.matchSource ?? "fixture"}
+                  </span>
                 </Button>
               ))}
             </div>
           )}
           <p className="text-[12px] text-muted-foreground">
-            If a warm target is hard to find, treat that as weak discoverability
-            and save a manual lead for verification. This stays local/manual —
-            no scraping, Places API, database write, or live integration.
+            If a warm target is hard to find, treat that as weak discoverability / name-indexing issue — potential Veroxa opportunity and save a manual lead for verification. Source labels stay fixture, fuzzy match, or manual. This stays local/manual — no scraping, Places API, database write, or live integration.
           </p>
           {manualLeadMessage && (
             <p

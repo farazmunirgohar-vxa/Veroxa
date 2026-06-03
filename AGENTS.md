@@ -43,6 +43,8 @@ Use Codex mainly for senior engineering, architecture review, hardening, type sa
 
 For the active five-phase pre-live roadmap, see `artifacts/veroxa/docs/VEROXA_OS_5_PHASE_PRELIVE_BUILD_MAP.md`.
 
+Before any large build, also run through `artifacts/veroxa/docs/PRE_BUILD_STABILITY_CHECKLIST.md` to protect Vercel config, temp login, audit search, public pricing, public metadata, and SaaS safety.
+
 Every Replit or Codex prompt should begin conceptually with:
 
 Pull latest origin/main before making any new changes.

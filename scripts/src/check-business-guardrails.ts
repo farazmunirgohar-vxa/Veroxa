@@ -108,6 +108,8 @@ const knownWarmAuditSearchFixtures = [
   "Mamdali",
   "Mamadali Kebab",
   "Mamadali Kebab House",
+  "Mamadali Kabob",
+  "Mamadali Kebob",
   "Selda",
   "Selda Mediterranean",
   "Selda Restaurant",
@@ -144,7 +146,9 @@ const freeAudit = readFileSync(
 );
 for (const marker of [
   "btn-use-manual-audit-fallback",
-  "weak preview discoverability is a potential Veroxa opportunity",
+  "potential Veroxa opportunity",
+  "review-mode audit preview",
+  "Live Google/API scanning is not connected here yet",
   'restaurantSource: candidate.source === "manual" ? "manual" : "fixture"',
 ]) {
   if (!freeAudit.includes(marker)) {
@@ -160,6 +164,8 @@ for (const marker of [
   "audit-lead-search-input",
   "btn-create-manual-audit-lead",
   "searchRestaurantCandidates(manualLeadInput)",
+  "manual-lead-link-fields",
+  "Weak discoverability / name-indexing issue — potential Veroxa opportunity",
   'selectedSource: "manual"',
 ]) {
   if (!teamAuditLeads.includes(marker)) {
@@ -169,6 +175,24 @@ for (const marker of [
   }
 }
 
+
+const restaurantNameMatching = readFileSync(
+  join(root, "artifacts/veroxa/src/lib/audit/restaurantNameMatching.ts"),
+  "utf8",
+);
+for (const marker of [
+  "normalizeRestaurantSearchText",
+  "getRestaurantSearchVariants",
+  "editDistanceWithinOne",
+  "isLikelySameRestaurantName",
+  "searchRestaurantCandidates",
+  "buildManualAuditLeadFallback",
+  "Weak discoverability / name-indexing issue — potential Veroxa opportunity.",
+]) {
+  if (!restaurantNameMatching.includes(marker)) {
+    failures.push(`restaurantNameMatching.ts missing audit-search marker: ${marker}`);
+  }
+}
 const publicClientGuaranteePatterns: Array<[RegExp, string]> = [
   [/(?:10|15|20|50)\s+orders\/day/i, "exact public/client order target"],
   [/guaranteed\s+orders/i, "public/client order guarantee"],
