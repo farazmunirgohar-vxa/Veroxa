@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { ListChecks } from "lucide-react";
+import { ArrowRight, ListChecks } from "lucide-react";
+import { Link } from "wouter";
 import { PortalLayout } from "@/components/PortalLayout";
 import {
   RealPortalReviewNotice,
@@ -32,6 +33,7 @@ import {
   scoreCustomerOpportunity,
   suggestManualSchedule,
 } from "@/domain/ruleBasedAutomation";
+import { buildManualExecutionPacks, getExecutionPackNextAction, getExecutionPackReadinessLabel } from "@/domain/manualExecution";
 
 import { TeamSaasStatePanel } from "@/components/team/TeamSaasStatePanel";
 type LocalDecision =
@@ -127,6 +129,8 @@ export default function TeamWorkQueue() {
     reportOverdue: primaryLifecycle?.reportingStatus === "Overdue",
     bestSellerVisible: true,
   });
+  const manualExecutionPacks = buildManualExecutionPacks().slice(0, 3);
+
   const alerts = buildTeamAlerts({
     restaurantName: primaryLifecycle
       ? getRestaurantName(primaryLifecycle.clientId)
@@ -232,6 +236,26 @@ export default function TeamWorkQueue() {
         Mark reviewed · Ask client · Queue for later · Hold for later. These are
         review notes only in this demo.
       </div>
+
+      <Card className="mb-4 border-primary/20 bg-card" data-testid="work-manual-execution-next-actions">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm">Manual execution next actions</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {manualExecutionPacks.map((pack) => (
+            <div key={pack.id} className="rounded-lg border border-border bg-muted/10 p-3 text-xs">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="font-medium text-foreground">{pack.title}</p>
+                <Badge variant="outline" className="border-border bg-muted/20 text-[10px]">{getExecutionPackReadinessLabel(pack)}</Badge>
+              </div>
+              <p className="mt-1 text-muted-foreground">{getExecutionPackNextAction(pack)}</p>
+            </div>
+          ))}
+          <Link href="/team/manual-execution" className="inline-flex items-center gap-2 text-sm text-primary hover:underline">
+            Open Manual Execution Center <ArrowRight className="h-3 w-3" />
+          </Link>
+        </CardContent>
+      </Card>
 
       <div className="mb-4 grid gap-3 lg:grid-cols-2">
         <Card

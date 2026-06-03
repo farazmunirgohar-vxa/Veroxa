@@ -27,6 +27,7 @@ import {
 import type { ReadinessStatus } from "@/domain/firstClientReadiness";
 import { VEROXA_PLANS } from "@/data/pricing/veroxaPricing";
 import { evaluateVeroxaProfitValidation } from "@/domain/profitValidation";
+import { buildManualExecutionPacks, evaluateManualExecutionLaunchGate } from "@/domain/manualExecution";
 
 import { TeamSaasStatePanel } from "@/components/team/TeamSaasStatePanel";
 const statusTone: Record<ReadinessStatus, StatusBadgeTone> = {
@@ -109,6 +110,7 @@ export default function TeamFirstClientReadiness() {
     monthlyFee: VEROXA_PLANS.starter.priceMonthly,
     trackingConfidence: "unknown",
   });
+  const manualExecutionReadiness = evaluateManualExecutionLaunchGate(buildManualExecutionPacks());
 
   return (
     <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
@@ -226,6 +228,43 @@ export default function TeamFirstClientReadiness() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="bg-card border-primary/20 mb-6" data-testid="card-manual-execution-readiness">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <ClipboardCheck className="w-4 h-4 text-primary" />
+            Manual execution readiness
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Pre-live execution support now measures whether Faraz has enough prepared work to review, copy, confirm, and manually complete without live integrations.
+          </p>
+          <div className="grid gap-2 sm:grid-cols-3 text-xs">
+            <div className="rounded-md border border-border bg-muted/20 p-3">
+              <p className="text-muted-foreground">Ready to copy</p>
+              <p className="font-semibold tabular-nums">{manualExecutionReadiness.readyToCopyCount}</p>
+            </div>
+            <div className="rounded-md border border-border bg-muted/20 p-3">
+              <p className="text-muted-foreground">Needs confirmation</p>
+              <p className="font-semibold tabular-nums">{manualExecutionReadiness.needsClientConfirmationCount}</p>
+            </div>
+            <div className="rounded-md border border-border bg-muted/20 p-3">
+              <p className="text-muted-foreground">Blocked media/context</p>
+              <p className="font-semibold tabular-nums">{manualExecutionReadiness.blockedByMediaOrContextCount}</p>
+            </div>
+          </div>
+          <div className="grid gap-1 text-xs text-muted-foreground">
+            <p>Demo-walkthrough ready: {manualExecutionReadiness.demoWalkthroughReady ? "Yes" : "No"}</p>
+            <p>Feedback-conversation ready: {manualExecutionReadiness.feedbackConversationReady ? "Yes" : "No"}</p>
+            <p>First-paid-client ready later: {manualExecutionReadiness.firstPaidClientReadyLater ? "Yes" : "No — production SaaS foundation still required"}</p>
+          </div>
+          <p className="text-xs text-primary/80">{manualExecutionReadiness.recommendedNextAction}</p>
+          <Link href="/team/manual-execution" className="inline-flex items-center gap-2 text-sm text-primary hover:underline">
+            Open Manual Execution Center <ArrowRight className="w-3 h-3" />
+          </Link>
+        </CardContent>
+      </Card>
 
       <Card
         className="bg-card border-amber-500/30 mb-6"
