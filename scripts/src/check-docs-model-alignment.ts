@@ -166,8 +166,12 @@ for (const required of [
   "Profit Fit Layer",
   "requiredDailyOrders = monthlyFee / netMargin / averageTicket / 30",
   "online-influenced orders/actions",
+  "break-even progress",
+  "attribution confidence",
+  "internal only",
+  "not public/client-facing guarantee",
 ]) {
-  if (!combinedDocs.includes(required)) {
+  if (!new RegExp(required.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i").test(combinedDocs)) {
     failures.push(`Profit Fit Layer is documented marker missing: ${required}`);
   }
 }

@@ -5,6 +5,7 @@ import {
   ClipboardCheck,
   Handshake,
   ShieldCheck,
+  TrendingUp,
 } from "lucide-react";
 import { Link } from "wouter";
 import { PortalLayout } from "@/components/PortalLayout";
@@ -24,6 +25,8 @@ import {
   getWarningChecks,
 } from "@/domain/firstClientReadiness";
 import type { ReadinessStatus } from "@/domain/firstClientReadiness";
+import { VEROXA_PLANS } from "@/data/pricing/veroxaPricing";
+import { evaluateVeroxaProfitValidation } from "@/domain/profitValidation";
 
 const statusTone: Record<ReadinessStatus, StatusBadgeTone> = {
   passing: "success",
@@ -100,6 +103,11 @@ export default function TeamFirstClientReadiness() {
   const launchGate = getFirstClientLaunchGate(checks);
   const blockingChecks = getBlockingChecks(checks);
   const warningChecks = getWarningChecks(checks);
+  const profitValidation = evaluateVeroxaProfitValidation({
+    daysSinceStart: 60,
+    monthlyFee: VEROXA_PLANS.starter.priceMonthly,
+    trackingConfidence: "unknown",
+  });
 
   return (
     <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
@@ -216,6 +224,49 @@ export default function TeamFirstClientReadiness() {
           </CardContent>
         </Card>
       </div>
+
+      <Card
+        className="bg-card border-amber-500/30 mb-6"
+        data-testid="card-first-client-profit-validation"
+      >
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-amber-300" />
+            Internal profit validation readiness
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            First-client readiness now includes the internal proof path: 2–3
+            months for service delivery plus cost justification, 6–9 months for
+            profit progress, and 12 months for online presence to become a
+            meaningful order channel. This stays internal only.
+          </p>
+          <div className="grid gap-2 sm:grid-cols-3 text-xs">
+            <div className="rounded-md border border-border bg-muted/20 p-3">
+              <p className="text-muted-foreground">Phase</p>
+              <p className="font-semibold capitalize">
+                {profitValidation.phase.replaceAll("_", " ")}
+              </p>
+            </div>
+            <div className="rounded-md border border-border bg-muted/20 p-3">
+              <p className="text-muted-foreground">Break-even progress</p>
+              <p className="font-semibold tabular-nums">
+                {profitValidation.requiredOrdersPerDay}/day
+              </p>
+            </div>
+            <div className="rounded-md border border-border bg-muted/20 p-3">
+              <p className="text-muted-foreground">Starter proof standard</p>
+              <p className="font-semibold tabular-nums">
+                {profitValidation.starterMinimumTarget}/day
+              </p>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {profitValidation.nextAction}
+          </p>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4 lg:grid-cols-2 mb-6">
         <CheckList

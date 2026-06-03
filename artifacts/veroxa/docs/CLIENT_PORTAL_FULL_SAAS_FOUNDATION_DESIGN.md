@@ -253,3 +253,16 @@ Guardrail expectations:
 - Online-influenced orders/actions include online orders, phone/order clicks, direction/address clicks that become visits, menu/order-link clicks, Google profile actions, customer mentions, social content-driven visits, and repeat-customer attention.
 - Public/client surfaces must not promise orders, profit, ROI, customers, revenue, rankings, or exact order targets.
 - This update does not mark production auth, migrations, storage, live AI, connectors, payments, or runtime SaaS wiring as built.
+## Profit validation and online-influenced action layer (internal only)
+
+Veroxa sells online presence publicly, but internally validates whether the work is becoming cost-justifiable through profitable online-influenced orders/actions. This is an internal operating model, not public/client-facing guarantee language.
+
+- Starter internal 2-month proof standard: 20 online-influenced actions/day for right-fit restaurants.
+- 2–3 months: service delivery plus cost justification through tracking setup, Google/Maps cleanup, best sellers, and order/contact paths.
+- 6–9 months: profit progress should be visible through careful signal review, not service delivery volume alone.
+- 12 months: online presence should be reviewed as a meaningful order channel when attribution confidence is strong enough.
+- Tracking hierarchy: business outcome signals, conversion/action signals, attention signals, engagement signals, and execution signals.
+- Attribution confidence must stay explicit: confirmed, strong signal, directional, owner reported, or unknown.
+- Break-even progress and exact proof math are internal only and must not appear as public/client guarantees.
+
+No runtime SaaS implementation is added by this layer: no production auth, database migrations, storage uploads, live AI, connectors, payments, or real client data writes.

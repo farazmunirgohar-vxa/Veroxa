@@ -14,6 +14,7 @@ import {
   Users,
   PhoneCall,
   ArrowRight,
+  ShieldCheck,
 } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import {
@@ -89,6 +90,13 @@ import {
   OBJECTION_LABELS,
   type ObjectionType,
 } from "@/lib/leadIntelligence/leadObjectionPatterns";
+import { VEROXA_PLANS } from "@/data/pricing/veroxaPricing";
+import { evaluateBreakEvenProgress } from "@/domain/breakEvenProgress";
+import {
+  STARTER_INTERNAL_MINIMUM_ACTIONS_PER_DAY,
+  evaluateOnlineInfluencedActionProgress,
+} from "@/domain/onlineInfluencedActions";
+import { evaluateVeroxaProfitValidation } from "@/domain/profitValidation";
 
 type FilterTab =
   | "all"
@@ -298,6 +306,18 @@ export default function TeamAuditLeads() {
   }, [selectedId]);
 
   const summary = useMemo(() => summarizeAuditLeads(leads), [leads]);
+  const profitValidation = evaluateVeroxaProfitValidation({
+    daysSinceStart: 45,
+    monthlyFee: VEROXA_PLANS.starter.priceMonthly,
+    hasCapacityForMoreOrders: undefined,
+    trackingConfidence: "unknown",
+  });
+  const proofProgress = evaluateOnlineInfluencedActionProgress({
+    daysSinceStart: 45,
+  });
+  const breakEvenProgress = evaluateBreakEvenProgress({
+    monthlyFee: VEROXA_PLANS.starter.priceMonthly,
+  });
 
   const filtered = useMemo(() => {
     if (filter === "all") return leads;
@@ -532,6 +552,53 @@ export default function TeamAuditLeads() {
           icon={AlertTriangle}
         />
       </div>
+
+      <Card
+        className="bg-card border-amber-500/30 bg-amber-500/5 mb-4"
+        data-testid="card-profit-validation-internal"
+      >
+        <CardHeader>
+          <CardTitle className="text-base inline-flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-amber-300" />
+            Profit validation · Internal only
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-foreground/90">
+            Veroxa sells online presence publicly, but team review validates
+            right-fit restaurants through profitable online-influenced
+            actions/orders, break-even progress, and attribution confidence.
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+            <MetricCell
+              label="Estimated actions/day"
+              value={
+                profitValidation.currentOnlineInfluencedActionsPerDay ??
+                "Not enough data"
+              }
+            />
+            <MetricCell
+              label="Break-even target"
+              value={`${breakEvenProgress.requiredOrdersPerDay}/day`}
+            />
+            <MetricCell
+              label="2-month proof standard"
+              value={`${STARTER_INTERNAL_MINIMUM_ACTIONS_PER_DAY}/day`}
+            />
+            <MetricCell
+              label="Attribution confidence"
+              value={proofProgress.confidence.replaceAll("_", " ")}
+            />
+          </div>
+          <div className="rounded-md border border-amber-500/30 bg-background/50 p-3 text-[12px] text-muted-foreground">
+            {profitValidation.nextAction}
+            <br />
+            Internal planning only, not public guarantee. Direction clicks,
+            calls, menu/order-link clicks, and owner notes are signals, not
+            perfect attribution.
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Veroxa Financial Health (M032) */}
       <Card className="bg-card border-border mb-4">
