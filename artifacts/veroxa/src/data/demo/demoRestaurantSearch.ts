@@ -24,6 +24,7 @@ export type RestaurantWalkInOpportunitySignal = "high" | "medium" | "low";
 export interface RestaurantSearchCandidate {
   id: string;
   restaurantName: string;
+  searchAliases?: string[];
   city: string;
   state: string;
   addressLine: string;
@@ -91,6 +92,44 @@ export const demoRestaurantSearchCandidates: RestaurantSearchCandidate[] = [
     onlineConsistencySignal: "strong",
     walkInOpportunitySignal: "medium",
     note: "Active on Instagram and Facebook but no Google Business Profile link — the search/Maps decision moment is missing.",
+  },
+
+  // ── Known warm targets / fuzzy-name regression fixtures ─────────────────
+  {
+    id: "warm-target-mamadali-kebab-house",
+    restaurantName: "Mamadali Kebab House",
+    searchAliases: [
+      "Mamadali",
+      "Mamdali",
+      "Mamadali Kebab",
+      "Mamadali Kebab House",
+    ],
+    city: "San Antonio",
+    state: "TX",
+    addressLine: "San Antonio, TX — address needs manual confirmation",
+    cuisineType: "Halal / Uzbek / Kebab",
+    matchConfidence: "medium",
+    onlineConsistencySignal: "unknown",
+    walkInOpportunitySignal: "high",
+    note: "Known warm target. If the exact listing is hard to discover, treat it as weak discoverability and create a manual audit lead for Veroxa review.",
+  },
+  {
+    id: "warm-target-selda-mediterranean",
+    restaurantName: "Selda Mediterranean",
+    searchAliases: [
+      "Selda",
+      "Selda Mediterranean",
+      "Selda Restaurant",
+      "Selda San Antonio",
+    ],
+    city: "San Antonio",
+    state: "TX",
+    addressLine: "San Antonio, TX — address needs manual confirmation",
+    cuisineType: "Mediterranean / Turkish",
+    matchConfidence: "medium",
+    onlineConsistencySignal: "unknown",
+    walkInOpportunitySignal: "high",
+    note: "Known warm target. Missing or inconsistent preview discovery should become a Veroxa opportunity, not a dead end.",
   },
 
   // ── San Antonio kebab / halal (near-duplicate names) ─────────────────────
@@ -234,27 +273,98 @@ export const demoRestaurantSearchCandidates: RestaurantSearchCandidate[] = [
   },
 ];
 
-function normalize(s: string): string {
-  return s.trim().toLowerCase();
+export function normalizeRestaurantSearchText(s: string): string {
+  return s
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/&/g, " and ")
+    .trim()
+    .toLowerCase();
 }
 
 function tokenize(s: string): string[] {
-  return normalize(s)
+  return normalizeRestaurantSearchText(s)
     .split(/[^a-z0-9]+/)
     .filter((t) => t.length >= 2);
 }
 
-function nameScore(query: string, candidate: string): number {
-  const q = normalize(query);
-  const c = normalize(candidate);
-  if (!q) return 0;
-  if (c.includes(q)) return 3;
-  const qTokens = tokenize(query);
-  const cTokens = new Set(tokenize(candidate));
-  let hits = 0;
-  for (const t of qTokens) {
-    if (cTokens.has(t)) hits += 1;
+function editDistanceWithinOne(a: string, b: string): boolean {
+  if (a === b) return true;
+  if (Math.abs(a.length - b.length) > 1) return false;
+  let edits = 0;
+  let i = 0;
+  let j = 0;
+  while (i < a.length && j < b.length) {
+    if (a[i] === b[j]) {
+      i += 1;
+      j += 1;
+      continue;
+    }
+    edits += 1;
+    if (edits > 1) return false;
+    if (a.length > b.length) i += 1;
+    else if (b.length > a.length) j += 1;
+    else {
+      i += 1;
+      j += 1;
+    }
   }
+  return true;
+}
+
+function tokenMatches(queryToken: string, candidateToken: string): boolean {
+  if (candidateToken === queryToken) return true;
+  if (
+    candidateToken.includes(queryToken) ||
+    queryToken.includes(candidateToken)
+  ) {
+    return true;
+  }
+  return (
+    queryToken.length >= 5 &&
+    candidateToken.length >= 5 &&
+    editDistanceWithinOne(queryToken, candidateToken)
+  );
+}
+
+function nameScore(
+  query: string,
+  candidate: RestaurantSearchCandidate,
+): number {
+  const q = normalizeRestaurantSearchText(query);
+  if (!q) return 0;
+
+  const searchableNames = [
+    candidate.restaurantName,
+    ...(candidate.searchAliases ?? []),
+  ];
+  if (
+    searchableNames.some((name) => normalizeRestaurantSearchText(name) === q)
+  ) {
+    return 4;
+  }
+  if (
+    searchableNames.some((name) =>
+      normalizeRestaurantSearchText(name).includes(q),
+    )
+  ) {
+    return 3;
+  }
+
+  const qTokens = tokenize(query);
+  const searchableTokens = searchableNames.flatMap(tokenize);
+  let hits = 0;
+  for (const qToken of qTokens) {
+    if (
+      searchableTokens.some((candidateToken) =>
+        tokenMatches(qToken, candidateToken),
+      )
+    ) {
+      hits += 1;
+    }
+  }
+
+  if (hits >= Math.max(1, qTokens.length)) return 2;
   return hits >= 1 ? 1 : 0;
 }
 
@@ -262,6 +372,7 @@ export interface RestaurantSearchQuery {
   restaurantName: string;
   city: string;
   state: string;
+  cuisineType?: string;
 }
 
 /**
@@ -279,32 +390,43 @@ export function searchRestaurantCandidates(
 ): RestaurantSearchCandidate[] {
   const name = query.restaurantName?.trim() ?? "";
   if (name.length === 0) return [];
-  const city = normalize(query.city ?? "");
-  const state = normalize(query.state ?? "");
+  const city = normalizeRestaurantSearchText(query.city ?? "");
+  const state = normalizeRestaurantSearchText(query.state ?? "");
+  const cuisineTokens = new Set(tokenize(query.cuisineType ?? ""));
 
   type Ranked = { candidate: RestaurantSearchCandidate; score: number };
   const ranked: Ranked[] = [];
 
   for (const candidate of demoRestaurantSearchCandidates) {
-    const nScore = nameScore(name, candidate.restaurantName);
-    if (nScore === 0) continue;
+    const nScore = nameScore(name, candidate);
 
-    const candidateCity = normalize(candidate.city);
-    const candidateState = normalize(candidate.state);
+    const candidateCity = normalizeRestaurantSearchText(candidate.city);
+    const candidateState = normalizeRestaurantSearchText(candidate.state);
 
     const cityMatches = city.length > 0 && candidateCity === city;
     const stateMatches = state.length > 0 && candidateState === state;
     const cityProvidedButMismatch = city.length > 0 && !cityMatches;
     const stateProvidedButMismatch = state.length > 0 && !stateMatches;
 
+    const candidateCuisineTokens = new Set(tokenize(candidate.cuisineType));
+    const cuisineMatches =
+      cuisineTokens.size > 0 &&
+      [...cuisineTokens].some((token) => candidateCuisineTokens.has(token));
+
+    if (nScore === 0 && !((cityMatches || stateMatches) && cuisineMatches)) {
+      continue;
+    }
+
     let score = nScore * 10;
     if (cityMatches) score += 5;
     if (stateMatches) score += 2;
+    if (cuisineMatches) score += 3;
     if (cityProvidedButMismatch) score -= 2;
     if (stateProvidedButMismatch) score -= 1;
 
     const reduceConfidence =
       (city.length === 0 && state.length === 0) ||
+      nScore <= 1 ||
       cityProvidedButMismatch ||
       stateProvidedButMismatch;
 
