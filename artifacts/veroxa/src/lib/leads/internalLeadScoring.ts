@@ -24,7 +24,8 @@
  *    0–39  = Not Current Target
  */
 
-import { getCurrentPublicPlanForLegacyPackage } from "@/data/pricing/veroxaPricing";
+import { getCurrentPublicPlanForPackageId } from "@/data/pricing/veroxaPricing";
+import { evaluateProfitFit, formatProfitFitSummary } from "@/domain/profitFit";
 import type {
   AuditPackageRecommendation,
   RecommendedPackageId,
@@ -66,6 +67,7 @@ export interface InternalLeadAudit {
   projectedStandardMonthlyMrr: number;
   whyThisLeadIsStrong: string[];
   risks: string[];
+  profitFitSummary: string;
   recommendedOutreachAngle: string;
   suggestedOpener: string;
   suggestedFollowUp: string;
@@ -154,12 +156,15 @@ function scoreGoogleMaps(
 // ── 5. Package Fit / MRR Potential (10) ─────────────────────────────
 function scorePackageFit(packageId: RecommendedPackageId): number {
   switch (packageId) {
+    case "premium":
     case "complete_plus_ads":
-      return 10;
+      return 8;
+    case "growth":
     case "complete_online_presence":
-      return 9;
+      return 10;
     case "ads_management_only":
       return 7;
+    case "starter":
     case "google_optimization":
       return 6;
   }
@@ -319,7 +324,7 @@ export function getLeadPriority(score: number): LeadPriority {
 export function getProjectedMrrFromRecommendation(
   recommendation: AuditPackageRecommendation,
 ): { current: number; standard: number } {
-  const plan = getCurrentPublicPlanForLegacyPackage(recommendation.packageId);
+  const plan = getCurrentPublicPlanForPackageId(recommendation.packageId);
   return { current: plan.priceMonthly, standard: plan.priceMonthly };
 }
 
@@ -462,6 +467,13 @@ export function generateInternalLeadAudit(
   const { total, breakdown } = calculateLeadSuccessScore(input);
   const priority = getLeadPriority(total);
   const mrr = getProjectedMrrFromRecommendation(input.report.recommendation);
+  const profitFit = evaluateProfitFit({
+    monthlyFee: mrr.standard,
+    hasCapacityForMoreOrders: undefined,
+    discountDependency: "unknown",
+    deliveryAppDependency: "unknown",
+    repeatCustomerPotential: "unknown",
+  });
   return {
     score: total,
     breakdown,
@@ -469,7 +481,13 @@ export function generateInternalLeadAudit(
     projectedFoundingMonthlyMrr: mrr.current,
     projectedStandardMonthlyMrr: mrr.standard,
     whyThisLeadIsStrong: getWhyStrong(input, breakdown),
-    risks: getRisks(input, breakdown),
+    risks: [
+      ...getRisks(input, breakdown),
+      profitFit.status === "needs_more_info"
+        ? "Profit fit needs more info — confirm average ticket, margin, capacity, and order source mix before selling."
+        : profitFit.mainRisk,
+    ],
+    profitFitSummary: formatProfitFitSummary(profitFit),
     recommendedOutreachAngle: getBestOutreachAngle(input),
     suggestedOpener: getSuggestedOpener(input),
     suggestedFollowUp: getSuggestedFollowUp(input),

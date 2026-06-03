@@ -80,9 +80,9 @@ function scoreCloseConversion(won: number, lost: number): number {
 }
 
 // ── 5. Package Value (10) ────────────────────────────────────────────────────
-// Average projected current-plan MRR per lead relative to Essential ($497/mo).
+// Average projected current-plan MRR per lead relative to Growth ($495/mo), the main package.
 function scorePackageValue(avgFoundingMrr: number): number {
-  const anchor = 497;
+  const anchor = 495;
   return clamp((avgFoundingMrr / anchor) * 10, 10);
 }
 

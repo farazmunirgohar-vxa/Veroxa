@@ -21,7 +21,8 @@
     "check-team-cockpit": "tsx ./src/check-team-cockpit.ts",
     "check-pilot-positioning": "tsx ./src/check-pilot-positioning.ts",
     "check-docs-model-alignment": "tsx ./src/check-docs-model-alignment.ts",
-    "check-saas-foundation-readiness": "tsx ./src/check-saas-foundation-readiness.ts"
+    "check-saas-foundation-readiness": "tsx ./src/check-saas-foundation-readiness.ts",
+    "check-profit-fit": "tsx ./src/check-profit-fit.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",

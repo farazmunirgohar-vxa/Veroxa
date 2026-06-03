@@ -72,47 +72,66 @@ Do not change pricing unless explicitly instructed by the user. The user’s new
 
 Current locked public pricing:
 
-- Essential: $497/month
-  - Google Business Profile optimization
-  - Google Search SEO basics
-  - Google Maps SEO basics
-  - Facebook + Instagram presence management
-  - Picture-based posting
-  - Max 1 picture post per day
-  - Platform-specific captions when applicable
-  - Weekly updates
-  - Monthly performance snapshot
+- Starter: $295/month
+  - Low-friction entry for basic online presence consistency and local visibility cleanup
+  - Google Business Profile cleanup
+  - Google Maps/local visibility basics
+  - Hours/menu/order/social link cleanup
+  - Best-seller visibility guidance
+  - Basic photo freshness support
+  - Facebook + Instagram basic posting
+  - Up to 3 posts/week depending on usable media
+  - Simple captions
+  - Review/reputation support through drafts/reminders
+  - Simple monthly progress summary
   - Client Portal access
-- Growth: $697/month
-  - Everything in Essential
-  - TikTok posting/management if applicable
-  - Facebook/Instagram Reels
-  - TikTok + Reels posting support using the photos and videos you provide
-  - Reels optimization
-  - Enhanced monthly report
-- Premium: $997/month
+  - Media reminders/upload guidance
+- Growth: $495/month
+  - Main recommended package for strong-fit restaurants
+  - Everything in Starter
+  - Stronger Google/local consistency
+  - Stronger social consistency
+  - Up to 1 post/day depending on usable media
+  - Stronger best-seller/content rhythm
+  - Weekly progress update
+  - Monthly report
+  - Limited content/design prep
+  - Stronger client portal workflow
+- Premium: $995/month
+  - Selective advanced package for restaurants ready for ads/support
   - Everything in Growth
-  - Ads management after readiness
-  - Google, Facebook, Instagram, and TikTok ads management
-  - Max 1 post per day, depending on usable client-provided media
-  - Platform-specific drafting/adaptation
-  - Ad reporting
+  - Ads management readiness/support
+  - Stronger reporting
+  - Ad planning/support
+  - Readiness assessment required
+  - Client approval required
+  - Agreed ad budget required
   - Ad spend is separate and paid directly by the restaurant
 
 Global pricing rules:
 
 - No contract.
 - Cancel anytime.
-- Google Optimization is included in all plans.
-- Facebook + Instagram are included in all plans.
-- Essential: max 1 picture post per day.
-- Growth: adds TikTok + Reels posting support using the photos and videos the client provides.
-- Premium: Growth-level posting support plus ads management readiness/support; posting remains max 1 post/day and ad spend is separate.
-- Posting depends on usable client-provided media and may slow when usable media is unavailable.
-- Premium requires 1+ month on Essential/Growth, Veroxa readiness assessment, client approval, and agreed ad budget.
 - Ad spend is always separate and paid by the restaurant directly to the ad platform.
+- Starter is capped at up to 3 posts/week depending on usable client-provided media.
+- Growth and Premium are capped at up to 1 post/day depending on usable client-provided media.
+- Posting depends on usable client-provided media and may slow when usable media is unavailable.
+- Premium requires a Veroxa readiness assessment, client approval, and an agreed ad budget. Premium must not be automatic.
 - Veroxa does not handle comments, DMs, inboxes, complaints, order questions, refunds, or customer-service conversations at launch.
+- No public/client-facing guarantee language for orders, profit, ROI, customers, revenue, or rankings.
 - First clients receive 20% off for 12 months, then keep it as a loyalty discount only while continuously active; if they leave and later return, the 20% discount is no longer eligible.
+
+## 5A. Profit Fit Layer
+
+The Restaurant Opportunity Engine must include an internal-only Profit Fit Layer. Veroxa sells online presence publicly, but internally Veroxa must evaluate whether a restaurant can realistically create profitable online-influenced orders/actions through better online presence.
+
+Internal break-even formula:
+
+`requiredDailyOrders = monthlyFee / netMargin / averageTicket / 30`
+
+Default conservative assumptions: $15 average ticket, 5% net margin, 30 days/month. Online-influenced actions/orders include online orders, phone clicks that become orders, direction/address clicks that become visits, menu/order-link clicks, Google profile actions, customer mentions such as “I saw you online,” social content that drives ordering/visits, and repeat-customer attention driven by online presence.
+
+Profit Fit language and exact break-even order math are team/internal only. Do not expose exact targets to public/client pages, and do not say Veroxa makes restaurants profitable.
 
 ## 6. Routing rules
 
@@ -272,7 +291,7 @@ The priority is a working Restaurant Partner <-> Veroxa Team flow that helps res
 
 ## 15. First-5-client readiness benchmark
 
-First 5 clients are the pre-launch readiness benchmark: healthy Essential, Essential with low media, Growth with reels content, Growth with inconsistent uploads, and a client eligible for Premium assessment. Build client-side readiness first; heavy Team/Internal Admin AI automation comes later.
+First 5 clients are the pre-launch readiness benchmark: healthy Starter, Starter with low media, Growth with strong media/cooperation, Growth with inconsistent uploads, and a client eligible for Premium assessment. Build client-side readiness first; heavy Team/Internal Admin AI automation comes later.
 
 ## 16. Full SaaS Foundation design control
 

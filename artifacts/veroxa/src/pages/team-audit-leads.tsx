@@ -845,6 +845,21 @@ export default function TeamAuditLeads() {
                           ))}
                         </ul>
                       </div>
+                      <div
+                        className="rounded-md border border-primary/20 bg-primary/5 p-2"
+                        data-testid="team-audit-profit-fit"
+                      >
+                        <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                          Profit fit · internal only
+                        </p>
+                        <p className="text-[12px] mt-0.5 text-foreground/85">
+                          {selectedInternal.profitFitSummary}
+                        </p>
+                        <p className="text-[11px] mt-1 text-muted-foreground">
+                          Profit fit uses conservative defaults until average
+                          ticket and margin are confirmed.
+                        </p>
+                      </div>
                       <div className="rounded-md border border-border bg-muted/20 p-2">
                         <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
                           Suggested opener

@@ -1,15 +1,15 @@
 // veroxaPricing.ts — internal source of truth for Veroxa pricing.
 //
-// IMPORTANT (owner-locked current pricing — 2026-05-31):
+// IMPORTANT (owner-locked current pricing — 2026-06-03):
 //   * Pricing is owner-locked. Do NOT change any price without explicit
 //     owner approval.
-//   * Current public model: Essential ($497/mo), Growth ($697/mo),
-//     Premium ($997/mo).
+//   * Current public model: Starter ($295/mo), Growth ($495/mo),
+//     Premium ($995/mo). Growth is the main recommended package.
 //   * No contract. Cancel anytime.
 //   * Posting depends on usable restaurant-provided media and may slow when
 //     usable media is unavailable.
-//   * All active plans are capped at max 1 post/day unless Faraz explicitly
-//     changes this later.
+//   * Starter is capped at up to 3 posts/week; Growth and Premium are
+//     capped at up to 1 post/day, depending on usable media.
 //   * Premium adds ads management readiness/support after assessment, client
 //     approval, and agreed ad budget. Ad spend is ALWAYS separate and paid by
 //     the restaurant directly to the ad platform.
@@ -23,18 +23,20 @@
 // public pricing.
 
 export type VeroxaPlanId =
-  | "essential"
+  | "starter"
   | "growth"
   | "premium"
-  | "google_optimization" // RETIRED — internal Free Audit / lead-scoring alias for Essential
+  | "essential"
+  | "google_optimization" // RETIRED — internal Free Audit / lead-scoring alias for Starter
   | "complete_online_presence" // RETIRED — internal Free Audit / lead-scoring alias for Growth
   | "complete_plus_ads" // RETIRED — internal Free Audit / lead-scoring alias for Premium
   | "ads_management_only"; // RETIRED — internal-only alias for Premium-fit ad leads
 
 export type VeroxaPlanLabel =
-  | "Essential"
+  | "Starter"
   | "Growth"
   | "Premium"
+  | "Essential"
   | "Google Optimization"
   | "Complete Online Presence"
   | "Complete Online Presence + Ads"
@@ -45,7 +47,7 @@ export interface VeroxaPlan {
   label: VeroxaPlanLabel;
   /** Current monthly price in USD dollars (not cents). */
   priceMonthly: number;
-  /** Display string for the current monthly price (e.g. "$497"). */
+  /** Display string for the current monthly price (e.g. "$295"). */
   displayPrice: string;
   /** One-line positioning copy. */
   tagline: string;
@@ -81,19 +83,21 @@ export const AD_SPEND_DISCLAIMER =
   "Ad spend is separate and paid directly by the restaurant. Veroxa plan pricing does not include ad spend.";
 
 export const MEDIA_DEPENDENCY_DISCLAIMER =
-  "Posting depends on usable client-provided media and may slow when usable media is unavailable. All active plans are capped at max 1 post/day unless Faraz explicitly changes this later.";
+  "Posting depends on usable client-provided media and may slow when usable media is unavailable. Starter is capped at up to 3 posts/week; Growth and Premium are capped at up to 1 post/day.";
 
 export const SERVICE_BOUNDARY_DISCLAIMER =
   "Veroxa does not handle comments, DMs, inboxes, complaints, order questions, refunds, or customer-service conversations at launch. The restaurant remains responsible for customer replies.";
 
 export const PREMIUM_READINESS_RULE =
-  "Premium requires 1+ month on Essential or Growth, a Veroxa readiness assessment by phone, Zoom, or in person, client approval, and an agreed ad budget.";
+  "Premium requires a Veroxa readiness assessment by phone, Zoom, or in person, client approval, and an agreed ad budget.";
 
 export const FIRST_CLIENT_LOYALTY_DISCOUNT_POLICY =
   "First clients receive 20% off for 12 months, then keep it as a loyalty discount only while continuously active; if they leave and later return, the 20% discount is no longer eligible.";
 
-const postingVolumeSummary =
-  "Max 1 post per day, depending on usable client-provided media.";
+const starterPostingVolumeSummary =
+  "Up to 3 posts/week, depending on usable client-provided media.";
+const growthPostingVolumeSummary =
+  "Up to 1 post/day, depending on usable client-provided media.";
 const mediaDependencySummary =
   "Posting depends on usable restaurant-provided photos and videos; Veroxa will ask for more when the supply is low.";
 
@@ -104,18 +108,22 @@ const restaurantResponsibilities = [
   "Pay any approved ad spend directly to the ad platform",
 ];
 
-const essentialResponsibilities = [
-  "Google Business Profile and Google Maps visibility support",
-  "Google Search SEO basics and page consistency",
-  "Facebook + Instagram picture posting",
-  "Basic captions, weekly updates, and monthly performance snapshot",
-  "Client Portal access and media guidance",
+const starterResponsibilities = [
+  "Google Business Profile cleanup",
+  "Google Maps/local visibility basics",
+  "Hours, menu, order, and social link cleanup",
+  "Best-seller visibility guidance and basic photo freshness support",
+  "Facebook + Instagram basic posting with simple captions",
+  "Review/reputation support through drafts/reminders",
+  "Simple monthly progress summary, Client Portal access, and media reminders/upload guidance",
 ];
 
 const growthResponsibilities = [
-  ...essentialResponsibilities,
-  "TikTok + Reels posting support using restaurant-provided photos and videos",
-  "Reels optimization and enhanced monthly report",
+  ...starterResponsibilities,
+  "Stronger Google/local consistency",
+  "Stronger social consistency and best-seller/content rhythm",
+  "Weekly progress update and monthly report",
+  "Limited content/design prep and stronger client portal workflow",
 ];
 
 const premiumResponsibilities = [
@@ -124,32 +132,43 @@ const premiumResponsibilities = [
   "Ad reporting once approved ads are active later",
 ];
 
-const essentialIncludes = [
-  "Google Business Profile optimization",
-  "Google Search SEO basics",
-  "Google Maps SEO basics",
-  "Facebook + Instagram picture posting",
-  "Basic captions",
-  "Weekly updates",
-  "Monthly performance snapshot",
+const starterIncludes = [
+  "Google Business Profile cleanup",
+  "Google Maps/local visibility basics",
+  "Hours/menu/order/social link cleanup",
+  "Best-seller visibility guidance",
+  "Basic photo freshness support",
+  "Facebook + Instagram basic posting",
+  "Up to 3 posts/week depending on usable media",
+  "Simple captions",
+  "Review/reputation support through drafts/reminders",
+  "Simple monthly progress summary",
   "Client Portal access",
-  postingVolumeSummary,
+  "Media reminders/upload guidance",
 ];
 
 const growthIncludes = [
-  "Everything in Essential",
-  "TikTok + Reels posting support using the photos and videos you provide",
-  "Reels optimization",
-  "Enhanced monthly report",
-  postingVolumeSummary,
+  "Everything in Starter",
+  "Stronger Google/local consistency",
+  "Stronger social consistency",
+  "Up to 1 post/day depending on usable media",
+  "Stronger best-seller/content rhythm",
+  "Weekly progress update",
+  "Monthly report",
+  "Limited content/design prep",
+  "Stronger client portal workflow",
 ];
 
 const premiumIncludes = [
   "Everything in Growth",
   "Ads management support/readiness after assessment, approval, and agreed ad budget",
-  "Platform-specific drafting and adaptation",
-  "Ad reporting once approved ads are active later",
-  postingVolumeSummary,
+  "Stronger reporting",
+  "Ad planning/support",
+  "Readiness assessment required",
+  "Client approval required",
+  "Agreed ad budget required",
+  "Ad spend separate",
+  growthPostingVolumeSummary,
   PREMIUM_READINESS_RULE,
   AD_SPEND_DISCLAIMER,
 ];
@@ -164,6 +183,7 @@ function buildPlan(input: {
   veroxaResponsibilities: string[];
   publicVisible: boolean;
   status: "active" | "retired";
+  postingVolumeSummary?: string;
   internalOnly?: boolean;
   legacyNote?: string;
 }): VeroxaPlan {
@@ -171,7 +191,8 @@ function buildPlan(input: {
     ...input,
     displayPrice: `$${input.priceMonthly}`,
     includesAdSpend: false,
-    postingVolumeSummary,
+    postingVolumeSummary:
+      input.postingVolumeSummary ?? growthPostingVolumeSummary,
     mediaDependencySummary,
     clientResponsibilities: restaurantResponsibilities,
     premiumReadinessRequirement: input.adsSupport
@@ -181,25 +202,26 @@ function buildPlan(input: {
 }
 
 export const VEROXA_PLANS: Record<VeroxaPlanId, VeroxaPlan> = {
-  essential: buildPlan({
-    id: "essential",
-    label: "Essential",
-    priceMonthly: 497,
+  starter: buildPlan({
+    id: "starter",
+    label: "Starter",
+    priceMonthly: 295,
     tagline:
-      "Core Google Business Profile, Google Maps, and Facebook/Instagram picture-posting support for steady restaurant visibility.",
-    includes: essentialIncludes,
+      "Low-friction entry plan for basic online presence consistency and local visibility cleanup.",
+    includes: starterIncludes,
     adsSupport: false,
-    veroxaResponsibilities: essentialResponsibilities,
+    veroxaResponsibilities: starterResponsibilities,
     publicVisible: true,
     status: "active",
+    postingVolumeSummary: starterPostingVolumeSummary,
   }),
 
   growth: buildPlan({
     id: "growth",
     label: "Growth",
-    priceMonthly: 697,
+    priceMonthly: 495,
     tagline:
-      "Essential visibility plus TikTok + Reels posting support using the photos and videos you provide, with an enhanced monthly report.",
+      "Most recommended main package for strong-fit restaurants that need stronger online visibility and customer decision confidence.",
     includes: growthIncludes,
     adsSupport: false,
     veroxaResponsibilities: growthResponsibilities,
@@ -210,9 +232,9 @@ export const VEROXA_PLANS: Record<VeroxaPlanId, VeroxaPlan> = {
   premium: buildPlan({
     id: "premium",
     label: "Premium",
-    priceMonthly: 997,
+    priceMonthly: 995,
     tagline:
-      "Growth-level posting support plus ads management readiness/support. Ad spend is separate and posting remains media-dependent.",
+      "Selective advanced package for restaurants ready for ads support and stronger reporting after readiness review.",
     includes: premiumIncludes,
     adsSupport: true,
     veroxaResponsibilities: premiumResponsibilities,
@@ -220,26 +242,43 @@ export const VEROXA_PLANS: Record<VeroxaPlanId, VeroxaPlan> = {
     status: "active",
   }),
 
-  google_optimization: buildPlan({
-    id: "google_optimization",
-    label: "Google Optimization",
-    priceMonthly: 497,
+  essential: buildPlan({
+    id: "essential",
+    label: "Essential",
+    priceMonthly: 295,
     tagline:
-      "Retired internal alias. Current public recommendation maps this fit to Essential.",
-    includes: essentialIncludes,
+      "Retired internal compatibility alias. Current public recommendation maps this fit to Starter.",
+    includes: starterIncludes,
     adsSupport: false,
-    veroxaResponsibilities: essentialResponsibilities,
+    veroxaResponsibilities: starterResponsibilities,
     publicVisible: false,
     internalOnly: true,
     legacyNote:
-      "Retired compatibility alias only; not current public pricing. Use Essential for public display.",
+      "Retired compatibility alias only; not current public pricing. Use Starter for public display.",
+    status: "retired",
+    postingVolumeSummary: starterPostingVolumeSummary,
+  }),
+
+  google_optimization: buildPlan({
+    id: "google_optimization",
+    label: "Google Optimization",
+    priceMonthly: 295,
+    tagline:
+      "Retired internal alias. Current public recommendation maps this fit to Starter.",
+    includes: starterIncludes,
+    adsSupport: false,
+    veroxaResponsibilities: starterResponsibilities,
+    publicVisible: false,
+    internalOnly: true,
+    legacyNote:
+      "Retired compatibility alias only; not current public pricing. Use Starter for public display.",
     status: "retired",
   }),
 
   complete_online_presence: buildPlan({
     id: "complete_online_presence",
     label: "Complete Online Presence",
-    priceMonthly: 697,
+    priceMonthly: 495,
     tagline:
       "Retired internal alias. Current public recommendation maps this fit to Growth.",
     includes: growthIncludes,
@@ -255,7 +294,7 @@ export const VEROXA_PLANS: Record<VeroxaPlanId, VeroxaPlan> = {
   complete_plus_ads: buildPlan({
     id: "complete_plus_ads",
     label: "Complete Online Presence + Ads",
-    priceMonthly: 997,
+    priceMonthly: 995,
     tagline:
       "Retired internal alias. Current public recommendation maps this fit to Premium.",
     includes: premiumIncludes,
@@ -271,7 +310,7 @@ export const VEROXA_PLANS: Record<VeroxaPlanId, VeroxaPlan> = {
   ads_management_only: buildPlan({
     id: "ads_management_only",
     label: "Ads Management Only",
-    priceMonthly: 997,
+    priceMonthly: 995,
     tagline:
       "Retired internal-only alias. Current public recommendation maps this fit to Premium.",
     includes: premiumIncludes,
@@ -286,7 +325,7 @@ export const VEROXA_PLANS: Record<VeroxaPlanId, VeroxaPlan> = {
 };
 
 export const CURRENT_PUBLIC_PLAN_IDS = [
-  "essential",
+  "starter",
   "growth",
   "premium",
 ] as const;
@@ -302,13 +341,41 @@ export const GLOBAL_PRICING_RULES = [
   "Cancel anytime",
   "Google Business Profile and Google Maps support included in all plans",
   "Facebook + Instagram included in all plans",
-  "All active plans are capped at max 1 post/day",
-  "Growth adds TikTok + Reels posting support using the photos and videos you provide",
+  "Starter is capped at up to 3 posts/week; Growth/Premium are capped at up to 1 post/day",
+  "Growth is the main recommended package for strong-fit restaurants",
   "Premium adds ads management readiness/support; ad spend is separate",
   "Posting depends on usable client-provided media and may slow when usable media is unavailable",
-  "Premium requires 1+ month on Essential/Growth, Veroxa readiness assessment, client approval, and agreed ad budget",
+  "Premium requires readiness assessment, client approval, and agreed ad budget",
   FIRST_CLIENT_LOYALTY_DISCOUNT_POLICY,
 ];
+
+export function getCurrentPublicPlanForPackageId(
+  packageId:
+    | CurrentPublicPlanId
+    | "essential"
+    | "google_optimization"
+    | "complete_online_presence"
+    | "complete_plus_ads"
+    | "ads_management_only",
+): VeroxaPlan {
+  switch (packageId) {
+    case "starter":
+      return VEROXA_PLANS.starter;
+    case "growth":
+      return VEROXA_PLANS.growth;
+    case "premium":
+      return VEROXA_PLANS.premium;
+    case "essential":
+      return VEROXA_PLANS.starter;
+    case "google_optimization":
+      return VEROXA_PLANS.starter;
+    case "complete_online_presence":
+      return VEROXA_PLANS.growth;
+    case "complete_plus_ads":
+    case "ads_management_only":
+      return VEROXA_PLANS.premium;
+  }
+}
 
 export function getCurrentPublicPlanForLegacyPackage(
   legacyPackageId:
@@ -317,15 +384,7 @@ export function getCurrentPublicPlanForLegacyPackage(
     | "complete_plus_ads"
     | "ads_management_only",
 ): VeroxaPlan {
-  switch (legacyPackageId) {
-    case "google_optimization":
-      return VEROXA_PLANS.essential;
-    case "complete_online_presence":
-      return VEROXA_PLANS.growth;
-    case "complete_plus_ads":
-    case "ads_management_only":
-      return VEROXA_PLANS.premium;
-  }
+  return getCurrentPublicPlanForPackageId(legacyPackageId);
 }
 
 export function getPlanMonthlyPrice(label: VeroxaPlanLabel): number {

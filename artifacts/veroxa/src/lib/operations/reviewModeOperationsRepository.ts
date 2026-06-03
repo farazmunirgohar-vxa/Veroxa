@@ -24,7 +24,7 @@ const clientAccounts: ClientAccount[] = [
   {
     id: REVIEW_MODE_CLIENT_ID,
     businessName: "Restaurant Account in Review",
-    planId: "essential",
+    planId: "starter",
     lifecycleStage: "review_mode",
     portalStatus: "pending_connection",
     mediaStatus: "needs_media",
@@ -56,7 +56,8 @@ const mediaStatuses: Record<string, ClientMediaStatus> = {
     pendingReviewCount: 0,
     needsMoreMedia: true,
     lastMediaReceivedAt: null,
-    nextMediaRequest: "Send a few clear food, dining room, and exterior photos when ready.",
+    nextMediaRequest:
+      "Send a few clear food, dining room, and exterior photos when ready.",
     clientVisibleMessage:
       "Your media area is ready. Veroxa will ask for content when the account connection is complete.",
     teamInternalMessage:
@@ -68,7 +69,8 @@ const mediaStatuses: Record<string, ClientMediaStatus> = {
     pendingReviewCount: 3,
     needsMoreMedia: false,
     lastMediaReceivedAt: "2026-05-30T16:00:00.000Z",
-    nextMediaRequest: "Review pending uploads and confirm whether more reels clips are needed.",
+    nextMediaRequest:
+      "Review pending uploads and confirm whether more reels clips are needed.",
     clientVisibleMessage:
       "Veroxa has media ready for review and will let you know if anything else is needed.",
     teamInternalMessage:
@@ -113,7 +115,8 @@ const reportStatuses: Record<string, ReportWorkflowStatus> = {
     lastWeeklyUpdateAt: null,
     lastMonthlyReportAt: null,
     needsReview: false,
-    reportEmptyStateReason: "Reports need active account work before a meaningful snapshot can be prepared.",
+    reportEmptyStateReason:
+      "Reports need active account work before a meaningful snapshot can be prepared.",
     clientVisibleMessage:
       "Reports will appear after Veroxa has enough account activity to summarize clearly.",
     teamInternalMessage:
@@ -138,8 +141,12 @@ const riskStatuses: Record<string, ClientRiskStatus> = {
   [REVIEW_MODE_CLIENT_ID]: {
     clientId: REVIEW_MODE_CLIENT_ID,
     riskLevel: "medium",
-    reasons: ["Live account connection is pending", "Usable media supply has not started"],
-    nextHumanAction: "Confirm account setup status and ask for starter media when appropriate.",
+    reasons: [
+      "Live account connection is pending",
+      "Usable media supply has not started",
+    ],
+    nextHumanAction:
+      "Confirm account setup status and ask for starter media when appropriate.",
     clientVisibleMessage:
       "Nothing urgent is needed right now. Veroxa will guide the next simple setup step.",
     teamInternalMessage:
@@ -149,9 +156,9 @@ const riskStatuses: Record<string, ClientRiskStatus> = {
     clientId: "client-account-pending-connection",
     riskLevel: "low",
     reasons: ["Media exists for review", "Content can be prepared manually"],
-    nextHumanAction: "Review media and prepare the next content item for approval.",
-    clientVisibleMessage:
-      "Veroxa is reviewing your next visibility step.",
+    nextHumanAction:
+      "Review media and prepare the next content item for approval.",
+    clientVisibleMessage: "Veroxa is reviewing your next visibility step.",
     teamInternalMessage:
       "Good candidate for the next manual content preparation pass.",
   },
@@ -161,7 +168,8 @@ const premiumStatuses: Record<string, PremiumReadinessStatus> = {
   [REVIEW_MODE_CLIENT_ID]: {
     eligible: false,
     status: "not_eligible_yet",
-    reason: "Premium is assessed only after Essential or Growth has operating history.",
+    reason:
+      "Premium is assessed only after Starter or Growth has operating history.",
     nextStep: "Continue setup and collect enough operating context first.",
     adSpendSeparate: true,
     requiresApproval: true,
@@ -169,15 +177,20 @@ const premiumStatuses: Record<string, PremiumReadinessStatus> = {
   "client-account-pending-connection": {
     eligible: false,
     status: "assessment_needed",
-    reason: "Growth account may be assessed later, but ads are not active in review mode.",
-    nextStep: "Complete Veroxa readiness assessment before recommending Premium.",
+    reason:
+      "Growth account may be assessed later, but ads are not active in review mode.",
+    nextStep:
+      "Complete Veroxa readiness assessment before recommending Premium.",
     adSpendSeparate: true,
     requiresApproval: true,
   },
 };
 
 function findAccount(clientId: string): ClientAccount {
-  return clientAccounts.find((account) => account.id === clientId) ?? clientAccounts[0];
+  return (
+    clientAccounts.find((account) => account.id === clientId) ??
+    clientAccounts[0]
+  );
 }
 
 export function getCurrentClientAccount(): ClientAccount {
@@ -192,11 +205,15 @@ export function getClientMediaStatus(clientId: string): ClientMediaStatus {
   return mediaStatuses[clientId] ?? mediaStatuses[REVIEW_MODE_CLIENT_ID];
 }
 
-export function getClientContentWorkflow(clientId: string): ContentWorkflowStatus {
+export function getClientContentWorkflow(
+  clientId: string,
+): ContentWorkflowStatus {
   return contentStatuses[clientId] ?? contentStatuses[REVIEW_MODE_CLIENT_ID];
 }
 
-export function getClientReportWorkflow(clientId: string): ReportWorkflowStatus {
+export function getClientReportWorkflow(
+  clientId: string,
+): ReportWorkflowStatus {
   return reportStatuses[clientId] ?? reportStatuses[REVIEW_MODE_CLIENT_ID];
 }
 
@@ -204,7 +221,9 @@ export function getClientRiskStatus(clientId: string): ClientRiskStatus {
   return riskStatuses[clientId] ?? riskStatuses[REVIEW_MODE_CLIENT_ID];
 }
 
-export function getClientPremiumReadiness(clientId: string): PremiumReadinessStatus {
+export function getClientPremiumReadiness(
+  clientId: string,
+): PremiumReadinessStatus {
   return premiumStatuses[clientId] ?? premiumStatuses[REVIEW_MODE_CLIENT_ID];
 }
 
@@ -275,19 +294,28 @@ export function getTeamActionQueue(): TeamActionQueueItem[] {
 }
 
 export function getPremiumReadinessCandidates(): TeamClientOverviewItem[] {
-  return getTeamClientOverview().filter((item) =>
-    item.premium.eligible || item.premium.status === "assessment_needed",
+  return getTeamClientOverview().filter(
+    (item) =>
+      item.premium.eligible || item.premium.status === "assessment_needed",
   );
 }
 
 export function getTeamDailyCommandSummary(): TeamDailyCommandSummary {
   const overview = getTeamClientOverview();
   const actions = getTeamActionQueue();
-  const clientsNeedingMedia = overview.filter((item) => item.media.needsMoreMedia).length;
-  const clientsReadyForContent = overview.filter((item) => item.content.needsHumanReview).length;
-  const reportsNeedingReview = overview.filter((item) => item.report.needsReview).length;
+  const clientsNeedingMedia = overview.filter(
+    (item) => item.media.needsMoreMedia,
+  ).length;
+  const clientsReadyForContent = overview.filter(
+    (item) => item.content.needsHumanReview,
+  ).length;
+  const reportsNeedingReview = overview.filter(
+    (item) => item.report.needsReview,
+  ).length;
   const premiumCandidates = getPremiumReadinessCandidates().length;
-  const riskFlags = overview.filter((item) => item.risk.riskLevel !== "low").length;
+  const riskFlags = overview.filter(
+    (item) => item.risk.riskLevel !== "low",
+  ).length;
 
   return {
     totalAccounts: overview.length,
@@ -296,7 +324,9 @@ export function getTeamDailyCommandSummary(): TeamDailyCommandSummary {
     reportsNeedingReview,
     premiumCandidates,
     riskFlags,
-    nextHumanActions: actions.slice(0, 5).map((action) => action.nextHumanAction),
+    nextHumanActions: actions
+      .slice(0, 5)
+      .map((action) => action.nextHumanAction),
     workloadSummary:
       actions.length === 0
         ? "No review-mode actions are queued right now."

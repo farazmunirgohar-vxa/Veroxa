@@ -818,7 +818,7 @@ export function generateRestaurantAudit(
     recommendation: {
       // Placeholder — immediately overwritten by recommendVeroxaPackage()
       // below, which reads from the locked pricing source of truth.
-      packageId: "complete_online_presence",
+      packageId: "growth",
       packageLabel: "",
       standardPriceDisplay: "",
       foundingPriceDisplay: "",

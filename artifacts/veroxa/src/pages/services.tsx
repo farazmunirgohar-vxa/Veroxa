@@ -1,5 +1,11 @@
 import { Link } from "wouter";
-import { ArrowRight, CheckCircle2, Compass, Megaphone, ShieldCheck } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Compass,
+  Megaphone,
+  ShieldCheck,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
@@ -50,14 +56,20 @@ export default function ServicesPage() {
             Services that match the real Veroxa offer.
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-5 duration-700">
-            Veroxa helps restaurants improve Google Business Profile readiness, Google Search and Maps visibility basics, social posting consistency, media rhythm, updates, and monthly reporting without claiming guaranteed growth.
+            Veroxa helps restaurants improve Google Business Profile readiness,
+            Google Search and Maps visibility basics, social posting
+            consistency, media rhythm, updates, and monthly reporting without
+            claiming promised growth.
           </p>
         </div>
       </section>
 
       {/* Plans */}
       <section className="py-14 px-6 lg:px-12 max-w-6xl mx-auto w-full">
-        <div className="grid md:grid-cols-3 gap-5" data-testid="services-plan-grid">
+        <div
+          className="grid md:grid-cols-3 gap-5"
+          data-testid="services-plan-grid"
+        >
           {planSummaries.map((plan) => (
             <div
               key={plan.name}
@@ -70,7 +82,9 @@ export default function ServicesPage() {
                 </p>
                 <div className="flex items-end gap-1 mb-2">
                   <span className="text-3xl font-extrabold">{plan.price}</span>
-                  <span className="text-sm text-muted-foreground mb-1">/month</span>
+                  <span className="text-sm text-muted-foreground mb-1">
+                    /month
+                  </span>
                 </div>
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   {plan.tagline}
@@ -96,21 +110,27 @@ export default function ServicesPage() {
             <Compass className="w-5 h-5 text-primary mb-3" />
             <h2 className="font-bold mb-2">Google/local visibility</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Google Business Profile optimization, Google Search SEO basics, Google Maps SEO basics, profile freshness, menu/link consistency, and local visibility opportunities are core to every plan.
+              Google Business Profile optimization, Google Search SEO basics,
+              Google Maps SEO basics, profile freshness, menu/link consistency,
+              and local visibility opportunities are core to every plan.
             </p>
           </div>
           <div className="rounded-xl border border-border/40 bg-background/40 p-5">
             <ShieldCheck className="w-5 h-5 text-primary mb-3" />
             <h2 className="font-bold mb-2">Portal + team workflow</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Restaurant partners use the Client Portal for media and simple status. Veroxa Team review keeps public actions calm, checked, and queued instead of automatic.
+              Restaurant partners use the Client Portal for media and simple
+              status. Veroxa Team review keeps public actions calm, checked, and
+              queued instead of automatic.
             </p>
           </div>
           <div className="rounded-xl border border-border/40 bg-background/40 p-5">
             <Megaphone className="w-5 h-5 text-primary mb-3" />
             <h2 className="font-bold mb-2">Premium ads readiness</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Premium adds ads management readiness/support only after assessment, client approval, and an agreed budget. Ad reporting begins once approved ads are active later.
+              Premium adds ads management readiness/support only after
+              assessment, client approval, and an agreed budget. Ad reporting
+              begins once approved ads are active later.
             </p>
           </div>
         </div>
@@ -119,21 +139,24 @@ export default function ServicesPage() {
       {/* Boundaries */}
       <section className="py-14 px-6 lg:px-12">
         <div className="max-w-5xl mx-auto rounded-2xl border border-border/40 bg-card/20 p-6 md:p-7">
-          <h2 className="text-2xl font-bold mb-3">What is not included at launch</h2>
+          <h2 className="text-2xl font-bold mb-3">
+            What is not included at launch
+          </h2>
           <p className="text-sm text-muted-foreground leading-relaxed mb-5">
             {SERVICE_BOUNDARY_DISCLAIMER}
           </p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-5">
             {boundaries.map((item) => (
-              <div key={item} className="rounded-lg border border-border/30 bg-background/30 px-3 py-2 text-sm">
+              <div
+                key={item}
+                className="rounded-lg border border-border/30 bg-background/30 px-3 py-2 text-sm"
+              >
                 {item}
               </div>
             ))}
           </div>
           <div className="grid md:grid-cols-2 gap-4 text-sm text-muted-foreground leading-relaxed">
-            <p>
-              {MEDIA_DEPENDENCY_DISCLAIMER}
-            </p>
+            <p>{MEDIA_DEPENDENCY_DISCLAIMER}</p>
             <p>
               {AD_SPEND_DISCLAIMER} {PREMIUM_READINESS_RULE}
             </p>
@@ -144,11 +167,10 @@ export default function ServicesPage() {
       {/* CTA */}
       <section className="py-20 px-6 lg:px-12 bg-card/10 border-t border-border/30">
         <div className="max-w-xl mx-auto text-center">
-          <h2 className="text-2xl font-bold mb-4">
-            Start with the Free Audit
-          </h2>
+          <h2 className="text-2xl font-bold mb-4">Start with the Free Audit</h2>
           <p className="text-muted-foreground mb-8">
-            The audit helps identify whether your restaurant should start with Essential, Growth, or Premium readiness review.
+            The audit helps identify whether your restaurant should start with
+            Starter, Growth, or Premium readiness review.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/free-audit" data-testid="btn-services-cta-audit">

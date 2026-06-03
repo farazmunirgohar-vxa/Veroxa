@@ -313,9 +313,17 @@ if (/healthy_supply[\s\S]{0,120}Low media risk/.test(firstFiveSource)) {
 
 const publicClientGuaranteeClaims: Array<[RegExp, string]> = [
   [/3[–-]5 customers/i, "public/client customer guarantee language"],
+  [/guaranteed orders/i, "public/client guarantee language"],
+  [/guaranteed profit/i, "public/client guarantee language"],
+  [/guaranteed ROI/i, "public/client guarantee language"],
   [/guaranteed customers/i, "public/client guarantee language"],
   [/guaranteed walk-ins/i, "public/client guarantee language"],
   [/guaranteed revenue/i, "public/client guarantee language"],
+  [
+    /10 orders\/day|15 orders\/day|20 orders\/day|50 orders\/day/i,
+    "public/client exact order target language",
+  ],
+  [/we make restaurants profitable/i, "public/client profit promise language"],
   [/we guarantee rankings/i, "public/client ranking guarantee language"],
 ];
 
@@ -339,7 +347,8 @@ const pricing = readFileSync(
   "utf8",
 );
 for (const required of [
-  "All active plans are capped at max 1 post/day",
+  "Starter is capped at up to 3 posts/week",
+  "Growth and Premium are capped at up to 1 post/day",
   "Premium adds ads management readiness/support",
   "AD_SPEND_DISCLAIMER",
   "SERVICE_BOUNDARY_DISCLAIMER",

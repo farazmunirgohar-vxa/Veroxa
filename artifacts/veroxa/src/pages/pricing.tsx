@@ -18,8 +18,8 @@ const PLANS = CURRENT_PUBLIC_PLANS.map((plan) => ({
   name: plan.label,
   price: plan.displayPrice,
   tagline: plan.tagline,
-  highlight: false,
-  badge: null,
+  highlight: plan.id === "growth",
+  badge: plan.id === "growth" ? "Most recommended" : null,
   includes: plan.includes,
   note:
     plan.id === "premium"
@@ -36,15 +36,15 @@ const GLOBAL_RULES = GLOBAL_PRICING_RULES;
 const FAQ_ITEMS = [
   {
     q: "Is Google optimization included in every plan?",
-    a: "Yes. Google Optimization — Google Search, Google Maps, Google Business Profile, and review support — is included in all three plans at no extra cost.",
+    a: "Yes. Google/local visibility support — Google Search basics, Google Maps basics, Google Business Profile cleanup, and review/reputation drafts/reminders — is included in all three plans at no extra cost.",
   },
   {
     q: "Which social media platforms are included at each tier?",
-    a: "Essential includes Facebook and Instagram picture posting. Growth adds TikTok + Reels posting support using the photos and videos you provide. Premium includes everything in Growth plus ads management after readiness approval.",
+    a: "Starter includes Google/local cleanup plus Facebook and Instagram basic posting. Growth is the main package for stronger online consistency and up to 1 post/day when usable media is available. Premium includes everything in Growth plus ads readiness/support after approval.",
   },
   {
     q: "How many posts per day does Veroxa publish?",
-    a: "All active plans are capped at max 1 post/day when usable media is available. Growth adds TikTok + Reels posting support using provided media, and Premium adds ads management readiness/support without increasing the public posting cap.",
+    a: "Starter is capped at up to 3 posts/week when usable media is available. Growth and Premium are capped at up to 1 post/day when usable media is available; Premium adds ads management readiness/support without increasing the posting cap.",
   },
   {
     q: "What if my restaurant doesn't have enough photos or videos?",
@@ -52,7 +52,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Is ad spend included in Premium?",
-    a: `${AD_SPEND_DISCLAIMER} Premium requires at least 1 month on Essential or Growth, a Veroxa readiness assessment by phone, Zoom, or in person, client approval, and an agreed ad budget.`,
+    a: `${AD_SPEND_DISCLAIMER} Premium requires a Veroxa readiness assessment by phone, Zoom, or in person, client approval, and an agreed ad budget.`,
   },
   {
     q: "Does Veroxa handle comments, DMs, inboxes, or customer-service replies?",
@@ -68,8 +68,8 @@ const FAQ_ITEMS = [
     a: "Veroxa will help set up the basic presence or accounts needed to run the service. This is not a custom website development package.",
   },
   {
-    q: "Does Veroxa guarantee more customers?",
-    a: "No. Veroxa does not guarantee rankings, revenue, walk-ins, or a specific number of new customers. The focus is on creating consistent daily customer opportunities online. Results depend on restaurant quality, offer, location, market, and the media the restaurant provides.",
+    q: "Are outcomes promised?",
+    a: "No. Veroxa does not promise rankings, revenue, walk-ins, or a specific customer count. The focus is a stronger online presence that helps restaurants become easier to find, easier to trust, and easier to choose. Results depend on restaurant quality, offer, location, market, and the media the restaurant provides.",
   },
 ];
 
@@ -98,7 +98,9 @@ export default function PricingPage() {
             </span>
           </h1>
           <p className="text-muted-foreground animate-in fade-in slide-in-from-bottom-5 duration-700">
-            Google Optimization included in every plan. No contract, cancel anytime, no payment checkout here, and no hidden ad spend.
+            Google/local visibility support is included in every plan. No
+            contract, cancel anytime, no payment checkout here, and ad spend
+            stays separate.
           </p>
         </div>
       </section>
@@ -196,22 +198,24 @@ export default function PricingPage() {
           </h3>
           <div className="grid sm:grid-cols-3 gap-5">
             <div>
-              <p className="text-sm font-semibold mb-1">Essential</p>
+              <p className="text-sm font-semibold mb-1">Starter</p>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Best if you need consistency and a clean online presence.
+                Low-friction entry for basic consistency and local visibility
+                cleanup.
               </p>
             </div>
             <div>
               <p className="text-sm font-semibold mb-1">Growth</p>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Best if you can provide videos and want stronger reach.
+                Most recommended for serious online presence when there is clear
+                opportunity and enough media/cooperation.
               </p>
             </div>
             <div>
               <p className="text-sm font-semibold mb-1">Premium</p>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Reviewed after your foundation is stable: requires 1+ month,
-                readiness assessment, approval, and agreed ad budget.
+                Selective and readiness-gated: requires assessment, approval,
+                and an agreed ad budget. Ad spend remains separate.
               </p>
             </div>
           </div>
@@ -241,15 +245,16 @@ export default function PricingPage() {
         </div>
       </section>
 
-
       {/* Trust notes */}
       <section className="pb-8 px-6 lg:px-12 max-w-5xl mx-auto w-full">
         <div
           className="rounded-xl border border-border/30 bg-card/10 px-6 py-4 text-sm text-muted-foreground leading-relaxed max-w-3xl"
           data-testid="pricing-trust-note"
         >
-          <strong className="text-foreground/80">No guaranteed outcomes:</strong>{" "}
-          Veroxa does not guarantee rankings, revenue, walk-ins, viral posts, or new customers. Results depend on restaurant quality, market, location, offer, consistency, and usable client-provided media.
+          <strong className="text-foreground/80">Clear boundaries:</strong>{" "}
+          Veroxa does not promise rankings, revenue, walk-ins, viral posts, or
+          customer counts. Results depend on restaurant quality, market,
+          location, offer, consistency, and usable client-provided media.
         </div>
       </section>
 
@@ -314,7 +319,10 @@ export default function PricingPage() {
                 Start Free Audit <ArrowRight className="ml-2 w-4 h-4" />
               </Button>
             </Link>
-            <Link href="/demo/client/dashboard" data-testid="btn-pricing-cta-demo">
+            <Link
+              href="/demo/client/dashboard"
+              data-testid="btn-pricing-cta-demo"
+            >
               <Button
                 size="lg"
                 variant="outline"

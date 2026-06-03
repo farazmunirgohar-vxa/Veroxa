@@ -243,3 +243,13 @@ Guardrail expectations:
 - Business-truth changes require client confirmation before approval/execution.
 - Connector attempts, successes, and failures must be activity-logged.
 - Service credentials must be server-only and never available to browser code.
+
+## 2026-06-03 pricing/profit-fit alignment
+
+- Active public pricing is Starter $295/month, Growth $495/month, and Premium $995/month.
+- Growth is the main recommended package for strong-fit restaurants; Starter is the low-friction entry plan; Premium is selective and readiness-gated.
+- Premium requires readiness assessment, client approval, and an agreed ad budget; ad spend is separate.
+- Profit Fit Layer is internal/team-only and uses `requiredDailyOrders = monthlyFee / netMargin / averageTicket / 30` with conservative defaults of $15 average ticket and 5% net margin.
+- Online-influenced orders/actions include online orders, phone/order clicks, direction/address clicks that become visits, menu/order-link clicks, Google profile actions, customer mentions, social content-driven visits, and repeat-customer attention.
+- Public/client surfaces must not promise orders, profit, ROI, customers, revenue, rankings, or exact order targets.
+- This update does not mark production auth, migrations, storage, live AI, connectors, payments, or runtime SaaS wiring as built.

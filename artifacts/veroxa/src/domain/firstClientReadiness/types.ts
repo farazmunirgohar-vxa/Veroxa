@@ -24,10 +24,7 @@ export type ReadinessStatus =
 
 export type ReadinessSeverity = "blocker" | "warning" | "pass";
 
-export type FirstClientPackageFit =
-  | "essential"
-  | "growth"
-  | "premium_candidate";
+export type FirstClientPackageFit = "starter" | "growth" | "premium_candidate";
 
 export type FirstClientRiskProfile =
   | "healthy"

@@ -7,8 +7,8 @@ import {
 } from "./packageReadiness";
 
 export type FirstFiveCondition =
-  | "healthy_essential"
-  | "essential_low_media"
+  | "healthy_starter"
+  | "starter_low_media"
   | "growth_reels_ready"
   | "growth_inconsistent_uploads"
   | "premium_assessment_eligible";
@@ -113,11 +113,11 @@ export interface FirstFiveTeamCommandCenterSummary {
 export const FIRST_FIVE_CLIENT_READINESS_FIXTURES: FirstFiveClientReadinessFixture[] =
   [
     {
-      id: "first-5-essential-healthy",
-      condition: "healthy_essential",
-      label: "Healthy Essential client",
+      id: "first-5-starter-healthy",
+      condition: "healthy_starter",
+      label: "Healthy Starter client",
       restaurantName: "Demo Grill House",
-      plan: "essential",
+      plan: "starter",
       usableMediaCount: 18,
       hasShortVideoContent: false,
       uploadConsistency: "steady",
@@ -127,11 +127,11 @@ export const FIRST_FIVE_CLIENT_READINESS_FIXTURES: FirstFiveClientReadinessFixtu
       monthlyReportReady: true,
     },
     {
-      id: "first-5-essential-low-media",
-      condition: "essential_low_media",
-      label: "Essential client with low media",
+      id: "first-5-starter-low-media",
+      condition: "starter_low_media",
+      label: "Starter client with low media",
       restaurantName: "Demo Taco Bar",
-      plan: "essential",
+      plan: "starter",
       usableMediaCount: 3,
       hasShortVideoContent: false,
       uploadConsistency: "low",
