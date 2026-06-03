@@ -71,6 +71,8 @@ import {
   getReadinessStatusLabel,
   getReadinessSummary,
 } from "@/domain/firstClientReadiness";
+import { VEROXA_PLANS } from "@/data/pricing/veroxaPricing";
+import { evaluateVeroxaProfitValidation } from "@/domain/profitValidation";
 
 const pushPriorityTone: Record<OpportunityPriority, StatusBadgeTone> = {
   high: "warning",
@@ -114,6 +116,11 @@ export default function TeamDashboard() {
   const reviewModeActions = getTeamActionQueue();
   const firstClientReadinessSummary = getReadinessSummary();
   const firstClientBlockingChecks = getBlockingChecks();
+  const internalProfitValidation = evaluateVeroxaProfitValidation({
+    daysSinceStart: 30,
+    monthlyFee: VEROXA_PLANS.starter.priceMonthly,
+    trackingConfidence: "unknown",
+  });
 
   // Today's suggested pushes — rule-based daily opportunities (team-only).
   const suggestedPushes = canUseFixtureData
@@ -353,6 +360,50 @@ export default function TeamDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      <Card
+        className="mb-6 border-amber-500/30 bg-amber-500/5"
+        data-testid="card-dashboard-profit-validation"
+      >
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-amber-300" />
+            Profit validation · Internal only
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
+          <div>
+            <p className="text-sm text-foreground/90">
+              {internalProfitValidation.headline}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Track online-influenced actions/orders, break-even progress, and
+              attribution confidence. Keep exact proof targets internal and out
+              of client/public pages.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-3">
+            <div className="rounded-md border border-border bg-background/60 p-2">
+              <p className="text-muted-foreground">Break-even progress</p>
+              <p className="font-semibold tabular-nums">
+                {internalProfitValidation.requiredOrdersPerDay}/day
+              </p>
+            </div>
+            <div className="rounded-md border border-border bg-background/60 p-2">
+              <p className="text-muted-foreground">2-month standard</p>
+              <p className="font-semibold tabular-nums">
+                {internalProfitValidation.starterMinimumTarget}/day
+              </p>
+            </div>
+            <div className="rounded-md border border-border bg-background/60 p-2">
+              <p className="text-muted-foreground">Status</p>
+              <p className="font-semibold capitalize">
+                {internalProfitValidation.status.replaceAll("_", " ")}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="mb-6 grid gap-4 lg:grid-cols-2">
         <Card

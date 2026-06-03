@@ -4,6 +4,27 @@ import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const failures: string[] = [];
+const publicClientGuaranteePatterns: Array<[RegExp, string]> = [
+  [/(?:10|15|20|50)\s+orders\/day/i, "exact order target"],
+  [/guaranteed\s+orders/i, "order guarantee"],
+  [/guaranteed\s+profit/i, "profit guarantee"],
+  [/guaranteed\s+ROI/i, "ROI guarantee"],
+  [/guaranteed\s+customers/i, "customer guarantee"],
+  [/guaranteed\s+revenue/i, "revenue guarantee"],
+  [/guaranteed\s+walk-ins/i, "walk-in guarantee"],
+  [/we make restaurants profitable/i, "profit promise"],
+];
+
+const publicClientFiles = [
+  "artifacts/veroxa/src/pages/landing.tsx",
+  "artifacts/veroxa/src/pages/services.tsx",
+  "artifacts/veroxa/src/pages/pricing.tsx",
+  "artifacts/veroxa/src/pages/free-audit.tsx",
+  "artifacts/veroxa/src/pages/client-dashboard.tsx",
+  "artifacts/veroxa/src/pages/client-updates.tsx",
+  "artifacts/veroxa/src/pages/client-reports.tsx",
+] as const;
+
 const clientFiles = [
   "artifacts/veroxa/src/pages/client-dashboard.tsx",
   "artifacts/veroxa/src/pages/client-media.tsx",
@@ -25,6 +46,15 @@ const internalClientTerms = [
   /raw scoring/i,
   /internal ID/i,
 ];
+for (const file of publicClientFiles) {
+  const text = readFileSync(join(root, file), "utf8");
+  for (const [pattern, label] of publicClientGuaranteePatterns) {
+    if (pattern.test(text)) {
+      failures.push(`${file} contains blocked public/client guarantee language: ${label}`);
+    }
+  }
+}
+
 for (const file of clientFiles) {
   const text = readFileSync(join(root, file), "utf8");
   const lines = text.split(/\r?\n/);

@@ -133,6 +133,18 @@ Default conservative assumptions: $15 average ticket, 5% net margin, 30 days/mon
 
 Profit Fit language and exact break-even order math are team/internal only. Do not expose exact targets to public/client pages, and do not say Veroxa makes restaurants profitable.
 
+## 5B. Profit validation and online-influenced action layer
+
+Veroxa sells online presence publicly, but internally validates whether the work is becoming cost-justifiable through profitable online-influenced orders/actions. This is internal only and is not public/client-facing guarantee language.
+
+- Starter internal 2-month proof standard: 20 online-influenced actions/day for right-fit restaurants.
+- 2–3 months: service delivery plus cost justification through tracking setup, Google/Maps cleanup, best sellers, and order/contact paths.
+- 6–9 months: profit progress should be visible through careful signal review, not service delivery volume alone.
+- 12 months: online presence should be reviewed as a meaningful order channel when attribution confidence is strong enough.
+- Tracking hierarchy: business outcome signals, conversion/action signals, attention signals, engagement signals, and execution signals.
+- Attribution confidence must stay explicit: confirmed, strong signal, directional, owner reported, or unknown.
+- Break-even progress and exact proof math are internal only and must not appear as public/client guarantees.
+
 ## 6. Routing rules
 
 Do not merge demo and login flows.

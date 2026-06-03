@@ -61,6 +61,10 @@ const restrictionPatterns = [
 
 const guaranteePatterns = [
   { label: "3–5 customers", pattern: /3\s*[–-]\s*5\s+customers/i },
+  { label: "20 orders/day", pattern: /20\s+orders\/day/i },
+  { label: "10 orders/day", pattern: /10\s+orders\/day/i },
+  { label: "15 orders/day", pattern: /15\s+orders\/day/i },
+  { label: "50 orders/day", pattern: /50\s+orders\/day/i },
   { label: "guaranteed orders", pattern: /guaranteed\s+orders/i },
   { label: "guaranteed profit", pattern: /guaranteed\s+profit/i },
   { label: "guaranteed ROI", pattern: /guaranteed\s+ROI/i },
@@ -133,6 +137,18 @@ if (
   failures.push(
     "SaaS foundation docs must warn that /client/* and /team/* cannot use demo/sample fixtures once authenticated real mode is enabled.",
   );
+}
+
+for (const required of [
+  "online-influenced orders/actions",
+  "break-even progress",
+  "attribution confidence",
+  "internal only",
+  "not public/client-facing guarantee",
+]) {
+  if (!new RegExp(required.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i").test(combinedDocs)) {
+    failures.push(`SaaS foundation docs are missing profit validation marker: ${required}`);
+  }
 }
 
 if (

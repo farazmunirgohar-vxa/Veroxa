@@ -21,6 +21,7 @@ const ignoredPathParts = [
   "/node_modules/",
   "/.git/",
   "scripts/src/check-business-guardrails.ts",
+  "scripts/src/check-profit-validation-model.ts",
 ];
 const activeRealPortalPages = new Set([
   "artifacts/veroxa/src/pages/client-dashboard.tsx",
@@ -83,6 +84,28 @@ const serviceBoundarySafe =
   /does not|doesn't|do not|not handle|not included|outside included services|restaurant remains responsible|customer-service outside/i;
 const activeRoleClaim =
   /(active|current|runtime|live|human|portal|user-facing)\s+(human\s+)?roles?[^\n]*(Operator|Owner|Super Admin)|roles?\s+(are always|include|includes)[^\n]*(Operator|Owner|Super Admin)|(Operator|Owner|Super Admin)\s+as\s+an?\s+(active|current|runtime|live|human|portal|user-facing)\s+roles?/i;
+
+
+const publicClientGuaranteePatterns: Array<[RegExp, string]> = [
+  [/(?:10|15|20|50)\s+orders\/day/i, "exact public/client order target"],
+  [/guaranteed\s+orders/i, "public/client order guarantee"],
+  [/guaranteed\s+profit/i, "public/client profit guarantee"],
+  [/guaranteed\s+ROI/i, "public/client ROI guarantee"],
+  [/guaranteed\s+customers/i, "public/client customer guarantee"],
+  [/guaranteed\s+revenue/i, "public/client revenue guarantee"],
+  [/guaranteed\s+walk-ins/i, "public/client walk-in guarantee"],
+  [/we make restaurants profitable/i, "public/client profit promise"],
+];
+
+const publicClientBoundaryFiles = [
+  "artifacts/veroxa/src/pages/landing.tsx",
+  "artifacts/veroxa/src/pages/services.tsx",
+  "artifacts/veroxa/src/pages/pricing.tsx",
+  "artifacts/veroxa/src/pages/free-audit.tsx",
+  "artifacts/veroxa/src/pages/client-dashboard.tsx",
+  "artifacts/veroxa/src/pages/client-updates.tsx",
+  "artifacts/veroxa/src/pages/client-reports.tsx",
+] as const;
 
 const forbiddenCopy: Array<[RegExp, string]> = [
   [/\b2 posts per day\b/i, "forbidden posting volume"],
@@ -164,6 +187,15 @@ for (const file of scanRoots.flatMap(walk)) {
       }
     }
   });
+}
+
+for (const file of publicClientBoundaryFiles) {
+  const text = readFileSync(join(root, file), "utf8");
+  for (const [pattern, label] of publicClientGuaranteePatterns) {
+    if (pattern.test(text)) {
+      failures.push(`${file} contains blocked public/client guarantee language: ${label}`);
+    }
+  }
 }
 
 const appSource = readFileSync(
