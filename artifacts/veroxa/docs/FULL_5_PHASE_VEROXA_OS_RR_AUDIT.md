@@ -438,7 +438,7 @@ Current guardrails cover:
 
 **WATCH**
 
-- CI prepares `pnpm@10.12.1` while root `package.json` declares `pnpm@10.26.1`. The local workaround succeeded, but version alignment should be reviewed to reduce environment-specific failures.
+- CI prepares `pnpm@10.12.1`, and root `package.json` is now aligned to `pnpm@10.12.1` to reduce Corepack/environment-specific version confusion.
 
 ### Guardrails to add before Full SaaS Foundation
 
@@ -571,7 +571,7 @@ Needed:
 ## 16. Recommended fixes before next era
 
 1. **BLOCKER:** Configure `origin` remote and re-run pull/fetch before this audit is treated as latest-main verified.
-2. **FIX BEFORE NEXT ERA:** Align or document pnpm/Corepack version behavior so verification does not require a workaround in normal CI/dev usage.
+2. **RESOLVED TOOLING ALIGNMENT:** Root `packageManager` and CI Corepack preparation are aligned to `pnpm@10.12.1`; continue using direct pnpm verification where supported by the environment.
 3. **FIX BEFORE NEXT ERA:** Add SaaS-era security/data guardrails before production auth/storage/database work begins.
 4. **FIX BEFORE NEXT ERA:** Create a production domain model document for accounts, users, roles, media, requests, approvals, actions, reports, activity logs, plans, discounts, and account states.
 5. **FIX BEFORE NEXT ERA:** Add rule-based automation unit tests before AI or connector expansion.
