@@ -9,7 +9,7 @@
  *
  * Hard guardrails captured by these types (enforced later, in server code):
  *   - All AI output is a DRAFT requiring team approval before any client sees it.
- *   - OPENAI_API_KEY is server-side only (Replit Secrets); never in VITE_*,
+ *   - OPENAI_API_KEY is server-side only (Vercel environment variables / local env); never in VITE_*,
  *     never in frontend code, never committed.
  */
 

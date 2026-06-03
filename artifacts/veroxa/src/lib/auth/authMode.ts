@@ -5,7 +5,7 @@
  * Flip this to `"real"` once:
  *   - `user_profiles` table has been applied to Supabase,
  *   - at least one test user per role is provisioned in Supabase Auth,
- *   - `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` are in Replit Secrets.
+ *   - `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` are configured in Vercel environment variables / local env.
  *
  * The Supabase client (`src/lib/supabase/client.ts`) uses
  * `{ persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }`,

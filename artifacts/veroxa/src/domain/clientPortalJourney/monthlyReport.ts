@@ -16,7 +16,7 @@ function summaries(items: { title: string; summary: string }[], fallback: string
 /**
  * Generate a deterministic, client-safe monthly report foundation from local
  * journey data. It avoids fake revenue, ranking guarantees, and invented live
- * metrics; Replit can later polish the display around these fields.
+ * metrics; future UI polish can adjust the display around these fields.
  */
 export function generateClientMonthlyReport(clientId: string): ClientMonthlyReport {
   const journey = getClientPortalJourney(clientId);

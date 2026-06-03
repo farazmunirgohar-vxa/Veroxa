@@ -7,12 +7,12 @@ them** for the current model.
 
 ## Builder model
 
-- **Codex** is the primary engineering/build/hardening partner for source-of-truth
-  updates, architecture review, type safety, tests, backend/domain logic, and PRs.
-- **Replit** is secondary/preview-only unless Faraz explicitly says otherwise; use
-  it mainly for visible previews and product iteration, not as the active source
-  of engineering truth.
-- GitHub main remains the source of truth.
+The active Veroxa build stack is **GitHub + Codex + Vercel**.
+
+- **GitHub main** remains the source of truth.
+- **Codex** is the primary engineering/build agent for source-of-truth updates, architecture review, type safety, tests, backend/domain logic, and PRs.
+- **Vercel** is the deployment target.
+- **Browser/manual QA** is used for visual checks.
 
 ## The two active human roles
 

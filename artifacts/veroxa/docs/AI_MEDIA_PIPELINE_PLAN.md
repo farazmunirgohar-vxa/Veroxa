@@ -60,7 +60,7 @@ publishing.
 
 ## 5. Security (OpenAI key handling)
 
-- `OPENAI_API_KEY` is **server-side only**, stored in **Replit Secrets**.
+- `OPENAI_API_KEY` is **server-side only**, stored in **Vercel environment variables / local env**.
 - **Never** import or expose the key in frontend / client code.
 - **Never** place the key in a `VITE_*` variable (those are bundled into the
   client and are public).

@@ -68,7 +68,7 @@ function rel(fullPath: string): string {
 
 function isExemptContext(file: string, line: string): boolean {
   if (
-    /sql_drafts|migration|MIGRATION_|CODEX_PRICING_CLEANUP_BRIEF|BUILD_STATUS|CURRENT_REPLIT_BUILD_STATUS/i.test(
+    /sql_drafts|migration|MIGRATION_|CODEX_PRICING_CLEANUP_BRIEF|BUILD_STATUS|CURRENT_BUILD_STATUS/i.test(
       file,
     )
   )

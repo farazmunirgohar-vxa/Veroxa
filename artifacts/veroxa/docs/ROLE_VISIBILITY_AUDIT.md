@@ -1,7 +1,7 @@
 # Role Visibility Audit
 
 This document is the source of truth for what each Veroxa role
-should and should not see in the current Replit phase
+should and should not see in the current placeholder review phase
 (Read-Only Operations Foundation).
 
 It is paired with the role-permissions code in
@@ -109,7 +109,7 @@ No other occurrences found anywhere in `artifacts/veroxa/src/` or
 
 Internal portals (team / operator / owner) may display the badge
 **"Source: Demo repository layer"** to make data provenance clear
-during this Replit phase. The client portal MUST NOT show that
+during this placeholder review phase. The client portal MUST NOT show that
 badge or any other technical / backend-implementation language.
 
 ## Client-facing copy rules

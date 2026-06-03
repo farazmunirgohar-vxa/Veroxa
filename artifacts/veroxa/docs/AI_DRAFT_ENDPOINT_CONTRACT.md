@@ -13,7 +13,7 @@
 `POST /api/ai/draft` (api-server)
 
 - The `OPENAI_API_KEY` is read **only** on the server, from environment
-  variables / Replit Secrets. It is never sent to the browser and never
+  variables / local env. It is never sent to the browser and never
   appears in any response.
 - The endpoint never throws raw provider errors to the client. Failures are
   converted into a structured response with `mode: "error"` and a safe
