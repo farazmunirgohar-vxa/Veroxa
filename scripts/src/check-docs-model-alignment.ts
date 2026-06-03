@@ -176,6 +176,22 @@ for (const required of [
   }
 }
 
+
+for (const required of [
+  "SaasDataMode",
+  "RepositoryBundle",
+  "ActivityLogRepository",
+  "assertNoDemoFixturesInAuthenticatedMode",
+  "ProfitValidationSnapshotRecord",
+  "placeholder repository",
+  "demo repository",
+  "future production adapter requires RR approval",
+]) {
+  if (!new RegExp(required.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i").test(combinedDocs)) {
+    failures.push(`Current docs are missing Phase 1 SaaS marker: ${required}`);
+  }
+}
+
 for (const marker of requiredCurrentMarkers) {
   if (!marker.pattern.test(combinedDocs)) {
     failures.push(

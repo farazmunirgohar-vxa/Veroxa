@@ -103,6 +103,11 @@ const scriptsPackage = readRequired("scripts/package.json");
 if (!rootPackage.includes("check-profit-validation-model")) {
   failures.push("Root verify:veroxa must run check-profit-validation-model.");
 }
+const profitSnapshotFile = readRequired("artifacts/veroxa/src/domain/saas/profitValidationPersistence.ts");
+for (const marker of ["ProfitValidationSnapshotRecord", "buildProfitValidationSnapshot", "formatProfitValidationSnapshot"]) {
+  if (!profitSnapshotFile.includes(marker)) failures.push(`Profit validation persistence hook missing marker: ${marker}`);
+}
+
 if (!scriptsPackage.includes("check-profit-validation-model")) {
   failures.push("scripts/package.json must expose check-profit-validation-model.");
 }

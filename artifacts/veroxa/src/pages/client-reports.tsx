@@ -118,6 +118,13 @@ export default function ClientReports() {
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
       <RealPortalReviewNotice />
+      {!canUseFixtureData && (
+        <Card className="border-primary/20 bg-primary/5" data-testid="card-client-reports-real-empty">
+          <CardContent className="p-4 text-sm text-muted-foreground">
+            Reports will appear here after verified work is reviewed. Missing account activity stays blank instead of being guessed.
+          </CardContent>
+        </Card>
+      )}
 
       <div>
         <h2

@@ -284,3 +284,13 @@ Veroxa sells online presence publicly, but internally validates whether the work
 - Break-even progress and exact proof math are internal only and must not appear as public/client guarantees.
 
 No runtime SaaS implementation is added by this layer: no production auth, database migrations, storage uploads, live AI, connectors, payments, or real client data writes.
+
+## 2026-06-03 — Client Portal Full SaaS Foundation Phase 1 scaffold
+
+- Phase 1 SaaS foundation scaffolding has been added as TypeScript contracts and guardrails only.
+- `SaasDataMode`, future restaurant/account/user/media/request/action/report/activity domain models, repository interfaces, placeholder repository adapters, demo repository adapters, and a `RepositoryBundle` selector now exist.
+- Activity log scaffolding exists through `ActivityLogRepository` contracts and preview helpers; no future write should ship without activity logging.
+- Profit validation persistence hooks now include `ProfitValidationSnapshotRecord` for team/internal-only snapshot previews.
+- Production DB/auth/storage is still not connected: no production auth, migrations, RLS policies, storage uploads, live AI, connectors, payments, or real client data writes are enabled.
+- Demo fixture leakage is guarded with `assertNoDemoFixturesInAuthenticatedMode`; `/client/*` and `/team/*` cannot use demo/sample fixtures once authenticated real mode is enabled.
+- A future production adapter requires RR approval before implementation or wiring.

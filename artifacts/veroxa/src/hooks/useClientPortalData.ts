@@ -33,6 +33,8 @@
 import { useState, useEffect } from "react";
 import { useActiveClientPortalContext } from "@/lib/clientPortalContext";
 import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary";
+import { mapRealPortalDataModeToSaasDataMode } from "@/domain/saas/dataMode";
+import { createSaasRepositoryBundle } from "@/domain/saas/repositoryProvider";
 import {
   DEFAULT_DEMO_CLIENT_ID,
   getClientById,
@@ -143,6 +145,8 @@ export function useClientPortalData(): UseClientPortalDataResult {
   const { activeClientId, isRealClientSession } =
     useActiveClientPortalContext();
   const portalDataMode = useRealPortalDataMode();
+  const saasDataMode = mapRealPortalDataModeToSaasDataMode(portalDataMode);
+  const repositoryBundle = createSaasRepositoryBundle(saasDataMode);
 
   if (
     !portalDataMode.allowDemoFixtures &&
@@ -153,7 +157,9 @@ export function useClientPortalData(): UseClientPortalDataResult {
       loading: false,
       error: null,
       data: {
-        businessName: "Client Portal in review",
+        businessName: repositoryBundle.repositoryMode === "placeholder repository"
+          ? "Client Portal in review"
+          : "Restaurant Portal",
         scheduledPosts: [],
         googleMetrics: demoGoogleMetrics,
         contentSupply: [],
@@ -176,7 +182,7 @@ export function useClientPortalData(): UseClientPortalDataResult {
         weeklyReportsCount: 0,
         monthlyReportsCount: 0,
       },
-      dataSourceMessage: "Live account data is being prepared",
+      dataSourceMessage: `${repositoryBundle.repositoryMode} — live account data is being prepared`,
       isReadOnlyLive: false,
       fallbackReason: null,
     };

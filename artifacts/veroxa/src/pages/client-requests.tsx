@@ -148,6 +148,13 @@ export default function ClientRequests() {
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
       <RealPortalReviewNotice />
+      {!canUseFixtureData && (
+        <Card className="border-primary/20 bg-primary/5" data-testid="card-client-requests-real-empty">
+          <CardContent className="p-4 text-sm text-muted-foreground">
+            Live client data is not connected yet. Requests you draft here stay in this review session until your active account workflow is ready.
+          </CardContent>
+        </Card>
+      )}
 
       <div>
         <h2
