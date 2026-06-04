@@ -69,40 +69,39 @@ Do not change pricing unless explicitly instructed by the user. The user’s new
 Current locked public pricing:
 
 - Starter: $295/month
-  - Low-friction entry for basic online presence consistency and local visibility cleanup
-  - Google Business Profile cleanup
+  - Google Business Profile support
   - Google Maps/local visibility basics
-  - Hours/menu/order/social link cleanup
-  - Best-seller visibility guidance
-  - Basic photo freshness support
-  - Facebook + Instagram basic posting
-  - Up to 3 posts/week depending on usable media
+  - Facebook support
+  - Instagram support
+  - Picture-based content support
+  - Up to 3 posts/week depending on usable client-provided media
   - Simple captions
-  - Review/reputation support through drafts/reminders
-  - Simple monthly progress summary
+  - Basic content organization
+  - Media guidance/reminders
   - Client Portal access
-  - Media reminders/upload guidance
+  - Simple monthly progress summary
+  - Veroxa team review before anything goes live
 - Growth: $495/month
   - Main recommended package for strong-fit restaurants
   - Everything in Starter
+  - Reels support
+  - TikTok support
+  - Better support / stronger communication
   - Stronger Google/local consistency
-  - Stronger social consistency
-  - Up to 1 post/day depending on usable media
-  - Stronger best-seller/content rhythm
-  - Weekly progress update
+  - Stronger content rhythm
+  - Better caption/content preparation
+  - Weekly progress updates
   - Monthly report
-  - Limited content/design prep
   - Stronger client portal workflow
 - Premium: $995/month
   - Selective advanced package for restaurants ready for ads/support
   - Everything in Growth
-  - Ads management readiness/support
-  - Stronger reporting
+  - Ad management
+  - Up to 1 post/day depending on usable client-provided media
+  - Stronger reporting/support
   - Ad planning/support
-  - Readiness assessment required
-  - Client approval required
-  - Agreed ad budget required
-  - Ad spend is separate and paid directly by the restaurant
+  - Ad spend separate
+  - Client approval required for ads
 
 Global pricing rules:
 
@@ -110,7 +109,7 @@ Global pricing rules:
 - Cancel anytime.
 - Ad spend is always separate and paid by the restaurant directly to the ad platform.
 - Starter is capped at up to 3 posts/week depending on usable client-provided media.
-- Growth and Premium are capped at up to 1 post/day depending on usable client-provided media.
+- Premium is capped at up to 1 post/day depending on usable client-provided media. Growth does not carry a public daily-posting cap and is differentiated by reels, TikTok support, better support/stronger communication, stronger consistency, weekly updates, monthly report, and stronger workflow.
 - Posting depends on usable client-provided media and may slow when usable media is unavailable.
 - Premium requires a Veroxa readiness assessment, client approval, and an agreed ad budget. Premium must not be automatic.
 - Veroxa does not handle comments, DMs, inboxes, complaints, order questions, refunds, or customer-service conversations at launch.

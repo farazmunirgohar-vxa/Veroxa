@@ -3,8 +3,6 @@ import { Link } from "wouter";
 const navItems = [
   { href: "/services", label: "Services", testId: "nav-link-services" },
   { href: "/pricing", label: "Pricing", testId: "nav-link-pricing" },
-  { href: "/free-audit", label: "Free Audit", testId: "nav-link-free-audit" },
-  { href: "/demo/client/dashboard", label: "Client Demo", testId: "nav-link-client-demo" },
   { href: "/login", label: "Login", testId: "nav-link-login" },
 ] as const;
 

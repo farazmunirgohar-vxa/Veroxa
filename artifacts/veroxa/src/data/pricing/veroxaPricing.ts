@@ -8,8 +8,10 @@
 //   * No contract. Cancel anytime.
 //   * Posting depends on usable restaurant-provided media and may slow when
 //     usable media is unavailable.
-//   * Starter is capped at up to 3 posts/week; Growth and Premium are
-//     capped at up to 1 post/day, depending on usable media.
+//   * Starter is capped at up to 3 posts/week; Growth is differentiated by
+//     reels, TikTok, better support, stronger consistency, stronger workflow,
+//     weekly updates, and monthly report; Premium is capped at up to
+//     1 post/day, depending on usable media.
 //   * Premium adds ads management readiness/support after assessment, client
 //     approval, and agreed ad budget. Ad spend is ALWAYS separate and paid by
 //     the restaurant directly to the ad platform.
@@ -83,7 +85,7 @@ export const AD_SPEND_DISCLAIMER =
   "Ad spend is separate and paid directly by the restaurant. Veroxa plan pricing does not include ad spend.";
 
 export const MEDIA_DEPENDENCY_DISCLAIMER =
-  "Posting depends on usable client-provided media and may slow when usable media is unavailable. Starter is capped at up to 3 posts/week; Growth and Premium are capped at up to 1 post/day.";
+  "Posting depends on usable client-provided media and may slow when usable media is unavailable. Starter is capped at up to 3 posts/week; Premium is capped at up to 1 post/day.";
 
 export const SERVICE_BOUNDARY_DISCLAIMER =
   "Veroxa does not handle comments, DMs, inboxes, complaints, order questions, refunds, or customer-service conversations at launch. The restaurant remains responsible for customer replies.";
@@ -97,6 +99,8 @@ export const FIRST_CLIENT_LOYALTY_DISCOUNT_POLICY =
 const starterPostingVolumeSummary =
   "Up to 3 posts/week, depending on usable client-provided media.";
 const growthPostingVolumeSummary =
+  "Reels, TikTok, stronger communication, weekly updates, and monthly reporting based on usable client-provided media.";
+const premiumPostingVolumeSummary =
   "Up to 1 post/day, depending on usable client-provided media.";
 const mediaDependencySummary =
   "Posting depends on usable restaurant-provided photos and videos; Veroxa will ask for more when the supply is low.";
@@ -109,68 +113,74 @@ const restaurantResponsibilities = [
 ];
 
 const starterResponsibilities = [
-  "Google Business Profile cleanup",
+  "Google Business Profile support",
   "Google Maps/local visibility basics",
-  "Hours, menu, order, and social link cleanup",
-  "Best-seller visibility guidance and basic photo freshness support",
-  "Facebook + Instagram basic posting with simple captions",
-  "Review/reputation support through drafts/reminders",
-  "Simple monthly progress summary, Client Portal access, and media reminders/upload guidance",
+  "Facebook support",
+  "Instagram support",
+  "Picture-based content support with simple captions",
+  "Basic content organization and media guidance/reminders",
+  "Client Portal access and simple monthly progress summary",
+  "Veroxa team review before anything goes live",
 ];
 
 const growthResponsibilities = [
   ...starterResponsibilities,
+  "Reels support",
+  "TikTok support",
+  "Better support / stronger communication",
   "Stronger Google/local consistency",
-  "Facebook, Instagram, and TikTok consistency using client-provided media",
-  "Stronger best-seller/content rhythm",
-  "Weekly progress update and monthly report",
-  "Limited content/design prep and stronger client portal workflow",
+  "Stronger content rhythm",
+  "Better caption/content preparation",
+  "Weekly progress updates and monthly report",
+  "Stronger client portal workflow",
 ];
 
 const premiumResponsibilities = [
   ...growthResponsibilities,
-  "Ads management readiness/support after assessment, client approval, and agreed ad budget",
-  "Ad reporting once approved ads are active later",
+  "Ad management",
+  premiumPostingVolumeSummary,
+  "Stronger reporting/support",
+  "Ad planning/support",
+  "Ad spend separate",
+  "Client approval required for ads",
 ];
 
 const starterIncludes = [
-  "Google Business Profile cleanup",
+  "Google Business Profile support",
   "Google Maps/local visibility basics",
-  "Hours/menu/order/social link cleanup",
-  "Best-seller visibility guidance",
-  "Basic photo freshness support",
-  "Facebook + Instagram basic posting",
-  "Up to 3 posts/week depending on usable media",
+  "Facebook support",
+  "Instagram support",
+  "Picture-based content support",
+  "Up to 3 posts/week depending on usable client-provided media",
   "Simple captions",
-  "Review/reputation support through drafts/reminders",
-  "Simple monthly progress summary",
+  "Basic content organization",
+  "Media guidance/reminders",
   "Client Portal access",
-  "Media reminders/upload guidance",
+  "Simple monthly progress summary",
+  "Veroxa team review before anything goes live",
 ];
 
 const growthIncludes = [
   "Everything in Starter",
+  "Reels support",
+  "TikTok support",
+  "Better support / stronger communication",
   "Stronger Google/local consistency",
-  "Facebook + Instagram + TikTok posting support",
-  "TikTok posting support using client-provided media",
-  "Up to 1 post/day depending on usable media",
-  "Stronger best-seller/content rhythm",
-  "Weekly progress update",
+  "Stronger content rhythm",
+  "Better caption/content preparation",
+  "Weekly progress updates",
   "Monthly report",
-  "Limited content/design prep",
   "Stronger client portal workflow",
 ];
 
 const premiumIncludes = [
   "Everything in Growth",
-  "Ads management support/readiness after assessment, approval, and agreed ad budget",
-  "Stronger reporting",
+  "Ad management",
+  premiumPostingVolumeSummary,
+  "Stronger reporting/support",
   "Ad planning/support",
-  "Readiness assessment required",
-  "Client approval required",
-  "Agreed ad budget required",
   "Ad spend separate",
-  growthPostingVolumeSummary,
+  "Client approval required for ads",
   PREMIUM_READINESS_RULE,
   AD_SPEND_DISCLAIMER,
 ];
@@ -209,7 +219,7 @@ export const VEROXA_PLANS: Record<VeroxaPlanId, VeroxaPlan> = {
     label: "Starter",
     priceMonthly: 295,
     tagline:
-      "Low-friction entry plan for basic online presence consistency and local visibility cleanup.",
+      "Complete professional entry plan for Google/local basics, Facebook and Instagram support, picture-based content, and calm review.",
     includes: starterIncludes,
     adsSupport: false,
     veroxaResponsibilities: starterResponsibilities,
@@ -223,7 +233,7 @@ export const VEROXA_PLANS: Record<VeroxaPlanId, VeroxaPlan> = {
     label: "Growth",
     priceMonthly: 495,
     tagline:
-      "For restaurants that want a stronger online presence rhythm across Google, social content, TikTok, weekly updates, and monthly reporting.",
+      "For restaurants that want reels, TikTok support, stronger communication, stronger consistency, weekly updates, and monthly reporting.",
     includes: growthIncludes,
     adsSupport: false,
     veroxaResponsibilities: growthResponsibilities,
@@ -236,12 +246,13 @@ export const VEROXA_PLANS: Record<VeroxaPlanId, VeroxaPlan> = {
     label: "Premium",
     priceMonthly: 995,
     tagline:
-      "Selective advanced package for restaurants ready for ads support and stronger reporting after readiness review.",
+      "Selective advanced package for restaurants ready for ad management, stronger support, and higher posting capacity after readiness review.",
     includes: premiumIncludes,
     adsSupport: true,
     veroxaResponsibilities: premiumResponsibilities,
     publicVisible: true,
     status: "active",
+    postingVolumeSummary: premiumPostingVolumeSummary,
   }),
 
   essential: buildPlan({
@@ -343,7 +354,7 @@ export const GLOBAL_PRICING_RULES = [
   "Cancel anytime",
   "Google Business Profile and Google Maps support included in all plans",
   "Facebook + Instagram included in all plans",
-  "Starter is capped at up to 3 posts/week; Growth/Premium are capped at up to 1 post/day",
+  "Starter is capped at up to 3 posts/week; Premium is capped at up to 1 post/day",
   "Growth is the main recommended package for strong-fit restaurants",
   "Premium adds ads management readiness/support; ad spend is separate",
   "Posting depends on usable client-provided media and may slow when usable media is unavailable",

@@ -160,11 +160,10 @@ Current pricing rules:
 
 - No contract.
 - Cancel anytime.
-- Starter is capped at up to 3 posts/week; Growth and Premium are capped at up to 1 post/day.
+- Starter is capped at up to 3 posts/week; Premium is capped at up to 1 post/day.
 - Posting depends on usable client-provided media.
-- Growth is the main recommended package for stronger Google/local and social consistency using client-provided media.
-- Premium adds ads management readiness/support after assessment, but does not
-  increase the public posting cap.
+- Growth is the main recommended package for reels, TikTok support, better support/stronger communication, stronger Google/local consistency, stronger content rhythm, weekly updates, monthly report, and stronger workflow.
+- Premium adds ad management and the public up to 1 post/day cap after assessment; ad spend remains separate.
 - Premium requires a Veroxa readiness assessment,
   client approval, and an agreed ad budget.
 - Ad spend is always separate and paid directly by the restaurant.

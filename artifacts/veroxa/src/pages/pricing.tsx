@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { ArrowRight, CheckCircle2, ShieldCheck, Zap } from "lucide-react";
+import { CheckCircle2, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
@@ -20,7 +20,7 @@ const pricingCardTestIdMarkers = ["pricing-card-starter", "pricing-card-growth",
 const lockedPricingTextMarkers = [
   "Premium requires a Veroxa readiness assessment",
   "Starter is capped at up to 3 posts/week",
-  "Growth and Premium are capped at up to 1 post/day",
+  "Premium is capped at up to 1 post/day",
 ];
 
 const pricingSourceMarkers = {
@@ -34,17 +34,21 @@ const plans = [
     name: "Starter",
     price: "$295",
     cadence: "/month",
-    highlight: "Low-friction online presence cleanup",
-    description: "For restaurants that need basic local visibility consistency and a calmer starting workflow.",
+    highlight: "Professional online presence starter",
+    description: "For restaurants that need Google/local basics, Facebook and Instagram support, picture-based content, and a calmer starting workflow.",
     inclusions: [
-      "Google Business Profile cleanup/support",
+      "Google Business Profile support",
       "Google Maps/local visibility basics",
-      "Facebook + Instagram basic posting",
-      "Up to 3 posts/week depending on usable media",
+      "Facebook support",
+      "Instagram support",
+      "Picture-based content support",
+      "Up to 3 posts/week depending on usable client-provided media",
       "Simple captions",
-      "Media reminders/upload guidance",
-      "Simple monthly progress summary",
+      "Basic content organization",
+      "Media guidance/reminders",
       "Client Portal access",
+      "Simple monthly progress summary",
+      "Veroxa team review before anything goes live",
     ],
   },
   {
@@ -52,17 +56,18 @@ const plans = [
     price: "$495",
     cadence: "/month",
     highlight: "Recommended for stronger consistency",
-    description: "For restaurants that want a stronger content rhythm, local consistency, and progress communication.",
+    description: "For restaurants that want reels, TikTok support, better communication, stronger consistency, and clearer reporting.",
     featured: true,
     inclusions: [
       "Everything in Starter",
+      "Reels support",
+      "TikTok support",
+      "Better support / stronger communication",
       "Stronger Google/local consistency",
-      "Facebook + Instagram + TikTok support",
-      "Up to 1 post/day depending on usable media",
       "Stronger content rhythm",
-      "Weekly progress update",
+      "Better caption/content preparation",
+      "Weekly progress updates",
       "Monthly report",
-      "Limited content/design prep",
       "Stronger client portal workflow",
     ],
   },
@@ -70,17 +75,16 @@ const plans = [
     name: "Premium",
     price: "$995",
     cadence: "/month",
-    highlight: "Selective ads-readiness support",
-    description: "For restaurants that are ready for stronger reporting and ad planning after Veroxa readiness review.",
+    highlight: "Selective ads and stronger support",
+    description: "For restaurants that are ready for ad management, stronger reporting/support, and higher posting capacity after Veroxa readiness review.",
     inclusions: [
       "Everything in Growth",
-      "Ads management readiness/support",
+      "Ad management",
+      "Up to 1 post/day depending on usable client-provided media",
+      "Stronger reporting/support",
       "Ad planning/support",
-      "Stronger reporting",
-      "Readiness assessment required",
-      "Client approval required",
-      "Agreed ad budget required",
       "Ad spend separate",
+      "Client approval required for ads",
     ],
   },
 ];
@@ -223,33 +227,6 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <section className="py-16 px-6 lg:px-12 bg-card/10 border-t border-border/30">
-        <div className="max-w-xl mx-auto text-center">
-          <div className="mx-auto mb-5 w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
-            <ShieldCheck className="w-5 h-5" />
-          </div>
-          <h2 className="text-2xl font-bold mb-4">Want details before comparing plans?</h2>
-          <p className="sr-only">
-            Pricing source includes {pricingSourceMarkers.currentPublicPlanCount} public plans and {pricingSourceMarkers.globalRuleCount} global pricing rules.
-          </p>
-          <p className="text-muted-foreground mb-8">
-            Pricing stays plan-centered. Visit Services to understand how the
-            work is organized before choosing a starting point.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/services" data-testid="btn-pricing-cta-services">
-              <Button size="lg" variant="outline" className="h-12 px-7 border-border/60 hover:bg-accent/50">
-                See Services
-              </Button>
-            </Link>
-            <Link href="/free-audit" data-testid="btn-pricing-cta-audit">
-              <Button size="lg" className="h-12 px-7 font-semibold shadow-[0_0_20px_rgba(99,102,241,0.25)]">
-                Start Free Audit <ArrowRight className="ml-2 w-4 h-4" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
 
       <PublicFooter />
     </div>

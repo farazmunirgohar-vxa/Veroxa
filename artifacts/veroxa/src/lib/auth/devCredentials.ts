@@ -2,9 +2,9 @@
  * devCredentials.ts — TEMPORARY placeholder-only login matcher.
  *
  * Placeholder credentials are preview-only and are read from Vite env first.
- * A public preview fallback is available only for placeholder/demo review when
- * VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=true (or local Vite dev). This is
- * not production auth and contains no real secret.
+ * A public preview fallback is available for placeholder/demo review unless
+ * VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=false. This is not production auth
+ * and contains no real secret.
  *
  * AUTH_MODE must NOT be switched to "real" until this placeholder file and the
  * placeholder branch in login.tsx are removed. See:
@@ -52,7 +52,8 @@ function credentialFromEnv(
 }
 
 function publicPreviewFallbackEnabled(): boolean {
-  return import.meta.env.DEV || readViteEnv(PUBLIC_PREVIEW_LOGIN_FLAG) === "true";
+  const explicitFlag = readViteEnv(PUBLIC_PREVIEW_LOGIN_FLAG);
+  return import.meta.env.DEV || explicitFlag !== "false";
 }
 
 function getPublicPreviewFallbackCredentials(): readonly DevCredential[] {
@@ -106,8 +107,8 @@ function getEnvRoleCredentials(): readonly DevCredential[] {
 
 /**
  * Placeholder development credentials for internal review only.
- * Env values always win; fallback credentials require an explicit preview flag
- * outside local dev and are intentionally obvious/non-secret.
+ * Env values always win; fallback credentials are intentionally obvious,
+ * non-secret placeholder credentials for preview review only.
  */
 export function getDevRoleCredentials(): readonly DevCredential[] {
   return [...getEnvRoleCredentials(), ...getPublicPreviewFallbackCredentials()];
@@ -133,10 +134,8 @@ export function getPlaceholderCredentialStatus(): PlaceholderCredentialStatus {
       ? "Preview login configured"
       : "Preview login not configured",
     helperText: isConfigured
-      ? envCredentialCount > 0
-        ? "Vite preview credentials are configured for this environment. Passwords are never displayed."
-        : "Preview access is enabled for review. Use client@veroxa.com / farazclient or team@veroxa.com / farazteam."
-      : `Set ${DEV_CLIENT_EMAIL_ENV}/${DEV_CLIENT_PASSWORD_ENV} and ${DEV_TEAM_EMAIL_ENV}/${DEV_TEAM_PASSWORD_ENV}, or explicitly set ${PUBLIC_PREVIEW_LOGIN_FLAG}=true for preview-only fallback login.`,
+      ? "Preview access is enabled for review. Use client@veroxa.com / farazclient or team@veroxa.com / farazteam."
+      : "Preview access is not enabled for this review environment.",
   };
 }
 

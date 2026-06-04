@@ -1,6 +1,4 @@
-import { Link } from "wouter";
 import {
-  ArrowRight,
   BarChart3,
   Camera,
   CheckCircle2,
@@ -11,7 +9,6 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 import { useDocumentMeta } from "@/hooks/useDocumentMeta";
@@ -193,27 +190,6 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      <section className="py-16 px-6 lg:px-12 bg-card/10 border-t border-border/30">
-        <div className="max-w-xl mx-auto text-center">
-          <h2 className="text-2xl font-bold mb-4">Ready to see where your restaurant stands?</h2>
-          <p className="text-muted-foreground mb-8">
-            Start with a free audit or review the package options when you want
-            to compare what each plan includes.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/free-audit" data-testid="btn-services-cta-audit">
-              <Button size="lg" className="h-12 px-7 font-semibold shadow-[0_0_20px_rgba(99,102,241,0.25)]">
-                Start Free Audit <ArrowRight className="ml-2 w-4 h-4" />
-              </Button>
-            </Link>
-            <Link href="/pricing" data-testid="btn-services-cta-pricing">
-              <Button size="lg" variant="outline" className="h-12 px-7 border-border/60 hover:bg-accent/50">
-                See Pricing
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
 
       <PublicFooter />
     </div>

@@ -1,14 +1,14 @@
 # Public Pricing and Services
 
-Updated: 2026-06-03
+Updated: 2026-06-04
 
 Public positioning remains: “We help restaurants become easier to find, easier to trust, and easier to choose.” Public pages must not promise orders, profit, ROI, revenue, rankings, walk-ins, or customer counts.
 
 ## Plans
 
-- Starter — $295/month: low-friction entry for Google Business Profile cleanup, Google Maps/local visibility basics, link/menu/hour cleanup, basic photo freshness support, Facebook + Instagram basic posting, simple captions, review/reputation drafts/reminders, simple monthly progress summary, Client Portal access, and media reminders/upload guidance. Starter is capped at up to 3 posts/week depending on usable media.
-- Growth — $495/month: Growth is the main recommended package for strong-fit restaurants. Includes everything in Starter plus stronger Google/local consistency, stronger social consistency, up to 1 post/day depending on usable media, stronger best-seller/content rhythm, weekly progress update, monthly report, limited content/design prep, and stronger client portal workflow.
-- Premium — $995/month: selective readiness-gated package. Includes everything in Growth plus ads management readiness/support, stronger reporting, and ad planning/support. Premium requires a readiness assessment, client approval, and an agreed ad budget. Ad spend is separate.
+- Starter — $295/month: complete professional entry for Google Business Profile support, Google Maps/local visibility basics, Facebook support, Instagram support, picture-based content support, up to 3 posts/week depending on usable client-provided media, simple captions, basic content organization, media guidance/reminders, Client Portal access, simple monthly progress summary, and Veroxa team review before anything goes live.
+- Growth — $495/month: Growth is the main recommended package for strong-fit restaurants. Includes everything in Starter plus Reels support, TikTok support, better support / stronger communication, stronger Google/local consistency, stronger content rhythm, better caption/content preparation, weekly progress updates, monthly report, and stronger client portal workflow. Growth does not include public daily posting language.
+- Premium — $995/month: selective readiness-gated package. Includes everything in Growth plus ad management, up to 1 post/day depending on usable client-provided media, stronger reporting/support, and ad planning/support. Premium requires client approval for ads, readiness assessment, and an agreed ad budget. Ad spend is separate.
 
 ## Boundaries
 

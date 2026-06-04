@@ -493,7 +493,8 @@ const pricing = readFileSync(
 );
 for (const required of [
   "Starter is capped at up to 3 posts/week",
-  "Growth and Premium are capped at up to 1 post/day",
+  "Premium is capped at up to 1 post/day",
+  "Growth is differentiated",
   "Premium adds ads management readiness/support",
   "AD_SPEND_DISCLAIMER",
   "SERVICE_BOUNDARY_DISCLAIMER",
