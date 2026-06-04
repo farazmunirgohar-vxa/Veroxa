@@ -1,11 +1,19 @@
 import type { ManualExecutionPack, ManualPublishStatus } from "./types";
-import { requiresClientConfirmation } from "./clientConfirmationWorkflow";
+import {
+  isClientConfirmationPending,
+  isClientConfirmationRejected,
+  requiresClientConfirmation,
+} from "./clientConfirmationWorkflow";
 
-export function getManualPublishingStatus(pack: ManualExecutionPack): ManualPublishStatus {
+export function getManualPublishingStatus(
+  pack: ManualExecutionPack,
+): ManualPublishStatus {
   return pack.manualPublishStatus;
 }
 
-export function getManualPublishingChecklist(pack: ManualExecutionPack): readonly string[] {
+export function getManualPublishingChecklist(
+  pack: ManualExecutionPack,
+): readonly string[] {
   const checklist = [
     "Team reviewed caption/update.",
     "Client-provided media is usable.",
@@ -16,33 +24,67 @@ export function getManualPublishingChecklist(pack: ManualExecutionPack): readonl
     "Screenshot or proof saved manually later.",
     "Marked as completed manually in tracker later.",
   ];
-  if (requiresClientConfirmation(pack)) {
-    return ["Client confirmation received before any manual execution.", ...checklist];
+  if (
+    requiresClientConfirmation(pack) ||
+    pack.confirmationStatus === "confirmed"
+  ) {
+    return [
+      "Client confirmation received before any manual execution if required.",
+      ...checklist,
+    ];
   }
   return checklist;
 }
 
-export function getManualPublishingBlockers(pack: ManualExecutionPack): readonly string[] {
+export function getManualPublishingBlockers(
+  pack: ManualExecutionPack,
+): readonly string[] {
   const blockers: string[] = [];
-  if (pack.blockedReason) blockers.push(pack.blockedReason);
-  if (pack.riskFlags.includes("missing_media")) blockers.push("More media needed before manual execution.");
-  if (pack.riskFlags.includes("low_media_quality")) blockers.push("Current media needs review or replacement.");
-  if (pack.riskFlags.includes("platform_access_needed")) blockers.push("Manual platform access must be available before posting.");
-  if (requiresClientConfirmation(pack) && pack.confirmationStatus !== "confirmed") {
+  if (
+    pack.blockedReason &&
+    (isClientConfirmationPending(pack) ||
+      !/confirmation|client confirms/i.test(pack.blockedReason))
+  )
+    blockers.push(pack.blockedReason);
+  if (isClientConfirmationRejected(pack))
+    blockers.push(
+      "Client rejected or corrected the detail; revise before manual execution.",
+    );
+  if (pack.riskFlags.includes("missing_media"))
+    blockers.push("More media needed before manual execution.");
+  if (pack.riskFlags.includes("low_media_quality"))
+    blockers.push("Current media needs review or replacement.");
+  if (pack.riskFlags.includes("platform_access_needed"))
+    blockers.push("Manual platform access must be available before posting.");
+  if (isClientConfirmationPending(pack) && requiresClientConfirmation(pack)) {
     blockers.push("Client confirmation needed before manual execution.");
   }
-  if (pack.riskFlags.includes("no_usable_action")) blockers.push("No usable manual action is recommended yet.");
+  if (pack.riskFlags.includes("no_usable_action"))
+    blockers.push("No usable manual action is recommended yet.");
   return [...new Set(blockers)];
 }
 
-export function getManualPublishingTimelinePreview(pack: ManualExecutionPack): readonly string[] {
+export function getManualPublishingTimelinePreview(
+  pack: ManualExecutionPack,
+): readonly string[] {
   const steps = ["Prepared", "Team reviewed"];
-  if (requiresClientConfirmation(pack)) steps.push("Client confirmed if required");
-  steps.push("Copied manually", "Posted manually later", "Logged manually later", "Included in report later");
+  if (
+    requiresClientConfirmation(pack) ||
+    pack.confirmationStatus === "confirmed"
+  )
+    steps.push("Client confirmed if required");
+  steps.push(
+    "Copied manually",
+    "Posted manually later",
+    "Logged manually later",
+    "Included in report later",
+  );
   return steps;
 }
 
-export function getManualPublishingCompletionLabel(pack: ManualExecutionPack): string {
+export function getManualPublishingCompletionLabel(
+  pack: ManualExecutionPack,
+): string {
   const labels: Record<ManualPublishStatus, string> = {
     not_ready: "Not ready for manual execution",
     ready_for_manual_execution: "Ready for manual execution",
