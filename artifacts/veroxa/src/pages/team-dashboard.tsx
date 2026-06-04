@@ -84,6 +84,7 @@ import {
 import { VEROXA_PLANS } from "@/data/pricing/veroxaPricing";
 import { evaluateVeroxaProfitValidation } from "@/domain/profitValidation";
 import { buildManualExecutionPacks, evaluateManualExecutionLaunchGate } from "@/domain/manualExecution";
+import { getFirstClientOperatingSnapshots, getFirstClientOpsSummary } from "@/domain/firstClientOperatingSuite";
 
 import { TeamSaasStatePanel } from "@/components/team/TeamSaasStatePanel";
 const pushPriorityTone: Record<OpportunityPriority, StatusBadgeTone> = {
@@ -153,6 +154,8 @@ export default function TeamDashboard() {
   });
   const manualExecutionPacks = buildManualExecutionPacks();
   const manualExecutionGate = evaluateManualExecutionLaunchGate(manualExecutionPacks);
+  const firstClientOpsSnapshots = getFirstClientOperatingSnapshots();
+  const firstClientOpsSummary = getFirstClientOpsSummary(firstClientOpsSnapshots);
 
   // Today's suggested pushes — rule-based daily opportunities (team-only).
   const suggestedPushes = canUseFixtureData
@@ -320,6 +323,31 @@ export default function TeamDashboard() {
         description="A calmer Today View for review, scheduling, client requests, blockers, approvals, and reports."
         testId="header-team-dashboard"
       />
+
+
+      <Card className="mb-4 border-emerald-500/20 bg-emerald-500/5" data-testid="card-first-client-ops-summary">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-sm">
+            <ShieldCheck className="h-4 w-4 text-emerald-300" />
+            First-Client Ops
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
+          <div className="grid grid-cols-2 gap-3 text-center text-xs md:grid-cols-5">
+            <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold tabular-nums">{firstClientOpsSummary.total}</p><p className="text-muted-foreground">Benchmarks</p></div>
+            <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold tabular-nums">{firstClientOpsSummary.healthy}</p><p className="text-muted-foreground">Healthy</p></div>
+            <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold tabular-nums">{firstClientOpsSummary.needingMedia}</p><p className="text-muted-foreground">Need media</p></div>
+            <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold tabular-nums">{firstClientOpsSummary.needingConfirmation}</p><p className="text-muted-foreground">Need confirmation</p></div>
+            <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold tabular-nums">{firstClientOpsSummary.readyForManualExecution}</p><p className="text-muted-foreground">Ready manual</p></div>
+          </div>
+          <div className="space-y-2 text-sm text-muted-foreground">
+            <p>{firstClientOpsSummary.atRiskOrBlocked} benchmark snapshots are at risk, blocked, paused, or need review.</p>
+            <Link href="/team/first-client-ops" className="inline-flex items-center gap-2 text-primary hover:underline">
+              Open First-Client Ops <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card className="mb-4 border-primary/20 bg-card" data-testid="card-manual-execution-summary">
         <CardHeader className="pb-2">
