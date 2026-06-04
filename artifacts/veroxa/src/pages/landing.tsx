@@ -3,99 +3,121 @@ import { Button } from "@/components/ui/button";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 import { useDocumentMeta } from "@/hooks/useDocumentMeta";
+import { COMPLETE_ONLINE_PRESENCE_PLAN, PRICING_NO_CONTRACT_DISCLAIMER } from "@/data/pricing/veroxaPricing";
 
-const SYSTEM_POINTS = [
-  "Google Business Profile and Google Maps visibility support",
-  "Facebook + Instagram posting included in every plan",
-  "Media guidance, weekly updates, and monthly reporting",
-  "Client Portal requests paired with Veroxa Team review",
+const handled = [
+  "Google Business Profile support",
+  "Google Maps/local visibility basics",
+  "Local SEO/search visibility basics",
+  "Yelp profile alignment/refinement",
+  "Website alignment/refinement if access is provided",
+  "Facebook support",
+  "Instagram support",
+  "Picture-based content support",
+  "Monthly online presence report",
+];
+
+const howItWorks = [
+  "Restaurant provides access, media, and business details.",
+  "Veroxa aligns profiles and online presence across Google, Maps, Yelp, website, Facebook, and Instagram.",
+  "Veroxa prepares platform-specific drafts for review.",
+  "Veroxa team reviews before anything goes live.",
+  "Client requests go through the portal; Veroxa responds/reviews/answers within 24 hours.",
+  "Monthly report explains what was done, what worked, what needs improvement, and what media Veroxa needs next.",
 ];
 
 export default function LandingPage() {
   useDocumentMeta({
-    title: "Veroxa — Restaurant Online Presence System",
+    title: "Complete Online Presence for Restaurants — Veroxa",
     description:
-      "Veroxa helps restaurants become easier to find, trust, choose, and return to through Google visibility, social posting, media guidance, and simple reporting.",
+      "Veroxa manages restaurant online presence across Google, Maps, Yelp, website alignment, Facebook, and Instagram for $495/month.",
   });
 
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-primary/30 flex flex-col">
       <PublicNav />
-
-      {/* Hero */}
-      <section className="pt-32 pb-20 px-6 lg:px-12 flex flex-col items-center text-center relative overflow-hidden">
+      <section className="pt-28 pb-16 px-6 lg:px-12 flex flex-col items-center text-center relative overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/20 blur-[120px] rounded-full pointer-events-none -z-10" />
-
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/10 text-primary text-xs font-semibold mb-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-          </span>
-          Restaurant Online Presence System
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/10 text-primary text-xs font-semibold mb-8">
+          One launch offer • Home → Audit → Login
         </div>
-
-        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight max-w-5xl leading-[1.1] mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-          Help your restaurant become easier to find, trust, choose, and return to.
+        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight max-w-5xl leading-[1.1] mb-6">
+          Complete Online Presence for Restaurants
         </h1>
-
-        <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mb-10 animate-in fade-in slide-in-from-bottom-5 duration-700 delay-150">
-          Veroxa is a calm, done-with-review operating system for restaurant online presence: Google/local visibility, social posting support, media guidance, updates, and reports handled through a Client Portal and Veroxa Team workflow.
+        <p className="text-3xl md:text-4xl font-bold text-primary mb-5" data-testid="home-price">
+          {COMPLETE_ONLINE_PRESENCE_PLAN.displayPrice}/month
         </p>
-
-        <div className="flex flex-col sm:flex-row gap-4 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-300">
+        <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mb-8">
+          Veroxa manages your restaurant’s complete online presence across Google, Maps, Yelp, website alignment, Facebook, and Instagram — then tracks what is working, what needs improvement, and what media helps your restaurant become easier to find, easier to trust, and easier to choose.
+        </p>
+        <p className="text-sm text-muted-foreground mb-10">
+          Portal-based workflow • Monthly online presence report • {PRICING_NO_CONTRACT_DISCLAIMER}
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4">
           <Link href="/free-audit" data-testid="btn-hero-audit">
-            <Button size="lg" className="h-14 px-8 text-base font-semibold shadow-[0_0_30px_rgba(99,102,241,0.3)] hover:shadow-[0_0_40px_rgba(99,102,241,0.5)] transition-all">
-              Request Free Audit
-            </Button>
+            <Button size="lg" className="h-14 px-8 text-base font-semibold shadow-[0_0_30px_rgba(99,102,241,0.3)]">Request Audit</Button>
           </Link>
-          <Link href="/demo/client/dashboard" data-testid="btn-hero-client-demo">
-            <Button size="lg" variant="outline" className="h-14 px-8 text-base border-border/50 hover:bg-accent/50 transition-colors">
-              Client Demo
-            </Button>
+          <Link href="/login" data-testid="btn-hero-login">
+            <Button size="lg" variant="outline" className="h-14 px-8 text-base border-border/50">Login</Button>
           </Link>
         </div>
       </section>
 
-      {/* What Veroxa Does */}
-      <section className="py-20 px-6 lg:px-12">
-        <div className="max-w-5xl mx-auto grid lg:grid-cols-[1fr_1.2fr] gap-10 items-start">
+      <section className="py-16 px-6 lg:px-12">
+        <div className="max-w-6xl mx-auto grid lg:grid-cols-[0.9fr_1.1fr] gap-10 items-start">
           <div>
-            <p className="text-xs uppercase tracking-wider text-primary font-semibold mb-3">
-              Built for restaurant owners
-            </p>
-            <h2 className="text-3xl font-bold mb-5">What Veroxa does</h2>
+            <p className="text-xs uppercase tracking-wider text-primary font-semibold mb-3">What Veroxa handles</p>
+            <h2 className="text-3xl font-bold mb-5">One calm online presence package.</h2>
             <p className="text-muted-foreground leading-relaxed">
-              Veroxa keeps the practical online pieces organized: local search readiness, Google Maps and Business Profile freshness, social content consistency, client-provided media use, simple reports, and clear requests when Veroxa needs restaurant input.
+              Veroxa focuses on the practical places restaurants are discovered, checked, trusted, and chosen. No multi-package funnel, no public demo promotion, and no fake live execution claims.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 gap-3">
-            {SYSTEM_POINTS.map((point) => (
-              <div
-                key={point}
-                className="rounded-xl border border-border/40 bg-card/20 p-4 text-sm font-medium leading-relaxed"
-              >
-                {point}
+            {handled.map((point) => <div key={point} className="rounded-xl border border-border/40 bg-card/20 p-4 text-sm font-medium leading-relaxed">{point}</div>)}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-16 px-6 lg:px-12 bg-card/10 border-y border-border/30">
+        <div className="max-w-6xl mx-auto">
+          <p className="text-xs uppercase tracking-wider text-primary font-semibold mb-3">How it works</p>
+          <div className="grid md:grid-cols-3 gap-4">
+            {howItWorks.map((step, index) => (
+              <div key={step} className="rounded-2xl border border-border/40 bg-background/60 p-5">
+                <div className="text-xs text-primary font-semibold mb-2">Step {index + 1}</div>
+                <p className="text-sm text-muted-foreground leading-relaxed">{step}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Trust boundaries */}
-      <section className="pb-20 px-6 lg:px-12">
-        <div className="max-w-5xl mx-auto rounded-2xl border border-border/40 bg-card/20 p-6 md:p-7">
-          <h2 className="text-xl font-bold mb-3">Clear, honest boundaries</h2>
-          <div className="grid md:grid-cols-2 gap-5 text-sm text-muted-foreground leading-relaxed">
-            <p>
-              Veroxa is not a magic growth guarantee. Rankings, revenue, walk-ins, and new customers depend on the restaurant's quality, location, market, offer, consistency, and the usable photos or videos the restaurant provides.
-            </p>
-            <p>
-              Veroxa does not handle comments, DMs, inboxes, refunds, complaints, order questions, or customer-service conversations at launch. Nothing public-facing goes live without Veroxa Team review and the right restaurant confirmation.
-            </p>
+      <section className="py-16 px-6 lg:px-12">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-5">
+          <div className="rounded-2xl border border-border/40 bg-card/20 p-6">
+            <h2 className="text-xl font-bold mb-3">Coming soon</h2>
+            <ul className="space-y-2 text-sm text-muted-foreground"><li>TikTok</li><li>Reels/video content</li><li>Ads management</li></ul>
+          </div>
+          <div className="rounded-2xl border border-border/40 bg-card/20 p-6 md:col-span-2">
+            <h2 className="text-xl font-bold mb-3">Not included at launch</h2>
+            <div className="grid sm:grid-cols-2 gap-2 text-sm text-muted-foreground">
+              <p>Comments, DMs, inboxes, customer-service replies, refunds, complaints, and order questions.</p>
+              <p>Full website redesign/development, paid ad spend, daily posting, automated publishing, live integrations, or guaranteed results.</p>
+            </div>
           </div>
         </div>
       </section>
 
+      <section className="pb-20 px-6 lg:px-12">
+        <div className="max-w-5xl mx-auto rounded-2xl border border-border/40 bg-card/20 p-6 md:p-7 text-center">
+          <h2 className="text-2xl font-bold mb-3">Start with a Restaurant Online Presence Audit.</h2>
+          <p className="text-sm text-muted-foreground mb-6">The audit reviews online presence gaps and whether Complete Online Presence — $495/month is a fit. Recommendations are not guarantees.</p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link href="/free-audit"><Button>Start Audit</Button></Link>
+            <Link href="/login"><Button variant="outline">Login</Button></Link>
+          </div>
+        </div>
+      </section>
       <PublicFooter />
     </div>
   );

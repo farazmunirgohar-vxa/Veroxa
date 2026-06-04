@@ -9,9 +9,7 @@ export const DAYS_PER_MONTH = 30;
 
 export const PROFIT_FIT_PLAN_MONTHLY_FEES: Record<CurrentPublicPlanId, number> =
   {
-    starter: VEROXA_PLANS.starter.priceMonthly,
-    growth: VEROXA_PLANS.growth.priceMonthly,
-    premium: VEROXA_PLANS.premium.priceMonthly,
+    complete_online_presence: VEROXA_PLANS.complete_online_presence.priceMonthly,
   };
 
 export type ProfitFitStatus =

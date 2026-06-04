@@ -66,55 +66,44 @@ For Codex:
 
 Do not change pricing unless explicitly instructed by the user. The user’s newest explicit instruction overrides stale repo docs.
 
-Current locked public pricing:
+Current locked public launch offer:
 
-- Starter: $295/month
+- Complete Online Presence: $495/month
   - Google Business Profile support
   - Google Maps/local visibility basics
+  - Local SEO/search visibility basics
+  - Yelp business profile alignment/refinement
+  - Basic website alignment/refinement if access is provided
+  - Business info consistency across Google/Yelp/website/socials
   - Facebook support
   - Instagram support
   - Picture-based content support
-  - Up to 3 posts/week depending on usable client-provided media
+  - Up to 3 total posts/updates per week, media dependent
   - Simple captions
   - Basic content organization
   - Media guidance/reminders
   - Client Portal access
-  - Simple monthly progress summary
+  - Portal request response/review/answer within 24 hours
+  - Monthly online presence report
   - Veroxa team review before anything goes live
-- Growth: $495/month
-  - Main recommended package for strong-fit restaurants
-  - Everything in Starter
-  - Reels support
-  - TikTok support
-  - Better support / stronger communication
-  - Stronger Google/local consistency
-  - Stronger content rhythm
-  - Better caption/content preparation
-  - Weekly progress updates
-  - Monthly report
-  - Stronger client portal workflow
-- Premium: $995/month
-  - Selective advanced package for restaurants ready for ads/support
-  - Everything in Growth
-  - Ad management
-  - Up to 1 post/day depending on usable client-provided media
-  - Stronger reporting/support
-  - Ad planning/support
-  - Ad spend separate
-  - Client approval required for ads
 
-Global pricing rules:
+No public demo promotion. Public flow is Home -> Audit -> Login. Do not promote public demo routes, public Client Demo CTAs, or a public Services/Pricing split as the main sales flow. Starter, Growth, Premium, Local Presence, Full Presence, and old Complete Presence are historical/deprecated/internal aliases only and must not appear as active public offers.
+
+Coming soon / not included at launch: TikTok support, Reels/video content support, ads management, daily posting, automated publishing, and live integrations.
+
+Not included: comments, DMs, inboxes, customer-service replies, refunds, complaints, order questions, full website redesign/development, custom website builds, hosting/domain/email troubleshooting, advanced technical SEO, paid ad spend, or guaranteed orders/revenue/rankings/profit.
+
+Global launch rules:
 
 - No contract.
 - Cancel anytime.
-- Ad spend is always separate and paid by the restaurant directly to the ad platform.
-- Starter is capped at up to 3 posts/week depending on usable client-provided media.
-- Premium is capped at up to 1 post/day depending on usable client-provided media. Growth does not carry a public daily-posting cap and is differentiated by reels, TikTok support, better support/stronger communication, stronger consistency, weekly updates, monthly report, and stronger workflow.
+- Ad spend is always separate and paid by the restaurant directly to the ad platform if future ads are approved.
 - Posting depends on usable client-provided media and may slow when usable media is unavailable.
-- Premium requires a Veroxa readiness assessment, client approval, and an agreed ad budget. Premium must not be automatic.
-- Veroxa does not handle comments, DMs, inboxes, complaints, order questions, refunds, or customer-service conversations at launch.
-- No public/client-facing guarantee language for orders, profit, ROI, customers, revenue, or rankings.
-- First clients receive 20% off for 12 months, then keep it as a loyalty discount only while continuously active; if they leave and later return, the 20% discount is no longer eligible.
+- Portal requests are the normal routine communication channel; Veroxa responds/reviews/answers within 24 hours, but this is not a completion promise.
+- No routine text/call workflow for normal service requests.
+- Veroxa does not invent discounts, BOGO offers, price cuts, lower prices, or new promotions. If a restaurant already has an offer/promotion, Veroxa may ask the client to confirm exact details before preparing public copy.
+- No public/client-facing guarantee language for orders, profit, ROI, customers, revenue, rankings, walk-ins, or growth.
+- Build Veroxa to about 90% complete in preview/manual/pre-live mode before paying for outside/live systems; future paid systems should plug into prepared interfaces.
 
 ## 5A. Profit Fit Layer
 

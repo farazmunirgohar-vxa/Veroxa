@@ -76,7 +76,7 @@ export default function TeamVisibilityAudit() {
     : null;
   const profitFit = selected
     ? evaluateProfitFit({
-        monthlyFee: PROFIT_FIT_PLAN_MONTHLY_FEES.growth,
+        monthlyFee: PROFIT_FIT_PLAN_MONTHLY_FEES.complete_online_presence,
         hasCapacityForMoreOrders: undefined,
         discountDependency: "unknown",
         deliveryAppDependency: "unknown",

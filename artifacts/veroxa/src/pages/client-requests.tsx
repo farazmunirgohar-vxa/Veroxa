@@ -20,7 +20,7 @@ import {
 
 const clientSafeBoundaryCopy = [
   "Portal requests are the normal channel for routine Veroxa work.",
-  "Veroxa will respond within 24 hours with an answer, review status, client question, upgrade route, or not-supported note.",
+  "Veroxa will respond within 24 hours with an answer, review status, client question, coming-soon note, or not-supported note.",
   "A 24-hour response is not a promise that larger work is completed within 24 hours.",
 ];
 
@@ -52,15 +52,15 @@ export default function ClientRequests() {
         needsClientInput: requestRows.filter(
           (row) => row.request.needsClientConfirmation,
         ).length,
-        upgradeRoute: requestRows.filter(
-          (row) => row.boundary?.eligibilityStatus === "needs_upgrade",
+        comingSoon: requestRows.filter(
+          (row) => row.boundary?.eligibilityStatus === "coming_soon_not_included",
         ).length,
       }
     : {
         total: requestSummary.total,
         inReview: grouped.in_review?.length ?? 0,
         needsClientInput: requestSummary.needsClientConfirmation,
-        upgradeRoute: 0,
+        comingSoon: 0,
       };
   const showSafeEmptyState = !pageState.isDemoData && !pageState.canShowRealData;
   return (
@@ -79,14 +79,14 @@ export default function ClientRequests() {
       ) : null}
       <div className="sr-only">
         Received In Review Handled Waiting for you Response within 24 hours
-        Upgrade required Not supported
+        Coming soon Not supported
       </div>
       {showSafeEmptyState ? null : (
         <section className="grid gap-4 md:grid-cols-4 mb-4">
           <Metric label="Total" value={metrics.total} />
           <Metric label="In review" value={metrics.inReview} />
           <Metric label="Needs your input" value={metrics.needsClientInput} />
-          <Metric label="Upgrade route" value={metrics.upgradeRoute} />
+          <Metric label="Coming soon" value={metrics.comingSoon} />
         </section>
       )}
       {showSafeEmptyState ? null : (
@@ -111,7 +111,7 @@ export default function ClientRequests() {
                       </p>
                       <StatusBadge
                         tone={
-                          boundary?.eligibilityStatus === "needs_upgrade"
+                          boundary?.eligibilityStatus === "coming_soon_not_included"
                             ? "warning"
                             : boundary?.eligibilityStatus ===
                                 "not_supported_at_launch"
@@ -189,7 +189,7 @@ export default function ClientRequests() {
             </div>
             <p className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs">
               {requestSummary.nextAction ||
-                "Veroxa reviews included requests, routes higher-plan work cleanly, and does not absorb out-of-tier work manually."}
+                "Veroxa reviews included Complete Online Presence requests, routes TikTok/Reels/Ads/daily posting as coming soon, and keeps customer-service/full-website-development requests outside launch scope."}
             </p>
           </CardContent>
         </Card>

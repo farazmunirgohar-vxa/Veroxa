@@ -1,128 +1,101 @@
-# Pre-Paid Activation Gate
+# Veroxa Launch Simplification Source of Truth
 
-Status: Required gate before Veroxa spends more money on production auth/database, storage uploads, live AI, platform APIs, payments, or paid monitoring/logging tiers.
+Status: Current as of 2026-06-04 for preview/manual/pre-live Veroxa.
 
-Veroxa should be theoretically complete in preview/manual/pre-live mode before paid infrastructure is activated. Paid systems should be connected into existing prepared interfaces, not used while the product is still being designed.
+## Locked launch model
 
-## Scope of this gate
+Veroxa has one active public offer: **Complete Online Presence — $495/month**.
 
-This gate must be reviewed before enabling paid or live versions of:
+Public positioning: Veroxa manages your restaurant's complete online presence across Google, Maps, Yelp, website alignment, Facebook, and Instagram — then tracks what is working, what needs improvement, and what media helps your restaurant become easier to find, easier to trust, and easier to choose.
 
-- Supabase production auth/database.
-- Storage uploads.
-- OpenAI/live AI.
-- Google APIs.
-- Meta/TikTok APIs.
-- Payments.
-- Monitoring/logging paid tiers.
+Public flow is **Home -> Audit -> Login**. Do not promote public demo routes, Client Demo CTAs, guided demo CTAs, or a public Services/Pricing split as the main sales flow. `/services` and `/pricing` may remain as hidden compatibility routes only and must not show multi-package cards.
 
-Active stack: **GitHub + Codex + Vercel**. **Replit is historical only**. Active roles: **Client and Team**. **Owner/Operator parked**.
+## Included in Complete Online Presence
 
-Current review credentials:
+- Google Business Profile support
+- Google Maps/local visibility basics
+- Local SEO/search visibility basics
+- Yelp business profile alignment/refinement
+- Basic website alignment/refinement if access is provided
+- Business info consistency across Google/Yelp/website/socials
+- Facebook support
+- Instagram support
+- Picture-based content support
+- Up to 3 total posts/updates per week, media dependent
+- Simple captions
+- Basic content organization
+- Media guidance/reminders
+- Client Portal access
+- Portal request response/review/answer within 24 hours
+- Monthly online presence report
+- Veroxa team review before anything goes live
 
-- [faraz@client.com](mailto:faraz@client.com) / farazclient
-- [faraz@team.com](mailto:faraz@team.com) / farazteam
+## Coming soon / not included at launch
 
-`AUTH_MODE` must remain `placeholder` until a separate approved production auth activation.
+TikTok support, Reels/video content support, ads management, daily posting, automated publishing, live integrations, and ads creative are coming soon / not included in the current launch package.
 
-## 1. Public site gate
+## Not included
 
-- [ ] Homepage is clear and current.
-- [ ] Services and Pricing are separated.
-- [ ] Services page explains service layers and contains no prices.
-- [ ] Pricing page contains $295, $495, and $995 with plan-service lists.
-- [ ] Free Audit is safe, honest, and does not imply live lookup/integration if none exists.
-- [ ] No fake guarantees for revenue, orders, profit, rankings, ROI, walk-ins, customers, or growth.
-- [ ] No public/client internal profit math.
+Veroxa does not handle comments, DMs, inboxes, customer-service replies, refunds, complaints, order questions, full website redesign/development, custom website builds, hosting/domain/email troubleshooting, plugin fixes, speed optimization, advanced technical SEO, paid ad spend, guaranteed orders/revenue/rankings/profit/ROI/customers/walk-ins/growth, or automated customer-visible execution.
 
-## 2. Preview login/demo gate
+## Historical/deprecated public plans
 
-- [ ] [faraz@client.com](mailto:faraz@client.com) / farazclient works in placeholder preview mode.
-- [ ] [faraz@team.com](mailto:faraz@team.com) / farazteam works in placeholder preview mode.
-- [ ] Public client demo at `/demo/client/dashboard` works.
-- [ ] Real client routes remain guarded.
-- [ ] Real team routes remain guarded.
-- [ ] Demo and login flows remain separate.
+Starter, Growth, Premium, Local Presence, Full Presence, old Complete Presence, Google Optimization, Complete Plus Ads, and Ads Management Only are historical/deprecated/internal aliases only. They may remain in compatibility code, seed data, or migration docs with clear retired language, but they are not active public offers. Old active public prices $295 and $995 must not appear as current public pricing.
 
-## 3. Client Portal gate
+## Portal request and SLA model
 
-- [ ] Client demo feels premium and honest.
-- [ ] Onboarding status is visible or a clear Restaurant Onboarding plan exists.
-- [ ] Media, request, update, and report flows are understandable.
-- [ ] Client-facing pages use calm service language.
-- [ ] No client-facing AI internals, backend terms, raw scores, fixture labels, connector/API language, Supabase/RLS language, or internal risk logic.
+Portal requests are the normal routine channel. Veroxa responds/reviews/answers within 24 hours with an answer, review status, client-input request, coming-soon note, not-included note, not-supported note, completion note, or manual-work scheduling note. This is not a promise that all work is completed within 24 hours. Routine texts/calls are not the normal service channel.
 
-## 4. Team Portal gate
+Included request types: google_profile_update, maps_visibility_update, yelp_profile_alignment, website_alignment, seo_search_visibility_basics, facebook_picture_post, instagram_picture_post, picture_caption, media_guidance, monthly_report, up_to_3_posts_per_week_media_dependent, portal_request_review, business_info_correction, and link_menu_contact_update.
 
-- [ ] Team Dashboard is usable for Faraz.
-- [ ] Manual Execution Center is usable.
-- [ ] First-Client Ops is usable if present.
-- [ ] Work Queue is usable.
-- [ ] Report Queue is usable.
-- [ ] Audit Leads is usable.
-- [ ] First-Client Readiness is usable.
-- [ ] Pages clearly state pre-live/manual/draft status where relevant.
-- [ ] No auto-posting or live paid integrations are implied.
+Coming soon / not included requests: tiktok_request, reels_request, video_content_request, ad_management_request, ad_planning_request, daily_posting_request, and advanced_campaign_request.
 
-## 5. Restaurant Onboarding gate
+Blocked/not supported requests: customer_service_request, dm_or_comment_reply_request, refund_or_complaint_request, order_question_request, full_website_redesign, custom_website_build, and technical_hosting_or_domain_support.
 
-- [ ] Restaurant Onboarding Center / Onboarding Wizard exists or a clear approved plan exists.
-- [ ] Business info checklist exists.
-- [ ] Media checklist exists.
-- [ ] Platform access checklist exists.
-- [ ] Business-truth confirmation checklist exists.
-- [ ] First-week setup checklist exists.
-- [ ] Client Portal onboarding status exists or is planned.
-- [ ] Team Portal onboarding queue exists or is planned.
+No-offer rule: Veroxa does not recommend or invent discounts, BOGO offers, price cuts, lower prices, or new promotions. If a restaurant already has an offer/promotion, Veroxa may ask the client to confirm exact details before preparing public copy.
 
-## 6. AI-ready gate
+## Website alignment scope
 
-- [ ] AI draft interfaces exist.
-- [ ] Captions, reports, updates, audits, and outreach drafts have deterministic fallbacks.
-- [ ] Human approval is required before public/customer-visible action.
-- [ ] Server-side-only future AI boundary is documented.
-- [ ] Budget caps are planned.
-- [ ] No frontend key exposure is possible.
-- [ ] Draft labels are clear.
-- [ ] Activity logging is planned before live AI.
-- [ ] Veroxa remains AI-ready but not connected until explicit activation.
+Included: business name/address/phone alignment, hours alignment, menu/order/reservation link alignment, Google/Yelp/Facebook/Instagram link alignment, simple restaurant description refinement, best-seller/menu visibility alignment, basic local SEO wording, basic photo/menu freshness suggestions, and small website content corrections if access is provided.
 
-## 7. Integration-ready gate
+Not included: full website redesign, new website build, custom development, online ordering setup, hosting/domain/email troubleshooting, plugin fixes, speed optimization, advanced technical SEO, unlimited website edits, and emergency website support.
 
-- [ ] Adapter contracts are planned.
-- [ ] Error states are planned.
-- [ ] Rollback plan is planned.
-- [ ] Rate limits are planned.
-- [ ] Activity logs are planned.
-- [ ] Permission boundaries are planned.
-- [ ] Human approval gates exist where customer-visible action is possible.
-- [ ] Veroxa remains integration-ready but not connected until explicit activation.
+Client-safe wording: "Basic website alignment/refinement is included when access is provided. Full website development is not included."
 
-## 8. Security gate
+## Yelp scope
 
-- [ ] No service role key reaches frontend code.
-- [ ] No exposed API keys.
-- [ ] `AUTH_MODE` is still intentionally controlled and remains `placeholder` until approved.
-- [ ] Protected routes are protected.
-- [ ] Guardrails pass.
-- [ ] Production auth/storage/live AI/connectors/payments are not described as active.
+Yelp is included as business profile alignment/refinement, business info consistency, photos/profile freshness where appropriate, reputation visibility snapshot, review theme awareness, and Yelp link/website/menu consistency. Do not promise Yelp ranking improvements, review removal, review suppression, fake review growth, or Yelp ads results. Prefer "Yelp profile freshness update," "Yelp photo/profile update," or "Yelp business profile alignment" instead of "Yelp post."
 
-## 9. Cost gate
+## Audit model
 
-- [ ] Estimated cost is approved before turning on paid systems.
-- [ ] Client/pilot readiness is confirmed.
-- [ ] Manual operation is possible without paid automation.
-- [ ] Cancellation/rollback path is documented before activation.
-- [ ] Activation is approved in a focused future build.
+The Audit page is the Restaurant Online Presence Audit. It reviews Google Business Profile, Google Maps/local visibility, Yelp presence, website alignment, local SEO/search visibility basics, Facebook, Instagram, menu/order/contact link clarity, media quality/presence, online presence gaps, and whether Complete Online Presence — $495/month is a fit. It must recommend one of: Complete Online Presence — $495/month, Not ready / needs manual review, or Not a fit yet. It must not claim live Google/Yelp/Facebook/Instagram scans, fake API results, ranking guarantees, revenue promises, or multi-tier recommendations.
 
-## Blocked until this gate passes
+Team Audit Leads should show Complete Online Presence fit, not fit/manual review, missing access/info, media quality, website alignment need, Google/Yelp status, and next team action. No multi-tier recommendation.
 
-Do not activate production auth, production database writes, storage uploads, live OpenAI calls, Google APIs, Meta/TikTok APIs, payments, webhooks, cron jobs, background jobs, automated publishing, or paid monitoring tiers until this gate passes and Faraz explicitly approves the relevant activation.
+## Onboarding model
 
-## Restaurant Onboarding OS V1 gate marker
+Restaurant Onboarding collects restaurant business info, Google Business Profile link/access status, Google Maps link, Yelp link/access status, website link/access status, Facebook link/access status, Instagram link/access status, menu/order/reservation links, best sellers, food categories, media supply, business-truth confirmations, website alignment permissions, profile access checklist, and monthly report baseline inputs. Public-facing multi-package onboarding logic is retired; old benchmark scenarios are historical/internal/demo only. TikTok/Reels/Ads may be mentioned only as coming soon.
 
-Restaurant Onboarding OS V1 is allowed before paid activation only because it is deterministic, preview/manual, and non-persistent. It must remain no database writes, no storage uploads, no live integrations, no payments, no auto-posting, no live AI, no real client data, and no offer invention until a future approved production onboarding phase.
+## Media intelligence and draft logic
 
-## 2026-06-04 post-onboarding expansion gate note
+For current launch, image/photo media creates or represents three platform-specific draft directions: Facebook draft, Instagram draft, and Google Business Profile / Google update draft. Video/reel media creates or represents four draft directions: Facebook draft, Instagram/Reels draft, Google Business Profile / Google update draft, and TikTok draft. TikTok/Reels draft readiness is team/internal preview only and must be marked coming soon/client-not-included. Do not use single-platform-only fit language such as "good for Facebook but not Instagram" or "only good for Facebook."
 
-The new package boundary, request SLA, value proof/reach, and media intelligence layers are preview/manual-only. They do not satisfy paid activation by themselves and do not connect production auth, database/storage, live AI, platform APIs, payments, webhooks, cron jobs, background jobs, or auto-posting. Portal requests are the normal routine channel, and the 24-hour promise means answer/review, not guaranteed completion.
+Media intelligence may evaluate clarity, lighting, food visibility, duplicate/reuse risk, whether confirmation is needed, usability, caption angle, what media is working/not working, and what to send next. Client pages must not show raw scores.
+
+## Value proof, reach, and reporting
+
+Value Proof / Restaurant Reach tracks Google/search reach, Google Maps reach, Yelp/profile visibility, Facebook reach, Instagram reach, website/menu/order link clarity, calls, direction clicks, website clicks, menu/order clicks, profile actions, customer mentions, owner-reported signals, media working/not-working, and content consistency.
+
+Client-safe reporting covers what Veroxa handled, Google/Maps/Yelp/website alignment progress, Facebook/Instagram posting/content progress, media used, what media worked, what media did not work, what media is needed next, reach/action signals, limitations, and next month focus. Report language: "This is what worked, what needs improvement, and what Veroxa needs next." No fake metrics, promises, raw internal scores, invented discounts/offers, or public/client profit math.
+
+Team-only value proof may include internal cost/value status, attribution confidence, proof strength, risk of under-proving value, and Profit Fit Layer review. The internal break-even formula `requiredDailyOrders = monthlyFee / netMargin / averageTicket / 30`, break-even progress, net margin, and exact proof math are internal only and not public/client-facing guarantee language.
+
+## Safety and live-system guardrails
+
+No production auth, Supabase migrations, RLS, production database wiring, real client data writes, real storage uploads, live AI/OpenAI runtime calls, Google/Meta/TikTok/YouTube APIs, publishing connectors, payments, Stripe, checkout, subscriptions, invoices, billing, webhooks, cron jobs, background jobs, automated customer-visible execution, Owner/Operator/Super Admin/generic Admin/Execution dashboards, or routine text/call workflow were added. `AUTH_MODE` remains `placeholder`; preview credentials remain faraz@client.com / farazclient and faraz@team.com / farazteam.
+
+Veroxa should be built to about 90% complete in preview/manual/pre-live mode before paying for outside/live systems. Future paid systems should plug into prepared interfaces, not be used while designing the product.
+
+## SaaS foundation continuity
+
+SaasDataMode, RepositoryBundle, ActivityLogRepository, assertNoDemoFixturesInAuthenticatedMode, ProfitValidationSnapshotRecord, placeholder repository, demo repository, and future production adapter requires RR approval remain the SaaS boundary markers. Real client routes must not show demo seed data unless they are public demo routes.
