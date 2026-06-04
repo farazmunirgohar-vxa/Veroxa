@@ -46,6 +46,60 @@ function ChecklistPreview({ title, items }: { title: string; items: { id: string
   );
 }
 
+const expectationNotHandled = [
+  "customer-service replies",
+  "comments",
+  "DMs",
+  "inboxes",
+  "refunds",
+  "complaints",
+  "order questions",
+  "full custom website development",
+  "hosting/domain/email troubleshooting",
+  "Yelp/TikTok/Reels/Ads yet",
+  "guaranteed orders, revenue, rankings, profit, ROI, or growth",
+];
+
+const expectationResponsibilities = [
+  "providing usable media",
+  "confirming business info",
+  "confirming hours/menu/prices",
+  "confirming existing offer/promotion details if you want Veroxa to present them",
+  "providing access when needed",
+  "handling customer conversations",
+  "understanding that 24-hour response means review/answer/next step, not guaranteed completion",
+];
+
+function ExpectationAgreementPreview() {
+  return (
+    <Card className="border-primary/20 bg-primary/5" data-testid="onboarding-expectation-acknowledgement">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <ShieldCheck className="h-4 w-4 text-primary" />
+          Expectation acknowledgement preview
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="grid gap-4 text-sm text-muted-foreground lg:grid-cols-2">
+        <div>
+          <p className="font-medium text-foreground">I understand Veroxa does not handle:</p>
+          <ul className="mt-2 list-disc space-y-1 pl-5">
+            {expectationNotHandled.map((item) => <li key={item}>{item}</li>)}
+          </ul>
+        </div>
+        <div>
+          <p className="font-medium text-foreground">I agree the restaurant is responsible for:</p>
+          <ul className="mt-2 list-disc space-y-1 pl-5">
+            {expectationResponsibilities.map((item) => <li key={item}>{item}</li>)}
+          </ul>
+        </div>
+        <p className="lg:col-span-2 rounded-lg border border-border/70 bg-background/70 p-3 text-xs">
+          Preview/manual only: no database write, no real checkbox persistence, no live platform access, and nothing goes live without Veroxa team review. Weekly updates are included so Veroxa can summarize what was worked on, what was posted/prepared, what is pending, what media is needed, what you need to confirm, and what is next.
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
 function DraftCard({ title, body }: { title: string; body: string }) {
   return (
     <Card className="border-primary/20 bg-primary/5">
@@ -84,6 +138,7 @@ export default function ClientOnboarding() {
             body="Your setup checklist will appear here once Veroxa activates your account. Real client onboarding data is not connected in this preview. Nothing goes live without Veroxa team review."
             testId="empty-client-onboarding-safe-state"
           />
+          <ExpectationAgreementPreview />
           <Card className="border-primary/20 bg-primary/5">
             <CardContent className="p-5 text-sm text-muted-foreground">
               <p className="font-medium text-foreground">What happens next</p>
@@ -144,7 +199,7 @@ export default function ClientOnboarding() {
             <div className="grid gap-2 sm:grid-cols-2">
               {getMediaQualityGuidance(profile).map((item) => <div key={item} className="rounded-lg border border-border/70 p-3">{item}</div>)}
             </div>
-            <p className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs">Short videos are helpful for Growth/Premium preview paths. Veroxa is not requesting a real upload here; this is setup guidance only.</p>
+            <p className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs">Short videos can help Veroxa prepare team-internal draft directions, but Reels/TikTok/video content are coming soon and not included at launch. Veroxa is not requesting a real upload here; this is setup guidance only.</p>
           </CardContent>
         </Card>
       </section>
@@ -161,6 +216,8 @@ export default function ClientOnboarding() {
         <DraftCard title="Missing info draft" body={buildMissingInfoRequestDraft(profile)} />
         <DraftCard title="Details confirmation draft" body={buildBusinessTruthConfirmationDraft(profile)} />
       </section>
+
+      <ExpectationAgreementPreview />
 
       <Card className="mt-5">
         <CardHeader><CardTitle className="flex items-center gap-2 text-base"><ShieldCheck className="h-4 w-4 text-primary" />First-week expectation</CardTitle></CardHeader>

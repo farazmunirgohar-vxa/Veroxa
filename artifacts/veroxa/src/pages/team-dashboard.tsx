@@ -338,8 +338,8 @@ export default function TeamDashboard() {
         <Card className="border-amber-500/20 bg-amber-500/5" data-testid="card-dashboard-package-boundary">
           <CardHeader className="pb-2"><CardTitle className="text-sm">Package boundary</CardTitle></CardHeader>
           <CardContent className="text-sm text-muted-foreground">
-            <p className="text-2xl font-semibold text-foreground">{packageBoundarySummary.upgradeRouted}</p>
-            <p>Upgrade-routed requests. Included work proceeds to review; out-of-tier work is not absorbed manually.</p>
+            <p className="text-2xl font-semibold text-foreground">{packageBoundarySummary.routedBoundaryWork}</p>
+            <p>Routed boundary work: coming-soon, add-on, confirmation, and not-included requests. Included work proceeds to review; no upgrade/payment flow is created.</p>
           </CardContent>
         </Card>
         <Card className="border-primary/20 bg-primary/5" data-testid="card-dashboard-request-sla">

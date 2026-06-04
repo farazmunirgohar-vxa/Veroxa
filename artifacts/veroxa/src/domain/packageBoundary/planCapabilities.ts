@@ -1,3 +1,4 @@
+import { MISSING_SOCIAL_PROFILE_ADDON_PRICE, NEW_BASIC_WEBSITE_ADDON_PRICE } from "@/data/pricing/veroxaPricing";
 import type { ClientRequestType, PlanId } from "./types";
 
 export const launchPlanId: PlanId = "complete_online_presence";
@@ -7,13 +8,13 @@ export const historicalPlanAliases: PlanId[] = ["starter", "growth", "premium"];
 export const completeOnlinePresenceIncluded: ClientRequestType[] = [
   "google_profile_update",
   "maps_visibility_update",
-  "yelp_profile_alignment",
-  "website_alignment",
   "seo_search_visibility_basics",
+  "website_alignment",
   "facebook_picture_post",
   "instagram_picture_post",
   "picture_caption",
   "media_guidance",
+  "weekly_update",
   "monthly_report",
   "monthly_report_request",
   "portal_request_review",
@@ -22,7 +23,13 @@ export const completeOnlinePresenceIncluded: ClientRequestType[] = [
   "link_menu_contact_update",
 ];
 
+export const addOnAvailableTypes: ClientRequestType[] = [
+  "new_basic_website_request",
+  "missing_social_profile_creation",
+];
+
 export const comingSoonNotIncludedTypes: ClientRequestType[] = [
+  "yelp_profile_alignment",
   "tiktok_request",
   "reels_request",
   "video_content_request",
@@ -59,4 +66,9 @@ export function getRequiredPlan(type: ClientRequestType): PlanId | undefined {
 }
 export function isRequestIncludedInPlan(plan: PlanId, type: ClientRequestType): boolean {
   return getIncludedRequestTypes(plan).includes(type);
+}
+export function getAddOnPrice(type: ClientRequestType): { price: number; displayPrice: string } | undefined {
+  if (type === "new_basic_website_request") return { price: NEW_BASIC_WEBSITE_ADDON_PRICE, displayPrice: "+$95" };
+  if (type === "missing_social_profile_creation") return { price: MISSING_SOCIAL_PROFILE_ADDON_PRICE, displayPrice: "+$45/profile" };
+  return undefined;
 }

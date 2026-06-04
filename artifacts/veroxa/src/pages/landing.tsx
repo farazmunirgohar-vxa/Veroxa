@@ -3,34 +3,38 @@ import { Button } from "@/components/ui/button";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 import { useDocumentMeta } from "@/hooks/useDocumentMeta";
-import { COMPLETE_ONLINE_PRESENCE_PLAN, PRICING_NO_CONTRACT_DISCLAIMER } from "@/data/pricing/veroxaPricing";
+import { COMPLETE_ONLINE_PRESENCE_PLAN, CURRENT_LAUNCH_ADDONS, PRICING_NO_CONTRACT_DISCLAIMER } from "@/data/pricing/veroxaPricing";
 
 const handled = [
   "Google Business Profile support",
   "Google Maps/local visibility basics",
   "Local SEO/search visibility basics",
-  "Yelp profile alignment/refinement",
   "Website alignment/refinement if access is provided",
   "Facebook support",
   "Instagram support",
   "Picture-based content support",
+  "Up to 3 posts/updates per week, media dependent",
+  "Weekly updates",
   "Monthly online presence report",
+  "Client Portal access",
+  "Portal request response/review/answer within 24 hours",
+  "Veroxa team review before anything goes live",
 ];
 
 const howItWorks = [
   "Restaurant provides access, media, and business details.",
-  "Veroxa aligns profiles and online presence across Google, Maps, Yelp, website, Facebook, and Instagram.",
+  "Veroxa aligns profiles and online presence across Google, Maps/local visibility, website, Facebook, and Instagram.",
   "Veroxa prepares platform-specific drafts for review.",
   "Veroxa team reviews before anything goes live.",
   "Client requests go through the portal; Veroxa responds/reviews/answers within 24 hours.",
-  "Monthly report explains what was done, what worked, what needs improvement, and what media Veroxa needs next.",
+  "Weekly updates explain what Veroxa worked on, what was posted/prepared, what is pending, what media is needed, what client details need confirmation, and what is next. Monthly reports go deeper.",
 ];
 
 export default function LandingPage() {
   useDocumentMeta({
     title: "Complete Online Presence for Restaurants — Veroxa",
     description:
-      "Veroxa manages restaurant online presence across Google, Maps, Yelp, website alignment, Facebook, and Instagram for $495/month.",
+      "Veroxa manages restaurant online presence across Google, Maps/local visibility, website alignment, Facebook, and Instagram for $495/month. Yelp is coming soon.",
   });
 
   return (
@@ -48,10 +52,10 @@ export default function LandingPage() {
           {COMPLETE_ONLINE_PRESENCE_PLAN.displayPrice}/month
         </p>
         <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mb-8">
-          Veroxa manages your restaurant’s complete online presence across Google, Maps, Yelp, website alignment, Facebook, and Instagram — then tracks what is working, what needs improvement, and what media helps your restaurant become easier to find, easier to trust, and easier to choose.
+          Veroxa manages your restaurant’s complete online presence across Google, Maps/local visibility, website alignment, Facebook, and Instagram — then tracks what is working, what needs improvement, and what media helps your restaurant become easier to find, easier to trust, and easier to choose.
         </p>
         <p className="text-sm text-muted-foreground mb-10">
-          Portal-based workflow • Monthly online presence report • {PRICING_NO_CONTRACT_DISCLAIMER}
+          Portal-based workflow • Weekly updates • Monthly online presence report • {PRICING_NO_CONTRACT_DISCLAIMER}
         </p>
         <div className="flex flex-col sm:flex-row gap-4">
           <Link href="/free-audit" data-testid="btn-hero-audit">
@@ -96,13 +100,21 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-5">
           <div className="rounded-2xl border border-border/40 bg-card/20 p-6">
             <h2 className="text-xl font-bold mb-3">Coming soon</h2>
-            <ul className="space-y-2 text-sm text-muted-foreground"><li>TikTok</li><li>Reels/video content</li><li>Ads management</li></ul>
+            <ul className="space-y-2 text-sm text-muted-foreground"><li>Yelp</li><li>TikTok</li><li>Reels/video content</li><li>Ads management</li></ul>
           </div>
-          <div className="rounded-2xl border border-border/40 bg-card/20 p-6 md:col-span-2">
+          <div className="rounded-2xl border border-border/40 bg-card/20 p-6">
+            <h2 className="text-xl font-bold mb-3">Add-ons</h2>
+            <p className="sr-only">New basic website +$95. Missing social profile creation +$45/profile.</p>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              {CURRENT_LAUNCH_ADDONS.map((addon) => <li key={addon.id}>{addon.label} — {addon.displayPrice}</li>)}
+            </ul>
+            <p className="mt-3 text-xs text-muted-foreground">Missing social profile creation is available as a $45/profile add-on for Facebook or Instagram. Yelp setup is coming soon, not a launch add-on.</p>
+          </div>
+          <div className="rounded-2xl border border-border/40 bg-card/20 p-6">
             <h2 className="text-xl font-bold mb-3">Not included at launch</h2>
             <div className="grid sm:grid-cols-2 gap-2 text-sm text-muted-foreground">
               <p>Comments, DMs, inboxes, customer-service replies, refunds, complaints, and order questions.</p>
-              <p>Full website redesign/development, paid ad spend, daily posting, automated publishing, live integrations, or guaranteed results.</p>
+              <p>Full website redesign, custom development, hosting/domain/email troubleshooting, paid ad spend, daily posting, automated publishing, live integrations, or guaranteed results.</p>
             </div>
           </div>
         </div>

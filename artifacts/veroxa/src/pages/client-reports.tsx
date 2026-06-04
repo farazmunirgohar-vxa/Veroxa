@@ -43,7 +43,7 @@ export default function ClientReports() {
       <RealPortalReviewNotice />
       <PageHeader
         title="Reports"
-        description="Reports appear after Veroxa reviews and publishes verified updates."
+        description="Weekly updates and monthly reports appear after Veroxa reviews verified work and safe next steps."
         testId="header-client-reports"
       />
       {!pageState.isDemoData && !pageState.canShowRealData ? (
@@ -60,8 +60,7 @@ export default function ClientReports() {
           <p>{buildClientSafeValueSummary(valueProofSeedSummaries[0])}</p>
           <p>{buildClientSafeMediaSummary(mediaIntelligenceSeedData)}</p>
           <p className="text-xs">
-            Client reports show verified work, visible signals, media notes, and
-            limitations without private team calculations.
+            Client reports show what Veroxa handled, what worked, what did not work, what media is needed next, what needs confirmation, visible signals, and limitations without private team calculations. Yelp is coming soon and not current included tracking.
           </p>
         </CardContent>
       </Card>
@@ -79,8 +78,7 @@ export default function ClientReports() {
           </CardHeader>
           <CardContent className="space-y-4 text-sm text-muted-foreground">
             <p>
-              Veroxa reports completed work, media usage, client needs, honest
-              limitations, and available online presence signals.
+              Weekly updates summarize what Veroxa worked on, what was posted/prepared, what is pending, what media is needed, what client details need confirmation, and what is next. Monthly reports go deeper into completed work, media usage, client needs, honest limitations, and available online presence signals.
             </p>
             <div>
               <p className="font-medium text-foreground">
@@ -98,8 +96,7 @@ export default function ClientReports() {
               </ul>
             </div>
             <p className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs">
-              No exact internal proof targets or fake ranking claims appear on
-              client pages.
+              No exact internal proof targets, raw internal scores, profit math, outcome promises, or fake ranking claims appear on client pages.
             </p>
           </CardContent>
         </Card>

@@ -16,7 +16,10 @@ export function summarizePackageBoundary(decisions: PackageBoundaryDecision[]) {
     total: decisions.length,
     included: decisions.filter((d) => d.eligibilityStatus === "included").length,
     comingSoon: decisions.filter((d) => d.eligibilityStatus === "coming_soon_not_included").length,
-    upgradeRouted: 0,
+    addOnAvailable: decisions.filter((d) => d.eligibilityStatus === "add_on_available").length,
+    routedBoundaryWork: decisions.filter((d) => d.eligibilityStatus !== "included").length,
+    comingSoonRouted: decisions.filter((d) => d.eligibilityStatus === "coming_soon_not_included").length,
+    upgradeRouted: decisions.filter((d) => d.eligibilityStatus === "coming_soon_not_included" || d.eligibilityStatus === "not_supported_at_launch" || d.eligibilityStatus === "add_on_available").length,
     confirmationNeeded: decisions.filter((d) => d.eligibilityStatus === "needs_confirmation").length,
     notSupported: decisions.filter((d) => d.eligibilityStatus === "not_supported_at_launch").length,
   };

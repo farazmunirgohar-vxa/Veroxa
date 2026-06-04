@@ -42,7 +42,7 @@ export function getRecommendedFirstStepsForPackage(
     report.weakSpots[0]?.title ?? "the largest online presence opportunity";
   return [
     "Review Google Business Profile and Google Maps/local visibility basics.",
-    "Check Yelp, website, menu/order/contact links, Facebook, and Instagram consistency.",
+    "Check website, menu/order/contact links, Facebook, and Instagram consistency; park Yelp as coming soon.",
     "Prepare current-launch image draft directions for Facebook, Instagram, and Google after team review.",
     `Begin a portal-first plan focused on ${topOpportunity}.`,
   ];
@@ -80,7 +80,7 @@ export function getPackageRecommendationReason(
   return {
     packageId: "complete_online_presence",
     reason:
-      "Complete Online Presence is the relevant launch offer. Veroxa would review Google, Maps, Yelp, website alignment, Facebook, Instagram, media supply, and link clarity before any public-facing work goes live.",
+      "Complete Online Presence is the relevant launch offer. Veroxa would review Google Business Profile, Google Maps/local visibility, local SEO/search visibility basics, website alignment, Facebook, Instagram, media supply, and menu/order/contact link clarity before any public-facing work goes live. Yelp is a coming-soon/future review area.",
   };
 }
 
@@ -125,5 +125,5 @@ export function recommendVeroxaPackage(
 export function getExpectedDirectionForPackage(
   _packageId: RecommendedPackageId,
 ): string {
-  return "Designed to improve online presence consistency across Google, Maps, Yelp, website alignment, Facebook, and Instagram. TikTok, Reels/video, and ads are coming soon and are not included at launch. Results vary and are not guaranteed.";
+  return "Designed to improve online presence consistency across Google, Maps/local visibility, website alignment, Facebook, and Instagram. Yelp, TikTok, Reels/video, and ads are coming soon and are not included at launch. Results vary and are not guaranteed.";
 }

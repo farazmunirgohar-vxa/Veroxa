@@ -22,8 +22,9 @@ export default function PricingPage() {
               {COMPLETE_ONLINE_PRESENCE_PLAN.includes.map((item) => <p key={item}>• {item}</p>)}
             </div>
           </div>
-          <div className="grid md:grid-cols-2 gap-4 text-left mb-8">
+          <div className="grid md:grid-cols-3 gap-4 text-left mb-8">
             <div className="rounded-2xl border border-border/40 bg-card/20 p-5"><h2 className="font-bold mb-2">Coming soon / not included</h2>{COMPLETE_ONLINE_PRESENCE_PLAN.comingSoon.map((item) => <p className="text-sm text-muted-foreground" key={item}>• {item}</p>)}</div>
+            <div className="rounded-2xl border border-border/40 bg-card/20 p-5"><h2 className="font-bold mb-2">Add-ons</h2>{COMPLETE_ONLINE_PRESENCE_PLAN.addons.map((addon) => <p className="text-sm text-muted-foreground" key={addon.id}>• {addon.label} — {addon.displayPrice}</p>)}</div>
             <div className="rounded-2xl border border-border/40 bg-card/20 p-5"><h2 className="font-bold mb-2">Boundaries</h2><p className="text-sm text-muted-foreground">{MEDIA_DEPENDENCY_DISCLAIMER}</p><p className="text-sm text-muted-foreground mt-2">{SERVICE_BOUNDARY_DISCLAIMER}</p><p className="text-sm text-muted-foreground mt-2">{WEBSITE_SCOPE_DISCLAIMER}</p></div>
           </div>
           <div className="rounded-2xl border border-border/40 bg-muted/10 p-5 text-left mb-8">

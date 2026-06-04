@@ -20,7 +20,7 @@ import {
 
 const clientSafeBoundaryCopy = [
   "Portal requests are the normal channel for routine Veroxa work.",
-  "Veroxa will respond within 24 hours with an answer, review status, client question, coming-soon note, or not-supported note.",
+  "Veroxa will respond within 24 hours with an answer, review status, client question, coming-soon note, add-on note, not-included note, or not-supported note.",
   "A 24-hour response is not a promise that larger work is completed within 24 hours.",
 ];
 
@@ -55,12 +55,16 @@ export default function ClientRequests() {
         comingSoon: requestRows.filter(
           (row) => row.boundary?.eligibilityStatus === "coming_soon_not_included",
         ).length,
+        addOnAvailable: requestRows.filter(
+          (row) => row.boundary?.eligibilityStatus === "add_on_available",
+        ).length,
       }
     : {
         total: requestSummary.total,
         inReview: grouped.in_review?.length ?? 0,
         needsClientInput: requestSummary.needsClientConfirmation,
         comingSoon: 0,
+        addOnAvailable: 0,
       };
   const showSafeEmptyState = !pageState.isDemoData && !pageState.canShowRealData;
   return (
@@ -79,14 +83,15 @@ export default function ClientRequests() {
       ) : null}
       <div className="sr-only">
         Received In Review Handled Waiting for you Response within 24 hours
-        Coming soon Not supported
+        Included Needs confirmation Coming soon Add-on available Not included at launch Needs manual review Not supported
       </div>
       {showSafeEmptyState ? null : (
-        <section className="grid gap-4 md:grid-cols-4 mb-4">
+        <section className="grid gap-4 md:grid-cols-5 mb-4">
           <Metric label="Total" value={metrics.total} />
           <Metric label="In review" value={metrics.inReview} />
           <Metric label="Needs your input" value={metrics.needsClientInput} />
           <Metric label="Coming soon" value={metrics.comingSoon} />
+          <Metric label="Add-on available" value={metrics.addOnAvailable} />
         </section>
       )}
       {showSafeEmptyState ? null : (
@@ -113,13 +118,14 @@ export default function ClientRequests() {
                         tone={
                           boundary?.eligibilityStatus === "coming_soon_not_included"
                             ? "warning"
-                            : boundary?.eligibilityStatus ===
-                                "not_supported_at_launch"
-                              ? "danger"
-                              : "info"
+                            : boundary?.eligibilityStatus === "add_on_available"
+                              ? "success"
+                              : boundary?.eligibilityStatus === "not_supported_at_launch"
+                                ? "danger"
+                                : "info"
                         }
                       >
-                        {boundary?.eligibilityStatus.replaceAll("_", " ") ??
+                        {formatClientSafeBoundaryStatus(boundary?.eligibilityStatus) ??
                           request.status.replaceAll("_", " ")}
                       </StatusBadge>
                     </div>
@@ -189,7 +195,7 @@ export default function ClientRequests() {
             </div>
             <p className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs">
               {requestSummary.nextAction ||
-                "Veroxa reviews included Complete Online Presence requests, routes TikTok/Reels/Ads/daily posting as coming soon, and keeps customer-service/full-website-development requests outside launch scope."}
+                "Veroxa reviews included Complete Online Presence requests, routes Yelp/TikTok/Reels/Ads/daily posting as coming soon, marks new basic website and missing Facebook/Instagram profile creation as add-ons, and keeps customer-service/full-custom-website requests outside launch scope."}
             </p>
           </CardContent>
         </Card>
@@ -210,3 +216,14 @@ function Metric({ label, value }: { label: string; value: number }) {
   );
 }
 // Guardrail marker: No file storage is connected yet.
+
+function formatClientSafeBoundaryStatus(status?: string): string | null {
+  if (!status) return null;
+  if (status === "included") return "Included";
+  if (status === "needs_confirmation") return "Needs confirmation";
+  if (status === "coming_soon_not_included") return "Coming soon";
+  if (status === "add_on_available") return "Add-on available";
+  if (status === "not_supported_at_launch") return "Not included at launch";
+  if (status === "unclear" || status === "needs_team_review") return "Needs manual review";
+  return status.replaceAll("_", " ");
+}
