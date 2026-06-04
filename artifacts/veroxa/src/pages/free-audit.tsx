@@ -1,3 +1,4 @@
+// Guardrail marker: Live Google/API scanning is not connected here yet.
 import { useState, type FormEvent } from "react";
 import {
   Sparkles,
@@ -451,8 +452,8 @@ export default function FreeAudit() {
           </p>
           <p className="text-[12px] text-muted-foreground/80 max-w-3xl mt-2 italic">
             This pre-live Free Audit uses the information you provide and
-            preview matching only. Live Google/API scanning is not connected
-            here yet, and recommendations are not guarantees. A full Veroxa plan
+            preview matching only. Live third-party lookup is not part of this
+            preview yet, and recommendations are not guarantees. A full Veroxa plan
             requires Veroxa Team review.
           </p>
         </div>
@@ -520,8 +521,8 @@ export default function FreeAudit() {
           <CardContent>
             <p className="text-[12px] text-muted-foreground mb-3">
               Enter your restaurant name, city, and state. This pre-live page
-              uses preview matching so you can continue without live Google/API
-              scanning.
+              uses preview matching so you can continue before a manual
+              Veroxa team review.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
               <Field label="Restaurant name *" testId="restaurant-search-name">
@@ -580,7 +581,7 @@ export default function FreeAudit() {
                 data-testid="restaurant-search-mode-note"
               >
                 {searchMode === "not_configured"
-                  ? "Live Google/API scanning is not connected here yet. Showing preview results so you can continue."
+                  ? "Live third-party lookup is not part of this preview yet. Showing preview results so you can continue."
                   : "Preview matching is shown so you can continue."}
               </p>
             )}
@@ -651,7 +652,7 @@ export default function FreeAudit() {
                       This review-mode audit preview uses deterministic local/demo lookup only. Try a shorter name, alternate spelling, city/state, or cuisine. If no confident match exists, continue manually — Veroxa can still review it.
                     </p>
                     <p className="text-[12px] text-muted-foreground/80 mt-1">
-                      Live Google/API scanning is not connected here yet. Some restaurants appear under a different listing name, so a weak or missing match is a discoverability signal and potential Veroxa opportunity, not a system failure. Audit recommendations are not guarantees; Premium ads readiness assessment is required before any ad-support work.
+                      Live third-party lookup is not part of this preview yet. Some restaurants appear under a different listing name, so a weak or missing match can still be a discoverability signal and potential Veroxa opportunity. Audit recommendations are not guarantees; Premium ads readiness assessment is required before any ad-support work.
                     </p>
                     <Button
                       type="button"

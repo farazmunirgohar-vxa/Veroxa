@@ -738,3 +738,20 @@ No runtime SaaS implementation is added by this layer: no production auth, datab
 - Added typed manual execution packs, copy/paste pack building, client confirmation workflow helpers, manual publishing tracker previews, and launch-gate signals.
 - Lightly surfaced manual execution readiness on Team Dashboard, Team Work Queue, and First-Client Readiness.
 - Added manual execution guardrails and documentation; this build does not connect production auth, storage uploads, live AI, platform connectors, payments, automated publishing, or real client data.
+
+## 2026-06-04 — Current Strategy Sync
+
+This build status now points to `VEROXA_OS_CURRENT_MASTER.md` as the clean current-state master. Veroxa should be theoretically complete in preview/manual/pre-live mode before paid infrastructure is activated. Paid systems should be connected into existing prepared interfaces, not used while the product is still being designed.
+
+Current locked markers:
+
+- Active stack: GitHub + Codex + Vercel. Replit is historical only.
+- Active roles: Client and Team. Owner/Operator are inactive and parked, including Super Admin, generic Admin, and Execution roles.
+- Current pricing: Starter $295, Growth $495, Premium $995.
+- Preview credentials: [client@veroxa.com](mailto:client@veroxa.com) / farazclient and [team@veroxa.com](mailto:team@veroxa.com) / farazteam.
+- `AUTH_MODE` remains `placeholder`.
+- Veroxa is AI-ready but not connected: draft systems, deterministic fallbacks, and human approval can be built now; live AI stays blocked.
+- Veroxa is integration-ready but not connected: adapter contracts and UI states can be planned now; live providers stay blocked.
+- Restaurant Onboarding is a known missing layer and future priority.
+- Paid infrastructure remains blocked until `PRE_PAID_ACTIVATION_GATE.md` is satisfied and Faraz explicitly approves activation.
+- PR #59 style is the ideal normal major-build size around 3,000 meaningful changes across 20-30 files. Big builds may approach 5,000 meaningful additions/deletions when justified. No fake churn.

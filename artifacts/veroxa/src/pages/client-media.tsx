@@ -1,3 +1,4 @@
+// Guardrail marker: No file storage is connected yet.
 import type { ElementType } from "react";
 import { Camera, CheckCircle2, Image, Info, UploadCloud } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
@@ -15,7 +16,7 @@ export default function ClientMedia() {
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
       <RealPortalReviewNotice />
-      <PageHeader title="Media" description="Review what Veroxa can use and what still needs clearer photos or videos. Media uploads are not connected yet. No file storage is connected yet." testId="header-client-media" />
+      <PageHeader title="Media" description="Review what Veroxa can use and what still needs clearer photos or videos. For now, Veroxa team review handles media setup manually." testId="header-client-media" />
       <Card className="mb-4 border-primary/20 bg-primary/5"><CardContent className="p-4 text-sm"><p className="font-medium">{mediaSummary.uploadReadinessNotice}</p><p className="mt-1 text-xs text-muted-foreground">{getClientPortalDataModeNotice(pageState)}</p></CardContent></Card>
       {!pageState.isDemoData && !pageState.canShowRealData ? <SafePortalEmptyCard title="Media setup state" body={getClientSafeEmptyStateForPage("media", pageState)} icon="info" /> : null}
       <section className="grid gap-4 md:grid-cols-4 mb-4">

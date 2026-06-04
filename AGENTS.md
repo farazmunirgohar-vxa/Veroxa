@@ -319,3 +319,16 @@ Phase 1 SaaS foundation scaffolding is present as TypeScript-only contracts and 
 - Integrated non-persisted activity log previews and internal-only profit validation snapshot previews without production writes.
 - Production runtime is still not connected: no production auth enablement, database tables, migrations, RLS policies, storage uploads, payments, live AI, or publishing integrations were added.
 - Next recommended phase: RR-approved production adapter design and test harness planning before any real auth/database/storage wiring.
+
+## 2026-06-04 — Current Veroxa OS sync markers
+
+- Veroxa should be theoretically complete in preview/manual/pre-live mode before paid infrastructure is activated.
+- Paid systems should be connected into existing prepared interfaces, not used while the product is still being designed.
+- Active stack remains GitHub + Codex + Vercel; Replit is historical only.
+- Active roles remain Client and Team. Owner/Operator are inactive and parked, including Super Admin, generic Admin, and Execution roles.
+- Veroxa is AI-ready but not connected: deterministic drafts and approval gates can be built now; live AI stays blocked until a future approved activation.
+- Veroxa is integration-ready but not connected: adapter contracts and UI states can be planned now; production auth, storage, Google/Meta/TikTok APIs, payments, webhooks, cron jobs, and automated publishing stay blocked.
+- Restaurant Onboarding is a known OS gap and should first be built in preview/manual mode.
+- Current PR philosophy: PR #59 style is the ideal normal major build size around 3,000 meaningful changes across 20-30 files; justified big builds may approach 5,000 meaningful additions/deletions; hotfixes stay surgical; no fake churn.
+- Current preview credentials: [client@veroxa.com](mailto:client@veroxa.com) / farazclient and [team@veroxa.com](mailto:team@veroxa.com) / farazteam.
+- `AUTH_MODE` remains `placeholder` until production auth is explicitly approved after the pre-paid activation gate.
