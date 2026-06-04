@@ -4,7 +4,7 @@ export function statusFromEligibility(
   status: RequestEligibilityStatus,
 ): RequestStatus {
   if (status === "included") return "in_review";
-  if (status === "needs_upgrade") return "upgrade_required";
+  if (status === "coming_soon_not_included") return "not_supported";
   if (status === "needs_confirmation") return "needs_client_input";
   if (status === "not_supported_at_launch") return "not_supported";
   if (status === "unclear") return "received";

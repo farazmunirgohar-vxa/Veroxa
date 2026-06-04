@@ -436,25 +436,19 @@ export default function FreeAudit() {
         {/* Hero */}
         <div className="mb-8">
           <div className="inline-flex items-center gap-2 text-xs uppercase tracking-wider text-primary mb-2">
-            <Sparkles className="w-3.5 h-3.5" /> Free review-mode audit
+            <Sparkles className="w-3.5 h-3.5" /> Restaurant Online Presence Audit
           </div>
           <h1
             className="text-3xl md:text-4xl font-bold tracking-tight mb-2"
             data-testid="header-free-audit"
           >
-            Get a Free Restaurant Online Presence Audit
+            Restaurant Online Presence Audit
           </h1>
           <p className="text-muted-foreground max-w-3xl">
-            Share your restaurant details and generate a review-mode audit
-            preview. Veroxa will review your online presence, identify
-            visibility and consistency opportunities, and recommend a current
-            plan fit for a manual first conversation.
+            Share your restaurant details and generate a review-mode audit preview. Veroxa reviews Google Business Profile, Google Maps/local visibility, Yelp presence, website alignment, local SEO/search visibility basics, Facebook, Instagram, menu/order/contact link clarity, media quality, and whether Complete Online Presence — $495/month is a fit.
           </p>
           <p className="text-[12px] text-muted-foreground/80 max-w-3xl mt-2 italic">
-            This pre-live Free Audit uses the information you provide and
-            preview matching only. Live third-party lookup is not part of this
-            preview yet, and recommendations are not guarantees. A full Veroxa plan
-            requires Veroxa Team review.
+            This pre-live audit uses the information you provide and preview matching only. Live third-party lookup is not part of this preview yet, and recommendations are not guarantees. TikTok, Reels/video, and ads are coming soon and are not included in the launch package.
           </p>
         </div>
 
@@ -652,7 +646,7 @@ export default function FreeAudit() {
                       This review-mode audit preview uses deterministic local/demo lookup only. Try a shorter name, alternate spelling, city/state, or cuisine. If no confident match exists, continue manually — Veroxa can still review it.
                     </p>
                     <p className="text-[12px] text-muted-foreground/80 mt-1">
-                      Live third-party lookup is not part of this preview yet. Some restaurants appear under a different listing name, so a weak or missing match can still be a discoverability signal and potential Veroxa opportunity. Audit recommendations are not guarantees; Premium ads readiness assessment is required before any ad-support work.
+                      Live third-party lookup is not part of this preview yet. Some restaurants appear under a different listing name, so a weak or missing match can still be a discoverability signal and potential Veroxa opportunity. Audit recommendations are not guarantees; TikTok, Reels/video, and ads are coming soon and are not included in the launch package.
                     </p>
                     <Button
                       type="button"
@@ -901,8 +895,7 @@ export default function FreeAudit() {
                 </p>
                 <p className="text-[11px] text-muted-foreground/80 mb-2">
                   A little context helps Veroxa understand whether you need
-                  Google visibility, social consistency, Reels support, or a
-                  Premium ads readiness assessment.
+                  Google visibility, Yelp/website alignment, Facebook/Instagram consistency, or whether Complete Online Presence needs manual review.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <Field
@@ -948,8 +941,7 @@ export default function FreeAudit() {
                     </p>
                     <p>
                       Google/local visibility, social consistency, usable media,
-                      Reels readiness, and whether ads should stay parked until
-                      Premium assessment, approval, and agreed ad budget.
+                      media readiness, and whether TikTok/Reels/Ads should stay parked as coming soon.
                     </p>
                   </div>
                 </div>
@@ -1107,7 +1099,7 @@ export default function FreeAudit() {
             <Card className="bg-card border-border">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base">
-                  Plan-fit recommendation preview
+                  Complete Online Presence fit preview
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -1452,10 +1444,7 @@ export default function FreeAudit() {
                       Thanks — your walkthrough request is saved for this demo.
                     </p>
                     <p className="text-[12px] text-muted-foreground mt-1">
-                      In production, a Veroxa team member would reach out using
-                      your preferred contact method to walk through this audit
-                      and recommend the best fit. No charge until you decide to
-                      move forward.
+                      A Veroxa team member would review the audit and explain whether Complete Online Presence is a fit, needs manual review, or is not a fit yet.
                     </p>
                   </div>
                 ) : (

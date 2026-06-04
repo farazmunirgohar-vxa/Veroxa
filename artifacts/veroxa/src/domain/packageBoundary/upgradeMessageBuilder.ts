@@ -1,18 +1,21 @@
-import type { PlanId, ClientRequestType } from "./types";
-const label: Record<PlanId, string> = {
-  starter: "Starter",
-  growth: "Growth",
-  premium: "Premium",
-};
-export function buildUpgradeMessage(
-  currentPlan: PlanId,
-  requiredPlan: PlanId,
-  type: ClientRequestType,
-): string {
-  if (type === "ad_management_request")
-    return "This request is included in Premium. Your current plan does not include ad management.";
-  return `This request is included in ${label[requiredPlan]}. Your current plan does not include this service. Veroxa can prepare this after you upgrade or adjust the request to match your current plan.`;
-}
+import type { ClientRequestType, PlanId } from "./types";
+
 export function buildIncludedMessage(): string {
-  return "This request is included in your current plan. Veroxa will review it and respond within 24 hours.";
+  return "This request is included in the current Complete Online Presence package. Veroxa will review/respond in the portal within 24 hours; completion timing depends on scope, access, media, and needed confirmations.";
+}
+
+export function buildComingSoonMessage(type: ClientRequestType): string {
+  if (type === "tiktok_request" || type === "reels_request" || type === "video_content_request") return "TikTok and Reels support are coming soon and are not included in the current launch package.";
+  if (type === "ad_management_request" || type === "ad_planning_request") return "Ads management is coming soon and is not included in the current launch package.";
+  if (type === "daily_posting_request" || type === "premium_daily_posting_request") return "Daily posting is coming soon and is not included in the current Complete Online Presence package.";
+  return "This request is outside the current Complete Online Presence package and needs manual review.";
+}
+
+export function buildUpgradeMessage(_currentPlan: PlanId, _requiredPlan: PlanId, type: ClientRequestType): string {
+  return buildComingSoonMessage(type);
+}
+
+export function buildNotSupportedMessage(type: ClientRequestType): string {
+  if (type === "full_website_redesign" || type === "custom_website_build" || type === "technical_hosting_or_domain_support") return "Full website development is not included. Veroxa can help with basic website alignment if access is provided.";
+  return "Veroxa does not handle guest conversations, comments, DMs, refunds, complaints, or order questions at launch.";
 }

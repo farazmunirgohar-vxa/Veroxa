@@ -6,7 +6,7 @@ export function getPackageBoundaryQueue(decisions: PackageBoundaryDecision[]) {
       id: `package-${d.requestId}`,
       clientId: d.clientId,
       status: d.eligibilityStatus,
-      label: d.upgradePath ?? d.blockedReason ?? "Review needed",
+      label: d.blockedReason ?? "Manual review",
       teamAction: d.nextAction,
       clientMessage: d.clientSafeMessage,
     }));
@@ -14,16 +14,10 @@ export function getPackageBoundaryQueue(decisions: PackageBoundaryDecision[]) {
 export function summarizePackageBoundary(decisions: PackageBoundaryDecision[]) {
   return {
     total: decisions.length,
-    included: decisions.filter((d) => d.eligibilityStatus === "included")
-      .length,
-    upgradeRouted: decisions.filter(
-      (d) => d.eligibilityStatus === "needs_upgrade",
-    ).length,
-    confirmationNeeded: decisions.filter(
-      (d) => d.eligibilityStatus === "needs_confirmation",
-    ).length,
-    notSupported: decisions.filter(
-      (d) => d.eligibilityStatus === "not_supported_at_launch",
-    ).length,
+    included: decisions.filter((d) => d.eligibilityStatus === "included").length,
+    comingSoon: decisions.filter((d) => d.eligibilityStatus === "coming_soon_not_included").length,
+    upgradeRouted: 0,
+    confirmationNeeded: decisions.filter((d) => d.eligibilityStatus === "needs_confirmation").length,
+    notSupported: decisions.filter((d) => d.eligibilityStatus === "not_supported_at_launch").length,
   };
 }

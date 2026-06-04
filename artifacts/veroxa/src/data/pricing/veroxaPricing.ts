@@ -1,46 +1,51 @@
-// veroxaPricing.ts — internal source of truth for Veroxa pricing.
+// veroxaPricing.ts — internal source of truth for Veroxa launch pricing.
 //
-// IMPORTANT (owner-locked current pricing — 2026-06-03):
-//   * Pricing is owner-locked. Do NOT change any price without explicit
-//     owner approval.
-//   * Current public model: Starter ($295/mo), Growth ($495/mo),
-//     Premium ($995/mo). Growth is the stronger online presence package.
+// IMPORTANT (owner-locked current pricing — 2026-06-04):
+//   * Current public model: one launch offer only.
+//   * Active public offer: Complete Online Presence ($495/month).
 //   * No contract. Cancel anytime.
 //   * Posting depends on usable restaurant-provided media and may slow when
 //     usable media is unavailable.
-//   * Starter is capped at up to 3 posts/week; Growth is differentiated by
-//     reels, TikTok, better support, stronger consistency, stronger workflow,
-//     weekly updates, and monthly report; Premium is capped at up to
-//     1 post/day, depending on usable media.
-//   * Premium includes ad management after assessment, client approval,
-//     and agreed ad budget. Ad spend is ALWAYS separate and paid by
-//     the restaurant directly to the ad platform.
+//   * The current launch offer includes up to 3 total posts/updates per week,
+//     media dependent.
+//   * TikTok, Reels/video content, ads management, daily posting, automated
+//     publishing, and live integrations are coming soon / not included at launch.
+//   * Ad spend is ALWAYS separate and paid by the restaurant directly to the ad
+//     platform if ads are approved in a future offer.
 //   * Veroxa does not handle customer conversations, including comments, DMs,
 //     refunds, complaints, or order questions, at launch.
-//   * No payment, billing, or checkout integration exists. Do not add Stripe,
-//     PayPal, or any checkout logic.
+//   * Veroxa does not invent discounts, BOGO offers, price cuts, lower prices,
+//     or new promotions.
+//   * No payment, billing, checkout, production auth, storage, live AI,
+//     publishing connector, webhook, cron, or real client-data write exists.
 //
-// Legacy package IDs remain below only as internal Free Audit / lead-scoring
-// compatibility aliases. They are retired, internal-only, and not current
-// public pricing.
+// Legacy package IDs remain below only as internal/demo compatibility aliases.
+// Starter/Growth/Premium/Local Presence/Full Presence/old Complete Presence are
+// retired as public offers and map safely to the one current launch offer.
 
 export type VeroxaPlanId =
+  | "complete_online_presence"
   | "starter"
   | "growth"
   | "premium"
   | "essential"
-  | "google_optimization" // RETIRED — internal Free Audit / lead-scoring alias for Starter
-  | "complete_online_presence" // RETIRED — internal Free Audit / lead-scoring alias for Growth
-  | "complete_plus_ads" // RETIRED — internal Free Audit / lead-scoring alias for Premium
-  | "ads_management_only"; // RETIRED — internal-only alias for Premium-fit ad leads
+  | "google_optimization"
+  | "local_presence"
+  | "full_presence"
+  | "old_complete_presence"
+  | "complete_plus_ads"
+  | "ads_management_only";
 
 export type VeroxaPlanLabel =
+  | "Complete Online Presence"
   | "Starter"
   | "Growth"
   | "Premium"
   | "Essential"
   | "Google Optimization"
-  | "Complete Online Presence"
+  | "Local Presence"
+  | "Full Presence"
+  | "Old Complete Presence"
   | "Complete Online Presence + Ads"
   | "Ads Management Only";
 
@@ -49,367 +54,208 @@ export interface VeroxaPlan {
   label: VeroxaPlanLabel;
   /** Current monthly price in USD dollars (not cents). */
   priceMonthly: number;
-  /** Display string for the current monthly price (e.g. "$295"). */
+  /** Display string for the current monthly price. */
   displayPrice: string;
-  /** One-line positioning copy. */
   tagline: string;
-  /** Feature list / inclusion notes for internal and public-safe surfaces. */
   includes: string[];
-  /** Always false — ad spend is separate, never included. */
+  comingSoon: string[];
+  notIncluded: string[];
   includesAdSpend: false;
-  /** Whether the plan includes readiness-gated ad management. */
   adsSupport: boolean;
-  /** Current posting cap language. */
   postingVolumeSummary: string;
-  /** Required media dependency language. */
   mediaDependencySummary: string;
-  /** What Veroxa handles under this package. */
   veroxaResponsibilities: string[];
-  /** What the restaurant remains responsible for. */
   clientResponsibilities: string[];
-  /** Premium readiness requirement; null for non-Premium plans. */
   premiumReadinessRequirement: string | null;
-  /** Whether this plan is shown on public pricing surfaces. */
   publicVisible: boolean;
-  /** True for compatibility aliases that are not current public pricing. */
   internalOnly?: boolean;
-  /** Compatibility note for retired/internal IDs. */
   legacyNote?: string;
-  /** "active" = currently sold; "retired" = internal/legacy only. */
   status: "active" | "retired";
 }
 
+export const COMPLETE_ONLINE_PRESENCE_PRICE_MONTHLY = 495;
+export const COMPLETE_ONLINE_PRESENCE_DISPLAY_PRICE = "$495";
+export const COMPLETE_ONLINE_PRESENCE_PLAN_ID = "complete_online_presence" as const;
 export const PRICING_NO_CONTRACT_DISCLAIMER = "No contract. Cancel anytime.";
 
 export const AD_SPEND_DISCLAIMER =
-  "Ad spend is separate and paid directly by the restaurant. Veroxa plan pricing does not include ad spend.";
+  "Ad spend is separate and paid directly by the restaurant. Veroxa launch pricing does not include ad spend.";
 
 export const MEDIA_DEPENDENCY_DISCLAIMER =
-  "Posting depends on usable client-provided media and may slow when usable media is unavailable. Starter is capped at up to 3 posts/week; Premium is capped at up to 1 post/day.";
+  "Posting depends on usable client-provided media and may slow when usable media is unavailable. The launch offer includes up to 3 total posts/updates per week, media dependent.";
 
 export const SERVICE_BOUNDARY_DISCLAIMER =
-  "Veroxa does not handle comments, DMs, inboxes, complaints, order questions, refunds, or customer-service conversations at launch. The restaurant remains responsible for customer replies.";
+  "Veroxa does not handle comments, DMs, inboxes, complaints, order questions, refunds, or customer-service conversations at launch. The restaurant remains responsible for guest replies.";
+
+export const WEBSITE_SCOPE_DISCLAIMER =
+  "Basic website alignment/refinement is included when access is provided. Full website development is not included.";
 
 export const PREMIUM_READINESS_RULE =
-  "Premium requires a Veroxa readiness assessment by phone, Zoom, or in person, client approval, and an agreed ad budget.";
+  "Ads management is coming soon and is not included in the current launch package.";
+
+export const OFFER_INVENTION_GUARDRAIL =
+  "Veroxa does not recommend or invent discounts, BOGO offers, price cuts, lower prices, or new promotions. If the restaurant already has an offer, Veroxa may ask the client to confirm exact details before preparing public copy.";
 
 export const FIRST_CLIENT_LOYALTY_DISCOUNT_POLICY =
-  "First clients receive 20% off for 12 months, then keep it as a loyalty discount only while continuously active; if they leave and later return, the 20% discount is no longer eligible.";
+  "Historical/internal loyalty policy only; not active public launch pricing copy.";
 
-const starterPostingVolumeSummary =
-  "Up to 3 posts/week, depending on usable client-provided media.";
-const growthPostingVolumeSummary =
-  "Reels, TikTok, stronger communication, weekly updates, and monthly reporting based on usable client-provided media.";
-const premiumPostingVolumeSummary =
-  "Up to 1 post/day, depending on usable client-provided media.";
-const mediaDependencySummary =
-  "Posting depends on usable restaurant-provided photos and videos; Veroxa will ask for more when the supply is low.";
-
-const restaurantResponsibilities = [
-  "Provide usable photos and videos when content is needed",
-  "Confirm business-truth changes such as hours, menu items, prices, offers, and important details",
-  "Handle customer replies, comments, DMs, order questions, refunds, complaints, and service conversations",
-  "Pay any approved ad spend directly to the ad platform",
-];
-
-const starterResponsibilities = [
+const launchIncluded = [
   "Google Business Profile support",
   "Google Maps/local visibility basics",
-  "Facebook support",
-  "Instagram support",
-  "Picture-based content support with simple captions",
-  "Basic content organization and media guidance/reminders",
-  "Client Portal access and simple monthly progress summary",
-  "Veroxa team review before anything goes live",
-];
-
-const growthResponsibilities = [
-  ...starterResponsibilities,
-  "Reels support",
-  "TikTok support",
-  "Better support / stronger communication",
-  "Stronger Google/local consistency",
-  "Stronger content rhythm",
-  "Better caption/content preparation",
-  "Weekly progress updates and monthly report",
-  "Stronger client portal workflow",
-];
-
-const premiumResponsibilities = [
-  ...growthResponsibilities,
-  "Ad management",
-  premiumPostingVolumeSummary,
-  "Stronger reporting/support",
-  "Ad planning/support",
-  "Ad spend separate",
-  "Client approval required for ads",
-];
-
-const starterIncludes = [
-  "Google Business Profile support",
-  "Google Maps/local visibility basics",
+  "Local SEO/search visibility basics",
+  "Yelp business profile alignment/refinement",
+  "Basic website alignment/refinement if access is provided",
+  "Business info consistency across Google/Yelp/website/socials",
   "Facebook support",
   "Instagram support",
   "Picture-based content support",
-  "Up to 3 posts/week depending on usable client-provided media",
+  "Up to 3 total posts/updates per week, media dependent",
   "Simple captions",
   "Basic content organization",
   "Media guidance/reminders",
   "Client Portal access",
-  "Simple monthly progress summary",
+  "Portal request response/review/answer within 24 hours",
+  "Monthly online presence report",
   "Veroxa team review before anything goes live",
 ];
 
-const growthIncludes = [
-  "Everything in Starter",
-  "Reels support",
+const launchComingSoon = [
   "TikTok support",
-  "Better support / stronger communication",
-  "Stronger Google/local consistency",
-  "Stronger content rhythm",
-  "Better caption/content preparation",
-  "Weekly progress updates",
-  "Monthly report",
-  "Stronger client portal workflow",
+  "Reels/video content support",
+  "Ads management",
+  "Daily posting",
+  "Automated publishing",
+  "Live integrations",
 ];
 
-const premiumIncludes = [
-  "Everything in Growth",
-  "Ad management",
-  premiumPostingVolumeSummary,
-  "Stronger reporting/support",
-  "Ad planning/support",
-  "Ad spend separate",
-  "Client approval required for ads",
-  PREMIUM_READINESS_RULE,
-  AD_SPEND_DISCLAIMER,
+const launchNotIncluded = [
+  "Comments, DMs, inboxes, and guest conversations",
+  "Customer-service replies, refunds, complaints, or order questions",
+  "Full website redesign/development or custom website builds",
+  "Hosting, domain, email, plugin, speed, or emergency website troubleshooting",
+  "Advanced technical SEO",
+  "Paid ad spend",
+  "Specific outcomes such as orders, revenue, rankings, profit, ROI, customers, or growth",
 ];
+
+const restaurantResponsibilities = [
+  "Provide access/media/business details needed for Google, Yelp, website, Facebook, and Instagram alignment",
+  "Confirm business-truth changes such as hours, menu items, prices, existing offers, and important details",
+  "Handle comments, DMs, inboxes, customer-service replies, refunds, complaints, and order questions",
+  "Provide usable restaurant media; Veroxa will explain what is working, what is not working, and what media is needed next",
+];
+
+const launchPostingVolumeSummary =
+  "Up to 3 total posts/updates per week, depending on usable client-provided media.";
+const mediaDependencySummary =
+  "Posting depends on usable restaurant-provided photos; Veroxa will ask for more when the supply is low.";
 
 function buildPlan(input: {
   id: VeroxaPlanId;
   label: VeroxaPlanLabel;
-  priceMonthly: number;
+  priceMonthly?: number;
   tagline: string;
-  includes: string[];
-  adsSupport: boolean;
-  veroxaResponsibilities: string[];
   publicVisible: boolean;
   status: "active" | "retired";
-  postingVolumeSummary?: string;
   internalOnly?: boolean;
   legacyNote?: string;
 }): VeroxaPlan {
+  const priceMonthly = input.priceMonthly ?? COMPLETE_ONLINE_PRESENCE_PRICE_MONTHLY;
   return {
     ...input,
-    displayPrice: `$${input.priceMonthly}`,
+    priceMonthly,
+    displayPrice: `$${priceMonthly}`,
+    includes: launchIncluded,
+    comingSoon: launchComingSoon,
+    notIncluded: launchNotIncluded,
     includesAdSpend: false,
-    postingVolumeSummary:
-      input.postingVolumeSummary ?? growthPostingVolumeSummary,
+    adsSupport: false,
+    postingVolumeSummary: launchPostingVolumeSummary,
     mediaDependencySummary,
+    veroxaResponsibilities: launchIncluded,
     clientResponsibilities: restaurantResponsibilities,
-    premiumReadinessRequirement: input.adsSupport
-      ? PREMIUM_READINESS_RULE
-      : null,
+    premiumReadinessRequirement: null,
   };
 }
 
+const retiredNote =
+  "Retired/internal compatibility alias only; not current public pricing. Public-safe display maps to Complete Online Presence ($495/month).";
+
 export const VEROXA_PLANS: Record<VeroxaPlanId, VeroxaPlan> = {
-  starter: buildPlan({
-    id: "starter",
-    label: "Starter",
-    priceMonthly: 295,
-    tagline:
-      "Complete professional entry plan for Google/local basics, Facebook and Instagram support, picture-based content, and calm review.",
-    includes: starterIncludes,
-    adsSupport: false,
-    veroxaResponsibilities: starterResponsibilities,
-    publicVisible: true,
-    status: "active",
-    postingVolumeSummary: starterPostingVolumeSummary,
-  }),
-
-  growth: buildPlan({
-    id: "growth",
-    label: "Growth",
-    priceMonthly: 495,
-    tagline:
-      "For restaurants that want reels, TikTok support, stronger communication, stronger consistency, weekly updates, and monthly reporting.",
-    includes: growthIncludes,
-    adsSupport: false,
-    veroxaResponsibilities: growthResponsibilities,
-    publicVisible: true,
-    status: "active",
-  }),
-
-  premium: buildPlan({
-    id: "premium",
-    label: "Premium",
-    priceMonthly: 995,
-    tagline:
-      "Selective advanced package for restaurants ready for ad management, stronger support, and higher posting capacity after readiness review.",
-    includes: premiumIncludes,
-    adsSupport: true,
-    veroxaResponsibilities: premiumResponsibilities,
-    publicVisible: true,
-    status: "active",
-    postingVolumeSummary: premiumPostingVolumeSummary,
-  }),
-
-  essential: buildPlan({
-    id: "essential",
-    label: "Essential",
-    priceMonthly: 295,
-    tagline:
-      "Retired internal compatibility alias. Current public recommendation maps this fit to Starter.",
-    includes: starterIncludes,
-    adsSupport: false,
-    veroxaResponsibilities: starterResponsibilities,
-    publicVisible: false,
-    internalOnly: true,
-    legacyNote:
-      "Retired compatibility alias only; not current public pricing. Use Starter for public display.",
-    status: "retired",
-    postingVolumeSummary: starterPostingVolumeSummary,
-  }),
-
-  google_optimization: buildPlan({
-    id: "google_optimization",
-    label: "Google Optimization",
-    priceMonthly: 295,
-    tagline:
-      "Retired internal alias. Current public recommendation maps this fit to Starter.",
-    includes: starterIncludes,
-    adsSupport: false,
-    veroxaResponsibilities: starterResponsibilities,
-    publicVisible: false,
-    internalOnly: true,
-    legacyNote:
-      "Retired compatibility alias only; not current public pricing. Use Starter for public display.",
-    status: "retired",
-  }),
-
   complete_online_presence: buildPlan({
     id: "complete_online_presence",
     label: "Complete Online Presence",
-    priceMonthly: 495,
     tagline:
-      "Retired internal alias. Current public recommendation maps this fit to Growth.",
-    includes: growthIncludes,
-    adsSupport: false,
-    veroxaResponsibilities: growthResponsibilities,
-    publicVisible: false,
-    internalOnly: true,
-    legacyNote:
-      "Retired compatibility alias only; not current public pricing. Use Growth for public display.",
-    status: "retired",
+      "Veroxa manages your restaurant's complete online presence across Google, Maps, Yelp, website alignment, Facebook, and Instagram — then reports what worked, what needs improvement, and what media Veroxa needs next.",
+    publicVisible: true,
+    status: "active",
   }),
-
-  complete_plus_ads: buildPlan({
-    id: "complete_plus_ads",
-    label: "Complete Online Presence + Ads",
-    priceMonthly: 995,
-    tagline:
-      "Retired internal alias. Current public recommendation maps this fit to Premium.",
-    includes: premiumIncludes,
-    adsSupport: true,
-    veroxaResponsibilities: premiumResponsibilities,
+  starter: buildPlan({
+    id: "starter",
+    label: "Starter",
+    tagline: "Historical/internal alias now mapped to the one launch offer.",
     publicVisible: false,
-    internalOnly: true,
-    legacyNote:
-      "Retired compatibility alias only; not current public pricing. Use Premium for public display.",
     status: "retired",
+    internalOnly: true,
+    legacyNote: retiredNote,
   }),
-
-  ads_management_only: buildPlan({
-    id: "ads_management_only",
-    label: "Ads Management Only",
-    priceMonthly: 995,
-    tagline:
-      "Retired internal-only alias. Current public recommendation maps this fit to Premium.",
-    includes: premiumIncludes,
-    adsSupport: true,
-    veroxaResponsibilities: premiumResponsibilities,
+  growth: buildPlan({
+    id: "growth",
+    label: "Growth",
+    tagline: "Historical/internal alias now mapped to the one launch offer.",
     publicVisible: false,
-    internalOnly: true,
-    legacyNote:
-      "Retired compatibility alias only; not current public pricing. Use Premium for public display.",
     status: "retired",
+    internalOnly: true,
+    legacyNote: retiredNote,
   }),
+  premium: buildPlan({
+    id: "premium",
+    label: "Premium",
+    tagline: "Historical/internal alias; ads management is coming soon, not included at launch.",
+    publicVisible: false,
+    status: "retired",
+    internalOnly: true,
+    legacyNote: retiredNote,
+  }),
+  essential: buildPlan({ id: "essential", label: "Essential", tagline: "Retired internal alias.", publicVisible: false, status: "retired", internalOnly: true, legacyNote: retiredNote }),
+  google_optimization: buildPlan({ id: "google_optimization", label: "Google Optimization", tagline: "Retired internal alias.", publicVisible: false, status: "retired", internalOnly: true, legacyNote: retiredNote }),
+  local_presence: buildPlan({ id: "local_presence", label: "Local Presence", tagline: "Retired internal alias.", publicVisible: false, status: "retired", internalOnly: true, legacyNote: retiredNote }),
+  full_presence: buildPlan({ id: "full_presence", label: "Full Presence", tagline: "Retired internal alias.", publicVisible: false, status: "retired", internalOnly: true, legacyNote: retiredNote }),
+  old_complete_presence: buildPlan({ id: "old_complete_presence", label: "Old Complete Presence", tagline: "Retired internal alias.", publicVisible: false, status: "retired", internalOnly: true, legacyNote: retiredNote }),
+  complete_plus_ads: buildPlan({ id: "complete_plus_ads", label: "Complete Online Presence + Ads", tagline: "Retired internal alias; ads are coming soon.", publicVisible: false, status: "retired", internalOnly: true, legacyNote: retiredNote }),
+  ads_management_only: buildPlan({ id: "ads_management_only", label: "Ads Management Only", tagline: "Retired internal alias; ads are coming soon.", publicVisible: false, status: "retired", internalOnly: true, legacyNote: retiredNote }),
 };
 
-export const CURRENT_PUBLIC_PLAN_IDS = [
-  "starter",
-  "growth",
-  "premium",
-] as const;
-
+export const CURRENT_PUBLIC_PLAN_IDS = ["complete_online_presence"] as const;
 export type CurrentPublicPlanId = (typeof CURRENT_PUBLIC_PLAN_IDS)[number];
-
-export const CURRENT_PUBLIC_PLANS = CURRENT_PUBLIC_PLAN_IDS.map(
-  (id) => VEROXA_PLANS[id],
-);
+export const CURRENT_PUBLIC_PLANS = CURRENT_PUBLIC_PLAN_IDS.map((id) => VEROXA_PLANS[id]);
+export const COMPLETE_ONLINE_PRESENCE_PLAN = VEROXA_PLANS.complete_online_presence;
 
 export const GLOBAL_PRICING_RULES = [
+  "One active public launch offer: Complete Online Presence — $495/month",
   "No contract",
   "Cancel anytime",
-  "Google Business Profile and Google Maps support included in all plans",
-  "Facebook + Instagram included in all plans",
-  "Starter is capped at up to 3 posts/week; Premium is capped at up to 1 post/day",
-  "Growth is the main recommended package for strong-fit restaurants",
-  "Premium includes ad management; ad spend is separate",
-  "Posting depends on usable client-provided media and may slow when usable media is unavailable",
-  "Premium requires readiness assessment, client approval, and agreed ad budget",
-  FIRST_CLIENT_LOYALTY_DISCOUNT_POLICY,
+  "Up to 3 total posts/updates per week, media dependent",
+  "Portal request response/review/answer within 24 hours; this is not a completion promise",
+  "TikTok, Reels/video content, ads management, daily posting, automated publishing, and live integrations are coming soon / not included at launch",
+  "Customer-service replies, comments, DMs, refunds, complaints, and order questions are not included",
+  WEBSITE_SCOPE_DISCLAIMER,
+  AD_SPEND_DISCLAIMER,
+  OFFER_INVENTION_GUARDRAIL,
 ];
 
-export function getCurrentPublicPlanForPackageId(
-  packageId:
-    | CurrentPublicPlanId
-    | "essential"
-    | "google_optimization"
-    | "complete_online_presence"
-    | "complete_plus_ads"
-    | "ads_management_only",
-): VeroxaPlan {
-  switch (packageId) {
-    case "starter":
-      return VEROXA_PLANS.starter;
-    case "growth":
-      return VEROXA_PLANS.growth;
-    case "premium":
-      return VEROXA_PLANS.premium;
-    case "essential":
-      return VEROXA_PLANS.starter;
-    case "google_optimization":
-      return VEROXA_PLANS.starter;
-    case "complete_online_presence":
-      return VEROXA_PLANS.growth;
-    case "complete_plus_ads":
-    case "ads_management_only":
-      return VEROXA_PLANS.premium;
-  }
+export function getCurrentPublicPlanForPackageId(packageId: VeroxaPlanId): VeroxaPlan {
+  return VEROXA_PLANS.complete_online_presence;
 }
 
-export function getCurrentPublicPlanForLegacyPackage(
-  legacyPackageId:
-    | "google_optimization"
-    | "complete_online_presence"
-    | "complete_plus_ads"
-    | "ads_management_only",
-): VeroxaPlan {
+export function getCurrentPublicPlanForLegacyPackage(legacyPackageId: Exclude<VeroxaPlanId, "complete_online_presence">): VeroxaPlan {
   return getCurrentPublicPlanForPackageId(legacyPackageId);
 }
 
 export function getPlanMonthlyPrice(label: VeroxaPlanLabel): number {
-  return (
-    Object.values(VEROXA_PLANS).find((p) => p.label === label)?.priceMonthly ??
-    0
-  );
+  return Object.values(VEROXA_PLANS).find((p) => p.label === label)?.priceMonthly ?? COMPLETE_ONLINE_PRESENCE_PRICE_MONTHLY;
 }
 
 export function getPlanDisplayPrice(label: VeroxaPlanLabel): string {
-  return (
-    Object.values(VEROXA_PLANS).find((p) => p.label === label)?.displayPrice ??
-    "$0"
-  );
+  return Object.values(VEROXA_PLANS).find((p) => p.label === label)?.displayPrice ?? COMPLETE_ONLINE_PRESENCE_DISPLAY_PRICE;
 }

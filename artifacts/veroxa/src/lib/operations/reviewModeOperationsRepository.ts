@@ -24,7 +24,7 @@ const clientAccounts: ClientAccount[] = [
   {
     id: REVIEW_MODE_CLIENT_ID,
     businessName: "Restaurant Account in Review",
-    planId: "starter",
+    planId: "complete_online_presence",
     lifecycleStage: "review_mode",
     portalStatus: "pending_connection",
     mediaStatus: "needs_media",
@@ -37,7 +37,7 @@ const clientAccounts: ClientAccount[] = [
   {
     id: "client-account-pending-connection",
     businessName: "Client Account Pending Connection",
-    planId: "growth",
+    planId: "complete_online_presence",
     lifecycleStage: "setup_pending",
     portalStatus: "review_shell",
     mediaStatus: "pending_review",
