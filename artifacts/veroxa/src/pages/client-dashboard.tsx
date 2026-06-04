@@ -13,6 +13,7 @@ import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary"
 import { useClientSaasPortalState } from "@/hooks/useClientSaasPortalState";
 import { getAccountActivationBadgeTone } from "@/domain/saas/accountActivation";
 import { getClientPortalDataModeNotice, getClientPortalReadinessSummary } from "@/domain/saas/clientPortalState";
+import { buildClientSafeWeeklyUpdate, getFirstClientOperatingSnapshots } from "@/domain/firstClientOperatingSuite";
 
 export default function ClientDashboard() {
   const mode = useRealPortalDataMode();
@@ -20,6 +21,7 @@ export default function ClientDashboard() {
   const mediaHref = getClientPortalHref("media", mode.isPublicDemoRoute);
   const requestsHref = getClientPortalHref("requests", mode.isPublicDemoRoute);
   const reportsHref = getClientPortalHref("reports", mode.isPublicDemoRoute);
+  const clientSafeOpsPreview = buildClientSafeWeeklyUpdate(getFirstClientOperatingSnapshots()[0]);
 
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
@@ -44,6 +46,15 @@ export default function ClientDashboard() {
       {!pageState.isDemoData && !pageState.canShowRealData ? (
         <SafePortalEmptyCard title="Account setup in review" body="Your account setup will appear here once your restaurant portal is active. Reports appear after Veroxa reviews and publishes verified updates. Upload and review features are not live yet." />
       ) : null}
+
+      <Card className="mb-4 border-emerald-500/20 bg-emerald-500/5" data-testid="client-weekly-needs-card">
+        <CardHeader className="pb-2"><CardTitle className="text-sm">What Veroxa may need from you this week</CardTitle></CardHeader>
+        <CardContent className="grid gap-3 text-sm text-muted-foreground md:grid-cols-3">
+          <div><p className="font-medium text-foreground">Working on</p><p className="mt-1">{clientSafeOpsPreview.workingOn[0]}</p></div>
+          <div><p className="font-medium text-foreground">Need from you</p><p className="mt-1">{clientSafeOpsPreview.needFromClient[0]}</p></div>
+          <div><p className="font-medium text-foreground">Next focus</p><p className="mt-1">{clientSafeOpsPreview.nextPlannedFocus[0]}</p></div>
+        </CardContent>
+      </Card>
 
       <section className="grid gap-4 md:grid-cols-4 mb-4">
         <SnapshotCard icon={ListChecks} label="Account" value={loading ? "Loading" : dashboardSummary.accountStatus} helper={getClientPortalReadinessSummary(pageState)} />

@@ -38,6 +38,7 @@ import {
   requiresClientConfirmation,
   type ManualExecutionPack,
 } from "@/domain/manualExecution";
+import { getFirstClientOperatingSnapshots, getServiceHealthLabel } from "@/domain/firstClientOperatingSuite";
 
 const statusToneMap: Record<
   ReturnType<typeof getExecutionPackRiskTone>,
@@ -157,6 +158,9 @@ export default function TeamManualExecution() {
     (pack) =>
       isClientConfirmationPending(pack) && requiresClientConfirmation(pack),
   );
+  const relatedOpsSnapshot = getFirstClientOperatingSnapshots().find((snapshot) =>
+    selectedPack.restaurantName.toLowerCase().includes(snapshot.restaurantName.split(" ")[0]?.toLowerCase() ?? "no-match"),
+  ) ?? getFirstClientOperatingSnapshots().find((snapshot) => snapshot.manualExecutionStatus === "ready_for_manual_execution");
 
   const summaryCards = [
     {
@@ -220,6 +224,18 @@ export default function TeamManualExecution() {
               {item}
             </StatusBadge>
           ))}
+        </CardContent>
+      </Card>
+
+      <Card className="mb-4 border-emerald-500/20 bg-emerald-500/5" data-testid="related-first-client-ops-snapshot">
+        <CardContent className="grid gap-3 p-4 text-sm md:grid-cols-[1fr_auto] md:items-center">
+          <div>
+            <p className="font-semibold">Related first-client ops snapshot</p>
+            <p className="mt-1 text-muted-foreground">{relatedOpsSnapshot ? `${relatedOpsSnapshot.restaurantName} · ${getServiceHealthLabel(relatedOpsSnapshot.serviceHealthStatus)} · ${relatedOpsSnapshot.nextBestAction}` : "No related first-client ops snapshot found."}</p>
+          </div>
+          <Link href="/team/first-client-ops" className="inline-flex items-center gap-2 text-primary hover:underline">
+            Open First-Client Ops <ArrowRight className="h-3 w-3" />
+          </Link>
         </CardContent>
       </Card>
 

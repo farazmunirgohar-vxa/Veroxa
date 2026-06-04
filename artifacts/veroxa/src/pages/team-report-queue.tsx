@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { FileText, FileBarChart, ClipboardCheck } from "lucide-react";
+import { Link } from "wouter";
+import { FileText, FileBarChart, ClipboardCheck, ArrowRight } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import {
   RealPortalReviewNotice,
@@ -20,6 +21,7 @@ import {
   type WeeklyReportStatus,
 } from "@/data/demoData";
 import { buildRuleBasedReportDraft } from "@/domain/ruleBasedAutomation";
+import { getFirstClientOperatingSnapshots, getMonthlyReportReadiness } from "@/domain/firstClientOperatingSuite";
 
 import { TeamSaasStatePanel } from "@/components/team/TeamSaasStatePanel";
 const weeklyStatusColor: Record<WeeklyReportStatus, string> = {
@@ -53,6 +55,9 @@ export default function TeamReportQueue() {
     stage: s,
     items: demoWeeklyReports.filter((r) => r.status === s),
   }));
+  const firstClientReportSnapshots = getFirstClientOperatingSnapshots();
+  const firstClientReportReady = firstClientReportSnapshots.filter((snapshot) => getMonthlyReportReadiness(snapshot).status === "draft_ready");
+  const firstClientNeedsContext = firstClientReportSnapshots.filter((snapshot) => getMonthlyReportReadiness(snapshot).blockers.length > 0);
 
   if (!canUseFixtureData) {
     return (
@@ -88,6 +93,27 @@ export default function TeamReportQueue() {
         message="Report sourcing persists in the workflow foundation for this browser (backend pending). Drafts require team verification before they become client-visible — nothing is delivered automatically."
         testId="banner-report-queue"
       />
+
+      <Card className="mb-4 border-emerald-500/20 bg-emerald-500/5" data-testid="first-client-report-readiness-preview">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center justify-between gap-2 text-sm">
+            <span className="flex items-center gap-2"><FileBarChart className="h-4 w-4 text-emerald-300" /> First-client report readiness</span>
+            <Link href="/team/first-client-ops" className="text-xs font-normal text-primary hover:underline">Open suite <ArrowRight className="inline h-3 w-3" /></Link>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-3 md:grid-cols-2">
+          <div className="rounded-lg border border-border bg-background/30 p-3">
+            <p className="text-sm font-semibold">Report-ready clients</p>
+            <p className="mt-1 text-2xl font-bold tabular-nums">{firstClientReportReady.length}</p>
+            <p className="mt-1 text-xs text-muted-foreground">Draft-only monthly report previews are ready for team review. No fake metrics are added.</p>
+          </div>
+          <div className="rounded-lg border border-border bg-background/30 p-3">
+            <p className="text-sm font-semibold">Need more data/media/context</p>
+            <p className="mt-1 text-2xl font-bold tabular-nums">{firstClientNeedsContext.length}</p>
+            <p className="mt-1 text-xs text-muted-foreground">These snapshots need stronger media, confirmation, or manual execution context before client-safe reporting.</p>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Report-source items — completed work eligible for the report, plus
           report drafts awaiting verification. Inclusion is a team decision;

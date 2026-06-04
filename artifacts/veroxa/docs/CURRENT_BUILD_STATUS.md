@@ -1,3 +1,15 @@
+
+## 2026-06-04 — First-Client Operating Suite V1
+
+- Added First-Client Operating Suite V1 as a deterministic, pre-live manual service lifecycle layer for the first 1–5 restaurant benchmarks.
+- Added guarded Team Portal route `/team/first-client-ops` with lifecycle board, selected detail panel, onboarding readiness, media rhythm, weekly update drafts, monthly report drafts, client handoff drafts, and Manual Execution linkage.
+- Added typed local/review-only lifecycle, onboarding, media rhythm, weekly update, monthly report, client handoff, service health, and first-client operating snapshot engines.
+- Added five deterministic benchmark snapshots: Starter healthy, Starter low-media, Growth media-ready, Growth inconsistent-upload, and Premium readiness.
+- Integrated compact first-client ops summaries into Team Dashboard, Team Work Queue, Team Report Queue, Team Manual Execution, and First-Client Readiness.
+- Added only lightweight client-safe reflection on Client Dashboard for what Veroxa may need from the restaurant this week.
+- Added first-client operating suite guardrail and documentation.
+- No production auth, storage uploads, live AI, production database writes, payments, platform APIs, publishing connectors, webhooks, cron jobs, or automated customer-visible execution were added.
+
 > **2026-05-30 — Portal separation and first-5-client readiness lock**
 >
 > Current active routing is now: public demo only at `/demo/client/dashboard`, real Client Portal review routes under `/client/*`, and real Team/Internal Admin review routes under `/team/*`. Team Demo / `/demo/team/*` is deprecated/not active and must not be promoted by public pages or used as a login destination. Client-side readiness remains first; heavy Team/Internal Admin AI automation comes later. The first 5 real clients are the pre-launch readiness benchmark.

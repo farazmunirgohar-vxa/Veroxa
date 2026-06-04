@@ -34,6 +34,7 @@ import {
   suggestManualSchedule,
 } from "@/domain/ruleBasedAutomation";
 import { buildManualExecutionPacks, getExecutionPackNextAction, getExecutionPackReadinessLabel } from "@/domain/manualExecution";
+import { getFirstClientOpsTopActions } from "@/domain/firstClientOperatingSuite";
 
 import { TeamSaasStatePanel } from "@/components/team/TeamSaasStatePanel";
 type LocalDecision =
@@ -130,6 +131,7 @@ export default function TeamWorkQueue() {
     bestSellerVisible: true,
   });
   const manualExecutionPacks = buildManualExecutionPacks().slice(0, 3);
+  const firstClientOpsActions = getFirstClientOpsTopActions(3);
 
   const alerts = buildTeamAlerts({
     restaurantName: primaryLifecycle
@@ -213,6 +215,24 @@ export default function TeamWorkQueue() {
         message="Demo only — button choices stay on this page. No database write, publishing action, or client message is sent."
         testId="banner-work-queue"
       />
+
+      <Card className="mb-4 border-emerald-500/20 bg-emerald-500/5" data-testid="first-client-ops-next-actions">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center justify-between gap-2 text-sm">
+            <span className="flex items-center gap-2"><ListChecks className="h-4 w-4 text-emerald-300" /> First-client ops next actions</span>
+            <Link href="/team/first-client-ops" className="text-xs font-normal text-primary hover:underline">Open suite</Link>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {firstClientOpsActions.map((item) => (
+            <div key={item.clientId} className="rounded-lg border border-border bg-background/30 p-3 text-sm">
+              <p className="font-medium">{item.restaurantName}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{item.action}</p>
+            </div>
+          ))}
+          <p className="text-xs text-muted-foreground">Actions can include requesting media, confirming business details, preparing manual execution, drafting weekly/monthly updates, or reviewing Premium readiness.</p>
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-4">
         {summaryTiles.map((tile) => (

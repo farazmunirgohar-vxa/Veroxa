@@ -28,6 +28,7 @@ import type { ReadinessStatus } from "@/domain/firstClientReadiness";
 import { VEROXA_PLANS } from "@/data/pricing/veroxaPricing";
 import { evaluateVeroxaProfitValidation } from "@/domain/profitValidation";
 import { buildManualExecutionPacks, evaluateManualExecutionLaunchGate } from "@/domain/manualExecution";
+import { getFirstClientOperatingSnapshots, getMonthlyReportReadiness } from "@/domain/firstClientOperatingSuite";
 
 import { TeamSaasStatePanel } from "@/components/team/TeamSaasStatePanel";
 const statusTone: Record<ReadinessStatus, StatusBadgeTone> = {
@@ -111,6 +112,15 @@ export default function TeamFirstClientReadiness() {
     trackingConfidence: "unknown",
   });
   const manualExecutionReadiness = evaluateManualExecutionLaunchGate(buildManualExecutionPacks());
+  const opsSnapshots = getFirstClientOperatingSnapshots();
+  const opsReadiness = {
+    onboarding: opsSnapshots.filter((snapshot) => snapshot.onboardingStatus.status === "complete").length,
+    media: opsSnapshots.filter((snapshot) => !snapshot.mediaRhythmStatus.shouldSlowPostingDueToMedia).length,
+    weekly: opsSnapshots.filter((snapshot) => snapshot.weeklyUpdateStatus.status === "draft_ready").length,
+    monthly: opsSnapshots.filter((snapshot) => getMonthlyReportReadiness(snapshot).status === "draft_ready").length,
+    manual: opsSnapshots.filter((snapshot) => snapshot.manualExecutionStatus === "ready_for_manual_execution").length,
+    confirmationBlockers: opsSnapshots.filter((snapshot) => snapshot.clientConfirmationStatus === "needed" || snapshot.onboardingStatus.itemsRequiringConfirmation.length > 0).length,
+  };
 
   return (
     <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
@@ -120,6 +130,30 @@ export default function TeamFirstClientReadiness() {
         description="A benchmark review surface for the first 1–5 restaurant clients. It does not mean production auth, storage uploads, or live account data are fully connected."
         testId="header-first-client-readiness"
       />
+
+      <Card className="mb-6 border-emerald-500/20 bg-emerald-500/5" data-testid="first-client-operating-suite-readiness">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-sm">
+            <Handshake className="h-4 w-4 text-emerald-300" /> First-Client Operating Suite readiness
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-3 text-center text-xs md:grid-cols-6">
+            <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold tabular-nums">{opsReadiness.onboarding}</p><p className="text-muted-foreground">Onboarding ready</p></div>
+            <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold tabular-nums">{opsReadiness.media}</p><p className="text-muted-foreground">Media rhythm ready</p></div>
+            <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold tabular-nums">{opsReadiness.weekly}</p><p className="text-muted-foreground">Weekly drafts</p></div>
+            <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold tabular-nums">{opsReadiness.monthly}</p><p className="text-muted-foreground">Monthly drafts</p></div>
+            <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold tabular-nums">{opsReadiness.manual}</p><p className="text-muted-foreground">Manual ready</p></div>
+            <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold tabular-nums">{opsReadiness.confirmationBlockers}</p><p className="text-muted-foreground">Confirm blockers</p></div>
+          </div>
+          <div className="grid gap-2 text-sm text-muted-foreground md:grid-cols-3">
+            <p className="rounded-lg border border-border bg-background/30 p-3">First 1–5 manual service is demo-walkthrough ready when Faraz wants to show the operating flow.</p>
+            <p className="rounded-lg border border-border bg-background/30 p-3">First 1–5 manual service is feedback-conversation ready for pre-live review language.</p>
+            <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-amber-200">First paid client remains blocked by future approved production auth, storage, live data, payment, and integration work.</p>
+          </div>
+          <Link href="/team/first-client-ops" className="inline-flex items-center gap-2 text-sm text-primary hover:underline">Open First-Client Operating Suite <ArrowRight className="h-3 w-3" /></Link>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr] mb-6">
         <Card className="bg-card border-border">
