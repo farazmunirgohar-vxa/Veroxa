@@ -55,6 +55,7 @@ import {
 } from "@/lib/ai/aiAgentTypes";
 import { ContentDraftPipelineCard } from "@/components/ContentDraftPipelineCard";
 import { ContentIntelligenceInboxList } from "@/components/ContentIntelligencePanel";
+import { buildTeamMediaSummary, mediaIntelligenceSeedData } from "@/domain/mediaIntelligence";
 
 const statusTone: Record<DemoUploadStatus, StatusBadgeTone> = {
   received: "info",
@@ -213,6 +214,14 @@ export default function TeamUploadInbox() {
       >
         {liveActive ? "Showing live submissions." : "Showing sample fallback."}
       </p>
+
+      <Card className="mb-4 border-sky-500/20 bg-sky-500/5" data-testid="upload-inbox-media-intelligence">
+        <CardContent className="p-4 text-sm text-muted-foreground">
+          <p className="font-medium text-foreground">Media intelligence tags</p>
+          <p className="mt-1">{buildTeamMediaSummary(mediaIntelligenceSeedData)}</p>
+          <p className="mt-2 text-xs">Platform fit, quality status, and next best use are deterministic preview labels only.</p>
+        </CardContent>
+      </Card>
 
       {/* Session controls — subtle */}
       <div className="flex flex-wrap items-center justify-between gap-2 mb-4 text-xs text-muted-foreground">

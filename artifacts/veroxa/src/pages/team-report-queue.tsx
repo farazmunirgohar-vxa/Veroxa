@@ -22,6 +22,8 @@ import {
 } from "@/data/demoData";
 import { buildRuleBasedReportDraft } from "@/domain/ruleBasedAutomation";
 import { getFirstClientOperatingSnapshots, getMonthlyReportReadiness } from "@/domain/firstClientOperatingSuite";
+import { buildTeamValueProofQueue, valueProofSeedSummaries } from "@/domain/valueProof";
+import { buildTeamMediaSummary, mediaIntelligenceSeedData } from "@/domain/mediaIntelligence";
 
 import { TeamSaasStatePanel } from "@/components/team/TeamSaasStatePanel";
 const weeklyStatusColor: Record<WeeklyReportStatus, string> = {
@@ -58,6 +60,7 @@ export default function TeamReportQueue() {
   const firstClientReportSnapshots = getFirstClientOperatingSnapshots();
   const firstClientReportReady = firstClientReportSnapshots.filter((snapshot) => getMonthlyReportReadiness(snapshot).status === "draft_ready");
   const firstClientNeedsContext = firstClientReportSnapshots.filter((snapshot) => getMonthlyReportReadiness(snapshot).blockers.length > 0);
+  const valueProofQueue = buildTeamValueProofQueue(valueProofSeedSummaries);
 
   if (!canUseFixtureData) {
     return (
@@ -94,6 +97,21 @@ export default function TeamReportQueue() {
         testId="banner-report-queue"
       />
 
+
+      <Card className="mb-4 border-sky-500/20 bg-sky-500/5" data-testid="report-queue-value-proof-media">
+        <CardHeader className="pb-2"><CardTitle className="text-sm">Value proof + media intelligence preview</CardTitle></CardHeader>
+        <CardContent className="grid gap-3 md:grid-cols-2 text-sm text-muted-foreground">
+          <div className="rounded-lg border border-border bg-background/40 p-3">
+            <p className="font-medium text-foreground">Reach vs customer actions</p>
+            <p className="mt-1">{valueProofQueue[0]?.teamSummary}</p>
+            <p className="mt-2 text-xs">Next: {valueProofQueue[0]?.nextAction}</p>
+          </div>
+          <div className="rounded-lg border border-border bg-background/40 p-3">
+            <p className="font-medium text-foreground">What media is working / weak</p>
+            <p className="mt-1">{buildTeamMediaSummary(mediaIntelligenceSeedData)}</p>
+          </div>
+        </CardContent>
+      </Card>
       <Card className="mb-4 border-emerald-500/20 bg-emerald-500/5" data-testid="first-client-report-readiness-preview">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center justify-between gap-2 text-sm">

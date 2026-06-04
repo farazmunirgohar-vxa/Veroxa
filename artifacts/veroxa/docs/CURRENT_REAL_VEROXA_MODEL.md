@@ -224,3 +224,7 @@ The current real Veroxa model is pre-live/manual and preview-first. Veroxa shoul
 - AI-ready but not connected means deterministic draft systems and approval gates can be built before live AI.
 - Integration-ready but not connected means adapter contracts and UI flows can be planned before paid/live providers.
 - Restaurant Onboarding is a known gap and should first be built in preview/manual mode.
+
+## 2026-06-04 request/proof/media expansion alignment
+
+The real Veroxa model now includes deterministic preview/manual boundaries for package eligibility, portal request response SLA, internal value proof/restaurant reach, and media intelligence. These are preparation and review layers only. No live client data connection, live AI, platform connector, payment flow, storage upload, webhook, cron job, or customer-visible execution was added.

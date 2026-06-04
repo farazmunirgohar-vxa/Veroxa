@@ -1,7 +1,7 @@
 import { Link } from "wouter";
 import { ArrowRight, Camera, CheckCircle2, ClipboardList, Globe, MessageSquare, ShieldCheck } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
-import { RealPortalReviewNotice } from "@/components/RealPortalSafeStates";
+import { RealPortalReviewNotice, SafePortalEmptyCard } from "@/components/RealPortalSafeStates";
 import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary";
 import { PageHeader, StatusBadge } from "@/components/common";
 import { Button } from "@/components/ui/button";
@@ -57,13 +57,13 @@ function DraftCard({ title, body }: { title: string; body: string }) {
 
 export default function ClientOnboarding() {
   const mode = useRealPortalDataMode();
-  const profile = getClientOnboardingPreviewProfile();
-  const progress = getOnboardingProgress(profile);
-  const readiness = buildOnboardingReadinessSnapshot(profile);
-  const missingInfo = getMissingBusinessInfo(profile);
-  const missingLinks = getMissingPlatformLinks(profile);
-  const missingMedia = getNextMediaNeeded(profile);
-  const truthItems = getBusinessTruthItemsToConfirm(profile);
+  const profile = mode.isPublicDemoRoute ? getClientOnboardingPreviewProfile() : null;
+  const progress = profile ? getOnboardingProgress(profile) : 0;
+  const readiness = profile ? buildOnboardingReadinessSnapshot(profile) : null;
+  const missingInfo = profile ? getMissingBusinessInfo(profile) : [];
+  const missingLinks = profile ? getMissingPlatformLinks(profile) : [];
+  const missingMedia = profile ? getNextMediaNeeded(profile) : [];
+  const truthItems = profile ? getBusinessTruthItemsToConfirm(profile) : [];
   const dashboardHref = getClientPortalHref("dashboard", mode.isPublicDemoRoute);
 
   return (
@@ -76,6 +76,23 @@ export default function ClientOnboarding() {
         testId="header-client-onboarding"
       />
 
+
+      {!profile || !readiness ? (
+        <div className="space-y-4">
+          <SafePortalEmptyCard
+            title="Restaurant onboarding is being prepared"
+            body="Your setup checklist will appear here once Veroxa activates your account. Real client onboarding data is not connected in this preview. Nothing goes live without Veroxa team review."
+            testId="empty-client-onboarding-safe-state"
+          />
+          <Card className="border-primary/20 bg-primary/5">
+            <CardContent className="p-5 text-sm text-muted-foreground">
+              <p className="font-medium text-foreground">What happens next</p>
+              <p className="mt-2">Veroxa will organize business details, platform links, media needs, and confirmation items after the account is activated. This real route stays useful without showing benchmark onboarding data as your restaurant.</p>
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        <>
       <Card className="mb-5 border-primary/25 bg-primary/5">
         <CardContent className="grid gap-4 p-5 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
           <div>
@@ -154,6 +171,8 @@ export default function ClientOnboarding() {
       </Card>
 
       <div className="mt-5 flex justify-end"><Link href={dashboardHref}><Button>Return to dashboard <ArrowRight className="ml-2 h-4 w-4" /></Button></Link></div>
+        </>
+      )}
     </PortalLayout>
   );
 }

@@ -36,6 +36,9 @@ import {
 import { buildManualExecutionPacks, getExecutionPackNextAction, getExecutionPackReadinessLabel } from "@/domain/manualExecution";
 import { getFirstClientOpsTopActions } from "@/domain/firstClientOperatingSuite";
 import { getRestaurantOnboardingSeedProfiles, getTeamNextOnboardingAction, getTeamOnboardingPriority } from "@/domain/restaurantOnboarding";
+import { getPackageBoundaryQueue, packageBoundarySeedDecisions, summarizePackageBoundary } from "@/domain/packageBoundary";
+import { buildTeamSlaQueue, requestSlaSeedData, summarizeRequestSla } from "@/domain/requestSla";
+import { buildTeamMediaSummary, mediaIntelligenceSeedData } from "@/domain/mediaIntelligence";
 
 import { TeamSaasStatePanel } from "@/components/team/TeamSaasStatePanel";
 type LocalDecision =
@@ -136,6 +139,10 @@ export default function TeamWorkQueue() {
   const onboardingActions = getRestaurantOnboardingSeedProfiles()
     .sort((a, b) => getTeamOnboardingPriority(b) - getTeamOnboardingPriority(a))
     .slice(0, 3);
+  const packageSummary = summarizePackageBoundary(packageBoundarySeedDecisions);
+  const packageQueue = getPackageBoundaryQueue(packageBoundarySeedDecisions).slice(0, 4);
+  const slaSummary = summarizeRequestSla(requestSlaSeedData);
+  const slaQueue = buildTeamSlaQueue(requestSlaSeedData).slice(0, 5);
 
   const alerts = buildTeamAlerts({
     restaurantName: primaryLifecycle
@@ -220,6 +227,56 @@ export default function TeamWorkQueue() {
         testId="banner-work-queue"
       />
 
+
+      <div className="mb-4 grid gap-4 lg:grid-cols-2">
+        <Card className="border-amber-500/20 bg-amber-500/5" data-testid="package-boundary-work-queue">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center justify-between gap-2 text-sm">
+              <span>Package boundary review</span>
+              <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-[10px]">{packageSummary.upgradeRouted} upgrade routed</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {packageQueue.map((item) => (
+              <div key={item.id} className="rounded-lg border border-border bg-background/40 p-3 text-xs">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="font-medium text-foreground">{item.label}</p>
+                  <Badge variant="outline" className="border-border bg-muted/20 text-[10px]">{item.status.replaceAll("_", " ")}</Badge>
+                </div>
+                <p className="mt-1 text-muted-foreground">{item.teamAction}</p>
+              </div>
+            ))}
+            <p className="text-xs text-muted-foreground">Allowed work can proceed to review. Blocked or higher-plan work stays routed; do not absorb it manually.</p>
+          </CardContent>
+        </Card>
+        <Card className="border-primary/20 bg-primary/5" data-testid="request-sla-work-queue">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center justify-between gap-2 text-sm">
+              <span>24-hour request SLA</span>
+              <Badge variant="outline" className="border-primary/30 bg-primary/10 text-[10px]">{slaSummary.needsResponse} need response</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {slaQueue.map(({ request, sla, action }) => (
+              <div key={request.id} className="rounded-lg border border-border bg-background/40 p-3 text-xs">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="font-medium text-foreground">{request.restaurantName}</p>
+                  <Badge variant="outline" className="border-border bg-muted/20 text-[10px]">{sla.teamLabel}</Badge>
+                </div>
+                <p className="mt-1 text-muted-foreground">{action}</p>
+              </div>
+            ))}
+            <p className="text-xs text-muted-foreground">The SLA is for a portal answer/review within 24 hours, not guaranteed completion.</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="mb-4 border-sky-500/20 bg-sky-500/5" data-testid="media-intelligence-work-queue">
+        <CardContent className="p-4 text-sm text-muted-foreground">
+          <p className="font-medium text-foreground">Media intelligence next actions</p>
+          <p className="mt-1">{buildTeamMediaSummary(mediaIntelligenceSeedData)}</p>
+        </CardContent>
+      </Card>
 
       <Card className="mb-4 border-primary/20 bg-primary/5" data-testid="onboarding-next-actions">
         <CardHeader className="pb-2">

@@ -785,3 +785,14 @@ Current locked markers:
 - Added Team onboarding queue surfaces for blockers, warnings, ready signals, proof inputs, first-week manual tasks, and draft-only client communication.
 - Integrated onboarding context into Client Dashboard, Team Dashboard, Team Work Queue, First-Client Ops, First-Client Readiness, and Manual Execution Center.
 - No production auth, database writes, storage uploads, live integrations, payments, live AI, auto-posting, real client data, or offer-recommendation logic were added.
+
+## 2026-06-04 — Post-Onboarding Expansion preview/manual build
+
+- Fixed real-route onboarding leakage: public demo onboarding can use benchmark profiles, while real guarded `/client/*` onboarding surfaces show safe setup/review states until real data is connected.
+- Added deterministic package boundary/request enforcement for included, upgrade-routed, confirmation-needed, not-supported, and unclear portal requests.
+- Added deterministic 24-hour portal request SLA logic. The SLA is an answer/review promise, not guaranteed completion.
+- Added team-only Value Proof and Restaurant Reach preview layers that separate reach from customer-action signals and keep internal cost-justification math off client/public pages.
+- Added media intelligence preview logic for what media is working, weak, or needs improvement, with client-safe guidance and deeper team notes.
+- Added guardrails for package boundaries, request SLA copy, value proof safety, media intelligence safety, pricing/auth/credential stability, and onboarding seed leakage.
+- No paid/live systems were added: no production auth, real DB/storage, live AI, platform connectors, payments, webhooks, cron, background jobs, auto-posting, or automated customer-visible execution.
+- No offer-recommendation or discount invention logic was added. Portal requests remain the normal routine channel.

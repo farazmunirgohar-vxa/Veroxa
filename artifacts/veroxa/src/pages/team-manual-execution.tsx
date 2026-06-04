@@ -40,6 +40,7 @@ import {
 } from "@/domain/manualExecution";
 import { getFirstClientOperatingSnapshots, getServiceHealthLabel } from "@/domain/firstClientOperatingSuite";
 import { getClientOnboardingPreviewProfile } from "@/domain/restaurantOnboarding";
+import { getNextBestMediaRequest, mediaIntelligenceSeedData } from "@/domain/mediaIntelligence";
 
 const statusToneMap: Record<
   ReturnType<typeof getExecutionPackRiskTone>,
@@ -226,6 +227,14 @@ export default function TeamManualExecution() {
               {item}
             </StatusBadge>
           ))}
+        </CardContent>
+      </Card>
+
+      <Card className="mb-4 border-sky-500/20 bg-sky-500/5" data-testid="manual-execution-media-intelligence">
+        <CardContent className="p-4 text-sm text-muted-foreground">
+          <p className="font-semibold text-foreground">Best media to use next</p>
+          <p className="mt-1">{getNextBestMediaRequest(mediaIntelligenceSeedData)}</p>
+          <p className="mt-2 text-xs">Use only after Veroxa team review and any needed client confirmation.</p>
         </CardContent>
       </Card>
 
