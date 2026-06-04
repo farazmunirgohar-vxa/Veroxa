@@ -77,7 +77,7 @@ for (const required of [
   "FIRST_CLIENT_LOYALTY_DISCOUNT_POLICY",
   "Premium requires a Veroxa readiness assessment",
   "Starter is capped at up to 3 posts/week",
-  "Growth and Premium are capped at up to 1 post/day",
+  "Premium is capped at up to 1 post/day",
 ]) {
   if (!pricingPage.includes(required)) {
     failures.push(

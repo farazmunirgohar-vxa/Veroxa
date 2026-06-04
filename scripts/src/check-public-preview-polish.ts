@@ -74,12 +74,17 @@ for (const required of ["$295", "$495", "$995", "Starter", "Growth", "Premium", 
   assert(pricingPage.includes(required), `pricing.tsx missing pricing/plan marker: ${required}`);
 }
 for (const required of [
-  "Google Business Profile cleanup/support",
-  "Facebook + Instagram basic posting",
+  "Google Business Profile support",
+  "Facebook support",
+  "Instagram support",
+  "Up to 3 posts/week depending on usable client-provided media",
   "Everything in Starter",
-  "Facebook + Instagram + TikTok support",
+  "Reels support",
+  "TikTok support",
+  "Better support / stronger communication",
   "Everything in Growth",
-  "Ads management readiness/support",
+  "Ad management",
+  "Up to 1 post/day depending on usable client-provided media",
   "Ad spend separate",
   "Posting depends on usable client-provided media",
   "Premium requires readiness assessment, client approval, and agreed ad budget.",
@@ -89,8 +94,11 @@ for (const required of [
 assert(pricingPage.includes("Pricing Plans — Veroxa"), "Pricing page title must be distinct and plan-focused.");
 
 // Public nav
-for (const navMarker of ["/services", "/pricing", "/free-audit", "/demo/client/dashboard", "/login"]) {
+for (const navMarker of ["/services", "/pricing", "/login"]) {
   assert(publicNav.includes(navMarker), `Public nav missing link: ${navMarker}`);
+}
+for (const removedNavMarker of ["/free-audit", "/demo/client/dashboard"]) {
+  assert(!publicNav.includes(removedNavMarker), `Public nav must not include removed link: ${removedNavMarker}`);
 }
 
 // Client Demo and protected routes

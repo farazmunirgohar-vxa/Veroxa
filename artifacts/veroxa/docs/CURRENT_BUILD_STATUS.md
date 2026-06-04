@@ -1,4 +1,15 @@
 
+## 2026-06-04 — Focused public cleanup and package alignment
+
+- Preview login credentials corrected for placeholder review: `client@veroxa.com` / `farazclient` and `team@veroxa.com` / `farazteam`.
+- Public nav simplified to Services, Pricing, and Login.
+- Services bottom Free Audit/Pricing CTA removed.
+- Pricing bottom Services/Free Audit CTA removed.
+- Starter clarified as Facebook/Instagram picture-based support plus Google/local basics.
+- Growth clarified as Reels, TikTok, better support/stronger communication, stronger consistency, stronger workflow, weekly updates, and monthly report without daily posting language.
+- Premium clarified as ad management plus up to 1 post/day depending on usable client-provided media.
+- No production auth, storage uploads, live AI, external APIs, payments, checkout, publishing connectors, webhooks, cron jobs, or background jobs were added.
+
 ## 2026-06-04 — Public access, Services/Pricing separation, and Client Demo polish
 
 - Corrected placeholder preview login aliases so the visible review credentials are `client@veroxa.com` / `farazclient` and `team@veroxa.com` / `farazteam`.

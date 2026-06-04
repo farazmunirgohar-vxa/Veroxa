@@ -67,8 +67,8 @@ for (const marker of [
     failures.push(`devCredentials.ts is missing temp-login safety marker: ${marker}`);
   }
 }
-if (!/import\.meta\.env\.DEV \|\| readViteEnv\(PUBLIC_PREVIEW_LOGIN_FLAG\) === ["']true["']/.test(devCredentials)) {
-  failures.push("public preview fallback login must require local DEV or explicit VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=true.");
+if (!/const explicitFlag = readViteEnv\(PUBLIC_PREVIEW_LOGIN_FLAG\)/.test(devCredentials) || !/import\.meta\.env\.DEV \|\| explicitFlag !== ["']false["']/.test(devCredentials)) {
+  failures.push("public preview fallback login must stay placeholder-only and allow preview review unless VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=false.");
 }
 const loginSource = readFileSync(join(root, "artifacts/veroxa/src/pages/login.tsx"), "utf8");
 for (const marker of [
@@ -135,4 +135,4 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-console.log("Dev auth/write safety guardrail passed: placeholder credentials are env-only and dev writes are production-disabled.");
+console.log("Dev auth/write safety guardrail passed: placeholder preview credentials stay contained and dev writes are production-disabled.");

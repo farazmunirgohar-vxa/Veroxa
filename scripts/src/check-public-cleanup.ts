@@ -95,13 +95,85 @@ for (const file of publicFiles) {
 }
 
 const nav = readFileSync(join(root, "artifacts/veroxa/src/components/public/PublicNav.tsx"), "utf8");
-for (const label of ["Services", "Pricing", "Free Audit", "Client Demo", "Login"]) {
+for (const label of ["Services", "Pricing", "Login"]) {
   if (!nav.includes(`label: "${label}"`) && !new RegExp(`>\\s*${label}\\s*</Link>`).test(nav)) failures.push(`PublicNav is missing centered ${label} link.`);
 }
-for (const label of ["Veroxa", "Request Free Audit"]) {
-  if (new RegExp(`>\\s*${label}\\s*</Link>`).test(nav)) failures.push(`PublicNav should not show ${label}.`);
+for (const label of ["Free Audit", "Client Demo", "Veroxa", "Request Free Audit"]) {
+  if (nav.includes(`label: "${label}"`) || new RegExp(`>\\s*${label}\\s*</Link>`).test(nav)) failures.push(`PublicNav should not show ${label}.`);
 }
 
+const devCredentials = readFileSync(join(root, "artifacts/veroxa/src/lib/auth/devCredentials.ts"), "utf8");
+const loginPage = readFileSync(join(root, "artifacts/veroxa/src/pages/login.tsx"), "utf8");
+const previewCredentialSources = `${devCredentials}\n${loginPage}`;
+for (const required of ["client@veroxa.com", "team@veroxa.com", "farazclient", "farazteam"]) {
+  if (!previewCredentialSources.includes(required)) failures.push(`Preview login is missing required placeholder credential marker: ${required}.`);
+}
+if (!devCredentials.includes("Preview access is enabled for review. Use client@veroxa.com / farazclient or team@veroxa.com / farazteam.")) {
+  failures.push("Preview login helper copy must stay clean and non-technical when preview access is enabled.");
+}
+for (const forbidden of ["veroxa-client", "veroxa-team"]) {
+  if (loginPage.includes(forbidden) || devCredentials.includes(`Use ${forbidden}`)) failures.push(`Visible preview helper passwords must not include ${forbidden}.`);
+}
+
+const servicesPage = readFileSync(join(root, "artifacts/veroxa/src/pages/services.tsx"), "utf8");
+for (const forbidden of [
+  "Ready to see where your restaurant stands?",
+  "btn-services-cta-audit",
+  "btn-services-cta-pricing",
+  "$295",
+  "$495",
+  "$995",
+  "/month",
+  "/mo",
+]) {
+  if (servicesPage.includes(forbidden)) failures.push(`services.tsx must not contain removed CTA/pricing text: ${forbidden}.`);
+}
+
+const pricingPage = readFileSync(join(root, "artifacts/veroxa/src/pages/pricing.tsx"), "utf8");
+for (const forbidden of ["Want details before comparing plans?", "btn-pricing-cta-services", "btn-pricing-cta-audit"]) {
+  if (pricingPage.includes(forbidden)) failures.push(`pricing.tsx must not contain removed bottom CTA text/marker: ${forbidden}.`);
+}
+
+const pricingSource = readFileSync(join(root, "artifacts/veroxa/src/data/pricing/veroxaPricing.ts"), "utf8");
+const pricingCombined = `${pricingPage}\n${pricingSource}`;
+for (const required of [
+  "Facebook support",
+  "Instagram support",
+  "Up to 3 posts/week depending on usable client-provided media",
+  "Reels support",
+  "TikTok support",
+  "Better support / stronger communication",
+  "Ad management",
+  "Up to 1 post/day depending on usable client-provided media",
+  "$295",
+  "$495",
+  "$995",
+]) {
+  if (!pricingCombined.includes(required)) failures.push(`Pricing/package copy is missing required marker: ${required}.`);
+}
+const growthBlocks = [
+  pricingPage.match(/name: "Growth"[\s\S]*?\n  \},\n  \{/m)?.[0] ?? "",
+  pricingSource.match(/const growthIncludes = \[[\s\S]*?\];/m)?.[0] ?? "",
+];
+for (const block of growthBlocks) {
+  if (!block) failures.push("Could not locate Growth package block for posting-limit guardrail.");
+  if (/up to 1 post\/day/i.test(block)) failures.push("Growth package block must not contain up to 1 post/day.");
+  if (/up to 3 posts\/week/i.test(block)) failures.push("Growth package block must not contain up to 3 posts/week.");
+}
+
+const authMode = readFileSync(join(root, "artifacts/veroxa/src/lib/auth/authMode.ts"), "utf8");
+if (!authMode.includes('"placeholder"')) failures.push("AUTH_MODE must remain placeholder.");
+
+for (const [file, text] of [
+  ["PublicNav.tsx", nav],
+  ["services.tsx", servicesPage],
+  ["pricing.tsx", pricingPage],
+  ["devCredentials.ts", devCredentials],
+] as const) {
+  for (const risky of [/createUser/i, /signUp/i, /storage\.from/i, /openai/i, /stripe/i, /googleapis/i, /youtube/i, /cron/i, /webhook/i]) {
+    if (risky.test(text)) failures.push(`${file} contains risky live integration/auth marker: ${risky}.`);
+  }
+}
 
 if (failures.length > 0) {
   console.error("Public cleanup guardrail failed:");

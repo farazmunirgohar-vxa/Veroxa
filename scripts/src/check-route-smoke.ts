@@ -31,6 +31,8 @@ const requiredRoutes = [
   "/team/approval-queue",
   "/team/visibility-audit",
   "/team/first-client-readiness",
+  "/team/first-client-ops",
+  "/team/manual-execution",
 ];
 
 const teamRoutes = [
@@ -43,6 +45,8 @@ const teamRoutes = [
   "approval-queue",
   "visibility-audit",
   "first-client-readiness",
+  "first-client-ops",
+  "manual-execution",
 ];
 
 const failures: string[] = [];

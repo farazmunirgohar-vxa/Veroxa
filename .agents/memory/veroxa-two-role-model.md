@@ -32,11 +32,13 @@ that contradicts the active two-role direction.
   deterministic via `ctx.now`, team-only surface ("Today's Suggested Push" on the
   team dashboard). Designed so a future AI layer can replace rule bodies behind
   the same function signatures without touching the UI.
-- Locked current public pricing (do not change): Essential $497/month, Growth
-  $697/month, Premium $997/month. All active plans are capped at max 1 post/day,
-  depending on usable client-provided media. Growth adds TikTok + Reels support
-  using provided photos/videos; Premium adds ads management readiness/support
-  after assessment, but does not increase the public posting cap.
+- Locked current public pricing (do not change): Starter $295/month, Growth
+  $495/month, Premium $995/month. Starter is capped at up to 3 posts/week
+  depending on usable client-provided media. Growth adds TikTok + Reels support,
+  better support/stronger communication, stronger consistency, weekly updates,
+  monthly report, and stronger workflow without public daily posting language.
+  Premium adds ad management and up to 1 post/day after readiness assessment,
+  client approval, and agreed ad budget; ad spend remains separate.
 - Deprecated historical pricing: the retired Core / Ads add-on / combo model and
   founding-client pricing are not current and must not be presented as active
   public pricing.

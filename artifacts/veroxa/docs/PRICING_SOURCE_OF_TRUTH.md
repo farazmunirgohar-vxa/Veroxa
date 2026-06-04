@@ -1,14 +1,14 @@
 # Veroxa Pricing Source of Truth
 
-Updated: 2026-06-03
+Updated: 2026-06-04
 
 ## Active public plans
 
 ### Starter — $295/month
 
-Low-friction entry plan for restaurants that need basic online presence consistency and local visibility cleanup.
+Complete professional entry plan for restaurants that need basic online presence consistency and local visibility cleanup.
 
-Includes Google Business Profile cleanup, Google Maps/local visibility basics, hours/menu/order/social link cleanup, best-seller visibility guidance, basic photo freshness support, Facebook + Instagram basic posting, up to 3 posts/week depending on usable media, simple captions, review/reputation support through drafts/reminders, a simple monthly progress summary, Client Portal access, and media reminders/upload guidance.
+Includes Google Business Profile support, Google Maps/local visibility basics, Facebook support, Instagram support, picture-based content support, up to 3 posts/week depending on usable client-provided media, simple captions, basic content organization, media guidance/reminders, Client Portal access, simple monthly progress summary, and Veroxa team review before anything goes live.
 
 Starter does not include daily posting, Reels/TikTok, ads management, heavy design/reporting, customer-service replies, comments/DMs/refunds/order questions, or unlimited edits.
 
@@ -16,13 +16,13 @@ Starter does not include daily posting, Reels/TikTok, ads management, heavy desi
 
 Growth is the main recommended package for strong-fit restaurants with clear opportunity and enough media/cooperation.
 
-Includes everything in Starter, stronger Google/local consistency, stronger social consistency, up to 1 post/day depending on usable media, stronger best-seller/content rhythm, weekly progress update, monthly report, limited content/design prep, and stronger client portal workflow.
+Includes everything in Starter, Reels support, TikTok support, better support / stronger communication, stronger Google/local consistency, stronger content rhythm, better caption/content preparation, weekly progress updates, monthly report, and stronger client portal workflow. Growth does not include a public daily-posting cap.
 
 ### Premium — $995/month
 
 Selective advanced package for restaurants ready for ads support and stronger reporting.
 
-Includes everything in Growth, ads management readiness/support, stronger reporting, ad planning/support, readiness assessment required, client approval required, agreed ad budget required, and ad spend separate.
+Includes everything in Growth, ad management, up to 1 post/day depending on usable client-provided media, stronger reporting/support, ad planning/support, ad spend separate, and client approval required for ads.
 
 Premium requires a Veroxa readiness assessment, client approval, and an agreed ad budget. Premium is never automatic.
 
@@ -31,8 +31,8 @@ Premium requires a Veroxa readiness assessment, client approval, and an agreed a
 - No contract.
 - Cancel anytime.
 - Ad spend is separate and paid directly by the restaurant.
-- Starter is capped at up to 3 posts/week depending on usable media.
-- Growth and Premium are capped at up to 1 post/day depending on usable media.
+- Starter is capped at up to 3 posts/week depending on usable client-provided media.
+- Premium is capped at up to 1 post/day depending on usable client-provided media; Growth does not include public daily posting language.
 - Posting depends on usable client-provided media and may slow when usable media is unavailable.
 - Veroxa does not handle customer-service conversations, comments, DMs, inboxes, complaints, order questions, or refunds at launch.
 - No guaranteed orders, customers, revenue, profit, ROI, rankings, or walk-ins.
