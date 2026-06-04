@@ -1,7 +1,16 @@
 
+## 2026-06-04 — Post-RR alignment hotfix
+
+- Preview credentials changed to `faraz@client.com` / `farazclient` and `faraz@team.com` / `farazteam`.
+- Preview fallback remains review-friendly for local development and Vercel preview hostnames, while `VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=false` can disable it for future production/security hardening.
+- Stale Growth daily-posting language removed from current docs; Growth has no public daily-posting cap.
+- Services page “Plan prices” wording removed and softened to package comparisons only.
+- Premium wording clarified: ad management included, ad spend separate, readiness assessment/client approval/agreed ad budget required.
+- No production auth, storage uploads, live AI, external APIs, payments, checkout, publishing connectors, webhooks, cron jobs, or background jobs were added.
+
 ## 2026-06-04 — Focused public cleanup and package alignment
 
-- Preview login credentials corrected for placeholder review: `client@veroxa.com` / `farazclient` and `team@veroxa.com` / `farazteam`.
+- Preview login credentials corrected for placeholder review: `faraz@client.com` / `farazclient` and `faraz@team.com` / `farazteam`.
 - Public nav simplified to Services, Pricing, and Login.
 - Services bottom Free Audit/Pricing CTA removed.
 - Pricing bottom Services/Free Audit CTA removed.
@@ -12,7 +21,7 @@
 
 ## 2026-06-04 — Public access, Services/Pricing separation, and Client Demo polish
 
-- Corrected placeholder preview login aliases so the visible review credentials are `client@veroxa.com` / `farazclient` and `team@veroxa.com` / `farazteam`.
+- Corrected placeholder preview login aliases so the visible review credentials are `faraz@client.com` / `farazclient` and `faraz@team.com` / `farazteam`.
 - Improved Services/Pricing separation: Services now explains Veroxa service layers without prices, while Pricing stays focused on Starter/Growth/Premium pricing and plan inclusions.
 - Polished public navigation with Services, Pricing, Free Audit, Client Demo, and Login links.
 - Lightly polished the public Client Demo with premium preview language, clearer first-screen hierarchy, and an explicit note that real client data is not connected.
@@ -687,10 +696,10 @@ manualReviewNeeded[], ownerFriendlyClosing } | null, message? }`.
 
 - Current public packages remain Starter ($295/month), Growth ($495/month), and Premium ($995/month).
 - Growth must not be labeled popular-badge until real client data supports that claim.
-- Growth wording should position Growth as the main recommended package for serious online presence, with up to 1 post/day depending on usable media.
+- Historical/deprecated: prior Growth wording incorrectly carried daily-posting language. Current Growth wording must not carry public daily-posting language.
 - Service boundary: Veroxa does not handle comments, DMs, inboxes, complaints, order questions, refunds, or customer-service conversations at launch.
 - Media dependency: posting depends on usable client-provided media and may slow when usable media is unavailable.
-- Posting limits: Starter allows up to 3 posts/week; Growth is the main package with up to 1 post/day using client-provided media; Premium follows the same max 1 post/day public posting cap and adds ads management readiness/support with ad spend separate.
+- Current posting limits: Starter allows up to 3 posts/week; Growth has no public daily-posting cap; Premium has up to 1 post/day with ad management, readiness/client approval, agreed ad budget, and separate ad spend.
 - Premium requires a Veroxa readiness assessment, client approval, and an agreed ad budget.
 - First-client discount: 20% off for 12 months, then loyalty discount only while continuously active; lost if the client leaves and later returns.
 - Build order remains client side first. Team/Internal Admin heavy AI automation comes after client-side clarity and should later become the command center for media review assist, caption drafting, Google/SEO/Maps tasks, reporting generation, Premium readiness checklist, client risk flags, workload tracking, and Pakistan team handoff after 10 clients.
@@ -759,7 +768,7 @@ Current locked markers:
 - Active stack: GitHub + Codex + Vercel. Replit is historical only.
 - Active roles: Client and Team. Owner/Operator are inactive and parked, including Super Admin, generic Admin, and Execution roles.
 - Current pricing: Starter $295, Growth $495, Premium $995.
-- Preview credentials: [client@veroxa.com](mailto:client@veroxa.com) / farazclient and [team@veroxa.com](mailto:team@veroxa.com) / farazteam.
+- Preview credentials: [faraz@client.com](mailto:faraz@client.com) / farazclient and [faraz@team.com](mailto:faraz@team.com) / farazteam.
 - `AUTH_MODE` remains `placeholder`.
 - Veroxa is AI-ready but not connected: draft systems, deterministic fallbacks, and human approval can be built now; live AI stays blocked.
 - Veroxa is integration-ready but not connected: adapter contracts and UI states can be planned now; live providers stay blocked.

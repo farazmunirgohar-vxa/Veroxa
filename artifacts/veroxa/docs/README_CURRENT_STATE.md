@@ -27,6 +27,6 @@ Current strategy markers:
 - Veroxa is integration-ready but not connected.
 - Restaurant Onboarding is a known gap and future priority.
 - Current pricing remains Starter $295, Growth $495, Premium $995.
-- Preview credentials: [client@veroxa.com](mailto:client@veroxa.com) / farazclient and [team@veroxa.com](mailto:team@veroxa.com) / farazteam.
+- Preview credentials: [faraz@client.com](mailto:faraz@client.com) / farazclient and [faraz@team.com](mailto:faraz@team.com) / farazteam.
 
 Warning: older docs may contain historical/deprecated material. Current docs override older changelog sections. Do not revive Replit as active, Owner/Operator as active, old pricing, production auth/storage/live AI/connectors/payments as active, or paid activation before the Pre-Paid Activation Gate.

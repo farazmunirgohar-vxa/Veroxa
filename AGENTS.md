@@ -329,5 +329,5 @@ Phase 1 SaaS foundation scaffolding is present as TypeScript-only contracts and 
 - Veroxa is integration-ready but not connected: adapter contracts and UI states can be planned now; production auth, storage, Google/Meta/TikTok APIs, payments, webhooks, cron jobs, and automated publishing stay blocked.
 - Restaurant Onboarding is a known OS gap and should first be built in preview/manual mode.
 - Current PR philosophy: PR #59 style is the ideal normal major build size around 3,000 meaningful changes across 20-30 files; justified big builds may approach 5,000 meaningful additions/deletions; hotfixes stay surgical; no fake churn.
-- Current preview credentials: [client@veroxa.com](mailto:client@veroxa.com) / farazclient and [team@veroxa.com](mailto:team@veroxa.com) / farazteam.
+- Current preview credentials: [faraz@client.com](mailto:faraz@client.com) / farazclient and [faraz@team.com](mailto:faraz@team.com) / farazteam.
 - `AUTH_MODE` remains `placeholder` until production auth is explicitly approved after the pre-paid activation gate.

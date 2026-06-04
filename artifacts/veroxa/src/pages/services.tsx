@@ -52,7 +52,7 @@ const serviceLayers = [
   {
     icon: CheckCircle2,
     title: "Premium ads readiness and support layer",
-    body: "For restaurants that are ready, Veroxa can support ad planning and readiness review. This service layer requires assessment, client approval, and an agreed ad budget before ad work is considered.",
+    body: "For restaurants that are ready, Veroxa can support ad management, ad planning, and readiness review. This service layer requires assessment, client approval, and an agreed ad budget before ad work is considered, with ad spend separate.",
   },
 ];
 
@@ -115,8 +115,8 @@ export default function ServicesPage() {
             </h2>
           </div>
           <p className="text-sm text-muted-foreground max-w-md">
-            Services are shown here by operating layer. Plan prices and package
-            inclusions live on the Pricing page.
+            Services are shown here by operating layer. Package comparisons live on
+            the Pricing page.
           </p>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">

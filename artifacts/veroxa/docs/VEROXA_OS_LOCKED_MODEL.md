@@ -373,7 +373,7 @@ Current locked markers:
 - Active roles: Client and Team. Owner/Operator are inactive and parked.
 - `AUTH_MODE` remains `placeholder`.
 - Current pricing remains Starter $295, Growth $495, Premium $995.
-- Preview credentials remain [client@veroxa.com](mailto:client@veroxa.com) / farazclient and [team@veroxa.com](mailto:team@veroxa.com) / farazteam.
+- Preview credentials remain [faraz@client.com](mailto:faraz@client.com) / farazclient and [faraz@team.com](mailto:faraz@team.com) / farazteam.
 - Veroxa remains AI-ready but not connected and integration-ready but not connected until a future approved activation.
 - Restaurant Onboarding is a known missing layer and future priority.
 - Paid infrastructure remains blocked until the Pre-Paid Activation Gate is satisfied.

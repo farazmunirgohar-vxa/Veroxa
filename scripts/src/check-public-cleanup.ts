@@ -105,14 +105,17 @@ for (const label of ["Free Audit", "Client Demo", "Veroxa", "Request Free Audit"
 const devCredentials = readFileSync(join(root, "artifacts/veroxa/src/lib/auth/devCredentials.ts"), "utf8");
 const loginPage = readFileSync(join(root, "artifacts/veroxa/src/pages/login.tsx"), "utf8");
 const previewCredentialSources = `${devCredentials}\n${loginPage}`;
-for (const required of ["client@veroxa.com", "team@veroxa.com", "farazclient", "farazteam"]) {
+for (const required of ["faraz@client.com", "faraz@team.com", "farazclient", "farazteam"]) {
   if (!previewCredentialSources.includes(required)) failures.push(`Preview login is missing required placeholder credential marker: ${required}.`);
 }
-if (!devCredentials.includes("Preview access is enabled for review. Use client@veroxa.com / farazclient or team@veroxa.com / farazteam.")) {
+if (!devCredentials.includes("Preview access is enabled for review. Use faraz@client.com / farazclient or faraz@team.com / farazteam.")) {
   failures.push("Preview login helper copy must stay clean and non-technical when preview access is enabled.");
 }
-for (const forbidden of ["veroxa-client", "veroxa-team"]) {
-  if (loginPage.includes(forbidden) || devCredentials.includes(`Use ${forbidden}`)) failures.push(`Visible preview helper passwords must not include ${forbidden}.`);
+for (const forbidden of ["veroxa-client", "veroxa-team", "client@veroxa.com", "team@veroxa.com"]) {
+  if (loginPage.includes(forbidden) || devCredentials.includes(forbidden)) failures.push(`Visible preview helper credentials must not include retired marker: ${forbidden}.`);
+}
+if (!devCredentials.includes('hostname.endsWith(".vercel.app")') || !devCredentials.includes('explicitFlag === "false"') || !devCredentials.includes('explicitFlag === "true"')) {
+  failures.push("Preview fallback must remain available for local/Vercel preview, explicitly opt-in capable, and explicitly disableable.");
 }
 
 const servicesPage = readFileSync(join(root, "artifacts/veroxa/src/pages/services.tsx"), "utf8");
@@ -125,6 +128,7 @@ for (const forbidden of [
   "$995",
   "/month",
   "/mo",
+  "Plan prices",
 ]) {
   if (servicesPage.includes(forbidden)) failures.push(`services.tsx must not contain removed CTA/pricing text: ${forbidden}.`);
 }

@@ -47,9 +47,9 @@ const requiredMarkers = [
   "$295",
   "$495",
   "$995",
-  "[client@veroxa.com](mailto:client@veroxa.com)",
+  "[faraz@client.com](mailto:faraz@client.com)",
   "farazclient",
-  "[team@veroxa.com](mailto:team@veroxa.com)",
+  "[faraz@team.com](mailto:faraz@team.com)",
   "farazteam",
 ];
 
@@ -89,6 +89,28 @@ for (const marker of ["$295", "$495", "$995", "295/month", "495/month", "995/mon
 const pricingPage = read("artifacts/veroxa/src/pages/pricing.tsx");
 for (const marker of ["$295", "$495", "$995"]) {
   assert(pricingPage.includes(marker), `Pricing page missing price marker: ${marker}`);
+}
+assert(!servicesPage.includes("Plan prices"), "Services page must not say Plan prices.");
+
+const currentDocsForPricing = [
+  "AGENTS.md",
+  "artifacts/veroxa/docs/VEROXA_OS_CURRENT_MASTER.md",
+  "artifacts/veroxa/docs/BUILD_STATUS.md",
+  "artifacts/veroxa/docs/CURRENT_BUILD_STATUS.md",
+  "artifacts/veroxa/docs/CURRENT_REAL_VEROXA_MODEL.md",
+  "artifacts/veroxa/docs/PRICING_SOURCE_OF_TRUTH.md",
+  "artifacts/veroxa/docs/PUBLIC_PRICING_AND_SERVICES.md",
+  "artifacts/veroxa/docs/PRE_BUILD_STABILITY_CHECKLIST.md",
+];
+for (const file of currentDocsForPricing) {
+  const lines = read(file).split(/\r?\n/);
+  for (const line of lines) {
+    assert(
+      !/Growth[^.;\n]*(?:gets|has|with|capped|cap|allows|includes)[^.;\n]*up to 1 post\/day/i.test(line) &&
+        !/Growth and Premium[^\n]*(?:up to 1 post\/day|capped)/i.test(line),
+      `${file} must not say Growth gets up to 1 post/day: ${line.trim()}`,
+    );
+  }
 }
 
 const docsToScan = [

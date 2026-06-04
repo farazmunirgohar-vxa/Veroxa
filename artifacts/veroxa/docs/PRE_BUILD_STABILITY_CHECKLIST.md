@@ -53,6 +53,6 @@ Before any large build, confirm the current strategy remains intact:
 - Active roles remain Client and Team. Owner/Operator are inactive and parked.
 - `AUTH_MODE` remains `placeholder`.
 - Current pricing remains Starter $295, Growth $495, Premium $995.
-- Preview credentials remain [client@veroxa.com](mailto:client@veroxa.com) / farazclient and [team@veroxa.com](mailto:team@veroxa.com) / farazteam.
+- Preview credentials remain [faraz@client.com](mailto:faraz@client.com) / farazclient and [faraz@team.com](mailto:faraz@team.com) / farazteam.
 - AI-ready but not connected and integration-ready but not connected are allowed; live AI/connectors/payments/storage/auth remain blocked.
 - Restaurant Onboarding is a known gap; do not imply it is production-complete until built.

@@ -10,13 +10,13 @@ Veroxa is not using production authentication, storage, live AI, live platform A
 
 Placeholder preview access uses the following visible review credentials:
 
-- Client: `client@veroxa.com` / `farazclient`
-- Team: `team@veroxa.com` / `farazteam`
+- Client: `faraz@client.com` / `farazclient`
+- Team: `faraz@team.com` / `farazteam`
 
 Expected placeholder routing:
 
-- `client@veroxa.com` / `farazclient` routes to `/client/dashboard`.
-- `team@veroxa.com` / `farazteam` routes to `/team/dashboard`.
+- `faraz@client.com` / `farazclient` routes to `/client/dashboard`.
+- `faraz@team.com` / `farazteam` routes to `/team/dashboard`.
 - Wrong credentials fail.
 
 These are preview-only credentials. They are not real users, not production secrets, and do not create or write database records.
@@ -121,7 +121,7 @@ Pricing page boundaries:
 - ad spend separate
 - posting depends on usable client-provided media
 - Starter capped at up to 3 posts/week depending on usable media
-- Growth and Premium capped at up to 1 post/day depending on usable media
+- Growth has no public daily-posting cap; Premium is capped at up to 1 post/day depending on usable media
 - Premium requires readiness assessment, client approval, and agreed ad budget
 
 The Pricing page should stay plan-centered and should not duplicate the full Services page explanation.

@@ -10,7 +10,7 @@
 
 - Essential = Google Business Profile / Google Maps visibility support plus Facebook + Instagram picture posting.
 - Growth = Essential plus TikTok + Reels / short-video support using restaurant-provided media.
-- Premium = Growth-level posting support plus ads management readiness/support.
+- Premium = Growth-level posting support plus ad management readiness/support.
 - Ad spend is separate and paid directly by the restaurant.
 - Posting is media dependent and may slow when usable media is unavailable.
 - All active plans are capped at max 1 post/day unless Faraz explicitly changes this later.

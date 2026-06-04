@@ -20,8 +20,8 @@ Active stack: **GitHub + Codex + Vercel**. **Replit is historical only**. Active
 
 Current review credentials:
 
-- [client@veroxa.com](mailto:client@veroxa.com) / farazclient
-- [team@veroxa.com](mailto:team@veroxa.com) / farazteam
+- [faraz@client.com](mailto:faraz@client.com) / farazclient
+- [faraz@team.com](mailto:faraz@team.com) / farazteam
 
 `AUTH_MODE` must remain `placeholder` until a separate approved production auth activation.
 
@@ -37,8 +37,8 @@ Current review credentials:
 
 ## 2. Preview login/demo gate
 
-- [ ] [client@veroxa.com](mailto:client@veroxa.com) / farazclient works in placeholder preview mode.
-- [ ] [team@veroxa.com](mailto:team@veroxa.com) / farazteam works in placeholder preview mode.
+- [ ] [faraz@client.com](mailto:faraz@client.com) / farazclient works in placeholder preview mode.
+- [ ] [faraz@team.com](mailto:faraz@team.com) / farazteam works in placeholder preview mode.
 - [ ] Public client demo at `/demo/client/dashboard` works.
 - [ ] Real client routes remain guarded.
 - [ ] Real team routes remain guarded.

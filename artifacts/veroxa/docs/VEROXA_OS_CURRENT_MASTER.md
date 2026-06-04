@@ -54,7 +54,7 @@ Global pricing rules:
 - Cancel anytime.
 - Ad spend is separate and paid directly by the restaurant.
 - Starter is capped at up to 3 posts/week depending on usable client-provided media.
-- Growth and Premium are capped at up to 1 post/day depending on usable client-provided media.
+- Starter is capped at up to 3 posts/week depending on usable client-provided media. Growth does not carry public daily-posting language and is differentiated by reels, TikTok, better support/stronger communication, stronger consistency, weekly updates, monthly report, and stronger workflow. Premium is capped at up to 1 post/day depending on usable client-provided media and includes ad management with ad spend separate.
 - Premium requires a Veroxa readiness assessment, client approval, and an agreed ad budget.
 - Veroxa does not handle comments, DMs, inboxes, complaints, refunds, order questions, or customer-service conversations at launch.
 
@@ -162,8 +162,8 @@ Do not merge demo and login flows.
 
 Preview credentials currently documented for review:
 
-- [client@veroxa.com](mailto:client@veroxa.com) / farazclient
-- [team@veroxa.com](mailto:team@veroxa.com) / farazteam
+- [faraz@client.com](mailto:faraz@client.com) / farazclient
+- [faraz@team.com](mailto:faraz@team.com) / farazteam
 
 `AUTH_MODE` must remain `placeholder` until production auth is explicitly approved.
 

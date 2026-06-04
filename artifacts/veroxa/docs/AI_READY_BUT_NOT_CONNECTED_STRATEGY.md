@@ -84,6 +84,6 @@ Before live AI activation:
 
 Preview markers protected by guardrails:
 
-- [client@veroxa.com](mailto:client@veroxa.com) / farazclient
-- [team@veroxa.com](mailto:team@veroxa.com) / farazteam
+- [faraz@client.com](mailto:faraz@client.com) / farazclient
+- [faraz@team.com](mailto:faraz@team.com) / farazteam
 - Starter $295, Growth $495, Premium $995

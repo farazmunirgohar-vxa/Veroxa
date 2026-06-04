@@ -13,7 +13,7 @@
 > - Premium: **$995/mo**
 > - No contract; cancel anytime
 > - Google Optimization and Facebook + Instagram are included in all plans
-> - Starter max 3 posts/week; Growth is the main package with up to 1 post/day; Premium max 1 post/day with ads readiness/support and separate ad spend
+> - Current locked pricing correction: Starter max 3 posts/week; Growth has no public daily-posting cap and is differentiated by reels, TikTok, better support/stronger communication, stronger consistency, weekly updates, monthly report, and stronger workflow; Premium max 1 post/day with ad management, readiness/client approval, agreed ad budget, and separate ad spend
 > - Posting depends on usable client-provided media and may slow when usable media is unavailable
 > - Premium requires readiness assessment, client approval, and agreed ad budget
 > - Ad spend is always separate and paid directly by the restaurant
@@ -1200,10 +1200,10 @@ internal_demo | future_protected`. The client, team, operator,
 
 - Current public packages remain Starter ($295/month), Growth ($495/month), and Premium ($995/month).
 - Growth must not be labeled popular-badge until real client data supports that claim.
-- Growth wording should position Growth as the main recommended package for serious online presence, with up to 1 post/day depending on usable media.
+- Historical/deprecated: prior Growth wording incorrectly carried daily-posting language. Current Growth wording must not carry public daily-posting language.
 - Service boundary: Veroxa does not handle comments, DMs, inboxes, complaints, order questions, refunds, or customer-service conversations at launch.
 - Media dependency: posting depends on usable client-provided media and may slow when usable media is unavailable.
-- Posting limits: Starter allows up to 3 posts/week; Growth is the main package with up to 1 post/day using client-provided media; Premium follows the same max 1 post/day public posting cap and adds ads management readiness/support with ad spend separate.
+- Current posting limits: Starter allows up to 3 posts/week; Growth has no public daily-posting cap; Premium has up to 1 post/day with ad management, readiness/client approval, agreed ad budget, and separate ad spend.
 - Premium requires a Veroxa readiness assessment, client approval, and an agreed ad budget.
 - First-client discount: 20% off for 12 months, then loyalty discount only while continuously active; lost if the client leaves and later returns.
 - Build order remains client side first. Team/Internal Admin heavy AI automation comes after client-side clarity and should later support media review assist, caption drafting, Google/SEO/Maps tasks, reporting generation, Premium readiness checklist, client risk flags, workload tracking, and Pakistan team handoff after 10 clients.

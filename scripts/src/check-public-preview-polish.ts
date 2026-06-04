@@ -39,13 +39,15 @@ const publicNav = read("artifacts/veroxa/src/components/public/PublicNav.tsx");
 const app = read("artifacts/veroxa/src/App.tsx");
 
 // Preview login
-for (const marker of ["client@veroxa.com", "team@veroxa.com", "farazclient", "farazteam"]) {
+for (const marker of ["faraz@client.com", "faraz@team.com", "farazclient", "farazteam"]) {
   assert(devCredentials.includes(marker), `devCredentials.ts missing preview login marker: ${marker}`);
 }
 assert(loginPage.includes("getPlaceholderCredentialStatus"), "login page must continue to show placeholder credential status.");
-assert(devCredentials.includes("Preview access is enabled for review. Use client@veroxa.com / farazclient or team@veroxa.com / farazteam."), "preview helper text must show the corrected main credentials.");
+assert(devCredentials.includes("Preview access is enabled for review. Use faraz@client.com / farazclient or faraz@team.com / farazteam."), "preview helper text must show the corrected main credentials.");
 assert(!loginPage.includes("veroxa-client") && !loginPage.includes("veroxa-team"), "login page must not show incorrect veroxa-client/veroxa-team passwords.");
 assert(!devCredentials.includes('"veroxa-client"') && !devCredentials.includes('"veroxa-team"'), "dev credentials must not use incorrect veroxa-client/veroxa-team passwords.");
+assert(!loginPage.includes("client@veroxa.com") && !loginPage.includes("team@veroxa.com"), "login page must not show retired preview credentials.");
+assert(devCredentials.includes('hostname.endsWith(".vercel.app")') && devCredentials.includes('explicitFlag === "false"') && devCredentials.includes('explicitFlag === "true"'), "preview fallback must support local/Vercel preview, explicit opt-in, and explicit disable.");
 assert(/AUTH_MODE(?:\s*:\s*AuthMode)?\s*=\s*["']placeholder["']/.test(authMode), 'AUTH_MODE must remain "placeholder".');
 
 // Services / Pricing separation
