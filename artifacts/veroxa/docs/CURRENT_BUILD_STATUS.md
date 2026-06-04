@@ -1,3 +1,9 @@
+## 2026-06-04 — Request SLA seed leakage hotfix
+
+- Fixed Client Requests seed-data leakage so real guarded `/client/requests` shows the safe setup/empty state instead of benchmark request rows when real client data is not connected.
+- Stabilized request SLA seed/demo timing by generating preview request timestamps relative to the current demo read instead of a fixed aging date.
+- No production auth, database, storage, live AI, APIs, payments, or publishing were added.
+
 
 ## 2026-06-04 — Post-RR alignment hotfix
 
