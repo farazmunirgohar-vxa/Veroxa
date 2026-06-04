@@ -42,3 +42,17 @@ Before any large Veroxa build, confirm these foundations stay intact:
 
 - Do not add production auth, storage, database/RLS migrations, payments, live AI, or publishing connectors unless explicitly approved.
 - Keep current SaaS scaffolding as TypeScript-only boundaries until a reviewed production adapter phase is approved.
+
+## 2026-06-04 — Pre-paid strategy checklist addendum
+
+Before any large build, confirm the current strategy remains intact:
+
+- Veroxa should be theoretically complete in preview/manual/pre-live mode before paid infrastructure is activated.
+- Paid systems should be connected into existing prepared interfaces, not used while the product is still being designed.
+- Active stack remains GitHub + Codex + Vercel; Replit is historical only.
+- Active roles remain Client and Team. Owner/Operator are inactive and parked.
+- `AUTH_MODE` remains `placeholder`.
+- Current pricing remains Starter $295, Growth $495, Premium $995.
+- Preview credentials remain [client@veroxa.com](mailto:client@veroxa.com) / farazclient and [team@veroxa.com](mailto:team@veroxa.com) / farazteam.
+- AI-ready but not connected and integration-ready but not connected are allowed; live AI/connectors/payments/storage/auth remain blocked.
+- Restaurant Onboarding is a known gap; do not imply it is production-complete until built.

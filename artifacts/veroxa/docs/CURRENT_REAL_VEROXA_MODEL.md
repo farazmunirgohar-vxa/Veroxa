@@ -212,3 +212,16 @@ Current pilot positioning is documented in `FIRST_CLIENT_PILOT_MODE.md`. It keep
 - Online-influenced orders/actions include online orders, phone/order clicks, direction/address clicks that become visits, menu/order-link clicks, Google profile actions, customer mentions, social content-driven visits, and repeat-customer attention.
 - Public/client surfaces must not promise orders, profit, ROI, customers, revenue, rankings, or exact order targets.
 - This update does not mark production auth, migrations, storage, live AI, connectors, payments, or runtime SaaS wiring as built.
+
+## 2026-06-04 — Current OS alignment
+
+The current real Veroxa model is pre-live/manual and preview-first. Veroxa should be theoretically complete in preview/manual/pre-live mode before paid infrastructure is activated. Paid systems should be connected into existing prepared interfaces, not used while the product is still being designed.
+
+- Active stack: GitHub + Codex + Vercel; Replit is historical only.
+- Active roles: Client and Team. Owner/Operator are inactive and parked.
+- Current pricing: Starter $295, Growth $495, Premium $995.
+- Preview credentials: [client@veroxa.com](mailto:client@veroxa.com) / farazclient and [team@veroxa.com](mailto:team@veroxa.com) / farazteam.
+- `AUTH_MODE` remains `placeholder`.
+- AI-ready but not connected means deterministic draft systems and approval gates can be built before live AI.
+- Integration-ready but not connected means adapter contracts and UI flows can be planned before paid/live providers.
+- Restaurant Onboarding is a known gap and should first be built in preview/manual mode.

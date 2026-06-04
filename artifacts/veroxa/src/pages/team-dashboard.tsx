@@ -324,6 +324,24 @@ export default function TeamDashboard() {
         testId="header-team-dashboard"
       />
 
+      <Card className="mb-4 border-amber-500/20 bg-amber-500/5" data-testid="card-onboarding-gap-note">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-sm">
+            <AlertTriangle className="h-4 w-4 text-amber-300" />
+            Restaurant Onboarding gap
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-2 text-sm text-muted-foreground md:grid-cols-[1fr_auto] md:items-center">
+          <p>
+            Onboarding is a known pre-live gap: business info, media, platform access,
+            and business-truth confirmations still need a preview/manual Onboarding OS V1.
+          </p>
+          <span className="rounded-full border border-amber-500/30 px-3 py-1 text-xs text-amber-100">
+            No paid systems active
+          </span>
+        </CardContent>
+      </Card>
+
 
       <Card className="mb-4 border-emerald-500/20 bg-emerald-500/5" data-testid="card-first-client-ops-summary">
         <CardHeader className="pb-2">
