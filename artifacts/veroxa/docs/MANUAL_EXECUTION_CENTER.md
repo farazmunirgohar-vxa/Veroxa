@@ -61,6 +61,8 @@ Client confirmation is required before manual execution when a pack touches busi
 
 Client-facing drafts stay simple and safe. They do not mention AI, backend, raw scores, automation internals, risk logic, connectors, APIs, or internal IDs.
 
+Confirmed items should move out of confirmation-hold behavior and continue to Veroxa team review before manual execution.
+
 ## Copy/paste execution pack rules
 
 Each execution pack should include:
