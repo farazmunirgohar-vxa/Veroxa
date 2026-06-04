@@ -39,6 +39,7 @@ import {
   type ManualExecutionPack,
 } from "@/domain/manualExecution";
 import { getFirstClientOperatingSnapshots, getServiceHealthLabel } from "@/domain/firstClientOperatingSuite";
+import { getClientOnboardingPreviewProfile } from "@/domain/restaurantOnboarding";
 
 const statusToneMap: Record<
   ReturnType<typeof getExecutionPackRiskTone>,
@@ -158,6 +159,7 @@ export default function TeamManualExecution() {
     (pack) =>
       isClientConfirmationPending(pack) && requiresClientConfirmation(pack),
   );
+  const onboardingContext = getClientOnboardingPreviewProfile();
   const relatedOpsSnapshot = getFirstClientOperatingSnapshots().find((snapshot) =>
     selectedPack.restaurantName.toLowerCase().includes(snapshot.restaurantName.split(" ")[0]?.toLowerCase() ?? "no-match"),
   ) ?? getFirstClientOperatingSnapshots().find((snapshot) => snapshot.manualExecutionStatus === "ready_for_manual_execution");

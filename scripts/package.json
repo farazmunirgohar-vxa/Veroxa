@@ -30,7 +30,8 @@
     "check-public-metadata": "tsx ./src/check-public-metadata.ts",
     "check-manual-execution-guardrails": "tsx ./src/check-manual-execution-guardrails.ts",
     "check-public-preview-polish": "tsx ./src/check-public-preview-polish.ts",
-    "check-veroxa-os-current-strategy": "tsx ./src/check-veroxa-os-current-strategy.ts"
+    "check-veroxa-os-current-strategy": "tsx ./src/check-veroxa-os-current-strategy.ts",
+    "check-restaurant-onboarding-os": "tsx ./src/check-restaurant-onboarding-os.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",

@@ -191,3 +191,9 @@ Before turning on any paid system, Faraz should approve estimated cost, operatio
 8. Activate Google/Meta/TikTok connectors only after permissions, rate limits, rollback, logs, and human approval gates are ready.
 9. Activate payments only after pricing, cancellation, billing support, and legal copy are ready.
 10. Keep manual fallbacks and rollback paths available after every paid activation.
+
+## 2026-06-04 — Restaurant Onboarding OS V1 added in preview/manual mode
+
+Restaurant Onboarding OS V1 is now part of the pre-live Veroxa OS foundation. It adds deterministic onboarding profiles, checklists, client-safe setup language, Team onboarding queue logic, proof input collection, media guidance, business-truth confirmation, and first-week manual setup planning.
+
+This does not mark production onboarding as live. Production auth, database writes, storage uploads, live integrations, payments, live AI, auto-posting, real client data, and connector execution remain blocked until explicit future approval and the pre-paid activation gate.

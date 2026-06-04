@@ -14,6 +14,7 @@ import { Progress } from "@/components/ui/progress";
 import { PageHeader, StatusBadge } from "@/components/common";
 import type { StatusBadgeTone } from "@/components/common";
 import { teamPortalNavItems } from "@/lib/teamPortalNav";
+import { getOnboardingQueueSummary, getRestaurantOnboardingSeedProfiles } from "@/domain/restaurantOnboarding";
 import {
   firstClientBenchmarkScenarios,
   getBlockingChecks,
@@ -101,6 +102,7 @@ function CheckList({
 }
 
 export default function TeamFirstClientReadiness() {
+  const onboardingSummary = getOnboardingQueueSummary(getRestaurantOnboardingSeedProfiles());
   const checks = getFirstClientReadinessChecks();
   const summary = getReadinessSummary(checks);
   const launchGate = getFirstClientLaunchGate(checks);
@@ -130,6 +132,22 @@ export default function TeamFirstClientReadiness() {
         description="A benchmark review surface for the first 1–5 restaurant clients. It does not mean production auth, storage uploads, or live account data are fully connected."
         testId="header-first-client-readiness"
       />
+
+      <Card className="mb-4 border-primary/20 bg-primary/5" data-testid="first-client-readiness-onboarding-os">
+        <CardHeader className="pb-2"><CardTitle className="text-sm">Restaurant Onboarding readiness</CardTitle></CardHeader>
+        <CardContent className="grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
+          <div className="grid grid-cols-3 gap-3 text-center text-xs md:grid-cols-6">
+            <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold">{onboardingSummary.total}</p><p className="text-muted-foreground">Demo walkthrough</p></div>
+            <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold">{onboardingSummary.needsMedia}</p><p className="text-muted-foreground">Media gaps</p></div>
+            <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold">{onboardingSummary.needsPlatformLinks}</p><p className="text-muted-foreground">Link gaps</p></div>
+            <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold">{onboardingSummary.needsConfirmation}</p><p className="text-muted-foreground">Feedback ready</p></div>
+            <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold">{onboardingSummary.readyForManualService}</p><p className="text-muted-foreground">Manual ready</p></div>
+            <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold">Later</p><p className="text-muted-foreground">Paid-client ready</p></div>
+          </div>
+          <div className="space-y-2 text-sm text-muted-foreground"><p>Onboarding is demo-walkthrough ready and feedback-conversation ready; first-paid-client readiness still waits for approved production auth, database, storage, and live-system activation.</p><Link href="/team/onboarding" className="inline-flex items-center gap-2 text-primary hover:underline">Open onboarding queue <ArrowRight className="h-3 w-3" /></Link></div>
+        </CardContent>
+      </Card>
+
 
       <Card className="mb-6 border-emerald-500/20 bg-emerald-500/5" data-testid="first-client-operating-suite-readiness">
         <CardHeader className="pb-2">

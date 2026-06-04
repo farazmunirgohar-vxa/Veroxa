@@ -11,12 +11,14 @@ import {
   FileText,
   ClipboardList,
   Images,
+  CheckSquare,
   Bell,
 } from "lucide-react";
 import type { SidebarItem } from "@/components/PortalLayout";
 
 export const clientPortalNavItems: SidebarItem[] = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/client/dashboard" },
+  { label: "Onboarding", icon: CheckSquare, href: "/client/onboarding" },
   { label: "Media", icon: Images, href: "/client/media" },
   { label: "Updates", icon: Bell, href: "/client/updates" },
   { label: "Requests", icon: ClipboardList, href: "/client/requests" },

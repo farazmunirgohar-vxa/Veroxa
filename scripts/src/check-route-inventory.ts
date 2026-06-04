@@ -21,8 +21,7 @@ const futurePlanned = new Set([
   "client-health-command.tsx",
   "client-monthly-report.tsx",
   "client-onboarding-center.tsx",
-  "client-onboarding.tsx",
-  "client-portal.tsx",
+    "client-portal.tsx",
   "client-weekly-report.tsx",
   "client-workspace.tsx",
   "team-activity-feed.tsx",
@@ -84,7 +83,7 @@ for (const [pattern, message] of routePatterns) {
   if (pattern.test(app)) failures.push(message);
 }
 
-const expectedClientLabels = ["Dashboard", "Media", "Updates", "Requests", "Reports"];
+const expectedClientLabels = ["Dashboard", "Onboarding", "Media", "Updates", "Requests", "Reports"];
 const actualClientLabels = [...clientNav.matchAll(/label:\s*["']([^"']+)["']/g)].map((match) => match[1]);
 if (actualClientLabels.join("|") !== expectedClientLabels.join("|")) {
   failures.push(`client nav labels changed: expected ${expectedClientLabels.join(", ")}; found ${actualClientLabels.join(", ")}.`);

@@ -775,3 +775,13 @@ Current locked markers:
 - Restaurant Onboarding is a known missing layer and future priority.
 - Paid infrastructure remains blocked until `PRE_PAID_ACTIVATION_GATE.md` is satisfied and Faraz explicitly approves activation.
 - PR #59 style is the ideal normal major-build size around 3,000 meaningful changes across 20-30 files. Big builds may approach 5,000 meaningful additions/deletions when justified. No fake churn.
+
+## 2026-06-04 — Restaurant Onboarding OS V1 preview/manual foundation
+
+- Added Restaurant Onboarding OS V1 as a preview/manual/pre-live foundation for moving restaurants from interested/signed into first-week setup.
+- Added deterministic onboarding domain engines for business info, platform links, media guidance, business-truth confirmation, proof inputs, first-week setup, package rules, status, readiness, and Team queue grouping.
+- Added five benchmark onboarding scenarios for Starter/Growth/Premium readiness testing. These are safe preview benchmarks, not real active paying clients and not performance results.
+- Added client-safe onboarding surfaces for setup progress, missing info/media/links, confirmation needs, media guidance, and draft-only messages.
+- Added Team onboarding queue surfaces for blockers, warnings, ready signals, proof inputs, first-week manual tasks, and draft-only client communication.
+- Integrated onboarding context into Client Dashboard, Team Dashboard, Team Work Queue, First-Client Ops, First-Client Readiness, and Manual Execution Center.
+- No production auth, database writes, storage uploads, live integrations, payments, live AI, auto-posting, real client data, or offer-recommendation logic were added.

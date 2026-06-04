@@ -183,3 +183,9 @@ Suggested scope:
 - [faraz@team.com](mailto:faraz@team.com) / farazteam
 - AI-ready but not connected
 - integration-ready but not connected
+
+## 2026-06-04 V1 foundation status
+
+Restaurant Onboarding OS V1 foundation has been added in preview/manual/pre-live mode. The original gap is no longer unmodeled: Veroxa now has deterministic benchmark onboarding profiles, business info checklists, platform/profile link checks, media intake guidance, business-truth confirmation, proof input collection, first-week setup planning, client onboarding surfaces, and a Team onboarding queue.
+
+This is not complete production onboarding. No production auth, database writes, storage uploads, live integrations, payments, auto-posting, live AI, real client data, or automated execution were added. Future production onboarding still requires explicit approval after the pre-paid activation gate.

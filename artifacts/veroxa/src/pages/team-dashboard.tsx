@@ -85,6 +85,7 @@ import { VEROXA_PLANS } from "@/data/pricing/veroxaPricing";
 import { evaluateVeroxaProfitValidation } from "@/domain/profitValidation";
 import { buildManualExecutionPacks, evaluateManualExecutionLaunchGate } from "@/domain/manualExecution";
 import { getFirstClientOperatingSnapshots, getFirstClientOpsSummary } from "@/domain/firstClientOperatingSuite";
+import { getOnboardingQueueSummary, getRestaurantOnboardingSeedProfiles } from "@/domain/restaurantOnboarding";
 
 import { TeamSaasStatePanel } from "@/components/team/TeamSaasStatePanel";
 const pushPriorityTone: Record<OpportunityPriority, StatusBadgeTone> = {
@@ -156,6 +157,7 @@ export default function TeamDashboard() {
   const manualExecutionGate = evaluateManualExecutionLaunchGate(manualExecutionPacks);
   const firstClientOpsSnapshots = getFirstClientOperatingSnapshots();
   const firstClientOpsSummary = getFirstClientOpsSummary(firstClientOpsSnapshots);
+  const onboardingSummary = getOnboardingQueueSummary(getRestaurantOnboardingSeedProfiles());
 
   // Today's suggested pushes — rule-based daily opportunities (team-only).
   const suggestedPushes = canUseFixtureData
@@ -324,24 +326,29 @@ export default function TeamDashboard() {
         testId="header-team-dashboard"
       />
 
-      <Card className="mb-4 border-amber-500/20 bg-amber-500/5" data-testid="card-onboarding-gap-note">
+      <Card className="mb-4 border-primary/25 bg-primary/5" data-testid="card-onboarding-os-summary">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-sm">
-            <AlertTriangle className="h-4 w-4 text-amber-300" />
-            Restaurant Onboarding gap
+            <ClipboardCheck className="h-4 w-4 text-primary" />
+            Restaurant Onboarding OS
           </CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-2 text-sm text-muted-foreground md:grid-cols-[1fr_auto] md:items-center">
-          <p>
-            Onboarding is a known pre-live gap: business info, media, platform access,
-            and business-truth confirmations still need a preview/manual Onboarding OS V1.
-          </p>
-          <span className="rounded-full border border-amber-500/30 px-3 py-1 text-xs text-amber-100">
-            No paid systems active
-          </span>
+        <CardContent className="grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
+          <div className="grid grid-cols-2 gap-3 text-center text-xs md:grid-cols-5">
+            <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold tabular-nums">{onboardingSummary.total}</p><p className="text-muted-foreground">Onboarding</p></div>
+            <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold tabular-nums">{onboardingSummary.needsMedia}</p><p className="text-muted-foreground">Need media</p></div>
+            <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold tabular-nums">{onboardingSummary.needsBusinessInfo}</p><p className="text-muted-foreground">Need info</p></div>
+            <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold tabular-nums">{onboardingSummary.needsConfirmation}</p><p className="text-muted-foreground">Need confirmation</p></div>
+            <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold tabular-nums">{onboardingSummary.readyForManualService}</p><p className="text-muted-foreground">Manual ready</p></div>
+          </div>
+          <div className="space-y-2 text-sm text-muted-foreground">
+            <p>Preview/manual setup only — no paid systems active.</p>
+            <Link href="/team/onboarding" className="inline-flex items-center gap-2 text-primary hover:underline">
+              Open Onboarding Queue <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
         </CardContent>
       </Card>
-
 
       <Card className="mb-4 border-emerald-500/20 bg-emerald-500/5" data-testid="card-first-client-ops-summary">
         <CardHeader className="pb-2">
