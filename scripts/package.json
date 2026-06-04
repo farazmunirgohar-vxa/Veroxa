@@ -31,7 +31,11 @@
     "check-manual-execution-guardrails": "tsx ./src/check-manual-execution-guardrails.ts",
     "check-public-preview-polish": "tsx ./src/check-public-preview-polish.ts",
     "check-veroxa-os-current-strategy": "tsx ./src/check-veroxa-os-current-strategy.ts",
-    "check-restaurant-onboarding-os": "tsx ./src/check-restaurant-onboarding-os.ts"
+    "check-restaurant-onboarding-os": "tsx ./src/check-restaurant-onboarding-os.ts",
+    "check-package-boundary-enforcement": "tsx ./src/check-package-boundary-enforcement.ts",
+    "check-request-sla-model": "tsx ./src/check-request-sla-model.ts",
+    "check-value-proof-reach-layer": "tsx ./src/check-value-proof-reach-layer.ts",
+    "check-media-intelligence-layer": "tsx ./src/check-media-intelligence-layer.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",

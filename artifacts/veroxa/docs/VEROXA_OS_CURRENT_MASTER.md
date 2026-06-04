@@ -197,3 +197,9 @@ Before turning on any paid system, Faraz should approve estimated cost, operatio
 Restaurant Onboarding OS V1 is now part of the pre-live Veroxa OS foundation. It adds deterministic onboarding profiles, checklists, client-safe setup language, Team onboarding queue logic, proof input collection, media guidance, business-truth confirmation, and first-week manual setup planning.
 
 This does not mark production onboarding as live. Production auth, database writes, storage uploads, live integrations, payments, live AI, auto-posting, real client data, and connector execution remain blocked until explicit future approval and the pre-paid activation gate.
+
+## 2026-06-04 — Post-onboarding request, proof, reach, and media intelligence expansion
+
+Veroxa now includes preview/manual-only package boundary enforcement, 24-hour portal request response logic, internal value proof/restaurant reach modeling, and deterministic media intelligence. These layers are domain-first and UI-previewed across client requests, client media/reports, team dashboard, team work queue, team report queue, upload inbox, and manual execution.
+
+Safety remains unchanged: `AUTH_MODE` stays placeholder; no production auth, real DB/storage, live AI, platform connectors, payments, auto-posting, or live execution are connected. Tracking exists to prove service value; reach alone is not enough, and relevant local reach plus customer-action signals matter. Client/public pages do not expose internal proof math.

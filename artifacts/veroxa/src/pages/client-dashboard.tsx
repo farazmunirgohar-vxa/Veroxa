@@ -29,8 +29,8 @@ export default function ClientDashboard() {
   const requestsHref = getClientPortalHref("requests", mode.isPublicDemoRoute);
   const reportsHref = getClientPortalHref("reports", mode.isPublicDemoRoute);
   const onboardingHref = getClientPortalHref("onboarding", mode.isPublicDemoRoute);
-  const onboardingProfile = getClientOnboardingPreviewProfile();
-  const onboardingProgress = getOnboardingProgress(onboardingProfile);
+  const onboardingProfile = mode.isPublicDemoRoute ? getClientOnboardingPreviewProfile() : null;
+  const onboardingProgress = onboardingProfile ? getOnboardingProgress(onboardingProfile) : 0;
   const clientSafeOpsPreview = buildClientSafeWeeklyUpdate(getFirstClientOperatingSnapshots()[0]);
 
   const dashboardTitle = mode.isPublicDemoRoute
@@ -88,7 +88,11 @@ export default function ClientDashboard() {
         <CardContent className="grid gap-4 p-4 md:grid-cols-[1fr_auto] md:items-center">
           <div>
             <p className="text-sm font-semibold text-foreground">Restaurant onboarding</p>
-            <p className="mt-1 text-xs text-muted-foreground">{getClientOnboardingStatusLabel(onboardingProfile)} · {onboardingProgress}% setup progress · {onboardingProfile.nextClientAction}</p>
+            {onboardingProfile ? (
+              <p className="mt-1 text-xs text-muted-foreground">{getClientOnboardingStatusLabel(onboardingProfile)} · {onboardingProgress}% setup progress · {onboardingProfile.nextClientAction}</p>
+            ) : (
+              <p className="mt-1 text-xs text-muted-foreground">Restaurant onboarding is being prepared. Your setup checklist will appear here once Veroxa activates your account. Real client onboarding data is not connected in this preview.</p>
+            )}
             <p className="mt-2 text-xs text-muted-foreground">Nothing goes live without Veroxa team review.</p>
           </div>
           <Link href={onboardingHref}><Button variant="outline" size="sm">View onboarding</Button></Link>

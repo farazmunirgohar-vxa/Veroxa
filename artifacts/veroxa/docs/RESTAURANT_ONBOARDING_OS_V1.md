@@ -149,3 +149,7 @@ Restaurant Onboarding OS V1 is preview/manual/pre-live. It does not activate pro
 ## Future connection boundary
 
 Future production onboarding may connect to approved auth, data, storage, and integrations only after the pre-paid activation gate and explicit implementation approval. V1 is a deterministic foundation that paid systems can connect into later; it is not production SaaS onboarding.
+
+## 2026-06-04 real-route onboarding safety hotfix
+
+Public demo onboarding may show benchmark onboarding profiles. Real guarded `/client/dashboard` and `/client/onboarding` must not display benchmark onboarding data as a real client account. Until real onboarding data is connected, real client routes show a setup/review empty state: restaurant onboarding is being prepared, the checklist appears after activation, real client onboarding data is not connected in this preview, and nothing goes live without Veroxa team review.

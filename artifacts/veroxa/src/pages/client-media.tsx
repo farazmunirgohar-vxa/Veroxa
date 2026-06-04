@@ -9,6 +9,7 @@ import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientSaasPortalState } from "@/hooks/useClientSaasPortalState";
 import { ClientMediaTracker } from "@/components/client/ClientMediaTracker";
 import { getClientSafeEmptyStateForPage, getClientPortalDataModeNotice } from "@/domain/saas/clientPortalState";
+import { buildClientSafeMediaSummary, getNextBestMediaRequest, mediaIntelligenceSeedData } from "@/domain/mediaIntelligence";
 
 export default function ClientMedia() {
   const { pageState, mediaSummary } = useClientSaasPortalState();
@@ -25,6 +26,14 @@ export default function ClientMedia() {
         <Metric icon={Camera} label="Needs better media" value={mediaSummary.needsBetterMedia} />
         <Metric icon={UploadCloud} label="Used already" value={mediaSummary.used} />
       </section>
+      <Card className="mb-4 border-sky-500/20 bg-sky-500/5" data-testid="client-safe-media-intelligence">
+        <CardHeader><CardTitle className="text-sm">What media is easiest to use</CardTitle></CardHeader>
+        <CardContent className="space-y-2 text-sm text-muted-foreground">
+          <p>{buildClientSafeMediaSummary(mediaIntelligenceSeedData)}</p>
+          <p>{getNextBestMediaRequest(mediaIntelligenceSeedData)}</p>
+          <p className="text-xs">Short food-prep videos are useful if your plan includes video support. Nothing is processed automatically here.</p>
+        </CardContent>
+      </Card>
       <section className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
         <Card data-testid="card-media-detail"><CardHeader><CardTitle className="text-sm">Media list</CardTitle></CardHeader><CardContent className="space-y-3">{media.length > 0 ? media.map((asset) => <div key={asset.id} className="rounded-lg border border-border p-3"><p className="font-medium">{asset.displayName}</p><p className="mt-1 text-xs text-muted-foreground">{asset.bestUse ?? "Veroxa team review"}</p><p className="mt-1 text-xs text-primary">{asset.status.replaceAll("_", " ")}</p><ClientMediaTracker status={asset.status === "usable" ? "Ready" : asset.status === "prepared_for_post" ? "Scheduled" : asset.status === "needs_better_media" ? "Needs better media" : "Waiting for direction"} /></div>) : <p className="text-sm text-muted-foreground">Once your account is active, your restaurant media will appear here.</p>}</CardContent></Card>
         <Card><CardHeader><CardTitle className="text-sm flex items-center gap-2"><Info className="h-4 w-4 text-primary" />What Veroxa needs</CardTitle></CardHeader><CardContent className="space-y-2 text-sm text-muted-foreground"><p>Clear food photos, short videos, storefront or dining-room photos, and any timely event media.</p><p>Please confirm business-truth changes before Veroxa prepares public-facing updates.</p><p>For now, this page shows either sample data or a safe setup state.</p>{pageState.activityPreview.map((log) => <p key={log.id} className="rounded-lg border border-border p-2 text-xs">{log.summary}</p>)}</CardContent></Card>

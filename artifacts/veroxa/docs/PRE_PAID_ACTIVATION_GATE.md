@@ -122,3 +122,7 @@ Do not activate production auth, production database writes, storage uploads, li
 ## Restaurant Onboarding OS V1 gate marker
 
 Restaurant Onboarding OS V1 is allowed before paid activation only because it is deterministic, preview/manual, and non-persistent. It must remain no database writes, no storage uploads, no live integrations, no payments, no auto-posting, no live AI, no real client data, and no offer invention until a future approved production onboarding phase.
+
+## 2026-06-04 post-onboarding expansion gate note
+
+The new package boundary, request SLA, value proof/reach, and media intelligence layers are preview/manual-only. They do not satisfy paid activation by themselves and do not connect production auth, database/storage, live AI, platform APIs, payments, webhooks, cron jobs, background jobs, or auto-posting. Portal requests are the normal routine channel, and the 24-hour promise means answer/review, not guaranteed completion.

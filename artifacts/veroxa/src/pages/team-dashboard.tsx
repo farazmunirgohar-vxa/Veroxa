@@ -86,6 +86,9 @@ import { evaluateVeroxaProfitValidation } from "@/domain/profitValidation";
 import { buildManualExecutionPacks, evaluateManualExecutionLaunchGate } from "@/domain/manualExecution";
 import { getFirstClientOperatingSnapshots, getFirstClientOpsSummary } from "@/domain/firstClientOperatingSuite";
 import { getOnboardingQueueSummary, getRestaurantOnboardingSeedProfiles } from "@/domain/restaurantOnboarding";
+import { summarizePackageBoundary, packageBoundarySeedDecisions } from "@/domain/packageBoundary";
+import { summarizeRequestSla, requestSlaSeedData } from "@/domain/requestSla";
+import { buildTeamValueProofQueue, valueProofSeedSummaries } from "@/domain/valueProof";
 
 import { TeamSaasStatePanel } from "@/components/team/TeamSaasStatePanel";
 const pushPriorityTone: Record<OpportunityPriority, StatusBadgeTone> = {
@@ -158,6 +161,9 @@ export default function TeamDashboard() {
   const firstClientOpsSnapshots = getFirstClientOperatingSnapshots();
   const firstClientOpsSummary = getFirstClientOpsSummary(firstClientOpsSnapshots);
   const onboardingSummary = getOnboardingQueueSummary(getRestaurantOnboardingSeedProfiles());
+  const packageBoundarySummary = summarizePackageBoundary(packageBoundarySeedDecisions);
+  const requestSlaSummary = summarizeRequestSla(requestSlaSeedData);
+  const valueProofQueue = buildTeamValueProofQueue(valueProofSeedSummaries);
 
   // Today's suggested pushes — rule-based daily opportunities (team-only).
   const suggestedPushes = canUseFixtureData
@@ -325,6 +331,31 @@ export default function TeamDashboard() {
         description="A calmer Today View for review, scheduling, client requests, blockers, approvals, and reports."
         testId="header-team-dashboard"
       />
+
+
+      <div className="mb-4 grid gap-4 lg:grid-cols-3">
+        <Card className="border-amber-500/20 bg-amber-500/5" data-testid="card-dashboard-package-boundary">
+          <CardHeader className="pb-2"><CardTitle className="text-sm">Package boundary</CardTitle></CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            <p className="text-2xl font-semibold text-foreground">{packageBoundarySummary.upgradeRouted}</p>
+            <p>Upgrade-routed requests. Included work proceeds to review; out-of-tier work is not absorbed manually.</p>
+          </CardContent>
+        </Card>
+        <Card className="border-primary/20 bg-primary/5" data-testid="card-dashboard-request-sla">
+          <CardHeader className="pb-2"><CardTitle className="text-sm">24-hour request SLA</CardTitle></CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            <p className="text-2xl font-semibold text-foreground">{requestSlaSummary.needsResponse}</p>
+            <p>Portal requests needing an answer/review. This does not promise completion within 24 hours.</p>
+          </CardContent>
+        </Card>
+        <Card className="border-sky-500/20 bg-sky-500/5" data-testid="card-dashboard-value-proof-reach">
+          <CardHeader className="pb-2"><CardTitle className="text-sm">Value proof / reach</CardTitle></CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            <p className="text-2xl font-semibold text-foreground">{valueProofQueue[0]?.status.replaceAll("_", " ") ?? "not enough data"}</p>
+            <p>Reach and customer-action signals stay separated for internal review.</p>
+          </CardContent>
+        </Card>
+      </div>
 
       <Card className="mb-4 border-primary/25 bg-primary/5" data-testid="card-onboarding-os-summary">
         <CardHeader className="pb-2">
