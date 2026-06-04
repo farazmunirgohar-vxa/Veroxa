@@ -3,7 +3,8 @@ export type ClientPortalSection =
   | "media"
   | "updates"
   | "requests"
-  | "reports";
+  | "reports"
+  | "onboarding";
 
 const CLIENT_PORTAL_BASE = "/client";
 const CLIENT_DEMO_BASE = "/demo/client";

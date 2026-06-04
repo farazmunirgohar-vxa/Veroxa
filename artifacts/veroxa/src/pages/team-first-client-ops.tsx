@@ -22,6 +22,7 @@ import {
   type FirstClientOperatingSnapshot,
   type ServiceHealthStatus,
 } from "@/domain/firstClientOperatingSuite";
+import { getOnboardingStatusLabel, getRestaurantOnboardingSeedProfiles } from "@/domain/restaurantOnboarding";
 
 const safetyItems = [
   "Pre-live mode",
@@ -87,6 +88,7 @@ export default function TeamFirstClientOps() {
   const teamMonthly = buildTeamMonthlyReportDraft(selected);
   const clientMonthly = buildClientSafeMonthlyReportDraft(selected);
   const handoff = buildClientHandoffPack(selected);
+  const onboardingProfiles = getRestaurantOnboardingSeedProfiles();
   const onboardingCompletion = Math.round((selected.onboardingStatus.completedItems.length / Math.max(1, selected.onboardingStatus.completedItems.length + selected.onboardingStatus.missingItems.length)) * 100);
 
   return (
@@ -98,6 +100,23 @@ export default function TeamFirstClientOps() {
       <Card className="mb-4 border-primary/20 bg-primary/5" data-testid="first-client-ops-safety-strip">
         <CardContent className="flex flex-wrap gap-2 p-3">
           {safetyItems.map((item) => <StatusBadge key={item} tone={item === "Team review required" ? "warning" : "info"}>{item}</StatusBadge>)}
+        </CardContent>
+      </Card>
+
+
+      <Card className="mb-4 border-primary/20 bg-primary/5" data-testid="first-client-ops-onboarding-readiness">
+        <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-sm"><ClipboardCheck className="h-4 w-4 text-primary" />Restaurant onboarding readiness</CardTitle></CardHeader>
+        <CardContent className="grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
+          <div className="grid gap-2 md:grid-cols-5">
+            {onboardingProfiles.map((profile) => (
+              <div key={profile.clientId} className="rounded-lg border border-border bg-background/40 p-3 text-xs text-muted-foreground">
+                <p className="font-medium text-foreground">{profile.restaurantName}</p>
+                <p className="mt-1">{getOnboardingStatusLabel(profile.overallStatus)}</p>
+                <p className="mt-1">{profile.blockers[0] ?? "No onboarding blocker recorded"}</p>
+              </div>
+            ))}
+          </div>
+          <Link href="/team/onboarding" className="inline-flex items-center gap-2 text-sm text-primary hover:underline">Open onboarding queue <ArrowRight className="h-3 w-3" /></Link>
         </CardContent>
       </Card>
 

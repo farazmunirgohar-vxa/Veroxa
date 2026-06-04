@@ -118,3 +118,7 @@ Current review credentials:
 ## Blocked until this gate passes
 
 Do not activate production auth, production database writes, storage uploads, live OpenAI calls, Google APIs, Meta/TikTok APIs, payments, webhooks, cron jobs, background jobs, automated publishing, or paid monitoring tiers until this gate passes and Faraz explicitly approves the relevant activation.
+
+## Restaurant Onboarding OS V1 gate marker
+
+Restaurant Onboarding OS V1 is allowed before paid activation only because it is deterministic, preview/manual, and non-persistent. It must remain no database writes, no storage uploads, no live integrations, no payments, no auto-posting, no live AI, no real client data, and no offer invention until a future approved production onboarding phase.

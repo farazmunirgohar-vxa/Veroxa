@@ -35,6 +35,7 @@ import {
 } from "@/domain/ruleBasedAutomation";
 import { buildManualExecutionPacks, getExecutionPackNextAction, getExecutionPackReadinessLabel } from "@/domain/manualExecution";
 import { getFirstClientOpsTopActions } from "@/domain/firstClientOperatingSuite";
+import { getRestaurantOnboardingSeedProfiles, getTeamNextOnboardingAction, getTeamOnboardingPriority } from "@/domain/restaurantOnboarding";
 
 import { TeamSaasStatePanel } from "@/components/team/TeamSaasStatePanel";
 type LocalDecision =
@@ -132,6 +133,9 @@ export default function TeamWorkQueue() {
   });
   const manualExecutionPacks = buildManualExecutionPacks().slice(0, 3);
   const firstClientOpsActions = getFirstClientOpsTopActions(3);
+  const onboardingActions = getRestaurantOnboardingSeedProfiles()
+    .sort((a, b) => getTeamOnboardingPriority(b) - getTeamOnboardingPriority(a))
+    .slice(0, 3);
 
   const alerts = buildTeamAlerts({
     restaurantName: primaryLifecycle
@@ -215,6 +219,29 @@ export default function TeamWorkQueue() {
         message="Demo only — button choices stay on this page. No database write, publishing action, or client message is sent."
         testId="banner-work-queue"
       />
+
+
+      <Card className="mb-4 border-primary/20 bg-primary/5" data-testid="onboarding-next-actions">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-sm">
+            <ListChecks className="h-4 w-4 text-primary" />
+            Top onboarding next actions
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
+          <div className="grid gap-2 md:grid-cols-3">
+            {onboardingActions.map((profile) => (
+              <div key={profile.clientId} className="rounded-lg border border-border bg-background/40 p-3 text-xs text-muted-foreground">
+                <p className="font-medium text-foreground">{profile.restaurantName}</p>
+                <p className="mt-1">{getTeamNextOnboardingAction(profile)}</p>
+              </div>
+            ))}
+          </div>
+          <Link href="/team/onboarding" className="inline-flex items-center gap-2 text-sm text-primary hover:underline">
+            Open onboarding queue <ArrowRight className="h-3 w-3" />
+          </Link>
+        </CardContent>
+      </Card>
 
       <Card className="mb-4 border-emerald-500/20 bg-emerald-500/5" data-testid="first-client-ops-next-actions">
         <CardHeader className="pb-2">

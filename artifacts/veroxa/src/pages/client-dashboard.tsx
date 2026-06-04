@@ -14,6 +14,7 @@ import { useClientSaasPortalState } from "@/hooks/useClientSaasPortalState";
 import { getAccountActivationBadgeTone } from "@/domain/saas/accountActivation";
 import { getClientPortalDataModeNotice, getClientPortalReadinessSummary } from "@/domain/saas/clientPortalState";
 import { buildClientSafeWeeklyUpdate, getFirstClientOperatingSnapshots } from "@/domain/firstClientOperatingSuite";
+import { getClientOnboardingPreviewProfile, getClientOnboardingStatusLabel, getOnboardingProgress } from "@/domain/restaurantOnboarding";
 
 const previewPrinciples = [
   "This preview shows how Veroxa organizes media, requests, updates, and reports.",
@@ -27,6 +28,9 @@ export default function ClientDashboard() {
   const mediaHref = getClientPortalHref("media", mode.isPublicDemoRoute);
   const requestsHref = getClientPortalHref("requests", mode.isPublicDemoRoute);
   const reportsHref = getClientPortalHref("reports", mode.isPublicDemoRoute);
+  const onboardingHref = getClientPortalHref("onboarding", mode.isPublicDemoRoute);
+  const onboardingProfile = getClientOnboardingPreviewProfile();
+  const onboardingProgress = getOnboardingProgress(onboardingProfile);
   const clientSafeOpsPreview = buildClientSafeWeeklyUpdate(getFirstClientOperatingSnapshots()[0]);
 
   const dashboardTitle = mode.isPublicDemoRoute
@@ -76,6 +80,18 @@ export default function ClientDashboard() {
             <p className="text-xs text-muted-foreground">{getClientPortalDataModeNotice(pageState)}</p>
           </div>
           <StatusBadge tone={getAccountActivationBadgeTone(pageState.accountActivation)}>{pageState.accountActivation.clientVisibleStatus}</StatusBadge>
+        </CardContent>
+      </Card>
+
+
+      <Card className="mb-4 border-primary/20 bg-background/70">
+        <CardContent className="grid gap-4 p-4 md:grid-cols-[1fr_auto] md:items-center">
+          <div>
+            <p className="text-sm font-semibold text-foreground">Restaurant onboarding</p>
+            <p className="mt-1 text-xs text-muted-foreground">{getClientOnboardingStatusLabel(onboardingProfile)} · {onboardingProgress}% setup progress · {onboardingProfile.nextClientAction}</p>
+            <p className="mt-2 text-xs text-muted-foreground">Nothing goes live without Veroxa team review.</p>
+          </div>
+          <Link href={onboardingHref}><Button variant="outline" size="sm">View onboarding</Button></Link>
         </CardContent>
       </Card>
 

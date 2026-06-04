@@ -16,13 +16,16 @@ const requiredRoutes = [
   "/demo/client/updates",
   "/demo/client/requests",
   "/demo/client/reports",
+  "/demo/client/onboarding",
   "/login",
   "/client/dashboard",
   "/client/media",
   "/client/updates",
   "/client/requests",
   "/client/reports",
+  "/client/onboarding",
   "/team/dashboard",
+  "/team/onboarding",
   "/team/upload-inbox",
   "/team/work-queue",
   "/team/direction-queue",
@@ -37,6 +40,7 @@ const requiredRoutes = [
 
 const teamRoutes = [
   "dashboard",
+  "onboarding",
   "upload-inbox",
   "work-queue",
   "direction-queue",
@@ -101,7 +105,7 @@ for (const route of teamRoutes) {
   }
 }
 
-const clientRoutes = ["dashboard", "media", "updates", "requests", "reports"];
+const clientRoutes = ["dashboard", "onboarding", "media", "updates", "requests", "reports"];
 for (const route of clientRoutes) {
   const block =
     app.match(
@@ -145,6 +149,7 @@ for (const file of [
   "client-updates.tsx",
   "client-requests.tsx",
   "client-reports.tsx",
+  "client-onboarding.tsx",
 ]) {
   const text = readFileSync(
     join(root, `artifacts/veroxa/src/pages/${file}`),

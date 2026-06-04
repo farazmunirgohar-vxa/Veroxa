@@ -32,6 +32,7 @@ const ClientMedia = lazy(() => import("@/pages/client-media"));
 const ClientRequests = lazy(() => import("@/pages/client-requests"));
 const ClientUpdates = lazy(() => import("@/pages/client-updates"));
 const ClientReports = lazy(() => import("@/pages/client-reports"));
+const ClientOnboarding = lazy(() => import("@/pages/client-onboarding"));
 
 // Team Portal (real Veroxa OS review — /team/*, login required)
 const TeamDashboard = lazy(() => import("@/pages/team-dashboard"));
@@ -45,6 +46,7 @@ const TeamManualExecution = lazy(() => import("@/pages/team-manual-execution"));
 const TeamDirectionQueue = lazy(() => import("@/pages/team-direction-queue"));
 const TeamReportQueue = lazy(() => import("@/pages/team-report-queue"));
 const TeamAuditLeads = lazy(() => import("@/pages/team-audit-leads"));
+const TeamOnboarding = lazy(() => import("@/pages/team-onboarding"));
 
 const queryClient = new QueryClient();
 
@@ -70,6 +72,7 @@ function Router() {
         <Route path="/demo/client/updates" component={ClientUpdates} />
         <Route path="/demo/client/requests" component={ClientRequests} />
         <Route path="/demo/client/reports" component={ClientReports} />
+        <Route path="/demo/client/onboarding" component={ClientOnboarding} />
 
         {/* ── Client Portal — login required in placeholder and future real auth ── */}
         <Route path="/client/dashboard">
@@ -77,6 +80,15 @@ function Router() {
             <ClientPortalGuard>
               <RealPortalDataBoundary portal="client">
                 <ClientDashboard />
+              </RealPortalDataBoundary>
+            </ClientPortalGuard>
+          )}
+        </Route>
+        <Route path="/client/onboarding">
+          {() => (
+            <ClientPortalGuard>
+              <RealPortalDataBoundary portal="client">
+                <ClientOnboarding />
               </RealPortalDataBoundary>
             </ClientPortalGuard>
           )}
@@ -124,6 +136,15 @@ function Router() {
             <InternalDemoGuard role="team">
               <RealPortalDataBoundary portal="team">
                 <TeamDashboard />
+              </RealPortalDataBoundary>
+            </InternalDemoGuard>
+          )}
+        </Route>
+        <Route path="/team/onboarding">
+          {() => (
+            <InternalDemoGuard role="team">
+              <RealPortalDataBoundary portal="team">
+                <TeamOnboarding />
               </RealPortalDataBoundary>
             </InternalDemoGuard>
           )}
