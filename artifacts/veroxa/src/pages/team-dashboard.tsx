@@ -87,7 +87,7 @@ import { buildManualExecutionPacks, evaluateManualExecutionLaunchGate } from "@/
 import { getFirstClientOperatingSnapshots, getFirstClientOpsSummary } from "@/domain/firstClientOperatingSuite";
 import { getOnboardingQueueSummary, getRestaurantOnboardingSeedProfiles } from "@/domain/restaurantOnboarding";
 import { summarizePackageBoundary, packageBoundarySeedDecisions } from "@/domain/packageBoundary";
-import { summarizeRequestSla, requestSlaSeedData } from "@/domain/requestSla";
+import { summarizeRequestSla, getRequestSlaSeedData } from "@/domain/requestSla";
 import { buildTeamValueProofQueue, valueProofSeedSummaries } from "@/domain/valueProof";
 
 import { TeamSaasStatePanel } from "@/components/team/TeamSaasStatePanel";
@@ -125,6 +125,7 @@ export default function TeamDashboard() {
   });
   const canUseFixtureData =
     portalDataMode.allowDemoFixtures || portalDataMode.isLiveDataConnected;
+  const requestSlaSeedData = getRequestSlaSeedData();
   const todayQueue = canUseFixtureData
     ? getTeamTodayQueueItems(demoClientTeamWorkflow, 6)
     : [];

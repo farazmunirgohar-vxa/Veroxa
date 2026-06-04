@@ -9,12 +9,13 @@ import { StatusBadge } from "@/components/common/StatusBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientSaasPortalState } from "@/hooks/useClientSaasPortalState";
+import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary";
 import { getClientSafeEmptyStateForPage } from "@/domain/saas/clientPortalState";
 import { packageBoundarySeedDecisions } from "@/domain/packageBoundary";
 import {
   buildClientRequestWindowMessage,
   evaluateRequestSla,
-  requestSlaSeedData,
+  getRequestSlaSeedData,
 } from "@/domain/requestSla";
 
 const clientSafeBoundaryCopy = [
@@ -24,20 +25,44 @@ const clientSafeBoundaryCopy = [
 ];
 
 export default function ClientRequests() {
+  const mode = useRealPortalDataMode();
   const { pageState, requestSummary } = useClientSaasPortalState();
+  const canUseSeedRequests = mode.isPublicDemoRoute;
   const grouped = pageState.clientRequests.reduce<
     Record<string, typeof pageState.clientRequests>
   >((acc, request) => {
     (acc[request.status] ??= []).push(request);
     return acc;
   }, {});
-  const requestRows = requestSlaSeedData.map((request) => ({
-    request,
-    sla: evaluateRequestSla(request),
-    boundary: packageBoundarySeedDecisions.find(
-      (decision) => decision.requestId === request.id,
-    ),
-  }));
+  const requestRows = canUseSeedRequests
+    ? getRequestSlaSeedData().map((request) => ({
+        request,
+        sla: evaluateRequestSla(request),
+        boundary: packageBoundarySeedDecisions.find(
+          (decision) => decision.requestId === request.id,
+        ),
+      }))
+    : [];
+  const metrics = canUseSeedRequests
+    ? {
+        total: requestRows.length,
+        inReview: requestRows.filter(
+          (row) => row.request.status === "in_review",
+        ).length,
+        needsClientInput: requestRows.filter(
+          (row) => row.request.needsClientConfirmation,
+        ).length,
+        upgradeRoute: requestRows.filter(
+          (row) => row.boundary?.eligibilityStatus === "needs_upgrade",
+        ).length,
+      }
+    : {
+        total: requestSummary.total,
+        inReview: grouped.in_review?.length ?? 0,
+        needsClientInput: requestSummary.needsClientConfirmation,
+        upgradeRoute: 0,
+      };
+  const showSafeEmptyState = !pageState.isDemoData && !pageState.canShowRealData;
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
       <RealPortalReviewNotice />
@@ -46,7 +71,7 @@ export default function ClientRequests() {
         description="Submit routine requests in the Veroxa portal. Veroxa responds within 24 hours with a review or next step."
         testId="header-client-requests"
       />
-      {!pageState.isDemoData && !pageState.canShowRealData ? (
+      {showSafeEmptyState ? (
         <SafePortalEmptyCard
           title="Requests in setup"
           body={getClientSafeEmptyStateForPage("requests", pageState)}
@@ -56,35 +81,16 @@ export default function ClientRequests() {
         Received In Review Handled Waiting for you Response within 24 hours
         Upgrade required Not supported
       </div>
-      <section className="grid gap-4 md:grid-cols-4 mb-4">
-        <Metric
-          label="Total"
-          value={requestSummary.total || requestRows.length}
-        />
-        <Metric
-          label="In review"
-          value={
-            requestRows.filter((row) => row.request.status === "in_review")
-              .length
-          }
-        />
-        <Metric
-          label="Needs your input"
-          value={
-            requestRows.filter((row) => row.request.needsClientConfirmation)
-              .length
-          }
-        />
-        <Metric
-          label="Upgrade route"
-          value={
-            requestRows.filter(
-              (row) => row.boundary?.eligibilityStatus === "needs_upgrade",
-            ).length
-          }
-        />
-      </section>
-      <section className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+      {showSafeEmptyState ? null : (
+        <section className="grid gap-4 md:grid-cols-4 mb-4">
+          <Metric label="Total" value={metrics.total} />
+          <Metric label="In review" value={metrics.inReview} />
+          <Metric label="Needs your input" value={metrics.needsClientInput} />
+          <Metric label="Upgrade route" value={metrics.upgradeRoute} />
+        </section>
+      )}
+      {showSafeEmptyState ? null : (
+        <section className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
         <Card>
           <CardHeader>
             <CardTitle className="text-sm flex items-center gap-2">
@@ -188,6 +194,7 @@ export default function ClientRequests() {
           </CardContent>
         </Card>
       </section>
+      )}
     </PortalLayout>
   );
 }

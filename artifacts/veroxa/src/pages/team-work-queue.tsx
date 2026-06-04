@@ -37,7 +37,7 @@ import { buildManualExecutionPacks, getExecutionPackNextAction, getExecutionPack
 import { getFirstClientOpsTopActions } from "@/domain/firstClientOperatingSuite";
 import { getRestaurantOnboardingSeedProfiles, getTeamNextOnboardingAction, getTeamOnboardingPriority } from "@/domain/restaurantOnboarding";
 import { getPackageBoundaryQueue, packageBoundarySeedDecisions, summarizePackageBoundary } from "@/domain/packageBoundary";
-import { buildTeamSlaQueue, requestSlaSeedData, summarizeRequestSla } from "@/domain/requestSla";
+import { buildTeamSlaQueue, getRequestSlaSeedData, summarizeRequestSla } from "@/domain/requestSla";
 import { buildTeamMediaSummary, mediaIntelligenceSeedData } from "@/domain/mediaIntelligence";
 
 import { TeamSaasStatePanel } from "@/components/team/TeamSaasStatePanel";
@@ -121,6 +121,7 @@ export default function TeamWorkQueue() {
   const portalDataMode = useRealPortalDataMode();
   const canUseFixtureData =
     portalDataMode.allowDemoFixtures || portalDataMode.isLiveDataConnected;
+  const requestSlaSeedData = getRequestSlaSeedData();
 
   const [decisions, setDecisions] = useState<Record<string, LocalDecision>>({});
   const groups = groupWorkflowItemsForTeam(demoClientTeamWorkflow);
