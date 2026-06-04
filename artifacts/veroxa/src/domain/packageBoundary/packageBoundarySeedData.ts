@@ -8,6 +8,8 @@ export const packageBoundarySeedRequests: PackageBoundaryRequestInput[] = [
   { requestId: "req-tiktok", clientId: "demo-c", currentPlan: "growth", title: "TikTok food prep", message: "Can we use this prep video for TikTok this week?" },
   { requestId: "req-ad", clientId: "demo-c", currentPlan: "growth", title: "Manage ads", message: "Can Veroxa manage paid ads for this campaign?" },
   { requestId: "req-daily", clientId: "demo-e", currentPlan: "premium", title: "Daily posting", message: "Can we post every day if we send usable media?" },
+  { requestId: "req-basic-website", clientId: "demo-a", currentPlan: "complete_online_presence", title: "New basic website", message: "Can Veroxa prepare a simple basic website?" },
+  { requestId: "req-social", clientId: "demo-a", currentPlan: "complete_online_presence", title: "Missing social profile", message: "Can Veroxa set up our missing Instagram profile?" },
   { requestId: "req-comment", clientId: "demo-b", currentPlan: "complete_online_presence", title: "Reply to a complaint", message: "Please reply to this customer complaint in our inbox." },
   { requestId: "req-offer", clientId: "demo-d", currentPlan: "complete_online_presence", title: "Offer copy", message: "We already have an offer and need copy after we confirm details." },
 ];

@@ -1,6 +1,6 @@
 import { buildComingSoonMessage, buildIncludedMessage, buildNotSupportedMessage } from "./upgradeMessageBuilder";
 import { classifyClientRequest } from "./requestClassifier";
-import { comingSoonNotIncludedTypes, customerServiceBlockedTypes, getRequiredPlan, isRequestIncludedInPlan, offerConfirmationTypes, websiteBlockedTypes, normalizePlan } from "./planCapabilities";
+import { addOnAvailableTypes, comingSoonNotIncludedTypes, customerServiceBlockedTypes, getAddOnPrice, getRequiredPlan, isRequestIncludedInPlan, offerConfirmationTypes, websiteBlockedTypes, normalizePlan } from "./planCapabilities";
 import type { PackageBoundaryDecision, PackageBoundaryRequestInput } from "./types";
 
 export function decidePackageBoundary(input: PackageBoundaryRequestInput): PackageBoundaryDecision {
@@ -50,6 +50,27 @@ export function decidePackageBoundary(input: PackageBoundaryRequestInput): Packa
     blockedReason: "offer_confirmation_required",
     createdAt,
   };
+
+  if (addOnAvailableTypes.includes(requestType)) {
+    const addOn = getAddOnPrice(requestType);
+    return {
+      requestId: input.requestId,
+      clientId: input.clientId,
+      currentPlan,
+      requestType,
+      eligibilityStatus: "add_on_available",
+      includedInPlan: false,
+      clientSafeMessage: requestType === "new_basic_website_request"
+        ? "A new basic website is available as a $95 add-on. Veroxa will review scope first; no checkout or live website work is started here."
+        : "Missing social profile creation is available as a $45/profile add-on for Facebook or Instagram. Yelp setup is coming soon and no live platform account creation happens here.",
+      teamReason: "Request maps to a launch add-on, not an included service or upgrade path.",
+      nextAction: "Confirm add-on scope manually; do not create checkout, payment, or live platform work.",
+      addOnPrice: addOn?.price,
+      addOnDisplayPrice: addOn?.displayPrice,
+      blockedReason: "add_on_available",
+      createdAt,
+    };
+  }
 
   if (comingSoonNotIncludedTypes.includes(requestType)) return {
     requestId: input.requestId,

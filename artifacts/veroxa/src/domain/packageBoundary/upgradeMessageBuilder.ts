@@ -5,6 +5,7 @@ export function buildIncludedMessage(): string {
 }
 
 export function buildComingSoonMessage(type: ClientRequestType): string {
+  if (type === "yelp_profile_alignment") return "Yelp is coming soon and is not included in the current launch package.";
   if (type === "tiktok_request" || type === "reels_request" || type === "video_content_request") return "TikTok and Reels support are coming soon and are not included in the current launch package.";
   if (type === "ad_management_request" || type === "ad_planning_request") return "Ads management is coming soon and is not included in the current launch package.";
   if (type === "daily_posting_request" || type === "premium_daily_posting_request") return "Daily posting is coming soon and is not included in the current Complete Online Presence package.";
@@ -16,6 +17,6 @@ export function buildUpgradeMessage(_currentPlan: PlanId, _requiredPlan: PlanId,
 }
 
 export function buildNotSupportedMessage(type: ClientRequestType): string {
-  if (type === "full_website_redesign" || type === "custom_website_build" || type === "technical_hosting_or_domain_support") return "Full website development is not included. Veroxa can help with basic website alignment if access is provided.";
+  if (type === "full_website_redesign" || type === "custom_website_build" || type === "technical_hosting_or_domain_support") return "Full/custom website development and technical website support are not included. Veroxa can help with website alignment if access is provided; a new basic website is available as a $95 add-on.";
   return "Veroxa does not handle guest conversations, comments, DMs, refunds, complaints, or order questions at launch.";
 }

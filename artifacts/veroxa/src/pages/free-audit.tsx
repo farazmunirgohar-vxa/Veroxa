@@ -445,10 +445,10 @@ export default function FreeAudit() {
             Restaurant Online Presence Audit
           </h1>
           <p className="text-muted-foreground max-w-3xl">
-            Share your restaurant details and generate a review-mode audit preview. Veroxa reviews Google Business Profile, Google Maps/local visibility, Yelp presence, website alignment, local SEO/search visibility basics, Facebook, Instagram, menu/order/contact link clarity, media quality, and whether Complete Online Presence — $495/month is a fit.
+            Share your restaurant details and generate a review-mode audit preview. Veroxa reviews Google Business Profile, Google Maps/local visibility, local SEO/search visibility basics, existing website alignment, Facebook, Instagram, media quality, menu/order/contact link clarity, and whether Complete Online Presence — $495/month is a fit. Yelp is a coming-soon/future review area, not included in the launch offer.
           </p>
           <p className="text-[12px] text-muted-foreground/80 max-w-3xl mt-2 italic">
-            This pre-live audit uses the information you provide and preview matching only. Live third-party lookup is not part of this preview yet, and recommendations are not guarantees. TikTok, Reels/video, and ads are coming soon and are not included in the launch package.
+            This pre-live audit uses the information you provide and preview matching only. Live third-party lookup is not part of this preview yet, and recommendations are not guarantees. Yelp, TikTok, Reels/video, and ads are coming soon and are not included in the launch package.
           </p>
         </div>
 
@@ -466,8 +466,7 @@ export default function FreeAudit() {
                 What Veroxa reviews
               </p>
               <p className="text-[12px] text-muted-foreground">
-                Google Business Profile links, website/menu paths, social
-                profiles, media readiness, goals, and consistency signals — the
+                Google Business Profile, Google Maps/local visibility, local SEO/search basics, existing website/menu/contact paths, Facebook, Instagram, media readiness, goals, and consistency signals — the
                 places customers usually check before deciding.
               </p>
             </CardContent>
@@ -482,8 +481,7 @@ export default function FreeAudit() {
               </p>
               <p className="text-[12px] text-muted-foreground">
                 A readiness report, your top daily customer opportunities, a
-                simple 30-day plan, and the Veroxa service area most likely to
-                fit.
+                simple 30-day plan, and whether Complete Online Presence — $495/month fits, needs manual review, or is not a fit yet.
               </p>
             </CardContent>
           </Card>
@@ -646,7 +644,7 @@ export default function FreeAudit() {
                       This review-mode audit preview uses deterministic local/demo lookup only. Try a shorter name, alternate spelling, city/state, or cuisine. If no confident match exists, continue manually — Veroxa can still review it.
                     </p>
                     <p className="text-[12px] text-muted-foreground/80 mt-1">
-                      Live third-party lookup is not part of this preview yet. Some restaurants appear under a different listing name, so a weak or missing match can still be a discoverability signal and potential Veroxa opportunity. Audit recommendations are not guarantees; TikTok, Reels/video, and ads are coming soon and are not included in the launch package.
+                      Live third-party lookup is not part of this preview yet. Some restaurants appear under a different listing name, so a weak or missing match can still be a discoverability signal and potential Veroxa opportunity. Audit recommendations are not guarantees; Yelp, TikTok, Reels/video, and ads are coming soon and are not included in the launch package.
                     </p>
                     <Button
                       type="button"
@@ -895,7 +893,7 @@ export default function FreeAudit() {
                 </p>
                 <p className="text-[11px] text-muted-foreground/80 mb-2">
                   A little context helps Veroxa understand whether you need
-                  Google visibility, Yelp/website alignment, Facebook/Instagram consistency, or whether Complete Online Presence needs manual review.
+                  Google visibility, website alignment, Facebook/Instagram consistency, menu/order/contact link clarity, or whether Complete Online Presence needs manual review. Yelp is coming soon.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <Field
@@ -940,8 +938,7 @@ export default function FreeAudit() {
                       What Veroxa reviews next
                     </p>
                     <p>
-                      Google/local visibility, social consistency, usable media,
-                      media readiness, and whether TikTok/Reels/Ads should stay parked as coming soon.
+                      Google/local visibility, local SEO basics, website alignment, Facebook/Instagram consistency, usable media, menu/order/contact link clarity, and whether Yelp/TikTok/Reels/Ads should stay parked as coming soon.
                     </p>
                   </div>
                 </div>
@@ -1433,7 +1430,7 @@ export default function FreeAudit() {
               <CardContent>
                 <p className="text-sm text-foreground/90 mb-3">
                   Veroxa can manually review this audit with you and explain
-                  which service area best fits the priority opportunities above.
+                  whether Complete Online Presence — $495/month fits, needs manual review, or is not a fit yet.
                 </p>
                 {walkthroughSaved ? (
                   <div

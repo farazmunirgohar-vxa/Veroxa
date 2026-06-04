@@ -2,19 +2,22 @@ export type PlanId = "complete_online_presence" | "starter" | "growth" | "premiu
 export type ClientRequestType =
   | "google_profile_update"
   | "maps_visibility_update"
-  | "yelp_profile_alignment"
-  | "website_alignment"
   | "seo_search_visibility_basics"
+  | "website_alignment"
   | "facebook_picture_post"
   | "instagram_picture_post"
   | "picture_caption"
   | "media_guidance"
+  | "weekly_update"
   | "monthly_report"
   | "monthly_report_request"
   | "portal_request_review"
   | "up_to_3_posts_per_week_media_dependent"
   | "business_info_correction"
   | "link_menu_contact_update"
+  | "new_basic_website_request"
+  | "missing_social_profile_creation"
+  | "yelp_profile_alignment"
   | "tiktok_request"
   | "reels_request"
   | "video_content_request"
@@ -34,6 +37,7 @@ export type ClientRequestType =
   | "unknown_request";
 export type RequestEligibilityStatus =
   | "included"
+  | "add_on_available"
   | "coming_soon_not_included"
   | "needs_confirmation"
   | "not_supported_at_launch"
@@ -50,6 +54,8 @@ export interface PackageBoundaryDecision {
   clientSafeMessage: string;
   teamReason: string;
   nextAction: string;
+  addOnPrice?: number;
+  addOnDisplayPrice?: string;
   upgradePath?: string;
   blockedReason?: string;
   createdAt: string;

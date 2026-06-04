@@ -20,10 +20,10 @@ export function getPlatformProfileChecklist(profile: RestaurantOnboardingProfile
     platformItem("orderingUrl", "Order link", "Ordering path if available.", profile.orderingUrl, ["starter", "growth", "premium"], p),
     platformItem("reservationUrl", "Reservation link", "Reservation path if the restaurant uses one.", profile.reservationUrl, [], p),
     platformItem("cateringUrl", "Catering link", "Catering or large-order path if available.", profile.cateringUrl, [], p),
-    platformItem("facebookUrl", "Facebook", "Facebook page for Starter and above.", profile.facebookUrl, ["starter", "growth", "premium"], p),
+    platformItem("facebookUrl", "Facebook", "Facebook page for Complete Online Presence.", profile.facebookUrl, ["starter", "growth", "premium"], p),
     platformItem("instagramUrl", "Instagram", "Instagram profile for media and content review.", profile.instagramUrl, ["starter", "growth", "premium"], p),
-    platformItem("tiktokUrl", "TikTok", "TikTok profile if Growth or Premium includes short-video support.", profile.tiktokUrl, ["growth", "premium"], p),
-    ({ id: "premiumAdsReadiness", label: "Premium ads readiness", description: "Premium-only ad approval and readiness placeholder; no ad systems are connected.", status: p === "premium" ? "review" as const : "not_needed" as const, clientLabel: p === "premium" ? "Veroxa team review" : "Not needed right now", teamLabel: p === "premium" ? "Needs verification" : "Not needed for this package", requiredFor: ["premium" as const], value: p === "premium" ? "Readiness assessment required" : "" } satisfies OnboardingChecklistItem),
+    platformItem("tiktokUrl", "TikTok", "TikTok is coming soon and not required for the launch offer.", profile.tiktokUrl, ["growth", "premium"], p),
+    ({ id: "premiumAdsReadiness", label: "Premium ads readiness", description: "Ads are coming soon; no ad systems are connected.", status: p === "premium" ? "review" as const : "not_needed" as const, clientLabel: p === "premium" ? "Veroxa team review" : "Not needed right now", teamLabel: p === "premium" ? "Needs verification" : "Not needed for this package", requiredFor: ["premium" as const], value: p === "premium" ? "Readiness assessment required" : "" } satisfies OnboardingChecklistItem),
   ].filter((check) => check.id !== "tiktokUrl" || needsTikTok(p) || hasText(profile.tiktokUrl));
 }
 

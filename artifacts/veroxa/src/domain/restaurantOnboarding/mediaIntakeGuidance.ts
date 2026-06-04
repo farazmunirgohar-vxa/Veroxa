@@ -4,7 +4,7 @@ import { packageRequiresGrowthMedia } from "./packageOnboardingRules";
 const mediaCategories = [
   ["food photos", "Food photos", "Clear photos of current menu items."],
   ["best seller photos", "Best seller photos", "Close-up photos of the items customers already choose most."],
-  ["short food prep videos", "Short food prep videos", "Simple short clips for Growth/Premium video paths."],
+  ["short food prep videos", "Short food prep videos", "Simple short clips for team-internal coming-soon video paths."],
   ["storefront photo", "Storefront photo", "Outside photo to help Veroxa orient local presence work."],
   ["menu photo/link", "Menu photo/link", "Current menu photo or menu link."],
   ["staff/team optional", "Staff/team optional", "Only if the restaurant is comfortable sharing."],
@@ -35,15 +35,15 @@ export function getNextMediaNeeded(profile: RestaurantOnboardingProfile): string
 
 export function getMediaQualityGuidance(profile: RestaurantOnboardingProfile): string[] {
   const guidance = ["Please send clear, current food photos with natural light when possible.", "Close-up angles of best-selling items usually work best.", "Avoid sending blurry photos, screenshots, or photos with private customer moments."];
-  if (packageRequiresGrowthMedia(profile.packageId)) guidance.push("For Growth/Premium, short food prep videos help Veroxa prepare a stronger Reels/TikTok path.");
+  if (packageRequiresGrowthMedia(profile.packageId)) guidance.push("Short food prep videos help Veroxa prepare team-internal future video directions; Reels/TikTok are coming soon and not included at launch.");
   if (profile.packageId === "premium") guidance.push("Premium ad planning stays on hold until readiness and client approval details are reviewed.");
   return guidance;
 }
 
 export function getPackageMediaExpectations(profile: RestaurantOnboardingProfile): string {
   if (profile.packageId === "starter") return "Starter needs a usable picture-based media batch before Veroxa prepares the first content rhythm.";
-  if (profile.packageId === "growth") return "Growth works best with current photos plus simple short videos for Reels/TikTok support.";
-  return "Premium needs strong current media plus readiness review before any ad planning is prepared.";
+  if (profile.packageId === "growth") return "Complete Online Presence works best with current photos; short videos may inform team-internal future Reels/TikTok directions only.";
+  return "Complete Online Presence needs strong current media; ad planning is coming soon and remains parked.";
 }
 
 export function getMediaRequestDraft(profile: RestaurantOnboardingProfile): string {

@@ -15,7 +15,7 @@ Public flow is **Home -> Audit -> Login**. Do not promote public demo routes, Cl
 - Google Business Profile support
 - Google Maps/local visibility basics
 - Local SEO/search visibility basics
-- Yelp business profile alignment/refinement
+- Yelp coming soon / future profile alignment (not included at launch)
 - Basic website alignment/refinement if access is provided
 - Business info consistency across Google/Yelp/website/socials
 - Facebook support
@@ -46,9 +46,9 @@ Starter, Growth, Premium, Local Presence, Full Presence, old Complete Presence, 
 
 Portal requests are the normal routine channel. Veroxa responds/reviews/answers within 24 hours with an answer, review status, client-input request, coming-soon note, not-included note, not-supported note, completion note, or manual-work scheduling note. This is not a promise that all work is completed within 24 hours. Routine texts/calls are not the normal service channel.
 
-Included request types: google_profile_update, maps_visibility_update, yelp_profile_alignment, website_alignment, seo_search_visibility_basics, facebook_picture_post, instagram_picture_post, picture_caption, media_guidance, monthly_report, up_to_3_posts_per_week_media_dependent, portal_request_review, business_info_correction, and link_menu_contact_update.
+Included request types: google_profile_update, maps_visibility_update, seo_search_visibility_basics, website_alignment, seo_search_visibility_basics, facebook_picture_post, instagram_picture_post, picture_caption, media_guidance, monthly_report, up_to_3_posts_per_week_media_dependent, portal_request_review, business_info_correction, and link_menu_contact_update.
 
-Coming soon / not included requests: tiktok_request, reels_request, video_content_request, ad_management_request, ad_planning_request, daily_posting_request, and advanced_campaign_request.
+Coming soon / not included requests: yelp_profile_alignment, tiktok_request, reels_request, video_content_request, ad_management_request, ad_planning_request, daily_posting_request, and advanced_campaign_request.
 
 Blocked/not supported requests: customer_service_request, dm_or_comment_reply_request, refund_or_complaint_request, order_question_request, full_website_redesign, custom_website_build, and technical_hosting_or_domain_support.
 
@@ -64,7 +64,7 @@ Client-safe wording: "Basic website alignment/refinement is included when access
 
 ## Yelp scope
 
-Yelp is included as business profile alignment/refinement, business info consistency, photos/profile freshness where appropriate, reputation visibility snapshot, review theme awareness, and Yelp link/website/menu consistency. Do not promise Yelp ranking improvements, review removal, review suppression, fake review growth, or Yelp ads results. Prefer "Yelp profile freshness update," "Yelp photo/profile update," or "Yelp business profile alignment" instead of "Yelp post."
+Yelp is coming soon and not included at launch; future Yelp scope may include business profile alignment/refinement, business info consistency, photos/profile freshness where appropriate, reputation visibility snapshot, review theme awareness, and Yelp link/website/menu consistency. Do not promise Yelp ranking improvements, review removal, review suppression, fake review growth, or Yelp ads results. Prefer "Yelp profile freshness update," "Yelp photo/profile update," or "Yelp business profile alignment" instead of "Yelp post."
 
 ## Audit model
 

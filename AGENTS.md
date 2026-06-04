@@ -1,5 +1,19 @@
 # Veroxa Agent Instructions
 
+## 2026-06-04 — Final launch offer lock / Post-PR67 alignment
+
+- One active public offer: **Complete Online Presence — $495/month**. Starter, Growth, Premium, Local Presence, Full Presence, old Complete Presence, $295, and $995 language are historical/internal only and must not be shown as active public pricing.
+- Included at launch: Google Business Profile support, Google Maps/local visibility basics, Local SEO/search visibility basics, existing website alignment/refinement if access is provided, Facebook support, Instagram support, picture-based content support, up to 3 posts/updates per week (media dependent), weekly updates, monthly online presence report, Client Portal access, portal request response/review/answer within 24 hours, and Veroxa team review before anything goes live.
+- **Yelp is coming soon / not included at launch**, along with TikTok, Reels/video content, ads management, daily posting, automated publishing, and live integrations.
+- Add-ons: **new basic website +$95** and **missing social profile creation +$45/profile** for Facebook or Instagram. Yelp setup is coming soon, not a launch add-on.
+- First-client loyalty discount policy: **20% off for the first 12 months, then kept only while continuously active. If the client leaves and returns later, the discount no longer applies.** This is not checkout/payment logic and must not confuse the main $495/month public offer.
+- Website alignment/refinement included scope: name/address/phone, hours, menu/order/contact links, Google/Facebook/Instagram links, simple description refinement, basic local SEO wording, and small content corrections if access is provided. New basic website add-on scope is a simple mobile-friendly restaurant website with NAP/hours, menu/order/contact links, Google/Facebook/Instagram links, basic local SEO wording, and best-seller/service highlights. Not included: custom-coded website, advanced design, hosting/domain/email troubleshooting, online ordering setup, speed optimization, plugin troubleshooting, advanced technical SEO, unlimited pages/edits.
+- Onboarding expectation acknowledgement must say: “I understand Veroxa does not handle...” customer-service replies, comments, DMs, inboxes, refunds, complaints, order questions, full custom website development, hosting/domain/email troubleshooting, Yelp/TikTok/Reels/Ads yet, or guaranteed orders/revenue/rankings/profit/ROI/growth; and “I agree the restaurant is responsible for...” usable media, business info confirmation, hours/menu/prices confirmation, existing offer/promotion confirmation, access when needed, customer conversations, and understanding that 24-hour response means review/answer/next step, not guaranteed completion.
+- Weekly update means what Veroxa worked on, what was posted/prepared, what is pending, what media is needed, what the client needs to confirm, and what is next. Monthly report remains the deeper proof/reporting layer.
+- Advanced Team OS complexity is later. Current focus is public/client/onboarding/reporting/proof/request-facing 90% before paid systems. Team surfaces should remain stable and action-focused; do not add complex Team command-center features unless explicitly requested.
+- No live auth/storage/AI/connectors/payments/API writes, publishing, webhooks, cron jobs, production database work, or automated customer-visible execution are added or allowed in this alignment. `AUTH_MODE` remains `placeholder`.
+
+
 This file is the repo-level operating guide for Codex and any coding agent working on Veroxa. If a task prompt conflicts with this file, follow the user's newest explicit instruction. Otherwise, treat this file as the locked Veroxa working model.
 
 ## 1. Product identity
@@ -72,9 +86,9 @@ Current locked public launch offer:
   - Google Business Profile support
   - Google Maps/local visibility basics
   - Local SEO/search visibility basics
-  - Yelp business profile alignment/refinement
-  - Basic website alignment/refinement if access is provided
-  - Business info consistency across Google/Yelp/website/socials
+  - Yelp coming soon / future profile alignment (not included at launch)
+  - Existing website alignment/refinement if access is provided
+  - Business info consistency across Google/website/socials
   - Facebook support
   - Instagram support
   - Picture-based content support
@@ -84,14 +98,15 @@ Current locked public launch offer:
   - Media guidance/reminders
   - Client Portal access
   - Portal request response/review/answer within 24 hours
+  - Weekly updates
   - Monthly online presence report
   - Veroxa team review before anything goes live
 
 No public demo promotion. Public flow is Home -> Audit -> Login. Do not promote public demo routes, public Client Demo CTAs, or a public Services/Pricing split as the main sales flow. Starter, Growth, Premium, Local Presence, Full Presence, and old Complete Presence are historical/deprecated/internal aliases only and must not appear as active public offers.
 
-Coming soon / not included at launch: TikTok support, Reels/video content support, ads management, daily posting, automated publishing, and live integrations.
+Coming soon / not included at launch: Yelp, TikTok support, Reels/video content support, ads management, daily posting, automated publishing, and live integrations.
 
-Not included: comments, DMs, inboxes, customer-service replies, refunds, complaints, order questions, full website redesign/development, custom website builds, hosting/domain/email troubleshooting, advanced technical SEO, paid ad spend, or guaranteed orders/revenue/rankings/profit.
+Not included: comments, DMs, inboxes, customer-service replies, refunds, complaints, order questions, full website redesign/development, custom website builds beyond the +$95 basic website add-on, hosting/domain/email troubleshooting, advanced technical SEO, paid ad spend, or guaranteed orders/revenue/rankings/profit.
 
 Global launch rules:
 

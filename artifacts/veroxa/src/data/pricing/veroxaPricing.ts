@@ -3,13 +3,15 @@
 // IMPORTANT (owner-locked current pricing — 2026-06-04):
 //   * Current public model: one launch offer only.
 //   * Active public offer: Complete Online Presence ($495/month).
-//   * No contract. Cancel anytime.
-//   * Posting depends on usable restaurant-provided media and may slow when
-//     usable media is unavailable.
-//   * The current launch offer includes up to 3 total posts/updates per week,
-//     media dependent.
-//   * TikTok, Reels/video content, ads management, daily posting, automated
-//     publishing, and live integrations are coming soon / not included at launch.
+//   * Yelp, TikTok, Reels/video content, ads management, daily posting,
+//     automated publishing, and live integrations are coming soon / not included
+//     at launch.
+//   * Weekly updates and a monthly online presence report are included.
+//   * New basic website is an add-on (+$95). Missing social profile creation is
+//     an add-on (+$45/profile). No checkout/payment logic exists.
+//   * First-client loyalty discount is a policy note only: 20% off for the first
+//     12 months, then kept only while continuously active. If the client leaves
+//     and returns later, the discount no longer applies.
 //   * Ad spend is ALWAYS separate and paid by the restaurant directly to the ad
 //     platform if ads are approved in a future offer.
 //   * Veroxa does not handle customer conversations, including comments, DMs,
@@ -49,6 +51,15 @@ export type VeroxaPlanLabel =
   | "Complete Online Presence + Ads"
   | "Ads Management Only";
 
+export interface LaunchAddon {
+  id: "new_basic_website" | "missing_social_profile_creation";
+  label: string;
+  price: number;
+  displayPrice: string;
+  scope: string[];
+  notIncluded?: string[];
+}
+
 export interface VeroxaPlan {
   id: VeroxaPlanId;
   label: VeroxaPlanLabel;
@@ -60,6 +71,8 @@ export interface VeroxaPlan {
   includes: string[];
   comingSoon: string[];
   notIncluded: string[];
+  addons: LaunchAddon[];
+  firstClientLoyaltyPolicy: string;
   includesAdSpend: false;
   adsSupport: boolean;
   postingVolumeSummary: string;
@@ -74,6 +87,9 @@ export interface VeroxaPlan {
 }
 
 export const COMPLETE_ONLINE_PRESENCE_PRICE_MONTHLY = 495;
+export const NEW_BASIC_WEBSITE_ADDON_PRICE = 95;
+export const MISSING_SOCIAL_PROFILE_ADDON_PRICE = 45;
+export const FIRST_CLIENT_LOYALTY_DISCOUNT_PERCENT = 20;
 export const COMPLETE_ONLINE_PRESENCE_DISPLAY_PRICE = "$495";
 export const COMPLETE_ONLINE_PRESENCE_PLAN_ID = "complete_online_presence" as const;
 export const PRICING_NO_CONTRACT_DISCLAIMER = "No contract. Cancel anytime.";
@@ -88,7 +104,7 @@ export const SERVICE_BOUNDARY_DISCLAIMER =
   "Veroxa does not handle comments, DMs, inboxes, complaints, order questions, refunds, or customer-service conversations at launch. The restaurant remains responsible for guest replies.";
 
 export const WEBSITE_SCOPE_DISCLAIMER =
-  "Basic website alignment/refinement is included when access is provided. Full website development is not included.";
+  "Website alignment/refinement is included when access is provided. A new basic website is available as a $95 add-on; custom development and technical hosting/domain/email troubleshooting are not included.";
 
 export const PREMIUM_READINESS_RULE =
   "Ads management is coming soon and is not included in the current launch package.";
@@ -97,50 +113,85 @@ export const OFFER_INVENTION_GUARDRAIL =
   "Veroxa does not recommend or invent discounts, BOGO offers, price cuts, lower prices, or new promotions. If the restaurant already has an offer, Veroxa may ask the client to confirm exact details before preparing public copy.";
 
 export const FIRST_CLIENT_LOYALTY_DISCOUNT_POLICY =
-  "Historical/internal loyalty policy only; not active public launch pricing copy.";
+  "First-client loyalty discount: 20% off for the first 12 months, then kept only while continuously active. If the client leaves and returns later, the discount no longer applies.";
 
-const launchIncluded = [
+export const CURRENT_LAUNCH_INCLUDED = [
   "Google Business Profile support",
   "Google Maps/local visibility basics",
   "Local SEO/search visibility basics",
-  "Yelp business profile alignment/refinement",
-  "Basic website alignment/refinement if access is provided",
-  "Business info consistency across Google/Yelp/website/socials",
+  "Existing website alignment/refinement if access is provided",
   "Facebook support",
   "Instagram support",
   "Picture-based content support",
   "Up to 3 total posts/updates per week, media dependent",
-  "Simple captions",
-  "Basic content organization",
-  "Media guidance/reminders",
+  "Weekly updates",
+  "Monthly online presence report",
   "Client Portal access",
   "Portal request response/review/answer within 24 hours",
-  "Monthly online presence report",
   "Veroxa team review before anything goes live",
 ];
 
-const launchComingSoon = [
-  "TikTok support",
-  "Reels/video content support",
+export const CURRENT_LAUNCH_COMING_SOON = [
+  "Yelp",
+  "TikTok",
+  "Reels/video content",
   "Ads management",
   "Daily posting",
   "Automated publishing",
   "Live integrations",
 ];
 
-const launchNotIncluded = [
+export const CURRENT_LAUNCH_NOT_INCLUDED = [
   "Comments, DMs, inboxes, and guest conversations",
   "Customer-service replies, refunds, complaints, or order questions",
-  "Full website redesign/development or custom website builds",
+  "Full website redesign, custom-coded website development, or advanced design",
   "Hosting, domain, email, plugin, speed, or emergency website troubleshooting",
+  "Online ordering setup",
   "Advanced technical SEO",
   "Paid ad spend",
-  "Specific outcomes such as orders, revenue, rankings, profit, ROI, customers, or growth",
+  "Specific outcomes such as orders, revenue, rankings, profit, ROI, customers, walk-ins, or growth",
+];
+
+export const CURRENT_LAUNCH_ADDONS: LaunchAddon[] = [
+  {
+    id: "new_basic_website",
+    label: "New basic website",
+    price: NEW_BASIC_WEBSITE_ADDON_PRICE,
+    displayPrice: "+$95",
+    scope: [
+      "Simple basic restaurant website",
+      "Name/address/phone/hours",
+      "Menu/order/contact links",
+      "Google/Facebook/Instagram links",
+      "Basic local SEO wording",
+      "Best-seller/service highlights",
+      "Simple mobile-friendly layout",
+    ],
+    notIncluded: [
+      "Custom-coded website",
+      "Advanced design",
+      "Hosting/domain/email troubleshooting",
+      "Online ordering setup",
+      "Speed optimization",
+      "Plugin troubleshooting",
+      "Advanced technical SEO",
+      "Unlimited pages/edits",
+    ],
+  },
+  {
+    id: "missing_social_profile_creation",
+    label: "Missing social profile creation",
+    price: MISSING_SOCIAL_PROFILE_ADDON_PRICE,
+    displayPrice: "+$45/profile",
+    scope: ["Facebook page setup if missing", "Instagram profile setup if missing"],
+    notIncluded: ["Yelp setup is coming soon, not a launch add-on", "No live platform account creation exists yet"],
+  },
 ];
 
 const restaurantResponsibilities = [
-  "Provide access/media/business details needed for Google, Yelp, website, Facebook, and Instagram alignment",
+  "Provide access/media/business details needed for Google, website, Facebook, and Instagram alignment",
   "Confirm business-truth changes such as hours, menu items, prices, existing offers, and important details",
+  "Confirm existing offer/promotion details if they want Veroxa to present them",
   "Handle comments, DMs, inboxes, customer-service replies, refunds, complaints, and order questions",
   "Provide usable restaurant media; Veroxa will explain what is working, what is not working, and what media is needed next",
 ];
@@ -165,14 +216,16 @@ function buildPlan(input: {
     ...input,
     priceMonthly,
     displayPrice: `$${priceMonthly}`,
-    includes: launchIncluded,
-    comingSoon: launchComingSoon,
-    notIncluded: launchNotIncluded,
+    includes: CURRENT_LAUNCH_INCLUDED,
+    comingSoon: CURRENT_LAUNCH_COMING_SOON,
+    notIncluded: CURRENT_LAUNCH_NOT_INCLUDED,
+    addons: CURRENT_LAUNCH_ADDONS,
+    firstClientLoyaltyPolicy: FIRST_CLIENT_LOYALTY_DISCOUNT_POLICY,
     includesAdSpend: false,
     adsSupport: false,
     postingVolumeSummary: launchPostingVolumeSummary,
     mediaDependencySummary,
-    veroxaResponsibilities: launchIncluded,
+    veroxaResponsibilities: CURRENT_LAUNCH_INCLUDED,
     clientResponsibilities: restaurantResponsibilities,
     premiumReadinessRequirement: null,
   };
@@ -186,7 +239,7 @@ export const VEROXA_PLANS: Record<VeroxaPlanId, VeroxaPlan> = {
     id: "complete_online_presence",
     label: "Complete Online Presence",
     tagline:
-      "Veroxa manages your restaurant's complete online presence across Google, Maps, Yelp, website alignment, Facebook, and Instagram — then reports what worked, what needs improvement, and what media Veroxa needs next.",
+      "Veroxa manages your restaurant's complete online presence across Google, Maps/local visibility, website alignment, Facebook, and Instagram — then sends weekly updates and a monthly online presence report about what worked, what needs improvement, and what media Veroxa needs next.",
     publicVisible: true,
     status: "active",
   }),
@@ -235,7 +288,13 @@ export const GLOBAL_PRICING_RULES = [
   "One active public launch offer: Complete Online Presence — $495/month",
   "No contract",
   "Cancel anytime",
+  "Yelp is coming soon / not included at launch",
   "Up to 3 total posts/updates per week, media dependent",
+  "Weekly updates are included",
+  "Monthly online presence report is included",
+  "New basic website add-on: +$95",
+  "Missing social profile creation add-on: +$45/profile",
+  FIRST_CLIENT_LOYALTY_DISCOUNT_POLICY,
   "Portal request response/review/answer within 24 hours; this is not a completion promise",
   "TikTok, Reels/video content, ads management, daily posting, automated publishing, and live integrations are coming soon / not included at launch",
   "Customer-service replies, comments, DMs, refunds, complaints, and order questions are not included",

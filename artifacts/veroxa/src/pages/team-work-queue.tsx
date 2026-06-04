@@ -234,7 +234,7 @@ export default function TeamWorkQueue() {
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center justify-between gap-2 text-sm">
               <span>Package boundary review</span>
-              <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-[10px]">{packageSummary.upgradeRouted} upgrade routed</Badge>
+              <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-[10px]">{packageSummary.routedBoundaryWork} boundary routed</Badge>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
