@@ -25,7 +25,7 @@ const demoMode: RealPortalDataMode = {
   isLiveDataConnected: false,
   allowDemoFixtures: true,
   showLaunchReadinessBenchmark: true,
-  boundaryMessage: "Client Demo — sample data only.",
+  boundaryMessage: "Client Demo Preview — real client data is not connected.",
 };
 
 const RealPortalDataContext = createContext<RealPortalDataMode>(demoMode);
@@ -41,7 +41,7 @@ function getBoundaryMessage(portal: RealPortalKind): string {
 /**
  * RealPortalDataBoundary separates real portal shells from unsafe fixture data
  * without hiding the page shell. Public /demo/* routes keep allowing sample
- * fixtures. Real /client/* and /team/* routes render their children with a
+ * preview records. Real /client/* and /team/* routes render their children with a
  * data-mode contract so pages can show calm empty/review states until live
  * account data is connected.
  */

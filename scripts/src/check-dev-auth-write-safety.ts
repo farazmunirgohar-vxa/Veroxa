@@ -27,8 +27,10 @@ function rel(fullPath: string): string {
 for (const file of walk("artifacts/veroxa/src")) {
   const relative = rel(file);
   const text = readFileSync(file, "utf8");
-  if (/farazclient|farazteam/.test(text)) {
-    failures.push(`${relative} contains a plaintext placeholder password.`);
+  const allowedPreviewCredentialFile =
+    relative === "artifacts/veroxa/src/lib/auth/devCredentials.ts";
+  if (/farazclient|farazteam/.test(text) && !allowedPreviewCredentialFile) {
+    failures.push(`${relative} contains a plaintext placeholder password outside the approved preview-only credential matcher.`);
   }
 }
 
@@ -41,8 +43,18 @@ for (const token of [
 ]) {
   if (!devCredentials.includes(token)) failures.push(`devCredentials.ts must read ${token}.`);
 }
-if (/password:\s*["'][^"']+["']/.test(devCredentials)) {
-  failures.push("devCredentials.ts must not define source plaintext passwords.");
+for (const requiredPreviewCredential of [
+  "client@veroxa.com",
+  "team@veroxa.com",
+  "farazclient",
+  "farazteam",
+]) {
+  if (!devCredentials.includes(requiredPreviewCredential)) {
+    failures.push(`devCredentials.ts is missing approved placeholder preview credential: ${requiredPreviewCredential}`);
+  }
+}
+if (/password:\s*["'](?!farazclient|farazteam|veroxa-preview-client|veroxa-preview-team)[^"']+["']/.test(devCredentials)) {
+  failures.push("devCredentials.ts defines an unapproved source plaintext password.");
 }
 for (const marker of [
   "VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN",

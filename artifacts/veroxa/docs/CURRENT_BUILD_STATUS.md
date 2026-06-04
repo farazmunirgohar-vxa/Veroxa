@@ -1,3 +1,13 @@
+
+## 2026-06-04 — Public access, Services/Pricing separation, and Client Demo polish
+
+- Corrected placeholder preview login aliases so the visible review credentials are `client@veroxa.com` / `farazclient` and `team@veroxa.com` / `farazteam`.
+- Improved Services/Pricing separation: Services now explains Veroxa service layers without prices, while Pricing stays focused on Starter/Growth/Premium pricing and plan inclusions.
+- Polished public navigation with Services, Pricing, Free Audit, Client Demo, and Login links.
+- Lightly polished the public Client Demo with premium preview language, clearer first-screen hierarchy, and an explicit note that real client data is not connected.
+- Added public preview polish guardrails and documentation for preview login, public demo language, Services purpose, and Pricing purpose.
+- No production auth, storage uploads, live AI, external APIs, payments, checkout, webhooks, cron jobs, background jobs, or automated publishing were added.
+
 > **2026-05-30 — Portal separation and first-5-client readiness lock**
 >
 > Current active routing is now: public demo only at `/demo/client/dashboard`, real Client Portal review routes under `/client/*`, and real Team/Internal Admin review routes under `/team/*`. Team Demo / `/demo/team/*` is deprecated/not active and must not be promoted by public pages or used as a login destination. Client-side readiness remains first; heavy Team/Internal Admin AI automation comes later. The first 5 real clients are the pre-launch readiness benchmark.
