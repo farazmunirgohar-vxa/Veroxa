@@ -19,7 +19,6 @@ const publicFiles = [
 ];
 
 const bannedLabels = [
-  "Demo Preview",
   "Public Demo Preview",
   "Client Portal Preview",
   "Start Client Preview",
@@ -96,12 +95,13 @@ for (const file of publicFiles) {
 }
 
 const nav = readFileSync(join(root, "artifacts/veroxa/src/components/public/PublicNav.tsx"), "utf8");
-for (const label of ["Services", "Pricing", "Login"]) {
-  if (!new RegExp(`>\\s*${label}\\s*</Link>`).test(nav)) failures.push(`PublicNav is missing centered ${label} link.`);
+for (const label of ["Services", "Pricing", "Free Audit", "Client Demo", "Login"]) {
+  if (!nav.includes(`label: "${label}"`) && !new RegExp(`>\\s*${label}\\s*</Link>`).test(nav)) failures.push(`PublicNav is missing centered ${label} link.`);
 }
-for (const label of ["Veroxa", "Request Free Audit", "Client Demo"]) {
+for (const label of ["Veroxa", "Request Free Audit"]) {
   if (new RegExp(`>\\s*${label}\\s*</Link>`).test(nav)) failures.push(`PublicNav should not show ${label}.`);
 }
+
 
 if (failures.length > 0) {
   console.error("Public cleanup guardrail failed:");

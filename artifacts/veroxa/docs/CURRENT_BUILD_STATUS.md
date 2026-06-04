@@ -1,14 +1,12 @@
 
-## 2026-06-04 — First-Client Operating Suite V1
+## 2026-06-04 — Public access, Services/Pricing separation, and Client Demo polish
 
-- Added First-Client Operating Suite V1 as a deterministic, pre-live manual service lifecycle layer for the first 1–5 restaurant benchmarks.
-- Added guarded Team Portal route `/team/first-client-ops` with lifecycle board, selected detail panel, onboarding readiness, media rhythm, weekly update drafts, monthly report drafts, client handoff drafts, and Manual Execution linkage.
-- Added typed local/review-only lifecycle, onboarding, media rhythm, weekly update, monthly report, client handoff, service health, and first-client operating snapshot engines.
-- Added five deterministic benchmark snapshots: Starter healthy, Starter low-media, Growth media-ready, Growth inconsistent-upload, and Premium readiness.
-- Integrated compact first-client ops summaries into Team Dashboard, Team Work Queue, Team Report Queue, Team Manual Execution, and First-Client Readiness.
-- Added only lightweight client-safe reflection on Client Dashboard for what Veroxa may need from the restaurant this week.
-- Added first-client operating suite guardrail and documentation.
-- No production auth, storage uploads, live AI, production database writes, payments, platform APIs, publishing connectors, webhooks, cron jobs, or automated customer-visible execution were added.
+- Corrected placeholder preview login aliases so the visible review credentials are `client@veroxa.com` / `farazclient` and `team@veroxa.com` / `farazteam`.
+- Improved Services/Pricing separation: Services now explains Veroxa service layers without prices, while Pricing stays focused on Starter/Growth/Premium pricing and plan inclusions.
+- Polished public navigation with Services, Pricing, Free Audit, Client Demo, and Login links.
+- Lightly polished the public Client Demo with premium preview language, clearer first-screen hierarchy, and an explicit note that real client data is not connected.
+- Added public preview polish guardrails and documentation for preview login, public demo language, Services purpose, and Pricing purpose.
+- No production auth, storage uploads, live AI, external APIs, payments, checkout, webhooks, cron jobs, background jobs, or automated publishing were added.
 
 > **2026-05-30 — Portal separation and first-5-client readiness lock**
 >

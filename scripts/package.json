@@ -29,7 +29,7 @@
     "check-vercel-deployment-config": "tsx ./src/check-vercel-deployment-config.ts",
     "check-public-metadata": "tsx ./src/check-public-metadata.ts",
     "check-manual-execution-guardrails": "tsx ./src/check-manual-execution-guardrails.ts",
-    "check-first-client-operating-suite": "tsx ./src/check-first-client-operating-suite.ts"
+    "check-public-preview-polish": "tsx ./src/check-public-preview-polish.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",

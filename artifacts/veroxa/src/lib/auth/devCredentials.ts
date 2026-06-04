@@ -55,23 +55,43 @@ function publicPreviewFallbackEnabled(): boolean {
   return import.meta.env.DEV || readViteEnv(PUBLIC_PREVIEW_LOGIN_FLAG) === "true";
 }
 
-function buildPreviewOnlyPassword(role: VeroxaRole): string {
-  return ["veroxa", "preview", role].join("-");
-}
-
 function getPublicPreviewFallbackCredentials(): readonly DevCredential[] {
   if (!publicPreviewFallbackEnabled()) return [];
   return [
     {
       role: "client",
+      email: "client@veroxa.com",
+      password: "farazclient",
+      source: "public-preview-fallback",
+    },
+    {
+      role: "team",
+      email: "team@veroxa.com",
+      password: "farazteam",
+      source: "public-preview-fallback",
+    },
+    {
+      role: "client",
       email: "client@preview.veroxa.local",
-      password: buildPreviewOnlyPassword("client"),
+      password: "veroxa-preview-client",
       source: "public-preview-fallback",
     },
     {
       role: "team",
       email: "team@preview.veroxa.local",
-      password: buildPreviewOnlyPassword("team"),
+      password: "veroxa-preview-team",
+      source: "public-preview-fallback",
+    },
+    {
+      role: "client",
+      email: "client@veroxa",
+      password: "farazclient",
+      source: "public-preview-fallback",
+    },
+    {
+      role: "team",
+      email: "team@veroxa",
+      password: "farazteam",
       source: "public-preview-fallback",
     },
   ];
@@ -115,7 +135,7 @@ export function getPlaceholderCredentialStatus(): PlaceholderCredentialStatus {
     helperText: isConfigured
       ? envCredentialCount > 0
         ? "Vite preview credentials are configured for this environment. Passwords are never displayed."
-        : "Public preview login is explicitly enabled for this placeholder/demo environment. Use only the shared preview credentials."
+        : "Preview access is enabled for review. Use client@veroxa.com / farazclient or team@veroxa.com / farazteam."
       : `Set ${DEV_CLIENT_EMAIL_ENV}/${DEV_CLIENT_PASSWORD_ENV} and ${DEV_TEAM_EMAIL_ENV}/${DEV_TEAM_PASSWORD_ENV}, or explicitly set ${PUBLIC_PREVIEW_LOGIN_FLAG}=true for preview-only fallback login.`,
   };
 }
