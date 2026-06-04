@@ -13,6 +13,7 @@ import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary"
 import { useClientSaasPortalState } from "@/hooks/useClientSaasPortalState";
 import { getAccountActivationBadgeTone } from "@/domain/saas/accountActivation";
 import { getClientPortalDataModeNotice, getClientPortalReadinessSummary } from "@/domain/saas/clientPortalState";
+import { buildClientSafeWeeklyUpdate, getFirstClientOperatingSnapshots } from "@/domain/firstClientOperatingSuite";
 
 const previewPrinciples = [
   "This preview shows how Veroxa organizes media, requests, updates, and reports.",
@@ -26,6 +27,7 @@ export default function ClientDashboard() {
   const mediaHref = getClientPortalHref("media", mode.isPublicDemoRoute);
   const requestsHref = getClientPortalHref("requests", mode.isPublicDemoRoute);
   const reportsHref = getClientPortalHref("reports", mode.isPublicDemoRoute);
+  const clientSafeOpsPreview = buildClientSafeWeeklyUpdate(getFirstClientOperatingSnapshots()[0]);
 
   const dashboardTitle = mode.isPublicDemoRoute
     ? "Demo Preview — example restaurant workspace"

@@ -38,6 +38,7 @@ const TeamDashboard = lazy(() => import("@/pages/team-dashboard"));
 const TeamApprovalQueue = lazy(() => import("@/pages/team-approval-queue"));
 const TeamVisibilityAudit = lazy(() => import("@/pages/team-visibility-audit"));
 const TeamFirstClientReadiness = lazy(() => import("@/pages/team-first-client-readiness"));
+const TeamFirstClientOps = lazy(() => import("@/pages/team-first-client-ops"));
 const TeamUploadInbox = lazy(() => import("@/pages/team-upload-inbox"));
 const TeamWorkQueue = lazy(() => import("@/pages/team-work-queue"));
 const TeamManualExecution = lazy(() => import("@/pages/team-manual-execution"));
@@ -204,6 +205,15 @@ function Router() {
             <InternalDemoGuard role="team">
               <RealPortalDataBoundary portal="team">
                 <TeamFirstClientReadiness />
+              </RealPortalDataBoundary>
+            </InternalDemoGuard>
+          )}
+        </Route>
+        <Route path="/team/first-client-ops">
+          {() => (
+            <InternalDemoGuard role="team">
+              <RealPortalDataBoundary portal="team">
+                <TeamFirstClientOps />
               </RealPortalDataBoundary>
             </InternalDemoGuard>
           )}
