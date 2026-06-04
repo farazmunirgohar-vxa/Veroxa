@@ -44,8 +44,8 @@ for (const token of [
   if (!devCredentials.includes(token)) failures.push(`devCredentials.ts must read ${token}.`);
 }
 for (const requiredPreviewCredential of [
-  "client@veroxa.com",
-  "team@veroxa.com",
+  "faraz@client.com",
+  "faraz@team.com",
   "farazclient",
   "farazteam",
 ]) {
@@ -53,8 +53,13 @@ for (const requiredPreviewCredential of [
     failures.push(`devCredentials.ts is missing approved placeholder preview credential: ${requiredPreviewCredential}`);
   }
 }
-if (/password:\s*["'](?!farazclient|farazteam|veroxa-preview-client|veroxa-preview-team)[^"']+["']/.test(devCredentials)) {
+if (/password:\s*["'](?!farazclient|farazteam)[^"']+["']/.test(devCredentials)) {
   failures.push("devCredentials.ts defines an unapproved source plaintext password.");
+}
+for (const retiredCredential of ["client@veroxa.com", "team@veroxa.com", "veroxa-preview-client", "veroxa-preview-team", "veroxa-client", "veroxa-team"]) {
+  if (devCredentials.includes(retiredCredential)) {
+    failures.push(`devCredentials.ts must not retain retired visible preview credential marker: ${retiredCredential}`);
+  }
 }
 for (const marker of [
   "VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN",
@@ -67,8 +72,8 @@ for (const marker of [
     failures.push(`devCredentials.ts is missing temp-login safety marker: ${marker}`);
   }
 }
-if (!/const explicitFlag = readViteEnv\(PUBLIC_PREVIEW_LOGIN_FLAG\)/.test(devCredentials) || !/import\.meta\.env\.DEV \|\| explicitFlag !== ["']false["']/.test(devCredentials)) {
-  failures.push("public preview fallback login must stay placeholder-only and allow preview review unless VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=false.");
+if (!/const explicitFlag = readViteEnv\(PUBLIC_PREVIEW_LOGIN_FLAG\)/.test(devCredentials) || !/explicitFlag === ["']false["']/.test(devCredentials) || !/explicitFlag === ["']true["']/.test(devCredentials) || !/import\.meta\.env\.DEV \|\| isPreviewFriendlyHostname\(\)/.test(devCredentials) || !/hostname\.endsWith\(["']\.vercel\.app["']\)/.test(devCredentials)) {
+  failures.push("public preview fallback login must be local/Vercel-preview friendly, explicitly opt-in capable, and disabled when VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=false.");
 }
 const loginSource = readFileSync(join(root, "artifacts/veroxa/src/pages/login.tsx"), "utf8");
 for (const marker of [

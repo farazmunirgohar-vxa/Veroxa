@@ -2,9 +2,9 @@
  * devCredentials.ts — TEMPORARY placeholder-only login matcher.
  *
  * Placeholder credentials are preview-only and are read from Vite env first.
- * A public preview fallback is available for placeholder/demo review unless
- * VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=false. This is not production auth
- * and contains no real secret.
+ * A public preview fallback is available for local and Vercel preview review,
+ * or by explicit opt-in. VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=false disables
+ * the fallback. This is not production auth and contains no real secret.
  *
  * AUTH_MODE must NOT be switched to "real" until this placeholder file and the
  * placeholder branch in login.tsx are removed. See:
@@ -51,9 +51,21 @@ function credentialFromEnv(
   return { role, email, password, source: "env" };
 }
 
+function isPreviewFriendlyHostname(): boolean {
+  if (typeof window === "undefined") return false;
+  const hostname = window.location.hostname.toLowerCase();
+  return (
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname.endsWith(".vercel.app")
+  );
+}
+
 function publicPreviewFallbackEnabled(): boolean {
   const explicitFlag = readViteEnv(PUBLIC_PREVIEW_LOGIN_FLAG);
-  return import.meta.env.DEV || explicitFlag !== "false";
+  if (explicitFlag === "false") return false;
+  if (explicitFlag === "true") return true;
+  return import.meta.env.DEV || isPreviewFriendlyHostname();
 }
 
 function getPublicPreviewFallbackCredentials(): readonly DevCredential[] {
@@ -61,43 +73,18 @@ function getPublicPreviewFallbackCredentials(): readonly DevCredential[] {
   return [
     {
       role: "client",
-      email: "client@veroxa.com",
+      email: "faraz@client.com",
       password: "farazclient",
       source: "public-preview-fallback",
     },
     {
       role: "team",
-      email: "team@veroxa.com",
-      password: "farazteam",
-      source: "public-preview-fallback",
-    },
-    {
-      role: "client",
-      email: "client@preview.veroxa.local",
-      password: "veroxa-preview-client",
-      source: "public-preview-fallback",
-    },
-    {
-      role: "team",
-      email: "team@preview.veroxa.local",
-      password: "veroxa-preview-team",
-      source: "public-preview-fallback",
-    },
-    {
-      role: "client",
-      email: "client@veroxa",
-      password: "farazclient",
-      source: "public-preview-fallback",
-    },
-    {
-      role: "team",
-      email: "team@veroxa",
+      email: "faraz@team.com",
       password: "farazteam",
       source: "public-preview-fallback",
     },
   ];
 }
-
 function getEnvRoleCredentials(): readonly DevCredential[] {
   return [
     credentialFromEnv("client", DEV_CLIENT_EMAIL_ENV, DEV_CLIENT_PASSWORD_ENV),
@@ -134,7 +121,7 @@ export function getPlaceholderCredentialStatus(): PlaceholderCredentialStatus {
       ? "Preview login configured"
       : "Preview login not configured",
     helperText: isConfigured
-      ? "Preview access is enabled for review. Use client@veroxa.com / farazclient or team@veroxa.com / farazteam."
+      ? "Preview access is enabled for review. Use faraz@client.com / farazclient or faraz@team.com / farazteam."
       : "Preview access is not enabled for this review environment.",
   };
 }

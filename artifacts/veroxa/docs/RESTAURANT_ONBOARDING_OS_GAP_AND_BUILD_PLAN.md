@@ -179,7 +179,7 @@ Suggested scope:
 
 ## Current markers
 
-- [client@veroxa.com](mailto:client@veroxa.com) / farazclient
-- [team@veroxa.com](mailto:team@veroxa.com) / farazteam
+- [faraz@client.com](mailto:faraz@client.com) / farazclient
+- [faraz@team.com](mailto:faraz@team.com) / farazteam
 - AI-ready but not connected
 - integration-ready but not connected

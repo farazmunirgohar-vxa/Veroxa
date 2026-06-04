@@ -305,7 +305,7 @@ Current alignment markers:
 - Active roles: Client and Team. Owner/Operator are inactive and parked.
 - `AUTH_MODE` remains `placeholder`.
 - Current pricing: Starter $295, Growth $495, Premium $995.
-- Preview credentials: [client@veroxa.com](mailto:client@veroxa.com) / farazclient and [team@veroxa.com](mailto:team@veroxa.com) / farazteam.
+- Preview credentials: [faraz@client.com](mailto:faraz@client.com) / farazclient and [faraz@team.com](mailto:faraz@team.com) / farazteam.
 - AI-ready but not connected workflows can be built now; real AI connects later only after the pre-paid gate.
 - Integration-ready but not connected workflows can be planned now; paid/live providers connect later only after the pre-paid gate.
 - Restaurant Onboarding is a known gap and should be added as a future preview/manual OS layer.

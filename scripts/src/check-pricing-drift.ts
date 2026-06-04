@@ -235,7 +235,7 @@ for (const required of [
   '"growth"',
   '"premium"',
   "TikTok",
-  "Premium adds ads management readiness/support",
+  "Premium includes ad management",
   "Premium requires readiness assessment",
   "SERVICE_BOUNDARY_DISCLAIMER",
   "FIRST_CLIENT_LOYALTY_DISCOUNT_POLICY",

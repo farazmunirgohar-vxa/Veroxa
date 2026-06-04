@@ -12,8 +12,8 @@
 //     reels, TikTok, better support, stronger consistency, stronger workflow,
 //     weekly updates, and monthly report; Premium is capped at up to
 //     1 post/day, depending on usable media.
-//   * Premium adds ads management readiness/support after assessment, client
-//     approval, and agreed ad budget. Ad spend is ALWAYS separate and paid by
+//   * Premium includes ad management after assessment, client approval,
+//     and agreed ad budget. Ad spend is ALWAYS separate and paid by
 //     the restaurant directly to the ad platform.
 //   * Veroxa does not handle customer conversations, including comments, DMs,
 //     refunds, complaints, or order questions, at launch.
@@ -57,7 +57,7 @@ export interface VeroxaPlan {
   includes: string[];
   /** Always false — ad spend is separate, never included. */
   includesAdSpend: false;
-  /** Whether the plan includes ads management readiness/support. */
+  /** Whether the plan includes readiness-gated ad management. */
   adsSupport: boolean;
   /** Current posting cap language. */
   postingVolumeSummary: string;
@@ -356,7 +356,7 @@ export const GLOBAL_PRICING_RULES = [
   "Facebook + Instagram included in all plans",
   "Starter is capped at up to 3 posts/week; Premium is capped at up to 1 post/day",
   "Growth is the main recommended package for strong-fit restaurants",
-  "Premium adds ads management readiness/support; ad spend is separate",
+  "Premium includes ad management; ad spend is separate",
   "Posting depends on usable client-provided media and may slow when usable media is unavailable",
   "Premium requires readiness assessment, client approval, and agreed ad budget",
   FIRST_CLIENT_LOYALTY_DISCOUNT_POLICY,

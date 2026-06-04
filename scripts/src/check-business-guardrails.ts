@@ -495,7 +495,7 @@ for (const required of [
   "Starter is capped at up to 3 posts/week",
   "Premium is capped at up to 1 post/day",
   "Growth is differentiated",
-  "Premium adds ads management readiness/support",
+  "Premium includes ad management",
   "AD_SPEND_DISCLAIMER",
   "SERVICE_BOUNDARY_DISCLAIMER",
 ]) {
