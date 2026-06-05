@@ -190,3 +190,13 @@ Manual first-client execution pack, client-facing final visual polish, audit-to-
 ## 2026-06-05 — Post-PR70 RR cleanup alignment
 
 PR #70 built the 90% pre-paid/manual OS foundations for client readiness, weekly updates, monthly reports, launch add-ons, SOPs, readiness mapping, value-proof guardrails, and client portal readiness surfaces. This cleanup fixed RR issues around preview login, the public header, loaded weekly/monthly client data states, client dashboard setup/demo separation, old tier leakage in onboarding, request boundary counts, public/client polish, and guardrail coverage. Veroxa remains manual/pre-live: no production auth, storage, database writes, live AI, connectors, payments, webhooks, cron jobs, or automated customer-visible execution were added. Team complexity remains deferred and supporting/action-focused. The next big build should wait until this cleanup passes RR and should focus on a dormant live-system blueprint and first-client execution pack, not paid/live systems yet.
+
+## 2026-06-05 — PR72 hotfix/polish alignment
+
+- Restricted fallback preview login to localhost, `127.0.0.1`, and Vercel preview deployments ending in `.vercel.app`; custom domains require explicit preview-login env opt-in or explicit preview credential env vars.
+- Documented that `VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=true` is required if a Veroxa custom domain needs temporary preview login for review, while `VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=false` remains the hard fallback disable.
+- Polished the public header so the centered Veroxa brand remains the only public header item and appears larger/premium.
+- Removed client-facing technical wording from onboarding preview language and kept the meaning client-safe: no legal onboarding signature, no live platform access, nothing sent automatically, and nothing goes live without Veroxa team review.
+- Cleaned minor duplicate copy and monthly report lookup code without changing reporting behavior.
+- Strengthened guardrails against broad custom-domain preview fallback, public header regression, public/client technical wording, and `AUTH_MODE` drift.
+- Veroxa remains preview/manual/pre-live. No paid/live systems were added, and Team Portal complexity was not expanded. The next big build remains the dormant live-system blueprint / first-client execution pack.

@@ -72,7 +72,7 @@ for (const marker of ["Complete Online Presence — $495/month", "Yelp is a comi
 for (const marker of ["Included", "Needs confirmation", "Add-on available", "Coming soon", "Not included at launch", "Needs manual review", "not a promise that larger work is completed within 24 hours"]) {
   if (!requests.includes(marker)) failures.push(`Client requests missing ${marker}`);
 }
-for (const marker of ["I understand Veroxa does not handle", "I agree the restaurant is responsible for", "Yelp/TikTok/Reels/Ads yet", "24-hour response means review/answer/next step, not guaranteed completion", "no database write", "Weekly updates are included", "Complete Online Presence"]) {
+for (const marker of ["I understand Veroxa does not handle", "I agree the restaurant is responsible for", "Yelp/TikTok/Reels/Ads yet", "24-hour response means review/answer/next step, not guaranteed completion", "this does not create a legal onboarding signature", "Weekly updates are included", "Complete Online Presence"]) {
   if (!onboarding.includes(marker)) failures.push(`Onboarding missing ${marker}`);
 }
 for (const marker of ["comingSoonRouted", "routedBoundaryWork", "upgradeRouted: decisions.filter"]) {

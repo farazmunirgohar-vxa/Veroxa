@@ -263,7 +263,7 @@ export function scoreAuditCategories(
       "How much your review presence supports confidence in comparison decisions.",
       "Veroxa supports review response cadence, fresh photos, and trust signals tied to recent activity.",
       googleConfirmed
-        ? "A full Veroxa audit would manually review review volume, recency, response rate, and tone."
+        ? "A full Veroxa audit would manually review volume, recency, response rate, and tone."
         : "Without a confirmed Google listing, trust signals through reviews are not clearly visible at the decision moment.",
     ),
     make(
