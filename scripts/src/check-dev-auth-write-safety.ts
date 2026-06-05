@@ -72,8 +72,19 @@ for (const marker of [
     failures.push(`devCredentials.ts is missing temp-login safety marker: ${marker}`);
   }
 }
-if (!/const explicitFlag = readViteEnv\(PUBLIC_PREVIEW_LOGIN_FLAG\)/.test(devCredentials) || !/explicitFlag === ["']false["']/.test(devCredentials) || !/explicitFlag === ["']true["']/.test(devCredentials) || !/import\.meta\.env\.DEV \|\| isPreviewFriendlyHostname\(\)/.test(devCredentials) || !/hostname\.endsWith\(["']\.vercel\.app["']\)/.test(devCredentials)) {
-  failures.push("public preview fallback login must be local/Vercel-preview friendly, explicitly opt-in capable, and disabled when VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=false.");
+if (/hostname\.includes\(["']veroxa["']\)/.test(devCredentials) || /includes\(["']veroxa["']\)/.test(devCredentials)) {
+  failures.push("public preview fallback login must not use broad Veroxa custom-domain hostname matching.");
+}
+if (
+  !/const explicitFlag = readViteEnv\(PUBLIC_PREVIEW_LOGIN_FLAG\)/.test(devCredentials) ||
+  !/explicitFlag === ["']false["']/.test(devCredentials) ||
+  !/explicitFlag === ["']true["']/.test(devCredentials) ||
+  !/import\.meta\.env\.DEV \|\| isPreviewFriendlyHostname\(\)/.test(devCredentials) ||
+  !/hostname === ["']localhost["']/.test(devCredentials) ||
+  !/hostname === ["']127\.0\.0\.1["']/.test(devCredentials) ||
+  !/hostname\.endsWith\(["']\.vercel\.app["']\)/.test(devCredentials)
+) {
+  failures.push("public preview fallback login must allow localhost, 127.0.0.1, and .vercel.app; support explicit opt-in; and disable fallback when VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=false.");
 }
 const loginSource = readFileSync(join(root, "artifacts/veroxa/src/pages/login.tsx"), "utf8");
 for (const marker of [

@@ -180,7 +180,7 @@ export const restaurantOnboardingSeedProfiles: RestaurantOnboardingProfile[] = [
     firstWeekSetupStatus: "blocked",
     proofInputStatus: "partial",
     overallStatus: "platform_links_needed",
-    nextClientAction: "Confirm website/menu/Google Maps/TikTok links if available and send one fresh fresh best-seller photo.",
+    nextClientAction: "Confirm website/menu/Google Maps/TikTok links if available and send one fresh best-seller photo.",
     nextTeamAction: "Ask client to confirm missing menu and Google Maps links before preparing the Complete Online Presence picture-based path.",
     blockers: ["Menu link missing", "Google Maps link missing"],
     warnings: ["TikTok is coming soon and not required at launch", "Media supply has been inconsistent"],

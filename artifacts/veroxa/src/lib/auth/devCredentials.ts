@@ -57,8 +57,7 @@ function isPreviewFriendlyHostname(): boolean {
   return (
     hostname === "localhost" ||
     hostname === "127.0.0.1" ||
-    hostname.endsWith(".vercel.app") ||
-    hostname.includes("veroxa")
+    hostname.endsWith(".vercel.app")
   );
 }
 

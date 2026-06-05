@@ -36,3 +36,11 @@ Before any paid systems are connected, RR should review auth mode, data boundari
 ## A-Z review reminder
 
 After Veroxa reaches about 80% complete pre-spending, Faraz will choose the A-Z review route before paid systems are activated.
+
+## 2026-06-05 — PR72 hotfix/polish readiness note
+
+- Preview login fallback is now limited to localhost, `127.0.0.1`, and `.vercel.app` preview deployments unless explicitly opted in through `VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=true` or explicit preview credential env vars.
+- Custom domains, including Veroxa-branded production/custom domains, should not depend on hardcoded fallback preview credentials. For a temporary review on a custom domain, set the explicit Vercel env opt-in and remove/disable it when review is complete.
+- The next big build remains a dormant live-system blueprint / first-client execution pack. It should define activation checklists, manual execution steps, connector readiness interfaces, and test harness planning without activating paid/live systems.
+- Veroxa remains preview/manual/pre-live. No production auth, storage, database writes, live AI, Google/Meta/Yelp/TikTok/YouTube APIs, publishing connectors, payments, webhooks, cron jobs, background jobs, or automated customer-visible execution were added.
+- Team complexity remains deferred; do not expand Team Portal command-center features in the next build unless explicitly requested.

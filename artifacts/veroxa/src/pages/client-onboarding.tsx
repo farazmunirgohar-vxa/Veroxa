@@ -105,7 +105,7 @@ function ExpectationAgreementPreview() {
           <ul className="mt-2 list-disc space-y-1 pl-5"><li>New basic website +$95</li><li>Missing Facebook or Instagram profile creation +$45/profile</li><li>Yelp, TikTok, Reels/video content, ads management, daily posting, automated publishing, and live integrations are coming soon.</li></ul>
         </div>
         <p className="lg:col-span-2 rounded-lg border border-border/70 bg-background/70 p-3 text-xs">
-          Preview/manual only: no database write, no legal signature, no live platform access, and nothing goes live without Veroxa team review. I understand 24-hour response means review/answer/next step, not guaranteed completion. Weekly updates are included so Veroxa can summarize what was worked on, what was posted/prepared, what is pending, what media is needed, what you need to confirm, and what is next.
+          Preview/manual only: this does not create a legal onboarding signature, connect live platform access, or send anything automatically. Nothing goes live without Veroxa team review. I understand 24-hour response means review/answer/next step, not guaranteed completion. Weekly updates are included so Veroxa can summarize what was worked on, what was posted/prepared, what is pending, what media is needed, what you need to confirm, and what is next.
         </p>
       </CardContent>
     </Card>

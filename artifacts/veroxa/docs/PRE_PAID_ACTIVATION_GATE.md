@@ -156,3 +156,12 @@ PR #70 built the 90% pre-paid/manual OS foundations for client readiness, weekly
 - `VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=true`
 
 Set `VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=false` only when intentionally disabling placeholder review login. This is preview-only access and does not add production auth.
+
+## 2026-06-05 — Preview login domain gate hotfix
+
+- Placeholder preview login remains preview/manual/pre-live only; `AUTH_MODE` remains `placeholder`.
+- Localhost, `127.0.0.1`, and Vercel preview deployments ending in `.vercel.app` may use the fallback preview credentials for review.
+- Custom Veroxa domains must not rely on broad hardcoded fallback credentials. If a custom domain needs temporary preview login for RR or founder review, the Vercel environment must explicitly set `VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=true`.
+- `VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=false` is the hard disable for fallback preview login.
+- Explicit `VITE_VEROXA_DEV_CLIENT_EMAIL`, `VITE_VEROXA_DEV_CLIENT_PASSWORD`, `VITE_VEROXA_DEV_TEAM_EMAIL`, and `VITE_VEROXA_DEV_TEAM_PASSWORD` may still configure preview-only credentials when needed; these are not production auth.
+- No paid/live systems were added: no production auth, storage, live AI, platform APIs, publishing connectors, payments, webhooks, cron/background jobs, or automated customer-visible execution.

@@ -10,10 +10,13 @@ import { buildClientMonthlyReportPreview, buildMonthlyReportFromClientSummary, b
 
 export default function ClientReports() {
   const { pageState, reportSummaries } = useClientSaasPortalState();
-  const loadedReport = reportSummaries.find((summary) => summary.reportType === "monthly")
-    ? buildMonthlyReportFromClientSummary(reportSummaries.find((summary) => summary.reportType === "monthly")!, pageState.restaurant?.name ?? "Your restaurant")
-    : pageState.reports.find((item) => item.reportType === "monthly")
-      ? buildMonthlyReportFromReportRecord(pageState.reports.find((item) => item.reportType === "monthly")!, pageState.restaurant?.name ?? "Your restaurant")
+  const restaurantName = pageState.restaurant?.name ?? "Your restaurant";
+  const monthlySummary = reportSummaries.find((summary) => summary.reportType === "monthly");
+  const monthlyRecord = pageState.reports.find((item) => item.reportType === "monthly");
+  const loadedReport = monthlySummary
+    ? buildMonthlyReportFromClientSummary(monthlySummary, restaurantName)
+    : monthlyRecord
+      ? buildMonthlyReportFromReportRecord(monthlyRecord, restaurantName)
       : null;
   const { report, readiness } = buildClientMonthlyReportPreview(loadedReport ?? undefined);
   return (
