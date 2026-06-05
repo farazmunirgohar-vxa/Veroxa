@@ -10,12 +10,12 @@ export default function PricingPage() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <PublicNav />
-      <main className="pt-28 pb-20 px-6 lg:px-12 flex-1"><span className="sr-only">$495</span>
+      <main className="pt-28 pb-20 px-6 lg:px-12 flex-1">
         <div className="max-w-4xl mx-auto text-center">
           <p className="text-xs uppercase tracking-wider text-primary font-semibold mb-3">Compatibility page</p>
           <h1 className="text-4xl md:text-5xl font-extrabold mb-4">One public launch offer</h1>
           <p className="text-3xl font-bold text-primary mb-4">{COMPLETE_ONLINE_PRESENCE_PLAN.label} — {COMPLETE_ONLINE_PRESENCE_PLAN.displayPrice}/month</p>
-          <p className="text-muted-foreground max-w-2xl mx-auto mb-8">Veroxa no longer uses a public multi-package pricing funnel. The main public flow is Home → Audit → Login.</p>
+          <p className="text-muted-foreground max-w-2xl mx-auto mb-8">Veroxa no longer uses a public multi-package pricing funnel. The active public flow is Home, the restaurant online presence audit, and portal login.</p>
           <div className="rounded-2xl border border-border/40 bg-card/20 p-6 text-left mb-8">
             <h2 className="font-bold mb-3">Included</h2>
             <div className="grid sm:grid-cols-2 gap-2 text-sm text-muted-foreground">

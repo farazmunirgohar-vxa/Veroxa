@@ -237,7 +237,6 @@ function Metric({ label, value }: { label: string; value: number }) {
     </Card>
   );
 }
-// Guardrail marker: No file storage is connected yet.
 
 function formatClientSafeBoundaryStatus(status?: string): string | null {
   if (!status) return null;

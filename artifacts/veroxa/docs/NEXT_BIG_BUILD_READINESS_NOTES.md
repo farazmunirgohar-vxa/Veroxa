@@ -1,5 +1,12 @@
 # Next Big Build Readiness Notes — Post-PR70 RR Cleanup
 
+## 2026-06-05 — Final trim handoff for next big build
+
+- PR #72 fixed preview-login safety and polish; this final trim cleans public presentation, route hygiene, client-safe copy, hidden marker guardrails, Team deferral notes, and AI/automation boundaries.
+- Veroxa is still preview/manual/pre-live only. No production auth, database/storage, live AI, payments, connectors, webhooks, cron jobs, background jobs, or automated customer-visible execution were added.
+- The next big build should be an AI/automation readiness blueprint: prompts, review gates, deterministic interfaces, QA plans, rollback requirements, and adapter boundaries. It must not activate live AI or live automation.
+- After the 80% mark, Faraz chooses the A-Z review route before any paid systems are connected.
+
 ## What PR #70 added
 
 PR #70 built the 90% pre-paid/manual OS foundations: client readiness, weekly updates, monthly reports, launch add-ons, SOPs, readiness mapping, value-proof guardrails, and client portal readiness surfaces.

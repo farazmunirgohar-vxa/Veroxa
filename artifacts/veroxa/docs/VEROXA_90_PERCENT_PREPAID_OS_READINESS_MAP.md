@@ -1,5 +1,13 @@
 # Veroxa 90% Pre-Paid OS Readiness Map
 
+## 2026-06-05 — Final trim before AI/automation readiness
+
+- PR #72 fixed preview-login safety, public header polish, client-facing technical wording, copy/code debt, and guardrails.
+- This final trim makes the manual/pre-live OS cleaner before the next AI/automation readiness blueprint: homepage hero polish, route-language cleanup, visible/source-of-truth guardrails instead of hidden markers, route inventory clarity, client media/client portal copy refinement, Team deferral clarification, and AI/automation boundary documentation.
+- Veroxa remains preview/manual/pre-live with no paid/live systems added. `AUTH_MODE` remains `placeholder`.
+- Team routes remain supporting/action-focused manual internal routes for Faraz; no Owner/Operator/Super Admin/generic Admin/Execution dashboards and no AI command-center automation were added.
+- After the 80% mark, Faraz chooses the A-Z review route before production auth, database/storage, payments, connectors, live AI, or automation are connected.
+
 ## Current readiness estimate
 
 Veroxa is approximately **86–90% ready for pre-paid/manual first-client preview operation** after this build. The product is not production SaaS yet; it is a manual operating system with prepared interfaces, client-safe portal flows, deterministic preview logic, and SOPs.

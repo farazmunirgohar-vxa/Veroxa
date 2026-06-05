@@ -1,5 +1,13 @@
 # Veroxa Launch Simplification Source of Truth
 
+## 2026-06-05 — Final trim before AI + automation readiness
+
+- PR #72 fixed preview-login safety, enlarged the centered public Veroxa header, removed client-facing technical wording, cleaned minor copy/code debt, and strengthened guardrails.
+- This PR is the final trim before AI/automation readiness: homepage hero typography, hero pill copy, hidden marker cleanup, route inventory hygiene, client media/client portal copy, Team deferral clarity, and AI/automation boundary documentation.
+- Veroxa remains preview/manual/pre-live. No paid/live systems were added: no production auth, database writes, storage uploads, payments, platform connectors, webhooks, cron jobs, background jobs, live AI, or automated customer-visible execution.
+- The next build is an AI/automation readiness blueprint, not live AI activation.
+- After the 80% mark, Faraz chooses the A-Z review route before paid systems are connected.
+
 
 ## 2026-06-04 — 90% pre-paid OS final alignment
 

@@ -4,6 +4,11 @@ This map documents the current Veroxa route surfaces for pre-live demo/review mo
 
 Global route-surface boundaries:
 
+- Active public flow: `/`, `/free-audit`, `/login`.
+- Hidden compatibility routes: `/services`, `/pricing`.
+- Hidden internal/demo QA routes: `/demo`, `/guided-demo`, `/demo/client/*`, and `/upload` (demo-only upload-key preview; no live upload/storage).
+- Real client portal routes: `/client/dashboard`, `/client/onboarding`, `/client/media`, `/client/updates`, `/client/requests`, `/client/reports`.
+- Real team portal routes: `/team/*` guarded supporting/manual internal routes for Faraz review only.
 - `/demo/client/*` is public sample data.
 - `/client/*` is guarded review mode.
 - `/team/*` is guarded internal mode.
@@ -26,7 +31,7 @@ Routes:
 - `/guided-demo`
 - `/upload`
 
-**Purpose:** Explain Veroxa, present the locked offer, provide public preview/intake paths, and route users toward demo or portal access.
+**Purpose:** Explain Veroxa, present the locked offer, support hidden compatibility links, and route users through Home, Audit, and Login. Demo routes are not promoted in public navigation or homepage CTAs.
 
 **Access level:** Public.
 
@@ -69,6 +74,7 @@ Routes:
 - `/client/updates`
 - `/client/requests`
 - `/client/reports`
+- `/client/onboarding`
 
 **Purpose:** Provide the guarded client review-mode portal surface for future Restaurant Partner use while production auth and real data remain gated.
 
@@ -95,8 +101,11 @@ Routes:
 - `/team/direction-queue`
 - `/team/report-queue`
 - `/team/audit-leads`
+- `/team/first-client-ops`
+- `/team/manual-execution`
+- `/team/onboarding`
 
-**Purpose:** Provide Faraz with the guarded internal review-mode control surface for queues, approvals, readiness, and manual first-client operations.
+**Purpose:** Provide Faraz with guarded supporting/manual internal routes for queues, approvals, readiness, and manual first-client operations without expanding into an AI command center or advanced Team OS.
 
 **Access level:** Guarded internal mode.
 

@@ -43,9 +43,9 @@ export default function LandingPage() {
       <section className="pt-28 pb-16 px-6 lg:px-12 flex flex-col items-center text-center relative overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/20 blur-[120px] rounded-full pointer-events-none -z-10" />
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/10 text-primary text-xs font-semibold mb-8">
-          One launch offer • Home → Audit → Login
+          One launch offer • Restaurant online presence review
         </div>
-        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight max-w-5xl leading-[1.1] mb-6">
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight max-w-5xl leading-[1.08] mb-6">
           Complete Online Presence for Restaurants
         </h1>
         <p className="text-3xl md:text-4xl font-bold text-primary mb-5" data-testid="home-price">
@@ -104,11 +104,10 @@ export default function LandingPage() {
           </div>
           <div className="rounded-2xl border border-border/40 bg-card/20 p-6">
             <h2 className="text-xl font-bold mb-3">Add-ons</h2>
-            <p className="sr-only">New basic website +$95. Missing social profile creation +$45/profile.</p>
             <ul className="space-y-2 text-sm text-muted-foreground">
               {CURRENT_LAUNCH_ADDONS.map((addon) => <li key={addon.id}>{addon.label} — {addon.displayPrice}</li>)}
             </ul>
-            <p className="mt-3 text-xs text-muted-foreground">Missing social profile creation is available as a $45/profile add-on for Facebook or Instagram. Yelp setup is coming soon, not a launch add-on.</p>
+            <p className="mt-3 text-xs text-muted-foreground">New basic website is available as a +$95 add-on. Missing social profile creation is available as a +$45/profile add-on for Facebook or Instagram. Yelp setup is coming soon, not a launch add-on.</p>
           </div>
           <div className="rounded-2xl border border-border/40 bg-card/20 p-6">
             <h2 className="text-xl font-bold mb-3">Not included at launch</h2>

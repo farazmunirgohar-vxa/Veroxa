@@ -211,7 +211,7 @@ export default function FreeAudit() {
   >(undefined);
   const [isSearching, setIsSearching] = useState(false);
 
-  function adaptFixtureCandidate(
+  function adaptPreviewCandidate(
     c: RestaurantSearchCandidate,
   ): UnifiedCandidate {
     return {
@@ -269,7 +269,7 @@ export default function FreeAudit() {
       notes: input.notes,
     });
     return {
-      ...adaptFixtureCandidate(fallback),
+      ...adaptPreviewCandidate(fallback),
       source: "manual",
       matchSource: "manual",
       googleMapsUrl: fallback.googleListingUrl,
@@ -305,7 +305,7 @@ export default function FreeAudit() {
       setLiveTotalRaw(undefined);
       setLiveTotalDisplayed(undefined);
       setSearchMode("preview_fallback");
-      setCandidateResults(previewResults.map(adaptFixtureCandidate));
+      setCandidateResults(previewResults.map(adaptPreviewCandidate));
       setCandidateSearchRan(true);
     } finally {
       setIsSearching(false);
@@ -702,7 +702,7 @@ export default function FreeAudit() {
                                   ? "Manual fallback"
                                   : c.matchSource === "fuzzy match"
                                     ? "Fuzzy match"
-                                    : "Fixture match"}
+                                    : "Preview match"}
                               </Badge>
                               <Badge
                                 variant="outline"
