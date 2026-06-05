@@ -14,3 +14,21 @@ export function classifyMediaAsset(label: string): {
     return { mediaType: "photo", category: "best_seller" };
   return { mediaType: "photo", category: "other" };
 }
+
+export function getClientSafeMediaReviewLabel(status: string): string {
+  if (status === "ready" || status === "usable") return "Ready for Veroxa review";
+  if (status === "needs_better_lighting" || status === "blurry" || status === "weak_angle") return "Needs clearer photo";
+  if (status === "duplicate" || status === "save_for_later") return "Saved for later";
+  if (status === "needs_confirmation") return "Needs business confirmation";
+  return "Useful for picture-based content";
+}
+
+export const clientSafeMediaGuidance = [
+  "Ready for Veroxa review",
+  "Needs clearer photo",
+  "More best-seller photos needed",
+  "Saved for later",
+  "Needs business confirmation",
+  "Useful for picture-based content",
+  "Video channels coming soon",
+] as const;

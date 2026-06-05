@@ -45,3 +45,21 @@ export function buildClientBusinessTruthRequest(profile: RestaurantOnboardingPro
   if (missing.length === 0) return "Veroxa has the key business details needed for team review. We may still ask you to confirm details before anything public is prepared.";
   return `Please confirm these details so Veroxa can prepare work accurately: ${missing.join(", ")}.${offerLine} Nothing goes live without Veroxa team review.`;
 }
+
+export const businessTruthConfirmationRequirements = [
+  "hours",
+  "holiday hours",
+  "address",
+  "phone",
+  "menu items",
+  "menu prices",
+  "existing offers/promotions",
+  "catering availability",
+  "halal/organic/health claims",
+  "order links",
+  "reservation links",
+] as const;
+
+export function getBusinessTruthConfirmationNotice(): string {
+  return "Please confirm the exact details before Veroxa prepares anything public. Veroxa does not invent discounts, BOGO offers, price cuts, lower prices, or new promotions.";
+}

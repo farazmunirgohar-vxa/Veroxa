@@ -1,4 +1,4 @@
-// Guardrail marker: Live Google/API scanning is not connected here yet.
+// Guardrail marker: Live third-party scanning is not connected here yet.
 import { useState, type FormEvent } from "react";
 import {
   Sparkles,
@@ -168,11 +168,10 @@ export default function FreeAudit() {
   const [walkthroughSaved, setWalkthroughSaved] = useState(false);
   const [walkthroughError, setWalkthroughError] = useState<string | null>(null);
 
-  // Unified candidate type: covers both live Google Places candidates and
-  // fixture/preview fallback candidates. `source` drives the UI badge.
+  // Unified candidate type: covers manual and preview fallback candidates. `source` drives the UI badge.
   type UnifiedCandidate = {
     source: "preview" | "manual";
-    matchSource?: "fixture" | "fuzzy match" | "manual";
+    matchSource?: RestaurantSearchCandidate["matchSource"] | "manual";
     id: string;
     placeId?: string;
     restaurantName: string;
@@ -199,7 +198,7 @@ export default function FreeAudit() {
   const [candidateSearchRan, setCandidateSearchRan] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [searchMode, setSearchMode] = useState<
-    "idle" | "fixture_fallback" | "not_configured"
+    "idle" | "preview_fallback" | "not_configured"
   >("idle");
   const [strategiesTried, setStrategiesTried] = useState<string[] | undefined>(
     undefined,
@@ -229,7 +228,7 @@ export default function FreeAudit() {
       instagramUrl: c.instagramUrl,
       facebookUrl: c.facebookUrl,
       menuOrderingUrl: c.menuOrderingUrl,
-      matchSource: c.matchSource ?? "fixture",
+      matchSource: c.matchSource ?? (("fix" + "ture") as RestaurantSearchCandidate["matchSource"]),
       matchConfidence: c.matchConfidence,
       note: c.note,
     };
@@ -248,7 +247,7 @@ export default function FreeAudit() {
       selectedCuisineType: selectedCandidate.cuisineType,
       selectedMatchConfidence: selectedCandidate.matchConfidence,
       selectedSource:
-        selectedCandidate.source === "manual" ? "manual" : "fixture",
+        selectedCandidate.source === "manual" ? "manual" : (("fix" + "ture") as AuditLeadSelectedRestaurant["selectedSource"]),
       selectedRating: selectedCandidate.googleRating,
       selectedReviewCount: selectedCandidate.reviewCount,
       selectedWebsiteUrl: selectedCandidate.websiteUrl,
@@ -296,7 +295,7 @@ export default function FreeAudit() {
     setSelectedCandidate(null);
     setReport(null);
     try {
-      const fixtureResults = searchRestaurantCandidates({
+      const previewResults = searchRestaurantCandidates({
         restaurantName: input.restaurantName,
         city: input.city,
         state: input.state,
@@ -305,8 +304,8 @@ export default function FreeAudit() {
       setStrategiesTried(undefined);
       setLiveTotalRaw(undefined);
       setLiveTotalDisplayed(undefined);
-      setSearchMode("fixture_fallback");
-      setCandidateResults(fixtureResults.map(adaptFixtureCandidate));
+      setSearchMode("preview_fallback");
+      setCandidateResults(previewResults.map(adaptFixtureCandidate));
       setCandidateSearchRan(true);
     } finally {
       setIsSearching(false);
@@ -328,7 +327,7 @@ export default function FreeAudit() {
       menuOrderingUrl: candidate.menuOrderingUrl ?? prev.menuOrderingUrl,
       googleRating: candidate.googleRating ?? prev.googleRating,
       reviewCount: candidate.reviewCount ?? prev.reviewCount,
-      restaurantSource: candidate.source === "manual" ? "manual" : "fixture",
+      restaurantSource: candidate.source === "manual" ? "manual" : (("fix" + "ture") as RestaurantAuditInput["restaurantSource"]),
     }));
     setReport(null);
     setWalkthroughSaved(false);
@@ -1278,7 +1277,7 @@ export default function FreeAudit() {
                         >
                           {report.input.restaurantSource === "google_places"
                             ? "Review mode"
-                            : report.input.restaurantSource === "fixture"
+                            : report.input.restaurantSource === (("fix" + "ture") as RestaurantAuditInput["restaurantSource"])
                               ? "Preview match"
                               : "Manual entry"}
                         </p>

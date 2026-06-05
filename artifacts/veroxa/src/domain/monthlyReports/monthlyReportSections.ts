@@ -1,0 +1,1 @@
+export const monthlyReportSections = ["What Veroxa handled", "Google/Maps/local search progress", "Website alignment progress", "Facebook/Instagram content progress", "Media used", "What media worked", "What media did not work", "What media is needed next", "Reach/action signals", "Limitations", "Next month focus"] as const;

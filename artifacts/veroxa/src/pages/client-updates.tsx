@@ -1,18 +1,63 @@
-import type { ElementType } from "react";
-import { CalendarDays, CheckCircle2, Clock, ListChecks } from "lucide-react";
+import { CalendarCheck, CheckCircle2, Clock, Image, MessageSquare, ShieldCheck } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { RealPortalReviewNotice, SafePortalEmptyCard } from "@/components/RealPortalSafeStates";
 import { PageHeader } from "@/components/common/PageHeader";
+import { StatusBadge } from "@/components/common/StatusBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientSaasPortalState } from "@/hooks/useClientSaasPortalState";
-import { getClientSafeEmptyStateForPage } from "@/domain/saas/clientPortalState";
+import { buildClientWeeklyUpdatePreview, getClientWeeklyUpdateReminder, getPortalRequestResponseReminder, weeklyUpdateTemplateSections } from "@/domain/weeklyUpdates";
 
 export default function ClientUpdates() {
-  const { pageState, updateSummaries } = useClientSaasPortalState();
-  return <PortalLayout items={clientPortalNavItems} portalName="Client Portal"><RealPortalReviewNotice /><PageHeader title="Updates" description="Weekly Veroxa progress notes appear here after team review: what Veroxa worked on, what was posted/prepared, what is pending, what media is needed, what needs confirmation, and what is next." testId="header-client-updates" />
-  {!pageState.isDemoData && !pageState.canShowRealData ? <SafePortalEmptyCard title="Updates in setup" body={getClientSafeEmptyStateForPage("updates", pageState)} /> : null}
-  <section className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]"><Card><CardHeader><CardTitle className="text-sm flex items-center gap-2"><CalendarDays className="h-4 w-4 text-primary" />Weekly update preview</CardTitle></CardHeader><CardContent className="space-y-4">{updateSummaries.length > 0 ? updateSummaries.map((update) => <div key={update.id} className="rounded-lg border border-border p-4"><p className="font-medium">{update.title}</p><div className="mt-3 grid gap-3 md:grid-cols-3"><Column icon={CheckCircle2} title="Completed" items={update.completed} /><Column icon={Clock} title="Waiting on client" items={update.waitingOnClient} /><Column icon={ListChecks} title="Next week" items={[update.nextDirection]} /></div><p className="mt-3 text-xs text-muted-foreground">Source: {update.sourceLabel === "demo" ? "sample data" : "setup state"}</p></div>) : <p className="text-sm text-muted-foreground">Weekly updates appear after Veroxa reviews and prepares verified progress notes.</p>}</CardContent></Card>
-  <Card><CardHeader><CardTitle className="text-sm">Signals Veroxa may review</CardTitle></CardHeader><CardContent className="space-y-2 text-sm text-muted-foreground"><p>Online presence signals for current launch channels.</p><p>Calls, directions, menu visits, order-path activity, Google/Facebook/Instagram visibility notes, and media needs may be reviewed when connected. Yelp/TikTok/Reels/Ads stay coming soon.</p><p>No fake metrics are shown while account data is not connected.</p>{pageState.activityPreview.map((log) => <p className="rounded-lg border border-border p-2 text-xs" key={log.id}>{log.summary}</p>)}</CardContent></Card></section></PortalLayout>;
+  const { pageState } = useClientSaasPortalState();
+  const { update, readiness } = buildClientWeeklyUpdatePreview();
+  return (
+    <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
+      <RealPortalReviewNotice />
+      <PageHeader title="Weekly Updates" description="A simple weekly summary of what Veroxa worked on, what is pending, what media is needed, and what is next." testId="header-client-updates" />
+      {!pageState.isDemoData && !pageState.canShowRealData ? <SafePortalEmptyCard title="Weekly update setup state" body="Your weekly updates will appear here once Veroxa has reviewed your account setup. For now, this page shows the safe preview/manual update structure." icon="info" /> : null}
+
+      <Card className="mb-4 border-primary/20 bg-primary/5" data-testid="latest-weekly-update">
+        <CardContent className="p-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-sm font-semibold">{update.weekLabel} — {update.restaurantName}</p>
+            <p className="text-xs text-muted-foreground">{update.clientSafeSummary}</p>
+          </div>
+          <StatusBadge tone={readiness.status === "needs_media" || readiness.status === "needs_confirmation" ? "warning" : "info"}>{readiness.label}</StatusBadge>
+        </CardContent>
+      </Card>
+
+      <section className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="space-y-4">
+          <WeeklySection icon={CheckCircle2} title="What Veroxa worked on" items={update.completedThisWeek} />
+          <WeeklySection icon={ShieldCheck} title="What was posted or prepared" items={update.preparedThisWeek} />
+          <WeeklySection icon={Clock} title="What is pending" items={update.pendingItems} />
+        </div>
+        <div className="space-y-4">
+          <WeeklySection icon={Image} title="Media needed" items={update.mediaNeeded} />
+          <WeeklySection icon={ShieldCheck} title="What you need to confirm" items={update.clientConfirmationsNeeded} />
+          <WeeklySection icon={CalendarCheck} title="Next week focus" items={update.nextWeekFocus} />
+          <Card className="border-sky-500/20 bg-sky-500/5">
+            <CardHeader><CardTitle className="text-sm flex items-center gap-2"><MessageSquare className="h-4 w-4" />Request response reminder</CardTitle></CardHeader>
+            <CardContent className="space-y-2 text-sm text-muted-foreground">
+              <p>{getPortalRequestResponseReminder()}</p>
+              <p>{getClientWeeklyUpdateReminder(update)}</p>
+              {update.requestsAnswered.map((item) => <p key={item} className="rounded-lg border border-border/50 p-2 text-xs">{item}</p>)}
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      <Card className="mt-4">
+        <CardHeader><CardTitle className="text-sm">Weekly update structure</CardTitle></CardHeader>
+        <CardContent className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {weeklyUpdateTemplateSections.map((section) => <div key={section} className="rounded-lg border border-border p-3 text-xs text-muted-foreground">{section}</div>)}
+        </CardContent>
+      </Card>
+    </PortalLayout>
+  );
 }
-function Column({ icon: Icon, title, items }: { icon: ElementType; title: string; items: string[] }) { return <div><p className="flex items-center gap-2 text-xs font-medium text-foreground"><Icon className="h-3.5 w-3.5 text-primary" />{title}</p><ul className="mt-2 space-y-1 text-xs text-muted-foreground">{items.map((item) => <li key={item}>{item}</li>)}</ul></div>; }
+
+function WeeklySection({ icon: Icon, title, items }: { icon: typeof CalendarCheck; title: string; items: string[] }) {
+  return <Card><CardHeader><CardTitle className="text-sm flex items-center gap-2"><Icon className="h-4 w-4 text-primary" />{title}</CardTitle></CardHeader><CardContent className="space-y-2 text-sm text-muted-foreground">{items.map((item) => <p key={item} className="rounded-lg border border-border/50 p-2">{item}</p>)}</CardContent></Card>;
+}

@@ -27,6 +27,10 @@ const docs = [
   "artifacts/veroxa/docs/MEDIA_INTELLIGENCE_LAYER.md",
   "artifacts/veroxa/docs/RESTAURANT_ONBOARDING_OS_V1.md",
   "artifacts/veroxa/docs/PRE_PAID_ACTIVATION_GATE.md",
+  "artifacts/veroxa/docs/VEROXA_90_PERCENT_PREPAID_OS_READINESS_MAP.md",
+  "artifacts/veroxa/docs/ADDON_NEW_BASIC_WEBSITE_SCOPE.md",
+  "artifacts/veroxa/docs/ADDON_SOCIAL_PROFILE_CREATION_SCOPE.md",
+  "artifacts/veroxa/docs/FIRST_5_CLIENT_READINESS_PLAN.md",
 ].map(read).join("\n");
 
 for (const marker of [
@@ -49,6 +53,14 @@ if (/CURRENT_LAUNCH_INCLUDED[\s\S]*Yelp/.test(pricing.split("export const CURREN
 for (const marker of ["Complete Online Presence", "$495", "Weekly updates", "Monthly online presence report", "+$95", "+$45/profile", "Yelp", "coming soon", "guaranteed results"]) {
   if (!landing.includes(marker)) failures.push(`Landing missing ${marker}`);
 }
+
+for (const marker of ["Home", "Audit", "Login"]) {
+  if (!landing.includes(marker)) failures.push(`Landing/nav missing ${marker}`);
+}
+for (const forbidden of ["Starter —", "Growth —", "Premium —", "Local Presence", "Full Presence", "Yelp included", "ads included", "TikTok included", "Reels included", "daily posting included", "Client Demo", "/demo/client"]) {
+  if (landing.includes(forbidden)) failures.push(`Landing contains active old/demo/included marker ${forbidden}`);
+}
+
 for (const forbidden of ["Client Demo", "/demo/client", "$295", "$995", "Most popular"]) {
   if (landing.includes(forbidden)) failures.push(`Landing promotes forbidden marker ${forbidden}`);
 }

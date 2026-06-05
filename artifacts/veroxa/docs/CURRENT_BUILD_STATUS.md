@@ -134,3 +134,55 @@ SaasDataMode, RepositoryBundle, ActivityLogRepository, assertNoDemoFixturesInAut
 - Client onboarding expectation acknowledgement added in preview/manual mode.
 - Advanced Team OS complexity deferred; Team surfaces remain stable/action-focused.
 - No live production auth, storage, AI, connectors, payments, publishing, webhooks, cron jobs, database writes, or automated customer-visible execution added.
+
+## 2026-06-05 — Mega Build: 90% Pre-Paid Manual OS readiness
+
+This build adds the 90% pre-paid/manual operating layer while keeping Veroxa preview/manual/pre-live only.
+
+### Completed foundations
+
+- Client readiness domain for onboarding, media supply, request channel, weekly updates, monthly reports, website alignment, Google/Maps/local visibility, Facebook/Instagram content, add-ons, missing confirmations, and account activation state.
+- Client Dashboard readiness cards and safe setup states.
+- Onboarding expectation acknowledgement for what Veroxa does, what Veroxa does not handle, restaurant responsibilities, confirmations, 24-hour response meaning, no guarantees, add-ons, and coming-soon items.
+- Weekly updates foundation and Client Updates page for what Veroxa worked on, what was posted/prepared, what is pending, media needed, confirmations needed, request response reminder, and next week focus.
+- Monthly report foundation and Client Reports page for what Veroxa handled, Google/Maps/local progress, website alignment, Facebook/Instagram content, media working/not-working, reach/action signals, limitations, and next month focus.
+- Add-on logic for new basic website +$95 and missing Facebook/Instagram profile creation +$45/profile; no checkout or payment logic.
+- Client-safe value proof messaging and internal value proof baseline guardrails. Internal value proof remains $9,900/month minimum online-influenced sales channel value baseline at 5% margin and is not extra new sales.
+- Media intelligence client-safe labels and guidance for best-seller photos, clearer photos, saved-for-later media, business confirmation, picture-based content, and video channels coming soon.
+- Audit-to-onboarding and audit-to-first-client documentation.
+- Backend SOP docs for operating principles, weekly update, monthly report, media review, website alignment, and portal request handling.
+- First 5 client readiness plan.
+- 90% pre-paid OS readiness map.
+- Guardrails for SOP presence, client-safe proof math, discount confusion, one-offer launch alignment, and Team deferral.
+
+### New/updated docs index
+
+- `MEGA_BUILD_EXECUTION_PLAN.md`
+- `VEROXA_90_PERCENT_PREPAID_OS_READINESS_MAP.md`
+- `BACKEND_SOP_OPERATING_PRINCIPLES.md`
+- `SOP_WEEKLY_UPDATE.md`
+- `SOP_MONTHLY_REPORT.md`
+- `SOP_MEDIA_REVIEW.md`
+- `SOP_WEBSITE_ALIGNMENT.md`
+- `SOP_PORTAL_REQUEST_HANDLING.md`
+- `FIRST_5_CLIENT_READINESS_PLAN.md`
+- `AUDIT_TO_FIRST_CLIENT_FLOW.md`
+- `ADDON_NEW_BASIC_WEBSITE_SCOPE.md`
+- `ADDON_SOCIAL_PROFILE_CREATION_SCOPE.md`
+- `PRE_PAID_ACTIVATION_GATE.md`
+- `PRICING_SOURCE_OF_TRUTH.md`
+- `PACKAGE_BOUNDARY_AND_REQUEST_ENFORCEMENT.md`
+- `VALUE_PROOF_AND_RESTAURANT_REACH_LAYER.md`
+- `MEDIA_INTELLIGENCE_LAYER.md`
+
+### No live systems
+
+No production auth, database, storage upload, live AI/OpenAI call, Google/Meta/Yelp/TikTok integration, payment/checkout, publishing connector, webhook, cron/background job, or automated customer-visible execution was added. `AUTH_MODE` remains `placeholder`.
+
+### Team complexity
+
+Advanced Team OS remains deferred. Team stays supporting/action-focused; this build does not add Owner/Operator/Super Admin/generic Admin/Execution dashboards or complex Team command-center features.
+
+### Next recommended build
+
+Manual first-client execution pack, client-facing final visual polish, audit-to-onboarding polish, and RR before any paid/live system planning.

@@ -36,7 +36,11 @@
     "check-request-sla-model": "tsx ./src/check-request-sla-model.ts",
     "check-value-proof-reach-layer": "tsx ./src/check-value-proof-reach-layer.ts",
     "check-media-intelligence-layer": "tsx ./src/check-media-intelligence-layer.ts",
-    "check-final-launch-offer-alignment": "tsx src/check-final-launch-offer-alignment.ts"
+    "check-final-launch-offer-alignment": "tsx src/check-final-launch-offer-alignment.ts",
+    "check-backend-sop-readiness": "tsx ./src/check-backend-sop-readiness.ts",
+    "check-client-safe-proof-math": "tsx ./src/check-client-safe-proof-math.ts",
+    "check-discount-confusion": "tsx ./src/check-discount-confusion.ts",
+    "check-team-deferral": "tsx ./src/check-team-deferral.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",
