@@ -132,3 +132,7 @@ Internal-only baseline remains: at $495/month and 5% margin, the minimum online-
 Launch reach channels: Google/search reach, Google Maps reach, website/menu/order link clarity, phone clicks, direction clicks, website clicks, menu/order clicks, profile actions, Facebook reach, Instagram reach, customer mentions, and owner-reported online-influenced activity.
 
 Coming soon reach channels: Yelp reach, TikTok/Reels reach, and ads reach. These are not live integrations.
+
+## 2026-06-05 — Post-PR70 RR cleanup alignment
+
+PR #70 built the 90% pre-paid/manual OS foundations for client readiness, weekly updates, monthly reports, launch add-ons, SOPs, readiness mapping, value-proof guardrails, and client portal readiness surfaces. This cleanup fixed RR issues around preview login, the public header, loaded weekly/monthly client data states, client dashboard setup/demo separation, old tier leakage in onboarding, request boundary counts, public/client polish, and guardrail coverage. Veroxa remains manual/pre-live: no production auth, storage, database writes, live AI, connectors, payments, webhooks, cron jobs, or automated customer-visible execution were added. Team complexity remains deferred and supporting/action-focused. The next big build should wait until this cleanup passes RR and should focus on a dormant live-system blueprint and first-client execution pack, not paid/live systems yet.

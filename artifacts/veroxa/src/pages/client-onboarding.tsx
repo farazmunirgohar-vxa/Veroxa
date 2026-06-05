@@ -81,7 +81,7 @@ function ExpectationAgreementPreview() {
       </CardHeader>
       <CardContent className="grid gap-4 text-sm text-muted-foreground lg:grid-cols-2">
         <div className="lg:col-span-2 rounded-lg border border-border/70 bg-background/70 p-3">
-          <p className="font-medium text-foreground">What Veroxa does</p>
+          <p className="font-medium text-foreground">Complete Online Presence — $495/month</p>
           <p className="mt-1">Veroxa helps manage the online presence channel customers already use to find, call, visit, order from, and trust the restaurant: Google, Maps/local visibility, website alignment if access is provided, Facebook, Instagram, weekly updates, monthly reports, and portal request review.</p>
         </div>
         <div>
@@ -137,7 +137,7 @@ export default function ClientOnboarding() {
       <RealPortalReviewNotice />
       <PageHeader
         title="Restaurant Onboarding"
-        description="A simple setup checklist so Veroxa can organize your online presence correctly."
+        description="A simple Complete Online Presence setup checklist so Veroxa can organize your online presence correctly."
         actions={<Link href={dashboardHref}><Button variant="outline">Back to dashboard</Button></Link>}
         testId="header-client-onboarding"
       />

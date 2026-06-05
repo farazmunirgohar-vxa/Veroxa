@@ -11,7 +11,7 @@ import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientSaasPortalState } from "@/hooks/useClientSaasPortalState";
 import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary";
 import { getClientSafeEmptyStateForPage } from "@/domain/saas/clientPortalState";
-import { packageBoundarySeedDecisions } from "@/domain/packageBoundary";
+import { decidePackageBoundary, packageBoundarySeedDecisions } from "@/domain/packageBoundary";
 import {
   buildClientRequestWindowMessage,
   evaluateRequestSla,
@@ -43,6 +43,16 @@ export default function ClientRequests() {
         ),
       }))
     : [];
+  const loadedBoundaries = pageState.clientRequests.map((request) =>
+    decidePackageBoundary({
+      requestId: request.id,
+      clientId: request.restaurantId,
+      currentPlan: "complete_online_presence",
+      title: request.requestType.replaceAll("_", " "),
+      message: request.message,
+      createdAt: request.createdAt,
+    }),
+  );
   const metrics = canUseSeedRequests
     ? {
         total: requestRows.length,
@@ -63,8 +73,8 @@ export default function ClientRequests() {
         total: requestSummary.total,
         inReview: grouped.in_review?.length ?? 0,
         needsClientInput: requestSummary.needsClientConfirmation,
-        comingSoon: 0,
-        addOnAvailable: 0,
+        comingSoon: loadedBoundaries.filter((boundary) => boundary.eligibilityStatus === "coming_soon_not_included").length,
+        addOnAvailable: loadedBoundaries.filter((boundary) => boundary.eligibilityStatus === "add_on_available").length,
       };
   const showSafeEmptyState = !pageState.isDemoData && !pageState.canShowRealData;
   return (
@@ -81,9 +91,9 @@ export default function ClientRequests() {
           body={getClientSafeEmptyStateForPage("requests", pageState)}
         />
       ) : null}
-      <div className="sr-only">
-        Received In Review Handled Waiting for you Response within 24 hours
-        Included Needs confirmation Coming soon Add-on available Not included at launch Needs manual review Not supported
+
+      <div className="mb-4 flex flex-wrap gap-2 text-xs text-muted-foreground">
+        {['Received', 'In Review', 'Handled', 'Waiting for you'].map((status) => <span key={status} className="rounded-full border border-border px-3 py-1">{status}</span>)}
       </div>
       {showSafeEmptyState ? null : (
         <section className="grid gap-4 md:grid-cols-5 mb-4">
@@ -156,7 +166,7 @@ export default function ClientRequests() {
                             {request.message}
                           </p>
                           <p className="mt-1 text-xs text-muted-foreground">
-                            {request.clientVisibleStatus}
+                            {loadedBoundaries.find((boundary) => boundary.requestId === request.id)?.clientSafeMessage ?? request.clientVisibleStatus}
                           </p>
                         </div>
                       ))}

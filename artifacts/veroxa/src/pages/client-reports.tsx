@@ -6,17 +6,21 @@ import { StatusBadge } from "@/components/common/StatusBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientSaasPortalState } from "@/hooks/useClientSaasPortalState";
-import { buildClientMonthlyReportPreview, getClientNoGuaranteeReportLanguage, getClientSafeValueProofReportLanguage, monthlyReportSections } from "@/domain/monthlyReports";
+import { buildClientMonthlyReportPreview, buildMonthlyReportFromClientSummary, buildMonthlyReportFromReportRecord, getClientNoGuaranteeReportLanguage, getClientSafeValueProofReportLanguage, monthlyReportSections } from "@/domain/monthlyReports";
 
 export default function ClientReports() {
-  const { pageState } = useClientSaasPortalState();
-  const { report, readiness } = buildClientMonthlyReportPreview();
+  const { pageState, reportSummaries } = useClientSaasPortalState();
+  const loadedReport = reportSummaries.find((summary) => summary.reportType === "monthly")
+    ? buildMonthlyReportFromClientSummary(reportSummaries.find((summary) => summary.reportType === "monthly")!, pageState.restaurant?.name ?? "Your restaurant")
+    : pageState.reports.find((item) => item.reportType === "monthly")
+      ? buildMonthlyReportFromReportRecord(pageState.reports.find((item) => item.reportType === "monthly")!, pageState.restaurant?.name ?? "Your restaurant")
+      : null;
+  const { report, readiness } = buildClientMonthlyReportPreview(loadedReport ?? undefined);
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
       <RealPortalReviewNotice />
-      <div className="sr-only">Weekly Reports Monthly Reports</div>
       <PageHeader title="Monthly Reports" description="A clear monthly online presence report: what Veroxa handled, what appears to be working, what needs improvement, and what is needed next." testId="header-client-reports" />
-      {!pageState.isDemoData && !pageState.canShowRealData ? <SafePortalEmptyCard title="Monthly report setup state" body="Your first report will appear after enough manual review context exists. This page shows the preview-safe report structure without live analytics or fake metrics." icon="info" /> : null}
+      {!pageState.isDemoData && !pageState.canShowRealData ? <SafePortalEmptyCard title="Monthly report setup state" body="Your first report will appear after enough manual review context exists. This page shows the safe monthly report structure without live analytics or fake metrics." icon="info" /> : null}
 
       <Card className="mb-4 border-primary/20 bg-primary/5" data-testid="monthly-report-status">
         <CardContent className="p-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">

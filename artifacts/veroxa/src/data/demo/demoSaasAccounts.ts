@@ -1,4 +1,4 @@
-import { VEROXA_PLANS } from "@/data/pricing/veroxaPricing";
+import { COMPLETE_ONLINE_PRESENCE_PRICE_MONTHLY } from "@/data/pricing/veroxaPricing";
 import { evaluateAccountActivation } from "@/domain/saas/accountActivation";
 import type { AccountPlanState, RestaurantAccount, RestaurantProfile } from "@/domain/saas/saasTypes";
 
@@ -27,10 +27,10 @@ export const demoSaasProfiles: RestaurantProfile[] = demoSaasRestaurants.map((re
 }));
 
 export const demoSaasPlans: AccountPlanState[] = [
-  { restaurantId: "demo-bistro", currentPlanId: "starter", planStatus: "demo", billingMode: "manual", monthlyPriceCents: VEROXA_PLANS.starter.priceMonthly * 100, foundingDiscountEligible: true, foundingDiscountActive: true, premiumReadinessStatus: "not_eligible", adBudgetConfirmed: false, createdAt: DEMO_NOW, updatedAt: DEMO_NOW },
-  { restaurantId: "demo-pizzeria", currentPlanId: "growth", planStatus: "demo", billingMode: "manual", monthlyPriceCents: VEROXA_PLANS.growth.priceMonthly * 100, foundingDiscountEligible: true, foundingDiscountActive: false, premiumReadinessStatus: "not_eligible", adBudgetConfirmed: false, createdAt: DEMO_NOW, updatedAt: DEMO_NOW },
-  { restaurantId: "demo-catering-kitchen", currentPlanId: "premium", planStatus: "demo", billingMode: "manual", monthlyPriceCents: VEROXA_PLANS.premium.priceMonthly * 100, foundingDiscountEligible: false, foundingDiscountActive: false, premiumReadinessStatus: "assessment_needed", adBudgetConfirmed: true, adBudgetAmountCents: 50000, createdAt: DEMO_NOW, updatedAt: DEMO_NOW },
-  { restaurantId: "demo-noodle-house", currentPlanId: "growth", planStatus: "paused", billingMode: "manual", monthlyPriceCents: VEROXA_PLANS.growth.priceMonthly * 100, foundingDiscountEligible: true, foundingDiscountActive: false, premiumReadinessStatus: "not_eligible", adBudgetConfirmed: false, createdAt: DEMO_NOW, updatedAt: DEMO_NOW },
+  { restaurantId: "demo-bistro", currentPlanId: "complete_online_presence", planStatus: "demo", billingMode: "manual", monthlyPriceCents: COMPLETE_ONLINE_PRESENCE_PRICE_MONTHLY * 100, foundingDiscountEligible: true, foundingDiscountActive: true, premiumReadinessStatus: "not_eligible", adBudgetConfirmed: false, createdAt: DEMO_NOW, updatedAt: DEMO_NOW },
+  { restaurantId: "demo-pizzeria", currentPlanId: "complete_online_presence", planStatus: "demo", billingMode: "manual", monthlyPriceCents: COMPLETE_ONLINE_PRESENCE_PRICE_MONTHLY * 100, foundingDiscountEligible: true, foundingDiscountActive: false, premiumReadinessStatus: "not_eligible", adBudgetConfirmed: false, createdAt: DEMO_NOW, updatedAt: DEMO_NOW },
+  { restaurantId: "demo-catering-kitchen", currentPlanId: "complete_online_presence", planStatus: "demo", billingMode: "manual", monthlyPriceCents: COMPLETE_ONLINE_PRESENCE_PRICE_MONTHLY * 100, foundingDiscountEligible: false, foundingDiscountActive: false, premiumReadinessStatus: "not_eligible", adBudgetConfirmed: false, createdAt: DEMO_NOW, updatedAt: DEMO_NOW },
+  { restaurantId: "demo-noodle-house", currentPlanId: "complete_online_presence", planStatus: "paused", billingMode: "manual", monthlyPriceCents: COMPLETE_ONLINE_PRESENCE_PRICE_MONTHLY * 100, foundingDiscountEligible: true, foundingDiscountActive: false, premiumReadinessStatus: "not_eligible", adBudgetConfirmed: false, createdAt: DEMO_NOW, updatedAt: DEMO_NOW },
 ];
 
 export const demoAccountActivationSummaries = demoSaasRestaurants.map((restaurant) => {
@@ -39,7 +39,7 @@ export const demoAccountActivationSummaries = demoSaasRestaurants.map((restauran
   return {
     restaurantId: restaurant.id,
     restaurantName: restaurant.name,
-    planId: plan?.currentPlanId ?? "starter",
+    planId: plan?.currentPlanId ?? "complete_online_presence",
     result: evaluateAccountActivation({
       restaurantStatus: restaurant.status,
       planStatus: plan?.planStatus,

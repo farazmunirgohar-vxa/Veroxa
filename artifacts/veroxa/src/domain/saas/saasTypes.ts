@@ -113,7 +113,7 @@ export type AccountPlanStatus =
 
 export interface AccountPlanState {
   restaurantId: RestaurantId;
-  currentPlanId: "starter" | "growth" | "premium";
+  currentPlanId: "complete_online_presence" | "starter" | "growth" | "premium";
   planStatus: AccountPlanStatus;
   billingMode: "manual" | "future_stripe" | "future_external";
   monthlyPriceCents: number;

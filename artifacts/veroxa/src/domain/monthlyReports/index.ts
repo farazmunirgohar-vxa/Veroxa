@@ -5,3 +5,4 @@ export * from "./reportReadinessEngine";
 export * from "./clientMonthlyReportMessages";
 export * from "./monthlyReportSections";
 export * from "./monthlyReportTemplates";
+export * from "./monthlyReportSummaryAdapter";

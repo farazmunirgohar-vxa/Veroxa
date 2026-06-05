@@ -1,4 +1,4 @@
-export type OnboardingPackageId = "starter" | "growth" | "premium";
+export type OnboardingPackageId = "complete_online_presence" | "starter" | "growth" | "premium";
 
 export type OnboardingStatus =
   | "not_started"
@@ -59,8 +59,8 @@ export interface BusinessTruthInputs {
   cateringAvailabilityConfirmed: boolean;
   dietaryClaimsConfirmed: boolean;
   orderingReservationLinksConfirmed: boolean;
-  premiumAdBudgetAcknowledged: boolean;
-  premiumReadinessAssessmentAcknowledged: boolean;
+  futureAdsAcknowledged: boolean;
+  futureReadinessAssessmentAcknowledged: boolean;
 }
 
 export interface ProofInputs {

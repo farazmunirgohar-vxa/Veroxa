@@ -20,12 +20,8 @@ export function getBusinessTruthChecklist(profile: RestaurantOnboardingProfile):
     const offerRelevant = !existingOfferCheck || profile.businessTruth.existingOfferProvided;
     const active = required && offerRelevant;
     const complete = Boolean(profile.businessTruth[key]);
-    return { id: key, label, description, status: !active ? "not_needed" : complete ? "complete" : "review" as const, clientLabel: !active ? "Not needed right now" : complete ? "Complete" : "Veroxa team review", teamLabel: !active ? "Not needed for this package" : complete ? "Ready for review" : "Confirm before public copy", requiredFor: ["starter", "growth", "premium"], value: complete ? "Confirmed" : "Needs confirmation" };
+    return { id: key, label, description, status: !active ? "not_needed" : complete ? "complete" : "review" as const, clientLabel: !active ? "Not needed right now" : complete ? "Complete" : "Veroxa team review", teamLabel: !active ? "Not needed for this package" : complete ? "Ready for review" : "Confirm before public copy", requiredFor: ["complete_online_presence"], value: complete ? "Confirmed" : "Needs confirmation" };
   });
-  if (profile.packageId === "premium") {
-    items.push({ id: "premiumAdBudgetAcknowledged", label: "Premium ad budget acknowledgement", description: "Ad spend is separate and client approval is required before ad planning.", status: profile.businessTruth.premiumAdBudgetAcknowledged ? "complete" : "review", clientLabel: profile.businessTruth.premiumAdBudgetAcknowledged ? "Complete" : "Veroxa team review", teamLabel: "Confirm before public copy", requiredFor: ["premium"], value: profile.businessTruth.premiumAdBudgetAcknowledged ? "Acknowledged" : "Needs acknowledgement" });
-    items.push({ id: "premiumReadinessAssessmentAcknowledged", label: "Advanced readiness assessment", description: "Premium is selective and requires readiness review before ad support.", status: profile.businessTruth.premiumReadinessAssessmentAcknowledged ? "complete" : "review", clientLabel: profile.businessTruth.premiumReadinessAssessmentAcknowledged ? "Complete" : "Veroxa team review", teamLabel: "Needs verification", requiredFor: ["premium"], value: profile.businessTruth.premiumReadinessAssessmentAcknowledged ? "Acknowledged" : "Assessment needed" });
-  }
   return items;
 }
 

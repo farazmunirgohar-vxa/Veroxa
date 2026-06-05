@@ -9,21 +9,17 @@ export function getFirstWeekSetupChecklist(profile: RestaurantOnboardingProfile)
   const missingPlatforms = getMissingPlatformLinks(profile).length;
   const missingMedia = getNextMediaNeeded(profile).length;
   const missingTruth = getBusinessTruthItemsToConfirm(profile).length;
-  const packageNeedsVideo = profile.packageId === "growth" || profile.packageId === "premium";
-  const packageNeedsPremium = profile.packageId === "premium";
   const checks = [
     ["verifyBusinessInfo", "Verify business info", "Review restaurant basics before first setup work.", missingBusiness === 0],
     ["reviewGoogleMaps", "Review Google/Maps presence", "Review local visibility readiness from provided links.", !getMissingPlatformLinks(profile).includes("Google Business Profile") && !getMissingPlatformLinks(profile).includes("Google Maps")],
     ["collectMedia", "Collect first usable media batch", "Request current photos before first picture-based content.", missingMedia === 0],
     ["identifyBestSellers", "Identify best sellers", "Use confirmed best sellers to guide first setup.", profile.bestSellers.length > 0],
     ["pictureContent", "Prepare first picture-based content", "Draft only; no publishing or scheduling.", missingMedia === 0 && missingTruth === 0],
-    ["growthVideoPath", "Prepare team-internal future video path", "Only as team/internal preview; Reels/TikTok are coming soon and client-not-included at launch.", !packageNeedsVideo || (profile.mediaAvailable.includes("short food prep videos") && Boolean(profile.tiktokUrl))],
-    ["premiumReview", "Prepare Advanced readiness review", "Premium ad planning remains on hold until readiness and approval are confirmed.", !packageNeedsPremium || (profile.businessTruth.premiumAdBudgetAcknowledged && profile.businessTruth.premiumReadinessAssessmentAcknowledged)],
     ["clientUpdate", "Prepare client-safe first update", "Explain setup status without internal language.", missingBusiness === 0],
     ["manualPlan", "Prepare Team manual execution plan", "Queue first-week actions for manual work only.", missingBusiness === 0 && missingPlatforms <= 2],
     ["confirmTruth", "Confirm business details before public claims", "Hold public-facing claims until details are confirmed.", missingTruth === 0],
   ] as const;
-  return checks.map(([id, label, description, complete]) => ({ id, label, description, status: complete ? "complete" : "review", clientLabel: complete ? "Complete" : "Veroxa team review", teamLabel: complete ? "Use in first-week setup" : "Needs verification", requiredFor: ["starter", "growth", "premium"] }));
+  return checks.map(([id, label, description, complete]) => ({ id, label, description, status: complete ? "complete" : "review", clientLabel: complete ? "Complete" : "Veroxa team review", teamLabel: complete ? "Use in first-week setup" : "Needs verification", requiredFor: ["complete_online_presence"] }));
 }
 
 export function getFirstWeekSetupStatus(profile: RestaurantOnboardingProfile): string {
@@ -34,8 +30,6 @@ export function getFirstWeekSetupStatus(profile: RestaurantOnboardingProfile): s
 
 export function getFirstWeekTeamTasks(profile: RestaurantOnboardingProfile): string[] {
   const tasks = ["Verify business info", "Review Google/Maps presence", "Identify best sellers to highlight", "Prepare client-safe first update", "Prepare Team manual execution plan", "Confirm business details before public claims"];
-  if (profile.packageId === "growth" || profile.packageId === "premium") tasks.push("Prepare team-internal future video path if media and links are ready");
-  if (profile.packageId === "premium") tasks.push("Keep ad planning parked as coming soon unless explicitly approved later");
   return tasks;
 }
 
