@@ -44,12 +44,12 @@ export default function ClientDashboard() {
       ? dashboardSummary.nextClientAction
       : "Veroxa is preparing your portal. No action is needed until Veroxa asks for media, access, or a confirmed business detail.";
   const weeklyStatus = updateSummaries.length > 0
-    ? "Update data loaded"
+    ? "Update ready for review"
     : isSetupState
       ? "Preparing first update"
       : "No update ready yet";
   const monthlyStatus = reportSummaries.some((report) => report.reportType === "monthly")
-    ? "Report data loaded"
+    ? "Report ready for review"
     : isSetupState
       ? "Preparing first report"
       : "No report ready yet";
@@ -75,7 +75,7 @@ export default function ClientDashboard() {
       </Card>
 
       {isSetupState ? (
-        <SafePortalEmptyCard title="Client portal setup state" body="Veroxa is preparing your workspace. This route shows safe setup guidance only — no sample progress is being presented as real client work." icon="info" />
+        <SafePortalEmptyCard title="Workspace setup" body="Veroxa is preparing your workspace. This preview is waiting for Veroxa setup review, so no sample progress is presented as your restaurant work." icon="info" />
       ) : null}
 
       <section className="mb-4 grid gap-4 md:grid-cols-4">

@@ -1,5 +1,12 @@
 # Veroxa Launch Simplification Source of Truth
 
+## 2026-06-05 — Final trim gate note
+
+- PR #72 resolved preview-login safety and polish; this final trim aligns public polish, route hygiene, client copy, Team deferral, guardrails, and the AI/automation readiness boundary.
+- Veroxa remains preview/manual/pre-live. Passing this gate still does not authorize production auth, database writes, storage uploads, payments, connectors, live AI, webhooks, cron jobs, background jobs, or automated customer-visible execution.
+- The next approved planning step is an AI/automation readiness blueprint, not live AI activation.
+- After the 80% mark, Faraz chooses the A-Z review route before paid systems are connected.
+
 
 ## 2026-06-04 — 90% pre-paid OS final alignment
 

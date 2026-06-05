@@ -21,7 +21,7 @@ export default function ServicesPage() {
         <div className="max-w-4xl mx-auto text-center">
           <p className="text-xs uppercase tracking-wider text-primary font-semibold mb-3">Compatibility page</p>
           <h1 className="text-4xl md:text-5xl font-extrabold mb-4">Services are now bundled into one launch offer.</h1>
-          <p className="text-muted-foreground max-w-2xl mx-auto mb-8">The main public flow is Home → Audit → Login. This hidden compatibility page keeps old links safe without reviving a separate Services/Pricing funnel.</p>
+          <p className="text-muted-foreground max-w-2xl mx-auto mb-8">The active public flow is Home, the restaurant online presence audit, and portal login. This hidden compatibility page keeps old links safe without reviving a separate Services/Pricing funnel.</p>
           <div className="grid sm:grid-cols-2 gap-3 text-left mb-8">
             {serviceScope.map((item) => <div className="rounded-xl border border-border/40 bg-card/20 p-4 text-sm text-muted-foreground" key={item}>{item}</div>)}
           </div>

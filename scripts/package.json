@@ -41,7 +41,8 @@
     "check-client-safe-proof-math": "tsx ./src/check-client-safe-proof-math.ts",
     "check-discount-confusion": "tsx ./src/check-discount-confusion.ts",
     "check-team-deferral": "tsx ./src/check-team-deferral.ts",
-    "check-post-pr70-rr-cleanup": "tsx ./src/check-post-pr70-rr-cleanup.ts"
+    "check-post-pr70-rr-cleanup": "tsx ./src/check-post-pr70-rr-cleanup.ts",
+    "check-final-trim-ai-readiness": "tsx ./src/check-final-trim-ai-readiness.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",

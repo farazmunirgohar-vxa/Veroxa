@@ -41,9 +41,9 @@ for (const forbidden of [
     );
   }
 }
-if (!clientMediaSource.includes("No file storage is connected yet")) {
+if (!clientMediaSource.includes("For now, Veroxa will tell you how to send media for review")) {
   failures.push(
-    "Client media page must clearly avoid implying cloud file storage is connected.",
+    "Client media page must use client-safe media sending guidance without implying live storage is connected.",
   );
 }
 if (

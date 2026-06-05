@@ -147,14 +147,14 @@ export default function ClientOnboarding() {
         <div className="space-y-4">
           <SafePortalEmptyCard
             title="Restaurant onboarding is being prepared"
-            body="Your setup checklist will appear here once Veroxa activates your account. Real client onboarding data is not connected in this preview. Nothing goes live without Veroxa team review."
+            body="Your setup checklist will appear here after Veroxa setup review. Your workspace is being prepared. Nothing goes live without Veroxa team review."
             testId="empty-client-onboarding-safe-state"
           />
           <ExpectationAgreementPreview />
           <Card className="border-primary/20 bg-primary/5">
             <CardContent className="p-5 text-sm text-muted-foreground">
               <p className="font-medium text-foreground">What happens next</p>
-              <p className="mt-2">Veroxa will organize business details, platform links, media needs, and confirmation items after the account is activated. This real route stays useful without showing benchmark onboarding data as your restaurant.</p>
+              <p className="mt-2">Veroxa will organize business details, platform links, media needs, and confirmation items after the account is activated. This workspace stays useful without showing sample setup progress as your restaurant.</p>
             </CardContent>
           </Card>
         </div>
@@ -163,7 +163,7 @@ export default function ClientOnboarding() {
       <Card className="mb-5 border-primary/25 bg-primary/5">
         <CardContent className="grid gap-4 p-5 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
           <div>
-            <p className="text-sm font-semibold text-foreground">{mode.isPublicDemoRoute ? "Demo Preview — example restaurant workspace" : "Real client data is not connected in this preview"}</p>
+            <p className="text-sm font-semibold text-foreground">{mode.isPublicDemoRoute ? "Demo Preview — example restaurant workspace" : "Your workspace is being prepared"}</p>
             <p className="mt-1 text-sm text-muted-foreground">Nothing goes live without Veroxa team review. This page shows setup status, what Veroxa needs from you, and what Veroxa will organize during the first week.</p>
           </div>
           <div className="rounded-xl border border-border/70 bg-background/70 p-4">

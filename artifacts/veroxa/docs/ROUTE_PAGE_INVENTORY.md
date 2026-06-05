@@ -20,6 +20,15 @@ Status: containment inventory created after P0/P1 hardening. No pages were delet
 - Client nav remains: Dashboard, Media, Updates, Requests, Reports.
 - Team nav remains the intentional `/team/*` review cockpit documented in `src/lib/teamPortalNav.ts`.
 
+
+## 2026-06-05 final trim route hygiene
+
+- Active public flow: `/`, `/free-audit`, `/login`.
+- Hidden compatibility routes: `/services`, `/pricing`; they keep older links safe without reviving a public Services/Pricing funnel.
+- Hidden internal/demo QA routes: `/demo`, `/guided-demo`, `/demo/client/*`, and `/upload`; they must be labeled sample/QA/demo-only and must not be promoted by public navigation or homepage CTAs. `/upload` remains demo-only and does not add live storage/upload.
+- Real client portal routes: `/client/dashboard`, `/client/onboarding`, `/client/media`, `/client/updates`, `/client/requests`, `/client/reports`; guarded and client-safe.
+- Real team portal routes: `/team/*`; guarded supporting/manual internal routes for Faraz review only. Team complexity remains deferred: no Owner/Operator/Super Admin/generic Admin/Execution dashboards and no AI command-center automation.
+
 ## Inventory
 
 | Filename | Routed? | Classification | Recommended action |
@@ -38,7 +47,7 @@ Status: containment inventory created after P0/P1 hardening. No pages were delet
 | `client-media.tsx` | yes | active_routed | Active client media page. |
 | `client-monthly-report.tsx` | no | future_planned | Keep for future report detail routing. |
 | `client-onboarding-center.tsx` | no | future_planned | Keep for later onboarding; not active now. |
-| `client-onboarding.tsx` | no | future_planned | Keep for later onboarding; not active now. |
+| `client-onboarding.tsx` | yes | active_routed | Active guarded client onboarding page plus public demo alias; keep setup/demo context safe. |
 | `client-portal.tsx` | no | future_planned | Keep as parked/legacy portal shell candidate; do not route now. |
 | `client-reports.tsx` | yes | active_routed | Active client reports page. |
 | `client-requests.tsx` | yes | active_routed | Active client requests page. |
