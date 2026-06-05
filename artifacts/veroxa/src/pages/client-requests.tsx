@@ -183,6 +183,14 @@ export default function ClientRequests() {
                 ))}
               </ul>
             </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <BoundaryExample title="Included" items={["Google update", "website alignment", "Facebook/Instagram picture post", "media guidance", "reporting question", "menu/contact/link correction"]} />
+              <BoundaryExample title="Needs confirmation" items={["hours", "menu/prices", "existing offer details", "order/reservation links"]} />
+              <BoundaryExample title="Add-on available" items={["new basic website +$95", "missing Facebook page +$45/profile", "missing Instagram profile +$45/profile"]} />
+              <BoundaryExample title="Coming soon" items={["Yelp", "TikTok", "Reels/video", "ads"]} />
+              <BoundaryExample title="Not included at launch" items={["DMs/comments/customer service", "refunds/complaints", "full custom development", "hosting/domain/email"]} />
+              <BoundaryExample title="Needs manual review" items={["unclear scope", "sensitive business detail", "larger request timing"]} />
+            </div>
             <div>
               <p className="font-medium text-foreground">
                 What the restaurant still handles
@@ -204,6 +212,10 @@ export default function ClientRequests() {
     </PortalLayout>
   );
 }
+function BoundaryExample({ title, items }: { title: string; items: string[] }) {
+  return <div className="rounded-lg border border-border/70 p-3"><p className="font-medium text-foreground">{title}</p><ul className="mt-2 list-disc space-y-1 pl-5 text-xs">{items.map((item) => <li key={item}>{item}</li>)}</ul></div>;
+}
+
 function Metric({ label, value }: { label: string; value: number }) {
   return (
     <Card>

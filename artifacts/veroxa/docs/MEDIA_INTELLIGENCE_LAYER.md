@@ -122,3 +122,11 @@ Veroxa should be built to about 90% complete in preview/manual/pre-live mode bef
 ## SaaS foundation continuity
 
 SaasDataMode, RepositoryBundle, ActivityLogRepository, assertNoDemoFixturesInAuthenticatedMode, ProfitValidationSnapshotRecord, placeholder repository, demo repository, and future production adapter requires RR approval remain the SaaS boundary markers. Real client routes must not show demo seed data unless they are public demo routes.
+
+## 2026-06-05 — Client-safe media intelligence alignment
+
+Client-safe media labels are: Ready for Veroxa review, Needs clearer photo, More best-seller photos needed, Saved for later, Needs business confirmation, Useful for picture-based content, and Video channels coming soon.
+
+Images/photos can support Facebook draft, Instagram draft, and Google Business Profile / Google update draft directions for Veroxa team review. Videos can be saved into Facebook, Instagram/Reels, Google Business Profile / Google update, and TikTok draft directions, but client-facing launch language must say current launch is picture-based content and video/Reels/TikTok are coming soon.
+
+No live systems, storage uploads, platform publishing, AI image editing, or automated customer-visible execution are connected.

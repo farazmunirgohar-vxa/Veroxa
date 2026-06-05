@@ -122,3 +122,21 @@ Veroxa should be built to about 90% complete in preview/manual/pre-live mode bef
 ## SaaS foundation continuity
 
 SaasDataMode, RepositoryBundle, ActivityLogRepository, assertNoDemoFixturesInAuthenticatedMode, ProfitValidationSnapshotRecord, placeholder repository, demo repository, and future production adapter requires RR approval remain the SaaS boundary markers. Real client routes must not show demo seed data unless they are public demo routes.
+
+## 2026-06-05 — Mega build pre-paid activation gate update
+
+Before paying for or connecting production auth, database, storage, OpenAI/live AI, Google/Meta/Yelp/TikTok integrations, payments, or publishing connectors, Veroxa must pass this checklist:
+
+- Public offer stable: Complete Online Presence — $495/month.
+- Onboarding expectations stable and client-safe.
+- Request boundary stable across included, confirmation-needed, add-on, coming-soon, not-included, and manual-review requests.
+- Weekly update domain/UI/SOP stable.
+- Monthly report domain/UI/SOP stable.
+- Backend SOPs drafted and usable for Pakistan backend execution later.
+- First 5 client workflow tested manually.
+- No critical RR issues.
+- No live-system drift.
+- No public/client proof math leaks.
+- No Team complexity expansion beyond supporting/action-focused surfaces.
+
+Blocked until future RR approval: production auth, database, storage, live AI, Google/Meta/Yelp/TikTok platform connections, payments, publishing connectors, webhooks, cron jobs, background jobs, and automated customer-visible execution.

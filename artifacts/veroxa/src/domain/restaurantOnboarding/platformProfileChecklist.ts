@@ -44,3 +44,15 @@ export function getPlatformNextAction(profile: RestaurantOnboardingProfile): str
   if (missing.length === 0) return "Platform links are ready for Veroxa team review.";
   return `Confirm available platform links: ${missing.slice(0, 4).join(", ")}${missing.length > 4 ? ", and remaining links" : ""}.`;
 }
+
+export function getLaunchAccessChecklist(profile: RestaurantOnboardingProfile) {
+  return [
+    { id: "google_business_profile", label: "Google Business Profile access/link", status: profile.googleBusinessProfileUrl || profile.googleMapsUrl ? "Ready for Veroxa review" : "Waiting on access", launchService: true },
+    { id: "website", label: "Website access/link", status: profile.websiteUrl ? "Ready for Veroxa review" : "Waiting on access", launchService: true },
+    { id: "facebook", label: "Facebook access/link", status: profile.facebookUrl ? "Ready for Veroxa review" : "Waiting on access", launchService: true, addOnIfMissing: "Missing Facebook profile creation +$45/profile" },
+    { id: "instagram", label: "Instagram access/link", status: profile.instagramUrl ? "Ready for Veroxa review" : "Waiting on access", launchService: true, addOnIfMissing: "Missing Instagram profile creation +$45/profile" },
+    { id: "yelp", label: "Yelp", status: "Coming soon", launchService: false },
+    { id: "tiktok", label: "TikTok", status: "Coming soon", launchService: false },
+    { id: "ads", label: "Ads", status: "Coming soon", launchService: false },
+  ] as const;
+}

@@ -80,6 +80,10 @@ function ExpectationAgreementPreview() {
         </CardTitle>
       </CardHeader>
       <CardContent className="grid gap-4 text-sm text-muted-foreground lg:grid-cols-2">
+        <div className="lg:col-span-2 rounded-lg border border-border/70 bg-background/70 p-3">
+          <p className="font-medium text-foreground">What Veroxa does</p>
+          <p className="mt-1">Veroxa helps manage the online presence channel customers already use to find, call, visit, order from, and trust the restaurant: Google, Maps/local visibility, website alignment if access is provided, Facebook, Instagram, weekly updates, monthly reports, and portal request review.</p>
+        </div>
         <div>
           <p className="font-medium text-foreground">I understand Veroxa does not handle:</p>
           <ul className="mt-2 list-disc space-y-1 pl-5">
@@ -92,8 +96,16 @@ function ExpectationAgreementPreview() {
             {expectationResponsibilities.map((item) => <li key={item}>{item}</li>)}
           </ul>
         </div>
+        <div>
+          <p className="font-medium text-foreground">What the restaurant must confirm</p>
+          <ul className="mt-2 list-disc space-y-1 pl-5"><li>hours, holiday hours, address, phone, menu items, menu prices if mentioned, existing offer details, catering availability, dietary/health claims, order links, and reservation links</li><li>Please confirm the exact details before Veroxa prepares anything public.</li></ul>
+        </div>
+        <div>
+          <p className="font-medium text-foreground">Add-ons and coming soon</p>
+          <ul className="mt-2 list-disc space-y-1 pl-5"><li>New basic website +$95</li><li>Missing Facebook or Instagram profile creation +$45/profile</li><li>Yelp, TikTok, Reels/video content, ads management, daily posting, automated publishing, and live integrations are coming soon.</li></ul>
+        </div>
         <p className="lg:col-span-2 rounded-lg border border-border/70 bg-background/70 p-3 text-xs">
-          Preview/manual only: no database write, no real checkbox persistence, no live platform access, and nothing goes live without Veroxa team review. Weekly updates are included so Veroxa can summarize what was worked on, what was posted/prepared, what is pending, what media is needed, what you need to confirm, and what is next.
+          Preview/manual only: no database write, no legal signature, no live platform access, and nothing goes live without Veroxa team review. I understand 24-hour response means review/answer/next step, not guaranteed completion. Weekly updates are included so Veroxa can summarize what was worked on, what was posted/prepared, what is pending, what media is needed, what you need to confirm, and what is next.
         </p>
       </CardContent>
     </Card>

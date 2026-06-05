@@ -122,3 +122,15 @@ Veroxa should be built to about 90% complete in preview/manual/pre-live mode bef
 ## SaaS foundation continuity
 
 SaasDataMode, RepositoryBundle, ActivityLogRepository, assertNoDemoFixturesInAuthenticatedMode, ProfitValidationSnapshotRecord, placeholder repository, demo repository, and future production adapter requires RR approval remain the SaaS boundary markers. Real client routes must not show demo seed data unless they are public demo routes.
+
+## 2026-06-05 — Request boundary examples
+
+Included: Google update, website alignment, Facebook/Instagram picture post, media guidance, reporting question, menu/contact/link correction, weekly update, and monthly report question.
+
+Needs confirmation: hours, holiday hours, address, phone, menu items, menu prices if mentioned, existing offers/promotions, catering availability, halal/organic/health claims, order links, and reservation links. Please confirm the exact details before Veroxa prepares anything public.
+
+Add-on available: new basic website +$95 and missing Facebook/Instagram social profile creation +$45/profile. No checkout/payment logic is connected.
+
+Coming soon / not included at launch: Yelp, TikTok, Reels/video content, ads management, daily posting, automated publishing, and live integrations.
+
+Not included at launch: DMs/comments/customer service, refunds/complaints, order questions, full custom development, hosting/domain/email troubleshooting, and guarantees.

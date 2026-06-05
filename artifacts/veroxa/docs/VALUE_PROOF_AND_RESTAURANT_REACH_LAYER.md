@@ -122,3 +122,13 @@ Veroxa should be built to about 90% complete in preview/manual/pre-live mode bef
 ## SaaS foundation continuity
 
 SaasDataMode, RepositoryBundle, ActivityLogRepository, assertNoDemoFixturesInAuthenticatedMode, ProfitValidationSnapshotRecord, placeholder repository, demo repository, and future production adapter requires RR approval remain the SaaS boundary markers. Real client routes must not show demo seed data unless they are public demo routes.
+
+## 2026-06-05 — Client-safe value proof and launch reach alignment
+
+Client-safe summary: Veroxa tracks online-influenced customer actions such as calls, directions, website/menu clicks, order-link clicks, profile actions, content reach, customer mentions, and owner-reported online-influenced activity to understand whether the online presence channel is meaningful. Early reports may say not enough data yet.
+
+Internal-only baseline remains: at $495/month and 5% margin, the minimum online-influenced sales channel value baseline is $9,900/month. This is **not extra new sales** and must never be presented as “Veroxa generated sales.” It is internal-only proof math for whether the online presence channel Veroxa manages is cost-justifiable.
+
+Launch reach channels: Google/search reach, Google Maps reach, website/menu/order link clarity, phone clicks, direction clicks, website clicks, menu/order clicks, profile actions, Facebook reach, Instagram reach, customer mentions, and owner-reported online-influenced activity.
+
+Coming soon reach channels: Yelp reach, TikTok/Reels reach, and ads reach. These are not live integrations.
