@@ -96,3 +96,7 @@ No live auth, production database, storage upload, AI call, Google/Meta/Yelp/Tik
 - [ ] No public demo promotion.
 - [ ] No live-system drift.
 - [ ] RR approves production architecture before any paid/live system work.
+
+## 2026-06-05 — Post-PR70 RR cleanup alignment
+
+PR #70 built the 90% pre-paid/manual OS foundations for client readiness, weekly updates, monthly reports, launch add-ons, SOPs, readiness mapping, value-proof guardrails, and client portal readiness surfaces. This cleanup fixed RR issues around preview login, the public header, loaded weekly/monthly client data states, client dashboard setup/demo separation, old tier leakage in onboarding, request boundary counts, public/client polish, and guardrail coverage. Veroxa remains manual/pre-live: no production auth, storage, database writes, live AI, connectors, payments, webhooks, cron jobs, or automated customer-visible execution were added. Team complexity remains deferred and supporting/action-focused. The next big build should wait until this cleanup passes RR and should focus on a dormant live-system blueprint and first-client execution pack, not paid/live systems yet.

@@ -140,3 +140,19 @@ Before paying for or connecting production auth, database, storage, OpenAI/live 
 - No Team complexity expansion beyond supporting/action-focused surfaces.
 
 Blocked until future RR approval: production auth, database, storage, live AI, Google/Meta/Yelp/TikTok platform connections, payments, publishing connectors, webhooks, cron jobs, background jobs, and automated customer-visible execution.
+
+## 2026-06-05 — Post-PR70 RR cleanup alignment
+
+PR #70 built the 90% pre-paid/manual OS foundations for client readiness, weekly updates, monthly reports, launch add-ons, SOPs, readiness mapping, value-proof guardrails, and client portal readiness surfaces. This cleanup fixed RR issues around preview login, the public header, loaded weekly/monthly client data states, client dashboard setup/demo separation, old tier leakage in onboarding, request boundary counts, public/client polish, and guardrail coverage. Veroxa remains manual/pre-live: no production auth, storage, database writes, live AI, connectors, payments, webhooks, cron jobs, or automated customer-visible execution were added. Team complexity remains deferred and supporting/action-focused. The next big build should wait until this cleanup passes RR and should focus on a dormant live-system blueprint and first-client execution pack, not paid/live systems yet.
+
+### Preview login review variables
+
+`AUTH_MODE` remains `placeholder`. Preview login can use the obvious non-secret fallback credentials on local/Veroxa review hostnames, or these Vercel variables can be set explicitly for review deployments:
+
+- `VITE_VEROXA_DEV_CLIENT_EMAIL=faraz@client.com`
+- `VITE_VEROXA_DEV_CLIENT_PASSWORD=farazclient`
+- `VITE_VEROXA_DEV_TEAM_EMAIL=faraz@team.com`
+- `VITE_VEROXA_DEV_TEAM_PASSWORD=farazteam`
+- `VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=true`
+
+Set `VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=false` only when intentionally disabling placeholder review login. This is preview-only access and does not add production auth.

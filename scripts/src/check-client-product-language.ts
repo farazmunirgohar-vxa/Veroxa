@@ -205,13 +205,11 @@ for (const claim of [/\b\d+%\b/, /rankings? up/i, /revenue/i]) {
       `client-reports.tsx may contain fake/overclaim metric language: ${claim}`,
     );
 }
-if (
-  !reports.includes("Weekly Reports") ||
-  !reports.includes("Monthly Reports")
-) {
-  failures.push(
-    "client-reports.tsx must keep clear Weekly Reports and Monthly Reports sections.",
-  );
+if (/sr-only[^\n]*(Weekly Reports|Monthly Reports)|(Weekly Reports|Monthly Reports)[^\n]*sr-only/.test(reports)) {
+  failures.push("client-reports.tsx must not use hidden Weekly/Monthly Reports marker stuffing.");
+}
+for (const marker of ["Monthly Reports", "What Veroxa handled", "Reach/action signals", "Next month focus"]) {
+  if (!reports.includes(marker)) failures.push(`client-reports.tsx missing visible report structure marker: ${marker}`);
 }
 
 

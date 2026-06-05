@@ -39,7 +39,7 @@ const placeholderMediaSummary: ClientMediaSummary = {
   usable: 0,
   needsBetterMedia: 0,
   used: 0,
-  uploadReadinessNotice: "Media uploads are not connected yet.",
+  uploadReadinessNotice: "Media sending instructions will appear after setup review.",
 };
 
 const placeholderRequestSummary: ClientRequestSummary = {

@@ -122,3 +122,7 @@ Veroxa should be built to about 90% complete in preview/manual/pre-live mode bef
 ## SaaS foundation continuity
 
 SaasDataMode, RepositoryBundle, ActivityLogRepository, assertNoDemoFixturesInAuthenticatedMode, ProfitValidationSnapshotRecord, placeholder repository, demo repository, and future production adapter requires RR approval remain the SaaS boundary markers. Real client routes must not show demo seed data unless they are public demo routes.
+
+## 2026-06-05 — Post-PR70 RR cleanup alignment
+
+PR #70 built the 90% pre-paid/manual OS foundations for client readiness, weekly updates, monthly reports, launch add-ons, SOPs, readiness mapping, value-proof guardrails, and client portal readiness surfaces. This cleanup fixed RR issues around preview login, the public header, loaded weekly/monthly client data states, client dashboard setup/demo separation, old tier leakage in onboarding, request boundary counts, public/client polish, and guardrail coverage. Veroxa remains manual/pre-live: no production auth, storage, database writes, live AI, connectors, payments, webhooks, cron jobs, or automated customer-visible execution were added. Team complexity remains deferred and supporting/action-focused. The next big build should wait until this cleanup passes RR and should focus on a dormant live-system blueprint and first-client execution pack, not paid/live systems yet.

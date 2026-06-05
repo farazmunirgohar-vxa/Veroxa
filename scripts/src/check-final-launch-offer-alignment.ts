@@ -54,8 +54,10 @@ for (const marker of ["Complete Online Presence", "$495", "Weekly updates", "Mon
   if (!landing.includes(marker)) failures.push(`Landing missing ${marker}`);
 }
 
-for (const marker of ["Home", "Audit", "Login"]) {
-  if (!landing.includes(marker)) failures.push(`Landing/nav missing ${marker}`);
+const nav = read("artifacts/veroxa/src/components/public/PublicNav.tsx");
+if (!nav.includes("Veroxa")) failures.push("Public header missing Veroxa brand.");
+for (const marker of ['label: "Home"', 'label: "Audit"', 'label: "Login"', 'nav-link-home', 'nav-link-audit', 'nav-link-login']) {
+  if (nav.includes(marker)) failures.push(`Public header must not render visible ${marker} navigation.`);
 }
 for (const forbidden of ["Starter —", "Growth —", "Premium —", "Local Presence", "Full Presence", "Yelp included", "ads included", "TikTok included", "Reels included", "daily posting included", "Client Demo", "/demo/client"]) {
   if (landing.includes(forbidden)) failures.push(`Landing contains active old/demo/included marker ${forbidden}`);
@@ -70,7 +72,7 @@ for (const marker of ["Complete Online Presence — $495/month", "Yelp is a comi
 for (const marker of ["Included", "Needs confirmation", "Add-on available", "Coming soon", "Not included at launch", "Needs manual review", "not a promise that larger work is completed within 24 hours"]) {
   if (!requests.includes(marker)) failures.push(`Client requests missing ${marker}`);
 }
-for (const marker of ["I understand Veroxa does not handle", "I agree the restaurant is responsible for", "Yelp/TikTok/Reels/Ads yet", "24-hour response means review/answer/next step, not guaranteed completion", "no database write", "Weekly updates are included"]) {
+for (const marker of ["I understand Veroxa does not handle", "I agree the restaurant is responsible for", "Yelp/TikTok/Reels/Ads yet", "24-hour response means review/answer/next step, not guaranteed completion", "no database write", "Weekly updates are included", "Complete Online Presence"]) {
   if (!onboarding.includes(marker)) failures.push(`Onboarding missing ${marker}`);
 }
 for (const marker of ["comingSoonRouted", "routedBoundaryWork", "upgradeRouted: decisions.filter"]) {

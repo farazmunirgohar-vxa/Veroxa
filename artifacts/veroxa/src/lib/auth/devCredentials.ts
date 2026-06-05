@@ -25,7 +25,7 @@ export interface PlaceholderCredentialStatus {
   isConfigured: boolean;
   envCredentialCount: number;
   publicPreviewFallbackEnabled: boolean;
-  statusLabel: "Preview login configured" | "Preview login not configured";
+  statusLabel: "Preview access ready" | "Preview access not enabled";
   helperText: string;
 }
 
@@ -57,7 +57,8 @@ function isPreviewFriendlyHostname(): boolean {
   return (
     hostname === "localhost" ||
     hostname === "127.0.0.1" ||
-    hostname.endsWith(".vercel.app")
+    hostname.endsWith(".vercel.app") ||
+    hostname.includes("veroxa")
   );
 }
 
@@ -118,11 +119,11 @@ export function getPlaceholderCredentialStatus(): PlaceholderCredentialStatus {
     envCredentialCount,
     publicPreviewFallbackEnabled: publicPreviewFallback,
     statusLabel: isConfigured
-      ? "Preview login configured"
-      : "Preview login not configured",
+      ? "Preview access ready"
+      : "Preview access not enabled",
     helperText: isConfigured
-      ? "Preview access is enabled for review. Use faraz@client.com / farazclient or faraz@team.com / farazteam."
-      : "Preview access is not enabled for this review environment.",
+      ? "Preview access is enabled for Veroxa review. Use the provided client or team preview credentials."
+      : "Preview access is off for this review environment. Ask Veroxa to enable preview access before signing in.",
   };
 }
 

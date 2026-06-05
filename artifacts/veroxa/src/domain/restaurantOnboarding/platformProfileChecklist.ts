@@ -1,7 +1,7 @@
 import type { OnboardingChecklistItem, OnboardingReadiness, OnboardingPackageId, RestaurantOnboardingProfile } from "./types";
 
 const hasText = (value: string) => value.trim().length > 0;
-const needsTikTok = (packageId: OnboardingPackageId) => packageId === "growth" || packageId === "premium";
+const needsTikTok = (_packageId: OnboardingPackageId) => false;
 
 function platformItem(id: string, label: string, description: string, value: string, requiredFor: OnboardingPackageId[], packageId: OnboardingPackageId): OnboardingChecklistItem {
   const required = requiredFor.includes(packageId);
@@ -13,17 +13,17 @@ function platformItem(id: string, label: string, description: string, value: str
 export function getPlatformProfileChecklist(profile: RestaurantOnboardingProfile): OnboardingChecklistItem[] {
   const p = profile.packageId;
   return [
-    platformItem("googleBusinessProfileUrl", "Google Business Profile", "Core profile link for Google visibility review.", profile.googleBusinessProfileUrl, ["starter", "growth", "premium"], p),
-    platformItem("googleMapsUrl", "Google Maps", "Maps listing link for local visibility review.", profile.googleMapsUrl, ["starter", "growth", "premium"], p),
-    platformItem("websiteUrl", "Website", "Website link if the restaurant has one.", profile.websiteUrl, ["starter", "growth", "premium"], p),
-    platformItem("menuUrl", "Menu link", "Public menu link Veroxa can reference after review.", profile.menuUrl, ["starter", "growth", "premium"], p),
-    platformItem("orderingUrl", "Order link", "Ordering path if available.", profile.orderingUrl, ["starter", "growth", "premium"], p),
+    platformItem("googleBusinessProfileUrl", "Google Business Profile", "Core profile link for Google visibility review.", profile.googleBusinessProfileUrl, ["complete_online_presence"], p),
+    platformItem("googleMapsUrl", "Google Maps", "Maps listing link for local visibility review.", profile.googleMapsUrl, ["complete_online_presence"], p),
+    platformItem("websiteUrl", "Website", "Website link if the restaurant has one.", profile.websiteUrl, ["complete_online_presence"], p),
+    platformItem("menuUrl", "Menu link", "Public menu link Veroxa can reference after review.", profile.menuUrl, ["complete_online_presence"], p),
+    platformItem("orderingUrl", "Order link", "Ordering path if available.", profile.orderingUrl, ["complete_online_presence"], p),
     platformItem("reservationUrl", "Reservation link", "Reservation path if the restaurant uses one.", profile.reservationUrl, [], p),
     platformItem("cateringUrl", "Catering link", "Catering or large-order path if available.", profile.cateringUrl, [], p),
-    platformItem("facebookUrl", "Facebook", "Facebook page for Complete Online Presence.", profile.facebookUrl, ["starter", "growth", "premium"], p),
-    platformItem("instagramUrl", "Instagram", "Instagram profile for media and content review.", profile.instagramUrl, ["starter", "growth", "premium"], p),
-    platformItem("tiktokUrl", "TikTok", "TikTok is coming soon and not required for the launch offer.", profile.tiktokUrl, ["growth", "premium"], p),
-    ({ id: "premiumAdsReadiness", label: "Premium ads readiness", description: "Ads are coming soon; no ad systems are connected.", status: p === "premium" ? "review" as const : "not_needed" as const, clientLabel: p === "premium" ? "Veroxa team review" : "Not needed right now", teamLabel: p === "premium" ? "Needs verification" : "Not needed for this package", requiredFor: ["premium" as const], value: p === "premium" ? "Readiness assessment required" : "" } satisfies OnboardingChecklistItem),
+    platformItem("facebookUrl", "Facebook", "Facebook page for Complete Online Presence.", profile.facebookUrl, ["complete_online_presence"], p),
+    platformItem("instagramUrl", "Instagram", "Instagram profile for media and content review.", profile.instagramUrl, ["complete_online_presence"], p),
+    platformItem("tiktokUrl", "TikTok", "TikTok is coming soon and not required for the launch offer.", profile.tiktokUrl, [], p),
+    ({ id: "adsComingSoon", label: "Ads", description: "Ads management is coming soon and not part of launch onboarding.", status: "not_needed" as const, clientLabel: "Not needed right now", teamLabel: "Not needed for this package", requiredFor: [], value: "Coming soon" } satisfies OnboardingChecklistItem),
   ].filter((check) => check.id !== "tiktokUrl" || needsTikTok(p) || hasText(profile.tiktokUrl));
 }
 

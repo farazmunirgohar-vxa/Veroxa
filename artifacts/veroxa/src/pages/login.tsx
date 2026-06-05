@@ -57,7 +57,7 @@ export default function LoginPage() {
         clearPlaceholderSession();
         setSignInState({
           kind: "error",
-          message: "Preview credentials are not configured for this environment.",
+          message: "Preview access is not enabled for this review. Please ask Veroxa to enable preview access.",
         });
         return;
       }
@@ -65,7 +65,7 @@ export default function LoginPage() {
       const role = validateDevCredentials(email, password);
       if (!role) {
         clearPlaceholderSession();
-        setSignInState({ kind: "error", message: "Incorrect credentials. Please try again." });
+        setSignInState({ kind: "error", message: "Those sign-in details do not match this Veroxa preview. Please try again." });
         return;
       }
       createPlaceholderSession(role, email);
@@ -148,10 +148,10 @@ export default function LoginPage() {
         {/* Heading */}
         <div className="text-center mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-3" data-testid="login-heading">
-            Sign in to Veroxa
+            Sign in to Veroxa.
           </h1>
           <p className="text-muted-foreground">
-            Enter your Veroxa credentials to access your portal.
+            Use your Veroxa preview credentials to access the right portal.
           </p>
         </div>
 

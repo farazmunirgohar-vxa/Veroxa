@@ -4,7 +4,7 @@ const hasText = (value: string) => value.trim().length > 0;
 const hasList = (value: string[]) => value.length > 0;
 
 function item(id: string, label: string, description: string, complete: boolean, value?: string): OnboardingChecklistItem {
-  return { id, label, description, status: complete ? "complete" : "needed", clientLabel: complete ? "Complete" : "Needs your input", teamLabel: complete ? "Use in first-week setup" : "Missing business info", requiredFor: ["starter", "growth", "premium"], value };
+  return { id, label, description, status: complete ? "complete" : "needed", clientLabel: complete ? "Complete" : "Needs your input", teamLabel: complete ? "Use in first-week setup" : "Missing business info", requiredFor: ["complete_online_presence"], value };
 }
 
 export function getBusinessInfoChecklist(profile: RestaurantOnboardingProfile): OnboardingChecklistItem[] {

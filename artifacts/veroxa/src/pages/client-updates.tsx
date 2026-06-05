@@ -6,16 +6,19 @@ import { StatusBadge } from "@/components/common/StatusBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
 import { useClientSaasPortalState } from "@/hooks/useClientSaasPortalState";
-import { buildClientWeeklyUpdatePreview, getClientWeeklyUpdateReminder, getPortalRequestResponseReminder, weeklyUpdateTemplateSections } from "@/domain/weeklyUpdates";
+import { buildClientWeeklyUpdatePreview, buildWeeklyUpdateFromClientSummary, getClientWeeklyUpdateReminder, getPortalRequestResponseReminder, weeklyUpdateTemplateSections } from "@/domain/weeklyUpdates";
 
 export default function ClientUpdates() {
-  const { pageState } = useClientSaasPortalState();
-  const { update, readiness } = buildClientWeeklyUpdatePreview();
+  const { pageState, updateSummaries } = useClientSaasPortalState();
+  const loadedUpdate = updateSummaries[0]
+    ? buildWeeklyUpdateFromClientSummary(updateSummaries[0], pageState.restaurant?.name ?? "Your restaurant")
+    : null;
+  const { update, readiness } = buildClientWeeklyUpdatePreview(loadedUpdate ?? undefined);
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
       <RealPortalReviewNotice />
       <PageHeader title="Weekly Updates" description="A simple weekly summary of what Veroxa worked on, what is pending, what media is needed, and what is next." testId="header-client-updates" />
-      {!pageState.isDemoData && !pageState.canShowRealData ? <SafePortalEmptyCard title="Weekly update setup state" body="Your weekly updates will appear here once Veroxa has reviewed your account setup. For now, this page shows the safe preview/manual update structure." icon="info" /> : null}
+      {!pageState.isDemoData && !pageState.canShowRealData ? <SafePortalEmptyCard title="Weekly update setup state" body="Your weekly updates will appear here once Veroxa has reviewed your account setup. For now, this page shows the safe manual update structure without pretending progress already happened." icon="info" /> : null}
 
       <Card className="mb-4 border-primary/20 bg-primary/5" data-testid="latest-weekly-update">
         <CardContent className="p-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">

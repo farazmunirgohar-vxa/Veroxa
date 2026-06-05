@@ -60,3 +60,7 @@ Use +$95 new basic website only when the restaurant needs a simple basic website
 ## What not to automate yet
 
 Production auth, database, storage, live AI, Google/Meta/Yelp/TikTok integrations, payments, publishing connectors, webhooks, cron jobs, and automated customer-visible execution.
+
+## 2026-06-05 — Post-PR70 RR cleanup alignment
+
+PR #70 built the 90% pre-paid/manual OS foundations for client readiness, weekly updates, monthly reports, launch add-ons, SOPs, readiness mapping, value-proof guardrails, and client portal readiness surfaces. This cleanup fixed RR issues around preview login, the public header, loaded weekly/monthly client data states, client dashboard setup/demo separation, old tier leakage in onboarding, request boundary counts, public/client polish, and guardrail coverage. Veroxa remains manual/pre-live: no production auth, storage, database writes, live AI, connectors, payments, webhooks, cron jobs, or automated customer-visible execution were added. Team complexity remains deferred and supporting/action-focused. The next big build should wait until this cleanup passes RR and should focus on a dormant live-system blueprint and first-client execution pack, not paid/live systems yet.

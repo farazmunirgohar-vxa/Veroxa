@@ -1,7 +1,7 @@
 import type { OnboardingChecklistItem, RestaurantOnboardingProfile } from "./types";
 
 function proofItem(id: string, label: string, description: string, complete: boolean, optional = false): OnboardingChecklistItem {
-  return { id, label, description, status: complete ? "complete" : optional ? "optional" : "needed", clientLabel: complete ? "Complete" : optional ? "Optional" : "Needs your input", teamLabel: complete ? "Use in first-week setup" : "Needs verification", requiredFor: ["starter", "growth", "premium"] };
+  return { id, label, description, status: complete ? "complete" : optional ? "optional" : "needed", clientLabel: complete ? "Complete" : optional ? "Optional" : "Needs your input", teamLabel: complete ? "Use in first-week setup" : "Needs verification", requiredFor: ["complete_online_presence"] };
 }
 
 export function getProofInputChecklist(profile: RestaurantOnboardingProfile): OnboardingChecklistItem[] {

@@ -64,8 +64,8 @@ for (const retiredCredential of ["client@veroxa.com", "team@veroxa.com", "veroxa
 for (const marker of [
   "VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN",
   "getPlaceholderCredentialStatus",
-  "Preview login configured",
-  "Preview login not configured",
+  "Preview access ready",
+  "Preview access not enabled",
   "publicPreviewFallbackEnabled",
 ]) {
   if (!devCredentials.includes(marker)) {

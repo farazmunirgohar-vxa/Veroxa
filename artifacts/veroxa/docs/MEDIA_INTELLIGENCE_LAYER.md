@@ -130,3 +130,7 @@ Client-safe media labels are: Ready for Veroxa review, Needs clearer photo, More
 Images/photos can support Facebook draft, Instagram draft, and Google Business Profile / Google update draft directions for Veroxa team review. Videos can be saved into Facebook, Instagram/Reels, Google Business Profile / Google update, and TikTok draft directions, but client-facing launch language must say current launch is picture-based content and video/Reels/TikTok are coming soon.
 
 No live systems, storage uploads, platform publishing, AI image editing, or automated customer-visible execution are connected.
+
+## 2026-06-05 — Post-PR70 RR cleanup alignment
+
+PR #70 built the 90% pre-paid/manual OS foundations for client readiness, weekly updates, monthly reports, launch add-ons, SOPs, readiness mapping, value-proof guardrails, and client portal readiness surfaces. This cleanup fixed RR issues around preview login, the public header, loaded weekly/monthly client data states, client dashboard setup/demo separation, old tier leakage in onboarding, request boundary counts, public/client polish, and guardrail coverage. Veroxa remains manual/pre-live: no production auth, storage, database writes, live AI, connectors, payments, webhooks, cron jobs, or automated customer-visible execution were added. Team complexity remains deferred and supporting/action-focused. The next big build should wait until this cleanup passes RR and should focus on a dormant live-system blueprint and first-client execution pack, not paid/live systems yet.

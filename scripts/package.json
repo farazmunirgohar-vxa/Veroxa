@@ -40,7 +40,8 @@
     "check-backend-sop-readiness": "tsx ./src/check-backend-sop-readiness.ts",
     "check-client-safe-proof-math": "tsx ./src/check-client-safe-proof-math.ts",
     "check-discount-confusion": "tsx ./src/check-discount-confusion.ts",
-    "check-team-deferral": "tsx ./src/check-team-deferral.ts"
+    "check-team-deferral": "tsx ./src/check-team-deferral.ts",
+    "check-post-pr70-rr-cleanup": "tsx ./src/check-post-pr70-rr-cleanup.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",

@@ -60,7 +60,7 @@ const emptyMediaSummary: ClientMediaSummary = {
   usable: 0,
   needsBetterMedia: 0,
   used: 0,
-  uploadReadinessNotice: "Media uploads are not connected yet.",
+  uploadReadinessNotice: "Media sending instructions will appear after setup review.",
 };
 
 const emptyRequestSummary: ClientRequestSummary = {
@@ -152,7 +152,7 @@ function buildDashboardSummary(restaurantId: RestaurantId): ClientDashboardSumma
   const reports = buildDemoReports(restaurant.id);
   return {
     accountStatus: "Sample portal preview",
-    planLabel: `${plan.currentPlanId[0].toUpperCase()}${plan.currentPlanId.slice(1)} sample plan`,
+    planLabel: "Complete Online Presence sample plan",
     onlinePresenceProgress: "Veroxa has sample visibility, media, request, and report items ready for review.",
     mediaCount: media.length,
     requestCount: requests.length,
@@ -168,7 +168,7 @@ function buildMediaSummary(restaurantId: RestaurantId): ClientMediaSummary {
     usable: media.filter((item) => item.status === "usable" || item.status === "prepared_for_post").length,
     needsBetterMedia: media.filter((item) => item.status === "needs_better_media").length,
     used: media.filter((item) => item.status === "manually_used").length,
-    uploadReadinessNotice: "For now, this page shows sample media or a safe setup state. Media uploads are not connected yet.",
+    uploadReadinessNotice: "For now, this page shows sample media or a safe setup state. Media sending instructions will appear after setup review.",
   };
 }
 

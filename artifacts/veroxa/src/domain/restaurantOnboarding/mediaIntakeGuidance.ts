@@ -4,7 +4,6 @@ import { packageRequiresGrowthMedia } from "./packageOnboardingRules";
 const mediaCategories = [
   ["food photos", "Food photos", "Clear photos of current menu items."],
   ["best seller photos", "Best seller photos", "Close-up photos of the items customers already choose most."],
-  ["short food prep videos", "Short food prep videos", "Simple short clips for team-internal coming-soon video paths."],
   ["storefront photo", "Storefront photo", "Outside photo to help Veroxa orient local presence work."],
   ["menu photo/link", "Menu photo/link", "Current menu photo or menu link."],
   ["staff/team optional", "Staff/team optional", "Only if the restaurant is comfortable sharing."],
@@ -16,16 +15,14 @@ const mediaCategories = [
 
 export function getMediaIntakeChecklist(profile: RestaurantOnboardingProfile): OnboardingChecklistItem[] {
   return mediaCategories.map(([id, label, description]) => {
-    const growthRequired = id === "short food prep videos" && packageRequiresGrowthMedia(profile.packageId);
-    const starterRequired = ["food photos", "best seller photos", "storefront photo", "menu photo/link"].includes(id);
-    const required = starterRequired || growthRequired;
+    const required = ["food photos", "best seller photos", "storefront photo", "menu photo/link"].includes(id);
     const complete = profile.mediaAvailable.includes(id);
-    return { id, label, description, status: complete ? "complete" : required ? "needed" : "optional", clientLabel: complete ? "Complete" : required ? "Needs your input" : "Optional", teamLabel: complete ? "Use in first-week setup" : required ? "Media request needed" : "Not needed for this package", requiredFor: required ? ["starter", "growth", "premium"] : [], value: complete ? "Available for review" : "" };
+    return { id, label, description, status: complete ? "complete" : required ? "needed" : "optional", clientLabel: complete ? "Complete" : required ? "Needs your input" : "Optional", teamLabel: complete ? "Use in first-week setup" : required ? "Media request needed" : "Not needed for this package", requiredFor: required ? ["complete_online_presence"] : [], value: complete ? "Available for review" : "" };
   });
 }
 
 export function getMediaSupplyStatus(profile: RestaurantOnboardingProfile): string {
-  const labels: Record<string, string> = { not_started: "Media not started", low: "More media needed", usable: "Usable starter media", strong: "Strong media supply", inconsistent: "Media supply inconsistent" };
+  const labels: Record<string, string> = { not_started: "Media not started", low: "More media needed", usable: "Usable launch media", strong: "Strong media supply", inconsistent: "Media supply inconsistent" };
   return labels[profile.mediaSupplyStatus] ?? "Media needs review";
 }
 
@@ -35,15 +32,13 @@ export function getNextMediaNeeded(profile: RestaurantOnboardingProfile): string
 
 export function getMediaQualityGuidance(profile: RestaurantOnboardingProfile): string[] {
   const guidance = ["Please send clear, current food photos with natural light when possible.", "Close-up angles of best-selling items usually work best.", "Avoid sending blurry photos, screenshots, or photos with private customer moments."];
-  if (packageRequiresGrowthMedia(profile.packageId)) guidance.push("Short food prep videos help Veroxa prepare team-internal future video directions; Reels/TikTok are coming soon and not included at launch.");
-  if (profile.packageId === "premium") guidance.push("Premium ad planning stays on hold until readiness and client approval details are reviewed.");
+  void packageRequiresGrowthMedia;
   return guidance;
 }
 
 export function getPackageMediaExpectations(profile: RestaurantOnboardingProfile): string {
-  if (profile.packageId === "starter") return "Starter needs a usable picture-based media batch before Veroxa prepares the first content rhythm.";
-  if (profile.packageId === "growth") return "Complete Online Presence works best with current photos; short videos may inform team-internal future Reels/TikTok directions only.";
-  return "Complete Online Presence needs strong current media; ad planning is coming soon and remains parked.";
+  void profile;
+  return "Complete Online Presence needs a usable picture-based media batch before Veroxa prepares the first content rhythm. Video/Reels/TikTok are coming soon.";
 }
 
 export function getMediaRequestDraft(profile: RestaurantOnboardingProfile): string {
