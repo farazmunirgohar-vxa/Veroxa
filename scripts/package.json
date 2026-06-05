@@ -35,7 +35,8 @@
     "check-package-boundary-enforcement": "tsx ./src/check-package-boundary-enforcement.ts",
     "check-request-sla-model": "tsx ./src/check-request-sla-model.ts",
     "check-value-proof-reach-layer": "tsx ./src/check-value-proof-reach-layer.ts",
-    "check-media-intelligence-layer": "tsx ./src/check-media-intelligence-layer.ts"
+    "check-media-intelligence-layer": "tsx ./src/check-media-intelligence-layer.ts",
+    "check-final-launch-offer-alignment": "tsx src/check-final-launch-offer-alignment.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",
