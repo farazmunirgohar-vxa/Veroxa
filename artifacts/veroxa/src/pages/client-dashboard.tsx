@@ -91,7 +91,7 @@ export default function ClientDashboard() {
             {onboardingProfile ? (
               <p className="mt-1 text-xs text-muted-foreground">{getClientOnboardingStatusLabel(onboardingProfile)} · {onboardingProgress}% setup progress · {onboardingProfile.nextClientAction}</p>
             ) : (
-              <p className="mt-1 text-xs text-muted-foreground">Restaurant onboarding is being prepared. Your setup checklist will appear here once Veroxa activates your account. Real client onboarding data is not connected in this preview.</p>
+              <p className="mt-1 text-xs text-muted-foreground">Restaurant onboarding is being prepared. Your setup checklist, expectation acknowledgement, weekly update status, and monthly report setup will appear here once Veroxa activates your account.</p>
             )}
             <p className="mt-2 text-xs text-muted-foreground">Nothing goes live without Veroxa team review.</p>
           </div>
@@ -129,9 +129,9 @@ export default function ClientDashboard() {
       </section>
 
       <section className="grid gap-4 md:grid-cols-3 mb-4">
-        <SnapshotCard icon={Image} label="Media supply" value={mediaSummary.total} helper={`${mediaSummary.usable} useful · ${mediaSummary.needsBetterMedia} needs better media`} />
-        <SnapshotCard icon={MessageSquare} label="Requests needing input" value={requestSummary.total} helper={`${requestSummary.open} in review · ${requestSummary.needsClientConfirmation} need input`} />
-        <SnapshotCard icon={FileText} label="Reports and updates" value={reportSummaries.length} helper="Published or prepared by Veroxa review" />
+        <SnapshotCard icon={Image} label="Media needed" value={mediaSummary.total} helper={`${mediaSummary.usable} useful · ${mediaSummary.needsBetterMedia} needs clearer media`} />
+        <SnapshotCard icon={MessageSquare} label="Request status" value={requestSummary.total} helper={`${requestSummary.open} in review · ${requestSummary.needsClientConfirmation} need input`} />
+        <SnapshotCard icon={FileText} label="Reports and updates" value={reportSummaries.length} helper="Weekly update status and monthly report status appear after Veroxa review" />
       </section>
 
       <section className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
@@ -142,7 +142,7 @@ export default function ClientDashboard() {
             {pageState.activityPreview.length > 0 ? pageState.activityPreview.map((log) => (
               <div key={log.id} className="rounded-lg border border-border p-3 text-xs">
                 <p className="font-medium text-foreground">{log.summary}</p>
-                <p className="mt-1 text-muted-foreground">Example preview item — real client data is not connected.</p>
+                <p className="mt-1 text-muted-foreground">Preview item only — real client activity is not connected.</p>
               </div>
             )) : <p className="text-sm text-muted-foreground">Client-safe activity appears only when Veroxa has a preview item or reviewed account updates.</p>}
           </CardContent>

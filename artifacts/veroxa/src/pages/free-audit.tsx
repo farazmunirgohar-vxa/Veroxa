@@ -491,8 +491,8 @@ export default function FreeAudit() {
                 What this is not
               </p>
               <p className="text-[12px] text-muted-foreground">
-                Not a contract, not a charge, and not a guaranteed result. The
-                audit is a preliminary read — Veroxa will not post, change, or
+                Not a contract, not a charge, no checkout/payment, and not a guaranteed result. The
+                audit recommendation options are Complete Online Presence — $495/month, Not ready / needs manual review, or Not a fit yet. Veroxa will not post, change, or
                 contact anyone without you.
               </p>
             </CardContent>

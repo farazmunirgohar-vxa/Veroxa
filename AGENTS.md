@@ -1,5 +1,15 @@
 # Veroxa Agent Instructions
 
+
+## 2026-06-04 — 90% pre-paid OS final alignment
+
+- Final public launch offer is still **Complete Online Presence — $495/month** with weekly updates, monthly online presence report, website alignment/refinement if access is provided, and portal request response/review/answer within 24 hours.
+- **Yelp is coming soon / not included at launch**; TikTok, Reels/video content, ads management, daily posting, automated publishing, and live integrations are also coming soon / not included.
+- Add-ons are **new basic website +$95** and **missing Facebook/Instagram social profile creation +$45/profile**. Yelp setup is not a launch add-on.
+- First-client loyalty discount policy: **20% off for the first 12 months, then kept only while continuously active. If the client leaves and returns later, the discount no longer applies.** This is policy/copy only, not checkout/payment logic.
+- Internal-only value proof: **$9,900/month** is the minimum online-influenced sales channel value baseline for a $495 client at 5% margin; healthy is $15k–$25k/month, strong is $25k+/month with clearer action signals. This is not extra new sales and must not appear on public/client pages.
+- Team Portal complexity remains deferred. Current priority is public/client/onboarding/reporting/proof/request-facing 90% readiness before paid systems.
+- No live auth, storage, AI, API writes, production database work, payments, publishing connectors, webhooks, cron jobs, or automated customer-visible execution were added; `AUTH_MODE` remains `placeholder`.
 ## 2026-06-04 — Final launch offer lock / Post-PR67 alignment
 
 - One active public offer: **Complete Online Presence — $495/month**. Starter, Growth, Premium, Local Presence, Full Presence, old Complete Presence, $295, and $995 language are historical/internal only and must not be shown as active public pricing.
@@ -86,8 +96,7 @@ Current locked public launch offer:
   - Google Business Profile support
   - Google Maps/local visibility basics
   - Local SEO/search visibility basics
-  - Yelp coming soon / future profile alignment (not included at launch)
-  - Existing website alignment/refinement if access is provided
+    - Existing website alignment/refinement if access is provided
   - Business info consistency across Google/website/socials
   - Facebook support
   - Instagram support

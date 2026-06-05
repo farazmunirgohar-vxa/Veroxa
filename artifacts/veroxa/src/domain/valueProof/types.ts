@@ -5,6 +5,8 @@ export type ReachSource =
   | "facebook"
   | "instagram"
   | "tiktok"
+  | "yelp"
+  | "ads"
   | "website"
   | "menu_link"
   | "order_link"

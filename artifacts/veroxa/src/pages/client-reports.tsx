@@ -20,12 +20,12 @@ import {
 } from "@/domain/valueProof";
 
 const safeSignals = [
-  "Google calls",
+  "Phone calls",
   "direction requests",
   "website/menu clicks",
-  "profile activity",
-  "post reach",
-  "engagement",
+  "Profile actions",
+  "Facebook/Instagram reach",
+  "Customer mentions",
   "media usage",
   "completed work",
 ];
@@ -96,7 +96,7 @@ export default function ClientReports() {
               </ul>
             </div>
             <p className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs">
-              No exact internal proof targets, raw internal scores, profit math, outcome promises, or fake ranking claims appear on client pages.
+              Client pages do not show private team proof targets, private scoring, outcome promises, or fake visibility claims.
             </p>
           </CardContent>
         </Card>
