@@ -135,7 +135,7 @@ export default function GuidedDemo() {
         {/* Header */}
         <div className="text-center space-y-3" data-testid="guided-demo-header">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/10 text-primary text-xs font-semibold">
-            Client Demo
+            Sample / QA preview only — not a real client account
           </div>
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-foreground">
             {title}
@@ -143,6 +143,7 @@ export default function GuidedDemo() {
           <p className="text-muted-foreground text-base max-w-2xl mx-auto leading-relaxed">
             {subtitle}
           </p>
+          <p className="text-xs text-muted-foreground max-w-2xl mx-auto">Demo-only preview — no real client data, no live uploads, no live publishing.</p>
         </div>
 
         {/* Quick-start CTAs */}

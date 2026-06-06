@@ -30,6 +30,31 @@ function requireFile(path: string): string {
 const blueprint = requireFile("artifacts/veroxa/docs/AI_AUTOMATION_READINESS_BLUEPRINT.md");
 const inventory = requireFile("artifacts/veroxa/docs/AI_SERVER_CODE_INVENTORY.md");
 const boundary = requireFile("artifacts/veroxa/docs/AI_AUTOMATION_READINESS_BOUNDARY.md");
+const activationPrerequisites = requireFile("artifacts/veroxa/docs/AI_ACTIVATION_PREREQUISITES.md");
+
+
+for (const marker of [
+  "production auth",
+  "Database/storage architecture",
+  "Activity logs",
+  "Approval states",
+  "Rollback plan",
+  "Prompt QA checklist",
+  "Cost/rate-limit controls",
+  "Data minimization/privacy rules",
+  "Failure fallback behavior",
+  "Activation requires RR approval",
+  "No automatic publishing",
+  "No customer messaging",
+  "No offer invention",
+  "No platform changes",
+  "No bypassing Veroxa/Faraz review",
+  "requireAiRoutesEnabled",
+]) {
+  if (!activationPrerequisites.toLowerCase().includes(marker.toLowerCase())) {
+    failures.push(`AI activation prerequisites missing marker: ${marker}`);
+  }
+}
 
 const requiredDomainFiles = [
   "types.ts",

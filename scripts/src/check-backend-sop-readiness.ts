@@ -12,8 +12,13 @@ const docs = [
   "artifacts/veroxa/docs/FIRST_5_CLIENT_READINESS_PLAN.md",
   "artifacts/veroxa/docs/AUDIT_TO_FIRST_CLIENT_FLOW.md",
   "artifacts/veroxa/docs/VEROXA_90_PERCENT_PREPAID_OS_READINESS_MAP.md",
+  "artifacts/veroxa/docs/BACKEND_DAILY_WORKFLOW.md",
+  "artifacts/veroxa/docs/BACKEND_WEEKLY_UPDATE_PLAYBOOK.md",
+  "artifacts/veroxa/docs/BACKEND_MONTHLY_REPORT_PLAYBOOK.md",
+  "artifacts/veroxa/docs/BACKEND_REQUEST_RESPONSE_EXAMPLES.md",
+  "artifacts/veroxa/docs/FARAZ_ESCALATION_PLAYBOOK.md",
 ];
-const required = ["no live systems", "portal-first", "no guarantees", "no offer invention", "confirmation required", "add-ons", "coming soon", "weekly updates", "monthly reports"];
+const required = ["no live systems", "portal-first", "no routine calls/texts", "24-hour response means review/answer/next step", "no guarantees", "no offer invention", "confirmation required", "add-ons", "coming soon", "weekly updates", "monthly reports", "faraz escalation"];
 const failures: string[] = [];
 let combined = "";
 for (const doc of docs) {

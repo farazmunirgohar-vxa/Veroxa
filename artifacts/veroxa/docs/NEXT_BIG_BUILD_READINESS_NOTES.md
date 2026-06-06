@@ -59,3 +59,7 @@ After Veroxa reaches about 80% complete pre-spending, Faraz will choose the A-Z 
 - The current build adds dormant prompt contracts and human review gates only. It does not activate live AI, automations, paid systems, production auth, database/storage, payments, connectors, webhooks, cron jobs, or background jobs.
 - Future live AI still requires production auth, database/storage architecture, logs, rollback plan, QA, guardrails, and RR approval.
 - Faraz still chooses the A-Z review route after the 80% mark before any paid systems are connected.
+
+## 2026-06-06 — A–Z cleanup readiness note
+
+A–Z review cleanup is complete for documentation and guardrails: [Veroxa OS System Map](./VEROXA_OS_SYSTEM_MAP.md) was added, demo/QA route policy was strengthened, backend execution pack docs were added, client premium copy polish was completed, and [AI Activation Prerequisites](./AI_ACTIVATION_PREREQUISITES.md) was documented. No live systems were added. Next recommended step is owner review of this cleanup, then a choice between first-client manual launch pack preparation or continued pre-live QA.

@@ -18,7 +18,7 @@ export default function ClientUpdates() {
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
       <RealPortalReviewNotice />
       <PageHeader title="Weekly Updates" description="A simple weekly summary of what Veroxa worked on, what is pending, what media is needed, and what is next." testId="header-client-updates" />
-      {!pageState.isDemoData && !pageState.canShowRealData ? <SafePortalEmptyCard title="Weekly update setup state" body="Your weekly updates will appear here once Veroxa has reviewed your account setup. For now, this page shows the safe manual update structure without pretending progress already happened." icon="info" /> : null}
+      {!pageState.isDemoData && !pageState.canShowRealData ? <SafePortalEmptyCard title="Veroxa is preparing your weekly update workspace" body="Your weekly updates will appear here once Veroxa has reviewed your account setup. For now, this page shows the safe service update structure without pretending progress already happened." icon="info" /> : null}
 
       <Card className="mb-4 border-primary/20 bg-primary/5" data-testid="latest-weekly-update">
         <CardContent className="p-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">

@@ -73,7 +73,7 @@ export default function RestaurantUploadAccess() {
               Veroxa Restaurant Upload
             </h1>
             <p className="text-sm text-muted-foreground">
-              Enter your restaurant key to upload today's photos or videos.
+              Demo-only upload-key preview. Veroxa will tell clients how to send media for review after setup. No live storage is connected.
             </p>
           </div>
 
@@ -99,7 +99,7 @@ export default function RestaurantUploadAccess() {
               Continue <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
             <p className="text-xs text-muted-foreground text-center">
-              Ask your manager or Veroxa contact for your restaurant key.
+              Sample / QA preview only — not a real client account.
             </p>
           </form>
 
@@ -186,11 +186,7 @@ export default function RestaurantUploadAccess() {
               What happens after upload
             </p>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Your photos go straight to your restaurant's Veroxa team for
-              review, captioning, and scheduling. The team triages each
-              upload, asks for a re-shoot if needed, and only then schedules
-              posts. Nothing posts automatically — your account stays in
-              control of what goes live.
+              In this preview, uploads stay demo-only and no live storage is connected. After setup, Veroxa will tell clients how to send media for review. Nothing posts automatically — Veroxa team review happens before anything goes live.
             </p>
           </div>
 

@@ -44,6 +44,22 @@ if (!existsSync(vercelPath)) {
   }
 }
 
+
+const previewLoginNotesPath = join(root, "artifacts/veroxa/docs/DEPLOYMENT_PREVIEW_LOGIN_NOTES.md");
+if (!existsSync(previewLoginNotesPath)) {
+  failures.push("Missing DEPLOYMENT_PREVIEW_LOGIN_NOTES.md.");
+} else {
+  const previewLoginNotes = readFileSync(previewLoginNotesPath, "utf8");
+  for (const marker of [
+    "Custom domains require explicit Vercel env opt-in",
+    "Vercel must redeploy after env changes",
+    "not production auth",
+    "hard disable flag",
+  ]) {
+    if (!previewLoginNotes.includes(marker)) failures.push(`Deployment preview login notes missing marker: ${marker}`);
+  }
+}
+
 const indexHtml = readFileSync(join(root, "artifacts/veroxa/index.html"), "utf8");
 for (const required of [
   "Veroxa Systems — Online Presence for Restaurants",

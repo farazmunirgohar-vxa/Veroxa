@@ -75,14 +75,14 @@ export default function ClientDashboard() {
       </Card>
 
       {isSetupState ? (
-        <SafePortalEmptyCard title="Workspace setup" body="Veroxa is preparing your workspace. This preview is waiting for Veroxa setup review, so no sample progress is presented as your restaurant work." icon="info" />
+        <SafePortalEmptyCard title="Veroxa is preparing your restaurant workspace" body="Veroxa is preparing your restaurant workspace. This preview is waiting for Veroxa setup review, so no sample progress is presented as your restaurant work." icon="info" />
       ) : null}
 
       <section className="mb-4 grid gap-4 md:grid-cols-4">
-        <Metric icon={ListChecks} label="Account/setup status" value={setupStatus} />
-        <Metric icon={Image} label="Media status" value={mediaSummary.total > 0 ? `${mediaSummary.usable} ready for review` : "Waiting for media"} />
-        <Metric icon={MessageSquare} label="Request status" value={requestSummary.total > 0 ? `${requestSummary.open} open` : "No requests yet"} />
-        <Metric icon={FileText} label="Report readiness" value={monthlyStatus} />
+        <Metric icon={ListChecks} label="Setup review" value={setupStatus} />
+        <Metric icon={Image} label="Media guidance" value={mediaSummary.total > 0 ? `${mediaSummary.usable} ready for review` : "Waiting for media — Veroxa will guide what to send next"} />
+        <Metric icon={MessageSquare} label="Portal requests" value={requestSummary.total > 0 ? `${requestSummary.open} open` : "No requests yet"} />
+        <Metric icon={FileText} label="Monthly report status" value={monthlyStatus} />
       </section>
 
       <section className="mb-4 grid gap-4 lg:grid-cols-[1fr_1fr]">
@@ -108,9 +108,9 @@ export default function ClientDashboard() {
       </section>
 
       <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatusCard icon={ListChecks} title="Onboarding status" body={pageState.accountActivation.clientVisibleStatus} />
-        <StatusCard icon={Image} title="Media status" body={mediaSummary.uploadReadinessNotice} />
-        <StatusCard icon={MessageSquare} title="Request status" body={requestSummary.nextAction} />
+        <StatusCard icon={ListChecks} title="Onboarding review" body={pageState.accountActivation.clientVisibleStatus} />
+        <StatusCard icon={Image} title="Media guidance" body={mediaSummary.uploadReadinessNotice} />
+        <StatusCard icon={MessageSquare} title="Portal requests" body={requestSummary.nextAction} />
         <StatusCard icon={ShieldCheck} title="Review promise" body={reviewPromise} />
       </section>
 

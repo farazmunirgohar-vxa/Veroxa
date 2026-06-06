@@ -170,6 +170,9 @@ export function RestaurantUploadFlow({ restaurant, onExit }: RestaurantUploadFlo
         >
           {getWriteSafetyBanner()}
         </div>
+        <div className="mb-4 rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-xs text-amber-200/90" data-testid="upload-flow-demo-only-label">
+          Demo-only upload-key preview. No live storage is connected, and nothing is published from this flow.
+        </div>
 
         {/* Progress dots */}
         {step < 6 && (

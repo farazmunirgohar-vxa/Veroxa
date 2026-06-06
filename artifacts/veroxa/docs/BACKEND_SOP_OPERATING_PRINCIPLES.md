@@ -26,3 +26,15 @@ No live auth, database, storage upload, AI call, publishing connector, platform 
 ## 2026-06-05 — Post-PR70 RR cleanup alignment
 
 PR #70 built the 90% pre-paid/manual OS foundations for client readiness, weekly updates, monthly reports, launch add-ons, SOPs, readiness mapping, value-proof guardrails, and client portal readiness surfaces. This cleanup fixed RR issues around preview login, the public header, loaded weekly/monthly client data states, client dashboard setup/demo separation, old tier leakage in onboarding, request boundary counts, public/client polish, and guardrail coverage. Veroxa remains manual/pre-live: no production auth, storage, database writes, live AI, connectors, payments, webhooks, cron jobs, or automated customer-visible execution were added. Team complexity remains deferred and supporting/action-focused. The next big build should wait until this cleanup passes RR and should focus on a dormant live-system blueprint and first-client execution pack, not paid/live systems yet.
+
+## Backend execution pack links
+
+Use these worker-ready playbooks with this SOP:
+
+- [Backend Daily Workflow](./BACKEND_DAILY_WORKFLOW.md)
+- [Backend Weekly Update Playbook](./BACKEND_WEEKLY_UPDATE_PLAYBOOK.md)
+- [Backend Monthly Report Playbook](./BACKEND_MONTHLY_REPORT_PLAYBOOK.md)
+- [Backend Request Response Examples](./BACKEND_REQUEST_RESPONSE_EXAMPLES.md)
+- [Faraz Escalation Playbook](./FARAZ_ESCALATION_PLAYBOOK.md)
+
+These docs keep work portal-first, no routine calls/texts, no guarantees, no offer invention, confirmation required, add-ons/coming-soon boundaries, weekly updates, monthly reports, Faraz escalation, and no live systems.

@@ -1,0 +1,114 @@
+# Veroxa OS System Map
+
+_Last updated: 2026-06-06 — A–Z cleanup alignment._
+
+Veroxa is currently a **preview/manual/pre-live** restaurant online presence operating system. It is designed so the public site, Client Portal, Team/manual surfaces, repository boundaries, SOPs, and dormant AI/server inventory can be reviewed before any paid or live infrastructure is activated.
+
+Source docs to keep nearby: [Current Build Status](./CURRENT_BUILD_STATUS.md), [Route Page Inventory](./ROUTE_PAGE_INVENTORY.md), [Route Surface Map](./VEROXA_ROUTE_SURFACE_MAP.md), [Pricing Source of Truth](./PRICING_SOURCE_OF_TRUTH.md), [Pre-Paid Activation Gate](./PRE_PAID_ACTIVATION_GATE.md), and [AI Automation Readiness Boundary](./AI_AUTOMATION_READINESS_BOUNDARY.md).
+
+## 1. Current status
+
+- Mode: **preview/manual/pre-live**.
+- `AUTH_MODE` remains `placeholder`.
+- No production auth, database/storage writes, live AI, live publishing, connectors, payments, webhooks, cron jobs, background jobs, or automated customer-visible execution are active.
+- Veroxa team review remains required before anything goes live.
+
+## 2. Route surfaces
+
+### Active public flow
+
+- `/` — public homepage and one-offer positioning.
+- `/free-audit` — restaurant online presence audit request preview/manual flow.
+- `/login` — preview login / portal access surface.
+
+### Hidden compatibility routes
+
+- `/services` — compatibility page only; not the active public funnel.
+- `/pricing` — compatibility page only; one launch offer, not a multi-package funnel.
+
+### Hidden demo/QA routes
+
+- `/demo` — sample/QA Client Demo hub.
+- `/guided-demo` — sample guided walkthrough.
+- `/demo/client/*` — demo client portal pages using sample data only.
+- `/upload` — demo-only upload-key preview; no live storage.
+
+### Guarded client routes
+
+- `/client/dashboard`
+- `/client/onboarding`
+- `/client/media`
+- `/client/requests`
+- `/client/updates`
+- `/client/reports`
+
+### Guarded Team/manual routes
+
+- `/team/dashboard`
+- `/team/onboarding`
+- `/team/upload-inbox`
+- `/team/work-queue`
+- `/team/manual-execution`
+- `/team/direction-queue`
+- `/team/report-queue`
+- `/team/audit-leads`
+- `/team/approval-queue`
+- `/team/visibility-audit`
+- `/team/first-client-readiness`
+- `/team/first-client-ops`
+
+## 3. Core domains
+
+- `pricing` — locked Complete Online Presence offer, add-ons, coming-soon boundaries, and launch rules.
+- `packageBoundary` — included/add-on/coming-soon/not-included request classification.
+- `requestSla` — portal-first 24-hour review/answer/next-step response model.
+- `clientReadiness` — first-client readiness checks and safe client messaging.
+- `restaurantOnboarding` — preview/manual onboarding acknowledgement and confirmation requirements.
+- `mediaIntelligence` — media quality/direction/reporting helpers without live uploads.
+- `weeklyUpdates` — weekly update structure and client-safe summaries.
+- `monthlyReports` — monthly online presence report structure and limitations language.
+- `valueProof` / `restaurantReach` — internal-only signal/proof framing; no proof math on public/client pages.
+- `addOns` — new basic website and missing Facebook/Instagram profile creation boundaries.
+- `saas` placeholder/demo repositories — TypeScript contracts and demo/placeholder adapters only.
+- `aiReadiness` — dormant AI readiness contracts, review gates, validators, and seed data only.
+
+## 4. API server status
+
+- API access is protected by internal API security middleware.
+- AI routes remain gated behind `requireAiRoutesEnabled` / `VEROXA_ENABLE_AI_ROUTES` and are not connected to public/client UI.
+- Google routes remain gated and are not connected to public/client UI.
+- No public or client UI path performs live API writes, live AI calls, live publishing, or live platform changes.
+
+See [AI Server Code Inventory](./AI_SERVER_CODE_INVENTORY.md) for the protected dormant server inventory.
+
+## 5. Guardrail categories
+
+- Pricing and one-offer alignment.
+- Public/client language safety.
+- Route inventory and route surface containment.
+- Auth safety and placeholder-mode protection.
+- API security and route gating.
+- Proof math leakage prevention.
+- Team deferral / no advanced Team OS expansion.
+- AI readiness without activation.
+- No live systems: no auth, database/storage, payments, connectors, webhooks, cron jobs, background jobs, live publishing, or live AI.
+
+## 6. Frozen for launch alignment
+
+- One active public offer: **Complete Online Presence — $495/month**.
+- Add-ons: **new basic website +$95** and **missing Facebook/Instagram profile creation +$45/profile**.
+- Coming-soon/not-included boundaries: Yelp, TikTok, Reels/video content, ads management, daily posting, automated publishing, and live integrations.
+- No guarantees for orders, revenue, rankings, walk-ins, ROI, profit, customers, or growth.
+- No live systems are activated in this cleanup.
+
+## 7. Still later
+
+- Production auth.
+- Database/storage architecture and migrations.
+- Live AI activation.
+- Google/Meta/Yelp/TikTok/YouTube connectors.
+- Payments, checkout, subscriptions, invoices, and billing.
+- Automated publishing or customer-visible execution.
+- Advanced Team OS / broader role dashboards.
+
+Future activation work should update this map, route docs, source-of-truth pricing docs, and the relevant guardrails before RR approval.

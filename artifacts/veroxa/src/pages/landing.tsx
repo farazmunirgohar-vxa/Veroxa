@@ -67,6 +67,30 @@ export default function LandingPage() {
         </div>
       </section>
 
+      <section className="py-16 px-6 lg:px-12 bg-card/10 border-y border-border/30">
+        <div className="max-w-6xl mx-auto grid lg:grid-cols-[0.85fr_1.15fr] gap-8 items-start">
+          <div>
+            <p className="text-xs uppercase tracking-wider text-primary font-semibold mb-3">What you get every month</p>
+            <h2 className="text-3xl font-bold mb-4">Clear monthly service, not a confusing software bundle.</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Complete Online Presence keeps the practical discovery and trust surfaces organized while Veroxa reviews the work before anything goes live.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-3">
+            {[
+              "Google/Maps/local visibility upkeep",
+              "Website/menu/contact alignment when access is provided",
+              "Facebook/Instagram picture-based content support",
+              "Up to 3 total posts/updates per week, media dependent",
+              "Portal request review within 24 hours",
+              "Weekly update",
+              "Monthly online presence report",
+              "Veroxa team review before anything goes live",
+            ].map((item) => <div key={item} className="rounded-xl border border-border/40 bg-background/60 p-4 text-sm font-medium leading-relaxed">{item}</div>)}
+          </div>
+        </div>
+      </section>
+
       <section className="py-16 px-6 lg:px-12">
         <div className="max-w-6xl mx-auto grid lg:grid-cols-[0.9fr_1.1fr] gap-10 items-start">
           <div>

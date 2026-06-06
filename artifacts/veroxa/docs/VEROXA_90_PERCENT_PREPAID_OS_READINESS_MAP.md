@@ -117,3 +117,7 @@ PR #70 built the 90% pre-paid/manual OS foundations for client readiness, weekly
 - No live AI, automations, paid systems, production auth, database/storage writes, payments, connectors, webhooks, cron jobs, background jobs, or automated customer-visible execution were added.
 - Future live AI requires production auth, database/storage architecture, logs, rollback plan, QA, guardrails, and RR approval.
 - Faraz still chooses the A-Z review route after the 80% mark before paid systems are connected.
+
+## 2026-06-06 — A–Z cleanup alignment
+
+A–Z review cleanup is complete. The [Veroxa OS System Map](./VEROXA_OS_SYSTEM_MAP.md) now links the current route surfaces, domains, API status, guardrails, frozen launch boundaries, and later live-system work. Demo/QA route policy is stronger, backend execution pack docs are available, client premium copy polish is complete, and [AI Activation Prerequisites](./AI_ACTIVATION_PREREQUISITES.md) is documented. No live auth, database/storage, payments, connectors, webhooks, cron/background jobs, live AI, or automated customer-visible execution was added. Next: owner review, then decide whether to prepare first-client manual launch pack or continue pre-live QA.
