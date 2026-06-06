@@ -51,3 +51,11 @@ After Veroxa reaches about 80% complete pre-spending, Faraz will choose the A-Z 
 - The next big build remains a dormant live-system blueprint / first-client execution pack. It should define activation checklists, manual execution steps, connector readiness interfaces, and test harness planning without activating paid/live systems.
 - Veroxa remains preview/manual/pre-live. No production auth, storage, database writes, live AI, Google/Meta/Yelp/TikTok/YouTube APIs, publishing connectors, payments, webhooks, cron jobs, background jobs, or automated customer-visible execution were added.
 - Team complexity remains deferred; do not expand Team Portal command-center features in the next build unless explicitly requested.
+
+## 2026-06-06 — AI readiness blueprint handoff
+
+- AI readiness has started with [`AI_AUTOMATION_READINESS_BLUEPRINT.md`](./AI_AUTOMATION_READINESS_BLUEPRINT.md), while [`AI_AUTOMATION_READINESS_BOUNDARY.md`](./AI_AUTOMATION_READINESS_BOUNDARY.md) remains the live/no-live boundary.
+- Existing protected server AI draft code is documented in [`AI_SERVER_CODE_INVENTORY.md`](./AI_SERVER_CODE_INVENTORY.md); it remains server-side, protected, and disabled unless `VEROXA_ENABLE_AI_ROUTES=true` is explicitly approved later.
+- The current build adds dormant prompt contracts and human review gates only. It does not activate live AI, automations, paid systems, production auth, database/storage, payments, connectors, webhooks, cron jobs, or background jobs.
+- Future live AI still requires production auth, database/storage architecture, logs, rollback plan, QA, guardrails, and RR approval.
+- Faraz still chooses the A-Z review route after the 80% mark before any paid systems are connected.

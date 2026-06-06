@@ -108,3 +108,12 @@ No live auth, production database, storage upload, AI call, Google/Meta/Yelp/Tik
 ## 2026-06-05 — Post-PR70 RR cleanup alignment
 
 PR #70 built the 90% pre-paid/manual OS foundations for client readiness, weekly updates, monthly reports, launch add-ons, SOPs, readiness mapping, value-proof guardrails, and client portal readiness surfaces. This cleanup fixed RR issues around preview login, the public header, loaded weekly/monthly client data states, client dashboard setup/demo separation, old tier leakage in onboarding, request boundary counts, public/client polish, and guardrail coverage. Veroxa remains manual/pre-live: no production auth, storage, database writes, live AI, connectors, payments, webhooks, cron jobs, or automated customer-visible execution were added. Team complexity remains deferred and supporting/action-focused. The next big build should wait until this cleanup passes RR and should focus on a dormant live-system blueprint and first-client execution pack, not paid/live systems yet.
+
+## 2026-06-06 — Dormant AI readiness blueprint layer
+
+- AI readiness blueprint work has started in [`AI_AUTOMATION_READINESS_BLUEPRINT.md`](./AI_AUTOMATION_READINESS_BLUEPRINT.md), with the boundary maintained in [`AI_AUTOMATION_READINESS_BOUNDARY.md`](./AI_AUTOMATION_READINESS_BOUNDARY.md).
+- Existing server-side AI draft code is inventoried in [`AI_SERVER_CODE_INVENTORY.md`](./AI_SERVER_CODE_INVENTORY.md) and remains protected/disabled unless explicitly enabled in a future approved activation build.
+- The readiness layer adds dormant prompt contracts, future assistant mappings, human review gates, client visibility validation, deterministic planning seed examples, and guardrails only.
+- No live AI, automations, paid systems, production auth, database/storage writes, payments, connectors, webhooks, cron jobs, background jobs, or automated customer-visible execution were added.
+- Future live AI requires production auth, database/storage architecture, logs, rollback plan, QA, guardrails, and RR approval.
+- Faraz still chooses the A-Z review route after the 80% mark before paid systems are connected.
