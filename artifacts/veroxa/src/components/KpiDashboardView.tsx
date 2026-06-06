@@ -42,7 +42,7 @@ export function KpiDashboardView({ viewerRole }: KpiDashboardViewProps) {
       </div>
       <p className="text-[11px] text-muted-foreground/60">
         Viewing as: <span className="text-foreground/70">{viewerRole}</span> ·
-        Demo values only. No live analytics, billing processor, or backend is
+        Demo values only. No live analytics, billing, or client account data is
         connected.
       </p>
     </div>

@@ -637,10 +637,10 @@ export default function FreeAudit() {
                     data-testid="restaurant-search-empty"
                   >
                     <p className="text-sm font-semibold">
-                      No confident demo/local lookup match found yet.
+                      No confident preview match found yet.
                     </p>
                     <p className="text-[12px] text-muted-foreground mt-1">
-                      This review-mode audit preview uses deterministic local/demo lookup only. Try a shorter name, alternate spelling, city/state, or cuisine. If no confident match exists, continue manually — Veroxa can still review it.
+                      This review-mode audit preview uses limited preview matching only. Try a shorter name, alternate spelling, city/state, or cuisine. If no confident match exists, continue manually — Veroxa can still review it.
                     </p>
                     <p className="text-[12px] text-muted-foreground/80 mt-1">
                       Live third-party lookup is not part of this preview yet. Some restaurants appear under a different listing name, so a weak or missing match can still be a discoverability signal and potential Veroxa opportunity. Audit recommendations are not guarantees; Yelp, TikTok, Reels/video, and ads are coming soon and are not included in the launch package.
@@ -947,7 +947,7 @@ export default function FreeAudit() {
                 <p className="text-[11px] text-muted-foreground inline-flex items-center gap-1">
                   <Info className="w-3 h-3" /> This preview runs in your
                   browser. Walkthrough requests are saved only for this pre-live
-                  review/demo.
+                  review preview.
                 </p>
                 <Button
                   type="submit"
@@ -1437,7 +1437,7 @@ export default function FreeAudit() {
                     data-testid="walkthrough-success"
                   >
                     <p className="text-sm font-semibold text-emerald-400">
-                      Thanks — your walkthrough request is saved for this demo.
+                      Thanks — your walkthrough request is saved for this preview.
                     </p>
                     <p className="text-[12px] text-muted-foreground mt-1">
                       A Veroxa team member would review the audit and explain whether Complete Online Presence is a fit, needs manual review, or is not a fit yet.

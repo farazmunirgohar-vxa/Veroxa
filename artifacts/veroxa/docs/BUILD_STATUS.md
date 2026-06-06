@@ -1,4 +1,6 @@
 > **Pre-build stability checklist:** see [`docs/PRE_BUILD_STABILITY_CHECKLIST.md`](./PRE_BUILD_STABILITY_CHECKLIST.md) before large builds to protect deploy config, temp login, audit search, pricing, metadata, and SaaS safety.
+> Do not override current docs: read `ACTIVE_DOCS_INDEX.md` first. Older build-status sections are historical/deprecated unless the active docs index confirms them.
+
 >
 > **2026-05-30 — Portal separation and first-5-client readiness lock**
 >
@@ -1227,7 +1229,7 @@ For the next Full SaaS Foundation design and guardrail plan, see `CLIENT_PORTAL_
 
 ## 2026-06-03 pricing/profit-fit alignment
 
-- Active public pricing is Starter $295/month, Growth $495/month, and Premium $995/month.
+- Historical note: Starter $295/month, Growth $495/month, and Premium $995/month are deprecated/archive-only and are not active public pricing. Current public pricing is Complete Online Presence — $495/month.
 - Growth is the main recommended package for strong-fit restaurants; Starter is the low-friction entry plan; Premium is selective and readiness-gated.
 - Premium requires readiness assessment, client approval, and an agreed ad budget; ad spend is separate.
 - Profit Fit Layer is internal/team-only and uses `requiredDailyOrders = monthlyFee / netMargin / averageTicket / 30` with conservative defaults of $15 average ticket and 5% net margin.

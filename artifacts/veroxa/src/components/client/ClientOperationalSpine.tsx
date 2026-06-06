@@ -96,12 +96,12 @@ export function ClientOperationalStatusGrid({
 
       <Card className="bg-card/60 border-border/60">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm">Premium readiness</CardTitle>
+          <CardTitle className="text-sm">Future ads readiness</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">
           <p>{premium.reason}</p>
           <p>{premium.nextStep}</p>
-          <p>Ad spend stays separate and requires approval before anything starts.</p>
+          <p>Future ad spend stays separate and requires approval before anything starts.</p>
         </CardContent>
       </Card>
     </div>

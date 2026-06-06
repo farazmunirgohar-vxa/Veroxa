@@ -78,7 +78,7 @@ export default function TeamOnboarding() {
 
       <Card className="mb-5 border-primary/25 bg-primary/5">
         <CardContent className="grid gap-3 p-4 md:grid-cols-5">
-          {["Pre-live onboarding", "No database writes", "No storage uploads", "No platform connectors", "No payments", "Team review required"].map((item) => (
+          {["Pre-live onboarding", "No live data writes", "No storage uploads", "No live platform connections", "No payments", "Team review required"].map((item) => (
             <div key={item} className="flex items-center gap-2 text-xs text-muted-foreground"><ShieldCheck className="h-4 w-4 text-primary" />{item}</div>
           ))}
         </CardContent>

@@ -209,8 +209,7 @@ export function ClientReportsProgress({ clientId }: { clientId: string }) {
         </div>
         <p className="text-[11px] text-muted-foreground">
           This is a plain-language summary of activity — not a performance
-          guarantee. Your full report is prepared by your Veroxa team. Premium
-          readiness can be reviewed after your foundation is stable.
+          guarantee. Your full report is prepared by your Veroxa team. Additional service readiness can be reviewed after your foundation is stable.
         </p>
       </CardContent>
     </Card>

@@ -58,7 +58,7 @@ const safetyItems = [
   "No auto-posting",
   "No live AI",
   "No storage uploads",
-  "No platform connectors",
+  "No live platform connections",
   "Human review required",
 ] as const;
 
@@ -480,7 +480,7 @@ export default function TeamManualExecution() {
         <CardContent className="flex items-start gap-2 p-3 text-xs text-muted-foreground">
           <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
           Manual Execution Center is prepared work only: no production auth,
-          storage upload, live AI, platform connector, payment, or automatic
+          storage upload, live AI, platform connection, payment, or automatic
           customer-visible execution was added.
         </CardContent>
       </Card>

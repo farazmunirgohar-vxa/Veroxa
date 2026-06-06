@@ -1,5 +1,16 @@
 # Veroxa Launch Simplification Source of Truth
 
+## 2026-06-06 — Final pre-client polish completed, no live systems
+
+- Final pre-client polish completed for visual QA, docs authority cleanup, real-auth readiness audit, production preview-login checklist, and manual launch usability.
+- Active docs authority is clarified: `ACTIVE_DOCS_INDEX.md` is the highest-level current docs index, and older current-looking docs must not override it.
+- Real auth readiness was audited in `REAL_AUTH_READINESS_AUDIT.md`, but real auth was not activated; `AUTH_MODE` remains `placeholder`.
+- Production preview-login guidance was added in `PRODUCTION_PREVIEW_LOGIN_CHECKLIST.md`, including the custom-domain expectation to disable public preview fallback login.
+- Manual launch docs are indexed in `FIRST_CLIENT_MANUAL_LAUNCH_INDEX.md` for Faraz and future execution workers.
+- Client/public/team copy and small mobile/responsive spacing were polished while keeping demo routes clearly sample/QA and real client routes in safe review/empty states.
+- No production auth, Supabase migrations, database writes, storage uploads, live AI/OpenAI calls, Google/Meta/Yelp/TikTok connectors, payments, webhooks, cron/background jobs, or automated publishing were added.
+- Next recommended step: owner visual review on Vercel preview, then first manual pilot/client walkthrough, then real-auth readiness PR only after the manual flow is approved.
+
 ## 2026-06-06 — PR #77 Manual First-Client Launch Pack completed, no live systems
 
 - PR #77 completed the Manual First-Client Launch Pack for preview/manual first-client operations.

@@ -823,14 +823,14 @@ export default function TeamAuditLeads() {
                 >
                   Use {match.restaurantName}
                   <span className="ml-2 rounded-full border border-border px-2 py-0.5 text-[10px] text-muted-foreground">
-                    Source: {match.matchSource ?? "fixture"}
+                    Source: {match.matchSource === "fixture" ? "sample" : match.matchSource ?? "sample"}
                   </span>
                 </Button>
               ))}
             </div>
           )}
           <p className="text-[12px] text-muted-foreground">
-            If a warm target is hard to find, treat that as weak discoverability / name-indexing issue — potential Veroxa opportunity and save a manual lead for verification. Source labels stay fixture, fuzzy match, or manual. This stays local/manual — no scraping, Places API, database write, or live integration.
+            If a warm target is hard to find, treat that as weak discoverability / name-indexing issue — potential Veroxa opportunity and save a manual lead for verification. Source labels stay sample, fuzzy match, or manual. This stays local/manual — no scraping, external lookup, database write, or live integration.
           </p>
           {manualLeadMessage && (
             <p

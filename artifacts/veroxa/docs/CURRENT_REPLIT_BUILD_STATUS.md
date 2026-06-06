@@ -1,4 +1,6 @@
 > **Historical note — not current build workflow**
+> Do not override current docs: read `ACTIVE_DOCS_INDEX.md` first. Any old pricing, role, auth, or automation language in this file is historical/deprecated unless the active docs index confirms it.
+
 >
 > This file is retained for older status history only. The current active build
 > stack is GitHub + Codex + Vercel, and the current status file is
@@ -30,7 +32,7 @@ For the active five-phase pre-live roadmap, see [`VEROXA_OS_5_PHASE_PRELIVE_BUIL
 > **2026-05-29 — Historical/deprecated pricing correction + active route reduction**
 >
 > - Historical pricing note only: this section described a previous Complete Online Presence / founding-client model. It is now deprecated and not current public pricing.
-> - Current correction: the public Pricing page now shows Starter, Growth, and Premium at $295/$495/$995. Do not restore the older Complete Online Presence + Ads add-on page model.
+> - Historical Replit note only: the old Starter/Growth/Premium $295/$495/$995 model is deprecated/archive-only. Do not override ACTIVE_DOCS_INDEX.md; current public offer is Complete Online Presence — $495/month.
 > - `google_optimization` and `ads_standalone` are intentionally retained in
 >   `veroxaPricing.ts` (NOT deleted) because the internal Free Audit
 >   recommendation engine and lead-scoring may still reference legacy IDs. They are
@@ -660,7 +662,7 @@ manualReviewNeeded[], ownerFriendlyClosing } | null, message? }`.
 
 ## 2026-05-30 RR strategy sync note
 
-- Current public packages remain Starter ($295/month), Growth ($495/month), and Premium ($995/month).
+- Historical Replit note only: Starter ($295/month), Growth ($495/month), and Premium ($995/month) are deprecated/archive-only; current public offer is Complete Online Presence — $495/month.
 - Growth must not be labeled popular-badge until real client data supports that claim.
 - Historical/deprecated: prior Growth wording incorrectly carried daily-posting language. Current Growth wording must not carry public daily-posting language.
 - Service boundary: Veroxa does not handle comments, DMs, inboxes, complaints, order questions, refunds, or customer-service conversations at launch.
@@ -676,7 +678,7 @@ For the next Full SaaS Foundation design and guardrail plan, see `CLIENT_PORTAL_
 
 ## 2026-06-03 pricing/profit-fit alignment
 
-- Active public pricing is Starter $295/month, Growth $495/month, and Premium $995/month.
+- Historical Replit note only: Starter $295/month, Growth $495/month, and Premium $995/month are deprecated/archive-only; current public offer is Complete Online Presence — $495/month.
 - Growth is the main recommended package for strong-fit restaurants; Starter is the low-friction entry plan; Premium is selective and readiness-gated.
 - Premium requires readiness assessment, client approval, and an agreed ad budget; ad spend is separate.
 - Profit Fit Layer is internal/team-only and uses `requiredDailyOrders = monthlyFee / netMargin / averageTicket / 30` with conservative defaults of $15 average ticket and 5% net margin.

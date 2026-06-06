@@ -1,4 +1,6 @@
 # Veroxa OS — Locked Operating Model
+> Do not override current docs: read `ACTIVE_DOCS_INDEX.md` first. Any old pricing, role, auth, or automation language in this file is historical/deprecated unless the active docs index confirms it.
+
 
 This document captures the current locked Veroxa OS direction. It is intended for Faraz, Codex, and future coding agents.
 
@@ -372,7 +374,7 @@ Current locked markers:
 - Active stack: GitHub + Codex + Vercel. Replit is historical only.
 - Active roles: Client and Team. Owner/Operator are inactive and parked.
 - `AUTH_MODE` remains `placeholder`.
-- Current pricing remains Starter $295, Growth $495, Premium $995.
+- Historical/deprecated pricing note: Starter $295, Growth $495, and Premium $995 are not active public pricing. Current pricing is Complete Online Presence — $495/month.
 - Preview credentials remain [faraz@client.com](mailto:faraz@client.com) / farazclient and [faraz@team.com](mailto:faraz@team.com) / farazteam.
 - Veroxa remains AI-ready but not connected and integration-ready but not connected until a future approved activation.
 - Restaurant Onboarding is a known missing layer and future priority.

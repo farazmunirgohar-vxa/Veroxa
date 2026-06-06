@@ -1,4 +1,6 @@
 # Restaurant Onboarding OS Gap and Build Plan
+> Do not override current docs: read `ACTIVE_DOCS_INDEX.md` first. Any old pricing, role, auth, or automation language in this file is historical/deprecated unless the active docs index confirms it.
+
 
 Status: Current gap note and future build plan.
 
@@ -30,7 +32,7 @@ Required onboarding sections:
 - Restaurant name.
 - Business type/cuisine.
 - Service area or neighborhood.
-- Current service package: Starter $295, Growth $495, or Premium $995.
+- Current service package: Complete Online Presence — $495/month. Starter $295, Growth $495, and Premium $995 are deprecated/archive-only.
 - Notes on whether Premium readiness assessment is needed.
 
 ### Contact person

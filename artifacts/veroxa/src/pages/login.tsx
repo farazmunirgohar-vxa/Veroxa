@@ -151,13 +151,13 @@ export default function LoginPage() {
             Sign in to Veroxa.
           </h1>
           <p className="text-muted-foreground">
-            Use your Veroxa preview credentials to access the right portal.
+            Use the Veroxa review sign-in details you were given. This preview access is not production client billing or live account access.
           </p>
         </div>
 
         {/* Sign In */}
         <div className="animate-in fade-in duration-700" data-testid="signin-section">
-          <div className="rounded-2xl border border-border bg-card p-7 shadow-sm relative overflow-hidden">
+          <div className="rounded-2xl border border-border bg-card p-5 sm:p-7 shadow-sm relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-primary/10 to-transparent blur-3xl rounded-full pointer-events-none" />
 
             {AUTH_MODE === "placeholder" && (

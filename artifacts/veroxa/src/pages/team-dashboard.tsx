@@ -448,7 +448,7 @@ export default function TeamDashboard() {
             <p className="font-semibold">{getDataModeLabel(saasDataMode)}</p>
           </div>
           <div>
-            <p className="text-muted-foreground">Demo fixtures allowed?</p>
+            <p className="text-muted-foreground">Sample demo records allowed?</p>
             <p className="font-semibold">{canUseDemoFixtures(saasDataMode) ? "Yes" : "No"}</p>
           </div>
           <div>
@@ -983,7 +983,7 @@ export default function TeamDashboard() {
             <CardContent className="space-y-4">
               <p className="text-sm text-muted-foreground">
                 Review-mode operational records only. Live integrations are not
-                connected yet, and public demo fixtures are not treated as
+                connected yet, and public demo records are not treated as
                 active clients.
               </p>
               <TeamCommandSummaryGrid summary={reviewModeSummary} />

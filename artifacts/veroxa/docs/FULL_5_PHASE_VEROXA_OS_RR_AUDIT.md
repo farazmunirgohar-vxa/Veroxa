@@ -1,4 +1,6 @@
 # Full 5-Phase Veroxa OS RR / Product Audit
+> Do not override current docs: read `ACTIVE_DOCS_INDEX.md` first. Any old pricing, role, auth, or automation language in this file is historical/deprecated unless the active docs index confirms it.
+
 
 Audit date: 2026-06-02
 
@@ -13,7 +15,7 @@ Scope: audit-only review after Phase 1 through Phase 5 and Founder OS alignment 
 The current repository shows a strong pre-live Veroxa OS foundation:
 
 - Public positioning is mostly aligned to “easier to find, easier to trust, and easier to choose.”
-- Pricing is locked to Starter `$295`, Growth `$495`, and Premium `$995` across the pricing source and active public pricing surfaces.
+- Historical audit note only: Starter `$295`, Growth `$495`, and Premium `$995` are deprecated/archive-only. Current public pricing is Complete Online Presence — `$495/month`.
 - Public, client, demo, and team route separation is guarded.
 - The Team / Founder OS is now more central than the Client Portal and supports Faraz-first review decisions.
 - Phase 5 deterministic automation helpers are intentionally rule-based, review-mode, and manual-execution oriented.
@@ -155,7 +157,7 @@ Pricing is locked, but there is not yet a SaaS account lifecycle with trial/demo
 
 **PASS**
 
-- Starter, Growth, and Premium are locked at `$295`, `$495`, and `$995`.
+- Historical audit note only: Starter, Growth, and Premium at `$295`, `$495`, and `$995` are deprecated/archive-only. Current public pricing is Complete Online Presence — `$495/month`.
 - No contract / cancel anytime is present.
 - Ad spend is separate.
 - Premium requires readiness assessment, client approval, and agreed ad budget.
@@ -654,7 +656,7 @@ For the next Full SaaS Foundation design and guardrail plan, see `CLIENT_PORTAL_
 
 ## 2026-06-03 pricing/profit-fit alignment
 
-- Active public pricing is Starter $295/month, Growth $495/month, and Premium $995/month.
+- Historical note: Starter $295/month, Growth $495/month, and Premium $995/month are deprecated/archive-only and are not active public pricing. Current public pricing is Complete Online Presence — $495/month.
 - Growth is the main recommended package for strong-fit restaurants; Starter is the low-friction entry plan; Premium is selective and readiness-gated.
 - Premium requires readiness assessment, client approval, and an agreed ad budget; ad spend is separate.
 - Profit Fit Layer is internal/team-only and uses `requiredDailyOrders = monthlyFee / netMargin / averageTicket / 30` with conservative defaults of $15 average ticket and 5% net margin.

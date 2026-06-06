@@ -93,7 +93,7 @@ export default function TeamReportQueue() {
       </div>
 
       <DemoOnlyBanner
-        message="Report sourcing persists in the workflow foundation for this browser (backend pending). Drafts require team verification before they become client-visible — nothing is delivered automatically."
+        message="Report sourcing is saved only for this review workspace. Drafts require team verification before they become client-visible — nothing is delivered automatically."
         testId="banner-report-queue"
       />
 

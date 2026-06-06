@@ -1,4 +1,6 @@
 # SaaS Persistence Model
+> Do not override current docs: read `ACTIVE_DOCS_INDEX.md` first. Any old pricing, role, auth, or automation language in this file is historical/deprecated unless the active docs index confirms it.
+
 
 Status: Design-only. No migrations created yet. No production auth enabled yet. No storage uploads enabled yet. No live AI enabled yet. No payments enabled yet.
 
@@ -188,7 +190,7 @@ Future connector records must include restaurant scope, actor/system source, att
 
 ## 2026-06-03 pricing/profit-fit alignment
 
-- Active public pricing is Starter $295/month, Growth $495/month, and Premium $995/month.
+- Historical note: Starter $295/month, Growth $495/month, and Premium $995/month are deprecated/archive-only and are not active public pricing. Current public pricing is Complete Online Presence — $495/month.
 - Growth is the main recommended package for strong-fit restaurants; Starter is the low-friction entry plan; Premium is selective and readiness-gated.
 - Premium requires readiness assessment, client approval, and an agreed ad budget; ad spend is separate.
 - Profit Fit Layer is internal/team-only and uses `requiredDailyOrders = monthlyFee / netMargin / averageTicket / 30` with conservative defaults of $15 average ticket and 5% net margin.
