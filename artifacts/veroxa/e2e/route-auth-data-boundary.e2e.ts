@@ -74,6 +74,12 @@ async function main() {
     assert(emptyStateBlock.includes("googleMetrics: ZERO_GOOGLE_METRICS"), "Real client empty state still risks demo Google metrics.");
     assert(!emptyStateBlock.includes("demoGoogleMetrics"), "Real client empty state references demo Google metrics.");
 
+    const liveDataBlock = clientDataHook.slice(clientDataHook.indexOf("isReadOnlyLive: true"), clientDataHook.indexOf("} catch (err)", clientDataHook.indexOf("isReadOnlyLive: true")));
+    assert(liveDataBlock.includes("googleMetrics: ZERO_GOOGLE_METRICS"), "Authenticated/live client data path must use zero/safe Google metrics until client-safe metrics exist.");
+    for (const marker of ["demoGoogleMetrics", "DEMO_MONTHLY_PREVIEW", "DEMO_WEEKLY_UPDATE"]) {
+      assert(!liveDataBlock.includes(marker), `Authenticated/live client data path must not reference ${marker}.`);
+    }
+
     const realClientDashboard = readFileSync(resolve(root, "src/pages/client-dashboard.tsx"), "utf8");
     assert(!realClientDashboard.includes("Demo Grill House"), "Real /client/dashboard page must not hard-code demo restaurant names.");
     assert(!realClientDashboard.includes("14,820") && !realClientDashboard.includes("3,240"), "Real /client/dashboard page must not hard-code demo metric values.");

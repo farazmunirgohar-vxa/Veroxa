@@ -47,10 +47,6 @@ import {
 import { AUTH_MODE } from "@/lib/auth/authMode";
 import { DATA_MODE } from "@/lib/data/dataMode";
 import {
-  googleMetrics as demoGoogleMetrics,
-  demoAClient,
-} from "@/lib/demo-data";
-import {
   formatMonthlyTitleFromKey,
   formatWeekTitle,
 } from "./clientPortalData/formatters";
@@ -111,6 +107,20 @@ export const ZERO_GOOGLE_METRICS: readonly GoogleMetricDisplay[] = [
   { label: "Direction Requests", value: "0", change: "0%", positive: true },
   { label: "Review Score", value: "Not available yet", change: "0", positive: true },
 ] as const;
+
+const LIVE_WEEKLY_UPDATE_EMPTY: WeeklyUpdateDisplay = {
+  title: "Weekly update in review",
+  summaryItems: ["Live account data is being prepared."],
+};
+
+const LIVE_MONTHLY_PREVIEW_EMPTY: MonthlyReportPreview = {
+  title: "Monthly report in review",
+  status: "In review",
+  postsPublished: 0,
+  postsPlanned: 0,
+  completionRate: 0,
+  summaryText: "Live account data is being prepared.",
+};
 
 export type ClientPortalData = {
   businessName: string;
@@ -177,18 +187,8 @@ export function useClientPortalData(): UseClientPortalDataResult {
         scheduledPosts: [],
         googleMetrics: ZERO_GOOGLE_METRICS,
         contentSupply: [],
-        weeklyUpdate: {
-          title: "Weekly update in review",
-          summaryItems: ["Live account data is being prepared."],
-        },
-        monthlyReportPreview: {
-          title: "Monthly report in review",
-          status: "In review",
-          postsPublished: 0,
-          postsPlanned: 0,
-          completionRate: 0,
-          summaryText: "Live account data is being prepared.",
-        },
+        weeklyUpdate: LIVE_WEEKLY_UPDATE_EMPTY,
+        monthlyReportPreview: LIVE_MONTHLY_PREVIEW_EMPTY,
         platformsCount: 0,
         mediaAssetsCount: 0,
         postsCount: 0,
@@ -270,7 +270,7 @@ export function useClientPortalData(): UseClientPortalDataResult {
         const businessName =
           (row?.business_name as string | undefined) ??
           (row?.businessName as string | undefined) ??
-          demoAClient.businessName;
+          "Restaurant Portal";
 
         const calendarTyped = calendar as Record<string, unknown>[];
         const weeklyTyped = weekly as Record<string, unknown>[];
@@ -293,7 +293,7 @@ export function useClientPortalData(): UseClientPortalDataResult {
               title: formatWeekTitle(
                 latestWeekly.week_start,
                 latestWeekly.week_end,
-                DEMO_WEEKLY_UPDATE.title,
+                LIVE_WEEKLY_UPDATE_EMPTY.title,
               ),
               summaryItems: parseWeeklySummaryItems(
                 latestWeekly.posts_published,
@@ -301,30 +301,30 @@ export function useClientPortalData(): UseClientPortalDataResult {
                 latestWeekly.client_safe_summary,
               ),
             }
-          : DEMO_WEEKLY_UPDATE;
+          : LIVE_WEEKLY_UPDATE_EMPTY;
 
         // Monthly report preview — view fields: month_key, client_safe_summary,
         // client_safe_summary_json, published_at. Status / posts_published /
         // posts_planned / completion_rate not exposed by design (status is
-        // always 'published' for any row the client sees). Fall back to demo
-        // numbers for those visual fields.
+        // always 'published' for any row the client sees). Use zero/in-review
+        // placeholders for visual fields until client-safe report metrics exist.
         const latestMonthly = monthlyTyped[0] ?? null;
         const monthlyReportPreview: MonthlyReportPreview = latestMonthly
           ? {
               title: formatMonthlyTitleFromKey(
                 latestMonthly.month_key,
-                DEMO_MONTHLY_PREVIEW.title,
+                LIVE_MONTHLY_PREVIEW_EMPTY.title,
               ),
               status: "Published",
-              postsPublished: DEMO_MONTHLY_PREVIEW.postsPublished,
-              postsPlanned: DEMO_MONTHLY_PREVIEW.postsPlanned,
-              completionRate: DEMO_MONTHLY_PREVIEW.completionRate,
+              postsPublished: 0,
+              postsPlanned: 0,
+              completionRate: 0,
               summaryText:
                 typeof latestMonthly.client_safe_summary === "string"
                   ? latestMonthly.client_safe_summary
                   : null,
             }
-          : DEMO_MONTHLY_PREVIEW;
+          : LIVE_MONTHLY_PREVIEW_EMPTY;
 
         // If the read came back empty (most likely RLS-blocked under
         // placeholder auth), fall back to fixtures so the UI stays usable.
@@ -364,7 +364,7 @@ export function useClientPortalData(): UseClientPortalDataResult {
           data: {
             businessName,
             scheduledPosts,
-            googleMetrics: demoGoogleMetrics,
+            googleMetrics: ZERO_GOOGLE_METRICS,
             contentSupply,
             weeklyUpdate,
             monthlyReportPreview,

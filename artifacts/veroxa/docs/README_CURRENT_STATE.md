@@ -2,8 +2,9 @@
 
 Status: Short index for Faraz, Codex, and future ChatGPT/Codex sessions.
 
-Use these documents as the current operating model before relying on older historical notes:
+Use `ACTIVE_DOCS_INDEX.md` first, then these documents as the current operating model before relying on older historical notes:
 
+- `ACTIVE_DOCS_INDEX.md`
 - `VEROXA_OS_CURRENT_MASTER.md`
 - `CURRENT_BUILD_STATUS.md`
 - `PRE_PAID_ACTIVATION_GATE.md`
@@ -26,7 +27,7 @@ Current strategy markers:
 - Veroxa is AI-ready but not connected.
 - Veroxa is integration-ready but not connected.
 - Restaurant Onboarding is a known gap and future priority.
-- Current pricing remains Starter $295, Growth $495, Premium $995.
+- Active public offer: **Complete Online Presence — $495/month**. `ACTIVE_DOCS_INDEX.md` is the current doc index and pricing source pointer; Starter/Growth/Premium and $295/$995 language are historical/deprecated only.
 - Preview credentials: [faraz@client.com](mailto:faraz@client.com) / farazclient and [faraz@team.com](mailto:faraz@team.com) / farazteam.
 
 Warning: older docs may contain historical/deprecated material. Current docs override older changelog sections. Do not revive Replit as active, Owner/Operator as active, old pricing, production auth/storage/live AI/connectors/payments as active, or paid activation before the Pre-Paid Activation Gate.
