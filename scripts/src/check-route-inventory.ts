@@ -12,11 +12,19 @@ const routeSurfaceMap = readFileSync(join(root, "artifacts/veroxa/docs/VEROXA_RO
 const documentedRoutesText = `${routeInventory}\n${routeSurfaceMap}`;
 
 const failures: string[] = [];
-const publicDemoPages = new Set(["client-dashboard.tsx", "demo-hub.tsx", "guided-demo.tsx", "restaurant-upload-access.tsx"]);
+
+const demoAliasPages = new Set([
+  "client-dashboard.tsx",
+  "client-media.tsx",
+  "client-requests.tsx",
+  "client-updates.tsx",
+  "client-reports.tsx",
+  "client-onboarding.tsx",
+]);
+const publicDemoOnlyPages = new Set(["demo-hub.tsx", "guided-demo.tsx", "restaurant-upload-access.tsx"]);
 const futurePlanned = new Set([
   "client-account.tsx",
   "client-activity-log.tsx",
-  "client-ai-draft-preview.tsx",
   "client-calendar.tsx",
   "client-content-pipeline.tsx",
   "client-direction-center.tsx",
@@ -24,20 +32,14 @@ const futurePlanned = new Set([
   "client-health-command.tsx",
   "client-monthly-report.tsx",
   "client-onboarding-center.tsx",
-    "client-portal.tsx",
   "client-weekly-report.tsx",
   "client-workspace.tsx",
   "team-activity-feed.tsx",
-  "team-adaptive-intelligence.tsx",
   "team-alert-center.tsx",
-  "team-ai-review.tsx",
   "team-content-review.tsx",
-  "team-drafts.tsx",
   "team-lead-source-lab.tsx",
   "team-media-review.tsx",
   "team-performance.tsx",
-  "team-portal.tsx",
-  "team-prospect-scanner.tsx",
   "team-scheduling.tsx",
 ]);
 const internalDebug = new Set([
@@ -53,22 +55,42 @@ const internalDebug = new Set([
 ]);
 const legacyQuarantined = new Set([
   "client-ai-agents.tsx",
+  "client-ai-draft-preview.tsx",
+  "client-portal.tsx",
+  "team-adaptive-intelligence.tsx",
+  "team-ai-review.tsx",
+  "team-drafts.tsx",
+  "team-portal.tsx",
+  "team-prospect-scanner.tsx",
   "real-client-placeholder.tsx",
   "real-route-placeholder.tsx",
   "real-team-placeholder.tsx",
 ]);
 
-const activeRouted = new Set<string>();
-for (const match of app.matchAll(/@\/pages\/([a-z0-9-]+)/gi)) {
-  activeRouted.add(`${match[1]}.tsx`);
+const importToComponent = new Map<string, string>();
+for (const match of app.matchAll(/const\s+(\w+)\s*=\s*lazy\(\(\)\s*=>\s*import\(["']@\/pages\/([a-z0-9-]+)["']\)\)/gi)) {
+  importToComponent.set(`${match[2]}.tsx`, match[1]);
 }
+const componentToImport = new Map([...importToComponent].map(([file, component]) => [component, file]));
+const activeRouted = new Set(importToComponent.keys());
+
+const routePaths = [...app.matchAll(/<Route\s+path=["']([^"']+)["']/g)].map((match) => match[1]);
+const demoAliasRoutes = [...app.matchAll(/<Route\s+path=["'](\/demo\/client\/[^"']+)["']\s+component=\{(\w+)\}/g)].map((match) => ({
+  route: match[1],
+  component: match[2],
+  file: componentToImport.get(match[2]),
+}));
 
 function classification(file: string): string {
-  if (activeRouted.has(file)) return publicDemoPages.has(file) ? "public_demo" : "active_routed";
+  if (activeRouted.has(file)) {
+    if (demoAliasPages.has(file)) return "active_routed + demo_alias";
+    if (publicDemoOnlyPages.has(file)) return "public_demo";
+    return "active_routed";
+  }
   if (internalDebug.has(file)) return "internal_debug";
   if (legacyQuarantined.has(file)) return "legacy_quarantined";
   if (futurePlanned.has(file)) return "future_planned";
-  return "delete_candidate";
+  return "delete_review_only";
 }
 
 const pages = readdirSync(pagesDir)
@@ -89,8 +111,6 @@ for (const [pattern, message] of routePatterns) {
   if (pattern.test(app)) failures.push(message);
 }
 
-
-const routePaths = [...app.matchAll(/<Route\s+path=["']([^"']+)["']/g)].map((match) => match[1]);
 for (const route of routePaths) {
   if (!documentedRoutesText.includes(route)) {
     failures.push(`App.tsx route ${route} must be documented in ROUTE_PAGE_INVENTORY.md or VEROXA_ROUTE_SURFACE_MAP.md.`);
@@ -105,13 +125,51 @@ for (const route of routePaths) {
     failures.push(`Demo/QA route ${route} must be documented as demo/QA-only.`);
   }
 }
+
 for (const blockedRoute of ["/owner", "/operator", "/super-admin", "/admin", "/execution"]) {
   if (routePaths.some((route) => route === blockedRoute || route.startsWith(`${blockedRoute}/`))) {
     failures.push(`${blockedRoute} routes are not allowed.`);
   }
 }
+
 if (!routeInventory.includes("QUARANTINED_AND_FUTURE_FILES_REVIEW.md") || !routeSurfaceMap.includes("QUARANTINED_AND_FUTURE_FILES_REVIEW.md")) {
   failures.push("Route docs must link QUARANTINED_AND_FUTURE_FILES_REVIEW.md.");
+}
+if (!routeInventory.includes("active_routed + demo_alias")) {
+  failures.push("Route inventory must include the dual-use classification `active_routed + demo_alias`.");
+}
+if (!/owner approval[\s\S]*route inventory update[\s\S]*route surface map update[\s\S]*guardrail update[\s\S]*RR/i.test(routeInventory)) {
+  failures.push("Route inventory must state parked pages require owner approval, route inventory update, route surface map update, guardrail update, and RR before routing.");
+}
+
+const expectedDualUse = [
+  ["client-dashboard.tsx", "/client/dashboard", "/demo/client/dashboard"],
+  ["client-onboarding.tsx", "/client/onboarding", "/demo/client/onboarding"],
+  ["client-media.tsx", "/client/media", "/demo/client/media"],
+  ["client-updates.tsx", "/client/updates", "/demo/client/updates"],
+  ["client-requests.tsx", "/client/requests", "/demo/client/requests"],
+  ["client-reports.tsx", "/client/reports", "/demo/client/reports"],
+] as const;
+
+const demoAliasFilesFromApp = new Set(demoAliasRoutes.map((route) => route.file).filter((file): file is string => Boolean(file)));
+for (const [file, guardedRoute, demoRoute] of expectedDualUse) {
+  if (!routePaths.includes(guardedRoute) || !routePaths.includes(demoRoute)) {
+    failures.push(`${file} dual-use check expected both ${guardedRoute} and ${demoRoute} to be routed if the page is classified as a demo alias.`);
+    continue;
+  }
+  if (!demoAliasFilesFromApp.has(file)) {
+    failures.push(`${file} is expected to be mounted as a /demo/client/* alias in App.tsx.`);
+  }
+  const row = routeInventory.split("\n").find((line) => line.includes(`\`${file}\``)) ?? "";
+  if (!row.includes("active_routed + demo_alias") || !row.includes(guardedRoute) || !row.includes(demoRoute)) {
+    failures.push(`${file} must be documented as guarded client route ${guardedRoute} and demo alias ${demoRoute}.`);
+  }
+}
+
+for (const file of [...futurePlanned, ...internalDebug, ...legacyQuarantined]) {
+  if (activeRouted.has(file)) {
+    failures.push(`${file} is parked/quarantined/internal-debug/legacy shell and must not be imported by App.tsx.`);
+  }
 }
 
 const expectedClientLabels = ["Dashboard", "Onboarding", "Media", "Updates", "Requests", "Reports"];
@@ -139,4 +197,4 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-console.log("Route inventory guardrail passed: active routes/nav remain contained and unrouted pages are inventoried only.");
+console.log("Route inventory guardrail passed: active routes/nav remain contained, dual-use aliases are documented, and parked pages are inventoried only.");

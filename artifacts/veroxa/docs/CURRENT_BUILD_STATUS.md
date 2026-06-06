@@ -227,3 +227,13 @@ PR #70 built the 90% pre-paid/manual OS foundations for client readiness, weekly
 - [AI Activation Prerequisites](./AI_ACTIVATION_PREREQUISITES.md) now documents what must exist before live AI can be enabled.
 - No live systems were added: no production auth, database/storage, payments, connectors, webhooks, cron/background jobs, live AI, or automated customer-visible execution.
 - Next recommended step: owner review of A–Z cleanup, then decide whether to prepare a first-client manual launch pack or continue pre-live QA.
+
+## 2026-06-06 — Final deletion/quarantine review
+
+- Final deletion/quarantine review completed.
+- No delete-now page files are confirmed.
+- Parked/future/debug/AI draft pages are hard-quarantined and require owner approval, route inventory update, route surface map update, guardrail update, and RR before routing.
+- Active demo/QA routes remain active, labeled, and guarded from public promotion.
+- Route inventory now distinguishes active routes from demo aliases with `active_routed + demo_alias`.
+- No live systems were added: no production auth, database/storage writes, live AI, payments, connectors, publishing, webhooks, cron jobs, background jobs, or automated customer-visible execution.
+- Next recommended step is the Manual First-Client Launch Pack after RR.
