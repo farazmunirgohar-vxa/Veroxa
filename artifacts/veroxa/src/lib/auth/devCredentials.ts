@@ -2,9 +2,10 @@
  * devCredentials.ts — TEMPORARY placeholder-only login matcher.
  *
  * Placeholder credentials are preview-only and are read from Vite env first.
- * A public preview fallback is available for local and Vercel preview review,
- * or by explicit opt-in. VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=false disables
- * the fallback. This is not production auth and contains no real secret.
+ * A public preview fallback is available only for localhost, 127.0.0.1,
+ * Vercel preview hostnames, or by explicit opt-in.
+ * VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=false disables the fallback on
+ * production/custom domains. This is not production auth and contains no real secret.
  *
  * AUTH_MODE must NOT be switched to "real" until this placeholder file and the
  * placeholder branch in login.tsx are removed. See:
@@ -51,7 +52,7 @@ function credentialFromEnv(
   return { role, email, password, source: "env" };
 }
 
-function isPreviewFriendlyHostname(): boolean {
+export function isPreviewFriendlyHostname(): boolean {
   if (typeof window === "undefined") return false;
   const hostname = window.location.hostname.toLowerCase();
   return (
@@ -65,7 +66,7 @@ function publicPreviewFallbackEnabled(): boolean {
   const explicitFlag = readViteEnv(PUBLIC_PREVIEW_LOGIN_FLAG);
   if (explicitFlag === "false") return false;
   if (explicitFlag === "true") return true;
-  return import.meta.env.DEV || isPreviewFriendlyHostname();
+  return isPreviewFriendlyHostname();
 }
 
 function getPublicPreviewFallbackCredentials(): readonly DevCredential[] {
@@ -121,8 +122,8 @@ export function getPlaceholderCredentialStatus(): PlaceholderCredentialStatus {
       ? "Preview access ready"
       : "Preview access not enabled",
     helperText: isConfigured
-      ? "Preview access is enabled for Veroxa review. Use the provided client or team preview credentials."
-      : "Preview access is off for this review environment. Ask Veroxa to enable preview access before signing in.",
+      ? "Preview access is enabled for Veroxa review. Production/custom domains should use explicit env credentials or an explicit preview-login opt-in only."
+      : "Preview access is off for this review environment. Production/custom domains require explicit env credentials or explicit preview-login opt-in before signing in.",
   };
 }
 

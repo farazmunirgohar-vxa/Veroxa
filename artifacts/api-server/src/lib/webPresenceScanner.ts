@@ -1,3 +1,5 @@
+import { lookup } from "node:dns/promises";
+import * as net from "node:net";
 import { logger } from "./logger";
 
 export interface WebPresenceScan {
@@ -22,6 +24,126 @@ export interface WebPresenceScan {
 const MAX_BYTES = 350_000;
 const TIMEOUT_MS = 10_000;
 
+const MAX_REDIRECTS = 5;
+const MANUAL_REVIEW_SCAN_NOTE =
+  "Website scan needs manual review before automated scanning can continue.";
+
+export interface UrlSafetyResult {
+  ok: boolean;
+  normalizedUrl?: string;
+  reason?: string;
+}
+
+function isLocalHostname(hostname: string): boolean {
+  const normalized = hostname.toLowerCase().replace(/\.$/, "");
+  return (
+    normalized === "localhost" ||
+    normalized.endsWith(".localhost") ||
+    normalized === "ip6-localhost" ||
+    normalized === "ip6-loopback"
+  );
+}
+
+function ipv4ToNumber(ip: string): number | null {
+  const parts = ip.split(".").map((part) => Number.parseInt(part, 10));
+  if (parts.length !== 4 || parts.some((part) => Number.isNaN(part) || part < 0 || part > 255)) {
+    return null;
+  }
+  return parts.reduce((acc, part) => (acc << 8) + part, 0) >>> 0;
+}
+
+function ipv4InCidr(ip: string, base: string, bits: number): boolean {
+  const ipNum = ipv4ToNumber(ip);
+  const baseNum = ipv4ToNumber(base);
+  if (ipNum === null || baseNum === null) return false;
+  const mask = bits === 0 ? 0 : (0xffffffff << (32 - bits)) >>> 0;
+  return (ipNum & mask) === (baseNum & mask);
+}
+
+export function isPrivateOrInternalIp(ip: string): boolean {
+  const normalized = ip.toLowerCase();
+  if (net.isIP(normalized) === 4) {
+    return (
+      ipv4InCidr(normalized, "0.0.0.0", 8) ||
+      ipv4InCidr(normalized, "10.0.0.0", 8) ||
+      ipv4InCidr(normalized, "127.0.0.0", 8) ||
+      ipv4InCidr(normalized, "169.254.0.0", 16) ||
+      ipv4InCidr(normalized, "172.16.0.0", 12) ||
+      ipv4InCidr(normalized, "192.168.0.0", 16) ||
+      ipv4InCidr(normalized, "224.0.0.0", 4) ||
+      normalized === "169.254.169.254"
+    );
+  }
+
+  if (net.isIP(normalized) === 6) {
+    return (
+      normalized === "::1" ||
+      normalized === "::" ||
+      normalized.startsWith("fc") ||
+      normalized.startsWith("fd") ||
+      normalized.startsWith("fe80:") ||
+      normalized.startsWith("ff") ||
+      normalized.includes("169.254.169.254")
+    );
+  }
+
+  return false;
+}
+
+export function normalizeUrl(input: string): string | null {
+  try {
+    const trimmed = input.trim();
+    if (!trimmed) return null;
+    const withProto = /^https?:\/\//i.test(trimmed)
+      ? trimmed
+      : `https://${trimmed}`;
+    const u = new URL(withProto);
+    if (u.protocol !== "http:" && u.protocol !== "https:") return null;
+    u.hash = "";
+    u.username = "";
+    u.password = "";
+    return u.toString();
+  } catch {
+    return null;
+  }
+}
+
+export async function validateScanUrlSafety(inputUrl: string): Promise<UrlSafetyResult> {
+  const normalizedUrl = normalizeUrl(inputUrl);
+  if (!normalizedUrl) {
+    return { ok: false, reason: "Invalid or unsupported website URL." };
+  }
+
+  const url = new URL(normalizedUrl);
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
+    return { ok: false, reason: "Only http and https website URLs can be scanned." };
+  }
+
+  const hostname = url.hostname.toLowerCase();
+  if (isLocalHostname(hostname)) {
+    return { ok: false, reason: "Localhost and internal hostnames cannot be scanned." };
+  }
+
+  if (net.isIP(hostname) && isPrivateOrInternalIp(hostname)) {
+    return { ok: false, reason: "Private or internal network IPs cannot be scanned." };
+  }
+
+  try {
+    const records = await lookup(hostname, { all: true, verbatim: true });
+    if (records.length === 0) {
+      return { ok: false, reason: "Website hostname could not be resolved for safe scanning." };
+    }
+    if (records.some((record) => isPrivateOrInternalIp(record.address))) {
+      return { ok: false, reason: "Website hostname resolves to a private/internal network." };
+    }
+  } catch {
+    return { ok: false, reason: "Website hostname could not be resolved for safe scanning." };
+  }
+
+  return { ok: true, normalizedUrl };
+}
+
+
 function emptyScan(notes: string[]): WebPresenceScan {
   return {
     websiteFound: false,
@@ -39,21 +161,6 @@ function emptyScan(notes: string[]): WebPresenceScan {
     scanConfidence: "none",
     scanNotes: notes,
   };
-}
-
-function normalizeUrl(input: string): string | null {
-  try {
-    const trimmed = input.trim();
-    if (!trimmed) return null;
-    const withProto = /^https?:\/\//i.test(trimmed)
-      ? trimmed
-      : `https://${trimmed}`;
-    const u = new URL(withProto);
-    if (u.protocol !== "http:" && u.protocol !== "https:") return null;
-    return u.toString();
-  } catch {
-    return null;
-  }
 }
 
 function decodeEntities(s: string): string {
@@ -101,60 +208,94 @@ export async function scanRestaurantWebPresence(input: {
     return emptyScan(["No restaurant-owned website was provided to scan."]);
   }
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  const initialSafety = await validateScanUrlSafety(normalized);
+  if (!initialSafety.ok || !initialSafety.normalizedUrl) {
+    return emptyScan([`${initialSafety.reason ?? MANUAL_REVIEW_SCAN_NOTE} Manual review needed.`]);
+  }
+
+  let fetchUrl = initialSafety.normalizedUrl;
   let html = "";
-  try {
-    const res = await fetch(normalized, {
-      method: "GET",
-      headers: {
-        "User-Agent": "VeroxaAuditBot/1.0 (+restaurant audit; respects robots)",
-        Accept: "text/html,*/*;q=0.1",
-      },
-      redirect: "follow",
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
-    if (!res.ok) {
+  for (let redirectCount = 0; redirectCount <= MAX_REDIRECTS; redirectCount += 1) {
+    const safety = await validateScanUrlSafety(fetchUrl);
+    if (!safety.ok || !safety.normalizedUrl) {
+      return emptyScan([`${safety.reason ?? MANUAL_REVIEW_SCAN_NOTE} Manual review needed.`]);
+    }
+    fetchUrl = safety.normalizedUrl;
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
+    try {
+      const res = await fetch(fetchUrl, {
+        method: "GET",
+        headers: {
+          "User-Agent": "VeroxaAuditBot/1.0 (+restaurant audit; respects robots)",
+          Accept: "text/html,*/*;q=0.1",
+        },
+        redirect: "manual",
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+
+      if (res.status >= 300 && res.status < 400) {
+        const location = res.headers.get("location");
+        if (!location) {
+          return emptyScan(["Website redirect did not include a destination. Manual review needed."]);
+        }
+        if (redirectCount === MAX_REDIRECTS) {
+          return emptyScan(["Website had too many redirects. Manual review needed."]);
+        }
+        fetchUrl = new URL(location, fetchUrl).toString();
+        continue;
+      }
+
+      const finalUrl = res.url || fetchUrl;
+      const finalSafety = await validateScanUrlSafety(finalUrl);
+      if (!finalSafety.ok) {
+        return emptyScan([`${finalSafety.reason ?? MANUAL_REVIEW_SCAN_NOTE} Manual review needed.`]);
+      }
+
+      if (!res.ok) {
+        return emptyScan([
+          `Website did not respond cleanly (status ${res.status}). Manual review needed.`,
+        ]);
+      }
+      const contentType = res.headers.get("content-type") ?? "";
+      if (!contentType.toLowerCase().includes("html")) {
+        return emptyScan(["Website did not return HTML. Manual review needed."]);
+      }
+      const reader = res.body?.getReader();
+      if (!reader) {
+        const fallback = await res.text();
+        html = fallback.slice(0, MAX_BYTES);
+      } else {
+        const decoder = new TextDecoder("utf-8", { fatal: false });
+        let bytes = 0;
+        while (bytes < MAX_BYTES) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          bytes += value.byteLength;
+          html += decoder.decode(value, { stream: true });
+          if (bytes >= MAX_BYTES) break;
+        }
+        try {
+          await reader.cancel();
+        } catch {
+          // ignore
+        }
+      }
+      break;
+    } catch (err) {
+      clearTimeout(timeout);
+      logger.warn({ err }, "Web presence scan threw");
       return emptyScan([
-        `Website did not respond cleanly (status ${res.status}). Manual review needed.`,
+        "Could not reach the restaurant website. Manual review needed.",
       ]);
     }
-    const contentType = res.headers.get("content-type") ?? "";
-    if (!contentType.toLowerCase().includes("html")) {
-      return emptyScan(["Website did not return HTML. Manual review needed."]);
-    }
-    const reader = res.body?.getReader();
-    if (!reader) {
-      const fallback = await res.text();
-      html = fallback.slice(0, MAX_BYTES);
-    } else {
-      const decoder = new TextDecoder("utf-8", { fatal: false });
-      let bytes = 0;
-      while (bytes < MAX_BYTES) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        bytes += value.byteLength;
-        html += decoder.decode(value, { stream: true });
-        if (bytes >= MAX_BYTES) break;
-      }
-      try {
-        await reader.cancel();
-      } catch {
-        // ignore
-      }
-    }
-  } catch (err) {
-    clearTimeout(timeout);
-    logger.warn({ err }, "Web presence scan threw");
-    return emptyScan([
-      "Could not reach the restaurant website. Manual review needed.",
-    ]);
   }
 
   const lowerHtml = html.toLowerCase();
   const hrefs = extractHrefs(html);
-  const baseHost = new URL(normalized).host.toLowerCase();
+  const baseHost = new URL(fetchUrl).host.toLowerCase();
 
   const social = {
     instagram: /instagram\.com\//i,

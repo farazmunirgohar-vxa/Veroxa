@@ -108,3 +108,7 @@ Status: final deletion/quarantine review completed after A–Z cleanup. No pages
 ## Delete review status
 
 No page files are marked delete-now. Future deletion requires a separate owner-approved cleanup PR unless a file is already marked `delete_review_only` and confirmed unused.
+
+## Active route marker refresh — 2026-06-06
+
+- `/team/dashboard` remains a guarded Team/manual route.

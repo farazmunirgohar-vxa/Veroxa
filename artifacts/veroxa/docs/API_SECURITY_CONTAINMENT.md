@@ -55,3 +55,7 @@ Real users should not hit AI or Google-powered routes directly. Those routes are
 - `/api/healthz` remains public.
 - `/api/ai/draft`, `/api/audit/ai-draft`, `/api/audit/search-restaurants`, and `/api/audit/restaurant-details` remain protected by the internal API access middleware and feature flags.
 - Browser/client code must not attach the protected API key header. If these routes are unavailable in preview, frontend helpers must fall back to safe local/report states instead of exposing an error or a secret.
+
+## Website scanner SSRF containment (2026-06-06)
+
+The dormant website presence scanner now validates URLs before server-side fetches. It allows only `http:` and `https:`, blocks localhost/internal hostnames, blocks private/link-local/metadata IP ranges including `127.0.0.0/8`, `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `169.254.0.0/16`, `169.254.169.254`, `::1`, and practical IPv6 local/link-local ranges, resolves hostnames before fetch, uses manual redirects, and re-checks redirect/final URLs. Failures return a client-safe manual-review scan note. The scanner remains behind existing API gates and is not connected to public/client UI.
