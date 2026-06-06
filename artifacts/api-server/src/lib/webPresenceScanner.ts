@@ -34,8 +34,31 @@ export interface UrlSafetyResult {
   reason?: string;
 }
 
+function normalizeHostnameForIpCheck(hostname: string): string {
+  return hostname.toLowerCase().replace(/\.$/, "").replace(/^\[(.*)\]$/, "$1");
+}
+
+function ipv4FromMappedIpv6(ip: string): string | null {
+  const normalized = normalizeHostnameForIpCheck(ip);
+  if (!normalized.startsWith("::ffff:")) return null;
+
+  const mapped = normalized.slice("::ffff:".length);
+  if (net.isIP(mapped) === 4) return mapped;
+
+  const hextets = mapped.split(":");
+  if (hextets.length !== 2) return null;
+
+  const high = Number.parseInt(hextets[0], 16);
+  const low = Number.parseInt(hextets[1], 16);
+  if (Number.isNaN(high) || Number.isNaN(low) || high < 0 || high > 0xffff || low < 0 || low > 0xffff) {
+    return null;
+  }
+
+  return [high >> 8, high & 0xff, low >> 8, low & 0xff].join(".");
+}
+
 function isLocalHostname(hostname: string): boolean {
-  const normalized = hostname.toLowerCase().replace(/\.$/, "");
+  const normalized = normalizeHostnameForIpCheck(hostname);
   return (
     normalized === "localhost" ||
     normalized.endsWith(".localhost") ||
@@ -61,7 +84,10 @@ function ipv4InCidr(ip: string, base: string, bits: number): boolean {
 }
 
 export function isPrivateOrInternalIp(ip: string): boolean {
-  const normalized = ip.toLowerCase();
+  const normalized = normalizeHostnameForIpCheck(ip);
+  const mappedIpv4 = ipv4FromMappedIpv6(normalized);
+  if (mappedIpv4) return isPrivateOrInternalIp(mappedIpv4);
+
   if (net.isIP(normalized) === 4) {
     return (
       ipv4InCidr(normalized, "0.0.0.0", 8) ||
@@ -120,11 +146,12 @@ export async function validateScanUrlSafety(inputUrl: string): Promise<UrlSafety
   }
 
   const hostname = url.hostname.toLowerCase();
+  const ipCheckHostname = normalizeHostnameForIpCheck(hostname);
   if (isLocalHostname(hostname)) {
     return { ok: false, reason: "Localhost and internal hostnames cannot be scanned." };
   }
 
-  if (net.isIP(hostname) && isPrivateOrInternalIp(hostname)) {
+  if (net.isIP(ipCheckHostname) && isPrivateOrInternalIp(ipCheckHostname)) {
     return { ok: false, reason: "Private or internal network IPs cannot be scanned." };
   }
 

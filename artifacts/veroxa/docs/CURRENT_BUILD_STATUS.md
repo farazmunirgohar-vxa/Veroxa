@@ -1,5 +1,15 @@
 # Veroxa Launch Simplification Source of Truth
 
+## 2026-06-06 — PR #77 Manual First-Client Launch Pack completed, no live systems
+
+- PR #77 completed the Manual First-Client Launch Pack for preview/manual first-client operations.
+- Real-route zero metrics were added so authenticated/client-safe routes avoid demo metric leakage while live account data is still being prepared.
+- Preview login hardening was completed and `AUTH_MODE` remains `placeholder`.
+- SSRF scanner containment was completed for local/private/metadata/IPv6 redirect safety boundaries.
+- Route/auth/data-boundary QA was completed for public, demo, client, and team route separation.
+- No production auth, Supabase migrations, database writes, storage uploads, live AI, connectors, payments, webhooks, cron/background jobs, or automated publishing were added.
+- Next recommended build: post-PR77 active-doc alignment, CI E2E wiring, scanner safety tests, and future live-data guardrails before any RR-approved live-system planning.
+
 ## 2026-06-05 — Final trim before AI + automation readiness
 
 - PR #72 fixed preview-login safety, enlarged the centered public Veroxa header, removed client-facing technical wording, cleaned minor copy/code debt, and strengthened guardrails.
@@ -193,11 +203,11 @@ Advanced Team OS remains deferred. Team stays supporting/action-focused; this bu
 
 ### Next recommended build
 
-Manual first-client execution pack, client-facing final visual polish, audit-to-onboarding polish, and RR before any paid/live system planning.
+Client-facing final visual polish, audit-to-onboarding polish, CI/QA guardrail hardening, and RR before any paid/live system planning.
 
 ## 2026-06-05 — Post-PR70 RR cleanup alignment
 
-PR #70 built the 90% pre-paid/manual OS foundations for client readiness, weekly updates, monthly reports, launch add-ons, SOPs, readiness mapping, value-proof guardrails, and client portal readiness surfaces. This cleanup fixed RR issues around preview login, the public header, loaded weekly/monthly client data states, client dashboard setup/demo separation, old tier leakage in onboarding, request boundary counts, public/client polish, and guardrail coverage. Veroxa remains manual/pre-live: no production auth, storage, database writes, live AI, connectors, payments, webhooks, cron jobs, or automated customer-visible execution were added. Team complexity remains deferred and supporting/action-focused. The next big build should wait until this cleanup passes RR and should focus on a dormant live-system blueprint and first-client execution pack, not paid/live systems yet.
+PR #70 built the 90% pre-paid/manual OS foundations for client readiness, weekly updates, monthly reports, launch add-ons, SOPs, readiness mapping, value-proof guardrails, and client portal readiness surfaces. This cleanup fixed RR issues around preview login, the public header, loaded weekly/monthly client data states, client dashboard setup/demo separation, old tier leakage in onboarding, request boundary counts, public/client polish, and guardrail coverage. Veroxa remains manual/pre-live: no production auth, storage, database writes, live AI, connectors, payments, webhooks, cron jobs, or automated customer-visible execution were added. Team complexity remains deferred and supporting/action-focused. The next big build should wait until this cleanup passes RR and should focus on a dormant live-system blueprint and post-launch-pack QA hardening, not paid/live systems yet.
 
 ## 2026-06-05 — PR72 hotfix/polish alignment
 
@@ -207,7 +217,7 @@ PR #70 built the 90% pre-paid/manual OS foundations for client readiness, weekly
 - Removed client-facing technical wording from onboarding preview language and kept the meaning client-safe: no legal onboarding signature, no live platform access, nothing sent automatically, and nothing goes live without Veroxa team review.
 - Cleaned minor duplicate copy and monthly report lookup code without changing reporting behavior.
 - Strengthened guardrails against broad custom-domain preview fallback, public header regression, public/client technical wording, and `AUTH_MODE` drift.
-- Veroxa remains preview/manual/pre-live. No paid/live systems were added, and Team Portal complexity was not expanded. The next big build remains the dormant live-system blueprint / first-client execution pack.
+- Veroxa remains preview/manual/pre-live. No paid/live systems were added, and Team Portal complexity was not expanded. The next big build remains the dormant live-system blueprint / post-launch-pack QA hardening.
 
 ## 2026-06-06 — AI readiness blueprint started, no live activation
 
@@ -226,7 +236,7 @@ PR #70 built the 90% pre-paid/manual OS foundations for client readiness, weekly
 - Client portal premium copy polish was completed without adding workflows, fake metrics, live data claims, or AI marketing.
 - [AI Activation Prerequisites](./AI_ACTIVATION_PREREQUISITES.md) now documents what must exist before live AI can be enabled.
 - No live systems were added: no production auth, database/storage, payments, connectors, webhooks, cron/background jobs, live AI, or automated customer-visible execution.
-- Next recommended step: owner review of A–Z cleanup, then decide whether to prepare a first-client manual launch pack or continue pre-live QA.
+- Next recommended step: owner review of A–Z cleanup, then continue post-launch-pack QA and active-doc alignment before any paid/live system planning.
 
 ## 2026-06-06 — Final deletion/quarantine review
 
@@ -236,4 +246,4 @@ PR #70 built the 90% pre-paid/manual OS foundations for client readiness, weekly
 - Active demo/QA routes remain active, labeled, and guarded from public promotion.
 - Route inventory now distinguishes active routes from demo aliases with `active_routed + demo_alias`.
 - No live systems were added: no production auth, database/storage writes, live AI, payments, connectors, publishing, webhooks, cron jobs, background jobs, or automated customer-visible execution.
-- Next recommended step is the Manual First-Client Launch Pack after RR.
+- Next recommended step: post-PR77 active-doc alignment, CI E2E wiring, scanner safety tests, future live-data guardrails, and RR before any paid/live system planning.
