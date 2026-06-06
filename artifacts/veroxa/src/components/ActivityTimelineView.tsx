@@ -106,7 +106,7 @@ export function ActivityTimelineView({ viewerRole }: ActivityTimelineViewProps) 
 
       <p className="text-[11px] text-muted-foreground/60">
         Viewing as: <span className="text-foreground/70">{viewerRole}</span> ·
-        Demo events only. No real tracking, logging, or backend is connected.
+        Demo events only. No real tracking or client account activity is connected.
       </p>
     </div>
   );

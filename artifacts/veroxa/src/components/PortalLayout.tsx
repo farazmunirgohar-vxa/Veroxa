@@ -76,13 +76,13 @@ function getPortalReviewContext(location: string): PortalReviewContext {
   if (location.startsWith("/team")) {
     return {
       bannerText:
-        "Team Portal in review — internal workspace under active build.",
+        "Team Portal in review — manual/pre-live workspace. Review, copy, and hold work for later; nothing publishes automatically.",
       isPublicDemo: false,
     };
   }
   return {
     bannerText:
-      "Client Portal in review — live account details are being prepared.",
+      "Client Portal in review — Veroxa is preparing the restaurant workspace. No sample progress is shown as client work.",
     isPublicDemo: false,
   };
 }
@@ -384,7 +384,7 @@ export function PortalLayout({
                 return (
                   <div
                     className={cn(
-                      "px-3 py-2 rounded-md border text-xs font-medium flex items-center gap-2",
+                      "px-3 py-2 rounded-md border text-xs font-medium flex items-start gap-2 leading-relaxed",
                       review.isPublicDemo
                         ? "bg-amber-500/8 border-amber-500/20 text-amber-400"
                         : "bg-primary/5 border-primary/20 text-primary/90",
@@ -393,7 +393,7 @@ export function PortalLayout({
                   >
                     <span
                       className={cn(
-                        "w-1.5 h-1.5 rounded-full flex-shrink-0",
+                        "mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0",
                         review.isPublicDemo ? "bg-amber-400" : "bg-primary/70",
                       )}
                     />

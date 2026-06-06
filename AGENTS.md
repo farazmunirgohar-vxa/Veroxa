@@ -1,5 +1,7 @@
 # Veroxa Agent Instructions
 
+Current docs authority: read `artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md` first. Do not override the active docs index, `PRICING_SOURCE_OF_TRUTH.md`, or `CURRENT_BUILD_STATUS.md` with older current-looking docs or archived strategy notes.
+
 
 ## 2026-06-04 — 90% pre-paid OS final alignment
 

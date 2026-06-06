@@ -46,7 +46,8 @@
     "check-ai-readiness-blueprint": "tsx ./src/check-ai-readiness-blueprint.ts",
     "check-quarantined-page-safety": "tsx ./src/check-quarantined-page-safety.ts",
     "check-manual-first-client-launch-safety": "tsx ./src/check-manual-first-client-launch-safety.ts",
-    "check-live-data-demo-fixture-boundary": "tsx ./src/check-live-data-demo-fixture-boundary.ts"
+    "check-live-data-demo-fixture-boundary": "tsx ./src/check-live-data-demo-fixture-boundary.ts",
+    "check-final-pre-client-polish": "tsx ./src/check-final-pre-client-polish.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",

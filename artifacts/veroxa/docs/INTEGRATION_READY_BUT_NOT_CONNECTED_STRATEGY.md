@@ -1,4 +1,6 @@
 # Integration-Ready But Not Connected Strategy
+> Do not override current docs: read `ACTIVE_DOCS_INDEX.md` first. Any old pricing, role, auth, or automation language in this file is historical/deprecated unless the active docs index confirms it.
+
 
 Status: Current architecture guidance for preparing future providers without activating paid/live systems.
 
@@ -102,4 +104,4 @@ For every future provider:
 
 - [faraz@client.com](mailto:faraz@client.com) / farazclient
 - [faraz@team.com](mailto:faraz@team.com) / farazteam
-- Starter $295, Growth $495, Premium $995
+- Historical/deprecated only: Starter $295, Growth $495, Premium $995. Current public offer is Complete Online Presence — $495/month.

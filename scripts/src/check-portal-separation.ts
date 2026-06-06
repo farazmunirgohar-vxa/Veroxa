@@ -107,8 +107,8 @@ for (const file of activeFiles) {
 const portalLayout = readFileSync(join(root, "artifacts/veroxa/src/components/PortalLayout.tsx"), "utf8");
 for (const required of [
   "Client Demo — sample data only.",
-  "Client Portal in review — live account details are being prepared.",
-  "Team Portal in review — internal workspace under active build.",
+  "Client Portal in review — Veroxa is preparing the restaurant workspace.",
+  "Team Portal in review — manual/pre-live workspace.",
 ]) {
   if (!portalLayout.includes(required)) failures.push(`PortalLayout is missing banner copy: ${required}`);
 }

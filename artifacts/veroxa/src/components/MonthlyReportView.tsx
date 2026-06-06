@@ -71,7 +71,7 @@ export function MonthlyReportView({
 
       <p className="text-[11px] text-muted-foreground/60">
         Viewing as: <span className="text-foreground/70">{viewerRole}</span> ·
-        Read-only demo. No real analytics, exports, or backend is connected.
+        Read-only demo. No real analytics, exports, or client account data is connected.
       </p>
     </div>
   );

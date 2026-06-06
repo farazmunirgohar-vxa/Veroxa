@@ -290,7 +290,7 @@ export function ClientHealthCenter({ viewerRole }: ClientHealthCenterProps) {
       <p className="text-[11px] text-muted-foreground/60">
         Viewing as: <span className="text-foreground/70">{viewerRole}</span> ·
         Health scoring is illustrative only. No real scoring logic, monitoring,
-        or backend is connected.
+        or client account data is connected.
       </p>
     </div>
   );

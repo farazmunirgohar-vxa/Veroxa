@@ -29,7 +29,7 @@ const safetyItems = [
   "Manual service only",
   "No production auth",
   "No storage uploads",
-  "No platform connectors",
+  "No live platform connections",
   "No payments",
   "No auto-posting",
   "Team review required",

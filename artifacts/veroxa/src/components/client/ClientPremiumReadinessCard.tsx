@@ -1,8 +1,8 @@
 /**
- * ClientPremiumReadinessCard — light, client-safe Premium readiness concept.
+ * ClientPremiumReadinessCard — light, client-safe future ads readiness concept.
  *
  * Local only: no reads or writes, no new routes, no ads automation.
- * Communicates how Premium (ads) becomes available without implying it is on
+ * Communicates how future ads support becomes available without implying it is on
  * by default. Calm, plain, blame-free language.
  */
 
@@ -15,7 +15,7 @@ import {
 } from "@/domain/clientPortalJourney";
 
 const READINESS_POINTS = [
-  "Eligible after at least 1 month on Starter or Growth",
+  "Reviewed only after the online presence foundation is stable",
   "Readiness assessment by phone, Zoom, or in person",
   "Starts only with your approval and an agreed ad budget",
   "Ad spend is separate and paid by the restaurant",
@@ -45,7 +45,7 @@ export function ClientPremiumReadinessCard({
             </span>
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Premium readiness
+                Future ads readiness
               </p>
               <h3 className="text-sm font-bold text-foreground leading-snug">
                 Ads become available once your foundation is ready
@@ -75,8 +75,8 @@ export function ClientPremiumReadinessCard({
           ))}
         </div>
         <p className="text-[11px] text-muted-foreground/70 leading-relaxed mt-3">
-          Premium isn&apos;t a starting point — it&apos;s reviewed with you once
-          your presence is stable, so ads run on a strong foundation.
+          Ads are not a launch service — they are reviewed later with you once
+          your presence is stable, so any future ads start from a stronger foundation.
         </p>
       </CardContent>
     </Card>

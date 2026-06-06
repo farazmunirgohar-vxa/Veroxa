@@ -1,10 +1,10 @@
 # Active Docs Index
 
-Status: active contributor guide for current source-of-truth docs.
+Status: highest-level active contributor guide and current source-of-truth index. Read this file before relying on any older Veroxa doc.
 
 ## Current source-of-truth docs
 
-These files reflect the current Veroxa manual/pre-live model and override historical/archive strategy notes:
+These files reflect the current Veroxa manual/pre-live model and override historical/archive strategy notes. If another doc conflicts with this index, do not override this index; treat the conflicting note as stale until Faraz explicitly refreshes it:
 
 - `CURRENT_BUILD_STATUS.md`
 - `PRICING_SOURCE_OF_TRUTH.md`
@@ -20,6 +20,9 @@ These files reflect the current Veroxa manual/pre-live model and override histor
 - `FIRST_MONTH_MONTHLY_REPORT_TEMPLATE.md`
 - `PAKISTAN_TEAM_EXECUTION_SOP.md`
 - `FARAZ_ESCALATION_RULES.md`
+- `FIRST_CLIENT_MANUAL_LAUNCH_INDEX.md`
+- `REAL_AUTH_READINESS_AUDIT.md`
+- `PRODUCTION_PREVIEW_LOGIN_CHECKLIST.md`
 
 ## Pricing truth
 
@@ -27,7 +30,7 @@ The only active public launch offer is **Complete Online Presence — $495/month
 
 ## Archive rule
 
-Historical docs remain useful as reference, but they must not override current source-of-truth docs. If an older file includes old pricing, multi-package language, Owner/Operator/Super Admin/generic Admin/Execution dashboards, or future automation plans, treat it as archive/reference only unless it has been explicitly refreshed as active.
+Historical docs remain useful as reference, but they must not override current source-of-truth docs. Do not override current docs with older current-looking files, changelog sections, or archived strategy notes. If an older file includes old pricing, multi-package language, Owner/Operator/Super Admin/generic Admin/Execution dashboards, or future automation plans, treat it as archive/reference only unless it has been explicitly refreshed as active.
 
 ## Deployment/auth truth
 

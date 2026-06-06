@@ -338,7 +338,7 @@ export default function TeamDirectionQueue() {
       </div>
 
       <DemoOnlyBanner
-        message="Direction updates persist in the workflow foundation for this browser (backend pending). No publishing, ads launch, or external sends happen from this page."
+        message="Direction updates are saved only for this review workspace. No publishing, ads launch, or external sends happen from this page."
         testId="banner-direction-queue"
       />
 

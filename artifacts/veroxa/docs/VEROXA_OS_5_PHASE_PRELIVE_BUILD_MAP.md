@@ -1,4 +1,6 @@
 # Veroxa OS — 5-Phase Pre-Live Build Map
+> Do not override current docs: read `ACTIVE_DOCS_INDEX.md` first. Any old pricing, role, auth, or automation language in this file is historical/deprecated unless the active docs index confirms it.
+
 
 This document is the master source of truth for the Veroxa OS pre-live build cycle. It protects the repository from roadmap drift before any future live integrations are approved.
 
@@ -264,7 +266,7 @@ For the next Full SaaS Foundation design and guardrail plan, see `CLIENT_PORTAL_
 
 ## 2026-06-03 pricing/profit-fit alignment
 
-- Active public pricing is Starter $295/month, Growth $495/month, and Premium $995/month.
+- Historical note: Starter $295/month, Growth $495/month, and Premium $995/month are deprecated/archive-only and are not active public pricing. Current public pricing is Complete Online Presence — $495/month.
 - Growth is the main recommended package for strong-fit restaurants; Starter is the low-friction entry plan; Premium is selective and readiness-gated.
 - Premium requires readiness assessment, client approval, and an agreed ad budget; ad spend is separate.
 - Profit Fit Layer is internal/team-only and uses `requiredDailyOrders = monthlyFee / netMargin / averageTicket / 30` with conservative defaults of $15 average ticket and 5% net margin.
@@ -304,7 +306,7 @@ Current alignment markers:
 - Active stack: GitHub + Codex + Vercel; Replit is historical only.
 - Active roles: Client and Team. Owner/Operator are inactive and parked.
 - `AUTH_MODE` remains `placeholder`.
-- Current pricing: Starter $295, Growth $495, Premium $995.
+- Current pricing: Complete Online Presence — $495/month. Starter $295, Growth $495, and Premium $995 are deprecated/archive-only.
 - Preview credentials: [faraz@client.com](mailto:faraz@client.com) / farazclient and [faraz@team.com](mailto:faraz@team.com) / farazteam.
 - AI-ready but not connected workflows can be built now; real AI connects later only after the pre-paid gate.
 - Integration-ready but not connected workflows can be planned now; paid/live providers connect later only after the pre-paid gate.

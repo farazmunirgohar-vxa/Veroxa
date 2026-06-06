@@ -1,4 +1,6 @@
 # Veroxa Pre-Build Stability Checklist
+> Do not override current docs: read `ACTIVE_DOCS_INDEX.md` first. Any old pricing, role, auth, or automation language in this file is historical/deprecated unless the active docs index confirms it.
+
 
 Before any large Veroxa build, confirm these foundations stay intact:
 
@@ -52,7 +54,7 @@ Before any large build, confirm the current strategy remains intact:
 - Active stack remains GitHub + Codex + Vercel; Replit is historical only.
 - Active roles remain Client and Team. Owner/Operator are inactive and parked.
 - `AUTH_MODE` remains `placeholder`.
-- Current pricing remains Starter $295, Growth $495, Premium $995.
+- Current pricing remains Complete Online Presence — $495/month. Starter $295, Growth $495, and Premium $995 are deprecated/archive-only.
 - Preview credentials remain [faraz@client.com](mailto:faraz@client.com) / farazclient and [faraz@team.com](mailto:faraz@team.com) / farazteam.
 - AI-ready but not connected and integration-ready but not connected are allowed; live AI/connectors/payments/storage/auth remain blocked.
 - Restaurant Onboarding is a known gap; do not imply it is production-complete until built.

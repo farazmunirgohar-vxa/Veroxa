@@ -195,7 +195,7 @@ export default function RestaurantUploadAccess() {
             <Lock className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
             <p>
               Restaurant keys only unlock content upload for that one restaurant. They do not
-              grant access to Team, Operator, Owner, pricing, or any other restaurant.
+              grant access to Team areas, pricing, account settings, or any other restaurant.
             </p>
           </div>
         </div>
