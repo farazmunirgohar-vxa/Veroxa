@@ -30,3 +30,9 @@ Vercel can set explicit preview credentials when needed:
 - This is **not production auth**.
 - Disable/remove preview fallback before real production auth.
 - Do not treat preview credentials as customer accounts, billing accounts, or real access control.
+
+## Production/custom-domain preview-login rule (2026-06-06)
+
+Production/custom domains should set `VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=false`. Fallback preview credentials are intended only for localhost, `127.0.0.1`, and `.vercel.app` review deployments unless a deployment explicitly opts in with `VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=true` or supplies explicit environment credentials. `AUTH_MODE` remains `placeholder` until real-auth readiness is approved; do not treat preview credentials as production auth.
+
+Preview deployments may use fallback preview credentials only for review.

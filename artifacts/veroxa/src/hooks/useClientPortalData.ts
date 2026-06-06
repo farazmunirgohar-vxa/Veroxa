@@ -98,10 +98,24 @@ export type MonthlyReportPreview = {
   summaryText: string | null;
 };
 
+export type GoogleMetricDisplay = {
+  label: string;
+  value: string;
+  change: string;
+  positive: boolean;
+};
+
+export const ZERO_GOOGLE_METRICS: readonly GoogleMetricDisplay[] = [
+  { label: "Search Impressions", value: "0", change: "0%", positive: true },
+  { label: "Profile Views", value: "0", change: "0%", positive: true },
+  { label: "Direction Requests", value: "0", change: "0%", positive: true },
+  { label: "Review Score", value: "Not available yet", change: "0", positive: true },
+] as const;
+
 export type ClientPortalData = {
   businessName: string;
   scheduledPosts: readonly ScheduledPostDisplay[];
-  googleMetrics: typeof demoGoogleMetrics;
+  googleMetrics: readonly GoogleMetricDisplay[];
   contentSupply: ContentSupplyItem[];
   weeklyUpdate: WeeklyUpdateDisplay;
   monthlyReportPreview: MonthlyReportPreview;
@@ -161,7 +175,7 @@ export function useClientPortalData(): UseClientPortalDataResult {
           ? "Client Portal in review"
           : "Restaurant Portal",
         scheduledPosts: [],
-        googleMetrics: demoGoogleMetrics,
+        googleMetrics: ZERO_GOOGLE_METRICS,
         contentSupply: [],
         weeklyUpdate: {
           title: "Weekly update in review",

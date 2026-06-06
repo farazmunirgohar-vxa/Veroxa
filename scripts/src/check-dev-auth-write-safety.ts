@@ -79,12 +79,14 @@ if (
   !/const explicitFlag = readViteEnv\(PUBLIC_PREVIEW_LOGIN_FLAG\)/.test(devCredentials) ||
   !/explicitFlag === ["']false["']/.test(devCredentials) ||
   !/explicitFlag === ["']true["']/.test(devCredentials) ||
-  !/import\.meta\.env\.DEV \|\| isPreviewFriendlyHostname\(\)/.test(devCredentials) ||
   !/hostname === ["']localhost["']/.test(devCredentials) ||
   !/hostname === ["']127\.0\.0\.1["']/.test(devCredentials) ||
   !/hostname\.endsWith\(["']\.vercel\.app["']\)/.test(devCredentials)
 ) {
-  failures.push("public preview fallback login must allow localhost, 127.0.0.1, and .vercel.app; support explicit opt-in; and disable fallback when VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=false.");
+  failures.push("public preview fallback login must allow localhost, 127.0.0.1, and .vercel.app only by default; support explicit opt-in; and disable fallback when VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=false.");
+}
+if (/import\.meta\.env\.DEV\s*\|\|\s*isPreviewFriendlyHostname/.test(devCredentials)) {
+  failures.push("public preview fallback login must not enable broad custom-domain fallback through import.meta.env.DEV.");
 }
 const loginSource = readFileSync(join(root, "artifacts/veroxa/src/pages/login.tsx"), "utf8");
 for (const marker of [

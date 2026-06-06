@@ -97,5 +97,15 @@ export default function InternalDemoGuard({ role, children }: InternalDemoGuardP
     );
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      <div
+        className="border-b border-border bg-slate-950/70 px-4 py-2 text-center text-[11px] text-muted-foreground"
+        data-testid="team-manual-prelive-notice"
+      >
+        Manual/pre-live Team portal: use this workspace for Veroxa review and execution prep. No live automation or publishing is active.
+      </div>
+      {children}
+    </>
+  );
 }
