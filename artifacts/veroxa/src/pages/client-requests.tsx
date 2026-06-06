@@ -110,7 +110,7 @@ export default function ClientRequests() {
           <CardHeader>
             <CardTitle className="text-sm flex items-center gap-2">
               <MessageSquare className="h-4 w-4 text-primary" />
-              Request status
+              Request review
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">

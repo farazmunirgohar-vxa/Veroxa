@@ -116,3 +116,16 @@ Routes:
 **Restricted visibility:** No public access, no client access, no Owner/Operator workflows, no super-admin console, no fake live execution.
 
 **Future integration status:** Future live integrations remain blocked; no live AI, no live uploads, no live publishing, no payments, and no real client data.
+
+## 2026-06-06 — A–Z cleanup route surface alignment
+
+See the [Veroxa OS System Map](./VEROXA_OS_SYSTEM_MAP.md) for the full route/domain/API/guardrail overview and [Quarantined and Future Files Review](./QUARANTINED_AND_FUTURE_FILES_REVIEW.md) for parked pages.
+
+- Active public flow remains `/`, `/free-audit`, `/login`.
+- Hidden compatibility routes remain `/services` and `/pricing`.
+- Demo/QA-only routes are `/demo`, `/guided-demo`, `/upload`, and `/demo/client/*`; they must show sample/QA labels and must not be promoted from public homepage/nav/footer.
+- Guarded client routes remain `/client/dashboard`, `/client/onboarding`, `/client/media`, `/client/requests`, `/client/updates`, and `/client/reports`.
+- Guarded Team/manual routes remain `/team/dashboard`, `/team/onboarding`, `/team/upload-inbox`, `/team/work-queue`, `/team/manual-execution`, `/team/direction-queue`, `/team/report-queue`, `/team/audit-leads`, `/team/approval-queue`, `/team/visibility-audit`, `/team/first-client-readiness`, and `/team/first-client-ops`.
+- Owner, Operator, Super Admin, generic Admin, and Execution dashboards remain blocked.
+
+A–Z cleanup strengthened route inventory enforcement, demo/QA policy, backend execution docs, client premium copy, and AI activation prerequisites. No live systems were added.

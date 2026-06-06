@@ -164,7 +164,7 @@ export default function ClientOnboarding() {
         <CardContent className="grid gap-4 p-5 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
           <div>
             <p className="text-sm font-semibold text-foreground">{mode.isPublicDemoRoute ? "Demo Preview — example restaurant workspace" : "Your workspace is being prepared"}</p>
-            <p className="mt-1 text-sm text-muted-foreground">Nothing goes live without Veroxa team review. This page shows setup status, what Veroxa needs from you, and what Veroxa will organize during the first week.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Nothing goes live without Veroxa team review. This page shows your setup review, what Veroxa needs from you, and what Veroxa will organize during the first week.</p>
           </div>
           <div className="rounded-xl border border-border/70 bg-background/70 p-4">
             <div className="flex items-center justify-between text-sm"><span className="font-medium">Setup progress</span><StatusBadge tone={progress >= 80 ? "success" : "warning"}>{getClientOnboardingStatusLabel(profile)}</StatusBadge></div>

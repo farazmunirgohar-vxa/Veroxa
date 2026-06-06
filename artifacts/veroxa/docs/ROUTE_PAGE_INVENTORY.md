@@ -99,3 +99,16 @@ Status: containment inventory created after P0/P1 hardening. No pages were delet
 ## Deletion posture
 
 No route/page files were deleted in this pass. Future deletion should happen only after owner review confirms a file is dead, not merely unrouted.
+
+## 2026-06-06 — A–Z cleanup route policy
+
+See the [Veroxa OS System Map](./VEROXA_OS_SYSTEM_MAP.md) for the high-level route map and [Quarantined and Future Files Review](./QUARANTINED_AND_FUTURE_FILES_REVIEW.md) for unrouted/parked page cleanup notes.
+
+- Active public flow: `/`, `/free-audit`, `/login`.
+- Hidden compatibility routes: `/services`, `/pricing`.
+- Hidden demo/QA-only routes: `/demo`, `/guided-demo`, `/upload`, `/demo/client/dashboard`, `/demo/client/media`, `/demo/client/updates`, `/demo/client/requests`, `/demo/client/reports`, `/demo/client/onboarding`.
+- Guarded client routes: `/client/dashboard`, `/client/onboarding`, `/client/media`, `/client/requests`, `/client/updates`, `/client/reports`.
+- Guarded Team/manual routes: `/team/dashboard`, `/team/onboarding`, `/team/upload-inbox`, `/team/work-queue`, `/team/manual-execution`, `/team/direction-queue`, `/team/report-queue`, `/team/audit-leads`, `/team/approval-queue`, `/team/visibility-audit`, `/team/first-client-readiness`, `/team/first-client-ops`.
+- No parked or quarantined page may be routed without updating `ROUTE_PAGE_INVENTORY.md`, `VEROXA_ROUTE_SURFACE_MAP.md`, and passing RR.
+
+A–Z cleanup added the system map, strengthened demo/QA route policy, aligned backend execution docs, completed client premium copy polish, documented AI activation prerequisites, and added no live systems.

@@ -21,7 +21,7 @@ export default function DemoHub() {
         <div className="w-full max-w-xl text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-blue-500/20 bg-blue-500/10 text-blue-400 text-xs font-semibold mb-6">
             <Monitor className="w-3.5 h-3.5" />
-            Sample data only
+            Sample / QA preview only — not a real client account
           </div>
 
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4" data-testid="demo-heading">
@@ -30,7 +30,7 @@ export default function DemoHub() {
 
           <p className="text-lg text-muted-foreground max-w-md mx-auto mb-8">
             See what a restaurant partner sees inside Veroxa — dashboard, media, updates,
-            requests, and reports. Sample data only; no account needed.
+            requests, and reports. Demo-only preview — no real client data, no live uploads, no live publishing.
           </p>
 
           <Link href="/demo/client/dashboard" data-testid="btn-enter-client-demo">

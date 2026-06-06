@@ -69,7 +69,7 @@ interface PortalReviewContext {
 function getPortalReviewContext(location: string): PortalReviewContext {
   if (location.startsWith("/demo")) {
     return {
-      bannerText: "Client Demo — sample data only.",
+      bannerText: "Client Demo — sample data only. Sample / QA preview only — not a real client account. Demo-only preview — no real client data, no live uploads, no live publishing.",
       isPublicDemo: true,
     };
   }

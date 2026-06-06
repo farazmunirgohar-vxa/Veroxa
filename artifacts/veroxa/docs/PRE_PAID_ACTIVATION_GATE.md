@@ -181,3 +181,7 @@ Set `VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=false` only when intentionally disa
 - No new live AI, automations, production auth, database/storage writes, payments, connectors, webhooks, cron jobs, background jobs, or paid systems were added.
 - Future live AI requires production auth, database/storage architecture, logs, rollback plan, QA, guardrails, and RR approval.
 - Faraz still chooses the A-Z review route after the 80% mark before paid systems are connected.
+
+## 2026-06-06 — A–Z cleanup checkpoint
+
+Before paid/live activation planning, review the [Veroxa OS System Map](./VEROXA_OS_SYSTEM_MAP.md), [Deployment Preview Login Notes](./DEPLOYMENT_PREVIEW_LOGIN_NOTES.md), backend execution pack, and [AI Activation Prerequisites](./AI_ACTIVATION_PREREQUISITES.md). A–Z cleanup strengthened demo/QA route policy, route inventory enforcement, backend SOP guardrails, and AI guardrails. No live systems were added. Next recommended step is owner review of the cleanup, then choose first-client manual launch pack or additional pre-live QA.

@@ -217,3 +217,13 @@ PR #70 built the 90% pre-paid/manual OS foundations for client readiness, weekly
 - No new live AI, OpenAI calls, live automations, production auth, database/storage writes, payments, connectors, webhooks, cron jobs, background jobs, or automated customer-visible execution were added.
 - Future live AI requires production auth, database/storage architecture, logs, rollback plan, QA, guardrails, and RR approval.
 - Faraz still chooses the A-Z review route after the 80% mark before paid systems are connected.
+
+## 2026-06-06 — A–Z cleanup completed, no live systems
+
+- A–Z review cleanup added the master [Veroxa OS System Map](./VEROXA_OS_SYSTEM_MAP.md) so future RR can start from one route/domain/guardrail overview.
+- Demo/QA route policy was strengthened for `/demo`, `/guided-demo`, `/demo/client/*`, and `/upload`; public homepage/nav/footer still do not promote demo routes.
+- Backend execution pack docs were added for daily workflow, weekly updates, monthly reports, request responses, and Faraz escalation.
+- Client portal premium copy polish was completed without adding workflows, fake metrics, live data claims, or AI marketing.
+- [AI Activation Prerequisites](./AI_ACTIVATION_PREREQUISITES.md) now documents what must exist before live AI can be enabled.
+- No live systems were added: no production auth, database/storage, payments, connectors, webhooks, cron/background jobs, live AI, or automated customer-visible execution.
+- Next recommended step: owner review of A–Z cleanup, then decide whether to prepare a first-client manual launch pack or continue pre-live QA.
