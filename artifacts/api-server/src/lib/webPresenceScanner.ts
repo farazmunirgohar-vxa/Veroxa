@@ -261,7 +261,6 @@ export async function scanRestaurantWebPresence(input: {
         redirect: "manual",
         signal: controller.signal,
       });
-      clearTimeout(timeout);
 
       if (res.status >= 300 && res.status < 400) {
         const location = res.headers.get("location");
@@ -304,6 +303,7 @@ export async function scanRestaurantWebPresence(input: {
           html += decoder.decode(value, { stream: true });
           if (bytes >= MAX_BYTES) break;
         }
+        html += decoder.decode();
         try {
           await reader.cancel();
         } catch {
@@ -312,11 +312,12 @@ export async function scanRestaurantWebPresence(input: {
       }
       break;
     } catch (err) {
-      clearTimeout(timeout);
       logger.warn({ err }, "Web presence scan threw");
       return emptyScan([
         "Could not reach the restaurant website. Manual review needed.",
       ]);
+    } finally {
+      clearTimeout(timeout);
     }
   }
 

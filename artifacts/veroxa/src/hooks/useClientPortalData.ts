@@ -63,7 +63,7 @@ import {
 export type ClientPortalSource =
   | "supabase" // legacy alias — supabase real-auth read
   | "supabase_readonly" // M007 read-only mode succeeded
-  | "fallback" // M007 read-only mode attempted but fell back to fixtures
+  | "fallback" // M007 read-only mode attempted but fell back safely
   | "demo"
   | "fixture";
 
@@ -137,6 +137,21 @@ export type ClientPortalData = {
   monthlyReportsCount: number;
 };
 
+export const LIVE_CLIENT_PORTAL_EMPTY_DATA: ClientPortalData = {
+  businessName: "Client Portal in review",
+  scheduledPosts: [],
+  googleMetrics: ZERO_GOOGLE_METRICS,
+  contentSupply: [],
+  weeklyUpdate: LIVE_WEEKLY_UPDATE_EMPTY,
+  monthlyReportPreview: LIVE_MONTHLY_PREVIEW_EMPTY,
+  platformsCount: 0,
+  mediaAssetsCount: 0,
+  postsCount: 0,
+  postSlotsCount: 0,
+  weeklyReportsCount: 0,
+  monthlyReportsCount: 0,
+};
+
 export type UseClientPortalDataResult = {
   source: ClientPortalSource;
   loading: boolean;
@@ -146,7 +161,7 @@ export type UseClientPortalDataResult = {
   dataSourceMessage: string;
   /** True iff the data on screen came from a real client-safe read. */
   isReadOnlyLive: boolean;
-  /** Populated when the portal fell back to fixtures. Null when live. */
+  /** Populated when the portal fell back safely. Null when live. */
   fallbackReason: string | null;
 };
 
@@ -166,7 +181,7 @@ export {
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
 export function useClientPortalData(): UseClientPortalDataResult {
-  const { activeClientId, isRealClientSession } =
+  const { activeClientId, isRealClientSession, isPublicDemoRoute } =
     useActiveClientPortalContext();
   const portalDataMode = useRealPortalDataMode();
   const saasDataMode = mapRealPortalDataModeToSaasDataMode(portalDataMode);
@@ -181,20 +196,9 @@ export function useClientPortalData(): UseClientPortalDataResult {
       loading: false,
       error: null,
       data: {
-        businessName: repositoryBundle.repositoryMode === "placeholder repository"
-          ? "Client Portal in review"
-          : "Restaurant Portal",
-        scheduledPosts: [],
+        ...LIVE_CLIENT_PORTAL_EMPTY_DATA,
+        businessName: "Client Portal in review",
         googleMetrics: ZERO_GOOGLE_METRICS,
-        contentSupply: [],
-        weeklyUpdate: LIVE_WEEKLY_UPDATE_EMPTY,
-        monthlyReportPreview: LIVE_MONTHLY_PREVIEW_EMPTY,
-        platformsCount: 0,
-        mediaAssetsCount: 0,
-        postsCount: 0,
-        postSlotsCount: 0,
-        weeklyReportsCount: 0,
-        monthlyReportsCount: 0,
       },
       dataSourceMessage: `${repositoryBundle.repositoryMode} — live account data is being prepared`,
       isReadOnlyLive: false,
@@ -207,27 +211,31 @@ export function useClientPortalData(): UseClientPortalDataResult {
   // M007: data source resolution.
   //
   // The portal historically short-circuited in placeholder auth mode and used
-  // fixtures only. M007 introduces DATA_MODE — a separate switch that may
+  // fixtures. M007 introduces DATA_MODE — a separate switch that may
   // request supabase_readonly reads even while AUTH_MODE === "placeholder".
   //
   // Resolution rules:
   //  - DATA_MODE === "fixture"            → fixture data, no network.
   //  - DATA_MODE === "supabase_readonly"  → attempt client_portal_* view reads,
-  //                                         fall back to fixtures on any failure.
+  //                                         fall back safely on any failure.
   //  - AUTH_MODE === "real" + fixture mode → keep current behaviour (existing
   //                                          Supabase load below).
   const shouldAttemptSupabase =
     DATA_MODE === "supabase_readonly" || Boolean(realClientId);
 
   const initialSource: ClientPortalSource =
-    DATA_MODE === "supabase_readonly" ? "supabase_readonly" : "demo";
+    DATA_MODE === "supabase_readonly"
+      ? "supabase_readonly"
+      : realClientId
+        ? "supabase"
+        : "demo";
 
   const initialState: UseClientPortalDataResult = shouldAttemptSupabase
     ? {
         source: initialSource,
         loading: true,
         error: null,
-        data: DEMO_DATA,
+        data: isPublicDemoRoute ? DEMO_DATA : LIVE_CLIENT_PORTAL_EMPTY_DATA,
         dataSourceMessage: SOURCE_MESSAGES[initialSource],
         isReadOnlyLive: false,
         fallbackReason: null,
@@ -236,7 +244,7 @@ export function useClientPortalData(): UseClientPortalDataResult {
         source: "fixture",
         loading: false,
         error: null,
-        data: DEMO_DATA,
+        data: isPublicDemoRoute ? DEMO_DATA : LIVE_CLIENT_PORTAL_EMPTY_DATA,
         dataSourceMessage: SOURCE_MESSAGES.fixture,
         isReadOnlyLive: false,
         fallbackReason: null,
@@ -327,7 +335,8 @@ export function useClientPortalData(): UseClientPortalDataResult {
           : LIVE_MONTHLY_PREVIEW_EMPTY;
 
         // If the read came back empty (most likely RLS-blocked under
-        // placeholder auth), fall back to fixtures so the UI stays usable.
+        // placeholder auth), keep public demo routes on demo data but keep
+        // authenticated/live paths on safe empty data.
         const looksEmpty =
           !client &&
           platforms.length === 0 &&
@@ -338,12 +347,14 @@ export function useClientPortalData(): UseClientPortalDataResult {
 
         if (looksEmpty) {
           const reason =
-            "Supabase read blocked by RLS or missing authenticated session. Fixture fallback remains active.";
+            isPublicDemoRoute
+              ? "Supabase read blocked by RLS or missing authenticated session. Demo preview data remains active."
+              : "Live account data is unavailable or still being prepared. Safe empty data remains active.";
           setState({
             source: "fallback",
             loading: false,
             error: reason,
-            data: DEMO_DATA,
+            data: isPublicDemoRoute ? DEMO_DATA : LIVE_CLIENT_PORTAL_EMPTY_DATA,
             dataSourceMessage: SOURCE_MESSAGES.fallback,
             isReadOnlyLive: false,
             fallbackReason: reason,
@@ -381,20 +392,21 @@ export function useClientPortalData(): UseClientPortalDataResult {
       } catch (err) {
         if (cancelled) return;
         const message = err instanceof Error ? err.message : String(err);
-        // In M007 supabase_readonly mode any failure becomes a fixture fallback,
-        // not a fatal error — the portal must keep working.
+        // In M007 supabase_readonly mode any failure becomes a safe fallback,
+        // not a fatal error — public demo routes keep demo data, while
+        // authenticated/live paths keep safe empty data.
         const fallbackSource: ClientPortalSource =
           DATA_MODE === "supabase_readonly" ? "fallback" : "demo";
         // Best-effort: log a single warning, never expose error details to clients.
         console.warn(
-          "[useClientPortalData] Supabase read failed, using fixtures:",
+          "[useClientPortalData] Supabase read failed, using safe fallback:",
           message,
         );
         setState({
           source: fallbackSource,
           loading: false,
           error: message,
-          data: DEMO_DATA,
+          data: isPublicDemoRoute ? DEMO_DATA : LIVE_CLIENT_PORTAL_EMPTY_DATA,
           dataSourceMessage: SOURCE_MESSAGES[fallbackSource],
           isReadOnlyLive: false,
           fallbackReason: message,
@@ -406,7 +418,7 @@ export function useClientPortalData(): UseClientPortalDataResult {
     return () => {
       cancelled = true;
     };
-  }, [activeClientId, realClientId, shouldAttemptSupabase]);
+  }, [activeClientId, isPublicDemoRoute, realClientId, shouldAttemptSupabase]);
 
   return state;
 }
