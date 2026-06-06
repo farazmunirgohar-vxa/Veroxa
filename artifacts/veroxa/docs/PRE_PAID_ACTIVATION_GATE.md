@@ -172,3 +172,12 @@ Set `VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=false` only when intentionally disa
 - `VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=false` is the hard disable for fallback preview login.
 - Explicit `VITE_VEROXA_DEV_CLIENT_EMAIL`, `VITE_VEROXA_DEV_CLIENT_PASSWORD`, `VITE_VEROXA_DEV_TEAM_EMAIL`, and `VITE_VEROXA_DEV_TEAM_PASSWORD` may still configure preview-only credentials when needed; these are not production auth.
 - No paid/live systems were added: no production auth, storage, live AI, platform APIs, publishing connectors, payments, webhooks, cron/background jobs, or automated customer-visible execution.
+
+## 2026-06-06 — AI readiness gate note
+
+- AI readiness blueprint work has started in [`AI_AUTOMATION_READINESS_BLUEPRINT.md`](./AI_AUTOMATION_READINESS_BLUEPRINT.md), governed by [`AI_AUTOMATION_READINESS_BOUNDARY.md`](./AI_AUTOMATION_READINESS_BOUNDARY.md).
+- Existing server AI draft code is inventoried in [`AI_SERVER_CODE_INVENTORY.md`](./AI_SERVER_CODE_INVENTORY.md) and remains protected/disabled unless explicitly enabled in a future approved activation build.
+- Dormant prompt contracts, review gates, seed examples, validators, and guardrails are allowed before paid systems because they do not perform live AI calls or live automation.
+- No new live AI, automations, production auth, database/storage writes, payments, connectors, webhooks, cron jobs, background jobs, or paid systems were added.
+- Future live AI requires production auth, database/storage architecture, logs, rollback plan, QA, guardrails, and RR approval.
+- Faraz still chooses the A-Z review route after the 80% mark before paid systems are connected.

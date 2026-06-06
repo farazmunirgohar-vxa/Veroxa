@@ -208,3 +208,12 @@ PR #70 built the 90% pre-paid/manual OS foundations for client readiness, weekly
 - Cleaned minor duplicate copy and monthly report lookup code without changing reporting behavior.
 - Strengthened guardrails against broad custom-domain preview fallback, public header regression, public/client technical wording, and `AUTH_MODE` drift.
 - Veroxa remains preview/manual/pre-live. No paid/live systems were added, and Team Portal complexity was not expanded. The next big build remains the dormant live-system blueprint / first-client execution pack.
+
+## 2026-06-06 — AI readiness blueprint started, no live activation
+
+- AI readiness blueprint work has started in [`AI_AUTOMATION_READINESS_BLUEPRINT.md`](./AI_AUTOMATION_READINESS_BLUEPRINT.md), alongside the existing boundary in [`AI_AUTOMATION_READINESS_BOUNDARY.md`](./AI_AUTOMATION_READINESS_BOUNDARY.md).
+- Existing server-side AI draft code is inventoried in [`AI_SERVER_CODE_INVENTORY.md`](./AI_SERVER_CODE_INVENTORY.md) and remains protected by internal API access, gated by `VEROXA_ENABLE_AI_ROUTES`, and disabled unless explicitly enabled in a future approved activation build.
+- This update adds dormant prompt contracts, review gates, client-visibility validation rules, planning seed examples, and guardrails only.
+- No new live AI, OpenAI calls, live automations, production auth, database/storage writes, payments, connectors, webhooks, cron jobs, background jobs, or automated customer-visible execution were added.
+- Future live AI requires production auth, database/storage architecture, logs, rollback plan, QA, guardrails, and RR approval.
+- Faraz still chooses the A-Z review route after the 80% mark before paid systems are connected.
