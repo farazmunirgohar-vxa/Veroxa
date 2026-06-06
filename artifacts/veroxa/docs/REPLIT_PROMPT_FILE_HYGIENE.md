@@ -1,10 +1,12 @@
 # Replit Prompt File Hygiene
 
+> Status: historical Replit hygiene note only. The active stack is GitHub + Codex + Vercel; Replit is historical only. Keep this file only as an archive reminder not to commit pasted prompt artifacts.
+
 ## Rule
 
-Replit must not commit pasted prompt files into the repo.
+Do not commit pasted prompt files into the repo. This rule remains useful even though Replit is historical only.
 
-## What to do before every checkpoint
+## What to do before every GitHub/Codex checkpoint
 
 1. Delete `attached_assets/Pasted-*.txt` if any exist.
 2. Do not create or add any new `attached_assets/Pasted-*.txt` files.
@@ -20,7 +22,7 @@ Replit must not commit pasted prompt files into the repo.
 
 - Pasted prompt files clutter `git log`.
 - They leak internal workflow details into the repo.
-- Future GitHub reviews will flag them.
+- GitHub/Codex reviews will flag them.
 - They are not useful to anyone reading the code.
 
 ## Check before every future GitHub review
