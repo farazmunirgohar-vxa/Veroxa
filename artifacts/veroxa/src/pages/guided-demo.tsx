@@ -175,10 +175,11 @@ export default function GuidedDemo() {
               How a restaurant works with Veroxa
             </p>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              You share direction and upload phone photos. Veroxa drafts the
-              content, reviews it before anything goes live, schedules posts at
-              the right time, and reports back monthly. You stay in charge of
-              the direction; Veroxa handles the execution.
+              You share direction and phone photos. Veroxa drafts the content,
+              reviews anything before it goes live, organizes reviewed posts
+              for manual execution when the service is active, and reports back
+              monthly. You stay in charge of the direction; Veroxa handles the
+              preparation and review flow.
             </p>
           </CardContent>
         </Card>

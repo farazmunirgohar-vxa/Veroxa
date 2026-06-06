@@ -43,7 +43,8 @@
     "check-team-deferral": "tsx ./src/check-team-deferral.ts",
     "check-post-pr70-rr-cleanup": "tsx ./src/check-post-pr70-rr-cleanup.ts",
     "check-final-trim-ai-readiness": "tsx ./src/check-final-trim-ai-readiness.ts",
-    "check-ai-readiness-blueprint": "tsx ./src/check-ai-readiness-blueprint.ts"
+    "check-ai-readiness-blueprint": "tsx ./src/check-ai-readiness-blueprint.ts",
+    "check-quarantined-page-safety": "tsx ./src/check-quarantined-page-safety.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",

@@ -112,3 +112,13 @@ See [AI Server Code Inventory](./AI_SERVER_CODE_INVENTORY.md) for the protected 
 - Advanced Team OS / broader role dashboards.
 
 Future activation work should update this map, route docs, source-of-truth pricing docs, and the relevant guardrails before RR approval.
+
+## 2026-06-06 — Final deletion/quarantine review
+
+- Final deletion/quarantine review completed.
+- No delete-now page files are confirmed.
+- Parked/future/debug/AI draft pages are hard-quarantined and require owner approval, route inventory update, route surface map update, guardrail update, and RR before routing.
+- Active demo/QA routes remain active, labeled, and guarded from public promotion.
+- Route inventory now distinguishes active routes from demo aliases with `active_routed + demo_alias`.
+- No live systems were added: no production auth, database/storage writes, live AI, payments, connectors, publishing, webhooks, cron jobs, background jobs, or automated customer-visible execution.
+- Next recommended step is the Manual First-Client Launch Pack after RR.
