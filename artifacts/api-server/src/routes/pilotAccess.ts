@@ -54,8 +54,10 @@ function parsePositiveIntEnv(name: string, fallback: number): number {
 }
 
 function rateLimitKey(req: Request, email: string): string {
-  const forwardedFor = req.header("x-forwarded-for")?.split(",")[0]?.trim();
-  const ip = forwardedFor || req.ip || req.socket.remoteAddress || "unknown";
+  // Do not read raw X-Forwarded-For here. Express only derives req.ip
+  // from forwarded headers when app-level trust proxy is explicitly enabled;
+  // otherwise req.ip is the socket peer and cannot be spoofed by clients.
+  const ip = req.ip || req.socket.remoteAddress || "unknown";
   return `${ip}:${email || "unknown"}`;
 }
 

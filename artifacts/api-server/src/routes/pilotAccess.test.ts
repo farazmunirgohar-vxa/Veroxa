@@ -17,10 +17,10 @@ async function withServer<T>(run: (baseUrl: string) => Promise<T>): Promise<T> {
   }
 }
 
-async function postPilotAccess(baseUrl: string, body: object) {
+async function postPilotAccess(baseUrl: string, body: object, headers: Record<string, string> = {}) {
   const response = await fetch(`${baseUrl}/api/pilot-access`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...headers },
     body: JSON.stringify(body),
   });
   return { status: response.status, payload: await response.json() as Record<string, unknown> };
@@ -58,6 +58,32 @@ async function main() {
     });
     assert.equal(invalid.status, 401);
     assert.equal(invalid.payload.ok, false);
+  });
+
+  process.env.VEROXA_PILOT_ACCESS_RATE_LIMIT_MAX = "2";
+
+  await withServer(async (baseUrl) => {
+    const firstSpoofedIp = await postPilotAccess(
+      baseUrl,
+      { email: "unknown-rate-limit@veroxa.app", password: "wrong-secret" },
+      { "X-Forwarded-For": "198.51.100.10" },
+    );
+    assert.equal(firstSpoofedIp.status, 401);
+
+    const secondSpoofedIp = await postPilotAccess(
+      baseUrl,
+      { email: "unknown-rate-limit@veroxa.app", password: "wrong-secret" },
+      { "X-Forwarded-For": "198.51.100.11" },
+    );
+    assert.equal(secondSpoofedIp.status, 401);
+
+    const thirdSpoofedIp = await postPilotAccess(
+      baseUrl,
+      { email: "unknown-rate-limit@veroxa.app", password: "wrong-secret" },
+      { "X-Forwarded-For": "198.51.100.12" },
+    );
+    assert.equal(thirdSpoofedIp.status, 429);
+    assert.equal(thirdSpoofedIp.payload.mode, "rate_limited");
   });
 
   console.log("Pilot access endpoint validation passed.");
