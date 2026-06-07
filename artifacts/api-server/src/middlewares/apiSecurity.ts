@@ -33,8 +33,10 @@ function getHeaderValue(req: Request, name: string): string | null {
 }
 
 function rateLimitKey(req: Request): string {
-  const forwardedFor = req.header("x-forwarded-for")?.split(",")[0]?.trim();
-  return forwardedFor || req.ip || req.socket.remoteAddress || "unknown";
+  // Do not trust raw X-Forwarded-For. If a deployment needs proxy-aware
+  // client IPs, configure Express trust proxy explicitly at the app layer so
+  // req.ip is populated by Express from trusted proxy hops only.
+  return req.ip || req.socket.remoteAddress || "unknown";
 }
 
 function parsePositiveIntEnv(name: string, fallback: number): number {

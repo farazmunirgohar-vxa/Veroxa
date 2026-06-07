@@ -12,6 +12,7 @@ function read(path: string): string {
 const app = read("artifacts/api-server/src/app.ts");
 const routesIndex = read("artifacts/api-server/src/routes/index.ts");
 const apiSecurity = read("artifacts/api-server/src/middlewares/apiSecurity.ts");
+const pilotAccessSource = read("artifacts/api-server/src/routes/pilotAccess.ts");
 const corsPolicy = read("artifacts/api-server/src/middlewares/corsPolicy.ts");
 const openApiSpec = read("lib/api-spec/openapi.yaml");
 
@@ -63,6 +64,19 @@ if (!/envFlag\(["']VEROXA_DEV_ENVIRONMENT["']\)/.test(apiSecurity)) {
 }
 if (!/res\.status\(429\)/.test(apiSecurity)) {
   failures.push("protected API rate limiter must return 429 when exceeded.");
+}
+
+if (!app.includes("VEROXA_TRUST_PROXY") || !app.includes('app.set("trust proxy", getTrustProxySetting())')) {
+  failures.push("api-server app must keep trust proxy explicitly env-controlled and default-disabled.");
+}
+if (/req\.header\(["']x-forwarded-for["']\)/i.test(pilotAccessSource)) {
+  failures.push("pilotAccess.ts must not read raw X-Forwarded-For for rate limiting.");
+}
+if (!pilotAccessSource.includes("req.ip") || !pilotAccessSource.includes("req.socket.remoteAddress")) {
+  failures.push("pilotAccess.ts rate limit key must use server-trusted req.ip with socket fallback.");
+}
+if (!pilotAccessSource.includes("VEROXA_PILOT_MOMO_HOUSE_PASSWORD") || !pilotAccessSource.includes("VEROXA_PILOT_TEAM_FARAZ_PASSWORD")) {
+  failures.push("pilotAccess.ts must keep pilot passwords server-side in API environment variables.");
 }
 
 
