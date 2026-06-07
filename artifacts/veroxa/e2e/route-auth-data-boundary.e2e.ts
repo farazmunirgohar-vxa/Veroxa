@@ -53,10 +53,12 @@ async function main() {
     const clientGuard = readFileSync(resolve(root, "src/components/auth/ClientPortalGuard.tsx"), "utf8");
     const teamGuard = readFileSync(resolve(root, "src/components/auth/InternalDemoGuard.tsx"), "utf8");
     const loginSource = readFileSync(resolve(root, "src/pages/login.tsx"), "utf8");
-    const devCredentials = readFileSync(resolve(root, "src/lib/auth/devCredentials.ts"), "utf8");
+    const pilotAccessAccounts = readFileSync(resolve(root, "src/lib/auth/pilotAccessAccounts.ts"), "utf8");
     const clientDataHook = readFileSync(resolve(root, "src/hooks/useClientPortalData.ts"), "utf8");
 
-    assert(!appSource.includes('path="/demo/client/dashboard"') && !appSource.includes('path="/demo"'), "Retired public demo/preview routes must stay disabled.");
+    for (const retiredRoute of ['path="/demo"', 'path="/guided-demo"', 'path="/upload"', 'path="/demo/client/dashboard"']) {
+      assert(!appSource.includes(retiredRoute), `Retired public demo/preview route is still active: ${retiredRoute}`);
+    }
     assert(appSource.includes("<ClientPortalGuard>") && appSource.includes('path="/client/dashboard"'), "Client dashboard route is not guarded.");
     assert(appSource.includes("<InternalDemoGuard role=\"team\">") && appSource.includes('path="/team/dashboard"'), "Team dashboard route is not guarded.");
 
@@ -65,9 +67,14 @@ async function main() {
     assert(clientGuard.includes("Wrong portal for this login") && clientGuard.includes('auth.session?.role === "team"'), "Team sessions must not view client dashboard.");
     assert(teamGuard.includes("Wrong portal for this login") && teamGuard.includes("allowed.includes(currentRole)"), "Client sessions must not view team dashboard.");
 
-    assert(loginSource.includes("validateDevCredentials") && loginSource.includes("setLocation(getDevRouteForRole(role))"), "Placeholder login must route by configured preview credentials.");
-    assert(devCredentials.includes('email: "faraz@client.com"') && devCredentials.includes('password: "farazclient"'), "Client preview credential fallback changed unexpectedly.");
-    assert(devCredentials.includes('email: "faraz@team.com"') && devCredentials.includes('password: "farazteam"'), "Team preview credential fallback changed unexpectedly.");
+    assert(loginSource.includes("Sign in to Veroxa") && loginSource.includes("Access your Veroxa portal."), "Login must use Real Login V1 portal wording.");
+    for (const bannedLoginCopy of ["Preview access", "review sign-in", "preview access", "not production client billing", "demo mode"]) {
+      assert(!loginSource.includes(bannedLoginCopy), `Login source still contains retired preview wording: ${bannedLoginCopy}`);
+    }
+    assert(loginSource.includes("validatePilotAccessCredentials") && loginSource.includes("setLocation(getPilotRouteForRole(account.role))"), "Pilot login must route by deterministic/manual portal accounts.");
+    assert(pilotAccessAccounts.includes('accountLabel: MOMO_HOUSE_CLIENT_ACCOUNT_LABEL') && pilotAccessAccounts.includes('email: "momo@veroxa.app"'), "Momo House pilot client account is missing.");
+    assert(pilotAccessAccounts.includes('accountLabel: TEAM_FARAZ_ACCOUNT_LABEL') && pilotAccessAccounts.includes('email: "faraz@veroxa.app"'), "Team Faraz pilot account is missing.");
+    assert(!pilotAccessAccounts.includes('faraz@client.com') && !pilotAccessAccounts.includes('faraz@team.com'), "Old public preview credentials must not remain in pilot account records.");
 
     assert(clientDataHook.includes("ZERO_GOOGLE_METRICS"), "Real client empty state must use zero/safe Google metrics.");
     const emptyStateBlock = clientDataHook.slice(clientDataHook.indexOf("!portalDataMode.allowDemoFixtures"), clientDataHook.indexOf("const realClientId"));

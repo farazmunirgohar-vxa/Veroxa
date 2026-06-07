@@ -1,8 +1,8 @@
 /**
- * placeholderSession.ts — temporary preview-session marker for placeholder auth.
+ * placeholderSession.ts — temporary pilot-session marker for placeholder auth.
  *
  * This is not production auth. It only records that the current browser tab
- * completed the env-backed placeholder login flow. Missing or wrong credentials
+ * completed the deterministic/manual pilot login flow. Missing or wrong credentials
  * never create a marker, and team routes must not render from AUTH_MODE alone.
  */
 
@@ -13,6 +13,9 @@ const PLACEHOLDER_SESSION_KEY = "veroxa.placeholder.session.v1";
 interface StoredPlaceholderSession {
   role: VeroxaRole;
   email: string;
+  accountLabel: string | null;
+  clientId: string | null;
+  restaurantId: string | null;
   createdAt: string;
 }
 
@@ -20,11 +23,20 @@ function canUseSessionStorage(): boolean {
   return typeof window !== "undefined" && typeof window.sessionStorage !== "undefined";
 }
 
-export function createPlaceholderSession(role: VeroxaRole, email: string): void {
+export function createPlaceholderSession(
+  role: VeroxaRole,
+  email: string,
+  accountLabel: string | null = null,
+  clientId: string | null = null,
+  restaurantId: string | null = null,
+): void {
   if (!canUseSessionStorage()) return;
   const payload: StoredPlaceholderSession = {
     role,
     email: email.trim().toLowerCase(),
+    accountLabel,
+    clientId,
+    restaurantId,
     createdAt: new Date().toISOString(),
   };
   window.sessionStorage.setItem(PLACEHOLDER_SESSION_KEY, JSON.stringify(payload));
@@ -48,11 +60,13 @@ export function readPlaceholderSession(): VeroxaSession | null {
     }
 
     return {
-      userId: `placeholder-${parsed.role}`,
+      userId: `pilot-${parsed.role}`,
       email: parsed.email,
       role: parsed.role,
-      clientId: parsed.role === "client" ? null : null,
-      displayName: parsed.role === "team" ? "Veroxa Team" : "Restaurant Partner",
+      clientId: typeof parsed.clientId === "string" ? parsed.clientId : null,
+      displayName: typeof parsed.accountLabel === "string" && parsed.accountLabel.trim()
+        ? parsed.accountLabel
+        : parsed.role === "team" ? "Team Faraz" : "Momo House San Antonio",
     };
   } catch {
     clearPlaceholderSession();

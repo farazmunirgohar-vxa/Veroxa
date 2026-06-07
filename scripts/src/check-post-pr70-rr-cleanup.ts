@@ -10,8 +10,13 @@ if (/text-sm/.test(nav)) failures.push("PublicNav brand must not regress to text
 const auth = read("artifacts/veroxa/src/lib/auth/authMode.ts");
 if (!/AUTH_MODE(?:\s*:\s*AuthMode)?\s*=\s*["']placeholder["']/.test(auth)) failures.push("AUTH_MODE must remain placeholder.");
 const devCreds = read("artifacts/veroxa/src/lib/auth/devCredentials.ts");
-for (const marker of ["VITE_VEROXA_DEV_CLIENT_EMAIL", "VITE_VEROXA_DEV_CLIENT_PASSWORD", "VITE_VEROXA_DEV_TEAM_EMAIL", "VITE_VEROXA_DEV_TEAM_PASSWORD", "VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN", "faraz@client.com", "faraz@team.com", "isPreviewFriendlyHostname", "hostname === \"localhost\"", "hostname === \"127.0.0.1\"", "hostname.endsWith(\".vercel.app\")", "explicitFlag === \"false\"", "explicitFlag === \"true\""]) if (!devCreds.includes(marker)) failures.push(`devCredentials missing preview login marker ${marker}.`);
-if (/hostname\.includes\(["']veroxa["']\)/.test(devCreds) || /includes\(["']veroxa["']\)/.test(devCreds)) failures.push("devCredentials must not allow broad Veroxa custom-domain preview login fallback.");
+const pilotAccounts = read("artifacts/veroxa/src/lib/auth/pilotAccessAccounts.ts");
+for (const marker of ["Real Login V1 pilot portal access", "getPilotAccessAccounts", "validatePilotAccessCredentials", "getPilotRouteForRole"]) if (!devCreds.includes(marker)) failures.push(`devCredentials missing Real Login V1 marker ${marker}.`);
+for (const marker of ["Momo House San Antonio", "Team Faraz", "VITE_VEROXA_PILOT_CLIENT_EMAIL", "VITE_VEROXA_PILOT_CLIENT_PASSWORD", "VITE_VEROXA_PILOT_TEAM_EMAIL", "VITE_VEROXA_PILOT_TEAM_PASSWORD", "deterministic-pilot"]) if (!pilotAccounts.includes(marker)) failures.push(`pilotAccessAccounts missing Real Login V1 marker ${marker}.`);
+for (const retired of ["VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN", "faraz@client.com", "faraz@team.com", "farazclient", "farazteam", "Preview access ready", "Preview access not enabled", "publicPreviewFallbackEnabled", "isPreviewFriendlyHostname"]) {
+  if (devCreds.includes(retired) || pilotAccounts.includes(retired)) failures.push(`Real Login V1 auth helpers must not retain retired preview-login marker ${retired}.`);
+}
+if (/hostname\.includes\(["']veroxa["']\)/.test(devCreds + pilotAccounts) || /includes\(["']veroxa["']\)/.test(devCreds + pilotAccounts)) failures.push("Auth helpers must not allow broad Veroxa custom-domain preview login fallback.");
 const updates = read("artifacts/veroxa/src/pages/client-updates.tsx");
 if (!updates.includes("updateSummaries") || !updates.includes("buildWeeklyUpdateFromClientSummary")) failures.push("client-updates.tsx must adapt loaded updateSummaries before using fallback preview data.");
 if (/buildClientWeeklyUpdatePreview\(\)/.test(updates)) failures.push("client-updates.tsx must not always call buildClientWeeklyUpdatePreview() with no data.");

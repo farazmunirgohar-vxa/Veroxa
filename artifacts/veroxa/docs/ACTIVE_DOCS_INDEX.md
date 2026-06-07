@@ -34,7 +34,7 @@ Historical docs remain useful as reference, but they must not override current s
 
 ## Deployment/auth truth
 
-Production/custom domains should set `VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=false`. Preview deployments may use fallback preview credentials only for review. `AUTH_MODE` remains `placeholder` until real-auth readiness is explicitly approved.
+Production/custom-domain login is now Real Login V1 pilot portal access for Momo House San Antonio and Team Faraz only. Public preview-login language and public preview credentials are retired from `/login`. `AUTH_MODE` remains `placeholder` until production-auth readiness is explicitly approved; Real Login V1 is deterministic/manual pilot access, not secure production auth.
 
 
 ## 2026-06-07 — Real pilot mode lock
@@ -54,3 +54,13 @@ Production/custom domains should set `VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=fa
 - Audit-to-onboarding prefill statuses are: `prefilled_by_veroxa`, `needs_owner_verification`, `missing`, `owner_corrected`, `completed_by_team`, and `blocked_needs_access`.
 - Active portals remain only Client Portal and Team/Internal Admin Portal; retired demo/preview routes remain disabled.
 - No live auth, writes, storage uploads, live AI, connectors, payments, cron/background jobs, or automated publishing were added.
+
+## 2026-06-07 — Real Login V1 / pilot portal access
+
+- Veroxa `/login` now uses real portal wording: “Sign in to Veroxa” and “Access your Veroxa portal.”
+- Active pilot accounts are **Momo House San Antonio** for the Client Portal and **Team Faraz** for the Team/Internal Admin Portal.
+- Login destinations remain only `/client/dashboard` and `/team/dashboard`; Owner, Operator, Super Admin, generic Admin, and Execution portals remain parked/blocked.
+- Preview demo login language and public preview credentials are removed from the production/custom-domain login experience.
+- `AUTH_MODE` remains `placeholder`; Real Login V1 is deterministic/manual pilot portal access, not secure production auth.
+- `/demo`, `/guided-demo`, `/upload`, and `/demo/client/*` remain retired/disabled.
+- No live AI, storage uploads, integrations, payments, publishing, cron/background jobs, database writes, or customer-visible automation were added.
