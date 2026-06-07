@@ -31,6 +31,10 @@ interface PilotCredentialRecord {
 
 const pilotRateLimitBuckets = new Map<string, PilotRateLimitBucket>();
 
+export function resetPilotAccessRateLimitForTests(): void {
+  pilotRateLimitBuckets.clear();
+}
+
 const PILOT_CREDENTIAL_RECORDS: readonly PilotCredentialRecord[] = [
   {
     role: "client",

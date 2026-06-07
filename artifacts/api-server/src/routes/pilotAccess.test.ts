@@ -1,6 +1,7 @@
 import { strict as assert } from "node:assert";
 import http from "node:http";
 import app from "../app";
+import { resetPilotAccessRateLimitForTests } from "./pilotAccess";
 
 const CLIENT_PASSWORD_ENV = "VEROXA_PILOT_MOMO_HOUSE_PASSWORD";
 const TEAM_PASSWORD_ENV = "VEROXA_PILOT_TEAM_FARAZ_PASSWORD";
@@ -27,6 +28,8 @@ async function postPilotAccess(baseUrl: string, body: object, headers: Record<st
 }
 
 async function main() {
+  assert.equal(app.get("trust proxy"), false);
+
   process.env[CLIENT_PASSWORD_ENV] = "local-client-test-secret";
   process.env[TEAM_PASSWORD_ENV] = "local-team-test-secret";
   process.env.VEROXA_PILOT_ACCESS_RATE_LIMIT_MAX = "50";
@@ -60,26 +63,27 @@ async function main() {
     assert.equal(invalid.payload.ok, false);
   });
 
+  resetPilotAccessRateLimitForTests();
   process.env.VEROXA_PILOT_ACCESS_RATE_LIMIT_MAX = "2";
 
   await withServer(async (baseUrl) => {
     const firstSpoofedIp = await postPilotAccess(
       baseUrl,
-      { email: "unknown-rate-limit@veroxa.app", password: "wrong-secret" },
+      { email: "momo@veroxa.app", password: "wrong-secret" },
       { "X-Forwarded-For": "198.51.100.10" },
     );
     assert.equal(firstSpoofedIp.status, 401);
 
     const secondSpoofedIp = await postPilotAccess(
       baseUrl,
-      { email: "unknown-rate-limit@veroxa.app", password: "wrong-secret" },
+      { email: "momo@veroxa.app", password: "wrong-secret" },
       { "X-Forwarded-For": "198.51.100.11" },
     );
     assert.equal(secondSpoofedIp.status, 401);
 
     const thirdSpoofedIp = await postPilotAccess(
       baseUrl,
-      { email: "unknown-rate-limit@veroxa.app", password: "wrong-secret" },
+      { email: "momo@veroxa.app", password: "wrong-secret" },
       { "X-Forwarded-For": "198.51.100.12" },
     );
     assert.equal(thirdSpoofedIp.status, 429);
