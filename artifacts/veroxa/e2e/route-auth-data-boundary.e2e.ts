@@ -71,10 +71,19 @@ async function main() {
     for (const bannedLoginCopy of ["Preview access", "review sign-in", "preview access", "not production client billing", "demo mode"]) {
       assert(!loginSource.includes(bannedLoginCopy), `Login source still contains retired preview wording: ${bannedLoginCopy}`);
     }
-    assert(loginSource.includes("validatePilotAccessCredentials") && loginSource.includes("setLocation(getPilotRouteForRole(account.role))"), "Pilot login must route by deterministic/manual portal accounts.");
-    assert(pilotAccessAccounts.includes('accountLabel: MOMO_HOUSE_CLIENT_ACCOUNT_LABEL') && pilotAccessAccounts.includes('email: "momo@veroxa.app"'), "Momo House pilot client account is missing.");
-    assert(pilotAccessAccounts.includes('accountLabel: TEAM_FARAZ_ACCOUNT_LABEL') && pilotAccessAccounts.includes('email: "faraz@veroxa.app"'), "Team Faraz pilot account is missing.");
-    assert(!pilotAccessAccounts.includes('faraz@client.com') && !pilotAccessAccounts.includes('faraz@team.com'), "Old public preview credentials must not remain in pilot account records.");
+    assert(loginSource.includes("validatePilotAccessCredentials") && loginSource.includes("setLocation(getPilotRouteForRole(account.role))"), "Pilot login must route by server-controlled/manual portal accounts.");
+    assert(loginSource.includes("Portal access is not configured"), "Unconfigured placeholder login must show clean portal-access-not-configured behavior.");
+    assert(pilotAccessAccounts.includes('accountLabel: MOMO_HOUSE_CLIENT_ACCOUNT_LABEL') && pilotAccessAccounts.includes('email: "momo@veroxa.app"'), "Momo House pilot client account allowlist is missing.");
+    assert(pilotAccessAccounts.includes('accountLabel: TEAM_FARAZ_ACCOUNT_LABEL') && pilotAccessAccounts.includes('email: "faraz@veroxa.app"'), "Team Faraz pilot account allowlist is missing.");
+    assert(pilotAccessAccounts.includes("VITE_VEROXA_PILOT_ACCESS_ENDPOINT") && pilotAccessAccounts.includes("server-controlled"), "Pilot access must be server-controlled instead of bundled-password controlled.");
+    for (const forbiddenCredential of ["faraz@client.com", "faraz@team.com", "farazclient", "farazteam", "momohousepilot", "teamfarazpilot"]) {
+      assert(!pilotAccessAccounts.includes(forbiddenCredential), `Bundled/old pilot credential must not remain in pilot account records: ${forbiddenCredential}`);
+      assert(!loginSource.includes(forbiddenCredential), `Bundled/old pilot credential must not remain in login source: ${forbiddenCredential}`);
+    }
+
+    const placeholderSession = readFileSync(resolve(root, "src/lib/auth/placeholderSession.ts"), "utf8");
+    assert(placeholderSession.includes("veroxa.placeholder.session.v2.post-pr87"), "Placeholder session key must be bumped for post-PR87 stale-session rejection.");
+    assert(placeholderSession.includes("LEGACY_PLACEHOLDER_SESSION_KEYS") && placeholderSession.includes("findPilotAccessAccountBySessionFields"), "Placeholder sessions must clear old keys and validate new account match fields.");
 
     assert(clientDataHook.includes("ZERO_GOOGLE_METRICS"), "Real client empty state must use zero/safe Google metrics.");
     const emptyStateBlock = clientDataHook.slice(clientDataHook.indexOf("!portalDataMode.allowDemoFixtures"), clientDataHook.indexOf("const realClientId"));

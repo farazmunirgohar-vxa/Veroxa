@@ -12,7 +12,7 @@
  *
  *
  * Reads only the temporary placeholder-session marker created by the
- * env-backed login form. No Supabase calls, no cookies, no network. This
+ * server-controlled login form. No Supabase calls, no cookies, no network. This
  * exists purely so that the RequireRole shell and the future `/client` and
  * `/team` placeholder pages can be wired against a stable hook signature today,
  * then swapped to a real implementation later without changing call

@@ -3,7 +3,7 @@
  *
  * Older call sites and tests used the devCredentials module name. The active
  * login behavior is now pilot access for the two locked Veroxa portals only:
- * Client Portal and Team/Internal Admin Portal. This is still deterministic
+ * Client Portal and Team/Internal Admin Portal. This is still server-controlled
  * placeholder/manual auth while AUTH_MODE remains "placeholder"; it is not
  * secure production auth and it does not create users or write records.
  */
@@ -25,11 +25,11 @@ export function hasConfiguredDevCredentials(): boolean {
   return getPilotAccessAccounts().length > 0;
 }
 
-export function validateDevCredentials(
+export async function validateDevCredentials(
   emailOrId: string,
   password: string,
-): VeroxaRole | null {
-  return validatePilotAccessCredentials(emailOrId, password)?.role ?? null;
+): Promise<VeroxaRole | null> {
+  return (await validatePilotAccessCredentials(emailOrId, password))?.role ?? null;
 }
 
 export function getDevRouteForRole(role: VeroxaRole): string {

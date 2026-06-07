@@ -367,7 +367,7 @@ export default function FreeAudit() {
       setWalkthroughSaved(true);
     } catch {
       setWalkthroughError(
-        "Could not save the walkthrough request for manual verification. Please try again.",
+        "Could not store this request locally in your browser. Portal lead capture is not connected yet.",
       );
     }
   }
@@ -963,7 +963,7 @@ export default function FreeAudit() {
 
               <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
                 <p className="text-[11px] text-muted-foreground inline-flex items-center gap-1">
-                  <Info className="w-3 h-3" /> This assessment runs in your browser. Walkthrough requests are saved locally for manual Veroxa review.
+                  <Info className="w-3 h-3" /> This preliminary audit is generated locally in your browser. To request Veroxa review, contact Team Faraz directly; portal lead capture is not connected yet.
                 </p>
                 <Button
                   type="submit"
@@ -1450,13 +1450,10 @@ export default function FreeAudit() {
                     data-testid="walkthrough-success"
                   >
                     <p className="text-sm font-semibold text-emerald-400">
-                      Thanks — your walkthrough request is saved for manual
-                      review.
+                      This preliminary audit was generated locally.
                     </p>
                     <p className="text-[12px] text-muted-foreground mt-1">
-                      A Veroxa team member would review the audit and explain
-                      whether Complete Online Presence is a fit, needs manual
-                      review, or is not a fit yet.
+                      Your contact details were stored only in this browser. To request Veroxa review, contact Team Faraz directly; portal lead capture is not connected yet.
                     </p>
                   </div>
                 ) : (
@@ -1551,8 +1548,7 @@ export default function FreeAudit() {
                     )}
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <p className="text-[11px] text-muted-foreground italic">
-                        Pilot note: this request is saved locally for manual Veroxa review.
-                        Production lead capture will be connected later.
+                        Pilot note: this request stays local in your browser. Team Faraz has not received it because portal lead capture is not connected yet.
                       </p>
                       <Button
                         type="submit"

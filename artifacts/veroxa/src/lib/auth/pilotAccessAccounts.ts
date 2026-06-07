@@ -1,12 +1,12 @@
 import { getRoleHomePath, type VeroxaRole } from "./authContract";
 
-export type PilotAccountSource = "env" | "deterministic-pilot";
+export type PilotAccountSource = "server-controlled" | "disabled-placeholder";
 
 export interface PilotAccessAccount {
   role: VeroxaRole;
   email: string;
-  password: string;
   accountLabel: string;
+  accountId: string;
   clientId: string | null;
   restaurantId: string | null;
   source: PilotAccountSource;
@@ -14,120 +14,119 @@ export interface PilotAccessAccount {
 
 export interface PilotAccessStatus {
   isConfigured: boolean;
-  envCredentialCount: number;
-  deterministicAccountCount: number;
-  statusLabel: "Portal access ready" | "Portal access unavailable";
+  serverEndpointConfigured: boolean;
+  configuredAccountCount: number;
+  statusLabel: "Portal access configured" | "Portal access not configured";
   helperText: string;
 }
 
-const PILOT_CLIENT_EMAIL_ENV = "VITE_VEROXA_PILOT_CLIENT_EMAIL";
-const PILOT_CLIENT_PASSWORD_ENV = "VITE_VEROXA_PILOT_CLIENT_PASSWORD";
-const PILOT_TEAM_EMAIL_ENV = "VITE_VEROXA_PILOT_TEAM_EMAIL";
-const PILOT_TEAM_PASSWORD_ENV = "VITE_VEROXA_PILOT_TEAM_PASSWORD";
+interface PilotAccessServerResponse {
+  ok?: unknown;
+  accountId?: unknown;
+  email?: unknown;
+  role?: unknown;
+}
 
-const LEGACY_CLIENT_EMAIL_ENV = "VITE_VEROXA_DEV_CLIENT_EMAIL";
-const LEGACY_CLIENT_PASSWORD_ENV = "VITE_VEROXA_DEV_CLIENT_PASSWORD";
-const LEGACY_TEAM_EMAIL_ENV = "VITE_VEROXA_DEV_TEAM_EMAIL";
-const LEGACY_TEAM_PASSWORD_ENV = "VITE_VEROXA_DEV_TEAM_PASSWORD";
+const PILOT_ACCESS_ENDPOINT_ENV = "VITE_VEROXA_PILOT_ACCESS_ENDPOINT";
 
 export const MOMO_HOUSE_CLIENT_ACCOUNT_LABEL = "Momo House San Antonio";
 export const TEAM_FARAZ_ACCOUNT_LABEL = "Team Faraz";
 export const MOMO_HOUSE_CLIENT_ID = "client-momo-house-san-antonio";
 export const MOMO_HOUSE_RESTAURANT_ID = "pilot-momo-house-san-antonio";
+export const MOMO_HOUSE_CLIENT_ACCOUNT_ID = "pilot-account-momo-house-san-antonio";
+export const TEAM_FARAZ_ACCOUNT_ID = "pilot-account-team-faraz";
 
 function readViteEnv(name: string): string | null {
   const value = (import.meta.env as Record<string, unknown>)[name];
   return typeof value === "string" && value.trim() ? value.trim() : null;
 }
 
-function accountFromEnv(
-  role: VeroxaRole,
-  label: string,
-  clientId: string | null,
-  restaurantId: string | null,
-  primaryEmailEnv: string,
-  primaryPasswordEnv: string,
-  legacyEmailEnv: string,
-  legacyPasswordEnv: string,
-): PilotAccessAccount | null {
-  const email = (readViteEnv(primaryEmailEnv) ?? readViteEnv(legacyEmailEnv))?.toLowerCase();
-  const password = readViteEnv(primaryPasswordEnv) ?? readViteEnv(legacyPasswordEnv);
-  if (!email || !password) return null;
-  return { role, email, password, accountLabel: label, clientId, restaurantId, source: "env" };
+function getPilotAccessEndpoint(): string | null {
+  return readViteEnv(PILOT_ACCESS_ENDPOINT_ENV);
 }
 
-function getEnvPilotAccounts(): readonly PilotAccessAccount[] {
-  return [
-    accountFromEnv(
-      "client",
-      MOMO_HOUSE_CLIENT_ACCOUNT_LABEL,
-      MOMO_HOUSE_CLIENT_ID,
-      MOMO_HOUSE_RESTAURANT_ID,
-      PILOT_CLIENT_EMAIL_ENV,
-      PILOT_CLIENT_PASSWORD_ENV,
-      LEGACY_CLIENT_EMAIL_ENV,
-      LEGACY_CLIENT_PASSWORD_ENV,
-    ),
-    accountFromEnv(
-      "team",
-      TEAM_FARAZ_ACCOUNT_LABEL,
-      null,
-      null,
-      PILOT_TEAM_EMAIL_ENV,
-      PILOT_TEAM_PASSWORD_ENV,
-      LEGACY_TEAM_EMAIL_ENV,
-      LEGACY_TEAM_PASSWORD_ENV,
-    ),
-  ].filter((account): account is PilotAccessAccount => Boolean(account));
-}
-
-function getDeterministicPilotAccounts(): readonly PilotAccessAccount[] {
+function getPilotAccountAllowlist(): readonly PilotAccessAccount[] {
   return [
     {
       role: "client",
       email: "momo@veroxa.app",
-      password: "momohousepilot",
       accountLabel: MOMO_HOUSE_CLIENT_ACCOUNT_LABEL,
+      accountId: MOMO_HOUSE_CLIENT_ACCOUNT_ID,
       clientId: MOMO_HOUSE_CLIENT_ID,
       restaurantId: MOMO_HOUSE_RESTAURANT_ID,
-      source: "deterministic-pilot",
+      source: "server-controlled",
     },
     {
       role: "team",
       email: "faraz@veroxa.app",
-      password: "teamfarazpilot",
       accountLabel: TEAM_FARAZ_ACCOUNT_LABEL,
+      accountId: TEAM_FARAZ_ACCOUNT_ID,
       clientId: null,
       restaurantId: null,
-      source: "deterministic-pilot",
+      source: "server-controlled",
     },
   ];
 }
 
 export function getPilotAccessAccounts(): readonly PilotAccessAccount[] {
-  return [...getEnvPilotAccounts(), ...getDeterministicPilotAccounts()];
+  return getPilotAccountAllowlist();
+}
+
+export function findPilotAccessAccountBySessionFields(fields: {
+  accountId: string;
+  email: string;
+  role: VeroxaRole;
+  clientId: string | null;
+  restaurantId: string | null;
+}): PilotAccessAccount | null {
+  const normalizedEmail = fields.email.trim().toLowerCase();
+  const account = getPilotAccountAllowlist().find(
+    (candidate) => candidate.accountId === fields.accountId,
+  );
+  if (!account) return null;
+  if (account.email !== normalizedEmail || account.role !== fields.role) return null;
+  if (account.clientId !== fields.clientId) return null;
+  if (account.restaurantId !== fields.restaurantId) return null;
+  return account;
 }
 
 export function getPilotAccessStatus(): PilotAccessStatus {
-  const envCredentialCount = getEnvPilotAccounts().length;
-  const deterministicAccountCount = getDeterministicPilotAccounts().length;
+  const serverEndpointConfigured = Boolean(getPilotAccessEndpoint());
   return {
-    isConfigured: envCredentialCount + deterministicAccountCount > 0,
-    envCredentialCount,
-    deterministicAccountCount,
-    statusLabel: "Portal access ready",
-    helperText: "Pilot portal access is available for the Client Portal and Team Portal. Access is managed manually by Veroxa for this pilot.",
+    isConfigured: serverEndpointConfigured,
+    serverEndpointConfigured,
+    configuredAccountCount: serverEndpointConfigured ? getPilotAccountAllowlist().length : 0,
+    statusLabel: serverEndpointConfigured ? "Portal access configured" : "Portal access not configured",
+    helperText: serverEndpointConfigured
+      ? "Pilot portal access is checked by a server-controlled endpoint. No portal passwords are bundled in the browser."
+      : "Portal access is not configured in this environment. Contact Team Faraz directly; secure pilot lead capture/login is not connected yet.",
   };
 }
 
-export function validatePilotAccessCredentials(
+export async function validatePilotAccessCredentials(
   emailOrId: string,
   password: string,
-): PilotAccessAccount | null {
+): Promise<PilotAccessAccount | null> {
+  const endpoint = getPilotAccessEndpoint();
   const normalizedEmail = emailOrId.trim().toLowerCase();
-  if (!normalizedEmail || !password) return null;
-  return getPilotAccessAccounts().find(
-    (account) => account.email === normalizedEmail && account.password === password,
+  if (!endpoint || !normalizedEmail || !password) return null;
+
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: normalizedEmail, password }),
+  });
+  if (!response.ok) return null;
+
+  const payload = (await response.json()) as PilotAccessServerResponse;
+  if (payload.ok !== true) return null;
+  const accountId = typeof payload.accountId === "string" ? payload.accountId : null;
+  const responseEmail = typeof payload.email === "string" ? payload.email.trim().toLowerCase() : normalizedEmail;
+  const role = payload.role === "client" || payload.role === "team" ? payload.role : null;
+  if (!accountId || !role) return null;
+
+  return getPilotAccountAllowlist().find(
+    (account) => account.accountId === accountId && account.email === responseEmail && account.role === role,
   ) ?? null;
 }
 

@@ -83,16 +83,14 @@ forbidIncludes(devCredentials, devCredentialsPath, retiredPreviewLoginMarkers);
 requireIncludes(pilotAccounts, pilotAccountsPath, [
   "Momo House San Antonio",
   "Team Faraz",
-  "VITE_VEROXA_PILOT_CLIENT_EMAIL",
-  "VITE_VEROXA_PILOT_CLIENT_PASSWORD",
-  "VITE_VEROXA_PILOT_TEAM_EMAIL",
-  "VITE_VEROXA_PILOT_TEAM_PASSWORD",
-  "deterministic-pilot",
+  "VITE_VEROXA_PILOT_ACCESS_ENDPOINT",
+  "server-controlled",
+  "Portal access not configured",
   "getRoleHomePath(role)",
 ]);
 forbidIncludes(pilotAccounts, pilotAccountsPath, retiredPreviewLoginMarkers);
-if (/password:\s*["'](?!momohousepilot|teamfarazpilot)[^"']+["']/.test(pilotAccounts)) {
-  failures.push("pilotAccessAccounts.ts defines an unapproved source plaintext password.");
+if (/password:\s*["'][^"']+["']/.test(pilotAccounts) || /momohousepilot|teamfarazpilot/.test(pilotAccounts)) {
+  failures.push("pilotAccessAccounts.ts must not define bundled plaintext pilot passwords.");
 }
 
 requireIncludes(loginSource, loginPath, [
@@ -101,11 +99,11 @@ requireIncludes(loginSource, loginPath, [
   "validatePilotAccessCredentials",
   "createPlaceholderSession",
   "setLocation(getPilotRouteForRole(account.role))",
-  "Those sign-in details do not match a Veroxa portal account. Please try again.",
+  "Portal access is not configured",
 ]);
 forbidIncludes(loginSource, loginPath, retiredPreviewLoginMarkers.concat(["demo access", "preview access"]));
-if (/momo@veroxa\.app|momohousepilot|faraz@veroxa\.app|teamfarazpilot/.test(loginSource)) {
-  failures.push("login.tsx must not expose pilot credentials in production-facing copy/source literals.");
+if (/momohousepilot|teamfarazpilot/.test(loginSource)) {
+  failures.push("login.tsx must not expose pilot passwords in production-facing copy/source literals.");
 }
 
 requireIncludes(appSource, appPath, [
@@ -159,8 +157,8 @@ for (const file of productionLikeDocs) {
   if (/VITE_VEROXA_ENABLE_DEV_WRITES\s*=\s*["']?true["']?/i.test(text) && !/dev-only|local-only|non-production|never production/i.test(text)) {
     failures.push(`${file} implies dev writes can be true without a clear non-production warning.`);
   }
-  if (/VITE_VEROXA_(DEV_)?(CLIENT|TEAM)_(EMAIL|PASSWORD)/.test(text) && !/pilot|manual|local-only|do not set|never set|must not be set/i.test(text)) {
-    failures.push(`${file} mentions portal credentials without a clear pilot/manual/local warning.`);
+  if (/VITE_VEROXA_(DEV_)?(CLIENT|TEAM)_(EMAIL|PASSWORD)|VITE_VEROXA_PILOT_ACCESS_ENDPOINT/.test(text) && !/pilot|manual|local-only|do not set|never set|must not be set|server-controlled/i.test(text)) {
+    failures.push(`${file} mentions portal access without a clear pilot/manual/server-controlled warning.`);
   }
 }
 
