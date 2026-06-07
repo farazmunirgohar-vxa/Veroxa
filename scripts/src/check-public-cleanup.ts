@@ -33,6 +33,6 @@ for (const file of publicDemoPromotionFiles) {
 }
 
 const freeAudit = read("artifacts/veroxa/src/pages/free-audit.tsx");
-for (const required of ["Restaurant Online Presence Audit", "Complete Online Presence", "$495", "Yelp is a coming-soon/future review area", "Live third-party lookup is not part of this preview yet", "recommendations are not guarantees"]) if (!freeAudit.includes(required)) failures.push(`free-audit.tsx missing audit launch marker: ${required}`);
+for (const required of ["Restaurant Online Presence Audit", "Complete Online Presence", "$495", "Yelp is a coming-soon/future review area", "This preliminary assessment uses the information you provide", "recommendations are not guarantees"]) if (!freeAudit.includes(required)) failures.push(`free-audit.tsx missing audit launch marker: ${required}`);
 if (failures.length) { console.error("Public cleanup guardrail failed:\n" + failures.map(f => `- ${f}`).join("\n")); process.exit(1); }
 console.log("Public cleanup guardrail passed.");

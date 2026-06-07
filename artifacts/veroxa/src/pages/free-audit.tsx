@@ -97,9 +97,9 @@ const matchConfidenceLabel: Record<
   RestaurantSearchCandidate["matchConfidence"],
   string
 > = {
-  high: "High match confidence",
-  medium: "Medium match confidence",
-  low: "Low match confidence",
+  high: "High match strength",
+  medium: "Medium match strength",
+  low: "Low match strength",
 };
 
 const sourceLabelTone: Record<GrowthReportSourceLabel, string> = {
@@ -113,8 +113,8 @@ const sourceLabelTone: Record<GrowthReportSourceLabel, string> = {
 const sourceLabelText: Record<GrowthReportSourceLabel, string> = {
   verified: "Verified",
   found: "Found",
-  "not found": "Not found",
-  "manual review needed": "Manual review needed",
+  "not found": "Needs verification",
+  "manual review needed": "Needs manual verification",
 };
 
 const sectionIcon: Record<string, React.ReactNode> = {
@@ -367,7 +367,7 @@ export default function FreeAudit() {
       setWalkthroughSaved(true);
     } catch {
       setWalkthroughError(
-        "Could not save the walkthrough request in this preview. Please try again.",
+        "Could not save the walkthrough request for manual verification. Please try again.",
       );
     }
   }
@@ -440,8 +440,7 @@ export default function FreeAudit() {
             Restaurant Online Presence Audit
           </h1>
           <p className="text-muted-foreground max-w-3xl">
-            Share your restaurant details and generate a review-mode audit
-            preview. Veroxa reviews Google Business Profile, Google Maps/local
+            Share your restaurant details and generate a preliminary restaurant growth readiness report. Veroxa reviews Google Business Profile, Google Maps/local
             visibility, local SEO/search visibility basics, existing website
             alignment, Facebook, Instagram, media quality, menu/order/contact
             link clarity, and whether Complete Online Presence — $495/month is a
@@ -449,9 +448,7 @@ export default function FreeAudit() {
             launch offer.
           </p>
           <p className="text-[12px] text-muted-foreground/80 max-w-3xl mt-2 italic">
-            This pre-live audit uses the information you provide and preview
-            matching only. Live third-party lookup is not part of this preview
-            yet, and recommendations are not guarantees. Yelp, TikTok,
+            This preliminary assessment uses the information you provide, available public signals, and manual-verification notes. Recommendations are not guarantees. Yelp, TikTok,
             Reels/video, and ads are coming soon and are not included in the
             launch package.
           </p>
@@ -489,7 +486,7 @@ export default function FreeAudit() {
               <p className="text-[12px] text-muted-foreground">
                 A readiness report, your top daily customer opportunities, a
                 simple 30-day plan, and whether Complete Online Presence —
-                $495/month fits, needs manual review, or is not a fit yet.
+                $495/month fits, needs manual verification, or is not a fit yet.
               </p>
             </CardContent>
           </Card>
@@ -501,7 +498,7 @@ export default function FreeAudit() {
               <p className="text-[12px] text-muted-foreground">
                 Not a contract, not a charge, no checkout/payment, and not a
                 guaranteed result. The audit recommendation options are Complete
-                Online Presence — $495/month, Not ready / needs manual review,
+                Online Presence — $495/month, Not ready / needs manual verification,
                 or Not a fit yet. Veroxa will not post, change, or contact
                 anyone without you.
               </p>
@@ -509,7 +506,7 @@ export default function FreeAudit() {
           </Card>
         </div>
 
-        {/* Find My Restaurant — preview matching only in pre-live mode */}
+        {/* Find My Restaurant — public-signal matching in pilot mode */}
         <Card
           className="bg-card border-border mb-4"
           data-testid="restaurant-search-card"
@@ -522,9 +519,7 @@ export default function FreeAudit() {
           </CardHeader>
           <CardContent>
             <p className="text-[12px] text-muted-foreground mb-3">
-              Enter your restaurant name, city, and state. This pre-live page
-              uses preview matching so you can continue before a manual Veroxa
-              team review.
+              Enter your restaurant name, city, and state. Veroxa uses available public signals so you can continue before team verification.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
               <Field label="Restaurant name *" testId="restaurant-search-name">
@@ -553,9 +548,7 @@ export default function FreeAudit() {
             </div>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-[11px] text-muted-foreground italic inline-flex items-center gap-1">
-                <Info className="w-3 h-3" /> Preview matching only. Veroxa will
-                manually review real online presence details before any
-                recommendation is treated as final.
+                <Info className="w-3 h-3" /> Public signals only. Veroxa will manually verify online presence details before any recommendation is treated as final.
               </p>
               <Button
                 type="button"
@@ -566,7 +559,7 @@ export default function FreeAudit() {
                 data-testid="btn-find-restaurant"
               >
                 <Search className="w-3.5 h-3.5 mr-1" />
-                {isSearching ? "Checking…" : "Preview match"}
+                {isSearching ? "Checking…" : "Find match"}
               </Button>
             </div>
             {searchError && (
@@ -583,8 +576,8 @@ export default function FreeAudit() {
                 data-testid="restaurant-search-mode-note"
               >
                 {searchMode === "not_configured"
-                  ? "Live third-party lookup is not part of this preview yet. Showing preview results so you can continue."
-                  : "Preview matching is shown so you can continue."}
+                  ? "Public-signal matching is limited right now. Showing possible matches so you can continue."
+                  : "Find matching is shown so you can continue."}
               </p>
             )}
             {selectedCandidate && (
@@ -606,7 +599,7 @@ export default function FreeAudit() {
                       >
                         {selectedCandidate.source === "manual"
                           ? "Manual fallback"
-                          : "Preview fallback result"}
+                          : "Public signal result"}
                       </Badge>
                     </div>
                     <p className="text-sm font-semibold mt-1">
@@ -648,16 +641,15 @@ export default function FreeAudit() {
                     data-testid="restaurant-search-empty"
                   >
                     <p className="text-sm font-semibold">
-                      No confident preview match found yet.
+                      No confident public-signal match found yet.
                     </p>
                     <p className="text-[12px] text-muted-foreground mt-1">
-                      This review-mode audit preview uses limited preview
-                      matching only. Try a shorter name, alternate spelling,
+                      This preliminary assessment uses limited public-signal matching. Try a shorter name, alternate spelling,
                       city/state, or cuisine. If no confident match exists,
                       continue manually — Veroxa can still review it.
                     </p>
                     <p className="text-[12px] text-muted-foreground/80 mt-1">
-                      Live third-party lookup is not part of this preview yet.
+                      Live third-party lookup is not connected to this assessment yet.
                       Some restaurants appear under a different listing name, so
                       a weak or missing match can still be a discoverability
                       signal and potential Veroxa opportunity. Audit
@@ -693,7 +685,7 @@ export default function FreeAudit() {
                 ) : (
                   <>
                     <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                      Preview matches
+                      Find matches
                     </p>
                     <div
                       className="grid grid-cols-1 md:grid-cols-2 gap-2"
@@ -722,7 +714,7 @@ export default function FreeAudit() {
                                   ? "Manual fallback"
                                   : c.matchSource === "fuzzy match"
                                     ? "Fuzzy match"
-                                    : "Preview match"}
+                                    : "Find match"}
                               </Badge>
                               <Badge
                                 variant="outline"
@@ -914,7 +906,7 @@ export default function FreeAudit() {
                   A little context helps Veroxa understand whether you need
                   Google visibility, website alignment, Facebook/Instagram
                   consistency, menu/order/contact link clarity, or whether
-                  Complete Online Presence needs manual review. Yelp is coming
+                  Complete Online Presence needs manual verification. Yelp is coming
                   soon.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -971,9 +963,7 @@ export default function FreeAudit() {
 
               <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
                 <p className="text-[11px] text-muted-foreground inline-flex items-center gap-1">
-                  <Info className="w-3 h-3" /> This preview runs in your
-                  browser. Walkthrough requests are saved only for this pre-live
-                  review preview.
+                  <Info className="w-3 h-3" /> This assessment runs in your browser. Walkthrough requests are saved locally for manual Veroxa review.
                 </p>
                 <Button
                   type="submit"
@@ -1024,7 +1014,7 @@ export default function FreeAudit() {
                         data-testid="audit-confidence-badge"
                       >
                         <ShieldCheck className="w-3 h-3" />{" "}
-                        {auditHero.confidenceLabel} confidence
+                        {auditHero.confidenceLabel}
                       </Badge>
                       <Badge
                         variant="outline"
@@ -1045,16 +1035,12 @@ export default function FreeAudit() {
                     data-testid="audit-total-score"
                   >
                     <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                      Readiness score
+                      Readiness note
                     </p>
-                    <p className="text-3xl font-bold mt-1 tabular-nums">
-                      {report.totalScore}
-                      <span className="text-sm text-muted-foreground">
-                        {" "}
-                        / 100
-                      </span>
+                    <p className="text-sm font-semibold mt-1">
+                      {auditHero.readinessStatus}
                     </p>
-                    <p className="text-[12px] text-muted-foreground mt-1">
+                    <p className="text-[12px] text-muted-foreground mt-1 leading-relaxed">
                       {report.gradeDescription}
                     </p>
                   </div>
@@ -1289,20 +1275,51 @@ export default function FreeAudit() {
             <details className="group" data-testid="full-signal-breakdown">
               <summary className="flex items-center justify-between cursor-pointer rounded-lg border border-border bg-card px-4 py-3 text-sm font-semibold hover:bg-muted/30 transition-colors list-none">
                 <span className="inline-flex items-center gap-2">
-                  <Globe className="w-4 h-4 text-primary" /> Full signal
-                  breakdown
+                  <Globe className="w-4 h-4 text-primary" />
+                  <span className="group-open:hidden">Show full signal breakdown</span>
+                  <span className="hidden group-open:inline">Hide full signal breakdown</span>
                 </span>
-                <span className="text-[11px] font-normal text-muted-foreground group-open:hidden">
-                  Show
-                </span>
-                <span className="text-[11px] font-normal text-muted-foreground hidden group-open:inline">
-                  Hide
+                <span className="text-[11px] font-normal text-muted-foreground">
+                  Public signals by category
                 </span>
               </summary>
-              <div
-                className="mt-2 space-y-3"
-                data-testid="growth-report-sections"
-              >
+              <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3">
+                {signalBreakdown.map((group) => (
+                  <Card key={group.title} className="bg-card border-border">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm">{group.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-1">
+                        {group.bullets.map((bullet) => (
+                          <li
+                            key={bullet}
+                            className="text-[12px] text-muted-foreground flex items-start gap-2"
+                          >
+                            <span className="mt-[6px] shrink-0 w-1.5 h-1.5 rounded-full bg-primary/60" />
+                            {bullet}
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </details>
+
+            {/* 8. Source notes */}
+            <details className="group" data-testid="audit-source-notes">
+              <summary className="flex items-center justify-between cursor-pointer rounded-lg border border-border bg-card px-4 py-3 text-sm font-semibold hover:bg-muted/30 transition-colors list-none">
+                <span className="inline-flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-primary" />
+                  <span className="group-open:hidden">Show source notes for manual review</span>
+                  <span className="hidden group-open:inline">Hide source notes</span>
+                </span>
+                <span className="text-[11px] font-normal text-muted-foreground">
+                  Public signals + verification notes
+                </span>
+              </summary>
+              <div className="mt-2 space-y-3" data-testid="growth-report-sections">
                 <Card
                   className="bg-card border-border"
                   data-testid="audit-confidence-strip"
@@ -1317,43 +1334,43 @@ export default function FreeAudit() {
                           "Google profile",
                           report.input.googleListingUrl
                             ? "Link provided"
-                            : "Not confirmed",
+                            : "Needs verification",
                         ],
                         [
                           "Website",
                           report.input.websiteFound
-                            ? "Preview signal"
+                            ? "Public signal"
                             : report.input.websiteUrl
                               ? "Link provided"
-                              : "Not confirmed",
+                              : "Needs verification",
                         ],
                         [
                           "Menu / order",
                           report.input.menuLinkFound ||
                           report.input.orderLinkFound
-                            ? "Preview signal"
+                            ? "Public signal"
                             : report.input.menuOrderingUrl
                               ? "Link provided"
-                              : "Not confirmed",
+                              : "Needs verification",
                         ],
                         [
                           "Social",
                           (report.input.discoveredSocialLinks?.length ?? 0) > 0
-                            ? `${report.input.discoveredSocialLinks!.length} preview signal(s)`
+                            ? `${report.input.discoveredSocialLinks!.length} public signal(s)`
                             : report.input.instagramUrl ||
                                 report.input.facebookUrl ||
                                 report.input.tiktokUrl
                               ? "Links provided"
-                              : "Not confirmed",
+                              : "Needs verification",
                         ],
                         [
-                          "Audit mode",
+                          "Assessment source",
                           report.input.restaurantSource === "google_places"
-                            ? "Review mode"
+                            ? "Public signal review"
                             : report.input.restaurantSource ===
                                 (("fix" +
                                   "ture") as RestaurantAuditInput["restaurantSource"])
-                              ? "Preview match"
+                              ? "Public signals"
                               : "Manual entry",
                         ],
                       ].map(([label, value]) => (
@@ -1372,35 +1389,8 @@ export default function FreeAudit() {
                     </div>
                   </CardContent>
                 </Card>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {signalBreakdown.map((group) => (
-                    <Card key={group.title} className="bg-card border-border">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm">{group.title}</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <ul className="space-y-1">
-                          {group.bullets.map((bullet) => (
-                            <li
-                              key={bullet}
-                              className="text-[12px] text-muted-foreground flex items-start gap-2"
-                            >
-                              <span className="mt-[6px] shrink-0 w-1.5 h-1.5 rounded-full bg-primary/60" />
-                              {bullet}
-                            </li>
-                          ))}
-                        </ul>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
                 <Card className="bg-card border-border">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">
-                      Source notes for manual review
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
+                  <CardContent className="space-y-3 p-4">
                     {report.growthReportSections
                       .filter(
                         (section) =>
@@ -1452,7 +1442,7 @@ export default function FreeAudit() {
                 <p className="text-sm text-foreground/90 mb-3">
                   Veroxa can manually review this audit with you and explain
                   whether Complete Online Presence — $495/month fits, needs
-                  manual review, or is not a fit yet.
+                  manual verification, or is not a fit yet.
                 </p>
                 {walkthroughSaved ? (
                   <div
@@ -1460,8 +1450,8 @@ export default function FreeAudit() {
                     data-testid="walkthrough-success"
                   >
                     <p className="text-sm font-semibold text-emerald-400">
-                      Thanks — your walkthrough request is saved for this
-                      preview.
+                      Thanks — your walkthrough request is saved for manual
+                      review.
                     </p>
                     <p className="text-[12px] text-muted-foreground mt-1">
                       A Veroxa team member would review the audit and explain
@@ -1561,9 +1551,8 @@ export default function FreeAudit() {
                     )}
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <p className="text-[11px] text-muted-foreground italic">
-                        Demo note: this request is saved locally in this
-                        preview. Production lead capture will be connected
-                        later.
+                        Pilot note: this request is saved locally for manual Veroxa review.
+                        Production lead capture will be connected later.
                       </p>
                       <Button
                         type="submit"

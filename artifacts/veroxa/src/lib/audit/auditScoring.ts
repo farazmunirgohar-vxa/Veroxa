@@ -309,7 +309,7 @@ export function getAuditGrade(totalScore: number): {
     grade = "underbuilt";
     label = "Major Opportunity";
     description =
-      "Several important public signals may need setup or manual review. Focused early work on the foundation would likely improve visibility and customer decision moments.";
+      "Several important public signals may need setup or manual verification. Focused early work on the foundation would likely improve visibility and customer decision moments.";
   } else {
     grade = "foundational_problem";
     label = "Limited Public Signals";
@@ -336,7 +336,7 @@ export function getAuditConfidence(input: RestaurantAuditInput): {
   if (hasGoogle && hasSiteOrMenu && socialCount >= 2) {
     return {
       level: "strong",
-      label: "Strong",
+      label: "Public signal review",
       explanation:
         "Multiple key links were provided, so the preliminary report has stronger signal. A full Veroxa audit would still manually verify the live profiles.",
     };
@@ -344,14 +344,14 @@ export function getAuditConfidence(input: RestaurantAuditInput): {
   if (hasGoogle && (hasSiteOrMenu || socialCount >= 1)) {
     return {
       level: "good",
-      label: "Good",
+      label: "Public signal review",
       explanation:
         "Several useful links were provided, so the audit can give more specific direction. A full Veroxa audit would still manually verify the live profiles.",
     };
   }
   return {
     level: "basic",
-    label: "Basic",
+    label: "Public signals only",
     explanation:
       "Few links were provided, so this report focuses on likely opportunities suggested by missing information. Adding links would sharpen the audit, but missing links are themselves a signal Veroxa can act on.",
   };
@@ -637,14 +637,14 @@ export function generateGrowthReportSections(
   const auditModeLabel = isLive
     ? "live Google lookup"
     : input.restaurantSource === "fixture"
-      ? "preview match"
+      ? "public signals"
       : "manual entry";
 
   return [
     {
       id: "identity",
       title: "Restaurant Identity",
-      currentSignal: `${input.restaurantName} · ${input.cuisineType || "cuisine not verified"} · ${input.city}, ${input.state}. Audit mode: ${auditModeLabel}.`,
+      currentSignal: `${input.restaurantName} · ${input.cuisineType || "cuisine not verified"} · ${input.city}, ${input.state}. Assessment source: ${auditModeLabel} + manual verification needed.`,
       whatItMeans:
         "A clear and consistent restaurant identity — name, cuisine, and location — helps nearby customers recognize and remember the restaurant across every platform they check before deciding.",
       whyItMatters:
@@ -657,8 +657,8 @@ export function generateGrowthReportSections(
       id: "google_search_seo",
       title: "Google Search SEO",
       currentSignal: googleConfirmed
-        ? `Google Business Profile ${isLive ? "confirmed via live lookup" : "link provided"}. ${input.businessStatus ? "Business status: " + input.businessStatus + ". " : ""}${liveWebsiteFound ? "Website found from scan. " : ""}Keyword coverage, category accuracy, and content freshness need manual review.`.trim()
-        : "No Google Business Profile was confirmed. Restaurants without an active, optimized listing can be harder for nearby customers to discover when they search by name, cuisine, or location.",
+        ? `Google Business Profile ${isLive ? "confirmed via live lookup" : "link provided"}. ${input.businessStatus ? "Business status: " + input.businessStatus + ". " : ""}${liveWebsiteFound ? "Website found from scan. " : ""}Keyword coverage, category accuracy, and content freshness need manual verification.`.trim()
+        : "Google profile needs verification before setup decisions are made. Restaurants without an active, optimized listing can be harder for nearby customers to discover when they search by name, cuisine, or location.",
       whatItMeans:
         "Google search is usually the first place a nearby customer looks when deciding where to eat. If the restaurant does not appear clearly — or appears with incomplete information — those potential customer moments may be going to other nearby options.",
       whyItMatters:
@@ -672,7 +672,7 @@ export function generateGrowthReportSections(
       id: "google_maps_seo",
       title: "Google Maps / Local SEO",
       currentSignal: googleConfirmed
-        ? `Google Maps presence ${isLive ? "confirmed via live lookup" : "found"}. ${googleDetailStr ? googleDetailStr + " " : ""}${input.businessStatus ? "Business status: " + input.businessStatus + ". " : ""}Profile freshness, photo recency, and direction/call readiness need manual review.`.trim()
+        ? `Google Maps presence ${isLive ? "confirmed via live lookup" : "found"}. ${googleDetailStr ? googleDetailStr + " " : ""}${input.businessStatus ? "Business status: " + input.businessStatus + ". " : ""}Profile freshness, photo recency, and direction/call readiness need manual verification.`.trim()
         : "No Google Maps presence was confirmed from the information provided. Direction clicks, call buttons, and local discovery may be missing from the customer decision moment.",
       whatItMeans:
         "Google Maps is where many nearby customers make their final restaurant decision — they compare photos, check reviews, tap for directions, or call directly. An incomplete or inactive Maps profile means those moments may be going to nearby competitors.",
@@ -687,8 +687,8 @@ export function generateGrowthReportSections(
       id: "gbp_strength",
       title: "Google Business Profile Strength",
       currentSignal: googleConfirmed
-        ? `Business Profile ${isLive ? "confirmed via live lookup" : "link provided"}. ${googleDetailStr ? googleDetailStr + " " : ""}Photos, posts, hours, menu link, and category accuracy need manual review to assess current strength.`.trim()
-        : "No Google Business Profile was confirmed — photos, posts, hours, menu access, and categories cannot be assessed without a verified profile.",
+        ? `Business Profile ${isLive ? "confirmed via live lookup" : "link provided"}. ${googleDetailStr ? googleDetailStr + " " : ""}Photos, posts, hours, menu link, and category accuracy need manual verification to assess current strength.`.trim()
+        : "Google profile needs verification before setup decisions are made; photos, posts, hours, menu access, and categories should be checked before decisions are made.",
       whatItMeans:
         "A strong Google Business Profile is the single most visible online signal a local restaurant has. It is what customers see before they ever reach the website or social media.",
       whyItMatters:
@@ -702,7 +702,7 @@ export function generateGrowthReportSections(
       title: "Website + Menu / Order / Contact Path",
       currentSignal:
         webSignals.join(". ") +
-        ". The full customer action path and any friction points need manual review.",
+        ". The full customer action path and any friction points need manual verification.",
       whatItMeans:
         "When a customer is ready to act — check the menu, order, call, or reserve — they need to find that path quickly. Every extra tap or missing link is a moment where they might choose somewhere else instead.",
       whyItMatters:
@@ -715,7 +715,7 @@ export function generateGrowthReportSections(
       id: "social_standing",
       title: "Social Media Standing",
       currentSignal: socialAvailable
-        ? `${socialSignals.join(". ")}. Posting rhythm, consistency, and content quality need manual review.`
+        ? `${socialSignals.join(". ")}. Posting rhythm, consistency, and content quality need manual verification.`
         : "No social media channels were confirmed. Whether the restaurant has an active social presence for customer reminders is not yet known.",
       whatItMeans:
         "Social media keeps the restaurant top-of-mind between visits. When a customer is deciding where to eat for lunch, dinner, or the weekend, they often scroll social first — a consistent presence keeps the restaurant in the running.",
@@ -730,7 +730,7 @@ export function generateGrowthReportSections(
       title: "Content Consistency",
       currentSignal:
         hasSocial || googleConfirmed
-          ? "Some online presence found. Content consistency, posting rhythm, and cross-platform alignment need manual review to assess."
+          ? "Some online presence found. Content consistency, posting rhythm, and cross-platform alignment need manual verification to assess."
           : "Limited online presence confirmed. Whether the restaurant name, photos, hours, and messaging align across platforms is not yet known.",
       whatItMeans:
         "Customers often check a restaurant on Google, then Instagram, then maybe TikTok — all in the same minute. Different hours, different photos, or different information on each platform creates doubt and can affect the decision to visit.",
@@ -744,8 +744,8 @@ export function generateGrowthReportSections(
       id: "reviews_trust",
       title: "Reviews + Trust Signals",
       currentSignal: googleConfirmed
-        ? `Google profile found. ${googleDetailStr ? googleDetailStr + " " : ""}Review recency, owner response rate, and trust signal strength need manual review.`.trim()
-        : "No Google profile was confirmed — reviews and trust signals cannot be assessed at this time. This may be an area worth addressing.",
+        ? `Google profile found. ${googleDetailStr ? googleDetailStr + " " : ""}Review recency, owner response rate, and trust signal strength need manual verification.`.trim()
+        : "Google profile needs verification before review and trust-signal decisions are made. This may be an area worth addressing.",
       whatItMeans:
         "When a nearby customer is comparing two restaurants, reviews often decide it. Star rating, number of reviews, recency, and how the restaurant responds all factor into that comparison.",
       whyItMatters:
@@ -758,21 +758,21 @@ export function generateGrowthReportSections(
       id: "ads_readiness",
       title: "Ads Readiness",
       currentSignal:
-        "Ads usage was not publicly verified — manual review needed. Whether this restaurant is currently running Google or social ads cannot be confirmed from available signals.",
+        "Ads usage was not publicly verified — manual verification needed. Whether this restaurant is currently running Google or social ads cannot be confirmed from available signals.",
       whatItMeans:
         "Ads work best when the foundation is already in good shape. If a customer clicks an ad and then finds an incomplete Google profile, missing menu, or outdated content — the ad spend may not convert as well.",
       whyItMatters:
         "Paid ads can amplify an already solid online presence. But they send customers to whatever exists — Google profile, website, menu, content. If those can be strengthened first, ads spend more efficiently afterward.",
       veroxaRecommendation: hasAdsSignal
-        ? "An ads-related goal was noted. Veroxa would evaluate offer clarity, action path readiness, menu/order visibility, and Google/social foundation before recommending an ad strategy. Ads are most effective after the foundation is cleaned up — results vary by budget, offer, competition, and execution."
-        : "Veroxa recommends verifying the Google presence, content rhythm, and action path first. Once the foundation is strong, ads become more efficient and easier to measure. Veroxa can support ads strategy at that stage — results vary by budget, offer, competition, and execution.",
+        ? "An ads-related goal was noted. Ads should amplify a healthier foundation, not replace it, so Veroxa would evaluate Google, content rhythm, action path readiness, and menu/order visibility first. No ad result is guaranteed; performance depends on budget, offer, competition, and execution."
+        : "Ads should amplify a healthier foundation, not replace it. Google, content rhythm, and action paths should be cleaned up first. No ad result is guaranteed; performance depends on budget, offer, competition, and execution.",
       sourceLabel: "manual review needed",
     },
     {
       id: "walk_in_opportunity",
       title: "Daily Walk-In Opportunity",
       currentSignal:
-        "Walk-in opportunity is driven by the full chain of online consistency — not any single platform. How consistently this restaurant appears across search, Maps, and social needs manual review to assess.",
+        "Walk-in opportunity is driven by the full chain of online consistency — not any single platform. How consistently this restaurant appears across search, Maps, and social needs manual verification to assess.",
       whatItMeans:
         "Nearby customers choose restaurants based on memory, trust, convenience, and visibility. A restaurant that appears clearly on Google, posts consistent food-content reminders, and has an easy action path creates more customer decision moments each day.",
       whyItMatters:
