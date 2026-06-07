@@ -84,7 +84,7 @@ function normalizeDomain(input: string | undefined): string {
   if (!raw) return "";
   try {
     const withProtocol = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
-    return new URL(withProtocol).hostname.replace(/^www\./, "");
+    return normalizeHostname(new URL(withProtocol).hostname);
   } catch {
     return raw.replace(/^https?:\/\//, "").replace(/^www\./, "").split(/[/?#]/)[0];
   }
@@ -108,6 +108,88 @@ function candidateLinks(candidate: RestaurantSearchCandidate): string[] {
     candidate.grubhubUrl,
     candidate.directOrderingUrl,
   ].filter((link): link is string => Boolean(link));
+}
+
+
+interface NormalizedLinkProof {
+  raw: string;
+  domain: string;
+  url: string;
+  path: string;
+  genericPlatform: boolean;
+}
+
+const GENERIC_PLATFORM_DOMAINS = new Set([
+  "doordash.com",
+  "ubereats.com",
+  "grubhub.com",
+  "instagram.com",
+  "facebook.com",
+  "google.com",
+  "maps.google.com",
+]);
+
+function normalizeHostname(hostname: string): string {
+  return hostname.toLowerCase().replace(/^www\./, "");
+}
+
+function isUsableDomain(domain: string): boolean {
+  return /^[a-z0-9.-]+\.[a-z]{2,}$/i.test(domain) && !/\s/.test(domain);
+}
+
+function isGenericPlatformDomain(domain: string): boolean {
+  return GENERIC_PLATFORM_DOMAINS.has(domain) || Array.from(GENERIC_PLATFORM_DOMAINS).some((generic) => domain.endsWith(`.${generic}`));
+}
+
+function normalizeLinkProof(input: string | undefined): NormalizedLinkProof | null {
+  const raw = (input ?? "").trim();
+  if (!raw) return null;
+  try {
+    const withProtocol = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+    const parsed = new URL(withProtocol);
+    const domain = normalizeHostname(parsed.hostname);
+    if (!isUsableDomain(domain)) return null;
+    return {
+      raw,
+      domain,
+      url: `${domain}${parsed.pathname.replace(/\/$/, "")}${parsed.search}`.toLowerCase(),
+      path: parsed.pathname.toLowerCase(),
+      genericPlatform: isGenericPlatformDomain(domain),
+    };
+  } catch {
+    const domain = normalizeDomain(raw);
+    if (!isUsableDomain(domain)) return null;
+    return { raw, domain, url: domain, path: "", genericPlatform: isGenericPlatformDomain(domain) };
+  }
+}
+
+function uniqueLinkProofs(links: Array<string | undefined>): NormalizedLinkProof[] {
+  const proofs: NormalizedLinkProof[] = [];
+  const seen = new Set<string>();
+  for (const link of links) {
+    const proof = normalizeLinkProof(link);
+    if (!proof) continue;
+    const key = `${proof.domain}|${proof.url}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    proofs.push(proof);
+  }
+  return proofs;
+}
+
+function hasExactPlatformDomainProof(queryLinks: NormalizedLinkProof[], candidateLinksToCheck: NormalizedLinkProof[]): boolean {
+  return queryLinks.some((queryLink) => candidateLinksToCheck.some((candidateLink) => {
+    if (queryLink.url === candidateLink.url) return true;
+    if (queryLink.domain !== candidateLink.domain) return false;
+
+    // A non-generic owned restaurant domain is strong proof even when the query
+    // URL points to a deeper ordering path than the candidate fixture stores.
+    if (!queryLink.genericPlatform && !candidateLink.genericPlatform) return true;
+
+    // Generic marketplace/social domains are too broad by themselves. Only the
+    // exact profile/listing URL is strong enough to override a location conflict.
+    return false;
+  }));
 }
 
 function editDistanceWithinOne(a: string, b: string): boolean {
@@ -153,7 +235,7 @@ export function matchRestaurantCandidates(
   const queryAddress = normalizeRestaurantSearchText(query.address ?? query.restaurantName);
   const queryPhone = normalizePhone(query.phone ?? query.restaurantName);
   const queryDomain = normalizeDomain(query.websiteUrl ?? query.website ?? query.domain ?? query.restaurantName);
-  const queryPlatformDomains = [
+  const queryPlatformLinks = uniqueLinkProofs([
     query.googleMapsUrl,
     query.googleBusinessProfileUrl,
     query.instagramUrl,
@@ -162,7 +244,7 @@ export function matchRestaurantCandidates(
     query.uberEatsUrl,
     query.grubhubUrl,
     query.directOrderingUrl,
-  ].map(normalizeDomain).filter(Boolean);
+  ]);
   const queryCuisineTokens = tokens(query.cuisineType);
   const queryNameTokens = tokens(query.restaurantName);
 
@@ -236,9 +318,14 @@ export function matchRestaurantCandidates(
     const candidatePhone = normalizePhone(candidate.phone);
     if (queryPhone.length >= 10 && candidatePhone && queryPhone === candidatePhone) { score += 90; addReason(reasons, "phone matched"); }
 
-    const candidateDomains = candidateLinks(candidate).map(normalizeDomain).filter(Boolean);
+    const candidateLinkProofs = uniqueLinkProofs(candidateLinks(candidate));
+    const candidateDomains = candidateLinkProofs.map((link) => link.domain);
+    const hasExactPlatformLinkProof = hasExactPlatformDomainProof(queryPlatformLinks, candidateLinkProofs);
     if (queryDomain && candidateDomains.includes(queryDomain)) { score += 90; addReason(reasons, "domain matched"); }
-    if (queryPlatformDomains.some((domain) => candidateDomains.includes(domain))) { score += 45; addReason(reasons, "platform link matched"); }
+    if (hasExactPlatformLinkProof) {
+      score += 90;
+      addReason(reasons, "platform link matched");
+    }
 
     if (queryCuisineTokens.length > 0) {
       const cuisineHits = queryCuisineTokens.filter((qt) => tokens(candidate.cuisineType).some((ct) => tokenMatches(qt, ct))).length;
@@ -248,7 +335,7 @@ export function matchRestaurantCandidates(
     if (score < 25) continue;
 
     const hasStrongIdentityProof = reasons.includes("phone matched") || reasons.includes("domain matched") || reasons.includes("address matched") || reasons.includes("platform link matched");
-    const hasLocationConflictOverrideProof = reasons.includes("phone matched") || reasons.includes("domain matched") || reasons.includes("address matched");
+    const hasLocationConflictOverrideProof = reasons.includes("phone matched") || reasons.includes("domain matched") || reasons.includes("address matched") || hasExactPlatformLinkProof;
     const hasLocationConflict = cityMismatches || stateMismatches;
     const hasOnlyStateConfirmation = Boolean(queryState && !queryCity && stateMatches && !hasStrongIdentityProof);
     const hasFullLocationConfirmation = cityMatches && stateMatches;
