@@ -46,7 +46,6 @@ const STRONG_CUISINE_TERMS = [
   "middle eastern",
   "bakery",
   "dessert",
-  "catering",
   "grill",
   "kabob",
   "kebab",
@@ -56,7 +55,6 @@ const STRONG_CUISINE_TERMS = [
 
 const GOAL_KEYWORDS = [
   "lunch",
-  "catering",
   "dinner",
   "google",
   "reviews",
@@ -163,7 +161,7 @@ export function scoreAuditCategories(
   if (googleConfirmed) actionScore += 2;
   if (liveContactFound) actionScore += 1;
   if (!effectiveWebsite && !effectiveMenu && !googleConfirmed) actionScore -= 3;
-  if (goalLower.match(/order|reserv|call|inquir|catering/)) actionScore += 1;
+  if (goalLower.match(/order|reserv|call|inquir/)) actionScore += 1;
   actionScore = clamp(actionScore, 2, 14);
 
   // 6. Review & Trust Strength (10)
@@ -231,9 +229,9 @@ export function scoreAuditCategories(
       "Customer Reminder Rhythm",
       socialScore,
       "How consistently your restaurant stays top-of-mind with hungry customers across social platforms.",
-      "Veroxa improves posting consistency, Reels/TikToks, weekly specials, lunch/dinner reminders, and catering reminders.",
+      "Veroxa improves posting consistency, weekly food updates, lunch/dinner reminders, and repeatable content themes.",
       effectiveSocialCount === 0
-        ? "Preliminary signal: no social channels confirmed. Reminder-driven flow (lunch, dinner, weekend, catering) may be underused."
+        ? "Preliminary signal: no social channels confirmed. Reminder-driven flow (lunch, dinner, weekend cravings) may be underused."
         : `Based on the information provided, ${effectiveSocialCount} social channel${effectiveSocialCount === 1 ? "" : "s"} confirmed. Consistency and weekly themes are typically the bigger lever than channel count.`,
     ),
     make(
@@ -364,8 +362,7 @@ export function getTopWeakSpots(
 ): AuditWeakSpot[] {
   const input = report.input;
   const hasGoogle = has(input.googleListingUrl);
-  const hasWebsiteOrMenu =
-    has(input.websiteUrl) || has(input.menuOrderingUrl);
+  const hasWebsiteOrMenu = has(input.websiteUrl) || has(input.menuOrderingUrl);
   const socialCount = [
     has(input.instagramUrl),
     has(input.facebookUrl),
@@ -374,10 +371,12 @@ export function getTopWeakSpots(
 
   const ranked = [...report.categories]
     .map((c) => ({ c, pct: c.score / c.maxScore }))
-    .sort((a, b) => a.pct - b.pct)
-    .slice(0, 3);
+    .sort((a, b) => a.pct - b.pct);
 
-  function describe(categoryId: AuditCategoryId, fallback: AuditWeakSpot): AuditWeakSpot {
+  function describe(
+    categoryId: AuditCategoryId,
+    fallback: AuditWeakSpot,
+  ): AuditWeakSpot {
     if (
       (categoryId === "search_visibility_readiness" ||
         categoryId === "google_maps_conversion_readiness" ||
@@ -416,14 +415,33 @@ export function getTopWeakSpots(
     return fallback;
   }
 
-  return ranked.map(({ c }) =>
-    describe(c.id, {
+  const seen = new Set<string>();
+  const unique: AuditWeakSpot[] = [];
+
+  for (const { c } of ranked) {
+    const weakSpot = describe(c.id, {
       categoryId: c.id,
       title: c.label,
       whyItMatters: c.customerFlowImpact,
       howVeroxaHelps: c.howVeroxaHelps,
-    }),
-  );
+    });
+    const canonicalCategory =
+      c.id === "search_visibility_readiness" ||
+      c.id === "google_maps_conversion_readiness" ||
+      c.id === "review_trust_strength"
+        ? "google_visibility"
+        : c.id === "social_reminder_system" ||
+            c.id === "content_persuasion_quality"
+          ? "social_content_rhythm"
+          : c.id;
+
+    if (seen.has(canonicalCategory)) continue;
+    seen.add(canonicalCategory);
+    unique.push(weakSpot);
+    if (unique.length === 3) break;
+  }
+
+  return unique;
 }
 
 export function getTopOpportunities(
@@ -432,8 +450,7 @@ export function getTopOpportunities(
   const input = report.input;
   const goal = lower(input.currentGoal);
   const hasGoogle = has(input.googleListingUrl);
-  const hasWebsiteOrMenu =
-    has(input.websiteUrl) || has(input.menuOrderingUrl);
+  const hasWebsiteOrMenu = has(input.websiteUrl) || has(input.menuOrderingUrl);
   const socialCount = [
     has(input.instagramUrl),
     has(input.facebookUrl),
@@ -477,7 +494,7 @@ export function getTopOpportunities(
       whyItMatters:
         "Without social reminders, regulars and nearby customers may forget about the restaurant when they are hungry.",
       veroxaApproach:
-        "Veroxa would set up a weekly content plan with lunch / dinner / weekend / catering themes.",
+        "Veroxa would set up a weekly content plan with lunch, dinner, weekend, and craving-based themes.",
     });
   }
   if (out.length < 3 && strongCuisine) {
@@ -570,7 +587,10 @@ export function generateGrowthReportSections(
   const liveContactFound = input.contactPathFound === true;
   const liveMenuOrOrder = liveMenuFound || liveOrderFound;
   const liveActionPath =
-    liveWebsiteFound || liveMenuOrOrder || liveContactFound || liveReservationFound;
+    liveWebsiteFound ||
+    liveMenuOrOrder ||
+    liveContactFound ||
+    liveReservationFound;
   const discoveredSocialLinks = input.discoveredSocialLinks ?? [];
   const discoveredMenuLinks = input.discoveredMenuLinks ?? [];
   const hasLiveSocialSignals = discoveredSocialLinks.length > 0;
@@ -608,7 +628,7 @@ export function generateGrowthReportSections(
   if (liveReservationFound) webSignals.push("Reservation link: found");
   if (liveContactFound) webSignals.push("Contact path: found");
   if (hasOther && !liveReservationFound)
-    webSignals.push("Additional link (reservation/catering/other): provided");
+    webSignals.push("Additional link (reservation/delivery/other): provided");
 
   const hasAdsSignal = /(ads?|paid|campaign)/i.test(
     lower(input.currentGoal) + " " + lower(input.notes),
@@ -694,10 +714,9 @@ export function generateGrowthReportSections(
     {
       id: "social_standing",
       title: "Social Media Standing",
-      currentSignal:
-        socialAvailable
-          ? `${socialSignals.join(". ")}. Posting rhythm, consistency, and content quality need manual review.`
-          : "No social media channels were confirmed. Whether the restaurant has an active social presence for customer reminders is not yet known.",
+      currentSignal: socialAvailable
+        ? `${socialSignals.join(". ")}. Posting rhythm, consistency, and content quality need manual review.`
+        : "No social media channels were confirmed. Whether the restaurant has an active social presence for customer reminders is not yet known.",
       whatItMeans:
         "Social media keeps the restaurant top-of-mind between visits. When a customer is deciding where to eat for lunch, dinner, or the weekend, they often scroll social first — a consistent presence keeps the restaurant in the running.",
       whyItMatters:
