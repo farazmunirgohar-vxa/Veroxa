@@ -3,6 +3,7 @@ import { VEROXA_PLANS } from "@/data/pricing/veroxaPricing";
 import { demoSaasPlans, demoSaasProfiles, demoSaasRestaurants, demoAccountActivationSummaries } from "@/data/demo/demoSaasAccounts";
 import { getDemoActivityLogs } from "@/data/demo/demoActivityLogs";
 import { demoProfitValidationSnapshots } from "@/data/demo/demoProfitSnapshots";
+import { MOMO_HOUSE_RESTAURANT_ID, momoHousePilotPlan, momoHousePilotProfile, momoHousePilotRestaurant } from "./preLivePilotData";
 import { buildClientPortalPageState } from "./clientPortalState";
 import { buildTeamPortalRepositoryState } from "./teamPortalState";
 import type {
@@ -32,27 +33,27 @@ const DEMO_NOW = "2026-06-03T00:00:00.000Z";
 
 function emptyDashboardState(dataMode = "placeholder_review" as const): ClientPortalRepositoryState {
   return {
-    restaurant: null,
-    profile: null,
-    accountPlan: null,
+    restaurant: momoHousePilotRestaurant,
+    profile: momoHousePilotProfile,
+    accountPlan: momoHousePilotPlan,
     mediaAssets: [],
     requests: [],
     reports: [],
     dataMode,
     isLiveDataConnected: false,
-    emptyStateTitle: "Client Portal in review",
-    emptyStateBody: "Your account setup will appear here once your restaurant portal is active.",
+    emptyStateTitle: "Momo House San Antonio pilot in review",
+    emptyStateBody: "Internal unpaid cooperation pilot data is prefilled from audit/public information and needs owner/team verification.",
   };
 }
 
 const emptyDashboardSummary: ClientDashboardSummary = {
-  accountStatus: "Account setup in review",
-  planLabel: "Plan details will appear after setup",
-  onlinePresenceProgress: "Veroxa is preparing the restaurant workspace.",
+  accountStatus: "Momo House pilot onboarding review",
+  planLabel: "Internal unpaid cooperation pilot — not a public pricing change",
+  onlinePresenceProgress: "Audit-prefilled profile ready for owner/team verification.",
   mediaCount: 0,
   requestCount: 0,
   reportCount: 0,
-  nextClientAction: "No action is needed until Veroxa asks for input.",
+  nextClientAction: "Review prefilled details, confirm contacts, platform access, hours, menu/order links, catering details, and usable media.",
 };
 
 const emptyMediaSummary: ClientMediaSummary = {
@@ -77,7 +78,7 @@ export function createPlaceholderClientPortalRepository(): ClientPortalRepositor
       return emptyDashboardState();
     },
     async getClientPortalPageState() {
-      return buildClientPortalPageState({ dataMode: "placeholder_review", restaurant: null, profile: null, plan: null });
+      return buildClientPortalPageState({ dataMode: "placeholder_review", restaurant: momoHousePilotRestaurant, profile: momoHousePilotProfile, plan: momoHousePilotPlan });
     },
     async getClientDashboardSummary() {
       return emptyDashboardSummary;
@@ -242,7 +243,7 @@ function buildDemoPreparedActions(restaurantId?: RestaurantId): PreparedActionRe
 export function createPlaceholderTeamPortalRepository(): TeamPortalRepository {
   return {
     async getTeamPortalRepositoryState() { return buildTeamPortalRepositoryState({ dataMode: "placeholder_review", repositoryModeLabel: "placeholder repository" }); },
-    async getTeamRestaurantOverview() { return []; },
+    async getTeamRestaurantOverview() { return [{ restaurantId: MOMO_HOUSE_RESTAURANT_ID, restaurantName: "Momo House San Antonio", status: "onboarding", dataMode: "placeholder_review", repositoryMode: "placeholder repository", nextAction: "Team Faraz: verify audit prefill, owner gaps, platform access, media/content workflow, and first-month report readiness." }]; },
     async getPreparedActions() { return []; },
     async getApprovalDecisions() { return []; },
     async getManualExecutionEvents() { return []; },

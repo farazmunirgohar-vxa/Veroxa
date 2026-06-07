@@ -35,3 +35,15 @@ Historical docs remain useful as reference, but they must not override current s
 ## Deployment/auth truth
 
 Production/custom domains should set `VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=false`. Preview deployments may use fallback preview credentials only for review. `AUTH_MODE` remains `placeholder` until real-auth readiness is explicitly approved.
+
+
+## 2026-06-07 — Real pilot mode lock
+
+- Veroxa is moving from public demo/preview portal exposure into **real pilot pre-live/manual mode**.
+- Public demo/preview portals are no longer part of the active live app surface; `/demo`, `/guided-demo`, `/upload`, and `/demo/client/*` must remain disabled from active routing.
+- Active app portal experiences are only **Client Portal** and **Team/Internal Admin Portal**. Owner, Operator, Super Admin, generic Admin, and Execution portals remain parked/blocked.
+- First real pilot client: **Momo House San Antonio**. Momo House is an internal unpaid cooperation pilot account for initial Veroxa improvement work, not a public pricing change.
+- Internal operations identity: **Team Faraz**.
+- Locked audit-to-onboarding workflow: public/initial audit → prefilled onboarding profile → owner verification → credential/platform connection → gap completion by owner + Veroxa team → final onboarding approval.
+- Onboarding must show which fields were prefilled by Veroxa, need owner verification, are missing, were corrected by owner, or were completed by Veroxa.
+- Safety remains pre-live/manual only: no production auth, database writes, storage uploads, live AI, connectors, payments, webhooks, cron, or automated customer-visible execution; `AUTH_MODE` remains `placeholder`.

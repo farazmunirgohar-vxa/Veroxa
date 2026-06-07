@@ -8,13 +8,11 @@ const sourceRoots = ["artifacts/veroxa/src"];
 const activeFiles = [
   "artifacts/veroxa/src/App.tsx",
   "artifacts/veroxa/src/pages/login.tsx",
-  "artifacts/veroxa/src/pages/demo-hub.tsx",
   "artifacts/veroxa/src/components/PortalLayout.tsx",
   "artifacts/veroxa/src/lib/auth/devCredentials.ts",
   "artifacts/veroxa/src/lib/auth/authContract.ts",
   "artifacts/veroxa/src/lib/auth/placeholderSession.ts",
   "artifacts/veroxa/src/components/auth/InternalDemoGuard.tsx",
-  "artifacts/veroxa/src/lib/demoRoutes.ts",
   "artifacts/veroxa/src/lib/clientPortalNav.ts",
   "artifacts/veroxa/src/lib/teamPortalNav.ts",
 ];
@@ -106,29 +104,18 @@ for (const file of activeFiles) {
 
 const portalLayout = readFileSync(join(root, "artifacts/veroxa/src/components/PortalLayout.tsx"), "utf8");
 for (const required of [
-  "Client Demo — sample data only.",
   "Client Portal in review — Veroxa is preparing the restaurant workspace.",
   "Team Portal in review — manual/pre-live workspace.",
 ]) {
   if (!portalLayout.includes(required)) failures.push(`PortalLayout is missing banner copy: ${required}`);
 }
-if (!/getPortalReviewContext\(location\)\.isPublicDemo/.test(portalLayout)) {
-  failures.push("PortalLayout must gate 'Back to Client Demo' behind demo-route context.");
-}
 
 const app = readFileSync(join(root, "artifacts/veroxa/src/App.tsx"), "utf8");
-if (!app.includes('path="/demo/client/dashboard"')) failures.push("App.tsx must expose /demo/client/dashboard.");
-for (const publicDemoRoute of [
-  "/demo/client/media",
-  "/demo/client/updates",
-  "/demo/client/requests",
-  "/demo/client/reports",
-]) {
-  if (!app.includes(`path="${publicDemoRoute}"`)) {
-    failures.push(`App.tsx must expose ${publicDemoRoute} as a public client demo route.`);
+for (const blockedDemoRoute of ["/demo", "/guided-demo", "/upload", "/demo/client/dashboard", "/demo/client/media", "/demo/client/updates", "/demo/client/requests", "/demo/client/reports", "/demo/client/onboarding", "/demo/team"]) {
+  if (app.includes(`path="${blockedDemoRoute}`) || app.includes(`path='${blockedDemoRoute}`)) {
+    failures.push(`App.tsx must not expose retired public demo/preview route ${blockedDemoRoute}.`);
   }
 }
-if (/path=["']\/demo\/team/.test(app)) failures.push("App.tsx must not expose /demo/team/*.");
 
 function routeBlock(route: string): string {
   const escaped = route.replaceAll("/", "\\/");
@@ -159,14 +146,7 @@ for (const route of [
   }
 }
 
-// Client Demo nav must stay inside /demo/client/* (no crossover to real /client/*).
-if (!/location\.startsWith\(["']\/demo\/client["']\)[\s\S]{0,200}\/demo\/client\//.test(portalLayout)) {
-  failures.push("PortalLayout must keep Client Demo nav inside /demo/client/* (no crossover to login-gated /client/*).");
-}
-
-const demoHub = readFileSync(join(root, "artifacts/veroxa/src/pages/demo-hub.tsx"), "utf8");
-if (!demoHub.includes("/demo/client/dashboard")) failures.push("Demo hub must link to /demo/client/dashboard.");
-if (/Team Demo|Demo Team|\/demo\/team/i.test(demoHub)) failures.push("Demo hub must not promote Team Demo.");
+// Public demo/preview portal routes are retired; no demo hub or demo nav is required in real-pilot mode.
 
 const loginAndAuth = [
   "artifacts/veroxa/src/pages/login.tsx",
@@ -240,8 +220,8 @@ const realPortalBoundarySource = readFileSync(
   join(root, "artifacts/veroxa/src/components/auth/RealPortalDataBoundary.tsx"),
   "utf8",
 );
-if (!/isPublicDemoRoute[\s\S]*allowDemoFixtures:\s*true/.test(realPortalBoundarySource)) {
-  failures.push("RealPortalDataBoundary must allow demo fixtures only for public demo route context.");
+if (/isPublicDemoRoute[\s\S]*allowDemoFixtures:\s*true/.test(realPortalBoundarySource) && app.includes("/demo/client/")) {
+  failures.push("Public demo fixture mode must not be active now that demo portal routes are retired.");
 }
 if (!/isLiveDataConnected:\s*false,\s*\n\s*allowDemoFixtures:\s*false/.test(realPortalBoundarySource)) {
   failures.push("RealPortalDataBoundary must default real /client/* and /team/* routes to no live data and no demo fixtures.");
@@ -283,4 +263,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log("Portal separation check passed: public demo, client portal, and team portal remain separated.");
+console.log("Portal separation check passed: real-pilot public surface, client portal, and Team Faraz portal remain separated; demo/preview portals are retired.");

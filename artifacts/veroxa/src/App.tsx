@@ -21,10 +21,6 @@ const PricingPage = lazy(() => import("@/pages/pricing"));
 const LoginPage = lazy(() => import("@/pages/login"));
 const FreeAudit = lazy(() => import("@/pages/free-audit"));
 
-// Client Demo sample (sample data, no login)
-const DemoHub = lazy(() => import("@/pages/demo-hub"));
-const GuidedDemo = lazy(() => import("@/pages/guided-demo"));
-const RestaurantUploadAccess = lazy(() => import("@/pages/restaurant-upload-access"));
 
 // Client Portal (real Veroxa OS review — /client/*)
 const ClientDashboard = lazy(() => import("@/pages/client-dashboard"));
@@ -60,19 +56,6 @@ function Router() {
         <Route path="/pricing" component={PricingPage} />
         <Route path="/login" component={LoginPage} />
         <Route path="/free-audit" component={FreeAudit} />
-
-        {/* ── Client Demo sample — sample data only, no login ─────── */}
-        <Route path="/demo" component={DemoHub} />
-        <Route path="/guided-demo" component={GuidedDemo} />
-        {/* Restaurant Upload Key entry — public, demo-only. No login. */}
-        <Route path="/upload" component={RestaurantUploadAccess} />
-        {/* Public Client Demo surface — sample data only, no login. */}
-        <Route path="/demo/client/dashboard" component={ClientDashboard} />
-        <Route path="/demo/client/media" component={ClientMedia} />
-        <Route path="/demo/client/updates" component={ClientUpdates} />
-        <Route path="/demo/client/requests" component={ClientRequests} />
-        <Route path="/demo/client/reports" component={ClientReports} />
-        <Route path="/demo/client/onboarding" component={ClientOnboarding} />
 
         {/* ── Client Portal — login required in placeholder and future real auth ── */}
         <Route path="/client/dashboard">

@@ -13,15 +13,8 @@ const documentedRoutesText = `${routeInventory}\n${routeSurfaceMap}`;
 
 const failures: string[] = [];
 
-const demoAliasPages = new Set([
-  "client-dashboard.tsx",
-  "client-media.tsx",
-  "client-requests.tsx",
-  "client-updates.tsx",
-  "client-reports.tsx",
-  "client-onboarding.tsx",
-]);
-const publicDemoOnlyPages = new Set(["demo-hub.tsx", "guided-demo.tsx", "restaurant-upload-access.tsx"]);
+const demoAliasPages = new Set<string>();
+const publicDemoOnlyPages = new Set<string>();
 const futurePlanned = new Set([
   "client-account.tsx",
   "client-activity-log.tsx",
@@ -121,8 +114,8 @@ for (const route of routePaths) {
   if (/^\/team\//.test(route) && !/guarded Team\/manual routes[\s\S]*`\/team\//i.test(documentedRoutesText)) {
     failures.push(`Team route ${route} must be documented as a guarded Team/manual route.`);
   }
-  if ((/^\/demo(?:\/|$)/.test(route) || route === "/guided-demo" || route === "/upload") && !/demo\/QA-only routes[\s\S]*`\/demo|demo\/QA-only routes[\s\S]*`\/guided-demo|demo\/QA-only routes[\s\S]*`\/upload/i.test(documentedRoutesText)) {
-    failures.push(`Demo/QA route ${route} must be documented as demo/QA-only.`);
+  if (/^\/demo(?:\/|$)/.test(route) || route === "/guided-demo" || route === "/upload") {
+    failures.push(`Public demo/preview portal route ${route} must not be active in real-pilot mode.`);
   }
 }
 
@@ -135,35 +128,16 @@ for (const blockedRoute of ["/owner", "/operator", "/super-admin", "/admin", "/e
 if (!routeInventory.includes("QUARANTINED_AND_FUTURE_FILES_REVIEW.md") || !routeSurfaceMap.includes("QUARANTINED_AND_FUTURE_FILES_REVIEW.md")) {
   failures.push("Route docs must link QUARANTINED_AND_FUTURE_FILES_REVIEW.md.");
 }
-if (!routeInventory.includes("active_routed + demo_alias")) {
-  failures.push("Route inventory must include the dual-use classification `active_routed + demo_alias`.");
+if (routeInventory.includes("active_routed + demo_alias")) {
+  failures.push("Route inventory must not classify active client pages as `active_routed + demo_alias` in real-pilot mode.");
 }
 if (!/owner approval[\s\S]*route inventory update[\s\S]*route surface map update[\s\S]*guardrail update[\s\S]*RR/i.test(routeInventory)) {
   failures.push("Route inventory must state parked pages require owner approval, route inventory update, route surface map update, guardrail update, and RR before routing.");
 }
 
-const expectedDualUse = [
-  ["client-dashboard.tsx", "/client/dashboard", "/demo/client/dashboard"],
-  ["client-onboarding.tsx", "/client/onboarding", "/demo/client/onboarding"],
-  ["client-media.tsx", "/client/media", "/demo/client/media"],
-  ["client-updates.tsx", "/client/updates", "/demo/client/updates"],
-  ["client-requests.tsx", "/client/requests", "/demo/client/requests"],
-  ["client-reports.tsx", "/client/reports", "/demo/client/reports"],
-] as const;
-
-const demoAliasFilesFromApp = new Set(demoAliasRoutes.map((route) => route.file).filter((file): file is string => Boolean(file)));
-for (const [file, guardedRoute, demoRoute] of expectedDualUse) {
-  if (!routePaths.includes(guardedRoute) || !routePaths.includes(demoRoute)) {
-    failures.push(`${file} dual-use check expected both ${guardedRoute} and ${demoRoute} to be routed if the page is classified as a demo alias.`);
-    continue;
-  }
-  if (!demoAliasFilesFromApp.has(file)) {
-    failures.push(`${file} is expected to be mounted as a /demo/client/* alias in App.tsx.`);
-  }
-  const row = routeInventory.split("\n").find((line) => line.includes(`\`${file}\``)) ?? "";
-  if (!row.includes("active_routed + demo_alias") || !row.includes(guardedRoute) || !row.includes(demoRoute)) {
-    failures.push(`${file} must be documented as guarded client route ${guardedRoute} and demo alias ${demoRoute}.`);
-  }
+const blockedDemoRoutes = ["/demo", "/guided-demo", "/upload", "/demo/client/dashboard", "/demo/client/onboarding", "/demo/client/media", "/demo/client/updates", "/demo/client/requests", "/demo/client/reports"];
+for (const route of blockedDemoRoutes) {
+  if (routePaths.includes(route)) failures.push(`${route} must remain disabled from active routing.`);
 }
 
 for (const file of [...futurePlanned, ...internalDebug, ...legacyQuarantined]) {
@@ -197,4 +171,4 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-console.log("Route inventory guardrail passed: active routes/nav remain contained, dual-use aliases are documented, and parked pages are inventoried only.");
+console.log("Route inventory guardrail passed: active routes/nav remain real-pilot only, demo aliases are blocked, and parked pages are inventoried only.");

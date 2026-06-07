@@ -27,6 +27,7 @@ import {
   getOnboardingStatusLabel,
   getPlatformProfileChecklist,
   getProofInputChecklist,
+  getMomoHouseAuditPrefillSections,
   getRestaurantOnboardingSeedProfiles,
   getTeamNextOnboardingAction,
   getTeamOnboardingPriority,
@@ -59,6 +60,7 @@ function DraftPanel({ title, body }: { title: string; body: string }) {
 
 export default function TeamOnboarding() {
   const profiles = useMemo(() => getRestaurantOnboardingSeedProfiles(), []);
+  const prefillSections = getMomoHouseAuditPrefillSections();
   const [selectedId, setSelectedId] = useState(profiles[0]?.clientId ?? "");
   const selected = profiles.find((profile) => profile.clientId === selectedId) ?? profiles[0];
   const queue = buildTeamOnboardingQueue(profiles);
@@ -70,7 +72,7 @@ export default function TeamOnboarding() {
     <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
       <RealPortalReviewNotice />
       <PageHeader
-        title="Restaurant Onboarding Queue"
+        title="Team Faraz — Momo House Onboarding"
         description="Manual setup queue for moving restaurants into first-week Veroxa service."
         actions={<Link href="/team/dashboard"><Button variant="outline">Team dashboard</Button></Link>}
         testId="header-team-onboarding"
@@ -128,6 +130,33 @@ export default function TeamOnboarding() {
                 <div><p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Warnings</p>{(selected.warnings.length ? selected.warnings : ["No warnings recorded"]).map((item) => <p key={item} className="mt-2 rounded-lg border border-border/70 p-2 text-xs text-muted-foreground">{item}</p>)}</div>
                 <div><p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Ready signals</p>{selected.readySignals.map((item) => <p key={item} className="mt-2 rounded-lg border border-border/70 p-2 text-xs text-muted-foreground">{item}</p>)}</div>
               </div>
+            </CardContent>
+          </Card>
+
+
+          <Card data-testid="team-audit-prefill-review">
+            <CardHeader><CardTitle className="text-base">Audit-to-onboarding prefill review</CardTitle></CardHeader>
+            <CardContent className="grid gap-3 md:grid-cols-2">
+              {prefillSections.map((section) => (
+                <div key={section.id} className="rounded-lg border border-border/70 p-3">
+                  <p className="text-sm font-medium text-foreground">{section.title}</p>
+                  <div className="mt-2 space-y-1 text-xs text-muted-foreground">
+                    <p>Prefilled: {section.fields.filter((field) => field.status === "prefilled").length}</p>
+                    <p>Needs owner verification: {section.fields.filter((field) => field.status === "needs_owner_verification").length}</p>
+                    <p>Missing: {section.fields.filter((field) => field.status === "missing").length}</p>
+                    <p>Corrected by owner / completed by Veroxa / confirmed: {section.fields.filter((field) => ["corrected_by_owner", "completed_by_veroxa", "confirmed"].includes(field.status)).length}</p>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card data-testid="team-ai-automation-review-gated-stubs">
+            <CardHeader><CardTitle className="text-base">Review-gated AI/automation readiness — deterministic stubs only</CardTitle></CardHeader>
+            <CardContent className="grid gap-2 md:grid-cols-2 text-sm text-muted-foreground">
+              {["Restaurant Intelligence", "Media Intelligence", "Platform Strategy", "Asset Generation", "AI Asset Review", "Repair Loop", "Drafts", "Human Approval", "Approved Media", "Content Health", "Scheduling", "Publishing", "Performance Intelligence", "Reach Campaign Intelligence", "Reports", "Media Review Agent", "Content Strategist Agent", "Caption Agent", "Brand Voice Agent", "Scheduling Agent", "Publishing Queue Agent", "Reporting Agent", "Alert/Risk Agent"].map((item) => (
+                <div key={item} className="rounded-lg border border-border/70 p-2">{item} — pre-live review placeholder; no live AI, connector, publishing, or background job.</div>
+              ))}
             </CardContent>
           </Card>
 

@@ -323,7 +323,7 @@ export default function TeamDashboard() {
   const StartHereIcon = startHereAction.icon;
 
   return (
-    <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
+    <PortalLayout items={teamPortalNavItems} portalName="Team Faraz">
       <TeamSaasStatePanel compact={false} />
       <RealPortalReviewNotice />
 
@@ -333,6 +333,14 @@ export default function TeamDashboard() {
         testId="header-team-dashboard"
       />
 
+
+      <Card className="mb-4 border-primary/20 bg-primary/5" data-testid="team-faraz-momo-pilot-summary">
+        <CardHeader className="pb-2"><CardTitle className="text-sm">Team Faraz — Momo House pilot operations</CardTitle></CardHeader>
+        <CardContent className="grid gap-2 text-sm text-muted-foreground md:grid-cols-2">
+          <p><span className="font-medium text-foreground">Client:</span> Momo House San Antonio — internal unpaid cooperation pilot, not a public pricing change.</p>
+          <p><span className="font-medium text-foreground">Focus:</span> audit review, audit-to-onboarding prefill, owner verification gaps, platform/credential checks, content rhythm, queues, first-week execution, and first-month report readiness.</p>
+        </CardContent>
+      </Card>
 
       <div className="mb-4 grid gap-4 lg:grid-cols-3">
         <Card className="border-amber-500/20 bg-amber-500/5" data-testid="card-dashboard-package-boundary">
@@ -391,14 +399,14 @@ export default function TeamDashboard() {
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
           <div className="grid grid-cols-2 gap-3 text-center text-xs md:grid-cols-5">
-            <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold tabular-nums">{firstClientOpsSummary.total}</p><p className="text-muted-foreground">Benchmarks</p></div>
+            <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold tabular-nums">{firstClientOpsSummary.total}</p><p className="text-muted-foreground">Pilot readiness</p></div>
             <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold tabular-nums">{firstClientOpsSummary.healthy}</p><p className="text-muted-foreground">Healthy</p></div>
             <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold tabular-nums">{firstClientOpsSummary.needingMedia}</p><p className="text-muted-foreground">Need media</p></div>
             <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold tabular-nums">{firstClientOpsSummary.needingConfirmation}</p><p className="text-muted-foreground">Need confirmation</p></div>
             <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold tabular-nums">{firstClientOpsSummary.readyForManualExecution}</p><p className="text-muted-foreground">Ready manual</p></div>
           </div>
           <div className="space-y-2 text-sm text-muted-foreground">
-            <p>{firstClientOpsSummary.atRiskOrBlocked} benchmark snapshots are at risk, blocked, paused, or need review.</p>
+            <p>{firstClientOpsSummary.atRiskOrBlocked} pilot readiness snapshots are at risk, blocked, paused, or need review.</p>
             <Link href="/team/first-client-ops" className="inline-flex items-center gap-2 text-primary hover:underline">
               Open First-Client Ops <ArrowRight className="h-3 w-3" />
             </Link>

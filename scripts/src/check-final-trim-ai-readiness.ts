@@ -67,8 +67,11 @@ for (const file of publicClientFiles) {
   }
 }
 
-for (const marker of ["/demo", "/guided-demo", "/upload", "/demo/client/dashboard", "/services", "/pricing", "/client/onboarding", "/team/manual-execution"]) {
+for (const marker of ["/services", "/pricing", "/client/onboarding", "/team/manual-execution"]) {
   if (!app.includes(`path=\"${marker}\"`)) failures.push(`App route inventory missing expected route marker ${marker}`);
+}
+for (const retired of ["/demo", "/guided-demo", "/upload", "/demo/client/dashboard"]) {
+  if (app.includes(`path=\"${retired}\"`)) failures.push(`Retired demo/preview route marker must stay disabled: ${retired}`);
 }
 
 for (const marker of [

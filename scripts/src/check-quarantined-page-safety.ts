@@ -61,26 +61,15 @@ if (!quarantineReview.includes("Delete now: none confirmed")) {
   failures.push('QUARANTINED_AND_FUTURE_FILES_REVIEW.md must include the marker "Delete now: none confirmed".');
 }
 
-if (!routeInventory.includes("active_routed + demo_alias")) {
-  failures.push("ROUTE_PAGE_INVENTORY.md must include the dual-use classification `active_routed + demo_alias`.");
+if (routeInventory.includes("active_routed + demo_alias")) {
+  failures.push("ROUTE_PAGE_INVENTORY.md must not require demo aliases in real-pilot mode.");
 }
 
-const requiredDualUseRows = [
-  ["client-dashboard.tsx", "/client/dashboard", "/demo/client/dashboard"],
-  ["client-onboarding.tsx", "/client/onboarding", "/demo/client/onboarding"],
-  ["client-media.tsx", "/client/media", "/demo/client/media"],
-  ["client-updates.tsx", "/client/updates", "/demo/client/updates"],
-  ["client-requests.tsx", "/client/requests", "/demo/client/requests"],
-  ["client-reports.tsx", "/client/reports", "/demo/client/reports"],
-] as const;
-
-for (const [file, guardedRoute, demoRoute] of requiredDualUseRows) {
-  const row = routeInventory.split("\n").find((line) => line.includes(`\`${file}\``)) ?? "";
-  if (!row.includes("active_routed + demo_alias") || !row.includes(guardedRoute) || !row.includes(demoRoute)) {
-    failures.push(`${file} must be documented as active_routed + demo_alias with guarded route ${guardedRoute} and demo alias ${demoRoute}.`);
+for (const retiredDemoRoute of ["/demo", "/guided-demo", "/upload", "/demo/client/dashboard", "/demo/client/onboarding", "/demo/client/media", "/demo/client/updates", "/demo/client/requests", "/demo/client/reports"]) {
+  if (routePaths.includes(retiredDemoRoute)) {
+    failures.push(`${retiredDemoRoute} is retired and must not exist in App.tsx.`);
   }
 }
-
 
 const ownerApprovalRule = /owner approval[\s\S]*route inventory update[\s\S]*route surface map update[\s\S]*guardrail update[\s\S]*RR/i;
 if (!ownerApprovalRule.test(routeInventory)) {
@@ -96,4 +85,4 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-console.log("Quarantined page safety guardrail passed: parked/future/debug/legacy pages remain unrouted and documented.");
+console.log("Quarantined page safety guardrail passed: parked/future/debug/legacy pages remain unrouted, and retired demo/preview routes stay disabled.");

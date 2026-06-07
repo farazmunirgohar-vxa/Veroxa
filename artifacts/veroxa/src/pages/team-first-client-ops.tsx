@@ -92,7 +92,7 @@ export default function TeamFirstClientOps() {
   const onboardingCompletion = Math.round((selected.onboardingStatus.completedItems.length / Math.max(1, selected.onboardingStatus.completedItems.length + selected.onboardingStatus.missingItems.length)) * 100);
 
   return (
-    <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
+    <PortalLayout items={teamPortalNavItems} portalName="Team Faraz">
       <TeamSaasStatePanel compact={true} />
       <RealPortalReviewNotice />
       <PageHeader title="First-Client Operating Suite" description="Pre-live operating view for running the first 1–5 restaurant clients manually." testId="header-first-client-ops" />
@@ -128,7 +128,7 @@ export default function TeamFirstClientOps() {
               const columnSnapshots = snapshots.filter((snapshot) => column.stages.includes(snapshot.lifecycleStage));
               return <div key={column.title} className="rounded-xl border border-border bg-background/30 p-3">
                 <div className="mb-3 flex items-center justify-between gap-2"><p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{column.title}</p><StatusBadge tone="neutral">{columnSnapshots.length}</StatusBadge></div>
-                <div className="space-y-2">{columnSnapshots.length > 0 ? columnSnapshots.map((snapshot) => <SnapshotPill key={snapshot.clientId} snapshot={snapshot} selected={snapshot.clientId === selected.clientId} onClick={() => setSelectedId(snapshot.clientId)} />) : <p className="text-xs text-muted-foreground">No benchmark in this lane.</p>}</div>
+                <div className="space-y-2">{columnSnapshots.length > 0 ? columnSnapshots.map((snapshot) => <SnapshotPill key={snapshot.clientId} snapshot={snapshot} selected={snapshot.clientId === selected.clientId} onClick={() => setSelectedId(snapshot.clientId)} />) : <p className="text-xs text-muted-foreground">No pilot readiness in this lane.</p>}</div>
               </div>;
             })}
           </CardContent>

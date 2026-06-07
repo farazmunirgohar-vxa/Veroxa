@@ -16,7 +16,7 @@ import type { StatusBadgeTone } from "@/components/common";
 import { teamPortalNavItems } from "@/lib/teamPortalNav";
 import { getOnboardingQueueSummary, getRestaurantOnboardingSeedProfiles } from "@/domain/restaurantOnboarding";
 import {
-  firstClientBenchmarkScenarios,
+  firstClientBenchmarkScenarios as firstClientReadinessScenarios,
   getBlockingChecks,
   getFirstClientLaunchGate,
   getFirstClientReadinessChecks,
@@ -125,11 +125,11 @@ export default function TeamFirstClientReadiness() {
   };
 
   return (
-    <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
+    <PortalLayout items={teamPortalNavItems} portalName="Team Faraz">
       <TeamSaasStatePanel compact={false} />
       <PageHeader
         title="First-client readiness"
-        description="A benchmark review surface for the first 1–5 restaurant clients. It does not mean production auth, storage uploads, or live account data are fully connected."
+        description="A pilot readiness review surface for the first 1–5 restaurant clients. It does not mean production auth, storage uploads, or live account data are fully connected."
         testId="header-first-client-readiness"
       />
 
@@ -137,7 +137,7 @@ export default function TeamFirstClientReadiness() {
         <CardHeader className="pb-2"><CardTitle className="text-sm">Restaurant Onboarding readiness</CardTitle></CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
           <div className="grid grid-cols-3 gap-3 text-center text-xs md:grid-cols-6">
-            <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold">{onboardingSummary.total}</p><p className="text-muted-foreground">Demo walkthrough</p></div>
+            <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold">{onboardingSummary.total}</p><p className="text-muted-foreground">Real pilot workflow</p></div>
             <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold">{onboardingSummary.needsMedia}</p><p className="text-muted-foreground">Media gaps</p></div>
             <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold">{onboardingSummary.needsPlatformLinks}</p><p className="text-muted-foreground">Link gaps</p></div>
             <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold">{onboardingSummary.needsConfirmation}</p><p className="text-muted-foreground">Feedback ready</p></div>
@@ -188,7 +188,7 @@ export default function TeamFirstClientReadiness() {
                   {summary.completionPercentage}%
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {summary.passingChecks} of {summary.totalChecks} benchmark
+                  {summary.passingChecks} of {summary.totalChecks} pilot readiness
                   checks OK
                 </p>
               </div>
@@ -215,7 +215,7 @@ export default function TeamFirstClientReadiness() {
                   {summary.passingChecks}
                 </p>
                 <p className="text-[11px] text-muted-foreground">
-                  Benchmark OK
+                  Pilot readiness OK
                 </p>
               </div>
             </div>
@@ -238,7 +238,7 @@ export default function TeamFirstClientReadiness() {
           <CardContent className="space-y-3">
             <StatusBadge tone={launchGate.isReady ? "success" : "danger"}>
               {launchGate.isReady
-                ? "Benchmark ready for Faraz review"
+                ? "Pilot readiness ready for Faraz review"
                 : "Needs setup"}
             </StatusBadge>
             <p className="text-sm text-muted-foreground">
@@ -246,11 +246,11 @@ export default function TeamFirstClientReadiness() {
             </p>
             <div className="grid gap-2 text-xs text-muted-foreground">
               <p>
-                Benchmark gate checks: {launchGate.requiredCheckKeys.length}.
+                Pilot readiness gate checks: {launchGate.requiredCheckKeys.length}.
                 Current blockers: {launchGate.blockers.length}.
               </p>
               <p>
-                Ready for demo walkthrough:{" "}
+                Ready for real pilot workflow:{" "}
                 {launchGate.readyForDemoWalkthrough ? "Yes" : "No"}
               </p>
               <p>
@@ -394,7 +394,7 @@ export default function TeamFirstClientReadiness() {
                   </StatusBadge>
                 </div>
                 <p className="mt-2 text-xs text-muted-foreground">
-                  {area.passingChecks}/{area.totalChecks} benchmark OK ·{" "}
+                  {area.passingChecks}/{area.totalChecks} pilot readiness OK ·{" "}
                   {area.blockingChecks} blocking · {area.warningChecks} warning
                 </p>
               </div>
@@ -407,12 +407,12 @@ export default function TeamFirstClientReadiness() {
         <CardHeader className="pb-2">
           <CardTitle className="text-sm flex items-center gap-2">
             <Handshake className="w-4 h-4 text-primary" />
-            First 1–5 benchmark scenarios
+            First 1–5 pilot readiness scenarios
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 lg:grid-cols-2">
-            {firstClientBenchmarkScenarios.map((scenario) => (
+            {firstClientReadinessScenarios.map((scenario) => (
               <div
                 key={scenario.key}
                 className="rounded-lg border border-border bg-muted/20 p-4 space-y-3"

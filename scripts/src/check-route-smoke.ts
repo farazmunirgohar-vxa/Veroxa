@@ -10,13 +10,6 @@ const requiredRoutes = [
   "/services",
   "/pricing",
   "/free-audit",
-  "/demo",
-  "/demo/client/dashboard",
-  "/demo/client/media",
-  "/demo/client/updates",
-  "/demo/client/requests",
-  "/demo/client/reports",
-  "/demo/client/onboarding",
   "/login",
   "/client/dashboard",
   "/client/media",
@@ -37,6 +30,8 @@ const requiredRoutes = [
   "/team/first-client-ops",
   "/team/manual-execution",
 ];
+
+const clientRoutes = ["dashboard", "onboarding", "media", "updates", "requests", "reports"];
 
 const teamRoutes = [
   "dashboard",
@@ -80,6 +75,14 @@ for (const file of activePageFiles) {
     }
   }
 }
+
+const blockedPublicDemoRoutes = ["/demo", "/guided-demo", "/upload", ...clientRoutes.map((route) => `/demo/client/${route}`)];
+for (const route of blockedPublicDemoRoutes) {
+  if (registeredRoutes.has(route)) {
+    failures.push(`Public demo/preview portal route must stay disabled in real-pilot mode: ${route}`);
+  }
+}
+
 for (const route of requiredRoutes) {
   const pattern = new RegExp(
     `<Route\\s+path=["']${route.replaceAll("/", "\\/")}["']`,
@@ -105,7 +108,6 @@ for (const route of teamRoutes) {
   }
 }
 
-const clientRoutes = ["dashboard", "onboarding", "media", "updates", "requests", "reports"];
 for (const route of clientRoutes) {
   const block =
     app.match(
@@ -121,27 +123,6 @@ for (const route of clientRoutes) {
   }
 }
 
-for (const route of clientRoutes) {
-  const demoBlock =
-    app.match(
-      new RegExp(
-        String.raw`<Route path="\/demo\/client\/${route}"[\s\S]*?\/>|<Route path="\/demo\/client\/${route}">[\s\S]*?<\/Route>`,
-      ),
-    )?.[0] ?? "";
-  if (!demoBlock) {
-    failures.push(
-      `/demo/client/${route} must remain present as a public demo route.`,
-    );
-  }
-  if (
-    demoBlock.includes("ClientPortalGuard") ||
-    demoBlock.includes("InternalDemoGuard")
-  ) {
-    failures.push(
-      `/demo/client/${route} must remain public and not be wrapped by login guards.`,
-    );
-  }
-}
 
 for (const file of [
   "client-dashboard.tsx",
@@ -180,5 +161,5 @@ if (failures.length > 0) {
 }
 
 console.log(
-  "Route smoke guardrail passed: public, client, demo, and guarded team routes are present.",
+  "Route smoke guardrail passed: real-pilot public, guarded client, and guarded team routes are present; demo/preview portal routes are blocked.",
 );

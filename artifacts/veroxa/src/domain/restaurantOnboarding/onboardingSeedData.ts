@@ -18,6 +18,50 @@ const baseTruth = {
 };
 
 export const restaurantOnboardingSeedProfiles: RestaurantOnboardingProfile[] = [
+
+  {
+    clientId: "pilot-momo-house-san-antonio",
+    restaurantName: "Momo House San Antonio",
+    packageId: "complete_online_presence",
+    contactName: "Owner contact needed",
+    contactRole: "Owner / manager verification needed",
+    phone: "(210) 492-1711",
+    email: "momohousesa@gmail.com",
+    address: "4447 De Zavala Rd, San Antonio, TX 78249",
+    websiteUrl: "https://momohousesa.com",
+    googleBusinessProfileUrl: "",
+    googleMapsUrl: "",
+    instagramUrl: "Presence known — link/access needs owner verification",
+    facebookUrl: "Presence known — link/access needs owner verification",
+    tiktokUrl: "",
+    menuUrl: "https://momohousesa.com",
+    orderingUrl: "https://momohousesa.com",
+    reservationUrl: "",
+    cateringUrl: "Catering availability/details need owner confirmation",
+    cuisineType: "Nepali-style dumplings / momo",
+    bestSellers: ["Steamed momo", "Fried momo", "Soup momo"],
+    foodCategories: ["Momo", "Sauce education", "Direct ordering", "Catering"],
+    customerTypes: ["First-time momo customers", "De Zavala / UTSA locals", "Catering inquiries"],
+    busyDays: [],
+    busyTimes: [],
+    brandTone: "Educational, warm, first-time-customer friendly; explain what momo is without inventing claims.",
+    postingPreferences: { cadencePreference: "Veroxa prepares up to 3 updates/week when usable media is available", preferredDays: [], toneNotes: "What is momo, steamed vs fried vs soup momo, sauce education, handmade/behind-the-scenes, first-time guide, De Zavala/UTSA local targeting, catering, direct ordering/app/rewards", contentBoundaries: ["No invented offers", "No unconfirmed dietary/health/halal/organic claims", "No guaranteed outcomes"], communicationPreference: "Portal requests and weekly updates" },
+    mediaSupplyStatus: "inconsistent",
+    platformAccessStatus: "links_needed",
+    businessTruthStatus: "confirmation_needed",
+    firstWeekSetupStatus: "needs_team_setup",
+    proofInputStatus: "partial",
+    overallStatus: "business_truth_needed",
+    nextClientAction: "Review the prefilled profile, confirm owner contacts, access/connection status, hours, menu/order links, catering details, and usable media.",
+    nextTeamAction: "Team Faraz should verify audit-prefilled fields, platform access gaps, Google/local optimization needs, direct ordering awareness, and first-week content/report setup.",
+    blockers: ["Primary/secondary contacts missing", "Credential/platform connections not verified", "Hours/menu/catering/business claims need owner confirmation"],
+    warnings: ["Momo House already has strong online pieces; do not position it as needing online presence", "Use internal positioning: good pieces becoming a consistent growth system", "No live metrics or connectors are connected"],
+    readySignals: ["Website is present", "Direct ordering/app/rewards presence is known", "Facebook, Instagram, DoorDash, Uber Eats, and Grubhub presence is known", "Clear content education angles are available"],
+    mediaAvailable: ["Needs owner/team verification", "Food photos/videos requested", "Best-seller media requested", "Menu/order links requested"],
+    businessTruth: { ...baseTruth, hoursConfirmed: false, holidayHoursConfirmed: false, menuItemsConfirmed: false, orderingReservationLinksConfirmed: false, cateringAvailabilityConfirmed: false },
+    proofInputs: { mainCustomerType: "De Zavala / UTSA local customers and first-time momo customers", mostWantedAction: "orders", currentWeakPoints: ["Consistency", "platform verification", "Google/local optimization", "direct ordering awareness", "reporting", "content rhythm", "case-study tracking"], orderLinkAvailable: true, menuLinkAvailable: true, googleConfidence: "Needs platform verification", socialConfidence: "Presence known; access/link verification needed", ownerReportedBaselineNotes: "Internal unpaid cooperation pilot. Do not invent metrics.", trackingSignalsAvailableLater: true },
+    updatedAt: "2026-06-07T00:00:00.000Z",
+  },
   {
     clientId: "complete-presence-ready-benchmark",
     restaurantName: "Complete Online Presence ready benchmark",
@@ -240,5 +284,5 @@ export function getRestaurantOnboardingSeedProfiles(): RestaurantOnboardingProfi
 }
 
 export function getClientOnboardingPreviewProfile(): RestaurantOnboardingProfile {
-  return restaurantOnboardingSeedProfiles[1];
+  return restaurantOnboardingSeedProfiles[0];
 }

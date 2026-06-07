@@ -1,14 +1,12 @@
 /**
  * demoRestaurantSearch.ts
  *
- * Fixture-backed restaurant candidate search for the public /free-audit flow.
+ * Pre-live restaurant candidate data for the public /free-audit flow.
  *
  * Hard guardrails:
  *  - No network. No Google Places API. No scraping. No live business lookup.
- *  - This is sample/demo data only. The public UI must clearly say
- *    "Demo search only — live Google/Maps lookup is not connected yet."
- *  - All ids use the `sample-prospect-*` prefix so they are obviously fake
- *    and never collide with the demo client ids (`demo-a` … `demo-d`).
+ *  - This includes sample prospects plus the real pre-live Momo House pilot candidate.
+ *  - Public UI must say pre-live/prefill matching only; no live Google/Maps lookup.
  */
 
 export type RestaurantMatchConfidence = "high" | "medium" | "low";
@@ -25,17 +23,26 @@ export interface RestaurantSearchCandidate {
   id: string;
   restaurantName: string;
   searchAliases?: string[];
+  aliases?: string[];
   city: string;
   state: string;
   addressLine: string;
+  address?: string;
+  phone?: string;
   cuisineType: string;
   googleRating?: number;
   reviewCount?: number;
   websiteUrl?: string;
   googleListingUrl?: string;
+  googleMapsUrl?: string;
+  googleBusinessProfileUrl?: string;
   instagramUrl?: string;
   facebookUrl?: string;
   menuOrderingUrl?: string;
+  doorDashUrl?: string;
+  uberEatsUrl?: string;
+  grubhubUrl?: string;
+  directOrderingUrl?: string;
   tiktokUrl?: string;
   matchSource?: "fixture" | "fuzzy match" | "manual";
   matchConfidence: RestaurantMatchConfidence;
@@ -45,6 +52,46 @@ export interface RestaurantSearchCandidate {
 }
 
 export const demoRestaurantSearchCandidates: RestaurantSearchCandidate[] = [
+
+  // ── Real pre-live pilot candidate (not sample/demo client data) ───────────
+  {
+    id: "pilot-momo-house-san-antonio",
+    restaurantName: "Momo House San Antonio",
+    searchAliases: [
+      "Momo House",
+      "Momo House Nepali Style Dumplings",
+      "Momo House San Antonio",
+      "Momo House De Zavala",
+      "Momo House 4447 De Zavala",
+      "momohousesa.com",
+    ],
+    aliases: [
+      "Momo House",
+      "Momo House Nepali Style Dumplings",
+      "Momo House San Antonio",
+      "Momo House De Zavala",
+      "Momo House 4447 De Zavala",
+      "momohousesa.com",
+    ],
+    city: "San Antonio",
+    state: "TX",
+    addressLine: "4447 De Zavala Rd, San Antonio, TX 78249",
+    address: "4447 De Zavala Rd, San Antonio, TX 78249",
+    phone: "(210) 492-1711",
+    cuisineType: "Nepali-style dumplings / momo",
+    websiteUrl: "https://momohousesa.com",
+    directOrderingUrl: "https://momohousesa.com",
+    doorDashUrl: "DoorDash presence needs owner/team verification",
+    uberEatsUrl: "Uber Eats presence needs owner/team verification",
+    grubhubUrl: "Grubhub presence needs owner/team verification",
+    instagramUrl: "Instagram presence needs owner/team verification",
+    facebookUrl: "Facebook presence needs owner/team verification",
+    matchConfidence: "high",
+    matchSource: "manual",
+    onlineConsistencySignal: "strong",
+    walkInOpportunitySignal: "high",
+    note: "First Veroxa pilot. Strong pieces are already present; Veroxa should turn them into a consistent growth system through verification, local optimization, direct ordering awareness, reporting, and content rhythm.",
+  },
   // ── San Antonio tacos (near-duplicate names) ─────────────────────────────
   {
     id: "sample-prospect-tacos-1",
@@ -374,8 +421,21 @@ function nameScore(
 
 export interface RestaurantSearchQuery {
   restaurantName: string;
-  city: string;
-  state: string;
+  city?: string;
+  state?: string;
+  address?: string;
+  phone?: string;
+  websiteUrl?: string;
+  website?: string;
+  domain?: string;
+  googleMapsUrl?: string;
+  googleBusinessProfileUrl?: string;
+  instagramUrl?: string;
+  facebookUrl?: string;
+  doorDashUrl?: string;
+  uberEatsUrl?: string;
+  grubhubUrl?: string;
+  directOrderingUrl?: string;
   cuisineType?: string;
 }
 

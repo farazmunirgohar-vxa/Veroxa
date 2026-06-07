@@ -1,8 +1,8 @@
 /**
- * restaurantNameMatching.ts — deterministic audit search helper.
+ * restaurantNameMatching.ts — canonical deterministic audit matching engine.
  *
- * Local/demo only: no network, no scraping, no Google Places API, no paid API,
- * and no production writes. Hard-to-find restaurants become manual audit leads
+ * Pre-live/manual only: no network, no scraping, no Google Places API, no paid
+ * API, no production writes. Hard-to-find restaurants become manual audit leads
  * so Free Audit and Team Audit Leads never dead-end.
  */
 
@@ -11,238 +11,239 @@ import {
   type RestaurantMatchConfidence,
   type RestaurantSearchCandidate,
   type RestaurantSearchQuery,
-} from "@/data/demo/demoRestaurantSearch";
+} from "../../data/demo/demoRestaurantSearch";
 
-export type { RestaurantSearchCandidate } from "@/data/demo/demoRestaurantSearch";
+export type { RestaurantSearchCandidate, RestaurantSearchQuery } from "../../data/demo/demoRestaurantSearch";
+
+export type RestaurantMatchState =
+  | "exact_match"
+  | "likely_match"
+  | "multiple_possible_matches"
+  | "manual_review_needed"
+  | "no_match";
+
+export type RestaurantMatchReason =
+  | "name matched"
+  | "alias matched"
+  | "city/state matched"
+  | "address matched"
+  | "phone matched"
+  | "domain matched"
+  | "platform link matched"
+  | "weak/fuzzy match only";
+
+export interface RestaurantCandidateMatch {
+  candidate: RestaurantSearchCandidate;
+  score: number;
+  state: RestaurantMatchState;
+  reasons: RestaurantMatchReason[];
+}
+
+export interface RestaurantMatchingResult {
+  state: RestaurantMatchState;
+  matches: RestaurantCandidateMatch[];
+  topMatch?: RestaurantCandidateMatch;
+}
 
 const MANUAL_FALLBACK_NOTE =
   "Weak discoverability / name-indexing issue — potential Veroxa opportunity.";
 
-const BUSINESS_SUFFIXES = new Set([
-  "restaurant",
-  "restaurants",
-  "kitchen",
-  "house",
-  "grill",
-  "cafe",
-  "café",
-  "mediterranean",
-  "kebab",
-  "kabob",
-  "kebob",
-  "san",
-  "antonio",
-]);
+// Keep meaningful restaurant words. Do not strip "house" because Momo House is
+// a locked regression. City/location tokens are scored separately instead.
+const GENERIC_SUFFIXES = new Set(["restaurant", "restaurants", "llc", "inc", "co", "company"]);
 
-export function normalizeRestaurantSearchText(input: string): string {
-  return input
+export function normalizeRestaurantSearchText(input: string | undefined): string {
+  return (input ?? "")
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/&/g, " and ")
-    .replace(/['’`]/g, "")
+    .replace(/[’'`]/g, "")
     .replace(/[^a-zA-Z0-9]+/g, " ")
     .trim()
     .toLowerCase()
     .replace(/\s+/g, " ");
 }
 
-function tokenize(input: string): string[] {
+function tokens(input: string | undefined): string[] {
   return normalizeRestaurantSearchText(input)
     .split(" ")
-    .filter((token) => token.length >= 2);
+    .filter((token) => token.length >= 2 && !GENERIC_SUFFIXES.has(token));
 }
 
-export function getRestaurantSearchVariants(input: string): string[] {
-  const normalized = normalizeRestaurantSearchText(input);
-  if (!normalized) return [];
-
-  const tokens = tokenize(normalized);
-  const withoutSuffixes = tokens
-    .filter((token) => !BUSINESS_SUFFIXES.has(token))
-    .join(" ");
-  const compact = normalized.replace(/\s+/g, "");
-  const kebabVariants = [
-    normalized.replace(/\bkebab\b/g, "kabob"),
-    normalized.replace(/\bkebab\b/g, "kebob"),
-    normalized.replace(/\bkabob\b/g, "kebab"),
-    normalized.replace(/\bkebob\b/g, "kebab"),
-  ];
-
-  return Array.from(
-    new Set(
-      [normalized, withoutSuffixes, compact, ...kebabVariants]
-        .map((variant) => normalizeRestaurantSearchText(variant))
-        .filter(Boolean),
-    ),
-  );
+function normalizePhone(input: string | undefined): string {
+  const digits = (input ?? "").replace(/\D/g, "");
+  return digits.length === 11 && digits.startsWith("1") ? digits.slice(1) : digits;
 }
 
-export function editDistanceWithinOne(a: string, b: string): boolean {
+function normalizeDomain(input: string | undefined): string {
+  const raw = (input ?? "").trim().toLowerCase();
+  if (!raw) return "";
+  try {
+    const withProtocol = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+    return new URL(withProtocol).hostname.replace(/^www\./, "");
+  } catch {
+    return raw.replace(/^https?:\/\//, "").replace(/^www\./, "").split(/[/?#]/)[0];
+  }
+}
+
+function canonicalNames(candidate: RestaurantSearchCandidate): string[] {
+  return [candidate.restaurantName, ...(candidate.searchAliases ?? []), ...(candidate.aliases ?? [])];
+}
+
+function candidateLinks(candidate: RestaurantSearchCandidate): string[] {
+  return [
+    candidate.websiteUrl,
+    candidate.googleListingUrl,
+    candidate.googleMapsUrl,
+    candidate.googleBusinessProfileUrl,
+    candidate.instagramUrl,
+    candidate.facebookUrl,
+    candidate.menuOrderingUrl,
+    candidate.doorDashUrl,
+    candidate.uberEatsUrl,
+    candidate.grubhubUrl,
+    candidate.directOrderingUrl,
+  ].filter((link): link is string => Boolean(link));
+}
+
+function editDistanceWithinOne(a: string, b: string): boolean {
   const left = normalizeRestaurantSearchText(a).replace(/\s+/g, "");
   const right = normalizeRestaurantSearchText(b).replace(/\s+/g, "");
   if (left === right) return true;
   if (Math.abs(left.length - right.length) > 1) return false;
-
   let edits = 0;
   let i = 0;
   let j = 0;
   while (i < left.length && j < right.length) {
-    if (left[i] === right[j]) {
-      i += 1;
-      j += 1;
-      continue;
-    }
+    if (left[i] === right[j]) { i += 1; j += 1; continue; }
     edits += 1;
     if (edits > 1) return false;
     if (left.length > right.length) i += 1;
     else if (right.length > left.length) j += 1;
-    else {
-      i += 1;
-      j += 1;
-    }
+    else { i += 1; j += 1; }
   }
   return true;
 }
 
-function candidateNames(candidate: RestaurantSearchCandidate): string[] {
-  return [candidate.restaurantName, ...(candidate.searchAliases ?? [])];
+function tokenMatches(a: string, b: string): boolean {
+  return a === b || a.includes(b) || b.includes(a) || (a.length >= 5 && b.length >= 5 && editDistanceWithinOne(a, b));
 }
 
-function tokenMatches(queryToken: string, candidateToken: string): boolean {
-  if (queryToken === candidateToken) return true;
-  if (queryToken.includes(candidateToken) || candidateToken.includes(queryToken)) {
-    return true;
-  }
-  return (
-    queryToken.length >= 5 &&
-    candidateToken.length >= 5 &&
-    editDistanceWithinOne(queryToken, candidateToken)
-  );
-}
-
-export function isLikelySameRestaurantName(a: string, b: string): boolean {
-  const leftVariants = getRestaurantSearchVariants(a);
-  const rightVariants = getRestaurantSearchVariants(b);
-  if (leftVariants.length === 0 || rightVariants.length === 0) return false;
-
-  if (
-    leftVariants.some((left) =>
-      rightVariants.some(
-        (right) => left === right || left.includes(right) || right.includes(left),
-      ),
-    )
-  ) {
-    return true;
-  }
-
-  const leftTokens = tokenize(a).filter((token) => !BUSINESS_SUFFIXES.has(token));
-  const rightTokens = tokenize(b).filter((token) => !BUSINESS_SUFFIXES.has(token));
-  if (leftTokens.length === 0 || rightTokens.length === 0) return false;
-
-  const hits = leftTokens.filter((leftToken) =>
-    rightTokens.some((rightToken) => tokenMatches(leftToken, rightToken)),
-  ).length;
-  return hits >= Math.min(leftTokens.length, rightTokens.length);
-}
-
-function nameScore(query: string, candidate: RestaurantSearchCandidate): number {
-  const queryVariants = getRestaurantSearchVariants(query);
-  if (queryVariants.length === 0) return 0;
-
-  const names = candidateNames(candidate);
-  const nameVariants = names.flatMap(getRestaurantSearchVariants);
-  if (
-    queryVariants.some((queryVariant) =>
-      nameVariants.some((nameVariant) => queryVariant === nameVariant),
-    )
-  ) {
-    return 5;
-  }
-  if (
-    queryVariants.some((queryVariant) =>
-      nameVariants.some(
-        (nameVariant) =>
-          nameVariant.includes(queryVariant) || queryVariant.includes(nameVariant),
-      ),
-    )
-  ) {
-    return 4;
-  }
-  if (names.some((name) => isLikelySameRestaurantName(query, name))) return 3;
-
-  const qTokens = tokenize(query);
-  const cTokens = names.flatMap(tokenize);
-  const hits = qTokens.filter((qToken) =>
-    cTokens.some((cToken) => tokenMatches(qToken, cToken)),
-  ).length;
-  if (hits >= Math.max(1, qTokens.length)) return 2;
-  return hits >= 1 ? 1 : 0;
-}
-
-function reduceConfidence(confidence: RestaurantMatchConfidence): RestaurantMatchConfidence {
-  if (confidence === "high") return "medium";
-  return "low";
+function addReason(reasons: RestaurantMatchReason[], reason: RestaurantMatchReason) {
+  if (!reasons.includes(reason)) reasons.push(reason);
 }
 
 function queryFromInput(input: string | Partial<RestaurantSearchQuery>): RestaurantSearchQuery {
-  if (typeof input === "string") {
-    return { restaurantName: input, city: "", state: "", cuisineType: "" };
-  }
-  return {
-    restaurantName: input.restaurantName ?? "",
-    city: input.city ?? "",
-    state: input.state ?? "",
-    cuisineType: input.cuisineType ?? "",
-  };
+  if (typeof input === "string") return { restaurantName: input };
+  return { ...input, restaurantName: input.restaurantName ?? "" };
 }
 
-export function searchRestaurantCandidates(
+export function matchRestaurantCandidates(
   input: string | Partial<RestaurantSearchQuery>,
-): RestaurantSearchCandidate[] {
+  candidates: RestaurantSearchCandidate[] = demoRestaurantSearchCandidates,
+): RestaurantMatchingResult {
   const query = queryFromInput(input);
-  const restaurantName = query.restaurantName.trim();
-  if (!restaurantName) return [];
+  const queryName = normalizeRestaurantSearchText(query.restaurantName);
+  const queryCity = normalizeRestaurantSearchText(query.city);
+  const queryState = normalizeRestaurantSearchText(query.state);
+  const queryAddress = normalizeRestaurantSearchText(query.address ?? query.restaurantName);
+  const queryPhone = normalizePhone(query.phone ?? query.restaurantName);
+  const queryDomain = normalizeDomain(query.websiteUrl ?? query.website ?? query.domain ?? query.restaurantName);
+  const queryPlatformDomains = [
+    query.googleMapsUrl,
+    query.googleBusinessProfileUrl,
+    query.instagramUrl,
+    query.facebookUrl,
+    query.doorDashUrl,
+    query.uberEatsUrl,
+    query.grubhubUrl,
+    query.directOrderingUrl,
+  ].map(normalizeDomain).filter(Boolean);
+  const queryCuisineTokens = tokens(query.cuisineType);
+  const queryNameTokens = tokens(query.restaurantName);
 
-  const city = normalizeRestaurantSearchText(query.city ?? "");
-  const state = normalizeRestaurantSearchText(query.state ?? "");
-  const cuisineTokens = new Set(tokenize(query.cuisineType ?? ""));
+  if (!queryName && !queryPhone && !queryDomain && !queryAddress) {
+    return { state: "no_match", matches: [] };
+  }
 
-  const ranked = demoRestaurantSearchCandidates.flatMap((candidate) => {
-    const nScore = nameScore(restaurantName, candidate);
-    const candidateCity = normalizeRestaurantSearchText(candidate.city);
-    const candidateState = normalizeRestaurantSearchText(candidate.state);
-    const cityMatches = city.length > 0 && candidateCity === city;
-    const stateMatches = state.length > 0 && candidateState === state;
-    const cityProvidedButMismatch = city.length > 0 && !cityMatches;
-    const stateProvidedButMismatch = state.length > 0 && !stateMatches;
-    const candidateCuisineTokens = new Set(tokenize(candidate.cuisineType));
-    const cuisineMatches =
-      cuisineTokens.size > 0 &&
-      [...cuisineTokens].some((token) => candidateCuisineTokens.has(token));
+  const ranked: RestaurantCandidateMatch[] = [];
 
-    if (nScore === 0 && !((cityMatches || stateMatches) && cuisineMatches)) return [];
+  for (const candidate of candidates) {
+    let score = 0;
+    const reasons: RestaurantMatchReason[] = [];
+    const candidateNameNorm = normalizeRestaurantSearchText(candidate.restaurantName);
+    const candidateAliases = [...(candidate.searchAliases ?? []), ...(candidate.aliases ?? [])];
+    const allNames = canonicalNames(candidate);
+    const allNameNorms = allNames.map(normalizeRestaurantSearchText);
+    const aliasNorms = candidateAliases.map(normalizeRestaurantSearchText);
 
-    let score = nScore * 10;
-    if (cityMatches) score += 5;
-    if (stateMatches) score += 2;
-    if (cuisineMatches) score += 3;
-    if (cityProvidedButMismatch) score -= 2;
-    if (stateProvidedButMismatch) score -= 1;
+    if (queryName && queryName === candidateNameNorm) { score += 100; addReason(reasons, "name matched"); }
+    if (queryName && aliasNorms.includes(queryName)) { score += 95; addReason(reasons, "alias matched"); }
+    if (queryName && allNameNorms.some((name) => name.includes(queryName) || queryName.includes(name))) {
+      score += 60;
+      addReason(reasons, aliasNorms.some((name) => name.includes(queryName) || queryName.includes(name)) ? "alias matched" : "name matched");
+    }
 
-    const source = nScore >= 4 ? "fixture" : "fuzzy match";
-    const adjusted: RestaurantSearchCandidate = {
-      ...candidate,
-      matchSource: source,
-      matchConfidence:
-        cityProvidedButMismatch || stateProvidedButMismatch || nScore <= 2
-          ? reduceConfidence(candidate.matchConfidence)
-          : candidate.matchConfidence,
-    };
-    return [{ candidate: adjusted, score }];
-  });
+    if (queryNameTokens.length > 0) {
+      const candidateNameTokens = allNames.flatMap(tokens);
+      const hits = queryNameTokens.filter((qt) => candidateNameTokens.some((ct) => tokenMatches(qt, ct))).length;
+      const ratio = hits / queryNameTokens.length;
+      if (ratio >= 0.8) { score += 45; addReason(reasons, "weak/fuzzy match only"); }
+      else if (hits >= 1) { score += 15; addReason(reasons, "weak/fuzzy match only"); }
+    }
+
+    const cityMatches = queryCity && normalizeRestaurantSearchText(candidate.city) === queryCity;
+    const stateMatches = queryState && normalizeRestaurantSearchText(candidate.state) === queryState;
+    if (cityMatches && stateMatches) { score += 18; addReason(reasons, "city/state matched"); }
+    else if (cityMatches || stateMatches) { score += 8; addReason(reasons, "city/state matched"); }
+
+    const candidateAddress = normalizeRestaurantSearchText(candidate.address ?? candidate.addressLine);
+    if (queryAddress && candidateAddress && (queryAddress.includes(candidateAddress) || candidateAddress.includes(queryAddress) || tokens(queryAddress).filter((qt) => tokens(candidateAddress).some((ct) => tokenMatches(qt, ct))).length >= 3)) {
+      score += 50;
+      addReason(reasons, "address matched");
+    }
+
+    const candidatePhone = normalizePhone(candidate.phone);
+    if (queryPhone.length >= 10 && candidatePhone && queryPhone === candidatePhone) { score += 90; addReason(reasons, "phone matched"); }
+
+    const candidateDomains = candidateLinks(candidate).map(normalizeDomain).filter(Boolean);
+    if (queryDomain && candidateDomains.includes(queryDomain)) { score += 90; addReason(reasons, "domain matched"); }
+    if (queryPlatformDomains.some((domain) => candidateDomains.includes(domain))) { score += 35; addReason(reasons, "platform link matched"); }
+
+    if (queryCuisineTokens.length > 0) {
+      const cuisineHits = queryCuisineTokens.filter((qt) => tokens(candidate.cuisineType).some((ct) => tokenMatches(qt, ct))).length;
+      if (cuisineHits > 0) score += Math.min(8, cuisineHits * 3);
+    }
+
+    if (score < 25) continue;
+    let state: RestaurantMatchState = "manual_review_needed";
+    if (score >= 115 || reasons.includes("phone matched") || reasons.includes("domain matched")) state = "exact_match";
+    else if (score >= 65) state = "likely_match";
+
+    ranked.push({ candidate, score, state, reasons });
+  }
 
   ranked.sort((a, b) => b.score - a.score);
-  return ranked.map((entry) => entry.candidate);
+  if (ranked.length === 0) return { state: "no_match", matches: [] };
+  const top = ranked[0];
+  const second = ranked[1];
+  const state = second && top.score - second.score < 10 ? "multiple_possible_matches" : top.state;
+  return { state, matches: ranked.map((match, index) => index === 0 ? { ...match, state } : match), topMatch: { ...top, state } };
+}
+
+function confidenceForState(state: RestaurantMatchState, current: RestaurantMatchConfidence): RestaurantMatchConfidence {
+  if (state === "exact_match" || state === "likely_match") return current;
+  if (current === "high") return "medium";
+  return "low";
+}
+
+export function searchRestaurantCandidates(input: string | Partial<RestaurantSearchQuery>): RestaurantSearchCandidate[] {
+  const result = matchRestaurantCandidates(input);
+  return result.matches.map((match) => ({
+    ...match.candidate,
+    matchSource: match.reasons.includes("weak/fuzzy match only") && !match.reasons.includes("name matched") && !match.reasons.includes("alias matched") ? "fuzzy match" : match.candidate.matchSource ?? "fixture",
+    matchConfidence: confidenceForState(match.state, match.candidate.matchConfidence),
+  }));
 }
 
 export function buildManualAuditLeadFallback(input: {
@@ -260,22 +261,20 @@ export function buildManualAuditLeadFallback(input: {
   const restaurantName = input.restaurantName.trim() || "Manual restaurant lead";
   const city = input.city?.trim() || "";
   const state = input.state?.trim() || "";
-  const addressLine =
-    city || state
-      ? `${[city, state].filter(Boolean).join(", ")} — address needs manual confirmation`
-      : "Address needs manual confirmation";
+  const addressLine = city || state ? `${[city, state].filter(Boolean).join(", ")} — address needs manual confirmation` : "Address needs manual confirmation";
   const slug = normalizeRestaurantSearchText(restaurantName).replace(/\s+/g, "-") || "restaurant";
   const notes = [MANUAL_FALLBACK_NOTE, input.notes?.trim()].filter(Boolean).join(" ");
 
   return {
     id: `manual-audit-${slug}`,
     restaurantName,
-    searchAliases: getRestaurantSearchVariants(restaurantName),
+    searchAliases: [restaurantName],
     city,
     state,
     addressLine,
     cuisineType: input.cuisineType?.trim() || "Restaurant / Food — category not verified",
     googleListingUrl: input.googleMapsUrl,
+    googleMapsUrl: input.googleMapsUrl,
     websiteUrl: input.websiteUrl,
     instagramUrl: input.instagramUrl,
     facebookUrl: input.facebookUrl,
