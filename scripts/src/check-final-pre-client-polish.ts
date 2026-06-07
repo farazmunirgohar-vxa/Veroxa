@@ -54,12 +54,12 @@ requireIncludes("artifacts/veroxa/docs/REAL_AUTH_READINESS_AUDIT.md", [
   "Rollback plan",
 ]);
 requireIncludes("artifacts/veroxa/docs/PRODUCTION_PREVIEW_LOGIN_CHECKLIST.md", [
-  "VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=false",
-  "Preview credentials are not production auth",
-  "localhost",
-  "127.0.0.1",
-  ".vercel.app",
-  "Vercel env changes require a redeploy",
+  "Real Login V1 / Pilot Portal Access Checklist",
+  "Sign in to Veroxa",
+  "Access your Veroxa portal",
+  "Momo House San Antonio",
+  "Team Faraz",
+  "Real Login V1 uses deterministic/manual pilot access records",
   "`AUTH_MODE` remains `\"placeholder\"`",
 ]);
 requireIncludes("artifacts/veroxa/docs/FIRST_CLIENT_MANUAL_LAUNCH_INDEX.md", [

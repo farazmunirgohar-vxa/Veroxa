@@ -24,81 +24,111 @@ function rel(fullPath: string): string {
   return fullPath.startsWith(root) ? fullPath.slice(root.length + 1) : fullPath;
 }
 
-for (const file of walk("artifacts/veroxa/src")) {
-  const relative = rel(file);
-  const text = readFileSync(file, "utf8");
-  const allowedPreviewCredentialFile =
-    relative === "artifacts/veroxa/src/lib/auth/devCredentials.ts";
-  if (/farazclient|farazteam/.test(text) && !allowedPreviewCredentialFile) {
-    failures.push(`${relative} contains a plaintext placeholder password outside the approved preview-only credential matcher.`);
+function requireIncludes(source: string, file: string, markers: string[]) {
+  for (const marker of markers) {
+    if (!source.includes(marker)) failures.push(`${file} missing Real Login V1 marker: ${marker}`);
   }
 }
 
-const devCredentials = readFileSync(join(root, "artifacts/veroxa/src/lib/auth/devCredentials.ts"), "utf8");
-for (const token of [
-  "VITE_VEROXA_DEV_CLIENT_EMAIL",
-  "VITE_VEROXA_DEV_CLIENT_PASSWORD",
-  "VITE_VEROXA_DEV_TEAM_EMAIL",
-  "VITE_VEROXA_DEV_TEAM_PASSWORD",
-]) {
-  if (!devCredentials.includes(token)) failures.push(`devCredentials.ts must read ${token}.`);
+function forbidIncludes(source: string, file: string, markers: string[]) {
+  for (const marker of markers) {
+    if (source.includes(marker)) failures.push(`${file} contains retired preview-login marker: ${marker}`);
+  }
 }
-for (const requiredPreviewCredential of [
+
+const retiredPreviewLoginMarkers = [
+  "VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN",
+  "Preview access ready",
+  "Preview access not enabled",
+  "publicPreviewFallbackEnabled",
+  "isPreviewFriendlyHostname",
+  "temp-login-status-note",
+  "placeholderCredentialStatus.statusLabel",
   "faraz@client.com",
   "faraz@team.com",
   "farazclient",
   "farazteam",
-]) {
-  if (!devCredentials.includes(requiredPreviewCredential)) {
-    failures.push(`devCredentials.ts is missing approved placeholder preview credential: ${requiredPreviewCredential}`);
+  "review sign-in",
+  "not production client billing",
+];
+
+for (const file of walk("artifacts/veroxa/src")) {
+  const relative = rel(file);
+  const text = readFileSync(file, "utf8");
+  for (const marker of retiredPreviewLoginMarkers) {
+    if (text.includes(marker)) {
+      failures.push(`${relative} contains retired preview-login marker: ${marker}`);
+    }
   }
 }
-if (/password:\s*["'](?!farazclient|farazteam)[^"']+["']/.test(devCredentials)) {
-  failures.push("devCredentials.ts defines an unapproved source plaintext password.");
+
+const devCredentialsPath = "artifacts/veroxa/src/lib/auth/devCredentials.ts";
+const pilotAccountsPath = "artifacts/veroxa/src/lib/auth/pilotAccessAccounts.ts";
+const loginPath = "artifacts/veroxa/src/pages/login.tsx";
+const appPath = "artifacts/veroxa/src/App.tsx";
+
+const devCredentials = readFileSync(join(root, devCredentialsPath), "utf8");
+const pilotAccounts = readFileSync(join(root, pilotAccountsPath), "utf8");
+const loginSource = readFileSync(join(root, loginPath), "utf8");
+const appSource = readFileSync(join(root, appPath), "utf8");
+
+requireIncludes(devCredentials, devCredentialsPath, [
+  "Real Login V1 pilot portal access",
+  "getPilotAccessAccounts",
+  "validatePilotAccessCredentials",
+  "getPilotRouteForRole",
+]);
+forbidIncludes(devCredentials, devCredentialsPath, retiredPreviewLoginMarkers);
+
+requireIncludes(pilotAccounts, pilotAccountsPath, [
+  "Momo House San Antonio",
+  "Team Faraz",
+  "VITE_VEROXA_PILOT_CLIENT_EMAIL",
+  "VITE_VEROXA_PILOT_CLIENT_PASSWORD",
+  "VITE_VEROXA_PILOT_TEAM_EMAIL",
+  "VITE_VEROXA_PILOT_TEAM_PASSWORD",
+  "deterministic-pilot",
+  "getRoleHomePath(role)",
+]);
+forbidIncludes(pilotAccounts, pilotAccountsPath, retiredPreviewLoginMarkers);
+if (/password:\s*["'](?!momohousepilot|teamfarazpilot)[^"']+["']/.test(pilotAccounts)) {
+  failures.push("pilotAccessAccounts.ts defines an unapproved source plaintext password.");
 }
-for (const retiredCredential of ["client@veroxa.com", "team@veroxa.com", "veroxa-preview-client", "veroxa-preview-team", "veroxa-client", "veroxa-team"]) {
-  if (devCredentials.includes(retiredCredential)) {
-    failures.push(`devCredentials.ts must not retain retired visible preview credential marker: ${retiredCredential}`);
-  }
-}
-for (const marker of [
-  "VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN",
-  "getPlaceholderCredentialStatus",
-  "Preview access ready",
-  "Preview access not enabled",
-  "publicPreviewFallbackEnabled",
-]) {
-  if (!devCredentials.includes(marker)) {
-    failures.push(`devCredentials.ts is missing temp-login safety marker: ${marker}`);
-  }
-}
-if (/hostname\.includes\(["']veroxa["']\)/.test(devCredentials) || /includes\(["']veroxa["']\)/.test(devCredentials)) {
-  failures.push("public preview fallback login must not use broad Veroxa custom-domain hostname matching.");
-}
-if (
-  !/const explicitFlag = readViteEnv\(PUBLIC_PREVIEW_LOGIN_FLAG\)/.test(devCredentials) ||
-  !/explicitFlag === ["']false["']/.test(devCredentials) ||
-  !/explicitFlag === ["']true["']/.test(devCredentials) ||
-  !/hostname === ["']localhost["']/.test(devCredentials) ||
-  !/hostname === ["']127\.0\.0\.1["']/.test(devCredentials) ||
-  !/hostname\.endsWith\(["']\.vercel\.app["']\)/.test(devCredentials)
-) {
-  failures.push("public preview fallback login must allow localhost, 127.0.0.1, and .vercel.app only by default; support explicit opt-in; and disable fallback when VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=false.");
-}
-if (/import\.meta\.env\.DEV\s*\|\|\s*isPreviewFriendlyHostname/.test(devCredentials)) {
-  failures.push("public preview fallback login must not enable broad custom-domain fallback through import.meta.env.DEV.");
-}
-const loginSource = readFileSync(join(root, "artifacts/veroxa/src/pages/login.tsx"), "utf8");
-for (const marker of [
-  "getPlaceholderCredentialStatus",
-  "temp-login-status-note",
-  "placeholderCredentialStatus.statusLabel",
+
+requireIncludes(loginSource, loginPath, [
+  "Sign in to Veroxa",
+  "Access your Veroxa portal.",
+  "validatePilotAccessCredentials",
   "createPlaceholderSession",
-]) {
-  if (!loginSource.includes(marker)) {
-    failures.push(`login.tsx is missing placeholder temp-login marker: ${marker}`);
-  }
+  "setLocation(getPilotRouteForRole(account.role))",
+  "Those sign-in details do not match a Veroxa portal account. Please try again.",
+]);
+forbidIncludes(loginSource, loginPath, retiredPreviewLoginMarkers.concat(["demo access", "preview access"]));
+if (/momo@veroxa\.app|momohousepilot|faraz@veroxa\.app|teamfarazpilot/.test(loginSource)) {
+  failures.push("login.tsx must not expose pilot credentials in production-facing copy/source literals.");
 }
+
+requireIncludes(appSource, appPath, [
+  'path="/client/dashboard"',
+  'path="/team/dashboard"',
+  "<ClientPortalGuard>",
+  '<InternalDemoGuard role="team">',
+]);
+for (const retiredRoute of ['path="/demo"', 'path="/guided-demo"', 'path="/upload"', 'path="/demo/client/dashboard"']) {
+  if (appSource.includes(retiredRoute)) failures.push(`Retired demo/upload route is active in App.tsx: ${retiredRoute}`);
+}
+for (const forbiddenPortal of ["/owner", "/operator", "/admin", "/super-admin", "/execution"]) {
+  if (appSource.includes(`path="${forbiddenPortal}`)) failures.push(`Forbidden portal route is active in App.tsx: ${forbiddenPortal}`);
+}
+
+const authContractSource = readFileSync(join(root, "artifacts/veroxa/src/lib/auth/authContract.ts"), "utf8");
+if (!/export type VeroxaRole = ["']client["'] \| ["']team["']/.test(authContractSource)) {
+  failures.push("Auth contract must keep only client and team roles active.");
+}
+if (!authContractSource.includes('client:   "/client/dashboard"') || !authContractSource.includes('team:     "/team/dashboard"')) {
+  failures.push("Auth contract must route client/team roles to /client/dashboard and /team/dashboard.");
+}
+
 const authModeSource = readFileSync(join(root, "artifacts/veroxa/src/lib/auth/authMode.ts"), "utf8");
 if (!/export\s+const\s+AUTH_MODE(?:\s*:\s*AuthMode)?\s*=\s*["']placeholder["']/.test(authModeSource)) {
   failures.push("AUTH_MODE must remain placeholder until production auth is explicitly approved.");
@@ -129,8 +159,8 @@ for (const file of productionLikeDocs) {
   if (/VITE_VEROXA_ENABLE_DEV_WRITES\s*=\s*["']?true["']?/i.test(text) && !/dev-only|local-only|non-production|never production/i.test(text)) {
     failures.push(`${file} implies dev writes can be true without a clear non-production warning.`);
   }
-  if (/VITE_VEROXA_DEV_(CLIENT|TEAM)_(EMAIL|PASSWORD)/.test(text) && !/preview-only|local-only|do not set|never set|must not be set/i.test(text)) {
-    failures.push(`${file} mentions placeholder credentials without a clear preview-only / do-not-set-in-production warning.`);
+  if (/VITE_VEROXA_(DEV_)?(CLIENT|TEAM)_(EMAIL|PASSWORD)/.test(text) && !/pilot|manual|local-only|do not set|never set|must not be set/i.test(text)) {
+    failures.push(`${file} mentions portal credentials without a clear pilot/manual/local warning.`);
   }
 }
 
@@ -139,11 +169,11 @@ const envLikeFiles = ["artifacts/veroxa/.env.example"].filter((file) => {
 });
 for (const file of envLikeFiles) {
   const text = readFileSync(join(root, file), "utf8");
-  const activePlaceholderCredential = text
+  const activePortalCredential = text
     .split(/\r?\n/)
-    .some((line) => /^\s*VITE_VEROXA_DEV_(CLIENT|TEAM)_(EMAIL|PASSWORD)\s*=/.test(line));
-  if (activePlaceholderCredential) {
-    failures.push(`${file} must not set preview-only VITE_VEROXA_DEV_* placeholder credentials.`);
+    .some((line) => /^\s*VITE_VEROXA_(DEV_)?(CLIENT|TEAM)_(EMAIL|PASSWORD)\s*=/.test(line));
+  if (activePortalCredential) {
+    failures.push(`${file} must not set pilot/manual portal credentials.`);
   }
 }
 
@@ -153,4 +183,4 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-console.log("Dev auth/write safety guardrail passed: placeholder preview credentials stay contained and dev writes are production-disabled.");
+console.log("Dev auth/write safety guardrail passed: Real Login V1 pilot access is constrained to Client/Team and dev writes are production-disabled.");

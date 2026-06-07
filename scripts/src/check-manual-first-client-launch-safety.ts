@@ -28,22 +28,31 @@ else {
 }
 
 const devCredentials = requireIncludes("artifacts/veroxa/src/lib/auth/devCredentials.ts", [
-  "VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN",
-  "hostname === \"localhost\"",
-  "hostname === \"127.0.0.1\"",
-  "hostname.endsWith(\".vercel.app\")",
-  "explicitFlag === \"false\"",
-  "explicitFlag === \"true\"",
-  "return isPreviewFriendlyHostname();",
+  "Real Login V1 pilot portal access",
+  "getPilotAccessAccounts",
+  "validatePilotAccessCredentials",
+  "getPilotRouteForRole",
 ]);
-if (/import\.meta\.env\.DEV\s*\|\|\s*isPreviewFriendlyHostname/.test(devCredentials)) {
-  failures.push("Public preview fallback login must not be enabled for broad custom dev domains by import.meta.env.DEV.");
+const pilotAccounts = requireIncludes("artifacts/veroxa/src/lib/auth/pilotAccessAccounts.ts", [
+  "Momo House San Antonio",
+  "Team Faraz",
+  "VITE_VEROXA_PILOT_CLIENT_EMAIL",
+  "VITE_VEROXA_PILOT_CLIENT_PASSWORD",
+  "VITE_VEROXA_PILOT_TEAM_EMAIL",
+  "VITE_VEROXA_PILOT_TEAM_PASSWORD",
+  "deterministic-pilot",
+]);
+for (const retired of ["VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN", "Preview access ready", "Preview access not enabled", "publicPreviewFallbackEnabled", "isPreviewFriendlyHostname", "faraz@client.com", "faraz@team.com", "farazclient", "farazteam"]) {
+  if (devCredentials.includes(retired) || pilotAccounts.includes(retired)) failures.push(`Real Login V1 auth helpers must not retain retired preview-login marker ${retired}.`);
 }
 
-requireIncludes("artifacts/veroxa/docs/DEPLOYMENT_PREVIEW_LOGIN_NOTES.md", [
-  "Production/custom domains should set `VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=false`",
-  "Preview deployments may use fallback preview credentials only for review",
-  "`AUTH_MODE` remains `placeholder`",
+requireIncludes("artifacts/veroxa/docs/PRODUCTION_PREVIEW_LOGIN_CHECKLIST.md", [
+  "Real Login V1 / Pilot Portal Access Checklist",
+  "Sign in to Veroxa",
+  "Access your Veroxa portal",
+  "Momo House San Antonio",
+  "Team Faraz",
+  "`AUTH_MODE` remains `\"placeholder\"`",
 ]);
 
 requireIncludes("artifacts/api-server/src/lib/webPresenceScanner.ts", [

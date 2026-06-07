@@ -11,26 +11,18 @@
 import type { VeroxaRole } from "./authContract";
 import {
   getPilotAccessAccounts,
-  getPilotAccessStatus,
   getPilotRouteForRole,
   validatePilotAccessCredentials,
   type PilotAccessAccount,
-  type PilotAccessStatus,
 } from "./pilotAccessAccounts";
 
 export type DevCredential = PilotAccessAccount;
-export type PlaceholderCredentialStatus = PilotAccessStatus;
-
 export function getDevRoleCredentials(): readonly DevCredential[] {
   return getPilotAccessAccounts();
 }
 
 export function hasConfiguredDevCredentials(): boolean {
   return getPilotAccessAccounts().length > 0;
-}
-
-export function getPlaceholderCredentialStatus(): PlaceholderCredentialStatus {
-  return getPilotAccessStatus();
 }
 
 export function validateDevCredentials(
