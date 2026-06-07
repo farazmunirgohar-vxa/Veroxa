@@ -24,7 +24,7 @@ interface InternalDemoGuardProps {
  * Rules:
  *   AUTH_MODE === "placeholder":
  *     - Team routes require a placeholder session marker created only after
- *       successful env-backed login. AUTH_MODE alone never grants access.
+ *       successful server-controlled login. AUTH_MODE alone never grants access.
  *
  *   AUTH_MODE === "real":
  *     - loading  → "Checking Veroxa access…" card

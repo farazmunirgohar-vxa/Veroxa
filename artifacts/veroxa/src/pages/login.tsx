@@ -37,8 +37,8 @@ export default function LoginPage() {
   /**
    * Sign-in submit handler.
    *
-   * - When AUTH_MODE === "placeholder": validates deterministic/manual pilot
-   *   portal credentials, routes to the real portal path based on the
+   * - When AUTH_MODE === "placeholder": checks server-controlled/manual pilot
+   *   portal access, routes to the real portal path based on the
    *   validated role (no visible role selection required).
    * - When AUTH_MODE === "real":
    *     1. signInWithPassword
@@ -57,20 +57,33 @@ export default function LoginPage() {
         clearPlaceholderSession();
         setSignInState({
           kind: "error",
-          message: "Portal access is not configured for this environment. Please contact Veroxa.",
+          message: "Portal access is not configured for this environment. Please contact Team Faraz directly.",
         });
         return;
       }
 
-      const account = validatePilotAccessCredentials(email, password);
-      if (!account) {
+      setSignInState({ kind: "submitting" });
+      try {
+        const account = await validatePilotAccessCredentials(email, password);
+        if (!account) {
+          clearPlaceholderSession();
+          setSignInState({ kind: "error", message: "Portal access is not configured or those sign-in details do not match a Veroxa portal account. Please contact Veroxa." });
+          return;
+        }
+        createPlaceholderSession({
+          role: account.role,
+          email: account.email,
+          accountLabel: account.accountLabel,
+          accountId: account.accountId,
+          clientId: account.clientId,
+          restaurantId: account.restaurantId,
+        });
+        setSignInState({ kind: "success", message: `Signed in as ${account.accountLabel} — taking you to your portal…` });
+        setLocation(getPilotRouteForRole(account.role));
+      } catch {
         clearPlaceholderSession();
-        setSignInState({ kind: "error", message: "Those sign-in details do not match a Veroxa portal account. Please try again." });
-        return;
+        setSignInState({ kind: "error", message: "Portal access is not configured for this environment. Please contact Veroxa." });
       }
-      createPlaceholderSession(account.role, account.email, account.accountLabel, account.clientId, account.restaurantId);
-      setSignInState({ kind: "success", message: `Signed in as ${account.accountLabel} — taking you to your portal…` });
-      setLocation(getPilotRouteForRole(account.role));
       return;
     }
 

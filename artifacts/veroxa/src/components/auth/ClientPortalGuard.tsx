@@ -11,7 +11,7 @@ interface ClientPortalGuardProps {
 /**
  * ClientPortalGuard — protects /client/* in both placeholder and real auth.
  *
- * In placeholder mode a client must complete the env-backed login flow (which
+ * In placeholder mode a client must complete the server-controlled login flow (which
  * creates a placeholder session) before /client/* renders; AUTH_MODE alone never
  * grants access. Placeholder client sessions carry no clientId, so the clientId
  * requirement applies only when AUTH_MODE === "real". Public demo routes (for

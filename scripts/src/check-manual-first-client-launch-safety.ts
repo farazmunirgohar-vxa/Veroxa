@@ -36,13 +36,12 @@ const devCredentials = requireIncludes("artifacts/veroxa/src/lib/auth/devCredent
 const pilotAccounts = requireIncludes("artifacts/veroxa/src/lib/auth/pilotAccessAccounts.ts", [
   "Momo House San Antonio",
   "Team Faraz",
-  "VITE_VEROXA_PILOT_CLIENT_EMAIL",
-  "VITE_VEROXA_PILOT_CLIENT_PASSWORD",
-  "VITE_VEROXA_PILOT_TEAM_EMAIL",
-  "VITE_VEROXA_PILOT_TEAM_PASSWORD",
-  "deterministic-pilot",
+  "VITE_VEROXA_PILOT_ACCESS_ENDPOINT",
+  "server-controlled",
+  "Portal access not configured",
 ]);
-for (const retired of ["VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN", "Preview access ready", "Preview access not enabled", "publicPreviewFallbackEnabled", "isPreviewFriendlyHostname", "faraz@client.com", "faraz@team.com", "farazclient", "farazteam"]) {
+if (/password:\s*["'][^"']+["']/.test(pilotAccounts) || /momohousepilot|teamfarazpilot/.test(pilotAccounts)) failures.push("pilotAccessAccounts must not include bundled plaintext pilot passwords.");
+for (const retired of ["VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN", "Preview access ready", "Preview access not enabled", "publicPreviewFallbackEnabled", "isPreviewFriendlyHostname", "faraz@client.com", "faraz@team.com", "farazclient", "farazteam", "momohousepilot", "teamfarazpilot"]) {
   if (devCredentials.includes(retired) || pilotAccounts.includes(retired)) failures.push(`Real Login V1 auth helpers must not retain retired preview-login marker ${retired}.`);
 }
 
