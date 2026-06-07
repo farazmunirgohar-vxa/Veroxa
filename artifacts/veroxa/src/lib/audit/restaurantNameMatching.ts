@@ -210,7 +210,7 @@ export function matchRestaurantCandidates(
     } else {
       if (cityMatches && !queryState) addReason(reasons, "city matched without state confirmation");
       if (stateMatches && !queryCity) addReason(reasons, "state provided without city confirmation");
-      if (cityMismatches) { score -= 35; addReason(reasons, "city mismatch"); }
+      if (cityMismatches) { score -= 65; addReason(reasons, "city mismatch"); }
       if (stateMismatches) { score -= 45; addReason(reasons, "state mismatch"); }
     }
 
@@ -248,6 +248,7 @@ export function matchRestaurantCandidates(
     if (score < 25) continue;
 
     const hasStrongIdentityProof = reasons.includes("phone matched") || reasons.includes("domain matched") || reasons.includes("address matched") || reasons.includes("platform link matched");
+    const hasLocationConflictOverrideProof = reasons.includes("phone matched") || reasons.includes("domain matched") || reasons.includes("address matched");
     const hasLocationConflict = cityMismatches || stateMismatches;
     const hasOnlyStateConfirmation = Boolean(queryState && !queryCity && stateMatches && !hasStrongIdentityProof);
     const hasFullLocationConfirmation = cityMatches && stateMatches;
@@ -256,7 +257,7 @@ export function matchRestaurantCandidates(
     const hasNameOrAlias = reasons.includes("name matched") || reasons.includes("alias matched");
 
     let state: RestaurantMatchState = "manual_review_needed";
-    if (hasStrongIdentityProof && score >= 80) {
+    if (hasStrongIdentityProof && (!hasLocationConflict || hasLocationConflictOverrideProof) && score >= 80) {
       state = "exact_match";
     } else if (
       !hasLocationConflict &&
