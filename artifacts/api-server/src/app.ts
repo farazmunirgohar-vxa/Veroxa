@@ -14,6 +14,7 @@ app.use(
       "req.headers.x-veroxa-api-key",
       "req.headers[\"x-veroxa-api-key\"]",
       "req.body.email",
+      "req.body.password",
     ],
     serializers: {
       req(req) {

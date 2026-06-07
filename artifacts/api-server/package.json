@@ -8,7 +8,8 @@
     "build": "node ./build.mjs",
     "start": "node --enable-source-maps ./dist/index.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test:scan-url-safety": "pnpm --dir ../.. --filter @workspace/scripts exec tsx ../artifacts/api-server/src/lib/webPresenceScanner.safety.test.ts"
+    "test:scan-url-safety": "pnpm --dir ../.. --filter @workspace/scripts exec tsx ../artifacts/api-server/src/lib/webPresenceScanner.safety.test.ts",
+    "test:pilot-access": "pnpm --dir ../.. --filter @workspace/scripts exec tsx ../artifacts/api-server/src/routes/pilotAccess.test.ts"
   },
   "dependencies": {
     "@workspace/api-zod": "workspace:*",

@@ -14,6 +14,8 @@ tags:
     description: Protected AI drafting operations. Browser clients must not provide API keys.
   - name: protected-audit
     description: Protected restaurant audit lookup operations. Browser clients must not provide API keys.
+  - name: pilot-access
+    description: Public Real Login V1 manual pilot credential check. Passwords stay server-side.
 paths:
   /healthz:
     get:
@@ -28,6 +30,35 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /pilot-access:
+    post:
+      operationId: validatePilotAccess
+      tags: [pilot-access]
+      summary: Validate Real Login V1 pilot portal access
+      description: Public rate-limited endpoint that checks Momo House and Team Faraz pilot credentials server-side. Browser bundles must not contain pilot passwords.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+              required: [email, password]
+      responses:
+        "200":
+          description: Pilot account role and account id for manual placeholder session routing
+        "400":
+          description: Missing credentials
+        "401":
+          description: Invalid pilot credentials
+        "429":
+          description: Too many pilot access attempts
+        "503":
+          description: Pilot access server credentials are not configured
   /ai/draft:
     post:
       operationId: createAiDraft

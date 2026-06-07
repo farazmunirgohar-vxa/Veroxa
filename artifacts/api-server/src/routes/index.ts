@@ -3,6 +3,7 @@ import healthRouter from "./health";
 import auditAiRouter from "./auditAi";
 import auditLiveRouter from "./auditLive";
 import aiDraftsRouter from "./aiDrafts";
+import pilotAccessRouter from "./pilotAccess";
 import {
   protectedApiRateLimit,
   requireAiRoutesEnabled,
@@ -13,6 +14,7 @@ import {
 const router: IRouter = Router();
 
 router.use(healthRouter);
+router.use(pilotAccessRouter);
 
 router.use(protectedApiRateLimit);
 router.use(requireProtectedApiAccess);
