@@ -382,7 +382,7 @@ export default function TeamDashboard() {
             <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold tabular-nums">{onboardingSummary.readyForManualService}</p><p className="text-muted-foreground">Manual ready</p></div>
           </div>
           <div className="space-y-2 text-sm text-muted-foreground">
-            <p>Preview/manual setup only — no paid systems active.</p>
+            <p>Pre-live/manual setup only — no paid systems active.</p>
             <Link href="/team/onboarding" className="inline-flex items-center gap-2 text-primary hover:underline">
               Open Onboarding Queue <ArrowRight className="h-3 w-3" />
             </Link>
@@ -456,7 +456,7 @@ export default function TeamDashboard() {
             <p className="font-semibold">{getDataModeLabel(saasDataMode)}</p>
           </div>
           <div>
-            <p className="text-muted-foreground">Sample demo records allowed?</p>
+            <p className="text-muted-foreground">Pre-live records allowed?</p>
             <p className="font-semibold">{canUseDemoFixtures(saasDataMode) ? "Yes" : "No"}</p>
           </div>
           <div>
@@ -476,7 +476,7 @@ export default function TeamDashboard() {
 
       {canUseFixtureData ? (
         <DemoOnlyBanner
-          message="Demo only — today's work is derived from shared workflow items. No write or publishing action is connected."
+          message="Pre-live/manual only — today's work is derived from prepared workflow items. No write or publishing action is connected."
           testId="banner-team-dashboard"
         />
       ) : (

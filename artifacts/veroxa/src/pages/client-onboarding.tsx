@@ -124,12 +124,12 @@ function DraftCard({ title, body }: { title: string; body: string }) {
 
 function PrefillStatusGrid({ sections, clientSafe = true }: { sections: ReturnType<typeof getMomoHouseAuditPrefillSections>; clientSafe?: boolean }) {
   const statusLabel: Record<string, string> = {
-    prefilled: "Prefilled by Veroxa",
-    needs_owner_verification: "Needs owner verification",
-    missing: "Missing",
-    confirmed: "Confirmed",
-    corrected_by_owner: "Corrected by owner",
-    completed_by_veroxa: "Completed by Veroxa",
+    prefilled_by_veroxa: "Veroxa prefilled this from the audit",
+    needs_owner_verification: "Needs your verification",
+    missing: "Missing — needed before setup can continue",
+    owner_corrected: "Corrected by owner",
+    completed_by_team: "Team Faraz will complete this after access is provided",
+    blocked_needs_access: "Access needed before Team Faraz can continue",
   };
   return (
     <section className="mt-5 grid gap-4 lg:grid-cols-2" data-testid="audit-prefill-onboarding-fields">
@@ -141,7 +141,7 @@ function PrefillStatusGrid({ sections, clientSafe = true }: { sections: ReturnTy
               <div key={field.id} className="rounded-lg border border-border/70 p-3 text-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div><p className="font-medium text-foreground">{field.label}</p><p className="mt-1 text-xs text-muted-foreground">{field.value}</p></div>
-                  <StatusBadge tone={field.status === "missing" ? "danger" : field.status === "needs_owner_verification" ? "warning" : "success"}>{statusLabel[field.status]}</StatusBadge>
+                  <StatusBadge tone={field.status === "missing" || field.status === "blocked_needs_access" ? "danger" : field.status === "needs_owner_verification" ? "warning" : "success"}>{statusLabel[field.status]}</StatusBadge>
                 </div>
                 <p className="mt-2 text-[11px] text-muted-foreground">Source: {clientSafe ? "Veroxa prefill review" : field.source} · {field.required ? "Required" : "Optional"}</p>
               </div>
@@ -196,7 +196,7 @@ export default function ClientOnboarding() {
       <Card className="mb-5 border-primary/25 bg-primary/5">
         <CardContent className="grid gap-4 p-5 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
           <div>
-            <p className="text-sm font-semibold text-foreground">{mode.isPublicDemoRoute ? "Real pilot profile — Momo House San Antonio" : "Momo House San Antonio pilot workspace"}</p>
+            <p className="text-sm font-semibold text-foreground">Momo House San Antonio pilot workspace</p>
             <p className="mt-1 text-sm text-muted-foreground">Nothing goes live without Veroxa team review. This page shows your setup review, what Veroxa needs from you, and what Veroxa will organize during the first week.</p>
           </div>
           <div className="rounded-xl border border-border/70 bg-background/70 p-4">
@@ -220,6 +220,24 @@ export default function ClientOnboarding() {
       </section>
 
       <PrefillStatusGrid sections={prefillSections} />
+
+      <Card className="mt-5 border-emerald-500/25 bg-emerald-500/5" data-testid="client-onboarding-next-step">
+        <CardHeader><CardTitle className="text-base">Next step</CardTitle></CardHeader>
+        <CardContent className="grid gap-3 text-sm text-muted-foreground md:grid-cols-2 lg:grid-cols-4">
+          {[
+            "Verify business details",
+            "Confirm menu/order links",
+            "Upload or send usable food media",
+            "Provide Google/social/ordering access if requested",
+          ].map((item) => (
+            <div key={item} className="rounded-lg border border-border/70 bg-background/70 p-3">
+              <CheckCircle2 className="mb-2 h-4 w-4 text-emerald-400" />
+              <p className="font-medium text-foreground">{item}</p>
+            </div>
+          ))}
+          <p className="md:col-span-2 lg:col-span-4 rounded-lg border border-border/70 bg-background/70 p-3 text-xs">All setup actions are manual/pre-live. Veroxa will prepare and review work; this page does not publish, connect accounts, or change Google/social/ordering platforms automatically.</p>
+        </CardContent>
+      </Card>
 
       <section className="mt-5 grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
         <Card>

@@ -103,6 +103,15 @@ export default function TeamFirstClientOps() {
         </CardContent>
       </Card>
 
+      <Card className="mb-4 border-amber-500/25 bg-amber-500/5" data-testid="first-client-ops-manual-review-reminder">
+        <CardHeader className="pb-2"><CardTitle className="text-sm">Team Faraz manual review reminder</CardTitle></CardHeader>
+        <CardContent className="grid gap-3 text-sm text-muted-foreground md:grid-cols-3">
+          <p className="rounded-lg border border-border bg-background/30 p-3">Match and onboarding prefill must be reviewed before client handoff.</p>
+          <p className="rounded-lg border border-border bg-background/30 p-3">Do not publish / do not automate from this operating suite.</p>
+          <p className="rounded-lg border border-border bg-background/30 p-3">Google visibility, ordering, and social work stay manual checklists until future approved connectors exist.</p>
+        </CardContent>
+      </Card>
+
 
       <Card className="mb-4 border-primary/20 bg-primary/5" data-testid="first-client-ops-onboarding-readiness">
         <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-sm"><ClipboardCheck className="h-4 w-4 text-primary" />Restaurant onboarding readiness</CardTitle></CardHeader>

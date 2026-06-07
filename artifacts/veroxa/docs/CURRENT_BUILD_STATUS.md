@@ -1,5 +1,13 @@
 # Veroxa Launch Simplification Source of Truth
 
+## 2026-06-07 — PR #82 Audit matcher safety and real-pilot onboarding polish
+
+- PR #82 strengthened audit matcher safety after PR #81: state-only matches no longer count as city/state matched, and city/state conflicts reduce confidence.
+- City mismatch now prevents confident exact audit-to-onboarding prefill unless strong identity proof exists: exact phone, exact domain, exact/strong address, or exact platform/domain link.
+- Momo House San Antonio remains the first internal unpaid cooperation pilot; Team Faraz sees match reasons, location safety notes, owner verification gaps, missing fields, access blockers, and manual Google visibility readiness.
+- Active portal experiences remain only Client Portal and Team/Internal Admin Portal. Retired demo routes remain disabled. Owner, Operator, Super Admin, generic Admin, and Execution portals remain parked/blocked.
+- No live auth, database writes, storage uploads, live AI/OpenAI calls, Google/GBP or social connectors, payments, webhooks, cron/background jobs, or automated customer-visible publishing were added; `AUTH_MODE` remains `placeholder`.
+
 ## 2026-06-06 — Final pre-client polish completed, no live systems
 
 - Final pre-client polish completed for visual QA, docs authority cleanup, real-auth readiness audit, production preview-login checklist, and manual launch usability.
