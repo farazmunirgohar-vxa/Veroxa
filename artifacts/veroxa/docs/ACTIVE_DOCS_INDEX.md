@@ -47,3 +47,10 @@ Production/custom domains should set `VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=fa
 - Locked audit-to-onboarding workflow: public/initial audit → prefilled onboarding profile → owner verification → credential/platform connection → gap completion by owner + Veroxa team → final onboarding approval.
 - Onboarding must show which fields were prefilled by Veroxa, need owner verification, are missing, were corrected by owner, or were completed by Veroxa.
 - Safety remains pre-live/manual only: no production auth, database writes, storage uploads, live AI, connectors, payments, webhooks, cron, or automated customer-visible execution; `AUTH_MODE` remains `placeholder`.
+
+## 2026-06-07 — PR #82 matcher safety and onboarding alignment
+
+- Audit matching is conservative for location conflicts: state-only is not city/state matched, city/state mismatches are penalized, and city-conflicting Momo House inputs must not exact-prefill San Antonio unless strong proof exists (phone, domain, strong address, or platform/domain link).
+- Audit-to-onboarding prefill statuses are: `prefilled_by_veroxa`, `needs_owner_verification`, `missing`, `owner_corrected`, `completed_by_team`, and `blocked_needs_access`.
+- Active portals remain only Client Portal and Team/Internal Admin Portal; retired demo/preview routes remain disabled.
+- No live auth, writes, storage uploads, live AI, connectors, payments, cron/background jobs, or automated publishing were added.

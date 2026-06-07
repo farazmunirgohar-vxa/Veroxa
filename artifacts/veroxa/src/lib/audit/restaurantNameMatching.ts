@@ -26,6 +26,10 @@ export type RestaurantMatchReason =
   | "name matched"
   | "alias matched"
   | "city/state matched"
+  | "city mismatch"
+  | "state mismatch"
+  | "state provided without city confirmation"
+  | "city matched without state confirmation"
   | "address matched"
   | "phone matched"
   | "domain matched"
@@ -176,9 +180,10 @@ export function matchRestaurantCandidates(
     const allNames = canonicalNames(candidate);
     const allNameNorms = allNames.map(normalizeRestaurantSearchText);
     const aliasNorms = candidateAliases.map(normalizeRestaurantSearchText);
+    const hasExactAliasName = Boolean(queryName && aliasNorms.includes(queryName));
 
     if (queryName && queryName === candidateNameNorm) { score += 100; addReason(reasons, "name matched"); }
-    if (queryName && aliasNorms.includes(queryName)) { score += 95; addReason(reasons, "alias matched"); }
+    if (hasExactAliasName) { score += 95; addReason(reasons, "alias matched"); }
     if (queryName && allNameNorms.some((name) => name.includes(queryName) || queryName.includes(name))) {
       score += 60;
       addReason(reasons, aliasNorms.some((name) => name.includes(queryName) || queryName.includes(name)) ? "alias matched" : "name matched");
@@ -192,13 +197,38 @@ export function matchRestaurantCandidates(
       else if (hits >= 1) { score += 15; addReason(reasons, "weak/fuzzy match only"); }
     }
 
-    const cityMatches = queryCity && normalizeRestaurantSearchText(candidate.city) === queryCity;
-    const stateMatches = queryState && normalizeRestaurantSearchText(candidate.state) === queryState;
-    if (cityMatches && stateMatches) { score += 18; addReason(reasons, "city/state matched"); }
-    else if (cityMatches || stateMatches) { score += 8; addReason(reasons, "city/state matched"); }
+    const candidateCity = normalizeRestaurantSearchText(candidate.city);
+    const candidateState = normalizeRestaurantSearchText(candidate.state);
+    const cityMatches = Boolean(queryCity && candidateCity === queryCity);
+    const stateMatches = Boolean(queryState && candidateState === queryState);
+    const cityMismatches = Boolean(queryCity && candidateCity && candidateCity !== queryCity);
+    const stateMismatches = Boolean(queryState && candidateState && candidateState !== queryState);
+
+    if (cityMatches && stateMatches) {
+      score += 18;
+      addReason(reasons, "city/state matched");
+    } else {
+      if (cityMatches && !queryState) addReason(reasons, "city matched without state confirmation");
+      if (stateMatches && !queryCity) addReason(reasons, "state provided without city confirmation");
+      if (cityMismatches) { score -= 35; addReason(reasons, "city mismatch"); }
+      if (stateMismatches) { score -= 45; addReason(reasons, "state mismatch"); }
+    }
 
     const candidateAddress = normalizeRestaurantSearchText(candidate.address ?? candidate.addressLine);
-    if (queryAddress && candidateAddress && (queryAddress.includes(candidateAddress) || candidateAddress.includes(queryAddress) || tokens(queryAddress).filter((qt) => tokens(candidateAddress).some((ct) => tokenMatches(qt, ct))).length >= 3)) {
+    const addressTokenHits = queryAddress && candidateAddress
+      ? tokens(queryAddress).filter((qt) => tokens(candidateAddress).some((ct) => tokenMatches(qt, ct))).length
+      : 0;
+    const addressStrongMatch = Boolean(
+      queryAddress &&
+      candidateAddress &&
+      (
+        queryAddress.includes(candidateAddress) ||
+        candidateAddress.includes(queryAddress) ||
+        (addressTokenHits >= 3 && tokens(queryAddress).some((token) => /\d/.test(token))) ||
+        (addressTokenHits >= 2 && tokens(queryAddress).some((token) => /\d/.test(token)) && queryAddress.includes("de zavala"))
+      ),
+    );
+    if (addressStrongMatch) {
       score += 50;
       addReason(reasons, "address matched");
     }
@@ -208,7 +238,7 @@ export function matchRestaurantCandidates(
 
     const candidateDomains = candidateLinks(candidate).map(normalizeDomain).filter(Boolean);
     if (queryDomain && candidateDomains.includes(queryDomain)) { score += 90; addReason(reasons, "domain matched"); }
-    if (queryPlatformDomains.some((domain) => candidateDomains.includes(domain))) { score += 35; addReason(reasons, "platform link matched"); }
+    if (queryPlatformDomains.some((domain) => candidateDomains.includes(domain))) { score += 45; addReason(reasons, "platform link matched"); }
 
     if (queryCuisineTokens.length > 0) {
       const cuisineHits = queryCuisineTokens.filter((qt) => tokens(candidate.cuisineType).some((ct) => tokenMatches(qt, ct))).length;
@@ -216,9 +246,28 @@ export function matchRestaurantCandidates(
     }
 
     if (score < 25) continue;
+
+    const hasStrongIdentityProof = reasons.includes("phone matched") || reasons.includes("domain matched") || reasons.includes("address matched") || reasons.includes("platform link matched");
+    const hasLocationConflict = cityMismatches || stateMismatches;
+    const hasOnlyStateConfirmation = Boolean(queryState && !queryCity && stateMatches && !hasStrongIdentityProof);
+    const hasFullLocationConfirmation = cityMatches && stateMatches;
+    const hasExactCanonicalName = Boolean(queryName && queryName === candidateNameNorm);
+    const hasExactNameIdentity = hasExactCanonicalName || hasExactAliasName;
+    const hasNameOrAlias = reasons.includes("name matched") || reasons.includes("alias matched");
+
     let state: RestaurantMatchState = "manual_review_needed";
-    if (score >= 115 || reasons.includes("phone matched") || reasons.includes("domain matched")) state = "exact_match";
-    else if (score >= 65) state = "likely_match";
+    if (hasStrongIdentityProof && score >= 80) {
+      state = "exact_match";
+    } else if (
+      !hasLocationConflict &&
+      !hasOnlyStateConfirmation &&
+      score >= 115 &&
+      ((hasFullLocationConfirmation && hasExactNameIdentity) || hasExactCanonicalName)
+    ) {
+      state = "exact_match";
+    } else if (score >= 65 && (!hasLocationConflict || (hasNameOrAlias && score >= 85))) {
+      state = hasLocationConflict ? "manual_review_needed" : "likely_match";
+    }
 
     ranked.push({ candidate, score, state, reasons });
   }

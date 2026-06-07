@@ -133,6 +133,16 @@ export default function TeamFirstClientReadiness() {
         testId="header-first-client-readiness"
       />
 
+
+      <Card className="mb-4 border-amber-500/25 bg-amber-500/5" data-testid="first-client-readiness-manual-review-reminder">
+        <CardHeader className="pb-2"><CardTitle className="text-sm">Manual review required before pilot handoff</CardTitle></CardHeader>
+        <CardContent className="grid gap-3 text-sm text-muted-foreground md:grid-cols-3">
+          <p className="rounded-lg border border-border bg-background/30 p-3">Audit matcher city conflicts must be handled by Team Faraz, not automatic exact prefill.</p>
+          <p className="rounded-lg border border-border bg-background/30 p-3">Owner verification, missing fields, and credential blockers remain first-client readiness gates.</p>
+          <p className="rounded-lg border border-border bg-background/30 p-3">Do not publish / do not automate; Google visibility readiness is a manual checklist only.</p>
+        </CardContent>
+      </Card>
+
       <Card className="mb-4 border-primary/20 bg-primary/5" data-testid="first-client-readiness-onboarding-os">
         <CardHeader className="pb-2"><CardTitle className="text-sm">Restaurant Onboarding readiness</CardTitle></CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
@@ -144,7 +154,7 @@ export default function TeamFirstClientReadiness() {
             <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold">{onboardingSummary.readyForManualService}</p><p className="text-muted-foreground">Manual ready</p></div>
             <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold">Later</p><p className="text-muted-foreground">Paid-client ready</p></div>
           </div>
-          <div className="space-y-2 text-sm text-muted-foreground"><p>Onboarding is demo-walkthrough ready and feedback-conversation ready; first-paid-client readiness still waits for approved production auth, database, storage, and live-system activation.</p><Link href="/team/onboarding" className="inline-flex items-center gap-2 text-primary hover:underline">Open onboarding queue <ArrowRight className="h-3 w-3" /></Link></div>
+          <div className="space-y-2 text-sm text-muted-foreground"><p>Onboarding is pre-live walkthrough ready and feedback-conversation ready; first-paid-client readiness still waits for approved production auth, database, storage, and live-system activation.</p><Link href="/team/onboarding" className="inline-flex items-center gap-2 text-primary hover:underline">Open onboarding queue <ArrowRight className="h-3 w-3" /></Link></div>
         </CardContent>
       </Card>
 
@@ -165,7 +175,7 @@ export default function TeamFirstClientReadiness() {
             <div className="rounded-lg border border-border bg-background/30 p-3"><p className="text-xl font-semibold tabular-nums">{opsReadiness.confirmationBlockers}</p><p className="text-muted-foreground">Confirm blockers</p></div>
           </div>
           <div className="grid gap-2 text-sm text-muted-foreground md:grid-cols-3">
-            <p className="rounded-lg border border-border bg-background/30 p-3">First 1–5 manual service is demo-walkthrough ready when Faraz wants to show the operating flow.</p>
+            <p className="rounded-lg border border-border bg-background/30 p-3">First 1–5 manual service is pre-live walkthrough ready when Faraz wants to show the operating flow.</p>
             <p className="rounded-lg border border-border bg-background/30 p-3">First 1–5 manual service is feedback-conversation ready for pre-live review language.</p>
             <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-amber-200">First paid client remains blocked by future approved production auth, storage, live data, payment, and integration work.</p>
           </div>

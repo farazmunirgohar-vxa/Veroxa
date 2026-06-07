@@ -158,12 +158,12 @@ export interface TeamOnboardingQueueSummary {
 }
 
 export type AuditPrefillFieldStatus =
-  | "prefilled"
+  | "prefilled_by_veroxa"
   | "needs_owner_verification"
   | "missing"
-  | "confirmed"
-  | "corrected_by_owner"
-  | "completed_by_veroxa";
+  | "owner_corrected"
+  | "completed_by_team"
+  | "blocked_needs_access";
 
 export type AuditPrefillFieldSource =
   | "audit"

@@ -7,6 +7,7 @@ import { PageHeader, StatusBadge } from "@/components/common";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { teamPortalNavItems } from "@/lib/teamPortalNav";
+import { matchRestaurantCandidates } from "@/lib/audit/restaurantNameMatching";
 import {
   buildBusinessTruthConfirmationDraft,
   buildMissingInfoRequestDraft,
@@ -67,6 +68,27 @@ export default function TeamOnboarding() {
   const summary = getOnboardingQueueSummary(profiles);
   const readiness = buildOnboardingReadinessSnapshot(selected);
   const tone = getOnboardingRiskTone(selected);
+  const safeMatch = matchRestaurantCandidates({ restaurantName: "Momo House", city: "San Antonio", state: "TX" });
+  const unsafeMatch = matchRestaurantCandidates({ restaurantName: "Momo House", city: "Houston", state: "TX" });
+  const topMatch = safeMatch.topMatch;
+  const locationSafetyNotes = [
+    "City/state matched is only shown when both city and state match.",
+    "Houston/Dallas TX conflicts become manual review, not exact prefill, unless phone/domain/address/platform proof exists.",
+    "State-only TX is not location-confirmed.",
+  ];
+  const accessBlockers = prefillSections.flatMap((section) => section.fields.filter((field) => field.status === "blocked_needs_access").map((field) => `${section.title}: ${field.label}`));
+  const ownerVerificationFields = prefillSections.flatMap((section) => section.fields.filter((field) => field.status === "needs_owner_verification").map((field) => `${section.title}: ${field.label}`));
+  const missingPrefillFields = prefillSections.flatMap((section) => section.fields.filter((field) => field.status === "missing").map((field) => `${section.title}: ${field.label}`));
+  const visibilityChecklist = [
+    ["Website present", true],
+    ["GBP link verified", false],
+    ["Menu readable", false],
+    ["Photos usable", false],
+    ["Ordering links verified", false],
+    ["Social links verified", false],
+    ["Review response workflow pending", false],
+    ["Google posts/manual content opportunity", true],
+  ] as const;
 
   return (
     <PortalLayout items={teamPortalNavItems} portalName="Team Portal">
@@ -134,6 +156,44 @@ export default function TeamOnboarding() {
           </Card>
 
 
+
+          <Card className="border-amber-500/30 bg-amber-500/5" data-testid="team-match-safety-review">
+            <CardHeader><CardTitle className="flex items-center gap-2 text-base"><AlertTriangle className="h-4 w-4 text-amber-400" />Audit matcher safety review</CardTitle></CardHeader>
+            <CardContent className="space-y-4 text-sm text-muted-foreground">
+              <div className="grid gap-3 md:grid-cols-3">
+                <div className="rounded-lg border border-border/70 bg-background/70 p-3"><p className="text-xs uppercase tracking-wide">Match result</p><p className="mt-1 font-medium text-foreground">{safeMatch.state}</p></div>
+                <div className="rounded-lg border border-border/70 bg-background/70 p-3"><p className="text-xs uppercase tracking-wide">Match confidence</p><p className="mt-1 font-medium text-foreground">{topMatch?.score ?? 0} deterministic score</p></div>
+                <div className="rounded-lg border border-border/70 bg-background/70 p-3"><p className="text-xs uppercase tracking-wide">Manual review required test</p><p className="mt-1 font-medium text-foreground">Houston conflict: {unsafeMatch.state}</p></div>
+              </div>
+              <div className="grid gap-3 lg:grid-cols-2">
+                <div className="rounded-lg border border-border/70 bg-background/70 p-3"><p className="font-medium text-foreground">Match reasons</p><ul className="mt-2 list-disc space-y-1 pl-5">{(topMatch?.reasons ?? []).map((reason) => <li key={reason}>{reason}</li>)}</ul></div>
+                <div className="rounded-lg border border-border/70 bg-background/70 p-3"><p className="font-medium text-foreground">Location safety notes</p><ul className="mt-2 list-disc space-y-1 pl-5">{locationSafetyNotes.map((note) => <li key={note}>{note}</li>)}</ul></div>
+              </div>
+              <p className="rounded-lg border border-amber-500/30 bg-background/70 p-3 text-xs text-foreground">Manual review required whenever the match is not safe enough for automatic prefill. Do not publish / do not automate: this page is review guidance only and no Google, social, ordering, AI, or connector action runs from here.</p>
+            </CardContent>
+          </Card>
+
+          <Card data-testid="team-prefill-blockers-review">
+            <CardHeader><CardTitle className="text-base">Prefill fields, owner verification, and access blockers</CardTitle></CardHeader>
+            <CardContent className="grid gap-3 lg:grid-cols-3 text-sm text-muted-foreground">
+              <div className="rounded-lg border border-border/70 p-3"><p className="font-medium text-foreground">Missing fields</p><ul className="mt-2 list-disc space-y-1 pl-5">{missingPrefillFields.slice(0, 8).map((item) => <li key={item}>{item}</li>)}</ul></div>
+              <div className="rounded-lg border border-border/70 p-3"><p className="font-medium text-foreground">Owner verification required</p><ul className="mt-2 list-disc space-y-1 pl-5">{ownerVerificationFields.slice(0, 8).map((item) => <li key={item}>{item}</li>)}</ul></div>
+              <div className="rounded-lg border border-border/70 p-3"><p className="font-medium text-foreground">Access / credential blockers</p><ul className="mt-2 list-disc space-y-1 pl-5">{accessBlockers.slice(0, 8).map((item) => <li key={item}>{item}</li>)}</ul></div>
+            </CardContent>
+          </Card>
+
+          <Card data-testid="team-seo-google-visibility-manual-checklist">
+            <CardHeader><CardTitle className="text-base">SEO / Google Visibility readiness — manual checklist only</CardTitle></CardHeader>
+            <CardContent className="grid gap-2 md:grid-cols-2 text-sm text-muted-foreground">
+              {visibilityChecklist.map(([item, ready]) => (
+                <div key={item} className="flex items-center justify-between rounded-lg border border-border/70 p-3">
+                  <span>{item}</span>
+                  <StatusBadge tone={ready ? "success" : "warning"}>{ready ? "Prepared for review" : "Manual review required"}</StatusBadge>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
           <Card data-testid="team-audit-prefill-review">
             <CardHeader><CardTitle className="text-base">Audit-to-onboarding prefill review</CardTitle></CardHeader>
             <CardContent className="grid gap-3 md:grid-cols-2">
@@ -141,10 +201,11 @@ export default function TeamOnboarding() {
                 <div key={section.id} className="rounded-lg border border-border/70 p-3">
                   <p className="text-sm font-medium text-foreground">{section.title}</p>
                   <div className="mt-2 space-y-1 text-xs text-muted-foreground">
-                    <p>Prefilled: {section.fields.filter((field) => field.status === "prefilled").length}</p>
+                    <p>Prefilled: {section.fields.filter((field) => field.status === "prefilled_by_veroxa").length}</p>
                     <p>Needs owner verification: {section.fields.filter((field) => field.status === "needs_owner_verification").length}</p>
                     <p>Missing: {section.fields.filter((field) => field.status === "missing").length}</p>
-                    <p>Corrected by owner / completed by Veroxa / confirmed: {section.fields.filter((field) => ["corrected_by_owner", "completed_by_veroxa", "confirmed"].includes(field.status)).length}</p>
+                    <p>Owner corrected / completed by Team Faraz: {section.fields.filter((field) => ["owner_corrected", "completed_by_team"].includes(field.status)).length}</p>
+                    <p>Access blockers: {section.fields.filter((field) => field.status === "blocked_needs_access").length}</p>
                   </div>
                 </div>
               ))}

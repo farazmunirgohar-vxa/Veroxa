@@ -2,6 +2,12 @@
 
 Status: active real-pilot route inventory. Public demo/preview portal aliases are retired. See `QUARANTINED_AND_FUTURE_FILES_REVIEW.md` before routing parked pages.
 
+## 2026-06-07 — PR #82 route and matcher alignment
+
+- Matcher safety was strengthened after PR #81: city mismatch prevents exact prefill unless exact phone/domain, strong address, or platform/domain proof exists.
+- Retired demo routes remain disabled, and no live auth, writes, storage uploads, live AI, connectors, payments, cron jobs, or automated publishing were added.
+- Active portals remain only Client Portal and Team/Internal Admin Portal.
+
 ## Real-pilot route model
 
 Veroxa now has only two active portal experiences: Client Portal and Team/Internal Admin Portal. The first real pilot client is **Momo House San Antonio**; internal operations run as **Team Faraz**. Public demo/preview portals are no longer part of the live app surface.
@@ -52,6 +58,6 @@ Owner, Operator, Super Admin, generic Admin, and Execution portals must not be e
 
 ## Audit-to-onboarding visibility
 
-Onboarding must show field status for: prefilled, needs owner verification, missing, confirmed, corrected by owner, and completed by Veroxa. Sources can include audit, public info, owner, Veroxa team, and manual review.
+Onboarding must show field status for: `prefilled_by_veroxa`, `needs_owner_verification`, `missing`, `owner_corrected`, `completed_by_team`, and `blocked_needs_access`. Sources can include audit, public info, owner, Veroxa team, and manual review. City/state matched means both city and state matched; city-conflicting prefill is manual review unless exact phone/domain/strong address/platform proof exists.
 
 Retired demo/preview files remain quarantined unless the owner explicitly approves re-routing with docs and guardrails updated.

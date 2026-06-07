@@ -37,7 +37,7 @@ export const momoHousePilotProfile: RestaurantProfile = {
   preferredPostingTimes: [],
   brandVoiceNotes: "Internal pilot positioning: good online pieces becoming a consistent growth system. Use educational momo content and owner-confirmed claims only.",
   mediaGuidanceNotes: "Request current food photos/videos, best-seller media, menu/order links, and optional dining area/logo photos.",
-  businessTruthNotes: "Hours, menu items/prices, ordering links, catering availability, and dietary/health/halal/organic claims need owner verification before public copy.",
+  businessTruthNotes: "Audit details are prefilled for the San Antonio pilot only. Hours, menu items/prices, ordering links, catering availability, access, and dietary/health/halal/organic claims need owner verification before public copy; city-conflicting audit inputs stay manual review unless phone/domain/address/platform proof exists.",
   updatedAt: NOW,
 };
 
