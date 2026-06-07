@@ -138,7 +138,7 @@ export const AUDIT_ADAPTIVE_LEARNING_EXPLANATION =
   "Veroxa does not treat this audit as a one-time report. The audit becomes the starting point. As Veroxa works, the system learns from uploads, direction, content decisions, Google activity, social performance, review signals, and results. Every week, those signals help Veroxa make better recommendations.";
 
 export const AUDIT_DISCLAIMER =
-  "Preliminary audit based on available public signals. Veroxa can improve visibility, consistency, and customer decision support. Veroxa cannot guarantee exact sales or customer counts.";
+  "Veroxa can improve visibility, consistency, and customer decision support. Veroxa cannot guarantee exact sales or customer counts.";
 
 export const WHAT_VEROXA_NEEDS_FROM_RESTAURANT: string[] = [
   "3–5 real photos or short videos per week (dishes, daily specials, behind-the-scenes moments)",
@@ -202,11 +202,11 @@ export function buildAuditV2HeroSummary(
     scoreLabel: `${report.totalScore} / 100`,
     readinessStatus: report.gradeLabel,
     confidenceLabel: report.confidenceLabel,
-    reviewModeLabel: "Review-mode preview",
+    reviewModeLabel: "Preliminary assessment",
     cuisineOrConcept: cuisine,
     locationContext: `${report.input.city}, ${report.input.state}`,
     shortSummary: momo
-      ? `${report.input.restaurantName} has a focused hero product: momos. The biggest opportunity is to make the restaurant easier to discover, easier to understand, and more memorable during lunch, dinner, and craving moments.`
+      ? `${report.input.restaurantName} has a focused hero product: momos. The biggest opportunity is to improve visibility, customer discovery, and reminder strength during lunch, dinner, and craving moments.`
       : `${report.input.restaurantName} can strengthen its online foundation by making the restaurant easier to discover, easier to understand, and easier to choose when nearby customers are deciding what to eat.`,
   };
 }

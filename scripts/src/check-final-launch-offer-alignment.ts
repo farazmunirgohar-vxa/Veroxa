@@ -66,7 +66,7 @@ for (const forbidden of ["Starter —", "Growth —", "Premium —", "Local Pres
 for (const forbidden of ["Client Demo", "/demo/client", "$295", "$995", "Most popular"]) {
   if (landing.includes(forbidden)) failures.push(`Landing promotes forbidden marker ${forbidden}`);
 }
-for (const marker of ["Complete Online Presence — $495/month", "Yelp is a coming-soon/future review area", "Not ready / needs manual review", "Not a fit yet", "no checkout/payment"]) {
+for (const marker of ["Complete Online Presence — $495/month", "Yelp is a coming-soon/future review area", "Not ready / needs manual verification", "Not a fit yet", "no checkout/payment"]) {
   if (!audit.includes(marker)) failures.push(`Audit missing ${marker}`);
 }
 for (const marker of ["Included", "Needs confirmation", "Add-on available", "Coming soon", "Not included at launch", "Needs manual review", "not a promise that larger work is completed within 24 hours"]) {
