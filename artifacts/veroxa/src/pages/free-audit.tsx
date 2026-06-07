@@ -45,11 +45,14 @@ import { Badge } from "@/components/ui/badge";
 import { generateRestaurantAudit } from "@/lib/audit/auditScoring";
 import {
   AUDIT_DISCLAIMER,
-  AUDIT_EXPECTED_IMPACT_TIMELINE,
+  buildAuditV2FixPlan,
+  buildAuditV2GrowthInsights,
+  buildAuditV2HeroSummary,
+  buildAuditV2PriorityOpportunities,
+  buildAuditV2SignalBreakdown,
   formatThirtyDayPlan,
   formatWhatVeroxaCanImprove,
   formatWhatVeroxaCannotGuarantee,
-  WHAT_VEROXA_NEEDS_FROM_RESTAURANT,
 } from "@/lib/audit/auditReportFormatter";
 import type {
   AuditConfidence,
@@ -128,24 +131,6 @@ const sectionIcon: Record<string, React.ReactNode> = {
   fix_first: <Wrench className="w-4 h-4 text-primary" />,
   veroxa_needs: <CheckCircle2 className="w-4 h-4 text-primary" />,
 };
-
-const GROWTH_SECTION_GROUPS: { groupTitle: string; sectionIds: string[] }[] = [
-  {
-    groupTitle: "Google Visibility",
-    sectionIds: ["google_search_seo", "google_maps_seo", "gbp_strength"],
-  },
-  { groupTitle: "Customer Action Path", sectionIds: ["website_menu_path"] },
-  {
-    groupTitle: "Social Reminder Rhythm",
-    sectionIds: ["social_standing", "content_consistency"],
-  },
-  { groupTitle: "Trust Signals", sectionIds: ["reviews_trust"] },
-  { groupTitle: "Ads Readiness", sectionIds: ["ads_readiness"] },
-  {
-    groupTitle: "Identity & Location",
-    sectionIds: ["identity", "walk_in_opportunity"],
-  },
-];
 
 const emptyContact: AuditLeadContact = {
   contactName: "",
@@ -228,7 +213,9 @@ export default function FreeAudit() {
       instagramUrl: c.instagramUrl,
       facebookUrl: c.facebookUrl,
       menuOrderingUrl: c.menuOrderingUrl,
-      matchSource: c.matchSource ?? (("fix" + "ture") as RestaurantSearchCandidate["matchSource"]),
+      matchSource:
+        c.matchSource ??
+        (("fix" + "ture") as RestaurantSearchCandidate["matchSource"]),
       matchConfidence: c.matchConfidence,
       note: c.note,
     };
@@ -247,7 +234,9 @@ export default function FreeAudit() {
       selectedCuisineType: selectedCandidate.cuisineType,
       selectedMatchConfidence: selectedCandidate.matchConfidence,
       selectedSource:
-        selectedCandidate.source === "manual" ? "manual" : (("fix" + "ture") as AuditLeadSelectedRestaurant["selectedSource"]),
+        selectedCandidate.source === "manual"
+          ? "manual"
+          : (("fix" + "ture") as AuditLeadSelectedRestaurant["selectedSource"]),
       selectedRating: selectedCandidate.googleRating,
       selectedReviewCount: selectedCandidate.reviewCount,
       selectedWebsiteUrl: selectedCandidate.websiteUrl,
@@ -327,7 +316,10 @@ export default function FreeAudit() {
       menuOrderingUrl: candidate.menuOrderingUrl ?? prev.menuOrderingUrl,
       googleRating: candidate.googleRating ?? prev.googleRating,
       reviewCount: candidate.reviewCount ?? prev.reviewCount,
-      restaurantSource: candidate.source === "manual" ? "manual" : (("fix" + "ture") as RestaurantAuditInput["restaurantSource"]),
+      restaurantSource:
+        candidate.source === "manual"
+          ? "manual"
+          : (("fix" + "ture") as RestaurantAuditInput["restaurantSource"]),
     }));
     setReport(null);
     setWalkthroughSaved(false);
@@ -424,10 +416,13 @@ export default function FreeAudit() {
   const plan = report ? formatThirtyDayPlan(report) : [];
   const canImprove = formatWhatVeroxaCanImprove();
   const cannotGuarantee = formatWhatVeroxaCannotGuarantee();
-  const fixFirstSection =
-    report?.growthReportSections.find((s) => s.id === "fix_first") ?? null;
-  const veroxaNeedsSection =
-    report?.growthReportSections.find((s) => s.id === "veroxa_needs") ?? null;
+  const auditHero = report ? buildAuditV2HeroSummary(report) : null;
+  const priorityOpportunities = report
+    ? buildAuditV2PriorityOpportunities(report)
+    : [];
+  const growthInsights = report ? buildAuditV2GrowthInsights(report) : [];
+  const fixPlan = buildAuditV2FixPlan();
+  const signalBreakdown = report ? buildAuditV2SignalBreakdown(report) : [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -435,7 +430,8 @@ export default function FreeAudit() {
         {/* Hero */}
         <div className="mb-8">
           <div className="inline-flex items-center gap-2 text-xs uppercase tracking-wider text-primary mb-2">
-            <Sparkles className="w-3.5 h-3.5" /> Restaurant Online Presence Audit
+            <Sparkles className="w-3.5 h-3.5" /> Restaurant Online Presence
+            Audit
           </div>
           <h1
             className="text-3xl md:text-4xl font-bold tracking-tight mb-2"
@@ -444,10 +440,20 @@ export default function FreeAudit() {
             Restaurant Online Presence Audit
           </h1>
           <p className="text-muted-foreground max-w-3xl">
-            Share your restaurant details and generate a review-mode audit preview. Veroxa reviews Google Business Profile, Google Maps/local visibility, local SEO/search visibility basics, existing website alignment, Facebook, Instagram, media quality, menu/order/contact link clarity, and whether Complete Online Presence — $495/month is a fit. Yelp is a coming-soon/future review area, not included in the launch offer.
+            Share your restaurant details and generate a review-mode audit
+            preview. Veroxa reviews Google Business Profile, Google Maps/local
+            visibility, local SEO/search visibility basics, existing website
+            alignment, Facebook, Instagram, media quality, menu/order/contact
+            link clarity, and whether Complete Online Presence — $495/month is a
+            fit. Yelp is a coming-soon/future review area, not included in the
+            launch offer.
           </p>
           <p className="text-[12px] text-muted-foreground/80 max-w-3xl mt-2 italic">
-            This pre-live audit uses the information you provide and preview matching only. Live third-party lookup is not part of this preview yet, and recommendations are not guarantees. Yelp, TikTok, Reels/video, and ads are coming soon and are not included in the launch package.
+            This pre-live audit uses the information you provide and preview
+            matching only. Live third-party lookup is not part of this preview
+            yet, and recommendations are not guarantees. Yelp, TikTok,
+            Reels/video, and ads are coming soon and are not included in the
+            launch package.
           </p>
         </div>
 
@@ -465,8 +471,10 @@ export default function FreeAudit() {
                 What Veroxa reviews
               </p>
               <p className="text-[12px] text-muted-foreground">
-                Google Business Profile, Google Maps/local visibility, local SEO/search basics, existing website/menu/contact paths, Facebook, Instagram, media readiness, goals, and consistency signals — the
-                places customers usually check before deciding.
+                Google Business Profile, Google Maps/local visibility, local
+                SEO/search basics, existing website/menu/contact paths,
+                Facebook, Instagram, media readiness, goals, and consistency
+                signals — the places customers usually check before deciding.
               </p>
             </CardContent>
           </Card>
@@ -480,7 +488,8 @@ export default function FreeAudit() {
               </p>
               <p className="text-[12px] text-muted-foreground">
                 A readiness report, your top daily customer opportunities, a
-                simple 30-day plan, and whether Complete Online Presence — $495/month fits, needs manual review, or is not a fit yet.
+                simple 30-day plan, and whether Complete Online Presence —
+                $495/month fits, needs manual review, or is not a fit yet.
               </p>
             </CardContent>
           </Card>
@@ -490,9 +499,11 @@ export default function FreeAudit() {
                 What this is not
               </p>
               <p className="text-[12px] text-muted-foreground">
-                Not a contract, not a charge, no checkout/payment, and not a guaranteed result. The
-                audit recommendation options are Complete Online Presence — $495/month, Not ready / needs manual review, or Not a fit yet. Veroxa will not post, change, or
-                contact anyone without you.
+                Not a contract, not a charge, no checkout/payment, and not a
+                guaranteed result. The audit recommendation options are Complete
+                Online Presence — $495/month, Not ready / needs manual review,
+                or Not a fit yet. Veroxa will not post, change, or contact
+                anyone without you.
               </p>
             </CardContent>
           </Card>
@@ -512,8 +523,8 @@ export default function FreeAudit() {
           <CardContent>
             <p className="text-[12px] text-muted-foreground mb-3">
               Enter your restaurant name, city, and state. This pre-live page
-              uses preview matching so you can continue before a manual
-              Veroxa team review.
+              uses preview matching so you can continue before a manual Veroxa
+              team review.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
               <Field label="Restaurant name *" testId="restaurant-search-name">
@@ -640,10 +651,19 @@ export default function FreeAudit() {
                       No confident preview match found yet.
                     </p>
                     <p className="text-[12px] text-muted-foreground mt-1">
-                      This review-mode audit preview uses limited preview matching only. Try a shorter name, alternate spelling, city/state, or cuisine. If no confident match exists, continue manually — Veroxa can still review it.
+                      This review-mode audit preview uses limited preview
+                      matching only. Try a shorter name, alternate spelling,
+                      city/state, or cuisine. If no confident match exists,
+                      continue manually — Veroxa can still review it.
                     </p>
                     <p className="text-[12px] text-muted-foreground/80 mt-1">
-                      Live third-party lookup is not part of this preview yet. Some restaurants appear under a different listing name, so a weak or missing match can still be a discoverability signal and potential Veroxa opportunity. Audit recommendations are not guarantees; Yelp, TikTok, Reels/video, and ads are coming soon and are not included in the launch package.
+                      Live third-party lookup is not part of this preview yet.
+                      Some restaurants appear under a different listing name, so
+                      a weak or missing match can still be a discoverability
+                      signal and potential Veroxa opportunity. Audit
+                      recommendations are not guarantees; Yelp, TikTok,
+                      Reels/video, and ads are coming soon and are not included
+                      in the launch package.
                     </p>
                     <Button
                       type="button"
@@ -875,7 +895,7 @@ export default function FreeAudit() {
                     <Input
                       value={input.otherUrl ?? ""}
                       onChange={(e) => handleChange("otherUrl", e.target.value)}
-                      placeholder="Reservation, catering, anything else"
+                      placeholder="Reservation link, delivery link, anything else"
                     />
                   </Field>
                 </div>
@@ -892,7 +912,10 @@ export default function FreeAudit() {
                 </p>
                 <p className="text-[11px] text-muted-foreground/80 mb-2">
                   A little context helps Veroxa understand whether you need
-                  Google visibility, website alignment, Facebook/Instagram consistency, menu/order/contact link clarity, or whether Complete Online Presence needs manual review. Yelp is coming soon.
+                  Google visibility, website alignment, Facebook/Instagram
+                  consistency, menu/order/contact link clarity, or whether
+                  Complete Online Presence needs manual review. Yelp is coming
+                  soon.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <Field
@@ -904,7 +927,7 @@ export default function FreeAudit() {
                       onChange={(e) =>
                         handleChange("currentGoal", e.target.value)
                       }
-                      placeholder="e.g. more consistent Google visibility, cleaner social posting, reels, catering inquiries, ads assessment"
+                      placeholder="e.g. more consistent Google visibility, cleaner social posting, content rhythm, menu link clarity, ads assessment"
                       rows={3}
                     />
                   </Field>
@@ -937,7 +960,10 @@ export default function FreeAudit() {
                       What Veroxa reviews next
                     </p>
                     <p>
-                      Google/local visibility, local SEO basics, website alignment, Facebook/Instagram consistency, usable media, menu/order/contact link clarity, and whether Yelp/TikTok/Reels/Ads should stay parked as coming soon.
+                      Google/local visibility, local SEO basics, website
+                      alignment, Facebook/Instagram consistency, usable media,
+                      menu/order/contact link clarity, and whether
+                      Yelp/TikTok/Reels/Ads should stay parked as coming soon.
                     </p>
                   </div>
                 </div>
@@ -963,58 +989,179 @@ export default function FreeAudit() {
 
         {/* Report */}
         <div id="audit-report-anchor" />
-        {report && (
+        {report && auditHero && (
           <div className="mt-10 space-y-4" data-testid="audit-report">
-            {/* 1. Overall header */}
+            {/* 1. Audit Hero Summary */}
             <Card className="bg-card border-border">
-              <CardContent className="p-6">
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div>
+              <CardContent className="p-5 md:p-6">
+                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                  <div className="min-w-0">
                     <p className="text-[11px] uppercase tracking-wider text-primary mb-1">
-                      Veroxa Review-Mode Restaurant Audit Preview
+                      Online Presence Audit
                     </p>
                     <p
                       className="text-2xl md:text-3xl font-bold mt-0.5"
                       data-testid="audit-grade-headline"
                     >
-                      {report.input.restaurantName}
+                      {auditHero.restaurantName}
                     </p>
-                    <p
-                      className="text-[11px] text-muted-foreground mt-1 tabular-nums"
-                      data-testid="audit-total-score"
-                    >
-                      Readiness: {report.gradeLabel} · Score:{" "}
-                      {report.totalScore} / 100
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      <Badge
+                        variant="outline"
+                        className="border-primary/40 text-primary bg-primary/5"
+                      >
+                        Score: {auditHero.scoreLabel}
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className="border-muted-foreground/30 text-muted-foreground bg-muted/10"
+                      >
+                        {auditHero.readinessStatus}
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className={`inline-flex items-center gap-1 ${confidenceTone[report.auditConfidence]}`}
+                        data-testid="audit-confidence-badge"
+                      >
+                        <ShieldCheck className="w-3 h-3" />{" "}
+                        {auditHero.confidenceLabel} confidence
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className="border-amber-500/40 text-amber-400 bg-amber-500/5"
+                      >
+                        {auditHero.reviewModeLabel}
+                      </Badge>
+                    </div>
+                    <p className="text-[12px] text-muted-foreground mt-2">
+                      {auditHero.cuisineOrConcept} · {auditHero.locationContext}
                     </p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">
-                      {report.input.cuisineType} · {report.input.city},{" "}
-                      {report.input.state}
-                    </p>
-                    <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
-                      {report.gradeDescription}
+                    <p className="text-sm text-foreground/90 mt-3 max-w-3xl leading-relaxed">
+                      {auditHero.shortSummary}
                     </p>
                   </div>
-                  <div className="flex flex-col items-end gap-1">
-                    <Badge
-                      variant="outline"
-                      className="border-amber-500/40 text-amber-400 bg-amber-500/5"
-                    >
-                      Review-mode preview
-                    </Badge>
-                    <Badge
-                      variant="outline"
-                      className={`inline-flex items-center gap-1 ${confidenceTone[report.auditConfidence]}`}
-                      data-testid="audit-confidence-badge"
-                    >
-                      <ShieldCheck className="w-3 h-3" /> Confidence:{" "}
-                      {report.confidenceLabel}
-                    </Badge>
+                  <div
+                    className="rounded-lg border border-border bg-muted/20 p-3 md:w-56 shrink-0"
+                    data-testid="audit-total-score"
+                  >
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                      Readiness score
+                    </p>
+                    <p className="text-3xl font-bold mt-1 tabular-nums">
+                      {report.totalScore}
+                      <span className="text-sm text-muted-foreground">
+                        {" "}
+                        / 100
+                      </span>
+                    </p>
+                    <p className="text-[12px] text-muted-foreground mt-1">
+                      {report.gradeDescription}
+                    </p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* 2. What Veroxa would fix first */}
+            {/* 2. Top 3 Priority Opportunities */}
+            <Card className="bg-card border-border">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base inline-flex items-center gap-2">
+                  <Target className="w-4 h-4 text-primary" /> Top 3 priority
+                  opportunities
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {priorityOpportunities.map((opportunity, i) => (
+                    <div
+                      key={opportunity.category}
+                      className="rounded-lg border border-border bg-muted/20 p-3"
+                      data-testid={`audit-priority-${opportunity.category.toLowerCase().replace(/\s+/g, "-")}`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                          Opportunity {i + 1}
+                        </p>
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] border-primary/30 text-primary bg-primary/5"
+                        >
+                          {opportunity.priority}
+                        </Badge>
+                      </div>
+                      <p className="text-sm font-semibold mt-1">
+                        {opportunity.title}
+                      </p>
+                      <p className="text-[12px] text-muted-foreground mt-2 leading-relaxed">
+                        <span className="font-medium text-foreground/90">
+                          Why it matters:{" "}
+                        </span>
+                        {opportunity.whyItMatters}
+                      </p>
+                      <p className="text-[12px] text-muted-foreground mt-2 leading-relaxed">
+                        <span className="font-medium text-foreground/90">
+                          What Veroxa can do:{" "}
+                        </span>
+                        {opportunity.whatVeroxaCanDo}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* 3. Restaurant Growth Insights */}
+            <Card
+              className="bg-card border-border"
+              data-testid="restaurant-growth-insights"
+            >
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base inline-flex items-center gap-2">
+                  <Compass className="w-4 h-4 text-primary" /> Restaurant Growth
+                  Insights
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {growthInsights.map((insight) => (
+                    <div
+                      key={insight.title}
+                      className="rounded-lg border border-border bg-muted/20 p-3"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="text-sm font-semibold">{insight.title}</p>
+                        {insight.label && (
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] border-amber-500/40 text-amber-400 bg-amber-500/5"
+                          >
+                            {insight.label}
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-[12px] text-muted-foreground mt-2 leading-relaxed">
+                        {insight.body}
+                      </p>
+                      {insight.bullets && (
+                        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1 mt-2">
+                          {insight.bullets.map((bullet) => (
+                            <li
+                              key={bullet}
+                              className="text-[12px] text-foreground/90 flex items-start gap-2"
+                            >
+                              <span className="mt-[6px] shrink-0 w-1.5 h-1.5 rounded-full bg-primary/60" />
+                              {bullet}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* 4. What Veroxa would fix first */}
             <Card
               className="bg-card border-border"
               data-testid="fix-plan-summary"
@@ -1025,117 +1172,37 @@ export default function FreeAudit() {
                   fix first
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                {fixFirstSection && (
-                  <p className="text-sm text-foreground/90">
-                    {fixFirstSection.veroxaRecommendation}
-                  </p>
-                )}
-                {veroxaNeedsSection && (
-                  <p className="text-[12px] text-muted-foreground">
-                    {veroxaNeedsSection.currentSignal}
-                  </p>
-                )}
-                <div>
-                  <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">
-                    What Veroxa needs from the restaurant
-                  </p>
-                  <ul className="space-y-1">
-                    {WHAT_VEROXA_NEEDS_FROM_RESTAURANT.map((item) => (
-                      <li
-                        key={item}
-                        className="text-[12px] text-foreground/90 flex items-start gap-2"
-                      >
-                        <span className="mt-[3px] shrink-0 w-1.5 h-1.5 rounded-full bg-primary/60" />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* 3. Top 3 daily customer opportunities */}
-            <Card className="bg-card border-border">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base inline-flex items-center gap-2">
-                  <Target className="w-4 h-4 text-primary" /> Top 3 daily
-                  customer opportunities
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {report.weakSpots.map((w, i) => (
-                  <div
-                    key={`${w.categoryId}-${i}`}
-                    className="rounded-md border border-border bg-muted/20 p-3"
-                    data-testid={`audit-weak-${w.categoryId}`}
-                  >
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                      Opportunity {i + 1}
-                    </p>
-                    <p className="text-sm font-semibold mt-0.5">{w.title}</p>
-                    <p className="text-[12px] text-muted-foreground mt-1">
-                      <span className="font-medium text-foreground/90">
-                        Why this matters:{" "}
-                      </span>
-                      {w.whyItMatters}
-                    </p>
-                    <p className="text-[12px] text-muted-foreground mt-1">
-                      <span className="font-medium text-foreground/90">
-                        What Veroxa can do:{" "}
-                      </span>
-                      {w.howVeroxaHelps}
-                    </p>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-
-            {/* 4. Recommended package */}
-            <Card className="bg-card border-border">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">
-                  Complete Online Presence fit preview
-                </CardTitle>
-              </CardHeader>
               <CardContent>
-                <div className="flex flex-wrap items-baseline justify-between gap-2 mb-2">
-                  <p
-                    className="text-lg font-semibold"
-                    data-testid="audit-package-label"
-                  >
-                    {report.recommendation.packageLabel}
-                  </p>
-                  <div className="text-right">
-                    <p className="text-sm">
-                      {report.recommendation.standardPriceDisplay}
-                    </p>
-                    <p className="text-[11px] text-muted-foreground">
-                      {report.recommendation.foundingPriceDisplay}
-                    </p>
-                  </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {fixPlan.map((stage) => (
+                    <div
+                      key={stage.label}
+                      className="rounded-lg border border-border bg-muted/20 p-3"
+                    >
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                        {stage.label}
+                      </p>
+                      <p className="text-sm font-semibold mt-1 leading-snug">
+                        {stage.title}
+                      </p>
+                      <ul className="space-y-1 mt-2">
+                        {stage.bullets.map((bullet) => (
+                          <li
+                            key={bullet}
+                            className="text-[12px] text-muted-foreground flex items-start gap-2"
+                          >
+                            <span className="mt-[6px] shrink-0 w-1.5 h-1.5 rounded-full bg-primary/60" />
+                            {bullet}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
                 </div>
-                <p className="text-sm text-foreground/90">
-                  {report.recommendation.reason}
-                </p>
-                {report.recommendation.whyNotAdsYet && (
-                  <p className="text-[12px] text-amber-400/90 mt-2">
-                    {report.recommendation.whyNotAdsYet}
-                  </p>
-                )}
-                {report.recommendation.expectedDirection && (
-                  <p
-                    className="text-[12px] text-muted-foreground italic mt-2"
-                    data-testid="audit-expected-direction"
-                  >
-                    Expected direction (not a guarantee):{" "}
-                    {report.recommendation.expectedDirection}
-                  </p>
-                )}
               </CardContent>
             </Card>
 
-            {/* 5. 30-day plan — compact phase strip */}
+            {/* 5. 30-day plan */}
             <Card className="bg-card border-border">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base">
@@ -1143,26 +1210,83 @@ export default function FreeAudit() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   {plan.map((w) => (
                     <div
                       key={w.week}
-                      className="rounded-md border border-border bg-muted/20 p-3"
+                      className="rounded-lg border border-border bg-muted/20 p-3"
                     >
                       <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
                         Week {w.week}
                       </p>
-                      <p className="text-xs font-semibold mt-0.5 leading-snug">
-                        {w.title}
-                      </p>
+                      <p className="text-sm font-semibold mt-1">{w.title}</p>
+                      <ul className="space-y-1 mt-2">
+                        {w.bullets.map((bullet) => (
+                          <li
+                            key={bullet}
+                            className="text-[12px] text-muted-foreground flex items-start gap-2"
+                          >
+                            <span className="mt-[6px] shrink-0 w-1.5 h-1.5 rounded-full bg-primary/60" />
+                            {bullet}
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   ))}
                 </div>
               </CardContent>
             </Card>
 
-            {/* 6. Full signal breakdown — collapsible */}
-            <details className="group">
+            {/* 6. Can / cannot */}
+            <Card className="bg-card border-border">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">
+                  What Veroxa can and cannot improve
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-sm text-foreground/90">{AUDIT_DISCLAIMER}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="rounded-lg border border-border bg-muted/20 p-3">
+                    <p className="text-sm font-semibold inline-flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Can
+                      improve
+                    </p>
+                    <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 mt-2">
+                      {canImprove.map((item) => (
+                        <li
+                          key={item}
+                          className="text-[12px] text-foreground/90 flex items-start gap-2"
+                        >
+                          <span className="mt-[6px] shrink-0 w-1.5 h-1.5 rounded-full bg-emerald-400/70" />
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="rounded-lg border border-border bg-muted/20 p-3">
+                    <p className="text-sm font-semibold inline-flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4 text-amber-400" />{" "}
+                      Cannot guarantee or directly control
+                    </p>
+                    <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 mt-2">
+                      {cannotGuarantee.map((item) => (
+                        <li
+                          key={item}
+                          className="text-[12px] text-muted-foreground flex items-start gap-2"
+                        >
+                          <span className="mt-[6px] shrink-0 w-1.5 h-1.5 rounded-full bg-amber-400/70" />
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* 7. Full signal breakdown */}
+            <details className="group" data-testid="full-signal-breakdown">
               <summary className="flex items-center justify-between cursor-pointer rounded-lg border border-border bg-card px-4 py-3 text-sm font-semibold hover:bg-muted/30 transition-colors list-none">
                 <span className="inline-flex items-center gap-2">
                   <Globe className="w-4 h-4 text-primary" /> Full signal
@@ -1179,7 +1303,6 @@ export default function FreeAudit() {
                 className="mt-2 space-y-3"
                 data-testid="growth-report-sections"
               >
-                {/* Audit signal summary */}
                 <Card
                   className="bg-card border-border"
                   data-testid="audit-confidence-strip"
@@ -1189,227 +1312,126 @@ export default function FreeAudit() {
                       Audit signal summary
                     </p>
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-[11px]">
-                      <div className="rounded-md border border-border bg-muted/10 p-2 text-center">
-                        <p className="text-muted-foreground mb-0.5">
-                          Google profile
-                        </p>
-                        <p
-                          className={
-                            report.input.googleListingUrl
-                              ? "text-emerald-400 font-medium"
-                              : "text-muted-foreground/60"
-                          }
-                        >
-                          {report.input.googleListingUrl
+                      {[
+                        [
+                          "Google profile",
+                          report.input.googleListingUrl
                             ? "Link provided"
-                            : "Not confirmed"}
-                        </p>
-                      </div>
-                      <div className="rounded-md border border-border bg-muted/10 p-2 text-center">
-                        <p className="text-muted-foreground mb-0.5">Website</p>
-                        <p
-                          className={
-                            report.input.websiteFound || report.input.websiteUrl
-                              ? "text-emerald-400 font-medium"
-                              : "text-muted-foreground/60"
-                          }
-                        >
-                          {report.input.websiteFound
+                            : "Not confirmed",
+                        ],
+                        [
+                          "Website",
+                          report.input.websiteFound
                             ? "Preview signal"
                             : report.input.websiteUrl
                               ? "Link provided"
-                              : "Not confirmed"}
-                        </p>
-                      </div>
-                      <div className="rounded-md border border-border bg-muted/10 p-2 text-center">
-                        <p className="text-muted-foreground mb-0.5">
-                          Menu / order
-                        </p>
-                        <p
-                          className={
-                            report.input.menuLinkFound ||
-                            report.input.orderLinkFound ||
-                            report.input.menuOrderingUrl
-                              ? "text-emerald-400 font-medium"
-                              : "text-muted-foreground/60"
-                          }
-                        >
-                          {report.input.menuLinkFound ||
+                              : "Not confirmed",
+                        ],
+                        [
+                          "Menu / order",
+                          report.input.menuLinkFound ||
                           report.input.orderLinkFound
                             ? "Preview signal"
                             : report.input.menuOrderingUrl
                               ? "Link provided"
-                              : "Not confirmed"}
-                        </p>
-                      </div>
-                      <div className="rounded-md border border-border bg-muted/10 p-2 text-center">
-                        <p className="text-muted-foreground mb-0.5">Social</p>
-                        <p
-                          className={
-                            (report.input.discoveredSocialLinks?.length ?? 0) >
-                              0 ||
-                            report.input.instagramUrl ||
-                            report.input.facebookUrl ||
-                            report.input.tiktokUrl
-                              ? "text-emerald-400 font-medium"
-                              : "text-muted-foreground/60"
-                          }
-                        >
-                          {(report.input.discoveredSocialLinks?.length ?? 0) > 0
+                              : "Not confirmed",
+                        ],
+                        [
+                          "Social",
+                          (report.input.discoveredSocialLinks?.length ?? 0) > 0
                             ? `${report.input.discoveredSocialLinks!.length} preview signal(s)`
                             : report.input.instagramUrl ||
                                 report.input.facebookUrl ||
                                 report.input.tiktokUrl
                               ? "Links provided"
-                              : "Not confirmed"}
-                        </p>
-                      </div>
-                      <div className="rounded-md border border-border bg-muted/10 p-2 text-center">
-                        <p className="text-muted-foreground mb-0.5">
-                          Audit mode
-                        </p>
-                        <p
-                          className={
-                            report.input.restaurantSource === "google_places"
-                              ? "text-emerald-400 font-medium"
-                              : "text-muted-foreground/60"
-                          }
-                        >
-                          {report.input.restaurantSource === "google_places"
+                              : "Not confirmed",
+                        ],
+                        [
+                          "Audit mode",
+                          report.input.restaurantSource === "google_places"
                             ? "Review mode"
-                            : report.input.restaurantSource === (("fix" + "ture") as RestaurantAuditInput["restaurantSource"])
+                            : report.input.restaurantSource ===
+                                (("fix" +
+                                  "ture") as RestaurantAuditInput["restaurantSource"])
                               ? "Preview match"
-                              : "Manual entry"}
-                        </p>
-                      </div>
+                              : "Manual entry",
+                        ],
+                      ].map(([label, value]) => (
+                        <div
+                          key={label}
+                          className="rounded-md border border-border bg-muted/10 p-2 text-center"
+                        >
+                          <p className="text-muted-foreground mb-0.5">
+                            {label}
+                          </p>
+                          <p className="text-foreground/90 font-medium">
+                            {value}
+                          </p>
+                        </div>
+                      ))}
                     </div>
                   </CardContent>
                 </Card>
-
-                {/* Grouped sections */}
-                {GROWTH_SECTION_GROUPS.map((group) => {
-                  const sections = report.growthReportSections.filter((s) =>
-                    group.sectionIds.includes(s.id),
-                  );
-                  if (sections.length === 0) return null;
-                  return (
-                    <Card
-                      key={group.groupTitle}
-                      className="bg-card border-border"
-                      data-testid={`growth-group-${group.groupTitle.toLowerCase().replace(/\s+/g, "-")}`}
-                    >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {signalBreakdown.map((group) => (
+                    <Card key={group.title} className="bg-card border-border">
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-sm">
-                          {group.groupTitle}
-                        </CardTitle>
+                        <CardTitle className="text-sm">{group.title}</CardTitle>
                       </CardHeader>
-                      <CardContent className="space-y-4">
-                        {sections.map((sec) => (
-                          <div
-                            key={sec.id}
-                            className="border-b border-border last:border-0 pb-3 last:pb-0"
-                            data-testid={`growth-section-${sec.id}`}
-                          >
-                            <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
-                              <p className="text-xs font-semibold inline-flex items-center gap-1.5">
-                                {sectionIcon[sec.id]}
-                                {sec.title}
-                              </p>
-                              <Badge
-                                variant="outline"
-                                className={`text-[10px] ${sourceLabelTone[sec.sourceLabel]}`}
-                              >
-                                {sourceLabelText[sec.sourceLabel]}
-                              </Badge>
-                            </div>
-                            <p className="text-[12px] text-muted-foreground mb-1">
-                              <span className="font-medium text-foreground/90">
-                                Signal:{" "}
-                              </span>
-                              {sec.currentSignal}
-                            </p>
-                            <p className="text-[12px] text-muted-foreground">
-                              <span className="font-medium text-foreground/90">
-                                Recommendation:{" "}
-                              </span>
-                              {sec.veroxaRecommendation}
-                            </p>
-                          </div>
-                        ))}
+                      <CardContent>
+                        <ul className="space-y-1">
+                          {group.bullets.map((bullet) => (
+                            <li
+                              key={bullet}
+                              className="text-[12px] text-muted-foreground flex items-start gap-2"
+                            >
+                              <span className="mt-[6px] shrink-0 w-1.5 h-1.5 rounded-full bg-primary/60" />
+                              {bullet}
+                            </li>
+                          ))}
+                        </ul>
                       </CardContent>
                     </Card>
-                  );
-                })}
-              </div>
-            </details>
-
-            {/* 7. Can / cannot + timeline — collapsible */}
-            <details className="group">
-              <summary className="flex items-center justify-between cursor-pointer rounded-lg border border-border bg-card px-4 py-3 text-sm font-semibold hover:bg-muted/30 transition-colors list-none">
-                <span className="inline-flex items-center gap-2">
-                  <Compass className="w-4 h-4 text-primary" /> What Veroxa can
-                  and cannot do
-                </span>
-                <span className="text-[11px] font-normal text-muted-foreground group-open:hidden">
-                  Show
-                </span>
-                <span className="text-[11px] font-normal text-muted-foreground hidden group-open:inline">
-                  Hide
-                </span>
-              </summary>
-              <div className="mt-2 space-y-3">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <Card className="bg-card border-border">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm inline-flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />{" "}
-                        What Veroxa can improve
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ul className="text-[12px] text-foreground/90 space-y-1 list-disc pl-5">
-                        {canImprove.map((i) => (
-                          <li key={i}>{i}</li>
-                        ))}
-                      </ul>
-                    </CardContent>
-                  </Card>
-                  <Card className="bg-card border-border">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm inline-flex items-center gap-2">
-                        <AlertTriangle className="w-4 h-4 text-amber-400" />{" "}
-                        What Veroxa cannot guarantee
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ul className="text-[12px] text-muted-foreground space-y-1 list-disc pl-5">
-                        {cannotGuarantee.map((i) => (
-                          <li key={i}>{i}</li>
-                        ))}
-                      </ul>
-                    </CardContent>
-                  </Card>
+                  ))}
                 </div>
                 <Card className="bg-card border-border">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-base">
-                      Expected timeline of impact
+                    <CardTitle className="text-sm">
+                      Source notes for manual review
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-2">
-                    {AUDIT_EXPECTED_IMPACT_TIMELINE.map((t) => (
-                      <div
-                        key={t.period}
-                        className="flex flex-col sm:flex-row sm:gap-3 border-b border-border last:border-0 pb-2 last:pb-0"
-                      >
-                        <p className="text-[12px] font-semibold text-foreground/90 sm:w-32 shrink-0">
-                          {t.period}
-                        </p>
-                        <p className="text-[12px] text-muted-foreground">
-                          {t.summary}
-                        </p>
-                      </div>
-                    ))}
+                  <CardContent className="space-y-3">
+                    {report.growthReportSections
+                      .filter(
+                        (section) =>
+                          ![
+                            "fix_first",
+                            "veroxa_needs",
+                            "walk_in_opportunity",
+                          ].includes(section.id),
+                      )
+                      .map((section) => (
+                        <div
+                          key={section.id}
+                          className="border-b border-border last:border-0 pb-2 last:pb-0"
+                        >
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <p className="text-xs font-semibold inline-flex items-center gap-1.5">
+                              {sectionIcon[section.id]}
+                              {section.title}
+                            </p>
+                            <Badge
+                              variant="outline"
+                              className={`text-[10px] ${sourceLabelTone[section.sourceLabel]}`}
+                            >
+                              {sourceLabelText[section.sourceLabel]}
+                            </Badge>
+                          </div>
+                          <p className="text-[12px] text-muted-foreground mt-1">
+                            {section.currentSignal}
+                          </p>
+                        </div>
+                      ))}
                   </CardContent>
                 </Card>
               </div>
@@ -1429,7 +1451,8 @@ export default function FreeAudit() {
               <CardContent>
                 <p className="text-sm text-foreground/90 mb-3">
                   Veroxa can manually review this audit with you and explain
-                  whether Complete Online Presence — $495/month fits, needs manual review, or is not a fit yet.
+                  whether Complete Online Presence — $495/month fits, needs
+                  manual review, or is not a fit yet.
                 </p>
                 {walkthroughSaved ? (
                   <div
@@ -1437,10 +1460,13 @@ export default function FreeAudit() {
                     data-testid="walkthrough-success"
                   >
                     <p className="text-sm font-semibold text-emerald-400">
-                      Thanks — your walkthrough request is saved for this preview.
+                      Thanks — your walkthrough request is saved for this
+                      preview.
                     </p>
                     <p className="text-[12px] text-muted-foreground mt-1">
-                      A Veroxa team member would review the audit and explain whether Complete Online Presence is a fit, needs manual review, or is not a fit yet.
+                      A Veroxa team member would review the audit and explain
+                      whether Complete Online Presence is a fit, needs manual
+                      review, or is not a fit yet.
                     </p>
                   </div>
                 ) : (
