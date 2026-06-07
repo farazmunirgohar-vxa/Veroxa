@@ -153,7 +153,7 @@ Team-only value proof may include internal cost/value status, attribution confid
 
 ## Safety and live-system guardrails
 
-No production auth, Supabase migrations, RLS, production database wiring, real client data writes, real storage uploads, live AI/OpenAI runtime calls, Google/Meta/TikTok/YouTube APIs, publishing connectors, payments, Stripe, checkout, subscriptions, invoices, billing, webhooks, cron jobs, background jobs, automated customer-visible execution, Owner/Operator/Super Admin/generic Admin/Execution dashboards, or routine text/call workflow were added. `AUTH_MODE` remains `placeholder`; preview credentials remain faraz@client.com / farazclient and faraz@team.com / farazteam.
+No production auth, Supabase migrations, RLS, production database wiring, real client data writes, real storage uploads, live AI/OpenAI runtime calls, Google/Meta/TikTok/YouTube APIs, publishing connectors, payments, Stripe, checkout, subscriptions, invoices, billing, webhooks, cron jobs, background jobs, automated customer-visible execution, Owner/Operator/Super Admin/generic Admin/Execution dashboards, or routine text/call workflow were added. `AUTH_MODE` remains `placeholder`; production/custom-domain login now uses Real Login V1 pilot portal access language and deterministic/manual account records for Momo House San Antonio and Team Faraz only.
 
 Veroxa should be built to about 90% complete in preview/manual/pre-live mode before paying for outside/live systems. Future paid systems should plug into prepared interfaces, not be used while designing the product.
 
@@ -278,3 +278,12 @@ PR #70 built the 90% pre-paid/manual OS foundations for client readiness, weekly
 - Locked audit-to-onboarding workflow: public/initial audit → prefilled onboarding profile → owner verification → credential/platform connection → gap completion by owner + Veroxa team → final onboarding approval.
 - Onboarding must show which fields were prefilled by Veroxa, need owner verification, are missing, were corrected by owner, or were completed by Veroxa.
 - Safety remains pre-live/manual only: no production auth, database writes, storage uploads, live AI, connectors, payments, webhooks, cron, or automated customer-visible execution; `AUTH_MODE` remains `placeholder`.
+
+## 2026-06-07 — Real Login V1 / pilot portal access
+
+- `/login` now presents real portal wording: “Sign in to Veroxa” and “Access your Veroxa portal.”
+- Preview/review login language and public preview credentials are removed from the production/custom-domain login experience.
+- Active pilot account records are Momo House San Antonio for the Client Portal and Team Faraz for the Team/Internal Admin Portal.
+- `AUTH_MODE` remains `placeholder`; this is deterministic/manual V1 pilot access, not secure production auth.
+- Active portals remain Client and Team only; `/demo`, `/guided-demo`, `/upload`, and `/demo/client/*` remain retired.
+- No live AI, storage uploads, integrations, payments, publishing, cron/background jobs, database writes, or customer-visible automation were added.

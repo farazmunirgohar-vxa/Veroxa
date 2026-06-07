@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { AUTH_MODE } from "@/lib/auth/authMode";
 import { getSupabaseClient } from "@/lib/supabase";
 import { getRoleHomePath, isVeroxaRole } from "@/lib/auth/authContract";
-import { getDevRouteForRole, validateDevCredentials, getPlaceholderCredentialStatus } from "@/lib/auth/devCredentials";
+import { getPilotAccessStatus, getPilotRouteForRole, validatePilotAccessCredentials } from "@/lib/auth/pilotAccessAccounts";
 import { createPlaceholderSession, clearPlaceholderSession } from "@/lib/auth/placeholderSession";
 import { useDocumentMeta } from "@/hooks/useDocumentMeta";
 
@@ -30,16 +30,16 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [, setLocation] = useLocation();
 
-  const placeholderCredentialStatus = getPlaceholderCredentialStatus();
-  const placeholderLoginUnconfigured =
-    AUTH_MODE === "placeholder" && !placeholderCredentialStatus.isConfigured;
+  const pilotAccessStatus = getPilotAccessStatus();
+  const pilotAccessUnconfigured =
+    AUTH_MODE === "placeholder" && !pilotAccessStatus.isConfigured;
 
   /**
    * Sign-in submit handler.
    *
-   * - When AUTH_MODE === "placeholder": validates dev credentials, routes to
-   *   the real portal path based on the validated role (no visible role
-   *   selection required).
+   * - When AUTH_MODE === "placeholder": validates deterministic/manual pilot
+   *   portal credentials, routes to the real portal path based on the
+   *   validated role (no visible role selection required).
    * - When AUTH_MODE === "real":
    *     1. signInWithPassword
    *     2. Get session → look up user_profiles by user_id
@@ -53,24 +53,24 @@ export default function LoginPage() {
     e.preventDefault();
 
     if (AUTH_MODE === "placeholder") {
-      if (placeholderLoginUnconfigured) {
+      if (pilotAccessUnconfigured) {
         clearPlaceholderSession();
         setSignInState({
           kind: "error",
-          message: "Preview access is not enabled for this review. Please ask Veroxa to enable preview access.",
+          message: "Portal access is not configured for this environment. Please contact Veroxa.",
         });
         return;
       }
 
-      const role = validateDevCredentials(email, password);
-      if (!role) {
+      const account = validatePilotAccessCredentials(email, password);
+      if (!account) {
         clearPlaceholderSession();
-        setSignInState({ kind: "error", message: "Those sign-in details do not match this Veroxa preview. Please try again." });
+        setSignInState({ kind: "error", message: "Those sign-in details do not match a Veroxa portal account. Please try again." });
         return;
       }
-      createPlaceholderSession(role, email);
-      setSignInState({ kind: "success", message: "Signed in — taking you to your portal…" });
-      setLocation(getDevRouteForRole(role));
+      createPlaceholderSession(account.role, account.email, account.accountLabel, account.clientId, account.restaurantId);
+      setSignInState({ kind: "success", message: `Signed in as ${account.accountLabel} — taking you to your portal…` });
+      setLocation(getPilotRouteForRole(account.role));
       return;
     }
 
@@ -148,10 +148,10 @@ export default function LoginPage() {
         {/* Heading */}
         <div className="text-center mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-3" data-testid="login-heading">
-            Sign in to Veroxa.
+            Sign in to Veroxa
           </h1>
           <p className="text-muted-foreground">
-            Use the Veroxa review sign-in details you were given. This preview access is not production client billing or live account access.
+            Access your Veroxa portal.
           </p>
         </div>
 
@@ -162,20 +162,16 @@ export default function LoginPage() {
 
             {AUTH_MODE === "placeholder" && (
               <div
-                className={`mb-4 rounded-lg border px-3 py-2 text-[11px] flex items-start gap-2 relative ${
-                  placeholderCredentialStatus.isConfigured
-                    ? "border-emerald-500/20 bg-emerald-500/5 text-emerald-400"
-                    : "border-amber-500/20 bg-amber-500/5 text-amber-400"
-                }`}
-                data-testid="temp-login-status-note"
+                className="mb-4 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 text-[11px] text-emerald-400 flex items-start gap-2 relative"
+                data-testid="pilot-login-status-note"
               >
                 <ShieldAlert className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
                 <span>
                   <span className="font-semibold">
-                    {placeholderCredentialStatus.statusLabel}
+                    {pilotAccessStatus.statusLabel}
                   </span>
                   {" — "}
-                  {placeholderCredentialStatus.helperText}
+                  {pilotAccessStatus.helperText}
                 </span>
               </div>
             )}
@@ -225,7 +221,7 @@ export default function LoginPage() {
                 className="w-full font-semibold"
                 data-testid="btn-signin"
               >
-                {signInState.kind === "submitting" ? "Signing in…" : "Sign In"}
+                {signInState.kind === "submitting" ? "Signing in…" : "Sign in"}
               </Button>
 
               {signInState.kind === "success" && (

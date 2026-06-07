@@ -1,53 +1,57 @@
-# Production Preview Login Checklist
+# Real Login V1 / Pilot Portal Access Checklist
 
-Status: preview-login deployment checklist only. This does **not** activate production auth.
+Status: Real Login V1 pilot-access checklist. This replaces public preview-login deployment language for the production/custom-domain experience. It does **not** activate secure production auth.
 
-Authority: read [`ACTIVE_DOCS_INDEX.md`](./ACTIVE_DOCS_INDEX.md) first. `AUTH_MODE` remains `"placeholder"` until a separate owner-approved real-auth PR.
+Authority: read [`ACTIVE_DOCS_INDEX.md`](./ACTIVE_DOCS_INDEX.md) first. `AUTH_MODE` remains `"placeholder"` until a separate owner-approved production-auth PR.
 
 ## Production/custom-domain rule
 
-- Production/custom domains should set `VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=false`.
-- Vercel env changes require a redeploy before the app behavior changes.
-- No billing, paid client access, or real client access should rely on preview credentials.
+- `/login` must say **“Sign in to Veroxa”** and **“Access your Veroxa portal.”**
+- Production/custom domains must not show preview/demo/review-login wording, public preview credentials, or fake/temporary portal language.
+- Real Login V1 uses deterministic/manual pilot access records until production auth is explicitly implemented.
+- Do not claim secure production auth, billing access, or automated account security exists while `AUTH_MODE` is still `"placeholder"`.
 
-## Preview credential rule
+## Active pilot account records
 
-Preview credentials are not production auth. They exist only to review the placeholder Client and Team portals before real auth is approved.
+Real Login V1 supports only two account destinations:
 
-Fallback preview login should only be used for:
+- **Momo House San Antonio** → Client Portal → `/client/dashboard`
+- **Team Faraz** → Team/Internal Admin Portal → `/team/dashboard`
 
-- `localhost`
-- `127.0.0.1`
-- `.vercel.app` review deployments
+Environment-specific pilot credentials may be provided with:
 
-Any other hostname should only use preview login if explicitly opted in by the owner for a temporary review.
+- `VITE_VEROXA_PILOT_CLIENT_EMAIL`
+- `VITE_VEROXA_PILOT_CLIENT_PASSWORD`
+- `VITE_VEROXA_PILOT_TEAM_EMAIL`
+- `VITE_VEROXA_PILOT_TEAM_PASSWORD`
 
-## Env credential rule
+Legacy `VITE_VEROXA_DEV_*` variables may still be read as a compatibility fallback for existing deployment settings, but UI/docs must refer to portal access or pilot access, not preview login.
 
-Explicit Vercel review credentials may be used for review deployments only:
+## Portal and route guard rule
 
-- `VITE_VEROXA_DEV_CLIENT_EMAIL`
-- `VITE_VEROXA_DEV_CLIENT_PASSWORD`
-- `VITE_VEROXA_DEV_TEAM_EMAIL`
-- `VITE_VEROXA_DEV_TEAM_PASSWORD`
-- `VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN`
+Only these portal classes are active:
 
-Do not expose credentials in public docs except the approved preview-only fallback already present in dev credential docs. Do not use these credentials as proof that production auth, billing, client access, or account security is ready.
+- `/client/*` — guarded Client Portal surfaces.
+- `/team/*` — guarded Team/Internal Admin Portal surfaces.
+
+These public demo/preview surfaces must remain disabled/retired:
+
+- `/demo`
+- `/guided-demo`
+- `/upload`
+- `/demo/client/*`
+
+Owner, Operator, Super Admin, generic Admin, and Execution portals remain parked/blocked.
 
 ## Pre-deploy confirmation
 
 Before a production/custom-domain deploy, confirm:
 
-- `AUTH_MODE` is still `"placeholder"` unless a separate owner-approved PR intentionally changes it.
-- `VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=false` on production/custom domains.
+- `AUTH_MODE` is still `"placeholder"` unless a separate owner-approved production-auth PR intentionally changes it.
+- `/login` no longer contains preview/review/demo wording or public preview credentials.
+- Momo House San Antonio signs into `/client/dashboard`.
+- Team Faraz signs into `/team/dashboard`.
+- Wrong credentials show a clean Veroxa portal-account error.
+- Wrong-role sessions cannot view the other portal.
 - No service-role key is present in frontend env.
-- No Supabase migrations, database writes, storage uploads, live AI calls, platform connectors, payments, webhooks, cron/background jobs, or automated publishing were added as part of preview login.
-- `/login` copy makes clear that preview credentials are for review access only.
-
-## If preview login is accidentally exposed
-
-1. Set `VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=false`.
-2. Redeploy Vercel.
-3. Confirm fallback credentials no longer work on the production/custom domain.
-4. Keep `AUTH_MODE="placeholder"` unless a real-auth PR has already been approved.
-5. Document the incident and the redeploy confirmation.
+- No Supabase migrations, database writes, storage uploads, live AI calls, platform connectors, payments, webhooks, cron/background jobs, automated publishing, or customer-visible automation were added.

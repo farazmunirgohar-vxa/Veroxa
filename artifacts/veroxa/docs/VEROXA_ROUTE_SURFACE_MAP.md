@@ -8,6 +8,13 @@ Status: active real-pilot route inventory. Public demo/preview portal aliases ar
 - Retired demo routes remain disabled, and no live auth, writes, storage uploads, live AI, connectors, payments, cron jobs, or automated publishing were added.
 - Active portals remain only Client Portal and Team/Internal Admin Portal.
 
+## 2026-06-07 — Real Login V1 route/auth alignment
+
+- Login copy is production/custom-domain clean: “Sign in to Veroxa” / “Access your Veroxa portal.”
+- Pilot login destinations remain only Client Portal (`/client/dashboard`) and Team/Internal Admin Portal (`/team/dashboard`).
+- Pilot account labels are Momo House San Antonio and Team Faraz. `AUTH_MODE` remains `placeholder`, so access is deterministic/manual rather than secure production auth.
+- Retired public demo/preview portal routes remain disabled, and no Owner/Operator/Super Admin/generic Admin/Execution portals are active.
+
 ## Real-pilot route model
 
 Veroxa now has only two active portal experiences: Client Portal and Team/Internal Admin Portal. The first real pilot client is **Momo House San Antonio**; internal operations run as **Team Faraz**. Public demo/preview portals are no longer part of the live app surface.
@@ -16,7 +23,7 @@ Veroxa now has only two active portal experiences: Client Portal and Team/Intern
 
 - `/` — public home
 - `/free-audit` — public/initial audit that can create a pre-live manual review lead
-- `/login` — placeholder portal login
+- `/login` — Real Login V1 pilot portal access for Momo House San Antonio and Team Faraz; deterministic/manual while `AUTH_MODE` remains `placeholder`
 - `/services` — hidden compatibility route only; not the main funnel
 - `/pricing` — hidden compatibility route only; not the main funnel
 
