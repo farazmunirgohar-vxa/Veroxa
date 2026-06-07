@@ -12,6 +12,7 @@ type RegressionCase = {
   forbiddenStates?: RestaurantMatchState[];
   requiredReasons?: RestaurantMatchReason[];
   forbiddenReasons?: RestaurantMatchReason[];
+  allowCityConflictExact?: boolean;
 };
 
 const cases: RegressionCase[] = [
@@ -75,11 +76,20 @@ const cases: RegressionCase[] = [
     requiredReasons: ["phone matched", "domain matched"],
   },
   {
-    label: "city conflict plus platform-only link still needs review",
+    label: "city conflict plus exact direct ordering domain resolves Momo House",
     input: { restaurantName: "Momo House", city: "Houston", state: "TX", directOrderingUrl: "https://momohousesa.com/order" },
+    expectedTopId: expectedId,
+    expectedStates: ["exact_match"],
+    requiredReasons: ["city mismatch", "platform link matched"],
+    allowCityConflictExact: true,
+  },
+  {
+    label: "city conflict plus generic marketplace domain still needs review",
+    input: { restaurantName: "Momo House", city: "Houston", state: "TX", doorDashUrl: "https://www.doordash.com/store/momo-house" },
     expectedTopId: expectedId,
     forbiddenStates: ["exact_match"],
     requiredReasons: ["city mismatch"],
+    forbiddenReasons: ["platform link matched"],
   },
   {
     label: "similar/common taco names stay ambiguous instead of overconfident",
@@ -119,8 +129,8 @@ for (const testCase of cases) {
   for (const reason of testCase.forbiddenReasons ?? []) {
     expect(!top.reasons.includes(reason), `${testCase.label}: forbidden reason "${reason}" was returned (${top.reasons.join(", ")})`);
   }
-  if (String((testCase.input as { city?: string }).city ?? "").match(/Houston|Dallas/i)) {
-    expect(top.state !== "exact_match" && result.state !== "exact_match", `${testCase.label}: city mismatch must block exact match; match state ${top.state}, result state ${result.state}`);
+  if (!testCase.allowCityConflictExact && String((testCase.input as { city?: string }).city ?? "").match(/Houston|Dallas/i)) {
+    expect(top.state !== "exact_match" && result.state !== "exact_match", `${testCase.label}: city mismatch must block exact match unless exact candidate-owned platform/domain proof exists; match state ${top.state}, result state ${result.state}`);
   }
 }
 
@@ -129,4 +139,4 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-console.log("Restaurant matching regression passed: location conflicts block exact prefill, while phone/domain/address proof still resolves the Momo House pre-live pilot.");
+console.log("Restaurant matching regression passed: location conflicts block exact prefill unless phone/domain/address or exact candidate-owned platform/domain proof resolves the Momo House pre-live pilot.");
