@@ -45,7 +45,7 @@ async function main() {
 
   try {
     await waitForServer();
-    for (const path of ["/", "/free-audit", "/login", "/demo/client/dashboard", "/client/dashboard", "/team/dashboard"]) {
+    for (const path of ["/", "/free-audit", "/login", "/client/dashboard", "/team/dashboard"]) {
       await expectRouteOk(path);
     }
 
@@ -56,7 +56,7 @@ async function main() {
     const devCredentials = readFileSync(resolve(root, "src/lib/auth/devCredentials.ts"), "utf8");
     const clientDataHook = readFileSync(resolve(root, "src/hooks/useClientPortalData.ts"), "utf8");
 
-    assert(appSource.includes('path="/demo/client/dashboard"'), "Demo client dashboard route is missing.");
+    assert(!appSource.includes('path="/demo/client/dashboard"') && !appSource.includes('path="/demo"'), "Retired public demo/preview routes must stay disabled.");
     assert(appSource.includes("<ClientPortalGuard>") && appSource.includes('path="/client/dashboard"'), "Client dashboard route is not guarded.");
     assert(appSource.includes("<InternalDemoGuard role=\"team\">") && appSource.includes('path="/team/dashboard"'), "Team dashboard route is not guarded.");
 

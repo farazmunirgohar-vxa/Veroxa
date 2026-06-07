@@ -11,3 +11,4 @@ export * from "./clientOnboardingMessages";
 export * from "./teamOnboardingQueue";
 export * from "./onboardingStatusEngine";
 export * from "./onboardingReadinessEngine";
+export * from "./auditPrefillModel";

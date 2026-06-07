@@ -66,30 +66,31 @@ export function buildClientPortalPageState(
   });
 
   const canShowRealData = input.dataMode === "authenticated_client" && accountActivation.canShowClientPortalData;
+  const canShowPreLivePilotData = input.dataMode === "placeholder_review" && Boolean(input.restaurant);
 
   return {
     dataMode: input.dataMode,
     accountActivation,
-    restaurant: isDemoData || canShowRealData ? input.restaurant : null,
-    profile: isDemoData || canShowRealData ? input.profile : null,
-    plan: isDemoData || canShowRealData ? input.plan : null,
+    restaurant: isDemoData || canShowRealData || canShowPreLivePilotData ? input.restaurant : null,
+    profile: isDemoData || canShowRealData || canShowPreLivePilotData ? input.profile : null,
+    plan: isDemoData || canShowRealData || canShowPreLivePilotData ? input.plan : null,
     mediaAssets: isDemoData || canShowRealData ? mediaAssets : [],
     clientRequests: isDemoData || canShowRealData ? clientRequests : [],
     reports: isDemoData || canShowRealData ? reports : [],
     activityPreview: isDemoData ? activityPreview.filter((log) => log.visibility === "client_safe") : [],
     isDemoData,
     isPlaceholderOnly,
-    canShowRealData,
+    canShowRealData: canShowRealData || canShowPreLivePilotData,
     clientSafeMessage: isDemoData
       ? "Demo Preview — example restaurant workspace"
       : canShowRealData
         ? "Your Veroxa account details are ready for review."
-        : "Your account setup will appear here once your restaurant portal is active.",
+        : "Momo House San Antonio pilot details are available for owner/team verification.",
   };
 }
 
 const pageEmptyCopy: Record<ClientPortalPageName, string> = {
-  dashboard: "Your account setup will appear here once your restaurant portal is active.",
+  dashboard: "Momo House San Antonio pilot details are available for owner/team verification.",
   media: "Once your account is active, your restaurant media will appear here. Media uploads are not connected yet.",
   requests: "Requests appear here after your Veroxa team review workflow is active.",
   updates: "Updates appear after Veroxa reviews and prepares verified progress notes.",

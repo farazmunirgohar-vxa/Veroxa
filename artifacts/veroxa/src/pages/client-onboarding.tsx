@@ -22,6 +22,7 @@ import {
   getMediaIntakeChecklist,
   getMediaQualityGuidance,
   getMediaRequestDraft,
+  getMomoHouseAuditPrefillSections,
   getMissingBusinessInfo,
   getMissingPlatformLinks,
   getNextMediaNeeded,
@@ -121,9 +122,40 @@ function DraftCard({ title, body }: { title: string; body: string }) {
   );
 }
 
+function PrefillStatusGrid({ sections, clientSafe = true }: { sections: ReturnType<typeof getMomoHouseAuditPrefillSections>; clientSafe?: boolean }) {
+  const statusLabel: Record<string, string> = {
+    prefilled: "Prefilled by Veroxa",
+    needs_owner_verification: "Needs owner verification",
+    missing: "Missing",
+    confirmed: "Confirmed",
+    corrected_by_owner: "Corrected by owner",
+    completed_by_veroxa: "Completed by Veroxa",
+  };
+  return (
+    <section className="mt-5 grid gap-4 lg:grid-cols-2" data-testid="audit-prefill-onboarding-fields">
+      {sections.map((section) => (
+        <Card key={section.id}>
+          <CardHeader><CardTitle className="text-sm">{section.title}</CardTitle></CardHeader>
+          <CardContent className="space-y-2">
+            {section.fields.map((field) => (
+              <div key={field.id} className="rounded-lg border border-border/70 p-3 text-sm">
+                <div className="flex items-start justify-between gap-3">
+                  <div><p className="font-medium text-foreground">{field.label}</p><p className="mt-1 text-xs text-muted-foreground">{field.value}</p></div>
+                  <StatusBadge tone={field.status === "missing" ? "danger" : field.status === "needs_owner_verification" ? "warning" : "success"}>{statusLabel[field.status]}</StatusBadge>
+                </div>
+                <p className="mt-2 text-[11px] text-muted-foreground">Source: {clientSafe ? "Veroxa prefill review" : field.source} · {field.required ? "Required" : "Optional"}</p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      ))}
+    </section>
+  );
+}
+
 export default function ClientOnboarding() {
   const mode = useRealPortalDataMode();
-  const profile = mode.isPublicDemoRoute ? getClientOnboardingPreviewProfile() : null;
+  const profile = getClientOnboardingPreviewProfile();
   const progress = profile ? getOnboardingProgress(profile) : 0;
   const readiness = profile ? buildOnboardingReadinessSnapshot(profile) : null;
   const missingInfo = profile ? getMissingBusinessInfo(profile) : [];
@@ -131,6 +163,7 @@ export default function ClientOnboarding() {
   const missingMedia = profile ? getNextMediaNeeded(profile) : [];
   const truthItems = profile ? getBusinessTruthItemsToConfirm(profile) : [];
   const dashboardHref = getClientPortalHref("dashboard", mode.isPublicDemoRoute);
+  const prefillSections = getMomoHouseAuditPrefillSections();
 
   return (
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
@@ -147,7 +180,7 @@ export default function ClientOnboarding() {
         <div className="space-y-4">
           <SafePortalEmptyCard
             title="Restaurant onboarding is being prepared"
-            body="Your setup checklist will appear here after Veroxa setup review. Your workspace is being prepared. Nothing goes live without Veroxa team review."
+            body="Your setup checklist will appear here after Veroxa setup review. Momo House San Antonio pilot workspace. Nothing goes live without Veroxa team review."
             testId="empty-client-onboarding-safe-state"
           />
           <ExpectationAgreementPreview />
@@ -163,7 +196,7 @@ export default function ClientOnboarding() {
       <Card className="mb-5 border-primary/25 bg-primary/5">
         <CardContent className="grid gap-4 p-5 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
           <div>
-            <p className="text-sm font-semibold text-foreground">{mode.isPublicDemoRoute ? "Demo Preview — example restaurant workspace" : "Your workspace is being prepared"}</p>
+            <p className="text-sm font-semibold text-foreground">{mode.isPublicDemoRoute ? "Real pilot profile — Momo House San Antonio" : "Momo House San Antonio pilot workspace"}</p>
             <p className="mt-1 text-sm text-muted-foreground">Nothing goes live without Veroxa team review. This page shows your setup review, what Veroxa needs from you, and what Veroxa will organize during the first week.</p>
           </div>
           <div className="rounded-xl border border-border/70 bg-background/70 p-4">
@@ -185,6 +218,8 @@ export default function ClientOnboarding() {
           <Card key={label}><CardContent className="p-4"><CheckCircle2 className={`mb-3 h-5 w-5 ${level === "ready" ? "text-emerald-400" : "text-amber-400"}`} /><p className="text-sm font-medium">{label}</p><p className="text-xs text-muted-foreground">{level === "ready" ? "Ready" : "Needs attention"}</p></CardContent></Card>
         ))}
       </section>
+
+      <PrefillStatusGrid sections={prefillSections} />
 
       <section className="mt-5 grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
         <Card>

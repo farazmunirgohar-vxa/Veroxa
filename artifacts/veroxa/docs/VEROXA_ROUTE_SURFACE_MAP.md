@@ -1,142 +1,55 @@
-# Veroxa Route & Surface Map
+# Veroxa Route Surface Map
 
-This map documents the current Veroxa route surfaces for pre-live demo/review mode. It is descriptive only and does not change routing behavior.
+Status: active real-pilot route inventory. Public demo/preview portal aliases are retired. See `QUARANTINED_AND_FUTURE_FILES_REVIEW.md` before routing parked pages.
 
-Global route-surface boundaries:
+## Real-pilot route model
 
-- Active public flow: `/`, `/free-audit`, `/login`.
-- Hidden compatibility routes: `/services`, `/pricing`.
-- Hidden internal/demo QA routes: `/demo`, `/guided-demo`, `/demo/client/*`, and `/upload` (demo-only upload-key preview; no live upload/storage).
-- Real client portal routes: `/client/dashboard`, `/client/onboarding`, `/client/media`, `/client/updates`, `/client/requests`, `/client/reports`.
-- Real team portal routes: `/team/*` guarded supporting/manual internal routes for Faraz review only.
-- `/demo/client/*` is public sample data.
-- `/client/*` is guarded review mode.
-- `/team/*` is guarded internal mode.
-- No live AI.
-- No live uploads.
-- No live publishing.
-- No payments.
-- No real client data.
+Veroxa now has only two active portal experiences: Client Portal and Team/Internal Admin Portal. The first real pilot client is **Momo House San Antonio**; internal operations run as **Team Faraz**. Public demo/preview portals are no longer part of the live app surface.
 
-## Public Website
+## Active public routes
 
-Routes:
+- `/` — public home
+- `/free-audit` — public/initial audit that can create a pre-live manual review lead
+- `/login` — placeholder portal login
+- `/services` — hidden compatibility route only; not the main funnel
+- `/pricing` — hidden compatibility route only; not the main funnel
 
-- `/`
-- `/services`
-- `/pricing`
-- `/free-audit`
-- `/login`
-- `/demo`
-- `/guided-demo`
-- `/upload`
-
-**Purpose:** Explain Veroxa, present the locked offer, support hidden compatibility links, and route users through Home, Audit, and Login. Demo routes are not promoted in public navigation or homepage CTAs.
-
-**Access level:** Public.
-
-**Data mode:** Public copy, demo/review data, local/session browser state where applicable.
-
-**Expected visibility:** Prospective restaurants, first-client review, Faraz, and collaborators reviewing the public experience.
-
-**Restricted visibility:** No internal team queue data, no real client data, no credentials, no backend implementation details.
-
-**Future integration status:** Future live integrations remain blocked; no live AI, no live uploads, no live publishing, no payments, and no real client data.
-
-## Public Client Demo
-
-Routes:
-
-- `/demo/client/dashboard`
-- `/demo/client/media`
-- `/demo/client/updates`
-- `/demo/client/requests`
-- `/demo/client/reports`
-- `/demo/client/onboarding`
-
-**Purpose:** Show a public sample of the Restaurant Partner / Client experience without requiring login.
-
-**Access level:** Public demo.
-
-**Data mode:** `/demo/client/*` is public sample data.
-
-**Expected visibility:** Prospective restaurants and reviewers who need to understand the client-side Veroxa experience.
-
-**Restricted visibility:** No real client portal data, no internal team logic, no backend/AI/internal terms, no private restaurant details.
-
-**Future integration status:** Future live integrations remain blocked; no live AI, no live uploads, no live publishing, no payments, and no real client data.
-
-## Guarded Client Portal
-
-Routes:
+## Guarded client routes
 
 - `/client/dashboard`
+- `/client/onboarding`
 - `/client/media`
 - `/client/updates`
 - `/client/requests`
 - `/client/reports`
-- `/client/onboarding`
 
-**Purpose:** Provide the guarded client review-mode portal surface for future Restaurant Partner use while production auth and real data remain gated.
+Client routes must be guarded by `ClientPortalGuard` and `RealPortalDataBoundary`. They show the Momo House San Antonio pre-live pilot state after placeholder client login, with missing/unverified fields clearly labeled for owner/team verification.
 
-**Access level:** Guarded client review mode.
-
-**Data mode:** `/client/*` is guarded review mode.
-
-**Expected visibility:** Authorized preview/review client access only through the current guard model.
-
-**Restricted visibility:** No public access, no real client data leak, no internal team-only details, no implication that production auth is active.
-
-**Future integration status:** Future live integrations remain blocked; no live AI, no live uploads, no live publishing, no payments, and no real client data.
-
-## Guarded Team Portal
-
-Routes:
+## Guarded Team/manual routes
 
 - `/team/dashboard`
-- `/team/approval-queue`
+- `/team/onboarding`
+- `/team/audit-leads`
 - `/team/visibility-audit`
-- `/team/first-client-readiness`
 - `/team/upload-inbox`
 - `/team/work-queue`
+- `/team/approval-queue`
 - `/team/direction-queue`
 - `/team/report-queue`
-- `/team/audit-leads`
-- `/team/first-client-ops`
 - `/team/manual-execution`
-- `/team/onboarding`
+- `/team/first-client-readiness`
+- `/team/first-client-ops`
 
-**Purpose:** Provide Faraz with guarded supporting/manual internal routes for queues, approvals, readiness, and manual first-client operations without expanding into an AI command center or advanced Team OS.
+Team routes must be guarded by `InternalDemoGuard role=team` and `RealPortalDataBoundary`. Team surfaces should identify as Team Faraz and stay action-focused around Momo House audit review, audit-to-onboarding prefill, onboarding gaps, platform/credential checklists, media/content workflow, report/request/approval queues, first-week execution, and first-month report readiness.
 
-**Access level:** Guarded internal mode.
+## Disabled public demo/preview portal routes
 
-**Data mode:** `/team/*` is guarded internal mode.
+These routes must fail guardrails if reintroduced: `/demo`, `/guided-demo`, `/upload`, `/demo/client/dashboard`, `/demo/client/media`, `/demo/client/updates`, `/demo/client/requests`, `/demo/client/reports`, and `/demo/client/onboarding`.
 
-**Expected visibility:** Veroxa Team / Faraz through the current team guard model.
+## Parked/blocked route classes
 
-**Restricted visibility:** No public access, no client access, no Owner/Operator workflows, no super-admin console, no fake live execution.
+Owner, Operator, Super Admin, generic Admin, and Execution portals must not be exposed. Parked pages require owner approval, route inventory update, route surface map update, guardrail update, and RR before routing.
 
-**Future integration status:** Future live integrations remain blocked; no live AI, no live uploads, no live publishing, no payments, and no real client data.
+## Audit-to-onboarding visibility
 
-## 2026-06-06 — A–Z cleanup route surface alignment
-
-See the [Veroxa OS System Map](./VEROXA_OS_SYSTEM_MAP.md) for the full route/domain/API/guardrail overview and [Quarantined and Future Files Review](./QUARANTINED_AND_FUTURE_FILES_REVIEW.md) for parked pages.
-
-- Active public flow remains `/`, `/free-audit`, `/login`.
-- Hidden compatibility routes remain `/services` and `/pricing`.
-- Demo/QA-only routes are `/demo`, `/guided-demo`, `/upload`, and `/demo/client/*`; they must show sample/QA labels and must not be promoted from public homepage/nav/footer.
-- Guarded client routes remain `/client/dashboard`, `/client/onboarding`, `/client/media`, `/client/requests`, `/client/updates`, and `/client/reports`.
-- Guarded Team/manual routes remain `/team/dashboard`, `/team/onboarding`, `/team/upload-inbox`, `/team/work-queue`, `/team/manual-execution`, `/team/direction-queue`, `/team/report-queue`, `/team/audit-leads`, `/team/approval-queue`, `/team/visibility-audit`, `/team/first-client-readiness`, and `/team/first-client-ops`.
-- Owner, Operator, Super Admin, generic Admin, and Execution dashboards remain blocked.
-
-A–Z cleanup strengthened route inventory enforcement, demo/QA policy, backend execution docs, client premium copy, and AI activation prerequisites. No live systems were added.
-
-## 2026-06-06 — Final deletion/quarantine review
-
-- Final deletion/quarantine review completed.
-- No delete-now page files are confirmed.
-- Parked/future/debug/AI draft pages are hard-quarantined and require owner approval, route inventory update, route surface map update, guardrail update, and RR before routing.
-- Active demo/QA routes remain active, labeled, and guarded from public promotion.
-- Route inventory now distinguishes active routes from demo aliases with `active_routed + demo_alias`.
-- No live systems were added: no production auth, database/storage writes, live AI, payments, connectors, publishing, webhooks, cron jobs, background jobs, or automated customer-visible execution.
-- Next recommended step is the Manual First-Client Launch Pack after RR.
+Onboarding must show field status for: prefilled, needs owner verification, missing, confirmed, corrected by owner, and completed by Veroxa. Sources can include audit, public info, owner, Veroxa team, and manual review.

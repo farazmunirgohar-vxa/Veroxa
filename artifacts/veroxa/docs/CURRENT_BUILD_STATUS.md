@@ -258,3 +258,15 @@ PR #70 built the 90% pre-paid/manual OS foundations for client readiness, weekly
 - Route inventory now distinguishes active routes from demo aliases with `active_routed + demo_alias`.
 - No live systems were added: no production auth, database/storage writes, live AI, payments, connectors, publishing, webhooks, cron jobs, background jobs, or automated customer-visible execution.
 - Next recommended step: post-PR77 active-doc alignment, CI E2E wiring, scanner safety tests, future live-data guardrails, and RR before any paid/live system planning.
+
+
+## 2026-06-07 — Real pilot mode lock
+
+- Veroxa is moving from public demo/preview portal exposure into **real pilot pre-live/manual mode**.
+- Public demo/preview portals are no longer part of the active live app surface; `/demo`, `/guided-demo`, `/upload`, and `/demo/client/*` must remain disabled from active routing.
+- Active app portal experiences are only **Client Portal** and **Team/Internal Admin Portal**. Owner, Operator, Super Admin, generic Admin, and Execution portals remain parked/blocked.
+- First real pilot client: **Momo House San Antonio**. Momo House is an internal unpaid cooperation pilot account for initial Veroxa improvement work, not a public pricing change.
+- Internal operations identity: **Team Faraz**.
+- Locked audit-to-onboarding workflow: public/initial audit → prefilled onboarding profile → owner verification → credential/platform connection → gap completion by owner + Veroxa team → final onboarding approval.
+- Onboarding must show which fields were prefilled by Veroxa, need owner verification, are missing, were corrected by owner, or were completed by Veroxa.
+- Safety remains pre-live/manual only: no production auth, database writes, storage uploads, live AI, connectors, payments, webhooks, cron, or automated customer-visible execution; `AUTH_MODE` remains `placeholder`.

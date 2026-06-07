@@ -156,3 +156,34 @@ export interface TeamOnboardingQueueSummary {
   readyForManualService: number;
   blockedOrPaused: number;
 }
+
+export type AuditPrefillFieldStatus =
+  | "prefilled"
+  | "needs_owner_verification"
+  | "missing"
+  | "confirmed"
+  | "corrected_by_owner"
+  | "completed_by_veroxa";
+
+export type AuditPrefillFieldSource =
+  | "audit"
+  | "public_info"
+  | "owner"
+  | "veroxa_team"
+  | "manual_review";
+
+export interface AuditPrefilledOnboardingField {
+  id: string;
+  label: string;
+  value: string;
+  status: AuditPrefillFieldStatus;
+  source: AuditPrefillFieldSource;
+  required: boolean;
+  note?: string;
+}
+
+export interface AuditPrefilledOnboardingSection {
+  id: string;
+  title: string;
+  fields: AuditPrefilledOnboardingField[];
+}
