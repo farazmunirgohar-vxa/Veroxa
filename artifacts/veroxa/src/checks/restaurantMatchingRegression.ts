@@ -68,6 +68,20 @@ const cases: RegressionCase[] = [
     requiredReasons: ["domain matched"],
   },
   {
+    label: "correct phone and domain remain exact proof together",
+    input: { restaurantName: "Momo House", phone: "2104921711", websiteUrl: "https://momohousesa.com" },
+    expectedTopId: expectedId,
+    expectedStates: ["exact_match"],
+    requiredReasons: ["phone matched", "domain matched"],
+  },
+  {
+    label: "city conflict plus platform-only link still needs review",
+    input: { restaurantName: "Momo House", city: "Houston", state: "TX", directOrderingUrl: "https://momohousesa.com/order" },
+    expectedTopId: expectedId,
+    forbiddenStates: ["exact_match"],
+    requiredReasons: ["city mismatch"],
+  },
+  {
     label: "similar/common taco names stay ambiguous instead of overconfident",
     input: { restaurantName: "El Sol Tacos", city: "San Antonio", state: "TX" },
     expectedStates: ["multiple_possible_matches", "manual_review_needed", "likely_match"],
