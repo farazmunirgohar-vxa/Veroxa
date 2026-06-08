@@ -82,7 +82,7 @@ export function buildClientPortalPageState(
     isPlaceholderOnly,
     canShowRealData: canShowRealData || canShowPreLivePilotData,
     clientSafeMessage: isDemoData
-      ? "Demo Preview — example restaurant workspace"
+      ? "Example restaurant workspace"
       : canShowRealData
         ? "Your Veroxa account details are ready for review."
         : "Momo House San Antonio pilot details are available for owner/team verification.",
@@ -101,19 +101,19 @@ export function getClientSafeEmptyStateForPage(
   pageName: ClientPortalPageName,
   state: ClientPortalPageState,
 ): string {
-  if (state.isDemoData) return "This preview shows how Veroxa organizes media, requests, updates, and reports.";
+  if (state.isDemoData) return "This example shows how Veroxa organizes media, requests, updates, and reports.";
   if (state.canShowRealData) return "No items are ready for this page yet.";
   return pageEmptyCopy[pageName];
 }
 
 export function getClientPortalDataModeNotice(state: ClientPortalPageState): string {
-  if (state.isDemoData) return "Real client data is not connected in this preview.";
+  if (state.isDemoData) return "Real client data is not connected here.";
   if (state.canShowRealData) return "Verified account data only appears after Veroxa team review.";
   return "For now, this page shows a safe setup state while your restaurant portal is prepared.";
 }
 
 export function getClientPortalReadinessSummary(state: ClientPortalPageState): string {
-  if (state.isDemoData) return "Demo Preview — example restaurant workspace.";
+  if (state.isDemoData) return "Example restaurant workspace.";
   if (state.accountActivation.blockers.length > 0) {
     return "Veroxa is still preparing the account setup before showing restaurant details.";
   }

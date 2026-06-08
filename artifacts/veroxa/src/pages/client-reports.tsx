@@ -23,7 +23,7 @@ export default function ClientReports() {
     <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
       <RealPortalReviewNotice />
       <PageHeader title="Monthly Reports" description="A clear monthly online presence report: what Veroxa handled, what appears to be working, what needs improvement, and what is needed next." testId="header-client-reports" />
-      {!pageState.isDemoData && !pageState.canShowRealData ? <SafePortalEmptyCard title="Monthly report status" body="Your first monthly report will appear after Veroxa has enough manual review context. This page shows the safe report structure without live analytics or fake metrics." icon="info" /> : null}
+      {!pageState.isDemoData && !pageState.canShowRealData ? <SafePortalEmptyCard title="Monthly report status" body="Your first monthly report will appear after Veroxa has enough manual review context. This page shows the safe report structure without live analytics or unverified metrics." icon="info" /> : null}
 
       <Card className="mb-4 border-primary/20 bg-primary/5" data-testid="monthly-report-status">
         <CardContent className="p-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">

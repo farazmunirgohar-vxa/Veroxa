@@ -11,6 +11,7 @@ import {
   AlertTriangle,
   ShieldCheck,
   CopyCheck,
+  CheckCircle2,
 } from "lucide-react";
 import { Link } from "wouter";
 import { PortalLayout } from "@/components/PortalLayout";
@@ -102,6 +103,96 @@ const pushPriorityLabel: Record<OpportunityPriority, string> = {
   medium: "Medium",
   low: "Low",
 };
+
+
+const momoPilotFirstSevenDayTasks = [
+  "Confirm business identity",
+  "Confirm hours and holiday hours",
+  "Confirm menu/order/contact paths",
+  "Confirm Google Business Profile access path",
+  "Confirm Facebook/Instagram access path",
+  "Request 10–15 current food photos/videos",
+  "Prepare first 6 content pillars",
+  "Prepare first Google/social content drafts for manual review",
+];
+
+const momoPilotFirstThirtyDayTasks = [
+  "Build weekly content rhythm",
+  "Refresh Google with photos/posts after review",
+  "Track content supply",
+  "Prepare first monthly owner-friendly report",
+  "Identify next content gaps",
+];
+
+function MomoPilotCommandCenter() {
+  return (
+    <Card className="mb-4 border-primary/25 bg-primary/5" data-testid="momo-pilot-command-center">
+      <CardHeader className="pb-2">
+        <CardTitle className="flex items-center gap-2 text-sm">
+          <ShieldCheck className="h-4 w-4 text-primary" />
+          Momo Pilot Command Center
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4 text-sm text-muted-foreground">
+        <div className="grid gap-3 md:grid-cols-3">
+          {[
+            ["Pilot status", "Real pilot/manual mode"],
+            ["Login status", "Pilot access endpoint + server-side secrets required"],
+            ["Audit status", "Audit V2 ready for owner walkthrough"],
+            ["Onboarding status", "Owner verification needed"],
+            ["Owner verification", "NAP, hours, menu/order links, claims"],
+            ["Access blockers", "Google, Facebook/Instagram, ordering, website if refinements are approved"],
+            ["Media intake", "Need 10–15 current food photos/videos"],
+            ["Manual-only", "No automated publishing connected"],
+            ["Safety", "Nothing public changes without access and review"],
+          ].map(([label, value]) => (
+            <div key={label} className="rounded-lg border border-border/70 bg-background/70 p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">{label}</p>
+              <p className="mt-1 font-medium text-foreground">{value}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          <div className="rounded-xl border border-border/70 bg-background/60 p-4">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <p className="font-semibold text-foreground">First 7-day tasks</p>
+              <StatusBadge tone="warning">Owner/access first</StatusBadge>
+            </div>
+            <ul className="space-y-2">
+              {momoPilotFirstSevenDayTasks.map((task) => (
+                <li key={task} className="flex gap-2">
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-400" />
+                  <span>{task}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="rounded-xl border border-border/70 bg-background/60 p-4">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <p className="font-semibold text-foreground">First 30-day tasks</p>
+              <StatusBadge tone="info">Manual rhythm</StatusBadge>
+            </div>
+            <ul className="space-y-2">
+              {momoPilotFirstThirtyDayTasks.map((task) => (
+                <li key={task} className="flex gap-2">
+                  <ClipboardCheck className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
+                  <span>{task}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2">
+          <p className="rounded-lg border border-amber-500/25 bg-amber-500/5 p-3 text-xs">Manual-only warning: Team Faraz prepares and reviews work manually. This pass does not connect AI execution, publishing APIs, payments, storage uploads, cron jobs, or production auth.</p>
+          <p className="rounded-lg border border-rose-500/20 bg-rose-500/5 p-3 text-xs">No automated publishing warning: Veroxa does not post to Google, Facebook, Instagram, TikTok, ads, or ordering platforms automatically.</p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function TeamDashboard() {
   const portalDataMode = useRealPortalDataMode();
@@ -334,13 +425,7 @@ export default function TeamDashboard() {
       />
 
 
-      <Card className="mb-4 border-primary/20 bg-primary/5" data-testid="team-faraz-momo-pilot-summary">
-        <CardHeader className="pb-2"><CardTitle className="text-sm">Team Faraz — Momo House pilot operations</CardTitle></CardHeader>
-        <CardContent className="grid gap-2 text-sm text-muted-foreground md:grid-cols-2">
-          <p><span className="font-medium text-foreground">Client:</span> Momo House San Antonio — internal unpaid cooperation pilot, not a public pricing change.</p>
-          <p><span className="font-medium text-foreground">Focus:</span> audit review, audit-to-onboarding prefill, owner verification gaps, platform/credential checks, content rhythm, queues, first-week execution, and first-month report readiness.</p>
-        </CardContent>
-      </Card>
+      <MomoPilotCommandCenter />
 
       <div className="mb-4 grid gap-4 lg:grid-cols-3">
         <Card className="border-amber-500/20 bg-amber-500/5" data-testid="card-dashboard-package-boundary">
