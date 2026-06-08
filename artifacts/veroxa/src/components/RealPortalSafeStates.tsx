@@ -29,7 +29,7 @@ export function RealPortalReviewNotice({
           </p>
           <p className="text-xs text-muted-foreground leading-relaxed">
             {mode.portal === "client"
-              ? "Live account data is being prepared. This real route keeps the portal shell visible without showing a sample restaurant as your account."
+              ? "Live account data is being prepared. This real route keeps the portal shell visible without showing another restaurant as your account."
               : "Live client operations are not connected yet. This real internal route keeps Faraz's command center visible with safe empty states and clearly labeled launch benchmarks."}
           </p>
         </div>

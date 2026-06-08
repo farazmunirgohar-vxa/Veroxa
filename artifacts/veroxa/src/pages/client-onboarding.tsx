@@ -31,7 +31,7 @@ import {
   getProofInputStatus,
 } from "@/domain/restaurantOnboarding";
 
-function ChecklistPreview({ title, items }: { title: string; items: { id: string; label: string; clientLabel: string }[] }) {
+function ChecklistSection({ title, items }: { title: string; items: { id: string; label: string; clientLabel: string }[] }) {
   return (
     <Card>
       <CardHeader><CardTitle className="text-sm">{title}</CardTitle></CardHeader>
@@ -71,13 +71,13 @@ const expectationResponsibilities = [
   "understanding that 24-hour response means review/answer/next step, not guaranteed completion",
 ];
 
-function ExpectationAgreementPreview() {
+function ExpectationAgreement() {
   return (
     <Card className="border-primary/20 bg-primary/5" data-testid="onboarding-expectation-acknowledgement">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <ShieldCheck className="h-4 w-4 text-primary" />
-          Expectation acknowledgement preview
+          Setup expectations
         </CardTitle>
       </CardHeader>
       <CardContent className="grid gap-4 text-sm text-muted-foreground lg:grid-cols-2">
@@ -106,33 +106,38 @@ function ExpectationAgreementPreview() {
           <ul className="mt-2 list-disc space-y-1 pl-5"><li>New basic website +$95</li><li>Missing Facebook or Instagram profile creation +$45/profile</li><li>Yelp, TikTok, Reels/video content, ads management, daily posting, automated publishing, and live integrations are coming soon.</li></ul>
         </div>
         <p className="lg:col-span-2 rounded-lg border border-border/70 bg-background/70 p-3 text-xs">
-          Preview/manual only: this does not create a legal onboarding signature, connect live platform access, or send anything automatically. Nothing goes live without Veroxa team review. I understand 24-hour response means review/answer/next step, not guaranteed completion. Weekly updates are included so Veroxa can summarize what was worked on, what was posted/prepared, what is pending, what media is needed, what you need to confirm, and what is next.
+          Manual pilot note: this does not create a legal onboarding signature, connect live platform access, or send anything automatically. Nothing goes live without Veroxa team review. I understand 24-hour response means review/answer/next step, not guaranteed completion. Weekly updates are included so Veroxa can summarize what was worked on, what was posted/prepared, what is pending, what media is needed, what you need to confirm, and what is next.
         </p>
       </CardContent>
     </Card>
   );
 }
 
-function DraftCard({ title, body }: { title: string; body: string }) {
+function OwnerMessageCard({ title, body }: { title: string; body: string }) {
   return (
     <Card className="border-primary/20 bg-primary/5">
       <CardHeader><CardTitle className="flex items-center gap-2 text-sm"><MessageSquare className="h-4 w-4 text-primary" />{title}</CardTitle></CardHeader>
-      <CardContent><p className="text-sm leading-relaxed text-muted-foreground">{body}</p><p className="mt-3 text-xs text-muted-foreground">Draft preview only. Copy manually if useful; this page does not send messages.</p></CardContent>
+      <CardContent><p className="text-sm leading-relaxed text-muted-foreground">{body}</p><p className="mt-3 text-xs text-muted-foreground">Prepared message only. Veroxa will review before anything is sent or used publicly.</p></CardContent>
     </Card>
   );
 }
 
-function PrefillStatusGrid({ sections, clientSafe = true }: { sections: ReturnType<typeof getMomoHouseAuditPrefillSections>; clientSafe?: boolean }) {
+function OwnerVerificationGrid({ sections }: { sections: ReturnType<typeof getMomoHouseAuditPrefillSections> }) {
   const statusLabel: Record<string, string> = {
-    prefilled_by_veroxa: "Veroxa prefilled this from the audit",
-    needs_owner_verification: "Needs your verification",
-    missing: "Missing — needed before setup can continue",
-    owner_corrected: "Corrected by owner",
-    completed_by_team: "Team Faraz will complete this after access is provided",
-    blocked_needs_access: "Access needed before Team Faraz can continue",
+    prefilled_by_veroxa: "Completed by Veroxa",
+    needs_owner_verification: "Needs verification",
+    missing: "Missing",
+    owner_corrected: "Confirmed",
+    completed_by_team: "Completed by Veroxa",
+    blocked_needs_access: "Needs access",
   };
   return (
-    <section className="mt-5 grid gap-4 lg:grid-cols-2" data-testid="audit-prefill-onboarding-fields">
+    <section className="mt-5 space-y-3" data-testid="audit-prefill-onboarding-fields">
+      <div>
+        <h3 className="text-base font-semibold text-foreground">What Veroxa already knows and what needs your review</h3>
+        <p className="mt-1 text-sm text-muted-foreground">Review each item, confirm anything marked as needed, and provide access only where Veroxa asks for it.</p>
+      </div>
+      <div className="grid gap-4 lg:grid-cols-2">
       {sections.map((section) => (
         <Card key={section.id}>
           <CardHeader><CardTitle className="text-sm">{section.title}</CardTitle></CardHeader>
@@ -143,12 +148,13 @@ function PrefillStatusGrid({ sections, clientSafe = true }: { sections: ReturnTy
                   <div><p className="font-medium text-foreground">{field.label}</p><p className="mt-1 text-xs text-muted-foreground">{field.value}</p></div>
                   <StatusBadge tone={field.status === "missing" || field.status === "blocked_needs_access" ? "danger" : field.status === "needs_owner_verification" ? "warning" : "success"}>{statusLabel[field.status]}</StatusBadge>
                 </div>
-                <p className="mt-2 text-[11px] text-muted-foreground">Source: {clientSafe ? "Veroxa prefill review" : field.source} · {field.required ? "Required" : "Optional"}</p>
+                <p className="mt-2 text-[11px] text-muted-foreground">{field.required ? "Required" : "Optional"}</p>
               </div>
             ))}
           </CardContent>
         </Card>
       ))}
+      </div>
     </section>
   );
 }
@@ -183,11 +189,11 @@ export default function ClientOnboarding() {
             body="Your setup checklist will appear here after Veroxa setup review. Momo House San Antonio pilot workspace. Nothing goes live without Veroxa team review."
             testId="empty-client-onboarding-safe-state"
           />
-          <ExpectationAgreementPreview />
+          <ExpectationAgreement />
           <Card className="border-primary/20 bg-primary/5">
             <CardContent className="p-5 text-sm text-muted-foreground">
               <p className="font-medium text-foreground">What happens next</p>
-              <p className="mt-2">Veroxa will organize business details, platform links, media needs, and confirmation items after the account is activated. This workspace stays useful without showing sample setup progress as your restaurant.</p>
+              <p className="mt-2">Veroxa will organize business details, platform links, media needs, and confirmation items after the account is activated. This workspace will only show information that is ready for your restaurant review.</p>
             </CardContent>
           </Card>
         </div>
@@ -219,7 +225,7 @@ export default function ClientOnboarding() {
         ))}
       </section>
 
-      <PrefillStatusGrid sections={prefillSections} />
+      <OwnerVerificationGrid sections={prefillSections} />
 
       <Card className="mt-5 border-emerald-500/25 bg-emerald-500/5" data-testid="client-onboarding-next-step">
         <CardHeader><CardTitle className="text-base">Next step</CardTitle></CardHeader>
@@ -235,7 +241,7 @@ export default function ClientOnboarding() {
               <p className="font-medium text-foreground">{item}</p>
             </div>
           ))}
-          <p className="md:col-span-2 lg:col-span-4 rounded-lg border border-border/70 bg-background/70 p-3 text-xs">All setup actions are manual/pre-live. Veroxa will prepare and review work; this page does not publish, connect accounts, or change Google/social/ordering platforms automatically.</p>
+          <p className="md:col-span-2 lg:col-span-4 rounded-lg border border-border/70 bg-background/70 p-3 text-xs">All setup actions are manual pilot steps. Veroxa will prepare and review work; this page does not publish, connect accounts, or change Google/social/ordering platforms automatically.</p>
         </CardContent>
       </Card>
 
@@ -264,25 +270,25 @@ export default function ClientOnboarding() {
             <div className="grid gap-2 sm:grid-cols-2">
               {getMediaQualityGuidance(profile).map((item) => <div key={item} className="rounded-lg border border-border/70 p-3">{item}</div>)}
             </div>
-            <p className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs">Short videos can help Veroxa prepare team-internal draft directions, but Reels/TikTok/video content are coming soon and not included at launch. Veroxa is not requesting a real upload here; this is setup guidance only.</p>
+            <p className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs">Short videos can help Veroxa prepare reviewed content direction, but Reels/TikTok/video content are coming soon and not included at launch. Veroxa is not requesting a real upload here; this is setup guidance only.</p>
           </CardContent>
         </Card>
       </section>
 
       <section className="mt-5 grid gap-4 lg:grid-cols-3">
-        <ChecklistPreview title="Business info" items={getBusinessInfoChecklist(profile)} />
-        <ChecklistPreview title="Platform links" items={getPlatformProfileChecklist(profile)} />
-        <ChecklistPreview title="Media" items={getMediaIntakeChecklist(profile)} />
+        <ChecklistSection title="Business info" items={getBusinessInfoChecklist(profile)} />
+        <ChecklistSection title="Platform links" items={getPlatformProfileChecklist(profile)} />
+        <ChecklistSection title="Media" items={getMediaIntakeChecklist(profile)} />
       </section>
 
       <section className="mt-5 grid gap-4 lg:grid-cols-2">
-        <DraftCard title="Welcome draft" body={buildWelcomeMessageDraft(profile)} />
-        <DraftCard title="Media request draft" body={getMediaRequestDraft(profile)} />
-        <DraftCard title="Missing info draft" body={buildMissingInfoRequestDraft(profile)} />
-        <DraftCard title="Details confirmation draft" body={buildBusinessTruthConfirmationDraft(profile)} />
+        <OwnerMessageCard title="Welcome message" body={buildWelcomeMessageDraft(profile)} />
+        <OwnerMessageCard title="Media request" body={getMediaRequestDraft(profile)} />
+        <OwnerMessageCard title="Missing info request" body={buildMissingInfoRequestDraft(profile)} />
+        <OwnerMessageCard title="Details confirmation" body={buildBusinessTruthConfirmationDraft(profile)} />
       </section>
 
-      <ExpectationAgreementPreview />
+      <ExpectationAgreement />
 
       <Card className="mt-5">
         <CardHeader><CardTitle className="flex items-center gap-2 text-base"><ShieldCheck className="h-4 w-4 text-primary" />First-week expectation</CardTitle></CardHeader>

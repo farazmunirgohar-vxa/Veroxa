@@ -97,7 +97,7 @@ export default function LandingPage() {
             <p className="text-xs uppercase tracking-wider text-primary font-semibold mb-3">What Veroxa handles</p>
             <h2 className="text-3xl font-bold mb-5">One calm online presence package.</h2>
             <p className="text-muted-foreground leading-relaxed">
-              Veroxa focuses on the practical places restaurants are discovered, checked, trusted, and chosen. No multi-package funnel, no public demo promotion, and no fake live execution claims.
+              Veroxa focuses on the practical places restaurants are discovered, checked, trusted, and chosen. No multi-package funnel, no public portal promotion, and no live-execution claims.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 gap-3">

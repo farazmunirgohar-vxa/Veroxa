@@ -27,14 +27,14 @@ export default function ClientDashboard() {
   const isSetupState = !pageState.isDemoData && !pageState.canShowRealData;
 
   const dashboardTitle = pageState.isDemoData
-    ? "Demo Preview — example restaurant workspace"
+    ? "Example restaurant workspace"
     : pageState.restaurant?.name ?? "Your Veroxa workspace";
   const dashboardDescription = pageState.isDemoData
-    ? "Sample data shows how Veroxa organizes setup, media, requests, weekly updates, and monthly reports. It is not a live client account."
+    ? "Example data shows how Veroxa organizes setup, media, requests, weekly updates, and monthly reports. It is not an active client account."
     : "A calm workspace for setup, media, requests, weekly updates, and monthly reports. Nothing goes live without Veroxa team review.";
 
   const setupStatus = pageState.isDemoData
-    ? "Sample account for review"
+    ? "Example account for review"
     : pageState.canShowRealData
       ? dashboardSummary.accountStatus
       : "Account setup is being prepared";
@@ -75,7 +75,7 @@ export default function ClientDashboard() {
       </Card>
 
       {isSetupState ? (
-        <SafePortalEmptyCard title="Veroxa is preparing your restaurant workspace" body="Veroxa is preparing your restaurant workspace. This preview is waiting for Veroxa setup review, so no sample progress is presented as your restaurant work." icon="info" />
+        <SafePortalEmptyCard title="Veroxa is preparing your restaurant workspace" body="Veroxa is preparing your restaurant workspace. Only setup information ready for your restaurant review will appear here." icon="info" />
       ) : null}
 
       <section className="mb-4 grid gap-4 md:grid-cols-4">

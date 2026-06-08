@@ -17,7 +17,7 @@ export default function PublicFooter() {
           </div>
         </div>
         <p className="text-xs text-muted-foreground/60 text-center max-w-2xl mx-auto leading-relaxed">
-          © {new Date().getFullYear()} Veroxa. Complete Online Presence is a preview/manual launch service. Veroxa does not guarantee orders, revenue, profit, rankings, customers, walk-ins, ROI, or growth.
+          © {new Date().getFullYear()} Veroxa. Complete Online Presence is a manual launch service. Veroxa does not guarantee orders, revenue, profit, rankings, customers, walk-ins, ROI, or growth.
         </p>
       </div>
     </footer>
