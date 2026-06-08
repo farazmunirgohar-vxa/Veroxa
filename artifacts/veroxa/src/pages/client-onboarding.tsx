@@ -4,6 +4,7 @@ import { PortalLayout } from "@/components/PortalLayout";
 import { RealPortalReviewNotice, SafePortalEmptyCard } from "@/components/RealPortalSafeStates";
 import { useRealPortalDataMode } from "@/components/auth/RealPortalDataBoundary";
 import { PageHeader, StatusBadge } from "@/components/common";
+import type { StatusBadgeTone } from "@/components/common";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -30,6 +31,7 @@ import {
   getPlatformProfileChecklist,
   getProofInputStatus,
 } from "@/domain/restaurantOnboarding";
+import type { AuditPrefillFieldStatus } from "@/domain/restaurantOnboarding";
 
 function ChecklistSection({ title, items }: { title: string; items: { id: string; label: string; clientLabel: string }[] }) {
   return (
@@ -123,19 +125,27 @@ function OwnerMessageCard({ title, body }: { title: string; body: string }) {
 }
 
 function OwnerVerificationGrid({ sections }: { sections: ReturnType<typeof getMomoHouseAuditPrefillSections> }) {
-  const statusLabel: Record<string, string> = {
-    prefilled_by_veroxa: "Completed by Veroxa",
+  const statusLabel: Record<AuditPrefillFieldStatus, string> = {
+    prefilled_by_veroxa: "Pre-filled — please review",
     needs_owner_verification: "Needs verification",
     missing: "Missing",
     owner_corrected: "Confirmed",
     completed_by_team: "Completed by Veroxa",
     blocked_needs_access: "Needs access",
   };
+  const statusTone: Record<AuditPrefillFieldStatus, StatusBadgeTone> = {
+    prefilled_by_veroxa: "info",
+    needs_owner_verification: "warning",
+    missing: "danger",
+    owner_corrected: "success",
+    completed_by_team: "success",
+    blocked_needs_access: "danger",
+  };
   return (
     <section className="mt-5 space-y-3" data-testid="audit-prefill-onboarding-fields">
       <div>
         <h3 className="text-base font-semibold text-foreground">What Veroxa already knows and what needs your review</h3>
-        <p className="mt-1 text-sm text-muted-foreground">Review each item, confirm anything marked as needed, and provide access only where Veroxa asks for it.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Pre-filled items came from public or audit signals and still need your review; missing items need details from you, access blockers need permission, and only completed items reflect Veroxa team work already finished.</p>
       </div>
       <div className="grid gap-4 lg:grid-cols-2">
       {sections.map((section) => (
@@ -146,7 +156,7 @@ function OwnerVerificationGrid({ sections }: { sections: ReturnType<typeof getMo
               <div key={field.id} className="rounded-lg border border-border/70 p-3 text-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div><p className="font-medium text-foreground">{field.label}</p><p className="mt-1 text-xs text-muted-foreground">{field.value}</p></div>
-                  <StatusBadge tone={field.status === "missing" || field.status === "blocked_needs_access" ? "danger" : field.status === "needs_owner_verification" ? "warning" : "success"}>{statusLabel[field.status]}</StatusBadge>
+                  <StatusBadge tone={statusTone[field.status]}>{statusLabel[field.status]}</StatusBadge>
                 </div>
                 <p className="mt-2 text-[11px] text-muted-foreground">{field.required ? "Required" : "Optional"}</p>
               </div>
