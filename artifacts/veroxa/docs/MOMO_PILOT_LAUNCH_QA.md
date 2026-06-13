@@ -110,3 +110,13 @@ These cannot be fully proven from local code alone and must be checked in the de
 - Server-only secret configuration for both pilot passwords.
 - Deployed build output password scan.
 - Mobile walkthrough on the production/custom-domain frontend.
+
+
+## 2026-06-13 — Momo CP-V1 live pilot readiness
+
+- CP-V1 primary nav remains exactly Home, Media, Messages, Reports, Connections, Profile.
+- `/client/requests` is a hidden guarded alias to Messages.
+- `/client/updates` is a hidden guarded alias to Reports.
+- `/client/onboarding` is a hidden guarded alias to the Profile setup-review experience.
+- `/api/pilot-access` is the Vercel serverless pilot-login endpoint; SPA rewrites must not swallow `/api/*`.
+- Manual/pre-live boundaries remain locked: no production auth, database writes, storage uploads, live integrations, OAuth, live AI, payments, publishing, cron jobs, fake metrics, fake upload success, or fake message delivery.

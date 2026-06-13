@@ -362,7 +362,7 @@ export function PortalLayout({
             className="text-sm font-medium text-muted-foreground"
             data-testid="header-breadcrumb"
           >
-            {portalName} / {activeItem?.label ?? "Dashboard"}
+            {portalName} / {activeItem?.label ?? (portalName === "Client Portal" ? "Home" : "Dashboard")}
           </h1>
         </header>
 
@@ -372,7 +372,7 @@ export function PortalLayout({
             className="text-xs text-muted-foreground"
             data-testid="header-breadcrumb"
           >
-            {portalName} / {activeItem?.label ?? "Dashboard"}
+            {portalName} / {activeItem?.label ?? (portalName === "Client Portal" ? "Home" : "Dashboard")}
           </p>
         </div>
 

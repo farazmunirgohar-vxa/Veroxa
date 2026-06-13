@@ -45,7 +45,7 @@ async function main() {
 
   try {
     await waitForServer();
-    for (const path of ["/", "/free-audit", "/login", "/client/dashboard", "/team/dashboard"]) {
+    for (const path of ["/", "/free-audit", "/login", "/client/dashboard", "/client/media", "/client/messages", "/client/reports", "/client/connections", "/client/profile", "/client/requests", "/client/updates", "/client/onboarding", "/team/dashboard"]) {
       await expectRouteOk(path);
     }
 
@@ -75,7 +75,7 @@ async function main() {
     assert(loginSource.includes("Portal access is not configured"), "Unconfigured placeholder login must show clean portal-access-not-configured behavior.");
     assert(pilotAccessAccounts.includes('accountLabel: MOMO_HOUSE_CLIENT_ACCOUNT_LABEL') && pilotAccessAccounts.includes('email: "momo@veroxa.app"'), "Momo House pilot client account allowlist is missing.");
     assert(pilotAccessAccounts.includes('accountLabel: TEAM_FARAZ_ACCOUNT_LABEL') && pilotAccessAccounts.includes('email: "faraz@veroxa.app"'), "Team Faraz pilot account allowlist is missing.");
-    assert(pilotAccessAccounts.includes("VITE_VEROXA_PILOT_ACCESS_ENDPOINT") && pilotAccessAccounts.includes("server-controlled"), "Pilot access must be server-controlled instead of bundled-password controlled.");
+    assert(pilotAccessAccounts.includes("VITE_VEROXA_PILOT_ACCESS_ENDPOINT") && pilotAccessAccounts.includes("/api/pilot-access") && pilotAccessAccounts.includes("server-controlled"), "Pilot access must default to the Vercel serverless endpoint and stay server-controlled.");
     for (const forbiddenCredential of ["faraz@client.com", "faraz@team.com", "farazclient", "farazteam", "momohousepilot", "teamfarazpilot"]) {
       assert(!pilotAccessAccounts.includes(forbiddenCredential), `Bundled/old pilot credential must not remain in pilot account records: ${forbiddenCredential}`);
       assert(!loginSource.includes(forbiddenCredential), `Bundled/old pilot credential must not remain in login source: ${forbiddenCredential}`);
@@ -95,6 +95,19 @@ async function main() {
     for (const marker of ["demoGoogleMetrics", "DEMO_MONTHLY_PREVIEW", "DEMO_WEEKLY_UPDATE"]) {
       assert(!liveDataBlock.includes(marker), `Authenticated/live client data path must not reference ${marker}.`);
     }
+
+
+    const navSource = readFileSync(resolve(root, "src/lib/clientPortalNav.ts"), "utf8");
+    const navLabels = Array.from(navSource.matchAll(/label: "([^"]+)"/g)).map((m) => m[1]);
+    assert(JSON.stringify(navLabels) === JSON.stringify(["Home", "Media", "Messages", "Reports", "Connections", "Profile"]), "CP-V1 primary nav labels must remain exact and ordered.");
+    for (const retiredLabel of ["Dashboard", "Onboarding", "Updates", "Requests"]) assert(!navLabels.includes(retiredLabel), `Retired label must not appear in primary nav: ${retiredLabel}`);
+    assert(appSource.includes('path="/client/requests"') && appSource.includes('<ClientMessages />'), "/client/requests must stay a guarded Messages alias.");
+    assert(appSource.includes('path="/client/updates"') && appSource.includes('<ClientReports />'), "/client/updates must stay a guarded Reports alias.");
+    assert(appSource.includes('path="/client/onboarding"') && appSource.includes('<ClientProfile />'), "/client/onboarding must stay a guarded Profile alias.");
+    const vercelConfig = readFileSync(resolve(root, "../../vercel.json"), "utf8");
+    assert(vercelConfig.includes("(?!api/)"), "Vercel SPA rewrite must exclude /api routes so /api/pilot-access is not swallowed.");
+    const vercelApi = readFileSync(resolve(root, "../../api/pilot-access.ts"), "utf8");
+    assert(vercelApi.includes('req.method !== "POST"') && vercelApi.includes("VEROXA_PILOT_MOMO_HOUSE_PASSWORD") && vercelApi.includes("VEROXA_PILOT_TEAM_FARAZ_PASSWORD"), "Vercel pilot API must reject non-POST and use server-only env vars.");
 
     const realClientDashboard = readFileSync(resolve(root, "src/pages/client-dashboard.tsx"), "utf8");
     assert(!realClientDashboard.includes("Demo Grill House"), "Real /client/dashboard page must not hard-code demo restaurant names.");

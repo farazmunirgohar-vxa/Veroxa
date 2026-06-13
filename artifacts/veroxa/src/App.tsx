@@ -29,7 +29,6 @@ const ClientMessages = lazy(() => import("@/pages/client-messages"));
 const ClientReports = lazy(() => import("@/pages/client-reports"));
 const ClientConnections = lazy(() => import("@/pages/client-connections"));
 const ClientProfile = lazy(() => import("@/pages/client-profile"));
-const ClientOnboarding = lazy(() => import("@/pages/client-onboarding"));
 
 // Team Portal (real Veroxa OS review — /team/*, login required)
 const TeamDashboard = lazy(() => import("@/pages/team-dashboard"));
@@ -72,7 +71,7 @@ function Router() {
           {() => (
             <ClientPortalGuard>
               <RealPortalDataBoundary portal="client">
-                <ClientOnboarding />
+                <ClientProfile />
               </RealPortalDataBoundary>
             </ClientPortalGuard>
           )}

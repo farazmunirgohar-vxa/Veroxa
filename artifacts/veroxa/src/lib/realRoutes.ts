@@ -71,6 +71,13 @@ export const clientRoutes: RealRoute[] = [
   },
 ];
 
+
+export const hiddenClientCompatibilityRoutes: RealRoute[] = [
+  { path: "/client/requests", role: "client", label: "Messages alias", demoPath: "/demo/client/dashboard", description: "Hidden guarded compatibility alias that renders CP-V1 Messages." },
+  { path: "/client/updates", role: "client", label: "Reports alias", demoPath: "/demo/client/dashboard", description: "Hidden guarded compatibility alias that renders CP-V1 Reports." },
+  { path: "/client/onboarding", role: "client", label: "Profile setup review alias", demoPath: "/demo/client/dashboard", description: "Hidden guarded compatibility alias that renders CP-V1 Profile setup review." },
+];
+
 export const teamRoutes: RealRoute[] = [
   {
     path: "/team/dashboard",
@@ -137,9 +144,33 @@ export const teamRoutes: RealRoute[] = [
     demoPath: "/demo/client/dashboard",
     description: "Free Audit leads and follow-up review queue.",
   },
+
+  {
+    path: "/team/onboarding",
+    role: "team",
+    label: "Onboarding",
+    demoPath: "/demo/client/dashboard",
+    description: "Team/Internal Admin routed review surface.",
+  },
+
+  {
+    path: "/team/manual-execution",
+    role: "team",
+    label: "Manual Execution",
+    demoPath: "/demo/client/dashboard",
+    description: "Team/Internal Admin routed review surface.",
+  },
+
+  {
+    path: "/team/first-client-ops",
+    role: "team",
+    label: "First-Client Ops",
+    demoPath: "/demo/client/dashboard",
+    description: "Team/Internal Admin routed review surface.",
+  },
 ];
 
-export const allRealRoutes: RealRoute[] = [...clientRoutes, ...teamRoutes];
+export const allRealRoutes: RealRoute[] = [...clientRoutes, ...hiddenClientCompatibilityRoutes, ...teamRoutes];
 
 export const routesByRole: Readonly<Record<VeroxaRole, RealRoute[]>> =
   Object.freeze({
