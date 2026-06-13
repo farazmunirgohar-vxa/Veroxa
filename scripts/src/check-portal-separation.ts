@@ -35,9 +35,12 @@ const failures: string[] = [];
 const realPortalPages = [
   "artifacts/veroxa/src/pages/client-dashboard.tsx",
   "artifacts/veroxa/src/pages/client-media.tsx",
+  "artifacts/veroxa/src/pages/client-messages.tsx",
   "artifacts/veroxa/src/pages/client-requests.tsx",
   "artifacts/veroxa/src/pages/client-updates.tsx",
   "artifacts/veroxa/src/pages/client-reports.tsx",
+  "artifacts/veroxa/src/pages/client-connections.tsx",
+  "artifacts/veroxa/src/pages/client-profile.tsx",
   "artifacts/veroxa/src/pages/team-dashboard.tsx",
   "artifacts/veroxa/src/pages/team-upload-inbox.tsx",
   "artifacts/veroxa/src/pages/team-work-queue.tsx",
@@ -122,7 +125,7 @@ function routeBlock(route: string): string {
   return app.match(new RegExp(`<Route path=["']${escaped}["']>[\\s\\S]*?<\\/Route>`))?.[0] ?? "";
 }
 
-for (const route of ["dashboard", "media", "updates", "requests", "reports"]) {
+for (const route of ["dashboard", "media", "messages", "updates", "requests", "reports", "connections", "profile"]) {
   const block = routeBlock(`/client/${route}`);
   if (!block.includes("ClientPortalGuard")) {
     failures.push(`/client/${route} must remain wrapped by ClientPortalGuard.`);
@@ -187,9 +190,12 @@ if (!clientGuardSource.includes('auth.status === "unauthenticated"')) {
 for (const clientFile of [
   "artifacts/veroxa/src/pages/client-dashboard.tsx",
   "artifacts/veroxa/src/pages/client-media.tsx",
+  "artifacts/veroxa/src/pages/client-messages.tsx",
   "artifacts/veroxa/src/pages/client-requests.tsx",
   "artifacts/veroxa/src/pages/client-updates.tsx",
   "artifacts/veroxa/src/pages/client-reports.tsx",
+  "artifacts/veroxa/src/pages/client-connections.tsx",
+  "artifacts/veroxa/src/pages/client-profile.tsx",
 ]) {
   const text = readFileSync(join(root, clientFile), "utf8");
   if (/const\s+DEMO_CLIENT_ID\s*=\s*["']demo-a["']/.test(text)) {

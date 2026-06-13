@@ -24,6 +24,14 @@ These files reflect the current Veroxa manual/pre-live model and override histor
 - `REAL_AUTH_READINESS_AUDIT.md`
 - `PRODUCTION_PREVIEW_LOGIN_CHECKLIST.md`
 
+## 2026-06-13 — CP-V1 client portal lock
+
+- Momo House Client Portal V1 primary navigation is locked to **Home, Media, Messages, Reports, Connections, Profile**.
+- Home replaces owner-facing Dashboard language; Messages replaces Requests; Weekly Updates live inside Reports rather than primary navigation.
+- Connections V1 tracks only Meta Business Suite and Google Business Profile status. Website and delivery platforms are outside Connections V1.
+- Profile is the owner-editable business-truth page; owner edits become Pending Veroxa Review and do not publish automatically.
+- CP-V1 remains manual-first/pre-live: no production auth, database writes, storage uploads, live integrations, payments, live AI, automated publishing, fake upload success, fake message delivery, or fake metrics.
+
 ## Pricing truth
 
 The only active public launch offer is **Complete Online Presence — $495/month**. Starter, Growth, Premium, Local Presence, Full Presence, old Complete Presence, $295, $995, $977, and $488 references are historical/deprecated/archive-only unless a current source-of-truth doc explicitly says otherwise.

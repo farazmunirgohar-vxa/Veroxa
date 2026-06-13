@@ -146,7 +146,7 @@ for (const file of [...futurePlanned, ...internalDebug, ...legacyQuarantined]) {
   }
 }
 
-const expectedClientLabels = ["Dashboard", "Onboarding", "Media", "Updates", "Requests", "Reports"];
+const expectedClientLabels = ["Home", "Media", "Messages", "Reports", "Connections", "Profile"];
 const actualClientLabels = [...clientNav.matchAll(/label:\s*["']([^"']+)["']/g)].map((match) => match[1]);
 if (actualClientLabels.join("|") !== expectedClientLabels.join("|")) {
   failures.push(`client nav labels changed: expected ${expectedClientLabels.join(", ")}; found ${actualClientLabels.join(", ")}.`);
