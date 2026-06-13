@@ -9,9 +9,30 @@ import { Label } from "@/components/ui/label";
 import { AUTH_MODE } from "@/lib/auth/authMode";
 import { getSupabaseClient } from "@/lib/supabase";
 import { getRoleHomePath, isVeroxaRole } from "@/lib/auth/authContract";
-import { getPilotAccessStatus, getPilotRouteForRole, validatePilotAccessCredentials } from "@/lib/auth/pilotAccessAccounts";
+import {
+  getPilotAccessStatus,
+  getPilotRouteForRole,
+  validatePilotAccessCredentials,
+  type PilotAccessFailureMode,
+} from "@/lib/auth/pilotAccessAccounts";
 import { createPlaceholderSession, clearPlaceholderSession } from "@/lib/auth/placeholderSession";
 import { useDocumentMeta } from "@/hooks/useDocumentMeta";
+
+
+function getPilotAccessFailureMessage(mode: PilotAccessFailureMode): string {
+  switch (mode) {
+    case "disabled":
+    case "endpoint_unavailable":
+      return "Pilot login is not available in this environment yet. Please contact Team Faraz directly.";
+    case "unauthorized":
+      return "Those sign-in details do not match a Veroxa pilot portal account. Please check the email and password.";
+    case "rate_limited":
+      return "Too many sign-in attempts. Please wait a few minutes and try again.";
+    case "method_not_allowed":
+    case "unexpected_error":
+      return "We could not finish checking portal access. Please try again or contact Veroxa.";
+  }
+}
 
 type SignInState =
   | { kind: "idle" }
@@ -64,12 +85,13 @@ export default function LoginPage() {
 
       setSignInState({ kind: "submitting" });
       try {
-        const account = await validatePilotAccessCredentials(email, password);
-        if (!account) {
+        const result = await validatePilotAccessCredentials(email, password);
+        if (!result.ok) {
           clearPlaceholderSession();
-          setSignInState({ kind: "error", message: "Portal access is not configured or those sign-in details do not match a Veroxa portal account. Please contact Veroxa." });
+          setSignInState({ kind: "error", message: getPilotAccessFailureMessage(result.mode) });
           return;
         }
+        const { account } = result;
         createPlaceholderSession({
           role: account.role,
           email: account.email,
@@ -82,7 +104,7 @@ export default function LoginPage() {
         setLocation(getPilotRouteForRole(account.role));
       } catch {
         clearPlaceholderSession();
-        setSignInState({ kind: "error", message: "Portal access is not configured for this environment. Please contact Veroxa." });
+        setSignInState({ kind: "error", message: "We could not reach the pilot login endpoint. Please try again or contact Veroxa." });
       }
       return;
     }

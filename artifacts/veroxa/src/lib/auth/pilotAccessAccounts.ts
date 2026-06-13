@@ -16,12 +16,19 @@ export interface PilotAccessStatus {
   isConfigured: boolean;
   serverEndpointConfigured: boolean;
   configuredAccountCount: number;
-  statusLabel: "Portal access configured" | "Portal access not configured";
+  statusLabel: "Pilot login endpoint available" | "Pilot login endpoint unavailable";
   helperText: string;
 }
 
+export type PilotAccessFailureMode = "endpoint_unavailable" | "disabled" | "unauthorized" | "rate_limited" | "method_not_allowed" | "unexpected_error";
+
+export type PilotAccessValidationResult =
+  | { ok: true; account: PilotAccessAccount }
+  | { ok: false; mode: PilotAccessFailureMode };
+
 interface PilotAccessServerResponse {
   ok?: unknown;
+  mode?: unknown;
   accountId?: unknown;
   email?: unknown;
   role?: unknown;
@@ -96,39 +103,63 @@ export function getPilotAccessStatus(): PilotAccessStatus {
     isConfigured: serverEndpointConfigured,
     serverEndpointConfigured,
     configuredAccountCount: serverEndpointConfigured ? getPilotAccountAllowlist().length : 0,
-    statusLabel: serverEndpointConfigured ? "Portal access configured" : "Portal access not configured",
+    statusLabel: serverEndpointConfigured ? "Pilot login endpoint available" : "Pilot login endpoint unavailable",
     helperText: serverEndpointConfigured
-      ? "Pilot portal access is checked by a server-controlled endpoint. No portal passwords are bundled in the browser."
-      : "Portal access is not configured in this environment. Contact Team Faraz directly; pilot login is not connected yet.",
+      ? "passwords are checked server-side. No portal passwords are bundled in the browser."
+      : "Pilot login is not connected in this environment. Contact Team Faraz directly.",
   };
+}
+
+function readSafeFailureMode(mode: unknown, responseOk: boolean): PilotAccessFailureMode {
+  if (mode === "disabled" || mode === "unauthorized" || mode === "rate_limited" || mode === "method_not_allowed") {
+    return mode;
+  }
+  return responseOk ? "unexpected_error" : "endpoint_unavailable";
 }
 
 export async function validatePilotAccessCredentials(
   emailOrId: string,
   password: string,
-): Promise<PilotAccessAccount | null> {
+): Promise<PilotAccessValidationResult> {
   const endpoint = getPilotAccessEndpoint();
   const normalizedEmail = emailOrId.trim().toLowerCase();
-  if (!endpoint || !normalizedEmail || !password) return null;
+  if (!endpoint) return { ok: false, mode: "endpoint_unavailable" };
+  if (!normalizedEmail || !password) return { ok: false, mode: "unauthorized" };
 
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email: normalizedEmail, password }),
-  });
-  if (!response.ok) return null;
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: normalizedEmail, password }),
+    });
+  } catch {
+    return { ok: false, mode: "endpoint_unavailable" };
+  }
 
-  const payload = (await response.json()) as PilotAccessServerResponse;
-  if (payload.ok !== true) return null;
+  let payload: PilotAccessServerResponse = {};
+  try {
+    payload = (await response.json()) as PilotAccessServerResponse;
+  } catch {
+    return { ok: false, mode: response.ok ? "unexpected_error" : "endpoint_unavailable" };
+  }
+
+  if (!response.ok || payload.ok !== true) {
+    return { ok: false, mode: readSafeFailureMode(payload.mode, response.ok) };
+  }
+
   const accountId = typeof payload.accountId === "string" ? payload.accountId : null;
   const responseEmail = typeof payload.email === "string" ? payload.email.trim().toLowerCase() : normalizedEmail;
   const role = payload.role === "client" || payload.role === "team" ? payload.role : null;
-  if (!accountId || !role) return null;
+  if (!accountId || !role) return { ok: false, mode: "unexpected_error" };
 
-  return getPilotAccountAllowlist().find(
-    (account) => account.accountId === accountId && account.email === responseEmail && account.role === role,
-  ) ?? null;
+  const account = getPilotAccountAllowlist().find(
+    (candidate) => candidate.accountId === accountId && candidate.email === responseEmail && candidate.role === role,
+  );
+
+  return account ? { ok: true, account } : { ok: false, mode: "unexpected_error" };
 }
+
 
 export function getPilotRouteForRole(role: VeroxaRole): string {
   return getRoleHomePath(role);

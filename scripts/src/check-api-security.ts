@@ -13,6 +13,7 @@ const app = read("artifacts/api-server/src/app.ts");
 const routesIndex = read("artifacts/api-server/src/routes/index.ts");
 const apiSecurity = read("artifacts/api-server/src/middlewares/apiSecurity.ts");
 const pilotAccessSource = read("artifacts/api-server/src/routes/pilotAccess.ts");
+const vercelPilotAccessSource = read("api/pilot-access.ts");
 const corsPolicy = read("artifacts/api-server/src/middlewares/corsPolicy.ts");
 const openApiSpec = read("lib/api-spec/openapi.yaml");
 
@@ -75,7 +76,13 @@ if (/req\.header\(["']x-forwarded-for["']\)/i.test(pilotAccessSource)) {
 if (!pilotAccessSource.includes("req.ip") || !pilotAccessSource.includes("req.socket.remoteAddress")) {
   failures.push("pilotAccess.ts rate limit key must use server-trusted req.ip with socket fallback.");
 }
-if (!pilotAccessSource.includes("VEROXA_PILOT_MOMO_HOUSE_PASSWORD") || !pilotAccessSource.includes("VEROXA_PILOT_TEAM_FARAZ_PASSWORD")) {
+if (/headers\[["']x-forwarded-for["']\]/i.test(vercelPilotAccessSource)) {
+  failures.push("Vercel api/pilot-access.ts must not read raw X-Forwarded-For for rate limiting.");
+}
+for (const required of ["x-vercel-forwarded-for", "req.socket.remoteAddress", "method_not_allowed", "disabled", "unauthorized", "rate_limited"]) {
+  if (!vercelPilotAccessSource.includes(required)) failures.push(`Vercel api/pilot-access.ts missing safe pilot marker: ${required}`);
+}
+if (!pilotAccessSource.includes("VEROXA_PILOT_MOMO_HOUSE_PASSWORD") || !pilotAccessSource.includes("VEROXA_PILOT_TEAM_FARAZ_PASSWORD") || !vercelPilotAccessSource.includes("VEROXA_PILOT_MOMO_HOUSE_PASSWORD") || !vercelPilotAccessSource.includes("VEROXA_PILOT_TEAM_FARAZ_PASSWORD")) {
   failures.push("pilotAccess.ts must keep pilot passwords server-side in API environment variables.");
 }
 

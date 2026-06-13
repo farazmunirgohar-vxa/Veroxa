@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 const root = resolve(process.cwd(), "..");
@@ -36,11 +36,19 @@ if (!existsSync(vercelPath)) {
   if (config.outputDirectory !== "artifacts/veroxa/dist/public") {
     failures.push("vercel.json outputDirectory must be artifacts/veroxa/dist/public.");
   }
-  const hasSpaRewrite = config.rewrites?.some(
-    (rewrite) => (rewrite.source === "/(.*)" || rewrite.source === "/((?!api/).*)") && rewrite.destination === "/index.html",
+  const rootApiPath = join(root, "api");
+  const hasRootApiFunctions = existsSync(rootApiPath) && readdirSync(rootApiPath).some((entry) => entry.endsWith(".ts"));
+  const hasOldCatchAllSpaRewrite = config.rewrites?.some(
+    (rewrite) => rewrite.source === "/(.*)" && rewrite.destination === "/index.html",
   );
-  if (!hasSpaRewrite) {
-    failures.push("vercel.json must include the SPA rewrite to /index.html while preserving /api routes.");
+  if (hasRootApiFunctions && hasOldCatchAllSpaRewrite) {
+    failures.push('vercel.json must not use the old catch-all SPA rewrite "/(.*)" while root api/*.ts functions exist. Preserve /api/* routes.');
+  }
+  const hasApiPreservingSpaRewrite = config.rewrites?.some(
+    (rewrite) => rewrite.source === "/((?!api/).*)" && rewrite.destination === "/index.html",
+  );
+  if (!hasApiPreservingSpaRewrite) {
+    failures.push("vercel.json must include an API-preserving SPA rewrite to /index.html, such as /((?!api/).*), so /api/* routes remain serverless functions.");
   }
 }
 
