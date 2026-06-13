@@ -105,7 +105,7 @@ async function main() {
     assert(appSource.includes('path="/client/updates"') && appSource.includes('<ClientReports />'), "/client/updates must stay a guarded Reports alias.");
     assert(appSource.includes('path="/client/onboarding"') && appSource.includes('<ClientProfile />'), "/client/onboarding must stay a guarded Profile alias.");
     const vercelConfig = readFileSync(resolve(root, "../../vercel.json"), "utf8");
-    assert(vercelConfig.includes("(?!api/)"), "Vercel SPA rewrite must exclude /api routes so /api/pilot-access is not swallowed.");
+    assert(vercelConfig.includes('"handle": "filesystem"') && vercelConfig.includes('"dest": "/index.html"'), "Vercel SPA fallback must use filesystem-first routing so /api/pilot-access is not swallowed.");
     const vercelApi = readFileSync(resolve(root, "../../api/pilot-access.ts"), "utf8");
     assert(vercelApi.includes('req.method !== "POST"') && vercelApi.includes("VEROXA_PILOT_MOMO_HOUSE_PASSWORD") && vercelApi.includes("VEROXA_PILOT_TEAM_FARAZ_PASSWORD"), "Vercel pilot API must reject non-POST and use server-only env vars.");
 
