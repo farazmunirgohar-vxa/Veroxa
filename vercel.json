@@ -6,7 +6,7 @@
   "outputDirectory": "artifacts/veroxa/dist/public",
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ]

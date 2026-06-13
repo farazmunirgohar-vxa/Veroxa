@@ -37,10 +37,10 @@ if (!existsSync(vercelPath)) {
     failures.push("vercel.json outputDirectory must be artifacts/veroxa/dist/public.");
   }
   const hasSpaRewrite = config.rewrites?.some(
-    (rewrite) => rewrite.source === "/(.*)" && rewrite.destination === "/index.html",
+    (rewrite) => (rewrite.source === "/(.*)" || rewrite.source === "/((?!api/).*)") && rewrite.destination === "/index.html",
   );
   if (!hasSpaRewrite) {
-    failures.push("vercel.json must include the SPA rewrite to /index.html.");
+    failures.push("vercel.json must include the SPA rewrite to /index.html while preserving /api routes.");
   }
 }
 

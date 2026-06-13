@@ -70,3 +70,13 @@ Owner, Operator, Super Admin, generic Admin, and Execution portals must not be e
 ## Audit-to-onboarding visibility
 
 Onboarding must show field status for: `prefilled_by_veroxa`, `needs_owner_verification`, `missing`, `owner_corrected`, `completed_by_team`, and `blocked_needs_access`. Sources can include audit, public info, owner, Veroxa team, and manual review. City/state matched means both city and state matched; city-conflicting prefill is manual review unless exact phone/domain/strong address/platform proof exists.
+
+
+## 2026-06-13 — Momo CP-V1 live pilot readiness
+
+- CP-V1 primary nav remains exactly Home, Media, Messages, Reports, Connections, Profile.
+- `/client/requests` is a hidden guarded alias to Messages.
+- `/client/updates` is a hidden guarded alias to Reports.
+- `/client/onboarding` is a hidden guarded alias to the Profile setup-review experience.
+- `/api/pilot-access` is the Vercel serverless pilot-login endpoint; SPA rewrites must not swallow `/api/*`.
+- Manual/pre-live boundaries remain locked: no production auth, database writes, storage uploads, live integrations, OAuth, live AI, payments, publishing, cron jobs, fake metrics, fake upload success, or fake message delivery.

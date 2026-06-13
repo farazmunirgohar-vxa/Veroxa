@@ -23,6 +23,7 @@ These files reflect the current Veroxa manual/pre-live model and override histor
 - `FIRST_CLIENT_MANUAL_LAUNCH_INDEX.md`
 - `REAL_AUTH_READINESS_AUDIT.md`
 - `PRODUCTION_PREVIEW_LOGIN_CHECKLIST.md`
+- `MOMO_LIVE_PILOT_READINESS.md`
 
 ## 2026-06-13 — CP-V1 client portal lock
 
@@ -30,7 +31,7 @@ These files reflect the current Veroxa manual/pre-live model and override histor
 - Home replaces owner-facing Dashboard language; Messages replaces Requests; Weekly Updates live inside Reports rather than primary navigation.
 - Connections V1 tracks only Meta Business Suite and Google Business Profile status. Website and delivery platforms are outside Connections V1.
 - Profile is the owner-editable business-truth page; owner edits become Pending Veroxa Review and do not publish automatically.
-- CP-V1 remains manual-first/pre-live: no production auth, database writes, storage uploads, live integrations, payments, live AI, automated publishing, fake upload success, fake message delivery, or fake metrics.
+- Requests and Updates are hidden guarded compatibility aliases only; `/client/onboarding` renders Profile setup review. CP-V1 remains manual-first/pre-live: no production auth, database writes, storage uploads, live integrations, payments, live AI, automated publishing, fake upload success, fake message delivery, or fake metrics.
 
 ## Pricing truth
 
