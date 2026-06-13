@@ -38,7 +38,7 @@ const pilotAccounts = requireIncludes("artifacts/veroxa/src/lib/auth/pilotAccess
   "Team Faraz",
   "VITE_VEROXA_PILOT_ACCESS_ENDPOINT",
   "server-controlled",
-  "Portal access not configured",
+  "Pilot login endpoint unavailable",
 ]);
 if (/password:\s*["'][^"']+["']/.test(pilotAccounts) || /momohousepilot|teamfarazpilot/.test(pilotAccounts)) failures.push("pilotAccessAccounts must not include bundled plaintext pilot passwords.");
 for (const retired of ["VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN", "Preview access ready", "Preview access not enabled", "publicPreviewFallbackEnabled", "isPreviewFriendlyHostname", "faraz@client.com", "faraz@team.com", "farazclient", "farazteam", "momohousepilot", "teamfarazpilot"]) {
