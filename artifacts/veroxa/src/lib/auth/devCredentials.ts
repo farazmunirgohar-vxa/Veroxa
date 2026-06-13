@@ -29,7 +29,8 @@ export async function validateDevCredentials(
   emailOrId: string,
   password: string,
 ): Promise<VeroxaRole | null> {
-  return (await validatePilotAccessCredentials(emailOrId, password))?.role ?? null;
+  const result = await validatePilotAccessCredentials(emailOrId, password);
+  return result.ok ? result.account.role : null;
 }
 
 export function getDevRouteForRole(role: VeroxaRole): string {

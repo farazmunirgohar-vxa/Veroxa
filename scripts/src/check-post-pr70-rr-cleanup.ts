@@ -12,7 +12,7 @@ if (!/AUTH_MODE(?:\s*:\s*AuthMode)?\s*=\s*["']placeholder["']/.test(auth)) failu
 const devCreds = read("artifacts/veroxa/src/lib/auth/devCredentials.ts");
 const pilotAccounts = read("artifacts/veroxa/src/lib/auth/pilotAccessAccounts.ts");
 for (const marker of ["Real Login V1 pilot portal access", "getPilotAccessAccounts", "validatePilotAccessCredentials", "getPilotRouteForRole"]) if (!devCreds.includes(marker)) failures.push(`devCredentials missing Real Login V1 marker ${marker}.`);
-for (const marker of ["Momo House San Antonio", "Team Faraz", "VITE_VEROXA_PILOT_ACCESS_ENDPOINT", "server-controlled", "Portal access not configured"]) if (!pilotAccounts.includes(marker)) failures.push(`pilotAccessAccounts missing post-PR87 Real Login V1 marker ${marker}.`);
+for (const marker of ["Momo House San Antonio", "Team Faraz", "VITE_VEROXA_PILOT_ACCESS_ENDPOINT", "server-controlled", "Pilot login endpoint unavailable"]) if (!pilotAccounts.includes(marker)) failures.push(`pilotAccessAccounts missing post-PR87 Real Login V1 marker ${marker}.`);
 if (/password:\s*["'][^"']+["']/.test(pilotAccounts) || /momohousepilot|teamfarazpilot/.test(pilotAccounts)) failures.push("pilotAccessAccounts must not include bundled plaintext pilot passwords.");
 for (const retired of ["VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN", "faraz@client.com", "faraz@team.com", "farazclient", "farazteam", "momohousepilot", "teamfarazpilot", "Preview access ready", "Preview access not enabled", "publicPreviewFallbackEnabled", "isPreviewFriendlyHostname"]) {
   if (devCreds.includes(retired) || pilotAccounts.includes(retired)) failures.push(`Real Login V1 auth helpers must not retain retired preview-login marker ${retired}.`);
