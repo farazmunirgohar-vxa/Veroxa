@@ -42,7 +42,7 @@ function readViteEnv(name: string): string | null {
 }
 
 function getPilotAccessEndpoint(): string | null {
-  return readViteEnv(PILOT_ACCESS_ENDPOINT_ENV);
+  return readViteEnv(PILOT_ACCESS_ENDPOINT_ENV) ?? "/api/pilot-access";
 }
 
 function getPilotAccountAllowlist(): readonly PilotAccessAccount[] {
@@ -99,7 +99,7 @@ export function getPilotAccessStatus(): PilotAccessStatus {
     statusLabel: serverEndpointConfigured ? "Portal access configured" : "Portal access not configured",
     helperText: serverEndpointConfigured
       ? "Pilot portal access is checked by a server-controlled endpoint. No portal passwords are bundled in the browser."
-      : "Portal access is not configured in this environment. Contact Team Faraz directly; secure pilot lead capture/login is not connected yet.",
+      : "Portal access is not configured in this environment. Contact Team Faraz directly; pilot login is not connected yet.",
   };
 }
 
