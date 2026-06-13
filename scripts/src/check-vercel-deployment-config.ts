@@ -22,6 +22,7 @@ if (!existsSync(vercelPath)) {
     buildCommand?: string;
     outputDirectory?: string;
     rewrites?: Array<{ source?: string; destination?: string }>;
+    routes?: Array<{ handle?: string; src?: string; dest?: string }>;
   };
 
   if (config.framework !== "vite") {
@@ -36,11 +37,15 @@ if (!existsSync(vercelPath)) {
   if (config.outputDirectory !== "artifacts/veroxa/dist/public") {
     failures.push("vercel.json outputDirectory must be artifacts/veroxa/dist/public.");
   }
-  const hasSpaRewrite = config.rewrites?.some(
-    (rewrite) => (rewrite.source === "/(.*)" || rewrite.source === "/((?!api/).*)") && rewrite.destination === "/index.html",
+  const hasFilesystemFirstRoutes = Boolean(
+    config.routes?.[0]?.handle === "filesystem" &&
+    config.routes?.some((route) => route.src === "/(.*)" && route.dest === "/index.html"),
   );
-  if (!hasSpaRewrite) {
-    failures.push("vercel.json must include the SPA rewrite to /index.html while preserving /api routes.");
+  const hasSpaRewrite = config.rewrites?.some(
+    (rewrite) => rewrite.source === "/(.*)" && rewrite.destination === "/index.html",
+  );
+  if (!hasFilesystemFirstRoutes && !hasSpaRewrite) {
+    failures.push("vercel.json must include a filesystem-first SPA fallback to /index.html while preserving /api routes.");
   }
 }
 
@@ -84,4 +89,4 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-console.log("Vercel deployment config guardrail passed: Veroxa is configured as a Vite frontend, not a Services app.");
+console.log("Vercel deployment config guardrail passed: Veroxa is configured as a Vite frontend with API-safe SPA fallback.");
