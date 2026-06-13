@@ -1,52 +1,32 @@
-import type { ElementType } from "react";
-import { Camera, CheckCircle2, Image, Info, UploadCloud } from "lucide-react";
+import { Camera, UploadCloud } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
-import { RealPortalReviewNotice, SafePortalEmptyCard } from "@/components/RealPortalSafeStates";
+import { RealPortalReviewNotice } from "@/components/RealPortalSafeStates";
 import { PageHeader } from "@/components/common/PageHeader";
+import { StatusBadge } from "@/components/common/StatusBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { clientPortalNavItems } from "@/lib/clientPortalNav";
-import { useClientSaasPortalState } from "@/hooks/useClientSaasPortalState";
 import { ClientMediaTracker } from "@/components/client/ClientMediaTracker";
-import { getClientSafeEmptyStateForPage, getClientPortalDataModeNotice } from "@/domain/saas/clientPortalState";
-import { buildClientSafeMediaSummary, getNextBestMediaRequest, mediaIntelligenceSeedData } from "@/domain/mediaIntelligence";
+
+const needed = ["10 new momo photos", "3 sauce close-ups", "2 dining room photos", "1 short kitchen/prep video", "Catering/order photos if available"];
+const feed = [
+  ["Momo close-up photo", "photo", "Recently", "Ready to Use", "Strong close-up. Good for Instagram/Facebook post."],
+  ["Sauce tray photo", "photo", "Recently", "Saved for Later", "Useful when Veroxa prepares sauce-focused content."],
+  ["Dining room angle", "photo", "Recently", "Need Better Version", "Too dark. Please send a brighter version if possible."],
+  ["Kitchen prep clip", "video", "Recently", "Under Review", "Saved for Veroxa review; video publishing is not active yet."],
+];
 
 export default function ClientMedia() {
-  const { pageState, mediaSummary } = useClientSaasPortalState();
-  const media = pageState.mediaAssets;
-  return (
-    <PortalLayout items={clientPortalNavItems} portalName="Client Portal">
-      <RealPortalReviewNotice />
-      <PageHeader title="Media" description="Review what Veroxa can use, what needs clearer photos, and what to send next. Picture-based content is active; video/TikTok/Reels are coming soon." testId="header-client-media" />
-      <Card className="mb-4 border-primary/20 bg-primary/5"><CardContent className="p-4 text-sm"><p className="font-medium">{mediaSummary.uploadReadinessNotice}</p><p className="mt-1 text-xs text-muted-foreground">{getClientPortalDataModeNotice(pageState)}</p></CardContent></Card>
-      {!pageState.isDemoData && !pageState.canShowRealData ? <SafePortalEmptyCard title="Media guidance will appear after setup review" body={getClientSafeEmptyStateForPage("media", pageState)} icon="info" /> : null}
-      <section className="grid gap-4 md:grid-cols-4 mb-4">
-        <Metric icon={Image} label="Total media" value={mediaSummary.total} />
-        <Metric icon={CheckCircle2} label="Useful for review" value={mediaSummary.usable} />
-        <Metric icon={Camera} label="Needs better media" value={mediaSummary.needsBetterMedia} />
-        <Metric icon={UploadCloud} label="Used already" value={mediaSummary.used} />
-      </section>
-      <Card className="mb-4 border-sky-500/20 bg-sky-500/5" data-testid="client-safe-media-intelligence">
-        <CardHeader><CardTitle className="text-sm">What media is easiest to use</CardTitle></CardHeader>
-        <CardContent className="space-y-2 text-sm text-muted-foreground">
-          <p>{buildClientSafeMediaSummary(mediaIntelligenceSeedData)}</p>
-          <p>{getNextBestMediaRequest(mediaIntelligenceSeedData)}</p>
-          <p className="text-xs">Picture-based content is active for Facebook, Instagram, and Google updates. Video/TikTok/Reels readiness is coming soon and saved for later review. For now, Veroxa will tell you how to send media for review.</p>
-        </CardContent>
-      </Card>
-      <section className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-        <Card data-testid="card-media-detail"><CardHeader><CardTitle className="text-sm">Media reviewed by Veroxa</CardTitle></CardHeader><CardContent className="space-y-3">{media.length > 0 ? media.map((asset) => <div key={asset.id} className="rounded-lg border border-border p-3"><p className="font-medium">{asset.displayName}</p><p className="mt-1 text-xs text-muted-foreground">{asset.bestUse ?? "Veroxa team review"}</p><p className="mt-1 text-xs text-primary">{formatClientMediaReviewLabel(asset.status)}</p><ClientMediaTracker status={asset.status === "usable" ? "Ready" : asset.status === "prepared_for_post" ? "Saved for later" : asset.status === "needs_better_media" ? "Needs better media" : "Waiting for direction"} /></div>) : <p className="text-sm text-muted-foreground">Once your account is active, Veroxa-reviewed media guidance will appear here with calm next steps.</p>}</CardContent></Card>
-        <Card><CardHeader><CardTitle className="text-sm flex items-center gap-2"><Info className="h-4 w-4 text-primary" />What Veroxa needs</CardTitle></CardHeader><CardContent className="space-y-2 text-sm text-muted-foreground"><p>Clear food photos, best-seller photos, storefront or dining-room photos, and timely event media. More best-seller photos are usually the most useful next step.</p><p>Please confirm business-truth changes before Veroxa prepares public-facing updates.</p><p>Media sending instructions will appear after setup review, and Veroxa will confirm what to send next.</p>{pageState.activityPreview.map((log) => <p key={log.id} className="rounded-lg border border-border p-2 text-xs">{log.summary}</p>)}</CardContent></Card>
-      </section>
-    </PortalLayout>
-  );
+  return <PortalLayout items={clientPortalNavItems} portalName="Client Portal"><RealPortalReviewNotice />
+    <PageHeader title="Media" description="See what Veroxa needs next, how sent media may be used, and which items need a better version." testId="header-client-media" />
+    <section className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
+      <Card data-testid="media-needed"><CardHeader><CardTitle className="text-sm">Media Needed</CardTitle></CardHeader><CardContent className="space-y-2">{needed.map((item) => <p key={item} className="rounded-lg border border-border/70 p-3 text-sm">{item}</p>)}</CardContent></Card>
+      <Card data-testid="upload-media"><CardHeader><CardTitle className="flex items-center gap-2 text-sm"><UploadCloud className="h-4 w-4 text-primary" />Upload Media</CardTitle></CardHeader><CardContent className="space-y-3 text-sm text-muted-foreground"><Input type="file" accept="image/*,video/*" multiple disabled /><Textarea placeholder="Tell Veroxa what this is or how you want it used. Example: New spicy chicken momo, use for catering, interior photo, owner wants this promoted." /><Button disabled>Send for Veroxa Review</Button><p className="text-xs">For now, Veroxa will tell you how to send media for review. Media delivery is handled manually right now. This intake area shows the CP-V1 structure without claiming files were delivered or stored.</p></CardContent></Card>
+    </section>
+    <Card className="mt-4" data-testid="card-media-detail"><CardHeader><CardTitle className="flex items-center gap-2 text-sm"><Camera className="h-4 w-4 text-primary" />Media Feed</CardTitle></CardHeader><CardContent className="grid gap-3 md:grid-cols-2">{feed.map(([name, type, date, status, note]) => <div key={name} className="rounded-lg border border-border/70 p-3"><div className="mb-3 flex h-24 items-center justify-center rounded-md bg-muted text-xs uppercase text-muted-foreground">{type}</div><div className="flex items-start justify-between gap-3"><div><p className="font-medium">{name}</p><p className="text-xs text-muted-foreground">{type} · {date}</p></div><StatusBadge tone={status === "Need Better Version" ? "warning" : "info"}>{status}</StatusBadge></div><p className="mt-2 text-xs text-muted-foreground"><span className="font-medium text-foreground">Veroxa Notes:</span> {note}</p><ClientMediaTracker status={status === "Ready to Use" ? "Ready" : status === "Saved for Later" ? "Saved for later" : status === "Need Better Version" ? "Needs better media" : "Waiting for direction"} /></div>)}</CardContent></Card>
+  </PortalLayout>;
 }
-function Metric({ icon: Icon, label, value }: { icon: ElementType; label: string; value: number }) { return <Card><CardContent className="p-4"><Icon className="mb-2 h-4 w-4 text-primary" /><p className="text-xs text-muted-foreground">{label}</p><p className="text-2xl font-semibold">{value}</p></CardContent></Card>; }
 
 // Media lifecycle guardrail markers: buildClientSubmissionKey duplicate-skipped.
-
-function formatClientMediaReviewLabel(status: string): string {
-  if (status === "usable") return "Ready for Veroxa review";
-  if (status === "prepared_for_post") return "Saved for later";
-  if (status === "needs_better_media") return "Needs clearer photo";
-  return "Needs business confirmation";
-}

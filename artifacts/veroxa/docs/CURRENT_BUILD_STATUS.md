@@ -179,10 +179,14 @@ This build adds the 90% pre-paid/manual operating layer while keeping Veroxa pre
 ### Completed foundations
 
 - Client readiness domain for onboarding, media supply, request channel, weekly updates, monthly reports, website alignment, Google/Maps/local visibility, Facebook/Instagram content, add-ons, missing confirmations, and account activation state.
-- Client Dashboard readiness cards and safe setup states.
+- CP-V1 Client Portal alignment for Momo House: primary navigation is Home, Media, Messages, Reports, Connections, and Profile.
+- Home answers what Veroxa has done, what Veroxa needs from the owner, and what Veroxa is currently doing.
+- Media includes specific media needed, honest manual/pre-live intake structure, and one continuous media feed with Veroxa notes.
+- Messages replaces owner-facing Requests as an inbox-style communication model. Hidden compatibility aliases may remain guarded, but Requests is not primary client navigation.
+- Reports contains both Weekly Updates and Monthly Reports; Weekly Updates are no longer a separate primary client nav item.
+- Connections V1 tracks only Meta Business Suite and Google Business Profile statuses; no live account integrations or OAuth flows are added.
+- Profile is the owner-editable business-truth page; edits become Pending Veroxa Review and never publish automatically.
 - Onboarding expectation acknowledgement for what Veroxa does, what Veroxa does not handle, restaurant responsibilities, confirmations, 24-hour response meaning, no guarantees, add-ons, and coming-soon items.
-- Weekly updates foundation and Client Updates page for what Veroxa worked on, what was posted/prepared, what is pending, media needed, confirmations needed, request response reminder, and next week focus.
-- Monthly report foundation and Client Reports page for what Veroxa handled, Google/Maps/local progress, website alignment, Facebook/Instagram content, media working/not-working, reach/action signals, limitations, and next month focus.
 - Add-on logic for new basic website +$95 and missing Facebook/Instagram profile creation +$45/profile; no checkout or payment logic.
 - Client-safe value proof messaging and internal value proof baseline guardrails. Internal value proof remains $9,900/month minimum online-influenced sales channel value baseline at 5% margin and is not extra new sales.
 - Media intelligence client-safe labels and guidance for best-seller photos, clearer photos, saved-for-later media, business confirmation, picture-based content, and video channels coming soon.

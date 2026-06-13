@@ -29,14 +29,18 @@ Veroxa now has only two active portal experiences: Client Portal and Team/Intern
 
 ## Guarded client routes
 
-- `/client/dashboard`
-- `/client/onboarding`
-- `/client/media`
-- `/client/updates`
-- `/client/requests`
-- `/client/reports`
+Primary CP-V1 client navigation is exactly: Home, Media, Messages, Reports, Connections, Profile.
 
-Client routes must be guarded by `ClientPortalGuard` and `RealPortalDataBoundary`. They show the Momo House San Antonio pre-live pilot state after placeholder client login, with missing/unverified fields clearly labeled for owner/team verification.
+- `/client/dashboard` — Home
+- `/client/media` — Media
+- `/client/messages` — Messages
+- `/client/reports` — Reports, including Weekly Updates and Monthly Reports
+- `/client/connections` — Connections status for Meta Business Suite and Google Business Profile only
+- `/client/profile` — editable business-truth Profile for Veroxa review
+
+Hidden compatibility aliases may remain guarded only for continuity: `/client/onboarding`, `/client/updates`, and `/client/requests`. They must not appear in primary client navigation, and client-facing copy should model communication as Messages rather than tickets or requests.
+
+Client routes must be guarded by `ClientPortalGuard` and `RealPortalDataBoundary`. They show the Momo House San Antonio pre-live pilot state after placeholder client login, with missing/unverified fields clearly labeled for owner/team verification. CP-V1 remains manual/pre-live: no live integrations, storage uploads, database writes, live AI, payments, or automated publishing.
 
 ## Guarded Team/manual routes
 

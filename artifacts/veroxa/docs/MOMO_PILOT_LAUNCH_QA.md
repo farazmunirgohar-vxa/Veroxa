@@ -45,14 +45,19 @@ This checklist answers one launch question: if Momo House says yes tomorrow, can
 
 ## D. Client Portal QA
 
-- [ ] Client dashboard loads after Momo House login.
-- [ ] Client onboarding loads after Momo House login.
-- [ ] Client onboarding is understandable to a restaurant owner.
+- [ ] Client Home loads after Momo House login at `/client/dashboard`.
+- [ ] Primary client navigation shows exactly Home, Media, Messages, Reports, Connections, and Profile.
+- [ ] Primary client navigation does not show Dashboard, Onboarding, Updates, or Requests.
+- [ ] Home clearly answers what Veroxa has done, what Veroxa needs from Momo House, and what Veroxa is currently doing.
+- [ ] Media clearly shows specific photos/videos Veroxa needs next and does not claim fake upload success.
+- [ ] Messages uses Inbox, Sent, and New Message language rather than ticket/request language.
+- [ ] Reports contains Weekly Updates and Monthly Reports without fake metrics.
+- [ ] Connections tracks only Meta Business Suite and Google Business Profile.
+- [ ] Profile allows owner review/correction and uses Save Changes for Veroxa Review.
 - [ ] Owner can clearly see what to confirm next.
 - [ ] Owner can clearly see what Veroxa already knows.
 - [ ] Owner can clearly see what access Veroxa needs.
 - [ ] Owner can clearly see what photos/videos to upload or send next.
-- [ ] Owner can clearly see what happens after onboarding.
 - [ ] No internal-only jargon appears in client-facing copy.
 - [ ] No empty/demo/sample/preview language appears in active owner-facing copy.
 - [ ] Mobile layout is readable.

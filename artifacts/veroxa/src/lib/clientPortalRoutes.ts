@@ -1,9 +1,12 @@
 export type ClientPortalSection =
   | "dashboard"
   | "media"
+  | "messages"
+  | "reports"
+  | "connections"
+  | "profile"
   | "updates"
   | "requests"
-  | "reports"
   | "onboarding";
 
 const CLIENT_PORTAL_BASE = "/client";

@@ -25,9 +25,10 @@ const FreeAudit = lazy(() => import("@/pages/free-audit"));
 // Client Portal (real Veroxa OS review — /client/*)
 const ClientDashboard = lazy(() => import("@/pages/client-dashboard"));
 const ClientMedia = lazy(() => import("@/pages/client-media"));
-const ClientRequests = lazy(() => import("@/pages/client-requests"));
-const ClientUpdates = lazy(() => import("@/pages/client-updates"));
+const ClientMessages = lazy(() => import("@/pages/client-messages"));
 const ClientReports = lazy(() => import("@/pages/client-reports"));
+const ClientConnections = lazy(() => import("@/pages/client-connections"));
+const ClientProfile = lazy(() => import("@/pages/client-profile"));
 const ClientOnboarding = lazy(() => import("@/pages/client-onboarding"));
 
 // Team Portal (real Veroxa OS review — /team/*, login required)
@@ -85,11 +86,20 @@ function Router() {
             </ClientPortalGuard>
           )}
         </Route>
+        <Route path="/client/messages">
+          {() => (
+            <ClientPortalGuard>
+              <RealPortalDataBoundary portal="client">
+                <ClientMessages />
+              </RealPortalDataBoundary>
+            </ClientPortalGuard>
+          )}
+        </Route>
         <Route path="/client/requests">
           {() => (
             <ClientPortalGuard>
               <RealPortalDataBoundary portal="client">
-                <ClientRequests />
+                <ClientMessages />
               </RealPortalDataBoundary>
             </ClientPortalGuard>
           )}
@@ -98,7 +108,7 @@ function Router() {
           {() => (
             <ClientPortalGuard>
               <RealPortalDataBoundary portal="client">
-                <ClientUpdates />
+                <ClientReports />
               </RealPortalDataBoundary>
             </ClientPortalGuard>
           )}
@@ -108,6 +118,24 @@ function Router() {
             <ClientPortalGuard>
               <RealPortalDataBoundary portal="client">
                 <ClientReports />
+              </RealPortalDataBoundary>
+            </ClientPortalGuard>
+          )}
+        </Route>
+        <Route path="/client/connections">
+          {() => (
+            <ClientPortalGuard>
+              <RealPortalDataBoundary portal="client">
+                <ClientConnections />
+              </RealPortalDataBoundary>
+            </ClientPortalGuard>
+          )}
+        </Route>
+        <Route path="/client/profile">
+          {() => (
+            <ClientPortalGuard>
+              <RealPortalDataBoundary portal="client">
+                <ClientProfile />
               </RealPortalDataBoundary>
             </ClientPortalGuard>
           )}
