@@ -85,7 +85,7 @@ requireIncludes(pilotAccounts, pilotAccountsPath, [
   "Team Faraz",
   "VITE_VEROXA_PILOT_ACCESS_ENDPOINT",
   "server-controlled",
-  "Portal access not configured",
+  "Pilot login endpoint unavailable",
   "getRoleHomePath(role)",
 ]);
 forbidIncludes(pilotAccounts, pilotAccountsPath, retiredPreviewLoginMarkers);
