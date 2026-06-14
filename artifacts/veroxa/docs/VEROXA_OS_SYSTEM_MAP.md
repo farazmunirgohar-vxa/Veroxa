@@ -1,10 +1,18 @@
 # Veroxa OS System Map
 
-_Last updated: 2026-06-06 — A–Z cleanup alignment._
+_Last updated: 2026-06-14 — Automation-first Momo pivot._
 
 Veroxa is currently a **preview/manual/pre-live** restaurant online presence operating system. It is designed so the public site, Client Portal, Team/manual surfaces, repository boundaries, SOPs, and dormant AI/server inventory can be reviewed before any paid or live infrastructure is activated.
 
 Source docs to keep nearby: [Current Build Status](./CURRENT_BUILD_STATUS.md), [Route Page Inventory](./ROUTE_PAGE_INVENTORY.md), [Route Surface Map](./VEROXA_ROUTE_SURFACE_MAP.md), [Pricing Source of Truth](./PRICING_SOURCE_OF_TRUTH.md), [Pre-Paid Activation Gate](./PRE_PAID_ACTIVATION_GATE.md), and [AI Automation Readiness Boundary](./AI_AUTOMATION_READINESS_BOUNDARY.md).
+
+## 2026-06-14 — Automation-first target before Momo walkthrough
+
+- The previous manual/pre-live model remains the current code state: `AUTH_MODE` is still `placeholder`, and live auth, database, storage, messages, media handling, live AI, integrations, payments, publishing, webhooks, cron jobs, and automated customer-visible execution are not active.
+- The newest target state is **Live Automation V1 before any Momo owner walkthrough**. The old manual-first Momo walkthrough path is historical/stale for the current Momo plan unless Faraz explicitly re-approves it.
+- The next build sequence is real auth, database-backed account/restaurant records, media upload and storage, messages/portal request threads, profile corrections pending Veroxa review, activity log, AI drafting/preparation, Team Automation Control Center, and reports generated from activity.
+- Automation may prepare and process internal drafts, classifications, activity records, and Team review items. Public/customer-visible actions still require Veroxa/Faraz approval, and business-truth changes still require client confirmation before approval or execution.
+- This map describes target sequence and docs authority only; it does not mark Live Automation V1 as built.
 
 ## 1. Current status
 

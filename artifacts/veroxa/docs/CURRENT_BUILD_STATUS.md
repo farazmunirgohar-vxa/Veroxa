@@ -1,5 +1,16 @@
 # Veroxa Launch Simplification Source of Truth
 
+## 2026-06-14 — Automation-first pivot
+
+- Faraz’s newest locked direction is automation-first before any Momo owner walkthrough.
+- CP-V1 client portal is polished for the owner-facing Home, Media, Messages, Reports, Connections, and Profile shape.
+- Profile is polished as the owner-editable business-truth surface where corrections should become Pending Veroxa Review rather than publish automatically.
+- `AUTH_MODE` is still `placeholder`.
+- Live data, production auth, storage uploads, messages, media handling, report generation, and live AI are not connected yet.
+- Therefore the Momo owner walkthrough is blocked until **Live Automation V1** is built and approved.
+- Older manual-first walkthrough docs remain historical context for current code limitations and safety language, but they are stale for the current Momo execution path unless Faraz explicitly re-approves manual-first.
+- This status update is docs/source-of-truth alignment only: no production auth, database migrations, storage uploads, live AI calls, Google/Meta APIs, payments, publishing, or code behavior changes were added.
+
 ## 2026-06-07 — PR #82 Audit matcher safety and real-pilot onboarding polish
 
 - PR #82 strengthened audit matcher safety after PR #81: state-only matches no longer count as city/state matched, and city/state conflicts reduce confidence.

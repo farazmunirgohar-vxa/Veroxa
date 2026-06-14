@@ -4,8 +4,9 @@ Status: highest-level active contributor guide and current source-of-truth index
 
 ## Current source-of-truth docs
 
-These files reflect the current Veroxa manual/pre-live model and override historical/archive strategy notes. If another doc conflicts with this index, do not override this index; treat the conflicting note as stale until Faraz explicitly refreshes it:
+These files reflect the current Veroxa operating truth and override historical/archive strategy notes. If another doc conflicts with this index, do not override this index; treat the conflicting note as stale until Faraz explicitly refreshes it:
 
+- `VEROXA_LOCKED_OPERATING_MEMORY.md`
 - `CURRENT_BUILD_STATUS.md`
 - `PRICING_SOURCE_OF_TRUTH.md`
 - `VEROXA_OS_SYSTEM_MAP.md`
@@ -24,6 +25,16 @@ These files reflect the current Veroxa manual/pre-live model and override histor
 - `REAL_AUTH_READINESS_AUDIT.md`
 - `PRODUCTION_PREVIEW_LOGIN_CHECKLIST.md`
 - `MOMO_LIVE_PILOT_READINESS.md`
+
+## 2026-06-14 — Automation-first Momo pivot
+
+- `VEROXA_LOCKED_OPERATING_MEMORY.md` is now the first/highest-priority current source-of-truth doc after this index.
+- No Momo owner walkthrough should happen until **Live Automation V1** exists.
+- Old manual-first Momo walkthrough docs are historical/stale for the current Momo path unless Faraz explicitly re-approves a manual-first walkthrough.
+- Automation may prepare and process internal Veroxa work: drafts, classifications, media organization, activity records, report inputs, and Team review items.
+- Public/customer-visible actions still require Veroxa/Faraz approval before anything goes live.
+- Business-truth changes still require client confirmation before approval or execution, including hours, menu, prices, offers, links, sensitive claims, and complaint/reputation-impacting language.
+- Current technical truth remains that `AUTH_MODE` is `placeholder`; live data/auth/storage/messages/media/reports/AI are not connected yet, so Live Automation V1 is a future build sequence, not completed functionality.
 
 ## 2026-06-13 — CP-V1 client portal lock
 

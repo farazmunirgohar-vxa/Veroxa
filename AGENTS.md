@@ -1,6 +1,14 @@
 # Veroxa Agent Instructions
 
-Current docs authority: read `artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md` first. Do not override the active docs index, `PRICING_SOURCE_OF_TRUTH.md`, or `CURRENT_BUILD_STATUS.md` with older current-looking docs or archived strategy notes.
+Current docs authority: read `artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md` first, then read `artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md`. Do not override the active docs index, locked operating memory, `PRICING_SOURCE_OF_TRUTH.md`, or `CURRENT_BUILD_STATUS.md` with older current-looking docs or archived strategy notes.
+
+## 2026-06-14 — Automation-first Momo pivot
+
+- Faraz’s latest direction is automation-first before any Momo owner walkthrough: Veroxa should be live and automatic enough to operate with minimum human interference before Momo is walked through the owner experience.
+- Do not assume or revive the old manual-first Momo walkthrough path unless Faraz explicitly says to use a manual-first walkthrough again. Older manual/pre-live walkthrough docs are historical/stale for the current Momo path.
+- Automation may prepare and process internal Veroxa work, drafts, classifications, activity records, and Team review items.
+- Public/customer-visible actions still require Veroxa/Faraz approval before anything goes live.
+- Business-truth changes still require client confirmation before approval or execution, including hours, menu, prices, offers, links, sensitive claims, and complaint/reputation-impacting language.
 
 
 ## 2026-06-04 — 90% pre-paid OS final alignment
