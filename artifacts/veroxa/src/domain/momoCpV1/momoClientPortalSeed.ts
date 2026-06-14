@@ -1,7 +1,7 @@
 import type { StatusBadgeTone } from "@/components/common/StatusBadge";
 
 export type CpV1Status = "Completed" | "Prepared" | "In Progress" | "Under Veroxa Review" | "Waiting for Access" | "Waiting on Media" | "Pending Verification" | "Needs Your Attention" | "Ready to Use" | "Saved for Later" | "Better Version Helpful" | "Under Review" | "Used" | "Covered" | "Read";
-export type ProfileFieldStatus = "Pre-filled — please review" | "Needs owner verification" | "Owner edited" | "Confirmed" | "Pending Veroxa Review";
+export type ProfileFieldStatus = "Please Review" | "Pre-filled" | "Confirmed" | "Optional" | "Veroxa Review";
 export type WebsiteAccessStatus = "Not Needed" | "Requested" | "Pending" | "Connected" | "Access Unavailable";
 
 export function statusTone(status: string): StatusBadgeTone {
@@ -23,7 +23,7 @@ export const momoCpV1Seed = {
   home: {
     ownerActions: [
       { title: "Confirm business hours", status: "Needs Your Attention", section: "profile", buttonLabel: "Review Profile" },
-      { title: "Confirm menu/order link", status: "Needs Your Attention", section: "profile", buttonLabel: "Review Profile" },
+      { title: "Confirm menu source", status: "Needs Your Attention", section: "profile", buttonLabel: "Review Profile" },
       { title: "Add Veroxa to Meta or Google", status: "Waiting for Access", section: "connections", buttonLabel: "Open Connections" },
     ],
     veroxaWorkingOn: [
@@ -60,7 +60,7 @@ export const momoCpV1Seed = {
     weeklyIntro: "Veroxa is preparing your restaurant workspace, reviewing your profile, and organizing what is needed before public work begins.",
     weeklyDone: ["Profile prepared for review", "Initial media guidance prepared", "Meta/Google access steps identified"],
     weeklyNext: ["Confirm business details", "Confirm account access", "Review media recommendations"],
-    weeklyNeeds: ["Confirm business hours", "Confirm menu/order link", "Add Veroxa to Meta/Google"],
+    weeklyNeeds: ["Confirm business hours", "Confirm menu source", "Add Veroxa to Meta/Google"],
   },
   connections: [
     {
@@ -79,32 +79,59 @@ export const momoCpV1Seed = {
     },
   ],
   profile: [
-    { section: "Restaurant Details", fields: [
-      { label: "Name", value: "Momo’s House", status: "Pre-filled — please review" },
-      { label: "Address", value: "San Antonio, TX — exact street address needs owner verification", status: "Needs owner verification" },
-      { label: "Phone", value: "Owner verification needed before public use", status: "Needs owner verification" },
-      { label: "Hours", value: "Needs current owner-confirmed hours", status: "Needs owner verification" },
-      { label: "Cuisine type", value: "Momo / dumpling restaurant", status: "Pre-filled — please review" },
-    ]},
-    { section: "Menu & Ordering", fields: [
-      { label: "Menu link", value: "Needs owner-confirmed current link", status: "Needs owner verification" },
-      { label: "Online ordering link", value: "Needs owner-confirmed current link", status: "Needs owner verification" },
-      { label: "Delivery availability", value: "Confirm available platforms before Veroxa mentions delivery", status: "Needs owner verification" },
-      { label: "Catering availability", value: "Only mention catering if owner confirms exact availability", status: "Needs owner verification" },
-    ]},
-    { section: "Contacts", fields: [
-      { label: "Primary contact", value: "Momo House owner contact — confirm best name/phone/email", status: "Needs owner verification" },
-      { label: "Secondary contact", value: "Optional backup contact", status: "Needs owner verification" },
-    ]},
-    { section: "Brand Voice", fields: [
-      { label: "Best sellers", value: "Steamed momo, fried momo, sauces — owner can confirm favorites", status: "Needs owner verification" },
-      { label: "Tone", value: "Warm, family-friendly, casual, welcoming for first-time momo customers", status: "Pre-filled — please review" },
-      { label: "Things to avoid saying", value: "Avoid halal/organic/healthy/spicy/dietary claims unless owner confirms", status: "Needs owner verification" },
-      { label: "Claims needing owner confirmation", value: "Catering, delivery platforms, holiday hours, discounts, ingredients, dietary claims", status: "Needs owner verification" },
-    ]},
-    { section: "Website", fields: [
-      { label: "Website URL", value: "Needs owner-confirmed website or menu/order link", status: "Needs owner verification" },
-      { label: "Website access status", value: "Optional — not needed unless Veroxa is asked to refine the website", status: "Pending Veroxa Review", websiteAccessStatus: "Pending" as WebsiteAccessStatus },
-    ]},
+    {
+      section: "Restaurant Basics",
+      purpose: "Basic public restaurant information Veroxa should confirm before using.",
+      fields: [
+        { label: "Name", value: "Momo’s House", status: "Pre-filled" },
+        { label: "Address", value: "San Antonio, TX — exact street address should be confirmed before public use", status: "Please Review" },
+        { label: "Phone", value: "Owner confirmation needed before public use", status: "Please Review" },
+        { label: "Hours", value: "Current hours should be confirmed before Veroxa uses them publicly", status: "Please Review" },
+        { label: "Cuisine", value: "Momo / dumpling restaurant", status: "Pre-filled" },
+      ],
+    },
+    {
+      section: "Menu",
+      purpose: "Veroxa will only use menu details after the current source is confirmed.",
+      fields: [
+        { label: "Current menu source", value: "Owner-confirmed menu needed", status: "Please Review" },
+        { label: "Menu link or menu photo/PDF", value: "Please send or confirm the current menu source", status: "Please Review" },
+        { label: "Menu accuracy status", value: "Veroxa will use the menu only after owner confirmation", status: "Veroxa Review" },
+      ],
+    },
+    {
+      section: "Delivery & Catering Notes",
+      purpose: "Veroxa will only mention delivery or catering if the restaurant confirms it.",
+      fields: [
+        { label: "Delivery availability", value: "Confirm before Veroxa mentions delivery publicly", status: "Please Review" },
+        { label: "Catering availability", value: "Only mention catering if owner confirms availability", status: "Please Review" },
+      ],
+    },
+    {
+      section: "Contacts",
+      purpose: "Who Veroxa should contact if a profile detail needs a quick correction.",
+      fields: [
+        { label: "Primary contact", value: "Momo House owner contact — confirm best name, phone, or email", status: "Please Review" },
+        { label: "Backup contact", value: "Optional backup contact", status: "Optional" },
+      ],
+    },
+    {
+      section: "Brand Notes",
+      purpose: "Short notes so Veroxa stays accurate and avoids unconfirmed claims.",
+      fields: [
+        { label: "Popular items", value: "Steamed momo, fried momo, sauces — owner can confirm favorites", status: "Please Review" },
+        { label: "Tone", value: "Warm, casual, family-friendly", status: "Pre-filled" },
+        { label: "Claims to confirm", value: "Catering, delivery, discounts, ingredients, dietary claims", status: "Please Review" },
+        { label: "Things Veroxa should avoid saying", value: "Halal, organic, healthy, spicy, or dietary claims unless confirmed", status: "Please Review" },
+      ],
+    },
+    {
+      section: "Website",
+      purpose: "Website access is optional and only needed if Veroxa is asked to help refine the website.",
+      fields: [
+        { label: "Website URL", value: "Owner-confirmed website URL if available", status: "Optional" },
+        { label: "Website access status", value: "Optional — only needed if Veroxa is asked to help refine the website", status: "Optional", websiteAccessStatus: "Pending" as WebsiteAccessStatus },
+      ],
+    },
   ],
 };
