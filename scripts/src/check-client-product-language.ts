@@ -259,6 +259,63 @@ if (media.includes("Media Needed") || momoCpV1Seed.includes("Media Needed") || m
 }
 
 
+
+const clientProfilePath = "artifacts/veroxa/src/pages/client-profile.tsx";
+const clientProfile = readFileSync(join(root, clientProfilePath), "utf8");
+const activeProfileText = `${clientProfile}\n${momoCpV1Seed}`;
+
+if (clientProfile.includes("@/components/ui/input") || /<Input\b|<input\b/i.test(clientProfile)) {
+  failures.push(`${clientProfilePath} must use read-only review rows/cards, not input-style fields.`);
+}
+
+for (const requiredProfileMarker of [
+  "Restaurant Basics",
+  "Menu",
+  "Delivery & Catering Notes",
+  "Contacts",
+  "Brand Notes",
+  "Website",
+  "Need to correct something?",
+  "Please Review",
+  "Message Veroxa About Profile",
+]) {
+  if (!activeProfileText.includes(requiredProfileMarker)) failures.push(`Momo Profile is missing required owner-friendly marker: ${requiredProfileMarker}`);
+}
+
+const blockedProfilePatterns: Array<[RegExp, string]> = [
+  [/Needs owner verification/i, "Needs owner verification"],
+  [/Menu & Ordering/i, "Menu & Ordering"],
+  [/Brand Voice/i, "Brand Voice"],
+  [/Online ordering link/i, "Online ordering link"],
+  [/\bDoorDash\b/i, "DoorDash"],
+  [/\bUber Eats\b/i, "Uber Eats"],
+  [/\bGrubhub\b/i, "Grubhub"],
+  [/\bToast\b/i, "Toast"],
+  [/\bSquare\b/i, "Square"],
+  [/Sales Signals/i, "Sales Signals"],
+  [/Ordering Intelligence/i, "Ordering Intelligence"],
+  [/Platform sync/i, "Platform sync"],
+  [/Order tracking/i, "Order tracking"],
+  [/platform access/i, "platform access"],
+  [/menu sync/i, "menu sync"],
+  [/\bAPI\b/i, "API"],
+];
+for (const [pattern, label] of blockedProfilePatterns) {
+  if (pattern.test(activeProfileText)) {
+    failures.push(`Momo Profile must not expose stressful or parked ordering copy: ${label}`);
+  }
+}
+
+for (const fakePersistenceMarker of [
+  "Save Changes",
+  "Submit",
+  "Saved",
+  "Published",
+  "Updated live",
+]) {
+  if (clientProfile.includes(fakePersistenceMarker)) failures.push(`${clientProfilePath} must not include fake persistence action/copy: ${fakePersistenceMarker}`);
+}
+
 const saasScaffold = readFileSync(join(root, "artifacts/veroxa/src/domain/saas/repositoryProvider.ts"), "utf8");
 for (const marker of ["createSaasRepositoryBundle", "placeholder repository", "demo repository"]) {
   if (!saasScaffold.includes(marker)) failures.push(`Phase 1 SaaS scaffold marker missing: ${marker}`);
