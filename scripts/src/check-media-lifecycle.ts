@@ -30,6 +30,12 @@ const clientMediaSource = readFileSync(
   join(root, "artifacts/veroxa/src/pages/client-media.tsx"),
   "utf8",
 );
+const momoCpV1Seed = readFileSync(
+  join(root, "artifacts/veroxa/src/domain/momoCpV1/momoClientPortalSeed.ts"),
+  "utf8",
+);
+const activeMediaCopy = `${clientMediaSource}
+${momoCpV1Seed}`;
 for (const forbidden of [
   "Uploaded. Veroxa has your media",
   "uploaded successfully",
@@ -41,9 +47,9 @@ for (const forbidden of [
     );
   }
 }
-if (!clientMediaSource.includes("For now, Veroxa will tell you how to send media for review")) {
+if (!clientMediaSource.includes("Send photos or videos whenever it is easy") || !clientMediaSource.includes("They do not need to be perfect")) {
   failures.push(
-    "Client media page must use client-safe media sending guidance without implying live storage is connected.",
+    "Client media page must use low-pressure manual media sending guidance without implying live storage is connected.",
   );
 }
 if (
@@ -74,10 +80,15 @@ for (const rel of activeClientFiles) {
     }
   }
 }
-if (!clientMediaSource.includes("ClientMediaTracker")) {
-  failures.push(
-    "Client media page must include the client-safe media detail tracker.",
-  );
+for (const requiredMediaCopy of ["Recommended Media", "How to Send Media", "Media Reviewed by Veroxa", "Better Version Helpful"]) {
+  if (!activeMediaCopy.includes(requiredMediaCopy)) {
+    failures.push(`Client media page must include simplified owner-friendly media copy: ${requiredMediaCopy}`);
+  }
+}
+for (const removedMediaCopy of ["Media Needed", "Upload Media", "Send for Veroxa Review", "ClientMediaTracker", "Need Better Version"]) {
+  if (activeMediaCopy.includes(removedMediaCopy)) {
+    failures.push(`Client media page must not reintroduce old workflow-heavy media copy: ${removedMediaCopy}`);
+  }
 }
 
 if (failures.length > 0) {
