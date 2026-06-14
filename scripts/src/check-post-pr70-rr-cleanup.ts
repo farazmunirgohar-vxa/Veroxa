@@ -22,7 +22,9 @@ const updates = read("artifacts/veroxa/src/pages/client-updates.tsx");
 if (!updates.includes("updateSummaries") || !updates.includes("buildWeeklyUpdateFromClientSummary")) failures.push("client-updates.tsx must adapt loaded updateSummaries before using fallback preview data.");
 if (/buildClientWeeklyUpdatePreview\(\)/.test(updates)) failures.push("client-updates.tsx must not always call buildClientWeeklyUpdatePreview() with no data.");
 const reports = read("artifacts/veroxa/src/pages/client-reports.tsx");
-if (!reports.includes("reportSummaries") || !reports.includes("buildMonthlyReportFromClientSummary")) failures.push("client-reports.tsx must adapt loaded reportSummaries before using fallback preview data.");
+for (const marker of ["This Week’s Update", "Your first monthly report will appear after Veroxa has enough reviewed activity to report honestly", "Veroxa does not show fake numbers"]) {
+  if (!reports.includes(marker)) failures.push(`client-reports.tsx missing simplified honest-report marker ${marker}.`);
+}
 if (/buildClientMonthlyReportPreview\(\)/.test(reports)) failures.push("client-reports.tsx must not always call buildClientMonthlyReportPreview() with no data.");
 if (/sr-only[^\n]*(Weekly Reports|Monthly Reports)|(Weekly Reports|Monthly Reports)[^\n]*sr-only/.test(reports)) failures.push("client-reports.tsx contains hidden report marker stuffing.");
 const onboardingPage = read("artifacts/veroxa/src/pages/client-onboarding.tsx");

@@ -199,7 +199,7 @@ const reports = readFileSync(
   join(root, "artifacts/veroxa/src/pages/client-reports.tsx"),
   "utf8",
 );
-for (const claim of [/\b\d+%\b/, /rankings? up/i, /revenue/i]) {
+for (const claim of [/\b\d+%\b/, /rankings? up/i, /revenue increased|revenue grew|revenue improved/i]) {
   if (claim.test(reports))
     failures.push(
       `client-reports.tsx may contain fake/overclaim metric language: ${claim}`,
@@ -208,8 +208,54 @@ for (const claim of [/\b\d+%\b/, /rankings? up/i, /revenue/i]) {
 if (/sr-only[^\n]*(Weekly Reports|Monthly Reports)|(Weekly Reports|Monthly Reports)[^\n]*sr-only/.test(reports)) {
   failures.push("client-reports.tsx must not use hidden Weekly/Monthly Reports marker stuffing.");
 }
-for (const marker of ["Monthly Reports", "What Veroxa handled", "Reach/action signals", "Next month focus"]) {
-  if (!reports.includes(marker)) failures.push(`client-reports.tsx missing visible report structure marker: ${marker}`);
+for (const marker of ["This Week’s Update", "Monthly Report", "Reports Stay Honest"]) {
+  if (!reports.includes(marker)) failures.push(`client-reports.tsx missing simplified report marker: ${marker}`);
+}
+
+const momoCpV1SeedPath = "artifacts/veroxa/src/domain/momoCpV1/momoClientPortalSeed.ts";
+const momoCpV1Seed = readFileSync(join(root, momoCpV1SeedPath), "utf8");
+const activeClientOwnerFacingFiles = [
+  "artifacts/veroxa/src/pages/client-dashboard.tsx",
+  "artifacts/veroxa/src/pages/client-media.tsx",
+  "artifacts/veroxa/src/pages/client-messages.tsx",
+  "artifacts/veroxa/src/pages/client-reports.tsx",
+  "artifacts/veroxa/src/pages/client-connections.tsx",
+  "artifacts/veroxa/src/pages/client-profile.tsx",
+];
+for (const file of activeClientOwnerFacingFiles) {
+  const text = readFileSync(join(root, file), "utf8");
+  for (const blocked of [
+    "Client Portal in review",
+    "Live account data is being prepared",
+    "portal shell",
+    "sample progress",
+    "real route",
+  ]) {
+    if (text.includes(blocked)) failures.push(`${file} includes repeated/internal client review banner copy: ${blocked}`);
+  }
+}
+for (const blocked of [
+  "10 new momo photos",
+  "3 sauce close-ups",
+  "2 dining room photos",
+  "1 short kitchen/prep video",
+  "Need 10 new food photos",
+]) {
+  if (media.includes(blocked) || momoCpV1Seed.includes(blocked)) failures.push(`Active media copy must not include quantity pressure: ${blocked}`);
+}
+for (const fakeMessage of [
+  "We have new food photos coming Friday",
+  "We are closed July 4th",
+  "Please promote catering next week",
+]) {
+  if (momoCpV1Seed.includes(fakeMessage)) failures.push(`${momoCpV1SeedPath} includes fake Momo sent message: ${fakeMessage}`);
+}
+if (!momoCpV1Seed.includes("Nothing needed at the moment")) failures.push(`${momoCpV1SeedPath} must include the owner-friendly empty state.`);
+if (!media.includes("Recommended Media") || !momoCpV1Seed.includes("Better Version Helpful")) {
+  failures.push("Active media copy must include Recommended Media and Better Version Helpful.");
+}
+if (media.includes("Media Needed") || momoCpV1Seed.includes("Media Needed") || media.includes("Need Better Version") || momoCpV1Seed.includes("Need Better Version")) {
+  failures.push("Active media copy must not include old Media Needed / Need Better Version language.");
 }
 
 

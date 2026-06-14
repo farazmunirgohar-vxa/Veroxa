@@ -88,9 +88,14 @@ if (!realEmptyBlock.includes("ZERO_GOOGLE_METRICS") || !realEmptyBlock.includes(
 }
 
 const portalLayout = read("artifacts/veroxa/src/components/PortalLayout.tsx");
-for (const marker of ["manual/pre-live workspace", "nothing publishes automatically", "No sample progress is shown as client work"]) {
-  if (!portalLayout.includes(marker)) failures.push(`PortalLayout missing calm manual/pre-live marker: ${marker}`);
+for (const marker of ["manual/pre-live workspace", "nothing publishes automatically"]) {
+  if (!portalLayout.includes(marker)) failures.push(`PortalLayout missing calm team manual/pre-live marker: ${marker}`);
 }
+const clientDashboard = read("artifacts/veroxa/src/pages/client-dashboard.tsx");
+for (const marker of ["Nothing goes live without Veroxa review and owner-confirmed details", "Needs Your Attention", "Veroxa Is Working On"]) {
+  if (!clientDashboard.includes(marker)) failures.push(`client-dashboard.tsx missing calm owner walkthrough marker: ${marker}`);
+}
+if (portalLayout.includes("No sample progress is shown as client work")) failures.push("PortalLayout must not reintroduce repeated client sample-progress banner copy.");
 
 const combinedCurrentDocs = [
   "artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md",

@@ -1,95 +1,90 @@
 import type { StatusBadgeTone } from "@/components/common/StatusBadge";
 
-export type CpV1Status = "Completed" | "Prepared" | "In Progress" | "Under Veroxa Review" | "Waiting on You" | "Waiting on Access" | "Waiting on Media" | "Pending Verification" | "Needs Your Review" | "Missing" | "Ready to Use" | "Saved for Later" | "Need Better Version" | "Unread" | "Read" | "Needs Reply" | "Confirmed";
-export type ProfileFieldStatus = "Pre-filled — please review" | "Needs owner verification" | "Missing" | "Owner edited" | "Confirmed" | "Pending Veroxa Review";
+export type CpV1Status = "Completed" | "Prepared" | "In Progress" | "Under Veroxa Review" | "Waiting for Access" | "Waiting on Media" | "Pending Verification" | "Needs Your Attention" | "Ready to Use" | "Saved for Later" | "Better Version Helpful" | "Under Review" | "Used" | "Covered" | "Read";
+export type ProfileFieldStatus = "Pre-filled — please review" | "Needs owner verification" | "Owner edited" | "Confirmed" | "Pending Veroxa Review";
 export type WebsiteAccessStatus = "Not Needed" | "Requested" | "Pending" | "Connected" | "Access Unavailable";
 
 export function statusTone(status: string): StatusBadgeTone {
-  if (/blocked|missing/i.test(status)) return "danger";
-  if (/waiting|pending verification|needs your review|needs reply|unread|need better/i.test(status)) return "warning";
-  if (/completed|confirmed|ready/i.test(status)) return "success";
+  if (/blocked/i.test(status)) return "danger";
+  if (/waiting|pending|needs your attention|review|better version/i.test(status)) return "warning";
+  if (/completed|confirmed|ready|covered|used/i.test(status)) return "success";
   return "info";
 }
+
+export const emptyStateCopy = {
+  nothingNeeded: "Nothing needed at the moment.",
+  ownerReview: "Veroxa will let you know when something needs your review.",
+  media: "Veroxa will recommend new media when it is useful.",
+  messages: "Veroxa will message you here when there is an update.",
+};
 
 export const momoCpV1Seed = {
   restaurantName: "Momo’s House",
   home: {
-    completed: [
-      { title: "Reviewed your online presence", status: "Completed", note: "Initial Momo House review has been organized for owner review." },
-      { title: "Pre-filled your restaurant profile", status: "Prepared", note: "Business details are ready for you to confirm before Veroxa uses them." },
-      { title: "Organized your first setup checklist", status: "Completed", note: "The next owner actions are grouped below." },
-      { title: "Reviewed menu/order links", status: "Prepared", note: "Veroxa is checking the best owner-confirmed link to use." },
-      { title: "Prepared first media guidance", status: "Prepared", note: "The Media page lists the specific photos and video that would help next." },
-      { title: "Prepared Meta and Google access steps", status: "Prepared", note: "Connection steps are tracked without any live account integration." },
+    ownerActions: [
+      { title: "Confirm business hours", status: "Needs Your Attention", section: "profile", buttonLabel: "Review Profile" },
+      { title: "Confirm menu/order link", status: "Needs Your Attention", section: "profile", buttonLabel: "Review Profile" },
+      { title: "Add Veroxa to Meta or Google", status: "Waiting for Access", section: "connections", buttonLabel: "Open Connections" },
     ],
-    needed: [
-      { title: "Confirm business hours", status: "Needs Your Review", section: "profile" },
-      { title: "Confirm menu/order link", status: "Needs Your Review", section: "profile" },
-      { title: "Send 10–15 current food photos", status: "Waiting on You", section: "media" },
-      { title: "Add Veroxa to Meta Business Suite", status: "Waiting on You", section: "connections" },
-      { title: "Add Veroxa as Google Business Profile Manager", status: "Waiting on You", section: "connections" },
-      { title: "Confirm catering availability", status: "Needs Your Review", section: "profile" },
-    ],
-    inProgress: [
+    veroxaWorkingOn: [
       { title: "Preparing first content direction", status: "In Progress" },
-      { title: "Reviewing Google Business Profile connection", status: "Waiting on Access" },
-      { title: "Waiting on Meta access", status: "Waiting on Access" },
-      { title: "Organizing media guidance", status: "Waiting on Media" },
-      { title: "Preparing first weekly update draft", status: "Under Veroxa Review" },
-      { title: "Preparing first monthly report structure", status: "Under Veroxa Review" },
+      { title: "Reviewing Meta/Google access", status: "Waiting for Access" },
+      { title: "Preparing first weekly update", status: "Under Veroxa Review" },
     ],
-    recentMessages: [
-      "Veroxa: Please confirm your current business hours.",
-      "Veroxa: Meta and Google access are still pending.",
-      "Momo’s House: We will send new food photos this week.",
-    ],
+    latestUpdate: "Veroxa has prepared your profile for review and is organizing the next setup steps. The next priority is confirming business details and access to Meta/Google.",
   },
   media: {
-    needed: ["10 new momo photos", "3 sauce close-ups", "2 dining room photos", "1 short kitchen/prep video", "Catering/order photos if available"],
-    feed: [
-      { name: "Momo close-up photo", type: "photo", date: "Manual review pending", status: "Ready to Use", note: "Strong close-up. Good for Instagram/Facebook post." },
-      { name: "Sauce tray photo", type: "photo", date: "Manual review pending", status: "Saved for Later", note: "Useful when Veroxa prepares sauce-focused content." },
-      { name: "Dining room angle", type: "photo", date: "Manual review pending", status: "Need Better Version", note: "Too dark. Please send a brighter version if possible." },
-      { name: "Kitchen prep clip", type: "video", date: "Manual review pending", status: "Under Review", note: "Saved for Veroxa review; video publishing is not active yet." },
+    recommendations: [
+      { name: "Steamed momo photo", guidance: "Menu item photos as they are made", status: "Covered" },
+      { name: "Fried momo photo", guidance: "Helpful when convenient", status: "Recommended" },
+      { name: "Sauce tray photo", guidance: "Sauce photos when available", status: "Covered" },
+      { name: "Snack or drink photo", guidance: "Useful when easy to capture", status: "Recommended" },
+      { name: "Dining area photo", guidance: "Dining room or storefront photos when convenient", status: "Recommended" },
+      { name: "Storefront photo", guidance: "Helpful for local trust when available", status: "Recommended" },
+    ],
+    reviewed: [
+      { name: "Momo close-up photo", status: "Ready to Use", note: "Strong close-up. Good for social content." },
+      { name: "Sauce tray photo", status: "Saved for Later", note: "Useful when Veroxa prepares sauce-focused content." },
+      { name: "Dining room angle", status: "Better Version Helpful", note: "A brighter version would be helpful if it is easy to send." },
+      { name: "Kitchen prep clip", status: "Under Review", note: "Veroxa is reviewing whether this is useful for later content." },
     ],
   },
   messages: {
-    inbox: [
-      { subject: "Please confirm your menu link", status: "Needs Reply" },
-      { subject: "Meta access is still pending", status: "Unread" },
-      { subject: "First weekly update draft is under Veroxa review", status: "Read" },
-      { subject: "New media needed for next week", status: "Needs Reply" },
-    ],
-    sent: [
-      { subject: "We have new food photos coming Friday", status: "Completed" },
-      { subject: "We are closed July 4th", status: "Read" },
-      { subject: "Please promote catering next week", status: "Read" },
+    fromVeroxa: [
+      { subject: "Please confirm your menu link", status: "Needs Your Attention" },
+      { subject: "Meta access is still waiting for owner action", status: "Waiting for Access" },
+      { subject: "New media recommendations are ready", status: "Read" },
     ],
   },
   reports: {
-    weeklyDone: ["Reviewed Google profile", "Organized new photos", "Prepared first content ideas", "Checked menu/order links", "Drafted first captions"],
-    weeklyNext: ["Prepare 3 content pieces", "Review new food photos", "Prepare Google update draft", "Build first monthly report draft", "Confirm Meta access"],
-    weeklyNeeds: ["Send new momo photos", "Confirm holiday hours", "Confirm catering availability", "Add Veroxa to Meta", "Add Veroxa to Google Business Profile"],
-    monthlyHandled: ["Reviewed online presence setup", "Organized media guidance", "Prepared connection next steps"],
-    worked: ["Close-up momo photos", "Sauce-focused posts", "Google photo freshness", "Best-seller content"],
-    didnt: ["Dark photos", "Repeated angles", "Not enough new media", "Missing catering confirmation", "Pending Google/Meta access"],
-    nextMonth: ["Focus on chicken momo and sauce content", "Add more Google photos", "Prepare catering visibility content", "Improve snack/drink content variety", "Need 10 new food photos", "Need confirmation of holiday hours", "Need confirmation of catering availability"],
+    weeklyIntro: "Veroxa is preparing your restaurant workspace, reviewing your profile, and organizing what is needed before public work begins.",
+    weeklyDone: ["Profile prepared for review", "Initial media guidance prepared", "Meta/Google access steps identified"],
+    weeklyNext: ["Confirm business details", "Confirm account access", "Review media recommendations"],
+    weeklyNeeds: ["Confirm business hours", "Confirm menu/order link", "Add Veroxa to Meta/Google"],
   },
   connections: [
-    { platform: "Meta Business Suite", status: "Pending Verification", updated: "Waiting on owner access", notes: "Waiting for Momo’s House to add Veroxa as a partner." },
-    { platform: "Google Business Profile", status: "Pending Verification", updated: "Waiting on owner access", notes: "Momo’s House needs to add Veroxa as a manager before Google updates can begin." },
+    {
+      platform: "Meta Business Suite",
+      status: "Waiting for Access",
+      updated: "Waiting on owner access",
+      meaning: "Veroxa needs access before helping with Facebook and Instagram setup.",
+      next: "Please add Veroxa to Meta Business Suite when ready.",
+    },
+    {
+      platform: "Google Business Profile",
+      status: "Waiting for Access",
+      updated: "Waiting on owner access",
+      meaning: "Veroxa needs manager access before preparing Google profile updates.",
+      next: "Please add Veroxa as a manager on your Google Business Profile when ready.",
+    },
   ],
   profile: [
-    { section: "Basic Info", fields: [
-      { label: "Restaurant name", value: "Momo’s House", status: "Pre-filled — please review" },
+    { section: "Restaurant Details", fields: [
+      { label: "Name", value: "Momo’s House", status: "Pre-filled — please review" },
       { label: "Address", value: "San Antonio, TX — exact street address needs owner verification", status: "Needs owner verification" },
-      { label: "Phone number", value: "Owner verification needed before public use", status: "Needs owner verification" },
-      { label: "Business hours", value: "Needs current owner-confirmed hours", status: "Missing" },
+      { label: "Phone", value: "Owner verification needed before public use", status: "Needs owner verification" },
+      { label: "Hours", value: "Needs current owner-confirmed hours", status: "Needs owner verification" },
       { label: "Cuisine type", value: "Momo / dumpling restaurant", status: "Pre-filled — please review" },
-    ]},
-    { section: "Contacts", fields: [
-      { label: "Primary contact", value: "Momo House owner contact — confirm best name/phone/email", status: "Needs owner verification" },
-      { label: "Secondary contact", value: "Optional backup contact", status: "Missing" },
     ]},
     { section: "Menu & Ordering", fields: [
       { label: "Menu link", value: "Needs owner-confirmed current link", status: "Needs owner verification" },
@@ -97,9 +92,19 @@ export const momoCpV1Seed = {
       { label: "Delivery availability", value: "Confirm available platforms before Veroxa mentions delivery", status: "Needs owner verification" },
       { label: "Catering availability", value: "Only mention catering if owner confirms exact availability", status: "Needs owner verification" },
     ]},
+    { section: "Contacts", fields: [
+      { label: "Primary contact", value: "Momo House owner contact — confirm best name/phone/email", status: "Needs owner verification" },
+      { label: "Secondary contact", value: "Optional backup contact", status: "Needs owner verification" },
+    ]},
+    { section: "Brand Voice", fields: [
+      { label: "Best sellers", value: "Steamed momo, fried momo, sauces — owner can confirm favorites", status: "Needs owner verification" },
+      { label: "Tone", value: "Warm, family-friendly, casual, welcoming for first-time momo customers", status: "Pre-filled — please review" },
+      { label: "Things to avoid saying", value: "Avoid halal/organic/healthy/spicy/dietary claims unless owner confirms", status: "Needs owner verification" },
+      { label: "Claims needing owner confirmation", value: "Catering, delivery platforms, holiday hours, discounts, ingredients, dietary claims", status: "Needs owner verification" },
+    ]},
     { section: "Website", fields: [
       { label: "Website URL", value: "Needs owner-confirmed website or menu/order link", status: "Needs owner verification" },
-      { label: "Website access status", value: "Pending", status: "Pending Veroxa Review", websiteAccessStatus: "Pending" as WebsiteAccessStatus },
+      { label: "Website access status", value: "Optional — not needed unless Veroxa is asked to refine the website", status: "Pending Veroxa Review", websiteAccessStatus: "Pending" as WebsiteAccessStatus },
     ]},
   ],
 };

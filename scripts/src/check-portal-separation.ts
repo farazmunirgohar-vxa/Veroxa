@@ -106,11 +106,14 @@ for (const file of activeFiles) {
 }
 
 const portalLayout = readFileSync(join(root, "artifacts/veroxa/src/components/PortalLayout.tsx"), "utf8");
-for (const required of [
+if (!portalLayout.includes("Team Portal in review — manual/pre-live workspace.")) {
+  failures.push("PortalLayout is missing the team pre-live banner copy.");
+}
+for (const removedClientCopy of [
   "Client Portal in review — Veroxa is preparing the restaurant workspace.",
-  "Team Portal in review — manual/pre-live workspace.",
+  "No sample progress is shown as client work.",
 ]) {
-  if (!portalLayout.includes(required)) failures.push(`PortalLayout is missing banner copy: ${required}`);
+  if (portalLayout.includes(removedClientCopy)) failures.push(`PortalLayout still includes removed client review banner copy: ${removedClientCopy}`);
 }
 
 const app = readFileSync(join(root, "artifacts/veroxa/src/App.tsx"), "utf8");

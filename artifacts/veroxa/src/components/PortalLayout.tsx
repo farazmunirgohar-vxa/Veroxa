@@ -81,8 +81,7 @@ function getPortalReviewContext(location: string): PortalReviewContext {
     };
   }
   return {
-    bannerText:
-      "Client Portal in review — Veroxa is preparing the restaurant workspace. No sample progress is shown as client work.",
+    bannerText: "",
     isPublicDemo: false,
   };
 }
@@ -381,6 +380,7 @@ export function PortalLayout({
             {AUTH_MODE === "placeholder" &&
               (() => {
                 const review = getPortalReviewContext(location);
+                if (!review.bannerText) return null;
                 return (
                   <div
                     className={cn(
