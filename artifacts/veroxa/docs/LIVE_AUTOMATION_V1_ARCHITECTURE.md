@@ -6,7 +6,7 @@ Status: source-of-truth architecture plan for PR 99. This document is design onl
 
 - Supabase Auth Foundation is now implemented in code behind `AUTH_MODE`.
 - `AUTH_MODE` remains `placeholder`; current pilot access still uses `/api/pilot-access`.
-- The real-auth foundation validates active `user_profiles`, restricts active roles to `client` and `team`, requires active restaurant membership for client users, prepares password reset, and keeps client/team route guards separated.
+- The real-auth foundation validates active `user_profiles`, restricts active roles to `client` and `team`, requires active restaurant membership plus active linked restaurant workspace status for client users, supports reset email request and recovery-link password completion, and keeps client/team route guards separated.
 - This does not mark full Live Automation V1 as live: no media uploads, live messages, profile correction persistence, activity log implementation, AI runtime calls, reports from real activity, integrations, payments, publishing, cron jobs, or webhooks were added.
 - Momo owner walkthrough remains blocked until the full PR 100–PR 109 sequence is completed and approved.
 

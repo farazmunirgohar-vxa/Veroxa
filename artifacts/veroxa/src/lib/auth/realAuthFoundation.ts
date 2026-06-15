@@ -20,6 +20,11 @@ export interface RestaurantMemberRow {
   status?: unknown;
 }
 
+export interface RestaurantRow {
+  id?: string | null;
+  status?: unknown;
+}
+
 export type RealAuthAccessResult =
   | {
       ok: true;
@@ -32,7 +37,18 @@ export type RealAuthAccessResult =
         clientId: string | null;
       };
     }
-  | { ok: false; reason: "missing_profile" | "unsupported_role" | "inactive_profile" | "missing_client_membership" | "inactive_membership" | "read_error" };
+  | {
+      ok: false;
+      reason:
+        | "missing_profile"
+        | "unsupported_role"
+        | "inactive_profile"
+        | "missing_client_membership"
+        | "inactive_membership"
+        | "missing_restaurant"
+        | "inactive_restaurant"
+        | "read_error";
+    };
 
 const ACCOUNT_STATUSES: readonly VeroxaAccountStatus[] = ["active", "disabled", "pending"] as const;
 
@@ -80,7 +96,18 @@ export async function resolveRealAuthAccess(
     if (membership.role !== "client" || membership.status !== "active") {
       return { ok: false, reason: "inactive_membership" };
     }
-    clientId = membership.restaurant_id;
+
+    const { data: restaurant, error: restaurantError } = await client
+      .from("restaurants")
+      .select("id, status")
+      .eq("id", membership.restaurant_id)
+      .maybeSingle<RestaurantRow>();
+
+    if (restaurantError) return { ok: false, reason: "read_error" };
+    if (!restaurant?.id) return { ok: false, reason: "missing_restaurant" };
+    if (restaurant.status !== "active") return { ok: false, reason: "inactive_restaurant" };
+
+    clientId = restaurant.id;
   }
 
   return {
@@ -101,7 +128,10 @@ export function getRealAuthAccessMessage(reason: Exclude<RealAuthAccessResult, {
     case "inactive_profile":
     case "inactive_membership":
       return "This account is not active yet. Please contact Veroxa support.";
+    case "inactive_restaurant":
+      return "This restaurant workspace is not active yet. Please contact Veroxa support.";
     case "missing_client_membership":
+    case "missing_restaurant":
     case "missing_profile":
       return "This Veroxa account is not fully set up yet. Please contact Veroxa support.";
     case "unsupported_role":

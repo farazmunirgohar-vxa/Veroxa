@@ -75,11 +75,17 @@ async function main() {
     }
     assert(loginSource.includes("validatePilotAccessCredentials") && loginSource.includes("setLocation(getPilotRouteForRole(account.role))"), "Pilot login must route by server-controlled/manual portal accounts.");
     assert(loginSource.includes("resolveRealAuthAccess") && loginSource.includes("resetPasswordForEmail"), "Login must prepare real-auth access validation and password reset behind AUTH_MODE.");
+    assert(loginSource.includes("form-password-recovery") && loginSource.includes("Set a new password"), "Login must detect recovery mode and render a new-password form in real-auth mode.");
+    assert(loginSource.includes("updateUser({ password: newPassword })"), "Password recovery completion must update the signed-in recovery password.");
+    assert(loginSource.includes("The passwords do not match."), "Password recovery must handle confirmation mismatch with safe copy.");
+    assert(loginSource.includes("AUTH_MODE === \"real\" && isRecoveryMode") && loginSource.includes("AUTH_MODE === \"real\" && ("), "Reset request and recovery UI must be gated to real-auth mode.");
     assert(loginSource.includes("Portal access is not configured"), "Unconfigured placeholder login must show clean portal-access-not-configured behavior.");
     assert(authContract.includes('export type VeroxaRole = "client" | "team"') && !authContract.includes('"owner"') && !authContract.includes('"operator"'), "Auth contract must keep only client/team active roles.");
     assert(authContract.includes('VeroxaAccountStatus = "active" | "disabled" | "pending"'), "Auth contract must model active/disabled/pending account status.");
-    assert(realAuthFoundation.includes('.from("user_profiles")') && realAuthFoundation.includes('.from("restaurant_members")'), "Real auth foundation must read profile and membership tables.");
+    assert(realAuthFoundation.includes('.from("user_profiles")') && realAuthFoundation.includes('.from("restaurant_members")') && realAuthFoundation.includes('.from("restaurants")'), "Real auth foundation must read profile, membership, and restaurant workspace tables.");
     assert(realAuthFoundation.includes('profileStatus') && realAuthFoundation.includes('missing_client_membership'), "Real auth foundation must block inactive profiles and clients without memberships.");
+    assert(realAuthFoundation.includes('missing_restaurant') && realAuthFoundation.includes('inactive_restaurant') && realAuthFoundation.includes('restaurant.status !== "active"'), "Real auth foundation must deny missing, pending, disabled, or unsupported restaurant workspaces.");
+    assert(realAuthFoundation.includes('if (profile.role === "client")') && !realAuthFoundation.includes('if (profile.role === "team") {'), "Team users must not be treated as clients or require a client workspace.");
     assert(pilotAccessAccounts.includes('accountLabel: MOMO_HOUSE_CLIENT_ACCOUNT_LABEL') && pilotAccessAccounts.includes('email: "momo@veroxa.app"'), "Momo House pilot client account allowlist is missing.");
     assert(pilotAccessAccounts.includes('accountLabel: TEAM_FARAZ_ACCOUNT_LABEL') && pilotAccessAccounts.includes('email: "faraz@veroxa.app"'), "Team Faraz pilot account allowlist is missing.");
     assert(pilotAccessAccounts.includes("VITE_VEROXA_PILOT_ACCESS_ENDPOINT") && pilotAccessAccounts.includes("/api/pilot-access") && pilotAccessAccounts.includes("server-controlled"), "Pilot access must default to the Vercel serverless endpoint and stay server-controlled.");

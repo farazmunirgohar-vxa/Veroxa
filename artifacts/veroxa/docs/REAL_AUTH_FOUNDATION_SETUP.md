@@ -50,7 +50,7 @@ The future Supabase project must provide these minimum tables before `AUTH_MODE`
 - `status` constrained to `active`, `disabled`, or `pending`.
 - `created_at` and `updated_at`.
 
-PR 100 frontend code reads `user_profiles` and, for `client` users, requires an active `restaurant_members` row before allowing `/client/*` access. Team users do not get treated as clients.
+PR 100 frontend code reads `user_profiles` and, for `client` users, requires both an active `restaurant_members` row and an active linked `restaurants` workspace before allowing `/client/*` access. A missing, pending, disabled, or unsupported restaurant status must deny client access. Team users do not get treated as clients and do not require a client restaurant workspace.
 
 ## First Momo client user setup
 
@@ -89,8 +89,12 @@ Test all of these in a non-production environment first:
 - `pending` user cannot reach client or team routes.
 - `disabled` user cannot reach client or team routes.
 - Client user with no active `restaurant_members` row cannot reach `/client/*`.
+- Client user with a missing restaurant row cannot reach `/client/*`.
+- Client user linked to a `pending`, `disabled`, or unsupported restaurant status cannot reach `/client/*`.
 - Unsupported role values do not route anywhere.
 - Password reset can be requested from `/login` without exposing implementation details.
+- Password reset completion works as a two-step flow: request a reset email, then return from the recovery link to set and confirm a new password.
+- Password reset mismatch and unusable-link states show calm client-safe copy.
 - Logout clears the real session and returns the user to `/login` when logout UI is exposed by the portal shell.
 
 ## Requirements before setting `AUTH_MODE` to `"real"`
@@ -101,7 +105,7 @@ Do not flip until all are true:
 2. `user_profiles`, `restaurants`, and `restaurant_members` exist with reviewed constraints and policies.
 3. RLS blocks anonymous users from portal data.
 4. RLS limits clients to their own restaurant workspace.
-5. Test users exist for active client, active team, missing profile, pending, disabled, and wrong-role/unsupported-role scenarios.
+5. Test users and workspace states exist for active client, active team, missing profile, pending user, disabled user, missing restaurant, pending restaurant, disabled restaurant, unsupported restaurant status, and wrong-role/unsupported-role scenarios.
 6. `/api/pilot-access` still works as rollback while placeholder mode remains available.
 7. No public preview credentials or frontend passwords are present.
 8. No service-role key is bundled into browser code.
