@@ -95,3 +95,10 @@ When future Codex or ChatGPT work sees conflicts:
 - The foundation adds schema, migrations, RLS/security baseline, TypeScript contracts, documentation, and guardrails only; it does not complete Live Automation V1.
 - `AUTH_MODE` remains `placeholder`, `/api/pilot-access` remains active, no portal page is live database-powered, and Momo owner walkthrough remains blocked.
 
+
+## 2026-06-15 — PR #102 Media Upload + Storage status
+
+- Media Upload + Storage is the third Live Automation V1 implementation step after auth and database foundations.
+- It adds a private `restaurant-media` storage foundation, safe upload validation/path/service code, and gated client upload UI, but it does not complete Live Automation V1.
+- Upload does not mean publish: uploaded media is only received for Veroxa review and is not approved, posted, public, or used in marketing automatically.
+- `AUTH_MODE` remains `placeholder`, `/api/pilot-access` remains active, upload is not active in placeholder mode, and Momo owner walkthrough remains blocked.

@@ -624,3 +624,12 @@ PR 99 must not add production auth implementation, Supabase migrations, database
 - Still not live: media upload/storage, messages runtime, profile correction runtime, activity runtime, AI drafts runtime, reports, Google/Meta integrations, payments, publishing, cron jobs, webhooks, and background jobs.
 - `AUTH_MODE` remains `placeholder`; Momo owner walkthrough remains blocked until full Live Automation V1 approval.
 
+
+## 2026-06-15 — PR #102 implementation status
+
+- Media upload/storage foundation is now added after the auth and database foundations.
+- A private `restaurant-media` bucket setup, conservative storage policies, validation helpers, restaurant-scoped storage path helper, gated upload service, and gated Client Media upload panel are prepared.
+- Media assets can be stored and recorded with `status = uploaded` only when real auth, active restaurant access, configured storage, and the explicit media-upload flag are active.
+- `AUTH_MODE` remains `placeholder`, `/api/pilot-access` remains active, and placeholder mode does not show fake upload controls or fake upload history.
+- Full media review workflow, AI drafting/analysis, activity log runtime, generated reports, social/Google publishing, messages, profile corrections, payments, cron jobs, and webhooks remain future PRs.
+- Momo owner walkthrough remains blocked until the full Live Automation V1 sequence is built and approved.
