@@ -1,6 +1,21 @@
 # Veroxa Launch Simplification Source of Truth
 
 
+## 2026-06-15 — PR 100 RR patch: password recovery and active workspace enforcement
+
+- Password reset completion was added/prepared for real-auth mode: reset email request remains client-safe, recovery links can show a set-new-password form, password mismatch is handled safely, and successful updates return the user to normal sign-in.
+- Client real-auth access now requires an active profile, active restaurant membership, and an active linked restaurant workspace; missing, pending, disabled, or unsupported restaurant workspace states are denied.
+- `AUTH_MODE` remains `placeholder`, `/api/pilot-access` remains the active safe pilot path, and the Momo owner walkthrough remains blocked until full Live Automation V1 is built and approved.
+- No PR 101+ scope was added: no media uploads, storage, messages, profile correction persistence, activity log implementation, AI runtime calls, reports from real activity, integrations, publishing, payments, cron jobs, webhooks, or background jobs.
+
+## 2026-06-15 — PR 100 Supabase Auth Foundation
+
+- PR 100 added the Supabase Auth Foundation for Live Automation V1 behind the existing auth mode switch.
+- `AUTH_MODE` remains `placeholder`; the current `/api/pilot-access` Momo House San Antonio and Team Faraz pilot login path remains the active safe access path.
+- Real-auth readiness now includes active-only `user_profiles` validation, client/team role separation, active restaurant membership requirements for client users, password-reset preparation, and safe session loading behavior.
+- Still not live: production auth activation, live database/data wiring, media uploads, storage buckets, messages, profile correction persistence, activity logs, AI runtime calls, generated reports from real activity, Google/Meta integrations, payments, publishing, webhooks, cron jobs, or background jobs.
+- The Momo owner walkthrough remains blocked until full Live Automation V1 is built and approved.
+
 ## 2026-06-14 — PR 99 Live Automation V1 architecture only
 
 - PR 99 added `LIVE_AUTOMATION_V1_ARCHITECTURE.md` as the source-of-truth architecture and schema design for Live Automation V1.

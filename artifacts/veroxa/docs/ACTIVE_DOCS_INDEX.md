@@ -2,6 +2,13 @@
 
 Status: highest-level active contributor guide and current source-of-truth index. Read this file before relying on any older Veroxa doc.
 
+## 2026-06-15 — PR 100 Supabase Auth Foundation status
+
+- PR 100 adds the Live Automation V1 real-auth foundation while keeping `AUTH_MODE` as `placeholder`.
+- Current safe pilot login remains `/api/pilot-access` for Momo House San Antonio and Team Faraz.
+- `REAL_AUTH_FOUNDATION_SETUP.md` is the setup checklist for required env vars, minimum auth tables, first client/team users, role-routing tests, and the remaining conditions before any future `AUTH_MODE = "real"` flip.
+- Momo owner walkthrough remains blocked until the full Live Automation V1 sequence is implemented and approved.
+
 ## Current source-of-truth docs
 
 These files reflect the current Veroxa operating truth and override historical/archive strategy notes. If another doc conflicts with this index, do not override this index; treat the conflicting note as stale until Faraz explicitly refreshes it:

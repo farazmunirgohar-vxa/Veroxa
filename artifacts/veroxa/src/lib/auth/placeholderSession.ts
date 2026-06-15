@@ -113,6 +113,7 @@ export function readPlaceholderSession(): VeroxaSession | null {
       role: account.role,
       clientId: account.clientId,
       displayName: account.accountLabel,
+      accountStatus: "active",
     };
   } catch {
     clearPlaceholderSession();

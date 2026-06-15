@@ -1,14 +1,15 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link, useLocation } from "wouter";
 import {
-  ArrowLeft, CheckCircle2, Hexagon, Lock, Mail, ShieldAlert,
+  ArrowLeft, CheckCircle2, Hexagon, KeyRound, Lock, Mail, ShieldAlert,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AUTH_MODE } from "@/lib/auth/authMode";
 import { getSupabaseClient } from "@/lib/supabase";
-import { getRoleHomePath, isVeroxaRole } from "@/lib/auth/authContract";
+import { getRoleHomePath } from "@/lib/auth/authContract";
+import { getRealAuthAccessMessage, resolveRealAuthAccess } from "@/lib/auth/realAuthFoundation";
 import {
   getPilotAccessStatus,
   getPilotRouteForRole,
@@ -49,11 +50,34 @@ export default function LoginPage() {
   const [signInState, setSignInState] = useState<SignInState>({ kind: "idle" });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isRecoveryMode, setIsRecoveryMode] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [, setLocation] = useLocation();
 
   const pilotAccessStatus = getPilotAccessStatus();
   const pilotAccessUnconfigured =
     AUTH_MODE === "placeholder" && !pilotAccessStatus.isConfigured;
+
+  useEffect(() => {
+    if (AUTH_MODE !== "real" || typeof window === "undefined") return;
+
+    const recoveryParts = `${window.location.search} ${window.location.hash}`;
+    const recoveryDetected =
+      recoveryParts.includes("type=recovery") ||
+      recoveryParts.includes("type=password_recovery") ||
+      recoveryParts.includes("code=");
+
+    if (recoveryDetected) {
+      setIsRecoveryMode(true);
+      setSignInState({ kind: "idle" });
+    }
+  }, []);
+
+  function clearRecoveryUrl() {
+    if (typeof window === "undefined") return;
+    window.history.replaceState(null, "", "/login");
+  }
 
   /**
    * Sign-in submit handler.
@@ -63,8 +87,8 @@ export default function LoginPage() {
    *   validated role (no visible role selection required).
    * - When AUTH_MODE === "real":
    *     1. signInWithPassword
-   *     2. Get session → look up user_profiles by user_id
-   *     3. Validate role with isVeroxaRole
+   *     2. Get session → resolve active profile + membership access
+   *     3. Validate the active client/team role boundary
    *     4. Redirect to getRoleHomePath(role)
    *
    * Never creates users. Never writes to user_profiles. Never stores
@@ -131,29 +155,79 @@ export default function LoginPage() {
         return;
       }
 
-      const { data: profile, error: profileError } = await client
-        .from("user_profiles")
-        .select("role")
-        .eq("user_id", userId)
-        .maybeSingle<{ role?: unknown }>();
-
-      if (profileError) {
-        setSignInState({ kind: "error", message: "We could not finish checking your account access. Please try again later." });
-        return;
-      }
-      if (!profile) {
-        setSignInState({ kind: "error", message: "This Veroxa account is not fully set up yet. Please contact Veroxa support." });
-        return;
-      }
-      if (!isVeroxaRole(profile.role)) {
-        setSignInState({ kind: "error", message: "This account does not have the right portal access yet. Please contact Veroxa support." });
+      const access = await resolveRealAuthAccess(client, { userId, email });
+      if (!access.ok) {
+        setSignInState({ kind: "error", message: getRealAuthAccessMessage(access.reason) });
         return;
       }
 
-      setLocation(getRoleHomePath(profile.role));
+      setLocation(getRoleHomePath(access.profile.role));
     } catch {
       setSignInState({ kind: "error", message: "Unexpected sign-in error. Please try again." });
     }
+  }
+
+
+
+  async function handlePasswordRecoverySubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    if (AUTH_MODE !== "real") return;
+
+    if (!newPassword || newPassword !== confirmNewPassword) {
+      setSignInState({ kind: "error", message: "The passwords do not match." });
+      return;
+    }
+
+    const client = getSupabaseClient();
+    if (!client) {
+      setSignInState({ kind: "error", message: "This reset link could not be used. Please request a new password reset." });
+      return;
+    }
+
+    setSignInState({ kind: "submitting" });
+    const { error } = await client.auth.updateUser({ password: newPassword });
+    if (error) {
+      setSignInState({ kind: "error", message: "This reset link could not be used. Please request a new password reset." });
+      return;
+    }
+
+    await client.auth.signOut();
+    clearRecoveryUrl();
+    setPassword("");
+    setNewPassword("");
+    setConfirmNewPassword("");
+    setIsRecoveryMode(false);
+    setSignInState({ kind: "success", message: "Your password has been updated. Please sign in again." });
+  }
+
+  async function handlePasswordReset() {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail) {
+      setSignInState({ kind: "error", message: "Enter your email first, then request a password reset." });
+      return;
+    }
+
+    if (AUTH_MODE === "placeholder") {
+      setSignInState({ kind: "error", message: "Password reset will be available after real account access is activated." });
+      return;
+    }
+
+    const client = getSupabaseClient();
+    if (!client) {
+      setSignInState({ kind: "error", message: "Password reset is temporarily unavailable. Please contact Veroxa support." });
+      return;
+    }
+
+    setSignInState({ kind: "submitting" });
+    const { error } = await client.auth.resetPasswordForEmail(normalizedEmail, {
+      redirectTo: `${window.location.origin}/login`,
+    });
+    if (error) {
+      setSignInState({ kind: "error", message: "We could not start password reset. Please contact Veroxa support." });
+      return;
+    }
+    setSignInState({ kind: "success", message: "If this email has Veroxa access, password reset instructions will be sent." });
   }
 
   return (
@@ -211,6 +285,98 @@ export default function LoginPage() {
               </div>
             )}
 
+            {AUTH_MODE === "real" && isRecoveryMode ? (
+              <form onSubmit={handlePasswordRecoverySubmit} className="space-y-4 relative" data-testid="form-password-recovery">
+                <div className="space-y-2">
+                  <h2 className="text-lg font-bold tracking-tight">Set a new password</h2>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Enter a new password for your Veroxa account.
+                  </p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="new-password" className="text-xs font-semibold text-muted-foreground">
+                    New password
+                  </Label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" />
+                    <Input
+                      id="new-password"
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="••••••••"
+                      autoComplete="new-password"
+                      className="pl-9"
+                      data-testid="input-new-password"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="confirm-new-password" className="text-xs font-semibold text-muted-foreground">
+                    Confirm new password
+                  </Label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" />
+                    <Input
+                      id="confirm-new-password"
+                      type="password"
+                      value={confirmNewPassword}
+                      onChange={(e) => setConfirmNewPassword(e.target.value)}
+                      placeholder="••••••••"
+                      autoComplete="new-password"
+                      className="pl-9"
+                      data-testid="input-confirm-new-password"
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={signInState.kind === "submitting"}
+                  className="w-full font-semibold"
+                  data-testid="btn-update-password"
+                >
+                  {signInState.kind === "submitting" ? "Updating password…" : "Update password"}
+                </Button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    clearRecoveryUrl();
+                    setIsRecoveryMode(false);
+                    setNewPassword("");
+                    setConfirmNewPassword("");
+                    setSignInState({ kind: "idle" });
+                  }}
+                  className="mx-auto block text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  data-testid="btn-return-signin"
+                >
+                  Return to sign in
+                </button>
+
+                {signInState.kind === "success" && (
+                  <div
+                    className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 text-[11px] text-emerald-400 flex items-center gap-2"
+                    data-testid="password-recovery-success"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
+                    {signInState.message}
+                  </div>
+                )}
+
+                {signInState.kind === "error" && (
+                  <div
+                    className="rounded-lg border border-red-500/20 bg-red-500/5 px-3 py-2 text-[11px] text-red-400 flex items-center gap-2"
+                    data-testid="password-recovery-error"
+                  >
+                    <ShieldAlert className="w-3.5 h-3.5 flex-shrink-0" />
+                    {signInState.message}
+                  </div>
+                )}
+              </form>
+            ) : (
             <form onSubmit={handleSignInSubmit} className="space-y-4 relative" data-testid="form-signin">
               <div className="space-y-1.5">
                 <Label htmlFor="signin-email" className="text-xs font-semibold text-muted-foreground">
@@ -259,6 +425,19 @@ export default function LoginPage() {
                 {signInState.kind === "submitting" ? "Signing in…" : "Sign in"}
               </Button>
 
+              {AUTH_MODE === "real" && (
+                <button
+                  type="button"
+                  onClick={handlePasswordReset}
+                  disabled={signInState.kind === "submitting"}
+                  className="mx-auto flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  data-testid="btn-password-reset"
+                >
+                  <KeyRound className="h-3.5 w-3.5" />
+                  Reset password
+                </button>
+              )}
+
               {signInState.kind === "success" && (
                 <div
                   className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 text-[11px] text-emerald-400 flex items-center gap-2"
@@ -279,6 +458,7 @@ export default function LoginPage() {
                 </div>
               )}
             </form>
+            )}
           </div>
         </div>
 

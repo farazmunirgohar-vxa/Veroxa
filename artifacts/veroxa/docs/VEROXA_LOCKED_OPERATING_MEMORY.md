@@ -1,5 +1,9 @@
 # Veroxa Locked Operating Memory
 
+## 2026-06-15 — PR 100 Supabase Auth Foundation
+
+PR 100 is the first Live Automation V1 implementation step. It adds real-auth foundation code and setup documentation while keeping `AUTH_MODE` as `placeholder`; `/api/pilot-access` remains the active safe Momo/Team Faraz pilot login path. Real auth is not activated, and the Momo owner walkthrough remains blocked until full Live Automation V1 is built and approved.
+
 Status: highest-priority current operating memory as of 2026-06-14. This file exists to prevent future Veroxa work from drifting back to stale manual-first Momo walkthrough planning.
 
 ## 2026-06-14 — Automation-first Momo pivot
