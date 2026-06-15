@@ -10,6 +10,9 @@ The older manual-first Momo walkthrough path is now stale for the current Momo p
 
 ## Current operating rule
 
+Detailed Live Automation V1 architecture and PR 100–PR 109 build sequencing now live in `LIVE_AUTOMATION_V1_ARCHITECTURE.md`. Read that document before implementing any PR 100+ live automation work.
+
+
 - Do **not** schedule, design around, or assume a Momo owner walkthrough until **Live Automation V1** exists.
 - Do **not** treat older first-client/manual launch walkthrough docs as the current Momo execution plan.
 - Do **not** build product features from this memory doc alone; it is a source-of-truth alignment document.

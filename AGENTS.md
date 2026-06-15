@@ -74,6 +74,8 @@ The current active Veroxa build stack is GitHub + Codex + Vercel:
 
 For the active five-phase pre-live roadmap, see `artifacts/veroxa/docs/VEROXA_OS_5_PHASE_PRELIVE_BUILD_MAP.md`.
 
+Before implementing PR 100+ live automation work, read `artifacts/veroxa/docs/LIVE_AUTOMATION_V1_ARCHITECTURE.md`.
+
 Before any large build, also run through `artifacts/veroxa/docs/PRE_BUILD_STABILITY_CHECKLIST.md` to protect Vercel config, temp login, audit search, public pricing, public metadata, and SaaS safety.
 
 Every Codex prompt should begin conceptually with:
