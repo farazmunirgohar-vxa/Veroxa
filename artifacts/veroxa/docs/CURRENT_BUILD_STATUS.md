@@ -1,5 +1,13 @@
 # Veroxa Launch Simplification Source of Truth
 
+
+## 2026-06-14 — PR 99 Live Automation V1 architecture only
+
+- PR 99 added `LIVE_AUTOMATION_V1_ARCHITECTURE.md` as the source-of-truth architecture and schema design for Live Automation V1.
+- This is architecture/design only: no live auth, Supabase migrations, database writes, storage bucket code, file upload behavior, real messaging behavior, live AI calls, Meta/Google APIs, payments, publishing, cron/background jobs, webhooks, or live customer-visible automation were added.
+- The Momo owner walkthrough remains blocked until Live Automation V1 is built and approved through the future PR 100–PR 109 sequence.
+- Current technical truth remains: `AUTH_MODE` is `placeholder`; pilot access is deterministic/manual; Momo Client Portal is polished but seeded/static; Team Portal is not yet Live Automation V1.
+
 ## 2026-06-14 — Automation-first pivot
 
 - Faraz’s newest locked direction is automation-first before any Momo owner walkthrough.

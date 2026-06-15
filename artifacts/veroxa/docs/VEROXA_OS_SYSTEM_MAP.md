@@ -4,7 +4,13 @@ _Last updated: 2026-06-14 — Automation-first Momo pivot._
 
 Veroxa is currently a **preview/manual/pre-live** restaurant online presence operating system. It is designed so the public site, Client Portal, Team/manual surfaces, repository boundaries, SOPs, and dormant AI/server inventory can be reviewed before any paid or live infrastructure is activated.
 
-Source docs to keep nearby: [Current Build Status](./CURRENT_BUILD_STATUS.md), [Route Page Inventory](./ROUTE_PAGE_INVENTORY.md), [Route Surface Map](./VEROXA_ROUTE_SURFACE_MAP.md), [Pricing Source of Truth](./PRICING_SOURCE_OF_TRUTH.md), [Pre-Paid Activation Gate](./PRE_PAID_ACTIVATION_GATE.md), and [AI Automation Readiness Boundary](./AI_AUTOMATION_READINESS_BOUNDARY.md).
+Source docs to keep nearby: [Live Automation V1 Architecture](./LIVE_AUTOMATION_V1_ARCHITECTURE.md), [Current Build Status](./CURRENT_BUILD_STATUS.md), [Route Page Inventory](./ROUTE_PAGE_INVENTORY.md), [Route Surface Map](./VEROXA_ROUTE_SURFACE_MAP.md), [Pricing Source of Truth](./PRICING_SOURCE_OF_TRUTH.md), [Pre-Paid Activation Gate](./PRE_PAID_ACTIVATION_GATE.md), and [AI Automation Readiness Boundary](./AI_AUTOMATION_READINESS_BOUNDARY.md).
+
+## 2026-06-14 — Live Automation V1 architecture planned, not built
+
+- `LIVE_AUTOMATION_V1_ARCHITECTURE.md` is the PR 99 source-of-truth blueprint for the PR 100–PR 109 sequence.
+- The architecture is planned but not built: no production auth, database writes, storage uploads, live messaging, live AI, activity-backed reports, publishing, integrations, payments, cron jobs, or webhooks are active.
+- Future implementation should follow the architecture before any Momo owner walkthrough.
 
 ## 2026-06-14 — Automation-first target before Momo walkthrough
 

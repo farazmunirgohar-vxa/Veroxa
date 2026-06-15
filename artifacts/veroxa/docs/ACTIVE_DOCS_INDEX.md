@@ -7,6 +7,7 @@ Status: highest-level active contributor guide and current source-of-truth index
 These files reflect the current Veroxa operating truth and override historical/archive strategy notes. If another doc conflicts with this index, do not override this index; treat the conflicting note as stale until Faraz explicitly refreshes it:
 
 - `VEROXA_LOCKED_OPERATING_MEMORY.md`
+- `LIVE_AUTOMATION_V1_ARCHITECTURE.md`
 - `CURRENT_BUILD_STATUS.md`
 - `PRICING_SOURCE_OF_TRUTH.md`
 - `VEROXA_OS_SYSTEM_MAP.md`
@@ -25,6 +26,14 @@ These files reflect the current Veroxa operating truth and override historical/a
 - `REAL_AUTH_READINESS_AUDIT.md`
 - `PRODUCTION_PREVIEW_LOGIN_CHECKLIST.md`
 - `MOMO_LIVE_PILOT_READINESS.md`
+
+
+## 2026-06-14 — Live Automation V1 architecture planned
+
+- `LIVE_AUTOMATION_V1_ARCHITECTURE.md` defines the build sequence after the automation-first pivot.
+- It is the detailed PR 99 blueprint for PR 100 through PR 109: real auth, database foundation, media upload/storage, messages, profile corrections, activity log, AI draft preparation, Team Automation Control Center, reports from activity, and the final Momo live pilot readiness gate.
+- This architecture is not live functionality. Migrations, production auth, storage uploads, live messages, live AI, reports from real activity, publishing, integrations, payments, cron jobs, and webhooks remain unbuilt until future approved implementation PRs.
+- Momo owner walkthrough remains blocked until Live Automation V1 is built and approved.
 
 ## 2026-06-14 — Automation-first Momo pivot
 
