@@ -110,3 +110,8 @@ Do not flip until all are true:
 7. No public preview credentials or frontend passwords are present.
 8. No service-role key is bundled into browser code.
 9. The full Live Automation V1 Momo walkthrough gate remains closed until later modules are complete.
+
+## PR #101 database foundation note
+
+PR #101 adds the required Live Automation V1 database migration and TypeScript contracts, including `user_profiles`, `restaurants`, `restaurant_members`, and future automation tables. This does not activate real auth. Before `AUTH_MODE = "real"`, the target Supabase project still needs environment configuration, the migration applied, RLS verification with test client/team users, Momo/Team Faraz records, route/auth/data-boundary QA, rollback readiness, and explicit approval. `/api/pilot-access` remains active until that approval.
+

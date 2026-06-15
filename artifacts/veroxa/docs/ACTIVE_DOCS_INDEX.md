@@ -100,3 +100,11 @@ Production/custom-domain login is now Real Login V1 pilot portal access for Momo
 - `AUTH_MODE` remains `placeholder`; Real Login V1 is deterministic/manual pilot portal access, not secure production auth.
 - `/demo`, `/guided-demo`, `/upload`, and `/demo/client/*` remain retired/disabled.
 - No live AI, storage uploads, integrations, payments, publishing, cron/background jobs, database writes, or customer-visible automation were added.
+
+## 2026-06-15 — PR 101 Database Foundation status
+
+- PR 101 adds the Live Automation V1 database foundation while keeping `AUTH_MODE` as `placeholder`.
+- Current safe pilot login remains `/api/pilot-access`; no portal page is live database-powered yet.
+- `LIVE_AUTOMATION_V1_DATABASE_FOUNDATION.md` is the setup and safety reference for the new migration, tables, status models, RLS baseline, TypeScript contracts, and later Momo/Team Faraz setup notes.
+- Momo owner walkthrough remains blocked until the full Live Automation V1 sequence is implemented and approved.
+

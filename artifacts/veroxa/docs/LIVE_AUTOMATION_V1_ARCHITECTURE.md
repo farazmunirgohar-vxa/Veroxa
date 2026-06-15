@@ -616,3 +616,11 @@ PR 99 only documents this guardrail plan. Future implementation PRs should add t
 ## 11. PR 99 Explicit Non-Implementation Lock
 
 PR 99 must not add production auth implementation, Supabase migrations, database writes, storage bucket code, file upload behavior, real messaging behavior, live AI calls, Meta/Google APIs, payments, publishing, cron/background jobs, webhooks, or live customer-visible automation.
+
+## 2026-06-15 — PR #101 Database Foundation status
+
+- Database foundation added with Supabase migration, Live Automation V1 tables, role/status constraints, indexes, updated-at triggers, and TypeScript contracts.
+- RLS/security foundation added as authenticated read policies scoped by active team profile or active client membership; writes remain deny-by-default for PR #101.
+- Still not live: media upload/storage, messages runtime, profile correction runtime, activity runtime, AI drafts runtime, reports, Google/Meta integrations, payments, publishing, cron jobs, webhooks, and background jobs.
+- `AUTH_MODE` remains `placeholder`; Momo owner walkthrough remains blocked until full Live Automation V1 approval.
+
