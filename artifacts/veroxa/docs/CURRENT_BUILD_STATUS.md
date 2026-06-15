@@ -325,3 +325,14 @@ PR #70 built the 90% pre-paid/manual OS foundations for client readiness, weekly
 - `AUTH_MODE` remains `placeholder`; this is deterministic/manual V1 pilot access, not secure production auth.
 - Active portals remain Client and Team only; `/demo`, `/guided-demo`, `/upload`, and `/demo/client/*` remain retired.
 - No live AI, storage uploads, integrations, payments, publishing, cron/background jobs, database writes, or customer-visible automation were added.
+
+## 2026-06-15 — PR #101 Database Foundation for Live Automation V1
+
+- Database Foundation added for Live Automation V1 with Supabase migration/schema, RLS baseline, indexes, updated-at triggers, and TypeScript contracts.
+- Migration/schema/contracts added at `supabase/migrations/20260615010100_live_automation_v1_database_foundation.sql` and `artifacts/veroxa/src/domain/liveAutomation/`.
+- `AUTH_MODE` remains `placeholder`.
+- `/api/pilot-access` remains the active safe pilot login path.
+- No live portal DB wiring was added.
+- No media uploads, messages runtime, profile correction runtime, activity log runtime, AI runtime, or report generation was added.
+- Momo owner walkthrough remains blocked until full Live Automation V1 is built and approved.
+

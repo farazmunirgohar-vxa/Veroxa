@@ -88,3 +88,10 @@ When future Codex or ChatGPT work sees conflicts:
 2. Then follow `ACTIVE_DOCS_INDEX.md` and this locked operating memory.
 3. Treat older manual-first Momo walkthrough language as stale for the current Momo path.
 4. Preserve safety gates for approval, client confirmation, and no fake live execution.
+
+## 2026-06-15 — PR #101 Database Foundation status
+
+- Database Foundation is the second implementation step after the PR #100 auth foundation in the Live Automation V1 sequence.
+- The foundation adds schema, migrations, RLS/security baseline, TypeScript contracts, documentation, and guardrails only; it does not complete Live Automation V1.
+- `AUTH_MODE` remains `placeholder`, `/api/pilot-access` remains active, no portal page is live database-powered, and Momo owner walkthrough remains blocked.
+
