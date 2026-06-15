@@ -55,6 +55,8 @@ async function main() {
     const loginSource = readFileSync(resolve(root, "src/pages/login.tsx"), "utf8");
     const pilotAccessAccounts = readFileSync(resolve(root, "src/lib/auth/pilotAccessAccounts.ts"), "utf8");
     const clientDataHook = readFileSync(resolve(root, "src/hooks/useClientPortalData.ts"), "utf8");
+    const realAuthFoundation = readFileSync(resolve(root, "src/lib/auth/realAuthFoundation.ts"), "utf8");
+    const authContract = readFileSync(resolve(root, "src/lib/auth/authContract.ts"), "utf8");
 
     for (const retiredRoute of ['path="/demo"', 'path="/guided-demo"', 'path="/upload"', 'path="/demo/client/dashboard"']) {
       assert(!appSource.includes(retiredRoute), `Retired public demo/preview route is still active: ${retiredRoute}`);
@@ -72,7 +74,12 @@ async function main() {
       assert(!loginSource.includes(bannedLoginCopy), `Login source still contains retired preview wording: ${bannedLoginCopy}`);
     }
     assert(loginSource.includes("validatePilotAccessCredentials") && loginSource.includes("setLocation(getPilotRouteForRole(account.role))"), "Pilot login must route by server-controlled/manual portal accounts.");
+    assert(loginSource.includes("resolveRealAuthAccess") && loginSource.includes("resetPasswordForEmail"), "Login must prepare real-auth access validation and password reset behind AUTH_MODE.");
     assert(loginSource.includes("Portal access is not configured"), "Unconfigured placeholder login must show clean portal-access-not-configured behavior.");
+    assert(authContract.includes('export type VeroxaRole = "client" | "team"') && !authContract.includes('"owner"') && !authContract.includes('"operator"'), "Auth contract must keep only client/team active roles.");
+    assert(authContract.includes('VeroxaAccountStatus = "active" | "disabled" | "pending"'), "Auth contract must model active/disabled/pending account status.");
+    assert(realAuthFoundation.includes('.from("user_profiles")') && realAuthFoundation.includes('.from("restaurant_members")'), "Real auth foundation must read profile and membership tables.");
+    assert(realAuthFoundation.includes('profileStatus') && realAuthFoundation.includes('missing_client_membership'), "Real auth foundation must block inactive profiles and clients without memberships.");
     assert(pilotAccessAccounts.includes('accountLabel: MOMO_HOUSE_CLIENT_ACCOUNT_LABEL') && pilotAccessAccounts.includes('email: "momo@veroxa.app"'), "Momo House pilot client account allowlist is missing.");
     assert(pilotAccessAccounts.includes('accountLabel: TEAM_FARAZ_ACCOUNT_LABEL') && pilotAccessAccounts.includes('email: "faraz@veroxa.app"'), "Team Faraz pilot account allowlist is missing.");
     assert(pilotAccessAccounts.includes("VITE_VEROXA_PILOT_ACCESS_ENDPOINT") && pilotAccessAccounts.includes("/api/pilot-access") && pilotAccessAccounts.includes("server-controlled"), "Pilot access must default to the Vercel serverless endpoint and stay server-controlled.");

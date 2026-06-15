@@ -1,6 +1,14 @@
 # Veroxa Launch Simplification Source of Truth
 
 
+## 2026-06-15 — PR 100 Supabase Auth Foundation
+
+- PR 100 added the Supabase Auth Foundation for Live Automation V1 behind the existing auth mode switch.
+- `AUTH_MODE` remains `placeholder`; the current `/api/pilot-access` Momo House San Antonio and Team Faraz pilot login path remains the active safe access path.
+- Real-auth readiness now includes active-only `user_profiles` validation, client/team role separation, active restaurant membership requirements for client users, password-reset preparation, and safe session loading behavior.
+- Still not live: production auth activation, live database/data wiring, media uploads, storage buckets, messages, profile correction persistence, activity logs, AI runtime calls, generated reports from real activity, Google/Meta integrations, payments, publishing, webhooks, cron jobs, or background jobs.
+- The Momo owner walkthrough remains blocked until full Live Automation V1 is built and approved.
+
 ## 2026-06-14 — PR 99 Live Automation V1 architecture only
 
 - PR 99 added `LIVE_AUTOMATION_V1_ARCHITECTURE.md` as the source-of-truth architecture and schema design for Live Automation V1.

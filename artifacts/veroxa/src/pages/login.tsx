@@ -1,14 +1,15 @@
 import { useState, type FormEvent } from "react";
 import { Link, useLocation } from "wouter";
 import {
-  ArrowLeft, CheckCircle2, Hexagon, Lock, Mail, ShieldAlert,
+  ArrowLeft, CheckCircle2, Hexagon, KeyRound, Lock, Mail, ShieldAlert,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AUTH_MODE } from "@/lib/auth/authMode";
 import { getSupabaseClient } from "@/lib/supabase";
-import { getRoleHomePath, isVeroxaRole } from "@/lib/auth/authContract";
+import { getRoleHomePath } from "@/lib/auth/authContract";
+import { getRealAuthAccessMessage, resolveRealAuthAccess } from "@/lib/auth/realAuthFoundation";
 import {
   getPilotAccessStatus,
   getPilotRouteForRole,
@@ -63,8 +64,8 @@ export default function LoginPage() {
    *   validated role (no visible role selection required).
    * - When AUTH_MODE === "real":
    *     1. signInWithPassword
-   *     2. Get session → look up user_profiles by user_id
-   *     3. Validate role with isVeroxaRole
+   *     2. Get session → resolve active profile + membership access
+   *     3. Validate the active client/team role boundary
    *     4. Redirect to getRoleHomePath(role)
    *
    * Never creates users. Never writes to user_profiles. Never stores
@@ -131,29 +132,46 @@ export default function LoginPage() {
         return;
       }
 
-      const { data: profile, error: profileError } = await client
-        .from("user_profiles")
-        .select("role")
-        .eq("user_id", userId)
-        .maybeSingle<{ role?: unknown }>();
-
-      if (profileError) {
-        setSignInState({ kind: "error", message: "We could not finish checking your account access. Please try again later." });
-        return;
-      }
-      if (!profile) {
-        setSignInState({ kind: "error", message: "This Veroxa account is not fully set up yet. Please contact Veroxa support." });
-        return;
-      }
-      if (!isVeroxaRole(profile.role)) {
-        setSignInState({ kind: "error", message: "This account does not have the right portal access yet. Please contact Veroxa support." });
+      const access = await resolveRealAuthAccess(client, { userId, email });
+      if (!access.ok) {
+        setSignInState({ kind: "error", message: getRealAuthAccessMessage(access.reason) });
         return;
       }
 
-      setLocation(getRoleHomePath(profile.role));
+      setLocation(getRoleHomePath(access.profile.role));
     } catch {
       setSignInState({ kind: "error", message: "Unexpected sign-in error. Please try again." });
     }
+  }
+
+
+  async function handlePasswordReset() {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail) {
+      setSignInState({ kind: "error", message: "Enter your email first, then request a password reset." });
+      return;
+    }
+
+    if (AUTH_MODE === "placeholder") {
+      setSignInState({ kind: "error", message: "Password reset will be available after real account access is activated." });
+      return;
+    }
+
+    const client = getSupabaseClient();
+    if (!client) {
+      setSignInState({ kind: "error", message: "Password reset is temporarily unavailable. Please contact Veroxa support." });
+      return;
+    }
+
+    setSignInState({ kind: "submitting" });
+    const { error } = await client.auth.resetPasswordForEmail(normalizedEmail, {
+      redirectTo: `${window.location.origin}/login`,
+    });
+    if (error) {
+      setSignInState({ kind: "error", message: "We could not start password reset. Please contact Veroxa support." });
+      return;
+    }
+    setSignInState({ kind: "success", message: "If this email has Veroxa access, password reset instructions will be sent." });
   }
 
   return (
@@ -258,6 +276,17 @@ export default function LoginPage() {
               >
                 {signInState.kind === "submitting" ? "Signing in…" : "Sign in"}
               </Button>
+
+              <button
+                type="button"
+                onClick={handlePasswordReset}
+                disabled={signInState.kind === "submitting"}
+                className="mx-auto flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                data-testid="btn-password-reset"
+              >
+                <KeyRound className="h-3.5 w-3.5" />
+                Reset password
+              </button>
 
               {signInState.kind === "success" && (
                 <div

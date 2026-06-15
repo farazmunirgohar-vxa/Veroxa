@@ -24,6 +24,7 @@
 export type VeroxaRole = "client" | "team";
 
 export type AuthStatus = "loading" | "authenticated" | "unauthenticated";
+export type VeroxaAccountStatus = "active" | "disabled" | "pending";
 
 /** Shape of a resolved Veroxa session once real auth ships. */
 export interface VeroxaSession {
@@ -33,6 +34,7 @@ export interface VeroxaSession {
   /** Only populated for `client` role; `null` for staff roles. */
   clientId: string | null;
   displayName: string | null;
+  accountStatus: VeroxaAccountStatus;
 }
 
 /** Return type for any Veroxa auth hook (placeholder or real). */
