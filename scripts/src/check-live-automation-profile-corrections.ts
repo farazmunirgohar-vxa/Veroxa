@@ -35,10 +35,15 @@ for (const copy of ["internal Veroxa profile records only", "No public/platform 
 }
 
 const migration = read("supabase/migrations/20260616010400_profile_corrections_foundation.sql");
-for (const sql of ["profile_corrections_client_insert_requested", "status = 'requested'", "requested_by = auth.uid()", "reviewed_by is null", "review_note is null", "current_user_is_active_team()", "restaurant_profile_fields_team_update_internal_value"]) {
+for (const sql of ["profile_corrections_client_insert_requested", "correction_field_id uuid", "restaurant_profile_fields rpf", "rpf.restaurant_id = correction_restaurant_id", "profile_correction_insert_is_safe(restaurant_id, field_id, status", "status = 'requested'", "requested_by = auth.uid()", "reviewed_by is null", "review_note is null", "current_user_is_active_team()", "restaurant_profile_fields_team_update_internal_value"]) {
   if (!migration.includes(sql)) failures.push(`Profile corrections migration missing: ${sql}`);
 }
 if (/to\s+anon/i.test(migration)) failures.push("Profile corrections migration must not add anonymous policies.");
+
+const service = read("artifacts/veroxa/src/lib/profileCorrections/profileCorrectionService.ts");
+for (const marker of [".eq(\"id\", input.correction.field_id)", ".eq(\"restaurant_id\", input.correction.restaurant_id)", ".select(\"id\")", "internal profile field did not match this restaurant"]) {
+  if (!service.includes(marker)) failures.push(`Profile correction service missing restaurant-field safety marker: ${marker}`);
+}
 
 const sourceFiles = [
   "artifacts/veroxa/src/pages/client-profile.tsx",
