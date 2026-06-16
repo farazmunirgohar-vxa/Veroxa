@@ -7,6 +7,7 @@ alter table public.restaurant_profile_fields enable row level security;
 
 create or replace function public.profile_correction_insert_is_safe(
   correction_restaurant_id uuid,
+  correction_field_id uuid,
   correction_status public.profile_correction_status,
   correction_requested_by uuid,
   correction_reviewed_by uuid,
@@ -30,6 +31,15 @@ as $$
       and r.status = 'active'::public.veroxa_account_status
       and up.role = 'client'::public.veroxa_role
       and up.status = 'active'::public.veroxa_account_status
+  )
+  and (
+    correction_field_id is null
+    or exists (
+      select 1
+      from public.restaurant_profile_fields rpf
+      where rpf.id = correction_field_id
+        and rpf.restaurant_id = correction_restaurant_id
+    )
   )
   and correction_status = 'requested'::public.profile_correction_status
   and correction_requested_by = auth.uid()
@@ -57,7 +67,7 @@ create policy profile_corrections_client_insert_requested
   on public.profile_corrections
   for insert
   to authenticated
-  with check (public.profile_correction_insert_is_safe(restaurant_id, status, requested_by, reviewed_by, review_note));
+  with check (public.profile_correction_insert_is_safe(restaurant_id, field_id, status, requested_by, reviewed_by, review_note));
 
 drop policy if exists profile_corrections_team_update_review on public.profile_corrections;
 create policy profile_corrections_team_update_review
@@ -76,7 +86,7 @@ create policy restaurant_profile_fields_team_update_internal_value
   with check (public.current_user_is_active_team());
 
 comment on policy profile_corrections_client_insert_requested on public.profile_corrections is
-  'PR #104: active clients may request corrections only for their active restaurant; status must remain requested and review fields must be empty.';
+  'PR #104: active clients may request corrections only for their active restaurant and only reference fields that belong to that restaurant; status must remain requested and review fields must be empty.';
 comment on policy profile_corrections_team_update_review on public.profile_corrections is
   'PR #104: active team may review correction status/review fields. This is not public/platform publishing.';
 comment on policy restaurant_profile_fields_team_update_internal_value on public.restaurant_profile_fields is
