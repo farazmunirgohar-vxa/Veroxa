@@ -1,8 +1,10 @@
 # Live Automation V1 Profile Corrections Foundation
 
-Status: PR #104 Profile Corrections foundation only.
+Status: Profile Corrections foundation only. This feature merged as **GitHub PR #103** even though older Live Automation planning originally labeled Profile Corrections as PR #104.
 
-## What PR #104 adds
+For actual PR numbering, follow `LIVE_AUTOMATION_V1_PR_SEQUENCE.md`.
+
+## What GitHub PR #103 added
 
 - A gated client correction request path for existing `restaurant_profile_fields` records.
 - A gated Team Faraz profile correction queue for review decisions.
@@ -21,6 +23,10 @@ Status: PR #104 Profile Corrections foundation only.
 - Nothing is published automatically.
 - Momo owner walkthrough remains blocked.
 
-## Not included in PR #104
+## Not included in GitHub PR #103
 
-Activity Log runtime, AI Drafting, Reports, Team Automation Control Center, Google/Meta/Yelp/TikTok integrations, publishing, payments, cron jobs, background jobs, webhooks, SMS/email automation, fake profile updates, fake reports, and customer-visible execution remain future PRs.
+Real Messages / Portal Threads, Activity Log runtime, AI Drafting, Reports, Team Automation Control Center, Google/Meta/Yelp/TikTok integrations, publishing, payments, cron jobs, background jobs, webhooks, SMS/email automation, fake profile updates, fake reports, and customer-visible execution remain future PRs.
+
+## Next required module
+
+Real Messages / Portal Threads should be the next GitHub PR #104 before Activity Log, AI Drafting, Team Automation Control Center, Reports From Activity, or Momo Live Pilot Readiness Gate.
