@@ -640,3 +640,7 @@ PR 99 must not add production auth implementation, Supabase migrations, database
 - `media_assets` client insert boundaries now validate storage path shape, parsed restaurant ownership, uploaded-only status, null public/review fields, allowed image/video MIME pairs, and file-size limits at the DB/policy layer.
 - This remains PR #102 only: `AUTH_MODE` is still `placeholder`, upload is inactive in placeholder mode, uploaded media is not published, and PR #103+ modules remain future.
 - Momo owner walkthrough remains blocked until the full Live Automation V1 sequence is built and approved.
+
+## PR #104 — Profile Corrections Foundation
+
+PR #104 adds the Profile Corrections foundation only: client correction request, Team Faraz review queue, and approved internal profile update. It does not activate full Live Automation V1. `AUTH_MODE` remains `placeholder`, profile corrections are not public/platform updates, and approved corrections update internal Veroxa profile records only. Momo owner walkthrough remains blocked. Activity Log runtime, AI Drafting, Reports, Team Automation Control Center, integrations, publishing, payments, cron jobs, background jobs, and webhooks remain future PRs.

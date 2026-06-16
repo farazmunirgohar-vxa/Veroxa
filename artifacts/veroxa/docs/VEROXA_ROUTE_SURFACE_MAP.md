@@ -51,6 +51,7 @@ Client routes must be guarded by `ClientPortalGuard` and `RealPortalDataBoundary
 - `/team/upload-inbox`
 - `/team/work-queue`
 - `/team/approval-queue`
+- `/team/profile-corrections` — PR #104 gated Profile Correction Queue; real auth + explicit flag only, no public/platform updates
 - `/team/direction-queue`
 - `/team/report-queue`
 - `/team/manual-execution`

@@ -51,7 +51,8 @@
     "check-restaurant-matching-regression": "tsx ./src/check-restaurant-matching-regression.ts",
     "check-momo-pilot-launch-qa": "tsx ./src/check-momo-pilot-launch-qa.ts",
     "check-live-automation-database-foundation": "tsx ./src/check-live-automation-database-foundation.ts",
-    "check-live-automation-media-upload-storage": "tsx ./src/check-live-automation-media-upload-storage.ts"
+    "check-live-automation-media-upload-storage": "tsx ./src/check-live-automation-media-upload-storage.ts",
+    "check-live-automation-profile-corrections": "tsx ./src/check-live-automation-profile-corrections.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",
