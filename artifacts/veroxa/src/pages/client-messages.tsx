@@ -14,9 +14,10 @@ import type { MessageRecord } from "@/domain/liveAutomation/databaseTypes";
 import { canUseClientMessages } from "@/lib/messages/messageConfig";
 import { listRestaurantMessages, sendClientMessage } from "@/lib/messages/messageService";
 
-function clientStatusLabel(status: MessageRecord["status"]): string {
-  if (status === "resolved") return "Reviewed";
-  if (status === "read") return "In review";
+function clientStatusLabel(message: MessageRecord): string {
+  if (message.sender_role === "team") return "Reply from Veroxa";
+  if (message.status === "resolved") return "Reviewed";
+  if (message.status === "read") return "In review";
   return "Sent to Veroxa";
 }
 
@@ -68,7 +69,7 @@ export default function ClientMessages() {
       <Card className="mb-4 border-primary/20 bg-primary/5"><CardContent className="flex gap-2 p-4 text-sm text-muted-foreground"><ShieldCheck className="mt-0.5 h-4 w-4 text-primary" />Nothing is published automatically. Veroxa reviews messages before taking any public or customer-visible action.</CardContent></Card>
       <section className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
         <Card data-testid="client-message-composer"><CardHeader><CardTitle className="flex items-center gap-2 text-sm"><MessageSquare className="h-4 w-4 text-primary" />Message Veroxa</CardTitle></CardHeader><CardContent className="space-y-3"><Textarea value={body} onChange={(event) => setBody(event.target.value)} placeholder="Write your message for Veroxa" /><Button onClick={() => void submitMessage()} disabled={sendState === "sending"}>{sendState === "sending" ? "Sending…" : "Send message"}</Button>{sendState === "sent" ? <p className="text-xs text-emerald-300">Message sent for Veroxa review. This is not an instant-completion promise.</p> : null}{sendState === "error" ? <p className="text-xs text-red-300">Message could not be sent. Please try again.</p> : null}</CardContent></Card>
-        <Card data-testid="client-message-thread"><CardHeader><CardTitle className="text-sm">Portal thread</CardTitle></CardHeader><CardContent className="space-y-3">{messages.length === 0 ? <p className="rounded-lg border border-border/70 p-3 text-sm text-muted-foreground">No portal messages yet.</p> : messages.map((message) => <div key={message.id} className="rounded-lg border border-border/70 p-3 text-sm"><div className="flex items-start justify-between gap-3"><p className="font-medium">{message.sender_role === "team" ? "Veroxa" : "You"}</p><StatusBadge tone={message.status === "resolved" ? "success" : "warning"}>{clientStatusLabel(message.status)}</StatusBadge></div><p className="mt-2 whitespace-pre-wrap text-muted-foreground">{message.body}</p><p className="mt-2 text-xs text-muted-foreground">{new Date(message.created_at).toLocaleString()}</p></div>)}</CardContent></Card>
+        <Card data-testid="client-message-thread"><CardHeader><CardTitle className="text-sm">Portal thread</CardTitle></CardHeader><CardContent className="space-y-3">{messages.length === 0 ? <p className="rounded-lg border border-border/70 p-3 text-sm text-muted-foreground">No portal messages yet.</p> : messages.map((message) => <div key={message.id} className="rounded-lg border border-border/70 p-3 text-sm"><div className="flex items-start justify-between gap-3"><p className="font-medium">{message.sender_role === "team" ? "Veroxa" : "You"}</p><StatusBadge tone={message.status === "resolved" ? "success" : "warning"}>{clientStatusLabel(message)}</StatusBadge></div><p className="mt-2 whitespace-pre-wrap text-muted-foreground">{message.body}</p><p className="mt-2 text-xs text-muted-foreground">{new Date(message.created_at).toLocaleString()}</p></div>)}</CardContent></Card>
       </section>
     </PortalLayout>
   );
