@@ -114,3 +114,8 @@ Production/custom-domain login is now Real Login V1 pilot portal access for Momo
 - `LIVE_AUTOMATION_V1_MEDIA_UPLOAD_STORAGE.md` is the active setup/safety reference for the PR #102 media upload and storage foundation.
 - The foundation adds private storage setup, validation, restaurant-scoped paths, gated upload service/UI, and guardrails only.
 - `AUTH_MODE` remains `placeholder`, `/api/pilot-access` remains active, upload is not active in placeholder mode, uploaded media is not published, and Momo owner walkthrough remains blocked.
+
+## PR #104 — Live Automation V1 Profile Corrections
+
+- Active reference: `LIVE_AUTOMATION_V1_PROFILE_CORRECTIONS.md`.
+- PR #104 adds Profile Corrections foundation only. AUTH_MODE remains placeholder; profile corrections are not public/platform updates; approved corrections update internal Veroxa profile records only. Momo owner walkthrough remains blocked. Activity Log, AI Drafting, Reports, Team Automation Control Center, integrations, publishing, payments, cron jobs, and webhooks remain future PRs.

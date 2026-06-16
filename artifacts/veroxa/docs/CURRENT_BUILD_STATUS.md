@@ -356,3 +356,12 @@ PR #70 built the 90% pre-paid/manual OS foundations for client readiness, weekly
 - `AUTH_MODE` remains `placeholder`, `/api/pilot-access` remains active, and upload remains inactive in placeholder mode.
 - Uploaded media remains received for Veroxa review only; it is not published, posted, approved, public, live on Google, live on Instagram/Facebook, or part of a marketing campaign.
 - Momo owner walkthrough remains blocked until full Live Automation V1 is built and approved.
+
+## 2026-06-16 — PR #104 Profile Corrections foundation
+
+- Added the Live Automation V1 Profile Corrections foundation only.
+- Client correction submission is gated behind real auth, authenticated client role, active restaurant/clientId, and `VITE_VEROXA_PROFILE_CORRECTIONS_ENABLED=true`. Placeholder mode remains honest and does not fake correction submission.
+- Team Faraz can review correction requests when real auth and the explicit flag are active; approval updates internal Veroxa `restaurant_profile_fields` only.
+- Profile corrections are not public/platform updates, and nothing publishes automatically.
+- `AUTH_MODE` remains `placeholder`; `/api/pilot-access` remains active; Momo owner walkthrough remains blocked.
+- Activity Log runtime, AI Drafting, Reports, Team Automation Control Center, integrations, publishing, payments, cron jobs, background jobs, and webhooks remain future PRs.

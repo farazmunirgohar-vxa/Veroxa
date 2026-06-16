@@ -102,3 +102,11 @@ When future Codex or ChatGPT work sees conflicts:
 - It adds a private `restaurant-media` storage foundation, safe upload validation/path/service code, and gated client upload UI, but it does not complete Live Automation V1.
 - Upload does not mean publish: uploaded media is only received for Veroxa review and is not approved, posted, public, or used in marketing automatically.
 - `AUTH_MODE` remains `placeholder`, `/api/pilot-access` remains active, upload is not active in placeholder mode, and Momo owner walkthrough remains blocked.
+
+## 2026-06-16 — PR #104 Live Automation V1 Profile Corrections lock
+
+- PR #104 adds Profile Corrections foundation only.
+- Correction requests may be recorded for internal Veroxa review, but they are not Google, Meta, website, menu, price, link, or public-platform updates.
+- Approved corrections update internal Veroxa profile records only after Team Faraz review. Business-truth fields still require owner/client confirmation before execution.
+- `AUTH_MODE` remains `placeholder`; Momo owner walkthrough remains blocked.
+- Activity Log, AI Drafting, Reports, Team Automation Control Center, integrations, publishing, payments, cron jobs, background jobs, and webhooks remain future PRs.
