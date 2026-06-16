@@ -47,3 +47,7 @@ For future ChatGPT/Codex planning in this project:
 - Treat Real Messages / Portal Threads as the next build, expected GitHub PR #104.
 - After Real Messages, continue with Activity Log as PR #105.
 - Do not skip to AI Drafting, Team Automation Control Center, Reports, real-auth activation, integrations, publishing, payments, or Momo walkthrough before Real Messages and Activity Log are handled safely.
+
+## PR #104 implementation note
+
+GitHub PR #104 is Real Messages / Portal Threads Foundation. It follows Profile Corrections PR #103, keeps `AUTH_MODE` as `placeholder`, keeps `/api/pilot-access` active, adds only gated portal messages, and leaves Activity Log as PR #105 and AI Drafting as PR #106.

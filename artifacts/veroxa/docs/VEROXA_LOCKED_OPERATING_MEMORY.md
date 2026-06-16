@@ -132,3 +132,7 @@ When future Codex or ChatGPT work sees conflicts:
 - `AUTH_MODE` remains `placeholder`; Momo owner walkthrough remains blocked.
 - Real Messages / Portal Threads are still missing and must be the next GitHub PR #104.
 - Activity Log, AI Drafting, Reports, Team Automation Control Center, integrations, publishing, payments, cron jobs, background jobs, and webhooks remain future PRs.
+
+## 2026-06-16 — PR #104 Real Messages / Portal Threads foundation
+
+GitHub PR #104 adds the Real Messages / Portal Threads foundation after Profile Corrections merged as GitHub PR #103. `AUTH_MODE` remains `placeholder`, `/api/pilot-access` remains active, and real portal messages require real auth plus `VITE_VEROXA_MESSAGES_ENABLED=true`. Messages are portal-only and are not SMS, email automation, DMs, comments, customer-service inbox handling, refund/order support, AI runtime, publishing, payments, webhooks, cron jobs, or background jobs. Placeholder mode must not fake message sending, delivery, replies, or persistence. Activity Log remains PR #105, AI Drafting remains PR #106, and Momo owner walkthrough remains blocked.

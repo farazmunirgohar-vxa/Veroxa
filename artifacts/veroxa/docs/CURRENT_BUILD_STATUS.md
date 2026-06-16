@@ -365,3 +365,12 @@ PR #70 built the 90% pre-paid/manual OS foundations for client readiness, weekly
 - Profile corrections are not public/platform updates, and nothing publishes automatically.
 - `AUTH_MODE` remains `placeholder`; `/api/pilot-access` remains active; Momo owner walkthrough remains blocked.
 - Activity Log runtime, AI Drafting, Reports, Team Automation Control Center, integrations, publishing, payments, cron jobs, background jobs, and webhooks remain future PRs.
+
+## 2026-06-16 — GitHub PR #104 Real Messages / Portal Threads foundation
+
+- Profile Corrections already merged as GitHub PR #103.
+- PR #104 adds gated real portal message helpers, Client Portal Messages real-auth composer/thread, Team `/team/messages` inbox/reply route, and Supabase RLS insert/status policies for `messages`.
+- `AUTH_MODE` remains `placeholder`; `/api/pilot-access` remains active; real messages require `AUTH_MODE === "real"` and `VITE_VEROXA_MESSAGES_ENABLED=true`.
+- Placeholder mode remains honest and does not fake sent messages, delivered state, replies, or persistence.
+- Portal messages are not SMS, email automation, DMs, comments, customer-service inbox handling, external chat, Activity Log runtime, AI runtime, integrations, publishing, payments, webhooks, cron jobs, or background jobs.
+- Activity Log remains PR #105, AI Drafting remains PR #106, and Momo owner walkthrough remains blocked.
