@@ -1,5 +1,27 @@
 # Veroxa Locked Operating Memory
 
+## 2026-06-16 — Actual GitHub PR sequence lock
+
+Profile Corrections has already merged as GitHub PR #103. The next GitHub PR should be **PR #104 — Real Messages / Portal Threads Foundation**.
+
+`LIVE_AUTOMATION_V1_PR_SEQUENCE.md` is the current source of truth for actual GitHub PR numbering. If older docs still say Real Messages was PR #103 or Profile Corrections was PR #104, treat that as original planning language, not actual GitHub history.
+
+Current corrected sequence:
+
+1. PR #99 — Live Automation V1 Architecture + Schema Design.
+2. PR #100 — Supabase Auth Foundation.
+3. PR #101 — Database Foundation.
+4. PR #102 — Media Upload + Storage Foundation.
+5. PR #103 — Profile Corrections Foundation.
+6. PR #104 — Real Messages / Portal Threads Foundation next.
+7. PR #105 — Activity Log Foundation.
+8. PR #106 — AI Draft Preparation Foundation.
+9. PR #107 — Team Automation Control Center Foundation.
+10. PR #108 — Reports From Activity Foundation.
+11. PR #109 — Momo Live Pilot Readiness Gate.
+
+Do not skip to Activity Log, AI, Team Automation Control Center, Reports, real-auth activation, integrations, publishing, payments, or Momo walkthrough before Real Messages is built safely.
+
 ## 2026-06-15 — PR 100 Supabase Auth Foundation
 
 PR 100 is the first Live Automation V1 implementation step. It adds real-auth foundation code and setup documentation while keeping `AUTH_MODE` as `placeholder`; `/api/pilot-access` remains the active safe Momo/Team Faraz pilot login path. Real auth is not activated, and the Momo owner walkthrough remains blocked until full Live Automation V1 is built and approved.
@@ -14,8 +36,7 @@ The older manual-first Momo walkthrough path is now stale for the current Momo p
 
 ## Current operating rule
 
-Detailed Live Automation V1 architecture and PR 100–PR 109 build sequencing now live in `LIVE_AUTOMATION_V1_ARCHITECTURE.md`. Read that document before implementing any PR 100+ live automation work.
-
+Detailed Live Automation V1 architecture and module sequencing live in `LIVE_AUTOMATION_V1_ARCHITECTURE.md`; actual GitHub PR numbering now lives in `LIVE_AUTOMATION_V1_PR_SEQUENCE.md`. Read both before implementing any PR 100+ live automation work.
 
 - Do **not** schedule, design around, or assume a Momo owner walkthrough until **Live Automation V1** exists.
 - Do **not** treat older first-client/manual launch walkthrough docs as the current Momo execution plan.
@@ -73,19 +94,20 @@ Veroxa must not invent discounts, BOGO offers, price cuts, lower prices, or new 
 As of this operating memory:
 
 - CP-V1 client portal is polished for the intended owner-facing shape.
-- Profile is polished as the owner-editable business-truth surface.
+- Profile Corrections foundation is merged as GitHub PR #103, but real-auth activation is still off and profile corrections are not public/platform updates.
+- Real Messages / Portal Threads are still missing and should be built next.
 - `AUTH_MODE` remains `placeholder`.
-- Live data, production auth, storage uploads, messages, media handling, reports, and live AI are not connected yet.
+- Full live data, production auth activation, live messages, activity-backed reports, and live AI are not connected yet.
 - Therefore the Momo owner walkthrough is blocked until Live Automation V1 is built and approved.
 
 ## Relationship to older docs
 
-Older manual-first, first-client, preview-login, pre-live, and Momo readiness docs remain historical context unless refreshed by a newer source-of-truth doc. They may still be useful for route inventories, copy constraints, safety rules, and understanding current code limitations, but they must not override this automation-first Momo pivot.
+Older manual-first, first-client, preview-login, pre-live, and Momo readiness docs remain historical context unless refreshed by a newer source-of-truth doc. They may still be useful for route inventories, copy constraints, safety rules, and understanding current code limitations, but they must not override this automation-first Momo pivot or the actual PR numbering in `LIVE_AUTOMATION_V1_PR_SEQUENCE.md`.
 
 When future Codex or ChatGPT work sees conflicts:
 
 1. Follow Faraz's newest explicit instruction.
-2. Then follow `ACTIVE_DOCS_INDEX.md` and this locked operating memory.
+2. Then follow `ACTIVE_DOCS_INDEX.md`, `LIVE_AUTOMATION_V1_PR_SEQUENCE.md`, and this locked operating memory.
 3. Treat older manual-first Momo walkthrough language as stale for the current Momo path.
 4. Preserve safety gates for approval, client confirmation, and no fake live execution.
 
@@ -95,7 +117,6 @@ When future Codex or ChatGPT work sees conflicts:
 - The foundation adds schema, migrations, RLS/security baseline, TypeScript contracts, documentation, and guardrails only; it does not complete Live Automation V1.
 - `AUTH_MODE` remains `placeholder`, `/api/pilot-access` remains active, no portal page is live database-powered, and Momo owner walkthrough remains blocked.
 
-
 ## 2026-06-15 — PR #102 Media Upload + Storage status
 
 - Media Upload + Storage is the third Live Automation V1 implementation step after auth and database foundations.
@@ -103,10 +124,11 @@ When future Codex or ChatGPT work sees conflicts:
 - Upload does not mean publish: uploaded media is only received for Veroxa review and is not approved, posted, public, or used in marketing automatically.
 - `AUTH_MODE` remains `placeholder`, `/api/pilot-access` remains active, upload is not active in placeholder mode, and Momo owner walkthrough remains blocked.
 
-## 2026-06-16 — PR #104 Live Automation V1 Profile Corrections lock
+## 2026-06-16 — GitHub PR #103 Live Automation V1 Profile Corrections lock
 
-- PR #104 adds Profile Corrections foundation only.
+- GitHub PR #103 adds Profile Corrections foundation only.
 - Correction requests may be recorded for internal Veroxa review, but they are not Google, Meta, website, menu, price, link, or public-platform updates.
 - Approved corrections update internal Veroxa profile records only after Team Faraz review. Business-truth fields still require owner/client confirmation before execution.
 - `AUTH_MODE` remains `placeholder`; Momo owner walkthrough remains blocked.
+- Real Messages / Portal Threads are still missing and must be the next GitHub PR #104.
 - Activity Log, AI Drafting, Reports, Team Automation Control Center, integrations, publishing, payments, cron jobs, background jobs, and webhooks remain future PRs.
