@@ -43,11 +43,26 @@ export async function listProfileCorrectionsForTeam(client: SupabaseClient): Pro
 export type ProfileCorrectionDecision = "approved" | "rejected" | "needs_owner_input";
 
 export async function decideProfileCorrection(input: { client: SupabaseClient; correction: ProfileCorrectionRecord; reviewerId: Uuid; decision: ProfileCorrectionDecision; reviewNote: string | null; }): Promise<void> {
-  const update = { status: input.decision, reviewed_by: input.reviewerId, review_note: input.reviewNote, updated_at: new Date().toISOString() };
-  const { error } = await input.client.from("profile_corrections").update(update).eq("id", input.correction.id);
-  if (error) throw new Error("Decision could not be saved right now.");
+  const reviewedAt = new Date().toISOString();
+
   if (input.decision === "approved" && input.correction.field_id) {
-    const { error: fieldError } = await input.client.from("restaurant_profile_fields").update({ value: input.correction.requested_value, status: "veroxa_review", updated_at: new Date().toISOString() }).eq("id", input.correction.field_id);
-    if (fieldError) throw new Error("Correction was reviewed, but the internal profile field could not be updated.");
+    const { data: updatedField, error: fieldError } = await input.client
+      .from("restaurant_profile_fields")
+      .update({ value: input.correction.requested_value, status: "veroxa_review", updated_at: reviewedAt })
+      .eq("id", input.correction.field_id)
+      .eq("restaurant_id", input.correction.restaurant_id)
+      .select("id")
+      .maybeSingle();
+
+    if (fieldError || !updatedField) throw new Error("Correction could not be approved because the internal profile field did not match this restaurant.");
   }
+
+  const update = { status: input.decision, reviewed_by: input.reviewerId, review_note: input.reviewNote, updated_at: reviewedAt };
+  const { error } = await input.client
+    .from("profile_corrections")
+    .update(update)
+    .eq("id", input.correction.id)
+    .eq("restaurant_id", input.correction.restaurant_id);
+
+  if (error) throw new Error("Decision could not be saved right now.");
 }
