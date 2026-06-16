@@ -644,3 +644,7 @@ PR 99 must not add production auth implementation, Supabase migrations, database
 ## PR #104 — Profile Corrections Foundation
 
 PR #104 adds the Profile Corrections foundation only: client correction request, Team Faraz review queue, and approved internal profile update. It does not activate full Live Automation V1. `AUTH_MODE` remains `placeholder`, profile corrections are not public/platform updates, and approved corrections update internal Veroxa profile records only. Momo owner walkthrough remains blocked. Activity Log runtime, AI Drafting, Reports, Team Automation Control Center, integrations, publishing, payments, cron jobs, background jobs, and webhooks remain future PRs.
+
+## 2026-06-16 — Actual PR #104 Real Messages correction
+
+Profile Corrections already merged as GitHub PR #103. GitHub PR #104 is Real Messages / Portal Threads Foundation. This module is portal-only, gated by `AUTH_MODE === "real"` plus `VITE_VEROXA_MESSAGES_ENABLED=true`, and does not activate SMS, email, DMs, comments, customer-service inbox handling, Activity Log runtime, AI runtime, integrations, publishing, payments, webhooks, cron jobs, or background jobs. Activity Log remains PR #105, AI Drafting remains PR #106, and Momo owner walkthrough remains blocked.

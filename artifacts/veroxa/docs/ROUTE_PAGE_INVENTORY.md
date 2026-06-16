@@ -83,3 +83,5 @@ Retired demo/preview files remain quarantined unless the owner explicitly approv
 - `/client/onboarding` is a hidden guarded alias to the Profile setup-review experience.
 - `/api/pilot-access` is the Vercel serverless pilot-login endpoint; SPA rewrites must not swallow `/api/*`.
 - Manual/pre-live boundaries remain locked: no production auth, database writes, storage uploads, live integrations, OAuth, live AI, payments, publishing, cron jobs, fake metrics, fake upload success, or fake message delivery.
+
+- `/team/messages` — guarded Team Portal Message Inbox for PR #104 portal-only real messages; requires Team login and remains empty in placeholder mode without fake messages.

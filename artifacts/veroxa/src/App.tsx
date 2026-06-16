@@ -44,6 +44,7 @@ const TeamReportQueue = lazy(() => import("@/pages/team-report-queue"));
 const TeamAuditLeads = lazy(() => import("@/pages/team-audit-leads"));
 const TeamOnboarding = lazy(() => import("@/pages/team-onboarding"));
 const TeamProfileCorrections = lazy(() => import("@/pages/team-profile-corrections"));
+const TeamMessages = lazy(() => import("@/pages/team-messages"));
 
 const queryClient = new QueryClient();
 
@@ -219,6 +220,15 @@ function Router() {
             <InternalDemoGuard role="team">
               <RealPortalDataBoundary portal="team">
                 <TeamApprovalQueue />
+              </RealPortalDataBoundary>
+            </InternalDemoGuard>
+          )}
+        </Route>
+        <Route path="/team/messages">
+          {() => (
+            <InternalDemoGuard role="team">
+              <RealPortalDataBoundary portal="team">
+                <TeamMessages />
               </RealPortalDataBoundary>
             </InternalDemoGuard>
           )}

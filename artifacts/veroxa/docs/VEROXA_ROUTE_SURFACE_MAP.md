@@ -81,3 +81,5 @@ Onboarding must show field status for: `prefilled_by_veroxa`, `needs_owner_verif
 - `/client/onboarding` is a hidden guarded alias to the Profile setup-review experience.
 - `/api/pilot-access` is the Vercel serverless pilot-login endpoint; SPA rewrites must not swallow `/api/*`.
 - Manual/pre-live boundaries remain locked: no production auth, database writes, storage uploads, live integrations, OAuth, live AI, payments, publishing, cron jobs, fake metrics, fake upload success, or fake message delivery.
+
+- `/team/messages` — Team Portal guarded route for PR #104 Real Messages / Portal Threads. Portal-only messages; not SMS/email/DM/comment/customer-service inbox handling.
