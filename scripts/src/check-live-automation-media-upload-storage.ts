@@ -29,6 +29,42 @@ if (!/pilot-access/.test(read("artifacts/veroxa/docs/CURRENT_BUILD_STATUS.md")))
 if (!/restaurant-media/.test(migration) || !/public\s*=\s*false/.test(migration)) failures.push("Private restaurant-media bucket setup must exist.");
 if (/using\s*\(\s*true\s*\)|with check\s*\(\s*true\s*\)/i.test(migration)) failures.push("Storage policies must not be broad using(true) policies.");
 if (!/current_user_has_active_restaurant/.test(migration) || !/current_user_is_active_team/.test(migration)) failures.push("Storage policies must scope client/team access conservatively.");
+
+const pathRegexMarkers = [
+  "is_safe_restaurant_media_storage_path",
+  "restaurant_id_from_media_storage_path",
+  "^restaurants/",
+  "/uploads/[0-9]{4}/(0[1-9]|1[0-2])/",
+  "\\.(jpg|jpeg|png|webp|heic|heif|mp4|mov|webm)$",
+  "split_part(object_name, '/', 2)::uuid",
+];
+for (const marker of pathRegexMarkers) if (!migration.includes(marker)) failures.push(`Storage path hardening missing marker: ${marker}`);
+for (const rawPath of ["uploads/menu.jpg", "raw-file-name.png", "anything/else/file.jpg"]) if (migration.includes(rawPath)) failures.push(`Migration must not allow raw/broad path example: ${rawPath}`);
+for (const policyName of ["restaurant_media_client_insert_own_restaurant", "restaurant_media_client_select_own_restaurant", "restaurant_media_team_select"]) {
+  const policyIndex = migration.indexOf(`create policy ${policyName}`);
+  const policyBody = policyIndex >= 0 ? migration.slice(policyIndex, migration.indexOf("create policy", policyIndex + 20) >= 0 ? migration.indexOf("create policy", policyIndex + 20) : migration.length) : "";
+  if (!policyBody.includes("public.is_safe_restaurant_media_storage_path(name)")) failures.push(`${policyName} must call safe path helper.`);
+}
+const mediaInsertPolicy = migration.slice(migration.indexOf("create policy media_assets_client_insert_uploaded_only"));
+for (const marker of [
+  "status = 'uploaded'",
+  "file_url is null",
+  "ai_summary is null",
+  "veroxa_notes is null",
+  "file_type is not null",
+  "mime_type is not null",
+  "file_size is not null",
+  "file_size > 0",
+  "file_size <= 26214400",
+  "file_size <= 104857600",
+  "mime_type in ('image/jpeg','image/png','image/webp','image/heic','image/heif')",
+  "mime_type in ('video/mp4','video/quicktime','video/webm')",
+  "file_type = 'image'",
+  "file_type = 'video'",
+  "public.is_safe_restaurant_media_storage_path(storage_path)",
+  "restaurant_id = public.restaurant_id_from_media_storage_path(storage_path)",
+]) if (!mediaInsertPolicy.includes(marker)) failures.push(`media_assets insert hardening missing marker: ${marker}`);
+for (const constraint of ["media_assets_storage_path_safe_shape", "media_assets_restaurant_matches_storage_path", "media_assets_file_metadata_valid"]) if (!migration.includes(constraint)) failures.push(`Missing DB constraint: ${constraint}`);
 if (!/VITE_VEROXA_MEDIA_UPLOAD_ENABLED/.test(all)) failures.push("Media upload must have an explicit default-safe feature flag.");
 if (!/AUTH_MODE === "real"/.test(all)) failures.push("Media upload must be gated to real auth mode.");
 if (!/restaurants\/\$\{restaurantId\}\/uploads\/\$\{yyyy\}\/\$\{mm\}\/\$\{id\}\./.test(paths)) failures.push("Storage path must be restaurant-scoped with generated id.");

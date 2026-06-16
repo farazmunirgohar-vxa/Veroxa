@@ -102,3 +102,12 @@ Momo owner walkthrough remains blocked until full Live Automation V1 is built an
 - No reports are generated from uploads.
 - No real messages, profile correction runtime, payments, cron jobs, background jobs, or webhooks were added.
 - Momo owner walkthrough remains blocked.
+
+## 2026-06-16 — PR #102 RR patch: storage path and metadata hardening
+
+- Storage policies now enforce the full `restaurants/{restaurantUuid}/uploads/{yyyy}/{mm}/{objectUuid}.{safeExtension}` path shape through SQL helpers, not only through the frontend path builder.
+- Raw filename paths, missing date folders, arbitrary nested folders, unsupported extensions, non-UUID restaurant ids, and non-UUID object names are rejected at the policy/helper layer.
+- `media_assets` inserts now require a private safe storage path, matching parsed restaurant id, active client restaurant membership, `uploaded_by = auth.uid()`, `status = uploaded`, null `file_url`, null `ai_summary`, null `veroxa_notes`, non-null `file_type`, non-null `mime_type`, and non-null positive `file_size`.
+- SQL constraints/policies mirror media validation for image MIME types, video MIME types, 25 MB image limit, and 100 MB video limit so direct authenticated calls cannot insert unsupported or fake media rows.
+- Frontend validation remains, but DB/storage boundaries now also enforce the same safety model.
+- `AUTH_MODE` remains `placeholder`; upload remains inactive in placeholder mode; uploaded media remains not published; no PR #103+ scope was added; Momo owner walkthrough remains blocked.

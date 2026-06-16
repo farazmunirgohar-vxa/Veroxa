@@ -347,3 +347,12 @@ PR #70 built the 90% pre-paid/manual OS foundations for client readiness, weekly
 - Uploaded media is for Veroxa review only; it is not published, posted, approved, live on Google, live on Instagram/Facebook, or part of a public campaign.
 - No social publishing, AI runtime, reports, real messages, profile correction runtime, full activity log module, Google/Meta integration, payments, cron jobs, background jobs, or webhooks were added.
 - Momo owner walkthrough remains blocked until full Live Automation V1 is built and approved.
+
+## 2026-06-16 — PR #102 RR patch: storage path + media metadata security hardening
+
+- Storage object policies were hardened to require the full restaurant/date/object UUID media path shape before client upload or client/team read access is allowed.
+- Raw filename storage paths and arbitrary nested paths under a restaurant prefix are rejected by SQL helper/policy enforcement, not only by frontend code.
+- `media_assets` client inserts now require validated media metadata at the DB/policy layer: safe private path, parsed restaurant match, `status = uploaded`, null public/review fields, allowed file type/MIME pairing, positive file size, and 25 MB image / 100 MB video limits.
+- `AUTH_MODE` remains `placeholder`, `/api/pilot-access` remains active, and upload remains inactive in placeholder mode.
+- Uploaded media remains received for Veroxa review only; it is not published, posted, approved, public, live on Google, live on Instagram/Facebook, or part of a marketing campaign.
+- Momo owner walkthrough remains blocked until full Live Automation V1 is built and approved.
