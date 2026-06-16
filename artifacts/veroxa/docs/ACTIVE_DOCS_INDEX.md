@@ -108,3 +108,9 @@ Production/custom-domain login is now Real Login V1 pilot portal access for Momo
 - `LIVE_AUTOMATION_V1_DATABASE_FOUNDATION.md` is the setup and safety reference for the new migration, tables, status models, RLS baseline, TypeScript contracts, and later Momo/Team Faraz setup notes.
 - Momo owner walkthrough remains blocked until the full Live Automation V1 sequence is implemented and approved.
 
+
+## 2026-06-15 — PR #102 Media Upload + Storage status
+
+- `LIVE_AUTOMATION_V1_MEDIA_UPLOAD_STORAGE.md` is the active setup/safety reference for the PR #102 media upload and storage foundation.
+- The foundation adds private storage setup, validation, restaurant-scoped paths, gated upload service/UI, and guardrails only.
+- `AUTH_MODE` remains `placeholder`, `/api/pilot-access` remains active, upload is not active in placeholder mode, uploaded media is not published, and Momo owner walkthrough remains blocked.

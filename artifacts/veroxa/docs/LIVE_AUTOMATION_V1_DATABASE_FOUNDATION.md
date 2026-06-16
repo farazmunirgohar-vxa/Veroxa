@@ -82,3 +82,7 @@ Real auth still requires environment configuration, applied migrations in the ta
 ## Not live yet
 
 No live portal DB reads, media upload, messages, profile correction persistence, activity log runtime writing, AI runtime calls, report generation, Google/Meta integrations, payments, publishing, cron jobs, webhooks, or background jobs are live. Momo owner walkthrough remains blocked.
+
+## PR #102 media upload/storage usage note
+
+PR #102 begins using the `media_assets` schema contract as the metadata destination for future safe uploads. Successful upload is prepared to insert rows with `status = uploaded`, private `storage_path`, `file_url = null`, `ai_summary = null`, and `veroxa_notes = null`. This does not make active portal pages live DB-powered while `AUTH_MODE` remains `placeholder`, and upload does not mean publish.
