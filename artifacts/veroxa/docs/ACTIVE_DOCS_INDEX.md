@@ -2,6 +2,15 @@
 
 Status: highest-level active contributor guide and current source-of-truth index. Read this file before relying on any older Veroxa doc.
 
+## 2026-06-16 — Actual Live Automation V1 PR sequence correction
+
+- `LIVE_AUTOMATION_V1_PR_SEQUENCE.md` is the current source of truth for GitHub PR numbering after Profile Corrections merged as GitHub PR #103.
+- Actual completed sequence: PR #99 architecture, PR #100 auth foundation, PR #101 database foundation, PR #102 media upload/storage foundation, PR #103 Profile Corrections foundation.
+- Next GitHub PR should be **PR #104 — Real Messages / Portal Threads Foundation**.
+- After Real Messages, continue with PR #105 Activity Log, PR #106 AI Draft Preparation, PR #107 Team Automation Control Center, PR #108 Reports From Activity, and PR #109 Momo Live Pilot Readiness Gate.
+- If older docs still say Real Messages was PR #103 or Profile Corrections was PR #104, treat those as original planning labels, not actual GitHub PR numbers.
+- Momo owner walkthrough remains blocked until full Live Automation V1 is built and approved.
+
 ## 2026-06-15 — PR 100 Supabase Auth Foundation status
 
 - PR 100 adds the Live Automation V1 real-auth foundation while keeping `AUTH_MODE` as `placeholder`.
@@ -14,6 +23,7 @@ Status: highest-level active contributor guide and current source-of-truth index
 These files reflect the current Veroxa operating truth and override historical/archive strategy notes. If another doc conflicts with this index, do not override this index; treat the conflicting note as stale until Faraz explicitly refreshes it:
 
 - `VEROXA_LOCKED_OPERATING_MEMORY.md`
+- `LIVE_AUTOMATION_V1_PR_SEQUENCE.md`
 - `LIVE_AUTOMATION_V1_ARCHITECTURE.md`
 - `CURRENT_BUILD_STATUS.md`
 - `PRICING_SOURCE_OF_TRUTH.md`
@@ -37,9 +47,10 @@ These files reflect the current Veroxa operating truth and override historical/a
 
 ## 2026-06-14 — Live Automation V1 architecture planned
 
-- `LIVE_AUTOMATION_V1_ARCHITECTURE.md` defines the build sequence after the automation-first pivot.
-- It is the detailed PR 99 blueprint for PR 100 through PR 109: real auth, database foundation, media upload/storage, messages, profile corrections, activity log, AI draft preparation, Team Automation Control Center, reports from activity, and the final Momo live pilot readiness gate.
-- This architecture is not live functionality. Migrations, production auth, storage uploads, live messages, live AI, reports from real activity, publishing, integrations, payments, cron jobs, and webhooks remain unbuilt until future approved implementation PRs.
+- `LIVE_AUTOMATION_V1_ARCHITECTURE.md` defines the module build sequence after the automation-first pivot.
+- `LIVE_AUTOMATION_V1_PR_SEQUENCE.md` now corrects the actual GitHub PR numbering after Profile Corrections merged as GitHub PR #103.
+- The detailed architecture still covers the full Live Automation V1 module sequence: real auth, database foundation, media upload/storage, messages, profile corrections, activity log, AI draft preparation, Team Automation Control Center, reports from activity, and the final Momo live pilot readiness gate.
+- This architecture is not live functionality. Production auth, full live messages, live AI, reports from real activity, publishing, integrations, payments, cron jobs, and webhooks remain unbuilt until future approved implementation PRs.
 - Momo owner walkthrough remains blocked until Live Automation V1 is built and approved.
 
 ## 2026-06-14 — Automation-first Momo pivot
@@ -50,7 +61,7 @@ These files reflect the current Veroxa operating truth and override historical/a
 - Automation may prepare and process internal Veroxa work: drafts, classifications, media organization, activity records, report inputs, and Team review items.
 - Public/customer-visible actions still require Veroxa/Faraz approval before anything goes live.
 - Business-truth changes still require client confirmation before approval or execution, including hours, menu, prices, offers, links, sensitive claims, and complaint/reputation-impacting language.
-- Current technical truth remains that `AUTH_MODE` is `placeholder`; live data/auth/storage/messages/media/reports/AI are not connected yet, so Live Automation V1 is a future build sequence, not completed functionality.
+- Current technical truth remains that `AUTH_MODE` is `placeholder`; full live data/auth/messages/reports/AI are not connected yet, so Live Automation V1 is not completed functionality.
 
 ## 2026-06-13 — CP-V1 client portal lock
 
@@ -58,7 +69,7 @@ These files reflect the current Veroxa operating truth and override historical/a
 - Home replaces owner-facing Dashboard language; Messages replaces Requests; Weekly Updates live inside Reports rather than primary navigation.
 - Connections V1 tracks only Meta Business Suite and Google Business Profile status. Website and delivery platforms are outside Connections V1.
 - Profile is the owner-editable business-truth page; owner edits become Pending Veroxa Review and do not publish automatically.
-- Requests and Updates are hidden guarded compatibility aliases only; `/client/onboarding` renders Profile setup review. CP-V1 remains manual-first/pre-live: no production auth, database writes, storage uploads, live integrations, payments, live AI, automated publishing, fake upload success, fake message delivery, or fake metrics.
+- Requests and Updates are hidden guarded compatibility aliases only; `/client/onboarding` renders Profile setup review. CP-V1 remains manual-first/pre-live: no production auth, live integrations, payments, live AI, automated publishing, fake upload success, fake message delivery, or fake metrics.
 
 ## Pricing truth
 
@@ -82,7 +93,7 @@ Production/custom-domain login is now Real Login V1 pilot portal access for Momo
 - Internal operations identity: **Team Faraz**.
 - Locked audit-to-onboarding workflow: public/initial audit → prefilled onboarding profile → owner verification → credential/platform connection → gap completion by owner + Veroxa team → final onboarding approval.
 - Onboarding must show which fields were prefilled by Veroxa, need owner verification, are missing, were corrected by owner, or were completed by Veroxa.
-- Safety remains pre-live/manual only: no production auth, database writes, storage uploads, live AI, connectors, payments, webhooks, cron, or automated customer-visible execution; `AUTH_MODE` remains `placeholder`.
+- Safety remains pre-live/manual only: no production auth, live AI, connectors, payments, webhooks, cron, or automated customer-visible execution; `AUTH_MODE` remains `placeholder`.
 
 ## 2026-06-07 — PR #82 matcher safety and onboarding alignment
 
@@ -115,7 +126,10 @@ Production/custom-domain login is now Real Login V1 pilot portal access for Momo
 - The foundation adds private storage setup, validation, restaurant-scoped paths, gated upload service/UI, and guardrails only.
 - `AUTH_MODE` remains `placeholder`, `/api/pilot-access` remains active, upload is not active in placeholder mode, uploaded media is not published, and Momo owner walkthrough remains blocked.
 
-## PR #104 — Live Automation V1 Profile Corrections
+## 2026-06-16 — GitHub PR #103 Profile Corrections status
 
 - Active reference: `LIVE_AUTOMATION_V1_PROFILE_CORRECTIONS.md`.
-- PR #104 adds Profile Corrections foundation only. AUTH_MODE remains placeholder; profile corrections are not public/platform updates; approved corrections update internal Veroxa profile records only. Momo owner walkthrough remains blocked. Activity Log, AI Drafting, Reports, Team Automation Control Center, integrations, publishing, payments, cron jobs, and webhooks remain future PRs.
+- Profile Corrections foundation merged as GitHub PR #103, even though older planning docs originally labeled it PR #104.
+- Profile Corrections foundation only: `AUTH_MODE` remains placeholder; profile corrections are not public/platform updates; approved corrections update internal Veroxa profile records only.
+- Momo owner walkthrough remains blocked.
+- Real Messages / Portal Threads are still missing and should be the next GitHub PR #104 before Activity Log, AI Drafting, Reports, Team Automation Control Center, integrations, publishing, payments, cron jobs, or webhooks.
