@@ -17,7 +17,12 @@ begin
   end if;
   if not exists (select 1 from pg_constraint where conname = 'ai_drafts_status_safe') then
     alter table public.ai_drafts add constraint ai_drafts_status_safe check (status in (
-      'draft', 'needs_review', 'held', 'rejected', 'approved_internal_only'
+      'drafted'::public.ai_draft_status,
+      'ready_for_faraz_review'::public.ai_draft_status,
+      'approved'::public.ai_draft_status,
+      'rejected'::public.ai_draft_status,
+      'held'::public.ai_draft_status,
+      'needs_owner_input'::public.ai_draft_status
     ));
   end if;
   if not exists (select 1 from pg_constraint where conname = 'ai_drafts_source_entity_type_safe') then
@@ -28,8 +33,9 @@ begin
   if not exists (select 1 from pg_constraint where conname = 'ai_drafts_safety_flags_required') then
     alter table public.ai_drafts add constraint ai_drafts_safety_flags_required check (
       safety_flags is not null
-      and array_length(safety_flags, 1) >= 1
-      and safety_flags <@ array['ready_for_faraz_review', 'needs_owner_input', 'business_truth_confirmation_required', 'low_confidence']::text[]
+      and jsonb_typeof(safety_flags) = 'array'
+      and jsonb_array_length(safety_flags) >= 1
+      and safety_flags <@ '["ready_for_faraz_review", "needs_owner_input", "business_truth_confirmation_required", "low_confidence"]'::jsonb
     );
   end if;
 end $$;
@@ -50,10 +56,11 @@ create policy ai_drafts_active_team_insert on public.ai_drafts
     and exists (select 1 from public.restaurants r where r.id = restaurant_id and r.status = 'active')
     and length(btrim(draft_text)) > 0
     and draft_type in ('media_summary', 'caption_draft', 'google_update_draft', 'social_caption_draft', 'message_reply_draft', 'profile_correction_summary', 'report_draft_placeholder', 'next_step_recommendation')
-    and status in ('draft', 'needs_review', 'held', 'rejected', 'approved_internal_only')
+    and status in ('drafted'::public.ai_draft_status, 'ready_for_faraz_review'::public.ai_draft_status, 'approved'::public.ai_draft_status, 'rejected'::public.ai_draft_status, 'held'::public.ai_draft_status, 'needs_owner_input'::public.ai_draft_status)
     and safety_flags is not null
-    and array_length(safety_flags, 1) >= 1
-    and safety_flags <@ array['ready_for_faraz_review', 'needs_owner_input', 'business_truth_confirmation_required', 'low_confidence']::text[]
+    and jsonb_typeof(safety_flags) = 'array'
+    and jsonb_array_length(safety_flags) >= 1
+    and safety_flags <@ '["ready_for_faraz_review", "needs_owner_input", "business_truth_confirmation_required", "low_confidence"]'::jsonb
   );
 
 create policy ai_drafts_active_team_safe_update on public.ai_drafts
@@ -63,12 +70,13 @@ create policy ai_drafts_active_team_safe_update on public.ai_drafts
     public.current_user_is_active_team()
     and exists (select 1 from public.restaurants r where r.id = restaurant_id and r.status = 'active')
     and length(btrim(draft_text)) > 0
-    and status in ('draft', 'needs_review', 'held', 'rejected', 'approved_internal_only')
+    and status in ('drafted'::public.ai_draft_status, 'ready_for_faraz_review'::public.ai_draft_status, 'approved'::public.ai_draft_status, 'rejected'::public.ai_draft_status, 'held'::public.ai_draft_status, 'needs_owner_input'::public.ai_draft_status)
     and safety_flags is not null
-    and array_length(safety_flags, 1) >= 1
+    and jsonb_typeof(safety_flags) = 'array'
+    and jsonb_array_length(safety_flags) >= 1
   );
 
-comment on table public.ai_drafts is 'Live Automation V1 PR #106 AI Draft Preparation Foundation: internal Team-only draft records. approved_internal_only is not public approval and drafts never publish themselves.';
+comment on table public.ai_drafts is 'Live Automation V1 PR #106 AI Draft Preparation Foundation: internal Team-only draft records. Existing approved status means internal review only and drafts never publish themselves.';
 
 -- Limit authenticated browser updates to review-safe status fields. Draft text and source context
 -- are created as new internal draft records instead of being silently rewritten by status actions.
