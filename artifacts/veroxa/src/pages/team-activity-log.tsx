@@ -40,7 +40,7 @@ export default function TeamActivityLog() {
     if (!client || !auth.session?.userId) return;
     setStatus("Saving…");
     try {
-      const saved = await recordActivityEvent({ client, restaurantId, actorType: "team", actorUserId: auth.session.userId, eventType, title, description, visibility, reportEligible });
+      const saved = await recordActivityEvent({ client, restaurantId, teamUserId: auth.session.userId, eventType, title, description, visibility, reportEligible });
       setItems((prev) => [saved, ...prev]);
       setTitle("");
       setDescription("");
@@ -53,7 +53,7 @@ export default function TeamActivityLog() {
   }
 
   if (!canUse) {
-    return <PortalLayout items={teamPortalNavItems} portalName="Team Portal"><RealPortalReviewNotice /><SafePortalEmptyCard title="Activity Log in review" body="Activity Log requires real auth and VITE_VEROXA_ACTIVITY_LOG_ENABLED. Placeholder mode stays empty and does not show fake activity history, fake completed work, fake metrics, or fake reports." testId="empty-team-activity-log" /><TeamReviewModeRouteSummary title="Activity Log review-mode summary" /></PortalLayout>;
+    return <PortalLayout items={teamPortalNavItems} portalName="Team Portal"><RealPortalReviewNotice /><SafePortalEmptyCard title="Activity Log in review" body="Activity Log requires real auth and the Activity Log feature flag. Placeholder mode stays empty and does not show fake activity history, fake completed work, fake metrics, or fake reports." testId="empty-team-activity-log" /><TeamReviewModeRouteSummary title="Activity Log review-mode summary" /></PortalLayout>;
   }
 
   return (
