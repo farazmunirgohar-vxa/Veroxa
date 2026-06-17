@@ -19,7 +19,7 @@ Status: GitHub PR #106 AI Draft Preparation Foundation only. PR #103 Profile Cor
 - No raw AI output is client-visible.
 - No publishing occurs from a draft.
 - No auto-approval: no draft auto-approves itself.
-- `approved_internal_only` means reviewed for internal use only; it is not public/customer-visible approval.
+- The existing database status `approved` is used only as an internal reviewed status in this PR. It is not public/customer-visible approval and does not publish anything.
 - Safety flags are explicit: `ready_for_faraz_review`, `needs_owner_input`, `business_truth_confirmation_required`, or `low_confidence`.
 - Business-truth changes still require owner/client confirmation.
 - Public/customer-visible work still requires Faraz/Team approval.
