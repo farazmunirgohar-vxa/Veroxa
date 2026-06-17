@@ -46,7 +46,8 @@ create policy activity_log_active_team_insert on public.activity_log
   with check (
     public.current_user_is_active_team()
     and exists (select 1 from public.restaurants r where r.id = restaurant_id and r.status = 'active')
-    and actor_type in ('team', 'client', 'system')
+    and actor_type = 'team'
+    and actor_user_id = auth.uid()
     and event_type in (
       'media_uploaded', 'media_reviewed', 'media_saved_for_later', 'media_better_version_requested', 'media_marked_ready_to_use',
       'client_message_sent', 'team_reply_sent', 'message_resolved',
