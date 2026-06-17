@@ -374,3 +374,11 @@ PR #70 built the 90% pre-paid/manual OS foundations for client readiness, weekly
 - Placeholder mode remains honest and does not fake sent messages, delivered state, replies, or persistence.
 - Portal messages are not SMS, email automation, DMs, comments, customer-service inbox handling, external chat, Activity Log runtime, AI runtime, integrations, publishing, payments, webhooks, cron jobs, or background jobs.
 - Activity Log remains PR #105, AI Drafting remains PR #106, and Momo owner walkthrough remains blocked.
+
+## 2026-06-16 — GitHub PR #105 Activity Log Foundation
+
+- PR #105 adds Activity Log Foundation only, after PR #103 Profile Corrections and PR #104 Real Messages / Portal Threads.
+- `AUTH_MODE` remains `placeholder` and `/api/pilot-access` remains active.
+- Activity Log is gated behind real auth plus `VITE_VEROXA_ACTIVITY_LOG_ENABLED=true`.
+- Activity Log is restaurant-scoped event memory, not reports; client-visible activity and `report_eligible` are explicit.
+- AI Drafting remains PR #106, Reports From Activity remain PR #108, and Momo owner walkthrough remains blocked.

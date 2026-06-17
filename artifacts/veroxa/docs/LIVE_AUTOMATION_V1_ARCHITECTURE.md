@@ -648,3 +648,7 @@ PR #104 adds the Profile Corrections foundation only: client correction request,
 ## 2026-06-16 — Actual PR #104 Real Messages correction
 
 Profile Corrections already merged as GitHub PR #103. GitHub PR #104 is Real Messages / Portal Threads Foundation. This module is portal-only, gated by `AUTH_MODE === "real"` plus `VITE_VEROXA_MESSAGES_ENABLED=true`, and does not activate SMS, email, DMs, comments, customer-service inbox handling, Activity Log runtime, AI runtime, integrations, publishing, payments, webhooks, cron jobs, or background jobs. Activity Log remains PR #105, AI Drafting remains PR #106, and Momo owner walkthrough remains blocked.
+
+## PR #105 Activity Log Foundation status
+
+GitHub PR #105 adds Activity Log Foundation only after PR #103 Profile Corrections and PR #104 Real Messages / Portal Threads. Activity Log is a restaurant-scoped event memory layer, not reports. `AUTH_MODE` remains `placeholder`; access requires real auth and `VITE_VEROXA_ACTIVITY_LOG_ENABLED=true`. Client-visible activity is explicit only, `report_eligible` does not mean published report, AI Drafting remains PR #106, Reports From Activity remain PR #108, and Momo owner walkthrough remains blocked.

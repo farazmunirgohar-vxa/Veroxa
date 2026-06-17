@@ -141,3 +141,11 @@ Production/custom-domain login is now Real Login V1 pilot portal access for Momo
 - `AUTH_MODE` remains `placeholder`; `/api/pilot-access` remains active; messages require real auth plus `VITE_VEROXA_MESSAGES_ENABLED=true`.
 - Messages are portal-only, not SMS/email/DM/comment/customer-service inbox handling, and placeholder mode does not fake message sending.
 - Activity Log remains PR #105, AI Drafting remains PR #106, and Momo owner walkthrough remains blocked.
+
+## 2026-06-16 — GitHub PR #105 Activity Log status
+
+- Active reference: `LIVE_AUTOMATION_V1_ACTIVITY_LOG.md`.
+- GitHub PR #105 adds Activity Log Foundation only; PR #103 Profile Corrections and PR #104 Real Messages / Portal Threads are already merged.
+- `AUTH_MODE` remains `placeholder`; Activity Log requires real auth plus `VITE_VEROXA_ACTIVITY_LOG_ENABLED=true`.
+- Activity Log is event memory, not reports; client-visible activity and `report_eligible` are explicit.
+- AI Drafting remains PR #106, Reports From Activity remain PR #108, and Momo owner walkthrough remains blocked.
