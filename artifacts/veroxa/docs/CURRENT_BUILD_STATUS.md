@@ -1,3 +1,9 @@
+## 2026-06-17 — PR #106 AI Draft Preparation Foundation
+
+- PR #106 adds the AI Draft Preparation Foundation only: Team-only internal draft records, a guarded `/team/ai-drafts` route, safe draft service helpers, RLS hardening, and guardrails.
+- AI drafts are internal only; no raw AI output is client-visible, no publishing happens, no auto-approval is added, and `approved_internal_only` is not public approval.
+- `AUTH_MODE` remains `placeholder`, `/api/pilot-access` remains active, Reports From Activity remain PR #108, Team Automation Control Center remains PR #107, and Momo owner walkthrough remains blocked.
+
 # Veroxa Launch Simplification Source of Truth
 
 

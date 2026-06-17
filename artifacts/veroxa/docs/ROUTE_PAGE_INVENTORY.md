@@ -90,3 +90,8 @@ Retired demo/preview files remain quarantined unless the owner explicitly approv
 
 - `/team/activity-log` — guarded Team Portal route for Activity Log Foundation. It requires Team auth route protection and the Activity Log runtime gate; placeholder mode shows an honest empty review state, not fake activity.
 - `/client/dashboard` includes a small “Recent Veroxa Activity” card that only reads explicit `client_visible` activity when real auth and `VITE_VEROXA_ACTIVITY_LOG_ENABLED=true` are active.
+
+
+## PR #106 route addition
+
+- `/team/ai-drafts` — guarded Team-only AI Draft Queue for internal draft review. Requires real auth plus `VITE_VEROXA_AI_DRAFTS_ENABLED=true`; placeholder mode is empty/review-only. No client AI draft route, no publishing, no report generation.

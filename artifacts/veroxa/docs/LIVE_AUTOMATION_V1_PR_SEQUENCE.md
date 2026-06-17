@@ -22,7 +22,7 @@ If this file conflicts with older PR-number wording in `LIVE_AUTOMATION_V1_ARCHI
 
 ## Next GitHub PR
 
-- PR #106 — AI Draft Preparation Foundation.
+- PR #106 — AI Draft Preparation Foundation (current PR: internal Team-only AI drafts; no publishing, no reports, no client-visible raw AI output).
 
 ## Remaining planned GitHub sequence
 
