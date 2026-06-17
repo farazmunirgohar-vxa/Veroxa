@@ -12,7 +12,7 @@ export const AI_DRAFT_TYPES = [
   "next_step_recommendation",
 ] as const;
 
-export const AI_DRAFT_STATUSES = ["draft", "needs_review", "held", "rejected", "approved_internal_only"] as const;
+export const AI_DRAFT_STATUSES = ["drafted", "ready_for_faraz_review", "held", "rejected", "approved", "needs_owner_input"] as const;
 export const AI_DRAFT_SOURCE_ENTITY_TYPES = ["media_asset", "message", "profile_correction", "activity_log", "restaurant_profile_field"] as const;
 export const AI_DRAFT_SAFETY_FLAGS = ["ready_for_faraz_review", "needs_owner_input", "business_truth_confirmation_required", "low_confidence"] as const;
 
@@ -83,7 +83,7 @@ export async function createAiDraftRecord(input: {
 
   const { data, error } = await input.client
     .from("ai_drafts")
-    .insert({ restaurant_id, draft_type, source_entity_type, source_entity_id: input.sourceEntityId ?? null, draft_text, safety_flags, status: "needs_review" })
+    .insert({ restaurant_id, draft_type, source_entity_type, source_entity_id: input.sourceEntityId ?? null, draft_text, safety_flags, status: "ready_for_faraz_review" })
     .select("*")
     .single();
 
@@ -107,4 +107,8 @@ export function holdAiDraft(client: SupabaseClient, draftId: Uuid, restaurantId:
 
 export function rejectAiDraft(client: SupabaseClient, draftId: Uuid, restaurantId: Uuid): Promise<AiDraftRecord> {
   return updateAiDraftStatus({ client, draftId, restaurantId, status: "rejected" });
+}
+
+export function markAiDraftReviewedInternally(client: SupabaseClient, draftId: Uuid, restaurantId: Uuid): Promise<AiDraftRecord> {
+  return updateAiDraftStatus({ client, draftId, restaurantId, status: "approved" });
 }
