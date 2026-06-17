@@ -21,7 +21,6 @@ export const ACTIVITY_LOG_EVENT_TYPES = [
 ] as const;
 
 export type ActivityLogEventType = (typeof ACTIVITY_LOG_EVENT_TYPES)[number];
-export type ActivityLogActorType = "team" | "client" | "system";
 
 const allowedEventTypes = new Set<string>(ACTIVITY_LOG_EVENT_TYPES);
 const allowedVisibility = new Set<ActivityVisibility>(["internal_only", "client_visible"]);
@@ -69,8 +68,7 @@ export async function listTeamActivity(client: SupabaseClient, restaurantId?: Uu
 export async function recordActivityEvent(input: {
   client: SupabaseClient;
   restaurantId: Uuid;
-  actorType: ActivityLogActorType;
-  actorUserId?: Uuid | null;
+  teamUserId: Uuid;
   eventType: ActivityLogEventType | string;
   title: string;
   description?: string | null;
@@ -81,6 +79,7 @@ export async function recordActivityEvent(input: {
 }): Promise<ActivityLogRecord> {
   const restaurant_id = cleanRequired(input.restaurantId, "restaurant_id");
   const title = cleanRequired(input.title, "title");
+  const actor_user_id = cleanRequired(input.teamUserId, "teamUserId");
   const event_type = assertActivityLogEventType(cleanRequired(input.eventType, "event_type"));
   if (!allowedVisibility.has(input.visibility)) throw new Error("Activity visibility is not supported.");
   if (typeof input.reportEligible !== "boolean") throw new Error("report_eligible must be explicit.");
@@ -89,8 +88,8 @@ export async function recordActivityEvent(input: {
     .from("activity_log")
     .insert({
       restaurant_id,
-      actor_type: input.actorType,
-      actor_user_id: input.actorUserId ?? null,
+      actor_type: "team",
+      actor_user_id,
       event_type,
       title,
       description: cleanOptional(input.description),
