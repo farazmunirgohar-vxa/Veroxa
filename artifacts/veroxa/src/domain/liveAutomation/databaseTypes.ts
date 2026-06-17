@@ -9,7 +9,7 @@ export type MediaAssetStatus = "uploaded" | "under_veroxa_review" | "ready_to_us
 export type MessageStatus = "unread" | "read" | "resolved";
 export type ProfileCorrectionStatus = "requested" | "under_veroxa_review" | "approved" | "rejected" | "needs_owner_input";
 export type ActivityVisibility = "internal_only" | "client_visible";
-export type AiDraftStatus = "draft" | "needs_review" | "held" | "rejected" | "approved_internal_only" | "drafted" | "ready_for_faraz_review" | "approved" | "needs_owner_input";
+export type AiDraftStatus = "drafted" | "ready_for_faraz_review" | "approved" | "rejected" | "held" | "needs_owner_input";
 export type ApprovalStatus = "pending" | "approved" | "rejected" | "held" | "needs_owner_confirmation";
 export type ReportStatus = "draft" | "ready_for_faraz_review" | "approved" | "published_to_client";
 
