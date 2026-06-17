@@ -142,6 +142,15 @@ Production/custom-domain login is now Real Login V1 pilot portal access for Momo
 - Messages are portal-only, not SMS/email/DM/comment/customer-service inbox handling, and placeholder mode does not fake message sending.
 - Activity Log remains PR #105, AI Drafting remains PR #106, and Momo owner walkthrough remains blocked.
 
+
+## 2026-06-17 — GitHub PR #106 AI Draft Preparation status
+
+- Active reference: `LIVE_AUTOMATION_V1_AI_DRAFT_PREPARATION.md`.
+- GitHub PR #106 adds AI Draft Preparation Foundation only after PR #105 Activity Log.
+- `AUTH_MODE` remains `placeholder`; AI drafts require real auth plus `VITE_VEROXA_AI_DRAFTS_ENABLED=true` and authenticated Team role.
+- AI drafts are internal only: no raw AI output is client-visible, no publishing, and no auto-approval.
+- Team Automation Control Center remains PR #107, Reports From Activity remain PR #108, and Momo owner walkthrough remains blocked.
+
 ## 2026-06-16 — GitHub PR #105 Activity Log status
 
 - Active reference: `LIVE_AUTOMATION_V1_ACTIVITY_LOG.md`.

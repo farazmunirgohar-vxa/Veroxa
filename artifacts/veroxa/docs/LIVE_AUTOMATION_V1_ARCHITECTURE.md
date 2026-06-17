@@ -1,3 +1,7 @@
+## 2026-06-17 — PR #106 AI Draft Preparation Foundation implementation status
+
+PR #106 adds an internal AI Draft Preparation Foundation: Team-only gated draft records, `/team/ai-drafts`, safe status controls, explicit safety flags, and `ai_drafts` RLS hardening. This does not activate live AI model calls, client-visible raw AI output, publishing, report generation, integrations, payments, cron jobs, webhooks, or background jobs. `AUTH_MODE` remains `placeholder`; Team Automation Control Center remains PR #107; Reports From Activity remain PR #108; Momo owner walkthrough remains blocked.
+
 # Live Automation V1 Architecture + Schema Design
 
 Status: source-of-truth architecture plan for PR 99. This document is design only and does not mark live auth, database writes, storage uploads, live messages, AI runtime calls, platform publishing, payments, cron jobs, webhooks, or customer-visible automation as built.

@@ -1,3 +1,7 @@
+## 2026-06-17 — PR #106 AI Draft Preparation Foundation status
+
+GitHub PR #106 adds AI Draft Preparation Foundation only. AI drafts are Team-only internal draft records behind real auth and `VITE_VEROXA_AI_DRAFTS_ENABLED=true`; placeholder mode stays empty. No raw AI output is client-visible, no draft publishes, no draft auto-approves, no reports are generated, Team Automation Control Center remains PR #107, Reports From Activity remain PR #108, and Momo owner walkthrough remains blocked.
+
 # Veroxa Locked Operating Memory
 
 ## 2026-06-16 — Actual GitHub PR sequence lock

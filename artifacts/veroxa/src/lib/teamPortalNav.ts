@@ -20,6 +20,7 @@ import {
   CheckSquare,
   ClipboardEdit,
   Activity,
+  Bot,
 } from "lucide-react";
 import type { SidebarItem } from "@/components/PortalLayout";
 
@@ -30,6 +31,7 @@ export const teamPortalNavItems: SidebarItem[] = [
   { label: "Profile Corrections", icon: ClipboardEdit, href: "/team/profile-corrections" },
   { label: "Messages", icon: MessagesSquare, href: "/team/messages" },
   { label: "Activity Log", icon: Activity, href: "/team/activity-log" },
+  { label: "AI Drafts", icon: Bot, href: "/team/ai-drafts" },
   { label: "Visibility Audit", icon: ScanSearch, href: "/team/visibility-audit" },
   { label: "First-Client Readiness", icon: ShieldCheck, href: "/team/first-client-readiness" },
   { label: "First-Client Ops", icon: BriefcaseBusiness, href: "/team/first-client-ops" },

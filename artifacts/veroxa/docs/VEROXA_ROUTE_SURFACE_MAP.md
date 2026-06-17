@@ -89,3 +89,8 @@ Onboarding must show field status for: `prefilled_by_veroxa`, `needs_owner_verif
 - Team route: `/team/activity-log` for restaurant-scoped internal Activity Log review and Team-only manual activity notes.
 - Client surface: `/client/dashboard` can show “Recent Veroxa Activity” only for explicit client-visible events when real auth and the Activity Log feature flag are active.
 - No report generation, AI runtime, publishing, integrations, payments, webhooks, cron jobs, or background jobs are added.
+
+
+## PR #106 route addition
+
+- `/team/ai-drafts` — guarded Team-only AI Draft Queue for internal draft review. Requires real auth plus `VITE_VEROXA_AI_DRAFTS_ENABLED=true`; placeholder mode is empty/review-only. No client AI draft route, no publishing, no report generation.

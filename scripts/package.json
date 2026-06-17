@@ -54,7 +54,8 @@
     "check-live-automation-media-upload-storage": "tsx ./src/check-live-automation-media-upload-storage.ts",
     "check-live-automation-profile-corrections": "tsx ./src/check-live-automation-profile-corrections.ts",
     "check-live-automation-real-messages": "tsx ./src/check-live-automation-real-messages.ts",
-    "check-live-automation-activity-log": "tsx ./src/check-live-automation-activity-log.ts"
+    "check-live-automation-activity-log": "tsx ./src/check-live-automation-activity-log.ts",
+    "check-live-automation-ai-drafts": "tsx ./src/check-live-automation-ai-drafts.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",
