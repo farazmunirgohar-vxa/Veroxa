@@ -83,3 +83,9 @@ Onboarding must show field status for: `prefilled_by_veroxa`, `needs_owner_verif
 - Manual/pre-live boundaries remain locked: no production auth, database writes, storage uploads, live integrations, OAuth, live AI, payments, publishing, cron jobs, fake metrics, fake upload success, or fake message delivery.
 
 - `/team/messages` — Team Portal guarded route for PR #104 Real Messages / Portal Threads. Portal-only messages; not SMS/email/DM/comment/customer-service inbox handling.
+
+## PR #105 Activity Log route surface
+
+- Team route: `/team/activity-log` for restaurant-scoped internal Activity Log review and Team-only manual activity notes.
+- Client surface: `/client/dashboard` can show “Recent Veroxa Activity” only for explicit client-visible events when real auth and the Activity Log feature flag are active.
+- No report generation, AI runtime, publishing, integrations, payments, webhooks, cron jobs, or background jobs are added.

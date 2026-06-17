@@ -19,6 +19,7 @@ import {
   BriefcaseBusiness,
   CheckSquare,
   ClipboardEdit,
+  Activity,
 } from "lucide-react";
 import type { SidebarItem } from "@/components/PortalLayout";
 
@@ -28,6 +29,7 @@ export const teamPortalNavItems: SidebarItem[] = [
   { label: "Approvals", icon: ClipboardCheck, href: "/team/approval-queue" },
   { label: "Profile Corrections", icon: ClipboardEdit, href: "/team/profile-corrections" },
   { label: "Messages", icon: MessagesSquare, href: "/team/messages" },
+  { label: "Activity Log", icon: Activity, href: "/team/activity-log" },
   { label: "Visibility Audit", icon: ScanSearch, href: "/team/visibility-audit" },
   { label: "First-Client Readiness", icon: ShieldCheck, href: "/team/first-client-readiness" },
   { label: "First-Client Ops", icon: BriefcaseBusiness, href: "/team/first-client-ops" },

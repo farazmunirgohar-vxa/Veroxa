@@ -51,3 +51,10 @@ For future ChatGPT/Codex planning in this project:
 ## PR #104 implementation note
 
 GitHub PR #104 is Real Messages / Portal Threads Foundation. It follows Profile Corrections PR #103, keeps `AUTH_MODE` as `placeholder`, keeps `/api/pilot-access` active, adds only gated portal messages, and leaves Activity Log as PR #105 and AI Drafting as PR #106.
+
+## 2026-06-16 — PR #105 Activity Log Foundation
+
+- PR #103 Profile Corrections and PR #104 Real Messages / Portal Threads are already merged.
+- GitHub PR #105 adds Activity Log Foundation only.
+- Next is PR #106 AI Draft Preparation Foundation, then PR #107 Team Automation Control Center, PR #108 Reports From Activity, and PR #109 Momo Live Pilot Readiness Gate.
+- Activity Log is event memory, not reports; `AUTH_MODE` remains `placeholder`; Momo owner walkthrough remains blocked.

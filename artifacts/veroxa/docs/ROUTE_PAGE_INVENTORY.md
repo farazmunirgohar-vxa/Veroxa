@@ -85,3 +85,8 @@ Retired demo/preview files remain quarantined unless the owner explicitly approv
 - Manual/pre-live boundaries remain locked: no production auth, database writes, storage uploads, live integrations, OAuth, live AI, payments, publishing, cron jobs, fake metrics, fake upload success, or fake message delivery.
 
 - `/team/messages` — guarded Team Portal Message Inbox for PR #104 portal-only real messages; requires Team login and remains empty in placeholder mode without fake messages.
+
+## PR #105 route addition
+
+- `/team/activity-log` — guarded Team Portal route for Activity Log Foundation. It requires Team auth route protection and the Activity Log runtime gate; placeholder mode shows an honest empty review state, not fake activity.
+- `/client/dashboard` includes a small “Recent Veroxa Activity” card that only reads explicit `client_visible` activity when real auth and `VITE_VEROXA_ACTIVITY_LOG_ENABLED=true` are active.
