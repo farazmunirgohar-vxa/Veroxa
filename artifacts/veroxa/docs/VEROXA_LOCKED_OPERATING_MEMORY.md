@@ -148,3 +148,15 @@ GitHub PR #104 adds the Real Messages / Portal Threads foundation after Profile 
 ## 2026-06-16 — PR #105 Activity Log Foundation status
 
 GitHub PR #105 adds the Activity Log Foundation after PR #103 Profile Corrections and PR #104 Real Messages / Portal Threads. `AUTH_MODE` remains `placeholder`; Activity Log is gated by real auth, authenticated role context, active restaurant/client context where required, and `VITE_VEROXA_ACTIVITY_LOG_ENABLED=true`. It is restaurant-scoped event memory only, not report generation. Client-visible activity is explicit, `report_eligible` is explicit and does not publish anything, AI Drafting remains PR #106, Reports From Activity remain PR #108, and Momo owner walkthrough remains blocked.
+
+## 2026-06-18 — GitHub PR #107 Team Automation Control Center Foundation
+
+- GitHub PR #107 adds Team Automation Control Center Foundation only.
+- PR #106 AI Draft Preparation is already merged.
+- `/team/control-center` is Team-only/internal-only and summarizes existing queues from media, messages, profile corrections, activity log, AI drafts, and safe approvals when present.
+- Control Center does not publish, does not generate reports, does not activate integrations, and does not contact clients.
+- Reports From Activity remain PR #108.
+- Momo Live Pilot Readiness Gate remains PR #109.
+- Controlled Momo Pilot Activation Gate remains PR #110.
+- `AUTH_MODE` remains `placeholder`.
+- Momo owner walkthrough remains blocked.

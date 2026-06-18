@@ -62,3 +62,15 @@ For future ChatGPT/Codex planning in this project:
 - Then continue with Momo Live Pilot Readiness Gate as PR #109.
 - Treat PR #110 as the controlled activation gate only after PR #109 readiness passes and Faraz explicitly approves moving toward activation.
 - Do not skip to real-auth activation, integrations, publishing, payments, or Momo walkthrough before PR #109 readiness and PR #110 activation gates are handled safely.
+
+## 2026-06-18 — GitHub PR #107 Team Automation Control Center Foundation
+
+- GitHub PR #107 adds Team Automation Control Center Foundation only.
+- PR #106 AI Draft Preparation is already merged.
+- `/team/control-center` is Team-only/internal-only and summarizes existing queues from media, messages, profile corrections, activity log, AI drafts, and safe approvals when present.
+- Control Center does not publish, does not generate reports, does not activate integrations, and does not contact clients.
+- Reports From Activity remain PR #108.
+- Momo Live Pilot Readiness Gate remains PR #109.
+- Controlled Momo Pilot Activation Gate remains PR #110.
+- `AUTH_MODE` remains `placeholder`.
+- Momo owner walkthrough remains blocked.
