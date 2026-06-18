@@ -160,3 +160,12 @@ GitHub PR #105 adds the Activity Log Foundation after PR #103 Profile Correction
 - Controlled Momo Pilot Activation Gate remains PR #110.
 - `AUTH_MODE` remains `placeholder`.
 - Momo owner walkthrough remains blocked.
+
+## 2026-06-18 — PR #108 Reports From Activity Foundation
+
+- GitHub PR #108 adds Reports From Activity Foundation only, after PR #107 Team Automation Control Center.
+- Reports are prepared from real Veroxa activity/work history only.
+- No fake metrics, external analytics, revenue/order/ranking/ROI/customer/walk-in claims, or external publishing are included.
+- Client-visible reports require Team review and appear inside the client portal only.
+- `AUTH_MODE` remains `placeholder`; Momo owner walkthrough remains blocked.
+- PR #109 remains Momo Live Pilot Readiness Gate; PR #110 remains Controlled Momo Pilot Activation Gate.

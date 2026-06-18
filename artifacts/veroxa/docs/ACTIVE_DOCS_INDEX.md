@@ -170,3 +170,12 @@ Production/custom-domain login is now Real Login V1 pilot portal access for Momo
 - Controlled Momo Pilot Activation Gate remains PR #110.
 - `AUTH_MODE` remains `placeholder`.
 - Momo owner walkthrough remains blocked.
+
+## 2026-06-18 — PR #108 Reports From Activity Foundation
+
+- GitHub PR #108 adds Reports From Activity Foundation only.
+- PR #107 Team Automation Control Center is already merged.
+- Reports are based on real Veroxa activity/work history only, with no fake metrics, no external analytics, and no revenue/orders/rankings/ROI/customers/walk-ins claims.
+- Client-visible reports require Team review and are visible inside the client portal only; reports do not publish externally.
+- `AUTH_MODE` remains `placeholder`; Momo owner walkthrough remains blocked.
+- Momo Live Pilot Readiness Gate remains PR #109 and Controlled Momo Pilot Activation Gate remains PR #110.

@@ -22,6 +22,7 @@ import {
   Activity,
   Bot,
   SlidersHorizontal,
+  ClipboardList,
 } from "lucide-react";
 import type { SidebarItem } from "@/components/PortalLayout";
 
@@ -30,6 +31,7 @@ export const teamPortalNavItems: SidebarItem[] = [
   { label: "Onboarding", icon: CheckSquare, href: "/team/onboarding" },
   { label: "Approvals", icon: ClipboardCheck, href: "/team/approval-queue" },
   { label: "Control Center", icon: SlidersHorizontal, href: "/team/control-center" },
+  { label: "Reports From Activity", icon: ClipboardList, href: "/team/reports-from-activity" },
   { label: "Profile Corrections", icon: ClipboardEdit, href: "/team/profile-corrections" },
   { label: "Messages", icon: MessagesSquare, href: "/team/messages" },
   { label: "Activity Log", icon: Activity, href: "/team/activity-log" },

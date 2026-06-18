@@ -30,7 +30,7 @@ export interface TeamControlCenterSummary {
   profile_corrections_pending: number;
   media_needing_review: number;
   recent_activity: number;
-  reports_future_state: "Reports are built in PR #108.";
+  reports_future_state: "Reports From Activity is active as PR #108 foundation.";
 }
 
 type Row = Record<string, any>;
@@ -74,7 +74,7 @@ export async function getRestaurantScopedControlCenterSummary(client: SupabaseCl
     profile_corrections_pending: corrections,
     media_needing_review: media,
     recent_activity: activity,
-    reports_future_state: "Reports are built in PR #108.",
+    reports_future_state: "Reports From Activity is active as PR #108 foundation.",
   };
 }
 

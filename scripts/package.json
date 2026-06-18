@@ -56,7 +56,8 @@
     "check-live-automation-real-messages": "tsx ./src/check-live-automation-real-messages.ts",
     "check-live-automation-activity-log": "tsx ./src/check-live-automation-activity-log.ts",
     "check-live-automation-ai-drafts": "tsx ./src/check-live-automation-ai-drafts.ts",
-    "check-live-automation-team-control-center": "tsx ./src/check-live-automation-team-control-center.ts"
+    "check-live-automation-team-control-center": "tsx ./src/check-live-automation-team-control-center.ts",
+    "check-live-automation-reports-from-activity": "tsx ./src/check-live-automation-reports-from-activity.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",
