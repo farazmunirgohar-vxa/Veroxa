@@ -388,3 +388,15 @@ PR #70 built the 90% pre-paid/manual OS foundations for client readiness, weekly
 - Activity Log is gated behind real auth plus `VITE_VEROXA_ACTIVITY_LOG_ENABLED=true`.
 - Activity Log is restaurant-scoped event memory, not reports; client-visible activity and `report_eligible` are explicit.
 - AI Drafting remains PR #106, Reports From Activity remain PR #108, and Momo owner walkthrough remains blocked.
+
+## 2026-06-18 — GitHub PR #107 Team Automation Control Center Foundation
+
+- GitHub PR #107 adds Team Automation Control Center Foundation only.
+- PR #106 AI Draft Preparation is already merged.
+- `/team/control-center` is Team-only/internal-only and summarizes existing queues from media, messages, profile corrections, activity log, AI drafts, and safe approvals when present.
+- Control Center does not publish, does not generate reports, does not activate integrations, and does not contact clients.
+- Reports From Activity remain PR #108.
+- Momo Live Pilot Readiness Gate remains PR #109.
+- Controlled Momo Pilot Activation Gate remains PR #110.
+- `AUTH_MODE` remains `placeholder`.
+- Momo owner walkthrough remains blocked.

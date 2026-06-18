@@ -95,3 +95,15 @@ Retired demo/preview files remain quarantined unless the owner explicitly approv
 ## PR #106 route addition
 
 - `/team/ai-drafts` — guarded Team-only AI Draft Queue for internal draft review. Requires real auth plus `VITE_VEROXA_AI_DRAFTS_ENABLED=true`; placeholder mode is empty/review-only. No client AI draft route, no publishing, no report generation.
+
+## 2026-06-18 — GitHub PR #107 Team Automation Control Center Foundation
+
+- GitHub PR #107 adds Team Automation Control Center Foundation only.
+- PR #106 AI Draft Preparation is already merged.
+- `/team/control-center` is Team-only/internal-only and summarizes existing queues from media, messages, profile corrections, activity log, AI drafts, and safe approvals when present.
+- Control Center does not publish, does not generate reports, does not activate integrations, and does not contact clients.
+- Reports From Activity remain PR #108.
+- Momo Live Pilot Readiness Gate remains PR #109.
+- Controlled Momo Pilot Activation Gate remains PR #110.
+- `AUTH_MODE` remains `placeholder`.
+- Momo owner walkthrough remains blocked.
