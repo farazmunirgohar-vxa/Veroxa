@@ -107,3 +107,7 @@ Retired demo/preview files remain quarantined unless the owner explicitly approv
 - Controlled Momo Pilot Activation Gate remains PR #110.
 - `AUTH_MODE` remains `placeholder`.
 - Momo owner walkthrough remains blocked.
+
+## PR #108 route addition
+
+- `/team/reports-from-activity` — Team-only Reports From Activity Foundation for report drafts from real Veroxa activity/work history. Guarded by `InternalDemoGuard role="team"` and `RealPortalDataBoundary portal="team"`. It does not create fake metrics, does not use external analytics, does not claim revenue/orders/rankings/ROI/customers/walk-ins, and does not publish externally. Client-visible reports require Team review and are visible inside the client portal only. `AUTH_MODE` remains `placeholder`; Momo owner walkthrough remains blocked; PR #109 remains Momo Live Pilot Readiness Gate and PR #110 remains Controlled Momo Pilot Activation Gate.

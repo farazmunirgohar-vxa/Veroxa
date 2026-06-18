@@ -1,0 +1,37 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+const cwd = process.cwd();
+const root = cwd.endsWith("/scripts") ? join(cwd, "..") : cwd;
+const read = (p: string) => readFileSync(join(root, p), "utf8");
+const failures: string[] = [];
+const must = (ok: boolean, msg: string) => { if (!ok) failures.push(msg); };
+const authMode = read("artifacts/veroxa/src/lib/auth/authMode.ts");
+const config = read("artifacts/veroxa/src/lib/reportsFromActivity/reportsConfig.ts");
+const service = read("artifacts/veroxa/src/lib/reportsFromActivity/reportsService.ts");
+const app = read("artifacts/veroxa/src/App.tsx");
+const nav = read("artifacts/veroxa/src/lib/teamPortalNav.ts");
+const teamPage = read("artifacts/veroxa/src/pages/team-reports-from-activity.tsx");
+const clientReports = read("artifacts/veroxa/src/pages/client-reports.tsx");
+const migration = read("supabase/migrations/20260616010800_reports_from_activity_foundation.sql");
+const docs = ["artifacts/veroxa/docs/LIVE_AUTOMATION_V1_REPORTS_FROM_ACTIVITY.md","artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md","artifacts/veroxa/docs/LIVE_AUTOMATION_V1_PR_SEQUENCE.md","artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md","artifacts/veroxa/docs/CURRENT_BUILD_STATUS.md","artifacts/veroxa/docs/LIVE_AUTOMATION_V1_ARCHITECTURE.md"].map(read).join("\n");
+
+must(authMode.includes('"placeholder"') && authMode.includes("AUTH_MODE"), "AUTH_MODE remains placeholder.");
+must(config.includes('AUTH_MODE === "real"') && config.includes("VITE_VEROXA_REPORTS_FROM_ACTIVITY_ENABLED"), "Reports feature gate requires real auth and flag.");
+must(config.includes('auth.session?.role === "team"'), "Team gate requires authenticated Team role.");
+must(config.includes('auth.session?.role === "client"') && config.includes("Boolean(auth.session.clientId)"), "Client read gate requires authenticated Client role and active context.");
+must(app.includes('path="/team/reports-from-activity"'), "/team/reports-from-activity route exists.");
+const block = app.slice(app.indexOf('path="/team/reports-from-activity"'), app.indexOf('path="/team/approval-queue"'));
+must(block.includes('<InternalDemoGuard role="team">'), "Team Reports route must be guarded by InternalDemoGuard role=team.");
+must(block.includes('<RealPortalDataBoundary portal="team">'), "Team Reports route must be wrapped in RealPortalDataBoundary portal=team.");
+must(nav.includes("Reports From Activity") && nav.includes("/team/reports-from-activity"), "Team nav includes Reports From Activity.");
+must(service.includes('.eq("report_eligible", true)') && service.includes('.from("activity_log")'), "Reports service reads report-eligible activity_log records.");
+must(service.includes('.eq("status", "published_to_client")'), "Client visible report helper reads only published_to_client reports.");
+must(!/\.insert\(/.test(clientReports) && !/\.update\(/.test(clientReports), "Client reports page does not insert or update reports.");
+must(clientReports.includes("loadClientPortalReports") && clientReports.includes("published_to_client") === false, "Client reports page uses client-visible helper without direct status widening.");
+must(migration.includes("reports_active_client_published_select") && migration.includes("reports_active_team_insert") && migration.includes("reports_active_team_update_safe_fields"), "No client insert/update policies for reports.");
+const combined = [config, service, teamPage, clientReports, migration].join("\n");
+must(!/fake performance|fake growth|auto-publish|auto publish|external analytics api|google business profile api|meta api|yelp api|tiktok api|stripe|checkout|webhook|cron|background job|service_role|sms|email automation|push notification|\bdm\b/i.test(combined), "No forbidden fake/live integration/payment/delivery language.");
+must(!/guaranteed growth|guaranteed revenue|guaranteed roi|guaranteed ranking|guaranteed customer|guaranteed walk-in/i.test(combined), "No guarantee language.");
+for (const marker of ["GitHub PR #108", "Reports From Activity", "PR #107 Team Automation Control Center", "PR #109", "AUTH_MODE", "placeholder", "Momo owner walkthrough remains blocked", "real Veroxa activity/work history", "do not include fake metrics", "do not include external analytics", "do not publish externally"]) must(docs.includes(marker), `Docs missing ${marker}.`);
+if (failures.length) { console.error(failures.map((f) => `- ${f}`).join("\n")); process.exit(1); }
+console.log("Live Automation V1 Reports From Activity guardrail passed.");
