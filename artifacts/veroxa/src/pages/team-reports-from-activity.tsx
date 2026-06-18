@@ -39,17 +39,20 @@ export default function TeamReportsFromActivity() {
     void listTeamReports(client).then(setReports).catch(() => setReports([]));
   }, [canUse]);
 
+  const clientVisibleActivity = useMemo(() => activity.filter((item) => item.visibility === "client_visible"), [activity]);
+  const ownerConfirmationActivity = useMemo(() => clientVisibleActivity.filter((item) => /confirm|owner|truth|correction/i.test(`${item.title} ${item.description ?? ""}`)), [clientVisibleActivity]);
+
   const bodyJson = useMemo(() => ({
     period: { start: periodStart, end: periodEnd },
     sections: [
-      { title: "Work completed", items: activity.filter((item) => item.visibility === "client_visible").map((item) => item.title) },
-      { title: "Items reviewed", items: activity.map((item) => item.event_type) },
-      { title: "Needs owner confirmation", items: activity.filter((item) => /confirm|owner|truth|correction/i.test(`${item.title} ${item.description ?? ""}`)).map((item) => item.title) },
+      { title: "Work completed", items: clientVisibleActivity.map((item) => item.title) },
+      { title: "Items reviewed", items: clientVisibleActivity.map((item) => item.title) },
+      { title: "Needs owner confirmation", items: ownerConfirmationActivity.map((item) => item.title) },
       { title: "Next steps", items: [] },
     ],
-    source_activity_count: activity.length,
+    source_activity_count: clientVisibleActivity.length,
     limitations: ["This report is based on Veroxa activity records only.", "No external analytics or revenue/order metrics are included."],
-  }), [activity, periodEnd, periodStart]);
+  }), [clientVisibleActivity, ownerConfirmationActivity, periodEnd, periodStart]);
 
   async function loadActivity() {
     const client = getSupabaseClient();
