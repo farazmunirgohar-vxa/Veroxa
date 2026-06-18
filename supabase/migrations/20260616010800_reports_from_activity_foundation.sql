@@ -1,6 +1,26 @@
 -- Live Automation V1 PR #108 Reports From Activity Foundation.
 -- Adds report constraints and conservative RLS for reports based on activity_log only.
 
+update public.reports
+set
+  report_type = case when report_type in ('weekly_update', 'monthly_report') then report_type else 'weekly_update' end,
+  summary = case when summary is not null and length(btrim(summary)) > 0 then summary else 'Historical report draft pending Veroxa review.' end,
+  period_start = coalesce(period_start, created_at::date, current_date),
+  period_end = coalesce(period_end, period_start, created_at::date, current_date),
+  body_json = case when body_json is not null and jsonb_typeof(body_json) = 'object' then body_json else '{}'::jsonb end
+where
+  report_type not in ('weekly_update', 'monthly_report')
+  or summary is null
+  or length(btrim(summary)) = 0
+  or period_start is null
+  or period_end is null
+  or body_json is null
+  or jsonb_typeof(body_json) <> 'object';
+
+update public.reports
+set period_end = period_start
+where period_start > period_end;
+
 alter table public.reports
   alter column summary set not null,
   alter column period_start set not null,
