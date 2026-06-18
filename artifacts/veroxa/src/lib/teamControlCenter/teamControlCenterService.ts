@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Uuid } from "@/domain/liveAutomation/databaseTypes";
 
-export const TEAM_CONTROL_CENTER_SOURCE_TYPES = ["media_asset", "message", "profile_correction", "activity_log", "ai_draft", "approval", "report_future_state"] as const;
+export const TEAM_CONTROL_CENTER_SOURCE_TYPES = ["media_asset", "message", "profile_correction", "activity_log", "ai_draft", "approval"] as const;
 export const TEAM_CONTROL_CENTER_PRIORITIES = ["high", "medium", "low"] as const;
 export const TEAM_CONTROL_CENTER_SAFETY_LABELS = ["internal_only", "needs_faraz_review", "needs_owner_confirmation", "client_visible_risk", "report_future_input"] as const;
 
@@ -98,6 +98,5 @@ export async function listTeamControlCenterWorkItems(client: SupabaseClient, res
     ...drafts.map((r) => item(r, "ai_draft", "/team/ai-drafts", "AI draft needs Faraz review", r.status === "needs_owner_input" ? "high" : "medium", r.status === "needs_owner_input" ? "needs_owner_confirmation" : "internal_only")),
     ...approvals.map((r) => item(r, "approval", "/team/approval-queue", "Approval queue item needs decision", r.status === "needs_owner_confirmation" ? "high" : "medium", r.status === "needs_owner_confirmation" ? "needs_owner_confirmation" : "needs_faraz_review")),
     ...activity.map((r) => item(r, "activity_log", "/team/activity-log", r.title ?? "Recent internal activity", "low", r.visibility === "client_visible" ? "report_future_input" : "internal_only")),
-    item({ id: "pr108", restaurant_id: restaurantId ?? "future", status: "future", created_at: new Date(0).toISOString() }, "report_future_state", "/team/report-queue", "Reports are built in PR #108.", "low", "report_future_input"),
   ].sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at)).slice(0, 50);
 }
