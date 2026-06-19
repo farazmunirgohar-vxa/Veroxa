@@ -124,8 +124,9 @@ must(
   ) &&
     !activeDocs.includes(
       "Controlled Momo Pilot Activation Gate remains PR #110",
-    ),
-  "Active docs must not say PR #110 is the Controlled Momo Pilot Activation Gate.",
+    ) &&
+    !activeDocs.includes("whether PR #110 can be considered later"),
+  "Active docs must not revive stale PR #110 activation-gate sequencing.",
 );
 must(
   activeDocs.includes(
