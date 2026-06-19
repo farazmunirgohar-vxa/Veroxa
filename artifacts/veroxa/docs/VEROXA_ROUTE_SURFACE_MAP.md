@@ -110,3 +110,7 @@ Onboarding must show field status for: `prefilled_by_veroxa`, `needs_owner_verif
 ## PR #108 route addition
 
 - `/team/reports-from-activity` — Team-only Reports From Activity Foundation for report drafts from real Veroxa activity/work history. Guarded by `InternalDemoGuard role="team"` and `RealPortalDataBoundary portal="team"`. It does not create fake metrics, does not use external analytics, does not claim revenue/orders/rankings/ROI/customers/walk-ins, and does not publish externally. Client-visible reports require Team review and are visible inside the client portal only. `AUTH_MODE` remains `placeholder`; Momo owner walkthrough remains blocked; PR #109 remains Momo Live Pilot Readiness Gate and PR #110 remains Controlled Momo Pilot Activation Gate.
+
+## `/team/momo-live-readiness`
+
+Team-only Momo Live Pilot Readiness Gate added by GitHub PR #109. PR #108 Reports From Activity is already merged. This route does not activate the pilot, does not activate real auth, does not contact Momo’s House, does not publish externally, does not create platform integrations, and does not add payments, webhooks, cron jobs, or background jobs. `AUTH_MODE` remains `placeholder`, `/api/pilot-access` remains active, Momo owner walkthrough remains blocked, and PR #110 remains Controlled Momo Pilot Activation Gate requiring Faraz explicit approval.
