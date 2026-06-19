@@ -1,87 +1,55 @@
 # Momo Owner Walkthrough Guide
 
-Status: active real-pilot/manual-mode guide for Faraz when showing Veroxa to Momo House San Antonio.
+Status: historical/stale blocked reference only. This is not an active owner walkthrough guide.
 
-Tone: simple, professional, honest, not technical, not salesy, and no guarantees.
+Momo owner walkthrough remains blocked. No next activation PR is approved by default. Future real-world activation requires separate explicit Faraz approval.
 
-## A. Opening
+Do not use this doc to contact Momo’s House, start a walkthrough, invite the owner, create credentials, turn on real auth, publish externally, connect platforms, or imply the pilot is live.
 
-Veroxa is a simple online presence system for restaurants. For the pilot, we are using Momo House to help improve the system while helping your restaurant become easier to find, easier to understand, and easier to remember online.
+## Current operating truth
 
-This pilot is focused on practical online presence work: Google/Maps basics, website and ordering paths, Facebook/Instagram support, simple content direction, owner-friendly updates, and monthly reporting.
+- Latest Momo internal review surface is PR #120 — Momo Internal Dry Run + Go/No-Go Gate.
+- PR #120 is internal dry-run/go-no-go review only.
+- `AUTH_MODE` remains `placeholder`.
+- `/api/pilot-access` remains active.
+- Roles remain `client` and `team` only.
+- Real auth remains off.
+- No external integrations are connected.
+- No credentials or auth users are created by this guide.
+- No client/owner exposure is approved from this guide.
+- Business-truth changes still require owner/client confirmation before public use.
+- Media usage rights require owner/client confirmation before public use.
+- Sensitive claims are blocked until owner-confirmed.
 
-## B. What the audit means
+## Historical draft language only
 
-The audit is a preliminary public-signal assessment. It is not a final judgment of the restaurant.
+The older walkthrough language below may be useful later as raw material **only if Faraz separately approves a future owner-confirmation/walkthrough plan**. It must not be treated as permission to act.
 
-It helps identify where online visibility and customer decision paths can improve, such as whether customers can quickly understand what Momo House serves, find the right links, trust the profile, and know what to do next.
+### Possible simple explanation
 
-The audit does not guarantee sales, customers, rankings, revenue, profit, ROI, walk-ins, or growth. It is a starting point for organized review and improvement.
+Veroxa is a simple online presence system for restaurants. For any future pilot, the honest explanation should be that Veroxa helps organize online presence work so the restaurant becomes easier to find, easier to understand, and easier to remember online.
 
-## C. Why Momo House is a good pilot
+### Possible audit explanation
 
-Momo House is a strong pilot because it has a focused hero product: momos. That gives Veroxa a clear product story to organize around.
+The audit is a preliminary public-signal assessment. It is not a final judgment of the restaurant. It helps identify where online visibility and customer decision paths can improve, such as whether customers can quickly understand what Momo House serves, find the right links, trust the profile, and know what to do next.
 
-There is also a strong local positioning opportunity because many nearby customers may be curious about momos but need simple reminders, education, photos, and clear ordering paths before they choose the restaurant.
+The audit does not guarantee sales, customers, rankings, revenue, profit, ROI, walk-ins, or growth.
 
-The narrow menu is a content challenge, but it is manageable. Content can be built around cravings, sauces, preparation, customer reactions, cultural education, snack discovery, lunch/dinner reminders, and “what to try first” moments.
+### Possible Momo positioning note
 
-## D. What Veroxa will do first
+Momo House is a useful pilot candidate because it has a focused hero product: momos. The narrow menu is a content challenge, but it is manageable. Content can be built around cravings, sauces, preparation, customer reactions, first-time education, snack discovery, lunch/dinner reminders, and what-to-try-first moments.
 
-### First 7 days
+### Possible future confirmation topics
 
-- Verify profile details.
-- Confirm hours, menu, order links, and contact paths.
-- Confirm Google, Facebook, and Instagram links.
-- Review the existing online presence.
-- Collect usable photos/videos.
-- Prepare the first content direction.
-
-### First 30 days
-
-- Improve posting rhythm, depending on usable media.
-- Improve Google freshness through reviewed manual updates.
-- Create repeatable content pillars.
-- Organize content requests through the portal.
-- Provide owner-friendly updates and reports.
-
-## E. What Momo House needs to provide
+These are not outreach instructions. They are internal draft topics only:
 
 - Confirm restaurant name, address, phone, and hours.
-- Confirm menu and order links.
-- Confirm social links.
-- Provide access or invited permissions where needed.
-- Upload or send current food photos/videos.
-- Confirm any claims before they are used publicly.
-- Use the portal/request process for routine updates.
+- Confirm menu, prices, ordering links, and availability.
+- Confirm social links and platform ownership.
+- Confirm media usage rights.
+- Confirm sensitive claims before public/customer-visible use.
+- Confirm what Veroxa may manually prepare for Team/Faraz review.
 
-## F. What Veroxa cannot promise
+## Hard boundary
 
-Veroxa cannot promise:
-
-- An exact number of customers.
-- An exact sales increase.
-- Rankings.
-- Instant results.
-- Food, service, location, or pricing changes.
-- Platform algorithm behavior.
-
-Veroxa can organize and improve the online presence process, but Momo House still controls the restaurant experience and final business truth.
-
-## G. How to use the portal
-
-- Sign in.
-- Review onboarding.
-- Confirm missing details.
-- Upload or send media when requested.
-- Check updates.
-- Check reports.
-- Send routine requests through the portal.
-
-The portal is the normal place for routine service requests so Veroxa can review, answer, and organize next steps calmly.
-
-## H. Pilot boundary
-
-This is a controlled pilot. Some parts are still manual behind the scenes. Veroxa will not publish, connect accounts, run ads, or make public changes without the right access and review.
-
-The pilot does not include live AI execution, automated publishing, payments, storage uploads, Google/Meta/TikTok integrations, cron jobs, or full production auth. Team Faraz reviews work before anything goes live.
+This doc does not activate the pilot. This doc does not activate real auth. This doc does not create credentials. This doc does not contact Momo’s House. This doc does not publish externally. This doc does not connect Google, Meta, Yelp, TikTok, delivery platforms, or any external system. This doc does not unlock the Momo owner walkthrough.
