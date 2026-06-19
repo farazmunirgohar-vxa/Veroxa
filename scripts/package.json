@@ -66,7 +66,8 @@
     "check-momo-business-truth-review-pack": "tsx ./src/check-momo-business-truth-review-pack.ts",
     "check-momo-media-content-inventory-pack": "tsx ./src/check-momo-media-content-inventory-pack.ts",
     "check-momo-brand-voice-ai-prompt-rules": "tsx ./src/check-momo-brand-voice-ai-prompt-rules.ts",
-    "check-momo-controlled-ai-draft-generation-foundation": "tsx ./src/check-momo-controlled-ai-draft-generation-foundation.ts"
+    "check-momo-controlled-ai-draft-generation-foundation": "tsx ./src/check-momo-controlled-ai-draft-generation-foundation.ts",
+    "check-momo-ai-draft-approval-queue": "tsx ./src/check-momo-ai-draft-approval-queue.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",
