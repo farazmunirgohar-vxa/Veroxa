@@ -27,8 +27,10 @@ Current corrected sequence:
 11. PR #109 — Momo Live Pilot Readiness Gate.
 12. PR #110 — Post-PR109 Momo readiness alignment.
 13. PR #111 — Controlled Momo Pilot Activation Gate.
+14. PR #112 — Post-PR111 Activation Gate Alignment + Business Truth Status Hardening.
+15. PR #113 — Post-PR112 Source-of-Truth Finalization.
 
-Do not skip to real-auth activation, external integrations, publishing, payments, or Momo owner walkthrough from PR #111. Future real-world activation steps require separate explicit Faraz approval after the gate.
+Do not skip to real-auth activation, external integrations, publishing, payments, or Momo owner walkthrough from PR #111, PR #112, or PR #113. Future real-world activation steps require separate explicit Faraz approval after the internal gates and source-of-truth finalization.
 
 ## 2026-06-15 — PR 100 Supabase Auth Foundation
 
@@ -111,10 +113,13 @@ As of this operating memory:
 - Reports From Activity is merged as GitHub PR #108.
 - Momo Live Pilot Readiness Gate is merged as GitHub PR #109.
 - Post-PR109 Momo readiness alignment is merged as GitHub PR #110.
-- Controlled Momo Pilot Activation Gate is current as GitHub PR #111.
+- Controlled Momo Pilot Activation Gate is merged as GitHub PR #111.
+- Post-PR111 Activation Gate Alignment + Business Truth Status Hardening is merged as GitHub PR #112.
+- Post-PR112 Source-of-Truth Finalization is merged as GitHub PR #113.
 - `AUTH_MODE` remains `placeholder`.
 - `/api/pilot-access` remains active.
-- Momo owner walkthrough remains blocked until Faraz explicitly approves activation/walkthrough after reviewing the gate.
+- Momo owner walkthrough remains blocked until Faraz explicitly approves activation/walkthrough after reviewing the gate and current blockers.
+- No next activation PR is approved by default.
 
 ## Relationship to older docs
 
