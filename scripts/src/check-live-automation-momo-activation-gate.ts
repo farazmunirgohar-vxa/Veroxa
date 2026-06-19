@@ -1,0 +1,53 @@
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+const cwd = process.cwd();
+const root = cwd.endsWith("/scripts") ? join(cwd, "..") : cwd;
+const read = (p: string) => readFileSync(join(root, p), "utf8");
+const failures: string[] = [];
+const must = (ok: boolean, msg: string) => { if (!ok) failures.push(msg); };
+const authMode = read("artifacts/veroxa/src/lib/auth/authMode.ts");
+const login = read("artifacts/veroxa/src/pages/login.tsx");
+const pilotAccess = read("artifacts/veroxa/src/lib/auth/pilotAccessAccounts.ts");
+const config = read("artifacts/veroxa/src/lib/momoActivation/momoActivationConfig.ts");
+const service = read("artifacts/veroxa/src/lib/momoActivation/momoActivationGateService.ts");
+const page = read("artifacts/veroxa/src/pages/team-momo-activation-gate.tsx");
+const app = read("artifacts/veroxa/src/App.tsx");
+const nav = read("artifacts/veroxa/src/lib/teamPortalNav.ts");
+const pkg = read("package.json");
+const scriptsPkg = read("scripts/package.json");
+const docs = ["artifacts/veroxa/docs/LIVE_AUTOMATION_V1_MOMO_ACTIVATION_GATE.md","artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md","artifacts/veroxa/docs/LIVE_AUTOMATION_V1_PR_SEQUENCE.md","artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md","artifacts/veroxa/docs/CURRENT_BUILD_STATUS.md","artifacts/veroxa/docs/LIVE_AUTOMATION_V1_ARCHITECTURE.md","artifacts/veroxa/docs/ROUTE_PAGE_INVENTORY.md","artifacts/veroxa/docs/VEROXA_ROUTE_SURFACE_MAP.md"].map(read).join("\n");
+
+must(/AUTH_MODE\s*:\s*AuthMode\s*=\s*["']placeholder["']/.test(authMode), "AUTH_MODE must remain placeholder.");
+must(/pilot-access/.test(login + pilotAccess), "/api/pilot-access must remain active.");
+must(existsSync(join(root, "artifacts/veroxa/src/lib/momoActivation/momoActivationConfig.ts")), "Feature gate file exists.");
+must(config.includes('AUTH_MODE === "real"'), "Feature gate requires AUTH_MODE real.");
+must(config.includes("VITE_VEROXA_MOMO_ACTIVATION_GATE_ENABLED"), "Feature gate requires activation flag.");
+must(config.includes('auth.status === "authenticated"') && config.includes('role === "team"'), "Feature gate requires authenticated Team role.");
+must(app.includes('path="/team/momo-activation-gate"'), "Team Momo activation gate route exists.");
+const blockStart = app.indexOf('path="/team/momo-activation-gate"');
+const blockEnd = app.indexOf('path="/team/approval-queue"');
+const block = app.slice(blockStart, blockEnd > blockStart ? blockEnd : undefined);
+must(block.includes('<InternalDemoGuard role="team">'), "Activation gate route must be guarded by InternalDemoGuard role=team.");
+must(block.includes('<RealPortalDataBoundary portal="team">'), "Activation gate route must be wrapped in RealPortalDataBoundary portal=team.");
+must(nav.includes("Activation Gate") && nav.includes("/team/momo-activation-gate"), "Team nav includes /team/momo-activation-gate.");
+must(!app.includes('path="/client/momo-activation-gate"'), "No client Momo activation route.");
+must(!existsSync(join(root, "artifacts/veroxa/src/pages/client-momo-activation-gate.tsx")), "No client Momo activation page.");
+must(!/role\s*===\s*["'](owner|operator|admin|super_admin)["']/.test([config, service, page, app, nav].join("\n")), "No new roles beyond client/team in PR #111 code.");
+must(service.includes('from("restaurants")') && service.includes('"restaurant_profile_fields"') && service.includes('"media_assets"') && service.includes('"messages"') && service.includes('"profile_corrections"') && service.includes('"activity_log"') && service.includes('"ai_drafts"') && service.includes('"reports"') && service.includes('"approvals"'), "Activation service reads existing safe evidence tables.");
+must(service.includes("getMomoLivePilotReadiness"), "Activation service reuses Momo readiness evidence.");
+must(!/\.insert\(|\.update\(|\.upsert\(|\.delete\(/.test(service), "Activation gate service is read-only.");
+const activeCode = [config, service, page, app, nav].join("\n");
+const forbidden = [/go live now/i,/start pilot/i,/send to owner/i,/sync Google/i,/sync Meta/i,/create auth user/i,/\bcron\b/i,/webhook/i,/background job/i,/scheduled job/i,/stripe/i,/checkout/i,/service_role/i,/platform token/i];
+for (const pattern of forbidden) must(!pattern.test(activeCode), `Forbidden active-code phrase found: ${pattern}`);
+for (const phrase of ["connect Instagram", "connect Facebook", "invite client", "fake readiness", "fake metrics", "fake reports", "fake activity"]) {
+  const hits = activeCode.match(new RegExp(phrase, "gi")) ?? [];
+  const safeHits = activeCode.match(new RegExp(`(does not|no|without)[^\\n.]{0,80}${phrase}`, "gi")) ?? [];
+  must(hits.length === safeHits.length, `Forbidden unsafe active-code phrase found: ${phrase}`);
+}
+must(!/Google Business Profile API|Meta Business Suite API|Yelp API|TikTok API/i.test(activeCode), "No external connector activation language in active code.");
+must(page.includes("Activation gate only.") && page.includes("This does not activate the pilot.") && page.includes("This does not turn on real auth.") && page.includes("This does not create client credentials.") && page.includes("This does not contact Momo’s House.") && page.includes("This does not publish externally.") && page.includes("This does not connect Google, Meta, Yelp, TikTok, or delivery platforms.") && page.includes("Faraz approval is required before any pilot activation step.") && page.includes("Momo owner walkthrough remains blocked."), "Page includes required safe copy.");
+must(scriptsPkg.includes("check-live-automation-momo-activation-gate"), "scripts package wires activation guardrail.");
+must(pkg.includes("check-live-automation-momo-activation-gate"), "root verify:veroxa wires activation guardrail.");
+for (const marker of ["GitHub PR #111", "Controlled Momo Pilot Activation Gate", "PR #109 Momo Live Pilot Readiness Gate is already merged", "PR #110 Post-PR109 Momo readiness alignment is already merged", "AUTH_MODE", "placeholder", "/api/pilot-access", "Momo owner walkthrough remains blocked", "does not activate real auth", "does not create client credentials", "does not contact Momo’s House", "does not publish externally", "does not create platform integrations", "payments, webhooks, cron jobs, or background jobs"]) must(docs.includes(marker), `Docs missing ${marker}.`);
+if (failures.length) { console.error(failures.map((f) => `- ${f}`).join("\n")); process.exit(1); }
+console.log("Live Automation V1 Momo Activation Gate guardrail passed.");

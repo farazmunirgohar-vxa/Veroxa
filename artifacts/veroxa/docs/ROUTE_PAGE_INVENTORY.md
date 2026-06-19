@@ -113,3 +113,10 @@ Retired demo/preview files remain quarantined unless the owner explicitly approv
 - `/team/reports-from-activity` — Team-only Reports From Activity Foundation for report drafts from real Veroxa activity/work history. Guarded by `InternalDemoGuard role="team"` and `RealPortalDataBoundary portal="team"`. It does not create fake metrics, does not use external analytics, does not claim revenue/orders/rankings/ROI/customers/walk-ins, and does not publish externally. Client-visible reports require Team review and are visible inside the client portal only. `AUTH_MODE` remains `placeholder`; Momo owner walkthrough remains blocked; PR #109 remains Momo Live Pilot Readiness Gate and PR #110 remains Controlled Momo Pilot Activation Gate.
 
 - `/team/momo-live-readiness` → `src/pages/team-momo-live-readiness.tsx`; Team-only Momo Live Pilot Readiness Gate added by GitHub PR #109. It is guarded by `InternalDemoGuard role="team"` and `RealPortalDataBoundary portal="team"`; `AUTH_MODE` remains `placeholder`, `/api/pilot-access` remains active, PR #110 is required before activation consideration, and Momo owner walkthrough remains blocked.
+
+## Team route — PR #111 Controlled Momo Pilot Activation Gate
+
+- `/team/momo-activation-gate` renders `artifacts/veroxa/src/pages/team-momo-activation-gate.tsx`.
+- GitHub PR #111 adds Controlled Momo Pilot Activation Gate only. PR #109 Momo Live Pilot Readiness Gate is already merged and PR #110 Post-PR109 Momo readiness alignment is already merged.
+- The route is Team-only, guarded by `InternalDemoGuard role="team"`, and wrapped in `RealPortalDataBoundary portal="team"`.
+- This PR does not activate the pilot by default, does not activate real auth, does not create client credentials, does not contact Momo’s House, does not publish externally, does not create platform integrations, and does not add payments, webhooks, cron jobs, or background jobs. `AUTH_MODE` remains `placeholder`; `/api/pilot-access` remains active. Momo owner walkthrough remains blocked until Faraz explicitly approves activation/walkthrough after the gate.
