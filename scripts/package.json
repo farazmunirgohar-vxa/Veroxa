@@ -61,7 +61,8 @@
     "check-live-automation-momo-readiness-gate": "tsx ./src/check-live-automation-momo-readiness-gate.ts",
     "check-live-automation-momo-activation-gate": "tsx ./src/check-live-automation-momo-activation-gate.ts",
     "check-post-pr111-activation-gate-alignment": "tsx ./src/check-post-pr111-activation-gate-alignment.ts",
-    "check-post-pr112-source-of-truth-finalization": "tsx ./src/check-post-pr112-source-of-truth-finalization.ts"
+    "check-post-pr112-source-of-truth-finalization": "tsx ./src/check-post-pr112-source-of-truth-finalization.ts",
+    "check-momo-internal-pilot-prep-pack": "tsx ./src/check-momo-internal-pilot-prep-pack.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",
