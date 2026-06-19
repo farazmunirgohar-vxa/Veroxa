@@ -53,6 +53,7 @@ const TeamMomoLiveReadiness = lazy(() => import("@/pages/team-momo-live-readines
 const TeamMomoActivationGate = lazy(() => import("@/pages/team-momo-activation-gate"));
 const TeamMomoPilotPrep = lazy(() => import("@/pages/team-momo-pilot-prep"));
 const TeamMomoBusinessTruth = lazy(() => import("@/pages/team-momo-business-truth"));
+const TeamMomoMediaContent = lazy(() => import("@/pages/team-momo-media-content"));
 
 const queryClient = new QueryClient();
 
@@ -264,6 +265,15 @@ function Router() {
             <InternalDemoGuard role="team">
               <RealPortalDataBoundary portal="team">
                 <TeamMomoBusinessTruth />
+              </RealPortalDataBoundary>
+            </InternalDemoGuard>
+          )}
+        </Route>
+        <Route path="/team/momo-media-content">
+          {() => (
+            <InternalDemoGuard role="team">
+              <RealPortalDataBoundary portal="team">
+                <TeamMomoMediaContent />
               </RealPortalDataBoundary>
             </InternalDemoGuard>
           )}

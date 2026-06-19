@@ -63,7 +63,8 @@
     "check-post-pr111-activation-gate-alignment": "tsx ./src/check-post-pr111-activation-gate-alignment.ts",
     "check-post-pr112-source-of-truth-finalization": "tsx ./src/check-post-pr112-source-of-truth-finalization.ts",
     "check-momo-internal-pilot-prep-pack": "tsx ./src/check-momo-internal-pilot-prep-pack.ts",
-    "check-momo-business-truth-review-pack": "tsx ./src/check-momo-business-truth-review-pack.ts"
+    "check-momo-business-truth-review-pack": "tsx ./src/check-momo-business-truth-review-pack.ts",
+    "check-momo-media-content-inventory-pack": "tsx ./src/check-momo-media-content-inventory-pack.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",

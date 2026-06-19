@@ -27,6 +27,7 @@ import {
   KeyRound,
   PackageCheck,
   SearchCheck,
+  Images,
 } from "lucide-react";
 import type { SidebarItem } from "@/components/PortalLayout";
 
@@ -39,6 +40,7 @@ export const teamPortalNavItems: SidebarItem[] = [
   { label: "Momo Readiness", icon: ShieldAlert, href: "/team/momo-live-readiness" },
   { label: "Momo Prep", icon: PackageCheck, href: "/team/momo-pilot-prep" },
   { label: "Momo Truth", icon: SearchCheck, href: "/team/momo-business-truth" },
+  { label: "Momo Media", icon: Images, href: "/team/momo-media-content" },
   { label: "Activation Gate", icon: KeyRound, href: "/team/momo-activation-gate" },
   { label: "Profile Corrections", icon: ClipboardEdit, href: "/team/profile-corrections" },
   { label: "Messages", icon: MessagesSquare, href: "/team/messages" },
