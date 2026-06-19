@@ -1,6 +1,6 @@
 # Momo Internal Dry Run + Go/No-Go Gate
 
-Status: GitHub PR #120 adds Momo Internal Dry Run + Go/No-Go Gate only.
+Status: GitHub PR #120 added Momo Internal Dry Run + Go/No-Go Gate only. PR #120 is merged.
 
 ## Sequence truth
 
@@ -14,7 +14,8 @@ Status: GitHub PR #120 adds Momo Internal Dry Run + Go/No-Go Gate only.
 - PR #116 Momo Media + Content Inventory Pack is merged.
 - PR #117 Momo Brand Voice + AI Prompt Rules Pack is merged.
 - PR #118 Controlled AI Draft Generation Foundation is merged.
-- PR #119 AI Draft Approval Queue is merged or immediately prior.
+- PR #119 AI Draft Approval Queue is merged.
+- PR #120 Momo Internal Dry Run + Go/No-Go Gate is merged.
 
 ## What PR #120 adds
 
