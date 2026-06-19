@@ -24,6 +24,7 @@ import {
   SlidersHorizontal,
   ClipboardList,
   ShieldAlert,
+  KeyRound,
 } from "lucide-react";
 import type { SidebarItem } from "@/components/PortalLayout";
 
@@ -34,6 +35,7 @@ export const teamPortalNavItems: SidebarItem[] = [
   { label: "Control Center", icon: SlidersHorizontal, href: "/team/control-center" },
   { label: "Reports From Activity", icon: ClipboardList, href: "/team/reports-from-activity" },
   { label: "Momo Readiness", icon: ShieldAlert, href: "/team/momo-live-readiness" },
+  { label: "Activation Gate", icon: KeyRound, href: "/team/momo-activation-gate" },
   { label: "Profile Corrections", icon: ClipboardEdit, href: "/team/profile-corrections" },
   { label: "Messages", icon: MessagesSquare, href: "/team/messages" },
   { label: "Activity Log", icon: Activity, href: "/team/activity-log" },

@@ -114,3 +114,9 @@ Onboarding must show field status for: `prefilled_by_veroxa`, `needs_owner_verif
 ## `/team/momo-live-readiness`
 
 Team-only Momo Live Pilot Readiness Gate added by GitHub PR #109. PR #108 Reports From Activity is already merged. This route does not activate the pilot, does not activate real auth, does not contact Momo’s House, does not publish externally, does not create platform integrations, and does not add payments, webhooks, cron jobs, or background jobs. `AUTH_MODE` remains `placeholder`, `/api/pilot-access` remains active, Momo owner walkthrough remains blocked, and PR #110 remains Controlled Momo Pilot Activation Gate requiring Faraz explicit approval.
+
+## Team route — PR #111 Controlled Momo Pilot Activation Gate
+
+- `/team/momo-activation-gate` is an internal Team-only Controlled Momo Pilot Activation Gate.
+- GitHub PR #111 adds Controlled Momo Pilot Activation Gate only after PR #109 Momo Live Pilot Readiness Gate and PR #110 Post-PR109 Momo readiness alignment were merged.
+- This PR does not activate the pilot by default, does not activate real auth, does not create client credentials, does not contact Momo’s House, does not publish externally, does not create platform integrations, and does not add payments, webhooks, cron jobs, or background jobs. `AUTH_MODE` remains `placeholder`; `/api/pilot-access` remains active. Momo owner walkthrough remains blocked until Faraz explicitly approves activation/walkthrough after the gate. Future real-world activation steps require a separate explicit Faraz approval.
