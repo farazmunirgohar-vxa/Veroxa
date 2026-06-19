@@ -59,7 +59,8 @@
     "check-live-automation-team-control-center": "tsx ./src/check-live-automation-team-control-center.ts",
     "check-live-automation-reports-from-activity": "tsx ./src/check-live-automation-reports-from-activity.ts",
     "check-live-automation-momo-readiness-gate": "tsx ./src/check-live-automation-momo-readiness-gate.ts",
-    "check-live-automation-momo-activation-gate": "tsx ./src/check-live-automation-momo-activation-gate.ts"
+    "check-live-automation-momo-activation-gate": "tsx ./src/check-live-automation-momo-activation-gate.ts",
+    "check-post-pr111-activation-gate-alignment": "tsx ./src/check-post-pr111-activation-gate-alignment.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",
