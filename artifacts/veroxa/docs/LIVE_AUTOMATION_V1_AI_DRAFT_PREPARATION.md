@@ -34,4 +34,4 @@ No live model invocation, client AI draft route, report generation, Team Automat
 - Team Automation Control Center remains PR #107.
 - Reports From Activity remain PR #108.
 - Momo Live Pilot Readiness Gate remains PR #109.
-- Controlled Momo Pilot Activation Gate remains PR #110 and is not activated by default.
+- Controlled Momo Pilot Activation Gate is PR #111 and is already merged; no next activation PR is approved by default.
