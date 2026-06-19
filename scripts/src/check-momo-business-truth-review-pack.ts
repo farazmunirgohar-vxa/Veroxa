@@ -1,0 +1,50 @@
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+const cwd = process.cwd();
+const root = cwd.endsWith("/scripts") ? join(cwd, "..") : cwd;
+const read = (path: string) => readFileSync(join(root, path), "utf8");
+const failures: string[] = [];
+const must = (condition: boolean, message: string) => { if (!condition) failures.push(message); };
+const authMode = read("artifacts/veroxa/src/lib/auth/authMode.ts");
+const pilotAccess = read("artifacts/veroxa/src/lib/auth/pilotAccessAccounts.ts");
+const app = read("artifacts/veroxa/src/App.tsx");
+const nav = read("artifacts/veroxa/src/lib/teamPortalNav.ts");
+const page = read("artifacts/veroxa/src/pages/team-momo-business-truth.tsx");
+const model = read("artifacts/veroxa/src/lib/momoBusinessTruth/momoBusinessTruthReview.ts");
+const controlCenter = read("artifacts/veroxa/src/pages/team-control-center.tsx");
+const prepPage = read("artifacts/veroxa/src/pages/team-momo-pilot-prep.tsx");
+const pkg = read("package.json");
+const scriptsPkg = read("scripts/package.json");
+const docs = ["artifacts/veroxa/docs/MOMO_BUSINESS_TRUTH_REVIEW_PACK.md", "artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md", "artifacts/veroxa/docs/LIVE_AUTOMATION_V1_PR_SEQUENCE.md", "artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md", "artifacts/veroxa/docs/CURRENT_BUILD_STATUS.md", "artifacts/veroxa/docs/LIVE_AUTOMATION_V1_ARCHITECTURE.md", "artifacts/veroxa/docs/MOMO_INTERNAL_PILOT_PREP_PACK.md", "artifacts/veroxa/docs/ROUTE_PAGE_INVENTORY.md", "artifacts/veroxa/docs/VEROXA_ROUTE_SURFACE_MAP.md", "artifacts/veroxa/docs/LIVE_AUTOMATION_V1_MOMO_READINESS_GATE.md", "artifacts/veroxa/docs/LIVE_AUTOMATION_V1_MOMO_ACTIVATION_GATE.md"].map(read).join("\n");
+
+must(/AUTH_MODE\s*:\s*AuthMode\s*=\s*["']placeholder["']/.test(authMode), "AUTH_MODE must remain placeholder.");
+must(pilotAccess.includes("/api/pilot-access"), "/api/pilot-access must remain active.");
+must(app.includes('path="/team/momo-business-truth"'), "Team route exists.");
+const start = app.indexOf('path="/team/momo-business-truth"');
+const end = app.indexOf('path="/team/momo-activation-gate"');
+const block = app.slice(start, end > start ? end : undefined);
+must(block.includes('<InternalDemoGuard role="team">'), "Route guarded by InternalDemoGuard role=team.");
+must(block.includes('<RealPortalDataBoundary portal="team">'), "Route wrapped in RealPortalDataBoundary portal=team.");
+must(nav.includes("Momo Truth") && nav.includes("/team/momo-business-truth"), "Team nav includes Momo Truth.");
+must(controlCenter.includes("Momo Business Truth") && controlCenter.includes("PR #115") && controlCenter.includes("/team/momo-business-truth"), "Control Center links to route.");
+must(prepPage.includes("Review business truth internally") && prepPage.includes("/team/momo-business-truth"), "Momo Prep links internally to truth review.");
+must(!app.includes('path="/client/momo-business-truth"'), "No client route exists.");
+must(!existsSync(join(root, "artifacts/veroxa/src/pages/client-momo-business-truth.tsx")), "No client page exists.");
+must(!/path=["']\/team\/.*owner.*walkthrough/i.test(app), "No owner walkthrough route exists.");
+must(!/role\s*===\s*["'](owner|operator|admin|super_admin|execution)["']/.test([app, nav, page, model].join("\n")), "No new roles beyond client/team.");
+for (const phrase of ["Internal business-truth review only.", "This does not activate the pilot.", "This does not turn on real auth.", "This does not create credentials.", "This does not contact Momo’s House.", "This does not publish externally.", "This does not connect Google, Meta, Yelp, TikTok, or delivery platforms.", "Business-truth changes still require owner confirmation.", "Sensitive claims are blocked until owner-confirmed.", "Momo owner walkthrough remains blocked.", "No next activation PR is approved by default.", "Future real-world activation requires separate explicit Faraz approval."]) must(page.includes(phrase), `Page missing required safety copy: ${phrase}`);
+for (const category of ["Core Restaurant Identity", "Menu / Ordering Truth", "Brand / Positioning Truth", "Sensitive Claims", "Access / Platform Truth", "Media Truth", "Confirmation Script Draft", "Business Truth Blockers", "Safe Internal Next Decision"]) must(model.includes(category), `Model missing category: ${category}`);
+must(!/\.insert\(|\.update\(|\.upsert\(|\.delete\(/.test([page, model].join("\n")), "No DB writes in business-truth code.");
+must(!readdirSync(join(root, "artifacts/veroxa")).includes("supabase"), "No database migration folder added under artifacts/veroxa.");
+const activeCode = [app, nav, page, model, controlCenter, prepPage].join("\n");
+for (const pattern of [/go live now/i, /pilot activated/i, /owner walkthrough can begin/i, /activation approved/i, /real auth activation approved/i, /service_role/i, /platform token/i, /\.insert\(/, /\.update\(/, /\.upsert\(/, /\.delete\(/]) must(!pattern.test(activeCode), `Forbidden active-code pattern found: ${pattern}`);
+for (const phrase of ["create auth user", "invite client", "fake metrics", "fake reports", "fake activity", "start pilot", "sync Google", "sync Meta", "connect Instagram", "connect Facebook", "OAuth", "stripe", "checkout"]) {
+  const hits = activeCode.match(new RegExp(phrase, "gi")) ?? [];
+  const safeHits = activeCode.match(new RegExp(`(does not|do not|no|without|must not|blocked)[^\\n.]{0,160}${phrase}`, "gi")) ?? [];
+  must(hits.length === safeHits.length, `Forbidden unsafe active-code phrase found: ${phrase}`);
+}
+for (const marker of ["GitHub PR #115", "Momo Business Truth Review Pack", "internal business-truth review only", "AUTH_MODE remains placeholder", "/api/pilot-access remains active", "Momo owner walkthrough remains blocked", "No next activation PR is approved by default", "Future real-world activation requires separate explicit Faraz approval"]) must(docs.includes(marker), `Docs missing ${marker}.`);
+must(scriptsPkg.includes("check-momo-business-truth-review-pack"), "scripts package wires guardrail.");
+must(pkg.includes("check-momo-business-truth-review-pack"), "root verify:veroxa wires guardrail.");
+if (failures.length) { console.error(failures.map((f) => `- ${f}`).join("\n")); process.exit(1); }
+console.log("Momo Business Truth Review Pack guardrail passed.");
