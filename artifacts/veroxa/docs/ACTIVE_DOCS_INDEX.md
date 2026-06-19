@@ -170,3 +170,5 @@ PR #112 hardened current business-truth profile-field status interpretation for 
 - No next activation PR is approved by default.
 - Future real-world activation requires separate explicit Faraz approval.
 - Team route added for inventory/surface map: `/team/momo-pilot-prep` is guarded by InternalDemoGuard role="team" and RealPortalDataBoundary portal="team".
+
+- `MOMO_BUSINESS_TRUTH_REVIEW_PACK.md` — PR #115 Team-only internal business-truth review pack. PR #115 does not activate the pilot, does not activate real auth, does not create credentials, does not contact Momo’s House, does not publish externally, does not connect external platforms, AUTH_MODE remains placeholder, /api/pilot-access remains active, roles remain client/team only, Momo owner walkthrough remains blocked, no next activation PR is approved by default, and future real-world activation requires separate explicit Faraz approval.
