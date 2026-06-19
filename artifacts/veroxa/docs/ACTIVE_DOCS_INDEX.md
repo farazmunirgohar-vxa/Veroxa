@@ -2,14 +2,13 @@
 
 Status: highest-level active contributor guide and current source-of-truth index. Read this file before relying on any older Veroxa doc.
 
-## 2026-06-16 — Actual Live Automation V1 PR sequence correction
+## 2026-06-19 — Actual Live Automation V1 PR sequence correction
 
 - `LIVE_AUTOMATION_V1_PR_SEQUENCE.md` is the current source of truth for GitHub PR numbering after Profile Corrections merged as GitHub PR #103.
-- Actual completed sequence: PR #99 architecture, PR #100 auth foundation, PR #101 database foundation, PR #102 media upload/storage foundation, PR #103 Profile Corrections foundation.
-- Next GitHub PR should be **PR #104 — Real Messages / Portal Threads Foundation**.
-- After Real Messages, continue with PR #105 Activity Log, PR #106 AI Draft Preparation, PR #107 Team Automation Control Center, PR #108 Reports From Activity, and PR #109 Momo Live Pilot Readiness Gate.
-- If older docs still say Real Messages was PR #103 or Profile Corrections was PR #104, treat those as original planning labels, not actual GitHub PR numbers.
-- Momo owner walkthrough remains blocked until full Live Automation V1 is built and approved.
+- Actual completed sequence: PR #99 architecture, PR #100 auth foundation, PR #101 database foundation, PR #102 media upload/storage foundation, PR #103 Profile Corrections foundation, PR #104 Real Messages / Portal Threads foundation, PR #105 Activity Log foundation, PR #106 AI Draft Preparation foundation, PR #107 Team Automation Control Center foundation, PR #108 Reports From Activity foundation, PR #109 Momo Live Pilot Readiness Gate, and PR #110 Post-PR109 Momo readiness alignment.
+- Next GitHub PR should be **PR #111 — Controlled Momo Pilot Activation Gate** only if Faraz explicitly approves moving toward activation.
+- If older docs still say Real Messages was PR #103, Profile Corrections was PR #104, PR #104/PR #107 is next, or PR #110 is the activation gate, treat those as stale planning labels, not actual GitHub PR status.
+- Momo owner walkthrough remains blocked until full Live Automation V1 readiness passes and Faraz explicitly approves activation/walkthrough.
 
 ## 2026-06-15 — PR 100 Supabase Auth Foundation status
 
@@ -26,6 +25,15 @@ These files reflect the current Veroxa operating truth and override historical/a
 - `LIVE_AUTOMATION_V1_PR_SEQUENCE.md`
 - `LIVE_AUTOMATION_V1_ARCHITECTURE.md`
 - `CURRENT_BUILD_STATUS.md`
+- `LIVE_AUTOMATION_V1_MOMO_READINESS_GATE.md`
+- `LIVE_AUTOMATION_V1_REPORTS_FROM_ACTIVITY.md`
+- `LIVE_AUTOMATION_V1_TEAM_CONTROL_CENTER.md`
+- `LIVE_AUTOMATION_V1_AI_DRAFT_PREPARATION.md`
+- `LIVE_AUTOMATION_V1_ACTIVITY_LOG.md`
+- `LIVE_AUTOMATION_V1_REAL_MESSAGES.md`
+- `LIVE_AUTOMATION_V1_PROFILE_CORRECTIONS.md`
+- `LIVE_AUTOMATION_V1_MEDIA_UPLOAD_STORAGE.md`
+- `LIVE_AUTOMATION_V1_DATABASE_FOUNDATION.md`
 - `PRICING_SOURCE_OF_TRUTH.md`
 - `VEROXA_OS_SYSTEM_MAP.md`
 - `ROUTE_PAGE_INVENTORY.md`
@@ -44,13 +52,12 @@ These files reflect the current Veroxa operating truth and override historical/a
 - `PRODUCTION_PREVIEW_LOGIN_CHECKLIST.md`
 - `MOMO_LIVE_PILOT_READINESS.md`
 
-
 ## 2026-06-14 — Live Automation V1 architecture planned
 
 - `LIVE_AUTOMATION_V1_ARCHITECTURE.md` defines the module build sequence after the automation-first pivot.
 - `LIVE_AUTOMATION_V1_PR_SEQUENCE.md` now corrects the actual GitHub PR numbering after Profile Corrections merged as GitHub PR #103.
-- The detailed architecture still covers the full Live Automation V1 module sequence: real auth, database foundation, media upload/storage, messages, profile corrections, activity log, AI draft preparation, Team Automation Control Center, reports from activity, and the final Momo live pilot readiness gate.
-- This architecture is not live functionality. Production auth, full live messages, live AI, reports from real activity, publishing, integrations, payments, cron jobs, and webhooks remain unbuilt until future approved implementation PRs.
+- The detailed architecture still covers the full Live Automation V1 module sequence: real auth, database foundation, media upload/storage, messages, profile corrections, activity log, AI draft preparation, Team Automation Control Center, reports from activity, and Momo live pilot readiness gate. The controlled activation gate is now expected after corrective PR #110, as PR #111, only if Faraz approves.
+- This architecture is not live functionality. Production auth, full live messages, live AI, reports from real activity, publishing, integrations, payments, cron jobs, and webhooks remain unavailable until future approved implementation PRs.
 - Momo owner walkthrough remains blocked until Live Automation V1 is built and approved.
 
 ## 2026-06-14 — Automation-first Momo pivot
@@ -97,7 +104,7 @@ Production/custom-domain login is now Real Login V1 pilot portal access for Momo
 
 ## 2026-06-07 — PR #82 matcher safety and onboarding alignment
 
-- Audit matching is conservative for location conflicts: state-only is not city/state matched, city/state mismatches are penalized, and city-conflicting Momo House inputs must not exact-prefill San Antonio unless strong proof exists (phone, domain, strong address, or platform/domain link).
+- Audit matching is conservative for location conflicts: state-only is not city/state matched, and city/state mismatches are penalized, and city-conflicting Momo House inputs must not exact-prefill San Antonio unless strong proof exists (phone, domain, strong address, or platform/domain link).
 - Audit-to-onboarding prefill statuses are: `prefilled_by_veroxa`, `needs_owner_verification`, `missing`, `owner_corrected`, `completed_by_team`, and `blocked_needs_access`.
 - Active portals remain only Client Portal and Team/Internal Admin Portal; retired demo/preview routes remain disabled.
 - No live auth, writes, storage uploads, live AI, connectors, payments, cron/background jobs, or automated publishing were added.
@@ -118,68 +125,3 @@ Production/custom-domain login is now Real Login V1 pilot portal access for Momo
 - Current safe pilot login remains `/api/pilot-access`; no portal page is live database-powered yet.
 - `LIVE_AUTOMATION_V1_DATABASE_FOUNDATION.md` is the setup and safety reference for the new migration, tables, status models, RLS baseline, TypeScript contracts, and later Momo/Team Faraz setup notes.
 - Momo owner walkthrough remains blocked until the full Live Automation V1 sequence is implemented and approved.
-
-
-## 2026-06-15 — PR #102 Media Upload + Storage status
-
-- `LIVE_AUTOMATION_V1_MEDIA_UPLOAD_STORAGE.md` is the active setup/safety reference for the PR #102 media upload and storage foundation.
-- The foundation adds private storage setup, validation, restaurant-scoped paths, gated upload service/UI, and guardrails only.
-- `AUTH_MODE` remains `placeholder`, `/api/pilot-access` remains active, upload is not active in placeholder mode, uploaded media is not published, and Momo owner walkthrough remains blocked.
-
-## 2026-06-16 — GitHub PR #103 Profile Corrections status
-
-- Active reference: `LIVE_AUTOMATION_V1_PROFILE_CORRECTIONS.md`.
-- Profile Corrections foundation merged as GitHub PR #103, even though older planning docs originally labeled it PR #104.
-- Profile Corrections foundation only: `AUTH_MODE` remains placeholder; profile corrections are not public/platform updates; approved corrections update internal Veroxa profile records only.
-- Momo owner walkthrough remains blocked.
-- Real Messages / Portal Threads are still missing and should be the next GitHub PR #104 before Activity Log, AI Drafting, Reports, Team Automation Control Center, integrations, publishing, payments, cron jobs, or webhooks.
-
-## 2026-06-16 — GitHub PR #104 Real Messages status
-
-- Active reference: `LIVE_AUTOMATION_V1_REAL_MESSAGES.md`.
-- GitHub PR #104 adds Real Messages / Portal Threads foundation only. Profile Corrections already merged as GitHub PR #103.
-- `AUTH_MODE` remains `placeholder`; `/api/pilot-access` remains active; messages require real auth plus `VITE_VEROXA_MESSAGES_ENABLED=true`.
-- Messages are portal-only, not SMS/email/DM/comment/customer-service inbox handling, and placeholder mode does not fake message sending.
-- Activity Log remains PR #105, AI Drafting remains PR #106, and Momo owner walkthrough remains blocked.
-
-
-## 2026-06-17 — GitHub PR #106 AI Draft Preparation status
-
-- Active reference: `LIVE_AUTOMATION_V1_AI_DRAFT_PREPARATION.md`.
-- GitHub PR #106 adds AI Draft Preparation Foundation only after PR #105 Activity Log.
-- `AUTH_MODE` remains `placeholder`; AI drafts require real auth plus `VITE_VEROXA_AI_DRAFTS_ENABLED=true` and authenticated Team role.
-- AI drafts are internal only: no raw AI output is client-visible, no publishing, and no auto-approval.
-- Team Automation Control Center remains PR #107, Reports From Activity remain PR #108, and Momo owner walkthrough remains blocked.
-
-## 2026-06-16 — GitHub PR #105 Activity Log status
-
-- Active reference: `LIVE_AUTOMATION_V1_ACTIVITY_LOG.md`.
-- GitHub PR #105 adds Activity Log Foundation only; PR #103 Profile Corrections and PR #104 Real Messages / Portal Threads are already merged.
-- `AUTH_MODE` remains `placeholder`; Activity Log requires real auth plus `VITE_VEROXA_ACTIVITY_LOG_ENABLED=true`.
-- Activity Log is event memory, not reports; client-visible activity and `report_eligible` are explicit.
-- AI Drafting remains PR #106, Reports From Activity remain PR #108, and Momo owner walkthrough remains blocked.
-
-## 2026-06-18 — GitHub PR #107 Team Automation Control Center Foundation
-
-- GitHub PR #107 adds Team Automation Control Center Foundation only.
-- PR #106 AI Draft Preparation is already merged.
-- `/team/control-center` is Team-only/internal-only and summarizes existing queues from media, messages, profile corrections, activity log, AI drafts, and safe approvals when present.
-- Control Center does not publish, does not generate reports, does not activate integrations, and does not contact clients.
-- Reports From Activity remain PR #108.
-- Momo Live Pilot Readiness Gate remains PR #109.
-- Controlled Momo Pilot Activation Gate remains PR #110.
-- `AUTH_MODE` remains `placeholder`.
-- Momo owner walkthrough remains blocked.
-
-## 2026-06-18 — PR #108 Reports From Activity Foundation
-
-- GitHub PR #108 adds Reports From Activity Foundation only.
-- PR #107 Team Automation Control Center is already merged.
-- Reports are based on real Veroxa activity/work history only, with no fake metrics, no external analytics, and no revenue/orders/rankings/ROI/customers/walk-ins claims.
-- Client-visible reports require Team review and are visible inside the client portal only; reports do not publish externally.
-- `AUTH_MODE` remains `placeholder`; Momo owner walkthrough remains blocked.
-- Momo Live Pilot Readiness Gate remains PR #109 and Controlled Momo Pilot Activation Gate remains PR #110.
-
-## 2026-06-19 — GitHub PR #109 Momo Live Pilot Readiness Gate
-
-GitHub PR #109 adds Momo Live Pilot Readiness Gate only. PR #108 Reports From Activity is already merged. This PR does not activate the pilot. This PR does not activate real auth. This PR does not contact Momo’s House. This PR does not publish externally. This PR does not create platform integrations. This PR does not add payments, webhooks, cron jobs, or background jobs. `AUTH_MODE` remains `placeholder`. `/api/pilot-access` remains active. Momo owner walkthrough remains blocked. PR #110 remains Controlled Momo Pilot Activation Gate and requires Faraz explicit approval before moving toward activation.
