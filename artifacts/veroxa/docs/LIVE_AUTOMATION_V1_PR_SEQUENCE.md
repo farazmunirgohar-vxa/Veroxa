@@ -1,12 +1,12 @@
 # Live Automation V1 Actual PR Sequence
 
-Status: current source-of-truth correction for GitHub PR numbering after PR #109 was merged and GitHub PR #110 became a corrective post-PR109 alignment PR.
+Status: current source-of-truth correction for GitHub PR numbering through GitHub PR #111 Controlled Momo Pilot Activation Gate.
 
 ## Why this file exists
 
-The original Live Automation V1 architecture planned Real Messages as PR #103 and Profile Corrections as PR #104. In the actual GitHub history, Profile Corrections was implemented and merged first as GitHub PR #103, Real Messages followed as GitHub PR #104, Activity Log followed as GitHub PR #105, AI Draft Preparation followed as GitHub PR #106, Team Automation Control Center followed as GitHub PR #107, Reports From Activity followed as GitHub PR #108, and Momo Live Pilot Readiness Gate followed as GitHub PR #109.
+The original Live Automation V1 architecture planned Real Messages as PR #103 and Profile Corrections as PR #104. In the actual GitHub history, Profile Corrections was implemented and merged first as GitHub PR #103, Real Messages followed as GitHub PR #104, Activity Log followed as GitHub PR #105, AI Draft Preparation followed as GitHub PR #106, Team Automation Control Center followed as GitHub PR #107, Reports From Activity followed as GitHub PR #108, Momo Live Pilot Readiness Gate followed as GitHub PR #109, and post-PR109 Momo readiness alignment followed as GitHub PR #110.
 
-GitHub PR #110 is now reserved by the corrective post-PR109 Momo readiness alignment PR. Therefore the future controlled activation gate moves to GitHub PR #111.
+GitHub PR #111 is the Controlled Momo Pilot Activation Gate. It is an internal Team-only decision gate and does not activate by default.
 
 If this file conflicts with older PR-number wording in `LIVE_AUTOMATION_V1_ARCHITECTURE.md`, `CURRENT_BUILD_STATUS.md`, or other historical/current-looking docs, follow this file for PR numbering while preserving the same module order and safety gates.
 
@@ -23,18 +23,20 @@ If this file conflicts with older PR-number wording in `LIVE_AUTOMATION_V1_ARCHI
 - PR #107 — Team Automation Control Center Foundation.
 - PR #108 — Reports From Activity Foundation.
 - PR #109 — Momo Live Pilot Readiness Gate.
+- PR #110 — Post-PR109 Momo readiness alignment.
 
 ## Current GitHub PR
 
-- PR #110 — Post-PR109 Momo readiness alignment.
+- PR #111 — Controlled Momo Pilot Activation Gate.
 
 ## Remaining planned GitHub sequence
 
-- PR #111 — Controlled Momo Pilot Activation Gate, post-readiness only and not part of the original PR #99–#109 architecture sequence.
+- No next activation PR is approved by default.
+- Future real-world activation, real-auth activation, external platform setup, or Momo owner walkthrough requires a separate explicit Faraz approval after this gate.
 
-## PR #110–#111 execution lock
+## PR #111 execution lock
 
-PR #110 must remain a corrective readiness-alignment PR only. It fixes the Momo readiness gate foundation before any controlled activation work. PR #111 is the controlled activation gate only after PR #110 is green and merged and Faraz explicitly approves moving toward activation.
+PR #111 is the controlled activation gate only. It provides a Team-only internal decision surface and must not activate the pilot by default. Do not turn on real auth, do not create credentials, do not contact Momo’s House, do not publish externally, do not connect external platforms, and do not start the owner walkthrough from this PR.
 
 ## Safety lock
 
@@ -47,9 +49,9 @@ PR #110 must remain a corrective readiness-alignment PR only. It fixes the Momo 
 - Team Automation Control Center is built as PR #107 and stays internal only.
 - Reports From Activity is built as PR #108 and uses real activity without fake metrics or external publishing.
 - Momo Live Pilot Readiness Gate is built as PR #109 and must not activate the pilot.
-- Post-PR109 Momo readiness alignment is PR #110 and must only correct readiness evidence/schema/scoping.
-- Controlled Momo Pilot Activation Gate is PR #111 and must not activate by default unless Faraz explicitly approves activation.
-- Momo owner walkthrough remains blocked until the full Live Automation V1 acceptance criteria are met and Faraz explicitly approves activation/walkthrough.
+- Post-PR109 Momo readiness alignment is built as PR #110 and corrects readiness evidence/schema/scoping.
+- Controlled Momo Pilot Activation Gate is PR #111 and must not activate by default unless Faraz explicitly approves a later real-world activation step.
+- Momo owner walkthrough remains blocked until Faraz explicitly approves activation/walkthrough after reviewing the gate.
 
 ## ChatGPT operating lock
 
@@ -62,9 +64,9 @@ For future ChatGPT/Codex planning in this project:
 - Treat Team Automation Control Center as already merged under GitHub PR #107.
 - Treat Reports From Activity as already merged under GitHub PR #108.
 - Treat Momo Live Pilot Readiness Gate as already merged under GitHub PR #109.
-- Treat GitHub PR #110 as corrective post-PR109 Momo readiness alignment.
-- Treat PR #111 as the controlled activation gate only after PR #110 is green/merged and Faraz explicitly approves moving toward activation.
-- Do not skip to real-auth activation, integrations, publishing, payments, or Momo walkthrough before PR #110 alignment and PR #111 activation gates are handled safely.
+- Treat GitHub PR #110 as already merged corrective post-PR109 Momo readiness alignment.
+- Treat PR #111 as the controlled activation gate only.
+- Do not skip to real-auth activation, integrations, publishing, payments, or Momo walkthrough before Faraz explicitly approves a later activation/walkthrough step.
 
 ## 2026-06-18 — GitHub PR #107 Team Automation Control Center Foundation
 
@@ -80,7 +82,7 @@ For future ChatGPT/Codex planning in this project:
 
 ## PR #108 — Reports From Activity Foundation
 
-GitHub PR #108 adds Reports From Activity Foundation only. PR #107 Team Automation Control Center is already merged. Reports are based on real Veroxa activity/work history, do not include fake metrics or external analytics, do not claim revenue/orders/rankings/ROI/customers/walk-ins, and do not publish externally. Client-visible reports require Team review and are visible inside the client portal only. `AUTH_MODE` remains placeholder and Momo owner walkthrough remains blocked. PR #109 remains Momo Live Pilot Readiness Gate.
+GitHub PR #108 adds Reports From Activity Foundation only. PR #107 Team Automation Control Center is already merged. Reports are based on real Veroxa activity/work history, do not include fake metrics or external analytics, do not claim revenue/orders/rankings/ROI/customers/walk-ins, and do not publish externally. Client-visible reports require Team review and are visible inside the client portal only. `AUTH_MODE` remains placeholder and Momo owner walkthrough remains blocked.
 
 ## 2026-06-19 — GitHub PR #109 Momo Live Pilot Readiness Gate
 
@@ -89,3 +91,7 @@ GitHub PR #109 adds Momo Live Pilot Readiness Gate only. PR #108 Reports From Ac
 ## 2026-06-19 — GitHub PR #110 Post-PR109 Momo readiness alignment
 
 GitHub PR #110 is corrective alignment after PR #109. It fixes Momo readiness evidence reads so they use the current profile-field schema, valid profile-correction fields, existing AI draft safety fields, and Momo-scoped module evidence before any future controlled activation planning.
+
+## 2026-06-19 — GitHub PR #111 Controlled Momo Pilot Activation Gate
+
+GitHub PR #111 adds the Controlled Momo Pilot Activation Gate only. It is a Team-only internal decision gate that reads readiness evidence and blockers. It does not activate the pilot by default, does not activate real auth, does not create client credentials, does not contact Momo’s House, does not publish externally, does not create platform integrations, and does not start the owner walkthrough.
