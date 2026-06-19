@@ -71,6 +71,6 @@ export default function TeamMomoPilotPrep() {
       ))}
       <Card className="mt-4"><CardHeader><CardTitle className="flex items-center gap-2 text-sm"><Lock className="h-4 w-4" />Safe internal next steps</CardTitle></CardHeader><CardContent className="grid gap-2 text-sm text-muted-foreground"><p>Use existing internal Team pages only. This prep pack creates no account, credential, outreach, publishing, sync, or live workflow.</p><Button asChild size="sm" variant="outline"><Link href="/team/momo-business-truth">Review business truth internally</Link></Button><Button asChild size="sm" variant="outline"><Link href="/team/momo-media-content">Review media/content inventory internally</Link></Button><div className="flex flex-wrap gap-2">{MOMO_PILOT_PREP_ALLOWED_TEAM_LINKS.map((href) => <Button asChild key={href} size="sm" variant="outline"><Link href={href}>{href}</Link></Button>)}</div></CardContent></Card>
       <TeamReviewModeRouteSummary title="Momo Internal Pilot Prep Pack review-mode summary" />
-    </PortalLayout>
+    <Card className="mt-4"><CardContent className="p-4"><Button asChild size="sm" variant="outline"><Link href="/team/momo-brand-ai-rules">Review brand/AI rules internally</Link></Button></CardContent></Card></PortalLayout>
   );
 }

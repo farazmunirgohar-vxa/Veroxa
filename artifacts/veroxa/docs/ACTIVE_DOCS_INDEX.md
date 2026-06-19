@@ -6,7 +6,7 @@ Status: highest-level active contributor guide and current source-of-truth index
 
 - `LIVE_AUTOMATION_V1_PR_SEQUENCE.md` is the current source of truth for GitHub PR numbering after Profile Corrections merged as GitHub PR #103.
 - Actual completed sequence: PR #99 architecture, PR #100 auth foundation, PR #101 database foundation, PR #102 media upload/storage foundation, PR #103 Profile Corrections foundation, PR #104 Real Messages / Portal Threads foundation, PR #105 Activity Log foundation, PR #106 AI Draft Preparation foundation, PR #107 Team Automation Control Center foundation, PR #108 Reports From Activity foundation, PR #109 Momo Live Pilot Readiness Gate, and PR #110 Post-PR109 Momo readiness alignment.
-- Latest completed Live Automation V1 alignment is through **PR #112 — Post-PR111 Activation Gate Alignment + Business Truth Status Hardening**; PR #113 is source-of-truth finalization only; PR #114 is internal preparation only, PR #115 is internal business-truth review only, and PR #116 is internal media/content inventory only.
+- Latest completed Live Automation V1 alignment is through **PR #112 — Post-PR111 Activation Gate Alignment + Business Truth Status Hardening**; PR #113 is source-of-truth finalization only; PR #114 is internal preparation only, PR #115 is internal business-truth review only, and PR #116 is internal media/content inventory only. PR #117 is internal brand voice and AI prompt-rule preparation only; it does not generate AI output, call any AI provider, activate the pilot, activate real auth, create credentials, contact Momo’s House, upload/create/seed/generate/fake media, publish externally, connect external platforms, or approve a next activation PR.
 - There is no next activation PR approved by default. Any future real-world activation, real-auth activation, external platform setup, or Momo owner walkthrough requires a separate explicit Faraz approval after this gate.
 - If older docs still say Real Messages was PR #103, Profile Corrections was PR #104, PR #104/PR #107 is next, PR #110 is the activation gate, or PR #111 was intended to automatically activate, treat those as stale planning labels, not actual GitHub PR status.
 - Momo owner walkthrough remains blocked until Faraz explicitly approves activation/walkthrough after reviewing the gate.
@@ -27,6 +27,7 @@ These files reflect the current Veroxa operating truth and override historical/a
 - `LIVE_AUTOMATION_V1_ARCHITECTURE.md`
 - `CURRENT_BUILD_STATUS.md`
 - `MOMO_INTERNAL_PILOT_PREP_PACK.md`
+- `MOMO_BRAND_VOICE_AI_PROMPT_RULES.md`
 - `LIVE_AUTOMATION_V1_MOMO_ACTIVATION_GATE.md`
 - `LIVE_AUTOMATION_V1_MOMO_READINESS_GATE.md`
 - `LIVE_AUTOMATION_V1_REPORTS_FROM_ACTIVITY.md`
