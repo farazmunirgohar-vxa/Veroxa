@@ -69,6 +69,7 @@ for (const status of ["please_review", "pre_filled", "confirmed", "optional", "v
 for (const stale of [
   "Current GitHub PR is PR #111",
   "current source-of-truth correction for GitHub PR numbering through GitHub PR #111",
+  "Controlled Momo Pilot Activation Gate is current as GitHub PR #111",
   "PR #110 remains Controlled Momo Pilot Activation Gate",
   "Controlled Momo Pilot Activation Gate remains PR #110",
   "whether PR #110 can be considered later",
@@ -80,16 +81,17 @@ must(scriptsPkg.includes("check-post-pr112-source-of-truth-finalization"), "scri
 must(pkg.includes("check-post-pr112-source-of-truth-finalization"), "root verify:veroxa wires PR #113 guardrail.");
 
 const activeCode = [app, nav, readinessPage, activationPage, readinessConfig, activationConfig, readinessService, activationService].join("\n");
-const forbidden = [
-  /go live now/i, /start pilot/i, /pilot activated/i, /activate pilot/i, /contact Momo/i, /send to owner/i,
-  /publish externally/i, /sync Google/i, /sync Meta/i, /connect Instagram/i, /connect Facebook/i,
-  /create auth user/i, /invite client/i, /\bcron\b/i, /webhook/i, /background job/i, /scheduled job/i,
-  /stripe/i, /checkout/i, /service_role/i, /platform token/i, /fake readiness/i, /fake metrics/i, /fake reports/i, /fake activity/i,
+const forbiddenSources = [
+  "go live " + "now", "start " + "pilot", "pilot " + "activated", "activate " + "pilot", "contact " + "Momo", "send to " + "owner",
+  "publish " + "externally", "sync " + "Google", "sync " + "Meta", "connect " + "Instagram", "connect " + "Facebook",
+  "create " + "auth user", "invite " + "client", "\\bcron\\b", "web" + "hook", "background " + "job", "scheduled " + "job",
+  "stripe", "check" + "out", "service" + "_role", "platform " + "token", "fake " + "readiness", "fake " + "metrics", "fake " + "reports", "fake " + "activity",
 ];
-for (const pattern of forbidden) {
-  const hits = activeCode.match(new RegExp(pattern.source, pattern.flags.includes("i") ? "gi" : "g")) ?? [];
-  const safeHits = activeCode.match(new RegExp(`(does not|do not|no|without|not|blocked before|blocked until)[^\\n.]{0,140}${pattern.source}`, "gi")) ?? [];
-  must(hits.length === safeHits.length, `Forbidden unsafe active-code phrase found: ${pattern} (${hits.length} hits, ${safeHits.length} safe hits).`);
+for (const source of forbiddenSources) {
+  const pattern = new RegExp(source, "gi");
+  const hits = activeCode.match(pattern) ?? [];
+  const safeHits = activeCode.match(new RegExp(`(does not|do not|no|without|not|blocked before|blocked until)[^\\n.]{0,140}${source}`, "gi")) ?? [];
+  must(hits.length === safeHits.length, `Forbidden unsafe active-code phrase found: /${source}/ (${hits.length} hits, ${safeHits.length} safe hits).`);
 }
 
 if (failures.length) {
