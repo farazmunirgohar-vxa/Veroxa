@@ -28,4 +28,4 @@ Status: GitHub PR #108 Reports From Activity Foundation only. PR #107 Team Autom
 
 - GitHub PR #108 adds Reports From Activity Foundation only.
 - Momo Live Pilot Readiness Gate remains PR #109.
-- Controlled Momo Pilot Activation Gate remains PR #110.
+- Controlled Momo Pilot Activation Gate is PR #111 and is already merged; no next activation PR is approved by default.

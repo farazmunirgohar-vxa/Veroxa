@@ -29,4 +29,4 @@ Status: GitHub PR #107 Team Automation Control Center Foundation only. PR #106 A
 - GitHub PR #107 adds Team Automation Control Center Foundation only.
 - Reports From Activity remain PR #108.
 - Momo Live Pilot Readiness Gate remains PR #109.
-- Controlled Momo Pilot Activation Gate remains PR #110.
+- Controlled Momo Pilot Activation Gate is PR #111 and is already merged; no next activation PR is approved by default.
