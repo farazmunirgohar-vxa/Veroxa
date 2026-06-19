@@ -16,6 +16,7 @@ const nav = read("artifacts/veroxa/src/lib/teamPortalNav.ts");
 const page = read("artifacts/veroxa/src/pages/team-momo-pilot-prep.tsx");
 const checklist = read("artifacts/veroxa/src/lib/momoPilotPrep/momoPilotPrepChecklist.ts");
 const controlCenter = read("artifacts/veroxa/src/pages/team-control-center.tsx");
+const activeDocsIndex = read("artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md");
 const pkg = read("package.json");
 const scriptsPkg = read("scripts/package.json");
 const docs = [
@@ -81,6 +82,30 @@ for (const phrase of ["create auth user", "invite client", "fake metrics", "fake
   const safeHits = activeCode.match(new RegExp(`(does not|no|without|must not)[^\\n.]{0,100}${phrase}`, "gi")) ?? [];
   must(hits.length === safeHits.length, `Forbidden unsafe active-code phrase found: ${phrase}`);
 }
+for (const source of [
+  "start " + "pilot",
+  "activate " + "pilot",
+  "contact " + "Momo",
+  "send to " + "owner",
+  "publish " + "externally",
+  "connect " + "Instagram",
+  "connect " + "Facebook",
+  "create " + "credentials",
+  "turn on " + "real auth",
+  "sync " + "Google",
+  "sync " + "Meta",
+  "OAuth",
+  "web" + "hook",
+  "cron",
+  "background " + "job",
+  "scheduled " + "job",
+  "stripe",
+  "check" + "out",
+]) {
+  const hits = activeCode.match(new RegExp(source, "gi")) ?? [];
+  const safeHits = activeCode.match(new RegExp(`(does not|do not|no|without|must not|blocked)[^\\n.]{0,140}${source}`, "gi")) ?? [];
+  must(hits.length === safeHits.length, `Forbidden unsafe active-code phrase found: /${source}/ (${hits.length} hits, ${safeHits.length} safe hits).`);
+}
 
 for (const marker of [
   "GitHub PR #114",
@@ -92,6 +117,7 @@ for (const marker of [
   "No next activation PR is approved by default",
   "Future real-world activation requires separate explicit Faraz approval",
 ]) must(docs.includes(marker), `Docs missing ${marker}.`);
+must(activeDocsIndex.includes("MOMO_INTERNAL_PILOT_PREP_PACK.md"), "Active Docs Index must list Momo Internal Pilot Prep Pack as a source-of-truth doc.");
 
 must(scriptsPkg.includes("check-momo-internal-pilot-prep-pack"), "scripts package wires Momo prep guardrail.");
 must(pkg.includes("check-momo-internal-pilot-prep-pack"), "root verify:veroxa wires Momo prep guardrail.");
