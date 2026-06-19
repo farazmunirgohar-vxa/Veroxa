@@ -29,6 +29,7 @@ import {
   SearchCheck,
   Images,
   BotMessageSquare,
+  Sparkles,
 } from "lucide-react";
 import type { SidebarItem } from "@/components/PortalLayout";
 
@@ -43,6 +44,7 @@ export const teamPortalNavItems: SidebarItem[] = [
   { label: "Momo Truth", icon: SearchCheck, href: "/team/momo-business-truth" },
   { label: "Momo Media", icon: Images, href: "/team/momo-media-content" },
   { label: "Momo Brand AI", icon: BotMessageSquare, href: "/team/momo-brand-ai-rules" },
+  { label: "Momo AI Gen", icon: Sparkles, href: "/team/momo-ai-generation" },
   { label: "Activation Gate", icon: KeyRound, href: "/team/momo-activation-gate" },
   { label: "Profile Corrections", icon: ClipboardEdit, href: "/team/profile-corrections" },
   { label: "Messages", icon: MessagesSquare, href: "/team/messages" },

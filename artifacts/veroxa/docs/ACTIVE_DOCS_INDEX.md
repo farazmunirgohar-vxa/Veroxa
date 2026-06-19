@@ -19,6 +19,11 @@ Status: highest-level active contributor guide and current source-of-truth index
 - Momo owner walkthrough remains blocked until the full Live Automation V1 sequence is implemented and approved.
 
 ## Current source-of-truth docs
+- `MOMO_CONTROLLED_AI_DRAFT_GENERATION_FOUNDATION.md` — GitHub PR #118 controlled AI draft generation foundation only; AI generation disabled by default; AUTH_MODE placeholder; /api/pilot-access active; Momo owner walkthrough blocked; no next activation PR approved by default; future real-world activation requires separate explicit Faraz approval.
+- `MOMO_BRAND_VOICE_AI_PROMPT_RULES.md` — PR #117 source of truth for Momo brand voice and AI prompt rules.
+- `MOMO_MEDIA_CONTENT_INVENTORY_PACK.md` — PR #116 source of truth for Momo media/content inventory.
+- `MOMO_BUSINESS_TRUTH_REVIEW_PACK.md` — PR #115 source of truth for Momo business-truth review.
+
 
 These files reflect the current Veroxa operating truth and override historical/archive strategy notes. If another doc conflicts with this index, do not override this index; treat the conflicting note as stale until Faraz explicitly refreshes it:
 
@@ -174,3 +179,13 @@ PR #112 hardened current business-truth profile-field status interpretation for 
 
 - `MOMO_BUSINESS_TRUTH_REVIEW_PACK.md`
 - `MOMO_MEDIA_CONTENT_INVENTORY_PACK.md` — PR #115 Team-only internal business-truth review pack. PR #115 does not activate the pilot, does not activate real auth, does not create credentials, does not contact Momo’s House, does not publish externally, does not connect external platforms, AUTH_MODE remains placeholder, /api/pilot-access remains active, roles remain client/team only, Momo owner walkthrough remains blocked, no next activation PR is approved by default, and future real-world activation requires separate explicit Faraz approval.
+
+## GitHub PR #118 — Controlled AI Draft Generation Foundation
+
+GitHub PR #118 adds Controlled AI Draft Generation Foundation only. PR #109 Momo Live Pilot Readiness Gate is merged. PR #110 Post-PR109 Momo readiness alignment is merged. PR #111 Controlled Momo Pilot Activation Gate is merged. PR #112 Post-PR111 Activation Gate Alignment + Business Truth Status Hardening is merged. PR #113 Post-PR112 Source-of-Truth Finalization is merged. PR #114 Momo Internal Pilot Prep Pack is merged. PR #115 Momo Business Truth Review Pack is merged. PR #116 Momo Media + Content Inventory Pack is merged. PR #117 Momo Brand Voice + AI Prompt Rules Pack is merged.
+
+PR #118 is controlled AI draft generation foundation only. AI generation is disabled by default. PR #118 does not generate customer-visible AI output. PR #118 does not auto-approve AI output. PR #118 does not publish AI output. PR #118 does not activate the pilot. PR #118 does not activate real auth. PR #118 does not create credentials. PR #118 does not contact Momo’s House. PR #118 does not upload, create, seed, generate, or fake media. PR #118 does not publish externally. PR #118 does not connect external platforms. PR #118 does not add payments, webhooks, cron jobs, background jobs, scheduled jobs, or automation runners.
+
+AUTH_MODE remains placeholder. /api/pilot-access remains active. Roles remain client/team only. Momo owner walkthrough remains blocked. No next activation PR is approved by default. Future real-world activation requires separate explicit Faraz approval.
+
+Business-truth changes require owner confirmation before any public/customer-visible use. Media usage rights require owner confirmation before public/customer-visible use. Sensitive claims are blocked until owner-confirmed. AI may use only confirmed business truth and permissioned media in later internal drafts. All future AI output requires Team/Faraz review before customer-visible use.
