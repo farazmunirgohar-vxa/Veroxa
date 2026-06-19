@@ -19,11 +19,13 @@ Status: highest-level active contributor guide and current source-of-truth index
 - Momo owner walkthrough remains blocked until the full Live Automation V1 sequence is implemented and approved.
 
 ## Current source-of-truth docs
+- `MOMO_INTERNAL_DRY_RUN_GO_NO_GO_GATE.md` — GitHub PR #120 Momo Internal Dry Run + Go/No-Go Gate only; internal dry-run/go-no-go review only; AUTH_MODE placeholder; /api/pilot-access active; Momo owner walkthrough blocked; no next activation PR approved by default; future real-world activation requires separate explicit Faraz approval.
 - `MOMO_AI_DRAFT_APPROVAL_QUEUE.md` — GitHub PR #119 AI Draft Approval Queue only; internal Team review queue; AUTH_MODE placeholder; /api/pilot-access active; Momo owner walkthrough blocked; no next activation PR approved by default; future real-world activation requires separate explicit Faraz approval.
 - `MOMO_CONTROLLED_AI_DRAFT_GENERATION_FOUNDATION.md` — GitHub PR #118 controlled AI draft generation foundation only; AI generation disabled by default; AUTH_MODE placeholder; /api/pilot-access active; Momo owner walkthrough blocked; no next activation PR approved by default; future real-world activation requires separate explicit Faraz approval.
 - `MOMO_BRAND_VOICE_AI_PROMPT_RULES.md` — PR #117 source of truth for Momo brand voice and AI prompt rules.
 - `MOMO_MEDIA_CONTENT_INVENTORY_PACK.md` — PR #116 source of truth for Momo media/content inventory.
 - `MOMO_BUSINESS_TRUTH_REVIEW_PACK.md` — PR #115 source of truth for Momo business-truth review.
+- `MOMO_INTERNAL_PILOT_PREP_PACK.md` — PR #114 source of truth for Momo internal pilot prep.
 
 
 These files reflect the current Veroxa operating truth and override historical/archive strategy notes. If another doc conflicts with this index, do not override this index; treat the conflicting note as stale until Faraz explicitly refreshes it:
