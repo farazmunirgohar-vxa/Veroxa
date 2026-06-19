@@ -31,6 +31,7 @@ import {
   BotMessageSquare,
   Sparkles,
   ShieldQuestion,
+  ClipboardCheckIcon,
 } from "lucide-react";
 import type { SidebarItem } from "@/components/PortalLayout";
 
@@ -47,6 +48,7 @@ export const teamPortalNavItems: SidebarItem[] = [
   { label: "Momo Brand AI", icon: BotMessageSquare, href: "/team/momo-brand-ai-rules" },
   { label: "Momo AI Gen", icon: Sparkles, href: "/team/momo-ai-generation" },
   { label: "Momo AI Approval", icon: ShieldQuestion, href: "/team/momo-ai-approval" },
+  { label: "Momo Dry Run", icon: ClipboardCheckIcon, href: "/team/momo-dry-run-go-no-go" },
   { label: "Activation Gate", icon: KeyRound, href: "/team/momo-activation-gate" },
   { label: "Profile Corrections", icon: ClipboardEdit, href: "/team/profile-corrections" },
   { label: "Messages", icon: MessagesSquare, href: "/team/messages" },

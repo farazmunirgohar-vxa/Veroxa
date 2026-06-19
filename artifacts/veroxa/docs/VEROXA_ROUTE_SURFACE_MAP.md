@@ -208,3 +208,7 @@ PR #119 is internal AI draft approval queue only. PR #119 does not generate AI o
 AUTH_MODE remains placeholder. /api/pilot-access remains active. Roles remain client/team only. Momo owner walkthrough remains blocked. No next activation PR is approved by default. Future real-world activation requires separate explicit Faraz approval. Business-truth changes require owner confirmation before any public/customer-visible use. Media usage rights require owner confirmation before public/customer-visible use. Sensitive claims are blocked until owner-confirmed. AI drafts may move forward only after Team/Faraz review. No AI output becomes customer-visible from this PR.
 
 - `/team/momo-ai-approval` — PR #119 Team-only internal AI Draft Approval Queue guarded by InternalDemoGuard role="team" and RealPortalDataBoundary portal="team".
+
+## PR #120 — Momo Internal Dry Run + Go/No-Go Gate surface
+
+- `/team/momo-dry-run-go-no-go` — Team-only internal dry-run/go-no-go review surface. It is not client-visible, does not activate real auth, does not contact Momo’s House, does not publish externally, and does not connect external platforms. Momo owner walkthrough remains blocked; no next activation PR is approved by default.

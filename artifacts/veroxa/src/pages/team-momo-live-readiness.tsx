@@ -134,7 +134,7 @@ export default function TeamMomoLiveReadiness() {
           testId="empty-team-momo-live-readiness"
         />
         <BoundaryCopy />
-        <TeamReviewModeRouteSummary title="Momo Live Pilot Readiness Gate review-mode summary" />
+        <Card className="mt-4"><CardContent className="p-4"><Button asChild size="sm" variant="outline"><Link href="/team/momo-dry-run-go-no-go">Review internal dry run gate</Link></Button></CardContent></Card><TeamReviewModeRouteSummary title="Momo Live Pilot Readiness Gate review-mode summary" />
       </PortalLayout>
     );
   }
@@ -307,7 +307,7 @@ export default function TeamMomoLiveReadiness() {
           </div>
         </CardContent>
       </Card>
-      <TeamReviewModeRouteSummary title="Momo Live Pilot Readiness Gate safe checklist summary" />
+      <Card className="mt-4"><CardContent className="p-4"><Button asChild size="sm" variant="outline"><Link href="/team/momo-dry-run-go-no-go">Review internal dry run gate</Link></Button></CardContent></Card><TeamReviewModeRouteSummary title="Momo Live Pilot Readiness Gate safe checklist summary" />
     </PortalLayout>
   );
 }
