@@ -33,7 +33,7 @@ Current completed sequence:
 
 PR #120 is internal dry-run/go-no-go review only. It does not activate the pilot, activate real auth, create credentials, contact Momo’s House, expose anything to the client, generate AI output, create fake AI drafts, create fake approvals, create fake reports, upload/create/seed/generate/fake media, publish externally, connect external platforms, or add payments, webhooks, cron jobs, background jobs, scheduled jobs, or automation runners.
 
-`AUTH_MODE` remains `placeholder`. `/api/pilot-access` remains active. Roles remain `client` and `team` only. Momo owner walkthrough remains blocked. No next activation PR is approved by default. Future real-world activation, real-auth activation, external platform setup, owner walkthrough, or client exposure requires separate explicit Faraz approval.
+`AUTH_MODE` remains `placeholder`. `/api/pilot-access` remains active. Roles remain `client` and `team` only. Momo owner walkthrough remains blocked. No next activation PR is approved by default. Future real-world activation, real-auth activation, external platform setup, owner walkthrough, or client exposure requires separate explicit Faraz approval. No production auth is active.
 
 ## Product identity
 
@@ -48,7 +48,7 @@ Active roles today:
 1. Restaurant Partner / Client
 2. Veroxa Team / Faraz
 
-Owner, Operator, Super Admin, generic Admin, and Execution roles remain parked unless Faraz explicitly reintroduces them. Do not build Owner/Operator/Admin/Super Admin/Execution portals or workflows without an explicit new instruction.
+Owner, Operator, Super Admin, generic Admin, and Execution roles are not active and remain parked unless Faraz explicitly reintroduces them. Do not build Owner/Operator/Admin/Super Admin/Execution portals or workflows without an explicit new instruction.
 
 Team Portal complexity remains deferred. Team surfaces must stay supporting/action-focused. No AI command-center automation should be added unless separately approved. Owner/Operator/Super Admin/generic Admin/Execution dashboards remain blocked.
 
@@ -91,7 +91,11 @@ Current locked public launch offer:
 
 Coming soon / not included at launch: Yelp, TikTok support, Reels/video support, ads management, daily posting, automated publishing, live integrations, and ads creative.
 
-Do not expose old Starter/Growth/Premium, Local Presence, Full Presence, old Complete Presence, $295, $995, $977, or $488 offers as current public pricing.
+Starter, Growth, Premium, Local Presence, Full Presence, old Complete Presence, $295, $995, $977, and $488 are historical/deprecated and must not be shown as current public pricing. Veroxa does not recommend or invent discounts, BOGO offers, lower prices, price cuts, or promotions for restaurants.
+
+## Communication rules
+
+No routine text/call workflow should be the normal service channel. Portal requests are the normal routine channel; Veroxa responds/reviews/answers within 24 hours, but this is not a promise that all work is completed within 24 hours.
 
 ## Routing rules
 
