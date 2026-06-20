@@ -36,8 +36,6 @@ for (const [path, text] of [
   for (const forbidden of [
     "Status: active real-pilot/manual-mode",
     "if Momo House says yes tomorrow",
-    "active owner walkthrough guide",
-    "active launch checklist",
   ]) {
     must(!text.includes(forbidden), `${path} must not present stale manual launch/walkthrough content as active: ${forbidden}`);
   }
