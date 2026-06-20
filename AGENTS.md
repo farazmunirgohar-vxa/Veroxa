@@ -50,6 +50,8 @@ Active roles today:
 
 Owner, Operator, Super Admin, generic Admin, and Execution roles remain parked unless Faraz explicitly reintroduces them. Do not build Owner/Operator/Admin/Super Admin/Execution portals or workflows without an explicit new instruction.
 
+Team Portal complexity remains deferred. Team surfaces must stay supporting/action-focused. No AI command-center automation should be added unless separately approved. Owner/Operator/Super Admin/generic Admin/Execution dashboards remain blocked.
+
 ## Current build stack
 
 The active build stack is GitHub + Codex + Vercel.
