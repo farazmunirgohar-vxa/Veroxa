@@ -36,6 +36,7 @@ for (const path of ["MOMO_OWNER_WALKTHROUGH.md", "MOMO_PILOT_LAUNCH_QA.md"]) {
     const doc = read(`${docsPath}${path}`).slice(0, 1500);
     must(/Historical\/blocked reference only/i.test(doc), `${path} must be clearly marked historical/blocked near the top.`);
     must(/Do not use this document as an active launch guide or active owner walkthrough guide/i.test(doc), `${path} must block active launch/walkthrough usage.`);
+    must(!/^Status:\s*active\b/im.test(doc), `${path} must not contain active status wording near the top.`);
   }
 }
 for (const path of [
