@@ -72,7 +72,8 @@
     "check-post-pr120-source-truth-operating-lock": "tsx ./src/check-post-pr120-source-truth-operating-lock.ts",
     "check-momo-focused-team-portal-consolidation": "tsx ./src/check-momo-focused-team-portal-consolidation.ts",
     "check-momo-workspace-primary-navigation-alignment": "tsx ./src/check-momo-workspace-primary-navigation-alignment.ts",
-    "check-momo-workspace-dashboard-operating-snapshot": "tsx ./src/check-momo-workspace-dashboard-operating-snapshot.ts"
+    "check-momo-workspace-dashboard-operating-snapshot": "tsx ./src/check-momo-workspace-dashboard-operating-snapshot.ts",
+    "check-momo-work-queue-daily-operating-board": "tsx ./src/check-momo-work-queue-daily-operating-board.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",
