@@ -7,6 +7,7 @@ function includes(haystack: string, needle: string, label = needle) { assert(hay
 const app = read("artifacts/veroxa/src/App.tsx");
 const nav = read("artifacts/veroxa/src/lib/teamPortalNav.ts");
 const control = read("artifacts/veroxa/src/pages/team-control-center.tsx");
+const activeIndex = read("artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md");
 const docs = [
   "artifacts/veroxa/docs/MOMO_FOCUSED_TEAM_PORTAL_CONSOLIDATION.md",
   "artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md",
@@ -37,6 +38,15 @@ for (const role of ["owner", "admin", "operator", "super-admin"]) {
 
 for (const route of ["/team/momo-live-readiness", "/team/momo-activation-gate", "/team/momo-pilot-prep", "/team/momo-business-truth", "/team/momo-media-content", "/team/momo-brand-ai-rules", "/team/momo-ai-generation", "/team/momo-ai-approval", "/team/momo-dry-run-go-no-go"]) {
   includes(app, `path=\"${route}\"`, `standalone route ${route}`);
+}
+
+for (const sourceDoc of [
+  "`MOMO_FOCUSED_TEAM_PORTAL_CONSOLIDATION.md`",
+  "`MOMO_FOCUSED_TEAM_PORTAL_DIRECTION.md`",
+]) {
+  const sourceDocIndex = activeIndex.indexOf(sourceDoc);
+  const currentSourceListIndex = activeIndex.indexOf("## Current source-of-truth docs");
+  assert(sourceDocIndex > currentSourceListIndex && sourceDocIndex < activeIndex.indexOf("These files reflect", currentSourceListIndex), `${sourceDoc} must be listed in the Current source-of-truth docs section.`);
 }
 
 for (const phrase of [
