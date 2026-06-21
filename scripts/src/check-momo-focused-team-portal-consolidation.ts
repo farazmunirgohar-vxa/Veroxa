@@ -7,6 +7,7 @@ function includes(haystack: string, needle: string, label = needle) { assert(hay
 const app = read("artifacts/veroxa/src/App.tsx");
 const nav = read("artifacts/veroxa/src/lib/teamPortalNav.ts");
 const control = read("artifacts/veroxa/src/pages/team-control-center.tsx");
+const activeIndex = read("artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md");
 const docs = [
   "artifacts/veroxa/docs/MOMO_FOCUSED_TEAM_PORTAL_CONSOLIDATION.md",
   "artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md",
@@ -37,6 +38,19 @@ for (const role of ["owner", "admin", "operator", "super-admin"]) {
 
 for (const route of ["/team/momo-live-readiness", "/team/momo-activation-gate", "/team/momo-pilot-prep", "/team/momo-business-truth", "/team/momo-media-content", "/team/momo-brand-ai-rules", "/team/momo-ai-generation", "/team/momo-ai-approval", "/team/momo-dry-run-go-no-go"]) {
   includes(app, `path=\"${route}\"`, `standalone route ${route}`);
+}
+
+const currentSourceListIndex = activeIndex.indexOf("## Current source-of-truth docs");
+const activeOverrideListIndex = activeIndex.indexOf("These files reflect", currentSourceListIndex);
+assert(currentSourceListIndex >= 0, "ACTIVE_DOCS_INDEX.md missing Current source-of-truth docs section.");
+assert(activeOverrideListIndex > currentSourceListIndex, "ACTIVE_DOCS_INDEX.md missing active override list after current source docs section.");
+const currentSourceList = activeIndex.slice(currentSourceListIndex, activeOverrideListIndex);
+
+for (const sourceDoc of [
+  "`MOMO_FOCUSED_TEAM_PORTAL_CONSOLIDATION.md`",
+  "`MOMO_FOCUSED_TEAM_PORTAL_DIRECTION.md`",
+]) {
+  includes(currentSourceList, sourceDoc, `${sourceDoc} in Current source-of-truth docs section`);
 }
 
 for (const phrase of [
