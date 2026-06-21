@@ -29,30 +29,39 @@ const authMode = read("artifacts/veroxa/src/lib/auth/authMode.ts");
 const pilotAccess = read("api/pilot-access.ts");
 const roles = `${read("artifacts/veroxa/src/domain/users/permissions.ts")}\n${read("artifacts/veroxa/src/lib/auth/authContract.ts")}`;
 
+function sliceSection(source: string, heading: string, endSearchStartOffset = 1) {
+  const start = source.indexOf(heading);
+  if (start < 0) return "";
+  const nextHeading = source.indexOf("\n## ", start + endSearchStartOffset);
+  return source.slice(start, nextHeading > start ? nextHeading : source.length);
+}
+
 must(/AUTH_MODE\s*:\s*AuthMode\s*=\s*["']placeholder["']/.test(authMode), "AUTH_MODE remains placeholder.");
 must(pilotAccess.includes("export default function handler") && pilotAccess.includes("manual_pilot_auth"), "/api/pilot-access remains active.");
 must(/AppRole\s*=\s*["']client["']\s*\|\s*["']team["']/.test(roles) && /VeroxaRole\s*=\s*["']client["']\s*\|\s*["']team["']/.test(roles), "Roles remain client/team only.");
 must(!/AppRole\s*=.*(owner|operator|admin|super_admin|super-admin)/i.test(roles), "No owner/operator/admin role was added to AppRole.");
 must(!/VeroxaRole\s*=.*(owner|operator|admin|super_admin|super-admin)/i.test(roles), "No owner/operator/admin role was added to VeroxaRole.");
 
-must(activeDocs.includes("GitHub PR #131"), "ACTIVE_DOCS_INDEX.md includes GitHub PR #131.");
-must(activeDocs.includes("GitHub PR #131 is Active Docs Override List Alignment only"), "ACTIVE_DOCS_INDEX.md says PR #131 is Active Docs Override List Alignment only.");
+const pr131Section = sliceSection(activeDocs, "## 2026-06-21 — PR #131 Active Docs Override List Alignment");
+must(Boolean(pr131Section), "Could not slice PR #131 Active Docs Override List Alignment section.");
+must(pr131Section.includes("GitHub PR #131"), "PR #131 section includes GitHub PR #131.");
+must(pr131Section.includes("GitHub PR #131 is Active Docs Override List Alignment only"), "PR #131 section says PR #131 is Active Docs Override List Alignment only.");
 must(currentBuildStatus.includes("GitHub PR #131 is docs/guardrail only"), "CURRENT_BUILD_STATUS.md says PR #131 is docs/guardrail only.");
 
 for (const marker of [
-  "does not activate the pilot",
-  "does not activate real auth",
-  "does not create credentials",
-  "does not contact Momo’s House",
-  "does not publish externally",
-  "does not connect external platforms",
-  "does not generate AI output",
-  "does not create fake data",
+  "PR #131 does not activate the pilot",
+  "PR #131 does not activate real auth",
+  "PR #131 does not create credentials",
+  "PR #131 does not contact Momo’s House",
+  "PR #131 does not publish externally",
+  "PR #131 does not connect external platforms",
+  "PR #131 does not generate AI output",
+  "PR #131 does not create fake data",
   "Momo owner walkthrough remains blocked",
   "No next activation PR is approved by default",
   "Future real-world activation requires separate explicit Faraz approval",
 ]) {
-  must(activeDocs.includes(marker), `ACTIVE_DOCS_INDEX.md missing PR #131 safety marker: ${marker}`);
+  must(pr131Section.includes(marker), `PR #131 section missing safety marker: ${marker}`);
 }
 
 const currentHeading = "## Current source-of-truth docs";
