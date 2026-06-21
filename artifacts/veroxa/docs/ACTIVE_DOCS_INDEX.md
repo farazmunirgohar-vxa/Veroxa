@@ -1,3 +1,22 @@
+## 2026-06-21 — PR #131 Active Docs Override List Alignment
+
+- GitHub PR #131 is Active Docs Override List Alignment only.
+- PR #131 aligns the Current source-of-truth docs section and lower active override list after PR #130.
+- PR #131 does not activate the pilot.
+- PR #131 does not activate real auth.
+- PR #131 does not create credentials.
+- PR #131 does not contact Momo’s House.
+- PR #131 does not publish externally.
+- PR #131 does not connect external platforms.
+- PR #131 does not generate AI output.
+- PR #131 does not create fake data.
+- AUTH_MODE remains placeholder.
+- /api/pilot-access remains active.
+- Roles remain client/team only.
+- Momo owner walkthrough remains blocked.
+- No next activation PR is approved by default.
+- Future real-world activation requires separate explicit Faraz approval.
+
 ## 2026-06-21 — PR #130 Momo Work Queue Daily Operating Board
 
 GitHub PR #130 adds Momo Work Queue Daily Operating Board only. PR #120 remains the current operating baseline. PR #123 locked the Momo-focused Team Portal direction. PR #126 added grouped Momo workspace routes. PR #128 made grouped Momo Workspace the primary navigation path while preserving standalone routes as compatibility/detail routes. PR #129 improved `/team/momo` as an internal operating snapshot dashboard. PR #130 improves `/team/momo/work` as an internal daily work board.
@@ -63,27 +82,37 @@ Status: highest-level active contributor guide and current source-of-truth index
 
 ## Current source-of-truth docs
 - `MOMO_WORK_QUEUE_DAILY_OPERATING_BOARD.md` — PR #130 source of truth for `/team/momo/work` as the internal daily work board; organization only, no activation, no real auth, no credentials, no Momo contact, no publishing, no integrations, no AI generation, and no fake work items or counts.
+- `MOMO_WORKSPACE_DASHBOARD_OPERATING_SNAPSHOT.md` — PR #129 source of truth for `/team/momo` as the internal operating snapshot dashboard; no activation, no real auth, no credentials, no Momo contact, no publishing, no integrations, no AI generation, and no fake metrics or readiness.
+- `MOMO_WORKSPACE_PRIMARY_NAVIGATION_ALIGNMENT.md` — PR #128 source of truth for grouped Momo Workspace as the primary Team navigation path while preserving standalone compatibility/detail routes; no activation, no real auth, no credentials, no Momo contact, no publishing, no integrations, and no AI generation.
 - `MOMO_FOCUSED_TEAM_PORTAL_CONSOLIDATION.md` — PR #126 source of truth for the grouped Momo-only Team Portal workspace; consolidation only, no activation, no real auth, no external publishing, no integrations, and owner walkthrough blocked.
 - `MOMO_FOCUSED_TEAM_PORTAL_DIRECTION.md` — PR #123 source of truth for Momo-focused Team Portal direction; Team Portal is Momo-only internal operations workspace for now.
 - `MOMO_INTERNAL_DRY_RUN_GO_NO_GO_GATE.md` — GitHub PR #120 Momo Internal Dry Run + Go/No-Go Gate only; internal dry-run/go-no-go review only; AUTH_MODE placeholder; /api/pilot-access active; Momo owner walkthrough blocked; no next activation PR approved by default; future real-world activation requires separate explicit Faraz approval.
 - `MOMO_AI_DRAFT_APPROVAL_QUEUE.md` — GitHub PR #119 AI Draft Approval Queue only; internal Team review queue; AUTH_MODE placeholder; /api/pilot-access active; Momo owner walkthrough blocked; no next activation PR approved by default; future real-world activation requires separate explicit Faraz approval.
 - `MOMO_CONTROLLED_AI_DRAFT_GENERATION_FOUNDATION.md` — GitHub PR #118 controlled AI draft generation foundation only; AI generation disabled by default; AUTH_MODE placeholder; /api/pilot-access active; Momo owner walkthrough blocked; no next activation PR approved by default; future real-world activation requires separate explicit Faraz approval.
-- `MOMO_BRAND_VOICE_AI_PROMPT_RULES.md` — PR #117 source of truth for Momo brand voice and AI prompt rules.
-- `MOMO_MEDIA_CONTENT_INVENTORY_PACK.md` — PR #116 source of truth for Momo media/content inventory.
-- `MOMO_BUSINESS_TRUTH_REVIEW_PACK.md` — PR #115 source of truth for Momo business-truth review.
-- `MOMO_INTERNAL_PILOT_PREP_PACK.md` — PR #114 source of truth for Momo internal pilot prep.
+- `MOMO_BRAND_VOICE_AI_PROMPT_RULES.md` — PR #117 source of truth for Momo brand voice and AI prompt rules; no AI provider calls, no AI output generation, and Team/Faraz review remains required before any customer-visible use.
+- `MOMO_MEDIA_CONTENT_INVENTORY_PACK.md` — PR #116 source of truth for Momo media/content inventory; internal-only media review with no upload, no generated/fake media, no publishing, and owner-confirmed usage rights required before public use.
+- `MOMO_BUSINESS_TRUTH_REVIEW_PACK.md` — PR #115 source of truth for Momo business-truth review; owner confirmation remains required before any public/customer-visible use of business-truth changes or sensitive claims.
+- `MOMO_INTERNAL_PILOT_PREP_PACK.md` — PR #114 source of truth for Momo internal pilot prep; internal preparation only, no activation, no real auth, no credentials, no Momo contact, no publishing, and no integrations.
 
 
 These files reflect the current Veroxa operating truth and override historical/archive strategy notes. If another doc conflicts with this index, do not override this index; treat the conflicting note as stale until Faraz explicitly refreshes it:
 
+- `MOMO_WORK_QUEUE_DAILY_OPERATING_BOARD.md`
+- `MOMO_WORKSPACE_DASHBOARD_OPERATING_SNAPSHOT.md`
+- `MOMO_WORKSPACE_PRIMARY_NAVIGATION_ALIGNMENT.md`
+- `MOMO_FOCUSED_TEAM_PORTAL_CONSOLIDATION.md`
+- `MOMO_FOCUSED_TEAM_PORTAL_DIRECTION.md`
+- `MOMO_INTERNAL_DRY_RUN_GO_NO_GO_GATE.md`
+- `MOMO_AI_DRAFT_APPROVAL_QUEUE.md`
+- `MOMO_CONTROLLED_AI_DRAFT_GENERATION_FOUNDATION.md`
+- `MOMO_BRAND_VOICE_AI_PROMPT_RULES.md`
+- `MOMO_MEDIA_CONTENT_INVENTORY_PACK.md`
+- `MOMO_BUSINESS_TRUTH_REVIEW_PACK.md`
+- `MOMO_INTERNAL_PILOT_PREP_PACK.md`
 - `VEROXA_LOCKED_OPERATING_MEMORY.md`
 - `LIVE_AUTOMATION_V1_PR_SEQUENCE.md`
 - `LIVE_AUTOMATION_V1_ARCHITECTURE.md`
 - `CURRENT_BUILD_STATUS.md`
-- `MOMO_FOCUSED_TEAM_PORTAL_CONSOLIDATION.md`
-- `MOMO_FOCUSED_TEAM_PORTAL_DIRECTION.md`
-- `MOMO_INTERNAL_PILOT_PREP_PACK.md`
-- `MOMO_BRAND_VOICE_AI_PROMPT_RULES.md`
 - `LIVE_AUTOMATION_V1_MOMO_ACTIVATION_GATE.md`
 - `LIVE_AUTOMATION_V1_MOMO_READINESS_GATE.md`
 - `LIVE_AUTOMATION_V1_REPORTS_FROM_ACTIVITY.md`
