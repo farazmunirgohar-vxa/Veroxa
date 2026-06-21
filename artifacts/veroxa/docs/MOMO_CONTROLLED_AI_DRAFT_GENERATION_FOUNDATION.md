@@ -1,3 +1,9 @@
+## 2026-06-21 — Merged/completed operating status
+
+PR #118 Controlled AI Draft Generation Foundation is merged/completed and is an active internal operating reference in the post-PR120 baseline. This document must be read as completed source-of-truth, not future work.
+
+It does not imply activation is next by default. It preserves internal-only/no-activation/no-publishing/no-client-exposure boundaries. AUTH_MODE remains placeholder. /api/pilot-access remains active. Roles remain client/team only. Momo owner walkthrough remains blocked. No next activation PR is approved by default. Future real-world activation requires separate explicit Faraz approval.
+
 
 ## GitHub PR #118 — Controlled AI Draft Generation Foundation
 

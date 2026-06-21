@@ -1,3 +1,25 @@
+## 2026-06-21 — Post-PR120 Source-of-Truth Cleanup + Operating Lock
+
+Current operating baseline: merged PR #120 — Momo Internal Dry Run + Go/No-Go Gate.
+
+- Active internal operating references now include PR #118 `MOMO_CONTROLLED_AI_DRAFT_GENERATION_FOUNDATION.md`, PR #119 `MOMO_AI_DRAFT_APPROVAL_QUEUE.md`, and PR #120 `MOMO_INTERNAL_DRY_RUN_GO_NO_GO_GATE.md`.
+- PR #118 Controlled AI Draft Generation Foundation is merged/completed and remains internal-only with AI generation disabled by default.
+- PR #119 AI Draft Approval Queue is merged/completed and remains Team-only/internal-only.
+- PR #120 Momo Internal Dry Run + Go/No-Go Gate is merged/completed and remains Team-only/internal-only.
+- PR #121 was closed unmerged and is not active source-of-truth.
+- PR #122 was closed/not used and is not active source-of-truth.
+- Older Momo owner walkthrough and launch QA docs are historical/blocked references only.
+- No active guide should tell Faraz to start the Momo owner walkthrough.
+- No active guide should treat activation as the default next step.
+- No active guide should claim real auth is active.
+- No active guide should claim external integrations are connected.
+- AUTH_MODE remains placeholder.
+- /api/pilot-access remains active.
+- Roles remain client/team only.
+- Momo owner walkthrough remains blocked unless Faraz explicitly approves it later.
+- No next activation PR is approved by default.
+- Future real-world activation, real-auth activation, external platform setup, or client exposure requires separate explicit Faraz approval.
+
 # Active Docs Index
 
 Status: highest-level active contributor guide and current source-of-truth index. Read this file before relying on any older Veroxa doc.

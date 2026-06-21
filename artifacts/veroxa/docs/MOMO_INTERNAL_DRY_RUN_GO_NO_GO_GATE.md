@@ -1,3 +1,11 @@
+## 2026-06-21 — Merged/completed operating status
+
+PR #120 Momo Internal Dry Run + Go/No-Go Gate is merged/completed and is an active internal operating reference in the post-PR120 baseline. This document must be read as completed source-of-truth, not future work.
+
+It does not imply activation is next by default. It preserves internal-only/no-activation/no-publishing/no-client-exposure boundaries. AUTH_MODE remains placeholder. /api/pilot-access remains active. Roles remain client/team only. Momo owner walkthrough remains blocked. No next activation PR is approved by default. Future real-world activation requires separate explicit Faraz approval.
+
+The dry-run/go-no-go gate is internal review only and is not an owner walkthrough approval.
+
 # Momo Internal Dry Run + Go/No-Go Gate
 
 Status: GitHub PR #120 adds Momo Internal Dry Run + Go/No-Go Gate only.

@@ -1,3 +1,9 @@
+## Historical/blocked reference only — not active launch or walkthrough guide
+
+Do not use this document as an active launch guide or active owner walkthrough guide. Momo owner walkthrough remains blocked. No activation or owner outreach is approved. Future owner walkthrough requires separate explicit Faraz approval. Current active source-of-truth is the post-PR120 dry-run/go-no-go state: merged PR #120 — Momo Internal Dry Run + Go/No-Go Gate.
+
+AUTH_MODE remains placeholder. /api/pilot-access remains active. Roles remain client/team only. No next activation PR is approved by default. Future real-world activation requires separate explicit Faraz approval.
+
 # Momo Pilot Launch QA Checklist
 
 Status: active real-pilot/manual-mode checklist for Momo House San Antonio and Team Faraz.

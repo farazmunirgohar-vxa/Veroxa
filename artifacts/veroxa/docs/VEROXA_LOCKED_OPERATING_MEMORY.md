@@ -1,3 +1,19 @@
+## 2026-06-21 — Post-PR120 locked operating memory
+
+Automation-first direction remains locked. The current operating baseline is post-PR120: merged PR #120 — Momo Internal Dry Run + Go/No-Go Gate.
+
+- PR #118 Controlled AI Draft Generation Foundation is merged/completed.
+- PR #119 AI Draft Approval Queue is merged/completed.
+- PR #120 Momo Internal Dry Run + Go/No-Go Gate is merged/completed.
+- PR #121 was closed unmerged and is not active source-of-truth.
+- PR #122 was closed/not used and is not active source-of-truth.
+- PR #120 dry-run/go-no-go gate is internal-only and not an owner walkthrough approval.
+- Momo owner walkthrough remains blocked.
+- Any future owner walkthrough must come only after separate explicit Faraz approval.
+- Any future activation must come only after separate explicit Faraz approval.
+- No public/customer-visible use of business truth, media, AI drafts, reports, or approvals is allowed without Team/Faraz review and required owner confirmation.
+- AUTH_MODE remains placeholder. /api/pilot-access remains active. Roles remain client/team only. No next activation PR is approved by default.
+
 ## 2026-06-17 — PR #106 AI Draft Preparation Foundation status
 
 GitHub PR #106 adds AI Draft Preparation Foundation only. AI drafts are Team-only internal draft records behind real auth and `VITE_VEROXA_AI_DRAFTS_ENABLED=true`; placeholder mode stays empty. No raw AI output is client-visible, no draft publishes, no draft auto-approves, no reports are generated, Team Automation Control Center remains PR #107, Reports From Activity remain PR #108, and Momo owner walkthrough remains blocked.
