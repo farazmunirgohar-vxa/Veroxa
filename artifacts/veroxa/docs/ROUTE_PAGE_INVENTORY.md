@@ -220,3 +220,14 @@ AUTH_MODE remains placeholder. /api/pilot-access remains active. Roles remain cl
 ## PR #120 — Momo Internal Dry Run + Go/No-Go Gate route
 
 - `/team/momo-dry-run-go-no-go` — Team-only internal dry-run/go-no-go review route. It is guarded by InternalDemoGuard role="team" and RealPortalDataBoundary portal="team". PR #120 is internal dry-run/go-no-go review only; AUTH_MODE remains placeholder, /api/pilot-access remains active, Momo owner walkthrough remains blocked, and future real-world activation requires separate explicit Faraz approval.
+
+## 2026-06-21 — PR #126 Momo-Focused Team Portal Consolidation
+
+- GitHub PR #126 adds Momo-Focused Team Portal Consolidation only.
+- PR #120 is the current operating baseline.
+- PR #123 locked Momo-focused Team Portal direction.
+- PR #124 and PR #125 are merged source-of-truth cleanup/fix-forward PRs.
+- PR #126 adds grouped Team-only Momo workspace routes: `/team/momo`, `/team/momo/work`, `/team/momo/intelligence`, `/team/momo/content-ai`, `/team/momo/reports`, and `/team/momo/readiness`.
+- Existing standalone Momo routes remain compatibility/detail routes.
+- PR #126 does not activate the pilot, activate real auth, create credentials, contact Momo’s House, publish externally, connect external platforms, or generate AI output.
+- AUTH_MODE remains placeholder; `/api/pilot-access` remains active; roles remain client/team only; Momo owner walkthrough remains blocked; no next activation PR is approved by default; future real-world activation requires separate explicit Faraz approval.
