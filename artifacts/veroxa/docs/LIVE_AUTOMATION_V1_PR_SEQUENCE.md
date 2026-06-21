@@ -197,3 +197,14 @@ AUTH_MODE remains placeholder. /api/pilot-access remains active. Roles remain cl
 ## PR #120 — Momo Internal Dry Run + Go/No-Go Gate
 
 GitHub PR #120 adds Momo Internal Dry Run + Go/No-Go Gate only. PR #109 through PR #119 are merged or immediately prior as the Momo readiness, activation alignment, source-of-truth, prep, business-truth, media/content, brand/AI rules, controlled generation, and AI approval queue foundations. PR #120 is internal dry-run/go-no-go review only; it does not activate the pilot, activate real auth, create credentials, contact Momo’s House, expose anything to the client, generate AI output, create fake AI drafts, create fake approvals, create fake reports, upload/create/seed/generate/fake media, publish externally, connect external platforms, or add payments, webhooks, cron jobs, background jobs, scheduled jobs, or automation runners. AUTH_MODE remains placeholder, /api/pilot-access remains active, roles remain client/team only, Momo owner walkthrough remains blocked, no next activation PR is approved by default, and future real-world activation requires separate explicit Faraz approval. Business-truth changes and media usage rights require owner confirmation before any public/customer-visible use; sensitive claims are blocked until owner-confirmed.
+
+## 2026-06-21 — PR #126 Momo-Focused Team Portal Consolidation
+
+- GitHub PR #126 adds Momo-Focused Team Portal Consolidation only.
+- PR #120 is the current operating baseline.
+- PR #123 locked Momo-focused Team Portal direction.
+- PR #124 and PR #125 are merged source-of-truth cleanup/fix-forward PRs.
+- PR #126 adds grouped Team-only Momo workspace routes: `/team/momo`, `/team/momo/work`, `/team/momo/intelligence`, `/team/momo/content-ai`, `/team/momo/reports`, and `/team/momo/readiness`.
+- Existing standalone Momo routes remain compatibility/detail routes.
+- PR #126 does not activate the pilot, activate real auth, create credentials, contact Momo’s House, publish externally, connect external platforms, or generate AI output.
+- AUTH_MODE remains placeholder; `/api/pilot-access` remains active; roles remain client/team only; Momo owner walkthrough remains blocked; no next activation PR is approved by default; future real-world activation requires separate explicit Faraz approval.

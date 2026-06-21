@@ -1,0 +1,8 @@
+import { Link } from "wouter";
+import { PortalLayout } from "@/components/PortalLayout";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { teamPortalNavItems } from "@/lib/teamPortalNav";
+const links = [{ label: "Activity Log", href: "/team/activity-log" }, { label: "Reports From Activity", href: "/team/reports-from-activity" }, { label: "Control Center", href: "/team/control-center" }];
+export default function TeamMomoReports() { return <PortalLayout items={teamPortalNavItems} portalName="Team Portal"><div className="mb-4 flex items-start justify-between gap-3"><div><h2 className="text-2xl font-bold tracking-tight">Reports + Activity</h2><p className="mt-1 text-sm text-muted-foreground">Momo-only internal workspace. Shows what Veroxa actually did for Momo.</p></div><Badge variant="outline">Internal only</Badge></div><Card className="border-amber-500/30 bg-amber-500/10"><CardContent className="grid gap-1 p-4 text-sm text-amber-100"><p>Reports must be based on real Veroxa activity only.</p><p>No fake reports.</p><p>No fake metrics.</p><p>No ROI/sales/ranking/reach claims.</p><p>Client-visible reports require review/approval.</p></CardContent></Card><section className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">{links.map((link) => <Card key={link.href}><CardHeader><CardTitle className="text-sm">{link.label}</CardTitle></CardHeader><CardContent><Button asChild size="sm" variant="outline"><Link href={link.href}>Open</Link></Button></CardContent></Card>)}</section><Button asChild className="mt-4" size="sm" variant="outline"><Link href="/team/momo">Back to Momo Workspace</Link></Button></PortalLayout>; }

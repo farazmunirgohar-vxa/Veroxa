@@ -221,3 +221,11 @@ GitHub PR #119 adds AI Draft Approval Queue only. PR #109 Momo Live Pilot Readin
 PR #119 is internal AI draft approval queue only. PR #119 does not generate AI output. PR #119 does not call any AI provider. PR #119 does not auto-approve AI output. PR #119 does not publish AI output. PR #119 does not expose AI output to the client. PR #119 does not activate the pilot. PR #119 does not activate real auth. PR #119 does not create credentials. PR #119 does not contact Momo’s House. PR #119 does not upload, create, seed, generate, or fake media. PR #119 does not publish externally. PR #119 does not connect external platforms. PR #119 does not add payments, webhooks, cron jobs, background jobs, scheduled jobs, or automation runners.
 
 AUTH_MODE remains placeholder. /api/pilot-access remains active. Roles remain client/team only. Momo owner walkthrough remains blocked. No next activation PR is approved by default. Future real-world activation requires separate explicit Faraz approval. Business-truth changes require owner confirmation before any public/customer-visible use. Media usage rights require owner confirmation before public/customer-visible use. Sensitive claims are blocked until owner-confirmed. AI drafts may move forward only after Team/Faraz review. No AI output becomes customer-visible from this PR.
+
+## 2026-06-21 — PR #126 Momo-Focused Team Portal Consolidation
+
+- `MOMO_FOCUSED_TEAM_PORTAL_CONSOLIDATION.md` documents GitHub PR #126 as Momo-Focused Team Portal Consolidation only.
+- PR #120 remains the current operating baseline; PR #123 locked the Momo-focused Team Portal direction; PR #124 and PR #125 are merged source-of-truth cleanup/fix-forward PRs.
+- PR #126 adds grouped Team-only Momo workspace routes while existing standalone Momo routes remain compatibility/detail routes.
+- PR #126 does not activate the pilot, activate real auth, create credentials, contact Momo’s House, publish externally, connect external platforms, or generate AI output.
+- AUTH_MODE remains placeholder; `/api/pilot-access` remains active; roles remain client/team only; Momo owner walkthrough remains blocked; no next activation PR is approved by default; future real-world activation requires separate explicit Faraz approval.

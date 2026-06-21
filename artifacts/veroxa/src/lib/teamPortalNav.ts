@@ -32,6 +32,7 @@ import {
   Sparkles,
   ShieldQuestion,
   ClipboardCheckIcon,
+  Home,
 } from "lucide-react";
 import type { SidebarItem } from "@/components/PortalLayout";
 
@@ -40,6 +41,7 @@ export const teamPortalNavItems: SidebarItem[] = [
   { label: "Onboarding", icon: CheckSquare, href: "/team/onboarding" },
   { label: "Approvals", icon: ClipboardCheck, href: "/team/approval-queue" },
   { label: "Control Center", icon: SlidersHorizontal, href: "/team/control-center" },
+  { label: "Momo Workspace", icon: Home, href: "/team/momo" },
   { label: "Reports From Activity", icon: ClipboardList, href: "/team/reports-from-activity" },
   { label: "Momo Readiness", icon: ShieldAlert, href: "/team/momo-live-readiness" },
   { label: "Momo Prep", icon: PackageCheck, href: "/team/momo-pilot-prep" },

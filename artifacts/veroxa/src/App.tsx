@@ -58,6 +58,12 @@ const TeamMomoBrandAiRules = lazy(() => import("@/pages/team-momo-brand-ai-rules
 const TeamMomoAiGeneration = lazy(() => import("@/pages/team-momo-ai-generation"));
 const TeamMomoAiApproval = lazy(() => import("@/pages/team-momo-ai-approval"));
 const TeamMomoDryRunGoNoGo = lazy(() => import("@/pages/team-momo-dry-run-go-no-go"));
+const TeamMomoWorkspace = lazy(() => import("@/pages/team-momo-workspace"));
+const TeamMomoWork = lazy(() => import("@/pages/team-momo-work"));
+const TeamMomoIntelligence = lazy(() => import("@/pages/team-momo-intelligence"));
+const TeamMomoContentAi = lazy(() => import("@/pages/team-momo-content-ai"));
+const TeamMomoReports = lazy(() => import("@/pages/team-momo-reports"));
+const TeamMomoReadiness = lazy(() => import("@/pages/team-momo-readiness"));
 
 const queryClient = new QueryClient();
 
@@ -242,6 +248,60 @@ function Router() {
             <InternalDemoGuard role="team">
               <RealPortalDataBoundary portal="team">
                 <TeamReportsFromActivity />
+              </RealPortalDataBoundary>
+            </InternalDemoGuard>
+          )}
+        </Route>
+        <Route path="/team/momo">
+          {() => (
+            <InternalDemoGuard role="team">
+              <RealPortalDataBoundary portal="team">
+                <TeamMomoWorkspace />
+              </RealPortalDataBoundary>
+            </InternalDemoGuard>
+          )}
+        </Route>
+        <Route path="/team/momo/work">
+          {() => (
+            <InternalDemoGuard role="team">
+              <RealPortalDataBoundary portal="team">
+                <TeamMomoWork />
+              </RealPortalDataBoundary>
+            </InternalDemoGuard>
+          )}
+        </Route>
+        <Route path="/team/momo/intelligence">
+          {() => (
+            <InternalDemoGuard role="team">
+              <RealPortalDataBoundary portal="team">
+                <TeamMomoIntelligence />
+              </RealPortalDataBoundary>
+            </InternalDemoGuard>
+          )}
+        </Route>
+        <Route path="/team/momo/content-ai">
+          {() => (
+            <InternalDemoGuard role="team">
+              <RealPortalDataBoundary portal="team">
+                <TeamMomoContentAi />
+              </RealPortalDataBoundary>
+            </InternalDemoGuard>
+          )}
+        </Route>
+        <Route path="/team/momo/reports">
+          {() => (
+            <InternalDemoGuard role="team">
+              <RealPortalDataBoundary portal="team">
+                <TeamMomoReports />
+              </RealPortalDataBoundary>
+            </InternalDemoGuard>
+          )}
+        </Route>
+        <Route path="/team/momo/readiness">
+          {() => (
+            <InternalDemoGuard role="team">
+              <RealPortalDataBoundary portal="team">
+                <TeamMomoReadiness />
               </RealPortalDataBoundary>
             </InternalDemoGuard>
           )}
