@@ -6,9 +6,9 @@ AUTH_MODE remains placeholder. /api/pilot-access remains active. Roles remain cl
 
 # Momo Pilot Launch QA Checklist
 
-Status: active real-pilot/manual-mode checklist for Momo House San Antonio and Team Faraz.
+Status: historical/blocked reference only. This preserved launch QA checklist is not active and must not be used to start a walkthrough or pilot unless Faraz explicitly reactivates that scope later.
 
-This checklist answers one launch question: if Momo House says yes tomorrow, can Faraz show Veroxa and operate the first manual pilot without confusion?
+This historical checklist originally answered a pre-live launch question; it is preserved only for context and must not be treated as current readiness guidance.
 
 ## A. Deployment / environment setup
 
