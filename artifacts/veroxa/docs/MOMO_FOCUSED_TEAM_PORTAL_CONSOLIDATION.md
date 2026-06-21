@@ -36,3 +36,9 @@ Each grouped route remains behind `InternalDemoGuard role="team"` and `RealPorta
 - Momo owner walkthrough remains blocked.
 - No next activation PR is approved by default.
 - Future real-world activation requires separate explicit Faraz approval.
+
+## GitHub PR #128 — Momo Workspace Primary Navigation Alignment
+
+GitHub PR #128 adds Momo Workspace Primary Navigation Alignment only. PR #120 remains the current operating baseline. PR #123 locked the Momo-focused Team Portal direction. PR #126 added grouped Momo workspace routes. PR #127 elevated the Momo workspace docs into the current source-of-truth list. PR #128 makes the grouped Momo Workspace the primary navigation path while preserving standalone routes as compatibility/detail routes.
+
+PR #128 does not activate the pilot, does not activate real auth, does not create credentials, does not contact Momo’s House, does not publish externally, does not connect external platforms, and does not generate AI output. AUTH_MODE remains placeholder, /api/pilot-access remains active, roles remain client/team only, Momo owner walkthrough remains blocked, no next activation PR is approved by default, and future real-world activation requires separate explicit Faraz approval.
