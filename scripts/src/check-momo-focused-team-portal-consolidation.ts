@@ -40,13 +40,17 @@ for (const route of ["/team/momo-live-readiness", "/team/momo-activation-gate", 
   includes(app, `path=\"${route}\"`, `standalone route ${route}`);
 }
 
+const currentSourceListIndex = activeIndex.indexOf("## Current source-of-truth docs");
+const activeOverrideListIndex = activeIndex.indexOf("These files reflect", currentSourceListIndex);
+assert(currentSourceListIndex >= 0, "ACTIVE_DOCS_INDEX.md missing Current source-of-truth docs section.");
+assert(activeOverrideListIndex > currentSourceListIndex, "ACTIVE_DOCS_INDEX.md missing active override list after current source docs section.");
+const currentSourceList = activeIndex.slice(currentSourceListIndex, activeOverrideListIndex);
+
 for (const sourceDoc of [
   "`MOMO_FOCUSED_TEAM_PORTAL_CONSOLIDATION.md`",
   "`MOMO_FOCUSED_TEAM_PORTAL_DIRECTION.md`",
 ]) {
-  const sourceDocIndex = activeIndex.indexOf(sourceDoc);
-  const currentSourceListIndex = activeIndex.indexOf("## Current source-of-truth docs");
-  assert(sourceDocIndex > currentSourceListIndex && sourceDocIndex < activeIndex.indexOf("These files reflect", currentSourceListIndex), `${sourceDoc} must be listed in the Current source-of-truth docs section.`);
+  includes(currentSourceList, sourceDoc, `${sourceDoc} in Current source-of-truth docs section`);
 }
 
 for (const phrase of [
