@@ -1,3 +1,10 @@
+## 2026-06-21 — PR #131 Active Docs Override List Alignment
+
+- GitHub PR #131 is docs/guardrail only.
+- It aligns the active docs override list after PR #130.
+- It does not change UI, runtime behavior, auth, credentials, Momo contact, publishing, integrations, AI, database, or activation state.
+- The next product build after this cleanup should continue inside grouped Momo workspace sections, not activation.
+
 ## 2026-06-21 — PR #130 Momo Work Queue Daily Operating Board
 
 GitHub PR #130 adds Momo Work Queue Daily Operating Board only. PR #120 remains the current operating baseline. PR #123 locked the Momo-focused Team Portal direction. PR #126 added grouped Momo workspace routes. PR #128 made grouped Momo Workspace the primary navigation path while preserving standalone routes as compatibility/detail routes. PR #129 improved `/team/momo` as an internal operating snapshot dashboard. PR #130 improves `/team/momo/work` as an internal daily work board.

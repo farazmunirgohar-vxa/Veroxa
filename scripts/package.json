@@ -73,7 +73,8 @@
     "check-momo-focused-team-portal-consolidation": "tsx ./src/check-momo-focused-team-portal-consolidation.ts",
     "check-momo-workspace-primary-navigation-alignment": "tsx ./src/check-momo-workspace-primary-navigation-alignment.ts",
     "check-momo-workspace-dashboard-operating-snapshot": "tsx ./src/check-momo-workspace-dashboard-operating-snapshot.ts",
-    "check-momo-work-queue-daily-operating-board": "tsx ./src/check-momo-work-queue-daily-operating-board.ts"
+    "check-momo-work-queue-daily-operating-board": "tsx ./src/check-momo-work-queue-daily-operating-board.ts",
+    "check-active-docs-momo-workspace-override-list": "tsx ./src/check-active-docs-momo-workspace-override-list.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",
