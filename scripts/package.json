@@ -71,7 +71,8 @@
     "check-momo-internal-dry-run-go-no-go-gate": "tsx ./src/check-momo-internal-dry-run-go-no-go-gate.ts",
     "check-post-pr120-source-truth-operating-lock": "tsx ./src/check-post-pr120-source-truth-operating-lock.ts",
     "check-momo-focused-team-portal-consolidation": "tsx ./src/check-momo-focused-team-portal-consolidation.ts",
-    "check-momo-workspace-primary-navigation-alignment": "tsx ./src/check-momo-workspace-primary-navigation-alignment.ts"
+    "check-momo-workspace-primary-navigation-alignment": "tsx ./src/check-momo-workspace-primary-navigation-alignment.ts",
+    "check-momo-workspace-dashboard-operating-snapshot": "tsx ./src/check-momo-workspace-dashboard-operating-snapshot.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",
