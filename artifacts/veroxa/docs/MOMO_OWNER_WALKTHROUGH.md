@@ -6,7 +6,7 @@ AUTH_MODE remains placeholder. /api/pilot-access remains active. Roles remain cl
 
 # Momo Owner Walkthrough Guide
 
-Status: active real-pilot/manual-mode guide for Faraz when showing Veroxa to Momo House San Antonio.
+Status: historical/blocked reference only. This preserved walkthrough script is not an active guide and must not be used unless Faraz explicitly reactivates owner walkthrough scope later.
 
 Tone: simple, professional, honest, not technical, not salesy, and no guarantees.
 
