@@ -68,7 +68,8 @@
     "check-momo-brand-voice-ai-prompt-rules": "tsx ./src/check-momo-brand-voice-ai-prompt-rules.ts",
     "check-momo-controlled-ai-draft-generation-foundation": "tsx ./src/check-momo-controlled-ai-draft-generation-foundation.ts",
     "check-momo-ai-draft-approval-queue": "tsx ./src/check-momo-ai-draft-approval-queue.ts",
-    "check-momo-internal-dry-run-go-no-go-gate": "tsx ./src/check-momo-internal-dry-run-go-no-go-gate.ts"
+    "check-momo-internal-dry-run-go-no-go-gate": "tsx ./src/check-momo-internal-dry-run-go-no-go-gate.ts",
+    "check-post-pr120-source-truth-operating-lock": "tsx ./src/check-post-pr120-source-truth-operating-lock.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",

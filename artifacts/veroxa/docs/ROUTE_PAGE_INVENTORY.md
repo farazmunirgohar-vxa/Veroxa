@@ -1,3 +1,11 @@
+## 2026-06-21 — Post-PR120 internal route lock
+
+- `/team/momo-ai-generation` is Team-only/internal-only; no AI provider calls, no generated AI output, no DB writes, no publishing, no client exposure.
+- `/team/momo-ai-approval` is Team-only/internal-only; no auto-approval, no publishing, no client exposure, no external side effects.
+- `/team/momo-dry-run-go-no-go` is the PR #120 Team-only/internal-only Momo Dry Run route; no DB writes, no external side effects, no auth activation, no publishing, no client exposure.
+- Old walkthrough/launch docs are historical/blocked references only and are not active owner-facing flow.
+- AUTH_MODE remains placeholder. /api/pilot-access remains active. Roles remain client/team only. Momo owner walkthrough remains blocked. No next activation PR is approved by default. Future real-world activation requires separate explicit Faraz approval.
+
 # Route Page Inventory
 
 Status: active real-pilot route inventory. Public demo/preview portal aliases are retired. See `QUARANTINED_AND_FUTURE_FILES_REVIEW.md` before routing parked pages.

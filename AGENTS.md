@@ -1,3 +1,21 @@
+## 2026-06-21 — Post-PR120 source-of-truth operating lock
+
+- Current operating baseline: merged PR #120 — Momo Internal Dry Run + Go/No-Go Gate.
+- PR #119 AI Draft Approval Queue is merged/completed.
+- PR #120 Momo Internal Dry Run + Go/No-Go Gate is merged/completed.
+- PR #121 was closed unmerged and is not active source-of-truth.
+- PR #122 was closed/not used and is not active source-of-truth.
+- Older Momo owner walkthrough and launch QA docs are historical/blocked references only unless Faraz explicitly reactivates them later.
+- No future agent should assume the Momo owner walkthrough is approved.
+- No future agent should assume activation comes next.
+- No future agent should enable real auth, external integrations, publishing, AI provider calls, platform tokens, or client exposure unless a later prompt explicitly approves that exact scope.
+- AUTH_MODE remains placeholder.
+- /api/pilot-access remains active.
+- Roles remain client/team only.
+- Momo owner walkthrough remains blocked.
+- No next activation PR is approved by default.
+- Future real-world activation, real-auth activation, external platform setup, owner walkthrough, or client exposure requires separate explicit Faraz approval.
+
 # Veroxa Agent Instructions
 
 Current docs authority: read `artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md` first, then read `artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md`. Do not override the active docs index, locked operating memory, `PRICING_SOURCE_OF_TRUTH.md`, or `CURRENT_BUILD_STATUS.md` with older current-looking docs or archived strategy notes.

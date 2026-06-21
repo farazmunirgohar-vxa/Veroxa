@@ -1,3 +1,26 @@
+## 2026-06-21 — Post-PR120 current build status
+
+Veroxa is post-PR120. PR #120 — Momo Internal Dry Run + Go/No-Go Gate — is merged and is the current operating baseline.
+
+Team-only internal AI-assisted operating skeleton exists through:
+
+- Business Truth Review.
+- Media + Content Inventory.
+- Brand Voice + AI Prompt Rules.
+- Controlled AI Draft Generation Foundation.
+- AI Draft Approval Queue.
+- Internal Dry Run + Go/No-Go Gate.
+
+This does not mean launch-ready. This does not mean owner-walkthrough-ready. This does not mean real-auth-ready. This does not mean platform-integration-ready. This does not mean publishing-ready.
+
+Current next step:
+
+- Source-of-truth cleanup and review after PR #120.
+- Internal review of dry-run/go-no-go blockers.
+- No external activation.
+
+AUTH_MODE remains placeholder. /api/pilot-access remains active. Roles remain client/team only. Momo owner walkthrough remains blocked. No next activation PR is approved by default. Future real-world activation requires separate explicit Faraz approval.
+
 ## 2026-06-17 — PR #106 AI Draft Preparation Foundation
 
 - PR #106 adds the AI Draft Preparation Foundation only: Team-only internal draft records, a guarded `/team/ai-drafts` route, safe draft service helpers, RLS hardening, and guardrails.
