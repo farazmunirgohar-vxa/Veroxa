@@ -121,8 +121,8 @@ export const momoSafeNextActions = {
     { label: "Review media", href: "/team/momo-media-content" },
     { label: "Review brand rules", href: "/team/momo-brand-ai-rules" },
     { label: "Review readiness", href: "/team/momo/readiness" },
-    { label: "Review reports", href: "/team/momo" },
-    { label: "Review dry run", href: "/team/momo-pilot-prep" },
+    { label: "Review reports", href: "/team/momo/reports" },
+    { label: "Review dry run", href: "/team/momo-dry-run-go-no-go" },
   ],
   blocked: ["Contact owner", "Publish", "Generate AI", "Activate pilot", "Connect platforms"],
 };
