@@ -251,3 +251,10 @@ AUTH_MODE remains placeholder. /api/pilot-access remains active. Roles remain cl
 GitHub PR #128 adds Momo Workspace Primary Navigation Alignment only. PR #120 remains the current operating baseline. PR #123 locked the Momo-focused Team Portal direction. PR #126 added grouped Momo workspace routes. PR #127 elevated the Momo workspace docs into the current source-of-truth list. PR #128 makes the grouped Momo Workspace the primary navigation path while preserving standalone routes as compatibility/detail routes.
 
 PR #128 does not activate the pilot, does not activate real auth, does not create credentials, does not contact Momo’s House, does not publish externally, does not connect external platforms, and does not generate AI output. AUTH_MODE remains placeholder, /api/pilot-access remains active, roles remain client/team only, Momo owner walkthrough remains blocked, no next activation PR is approved by default, and future real-world activation requires separate explicit Faraz approval.
+
+## PR #132 — Momo Restaurant Intelligence Operating Board
+
+- `/team/momo/intelligence` is the Team-only Restaurant Intelligence operating board for Momo.
+- It remains behind Team/Internal guardrails through the app route shell and is organization-only.
+- It links only to grouped or existing Momo workspace review surfaces: `/team/momo-business-truth`, `/team/momo-media-content`, `/team/momo-brand-ai-rules`, `/team/momo-pilot-prep`, `/team/momo/readiness`, and `/team/momo`.
+- No client route was created. No activation, publishing, AI generation, external integration, auth change, credential creation, fake data, database read, or database write was added.

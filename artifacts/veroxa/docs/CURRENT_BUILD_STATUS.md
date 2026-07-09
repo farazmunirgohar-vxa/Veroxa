@@ -1,3 +1,9 @@
+## 2026-06-21 — PR #132 Momo Restaurant Intelligence Operating Board
+
+GitHub PR #132 adds Momo Restaurant Intelligence Operating Board only. `/team/momo/intelligence` is the internal Restaurant Intelligence hub for Team Faraz and consolidates restaurant identity, business truth, media inventory, brand voice, operational readiness, current risks, and safe next actions.
+
+PR #132 does not activate the pilot, does not activate real auth, does not create credentials, does not contact Momo’s House, does not publish externally, does not connect external platforms, does not generate AI output, does not create fake data, does not read or write the database, and does not remove guardrails. AUTH_MODE remains placeholder. /api/pilot-access remains active. Roles remain client/team only. Momo owner walkthrough remains blocked. Future activation requires explicit Faraz approval.
+
 ## 2026-06-21 — PR #131 Active Docs Override List Alignment
 
 - GitHub PR #131 is docs/guardrail only.

@@ -1,3 +1,9 @@
+## 2026-06-21 — PR #132 Momo Restaurant Intelligence Operating Board
+
+GitHub PR #132 adds Momo Restaurant Intelligence Operating Board only. `/team/momo/intelligence` is the internal Restaurant Intelligence hub for Team Faraz and consolidates restaurant identity, business truth, media inventory, brand voice, operational readiness, current risks, and safe next actions.
+
+PR #132 does not activate the pilot, does not activate real auth, does not create credentials, does not contact Momo’s House, does not publish externally, does not connect external platforms, does not generate AI output, does not create fake data, does not read or write the database, and does not remove guardrails. AUTH_MODE remains placeholder. /api/pilot-access remains active. Roles remain client/team only. Momo owner walkthrough remains blocked. Future activation requires explicit Faraz approval.
+
 ## 2026-06-21 — PR #131 Active Docs Override List Alignment
 
 - GitHub PR #131 is Active Docs Override List Alignment only.
@@ -81,6 +87,7 @@ Status: highest-level active contributor guide and current source-of-truth index
 - Momo owner walkthrough remains blocked until the full Live Automation V1 sequence is implemented and approved.
 
 ## Current source-of-truth docs
+- `MOMO_RESTAURANT_INTELLIGENCE_OPERATING_BOARD.md` — PR #132 source of truth for `/team/momo/intelligence` as the internal Restaurant Intelligence operating board; organization only, no activation, no real auth, no credentials, no Momo contact, no publishing, no integrations, no AI generation, no fake data, and no database writes.
 - `MOMO_WORK_QUEUE_DAILY_OPERATING_BOARD.md` — PR #130 source of truth for `/team/momo/work` as the internal daily work board; organization only, no activation, no real auth, no credentials, no Momo contact, no publishing, no integrations, no AI generation, and no fake work items or counts.
 - `MOMO_WORKSPACE_DASHBOARD_OPERATING_SNAPSHOT.md` — PR #129 source of truth for `/team/momo` as the internal operating snapshot dashboard; no activation, no real auth, no credentials, no Momo contact, no publishing, no integrations, no AI generation, and no fake metrics or readiness.
 - `MOMO_WORKSPACE_PRIMARY_NAVIGATION_ALIGNMENT.md` — PR #128 source of truth for grouped Momo Workspace as the primary Team navigation path while preserving standalone compatibility/detail routes; no activation, no real auth, no credentials, no Momo contact, no publishing, no integrations, and no AI generation.
@@ -97,6 +104,7 @@ Status: highest-level active contributor guide and current source-of-truth index
 
 These files reflect the current Veroxa operating truth and override historical/archive strategy notes. If another doc conflicts with this index, do not override this index; treat the conflicting note as stale until Faraz explicitly refreshes it:
 
+- `MOMO_RESTAURANT_INTELLIGENCE_OPERATING_BOARD.md`
 - `MOMO_WORK_QUEUE_DAILY_OPERATING_BOARD.md`
 - `MOMO_WORKSPACE_DASHBOARD_OPERATING_SNAPSHOT.md`
 - `MOMO_WORKSPACE_PRIMARY_NAVIGATION_ALIGNMENT.md`
