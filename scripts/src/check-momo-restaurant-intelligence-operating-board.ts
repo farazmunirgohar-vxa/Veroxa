@@ -38,9 +38,13 @@ for (const copy of [
   "Future activation requires explicit Faraz approval.",
 ]) must(page.includes(copy) || model.includes(copy), `Missing required safety copy: ${copy}`);
 
-for (const href of ["/team/momo-business-truth", "/team/momo-media-content", "/team/momo-brand-ai-rules", "/team/momo-pilot-prep", "/team/momo/readiness", "/team/momo"]) {
+for (const href of ["/team/momo-business-truth", "/team/momo-media-content", "/team/momo-brand-ai-rules", "/team/momo/readiness", "/team/momo/reports", "/team/momo-dry-run-go-no-go"]) {
   must(page.includes(href) || model.includes(href), `Missing allowed Restaurant Intelligence link: ${href}`);
 }
+must(model.includes('{ label: "Review reports", href: "/team/momo/reports" }'), "Review reports safe next action links to /team/momo/reports.");
+must(model.includes('{ label: "Review dry run", href: "/team/momo-dry-run-go-no-go" }'), "Review dry run safe next action links to /team/momo-dry-run-go-no-go.");
+must(!model.includes('{ label: "Review reports", href: "/team/momo" }'), "Review reports no longer links to /team/momo.");
+must(!model.includes('{ label: "Review dry run", href: "/team/momo-pilot-prep" }'), "Review dry run no longer links to /team/momo-pilot-prep.");
 
 for (const section of ["Restaurant Identity", "Business Truth", "Media Inventory", "Brand Voice", "Operational Readiness", "Current Risks", "Safe Next Actions"]) {
   must(page.includes(section) || model.includes(section), `Missing board section: ${section}`);

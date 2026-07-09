@@ -1,3 +1,7 @@
+## 2026-06-21 — PR #133 Momo Intelligence Safe Action Routes
+
+PR #133 fixes PR #132 safe action routing only: “Review reports” now routes to `/team/momo/reports`, and “Review dry run” now routes to `/team/momo-dry-run-go-no-go`. It does not activate the pilot, turn on real auth, create credentials, contact Momo’s House, publish externally, connect external platforms, generate AI output, create fake data, write to the database, or change product behavior beyond correcting internal links.
+
 ## 2026-06-21 — PR #132 Momo Restaurant Intelligence Operating Board
 
 GitHub PR #132 adds Momo Restaurant Intelligence Operating Board only. `/team/momo/intelligence` is the internal Restaurant Intelligence hub for Team Faraz and consolidates restaurant identity, business truth, media inventory, brand voice, operational readiness, current risks, and safe next actions.
