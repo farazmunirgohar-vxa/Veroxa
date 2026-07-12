@@ -11,7 +11,7 @@ Status: highest-level current source-of-truth index. Read this file before relyi
 - Other restaurant audits must not automatically create client accounts, operations workspaces, onboarding, media/content workflows, Team operations, reports, publishing access, or active-client conversion.
 - The active milestone is Momo's House San Antonio 100% readiness with the maximum safe level of AI, automation, social handling, SEO, reporting, monitoring, and human approval control.
 - Every build must update the milestone, current build status, any changed locked memory, runtime/deployment truth, and Faraz's plain-language handoff before it is considered complete.
-- Current release source/data implements the Momo Production Foundation and standalone Restaurant Audit Center. GitHub merge and Sites checkpoint are still pending; the live site remains on the prior shell until that exact green release is deployed.
+- GitHub PR #135 contains the current Momo Production Foundation and standalone Restaurant Audit Center release. Source RR and all GitHub Actions checks pass; merge and Sites checkpoint remain pending while the external Vercel rollback status is rechecked. The live site remains on the prior shell until that exact green release is deployed.
 - Sites sign-in is magic-link-only. Public user creation and password sign-in/recovery are disabled; supported Admin identity provisioning and authenticated smoke tests remain activation gates.
 
 ## 2026-07-12 — ChatGPT-managed build, GitHub, Sites, and RR direction

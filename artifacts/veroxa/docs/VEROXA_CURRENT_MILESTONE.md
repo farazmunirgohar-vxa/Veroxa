@@ -79,7 +79,7 @@ For this milestone, **100% readiness** means the scoped Momo capabilities are pe
 ## Current verified technical state
 
 - GitHub `main` includes merged PR #134 (`bb7ea6add62a0e7c337c23d9d48880a9d034c0d3`), which established the synchronized Sites delivery layer, current milestone, and ChatGPT-managed build protocol.
-- The current release branch implements Momo Production Foundation V1 and Restaurant Audit Center V1. At this update it is built and under final RR, but not yet merged or deployed to Sites.
+- GitHub PR #135 implements Momo Production Foundation V1 and Restaurant Audit Center V1. Source RR and all GitHub Actions checks, including the clean Supabase reset/pgTAP/lint workflow, pass; the PR remains unmerged and Sites remains undeployed while the external Vercel rollback status is rechecked.
 - The connected Supabase project is healthy. Five production-foundation migrations are applied: versioned Team/Momo tenancy, Audit Center, advisor hardening, release-blocker hardening, and trigger type safety.
 - Momo's House San Antonio is the only enabled operational restaurant scope. Legacy demo rows are preserved, and the ten broad M024 development policies are removed from the production migration chain.
 - The Sites release source implements signed Supabase sessions, server route guards, active profile plus active Momo membership checks, RLS, private restaurant storage, magic-link-only sign-in, callback safety, and session refresh. Password sign-in/recovery remains disabled while compromised-password protection is off.

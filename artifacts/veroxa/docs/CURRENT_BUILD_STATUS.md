@@ -2,7 +2,7 @@
 
 - Scope: build and deploy sequence steps 1–3 — merge PR #134, build the Momo-only production foundation, and build the standalone non-client Restaurant Audit Center.
 - PR #134 is merged at `bb7ea6add62a0e7c337c23d9d48880a9d034c0d3`.
-- Current implementation branch: `agent/momo-production-foundation-audit-center`. The release PR/merge/checkpoint identifiers will be added in the post-deployment continuity update.
+- Release PR: GitHub PR #135 on `agent/momo-production-foundation-audit-center`. Its first exact byte-matched head passed CI, Sites Verify, Veroxa Verify, Supabase clean reset/pgTAP/lint, and independent RR; the external Vercel rollback deployment reported an error without connector-visible logs and is being rechecked on the continuity head. Final merge/checkpoint identifiers will be added in the post-deployment continuity update.
 - Supabase runtime: healthy; five new migrations are applied. Momo is the only enabled operational scope. The audit domain has no automatic operational-client conversion.
 - Implemented in release source: server-verified Supabase sessions, active profile/membership checks, Team/Momo RLS, private Momo media storage policies, magic-link-only sign-in, callback safety, session refresh, and safe-empty client routes. Password sign-in/recovery is intentionally disabled while compromised-password protection remains off.
 - Implemented: durable signed public audit intake, explicit consent, idempotency, database rate limits, Team queue/manual intake, notes, evidence-backed findings, run history/comparisons, reviewed-report gates, immutable reviewed records, and Vercel rollback intake compatibility.
