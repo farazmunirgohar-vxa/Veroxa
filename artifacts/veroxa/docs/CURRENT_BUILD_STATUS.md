@@ -9,6 +9,9 @@
 - The next milestone is Momo's House San Antonio 100% readiness with maximum safe AI, automation, social handling, Google/SEO, approved publishing, reporting, monitoring, and human control.
 - After every build, ChatGPT must update the milestone, build status, relevant runtime/deployment truth, and Faraz's plain-language progress handoff. Locked memory changes when durable scope, authority, or product direction changes.
 - This continuity update is being held in draft PR #134 on `agent/chatgpt-sites-veroxa-integration`; it is not merged or deployed and changes no runtime behavior.
+- The durable milestone build is commit `ac6d7321eb3037b3a8b3b8551bb8167abec78aae`. Relevant strategy guardrails, direct TypeScript checks, Sites build/render tests, Sites lint, and whitespace checks pass; GitHub checks must be re-verified on the final branch head.
+- The exact next product build after PR #134 is approved and merged is Momo Production Foundation V1: production-safe Team/Momo Supabase Auth, tenant-scoped RLS and storage, clean migration and authorization tests, with real data, credentials, integrations, AI, and publishing still gated.
+- The following build is Restaurant Audit Center V1 for non-client restaurants with durable intake, a Team queue, saved evidence/findings, re-runs/comparisons, reviewed reports, abuse controls, and no automatic operational-client conversion.
 - The older route-manifest/Sites-parity sequence below is retained as RR history but is superseded as the current build order by `VEROXA_CURRENT_MILESTONE.md`.
 
 ## 2026-07-12 — ChatGPT-managed Veroxa build and live Sites state

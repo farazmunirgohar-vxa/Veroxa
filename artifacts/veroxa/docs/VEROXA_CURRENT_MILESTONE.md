@@ -80,17 +80,33 @@ For this milestone, **100% readiness** means the scoped Momo capabilities are pe
 
 - GitHub `main` currently ends at merged PR #133.
 - Draft PR #134 contains the initial GitHub-synchronized ChatGPT Sites delivery layer and ChatGPT-managed build protocol.
+- Commit `ac6d7321eb3037b3a8b3b8551bb8167abec78aae` on draft PR #134 records this Momo-only milestone, the fully functional non-client Audit Center exception, and the mandatory post-build continuity contract. It is not merged or deployed.
 - ChatGPT Sites is public at `veroxasystems.com`; Client and Team routes remain non-sensitive pre-live shells.
 - Production auth, durable persistence, real uploads, runtime AI, external platform connections, and publishing are not active.
 - The connected Supabase project is Veroxa Dev and was inactive when last inspected on 2026-07-12.
 - Momo owner walkthrough and real-world activation remain blocked until the milestone readiness gates are built, verified, and separately approved.
+- The current critical readiness blockers are forgeable placeholder browser sessions, production-unsafe broad development RLS policies in the canonical migration chain, and a public audit flow that does not yet persist a durable Team-visible audit record.
+
+## Latest completed build and exact next build
+
+The latest completed documentation build is commit `ac6d7321eb3037b3a8b3b8551bb8167abec78aae` in draft PR #134. It adds the current milestone record and automated drift checks. Relevant strategy guardrails, direct TypeScript checks, Sites build/render tests, Sites lint, and whitespace checks pass. GitHub checks must be re-verified on the final branch head before any merge decision.
+
+The exact next product build, after PR #134 is approved and merged, is **Momo Production Foundation V1**:
+
+- replace the broad development RLS policies with production-safe Team and Momo authorization boundaries;
+- implement Supabase Auth with server-verified sessions and explicit Team/Momo membership resolution;
+- establish Momo-scoped database and storage ownership without introducing another operational client;
+- add clean-migration and authorization tests for anonymous, Team, Momo, and denied cross-tenant access;
+- keep real Momo data, production credentials, owner-controlled connections, external publishing, and runtime AI inactive until their separate gates pass.
+
+The build immediately after that foundation is the fully functional Restaurant Audit Center V1 for non-client restaurants: durable audit intake, Team queue, saved evidence/findings, re-runs and comparisons, reviewed reports, abuse controls, and no automatic operational-client conversion.
 
 ## Current build sequence
 
 1. Reconcile GitHub, Sites, current milestone memory, and truthful Momo states.
 2. Establish the secure Supabase foundation for Team Faraz and Momo only.
-3. Build the persistent Momo Restaurant Intelligence Profile and onboarding flow.
-4. Make the Team Restaurant Audit Center effective for other restaurants without creating operational workspaces.
+3. Make the Team Restaurant Audit Center effective for non-client restaurants without creating operational workspaces.
+4. Build the persistent Momo Restaurant Intelligence Profile and onboarding flow.
 5. Connect Momo media intake, Team review, and AI media intelligence.
 6. Connect Momo AI content preparation, approvals, calendar, social handling, and approved publishing.
 7. Connect Google Business Profile, local SEO, reviews, website checks, and visibility actions.
