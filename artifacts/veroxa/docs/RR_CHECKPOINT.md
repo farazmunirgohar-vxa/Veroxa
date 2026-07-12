@@ -1,6 +1,6 @@
 # RR Release Checkpoint
 
-Status: active reusable review baseline for the Momo Production Foundation V1 + Restaurant Audit Center V1 release.
+Status: verified reusable review baseline for the deployed Momo Production Foundation V1 + Restaurant Audit Center V1 release.
 
 Read `RR_RELEASE_CHECKPOINT.json` and run `pnpm --filter @workspace/scripts run check-rr-release-checkpoint` before starting another broad RR. The checkpoint exists to reuse evidence, not to weaken review.
 
@@ -17,6 +17,7 @@ A full boundary review is required for changes to auth/session/allowlist/roles, 
 
 ## Current baseline truth
 
+- PR #135 is merged at `184821f1b94d3801d23742c5bb7d9571e9be27e6`; exact merged source is deployed as verified Sites version 4 and both custom domains are active with active SSL.
 - Momo’s House San Antonio is the only operational restaurant.
 - Other restaurants may use only the separate Audit Center and never auto-convert.
 - Sites sign-in is magic-link-only and public account creation is disabled.

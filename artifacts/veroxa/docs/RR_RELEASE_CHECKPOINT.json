@@ -1,13 +1,15 @@
 {
   "schemaVersion": 1,
   "checkpoint": "momo-foundation-audit-center-v1",
-  "status": "candidate",
+  "status": "verified",
   "reviewedAt": "2026-07-12",
   "source": {
     "pullRequest": 135,
-    "reviewedHead": "pending-final-delta-commit",
-    "mergedCommit": null,
-    "sitesProductionVerified": false
+    "reviewedHead": "fa5bb176c72620a082590502fb0eee3f0709a6e2",
+    "mergedCommit": "184821f1b94d3801d23742c5bb7d9571e9be27e6",
+    "sitesProductionVerified": true,
+    "sitesVersion": 4,
+    "customDomainsVerified": true
   },
   "scope": {
     "operationalRestaurant": "Momo's House San Antonio",
@@ -101,7 +103,7 @@
         "AGENTS.md",
         "artifacts/veroxa/docs/RR_CHECKPOINT.md"
       ],
-      "sha256": "27671745c102bad85a24ee9b7ed095f36ce9f18920855ab834b9760062fa4a8f"
+      "sha256": "056d81a241a3090c9261c8e177632eb0a2799dd5bd07013160374c83f0620611"
     },
     "presentation_surfaces": {
       "review": "delta-unless-boundary-crossed",
