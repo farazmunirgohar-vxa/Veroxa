@@ -34,7 +34,7 @@ for (const copy of ["internal Veroxa profile records only", "No public/platform 
   if (!teamPage.includes(copy)) failures.push(`Team profile corrections page missing safe copy: ${copy}`);
 }
 
-const migration = read("supabase/migrations/20260616010400_profile_corrections_foundation.sql");
+const migration = read("supabase/archive/legacy_unapplied_migrations/20260616010400_profile_corrections_foundation.sql");
 for (const sql of ["profile_corrections_client_insert_requested", "correction_field_id uuid", "restaurant_profile_fields rpf", "rpf.restaurant_id = correction_restaurant_id", "profile_correction_insert_is_safe(restaurant_id, field_id, status", "status = 'requested'", "requested_by = auth.uid()", "reviewed_by is null", "review_note is null", "current_user_is_active_team()", "restaurant_profile_fields_team_update_internal_value"]) {
   if (!migration.includes(sql)) failures.push(`Profile corrections migration missing: ${sql}`);
 }

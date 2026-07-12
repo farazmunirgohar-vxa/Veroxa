@@ -5,7 +5,6 @@ function assert(condition: unknown, message: string) { if (!condition) throw new
 function includes(haystack: string, needle: string, label = needle) { assert(haystack.includes(needle), `Missing ${label}`); }
 
 const authMode = read("artifacts/veroxa/src/lib/auth/authMode.ts");
-const pilotAccess = read("api/pilot-access.ts");
 const demoRoutes = read("artifacts/veroxa/src/lib/demoRoutes.ts");
 const app = read("artifacts/veroxa/src/App.tsx");
 const nav = read("artifacts/veroxa/src/lib/teamPortalNav.ts");
@@ -21,7 +20,6 @@ const docs = [
 ].map(read).join("\n");
 
 includes(authMode, 'export const AUTH_MODE: AuthMode = "placeholder";', "AUTH_MODE placeholder");
-includes(pilotAccess, "momo", "/api/pilot-access Momo access");
 includes(demoRoutes, 'export type DemoPortal = "client" | "team";', "client/team roles only route registry");
 
 const groupedRoutes = ["/team/momo", "/team/momo/work", "/team/momo/intelligence", "/team/momo/content-ai", "/team/momo/reports", "/team/momo/readiness"];

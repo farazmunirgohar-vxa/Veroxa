@@ -10,7 +10,7 @@ introduced.
 
 ## Migration
 
-`supabase/migrations/20260601000000_m024a_first_client_metadata_schema.sql`
+`supabase/archive/legacy_unapplied_migrations/20260601000000_m024a_first_client_metadata_schema.sql`
 
 Single migration. Idempotent (`create table if not exists`,
 `drop policy if exists`).

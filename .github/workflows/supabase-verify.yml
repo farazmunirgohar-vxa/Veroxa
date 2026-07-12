@@ -1,0 +1,37 @@
+name: Supabase Verify
+
+on:
+  pull_request:
+    paths:
+      - "supabase/**"
+      - ".github/workflows/supabase-verify.yml"
+  push:
+    branches: [main]
+    paths:
+      - "supabase/**"
+      - ".github/workflows/supabase-verify.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.109.1
+      - name: Verify pinned CLI and reviewed config
+        run: |
+          test "$(supabase --version)" = "2.109.1"
+          test -f supabase/config.toml
+      - name: Start local Supabase
+        run: supabase start
+      - name: Apply the complete migration chain
+        run: supabase db reset --local
+      - name: Run database tests
+        run: supabase test db
+      - name: Lint database functions
+        run: supabase db lint --level error --fail-on error

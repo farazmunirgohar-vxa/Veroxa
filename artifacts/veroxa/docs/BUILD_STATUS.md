@@ -1042,7 +1042,7 @@ internal_demo | future_protected`. The client, team, operator,
 ## M024A — Supabase metadata schema migration + RLS foundation
 
 - **One migration added:**
-  `supabase/migrations/20260601000000_m024a_first_client_metadata_schema.sql`.
+  `supabase/archive/legacy_unapplied_migrations/20260601000000_m024a_first_client_metadata_schema.sql`.
 - Tables: `clients`, `restaurant_upload_keys`, `upload_submissions`,
   `direction_requests`, `team_review_decisions`.
 - `set_updated_at()` trigger function + triggers for clients,

@@ -6,7 +6,7 @@ const failures: string[] = [];
 const read = (path: string) => readFileSync(join(root, path), "utf8");
 const exists = (path: string) => { try { statSync(join(root, path)); return true; } catch { return false; } };
 
-const migrationPath = "supabase/migrations/20260615010100_live_automation_v1_database_foundation.sql";
+const migrationPath = "supabase/archive/legacy_unapplied_migrations/20260615010100_live_automation_v1_database_foundation.sql";
 if (!exists(migrationPath)) failures.push(`${migrationPath} is missing.`);
 const migration = exists(migrationPath) ? read(migrationPath) : "";
 

@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
@@ -118,10 +118,9 @@ async function main() {
     assert(appSource.includes('path="/client/requests"') && appSource.includes('<ClientMessages />'), "/client/requests must stay a guarded Messages alias.");
     assert(appSource.includes('path="/client/updates"') && appSource.includes('<ClientReports />'), "/client/updates must stay a guarded Reports alias.");
     assert(appSource.includes('path="/client/onboarding"') && appSource.includes('<ClientProfile />'), "/client/onboarding must stay a guarded Profile alias.");
-    const vercelConfig = readFileSync(resolve(root, "../../vercel.json"), "utf8");
-    assert(vercelConfig.includes("(?!api/)"), "Vercel SPA rewrite must exclude /api routes so /api/pilot-access is not swallowed.");
-    const vercelApi = readFileSync(resolve(root, "../../api/pilot-access.ts"), "utf8");
-    assert(vercelApi.includes('req.method !== "POST"') && vercelApi.includes("VEROXA_PILOT_MOMO_HOUSE_PASSWORD") && vercelApi.includes("VEROXA_PILOT_TEAM_FARAZ_PASSWORD"), "Vercel pilot API must reject non-POST and use server-only env vars.");
+    assert(!existsSync(resolve(root, "../../vercel.json")), "Retired Vercel deployment config must stay removed.");
+    assert(!existsSync(resolve(root, "../../api/pilot-access.ts")), "Retired Vercel pilot endpoint must stay removed.");
+    assert(existsSync(resolve(root, "../veroxa-sites/.openai/hosting.json")), "Sites hosting identity must remain present.");
 
     const realClientDashboard = readFileSync(resolve(root, "src/pages/client-dashboard.tsx"), "utf8");
     assert(!realClientDashboard.includes("Demo Grill House"), "Real /client/dashboard page must not hard-code demo restaurant names.");

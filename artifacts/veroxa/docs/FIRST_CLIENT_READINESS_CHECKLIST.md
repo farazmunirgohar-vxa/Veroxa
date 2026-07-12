@@ -94,7 +94,7 @@ the first real client uses Veroxa in production.
 ## M024A — Schema/migration foundation
 
 - ✅ First-client metadata schema migration drafted
-  (`supabase/migrations/20260601000000_m024a_first_client_metadata_schema.sql`).
+  (`supabase/archive/legacy_unapplied_migrations/20260601000000_m024a_first_client_metadata_schema.sql`).
 - ✅ RLS enabled on every new table; conservative dev-stage policies
   in place; no `anon` writes.
 - ✅ `set_updated_at()` trigger added.

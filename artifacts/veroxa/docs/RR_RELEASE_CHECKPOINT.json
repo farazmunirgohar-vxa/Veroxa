@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "checkpoint": "momo-foundation-audit-center-v1",
+  "status": "candidate",
+  "reviewedAt": "2026-07-12",
+  "source": {
+    "pullRequest": 135,
+    "reviewedHead": "pending-final-delta-commit",
+    "mergedCommit": null,
+    "sitesProductionVerified": false
+  },
+  "scope": {
+    "operationalRestaurant": "Momo's House San Antonio",
+    "otherRestaurantCapability": "Restaurant Audit Center only",
+    "automaticProspectConversion": false
+  },
+  "databaseMigrations": [
+    "20260712213930_momo_production_foundation_v1.sql",
+    "20260712213939_restaurant_audit_center_v1.sql",
+    "20260712214343_production_foundation_advisor_hardening.sql",
+    "20260712220501_production_release_blocker_hardening.sql",
+    "20260712220656_audit_trigger_type_safety.sql",
+    "20260712230242_audit_center_release_hardening.sql"
+  ],
+  "reusableEvidence": [
+    "Momo-only tenancy, role matrix, RLS, and safe-empty client boundary",
+    "Magic-link-only session, membership, callback, and protected-route boundary",
+    "Signed public audit intake, raw-size limits, timeouts, idempotency, and rate limits",
+    "Latest-run review gate, reviewed immutability, append-only lifecycle evidence, and distinct audit identity",
+    "Clean Supabase reset, pgTAP role/workflow/coexistence tests, and error-level database lint",
+    "Root typecheck, Vite build/E2E, Sites build/render tests/lint, and Sites-only deployment guard"
+  ],
+  "fullReviewTriggers": [
+    "authentication, sessions, identity allowlist, role or membership authorization",
+    "RLS, schema, migrations, storage, secrets, or public intake security",
+    "audit-to-client conversion or any non-Momo operational capability",
+    "hosting, domains, deployment runtime, external integrations, AI, publishing, payments, or public promises"
+  ],
+  "deltaReviewRule": "If protected boundary fingerprints are unchanged, reuse their recorded evidence. Review and rerun only checks affected by the diff. Presentation/copy/refactor changes remain delta-only unless their exact diff crosses a full-review trigger.",
+  "boundaryGroups": {
+    "database_policy": {
+      "review": "full-on-change",
+      "files": [
+        "supabase/config.toml",
+        "supabase/migrations/20260712213930_momo_production_foundation_v1.sql",
+        "supabase/migrations/20260712213939_restaurant_audit_center_v1.sql",
+        "supabase/migrations/20260712214343_production_foundation_advisor_hardening.sql",
+        "supabase/migrations/20260712220501_production_release_blocker_hardening.sql",
+        "supabase/migrations/20260712220656_audit_trigger_type_safety.sql",
+        "supabase/migrations/20260712230242_audit_center_release_hardening.sql",
+        "supabase/tests/momo_production_tenant_rls_hardening.sql",
+        "supabase/tests/restaurant_audit_center_v1.sql",
+        "supabase/tests/legacy_policy_cleanup_coexistence.sql",
+        "scripts/src/check-supabase-migration-ledger.ts",
+        ".github/workflows/supabase-verify.yml"
+      ],
+      "sha256": "373d2f7cdf032c0b9a4a2c06a2c736f3062b1e5fb05b31c1cb3ab9146aa81b31"
+    },
+    "auth_access": {
+      "review": "full-on-change",
+      "files": [
+        "artifacts/veroxa-sites/app/veroxa-supabase-server.ts",
+        "artifacts/veroxa-sites/app/veroxa-supabase.ts",
+        "artifacts/veroxa-sites/app/auth/callback/route.ts",
+        "artifacts/veroxa-sites/app/[...slug]/page.tsx",
+        "artifacts/veroxa-sites/proxy.ts"
+      ],
+      "sha256": "abaa9ae27f25dcde7b6501a13fcc8b63122dee1c526de169be8176501d6260d2"
+    },
+    "audit_runtime": {
+      "review": "full-on-change",
+      "files": [
+        "artifacts/veroxa-sites/app/api/audit-requests/route.ts",
+        "artifacts/veroxa-sites/app/audit-center.tsx",
+        "scripts/src/check-audit-intake-adapter-contracts.ts",
+        "scripts/src/check-restaurant-audit-center-v1.ts"
+      ],
+      "sha256": "323c71c379fd65908827f7e07ebf54a17b662f37c84d5d607892bb3b8acde466"
+    },
+    "delivery": {
+      "review": "full-on-change",
+      "files": [
+        "artifacts/veroxa-sites/package.json",
+        "artifacts/veroxa-sites/scripts/build-verified.sh",
+        "artifacts/veroxa-sites/scripts/validate-artifact.sh",
+        "scripts/src/check-sites-only-deployment.ts",
+        "scripts/src/check-rr-release-checkpoint.ts",
+        ".github/workflows/ci.yml",
+        ".github/workflows/sites-verify.yml"
+      ],
+      "sha256": "009e0f2081f719b5ab14311432f843f57909865a03a84e501ba8875916db9e97"
+    },
+    "product_scope": {
+      "review": "full-on-change",
+      "files": [
+        "artifacts/veroxa/docs/VEROXA_CURRENT_MILESTONE.md",
+        "artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md",
+        "artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md",
+        "artifacts/veroxa/docs/CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md",
+        "artifacts/veroxa/docs/CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md",
+        "AGENTS.md",
+        "artifacts/veroxa/docs/RR_CHECKPOINT.md"
+      ],
+      "sha256": "27671745c102bad85a24ee9b7ed095f36ce9f18920855ab834b9760062fa4a8f"
+    },
+    "presentation_surfaces": {
+      "review": "delta-unless-boundary-crossed",
+      "files": [
+        "artifacts/veroxa-sites/app/page.tsx",
+        "artifacts/veroxa-sites/app/globals.css",
+        "artifacts/veroxa-sites/tests/rendered-html.test.mjs",
+        "artifacts/veroxa/src/pages/free-audit.tsx"
+      ],
+      "sha256": "eafcd60057a9691cfd27285504df5b87bf387415bf833ccdc3f7b59f42c5b736"
+    }
+  },
+  "activationGates": [
+    "Pre-provision and verify the approved Team identity through the supported Admin path",
+    "Complete authenticated Team/Momo browser smoke tests before sensitive data or owner exposure",
+    "Keep AI, Meta, Google, SEO writes, publishing, outbound contact, and Momo owner walkthrough inactive until separately approved"
+  ]
+}

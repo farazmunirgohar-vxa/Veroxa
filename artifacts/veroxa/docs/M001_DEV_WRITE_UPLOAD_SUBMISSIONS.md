@@ -93,7 +93,7 @@ This must be set to the `id` of a row already seeded in `public.clients`. If it 
 - `artifacts/veroxa/src/lib/data/writeReadiness.ts`
 - `artifacts/veroxa/src/lib/data/writeAdapterTypes.ts`
 - `artifacts/veroxa/src/lib/data/writeMappers.ts`
-- `supabase/migrations/20260601000000_m024a_first_client_metadata_schema.sql`
+- `supabase/archive/legacy_unapplied_migrations/20260601000000_m024a_first_client_metadata_schema.sql`
 
 ## Next build step
 

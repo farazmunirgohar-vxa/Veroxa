@@ -1,12 +1,19 @@
+# Active Docs Index
+
+Status: highest-level current source-of-truth index. Read this file before relying on older Veroxa documents.
+
 ## 2026-07-12 — Current milestone and post-build continuity lock
 
 - `VEROXA_CURRENT_MILESTONE.md` is the first document to read for current scope, priority, build order, and progress.
+- `RR_CHECKPOINT.md` and `RR_RELEASE_CHECKPOINT.json` are the reusable review baseline. Read and validate them before starting another broad RR; unchanged boundary evidence must be reused and only changed groups re-reviewed.
 - Momo's House San Antonio is the only operational client and restaurant workspace for the current milestone.
 - Team Faraz is Momo-focused. The only effective capability for non-client restaurants is the standalone, fully functional Restaurant Audit Center.
 - An audited restaurant does not become an operational client unless Faraz separately and explicitly approves conversion.
 - Other restaurant audits must not automatically create client accounts, operations workspaces, onboarding, media/content workflows, Team operations, reports, publishing access, or active-client conversion.
 - The active milestone is Momo's House San Antonio 100% readiness with the maximum safe level of AI, automation, social handling, SEO, reporting, monitoring, and human approval control.
 - Every build must update the milestone, current build status, any changed locked memory, runtime/deployment truth, and Faraz's plain-language handoff before it is considered complete.
+- GitHub PR #135 contains the current Momo Production Foundation and standalone Restaurant Audit Center release. Prior full-RR evidence remains reusable; the focused final delta and all six production migrations are verified, while the exact final head, merge, and Sites checkpoint remain pending. The live site remains on the prior shell until that exact green release is deployed.
+- Sites sign-in is magic-link-only. Public user creation and password sign-in/recovery are disabled; supported Admin identity provisioning and authenticated smoke tests remain activation gates.
 
 ## 2026-07-12 — ChatGPT-managed build, GitHub, Sites, and RR direction
 
@@ -19,11 +26,11 @@
 - `RR` means deep review plus reasonable safe fixes and does not independently authorize merge, deployment, activation, or scope expansion.
 - Faraz's explicit product direction is to build the real Veroxa application through ChatGPT Sites using the existing GitHub/Codex Veroxa OS as the core skeleton.
 - The Sites application is not a demo and must not become an independent product definition.
-- GitHub `main` remains canonical. ChatGPT Sites is the primary application/deployment surface. Vercel remains temporary rollback only.
+- GitHub `main` remains canonical. ChatGPT Sites is the sole application/deployment surface. Vercel is retired.
 - Public Sites access is approved. `veroxasystems.com` and `www.veroxasystems.com` are attached with active provider and SSL status as last verified on 2026-07-12; future checkpoints retain the same domains without routine Namecheap edits.
-- Public Client and Team routes remain non-sensitive pre-live shells until approved production identity and authorization exist; do not introduce real client or Team-sensitive data.
+- The live Client and Team routes remain the earlier non-sensitive pre-live shells until the current protected release is merged and checkpointed; do not introduce real client or Team-sensitive data before identity provisioning and authenticated verification.
 - `RR` now means a deep GitHub review plus Sites integration, deployment, domain, and access-state review.
-- This migration does not activate real auth, credentials, storage/database writes, external integrations, AI provider calls, publishing, real client accounts/data, Team-sensitive exposure, or the Momo owner walkthrough.
+- The current source/data release activates only the protected foundation and Audit Center persistence. It does not activate real Momo records, a Team login identity, external integrations, AI provider calls, publishing, Team-sensitive exposure, or the Momo owner walkthrough.
 
 ## 2026-06-21 — PR #133 Momo Intelligence Safe Action Routes
 
@@ -97,7 +104,7 @@ Current operating baseline: merged PR #120 — Momo Internal Dry Run + Go/No-Go 
 - No next activation PR is approved by default.
 - Future real-world activation, real-auth activation, external platform setup, or client exposure requires separate explicit Faraz approval.
 
-# Active Docs Index
+## Historical index continuation
 
 Status: highest-level active contributor guide and current source-of-truth index. Read this file before relying on any older Veroxa doc.
 
@@ -109,6 +116,16 @@ Status: highest-level active contributor guide and current source-of-truth index
 - `VEROXA_LOCKED_OPERATING_MEMORY.md`
 - `CURRENT_BUILD_STATUS.md`
 - `PRICING_SOURCE_OF_TRUTH.md`
+
+## 2026-07-12 — Current production-foundation override
+
+- PR #134 is merged; the current release branch completes Momo Production Foundation V1 and Restaurant Audit Center V1.
+- Sites production auth is authoritative for the deployed application. The undeployed Vite `AUTH_MODE = placeholder` code is retained only as historical/internal source, not as a rollback deployment.
+- Momo is the only operational restaurant scope. Non-client restaurants may exist only in the separate Audit Center and never convert automatically.
+- Public Sites marketing/audit intake is anonymous; Client/Team routes require signed sessions, active profile/membership, server guards, and RLS.
+- Client routes remain safe-empty until verified Momo records exist. Do not revive fixture activity, counts, media, reports, or completion claims in authenticated client views.
+- Runtime AI, external platform connections, social/SEO execution, publishing, outbound contact, and Momo owner walkthrough remain inactive.
+- Exact next build after release: Momo Restaurant Intelligence + Onboarding V1.
 
 ## 2026-06-19 — Actual Live Automation V1 PR sequence correction
 

@@ -7,6 +7,7 @@
 - The current milestone is Momo's House San Antonio 100% readiness with maximum safe AI, automation, social handling, SEO, approved publishing, reporting, monitoring, and human approval control.
 - After every build, update `VEROXA_CURRENT_MILESTONE.md`, `CURRENT_BUILD_STATUS.md`, relevant runtime/deployment truth, and Faraz's plain-language handoff. Update locked memory when durable scope, authority, or product direction changes. A build is not complete until this continuity update is done.
 - Older instructions that defer Team Portal capability, prioritize broad public/client work, or use the earlier post-cutover route-parity sequence are superseded for this milestone. Historical multi-client prospecting applies only inside the Restaurant Audit Center and does not authorize another operational client.
+- Current release source implements Supabase-backed magic-link sessions, active Momo membership authorization, RLS, durable audit intake, and protected portal routes. The live Sites deployment remains on the earlier public shell until the exact green release is merged and checkpointed; real identities/data, AI, external integrations, publishing, and Momo activation remain gated.
 
 ## 2026-07-12 — ChatGPT-managed build, GitHub, and deployment protocol
 
@@ -26,7 +27,7 @@
 - GitHub `main` remains the canonical source of truth for product behavior, routes, operating memory, guardrails, and build direction.
 - ChatGPT is Faraz's primary operating interface and invokes Codex as the engineering workflow.
 - ChatGPT Sites is the primary application/deployment surface.
-- Vercel remains a temporary compatibility and rollback surface during Sites stabilization.
+- Vercel is retired. ChatGPT Sites is Veroxa's sole deployment and hosting surface.
 - Read `artifacts/veroxa/docs/CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md` before changing hosting, routes, access, authentication, or the custom domain.
 - `veroxasystems.com` and `www.veroxasystems.com` are attached with active SSL. Preserve GitHub/Sites parity, mobile/build validation, honest public-shell labeling, domain verification, and rollback after each authorized deployment.
 - When Faraz asks for `RR`, perform a deep GitHub review plus ChatGPT Sites integration review. Fix reasonable code, docs, guardrail, CI, security, and direction drift without silently activating real-world systems.
@@ -115,13 +116,13 @@ Owner and Operator are parked unless explicitly requested by the user. Do not bu
 
 ## 3. Current active build stack
 
-The current active Veroxa build stack is ChatGPT-managed GitHub + Codex + ChatGPT Sites, with Vercel retained temporarily for migration compatibility and rollback:
+The current active Veroxa build stack is ChatGPT-managed GitHub + Codex + ChatGPT Sites:
 
 - ChatGPT is Faraz's primary operating and orchestration interface.
 - GitHub `main` is the canonical source of truth.
 - Codex is the engineering/build capability ChatGPT invokes internally.
 - ChatGPT Sites is the primary application/deployment surface.
-- Vercel is not the new source of truth and remains a temporary rollback path during stabilization.
+- Vercel is retired and must not be restored as a deployment or rollback path.
 - Browser/manual QA is used for visual checks.
 
 ## 4. ChatGPT-managed build and merge workflow
@@ -130,7 +131,7 @@ For completed historical pre-live sequencing and safety context, see `artifacts/
 
 Before implementing PR 100+ live automation work, read `artifacts/veroxa/docs/LIVE_AUTOMATION_V1_ARCHITECTURE.md`.
 
-Before any large build, also run through `artifacts/veroxa/docs/PRE_BUILD_STABILITY_CHECKLIST.md` to protect the Sites hosting identity and source sync, Vercel rollback config, auth boundaries, audit search, public pricing, metadata, and SaaS safety.
+Before any large build, also run through `artifacts/veroxa/docs/PRE_BUILD_STABILITY_CHECKLIST.md` to protect the Sites hosting identity and source sync, auth boundaries, audit search, public pricing, metadata, and SaaS safety.
 
 Command meanings and the complete green gate live in `artifacts/veroxa/docs/CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md`:
 
@@ -391,7 +392,7 @@ Phase 1 SaaS foundation scaffolding is present as TypeScript-only contracts and 
 
 - Veroxa should be theoretically complete in preview/manual/pre-live mode before paid infrastructure is activated.
 - Paid systems should be connected into existing prepared interfaces, not used while the product is still being designed.
-- Active stack is ChatGPT-managed GitHub + Codex + ChatGPT Sites; Vercel is temporary rollback only and Replit is historical.
+- Active stack is ChatGPT-managed GitHub + Codex + ChatGPT Sites; Vercel and Replit deployment paths are retired/historical.
 - Active roles remain Client and Team. Owner/Operator are inactive and parked, including Super Admin, generic Admin, and Execution roles.
 - Veroxa is AI-ready but not connected: deterministic drafts and approval gates can be built now; live AI stays blocked until a future approved activation.
 - Veroxa is integration-ready but not connected: adapter contracts and UI states can be planned now; production auth, storage, Google/Meta/TikTok APIs, payments, webhooks, cron jobs, and automated publishing stay blocked.

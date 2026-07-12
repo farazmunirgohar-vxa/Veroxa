@@ -12,7 +12,7 @@ const app = read("artifacts/veroxa/src/App.tsx");
 const nav = read("artifacts/veroxa/src/lib/teamPortalNav.ts");
 const teamPage = read("artifacts/veroxa/src/pages/team-reports-from-activity.tsx");
 const clientReports = read("artifacts/veroxa/src/pages/client-reports.tsx");
-const migration = read("supabase/migrations/20260616010800_reports_from_activity_foundation.sql");
+const migration = read("supabase/archive/legacy_unapplied_migrations/20260616010800_reports_from_activity_foundation.sql");
 const docs = ["artifacts/veroxa/docs/LIVE_AUTOMATION_V1_REPORTS_FROM_ACTIVITY.md","artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md","artifacts/veroxa/docs/LIVE_AUTOMATION_V1_PR_SEQUENCE.md","artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md","artifacts/veroxa/docs/CURRENT_BUILD_STATUS.md","artifacts/veroxa/docs/LIVE_AUTOMATION_V1_ARCHITECTURE.md"].map(read).join("\n");
 
 must(authMode.includes('"placeholder"') && authMode.includes("AUTH_MODE"), "AUTH_MODE remains placeholder.");
