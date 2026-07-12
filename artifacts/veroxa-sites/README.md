@@ -1,75 +1,130 @@
-# Veroxa Sites Application
+# Veroxa Systems — Sites Delivery Layer
 
-This directory is the GitHub-synchronized ChatGPT Sites delivery layer for Veroxa.
+This is the GitHub-synchronized ChatGPT Sites application for Veroxa. GitHub remains the canonical product source; this checkout is the Sites lifecycle copy used for verified checkpoint deployment.
 
-It is not a demo, a second product definition, or a replacement for the canonical Veroxa OS in `artifacts/veroxa`.
+## Production boundaries
 
-## Source-of-truth relationship
+- Sites access is public for the marketing pages and signed audit-intake route; Client and Team routes require a verified Supabase session plus active database membership.
+- Momo's House San Antonio is the only operational client and restaurant workspace.
+- Supabase Auth verifies signed sessions; server route guards and database RLS independently enforce Team/Momo membership.
+- Public Auth user creation is disabled. Team and future Momo identities must be created through a supported Supabase Admin path before magic-link sign-in can work. Password sign-in/recovery is intentionally disabled until compromised-password protection is enabled.
+- `/team/audits` is the standalone Restaurant Audit Center for non-client restaurants.
+- Public audit intake is validated, consented, idempotent, HMAC-gated, rate-limited, and stored separately from operational client tables.
+- Audit records never create client accounts, onboarding, media/content workflows, publishing access, or operational workspaces automatically.
+- Sites D1/R2 remain unused so Supabase stays the single source of truth.
+- Public marketing and audit-intake routes are anonymous. Protected portal data is never rendered from a public shell.
 
-- `artifacts/veroxa` remains the canonical product layer: routes, domain contracts, Client and Team behavior, Momo operating logic, guardrails, and historical implementation.
-- `artifacts/veroxa-sites` is the Sites-compatible delivery layer: the approved visual system, public route shell, Client Portal shell, Team Faraz shell, and Sites deployment packaging.
-- `artifacts/veroxa/docs/CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md` controls build, hold, RR, green merge, and deployment command meanings.
-- `artifacts/veroxa/docs/CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md` controls migration and domain decisions.
-- New product rules must enter the canonical layer first or in the same PR as their Sites implementation.
+Required hosted variables:
 
-## Current route slice
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+- `AUDIT_INTAKE_HMAC_SECRET` (secret; must match the protected Supabase intake configuration)
 
-Public:
+## Runtime foundation
 
-- `/`
-- `/free-audit`
-- `/login`
+A clean full-stack starter running on
+[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
+Drizzle support.
 
-Client:
+## Prerequisites
 
-- `/client/dashboard`
-- `/client/onboarding`
-- `/client/media`
-- `/client/reports`
-- `/client/services`
+- Node.js `>=22.13.0`
+- Linux with `flock`, `curl`, and GNU `timeout`
 
-Team Faraz / Momo Workspace:
+## Sites Lifecycle
 
-- `/team/momo`
-- `/team/momo/work`
-- `/team/momo/intelligence`
-- `/team/momo/content-ai`
-- `/team/momo/reports`
-- `/team/momo/readiness`
+The Sites lifecycle CLI runs the locked dependency install before returning this checkout. Edit the source under `app/`, then checkpoint when a coherent milestone is ready to inspect or share. The remote Sites builder runs `npm run build` against the pushed commit. Do not repeat install or build as a normal pre-checkpoint step.
 
-## Current safety state
+This starter does not use `wrangler.jsonc`.
 
-- Pre-live only.
-- Sites access is public.
-- Client and Team routes are non-sensitive pre-live visual shells, not secure production accounts or owner-restricted application areas.
-- Do not place real client data or Team-sensitive data in these routes until approved production identity and authorization are implemented and verified.
-- No production credentials or public client accounts.
-- No database or upload persistence.
-- No external platform connections or publishing.
-- No runtime AI provider calls.
-- No Momo owner walkthrough or pilot activation.
-- Session-only interactions are labeled honestly.
+`install:ci` is intentionally a single, non-retrying `npm ci`. It refuses a concurrent install for the same project, consumes a matching image-seeded npm cache with `--prefer-offline` while retaining registry fallback for a missing cache object, otherwise downloads and verifies the complete vinext tarball recorded in `package-lock.json`, limits npm to one socket, and terminates a stalled install. `build` applies a short timeout and then validates the Sites artifact. These helpers target Linux and use GNU `timeout`; they are not native macOS scripts.
 
-## Local verification
+Scripts that need writable project-scoped home, npm, XDG, and temporary paths use `scripts/sites-env.sh`. The `dev` and `start` scripts honor the caller's runtime environment and keep Wrangler logs inside the checkout. The generated `.sites-runtime/` directory is disposable and ignored by Git.
 
-From this directory:
+## Included Shape
 
-```bash
-npm ci
-npm test
-npm run lint
+- edit site code under `app/`
+- `app/chatgpt-auth.ts` provides optional dispatch-owned ChatGPT sign-in helpers
+- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
+- `vite.config.ts` simulates declared bindings for local development
+- `db/index.ts` reads the D1 binding from the Cloudflare Worker environment
+- `db/schema.ts` starts intentionally empty
+- `examples/d1/` contains an optional D1 example surface
+- `drizzle.config.ts` supports local migration generation when needed
+
+## Workspace Auth Headers
+
+OpenAI workspace sites can read the current user's email from
+`oai-authenticated-user-email`.
+
+SIWC-authenticated workspace sites may also receive
+`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
+`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
+`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
+
+Treat the full name as optional and fall back to email when it is absent:
+
+```tsx
+import { headers } from "next/headers";
+
+export default async function Home() {
+  const requestHeaders = await headers();
+  const email = requestHeaders.get("oai-authenticated-user-email");
+  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
+  const fullName =
+    encodedFullName &&
+    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
+      "percent-encoded-utf-8"
+      ? decodeURIComponent(encodedFullName)
+      : null;
+
+  const displayName = fullName ?? email;
+  // ...
+}
 ```
 
-The build must produce a valid Sites Worker artifact and every migration-critical route must return HTML with Veroxa identity.
+## Optional Dispatch-Owned ChatGPT Sign-In
 
-## GitHub-to-Sites release rule
+Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
+optional or required ChatGPT sign-in:
 
-- GitHub `main` is canonical.
-- `Build it` may merge an agreed PR after the green gate, but does not deploy Sites unless deployment was requested.
-- `Build and deploy it` requires the exact merged GitHub source to be synchronized here, then tested, checkpointed, deployed, and verified.
-- The current Sites setup does not automatically deploy every GitHub merge.
-- Never edit or deploy a lasting live-only change without reconciling it to GitHub source of truth.
+- Use `getChatGPTUser()` for optional signed-in UI.
+- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
+  anonymous visitors through Sign in with ChatGPT.
+- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
+  browser links or actions.
+- Pass a same-origin relative `returnTo` path for the destination after sign-in
+  or sign-out. The helper validates and safely encodes it.
+- Mark protected pages with `export const dynamic = "force-dynamic"` because
+  they depend on per-request identity headers.
 
-## Domain state
+Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
+OAuth cookies, and identity header injection. Do not implement app routes for
+those reserved paths. Routes that do not import and call the helper remain
+anonymous-compatible.
 
-Faraz approved public access and completed the Namecheap cutover. As last verified on 2026-07-12, `veroxasystems.com` and `www.veroxasystems.com` are attached to Sites with active provider and SSL status and no reported domain error. Future authorized checkpoints retain these domains without routine Namecheap changes. Verify public access, both domains, SSL, and rollback health after each production checkpoint.
+SIWC establishes identity only; it does not prove workspace membership. Use the
+Sites hosting platform's access policy controls for workspace-wide restrictions,
+or enforce explicit server-side membership or allowlist checks.
+
+Use SIWC for account pages, user-specific dashboards, saved records, and write
+actions tied to the current ChatGPT user. Leave public content anonymous.
+
+## Diagnostic Commands
+
+- `npm run install:ci`: perform the one bounded lockfile install
+- `npm run dev`: start the Vite/Vinext development server
+- `npm run build`: build and validate the deployable Sites artifact
+- `npm run start`: start the built Vinext application
+- `npm test`: build, validate, and verify the rendered development-preview metadata
+- `npm run validate:artifact`: recheck an existing artifact's manifest and ESM `default.fetch` export
+- `npm run db:generate`: generate Drizzle migrations after schema changes
+
+Use build and validation commands for targeted diagnosis after a remote failure, not as part of the normal checkpoint path.
+
+The timeout defaults can be overridden for a controlled canary with `SITES_INSTALL_TIMEOUT`, `SITES_INSTALL_KILL_AFTER`, `SITES_BUILD_TIMEOUT`, and `SITES_BUILD_KILL_AFTER`. A timeout fails the command; the helpers never retry an unchanged install or build.
+
+## Learn More
+
+- [vinext Documentation](https://github.com/cloudflare/vinext)
+- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)

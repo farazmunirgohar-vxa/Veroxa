@@ -92,7 +92,7 @@ reported as `dry_run`.
 ## How to use safely
 
 1. Apply the M024A migration:
-   `supabase/migrations/20260601000000_m024a_first_client_metadata_schema.sql`
+   `supabase/archive/legacy_unapplied_migrations/20260601000000_m024a_first_client_metadata_schema.sql`
    against a **dev** Supabase project only. Never apply to production.
 
 2. Manually create a fictional dev client row in the `clients` table:

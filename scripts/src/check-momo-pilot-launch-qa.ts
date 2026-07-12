@@ -102,8 +102,8 @@ for (const forbidden of [
   }
 }
 
-if (!freeAudit.includes("generated locally in your browser") || !freeAudit.includes("portal lead capture is not connected yet")) {
-  failures.push("Free Audit must remain honest that lead capture/review request storage is local-only right now.");
+if (!freeAudit.includes("generated locally in your browser") || !freeAudit.includes("protected Audit Center") || !freeAudit.includes("does not create a client workspace")) {
+  failures.push("Free Audit must distinguish the local preliminary audit from durable Audit Center intake and no-client conversion.");
 }
 
 for (const required of [

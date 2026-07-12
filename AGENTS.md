@@ -7,6 +7,7 @@
 - The current milestone is Momo's House San Antonio 100% readiness with maximum safe AI, automation, social handling, SEO, approved publishing, reporting, monitoring, and human approval control.
 - After every build, update `VEROXA_CURRENT_MILESTONE.md`, `CURRENT_BUILD_STATUS.md`, relevant runtime/deployment truth, and Faraz's plain-language handoff. Update locked memory when durable scope, authority, or product direction changes. A build is not complete until this continuity update is done.
 - Older instructions that defer Team Portal capability, prioritize broad public/client work, or use the earlier post-cutover route-parity sequence are superseded for this milestone. Historical multi-client prospecting applies only inside the Restaurant Audit Center and does not authorize another operational client.
+- Current release source implements Supabase-backed magic-link sessions, active Momo membership authorization, RLS, durable audit intake, and protected portal routes. The live Sites deployment remains on the earlier public shell until the exact green release is merged and checkpointed; real identities/data, AI, external integrations, publishing, and Momo activation remain gated.
 
 ## 2026-07-12 — ChatGPT-managed build, GitHub, and deployment protocol
 

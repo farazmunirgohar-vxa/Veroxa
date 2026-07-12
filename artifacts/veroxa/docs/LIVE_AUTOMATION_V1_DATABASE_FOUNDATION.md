@@ -4,7 +4,7 @@ Status: PR #101 database foundation. This prepares schema, RLS, and TypeScript c
 
 ## What PR #101 added
 
-- Supabase migration: `supabase/migrations/20260615010100_live_automation_v1_database_foundation.sql`.
+- Historical, never-applied SQL reference: `supabase/archive/legacy_unapplied_migrations/20260615010100_live_automation_v1_database_foundation.sql`.
 - Live Automation V1 tables, status enums, role enum, indexes, updated-at triggers, and conservative read-only RLS policies.
 - TypeScript database/domain contracts under `artifacts/veroxa/src/domain/liveAutomation/`.
 - Guardrails to keep the foundation safe and prevent accidental live runtime activation.

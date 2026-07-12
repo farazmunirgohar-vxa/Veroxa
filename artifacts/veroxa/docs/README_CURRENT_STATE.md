@@ -5,6 +5,7 @@ Status: Short index for Faraz, Codex, and future ChatGPT/Codex sessions.
 Use `ACTIVE_DOCS_INDEX.md` first as the highest-level current source-of-truth index, then these documents as the current operating model before relying on older historical notes:
 
 - `ACTIVE_DOCS_INDEX.md`
+- `VEROXA_CURRENT_MILESTONE.md`
 - `CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md`
 - `CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md`
 - `VEROXA_LOCKED_OPERATING_MEMORY.md`
@@ -26,13 +27,13 @@ Current strategy markers:
 - **GitHub `main` is canonical**; GitHub merge and Sites deployment are separate actions.
 - `Build it` means build/test/PR/CI/RR and green merge; `Build it, but hold for review` stops at the green PR; `Build and deploy it` also syncs the exact merged source to Sites, checkpoints, deploys, and verifies the live domains.
 - Sites is public; `veroxasystems.com` and `www.veroxasystems.com` report active provider and SSL status as last verified on 2026-07-12.
-- Public Client and Team routes are non-sensitive pre-live shells until production identity/authorization is separately approved and implemented.
+- Public marketing and audit intake are anonymous. The current release source makes Sites Client and Team routes use Supabase sessions plus active profile/membership authorization; client routes stay safe-empty until verified Momo records exist. The live domain remains on the prior shell until the exact green release is merged and checkpointed.
 - **Replit is historical only**.
 - Active roles: **Client and Team**.
 - **Owner/Operator parked**.
-- `AUTH_MODE` remains `placeholder`.
+- `AUTH_MODE` remains `placeholder` for Vite/Vercel rollback; it does not describe Sites production auth.
 - Veroxa should be theoretically complete in preview/manual/pre-live mode before paid infrastructure is activated.
-- Veroxa is AI-ready but not connected.
+- The Momo production data/auth foundation and standalone Audit Center V1 are the current release. Veroxa is still AI-ready but not connected.
 - Veroxa is integration-ready but not connected.
 - Restaurant Onboarding is a known gap and future priority.
 - Active public offer: **Complete Online Presence — $495/month**. `ACTIVE_DOCS_INDEX.md` is the current doc index and pricing source pointer; Starter/Growth/Premium and $295/$995 language are historical/deprecated only.

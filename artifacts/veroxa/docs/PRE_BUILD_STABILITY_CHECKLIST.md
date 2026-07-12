@@ -17,22 +17,24 @@ Before any large Veroxa build, read `CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md
 - Output directory remains `artifacts/veroxa/dist/public`.
 - Do not add Vercel Services or `experimentalServices`.
 
-## 2. Temp login
+## 2. Authentication boundaries by delivery surface
 
-- `AUTH_MODE` remains `placeholder` until production auth is explicitly approved.
+- The Vite/Vercel rollback keeps `AUTH_MODE = placeholder` and `/api/pilot-access` until a separate rollback-auth migration is approved.
+- The primary Sites delivery layer uses Supabase Auth with signed server sessions, active profile plus active Momo membership, RLS, and role-checked protected routes.
+- Public Supabase account creation stays disabled; identities require supported Admin pre-provisioning plus Veroxa profile/membership provisioning.
 - Client temp login reaches `/client/dashboard`.
 - Team temp login reaches `/team/dashboard`.
 - `/client/*` routes stay behind `ClientPortalGuard`.
 - `/team/*` routes stay behind `InternalDemoGuard`.
 - `/demo/client/*` routes stay public and do not require login.
-- Public Sites Client and Team routes are non-sensitive pre-live shells only; do not describe them as secure/owner-restricted or introduce real client/Team-sensitive data before production identity and authorization exist.
+- Public marketing and audit-intake routes remain anonymous. Sites Client and Team routes redirect guests, enforce role and active membership on the server, refresh session cookies, and never render fixture operational claims.
 
 ## 3. Audit search
 
 - `Mamadali`, `Mamdali`, and `Mamadali Kebab House` return a candidate or manual fallback.
 - `Selda` and `Selda Mediterranean` return a candidate or manual fallback.
 - No-result states become manual audit fallback, not a dead end.
-- Search remains deterministic/local/manual only: no scraping, Google Places API, paid APIs, or production writes.
+- Preliminary scoring remains deterministic/local/manual: no scraping, Google Places API, or paid APIs. A separately consented walkthrough request may write through signed Audit Center intake and must never create an operational client.
 
 ## 4. Public pricing
 
@@ -50,8 +52,8 @@ Before any large Veroxa build, read `CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md
 
 ## 6. SaaS safety
 
-- Do not add production auth, storage, database/RLS migrations, payments, live AI, or publishing connectors unless explicitly approved.
-- Keep current SaaS scaffolding as TypeScript-only boundaries until a reviewed production adapter phase is approved.
+- Production auth, versioned Momo storage, database/RLS migrations, and Audit Center persistence are approved only for the locked Momo/Audit scope in `VEROXA_CURRENT_MILESTONE.md`.
+- Do not broaden operational tenancy, add payments, live AI, external platform connections, or publishing connectors without the applicable approval and zero-new-spend review.
 
 ## 2026-06-04 — Pre-paid strategy checklist addendum (superseded where noted by the 2026-07-12 protocol)
 
@@ -61,8 +63,8 @@ Before any large build, confirm the current strategy remains intact:
 - Paid systems should be connected into existing prepared interfaces, not used while the product is still being designed.
 - Active stack is ChatGPT-managed GitHub + Codex + ChatGPT Sites; Vercel is temporary rollback only and Replit is historical.
 - Active roles remain Client and Team. Owner/Operator are inactive and parked.
-- `AUTH_MODE` remains `placeholder`.
+- `AUTH_MODE` remains `placeholder` for Vite/Vercel rollback; Sites uses the production Supabase session boundary.
 - Current pricing remains Complete Online Presence — $495/month. Starter $295, Growth $495, and Premium $995 are deprecated/archive-only.
 - Legacy preview-only credential strings are retired from active operating guidance and must never be reused as production authentication.
-- AI-ready but not connected and integration-ready but not connected are allowed; live AI/connectors/payments/storage/auth remain blocked.
+- AI-ready but not connected and integration-ready but not connected are allowed; live AI/connectors/payments remain blocked. Sites Auth and the scoped Momo/Audit database foundation are active infrastructure, not external business activation.
 - Restaurant Onboarding is a known gap; do not imply it is production-complete until built.

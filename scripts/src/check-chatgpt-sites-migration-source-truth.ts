@@ -183,6 +183,7 @@ for (const path of [
   "/team/momo/content-ai",
   "/team/momo/reports",
   "/team/momo/readiness",
+  "/team/audits",
 ]) {
   must(
     sitesRouter.includes(`\"${path}\"`),
@@ -301,14 +302,13 @@ must(
   "Sites README must record current public access.",
 );
 must(
-  sitesReadme.includes("non-sensitive pre-live visual shells"),
-  "Sites README must state the public Client/Team shell boundary honestly.",
+  sitesReadme.includes("Client and Team routes require a verified Supabase session"),
+  "Sites README must record the protected Client/Team route boundary.",
 );
 for (const bannedSitesCopy of [
-  "SECURE PORTAL ACCESS",
   "owner-restricted",
-  "Open the internal operating workspace",
-  "Internal only",
+  "public pre-live shells",
+  "no production accounts or real client data",
 ]) {
   must(
     !sitesRouter.includes(bannedSitesCopy),
@@ -316,14 +316,14 @@ for (const bannedSitesCopy of [
   );
 }
 for (const requiredSitesCopy of [
-  "PRE-LIVE PORTAL PREVIEW",
-  "public pre-live shells",
-  "no production accounts or real client data",
-  "Public pre-live shell",
+  "SECURE PORTAL ACCESS",
+  "Signed sessions are verified by Supabase Auth",
+  "Secure Team route",
+  "Momo-only production boundary",
 ]) {
   must(
     sitesRouter.includes(requiredSitesCopy),
-    `Public Sites source missing honest access marker: ${requiredSitesCopy}`,
+    `Sites source missing production access marker: ${requiredSitesCopy}`,
   );
 }
 must(

@@ -1,4 +1,22 @@
-## 2026-07-12 — Current milestone memory update
+## 2026-07-12 — Momo Production Foundation + Restaurant Audit Center V1
+
+- Scope: build and deploy sequence steps 1–3 — merge PR #134, build the Momo-only production foundation, and build the standalone non-client Restaurant Audit Center.
+- PR #134 is merged at `bb7ea6add62a0e7c337c23d9d48880a9d034c0d3`.
+- Current implementation branch: `agent/momo-production-foundation-audit-center`. The release PR/merge/checkpoint identifiers will be added in the post-deployment continuity update.
+- Supabase runtime: healthy; five new migrations are applied. Momo is the only enabled operational scope. The audit domain has no automatic operational-client conversion.
+- Implemented in release source: server-verified Supabase sessions, active profile/membership checks, Team/Momo RLS, private Momo media storage policies, magic-link-only sign-in, callback safety, session refresh, and safe-empty client routes. Password sign-in/recovery is intentionally disabled while compromised-password protection remains off.
+- Implemented: durable signed public audit intake, explicit consent, idempotency, database rate limits, Team queue/manual intake, notes, evidence-backed findings, run history/comparisons, reviewed-report gates, immutable reviewed records, and Vercel rollback intake compatibility.
+- RR fixes: removed ten broad M024 development policies; removed anonymous Team-function access; changed Team audit functions to invoker rights; blocked anonymous audit identity overwrites; added phone validation and missing indexes; fixed mixed-enum trigger behavior; required evidence/report review lifecycle; added stale-request cancellation and safe run selection.
+- Remote verification passed: catalog/RLS assertions; authorization matrix; signed public intake/idempotency/isolation; transactional Team create/findings/review/report/rerun/comparison workflow; security and performance advisor review.
+- Migration history is reconciled to the five exact remote-applied versions. Eight older, never-applied prototype SQL files are archived outside `supabase/migrations/`; CI uses a reviewed Postgres 17 config and pinned Supabase CLI `2.109.1`.
+- Advisor truth: current Momo/Audit hardening has no known error-level issue. Intentional warnings remain for scoped membership helpers and signed public intake; six mutable-search-path warnings and legacy-table performance notices belong to older unused schema. Leaked-password protection is off, so password login is disabled and identity provisioning remains an activation gate.
+- Local verification passed: direct TypeScript guardrails, root typecheck, canonical Vite production build, canonical route/auth/data-boundary E2E, SSRF safety checks, standalone rollback-handler typecheck, Sites production build/render tests, Sites lint with no errors, and whitespace checks. GitHub checks remain required on the release head.
+- Deployment state: Supabase data layer applied; Sites source built but not yet checkpointed. The public domain still serves the prior Sites version until exact merged-source deployment is verified.
+- Auth activation boundary: public Auth user creation is disabled. The approved Team identity is allowlisted but requires supported Admin pre-provisioning; no Momo client identity or real Momo data is active.
+- Still inactive: real onboarding/business truth, Momo uploads, AI provider calls, Meta/Google connections, social handling, SEO execution, ordering-platform connections, publishing, outbound contact, and outcome claims.
+- Exact next build after release: Momo Restaurant Intelligence + Onboarding V1.
+
+## 2026-07-12 — Previous milestone memory update
 
 - This update records product direction and continuity rules only; it does not activate auth, Supabase, storage, runtime AI, external integrations, publishing, Momo contact, or the owner walkthrough.
 - `VEROXA_CURRENT_MILESTONE.md` is now the highest-priority current scope and progress record.
@@ -14,7 +32,9 @@
 - The following build is Restaurant Audit Center V1 for non-client restaurants with durable intake, a Team queue, saved evidence/findings, re-runs/comparisons, reviewed reports, abuse controls, and no automatic operational-client conversion.
 - The older route-manifest/Sites-parity sequence below is retained as RR history but is superseded as the current build order by `VEROXA_CURRENT_MILESTONE.md`.
 
-## 2026-07-12 — ChatGPT-managed Veroxa build and live Sites state
+## 2026-07-12 — Historical PR #134 pre-foundation Sites state
+
+This section records the pre-foundation state and is superseded by the current release entry above wherever they conflict.
 
 - Faraz uses ChatGPT as the primary Veroxa command center. ChatGPT invokes Codex, GitHub, CI, RR, and Sites tooling internally after Faraz authorizes an agreed outcome.
 - `CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md` locks `Build it`, `Build it, but hold for review`, `Build and deploy it`, the green gate, and material pause boundaries.
@@ -443,7 +463,7 @@ PR #70 built the 90% pre-paid/manual OS foundations for client readiness, weekly
 ## 2026-06-15 — PR #101 Database Foundation for Live Automation V1
 
 - Database Foundation added for Live Automation V1 with Supabase migration/schema, RLS baseline, indexes, updated-at triggers, and TypeScript contracts.
-- Migration/schema/contracts added at `supabase/migrations/20260615010100_live_automation_v1_database_foundation.sql` and `artifacts/veroxa/src/domain/liveAutomation/`.
+- Historical migration/schema/contracts were drafted at `supabase/archive/legacy_unapplied_migrations/20260615010100_live_automation_v1_database_foundation.sql` and `artifacts/veroxa/src/domain/liveAutomation/`; that SQL was never part of the production migration ledger.
 - `AUTH_MODE` remains `placeholder`.
 - `/api/pilot-access` remains the active safe pilot login path.
 - No live portal DB wiring was added.

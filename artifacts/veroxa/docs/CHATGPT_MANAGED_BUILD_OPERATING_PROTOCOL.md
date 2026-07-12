@@ -111,6 +111,7 @@ As last verified on 2026-07-12:
 - both custom domains report active provider and SSL status with no reported domain error;
 - future verified Sites deployments use the existing domains and do not require routine Namecheap edits;
 - Vercel remains available temporarily as a migration rollback surface;
-- production auth, real client accounts/data, external publishing, payments, and live platform integrations remain blocked.
+- the current release source implements protected Supabase session and membership boundaries, but the live site remains on the earlier shell until the exact green release is checkpointed;
+- approved Team identity pre-provisioning, authenticated smoke tests, real Momo accounts/data, external publishing, payments, and live platform integrations remain blocked.
 
-Public Sites access currently exposes non-sensitive pre-live application shells, not secure production Client or Team access. Do not place real client data or Team-sensitive information behind those shells until an explicitly approved production identity and authorization layer is implemented and verified.
+Public Sites access currently exposes the earlier non-sensitive pre-live application shells. Do not place real client data or Team-sensitive information into production until the new identity/authorization source is merged, checkpointed, the approved identity is pre-provisioned, and authenticated access is verified.

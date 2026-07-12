@@ -2,6 +2,10 @@
 
 Status: active migration and deployment authority as of 2026-07-12.
 
+## Current production-foundation override
+
+The original migration scope below remains useful history, but its statements that production identity, persistence, and protected portal routes are future work are superseded for source truth by `VEROXA_CURRENT_MILESTONE.md`. The current release source implements Supabase-backed magic-link sessions, active Momo membership checks, RLS, durable audit intake, and protected Client/Team routes. The live site remains on the earlier public-shell deployment until the exact green GitHub release is merged and checkpointed. Runtime AI, external integrations, publishing, Momo contact, real Momo data, and client activation remain inactive.
+
 ## Locked direction
 
 Veroxa now uses the ChatGPT Sites application/deployment surface. This is not a separate demo project and must not become a second product definition.

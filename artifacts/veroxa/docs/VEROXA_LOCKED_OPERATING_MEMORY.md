@@ -1,3 +1,15 @@
+## 2026-07-12 — Production foundation and Audit Center V1 lock
+
+- Momo's House San Antonio remains the only operational client and restaurant workspace.
+- The primary Sites delivery layer uses Supabase Auth, server session validation, active profile plus active Momo membership, RLS, and safe-empty client views. The Vite/Vercel rollback keeps its historical `AUTH_MODE = placeholder` boundary; that setting does not describe Sites auth.
+- Public Auth identity creation is disabled. Team and future Momo identities must be pre-provisioned through a supported Supabase Admin path and must also have an active profile/membership.
+- Sign-in is magic-link-only for this release. Password sign-in/recovery remains disabled until compromised-password protection is enabled and re-reviewed.
+- Existing legacy demo rows are preserved. Ten broad M024 authenticated development policies are removed; production Sites reads only versioned `veroxa_*` tables and the separate `audit_*` domain.
+- The Restaurant Audit Center is the only cross-restaurant capability. Its records never create clients, workspaces, onboarding, media/content operations, publishing access, or active-client conversion automatically.
+- Reviewed audit states are evidence-gated and immutable. A reviewed request requires a reviewed report; a reviewed report requires a reviewed run and evidence-backed finding; reviewed reruns require a comparison.
+- The next build after this release is Momo Restaurant Intelligence + Onboarding V1. Runtime AI, Meta, Google, social, SEO execution, publishing, outbound contact, and owner walkthrough remain separately gated and inactive.
+- After every build, update `VEROXA_CURRENT_MILESTONE.md`, `CURRENT_BUILD_STATUS.md`, this memory when durable truth changes, and Faraz's plain-language handoff.
+
 ## 2026-07-12 — Momo 100%-readiness milestone and Audit Center exception
 
 Faraz's newest explicit product direction supersedes broader multi-client roadmap assumptions:
@@ -12,7 +24,7 @@ Faraz's newest explicit product direction supersedes broader multi-client roadma
 - After every build, ChatGPT must update the current milestone, build status, relevant runtime/deployment truth, and Faraz's plain-language progress handoff. Update this locked memory when durable scope, authority, or product direction changes. A build is not complete until this continuity update is done.
 - The earlier post-cutover route-parity sequence and older Team-deferral/public-client-first priorities are superseded as the current build order. Multi-client opportunity work is historical except for non-client prospecting inside the Restaurant Audit Center.
 
-Current technical truth remains separate from the milestone target: production auth, persistence, runtime AI, external integrations, and publishing are not yet active. The milestone authorizes the direction, not an unverified claim that readiness already exists.
+Current technical truth is recorded in the newer production-foundation section above. Runtime AI, external integrations, publishing, and Momo activation remain inactive.
 
 ## 2026-07-12 — ChatGPT-managed Veroxa operating agreement
 
@@ -28,7 +40,7 @@ Faraz's newest explicit operating direction:
 - GitHub `main` remains canonical. A GitHub merge and a Sites deployment are separate actions. Never allow live-only Sites behavior to become the lasting source of truth.
 - ChatGPT should perform safe, reversible, in-scope engineering work autonomously and pause for production auth/credentials, real customer data/privacy, destructive data or production migrations, billing/payments, external integrations/publishing/contact, business-truth or public-promise changes, DNS/domain-record changes, Momo activation/walkthrough, or material direction changes.
 
-Current hosted-state memory as last verified on 2026-07-12:
+Historical pre-foundation hosted-state memory as last verified earlier on 2026-07-12; superseded by the production-foundation lock above for source truth, while the deployed site remains on this state until checkpoint:
 
 - Sites access is public.
 - `veroxasystems.com` and `www.veroxasystems.com` are attached to Sites with active provider and SSL status and no reported domain error.

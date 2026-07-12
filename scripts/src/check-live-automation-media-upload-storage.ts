@@ -14,7 +14,7 @@ const uploadPanel = requireFile("artifacts/veroxa/src/components/client/MediaUpl
 const validation = requireFile("artifacts/veroxa/src/lib/media/mediaValidation.ts");
 const paths = requireFile("artifacts/veroxa/src/lib/media/mediaStoragePaths.ts");
 const service = requireFile("artifacts/veroxa/src/lib/media/mediaUploadService.ts");
-const migration = requireFile("supabase/migrations/20260615010200_media_upload_storage_foundation.sql");
+const migration = requireFile("supabase/archive/legacy_unapplied_migrations/20260615010200_media_upload_storage_foundation.sql");
 const docs = [
   "artifacts/veroxa/docs/LIVE_AUTOMATION_V1_MEDIA_UPLOAD_STORAGE.md",
   "artifacts/veroxa/docs/CURRENT_BUILD_STATUS.md",

@@ -133,7 +133,7 @@ Audit fields on every table: `created_at`, `updated_at`,
 ## M024A status — Metadata schema migration + RLS foundation
 
 - Created one migration:
-  `supabase/migrations/20260601000000_m024a_first_client_metadata_schema.sql`.
+  `supabase/archive/legacy_unapplied_migrations/20260601000000_m024a_first_client_metadata_schema.sql`.
 - Tables created: `clients`, `restaurant_upload_keys`,
   `upload_submissions`, `direction_requests`,
   `team_review_decisions`.

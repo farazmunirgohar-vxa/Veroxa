@@ -22,14 +22,10 @@ import {
   Users,
   Wrench,
 } from "lucide-react";
-import {
-  createAuditLeadFromReport,
-  saveAuditLead,
-} from "@/lib/leads/localAuditLeadStore";
+import { submitAuditCenterRequest } from "@/lib/auditCenter/auditCenterClient";
 import { useDocumentMeta } from "@/hooks/useDocumentMeta";
 import type {
   AuditLeadContact,
-  AuditLeadSelectedRestaurant,
   PreferredContactMethod,
 } from "@/lib/leads/leadTypes";
 import {
@@ -152,6 +148,11 @@ export default function FreeAudit() {
   const [contact, setContact] = useState<AuditLeadContact>(emptyContact);
   const [walkthroughSaved, setWalkthroughSaved] = useState(false);
   const [walkthroughError, setWalkthroughError] = useState<string | null>(null);
+  const [walkthroughReference, setWalkthroughReference] = useState<string | null>(null);
+  const [walkthroughSubmitting, setWalkthroughSubmitting] = useState(false);
+  const [walkthroughConsent, setWalkthroughConsent] = useState(false);
+  const [auditFormStartedAt] = useState(() => new Date().toISOString());
+  const [auditIdempotencyKey, setAuditIdempotencyKey] = useState("");
 
   // Unified candidate type: covers manual and preview fallback candidates. `source` drives the UI badge.
   type UnifiedCandidate = {
@@ -218,29 +219,6 @@ export default function FreeAudit() {
         (("fix" + "ture") as RestaurantSearchCandidate["matchSource"]),
       matchConfidence: c.matchConfidence,
       note: c.note,
-    };
-  }
-
-  function buildSelectedRestaurantSnapshot():
-    | AuditLeadSelectedRestaurant
-    | undefined {
-    if (!selectedCandidate) return undefined;
-    return {
-      selectedRestaurantId: selectedCandidate.id,
-      selectedRestaurantName: selectedCandidate.restaurantName,
-      selectedCity: selectedCandidate.city,
-      selectedState: selectedCandidate.state,
-      selectedAddress: selectedCandidate.addressLine,
-      selectedCuisineType: selectedCandidate.cuisineType,
-      selectedMatchConfidence: selectedCandidate.matchConfidence,
-      selectedSource:
-        selectedCandidate.source === "manual"
-          ? "manual"
-          : (("fix" + "ture") as AuditLeadSelectedRestaurant["selectedSource"]),
-      selectedRating: selectedCandidate.googleRating,
-      selectedReviewCount: selectedCandidate.reviewCount,
-      selectedWebsiteUrl: selectedCandidate.websiteUrl,
-      selectedGoogleMapsUrl: selectedCandidate.googleMapsUrl,
     };
   }
 
@@ -323,6 +301,9 @@ export default function FreeAudit() {
     }));
     setReport(null);
     setWalkthroughSaved(false);
+    setWalkthroughReference(null);
+    setWalkthroughConsent(false);
+    setAuditIdempotencyKey("");
   }
 
   function handleClearSelectedCandidate() {
@@ -337,8 +318,9 @@ export default function FreeAudit() {
     setContact((prev) => ({ ...prev, [key]: value }));
   }
 
-  function handleWalkthroughSubmit(e: FormEvent) {
+  async function handleWalkthroughSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const form = new FormData(e.currentTarget);
     setWalkthroughError(null);
     if (!report) return;
     const hasPhone = (contact.phone ?? "").trim().length > 0;
@@ -349,26 +331,47 @@ export default function FreeAudit() {
       );
       return;
     }
+    if (!walkthroughConsent) {
+      setWalkthroughError("Please confirm that Veroxa may store and follow up on this audit request.");
+      return;
+    }
+    const stableKey = auditIdempotencyKey || crypto.randomUUID();
+    setAuditIdempotencyKey(stableKey);
+    setWalkthroughSubmitting(true);
     try {
-      const lead = createAuditLeadFromReport(report, {
-        source: "free_audit",
-        contact: {
-          contactName: contact.contactName?.trim() || undefined,
-          phone: contact.phone?.trim() || undefined,
-          email: contact.email?.trim() || undefined,
-          preferredContactMethod: contact.preferredContactMethod,
-          bestTimeToContact: contact.bestTimeToContact?.trim() || undefined,
-          note: contact.note?.trim() || undefined,
-        },
-        initialStage: "walkthrough_requested",
-        selectedRestaurant: buildSelectedRestaurantSnapshot(),
+      const result = await submitAuditCenterRequest({
+        restaurantName: report.input.restaurantName,
+        city: report.input.city,
+        state: report.input.state,
+        websiteUrl: report.input.websiteUrl,
+        googleProfileUrl: report.input.googleListingUrl,
+        contactName: contact.contactName?.trim() || undefined,
+        contactPhone: contact.phone?.trim() || undefined,
+        contactEmail: contact.email?.trim() || undefined,
+        contactNote: [
+          contact.note?.trim(),
+          contact.bestTimeToContact?.trim()
+            ? `Best time: ${contact.bestTimeToContact.trim()}`
+            : "",
+          `Preferred contact: ${contact.preferredContactMethod}`,
+          `Unverified preliminary browser audit: ${report.totalScore}/${report.maxScore} (${report.gradeLabel}); confidence ${report.confidenceLabel}; priority gaps: ${report.weakSpots.slice(0, 3).map((spot) => spot.title).join(", ") || "none recorded"}`,
+        ].filter(Boolean).join(" · "),
+        consentToContact: true,
+        consentVersion: "2026-07-12",
+        formStartedAt: auditFormStartedAt,
+        honeypot: String(form.get("companyWebsite") || ""),
+        idempotencyKey: stableKey,
       });
-      saveAuditLead(lead);
+      setWalkthroughReference(result.reference);
       setWalkthroughSaved(true);
-    } catch {
+    } catch (error) {
       setWalkthroughError(
-        "Could not store this request locally in your browser. Portal lead capture is not connected yet.",
+        error instanceof Error && error.message === "rate_limited"
+          ? "Too many audit requests were submitted recently. Please wait and try again."
+          : "Could not save this audit request in Veroxa. Please try again shortly.",
       );
+    } finally {
+      setWalkthroughSubmitting(false);
     }
   }
 
@@ -403,6 +406,9 @@ export default function FreeAudit() {
     setReport(result);
     setWalkthroughSaved(false);
     setWalkthroughError(null);
+    setWalkthroughReference(null);
+    setWalkthroughConsent(false);
+    setAuditIdempotencyKey("");
     setContact(emptyContact);
     if (typeof window !== "undefined") {
       window.setTimeout(() => {
@@ -963,7 +969,7 @@ export default function FreeAudit() {
 
               <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
                 <p className="text-[11px] text-muted-foreground inline-flex items-center gap-1">
-                  <Info className="w-3 h-3" /> This preliminary audit is generated locally in your browser. To request Veroxa review, contact Team Faraz directly; portal lead capture is not connected yet.
+                  <Info className="w-3 h-3" /> This preliminary audit is generated locally in your browser. If you request a walkthrough below, Veroxa saves the request and an unverified score summary in the protected Audit Center; it does not create a client workspace.
                 </p>
                 <Button
                   type="submit"
@@ -1450,10 +1456,10 @@ export default function FreeAudit() {
                     data-testid="walkthrough-success"
                   >
                     <p className="text-sm font-semibold text-emerald-400">
-                      This preliminary audit was generated locally.
+                      Audit request saved in Veroxa.
                     </p>
                     <p className="text-[12px] text-muted-foreground mt-1">
-                      Your contact details were stored only in this browser. To request Veroxa review, contact Team Faraz directly; portal lead capture is not connected yet.
+                      Reference {walkthroughReference}. Team Faraz can now review it in the protected Audit Center. No client account, operations workspace, public change, or automatic contact was created.
                     </p>
                   </div>
                 ) : (
@@ -1462,6 +1468,10 @@ export default function FreeAudit() {
                     className="space-y-3"
                     data-testid="walkthrough-form"
                   >
+                    <label className="absolute -left-[10000px] h-px w-px overflow-hidden" aria-hidden="true">
+                      Company website
+                      <input name="companyWebsite" tabIndex={-1} autoComplete="off" />
+                    </label>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <Field label="Contact name" testId="walkthrough-name">
                         <Input
@@ -1538,6 +1548,16 @@ export default function FreeAudit() {
                       Required: at least a phone number or email so Veroxa can
                       follow up.
                     </p>
+                    <label className="flex items-start gap-2 text-[11px] text-muted-foreground">
+                      <input
+                        type="checkbox"
+                        checked={walkthroughConsent}
+                        onChange={(event) => setWalkthroughConsent(event.target.checked)}
+                        className="mt-0.5"
+                        data-testid="walkthrough-consent"
+                      />
+                      <span>I agree that Veroxa may store this request and contact me about this audit. The audit does not create a client workspace or authorize public changes.</span>
+                    </label>
                     {walkthroughError && (
                       <p
                         className="text-[12px] text-amber-400"
@@ -1548,14 +1568,15 @@ export default function FreeAudit() {
                     )}
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <p className="text-[11px] text-muted-foreground italic">
-                        Pilot note: this request stays local in your browser. Team Faraz has not received it because portal lead capture is not connected yet.
+                        This request is saved to Veroxa’s protected Audit Center and remains separate from operational client data.
                       </p>
                       <Button
                         type="submit"
+                        disabled={walkthroughSubmitting}
                         data-testid="walkthrough-submit"
                         className="font-semibold"
                       >
-                        Request walkthrough{" "}
+                        {walkthroughSubmitting ? "Saving request…" : "Request walkthrough"}{" "}
                         <ArrowRight className="w-4 h-4 ml-1" />
                       </Button>
                     </div>

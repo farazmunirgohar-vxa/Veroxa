@@ -17,7 +17,7 @@ Legacy/internal compatibility aliases may still appear in historical docs, audit
 
 - `src/data/pricing/veroxaPricing.ts` keeps retired internal aliases so Free Audit and lead-scoring logic can map old recommendations to the active Essential/Growth/Premium model.
 - `src/lib/audit/*` and `src/lib/leads/*` still accept legacy aliases for backward-compatible audit outputs; these are not public package labels.
-- `supabase/migrations/20260601000000_m024a_first_client_metadata_schema.sql` still defines legacy `service_plan` values. Treat this as sensitive/applied until confirmed otherwise; do not rewrite destructively.
+- `supabase/archive/legacy_unapplied_migrations/20260601000000_m024a_first_client_metadata_schema.sql` defines legacy `service_plan` values but was never applied through the production migration ledger. Keep it as historical reference; do not reintroduce it to the active chain.
 - `docs/sql_drafts/dev_test/m002/*`, `docs/sql_drafts/migrations_review/*`, and older schema drafts mention pre-current package slugs/prices as historical draft material.
 
 ## Future migration requirement before real client data

@@ -1,6 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { RestaurantAuditCenter } from "./audit-center";
+import {
+  getCurrentVeroxaAccess,
+  requestVeroxaMagicLink,
+  signOutOfVeroxa,
+  submitPublicAudit,
+  subscribeToVeroxaAuth,
+  type VeroxaAccess,
+} from "./veroxa-supabase";
 
 type View =
   | "public"
@@ -12,6 +21,7 @@ type View =
   | "reports"
   | "services"
   | "team"
+  | "team-audits"
   | "team-work"
   | "team-intelligence"
   | "team-content"
@@ -75,6 +85,7 @@ const clientNav: { id: View; label: string; icon: IconName; path: string }[] = [
 
 const teamNav: { id: View; label: string; icon: IconName; path: string }[] = [
   { id: "team", label: "Dashboard", icon: "home", path: "/team/momo" },
+  { id: "team-audits", label: "Audit Center", icon: "shield", path: "/team/audits" },
   { id: "team-work", label: "Work", icon: "grid", path: "/team/momo/work" },
   { id: "team-intelligence", label: "Intelligence", icon: "spark", path: "/team/momo/intelligence" },
   { id: "team-content", label: "Content + AI", icon: "image", path: "/team/momo/content-ai" },
@@ -93,6 +104,7 @@ const routeToView: Record<string, View> = {
   "/client/services": "services",
   "/team/dashboard": "team",
   "/team/momo": "team",
+  "/team/audits": "team-audits",
   "/team/momo/work": "team-work",
   "/team/momo/intelligence": "team-intelligence",
   "/team/momo/content-ai": "team-content",
@@ -128,7 +140,9 @@ export default function Home() {
   return <VeroxaApp initialPath="/" />;
 }
 
-export function VeroxaApp({ initialPath }: { initialPath: string }) {
+type AccessSeed = Pick<VeroxaAccess, "role" | "displayName" | "restaurantId">;
+
+export function VeroxaApp({ initialPath, initialAccess }: { initialPath: string; initialAccess?: AccessSeed }) {
   const [view, setView] = useState<View>(routeToView[initialPath] ?? "public");
   const [mediaFilter, setMediaFilter] = useState("All");
   const [reportRange, setReportRange] = useState("Weekly update");
@@ -136,12 +150,39 @@ export function VeroxaApp({ initialPath }: { initialPath: string }) {
   const [uploadDone, setUploadDone] = useState(false);
   const [completedSetup, setCompletedSetup] = useState<number[]>([]);
   const [toast, setToast] = useState("");
+  const [access, setAccess] = useState<
+    | { status: "loading"; value: null }
+    | { status: "guest"; value: null }
+    | { status: "authenticated"; value: AccessSeed }
+  >(initialAccess ? { status: "authenticated", value: initialAccess } : { status: "loading", value: null });
 
   useEffect(() => {
     const syncRoute = () => setView(routeToView[window.location.pathname] ?? "public");
     syncRoute();
     window.addEventListener("popstate", syncRoute);
     return () => window.removeEventListener("popstate", syncRoute);
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    const refreshAccess = () => {
+      void getCurrentVeroxaAccess()
+        .then((next) => {
+          if (!active) return;
+          setAccess(next
+            ? { status: "authenticated", value: next }
+            : { status: "guest", value: null });
+        })
+        .catch(() => {
+          if (active) setAccess({ status: "guest", value: null });
+        });
+    };
+    refreshAccess();
+    const unsubscribe = subscribeToVeroxaAuth(refreshAccess);
+    return () => {
+      active = false;
+      unsubscribe();
+    };
   }, []);
 
   const filteredMedia = useMemo(() => {
@@ -167,6 +208,18 @@ export function VeroxaApp({ initialPath }: { initialPath: string }) {
   if (view === "login") return <LoginPage onNavigate={changeView} />;
 
   const isTeam = view.startsWith("team");
+  const isProtected = isTeam || ["home", "onboarding", "media", "reports", "services"].includes(view);
+  if (isProtected && access.status !== "authenticated") {
+    return access.status === "loading"
+      ? <main className="login-shell"><section className="login-card"><p className="eyebrow">SECURE ACCESS</p><h1>Checking your session…</h1><p>Veroxa is validating the signed account session and workspace membership.</p></section></main>
+      : <LoginPage onNavigate={changeView} />;
+  }
+  if (isTeam && access.status === "authenticated" && access.value.role !== "team") {
+    return <main className="login-shell"><section className="login-card"><p className="eyebrow">WORKSPACE BOUNDARY</p><h1>Team access required.</h1><p>This signed account belongs to the Momo client workspace and cannot open Team Faraz routes.</p><button className="primary-button" onClick={() => window.location.assign("/client/dashboard")}>Open Momo workspace</button></section></main>;
+  }
+  if (!isTeam && isProtected && access.status === "authenticated" && access.value.role !== "client") {
+    return <main className="login-shell"><section className="login-card"><p className="eyebrow">WORKSPACE BOUNDARY</p><h1>Momo client access required.</h1><p>This signed account belongs to Team Faraz and cannot enter a client route.</p><button className="primary-button" onClick={() => window.location.assign("/team/momo")}>Open Team workspace</button></section></main>;
+  }
   const activeNav = isTeam ? teamNav : clientNav;
   const activeLabel = activeNav.find((item) => item.id === view)?.label ?? "Dashboard";
 
@@ -183,7 +236,6 @@ export function VeroxaApp({ initialPath }: { initialPath: string }) {
           {activeNav.map((item) => (
             <button key={item.id} className={view === item.id ? "nav-item active" : "nav-item"} onClick={() => changeView(item.id)}>
               <Icon name={item.icon} size={19}/><span>{item.label}</span>
-              {item.id === "onboarding" && <span className="nav-count">3</span>}
               {item.id === "team-work" && <span className="nav-count">4</span>}
             </button>
           ))}
@@ -193,12 +245,12 @@ export function VeroxaApp({ initialPath }: { initialPath: string }) {
         <div className="help-card">
           <span className="help-icon"><Icon name="message" size={18}/></span>
           <strong>{isTeam ? "Safety boundary" : "Need something?"}</strong>
-          <p>{isTeam ? "No public action without Faraz review and confirmed business truth." : "Your Veroxa team replies within one business day."}</p>
-          <button onClick={() => { setToast(isTeam ? "Operating guardrails are active" : "Message request opened"); window.setTimeout(() => setToast(""), 2600); }}>{isTeam ? "Review guardrails" : "Message team"} <Icon name="arrow" size={15}/></button>
+          <p>{isTeam ? "No public action without Faraz review and confirmed business truth." : "Verified Momo records will appear only after Team review and owner confirmation."}</p>
+          <button onClick={() => { setToast(isTeam ? "Operating guardrails are active" : "Client workspace is safely waiting for verified records"); window.setTimeout(() => setToast(""), 2600); }}>{isTeam ? "Review guardrails" : "View safe status"} <Icon name="arrow" size={15}/></button>
         </div>
-        <button className="profile-card">
+        <button className="profile-card" onClick={() => void signOutOfVeroxa().then(() => window.location.assign("/"))} title="Sign out">
           <span className="avatar">{isTeam ? "FM" : "MK"}</span>
-          <span><strong>{isTeam ? "Team Faraz" : "Momo’s House"}</strong><small>{isTeam ? "Internal operations" : "San Antonio, TX · pilot"}</small></span>
+          <span><strong>{access.status === "authenticated" ? access.value.displayName : isTeam ? "Team Faraz" : "Momo’s House"}</strong><small>{isTeam ? "Secure Team access · sign out" : "Momo only · sign out"}</small></span>
           <Icon name="chevron" size={16}/>
         </button>
       </aside>
@@ -208,19 +260,16 @@ export function VeroxaApp({ initialPath }: { initialPath: string }) {
           <div className="mobile-brand"><span className="brand-mark"><span>V</span></span><strong>VEROXA</strong></div>
           <div className="breadcrumbs"><span>{isTeam ? "Team workspace" : "Client portal"}</span><b>/</b><strong>{activeLabel}</strong></div>
           <div className="top-actions">
-            <span className="live-pill preview"><i/> Pre-live system</span>
-            <button className="icon-button" aria-label="Notifications"><Icon name="bell" size={19}/><span className="notification-dot"/></button>
+            <span className="live-pill"><i/> Authenticated</span>
+            <button className="icon-button" aria-label="Notifications"><Icon name="bell" size={19}/>{isTeam && <span className="notification-dot"/>}</button>
             <button className="top-avatar">FM</button>
           </div>
         </header>
 
         <div className="content">
-          {view === "home" && <Overview onNavigate={changeView} />}
-          {view === "onboarding" && <Setup steps={setupSteps} completed={completedSetup} onComplete={completeStep} />}
-          {view === "media" && <Media items={filteredMedia} filter={mediaFilter} setFilter={setMediaFilter} onUpload={() => { setUploadDone(false); setShowUpload(true); }} />}
-          {view === "reports" && <Reports range={reportRange} setRange={setReportRange} />}
-          {view === "services" && <Services />}
+          {!isTeam && <ClientWorkspaceSafeEmpty view={view} />}
           {view === "team" && <TeamDashboard onNavigate={changeView} />}
+          {view === "team-audits" && <RestaurantAuditCenter notify={(message) => { setToast(message); window.setTimeout(() => setToast(""), 2600); }} />}
           {view === "team-work" && <TeamWork />}
           {view === "team-intelligence" && <TeamIntelligence />}
           {view === "team-content" && <TeamContent />}
@@ -297,42 +346,129 @@ function SystemStep({ number, title, text }: { number: string; title: string; te
 }
 
 function AuditPage({ onNavigate }: { onNavigate: (view: View) => void }) {
-  const [prepared, setPrepared] = useState(false);
+  const [state, setState] = useState<
+    | { kind: "idle" }
+    | { kind: "submitting" }
+    | { kind: "success"; reference: string }
+    | { kind: "error"; message: string }
+  >({ kind: "idle" });
+  const [formStartedAt] = useState(() => new Date().toISOString());
+  const [idempotencyKey, setIdempotencyKey] = useState("");
+
+  async function handleAuditSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setState({ kind: "submitting" });
+    const form = new FormData(event.currentTarget);
+    const stableIdempotencyKey = idempotencyKey || crypto.randomUUID();
+    setIdempotencyKey(stableIdempotencyKey);
+    try {
+      const result = await submitPublicAudit({
+        restaurantName: String(form.get("restaurantName") || ""),
+        city: String(form.get("city") || ""),
+        state: String(form.get("state") || ""),
+        websiteUrl: String(form.get("websiteUrl") || ""),
+        googleProfileUrl: String(form.get("googleProfileUrl") || ""),
+        contactName: String(form.get("contactName") || ""),
+        contactEmail: String(form.get("contactEmail") || ""),
+        contactPhone: String(form.get("contactPhone") || ""),
+        contactNote: String(form.get("contactNote") || ""),
+        consentToContact: form.get("consent") === "yes",
+        consentVersion: "2026-07-12",
+        formStartedAt,
+        honeypot: String(form.get("companyWebsite") || ""),
+        idempotencyKey: stableIdempotencyKey,
+      });
+      setState({ kind: "success", reference: result.reference_code });
+      event.currentTarget.reset();
+    } catch (error) {
+      setState({
+        kind: "error",
+        message: error instanceof Error && error.message === "rate_limited"
+          ? "Too many audit requests were submitted recently. Please wait and try again."
+          : "We could not save this audit request. Please try again shortly.",
+      });
+    }
+  }
+
   return <main className="public-shell inner-public">
     <PublicHeader onNavigate={onNavigate} />
     <section className="public-inner-hero"><p className="eyebrow">RESTAURANT OPPORTUNITY ENGINE</p><h1>Start with the truth.</h1><p>Veroxa begins by checking whether a restaurant is easy to find, easy to understand, and easy to choose online.</p></section>
     <section className="audit-layout">
-      <form className="audit-form" onSubmit={(event) => { event.preventDefault(); setPrepared(true); }}>
-        <label>Restaurant name<input required placeholder="Restaurant name" /></label>
-        <label>City and state<input required placeholder="San Antonio, TX" /></label>
-        <label>Website or Google profile<input type="url" placeholder="https://" /></label>
-        <label>Best contact email<input type="email" required placeholder="owner@restaurant.com" /></label>
-        <button className="primary-button" type="submit">Prepare audit request <Icon name="arrow" size={16}/></button>
-        <small>This pre-live form prepares the request in your current session. It does not contact the restaurant or submit external changes.</small>
+      <form className="audit-form" onSubmit={handleAuditSubmit}>
+        <label>Restaurant name<input name="restaurantName" required minLength={2} maxLength={160} placeholder="Restaurant name" /></label>
+        <label>City<input name="city" required minLength={2} maxLength={100} placeholder="San Antonio" /></label>
+        <label>State<input name="state" required minLength={2} maxLength={40} placeholder="TX" /></label>
+        <label>Website<input name="websiteUrl" type="url" placeholder="https://" /></label>
+        <label>Google profile<input name="googleProfileUrl" type="url" placeholder="https://" /></label>
+        <label>Contact name<input name="contactName" maxLength={160} placeholder="Your name" /></label>
+        <label>Best contact email<input name="contactEmail" type="email" maxLength={320} placeholder="owner@restaurant.com" /></label>
+        <label>Contact phone<input name="contactPhone" type="tel" maxLength={50} placeholder="(210) 555-0123" /></label>
+        <label className="audit-form-wide">What should Team Faraz know?<textarea name="contactNote" maxLength={2000} rows={3} placeholder="Optional context for the audit" /></label>
+        <label className="audit-consent"><input name="consent" type="checkbox" value="yes" required /><span>I agree that Veroxa may store this request and contact me about this audit. No public changes or restaurant account are created.</span></label>
+        <label className="audit-honeypot" aria-hidden="true">Company website<input name="companyWebsite" tabIndex={-1} autoComplete="off" /></label>
+        <button className="primary-button" type="submit" disabled={state.kind === "submitting"}>{state.kind === "submitting" ? "Saving audit request…" : "Send audit request"} <Icon name="arrow" size={16}/></button>
+        {state.kind === "error" && <small className="audit-submit-error" role="alert">{state.message}</small>}
+        <small>Your request is saved in Veroxa’s protected Audit Center. It does not create a client account, operations workspace, or automatic restaurant contact.</small>
       </form>
       <aside className="audit-explainer">
-        {prepared ? <div className="audit-ready"><span><Icon name="check" size={24}/></span><h2>Audit request prepared.</h2><p>The next production integration will place this request into Team Faraz’s audit queue. No restaurant contact or public action has occurred.</p><button onClick={() => onNavigate("login")}>Open Team access <Icon name="arrow" size={15}/></button></div> : <><p className="eyebrow">WHAT VEROXA REVIEWS</p><h2>Five restaurant visibility layers</h2><ul><li>Google Business and Maps readiness</li><li>Business information consistency</li><li>Menu, ordering, website, and contact paths</li><li>Social trust and usable restaurant media</li><li>Whether Veroxa can create practical value honestly</li></ul><p className="audit-note"><Icon name="shield" size={17}/> An audit is a fit and opportunity review—not a promise of orders, rankings, revenue, profit, ROI, or growth.</p></>}
+        {state.kind === "success" ? <div className="audit-ready"><span><Icon name="check" size={24}/></span><h2>Audit request saved.</h2><p>Reference <strong>{state.reference}</strong> is now in Team Faraz’s protected audit queue. No client workspace, public change, or external contact was created.</p><button onClick={() => { setIdempotencyKey(""); setState({ kind: "idle" }); }}>Submit another audit <Icon name="arrow" size={15}/></button></div> : <><p className="eyebrow">WHAT VEROXA REVIEWS</p><h2>Five restaurant visibility layers</h2><ul><li>Google Business and Maps readiness</li><li>Business information consistency</li><li>Menu, ordering, website, and contact paths</li><li>Social trust and usable restaurant media</li><li>Whether Veroxa can create practical value honestly</li></ul><p className="audit-note"><Icon name="shield" size={17}/> An audit is a fit and opportunity review—not a promise of orders, rankings, revenue, profit, ROI, or growth.</p></>}
       </aside>
     </section>
   </main>;
 }
 
 function LoginPage({ onNavigate }: { onNavigate: (view: View) => void }) {
+  const [email, setEmail] = useState("");
+  const [state, setState] = useState<"idle" | "submitting">("idle");
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      if (new URLSearchParams(window.location.search).get("auth_error") === "1") {
+        setError("That sign-in link could not be verified. Please request a new link.");
+      }
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  async function handleMagicLink(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!email.trim()) {
+      setError("Enter your approved account email first.");
+      return;
+    }
+    setState("submitting");
+    setError("");
+    try {
+      await requestVeroxaMagicLink(email);
+      setMessage("If this email is approved for Veroxa, a secure sign-in link has been sent.");
+    } catch {
+      setError("A secure sign-in link could not be sent right now.");
+    } finally {
+      setState("idle");
+    }
+  }
+
   return <main className="login-shell">
-    <button className="brand login-brand" onClick={() => onNavigate("public")}><span className="brand-mark"><span>V</span></span><span className="brand-copy"><strong>VEROXA</strong><small>PRE-LIVE PORTAL PREVIEW</small></span></button>
+    <button className="brand login-brand" onClick={() => onNavigate("public")}><span className="brand-mark"><span>V</span></span><span className="brand-copy"><strong>VEROXA</strong><small>SECURE PORTAL ACCESS</small></span></button>
     <section className="login-card">
-      <p className="eyebrow">CHOOSE A PRE-LIVE VIEW</p><h1>Explore Veroxa.</h1><p>These public pre-live shells keep the Restaurant Partner and Team Faraz experiences visually separate. Production authentication is not active.</p>
-      <button onClick={() => onNavigate("home")}><span><i><Icon name="globe" size={20}/></i><b>Restaurant Partner</b><small>Explore the non-sensitive client shell</small></span><Icon name="arrow" size={18}/></button>
-      <button onClick={() => onNavigate("team")}><span><i><Icon name="shield" size={20}/></i><b>Team Faraz</b><small>Explore the non-sensitive Team shell</small></span><Icon name="arrow" size={18}/></button>
-      <div className="login-lock"><Icon name="shield" size={17}/><span>This public preview contains no production accounts or real client data. The workspace buttons demonstrate the planned route structure only.</span></div>
+      <p className="eyebrow">VEROXA ACCOUNT</p><h1>Welcome back.</h1><p>Request a one-time sign-in link for your assigned Team Faraz or Momo’s House account. Role and workspace access are verified against the protected database.</p>
+      <form className="login-form" onSubmit={handleMagicLink}>
+        <label>Email<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" required /></label>
+        {error && <p className="login-error" role="alert">{error}</p>}
+        {message && <p className="login-message" role="status">{message}</p>}
+        <button className="primary-button login-submit" type="submit" disabled={state === "submitting"}>{state === "submitting" ? "Sending secure link…" : "Email me a secure sign-in link"} <Icon name="arrow" size={18}/></button>
+      </form>
+      <div className="login-lock"><Icon name="shield" size={17}/><span>Password sign-in remains disabled until compromised-password protection is enabled. Signed sessions are verified by Supabase Auth, and database access is protected by row-level authorization.</span></div>
     </section>
   </main>;
 }
 
 function TeamDashboard({ onNavigate }: { onNavigate: (view: View) => void }) {
   return <div className="view">
-    <PageIntro eyebrow="MOMO WORKSPACE" title="Operating snapshot" description="A public pre-live model of the Team Faraz command center. It uses non-sensitive placeholder operating states and does not activate the Momo pilot." />
-    <section className="team-guardrail"><Icon name="shield" size={20}/><div><strong>Post-PR133 operating lock is active</strong><span>Placeholder auth, no real client data, no external publishing, no AI provider calls, and no business-truth changes without confirmation.</span></div><em>Public pre-live shell</em></section>
+    <PageIntro eyebrow="MOMO WORKSPACE" title="Operating snapshot" description="The authenticated Team Faraz command center for Momo’s House. Production identity and data boundaries are active; Momo operations remain gated by readiness and owner confirmation." />
+    <section className="team-guardrail"><Icon name="shield" size={20}/><div><strong>Momo-only production boundary</strong><span>Supabase Auth and row-level authorization protect Team/Momo data. Non-client restaurants exist only inside the separate Audit Center.</span></div><em>Secure Team route</em></section>
     <section className="metric-row">
       <Metric label="Pilot state" value="Blocked" trend="Pre-live" note="activation not approved" icon="shield" />
       <Metric label="Business truth" value="Review" trend="Open" note="confirmation needed" icon="spark" />
@@ -340,6 +476,7 @@ function TeamDashboard({ onNavigate }: { onNavigate: (view: View) => void }) {
       <Metric label="AI generation" value="Locked" trend="No calls" note="approval gate intact" icon="grid" />
     </section>
     <section className="team-module-grid">
+      <TeamModule icon="shield" title="Restaurant Audit Center" text="Save, re-run, compare, and review audits for non-client restaurants without creating operational workspaces." action="Open Audit Center" onClick={() => onNavigate("team-audits")} />
       <TeamModule icon="grid" title="Daily work board" text="Organize onboarding, truth review, media, approvals, reports, and blockers." action="Open work" onClick={() => onNavigate("team-work")} />
       <TeamModule icon="spark" title="Restaurant intelligence" text="Review identity, business truth, brand voice, risks, and safe next actions." action="Open intelligence" onClick={() => onNavigate("team-intelligence")} />
       <TeamModule icon="image" title="Content + AI" text="Keep content preparation and AI draft rules behind internal approval gates." action="Review content" onClick={() => onNavigate("team-content")} />
@@ -391,11 +528,26 @@ function TeamReports() {
 
 function TeamReadiness() {
   return <TeamSection eyebrow="GO / NO-GO GATE" title="Activation remains a separate decision" description="This page records the current no-go state. Building the interface does not authorize real credentials, owner outreach, platform access, publishing, or client exposure." columns={[
-    ["Production auth", "Placeholder mode remains active", "Blocked"],
+    ["Production auth", "Supabase membership boundary active", "Foundation ready"],
     ["External connections", "Google, Meta, ordering platforms", "Blocked"],
     ["Owner walkthrough", "Requires explicit Faraz approval", "Blocked"],
     ["Public execution", "Approval and business-truth gates", "Blocked"],
   ]} />;
+}
+
+function ClientWorkspaceSafeEmpty({ view }: { view: View }) {
+  const copy: Partial<Record<View, [string, string, string]>> = {
+    home: ["MOMO WORKSPACE", "Verified workspace ready", "No operational activity has been recorded yet."],
+    onboarding: ["RESTAURANT FOUNDATION", "Owner-confirmed setup will appear here", "No onboarding item is marked complete until Team Faraz records a verified fact."],
+    media: ["MEDIA GUIDANCE", "No reviewed media yet", "No upload, review, approval, or publishing claim is shown until a real Momo record exists."],
+    reports: ["REVIEWED ACTIVITY", "No reviewed report yet", "A report will appear only after evidence-backed Veroxa activity has been reviewed."],
+    services: ["VEROXA SERVICES", "Momo service configuration is not activated", "The signed workspace is available, but no service execution or external connection is represented as complete."],
+  };
+  const [eyebrow, title, description] = copy[view] || copy.home!;
+  return <div className="view"><PageIntro eyebrow={eyebrow} title={title} description={description} />
+    <section className="team-guardrail"><Icon name="shield" size={20}/><div><strong>Safe-empty production boundary</strong><span>This authenticated Momo view reads no fixture activity, invented counts, sample media, or unverified report claims.</span></div><em>Momo only</em></section>
+    <section className="panel audit-empty"><strong>Waiting for verified Momo data.</strong><p>Team Faraz must review and record business truth before operational details appear here.</p></section>
+  </div>;
 }
 
 function TeamSection({ eyebrow, title, description, columns }: { eyebrow: string; title: string; description: string; columns: string[][] }) {
