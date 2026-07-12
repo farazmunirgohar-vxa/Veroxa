@@ -1,8 +1,8 @@
 # Veroxa Documentation Index
 
-The Veroxa frontend is a **demo platform** plus an **architecture
-package** for the production system that will follow. This index links
-to every important planning, safety, and architecture doc.
+> **Current authority:** read [`ACTIVE_DOCS_INDEX.md`](./ACTIVE_DOCS_INDEX.md), [`CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md`](./CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md), [`CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md`](./CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md), and [`VEROXA_LOCKED_OPERATING_MEMORY.md`](./VEROXA_LOCKED_OPERATING_MEMORY.md) before using older entries in this historical index.
+
+Veroxa is a real product being delivered through ChatGPT Sites, with GitHub `main` as canonical source of truth and ChatGPT as Faraz's primary operating interface. The canonical Vite application and many documents in this index still contain pre-live/review scaffolding and historical architecture context; they must not redefine the Sites application as a separate demo or restore retired platform, pricing, access, or deployment direction.
 
 > **Demo-safe defaults.** No active real auth, no real writes, no
 > real uploads, no Supabase Storage buckets, no AI API integration,

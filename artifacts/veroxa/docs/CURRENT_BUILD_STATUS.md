@@ -1,14 +1,22 @@
-## 2026-07-12 — ChatGPT Sites integration in progress
+## 2026-07-12 — ChatGPT-managed Veroxa build and live Sites state
 
-- Faraz approved building the real Veroxa application through ChatGPT Sites using the GitHub/Codex Veroxa OS as its core skeleton.
-- This is a product-surface migration, not a new demo.
-- GitHub `main` remains the canonical source for Veroxa behavior, routes, docs, tests, and guardrails.
-- ChatGPT Sites is the new application/deployment target being integrated.
-- Vercel remains a temporary compatibility and rollback surface until Sites parity and domain cutover are verified.
-- A first integrated Sites slice now covers the real public Home -> Audit -> Login flow, Client Portal visual shell, and grouped Team Faraz/Momo workspace structure using the approved visual direction.
-- Production auth, persistence, uploads, external integrations, runtime AI provider calls, publishing, client exposure, and Momo activation remain blocked.
-- `veroxasystems.com` has not been moved. Domain cutover waits for route parity, portal separation, mobile/build verification, GitHub source sync, explicit access approval, DNS/SSL readiness, and rollback.
-- New active migration authority: `CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md`.
+- Faraz uses ChatGPT as the primary Veroxa command center. ChatGPT invokes Codex, GitHub, CI, RR, and Sites tooling internally after Faraz authorizes an agreed outcome.
+- `CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md` locks `Build it`, `Build it, but hold for review`, `Build and deploy it`, the green gate, and material pause boundaries.
+- GitHub `main` remains the canonical source for Veroxa behavior, routes, docs, tests, guardrails, and build direction.
+- ChatGPT Sites is the primary application/deployment surface. Vercel remains a temporary compatibility and rollback surface during stabilization.
+- The integrated Sites application covers the real public Home -> Audit -> Login flow, Client Portal visual shell, and grouped Team Faraz/Momo workspace structure using the approved visual direction. It is not a separate demo product.
+- Sites access is public. `veroxasystems.com` and `www.veroxasystems.com` are attached to Sites with active provider and SSL status and no reported domain error as last verified on 2026-07-12.
+- Routine future Sites checkpoints retain the existing custom domains; no new Namecheap records are required for each deployment.
+- Public Client and Team routes are currently non-sensitive pre-live shells, not secure production accounts. Production auth, real client/Team-sensitive data, persistence, uploads, external integrations, runtime AI provider calls, publishing, payments, real client activation, and Momo activation remain blocked.
+- GitHub PR #134 reconciles the previously live-ahead Sites source into GitHub, establishes the ChatGPT-managed operating contract, and adds explicit Sites verification. Before this PR reaches `main`, the live-ahead state is a recorded temporary migration exception; merging the verified PR closes that exception.
+- Active authorities: `CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md` and `CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md`.
+
+### Current operator commands
+
+- `Build it`: complete the agreed Codex/GitHub work and merge the exact reviewed commit only after the green gate passes; do not deploy Sites unless requested.
+- `Build it, but hold for review`: stop at the verified green PR.
+- `Build and deploy it`: green merge, exact merged-source sync to Sites, Sites verification, checkpoint deployment, and live/domain verification.
+- `RR`: deep review and safe fixes only; no automatic merge/deployment authority by itself.
 
 ### Current RR findings
 
@@ -16,16 +24,17 @@
 - The Vite/Vercel runtime and the new Sites delivery surface must share route and capability contracts to prevent dual-app drift.
 - The strongest next architectural improvement is a shared route/capability manifest consumed by navigation, route guards, documentation checks, and RR guardrails.
 - Real data activation should follow interface parity and identity/persistence architecture, not precede them.
+- GitHub green checks must explicitly verify the isolated Sites build, rendered routes, lint, and artifact contract before ChatGPT-managed merging can treat a Sites-changing PR as green.
+- PR #134 replaces misleading secure/owner-restricted/internal-only copy with honest public pre-live shell language; the Sites source-of-truth guardrail now protects that boundary.
 
 ### Next recommended build sequence
 
-1. Add and enforce the Sites migration memory/guardrail PR.
-2. Sync the Sites-compatible source into GitHub and create a route-parity manifest.
-3. Port the Client Portal behavior layer: onboarding, media intake states, requests/messages, reports, connections, and business-truth corrections.
-4. Port the complete grouped Momo Workspace and safe action routing.
-5. Design Sites identity and persistence adapters behind existing repositories, with a separate approval gate.
-6. Run security, accessibility, desktop/mobile, build, and route-boundary verification.
-7. Approve public access, attach `veroxasystems.com`, validate DNS/SSL, and retain the Vercel rollback path through stabilization.
+1. Create a shared route-and-capability manifest consumed by canonical navigation, Sites navigation, guards, docs, and RR checks.
+2. Port the Client Portal behavior layer: onboarding, media intake states, requests/messages, reports, connections, and business-truth corrections.
+3. Port the complete grouped Momo Workspace behavior and safe action routing.
+4. Design production identity/persistence adapters behind existing repositories under a separate explicit approval gate.
+5. Run security, accessibility, desktop/mobile, build, route-boundary, and live-domain verification.
+6. Retain the Vercel rollback path until the Sites application is behaviorally stable and GitHub/Sites parity is continuously enforced.
 
 ## 2026-06-21 — PR #133 Momo Intelligence Safe Action Routes
 

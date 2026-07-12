@@ -2,13 +2,13 @@
 > Do not override current docs: read `ACTIVE_DOCS_INDEX.md` first. Any old pricing, role, auth, or automation language in this file is historical/deprecated unless the active docs index confirms it.
 
 
-This document is the master source of truth for the Veroxa OS pre-live build cycle. It protects the repository from roadmap drift before any future live integrations are approved.
+Status: completed historical pre-live build map. It remains useful for safety and architecture context, but it does not govern the current ChatGPT-managed Sites build. `ACTIVE_DOCS_INDEX.md`, `CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md`, and `CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md` are the current authorities.
 
 ## Current Status
 
 - Phase 5 implementation now adds deterministic rule-based assistance, manual execution packs, client confirmation workflow helpers, internal customer opportunity scoring, and a pre-live launch gate in review mode.
 - Veroxa is in **pre-live mode**.
-- Product surfaces are in **demo/review mode**.
+- Legacy canonical surfaces retain **pre-live/review data**, while the Sites delivery layer is the real Veroxa application surface and must not be described as a separate demo product.
 - Authentication is still **placeholder auth** for preview/review access, not production authentication.
 - Current surfaces use **demo/review data**, not real client operating data.
 - Live integrations are blocked until explicit future approval from Faraz.
@@ -56,14 +56,13 @@ See [`VEROXA_ROUTE_SURFACE_MAP.md`](./VEROXA_ROUTE_SURFACE_MAP.md) for the route
 
 Locked public pricing and launch boundaries:
 
-- **Starter — $295/month**
-- **Growth — $495/month**
-- **Premium — $995/month**
+- **Complete Online Presence — $495/month** is the only active public offer.
+- **New basic website +$95** and **missing Facebook/Instagram profile creation +$45/profile** are the launch add-ons.
+- Starter $295, Growth $495, Premium $995, Local Presence, Full Presence, and old Complete Presence are historical/deprecated only.
 - No contract
 - Cancel anytime
-- Max 1 post/day depending on usable client-provided media
-- Ad spend separate
-- Premium requires readiness assessment, client approval, and agreed ad budget
+- Up to 3 posts/updates per week, media dependent
+- Yelp, TikTok, Reels/video, ads management, daily posting, automated publishing, and live integrations are coming soon/not included at launch
 - Veroxa does not handle comments, DMs, refunds, complaints, order issues, or customer-service conversations at launch
 
 ## Pre-Live Build Principle
@@ -297,17 +296,17 @@ No runtime SaaS implementation is added by this layer: no production auth, datab
 - Demo fixture leakage is guarded with `assertNoDemoFixturesInAuthenticatedMode`; `/client/*` and `/team/*` cannot use demo/sample fixtures once authenticated real mode is enabled.
 - A future production adapter requires RR approval before implementation or wiring.
 
-## 2026-06-04 — Current Strategy Sync
+## 2026-06-04 — Current Strategy Sync (superseded where noted by the 2026-07-12 protocol)
 
 The five-phase map now operates under the current no-paid-infrastructure strategy: Veroxa should be theoretically complete in preview/manual/pre-live mode before paid infrastructure is activated. Paid systems should be connected into existing prepared interfaces, not used while the product is still being designed.
 
 Current alignment markers:
 
-- Active stack: GitHub + Codex + Vercel; Replit is historical only.
+- Active stack: ChatGPT-managed GitHub + Codex + ChatGPT Sites; Vercel is temporary rollback only and Replit is historical.
 - Active roles: Client and Team. Owner/Operator are inactive and parked.
 - `AUTH_MODE` remains `placeholder`.
 - Current pricing: Complete Online Presence — $495/month. Starter $295, Growth $495, and Premium $995 are deprecated/archive-only.
-- Preview credentials: [faraz@client.com](mailto:faraz@client.com) / farazclient and [faraz@team.com](mailto:faraz@team.com) / farazteam.
+- Legacy preview-only credential strings are retired from active operating guidance and must never be reused as production authentication.
 - AI-ready but not connected workflows can be built now; real AI connects later only after the pre-paid gate.
 - Integration-ready but not connected workflows can be planned now; paid/live providers connect later only after the pre-paid gate.
 - Restaurant Onboarding is a known gap and should be added as a future preview/manual OS layer.

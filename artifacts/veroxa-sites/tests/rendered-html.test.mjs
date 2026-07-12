@@ -46,7 +46,7 @@ test("renders the Veroxa public and portal route shell", async () => {
   for (const [path, expected] of [
     ["/", "Be easier to find"],
     ["/free-audit", "Start with the truth"],
-    ["/login", "Choose your workspace"],
+    ["/login", "Choose a pre-live view"],
     ["/client/dashboard", "Welcome, Momo’s House"],
     ["/client/onboarding", "Setup your growth system"],
     ["/client/media", "Send what is easy"],
@@ -64,5 +64,13 @@ test("renders the Veroxa public and portal route shell", async () => {
     assert.match(html, /VEROXA|Veroxa/i, `${path} should carry Veroxa identity`);
     assert.match(html, new RegExp(expected, "i"), `${path} should server-render its route-specific surface`);
     assert.doesNotMatch(html, /Starter Project|clean starting point/i, `${path} must not expose starter metadata`);
+    if (path === "/login") {
+      assert.match(html, /public pre-live shells/i, "Login must disclose the public pre-live access state");
+      assert.doesNotMatch(html, /SECURE PORTAL ACCESS|owner-restricted|Open the internal operating workspace/i, "Login must not imply unenforced secure/internal access");
+    }
+    if (path === "/team/momo") {
+      assert.match(html, /Public pre-live shell/i, "Team shell must disclose its public pre-live state");
+      assert.doesNotMatch(html, />Internal only</i, "Team shell must not claim unenforced internal-only access");
+    }
   }
 });

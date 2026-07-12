@@ -289,7 +289,6 @@ function PublicHome({ onNavigate }: { onNavigate: (view: View) => void }) {
       <div className="public-price"><strong>$495</strong><span>/ month</span><small>No contract · media dependent</small><button onClick={() => onNavigate("audit")}>Check restaurant fit <Icon name="arrow" size={15}/></button></div>
     </section>
 
-    <section className="public-values"><span><b>Amanah</b> Trust</span><span><b>Sidq</b> Truthfulness</span><span><b>Ihsan</b> Excellence</span><span><b>Adl</b> Fairness</span></section>
   </main>;
 }
 
@@ -320,20 +319,20 @@ function AuditPage({ onNavigate }: { onNavigate: (view: View) => void }) {
 
 function LoginPage({ onNavigate }: { onNavigate: (view: View) => void }) {
   return <main className="login-shell">
-    <button className="brand login-brand" onClick={() => onNavigate("public")}><span className="brand-mark"><span>V</span></span><span className="brand-copy"><strong>VEROXA</strong><small>SECURE PORTAL ACCESS</small></span></button>
+    <button className="brand login-brand" onClick={() => onNavigate("public")}><span className="brand-mark"><span>V</span></span><span className="brand-copy"><strong>VEROXA</strong><small>PRE-LIVE PORTAL PREVIEW</small></span></button>
     <section className="login-card">
-      <p className="eyebrow">CHOOSE YOUR WORKSPACE</p><h1>Welcome back.</h1><p>Client and Team Faraz remain separate experiences. Production authentication is still locked until it is explicitly activated.</p>
-      <button onClick={() => onNavigate("home")}><span><i><Icon name="globe" size={20}/></i><b>Restaurant Partner</b><small>Open the client portal structure</small></span><Icon name="arrow" size={18}/></button>
-      <button onClick={() => onNavigate("team")}><span><i><Icon name="shield" size={20}/></i><b>Team Faraz</b><small>Open the internal operating workspace</small></span><Icon name="arrow" size={18}/></button>
-      <div className="login-lock"><Icon name="shield" size={17}/><span>This Sites deployment is currently owner-restricted. These buttons demonstrate role routing without creating public credentials.</span></div>
+      <p className="eyebrow">CHOOSE A PRE-LIVE VIEW</p><h1>Explore Veroxa.</h1><p>These public pre-live shells keep the Restaurant Partner and Team Faraz experiences visually separate. Production authentication is not active.</p>
+      <button onClick={() => onNavigate("home")}><span><i><Icon name="globe" size={20}/></i><b>Restaurant Partner</b><small>Explore the non-sensitive client shell</small></span><Icon name="arrow" size={18}/></button>
+      <button onClick={() => onNavigate("team")}><span><i><Icon name="shield" size={20}/></i><b>Team Faraz</b><small>Explore the non-sensitive Team shell</small></span><Icon name="arrow" size={18}/></button>
+      <div className="login-lock"><Icon name="shield" size={17}/><span>This public preview contains no production accounts or real client data. The workspace buttons demonstrate the planned route structure only.</span></div>
     </section>
   </main>;
 }
 
 function TeamDashboard({ onNavigate }: { onNavigate: (view: View) => void }) {
   return <div className="view">
-    <PageIntro eyebrow="MOMO WORKSPACE" title="Operating snapshot" description="A calm internal command center for Team Faraz. It organizes the verified Momo’s House operating state without activating the pilot or exposing internal work to the client." />
-    <section className="team-guardrail"><Icon name="shield" size={20}/><div><strong>Post-PR133 operating lock is active</strong><span>Placeholder auth, no external publishing, no client exposure, no AI provider calls, and no business-truth changes without confirmation.</span></div><em>Internal only</em></section>
+    <PageIntro eyebrow="MOMO WORKSPACE" title="Operating snapshot" description="A public pre-live model of the Team Faraz command center. It uses non-sensitive placeholder operating states and does not activate the Momo pilot." />
+    <section className="team-guardrail"><Icon name="shield" size={20}/><div><strong>Post-PR133 operating lock is active</strong><span>Placeholder auth, no real client data, no external publishing, no AI provider calls, and no business-truth changes without confirmation.</span></div><em>Public pre-live shell</em></section>
     <section className="metric-row">
       <Metric label="Pilot state" value="Blocked" trend="Pre-live" note="activation not approved" icon="shield" />
       <Metric label="Business truth" value="Review" trend="Open" note="confirmation needed" icon="spark" />

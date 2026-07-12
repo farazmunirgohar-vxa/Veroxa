@@ -6,7 +6,7 @@ Status: Current architecture guidance for preparing future providers without act
 
 Veroxa should be **integration-ready but not connected**. Build adapter contracts and UI flows before connecting paid/live providers. Veroxa should be theoretically complete in preview/manual/pre-live mode before paid infrastructure is activated.
 
-Active stack: **GitHub + Codex + Vercel**. **Replit is historical only**. Active roles are **Client and Team**. **Owner/Operator parked**. `AUTH_MODE` remains `placeholder`.
+Active stack: **ChatGPT-managed GitHub + Codex + ChatGPT Sites**. **Vercel is temporary rollback only** and **Replit is historical**. Active roles are **Client and Team**. **Owner/Operator parked**. `AUTH_MODE` remains `placeholder`.
 
 Paid systems should be connected into existing prepared interfaces, not used while the product is still being designed.
 
@@ -102,6 +102,6 @@ For every future provider:
 
 ## Current markers
 
-- [faraz@client.com](mailto:faraz@client.com) / farazclient
-- [faraz@team.com](mailto:faraz@team.com) / farazteam
+- Legacy preview-only credential strings are retired from active operating guidance and must never be reused as production authentication.
+- Public Sites Client/Team routes remain non-sensitive pre-live shells until production identity and authorization are explicitly approved and verified.
 - Historical/deprecated only: Starter $295, Growth $495, Premium $995. Current public offer is Complete Online Presence — $495/month.

@@ -122,7 +122,7 @@ Team-only value proof may include internal cost/value status, attribution confid
 
 ## Safety and live-system guardrails
 
-No production auth, Supabase migrations, RLS, production database wiring, real client data writes, real storage uploads, live AI/OpenAI runtime calls, Google/Meta/TikTok/YouTube APIs, publishing connectors, payments, Stripe, checkout, subscriptions, invoices, billing, webhooks, cron jobs, background jobs, automated customer-visible execution, Owner/Operator/Super Admin/generic Admin/Execution dashboards, or routine text/call workflow were added. `AUTH_MODE` remains `placeholder`; preview credentials remain faraz@client.com / farazclient and faraz@team.com / farazteam.
+No production auth, Supabase migrations, RLS, production database wiring, real client data writes, real storage uploads, live AI/OpenAI runtime calls, Google/Meta/TikTok/YouTube APIs, publishing connectors, payments, Stripe, checkout, subscriptions, invoices, billing, webhooks, cron jobs, background jobs, automated customer-visible execution, Owner/Operator/Super Admin/generic Admin/Execution dashboards, or routine text/call workflow were added. `AUTH_MODE` remains `placeholder`; legacy preview-only credential strings are retired from active operating guidance and must never be reused as production authentication.
 
 Veroxa should be built to about 90% complete in preview/manual/pre-live mode before paying for outside/live systems. Future paid systems should plug into prepared interfaces, not be used while designing the product.
 
@@ -154,12 +154,12 @@ PR #70 built the 90% pre-paid/manual OS foundations for client readiness, weekly
 
 ### Preview login review variables
 
-`AUTH_MODE` remains `placeholder`. Preview login can use the obvious non-secret fallback credentials on local/Veroxa review hostnames, or these Vercel variables can be set explicitly for review deployments:
+`AUTH_MODE` remains `placeholder`. Any local-only review login must use intentionally configured non-production values that are never reused for production authentication. Historical fallback values are retired from active operating guidance. If the legacy Vercel rollback surface needs isolated review access, configure these variables privately:
 
-- `VITE_VEROXA_DEV_CLIENT_EMAIL=faraz@client.com`
-- `VITE_VEROXA_DEV_CLIENT_PASSWORD=farazclient`
-- `VITE_VEROXA_DEV_TEAM_EMAIL=faraz@team.com`
-- `VITE_VEROXA_DEV_TEAM_PASSWORD=farazteam`
+- `VITE_VEROXA_DEV_CLIENT_EMAIL=<local-review-client-email>`
+- `VITE_VEROXA_DEV_CLIENT_PASSWORD=<local-review-client-password>`
+- `VITE_VEROXA_DEV_TEAM_EMAIL=<local-review-team-email>`
+- `VITE_VEROXA_DEV_TEAM_PASSWORD=<local-review-team-password>`
 - `VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=true`
 
 Set `VITE_VEROXA_ENABLE_PUBLIC_PREVIEW_LOGIN=false` only when intentionally disabling placeholder review login. This is preview-only access and does not add production auth.

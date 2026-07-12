@@ -1,12 +1,19 @@
-## 2026-07-12 — ChatGPT Sites migration and RR direction
+## 2026-07-12 — ChatGPT-managed build, GitHub, Sites, and RR direction
 
+- `CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md` is the command and autonomy authority for Veroxa work.
 - `CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md` is now an active source-of-truth document.
-- Faraz's explicit direction is to build the real Veroxa application through ChatGPT Sites using the existing GitHub/Codex Veroxa OS as the core skeleton.
+- Faraz uses ChatGPT as the primary Veroxa command center. Faraz and ChatGPT decide the next outcome together, and ChatGPT invokes Codex, GitHub, CI, RR, and Sites tools internally without requiring a second prompt handoff.
+- `Build it` authorizes the agreed branch, implementation, tests, PR, CI/RR repair, and merge of the exact reviewed commit only after the green gate passes; it does not deploy Sites unless deployment was requested.
+- `Build it, but hold for review` stops at a verified green PR without merge or deployment.
+- `Build and deploy it` authorizes the green merge, exact merged-source sync to Sites, checkpoint deployment, and live/domain verification.
+- `RR` means deep review plus reasonable safe fixes and does not independently authorize merge, deployment, activation, or scope expansion.
+- Faraz's explicit product direction is to build the real Veroxa application through ChatGPT Sites using the existing GitHub/Codex Veroxa OS as the core skeleton.
 - The Sites application is not a demo and must not become an independent product definition.
-- GitHub `main` remains canonical. ChatGPT Sites is the new application/deployment target being integrated. Vercel remains a temporary migration fallback until verified domain cutover.
-- `veroxasystems.com` must not move until route parity, portal separation, mobile/build verification, GitHub sync, access approval, DNS/SSL readiness, and rollback are complete.
+- GitHub `main` remains canonical. ChatGPT Sites is the primary application/deployment surface. Vercel remains temporary rollback only.
+- Public Sites access is approved. `veroxasystems.com` and `www.veroxasystems.com` are attached with active provider and SSL status as last verified on 2026-07-12; future checkpoints retain the same domains without routine Namecheap edits.
+- Public Client and Team routes remain non-sensitive pre-live shells until approved production identity and authorization exist; do not introduce real client or Team-sensitive data.
 - `RR` now means a deep GitHub review plus Sites integration, deployment, domain, and access-state review.
-- This migration does not activate real auth, credentials, storage/database writes, external integrations, AI provider calls, publishing, client exposure, or the Momo owner walkthrough.
+- This migration does not activate real auth, credentials, storage/database writes, external integrations, AI provider calls, publishing, real client accounts/data, Team-sensitive exposure, or the Momo owner walkthrough.
 
 ## 2026-06-21 — PR #133 Momo Intelligence Safe Action Routes
 
@@ -86,6 +93,7 @@ Status: highest-level active contributor guide and current source-of-truth index
 
 ## Current migration source of truth
 
+- `CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md`
 - `CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md`
 - `VEROXA_LOCKED_OPERATING_MEMORY.md`
 - `CURRENT_BUILD_STATUS.md`
@@ -125,6 +133,8 @@ Status: highest-level active contributor guide and current source-of-truth index
 
 These files reflect the current Veroxa operating truth and override historical/archive strategy notes. If another doc conflicts with this index, do not override this index; treat the conflicting note as stale until Faraz explicitly refreshes it:
 
+- `CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md`
+- `CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md`
 - `MOMO_RESTAURANT_INTELLIGENCE_OPERATING_BOARD.md`
 - `MOMO_WORK_QUEUE_DAILY_OPERATING_BOARD.md`
 - `MOMO_WORKSPACE_DASHBOARD_OPERATING_SNAPSHOT.md`

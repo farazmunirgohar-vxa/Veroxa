@@ -6,7 +6,7 @@ Status: Current architecture guidance for AI-shaped Veroxa systems before paid l
 
 Veroxa should be **AI-ready but not connected**. Build AI-shaped workflows now, connect paid AI later. Veroxa should be theoretically complete in preview/manual/pre-live mode before paid infrastructure is activated.
 
-Active stack: **GitHub + Codex + Vercel**. **Replit is historical only**. Active roles are **Client and Team**. **Owner/Operator parked**. `AUTH_MODE` remains `placeholder`.
+Active stack: **ChatGPT-managed GitHub + Codex + ChatGPT Sites**. **Vercel is temporary rollback only** and **Replit is historical**. Active roles are **Client and Team**. **Owner/Operator parked**. `AUTH_MODE` remains `placeholder`.
 
 ## Strategy
 
@@ -82,10 +82,8 @@ Before live AI activation:
 - [ ] Fallback behavior is tested.
 - [ ] Rollback path to deterministic drafts is documented.
 
-## Current credentials and pricing markers
+## Current access and pricing markers
 
-Preview markers protected by guardrails:
-
-- [faraz@client.com](mailto:faraz@client.com) / farazclient
-- [faraz@team.com](mailto:faraz@team.com) / farazteam
+- Legacy preview-only credential strings are retired from active operating guidance and must never be reused as production authentication.
+- Public Sites Client/Team routes remain non-sensitive pre-live shells until production identity and authorization are explicitly approved and verified.
 - Historical/deprecated only: Starter $295, Growth $495, Premium $995. Current public offer is Complete Online Presence — $495/month.
