@@ -1,3 +1,4 @@
+export const config = { runtime: "nodejs" };
 import { createHmac } from "node:crypto";
 
 const CONSENT_VERSION = "2026-07-12";
