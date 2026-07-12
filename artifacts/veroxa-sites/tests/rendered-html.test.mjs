@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 
 const developmentPreviewMeta =
@@ -98,11 +98,22 @@ test("audit intake fails closed when production configuration is absent", async 
   assert.match(response.headers.get("cache-control") || "", /no-store/);
 });
 
+test("Momo readiness evidence remains in the protected server bundle", async () => {
+  const clientAssets = new URL("../dist/client/assets/", import.meta.url);
+  const clientFiles = (await readdir(clientAssets)).filter((name) => name.endsWith(".js"));
+  const clientJavascript = (await Promise.all(clientFiles.map((name) => readFile(new URL(name, clientAssets), "utf8")))).join("\n");
+  assert.doesNotMatch(clientJavascript, /Six production migrations are applied|The approved Team identity still requires|momo-readiness-tracker/i, "Public JavaScript must not contain the protected readiness record");
+
+  const serverAssets = await readdir(new URL("../dist/server/assets/", import.meta.url));
+  assert.ok(serverAssets.some((name) => name.startsWith("momo-readiness-tracker-") && name.endsWith(".js")), "The protected readiness record must compile into a server-only asset");
+});
+
 test("audit UI keeps contact, draft-isolation, mutation, and mobile-navigation guardrails", async () => {
-  const [page, center, data] = await Promise.all([
+  const [page, center, data, protectedRoute] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/audit-center.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/veroxa-supabase.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/[...slug]/page.tsx", import.meta.url), "utf8"),
   ]);
 
   assert.match(page, /!contactEmail && !contactPhone/, "Public intake must require email or phone");
@@ -113,6 +124,12 @@ test("audit UI keeps contact, draft-isolation, mutation, and mobile-navigation g
   assert.match(page, /signOutBusy \? "Signing out" : "Sign out"/, "Mobile Team navigation must expose sign out");
   assert.match(page, /const handleSignOut = async/, "Sign out controls must share an error-aware handler");
   assert.match(page, /You are still signed in/, "Failed sign out must preserve and explain the signed-in state");
+  assert.doesNotMatch(page, /momo-readiness-tracker\.json/, "The public client entry must not bundle the full Team readiness record");
+  assert.match(protectedRoute, /if \(access\.role === "team"\)[\s\S]*?await import\("\.\.\/momo-readiness-tracker\.json"\)/, "Only a server-verified Team route may load the readiness record");
+  assert.ok(protectedRoute.indexOf("getServerVeroxaAccess()") < protectedRoute.indexOf("momo-readiness-tracker.json"), "Server access verification must precede readiness loading");
+  assert.match(page, /No readiness percentage is calculated/, "Team readiness must not invent a completion percentage");
+  assert.match(page, /Other restaurants remain Restaurant Audit Center records only/, "Team readiness must preserve the Momo-only operating boundary");
+  assert.match(page, /if \(!tracker\)/, "Team readiness must fail closed when the server-authorized record is absent");
 
   assert.match(center, /confirmDiscardDetail/, "Audit selection must protect unsaved drafts");
   assert.match(center, /beforeunload/, "Leaving the page must protect unsaved drafts");

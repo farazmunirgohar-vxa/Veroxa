@@ -16,6 +16,7 @@ function sliceSection(source: string, heading: string, endSearchStartOffset = 1)
 }
 
 const requiredMomoDocs = [
+  "momo-readiness-tracker.json",
   "MOMO_WORK_QUEUE_DAILY_OPERATING_BOARD.md",
   "MOMO_WORKSPACE_DASHBOARD_OPERATING_SNAPSHOT.md",
   "MOMO_WORKSPACE_PRIMARY_NAVIGATION_ALIGNMENT.md",

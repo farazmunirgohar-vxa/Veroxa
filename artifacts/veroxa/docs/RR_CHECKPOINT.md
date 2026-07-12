@@ -8,6 +8,7 @@ Read `RR_RELEASE_CHECKPOINT.json` and run `pnpm --filter @workspace/scripts run 
 
 - If a protected boundary fingerprint is unchanged, reuse that group’s recorded review and test evidence. Do not repeat its full review.
 - If only `presentation_surfaces` changed and the exact diff does not touch auth, intake, database, scope, deployment, integrations, public claims, AI, or publishing, perform a focused delta review and affected tests only.
+- If `momo_readiness_tracking` changed, validate the evidence, blockers, next actions, Momo-only scope, and overall readiness rule without reopening unchanged release boundaries.
 - If a `full-on-change` group changed, review that group and its direct consumers. Do not reopen unrelated unchanged groups.
 - After a successful build, update the checkpoint’s source/deployment state and fingerprints together with `CURRENT_BUILD_STATUS.md` and `VEROXA_CURRENT_MILESTONE.md`.
 
@@ -18,6 +19,7 @@ A full boundary review is required for changes to auth/session/allowlist/roles, 
 ## Current baseline truth
 
 - PR #135 is merged at `184821f1b94d3801d23742c5bb7d9571e9be27e6`; exact merged source is deployed as verified Sites version 4 and both custom domains are active with active SSL.
+- `momo-readiness-tracker.json` separately tracks Momo operational readiness. A verified release boundary does not imply overall Momo readiness.
 - Momo’s House San Antonio is the only operational restaurant.
 - Other restaurants may use only the separate Audit Center and never auto-convert.
 - Sites sign-in is magic-link-only and public account creation is disabled.

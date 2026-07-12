@@ -57,6 +57,7 @@
     "check-restaurant-audit-center-v1": "tsx ./src/check-restaurant-audit-center-v1.ts",
     "check-audit-intake-adapter-contracts": "tsx ./src/check-audit-intake-adapter-contracts.ts",
     "check-rr-release-checkpoint": "tsx ./src/check-rr-release-checkpoint.ts",
+    "check-momo-house-readiness-tracking": "tsx ./src/check-momo-house-readiness-tracking.ts",
     "check-live-automation-media-upload-storage": "tsx ./src/check-live-automation-media-upload-storage.ts",
     "check-live-automation-profile-corrections": "tsx ./src/check-live-automation-profile-corrections.ts",
     "check-live-automation-real-messages": "tsx ./src/check-live-automation-real-messages.ts",

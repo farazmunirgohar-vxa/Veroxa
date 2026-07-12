@@ -372,3 +372,4 @@ if (failures.length) {
 }
 
 console.log("ChatGPT Sites migration source-of-truth guardrail passed.");
+import "./check-momo-house-readiness-tracking";

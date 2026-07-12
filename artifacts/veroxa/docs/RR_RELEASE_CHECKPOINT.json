@@ -67,7 +67,7 @@
         "artifacts/veroxa-sites/app/[...slug]/page.tsx",
         "artifacts/veroxa-sites/proxy.ts"
       ],
-      "sha256": "abaa9ae27f25dcde7b6501a13fcc8b63122dee1c526de169be8176501d6260d2"
+      "sha256": "6fc93e4d9f6fa623eb42c6db1f0e0c48019af63810a760302b2b88d9a68a64a9"
     },
     "audit_runtime": {
       "review": "full-on-change",
@@ -103,7 +103,16 @@
         "AGENTS.md",
         "artifacts/veroxa/docs/RR_CHECKPOINT.md"
       ],
-      "sha256": "056d81a241a3090c9261c8e177632eb0a2799dd5bd07013160374c83f0620611"
+      "sha256": "9ea8a6e10d4b3a3e13827d2690f56de70c72fbe45d4d898c3a271fc2aefc1df9"
+    },
+    "momo_readiness_tracking": {
+      "review": "evidence-delta-on-change",
+      "files": [
+        "artifacts/veroxa-sites/app/momo-readiness-tracker.json",
+        "artifacts/veroxa-sites/app/momo-readiness-types.ts",
+        "scripts/src/check-momo-house-readiness-tracking.ts"
+      ],
+      "sha256": "b3d2ca2702ec106998527ae15e5de2d1523ccc9a4b7b5c5fe12f5ff6eca9adbf"
     },
     "presentation_surfaces": {
       "review": "delta-unless-boundary-crossed",
@@ -113,7 +122,7 @@
         "artifacts/veroxa-sites/tests/rendered-html.test.mjs",
         "artifacts/veroxa/src/pages/free-audit.tsx"
       ],
-      "sha256": "eafcd60057a9691cfd27285504df5b87bf387415bf833ccdc3f7b59f42c5b736"
+      "sha256": "8aa864ee8f6ae03ff918c483a33cf3f8781a6bd53cd630f1962b6cdc2d6f4c8c"
     }
   },
   "activationGates": [

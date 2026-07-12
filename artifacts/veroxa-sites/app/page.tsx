@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { RestaurantAuditCenter } from "./audit-center";
+import type { MomoReadinessTracker } from "./momo-readiness-types";
 import {
   getCurrentVeroxaAccess,
   requestVeroxaMagicLink,
@@ -142,7 +143,7 @@ export default function Home() {
 
 type AccessSeed = Pick<VeroxaAccess, "role" | "displayName" | "restaurantId">;
 
-export function VeroxaApp({ initialPath, initialAccess }: { initialPath: string; initialAccess?: AccessSeed }) {
+export function VeroxaApp({ initialPath, initialAccess, initialMomoReadiness }: { initialPath: string; initialAccess?: AccessSeed; initialMomoReadiness?: MomoReadinessTracker }) {
   const [view, setView] = useState<View>(routeToView[initialPath] ?? "public");
   const [mediaFilter, setMediaFilter] = useState("All");
   const [reportRange, setReportRange] = useState("Weekly update");
@@ -287,7 +288,7 @@ export function VeroxaApp({ initialPath, initialAccess }: { initialPath: string;
           {view === "team-intelligence" && <TeamIntelligence />}
           {view === "team-content" && <TeamContent />}
           {view === "team-reports" && <TeamReports />}
-          {view === "team-readiness" && <TeamReadiness />}
+          {view === "team-readiness" && <TeamReadiness tracker={initialMomoReadiness} />}
         </div>
 
         <nav className={isTeam ? "mobile-nav team-mobile-nav" : "mobile-nav"} aria-label="Mobile navigation">
@@ -572,13 +573,31 @@ function TeamReports() {
   ]} />;
 }
 
-function TeamReadiness() {
-  return <TeamSection eyebrow="GO / NO-GO GATE" title="Activation remains a separate decision" description="This page records the current no-go state. Building the interface does not authorize real credentials, owner outreach, platform access, publishing, or client exposure." columns={[
-    ["Production auth", "Supabase membership boundary active", "Foundation ready"],
-    ["External connections", "Google, Meta, ordering platforms", "Blocked"],
-    ["Owner walkthrough", "Requires explicit Faraz approval", "Blocked"],
-    ["Public execution", "Approval and business-truth gates", "Blocked"],
-  ]} />;
+function TeamReadiness({ tracker }: { tracker?: MomoReadinessTracker }) {
+  if (!tracker) return <div className="view"><PageIntro eyebrow="MOMO READINESS TRACKER" title="Readiness evidence unavailable" description="The server-authorized readiness record was not provided. No readiness claim is shown." /><section className="team-guardrail"><Icon name="shield" size={20}/><div><strong>Fail-closed readiness boundary</strong><span>Refresh the authenticated Team route. If this persists, review the protected server handoff.</span></div><em>Unavailable</em></section></div>;
+  const dimensions = Object.entries(tracker.dimensions);
+  const verifiedCount = dimensions.filter(([, dimension]) => dimension.status === "verified").length;
+  const blockedCount = dimensions.filter(([, dimension]) => dimension.status === "blocked").length;
+  const statusLabel = (status: string) => status.split("_").map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`).join(" ");
+
+  return <div className="view">
+    <PageIntro eyebrow="MOMO READINESS TRACKER" title="Evidence before readiness" description="Veroxa delivery and Momo operational readiness are tracked separately. A green build or deployment does not make Momo ready." />
+    <section className="readiness-summary" aria-label="Momo readiness summary">
+      <div><p className="eyebrow">OVERALL STATE</p><strong>{statusLabel(tracker.overallStatus)}</strong><span>{tracker.overallRule}</span></div>
+      <article><strong>{verifiedCount}</strong><span>of {dimensions.length} dimensions verified</span></article>
+      <article><strong>{blockedCount}</strong><span>dimensions blocked</span></article>
+    </section>
+    <section className="team-guardrail"><Icon name="shield" size={20}/><div><strong>Momo-only operating boundary</strong><span>Other restaurants remain Restaurant Audit Center records only and do not receive operational readiness tracking.</span></div><em>Evidence tracked</em></section>
+    <section className="readiness-grid">
+      {dimensions.map(([id, dimension]) => <article className="readiness-card" key={id}>
+        <div className="readiness-card-heading"><h2>{dimension.label}</h2><span className={`readiness-state ${dimension.status}`}>{statusLabel(dimension.status)}</span></div>
+        <div className="readiness-detail"><p className="eyebrow">CURRENT EVIDENCE</p><ul>{dimension.evidence.map((item) => <li key={item}>{item}</li>)}</ul></div>
+        {dimension.blockers.length > 0 && <div className="readiness-detail blockers"><p className="eyebrow">BLOCKERS</p><ul>{dimension.blockers.map((item) => <li key={item}>{item}</li>)}</ul></div>}
+        <div className="readiness-next"><Icon name="arrow" size={16}/><span><strong>Next action</strong>{dimension.nextAction}</span></div>
+      </article>)}
+    </section>
+    <section className="quiet-note"><Icon name="shield" size={17}/><span>No readiness percentage is calculated. Overall readiness is verified only when every required dimension is verified and no blocker remains.</span></section>
+  </div>;
 }
 
 function ClientWorkspaceSafeEmpty({ view }: { view: View }) {

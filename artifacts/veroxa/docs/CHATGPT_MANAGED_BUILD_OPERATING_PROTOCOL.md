@@ -78,11 +78,12 @@ After every build, including a build held at a draft or green pull request, Chat
 
 1. Updated `VEROXA_CURRENT_MILESTONE.md` with the actual completed state, blockers, and exact next build.
 2. Updated `CURRENT_BUILD_STATUS.md` with the branch/PR, exact commit, applicable checks, merge state, deployment state, and runtime truth.
-3. Updated `VEROXA_LOCKED_OPERATING_MEMORY.md` when scope, product direction, authority, or another durable decision changed.
-4. Updated `ACTIVE_DOCS_INDEX.md` when the governing source-of-truth set changed.
-5. Recorded verified Sites, Supabase, integration, custom-domain, and rollback state when applicable.
-6. Given Faraz a plain-language handoff stating what was built, what now works, what remains inactive, known blockers, and the recommended next step.
-7. Refreshed `RR_RELEASE_CHECKPOINT.json` when reviewed source, boundary fingerprints, merge state, or production verification changed.
+3. Updated `momo-readiness-tracker.json` for every affected Momo readiness dimension with evidence, blockers, and the next action.
+4. Updated `VEROXA_LOCKED_OPERATING_MEMORY.md` when scope, product direction, authority, or another durable decision changed.
+5. Updated `ACTIVE_DOCS_INDEX.md` when the governing source-of-truth set changed.
+6. Recorded verified Sites, Supabase, integration, custom-domain, and rollback state when applicable.
+7. Given Faraz a plain-language handoff stating what was built, what now works, what remains inactive, known blockers, and the recommended next step.
+8. Refreshed `RR_RELEASE_CHECKPOINT.json` when reviewed source, boundary fingerprints, merge state, or production verification changed.
 
 For held work, the record must say that the change is not merged or deployed. For merged work, it must identify the exact merged state. For an authorized deployment, it must record the verified production result and rollback state. Do not describe planned or fixture behavior as completed runtime functionality.
 

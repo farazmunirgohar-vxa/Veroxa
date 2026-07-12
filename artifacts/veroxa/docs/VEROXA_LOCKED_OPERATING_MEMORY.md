@@ -17,6 +17,8 @@
 - The final delta RR additionally requires the latest run/report before a request can close, distinct identity rows for same-name audit locations, append-only lifecycle events, failed-run reasons, reproducible run snapshots, raw-body/timeout intake controls, and explicit UI draft/navigation/accessibility safety.
 - `RR_CHECKPOINT.md` plus `RR_RELEASE_CHECKPOINT.json` is the durable review memory. Future RRs reuse unchanged boundary evidence and review only changed groups unless a documented full-review trigger is crossed.
 - The release checkpoint is verified after the green merge, production Supabase application, Sites deployment, and live custom-domain checks. Start the next RR from that checkpoint rather than repeating unchanged release review.
+- Veroxa tracking has two mandatory lanes after every build: Veroxa delivery/readiness and Momo's House San Antonio operational readiness. `momo-readiness-tracker.json` is the machine-readable Momo lane and must record evidence, blockers, and next actions without inventing a percentage.
+- Momo readiness is verified only when every required dimension is verified and no blocker remains. A green build, migration, deployment, or individual foundation does not by itself make Momo ready.
 - The next build after this release is Momo Restaurant Intelligence + Onboarding V1. Runtime AI, Meta, Google, social, SEO execution, publishing, outbound contact, and owner walkthrough remain separately gated and inactive.
 - After every build, update `VEROXA_CURRENT_MILESTONE.md`, `CURRENT_BUILD_STATUS.md`, this memory when durable truth changes, and Faraz's plain-language handoff.
 
