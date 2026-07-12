@@ -1,3 +1,37 @@
+## 2026-07-12 — Current milestone and mandatory continuity update
+
+- Read `artifacts/veroxa/docs/VEROXA_CURRENT_MILESTONE.md` first for the current scope, priority, verified state, and next build.
+- Momo's House San Antonio is the only operational client and restaurant workspace for the current milestone.
+- Team Faraz is Momo-focused. The only capability for non-client restaurants is the standalone, fully functional Restaurant Audit Center.
+- An audited restaurant remains a Team-owned audit record or prospect and does not become an operational client unless Faraz separately and explicitly approves conversion.
+- The current milestone is Momo's House San Antonio 100% readiness with maximum safe AI, automation, social handling, SEO, approved publishing, reporting, monitoring, and human approval control.
+- After every build, update `VEROXA_CURRENT_MILESTONE.md`, `CURRENT_BUILD_STATUS.md`, relevant runtime/deployment truth, and Faraz's plain-language handoff. Update locked memory when durable scope, authority, or product direction changes. A build is not complete until this continuity update is done.
+- Older instructions that defer Team Portal capability, prioritize broad public/client work, or use the earlier post-cutover route-parity sequence are superseded for this milestone. Historical multi-client prospecting applies only inside the Restaurant Audit Center and does not authorize another operational client.
+
+## 2026-07-12 — ChatGPT-managed build, GitHub, and deployment protocol
+
+- Faraz uses ChatGPT as the primary Veroxa command center. Faraz and ChatGPT decide the next outcome together; ChatGPT invokes Codex and connected GitHub/Sites tools internally. Do not require Faraz to copy prompts into a separate Codex, GitHub, Sites, terminal, or IDE window for routine work.
+- Read `artifacts/veroxa/docs/CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md` before planning, building, reviewing, merging, or deploying Veroxa.
+- `Build it` authorizes the agreed branch, Codex implementation, tests, pull request, CI/RR fixes, and merge of the exact reviewed commit only after the green gate passes. It does not authorize a Sites deployment unless deployment was explicitly included.
+- `Build it, but hold for review` stops at a verified green pull request and does not merge or deploy.
+- `Build and deploy it` authorizes the green merge plus synchronization of the exact merged GitHub state to Sites, checkpoint deployment, and live/custom-domain verification.
+- `RR` means deep review and reasonable safe fixes; `RR` alone does not authorize merge, deploy, activation, or scope expansion.
+- GitHub `main` remains canonical. A GitHub merge and a Sites deployment are separate actions; do not leave live Sites behavior ahead of GitHub source of truth.
+- Pause for specific Faraz direction when scope materially expands into production auth or credentials, real customer data/privacy, destructive data or production migrations, billing/payments, external integrations or publishing, owner/client contact, business-truth or public-promise changes, DNS/domain-record changes, Momo activation/walkthrough, or a material product-direction change.
+
+## 2026-07-12 — ChatGPT Sites migration and RR source-of-truth lock
+
+- Faraz explicitly approved building the real Veroxa application through ChatGPT Sites using the existing GitHub/Codex Veroxa OS as the core skeleton.
+- This is not a new demo and must not replace Veroxa with a shallow visual prototype.
+- GitHub `main` remains the canonical source of truth for product behavior, routes, operating memory, guardrails, and build direction.
+- ChatGPT is Faraz's primary operating interface and invokes Codex as the engineering workflow.
+- ChatGPT Sites is the primary application/deployment surface.
+- Vercel remains a temporary compatibility and rollback surface during Sites stabilization.
+- Read `artifacts/veroxa/docs/CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md` before changing hosting, routes, access, authentication, or the custom domain.
+- `veroxasystems.com` and `www.veroxasystems.com` are attached with active SSL. Preserve GitHub/Sites parity, mobile/build validation, honest public-shell labeling, domain verification, and rollback after each authorized deployment.
+- When Faraz asks for `RR`, perform a deep GitHub review plus ChatGPT Sites integration review. Fix reasonable code, docs, guardrail, CI, security, and direction drift without silently activating real-world systems.
+- The Sites migration does not activate production auth, credentials, database/storage, external integrations, AI provider calls, publishing, real client accounts/data, Team-sensitive exposure, or the Momo owner walkthrough.
+
 ## 2026-06-21 — Post-PR120 source-of-truth operating lock
 
 - Current operating baseline: merged PR #120 — Momo Internal Dry Run + Go/No-Go Gate.
@@ -8,17 +42,17 @@
 - Older Momo owner walkthrough and launch QA docs are historical/blocked references only unless Faraz explicitly reactivates them later.
 - No future agent should assume the Momo owner walkthrough is approved.
 - No future agent should assume activation comes next.
-- No future agent should enable real auth, external integrations, publishing, AI provider calls, platform tokens, or client exposure unless a later prompt explicitly approves that exact scope.
+- No future agent should enable real auth, external integrations, publishing, AI provider calls, platform tokens, or real client accounts/data exposure unless a later prompt explicitly approves that exact scope.
 - AUTH_MODE remains placeholder.
 - /api/pilot-access remains active.
 - Roles remain client/team only.
 - Momo owner walkthrough remains blocked.
 - No next activation PR is approved by default.
-- Future real-world activation, real-auth activation, external platform setup, owner walkthrough, or client exposure requires separate explicit Faraz approval.
+- Future real-world activation, real-auth activation, external platform setup, owner walkthrough, or real client accounts/data exposure requires separate explicit Faraz approval.
 
 # Veroxa Agent Instructions
 
-Current docs authority: read `artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md` first, then read `artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md`. Do not override the active docs index, locked operating memory, `PRICING_SOURCE_OF_TRUTH.md`, or `CURRENT_BUILD_STATUS.md` with older current-looking docs or archived strategy notes.
+Current docs authority: read `artifacts/veroxa/docs/VEROXA_CURRENT_MILESTONE.md` first, then `artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md`, then `artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md`. Do not override the current milestone, active docs index, locked operating memory, `PRICING_SOURCE_OF_TRUTH.md`, or `CURRENT_BUILD_STATUS.md` with older current-looking docs or archived strategy notes.
 
 ## 2026-06-14 — Automation-first Momo pivot
 
@@ -81,40 +115,31 @@ Owner and Operator are parked unless explicitly requested by the user. Do not bu
 
 ## 3. Current active build stack
 
-The current active Veroxa build stack is GitHub + Codex + Vercel:
+The current active Veroxa build stack is ChatGPT-managed GitHub + Codex + ChatGPT Sites, with Vercel retained temporarily for migration compatibility and rollback:
 
-- GitHub main is the source of truth.
-- Codex is the primary engineering/build agent.
-- Vercel is the deployment target.
+- ChatGPT is Faraz's primary operating and orchestration interface.
+- GitHub `main` is the canonical source of truth.
+- Codex is the engineering/build capability ChatGPT invokes internally.
+- ChatGPT Sites is the primary application/deployment surface.
+- Vercel is not the new source of truth and remains a temporary rollback path during stabilization.
 - Browser/manual QA is used for visual checks.
 
-## 4. Default Codex workflow
+## 4. ChatGPT-managed build and merge workflow
 
-For the active five-phase pre-live roadmap, see `artifacts/veroxa/docs/VEROXA_OS_5_PHASE_PRELIVE_BUILD_MAP.md`.
+For completed historical pre-live sequencing and safety context, see `artifacts/veroxa/docs/VEROXA_OS_5_PHASE_PRELIVE_BUILD_MAP.md`. It does not govern the current Sites roadmap.
 
 Before implementing PR 100+ live automation work, read `artifacts/veroxa/docs/LIVE_AUTOMATION_V1_ARCHITECTURE.md`.
 
-Before any large build, also run through `artifacts/veroxa/docs/PRE_BUILD_STABILITY_CHECKLIST.md` to protect Vercel config, temp login, audit search, public pricing, public metadata, and SaaS safety.
+Before any large build, also run through `artifacts/veroxa/docs/PRE_BUILD_STABILITY_CHECKLIST.md` to protect the Sites hosting identity and source sync, Vercel rollback config, auth boundaries, audit search, public pricing, metadata, and SaaS safety.
 
-Every Codex prompt should begin conceptually with:
+Command meanings and the complete green gate live in `artifacts/veroxa/docs/CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md`:
 
-Pull latest origin/main before making any new changes.
+- `Build it`: refresh current `main`, create a task branch, implement with Codex, test, open/update the PR, run RR, repair CI, re-check the exact reviewed head and mergeability, and merge only when green. After every build, update the milestone, build status, relevant runtime truth, and Faraz's plain-language handoff; update locked memory when a durable decision changes. Do not deploy Sites unless requested.
+- `Build it, but hold for review`: complete the same engineering and verification work, then stop at the green PR without merge or deployment.
+- `Build and deploy it`: complete the green merge, synchronize the exact merged GitHub source to Sites, run Sites verification, checkpoint/deploy, and verify access plus custom-domain health.
+- `RR`: review and safely fix; do not infer merge or deployment authority from RR alone.
 
-Create a branch for the task.
-
-Read the prompt completely and carefully before making changes.
-Understand all stages of the full prompt.
-Plan the work before editing.
-Stage and build each component of the prompt in order.
-Do not skip stages.
-Do not rush ahead into features not requested.
-
-For Codex:
-
-- Pull latest origin/main before making any new changes.
-- Create a branch for the task.
-- Do not push directly to main.
-- Open a PR when finished.
+Green requires correct scope, applicable local tests/typecheck/lint/build and guardrails, successful required GitHub checks, Sites verification when Sites changes, a mergeable PR whose exact head is unchanged since final review, and no unresolved actionable review thread or known critical/high-severity defect. Never push directly to `main`.
 
 ## 5. Locked pricing
 
@@ -362,15 +387,15 @@ Phase 1 SaaS foundation scaffolding is present as TypeScript-only contracts and 
 - Production runtime is still not connected: no production auth enablement, database tables, migrations, RLS policies, storage uploads, payments, live AI, or publishing integrations were added.
 - Next recommended phase: RR-approved production adapter design and test harness planning before any real auth/database/storage wiring.
 
-## 2026-06-04 — Current Veroxa OS sync markers
+## 2026-06-04 — Current Veroxa OS sync markers (superseded where noted by the 2026-07-12 protocol)
 
 - Veroxa should be theoretically complete in preview/manual/pre-live mode before paid infrastructure is activated.
 - Paid systems should be connected into existing prepared interfaces, not used while the product is still being designed.
-- Active stack remains GitHub + Codex + Vercel; Replit is historical only.
+- Active stack is ChatGPT-managed GitHub + Codex + ChatGPT Sites; Vercel is temporary rollback only and Replit is historical.
 - Active roles remain Client and Team. Owner/Operator are inactive and parked, including Super Admin, generic Admin, and Execution roles.
 - Veroxa is AI-ready but not connected: deterministic drafts and approval gates can be built now; live AI stays blocked until a future approved activation.
 - Veroxa is integration-ready but not connected: adapter contracts and UI states can be planned now; production auth, storage, Google/Meta/TikTok APIs, payments, webhooks, cron jobs, and automated publishing stay blocked.
 - Restaurant Onboarding is a known OS gap and should first be built in preview/manual mode.
 - Current PR philosophy: PR #59 style is the ideal normal major build size around 3,000 meaningful changes across 20-30 files; justified big builds may approach 5,000 meaningful additions/deletions; hotfixes stay surgical; no fake churn.
-- Current preview credentials: [faraz@client.com](mailto:faraz@client.com) / farazclient and [faraz@team.com](mailto:faraz@team.com) / farazteam.
+- Legacy preview-only credential strings are retired from active operating guidance and must never be reused as production authentication.
 - `AUTH_MODE` remains `placeholder` until production auth is explicitly approved after the pre-paid activation gate.

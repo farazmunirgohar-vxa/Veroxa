@@ -1,3 +1,57 @@
+## 2026-07-12 — Current milestone memory update
+
+- This update records product direction and continuity rules only; it does not activate auth, Supabase, storage, runtime AI, external integrations, publishing, Momo contact, or the owner walkthrough.
+- `VEROXA_CURRENT_MILESTONE.md` is now the highest-priority current scope and progress record.
+- Momo's House San Antonio is the only operational client and restaurant workspace for the current milestone.
+- Team Faraz is Momo-focused; the only effective capability for non-client restaurants is the standalone, fully functional Restaurant Audit Center.
+- An audited restaurant does not become an operational client unless Faraz separately and explicitly approves conversion.
+- Other restaurant audits remain audit records only and must not automatically create client accounts, operations workspaces, onboarding, media/content workflows, Team operations, reports, publishing access, or active-client conversion.
+- The next milestone is Momo's House San Antonio 100% readiness with maximum safe AI, automation, social handling, Google/SEO, approved publishing, reporting, monitoring, and human control.
+- After every build, ChatGPT must update the milestone, build status, relevant runtime/deployment truth, and Faraz's plain-language progress handoff. Locked memory changes when durable scope, authority, or product direction changes.
+- This continuity update is being held in draft PR #134 on `agent/chatgpt-sites-veroxa-integration`; it is not merged or deployed and changes no runtime behavior.
+- The durable milestone build is commit `ac6d7321eb3037b3a8b3b8551bb8167abec78aae`. Relevant strategy guardrails, direct TypeScript checks, Sites build/render tests, Sites lint, and whitespace checks pass; GitHub checks must be re-verified on the final branch head.
+- The exact next product build after PR #134 is approved and merged is Momo Production Foundation V1: production-safe Team/Momo Supabase Auth, tenant-scoped RLS and storage, clean migration and authorization tests, with real data, credentials, integrations, AI, and publishing still gated.
+- The following build is Restaurant Audit Center V1 for non-client restaurants with durable intake, a Team queue, saved evidence/findings, re-runs/comparisons, reviewed reports, abuse controls, and no automatic operational-client conversion.
+- The older route-manifest/Sites-parity sequence below is retained as RR history but is superseded as the current build order by `VEROXA_CURRENT_MILESTONE.md`.
+
+## 2026-07-12 — ChatGPT-managed Veroxa build and live Sites state
+
+- Faraz uses ChatGPT as the primary Veroxa command center. ChatGPT invokes Codex, GitHub, CI, RR, and Sites tooling internally after Faraz authorizes an agreed outcome.
+- `CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md` locks `Build it`, `Build it, but hold for review`, `Build and deploy it`, the green gate, and material pause boundaries.
+- GitHub `main` remains the canonical source for Veroxa behavior, routes, docs, tests, guardrails, and build direction.
+- ChatGPT Sites is the primary application/deployment surface. Vercel remains a temporary compatibility and rollback surface during stabilization.
+- The integrated Sites application covers the real public Home -> Audit -> Login flow, Client Portal visual shell, and grouped Team Faraz/Momo workspace structure using the approved visual direction. It is not a separate demo product.
+- Sites access is public. `veroxasystems.com` and `www.veroxasystems.com` are attached to Sites with active provider and SSL status and no reported domain error as last verified on 2026-07-12.
+- Routine future Sites checkpoints retain the existing custom domains; no new Namecheap records are required for each deployment.
+- Public Client and Team routes are currently non-sensitive pre-live shells, not secure production accounts. Production auth, real client/Team-sensitive data, persistence, uploads, external integrations, runtime AI provider calls, publishing, payments, real client activation, and Momo activation remain blocked.
+- GitHub PR #134 reconciles the previously live-ahead Sites source into GitHub, establishes the ChatGPT-managed operating contract, and adds explicit Sites verification. Before this PR reaches `main`, the live-ahead state is a recorded temporary migration exception; merging the verified PR closes that exception.
+- Active authorities: `CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md` and `CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md`.
+
+### Current operator commands
+
+- `Build it`: complete the agreed Codex/GitHub work and merge the exact reviewed commit only after the green gate passes; do not deploy Sites unless requested.
+- `Build it, but hold for review`: stop at the verified green PR.
+- `Build and deploy it`: green merge, exact merged-source sync to Sites, Sites verification, checkpoint deployment, and live/domain verification.
+- `RR`: deep review and safe fixes only; no automatic merge/deployment authority by itself.
+
+### Current RR findings
+
+- The repository is structurally mature but has significant historical documentation volume; current-source ordering and automated drift checks are essential.
+- The Vite/Vercel runtime and the new Sites delivery surface must share route and capability contracts to prevent dual-app drift.
+- The strongest next architectural improvement is a shared route/capability manifest consumed by navigation, route guards, documentation checks, and RR guardrails.
+- Real data activation should follow interface parity and identity/persistence architecture, not precede them.
+- GitHub green checks must explicitly verify the isolated Sites build, rendered routes, lint, and artifact contract before ChatGPT-managed merging can treat a Sites-changing PR as green.
+- PR #134 replaces misleading secure/owner-restricted/internal-only copy with honest public pre-live shell language; the Sites source-of-truth guardrail now protects that boundary.
+
+### Next recommended build sequence (historical; superseded by `VEROXA_CURRENT_MILESTONE.md`)
+
+1. Create a shared route-and-capability manifest consumed by canonical navigation, Sites navigation, guards, docs, and RR checks.
+2. Port the Client Portal behavior layer: onboarding, media intake states, requests/messages, reports, connections, and business-truth corrections.
+3. Port the complete grouped Momo Workspace behavior and safe action routing.
+4. Design production identity/persistence adapters behind existing repositories under a separate explicit approval gate.
+5. Run security, accessibility, desktop/mobile, build, route-boundary, and live-domain verification.
+6. Retain the Vercel rollback path until the Sites application is behaviorally stable and GitHub/Sites parity is continuously enforced.
+
 ## 2026-06-21 — PR #133 Momo Intelligence Safe Action Routes
 
 PR #133 fixes PR #132 safe action routing only: “Review reports” now routes to `/team/momo/reports`, and “Review dry run” now routes to `/team/momo-dry-run-go-no-go`. It does not activate the pilot, turn on real auth, create credentials, contact Momo’s House, publish externally, connect external platforms, generate AI output, create fake data, write to the database, or change product behavior beyond correcting internal links.

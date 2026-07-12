@@ -1,3 +1,64 @@
+## 2026-07-12 — Momo 100%-readiness milestone and Audit Center exception
+
+Faraz's newest explicit product direction supersedes broader multi-client roadmap assumptions:
+
+- Momo's House San Antonio is Veroxa's only operational client and restaurant workspace for the remainder of the current milestone.
+- Team Faraz is focused on operating Momo end to end.
+- The only capability that may be effective for non-client restaurants is the standalone, fully functional Restaurant Audit Center inside Team.
+- Other restaurants may have saved and repeatable audit records, evidence, Team notes, comparisons, and reviewed audit reports, but no client account, operations workspace, onboarding, media/content workflow, operational work queue, reporting, publishing access, or automatic conversion. An audited restaurant does not become an operational client unless Faraz separately and explicitly approves conversion.
+- The next milestone is Momo's House San Antonio 100% readiness: production-grade identity and data, full onboarding, media, AI, automation, social handling, Google/SEO, reviews, approved publishing, work orchestration, reporting, monitoring, and recovery—as automated and AI-integrated as safely possible.
+- Automation should maximize internal analysis, classification, drafting, routing, scheduling, monitoring, and reporting while preserving owner-confirmed business truth, Veroxa approval gates, human review for reputation-sensitive work, and verified platform permissions.
+- `VEROXA_CURRENT_MILESTONE.md` is the highest-priority current scope and progress document.
+- After every build, ChatGPT must update the current milestone, build status, relevant runtime/deployment truth, and Faraz's plain-language progress handoff. Update this locked memory when durable scope, authority, or product direction changes. A build is not complete until this continuity update is done.
+- The earlier post-cutover route-parity sequence and older Team-deferral/public-client-first priorities are superseded as the current build order. Multi-client opportunity work is historical except for non-client prospecting inside the Restaurant Audit Center.
+
+Current technical truth remains separate from the milestone target: production auth, persistence, runtime AI, external integrations, and publishing are not yet active. The milestone authorizes the direction, not an unverified claim that readiness already exists.
+
+## 2026-07-12 — ChatGPT-managed Veroxa operating agreement
+
+Faraz's newest explicit operating direction:
+
+- Faraz uses ChatGPT as the primary Veroxa command center. Faraz and ChatGPT decide the next outcome together; ChatGPT invokes Codex, GitHub, CI, RR, and Sites tooling internally.
+- Faraz should not need to copy a prompt into a separate Codex window or manually operate GitHub/Sites for routine build work.
+- `CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md` is the authority for command meanings, green-merge requirements, pause boundaries, and GitHub-to-Sites deployment discipline.
+- `Build it` authorizes the agreed branch, implementation, tests, PR, CI/RR repair, and merge of the exact reviewed commit only when green. It does not authorize a Sites deployment unless deployment was explicitly included.
+- `Build it, but hold for review` stops at a verified green PR without merge or deployment.
+- `Build and deploy it` authorizes the green merge plus synchronization of the exact merged GitHub state to Sites, checkpoint deployment, and live/domain verification.
+- `RR` authorizes deep review and reasonable safe fixes but does not independently authorize merge, deploy, real-world activation, or material scope expansion.
+- GitHub `main` remains canonical. A GitHub merge and a Sites deployment are separate actions. Never allow live-only Sites behavior to become the lasting source of truth.
+- ChatGPT should perform safe, reversible, in-scope engineering work autonomously and pause for production auth/credentials, real customer data/privacy, destructive data or production migrations, billing/payments, external integrations/publishing/contact, business-truth or public-promise changes, DNS/domain-record changes, Momo activation/walkthrough, or material direction changes.
+
+Current hosted-state memory as last verified on 2026-07-12:
+
+- Sites access is public.
+- `veroxasystems.com` and `www.veroxasystems.com` are attached to Sites with active provider and SSL status and no reported domain error.
+- Public Client and Team routes are non-sensitive pre-live shells, not secure production access; no real client or Team-sensitive data may be introduced before approved production identity and authorization.
+- Vercel remains temporary rollback only.
+
+## 2026-07-12 — ChatGPT Sites application migration
+
+Faraz's newest explicit build direction:
+
+- Build the real Veroxa application through ChatGPT Sites.
+- Use the existing GitHub/Codex Veroxa system as the core skeleton and canonical product truth.
+- Preserve the approved Sites visual direction as the presentation layer.
+- Do not create or promote another demo.
+- GitHub `main` remains canonical; Sites is the primary deployment/application surface.
+- Vercel remains temporarily available as a compatibility and rollback surface during post-cutover stabilization.
+- The approved Namecheap/Sites cutover is complete and both custom domains report active provider and SSL state; retain stabilization checks and the documented rollback path.
+- RR must review both GitHub health and the Sites migration/deployment/domain/access state.
+- The migration does not authorize real auth, credentials, external integrations, database/storage activation, AI provider calls, publishing, Momo contact, owner walkthrough, real client accounts/data, or Team-sensitive exposure.
+
+Current post-cutover priority (historical; superseded by `VEROXA_CURRENT_MILESTONE.md`):
+
+1. Keep the Sites source reconciled with GitHub `main`; PR #134 establishes the initial synchronized source and operating contract.
+2. Preserve honest public pre-live shell language and guard against misleading secure/internal access claims.
+3. Add a shared route/capability contract and guardrail.
+4. Complete Client and grouped Momo behavior parity.
+5. Keep GitHub-synced Sites source, CI, build, mobile, accessibility, and domain verification green.
+6. Design identity/persistence architecture only under separate approval.
+7. Retain Vercel rollback until post-cutover stabilization is explicitly complete.
+
 ## 2026-06-21 — Post-PR120 locked operating memory
 
 Automation-first direction remains locked. The current operating baseline is post-PR120: merged PR #120 — Momo Internal Dry Run + Go/No-Go Gate.
@@ -20,7 +81,7 @@ GitHub PR #106 adds AI Draft Preparation Foundation only. AI drafts are Team-onl
 
 ## 2026-06-17 — RR fix-forward operating rule
 
-When Faraz asks ChatGPT to RR a Veroxa PR, the job is not only to identify issues. ChatGPT should fix every issue it can reasonably and safely fix directly during the RR before giving the final merge verdict. This includes guardrail/check failures, docs mismatches, PR sequence drift, TypeScript/schema mismatches, migration/RLS/security policy problems, route guard issues, unsafe client visibility, feature-gate mistakes, accidental scope creep, and CI/Veroxa Verify failures that can be patched from GitHub. Only leave an issue for Faraz/Codex when it cannot be safely fixed directly. Do not call a PR merge-ready until fixable RR blockers are patched and the relevant checks are green.
+When Faraz asks ChatGPT to RR a Veroxa PR, the job is not only to identify issues. ChatGPT should fix every issue it can reasonably and safely fix directly during the RR before giving the final merge verdict. This includes guardrail/check failures, docs mismatches, PR sequence drift, TypeScript/schema mismatches, migration/RLS/security policy problems, route guard issues, unsafe client visibility, feature-gate mistakes, accidental scope creep, and CI/Veroxa Verify failures that can be patched from GitHub. ChatGPT owns the Codex implementation/fix loop and pauses for Faraz only at the material boundaries in `CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md`. Do not call a PR merge-ready until fixable RR blockers are patched and the relevant checks are green.
 
 # Veroxa Locked Operating Memory
 

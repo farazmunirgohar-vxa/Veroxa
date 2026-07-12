@@ -36,6 +36,8 @@ minimumReleaseAgeExclude:
 
 packages:
   - artifacts/*
+  # ChatGPT Sites uses its own isolated npm lockfile and deployment lifecycle.
+  - '!artifacts/veroxa-sites'
   - lib/*
   - lib/integrations/*
   - scripts

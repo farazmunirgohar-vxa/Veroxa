@@ -11,6 +11,7 @@
     "check-portal-separation": "tsx ./src/check-portal-separation.ts",
     "check-business-guardrails": "tsx ./src/check-business-guardrails.ts",
     "check-first-client-readiness": "tsx ./src/check-first-client-readiness.ts",
+    "check-first-client-operating-suite": "tsx ./src/check-first-client-operating-suite.ts",
     "check-media-lifecycle": "tsx ./src/check-media-lifecycle.ts",
     "check-public-cleanup": "tsx ./src/check-public-cleanup.ts",
     "check-api-security": "tsx ./src/check-api-security.ts",
@@ -75,7 +76,8 @@
     "check-momo-workspace-dashboard-operating-snapshot": "tsx ./src/check-momo-workspace-dashboard-operating-snapshot.ts",
     "check-momo-work-queue-daily-operating-board": "tsx ./src/check-momo-work-queue-daily-operating-board.ts",
     "check-active-docs-momo-workspace-override-list": "tsx ./src/check-active-docs-momo-workspace-override-list.ts",
-    "check-momo-restaurant-intelligence-operating-board": "tsx ./src/check-momo-restaurant-intelligence-operating-board.ts"
+    "check-momo-restaurant-intelligence-operating-board": "tsx ./src/check-momo-restaurant-intelligence-operating-board.ts",
+    "check-chatgpt-sites-migration-source-truth": "tsx ./src/check-chatgpt-sites-migration-source-truth.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",

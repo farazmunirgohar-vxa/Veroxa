@@ -57,6 +57,9 @@ jobs:
       - name: Business rule guardrail
         run: pnpm --filter @workspace/scripts run check-business-guardrails
 
+      - name: ChatGPT-managed Sites source-of-truth guardrail
+        run: pnpm --filter @workspace/scripts run check-chatgpt-sites-migration-source-truth
+
       - name: First-client readiness guardrail
         run: pnpm --filter @workspace/scripts run check-first-client-readiness
 

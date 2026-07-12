@@ -112,7 +112,7 @@ for (const [file, marker] of [
   ["artifacts/veroxa/src/pages/team-report-queue.tsx", "first-client-report-readiness-preview"],
   ["artifacts/veroxa/src/pages/team-first-client-readiness.tsx", "first-client-operating-suite-readiness"],
   ["artifacts/veroxa/src/pages/team-manual-execution.tsx", "related-first-client-ops-snapshot"],
-  ["artifacts/veroxa/src/pages/client-dashboard.tsx", "client-weekly-needs-card"],
+  ["artifacts/veroxa/src/pages/client-dashboard.tsx", "needs-your-attention"],
 ]) requireIncludes(file, marker, marker);
 
 const forbiddenDomainImports = [
@@ -159,7 +159,8 @@ for (const file of [page, `${domain}/weeklyUpdateBuilder.ts`, `${domain}/monthly
 }
 
 assert(/AUTH_MODE:\s*AuthMode\s*=\s*"placeholder"/.test(authMode), 'AUTH_MODE must remain "placeholder"');
-for (const price of ["$295", "$495", "$995"]) assert(pricing.includes(price), `Locked pricing marker missing: ${price}`);
+assert(pricing.includes('COMPLETE_ONLINE_PRESENCE_DISPLAY_PRICE = "$495"'), "Active $495 launch price marker is missing");
+assert(!pricing.includes('displayPrice: "$295"') && !pricing.includes('displayPrice: "$995"'), "Retired $295/$995 package prices must not return as active display prices");
 assert(!app.includes("/owner/") && !app.includes("/operator/"), "Owner/Operator routes must remain parked");
 requireIncludes("artifacts/veroxa/src/pages/team-manual-execution.tsx", "No auto-posting", "Manual execution remains pre-live/manual");
 requireIncludes("artifacts/veroxa/docs/MANUAL_EXECUTION_CENTER.md", "manual", "Manual execution documentation remains manual");

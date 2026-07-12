@@ -2,15 +2,17 @@
 > Do not override current docs: read `ACTIVE_DOCS_INDEX.md` first. Any old pricing, role, auth, or automation language in this file is historical/deprecated unless the active docs index confirms it.
 
 
-This document captures the current locked Veroxa OS direction. It is intended for Faraz, Codex, and future coding agents.
+This document captures the current locked Veroxa OS direction. It is intended for Faraz, ChatGPT, Codex, and future coding agents. `CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md` controls build/hold/RR/merge/deploy command semantics.
 
 ## 1. Correct platform reality
 
-The active Veroxa build stack is **GitHub + Codex + Vercel**:
+The active Veroxa build stack is **ChatGPT-managed GitHub + Codex + ChatGPT Sites**, with Vercel retained temporarily for migration compatibility and rollback:
 
+- **ChatGPT** is Faraz's primary planning, orchestration, review, GitHub, and deployment interface.
 - **GitHub main** is the source of truth.
-- **Codex** is the primary engineering/build agent for engineering, architecture review, hardening, PRs, and tests.
-- **Vercel** is the deployment target.
+- **Codex** is the engineering capability ChatGPT invokes for engineering, architecture review, hardening, PRs, and tests.
+- **ChatGPT Sites** is the primary application/deployment surface.
+- **Vercel** remains a temporary fallback during verified Sites and custom-domain stabilization.
 - **Browser/manual QA** is used for visual checks.
 - **Supabase** is connected as the future app/data backend, but production writes/auth/storage/RLS must remain staged and intentional.
 - **OpenAI Platform** is connected for future server-side AI work, but no frontend key exposure and no runtime AI calls unless explicitly requested.
@@ -243,7 +245,7 @@ The client should usually experience AI output only as "Prepared by Veroxa."
 
 ## 11. Build cadence
 
-Use Codex for:
+Use ChatGPT as Faraz's command center and use Codex internally for:
 
 - engineering/build work
 - source-of-truth updates
@@ -257,16 +259,19 @@ Use Codex for:
 - future server-side AI architecture when explicitly approved
 - future connector architecture when explicitly approved
 
-Use Vercel as the deployment target and use browser/manual QA for visual checks.
+Use ChatGPT Sites as the primary deployment surface and use browser/manual QA plus route/build checks for visual and behavioral verification. Retain Vercel only as a temporary compatibility and rollback surface.
 
 Recommended cadence:
 
-1. Codex creates a task branch from the latest source-of-truth state.
-2. Codex builds, reviews, hardens, and tests the staged change.
-3. Codex opens a PR.
-4. Faraz/ChatGPT review PR.
-5. Merge if safe.
-6. Vercel deploys from the configured GitHub flow.
+1. Faraz and ChatGPT agree on the next product outcome.
+2. Faraz authorizes `Build it`, `Build it, but hold for review`, or `Build and deploy it`.
+3. ChatGPT refreshes current source-of-truth state and invokes Codex on a controlled task branch.
+4. ChatGPT/Codex build, review, harden, test, and open/update the PR.
+5. ChatGPT runs RR, fixes in-scope defects/CI, and verifies the exact reviewed head against the green gate.
+6. `Build it` merges only when green; `Build it, but hold for review` stops at the green PR.
+7. `Build and deploy it` synchronizes the exact merged GitHub state to Sites, runs Sites verification, checkpoints/deploys, and verifies access plus both custom domains.
+
+GitHub merge and Sites deployment are separate actions. `RR` alone does not authorize either action. Pause at the material boundaries in `CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md`.
 
 ## 12. High-risk areas
 
@@ -305,14 +310,14 @@ Full connector execution comes later.
 
 Next controlled layers:
 
-1. Codex hardening for Visibility Audit Engine.
-2. Add AGENTS.md / keep agent instructions current.
-3. Team review status write-back behind dev flag.
-4. Client-visible status update after Team action.
-5. Server-side AI health/config check.
-6. AI text drafts for captions, Google posts, review replies, and updates.
-7. Storage/image workflow.
-8. Execution connectors for Google/social/website/reviews after approval gates are stable.
+1. Keep the ChatGPT-managed operating protocol, active memory, CI, and Sites deployment truth aligned.
+2. Create a shared route-and-capability manifest for the canonical and Sites applications.
+3. Complete Client behavior parity for onboarding, media, messages/requests, reports, connections, and business-truth corrections.
+4. Complete grouped Momo Workspace behavior parity and safe internal action routing.
+5. Remove misleading secure/internal labels from publicly reachable pre-live shells and keep real data out.
+6. Design production identity and persistence adapters only under separate explicit approval.
+7. Run security, accessibility, desktop/mobile, build, route, and live-domain verification.
+8. Add storage, live AI, or execution connectors only after their separate approval gates are satisfied.
 
 ## 15. Locked summary
 
@@ -324,11 +329,11 @@ Faraz should approve prepared work from mobile or computer.
 
 ## Veroxa should become the restaurant's quiet, AI-assisted growth operating system: simple outside, powerful inside.
 
-## 15. 2026-05-30 locked package and build-order sync
+## 15. 2026-05-30 historical package and build-order note — superseded
 
-Current public packages remain Essential ($497/month), Growth ($697/month), and Premium ($997/month). Growth must not be labeled popular-badge until real client data supports that claim.
+This section records a retired May 2026 package model and must not govern current product, pricing, UI, or roadmap decisions. The only active public offer is **Complete Online Presence — $495/month**, with launch add-ons and boundaries controlled by `PRICING_SOURCE_OF_TRUTH.md`.
 
-Use precise package language:
+The retired package language was:
 
 - Essential: Google Business Profile optimization, Google Search/Maps SEO basics, Facebook + Instagram presence management, picture-based posting, max 1 picture post/day, weekly updates, monthly snapshot, and Client Portal access.
 - Growth: everything in Essential plus TikTok + Reels posting support using the photos and videos the client provides, Reels optimization, and enhanced monthly report.
@@ -348,34 +353,34 @@ Build order remains client side first. Team/Internal Admin heavy AI automation c
 
 Current active routing is locked as follows:
 
-- Public demo preview: `/demo/client/dashboard` only.
-- Client Portal real review routes: `/client/*`, with login landing on `/client/dashboard`.
-- Team/Internal Admin real review routes: `/team/*`, with login landing on `/team/dashboard`.
-- Team Demo / `/demo/team/*` is deprecated/not active and must not be promoted publicly or used as a login destination.
+- Public flow: Home -> Audit -> Login through ChatGPT Sites.
+- Publicly reachable Sites Client and Team routes are non-sensitive pre-live shells and must not contain real client or Team-sensitive data.
+- Canonical Client review routes remain `/client/*`; canonical Team review routes remain `/team/*` with their existing guards.
+- Retired `/demo/*` routes must not be revived or promoted as the current Veroxa application.
 
-If a real Client or Team Portal section is incomplete, it should stay inside the real route and show calm “Still Building” language. It should not redirect to a demo route or call the real route a demo.
+If a Client or Team section is incomplete, it should stay inside the real route and use honest pre-live/coming-next language. It should not claim secure/internal access until authorization is enforced or call the real Sites application a separate demo.
 
-Client-side launch readiness comes first. Team/Internal Admin heavy AI automation comes later, after the real client portal backbone is safe enough for the first 5 clients.
+Client behavior parity and safe public-shell boundaries come first. Production identity, persistence, storage, AI, and external execution remain separately gated.
 
 The first 5 clients are the pre-launch readiness benchmark:
 
-1. Healthy Essential client.
-2. Essential client with low media.
-3. Growth client with reels content.
-4. Growth client with inconsistent uploads.
-5. Client eligible for Premium assessment.
+1. Healthy Complete Online Presence client.
+2. Client with low media availability.
+3. Client with incomplete business-truth confirmation.
+4. Client with inconsistent submissions or access.
+5. Client needing a separately scoped launch add-on or future service assessment.
 
-## 2026-06-04 — Locked current strategy addendum
+## 2026-06-04 — Locked current strategy addendum (superseded where noted by the 2026-07-12 protocol)
 
 Veroxa should be theoretically complete in preview/manual/pre-live mode before paid infrastructure is activated. Paid systems should be connected into existing prepared interfaces, not used while the product is still being designed.
 
 Current locked markers:
 
-- Active stack: GitHub + Codex + Vercel. Replit is historical only.
+- Active stack: ChatGPT-managed GitHub + Codex + ChatGPT Sites. Vercel is temporary rollback only; Replit is historical.
 - Active roles: Client and Team. Owner/Operator are inactive and parked.
 - `AUTH_MODE` remains `placeholder`.
 - Historical/deprecated pricing note: Starter $295, Growth $495, and Premium $995 are not active public pricing. Current pricing is Complete Online Presence — $495/month.
-- Preview credentials remain [faraz@client.com](mailto:faraz@client.com) / farazclient and [faraz@team.com](mailto:faraz@team.com) / farazteam.
+- Legacy preview-only credential strings are retired from active operating guidance and must never be reused as production authentication.
 - Veroxa remains AI-ready but not connected and integration-ready but not connected until a future approved activation.
 - Restaurant Onboarding is a known missing layer and future priority.
 - Paid infrastructure remains blocked until the Pre-Paid Activation Gate is satisfied.

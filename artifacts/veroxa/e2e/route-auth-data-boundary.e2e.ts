@@ -33,9 +33,10 @@ async function expectRouteOk(path: string): Promise<string> {
 }
 
 async function main() {
+  const vite = resolve(root, "node_modules/.bin/vite");
   const server = spawn(
-    "pnpm",
-    ["exec", "vite", "--config", "vite.config.ts", "--host", "127.0.0.1", "--port", String(port)],
+    vite,
+    ["--config", "vite.config.ts", "--host", "127.0.0.1", "--port", String(port)],
     { cwd: root, stdio: ["ignore", "pipe", "pipe"] },
   );
 

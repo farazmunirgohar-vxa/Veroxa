@@ -2,13 +2,13 @@
 > Do not override current docs: read `ACTIVE_DOCS_INDEX.md` first. Any old pricing, role, auth, or automation language in this file is historical/deprecated unless the active docs index confirms it.
 
 
-Status: Current gap note and future build plan.
+Status: current foundation-continuity and behavior-parity plan. The preview/manual V1 foundation exists; production identity, persistence, and complete Sites behavior parity remain future approved work.
 
 Restaurant Onboarding has not been seen recently in the product flow and is now a major missing layer. Veroxa should add a future **Restaurant Onboarding Center / Onboarding Wizard** before paid infrastructure is activated.
 
 Veroxa should be theoretically complete in preview/manual/pre-live mode before paid infrastructure is activated. Paid systems should be connected into existing prepared interfaces, not used while the product is still being designed.
 
-Active stack: **GitHub + Codex + Vercel**. **Replit is historical only**. Active roles are **Client and Team**. **Owner/Operator parked**. `AUTH_MODE` remains `placeholder`.
+Active stack: **ChatGPT-managed GitHub + Codex + ChatGPT Sites**. **Vercel is temporary rollback only** and **Replit is historical**. Active roles are **Client and Team**. **Owner/Operator parked**. `AUTH_MODE` remains `placeholder`.
 
 ## Build philosophy
 
@@ -181,8 +181,8 @@ Suggested scope:
 
 ## Current markers
 
-- [faraz@client.com](mailto:faraz@client.com) / farazclient
-- [faraz@team.com](mailto:faraz@team.com) / farazteam
+- Legacy preview-only credential strings are retired from active operating guidance and must never be reused as production authentication.
+- Public Sites Client/Team routes remain non-sensitive pre-live shells until production identity and authorization are explicitly approved and verified.
 - AI-ready but not connected
 - integration-ready but not connected
 
