@@ -106,7 +106,6 @@ async function handlePost(request: Request): Promise<Response> {
         p_intake_token: token,
         p_idempotency_key: idempotencyKey,
       }),
-      signal: AbortSignal.timeout(8_000),
     });
   } catch {
     return json(503, { accepted: false });
