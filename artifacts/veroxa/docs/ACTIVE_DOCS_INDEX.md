@@ -6,6 +6,7 @@ Status: highest-level current source-of-truth index. Read this file before relyi
 
 - `VEROXA_CURRENT_MILESTONE.md` is the first document to read for current scope, priority, build order, and progress.
 - `RR_CHECKPOINT.md` and `RR_RELEASE_CHECKPOINT.json` are the reusable review baseline. Read and validate them before starting another broad RR; unchanged boundary evidence must be reused and only changed groups re-reviewed.
+- `momo-readiness-tracker.json` is the machine-readable Momo readiness source. Every build must update affected dimensions with evidence, blockers, and next actions; do not invent a readiness percentage.
 - Momo's House San Antonio is the only operational client and restaurant workspace for the current milestone.
 - Team Faraz is Momo-focused. The only effective capability for non-client restaurants is the standalone, fully functional Restaurant Audit Center.
 - An audited restaurant does not become an operational client unless Faraz separately and explicitly approves conversion.
@@ -144,6 +145,7 @@ Status: highest-level active contributor guide and current source-of-truth index
 - Momo owner walkthrough remains blocked until the full Live Automation V1 sequence is implemented and approved.
 
 ## Current source-of-truth docs
+- `momo-readiness-tracker.json` — evidence-backed readiness tracking for Momo's House San Antonio only; every required dimension must be verified before overall readiness can be verified, and other restaurants remain Audit Center-only.
 - `MOMO_RESTAURANT_INTELLIGENCE_OPERATING_BOARD.md` — PR #132 source of truth for `/team/momo/intelligence` as the internal Restaurant Intelligence operating board; organization only, no activation, no real auth, no credentials, no Momo contact, no publishing, no integrations, no AI generation, no fake data, and no database writes.
 - `MOMO_WORK_QUEUE_DAILY_OPERATING_BOARD.md` — PR #130 source of truth for `/team/momo/work` as the internal daily work board; organization only, no activation, no real auth, no credentials, no Momo contact, no publishing, no integrations, no AI generation, and no fake work items or counts.
 - `MOMO_WORKSPACE_DASHBOARD_OPERATING_SNAPSHOT.md` — PR #129 source of truth for `/team/momo` as the internal operating snapshot dashboard; no activation, no real auth, no credentials, no Momo contact, no publishing, no integrations, no AI generation, and no fake metrics or readiness.
@@ -162,6 +164,7 @@ Status: highest-level active contributor guide and current source-of-truth index
 These files reflect the current Veroxa operating truth and override historical/archive strategy notes. If another doc conflicts with this index, do not override this index; treat the conflicting note as stale until Faraz explicitly refreshes it:
 
 - `VEROXA_CURRENT_MILESTONE.md`
+- `momo-readiness-tracker.json`
 - `CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md`
 - `CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md`
 - `MOMO_RESTAURANT_INTELLIGENCE_OPERATING_BOARD.md`

@@ -113,6 +113,9 @@ test("audit UI keeps contact, draft-isolation, mutation, and mobile-navigation g
   assert.match(page, /signOutBusy \? "Signing out" : "Sign out"/, "Mobile Team navigation must expose sign out");
   assert.match(page, /const handleSignOut = async/, "Sign out controls must share an error-aware handler");
   assert.match(page, /You are still signed in/, "Failed sign out must preserve and explain the signed-in state");
+  assert.match(page, /momo-readiness-tracker\.json/, "Team readiness must use the GitHub-tracked Momo readiness record");
+  assert.match(page, /No readiness percentage is calculated/, "Team readiness must not invent a completion percentage");
+  assert.match(page, /Other restaurants remain Restaurant Audit Center records only/, "Team readiness must preserve the Momo-only operating boundary");
 
   assert.match(center, /confirmDiscardDetail/, "Audit selection must protect unsaved drafts");
   assert.match(center, /beforeunload/, "Leaving the page must protect unsaved drafts");

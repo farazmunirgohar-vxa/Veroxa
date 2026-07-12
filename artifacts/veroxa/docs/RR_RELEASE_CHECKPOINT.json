@@ -103,7 +103,15 @@
         "AGENTS.md",
         "artifacts/veroxa/docs/RR_CHECKPOINT.md"
       ],
-      "sha256": "056d81a241a3090c9261c8e177632eb0a2799dd5bd07013160374c83f0620611"
+      "sha256": "9ea8a6e10d4b3a3e13827d2690f56de70c72fbe45d4d898c3a271fc2aefc1df9"
+    },
+    "momo_readiness_tracking": {
+      "review": "evidence-delta-on-change",
+      "files": [
+        "artifacts/veroxa-sites/app/momo-readiness-tracker.json",
+        "scripts/src/check-momo-house-readiness-tracking.ts"
+      ],
+      "sha256": "4e7fe3f217f9005c7705d7918cc2049f519ad7edcdd4a1edaa01e35403178dab"
     },
     "presentation_surfaces": {
       "review": "delta-unless-boundary-crossed",
@@ -113,7 +121,7 @@
         "artifacts/veroxa-sites/tests/rendered-html.test.mjs",
         "artifacts/veroxa/src/pages/free-audit.tsx"
       ],
-      "sha256": "eafcd60057a9691cfd27285504df5b87bf387415bf833ccdc3f7b59f42c5b736"
+      "sha256": "97d248b587e7ae98d6dbded1f7f6485777400f5b86ca8f71a9ebfc047ff90fb3"
     }
   },
   "activationGates": [

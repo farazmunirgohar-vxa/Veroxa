@@ -91,6 +91,16 @@ For this milestone, **100% readiness** means the scoped Momo capabilities are pe
 - `RR_CHECKPOINT.md` and its machine-readable fingerprint record now route future work to delta or changed-boundary review, preventing unchanged evidence from being repeated.
 - Real Momo business data, onboarding, uploads, runtime AI, Meta/Google connections, social handling, SEO execution, publishing, outbound contact, and outcome metrics remain inactive.
 
+## Mandatory two-lane tracking
+
+Veroxa progress must track both the platform build and Momo's House operational readiness after every build. A green Veroxa build or deployment does not by itself mean Momo is ready.
+
+- **Veroxa delivery state:** source, PR, checks, migrations, deployment, domain, security, and RR evidence.
+- **Momo readiness state:** identity/access, business truth/onboarding, media/rights, AI/automation, Meta/social, Google/SEO/reviews, website/menu/ordering, operations/reporting/monitoring, and activation/recovery.
+- `momo-readiness-tracker.json` is the machine-readable Momo readiness record. Every dimension requires evidence, blockers, and a next action.
+- Do not calculate or publish a readiness percentage. Overall Momo readiness becomes verified only when every required dimension is verified and no blocker remains.
+- This readiness tracker applies only to Momo's House San Antonio. Other restaurants remain Audit Center records only.
+
 ## Latest completed build and exact next build
 
 The release completed steps 1–3 below across source, data, GitHub, and Sites. The exact next product build is now ready to start.
@@ -121,8 +131,9 @@ After every build, ChatGPT must update the durable record and Faraz's handoff. A
 
 1. Update this file with the completed work, actual current state, blockers, and exact next build.
 2. Update `CURRENT_BUILD_STATUS.md` with the PR, commit, checks, merge state, deployment state, and runtime truth.
-3. Update `VEROXA_LOCKED_OPERATING_MEMORY.md` when product direction, authority, scope, or a durable decision changes.
-4. Update `ACTIVE_DOCS_INDEX.md` when the governing document set changes.
+3. Update `momo-readiness-tracker.json` with evidence-backed Momo readiness status, blockers, and next actions for every affected dimension.
+4. Update `VEROXA_LOCKED_OPERATING_MEMORY.md` when product direction, authority, scope, or a durable decision changes.
+5. Update `ACTIVE_DOCS_INDEX.md` when the governing document set changes.
 5. Record Sites, Supabase, integration, or custom-domain state when the build changes or verifies it.
 6. Give Faraz a plain-language handoff covering what was built, what now works, what remains inactive, blockers, and the recommended next step.
 
