@@ -3,6 +3,7 @@
 - Faraz retired Vercel. ChatGPT Sites is the sole Veroxa deployment surface.
 - Remove and keep removed `vercel.json` and root Vercel serverless handlers. Do not treat Vercel status as a merge, release, rollback, or readiness gate.
 - GitHub `main` remains canonical; verified Sites checkpoints are the hosted recovery path. Any older Vercel rollback language below is historical and superseded.
+- PR #135 is merged at `184821f1b94d3801d23742c5bb7d9571e9be27e6`, and its exact merged Sites source is deployed as verified Sites version 4. Both custom domains are active with active SSL and no reported domain error.
 
 ## 2026-07-12 — Production foundation and Audit Center V1 lock
 
@@ -15,6 +16,7 @@
 - Reviewed audit states are evidence-gated and immutable. A reviewed request requires a reviewed report; a reviewed report requires a reviewed run and evidence-backed finding; reviewed reruns require a comparison.
 - The final delta RR additionally requires the latest run/report before a request can close, distinct identity rows for same-name audit locations, append-only lifecycle events, failed-run reasons, reproducible run snapshots, raw-body/timeout intake controls, and explicit UI draft/navigation/accessibility safety.
 - `RR_CHECKPOINT.md` plus `RR_RELEASE_CHECKPOINT.json` is the durable review memory. Future RRs reuse unchanged boundary evidence and review only changed groups unless a documented full-review trigger is crossed.
+- The release checkpoint is verified after the green merge, production Supabase application, Sites deployment, and live custom-domain checks. Start the next RR from that checkpoint rather than repeating unchanged release review.
 - The next build after this release is Momo Restaurant Intelligence + Onboarding V1. Runtime AI, Meta, Google, social, SEO execution, publishing, outbound contact, and owner walkthrough remain separately gated and inactive.
 - After every build, update `VEROXA_CURRENT_MILESTONE.md`, `CURRENT_BUILD_STATUS.md`, this memory when durable truth changes, and Faraz's plain-language handoff.
 

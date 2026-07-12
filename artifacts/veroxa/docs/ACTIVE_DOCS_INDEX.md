@@ -12,7 +12,7 @@ Status: highest-level current source-of-truth index. Read this file before relyi
 - Other restaurant audits must not automatically create client accounts, operations workspaces, onboarding, media/content workflows, Team operations, reports, publishing access, or active-client conversion.
 - The active milestone is Momo's House San Antonio 100% readiness with the maximum safe level of AI, automation, social handling, SEO, reporting, monitoring, and human approval control.
 - Every build must update the milestone, current build status, any changed locked memory, runtime/deployment truth, and Faraz's plain-language handoff before it is considered complete.
-- GitHub PR #135 contains the current Momo Production Foundation and standalone Restaurant Audit Center release. Prior full-RR evidence remains reusable; the focused final delta and all six production migrations are verified, while the exact final head, merge, and Sites checkpoint remain pending. The live site remains on the prior shell until that exact green release is deployed.
+- GitHub PR #135 is merged at `184821f1b94d3801d23742c5bb7d9571e9be27e6`; its exact reviewed head passed all four GitHub workflows and the focused final delta RR. All six production migrations are verified, Sites version 4 is deployed, and both custom domains are active with active SSL. The reusable RR checkpoint is the starting point for future reviews.
 - Sites sign-in is magic-link-only. Public user creation and password sign-in/recovery are disabled; supported Admin identity provisioning and authenticated smoke tests remain activation gates.
 
 ## 2026-07-12 — ChatGPT-managed build, GitHub, Sites, and RR direction
@@ -28,7 +28,7 @@ Status: highest-level current source-of-truth index. Read this file before relyi
 - The Sites application is not a demo and must not become an independent product definition.
 - GitHub `main` remains canonical. ChatGPT Sites is the sole application/deployment surface. Vercel is retired.
 - Public Sites access is approved. `veroxasystems.com` and `www.veroxasystems.com` are attached with active provider and SSL status as last verified on 2026-07-12; future checkpoints retain the same domains without routine Namecheap edits.
-- The live Client and Team routes remain the earlier non-sensitive pre-live shells until the current protected release is merged and checkpointed; do not introduce real client or Team-sensitive data before identity provisioning and authenticated verification.
+- The protected release is live, but Team and Client access remain activation-gated: do not introduce real client or Team-sensitive data before supported identity provisioning and authenticated verification.
 - `RR` now means a deep GitHub review plus Sites integration, deployment, domain, and access-state review.
 - The current source/data release activates only the protected foundation and Audit Center persistence. It does not activate real Momo records, a Team login identity, external integrations, AI provider calls, publishing, Team-sensitive exposure, or the Momo owner walkthrough.
 

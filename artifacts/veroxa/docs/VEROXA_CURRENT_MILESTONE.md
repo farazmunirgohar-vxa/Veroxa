@@ -79,21 +79,21 @@ For this milestone, **100% readiness** means the scoped Momo capabilities are pe
 ## Current verified technical state
 
 - GitHub `main` includes merged PR #134 (`bb7ea6add62a0e7c337c23d9d48880a9d034c0d3`), which established the synchronized Sites delivery layer, current milestone, and ChatGPT-managed build protocol.
-- GitHub PR #135 implements Momo Production Foundation V1 and Restaurant Audit Center V1. The prior source RR/GitHub evidence remains reusable; a focused final delta RR fixed latest-run review, audit identity/event integrity, Sites intake reliability, UI draft/navigation/accessibility, and repeat-review checkpoint gaps. Vercel is retired. The final Sites-only head is pending GitHub checks, merge, and Sites deployment.
+- GitHub PR #135 is merged to `main` at `184821f1b94d3801d23742c5bb7d9571e9be27e6`. Its SHA-locked reviewed head passed CI, Sites Verify, Supabase Verify, Veroxa Verify, and focused final delta RR covering latest-run review, audit identity/event integrity, Sites intake reliability, UI draft/navigation/accessibility, and repeat-review checkpoints. Vercel is retired.
 - The connected Supabase project is healthy. All six production-foundation/Audit Center migrations are applied; the final forward-only hardening migration passed clean-reset CI, pgTAP, database lint, and production application.
 - Momo's House San Antonio is the only enabled operational restaurant scope. Legacy demo rows are preserved, and the ten broad M024 development policies are removed from the production migration chain.
 - The Sites release source implements signed Supabase sessions, server route guards, active profile plus active Momo membership checks, RLS, private restaurant storage, magic-link-only sign-in, callback safety, and session refresh. Password sign-in/recovery remains disabled while compromised-password protection is off.
 - Public Auth user creation is disabled. The approved Team identity is allowlisted but still requires supported Supabase Admin pre-provisioning before Faraz can sign in; no Momo client identity is provisioned.
 - The Restaurant Audit Center is durable and separate from operational clients: signed public intake, consent, idempotency, rate limits, Team queue/manual entry, notes, evidence-backed findings, run history/comparison, reviewed-report gates, and immutable reviewed records are implemented.
 - Final release hardening requires the latest reviewed run/report to close a request, separates same-name audit locations instead of auto-merging them, records append-only lifecycle events, validates failed-run reasons/timestamps/source snapshots, proves affected browser mutations, and labels the 100-row queue view truthfully.
-- Remote catalog, RLS/role, public-intake isolation, and transactional Team workflow tests pass. The active migration chain now matches the five remote-applied versions; eight never-applied prototype migrations are archived outside the active directory. Advisor review also records six legacy mutable-search-path warnings, legacy-table performance notices, intentional scoped security-definer functions, and disabled leaked-password protection; password login is therefore gated off.
-- The currently live Sites deployment is still the prior version until the exact green GitHub release is merged and checkpointed.
+- Remote catalog, RLS/role, public-intake isolation, and transactional Team workflow tests pass. The active migration chain matches all six remote-applied versions; eight never-applied prototype migrations are archived outside the active directory. Advisor review also records six legacy mutable-search-path warnings, legacy-table performance notices, intentional scoped security-definer functions, and disabled leaked-password protection; password login is therefore gated off.
+- Exact merged source is deployed as Sites version 4. The checkpoint and both custom domains are verified active with active SSL and no reported domain error.
 - `RR_CHECKPOINT.md` and its machine-readable fingerprint record now route future work to delta or changed-boundary review, preventing unchanged evidence from being repeated.
 - Real Momo business data, onboarding, uploads, runtime AI, Meta/Google connections, social handling, SEO execution, publishing, outbound contact, and outcome metrics remain inactive.
 
 ## Latest completed build and exact next build
 
-The current release build completes steps 1–3 below at the source/data layer. Final completion still requires green GitHub checks, exact merge, exact-source Sites checkpoint, and live verification. Final PR/checkpoint identifiers belong in `CURRENT_BUILD_STATUS.md` and the post-deployment handoff.
+The release completed steps 1–3 below across source, data, GitHub, and Sites. The exact next product build is now ready to start.
 
 The exact next product build after this release is **Momo Restaurant Intelligence + Onboarding V1**:
 
@@ -104,9 +104,9 @@ The exact next product build after this release is **Momo Restaurant Intelligenc
 
 ## Current build sequence
 
-1. **Implemented at source/data layer; pending green merge and Sites checkpoint:** reconcile GitHub, Sites, current milestone memory, and truthful Momo states.
-2. **Implemented at source/data layer; pending green merge and Sites checkpoint:** establish the secure Supabase foundation for Team Faraz and Momo only.
-3. **Implemented at source/data layer; pending green merge and Sites checkpoint:** make the Team Restaurant Audit Center effective for non-client restaurants without creating operational workspaces.
+1. **Complete and deployed:** reconcile GitHub, Sites, current milestone memory, and truthful Momo states.
+2. **Complete and deployed:** establish the secure Supabase foundation for Team Faraz and Momo only.
+3. **Complete and deployed:** make the Team Restaurant Audit Center effective for non-client restaurants without creating operational workspaces.
 4. **Next:** build the persistent Momo Restaurant Intelligence Profile and onboarding flow.
 5. Connect Momo media intake, Team review, and AI media intelligence.
 6. Connect Momo AI content preparation, approvals, calendar, social handling, and approved publishing.
