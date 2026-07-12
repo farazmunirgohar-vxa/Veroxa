@@ -10,6 +10,9 @@ const must = (condition: boolean, message: string) => {
 
 const agents = read("AGENTS.md");
 const activeDocs = read("artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md");
+const currentMilestone = read(
+  "artifacts/veroxa/docs/VEROXA_CURRENT_MILESTONE.md",
+);
 const protocol = read(
   "artifacts/veroxa/docs/CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md",
 );
@@ -57,6 +60,7 @@ const workspace = read("pnpm-workspace.yaml");
 const sourceTruth = [
   agents,
   activeDocs,
+  currentMilestone,
   protocol,
   memory,
   status,
@@ -67,6 +71,7 @@ const sourceTruth = [
 const governedDocs = [
   agents,
   activeDocs,
+  currentMilestone,
   protocol,
   memory,
   status,
@@ -85,6 +90,51 @@ const governedDocs = [
   ...alignedCurrentDocs,
   sitesReadme,
 ].join("\n");
+
+for (const marker of [
+  "Momo's House San Antonio",
+  "only operational client and restaurant workspace",
+  "standalone, fully functional",
+  "Restaurant Audit Center",
+  "does not become an operational client",
+  "Other restaurants",
+  "100% readiness",
+  "maximum safe level of AI assistance and automation",
+  "Mandatory post-build continuity update",
+  "After every build",
+]) {
+  must(
+    currentMilestone.includes(marker),
+    `Current milestone missing locked scope marker: ${marker}`,
+  );
+}
+
+for (const document of [agents, activeDocs, protocol, memory, status]) {
+  for (const marker of [
+    "VEROXA_CURRENT_MILESTONE.md",
+    "Momo's House San Antonio",
+    "Restaurant Audit Center",
+    "operational client",
+  ]) {
+    must(
+      document.includes(marker),
+      `Durable operating document missing current milestone marker: ${marker}`,
+    );
+  }
+}
+
+for (const marker of [
+  "Mandatory post-build continuity update",
+  "After every build",
+  "CURRENT_BUILD_STATUS.md",
+  "plain-language handoff",
+  "what remains inactive",
+]) {
+  must(
+    protocol.includes(marker),
+    `Build protocol missing continuity marker: ${marker}`,
+  );
+}
 
 for (const path of [
   "/",

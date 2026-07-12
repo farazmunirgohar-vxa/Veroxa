@@ -1,3 +1,19 @@
+## 2026-07-12 — Momo 100%-readiness milestone and Audit Center exception
+
+Faraz's newest explicit product direction supersedes broader multi-client roadmap assumptions:
+
+- Momo's House San Antonio is Veroxa's only operational client and restaurant workspace for the remainder of the current milestone.
+- Team Faraz is focused on operating Momo end to end.
+- The only capability that may be effective for non-client restaurants is the standalone, fully functional Restaurant Audit Center inside Team.
+- Other restaurants may have saved and repeatable audit records, evidence, Team notes, comparisons, and reviewed audit reports, but no client account, operations workspace, onboarding, media/content workflow, operational work queue, reporting, publishing access, or automatic conversion. An audited restaurant does not become an operational client unless Faraz separately and explicitly approves conversion.
+- The next milestone is Momo's House San Antonio 100% readiness: production-grade identity and data, full onboarding, media, AI, automation, social handling, Google/SEO, reviews, approved publishing, work orchestration, reporting, monitoring, and recovery—as automated and AI-integrated as safely possible.
+- Automation should maximize internal analysis, classification, drafting, routing, scheduling, monitoring, and reporting while preserving owner-confirmed business truth, Veroxa approval gates, human review for reputation-sensitive work, and verified platform permissions.
+- `VEROXA_CURRENT_MILESTONE.md` is the highest-priority current scope and progress document.
+- After every build, ChatGPT must update the current milestone, build status, relevant runtime/deployment truth, and Faraz's plain-language progress handoff. Update this locked memory when durable scope, authority, or product direction changes. A build is not complete until this continuity update is done.
+- The earlier post-cutover route-parity sequence and older Team-deferral/public-client-first priorities are superseded as the current build order. Multi-client opportunity work is historical except for non-client prospecting inside the Restaurant Audit Center.
+
+Current technical truth remains separate from the milestone target: production auth, persistence, runtime AI, external integrations, and publishing are not yet active. The milestone authorizes the direction, not an unverified claim that readiness already exists.
+
 ## 2026-07-12 — ChatGPT-managed Veroxa operating agreement
 
 Faraz's newest explicit operating direction:
@@ -33,7 +49,7 @@ Faraz's newest explicit build direction:
 - RR must review both GitHub health and the Sites migration/deployment/domain/access state.
 - The migration does not authorize real auth, credentials, external integrations, database/storage activation, AI provider calls, publishing, Momo contact, owner walkthrough, real client accounts/data, or Team-sensitive exposure.
 
-Current post-cutover priority:
+Current post-cutover priority (historical; superseded by `VEROXA_CURRENT_MILESTONE.md`):
 
 1. Keep the Sites source reconciled with GitHub `main`; PR #134 establishes the initial synchronized source and operating contract.
 2. Preserve honest public pre-live shell language and guard against misleading secure/internal access claims.

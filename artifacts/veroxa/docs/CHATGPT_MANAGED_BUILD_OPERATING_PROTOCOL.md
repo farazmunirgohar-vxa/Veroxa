@@ -6,6 +6,8 @@ Status: active operating authority as of 2026-07-12.
 
 Faraz uses ChatGPT as the primary Veroxa command center. Faraz and ChatGPT decide the next product outcome together, then ChatGPT invokes Codex and the connected engineering tools internally to complete the authorized work. Faraz does not need to open a separate Codex, GitHub, Sites, terminal, or IDE window or copy a prompt between them for routine Veroxa work.
 
+The current milestone is Momo's House San Antonio 100% readiness. Momo's House San Antonio is the only operational client and restaurant workspace during this milestone. Team Faraz is Momo-focused; the standalone, fully functional Restaurant Audit Center is the only capability that may operate for non-client restaurants. An audited restaurant does not become an operational client unless Faraz separately and explicitly approves conversion. Read `VEROXA_CURRENT_MILESTONE.md` before planning or building.
+
 The platform responsibilities remain distinct:
 
 - **Faraz** is the founder, product owner, source of business truth, and final authority for material business or real-world decisions.
@@ -67,6 +69,19 @@ A pull request is green only when all applicable conditions are true:
 - source-of-truth, access, product-safety, business-truth, and no-fake-data guardrails remain intact.
 
 If the branch head changes after the final review, ChatGPT must re-run the applicable checks and repeat the pre-merge review before merging.
+
+## Mandatory post-build continuity update
+
+After every build, including a build held at a draft or green pull request, ChatGPT must finish with a durable progress update. A build is not complete until ChatGPT has:
+
+1. Updated `VEROXA_CURRENT_MILESTONE.md` with the actual completed state, blockers, and exact next build.
+2. Updated `CURRENT_BUILD_STATUS.md` with the branch/PR, exact commit, applicable checks, merge state, deployment state, and runtime truth.
+3. Updated `VEROXA_LOCKED_OPERATING_MEMORY.md` when scope, product direction, authority, or another durable decision changed.
+4. Updated `ACTIVE_DOCS_INDEX.md` when the governing source-of-truth set changed.
+5. Recorded verified Sites, Supabase, integration, custom-domain, and rollback state when applicable.
+6. Given Faraz a plain-language handoff stating what was built, what now works, what remains inactive, known blockers, and the recommended next step.
+
+For held work, the record must say that the change is not merged or deployed. For merged work, it must identify the exact merged state. For an authorized deployment, it must record the verified production result and rollback state. Do not describe planned or fixture behavior as completed runtime functionality.
 
 ## Autonomous scope and pause boundaries
 

@@ -1,3 +1,16 @@
+## 2026-07-12 — Current milestone memory update
+
+- This update records product direction and continuity rules only; it does not activate auth, Supabase, storage, runtime AI, external integrations, publishing, Momo contact, or the owner walkthrough.
+- `VEROXA_CURRENT_MILESTONE.md` is now the highest-priority current scope and progress record.
+- Momo's House San Antonio is the only operational client and restaurant workspace for the current milestone.
+- Team Faraz is Momo-focused; the only effective capability for non-client restaurants is the standalone, fully functional Restaurant Audit Center.
+- An audited restaurant does not become an operational client unless Faraz separately and explicitly approves conversion.
+- Other restaurant audits remain audit records only and must not automatically create client accounts, operations workspaces, onboarding, media/content workflows, Team operations, reports, publishing access, or active-client conversion.
+- The next milestone is Momo's House San Antonio 100% readiness with maximum safe AI, automation, social handling, Google/SEO, approved publishing, reporting, monitoring, and human control.
+- After every build, ChatGPT must update the milestone, build status, relevant runtime/deployment truth, and Faraz's plain-language progress handoff. Locked memory changes when durable scope, authority, or product direction changes.
+- This continuity update is being held in draft PR #134 on `agent/chatgpt-sites-veroxa-integration`; it is not merged or deployed and changes no runtime behavior.
+- The older route-manifest/Sites-parity sequence below is retained as RR history but is superseded as the current build order by `VEROXA_CURRENT_MILESTONE.md`.
+
 ## 2026-07-12 — ChatGPT-managed Veroxa build and live Sites state
 
 - Faraz uses ChatGPT as the primary Veroxa command center. ChatGPT invokes Codex, GitHub, CI, RR, and Sites tooling internally after Faraz authorizes an agreed outcome.
@@ -27,7 +40,7 @@
 - GitHub green checks must explicitly verify the isolated Sites build, rendered routes, lint, and artifact contract before ChatGPT-managed merging can treat a Sites-changing PR as green.
 - PR #134 replaces misleading secure/owner-restricted/internal-only copy with honest public pre-live shell language; the Sites source-of-truth guardrail now protects that boundary.
 
-### Next recommended build sequence
+### Next recommended build sequence (historical; superseded by `VEROXA_CURRENT_MILESTONE.md`)
 
 1. Create a shared route-and-capability manifest consumed by canonical navigation, Sites navigation, guards, docs, and RR checks.
 2. Port the Client Portal behavior layer: onboarding, media intake states, requests/messages, reports, connections, and business-truth corrections.

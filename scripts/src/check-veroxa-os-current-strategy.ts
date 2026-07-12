@@ -5,6 +5,7 @@ const failures: string[] = [];
 const combined = [
   "AGENTS.md",
   "artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md",
+  "artifacts/veroxa/docs/VEROXA_CURRENT_MILESTONE.md",
   "artifacts/veroxa/docs/CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md",
   "artifacts/veroxa/docs/CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md",
   "artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md",
@@ -32,6 +33,14 @@ for (const required of [
   "AUTH_MODE",
   "placeholder",
   "90% complete",
+  "Momo's House San Antonio",
+  "only operational client and restaurant workspace",
+  "standalone, fully functional Restaurant Audit Center",
+  "Restaurant Audit Center",
+  "does not become an operational client",
+  "100% readiness",
+  "Mandatory post-build continuity update",
+  "plain-language handoff",
 ])
   if (!combined.includes(required))
     failures.push(`Current strategy missing ${required}`);

@@ -1,3 +1,13 @@
+## 2026-07-12 — Current milestone and mandatory continuity update
+
+- Read `artifacts/veroxa/docs/VEROXA_CURRENT_MILESTONE.md` first for the current scope, priority, verified state, and next build.
+- Momo's House San Antonio is the only operational client and restaurant workspace for the current milestone.
+- Team Faraz is Momo-focused. The only capability for non-client restaurants is the standalone, fully functional Restaurant Audit Center.
+- An audited restaurant remains a Team-owned audit record or prospect and does not become an operational client unless Faraz separately and explicitly approves conversion.
+- The current milestone is Momo's House San Antonio 100% readiness with maximum safe AI, automation, social handling, SEO, approved publishing, reporting, monitoring, and human approval control.
+- After every build, update `VEROXA_CURRENT_MILESTONE.md`, `CURRENT_BUILD_STATUS.md`, relevant runtime/deployment truth, and Faraz's plain-language handoff. Update locked memory when durable scope, authority, or product direction changes. A build is not complete until this continuity update is done.
+- Older instructions that defer Team Portal capability, prioritize broad public/client work, or use the earlier post-cutover route-parity sequence are superseded for this milestone. Historical multi-client prospecting applies only inside the Restaurant Audit Center and does not authorize another operational client.
+
 ## 2026-07-12 — ChatGPT-managed build, GitHub, and deployment protocol
 
 - Faraz uses ChatGPT as the primary Veroxa command center. Faraz and ChatGPT decide the next outcome together; ChatGPT invokes Codex and connected GitHub/Sites tools internally. Do not require Faraz to copy prompts into a separate Codex, GitHub, Sites, terminal, or IDE window for routine work.
@@ -42,7 +52,7 @@
 
 # Veroxa Agent Instructions
 
-Current docs authority: read `artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md` first, then read `artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md`. Do not override the active docs index, locked operating memory, `PRICING_SOURCE_OF_TRUTH.md`, or `CURRENT_BUILD_STATUS.md` with older current-looking docs or archived strategy notes.
+Current docs authority: read `artifacts/veroxa/docs/VEROXA_CURRENT_MILESTONE.md` first, then `artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md`, then `artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md`. Do not override the current milestone, active docs index, locked operating memory, `PRICING_SOURCE_OF_TRUTH.md`, or `CURRENT_BUILD_STATUS.md` with older current-looking docs or archived strategy notes.
 
 ## 2026-06-14 — Automation-first Momo pivot
 
@@ -124,7 +134,7 @@ Before any large build, also run through `artifacts/veroxa/docs/PRE_BUILD_STABIL
 
 Command meanings and the complete green gate live in `artifacts/veroxa/docs/CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md`:
 
-- `Build it`: refresh current `main`, create a task branch, implement with Codex, test, open/update the PR, run RR, repair CI, re-check the exact reviewed head and mergeability, and merge only when green. Update memory/status when material. Do not deploy Sites unless requested.
+- `Build it`: refresh current `main`, create a task branch, implement with Codex, test, open/update the PR, run RR, repair CI, re-check the exact reviewed head and mergeability, and merge only when green. After every build, update the milestone, build status, relevant runtime truth, and Faraz's plain-language handoff; update locked memory when a durable decision changes. Do not deploy Sites unless requested.
 - `Build it, but hold for review`: complete the same engineering and verification work, then stop at the green PR without merge or deployment.
 - `Build and deploy it`: complete the green merge, synchronize the exact merged GitHub source to Sites, run Sites verification, checkpoint/deploy, and verify access plus custom-domain health.
 - `RR`: review and safely fix; do not infer merge or deployment authority from RR alone.

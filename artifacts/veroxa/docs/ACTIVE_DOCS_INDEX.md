@@ -1,3 +1,13 @@
+## 2026-07-12 — Current milestone and post-build continuity lock
+
+- `VEROXA_CURRENT_MILESTONE.md` is the first document to read for current scope, priority, build order, and progress.
+- Momo's House San Antonio is the only operational client and restaurant workspace for the current milestone.
+- Team Faraz is Momo-focused. The only effective capability for non-client restaurants is the standalone, fully functional Restaurant Audit Center.
+- An audited restaurant does not become an operational client unless Faraz separately and explicitly approves conversion.
+- Other restaurant audits must not automatically create client accounts, operations workspaces, onboarding, media/content workflows, Team operations, reports, publishing access, or active-client conversion.
+- The active milestone is Momo's House San Antonio 100% readiness with the maximum safe level of AI, automation, social handling, SEO, reporting, monitoring, and human approval control.
+- Every build must update the milestone, current build status, any changed locked memory, runtime/deployment truth, and Faraz's plain-language handoff before it is considered complete.
+
 ## 2026-07-12 — ChatGPT-managed build, GitHub, Sites, and RR direction
 
 - `CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md` is the command and autonomy authority for Veroxa work.
@@ -93,6 +103,7 @@ Status: highest-level active contributor guide and current source-of-truth index
 
 ## Current migration source of truth
 
+- `VEROXA_CURRENT_MILESTONE.md`
 - `CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md`
 - `CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md`
 - `VEROXA_LOCKED_OPERATING_MEMORY.md`
@@ -133,6 +144,7 @@ Status: highest-level active contributor guide and current source-of-truth index
 
 These files reflect the current Veroxa operating truth and override historical/archive strategy notes. If another doc conflicts with this index, do not override this index; treat the conflicting note as stale until Faraz explicitly refreshes it:
 
+- `VEROXA_CURRENT_MILESTONE.md`
 - `CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md`
 - `CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md`
 - `MOMO_RESTAURANT_INTELLIGENCE_OPERATING_BOARD.md`
