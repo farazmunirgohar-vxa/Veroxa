@@ -1,5 +1,3 @@
-import { createHmac } from "node:crypto";
-
 const CONSENT_VERSION = "2026-07-12";
 const MAX_BODY_BYTES = 16_384;
 const RESPONSE_HEADERS = {
@@ -9,8 +7,20 @@ const RESPONSE_HEADERS = {
 };
 
 const text = (value: unknown, max: number) => typeof value === "string" ? value.trim().slice(0, max) : "";
-const hmac = (secret: string, value: string) => createHmac("sha256", secret).update(value).digest("hex");
 const json = (status: number, payload: unknown) => Response.json(payload, { status, headers: RESPONSE_HEADERS });
+
+async function hmac(secret: string, value: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(value));
+  return Array.from(new Uint8Array(signature), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
 
 function safeUrl(value: unknown): string | null {
   const raw = text(value, 2_000);
@@ -77,8 +87,8 @@ async function handlePost(request: Request): Promise<Response> {
   ) return json(400, { accepted: false });
 
   const day = new Date().toISOString().slice(0, 10);
-  const fingerprint = hmac(secret, `ip:${trustedIp(request)}|contact:${contactEmail || contactPhone}|day:${day}`);
-  const token = hmac(secret, fingerprint);
+  const fingerprint = await hmac(secret, `ip:${trustedIp(request)}|contact:${contactEmail || contactPhone}|day:${day}`);
+  const token = await hmac(secret, fingerprint);
   let response: Response;
   try {
     response = await fetch(`${url.replace(/\/$/, "")}/rest/v1/rpc/submit_audit_request_v1`, {
