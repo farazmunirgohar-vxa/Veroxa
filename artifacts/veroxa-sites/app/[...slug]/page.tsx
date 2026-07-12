@@ -1,4 +1,5 @@
 import { VeroxaApp } from "../page";
+import type { MomoReadinessTracker } from "../momo-readiness-types";
 import { redirect } from "next/navigation";
 import { getServerVeroxaAccess } from "../veroxa-supabase-server";
 
@@ -13,5 +14,10 @@ export default async function VeroxaRoute({ params }: { params: Promise<{ slug: 
   if (!access) redirect(`/login?return_to=${encodeURIComponent(initialPath)}`);
   if (protectedTeam && access.role !== "team") redirect("/client/dashboard");
   if (protectedClient && access.role !== "client") redirect("/team/momo");
-  return <VeroxaApp initialPath={initialPath} initialAccess={access} />;
+  let initialMomoReadiness: MomoReadinessTracker | undefined;
+  if (access.role === "team") {
+    const readinessSource = await import("../momo-readiness-tracker.json");
+    initialMomoReadiness = readinessSource.default as MomoReadinessTracker;
+  }
+  return <VeroxaApp initialPath={initialPath} initialAccess={access} initialMomoReadiness={initialMomoReadiness} />;
 }

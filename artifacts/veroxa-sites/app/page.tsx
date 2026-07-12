@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { RestaurantAuditCenter } from "./audit-center";
-import readinessTracker from "./momo-readiness-tracker.json";
+import type { MomoReadinessTracker } from "./momo-readiness-types";
 import {
   getCurrentVeroxaAccess,
   requestVeroxaMagicLink,
@@ -143,7 +143,7 @@ export default function Home() {
 
 type AccessSeed = Pick<VeroxaAccess, "role" | "displayName" | "restaurantId">;
 
-export function VeroxaApp({ initialPath, initialAccess }: { initialPath: string; initialAccess?: AccessSeed }) {
+export function VeroxaApp({ initialPath, initialAccess, initialMomoReadiness }: { initialPath: string; initialAccess?: AccessSeed; initialMomoReadiness?: MomoReadinessTracker }) {
   const [view, setView] = useState<View>(routeToView[initialPath] ?? "public");
   const [mediaFilter, setMediaFilter] = useState("All");
   const [reportRange, setReportRange] = useState("Weekly update");
@@ -288,7 +288,7 @@ export function VeroxaApp({ initialPath, initialAccess }: { initialPath: string;
           {view === "team-intelligence" && <TeamIntelligence />}
           {view === "team-content" && <TeamContent />}
           {view === "team-reports" && <TeamReports />}
-          {view === "team-readiness" && <TeamReadiness />}
+          {view === "team-readiness" && <TeamReadiness tracker={initialMomoReadiness} />}
         </div>
 
         <nav className={isTeam ? "mobile-nav team-mobile-nav" : "mobile-nav"} aria-label="Mobile navigation">
@@ -573,8 +573,9 @@ function TeamReports() {
   ]} />;
 }
 
-function TeamReadiness() {
-  const dimensions = Object.entries(readinessTracker.dimensions);
+function TeamReadiness({ tracker }: { tracker?: MomoReadinessTracker }) {
+  if (!tracker) return <div className="view"><PageIntro eyebrow="MOMO READINESS TRACKER" title="Readiness evidence unavailable" description="The server-authorized readiness record was not provided. No readiness claim is shown." /><section className="team-guardrail"><Icon name="shield" size={20}/><div><strong>Fail-closed readiness boundary</strong><span>Refresh the authenticated Team route. If this persists, review the protected server handoff.</span></div><em>Unavailable</em></section></div>;
+  const dimensions = Object.entries(tracker.dimensions);
   const verifiedCount = dimensions.filter(([, dimension]) => dimension.status === "verified").length;
   const blockedCount = dimensions.filter(([, dimension]) => dimension.status === "blocked").length;
   const statusLabel = (status: string) => status.split("_").map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`).join(" ");
@@ -582,7 +583,7 @@ function TeamReadiness() {
   return <div className="view">
     <PageIntro eyebrow="MOMO READINESS TRACKER" title="Evidence before readiness" description="Veroxa delivery and Momo operational readiness are tracked separately. A green build or deployment does not make Momo ready." />
     <section className="readiness-summary" aria-label="Momo readiness summary">
-      <div><p className="eyebrow">OVERALL STATE</p><strong>{statusLabel(readinessTracker.overallStatus)}</strong><span>{readinessTracker.overallRule}</span></div>
+      <div><p className="eyebrow">OVERALL STATE</p><strong>{statusLabel(tracker.overallStatus)}</strong><span>{tracker.overallRule}</span></div>
       <article><strong>{verifiedCount}</strong><span>of {dimensions.length} dimensions verified</span></article>
       <article><strong>{blockedCount}</strong><span>dimensions blocked</span></article>
     </section>
