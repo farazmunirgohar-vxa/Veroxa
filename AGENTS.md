@@ -1,3 +1,16 @@
+## 2026-07-12 — ChatGPT Sites migration and RR source-of-truth lock
+
+- Faraz explicitly approved building the real Veroxa application through ChatGPT Sites using the existing GitHub/Codex Veroxa OS as the core skeleton.
+- This is not a new demo and must not replace Veroxa with a shallow visual prototype.
+- GitHub `main` remains the canonical source of truth for product behavior, routes, operating memory, guardrails, and build direction.
+- Codex remains the primary engineering workflow.
+- ChatGPT Sites is the new primary application/deployment target being integrated.
+- Vercel remains a temporary compatibility and rollback surface until Sites parity and `veroxasystems.com` cutover are verified.
+- Read `artifacts/veroxa/docs/CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md` before changing hosting, routes, access, authentication, or the custom domain.
+- Do not point `veroxasystems.com` at an incomplete Sites shell. Domain cutover requires public/client/team route parity, mobile/build validation, GitHub sync, explicit public-access approval, DNS/SSL readiness, and rollback.
+- When Faraz asks for `RR`, perform a deep GitHub review plus ChatGPT Sites integration review. Fix reasonable code, docs, guardrail, CI, security, and direction drift without silently activating real-world systems.
+- The Sites migration does not activate production auth, credentials, database/storage, external integrations, AI provider calls, publishing, client exposure, or the Momo owner walkthrough.
+
 ## 2026-06-21 — Post-PR120 source-of-truth operating lock
 
 - Current operating baseline: merged PR #120 — Momo Internal Dry Run + Go/No-Go Gate.
@@ -81,11 +94,12 @@ Owner and Operator are parked unless explicitly requested by the user. Do not bu
 
 ## 3. Current active build stack
 
-The current active Veroxa build stack is GitHub + Codex + Vercel:
+The current active Veroxa build stack is GitHub + Codex + ChatGPT Sites, with Vercel retained temporarily for migration compatibility and rollback:
 
 - GitHub main is the source of truth.
 - Codex is the primary engineering/build agent.
-- Vercel is the deployment target.
+- ChatGPT Sites is the new application/deployment target being integrated.
+- Vercel is not the new source of truth and remains a temporary fallback until the Sites/domain cutover gate passes.
 - Browser/manual QA is used for visual checks.
 
 ## 4. Default Codex workflow

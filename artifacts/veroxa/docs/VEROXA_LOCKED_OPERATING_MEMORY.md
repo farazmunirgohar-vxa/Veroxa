@@ -1,3 +1,27 @@
+## 2026-07-12 — ChatGPT Sites application migration
+
+Faraz's newest explicit build direction:
+
+- Build the real Veroxa application through ChatGPT Sites.
+- Use the existing GitHub/Codex Veroxa system as the core skeleton and canonical product truth.
+- Preserve the approved Sites visual direction as the presentation layer.
+- Do not create or promote another demo.
+- GitHub `main` remains canonical; Sites is the new deployment/application surface being integrated.
+- Vercel remains temporarily available as a compatibility and rollback surface until verified cutover.
+- Do not move `veroxasystems.com` until the migration gate in `CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md` passes.
+- RR must review both GitHub health and the Sites migration/deployment/domain/access state.
+- The migration does not authorize real auth, credentials, external integrations, database/storage activation, AI provider calls, publishing, Momo contact, owner walkthrough, or client exposure.
+
+Current migration priority:
+
+1. Real public Home -> Audit -> Login route skeleton.
+2. Real Client and Team portal separation.
+3. Momo grouped workspace parity.
+4. Shared route/capability contract and guardrail.
+5. GitHub-synced Sites source and verified build/mobile behavior.
+6. Separate approved identity/persistence architecture.
+7. Explicit public-access and domain cutover approval.
+
 ## 2026-06-21 — Post-PR120 locked operating memory
 
 Automation-first direction remains locked. The current operating baseline is post-PR120: merged PR #120 — Momo Internal Dry Run + Go/No-Go Gate.

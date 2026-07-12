@@ -5,6 +5,7 @@ Status: Short index for Faraz, Codex, and future ChatGPT/Codex sessions.
 Use `ACTIVE_DOCS_INDEX.md` first as the highest-level current source-of-truth index, then these documents as the current operating model before relying on older historical notes:
 
 - `ACTIVE_DOCS_INDEX.md`
+- `CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md`
 - `VEROXA_OS_CURRENT_MASTER.md`
 - `CURRENT_BUILD_STATUS.md`
 - `PRE_PAID_ACTIVATION_GATE.md`
@@ -18,7 +19,7 @@ Use `ACTIVE_DOCS_INDEX.md` first as the highest-level current source-of-truth in
 
 Current strategy markers:
 
-- Active stack: **GitHub + Codex + Vercel**.
+- Active stack: **GitHub + Codex + ChatGPT Sites**, with Vercel retained temporarily for migration compatibility and rollback.
 - **Replit is historical only**.
 - Active roles: **Client and Team**.
 - **Owner/Operator parked**.

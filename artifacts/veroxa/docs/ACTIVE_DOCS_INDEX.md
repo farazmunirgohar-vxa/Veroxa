@@ -1,3 +1,13 @@
+## 2026-07-12 — ChatGPT Sites migration and RR direction
+
+- `CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md` is now an active source-of-truth document.
+- Faraz's explicit direction is to build the real Veroxa application through ChatGPT Sites using the existing GitHub/Codex Veroxa OS as the core skeleton.
+- The Sites application is not a demo and must not become an independent product definition.
+- GitHub `main` remains canonical. ChatGPT Sites is the new application/deployment target being integrated. Vercel remains a temporary migration fallback until verified domain cutover.
+- `veroxasystems.com` must not move until route parity, portal separation, mobile/build verification, GitHub sync, access approval, DNS/SSL readiness, and rollback are complete.
+- `RR` now means a deep GitHub review plus Sites integration, deployment, domain, and access-state review.
+- This migration does not activate real auth, credentials, storage/database writes, external integrations, AI provider calls, publishing, client exposure, or the Momo owner walkthrough.
+
 ## 2026-06-21 — PR #133 Momo Intelligence Safe Action Routes
 
 PR #133 fixes PR #132 safe action routing only: “Review reports” now routes to `/team/momo/reports`, and “Review dry run” now routes to `/team/momo-dry-run-go-no-go`. It does not activate the pilot, turn on real auth, create credentials, contact Momo’s House, publish externally, connect external platforms, generate AI output, create fake data, write to the database, or change product behavior beyond correcting internal links.
@@ -73,6 +83,13 @@ Current operating baseline: merged PR #120 — Momo Internal Dry Run + Go/No-Go 
 # Active Docs Index
 
 Status: highest-level active contributor guide and current source-of-truth index. Read this file before relying on any older Veroxa doc.
+
+## Current migration source of truth
+
+- `CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md`
+- `VEROXA_LOCKED_OPERATING_MEMORY.md`
+- `CURRENT_BUILD_STATUS.md`
+- `PRICING_SOURCE_OF_TRUTH.md`
 
 ## 2026-06-19 — Actual Live Automation V1 PR sequence correction
 

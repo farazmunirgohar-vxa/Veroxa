@@ -6,11 +6,12 @@ This document captures the current locked Veroxa OS direction. It is intended fo
 
 ## 1. Correct platform reality
 
-The active Veroxa build stack is **GitHub + Codex + Vercel**:
+The active Veroxa build stack is **GitHub + Codex + ChatGPT Sites**, with Vercel retained temporarily for migration compatibility and rollback:
 
 - **GitHub main** is the source of truth.
 - **Codex** is the primary engineering/build agent for engineering, architecture review, hardening, PRs, and tests.
-- **Vercel** is the deployment target.
+- **ChatGPT Sites** is the new application/deployment target being integrated.
+- **Vercel** remains a temporary fallback until verified Sites and `veroxasystems.com` cutover.
 - **Browser/manual QA** is used for visual checks.
 - **Supabase** is connected as the future app/data backend, but production writes/auth/storage/RLS must remain staged and intentional.
 - **OpenAI Platform** is connected for future server-side AI work, but no frontend key exposure and no runtime AI calls unless explicitly requested.

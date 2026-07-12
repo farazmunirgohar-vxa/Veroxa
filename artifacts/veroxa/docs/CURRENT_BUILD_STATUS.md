@@ -1,3 +1,32 @@
+## 2026-07-12 — ChatGPT Sites integration in progress
+
+- Faraz approved building the real Veroxa application through ChatGPT Sites using the GitHub/Codex Veroxa OS as its core skeleton.
+- This is a product-surface migration, not a new demo.
+- GitHub `main` remains the canonical source for Veroxa behavior, routes, docs, tests, and guardrails.
+- ChatGPT Sites is the new application/deployment target being integrated.
+- Vercel remains a temporary compatibility and rollback surface until Sites parity and domain cutover are verified.
+- A first integrated Sites slice now covers the real public Home -> Audit -> Login flow, Client Portal visual shell, and grouped Team Faraz/Momo workspace structure using the approved visual direction.
+- Production auth, persistence, uploads, external integrations, runtime AI provider calls, publishing, client exposure, and Momo activation remain blocked.
+- `veroxasystems.com` has not been moved. Domain cutover waits for route parity, portal separation, mobile/build verification, GitHub source sync, explicit access approval, DNS/SSL readiness, and rollback.
+- New active migration authority: `CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md`.
+
+### Current RR findings
+
+- The repository is structurally mature but has significant historical documentation volume; current-source ordering and automated drift checks are essential.
+- The Vite/Vercel runtime and the new Sites delivery surface must share route and capability contracts to prevent dual-app drift.
+- The strongest next architectural improvement is a shared route/capability manifest consumed by navigation, route guards, documentation checks, and RR guardrails.
+- Real data activation should follow interface parity and identity/persistence architecture, not precede them.
+
+### Next recommended build sequence
+
+1. Add and enforce the Sites migration memory/guardrail PR.
+2. Sync the Sites-compatible source into GitHub and create a route-parity manifest.
+3. Port the Client Portal behavior layer: onboarding, media intake states, requests/messages, reports, connections, and business-truth corrections.
+4. Port the complete grouped Momo Workspace and safe action routing.
+5. Design Sites identity and persistence adapters behind existing repositories, with a separate approval gate.
+6. Run security, accessibility, desktop/mobile, build, and route-boundary verification.
+7. Approve public access, attach `veroxasystems.com`, validate DNS/SSL, and retain the Vercel rollback path through stabilization.
+
 ## 2026-06-21 — PR #133 Momo Intelligence Safe Action Routes
 
 PR #133 fixes PR #132 safe action routing only: “Review reports” now routes to `/team/momo/reports`, and “Review dry run” now routes to `/team/momo-dry-run-go-no-go`. It does not activate the pilot, turn on real auth, create credentials, contact Momo’s House, publish externally, connect external platforms, generate AI output, create fake data, write to the database, or change product behavior beyond correcting internal links.
