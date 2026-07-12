@@ -5,13 +5,14 @@ Status: highest-level current source-of-truth index. Read this file before relyi
 ## 2026-07-12 — Current milestone and post-build continuity lock
 
 - `VEROXA_CURRENT_MILESTONE.md` is the first document to read for current scope, priority, build order, and progress.
+- `RR_CHECKPOINT.md` and `RR_RELEASE_CHECKPOINT.json` are the reusable review baseline. Read and validate them before starting another broad RR; unchanged boundary evidence must be reused and only changed groups re-reviewed.
 - Momo's House San Antonio is the only operational client and restaurant workspace for the current milestone.
 - Team Faraz is Momo-focused. The only effective capability for non-client restaurants is the standalone, fully functional Restaurant Audit Center.
 - An audited restaurant does not become an operational client unless Faraz separately and explicitly approves conversion.
 - Other restaurant audits must not automatically create client accounts, operations workspaces, onboarding, media/content workflows, Team operations, reports, publishing access, or active-client conversion.
 - The active milestone is Momo's House San Antonio 100% readiness with the maximum safe level of AI, automation, social handling, SEO, reporting, monitoring, and human approval control.
 - Every build must update the milestone, current build status, any changed locked memory, runtime/deployment truth, and Faraz's plain-language handoff before it is considered complete.
-- GitHub PR #135 contains the current Momo Production Foundation and standalone Restaurant Audit Center release. Source RR and all GitHub Actions checks pass; merge and Sites checkpoint remain pending while the external Vercel rollback status is rechecked. The live site remains on the prior shell until that exact green release is deployed.
+- GitHub PR #135 contains the current Momo Production Foundation and standalone Restaurant Audit Center release. Prior full-RR evidence remains reusable; the focused final delta fixes are pending exact-head GitHub checks, sixth forward migration application, merge, and Sites checkpoint. The live site remains on the prior shell until that exact green release is deployed.
 - Sites sign-in is magic-link-only. Public user creation and password sign-in/recovery are disabled; supported Admin identity provisioning and authenticated smoke tests remain activation gates.
 
 ## 2026-07-12 — ChatGPT-managed build, GitHub, Sites, and RR direction

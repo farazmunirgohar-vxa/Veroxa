@@ -9,6 +9,9 @@ const migration = read(
 const releaseHardening = read(
   "supabase/migrations/20260712220501_production_release_blocker_hardening.sql",
 );
+const finalHardening = read(
+  "supabase/migrations/20260712233000_audit_center_release_hardening.sql",
+);
 const sqlTest = read("supabase/tests/restaurant_audit_center_v1.sql");
 const sitePage = read("artifacts/veroxa-sites/app/page.tsx");
 const siteData = read("artifacts/veroxa-sites/app/veroxa-supabase.ts");
@@ -20,6 +23,7 @@ const siteCenter = read("artifacts/veroxa-sites/app/audit-center.tsx");
 const siteRoutes = read("artifacts/veroxa-sites/app/[...slug]/page.tsx");
 const siteProxy = read("artifacts/veroxa-sites/proxy.ts");
 const siteCallback = read("artifacts/veroxa-sites/app/auth/callback/route.ts");
+const vercelIntake = read("api/audit-requests.ts");
 const failures: string[] = [];
 const must = (condition: boolean, message: string) => {
   if (!condition) failures.push(message);
@@ -43,6 +47,22 @@ for (const marker of [
 ]) {
   must(migration.includes(marker), `Audit Center migration missing: ${marker}`);
 }
+
+for (const marker of [
+  "reviewed_request_requires_latest_reviewed_report",
+  "failed_run_requires_reason",
+  "audit_restaurants_normalized_location_idx",
+  "capture_audit_event",
+  "remove_unsafe_legacy_dev_policies",
+  "v_previous.source_snapshot",
+]) {
+  must(finalHardening.includes(marker), `Final Audit Center hardening missing: ${marker}`);
+}
+must(
+  finalHardening.includes("drop constraint if exists audit_restaurants_identity_unique") &&
+    !finalHardening.includes("on conflict (normalized_name, normalized_city, normalized_state)"),
+  "Final Audit Center hardening must stop automatic same-name location merging",
+);
 
 for (const marker of [
   "protect_public_audit_restaurant_identity",
@@ -82,6 +102,15 @@ for (const marker of [
   "202",
 ]) {
   must(siteIntake.includes(marker), `Sites intake missing: ${marker}`);
+}
+for (const marker of [
+  'export default {',
+  "async fetch(request: Request)",
+  "request.text()",
+  "AbortSignal.timeout(8_000)",
+  'request.headers.get("x-forwarded-for")',
+]) {
+  must(vercelIntake.includes(marker), `Vercel intake missing: ${marker}`);
 }
 
 for (const marker of [

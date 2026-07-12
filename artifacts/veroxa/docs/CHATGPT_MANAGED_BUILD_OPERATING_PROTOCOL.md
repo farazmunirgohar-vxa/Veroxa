@@ -55,6 +55,8 @@ GitHub merge and Sites deployment are separate actions. The current Sites setup 
 
 `RR` means a deep review of GitHub code, docs, tests, CI, security boundaries, Veroxa product truth, Sites parity, deployment, access, and domain state. ChatGPT should fix reasonable in-scope defects during RR. `RR` by itself does not authorize merge, deployment, real-world activation, or a material scope expansion.
 
+Before a new broad RR, read `RR_CHECKPOINT.md`, validate `RR_RELEASE_CHECKPOINT.json`, and compare the exact diff with its boundary fingerprints. Reuse unchanged evidence. A changed `full-on-change` boundary gets a focused boundary review plus direct consumers; a presentation-only change gets a delta review unless its exact diff crosses a full-review trigger. Do not reopen unchanged review domains merely because a new build occurred.
+
 ## Green merge gate
 
 A pull request is green only when all applicable conditions are true:
@@ -80,6 +82,7 @@ After every build, including a build held at a draft or green pull request, Chat
 4. Updated `ACTIVE_DOCS_INDEX.md` when the governing source-of-truth set changed.
 5. Recorded verified Sites, Supabase, integration, custom-domain, and rollback state when applicable.
 6. Given Faraz a plain-language handoff stating what was built, what now works, what remains inactive, known blockers, and the recommended next step.
+7. Refreshed `RR_RELEASE_CHECKPOINT.json` when reviewed source, boundary fingerprints, merge state, or production verification changed.
 
 For held work, the record must say that the change is not merged or deployed. For merged work, it must identify the exact merged state. For an authorized deployment, it must record the verified production result and rollback state. Do not describe planned or fixture behavior as completed runtime functionality.
 

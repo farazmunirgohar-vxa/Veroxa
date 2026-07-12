@@ -150,6 +150,7 @@ export function VeroxaApp({ initialPath, initialAccess }: { initialPath: string;
   const [uploadDone, setUploadDone] = useState(false);
   const [completedSetup, setCompletedSetup] = useState<number[]>([]);
   const [toast, setToast] = useState("");
+  const [signOutBusy, setSignOutBusy] = useState(false);
   const [access, setAccess] = useState<
     | { status: "loading"; value: null }
     | { status: "guest"; value: null }
@@ -203,6 +204,19 @@ export function VeroxaApp({ initialPath, initialAccess }: { initialPath: string;
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const handleSignOut = async () => {
+    if (signOutBusy) return;
+    setSignOutBusy(true);
+    try {
+      await signOutOfVeroxa();
+      window.location.assign("/");
+    } catch {
+      setToast("Sign-out failed. You are still signed in; check the connection and try again.");
+      window.setTimeout(() => setToast(""), 4200);
+      setSignOutBusy(false);
+    }
+  };
+
   if (view === "public") return <PublicHome onNavigate={changeView} />;
   if (view === "audit") return <AuditPage onNavigate={changeView} />;
   if (view === "login") return <LoginPage onNavigate={changeView} />;
@@ -234,9 +248,8 @@ export function VeroxaApp({ initialPath, initialAccess }: { initialPath: string;
         <nav className="main-nav" aria-label="Main navigation">
           <p className="nav-label">{isTeam ? "TEAM FARAZ" : "CLIENT PORTAL"}</p>
           {activeNav.map((item) => (
-            <button key={item.id} className={view === item.id ? "nav-item active" : "nav-item"} onClick={() => changeView(item.id)}>
+            <button key={item.id} className={view === item.id ? "nav-item active" : "nav-item"} onClick={() => changeView(item.id)} aria-current={view === item.id ? "page" : undefined}>
               <Icon name={item.icon} size={19}/><span>{item.label}</span>
-              {item.id === "team-work" && <span className="nav-count">4</span>}
             </button>
           ))}
         </nav>
@@ -248,7 +261,7 @@ export function VeroxaApp({ initialPath, initialAccess }: { initialPath: string;
           <p>{isTeam ? "No public action without Faraz review and confirmed business truth." : "Verified Momo records will appear only after Team review and owner confirmation."}</p>
           <button onClick={() => { setToast(isTeam ? "Operating guardrails are active" : "Client workspace is safely waiting for verified records"); window.setTimeout(() => setToast(""), 2600); }}>{isTeam ? "Review guardrails" : "View safe status"} <Icon name="arrow" size={15}/></button>
         </div>
-        <button className="profile-card" onClick={() => void signOutOfVeroxa().then(() => window.location.assign("/"))} title="Sign out">
+        <button className="profile-card" onClick={() => void handleSignOut()} title="Sign out" disabled={signOutBusy}>
           <span className="avatar">{isTeam ? "FM" : "MK"}</span>
           <span><strong>{access.status === "authenticated" ? access.value.displayName : isTeam ? "Team Faraz" : "Momo’s House"}</strong><small>{isTeam ? "Secure Team access · sign out" : "Momo only · sign out"}</small></span>
           <Icon name="chevron" size={16}/>
@@ -261,8 +274,8 @@ export function VeroxaApp({ initialPath, initialAccess }: { initialPath: string;
           <div className="breadcrumbs"><span>{isTeam ? "Team workspace" : "Client portal"}</span><b>/</b><strong>{activeLabel}</strong></div>
           <div className="top-actions">
             <span className="live-pill"><i/> Authenticated</span>
-            <button className="icon-button" aria-label="Notifications"><Icon name="bell" size={19}/>{isTeam && <span className="notification-dot"/>}</button>
-            <button className="top-avatar">FM</button>
+            <button className="icon-button" aria-label="Notifications"><Icon name="bell" size={19}/></button>
+            <button className="top-avatar" aria-label="Sign out" title="Sign out" onClick={() => void handleSignOut()} disabled={signOutBusy}>{isTeam ? "FM" : "MH"}</button>
           </div>
         </header>
 
@@ -277,13 +290,14 @@ export function VeroxaApp({ initialPath, initialAccess }: { initialPath: string;
           {view === "team-readiness" && <TeamReadiness />}
         </div>
 
-        <nav className="mobile-nav" aria-label="Mobile navigation">
-          {activeNav.slice(0, 5).map((item) => <button key={item.id} className={view === item.id ? "active" : ""} onClick={() => changeView(item.id)}><Icon name={item.icon} size={18}/><span>{item.label}</span></button>)}
+        <nav className={isTeam ? "mobile-nav team-mobile-nav" : "mobile-nav"} aria-label="Mobile navigation">
+          {activeNav.map((item) => <button key={item.id} className={view === item.id ? "active" : ""} onClick={() => changeView(item.id)} aria-current={view === item.id ? "page" : undefined}><Icon name={item.icon} size={18}/><span>{item.label}</span></button>)}
+          {isTeam && <button onClick={() => void handleSignOut()} disabled={signOutBusy}><Icon name="close" size={18}/><span>{signOutBusy ? "Signing out" : "Sign out"}</span></button>}
         </nav>
       </section>
 
       {showUpload && <UploadModal done={uploadDone} setDone={setUploadDone} onClose={() => setShowUpload(false)} />}
-      {toast && <div className="toast"><Icon name="check" size={17}/>{toast}</div>}
+      {toast && <div className="toast" role="status" aria-live="polite"><Icon name="check" size={17}/>{toast}</div>}
     </main>
   );
 }
@@ -352,13 +366,32 @@ function AuditPage({ onNavigate }: { onNavigate: (view: View) => void }) {
     | { kind: "success"; reference: string }
     | { kind: "error"; message: string }
   >({ kind: "idle" });
-  const [formStartedAt] = useState(() => new Date().toISOString());
+  const [formStartedAt, setFormStartedAt] = useState(() => new Date().toISOString());
   const [idempotencyKey, setIdempotencyKey] = useState("");
+
+  function refreshExpiredAuditSession() {
+    if (Date.now() - Date.parse(formStartedAt) < 2 * 60 * 60 * 1000) return;
+    setFormStartedAt(new Date().toISOString());
+    setIdempotencyKey("");
+  }
 
   async function handleAuditSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const formElement = event.currentTarget;
+    if (Date.now() - Date.parse(formStartedAt) >= 2 * 60 * 60 * 1000) {
+      refreshExpiredAuditSession();
+      setState({ kind: "error", message: "This audit form session was refreshed for security. Please wait a few seconds, then submit again." });
+      return;
+    }
+    const form = new FormData(formElement);
+    const contactEmail = String(form.get("contactEmail") || "").trim();
+    const contactPhone = String(form.get("contactPhone") || "").trim();
+    if (!contactEmail && !contactPhone) {
+      setState({ kind: "error", message: "Enter either a contact email or phone number so Team Faraz can follow up about the audit." });
+      formElement.querySelector<HTMLInputElement>('input[name="contactEmail"]')?.focus();
+      return;
+    }
     setState({ kind: "submitting" });
-    const form = new FormData(event.currentTarget);
     const stableIdempotencyKey = idempotencyKey || crypto.randomUUID();
     setIdempotencyKey(stableIdempotencyKey);
     try {
@@ -369,8 +402,8 @@ function AuditPage({ onNavigate }: { onNavigate: (view: View) => void }) {
         websiteUrl: String(form.get("websiteUrl") || ""),
         googleProfileUrl: String(form.get("googleProfileUrl") || ""),
         contactName: String(form.get("contactName") || ""),
-        contactEmail: String(form.get("contactEmail") || ""),
-        contactPhone: String(form.get("contactPhone") || ""),
+        contactEmail,
+        contactPhone,
         contactNote: String(form.get("contactNote") || ""),
         consentToContact: form.get("consent") === "yes",
         consentVersion: "2026-07-12",
@@ -379,13 +412,20 @@ function AuditPage({ onNavigate }: { onNavigate: (view: View) => void }) {
         idempotencyKey: stableIdempotencyKey,
       });
       setState({ kind: "success", reference: result.reference_code });
-      event.currentTarget.reset();
+      formElement.reset();
     } catch (error) {
+      const code = error instanceof Error ? error.message : "audit_submission_failed";
       setState({
         kind: "error",
-        message: error instanceof Error && error.message === "rate_limited"
+        message: code === "rate_limited"
           ? "Too many audit requests were submitted recently. Please wait and try again."
-          : "We could not save this audit request. Please try again shortly.",
+          : code === "validation_failed"
+            ? "Check the required fields, contact details, and website links, then submit the request again."
+            : code === "request_too_large"
+              ? "This request is too large. Shorten the notes or links, then try again."
+              : code === "temporarily_unavailable"
+                ? "The protected audit queue is temporarily unavailable. Your request was not saved; please try again shortly."
+                : "We could not save this audit request. Your entries are still here; please try again shortly.",
       });
     }
   }
@@ -394,24 +434,29 @@ function AuditPage({ onNavigate }: { onNavigate: (view: View) => void }) {
     <PublicHeader onNavigate={onNavigate} />
     <section className="public-inner-hero"><p className="eyebrow">RESTAURANT OPPORTUNITY ENGINE</p><h1>Start with the truth.</h1><p>Veroxa begins by checking whether a restaurant is easy to find, easy to understand, and easy to choose online.</p></section>
     <section className="audit-layout">
-      <form className="audit-form" onSubmit={handleAuditSubmit}>
+      {state.kind !== "success" && <form className="audit-form" onSubmit={handleAuditSubmit} onFocusCapture={(event) => {
+        if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || event.target instanceof HTMLSelectElement) {
+          refreshExpiredAuditSession();
+        }
+      }} aria-busy={state.kind === "submitting"}>
         <label>Restaurant name<input name="restaurantName" required minLength={2} maxLength={160} placeholder="Restaurant name" /></label>
         <label>City<input name="city" required minLength={2} maxLength={100} placeholder="San Antonio" /></label>
         <label>State<input name="state" required minLength={2} maxLength={40} placeholder="TX" /></label>
         <label>Website<input name="websiteUrl" type="url" placeholder="https://" /></label>
         <label>Google profile<input name="googleProfileUrl" type="url" placeholder="https://" /></label>
         <label>Contact name<input name="contactName" maxLength={160} placeholder="Your name" /></label>
-        <label>Best contact email<input name="contactEmail" type="email" maxLength={320} placeholder="owner@restaurant.com" /></label>
-        <label>Contact phone<input name="contactPhone" type="tel" maxLength={50} placeholder="(210) 555-0123" /></label>
+        <label>Best contact email<input name="contactEmail" type="email" maxLength={320} autoComplete="email" aria-describedby="audit-contact-help" placeholder="owner@restaurant.com" /></label>
+        <label>Contact phone<input name="contactPhone" type="tel" maxLength={50} autoComplete="tel" aria-describedby="audit-contact-help" placeholder="(210) 555-0123" /></label>
+        <small id="audit-contact-help" className="audit-contact-help">Enter at least one contact method: email or phone.</small>
         <label className="audit-form-wide">What should Team Faraz know?<textarea name="contactNote" maxLength={2000} rows={3} placeholder="Optional context for the audit" /></label>
         <label className="audit-consent"><input name="consent" type="checkbox" value="yes" required /><span>I agree that Veroxa may store this request and contact me about this audit. No public changes or restaurant account are created.</span></label>
         <label className="audit-honeypot" aria-hidden="true">Company website<input name="companyWebsite" tabIndex={-1} autoComplete="off" /></label>
         <button className="primary-button" type="submit" disabled={state.kind === "submitting"}>{state.kind === "submitting" ? "Saving audit request…" : "Send audit request"} <Icon name="arrow" size={16}/></button>
-        {state.kind === "error" && <small className="audit-submit-error" role="alert">{state.message}</small>}
+        {state.kind === "error" && <small className="audit-submit-error" role="alert" aria-live="assertive">{state.message}</small>}
         <small>Your request is saved in Veroxa’s protected Audit Center. It does not create a client account, operations workspace, or automatic restaurant contact.</small>
-      </form>
+      </form>}
       <aside className="audit-explainer">
-        {state.kind === "success" ? <div className="audit-ready"><span><Icon name="check" size={24}/></span><h2>Audit request saved.</h2><p>Reference <strong>{state.reference}</strong> is now in Team Faraz’s protected audit queue. No client workspace, public change, or external contact was created.</p><button onClick={() => { setIdempotencyKey(""); setState({ kind: "idle" }); }}>Submit another audit <Icon name="arrow" size={15}/></button></div> : <><p className="eyebrow">WHAT VEROXA REVIEWS</p><h2>Five restaurant visibility layers</h2><ul><li>Google Business and Maps readiness</li><li>Business information consistency</li><li>Menu, ordering, website, and contact paths</li><li>Social trust and usable restaurant media</li><li>Whether Veroxa can create practical value honestly</li></ul><p className="audit-note"><Icon name="shield" size={17}/> An audit is a fit and opportunity review—not a promise of orders, rankings, revenue, profit, ROI, or growth.</p></>}
+        {state.kind === "success" ? <div className="audit-ready" role="status" aria-live="polite"><span><Icon name="check" size={24}/></span><h2>Audit request saved.</h2><p>Reference <strong>{state.reference}</strong> is now in Team Faraz’s protected audit queue. No client workspace, public change, or external contact was created.</p><button onClick={() => { setIdempotencyKey(""); setFormStartedAt(new Date().toISOString()); setState({ kind: "idle" }); }}>Submit another audit <Icon name="arrow" size={15}/></button></div> : <><p className="eyebrow">WHAT VEROXA REVIEWS</p><h2>Five restaurant visibility layers</h2><ul><li>Google Business and Maps readiness</li><li>Business information consistency</li><li>Menu, ordering, website, and contact paths</li><li>Social trust and usable restaurant media</li><li>Whether Veroxa can create practical value honestly</li></ul><p className="audit-note"><Icon name="shield" size={17}/> An audit is a fit and opportunity review—not a promise of orders, rankings, revenue, profit, ROI, or growth.</p></>}
       </aside>
     </section>
   </main>;
@@ -441,7 +486,8 @@ function LoginPage({ onNavigate }: { onNavigate: (view: View) => void }) {
     setState("submitting");
     setError("");
     try {
-      await requestVeroxaMagicLink(email);
+      const returnTo = new URLSearchParams(window.location.search).get("return_to");
+      await requestVeroxaMagicLink(email, returnTo);
       setMessage("If this email is approved for Veroxa, a secure sign-in link has been sent.");
     } catch {
       setError("A secure sign-in link could not be sent right now.");

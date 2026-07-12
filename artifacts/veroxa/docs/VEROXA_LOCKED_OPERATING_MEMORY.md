@@ -7,6 +7,8 @@
 - Existing legacy demo rows are preserved. Ten broad M024 authenticated development policies are removed; production Sites reads only versioned `veroxa_*` tables and the separate `audit_*` domain.
 - The Restaurant Audit Center is the only cross-restaurant capability. Its records never create clients, workspaces, onboarding, media/content operations, publishing access, or active-client conversion automatically.
 - Reviewed audit states are evidence-gated and immutable. A reviewed request requires a reviewed report; a reviewed report requires a reviewed run and evidence-backed finding; reviewed reruns require a comparison.
+- The final delta RR additionally requires the latest run/report before a request can close, distinct identity rows for same-name audit locations, append-only lifecycle events, failed-run reasons, reproducible run snapshots, raw-body/timeout intake controls, and explicit UI draft/navigation/accessibility safety.
+- `RR_CHECKPOINT.md` plus `RR_RELEASE_CHECKPOINT.json` is the durable review memory. Future RRs reuse unchanged boundary evidence and review only changed groups unless a documented full-review trigger is crossed.
 - The next build after this release is Momo Restaurant Intelligence + Onboarding V1. Runtime AI, Meta, Google, social, SEO execution, publishing, outbound contact, and owner walkthrough remain separately gated and inactive.
 - After every build, update `VEROXA_CURRENT_MILESTONE.md`, `CURRENT_BUILD_STATUS.md`, this memory when durable truth changes, and Faraz's plain-language handoff.
 

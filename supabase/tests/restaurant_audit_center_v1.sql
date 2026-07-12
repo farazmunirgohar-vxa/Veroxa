@@ -103,6 +103,21 @@ begin
   ) then
     raise exception 'anonymous audit restaurant identity protection is missing';
   end if;
+  if has_table_privilege('authenticated', 'public.audit_events', 'insert') then
+    raise exception 'authenticated users can forge Audit Center lifecycle events';
+  end if;
+  if not exists (
+    select 1 from pg_trigger
+    where tgname = 'audit_requests_capture_event' and not tgisinternal
+  ) or not exists (
+    select 1 from pg_trigger
+    where tgname = 'audit_runs_capture_event' and not tgisinternal
+  ) or not exists (
+    select 1 from pg_trigger
+    where tgname = 'audit_reports_capture_event' and not tgisinternal
+  ) then
+    raise exception 'append-only Audit Center lifecycle event triggers are missing';
+  end if;
   if not exists (
     select 1 from pg_trigger
     where tgname = 'audit_runs_review_gate' and not tgisinternal
@@ -127,6 +142,8 @@ declare
   v_request_id uuid;
   v_public_request_id uuid;
   v_repeat_request_id uuid;
+  v_team_audit_restaurant_id uuid;
+  v_public_audit_restaurant_id uuid;
   v_run_id uuid;
   v_rerun_id uuid;
   v_visible_count bigint;
@@ -208,6 +225,8 @@ begin
     ) created;
     select id into v_run_id from public.audit_runs
     where audit_request_id = v_request_id and run_number = 1;
+    select audit_restaurant_id into v_team_audit_restaurant_id
+    from public.audit_requests where id = v_request_id;
 
     begin
       update public.audit_requests set status = 'reviewed' where id = v_request_id;
@@ -256,6 +275,20 @@ begin
     end;
 
     select public.start_audit_rerun_v1(v_request_id) into v_rerun_id;
+    begin
+      update public.audit_requests set status = 'reviewed' where id = v_request_id;
+      raise exception 'request review gate accepted an older reviewed report while a newer run was open';
+    exception when check_violation then null;
+    end;
+    begin
+      update public.audit_runs set status = 'failed', failure_reason = null where id = v_rerun_id;
+      raise exception 'failed run accepted no failure reason';
+    exception when check_violation then null;
+    end;
+    update public.audit_runs
+      set status = 'failed', failure_reason = 'Research source was temporarily unavailable.'
+      where id = v_rerun_id;
+    update public.audit_runs set status = 'in_progress' where id = v_rerun_id;
     insert into public.audit_findings (
       audit_run_id, category, severity, title, summary,
       evidence_url, evidence_label, recommended_action, created_by
@@ -320,11 +353,14 @@ begin
   if v_public_request_id is distinct from v_repeat_request_id then
     raise exception 'public intake idempotency failed';
   end if;
+  select audit_restaurant_id into v_public_audit_restaurant_id
+  from public.audit_requests where id = v_public_request_id;
+  if v_public_audit_restaurant_id = v_team_audit_restaurant_id then
+    raise exception 'same-name restaurant requests were conflated into one identity record';
+  end if;
   select restaurant.website_url into v_canonical_website
   from public.audit_restaurants restaurant
-  where restaurant.normalized_name = 'ci test restaurant'
-    and restaurant.normalized_city = 'austin'
-    and restaurant.normalized_state = 'tx';
+  where restaurant.id = v_team_audit_restaurant_id;
   if v_canonical_website is distinct from 'https://canonical.example' then
     raise exception 'public intake overwrote canonical restaurant identity';
   end if;

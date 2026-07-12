@@ -55,6 +55,8 @@
     "check-supabase-migration-ledger": "tsx ./src/check-supabase-migration-ledger.ts",
     "check-momo-production-tenant-rls": "tsx ./src/check-momo-production-tenant-rls.ts",
     "check-restaurant-audit-center-v1": "tsx ./src/check-restaurant-audit-center-v1.ts",
+    "check-audit-intake-adapter-contracts": "tsx ./src/check-audit-intake-adapter-contracts.ts",
+    "check-rr-release-checkpoint": "tsx ./src/check-rr-release-checkpoint.ts",
     "check-live-automation-media-upload-storage": "tsx ./src/check-live-automation-media-upload-storage.ts",
     "check-live-automation-profile-corrections": "tsx ./src/check-live-automation-profile-corrections.ts",
     "check-live-automation-real-messages": "tsx ./src/check-live-automation-real-messages.ts",

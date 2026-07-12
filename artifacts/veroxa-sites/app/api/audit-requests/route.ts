@@ -1,5 +1,3 @@
-import { createClient } from "@supabase/supabase-js";
-
 export const runtime = "edge";
 
 const CONSENT_VERSION = "2026-07-12";
@@ -64,7 +62,9 @@ async function hmacHex(secret: string, value: string): Promise<string> {
 
 export async function POST(request: Request): Promise<Response> {
   const configuredLength = Number(request.headers.get("content-length") || 0);
-  if (configuredLength > MAX_BODY_BYTES) return response({ accepted: false }, 413);
+  if (!Number.isFinite(configuredLength) || configuredLength > MAX_BODY_BYTES) {
+    return response({ accepted: false }, 413);
+  }
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
@@ -83,7 +83,11 @@ export async function POST(request: Request): Promise<Response> {
 
   let body: IntakeBody;
   try {
-    body = JSON.parse(rawBody) as IntakeBody;
+    const parsed = JSON.parse(rawBody) as unknown;
+    if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+      return response({ accepted: false }, 400);
+    }
+    body = parsed as IntakeBody;
   } catch {
     return response({ accepted: false }, 400);
   }
@@ -128,33 +132,46 @@ export async function POST(request: Request): Promise<Response> {
   const fingerprint = await hmacHex(intakeSecret, `ip:${trustedIp}|contact:${contactEmail || contactPhone}|day:${day}`);
   const intakeToken = await hmacHex(intakeSecret, fingerprint);
 
-  const supabase = createClient(url, publishableKey, {
-    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
-  });
-  const { data, error } = await supabase.rpc("submit_audit_request_v1", {
-    p_restaurant_name: restaurantName,
-    p_city: city,
-    p_state: state,
-    p_website_url: websiteUrl,
-    p_google_profile_url: googleProfileUrl,
-    p_contact_name: contactName,
-    p_contact_email: contactEmail,
-    p_contact_phone: contactPhone,
-    p_contact_note: contactNote,
-    p_consent_to_contact: true,
-    p_consent_version: CONSENT_VERSION,
-    p_form_started_at: formStartedAt,
-    p_honeypot: honeypot,
-    p_fingerprint: fingerprint,
-    p_intake_token: intakeToken,
-    p_idempotency_key: idempotencyKey,
-  });
-  if (error) {
-    if (error.message.includes("rate_limited")) return response({ accepted: false }, 429);
-    if (error.message.includes("submission_rejected")) return response({ accepted: false }, 400);
+  let upstream: Response;
+  try {
+    upstream = await fetch(`${url.replace(/\/$/, "")}/rest/v1/rpc/submit_audit_request_v1`, {
+      method: "POST",
+      headers: {
+        apikey: publishableKey,
+        authorization: `Bearer ${publishableKey}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        p_restaurant_name: restaurantName,
+        p_city: city,
+        p_state: state,
+        p_website_url: websiteUrl,
+        p_google_profile_url: googleProfileUrl,
+        p_contact_name: contactName,
+        p_contact_email: contactEmail,
+        p_contact_phone: contactPhone,
+        p_contact_note: contactNote,
+        p_consent_to_contact: true,
+        p_consent_version: CONSENT_VERSION,
+        p_form_started_at: formStartedAt,
+        p_honeypot: honeypot,
+        p_fingerprint: fingerprint,
+        p_intake_token: intakeToken,
+        p_idempotency_key: idempotencyKey,
+      }),
+      signal: AbortSignal.timeout(8_000),
+    });
+  } catch {
     return response({ accepted: false }, 503);
   }
-  const row = Array.isArray(data) ? data[0] : data;
-  if (!row?.reference_code) return response({ accepted: false }, 503);
-  return response({ accepted: true, reference: row.reference_code }, 202);
+  const data = await upstream.json().catch(() => null) as Array<{ reference_code?: string }> | { message?: string } | null;
+  if (!upstream.ok) {
+    const errorText = JSON.stringify(data || {});
+    if (errorText.includes("rate_limited")) return response({ accepted: false }, 429);
+    if (errorText.includes("submission_rejected") || upstream.status === 400) return response({ accepted: false }, 400);
+    return response({ accepted: false }, 503);
+  }
+  const reference = Array.isArray(data) ? data[0]?.reference_code : null;
+  if (!reference) return response({ accepted: false }, 503);
+  return response({ accepted: true, reference }, 202);
 }

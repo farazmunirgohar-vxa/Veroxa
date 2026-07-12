@@ -151,7 +151,7 @@ export default function FreeAudit() {
   const [walkthroughReference, setWalkthroughReference] = useState<string | null>(null);
   const [walkthroughSubmitting, setWalkthroughSubmitting] = useState(false);
   const [walkthroughConsent, setWalkthroughConsent] = useState(false);
-  const [auditFormStartedAt] = useState(() => new Date().toISOString());
+  const [auditFormStartedAt, setAuditFormStartedAt] = useState(() => new Date().toISOString());
   const [auditIdempotencyKey, setAuditIdempotencyKey] = useState("");
 
   // Unified candidate type: covers manual and preview fallback candidates. `source` drives the UI badge.
@@ -315,6 +315,10 @@ export default function FreeAudit() {
     key: K,
     value: AuditLeadContact[K],
   ) {
+    if (Date.now() - Date.parse(auditFormStartedAt) >= 2 * 60 * 60 * 1000) {
+      setAuditFormStartedAt(new Date().toISOString());
+      setAuditIdempotencyKey("");
+    }
     setContact((prev) => ({ ...prev, [key]: value }));
   }
 
@@ -323,6 +327,12 @@ export default function FreeAudit() {
     const form = new FormData(e.currentTarget);
     setWalkthroughError(null);
     if (!report) return;
+    if (Date.now() - Date.parse(auditFormStartedAt) >= 2 * 60 * 60 * 1000) {
+      setAuditFormStartedAt(new Date().toISOString());
+      setAuditIdempotencyKey("");
+      setWalkthroughError("This audit form session was refreshed for security. Please wait a few seconds, then submit again.");
+      return;
+    }
     const hasPhone = (contact.phone ?? "").trim().length > 0;
     const hasEmail = (contact.email ?? "").trim().length > 0;
     if (!hasPhone && !hasEmail) {
@@ -1552,7 +1562,13 @@ export default function FreeAudit() {
                       <input
                         type="checkbox"
                         checked={walkthroughConsent}
-                        onChange={(event) => setWalkthroughConsent(event.target.checked)}
+                        onChange={(event) => {
+                          if (Date.now() - Date.parse(auditFormStartedAt) >= 2 * 60 * 60 * 1000) {
+                            setAuditFormStartedAt(new Date().toISOString());
+                            setAuditIdempotencyKey("");
+                          }
+                          setWalkthroughConsent(event.target.checked);
+                        }}
                         className="mt-0.5"
                         data-testid="walkthrough-consent"
                       />

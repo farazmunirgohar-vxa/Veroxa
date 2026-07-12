@@ -40,6 +40,7 @@ export type AuditRun = {
   source_snapshot: Record<string, unknown>;
   score_snapshot: Record<string, unknown>;
   comparison_summary: string | null;
+  failure_reason: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -184,17 +185,32 @@ export async function getCurrentVeroxaAccess(): Promise<VeroxaAccess | null> {
 
 export async function signOutOfVeroxa(): Promise<void> {
   const client = getVeroxaSupabase();
-  if (client) await client.auth.signOut();
+  if (!client) throw new Error("configuration_unavailable");
+  const { error } = await client.auth.signOut();
+  if (error) throw new Error("sign_out_failed");
 }
 
-export async function requestVeroxaMagicLink(email: string): Promise<void> {
+function safeReturnTo(value: string | null | undefined): string {
+  if (!value?.startsWith("/") || value.startsWith("//") || value.includes("\\")) return "/team/momo";
+  try {
+    const resolved = new URL(value, window.location.origin);
+    return resolved.origin === window.location.origin
+      ? `${resolved.pathname}${resolved.search}${resolved.hash}`
+      : "/team/momo";
+  } catch {
+    return "/team/momo";
+  }
+}
+
+export async function requestVeroxaMagicLink(email: string, returnTo?: string | null): Promise<void> {
   const client = getVeroxaSupabase();
   if (!client) throw new Error("configuration_unavailable");
+  const next = safeReturnTo(returnTo);
   const { error } = await client.auth.signInWithOtp({
     email: email.trim().toLowerCase(),
     options: {
       shouldCreateUser: false,
-      emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent("/team/momo")}`,
+      emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
     },
   });
   if (error) throw new Error("magic_link_failed");
@@ -218,6 +234,9 @@ export async function submitPublicAudit(
   const data = await response.json().catch(() => null) as { reference?: string } | null;
   if (!response.ok) {
     if (response.status === 429) throw new Error("rate_limited");
+    if (response.status === 400) throw new Error("validation_failed");
+    if (response.status === 413) throw new Error("request_too_large");
+    if (response.status === 503) throw new Error("temporarily_unavailable");
     throw new Error("audit_submission_failed");
   }
   if (!data?.reference) throw new Error("audit_submission_failed");
@@ -237,7 +256,7 @@ export async function listAuditQueue(): Promise<AuditQueueRecord[]> {
       ),
       audit_runs(
         id, previous_run_id, run_number, status, source_snapshot, score_snapshot,
-        comparison_summary, created_at, updated_at
+        comparison_summary, failure_reason, created_at, updated_at
       ),
       audit_notes(id, body, created_at)
     `)
@@ -287,8 +306,13 @@ export async function updateAuditRequestStatus(
     update.reviewed_by = data.user?.id || null;
     update.reviewed_at = new Date().toISOString();
   }
-  const { error } = await client.from("audit_requests").update(update).eq("id", requestId);
-  if (error) throw error;
+  const { data, error } = await client
+    .from("audit_requests")
+    .update(update)
+    .eq("id", requestId)
+    .select("id")
+    .single();
+  if (error || data?.id !== requestId) throw error || new Error("audit_request_update_failed");
 }
 
 export async function startAuditRerun(requestId: string): Promise<string> {
@@ -306,6 +330,7 @@ export async function updateAuditRun(
   input: {
     status: AuditRunStatus;
     comparisonSummary?: string;
+    failureReason?: string;
     scoreSnapshot?: Record<string, unknown>;
   },
 ): Promise<void> {
@@ -315,6 +340,7 @@ export async function updateAuditRun(
   const update: Record<string, unknown> = {
     status: input.status,
     comparison_summary: input.comparisonSummary?.trim() || null,
+    failure_reason: input.status === "failed" ? input.failureReason?.trim() || null : null,
   };
   if (input.scoreSnapshot !== undefined) update.score_snapshot = input.scoreSnapshot;
   if (input.status === "in_progress") update.started_at = new Date().toISOString();
@@ -325,8 +351,13 @@ export async function updateAuditRun(
     update.reviewed_by = authData.user?.id || null;
     update.reviewed_at = new Date().toISOString();
   }
-  const { error } = await client.from("audit_runs").update(update).eq("id", runId);
-  if (error) throw error;
+  const { data, error } = await client
+    .from("audit_runs")
+    .update(update)
+    .eq("id", runId)
+    .select("id")
+    .single();
+  if (error || data?.id !== runId) throw error || new Error("audit_run_update_failed");
 }
 
 export async function listAuditFindings(runId: string): Promise<AuditFinding[]> {
@@ -416,8 +447,10 @@ export async function saveAuditReport(
     record.reviewed_by = authData.user?.id || null;
     record.reviewed_at = new Date().toISOString();
   }
-  const { error } = await client.from("audit_reports").upsert(record, {
-    onConflict: "audit_run_id",
-  });
-  if (error) throw error;
+  const { data, error } = await client
+    .from("audit_reports")
+    .upsert(record, { onConflict: "audit_run_id" })
+    .select("id, audit_run_id")
+    .single();
+  if (error || data?.audit_run_id !== runId) throw error || new Error("audit_report_save_failed");
 }
