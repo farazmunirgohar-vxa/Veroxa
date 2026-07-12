@@ -15,7 +15,7 @@ The platform responsibilities remain distinct:
 - **Codex** is the engineering capability ChatGPT uses for repository inspection, implementation, testing, hardening, and fixes.
 - **GitHub `main`** is the canonical source of truth for product behavior, routes, code, operating memory, tests, and guardrails.
 - **ChatGPT Sites** is Veroxa's primary application and deployment surface.
-- **Vercel** is a temporary compatibility and rollback surface, not the primary product definition or deployment direction.
+- **Vercel is retired.** Do not create, maintain, verify, or depend on a Vercel deployment or rollback path.
 
 ## Command contract
 
@@ -113,7 +113,7 @@ As last verified on 2026-07-12:
 - `veroxasystems.com` and `www.veroxasystems.com` are attached to Sites;
 - both custom domains report active provider and SSL status with no reported domain error;
 - future verified Sites deployments use the existing domains and do not require routine Namecheap edits;
-- Vercel remains available temporarily as a migration rollback surface;
+- Vercel is retired; Sites checkpoints and GitHub source provide the deployment and recovery path;
 - the current release source implements protected Supabase session and membership boundaries, but the live site remains on the earlier shell until the exact green release is checkpointed;
 - approved Team identity pre-provisioning, authenticated smoke tests, real Momo accounts/data, external publishing, payments, and live platform integrations remain blocked.
 

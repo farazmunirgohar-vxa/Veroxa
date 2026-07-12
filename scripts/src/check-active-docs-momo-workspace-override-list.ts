@@ -26,11 +26,9 @@ const requiredMomoDocs = [
 const activeDocs = read("artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md");
 const currentBuildStatus = read("artifacts/veroxa/docs/CURRENT_BUILD_STATUS.md");
 const authMode = read("artifacts/veroxa/src/lib/auth/authMode.ts");
-const pilotAccess = read("api/pilot-access.ts");
 const roles = `${read("artifacts/veroxa/src/domain/users/permissions.ts")}\n${read("artifacts/veroxa/src/lib/auth/authContract.ts")}`;
 
 must(/AUTH_MODE\s*:\s*AuthMode\s*=\s*["']placeholder["']/.test(authMode), "AUTH_MODE remains placeholder.");
-must(pilotAccess.includes("export default function handler") && pilotAccess.includes("manual_pilot_auth"), "/api/pilot-access remains active.");
 must(/AppRole\s*=\s*["']client["']\s*\|\s*["']team["']/.test(roles) && /VeroxaRole\s*=\s*["']client["']\s*\|\s*["']team["']/.test(roles), "Roles remain client/team only.");
 must(!/AppRole\s*=.*(owner|operator|admin|super_admin|super-admin)/i.test(roles), "No owner/operator/admin role was added to AppRole.");
 must(!/VeroxaRole\s*=.*(owner|operator|admin|super_admin|super-admin)/i.test(roles), "No owner/operator/admin role was added to VeroxaRole.");

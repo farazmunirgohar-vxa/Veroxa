@@ -12,7 +12,7 @@ Status: highest-level current source-of-truth index. Read this file before relyi
 - Other restaurant audits must not automatically create client accounts, operations workspaces, onboarding, media/content workflows, Team operations, reports, publishing access, or active-client conversion.
 - The active milestone is Momo's House San Antonio 100% readiness with the maximum safe level of AI, automation, social handling, SEO, reporting, monitoring, and human approval control.
 - Every build must update the milestone, current build status, any changed locked memory, runtime/deployment truth, and Faraz's plain-language handoff before it is considered complete.
-- GitHub PR #135 contains the current Momo Production Foundation and standalone Restaurant Audit Center release. Prior full-RR evidence remains reusable; the focused final delta fixes are pending exact-head GitHub checks, sixth forward migration application, merge, and Sites checkpoint. The live site remains on the prior shell until that exact green release is deployed.
+- GitHub PR #135 contains the current Momo Production Foundation and standalone Restaurant Audit Center release. Prior full-RR evidence remains reusable; the focused final delta and all six production migrations are verified, while the exact final head, merge, and Sites checkpoint remain pending. The live site remains on the prior shell until that exact green release is deployed.
 - Sites sign-in is magic-link-only. Public user creation and password sign-in/recovery are disabled; supported Admin identity provisioning and authenticated smoke tests remain activation gates.
 
 ## 2026-07-12 — ChatGPT-managed build, GitHub, Sites, and RR direction
@@ -26,7 +26,7 @@ Status: highest-level current source-of-truth index. Read this file before relyi
 - `RR` means deep review plus reasonable safe fixes and does not independently authorize merge, deployment, activation, or scope expansion.
 - Faraz's explicit product direction is to build the real Veroxa application through ChatGPT Sites using the existing GitHub/Codex Veroxa OS as the core skeleton.
 - The Sites application is not a demo and must not become an independent product definition.
-- GitHub `main` remains canonical. ChatGPT Sites is the primary application/deployment surface. Vercel remains temporary rollback only.
+- GitHub `main` remains canonical. ChatGPT Sites is the sole application/deployment surface. Vercel is retired.
 - Public Sites access is approved. `veroxasystems.com` and `www.veroxasystems.com` are attached with active provider and SSL status as last verified on 2026-07-12; future checkpoints retain the same domains without routine Namecheap edits.
 - The live Client and Team routes remain the earlier non-sensitive pre-live shells until the current protected release is merged and checkpointed; do not introduce real client or Team-sensitive data before identity provisioning and authenticated verification.
 - `RR` now means a deep GitHub review plus Sites integration, deployment, domain, and access-state review.
@@ -120,7 +120,7 @@ Status: highest-level active contributor guide and current source-of-truth index
 ## 2026-07-12 — Current production-foundation override
 
 - PR #134 is merged; the current release branch completes Momo Production Foundation V1 and Restaurant Audit Center V1.
-- Sites production auth is distinct from the Vite/Vercel `AUTH_MODE = placeholder` rollback boundary.
+- Sites production auth is authoritative for the deployed application. The undeployed Vite `AUTH_MODE = placeholder` code is retained only as historical/internal source, not as a rollback deployment.
 - Momo is the only operational restaurant scope. Non-client restaurants may exist only in the separate Audit Center and never convert automatically.
 - Public Sites marketing/audit intake is anonymous; Client/Team routes require signed sessions, active profile/membership, server guards, and RLS.
 - Client routes remain safe-empty until verified Momo records exist. Do not revive fixture activity, counts, media, reports, or completion claims in authenticated client views.

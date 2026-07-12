@@ -1,8 +1,4 @@
-const vercelModuleUrl = new URL("../../api/audit-requests.ts", import.meta.url).href;
 const sitesModuleUrl = new URL("../../artifacts/veroxa-sites/app/api/audit-requests/route.ts", import.meta.url).href;
-const { default: vercelHandler } = await import(vercelModuleUrl) as {
-  default: { fetch(request: Request): Promise<Response> };
-};
 const { POST: sitesPost } = await import(sitesModuleUrl) as {
   POST(request: Request): Promise<Response>;
 };
@@ -48,18 +44,13 @@ try {
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_contract";
   process.env.AUDIT_INTAKE_HMAC_SECRET = "c".repeat(64);
 
-  await expectStatus("Vercel method guard", await vercelHandler.fetch(request("", "GET")), 405);
-  await expectStatus("Vercel null JSON", await vercelHandler.fetch(request("null")), 400);
-  await expectStatus("Vercel oversized raw body", await vercelHandler.fetch(request(`${" ".repeat(16_385)}{}`)), 413);
   await expectStatus("Sites null JSON", await sitesPost(request("null")), 400);
   await expectStatus("Sites oversized raw body", await sitesPost(request(`${" ".repeat(16_385)}{}`)), 413);
 
   globalThis.fetch = async () => { throw new Error("simulated upstream failure"); };
-  await expectStatus("Vercel upstream failure", await vercelHandler.fetch(request(JSON.stringify(validBody))), 503);
   await expectStatus("Sites upstream failure", await sitesPost(request(JSON.stringify(validBody))), 503);
 
   globalThis.fetch = async () => Response.json([{ reference_code: "VA-CONTRACT" }], { status: 200 });
-  await expectStatus("Vercel accepted intake", await vercelHandler.fetch(request(JSON.stringify(validBody))), 202);
   await expectStatus("Sites accepted intake", await sitesPost(request(JSON.stringify(validBody))), 202);
 } finally {
   globalThis.fetch = originalFetch;

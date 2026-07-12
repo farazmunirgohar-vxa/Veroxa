@@ -27,7 +27,7 @@
     "check-profit-validation-model": "tsx ./src/check-profit-validation-model.ts",
     "check-saas-data-boundary": "tsx ./src/check-saas-data-boundary.ts",
     "check-repository-contracts": "tsx ./src/check-repository-contracts.ts",
-    "check-vercel-deployment-config": "tsx ./src/check-vercel-deployment-config.ts",
+    "check-sites-only-deployment": "tsx ./src/check-sites-only-deployment.ts",
     "check-public-metadata": "tsx ./src/check-public-metadata.ts",
     "check-manual-execution-guardrails": "tsx ./src/check-manual-execution-guardrails.ts",
     "check-public-preview-polish": "tsx ./src/check-public-preview-polish.ts",

@@ -20,6 +20,7 @@ A full boundary review is required for changes to auth/session/allowlist/roles, 
 - Momo’s House San Antonio is the only operational restaurant.
 - Other restaurants may use only the separate Audit Center and never auto-convert.
 - Sites sign-in is magic-link-only and public account creation is disabled.
+- Sites is the sole deployment surface; Vercel is retired and must not be restored as a release or rollback gate.
 - Client routes remain safe-empty until verified Momo records exist.
 - Runtime AI, Meta/Google connections, SEO/social execution, publishing, outbound contact, and owner walkthrough remain inactive.
 

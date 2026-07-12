@@ -8,7 +8,6 @@ const must = (condition: boolean, message: string) => { if (!condition) failures
 
 const app = read("artifacts/veroxa/src/App.tsx");
 const authMode = read("artifacts/veroxa/src/lib/auth/authMode.ts");
-const pilotAccess = read("api/pilot-access.ts");
 const roles = read("artifacts/veroxa/src/domain/users/permissions.ts") + read("artifacts/veroxa/src/lib/auth/authContract.ts");
 const nav = read("artifacts/veroxa/src/components/team/MomoWorkspaceNav.tsx");
 const dashboard = read("artifacts/veroxa/src/pages/team-momo-workspace.tsx");
@@ -25,7 +24,6 @@ const docs = [
 ].map(read).join("\n");
 
 must(/AUTH_MODE\s*:\s*AuthMode\s*=\s*["']placeholder["']/.test(authMode), "AUTH_MODE remains placeholder.");
-must(pilotAccess.includes("export default") && pilotAccess.includes("manual_pilot_auth"), "/api/pilot-access remains active.");
 must(/AppRole\s*=\s*["']client["']\s*\|\s*["']team["']/.test(roles) || /VeroxaRole\s*=\s*["']client["']\s*\|\s*["']team["']/.test(roles), "Roles remain client/team only.");
 
 const momoRouteIndex = app.indexOf('<Route path="/team/momo">');

@@ -196,7 +196,7 @@ for (const marker of [
   "ChatGPT is Faraz's primary",
   "ChatGPT Sites",
   "not a new demo",
-  "Vercel remains a temporary",
+  "Vercel is retired",
   "veroxasystems.com",
   "RR",
 ]) {
@@ -207,8 +207,8 @@ for (const marker of [
 }
 
 for (const marker of [
-  "`AUTH_MODE` remains `placeholder`",
-  "/api/pilot-access",
+  "magic-link-only Supabase authentication",
+  "root `/api/pilot-access` deployment adapter is retired",
   "Roles remain `client` and `team` only",
   "Momo owner walkthrough",
 ]) {

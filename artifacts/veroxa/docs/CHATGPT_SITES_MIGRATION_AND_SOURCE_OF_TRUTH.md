@@ -14,7 +14,7 @@ Veroxa now uses the ChatGPT Sites application/deployment surface. This is not a 
 - ChatGPT is Faraz's primary planning, orchestration, GitHub, review, and deployment interface.
 - Codex is the engineering capability ChatGPT invokes internally.
 - ChatGPT Sites is the primary application and deployment surface.
-- The existing Vercel deployment remains a temporary compatibility and rollback surface during Sites stabilization.
+- Vercel is retired. Sites is the sole deployment surface; GitHub `main` plus verified Sites checkpoints are the recovery path.
 - `veroxasystems.com` and `www.veroxasystems.com` are attached to Sites with active provider and SSL status as last verified on 2026-07-12.
 - The approved Sites visual direction is the presentation layer. It must preserve the existing Veroxa OS rather than replace it.
 - `CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md` controls the build, green-merge, hold, RR, and deployment command meanings.
@@ -62,7 +62,7 @@ The hosting migration does not authorize any of the following:
 - public/client exposure of Team-only data;
 - changing verified business truth without confirmation.
 
-`AUTH_MODE` remains `placeholder`. `/api/pilot-access` remains the current compatibility login path until a separately approved Sites identity migration replaces it. Roles remain `client` and `team` only. Momo owner walkthrough and pilot activation remain blocked without explicit Faraz approval.
+Sites uses magic-link-only Supabase authentication with active profile/membership enforcement. The undeployed Vite `AUTH_MODE = placeholder` path is historical/internal and its root `/api/pilot-access` deployment adapter is retired. Roles remain `client` and `team` only. Momo owner walkthrough and pilot activation remain blocked without explicit Faraz approval.
 
 ## Migration architecture
 
@@ -81,7 +81,7 @@ Faraz approved public Sites access and completed the Namecheap DNS changes. As l
 - `veroxasystems.com` is active with active SSL and no reported domain error;
 - `www.veroxasystems.com` is active with active SSL and no reported domain error;
 - routine future Sites deployments use these existing domains and do not require new Namecheap records;
-- the Vercel deployment remains available temporarily as a rollback path.
+- Vercel is not a rollback path and no Vercel configuration or serverless handler belongs in the active repository.
 
 Continue to protect the domain after cutover:
 

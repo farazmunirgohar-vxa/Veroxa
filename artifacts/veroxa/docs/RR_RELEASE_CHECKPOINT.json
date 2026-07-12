@@ -20,7 +20,7 @@
     "20260712214343_production_foundation_advisor_hardening.sql",
     "20260712220501_production_release_blocker_hardening.sql",
     "20260712220656_audit_trigger_type_safety.sql",
-    "20260712233000_audit_center_release_hardening.sql"
+    "20260712230242_audit_center_release_hardening.sql"
   ],
   "reusableEvidence": [
     "Momo-only tenancy, role matrix, RLS, and safe-empty client boundary",
@@ -28,7 +28,7 @@
     "Signed public audit intake, raw-size limits, timeouts, idempotency, and rate limits",
     "Latest-run review gate, reviewed immutability, append-only lifecycle evidence, and distinct audit identity",
     "Clean Supabase reset, pgTAP role/workflow/coexistence tests, and error-level database lint",
-    "Root typecheck, Vite build/E2E, Sites build/render tests/lint, and Vercel adapter deployment check"
+    "Root typecheck, Vite build/E2E, Sites build/render tests/lint, and Sites-only deployment guard"
   ],
   "fullReviewTriggers": [
     "authentication, sessions, identity allowlist, role or membership authorization",
@@ -47,14 +47,14 @@
         "supabase/migrations/20260712214343_production_foundation_advisor_hardening.sql",
         "supabase/migrations/20260712220501_production_release_blocker_hardening.sql",
         "supabase/migrations/20260712220656_audit_trigger_type_safety.sql",
-        "supabase/migrations/20260712233000_audit_center_release_hardening.sql",
+        "supabase/migrations/20260712230242_audit_center_release_hardening.sql",
         "supabase/tests/momo_production_tenant_rls_hardening.sql",
         "supabase/tests/restaurant_audit_center_v1.sql",
         "supabase/tests/legacy_policy_cleanup_coexistence.sql",
         "scripts/src/check-supabase-migration-ledger.ts",
         ".github/workflows/supabase-verify.yml"
       ],
-      "sha256": "23eb06c23190e905dc561e5bde53dee45583e32b6b43e04c70d1b5219669cae9"
+      "sha256": "373d2f7cdf032c0b9a4a2c06a2c736f3062b1e5fb05b31c1cb3ab9146aa81b31"
     },
     "auth_access": {
       "review": "full-on-change",
@@ -70,26 +70,25 @@
     "audit_runtime": {
       "review": "full-on-change",
       "files": [
-        "api/audit-requests.ts",
         "artifacts/veroxa-sites/app/api/audit-requests/route.ts",
         "artifacts/veroxa-sites/app/audit-center.tsx",
         "scripts/src/check-audit-intake-adapter-contracts.ts",
         "scripts/src/check-restaurant-audit-center-v1.ts"
       ],
-      "sha256": "d948fc54bde1eed3d67b2f6fb165a6049adeaeddff97dba41f2719015410479a"
+      "sha256": "323c71c379fd65908827f7e07ebf54a17b662f37c84d5d607892bb3b8acde466"
     },
     "delivery": {
       "review": "full-on-change",
       "files": [
-        "vercel.json",
         "artifacts/veroxa-sites/package.json",
         "artifacts/veroxa-sites/scripts/build-verified.sh",
         "artifacts/veroxa-sites/scripts/validate-artifact.sh",
+        "scripts/src/check-sites-only-deployment.ts",
         "scripts/src/check-rr-release-checkpoint.ts",
         ".github/workflows/ci.yml",
         ".github/workflows/sites-verify.yml"
       ],
-      "sha256": "522dd24e77061be27febc41d277e9d6d06aa8ce8b1b4865abd1c297c49fab547"
+      "sha256": "009e0f2081f719b5ab14311432f843f57909865a03a84e501ba8875916db9e97"
     },
     "product_scope": {
       "review": "full-on-change",
@@ -97,9 +96,12 @@
         "artifacts/veroxa/docs/VEROXA_CURRENT_MILESTONE.md",
         "artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md",
         "artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md",
+        "artifacts/veroxa/docs/CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md",
+        "artifacts/veroxa/docs/CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md",
+        "AGENTS.md",
         "artifacts/veroxa/docs/RR_CHECKPOINT.md"
       ],
-      "sha256": "74d7003592169e2c93035d6f3bbb1164b117c302cc00c2fe61aa39307fc44dc2"
+      "sha256": "27671745c102bad85a24ee9b7ed095f36ce9f18920855ab834b9760062fa4a8f"
     },
     "presentation_surfaces": {
       "review": "delta-unless-boundary-crossed",

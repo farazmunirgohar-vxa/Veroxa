@@ -1,7 +1,13 @@
+## 2026-07-12 — Sites-only deployment lock
+
+- Faraz retired Vercel. ChatGPT Sites is the sole Veroxa deployment surface.
+- Remove and keep removed `vercel.json` and root Vercel serverless handlers. Do not treat Vercel status as a merge, release, rollback, or readiness gate.
+- GitHub `main` remains canonical; verified Sites checkpoints are the hosted recovery path. Any older Vercel rollback language below is historical and superseded.
+
 ## 2026-07-12 — Production foundation and Audit Center V1 lock
 
 - Momo's House San Antonio remains the only operational client and restaurant workspace.
-- The primary Sites delivery layer uses Supabase Auth, server session validation, active profile plus active Momo membership, RLS, and safe-empty client views. The Vite/Vercel rollback keeps its historical `AUTH_MODE = placeholder` boundary; that setting does not describe Sites auth.
+- The Sites delivery layer uses Supabase Auth, server session validation, active profile plus active Momo membership, RLS, and safe-empty client views. The undeployed Vite `AUTH_MODE = placeholder` code does not describe production Sites auth.
 - Public Auth identity creation is disabled. Team and future Momo identities must be pre-provisioned through a supported Supabase Admin path and must also have an active profile/membership.
 - Sign-in is magic-link-only for this release. Password sign-in/recovery remains disabled until compromised-password protection is enabled and re-reviewed.
 - Existing legacy demo rows are preserved. Ten broad M024 authenticated development policies are removed; production Sites reads only versioned `veroxa_*` tables and the separate `audit_*` domain.
