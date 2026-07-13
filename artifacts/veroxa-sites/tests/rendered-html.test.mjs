@@ -215,15 +215,16 @@ test("audit UI keeps contact, draft-isolation, mutation, and mobile-navigation g
   assert.match(page, /signOutBusy \? "Signing out" : "Sign out"/, "Mobile Team navigation must expose sign out");
   assert.match(page, /const handleSignOut = async/, "Sign out controls must share an error-aware handler");
   assert.match(page, /You are still signed in/, "Failed sign out must preserve and explain the signed-in state");
-  assert.match(data, /error\.status === 429/, "Magic-link requests must classify HTTP rate limits");
   assert.match(data, /error\.code === "over_email_send_rate_limit"/, "Magic-link requests must preserve Supabase email-limit meaning");
+  assert.doesNotMatch(data, /over_request_rate_limit|normalizedMessage\.includes\("rate limit"\)/, "Magic-link classification must not conflate unrelated request limits or brittle message text");
   assert.match(data, /throw new Error\("magic_link_rate_limited"\)/, "Magic-link requests must return a controlled rate-limit failure");
   assert.match(data, /VEROXA_PRODUCTION_ORIGIN = "https:\/\/veroxasystems\.com"/, "Production magic links must use the canonical Veroxa origin");
   assert.match(data, /emailRedirectTo: `\$\{getAuthCallbackOrigin\(\)\}\/auth\/callback`/, "Magic links must use one exact production callback URL");
   assert.match(data, /veroxa_auth_return_to/, "Magic-link return paths must be preserved outside the callback URL allowlist");
   assert.match(authCallback, /cookieStore\.get\(AUTH_RETURN_COOKIE\)/, "Auth callback must recover the validated return path from its short-lived cookie");
   assert.match(authCallback, /maxAge: 0/, "Auth callback must clear its short-lived return-path cookie");
-  assert.match(page, /Too many secure emails were requested during setup/, "Login must explain a temporary email limit without exposing account existence");
+  assert.match(page, /secure sign-in link will be delivered when available/, "Login must use one neutral delivery posture for non-configuration Auth outcomes");
+  assert.doesNotMatch(page, /Too many secure emails were requested during setup/, "Login must not reveal a distinct approved-account rate-limit state");
   assert.doesNotMatch(page, /momo-readiness-tracker\.json/, "The public client entry must not bundle the full Team readiness record");
   assert.match(protectedRoute, /if \(access\.role === "team"\)[\s\S]*?await import\("\.\.\/momo-readiness-tracker\.json"\)/, "Only a server-verified Team route may load the readiness record");
   assert.ok(protectedRoute.indexOf("getServerVeroxaAccess()") < protectedRoute.indexOf("momo-readiness-tracker.json"), "Server access verification must precede readiness loading");
