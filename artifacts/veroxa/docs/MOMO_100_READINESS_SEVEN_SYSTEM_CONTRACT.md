@@ -14,8 +14,9 @@ Status: deployed-foundation contract as of 2026-07-13. This document separates s
 
 - GitHub `main` contains PR #138 at merged commit `48630c62b9429238ab39b5b919d7689d189352f8`; its exact seven-system Sites source is deployed as verified version 5 and both custom domains are active with active SSL.
 - The connected Supabase project is healthy and has all eight production migrations, including `momo_full_operating_system_v1` and its advisor hardening. All 32 operating tables force RLS; clean reset, pgTAP, and error-level database lint passed.
-- The remote protected allowlist contains one enabled Team identity record, but no corresponding V1 Auth profile or Momo membership exists. No supported Supabase connector method can currently create an Auth user. The connected workflow has no `SUPABASE_SERVICE_ROLE_KEY`, so the approved Team identity remains **blocked external authority**.
-- `scripts/src/provision-approved-team-identity.ts` is a server-only, explicit-ack, idempotent Admin path for a later authorized environment. It takes the approved email and both Supabase values from environment variables, relies on the protected database allowlist trigger as authority, verifies active Team/Momo membership, and rolls back a newly created user when the allowlist rejects it. It must not be run from CI, a browser, or this credential-less connector session.
+- The protected allowlist is aligned to Faraz's approved Gmail Team identity. Its Auth email is confirmed, a real sign-in occurred, and the protected trigger created an active Team profile plus active Momo membership. The mistaken secondary identity has disabled profile/membership access. The remaining identity evidence is an authenticated protected-route Team/Momo browser/RLS smoke.
+- `scripts/src/provision-approved-team-identity.ts` remains the preferred server-only, explicit-ack, idempotent Admin path for future identities. It takes approved values only from environment, relies on the protected database allowlist trigger as authority, verifies active access, and rolls back an unaccepted new user. It must not run from CI or browser code.
+- Sites version 5 has the correct public Supabase runtime variables, but its browser bundle cannot consume runtime-only `NEXT_PUBLIC_` values. The reviewed source repair passes only a validated Supabase project URL and publishable key from the existing dynamic login/protected routes; all privileged keys remain server-only and the marketing root remains cacheable. Production login remains affected until that source delta is merged and checkpoint-deployed.
 - No real Momo owner-confirmed address, phone, hours, menu, services, dietary/halal claim, contacts, brand voice, goals, media rights, platform access, or performance data has been entered. Safe-empty and pending-owner states are correct; fixtures and inferred public facts are not owner confirmation.
 - Runtime AI, Meta, Google Business Profile, social publishing, Google writes, visibility monitoring, and external retries remain **inactive pending authorized access**. Provider-neutral contracts return blocked states and must not simulate success.
 - No new spend is approved. The deployed foundation provides interfaces, queues, evidence, approval gates, deterministic checks, and recovery behavior without activating a chargeable provider.
@@ -32,7 +33,7 @@ Status: deployed-foundation contract as of 2026-07-13. This document separates s
 ### 2. Team identity + authenticated Team/Momo access
 
 - Source target: database allowlist, Auth Admin provisioning, active `team` profile, active Momo membership, magic-link-only session, RLS, and authenticated Team/Momo smoke evidence.
-- Current state: deployed Auth/RLS foundation; real Team provisioning and authenticated browser smoke are **blocked external authority**. No Momo client identity is approved or provisioned.
+- Current state: deployed Auth/RLS foundation plus a confirmed, signed-in, active Team/Momo identity. The repaired Sites browser configuration and authenticated protected-route browser/RLS smoke remain incomplete. No Momo client identity is approved or provisioned.
 - Required gate: supported Admin credential/path, approved email supplied through environment, idempotent provisioning verification, redirect allowlist verification, API/RLS smoke, and browser route smoke. Public signup, password login, and service-role exposure remain forbidden.
 
 ### 3. Media intake + intelligence
@@ -62,7 +63,7 @@ Status: deployed-foundation contract as of 2026-07-13. This document separates s
 ### 7. Work orchestration + reporting + final gate
 
 - Source target: jobs, dependencies, attempts, exponential retry scheduling, dead-letter/recovery state, events, notifications, evidence-backed weekly/monthly reports, monitoring, and a fail-closed 100%-readiness result.
-- Current state: **deployed foundation / final gate blocked** by missing owner truth, identities, media rights, and inactive providers.
+- Current state: **deployed foundation / final gate blocked** by incomplete authenticated identity evidence, missing owner truth, media rights, and inactive providers.
 - Required gate: every required readiness check is passed with evidence; score is 100; no required blocker remains; authenticated end-to-end tests, monitoring, recovery, deployment, and external integration evidence are current.
 
 ## Provider-neutral source contracts

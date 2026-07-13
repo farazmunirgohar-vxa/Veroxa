@@ -127,10 +127,21 @@ must(
 );
 
 for (const marker of [
+  "configureVeroxaSupabase",
+  "runtimeConfig",
+  "validBrowserSupabaseConfig",
+  'publishableKey?.startsWith("sb_publishable_")',
+]) {
+  must(siteData.includes(marker), `Sites browser Auth config bridge missing: ${marker}`);
+}
+
+for (const marker of [
   "createServerClient",
   "auth.getUser()",
   "veroxa_user_profiles",
   "veroxa_restaurant_members",
+  "getServerSupabasePublicConfig",
+  'publishableKey?.startsWith("sb_publishable_")',
 ]) {
   must(siteServer.includes(marker), `Sites server auth missing: ${marker}`);
 }
@@ -147,12 +158,16 @@ for (const marker of [
   "RestaurantAuditCenter",
   "SECURE PORTAL ACCESS",
   "submitPublicAudit",
+  'setMessage("")',
 ]) {
   must(sitePage.includes(marker), `Sites route shell missing: ${marker}`);
 }
 
 for (const marker of [
+  'dynamic = "force-dynamic"',
   "getServerVeroxaAccess",
+  "getServerSupabasePublicConfig",
+  "initialSupabaseConfig",
   "redirect(`/login?return_to=",
   "access.role !== \"team\"",
   "access.role !== \"client\"",

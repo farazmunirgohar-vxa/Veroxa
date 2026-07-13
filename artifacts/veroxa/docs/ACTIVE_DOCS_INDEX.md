@@ -2,6 +2,12 @@
 
 Status: highest-level current source-of-truth index. Read this file before relying on older Veroxa documents.
 
+## 2026-07-13 — Team login repair state
+
+- Faraz's approved Gmail Team identity is confirmed, has signed in, and has an active Team profile plus active Momo membership. The mistaken secondary identity has disabled portal access. Authenticated protected-route browser/RLS evidence remains pending.
+- Sites version 5 has the public Supabase values in hosted runtime configuration, but its current browser bundle cannot consume those runtime-only values. The reviewed source repair passes only the validated project URL and publishable key from login/protected server routes while keeping `shouldCreateUser: false`, the marketing root cacheable, and all privileged keys server-only.
+- Until the repaired source is merged and explicitly deployed, the current production login remains affected. This is an auth/runtime delta and must refresh the protected checkpoint fingerprints after focused review.
+
 ## 2026-07-12 — Current milestone and post-build continuity lock
 
 - `VEROXA_CURRENT_MILESTONE.md` is the first document to read for current scope, priority, build order, and progress.

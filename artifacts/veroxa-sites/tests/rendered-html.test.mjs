@@ -33,6 +33,95 @@ test("renders development preview metadata", async () => {
   assert.match(await response.text(), developmentPreviewMeta);
 });
 
+test("injects validated runtime Supabase public config only into the login route", async () => {
+  const previousUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const previousKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  process.env.NEXT_PUBLIC_SUPABASE_URL = "https://runtime-config.supabase.co";
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY =
+    "sb_publishable_runtime_config_contract";
+
+  try {
+    const workerUrl = new URL("../dist/server/index.js", import.meta.url);
+    workerUrl.searchParams.set("runtime-auth-config", `${process.pid}-${Date.now()}`);
+    const { default: worker } = await import(workerUrl.href);
+    const response = await worker.fetch(
+      new Request("http://localhost/login", {
+        headers: { accept: "text/html" },
+      }),
+      {
+        ASSETS: {
+          fetch: async () => new Response("Not found", { status: 404 }),
+        },
+      },
+      { waitUntil() {}, passThroughOnException() {} },
+    );
+    const html = await response.text();
+    assert.equal(response.status, 200);
+    assert.match(html, /https:\/\/runtime-config\.supabase\.co/);
+    assert.match(html, /sb_publishable_runtime_config_contract/);
+    assert.match(response.headers.get("cache-control") || "", /no-store/);
+
+    for (const path of ["/", "/free-audit"]) {
+      const publicResponse = await worker.fetch(
+        new Request(`http://localhost${path}`, { headers: { accept: "text/html" } }),
+        {
+          ASSETS: {
+            fetch: async () => new Response("Not found", { status: 404 }),
+          },
+        },
+        { waitUntil() {}, passThroughOnException() {} },
+      );
+      const publicHtml = await publicResponse.text();
+      assert.doesNotMatch(publicHtml, /runtime-config\.supabase\.co/);
+      assert.doesNotMatch(publicHtml, /sb_publishable_runtime_config_contract/);
+    }
+  } finally {
+    if (previousUrl === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+    else process.env.NEXT_PUBLIC_SUPABASE_URL = previousUrl;
+    if (previousKey === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    else process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = previousKey;
+  }
+});
+
+test("rejects unsafe or incomplete runtime Supabase public config", async () => {
+  const previousUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const previousKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  const cases = [
+    ["http://unsafe-runtime.supabase.co", "sb_publishable_unsafe_http"],
+    ["https://unsafe-runtime.example.com", "sb_publishable_unsafe_host"],
+    ["https://unsafe-path.supabase.co/auth", "sb_publishable_unsafe_path"],
+    ["https://unsafe-secret.supabase.co", "sb_secret_must_not_reach_browser"],
+    ["https://missing-key.supabase.co", ""],
+  ];
+
+  try {
+    for (const [url, key] of cases) {
+      process.env.NEXT_PUBLIC_SUPABASE_URL = url;
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = key;
+      const workerUrl = new URL("../dist/server/index.js", import.meta.url);
+      workerUrl.searchParams.set("invalid-runtime-auth-config", `${process.pid}-${Date.now()}-${url}`);
+      const { default: worker } = await import(workerUrl.href);
+      const response = await worker.fetch(
+        new Request("http://localhost/login", { headers: { accept: "text/html" } }),
+        { ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) } },
+        { waitUntil() {}, passThroughOnException() {} },
+      );
+      const html = await response.text();
+      assert.equal(response.status, 200);
+      assert.doesNotMatch(html, new RegExp(url.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+      if (key) {
+        assert.doesNotMatch(html, new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+      }
+      assert.match(response.headers.get("cache-control") || "", /no-store/);
+    }
+  } finally {
+    if (previousUrl === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+    else process.env.NEXT_PUBLIC_SUPABASE_URL = previousUrl;
+    if (previousKey === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    else process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = previousKey;
+  }
+});
+
 test("renders public routes and protects portal routes", async () => {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
   workerUrl.searchParams.set("routes", `${process.pid}-${Date.now()}`);

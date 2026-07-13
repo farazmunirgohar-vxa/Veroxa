@@ -1,3 +1,12 @@
+## 2026-07-13 — Supabase Team login repair
+
+- Root cause: the deployed Sites client had the correct Supabase public values in hosted runtime configuration, but the browser bundle could not read runtime-only `NEXT_PUBLIC_` values. Login therefore failed locally with `configuration_unavailable` before an Auth request reached Supabase.
+- Identity repair: the protected allowlist is aligned to Faraz's approved Gmail identity. Its Auth email is confirmed, a real sign-in occurred, and the database trigger created an active `team` profile plus active Team membership for Momo's House San Antonio. The mistaken secondary identity is confirmed but its profile and membership are disabled. No service-role value was exposed and the product login still uses `shouldCreateUser: false`.
+- Source repair: the existing dynamic `/login` and protected routes validate the hosted Supabase URL/publishable key server-side and pass only those public values to the browser client. Invalid or missing configuration fails closed, while the public marketing root remains cacheable.
+- Verification: root TypeScript checks, the focused Auth/Audit contract, Sites lint, a no-build-time-env production build, artifact validation, and all eight rendered HTML/auth tests pass. Positive and negative tests prove runtime public config reaches `/login`, unsafe hosts/paths/secret keys are rejected, and login responses remain `no-store`.
+- Current boundary: the Gmail Auth user, confirmation, real sign-in, Team profile, and Momo membership are verified. A real protected-route browser smoke remains pending. The runtime source repair is not live until its reviewed GitHub change is merged and a Sites checkpoint is explicitly deployed.
+- Momo client identity, owner-confirmed data, media rights, external providers, publishing, and overall Momo readiness remain separately blocked and unchanged.
+
 ## 2026-07-13 — Momo Seven-System Operating Foundation V1 verified release
 
 - Scope: build the seven requested Momo systems together—Restaurant Intelligence/onboarding; approved Team identity and authenticated smoke; media rights/intelligence/reuse; AI content/approvals/calendar; Meta handling; Google/local visibility; and work/reports/retries/recovery/final readiness.

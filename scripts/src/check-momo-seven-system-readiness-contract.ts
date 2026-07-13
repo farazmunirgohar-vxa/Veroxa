@@ -54,7 +54,7 @@ for (const marker of [
   "blocked external authority",
   "inactive pending authorized access",
   "No real Momo owner-confirmed",
-  "No supported Supabase connector method can currently create an Auth user",
+  "active Team profile plus active Momo membership",
   "No new spend is approved",
   "provider_not_authorized",
   "incremental_spend_not_approved",
@@ -257,7 +257,7 @@ for (const document of [milestone, status, activeDocs]) {
   );
 }
 for (const marker of [
-  "blocked external authority",
+  "authenticated Team/Momo protected",
   "inactive pending authorized access",
   "no Momo owner",
 ]) {

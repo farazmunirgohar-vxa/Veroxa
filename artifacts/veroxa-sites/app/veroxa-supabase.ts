@@ -122,24 +122,74 @@ type AuditReference = {
   request_status: string;
 };
 
-let singleton: SupabaseClient | null | undefined;
+let singleton: SupabaseClient | null = null;
+let runtimeConfig: VeroxaPublicConfig | null = null;
 
-export function isSupabaseConfigured(): boolean {
-  return Boolean(
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+export type VeroxaPublicConfig = {
+  url: string;
+  publishableKey: string;
+};
+
+function validBrowserSupabaseConfig(
+  urlValue: string | null | undefined,
+  keyValue: string | null | undefined,
+): VeroxaPublicConfig | null {
+  const url = urlValue?.trim();
+  const publishableKey = keyValue?.trim();
+  if (!url || !publishableKey?.startsWith("sb_publishable_")) return null;
+  try {
+    const parsed = new URL(url);
+    if (
+      parsed.protocol !== "https:" ||
+      !parsed.hostname.endsWith(".supabase.co") ||
+      parsed.username ||
+      parsed.password ||
+      parsed.port ||
+      (parsed.pathname !== "/" && parsed.pathname !== "") ||
+      parsed.search ||
+      parsed.hash
+    ) {
+      return null;
+    }
+    return { url: parsed.origin, publishableKey };
+  } catch {
+    return null;
+  }
+}
+
+export function configureVeroxaSupabase(
+  config: VeroxaPublicConfig | null | undefined,
+): void {
+  if (!config) return;
+  const validated = validBrowserSupabaseConfig(config.url, config.publishableKey);
+  if (!validated) return;
+  if (
+    runtimeConfig &&
+    (runtimeConfig.url !== validated.url ||
+      runtimeConfig.publishableKey !== validated.publishableKey)
+  ) {
+    singleton = null;
+  }
+  runtimeConfig = validated;
+}
+
+function getBrowserSupabaseConfig(): VeroxaPublicConfig | null {
+  if (runtimeConfig) return runtimeConfig;
+  return validBrowserSupabaseConfig(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
   );
 }
 
+export function isSupabaseConfigured(): boolean {
+  return Boolean(getBrowserSupabaseConfig());
+}
+
 export function getVeroxaSupabase(): SupabaseClient | null {
-  if (singleton !== undefined) return singleton;
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-  if (!url || !key) {
-    singleton = null;
-    return singleton;
-  }
-  singleton = createBrowserClient(url, key);
+  if (singleton) return singleton;
+  const config = getBrowserSupabaseConfig();
+  if (!config) return null;
+  singleton = createBrowserClient(config.url, config.publishableKey);
   return singleton;
 }
 

@@ -1,14 +1,27 @@
 import { VeroxaApp } from "../page";
 import type { MomoReadinessTracker } from "../momo-readiness-types";
 import { redirect } from "next/navigation";
-import { getServerVeroxaAccess } from "../veroxa-supabase-server";
+import {
+  getServerSupabasePublicConfig,
+  getServerVeroxaAccess,
+} from "../veroxa-supabase-server";
+
+export const dynamic = "force-dynamic";
 
 export default async function VeroxaRoute({ params }: { params: Promise<{ slug: string[] }> }) {
   const { slug } = await params;
   const initialPath = `/${slug.join("/")}`;
   const protectedTeam = initialPath.startsWith("/team/") || initialPath === "/team";
   const protectedClient = initialPath.startsWith("/client/") || initialPath === "/client";
-  if (!protectedTeam && !protectedClient) return <VeroxaApp initialPath={initialPath} />;
+  if (!protectedTeam && !protectedClient) {
+    const initialSupabaseConfig = initialPath === "/login"
+      ? getServerSupabasePublicConfig()
+      : null;
+    return <VeroxaApp
+      initialPath={initialPath}
+      initialSupabaseConfig={initialSupabaseConfig ?? undefined}
+    />;
+  }
 
   const access = await getServerVeroxaAccess();
   if (!access) redirect(`/login?return_to=${encodeURIComponent(initialPath)}`);
@@ -19,5 +32,10 @@ export default async function VeroxaRoute({ params }: { params: Promise<{ slug: 
     const readinessSource = await import("../momo-readiness-tracker.json");
     initialMomoReadiness = readinessSource.default as MomoReadinessTracker;
   }
-  return <VeroxaApp initialPath={initialPath} initialAccess={access} initialMomoReadiness={initialMomoReadiness} />;
+  return <VeroxaApp
+    initialPath={initialPath}
+    initialAccess={access}
+    initialMomoReadiness={initialMomoReadiness}
+    initialSupabaseConfig={getServerSupabasePublicConfig() ?? undefined}
+  />;
 }
