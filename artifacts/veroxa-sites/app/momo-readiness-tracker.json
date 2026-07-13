@@ -42,7 +42,7 @@
         "Faraz's approved Gmail Team identity is confirmed, has signed in, and has an active Team profile plus active Momo membership without exposing a privileged key.",
         "The mistaken secondary identity has disabled portal profile and Momo membership access.",
         "The route-scoped runtime-config repair is live and passes the Sites no-build-time-env production build plus positive/negative rendered login regression tests.",
-        "Production Auth logs prove the current send failure is Supabase's temporary built-in email limit, not a missing identity, browser configuration, or RLS failure.",
+        "Production Auth logs prove the current send failure is Supabase's temporary built-in email limit; the request was rejected before protected-route or RLS evaluation.",
         "The login now preserves a controlled rate-limit state so temporary provider throttling is explained without disclosing whether an account exists."
       ],
       "blockers": [
