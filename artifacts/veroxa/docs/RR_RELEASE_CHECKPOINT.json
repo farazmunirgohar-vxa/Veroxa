@@ -101,11 +101,12 @@
         "artifacts/veroxa-sites/scripts/build-verified.sh",
         "artifacts/veroxa-sites/scripts/validate-artifact.sh",
         "scripts/src/check-sites-only-deployment.ts",
+        "scripts/src/check-chatgpt-sites-migration-source-truth.ts",
         "scripts/src/check-rr-release-checkpoint.ts",
         ".github/workflows/ci.yml",
         ".github/workflows/sites-verify.yml"
       ],
-      "sha256": "544d8703197cf5c8d30c849d1ad43a71cfa100143e87b0061ea3a98081aabc20"
+      "sha256": "ea57a7c5618f2bbab798db23f1751035910ca7ba0da53caf974eb7417dce3da2"
     },
     "product_scope": {
       "review": "full-on-change",
