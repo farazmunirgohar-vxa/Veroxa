@@ -13,7 +13,7 @@ const finalHardening = read(
   "supabase/migrations/20260712230242_audit_center_release_hardening.sql",
 );
 const generationV2 = read(
-  "supabase/migrations/20260713201715_restaurant_audit_generation_v2.sql",
+  "supabase/migrations/20260713212046_restaurant_audit_generation_v2.sql",
 );
 const sqlTest = read("supabase/tests/restaurant_audit_center_v1.sql");
 const generationSqlTest = read("supabase/tests/restaurant_audit_generation_v2.sql");
@@ -67,6 +67,10 @@ for (const marker of [
   "veroxa_convert_reviewed_audit_to_pending_profile_v1",
   "pending_profile",
   "reviewed_audit_required_for_onboarding_prefill",
+  "generated_audit_derivation_mismatch",
+  "restaurant-audit-v2:complete:",
+  "restaurant-audit-v2:rerun:",
+  "later_run.run_number > v_run.run_number",
   "old.audit_run_id",
   "new.audit_run_id",
 ]) {

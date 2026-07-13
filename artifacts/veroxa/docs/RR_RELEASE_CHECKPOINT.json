@@ -1,39 +1,37 @@
 {
-  "schemaVersion": 2,
-  "checkpoint": "momo-zero-cost-operating-rehearsal-v1-production-continuity",
-  "status": "production_continuity",
+  "schemaVersion": 3,
+  "checkpoint": "momo-team-audit-v2-pr145-production-verified",
+  "status": "production_verified",
   "reviewedAt": "2026-07-13",
   "deployedOperationalRelease": {
-    "pullRequest": 143,
-    "reviewedHead": "009276dbbf2639dc1eb5296bf62906f9f8ac45f1",
-    "mergedOperationalCommit": "49a5250d6ce7bd8d78f19e415641563e2260ace8",
-    "sitesCheckoutSourceCommit": "69871c51f8e80d1802539a6bca52e3ce5b4ff71c",
+    "pullRequest": 145,
+    "reviewedHead": "b007de99eb6c927f6d7ede56d7d4fffe8cbc0f0d",
+    "mergedOperationalCommit": "9aa74631e393bc0303c820cc7671f818d617778c",
+    "sitesCheckoutSourceCommit": "4bef697e230791403211cb9c60f769ebcb4f39c7",
     "databaseApplied": true,
     "databaseVerified": true,
-    "productionMigrations": 9,
+    "productionMigrations": 10,
     "sitesProductionVerified": true,
-    "sitesVersion": 9,
+    "sitesVersion": 11,
     "customDomainsVerified": true
   },
-  "continuityRelease": {
-    "pullRequest": 144,
-    "releaseKind": "repository_and_sites_evidence_continuity",
-    "requiredFinalSitesVersion": 10,
-    "deployableSitesSourceChanged": true,
-    "operationalBehaviorChanged": false,
-    "databaseSourceChanged": true,
-    "databaseSchemaChanged": false,
-    "migrationContentChanged": false,
-    "migrationCountChanged": false,
-    "migrationLedgerReconciled": true,
-    "databaseSourceChangeReason": "remote_migration_version_filename_reconciliation_only",
-    "reconciledMigrationVersion": "20260713191147",
-    "reconciledMigrationSha256": "07cdb0a41b3d81e23e2c9432b139ae219c2b4671fed7cd18f761d4c4d6a79f2a",
-    "selfCommitEmbedded": false,
-    "sourceIdentityAuthority": "GitHub PR #144 metadata after merge",
-    "deploymentIdentityAuthority": "Sites version 10 checkpoint metadata after publish",
-    "fingerprintAuthority": "boundaryGroups",
-    "completionRule": "PR #144 continuity is complete only after its exact merge identity and the required Sites version 10 checkpoint are verified in external GitHub and Sites metadata."
+  "auditAndTeamRelease": {
+    "releaseState": "merged_applied_published_verified",
+    "pullRequest": 145,
+    "reviewedHead": "b007de99eb6c927f6d7ede56d7d4fffe8cbc0f0d",
+    "mergedOperationalCommit": "9aa74631e393bc0303c820cc7671f818d617778c",
+    "sitesCheckoutSourceCommit": "4bef697e230791403211cb9c60f769ebcb4f39c7",
+    "sitesVersion": 11,
+    "productionMigrations": 10,
+    "databaseVerified": true,
+    "customDomainsVerified": true,
+    "auditV2MigrationVersion": "20260713212046",
+    "auditV2MigrationSha256": "f4bfff7ac94ade68a2c4f761c5627dbcfe82d5800a0a8a46ce42b13e5b930693",
+    "auditScoreAndPlanLive": true,
+    "simplifiedMomoTeamIALive": true,
+    "pendingProfileRequiresExplicitConsent": true,
+    "createsOperationalClient": false,
+    "newIncrementalSpendApproved": false
   },
   "runtimeVerification": {
     "teamIdentityProvisioned": true,
@@ -50,7 +48,7 @@
   },
   "scope": {
     "operationalRestaurant": "Momo's House San Antonio",
-    "otherRestaurantCapability": "Restaurant Audit Center plus explicit-consent pending profile only",
+    "otherRestaurantCapability": "Restaurant Audit Center + explicit-consent non-operational pending profile only",
     "automaticProspectConversion": false
   },
   "databaseMigrations": [
@@ -63,16 +61,16 @@
     "20260713010710_momo_full_operating_system_v1.sql",
     "20260713010916_momo_full_operating_system_advisor_hardening.sql",
     "20260713191147_momo_zero_cost_operating_rehearsal_v1.sql",
-    "20260713201715_restaurant_audit_generation_v2.sql"
+    "20260713212046_restaurant_audit_generation_v2.sql"
   ],
   "reusableEvidence": [
     "Momo-only tenancy, role matrix, RLS, and safe-empty client boundary",
     "Deployed secure-email-link recovery plus approved-user password session, membership, callback, and protected-route boundary",
     "Signed public audit intake, raw-size limits, timeouts, idempotency, and rate limits",
     "Latest-run review gate, reviewed immutability, append-only lifecycle evidence, and distinct audit identity",
-    "Nine applied and verified Supabase migrations, focused pgTAP role/workflow/coexistence tests, and error-level database lint",
-    "Ninth migration filename reconciled to remote version 20260713191147 with SQL SHA-256 07cdb0a41b3d81e23e2c9432b139ae219c2b4671fed7cd18f761d4c4d6a79f2a unchanged",
-    "PR #143 operational source deployed as Sites version 9 with both custom domains active and SSL healthy",
+    "Ten applied and verified Supabase migrations, focused pgTAP role/workflow/coexistence tests, and error-level database lint",
+    "Restaurant Audit V2 migration reconciled to remote version 20260713212046 with SQL SHA-256 f4bfff7ac94ade68a2c4f761c5627dbcfe82d5800a0a8a46ce42b13e5b930693 unchanged",
+    "PR #145 reviewed source merged and deployed as Sites version 11 with both custom domains active and SSL healthy",
     "Root typecheck, Vite build/E2E, Sites build/render tests/lint, and Sites-only deployment guard"
   ],
   "fullReviewTriggers": [
@@ -96,7 +94,7 @@
         "supabase/migrations/20260713010710_momo_full_operating_system_v1.sql",
         "supabase/migrations/20260713010916_momo_full_operating_system_advisor_hardening.sql",
         "supabase/migrations/20260713191147_momo_zero_cost_operating_rehearsal_v1.sql",
-        "supabase/migrations/20260713201715_restaurant_audit_generation_v2.sql",
+        "supabase/migrations/20260713212046_restaurant_audit_generation_v2.sql",
         "supabase/tests/momo_production_tenant_rls_hardening.sql",
         "supabase/tests/momo_full_operating_system_v1.sql",
         "supabase/tests/momo_zero_cost_operating_rehearsal_v1.sql",
@@ -106,7 +104,7 @@
         "scripts/src/check-supabase-migration-ledger.ts",
         ".github/workflows/supabase-verify.yml"
       ],
-      "sha256": "21a5687a44f9ea277341a406c5b1a87d643eb72486874321bfe295c361645f6f"
+      "sha256": "fbec90969f09cac142eb120551813438b38dfe934ab933684ee325283af03d8d"
     },
     "auth_access": {
       "review": "full-on-change",
@@ -130,7 +128,7 @@
         "scripts/src/check-audit-intake-adapter-contracts.ts",
         "scripts/src/check-restaurant-audit-center-v1.ts"
       ],
-      "sha256": "b5368ac4c887be0370c86a51abe2f9a2c777082fccdeb1677679992b5b01d4c4"
+      "sha256": "53aaf5f47f76ad46a8cd45879382b9db5dfb6f0fce1b0dbbdde64175a2a0d24a"
     },
     "delivery": {
       "review": "full-on-change",
@@ -146,7 +144,7 @@
         ".github/workflows/ci.yml",
         ".github/workflows/sites-verify.yml"
       ],
-      "sha256": "51f4007fd28094802fa876551a686037936c1c451e83ad121faaa79abe7ec98b"
+      "sha256": "ffca559a4d49c865eeff4e6ae66affc5ed2b1132118597605e76b75a87359a6e"
     },
     "product_scope": {
       "review": "full-on-change",
@@ -163,7 +161,7 @@
         "AGENTS.md",
         "artifacts/veroxa/docs/RR_CHECKPOINT.md"
       ],
-      "sha256": "79e85254cfa2a1c43d9bb3ae7fbc34017f67788826bfbe419f7c91febe65ee65"
+      "sha256": "c89ab8f0136418865db4e1b0ca3a5c14e8a72ede24ab897c9ffae59728d10dd7"
     },
     "momo_readiness_tracking": {
       "review": "evidence-delta-on-change",
@@ -172,7 +170,7 @@
         "artifacts/veroxa-sites/app/momo-readiness-types.ts",
         "scripts/src/check-momo-house-readiness-tracking.ts"
       ],
-      "sha256": "7a2a1af01780f665158f045eadeff593e5eb138a0cf1d62db9a03fd5f5a670b0"
+      "sha256": "b7d0ec78d8ade790b14e3c3ae602af5c81ee1bf36ee48b89142e0ad8697a2612"
     },
     "presentation_surfaces": {
       "review": "delta-unless-boundary-crossed",
@@ -215,7 +213,7 @@
     }
   },
   "activationGates": [
-    "Preserve the verified Gmail Team identity and authenticated Team/Momo protected route boundary",
+    "Preserve the verified PR #145 Gmail Team identity and authenticated Team/Momo protected route boundary",
     "Preserve the user-confirmed approved-user password login and secure-email-link recovery boundary",
     "Hosted reauthentication and old-session revocation remain unverified and must not be claimed as complete",
     "No Momo owner truth or media rights may be invented to satisfy readiness",

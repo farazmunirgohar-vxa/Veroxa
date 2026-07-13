@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "recordKind": "production_readiness_checkpoint",
   "operationalAuthority": "The scoped Supabase veroxa_readiness_dimensions records and veroxa_momo_readiness_summary_v1 RPC are authoritative for the live Team view. This file records repository release evidence and is not automatically synchronized with production rows.",
   "restaurant": "Momo's House San Antonio",
@@ -8,12 +8,12 @@
   "overallRule": "Do not calculate or publish a readiness percentage. Overall readiness is verified only when every required dimension is verified and no blocker remains.",
   "lastReviewedAt": "2026-07-13",
   "lastVerifiedOperationalRelease": {
-    "pullRequest": 143,
-    "reviewedHead": "009276dbbf2639dc1eb5296bf62906f9f8ac45f1",
-    "mergedOperationalCommit": "49a5250d6ce7bd8d78f19e415641563e2260ace8",
-    "sitesCheckoutSourceCommit": "69871c51f8e80d1802539a6bca52e3ce5b4ff71c",
-    "sitesVersion": 9,
-    "productionMigrations": 9,
+    "pullRequest": 145,
+    "reviewedHead": "b007de99eb6c927f6d7ede56d7d4fffe8cbc0f0d",
+    "mergedOperationalCommit": "9aa74631e393bc0303c820cc7671f818d617778c",
+    "sitesCheckoutSourceCommit": "4bef697e230791403211cb9c60f769ebcb4f39c7",
+    "sitesVersion": 11,
+    "productionMigrations": 10,
     "databaseVerified": true,
     "customDomainsVerified": true
   },
@@ -37,22 +37,23 @@
       "finalGate": "PR #143 and the verified ninth migration deploy an atomic rehearsal that derives an immutable readiness snapshot and records only a rehearsal-mode No-Go while blockers remain; no Go or activation action is exposed."
     }
   },
-  "continuityRelease": {
-    "pullRequest": 144,
-    "requiredFinalSitesVersion": 10,
-    "deployableSitesSourceChanged": true,
-    "operationalBehaviorChanged": false,
-    "databaseSourceChanged": true,
-    "databaseSchemaChanged": false,
-    "migrationContentChanged": false,
-    "migrationCountChanged": false,
-    "migrationLedgerReconciled": true,
-    "databaseSourceChangeReason": "remote_migration_version_filename_reconciliation_only",
-    "reconciledMigrationVersion": "20260713191147",
-    "reconciledMigrationSha256": "07cdb0a41b3d81e23e2c9432b139ae219c2b4671fed7cd18f761d4c4d6a79f2a",
-    "selfCommitEmbedded": false,
-    "sourceIdentityAuthority": "GitHub PR #144 metadata after merge",
-    "deploymentIdentityAuthority": "Sites version 10 checkpoint metadata after publish"
+  "auditAndTeamRelease": {
+    "releaseState": "merged_applied_published_verified",
+    "pullRequest": 145,
+    "reviewedHead": "b007de99eb6c927f6d7ede56d7d4fffe8cbc0f0d",
+    "mergedOperationalCommit": "9aa74631e393bc0303c820cc7671f818d617778c",
+    "sitesCheckoutSourceCommit": "4bef697e230791403211cb9c60f769ebcb4f39c7",
+    "sitesVersion": 11,
+    "productionMigrations": 10,
+    "databaseVerified": true,
+    "customDomainsVerified": true,
+    "auditV2MigrationVersion": "20260713212046",
+    "auditV2MigrationSha256": "f4bfff7ac94ade68a2c4f761c5627dbcfe82d5800a0a8a46ce42b13e5b930693",
+    "auditScoreAndPlanLive": true,
+    "simplifiedMomoTeamIALive": true,
+    "pendingProfileRequiresExplicitConsent": true,
+    "createsOperationalClient": false,
+    "newIncrementalSpendApproved": false
   },
   "statusDefinitions": {
     "not_started": "No production-quality implementation or verified evidence exists yet.",
@@ -69,8 +70,9 @@
       "status": "verified",
       "evidence": [
         "PR #138 merged the reviewed seven-system Momo operating foundation at commit 48630c62b9429238ab39b5b919d7689d189352f8.",
-        "Nine production migrations are applied and ledger/hash verified; 37 of 37 current public veroxa_* base tables force RLS.",
-        "PR #143 is merged at 49a5250d6ce7bd8d78f19e415641563e2260ace8; the operational Sites version 9 checkout uses source commit 69871c51f8e80d1802539a6bca52e3ce5b4ff71c.",
+        "Ten production migrations are applied and ledger/hash verified; 37 of 37 current public veroxa_* base tables force RLS.",
+        "PR #145 passed review at b007de99eb6c927f6d7ede56d7d4fffe8cbc0f0d and is merged at 9aa74631e393bc0303c820cc7671f818d617778c; the operational Sites version 11 checkout uses source commit 4bef697e230791403211cb9c60f769ebcb4f39c7.",
+        "Restaurant Audit V2 migration 20260713212046 is applied and verified; its explicit-consent bridge creates only a pending, non-operational profile.",
         "Both custom domains are verified active with active SSL."
       ],
       "blockers": [],
@@ -214,7 +216,7 @@
     }
   },
   "otherRestaurants": {
-    "allowedCapability": "Restaurant Audit Center only",
+    "allowedCapability": "Restaurant Audit Center + explicit-consent non-operational pending profile only",
     "automaticOperationalConversion": false,
     "readinessTrackingAllowed": false
   },

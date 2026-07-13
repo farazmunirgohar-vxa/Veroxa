@@ -34,22 +34,23 @@ const tracker = JSON.parse(trackerText) as {
     externalPublishingVerified: boolean;
     activationExecuted: boolean;
   };
-  continuityRelease: {
+  auditAndTeamRelease: {
+    releaseState: string;
     pullRequest: number;
-    requiredFinalSitesVersion: number;
-    deployableSitesSourceChanged: boolean;
-    operationalBehaviorChanged: boolean;
-    databaseSourceChanged: boolean;
-    databaseSchemaChanged: boolean;
-    migrationContentChanged: boolean;
-    migrationCountChanged: boolean;
-    migrationLedgerReconciled: boolean;
-    databaseSourceChangeReason: string;
-    reconciledMigrationVersion: string;
-    reconciledMigrationSha256: string;
-    selfCommitEmbedded: boolean;
-    sourceIdentityAuthority: string;
-    deploymentIdentityAuthority: string;
+    reviewedHead: string;
+    mergedOperationalCommit: string;
+    sitesCheckoutSourceCommit: string;
+    sitesVersion: number;
+    productionMigrations: number;
+    databaseVerified: boolean;
+    customDomainsVerified: boolean;
+    auditV2MigrationVersion: string;
+    auditV2MigrationSha256: string;
+    auditScoreAndPlanLive: boolean;
+    simplifiedMomoTeamIALive: boolean;
+    pendingProfileRequiresExplicitConsent: boolean;
+    createsOperationalClient: boolean;
+    newIncrementalSpendApproved: boolean;
   };
   statusDefinitions: Record<string, string>;
   dimensions: Record<string, {
@@ -89,7 +90,7 @@ const requiredDimensions = [
   "activation_and_recovery",
 ];
 
-if (tracker.schemaVersion !== 2) throw new Error("Momo readiness tracker schema version is invalid");
+if (tracker.schemaVersion !== 3) throw new Error("Momo readiness tracker schema version is invalid");
 if (
   tracker.recordKind !== "production_readiness_checkpoint" ||
   !tracker.operationalAuthority.includes("Supabase")
@@ -109,16 +110,16 @@ if (/readinessPercentage|readinessPercent|completionPercentage|completionPercent
 }
 const operational = tracker.lastVerifiedOperationalRelease;
 if (
-  operational.pullRequest !== 143 ||
-  operational.reviewedHead !== "009276dbbf2639dc1eb5296bf62906f9f8ac45f1" ||
-  operational.mergedOperationalCommit !== "49a5250d6ce7bd8d78f19e415641563e2260ace8" ||
-  operational.sitesCheckoutSourceCommit !== "69871c51f8e80d1802539a6bca52e3ce5b4ff71c" ||
-  operational.sitesVersion !== 9 ||
-  operational.productionMigrations !== 9 ||
+  operational.pullRequest !== 145 ||
+  operational.reviewedHead !== "b007de99eb6c927f6d7ede56d7d4fffe8cbc0f0d" ||
+  operational.mergedOperationalCommit !== "9aa74631e393bc0303c820cc7671f818d617778c" ||
+  operational.sitesCheckoutSourceCommit !== "4bef697e230791403211cb9c60f769ebcb4f39c7" ||
+  operational.sitesVersion !== 11 ||
+  operational.productionMigrations !== 10 ||
   !operational.databaseVerified ||
   !operational.customDomainsVerified
 ) {
-  throw new Error("Momo readiness tracker must preserve the verified PR #143 / Sites version 9 / nine-migration operational foundation");
+  throw new Error("Momo readiness tracker must preserve the verified PR #145 / Sites version 11 / ten-migration operational release");
 }
 const deployed = tracker.deployedNoCostFoundation;
 if (
@@ -134,26 +135,29 @@ if (
 ) {
   throw new Error("Momo readiness foundation overstates identity, owner data, providers, publishing, or activation");
 }
-const continuity = tracker.continuityRelease;
+const release = tracker.auditAndTeamRelease;
 if (
-  continuity.pullRequest !== 144 ||
-  continuity.requiredFinalSitesVersion !== 10 ||
-  !continuity.deployableSitesSourceChanged ||
-  continuity.operationalBehaviorChanged ||
-  !continuity.databaseSourceChanged ||
-  continuity.databaseSchemaChanged ||
-  continuity.migrationContentChanged ||
-  continuity.migrationCountChanged ||
-  !continuity.migrationLedgerReconciled ||
-  continuity.databaseSourceChangeReason !== "remote_migration_version_filename_reconciliation_only" ||
-  continuity.reconciledMigrationVersion !== "20260713191147" ||
-  continuity.reconciledMigrationSha256 !== "07cdb0a41b3d81e23e2c9432b139ae219c2b4671fed7cd18f761d4c4d6a79f2a" ||
-  continuity.selfCommitEmbedded ||
-  !continuity.sourceIdentityAuthority.includes("GitHub PR #144 metadata") ||
-  !continuity.deploymentIdentityAuthority.includes("Sites version 10 checkpoint metadata") ||
-  /\b[0-9a-f]{40}\b/i.test(JSON.stringify(continuity))
+  release.releaseState !== "merged_applied_published_verified" ||
+  release.pullRequest !== 145 ||
+  release.reviewedHead !== "b007de99eb6c927f6d7ede56d7d4fffe8cbc0f0d" ||
+  release.mergedOperationalCommit !== "9aa74631e393bc0303c820cc7671f818d617778c" ||
+  release.sitesCheckoutSourceCommit !== "4bef697e230791403211cb9c60f769ebcb4f39c7" ||
+  release.sitesVersion !== 11 ||
+  release.productionMigrations !== 10 ||
+  !release.databaseVerified ||
+  !release.customDomainsVerified ||
+  release.auditV2MigrationVersion !== "20260713212046" ||
+  release.auditV2MigrationSha256 !== "f4bfff7ac94ade68a2c4f761c5627dbcfe82d5800a0a8a46ce42b13e5b930693" ||
+  !release.auditScoreAndPlanLive ||
+  !release.simplifiedMomoTeamIALive ||
+  !release.pendingProfileRequiresExplicitConsent ||
+  release.createsOperationalClient ||
+  release.newIncrementalSpendApproved
 ) {
-  throw new Error("Momo readiness continuity must require external PR #144 / Sites version 10 identity without embedding a future commit");
+  throw new Error("Momo readiness release evidence must match verified PR #145, migration 10, and Sites version 11 without creating another operational client or approving spend");
+}
+if (trackerText.includes('"continuityRelease"')) {
+  throw new Error("Momo readiness tracker retains the superseded PR #144 continuity target");
 }
 for (const stale of [
   /current branch candidate/i,
@@ -183,6 +187,8 @@ for (const key of requiredDimensions) {
 if (
   tracker.dimensions.production_foundation.status !== "verified" ||
   !tracker.dimensions.production_foundation.evidence.some((item) => item.includes("37 of 37 current public veroxa_* base tables force RLS")) ||
+  !tracker.dimensions.production_foundation.evidence.some((item) => item.includes("Ten production migrations are applied")) ||
+  !tracker.dimensions.production_foundation.evidence.some((item) => item.includes("Sites version 11")) ||
   tracker.dimensions.team_identity_and_access.status !== "verified" ||
   tracker.dimensions.activation_and_recovery.status !== "blocked"
 ) {
@@ -193,7 +199,7 @@ const allRequiredVerified = requiredDimensions.every((key) => tracker.dimensions
 if (allRequiredVerified) throw new Error("Momo readiness cannot have every required dimension verified while the locked blockers remain");
 
 if (
-  tracker.otherRestaurants.allowedCapability !== "Restaurant Audit Center only" ||
+  tracker.otherRestaurants.allowedCapability !== "Restaurant Audit Center + explicit-consent non-operational pending profile only" ||
   tracker.otherRestaurants.automaticOperationalConversion !== false ||
   tracker.otherRestaurants.readinessTrackingAllowed !== false
 ) {
