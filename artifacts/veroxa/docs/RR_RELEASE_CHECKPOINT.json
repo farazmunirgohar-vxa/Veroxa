@@ -82,7 +82,7 @@
         "artifacts/veroxa-sites/app/[...slug]/page.tsx",
         "artifacts/veroxa-sites/proxy.ts"
       ],
-      "sha256": "96994195d384e2d27cb9a350ec2b9f9b2bd0f3f7ef8c42b86f678d05484a0a88"
+      "sha256": "e303f3b804846099914bf134cb80f3861c4d3ea85411f1b5227be72958966b93"
     },
     "audit_runtime": {
       "review": "full-on-change",
@@ -140,7 +140,7 @@
         "artifacts/veroxa-sites/tests/rendered-html.test.mjs",
         "artifacts/veroxa/src/pages/free-audit.tsx"
       ],
-      "sha256": "dbdcc81ae3d6b7d6826dea20fe6a25cba7bbc8bd3742a5ad6c040fa23c354717"
+      "sha256": "5f982651cf4709db12ce6065d3afc4fc61132c091e18a2a25e28c9c9d898a4ab"
     },
     "momo_operations_contract": {
       "review": "full-on-change",

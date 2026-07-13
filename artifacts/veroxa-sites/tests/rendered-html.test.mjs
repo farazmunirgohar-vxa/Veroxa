@@ -266,6 +266,7 @@ test("audit UI keeps contact, draft-isolation, mutation, and mobile-navigation g
   assert.match(data, /VEROXA_PRODUCTION_ORIGIN = "https:\/\/veroxasystems\.com"/, "Production magic links must use the canonical Veroxa origin");
   assert.match(data, /emailRedirectTo: `\$\{getAuthCallbackOrigin\(\)\}\/auth\/callback`/, "Magic links must use one exact production callback URL");
   assert.match(data, /veroxa_auth_return_to/, "Magic-link return paths must be preserved outside the callback URL allowlist");
+  assert.match(data, /Domain=veroxasystems\.com/, "Recovery return cookie must survive the www-to-apex callback");
   assert.match(data, /signInWithPassword/, "Approved identities must support permanent password sign-in");
   assert.match(data, /updateUser\(\{ password \}\)/, "A freshly authenticated user must be able to replace their password");
   assert.match(data, /signOut\(\{ scope: "local" \}\)/, "Failed post-login authorization must clear the new browser session");

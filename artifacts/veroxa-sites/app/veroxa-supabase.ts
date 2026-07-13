@@ -309,7 +309,10 @@ const VEROXA_PRODUCTION_ORIGIN = "https://veroxasystems.com";
 
 function setAuthReturnCookie(next: string): void {
   const secure = window.location.protocol === "https:" ? "; Secure" : "";
-  document.cookie = `${VEROXA_AUTH_RETURN_COOKIE}=${encodeURIComponent(next)}; Max-Age=900; Path=/; SameSite=Lax${secure}`;
+  const sharedDomain = ["veroxasystems.com", "www.veroxasystems.com"].includes(window.location.hostname)
+    ? "; Domain=veroxasystems.com"
+    : "";
+  document.cookie = `${VEROXA_AUTH_RETURN_COOKIE}=${encodeURIComponent(next)}; Max-Age=900; Path=/; SameSite=Lax${secure}${sharedDomain}`;
 }
 
 function getAuthCallbackOrigin(): string {
