@@ -263,7 +263,18 @@ export async function requestVeroxaMagicLink(email: string, returnTo?: string | 
       emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
     },
   });
-  if (error) throw new Error("magic_link_failed");
+  if (error) {
+    const normalizedMessage = error.message.toLowerCase();
+    if (
+      error.status === 429 ||
+      error.code === "over_email_send_rate_limit" ||
+      error.code === "over_request_rate_limit" ||
+      normalizedMessage.includes("rate limit")
+    ) {
+      throw new Error("magic_link_rate_limited");
+    }
+    throw new Error("magic_link_failed");
+  }
 }
 
 export function subscribeToVeroxaAuth(onChange: () => void): () => void {
