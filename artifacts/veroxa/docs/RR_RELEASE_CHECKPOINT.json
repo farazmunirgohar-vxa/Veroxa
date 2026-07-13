@@ -81,7 +81,7 @@
         "artifacts/veroxa-sites/app/[...slug]/page.tsx",
         "artifacts/veroxa-sites/proxy.ts"
       ],
-      "sha256": "5ef3980eaec96e21412e8d2bc2e6106a34a70c87153309de3fc6e37edb6660de"
+      "sha256": "0b109ba7620c3ed62263852204f5aff737b5ffe392eeddc98f7c0db0164840e2"
     },
     "audit_runtime": {
       "review": "full-on-change",
@@ -128,7 +128,7 @@
         "artifacts/veroxa-sites/app/momo-readiness-types.ts",
         "scripts/src/check-momo-house-readiness-tracking.ts"
       ],
-      "sha256": "1bfd117d881fec2bb75e0c682c7b90dd31202fbc10cc4a0beeb23e789a73852f"
+      "sha256": "5f61a9cfb36a6562ce702171cfbb313561a81f2cf512649e9ff4d5a3d7b187a6"
     },
     "presentation_surfaces": {
       "review": "delta-unless-boundary-crossed",
@@ -138,7 +138,7 @@
         "artifacts/veroxa-sites/tests/rendered-html.test.mjs",
         "artifacts/veroxa/src/pages/free-audit.tsx"
       ],
-      "sha256": "75cb4925e9f8bd0d2e7f3e685604f570587ffad72063f5d1005c3476a954f03c"
+      "sha256": "48d287f3b489b799c157e2eac58487c78ad7b0e896d969d428578a95db885f5e"
     },
     "momo_operations_contract": {
       "review": "full-on-change",
@@ -165,7 +165,7 @@
   "activationGates": [
     "Verify the confirmed Gmail Team identity on an authenticated Team/Momo protected route",
     "Complete authenticated Team/Momo browser smoke tests before sensitive data or owner exposure",
-    "Deploy the reviewed Sites runtime public-config bridge before treating production login as repaired",
+    "Correct the hosted Supabase Auth Site URL and exact production callback redirect before treating production login as repaired",
     "No Momo owner truth or media rights may be invented to satisfy readiness",
     "Keep AI, Meta, Google, SEO writes, publishing, outbound contact, and Momo owner walkthrough inactive pending authorized access"
   ]
