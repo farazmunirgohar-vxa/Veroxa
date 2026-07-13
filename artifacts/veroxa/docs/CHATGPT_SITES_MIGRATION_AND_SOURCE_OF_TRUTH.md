@@ -1,14 +1,14 @@
 # ChatGPT Sites Migration and Source-of-Truth
 
-Status: active migration and deployment authority as of 2026-07-12.
+Status: active migration and deployment authority as of 2026-07-13.
 
 ## Current production-foundation override
 
-The original migration scope below remains useful history, but its statements that production identity, persistence, and protected portal routes are future work are superseded for source truth by `VEROXA_CURRENT_MILESTONE.md`. PR #142 is merged at `9a905c822f084fd2df5c9a2cb87c1a8286647e59`, its eight-migration data layer is applied, and its exact runtime source is deployed as verified Sites version 8. That deployed foundation implements Supabase-backed secure-email-link recovery and approved-user password sessions, active Momo membership checks, forced RLS, durable audit intake, protected Client/Team routes, and all seven provider-neutral Momo operating systems.
+The original migration scope below remains useful history, but its statements that production identity, persistence, and protected portal routes are future work are superseded for source truth by `VEROXA_CURRENT_MILESTONE.md`. PR #143 was reviewed at head `009276dbbf2639dc1eb5296bf62906f9f8ac45f1` and merged at operational commit `49a5250d6ce7bd8d78f19e415641563e2260ace8`. Its nine-migration data layer is applied and verified, and Sites version 9 deployed successfully from checkout source `69871c51f8e80d1802539a6bca52e3ce5b4ff71c`; both custom domains are active with healthy SSL. That deployed foundation implements Supabase-backed secure-email-link recovery and approved-user password sessions, active Momo membership checks, forced RLS, durable audit intake, protected Client/Team routes, and the seven no-new-spend Momo operating steps.
 
 The seven-system Momo foundation is deployed, but Momo is not 100% ready. Faraz's approved Gmail Team identity is confirmed, has signed in, has active Team/Momo access, passed the authenticated Safari protected-route smoke, and confirmed password sign-in works. The protected password-replacement surface is deployed, while hosted reauthentication and old-session revocation remain unverified. No Momo owner identity or owner-confirmed data is provisioned. Runtime AI, Meta, Google Business Profile, external SEO/social execution, publishing, visibility monitoring, Momo contact, and client activation are **inactive pending authorized access**. See `MOMO_100_READINESS_SEVEN_SYSTEM_CONTRACT.md` for the source/runtime/activation split.
 
-The current branch is reserved for planned PR #143 and contains the next no-new-spend operating source, but the pull request is not opened and not merged, its ninth source migration is not applied, and its Sites candidate is not published. The coordinated production baseline remains PR #142 at `9a905c822f084fd2df5c9a2cb87c1a8286647e59`, Sites version 8, and eight applied migrations; candidate code, schema, or UI must not be reported as deployed runtime evidence.
+PR #144 is the behavior-neutral repository-and-Sites-evidence continuity release for the verified PR #143 foundation. Its database-source delta is limited to reconciling the ninth migration filename/ledger to remote version `20260713191147_momo_zero_cost_operating_rehearsal_v1.sql`; SQL, schema, content, and migration count remain unchanged at SHA-256 `07cdb0a41b3d81e23e2c9432b139ae219c2b4671fed7cd18f761d4c4d6a79f2a`. It changes no operational behavior, connection, or activation authority. Because it changes Sites-bundled readiness evidence, the exact merged PR #144 state must receive a verified Sites version 10 checkpoint after merge. Sites version 10 is not already deployed, and committed source must never embed or predict PR #144's merge SHA; external GitHub PR metadata and Sites checkpoint metadata are the future source/deployment authorities.
 
 ## Locked direction
 
@@ -23,6 +23,7 @@ Veroxa now uses the ChatGPT Sites application/deployment surface. This is not a 
 - `veroxasystems.com` and `www.veroxasystems.com` are attached to Sites with active provider and SSL status as last verified on 2026-07-13.
 - The approved Sites visual direction is the presentation layer. It must preserve the existing Veroxa OS rather than replace it.
 - `CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md` controls the build, green-merge, hold, RR, and deployment command meanings.
+- For PR #144 continuity, GitHub's post-merge PR metadata identifies the exact merged source and Sites checkpoint metadata must independently prove the Sites version 10 deployment; the pre-merge source record intentionally contains no PR #144 commit.
 
 ## ChatGPT-managed build, merge, and deployment workflow
 
@@ -67,7 +68,7 @@ The hosting migration did not by itself authorize any of the following. Later sc
 - public/client exposure of Team-only data;
 - changing verified business truth without confirmation.
 
-Deployed Sites version 8 uses approved-user password authentication plus secure-email-link Supabase authentication for recovery, with active profile/membership enforcement and protected password replacement. Public signup remains disabled. Faraz confirmed password sign-in; hosted reauthentication and old-session revocation remain unverified. The undeployed Vite `AUTH_MODE = placeholder` path is historical/internal and its root `/api/pilot-access` deployment adapter is retired. Roles remain `client` and `team` only. Momo owner walkthrough and pilot activation remain blocked without explicit Faraz approval.
+Deployed Sites version 9 uses approved-user password authentication plus secure-email-link Supabase authentication for recovery, with active profile/membership enforcement, protected password replacement, and the no-new-spend Momo operating foundation. Public signup remains disabled. Faraz confirmed password sign-in; hosted reauthentication and old-session revocation remain unverified. The undeployed Vite `AUTH_MODE = placeholder` path is historical/internal and its root `/api/pilot-access` deployment adapter is retired. Roles remain `client` and `team` only. Momo owner walkthrough and pilot activation remain blocked without explicit Faraz approval.
 
 ## Migration architecture
 
@@ -80,7 +81,7 @@ New product rules must be added to the canonical GitHub layer first or in the sa
 
 ## Custom-domain state and stabilization gate
 
-Faraz approved public Sites access and completed the Namecheap DNS changes. As last verified on 2026-07-12:
+Faraz approved public Sites access and completed the Namecheap DNS changes. As last verified on 2026-07-13:
 
 - the Sites project access mode is public;
 - `veroxasystems.com` is active with active SSL and no reported domain error;

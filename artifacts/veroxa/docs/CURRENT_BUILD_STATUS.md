@@ -1,13 +1,13 @@
-## 2026-07-13 — Planned PR #143 seven-step no-new-spend release candidate
+## 2026-07-13 — PR #143 operational release verified; PR #144 continuity target
 
-- Release boundary: the current branch is reserved for planned PR #143; the pull request is not opened and not merged, its ninth source migration is not applied, and the candidate Sites source is not published. Production remains PR #142 at `9a905c822f084fd2df5c9a2cb87c1a8286647e59`, Sites version 8, with eight applied migrations.
-1. Source/delivery reconciliation preserves PR #142, Sites-only deployment, and the inert Vercel Git-deployment shutdown sentinel while dashboard disconnection remains an owner-only follow-up.
-2. Client identity/onboarding prepares the explicit-ack client helper, 18 truth fields, and transactional Team/client review paths; no owner email, Auth user, membership, or owner-confirmed fact was invented.
-3. Media/rights locks the exact `momo-media-rights-v1` attestation and SHA-256 provenance, using Team review plus human tags instead of a paid AI provider.
-4. Manual content provides the deterministic six-pillar cycle, immutable truth/media provenance, variants, approvals, and calendar gates; runtime AI remains inactive.
-5. Operations/reports/recovery provides transactional work states, fixed evidence-backed report narratives, monitoring/alerts, bounded retry, one-shot recovery, and linked activity evidence in the unapplied migration.
-6. Meta/Google preflight reads only Veroxa records, requires current owner authority/capability/verification, and contacts neither provider.
-7. The atomic final rehearsal derives an immutable readiness snapshot and records only rehearsal-mode No-Go while blockers remain; no Go, activation, provider call, owner contact, or publication action exists.
+- Operational source: PR #143 reviewed head `009276dbbf2639dc1eb5296bf62906f9f8ac45f1` merged at operational commit `49a5250d6ce7bd8d78f19e415641563e2260ace8`.
+- Data state: all nine production migrations, including the zero-cost operating rehearsal migration, are applied and verified in Supabase.
+- Ledger reconciliation: PR #144 renames the ninth source migration to remote version `20260713191147_momo_zero_cost_operating_rehearsal_v1.sql`; SQL, schema, content, and the nine-migration count remain unchanged at SHA-256 `07cdb0a41b3d81e23e2c9432b139ae219c2b4671fed7cd18f761d4c4d6a79f2a`.
+- Hosted state: Sites version 9 deployed successfully from checkout source `69871c51f8e80d1802539a6bca52e3ce5b4ff71c`; `veroxasystems.com` and `www.veroxasystems.com` are active with healthy SSL.
+- Seven-step result: source/delivery reconciliation, the unexecuted explicit-ack client helper and 18-field onboarding workflow, media-rights/manual classification, deterministic manual content, operations/reports/recovery, fail-closed no-credential Meta/Google preflight, and atomic rehearsal-only No-Go are production-available no-new-spend foundations. No owner identity or fact, real media/right, credential, provider call, publication, Go decision, or activation was created.
+- Continuity boundary: PR #144 aligns the documents, checkpoint, guardrails, Sites-bundled readiness evidence, and filename/ledger-only database source without changing operational behavior, database schema, migration content/count, external authority, or activation state. Because bundled Sites evidence changes, verified Sites version 10 is required after PR #144 merges and is not already deployed.
+- Identity rule: this file never embeds or predicts PR #144's merge SHA. External GitHub PR metadata must identify the exact merged source, and external Sites checkpoint metadata must prove that same post-merge continuity release is deployed as Sites version 10.
+- Remaining truth: hosted reauthentication and old-session revocation remain unverified. Momo client identity, owner-confirmed business truth, permissioned media, runtime AI, Meta, Google, publishing, live monitoring history, owner contact, and activation remain blocked. Overall Momo readiness remains No-Go.
 
 ## 2026-07-13 — PR #142 permanent password release
 

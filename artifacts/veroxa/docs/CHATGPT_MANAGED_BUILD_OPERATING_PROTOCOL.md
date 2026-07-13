@@ -115,8 +115,11 @@ As last verified on 2026-07-13:
 - both custom domains report active provider and SSL status with no reported domain error;
 - future verified Sites deployments use the existing domains and do not require routine Namecheap edits;
 - Vercel is retired; Sites checkpoints and GitHub source provide the deployment and recovery path;
-- Sites version 8 implements protected Supabase sessions, active profile/membership checks, RLS, durable audit intake, and protected Client/Team routes;
+- PR #143 reviewed head `009276dbbf2639dc1eb5296bf62906f9f8ac45f1` merged at operational commit `49a5250d6ce7bd8d78f19e415641563e2260ace8`; all nine production migrations are applied and verified;
+- Sites version 9 deployed successfully from checkout source `69871c51f8e80d1802539a6bca52e3ce5b4ff71c` and implements protected Supabase sessions, active profile/membership checks, RLS, durable audit intake, protected Client/Team routes, and the no-new-spend Momo operating foundation;
 - Faraz's approved Gmail Team identity, Team/Momo access, protected-route Safari smoke, and approved-user password sign-in are verified; hosted reauthentication and old-session revocation remain unverified;
 - Momo client identity, owner-confirmed data, external publishing, payments, and live platform integrations remain blocked.
+- the ninth migration source filename is reconciled to remote version `20260713191147_momo_zero_cost_operating_rehearsal_v1.sql`; SQL, schema, content, and migration count are unchanged at SHA-256 `07cdb0a41b3d81e23e2c9432b139ae219c2b4671fed7cd18f761d4c4d6a79f2a`;
+- PR #144 is a behavior-neutral repository-and-Sites-evidence continuity release whose database-source delta is filename/ledger-only. Because it changes Sites-bundled readiness evidence, the exact merged PR #144 state requires a verified Sites version 10 checkpoint after merge. Sites version 10 is not already deployed, and PR #144's merge SHA must never be embedded or predicted; external GitHub PR metadata and Sites checkpoint metadata are the future authorities.
 
 Public marketing and audit intake remain anonymous. Protected portal data must continue to require signed sessions, active profile/membership authorization, server guards, and RLS; no real Momo client data may be entered until an approved client identity and owner-confirmed records exist.

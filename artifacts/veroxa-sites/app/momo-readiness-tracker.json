@@ -1,25 +1,26 @@
 {
-  "schemaVersion": 1,
-  "recordKind": "release_baseline_checkpoint",
+  "schemaVersion": 2,
+  "recordKind": "production_readiness_checkpoint",
   "operationalAuthority": "The scoped Supabase veroxa_readiness_dimensions records and veroxa_momo_readiness_summary_v1 RPC are authoritative for the live Team view. This file records repository release evidence and is not automatically synchronized with production rows.",
   "restaurant": "Momo's House San Antonio",
   "milestone": "Momo's House San Antonio 100% readiness",
   "overallStatus": "blocked",
   "overallRule": "Do not calculate or publish a readiness percentage. Overall readiness is verified only when every required dimension is verified and no blocker remains.",
   "lastReviewedAt": "2026-07-13",
-  "lastVerifiedRelease": {
-    "mainCommit": "9a905c822f084fd2df5c9a2cb87c1a8286647e59",
-    "sitesVersion": 8,
-    "productionMigrations": 8
+  "lastVerifiedOperationalRelease": {
+    "pullRequest": 143,
+    "reviewedHead": "009276dbbf2639dc1eb5296bf62906f9f8ac45f1",
+    "mergedOperationalCommit": "49a5250d6ce7bd8d78f19e415641563e2260ace8",
+    "sitesCheckoutSourceCommit": "69871c51f8e80d1802539a6bca52e3ce5b4ff71c",
+    "sitesVersion": 9,
+    "productionMigrations": 9,
+    "databaseVerified": true,
+    "customDomainsVerified": true
   },
-  "currentBranchCandidate": {
-    "releaseState": "prepared_not_merged_not_applied_not_published",
-    "productionBaselineUnchanged": true,
-    "candidateSourceMigrations": 9,
-    "productionMigrations": 8,
-    "pendingForwardMigrationApplied": false,
-    "pendingForwardMigrationVerified": false,
-    "sitesCandidatePublished": false,
+  "deployedNoCostFoundation": {
+    "releaseState": "merged_applied_published_verified",
+    "forwardMigrationApplied": true,
+    "forwardMigrationVerified": true,
     "momoClientIdentityProvisioned": false,
     "ownerConfirmedBusinessTruthVerified": false,
     "permissionedMediaVerified": false,
@@ -28,13 +29,30 @@
     "activationExecuted": false,
     "components": {
       "momoClientIdentity": "A server-only, explicit-ack, idempotent provisioning helper and deterministic mock checks are prepared but unexecuted; no Momo client identity is approved or provisioned.",
-      "restaurantIntelligence": "The candidate covers all 18 locked truth fields and Team onboarding/presence review UI wired to transactional RPC paths; no owner-confirmed data has been entered.",
-      "mediaIntelligence": "The candidate locks exact momo-media-rights-v1 attestation provenance and uses Team quality review plus human tags as the no-cost manual classification path; no AI provider is called.",
-      "manualContent": "The candidate provides a deterministic six-pillar manual content cycle with owner-confirmed-truth and permissioned-media validation plus immutable input provenance.",
-      "providerPreflight": "Candidate Meta and Google no-credential preflights read Veroxa records only, fail closed, and never contact a provider.",
-      "operationsReportingRecovery": "Transactional work, reporting, monitoring, bounded retry/recovery, and linked activity evidence are implemented in the unapplied ninth source migration and are not part of the eight-migration production baseline.",
-      "finalGate": "The unapplied ninth source migration implements an atomic rehearsal that derives an immutable readiness snapshot and records only a rehearsal-mode No-Go while blockers remain; no Go or activation action is exposed."
+      "restaurantIntelligence": "PR #143 deploys all 18 locked truth fields and Team onboarding/presence review UI wired to transactional RPC paths; no owner-confirmed data has been entered.",
+      "mediaIntelligence": "PR #143 deploys the exact momo-media-rights-v1 attestation provenance and Team quality review plus human tags as the no-cost manual classification path; no AI provider is called.",
+      "manualContent": "PR #143 deploys a deterministic six-pillar manual content cycle with owner-confirmed-truth and permissioned-media validation plus immutable input provenance.",
+      "providerPreflight": "PR #143 deploys Meta and Google no-credential preflights that read Veroxa records only, fail closed, and never contact a provider.",
+      "operationsReportingRecovery": "PR #143 and the verified ninth migration deploy transactional work, reporting, monitoring, bounded retry/recovery, and linked activity evidence without asserting real operating history.",
+      "finalGate": "PR #143 and the verified ninth migration deploy an atomic rehearsal that derives an immutable readiness snapshot and records only a rehearsal-mode No-Go while blockers remain; no Go or activation action is exposed."
     }
+  },
+  "continuityRelease": {
+    "pullRequest": 144,
+    "requiredFinalSitesVersion": 10,
+    "deployableSitesSourceChanged": true,
+    "operationalBehaviorChanged": false,
+    "databaseSourceChanged": true,
+    "databaseSchemaChanged": false,
+    "migrationContentChanged": false,
+    "migrationCountChanged": false,
+    "migrationLedgerReconciled": true,
+    "databaseSourceChangeReason": "remote_migration_version_filename_reconciliation_only",
+    "reconciledMigrationVersion": "20260713191147",
+    "reconciledMigrationSha256": "07cdb0a41b3d81e23e2c9432b139ae219c2b4671fed7cd18f761d4c4d6a79f2a",
+    "selfCommitEmbedded": false,
+    "sourceIdentityAuthority": "GitHub PR #144 metadata after merge",
+    "deploymentIdentityAuthority": "Sites version 10 checkpoint metadata after publish"
   },
   "statusDefinitions": {
     "not_started": "No production-quality implementation or verified evidence exists yet.",
@@ -51,8 +69,8 @@
       "status": "verified",
       "evidence": [
         "PR #138 merged the reviewed seven-system Momo operating foundation at commit 48630c62b9429238ab39b5b919d7689d189352f8.",
-        "Eight production migrations are applied and ledger/hash verified; 32 of 32 operating tables force RLS.",
-        "PR #142 is merged at 9a905c822f084fd2df5c9a2cb87c1a8286647e59 and its exact source is deployed as Sites version 8.",
+        "Nine production migrations are applied and ledger/hash verified; 37 of 37 current public veroxa_* base tables force RLS.",
+        "PR #143 is merged at 49a5250d6ce7bd8d78f19e415641563e2260ace8; the operational Sites version 9 checkout uses source commit 69871c51f8e80d1802539a6bca52e3ce5b4ff71c.",
         "Both custom domains are verified active with active SSL."
       ],
       "blockers": [],
@@ -84,14 +102,14 @@
       "evidence": [
         "The locked onboarding flow is Audit to Prefill to Owner verification to Veroxa gap completion to Final approval.",
         "PR #138 adds persistent field-level truth, contacts, onboarding, presence, client confirmation snapshots, Team review, and an evidence-backed readiness gate.",
-        "Current branch candidate only: all 18 locked truth fields and Team onboarding/presence RPC UI are prepared, and the Momo client provisioning helper is prepared but unexecuted."
+        "PR #143 and the verified ninth migration deploy all 18 locked truth fields and Team onboarding/presence RPC UI; the Momo client provisioning helper remains explicit-ack and unexecuted."
       ],
       "blockers": [
-        "No approved Momo client identity is provisioned, and the candidate RPC additions are not production-applied or published.",
+        "No approved Momo client identity is provisioned.",
         "Production owner-confirmed identity, hours, menu, services, contacts, dietary/halal claims, brand voice, goals, and presence-stack records are not complete.",
         "Uncertain facts cannot be used publicly before owner confirmation."
       ],
-      "nextAction": "Review and apply the pending migration plus exact Sites candidate first. Later, after an approved owner email is supplied, execute the explicit-ack client helper and collect real owner-confirmed Momo truth without inventing missing facts."
+      "nextAction": "After an approved owner email is supplied, execute the explicit-ack client helper and collect real owner-confirmed Momo truth without inventing missing facts."
     },
     "media_and_rights": {
       "label": "Media, rights, and intelligence",
@@ -100,7 +118,7 @@
       "evidence": [
         "Private Momo storage policies and an internal media/content inventory model exist.",
         "PR #138 adds client-authored media/rights intake, Team review, tags, provider-neutral classification jobs, and rights-gated reuse history.",
-        "Current branch candidate only: the exact momo-media-rights-v1 attestation plus SHA-256 provenance and Team quality review/human-tag manual classification are prepared without an AI provider call."
+        "PR #143 deploys the exact momo-media-rights-v1 attestation plus SHA-256 provenance and Team quality review/human-tag manual classification without an AI provider call."
       ],
       "blockers": [
         "No production Momo media inventory with verified usage rights exists.",
@@ -115,7 +133,7 @@
       "evidence": [
         "Brand voice, controlled drafting, approval queue, and human-review rules exist.",
         "PR #138 adds persistent strategies, captions, platform variants, owner/Team/publishing approvals, calendar records, bounded job attempts, and fail-closed provider adapters.",
-        "Current branch candidate only: a deterministic six-pillar manual content cycle validates confirmed truth and permissioned media and records immutable input provenance without calling runtime AI."
+        "PR #143 deploys a deterministic six-pillar manual content cycle that validates confirmed truth and permissioned media and records immutable input provenance without calling runtime AI."
       ],
       "blockers": [
         "Runtime AI provider calls are inactive.",
@@ -130,7 +148,7 @@
       "status": "blocked",
       "evidence": [
         "PR #138 adds not-connected Meta state, platform-specific capability gates, separate editorial/publishing approvals, queues, attempts, and recovery records without tokens.",
-        "Current branch candidate only: a no-credential database preflight reports missing authorization, capability, or connection state and never contacts Meta."
+        "PR #143 deploys a no-credential database preflight that reports missing authorization, capability, or connection state and never contacts Meta."
       ],
       "blockers": [
         "Owner-controlled Meta access and publishing permission are not connected or verified.",
@@ -144,7 +162,7 @@
       "status": "blocked",
       "evidence": [
         "PR #138 adds not-connected Google state, local presence/website/menu checks, review-response approval gates, visibility snapshots, and capability-gated provider records.",
-        "Current branch candidate only: a no-credential database preflight reports missing authorization, capability, or connection state and never contacts Google."
+        "PR #143 deploys a no-credential database preflight that reports missing authorization, capability, or connection state and never contacts Google."
       ],
       "blockers": [
         "Owner-controlled Google access is not connected or verified.",
@@ -173,13 +191,12 @@
       "evidence": [
         "Momo work, reporting, activity, and readiness surfaces exist with honest safe-empty states.",
         "PR #138 adds persistent work, attempts, activity, reports, monitors, alerts, recovery runs, transactional retry/backoff, and client-safe approved reports.",
-        "Current branch candidate only: transactional work transitions, evidence-backed reporting, monitoring, bounded retry/recovery, and linked activity evidence are implemented in the unapplied ninth source migration."
+        "PR #143 and the verified ninth migration deploy transactional work transitions, evidence-backed reporting, monitoring, bounded retry/recovery, and linked activity evidence."
       ],
       "blockers": [
-        "The ninth source migration is prepared but has not been applied to production.",
         "Production Momo work history, platform activity, weekly updates, monthly reporting, alerts, retries, and recovery are not verified end to end."
       ],
-      "nextAction": "Review and apply the pending forward migration, publish the exact Sites candidate, then verify a real work item, retry, monitored failure/recovery, and evidence-backed report end to end."
+      "nextAction": "Verify a real work item, retry, monitored failure/recovery, and evidence-backed report end to end before treating the deployed workflow foundation as operating history."
     },
     "activation_and_recovery": {
       "label": "Activation, recovery, and owner walkthrough",
@@ -187,10 +204,9 @@
       "status": "blocked",
       "evidence": [
         "Activation remains a separate decision and cannot be inferred from foundation readiness.",
-        "Current branch candidate only: the unapplied ninth source migration implements an atomic rehearsal that derives an immutable readiness snapshot and records only a rehearsal-mode No-Go while blockers remain; no Go action is exposed."
+        "PR #143 and the verified ninth migration deploy an atomic rehearsal that derives an immutable readiness snapshot and records only a rehearsal-mode No-Go while blockers remain; no Go action is exposed."
       ],
       "blockers": [
-        "The atomic rehearsal RPC is in the unapplied ninth source migration and is not production-available.",
         "All other required readiness dimensions are not verified.",
         "Momo owner contact, walkthrough, credentials, permissions, and publishing require separate explicit approval."
       ],

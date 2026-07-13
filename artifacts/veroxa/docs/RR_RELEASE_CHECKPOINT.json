@@ -1,33 +1,39 @@
 {
-  "schemaVersion": 1,
-  "checkpoint": "momo-zero-cost-operating-rehearsal-v1-candidate",
-  "status": "candidate",
+  "schemaVersion": 2,
+  "checkpoint": "momo-zero-cost-operating-rehearsal-v1-production-continuity",
+  "status": "production_continuity",
   "reviewedAt": "2026-07-13",
-  "source": {
-    "pullRequest": 142,
-    "reviewedHead": "26f0e2dec1a5e834f6c599fb2413bb24341c0327",
-    "mergedCommit": "9a905c822f084fd2df5c9a2cb87c1a8286647e59",
+  "deployedOperationalRelease": {
+    "pullRequest": 143,
+    "reviewedHead": "009276dbbf2639dc1eb5296bf62906f9f8ac45f1",
+    "mergedOperationalCommit": "49a5250d6ce7bd8d78f19e415641563e2260ace8",
+    "sitesCheckoutSourceCommit": "69871c51f8e80d1802539a6bca52e3ce5b4ff71c",
+    "databaseApplied": true,
+    "databaseVerified": true,
+    "productionMigrations": 9,
     "sitesProductionVerified": true,
-    "sitesVersion": 8,
+    "sitesVersion": 9,
     "customDomainsVerified": true
   },
-  "candidate": {
-    "pullRequest": 143,
-    "branch": "agent/momo-seven-step-free-first-release",
-    "reviewedHead": null,
-    "merged": false,
-    "databaseApplied": false,
-    "databaseVerified": false,
-    "productionMigrations": 8,
-    "sitesPublished": false,
-    "sitesProductionVerified": false,
-    "sitesVersion": null,
-    "momoClientIdentityProvisioned": false,
-    "ownerConfirmedBusinessTruthVerified": false,
-    "permissionedMediaVerified": false,
-    "externalProvidersConnected": false,
-    "externalPublishingVerified": false,
-    "activationExecuted": false
+  "continuityRelease": {
+    "pullRequest": 144,
+    "releaseKind": "repository_and_sites_evidence_continuity",
+    "requiredFinalSitesVersion": 10,
+    "deployableSitesSourceChanged": true,
+    "operationalBehaviorChanged": false,
+    "databaseSourceChanged": true,
+    "databaseSchemaChanged": false,
+    "migrationContentChanged": false,
+    "migrationCountChanged": false,
+    "migrationLedgerReconciled": true,
+    "databaseSourceChangeReason": "remote_migration_version_filename_reconciliation_only",
+    "reconciledMigrationVersion": "20260713191147",
+    "reconciledMigrationSha256": "07cdb0a41b3d81e23e2c9432b139ae219c2b4671fed7cd18f761d4c4d6a79f2a",
+    "selfCommitEmbedded": false,
+    "sourceIdentityAuthority": "GitHub PR #144 metadata after merge",
+    "deploymentIdentityAuthority": "Sites version 10 checkpoint metadata after publish",
+    "fingerprintAuthority": "boundaryGroups",
+    "completionRule": "PR #144 continuity is complete only after its exact merge identity and the required Sites version 10 checkpoint are verified in external GitHub and Sites metadata."
   },
   "runtimeVerification": {
     "teamIdentityProvisioned": true,
@@ -56,14 +62,16 @@
     "20260712230242_audit_center_release_hardening.sql",
     "20260713010710_momo_full_operating_system_v1.sql",
     "20260713010916_momo_full_operating_system_advisor_hardening.sql",
-    "20260713161533_momo_zero_cost_operating_rehearsal_v1.sql"
+    "20260713191147_momo_zero_cost_operating_rehearsal_v1.sql"
   ],
   "reusableEvidence": [
     "Momo-only tenancy, role matrix, RLS, and safe-empty client boundary",
     "Deployed secure-email-link recovery plus approved-user password session, membership, callback, and protected-route boundary",
     "Signed public audit intake, raw-size limits, timeouts, idempotency, and rate limits",
     "Latest-run review gate, reviewed immutability, append-only lifecycle evidence, and distinct audit identity",
-    "Clean Supabase reset, pgTAP role/workflow/coexistence tests, and error-level database lint",
+    "Nine applied and verified Supabase migrations, focused pgTAP role/workflow/coexistence tests, and error-level database lint",
+    "Ninth migration filename reconciled to remote version 20260713191147 with SQL SHA-256 07cdb0a41b3d81e23e2c9432b139ae219c2b4671fed7cd18f761d4c4d6a79f2a unchanged",
+    "PR #143 operational source deployed as Sites version 9 with both custom domains active and SSL healthy",
     "Root typecheck, Vite build/E2E, Sites build/render tests/lint, and Sites-only deployment guard"
   ],
   "fullReviewTriggers": [
@@ -86,7 +94,7 @@
         "supabase/migrations/20260712230242_audit_center_release_hardening.sql",
         "supabase/migrations/20260713010710_momo_full_operating_system_v1.sql",
         "supabase/migrations/20260713010916_momo_full_operating_system_advisor_hardening.sql",
-        "supabase/migrations/20260713161533_momo_zero_cost_operating_rehearsal_v1.sql",
+        "supabase/migrations/20260713191147_momo_zero_cost_operating_rehearsal_v1.sql",
         "supabase/tests/momo_production_tenant_rls_hardening.sql",
         "supabase/tests/momo_full_operating_system_v1.sql",
         "supabase/tests/momo_zero_cost_operating_rehearsal_v1.sql",
@@ -95,7 +103,7 @@
         "scripts/src/check-supabase-migration-ledger.ts",
         ".github/workflows/supabase-verify.yml"
       ],
-      "sha256": "6ddf5d6d1f1041ca64dd436edce58d2a5fc8b596575c30e341b40f130bb59a87"
+      "sha256": "ce2364a7aeefba4cdf5e6f7204604acad9c41cba29ed61ff38c21e1260a6c399"
     },
     "auth_access": {
       "review": "full-on-change",
@@ -133,7 +141,7 @@
         ".github/workflows/ci.yml",
         ".github/workflows/sites-verify.yml"
       ],
-      "sha256": "10a0db875b587aab431fa6f7cceae9c1e25e244bb50c04984a90f11ac889fac0"
+      "sha256": "1d440f53109909f71f27e494672dc8d16b829e2832384ab25eb226525f5d4b09"
     },
     "product_scope": {
       "review": "full-on-change",
@@ -150,7 +158,7 @@
         "AGENTS.md",
         "artifacts/veroxa/docs/RR_CHECKPOINT.md"
       ],
-      "sha256": "a9892dbc22f16cec05fe7ecbd52ecbb3f5ed6feec8d257d02af0c19ced46f59f"
+      "sha256": "27d90c65a237f3f5d322bc7f829791d6352a706e2f294e3c7b09c643638878d7"
     },
     "momo_readiness_tracking": {
       "review": "evidence-delta-on-change",
@@ -159,7 +167,7 @@
         "artifacts/veroxa-sites/app/momo-readiness-types.ts",
         "scripts/src/check-momo-house-readiness-tracking.ts"
       ],
-      "sha256": "1c8c57dcc7b8a3c35f0be566dd143256faf07c2e247a2b39863f748eee98f859"
+      "sha256": "7a2a1af01780f665158f045eadeff593e5eb138a0cf1d62db9a03fd5f5a670b0"
     },
     "presentation_surfaces": {
       "review": "delta-unless-boundary-crossed",
@@ -198,7 +206,7 @@
         "package.json",
         "pnpm-lock.yaml"
       ],
-      "sha256": "3c66f0698583722ddfea793dc4d3b5e67941d4f5057e11b20159edc6ede1130d"
+      "sha256": "c3a314849b3e28c5a930885c4e8876cd1e4841bf19d1f0991441cac8e5deb206"
     }
   },
   "activationGates": [
