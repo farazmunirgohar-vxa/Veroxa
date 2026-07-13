@@ -454,6 +454,7 @@ function LoginPage({ onNavigate }: { onNavigate: (view: View) => void }) {
   const [state, setState] = useState<"idle" | "submitting">("idle");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const neutralDeliveryMessage = "If this email is approved for Veroxa, a secure sign-in link will be delivered when available. Please wait before requesting another link.";
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -476,16 +477,14 @@ function LoginPage({ onNavigate }: { onNavigate: (view: View) => void }) {
     try {
       const returnTo = new URLSearchParams(window.location.search).get("return_to");
       await requestVeroxaMagicLink(email, returnTo);
-      setMessage("If this email is approved for Veroxa, a secure sign-in link has been sent.");
+      setMessage(neutralDeliveryMessage);
     } catch (caught) {
       const failure = caught instanceof Error ? caught.message : "magic_link_failed";
-      setError(
-        failure === "configuration_unavailable"
-          ? "Portal sign-in is temporarily unavailable while the secure connection is restored."
-          : failure === "magic_link_rate_limited"
-            ? "Too many secure emails were requested during setup. Please wait before requesting one new link."
-          : "A secure sign-in link could not be sent right now.",
-      );
+      if (failure === "configuration_unavailable") {
+        setError("Portal sign-in is temporarily unavailable while the secure connection is restored.");
+      } else {
+        setMessage(neutralDeliveryMessage);
+      }
     } finally {
       setState("idle");
     }
