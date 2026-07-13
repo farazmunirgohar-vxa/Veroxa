@@ -62,7 +62,7 @@ if (checkpoint.checkpoint === "momo-seven-system-readiness-v1-candidate") {
   }
 }
 for (const marker of [
-  "blocked external authority",
+  "authenticated Team/Momo protected route",
   "No Momo owner truth or media rights may be invented",
   "inactive pending authorized access",
 ]) {

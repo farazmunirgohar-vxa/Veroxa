@@ -7,17 +7,40 @@ export type ServerAccess = {
   restaurantId: string | null;
 };
 
-function getServerConfig(): { url: string; key: string } | null {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-  return url && key ? { url, key } : null;
+export type ServerSupabasePublicConfig = {
+  url: string;
+  publishableKey: string;
+};
+
+export function getServerSupabasePublicConfig(): ServerSupabasePublicConfig | null {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim();
+  if (!url || !publishableKey?.startsWith("sb_publishable_")) return null;
+  try {
+    const parsed = new URL(url);
+    if (
+      parsed.protocol !== "https:" ||
+      !parsed.hostname.endsWith(".supabase.co") ||
+      parsed.username ||
+      parsed.password ||
+      parsed.port ||
+      (parsed.pathname !== "/" && parsed.pathname !== "") ||
+      parsed.search ||
+      parsed.hash
+    ) {
+      return null;
+    }
+    return { url: parsed.origin, publishableKey };
+  } catch {
+    return null;
+  }
 }
 
 export async function getServerVeroxaAccess(): Promise<ServerAccess | null> {
-  const config = getServerConfig();
+  const config = getServerSupabasePublicConfig();
   if (!config) return null;
   const cookieStore = await cookies();
-  const client = createServerClient(config.url, config.key, {
+  const client = createServerClient(config.url, config.publishableKey, {
     cookies: {
       getAll: () => cookieStore.getAll(),
       setAll: (items) => {

@@ -16,7 +16,7 @@
     "merged": true,
     "databaseApplied": true,
     "sitesDeployed": true,
-    "identityProvisioned": false,
+    "identityProvisioned": true,
     "authenticatedBrowserSmokeVerified": false,
     "externalProvidersConnected": false
   },
@@ -81,7 +81,7 @@
         "artifacts/veroxa-sites/app/[...slug]/page.tsx",
         "artifacts/veroxa-sites/proxy.ts"
       ],
-      "sha256": "6fc93e4d9f6fa623eb42c6db1f0e0c48019af63810a760302b2b88d9a68a64a9"
+      "sha256": "5ef3980eaec96e21412e8d2bc2e6106a34a70c87153309de3fc6e37edb6660de"
     },
     "audit_runtime": {
       "review": "full-on-change",
@@ -91,7 +91,7 @@
         "scripts/src/check-audit-intake-adapter-contracts.ts",
         "scripts/src/check-restaurant-audit-center-v1.ts"
       ],
-      "sha256": "b715b0aee8a605ac35378033152afa2e88dd9dea7922278f401d3ef9de5aa41a"
+      "sha256": "870db9a292bf99c45bc7150229f9635e5b73a09fe9bbde85f2681a41e02c2559"
     },
     "delivery": {
       "review": "full-on-change",
@@ -104,7 +104,7 @@
         ".github/workflows/ci.yml",
         ".github/workflows/sites-verify.yml"
       ],
-      "sha256": "07268b797fef9261af64fea07ad2b4e94e1d44a5c08532d6b7824df3d98c52d3"
+      "sha256": "0eebe7450ecd6314149c5888484dfdf3a4236e04cdb29d7c35eced45c04c39c8"
     },
     "product_scope": {
       "review": "full-on-change",
@@ -119,7 +119,7 @@
         "AGENTS.md",
         "artifacts/veroxa/docs/RR_CHECKPOINT.md"
       ],
-      "sha256": "b45de722e3074e2be82bbd4874155c4333013a8fad3224601f2c7002b54e734d"
+      "sha256": "49d006242c4df34a272de7fd72bfc9949075c1ccfa731ca43b61f62f04378b77"
     },
     "momo_readiness_tracking": {
       "review": "evidence-delta-on-change",
@@ -128,7 +128,7 @@
         "artifacts/veroxa-sites/app/momo-readiness-types.ts",
         "scripts/src/check-momo-house-readiness-tracking.ts"
       ],
-      "sha256": "8803fd7cc4d3b353f164062a14d4b282f23cc5cfb18f8b3d998b101b1091bab3"
+      "sha256": "1bfd117d881fec2bb75e0c682c7b90dd31202fbc10cc4a0beeb23e789a73852f"
     },
     "presentation_surfaces": {
       "review": "delta-unless-boundary-crossed",
@@ -138,7 +138,7 @@
         "artifacts/veroxa-sites/tests/rendered-html.test.mjs",
         "artifacts/veroxa/src/pages/free-audit.tsx"
       ],
-      "sha256": "47058c5c6ac7f0332bebb988356c69eb0f721b7990731b5f450f550525234e94"
+      "sha256": "75cb4925e9f8bd0d2e7f3e685604f570587ffad72063f5d1005c3476a954f03c"
     },
     "momo_operations_contract": {
       "review": "full-on-change",
@@ -159,13 +159,13 @@
         "package.json",
         "pnpm-lock.yaml"
       ],
-      "sha256": "fc61745f30ecd14c790a3d858f21ad1569e8ce1636a3b4910278886b8f94452c"
+      "sha256": "1894af5e5c0de1f180c05b28f1914ad119196cf54cf1b426a11e12f8f1e9da90"
     }
   },
   "activationGates": [
-    "Pre-provision and verify the approved Team identity through the supported Admin path",
+    "Verify the confirmed Gmail Team identity on an authenticated Team/Momo protected route",
     "Complete authenticated Team/Momo browser smoke tests before sensitive data or owner exposure",
-    "Identity provisioning is blocked external authority until a privileged supported Admin environment is available",
+    "Deploy the reviewed Sites runtime public-config bridge before treating production login as repaired",
     "No Momo owner truth or media rights may be invented to satisfy readiness",
     "Keep AI, Meta, Google, SEO writes, publishing, outbound contact, and Momo owner walkthrough inactive pending authorized access"
   ]

@@ -38,13 +38,16 @@
       "evidence": [
         "Magic-link-only Supabase Auth, active profile/membership checks, route guards, and RLS are deployed.",
         "Public account creation and password sign-in/recovery are disabled.",
-        "PR #138 adds an idempotent server-only Admin provisioning command and a bounded authenticated Team/Momo Auth/RLS smoke harness."
+        "PR #138 adds an idempotent server-only Admin provisioning command and a bounded authenticated Team/Momo Auth/RLS smoke harness.",
+        "Faraz's approved Gmail Team identity is confirmed, has signed in, and has an active Team profile plus active Momo membership without exposing a privileged key.",
+        "The mistaken secondary identity has disabled portal profile and Momo membership access.",
+        "A reviewed route-scoped runtime-config repair passes the Sites no-build-time-env production build and positive/negative rendered login regression tests."
       ],
       "blockers": [
-        "The approved Team identity still requires supported Admin provisioning.",
-        "Authenticated Team/Momo browser smoke testing is incomplete."
+        "The Sites browser runtime-config repair is not live until its GitHub change is merged and explicitly checkpoint-deployed.",
+        "Authenticated Team/Momo browser and RLS smoke testing is incomplete."
       ],
-      "nextAction": "Provision the approved Team identity through the supported Admin path and complete authenticated browser authorization tests."
+      "nextAction": "Deploy the reviewed Sites login repair and complete authenticated Team/Momo protected-route authorization tests."
     },
     "business_truth_and_onboarding": {
       "label": "Business truth and onboarding",

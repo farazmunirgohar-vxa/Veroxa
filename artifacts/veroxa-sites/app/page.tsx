@@ -5,12 +5,14 @@ import { RestaurantAuditCenter } from "./audit-center";
 import { MomoOperatingCenter } from "./momo-operating-center";
 import type { MomoReadinessTracker } from "./momo-readiness-types";
 import {
+  configureVeroxaSupabase,
   getCurrentVeroxaAccess,
   requestVeroxaMagicLink,
   signOutOfVeroxa,
   submitPublicAudit,
   subscribeToVeroxaAuth,
   type VeroxaAccess,
+  type VeroxaPublicConfig,
 } from "./veroxa-supabase";
 
 type View =
@@ -125,7 +127,18 @@ export default function Home() {
 
 type AccessSeed = Pick<VeroxaAccess, "role" | "displayName" | "restaurantId">;
 
-export function VeroxaApp({ initialPath, initialAccess, initialMomoReadiness }: { initialPath: string; initialAccess?: AccessSeed; initialMomoReadiness?: MomoReadinessTracker }) {
+export function VeroxaApp({
+  initialPath,
+  initialAccess,
+  initialMomoReadiness,
+  initialSupabaseConfig,
+}: {
+  initialPath: string;
+  initialAccess?: AccessSeed;
+  initialMomoReadiness?: MomoReadinessTracker;
+  initialSupabaseConfig?: VeroxaPublicConfig;
+}) {
+  configureVeroxaSupabase(initialSupabaseConfig);
   // The server-loaded tracker remains durable RR evidence; the live readiness
   // surface below is authoritative from the scoped Supabase operating model.
   void initialMomoReadiness;
@@ -168,6 +181,10 @@ export function VeroxaApp({ initialPath, initialAccess, initialMomoReadiness }: 
   }, []);
 
   const changeView = (next: View) => {
+    if (next === "login" && !initialSupabaseConfig && window.location.pathname !== "/login") {
+      window.location.assign("/login");
+      return;
+    }
     setView(next);
     const nextPath = viewToPath[next] ?? "/";
     if (window.location.pathname !== nextPath) window.history.pushState({}, "", nextPath);
@@ -455,12 +472,17 @@ function LoginPage({ onNavigate }: { onNavigate: (view: View) => void }) {
     }
     setState("submitting");
     setError("");
+    setMessage("");
     try {
       const returnTo = new URLSearchParams(window.location.search).get("return_to");
       await requestVeroxaMagicLink(email, returnTo);
       setMessage("If this email is approved for Veroxa, a secure sign-in link has been sent.");
-    } catch {
-      setError("A secure sign-in link could not be sent right now.");
+    } catch (caught) {
+      setError(
+        caught instanceof Error && caught.message === "configuration_unavailable"
+          ? "Portal sign-in is temporarily unavailable while the secure connection is restored."
+          : "A secure sign-in link could not be sent right now.",
+      );
     } finally {
       setState("idle");
     }
