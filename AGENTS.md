@@ -7,7 +7,7 @@
 - The current milestone is Momo's House San Antonio 100% readiness with maximum safe AI, automation, social handling, SEO, approved publishing, reporting, monitoring, and human approval control.
 - After every build, update `VEROXA_CURRENT_MILESTONE.md`, `CURRENT_BUILD_STATUS.md`, relevant runtime/deployment truth, and Faraz's plain-language handoff. Update locked memory when durable scope, authority, or product direction changes. A build is not complete until this continuity update is done.
 - Older instructions that defer Team Portal capability, prioritize broad public/client work, or use the earlier post-cutover route-parity sequence are superseded for this milestone. Historical multi-client prospecting applies only inside the Restaurant Audit Center and does not authorize another operational client.
-- Current deployed baseline is PR #142 at `9a905c822f084fd2df5c9a2cb87c1a8286647e59`, verified as Sites version 8 with all eight production migrations applied. The current branch is reserved for planned PR #143, which is not opened and not merged; its ninth migration is not applied and its Sites candidate is not published. Approved-user password sign-in, secure-email-link recovery, active Momo membership authorization, RLS, durable audit intake, and protected portal routes are live; Faraz confirmed password sign-in. Hosted reauthentication and old-session revocation remain unverified, while Momo client identity/data, AI, external integrations, publishing, and activation remain gated.
+- Current verified operational foundation is PR #143: reviewed head `009276dbbf2639dc1eb5296bf62906f9f8ac45f1`, merged operational commit `49a5250d6ce7bd8d78f19e415641563e2260ace8`, all nine production migrations applied and verified, and Sites version 9 deployed successfully from checkout source `69871c51f8e80d1802539a6bca52e3ce5b4ff71c` with both custom domains active and SSL healthy. PR #144 is the behavior-neutral repository-and-Sites-evidence continuity release; because it changes Sites-bundled readiness evidence, verified Sites version 10 is a required post-merge target and is not already deployed. Its database-source delta is limited to reconciling the ninth migration filename/ledger to remote version `20260713191147`; schema, SQL content, and migration count do not change. Never embed or predict PR #144's merge SHA: external GitHub PR metadata and Sites checkpoint metadata are the post-merge source/deployment authorities. Approved-user password sign-in, secure-email-link recovery, active Momo membership authorization, RLS, durable audit intake, protected portal routes, and the no-new-spend seven-step operating foundation are live. Hosted reauthentication and old-session revocation remain unverified, while Momo client identity/data, AI, external integrations, publishing, and activation remain gated.
 
 ## 2026-07-12 — ChatGPT-managed build, GitHub, and deployment protocol
 
@@ -35,7 +35,7 @@
 
 ## 2026-06-21 — Historical post-PR120 source-of-truth operating lock
 
-This section records the retired Vite/Vercel state at PR #120. It does not override the current PR #142 Sites/Supabase baseline above.
+This section records the retired Vite/Vercel state at PR #120. It does not override the current PR #143 / Supabase-nine / Sites-version-9 operational foundation or the PR #144 / Sites-version-10 continuity rule above.
 
 - Current operating baseline: merged PR #120 — Momo Internal Dry Run + Go/No-Go Gate.
 - PR #119 AI Draft Approval Queue is merged/completed.

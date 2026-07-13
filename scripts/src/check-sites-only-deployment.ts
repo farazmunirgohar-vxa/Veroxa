@@ -75,8 +75,17 @@ for (const activePhrase of [
 if (!existsSync(resolve(root, "artifacts/veroxa-sites/.openai/hosting.json"))) {
   failures.push("Sites hosting identity is missing.");
 }
-if (!currentState.includes("PR #142") || !currentState.includes("Sites version 8")) {
-  failures.push("Current-state index must name the verified PR #142 / Sites version 8 baseline.");
+if (
+  !currentState.includes("PR #143") ||
+  !currentState.includes("009276dbbf2639dc1eb5296bf62906f9f8ac45f1") ||
+  !currentState.includes("49a5250d6ce7bd8d78f19e415641563e2260ace8") ||
+  !currentState.includes("69871c51f8e80d1802539a6bca52e3ce5b4ff71c") ||
+  !currentState.includes("Sites version 9") ||
+  !currentState.includes("PR #144") ||
+  !currentState.includes("Sites version 10") ||
+  !/(?:not yet deployed|not already deployed|required post-merge target)/i.test(currentState)
+) {
+  failures.push("Current-state index must distinguish the verified PR #143 / Sites version 9 operational foundation from the not-yet-deployed PR #144 / Sites version 10 continuity target.");
 }
 if (!preBuild.includes("GitHub `main` plus verified Sites checkpoints are the recovery path")) {
   failures.push("Pre-build checklist must use GitHub main plus verified Sites checkpoints for recovery.");

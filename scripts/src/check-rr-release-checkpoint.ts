@@ -8,31 +8,37 @@ const checkpoint = JSON.parse(readFileSync(checkpointPath, "utf8")) as {
   schemaVersion: number;
   checkpoint: string;
   status: string;
-  source: {
+  deployedOperationalRelease: {
     pullRequest: number;
     reviewedHead: string;
-    mergedCommit: string;
+    mergedOperationalCommit: string;
+    sitesCheckoutSourceCommit: string;
+    databaseApplied: boolean;
+    databaseVerified: boolean;
+    productionMigrations: number;
     sitesProductionVerified: boolean;
     sitesVersion: number;
     customDomainsVerified: boolean;
   };
-  candidate: {
+  continuityRelease: {
     pullRequest: number;
-    branch: string;
-    reviewedHead: null;
-    merged: boolean;
-    databaseApplied: boolean;
-    databaseVerified: boolean;
-    productionMigrations: number;
-    sitesPublished: boolean;
-    sitesProductionVerified: boolean;
-    sitesVersion: null;
-    momoClientIdentityProvisioned: boolean;
-    ownerConfirmedBusinessTruthVerified: boolean;
-    permissionedMediaVerified: boolean;
-    externalProvidersConnected: boolean;
-    externalPublishingVerified: boolean;
-    activationExecuted: boolean;
+    releaseKind: string;
+    requiredFinalSitesVersion: number;
+    deployableSitesSourceChanged: boolean;
+    operationalBehaviorChanged: boolean;
+    databaseSourceChanged: boolean;
+    databaseSchemaChanged: boolean;
+    migrationContentChanged: boolean;
+    migrationCountChanged: boolean;
+    migrationLedgerReconciled: boolean;
+    databaseSourceChangeReason: string;
+    reconciledMigrationVersion: string;
+    reconciledMigrationSha256: string;
+    selfCommitEmbedded: boolean;
+    sourceIdentityAuthority: string;
+    deploymentIdentityAuthority: string;
+    fingerprintAuthority: string;
+    completionRule: string;
   };
   runtimeVerification: {
     teamIdentityProvisioned: boolean;
@@ -56,15 +62,12 @@ const checkpoint = JSON.parse(readFileSync(checkpointPath, "utf8")) as {
 };
 
 const expectedRelease = {
-  pullRequest: 142,
-  reviewedHead: "26f0e2dec1a5e834f6c599fb2413bb24341c0327",
-  mergedCommit: "9a905c822f084fd2df5c9a2cb87c1a8286647e59",
-  sitesVersion: 8,
-};
-const expectedCandidate = {
   pullRequest: 143,
-  branch: "agent/momo-seven-step-free-first-release",
-  productionMigrations: 8,
+  reviewedHead: "009276dbbf2639dc1eb5296bf62906f9f8ac45f1",
+  mergedOperationalCommit: "49a5250d6ce7bd8d78f19e415641563e2260ace8",
+  sitesCheckoutSourceCommit: "69871c51f8e80d1802539a6bca52e3ce5b4ff71c",
+  sitesVersion: 9,
+  productionMigrations: 9,
 };
 
 function groupHash(files: string[]): string {
@@ -77,42 +80,50 @@ function groupHash(files: string[]): string {
   return hash.digest("hex");
 }
 
-if (checkpoint.schemaVersion !== 1 || checkpoint.status !== "candidate") {
+if (checkpoint.schemaVersion !== 2 || checkpoint.status !== "production_continuity") {
   throw new Error("RR checkpoint schema/status is invalid");
 }
-if (checkpoint.checkpoint !== "momo-zero-cost-operating-rehearsal-v1-candidate") {
-  throw new Error("RR checkpoint must record the exact PR #143 pre-production candidate");
+if (checkpoint.checkpoint !== "momo-zero-cost-operating-rehearsal-v1-production-continuity") {
+  throw new Error("RR checkpoint must record the PR #143 production foundation and PR #144 continuity target");
 }
+const release = checkpoint.deployedOperationalRelease;
 if (
-  checkpoint.source.pullRequest !== expectedRelease.pullRequest ||
-  checkpoint.source.reviewedHead !== expectedRelease.reviewedHead ||
-  checkpoint.source.mergedCommit !== expectedRelease.mergedCommit ||
-  checkpoint.source.sitesVersion !== expectedRelease.sitesVersion ||
-  !checkpoint.source.sitesProductionVerified ||
-  !checkpoint.source.customDomainsVerified
+  release.pullRequest !== expectedRelease.pullRequest ||
+  release.reviewedHead !== expectedRelease.reviewedHead ||
+  release.mergedOperationalCommit !== expectedRelease.mergedOperationalCommit ||
+  release.sitesCheckoutSourceCommit !== expectedRelease.sitesCheckoutSourceCommit ||
+  !release.databaseApplied ||
+  !release.databaseVerified ||
+  release.productionMigrations !== expectedRelease.productionMigrations ||
+  release.sitesVersion !== expectedRelease.sitesVersion ||
+  !release.sitesProductionVerified ||
+  !release.customDomainsVerified
 ) {
-  throw new Error("RR checkpoint source does not match the verified PR #142 / Sites version 8 baseline");
+  throw new Error("RR checkpoint source does not match the verified PR #143 / Sites version 9 / nine-migration operational foundation");
 }
-const candidate = checkpoint.candidate;
+const continuity = checkpoint.continuityRelease;
 if (
-  candidate.pullRequest !== expectedCandidate.pullRequest ||
-  candidate.branch !== expectedCandidate.branch ||
-  candidate.reviewedHead !== null ||
-  candidate.merged ||
-  candidate.databaseApplied ||
-  candidate.databaseVerified ||
-  candidate.productionMigrations !== expectedCandidate.productionMigrations ||
-  candidate.sitesPublished ||
-  candidate.sitesProductionVerified ||
-  candidate.sitesVersion !== null ||
-  candidate.momoClientIdentityProvisioned ||
-  candidate.ownerConfirmedBusinessTruthVerified ||
-  candidate.permissionedMediaVerified ||
-  candidate.externalProvidersConnected ||
-  candidate.externalPublishingVerified ||
-  candidate.activationExecuted
+  continuity.pullRequest !== 144 ||
+  continuity.releaseKind !== "repository_and_sites_evidence_continuity" ||
+  continuity.requiredFinalSitesVersion !== 10 ||
+  !continuity.deployableSitesSourceChanged ||
+  continuity.operationalBehaviorChanged ||
+  !continuity.databaseSourceChanged ||
+  continuity.databaseSchemaChanged ||
+  continuity.migrationContentChanged ||
+  continuity.migrationCountChanged ||
+  !continuity.migrationLedgerReconciled ||
+  continuity.databaseSourceChangeReason !== "remote_migration_version_filename_reconciliation_only" ||
+  continuity.reconciledMigrationVersion !== "20260713191147" ||
+  continuity.reconciledMigrationSha256 !== "07cdb0a41b3d81e23e2c9432b139ae219c2b4671fed7cd18f761d4c4d6a79f2a" ||
+  continuity.selfCommitEmbedded ||
+  !continuity.sourceIdentityAuthority.includes("GitHub PR #144 metadata") ||
+  !continuity.deploymentIdentityAuthority.includes("Sites version 10 checkpoint metadata") ||
+  continuity.fingerprintAuthority !== "boundaryGroups" ||
+  !continuity.completionRule.includes("only after") ||
+  /\b[0-9a-f]{40}\b/i.test(JSON.stringify(continuity))
 ) {
-  throw new Error("RR candidate overstates review, merge, migration, Sites, identity, owner data, providers, publishing, or activation");
+  throw new Error("RR continuity must require external PR #144 / Sites version 10 identity and filename-only migration-ledger reconciliation without embedding a future commit");
 }
 if (
   !checkpoint.runtimeVerification.teamIdentityProvisioned ||
@@ -174,6 +185,7 @@ const releaseDocuments = [
   "artifacts/veroxa/docs/README_CURRENT_STATE.md",
   "artifacts/veroxa/docs/MOMO_100_READINESS_SEVEN_SYSTEM_CONTRACT.md",
   "artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md",
+  "artifacts/veroxa/docs/CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md",
 ].map((file) => {
   const text = readFileSync(resolve(root, file), "utf8");
   const historicalBoundary = text.search(/\n## (?:Historical|2026-06-)/);
@@ -188,15 +200,20 @@ const readinessBaseline = JSON.parse(
 ) as {
   recordKind: string;
   operationalAuthority: string;
-  lastVerifiedRelease: { mainCommit: string; sitesVersion: number; productionMigrations: number };
-  currentBranchCandidate: {
-    releaseState: string;
-    productionBaselineUnchanged: boolean;
-    candidateSourceMigrations: number;
+  lastVerifiedOperationalRelease: {
+    pullRequest: number;
+    reviewedHead: string;
+    mergedOperationalCommit: string;
+    sitesCheckoutSourceCommit: string;
+    sitesVersion: number;
     productionMigrations: number;
-    pendingForwardMigrationApplied: boolean;
-    pendingForwardMigrationVerified: boolean;
-    sitesCandidatePublished: boolean;
+    databaseVerified: boolean;
+    customDomainsVerified: boolean;
+  };
+  deployedNoCostFoundation: {
+    releaseState: string;
+    forwardMigrationApplied: boolean;
+    forwardMigrationVerified: boolean;
     momoClientIdentityProvisioned: boolean;
     ownerConfirmedBusinessTruthVerified: boolean;
     permissionedMediaVerified: boolean;
@@ -204,19 +221,39 @@ const readinessBaseline = JSON.parse(
     externalPublishingVerified: boolean;
     activationExecuted: boolean;
   };
+  continuityRelease: {
+    pullRequest: number;
+    requiredFinalSitesVersion: number;
+    deployableSitesSourceChanged: boolean;
+    operationalBehaviorChanged: boolean;
+    databaseSourceChanged: boolean;
+    databaseSchemaChanged: boolean;
+    migrationContentChanged: boolean;
+    migrationCountChanged: boolean;
+    migrationLedgerReconciled: boolean;
+    databaseSourceChangeReason: string;
+    reconciledMigrationVersion: string;
+    reconciledMigrationSha256: string;
+    selfCommitEmbedded: boolean;
+    sourceIdentityAuthority: string;
+    deploymentIdentityAuthority: string;
+  };
 };
 
 for (const { file, currentText } of releaseDocuments) {
   for (const marker of [
-    "PR #142",
-    expectedRelease.mergedCommit,
-    "Sites version 8",
     "PR #143",
-    "not merged",
-    "not applied",
-    "not published",
+    expectedRelease.reviewedHead,
+    expectedRelease.mergedOperationalCommit,
+    expectedRelease.sitesCheckoutSourceCommit,
+    "Sites version 9",
+    "PR #144",
+    "Sites version 10",
   ]) {
     if (!currentText.includes(marker)) throw new Error(`${file} is missing current verified release marker: ${marker}`);
+  }
+  if (!/(?:not yet deployed|not already deployed|required post-merge target)/i.test(currentText)) {
+    throw new Error(`${file} must not present the PR #144 / Sites version 10 continuity target as pre-merge production truth`);
   }
 }
 const milestoneCurrent = releaseDocuments.find(({ file }) => file.endsWith("VEROXA_CURRENT_MILESTONE.md"))?.currentText ?? "";
@@ -229,7 +266,7 @@ for (const marker of [
   "6. **Meta and Google preflight:**",
   "7. **Atomic final rehearsal:**",
 ]) {
-  if (!milestoneCurrent.includes(marker)) throw new Error(`Exact PR #143 seven-step sequence is missing: ${marker}`);
+    if (!milestoneCurrent.includes(marker)) throw new Error(`Exact deployed PR #143 seven-step sequence is missing: ${marker}`);
 }
 const currentReleaseText = releaseDocuments.map(({ currentText }) => currentText).join("\n");
 for (const stale of [
@@ -239,28 +276,45 @@ for (const stale of [
 ]) {
   if (currentReleaseText.includes(stale)) throw new Error(`Current release docs retain superseded Team-access truth: ${stale}`);
 }
-const readinessCandidate = readinessBaseline.currentBranchCandidate;
+const readinessOperational = readinessBaseline.lastVerifiedOperationalRelease;
+const readinessDeployed = readinessBaseline.deployedNoCostFoundation;
+const readinessContinuity = readinessBaseline.continuityRelease;
 if (
-  readinessBaseline.recordKind !== "release_baseline_checkpoint" ||
+  readinessBaseline.recordKind !== "production_readiness_checkpoint" ||
   !readinessBaseline.operationalAuthority.includes("Supabase") ||
-  readinessBaseline.lastVerifiedRelease.mainCommit !== expectedRelease.mergedCommit ||
-  readinessBaseline.lastVerifiedRelease.sitesVersion !== expectedRelease.sitesVersion ||
-  readinessBaseline.lastVerifiedRelease.productionMigrations !== expectedCandidate.productionMigrations ||
-  readinessCandidate.releaseState !== "prepared_not_merged_not_applied_not_published" ||
-  !readinessCandidate.productionBaselineUnchanged ||
-  readinessCandidate.candidateSourceMigrations !== checkpoint.databaseMigrations.length ||
-  readinessCandidate.productionMigrations !== expectedCandidate.productionMigrations ||
-  readinessCandidate.pendingForwardMigrationApplied ||
-  readinessCandidate.pendingForwardMigrationVerified ||
-  readinessCandidate.sitesCandidatePublished ||
-  readinessCandidate.momoClientIdentityProvisioned ||
-  readinessCandidate.ownerConfirmedBusinessTruthVerified ||
-  readinessCandidate.permissionedMediaVerified ||
-  readinessCandidate.externalProvidersConnected ||
-  readinessCandidate.externalPublishingVerified ||
-  readinessCandidate.activationExecuted
+  readinessOperational.pullRequest !== expectedRelease.pullRequest ||
+  readinessOperational.reviewedHead !== expectedRelease.reviewedHead ||
+  readinessOperational.mergedOperationalCommit !== expectedRelease.mergedOperationalCommit ||
+  readinessOperational.sitesCheckoutSourceCommit !== expectedRelease.sitesCheckoutSourceCommit ||
+  readinessOperational.sitesVersion !== expectedRelease.sitesVersion ||
+  readinessOperational.productionMigrations !== checkpoint.databaseMigrations.length ||
+  !readinessOperational.databaseVerified ||
+  !readinessOperational.customDomainsVerified ||
+  readinessDeployed.releaseState !== "merged_applied_published_verified" ||
+  !readinessDeployed.forwardMigrationApplied ||
+  !readinessDeployed.forwardMigrationVerified ||
+  readinessDeployed.momoClientIdentityProvisioned ||
+  readinessDeployed.ownerConfirmedBusinessTruthVerified ||
+  readinessDeployed.permissionedMediaVerified ||
+  readinessDeployed.externalProvidersConnected ||
+  readinessDeployed.externalPublishingVerified ||
+  readinessDeployed.activationExecuted ||
+  readinessContinuity.pullRequest !== 144 ||
+  readinessContinuity.requiredFinalSitesVersion !== 10 ||
+  !readinessContinuity.deployableSitesSourceChanged ||
+  readinessContinuity.operationalBehaviorChanged ||
+  !readinessContinuity.databaseSourceChanged ||
+  readinessContinuity.databaseSchemaChanged ||
+  readinessContinuity.migrationContentChanged ||
+  readinessContinuity.migrationCountChanged ||
+  !readinessContinuity.migrationLedgerReconciled ||
+  readinessContinuity.databaseSourceChangeReason !== "remote_migration_version_filename_reconciliation_only" ||
+  readinessContinuity.reconciledMigrationVersion !== "20260713191147" ||
+  readinessContinuity.reconciledMigrationSha256 !== "07cdb0a41b3d81e23e2c9432b139ae219c2b4671fed7cd18f761d4c4d6a79f2a" ||
+  readinessContinuity.selfCommitEmbedded ||
+  /\b[0-9a-f]{40}\b/i.test(JSON.stringify(readinessContinuity))
 ) {
-  throw new Error("Momo release baseline/candidate is not reconciled to the PR #142 production boundary and PR #143 source state");
+  throw new Error("Momo readiness evidence is not reconciled to the PR #143 operational foundation and PR #144 / Sites version 10 continuity target");
 }
 if (
   !auth.includes("shouldCreateUser: false") ||

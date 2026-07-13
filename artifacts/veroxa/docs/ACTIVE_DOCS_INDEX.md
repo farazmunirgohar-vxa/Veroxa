@@ -2,11 +2,12 @@
 
 Status: highest-level current source-of-truth index. Read this file before relying on older Veroxa documents.
 
-## 2026-07-13 — Planned PR #143 seven-step candidate truth
+## 2026-07-13 — PR #143 operational truth and PR #144 continuity target
 
-- The current branch is reserved for planned PR #143, but the pull request is not opened and not merged, its ninth source migration is not applied, and its Sites candidate is not published. Production remains PR #142 at `9a905c822f084fd2df5c9a2cb87c1a8286647e59`, Sites version 8, with eight applied migrations.
-- Exact no-new-spend sequence: (1) source/Sites/Vercel retirement reconciliation; (2) client identity plus 18-field onboarding; (3) media rights and manual classification; (4) deterministic manual content with provenance/approvals/calendar; (5) work, reports, monitoring, retry, and one-shot recovery; (6) fail-closed no-credential Meta/Google preflight; and (7) atomic rehearsal-only No-Go.
-- No client identity, owner truth, media, credential, provider call, publication, or activation was created. Until the migration and exact Sites source pass review and publish, all new behavior remains candidate capability rather than production evidence.
+- PR #143 reviewed head `009276dbbf2639dc1eb5296bf62906f9f8ac45f1` merged at operational commit `49a5250d6ce7bd8d78f19e415641563e2260ace8`. All nine production migrations are applied and verified in Supabase. Sites version 9 deployed successfully from checkout source `69871c51f8e80d1802539a6bca52e3ce5b4ff71c`, and both custom domains are active with healthy SSL.
+- The deployed no-new-spend sequence is: (1) source/Sites/Vercel retirement reconciliation; (2) client identity plus 18-field onboarding; (3) media rights and manual classification; (4) deterministic manual content with provenance/approvals/calendar; (5) work, reports, monitoring, retry, and one-shot recovery; (6) fail-closed no-credential Meta/Google preflight; and (7) atomic rehearsal-only No-Go.
+- PR #144 is the behavior-neutral repository-and-Sites-evidence continuity release. Its database-source delta is the filename/ledger-only reconciliation of migration 9 to remote version `20260713191147`; schema, SQL content, and migration count remain unchanged. Because it changes Sites-bundled readiness evidence, verified Sites version 10 is required after merge and is not already deployed. Never embed or predict PR #144's merge SHA; external GitHub PR metadata and Sites checkpoint metadata are the future authorities for exact source and deployment identity.
+- No client identity, owner-confirmed truth, permissioned media, credential, provider call, publication, Go decision, or activation was created. The deployed foundation does not satisfy overall Momo readiness.
 
 ## 2026-07-13 — PR #142 Team password access state
 
@@ -25,8 +26,8 @@ Status: highest-level current source-of-truth index. Read this file before relyi
 - Other restaurant audits must not automatically create client accounts, operations workspaces, onboarding, media/content workflows, Team operations, reports, publishing access, or active-client conversion.
 - The active milestone is Momo's House San Antonio 100% readiness with the maximum safe level of AI, automation, social handling, SEO, reporting, monitoring, and human approval control.
 - Every build must update the milestone, current build status, any changed locked memory, runtime/deployment truth, and Faraz's plain-language handoff before it is considered complete.
-- PR #138 remains the reviewed seven-system foundation lineage. The current reusable release baseline is PR #142 at `9a905c822f084fd2df5c9a2cb87c1a8286647e59`, deployed as Sites version 8 with all eight production migrations verified and both custom domains active with active SSL.
-- Deployed Sites version 8 uses approved-user password sign-in plus secure-email-link recovery for approved active identities; public user creation remains disabled. Faraz's Gmail Team identity, protected Team/Momo browser route, and password sign-in are verified.
+- PR #138 remains the reviewed seven-system foundation lineage. The current reusable operational release is PR #143 at `49a5250d6ce7bd8d78f19e415641563e2260ace8`, reviewed at `009276dbbf2639dc1eb5296bf62906f9f8ac45f1`, deployed as Sites version 9 from checkout source `69871c51f8e80d1802539a6bca52e3ce5b4ff71c`, with all nine production migrations verified and both custom domains active with healthy SSL.
+- Deployed Sites version 9 uses approved-user password sign-in plus secure-email-link recovery for approved active identities and exposes the no-new-spend Momo operating foundation; public user creation remains disabled. Faraz's Gmail Team identity, protected Team/Momo browser route, and password sign-in are verified. PR #144 requires a separate post-merge Sites version 10 continuity checkpoint whose exact identities remain external metadata.
 
 ## 2026-07-12 — ChatGPT-managed build, GitHub, Sites, and RR direction
 

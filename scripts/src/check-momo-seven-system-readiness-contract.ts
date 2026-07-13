@@ -36,7 +36,7 @@ const migration = read(
 );
 const sqlTest = read("supabase/tests/momo_full_operating_system_v1.sql");
 const rehearsalMigration = read(
-  "supabase/migrations/20260713161533_momo_zero_cost_operating_rehearsal_v1.sql",
+  "supabase/migrations/20260713191147_momo_zero_cost_operating_rehearsal_v1.sql",
 );
 const rehearsalSqlTest = read(
   "supabase/tests/momo_zero_cost_operating_rehearsal_v1.sql",
