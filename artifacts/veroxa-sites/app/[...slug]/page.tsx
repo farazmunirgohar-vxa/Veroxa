@@ -13,7 +13,8 @@ export default async function VeroxaRoute({ params }: { params: Promise<{ slug: 
   const initialPath = `/${slug.join("/")}`;
   const protectedTeam = initialPath.startsWith("/team/") || initialPath === "/team";
   const protectedClient = initialPath.startsWith("/client/") || initialPath === "/client";
-  if (!protectedTeam && !protectedClient) {
+  const protectedAccount = initialPath === "/account/security";
+  if (!protectedTeam && !protectedClient && !protectedAccount) {
     const initialSupabaseConfig = initialPath === "/login"
       ? getServerSupabasePublicConfig()
       : null;

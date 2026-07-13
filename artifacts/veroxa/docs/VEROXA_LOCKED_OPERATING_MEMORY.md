@@ -2,25 +2,25 @@
 
 - `MOMO_100_READINESS_SEVEN_SYSTEM_CONTRACT.md` is the current contract for the seven requested Momo systems and the final fail-closed readiness gate.
 - A schema, adapter, queue, or UI state is not a live integration. Runtime AI, Meta, Google Business Profile, external SEO/social execution, publishing, and visibility monitoring remain inactive pending authorized access and any separately approved incremental spend.
-- Faraz's approved Gmail Team identity is confirmed, has signed in, and has an active Team profile plus active Momo membership. The mistaken secondary identity has disabled portal access. No privileged key was exposed. An authenticated Team/Momo protected-route browser smoke remains required before identity/access is fully verified.
-- Sites runtime public variables are not automatically available to the browser bundle. The reviewed login repair must pass only the validated Supabase project URL and publishable key from the existing dynamic login/protected routes; the marketing root remains cacheable, and service-role values remain server-only and forbidden from HTML, browser code, CI output, and public configuration.
+- Faraz's approved Gmail Team identity is confirmed, has signed in, has an active Team profile plus active Momo membership, and passed an authenticated Team/Momo protected-route Safari smoke. The mistaken secondary identity has disabled portal access. No privileged key was exposed.
+- Sites version 7 passes only the validated Supabase project URL and publishable key from the existing dynamic login/protected routes; the marketing root remains cacheable, and service-role values remain server-only and forbidden from HTML, browser code, CI output, and public configuration. Secure email-link access is live. The current unmerged candidate adds password sign-in and protected password replacement and is not yet deployed or activated.
 - No Momo owner business truth, contacts, sensitive dietary/halal claim, media rights, platform access, or result metric may be invented, inferred as confirmed, or seeded to satisfy readiness.
 - Final Momo readiness passes only at 100% when every required dimension has evidence and no blocker. Missing identities, owner truth, rights, provider authorization, authenticated/browser evidence, monitoring, or recovery evidence must keep the gate blocked.
-- PR #138 is merged at `48630c62b9429238ab39b5b919d7689d189352f8`; all eight migrations are applied; and exact runtime source is deployed as verified Sites version 5. This verifies the provider-neutral foundation only—no disconnected provider may be described as connected and Momo remains blocked until every operational gate has evidence.
+- PR #141 is merged at `46d01c44f0411a4e870cd490d5bfcd8e58ee0e59`; all eight migrations are applied; and exact runtime source is deployed as verified Sites version 7. This verifies the provider-neutral foundation and secure-email-link access only—no disconnected provider may be described as connected and Momo remains blocked until every operational gate has evidence.
 
 ## 2026-07-12 — Sites-only deployment lock
 
 - Faraz retired Vercel. ChatGPT Sites is the sole Veroxa deployment surface.
 - Remove and keep removed `vercel.json` and root Vercel serverless handlers. Do not treat Vercel status as a merge, release, rollback, or readiness gate.
 - GitHub `main` remains canonical; verified Sites checkpoints are the hosted recovery path. Any older Vercel rollback language below is historical and superseded.
-- PR #138 is merged at `48630c62b9429238ab39b5b919d7689d189352f8`, and its exact runtime Sites source is deployed as verified version 5. Both custom domains are active with active SSL and no reported domain error.
+- PR #141 is merged at `46d01c44f0411a4e870cd490d5bfcd8e58ee0e59`, and its exact runtime Sites source is deployed as verified version 7. Both custom domains are active with active SSL and no reported domain error.
 
 ## 2026-07-12 — Production foundation and Audit Center V1 lock
 
 - Momo's House San Antonio remains the only operational client and restaurant workspace.
 - The Sites delivery layer uses Supabase Auth, server session validation, active profile plus active Momo membership, RLS, and safe-empty client views. The undeployed Vite `AUTH_MODE = placeholder` code does not describe production Sites auth.
 - Public Auth identity creation is disabled. Team and future Momo identities must be pre-provisioned through a supported Supabase Admin path and must also have an active profile/membership.
-- Sign-in is magic-link-only for this release. Password sign-in/recovery remains disabled until compromised-password protection is enabled and re-reviewed.
+- Deployed sign-in for approved active identities uses secure email links. The current unmerged candidate adds password sign-in and protected password replacement; public signup remains disabled. Its 24-hour browser check is a UI guard, and its Free-plan HIBP partial-hash check is bypassable defense in depth rather than native Auth-boundary enforcement.
 - Existing legacy demo rows are preserved. Ten broad M024 authenticated development policies are removed; production Sites reads only versioned `veroxa_*` tables and the separate `audit_*` domain.
 - The Restaurant Audit Center is the only cross-restaurant capability. Its records never create clients, workspaces, onboarding, media/content operations, publishing access, or active-client conversion automatically.
 - Reviewed audit states are evidence-gated and immutable. A reviewed request requires a reviewed report; a reviewed report requires a reviewed run and evidence-backed finding; reviewed reruns require a comparison.

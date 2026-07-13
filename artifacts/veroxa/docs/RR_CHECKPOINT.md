@@ -1,6 +1,6 @@
 # RR Release Checkpoint
 
-Status: verified reusable baseline for the deployed Momo Seven-System Operating Foundation V1 + Restaurant Audit Center V1 release. Overall Momo readiness remains separately blocked.
+Status: verified reusable baseline through PR #141 and deployed Sites version 7, with an unmerged password-auth candidate under exact-delta review. Overall Momo readiness remains separately blocked.
 
 Read `RR_RELEASE_CHECKPOINT.json` and run `pnpm --filter @workspace/scripts run check-rr-release-checkpoint` before starting another broad RR. The checkpoint exists to reuse evidence, not to weaken review.
 
@@ -18,11 +18,11 @@ A full boundary review is required for changes to auth/session/allowlist/roles, 
 
 ## Current baseline truth
 
-- PR #138 is merged at `48630c62b9429238ab39b5b919d7689d189352f8`; exact runtime source is deployed as verified Sites version 5, all eight migrations are applied, and both custom domains are active with active SSL.
+- PR #141 is merged at `46d01c44f0411a4e870cd490d5bfcd8e58ee0e59`; exact runtime source is deployed as verified Sites version 7, all eight migrations are applied, and the custom live domain is active.
 - `momo-readiness-tracker.json` separately tracks Momo operational readiness. A verified release boundary does not imply overall Momo readiness.
 - Momo’s House San Antonio is the only operational restaurant.
 - Other restaurants may use only the separate Audit Center and never auto-convert.
-- Sites sign-in is magic-link-only and public account creation is disabled.
+- Deployed Sites sign-in uses secure email links for approved active identities. The current unmerged candidate adds password sign-in and protected password replacement; public account creation remains disabled.
 - Sites is the sole deployment surface; Vercel is retired and must not be restored as a release or rollback gate.
 - Client routes remain safe-empty until verified Momo records exist.
 - Runtime AI, Meta/Google connections, SEO/social execution, publishing, outbound contact, and owner walkthrough remain inactive.
@@ -33,8 +33,8 @@ A full boundary review is required for changes to auth/session/allowlist/roles, 
 - PR #137's `momo_readiness_tracking` lane is retained and updated as a focused evidence delta; its static tracker is durable RR evidence while the production Team readiness view reads the scoped Supabase operating model.
 - Review scope: the new operating-system migration and pgTAP coverage, canonical `momoOperationsV1` contracts, Sites Team/client data surfaces, seven-system truth guard, and controlled Auth Admin tooling.
 - Client operational reads must use the explicit-auth, role-sanitized Momo snapshot RPC; internal base tables remain Team-only and raw sensitive client reads must stay denied/empty.
-- Faraz's approved Gmail Team identity is confirmed, has signed in, and has an active Team profile plus active Momo membership. The mistaken secondary identity has disabled portal access. No privileged key was exposed; authenticated protected-route Team/Momo browser evidence remains an unverified gate.
-- The login repair is a reviewed auth/runtime delta: hosted public values existed, but Sites version 5 did not deliver them to browser code. The source candidate adds a validated dynamic public-config bridge, preserves `shouldCreateUser: false`, and adds rendered regression coverage. It is not production-live until merged and explicitly checkpoint-deployed.
+- Faraz's approved Gmail Team identity is confirmed, has signed in, has an active Team profile plus active Momo membership, and opened the protected Team/Momo route in Safari. The mistaken secondary identity has disabled portal access. No privileged key was exposed.
+- The login runtime-config/callback repair is merged and deployed as Sites version 7. The password extension is the current unmerged, undeployed auth delta; it preserves `shouldCreateUser: false` and must not be described as live until its exact source checkpoint succeeds.
 - No Momo owner truth or media rights are invented. Runtime AI, Meta, Google, publishing, and visibility monitoring are **inactive pending authorized access**.
 - The foundation delta is verified and reusable. Email confirmation, authenticated browser evidence, owner truth, provider access, and final readiness remain separate unverified activation gates and must not be inferred from the green release.
 

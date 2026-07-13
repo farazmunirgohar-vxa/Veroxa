@@ -79,9 +79,30 @@ if (JSON.stringify(activeMigrations) !== JSON.stringify([...checkpoint.databaseM
 }
 
 const auth = readFileSync(resolve(root, "artifacts/veroxa-sites/app/veroxa-supabase.ts"), "utf8");
+const password = readFileSync(resolve(root, "artifacts/veroxa-sites/app/veroxa-password.mjs"), "utf8");
+const route = readFileSync(resolve(root, "artifacts/veroxa-sites/app/[...slug]/page.tsx"), "utf8");
 const milestone = readFileSync(resolve(root, "artifacts/veroxa/docs/VEROXA_CURRENT_MILESTONE.md"), "utf8");
-if (!auth.includes("shouldCreateUser: false") || /signInWithPassword|resetPasswordForEmail/.test(auth)) {
-  throw new Error("RR checkpoint auth boundary is no longer magic-link-only/fail-closed");
+if (
+  !auth.includes("shouldCreateUser: false") ||
+  !auth.includes("signInWithPassword") ||
+  !auth.includes("updateUser({ password })") ||
+  /resetPasswordForEmail|\.auth\.signUp/.test(auth) ||
+  !auth.includes('await client.auth.signOut({ scope: "local" }).catch')
+) {
+  throw new Error("RR checkpoint approved-user password/email-link boundary is incomplete or public signup/recovery drifted");
+}
+if (
+  !password.includes("api.pwnedpasswords.com/range/${prefix}") ||
+  !password.includes('"Add-Padding": "true"') ||
+  !password.includes("fullHash.slice(0, 5)")
+) {
+  throw new Error("RR checkpoint Free-plan leaked-password defense-in-depth boundary is incomplete");
+}
+if (
+  !route.includes('const protectedAccount = initialPath === "/account/security"') ||
+  !route.includes("getServerVeroxaAccess()")
+) {
+  throw new Error("RR checkpoint account-security route is not server protected");
 }
 for (const marker of [
   "Momo's House San Antonio is Veroxa's only operational client",
