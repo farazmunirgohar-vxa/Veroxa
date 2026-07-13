@@ -1,8 +1,8 @@
 # Veroxa Current Milestone
 
-Status: highest-priority current milestone as of 2026-07-12.
+Status: highest-priority current milestone as of 2026-07-13.
 
-Current build: the seven-system Momo 100%-readiness release candidate is in draft PR #138 on `agent/momo-100-readiness`, reconciled with PR #137's two-lane readiness tracking. Its source contract is `MOMO_100_READINESS_SEVEN_SYSTEM_CONTRACT.md`. Until the exact merge, migration application, Sites checkpoint, and authenticated/external evidence are recorded, the deployed production baseline remains PR #135 / Sites version 4.
+Current build: the seven-system Momo operating foundation is merged in PR #138 at `48630c62b9429238ab39b5b919d7689d189352f8`, applied through eight production migrations, and deployed as verified Sites version 5. Its source contract is `MOMO_100_READINESS_SEVEN_SYSTEM_CONTRACT.md`. Momo remains operationally blocked until real identities, owner-confirmed truth, permissioned media, provider access, and authenticated evidence are complete.
 
 Read this file before planning, building, reviewing, merging, or deploying Veroxa. If an older roadmap, status note, or historical plan conflicts with this file, follow this file and Faraz's newest explicit instruction.
 
@@ -82,17 +82,17 @@ For this milestone, **100% readiness** means the scoped Momo capabilities are pe
 
 - GitHub `main` includes merged PR #134 (`bb7ea6add62a0e7c337c23d9d48880a9d034c0d3`), which established the synchronized Sites delivery layer, current milestone, and ChatGPT-managed build protocol.
 - GitHub PR #135 is merged to `main` at `184821f1b94d3801d23742c5bb7d9571e9be27e6`. Its SHA-locked reviewed head passed CI, Sites Verify, Supabase Verify, Veroxa Verify, and focused final delta RR covering latest-run review, audit identity/event integrity, Sites intake reliability, UI draft/navigation/accessibility, and repeat-review checkpoints. Vercel is retired.
-- The connected Supabase project is healthy. All six production-foundation/Audit Center migrations are applied; the final forward-only hardening migration passed clean-reset CI, pgTAP, database lint, and production application.
+- The connected Supabase project is healthy. All eight production migrations are applied; the Momo operating migration and advisor hardening passed clean-reset CI, pgTAP, database lint, production application, and post-apply verification. All 32 operating tables force RLS.
 - Momo's House San Antonio is the only enabled operational restaurant scope. Legacy demo rows are preserved, and the ten broad M024 development policies are removed from the production migration chain.
 - The Sites release source implements signed Supabase sessions, server route guards, active profile plus active Momo membership checks, RLS, private restaurant storage, magic-link-only sign-in, callback safety, and session refresh. Password sign-in/recovery remains disabled while compromised-password protection is off.
 - Public Auth user creation is disabled. The approved Team identity is allowlisted but still requires supported Supabase Admin pre-provisioning before Faraz can sign in; no Momo client identity is provisioned.
 - The Restaurant Audit Center is durable and separate from operational clients: signed public intake, consent, idempotency, rate limits, Team queue/manual entry, notes, evidence-backed findings, run history/comparison, reviewed-report gates, and immutable reviewed records are implemented.
 - Final release hardening requires the latest reviewed run/report to close a request, separates same-name audit locations instead of auto-merging them, records append-only lifecycle events, validates failed-run reasons/timestamps/source snapshots, proves affected browser mutations, and labels the 100-row queue view truthfully.
-- Remote catalog, RLS/role, public-intake isolation, and transactional Team workflow tests pass. The active migration chain matches all six remote-applied versions; eight never-applied prototype migrations are archived outside the active directory. Advisor review also records six legacy mutable-search-path warnings, legacy-table performance notices, intentional scoped security-definer functions, and disabled leaked-password protection; password login is therefore gated off.
-- Exact merged source is deployed as Sites version 4. The checkpoint and both custom domains are verified active with active SSL and no reported domain error.
+- Remote catalog, RLS/role, public-intake isolation, and transactional Team workflow tests pass. The active migration chain matches all eight remote-applied versions; eight never-applied prototype migrations are archived outside the active directory. Advisor review records no error-level issue; the duplicate uploader index is removed. Intentional scoped security-definer helpers, fresh unused-index notices, legacy warnings, and disabled leaked-password protection remain documented; password login is therefore gated off.
+- Exact merged runtime source is deployed as Sites version 5. The checkpoint and both custom domains are verified active with active SSL and no reported domain error.
 - `RR_CHECKPOINT.md` and its machine-readable fingerprint record now route future work to delta or changed-boundary review, preventing unchanged evidence from being repeated.
-- Real Momo business data, onboarding, uploads, runtime AI, Meta/Google connections, social handling, SEO execution, publishing, outbound contact, and outcome metrics remain inactive.
-- The seven-system release candidate adds fail-closed source contracts for Restaurant Intelligence/onboarding, media intelligence, content/approvals/calendar, Meta, Google/local visibility, work/reports/recovery, and the final gate. It does not convert prepared adapters into live integrations.
+- Owner-confirmed Momo business data, live onboarding, uploads, runtime AI, Meta/Google connections, social handling, SEO execution, publishing, outbound contact, and outcome metrics remain inactive.
+- The deployed seven-system foundation provides fail-closed contracts and persistence for Restaurant Intelligence/onboarding, media intelligence, content/approvals/calendar, Meta, Google/local visibility, work/reports/recovery, and the final gate. It does not convert prepared adapters into live integrations.
 - Real Team Auth provisioning is **blocked external authority**: the database allowlist exists, but the connector has no Auth Admin create-user method and this workflow has no privileged server key. The server-only idempotent provisioning and Auth/RLS smoke commands are prepared but have not been run.
 - Runtime AI, Meta, Google writes, publishing, and visibility monitoring are **inactive pending authorized access**. No Momo owner truth or media rights are invented to make a readiness score pass.
 
@@ -108,28 +108,28 @@ Veroxa progress must track both the platform build and Momo's House operational 
 
 ## Latest completed build and exact next build
 
-The deployed release completed steps 1–3 below across source, data, GitHub, and Sites. The current branch is building steps 4–10 together as one seven-system release candidate while keeping external authority and activation separate.
+The deployed release completed steps 1–9 below across source, data, GitHub, Supabase, and Sites. Step 10 remains blocked by real-world evidence and external authority.
 
-The current release candidate is **Momo 100% Readiness Seven-System V1**:
+The current deployed foundation is **Momo 100% Readiness Seven-System V1**:
 
 - persist owner-confirmed restaurant identity, hours, address, phone, menu, services, dietary/halal claims, contacts, brand voice, goals, and required presence-stack state;
 - provide Team review and Momo safe-empty/client-confirmation views backed only by verified records;
 - make onboarding readiness measurable without contacting Momo, inventing facts, or connecting owner-controlled platforms;
 - prepare modular adapters for later media, AI, Meta, Google, SEO, ordering, and publishing connections without adding new spend.
 
-The candidate also prepares media rights/reuse, AI/content approvals/calendar, provider-neutral Meta/Google operations, work/retry/recovery/reporting, and the fail-closed final readiness gate. The runtime truth and evidence requirements are locked in `MOMO_100_READINESS_SEVEN_SYSTEM_CONTRACT.md`.
+The deployed foundation also provides media rights/reuse, AI/content approvals/calendar, provider-neutral Meta/Google operations, work/retry/recovery/reporting, and the fail-closed final readiness gate. The runtime truth and evidence requirements are locked in `MOMO_100_READINESS_SEVEN_SYSTEM_CONTRACT.md`.
 
 ## Current build sequence
 
 1. **Complete and deployed:** reconcile GitHub, Sites, current milestone memory, and truthful Momo states.
 2. **Complete and deployed:** establish the secure Supabase foundation for Team Faraz and Momo only.
 3. **Complete and deployed:** make the Team Restaurant Audit Center effective for non-client restaurants without creating operational workspaces.
-4. **Release candidate:** persistent Momo Restaurant Intelligence Profile and onboarding flow.
-5. **Release candidate:** Momo media intake, rights, Team review, reuse, and provider-neutral AI media intelligence.
-6. **Release candidate:** Momo content strategy, captions, platform variants, approvals, calendar, and provider-neutral publishing jobs.
-7. **Release candidate:** Meta and Google Business Profile connection/readiness contracts, local SEO, reviews, website checks, and visibility actions; live providers remain inactive.
-8. **Release candidate:** work orchestration, activity/evidence, retries, recovery, monitoring, and reporting.
-9. **Release candidate:** deterministic source/database/guardrail tests plus controlled external identity/Auth smoke commands that are not run by CI.
+4. **Complete and deployed foundation:** persistent Momo Restaurant Intelligence Profile and onboarding flow.
+5. **Complete and deployed foundation:** Momo media intake, rights, Team review, reuse, and provider-neutral AI media intelligence.
+6. **Complete and deployed foundation:** Momo content strategy, captions, platform variants, approvals, calendar, and provider-neutral publishing jobs.
+7. **Complete and deployed foundation:** Meta and Google Business Profile connection/readiness contracts, local SEO, reviews, website checks, and visibility actions; live providers remain inactive.
+8. **Complete and deployed foundation:** work orchestration, activity/evidence, retries, recovery, monitoring, and reporting.
+9. **Complete and deployed foundation:** deterministic source/database/guardrail tests plus controlled external identity/Auth smoke commands that are not run by CI.
 10. **Blocked until evidence is complete:** Momo 100%-readiness gate, owner walkthrough, and activation decision.
 
 ## Mandatory post-build continuity update

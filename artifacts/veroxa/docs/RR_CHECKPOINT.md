@@ -1,6 +1,6 @@
 # RR Release Checkpoint
 
-Status: verified reusable baseline for the deployed Momo Production Foundation V1 + Restaurant Audit Center V1 release, with a candidate delta checkpoint open for the seven-system Momo 100%-readiness build.
+Status: verified reusable baseline for the deployed Momo Seven-System Operating Foundation V1 + Restaurant Audit Center V1 release. Overall Momo readiness remains separately blocked.
 
 Read `RR_RELEASE_CHECKPOINT.json` and run `pnpm --filter @workspace/scripts run check-rr-release-checkpoint` before starting another broad RR. The checkpoint exists to reuse evidence, not to weaken review.
 
@@ -18,7 +18,7 @@ A full boundary review is required for changes to auth/session/allowlist/roles, 
 
 ## Current baseline truth
 
-- PR #135 is merged at `184821f1b94d3801d23742c5bb7d9571e9be27e6`; exact merged source is deployed as verified Sites version 4 and both custom domains are active with active SSL.
+- PR #138 is merged at `48630c62b9429238ab39b5b919d7689d189352f8`; exact runtime source is deployed as verified Sites version 5, all eight migrations are applied, and both custom domains are active with active SSL.
 - `momo-readiness-tracker.json` separately tracks Momo operational readiness. A verified release boundary does not imply overall Momo readiness.
 - Momo’s House San Antonio is the only operational restaurant.
 - Other restaurants may use only the separate Audit Center and never auto-convert.
@@ -27,14 +27,14 @@ A full boundary review is required for changes to auth/session/allowlist/roles, 
 - Client routes remain safe-empty until verified Momo records exist.
 - Runtime AI, Meta/Google connections, SEO/social execution, publishing, outbound contact, and owner walkthrough remain inactive.
 
-## Current candidate delta
+## Current verified delta
 
-- Draft PR #138 / branch `agent/momo-100-readiness`; not yet merged or deployed.
+- PR #138 exact head `068f2c7e6bb094bb16329106ca54fed06fe66aca` passed all four workflows, clean reset, pgTAP, and lint before its SHA-locked merge and Sites deployment.
 - PR #137's `momo_readiness_tracking` lane is retained and updated as a focused evidence delta; its static tracker is durable RR evidence while the production Team readiness view reads the scoped Supabase operating model.
 - Review scope: the new operating-system migration and pgTAP coverage, canonical `momoOperationsV1` contracts, Sites Team/client data surfaces, seven-system truth guard, and controlled Auth Admin tooling.
 - Client operational reads must use the explicit-auth, role-sanitized Momo snapshot RPC; internal base tables remain Team-only and raw sensitive client reads must stay denied/empty.
 - Real Team identity provisioning is **blocked external authority** because the connector cannot call Auth Admin and no privileged server key is available. The explicit-ack server command and mock contract exist but have not been run.
 - No Momo owner truth or media rights are invented. Runtime AI, Meta, Google, publishing, and visibility monitoring are **inactive pending authorized access**.
-- Refresh candidate fingerprints only after the final source, SQL tests, Sites tests, and exact delta review pass. Do not relabel the candidate verified or deployed before merge, forward migration, checkpoint, domain verification, and authenticated evidence.
+- The foundation delta is verified and reusable. Identity provisioning, authenticated browser evidence, owner truth, provider access, and final readiness remain separate unverified activation gates and must not be inferred from the green release.
 
 The machine check verifies migration inventory, immutable applied migration checksums, scope/auth markers, and the protected file-group fingerprints. A failed fingerprint is a review-routing signal: inspect the exact diff, run only the required delta or boundary checks, then deliberately refresh the checkpoint.

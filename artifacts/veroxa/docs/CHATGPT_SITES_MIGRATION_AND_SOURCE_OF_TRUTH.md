@@ -4,9 +4,9 @@ Status: active migration and deployment authority as of 2026-07-12.
 
 ## Current production-foundation override
 
-The original migration scope below remains useful history, but its statements that production identity, persistence, and protected portal routes are future work are superseded for source truth by `VEROXA_CURRENT_MILESTONE.md`. PR #135 is merged and its exact source is deployed as verified Sites version 4. That deployed foundation implements Supabase-backed magic-link sessions, active Momo membership checks, RLS, durable audit intake, and protected Client/Team routes.
+The original migration scope below remains useful history, but its statements that production identity, persistence, and protected portal routes are future work are superseded for source truth by `VEROXA_CURRENT_MILESTONE.md`. PR #138 is merged at `48630c62b9429238ab39b5b919d7689d189352f8`, its eight-migration data layer is applied, and its exact runtime source is deployed as verified Sites version 5. That deployed foundation implements Supabase-backed magic-link sessions, active Momo membership checks, forced RLS, durable audit intake, protected Client/Team routes, and all seven provider-neutral Momo operating systems.
 
-The seven-system Momo 100%-readiness build is currently a release candidate, not the deployed runtime. Real Team provisioning is **blocked external authority** because the available connector cannot call Supabase Auth Admin and no privileged server key is available. No Momo owner identity or owner-confirmed data is provisioned. Runtime AI, Meta, Google Business Profile, external SEO/social execution, publishing, visibility monitoring, Momo contact, and client activation are **inactive pending authorized access**. See `MOMO_100_READINESS_SEVEN_SYSTEM_CONTRACT.md` for the source/runtime/activation split.
+The seven-system Momo foundation is deployed, but Momo is not 100% ready. Real Team provisioning is **blocked external authority** because the available connector cannot call Supabase Auth Admin and no privileged server key is available. No Momo owner identity or owner-confirmed data is provisioned. Runtime AI, Meta, Google Business Profile, external SEO/social execution, publishing, visibility monitoring, Momo contact, and client activation are **inactive pending authorized access**. See `MOMO_100_READINESS_SEVEN_SYSTEM_CONTRACT.md` for the source/runtime/activation split.
 
 ## Locked direction
 
@@ -17,7 +17,7 @@ Veroxa now uses the ChatGPT Sites application/deployment surface. This is not a 
 - Codex is the engineering capability ChatGPT invokes internally.
 - ChatGPT Sites is the primary application and deployment surface.
 - Vercel is retired. Sites is the sole deployment surface; GitHub `main` plus verified Sites checkpoints are the recovery path.
-- `veroxasystems.com` and `www.veroxasystems.com` are attached to Sites with active provider and SSL status as last verified on 2026-07-12.
+- `veroxasystems.com` and `www.veroxasystems.com` are attached to Sites with active provider and SSL status as last verified on 2026-07-13.
 - The approved Sites visual direction is the presentation layer. It must preserve the existing Veroxa OS rather than replace it.
 - `CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md` controls the build, green-merge, hold, RR, and deployment command meanings.
 

@@ -4,11 +4,11 @@
   "milestone": "Momo's House San Antonio 100% readiness",
   "overallStatus": "blocked",
   "overallRule": "Do not calculate or publish a readiness percentage. Overall readiness is verified only when every required dimension is verified and no blocker remains.",
-  "lastReviewedAt": "2026-07-12",
+  "lastReviewedAt": "2026-07-13",
   "lastVerifiedRelease": {
-    "mainCommit": "5137712cb1c8657e60322b95c76f5d2896a3cfbc",
-    "sitesVersion": 4,
-    "productionMigrations": 6
+    "mainCommit": "48630c62b9429238ab39b5b919d7689d189352f8",
+    "sitesVersion": 5,
+    "productionMigrations": 8
   },
   "statusDefinitions": {
     "not_started": "No production-quality implementation or verified evidence exists yet.",
@@ -22,16 +22,14 @@
     "production_foundation": {
       "label": "Production foundation",
       "required": true,
-      "status": "in_progress",
+      "status": "verified",
       "evidence": [
-        "PR #135 merged the reviewed Momo production foundation and Restaurant Audit Center V1.",
-        "Six production migrations are applied and ledger/hash verified.",
-        "Sites version 4 and both custom domains are verified active with active SSL."
+        "PR #138 merged the reviewed seven-system Momo operating foundation at commit 48630c62b9429238ab39b5b919d7689d189352f8.",
+        "Eight production migrations are applied and ledger/hash verified; 32 of 32 operating tables force RLS.",
+        "Sites version 5 and both custom domains are verified active with active SSL."
       ],
-      "blockers": [
-        "PR #138 changes protected database and delivery boundaries and still requires exact-head CI, merge, production migration, and Sites verification."
-      ],
-      "nextAction": "Pass the clean Supabase reset and all exact-head checks, then merge, apply the seventh migration, and verify the Sites checkpoint."
+      "blockers": [],
+      "nextAction": "Preserve the verified boundary fingerprints and rerun only exact deltas that cross protected database, identity, provider, or delivery boundaries."
     },
     "team_identity_and_access": {
       "label": "Team identity and authenticated access",
@@ -60,7 +58,7 @@
         "Production owner-confirmed identity, hours, menu, services, contacts, dietary/halal claims, brand voice, goals, and presence-stack records are not complete.",
         "Uncertain facts cannot be used publicly before owner confirmation."
       ],
-      "nextAction": "Merge and apply PR #138, then collect and review the real owner-confirmed Momo truth without inventing missing facts."
+      "nextAction": "Collect and review the real owner-confirmed Momo truth without inventing missing facts."
     },
     "media_and_rights": {
       "label": "Media, rights, and intelligence",
@@ -74,7 +72,7 @@
         "No production Momo media inventory with verified usage rights exists.",
         "Upload, review, classification, and reuse have not been verified end to end."
       ],
-      "nextAction": "Merge and apply PR #138, provision client access, and verify one real owner-authorized upload through review, tagging, and reuse."
+      "nextAction": "Provision client access and verify one real owner-authorized upload through review, tagging, and reuse."
     },
     "ai_and_automation": {
       "label": "AI and safe automation",
@@ -89,7 +87,7 @@
         "Verified business truth and permissioned media inputs are incomplete.",
         "Production runtime AI, retry, audit, monitoring, and cost controls are not verified end to end."
       ],
-      "nextAction": "Verify the provider-neutral PR #138 workflow in production, then connect a live provider only after credentials and any incremental spend are explicitly approved."
+      "nextAction": "Verify the deployed provider-neutral workflow with real approved inputs, then connect a live provider only after credentials and any incremental spend are explicitly approved."
     },
     "meta_social": {
       "label": "Meta social handling",
@@ -129,7 +127,7 @@
         "Current owner-confirmed menu, hours, links, services, and website access are incomplete.",
         "No external website or ordering-platform write is authorized."
       ],
-      "nextAction": "Merge and apply PR #138, then record the real owner-confirmed URLs/menu/hours and run evidence-backed checks."
+      "nextAction": "Record the real owner-confirmed URLs, menu, and hours, then run evidence-backed checks."
     },
     "operations_reporting_and_monitoring": {
       "label": "Operations, reporting, and monitoring",
@@ -142,7 +140,7 @@
       "blockers": [
         "Production Momo work history, platform activity, weekly updates, monthly reporting, alerts, retries, and recovery are not verified end to end."
       ],
-      "nextAction": "Merge and apply PR #138, then verify a real work item, retry, monitored failure/recovery, and evidence-backed report end to end."
+      "nextAction": "Verify a real work item, retry, monitored failure/recovery, and evidence-backed report end to end."
     },
     "activation_and_recovery": {
       "label": "Activation, recovery, and owner walkthrough",

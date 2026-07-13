@@ -1,21 +1,21 @@
 {
   "schemaVersion": 1,
-  "checkpoint": "momo-seven-system-readiness-v1-candidate",
-  "status": "candidate",
-  "reviewedAt": "2026-07-12",
+  "checkpoint": "momo-seven-system-foundation-v1-verified",
+  "status": "verified",
+  "reviewedAt": "2026-07-13",
   "source": {
-    "pullRequest": 135,
-    "reviewedHead": "fa5bb176c72620a082590502fb0eee3f0709a6e2",
-    "mergedCommit": "184821f1b94d3801d23742c5bb7d9571e9be27e6",
+    "pullRequest": 138,
+    "reviewedHead": "068f2c7e6bb094bb16329106ca54fed06fe66aca",
+    "mergedCommit": "48630c62b9429238ab39b5b919d7689d189352f8",
     "sitesProductionVerified": true,
-    "sitesVersion": 4,
+    "sitesVersion": 5,
     "customDomainsVerified": true
   },
   "candidate": {
     "branch": "agent/momo-100-readiness",
-    "merged": false,
-    "databaseApplied": false,
-    "sitesDeployed": false,
+    "merged": true,
+    "databaseApplied": true,
+    "sitesDeployed": true,
     "identityProvisioned": false,
     "authenticatedBrowserSmokeVerified": false,
     "externalProvidersConnected": false
@@ -119,7 +119,7 @@
         "AGENTS.md",
         "artifacts/veroxa/docs/RR_CHECKPOINT.md"
       ],
-      "sha256": "7ec403c2b91c93c3a451464fdc85abf6f3910fa98bcebe176214dc7c4601e8d7"
+      "sha256": "b45de722e3074e2be82bbd4874155c4333013a8fad3224601f2c7002b54e734d"
     },
     "momo_readiness_tracking": {
       "review": "evidence-delta-on-change",
@@ -128,7 +128,7 @@
         "artifacts/veroxa-sites/app/momo-readiness-types.ts",
         "scripts/src/check-momo-house-readiness-tracking.ts"
       ],
-      "sha256": "fa27a4228fcf8adcae4ef7fbf5ce09dd32fff3d3e654417326970c432ad263e8"
+      "sha256": "8803fd7cc4d3b353f164062a14d4b282f23cc5cfb18f8b3d998b101b1091bab3"
     },
     "presentation_surfaces": {
       "review": "delta-unless-boundary-crossed",
