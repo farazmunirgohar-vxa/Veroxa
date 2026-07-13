@@ -12,7 +12,11 @@ const releaseHardening = read(
 const finalHardening = read(
   "supabase/migrations/20260712230242_audit_center_release_hardening.sql",
 );
+const generationV2 = read(
+  "supabase/migrations/20260713201715_restaurant_audit_generation_v2.sql",
+);
 const sqlTest = read("supabase/tests/restaurant_audit_center_v1.sql");
+const generationSqlTest = read("supabase/tests/restaurant_audit_generation_v2.sql");
 const sitePage = read("artifacts/veroxa-sites/app/page.tsx");
 const momoOperatingCenter = read(
   "artifacts/veroxa-sites/app/momo-operating-center.tsx",
@@ -49,6 +53,29 @@ for (const marker of [
 ]) {
   must(migration.includes(marker), `Audit Center migration missing: ${marker}`);
 }
+
+for (const marker of [
+  "save_team_generated_audit_v2",
+  "complete_team_generated_audit_run_v2",
+  "save_team_generated_audit_rerun_v2",
+  "restaurant-audit-v2",
+  "overallScore",
+  "days_0_30",
+  "days_31_60",
+  "days_61_90",
+  "audit_onboarding_conversions",
+  "veroxa_convert_reviewed_audit_to_pending_profile_v1",
+  "pending_profile",
+  "reviewed_audit_required_for_onboarding_prefill",
+  "old.audit_run_id",
+  "new.audit_run_id",
+]) {
+  must(generationV2.includes(marker), `Generated Audit V2 migration missing: ${marker}`);
+}
+must(
+  generationV2.includes("This does not activate services, connect accounts, authorize publishing, or create charges."),
+  "Audit-to-profile conversion must preserve the exact non-activation consent",
+);
 
 for (const marker of [
   "reviewed_request_requires_latest_reviewed_report",
@@ -179,7 +206,17 @@ for (const marker of [
   "Audit-only boundary",
   "createTeamAudit",
   "addAuditFinding",
-  "startAuditRerun",
+  "generateRestaurantAuditSnapshot",
+  "Generate audit preview",
+  "UNSAVED PREVIEW",
+  "Save audit",
+  "Discard",
+  "Room to improve:",
+  "0–30 days",
+  "31–60 days",
+  "61–90 days",
+  "discardGeneratedPreview",
+  "Create pending restaurant profile",
   "saveAuditReport",
   "Reviewed report locked",
   "audit-run-history",
@@ -206,6 +243,15 @@ must(
   sqlTest.includes("Audit Center links to operational table"),
   "Audit Center SQL isolation test is missing",
 );
+for (const marker of [
+  "generated audit save, review, consent-backed pending profile",
+  "saving an audit automatically created",
+  "pending, non-operational boundary",
+  "reviewed finding escaped immutability",
+  "invalid generated audit left partial records",
+]) {
+  must(generationSqlTest.includes(marker), `Generated Audit V2 SQL test missing: ${marker}`);
+}
 
 if (failures.length) {
   console.error(

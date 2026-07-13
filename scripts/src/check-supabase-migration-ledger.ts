@@ -14,6 +14,7 @@ const expectedActive = [
   "20260713010710_momo_full_operating_system_v1.sql",
   "20260713010916_momo_full_operating_system_advisor_hardening.sql",
   "20260713191147_momo_zero_cost_operating_rehearsal_v1.sql",
+  "20260713201715_restaurant_audit_generation_v2.sql",
 ];
 const appliedChecksums: Record<string, string> = {
   "20260712213930_momo_production_foundation_v1.sql": "8fd646bdcbbef6b004f1fafc0fbb0b66cdc298e98cb890bbec6643788d0e2db9",

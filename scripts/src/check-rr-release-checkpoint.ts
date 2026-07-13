@@ -142,7 +142,8 @@ if (
 }
 if (
   checkpoint.scope.operationalRestaurant !== "Momo's House San Antonio" ||
-  checkpoint.scope.otherRestaurantCapability !== "Restaurant Audit Center only" ||
+  checkpoint.scope.otherRestaurantCapability !==
+    "Restaurant Audit Center plus explicit-consent pending profile only" ||
   checkpoint.scope.automaticProspectConversion !== false
 ) {
   throw new Error("RR checkpoint drifted from the locked Momo-only operating scope");
@@ -287,7 +288,7 @@ if (
   readinessOperational.mergedOperationalCommit !== expectedRelease.mergedOperationalCommit ||
   readinessOperational.sitesCheckoutSourceCommit !== expectedRelease.sitesCheckoutSourceCommit ||
   readinessOperational.sitesVersion !== expectedRelease.sitesVersion ||
-  readinessOperational.productionMigrations !== checkpoint.databaseMigrations.length ||
+  readinessOperational.productionMigrations !== expectedRelease.productionMigrations ||
   !readinessOperational.databaseVerified ||
   !readinessOperational.customDomainsVerified ||
   readinessDeployed.releaseState !== "merged_applied_published_verified" ||

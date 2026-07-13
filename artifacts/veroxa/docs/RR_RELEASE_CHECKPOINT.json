@@ -50,7 +50,7 @@
   },
   "scope": {
     "operationalRestaurant": "Momo's House San Antonio",
-    "otherRestaurantCapability": "Restaurant Audit Center only",
+    "otherRestaurantCapability": "Restaurant Audit Center plus explicit-consent pending profile only",
     "automaticProspectConversion": false
   },
   "databaseMigrations": [
@@ -62,7 +62,8 @@
     "20260712230242_audit_center_release_hardening.sql",
     "20260713010710_momo_full_operating_system_v1.sql",
     "20260713010916_momo_full_operating_system_advisor_hardening.sql",
-    "20260713191147_momo_zero_cost_operating_rehearsal_v1.sql"
+    "20260713191147_momo_zero_cost_operating_rehearsal_v1.sql",
+    "20260713201715_restaurant_audit_generation_v2.sql"
   ],
   "reusableEvidence": [
     "Momo-only tenancy, role matrix, RLS, and safe-empty client boundary",
@@ -95,15 +96,17 @@
         "supabase/migrations/20260713010710_momo_full_operating_system_v1.sql",
         "supabase/migrations/20260713010916_momo_full_operating_system_advisor_hardening.sql",
         "supabase/migrations/20260713191147_momo_zero_cost_operating_rehearsal_v1.sql",
+        "supabase/migrations/20260713201715_restaurant_audit_generation_v2.sql",
         "supabase/tests/momo_production_tenant_rls_hardening.sql",
         "supabase/tests/momo_full_operating_system_v1.sql",
         "supabase/tests/momo_zero_cost_operating_rehearsal_v1.sql",
         "supabase/tests/restaurant_audit_center_v1.sql",
+        "supabase/tests/restaurant_audit_generation_v2.sql",
         "supabase/tests/legacy_policy_cleanup_coexistence.sql",
         "scripts/src/check-supabase-migration-ledger.ts",
         ".github/workflows/supabase-verify.yml"
       ],
-      "sha256": "ce2364a7aeefba4cdf5e6f7204604acad9c41cba29ed61ff38c21e1260a6c399"
+      "sha256": "b90e46e2d528dc55c1b00deff76250f06d2d2a4f42a67761e1604336cb41f2e0"
     },
     "auth_access": {
       "review": "full-on-change",
@@ -115,17 +118,19 @@
         "artifacts/veroxa-sites/app/[...slug]/page.tsx",
         "artifacts/veroxa-sites/proxy.ts"
       ],
-      "sha256": "e303f3b804846099914bf134cb80f3861c4d3ea85411f1b5227be72958966b93"
+      "sha256": "3a100a84a5893fe636e8192c2e1444dd72f894a486f837970e9823a4aa3f8d21"
     },
     "audit_runtime": {
       "review": "full-on-change",
       "files": [
         "artifacts/veroxa-sites/app/api/audit-requests/route.ts",
         "artifacts/veroxa-sites/app/audit-center.tsx",
+        "artifacts/veroxa-sites/app/restaurant-audit-engine.ts",
+        "artifacts/veroxa-sites/tests/restaurant-audit-engine.test.mjs",
         "scripts/src/check-audit-intake-adapter-contracts.ts",
         "scripts/src/check-restaurant-audit-center-v1.ts"
       ],
-      "sha256": "870db9a292bf99c45bc7150229f9635e5b73a09fe9bbde85f2681a41e02c2559"
+      "sha256": "b5368ac4c887be0370c86a51abe2f9a2c777082fccdeb1677679992b5b01d4c4"
     },
     "delivery": {
       "review": "full-on-change",
@@ -141,7 +146,7 @@
         ".github/workflows/ci.yml",
         ".github/workflows/sites-verify.yml"
       ],
-      "sha256": "1d440f53109909f71f27e494672dc8d16b829e2832384ab25eb226525f5d4b09"
+      "sha256": "51f4007fd28094802fa876551a686037936c1c451e83ad121faaa79abe7ec98b"
     },
     "product_scope": {
       "review": "full-on-change",
@@ -158,7 +163,7 @@
         "AGENTS.md",
         "artifacts/veroxa/docs/RR_CHECKPOINT.md"
       ],
-      "sha256": "27d90c65a237f3f5d322bc7f829791d6352a706e2f294e3c7b09c643638878d7"
+      "sha256": "79e85254cfa2a1c43d9bb3ae7fbc34017f67788826bfbe419f7c91febe65ee65"
     },
     "momo_readiness_tracking": {
       "review": "evidence-delta-on-change",
@@ -177,7 +182,7 @@
         "artifacts/veroxa-sites/tests/rendered-html.test.mjs",
         "artifacts/veroxa/src/pages/free-audit.tsx"
       ],
-      "sha256": "7671b583adb4dfe11da000197c3474a2a57f20f0356541b11dd25b52deab751a"
+      "sha256": "1119d2f35ca6c23cdcfcec940dfafafcffcdda86a65f4a090388d36c6b50ca34"
     },
     "momo_operations_contract": {
       "review": "full-on-change",
@@ -206,7 +211,7 @@
         "package.json",
         "pnpm-lock.yaml"
       ],
-      "sha256": "c3a314849b3e28c5a930885c4e8876cd1e4841bf19d1f0991441cac8e5deb206"
+      "sha256": "a65ee0c235f21f0149e1a15893f0165ccf4c6040dbcccd05048fa62cce037296"
     }
   },
   "activationGates": [

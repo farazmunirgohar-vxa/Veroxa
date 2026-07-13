@@ -1,3 +1,11 @@
+## 2026-07-13 — Verified baseline and unshipped release-ready source
+
+- Verified reusable baseline: PR #144 is merged at 01d11b4195809f60bcaf8bb7f21e004418f7647c; Sites version 10 is verified from checkout source 064980c52ded14b8c80724859f68c4cb30ffc86c; and all nine production migrations are applied and verified.
+- Current release-ready candidate source adds Restaurant Audit Center V2 and the simplified Momo Team information architecture. Audit V2 restores a deterministic score out of 100, room-for-improvement findings, a 30/60/90-day plan, and save-or-discard preview control. Team stays organized under the Momo's House San Antonio folder, with the Work Board and focused content/approval views scoped to Momo.
+- The candidate also adds an explicit-consent conversion from a reviewed audit to a pending restaurant profile. Consent creates only a non-operational pending profile; it does not create a client identity, membership, workspace, onboarding activation, publishing authority, or paid service.
+- Release boundary: this candidate source is not yet merged to GitHub main, its new migration is not applied to production, and it is not deployed to Sites. Do not describe Audit V2, the pending-profile conversion, or the new Team IA as live until each separate source, migration, and deployment gate is verified.
+- Momo remains the only operational restaurant. This work adds no new spend; runtime or paid AI, Meta/Google access, external SEO/social execution, publishing, outbound contact, owner/client contact, and activation remain blocked pending specific authorization, verified access, and any separately approved cost. Older PR #143, PR #144-pending, Sites version 9, or pre-version-10 current-state wording below is historical and superseded by this section.
+
 ## 2026-07-12 — Current milestone and mandatory continuity update
 
 - Read `artifacts/veroxa/docs/VEROXA_CURRENT_MILESTONE.md` first for the current scope, priority, verified state, and next build.
