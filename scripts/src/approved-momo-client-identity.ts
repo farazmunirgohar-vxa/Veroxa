@@ -1,68 +1,60 @@
 import type { SupabaseClient, User } from "@supabase/supabase-js";
+import {
+  MOMO_OPERATIONAL_RESTAURANT,
+  validateSupabaseUrl,
+} from "./approved-team-identity";
 
-export const MOMO_OPERATIONAL_RESTAURANT = "Momo's House San Antonio";
+export { MOMO_OPERATIONAL_RESTAURANT, validateSupabaseUrl };
 
-export type ApprovedTeamAccess = {
+export type ApprovedMomoClientAccess = {
   profile: { user_id: string; role: string; status: string };
   membership: { restaurant_id: string; role: string; status: string };
   restaurant: { id: string; name: string; status: string };
   is_operational_restaurant: boolean;
 };
 
-export type IdentityProvisioningResult = {
+export type MomoClientIdentityProvisioningResult = {
   outcome: "created" | "already_exists";
   userId: string;
-  access: ApprovedTeamAccess;
+  access: ApprovedMomoClientAccess;
 };
 
-export interface ApprovedTeamIdentityGateway {
+export interface ApprovedMomoClientIdentityGateway {
   findUserByEmail(email: string): Promise<User | null>;
   createUser(email: string): Promise<User>;
   refreshUserEmail(userId: string, email: string): Promise<User>;
   deleteUser(userId: string): Promise<void>;
-  readApprovedTeamAccess(userId: string): Promise<ApprovedTeamAccess | null>;
+  readApprovedMomoClientAccess(
+    userId: string,
+  ): Promise<ApprovedMomoClientAccess | null>;
 }
 
-export function normalizeApprovedTeamEmail(value: string | undefined): string {
+export function normalizeApprovedMomoClientEmail(
+  value: string | undefined,
+): string {
   const email = value?.trim().toLowerCase() ?? "";
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    throw new Error("VEROXA_APPROVED_TEAM_EMAIL must be a valid email address");
+    throw new Error(
+      "VEROXA_APPROVED_MOMO_CLIENT_EMAIL must be a valid email address",
+    );
   }
   return email;
 }
 
-export function validateSupabaseUrl(value: string | undefined): string {
-  const raw = value?.trim() ?? "";
-  let parsed: URL;
-  try {
-    parsed = new URL(raw);
-  } catch {
-    throw new Error("SUPABASE_URL must be a valid HTTPS Supabase project URL");
+export function assertApprovedMomoClientAccess(
+  access: ApprovedMomoClientAccess | null,
+): asserts access is ApprovedMomoClientAccess {
+  if (!access) {
+    throw new Error("The Auth user was not accepted by the database allowlist");
+  }
+  if (access.profile.role !== "client" || access.profile.status !== "active") {
+    throw new Error("The allowlisted profile is not an active Momo client identity");
   }
   if (
-    parsed.protocol !== "https:" ||
-    !parsed.hostname.endsWith(".supabase.co") ||
-    parsed.username ||
-    parsed.password ||
-    parsed.port ||
-    (parsed.pathname !== "/" && parsed.pathname !== "") ||
-    parsed.search ||
-    parsed.hash
+    access.membership.role !== "client" ||
+    access.membership.status !== "active"
   ) {
-    throw new Error("SUPABASE_URL must be the HTTPS root of a hosted Supabase project");
-  }
-  return parsed.origin;
-}
-
-export function assertApprovedTeamAccess(
-  access: ApprovedTeamAccess | null,
-): asserts access is ApprovedTeamAccess {
-  if (!access) throw new Error("The Auth user was not accepted by the database allowlist");
-  if (access.profile.role !== "team" || access.profile.status !== "active") {
-    throw new Error("The allowlisted profile is not an active Team identity");
-  }
-  if (access.membership.role !== "team" || access.membership.status !== "active") {
-    throw new Error("The allowlisted identity has no active Team membership");
+    throw new Error("The allowlisted identity has no active Momo client membership");
   }
   if (
     access.restaurant.name !== MOMO_OPERATIONAL_RESTAURANT ||
@@ -70,49 +62,58 @@ export function assertApprovedTeamAccess(
     !access.is_operational_restaurant ||
     access.membership.restaurant_id !== access.restaurant.id
   ) {
-    throw new Error("The allowlisted identity is not scoped to the active Momo restaurant");
+    throw new Error(
+      "The allowlisted client identity is not scoped to the active Momo restaurant",
+    );
   }
 }
 
-export async function provisionApprovedTeamIdentity(
-  gateway: ApprovedTeamIdentityGateway,
+export async function provisionApprovedMomoClientIdentity(
+  gateway: ApprovedMomoClientIdentityGateway,
   emailValue: string | undefined,
-): Promise<IdentityProvisioningResult> {
-  const email = normalizeApprovedTeamEmail(emailValue);
+): Promise<MomoClientIdentityProvisioningResult> {
+  const email = normalizeApprovedMomoClientEmail(emailValue);
   const existing = await gateway.findUserByEmail(email);
   if (existing) {
-    let access = await gateway.readApprovedTeamAccess(existing.id);
+    let access = await gateway.readApprovedMomoClientAccess(existing.id);
     if (!access) {
       await gateway.refreshUserEmail(existing.id, email);
-      access = await gateway.readApprovedTeamAccess(existing.id);
+      access = await gateway.readApprovedMomoClientAccess(existing.id);
     }
-    assertApprovedTeamAccess(access);
+    assertApprovedMomoClientAccess(access);
     return { outcome: "already_exists", userId: existing.id, access };
   }
 
   const created = await gateway.createUser(email);
   try {
-    const access = await gateway.readApprovedTeamAccess(created.id);
-    assertApprovedTeamAccess(access);
+    const access = await gateway.readApprovedMomoClientAccess(created.id);
+    assertApprovedMomoClientAccess(access);
     return { outcome: "created", userId: created.id, access };
   } catch (error) {
     await gateway.deleteUser(created.id);
     throw new Error(
-      "Provisioning was rolled back because the database allowlist did not create active Team/Momo access",
+      "Provisioning was rolled back because the database allowlist did not create active Momo client access",
       { cause: error },
     );
   }
 }
 
-export function createApprovedTeamIdentityGateway(
+export function createApprovedMomoClientIdentityGateway(
   client: SupabaseClient,
-): ApprovedTeamIdentityGateway {
+): ApprovedMomoClientIdentityGateway {
   return {
     async findUserByEmail(email) {
       for (let page = 1; page <= 100; page += 1) {
-        const { data, error } = await client.auth.admin.listUsers({ page, perPage: 100 });
-        if (error) throw new Error("Unable to list Supabase Auth users", { cause: error });
-        const match = data.users.find((user) => user.email?.trim().toLowerCase() === email);
+        const { data, error } = await client.auth.admin.listUsers({
+          page,
+          perPage: 100,
+        });
+        if (error) {
+          throw new Error("Unable to list Supabase Auth users", { cause: error });
+        }
+        const match = data.users.find(
+          (user) => user.email?.trim().toLowerCase() === email,
+        );
         if (match) return match;
         if (data.users.length < 100) return null;
       }
@@ -125,9 +126,10 @@ export function createApprovedTeamIdentityGateway(
         email_confirm: true,
       });
       if (error || !data.user) {
-        throw new Error("Supabase Auth Admin could not create the approved Team user", {
-          cause: error,
-        });
+        throw new Error(
+          "Supabase Auth Admin could not create the approved Momo client user",
+          { cause: error },
+        );
       }
       return data.user;
     },
@@ -138,9 +140,10 @@ export function createApprovedTeamIdentityGateway(
         email_confirm: true,
       });
       if (error || !data.user) {
-        throw new Error("Unable to refresh the approved Auth identity against the allowlist", {
-          cause: error,
-        });
+        throw new Error(
+          "Unable to refresh the approved Momo Auth identity against the allowlist",
+          { cause: error },
+        );
       }
       return data.user;
     },
@@ -148,11 +151,13 @@ export function createApprovedTeamIdentityGateway(
     async deleteUser(userId) {
       const { error } = await client.auth.admin.deleteUser(userId);
       if (error) {
-        throw new Error("Failed to roll back the unaccepted Auth user", { cause: error });
+        throw new Error("Failed to roll back the unaccepted Momo Auth user", {
+          cause: error,
+        });
       }
     },
 
-    async readApprovedTeamAccess(userId) {
+    async readApprovedMomoClientAccess(userId) {
       const [profileResult, membershipResult] = await Promise.all([
         client
           .from("veroxa_user_profiles")
@@ -163,11 +168,11 @@ export function createApprovedTeamIdentityGateway(
           .from("veroxa_restaurant_members")
           .select("restaurant_id, role, status")
           .eq("user_id", userId)
-          .eq("role", "team")
+          .eq("role", "client")
           .maybeSingle(),
       ]);
       if (profileResult.error || membershipResult.error) {
-        throw new Error("Unable to verify the database-provisioned Team access", {
+        throw new Error("Unable to verify the database-provisioned Momo client access", {
           cause: profileResult.error ?? membershipResult.error,
         });
       }
@@ -179,7 +184,7 @@ export function createApprovedTeamIdentityGateway(
         .eq("id", membershipResult.data.restaurant_id)
         .maybeSingle();
       if (restaurantError) {
-        throw new Error("Unable to verify the Team restaurant scope", {
+        throw new Error("Unable to verify the Momo client restaurant scope", {
           cause: restaurantError,
         });
       }
@@ -198,7 +203,7 @@ export function createApprovedTeamIdentityGateway(
         membership: membershipResult.data,
         restaurant,
         is_operational_restaurant: isOperationalRestaurant === true,
-      } as ApprovedTeamAccess;
+      } as ApprovedMomoClientAccess;
     },
   };
 }

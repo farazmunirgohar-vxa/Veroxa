@@ -108,14 +108,15 @@ A command applies only to the agreed task. It is not blanket authority to merge 
 
 ## Current hosted-state truth
 
-As last verified on 2026-07-12:
+As last verified on 2026-07-13:
 
 - the Veroxa Sites project is active and publicly accessible;
 - `veroxasystems.com` and `www.veroxasystems.com` are attached to Sites;
 - both custom domains report active provider and SSL status with no reported domain error;
 - future verified Sites deployments use the existing domains and do not require routine Namecheap edits;
 - Vercel is retired; Sites checkpoints and GitHub source provide the deployment and recovery path;
-- the current release source implements protected Supabase session and membership boundaries, but the live site remains on the earlier shell until the exact green release is checkpointed;
-- approved Team identity pre-provisioning, authenticated smoke tests, real Momo accounts/data, external publishing, payments, and live platform integrations remain blocked.
+- Sites version 8 implements protected Supabase sessions, active profile/membership checks, RLS, durable audit intake, and protected Client/Team routes;
+- Faraz's approved Gmail Team identity, Team/Momo access, protected-route Safari smoke, and approved-user password sign-in are verified; hosted reauthentication and old-session revocation remain unverified;
+- Momo client identity, owner-confirmed data, external publishing, payments, and live platform integrations remain blocked.
 
-Public Sites access currently exposes the earlier non-sensitive pre-live application shells. Do not place real client data or Team-sensitive information into production until the new identity/authorization source is merged, checkpointed, the approved identity is pre-provisioned, and authenticated access is verified.
+Public marketing and audit intake remain anonymous. Protected portal data must continue to require signed sessions, active profile/membership authorization, server guards, and RLS; no real Momo client data may be entered until an approved client identity and owner-confirmed records exist.

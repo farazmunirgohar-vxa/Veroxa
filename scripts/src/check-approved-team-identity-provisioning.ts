@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import type { User } from "@supabase/supabase-js";
 import {
   MOMO_OPERATIONAL_RESTAURANT,
@@ -15,6 +16,7 @@ const validAccess = (userId: string): ApprovedTeamAccess => ({
   profile: { user_id: userId, role: "team", status: "active" },
   membership: { restaurant_id: "momo", role: "team", status: "active" },
   restaurant: { id: "momo", name: MOMO_OPERATIONAL_RESTAURANT, status: "active" },
+  is_operational_restaurant: true,
 });
 
 function fakeGateway(input: {
@@ -98,6 +100,22 @@ await assert.rejects(
 assert.equal(rejected.calls.create, 1);
 assert.equal(rejected.calls.remove, 1);
 
+const duplicateNameOutsideScope = fakeGateway({
+  created: user("duplicate-name", "duplicate@example.test"),
+  access: {
+    ...validAccess("duplicate-name"),
+    is_operational_restaurant: false,
+  },
+});
+await assert.rejects(
+  provisionApprovedTeamIdentity(
+    duplicateNameOutsideScope.gateway,
+    "duplicate@example.test",
+  ),
+  /rolled back/,
+);
+assert.equal(duplicateNameOutsideScope.calls.remove, 1);
+
 await assert.rejects(
   provisionApprovedTeamIdentity(rejected.gateway, "not-an-email"),
   /valid email/,
@@ -111,5 +129,12 @@ assert.throws(
   () => validateSupabaseUrl("https://example.test/collect"),
   /hosted Supabase project/,
 );
+
+const helperSource = readFileSync(
+  new URL("./approved-team-identity.ts", import.meta.url),
+  "utf8",
+);
+assert.match(helperSource, /veroxa_is_momo_operational_restaurant_v1/);
+assert.match(helperSource, /is_operational_restaurant:\s*isOperationalRestaurant === true/);
 
 console.log("Approved Team identity provisioning contract passed.");

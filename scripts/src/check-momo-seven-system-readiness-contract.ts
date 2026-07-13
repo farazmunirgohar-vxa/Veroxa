@@ -35,6 +35,12 @@ const migration = read(
   "supabase/migrations/20260713010710_momo_full_operating_system_v1.sql",
 );
 const sqlTest = read("supabase/tests/momo_full_operating_system_v1.sql");
+const rehearsalMigration = read(
+  "supabase/migrations/20260713161533_momo_zero_cost_operating_rehearsal_v1.sql",
+);
+const rehearsalSqlTest = read(
+  "supabase/tests/momo_zero_cost_operating_rehearsal_v1.sql",
+);
 
 const systemHeadings = [
   "### 1. Restaurant Intelligence + Onboarding V1",
@@ -248,6 +254,63 @@ for (const marker of [
   "pendingContentConfirmations",
 ]) {
   must(sqlTest.includes(marker), `Seven-system pgTAP contract missing: ${marker}`);
+}
+
+for (const marker of [
+  "Momo Zero-Cost Operating Rehearsal V1",
+  "momo-media-rights-v1",
+  "8d6b83d28e393313e52ac32e54eda8286e4c305617ea8722aedc9729a887628f",
+  "veroxa_private.truth_value_shape_valid_v1",
+  "jsonb_object_keys",
+  "veroxa_submit_momo_confirmation_v1",
+  "veroxa_save_momo_contact_prefill_v1",
+  "veroxa_add_momo_media_tag_v1",
+  "veroxa_create_manual_content_draft_v1",
+  "veroxa_create_manual_variant_v1",
+  "veroxa_schedule_momo_variant_v1",
+  "veroxa_revise_momo_report_draft_v1",
+  "veroxa_transition_momo_alert_v1",
+  "veroxa_private.provider_presence_authority_current_v1",
+  "owner_presence_authorization_withdrawn",
+  "owner_content_direction_rejected",
+  "eligibleCapabilities",
+  "provider_runtime_inactive_zero_cost_rehearsal",
+  "active_recovery_blocks_work_retry",
+  "veroxa_run_momo_no_go_rehearsal_v1",
+  "clock_timestamp()",
+]) {
+  must(
+    rehearsalMigration.includes(marker),
+    `Zero-cost rehearsal migration missing: ${marker}`,
+  );
+}
+must(
+  !rehearsalMigration.includes("jsonb_object_length"),
+  "Zero-cost rehearsal migration uses nonexistent jsonb_object_length",
+);
+must(
+  rehearsalMigration.trim().length > 10_000,
+  "Zero-cost rehearsal migration is empty or incomplete",
+);
+for (const marker of [
+  "plan(2)",
+  "[\"no\",\"halal\"]",
+  "Free delivery today.",
+  "Lobster $12.",
+  "100% certified halal.",
+  "We offer delivery.",
+  "We serve steamed chicken momo.",
+  "We are open until 11 PM.",
+  "Pending owner presence withdrawal did not freeze preflight",
+  "Owner content rejection did not cancel queue and calendar",
+  "Attempt ledger did not preserve initial plus retry history",
+  "Unsafe report narrative was accepted",
+  "No-Go rehearsal did not remain fail-closed",
+]) {
+  must(
+    rehearsalSqlTest.includes(marker),
+    `Zero-cost rehearsal pgTAP contract missing: ${marker}`,
+  );
 }
 
 for (const document of [milestone, status, activeDocs]) {

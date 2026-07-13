@@ -4,9 +4,11 @@ Status: active migration and deployment authority as of 2026-07-12.
 
 ## Current production-foundation override
 
-The original migration scope below remains useful history, but its statements that production identity, persistence, and protected portal routes are future work are superseded for source truth by `VEROXA_CURRENT_MILESTONE.md`. PR #141 is merged at `46d01c44f0411a4e870cd490d5bfcd8e58ee0e59`, its eight-migration data layer is applied, and its exact runtime source is deployed as verified Sites version 7. That deployed foundation implements Supabase-backed secure-email-link sessions, active Momo membership checks, forced RLS, durable audit intake, protected Client/Team routes, and all seven provider-neutral Momo operating systems.
+The original migration scope below remains useful history, but its statements that production identity, persistence, and protected portal routes are future work are superseded for source truth by `VEROXA_CURRENT_MILESTONE.md`. PR #142 is merged at `9a905c822f084fd2df5c9a2cb87c1a8286647e59`, its eight-migration data layer is applied, and its exact runtime source is deployed as verified Sites version 8. That deployed foundation implements Supabase-backed secure-email-link recovery and approved-user password sessions, active Momo membership checks, forced RLS, durable audit intake, protected Client/Team routes, and all seven provider-neutral Momo operating systems.
 
-The seven-system Momo foundation is deployed, but Momo is not 100% ready. Faraz's approved Gmail Team identity is confirmed, has signed in, has active Team/Momo access, and passed the authenticated Safari protected-route smoke. The current unmerged candidate adds approved-user password sign-in and protected password replacement; it is neither deployed nor activated. No Momo owner identity or owner-confirmed data is provisioned. Runtime AI, Meta, Google Business Profile, external SEO/social execution, publishing, visibility monitoring, Momo contact, and client activation are **inactive pending authorized access**. See `MOMO_100_READINESS_SEVEN_SYSTEM_CONTRACT.md` for the source/runtime/activation split.
+The seven-system Momo foundation is deployed, but Momo is not 100% ready. Faraz's approved Gmail Team identity is confirmed, has signed in, has active Team/Momo access, passed the authenticated Safari protected-route smoke, and confirmed password sign-in works. The protected password-replacement surface is deployed, while hosted reauthentication and old-session revocation remain unverified. No Momo owner identity or owner-confirmed data is provisioned. Runtime AI, Meta, Google Business Profile, external SEO/social execution, publishing, visibility monitoring, Momo contact, and client activation are **inactive pending authorized access**. See `MOMO_100_READINESS_SEVEN_SYSTEM_CONTRACT.md` for the source/runtime/activation split.
+
+The current branch is reserved for planned PR #143 and contains the next no-new-spend operating source, but the pull request is not opened and not merged, its ninth source migration is not applied, and its Sites candidate is not published. The coordinated production baseline remains PR #142 at `9a905c822f084fd2df5c9a2cb87c1a8286647e59`, Sites version 8, and eight applied migrations; candidate code, schema, or UI must not be reported as deployed runtime evidence.
 
 ## Locked direction
 
@@ -17,6 +19,7 @@ Veroxa now uses the ChatGPT Sites application/deployment surface. This is not a 
 - Codex is the engineering capability ChatGPT invokes internally.
 - ChatGPT Sites is the primary application and deployment surface.
 - Vercel is retired. Sites is the sole deployment surface; GitHub `main` plus verified Sites checkpoints are the recovery path.
+- The root `vercel.json` is a temporary, inert shutdown sentinel whose only allowed behavior is `git.deploymentEnabled: false`; it prevents the still-connected legacy Git integration from starting builds and must never contain runtime, route, build, or hosting configuration. Remove it after the Vercel dashboard integration is disconnected.
 - `veroxasystems.com` and `www.veroxasystems.com` are attached to Sites with active provider and SSL status as last verified on 2026-07-13.
 - The approved Sites visual direction is the presentation layer. It must preserve the existing Veroxa OS rather than replace it.
 - `CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md` controls the build, green-merge, hold, RR, and deployment command meanings.
@@ -51,20 +54,20 @@ Pause for specific Faraz direction when scope materially expands into production
 
 ## Non-negotiable safety boundaries
 
-The hosting migration does not authorize any of the following:
+The hosting migration did not by itself authorize any of the following. Later scoped releases explicitly activated Team Auth plus Momo/Audit persistence only:
 
-- production auth activation;
-- credential creation;
+- public account creation or an unapproved identity;
+- Momo Client credential creation;
 - contacting Momo's House;
 - external platform connections;
 - Google, Meta, ordering, or publishing actions;
 - runtime AI provider calls;
-- database writes or storage activation;
+- database or storage writes outside the approved Momo/Audit scope;
 - fake metrics, fake activity, fake reports, fake readiness, or fake integrations;
 - public/client exposure of Team-only data;
 - changing verified business truth without confirmation.
 
-Deployed Sites version 7 uses secure-email-link Supabase authentication with active profile/membership enforcement. The current unmerged candidate adds approved-user password authentication and protected password replacement. Public signup remains disabled, and a fresh email-link session is the recovery path. The undeployed Vite `AUTH_MODE = placeholder` path is historical/internal and its root `/api/pilot-access` deployment adapter is retired. Roles remain `client` and `team` only. Momo owner walkthrough and pilot activation remain blocked without explicit Faraz approval.
+Deployed Sites version 8 uses approved-user password authentication plus secure-email-link Supabase authentication for recovery, with active profile/membership enforcement and protected password replacement. Public signup remains disabled. Faraz confirmed password sign-in; hosted reauthentication and old-session revocation remain unverified. The undeployed Vite `AUTH_MODE = placeholder` path is historical/internal and its root `/api/pilot-access` deployment adapter is retired. Roles remain `client` and `team` only. Momo owner walkthrough and pilot activation remain blocked without explicit Faraz approval.
 
 ## Migration architecture
 
@@ -83,13 +86,13 @@ Faraz approved public Sites access and completed the Namecheap DNS changes. As l
 - `veroxasystems.com` is active with active SSL and no reported domain error;
 - `www.veroxasystems.com` is active with active SSL and no reported domain error;
 - routine future Sites deployments use these existing domains and do not require new Namecheap records;
-- Vercel is not a rollback path and no Vercel configuration or serverless handler belongs in the active repository.
+- Vercel is not a rollback path. No Vercel serverless handler, runtime, build, route, or hosting configuration belongs in the active repository; the exact no-deployment shutdown sentinel described above is the sole temporary exception.
 
 Continue to protect the domain after cutover:
 
 - keep public Home, Audit, and Login routes verified;
 - keep Client and Team route boundaries honest;
-- treat the publicly reachable Client and Team pages as non-sensitive pre-live shells until production identity/authorization is approved and implemented;
+- keep Team and Client pages protected by server-verified Supabase sessions, active profile/membership checks, and RLS; Team access is active for Faraz, while no Momo Client identity is provisioned;
 - keep desktop/mobile navigation, production build, rendered-route tests, lint, and Sites artifact validation green;
 - keep every deployed product change synchronized with GitHub `main`;
 - never expose production credentials, real client data, Team-sensitive data, or a custom-domain preview credential fallback;

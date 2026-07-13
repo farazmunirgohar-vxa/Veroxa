@@ -87,7 +87,9 @@
     "check-momo-seven-system-readiness-contract": "node --import tsx ./src/check-momo-seven-system-readiness-contract.ts",
     "check-sites-momo-operating-contract": "node --import tsx ./src/check-sites-momo-operating-contract.ts",
     "check-approved-team-identity-provisioning": "node --import tsx ./src/check-approved-team-identity-provisioning.ts",
+    "check-approved-momo-client-identity-provisioning": "node --import tsx ./src/check-approved-momo-client-identity-provisioning.ts",
     "provision-approved-team-identity": "node --import tsx ./src/provision-approved-team-identity.ts",
+    "provision-approved-momo-client-identity": "node --import tsx ./src/provision-approved-momo-client-identity.ts",
     "smoke-approved-team-auth": "node --import tsx ./src/smoke-approved-team-auth.ts"
   },
   "dependencies": {

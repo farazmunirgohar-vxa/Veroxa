@@ -118,7 +118,14 @@ async function main() {
     assert(appSource.includes('path="/client/requests"') && appSource.includes('<ClientMessages />'), "/client/requests must stay a guarded Messages alias.");
     assert(appSource.includes('path="/client/updates"') && appSource.includes('<ClientReports />'), "/client/updates must stay a guarded Reports alias.");
     assert(appSource.includes('path="/client/onboarding"') && appSource.includes('<ClientProfile />'), "/client/onboarding must stay a guarded Profile alias.");
-    assert(!existsSync(resolve(root, "../../vercel.json")), "Retired Vercel deployment config must stay removed.");
+    const vercelShutdownConfig = JSON.parse(readFileSync(resolve(root, "../../vercel.json"), "utf8"));
+    assert(
+      JSON.stringify(vercelShutdownConfig) === JSON.stringify({
+        $schema: "https://openapi.vercel.sh/vercel.json",
+        git: { deploymentEnabled: false },
+      }),
+      "Vercel may retain only the exact inert automatic-deployment shutdown sentinel.",
+    );
     assert(!existsSync(resolve(root, "../../api/pilot-access.ts")), "Retired Vercel pilot endpoint must stay removed.");
     assert(existsSync(resolve(root, "../veroxa-sites/.openai/hosting.json")), "Sites hosting identity must remain present.");
 

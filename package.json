@@ -4,7 +4,7 @@
   "license": "MIT",
   "packageManager": "pnpm@10.12.1",
   "scripts": {
-    "preverify:veroxa": "pnpm --filter @workspace/scripts run check-audit-intake-adapter-contracts && pnpm --filter @workspace/scripts run check-approved-team-identity-provisioning && pnpm --filter @workspace/scripts run check-sites-momo-operating-contract && pnpm --filter @workspace/scripts run check-momo-seven-system-readiness-contract && pnpm --filter @workspace/scripts run check-rr-release-checkpoint",
+    "preverify:veroxa": "pnpm --filter @workspace/scripts run check-audit-intake-adapter-contracts && pnpm --filter @workspace/scripts run check-approved-team-identity-provisioning && pnpm --filter @workspace/scripts run check-approved-momo-client-identity-provisioning && pnpm --filter @workspace/scripts run check-momo-house-readiness-tracking && pnpm --filter @workspace/scripts run check-sites-momo-operating-contract && pnpm --filter @workspace/scripts run check-momo-seven-system-readiness-contract && pnpm --filter @workspace/scripts run check-rr-release-checkpoint",
     "preinstall": "sh -c 'rm -f package-lock.json yarn.lock; case \"$npm_config_user_agent\" in pnpm/*) ;; *) echo \"Use pnpm instead\" >&2; exit 1 ;; esac'",
     "build": "pnpm run typecheck && pnpm -r --if-present run build",
     "typecheck:libs": "tsc --build",

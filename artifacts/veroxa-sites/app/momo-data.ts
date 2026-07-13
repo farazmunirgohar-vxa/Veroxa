@@ -117,6 +117,8 @@ export type MomoMediaRight = {
   asset_id: string;
   rights_status: string;
   usage_scope: unknown;
+  attestation_version: string | null;
+  attestation_sha256: string | null;
   valid_from: string | null;
   expires_at: string | null;
   confirmed_by: string | null;
@@ -199,6 +201,7 @@ export type MomoContentItem = {
   title: string;
   concept: string;
   master_caption: string | null;
+  manual_pillar: string | null;
   status: string;
   requires_owner_confirmation: boolean;
   created_by: string;
@@ -213,6 +216,8 @@ export type MomoPendingContentConfirmation = {
   title: string;
   concept: string;
   master_caption: string | null;
+  manual_pillar: string | null;
+  media_display_file_name: string | null;
   confirmation_status: string | null;
 };
 
@@ -258,6 +263,7 @@ export type MomoProviderConnection = {
   display_label: string | null;
   status: string;
   capabilities: unknown;
+  eligible_capabilities?: unknown;
   scopes: unknown;
   owner_authorized_by: string | null;
   owner_authorized_at: string | null;
@@ -337,12 +343,13 @@ export type MomoWorkItem = {
 export type MomoActivityEvent = {
   id: string;
   event_type: string;
-  subject_type: string;
+  subject_type: string | null;
   subject_id: string | null;
   actor_id: string | null;
   visibility: string;
   report_eligible: boolean;
   payload: unknown;
+  occurred_at: string;
   created_at: string;
 };
 
@@ -401,6 +408,34 @@ export type MomoRecoveryRun = {
   updated_at: string;
 };
 
+export type MomoContentInputLedgerEntry = {
+  id: string;
+  restaurant_id: string;
+  content_item_id: string;
+  input_kind: string;
+  truth_field_id: string | null;
+  media_asset_id: string | null;
+  truth_value_sha256: string | null;
+  rights_attestation_version: string | null;
+  rights_attestation_sha256: string | null;
+  input_sha256: string;
+  recorded_by: string;
+  recorded_at: string;
+};
+
+export type MomoActivationDecision = {
+  id: string;
+  restaurant_id: string;
+  gate_run_id: string;
+  mode: string;
+  decision: string;
+  reason: string;
+  blocker_snapshot: unknown;
+  decided_by: string;
+  decided_at: string;
+  created_at: string;
+};
+
 export type MomoWorkspaceData = {
   truth: MomoTruthField[];
   contacts: MomoContact[];
@@ -433,6 +468,8 @@ export type MomoWorkspaceData = {
   monitors: MomoMonitorCheck[];
   alerts: MomoAlert[];
   recovery: MomoRecoveryRun[];
+  contentInputs: MomoContentInputLedgerEntry[];
+  activationDecisions: MomoActivationDecision[];
 };
 
 export const emptyMomoWorkspaceData = (): MomoWorkspaceData => ({
@@ -442,6 +479,7 @@ export const emptyMomoWorkspaceData = (): MomoWorkspaceData => ({
   contentItems: [], pendingContentConfirmations: [], variants: [], approvals: [], calendar: [], connections: [],
   publishQueue: [], localChecks: [], reviews: [], visibility: [], work: [],
   activity: [], reports: [], monitors: [], alerts: [], recovery: [],
+  contentInputs: [], activationDecisions: [],
 });
 
 type QueryDefinition = {
@@ -464,7 +502,7 @@ const intelligenceQueries: QueryDefinition[] = [
 
 const mediaQueries: QueryDefinition[] = [
   { key: "media", table: "veroxa_media_assets", columns: "id, restaurant_id, storage_path, original_file_name, mime_type, file_size, uploaded_by, status, reuse_count, last_used_at, created_at, updated_at", order: "created_at", ascending: false },
-  { key: "mediaRights", table: "veroxa_media_rights", columns: "id, restaurant_id, asset_id, rights_status, usage_scope, valid_from, expires_at, confirmed_by, confirmed_at, created_at, updated_at", order: "created_at", ascending: false },
+  { key: "mediaRights", table: "veroxa_media_rights", columns: "id, restaurant_id, asset_id, rights_status, usage_scope, attestation_version, attestation_sha256, valid_from, expires_at, confirmed_by, confirmed_at, created_at, updated_at", order: "created_at", ascending: false },
   { key: "mediaReviews", table: "veroxa_media_reviews", columns: "id, restaurant_id, asset_id, status, quality_score, quality_notes, public_use_approved, is_current, reviewed_by, reviewed_at, created_at, updated_at", order: "created_at", ascending: false },
   { key: "mediaTags", table: "veroxa_media_tags", columns: "id, restaurant_id, slug, label, source, created_at, updated_at", order: "label" },
   { key: "mediaAssetTags", table: "veroxa_media_asset_tags", columns: "restaurant_id, asset_id, tag_id, source, confidence, created_at", order: "created_at", ascending: false },
@@ -474,12 +512,13 @@ const mediaQueries: QueryDefinition[] = [
 
 const contentQueries: QueryDefinition[] = [
   { key: "strategies", table: "veroxa_content_strategies", columns: "id, restaurant_id, title, status, goals, pillars, brand_voice_snapshot, approved_by, approved_at, created_at, updated_at", order: "created_at", ascending: false },
-  { key: "contentItems", table: "veroxa_content_items", columns: "id, restaurant_id, strategy_id, primary_media_asset_id, title, concept, master_caption, status, requires_owner_confirmation, created_by, approved_by, approved_at, created_at, updated_at", order: "created_at", ascending: false },
+  { key: "contentItems", table: "veroxa_content_items", columns: "id, restaurant_id, strategy_id, primary_media_asset_id, title, concept, master_caption, manual_pillar, status, requires_owner_confirmation, created_by, approved_by, approved_at, created_at, updated_at", order: "created_at", ascending: false },
   { key: "variants", table: "veroxa_content_variants", columns: "id, restaurant_id, content_item_id, platform, caption, metadata, status, approved_by, approved_at, created_at, updated_at", order: "created_at", ascending: false },
   { key: "approvals", table: "veroxa_approvals", columns: "id, restaurant_id, subject_type, subject_id, approval_kind, status, requested_by, requested_at, decided_by, decided_at, decision_notes, created_at, updated_at", order: "requested_at", ascending: false },
   { key: "calendar", table: "veroxa_content_calendar", columns: "id, restaurant_id, variant_id, status, scheduled_for, timezone, published_at, created_at, updated_at", order: "scheduled_for" },
   { key: "connections", table: "veroxa_provider_connections", columns: "id, restaurant_id, provider, external_account_id, display_label, status, capabilities, scopes, owner_authorized_by, owner_authorized_at, last_verified_at, last_error, created_at, updated_at", order: "provider" },
   { key: "publishQueue", table: "veroxa_publish_queue", columns: "id, restaurant_id, connection_id, variant_id, approval_id, status, scheduled_for, attempt_count, max_attempts, next_attempt_at, external_post_id, last_error, created_at, updated_at", order: "created_at", ascending: false },
+  { key: "contentInputs", table: "veroxa_content_input_ledger", columns: "id, restaurant_id, content_item_id, input_kind, truth_field_id, media_asset_id, truth_value_sha256, rights_attestation_version, rights_attestation_sha256, input_sha256, recorded_by, recorded_at", order: "recorded_at", ascending: false },
 ];
 
 const operationsQueries: QueryDefinition[] = [
@@ -494,17 +533,33 @@ const operationsQueries: QueryDefinition[] = [
   { key: "recovery", table: "veroxa_recovery_runs", columns: "id, restaurant_id, subject_type, subject_id, action_key, status, attempt_count, max_attempts, next_attempt_at, last_error, initiated_by, started_at, completed_at, created_at, updated_at", order: "created_at", ascending: false },
 ];
 
+const readinessQueries: QueryDefinition[] = [
+  { key: "activationDecisions", table: "veroxa_activation_decisions", columns: "id, restaurant_id, gate_run_id, mode, decision, reason, blocker_snapshot, decided_by, decided_at, created_at", order: "decided_at", ascending: false },
+];
+
 function queriesForSection(section: MomoWorkspaceSection): QueryDefinition[] {
   if (section === "intelligence") return intelligenceQueries;
   if (section === "media") return mediaQueries;
-  if (section === "content") return [...mediaQueries, ...contentQueries];
+  if (section === "content") return [
+    ...intelligenceQueries.filter((query) => query.key === "truth" || query.key === "confirmations"),
+    ...mediaQueries,
+    ...contentQueries,
+  ];
   if (section === "connections") return [...intelligenceQueries, ...contentQueries, ...operationsQueries.slice(0, 3)];
   if (section === "operations") return [...operationsQueries, contentQueries.find((query) => query.key === "approvals")!];
-  if (section === "readiness") return [...intelligenceQueries, ...operationsQueries.slice(6)];
-  return [...intelligenceQueries, ...mediaQueries, ...contentQueries, ...operationsQueries];
+  if (section === "readiness") return [...intelligenceQueries, ...operationsQueries.slice(6), ...readinessQueries];
+  return [...intelligenceQueries, ...mediaQueries, ...contentQueries, ...operationsQueries, ...readinessQueries];
 }
 
-function hydrateMomoClientSnapshot(raw: Record<string, unknown>, restaurantId: string): MomoWorkspaceData {
+export const MOMO_CLIENT_SNAPSHOT_UNKNOWN_STATUS = "unknown";
+
+const clientSnapshotString = (value: unknown): string | null =>
+  typeof value === "string" && value.trim() ? value.trim() : null;
+
+const clientSnapshotStatus = (value: unknown): string =>
+  clientSnapshotString(value) ?? MOMO_CLIENT_SNAPSHOT_UNKNOWN_STATUS;
+
+export function hydrateMomoClientSnapshot(raw: Record<string, unknown>, restaurantId: string): MomoWorkspaceData {
   const result = emptyMomoWorkspaceData();
   const onboarding = raw.onboarding && typeof raw.onboarding === "object"
     ? raw.onboarding as Record<string, unknown>
@@ -544,7 +599,8 @@ function hydrateMomoClientSnapshot(raw: Record<string, unknown>, restaurantId: s
   result.connections = rows(raw.connections).map((item) => ({
     id: String(item.provider), provider: String(item.provider),
     external_account_id: null, display_label: null, status: String(item.status),
-    capabilities: [], scopes: [], owner_authorized_by: null,
+    capabilities: [], eligible_capabilities: Array.isArray(item.eligibleCapabilities) ? item.eligibleCapabilities : [],
+    scopes: [], owner_authorized_by: null,
     owner_authorized_at: item.ownerAuthorizedAt ? String(item.ownerAuthorizedAt) : null,
     last_verified_at: item.lastVerifiedAt ? String(item.lastVerifiedAt) : null,
     last_error: null,
@@ -572,8 +628,8 @@ function hydrateMomoClientSnapshot(raw: Record<string, unknown>, restaurantId: s
       required_count: Number(latestGate.requiredCount || 0),
       verified_count: Number(latestGate.verifiedCount || 0),
       blocker_count: Number(latestGate.blockerCount || 0),
-      overall_status: String(latestGate.status),
-      can_activate: latestGate.status === "verified" && Number(latestGate.blockerCount || 0) === 0,
+      overall_status: String(latestGate.currentStatus || latestGate.status),
+      can_activate: latestGate.canActivate === true,
     };
   }
   for (const item of rows(raw.media)) {
@@ -586,8 +642,14 @@ function hydrateMomoClientSnapshot(raw: Record<string, unknown>, restaurantId: s
       created_at: item.createdAt ? String(item.createdAt) : "", updated_at: "",
     });
     if (item.rightsStatus) result.mediaRights.push({
-      id: `${assetId}:rights`, asset_id: assetId, rights_status: String(item.rightsStatus),
-      usage_scope: [], valid_from: null, expires_at: null, confirmed_by: null, confirmed_at: null,
+      id: item.rightsId ? String(item.rightsId) : "", asset_id: assetId, rights_status: String(item.rightsStatus),
+      usage_scope: Array.isArray(item.usageScope) ? item.usageScope : [],
+      attestation_version: item.attestationVersion ? String(item.attestationVersion) : null,
+      attestation_sha256: null,
+      valid_from: item.validFrom ? String(item.validFrom) : null,
+      expires_at: item.expiresAt ? String(item.expiresAt) : null,
+      confirmed_by: null,
+      confirmed_at: item.confirmedAt ? String(item.confirmedAt) : null,
     });
     if (item.reviewStatus) result.mediaReviews.push({
       id: `${assetId}:review`, asset_id: assetId,
@@ -597,22 +659,28 @@ function hydrateMomoClientSnapshot(raw: Record<string, unknown>, restaurantId: s
     });
   }
   for (const item of rows(raw.contentCalendar)) {
-    const itemId = String(item.contentItemId);
-    const variantId = String(item.variantId);
+    const itemId = clientSnapshotString(item.contentItemId);
+    const title = clientSnapshotString(item.title);
+    const variantId = clientSnapshotString(item.variantId);
+    const platform = clientSnapshotString(item.platform);
+    const caption = clientSnapshotString(item.caption);
+    const calendarStatus = clientSnapshotString(item.calendarStatus);
+    if (!itemId || !title || !variantId || !platform || !caption || !calendarStatus) continue;
     if (!result.contentItems.some((content) => content.id === itemId)) result.contentItems.push({
-      id: itemId, strategy_id: null, primary_media_asset_id: null, title: String(item.title),
-      concept: "", master_caption: null, status: "approved", requires_owner_confirmation: false,
+      id: itemId, strategy_id: null, primary_media_asset_id: null, title,
+      // Client calendar visibility is not approval evidence for either source row.
+      concept: "", master_caption: null, manual_pillar: null, status: clientSnapshotStatus(item.contentItemStatus), requires_owner_confirmation: false,
       created_by: "", approved_by: null, approved_at: null, created_at: "", updated_at: "",
     });
     result.variants.push({
-      id: variantId, content_item_id: itemId, platform: String(item.platform),
-      caption: String(item.caption), metadata: {}, status: "approved",
+      id: variantId, content_item_id: itemId, platform,
+      caption, metadata: {}, status: clientSnapshotStatus(item.variantStatus),
       approved_by: null, approved_at: null, created_at: "", updated_at: "",
     });
     result.calendar.push({
-      id: variantId, variant_id: variantId, status: String(item.calendarStatus),
+      id: variantId, variant_id: variantId, status: calendarStatus,
       scheduled_for: item.scheduledFor ? String(item.scheduledFor) : null,
-      timezone: "America/Chicago",
+      timezone: String(item.timezone || "America/Chicago"),
       published_at: item.publishedAt ? String(item.publishedAt) : null,
     });
   }
@@ -621,18 +689,27 @@ function hydrateMomoClientSnapshot(raw: Record<string, unknown>, restaurantId: s
     title: String(item.title || "Content direction"),
     concept: String(item.concept || ""),
     master_caption: item.masterCaption ? String(item.masterCaption) : null,
+    manual_pillar: item.manualPillar ? String(item.manualPillar) : null,
+    media_display_file_name: item.mediaDisplayFileName ? String(item.mediaDisplayFileName) : null,
     confirmation_status: item.confirmationStatus
       ? String(item.confirmationStatus)
       : result.confirmations.find((confirmation) => confirmation.subject_type === "content_item" && confirmation.subject_id === String(item.contentItemId || item.id))?.status || null,
   }));
-  result.reports = rows(raw.reports).map((item) => ({
-    id: String(item.id), report_type: String(item.reportType),
-    period_start: String(item.periodStart), period_end: String(item.periodEnd),
-    status: String(item.status || "approved"), summary: item.summary, evidence_event_ids: [],
-    approved_by: null, approved_at: item.approvedAt ? String(item.approvedAt) : null,
-    published_at: item.publishedAt ? String(item.publishedAt) : null,
-    created_at: "", updated_at: item.updatedAt ? String(item.updatedAt) : "",
-  }));
+  for (const item of rows(raw.reports)) {
+    const id = clientSnapshotString(item.id);
+    const reportType = clientSnapshotString(item.reportType);
+    const periodStart = clientSnapshotString(item.periodStart);
+    const periodEnd = clientSnapshotString(item.periodEnd);
+    const status = clientSnapshotString(item.status);
+    if (!id || !reportType || !periodStart || !periodEnd || !status) continue;
+    result.reports.push({
+      id, report_type: reportType, period_start: periodStart, period_end: periodEnd,
+      status, summary: item.summary, evidence_event_ids: [],
+      approved_by: null, approved_at: item.approvedAt ? String(item.approvedAt) : null,
+      published_at: item.publishedAt ? String(item.publishedAt) : null,
+      created_at: "", updated_at: item.updatedAt ? String(item.updatedAt) : "",
+    });
+  }
   return result;
 }
 
@@ -700,39 +777,83 @@ export async function saveMomoTruthField(input: {
   role: "team" | "client";
 }): Promise<void> {
   const client = requiredClient();
-  const user = await currentUser();
   if (input.role === "client") {
     if (!input.existingId) throw new Error("team_prefill_required");
-    const confirmation = await client.from("veroxa_confirmations").insert({
-      restaurant_id: input.restaurantId,
-      subject_type: "truth_field",
-      subject_id: input.existingId,
-      confirmation_kind: "business_truth",
+    return submitMomoConfirmation({
+      restaurantId: input.restaurantId,
+      subjectType: "truth_field",
+      subjectId: input.existingId,
+      confirmationKind: "business_truth",
       decision: "correct",
-      proposed_value: input.value,
-      status: "pending",
-      submitted_by: user.id,
+      proposedValue: input.value,
     });
-    if (confirmation.error) throw new Error("truth_save_failed");
-    return;
   }
   if (input.existingId && input.existingStatus === "owner_confirmed") {
     throw new Error("owner_confirmation_locked");
   }
-  const record = {
-    restaurant_id: input.restaurantId,
-    field_key: input.fieldKey,
-    section: input.section,
-    value_json: input.value,
-    status: "team_prefilled",
-    source: "team",
-    is_current: true,
-    created_by: user.id,
-  };
-  const response = input.existingId
-    ? await client.from("veroxa_restaurant_truth_fields").update(record).eq("id", input.existingId).eq("restaurant_id", input.restaurantId).select("id").single()
-    : await client.from("veroxa_restaurant_truth_fields").insert(record).select("id").single();
+  const response = await client.rpc("veroxa_create_truth_revisions_v1", {
+    p_restaurant_id: input.restaurantId,
+    p_revisions: [{
+      existing_id: input.existingId || null,
+      field_key: input.fieldKey,
+      section: input.section,
+      value_json: input.value,
+      source: "team",
+    }],
+  });
   if (response.error || !response.data) throw new Error("truth_save_failed");
+}
+
+export async function saveMomoTruthRevisions(input: {
+  restaurantId: string;
+  revisions: Array<{
+    existingId?: string;
+    existingStatus?: string;
+    fieldKey: string;
+    section: string;
+    value: unknown;
+  }>;
+}): Promise<void> {
+  if (input.revisions.length === 0) return;
+  if (input.revisions.some((revision) => revision.existingStatus === "owner_confirmed")) {
+    throw new Error("owner_confirmation_locked");
+  }
+  const client = requiredClient();
+  const { data, error } = await client.rpc("veroxa_create_truth_revisions_v1", {
+    p_restaurant_id: input.restaurantId,
+    p_revisions: input.revisions.map((revision) => ({
+      existing_id: revision.existingId || null,
+      field_key: revision.fieldKey,
+      section: revision.section,
+      value_json: revision.value,
+      source: "team",
+    })),
+  });
+  if (error || !data) throw new Error("truth_save_failed");
+}
+
+export type MomoOwnerDecision = "confirm" | "correct" | "reject" | "needs_help";
+
+export async function submitMomoConfirmation(input: {
+  restaurantId: string;
+  subjectType: "truth_field" | "contact" | "onboarding_step" | "presence_profile" | "media_rights" | "content_item";
+  subjectId: string;
+  confirmationKind: "business_truth" | "contact" | "onboarding" | "presence" | "usage_rights" | "content_direction";
+  decision: MomoOwnerDecision;
+  proposedValue?: unknown;
+  notes?: string;
+}): Promise<void> {
+  const client = requiredClient();
+  const { data, error } = await client.rpc("veroxa_submit_momo_confirmation_v1", {
+    p_restaurant_id: input.restaurantId,
+    p_subject_type: input.subjectType,
+    p_subject_id: input.subjectId,
+    p_confirmation_kind: input.confirmationKind,
+    p_decision: input.decision,
+    p_proposed_value: input.proposedValue ?? null,
+    p_notes: input.notes?.trim() || null,
+  });
+  if (error || !data) throw new Error("confirmation_save_failed");
 }
 
 export async function saveMomoContact(input: {
@@ -747,7 +868,6 @@ export async function saveMomoContact(input: {
   role: "team" | "client";
 }): Promise<void> {
   const client = requiredClient();
-  const user = await currentUser();
   const proposed = {
     contact_kind: input.contactKind,
     name: input.name.trim(),
@@ -766,31 +886,33 @@ export async function saveMomoContact(input: {
       if (bootstrap.error || !bootstrap.data) throw new Error("contact_save_failed");
       return;
     }
-    const confirmation = await client.from("veroxa_confirmations").insert({
-      restaurant_id: input.restaurantId,
-      subject_type: "contact",
-      subject_id: input.existingId,
-      confirmation_kind: "contact",
+    return submitMomoConfirmation({
+      restaurantId: input.restaurantId,
+      subjectType: "contact",
+      subjectId: input.existingId,
+      confirmationKind: "contact",
       decision: "correct",
-      proposed_value: {
+      proposedValue: {
         name: proposed.name,
         email: proposed.email,
         phone: proposed.phone,
         isPrimary: proposed.is_primary,
       },
-      status: "pending",
-      submitted_by: user.id,
+      notes: "Owner submitted a contact correction.",
     });
-    if (confirmation.error) throw new Error("contact_save_failed");
-    return;
   }
   if (input.existingId && input.existingStatus === "owner_confirmed") {
     throw new Error("owner_confirmation_locked");
   }
-  const record = { restaurant_id: input.restaurantId, ...proposed, status: "team_prefilled", created_by: user.id };
-  const response = input.existingId
-    ? await client.from("veroxa_restaurant_contacts").update(record).eq("id", input.existingId).eq("restaurant_id", input.restaurantId).select("id").single()
-    : await client.from("veroxa_restaurant_contacts").insert(record).select("id").single();
+  const response = await client.rpc("veroxa_save_momo_contact_prefill_v1", {
+    p_restaurant_id: input.restaurantId,
+    p_contact_id: input.existingId || null,
+    p_contact_kind: proposed.contact_kind,
+    p_name: proposed.name,
+    p_email: proposed.email,
+    p_phone: proposed.phone,
+    p_is_primary: proposed.is_primary,
+  });
   if (response.error || !response.data) throw new Error("contact_save_failed");
 }
 
@@ -806,6 +928,48 @@ export async function reviewMomoConfirmation(
     p_review_notes: null,
   });
   if (error || !data) throw new Error("confirmation_review_failed");
+}
+
+export async function updateMomoOnboardingStep(input: {
+  restaurantId: string;
+  stepId: string;
+  status: "not_started" | "foundation_ready" | "in_progress" | "blocked" | "ready_for_review" | "verified";
+  completionEvidence: unknown[];
+  blockerReason?: string;
+  confirmationId?: string;
+}): Promise<void> {
+  const client = requiredClient();
+  const { data, error } = await client.rpc("veroxa_update_momo_onboarding_step_v1", {
+    p_restaurant_id: input.restaurantId,
+    p_step_id: input.stepId,
+    p_status: input.status,
+    p_completion_evidence: input.completionEvidence,
+    p_blocker_reason: input.blockerReason?.trim() || null,
+    p_confirmation_id: input.confirmationId || null,
+  });
+  if (error || !data) throw new Error("onboarding_update_failed");
+}
+
+export async function updateMomoPresenceProfile(input: {
+  restaurantId: string;
+  presenceProfileId: string;
+  publicUrl?: string;
+  accessStatus: "not_connected" | "awaiting_owner_access" | "connected" | "degraded" | "revoked";
+  truthStatus: "unverified" | "team_prefilled" | "needs_owner_confirmation" | "owner_confirmed" | "rejected" | "superseded";
+  notes?: string;
+  confirmationId?: string;
+}): Promise<void> {
+  const client = requiredClient();
+  const { data, error } = await client.rpc("veroxa_update_momo_presence_v1", {
+    p_restaurant_id: input.restaurantId,
+    p_presence_profile_id: input.presenceProfileId,
+    p_public_url: input.publicUrl?.trim() || null,
+    p_access_status: input.accessStatus,
+    p_truth_status: input.truthStatus,
+    p_notes: input.notes?.trim() || null,
+    p_confirmation_id: input.confirmationId || null,
+  });
+  if (error || !data) throw new Error("presence_update_failed");
 }
 
 function safeMediaExtension(file: File): string {
@@ -836,7 +1000,7 @@ export async function uploadMomoMedia(input: {
     upsert: false,
   });
   if (uploaded.error) throw new Error("media_upload_failed");
-  const registration = await client.rpc("veroxa_register_momo_media_v1", {
+  const registration = await client.rpc("veroxa_register_momo_media_v2", {
     p_restaurant_id: input.restaurantId,
     p_storage_path: storagePath,
     p_mime_type: input.file.type,
@@ -844,7 +1008,7 @@ export async function uploadMomoMedia(input: {
     p_original_file_name: input.file.name,
     p_intake_notes: null,
     p_usage_scope: input.usageScope,
-    p_expires_at: input.expiresAt ? new Date(`${input.expiresAt}T23:59:59`).toISOString() : null,
+    p_expires_on: input.expiresAt || null,
   });
   if (registration.error || !registration.data) {
     await client.storage.from("restaurant-media").remove([storagePath]);
@@ -871,29 +1035,32 @@ export async function reviewMomoMedia(input: {
   if (error || !data) throw new Error("media_review_failed");
 }
 
+export async function revokeMomoMediaRights(input: {
+  restaurantId: string;
+  mediaRightsId: string;
+  reason: string;
+}): Promise<void> {
+  const client = requiredClient();
+  const { data, error } = await client.rpc("veroxa_revoke_momo_media_rights_v1", {
+    p_restaurant_id: input.restaurantId,
+    p_media_rights_id: input.mediaRightsId,
+    p_reason: input.reason.trim(),
+  });
+  if (error || !data) throw new Error("media_rights_revoke_failed");
+}
+
 export async function addMomoMediaTag(input: {
   restaurantId: string;
   assetId: string;
   label: string;
 }): Promise<void> {
   const client = requiredClient();
-  const slug = input.label.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-  if (!slug) throw new Error("invalid_tag");
-  const tag = await client.from("veroxa_media_tags").upsert({
-    restaurant_id: input.restaurantId,
-    slug,
-    label: input.label.trim(),
-    source: "team",
-  }, { onConflict: "restaurant_id,slug" }).select("id").single();
-  if (tag.error || !tag.data) throw new Error("tag_save_failed");
-  const linked = await client.from("veroxa_media_asset_tags").upsert({
-    restaurant_id: input.restaurantId,
-    asset_id: input.assetId,
-    tag_id: tag.data.id,
-    source: "team",
-    confidence: 1,
-  }, { onConflict: "asset_id,tag_id" }).select("asset_id, tag_id").single();
-  if (linked.error || !linked.data) throw new Error("tag_save_failed");
+  const { data, error } = await client.rpc("veroxa_add_momo_media_tag_v1", {
+    p_restaurant_id: input.restaurantId,
+    p_asset_id: input.assetId,
+    p_label: input.label.trim(),
+  });
+  if (error || !data) throw new Error("tag_save_failed");
 }
 
 export async function getMomoMediaPreviewUrl(storagePath: string): Promise<string> {
@@ -911,15 +1078,13 @@ export async function recordMomoMediaReuse(input: {
   usageKind: "draft" | "scheduled" | "published" | "report" | "internal_reference";
 }): Promise<void> {
   const client = requiredClient();
-  const user = await currentUser();
-  const { data, error } = await client.from("veroxa_media_usage").insert({
-    restaurant_id: input.restaurantId,
-    asset_id: input.assetId,
-    content_item_id: input.contentItemId || null,
-    platform: input.platform || "internal",
-    usage_kind: input.usageKind,
-    recorded_by: user.id,
-  }).select("id").single();
+  const { data, error } = await client.rpc("veroxa_record_momo_media_reuse_v1", {
+    p_restaurant_id: input.restaurantId,
+    p_asset_id: input.assetId,
+    p_content_item_id: input.contentItemId || null,
+    p_platform: input.platform || "internal",
+    p_usage_kind: input.usageKind,
+  });
   if (error || !data) throw new Error("media_reuse_failed");
 }
 
@@ -976,24 +1141,25 @@ export async function createMomoContentDraft(input: {
   restaurantId: string;
   strategyId?: string;
   mediaAssetId?: string;
+  truthFieldIds: string[];
+  pillar: string;
   title: string;
   concept: string;
   masterCaption: string;
   requiresOwnerConfirmation: boolean;
 }): Promise<void> {
   const client = requiredClient();
-  const user = await currentUser();
-  const { data, error } = await client.from("veroxa_content_items").insert({
-    restaurant_id: input.restaurantId,
-    strategy_id: input.strategyId || null,
-    primary_media_asset_id: input.mediaAssetId || null,
-    title: input.title.trim(),
-    concept: input.concept.trim(),
-    master_caption: input.masterCaption.trim(),
-    status: "pending",
-    requires_owner_confirmation: input.requiresOwnerConfirmation,
-    created_by: user.id,
-  }).select("id").single();
+  const { data, error } = await client.rpc("veroxa_create_manual_content_draft_v1", {
+    p_restaurant_id: input.restaurantId,
+    p_strategy_id: input.strategyId || null,
+    p_primary_media_asset_id: input.mediaAssetId || null,
+    p_title: input.title.trim(),
+    p_concept: input.concept.trim(),
+    p_master_caption: input.masterCaption.trim(),
+    p_requires_owner_confirmation: input.requiresOwnerConfirmation,
+    p_truth_field_ids: input.truthFieldIds,
+    p_pillar: input.pillar,
+  });
   if (error || !data) throw new Error("content_save_failed");
 }
 
@@ -1004,24 +1170,34 @@ export async function createMomoPlatformVariant(input: {
   caption: string;
 }): Promise<void> {
   const client = requiredClient();
-  const { data, error } = await client.from("veroxa_content_variants").insert({
-    restaurant_id: input.restaurantId,
-    content_item_id: input.contentItemId,
-    platform: input.platform,
-    caption: input.caption.trim(),
-    metadata: { prepared_manually: true },
-    status: "pending",
-  }).select("id").single();
+  const { data, error } = await client.rpc("veroxa_create_manual_variant_v1", {
+    p_restaurant_id: input.restaurantId,
+    p_content_item_id: input.contentItemId,
+    p_platform: input.platform,
+    p_caption: input.caption.trim(),
+  });
   if (error || !data) throw new Error("variant_save_failed");
 }
 
-export async function requestMomoApproval(input: {
+type MomoApprovalRequestKind =
+  | { subjectType: "content_strategy"; approvalKind: "team_review" }
+  | { subjectType: "content_item"; approvalKind: "team_review" }
+  | { subjectType: "content_variant"; approvalKind: "team_review" | "publishing" }
+  | { subjectType: "report"; approvalKind: "report_release" };
+
+export async function requestMomoApproval(input: MomoApprovalRequestKind & {
   restaurantId: string;
-  subjectType: string;
   subjectId: string;
-  approvalKind: string;
 }): Promise<void> {
   const client = requiredClient();
+  const allowedPair = new Set([
+    "content_strategy:team_review",
+    "content_item:team_review",
+    "content_variant:team_review",
+    "content_variant:publishing",
+    "report:report_release",
+  ]);
+  if (!allowedPair.has(`${input.subjectType}:${input.approvalKind}`)) throw new Error("approval_kind_not_allowed");
   const user = await currentUser();
   const { data, error } = await client.from("veroxa_approvals").insert({
     restaurant_id: input.restaurantId,
@@ -1040,20 +1216,15 @@ export async function submitMomoContentConfirmation(input: {
   contentItemId: string;
   notes?: string;
 }): Promise<void> {
-  const client = requiredClient();
-  const user = await currentUser();
-  const { error } = await client.from("veroxa_confirmations").insert({
-    restaurant_id: input.restaurantId,
-    subject_type: "content_item",
-    subject_id: input.contentItemId,
-    confirmation_kind: "content_direction",
+  return submitMomoConfirmation({
+    restaurantId: input.restaurantId,
+    subjectType: "content_item",
+    subjectId: input.contentItemId,
+    confirmationKind: "content_direction",
     decision: "confirm",
-    proposed_value: { confirmed: true },
-    notes: input.notes?.trim() || null,
-    status: "pending",
-    submitted_by: user.id,
+    proposedValue: { confirmed: true },
+    notes: input.notes,
   });
-  if (error) throw new Error("content_confirmation_failed");
 }
 
 export async function decideMomoApproval(
@@ -1077,15 +1248,12 @@ export async function scheduleMomoVariant(input: {
   timezone: string;
 }): Promise<void> {
   const client = requiredClient();
-  const user = await currentUser();
-  const { data, error } = await client.from("veroxa_content_calendar").insert({
-    restaurant_id: input.restaurantId,
-    variant_id: input.variantId,
-    status: "approved",
-    scheduled_for: new Date(input.scheduledFor).toISOString(),
-    timezone: input.timezone,
-    created_by: user.id,
-  }).select("id").single();
+  const { data, error } = await client.rpc("veroxa_schedule_momo_variant_v1", {
+    p_restaurant_id: input.restaurantId,
+    p_variant_id: input.variantId,
+    p_local_scheduled_at: input.scheduledFor,
+    p_timezone: input.timezone,
+  });
   if (error || !data) throw new Error("calendar_save_failed");
 }
 
@@ -1094,21 +1262,14 @@ export async function queueMomoPublication(input: {
   connectionId: string;
   variantId: string;
   approvalId: string;
-  scheduledFor?: string;
 }): Promise<void> {
   const client = requiredClient();
-  const user = await currentUser();
-  const { data, error } = await client.from("veroxa_publish_queue").insert({
-    restaurant_id: input.restaurantId,
-    connection_id: input.connectionId,
-    variant_id: input.variantId,
-    approval_id: input.approvalId,
-    status: "queued",
-    scheduled_for: input.scheduledFor ? new Date(input.scheduledFor).toISOString() : null,
-    attempt_count: 0,
-    max_attempts: 3,
-    created_by: user.id,
-  }).select("id").single();
+  const { data, error } = await client.rpc("veroxa_queue_momo_publication_v1", {
+    p_restaurant_id: input.restaurantId,
+    p_connection_id: input.connectionId,
+    p_variant_id: input.variantId,
+    p_approval_id: input.approvalId,
+  });
   if (error || !data) throw new Error("publish_queue_failed");
 }
 
@@ -1122,18 +1283,30 @@ export async function createMomoReportDraft(input: {
 }): Promise<void> {
   if (input.evidenceEventIds.length === 0) throw new Error("report_evidence_required");
   const client = requiredClient();
-  const user = await currentUser();
-  const { data, error } = await client.from("veroxa_reports").insert({
-    restaurant_id: input.restaurantId,
-    report_type: input.reportType,
-    period_start: input.periodStart,
-    period_end: input.periodEnd,
-    status: "pending",
-    summary: { narrative: input.summary.trim() },
-    evidence_event_ids: input.evidenceEventIds,
-    created_by: user.id,
-  }).select("id").single();
+  const { data, error } = await client.rpc("veroxa_create_momo_report_draft_v1", {
+    p_restaurant_id: input.restaurantId,
+    p_report_type: input.reportType,
+    p_period_start: input.periodStart,
+    p_period_end: input.periodEnd,
+    p_summary: { narrative: input.summary.trim() },
+    p_evidence_event_ids: input.evidenceEventIds,
+  });
   if (error || !data) throw new Error("report_save_failed");
+}
+
+export async function reviseMomoReportDraft(input: {
+  reportId: string;
+  summary: string;
+  evidenceEventIds: string[];
+}): Promise<void> {
+  if (input.evidenceEventIds.length === 0) throw new Error("report_evidence_required");
+  const client = requiredClient();
+  const { data, error } = await client.rpc("veroxa_revise_momo_report_draft_v1", {
+    p_report_id: input.reportId,
+    p_summary: { narrative: input.summary.trim() },
+    p_evidence_event_ids: input.evidenceEventIds,
+  });
+  if (error || !data) throw new Error("report_revision_failed");
 }
 
 export async function createMomoWorkItem(input: {
@@ -1168,4 +1341,158 @@ export async function retryMomoWorkItem(
     p_work_item_id: item.id,
   });
   if (error || !data) throw new Error("retry_failed");
+}
+
+export async function transitionMomoWorkItem(input: {
+  workItemId: string;
+  targetStatus: "in_progress" | "blocked" | "completed" | "failed" | "cancelled";
+  reason?: string;
+  visibility?: "team" | "client" | "both";
+  reportEligible?: boolean;
+  payload?: Record<string, unknown>;
+}): Promise<void> {
+  const client = requiredClient();
+  const { data, error } = await client.rpc("veroxa_transition_work_item_v1", {
+    p_work_item_id: input.workItemId,
+    p_target_status: input.targetStatus,
+    p_reason: input.reason?.trim() || null,
+    p_visibility: input.visibility || "team",
+    p_report_eligible: input.reportEligible || false,
+    p_payload: input.payload || {},
+  });
+  if (error || !data) throw new Error("work_transition_failed");
+}
+
+export async function recordMomoMonitorCheck(input: {
+  restaurantId: string;
+  checkKey: string;
+  status: "healthy" | "warning" | "critical";
+  details: string;
+  nextCheckAt?: string;
+}): Promise<void> {
+  const client = requiredClient();
+  const { data, error } = await client.rpc("veroxa_record_monitor_check_v1", {
+    p_restaurant_id: input.restaurantId,
+    p_check_key: input.checkKey.trim(),
+    p_status: input.status,
+    p_details: { note: input.details.trim(), source: "team_manual_check" },
+    p_next_check_at: input.nextCheckAt ? new Date(input.nextCheckAt).toISOString() : null,
+  });
+  if (error || !data) throw new Error("monitor_check_failed");
+}
+
+export async function transitionMomoAlert(input: {
+  alertId: string;
+  targetStatus: "acknowledged" | "resolved";
+  notes: string;
+}): Promise<void> {
+  const client = requiredClient();
+  const { data, error } = await client.rpc("veroxa_transition_momo_alert_v1", {
+    p_alert_id: input.alertId,
+    p_target_status: input.targetStatus,
+    p_notes: input.notes.trim(),
+  });
+  if (error || !data) throw new Error("alert_transition_failed");
+}
+
+export async function startMomoRecoveryRun(input: {
+  workItemId: string;
+  actionKey: string;
+}): Promise<void> {
+  const client = requiredClient();
+  const { data, error } = await client.rpc("veroxa_start_recovery_run_v1", {
+    p_work_item_id: input.workItemId,
+    p_action_key: input.actionKey.trim(),
+    p_max_attempts: 1,
+  });
+  if (error || !data) throw new Error("recovery_start_failed");
+}
+
+export async function completeMomoRecoveryRun(input: {
+  recoveryRunId: string;
+  succeeded: boolean;
+  notes: string;
+  visibility?: "team" | "client" | "both";
+}): Promise<void> {
+  const client = requiredClient();
+  const { data, error } = await client.rpc("veroxa_complete_recovery_run_v1", {
+    p_recovery_run_id: input.recoveryRunId,
+    p_succeeded: input.succeeded,
+    p_notes: input.notes.trim() || null,
+    p_visibility: input.visibility || "team",
+  });
+  if (error || !data) throw new Error("recovery_completion_failed");
+}
+
+export type MomoProviderPreflight = {
+  provider: string;
+  connection_status: string;
+  allowed: boolean;
+  blockers: unknown;
+};
+
+export async function runMomoProviderPreflight(input: {
+  restaurantId: string;
+  provider: "meta" | "google_business";
+  requiredCapability: string;
+}): Promise<MomoProviderPreflight> {
+  const client = requiredClient();
+  const { data, error } = await client.rpc("veroxa_provider_preflight_v1", {
+    p_restaurant_id: input.restaurantId,
+    p_provider: input.provider,
+    p_required_capability: input.requiredCapability,
+  });
+  const result = (Array.isArray(data) ? data[0] : data) as MomoProviderPreflight | null;
+  if (error || !result) throw new Error("provider_preflight_failed");
+  return result;
+}
+
+export type MomoReadinessGateRun = {
+  gate_run_id: string;
+  status: string;
+  required_count: number;
+  verified_count: number;
+  blocker_count: number;
+  can_activate: boolean;
+};
+
+export type MomoNoGoRehearsalResult = MomoReadinessGateRun & { decision_id: string | null };
+
+export async function runMomoReadinessGate(restaurantId: string): Promise<MomoReadinessGateRun> {
+  const client = requiredClient();
+  const { data, error } = await client.rpc("veroxa_run_momo_readiness_gate_v1", {
+    p_restaurant_id: restaurantId,
+  });
+  const result = (Array.isArray(data) ? data[0] : data) as MomoReadinessGateRun | null;
+  if (error || !result) throw new Error("readiness_gate_failed");
+  return result;
+}
+
+export async function recordMomoNoGo(input: {
+  restaurantId: string;
+  gateRunId: string;
+  reason: string;
+}): Promise<void> {
+  const client = requiredClient();
+  const { data, error } = await client.rpc("veroxa_record_momo_no_go_v1", {
+    p_restaurant_id: input.restaurantId,
+    p_gate_run_id: input.gateRunId,
+    p_reason: input.reason.trim(),
+    p_rehearsal: true,
+  });
+  if (error || !data) throw new Error("no_go_record_failed");
+}
+
+export async function runMomoNoGoRehearsal(input: {
+  restaurantId: string;
+  reason: string;
+}): Promise<MomoNoGoRehearsalResult> {
+  const client = requiredClient();
+  const { data, error } = await client.rpc("veroxa_run_momo_no_go_rehearsal_v1", {
+    p_restaurant_id: input.restaurantId,
+    p_reason: input.reason.trim(),
+  });
+  const result = (Array.isArray(data) ? data[0] : data) as MomoNoGoRehearsalResult | null;
+  if (error || !result) throw new Error("no_go_rehearsal_failed");
+  return result;
 }

@@ -2,25 +2,31 @@
 
 Status: highest-level current source-of-truth index. Read this file before relying on older Veroxa documents.
 
-## 2026-07-13 — Team login repair state
+## 2026-07-13 — Planned PR #143 seven-step candidate truth
+
+- The current branch is reserved for planned PR #143, but the pull request is not opened and not merged, its ninth source migration is not applied, and its Sites candidate is not published. Production remains PR #142 at `9a905c822f084fd2df5c9a2cb87c1a8286647e59`, Sites version 8, with eight applied migrations.
+- Exact no-new-spend sequence: (1) source/Sites/Vercel retirement reconciliation; (2) client identity plus 18-field onboarding; (3) media rights and manual classification; (4) deterministic manual content with provenance/approvals/calendar; (5) work, reports, monitoring, retry, and one-shot recovery; (6) fail-closed no-credential Meta/Google preflight; and (7) atomic rehearsal-only No-Go.
+- No client identity, owner truth, media, credential, provider call, publication, or activation was created. Until the migration and exact Sites source pass review and publish, all new behavior remains candidate capability rather than production evidence.
+
+## 2026-07-13 — PR #142 Team password access state
 
 - Faraz's approved Gmail Team identity is confirmed, has signed in, and has an active Team profile plus active Momo membership. The mistaken secondary identity has disabled portal access. Production logs and Faraz's Safari confirmation verify the protected Team/Momo route.
-- PR #141 is merged at `46d01c44f0411a4e870cd490d5bfcd8e58ee0e59`, and its runtime-config/callback repair is deployed as Sites version 7. The hosted Site URL and exact callback are configured; passwordless production login is repaired end to end.
-- A new unmerged, undeployed candidate adds password login and a protected password-replacement screen for approved users while preserving secure-email-link recovery and `shouldCreateUser: false`. It is not production-live until its exact PR merges and a later Sites checkpoint succeeds.
+- PR #142 is merged at `9a905c822f084fd2df5c9a2cb87c1a8286647e59`, and its exact runtime source is deployed as verified Sites version 8 with all eight production migrations applied. Approved-user password sign-in and the protected password-replacement screen are live while secure-email-link recovery and `shouldCreateUser: false` remain intact. Faraz confirmed password sign-in works.
+- Hosted reauthentication and rejection of old sessions after password replacement remain unverified. They are security follow-ups, not evidence that password sign-in or the protected Team/Momo route failed.
 
 ## 2026-07-12 — Current milestone and post-build continuity lock
 
 - `VEROXA_CURRENT_MILESTONE.md` is the first document to read for current scope, priority, build order, and progress.
 - `RR_CHECKPOINT.md` and `RR_RELEASE_CHECKPOINT.json` are the reusable review baseline. Read and validate them before starting another broad RR; unchanged boundary evidence must be reused and only changed groups re-reviewed.
-- `momo-readiness-tracker.json` is the machine-readable Momo readiness source. Every build must update affected dimensions with evidence, blockers, and next actions; do not invent a readiness percentage.
+- `momo-readiness-tracker.json` is the repository release baseline/checkpoint for Momo readiness. The scoped Supabase readiness records and summary RPC are authoritative for the live Team operational view. Every build must update affected release evidence, blockers, and next actions without inventing a percentage, and must separately reconcile live database evidence when it changes.
 - Momo's House San Antonio is the only operational client and restaurant workspace for the current milestone.
 - Team Faraz is Momo-focused. The only effective capability for non-client restaurants is the standalone, fully functional Restaurant Audit Center.
 - An audited restaurant does not become an operational client unless Faraz separately and explicitly approves conversion.
 - Other restaurant audits must not automatically create client accounts, operations workspaces, onboarding, media/content workflows, Team operations, reports, publishing access, or active-client conversion.
 - The active milestone is Momo's House San Antonio 100% readiness with the maximum safe level of AI, automation, social handling, SEO, reporting, monitoring, and human approval control.
 - Every build must update the milestone, current build status, any changed locked memory, runtime/deployment truth, and Faraz's plain-language handoff before it is considered complete.
-- GitHub PR #138 is merged at `48630c62b9429238ab39b5b919d7689d189352f8`; its exact reviewed head passed all four GitHub workflows, clean reset, pgTAP, lint, and focused final delta RR. All eight production migrations are verified, Sites version 5 is deployed, and both custom domains are active with active SSL. The reusable RR checkpoint is the starting point for future reviews.
-- Deployed Sites version 7 uses secure email-link sign-in for approved active identities. The current release candidate adds password sign-in plus protected password replacement; public user creation remains disabled. Faraz's Gmail Team identity and protected Team/Momo browser route are verified.
+- PR #138 remains the reviewed seven-system foundation lineage. The current reusable release baseline is PR #142 at `9a905c822f084fd2df5c9a2cb87c1a8286647e59`, deployed as Sites version 8 with all eight production migrations verified and both custom domains active with active SSL.
+- Deployed Sites version 8 uses approved-user password sign-in plus secure-email-link recovery for approved active identities; public user creation remains disabled. Faraz's Gmail Team identity, protected Team/Momo browser route, and password sign-in are verified.
 
 ## 2026-07-12 — ChatGPT-managed build, GitHub, Sites, and RR direction
 
@@ -34,10 +40,10 @@ Status: highest-level current source-of-truth index. Read this file before relyi
 - Faraz's explicit product direction is to build the real Veroxa application through ChatGPT Sites using the existing GitHub/Codex Veroxa OS as the core skeleton.
 - The Sites application is not a demo and must not become an independent product definition.
 - GitHub `main` remains canonical. ChatGPT Sites is the sole application/deployment surface. Vercel is retired.
-- Public Sites access is approved. `veroxasystems.com` and `www.veroxasystems.com` are attached with active provider and SSL status as last verified on 2026-07-12; future checkpoints retain the same domains without routine Namecheap edits.
-- The protected release is live, but Team and Client access remain activation-gated: do not introduce real client or Team-sensitive data before supported identity provisioning and authenticated verification.
+- Public Sites access is approved. `veroxasystems.com` and `www.veroxasystems.com` are attached with active provider and SSL status as last verified on 2026-07-13; future checkpoints retain the same domains without routine Namecheap edits.
+- The protected release and Faraz's Team access are live. Momo Client access remains unprovisioned and activation-gated; do not introduce owner/client data before supported identity provisioning, owner authorization, and authenticated verification.
 - `RR` now means a deep GitHub review plus Sites integration, deployment, domain, and access-state review.
-- The current source/data release activates only the protected foundation and Audit Center persistence. It does not activate real Momo records, a Team login identity, external integrations, AI provider calls, publishing, Team-sensitive exposure, or the Momo owner walkthrough.
+- The current source/data release activates the protected foundation, Audit Center persistence, and Faraz's approved Team login identity. It does not activate a Momo Client identity, owner-confirmed Momo records, external integrations, AI provider calls, publishing, or the Momo owner walkthrough.
 
 ## 2026-06-21 — PR #133 Momo Intelligence Safe Action Routes
 
@@ -133,7 +139,7 @@ Status: highest-level active contributor guide and current source-of-truth index
 - Public Sites marketing/audit intake is anonymous; Client/Team routes require signed sessions, active profile/membership, server guards, and RLS.
 - Client routes remain safe-empty until verified Momo records exist. Do not revive fixture activity, counts, media, reports, or completion claims in authenticated client views.
 - Runtime AI, external platform connections, social/SEO execution, publishing, outbound contact, and Momo owner walkthrough remain inactive.
-- Current build: Momo 100% Readiness Seven-System V1 deployed foundation. Real Team provisioning is blocked external authority; runtime AI, Meta, Google, publishing, and monitoring are inactive pending authorized access.
+- Current build: Momo 100% Readiness Seven-System V1 deployed foundation. Faraz's approved Team identity, protected route, and password sign-in are verified; Momo client identity is not provisioned, and runtime AI, Meta, Google, publishing, and external monitoring are inactive pending authorized access.
 
 ## 2026-06-19 — Actual Live Automation V1 PR sequence correction
 

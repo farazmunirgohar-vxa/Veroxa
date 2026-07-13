@@ -13,6 +13,7 @@ const expectedActive = [
   "20260712230242_audit_center_release_hardening.sql",
   "20260713010710_momo_full_operating_system_v1.sql",
   "20260713010916_momo_full_operating_system_advisor_hardening.sql",
+  "20260713161533_momo_zero_cost_operating_rehearsal_v1.sql",
 ];
 const appliedChecksums: Record<string, string> = {
   "20260712213930_momo_production_foundation_v1.sql": "8fd646bdcbbef6b004f1fafc0fbb0b66cdc298e98cb890bbec6643788d0e2db9",
@@ -23,6 +24,7 @@ const appliedChecksums: Record<string, string> = {
   "20260712230242_audit_center_release_hardening.sql": "e79e47a3e4b4857a2899b1a2e361254d68d52ce87d9f2273f73f92e42f9e2e8e",
   "20260713010710_momo_full_operating_system_v1.sql": "d74faa7b4b87a315321f30cb31097016565e32a80a72be29e10c2406cba751ef",
   "20260713010916_momo_full_operating_system_advisor_hardening.sql": "237561bc8bac94062211ac7a8744b1de36df9574c4ad46050889637ad883217c",
+  "20260713161533_momo_zero_cost_operating_rehearsal_v1.sql": "07cdb0a41b3d81e23e2c9432b139ae219c2b4671fed7cd18f761d4c4d6a79f2a",
 };
 const expectedArchived = [
   "20260601000000_m024a_first_client_metadata_schema.sql",
