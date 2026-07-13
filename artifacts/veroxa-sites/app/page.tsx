@@ -454,7 +454,7 @@ function LoginPage({ onNavigate }: { onNavigate: (view: View) => void }) {
   const [state, setState] = useState<"idle" | "submitting">("idle");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
-  const neutralDeliveryMessage = "If this email is approved for Veroxa, a secure sign-in link will be delivered when available. Please wait before requesting another link.";
+  const neutralDeliveryMessage = "If this email is approved for Veroxa, a secure sign-in link may have been sent. If no email arrives, please wait before requesting another link.";
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
