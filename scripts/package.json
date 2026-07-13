@@ -83,7 +83,15 @@
     "check-momo-work-queue-daily-operating-board": "tsx ./src/check-momo-work-queue-daily-operating-board.ts",
     "check-active-docs-momo-workspace-override-list": "tsx ./src/check-active-docs-momo-workspace-override-list.ts",
     "check-momo-restaurant-intelligence-operating-board": "tsx ./src/check-momo-restaurant-intelligence-operating-board.ts",
-    "check-chatgpt-sites-migration-source-truth": "tsx ./src/check-chatgpt-sites-migration-source-truth.ts"
+    "check-chatgpt-sites-migration-source-truth": "tsx ./src/check-chatgpt-sites-migration-source-truth.ts",
+    "check-momo-seven-system-readiness-contract": "node --import tsx ./src/check-momo-seven-system-readiness-contract.ts",
+    "check-sites-momo-operating-contract": "node --import tsx ./src/check-sites-momo-operating-contract.ts",
+    "check-approved-team-identity-provisioning": "node --import tsx ./src/check-approved-team-identity-provisioning.ts",
+    "provision-approved-team-identity": "node --import tsx ./src/provision-approved-team-identity.ts",
+    "smoke-approved-team-auth": "node --import tsx ./src/smoke-approved-team-auth.ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.106.1"
   },
   "devDependencies": {
     "@types/node": "catalog:",

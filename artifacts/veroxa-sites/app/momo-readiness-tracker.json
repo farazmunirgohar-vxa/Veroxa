@@ -22,14 +22,16 @@
     "production_foundation": {
       "label": "Production foundation",
       "required": true,
-      "status": "verified",
+      "status": "in_progress",
       "evidence": [
         "PR #135 merged the reviewed Momo production foundation and Restaurant Audit Center V1.",
         "Six production migrations are applied and ledger/hash verified.",
         "Sites version 4 and both custom domains are verified active with active SSL."
       ],
-      "blockers": [],
-      "nextAction": "Preserve the verified boundary and rerun only affected RR groups when protected files change."
+      "blockers": [
+        "PR #138 changes protected database and delivery boundaries and still requires exact-head CI, merge, production migration, and Sites verification."
+      ],
+      "nextAction": "Pass the clean Supabase reset and all exact-head checks, then merge, apply the seventh migration, and verify the Sites checkpoint."
     },
     "team_identity_and_access": {
       "label": "Team identity and authenticated access",
@@ -37,7 +39,8 @@
       "status": "foundation_ready",
       "evidence": [
         "Magic-link-only Supabase Auth, active profile/membership checks, route guards, and RLS are deployed.",
-        "Public account creation and password sign-in/recovery are disabled."
+        "Public account creation and password sign-in/recovery are disabled.",
+        "PR #138 adds an idempotent server-only Admin provisioning command and a bounded authenticated Team/Momo Auth/RLS smoke harness."
       ],
       "blockers": [
         "The approved Team identity still requires supported Admin provisioning.",
@@ -48,30 +51,30 @@
     "business_truth_and_onboarding": {
       "label": "Business truth and onboarding",
       "required": true,
-      "status": "foundation_ready",
+      "status": "in_progress",
       "evidence": [
         "The locked onboarding flow is Audit to Prefill to Owner verification to Veroxa gap completion to Final approval.",
-        "Internal Momo business-truth and Restaurant Intelligence foundations exist."
+        "PR #138 adds persistent field-level truth, contacts, onboarding, presence, client confirmation snapshots, Team review, and an evidence-backed readiness gate."
       ],
       "blockers": [
         "Production owner-confirmed identity, hours, menu, services, contacts, dietary/halal claims, brand voice, goals, and presence-stack records are not complete.",
         "Uncertain facts cannot be used publicly before owner confirmation."
       ],
-      "nextAction": "Build Momo Restaurant Intelligence + Onboarding V1 with persistent field-level truth statuses and Team/client confirmation views."
+      "nextAction": "Merge and apply PR #138, then collect and review the real owner-confirmed Momo truth without inventing missing facts."
     },
     "media_and_rights": {
       "label": "Media, rights, and intelligence",
       "required": true,
-      "status": "foundation_ready",
+      "status": "in_progress",
       "evidence": [
         "Private Momo storage policies and an internal media/content inventory model exist.",
-        "AI media metadata, quality, reuse, duplicate, context, and compliance requirements are documented."
+        "PR #138 adds client-authored media/rights intake, Team review, tags, provider-neutral classification jobs, and rights-gated reuse history."
       ],
       "blockers": [
         "No production Momo media inventory with verified usage rights exists.",
         "Upload, review, classification, and reuse have not been verified end to end."
       ],
-      "nextAction": "Connect Momo media intake to persistent rights, review, AI classification, quality, tagging, duplicate, and reuse states."
+      "nextAction": "Merge and apply PR #138, provision client access, and verify one real owner-authorized upload through review, tagging, and reuse."
     },
     "ai_and_automation": {
       "label": "AI and safe automation",
@@ -79,67 +82,67 @@
       "status": "foundation_ready",
       "evidence": [
         "Brand voice, controlled drafting, approval queue, and human-review rules exist.",
-        "Publishing and reputation-sensitive work remain approval gated."
+        "PR #138 adds persistent strategies, captions, platform variants, owner/Team/publishing approvals, calendar records, bounded job attempts, and fail-closed provider adapters."
       ],
       "blockers": [
         "Runtime AI provider calls are inactive.",
         "Verified business truth and permissioned media inputs are incomplete.",
-        "Production retry, audit, monitoring, and cost controls are not verified."
+        "Production runtime AI, retry, audit, monitoring, and cost controls are not verified end to end."
       ],
-      "nextAction": "Build provider-neutral AI preparation, approval, retry, audit, monitoring, and manual-fallback workflows before connecting a live provider."
+      "nextAction": "Verify the provider-neutral PR #138 workflow in production, then connect a live provider only after credentials and any incremental spend are explicitly approved."
     },
     "meta_social": {
       "label": "Meta social handling",
       "required": true,
       "status": "blocked",
       "evidence": [
-        "Facebook and Instagram handling is part of the locked Momo readiness scope."
+        "PR #138 adds not-connected Meta state, platform-specific capability gates, separate editorial/publishing approvals, queues, attempts, and recovery records without tokens."
       ],
       "blockers": [
         "Owner-controlled Meta access and publishing permission are not connected or verified.",
         "No production social publishing workflow has passed approval, retry, and activity-history tests."
       ],
-      "nextAction": "Prepare the no-new-spend Meta adapter boundary, content/calendar states, approvals, retries, and audit trail; connect only after explicit access approval."
+      "nextAction": "Verify the fail-closed Meta foundation, then obtain owner-controlled Meta access and required permissions before enabling any adapter or publication."
     },
     "google_seo_and_reviews": {
       "label": "Google, local SEO, and reviews",
       "required": true,
       "status": "blocked",
       "evidence": [
-        "Google Business Profile, local SEO, review handling, and visibility monitoring are part of the locked Momo readiness scope."
+        "PR #138 adds not-connected Google state, local presence/website/menu checks, review-response approval gates, visibility snapshots, and capability-gated provider records."
       ],
       "blockers": [
         "Owner-controlled Google access is not connected or verified.",
         "Reputation-sensitive response and publishing permissions are not active.",
         "No verified baseline or production monitoring history exists."
       ],
-      "nextAction": "Build provider-neutral Google/SEO/review tasks, approvals, evidence, monitoring, and manual fallbacks; connect only after explicit access approval."
+      "nextAction": "Verify the fail-closed Google foundation, then obtain owner-controlled Business Profile access and required permissions before live checks, replies, or writes."
     },
     "website_menu_and_ordering": {
       "label": "Website, menu, and ordering paths",
       "required": true,
-      "status": "foundation_ready",
+      "status": "in_progress",
       "evidence": [
-        "Website, menu, contact, and ordering-path review is included in the locked Momo operating scope."
+        "PR #138 persists website, menu, ordering, contact-path, and local SEO checks with evidence, findings, and recommended actions."
       ],
       "blockers": [
         "Current owner-confirmed menu, hours, links, services, and website access are incomplete.",
         "No external website or ordering-platform write is authorized."
       ],
-      "nextAction": "Persist the verified presence stack and create evidence-backed website/menu/order readiness checks with prepared, approval-gated actions."
+      "nextAction": "Merge and apply PR #138, then record the real owner-confirmed URLs/menu/hours and run evidence-backed checks."
     },
     "operations_reporting_and_monitoring": {
       "label": "Operations, reporting, and monitoring",
       "required": true,
-      "status": "foundation_ready",
+      "status": "in_progress",
       "evidence": [
         "Momo work, reporting, activity, and readiness surfaces exist with honest safe-empty states.",
-        "Reports are required to use reviewed activity rather than invented outcomes."
+        "PR #138 adds persistent work, attempts, activity, reports, monitors, alerts, recovery runs, transactional retry/backoff, and client-safe approved reports."
       ],
       "blockers": [
         "Production Momo work history, platform activity, weekly updates, monthly reporting, alerts, retries, and recovery are not verified end to end."
       ],
-      "nextAction": "Connect persistent Momo work, reviewed activity, reporting, observability, retry, alert, and recovery records."
+      "nextAction": "Merge and apply PR #138, then verify a real work item, retry, monitored failure/recovery, and evidence-backed report end to end."
     },
     "activation_and_recovery": {
       "label": "Activation, recovery, and owner walkthrough",

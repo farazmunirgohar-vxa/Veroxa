@@ -2,6 +2,8 @@
 
 Status: highest-priority current milestone as of 2026-07-12.
 
+Current build: the seven-system Momo 100%-readiness release candidate is in draft PR #138 on `agent/momo-100-readiness`, reconciled with PR #137's two-lane readiness tracking. Its source contract is `MOMO_100_READINESS_SEVEN_SYSTEM_CONTRACT.md`. Until the exact merge, migration application, Sites checkpoint, and authenticated/external evidence are recorded, the deployed production baseline remains PR #135 / Sites version 4.
+
 Read this file before planning, building, reviewing, merging, or deploying Veroxa. If an older roadmap, status note, or historical plan conflicts with this file, follow this file and Faraz's newest explicit instruction.
 
 ## Milestone
@@ -90,6 +92,9 @@ For this milestone, **100% readiness** means the scoped Momo capabilities are pe
 - Exact merged source is deployed as Sites version 4. The checkpoint and both custom domains are verified active with active SSL and no reported domain error.
 - `RR_CHECKPOINT.md` and its machine-readable fingerprint record now route future work to delta or changed-boundary review, preventing unchanged evidence from being repeated.
 - Real Momo business data, onboarding, uploads, runtime AI, Meta/Google connections, social handling, SEO execution, publishing, outbound contact, and outcome metrics remain inactive.
+- The seven-system release candidate adds fail-closed source contracts for Restaurant Intelligence/onboarding, media intelligence, content/approvals/calendar, Meta, Google/local visibility, work/reports/recovery, and the final gate. It does not convert prepared adapters into live integrations.
+- Real Team Auth provisioning is **blocked external authority**: the database allowlist exists, but the connector has no Auth Admin create-user method and this workflow has no privileged server key. The server-only idempotent provisioning and Auth/RLS smoke commands are prepared but have not been run.
+- Runtime AI, Meta, Google writes, publishing, and visibility monitoring are **inactive pending authorized access**. No Momo owner truth or media rights are invented to make a readiness score pass.
 
 ## Mandatory two-lane tracking
 
@@ -103,27 +108,29 @@ Veroxa progress must track both the platform build and Momo's House operational 
 
 ## Latest completed build and exact next build
 
-The release completed steps 1–3 below across source, data, GitHub, and Sites. The exact next product build is now ready to start.
+The deployed release completed steps 1–3 below across source, data, GitHub, and Sites. The current branch is building steps 4–10 together as one seven-system release candidate while keeping external authority and activation separate.
 
-The exact next product build after this release is **Momo Restaurant Intelligence + Onboarding V1**:
+The current release candidate is **Momo 100% Readiness Seven-System V1**:
 
 - persist owner-confirmed restaurant identity, hours, address, phone, menu, services, dietary/halal claims, contacts, brand voice, goals, and required presence-stack state;
 - provide Team review and Momo safe-empty/client-confirmation views backed only by verified records;
 - make onboarding readiness measurable without contacting Momo, inventing facts, or connecting owner-controlled platforms;
 - prepare modular adapters for later media, AI, Meta, Google, SEO, ordering, and publishing connections without adding new spend.
 
+The candidate also prepares media rights/reuse, AI/content approvals/calendar, provider-neutral Meta/Google operations, work/retry/recovery/reporting, and the fail-closed final readiness gate. The runtime truth and evidence requirements are locked in `MOMO_100_READINESS_SEVEN_SYSTEM_CONTRACT.md`.
+
 ## Current build sequence
 
 1. **Complete and deployed:** reconcile GitHub, Sites, current milestone memory, and truthful Momo states.
 2. **Complete and deployed:** establish the secure Supabase foundation for Team Faraz and Momo only.
 3. **Complete and deployed:** make the Team Restaurant Audit Center effective for non-client restaurants without creating operational workspaces.
-4. **Next:** build the persistent Momo Restaurant Intelligence Profile and onboarding flow.
-5. Connect Momo media intake, Team review, and AI media intelligence.
-6. Connect Momo AI content preparation, approvals, calendar, social handling, and approved publishing.
-7. Connect Google Business Profile, local SEO, reviews, website checks, and visibility actions.
-8. Connect Momo messages, requests, work orchestration, activity logging, and reporting.
-9. Add monitoring, recovery, security, browser, authorization, and integration tests.
-10. Run the Momo 100%-readiness gate before any owner walkthrough or activation decision.
+4. **Release candidate:** persistent Momo Restaurant Intelligence Profile and onboarding flow.
+5. **Release candidate:** Momo media intake, rights, Team review, reuse, and provider-neutral AI media intelligence.
+6. **Release candidate:** Momo content strategy, captions, platform variants, approvals, calendar, and provider-neutral publishing jobs.
+7. **Release candidate:** Meta and Google Business Profile connection/readiness contracts, local SEO, reviews, website checks, and visibility actions; live providers remain inactive.
+8. **Release candidate:** work orchestration, activity/evidence, retries, recovery, monitoring, and reporting.
+9. **Release candidate:** deterministic source/database/guardrail tests plus controlled external identity/Auth smoke commands that are not run by CI.
+10. **Blocked until evidence is complete:** Momo 100%-readiness gate, owner walkthrough, and activation decision.
 
 ## Mandatory post-build continuity update
 

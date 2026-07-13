@@ -6,10 +6,21 @@ const root = resolve(import.meta.dirname, "../..");
 const checkpointPath = resolve(root, "artifacts/veroxa/docs/RR_RELEASE_CHECKPOINT.json");
 const checkpoint = JSON.parse(readFileSync(checkpointPath, "utf8")) as {
   schemaVersion: number;
+  checkpoint: string;
   status: string;
+  candidate?: {
+    branch: string;
+    merged: boolean;
+    databaseApplied: boolean;
+    sitesDeployed: boolean;
+    identityProvisioned: boolean;
+    authenticatedBrowserSmokeVerified: boolean;
+    externalProvidersConnected: boolean;
+  };
   scope: { operationalRestaurant: string; otherRestaurantCapability: string; automaticProspectConversion: boolean };
   databaseMigrations: string[];
   fullReviewTriggers: string[];
+  activationGates: string[];
   boundaryGroups: Record<string, { review: string; files: string[]; sha256: string }>;
 };
 
@@ -34,6 +45,31 @@ if (
   throw new Error("RR checkpoint drifted from the locked Momo-only operating scope");
 }
 if (checkpoint.fullReviewTriggers.length < 4) throw new Error("RR checkpoint review triggers are incomplete");
+if (checkpoint.checkpoint === "momo-seven-system-readiness-v1-candidate") {
+  const candidate = checkpoint.candidate;
+  if (
+    checkpoint.status !== "candidate" ||
+    !candidate ||
+    candidate.branch !== "agent/momo-100-readiness" ||
+    candidate.merged ||
+    candidate.databaseApplied ||
+    candidate.sitesDeployed ||
+    candidate.identityProvisioned ||
+    candidate.authenticatedBrowserSmokeVerified ||
+    candidate.externalProvidersConnected
+  ) {
+    throw new Error("RR candidate checkpoint overstates merge, deployment, identity, smoke, or provider state");
+  }
+}
+for (const marker of [
+  "blocked external authority",
+  "No Momo owner truth or media rights may be invented",
+  "inactive pending authorized access",
+]) {
+  if (!checkpoint.activationGates.some((gate) => gate.includes(marker))) {
+    throw new Error(`RR checkpoint activation truth missing: ${marker}`);
+  }
+}
 
 const activeMigrations = readdirSync(resolve(root, "supabase/migrations"))
   .filter((name) => name.endsWith(".sql"))

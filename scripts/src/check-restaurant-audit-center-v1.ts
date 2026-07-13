@@ -14,6 +14,9 @@ const finalHardening = read(
 );
 const sqlTest = read("supabase/tests/restaurant_audit_center_v1.sql");
 const sitePage = read("artifacts/veroxa-sites/app/page.tsx");
+const momoOperatingCenter = read(
+  "artifacts/veroxa-sites/app/momo-operating-center.tsx",
+);
 const siteData = read("artifacts/veroxa-sites/app/veroxa-supabase.ts");
 const siteServer = read("artifacts/veroxa-sites/app/veroxa-supabase-server.ts");
 const siteIntake = read(
@@ -173,12 +176,15 @@ for (const marker of [
 }
 
 for (const marker of [
-  "Safe-empty production boundary",
-  "reads no fixture activity",
-  "No reviewed media yet",
-  "No reviewed report yet",
+  "No cached or sample records are being shown",
+  "No owner-confirmed restaurant truth yet",
+  "No media has been uploaded",
+  "No reviewed report exists",
 ]) {
-  must(sitePage.includes(marker), `Sites client fixture firewall missing: ${marker}`);
+  must(
+    momoOperatingCenter.includes(marker),
+    `Sites client fixture firewall missing: ${marker}`,
+  );
 }
 
 must(
