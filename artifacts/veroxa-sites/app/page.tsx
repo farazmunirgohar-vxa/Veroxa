@@ -478,9 +478,12 @@ function LoginPage({ onNavigate }: { onNavigate: (view: View) => void }) {
       await requestVeroxaMagicLink(email, returnTo);
       setMessage("If this email is approved for Veroxa, a secure sign-in link has been sent.");
     } catch (caught) {
+      const failure = caught instanceof Error ? caught.message : "magic_link_failed";
       setError(
-        caught instanceof Error && caught.message === "configuration_unavailable"
+        failure === "configuration_unavailable"
           ? "Portal sign-in is temporarily unavailable while the secure connection is restored."
+          : failure === "magic_link_rate_limited"
+            ? "Too many secure emails were requested during setup. Please wait before requesting one new link."
           : "A secure sign-in link could not be sent right now.",
       );
     } finally {
