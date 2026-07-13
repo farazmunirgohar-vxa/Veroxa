@@ -138,7 +138,7 @@
         "artifacts/veroxa-sites/tests/rendered-html.test.mjs",
         "artifacts/veroxa/src/pages/free-audit.tsx"
       ],
-      "sha256": "2a72c3f342c2320ce85150cc30ee5999ed5f9ac0aafc1d6d0dd34178b101a559"
+      "sha256": "b1b750df1c2584a487d3eb4d30e0350c636cb7638b22322eb9d75753903c80d1"
     },
     "momo_operations_contract": {
       "review": "full-on-change",
