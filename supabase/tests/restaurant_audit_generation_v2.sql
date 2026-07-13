@@ -538,7 +538,6 @@ begin
 exception when others then
   execute 'reset role';
   raise;
-end;
 end $$;
 $workflow$, 'generated audit save, review, consent-backed pending profile, isolation, idempotency, and immutability pass');
 
