@@ -7,7 +7,7 @@
 - The current milestone is Momo's House San Antonio 100% readiness with maximum safe AI, automation, social handling, SEO, approved publishing, reporting, monitoring, and human approval control.
 - After every build, update `VEROXA_CURRENT_MILESTONE.md`, `CURRENT_BUILD_STATUS.md`, relevant runtime/deployment truth, and Faraz's plain-language handoff. Update locked memory when durable scope, authority, or product direction changes. A build is not complete until this continuity update is done.
 - Older instructions that defer Team Portal capability, prioritize broad public/client work, or use the earlier post-cutover route-parity sequence are superseded for this milestone. Historical multi-client prospecting applies only inside the Restaurant Audit Center and does not authorize another operational client.
-- Current release source implements Supabase-backed magic-link sessions, active Momo membership authorization, RLS, durable audit intake, and protected portal routes. The live Sites deployment remains on the earlier public shell until the exact green release is merged and checkpointed; real identities/data, AI, external integrations, publishing, and Momo activation remain gated.
+- Current deployed baseline is PR #142 at `9a905c822f084fd2df5c9a2cb87c1a8286647e59`, verified as Sites version 8 with all eight production migrations applied. The current branch is reserved for planned PR #143, which is not opened and not merged; its ninth migration is not applied and its Sites candidate is not published. Approved-user password sign-in, secure-email-link recovery, active Momo membership authorization, RLS, durable audit intake, and protected portal routes are live; Faraz confirmed password sign-in. Hosted reauthentication and old-session revocation remain unverified, while Momo client identity/data, AI, external integrations, publishing, and activation remain gated.
 
 ## 2026-07-12 — ChatGPT-managed build, GitHub, and deployment protocol
 
@@ -31,9 +31,11 @@
 - Read `artifacts/veroxa/docs/CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md` before changing hosting, routes, access, authentication, or the custom domain.
 - `veroxasystems.com` and `www.veroxasystems.com` are attached with active SSL. Preserve GitHub/Sites parity, mobile/build validation, honest public-shell labeling, domain verification, and rollback after each authorized deployment.
 - When Faraz asks for `RR`, perform a deep GitHub review plus ChatGPT Sites integration review. Fix reasonable code, docs, guardrail, CI, security, and direction drift without silently activating real-world systems.
-- The Sites migration does not activate production auth, credentials, database/storage, external integrations, AI provider calls, publishing, real client accounts/data, Team-sensitive exposure, or the Momo owner walkthrough.
+- The Sites migration did not by itself authorize identities, credentials, customer data, external integrations, AI provider calls, publishing, or the Momo owner walkthrough. The later scoped Supabase release now provides production Team authentication and Momo/Audit persistence; no Momo client identity, owner-confirmed data, provider connection, publishing, or owner walkthrough is active.
 
-## 2026-06-21 — Post-PR120 source-of-truth operating lock
+## 2026-06-21 — Historical post-PR120 source-of-truth operating lock
+
+This section records the retired Vite/Vercel state at PR #120. It does not override the current PR #142 Sites/Supabase baseline above.
 
 - Current operating baseline: merged PR #120 — Momo Internal Dry Run + Go/No-Go Gate.
 - PR #119 AI Draft Approval Queue is merged/completed.
@@ -44,8 +46,7 @@
 - No future agent should assume the Momo owner walkthrough is approved.
 - No future agent should assume activation comes next.
 - No future agent should enable real auth, external integrations, publishing, AI provider calls, platform tokens, or real client accounts/data exposure unless a later prompt explicitly approves that exact scope.
-- AUTH_MODE remains placeholder.
-- /api/pilot-access remains active.
+- Historical markers only: “AUTH_MODE remains placeholder” and “/api/pilot-access remains active” described the retired Vite/Vercel path and are not current Sites requirements.
 - Roles remain client/team only.
 - Momo owner walkthrough remains blocked.
 - No next activation PR is approved by default.
@@ -123,6 +124,7 @@ The current active Veroxa build stack is ChatGPT-managed GitHub + Codex + ChatGP
 - Codex is the engineering/build capability ChatGPT invokes internally.
 - ChatGPT Sites is the primary application/deployment surface.
 - Vercel is retired and must not be restored as a deployment or rollback path.
+- Until the legacy Vercel Git integration is disconnected in its dashboard, the exact root shutdown sentinel may set only `git.deploymentEnabled: false`. It is not a runtime or rollback path; do not add any other Vercel configuration, and remove the sentinel after disconnection.
 - Browser/manual QA is used for visual checks.
 
 ## 4. ChatGPT-managed build and merge workflow

@@ -6,11 +6,33 @@ const trackerPath = resolve(root, "artifacts/veroxa-sites/app/momo-readiness-tra
 const trackerText = readFileSync(trackerPath, "utf8");
 const tracker = JSON.parse(trackerText) as {
   schemaVersion: number;
+  recordKind: string;
+  operationalAuthority: string;
   restaurant: string;
   milestone: string;
   overallStatus: string;
   overallRule: string;
   lastReviewedAt: string;
+  lastVerifiedRelease: {
+    mainCommit: string;
+    sitesVersion: number;
+    productionMigrations: number;
+  };
+  currentBranchCandidate: {
+    releaseState: string;
+    productionBaselineUnchanged: boolean;
+    candidateSourceMigrations: number;
+    productionMigrations: number;
+    pendingForwardMigrationApplied: boolean;
+    pendingForwardMigrationVerified: boolean;
+    sitesCandidatePublished: boolean;
+    momoClientIdentityProvisioned: boolean;
+    ownerConfirmedBusinessTruthVerified: boolean;
+    permissionedMediaVerified: boolean;
+    externalProvidersConnected: boolean;
+    externalPublishingVerified: boolean;
+    activationExecuted: boolean;
+  };
   statusDefinitions: Record<string, string>;
   dimensions: Record<string, {
     label: string;
@@ -50,6 +72,12 @@ const requiredDimensions = [
 ];
 
 if (tracker.schemaVersion !== 1) throw new Error("Momo readiness tracker schema version is invalid");
+if (
+  tracker.recordKind !== "release_baseline_checkpoint" ||
+  !tracker.operationalAuthority.includes("Supabase")
+) {
+  throw new Error("Momo readiness tracker must preserve Supabase operational authority and release-checkpoint scope");
+}
 if (tracker.restaurant !== "Momo's House San Antonio") throw new Error("Momo readiness tracker restaurant scope drifted");
 if (tracker.milestone !== "Momo's House San Antonio 100% readiness") throw new Error("Momo readiness tracker milestone drifted");
 if (!/^\d{4}-\d{2}-\d{2}$/.test(tracker.lastReviewedAt)) throw new Error("Momo readiness tracker review date is invalid");
@@ -59,6 +87,31 @@ if (!tracker.overallRule.includes("Do not calculate or publish a readiness perce
 }
 if (/readinessPercentage|readinessPercent|completionPercentage|completionPercent/i.test(trackerText)) {
   throw new Error("Momo readiness tracker must not contain a synthetic percentage field");
+}
+if (
+  tracker.lastVerifiedRelease.mainCommit !== "9a905c822f084fd2df5c9a2cb87c1a8286647e59" ||
+  tracker.lastVerifiedRelease.sitesVersion !== 8 ||
+  tracker.lastVerifiedRelease.productionMigrations !== 8
+) {
+  throw new Error("Momo readiness tracker must preserve the verified PR #142 / Sites version 8 / eight-migration baseline");
+}
+const candidate = tracker.currentBranchCandidate;
+if (
+  candidate.releaseState !== "prepared_not_merged_not_applied_not_published" ||
+  candidate.productionBaselineUnchanged !== true ||
+  candidate.candidateSourceMigrations !== 9 ||
+  candidate.productionMigrations !== 8 ||
+  candidate.pendingForwardMigrationApplied !== false ||
+  candidate.pendingForwardMigrationVerified !== false ||
+  candidate.sitesCandidatePublished !== false ||
+  candidate.momoClientIdentityProvisioned !== false ||
+  candidate.ownerConfirmedBusinessTruthVerified !== false ||
+  candidate.permissionedMediaVerified !== false ||
+  candidate.externalProvidersConnected !== false ||
+  candidate.externalPublishingVerified !== false ||
+  candidate.activationExecuted !== false
+) {
+  throw new Error("Momo readiness candidate overstates merge, migration, publication, identity, owner data, providers, or activation");
 }
 
 if (JSON.stringify(Object.keys(tracker.dimensions).sort()) !== JSON.stringify([...requiredDimensions].sort())) {

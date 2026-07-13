@@ -1,6 +1,8 @@
 # RR Release Checkpoint
 
-Status: verified reusable baseline through PR #141 and deployed Sites version 7, with an unmerged password-auth candidate under exact-delta review. Overall Momo readiness remains separately blocked.
+Status: verified reusable baseline through PR #142 at `9a905c822f084fd2df5c9a2cb87c1a8286647e59` and deployed Sites version 8. Password sign-in is user-confirmed; hosted reauthentication and old-session revocation remain unverified. Overall Momo readiness remains separately blocked.
+
+The current branch is reserved for planned PR #143 and is the current no-new-spend source candidate, but the pull request is not opened and not merged, its ninth source migration is not applied, and its Sites candidate is not published. Production remains the PR #142 / Sites version 8 / eight-migration baseline above. Candidate implementation and review evidence must not be treated as deployed operating evidence.
 
 Read `RR_RELEASE_CHECKPOINT.json` and run `pnpm --filter @workspace/scripts run check-rr-release-checkpoint` before starting another broad RR. The checkpoint exists to reuse evidence, not to weaken review.
 
@@ -18,11 +20,11 @@ A full boundary review is required for changes to auth/session/allowlist/roles, 
 
 ## Current baseline truth
 
-- PR #141 is merged at `46d01c44f0411a4e870cd490d5bfcd8e58ee0e59`; exact runtime source is deployed as verified Sites version 7, all eight migrations are applied, and the custom live domain is active.
-- `momo-readiness-tracker.json` separately tracks Momo operational readiness. A verified release boundary does not imply overall Momo readiness.
+- PR #142 is merged at `9a905c822f084fd2df5c9a2cb87c1a8286647e59`; exact runtime source is deployed as verified Sites version 8, all eight migrations are applied, and both custom live domains are active.
+- `momo-readiness-tracker.json` is the repository release baseline/checkpoint. The scoped Supabase readiness rows and summary RPC are authoritative for live Team operational readiness. A verified release boundary does not imply overall Momo readiness.
 - Momo’s House San Antonio is the only operational restaurant.
 - Other restaurants may use only the separate Audit Center and never auto-convert.
-- Deployed Sites sign-in uses secure email links for approved active identities. The current unmerged candidate adds password sign-in and protected password replacement; public account creation remains disabled.
+- Deployed Sites sign-in supports approved-user passwords and secure-email-link recovery for approved active identities. Faraz confirmed password sign-in; public account creation remains disabled. Hosted reauthentication and old-session revocation are not yet verified.
 - Sites is the sole deployment surface; Vercel is retired and must not be restored as a release or rollback gate.
 - Client routes remain safe-empty until verified Momo records exist.
 - Runtime AI, Meta/Google connections, SEO/social execution, publishing, outbound contact, and owner walkthrough remain inactive.
@@ -34,8 +36,8 @@ A full boundary review is required for changes to auth/session/allowlist/roles, 
 - Review scope: the new operating-system migration and pgTAP coverage, canonical `momoOperationsV1` contracts, Sites Team/client data surfaces, seven-system truth guard, and controlled Auth Admin tooling.
 - Client operational reads must use the explicit-auth, role-sanitized Momo snapshot RPC; internal base tables remain Team-only and raw sensitive client reads must stay denied/empty.
 - Faraz's approved Gmail Team identity is confirmed, has signed in, has an active Team profile plus active Momo membership, and opened the protected Team/Momo route in Safari. The mistaken secondary identity has disabled portal access. No privileged key was exposed.
-- The login runtime-config/callback repair is merged and deployed as Sites version 7. The password extension is the current unmerged, undeployed auth delta; it preserves `shouldCreateUser: false` and must not be described as live until its exact source checkpoint succeeds.
+- The login runtime-config/callback repair and password extension are merged through PR #142 and deployed as Sites version 8. The release preserves `shouldCreateUser: false`, approved-user-only password sign-in, protected password replacement, and secure-email-link recovery. Hosted reauthentication and old-session revocation must not be described as verified until a controlled smoke proves them.
 - No Momo owner truth or media rights are invented. Runtime AI, Meta, Google, publishing, and visibility monitoring are **inactive pending authorized access**.
-- The foundation delta is verified and reusable. Email confirmation, authenticated browser evidence, owner truth, provider access, and final readiness remain separate unverified activation gates and must not be inferred from the green release.
+- The foundation and approved Team access delta are verified and reusable. Momo Client identity, owner truth, provider access, hosted reauthentication, old-session revocation, and final readiness remain separate unverified gates and must not be inferred from the green release.
 
 The machine check verifies migration inventory, immutable applied migration checksums, scope/auth markers, and the protected file-group fingerprints. A failed fingerprint is a review-routing signal: inspect the exact diff, run only the required delta or boundary checks, then deliberately refresh the checkpoint.

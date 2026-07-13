@@ -250,8 +250,13 @@ button { color: inherit; }
 .momo-form label,.momo-inline-form label,.momo-upload label,.momo-review-box label,.momo-variant-form label { display: grid; gap: 7px; color: var(--muted); font-size: 11px; font-weight: 700; }
 .momo-form label.wide,.momo-review-box .wide { grid-column: 1/-1; }
 .momo-form input,.momo-form textarea,.momo-form select,.momo-inline-form input,.momo-inline-form select,.momo-upload input,.momo-review-box input,.momo-review-box textarea,.momo-tag-input input,.momo-variant-form input,.momo-variant-form textarea,.momo-variant-form select,.momo-decision input { width: 100%; min-height: 43px; padding: 10px 12px; color: var(--ink); background: white; border: 1px solid var(--line); border-radius: 10px; font: inherit; outline: none; resize: vertical; }
+.momo-record-list input,.momo-record-list textarea,.momo-work-grid input,.momo-mini input { width: 100%; min-height: 39px; margin-top: 7px; padding: 9px 10px; color: var(--ink); background: white; border: 1px solid var(--line); border-radius: 9px; font: inherit; outline: none; resize: vertical; }
 .momo-form input:focus,.momo-form textarea:focus,.momo-form select:focus,.momo-inline-form input:focus,.momo-inline-form select:focus,.momo-upload input:focus,.momo-review-box input:focus,.momo-review-box textarea:focus,.momo-tag-input input:focus,.momo-variant-form input:focus,.momo-variant-form textarea:focus,.momo-variant-form select:focus,.momo-decision input:focus { border-color: #7e9988; box-shadow: 0 0 0 3px rgba(69,99,80,.08); }
 .momo-form-note { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.55; }
+.momo-callout { display: grid; gap: 5px; padding: 11px; color: #315b43; background: #edf7f0; border: 1px solid #cfe3d5; border-radius: 10px; font-size: 10px; line-height: 1.5; }
+.momo-callout p,.momo-callout small,.momo-warning p,.momo-warning small { margin: 0; }
+.momo-compact-form { margin-top: 10px; }
+.momo-contact-list { margin-top: 16px; }
 .momo-inline-form { display: grid; grid-template-columns: minmax(180px,1.2fr) repeat(3,minmax(120px,1fr)) auto; gap: 12px; align-items: end; }
 .momo-inline-form h2 { margin-top: 4px; }
 .momo-inline-form button { min-width: 120px; }

@@ -1,14 +1,40 @@
 {
   "schemaVersion": 1,
+  "recordKind": "release_baseline_checkpoint",
+  "operationalAuthority": "The scoped Supabase veroxa_readiness_dimensions records and veroxa_momo_readiness_summary_v1 RPC are authoritative for the live Team view. This file records repository release evidence and is not automatically synchronized with production rows.",
   "restaurant": "Momo's House San Antonio",
   "milestone": "Momo's House San Antonio 100% readiness",
   "overallStatus": "blocked",
   "overallRule": "Do not calculate or publish a readiness percentage. Overall readiness is verified only when every required dimension is verified and no blocker remains.",
   "lastReviewedAt": "2026-07-13",
   "lastVerifiedRelease": {
-    "mainCommit": "46d01c44f0411a4e870cd490d5bfcd8e58ee0e59",
-    "sitesVersion": 7,
+    "mainCommit": "9a905c822f084fd2df5c9a2cb87c1a8286647e59",
+    "sitesVersion": 8,
     "productionMigrations": 8
+  },
+  "currentBranchCandidate": {
+    "releaseState": "prepared_not_merged_not_applied_not_published",
+    "productionBaselineUnchanged": true,
+    "candidateSourceMigrations": 9,
+    "productionMigrations": 8,
+    "pendingForwardMigrationApplied": false,
+    "pendingForwardMigrationVerified": false,
+    "sitesCandidatePublished": false,
+    "momoClientIdentityProvisioned": false,
+    "ownerConfirmedBusinessTruthVerified": false,
+    "permissionedMediaVerified": false,
+    "externalProvidersConnected": false,
+    "externalPublishingVerified": false,
+    "activationExecuted": false,
+    "components": {
+      "momoClientIdentity": "A server-only, explicit-ack, idempotent provisioning helper and deterministic mock checks are prepared but unexecuted; no Momo client identity is approved or provisioned.",
+      "restaurantIntelligence": "The candidate covers all 18 locked truth fields and Team onboarding/presence review UI wired to transactional RPC paths; no owner-confirmed data has been entered.",
+      "mediaIntelligence": "The candidate locks exact momo-media-rights-v1 attestation provenance and uses Team quality review plus human tags as the no-cost manual classification path; no AI provider is called.",
+      "manualContent": "The candidate provides a deterministic six-pillar manual content cycle with owner-confirmed-truth and permissioned-media validation plus immutable input provenance.",
+      "providerPreflight": "Candidate Meta and Google no-credential preflights read Veroxa records only, fail closed, and never contact a provider.",
+      "operationsReportingRecovery": "Transactional work, reporting, monitoring, bounded retry/recovery, and linked activity evidence are implemented in the unapplied ninth source migration and are not part of the eight-migration production baseline.",
+      "finalGate": "The unapplied ninth source migration implements an atomic rehearsal that derives an immutable readiness snapshot and records only a rehearsal-mode No-Go while blockers remain; no Go or activation action is exposed."
+    }
   },
   "statusDefinitions": {
     "not_started": "No production-quality implementation or verified evidence exists yet.",
@@ -26,7 +52,8 @@
       "evidence": [
         "PR #138 merged the reviewed seven-system Momo operating foundation at commit 48630c62b9429238ab39b5b919d7689d189352f8.",
         "Eight production migrations are applied and ledger/hash verified; 32 of 32 operating tables force RLS.",
-        "Sites version 5 and both custom domains are verified active with active SSL."
+        "PR #142 is merged at 9a905c822f084fd2df5c9a2cb87c1a8286647e59 and its exact source is deployed as Sites version 8.",
+        "Both custom domains are verified active with active SSL."
       ],
       "blockers": [],
       "nextAction": "Preserve the verified boundary fingerprints and rerun only exact deltas that cross protected database, identity, provider, or delivery boundaries."
@@ -37,17 +64,18 @@
       "status": "verified",
       "evidence": [
         "Supabase Auth, active profile/membership checks, server route guards, and RLS are deployed; public account creation remains disabled.",
-        "The current unmerged candidate adds approved-user password sign-in plus a protected account-security route while preserving secure email-link recovery and disabled public signup.",
-        "The candidate requires 12–72 ASCII characters with uppercase, lowercase, number, and supported symbol. A padded HIBP five-character hash-prefix check adds no-cost, bypassable defense in depth; native Auth-boundary leaked-password enforcement remains unavailable on Supabase Free.",
+        "PR #142 deploys approved-user password sign-in plus a protected account-security route while preserving secure-email-link recovery and disabled public signup.",
+        "The deployed password policy requires 12–72 ASCII characters with uppercase, lowercase, number, and supported symbol. A padded HIBP five-character hash-prefix check adds no-cost, bypassable defense in depth; native Auth-boundary leaked-password enforcement remains unavailable on Supabase Free.",
         "PR #138 adds an idempotent server-only Admin provisioning command and a bounded authenticated Team/Momo Auth/RLS smoke harness.",
         "Faraz's approved Gmail Team identity is confirmed, has signed in, and has an active Team profile plus active Momo membership without exposing a privileged key.",
         "The mistaken secondary identity has disabled portal profile and Momo membership access.",
         "The route-scoped runtime-config repair is live and passes the Sites no-build-time-env production build plus positive/negative rendered login regression tests.",
         "Production Auth logs prove the temporary send failure was Supabase's built-in email limit; the request was rejected before protected-route or RLS evaluation, and the neutral UI does not disclose account existence.",
-        "The hosted Auth Site URL and exact production callback are configured. Production logs prove Gmail magic-link verification, token issuance, and session reads; Faraz confirmed the protected Team/Momo route opened in Safari."
+        "The hosted Auth Site URL and exact production callback are configured. Production logs prove Gmail magic-link verification, token issuance, and session reads; Faraz confirmed the protected Team/Momo route opened in Safari.",
+        "Faraz confirmed the deployed approved-user password sign-in works. Hosted reauthentication and old-session revocation have not been verified."
       ],
       "blockers": [],
-      "nextAction": "Merge and deploy the reviewed password candidate, enable and verify hosted secure password change for Auth-boundary reauthentication, then set a unique non-breached password through account security and verify one password login. Custom SMTP and native leaked-password enforcement remain deferred with no new spend approved."
+      "nextAction": "Preserve approved-user password sign-in and secure-email-link recovery. Verify hosted reauthentication and rejection of an old session after password replacement before claiming those controls are complete. Custom SMTP and native leaked-password enforcement remain deferred with no new spend approved."
     },
     "business_truth_and_onboarding": {
       "label": "Business truth and onboarding",
@@ -55,13 +83,15 @@
       "status": "in_progress",
       "evidence": [
         "The locked onboarding flow is Audit to Prefill to Owner verification to Veroxa gap completion to Final approval.",
-        "PR #138 adds persistent field-level truth, contacts, onboarding, presence, client confirmation snapshots, Team review, and an evidence-backed readiness gate."
+        "PR #138 adds persistent field-level truth, contacts, onboarding, presence, client confirmation snapshots, Team review, and an evidence-backed readiness gate.",
+        "Current branch candidate only: all 18 locked truth fields and Team onboarding/presence RPC UI are prepared, and the Momo client provisioning helper is prepared but unexecuted."
       ],
       "blockers": [
+        "No approved Momo client identity is provisioned, and the candidate RPC additions are not production-applied or published.",
         "Production owner-confirmed identity, hours, menu, services, contacts, dietary/halal claims, brand voice, goals, and presence-stack records are not complete.",
         "Uncertain facts cannot be used publicly before owner confirmation."
       ],
-      "nextAction": "Collect and review the real owner-confirmed Momo truth without inventing missing facts."
+      "nextAction": "Review and apply the pending migration plus exact Sites candidate first. Later, after an approved owner email is supplied, execute the explicit-ack client helper and collect real owner-confirmed Momo truth without inventing missing facts."
     },
     "media_and_rights": {
       "label": "Media, rights, and intelligence",
@@ -69,7 +99,8 @@
       "status": "in_progress",
       "evidence": [
         "Private Momo storage policies and an internal media/content inventory model exist.",
-        "PR #138 adds client-authored media/rights intake, Team review, tags, provider-neutral classification jobs, and rights-gated reuse history."
+        "PR #138 adds client-authored media/rights intake, Team review, tags, provider-neutral classification jobs, and rights-gated reuse history.",
+        "Current branch candidate only: the exact momo-media-rights-v1 attestation plus SHA-256 provenance and Team quality review/human-tag manual classification are prepared without an AI provider call."
       ],
       "blockers": [
         "No production Momo media inventory with verified usage rights exists.",
@@ -83,7 +114,8 @@
       "status": "foundation_ready",
       "evidence": [
         "Brand voice, controlled drafting, approval queue, and human-review rules exist.",
-        "PR #138 adds persistent strategies, captions, platform variants, owner/Team/publishing approvals, calendar records, bounded job attempts, and fail-closed provider adapters."
+        "PR #138 adds persistent strategies, captions, platform variants, owner/Team/publishing approvals, calendar records, bounded job attempts, and fail-closed provider adapters.",
+        "Current branch candidate only: a deterministic six-pillar manual content cycle validates confirmed truth and permissioned media and records immutable input provenance without calling runtime AI."
       ],
       "blockers": [
         "Runtime AI provider calls are inactive.",
@@ -97,7 +129,8 @@
       "required": true,
       "status": "blocked",
       "evidence": [
-        "PR #138 adds not-connected Meta state, platform-specific capability gates, separate editorial/publishing approvals, queues, attempts, and recovery records without tokens."
+        "PR #138 adds not-connected Meta state, platform-specific capability gates, separate editorial/publishing approvals, queues, attempts, and recovery records without tokens.",
+        "Current branch candidate only: a no-credential database preflight reports missing authorization, capability, or connection state and never contacts Meta."
       ],
       "blockers": [
         "Owner-controlled Meta access and publishing permission are not connected or verified.",
@@ -110,7 +143,8 @@
       "required": true,
       "status": "blocked",
       "evidence": [
-        "PR #138 adds not-connected Google state, local presence/website/menu checks, review-response approval gates, visibility snapshots, and capability-gated provider records."
+        "PR #138 adds not-connected Google state, local presence/website/menu checks, review-response approval gates, visibility snapshots, and capability-gated provider records.",
+        "Current branch candidate only: a no-credential database preflight reports missing authorization, capability, or connection state and never contacts Google."
       ],
       "blockers": [
         "Owner-controlled Google access is not connected or verified.",
@@ -138,21 +172,25 @@
       "status": "in_progress",
       "evidence": [
         "Momo work, reporting, activity, and readiness surfaces exist with honest safe-empty states.",
-        "PR #138 adds persistent work, attempts, activity, reports, monitors, alerts, recovery runs, transactional retry/backoff, and client-safe approved reports."
+        "PR #138 adds persistent work, attempts, activity, reports, monitors, alerts, recovery runs, transactional retry/backoff, and client-safe approved reports.",
+        "Current branch candidate only: transactional work transitions, evidence-backed reporting, monitoring, bounded retry/recovery, and linked activity evidence are implemented in the unapplied ninth source migration."
       ],
       "blockers": [
+        "The ninth source migration is prepared but has not been applied to production.",
         "Production Momo work history, platform activity, weekly updates, monthly reporting, alerts, retries, and recovery are not verified end to end."
       ],
-      "nextAction": "Verify a real work item, retry, monitored failure/recovery, and evidence-backed report end to end."
+      "nextAction": "Review and apply the pending forward migration, publish the exact Sites candidate, then verify a real work item, retry, monitored failure/recovery, and evidence-backed report end to end."
     },
     "activation_and_recovery": {
       "label": "Activation, recovery, and owner walkthrough",
       "required": true,
       "status": "blocked",
       "evidence": [
-        "Activation remains a separate decision and cannot be inferred from foundation readiness."
+        "Activation remains a separate decision and cannot be inferred from foundation readiness.",
+        "Current branch candidate only: the unapplied ninth source migration implements an atomic rehearsal that derives an immutable readiness snapshot and records only a rehearsal-mode No-Go while blockers remain; no Go action is exposed."
       ],
       "blockers": [
+        "The atomic rehearsal RPC is in the unapplied ninth source migration and is not production-available.",
         "All other required readiness dimensions are not verified.",
         "Momo owner contact, walkthrough, credentials, permissions, and publishing require separate explicit approval."
       ],
