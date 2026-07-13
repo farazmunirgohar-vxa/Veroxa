@@ -205,7 +205,10 @@ test("renders public routes and protects portal routes", async () => {
     "/team/audits",
     "/team/momo/work",
     "/team/momo/intelligence",
+    "/team/momo/media",
+    "/team/momo/content",
     "/team/momo/content-ai",
+    "/team/momo/presence",
     "/team/momo/reports",
     "/team/momo/readiness",
     "/account/security",
@@ -301,6 +304,97 @@ test("audit UI keeps contact, draft-isolation, mutation, and mobile-navigation g
     );
   }
   assert.match(data, /\.upsert\(record,[\s\S]*?\.select\("id, audit_run_id"\)[\s\S]*?\.single\(\)/, "Report saves must prove one affected row");
+});
+
+test("Team stays Momo-focused and generated audits preview before atomic save", async () => {
+  const [page, center, data, css] = await Promise.all([
+    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/audit-center.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/veroxa-supabase.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+  ]);
+
+  for (const marker of [
+    "Momo’s House",
+    "San Antonio · only operating client",
+    "Work Board",
+    "Media Library",
+    "Online Presence",
+    '"/team/momo/media"',
+    '"/team/momo/presence"',
+    "Restaurant Audit Center",
+  ]) {
+    assert.match(page, new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), `Team navigation missing ${marker}`);
+  }
+  assert.doesNotMatch(page, /const teamNav[\s\S]{0,350}Dashboard[\s\S]{0,350}Audit Center[\s\S]{0,350}Work[\s\S]{0,350}Intelligence/, "Team navigation must not return to the scattered flat list");
+
+  for (const marker of [
+    "GENERATE → PREVIEW → SAVE OR DISCARD",
+    "Generate audit preview",
+    "UNSAVED PREVIEW",
+    "Room to improve:",
+    "0–30 days",
+    "31–60 days",
+    "61–90 days",
+    "Save audit",
+    "Discard",
+    "discardGeneratedPreview",
+    "parseRestaurantAuditSnapshot",
+    "SAVED PRIORITIES",
+    "savedSnapshot.honestyNote",
+    "Create pending restaurant profile",
+    "AUDIT_ONBOARDING_CONSENT_TEXT",
+  ]) {
+    assert.match(center, new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), `Generated audit UI missing ${marker}`);
+  }
+  const discardBody = center.match(/function discardGeneratedPreview\(\)[\s\S]*?\n  }/i)?.[0] || "";
+  assert.doesNotMatch(discardBody, /await|\.rpc\(|saveGenerated/i, "Discard must remain local and write nothing");
+  assert.match(center, /onboardingTargetKey === currentOnboardingTargetKey/, "Onboarding consent must be bound to the selected request and latest run");
+  assert.match(center, /run\.id !== runs\[0\]\?\.id/, "Generated audits must target only the latest run");
+  assert.match(center, /builderTargetMatchesCurrentSelection/, "Generated saves must remain bound to the selected restaurant and latest run");
+  assert.match(center, /hasSavedSnapshotEvidence/, "A positive evidence-backed generated audit must remain reviewable without an invented negative finding");
+  assert.match(center, /resetGeneratedAuditDraft\(false\);[\s\S]{0,100}resetOnboardingDraft\(\);[\s\S]{0,100}setSelectedId\(item\.id\)/, "Changing restaurants must clear generator and onboarding drafts");
+  assert.match(css, /conic-gradient\(var\(--lime\) 0 var\(--audit-score,0%\)/, "The score ring must reflect the actual audit score");
+  assert.doesNotMatch(css, /conic-gradient\(var\(--lime\) 0 75%/, "The score ring must not be hard-coded to 75 percent");
+  assert.match(css, /\.audit-signal-card input,[^\n]*font-size: 16px/, "Mobile audit controls must avoid tiny text and focus zoom");
+  assert.match(css, /\.audit-consent-check input \{ width: 22px; height: 22px;/, "Mobile consent control must have a usable target");
+
+  for (const rpc of [
+    "save_team_generated_audit_v2",
+    "complete_team_generated_audit_run_v2",
+    "save_team_generated_audit_rerun_v2",
+    "veroxa_convert_reviewed_audit_to_pending_profile_v1",
+  ]) {
+    assert.match(data, new RegExp(rpc), `Sites data adapter missing ${rpc}`);
+  }
+  assert.match(data, /This does not activate services, connect accounts, authorize publishing, or create charges\./, "Onboarding conversion must use the exact non-activation consent");
+});
+
+test("Team navigation and Momo work/content controls keep every state reachable without exposing backend clutter", async () => {
+  const [page, center] = await Promise.all([
+    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/momo-operating-center.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(page, /const \[momoFolderExpanded, setMomoFolderExpanded\]/, "Momo navigation must have a real folder state");
+  assert.match(page, /useState\(\(\) => routeToView\[initialPath\] !== "team-audits"\)/, "The initial Audit Center route must default the Momo folder closed");
+  assert.match(page, /if \(next === "team-audits"\) setMomoFolderExpanded\(false\)/, "Audit Center navigation must close the Momo folder");
+  assert.match(page, /else if \(next\.startsWith\("team"\)\) setMomoFolderExpanded\(true\)/, "Momo navigation must open its folder");
+  assert.match(page, /aria-expanded=\{momoFolderExpanded\}/, "The Momo folder must expose its state to assistive technology");
+  assert.match(page, /aria-controls="momo-workspace-navigation"/, "The folder toggle must identify its controlled navigation");
+  assert.match(page, /hidden=\{!momoFolderExpanded\}/, "Collapsed Momo navigation must hide its child routes");
+
+  assert.match(center, /const waitingForApproval = item\.status === "waiting_approval"/, "Waiting-approval work must have an explicit UI state");
+  assert.match(center, /waitingForApproval[\s\S]{0,900}targetStatus: "in_progress", reason[\s\S]{0,250}Resume after approval/, "Approved work must be resumable with recorded evidence");
+  assert.match(center, /waitingForApproval[\s\S]{0,1300}targetStatus: "blocked", reason[\s\S]{0,250}Block work/, "Waiting work must remain blockable with a reason");
+  assert.match(center, /\["queued", "in_progress", "waiting_approval", "retrying", "blocked"\]\.includes\(item\.status\)/, "Waiting work must remain cancellable");
+
+  assert.match(center, /useState<ContentWorkspaceSection>\("attention"\)/, "Content must open on the action-first section");
+  assert.match(center, /id="content-tab-attention"[\s\S]{0,500}Needs attention/, "Content must expose a Needs attention tab");
+  assert.match(center, /id="content-tab-create"[\s\S]{0,500}Create content/, "Team creation controls must stay reachable behind a focused tab");
+  assert.match(center, /id="content-tab-library"[\s\S]{0,500}Library &amp; calendar/, "Content records and calendar must stay reachable behind one library tab");
+  assert.match(center, /hidden=\{activeSection !== "attention"\}/, "Inactive content panels must use progressive disclosure");
+  assert.match(center, /orderedApprovals\.map/, "Pending approval records must render before decision history");
 });
 
 test("Momo operating center uses live tenant data and exact production contracts", async () => {

@@ -4,6 +4,7 @@ import {
   getVeroxaPasswordIssue,
   isVeroxaPasswordCompromised,
 } from "./veroxa-password.mjs";
+import type { RestaurantAuditSnapshot } from "./restaurant-audit-engine";
 
 export { getVeroxaPasswordIssue } from "./veroxa-password.mjs";
 
@@ -45,6 +46,7 @@ export type AuditRun = {
   status: AuditRunStatus;
   source_snapshot: Record<string, unknown>;
   score_snapshot: Record<string, unknown>;
+  generator_version?: string | null;
   comparison_summary: string | null;
   failure_reason: string | null;
   created_at: string;
@@ -77,6 +79,8 @@ export type AuditReport = {
   executive_summary: string;
   priority_actions: string;
   honesty_note: string;
+  improvement_snapshot?: unknown[];
+  plan_snapshot?: Record<string, unknown>;
   reviewed_at: string | null;
   updated_at: string;
 };
@@ -127,6 +131,26 @@ type AuditReference = {
   reference_code: string;
   request_status: string;
 };
+
+export type GeneratedAuditFindingInput = {
+  category: string;
+  severity: AuditFindingSeverity;
+  title: string;
+  summary: string;
+  evidenceUrl: string;
+  evidenceLabel?: string;
+  recommendedAction: string;
+};
+
+export type GeneratedAuditReference = {
+  request_id: string;
+  run_id: string;
+  reference_code: string;
+};
+
+export const AUDIT_ONBOARDING_CONSENT_VERSION = "audit-onboarding-consent-v1";
+export const AUDIT_ONBOARDING_CONSENT_TEXT =
+  "I agree that Veroxa may create a pending restaurant onboarding profile using the reviewed audit information. This does not activate services, connect accounts, authorize publishing, or create charges.";
 
 let singleton: SupabaseClient | null = null;
 let runtimeConfig: VeroxaPublicConfig | null = null;
@@ -381,7 +405,7 @@ export async function listAuditQueue(): Promise<AuditQueueRecord[]> {
       ),
       audit_runs(
         id, previous_run_id, run_number, status, source_snapshot, score_snapshot,
-        comparison_summary, failure_reason, created_at, updated_at
+        generator_version, comparison_summary, failure_reason, created_at, updated_at
       ),
       audit_notes(id, body, created_at)
     `)
@@ -417,6 +441,118 @@ export async function createTeamAudit(input: {
   const row = (Array.isArray(data) ? data[0] : data) as AuditReference | null;
   if (!row?.request_id) throw new Error("audit_create_failed");
   return row;
+}
+
+function generatedAuditReference(data: unknown): GeneratedAuditReference {
+  const row = (Array.isArray(data) ? data[0] : data) as GeneratedAuditReference | null;
+  if (!row?.request_id || !row.run_id || !row.reference_code) {
+    throw new Error("generated_audit_save_failed");
+  }
+  return row;
+}
+
+type GeneratedAuditPayload = {
+  snapshot: RestaurantAuditSnapshot;
+  findings: GeneratedAuditFindingInput[];
+  executiveSummary: string;
+  priorityActions: string;
+  saveKey: string;
+};
+
+export async function saveGeneratedAudit(input: GeneratedAuditPayload & {
+  restaurantName: string;
+  city: string;
+  state: string;
+  websiteUrl?: string;
+  googleProfileUrl?: string;
+  teamNote?: string;
+}): Promise<GeneratedAuditReference> {
+  const client = getVeroxaSupabase();
+  if (!client) throw new Error("configuration_unavailable");
+  const { data, error } = await client.rpc("save_team_generated_audit_v2", {
+    p_restaurant_name: input.restaurantName.trim(),
+    p_city: input.city.trim(),
+    p_state: input.state.trim(),
+    p_website_url: input.websiteUrl?.trim() || null,
+    p_google_profile_url: input.googleProfileUrl?.trim() || null,
+    p_score_snapshot: input.snapshot,
+    p_findings: input.findings,
+    p_executive_summary: input.executiveSummary,
+    p_priority_actions: input.priorityActions,
+    p_team_note: input.teamNote?.trim() || null,
+    p_save_key: input.saveKey,
+  });
+  if (error) throw error;
+  return generatedAuditReference(data);
+}
+
+export async function completeGeneratedAuditRun(
+  runId: string,
+  input: GeneratedAuditPayload,
+): Promise<GeneratedAuditReference> {
+  const client = getVeroxaSupabase();
+  if (!client) throw new Error("configuration_unavailable");
+  const { data, error } = await client.rpc("complete_team_generated_audit_run_v2", {
+    p_audit_run_id: runId,
+    p_score_snapshot: input.snapshot,
+    p_findings: input.findings,
+    p_executive_summary: input.executiveSummary,
+    p_priority_actions: input.priorityActions,
+    p_save_key: input.saveKey,
+  });
+  if (error) throw error;
+  return generatedAuditReference(data);
+}
+
+export async function saveGeneratedAuditRerun(
+  requestId: string,
+  expectedPreviousRunId: string,
+  input: GeneratedAuditPayload & { comparisonSummary: string },
+): Promise<GeneratedAuditReference> {
+  const client = getVeroxaSupabase();
+  if (!client) throw new Error("configuration_unavailable");
+  const { data, error } = await client.rpc("save_team_generated_audit_rerun_v2", {
+    p_audit_request_id: requestId,
+    p_expected_previous_run_id: expectedPreviousRunId,
+    p_score_snapshot: input.snapshot,
+    p_findings: input.findings,
+    p_executive_summary: input.executiveSummary,
+    p_priority_actions: input.priorityActions,
+    p_comparison_summary: input.comparisonSummary,
+    p_save_key: input.saveKey,
+  });
+  if (error) throw error;
+  return generatedAuditReference(data);
+}
+
+export async function convertReviewedAuditToPendingProfile(input: {
+  requestId: string;
+  consentChannel: "written" | "email" | "signed_form" | "recorded_call";
+  consentEvidenceReference: string;
+  consentedAt: string;
+  idempotencyKey: string;
+}): Promise<{ conversion_id: string; pending_restaurant_id: string; conversion_state: string }> {
+  const client = getVeroxaSupabase();
+  if (!client) throw new Error("configuration_unavailable");
+  const { data, error } = await client.rpc("veroxa_convert_reviewed_audit_to_pending_profile_v1", {
+    p_audit_request_id: input.requestId,
+    p_consent_version: AUDIT_ONBOARDING_CONSENT_VERSION,
+    p_consent_text: AUDIT_ONBOARDING_CONSENT_TEXT,
+    p_consent_channel: input.consentChannel,
+    p_consent_evidence_reference: input.consentEvidenceReference.trim(),
+    p_consented_at: input.consentedAt,
+    p_idempotency_key: input.idempotencyKey,
+  });
+  if (error) throw error;
+  const row = (Array.isArray(data) ? data[0] : data) as {
+    conversion_id?: string;
+    pending_restaurant_id?: string;
+    conversion_state?: string;
+  } | null;
+  if (!row?.conversion_id || !row.pending_restaurant_id) {
+    throw new Error("audit_onboarding_profile_failed");
+  }
+  return row as { conversion_id: string; pending_restaurant_id: string; conversion_state: string };
 }
 
 export async function updateAuditRequestStatus(

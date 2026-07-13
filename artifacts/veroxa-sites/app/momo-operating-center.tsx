@@ -77,9 +77,9 @@ type LoadState =
 
 const sectionForView = (view: string): MomoWorkspaceSection => {
   if (view === "onboarding" || view === "team-intelligence") return "intelligence";
-  if (view === "media") return "media";
+  if (view === "media" || view === "team-media") return "media";
   if (view === "content" || view === "team-content") return "content";
-  if (view === "services") return "connections";
+  if (view === "services" || view === "team-presence") return "connections";
   if (view === "reports" || view === "team-reports" || view === "team-work") return "operations";
   if (view === "team-readiness") return "readiness";
   return "dashboard";
@@ -286,9 +286,9 @@ export function MomoOperatingCenter({ view, access, onNavigate, notify }: Props)
   };
 
   if (view === "onboarding" || view === "team-intelligence") return <IntelligencePanel {...shared} />;
-  if (view === "media") return <MediaPanel {...shared} />;
+  if (view === "media" || view === "team-media") return <MediaPanel {...shared} />;
   if (view === "content" || view === "team-content") return <ContentPanel {...shared} />;
-  if (view === "services") return <ConnectionsPanel {...shared} />;
+  if (view === "services" || view === "team-presence") return <ConnectionsPanel {...shared} />;
   if (view === "team-work") return <OperationsPanel {...shared} mode="work" />;
   if (view === "reports" || view === "team-reports") return <OperationsPanel {...shared} mode="reports" />;
   if (view === "team-readiness") return <ReadinessPanel {...shared} />;
@@ -312,9 +312,8 @@ function DashboardPanel({ data, role, onNavigate }: PanelProps & { onNavigate: (
     : connectionIsCurrentlyEligible(connection, "facebook_publish") || connectionIsCurrentlyEligible(connection, "instagram_publish")).length;
   const currentOwnerTruth = data.truth.filter((item) => momoTruthFieldIsCurrentlyUsable(data, item.id)).length;
   const gate = data.readinessGate;
-  const truthName = data.truth.find((item) => item.field_key === "identity.display_name");
   return <div className="view">
-    <MomoIntro eyebrow="MOMO OPERATING SYSTEM" title={truthName ? valueText(truthName.value_json) || "Momo’s House" : "Momo workspace"} description="Live operational records for restaurant truth, media, content, connections, work, reporting, and readiness." />
+    <MomoIntro eyebrow="MOMO’S HOUSE SAN ANTONIO · ONLY OPERATING CLIENT" title="Momo’s House workspace" description="One focused place for today’s work, restaurant setup, media, content approvals, online presence, reports, and readiness." />
     <SafetyBoundary role={role} />
     <section className="momo-metrics">
       <article><span>Truth fields</span><strong>{data.truth.length}</strong><small>{currentOwnerTruth} current owner confirmed</small></article>
@@ -323,10 +322,10 @@ function DashboardPanel({ data, role, onNavigate }: PanelProps & { onNavigate: (
       <article><span>Blocked work</span><strong>{blockedWork}</strong><small>requires action</small></article>
     </section>
     <section className="momo-module-grid">
-      <Module title="Restaurant intelligence" detail={data.truth.length ? `${data.truth.length} persistent fields available.` : "No owner-confirmed restaurant truth yet."} status={data.truth.length ? "in_progress" : "not_started"} action="Open intelligence" onClick={() => onNavigate(role === "team" ? "team-intelligence" : "onboarding")} />
-      <Module title="Media + rights" detail={data.media.length ? `${data.media.length} assets; ${data.mediaRights.length} rights records.` : "No Momo media has been uploaded."} status={data.media.length ? "in_progress" : "not_started"} action={role === "team" ? "Open content" : "Open media"} onClick={() => onNavigate(role === "team" ? "team-content" : "media")} />
-      <Module title="Content approvals" detail={data.contentItems.length ? `${data.contentItems.length} content items; ${pendingApprovals} pending approvals.` : "No strategy or content draft exists."} status={pendingApprovals ? "approval_required" : data.contentItems.length ? "in_progress" : "not_started"} action="Open content" onClick={() => onNavigate(role === "team" ? "team-content" : "services")} />
-      <Module title="Connections" detail={data.connections.length ? `${eligibleConnections} of ${data.connections.length} provider records have current owner authorization, capability, and verification.` : "Meta and Google are not represented as connected."} status={eligibleConnections > 0 ? "connected" : "blocked"} action="Review services" onClick={() => onNavigate(role === "team" ? "team-readiness" : "services")} />
+      <Module title="Restaurant setup" detail={data.truth.length ? `${data.truth.length} persistent fields available.` : "No owner-confirmed restaurant truth yet."} status={data.truth.length ? "in_progress" : "not_started"} action="Open restaurant setup" onClick={() => onNavigate(role === "team" ? "team-intelligence" : "onboarding")} />
+      <Module title="Media library" detail={data.media.length ? `${data.media.length} assets; ${data.mediaRights.length} rights records.` : "No Momo media has been uploaded."} status={data.media.length ? "in_progress" : "not_started"} action="Open media library" onClick={() => onNavigate(role === "team" ? "team-media" : "media")} />
+      <Module title="Content & approvals" detail={data.contentItems.length ? `${data.contentItems.length} content items; ${pendingApprovals} pending approvals.` : "No strategy or content draft exists."} status={pendingApprovals ? "approval_required" : data.contentItems.length ? "in_progress" : "not_started"} action="Open content" onClick={() => onNavigate(role === "team" ? "team-content" : "content")} />
+      <Module title="Online presence" detail={data.connections.length ? `${eligibleConnections} of ${data.connections.length} provider records have current owner authorization, capability, and verification.` : "Meta and Google are not represented as connected."} status={eligibleConnections > 0 ? "connected" : "blocked"} action="Review online presence" onClick={() => onNavigate(role === "team" ? "team-presence" : "services")} />
       <Module title="Reporting" detail={data.reports.length ? `${data.reports.length} evidence-backed report records.` : "No reviewed report is available."} status={data.reports.length ? "in_progress" : "not_started"} action="Open reports" onClick={() => onNavigate(role === "team" ? "team-reports" : "reports")} />
       <Module title="Final readiness gate" detail={gate ? `${gate.verified_count} of ${gate.required_count} required dimensions verified; ${gate.blocker_count} blockers.` : "The production readiness gate has no evaluated record."} status={gate?.overall_status || "not_evaluated"} action="Review readiness" onClick={() => onNavigate(role === "team" ? "team-readiness" : "onboarding")} />
     </section>
@@ -622,8 +621,11 @@ function MediaAssetCard({ asset, data, role, restaurantId, busy, run }: PanelPro
   </article>;
 }
 
+type ContentWorkspaceSection = "attention" | "create" | "library";
+
 function ContentPanel(props: PanelProps) {
   const { data, role, restaurantId, busy, run } = props;
+  const [activeSection, setActiveSection] = useState<ContentWorkspaceSection>("attention");
   const [strategyTitle, setStrategyTitle] = useState("");
   const [goals, setGoals] = useState("");
   const [pillars, setPillars] = useState("");
@@ -657,6 +659,12 @@ function ContentPanel(props: PanelProps) {
   const selectedTruth = confirmedTruth.filter((item) => truthInputIds.includes(item.id));
   const selectedMedia = mediaAssetId ? readyMedia.find((item) => item.id === mediaAssetId) : undefined;
   const selectedStrategy = strategyId ? approvedStrategies.find((item) => item.id === strategyId) : undefined;
+  const approvalNeedsAttention = (status: string) => ["pending", "in_review"].includes(status);
+  const orderedApprovals = [...data.approvals].sort((left, right) =>
+    Number(!approvalNeedsAttention(left.status)) - Number(!approvalNeedsAttention(right.status)));
+  const attentionCount = data.pendingContentConfirmations.length
+    + data.approvals.filter((approval) => approvalNeedsAttention(approval.status)).length;
+  const libraryCount = data.contentItems.length + data.calendar.length;
   const selectionsCurrent = momoContentSelectionsAreCurrent({
     selectedTruthIds: truthInputIds,
     currentTruthIds: confirmedTruth.map((item) => item.id),
@@ -697,7 +705,13 @@ function ContentPanel(props: PanelProps) {
   return <div className="view">
     <MomoIntro eyebrow="AI CONTENT + APPROVAL CALENDAR" title="Prepared, reviewed, controlled" description="Strategy, captions, platform variants, approvals, and calendar entries are persistent. Runtime AI and publishing remain separate gated actions." />
     <SafetyBoundary role={role} />
-    {role === "team" && <section className="momo-split">
+    <div className="momo-content-tabs" role="tablist" aria-label="Content and approvals sections">
+      <button type="button" id="content-tab-attention" role="tab" aria-selected={activeSection === "attention"} aria-controls="content-panel-attention" className={activeSection === "attention" ? "active" : ""} onClick={() => setActiveSection("attention")}><span>Needs attention</span><b>{attentionCount}</b></button>
+      {role === "team" && <button type="button" id="content-tab-create" role="tab" aria-selected={activeSection === "create"} aria-controls="content-panel-create" className={activeSection === "create" ? "active" : ""} onClick={() => setActiveSection("create")}><span>Create content</span></button>}
+      <button type="button" id="content-tab-library" role="tab" aria-selected={activeSection === "library"} aria-controls="content-panel-library" className={activeSection === "library" ? "active" : ""} onClick={() => setActiveSection("library")}><span>Library &amp; calendar</span><b>{libraryCount}</b></button>
+    </div>
+    {role === "team" && <div id="content-panel-create" className="momo-content-tabpanel" role="tabpanel" aria-labelledby="content-tab-create" hidden={activeSection !== "create"}>
+    <section className="momo-split">
       <form className="momo-panel momo-form" onSubmit={(event) => {
         event.preventDefault();
         void run(() => createMomoContentStrategy({ restaurantId, title: strategyTitle, goals: goals.split(",").map((item) => item.trim()).filter(Boolean), pillars: pillars.split(",").map((item) => item.trim()).filter(Boolean), brandVoice: voice }), "Draft content strategy saved.");
@@ -734,7 +748,9 @@ function ContentPanel(props: PanelProps) {
         {currentManualCycle && <div className={currentManualCycle.inputsVerified ? "momo-callout" : "momo-warning"}><strong>{currentManualCycle.inputsVerified ? "Inputs verified for an internal brief" : "Manual cycle remains blocked"}</strong>{currentManualCycle.issues.map((issue) => <p key={`${issue.code}:${issue.field}`}>{issue.message}</p>)}{currentManualCycle.brief && <p>Three human-editable platform skeletons prepared. Approval, publishing, and readiness remain false until the separate database gates pass.</p>}</div>}
         <button className="secondary-button" disabled={busy || !selectionsCurrent || !currentManualCycle?.inputsVerified || truthInputIds.length === 0}>Save gated content draft</button>
       </form>
-    </section>}
+    </section>
+    </div>}
+    <div id="content-panel-attention" className="momo-content-tabpanel" role="tabpanel" aria-labelledby="content-tab-attention" hidden={activeSection !== "attention"}>
     {role === "client" && <section className="momo-panel">
       <div className="momo-panel-heading"><div><p className="eyebrow">OWNER CONTENT CONFIRMATION</p><h2>Directions waiting for your decision</h2></div><span>{data.pendingContentConfirmations.length}</span></div>
       {data.pendingContentConfirmations.length === 0 ? <EmptyState title="No content direction needs confirmation." detail="Only Momo content that explicitly requires owner confirmation appears here." /> : <div className="momo-content-list">{data.pendingContentConfirmations.map((item) => <PendingContentConfirmationCard key={item.content_item_id} item={item} {...props} />)}</div>}
@@ -746,14 +762,16 @@ function ContentPanel(props: PanelProps) {
         return <article key={strategy.id}><div><strong>{strategy.title}</strong><p>{jsonList(strategy.pillars).join(" · ") || "No pillars recorded"}</p></div><StatusBadge status={approval?.status || strategy.status} />{strategy.status !== "approved" && !approvalBlocksNewRequest(approval) && <button disabled={busy} onClick={() => void run(() => requestMomoApproval({ restaurantId, subjectType: "content_strategy", subjectId: strategy.id, approvalKind: "team_review" }), "Strategy review requested.")}>Request Team review</button>}</article>;
       })}</div>}
     </section>}
+    <section className="momo-panel">
+      <div className="momo-panel-heading"><div><p className="eyebrow">APPROVAL QUEUE</p><h2>Human decisions</h2></div><span>{data.approvals.length}</span></div>
+      {data.approvals.length === 0 ? <EmptyState title="No approval requests exist." detail="No content, variant, review response, or publication is treated as approved." /> : <div className="momo-record-list">{orderedApprovals.map((approval) => <ApprovalRow key={approval.id} approval={approval} {...props} />)}</div>}
+    </section>
+    </div>
+    <div id="content-panel-library" className="momo-content-tabpanel" role="tabpanel" aria-labelledby="content-tab-library" hidden={activeSection !== "library"}>
     {role === "team" && <section className="momo-panel">
       <div className="momo-panel-heading"><div><p className="eyebrow">INPUT PROVENANCE</p><h2>Immutable content evidence</h2></div><span>{data.contentInputs.length}</span></div>
       {data.contentInputs.length === 0 ? <EmptyState title="No gated content input has been recorded." detail="Saving a manual draft records owner-confirmed truth and permissioned-media fingerprints here; draft text alone is never treated as verified input." /> : <div className="momo-record-list">{data.contentInputs.map((entry) => <article key={entry.id}><div><strong>{labelStatus(entry.input_kind)}</strong><p>{entry.truth_field_id ? "Owner-confirmed truth snapshot" : entry.media_asset_id ? `Media rights ${entry.rights_attestation_version || "version not recorded"}` : "Recorded content input"}</p><small>Draft {entry.content_item_id.slice(0, 8)} · fingerprint {entry.input_sha256.slice(0, 12)}… · {formatDate(entry.recorded_at)}</small></div><StatusBadge status="immutable" /></article>)}</div>}
     </section>}
-    <section className="momo-panel">
-      <div className="momo-panel-heading"><div><p className="eyebrow">APPROVAL QUEUE</p><h2>Human decisions</h2></div><span>{data.approvals.length}</span></div>
-      {data.approvals.length === 0 ? <EmptyState title="No approval requests exist." detail="No content, variant, review response, or publication is treated as approved." /> : <div className="momo-record-list">{data.approvals.map((approval) => <ApprovalRow key={approval.id} approval={approval} {...props} />)}</div>}
-    </section>
     <section className="momo-panel">
       <div className="momo-panel-heading"><div><p className="eyebrow">CONTENT ITEMS</p><h2>Drafts and platform variants</h2></div><span>{data.contentItems.length}</span></div>
       {data.contentItems.length === 0 ? <EmptyState title="No content draft exists." detail="AI does not generate content from missing business truth or unapproved media." /> : <div className="momo-content-list">{data.contentItems.map((item) => <ContentItemCard key={item.id} item={item} {...props} />)}</div>}
@@ -762,6 +780,7 @@ function ContentPanel(props: PanelProps) {
       <div className="momo-panel-heading"><div><p className="eyebrow">CONTENT CALENDAR</p><h2>Approved schedule records</h2></div><span>{data.calendar.length}</span></div>
       {data.calendar.length === 0 ? <EmptyState title="The calendar is empty." detail="Nothing is scheduled or represented as published." /> : <div className="momo-card-grid">{data.calendar.map((entry) => <article className="momo-small-card" key={entry.id}><div><strong>{data.variants.find((item) => item.id === entry.variant_id)?.platform || "Variant"}</strong><StatusBadge status={entry.status} /></div><p>{formatZonedDate(entry.scheduled_for, entry.timezone)}</p><small>{entry.published_at ? `Published ${formatDate(entry.published_at)}` : `Not published · ${entry.timezone}`}</small></article>)}</div>}
     </section>
+    </div>
   </div>;
 }
 
@@ -925,29 +944,56 @@ function OperationsPanel(props: PanelProps & { mode: "work" | "reports" }) {
     const eventDate = momoLocalDate(event.occurred_at);
     return eventDate >= periodStart && eventDate <= periodEnd;
   });
+
+  if (mode === "work") {
+    const workLanes = [
+      { key: "attention", label: "Needs attention", detail: "Approval, blocker, or failure", statuses: ["waiting_approval", "blocked", "failed"] },
+      { key: "doing", label: "Doing now", detail: "Active or retrying", statuses: ["in_progress", "retrying"] },
+      { key: "next", label: "Up next", detail: "Ready to begin", statuses: ["queued"] },
+      { key: "done", label: "Done", detail: "Completed or closed", statuses: ["completed", "cancelled"] },
+    ] as const;
+
+    return <div className="view momo-work-view">
+      <MomoIntro eyebrow="MOMO’S HOUSE SAN ANTONIO · WORK BOARD" title="What needs action now" description="Every task on this board belongs only to Momo’s House. Detailed attempts, evidence, retries, alerts, and recovery remain attached behind each simple work state." />
+      <SafetyBoundary role={role} />
+      {role === "team" && <form className="momo-panel momo-inline-form momo-work-create" onSubmit={(event) => {
+        event.preventDefault();
+        void run(() => createMomoWorkItem({ restaurantId, workType, title, description, priority: 3 }), "Momo work item queued.");
+      }}><div><p className="eyebrow">ADD MOMO WORK</p><h2>Create one clear task</h2></div><label>Type<select value={workType} onChange={(event) => setWorkType(event.target.value)}><option value="onboarding">Onboarding</option><option value="truth_review">Truth review</option><option value="media">Media</option><option value="content">Content</option><option value="publishing">Publishing</option><option value="google">Google</option><option value="seo">SEO</option><option value="reviews">Reviews</option><option value="website">Website</option><option value="reporting">Reporting</option><option value="monitoring">Monitoring</option><option value="recovery">Recovery</option></select></label><label>Task title<input value={title} onChange={(event) => setTitle(event.target.value)} required /></label><label>Useful detail<input value={description} onChange={(event) => setDescription(event.target.value)} /></label><button className="secondary-button" disabled={busy || !title.trim()}>Add to Momo board</button></form>}
+      <section className="momo-work-board" aria-label="Momo’s House San Antonio work board">
+        {workLanes.map((lane) => {
+          const items = data.work.filter((item) => (lane.statuses as readonly string[]).includes(item.status));
+          return <section className={`momo-work-lane ${lane.key}`} key={lane.key}>
+            <header><span><strong>{lane.label}</strong><small>{lane.detail}</small></span><b>{items.length}</b></header>
+            {items.length === 0 ? <EmptyState title={`Nothing ${lane.label.toLowerCase()}.`} detail="This lane will update from Momo’s persisted work states." /> : <div className="momo-work-grid">{items.map((item) => <WorkItemCard key={item.id} item={item} {...props} />)}</div>}
+          </section>;
+        })}
+      </section>
+      {role === "team" && <details className="momo-operations-details">
+        <summary><span><strong>Monitoring & recovery</strong><small>Open only when an operational exception needs review.</small></span><b>{data.alerts.filter((item) => item.status !== "resolved").length} open alerts</b></summary>
+        <div className="momo-operations-detail-body">
+          <MonitorCheckForm {...props} />
+          <section className="momo-split">
+            <article className="momo-panel"><div className="momo-panel-heading"><h2>Alerts</h2><span>{data.alerts.length}</span></div>{data.alerts.length === 0 ? <EmptyState title="No alerts recorded." detail="Absence of records is not proof of health." /> : data.alerts.map((item) => <AlertRow key={item.id} item={item} {...props} />)}</article>
+            <article className="momo-panel"><div className="momo-panel-heading"><h2>Recovery</h2><span>{data.recovery.length}</span></div>{data.recovery.length === 0 ? <EmptyState title="No recovery run." detail="No recovery is represented as complete." /> : data.recovery.map((item) => <RecoveryRunRow key={item.id} item={item} {...props} />)}</article>
+          </section>
+        </div>
+      </details>}
+    </div>;
+  }
+
   return <div className="view">
-    <MomoIntro eyebrow={mode === "work" ? "WORK ORCHESTRATION + RECOVERY" : "EVIDENCE-BACKED REPORTING"} title={mode === "work" ? "Real work, explicit blockers" : "Reviewed activity before claims"} description={mode === "work" ? "Assignments, attempts, retry limits, monitoring, alerts, and recovery are persistent and auditable." : "Weekly and monthly reports use reviewed, report-eligible activity. Missing outcomes stay missing."} />
+    <MomoIntro eyebrow="MOMO’S HOUSE SAN ANTONIO · REPORTS" title="Reviewed activity before claims" description="Weekly and monthly reports use reviewed, report-eligible Momo activity. Missing outcomes stay missing." />
     <SafetyBoundary role={role} />
-    {mode === "work" && role === "team" && <form className="momo-panel momo-inline-form" onSubmit={(event) => {
-      event.preventDefault();
-      void run(() => createMomoWorkItem({ restaurantId, workType, title, description, priority: 3 }), "Work item queued.");
-    }}><div><p className="eyebrow">NEW WORK</p><h2>Create an auditable task</h2></div><label>Type<select value={workType} onChange={(event) => setWorkType(event.target.value)}><option value="onboarding">Onboarding</option><option value="truth_review">Truth review</option><option value="media">Media</option><option value="content">Content</option><option value="publishing">Publishing</option><option value="google">Google</option><option value="seo">SEO</option><option value="reviews">Reviews</option><option value="website">Website</option><option value="reporting">Reporting</option><option value="monitoring">Monitoring</option><option value="recovery">Recovery</option></select></label><label>Title<input value={title} onChange={(event) => setTitle(event.target.value)} required /></label><label>Description<input value={description} onChange={(event) => setDescription(event.target.value)} /></label><button className="secondary-button" disabled={busy}>Create work item</button></form>}
-    {mode === "reports" && role === "team" && <form className="momo-panel momo-form" onSubmit={(event) => {
+    {role === "team" && <form className="momo-panel momo-form" onSubmit={(event) => {
       event.preventDefault();
       void run(async () => {
         if (!reportNarrativeSafe) throw new Error("report_narrative_requires_source_backed_provider_metrics");
         await createMomoReportDraft({ restaurantId, reportType, periodStart, periodEnd, summary: reportSummary, evidenceEventIds: eligibleEvents.map((item) => item.id) });
       }, "Evidence-backed report draft saved for review.");
     }}><div className="momo-panel-heading"><div><p className="eyebrow">REPORT DRAFT</p><h2>Build from eligible activity</h2></div><StatusBadge status="pending" /></div><div className="momo-form-grid"><label>Cadence<select value={reportType} onChange={(event) => setReportType(event.target.value as "weekly" | "monthly")}><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select></label><label>Start date<input type="date" value={periodStart} onChange={(event) => setPeriodStart(event.target.value)} required /></label><label>End date<input type="date" value={periodEnd} onChange={(event) => setPeriodEnd(event.target.value)} required /></label><label className="wide">Manual-process summary<select value={reportSummary} onChange={(event) => setReportSummary(event.target.value)}>{MOMO_MANUAL_REPORT_NARRATIVES.map((narrative) => <option key={narrative} value={narrative}>{narrative}</option>)}</select></label></div><p className="momo-form-note">{eligibleEvents.length} client-safe, report-eligible activity events occurred inside this date range. Events outside the range or marked Team-only are excluded. This no-cost release accepts fixed process narratives only; it cannot claim provider or business outcomes.</p><button className="secondary-button" disabled={busy || eligibleEvents.length === 0 || !reportNarrativeSafe}>Save report draft</button></form>}
-    {mode === "reports" && role === "team" && data.approvals.some((approval) => approval.subject_type === "report") && <section className="momo-panel"><div className="momo-panel-heading"><div><p className="eyebrow">REPORT RELEASE QUEUE</p><h2>Human release decisions</h2></div><span>{data.approvals.filter((approval) => approval.subject_type === "report").length}</span></div><div className="momo-record-list">{data.approvals.filter((approval) => approval.subject_type === "report").map((approval) => <ApprovalRow key={approval.id} approval={approval} {...props} />)}</div></section>}
-    {mode === "work" && <section className="momo-panel"><div className="momo-panel-heading"><div><p className="eyebrow">WORK QUEUE</p><h2>Persistent operating board</h2></div><span>{data.work.length}</span></div>{data.work.length === 0 ? <EmptyState title="No work item exists." detail="Nothing is represented as assigned, complete, blocked, or retried." /> : <div className="momo-work-grid">{data.work.map((item) => <WorkItemCard key={item.id} item={item} {...props} />)}</div>}</section>}
-    {mode === "work" && role === "team" && <MonitorCheckForm {...props} />}
+    {role === "team" && data.approvals.some((approval) => approval.subject_type === "report") && <section className="momo-panel"><div className="momo-panel-heading"><div><p className="eyebrow">REPORT RELEASE QUEUE</p><h2>Human release decisions</h2></div><span>{data.approvals.filter((approval) => approval.subject_type === "report").length}</span></div><div className="momo-record-list">{data.approvals.filter((approval) => approval.subject_type === "report").map((approval) => <ApprovalRow key={approval.id} approval={approval} {...props} />)}</div></section>}
     <section className="momo-panel"><div className="momo-panel-heading"><div><p className="eyebrow">REPORTS</p><h2>Client-safe evidence</h2></div><span>{data.reports.length}</span></div>{data.reports.length === 0 ? <EmptyState title="No reviewed report exists." detail="Orders, revenue, rankings, ROI, and outcomes are never fabricated." /> : <div className="momo-report-list">{data.reports.map((report) => <ReportCard key={report.id} report={report} {...props} />)}</div>}</section>
-    <section className="momo-triple">
-      <article className="momo-panel"><div className="momo-panel-heading"><h2>Monitoring</h2><span>{data.monitors.length}</span></div>{data.monitors.length === 0 ? <EmptyState title="No checks yet." detail="Health is unknown." /> : data.monitors.map((item) => <div className="momo-mini" key={item.id}><span><strong>{labelStatus(item.check_key)}</strong><small>{formatDate(item.checked_at)}</small></span><StatusBadge status={item.status} /></div>)}</article>
-      <article className="momo-panel"><div className="momo-panel-heading"><h2>Alerts</h2><span>{data.alerts.length}</span></div>{data.alerts.length === 0 ? <EmptyState title="No alerts recorded." detail="Absence of records is not proof of health." /> : data.alerts.map((item) => <AlertRow key={item.id} item={item} {...props} />)}</article>
-      <article className="momo-panel"><div className="momo-panel-heading"><h2>Recovery</h2><span>{data.recovery.length}</span></div>{data.recovery.length === 0 ? <EmptyState title="No recovery run." detail="No recovery is represented as complete." /> : data.recovery.map((item) => <RecoveryRunRow key={item.id} item={item} {...props} />)}</article>
-    </section>
     <section className="momo-panel"><div className="momo-panel-heading"><div><p className="eyebrow">ACTIVITY HISTORY</p><h2>Report eligibility is explicit</h2></div><span>{data.activity.length}</span></div>{data.activity.length === 0 ? <EmptyState title="No operating activity is recorded." detail="Reports remain safe-empty until reviewed work produces eligible evidence." /> : <div className="momo-record-list">{data.activity.map((event) => <article key={event.id}><div><strong>{labelStatus(event.event_type)}</strong><p>{valueText(event.payload) || "No public detail"}</p><small>{formatDate(event.occurred_at)} · {event.visibility}</small></div><StatusBadge status={event.report_eligible ? "report_eligible" : "internal_only"} /></article>)}</div>}</section>
   </div>;
 }
@@ -989,7 +1035,31 @@ function WorkItemCard({ item, role, busy, run }: PanelProps & { item: MomoWorksp
   const requiresExternalEvidence = externalEvidenceWorkTypes.has(item.work_type);
   const visibility = requiresExternalEvidence ? "team" as const : "both" as const;
   const retryDue = !item.next_attempt_at || new Date(item.next_attempt_at) <= new Date();
-  return <article><div><strong>{item.title}</strong><StatusBadge status={item.status} /></div><p>{item.description || item.blocked_reason || "No detail recorded"}</p><small>{labelStatus(item.work_type)} · attempts {item.attempt_count}/{item.max_attempts} · due {formatDate(item.due_at)} · retry after {formatDate(item.next_attempt_at)}</small>{role === "team" && !["completed", "cancelled"].includes(item.status) && <label>Evidence or failure detail<input value={reason} onChange={(event) => setReason(event.target.value)} placeholder="At least 10 characters" /></label>}{role === "team" && ["queued", "retrying"].includes(item.status) && <button disabled={busy || (item.status === "retrying" && !retryDue)} onClick={() => void run(() => transitionMomoWorkItem({ workItemId: item.id, targetStatus: "in_progress" }), item.status === "retrying" ? "Due retry started with aligned attempt history." : "Work item started with an auditable transition.")}>{item.status === "retrying" ? "Start due retry" : "Start work"}</button>}{role === "team" && item.status === "in_progress" && <><button disabled={busy || !actionableDetail} onClick={() => void run(() => transitionMomoWorkItem({ workItemId: item.id, targetStatus: "blocked", reason }), "Work item blocked with an explicit reason.")}>Block work</button><button disabled={busy || !actionableDetail} onClick={() => void run(() => transitionMomoWorkItem({ workItemId: item.id, targetStatus: "failed", reason }), "Failure and attempt evidence recorded.")}>Record failure</button><button disabled={busy || !actionableDetail} onClick={() => void run(() => transitionMomoWorkItem({ workItemId: item.id, targetStatus: "completed", reason, visibility, reportEligible: !requiresExternalEvidence, payload: { summary: reason.trim(), workType: item.work_type, evidenceBoundary: requiresExternalEvidence ? "team_only_pending_provider_evidence" : "manual_operating_evidence" } }), requiresExternalEvidence ? "Internal completion recorded. Client/report evidence remains blocked until source-backed provider evidence exists." : "Completion and client-safe report evidence recorded.")}>Complete with evidence</button>{requiresExternalEvidence && <small>Completion stays Team-only and report-ineligible until a source-backed external record is validated.</small>}</>}{role === "team" && ["queued", "in_progress", "retrying", "blocked"].includes(item.status) && <button disabled={busy || !actionableDetail} onClick={() => void run(() => transitionMomoWorkItem({ workItemId: item.id, targetStatus: "cancelled", reason }), "Work item cancelled with an auditable reason.")}>Cancel work</button>}{role === "team" && (item.status === "failed" || item.status === "blocked") && <><button disabled={busy || item.attempt_count >= item.max_attempts || Boolean(item.next_attempt_at && new Date(item.next_attempt_at) > new Date())} onClick={() => void run(() => retryMomoWorkItem(item), "Retry queued within the recorded backoff and attempt limit.")}>Retry when due</button><button disabled={busy || !actionableDetail} onClick={() => void run(() => startMomoRecoveryRun({ workItemId: item.id, actionKey: reason.trim().toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 80) || "manual_recovery" }), "Recovery run started and linked to the failed work item.")}>Start recovery</button></>}</article>;
+  const waitingForApproval = item.status === "waiting_approval";
+  const canCancel = ["queued", "in_progress", "waiting_approval", "retrying", "blocked"].includes(item.status);
+  return <article>
+    <div><strong>{item.title}</strong><StatusBadge status={item.status} /></div>
+    <p>{item.description || item.blocked_reason || "No detail recorded"}</p>
+    <small>{labelStatus(item.work_type)} · attempts {item.attempt_count}/{item.max_attempts} · due {formatDate(item.due_at)} · retry after {formatDate(item.next_attempt_at)}</small>
+    {role === "team" && !["completed", "cancelled"].includes(item.status) && <label>Evidence or failure detail<input value={reason} onChange={(event) => setReason(event.target.value)} placeholder="At least 10 characters" /></label>}
+    {role === "team" && ["queued", "retrying"].includes(item.status) && <button type="button" disabled={busy || (item.status === "retrying" && !retryDue)} onClick={() => void run(() => transitionMomoWorkItem({ workItemId: item.id, targetStatus: "in_progress" }), item.status === "retrying" ? "Due retry started with aligned attempt history." : "Work item started with an auditable transition.")}>{item.status === "retrying" ? "Start due retry" : "Start work"}</button>}
+    {role === "team" && waitingForApproval && <>
+      <small>Record the approval outcome before choosing the next work state.</small>
+      <button type="button" disabled={busy || !actionableDetail} onClick={() => void run(() => transitionMomoWorkItem({ workItemId: item.id, targetStatus: "in_progress", reason }), "Approval evidence recorded; work resumed.")}>Resume after approval</button>
+      <button type="button" disabled={busy || !actionableDetail} onClick={() => void run(() => transitionMomoWorkItem({ workItemId: item.id, targetStatus: "blocked", reason }), "Work item blocked with an explicit reason.")}>Block work</button>
+    </>}
+    {role === "team" && item.status === "in_progress" && <>
+      <button type="button" disabled={busy || !actionableDetail} onClick={() => void run(() => transitionMomoWorkItem({ workItemId: item.id, targetStatus: "blocked", reason }), "Work item blocked with an explicit reason.")}>Block work</button>
+      <button type="button" disabled={busy || !actionableDetail} onClick={() => void run(() => transitionMomoWorkItem({ workItemId: item.id, targetStatus: "failed", reason }), "Failure and attempt evidence recorded.")}>Record failure</button>
+      <button type="button" disabled={busy || !actionableDetail} onClick={() => void run(() => transitionMomoWorkItem({ workItemId: item.id, targetStatus: "completed", reason, visibility, reportEligible: !requiresExternalEvidence, payload: { summary: reason.trim(), workType: item.work_type, evidenceBoundary: requiresExternalEvidence ? "team_only_pending_provider_evidence" : "manual_operating_evidence" } }), requiresExternalEvidence ? "Internal completion recorded. Client/report evidence remains blocked until source-backed provider evidence exists." : "Completion and client-safe report evidence recorded.")}>Complete with evidence</button>
+      {requiresExternalEvidence && <small>Completion stays Team-only and report-ineligible until a source-backed external record is validated.</small>}
+    </>}
+    {role === "team" && canCancel && <button type="button" disabled={busy || !actionableDetail} onClick={() => void run(() => transitionMomoWorkItem({ workItemId: item.id, targetStatus: "cancelled", reason }), "Work item cancelled with an auditable reason.")}>Cancel work</button>}
+    {role === "team" && (item.status === "failed" || item.status === "blocked") && <>
+      <button type="button" disabled={busy || item.attempt_count >= item.max_attempts || Boolean(item.next_attempt_at && new Date(item.next_attempt_at) > new Date())} onClick={() => void run(() => retryMomoWorkItem(item), "Retry queued within the recorded backoff and attempt limit.")}>Retry when due</button>
+      <button type="button" disabled={busy || !actionableDetail} onClick={() => void run(() => startMomoRecoveryRun({ workItemId: item.id, actionKey: reason.trim().toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 80) || "manual_recovery" }), "Recovery run started and linked to the failed work item.")}>Start recovery</button>
+    </>}
+  </article>;
 }
 
 function MonitorCheckForm({ restaurantId, busy, run }: PanelProps) {
