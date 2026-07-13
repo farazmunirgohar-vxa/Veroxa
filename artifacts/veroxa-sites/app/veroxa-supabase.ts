@@ -252,15 +252,30 @@ function safeReturnTo(value: string | null | undefined): string {
   }
 }
 
+const VEROXA_AUTH_RETURN_COOKIE = "veroxa_auth_return_to";
+const VEROXA_PRODUCTION_ORIGIN = "https://veroxasystems.com";
+
+function setAuthReturnCookie(next: string): void {
+  const secure = window.location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = `${VEROXA_AUTH_RETURN_COOKIE}=${encodeURIComponent(next)}; Max-Age=900; Path=/; SameSite=Lax${secure}`;
+}
+
+function getAuthCallbackOrigin(): string {
+  return ["localhost", "127.0.0.1"].includes(window.location.hostname)
+    ? window.location.origin
+    : VEROXA_PRODUCTION_ORIGIN;
+}
+
 export async function requestVeroxaMagicLink(email: string, returnTo?: string | null): Promise<void> {
   const client = getVeroxaSupabase();
   if (!client) throw new Error("configuration_unavailable");
   const next = safeReturnTo(returnTo);
+  setAuthReturnCookie(next);
   const { error } = await client.auth.signInWithOtp({
     email: email.trim().toLowerCase(),
     options: {
       shouldCreateUser: false,
-      emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+      emailRedirectTo: `${getAuthCallbackOrigin()}/auth/callback`,
     },
   });
   if (error) {
