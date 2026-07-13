@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
-  "checkpoint": "momo-seven-system-foundation-v1-verified",
-  "status": "verified",
+  "checkpoint": "momo-password-auth-v1-candidate",
+  "status": "candidate",
   "reviewedAt": "2026-07-13",
   "source": {
-    "pullRequest": 138,
-    "reviewedHead": "068f2c7e6bb094bb16329106ca54fed06fe66aca",
-    "mergedCommit": "48630c62b9429238ab39b5b919d7689d189352f8",
+    "pullRequest": 141,
+    "reviewedHead": "f3bd240fab821d87bc0c4c63afd1e26348ee5aa9",
+    "mergedCommit": "46d01c44f0411a4e870cd490d5bfcd8e58ee0e59",
     "sitesProductionVerified": true,
-    "sitesVersion": 5,
+    "sitesVersion": 7,
     "customDomainsVerified": true
   },
   "candidate": {
-    "branch": "agent/momo-100-readiness",
-    "merged": true,
+    "branch": "agent/permanent-password-auth",
+    "merged": false,
     "databaseApplied": true,
-    "sitesDeployed": true,
+    "sitesDeployed": false,
     "identityProvisioned": true,
-    "authenticatedBrowserSmokeVerified": false,
+    "authenticatedBrowserSmokeVerified": true,
     "externalProvidersConnected": false
   },
   "scope": {
@@ -37,7 +37,7 @@
   ],
   "reusableEvidence": [
     "Momo-only tenancy, role matrix, RLS, and safe-empty client boundary",
-    "Magic-link-only session, membership, callback, and protected-route boundary",
+    "Deployed secure-email-link session plus candidate approved-user password/recovery, membership, callback, and protected-route boundary",
     "Signed public audit intake, raw-size limits, timeouts, idempotency, and rate limits",
     "Latest-run review gate, reviewed immutability, append-only lifecycle evidence, and distinct audit identity",
     "Clean Supabase reset, pgTAP role/workflow/coexistence tests, and error-level database lint",
@@ -77,11 +77,12 @@
       "files": [
         "artifacts/veroxa-sites/app/veroxa-supabase-server.ts",
         "artifacts/veroxa-sites/app/veroxa-supabase.ts",
+        "artifacts/veroxa-sites/app/veroxa-password.mjs",
         "artifacts/veroxa-sites/app/auth/callback/route.ts",
         "artifacts/veroxa-sites/app/[...slug]/page.tsx",
         "artifacts/veroxa-sites/proxy.ts"
       ],
-      "sha256": "4af4621172a0e51c171295e2201b2bb5c3430d091725e096f50574749b76ae6a"
+      "sha256": "e303f3b804846099914bf134cb80f3861c4d3ea85411f1b5227be72958966b93"
     },
     "audit_runtime": {
       "review": "full-on-change",
@@ -100,11 +101,12 @@
         "artifacts/veroxa-sites/scripts/build-verified.sh",
         "artifacts/veroxa-sites/scripts/validate-artifact.sh",
         "scripts/src/check-sites-only-deployment.ts",
+        "scripts/src/check-chatgpt-sites-migration-source-truth.ts",
         "scripts/src/check-rr-release-checkpoint.ts",
         ".github/workflows/ci.yml",
         ".github/workflows/sites-verify.yml"
       ],
-      "sha256": "0eebe7450ecd6314149c5888484dfdf3a4236e04cdb29d7c35eced45c04c39c8"
+      "sha256": "ea57a7c5618f2bbab798db23f1751035910ca7ba0da53caf974eb7417dce3da2"
     },
     "product_scope": {
       "review": "full-on-change",
@@ -119,7 +121,7 @@
         "AGENTS.md",
         "artifacts/veroxa/docs/RR_CHECKPOINT.md"
       ],
-      "sha256": "49d006242c4df34a272de7fd72bfc9949075c1ccfa731ca43b61f62f04378b77"
+      "sha256": "23a8d54c29b7ba949bfb2414fc124587361a54f1934b246fb6ba3b4b8c64a6ba"
     },
     "momo_readiness_tracking": {
       "review": "evidence-delta-on-change",
@@ -128,7 +130,7 @@
         "artifacts/veroxa-sites/app/momo-readiness-types.ts",
         "scripts/src/check-momo-house-readiness-tracking.ts"
       ],
-      "sha256": "33f8051f29815c6d3040234edd1b79af7c9d6fd0042974c44a857df5c52addfd"
+      "sha256": "effb5149318a969285e0e96909097394fb35ccfb523651388f35ce67f39f1607"
     },
     "presentation_surfaces": {
       "review": "delta-unless-boundary-crossed",
@@ -138,7 +140,7 @@
         "artifacts/veroxa-sites/tests/rendered-html.test.mjs",
         "artifacts/veroxa/src/pages/free-audit.tsx"
       ],
-      "sha256": "b1b750df1c2584a487d3eb4d30e0350c636cb7638b22322eb9d75753903c80d1"
+      "sha256": "5f982651cf4709db12ce6065d3afc4fc61132c091e18a2a25e28c9c9d898a4ab"
     },
     "momo_operations_contract": {
       "review": "full-on-change",
@@ -163,9 +165,8 @@
     }
   },
   "activationGates": [
-    "Verify the confirmed Gmail Team identity on an authenticated Team/Momo protected route",
-    "Complete authenticated Team/Momo browser smoke tests before sensitive data or owner exposure",
-    "Correct the hosted Supabase Auth Site URL and exact production callback redirect before treating production login as repaired",
+    "Preserve the verified Gmail Team identity and authenticated Team/Momo protected route boundary",
+    "Verify one password login after Faraz sets a password through the protected account-security route",
     "No Momo owner truth or media rights may be invented to satisfy readiness",
     "Keep AI, Meta, Google, SEO writes, publishing, outbound contact, and Momo owner walkthrough inactive pending authorized access"
   ]

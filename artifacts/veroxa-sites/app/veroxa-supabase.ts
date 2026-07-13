@@ -1,5 +1,11 @@
 import { createBrowserClient } from "@supabase/ssr";
 import type { SupabaseClient, User } from "@supabase/supabase-js";
+import {
+  getVeroxaPasswordIssue,
+  isVeroxaPasswordCompromised,
+} from "./veroxa-password.mjs";
+
+export { getVeroxaPasswordIssue } from "./veroxa-password.mjs";
 
 export type VeroxaRole = "team" | "client";
 
@@ -240,6 +246,52 @@ export async function signOutOfVeroxa(): Promise<void> {
   if (error) throw new Error("sign_out_failed");
 }
 
+export async function signInWithVeroxaPassword(
+  email: string,
+  password: string,
+): Promise<VeroxaAccess> {
+  const client = getVeroxaSupabase();
+  if (!client) throw new Error("configuration_unavailable");
+  const { error } = await client.auth.signInWithPassword({
+    email: email.trim().toLowerCase(),
+    password,
+  });
+  if (error) throw new Error("invalid_credentials");
+
+  let access: VeroxaAccess | null = null;
+  try {
+    access = await getCurrentVeroxaAccess();
+  } catch {
+    access = null;
+  }
+  if (!access) {
+    await client.auth.signOut({ scope: "local" }).catch(() => undefined);
+    throw new Error("access_denied");
+  }
+  return access;
+}
+
+export async function updateVeroxaPassword(password: string): Promise<void> {
+  const client = getVeroxaSupabase();
+  if (!client) throw new Error("configuration_unavailable");
+  if (getVeroxaPasswordIssue(password)) throw new Error("weak_password");
+
+  const { data, error: userError } = await client.auth.getUser();
+  if (userError || !data.user) throw new Error("session_required");
+  const lastSignInAt = Date.parse(data.user.last_sign_in_at || "");
+  if (!Number.isFinite(lastSignInAt) || Date.now() - lastSignInAt > 24 * 60 * 60 * 1000) {
+    throw new Error("recent_sign_in_required");
+  }
+
+  if (await isVeroxaPasswordCompromised(password)) {
+    throw new Error("compromised_password");
+  }
+
+  const { error } = await client.auth.updateUser({ password });
+  if (error) throw new Error("password_update_failed");
+  await client.auth.signOut({ scope: "others" }).catch(() => undefined);
+}
+
 function safeReturnTo(value: string | null | undefined): string {
   if (!value?.startsWith("/") || value.startsWith("//") || value.includes("\\")) return "/team/momo";
   try {
@@ -257,7 +309,10 @@ const VEROXA_PRODUCTION_ORIGIN = "https://veroxasystems.com";
 
 function setAuthReturnCookie(next: string): void {
   const secure = window.location.protocol === "https:" ? "; Secure" : "";
-  document.cookie = `${VEROXA_AUTH_RETURN_COOKIE}=${encodeURIComponent(next)}; Max-Age=900; Path=/; SameSite=Lax${secure}`;
+  const sharedDomain = ["veroxasystems.com", "www.veroxasystems.com"].includes(window.location.hostname)
+    ? "; Domain=veroxasystems.com"
+    : "";
+  document.cookie = `${VEROXA_AUTH_RETURN_COOKIE}=${encodeURIComponent(next)}; Max-Age=900; Path=/; SameSite=Lax${secure}${sharedDomain}`;
 }
 
 function getAuthCallbackOrigin(): string {

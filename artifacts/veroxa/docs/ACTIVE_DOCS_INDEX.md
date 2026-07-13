@@ -4,9 +4,9 @@ Status: highest-level current source-of-truth index. Read this file before relyi
 
 ## 2026-07-13 — Team login repair state
 
-- Faraz's approved Gmail Team identity is confirmed, has signed in, and has an active Team profile plus active Momo membership. The mistaken secondary identity has disabled portal access. Authenticated protected-route browser/RLS evidence remains pending.
-- Sites version 5 has the public Supabase values in hosted runtime configuration, but its current browser bundle cannot consume those runtime-only values. The reviewed source repair passes only the validated project URL and publishable key from login/protected server routes while keeping `shouldCreateUser: false`, the marketing root cacheable, and all privileged keys server-only.
-- Until the repaired source is merged and explicitly deployed, the current production login remains affected. This is an auth/runtime delta and must refresh the protected checkpoint fingerprints after focused review.
+- Faraz's approved Gmail Team identity is confirmed, has signed in, and has an active Team profile plus active Momo membership. The mistaken secondary identity has disabled portal access. Production logs and Faraz's Safari confirmation verify the protected Team/Momo route.
+- PR #141 is merged at `46d01c44f0411a4e870cd490d5bfcd8e58ee0e59`, and its runtime-config/callback repair is deployed as Sites version 7. The hosted Site URL and exact callback are configured; passwordless production login is repaired end to end.
+- A new unmerged, undeployed candidate adds password login and a protected password-replacement screen for approved users while preserving secure-email-link recovery and `shouldCreateUser: false`. It is not production-live until its exact PR merges and a later Sites checkpoint succeeds.
 
 ## 2026-07-12 — Current milestone and post-build continuity lock
 
@@ -20,7 +20,7 @@ Status: highest-level current source-of-truth index. Read this file before relyi
 - The active milestone is Momo's House San Antonio 100% readiness with the maximum safe level of AI, automation, social handling, SEO, reporting, monitoring, and human approval control.
 - Every build must update the milestone, current build status, any changed locked memory, runtime/deployment truth, and Faraz's plain-language handoff before it is considered complete.
 - GitHub PR #138 is merged at `48630c62b9429238ab39b5b919d7689d189352f8`; its exact reviewed head passed all four GitHub workflows, clean reset, pgTAP, lint, and focused final delta RR. All eight production migrations are verified, Sites version 5 is deployed, and both custom domains are active with active SSL. The reusable RR checkpoint is the starting point for future reviews.
-- Sites sign-in is magic-link-only. Public user creation and password sign-in/recovery are disabled; supported Admin identity provisioning and authenticated smoke tests remain activation gates.
+- Deployed Sites version 7 uses secure email-link sign-in for approved active identities. The current release candidate adds password sign-in plus protected password replacement; public user creation remains disabled. Faraz's Gmail Team identity and protected Team/Momo browser route are verified.
 
 ## 2026-07-12 — ChatGPT-managed build, GitHub, Sites, and RR direction
 

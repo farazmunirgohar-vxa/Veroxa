@@ -4,9 +4,9 @@ Status: active migration and deployment authority as of 2026-07-12.
 
 ## Current production-foundation override
 
-The original migration scope below remains useful history, but its statements that production identity, persistence, and protected portal routes are future work are superseded for source truth by `VEROXA_CURRENT_MILESTONE.md`. PR #138 is merged at `48630c62b9429238ab39b5b919d7689d189352f8`, its eight-migration data layer is applied, and its exact runtime source is deployed as verified Sites version 5. That deployed foundation implements Supabase-backed magic-link sessions, active Momo membership checks, forced RLS, durable audit intake, protected Client/Team routes, and all seven provider-neutral Momo operating systems.
+The original migration scope below remains useful history, but its statements that production identity, persistence, and protected portal routes are future work are superseded for source truth by `VEROXA_CURRENT_MILESTONE.md`. PR #141 is merged at `46d01c44f0411a4e870cd490d5bfcd8e58ee0e59`, its eight-migration data layer is applied, and its exact runtime source is deployed as verified Sites version 7. That deployed foundation implements Supabase-backed secure-email-link sessions, active Momo membership checks, forced RLS, durable audit intake, protected Client/Team routes, and all seven provider-neutral Momo operating systems.
 
-The seven-system Momo foundation is deployed, but Momo is not 100% ready. Faraz's approved Gmail Team identity is confirmed, has signed in, and has active Team/Momo access; the remaining identity gate is the repaired Sites client deployment plus authenticated protected-route browser/RLS evidence. No Momo owner identity or owner-confirmed data is provisioned. Runtime AI, Meta, Google Business Profile, external SEO/social execution, publishing, visibility monitoring, Momo contact, and client activation are **inactive pending authorized access**. See `MOMO_100_READINESS_SEVEN_SYSTEM_CONTRACT.md` for the source/runtime/activation split.
+The seven-system Momo foundation is deployed, but Momo is not 100% ready. Faraz's approved Gmail Team identity is confirmed, has signed in, has active Team/Momo access, and passed the authenticated Safari protected-route smoke. The current unmerged candidate adds approved-user password sign-in and protected password replacement; it is neither deployed nor activated. No Momo owner identity or owner-confirmed data is provisioned. Runtime AI, Meta, Google Business Profile, external SEO/social execution, publishing, visibility monitoring, Momo contact, and client activation are **inactive pending authorized access**. See `MOMO_100_READINESS_SEVEN_SYSTEM_CONTRACT.md` for the source/runtime/activation split.
 
 ## Locked direction
 
@@ -64,7 +64,7 @@ The hosting migration does not authorize any of the following:
 - public/client exposure of Team-only data;
 - changing verified business truth without confirmation.
 
-Sites uses magic-link-only Supabase authentication with active profile/membership enforcement. The undeployed Vite `AUTH_MODE = placeholder` path is historical/internal and its root `/api/pilot-access` deployment adapter is retired. Roles remain `client` and `team` only. Momo owner walkthrough and pilot activation remain blocked without explicit Faraz approval.
+Deployed Sites version 7 uses secure-email-link Supabase authentication with active profile/membership enforcement. The current unmerged candidate adds approved-user password authentication and protected password replacement. Public signup remains disabled, and a fresh email-link session is the recovery path. The undeployed Vite `AUTH_MODE = placeholder` path is historical/internal and its root `/api/pilot-access` deployment adapter is retired. Roles remain `client` and `team` only. Momo owner walkthrough and pilot activation remain blocked without explicit Faraz approval.
 
 ## Migration architecture
 

@@ -207,7 +207,9 @@ for (const marker of [
 }
 
 for (const marker of [
-  "magic-link-only Supabase authentication",
+  "secure-email-link Supabase authentication",
+  "approved-user password authentication",
+  "Public signup remains disabled",
   "root `/api/pilot-access` deployment adapter is retired",
   "Roles remain `client` and `team` only",
   "Momo owner walkthrough",
@@ -317,7 +319,7 @@ for (const bannedSitesCopy of [
 }
 for (const requiredSitesCopy of [
   "SECURE PORTAL ACCESS",
-  "Signed sessions are verified by Supabase Auth",
+  "Signed sessions and password verification are handled by Supabase Auth",
   "Secure Team route",
   "Momo-only production boundary",
 ]) {

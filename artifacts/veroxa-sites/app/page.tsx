@@ -7,10 +7,13 @@ import type { MomoReadinessTracker } from "./momo-readiness-types";
 import {
   configureVeroxaSupabase,
   getCurrentVeroxaAccess,
+  getVeroxaPasswordIssue,
   requestVeroxaMagicLink,
+  signInWithVeroxaPassword,
   signOutOfVeroxa,
   submitPublicAudit,
   subscribeToVeroxaAuth,
+  updateVeroxaPassword,
   type VeroxaAccess,
   type VeroxaPublicConfig,
 } from "./veroxa-supabase";
@@ -19,6 +22,7 @@ type View =
   | "public"
   | "audit"
   | "login"
+  | "security"
   | "home"
   | "onboarding"
   | "media"
@@ -103,6 +107,7 @@ const routeToView: Record<string, View> = {
   "/": "public",
   "/free-audit": "audit",
   "/login": "login",
+  "/account/security": "security",
   "/client/dashboard": "home",
   "/client/onboarding": "onboarding",
   "/client/media": "media",
@@ -208,18 +213,27 @@ export function VeroxaApp({
   if (view === "audit") return <AuditPage onNavigate={changeView} />;
   if (view === "login") return <LoginPage onNavigate={changeView} />;
 
+  const isSecurity = view === "security";
   const isTeam = view.startsWith("team");
-  const isProtected = isTeam || ["home", "onboarding", "media", "content", "reports", "services"].includes(view);
+  const isProtected = isTeam || isSecurity || ["home", "onboarding", "media", "content", "reports", "services"].includes(view);
   if (isProtected && access.status !== "authenticated") {
     return access.status === "loading"
       ? <main className="login-shell"><section className="login-card"><p className="eyebrow">SECURE ACCESS</p><h1>Checking your session…</h1><p>Veroxa is validating the signed account session and workspace membership.</p></section></main>
       : <LoginPage onNavigate={changeView} />;
   }
-  if (isTeam && access.status === "authenticated" && access.value.role !== "team") {
+  if (!isSecurity && isTeam && access.status === "authenticated" && access.value.role !== "team") {
     return <main className="login-shell"><section className="login-card"><p className="eyebrow">WORKSPACE BOUNDARY</p><h1>Team access required.</h1><p>This signed account belongs to the Momo client workspace and cannot open Team Faraz routes.</p><button className="primary-button" onClick={() => window.location.assign("/client/dashboard")}>Open Momo workspace</button></section></main>;
   }
-  if (!isTeam && isProtected && access.status === "authenticated" && access.value.role !== "client") {
+  if (!isSecurity && !isTeam && isProtected && access.status === "authenticated" && access.value.role !== "client") {
     return <main className="login-shell"><section className="login-card"><p className="eyebrow">WORKSPACE BOUNDARY</p><h1>Momo client access required.</h1><p>This signed account belongs to Team Faraz and cannot enter a client route.</p><button className="primary-button" onClick={() => window.location.assign("/team/momo")}>Open Team workspace</button></section></main>;
+  }
+  if (isSecurity && access.status === "authenticated") {
+    return <PasswordSecurityPage
+      access={access.value}
+      onBack={() => window.location.assign(access.value.role === "team" ? "/team/momo" : "/client/dashboard")}
+      onSignOut={() => void handleSignOut()}
+      signOutBusy={signOutBusy}
+    />;
   }
   const activeNav = isTeam ? teamNav : clientNav;
   const activeLabel = activeNav.find((item) => item.id === view)?.label ?? "Dashboard";
@@ -248,9 +262,9 @@ export function VeroxaApp({
           <p>{isTeam ? "No public action without Faraz review and confirmed business truth." : "Verified Momo records will appear only after Team review and owner confirmation."}</p>
           <button onClick={() => { setToast(isTeam ? "Operating guardrails are active" : "Client workspace is safely waiting for verified records"); window.setTimeout(() => setToast(""), 2600); }}>{isTeam ? "Review guardrails" : "View safe status"} <Icon name="arrow" size={15}/></button>
         </div>
-        <button className="profile-card" onClick={() => void handleSignOut()} title="Sign out" disabled={signOutBusy}>
+        <button className="profile-card" onClick={() => changeView("security")} title="Account security">
           <span className="avatar">{isTeam ? "FM" : "MK"}</span>
-          <span><strong>{access.status === "authenticated" ? access.value.displayName : isTeam ? "Team Faraz" : "Momo’s House"}</strong><small>{isTeam ? "Secure Team access · sign out" : "Momo only · sign out"}</small></span>
+          <span><strong>{access.status === "authenticated" ? access.value.displayName : isTeam ? "Team Faraz" : "Momo’s House"}</strong><small>Account security · password</small></span>
           <Icon name="chevron" size={16}/>
         </button>
       </aside>
@@ -451,6 +465,8 @@ function AuditPage({ onNavigate }: { onNavigate: (view: View) => void }) {
 
 function LoginPage({ onNavigate }: { onNavigate: (view: View) => void }) {
   const [email, setEmail] = useState("");
+  const [mode, setMode] = useState<"password" | "magic-link">("password");
+  const [emailLinkReturnTo, setEmailLinkReturnTo] = useState<string | null>(null);
   const [state, setState] = useState<"idle" | "submitting">("idle");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -475,7 +491,7 @@ function LoginPage({ onNavigate }: { onNavigate: (view: View) => void }) {
     setError("");
     setMessage("");
     try {
-      const returnTo = new URLSearchParams(window.location.search).get("return_to");
+      const returnTo = emailLinkReturnTo ?? new URLSearchParams(window.location.search).get("return_to");
       await requestVeroxaMagicLink(email, returnTo);
       setMessage(neutralDeliveryMessage);
     } catch (caught) {
@@ -490,17 +506,142 @@ function LoginPage({ onNavigate }: { onNavigate: (view: View) => void }) {
     }
   }
 
+  async function handlePassword(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formElement = event.currentTarget;
+    const password = String(new FormData(formElement).get("password") || "");
+    if (!email.trim() || !password) {
+      setError("Enter your approved account email and password.");
+      formElement.reset();
+      return;
+    }
+    setState("submitting");
+    setError("");
+    setMessage("");
+    try {
+      const access = await signInWithVeroxaPassword(email, password);
+      const requested = new URLSearchParams(window.location.search).get("return_to");
+      const fallback = access.role === "team" ? "/team/momo" : "/client/dashboard";
+      let next = fallback;
+      if (requested?.startsWith("/") && !requested.startsWith("//") && !requested.includes("\\")) {
+        const resolved = new URL(requested, window.location.origin);
+        if (resolved.origin === window.location.origin) next = `${resolved.pathname}${resolved.search}${resolved.hash}`;
+      }
+      window.location.assign(next);
+    } catch (caught) {
+      const failure = caught instanceof Error ? caught.message : "invalid_credentials";
+      if (failure === "configuration_unavailable") {
+        setError("Portal sign-in is temporarily unavailable while the secure connection is restored.");
+      } else {
+        setError("The email or password is incorrect, or this account is not approved.");
+      }
+    } finally {
+      formElement.reset();
+      setState("idle");
+    }
+  }
+
+  function switchMode(next: "password" | "magic-link", recovery = false) {
+    setMode(next);
+    setEmailLinkReturnTo(recovery ? "/account/security" : null);
+    setError("");
+    setMessage("");
+  }
+
   return <main className="login-shell">
     <button className="brand login-brand" onClick={() => onNavigate("public")}><span className="brand-mark"><span>V</span></span><span className="brand-copy"><strong>VEROXA</strong><small>SECURE PORTAL ACCESS</small></span></button>
     <section className="login-card">
-      <p className="eyebrow">VEROXA ACCOUNT</p><h1>Welcome back.</h1><p>Request a one-time sign-in link for your assigned Team Faraz or Momo’s House account. Role and workspace access are verified against the protected database.</p>
-      <form className="login-form" onSubmit={handleMagicLink}>
+      <p className="eyebrow">VEROXA ACCOUNT</p><h1>Welcome back.</h1><p>Sign in to your assigned Team Faraz or Momo’s House account. Role and workspace access are verified against the protected database.</p>
+      <div className="auth-mode-switch" role="group" aria-label="Sign-in method">
+        <button type="button" className={mode === "password" ? "active" : ""} onClick={() => switchMode("password")}>Password</button>
+        <button type="button" className={mode === "magic-link" ? "active" : ""} onClick={() => switchMode("magic-link")}>Email link</button>
+      </div>
+      <form className="login-form" onSubmit={mode === "password" ? handlePassword : handleMagicLink}>
         <label>Email<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" required /></label>
+        {mode === "password" && <label>Password<input name="password" type="password" autoComplete="current-password" required /></label>}
         {error && <p className="login-error" role="alert">{error}</p>}
         {message && <p className="login-message" role="status">{message}</p>}
-        <button className="primary-button login-submit" type="submit" disabled={state === "submitting"}>{state === "submitting" ? "Sending secure link…" : "Email me a secure sign-in link"} <Icon name="arrow" size={18}/></button>
+        <button className="primary-button login-submit" type="submit" disabled={state === "submitting"}>{state === "submitting" ? (mode === "password" ? "Signing in…" : "Sending secure link…") : (mode === "password" ? "Sign in securely" : "Email me a secure sign-in link")} <Icon name="arrow" size={18}/></button>
+        {mode === "password" && <button className="login-reset" type="button" onClick={() => switchMode("magic-link", true)}>Forgot or setting your password? Use a secure email link.</button>}
       </form>
-      <div className="login-lock"><Icon name="shield" size={17}/><span>Password sign-in remains disabled until compromised-password protection is enabled. Signed sessions are verified by Supabase Auth, and database access is protected by row-level authorization.</span></div>
+      <div className="login-lock"><Icon name="shield" size={17}/><span>Signed sessions and password verification are handled by Supabase Auth. Passwords require 12+ ASCII characters with uppercase, lowercase, number, and supported symbol. New passwords are checked against known leaks using a privacy-preserving partial hash; native Auth-boundary screening remains unavailable on the Free plan.</span></div>
+    </section>
+  </main>;
+}
+
+function PasswordSecurityPage({
+  access,
+  onBack,
+  onSignOut,
+  signOutBusy,
+}: {
+  access: AccessSeed;
+  onBack: () => void;
+  onSignOut: () => void;
+  signOutBusy: boolean;
+}) {
+  const [state, setState] = useState<"idle" | "submitting">("idle");
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+
+  async function handlePasswordUpdate(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
+    const password = String(form.get("password") || "");
+    const confirmation = String(form.get("confirmation") || "");
+    setError("");
+    setMessage("");
+    const issue = getVeroxaPasswordIssue(password);
+    if (issue) {
+      setError(issue);
+      formElement.reset();
+      return;
+    }
+    if (password !== confirmation) {
+      setError("The passwords do not match.");
+      formElement.reset();
+      return;
+    }
+    setState("submitting");
+    try {
+      await updateVeroxaPassword(password);
+      setMessage("Your password is active. You can now use password sign-in, while email-link access remains available for recovery.");
+    } catch (caught) {
+      const failure = caught instanceof Error ? caught.message : "password_update_failed";
+      if (failure === "recent_sign_in_required" || failure === "session_required") {
+        setError("For security, request a fresh email sign-in link and return here before replacing the password.");
+      } else if (failure === "configuration_unavailable") {
+        setError("Password settings are temporarily unavailable while the secure connection is restored.");
+      } else if (failure === "compromised_password") {
+        setError("That password appears in known breach data. Choose a different unique password.");
+      } else if (failure === "password_check_unavailable") {
+        setError("The leaked-password safety check is temporarily unavailable, so the password was not changed. Please try again.");
+      } else {
+        setError("The password could not be updated. Check the requirements and try again.");
+      }
+    } finally {
+      formElement.reset();
+      setState("idle");
+    }
+  }
+
+  return <main className="login-shell security-shell">
+    <button className="brand login-brand" onClick={onBack}><span className="brand-mark"><span>V</span></span><span className="brand-copy"><strong>VEROXA</strong><small>ACCOUNT SECURITY</small></span></button>
+    <section className="login-card security-card">
+      <p className="eyebrow">SIGNED IN · {access.role === "team" ? "TEAM FARAZ" : "MOMO’S HOUSE"}</p>
+      <h1>Set or replace password.</h1>
+      <p>Choose a unique password stored only as a secure Supabase Auth hash. Veroxa never stores or displays the plaintext password.</p>
+      <form className="login-form" onSubmit={handlePasswordUpdate}>
+        <label>New password<input name="password" type="password" autoComplete="new-password" minLength={12} maxLength={72} required /></label>
+        <label>Confirm new password<input name="confirmation" type="password" autoComplete="new-password" minLength={12} maxLength={72} required /></label>
+        <p className="password-requirements">12–72 ASCII characters · uppercase · lowercase · number · supported symbol · no spaces</p>
+        {error && <p className="login-error" role="alert">{error}</p>}
+        {message && <p className="login-message" role="status">{message}</p>}
+        <button className="primary-button login-submit" type="submit" disabled={state === "submitting"}>{state === "submitting" ? "Securing password…" : "Set or replace password"} <Icon name="shield" size={18}/></button>
+      </form>
+      <div className="security-actions"><button type="button" onClick={onBack}>Back to portal</button><button type="button" onClick={onSignOut} disabled={signOutBusy}>{signOutBusy ? "Signing out…" : "Sign out"}</button></div>
+      <div className="login-lock"><Icon name="shield" size={17}/><span>Veroxa checks the new password against known breach data using only a five-character hash prefix. This is defense in depth; Supabase Free does not provide native Auth-boundary leaked-password enforcement. A fresh email-link sign-in lets you replace it later.</span></div>
     </section>
   </main>;
 }

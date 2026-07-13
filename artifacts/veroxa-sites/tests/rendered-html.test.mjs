@@ -1,9 +1,50 @@
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
+import {
+  getVeroxaPasswordIssue,
+  isVeroxaPasswordCompromised,
+  pwnedRangeContainsHash,
+  sha1Hex,
+} from "../app/veroxa-password.mjs";
 
 const developmentPreviewMeta =
   /<meta(?=[^>]*\bname=["']codex-preview["'])(?=[^>]*\bcontent=["']development["'])[^>]*>/i;
+
+test("enforces the temporary Free-plan password policy", () => {
+  assert.equal(getVeroxaPasswordIssue("Unique-Portal-Key-47!"), null);
+  assert.match(getVeroxaPasswordIssue("Short1!") || "", /12 characters/);
+  assert.match(getVeroxaPasswordIssue("NOLOWERCASE-47!") || "", /lowercase/);
+  assert.match(getVeroxaPasswordIssue("nouppercase-47!") || "", /uppercase/);
+  assert.match(getVeroxaPasswordIssue("NoNumber-Needed!") || "", /number/);
+  assert.match(getVeroxaPasswordIssue("NoSymbolNeeded47") || "", /symbol/);
+  assert.match(getVeroxaPasswordIssue("Has a Space 47!") || "", /spaces/);
+  assert.match(getVeroxaPasswordIssue("Unicode-Portal-47!é") || "", /supported symbols/);
+});
+
+test("checks leaked passwords with only a padded five-character hash prefix", async () => {
+  assert.equal(await sha1Hex("password"), "5BAA61E4C9B93F3F0682250B6CF8331B7EE68FD8");
+  const candidate = "Unit-Test-Only-Key-47!";
+  const fullHash = await sha1Hex(candidate);
+  let requestUrl = "";
+  let requestOptions;
+  const compromised = await isVeroxaPasswordCompromised(candidate, async (url, options) => {
+    requestUrl = String(url);
+    requestOptions = options;
+    return new Response(`${fullHash.slice(5)}:3\n${"0".repeat(35)}:0`, { status: 200 });
+  });
+  assert.equal(compromised, true);
+  assert.equal(requestUrl, `https://api.pwnedpasswords.com/range/${fullHash.slice(0, 5)}`);
+  assert.equal(requestOptions.headers["Add-Padding"], "true");
+  assert.ok(requestOptions.signal instanceof AbortSignal);
+  assert.doesNotMatch(requestUrl, new RegExp(fullHash.slice(5), "i"));
+  assert.equal(pwnedRangeContainsHash(`${fullHash.slice(5)}:0`, fullHash), false);
+  assert.equal(await isVeroxaPasswordCompromised(candidate, async () => new Response(`${"F".repeat(35)}:9`, { status: 200 })), false);
+  await assert.rejects(
+    isVeroxaPasswordCompromised(candidate, async () => new Response("unavailable", { status: 503 })),
+    /password_check_unavailable/,
+  );
+});
 
 test("renders development preview metadata", async () => {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
@@ -148,6 +189,9 @@ test("renders public routes and protects portal routes", async () => {
       assert.match(html, /SECURE PORTAL ACCESS/i, "Login must describe real signed access");
       assert.match(html, /Supabase Auth/i, "Login must disclose its identity boundary");
       assert.doesNotMatch(html, /Choose a pre-live view|Explore the non-sensitive Team shell/i, "Login must not expose role-bypass buttons");
+      assert.match(html, /Password/i, "Login must offer password sign-in");
+      assert.match(html, /Email link/i, "Login must preserve secure email-link access");
+      assert.match(html, /autocomplete="current-password"/i, "Password sign-in must use password-manager semantics");
     }
   }
 
@@ -164,6 +208,7 @@ test("renders public routes and protects portal routes", async () => {
     "/team/momo/content-ai",
     "/team/momo/reports",
     "/team/momo/readiness",
+    "/account/security",
   ]) {
     const response = await worker.fetch(new Request(`http://localhost${path}`, { headers: { accept: "text/html" } }), env, ctx);
     assert.ok([302, 303, 307, 308].includes(response.status), `${path} should redirect without a verified session`);
@@ -221,6 +266,16 @@ test("audit UI keeps contact, draft-isolation, mutation, and mobile-navigation g
   assert.match(data, /VEROXA_PRODUCTION_ORIGIN = "https:\/\/veroxasystems\.com"/, "Production magic links must use the canonical Veroxa origin");
   assert.match(data, /emailRedirectTo: `\$\{getAuthCallbackOrigin\(\)\}\/auth\/callback`/, "Magic links must use one exact production callback URL");
   assert.match(data, /veroxa_auth_return_to/, "Magic-link return paths must be preserved outside the callback URL allowlist");
+  assert.match(data, /Domain=veroxasystems\.com/, "Recovery return cookie must survive the www-to-apex callback");
+  assert.match(data, /signInWithPassword/, "Approved identities must support permanent password sign-in");
+  assert.match(data, /updateUser\(\{ password \}\)/, "A freshly authenticated user must be able to replace their password");
+  assert.match(data, /signOut\(\{ scope: "local" \}\)/, "Failed post-login authorization must clear the new browser session");
+  assert.match(data, /signOut\(\{ scope: "others" \}\)/, "Password replacement must revoke other refresh sessions when available");
+  assert.doesNotMatch(data, /resetPasswordForEmail|\.auth\.signUp/, "Password recovery must reuse the existing approved-user email-link path without enabling public signup");
+  assert.match(page, /name="password"[\s\S]*?autocomplete="new-password"/i, "Account security must use a non-prefilled new-password field");
+  assert.match(page, /email or password is incorrect, or this account is not approved/i, "Password failures must use one non-enumerating message");
+  assert.match(page, /setEmailLinkReturnTo\(recovery \? "\/account\/security" : null\)/, "Recovery mode must target the protected replacement screen");
+  assert.match(page, /switchMode\("magic-link", true\)/, "Forgot-password control must enable recovery mode");
   assert.match(authCallback, /cookieStore\.get\(AUTH_RETURN_COOKIE\)/, "Auth callback must recover the validated return path from its short-lived cookie");
   assert.match(authCallback, /maxAge: 0/, "Auth callback must clear its short-lived return-path cookie");
   assert.match(page, /secure sign-in link may have been sent/, "Login must use one neutral, non-promissory delivery posture for non-configuration Auth outcomes");
