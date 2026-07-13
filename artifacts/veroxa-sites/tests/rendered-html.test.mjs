@@ -223,7 +223,8 @@ test("audit UI keeps contact, draft-isolation, mutation, and mobile-navigation g
   assert.match(data, /veroxa_auth_return_to/, "Magic-link return paths must be preserved outside the callback URL allowlist");
   assert.match(authCallback, /cookieStore\.get\(AUTH_RETURN_COOKIE\)/, "Auth callback must recover the validated return path from its short-lived cookie");
   assert.match(authCallback, /maxAge: 0/, "Auth callback must clear its short-lived return-path cookie");
-  assert.match(page, /secure sign-in link will be delivered when available/, "Login must use one neutral delivery posture for non-configuration Auth outcomes");
+  assert.match(page, /secure sign-in link may have been sent/, "Login must use one neutral, non-promissory delivery posture for non-configuration Auth outcomes");
+  assert.doesNotMatch(page, /will be delivered when available/, "Login must not imply that failed Auth requests are queued for later delivery");
   assert.doesNotMatch(page, /Too many secure emails were requested during setup/, "Login must not reveal a distinct approved-account rate-limit state");
   assert.doesNotMatch(page, /momo-readiness-tracker\.json/, "The public client entry must not bundle the full Team readiness record");
   assert.match(protectedRoute, /if \(access\.role === "team"\)[\s\S]*?await import\("\.\.\/momo-readiness-tracker\.json"\)/, "Only a server-verified Team route may load the readiness record");
