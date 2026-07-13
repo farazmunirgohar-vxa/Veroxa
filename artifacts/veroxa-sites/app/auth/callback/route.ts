@@ -4,10 +4,22 @@ import { NextResponse } from "next/server";
 
 export const runtime = "edge";
 
+const AUTH_RETURN_COOKIE = "veroxa_auth_return_to";
+
 export async function GET(request: Request): Promise<Response> {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
-  const requestedNext = requestUrl.searchParams.get("next") || "/login";
+  const cookieStore = await cookies();
+  const storedNext = cookieStore.get(AUTH_RETURN_COOKIE)?.value;
+  let decodedStoredNext = "";
+  if (storedNext) {
+    try {
+      decodedStoredNext = decodeURIComponent(storedNext);
+    } catch {
+      decodedStoredNext = "";
+    }
+  }
+  const requestedNext = requestUrl.searchParams.get("next") || decodedStoredNext || "/login";
   let next = "/login";
   if (requestedNext.startsWith("/") && !requestedNext.startsWith("//") && !requestedNext.includes("\\")) {
     const resolvedNext = new URL(requestedNext, requestUrl.origin);
@@ -19,8 +31,13 @@ export async function GET(request: Request): Promise<Response> {
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   if (!code || !url || !key) return NextResponse.redirect(new URL("/login?auth_error=1", request.url));
 
-  const cookieStore = await cookies();
   const response = NextResponse.redirect(new URL(next, request.url));
+  response.cookies.set(AUTH_RETURN_COOKIE, "", {
+    path: "/",
+    maxAge: 0,
+    sameSite: "lax",
+    secure: requestUrl.protocol === "https:",
+  });
   const client = createServerClient(url, key, {
     cookies: {
       getAll: () => cookieStore.getAll(),
