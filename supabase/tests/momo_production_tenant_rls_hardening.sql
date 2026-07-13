@@ -35,7 +35,7 @@ begin
     'veroxa_profiles_self_or_team_select',
     'veroxa_restaurants_member_select',
     'veroxa_members_self_or_team_select',
-    'veroxa_media_member_select',
+    'veroxa_media_team_select',
     'veroxa_media_client_insert',
     'veroxa_restaurant_media_client_insert',
     'veroxa_restaurant_media_member_select'

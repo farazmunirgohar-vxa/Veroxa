@@ -66,6 +66,7 @@ test("renders public routes and protects portal routes", async () => {
     "/client/dashboard",
     "/client/onboarding",
     "/client/media",
+    "/client/content",
     "/client/reports",
     "/team/momo",
     "/team/audits",
@@ -127,9 +128,7 @@ test("audit UI keeps contact, draft-isolation, mutation, and mobile-navigation g
   assert.doesNotMatch(page, /momo-readiness-tracker\.json/, "The public client entry must not bundle the full Team readiness record");
   assert.match(protectedRoute, /if \(access\.role === "team"\)[\s\S]*?await import\("\.\.\/momo-readiness-tracker\.json"\)/, "Only a server-verified Team route may load the readiness record");
   assert.ok(protectedRoute.indexOf("getServerVeroxaAccess()") < protectedRoute.indexOf("momo-readiness-tracker.json"), "Server access verification must precede readiness loading");
-  assert.match(page, /No readiness percentage is calculated/, "Team readiness must not invent a completion percentage");
-  assert.match(page, /Other restaurants remain Restaurant Audit Center records only/, "Team readiness must preserve the Momo-only operating boundary");
-  assert.match(page, /if \(!tracker\)/, "Team readiness must fail closed when the server-authorized record is absent");
+  assert.match(page, /MomoOperatingCenter/, "Protected Team/client routes must use the database-backed operating center");
 
   assert.match(center, /confirmDiscardDetail/, "Audit selection must protect unsaved drafts");
   assert.match(center, /beforeunload/, "Leaving the page must protect unsaved drafts");
@@ -146,4 +145,71 @@ test("audit UI keeps contact, draft-isolation, mutation, and mobile-navigation g
     );
   }
   assert.match(data, /\.upsert\(record,[\s\S]*?\.select\("id, audit_run_id"\)[\s\S]*?\.single\(\)/, "Report saves must prove one affected row");
+});
+
+test("Momo operating center uses live tenant data and exact production contracts", async () => {
+  const [page, center, data] = await Promise.all([
+    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/momo-operating-center.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/momo-data.ts", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(page, /<MomoOperatingCenter/, "Protected routes must use the database-backed operating center");
+  assert.match(page, /"\/client\/content": "content"/, "Client navigation must expose owner content confirmation");
+  assert.doesNotMatch(page, /const mediaItems|const setupSteps|Momo close-up photo|Setup progress saved for this session/, "Protected fixture content must be removed");
+
+  for (const table of [
+    "veroxa_restaurant_truth_fields", "veroxa_restaurant_contacts", "veroxa_onboarding_steps",
+    "veroxa_presence_profiles", "veroxa_readiness_dimensions", "veroxa_media_assets",
+    "veroxa_media_rights", "veroxa_media_reviews", "veroxa_ai_jobs",
+    "veroxa_content_strategies", "veroxa_content_items", "veroxa_content_variants",
+    "veroxa_approvals", "veroxa_content_calendar", "veroxa_provider_connections",
+    "veroxa_publish_queue", "veroxa_local_presence_checks", "veroxa_review_records",
+    "veroxa_visibility_snapshots", "veroxa_work_items", "veroxa_activity_events",
+    "veroxa_reports", "veroxa_monitor_checks", "veroxa_alerts", "veroxa_recovery_runs",
+  ]) {
+    assert.match(data, new RegExp(`"${table}"`), `${table} must be loaded through the central Momo data contract`);
+  }
+
+  for (const field of [
+    "identity.display_name", "address.primary", "phone.primary", "hours.regular",
+    "menu.primary", "services.active", "claims.dietary", "claims.halal",
+    "brand.voice", "goals.primary",
+  ]) {
+    assert.match(center, new RegExp(field.replace(".", "\\.")), `${field} must use the database field-key contract`);
+  }
+
+  assert.doesNotMatch(center + data, /"team_verified"|"google_business_profile"|"content_variants"|"owner_content_approval"|"team_content_approval"|"needs_better_version"|status:\s*"scheduled"|status:\s*"draft"|RLS protected/, "Invalid enum values and implementation jargon must stay out");
+  assert.match(data, /usageScope:\s*string\[\]/, "Media rights scope input must be an explicit token array");
+  assert.match(data, /p_usage_scope:\s*input\.usageScope/, "Media registration RPC must receive the validated JSON token array");
+  assert.match(center, /"instagram", "facebook", "google_business", "website"/, "Media rights UI must start from allowed provider tokens");
+  assert.match(data, /safety_flags:\s*\["live_provider_not_connected", "human_review_required"\]/, "AI safety flags must be a JSON array");
+  assert.match(data, /provider_key:\s*null[\s\S]*?model_key:\s*null/, "AI preparation must remain provider neutral");
+  assert.match(data, /\.rpc\("veroxa_momo_readiness_summary_v1"/, "Final readiness must use the database gate");
+  assert.match(data, /\.rpc\("veroxa_momo_client_snapshot_v1"/, "Client reads must use the sanitized snapshot");
+  assert.match(data, /\.rpc\("veroxa_apply_confirmation_v1"/, "Team confirmation decisions must be transactional");
+  assert.match(data, /\.rpc\("veroxa_apply_approval_v1"/, "Team approval decisions must atomically update their subject");
+  assert.match(data, /\.rpc\("veroxa_review_momo_media_v1"/, "Media review replacement and asset state must be atomic");
+  assert.match(data, /\.rpc\("veroxa_register_momo_media_v1"/, "Media metadata and rights must be registered atomically");
+  assert.match(data, /\.rpc\("veroxa_retry_work_item_v1"/, "Retries must write the bounded attempt ledger transactionally");
+  assert.match(data, /\.rpc\("veroxa_register_primary_contact_v1"/, "Initial owner contact must use the narrow bootstrap contract");
+  assert.match(data, /source:\s*String\(item\.source\)/, "Client truth mapping must preserve the sanitized provenance");
+  assert.match(data, /if \(item\.reviewStatus\) result\.mediaReviews\.push/, "Client media mapping must not invent a pending review");
+  assert.match(data, /display_name:\s*String\(item\.displayFileName/, "Client media mapping must use the safe display filename");
+  assert.match(data, /storage_path:\s*item\.storagePath/, "Client media mapping must preserve the scoped object name for signed previews");
+  assert.match(data, /approved_at:\s*item\.approvedAt/, "Client report mapping must preserve the approval timestamp");
+  assert.match(data, /rows\(raw\.pendingContentConfirmations\)/, "Client snapshot must expose only sanitized content directions awaiting owner confirmation");
+  assert.match(data, /confirmation_kind:\s*"content_direction"[\s\S]*?decision:\s*"confirm"/, "Owner content confirmation must append a dedicated confirmation record");
+  assert.doesNotMatch(data, /from\("veroxa_confirmations"\)\.insert\(\{[^;]+?\}\)\.select/, "Client confirmation inserts must not require table SELECT permission for RETURNING");
+  assert.match(center, /Confirm this content direction/, "Clients must be able to submit an owner content-direction confirmation");
+  assert.match(center, /subjectType:\s*"content_variant"[\s\S]*?approvalKind:\s*"team_review"/, "Pending platform variants must have a reachable Team-review gate");
+  assert.match(center, /subjectType:\s*"report"[\s\S]*?approvalKind:\s*"report_release"/, "Pending reports must have a reachable release review");
+  assert.doesNotMatch(center, /approvalKind:\s*item\.requires_owner_confirmation\s*\?\s*"owner_confirmation"/, "Owner content confirmation must not be represented by a Team approval row");
+  assert.match(data, /select\("asset_id, tag_id"\)/, "Media tagging must read the join table's real composite key");
+  assert.match(data, /input\.role === "client"[\s\S]*?\.from\("veroxa_confirmations"\)/, "Owner truth and contact changes must be append-only confirmations");
+  assert.doesNotMatch(data, /from\("veroxa_provider_connections"\)\.update/, "Client UI must not mutate provider connection state");
+  assert.match(center, /No readiness percentage is calculated/, "Readiness must remain pass or fail");
+  assert.match(center, /Other restaurants remain Restaurant Audit Center records only/, "Runtime readiness must preserve the Momo-only operating boundary");
+  assert.match(center, /No cached or sample records are being shown/, "Load failure must fail closed");
+  assert.match(center, /No provider is connected/, "Missing integrations must have an honest safe-empty state");
 });

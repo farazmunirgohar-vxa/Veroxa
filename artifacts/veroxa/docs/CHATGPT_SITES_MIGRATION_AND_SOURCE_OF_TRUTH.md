@@ -4,7 +4,9 @@ Status: active migration and deployment authority as of 2026-07-12.
 
 ## Current production-foundation override
 
-The original migration scope below remains useful history, but its statements that production identity, persistence, and protected portal routes are future work are superseded for source truth by `VEROXA_CURRENT_MILESTONE.md`. The current release source implements Supabase-backed magic-link sessions, active Momo membership checks, RLS, durable audit intake, and protected Client/Team routes. The live site remains on the earlier public-shell deployment until the exact green GitHub release is merged and checkpointed. Runtime AI, external integrations, publishing, Momo contact, real Momo data, and client activation remain inactive.
+The original migration scope below remains useful history, but its statements that production identity, persistence, and protected portal routes are future work are superseded for source truth by `VEROXA_CURRENT_MILESTONE.md`. PR #135 is merged and its exact source is deployed as verified Sites version 4. That deployed foundation implements Supabase-backed magic-link sessions, active Momo membership checks, RLS, durable audit intake, and protected Client/Team routes.
+
+The seven-system Momo 100%-readiness build is currently a release candidate, not the deployed runtime. Real Team provisioning is **blocked external authority** because the available connector cannot call Supabase Auth Admin and no privileged server key is available. No Momo owner identity or owner-confirmed data is provisioned. Runtime AI, Meta, Google Business Profile, external SEO/social execution, publishing, visibility monitoring, Momo contact, and client activation are **inactive pending authorized access**. See `MOMO_100_READINESS_SEVEN_SYSTEM_CONTRACT.md` for the source/runtime/activation split.
 
 ## Locked direction
 

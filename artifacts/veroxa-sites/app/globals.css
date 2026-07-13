@@ -204,3 +204,156 @@ button { color: inherit; }
   .mobile-nav button { font-size: 10px; }
 }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; animation-duration: .001ms !important; transition-duration: .001ms !important; } }
+
+/* Database-backed Momo operating system */
+.momo-loading { min-height: 420px; display: grid; place-content: center; justify-items: center; gap: 8px; color: var(--forest); }
+.momo-loading strong { font-family: Georgia,serif; font-size: 25px; font-weight: 500; }
+.momo-loading span { color: var(--muted); font-size: 12px; }
+.momo-intro { display: flex; align-items: flex-end; justify-content: space-between; gap: 26px; margin-bottom: 22px; }
+.momo-intro h1 { margin: 0 0 9px; color: var(--ink); font: 500 42px/1.05 Georgia,serif; letter-spacing: -.035em; }
+.momo-intro > div > p:last-child { max-width: 760px; margin: 0; color: var(--muted); font-size: 13px; line-height: 1.65; }
+.momo-intro-actions { flex: none; }
+.momo-boundary { display: grid; grid-template-columns: minmax(180px,.55fr) 1fr auto; gap: 18px; align-items: center; margin-bottom: 18px; padding: 16px 18px; color: #5f562b; background: #fffbea; border: 1px solid #eadfab; border-radius: 14px; }
+.momo-boundary strong { font-size: 12px; }
+.momo-boundary span { color: #81774b; font-size: 11px; line-height: 1.55; }
+.momo-boundary em { padding: 7px 9px; color: #5f562b; background: white; border-radius: 8px; font-size: 9px; font-style: normal; font-weight: 800; white-space: nowrap; }
+.momo-status { display: inline-flex; align-items: center; width: fit-content; min-height: 25px; padding: 5px 8px; color: #5f665f; background: #eff1ed; border-radius: 999px; font-size: 9px; font-weight: 800; line-height: 1.2; }
+.momo-status.verified,.momo-status.owner-confirmed,.momo-status.approved,.momo-status.completed,.momo-status.connected,.momo-status.healthy,.momo-status.published,.momo-status.report-eligible { color: #33623f; background: #e6f3e8; }
+.momo-status.blocked,.momo-status.failed,.momo-status.rejected,.momo-status.revoked,.momo-status.critical { color: #994439; background: #ffefec; }
+.momo-status.pending,.momo-status.in-progress,.momo-status.team-prefilled,.momo-status.needs-owner-confirmation,.momo-status.awaiting-owner-access,.momo-status.awaiting-approval,.momo-status.warning { color: #8b6124; background: #fff3dc; }
+.momo-status.not-connected,.momo-status.not-started,.momo-status.not-evaluated,.momo-status.internal-only { color: #656861; background: #f0f1ee; }
+.momo-panel { margin-bottom: 16px; padding: 22px; background: white; border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 10px 25px rgba(39,57,45,.035); }
+.momo-panel h2 { margin: 0; color: var(--ink); font: 500 23px/1.2 Georgia,serif; }
+.momo-panel-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 16px; }
+.momo-panel-heading > div { display: grid; gap: 5px; }
+.momo-panel-heading > div > strong { font-size: 14px; }
+.momo-panel-heading > div > small { color: var(--muted); font-size: 11px; }
+.momo-panel-heading > span:not(.momo-status) { display: grid; place-items: center; min-width: 31px; height: 31px; padding: 0 8px; color: var(--forest); background: #edf2e9; border-radius: 9px; font-size: 11px; font-weight: 900; }
+.momo-empty { display: grid; place-items: center; min-height: 130px; padding: 25px; text-align: center; background: #fafbf8; border: 1px dashed #d7ddd7; border-radius: 13px; }
+.momo-empty strong { color: var(--ink); font-size: 13px; }
+.momo-empty p { max-width: 520px; margin: 6px 0 0; color: var(--muted); font-size: 11px; line-height: 1.55; }
+.momo-metrics { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 16px; }
+.momo-metrics article { display: grid; gap: 5px; padding: 19px; background: white; border: 1px solid var(--line); border-radius: 15px; }
+.momo-metrics span,.momo-metrics small { color: var(--muted); font-size: 10px; }
+.momo-metrics strong { color: var(--ink); font: 500 32px/1 Georgia,serif; }
+.momo-module-grid,.momo-card-grid,.momo-media-grid,.momo-work-grid,.momo-readiness-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+.momo-module { display: grid; gap: 14px; padding: 21px; background: white; border: 1px solid var(--line); border-radius: 17px; }
+.momo-module > div,.momo-small-card > div,.momo-work-grid article > div,.momo-report-list article > div,.momo-readiness-grid > article > div,.momo-media-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.momo-module h2 { margin: 0; font: 500 20px/1.2 Georgia,serif; }
+.momo-module p { min-height: 46px; margin: 0; color: var(--muted); font-size: 11px; line-height: 1.55; }
+.momo-module button,.momo-small-card button,.momo-work-grid button,.momo-review-box button,.momo-variant-form button,.momo-decision button,.momo-tag-input button { min-height: 38px; padding: 0; color: var(--forest); background: transparent; border: 0; border-top: 1px solid var(--line); font-size: 10px; font-weight: 800; text-align: left; cursor: pointer; }
+.momo-split { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+.momo-triple { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; }
+.momo-form { display: grid; gap: 15px; }
+.momo-form-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 13px; }
+.momo-form label,.momo-inline-form label,.momo-upload label,.momo-review-box label,.momo-variant-form label { display: grid; gap: 7px; color: var(--muted); font-size: 11px; font-weight: 700; }
+.momo-form label.wide,.momo-review-box .wide { grid-column: 1/-1; }
+.momo-form input,.momo-form textarea,.momo-form select,.momo-inline-form input,.momo-inline-form select,.momo-upload input,.momo-review-box input,.momo-review-box textarea,.momo-tag-input input,.momo-variant-form input,.momo-variant-form textarea,.momo-variant-form select,.momo-decision input { width: 100%; min-height: 43px; padding: 10px 12px; color: var(--ink); background: white; border: 1px solid var(--line); border-radius: 10px; font: inherit; outline: none; resize: vertical; }
+.momo-form input:focus,.momo-form textarea:focus,.momo-form select:focus,.momo-inline-form input:focus,.momo-inline-form select:focus,.momo-upload input:focus,.momo-review-box input:focus,.momo-review-box textarea:focus,.momo-tag-input input:focus,.momo-variant-form input:focus,.momo-variant-form textarea:focus,.momo-variant-form select:focus,.momo-decision input:focus { border-color: #7e9988; box-shadow: 0 0 0 3px rgba(69,99,80,.08); }
+.momo-form-note { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.55; }
+.momo-inline-form { display: grid; grid-template-columns: minmax(180px,1.2fr) repeat(3,minmax(120px,1fr)) auto; gap: 12px; align-items: end; }
+.momo-inline-form h2 { margin-top: 4px; }
+.momo-inline-form button { min-width: 120px; }
+.momo-record-list,.momo-content-list,.momo-report-list { display: grid; gap: 9px; }
+.momo-record-list > article { display: grid; grid-template-columns: minmax(0,1fr) auto auto; gap: 12px; align-items: center; padding: 13px; background: #fafbf8; border: 1px solid #ebeee8; border-radius: 12px; }
+.momo-record-list > article > div:first-child { min-width: 0; }
+.momo-record-list strong { color: var(--ink); font-size: 12px; }
+.momo-record-list p { margin: 4px 0; color: var(--muted); font-size: 11px; line-height: 1.5; overflow-wrap: anywhere; }
+.momo-record-list small { color: #858b86; font-size: 9px; }
+.momo-decision { display: flex; gap: 6px; align-items: center; }
+.momo-decision input { min-width: 125px; }
+.momo-decision button { min-height: 34px; padding: 0 8px; border: 1px solid var(--line); border-radius: 8px; }
+.momo-small-card { display: grid; gap: 12px; min-height: 145px; padding: 17px; background: #fafbf8; border: 1px solid var(--line); border-radius: 14px; }
+.momo-small-card strong { font-size: 12px; }
+.momo-small-card p { margin: 0; color: var(--ink); font-size: 11px; overflow-wrap: anywhere; }
+.momo-small-card small { color: var(--muted); font-size: 9px; line-height: 1.55; }
+.momo-upload { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 14px; align-items: end; }
+.momo-upload > div:first-child { grid-column: 1/-1; }
+.momo-upload > div:first-child p:last-child { color: var(--muted); font-size: 11px; }
+.momo-upload .momo-check { grid-column: 1/-1; }
+.momo-scope { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px; margin: 0; padding: 11px; border: 1px solid var(--line); border-radius: 10px; }
+.momo-scope legend { padding: 0 5px; color: var(--muted); font-size: 10px; font-weight: 800; }
+.momo-scope .momo-check { grid-column: auto; color: var(--ink); font-size: 10px; }
+.momo-check { display: flex !important; flex-direction: row !important; align-items: flex-start; gap: 9px !important; }
+.momo-check input { width: 17px !important; min-height: 17px !important; height: 17px; flex: 0 0 17px; margin-top: 1px; }
+.momo-media-card { display: grid; gap: 13px; padding: 17px; background: #fafbf8; border: 1px solid var(--line); border-radius: 15px; min-width: 0; }
+.momo-media-icon { display: grid; place-items: center; min-height: 92px; color: #486350; background: linear-gradient(135deg,#e8f0e6,#f6eadb); border-radius: 11px; font-size: 11px; font-weight: 900; letter-spacing: .1em; }
+.momo-media-icon video,.momo-image-preview { width: 100%; height: 180px; border-radius: 11px; }
+.momo-media-icon video { object-fit: cover; }
+.momo-image-preview { display: block; background-position: center; background-size: cover; }
+.momo-preview-button { min-height: 36px; color: var(--forest); background: white; border: 1px solid var(--line); border-radius: 9px; font-size: 10px; font-weight: 800; cursor: pointer; }
+.momo-media-heading > span:first-child { display: grid; min-width: 0; gap: 4px; }
+.momo-media-heading strong { font-size: 11px; overflow: hidden; text-overflow: ellipsis; }
+.momo-media-heading small { color: var(--muted); font-size: 9px; }
+.momo-facts { display: grid; grid-template-columns: repeat(3,1fr); gap: 5px; }
+.momo-facts span { display: grid; gap: 4px; padding: 8px; color: var(--muted); background: white; border-radius: 8px; font-size: 8px; }
+.momo-facts strong { color: var(--ink); font-size: 9px; }
+.momo-tag-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.momo-tag-row span { padding: 5px 7px; color: #4b6854; background: #e9f1e7; border-radius: 7px; font-size: 8px; }
+.momo-review-box,.momo-variant-form { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 9px; padding-top: 12px; border-top: 1px solid var(--line); }
+.momo-review-box button,.momo-variant-form button { min-height: 36px; padding: 0 9px; border: 1px solid var(--line); border-radius: 8px; text-align: center; }
+.momo-tag-input { display: grid; grid-template-columns: 1fr auto; gap: 6px; }
+.momo-tag-input button { padding: 0 9px; border: 1px solid var(--line); border-radius: 8px; }
+.momo-provider-action { grid-column: 1/-1; }
+.momo-warning { margin: 0; padding: 9px; color: #8b6124; background: #fff3dc; border-radius: 8px; font-size: 9px; line-height: 1.5; }
+.momo-content-card,.momo-report-list article,.momo-work-grid article { display: grid; gap: 12px; padding: 17px; background: #fafbf8; border: 1px solid var(--line); border-radius: 14px; }
+.momo-variant-list { display: grid; gap: 7px; }
+.momo-variant-list article { display: grid; grid-template-columns: minmax(0,1fr) auto auto; gap: 8px; align-items: center; padding: 9px; background: white; border: 1px solid var(--line); border-radius: 9px; }
+.momo-variant-list article > span:first-child { display: grid; gap: 3px; min-width: 0; }
+.momo-variant-list strong { font-size: 10px; }
+.momo-variant-list small { color: var(--muted); font-size: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.momo-variant-list button { min-height: 32px; padding: 0 8px; color: var(--forest); background: white; border: 1px solid var(--line); border-radius: 8px; font-size: 9px; font-weight: 800; cursor: pointer; }
+.momo-caption { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.65; white-space: pre-wrap; }
+.momo-work-grid article p,.momo-report-list article p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.55; }
+.momo-work-grid article small,.momo-report-list article small { color: #777f79; font-size: 9px; }
+.momo-mini { display: flex; align-items: center; justify-content: space-between; gap: 9px; padding: 10px 0; border-top: 1px solid var(--line); }
+.momo-mini > span { display: grid; gap: 3px; min-width: 0; }
+.momo-mini strong { font-size: 11px; }
+.momo-mini small { color: var(--muted); font-size: 9px; line-height: 1.4; }
+.momo-gate { display: grid; grid-template-columns: minmax(270px,1fr) repeat(3,130px); gap: 14px; margin-bottom: 18px; padding: 22px; color: white; background: #6c392f; border-radius: 18px; }
+.momo-gate.pass { background: var(--forest); }
+.momo-gate > div { display: grid; gap: 7px; }
+.momo-gate > div > strong { font: 500 28px/1.1 Georgia,serif; }
+.momo-gate > div > span { max-width: 650px; color: rgba(255,255,255,.7); font-size: 10px; line-height: 1.55; }
+.momo-gate article { display: grid; align-content: center; gap: 5px; padding-left: 16px; border-left: 1px solid rgba(255,255,255,.18); }
+.momo-gate article strong { font: 500 29px/1 Georgia,serif; }
+.momo-gate article span { color: rgba(255,255,255,.68); font-size: 9px; line-height: 1.4; }
+.momo-readiness-grid { grid-template-columns: repeat(2,1fr); margin-bottom: 16px; }
+.momo-readiness-grid > article { display: grid; gap: 15px; padding: 20px; background: white; border: 1px solid var(--line); border-radius: 16px; }
+.momo-readiness-grid h2 { margin: 0; font: 500 19px/1.25 Georgia,serif; }
+.momo-readiness-grid section { display: grid; gap: 6px; }
+.momo-readiness-grid ul { display: grid; gap: 5px; margin: 0; padding-left: 17px; color: var(--muted); font-size: 10px; line-height: 1.5; }
+.momo-readiness-grid section > p:last-child { margin: 0; color: var(--muted); font-size: 10px; }
+.momo-readiness-grid > article > small { color: var(--muted); font-size: 9px; }
+.momo-blockers { padding: 11px; background: #fff5ef; border-radius: 9px; }
+
+@media (max-width: 1100px) {
+  .momo-metrics,.momo-module-grid,.momo-media-grid,.momo-work-grid { grid-template-columns: repeat(2,1fr); }
+  .momo-inline-form { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .momo-inline-form > div:first-child { grid-column: 1/-1; }
+  .momo-triple { grid-template-columns: 1fr; }
+  .momo-gate { grid-template-columns: 1fr repeat(3,110px); }
+}
+@media (max-width: 720px) {
+  .momo-intro,.momo-boundary { grid-template-columns: 1fr; flex-direction: column; align-items: flex-start; }
+  .momo-intro h1 { font-size: 34px; }
+  .momo-boundary { display: grid; gap: 8px; }
+  .momo-metrics,.momo-module-grid,.momo-card-grid,.momo-media-grid,.momo-work-grid,.momo-readiness-grid,.momo-split,.momo-form-grid,.momo-upload { grid-template-columns: 1fr; }
+  .momo-form label.wide,.momo-review-box .wide,.momo-upload > div:first-child,.momo-upload .momo-check { grid-column: 1; }
+  .momo-inline-form { grid-template-columns: 1fr; }
+  .momo-inline-form > div:first-child { grid-column: 1; }
+  .momo-record-list > article { grid-template-columns: 1fr auto; }
+  .momo-record-list .momo-decision { grid-column: 1/-1; }
+  .momo-decision { display: grid; grid-template-columns: 1fr 1fr; }
+  .momo-decision input { grid-column: 1/-1; }
+  .momo-gate { grid-template-columns: repeat(3,1fr); }
+  .momo-gate > div { grid-column: 1/-1; }
+  .momo-gate article { padding: 12px 0 0; border-left: 0; border-top: 1px solid rgba(255,255,255,.18); }
+}
+@media (max-width: 480px) {
+  .momo-panel { padding: 17px; }
+  .momo-metrics { grid-template-columns: repeat(2,1fr); }
+  .momo-review-box,.momo-variant-form { grid-template-columns: 1fr; }
+  .momo-provider-action { grid-column: 1; }
+  .momo-form input,.momo-form textarea,.momo-form select,.momo-inline-form input,.momo-inline-form select,.momo-upload input,.momo-review-box input,.momo-review-box textarea,.momo-tag-input input,.momo-variant-form input,.momo-variant-form textarea,.momo-variant-form select,.momo-decision input { font-size: 16px; }
+}

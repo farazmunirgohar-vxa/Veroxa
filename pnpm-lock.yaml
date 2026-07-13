@@ -631,6 +631,10 @@ importers:
         version: 0.31.10
 
   scripts:
+    dependencies:
+      '@supabase/supabase-js':
+        specifier: 2.106.1
+        version: 2.106.1
     devDependencies:
       '@types/node':
         specifier: 'catalog:'

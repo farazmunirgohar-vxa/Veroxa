@@ -1,3 +1,19 @@
+## 2026-07-12 — Momo Seven-System 100%-Readiness V1 release candidate
+
+- Scope: build the seven requested Momo systems together—Restaurant Intelligence/onboarding; approved Team identity and authenticated smoke; media rights/intelligence/reuse; AI content/approvals/calendar; Meta handling; Google/local visibility; and work/reports/retries/recovery/final readiness.
+- Git state: draft PR #138 is open from `agent/momo-100-readiness` and is being reconciled onto the current `main` after PR #137. No merged commit, production migration, Sites checkpoint, or new domain version is claimed by this entry.
+- Contract: `MOMO_100_READINESS_SEVEN_SYSTEM_CONTRACT.md` separates release-candidate source, deployed foundation, provider connection, external authority, and final readiness.
+- Source direction: the canonical provider-neutral contracts under `artifacts/veroxa/src/domain/momoOperationsV1/` fail closed for unapproved providers/spend and require a 100% evidence-backed score with no required blocker.
+- Client data boundary: operational base tables remain Team-only; the client adapter uses the explicit-auth, role-sanitized `veroxa_momo_client_snapshot_v1` contract so internal provider/error/AI payload columns are not exposed.
+- Identity path: `scripts/src/provision-approved-team-identity.ts` provides explicit-ack, server-only, idempotent Supabase Admin provisioning. It takes the approved email and privileged values only from environment, relies on the protected database allowlist trigger, verifies active Team/Momo access, and rolls back a newly created user that is not accepted. The command has not been run.
+- Auth smoke: a controlled magic-link/API/RLS harness is prepared separately from CI and does not log a link, token, or session. Authenticated Team and Momo browser smoke remain unverified.
+- External blocker: the protected database has one enabled Team allowlist record, but no corresponding V1 Auth profile/membership. Real Team provisioning is **blocked external authority** because the connector has no Auth Admin create-user method and no `SUPABASE_SERVICE_ROLE_KEY` is available. No Momo client identity is provisioned.
+- Data truth: no Momo owner-confirmed business truth, contacts, dietary/halal claims, media rights, platform access, or performance data is invented or seeded. Safe-empty and pending-owner states remain correct.
+- Integration truth: runtime AI, Meta, Google Business Profile, social/Google publishing, external SEO writes, and visibility monitoring are **inactive pending authorized access**. Provider-neutral interfaces and queues are not live connections.
+- Cost truth: no new spend is approved or introduced; chargeable provider calls remain blocked behind explicit authorization and configuration.
+- Deployment truth: production remains the verified PR #135 baseline on Sites version 4 with six applied Supabase migrations until this exact candidate passes verification, merges, applies forward-only, checkpoints, and receives live/domain confirmation.
+- Final gate: blocked by missing owner confirmation, real identities, media rights, external access, authenticated browser evidence, and live monitoring/recovery evidence. A partial score cannot pass.
+
 ## 2026-07-12 — Momo Production Foundation + Restaurant Audit Center V1
 
 - Scope: build and deploy sequence steps 1–3 — merge PR #134, build the Momo-only production foundation, and build the standalone non-client Restaurant Audit Center.

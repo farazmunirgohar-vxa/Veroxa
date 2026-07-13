@@ -1,3 +1,12 @@
+## 2026-07-12 — Seven-system readiness source/runtime lock
+
+- `MOMO_100_READINESS_SEVEN_SYSTEM_CONTRACT.md` is the current contract for the seven requested Momo systems and the final fail-closed readiness gate.
+- A schema, adapter, queue, or UI state is not a live integration. Runtime AI, Meta, Google Business Profile, external SEO/social execution, publishing, and visibility monitoring remain inactive pending authorized access and any separately approved incremental spend.
+- Real Team provisioning is blocked external authority until a supported server environment has a Supabase service-role credential. The approved Team email is supplied at execution time from environment and must be accepted by the protected database allowlist; never hardcode it into the provisioning command or expose the key to a client/CI log.
+- No Momo owner business truth, contacts, sensitive dietary/halal claim, media rights, platform access, or result metric may be invented, inferred as confirmed, or seeded to satisfy readiness.
+- Final Momo readiness passes only at 100% when every required dimension has evidence and no blocker. Missing identities, owner truth, rights, provider authorization, authenticated/browser evidence, monitoring, or recovery evidence must keep the gate blocked.
+- The deployed baseline remains PR #135 / Sites version 4 until the exact seven-system source is reviewed, merged, migrated, checkpointed, and verified. Candidate source must not be described as deployed or connected.
+
 ## 2026-07-12 — Sites-only deployment lock
 
 - Faraz retired Vercel. ChatGPT Sites is the sole Veroxa deployment surface.

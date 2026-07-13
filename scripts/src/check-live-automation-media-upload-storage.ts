@@ -71,8 +71,9 @@ if (!/restaurants\/\$\{restaurantId\}\/uploads\/\$\{yyyy\}\/\$\{mm\}\/\$\{id\}\.
 if (/file\.name.*storagePath|storagePath.*file\.name/.test(all)) failures.push("Raw filenames must not be used as storage keys.");
 for (const marker of ["image/jpeg", "video/mp4", "maxImageBytes", "maxVideoBytes", "maxBatchCount"]) if (!validation.includes(marker)) failures.push(`Validation missing ${marker}.`);
 if (!/status:\s*"uploaded"/.test(service) || /status:\s*"(approved|posted|published|ready_to_use)"/.test(service)) failures.push("Uploaded media must default to uploaded only.");
-for (const forbidden of ["VITE_SUPABASE_SERVICE_ROLE_KEY", "SERVICE_ROLE", "googleapis", "openai"]) if (all.includes(forbidden)) failures.push(`Forbidden PR #102 marker found: ${forbidden}`);
-const runtime = [clientMedia, uploadPanel, validation, paths, service].join("\n");
+const clientRuntime = [clientMedia, uploadPanel, validation, paths, service].join("\n");
+for (const forbidden of ["VITE_SUPABASE_SERVICE_ROLE_KEY", "SERVICE_ROLE", "googleapis", "openai"]) if (clientRuntime.includes(forbidden)) failures.push(`Forbidden PR #102 client-runtime marker found: ${forbidden}`);
+const runtime = clientRuntime;
 for (const forbidden of ["cron", "webhook"]) if (runtime.includes(forbidden)) failures.push(`Forbidden PR #102 runtime marker found: ${forbidden}`);
 if (!/return null/.test(uploadPanel)) failures.push("Placeholder/unsafe mode must not show upload controls.");
 if (!/Momo owner walkthrough remains blocked/i.test(docs)) failures.push("Docs must keep Momo walkthrough blocked.");
