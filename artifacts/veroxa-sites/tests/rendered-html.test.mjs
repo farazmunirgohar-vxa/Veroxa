@@ -199,11 +199,12 @@ test("Momo readiness evidence remains in the protected server bundle", async () 
 });
 
 test("audit UI keeps contact, draft-isolation, mutation, and mobile-navigation guardrails", async () => {
-  const [page, center, data, protectedRoute] = await Promise.all([
+  const [page, center, data, protectedRoute, authCallback] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/audit-center.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/veroxa-supabase.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/[...slug]/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/auth/callback/route.ts", import.meta.url), "utf8"),
   ]);
 
   assert.match(page, /!contactEmail && !contactPhone/, "Public intake must require email or phone");
@@ -217,6 +218,11 @@ test("audit UI keeps contact, draft-isolation, mutation, and mobile-navigation g
   assert.match(data, /error\.status === 429/, "Magic-link requests must classify HTTP rate limits");
   assert.match(data, /error\.code === "over_email_send_rate_limit"/, "Magic-link requests must preserve Supabase email-limit meaning");
   assert.match(data, /throw new Error\("magic_link_rate_limited"\)/, "Magic-link requests must return a controlled rate-limit failure");
+  assert.match(data, /VEROXA_PRODUCTION_ORIGIN = "https:\/\/veroxasystems\.com"/, "Production magic links must use the canonical Veroxa origin");
+  assert.match(data, /emailRedirectTo: `\$\{getAuthCallbackOrigin\(\)\}\/auth\/callback`/, "Magic links must use one exact production callback URL");
+  assert.match(data, /veroxa_auth_return_to/, "Magic-link return paths must be preserved outside the callback URL allowlist");
+  assert.match(authCallback, /cookieStore\.get\(AUTH_RETURN_COOKIE\)/, "Auth callback must recover the validated return path from its short-lived cookie");
+  assert.match(authCallback, /maxAge: 0/, "Auth callback must clear its short-lived return-path cookie");
   assert.match(page, /Too many secure emails were requested during setup/, "Login must explain a temporary email limit without exposing account existence");
   assert.doesNotMatch(page, /momo-readiness-tracker\.json/, "The public client entry must not bundle the full Team readiness record");
   assert.match(protectedRoute, /if \(access\.role === "team"\)[\s\S]*?await import\("\.\.\/momo-readiness-tracker\.json"\)/, "Only a server-verified Team route may load the readiness record");
