@@ -214,6 +214,10 @@ test("audit UI keeps contact, draft-isolation, mutation, and mobile-navigation g
   assert.match(page, /signOutBusy \? "Signing out" : "Sign out"/, "Mobile Team navigation must expose sign out");
   assert.match(page, /const handleSignOut = async/, "Sign out controls must share an error-aware handler");
   assert.match(page, /You are still signed in/, "Failed sign out must preserve and explain the signed-in state");
+  assert.match(data, /error\.status === 429/, "Magic-link requests must classify HTTP rate limits");
+  assert.match(data, /error\.code === "over_email_send_rate_limit"/, "Magic-link requests must preserve Supabase email-limit meaning");
+  assert.match(data, /throw new Error\("magic_link_rate_limited"\)/, "Magic-link requests must return a controlled rate-limit failure");
+  assert.match(page, /Too many secure emails were requested during setup/, "Login must explain a temporary email limit without exposing account existence");
   assert.doesNotMatch(page, /momo-readiness-tracker\.json/, "The public client entry must not bundle the full Team readiness record");
   assert.match(protectedRoute, /if \(access\.role === "team"\)[\s\S]*?await import\("\.\.\/momo-readiness-tracker\.json"\)/, "Only a server-verified Team route may load the readiness record");
   assert.ok(protectedRoute.indexOf("getServerVeroxaAccess()") < protectedRoute.indexOf("momo-readiness-tracker.json"), "Server access verification must precede readiness loading");
