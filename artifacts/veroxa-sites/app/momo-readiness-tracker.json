@@ -41,13 +41,16 @@
         "PR #138 adds an idempotent server-only Admin provisioning command and a bounded authenticated Team/Momo Auth/RLS smoke harness.",
         "Faraz's approved Gmail Team identity is confirmed, has signed in, and has an active Team profile plus active Momo membership without exposing a privileged key.",
         "The mistaken secondary identity has disabled portal profile and Momo membership access.",
-        "A reviewed route-scoped runtime-config repair passes the Sites no-build-time-env production build and positive/negative rendered login regression tests."
+        "The route-scoped runtime-config repair is live and passes the Sites no-build-time-env production build plus positive/negative rendered login regression tests.",
+        "Production Auth logs prove the current send failure is Supabase's temporary built-in email limit; the request was rejected before protected-route or RLS evaluation.",
+        "The login now preserves a controlled rate-limit state so temporary provider throttling is explained without disclosing whether an account exists."
       ],
       "blockers": [
-        "The Sites browser runtime-config repair is not live until its GitHub change is merged and explicitly checkpoint-deployed.",
+        "Supabase Auth still falls back to http://localhost:3000 because the production Site URL and callback redirect allowlist are not configured in the hosted Auth settings.",
+        "The built-in Supabase mail sender's two-email hourly allowance was consumed by the two identity-confirmation messages; custom SMTP remains deferred with no new spend approved.",
         "Authenticated Team/Momo browser and RLS smoke testing is incomplete."
       ],
-      "nextAction": "Deploy the reviewed Sites login repair and complete authenticated Team/Momo protected-route authorization tests."
+      "nextAction": "Set the hosted Supabase Auth Site URL and exact production callback redirect, request one Gmail link after the temporary mail allowance replenishes, and complete the authenticated Team/Momo protected-route authorization tests."
     },
     "business_truth_and_onboarding": {
       "label": "Business truth and onboarding",
