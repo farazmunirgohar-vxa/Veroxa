@@ -20,25 +20,23 @@ const checkpoint = JSON.parse(readFileSync(checkpointPath, "utf8")) as {
     sitesVersion: number;
     customDomainsVerified: boolean;
   };
-  continuityRelease: {
+  auditAndTeamRelease: {
+    releaseState: string;
     pullRequest: number;
-    releaseKind: string;
-    requiredFinalSitesVersion: number;
-    deployableSitesSourceChanged: boolean;
-    operationalBehaviorChanged: boolean;
-    databaseSourceChanged: boolean;
-    databaseSchemaChanged: boolean;
-    migrationContentChanged: boolean;
-    migrationCountChanged: boolean;
-    migrationLedgerReconciled: boolean;
-    databaseSourceChangeReason: string;
-    reconciledMigrationVersion: string;
-    reconciledMigrationSha256: string;
-    selfCommitEmbedded: boolean;
-    sourceIdentityAuthority: string;
-    deploymentIdentityAuthority: string;
-    fingerprintAuthority: string;
-    completionRule: string;
+    reviewedHead: string;
+    mergedOperationalCommit: string;
+    sitesCheckoutSourceCommit: string;
+    sitesVersion: number;
+    productionMigrations: number;
+    databaseVerified: boolean;
+    customDomainsVerified: boolean;
+    auditV2MigrationVersion: string;
+    auditV2MigrationSha256: string;
+    auditScoreAndPlanLive: boolean;
+    simplifiedMomoTeamIALive: boolean;
+    pendingProfileRequiresExplicitConsent: boolean;
+    createsOperationalClient: boolean;
+    newIncrementalSpendApproved: boolean;
   };
   runtimeVerification: {
     teamIdentityProvisioned: boolean;
@@ -62,12 +60,14 @@ const checkpoint = JSON.parse(readFileSync(checkpointPath, "utf8")) as {
 };
 
 const expectedRelease = {
-  pullRequest: 143,
-  reviewedHead: "009276dbbf2639dc1eb5296bf62906f9f8ac45f1",
-  mergedOperationalCommit: "49a5250d6ce7bd8d78f19e415641563e2260ace8",
-  sitesCheckoutSourceCommit: "69871c51f8e80d1802539a6bca52e3ce5b4ff71c",
-  sitesVersion: 9,
-  productionMigrations: 9,
+  pullRequest: 145,
+  reviewedHead: "b007de99eb6c927f6d7ede56d7d4fffe8cbc0f0d",
+  mergedOperationalCommit: "9aa74631e393bc0303c820cc7671f818d617778c",
+  sitesCheckoutSourceCommit: "4bef697e230791403211cb9c60f769ebcb4f39c7",
+  sitesVersion: 11,
+  productionMigrations: 10,
+  auditV2MigrationVersion: "20260713212046",
+  auditV2MigrationSha256: "f4bfff7ac94ade68a2c4f761c5627dbcfe82d5800a0a8a46ce42b13e5b930693",
 };
 
 function groupHash(files: string[]): string {
@@ -80,11 +80,11 @@ function groupHash(files: string[]): string {
   return hash.digest("hex");
 }
 
-if (checkpoint.schemaVersion !== 2 || checkpoint.status !== "production_continuity") {
+if (checkpoint.schemaVersion !== 3 || checkpoint.status !== "production_verified") {
   throw new Error("RR checkpoint schema/status is invalid");
 }
-if (checkpoint.checkpoint !== "momo-zero-cost-operating-rehearsal-v1-production-continuity") {
-  throw new Error("RR checkpoint must record the PR #143 production foundation and PR #144 continuity target");
+if (checkpoint.checkpoint !== "momo-team-audit-v2-pr145-production-verified") {
+  throw new Error("RR checkpoint must record the verified PR #145 / Supabase 10 / Sites version 11 release");
 }
 const release = checkpoint.deployedOperationalRelease;
 if (
@@ -99,31 +99,28 @@ if (
   !release.sitesProductionVerified ||
   !release.customDomainsVerified
 ) {
-  throw new Error("RR checkpoint source does not match the verified PR #143 / Sites version 9 / nine-migration operational foundation");
+  throw new Error("RR checkpoint source does not match the verified PR #145 / Sites version 11 / ten-migration release");
 }
-const continuity = checkpoint.continuityRelease;
+const auditAndTeam = checkpoint.auditAndTeamRelease;
 if (
-  continuity.pullRequest !== 144 ||
-  continuity.releaseKind !== "repository_and_sites_evidence_continuity" ||
-  continuity.requiredFinalSitesVersion !== 10 ||
-  !continuity.deployableSitesSourceChanged ||
-  continuity.operationalBehaviorChanged ||
-  !continuity.databaseSourceChanged ||
-  continuity.databaseSchemaChanged ||
-  continuity.migrationContentChanged ||
-  continuity.migrationCountChanged ||
-  !continuity.migrationLedgerReconciled ||
-  continuity.databaseSourceChangeReason !== "remote_migration_version_filename_reconciliation_only" ||
-  continuity.reconciledMigrationVersion !== "20260713191147" ||
-  continuity.reconciledMigrationSha256 !== "07cdb0a41b3d81e23e2c9432b139ae219c2b4671fed7cd18f761d4c4d6a79f2a" ||
-  continuity.selfCommitEmbedded ||
-  !continuity.sourceIdentityAuthority.includes("GitHub PR #144 metadata") ||
-  !continuity.deploymentIdentityAuthority.includes("Sites version 10 checkpoint metadata") ||
-  continuity.fingerprintAuthority !== "boundaryGroups" ||
-  !continuity.completionRule.includes("only after") ||
-  /\b[0-9a-f]{40}\b/i.test(JSON.stringify(continuity))
+  auditAndTeam.releaseState !== "merged_applied_published_verified" ||
+  auditAndTeam.pullRequest !== expectedRelease.pullRequest ||
+  auditAndTeam.reviewedHead !== expectedRelease.reviewedHead ||
+  auditAndTeam.mergedOperationalCommit !== expectedRelease.mergedOperationalCommit ||
+  auditAndTeam.sitesCheckoutSourceCommit !== expectedRelease.sitesCheckoutSourceCommit ||
+  auditAndTeam.sitesVersion !== expectedRelease.sitesVersion ||
+  auditAndTeam.productionMigrations !== expectedRelease.productionMigrations ||
+  !auditAndTeam.databaseVerified ||
+  !auditAndTeam.customDomainsVerified ||
+  auditAndTeam.auditV2MigrationVersion !== expectedRelease.auditV2MigrationVersion ||
+  auditAndTeam.auditV2MigrationSha256 !== expectedRelease.auditV2MigrationSha256 ||
+  !auditAndTeam.auditScoreAndPlanLive ||
+  !auditAndTeam.simplifiedMomoTeamIALive ||
+  !auditAndTeam.pendingProfileRequiresExplicitConsent ||
+  auditAndTeam.createsOperationalClient ||
+  auditAndTeam.newIncrementalSpendApproved
 ) {
-  throw new Error("RR continuity must require external PR #144 / Sites version 10 identity and filename-only migration-ledger reconciliation without embedding a future commit");
+  throw new Error("RR checkpoint Audit V2/Team release evidence is incomplete or overstates activation/spend authority");
 }
 if (
   !checkpoint.runtimeVerification.teamIdentityProvisioned ||
@@ -143,7 +140,7 @@ if (
 if (
   checkpoint.scope.operationalRestaurant !== "Momo's House San Antonio" ||
   checkpoint.scope.otherRestaurantCapability !==
-    "Restaurant Audit Center plus explicit-consent pending profile only" ||
+    "Restaurant Audit Center + explicit-consent non-operational pending profile only" ||
   checkpoint.scope.automaticProspectConversion !== false
 ) {
   throw new Error("RR checkpoint drifted from the locked Momo-only operating scope");
@@ -181,12 +178,9 @@ const releaseDocuments = [
   "artifacts/veroxa/docs/VEROXA_CURRENT_MILESTONE.md",
   "artifacts/veroxa/docs/CURRENT_BUILD_STATUS.md",
   "artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md",
-  "artifacts/veroxa/docs/CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md",
   "artifacts/veroxa/docs/RR_CHECKPOINT.md",
   "artifacts/veroxa/docs/README_CURRENT_STATE.md",
-  "artifacts/veroxa/docs/MOMO_100_READINESS_SEVEN_SYSTEM_CONTRACT.md",
   "artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md",
-  "artifacts/veroxa/docs/CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md",
 ].map((file) => {
   const text = readFileSync(resolve(root, file), "utf8");
   const historicalBoundary = text.search(/\n## (?:Historical|2026-06-)/);
@@ -199,6 +193,7 @@ const releaseDocuments = [
 const readinessBaseline = JSON.parse(
   readFileSync(resolve(root, "artifacts/veroxa-sites/app/momo-readiness-tracker.json"), "utf8"),
 ) as {
+  schemaVersion: number;
   recordKind: string;
   operationalAuthority: string;
   lastVerifiedOperationalRelease: {
@@ -222,39 +217,50 @@ const readinessBaseline = JSON.parse(
     externalPublishingVerified: boolean;
     activationExecuted: boolean;
   };
-  continuityRelease: {
+  auditAndTeamRelease: {
+    releaseState: string;
     pullRequest: number;
-    requiredFinalSitesVersion: number;
-    deployableSitesSourceChanged: boolean;
-    operationalBehaviorChanged: boolean;
-    databaseSourceChanged: boolean;
-    databaseSchemaChanged: boolean;
-    migrationContentChanged: boolean;
-    migrationCountChanged: boolean;
-    migrationLedgerReconciled: boolean;
-    databaseSourceChangeReason: string;
-    reconciledMigrationVersion: string;
-    reconciledMigrationSha256: string;
-    selfCommitEmbedded: boolean;
-    sourceIdentityAuthority: string;
-    deploymentIdentityAuthority: string;
+    reviewedHead: string;
+    mergedOperationalCommit: string;
+    sitesCheckoutSourceCommit: string;
+    sitesVersion: number;
+    productionMigrations: number;
+    databaseVerified: boolean;
+    customDomainsVerified: boolean;
+    auditV2MigrationVersion: string;
+    auditV2MigrationSha256: string;
+    auditScoreAndPlanLive: boolean;
+    simplifiedMomoTeamIALive: boolean;
+    pendingProfileRequiresExplicitConsent: boolean;
+    createsOperationalClient: boolean;
+    newIncrementalSpendApproved: boolean;
   };
+  otherRestaurants: {
+    allowedCapability: string;
+    automaticOperationalConversion: boolean;
+    readinessTrackingAllowed: boolean;
+  };
+  costPolicy: { newIncrementalSpendApproved: boolean };
 };
 
 for (const { file, currentText } of releaseDocuments) {
   for (const marker of [
-    "PR #143",
+    "PR #145",
     expectedRelease.reviewedHead,
     expectedRelease.mergedOperationalCommit,
     expectedRelease.sitesCheckoutSourceCommit,
-    "Sites version 9",
-    "PR #144",
-    "Sites version 10",
+    "Sites version 11",
+    expectedRelease.auditV2MigrationVersion,
+    expectedRelease.auditV2MigrationSha256,
   ]) {
     if (!currentText.includes(marker)) throw new Error(`${file} is missing current verified release marker: ${marker}`);
   }
-  if (!/(?:not yet deployed|not already deployed|required post-merge target)/i.test(currentText)) {
-    throw new Error(`${file} must not present the PR #144 / Sites version 10 continuity target as pre-merge production truth`);
+  const finalRelease = currentText.indexOf("PR #145");
+  const staleRelease = [currentText.indexOf("PR #143"), currentText.indexOf("PR #144")]
+    .filter((index) => index >= 0)
+    .sort((left, right) => left - right)[0];
+  if (finalRelease < 0 || (staleRelease !== undefined && finalRelease > staleRelease)) {
+    throw new Error(`${file} must lead with PR #145 / Supabase 10 / Sites version 11 before superseded release text`);
   }
 }
 const milestoneCurrent = releaseDocuments.find(({ file }) => file.endsWith("VEROXA_CURRENT_MILESTONE.md"))?.currentText ?? "";
@@ -267,7 +273,7 @@ for (const marker of [
   "6. **Meta and Google preflight:**",
   "7. **Atomic final rehearsal:**",
 ]) {
-    if (!milestoneCurrent.includes(marker)) throw new Error(`Exact deployed PR #143 seven-step sequence is missing: ${marker}`);
+    if (!milestoneCurrent.includes(marker)) throw new Error(`Exact deployed no-new-spend seven-step sequence is missing: ${marker}`);
 }
 const currentReleaseText = releaseDocuments.map(({ currentText }) => currentText).join("\n");
 for (const stale of [
@@ -279,8 +285,9 @@ for (const stale of [
 }
 const readinessOperational = readinessBaseline.lastVerifiedOperationalRelease;
 const readinessDeployed = readinessBaseline.deployedNoCostFoundation;
-const readinessContinuity = readinessBaseline.continuityRelease;
+const readinessAuditAndTeam = readinessBaseline.auditAndTeamRelease;
 if (
+  readinessBaseline.schemaVersion !== 3 ||
   readinessBaseline.recordKind !== "production_readiness_checkpoint" ||
   !readinessBaseline.operationalAuthority.includes("Supabase") ||
   readinessOperational.pullRequest !== expectedRelease.pullRequest ||
@@ -300,22 +307,29 @@ if (
   readinessDeployed.externalProvidersConnected ||
   readinessDeployed.externalPublishingVerified ||
   readinessDeployed.activationExecuted ||
-  readinessContinuity.pullRequest !== 144 ||
-  readinessContinuity.requiredFinalSitesVersion !== 10 ||
-  !readinessContinuity.deployableSitesSourceChanged ||
-  readinessContinuity.operationalBehaviorChanged ||
-  !readinessContinuity.databaseSourceChanged ||
-  readinessContinuity.databaseSchemaChanged ||
-  readinessContinuity.migrationContentChanged ||
-  readinessContinuity.migrationCountChanged ||
-  !readinessContinuity.migrationLedgerReconciled ||
-  readinessContinuity.databaseSourceChangeReason !== "remote_migration_version_filename_reconciliation_only" ||
-  readinessContinuity.reconciledMigrationVersion !== "20260713191147" ||
-  readinessContinuity.reconciledMigrationSha256 !== "07cdb0a41b3d81e23e2c9432b139ae219c2b4671fed7cd18f761d4c4d6a79f2a" ||
-  readinessContinuity.selfCommitEmbedded ||
-  /\b[0-9a-f]{40}\b/i.test(JSON.stringify(readinessContinuity))
+  readinessAuditAndTeam.releaseState !== "merged_applied_published_verified" ||
+  readinessAuditAndTeam.pullRequest !== expectedRelease.pullRequest ||
+  readinessAuditAndTeam.reviewedHead !== expectedRelease.reviewedHead ||
+  readinessAuditAndTeam.mergedOperationalCommit !== expectedRelease.mergedOperationalCommit ||
+  readinessAuditAndTeam.sitesCheckoutSourceCommit !== expectedRelease.sitesCheckoutSourceCommit ||
+  readinessAuditAndTeam.sitesVersion !== expectedRelease.sitesVersion ||
+  readinessAuditAndTeam.productionMigrations !== expectedRelease.productionMigrations ||
+  !readinessAuditAndTeam.databaseVerified ||
+  !readinessAuditAndTeam.customDomainsVerified ||
+  readinessAuditAndTeam.auditV2MigrationVersion !== expectedRelease.auditV2MigrationVersion ||
+  readinessAuditAndTeam.auditV2MigrationSha256 !== expectedRelease.auditV2MigrationSha256 ||
+  !readinessAuditAndTeam.auditScoreAndPlanLive ||
+  !readinessAuditAndTeam.simplifiedMomoTeamIALive ||
+  !readinessAuditAndTeam.pendingProfileRequiresExplicitConsent ||
+  readinessAuditAndTeam.createsOperationalClient ||
+  readinessAuditAndTeam.newIncrementalSpendApproved ||
+  readinessBaseline.otherRestaurants.allowedCapability !==
+    "Restaurant Audit Center + explicit-consent non-operational pending profile only" ||
+  readinessBaseline.otherRestaurants.automaticOperationalConversion ||
+  readinessBaseline.otherRestaurants.readinessTrackingAllowed ||
+  readinessBaseline.costPolicy.newIncrementalSpendApproved
 ) {
-  throw new Error("Momo readiness evidence is not reconciled to the PR #143 operational foundation and PR #144 / Sites version 10 continuity target");
+  throw new Error("Momo readiness evidence is not reconciled to the verified PR #145 Audit V2/Team release and explicit-consent/no-spend boundary");
 }
 if (
   !auth.includes("shouldCreateUser: false") ||

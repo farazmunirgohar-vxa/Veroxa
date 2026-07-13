@@ -38,6 +38,21 @@ const agents = read("AGENTS.md");
 const milestone = read("artifacts/veroxa/docs/VEROXA_CURRENT_MILESTONE.md");
 const status = read("artifacts/veroxa/docs/CURRENT_BUILD_STATUS.md");
 const currentState = read("artifacts/veroxa/docs/README_CURRENT_STATE.md");
+const readinessTracker = JSON.parse(
+  read("artifacts/veroxa-sites/app/momo-readiness-tracker.json"),
+) as {
+  schemaVersion: number;
+  lastVerifiedOperationalRelease: {
+    pullRequest: number;
+    reviewedHead: string;
+    mergedOperationalCommit: string;
+    sitesCheckoutSourceCommit: string;
+    sitesVersion: number;
+    productionMigrations: number;
+    databaseVerified: boolean;
+    customDomainsVerified: boolean;
+  };
+};
 const preBuild = read("artifacts/veroxa/docs/PRE_BUILD_STABILITY_CHECKLIST.md");
 const rrCheckpoint = read("artifacts/veroxa/docs/RR_CHECKPOINT.md");
 const before = (source: string, marker: string) => source.split(marker)[0];
@@ -76,16 +91,28 @@ if (!existsSync(resolve(root, "artifacts/veroxa-sites/.openai/hosting.json"))) {
   failures.push("Sites hosting identity is missing.");
 }
 if (
-  !currentState.includes("PR #143") ||
-  !currentState.includes("009276dbbf2639dc1eb5296bf62906f9f8ac45f1") ||
-  !currentState.includes("49a5250d6ce7bd8d78f19e415641563e2260ace8") ||
-  !currentState.includes("69871c51f8e80d1802539a6bca52e3ce5b4ff71c") ||
-  !currentState.includes("Sites version 9") ||
-  !currentState.includes("PR #144") ||
-  !currentState.includes("Sites version 10") ||
-  !/(?:not yet deployed|not already deployed|required post-merge target)/i.test(currentState)
+  !currentState.includes("PR #145") ||
+  !currentState.includes("b007de99eb6c927f6d7ede56d7d4fffe8cbc0f0d") ||
+  !currentState.includes("9aa74631e393bc0303c820cc7671f818d617778c") ||
+  !currentState.includes("4bef697e230791403211cb9c60f769ebcb4f39c7") ||
+  !currentState.includes("Sites version 11") ||
+  !currentState.includes("all 10 production migrations applied and verified")
 ) {
-  failures.push("Current-state index must distinguish the verified PR #143 / Sites version 9 operational foundation from the not-yet-deployed PR #144 / Sites version 10 continuity target.");
+  failures.push("Current-state index must record the verified PR #145 / Sites version 11 / ten-migration operational release.");
+}
+const verifiedRelease = readinessTracker.lastVerifiedOperationalRelease;
+if (
+  readinessTracker.schemaVersion !== 3 ||
+  verifiedRelease.pullRequest !== 145 ||
+  verifiedRelease.reviewedHead !== "b007de99eb6c927f6d7ede56d7d4fffe8cbc0f0d" ||
+  verifiedRelease.mergedOperationalCommit !== "9aa74631e393bc0303c820cc7671f818d617778c" ||
+  verifiedRelease.sitesCheckoutSourceCommit !== "4bef697e230791403211cb9c60f769ebcb4f39c7" ||
+  verifiedRelease.sitesVersion !== 11 ||
+  verifiedRelease.productionMigrations !== 10 ||
+  !verifiedRelease.databaseVerified ||
+  !verifiedRelease.customDomainsVerified
+) {
+  failures.push("Sites-bundled readiness evidence must match the verified PR #145 / Sites version 11 / ten-migration release before the next checkpoint.");
 }
 if (!preBuild.includes("GitHub `main` plus verified Sites checkpoints are the recovery path")) {
   failures.push("Pre-build checklist must use GitHub main plus verified Sites checkpoints for recovery.");

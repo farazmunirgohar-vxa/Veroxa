@@ -2,13 +2,15 @@
 
 Status: highest-level current source-of-truth index. Read this file before relying on older Veroxa documents.
 
-## 2026-07-13 — Verified baseline and unshipped release-ready source
+## 2026-07-13 — PR #145, Supabase 10, and Sites v11 verified production state
 
-- Verified reusable baseline: PR #144 is merged at 01d11b4195809f60bcaf8bb7f21e004418f7647c; Sites version 10 is verified from checkout source 064980c52ded14b8c80724859f68c4cb30ffc86c; and all nine production migrations are applied and verified.
-- Current release-ready candidate source adds Restaurant Audit Center V2 and the simplified Momo Team information architecture. Audit V2 restores a deterministic score out of 100, room-for-improvement findings, a 30/60/90-day plan, and save-or-discard preview control. Team stays organized under the Momo's House San Antonio folder, with the Work Board and focused content/approval views scoped to Momo.
-- The candidate also adds an explicit-consent conversion from a reviewed audit to a pending restaurant profile. Consent creates only a non-operational pending profile; it does not create a client identity, membership, workspace, onboarding activation, publishing authority, or paid service.
-- Release boundary: this candidate source is not yet merged to GitHub main, its new migration is not applied to production, and it is not deployed to Sites. Do not describe Audit V2, the pending-profile conversion, or the new Team IA as live until each separate source, migration, and deployment gate is verified.
-- Momo remains the only operational restaurant. This work adds no new spend; runtime or paid AI, Meta/Google access, external SEO/social execution, publishing, outbound contact, owner/client contact, and activation remain blocked pending specific authorization, verified access, and any separately approved cost. Older PR #143, PR #144-pending, Sites version 9, or pre-version-10 current-state wording below is historical and superseded by this section.
+- Verified source: PR #145 passed review at exact head b007de99eb6c927f6d7ede56d7d4fffe8cbc0f0d and is merged to GitHub main at 9aa74631e393bc0303c820cc7671f818d617778c.
+- Verified data: Supabase has all 10 production migrations applied and verified. Restaurant Audit V2 is remote migration version 20260713212046 with SQL SHA-256 f4bfff7ac94ade68a2c4f761c5627dbcfe82d5800a0a8a46ce42b13e5b930693.
+- Verified hosting: Sites version 11 succeeded in production from checkout source 4bef697e230791403211cb9c60f769ebcb4f39c7. Both custom domains are active with healthy SSL.
+- Live product state: Restaurant Audit Center V2 and the simplified Momo Team information architecture are live. Audit V2 provides the deterministic score out of 100, room-for-improvement findings, 30/60/90-day plan, and save-or-discard preview flow. Team remains organized under the Momo's House San Antonio folder with a Momo-only Work Board and focused content/approval views.
+- Conversion boundary: a reviewed audit may create only a pending, non-operational restaurant profile after exact explicit consent. It never auto-creates a client identity, membership, active workspace, onboarding activation, publishing authority, paid service, or charge.
+- Operating boundary: Momo's House San Antonio remains the only operational restaurant and remains blocked until its owner-confirmed truth, permissioned media, provider authority, and remaining readiness evidence are complete. No runtime or paid AI, Meta/Google connection, external SEO/social execution, publishing, outbound contact, owner/client contact, or activation was authorized by this release.
+- Supersession: older current-looking PR #143, PR #144-pending, Sites version 9/10, nine-migration, unshipped-candidate, or Audit V1 wording below is historical and superseded by this verified section.
 
 ## 2026-07-13 — PR #143 operational truth and PR #144 continuity target
 
