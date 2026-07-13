@@ -13,7 +13,7 @@ Status: highest-level current source-of-truth index. Read this file before relyi
 - Other restaurant audits must not automatically create client accounts, operations workspaces, onboarding, media/content workflows, Team operations, reports, publishing access, or active-client conversion.
 - The active milestone is Momo's House San Antonio 100% readiness with the maximum safe level of AI, automation, social handling, SEO, reporting, monitoring, and human approval control.
 - Every build must update the milestone, current build status, any changed locked memory, runtime/deployment truth, and Faraz's plain-language handoff before it is considered complete.
-- GitHub PR #135 is merged at `184821f1b94d3801d23742c5bb7d9571e9be27e6`; its exact reviewed head passed all four GitHub workflows and the focused final delta RR. All six production migrations are verified, Sites version 4 is deployed, and both custom domains are active with active SSL. The reusable RR checkpoint is the starting point for future reviews.
+- GitHub PR #138 is merged at `48630c62b9429238ab39b5b919d7689d189352f8`; its exact reviewed head passed all four GitHub workflows, clean reset, pgTAP, lint, and focused final delta RR. All eight production migrations are verified, Sites version 5 is deployed, and both custom domains are active with active SSL. The reusable RR checkpoint is the starting point for future reviews.
 - Sites sign-in is magic-link-only. Public user creation and password sign-in/recovery are disabled; supported Admin identity provisioning and authenticated smoke tests remain activation gates.
 
 ## 2026-07-12 — ChatGPT-managed build, GitHub, Sites, and RR direction
@@ -127,7 +127,7 @@ Status: highest-level active contributor guide and current source-of-truth index
 - Public Sites marketing/audit intake is anonymous; Client/Team routes require signed sessions, active profile/membership, server guards, and RLS.
 - Client routes remain safe-empty until verified Momo records exist. Do not revive fixture activity, counts, media, reports, or completion claims in authenticated client views.
 - Runtime AI, external platform connections, social/SEO execution, publishing, outbound contact, and Momo owner walkthrough remain inactive.
-- Current build: Momo 100% Readiness Seven-System V1 release candidate. Real Team provisioning is blocked external authority; runtime AI, Meta, Google, publishing, and monitoring are inactive pending authorized access.
+- Current build: Momo 100% Readiness Seven-System V1 deployed foundation. Real Team provisioning is blocked external authority; runtime AI, Meta, Google, publishing, and monitoring are inactive pending authorized access.
 
 ## 2026-06-19 — Actual Live Automation V1 PR sequence correction
 
@@ -147,7 +147,7 @@ Status: highest-level active contributor guide and current source-of-truth index
 
 ## Current source-of-truth docs
 - `momo-readiness-tracker.json` — evidence-backed readiness tracking for Momo's House San Antonio only; every required dimension must be verified before overall readiness can be verified, and other restaurants remain Audit Center-only.
-- `MOMO_100_READINESS_SEVEN_SYSTEM_CONTRACT.md` — current release-candidate source/runtime/activation contract for all seven requested Momo systems; no invented owner truth, no automatic Auth provisioning, no live provider claims, and a fail-closed 100% evidence gate.
+- `MOMO_100_READINESS_SEVEN_SYSTEM_CONTRACT.md` — current deployed-foundation source/runtime/activation contract for all seven requested Momo systems; no invented owner truth, no automatic Auth provisioning, no live provider claims, and a fail-closed 100% evidence gate.
 - `MOMO_RESTAURANT_INTELLIGENCE_OPERATING_BOARD.md` — PR #132 source of truth for `/team/momo/intelligence` as the internal Restaurant Intelligence operating board; organization only, no activation, no real auth, no credentials, no Momo contact, no publishing, no integrations, no AI generation, no fake data, and no database writes.
 - `MOMO_WORK_QUEUE_DAILY_OPERATING_BOARD.md` — PR #130 source of truth for `/team/momo/work` as the internal daily work board; organization only, no activation, no real auth, no credentials, no Momo contact, no publishing, no integrations, no AI generation, and no fake work items or counts.
 - `MOMO_WORKSPACE_DASHBOARD_OPERATING_SNAPSHOT.md` — PR #129 source of truth for `/team/momo` as the internal operating snapshot dashboard; no activation, no real auth, no credentials, no Momo contact, no publishing, no integrations, no AI generation, and no fake metrics or readiness.

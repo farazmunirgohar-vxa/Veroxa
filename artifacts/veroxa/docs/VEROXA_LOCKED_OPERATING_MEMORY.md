@@ -1,18 +1,18 @@
-## 2026-07-12 — Seven-system readiness source/runtime lock
+## 2026-07-13 — Seven-system readiness source/runtime lock
 
 - `MOMO_100_READINESS_SEVEN_SYSTEM_CONTRACT.md` is the current contract for the seven requested Momo systems and the final fail-closed readiness gate.
 - A schema, adapter, queue, or UI state is not a live integration. Runtime AI, Meta, Google Business Profile, external SEO/social execution, publishing, and visibility monitoring remain inactive pending authorized access and any separately approved incremental spend.
 - Real Team provisioning is blocked external authority until a supported server environment has a Supabase service-role credential. The approved Team email is supplied at execution time from environment and must be accepted by the protected database allowlist; never hardcode it into the provisioning command or expose the key to a client/CI log.
 - No Momo owner business truth, contacts, sensitive dietary/halal claim, media rights, platform access, or result metric may be invented, inferred as confirmed, or seeded to satisfy readiness.
 - Final Momo readiness passes only at 100% when every required dimension has evidence and no blocker. Missing identities, owner truth, rights, provider authorization, authenticated/browser evidence, monitoring, or recovery evidence must keep the gate blocked.
-- The deployed baseline remains PR #135 / Sites version 4 until the exact seven-system source is reviewed, merged, migrated, checkpointed, and verified. Candidate source must not be described as deployed or connected.
+- PR #138 is merged at `48630c62b9429238ab39b5b919d7689d189352f8`; all eight migrations are applied; and exact runtime source is deployed as verified Sites version 5. This verifies the provider-neutral foundation only—no disconnected provider may be described as connected and Momo remains blocked until every operational gate has evidence.
 
 ## 2026-07-12 — Sites-only deployment lock
 
 - Faraz retired Vercel. ChatGPT Sites is the sole Veroxa deployment surface.
 - Remove and keep removed `vercel.json` and root Vercel serverless handlers. Do not treat Vercel status as a merge, release, rollback, or readiness gate.
 - GitHub `main` remains canonical; verified Sites checkpoints are the hosted recovery path. Any older Vercel rollback language below is historical and superseded.
-- PR #135 is merged at `184821f1b94d3801d23742c5bb7d9571e9be27e6`, and its exact merged Sites source is deployed as verified Sites version 4. Both custom domains are active with active SSL and no reported domain error.
+- PR #138 is merged at `48630c62b9429238ab39b5b919d7689d189352f8`, and its exact runtime Sites source is deployed as verified version 5. Both custom domains are active with active SSL and no reported domain error.
 
 ## 2026-07-12 — Production foundation and Audit Center V1 lock
 
@@ -28,7 +28,7 @@
 - The release checkpoint is verified after the green merge, production Supabase application, Sites deployment, and live custom-domain checks. Start the next RR from that checkpoint rather than repeating unchanged release review.
 - Veroxa tracking has two mandatory lanes after every build: Veroxa delivery/readiness and Momo's House San Antonio operational readiness. `momo-readiness-tracker.json` is the machine-readable Momo lane and must record evidence, blockers, and next actions without inventing a percentage.
 - Momo readiness is verified only when every required dimension is verified and no blocker remains. A green build, migration, deployment, or individual foundation does not by itself make Momo ready.
-- The next build after this release is Momo Restaurant Intelligence + Onboarding V1. Runtime AI, Meta, Google, social, SEO execution, publishing, outbound contact, and owner walkthrough remain separately gated and inactive.
+- The next operational step is supported Team/client identity provisioning followed by real owner-confirmed Momo onboarding and media intake. Runtime AI, Meta, Google, social, SEO execution, publishing, outbound contact, and owner walkthrough remain separately gated and inactive.
 - After every build, update `VEROXA_CURRENT_MILESTONE.md`, `CURRENT_BUILD_STATUS.md`, this memory when durable truth changes, and Faraz's plain-language handoff.
 
 ## 2026-07-12 — Momo 100%-readiness milestone and Audit Center exception
