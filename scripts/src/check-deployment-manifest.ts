@@ -94,6 +94,7 @@ for (const excluded of [
   "dist",
   "node_modules",
   "outputs",
+  "tsconfig.tsbuildinfo",
   "work",
 ]) {
   must(

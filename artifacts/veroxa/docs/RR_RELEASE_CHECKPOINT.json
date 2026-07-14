@@ -193,7 +193,7 @@
         ".github/workflows/supabase-verify.yml",
         ".github/workflows/veroxa-verify.yml"
       ],
-      "sha256": "dbaf522ce4621a9dfb6ed15181e97c76f9b157343fef9f271a716f9acb2e295b"
+      "sha256": "05690fc38351514755aeca9b7017e521f34e4095fb657cbd5c0e7f72f53f35c9"
     },
     "product_scope": {
       "review": "full-on-change",

@@ -26,8 +26,8 @@
     "root": "artifacts/veroxa-sites",
     "mappingTarget": "Sites repository root",
     "hashAlgorithm": "veroxa-path-null-content-null-sha256-v1",
-    "fileCount": 56,
-    "treeSha256": "0a83b96dad5a1cf3ae0f1aa1fdc725c77220d03c7a63aa9a1b256926e38938a5",
+    "fileCount": 55,
+    "treeSha256": "4f0a4f82d774a63c231a294704ae177ddbbe13c665567db33bdebab815331799",
     "generatedPathExclusions": [
       ".git",
       ".next",
@@ -37,6 +37,7 @@
       "dist",
       "node_modules",
       "outputs",
+      "tsconfig.tsbuildinfo",
       "work"
     ]
   },
