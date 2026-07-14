@@ -28,32 +28,19 @@ const tracker = JSON.parse(trackerText) as {
     readinessDecision: string;
     reason: string;
   };
-  observedProductionState: {
-    canonicalGitHubMainCommit: string;
-    liveSitesVersion: number;
-    liveSitesCheckoutSourceCommit: string;
-    productionMigrations: number;
-    latestMigration: string;
-    latestMigrationSha256: string;
-    sourceParityVerified: boolean;
-    drift: string;
-  };
-  reconciliationCandidate: {
-    state: string;
-    manifest: string;
-    mergeCommit: null;
-    futureSitesVersion: null;
-    databaseCandidateApplied: boolean;
-    sitesCandidatePublished: boolean;
-    deploymentFrozen: boolean;
-    onlyAuthorizedDeployment: string;
+  releaseEvidenceBoundary: {
+    authority: string;
+    bundlesCurrentDeploymentIdentity: boolean;
+    reviewedManualDeploymentsOnly: boolean;
+    databaseChangesRequiredForThisReadinessRecord: boolean;
+    rule: string;
   };
   activationState: Record<string, boolean>;
   deployedNoCostFoundation: {
     releaseState: string;
     forwardMigrationApplied: boolean;
     forwardMigrationVerified: boolean;
-    canonicalSourceParityVerified: boolean;
+    sourceParityAuthority: string;
     momoClientIdentityProvisioned: boolean;
     ownerConfirmedBusinessTruthVerified: boolean;
     permissionedMediaVerified: boolean;
@@ -63,15 +50,8 @@ const tracker = JSON.parse(trackerText) as {
   };
   auditAndTeamRelease: {
     releaseState: string;
-    sitesCheckoutSourceCommit: string;
-    sitesVersion: number;
-    productionMigrations: number;
-    databaseVerified: boolean;
-    customDomainsVerified: boolean;
-    auditV3MigrationVersion: string;
-    auditV3MigrationSha256: string;
     auditV3PartialScoreAndPlanLive: boolean;
-    canonicalSourceParityVerified: boolean;
+    canonicalSourceParityClaimed: boolean;
     simplifiedMomoTeamIALive: boolean;
     pendingProfileRequiresExplicitConsent: boolean;
     createsOperationalClient: boolean;
@@ -101,15 +81,6 @@ const failures: string[] = [];
 const must = (condition: boolean, message: string) => {
   if (!condition) failures.push(message);
 };
-const expected = {
-  githubMain: "674e1a7c0d140c9b281029277baeb2e68962dac2",
-  sitesCommit: "dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805",
-  sitesVersion: 13,
-  productionMigrations: 11,
-  migration: "20260713222721_upgrade_restaurant_audit_engine_v3_partial_scoring.sql",
-  migrationVersion: "20260713222721",
-  migrationSha: "304eb98db628b09fa245fba156160b043c1ba9ba2f9aeb689086a6a18ad234b2",
-};
 const allowedStatuses = new Set([
   "not_started",
   "foundation_ready",
@@ -131,7 +102,7 @@ const requiredDimensions = [
   "activation_and_recovery",
 ];
 
-must(tracker.schemaVersion === 4, "Momo readiness tracker schema must be 4.");
+must(tracker.schemaVersion === 6, "Momo readiness tracker schema must be 6.");
 must(
   tracker.recordKind === "production_readiness_checkpoint" &&
     tracker.operationalAuthority.includes("Supabase"),
@@ -173,30 +144,16 @@ must(
   "Founding-pilot gate overstates authorization or treats paid automation as required.",
 );
 
-const observed = tracker.observedProductionState;
+const releaseEvidence = tracker.releaseEvidenceBoundary;
 must(
-  observed.canonicalGitHubMainCommit === expected.githubMain &&
-    observed.liveSitesVersion === expected.sitesVersion &&
-    observed.liveSitesCheckoutSourceCommit === expected.sitesCommit &&
-    observed.productionMigrations === expected.productionMigrations &&
-    observed.latestMigration === expected.migration &&
-    observed.latestMigrationSha256 === expected.migrationSha &&
-    !observed.sourceParityVerified &&
-    /ahead/i.test(observed.drift),
-  "Momo readiness tracker must preserve exact production drift evidence.",
-);
-const candidate = tracker.reconciliationCandidate;
-must(
-  candidate.state === "candidate_not_merged_not_deployed" &&
-    candidate.manifest === "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json" &&
-    candidate.mergeCommit === null &&
-    candidate.futureSitesVersion === null &&
-    !candidate.databaseCandidateApplied &&
-    !candidate.sitesCandidatePublished &&
-    candidate.deploymentFrozen &&
-    /all four workflows/i.test(candidate.onlyAuthorizedDeployment) &&
-    /zero unresolved review threads/i.test(candidate.onlyAuthorizedDeployment),
-  "Reconciliation candidate must remain frozen, unmerged, undeployed, and unpredicted.",
+  releaseEvidence.authority.includes("VEROXA_DEPLOYMENT_MANIFEST.json") &&
+    releaseEvidence.authority.includes("external GitHub, Sites, and Supabase") &&
+    !releaseEvidence.bundlesCurrentDeploymentIdentity &&
+    releaseEvidence.reviewedManualDeploymentsOnly &&
+    !releaseEvidence.databaseChangesRequiredForThisReadinessRecord &&
+    /never asserts its own current Sites version/i.test(releaseEvidence.rule) &&
+    !/165ff82ab46b0a0985605ffcfb6efa687982eca5|57ccb8d1cce596baf782b03525c80161c11af8f3|sitesCandidatePublished|futureSitesVersion/.test(trackerText),
+  "Deployable readiness evidence must remain stable and externalize exact deployment identity.",
 );
 for (const [name, value] of Object.entries(tracker.activationState)) {
   must(value === false, `Momo activation state must remain false: ${name}`);
@@ -204,10 +161,10 @@ for (const [name, value] of Object.entries(tracker.activationState)) {
 
 const deployed = tracker.deployedNoCostFoundation;
 must(
-  deployed.releaseState === "deployed_foundation_with_production_source_drift" &&
+  deployed.releaseState === "deployed_foundation_external_release_evidence" &&
     deployed.forwardMigrationApplied &&
     deployed.forwardMigrationVerified &&
-    !deployed.canonicalSourceParityVerified &&
+    deployed.sourceParityAuthority === "external_release_records" &&
     !deployed.momoClientIdentityProvisioned &&
     !deployed.ownerConfirmedBusinessTruthVerified &&
     !deployed.permissionedMediaVerified &&
@@ -218,16 +175,9 @@ must(
 );
 const release = tracker.auditAndTeamRelease;
 must(
-  release.releaseState === "live_ahead_of_canonical_source_reconciliation_required" &&
-    release.sitesCheckoutSourceCommit === expected.sitesCommit &&
-    release.sitesVersion === expected.sitesVersion &&
-    release.productionMigrations === expected.productionMigrations &&
-    release.databaseVerified &&
-    release.customDomainsVerified &&
-    release.auditV3MigrationVersion === expected.migrationVersion &&
-    release.auditV3MigrationSha256 === expected.migrationSha &&
+  release.releaseState === "audit_v3_foundation_external_release_evidence" &&
     release.auditV3PartialScoreAndPlanLive &&
-    !release.canonicalSourceParityVerified &&
+    !release.canonicalSourceParityClaimed &&
     release.simplifiedMomoTeamIALive &&
     release.pendingProfileRequiresExplicitConsent &&
     !release.createsOperationalClient &&
@@ -259,11 +209,11 @@ for (const key of requiredDimensions) {
   );
 }
 must(
-  tracker.dimensions.production_foundation.status === "in_progress" &&
-    tracker.dimensions.production_foundation.blockers.length > 0 &&
+  tracker.dimensions.production_foundation.status === "verified" &&
+    tracker.dimensions.production_foundation.blockers.length === 0 &&
     tracker.dimensions.team_identity_and_access.status === "verified" &&
     tracker.dimensions.activation_and_recovery.status === "blocked",
-  "Readiness dimensions must reflect source drift, verified Team access, and blocked activation.",
+  "Readiness dimensions must separate the verified platform foundation from blocked Momo activation.",
 );
 must(
   !requiredDimensions.every(

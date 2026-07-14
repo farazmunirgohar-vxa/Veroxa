@@ -2,7 +2,17 @@
 
 Status: Short index for Faraz, Codex, and future ChatGPT/Codex sessions.
 
-## 2026-07-14 — current production-reconciliation state
+## 2026-07-14 — current verified release and cleanup state
+
+- Start with `VEROXA_CURRENT_MILESTONE.md`, `ACTIVE_DOCS_INDEX.md`, `VEROXA_LOCKED_OPERATING_MEMORY.md`, and the machine release records.
+- PR #148 is the verified deployed application release at `165ff82ab46b0a0985605ffcfb6efa687982eca5`; Sites version 14 is live from Sites source `57ccb8d1cce596baf782b03525c80161c11af8f3`; Supabase has 13 applied migrations.
+- The verified Sites tree SHA-256 is `4f0a4f82d774a63c231a294704ae177ddbbe13c665567db33bdebab815331799`. The cleanup candidate is not merged and not published; after merge it requires an exact-source Sites checkpoint.
+- The cleanup candidate aligns migration 12/13 source filenames with applied Supabase versions without changing SQL bytes and archives legacy Vite from active development paths. Exact filename-ledger parity remains pending until that candidate merges.
+- Runtime AI, Momo/client contact and provisioning, owner truth, media rights, providers, publishing, billing, activation, and new spend remain disabled. Momo remains No-Go.
+- Retain the exact Vercel shutdown sentinel until the external Git integration is independently verified disconnected.
+- The next section is the historical pre-PR #148 checkpoint.
+
+## 2026-07-14 — current production-reconciliation state (historical pre-PR #148 checkpoint)
 
 - Start with `VEROXA_CURRENT_MILESTONE.md`, `MOMO_FOUNDING_PILOT_COMMITMENT_AND_ONBOARDING_GATE.md`, `ACTIVE_DOCS_INDEX.md`, and `VEROXA_LOCKED_OPERATING_MEMORY.md`.
 - Read `VEROXA_DEPLOYMENT_MANIFEST.json` for the machine-readable release state. It records the freeze, disabled activation surfaces, observed baseline, deterministic source/migration trees, and deferred cleanup gates; the CI attestation supplies the exact reviewed `GITHUB_SHA`.

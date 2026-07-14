@@ -4,7 +4,7 @@ Status: full-automation contract and historical foundation record, reviewed 2026
 
 This contract does not replace the narrower founding-pilot onboarding authority in `MOMO_FOUNDING_PILOT_COMMITMENT_AND_ONBOARDING_GATE.md`. Momo may begin the already-agreed free pilot after the secure, persistent, human-controlled manual operating loop and exact evidence gate pass; runtime AI, Meta, Google, and automated publishing remain later modular activations. The 100% seven-system gate still governs any claim of full automation readiness.
 
-Current delivery state is a production/source reconciliation: canonical GitHub `main` is `674e1a7c0d140c9b281029277baeb2e68962dac2`, live Sites version 13 is checkout `dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805`, and production Supabase has 11 migrations. The candidate is not merged or deployed, so production parity is not yet verified and activation remains blocked.
+Current delivery state: PR #148 is the verified deployed application release at `165ff82ab46b0a0985605ffcfb6efa687982eca5`; Sites version 14 is live from Sites source commit `57ccb8d1cce596baf782b03525c80161c11af8f3`; production Supabase has 13 applied migrations. A post-release cleanup candidate is reconciling migration 12/13 filenames to the applied ledger without SQL-byte changes and archiving legacy Vite from active development paths. Exact filename-ledger parity remains pending until that cleanup merges. This release does not enable runtime AI, contact Momo, provision a Client, connect a provider, publish, bill, activate, or approve new spend; the Momo readiness decision remains No-Go. The Vercel shutdown sentinel remains until external Git disconnection is independently verified.
 
 ## Status vocabulary
 
@@ -15,7 +15,7 @@ Current delivery state is a production/source reconciliation: canonical GitHub `
 - **Blocked external authority** — completion requires a credential, owner-controlled access, real identity, client confirmation, or specific external action that is not available to the current workflow.
 - **Ready** — every required check has evidence and the fail-closed readiness result is exactly 100%. No partial score, adapter, fixture, or empty record may satisfy this state.
 
-## Current release truth
+## Current release truth before PR #148 (historical)
 
 - PR #143 reviewed head `009276dbbf2639dc1eb5296bf62906f9f8ac45f1` merged at operational commit `49a5250d6ce7bd8d78f19e415641563e2260ace8`. Sites version 9 deployed successfully from checkout source `69871c51f8e80d1802539a6bca52e3ce5b4ff71c`, and both custom domains are active with healthy SSL.
 - The connected Supabase project is healthy and has all nine production migrations applied and verified, including `momo_full_operating_system_v1`, its advisor hardening, and the zero-cost operating rehearsal. All scoped operating tables force RLS; clean reset, pgTAP, error-level database lint, migration application, and post-apply verification passed.

@@ -1,4 +1,15 @@
-## 2026-07-14 — production-reconciliation candidate; not merged or deployed
+## 2026-07-14 — PR #148 deployed; post-release cleanup candidate
+
+- Verified deployed application release: PR #148 at `165ff82ab46b0a0985605ffcfb6efa687982eca5`.
+- Verified hosting: Sites version 14 from Sites source commit `57ccb8d1cce596baf782b03525c80161c11af8f3`.
+- Verified Sites tree SHA-256: `4f0a4f82d774a63c231a294704ae177ddbbe13c665567db33bdebab815331799`. The cleanup candidate is not merged and not published; after merge it requires an exact-source Sites checkpoint.
+- Verified database count: 13 applied Supabase migrations. The cleanup candidate reconciles source filenames for migrations 12 and 13 to applied versions `20260714022859_reconcile_audit_v3_and_function_search_paths.sql` and `20260714022911_ai_budget_and_momo_manual_pilot_contract.sql` with no SQL-byte change; exact filename-ledger parity remains pending until merge.
+- Legacy Vite is archived from the active workspace, root typecheck/build, and direct CI E2E paths. Its source is retained as recoverable history.
+- Runtime AI, credentials, Momo/client contact, Client provisioning, owner-confirmed truth, media rights, external providers, publishing, billing, activation, and incremental spend remain disabled. Momo remains No-Go.
+- The Vercel shutdown sentinel remains mandatory until independently verified external Git disconnection. No sentinel edit is part of this cleanup.
+- This cleanup does not change the deployed application runtime and must not predict its own future merge commit.
+
+## 2026-07-14 — production-reconciliation candidate; not merged or deployed (historical pre-PR #148 checkpoint)
 
 - Canonical GitHub `main`: `674e1a7c0d140c9b281029277baeb2e68962dac2`.
 - Observed live Sites version 13: checkout `dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805`, with both custom domains and SSL healthy.

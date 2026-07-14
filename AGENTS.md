@@ -1,4 +1,13 @@
-## 2026-07-14 — production reconciliation, founding-pilot, and freeze override
+## 2026-07-14 — verified PR #148 release and post-release cleanup override
+
+- PR #148 is the verified deployed application release at GitHub commit `165ff82ab46b0a0985605ffcfb6efa687982eca5`. Sites version 14 is live from its separate Sites source commit `57ccb8d1cce596baf782b03525c80161c11af8f3`, and production Supabase has 13 applied migrations.
+- The verified Sites version 14 tree SHA-256 is `4f0a4f82d774a63c231a294704ae177ddbbe13c665567db33bdebab815331799`. The cleanup candidate is not merged and not published; after merge it requires an exact-source Sites checkpoint.
+- Production migration content is present and verified, but the cleanup candidate must reconcile canonical filenames for migrations 12 and 13 to the applied Supabase versions `20260714022859_reconcile_audit_v3_and_function_search_paths.sql` and `20260714022911_ai_budget_and_momo_manual_pilot_contract.sql` without changing their SQL bytes. Do not claim exact filename-ledger parity until that cleanup merges.
+- This post-release cleanup archives the legacy Vite application from active workspace, build, and CI paths while retaining its source as recoverable historical evidence. PR #148 remains the deployed application-release commit; this cleanup must not predict its own future merge commit.
+- Runtime AI, credentials, Momo/client contact, Client provisioning, owner confirmation, media rights, external providers, publishing, billing, activation, and incremental spend remain disabled. Momo remains a visual/manual No-Go until the evidence gate passes and Faraz separately authorizes contact.
+- Vercel remains retired. Preserve the exact inert shutdown sentinel until the external Vercel Git integration is independently verified disconnected; this cleanup does not authorize sentinel removal.
+
+## 2026-07-14 — production reconciliation, founding-pilot, and freeze override (historical pre-PR #148 checkpoint)
 
 - GitHub `main` remains canonical at `674e1a7c0d140c9b281029277baeb2e68962dac2`, but production is currently ahead of it: live Sites version 13 is checkout `dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805`, and Supabase has 11 applied migrations. This is observed drift, not parity.
 - The exact live Audit V3 migration is `20260713222721_upgrade_restaurant_audit_engine_v3_partial_scoring.sql`, SHA-256 `304eb98db628b09fa245fba156160b043c1ba9ba2f9aeb689086a6a18ad234b2`.

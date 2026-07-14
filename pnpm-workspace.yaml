@@ -36,6 +36,8 @@ minimumReleaseAgeExclude:
 
 packages:
   - artifacts/*
+  # The legacy Vite application is retained as recoverable history, not an active workspace.
+  - '!artifacts/veroxa'
   # ChatGPT Sites uses its own isolated npm lockfile and deployment lifecycle.
   - '!artifacts/veroxa-sites'
   - lib/*

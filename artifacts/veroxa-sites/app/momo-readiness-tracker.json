@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 6,
   "recordKind": "production_readiness_checkpoint",
   "operationalAuthority": "The scoped Supabase veroxa_readiness_dimensions records and veroxa_momo_readiness_summary_v1 RPC are authoritative for the live Team view. This file records repository release evidence and is not automatically synchronized with production rows.",
   "restaurant": "Momo's House San Antonio",
@@ -20,25 +20,12 @@
     "readinessDecision": "no_go",
     "reason": "No approved Momo Client identity, same-owner confirmation chain, permissioned media, complete request-to-recovery evidence chain, browser QA, or explicit Faraz contact approval exists."
   },
-  "observedProductionState": {
-    "canonicalGitHubMainCommit": "674e1a7c0d140c9b281029277baeb2e68962dac2",
-    "liveSitesVersion": 13,
-    "liveSitesCheckoutSourceCommit": "dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805",
-    "productionMigrations": 11,
-    "latestMigration": "20260713222721_upgrade_restaurant_audit_engine_v3_partial_scoring.sql",
-    "latestMigrationSha256": "304eb98db628b09fa245fba156160b043c1ba9ba2f9aeb689086a6a18ad234b2",
-    "sourceParityVerified": false,
-    "drift": "Live Sites Audit V3 and production migration 11 are ahead of canonical GitHub main."
-  },
-  "reconciliationCandidate": {
-    "state": "candidate_not_merged_not_deployed",
-    "manifest": "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json",
-    "mergeCommit": null,
-    "futureSitesVersion": null,
-    "databaseCandidateApplied": false,
-    "sitesCandidatePublished": false,
-    "deploymentFrozen": true,
-    "onlyAuthorizedDeployment": "The exact reviewed reconciliation release after all four workflows are green and GitHub reports zero unresolved review threads."
+  "releaseEvidenceBoundary": {
+    "authority": "VEROXA_DEPLOYMENT_MANIFEST.json plus external GitHub, Sites, and Supabase release records",
+    "bundlesCurrentDeploymentIdentity": false,
+    "reviewedManualDeploymentsOnly": true,
+    "databaseChangesRequiredForThisReadinessRecord": false,
+    "rule": "This Sites-bundled readiness record never asserts its own current Sites version, checkout commit, publication state, or canonical-main commit."
   },
   "activationState": {
     "runtimeAiEnabled": false,
@@ -61,10 +48,10 @@
     "customDomainsVerified": true
   },
   "deployedNoCostFoundation": {
-    "releaseState": "deployed_foundation_with_production_source_drift",
+    "releaseState": "deployed_foundation_external_release_evidence",
     "forwardMigrationApplied": true,
     "forwardMigrationVerified": true,
-    "canonicalSourceParityVerified": false,
+    "sourceParityAuthority": "external_release_records",
     "momoClientIdentityProvisioned": false,
     "ownerConfirmedBusinessTruthVerified": false,
     "permissionedMediaVerified": false,
@@ -82,19 +69,9 @@
     }
   },
   "auditAndTeamRelease": {
-    "releaseState": "live_ahead_of_canonical_source_reconciliation_required",
-    "pullRequest": null,
-    "reviewedHead": null,
-    "mergedOperationalCommit": null,
-    "sitesCheckoutSourceCommit": "dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805",
-    "sitesVersion": 13,
-    "productionMigrations": 11,
-    "databaseVerified": true,
-    "customDomainsVerified": true,
-    "auditV3MigrationVersion": "20260713222721",
-    "auditV3MigrationSha256": "304eb98db628b09fa245fba156160b043c1ba9ba2f9aeb689086a6a18ad234b2",
+    "releaseState": "audit_v3_foundation_external_release_evidence",
     "auditV3PartialScoreAndPlanLive": true,
-    "canonicalSourceParityVerified": false,
+    "canonicalSourceParityClaimed": false,
     "simplifiedMomoTeamIALive": true,
     "pendingProfileRequiresExplicitConsent": true,
     "createsOperationalClient": false,
@@ -112,19 +89,15 @@
     "production_foundation": {
       "label": "Production foundation",
       "required": true,
-      "status": "in_progress",
+      "status": "verified",
       "evidence": [
         "PR #138 merged the reviewed seven-system Momo operating foundation at commit 48630c62b9429238ab39b5b919d7689d189352f8.",
-        "Eleven production migrations are applied; migration 11 is the Audit V3 partial-scoring migration with verified SHA-256 304eb98db628b09fa245fba156160b043c1ba9ba2f9aeb689086a6a18ad234b2.",
-        "Live Sites version 13 uses checkout source dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805 and Audit V3 is operational.",
-        "The reconciliation candidate imports the observed Sites and migration sources and adds deterministic manifest and exact-commit attestation controls, but it is not merged or deployed.",
-        "Both custom domains are verified active with active SSL."
+        "The deployed no-cost foundation includes Audit V3, AI budget/provenance controls, and the private manual-pilot request contract.",
+        "Exact GitHub, Sites, domain, and Supabase deployment identity is maintained in the external release manifest and checkpoint records, not in this deployable Sites bundle.",
+        "This record therefore remains stable across reviewed deployments and cannot claim its own future publication state."
       ],
-      "blockers": [
-        "GitHub main at 674e1a7c0d140c9b281029277baeb2e68962dac2 does not contain the exact live Sites V13 and production migration 11 source.",
-        "The reconciliation candidate has not passed all four workflows, reached zero unresolved review threads, merged, or been republished and independently verified from the exact merge."
-      ],
-      "nextAction": "Finish the exact reconciliation candidate, require all four workflows green and zero unresolved review threads, merge the reviewed head, then republish and verify Sites, Auth, domains, source hashes, migration hashes, and rollback evidence from that exact merge."
+      "blockers": [],
+      "nextAction": "Preserve reviewed-only deployment and external attestation controls without enabling AI, Client provisioning, external providers, publishing, or spend."
     },
     "team_identity_and_access": {
       "label": "Team identity and authenticated access",
