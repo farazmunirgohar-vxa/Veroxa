@@ -2,7 +2,18 @@
 
 Status: highest-level current source-of-truth index. Read this file before relying on older Veroxa documents.
 
-## 2026-07-14 — production reconciliation and founding-pilot override
+## 2026-07-14 — verified PR #148 release and cleanup override
+
+- Verified application release: PR #148 merged at `165ff82ab46b0a0985605ffcfb6efa687982eca5`; Sites version 14 is live from Sites source commit `57ccb8d1cce596baf782b03525c80161c11af8f3`; production Supabase reports 13 applied migrations.
+- Verified Sites tree SHA-256: `4f0a4f82d774a63c231a294704ae177ddbbe13c665567db33bdebab815331799`. The cleanup candidate is not merged and not published; after merge it requires an exact-source Sites checkpoint.
+- Ledger cleanup: this candidate reconciles migrations 12 and 13 to applied versions `20260714022859_reconcile_audit_v3_and_function_search_paths.sql` and `20260714022911_ai_budget_and_momo_manual_pilot_contract.sql` without SQL-byte changes. Count and content are verified, but exact filename-ledger parity remains pending until the cleanup merges.
+- Legacy boundary: the Vite application is removed from active workspace/build/CI paths and retained as recoverable historical source. It is not a deployment, rollback, or product-development surface.
+- Activation boundary: runtime AI, credentials, Momo/client contact, Client provisioning, owner confirmation, media rights, providers, publishing, billing, activation, and new spend remain disabled. Momo remains No-Go.
+- Vercel boundary: keep the exact inert shutdown sentinel until the external Vercel Git integration is independently verified disconnected.
+- Cleanup evidence: `POST_RELEASE_BRANCH_AND_PROVIDER_CLEANUP.md` records the reviewed branch categories, unavailable branch-delete capability, legacy Vite archive boundary, and the unresolved external Vercel disconnection.
+- The section immediately below is the historical pre-PR #148 reconciliation checkpoint and does not describe current production.
+
+## 2026-07-14 — production reconciliation and founding-pilot override (historical pre-PR #148 checkpoint)
 
 - Governing direction: `VEROXA_CURRENT_MILESTONE.md` and `MOMO_FOUNDING_PILOT_COMMITMENT_AND_ONBOARDING_GATE.md` define the secure, persistent, human-controlled founding-pilot loop and evidence-based onboarding gate. Momo has already agreed to onboard, remains free during the founding-pilot period, and must not be contacted or activated until the gate passes and Faraz separately approves contact.
 - Machine release truth: `VEROXA_DEPLOYMENT_MANIFEST.json` records the freeze, disabled activation surfaces, observed production baseline, deterministic source and migration trees, and deferred cleanup gates. CI produces the exact-commit attestation; the manifest never predicts a future merge SHA or Sites version.

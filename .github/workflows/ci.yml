@@ -80,6 +80,3 @@ jobs:
 
       - name: First-client readiness guardrail
         run: pnpm --filter @workspace/scripts run check-first-client-readiness
-
-      - name: E2E route/auth/data-boundary QA
-        run: pnpm --filter @workspace/veroxa run test:e2e

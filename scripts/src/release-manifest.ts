@@ -27,11 +27,31 @@ export type DeploymentManifest = {
     latestProductionMigrationSha256: string;
     sourceParityVerified: boolean;
   };
+  verifiedReconciliationRelease: {
+    pullRequest: number;
+    githubMainCommit: string;
+    sitesCheckoutCommit: string;
+    sitesVersion: number;
+    sourceFileCount: number;
+    sourceTreeSha256: string;
+    productionMigrationCount: number;
+    latestProductionMigration: string;
+    latestProductionMigrationSha256: string;
+    databaseApplied: boolean;
+    databaseVerified: boolean;
+    sitesPublished: boolean;
+    sitesVerified: boolean;
+    customDomainsVerified: boolean;
+    sitesSourceParityVerified: boolean;
+    migrationContentParityVerified: boolean;
+    migrationFilenameParityVerified: boolean;
+  };
   releaseCandidate: {
     status: string;
     futureMergedGitHubCommit: null;
     futureSitesVersion: null;
-    databaseApplied: boolean;
+    databaseChangesRequired: boolean;
+    sitesPublishRequired: boolean;
     sitesPublished: boolean;
   };
   source: {
@@ -52,7 +72,7 @@ export type DeploymentManifest = {
     state: string;
     automaticDeploymentsAllowed: boolean;
     allowedDeployment: string;
-    liftCondition: string;
+    releaseCondition: string;
   };
   activationState: {
     newIncrementalSpendApproved: boolean;
@@ -67,9 +87,13 @@ export type DeploymentManifest = {
     momoActivationExecuted: boolean;
   };
   cleanupState: {
+    inventoryReviewed: boolean;
+    branchDeletionCapabilityAvailable: boolean;
     branchDeletionAllowed: boolean;
+    legacyViteArchived: boolean;
     legacyViteRemovalAllowed: boolean;
-    vercelSentinelRemovalAllowed: boolean;
+    externalVercelGitDisconnectionVerified: boolean;
+    vercelShutdownSentinelRequired: boolean;
     blocker: string;
   };
 };

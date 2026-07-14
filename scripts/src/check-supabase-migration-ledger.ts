@@ -16,8 +16,8 @@ const expectedActive = [
   "20260713191147_momo_zero_cost_operating_rehearsal_v1.sql",
   "20260713212046_restaurant_audit_generation_v2.sql",
   "20260713222721_upgrade_restaurant_audit_engine_v3_partial_scoring.sql",
-  "20260714120000_reconcile_audit_v3_and_function_search_paths.sql",
-  "20260714121000_ai_budget_and_momo_manual_pilot_contract.sql",
+  "20260714022859_reconcile_audit_v3_and_function_search_paths.sql",
+  "20260714022911_ai_budget_and_momo_manual_pilot_contract.sql",
 ];
 const appliedChecksums: Record<string, string> = {
   "20260712213930_momo_production_foundation_v1.sql": "8fd646bdcbbef6b004f1fafc0fbb0b66cdc298e98cb890bbec6643788d0e2db9",
@@ -31,6 +31,8 @@ const appliedChecksums: Record<string, string> = {
   "20260713191147_momo_zero_cost_operating_rehearsal_v1.sql": "07cdb0a41b3d81e23e2c9432b139ae219c2b4671fed7cd18f761d4c4d6a79f2a",
   "20260713212046_restaurant_audit_generation_v2.sql": "f4bfff7ac94ade68a2c4f761c5627dbcfe82d5800a0a8a46ce42b13e5b930693",
   "20260713222721_upgrade_restaurant_audit_engine_v3_partial_scoring.sql": "304eb98db628b09fa245fba156160b043c1ba9ba2f9aeb689086a6a18ad234b2",
+  "20260714022859_reconcile_audit_v3_and_function_search_paths.sql": "192505ca4631e55f35b28f0c849a7d380bc1a709e5ae89adca742d7d349da45e",
+  "20260714022911_ai_budget_and_momo_manual_pilot_contract.sql": "ebc2ea499a24b79da1baaffa02423488b1a28a95cb75d4c0d5c002c7c585948d",
 };
 const expectedArchived = [
   "20260601000000_m024a_first_client_metadata_schema.sql",

@@ -46,10 +46,15 @@ const documents = [
 const combined = documents.map(({ source }) => source).join("\n");
 for (const marker of [
   "Vercel is retired",
+  "165ff82ab46b0a0985605ffcfb6efa687982eca5",
+  "57ccb8d1cce596baf782b03525c80161c11af8f3",
+  "Sites version 14",
+  "4f0a4f82d774a63c231a294704ae177ddbbe13c665567db33bdebab815331799",
+  "cleanup candidate",
+  // Historical pre-PR #148 drift evidence remains recorded below the current override.
   "674e1a7c0d140c9b281029277baeb2e68962dac2",
   "dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805",
   "Sites version 13",
-  "candidate",
 ]) {
   must(combined.includes(marker), `Current source truth is missing delivery marker: ${marker}`);
 }
@@ -81,32 +86,28 @@ const readiness = JSON.parse(
   read("artifacts/veroxa-sites/app/momo-readiness-tracker.json"),
 ) as {
   schemaVersion: number;
-  observedProductionState: {
-    canonicalGitHubMainCommit: string;
-    liveSitesVersion: number;
-    liveSitesCheckoutSourceCommit: string;
-    productionMigrations: number;
-    sourceParityVerified: boolean;
-  };
-  reconciliationCandidate: {
-    state: string;
-    deploymentFrozen: boolean;
-    sitesCandidatePublished: boolean;
+  releaseEvidenceBoundary: {
+    authority: string;
+    bundlesCurrentDeploymentIdentity: boolean;
+    reviewedManualDeploymentsOnly: boolean;
+    databaseChangesRequiredForThisReadinessRecord: boolean;
+    rule: string;
   };
 };
+const readinessText = read("artifacts/veroxa-sites/app/momo-readiness-tracker.json");
 must(
-  readiness.schemaVersion === 4 &&
-    readiness.observedProductionState.canonicalGitHubMainCommit ===
-      "674e1a7c0d140c9b281029277baeb2e68962dac2" &&
-    readiness.observedProductionState.liveSitesVersion === 13 &&
-    readiness.observedProductionState.liveSitesCheckoutSourceCommit ===
-      "dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805" &&
-    readiness.observedProductionState.productionMigrations === 11 &&
-    !readiness.observedProductionState.sourceParityVerified &&
-    readiness.reconciliationCandidate.state === "candidate_not_merged_not_deployed" &&
-    readiness.reconciliationCandidate.deploymentFrozen &&
-    !readiness.reconciliationCandidate.sitesCandidatePublished,
-  "Sites-bundled readiness evidence must preserve production drift and the undeployed freeze.",
+  readiness.schemaVersion === 6 &&
+    readiness.releaseEvidenceBoundary.authority.includes("VEROXA_DEPLOYMENT_MANIFEST.json") &&
+    !readiness.releaseEvidenceBoundary.bundlesCurrentDeploymentIdentity &&
+    readiness.releaseEvidenceBoundary.reviewedManualDeploymentsOnly &&
+    !readiness.releaseEvidenceBoundary.databaseChangesRequiredForThisReadinessRecord &&
+    /never asserts its own current Sites version/i.test(
+      readiness.releaseEvidenceBoundary.rule,
+    ) &&
+    !/165ff82ab46b0a0985605ffcfb6efa687982eca5|57ccb8d1cce596baf782b03525c80161c11af8f3|sitesCandidatePublished|futureSitesVersion/.test(
+      readinessText,
+    ),
+  "Sites-bundled readiness evidence must externalize exact deployment identity and remain stable across publications.",
 );
 
 const manifest = JSON.parse(
@@ -115,14 +116,36 @@ const manifest = JSON.parse(
   sitesProjectId: string;
   releaseState: string;
   deploymentFreeze: { automaticDeploymentsAllowed: boolean };
-  cleanupState: { vercelSentinelRemovalAllowed: boolean };
+  verifiedReconciliationRelease: {
+    sitesVersion: number;
+    sourceTreeSha256: string;
+    sitesSourceParityVerified: boolean;
+    migrationContentParityVerified: boolean;
+    migrationFilenameParityVerified: boolean;
+  };
+  releaseCandidate: { sitesPublishRequired: boolean; sitesPublished: boolean };
+  cleanupState: {
+    branchDeletionCapabilityAvailable: boolean;
+    externalVercelGitDisconnectionVerified: boolean;
+    vercelShutdownSentinelRequired: boolean;
+  };
 };
 must(
   manifest.sitesProjectId === "appgprj_6a53d07c7c28819182801cf35dfd30de" &&
-    manifest.releaseState === "candidate_not_merged_not_deployed" &&
+    manifest.releaseState === "verified_reconciliation_cleanup_candidate" &&
+    manifest.verifiedReconciliationRelease.sitesVersion === 14 &&
+    manifest.verifiedReconciliationRelease.sourceTreeSha256 ===
+      "4f0a4f82d774a63c231a294704ae177ddbbe13c665567db33bdebab815331799" &&
+    manifest.verifiedReconciliationRelease.sitesSourceParityVerified &&
+    manifest.verifiedReconciliationRelease.migrationContentParityVerified &&
+    !manifest.verifiedReconciliationRelease.migrationFilenameParityVerified &&
     !manifest.deploymentFreeze.automaticDeploymentsAllowed &&
-    !manifest.cleanupState.vercelSentinelRemovalAllowed,
-  "Deployment manifest must bind Sites identity and keep deployment/Vercel cleanup frozen.",
+    manifest.releaseCandidate.sitesPublishRequired &&
+    !manifest.releaseCandidate.sitesPublished &&
+    !manifest.cleanupState.branchDeletionCapabilityAvailable &&
+    !manifest.cleanupState.externalVercelGitDisconnectionVerified &&
+    manifest.cleanupState.vercelShutdownSentinelRequired,
+  "Deployment manifest must bind v14, keep cleanup unpublished, and preserve the Vercel sentinel.",
 );
 
 for (const workflow of readdirSync(resolve(root, ".github/workflows")).filter((name) =>

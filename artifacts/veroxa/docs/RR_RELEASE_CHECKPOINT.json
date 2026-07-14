@@ -1,7 +1,7 @@
 {
-  "schemaVersion": 4,
-  "checkpoint": "production-reconciliation-candidate-2026-07-14",
-  "status": "candidate_not_merged_not_deployed",
+  "schemaVersion": 5,
+  "checkpoint": "post-release-cleanup-candidate-2026-07-14",
+  "status": "verified_reconciliation_cleanup_candidate",
   "reviewedAt": "2026-07-14",
   "deployedOperationalRelease": {
     "supersededAsLiveBaseline": true,
@@ -27,24 +27,42 @@
     "customDomainsVerified": true,
     "sourceParityVerified": false
   },
+  "verifiedReconciliationRelease": {
+    "pullRequest": 148,
+    "githubMainCommit": "165ff82ab46b0a0985605ffcfb6efa687982eca5",
+    "sitesCheckoutSourceCommit": "57ccb8d1cce596baf782b03525c80161c11af8f3",
+    "sitesVersion": 14,
+    "sourceFileCount": 55,
+    "sourceTreeSha256": "4f0a4f82d774a63c231a294704ae177ddbbe13c665567db33bdebab815331799",
+    "productionMigrations": 13,
+    "latestProductionMigration": "20260714022911_ai_budget_and_momo_manual_pilot_contract.sql",
+    "latestProductionMigrationSha256": "ebc2ea499a24b79da1baaffa02423488b1a28a95cb75d4c0d5c002c7c585948d",
+    "databaseVerified": true,
+    "sitesProductionVerified": true,
+    "customDomainsVerified": true,
+    "sitesSourceParityVerified": true,
+    "migrationContentParityVerified": true,
+    "migrationFilenameParityVerified": false
+  },
   "releaseCandidate": {
     "manifest": "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json",
-    "state": "candidate_not_merged_not_deployed",
+    "state": "post_release_cleanup_built_for_review",
     "futureMergedGitHubCommit": null,
     "futureSitesVersion": null,
     "allFourWorkflowsGreen": false,
     "zeroUnresolvedReviewThreads": false,
-    "databaseCandidateApplied": false,
+    "databaseChangesRequired": false,
+    "sitesPublishRequired": true,
     "sitesCandidatePublished": false
   },
   "auditAndTeamRelease": {
-    "releaseState": "live_ahead_of_canonical_source_reconciliation_required",
-    "pullRequest": null,
-    "reviewedHead": null,
-    "mergedOperationalCommit": null,
-    "sitesCheckoutSourceCommit": "dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805",
-    "sitesVersion": 13,
-    "productionMigrations": 11,
+    "releaseState": "verified_reconciliation_baseline",
+    "pullRequest": 148,
+    "reviewedHead": "111cf12159e8e58e81d4055dc0ddec67ba72cdf9",
+    "mergedOperationalCommit": "165ff82ab46b0a0985605ffcfb6efa687982eca5",
+    "sitesCheckoutSourceCommit": "57ccb8d1cce596baf782b03525c80161c11af8f3",
+    "sitesVersion": 14,
+    "productionMigrations": 13,
     "databaseVerified": true,
     "customDomainsVerified": true,
     "auditV3MigrationVersion": "20260713222721",
@@ -92,18 +110,18 @@
     "20260713191147_momo_zero_cost_operating_rehearsal_v1.sql",
     "20260713212046_restaurant_audit_generation_v2.sql",
     "20260713222721_upgrade_restaurant_audit_engine_v3_partial_scoring.sql",
-    "20260714120000_reconcile_audit_v3_and_function_search_paths.sql",
-    "20260714121000_ai_budget_and_momo_manual_pilot_contract.sql"
+    "20260714022859_reconcile_audit_v3_and_function_search_paths.sql",
+    "20260714022911_ai_budget_and_momo_manual_pilot_contract.sql"
   ],
   "reusableEvidence": [
     "Momo-only tenancy, role matrix, RLS, and safe-empty client boundary",
     "Deployed secure-email-link recovery plus approved-user password session, membership, callback, and protected-route boundary",
     "Signed public audit intake, raw-size limits, timeouts, idempotency, and rate limits",
     "Latest-run review gate, reviewed immutability, append-only lifecycle evidence, and distinct audit identity",
-    "Eleven applied production migrations, including exact Audit V3 migration 20260713222721 with SHA-256 304eb98db628b09fa245fba156160b043c1ba9ba2f9aeb689086a6a18ad234b2",
-    "Observed live Sites version 13 checkout dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805 with both custom domains active and SSL healthy",
-    "Canonical GitHub main 674e1a7c0d140c9b281029277baeb2e68962dac2 is behind production; parity is not verified",
-    "The production-reconciliation candidate is unmerged and undeployed, with deterministic tree verification and exact-GITHUB_SHA CI attestation"
+    "Thirteen applied production migrations, including exact migration 13 20260714022911 with SHA-256 ebc2ea499a24b79da1baaffa02423488b1a28a95cb75d4c0d5c002c7c585948d",
+    "PR #148 application-release commit 165ff82ab46b0a0985605ffcfb6efa687982eca5 restored exact Sites source parity and Supabase migration-content parity; exact migration filename parity is the cleanup candidate",
+    "Verified Sites version 14 checkout 57ccb8d1cce596baf782b03525c80161c11af8f3 with 55-file source tree 4f0a4f82d774a63c231a294704ae177ddbbe13c665567db33bdebab815331799 and both custom domains active with SSL healthy",
+    "The post-release cleanup candidate reconciles applied migration filenames, archives legacy Vite from active development, and refreshes readiness evidence without enabling any activation path"
   ],
   "fullReviewTriggers": [
     "authentication, sessions, identity allowlist, role or membership authorization",
@@ -128,8 +146,8 @@
         "supabase/migrations/20260713191147_momo_zero_cost_operating_rehearsal_v1.sql",
         "supabase/migrations/20260713212046_restaurant_audit_generation_v2.sql",
         "supabase/migrations/20260713222721_upgrade_restaurant_audit_engine_v3_partial_scoring.sql",
-        "supabase/migrations/20260714120000_reconcile_audit_v3_and_function_search_paths.sql",
-        "supabase/migrations/20260714121000_ai_budget_and_momo_manual_pilot_contract.sql",
+        "supabase/migrations/20260714022859_reconcile_audit_v3_and_function_search_paths.sql",
+        "supabase/migrations/20260714022911_ai_budget_and_momo_manual_pilot_contract.sql",
         "supabase/tests/momo_production_tenant_rls_hardening.sql",
         "supabase/tests/momo_full_operating_system_v1.sql",
         "supabase/tests/momo_zero_cost_operating_rehearsal_v1.sql",
@@ -140,7 +158,7 @@
         "scripts/src/check-supabase-migration-ledger.ts",
         ".github/workflows/supabase-verify.yml"
       ],
-      "sha256": "97f02a2508a06b21c108d6e97508cd8ad6cab193bf5a6ec37dbecd5db05d9c4b"
+      "sha256": "f3a51ee332101c32f0e5de6794fc6b842e45ed455292537aa5b7b48caa83e96c"
     },
     "auth_access": {
       "review": "full-on-change",
@@ -193,7 +211,7 @@
         ".github/workflows/supabase-verify.yml",
         ".github/workflows/veroxa-verify.yml"
       ],
-      "sha256": "05690fc38351514755aeca9b7017e521f34e4095fb657cbd5c0e7f72f53f35c9"
+      "sha256": "92ce525745b0be969610d1de73875884b8f531932398771e094622f26419191c"
     },
     "product_scope": {
       "review": "full-on-change",
@@ -211,7 +229,7 @@
         "AGENTS.md",
         "artifacts/veroxa/docs/RR_CHECKPOINT.md"
       ],
-      "sha256": "bfc875a64672b55137f87e3089bc514cb27ebed4167f97b0020f9b6876f56b99"
+      "sha256": "01f2001ea8fa5a6212e83562deb46e707687d8ab908fc471d5aa74b1badb4e83"
     },
     "momo_readiness_tracking": {
       "review": "evidence-delta-on-change",
@@ -220,7 +238,7 @@
         "artifacts/veroxa-sites/app/momo-readiness-types.ts",
         "scripts/src/check-momo-house-readiness-tracking.ts"
       ],
-      "sha256": "4d2762aba9e66564f2e8699cbf4e4332f7f6cf65b26c4a02ad8bf7fddd9081c5"
+      "sha256": "b60a3d63a7b51b4f9b8ccdf6cd5562ecb8a958e8afd93d0ba4e21295f20a8e44"
     },
     "presentation_surfaces": {
       "review": "delta-unless-boundary-crossed",
@@ -259,7 +277,7 @@
         "package.json",
         "pnpm-lock.yaml"
       ],
-      "sha256": "32b2f770cb62a9b78f273ac85c64084d4466af826b1d49846cccdc4872020da4"
+      "sha256": "6b1d68dcf24eca583e9ddcd6778bc14f3e32a4cb92485a0968ffde517ac19451"
     }
   },
   "activationGates": [
@@ -268,13 +286,16 @@
     "Hosted reauthentication and old-session revocation remain unverified and must not be claimed as complete",
     "No Momo owner truth or media rights may be invented to satisfy readiness",
     "Keep AI, Meta, Google, SEO writes, publishing, outbound contact, Client provisioning, billing, and Momo activation inactive pending exact authorization",
-    "Freeze every product deployment except the exact reviewed reconciliation release after all four workflows are green and GitHub reports zero unresolved review threads"
+    "Allow only exact reviewed and merged GitHub source to be deployed manually after all four workflows are green and GitHub reports zero unresolved review threads"
   ],
   "cleanupGate": {
+    "inventoryReviewed": true,
     "vercelShutdownSentinelRequired": true,
     "externalVercelGitDisconnectionVerified": false,
+    "branchDeletionCapabilityAvailable": false,
     "branchDeletionAllowed": false,
+    "legacyViteArchived": true,
     "legacyViteRemovalAllowed": false,
-    "requiredBeforeCleanup": "Verified canonical production parity, tested rollback evidence, merged/superseded/owned branch classification, external Vercel Git disconnection verification, and explicit approval."
+    "requiredBeforeCleanup": "Verified production parity and rollback evidence remain required. Branch deletion also requires an available GitHub branch-delete capability; Vercel sentinel removal requires independently verified external Git disconnection and explicit approval."
   }
 }

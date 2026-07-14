@@ -32,6 +32,23 @@ type Checkpoint = {
     customDomainsVerified: boolean;
     sourceParityVerified: boolean;
   };
+  verifiedReconciliationRelease: {
+    pullRequest: number;
+    githubMainCommit: string;
+    sitesCheckoutSourceCommit: string;
+    sitesVersion: number;
+    sourceFileCount: number;
+    sourceTreeSha256: string;
+    productionMigrations: number;
+    latestProductionMigration: string;
+    latestProductionMigrationSha256: string;
+    databaseVerified: boolean;
+    sitesProductionVerified: boolean;
+    customDomainsVerified: boolean;
+    sitesSourceParityVerified: boolean;
+    migrationContentParityVerified: boolean;
+    migrationFilenameParityVerified: boolean;
+  };
   releaseCandidate: {
     manifest: string;
     state: string;
@@ -39,7 +56,8 @@ type Checkpoint = {
     futureSitesVersion: null;
     allFourWorkflowsGreen: boolean;
     zeroUnresolvedReviewThreads: boolean;
-    databaseCandidateApplied: boolean;
+    databaseChangesRequired: boolean;
+    sitesPublishRequired: boolean;
     sitesCandidatePublished: boolean;
   };
   auditAndTeamRelease: {
@@ -69,9 +87,12 @@ type Checkpoint = {
   fullReviewTriggers: string[];
   activationGates: string[];
   cleanupGate: {
+    inventoryReviewed: boolean;
     vercelShutdownSentinelRequired: boolean;
     externalVercelGitDisconnectionVerified: boolean;
+    branchDeletionCapabilityAvailable: boolean;
     branchDeletionAllowed: boolean;
+    legacyViteArchived: boolean;
     legacyViteRemovalAllowed: boolean;
     requiredBeforeCleanup: string;
   };
@@ -91,29 +112,18 @@ type Readiness = {
     clientProvisioningAuthorized: boolean;
     readinessDecision: string;
   };
-  observedProductionState: {
-    canonicalGitHubMainCommit: string;
-    liveSitesVersion: number;
-    liveSitesCheckoutSourceCommit: string;
-    productionMigrations: number;
-    latestMigration: string;
-    latestMigrationSha256: string;
-    sourceParityVerified: boolean;
-  };
-  reconciliationCandidate: {
-    state: string;
-    mergeCommit: null;
-    futureSitesVersion: null;
-    databaseCandidateApplied: boolean;
-    sitesCandidatePublished: boolean;
-    deploymentFrozen: boolean;
+  releaseEvidenceBoundary: {
+    authority: string;
+    bundlesCurrentDeploymentIdentity: boolean;
+    reviewedManualDeploymentsOnly: boolean;
+    databaseChangesRequiredForThisReadinessRecord: boolean;
+    rule: string;
   };
   activationState: Record<string, boolean>;
   auditAndTeamRelease: {
     releaseState: string;
-    auditV3MigrationVersion: string;
-    auditV3MigrationSha256: string;
-    canonicalSourceParityVerified: boolean;
+    auditV3PartialScoreAndPlanLive: boolean;
+    canonicalSourceParityClaimed: boolean;
     createsOperationalClient: boolean;
     newIncrementalSpendApproved: boolean;
   };
@@ -137,28 +147,60 @@ type DeploymentManifest = {
     latestProductionMigrationSha256: string;
     sourceParityVerified: boolean;
   };
+  verifiedReconciliationRelease: {
+    pullRequest: number;
+    githubMainCommit: string;
+    sitesCheckoutCommit: string;
+    sitesVersion: number;
+    sourceFileCount: number;
+    sourceTreeSha256: string;
+    productionMigrationCount: number;
+    latestProductionMigration: string;
+    latestProductionMigrationSha256: string;
+    sitesSourceParityVerified: boolean;
+    migrationContentParityVerified: boolean;
+    migrationFilenameParityVerified: boolean;
+  };
   releaseCandidate: {
     futureMergedGitHubCommit: null;
     futureSitesVersion: null;
-    databaseApplied: boolean;
+    databaseChangesRequired: boolean;
+    sitesPublishRequired: boolean;
     sitesPublished: boolean;
   };
   activationState: Record<string, boolean>;
   cleanupState: {
+    inventoryReviewed: boolean;
+    branchDeletionCapabilityAvailable: boolean;
     branchDeletionAllowed: boolean;
+    legacyViteArchived: boolean;
     legacyViteRemovalAllowed: boolean;
-    vercelSentinelRemovalAllowed: boolean;
+    externalVercelGitDisconnectionVerified: boolean;
+    vercelShutdownSentinelRequired: boolean;
   };
 };
 
 const expected = {
-  githubMain: "674e1a7c0d140c9b281029277baeb2e68962dac2",
-  sitesCommit: "dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805",
-  sitesVersion: 13,
-  productionMigrations: 11,
-  migration: "20260713222721_upgrade_restaurant_audit_engine_v3_partial_scoring.sql",
-  migrationVersion: "20260713222721",
-  migrationSha: "304eb98db628b09fa245fba156160b043c1ba9ba2f9aeb689086a6a18ad234b2",
+  historical: {
+    githubMain: "674e1a7c0d140c9b281029277baeb2e68962dac2",
+    sitesCommit: "dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805",
+    sitesVersion: 13,
+    productionMigrations: 11,
+    migration: "20260713222721_upgrade_restaurant_audit_engine_v3_partial_scoring.sql",
+    migrationVersion: "20260713222721",
+    migrationSha: "304eb98db628b09fa245fba156160b043c1ba9ba2f9aeb689086a6a18ad234b2",
+  },
+  verified: {
+    pullRequest: 148,
+    githubMain: "165ff82ab46b0a0985605ffcfb6efa687982eca5",
+    sitesCommit: "57ccb8d1cce596baf782b03525c80161c11af8f3",
+    sitesVersion: 14,
+    sourceFileCount: 55,
+    sourceTreeSha256: "4f0a4f82d774a63c231a294704ae177ddbbe13c665567db33bdebab815331799",
+    productionMigrations: 13,
+    migration: "20260714022911_ai_budget_and_momo_manual_pilot_contract.sql",
+    migrationSha: "ebc2ea499a24b79da1baaffa02423488b1a28a95cb75d4c0d5c002c7c585948d",
+  },
 };
 
 function groupHash(files: string[]): string {
@@ -174,25 +216,44 @@ function groupHash(files: string[]): string {
 const checkpoint = readJson<Checkpoint>(
   "artifacts/veroxa/docs/RR_RELEASE_CHECKPOINT.json",
 );
-must(checkpoint.schemaVersion === 4, "RR checkpoint schema must be 4.");
+must(checkpoint.schemaVersion === 5, "RR checkpoint schema must be 5.");
 must(
-  checkpoint.checkpoint === "production-reconciliation-candidate-2026-07-14" &&
-    checkpoint.status === "candidate_not_merged_not_deployed",
-  "RR checkpoint must remain an honest unmerged/undeployed reconciliation candidate.",
+  checkpoint.checkpoint === "post-release-cleanup-candidate-2026-07-14" &&
+    checkpoint.status === "verified_reconciliation_cleanup_candidate",
+  "RR checkpoint must distinguish verified PR #148 from the unpublished cleanup candidate.",
 );
 
 const observed = checkpoint.observedProductionBaseline;
 must(
-  observed.canonicalGitHubMainCommit === expected.githubMain &&
-    observed.sitesCheckoutSourceCommit === expected.sitesCommit &&
-    observed.sitesVersion === expected.sitesVersion &&
-    observed.productionMigrations === expected.productionMigrations &&
-    observed.latestProductionMigration === expected.migration &&
-    observed.latestProductionMigrationSha256 === expected.migrationSha &&
+  observed.canonicalGitHubMainCommit === expected.historical.githubMain &&
+    observed.sitesCheckoutSourceCommit === expected.historical.sitesCommit &&
+    observed.sitesVersion === expected.historical.sitesVersion &&
+    observed.productionMigrations === expected.historical.productionMigrations &&
+    observed.latestProductionMigration === expected.historical.migration &&
+    observed.latestProductionMigrationSha256 === expected.historical.migrationSha &&
     observed.databaseVerified &&
     observed.customDomainsVerified &&
     !observed.sourceParityVerified,
-  "RR checkpoint observed production baseline drifted or falsely claims source parity.",
+  "RR checkpoint must preserve the exact pre-PR #148 drift baseline.",
+);
+const verifiedRelease = checkpoint.verifiedReconciliationRelease;
+must(
+  verifiedRelease.pullRequest === expected.verified.pullRequest &&
+    verifiedRelease.githubMainCommit === expected.verified.githubMain &&
+    verifiedRelease.sitesCheckoutSourceCommit === expected.verified.sitesCommit &&
+    verifiedRelease.sitesVersion === expected.verified.sitesVersion &&
+    verifiedRelease.sourceFileCount === expected.verified.sourceFileCount &&
+    verifiedRelease.sourceTreeSha256 === expected.verified.sourceTreeSha256 &&
+    verifiedRelease.productionMigrations === expected.verified.productionMigrations &&
+    verifiedRelease.latestProductionMigration === expected.verified.migration &&
+    verifiedRelease.latestProductionMigrationSha256 === expected.verified.migrationSha &&
+    verifiedRelease.databaseVerified &&
+    verifiedRelease.sitesProductionVerified &&
+    verifiedRelease.customDomainsVerified &&
+    verifiedRelease.sitesSourceParityVerified &&
+    verifiedRelease.migrationContentParityVerified &&
+    !verifiedRelease.migrationFilenameParityVerified,
+  "RR checkpoint must preserve PR #148 Sites/content parity and its migration-filename mismatch.",
 );
 must(
   checkpoint.deployedOperationalRelease.supersededAsLiveBaseline &&
@@ -205,30 +266,31 @@ must(
 const candidate = checkpoint.releaseCandidate;
 must(
   candidate.manifest === "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json" &&
-    candidate.state === "candidate_not_merged_not_deployed" &&
+    candidate.state === "post_release_cleanup_built_for_review" &&
     candidate.futureMergedGitHubCommit === null &&
     candidate.futureSitesVersion === null &&
     !candidate.allFourWorkflowsGreen &&
     !candidate.zeroUnresolvedReviewThreads &&
-    !candidate.databaseCandidateApplied &&
+    !candidate.databaseChangesRequired &&
+    candidate.sitesPublishRequired &&
     !candidate.sitesCandidatePublished,
-  "RR candidate must not predict or overstate merge, review, workflow, database, or Sites state.",
+  "RR cleanup candidate must remain unpredicted, database-neutral, and unpublished.",
 );
 
 const audit = checkpoint.auditAndTeamRelease;
 must(
-  audit.releaseState === "live_ahead_of_canonical_source_reconciliation_required" &&
-    audit.sitesCheckoutSourceCommit === expected.sitesCommit &&
-    audit.sitesVersion === expected.sitesVersion &&
-    audit.productionMigrations === expected.productionMigrations &&
-    audit.auditV3MigrationVersion === expected.migrationVersion &&
-    audit.auditV3MigrationSha256 === expected.migrationSha &&
+  audit.releaseState === "verified_reconciliation_baseline" &&
+    audit.sitesCheckoutSourceCommit === expected.verified.sitesCommit &&
+    audit.sitesVersion === expected.verified.sitesVersion &&
+    audit.productionMigrations === expected.verified.productionMigrations &&
+    audit.auditV3MigrationVersion === expected.historical.migrationVersion &&
+    audit.auditV3MigrationSha256 === expected.historical.migrationSha &&
     audit.auditV3PartialScoreAndPlanLive &&
     !audit.canonicalSourceParityVerified &&
     audit.pendingProfileRequiresExplicitConsent &&
     !audit.createsOperationalClient &&
     !audit.newIncrementalSpendApproved,
-  "RR Audit V3 evidence is incomplete or overstates conversion, parity, or spend authority.",
+  "RR Audit V3 evidence must preserve the verified baseline without overstating exact ledger parity, conversion, or spend.",
 );
 
 for (const inactive of [
@@ -277,8 +339,11 @@ for (const marker of [
   );
 }
 must(
-  checkpoint.cleanupGate.vercelShutdownSentinelRequired &&
+  checkpoint.cleanupGate.inventoryReviewed &&
+    checkpoint.cleanupGate.legacyViteArchived &&
+    checkpoint.cleanupGate.vercelShutdownSentinelRequired &&
     !checkpoint.cleanupGate.externalVercelGitDisconnectionVerified &&
+    !checkpoint.cleanupGate.branchDeletionCapabilityAvailable &&
     !checkpoint.cleanupGate.branchDeletionAllowed &&
     !checkpoint.cleanupGate.legacyViteRemovalAllowed &&
     /parity/i.test(checkpoint.cleanupGate.requiredBeforeCleanup) &&
@@ -299,7 +364,7 @@ const readiness = readJson<Readiness>(
   "artifacts/veroxa-sites/app/momo-readiness-tracker.json",
 );
 must(
-  readiness.schemaVersion === 4 &&
+  readiness.schemaVersion === 6 &&
     readiness.recordKind === "production_readiness_checkpoint" &&
     readiness.operationalAuthority.includes("Supabase") &&
     readiness.overallStatus === "blocked" &&
@@ -314,60 +379,68 @@ must(
     readiness.foundingPilotOnboardingGate.readinessDecision === "no_go",
   "Momo founding-pilot gate overstates authorization or requires paid AI.",
 );
-const readinessObserved = readiness.observedProductionState;
+const readinessEvidence = readiness.releaseEvidenceBoundary;
 must(
-  readinessObserved.canonicalGitHubMainCommit === expected.githubMain &&
-    readinessObserved.liveSitesCheckoutSourceCommit === expected.sitesCommit &&
-    readinessObserved.liveSitesVersion === expected.sitesVersion &&
-    readinessObserved.productionMigrations === expected.productionMigrations &&
-    readinessObserved.latestMigration === expected.migration &&
-    readinessObserved.latestMigrationSha256 === expected.migrationSha &&
-    !readinessObserved.sourceParityVerified,
-  "Readiness production observation disagrees with the RR checkpoint.",
-);
-must(
-  readiness.reconciliationCandidate.state === "candidate_not_merged_not_deployed" &&
-    readiness.reconciliationCandidate.mergeCommit === null &&
-    readiness.reconciliationCandidate.futureSitesVersion === null &&
-    !readiness.reconciliationCandidate.databaseCandidateApplied &&
-    !readiness.reconciliationCandidate.sitesCandidatePublished &&
-    readiness.reconciliationCandidate.deploymentFrozen,
-  "Readiness reconciliation candidate overstates release state.",
+  readinessEvidence.authority.includes("VEROXA_DEPLOYMENT_MANIFEST.json") &&
+    !readinessEvidence.bundlesCurrentDeploymentIdentity &&
+    readinessEvidence.reviewedManualDeploymentsOnly &&
+    !readinessEvidence.databaseChangesRequiredForThisReadinessRecord &&
+    /never asserts its own current Sites version/i.test(readinessEvidence.rule),
+  "Readiness record must externalize exact deployment evidence and remain stable across checkpoints.",
 );
 for (const [name, value] of Object.entries(readiness.activationState)) {
   must(value === false, `Readiness activation state must remain false: ${name}`);
 }
 must(
   readiness.auditAndTeamRelease.releaseState ===
-    "live_ahead_of_canonical_source_reconciliation_required" &&
-    readiness.auditAndTeamRelease.auditV3MigrationVersion === expected.migrationVersion &&
-    readiness.auditAndTeamRelease.auditV3MigrationSha256 === expected.migrationSha &&
-    !readiness.auditAndTeamRelease.canonicalSourceParityVerified &&
+    "audit_v3_foundation_external_release_evidence" &&
+    readiness.auditAndTeamRelease.auditV3PartialScoreAndPlanLive &&
+    !readiness.auditAndTeamRelease.canonicalSourceParityClaimed &&
     !readiness.auditAndTeamRelease.createsOperationalClient &&
     !readiness.auditAndTeamRelease.newIncrementalSpendApproved &&
-    readiness.dimensions.production_foundation.status !== "verified" &&
-    readiness.dimensions.production_foundation.blockers.length > 0 &&
+    readiness.dimensions.production_foundation.status === "verified" &&
+    readiness.dimensions.production_foundation.blockers.length === 0 &&
     !readiness.otherRestaurants.automaticOperationalConversion &&
     !readiness.otherRestaurants.readinessTrackingAllowed &&
     !readiness.costPolicy.newIncrementalSpendApproved,
-  "Readiness evidence overstates production parity, client conversion, or spend authority.",
+  "Readiness evidence must keep deployment identity external and client conversion/spend inactive.",
 );
 
 const manifest = readJson<DeploymentManifest>(candidate.manifest);
 must(
-  manifest.releaseState === candidate.state &&
-    manifest.observedProductionBaseline.githubMainCommit === expected.githubMain &&
-    manifest.observedProductionBaseline.sitesCheckoutCommit === expected.sitesCommit &&
-    manifest.observedProductionBaseline.sitesVersion === expected.sitesVersion &&
+  manifest.releaseState === checkpoint.status &&
+    manifest.observedProductionBaseline.githubMainCommit === expected.historical.githubMain &&
+    manifest.observedProductionBaseline.sitesCheckoutCommit === expected.historical.sitesCommit &&
+    manifest.observedProductionBaseline.sitesVersion === expected.historical.sitesVersion &&
     manifest.observedProductionBaseline.productionMigrationCount ===
-      expected.productionMigrations &&
-    manifest.observedProductionBaseline.latestProductionMigration === expected.migration &&
+      expected.historical.productionMigrations &&
+    manifest.observedProductionBaseline.latestProductionMigration ===
+      expected.historical.migration &&
     manifest.observedProductionBaseline.latestProductionMigrationSha256 ===
-      expected.migrationSha &&
+      expected.historical.migrationSha &&
     !manifest.observedProductionBaseline.sourceParityVerified &&
+    manifest.verifiedReconciliationRelease.pullRequest === expected.verified.pullRequest &&
+    manifest.verifiedReconciliationRelease.githubMainCommit === expected.verified.githubMain &&
+    manifest.verifiedReconciliationRelease.sitesCheckoutCommit ===
+      expected.verified.sitesCommit &&
+    manifest.verifiedReconciliationRelease.sitesVersion === expected.verified.sitesVersion &&
+    manifest.verifiedReconciliationRelease.sourceFileCount ===
+      expected.verified.sourceFileCount &&
+    manifest.verifiedReconciliationRelease.sourceTreeSha256 ===
+      expected.verified.sourceTreeSha256 &&
+    manifest.verifiedReconciliationRelease.productionMigrationCount ===
+      expected.verified.productionMigrations &&
+    manifest.verifiedReconciliationRelease.latestProductionMigration ===
+      expected.verified.migration &&
+    manifest.verifiedReconciliationRelease.latestProductionMigrationSha256 ===
+      expected.verified.migrationSha &&
+    manifest.verifiedReconciliationRelease.sitesSourceParityVerified &&
+    manifest.verifiedReconciliationRelease.migrationContentParityVerified &&
+    !manifest.verifiedReconciliationRelease.migrationFilenameParityVerified &&
     manifest.releaseCandidate.futureMergedGitHubCommit === null &&
     manifest.releaseCandidate.futureSitesVersion === null &&
-    !manifest.releaseCandidate.databaseApplied &&
+    !manifest.releaseCandidate.databaseChangesRequired &&
+    manifest.releaseCandidate.sitesPublishRequired &&
     !manifest.releaseCandidate.sitesPublished,
   "Deployment manifest disagrees with the RR production/candidate state.",
 );
@@ -375,9 +448,13 @@ for (const [name, value] of Object.entries(manifest.activationState)) {
   must(value === false, `Manifest activation state must remain false: ${name}`);
 }
 must(
-  !manifest.cleanupState.branchDeletionAllowed &&
+  manifest.cleanupState.inventoryReviewed &&
+    !manifest.cleanupState.branchDeletionCapabilityAvailable &&
+    !manifest.cleanupState.branchDeletionAllowed &&
+    manifest.cleanupState.legacyViteArchived &&
     !manifest.cleanupState.legacyViteRemovalAllowed &&
-    !manifest.cleanupState.vercelSentinelRemovalAllowed,
+    !manifest.cleanupState.externalVercelGitDisconnectionVerified &&
+    manifest.cleanupState.vercelShutdownSentinelRequired,
   "Deployment manifest must keep cleanup deferred.",
 );
 
@@ -392,12 +469,17 @@ const currentDocuments = [
 ];
 for (const file of currentDocuments) {
   const current = readFileSync(resolve(root, file), "utf8").slice(0, 14_000);
-  for (const marker of [expected.githubMain, expected.sitesCommit, "Sites version 13"]) {
+  for (const marker of [
+    expected.verified.githubMain,
+    expected.verified.sitesCommit,
+    "Sites version 14",
+    expected.verified.sourceTreeSha256,
+  ]) {
     must(current.includes(marker), `${file} is missing current reconciliation marker: ${marker}`);
   }
   must(
-    /not merged|unmerged/i.test(current) && /not deployed|undeployed|not published/i.test(current),
-    `${file} must describe the reconciliation candidate as unmerged and undeployed.`,
+    /not merged|unmerged/i.test(current) && /not published|awaiting.*Sites/i.test(current),
+    `${file} must describe the cleanup candidate as unmerged and unpublished.`,
   );
 }
 

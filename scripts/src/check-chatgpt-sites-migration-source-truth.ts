@@ -1,4 +1,5 @@
-import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { resolve } from "node:path";
 
 const repoRoot = resolve(import.meta.dirname, "../..");
@@ -7,6 +8,27 @@ const failures: string[] = [];
 const must = (condition: boolean, message: string) => {
   if (!condition) failures.push(message);
 };
+
+function archivedRuntimeHash(entries: string[]): { fileCount: number; sha256: string } {
+  const files: string[] = [];
+  const walk = (path: string) => {
+    const absolute = resolve(repoRoot, path);
+    if (statSync(absolute).isDirectory()) {
+      for (const name of readdirSync(absolute).sort()) walk(`${path}/${name}`);
+    } else {
+      files.push(path);
+    }
+  };
+  for (const entry of entries) walk(entry);
+  const hash = createHash("sha256");
+  for (const file of files.sort()) {
+    hash.update(file, "utf8");
+    hash.update("\0");
+    hash.update(readFileSync(resolve(repoRoot, file)));
+    hash.update("\0");
+  }
+  return { fileCount: files.length, sha256: hash.digest("hex") };
+}
 
 const agents = read("AGENTS.md");
 const activeDocs = read("artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md");
@@ -58,10 +80,10 @@ const alignedCurrentDocs = [
   "artifacts/veroxa/docs/MEDIA_INTELLIGENCE_LAYER.md",
   "artifacts/veroxa/docs/RESTAURANT_ONBOARDING_OS_V1.md",
 ].map(read);
-const router = read("artifacts/veroxa/src/App.tsx");
 const sitesRouter = read("artifacts/veroxa-sites/app/page.tsx");
 const sitesReadme = read("artifacts/veroxa-sites/README.md");
 const sitesHosting = read("artifacts/veroxa-sites/.openai/hosting.json");
+const legacyArchive = read("artifacts/veroxa/ARCHIVED.md");
 const workspace = read("pnpm-workspace.yaml");
 const sourceTruth = [
   agents,
@@ -109,7 +131,7 @@ for (const marker of [
   "does not become an operational client",
   "Other restaurants",
   "VEROXA_DEPLOYMENT_MANIFEST.json",
-  "Sites version 13",
+  "Sites version 14",
   "all four required workflows",
   "Mandatory post-build continuity update",
   "After every build",
@@ -163,10 +185,6 @@ for (const path of [
   "/team/momo/readiness",
 ]) {
   must(
-    router.includes(`path=\"${path}\"`),
-    `Canonical router missing migration-critical route: ${path}`,
-  );
-  must(
     migration.includes(`\`${path}\``) ||
       [
         "/",
@@ -182,6 +200,7 @@ for (const path of [
 }
 
 for (const path of [
+  "/",
   "/free-audit",
   "/login",
   "/client/dashboard",
@@ -218,13 +237,23 @@ for (const marker of [
 }
 
 for (const marker of [
+  "165ff82ab46b0a0985605ffcfb6efa687982eca5",
+  "57ccb8d1cce596baf782b03525c80161c11af8f3",
+  "Sites version 14",
+  "4f0a4f82d774a63c231a294704ae177ddbbe13c665567db33bdebab815331799",
+  "20260714022859_reconcile_audit_v3_and_function_search_paths.sql",
+  "192505ca4631e55f35b28f0c849a7d380bc1a709e5ae89adca742d7d349da45e",
+  "20260714022911_ai_budget_and_momo_manual_pilot_contract.sql",
+  "ebc2ea499a24b79da1baaffa02423488b1a28a95cb75d4c0d5c002c7c585948d",
+  "verified_reconciliation_cleanup_candidate",
+  "post_release_cleanup_built_for_review",
+  "reviewed_manual_deployment_only",
+  // Preserve the exact pre-PR #148 drift baseline as historical evidence.
   "674e1a7c0d140c9b281029277baeb2e68962dac2",
   "dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805",
   "Sites version 13",
   "20260713222721_upgrade_restaurant_audit_engine_v3_partial_scoring.sql",
   "304eb98db628b09fa245fba156160b043c1ba9ba2f9aeb689086a6a18ad234b2",
-  "candidate_not_merged_not_deployed",
-  "frozen_except_authorized_reconciliation",
 ]) {
   must(
     sourceTruth.includes(marker),
@@ -394,8 +423,29 @@ must(
   "GitHub-synchronized Sites source must preserve its hosting identity manifest.",
 );
 must(
-  workspace.includes("!artifacts/veroxa-sites"),
-  "Root pnpm workspace must exclude the isolated npm-based Sites application.",
+  workspace.includes("!artifacts/veroxa-sites") &&
+    workspace.includes("!artifacts/veroxa") &&
+    legacyArchive.includes("archived from active development") &&
+    legacyArchive.includes("not the canonical production application"),
+  "Root workspace must isolate Sites and archive legacy Vite from active development.",
+);
+const legacyRuntime = archivedRuntimeHash([
+  "artifacts/veroxa/src",
+  "artifacts/veroxa/public",
+  "artifacts/veroxa/e2e",
+  "artifacts/veroxa/.env.example",
+  "artifacts/veroxa/components.json",
+  "artifacts/veroxa/index.html",
+  "artifacts/veroxa/package.json",
+  "artifacts/veroxa/tsconfig.json",
+  "artifacts/veroxa/vite.config.ts",
+]);
+must(
+  legacyRuntime.fileCount === 670 &&
+    legacyRuntime.sha256 ===
+      "34c9133b9e672f9396357cbb7ba1fa46d7d2f3c5d513548fde9e31c32f566a49" &&
+    legacyArchive.includes(legacyRuntime.sha256),
+  "Archived Vite runtime changed without an explicit reactivation decision and archive-hash update.",
 );
 
 if (failures.length) {

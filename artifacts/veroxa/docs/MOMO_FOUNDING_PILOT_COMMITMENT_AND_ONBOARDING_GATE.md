@@ -2,11 +2,11 @@
 
 Status: current governing direction as of 2026-07-14.
 
-## Delivery freeze during production reconciliation
+## Verified release and post-release cleanup boundary
 
-GitHub `main` is canonical at `674e1a7c0d140c9b281029277baeb2e68962dac2`, while live Sites version 13 (`dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805`) and production Supabase migration 11 are ahead. Until one reviewed reconciliation release restores parity, product deployment is frozen except for that exact release.
+PR #148 is the verified deployed application release at GitHub commit `165ff82ab46b0a0985605ffcfb6efa687982eca5`. Sites version 14 is live from the separate Sites source commit `57ccb8d1cce596baf782b03525c80161c11af8f3`, and production Supabase has 13 applied migrations. The post-release cleanup candidate reconciles migration 12/13 filenames to their applied Supabase versions without changing SQL bytes and archives legacy Vite from active development paths. Exact filename-ledger parity remains pending until that cleanup merges.
 
-The reconciliation candidate is not merged or deployed. It does not authorize contacting Momo, provisioning a Client identity, recording owner confirmation or media rights, enabling runtime AI, connecting providers, publishing, charging, or adding spend. Visual/manual review may exercise honest empty and blocked states only.
+Neither PR #148 nor this cleanup authorizes contacting Momo, provisioning a Client identity, recording owner confirmation or media rights, enabling runtime AI, connecting providers, publishing, charging, activating, or adding spend. Visual/manual review may exercise honest empty and blocked states only, and the readiness decision remains No-Go. Preserve the exact Vercel shutdown sentinel until external Git disconnection is independently verified.
 
 ## Relationship and commercial commitment
 

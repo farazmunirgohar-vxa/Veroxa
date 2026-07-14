@@ -1,4 +1,15 @@
-## 2026-07-14 — locked production reconciliation and founding-pilot direction
+## 2026-07-14 — locked verified PR #148 release and cleanup direction
+
+- `CVR` means **Complete Veroxa Review**: Veroxa code review, build-direction review, Codex review, GitHub review, Sites review, and recommended next steps.
+- PR #148 is the verified deployed application release at `165ff82ab46b0a0985605ffcfb6efa687982eca5`; Sites version 14 is live from Sites source `57ccb8d1cce596baf782b03525c80161c11af8f3`; Supabase has 13 applied migrations.
+- The verified Sites tree SHA-256 is `4f0a4f82d774a63c231a294704ae177ddbbe13c665567db33bdebab815331799`. The cleanup candidate is not merged and not published; after merge it requires an exact-source Sites checkpoint.
+- Reconcile migrations 12 and 13 to applied filename versions `20260714022859_reconcile_audit_v3_and_function_search_paths.sql` and `20260714022911_ai_budget_and_momo_manual_pilot_contract.sql` without changing SQL bytes. Until that cleanup merges, content/count are verified but exact filename-ledger parity remains pending.
+- Archive legacy Vite from active workspace, build, and CI development paths while retaining recoverable historical source. It is not canonical runtime source, a deployment path, or a rollback authority.
+- Keep runtime AI, credentials, Momo/client contact, Client provisioning, owner confirmation, media rights, providers, publishing, billing, activation, and new spend disabled. Momo remains No-Go until real evidence and separate approval exist.
+- Preserve the exact Vercel shutdown sentinel until external Git disconnection is independently verified. Do not infer disconnection from quiet deployment history.
+- PR #148 remains the deployed application-release commit; do not predict the cleanup candidate's eventual merge commit.
+
+## 2026-07-14 — locked production reconciliation and founding-pilot direction (historical pre-PR #148 checkpoint)
 
 - `CVR` means **Complete Veroxa Review**: Veroxa code review, build-direction review, Codex review, GitHub review, Sites review, and recommended next steps.
 - Momo's House San Antonio has already agreed to onboard as Veroxa's free founding pilot. Complete and prove the secure, persistent, human-controlled operating loop before contact. Manual execution is valid for the pilot; paid AI and live provider automation are later modular activations, not prerequisites for truthful onboarding.
