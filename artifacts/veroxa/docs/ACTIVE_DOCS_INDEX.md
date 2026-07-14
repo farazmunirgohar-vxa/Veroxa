@@ -2,7 +2,17 @@
 
 Status: highest-level current source-of-truth index. Read this file before relying on older Veroxa documents.
 
-## 2026-07-13 — PR #145, Supabase 10, and Sites v11 verified production state
+## 2026-07-14 — production reconciliation and founding-pilot override
+
+- Governing direction: `VEROXA_CURRENT_MILESTONE.md` and `MOMO_FOUNDING_PILOT_COMMITMENT_AND_ONBOARDING_GATE.md` define the secure, persistent, human-controlled founding-pilot loop and evidence-based onboarding gate. Momo has already agreed to onboard, remains free during the founding-pilot period, and must not be contacted or activated until the gate passes and Faraz separately approves contact.
+- Machine release truth: `VEROXA_DEPLOYMENT_MANIFEST.json` records the freeze, disabled activation surfaces, observed production baseline, deterministic source and migration trees, and deferred cleanup gates. CI produces the exact-commit attestation; the manifest never predicts a future merge SHA or Sites version.
+- Observed source state: GitHub `main` is canonical at `674e1a7c0d140c9b281029277baeb2e68962dac2`, but live Sites version 13 is checkout `dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805` and production Supabase has 11 applied migrations. The exact migration 11 source is `20260713222721_upgrade_restaurant_audit_engine_v3_partial_scoring.sql`, SHA-256 `304eb98db628b09fa245fba156160b043c1ba9ba2f9aeb689086a6a18ad234b2`.
+- Delivery state: production is ahead of GitHub. The reconciliation candidate is unmerged and undeployed; it is not permission to mutate production.
+- Freeze: all product deployment is frozen except the exact reviewed reconciliation release after the four required workflows are green and GitHub shows zero unresolved review threads. AI, credentials, Momo/client contact, activation, providers, publishing, billing, and incremental spend remain disabled.
+- Cleanup: preserve the Vercel shutdown sentinel until external disconnection is independently verified. Do not delete branches or legacy Vite code until parity, rollback evidence, ownership classification, and explicit post-release approval exist.
+- Supersession: the 2026-07-13 PR #145 / Supabase 10 / Sites v11 section below is a historical checkpoint. It does not describe current live production or authorize a deployment.
+
+## 2026-07-13 — PR #145, Supabase 10, and Sites v11 verified production state (historical)
 
 - Verified source: PR #145 passed review at exact head b007de99eb6c927f6d7ede56d7d4fffe8cbc0f0d and is merged to GitHub main at 9aa74631e393bc0303c820cc7671f818d617778c.
 - Verified data: Supabase has all 10 production migrations applied and verified. Restaurant Audit V2 is remote migration version 20260713212046 with SQL SHA-256 f4bfff7ac94ade68a2c4f761c5627dbcfe82d5800a0a8a46ce42b13e5b930693.
@@ -169,6 +179,8 @@ Status: highest-level active contributor guide and current source-of-truth index
 - Momo owner walkthrough remains blocked until the full Live Automation V1 sequence is implemented and approved.
 
 ## Current source-of-truth docs
+- `VEROXA_DEPLOYMENT_MANIFEST.json` — machine-readable production observation, candidate tree, deployment freeze, activation state, and deferred cleanup gates. The eventual exact commit comes only from the CI attestation.
+- `MOMO_FOUNDING_PILOT_COMMITMENT_AND_ONBOARDING_GATE.md` — relationship, free founding-pilot, secure manual-loop, evidence-gate, and contact-approval authority.
 - `momo-readiness-tracker.json` — evidence-backed readiness tracking for Momo's House San Antonio only; every required dimension must be verified before overall readiness can be verified, and other restaurants remain Audit Center-only.
 - `MOMO_100_READINESS_SEVEN_SYSTEM_CONTRACT.md` — current deployed-foundation source/runtime/activation contract for all seven requested Momo systems; no invented owner truth, no automatic Auth provisioning, no live provider claims, and a fail-closed 100% evidence gate.
 - `MOMO_RESTAURANT_INTELLIGENCE_OPERATING_BOARD.md` — PR #132 source of truth for `/team/momo/intelligence` as the internal Restaurant Intelligence operating board; organization only, no activation, no real auth, no credentials, no Momo contact, no publishing, no integrations, no AI generation, no fake data, and no database writes.

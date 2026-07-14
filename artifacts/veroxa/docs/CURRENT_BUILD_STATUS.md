@@ -1,4 +1,16 @@
-## 2026-07-13 — PR #145, Supabase 10, and Sites v11 verified production state
+## 2026-07-14 — production-reconciliation candidate; not merged or deployed
+
+- Canonical GitHub `main`: `674e1a7c0d140c9b281029277baeb2e68962dac2`.
+- Observed live Sites version 13: checkout `dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805`, with both custom domains and SSL healthy.
+- Observed live database: 11 applied migrations. Migration 11 is `20260713222721_upgrade_restaurant_audit_engine_v3_partial_scoring.sql`, SHA-256 `304eb98db628b09fa245fba156160b043c1ba9ba2f9aeb689086a6a18ad234b2`.
+- Production is ahead of canonical source. The current worktree imports the exact Audit V3/Sites and migration evidence plus release controls. The reconciliation candidate is unmerged and undeployed: it is not republished or applied to production.
+- `VEROXA_DEPLOYMENT_MANIFEST.json` records the current freeze, disabled activation state, observed baseline, candidate tree fingerprints, and deferred cleanup gates. CI—not a hand-written document—must bind the eventual reviewed commit through an exact-`GITHUB_SHA` attestation.
+- Product deployments remain frozen except the exact green, reviewed, merged reconciliation release. The candidate does not authorize AI, credentials, Momo/client contact, Client provisioning, activation, providers, publishing, billing, external writes, or new spend.
+- Momo visual/manual review may continue against honest blocked and empty states; the onboarding gate remains No-Go until real, same-owner evidence satisfies it and Faraz explicitly authorizes contact.
+- Vercel's shutdown sentinel remains. External Git disconnection, branch pruning, and legacy Vite removal are blocked/deferred until post-release parity, rollback evidence, ownership classification, and explicit approval.
+- Older PR #145 / Supabase 10 / Sites v11 / Audit V2 material below is retained as release history and is not current live truth.
+
+## 2026-07-13 — PR #145, Supabase 10, and Sites v11 verified production state (historical)
 
 - Verified source: PR #145 passed review at exact head b007de99eb6c927f6d7ede56d7d4fffe8cbc0f0d and is merged to GitHub main at 9aa74631e393bc0303c820cc7671f818d617778c.
 - Verified data: Supabase has all 10 production migrations applied and verified. Restaurant Audit V2 is remote migration version 20260713212046 with SQL SHA-256 f4bfff7ac94ade68a2c4f761c5627dbcfe82d5800a0a8a46ce42b13e5b930693.

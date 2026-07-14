@@ -15,6 +15,9 @@ const expectedActive = [
   "20260713010916_momo_full_operating_system_advisor_hardening.sql",
   "20260713191147_momo_zero_cost_operating_rehearsal_v1.sql",
   "20260713212046_restaurant_audit_generation_v2.sql",
+  "20260713222721_upgrade_restaurant_audit_engine_v3_partial_scoring.sql",
+  "20260714120000_reconcile_audit_v3_and_function_search_paths.sql",
+  "20260714121000_ai_budget_and_momo_manual_pilot_contract.sql",
 ];
 const appliedChecksums: Record<string, string> = {
   "20260712213930_momo_production_foundation_v1.sql": "8fd646bdcbbef6b004f1fafc0fbb0b66cdc298e98cb890bbec6643788d0e2db9",
@@ -27,6 +30,7 @@ const appliedChecksums: Record<string, string> = {
   "20260713010916_momo_full_operating_system_advisor_hardening.sql": "237561bc8bac94062211ac7a8744b1de36df9574c4ad46050889637ad883217c",
   "20260713191147_momo_zero_cost_operating_rehearsal_v1.sql": "07cdb0a41b3d81e23e2c9432b139ae219c2b4671fed7cd18f761d4c4d6a79f2a",
   "20260713212046_restaurant_audit_generation_v2.sql": "f4bfff7ac94ade68a2c4f761c5627dbcfe82d5800a0a8a46ce42b13e5b930693",
+  "20260713222721_upgrade_restaurant_audit_engine_v3_partial_scoring.sql": "304eb98db628b09fa245fba156160b043c1ba9ba2f9aeb689086a6a18ad234b2",
 };
 const expectedArchived = [
   "20260601000000_m024a_first_client_metadata_schema.sql",
@@ -54,7 +58,7 @@ if (JSON.stringify(archived) !== JSON.stringify(expectedArchived)) {
 for (const filename of expectedActive) {
   const version = filename.slice(0, 14);
   const source = readFileSync(join(root, "supabase/migrations", filename), "utf8");
-  if (!/^2026071[23]\d{6}$/.test(version) || source.trim().length < 50) {
+  if (!/^2026071[234]\d{6}$/.test(version) || source.trim().length < 50) {
     throw new Error(`Invalid canonical migration: ${filename}`);
   }
   const expectedChecksum = appliedChecksums[filename];

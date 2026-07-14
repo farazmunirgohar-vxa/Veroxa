@@ -1,6 +1,10 @@
 # Momo 100% Readiness — Seven-System Contract
 
-Status: deployed-foundation contract as of 2026-07-13. This document separates source readiness, deployment, runtime connection, and activation so a prepared adapter or screen is never reported as a live provider connection.
+Status: full-automation contract and historical foundation record, reviewed 2026-07-14. This document separates source readiness, deployment, runtime connection, and activation so a prepared adapter or screen is never reported as a live provider connection.
+
+This contract does not replace the narrower founding-pilot onboarding authority in `MOMO_FOUNDING_PILOT_COMMITMENT_AND_ONBOARDING_GATE.md`. Momo may begin the already-agreed free pilot after the secure, persistent, human-controlled manual operating loop and exact evidence gate pass; runtime AI, Meta, Google, and automated publishing remain later modular activations. The 100% seven-system gate still governs any claim of full automation readiness.
+
+Current delivery state is a production/source reconciliation: canonical GitHub `main` is `674e1a7c0d140c9b281029277baeb2e68962dac2`, live Sites version 13 is checkout `dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805`, and production Supabase has 11 migrations. The candidate is not merged or deployed, so production parity is not yet verified and activation remains blocked.
 
 ## Status vocabulary
 

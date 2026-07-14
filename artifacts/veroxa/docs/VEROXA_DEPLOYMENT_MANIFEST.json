@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "recordKind": "veroxa_production_reconciliation_manifest",
+  "releaseState": "candidate_not_merged_not_deployed",
+  "canonicalRepository": "farazmunirgohar-vxa/Veroxa",
+  "canonicalBranch": "main",
+  "sitesProjectId": "appgprj_6a53d07c7c28819182801cf35dfd30de",
+  "observedProductionBaseline": {
+    "reviewedAt": "2026-07-13",
+    "githubMainCommit": "674e1a7c0d140c9b281029277baeb2e68962dac2",
+    "sitesCheckoutCommit": "dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805",
+    "sitesVersion": 13,
+    "productionMigrationCount": 11,
+    "latestProductionMigration": "20260713222721_upgrade_restaurant_audit_engine_v3_partial_scoring.sql",
+    "latestProductionMigrationSha256": "304eb98db628b09fa245fba156160b043c1ba9ba2f9aeb689086a6a18ad234b2",
+    "sourceParityVerified": false
+  },
+  "releaseCandidate": {
+    "status": "built_for_review",
+    "futureMergedGitHubCommit": null,
+    "futureSitesVersion": null,
+    "databaseApplied": false,
+    "sitesPublished": false
+  },
+  "source": {
+    "root": "artifacts/veroxa-sites",
+    "mappingTarget": "Sites repository root",
+    "hashAlgorithm": "veroxa-path-null-content-null-sha256-v1",
+    "fileCount": 56,
+    "treeSha256": "0a83b96dad5a1cf3ae0f1aa1fdc725c77220d03c7a63aa9a1b256926e38938a5",
+    "generatedPathExclusions": [
+      ".git",
+      ".next",
+      ".sites-runtime",
+      ".vinext",
+      ".wrangler",
+      "dist",
+      "node_modules",
+      "outputs",
+      "work"
+    ]
+  },
+  "migrations": {
+    "root": "supabase/migrations",
+    "hashAlgorithm": "veroxa-path-null-content-null-sha256-v1",
+    "fileCount": 13,
+    "treeSha256": "64ecaa9d80b42881874abe2f8b57e67d1e490280ee555a8e28f04005292557d1"
+  },
+  "deploymentFreeze": {
+    "state": "frozen_except_authorized_reconciliation",
+    "automaticDeploymentsAllowed": false,
+    "allowedDeployment": "Only the exact reviewed and merged production-reconciliation source may be synchronized, saved, and deployed through Sites.",
+    "liftCondition": "Record verified GitHub, Sites, database, domain, and production parity after the authorized reconciliation deployment."
+  },
+  "activationState": {
+    "newIncrementalSpendApproved": false,
+    "aiWebResearchEnabled": false,
+    "openAiCredentialProvisioned": false,
+    "momoClientIdentityProvisioned": false,
+    "momoOwnerContactAuthorized": false,
+    "ownerConfirmedBusinessTruthVerified": false,
+    "permissionedMediaVerified": false,
+    "externalProvidersConnected": false,
+    "externalPublishingEnabled": false,
+    "momoActivationExecuted": false
+  },
+  "cleanupState": {
+    "branchDeletionAllowed": false,
+    "legacyViteRemovalAllowed": false,
+    "vercelSentinelRemovalAllowed": false,
+    "blocker": "Complete and verify the post-release reconciliation first; then confirm PR/branch equivalence, remove legacy Vite from active checks, and verify the external Vercel Git integration is disconnected before cleanup."
+  }
+}

@@ -24,12 +24,14 @@ type View =
   | "login"
   | "security"
   | "home"
+  | "requests"
   | "onboarding"
   | "media"
   | "content"
   | "reports"
   | "services"
   | "team"
+  | "team-requests"
   | "team-audits"
   | "team-work"
   | "team-intelligence"
@@ -88,6 +90,7 @@ function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
 
 const clientNav: { id: View; label: string; icon: IconName; path: string }[] = [
   { id: "home", label: "Overview", icon: "home", path: "/client/dashboard" },
+  { id: "requests", label: "Requests", icon: "message", path: "/client/requests" },
   { id: "onboarding", label: "Setup", icon: "spark", path: "/client/onboarding" },
   { id: "media", label: "Media", icon: "image", path: "/client/media" },
   { id: "content", label: "Content", icon: "calendar", path: "/client/content" },
@@ -97,6 +100,7 @@ const clientNav: { id: View; label: string; icon: IconName; path: string }[] = [
 
 const momoWorkspaceNav: { id: View; label: string; icon: IconName; path: string }[] = [
   { id: "team", label: "Overview", icon: "home", path: "/team/momo" },
+  { id: "team-requests", label: "Client Requests", icon: "message", path: "/team/momo/requests" },
   { id: "team-work", label: "Work Board", icon: "grid", path: "/team/momo/work" },
   { id: "team-intelligence", label: "Restaurant Setup", icon: "spark", path: "/team/momo/intelligence" },
   { id: "team-media", label: "Media Library", icon: "image", path: "/team/momo/media" },
@@ -115,6 +119,7 @@ const routeToView: Record<string, View> = {
   "/login": "login",
   "/account/security": "security",
   "/client/dashboard": "home",
+  "/client/requests": "requests",
   "/client/onboarding": "onboarding",
   "/client/media": "media",
   "/client/content": "content",
@@ -122,6 +127,7 @@ const routeToView: Record<string, View> = {
   "/client/services": "services",
   "/team/dashboard": "team",
   "/team/momo": "team",
+  "/team/momo/requests": "team-requests",
   "/team/audits": "team-audits",
   "/team/momo/work": "team-work",
   "/team/momo/intelligence": "team-intelligence",
@@ -232,7 +238,7 @@ export function VeroxaApp({
 
   const isSecurity = view === "security";
   const isTeam = view.startsWith("team");
-  const isProtected = isTeam || isSecurity || ["home", "onboarding", "media", "content", "reports", "services"].includes(view);
+  const isProtected = isTeam || isSecurity || ["home", "requests", "onboarding", "media", "content", "reports", "services"].includes(view);
   if (isProtected && access.status !== "authenticated") {
     return access.status === "loading"
       ? <main className="login-shell"><section className="login-card"><p className="eyebrow">SECURE ACCESS</p><h1>Checking your session…</h1><p>Veroxa is validating the signed account session and workspace membership.</p></section></main>

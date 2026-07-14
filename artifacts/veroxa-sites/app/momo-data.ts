@@ -3,6 +3,7 @@ import { getVeroxaSupabase } from "./veroxa-supabase";
 
 export type MomoWorkspaceSection =
   | "dashboard"
+  | "requests"
   | "intelligence"
   | "media"
   | "content"
@@ -323,6 +324,7 @@ export type MomoVisibilitySnapshot = {
 
 export type MomoWorkItem = {
   id: string;
+  client_request_id?: string | null;
   work_type: string;
   title: string;
   description: string | null;
@@ -338,6 +340,27 @@ export type MomoWorkItem = {
   next_attempt_at: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type MomoClientRequest = {
+  id: string;
+  requestType: "onboarding" | "truth_update" | "media" | "content" | "website" | "reporting" | "support";
+  title: string;
+  details: string;
+  priority: "normal" | "urgent";
+  status: "open" | "acknowledged" | "in_progress" | "completed" | "cancelled";
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+  completedAt: string | null;
+};
+
+export type MomoRequestMessage = {
+  id: string;
+  senderId: string;
+  senderRole: "team" | "client";
+  body: string;
+  createdAt: string;
 };
 
 export type MomoActivityEvent = {
@@ -525,7 +548,7 @@ const operationsQueries: QueryDefinition[] = [
   { key: "localChecks", table: "veroxa_local_presence_checks", columns: "id, restaurant_id, presence_profile_id, check_type, status, observed_at, evidence, findings, recommended_actions, created_at, updated_at", order: "observed_at", ascending: false },
   { key: "reviews", table: "veroxa_review_records", columns: "id, restaurant_id, provider, external_review_id, rating, review_observed_at, review_excerpt, response_status, response_draft, approval_id, response_published_at, created_at, updated_at", order: "review_observed_at", ascending: false },
   { key: "visibility", table: "veroxa_visibility_snapshots", columns: "id, restaurant_id, source, period_start, period_end, metrics, evidence, captured_at, created_at", order: "captured_at", ascending: false },
-  { key: "work", table: "veroxa_work_items", columns: "id, restaurant_id, work_type, title, description, priority, status, subject_type, subject_id, due_at, assigned_to, blocked_reason, attempt_count, max_attempts, next_attempt_at, created_at, updated_at", order: "created_at", ascending: false },
+  { key: "work", table: "veroxa_work_items", columns: "id, restaurant_id, client_request_id, work_type, title, description, priority, status, subject_type, subject_id, due_at, assigned_to, blocked_reason, attempt_count, max_attempts, next_attempt_at, created_at, updated_at", order: "created_at", ascending: false },
   { key: "activity", table: "veroxa_activity_events", columns: "id, restaurant_id, event_type, subject_type, subject_id, actor_id, visibility, report_eligible, payload, occurred_at, created_at", order: "occurred_at", ascending: false },
   { key: "reports", table: "veroxa_reports", columns: "id, restaurant_id, report_type, period_start, period_end, status, summary, evidence_event_ids, approved_by, approved_at, published_at, created_at, updated_at", order: "period_end", ascending: false },
   { key: "monitors", table: "veroxa_monitor_checks", columns: "id, restaurant_id, check_key, status, details, checked_at, next_check_at, created_at, updated_at", order: "checked_at", ascending: false },
@@ -538,6 +561,7 @@ const readinessQueries: QueryDefinition[] = [
 ];
 
 function queriesForSection(section: MomoWorkspaceSection): QueryDefinition[] {
+  if (section === "requests") return [];
   if (section === "intelligence") return intelligenceQueries;
   if (section === "media") return mediaQueries;
   if (section === "content") return [
@@ -720,6 +744,9 @@ export async function loadMomoWorkspaceData(
 ): Promise<MomoWorkspaceData> {
   const client = getVeroxaSupabase();
   if (!client) throw new Error("configuration_unavailable");
+  // Requests and messages are private tables. Their dedicated panel loads only
+  // through the bounded list/thread RPCs below.
+  if (section === "requests") return emptyMomoWorkspaceData();
   if (role === "client") {
     const { data, error } = await client.rpc("veroxa_momo_client_snapshot_v1", {
       target_restaurant_id: restaurantId,
@@ -765,6 +792,217 @@ async function currentUser(): Promise<User> {
   const { data, error } = await client.auth.getUser();
   if (error || !data.user) throw new Error("session_unavailable");
   return data.user;
+}
+
+const requestTypes = new Set<MomoClientRequest["requestType"]>([
+  "onboarding", "truth_update", "media", "content", "website", "reporting", "support",
+]);
+const requestStatuses = new Set<MomoClientRequest["status"]>([
+  "open", "acknowledged", "in_progress", "completed", "cancelled",
+]);
+
+const requestRpcError = (error: unknown, fallback: string) => {
+  const message = error && typeof error === "object" && "message" in error
+    ? String((error as { message?: unknown }).message || "")
+    : "";
+  const known = [
+    "active_client_request_author_required",
+    "invalid_client_request_payload",
+    "client_request_idempotency_conflict",
+    "client_request_rate_or_open_limit_reached",
+    "request_thread_access_denied",
+    "request_thread_is_closed",
+    "invalid_request_message_payload",
+    "request_message_idempotency_conflict",
+    "request_message_rate_or_thread_limit_reached",
+    "momo_team_request_transition_required",
+    "invalid_client_request_transition",
+    "client_request_transition_idempotency_conflict",
+    "invalid_client_request_state_transition",
+    "momo_team_client_request_work_required",
+    "invalid_client_request_work_payload",
+    "client_request_work_idempotency_conflict",
+    "request_list_access_or_limit_denied",
+    "request_thread_access_or_limit_denied",
+  ].find((code) => message.includes(code));
+  return new Error(known || fallback);
+};
+
+const jsonRows = (value: unknown): Record<string, unknown>[] => {
+  if (!Array.isArray(value)) throw new Error("request_data_invalid");
+  if (value.some((item) => !item || typeof item !== "object" || Array.isArray(item))) throw new Error("request_data_invalid");
+  return value as Record<string, unknown>[];
+};
+
+const singleRpcRow = (value: unknown): Record<string, unknown> => {
+  const row = Array.isArray(value) ? (value.length === 1 ? value[0] : null) : value;
+  if (!row || typeof row !== "object" || Array.isArray(row)) throw new Error("request_data_invalid");
+  return row as Record<string, unknown>;
+};
+
+const requestFromJson = (row: Record<string, unknown>): MomoClientRequest | null => {
+  const requestType = row.requestType;
+  const status = row.status;
+  const priority = row.priority;
+  if (typeof row.id !== "string" || typeof requestType !== "string" || !requestTypes.has(requestType as MomoClientRequest["requestType"])
+    || typeof row.title !== "string" || typeof row.details !== "string"
+    || (priority !== "normal" && priority !== "urgent")
+    || typeof status !== "string" || !requestStatuses.has(status as MomoClientRequest["status"])
+    || typeof row.createdBy !== "string" || typeof row.createdAt !== "string"
+    || typeof row.updatedAt !== "string" || (row.completedAt !== null && typeof row.completedAt !== "string")) return null;
+  return {
+    id: row.id,
+    requestType: requestType as MomoClientRequest["requestType"],
+    title: row.title,
+    details: row.details,
+    priority,
+    status: status as MomoClientRequest["status"],
+    createdBy: row.createdBy,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+    completedAt: row.completedAt as string | null,
+  };
+};
+
+const messageFromJson = (row: Record<string, unknown>): MomoRequestMessage | null => {
+  if (typeof row.id !== "string" || typeof row.senderId !== "string"
+    || (row.senderRole !== "team" && row.senderRole !== "client")
+    || typeof row.body !== "string" || typeof row.createdAt !== "string") return null;
+  return {
+    id: row.id,
+    senderId: row.senderId,
+    senderRole: row.senderRole,
+    body: row.body,
+    createdAt: row.createdAt,
+  };
+};
+
+export const newMomoRequestIdempotencyKey = (scope: "request" | "message" | "transition" | "work") =>
+  `${scope}:${crypto.randomUUID()}`;
+
+export async function loadMomoClientRequests(input: {
+  restaurantId: string;
+  before?: string;
+  limit?: number;
+}): Promise<MomoClientRequest[]> {
+  const limit = input.limit ?? 25;
+  if (!Number.isInteger(limit) || limit < 1 || limit > 50) throw new Error("invalid_request_list_limit");
+  const client = requiredClient();
+  const { data, error } = await client.rpc("veroxa_list_client_requests_v1", {
+    p_restaurant_id: input.restaurantId,
+    p_before: input.before || null,
+    p_limit: limit,
+  });
+  if (error) throw requestRpcError(error, "request_list_failed");
+  const rows = jsonRows(data);
+  const requests = rows.map(requestFromJson);
+  if (requests.some((request) => request === null)) throw new Error("request_data_invalid");
+  return requests as MomoClientRequest[];
+}
+
+export async function loadMomoRequestThread(input: {
+  requestId: string;
+  before?: string;
+  limit?: number;
+}): Promise<MomoRequestMessage[]> {
+  const limit = input.limit ?? 50;
+  if (!Number.isInteger(limit) || limit < 1 || limit > 100) throw new Error("invalid_request_thread_limit");
+  const client = requiredClient();
+  const { data, error } = await client.rpc("veroxa_request_thread_v1", {
+    p_request_id: input.requestId,
+    p_before: input.before || null,
+    p_limit: limit,
+  });
+  if (error) throw requestRpcError(error, "request_thread_failed");
+  const rows = jsonRows(data);
+  const messages = rows.map(messageFromJson);
+  if (messages.some((message) => message === null)) throw new Error("request_data_invalid");
+  return messages as MomoRequestMessage[];
+}
+
+export async function createMomoClientRequest(input: {
+  restaurantId: string;
+  requestType: MomoClientRequest["requestType"];
+  title: string;
+  details: string;
+  priority: MomoClientRequest["priority"];
+  idempotencyKey: string;
+}): Promise<string> {
+  const client = requiredClient();
+  const { data, error } = await client.rpc("veroxa_create_client_request_v1", {
+    p_restaurant_id: input.restaurantId,
+    p_request_type: input.requestType,
+    p_title: input.title.trim(),
+    p_details: input.details.trim(),
+    p_priority: input.priority,
+    p_idempotency_key: input.idempotencyKey,
+  });
+  if (error) throw requestRpcError(error, "client_request_create_failed");
+  const row = singleRpcRow(data);
+  if (typeof row.request_id !== "string"
+    || typeof row.status !== "string"
+    || !requestStatuses.has(row.status as MomoClientRequest["status"])
+    || typeof row.created_at !== "string") throw new Error("client_request_create_failed");
+  return row.request_id;
+}
+
+export async function appendMomoRequestMessage(input: {
+  requestId: string;
+  body: string;
+  idempotencyKey: string;
+}): Promise<void> {
+  const client = requiredClient();
+  const { data, error } = await client.rpc("veroxa_append_request_message_v1", {
+    p_request_id: input.requestId,
+    p_body: input.body.trim(),
+    p_idempotency_key: input.idempotencyKey,
+  });
+  if (error) throw requestRpcError(error, "request_message_failed");
+  const row = singleRpcRow(data);
+  if (typeof row.message_id !== "string" || typeof row.created_at !== "string") throw new Error("request_message_failed");
+}
+
+export async function transitionMomoClientRequest(input: {
+  requestId: string;
+  targetStatus: "acknowledged" | "in_progress" | "completed" | "cancelled";
+  notes: string;
+  idempotencyKey: string;
+}): Promise<void> {
+  const client = requiredClient();
+  const { data, error } = await client.rpc("veroxa_transition_client_request_v1", {
+    p_request_id: input.requestId,
+    p_target_status: input.targetStatus,
+    p_notes: input.notes.trim(),
+    p_idempotency_key: input.idempotencyKey,
+  });
+  if (error) throw requestRpcError(error, "client_request_transition_failed");
+  const row = singleRpcRow(data);
+  if (row.request_id !== input.requestId || row.status !== input.targetStatus || typeof row.transitioned_at !== "string") throw new Error("client_request_transition_failed");
+}
+
+export async function createMomoClientRequestWork(input: {
+  requestId: string;
+  workType: string;
+  title: string;
+  description: string;
+  priority: number;
+  idempotencyKey: string;
+  dueAt?: string;
+}): Promise<string> {
+  const client = requiredClient();
+  const { data, error } = await client.rpc("veroxa_create_client_request_work_v1", {
+    p_request_id: input.requestId,
+    p_work_type: input.workType,
+    p_title: input.title.trim(),
+    p_description: input.description.trim(),
+    p_priority: input.priority,
+    p_idempotency_key: input.idempotencyKey,
+    p_subject_type: null,
+    p_subject_id: null,
+    p_due_at: input.dueAt ? new Date(input.dueAt).toISOString() : null,
+  });
+  if (error || typeof data !== "string") throw requestRpcError(error, "client_request_work_failed");
+  return data;
 }
 
 export async function saveMomoTruthField(input: {

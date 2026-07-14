@@ -1,9 +1,10 @@
 {
-  "schemaVersion": 3,
-  "checkpoint": "momo-team-audit-v2-pr145-production-verified",
-  "status": "production_verified",
-  "reviewedAt": "2026-07-13",
+  "schemaVersion": 4,
+  "checkpoint": "production-reconciliation-candidate-2026-07-14",
+  "status": "candidate_not_merged_not_deployed",
+  "reviewedAt": "2026-07-14",
   "deployedOperationalRelease": {
+    "supersededAsLiveBaseline": true,
     "pullRequest": 145,
     "reviewedHead": "b007de99eb6c927f6d7ede56d7d4fffe8cbc0f0d",
     "mergedOperationalCommit": "9aa74631e393bc0303c820cc7671f818d617778c",
@@ -15,19 +16,41 @@
     "sitesVersion": 11,
     "customDomainsVerified": true
   },
-  "auditAndTeamRelease": {
-    "releaseState": "merged_applied_published_verified",
-    "pullRequest": 145,
-    "reviewedHead": "b007de99eb6c927f6d7ede56d7d4fffe8cbc0f0d",
-    "mergedOperationalCommit": "9aa74631e393bc0303c820cc7671f818d617778c",
-    "sitesCheckoutSourceCommit": "4bef697e230791403211cb9c60f769ebcb4f39c7",
-    "sitesVersion": 11,
-    "productionMigrations": 10,
+  "observedProductionBaseline": {
+    "canonicalGitHubMainCommit": "674e1a7c0d140c9b281029277baeb2e68962dac2",
+    "sitesCheckoutSourceCommit": "dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805",
+    "sitesVersion": 13,
+    "productionMigrations": 11,
+    "latestProductionMigration": "20260713222721_upgrade_restaurant_audit_engine_v3_partial_scoring.sql",
+    "latestProductionMigrationSha256": "304eb98db628b09fa245fba156160b043c1ba9ba2f9aeb689086a6a18ad234b2",
     "databaseVerified": true,
     "customDomainsVerified": true,
-    "auditV2MigrationVersion": "20260713212046",
-    "auditV2MigrationSha256": "f4bfff7ac94ade68a2c4f761c5627dbcfe82d5800a0a8a46ce42b13e5b930693",
-    "auditScoreAndPlanLive": true,
+    "sourceParityVerified": false
+  },
+  "releaseCandidate": {
+    "manifest": "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json",
+    "state": "candidate_not_merged_not_deployed",
+    "futureMergedGitHubCommit": null,
+    "futureSitesVersion": null,
+    "allFourWorkflowsGreen": false,
+    "zeroUnresolvedReviewThreads": false,
+    "databaseCandidateApplied": false,
+    "sitesCandidatePublished": false
+  },
+  "auditAndTeamRelease": {
+    "releaseState": "live_ahead_of_canonical_source_reconciliation_required",
+    "pullRequest": null,
+    "reviewedHead": null,
+    "mergedOperationalCommit": null,
+    "sitesCheckoutSourceCommit": "dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805",
+    "sitesVersion": 13,
+    "productionMigrations": 11,
+    "databaseVerified": true,
+    "customDomainsVerified": true,
+    "auditV3MigrationVersion": "20260713222721",
+    "auditV3MigrationSha256": "304eb98db628b09fa245fba156160b043c1ba9ba2f9aeb689086a6a18ad234b2",
+    "auditV3PartialScoreAndPlanLive": true,
+    "canonicalSourceParityVerified": false,
     "simplifiedMomoTeamIALive": true,
     "pendingProfileRequiresExplicitConsent": true,
     "createsOperationalClient": false,
@@ -42,12 +65,18 @@
     "momoClientIdentityProvisioned": false,
     "ownerConfirmedBusinessTruthVerified": false,
     "permissionedMediaVerified": false,
+    "aiWebResearchEnabled": false,
+    "openAiCredentialProvisioned": false,
     "externalProvidersConnected": false,
     "externalPublishingVerified": false,
     "activationExecuted": false
   },
   "scope": {
     "operationalRestaurant": "Momo's House San Antonio",
+    "relationship": "agreed_free_founding_pilot",
+    "onboardingAuthority": "MOMO_FOUNDING_PILOT_COMMITMENT_AND_ONBOARDING_GATE.md",
+    "manualPilotAllowedWhenGatePasses": true,
+    "ownerContactAuthorized": false,
     "otherRestaurantCapability": "Restaurant Audit Center + explicit-consent non-operational pending profile only",
     "automaticProspectConversion": false
   },
@@ -61,17 +90,20 @@
     "20260713010710_momo_full_operating_system_v1.sql",
     "20260713010916_momo_full_operating_system_advisor_hardening.sql",
     "20260713191147_momo_zero_cost_operating_rehearsal_v1.sql",
-    "20260713212046_restaurant_audit_generation_v2.sql"
+    "20260713212046_restaurant_audit_generation_v2.sql",
+    "20260713222721_upgrade_restaurant_audit_engine_v3_partial_scoring.sql",
+    "20260714120000_reconcile_audit_v3_and_function_search_paths.sql",
+    "20260714121000_ai_budget_and_momo_manual_pilot_contract.sql"
   ],
   "reusableEvidence": [
     "Momo-only tenancy, role matrix, RLS, and safe-empty client boundary",
     "Deployed secure-email-link recovery plus approved-user password session, membership, callback, and protected-route boundary",
     "Signed public audit intake, raw-size limits, timeouts, idempotency, and rate limits",
     "Latest-run review gate, reviewed immutability, append-only lifecycle evidence, and distinct audit identity",
-    "Ten applied and verified Supabase migrations, focused pgTAP role/workflow/coexistence tests, and error-level database lint",
-    "Restaurant Audit V2 migration reconciled to remote version 20260713212046 with SQL SHA-256 f4bfff7ac94ade68a2c4f761c5627dbcfe82d5800a0a8a46ce42b13e5b930693 unchanged",
-    "PR #145 reviewed source merged and deployed as Sites version 11 with both custom domains active and SSL healthy",
-    "Root typecheck, Vite build/E2E, Sites build/render tests/lint, and Sites-only deployment guard"
+    "Eleven applied production migrations, including exact Audit V3 migration 20260713222721 with SHA-256 304eb98db628b09fa245fba156160b043c1ba9ba2f9aeb689086a6a18ad234b2",
+    "Observed live Sites version 13 checkout dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805 with both custom domains active and SSL healthy",
+    "Canonical GitHub main 674e1a7c0d140c9b281029277baeb2e68962dac2 is behind production; parity is not verified",
+    "The production-reconciliation candidate is unmerged and undeployed, with deterministic tree verification and exact-GITHUB_SHA CI attestation"
   ],
   "fullReviewTriggers": [
     "authentication, sessions, identity allowlist, role or membership authorization",
@@ -95,16 +127,20 @@
         "supabase/migrations/20260713010916_momo_full_operating_system_advisor_hardening.sql",
         "supabase/migrations/20260713191147_momo_zero_cost_operating_rehearsal_v1.sql",
         "supabase/migrations/20260713212046_restaurant_audit_generation_v2.sql",
+        "supabase/migrations/20260713222721_upgrade_restaurant_audit_engine_v3_partial_scoring.sql",
+        "supabase/migrations/20260714120000_reconcile_audit_v3_and_function_search_paths.sql",
+        "supabase/migrations/20260714121000_ai_budget_and_momo_manual_pilot_contract.sql",
         "supabase/tests/momo_production_tenant_rls_hardening.sql",
         "supabase/tests/momo_full_operating_system_v1.sql",
         "supabase/tests/momo_zero_cost_operating_rehearsal_v1.sql",
         "supabase/tests/restaurant_audit_center_v1.sql",
         "supabase/tests/restaurant_audit_generation_v2.sql",
+        "supabase/tests/production_reconciliation_hardening.sql",
         "supabase/tests/legacy_policy_cleanup_coexistence.sql",
         "scripts/src/check-supabase-migration-ledger.ts",
         ".github/workflows/supabase-verify.yml"
       ],
-      "sha256": "fbec90969f09cac142eb120551813438b38dfe934ab933684ee325283af03d8d"
+      "sha256": "97f02a2508a06b21c108d6e97508cd8ad6cab193bf5a6ec37dbecd5db05d9c4b"
     },
     "auth_access": {
       "review": "full-on-change",
@@ -124,15 +160,20 @@
         "artifacts/veroxa-sites/app/api/audit-requests/route.ts",
         "artifacts/veroxa-sites/app/audit-center.tsx",
         "artifacts/veroxa-sites/app/restaurant-audit-engine.ts",
+        "artifacts/veroxa-sites/app/api/team/restaurant-audits/research/research-core.ts",
+        "artifacts/veroxa-sites/app/api/team/restaurant-audits/research/route.ts",
+        "artifacts/veroxa-sites/tests/restaurant-audit-ai-route.test.mjs",
         "artifacts/veroxa-sites/tests/restaurant-audit-engine.test.mjs",
         "scripts/src/check-audit-intake-adapter-contracts.ts",
         "scripts/src/check-restaurant-audit-center-v1.ts"
       ],
-      "sha256": "53aaf5f47f76ad46a8cd45879382b9db5dfb6f0fce1b0dbbdde64175a2a0d24a"
+      "sha256": "e1fdb793e3bc6254c5f7c3710393ccbc485075207ace2d6da4a227207f746b96"
     },
     "delivery": {
       "review": "full-on-change",
       "files": [
+        "artifacts/veroxa-sites/.npmrc",
+        "artifacts/veroxa-sites/.openai/hosting.json",
         "artifacts/veroxa-sites/package.json",
         "artifacts/veroxa-sites/scripts/build-verified.sh",
         "artifacts/veroxa-sites/scripts/validate-artifact.sh",
@@ -140,16 +181,25 @@
         "artifacts/veroxa/e2e/route-auth-data-boundary.e2e.ts",
         "scripts/src/check-sites-only-deployment.ts",
         "scripts/src/check-chatgpt-sites-migration-source-truth.ts",
+        "scripts/src/check-deployment-manifest.ts",
+        "scripts/src/check-release-workflow-policy.ts",
+        "scripts/src/generate-deployment-attestation.ts",
+        "scripts/src/refresh-release-fingerprints.ts",
+        "scripts/src/release-manifest.ts",
         "scripts/src/check-rr-release-checkpoint.ts",
+        "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json",
         ".github/workflows/ci.yml",
-        ".github/workflows/sites-verify.yml"
+        ".github/workflows/sites-verify.yml",
+        ".github/workflows/supabase-verify.yml",
+        ".github/workflows/veroxa-verify.yml"
       ],
-      "sha256": "ffca559a4d49c865eeff4e6ae66affc5ed2b1132118597605e76b75a87359a6e"
+      "sha256": "dbaf522ce4621a9dfb6ed15181e97c76f9b157343fef9f271a716f9acb2e295b"
     },
     "product_scope": {
       "review": "full-on-change",
       "files": [
         "artifacts/veroxa/docs/VEROXA_CURRENT_MILESTONE.md",
+        "artifacts/veroxa/docs/MOMO_FOUNDING_PILOT_COMMITMENT_AND_ONBOARDING_GATE.md",
         "artifacts/veroxa/docs/MOMO_100_READINESS_SEVEN_SYSTEM_CONTRACT.md",
         "artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md",
         "artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md",
@@ -161,7 +211,7 @@
         "AGENTS.md",
         "artifacts/veroxa/docs/RR_CHECKPOINT.md"
       ],
-      "sha256": "c89ab8f0136418865db4e1b0ca3a5c14e8a72ede24ab897c9ffae59728d10dd7"
+      "sha256": "bfc875a64672b55137f87e3089bc514cb27ebed4167f97b0020f9b6876f56b99"
     },
     "momo_readiness_tracking": {
       "review": "evidence-delta-on-change",
@@ -170,7 +220,7 @@
         "artifacts/veroxa-sites/app/momo-readiness-types.ts",
         "scripts/src/check-momo-house-readiness-tracking.ts"
       ],
-      "sha256": "b7d0ec78d8ade790b14e3c3ae602af5c81ee1bf36ee48b89142e0ad8697a2612"
+      "sha256": "4d2762aba9e66564f2e8699cbf4e4332f7f6cf65b26c4a02ad8bf7fddd9081c5"
     },
     "presentation_surfaces": {
       "review": "delta-unless-boundary-crossed",
@@ -180,7 +230,7 @@
         "artifacts/veroxa-sites/tests/rendered-html.test.mjs",
         "artifacts/veroxa/src/pages/free-audit.tsx"
       ],
-      "sha256": "1119d2f35ca6c23cdcfcec940dfafafcffcdda86a65f4a090388d36c6b50ca34"
+      "sha256": "d962f4a20a1a6caa5a1dba23cb8eec068438624f55059f3e60e4b3baa5232e76"
     },
     "momo_operations_contract": {
       "review": "full-on-change",
@@ -209,14 +259,22 @@
         "package.json",
         "pnpm-lock.yaml"
       ],
-      "sha256": "a65ee0c235f21f0149e1a15893f0165ccf4c6040dbcccd05048fa62cce037296"
+      "sha256": "32b2f770cb62a9b78f273ac85c64084d4466af826b1d49846cccdc4872020da4"
     }
   },
   "activationGates": [
-    "Preserve the verified PR #145 Gmail Team identity and authenticated Team/Momo protected route boundary",
+    "Preserve the verified Gmail Team identity and authenticated Team/Momo protected route boundary",
     "Preserve the user-confirmed approved-user password login and secure-email-link recovery boundary",
     "Hosted reauthentication and old-session revocation remain unverified and must not be claimed as complete",
     "No Momo owner truth or media rights may be invented to satisfy readiness",
-    "Keep AI, Meta, Google, SEO writes, publishing, outbound contact, and Momo owner walkthrough inactive pending authorized access"
-  ]
+    "Keep AI, Meta, Google, SEO writes, publishing, outbound contact, Client provisioning, billing, and Momo activation inactive pending exact authorization",
+    "Freeze every product deployment except the exact reviewed reconciliation release after all four workflows are green and GitHub reports zero unresolved review threads"
+  ],
+  "cleanupGate": {
+    "vercelShutdownSentinelRequired": true,
+    "externalVercelGitDisconnectionVerified": false,
+    "branchDeletionAllowed": false,
+    "legacyViteRemovalAllowed": false,
+    "requiredBeforeCleanup": "Verified canonical production parity, tested rollback evidence, merged/superseded/owned branch classification, external Vercel Git disconnection verification, and explicit approval."
+  }
 }

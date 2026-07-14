@@ -1,8 +1,18 @@
 # ChatGPT Sites Migration and Source-of-Truth
 
-Status: active migration and deployment authority as of 2026-07-13.
+Status: active migration and deployment authority as of 2026-07-14.
 
-## Current production-foundation override
+## Production-reconciliation override
+
+GitHub `main` remains canonical at `674e1a7c0d140c9b281029277baeb2e68962dac2`, while production is ahead: live Sites version 13 is checkout `dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805`, and Supabase has 11 applied migrations. The latest exact source is `20260713222721_upgrade_restaurant_audit_engine_v3_partial_scoring.sql`, SHA-256 `304eb98db628b09fa245fba156160b043c1ba9ba2f9aeb689086a6a18ad234b2`. This is drift, not verified parity.
+
+The production-reconciliation worktree is an unmerged, undeployed candidate. `VEROXA_DEPLOYMENT_MANIFEST.json` records the observed baseline, deterministic candidate source and migration trees, fail-closed activation state, and deferred cleanup gates. CI must verify the manifest and generate an attestation from the exact `GITHUB_SHA`; committed source must not predict a merge SHA or future Sites version.
+
+Freeze product deployment except the exact reviewed reconciliation release after the four required workflows are green and GitHub reports no unresolved review threads. Keep runtime AI, credentials, Momo/client contact, activation, providers, publishing, billing, and new spend disabled. After merge, synchronize Sites from that exact merge and independently verify Audit V3 persistence, authentication, both domains, SSL, migration/source hashes, and rollback evidence before declaring parity.
+
+The Vercel shutdown sentinel remains mandatory until the external Git integration is independently confirmed disconnected. Removal is a separate post-release cleanup action, as are branch pruning and legacy Vite removal; all require parity, rollback evidence, ownership review, and explicit approval.
+
+## Historical production-foundation checkpoint
 
 The original migration scope below remains useful history, but its statements that production identity, persistence, and protected portal routes are future work are superseded for source truth by `VEROXA_CURRENT_MILESTONE.md`. PR #143 was reviewed at head `009276dbbf2639dc1eb5296bf62906f9f8ac45f1` and merged at operational commit `49a5250d6ce7bd8d78f19e415641563e2260ace8`. Its nine-migration data layer is applied and verified, and Sites version 9 deployed successfully from checkout source `69871c51f8e80d1802539a6bca52e3ce5b4ff71c`; both custom domains are active with healthy SSL. That deployed foundation implements Supabase-backed secure-email-link recovery and approved-user password sessions, active Momo membership checks, forced RLS, durable audit intake, protected Client/Team routes, and the seven no-new-spend Momo operating steps.
 
@@ -19,7 +29,7 @@ Veroxa now uses the ChatGPT Sites application/deployment surface. This is not a 
 - Codex is the engineering capability ChatGPT invokes internally.
 - ChatGPT Sites is the primary application and deployment surface.
 - Vercel is retired. Sites is the sole deployment surface; GitHub `main` plus verified Sites checkpoints are the recovery path.
-- The root `vercel.json` is a temporary, inert shutdown sentinel whose only allowed behavior is `git.deploymentEnabled: false`; it prevents the still-connected legacy Git integration from starting builds and must never contain runtime, route, build, or hosting configuration. Remove it after the Vercel dashboard integration is disconnected.
+- The root `vercel.json` is a temporary, inert shutdown sentinel whose only allowed behavior is `git.deploymentEnabled: false`; it prevents the still-connected legacy Git integration from starting builds and must never contain runtime, route, build, or hosting configuration. Remove it only after the Vercel dashboard integration is independently confirmed disconnected and the post-release cleanup gate is explicitly approved.
 - `veroxasystems.com` and `www.veroxasystems.com` are attached to Sites with active provider and SSL status as last verified on 2026-07-13.
 - The approved Sites visual direction is the presentation layer. It must preserve the existing Veroxa OS rather than replace it.
 - `CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md` controls the build, green-merge, hold, RR, and deployment command meanings.
