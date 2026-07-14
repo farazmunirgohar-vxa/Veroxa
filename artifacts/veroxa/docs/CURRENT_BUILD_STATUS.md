@@ -1,13 +1,13 @@
-## 2026-07-14 — PR #148 deployed; post-release cleanup candidate
+## 2026-07-14 — PR #149 cleanup merged and Sites v15 deployed
 
-- Verified deployed application release: PR #148 at `165ff82ab46b0a0985605ffcfb6efa687982eca5`.
-- Verified hosting: Sites version 14 from Sites source commit `57ccb8d1cce596baf782b03525c80161c11af8f3`.
-- Verified Sites tree SHA-256: `4f0a4f82d774a63c231a294704ae177ddbbe13c665567db33bdebab815331799`. The cleanup candidate is not merged and not published; after merge it requires an exact-source Sites checkpoint.
-- Verified database count: 13 applied Supabase migrations. The cleanup candidate reconciles source filenames for migrations 12 and 13 to applied versions `20260714022859_reconcile_audit_v3_and_function_search_paths.sql` and `20260714022911_ai_budget_and_momo_manual_pilot_contract.sql` with no SQL-byte change; exact filename-ledger parity remains pending until merge.
+- Verified GitHub release: PR #149 reviewed head `0d2c6e47fbfe1c44a2f0ff19fbb158001ed9365a` passed all four required workflows with zero unresolved review threads and merged at `9749b68ce2cfc383deeae6aa63c413019ef61385`.
+- Verified hosting: Sites version 15 succeeded from checkout `e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0`. The 55-file source tree SHA-256 is `ba06cd39ab7782987a6504678e4a3533a9943d078ba5dd9f93dbe8eeb0c5178f`; public access and both custom domains were verified.
+- Verified database: 13 Supabase migrations remain applied with exact filename and content parity. PR #149 required no database apply.
+- Audit V3 persistence contract: both production save/rerun RPC definitions and the validated `audit_runs` constraint accept `restaurant-audit-v3`. No synthetic production V3 save was created; an authenticated end-to-end save transaction remains unverified.
+- Verified state: `verified_reconciliation_cleanup_deployed` / `post_release_cleanup_deployed`. The evidence-only closeout PR touches no Sites source, so no Sites version 16 deployment is needed.
 - Legacy Vite is archived from the active workspace, root typecheck/build, and direct CI E2E paths. Its source is retained as recoverable history.
 - Runtime AI, credentials, Momo/client contact, Client provisioning, owner-confirmed truth, media rights, external providers, publishing, billing, activation, and incremental spend remain disabled. Momo remains No-Go.
-- The Vercel shutdown sentinel remains mandatory until independently verified external Git disconnection. No sentinel edit is part of this cleanup.
-- This cleanup does not change the deployed application runtime and must not predict its own future merge commit.
+- Branch deletion is unavailable. The external Vercel Git integration is not verified disconnected, so the inert shutdown sentinel remains mandatory.
 
 ## 2026-07-14 — production-reconciliation candidate; not merged or deployed (historical pre-PR #148 checkpoint)
 

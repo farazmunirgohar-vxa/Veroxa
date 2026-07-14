@@ -2,7 +2,9 @@
 
 Status reviewed: 2026-07-14.
 
-This record keeps cleanup truthful after the PR #148 production reconciliation. It does not authorize product activation, Momo contact, Client provisioning, provider connection, publishing, or spend.
+This record keeps cleanup truthful after PR #149 reviewed head `0d2c6e47fbfe1c44a2f0ff19fbb158001ed9365a` merged at `9749b68ce2cfc383deeae6aa63c413019ef61385` and its exact Sites source was verified in successful Sites version 15 checkout `e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0`. The 55-file deployed source SHA-256 is `ba06cd39ab7782987a6504678e4a3533a9943d078ba5dd9f93dbe8eeb0c5178f`; public access and both custom domains passed verification. Supabase remains at 13 migrations with filename/content parity, and PR #149 required no database apply. State is `verified_reconciliation_cleanup_deployed` / `post_release_cleanup_deployed`.
+
+The evidence-only closeout PR touches no Sites source and requires no Sites version 16. This record does not authorize product activation, Momo contact, Client provisioning, provider connection, publishing, or spend.
 
 ## GitHub branches
 

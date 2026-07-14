@@ -8,7 +8,7 @@ Faraz uses ChatGPT as the primary Veroxa command center. Faraz and ChatGPT decid
 
 The current milestone is to complete and prove the secure, persistent, human-controlled Momo operating loop and evidence-based onboarding gate. Momo's House San Antonio is the agreed free founding pilot and the only operational restaurant scope. Team Faraz is Momo-focused; the standalone Restaurant Audit Center is the only capability that may operate for non-client restaurants. An audited restaurant does not become an operational client unless Faraz separately and explicitly approves conversion. Runtime AI and external providers are later modular activations, not prerequisites for a truthful manual pilot. Read `VEROXA_CURRENT_MILESTONE.md` and `MOMO_FOUNDING_PILOT_COMMITMENT_AND_ONBOARDING_GATE.md` before planning or building.
 
-PR #148 is the verified deployed application release at GitHub commit `165ff82ab46b0a0985605ffcfb6efa687982eca5`. Sites version 14 is live from its separate Sites source commit `57ccb8d1cce596baf782b03525c80161c11af8f3`, and Supabase has 13 applied migrations. The post-release cleanup candidate reconciles migration 12/13 source filenames to their applied Supabase versions without changing SQL bytes and archives legacy Vite from active development paths; it must not predict its own future merge commit. Runtime AI, credentials, Momo/client contact or provisioning, owner truth, media rights, providers, publishing, billing, activation, and new spend remain disabled. Keep the exact Vercel shutdown sentinel until external Git disconnection is independently verified.
+PR #149 passed all four required workflows with zero unresolved review threads at reviewed head `0d2c6e47fbfe1c44a2f0ff19fbb158001ed9365a` and merged at `9749b68ce2cfc383deeae6aa63c413019ef61385`. Sites version 15 succeeded from checkout `e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0`; the verified 55-file source SHA-256 is `ba06cd39ab7782987a6504678e4a3533a9943d078ba5dd9f93dbe8eeb0c5178f`, and public/custom-domain checks passed. Supabase remains at 13 migrations with filename/content parity; PR #149 required no database apply. Machine state is `verified_reconciliation_cleanup_deployed`, and release state is `post_release_cleanup_deployed`. The evidence-only closeout PR changes no Sites source and therefore needs no Sites version 16. Runtime AI, credentials, Momo/client contact or provisioning, owner truth, media rights, providers, publishing, billing, activation, and new spend remain disabled. Branch deletion is unavailable, and the exact Vercel shutdown sentinel must remain until external Git disconnection is independently verified.
 
 The platform responsibilities remain distinct:
 
@@ -114,21 +114,17 @@ A command applies only to the agreed task. It is not blanket authority to merge 
 
 As last verified on 2026-07-14:
 
-- GitHub `main` is canonical at `674e1a7c0d140c9b281029277baeb2e68962dac2`, but production is ahead and parity is not currently established;
-- live Sites version 13 is checkout `dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805`;
-- Supabase has 11 applied migrations; migration 11 is `20260713222721_upgrade_restaurant_audit_engine_v3_partial_scoring.sql`, SHA-256 `304eb98db628b09fa245fba156160b043c1ba9ba2f9aeb689086a6a18ad234b2`;
-- the reconciliation worktree is not merged, not republished, and not authority to change production;
-- product deployment is frozen except the exact reviewed reconciliation release; AI, credentials, Momo/client contact, activation, providers, publishing, billing, and new spend remain disabled;
-
+- PR #149 reviewed head `0d2c6e47fbfe1c44a2f0ff19fbb158001ed9365a` passed all four required workflows with zero unresolved review threads and merged to canonical GitHub `main` at `9749b68ce2cfc383deeae6aa63c413019ef61385`;
+- Sites version 15 succeeded from checkout `e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0`, with 55-file source SHA-256 `ba06cd39ab7782987a6504678e4a3533a9943d078ba5dd9f93dbe8eeb0c5178f`;
+- Supabase remains at 13 applied migrations with exact filename/content parity, and PR #149 required no database apply;
+- machine/release state is `verified_reconciliation_cleanup_deployed` / `post_release_cleanup_deployed`;
 - the Veroxa Sites project is active and publicly accessible;
-- `veroxasystems.com` and `www.veroxasystems.com` are attached to Sites;
-- both custom domains report active provider and SSL status with no reported domain error;
+- `veroxasystems.com` and `www.veroxasystems.com` were verified with the Sites v15 release;
 - future verified Sites deployments use the existing domains and do not require routine Namecheap edits;
+- the evidence-only closeout PR changes no Sites source and requires no Sites version 16;
 - Vercel is retired; Sites checkpoints and GitHub source provide the deployment and recovery path;
-- the earlier PR #143 / nine-migration / Sites-version-9 bullets below are historical lineage, not current production identity;
+- branch deletion remains unavailable, and the Vercel shutdown sentinel remains because external Git disconnection is not verified;
 - Faraz's approved Gmail Team identity, Team/Momo access, protected-route Safari smoke, and approved-user password sign-in are verified; hosted reauthentication and old-session revocation remain unverified;
-- Momo client identity, owner-confirmed data, external publishing, payments, and live platform integrations remain blocked.
-- the ninth migration source filename is reconciled to remote version `20260713191147_momo_zero_cost_operating_rehearsal_v1.sql`; SQL, schema, content, and migration count are unchanged at SHA-256 `07cdb0a41b3d81e23e2c9432b139ae219c2b4671fed7cd18f761d4c4d6a79f2a`;
-- PR #144 is a behavior-neutral repository-and-Sites-evidence continuity release whose database-source delta is filename/ledger-only. Because it changes Sites-bundled readiness evidence, the exact merged PR #144 state requires a verified Sites version 10 checkpoint after merge. Sites version 10 is not already deployed, and PR #144's merge SHA must never be embedded or predicted; external GitHub PR metadata and Sites checkpoint metadata are the future authorities.
+- Momo client identity, owner-confirmed data, external publishing, payments, live platform integrations, runtime AI, and new spend remain blocked.
 
 Public marketing and audit intake remain anonymous. Protected portal data must continue to require signed sessions, active profile/membership authorization, server guards, and RLS; no real Momo client data may be entered until an approved client identity and owner-confirmed records exist.

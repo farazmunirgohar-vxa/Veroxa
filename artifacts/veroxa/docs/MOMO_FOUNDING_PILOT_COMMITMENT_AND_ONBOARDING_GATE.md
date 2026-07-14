@@ -2,11 +2,11 @@
 
 Status: current governing direction as of 2026-07-14.
 
-## Verified release and post-release cleanup boundary
+## Verified PR #149 cleanup and Sites v15 deployment boundary
 
-PR #148 is the verified deployed application release at GitHub commit `165ff82ab46b0a0985605ffcfb6efa687982eca5`. Sites version 14 is live from the separate Sites source commit `57ccb8d1cce596baf782b03525c80161c11af8f3`, and production Supabase has 13 applied migrations. The post-release cleanup candidate reconciles migration 12/13 filenames to their applied Supabase versions without changing SQL bytes and archives legacy Vite from active development paths. Exact filename-ledger parity remains pending until that cleanup merges.
+PR #149 passed all four required workflows with zero unresolved review threads at reviewed head `0d2c6e47fbfe1c44a2f0ff19fbb158001ed9365a` and merged at `9749b68ce2cfc383deeae6aa63c413019ef61385`. Sites version 15 succeeded from checkout `e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0`; its verified 55-file source SHA-256 is `ba06cd39ab7782987a6504678e4a3533a9943d078ba5dd9f93dbe8eeb0c5178f`, and the public/custom-domain checks passed. Production Supabase remains at 13 migrations with exact filename/content parity; PR #149 required no database apply. Machine/release state is `verified_reconciliation_cleanup_deployed` / `post_release_cleanup_deployed`. The evidence-only closeout PR changes no Sites source and needs no Sites version 16.
 
-Neither PR #148 nor this cleanup authorizes contacting Momo, provisioning a Client identity, recording owner confirmation or media rights, enabling runtime AI, connecting providers, publishing, charging, activating, or adding spend. Visual/manual review may exercise honest empty and blocked states only, and the readiness decision remains No-Go. Preserve the exact Vercel shutdown sentinel until external Git disconnection is independently verified.
+Neither PR #149 nor the evidence closeout authorizes contacting Momo, provisioning a Client identity, recording owner confirmation or media rights, enabling runtime AI, connecting providers, publishing, charging, activating, or adding spend. Visual/manual review may exercise honest empty and blocked states only, and the readiness decision remains No-Go. Branch deletion remains unavailable. Preserve the exact Vercel shutdown sentinel because external Git disconnection is not independently verified.
 
 ## Relationship and commercial commitment
 

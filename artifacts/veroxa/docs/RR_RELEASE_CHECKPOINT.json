@@ -1,7 +1,7 @@
 {
   "schemaVersion": 5,
-  "checkpoint": "post-release-cleanup-candidate-2026-07-14",
-  "status": "verified_reconciliation_cleanup_candidate",
+  "checkpoint": "post-release-cleanup-deployed-2026-07-14",
+  "status": "verified_reconciliation_cleanup_deployed",
   "reviewedAt": "2026-07-14",
   "deployedOperationalRelease": {
     "supersededAsLiveBaseline": true,
@@ -28,12 +28,12 @@
     "sourceParityVerified": false
   },
   "verifiedReconciliationRelease": {
-    "pullRequest": 148,
-    "githubMainCommit": "165ff82ab46b0a0985605ffcfb6efa687982eca5",
-    "sitesCheckoutSourceCommit": "57ccb8d1cce596baf782b03525c80161c11af8f3",
-    "sitesVersion": 14,
+    "pullRequest": 149,
+    "githubMainCommit": "9749b68ce2cfc383deeae6aa63c413019ef61385",
+    "sitesCheckoutSourceCommit": "e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0",
+    "sitesVersion": 15,
     "sourceFileCount": 55,
-    "sourceTreeSha256": "4f0a4f82d774a63c231a294704ae177ddbbe13c665567db33bdebab815331799",
+    "sourceTreeSha256": "ba06cd39ab7782987a6504678e4a3533a9943d078ba5dd9f93dbe8eeb0c5178f",
     "productionMigrations": 13,
     "latestProductionMigration": "20260714022911_ai_budget_and_momo_manual_pilot_contract.sql",
     "latestProductionMigrationSha256": "ebc2ea499a24b79da1baaffa02423488b1a28a95cb75d4c0d5c002c7c585948d",
@@ -42,33 +42,33 @@
     "customDomainsVerified": true,
     "sitesSourceParityVerified": true,
     "migrationContentParityVerified": true,
-    "migrationFilenameParityVerified": false
+    "migrationFilenameParityVerified": true
   },
   "releaseCandidate": {
     "manifest": "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json",
-    "state": "post_release_cleanup_built_for_review",
+    "state": "post_release_cleanup_deployed",
     "futureMergedGitHubCommit": null,
     "futureSitesVersion": null,
-    "allFourWorkflowsGreen": false,
-    "zeroUnresolvedReviewThreads": false,
+    "allFourWorkflowsGreen": true,
+    "zeroUnresolvedReviewThreads": true,
     "databaseChangesRequired": false,
     "sitesPublishRequired": true,
-    "sitesCandidatePublished": false
+    "sitesCandidatePublished": true
   },
   "auditAndTeamRelease": {
-    "releaseState": "verified_reconciliation_baseline",
-    "pullRequest": 148,
-    "reviewedHead": "111cf12159e8e58e81d4055dc0ddec67ba72cdf9",
-    "mergedOperationalCommit": "165ff82ab46b0a0985605ffcfb6efa687982eca5",
-    "sitesCheckoutSourceCommit": "57ccb8d1cce596baf782b03525c80161c11af8f3",
-    "sitesVersion": 14,
+    "releaseState": "verified_reconciliation_cleanup_deployed",
+    "pullRequest": 149,
+    "reviewedHead": "0d2c6e47fbfe1c44a2f0ff19fbb158001ed9365a",
+    "mergedOperationalCommit": "9749b68ce2cfc383deeae6aa63c413019ef61385",
+    "sitesCheckoutSourceCommit": "e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0",
+    "sitesVersion": 15,
     "productionMigrations": 13,
     "databaseVerified": true,
     "customDomainsVerified": true,
     "auditV3MigrationVersion": "20260713222721",
     "auditV3MigrationSha256": "304eb98db628b09fa245fba156160b043c1ba9ba2f9aeb689086a6a18ad234b2",
     "auditV3PartialScoreAndPlanLive": true,
-    "canonicalSourceParityVerified": false,
+    "canonicalSourceParityVerified": true,
     "simplifiedMomoTeamIALive": true,
     "pendingProfileRequiresExplicitConsent": true,
     "createsOperationalClient": false,
@@ -78,6 +78,8 @@
     "teamIdentityProvisioned": true,
     "authenticatedProtectedRouteVerified": true,
     "passwordSignInVerifiedByUser": true,
+    "auditV3SaveContractVerified": true,
+    "auditV3ProductionSaveTransactionVerified": false,
     "hostedReauthenticationVerified": false,
     "oldSessionRevocationVerified": false,
     "momoClientIdentityProvisioned": false,
@@ -119,9 +121,9 @@
     "Signed public audit intake, raw-size limits, timeouts, idempotency, and rate limits",
     "Latest-run review gate, reviewed immutability, append-only lifecycle evidence, and distinct audit identity",
     "Thirteen applied production migrations, including exact migration 13 20260714022911 with SHA-256 ebc2ea499a24b79da1baaffa02423488b1a28a95cb75d4c0d5c002c7c585948d",
-    "PR #148 application-release commit 165ff82ab46b0a0985605ffcfb6efa687982eca5 restored exact Sites source parity and Supabase migration-content parity; exact migration filename parity is the cleanup candidate",
-    "Verified Sites version 14 checkout 57ccb8d1cce596baf782b03525c80161c11af8f3 with 55-file source tree 4f0a4f82d774a63c231a294704ae177ddbbe13c665567db33bdebab815331799 and both custom domains active with SSL healthy",
-    "The post-release cleanup candidate reconciles applied migration filenames, archives legacy Vite from active development, and refreshes readiness evidence without enabling any activation path"
+    "PR #149 merge commit 9749b68ce2cfc383deeae6aa63c413019ef61385 finalized exact Sites and Supabase migration filename/content parity without applying a database change",
+    "Verified Sites version 15 checkout e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0 with 55-file source tree ba06cd39ab7782987a6504678e4a3533a9943d078ba5dd9f93dbe8eeb0c5178f and both custom domains active with SSL healthy",
+    "PR #149 archived legacy Vite from active development and deployed stable readiness evidence without enabling any activation path"
   ],
   "fullReviewTriggers": [
     "authentication, sessions, identity allowlist, role or membership authorization",
@@ -211,7 +213,7 @@
         ".github/workflows/supabase-verify.yml",
         ".github/workflows/veroxa-verify.yml"
       ],
-      "sha256": "92ce525745b0be969610d1de73875884b8f531932398771e094622f26419191c"
+      "sha256": "78236bd76ce8e4309874d8bcfe5ec4bb51729685bc94e4f3004a0e4790be50ad"
     },
     "product_scope": {
       "review": "full-on-change",
@@ -229,7 +231,7 @@
         "AGENTS.md",
         "artifacts/veroxa/docs/RR_CHECKPOINT.md"
       ],
-      "sha256": "01f2001ea8fa5a6212e83562deb46e707687d8ab908fc471d5aa74b1badb4e83"
+      "sha256": "0f6cec76a87a85cf5e25f51f636f00aa89f951552b8507f763ec71208f6169b5"
     },
     "momo_readiness_tracking": {
       "review": "evidence-delta-on-change",
@@ -238,7 +240,7 @@
         "artifacts/veroxa-sites/app/momo-readiness-types.ts",
         "scripts/src/check-momo-house-readiness-tracking.ts"
       ],
-      "sha256": "b60a3d63a7b51b4f9b8ccdf6cd5562ecb8a958e8afd93d0ba4e21295f20a8e44"
+      "sha256": "274ac0dac48015515fca74a013a0fa1af1e7ff5e033e84020f8dea2639aa5c0f"
     },
     "presentation_surfaces": {
       "review": "delta-unless-boundary-crossed",

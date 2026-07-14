@@ -152,7 +152,7 @@ must(
     releaseEvidence.reviewedManualDeploymentsOnly &&
     !releaseEvidence.databaseChangesRequiredForThisReadinessRecord &&
     /never asserts its own current Sites version/i.test(releaseEvidence.rule) &&
-    !/165ff82ab46b0a0985605ffcfb6efa687982eca5|57ccb8d1cce596baf782b03525c80161c11af8f3|sitesCandidatePublished|futureSitesVersion/.test(trackerText),
+    !/165ff82ab46b0a0985605ffcfb6efa687982eca5|57ccb8d1cce596baf782b03525c80161c11af8f3|9749b68ce2cfc383deeae6aa63c413019ef61385|e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0|ba06cd39ab7782987a6504678e4a3533a9943d078ba5dd9f93dbe8eeb0c5178f|Sites version 15|sitesCandidatePublished|futureSitesVersion/.test(trackerText),
   "Deployable readiness evidence must remain stable and externalize exact deployment identity.",
 );
 for (const [name, value] of Object.entries(tracker.activationState)) {

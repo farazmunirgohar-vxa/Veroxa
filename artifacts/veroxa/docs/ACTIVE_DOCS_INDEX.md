@@ -2,16 +2,16 @@
 
 Status: highest-level current source-of-truth index. Read this file before relying on older Veroxa documents.
 
-## 2026-07-14 — verified PR #148 release and cleanup override
+## 2026-07-14 — verified PR #149 cleanup and Sites v15 override
 
-- Verified application release: PR #148 merged at `165ff82ab46b0a0985605ffcfb6efa687982eca5`; Sites version 14 is live from Sites source commit `57ccb8d1cce596baf782b03525c80161c11af8f3`; production Supabase reports 13 applied migrations.
-- Verified Sites tree SHA-256: `4f0a4f82d774a63c231a294704ae177ddbbe13c665567db33bdebab815331799`. The cleanup candidate is not merged and not published; after merge it requires an exact-source Sites checkpoint.
-- Ledger cleanup: this candidate reconciles migrations 12 and 13 to applied versions `20260714022859_reconcile_audit_v3_and_function_search_paths.sql` and `20260714022911_ai_budget_and_momo_manual_pilot_contract.sql` without SQL-byte changes. Count and content are verified, but exact filename-ledger parity remains pending until the cleanup merges.
-- Legacy boundary: the Vite application is removed from active workspace/build/CI paths and retained as recoverable historical source. It is not a deployment, rollback, or product-development surface.
+- Verified GitHub release: PR #149 reviewed head `0d2c6e47fbfe1c44a2f0ff19fbb158001ed9365a` passed all four workflows with zero unresolved review threads and merged at `9749b68ce2cfc383deeae6aa63c413019ef61385`.
+- Verified hosting: Sites version 15 succeeded from checkout `e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0`; its 55-file source tree SHA-256 is `ba06cd39ab7782987a6504678e4a3533a9943d078ba5dd9f93dbe8eeb0c5178f`. Public access and both custom domains were verified.
+- Verified database: Supabase remains at 13 applied migrations, with exact filename and content parity. PR #149 applied no database change.
+- Machine and release states are `verified_reconciliation_cleanup_deployed` and `post_release_cleanup_deployed`. The evidence-only closeout PR changes no Sites source, so Sites version 16 is neither required nor authorized by that PR.
+- Legacy boundary: the Vite application is archived from active workspace/build/CI paths and retained as recoverable historical source. It is not a deployment, rollback, or product-development surface.
 - Activation boundary: runtime AI, credentials, Momo/client contact, Client provisioning, owner confirmation, media rights, providers, publishing, billing, activation, and new spend remain disabled. Momo remains No-Go.
-- Vercel boundary: keep the exact inert shutdown sentinel until the external Vercel Git integration is independently verified disconnected.
-- Cleanup evidence: `POST_RELEASE_BRANCH_AND_PROVIDER_CLEANUP.md` records the reviewed branch categories, unavailable branch-delete capability, legacy Vite archive boundary, and the unresolved external Vercel disconnection.
-- The section immediately below is the historical pre-PR #148 reconciliation checkpoint and does not describe current production.
+- Cleanup boundary: branch deletion remains unavailable. The external Vercel Git integration is not verified disconnected, so retain the exact inert shutdown sentinel. `POST_RELEASE_BRANCH_AND_PROVIDER_CLEANUP.md` records the remaining owner/tool actions.
+- The sections below are historical checkpoints and do not describe current production.
 
 ## 2026-07-14 — production reconciliation and founding-pilot override (historical pre-PR #148 checkpoint)
 

@@ -1,13 +1,12 @@
-## 2026-07-14 — locked verified PR #148 release and cleanup direction
+## 2026-07-14 — locked verified PR #149 / Sites v15 release state
 
 - `CVR` means **Complete Veroxa Review**: Veroxa code review, build-direction review, Codex review, GitHub review, Sites review, and recommended next steps.
-- PR #148 is the verified deployed application release at `165ff82ab46b0a0985605ffcfb6efa687982eca5`; Sites version 14 is live from Sites source `57ccb8d1cce596baf782b03525c80161c11af8f3`; Supabase has 13 applied migrations.
-- The verified Sites tree SHA-256 is `4f0a4f82d774a63c231a294704ae177ddbbe13c665567db33bdebab815331799`. The cleanup candidate is not merged and not published; after merge it requires an exact-source Sites checkpoint.
-- Reconcile migrations 12 and 13 to applied filename versions `20260714022859_reconcile_audit_v3_and_function_search_paths.sql` and `20260714022911_ai_budget_and_momo_manual_pilot_contract.sql` without changing SQL bytes. Until that cleanup merges, content/count are verified but exact filename-ledger parity remains pending.
-- Archive legacy Vite from active workspace, build, and CI development paths while retaining recoverable historical source. It is not canonical runtime source, a deployment path, or a rollback authority.
+- PR #149 passed all four required workflows with zero unresolved review threads at reviewed head `0d2c6e47fbfe1c44a2f0ff19fbb158001ed9365a` and merged at `9749b68ce2cfc383deeae6aa63c413019ef61385`.
+- Sites version 15 succeeded from checkout `e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0`. Its verified 55-file source tree SHA-256 is `ba06cd39ab7782987a6504678e4a3533a9943d078ba5dd9f93dbe8eeb0c5178f`; public access and both custom domains were verified.
+- Supabase remains at 13 applied migrations with exact filename/content parity; PR #149 required no database apply. Machine/release state is `verified_reconciliation_cleanup_deployed` / `post_release_cleanup_deployed`.
+- The evidence-only closeout PR changes no Sites source and therefore requires no Sites version 16. Archive legacy Vite from active development paths while retaining recoverable historical source; it is not canonical runtime source, a deployment path, or a rollback authority.
 - Keep runtime AI, credentials, Momo/client contact, Client provisioning, owner confirmation, media rights, providers, publishing, billing, activation, and new spend disabled. Momo remains No-Go until real evidence and separate approval exist.
-- Preserve the exact Vercel shutdown sentinel until external Git disconnection is independently verified. Do not infer disconnection from quiet deployment history.
-- PR #148 remains the deployed application-release commit; do not predict the cleanup candidate's eventual merge commit.
+- Branch deletion remains unavailable. Preserve the exact Vercel shutdown sentinel because external Git disconnection is not independently verified; do not infer disconnection from quiet deployment history.
 
 ## 2026-07-14 — locked production reconciliation and founding-pilot direction (historical pre-PR #148 checkpoint)
 
