@@ -46,11 +46,11 @@ const documents = [
 const combined = documents.map(({ source }) => source).join("\n");
 for (const marker of [
   "Vercel is retired",
-  "165ff82ab46b0a0985605ffcfb6efa687982eca5",
-  "57ccb8d1cce596baf782b03525c80161c11af8f3",
-  "Sites version 14",
-  "4f0a4f82d774a63c231a294704ae177ddbbe13c665567db33bdebab815331799",
-  "cleanup candidate",
+  "9749b68ce2cfc383deeae6aa63c413019ef61385",
+  "e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0",
+  "Sites version 15",
+  "ba06cd39ab7782987a6504678e4a3533a9943d078ba5dd9f93dbe8eeb0c5178f",
+  "post_release_cleanup_deployed",
   // Historical pre-PR #148 drift evidence remains recorded below the current override.
   "674e1a7c0d140c9b281029277baeb2e68962dac2",
   "dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805",
@@ -104,7 +104,7 @@ must(
     /never asserts its own current Sites version/i.test(
       readiness.releaseEvidenceBoundary.rule,
     ) &&
-    !/165ff82ab46b0a0985605ffcfb6efa687982eca5|57ccb8d1cce596baf782b03525c80161c11af8f3|sitesCandidatePublished|futureSitesVersion/.test(
+    !/165ff82ab46b0a0985605ffcfb6efa687982eca5|57ccb8d1cce596baf782b03525c80161c11af8f3|9749b68ce2cfc383deeae6aa63c413019ef61385|e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0|ba06cd39ab7782987a6504678e4a3533a9943d078ba5dd9f93dbe8eeb0c5178f|Sites version 15|sitesCandidatePublished|futureSitesVersion/.test(
       readinessText,
     ),
   "Sites-bundled readiness evidence must externalize exact deployment identity and remain stable across publications.",
@@ -132,20 +132,20 @@ const manifest = JSON.parse(
 };
 must(
   manifest.sitesProjectId === "appgprj_6a53d07c7c28819182801cf35dfd30de" &&
-    manifest.releaseState === "verified_reconciliation_cleanup_candidate" &&
-    manifest.verifiedReconciliationRelease.sitesVersion === 14 &&
+    manifest.releaseState === "verified_reconciliation_cleanup_deployed" &&
+    manifest.verifiedReconciliationRelease.sitesVersion === 15 &&
     manifest.verifiedReconciliationRelease.sourceTreeSha256 ===
-      "4f0a4f82d774a63c231a294704ae177ddbbe13c665567db33bdebab815331799" &&
+      "ba06cd39ab7782987a6504678e4a3533a9943d078ba5dd9f93dbe8eeb0c5178f" &&
     manifest.verifiedReconciliationRelease.sitesSourceParityVerified &&
     manifest.verifiedReconciliationRelease.migrationContentParityVerified &&
-    !manifest.verifiedReconciliationRelease.migrationFilenameParityVerified &&
+    manifest.verifiedReconciliationRelease.migrationFilenameParityVerified &&
     !manifest.deploymentFreeze.automaticDeploymentsAllowed &&
     manifest.releaseCandidate.sitesPublishRequired &&
-    !manifest.releaseCandidate.sitesPublished &&
+    manifest.releaseCandidate.sitesPublished &&
     !manifest.cleanupState.branchDeletionCapabilityAvailable &&
     !manifest.cleanupState.externalVercelGitDisconnectionVerified &&
     manifest.cleanupState.vercelShutdownSentinelRequired,
-  "Deployment manifest must bind v14, keep cleanup unpublished, and preserve the Vercel sentinel.",
+  "Deployment manifest must bind v15, record cleanup deployment, and preserve the Vercel sentinel.",
 );
 
 for (const workflow of readdirSync(resolve(root, ".github/workflows")).filter((name) =>

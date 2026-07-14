@@ -1,11 +1,11 @@
-## 2026-07-14 — verified PR #148 release and post-release cleanup override
+## 2026-07-14 — verified PR #149 cleanup and Sites v15 deployment override
 
-- PR #148 is the verified deployed application release at GitHub commit `165ff82ab46b0a0985605ffcfb6efa687982eca5`. Sites version 14 is live from its separate Sites source commit `57ccb8d1cce596baf782b03525c80161c11af8f3`, and production Supabase has 13 applied migrations.
-- The verified Sites version 14 tree SHA-256 is `4f0a4f82d774a63c231a294704ae177ddbbe13c665567db33bdebab815331799`. The cleanup candidate is not merged and not published; after merge it requires an exact-source Sites checkpoint.
-- Production migration content is present and verified, but the cleanup candidate must reconcile canonical filenames for migrations 12 and 13 to the applied Supabase versions `20260714022859_reconcile_audit_v3_and_function_search_paths.sql` and `20260714022911_ai_budget_and_momo_manual_pilot_contract.sql` without changing their SQL bytes. Do not claim exact filename-ledger parity until that cleanup merges.
-- This post-release cleanup archives the legacy Vite application from active workspace, build, and CI paths while retaining its source as recoverable historical evidence. PR #148 remains the deployed application-release commit; this cleanup must not predict its own future merge commit.
-- Runtime AI, credentials, Momo/client contact, Client provisioning, owner confirmation, media rights, external providers, publishing, billing, activation, and incremental spend remain disabled. Momo remains a visual/manual No-Go until the evidence gate passes and Faraz separately authorizes contact.
-- Vercel remains retired. Preserve the exact inert shutdown sentinel until the external Vercel Git integration is independently verified disconnected; this cleanup does not authorize sentinel removal.
+- PR #149 passed all four required workflows with zero unresolved review threads at reviewed head `0d2c6e47fbfe1c44a2f0ff19fbb158001ed9365a` and merged to GitHub `main` at `9749b68ce2cfc383deeae6aa63c413019ef61385`.
+- Sites version 15 succeeded from checkout `e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0`. Its 55-file canonical source tree has SHA-256 `ba06cd39ab7782987a6504678e4a3533a9943d078ba5dd9f93dbe8eeb0c5178f`; the public site and both custom domains were verified.
+- Production Supabase remains at 13 applied migrations. Canonical filenames and SQL content match the applied ledger, and PR #149 required no database apply.
+- Machine state is `verified_reconciliation_cleanup_deployed`; release state is `post_release_cleanup_deployed`. An evidence-only closeout PR does not touch `artifacts/veroxa-sites`, so it requires no Sites version 16 deployment.
+- Legacy Vite is archived from active workspace, build, and CI paths while retained as recoverable historical evidence. Runtime AI, credentials, Momo/client contact, Client provisioning, owner confirmation, media rights, external providers, publishing, billing, activation, and incremental spend remain disabled. Momo remains a visual/manual No-Go until the evidence gate passes and Faraz separately authorizes contact.
+- Branch deletion remains unavailable through the connected GitHub surface. Vercel remains retired; the external Git integration is not verified disconnected, so preserve the exact inert shutdown sentinel.
 
 ## 2026-07-14 — production reconciliation, founding-pilot, and freeze override (historical pre-PR #148 checkpoint)
 

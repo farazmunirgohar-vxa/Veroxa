@@ -26,13 +26,13 @@ const historical = {
     "304eb98db628b09fa245fba156160b043c1ba9ba2f9aeb689086a6a18ad234b2",
 };
 const verified = {
-  pullRequest: 148,
-  githubMainCommit: "165ff82ab46b0a0985605ffcfb6efa687982eca5",
-  sitesCheckoutCommit: "57ccb8d1cce596baf782b03525c80161c11af8f3",
-  sitesVersion: 14,
+  pullRequest: 149,
+  githubMainCommit: "9749b68ce2cfc383deeae6aa63c413019ef61385",
+  sitesCheckoutCommit: "e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0",
+  sitesVersion: 15,
   sourceFileCount: 55,
   sourceTreeSha256:
-    "4f0a4f82d774a63c231a294704ae177ddbbe13c665567db33bdebab815331799",
+    "ba06cd39ab7782987a6504678e4a3533a9943d078ba5dd9f93dbe8eeb0c5178f",
   productionMigrationCount: 13,
   latestProductionMigration:
     "20260714022911_ai_budget_and_momo_manual_pilot_contract.sql",
@@ -52,8 +52,8 @@ must(
   "Deployment manifest record kind is invalid.",
 );
 must(
-  manifest.releaseState === "verified_reconciliation_cleanup_candidate",
-  "The manifest must distinguish the verified PR #148 release from the cleanup candidate.",
+  manifest.releaseState === "verified_reconciliation_cleanup_deployed",
+  "The manifest must identify the deployed PR #149 reconciliation cleanup.",
 );
 must(
   manifest.canonicalRepository === "farazmunirgohar-vxa/Veroxa" &&
@@ -90,25 +90,25 @@ must(
     release.latestProductionMigration === verified.latestProductionMigration &&
     release.latestProductionMigrationSha256 ===
       verified.latestProductionMigrationSha256 &&
-    release.databaseApplied &&
+    !release.databaseApplied &&
     release.databaseVerified &&
     release.sitesPublished &&
     release.sitesVerified &&
     release.customDomainsVerified &&
     release.sitesSourceParityVerified &&
     release.migrationContentParityVerified &&
-    !release.migrationFilenameParityVerified,
-  "PR #148 must preserve exact Sites/content parity while recording the provisional migration-filename mismatch.",
+    release.migrationFilenameParityVerified,
+  "PR #149 must preserve exact Sites and migration content/filename parity without claiming a database apply.",
 );
 
 must(
-  manifest.releaseCandidate.status === "post_release_cleanup_built_for_review" &&
+  manifest.releaseCandidate.status === "post_release_cleanup_deployed" &&
     manifest.releaseCandidate.futureMergedGitHubCommit === null &&
     manifest.releaseCandidate.futureSitesVersion === null &&
     !manifest.releaseCandidate.databaseChangesRequired &&
     manifest.releaseCandidate.sitesPublishRequired &&
-    !manifest.releaseCandidate.sitesPublished,
-  "The cleanup candidate must remain unmerged, unpredicted, database-neutral, and unpublished.",
+    manifest.releaseCandidate.sitesPublished,
+  "The cleanup lifecycle must remain unpredicted, database-neutral, and recorded as deployed.",
 );
 
 must(
@@ -125,12 +125,12 @@ const sourceTree = hashTree(sourceRoot, {
 must(
   sourceTree.fileCount === manifest.source.fileCount &&
     sourceTree.sha256 === manifest.source.treeSha256,
-  `Cleanup-candidate Sites tree drifted (actual ${sourceTree.fileCount}/${sourceTree.sha256}).`,
+  `Deployed Sites tree drifted (actual ${sourceTree.fileCount}/${sourceTree.sha256}).`,
 );
 must(
   sourceTree.fileCount === verified.sourceFileCount &&
-    sourceTree.sha256 !== verified.sourceTreeSha256,
-  "The cleanup candidate must retain 55 source files but differ from deployed v14 before its required post-merge Sites publication.",
+    sourceTree.sha256 === verified.sourceTreeSha256,
+  "GitHub must retain the exact 55-file Sites v15 source tree deployed from PR #149.",
 );
 must(sourceTree.files.includes(".npmrc"), "Canonical Sites source must include .npmrc.");
 for (const excluded of [
@@ -222,5 +222,5 @@ if (failures.length) {
 }
 
 console.log(
-  `Veroxa deployment manifest passed: PR #148 / Sites v14 is preserved and the ${sourceTree.fileCount}-file cleanup candidate remains unpublished.`,
+  `Veroxa deployment manifest passed: PR #149 / Sites v15 is verified at ${sourceTree.fileCount} files with migration filename parity.`,
 );

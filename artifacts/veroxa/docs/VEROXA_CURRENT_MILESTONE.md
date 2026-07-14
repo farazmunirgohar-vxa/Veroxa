@@ -17,14 +17,13 @@ Also read:
 
 ## Current verified delivery state
 
-PR #148 is the verified deployed application release at `165ff82ab46b0a0985605ffcfb6efa687982eca5`; Sites version 14 is live from source commit `57ccb8d1cce596baf782b03525c80161c11af8f3` with tree SHA-256 `4f0a4f82d774a63c231a294704ae177ddbbe13c665567db33bdebab815331799`. The cleanup candidate is not merged and not published; after merge it requires an exact-source Sites checkpoint.
+PR #149 passed all four required workflows with zero unresolved review threads at reviewed head `0d2c6e47fbfe1c44a2f0ff19fbb158001ed9365a` and merged at `9749b68ce2cfc383deeae6aa63c413019ef61385`. Sites version 15 succeeded from checkout `e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0` with a verified 55-file source tree SHA-256 of `ba06cd39ab7782987a6504678e4a3533a9943d078ba5dd9f93dbe8eeb0c5178f`; public access and both custom domains were verified.
 
-- PR #148 is the verified deployed application release at GitHub commit `165ff82ab46b0a0985605ffcfb6efa687982eca5`. Sites version 14 is live from the separate Sites source commit `57ccb8d1cce596baf782b03525c80161c11af8f3`, and production Supabase has 13 applied migrations.
-- This cleanup candidate reconciles canonical source filenames for production migrations 12 and 13 to applied versions `20260714022859_reconcile_audit_v3_and_function_search_paths.sql` and `20260714022911_ai_budget_and_momo_manual_pilot_contract.sql`, preserving their SQL bytes. Exact filename-ledger parity must remain pending until this cleanup merges.
+- Production Supabase remains at 13 applied migrations, with exact canonical filename and SQL-content parity. PR #149 required no database apply.
+- Machine state is `verified_reconciliation_cleanup_deployed`; release state is `post_release_cleanup_deployed`. The evidence-only closeout PR changes no Sites source and therefore requires no Sites version 16.
 - The legacy Vite application is archived from active workspace, build, and CI paths; its source remains recoverable history and is not a deployment or rollback path.
 - Runtime AI, credentials, Momo/client contact, Client provisioning, owner confirmation, media rights, Meta/Google or other providers, publishing, billing, activation, and new spend remain disabled. Momo remains an evidence-based No-Go.
-- Keep the Vercel shutdown sentinel unchanged until external Git disconnection is independently verified. This cleanup does not authorize its removal.
-- PR #148 remains the deployed application-release identity. This candidate must not predict the later merge commit that will contain documentation and filename-ledger cleanup.
+- Branch deletion remains unavailable through the connected GitHub surface. Keep the Vercel shutdown sentinel unchanged because the external Git integration is not independently verified disconnected.
 
 ## Pre-PR #148 reconciliation state (historical)
 

@@ -1,14 +1,14 @@
 # RR Release Checkpoint
 
-## 2026-07-14 — verified PR #148 release and cleanup checkpoint
+## 2026-07-14 — verified PR #149 cleanup and Sites v15 checkpoint
 
-- PR #148 is the verified deployed application release at `165ff82ab46b0a0985605ffcfb6efa687982eca5`; Sites version 14 is live from Sites source commit `57ccb8d1cce596baf782b03525c80161c11af8f3`; Supabase has 13 applied migrations.
-- The verified Sites tree SHA-256 is `4f0a4f82d774a63c231a294704ae177ddbbe13c665567db33bdebab815331799`. The cleanup candidate is not merged and not published; after merge it requires an exact-source Sites checkpoint.
-- The cleanup delta is filename/ledger-only for migrations 12 and 13 plus retirement of legacy Vite from active workspace/build/CI paths. The migration SQL bytes and deployed Sites runtime do not change.
-- Applied filenames are `20260714022859_reconcile_audit_v3_and_function_search_paths.sql` and `20260714022911_ai_budget_and_momo_manual_pilot_contract.sql`. Do not mark exact filename-ledger parity complete before the cleanup merges and its guards pass.
+- PR #149 reviewed head `0d2c6e47fbfe1c44a2f0ff19fbb158001ed9365a` passed all four required workflows with zero unresolved review threads and merged at `9749b68ce2cfc383deeae6aa63c413019ef61385`.
+- Sites version 15 succeeded from checkout `e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0`. Its verified 55-file source tree SHA-256 is `ba06cd39ab7782987a6504678e4a3533a9943d078ba5dd9f93dbe8eeb0c5178f`; public access and both custom domains were verified.
+- Supabase remains at 13 applied migrations with exact filename/content parity. PR #149 applied no database change.
+- Both live save/rerun RPC definitions and the validated `audit_runs` constraint accept `restaurant-audit-v3`; no synthetic production record was created, so an authenticated end-to-end V3 save transaction remains unverified.
+- Machine state is `verified_reconciliation_cleanup_deployed`, and release state is `post_release_cleanup_deployed`. The evidence-only closeout PR touches no Sites source, so no Sites version 16 checkpoint is required.
 - Runtime AI, credentials, Momo/client contact or provisioning, owner truth, media rights, external providers, publishing, billing, activation, and new spend remain disabled. Momo remains No-Go.
-- Preserve the Vercel shutdown sentinel until independently verified external Git disconnection. Legacy Vite source remains recoverable historical evidence, not an active product or rollback surface.
-- PR #148 remains the deployed application-release commit; this checkpoint does not predict the cleanup candidate's future merge commit.
+- Legacy Vite source remains recoverable historical evidence, not an active product or rollback surface. Branch deletion remains unavailable. Preserve the Vercel shutdown sentinel because external Git disconnection is not independently verified.
 
 ## 2026-07-14 — production-reconciliation checkpoint candidate (historical pre-PR #148 checkpoint)
 

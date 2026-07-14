@@ -2,13 +2,13 @@
 
 Status: active migration and deployment authority as of 2026-07-14.
 
-## Verified PR #148 release and post-release cleanup override
+## Verified PR #149 cleanup and Sites v15 deployment override
 
-PR #148 is the verified deployed application release at GitHub commit `165ff82ab46b0a0985605ffcfb6efa687982eca5`. Sites version 14 is live from the separate Sites source commit `57ccb8d1cce596baf782b03525c80161c11af8f3`; production Supabase has 13 applied migrations.
+PR #149 passed all four required workflows with zero unresolved review threads at reviewed head `0d2c6e47fbfe1c44a2f0ff19fbb158001ed9365a` and merged to GitHub `main` at `9749b68ce2cfc383deeae6aa63c413019ef61385`.
 
-The verified Sites version 14 baseline contains 55 canonical files at tree SHA-256 `4f0a4f82d774a63c231a294704ae177ddbbe13c665567db33bdebab815331799`. The cleanup candidate reconciles canonical migration filenames 12 and 13 to applied Supabase versions `20260714022859_reconcile_audit_v3_and_function_search_paths.sql` (SHA-256 `192505ca4631e55f35b28f0c849a7d380bc1a709e5ae89adca742d7d349da45e`) and `20260714022911_ai_budget_and_momo_manual_pilot_contract.sql` (SHA-256 `ebc2ea499a24b79da1baaffa02423488b1a28a95cb75d4c0d5c002c7c585948d`) without changing SQL bytes. Count and content are verified, but exact filename-ledger parity remains pending until the cleanup merges. The machine state is `verified_reconciliation_cleanup_candidate`, the release candidate is `post_release_cleanup_built_for_review`, and delivery remains `reviewed_manual_deployment_only`. The cleanup also archives legacy Vite from active workspace, build, and CI paths while retaining recoverable historical source.
+Sites version 15 succeeded from checkout `e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0`. The deployed source contains 55 canonical files at tree SHA-256 `ba06cd39ab7782987a6504678e4a3533a9943d078ba5dd9f93dbe8eeb0c5178f`; public access and `veroxasystems.com` plus `www.veroxasystems.com` were verified with active provider and SSL status. Production Supabase remains at 13 applied migrations, with exact canonical filename and SQL-content parity. Applied migration 12 is `20260714022859_reconcile_audit_v3_and_function_search_paths.sql`, SHA-256 `192505ca4631e55f35b28f0c849a7d380bc1a709e5ae89adca742d7d349da45e`; migration 13 is `20260714022911_ai_budget_and_momo_manual_pilot_contract.sql`, SHA-256 `ebc2ea499a24b79da1baaffa02423488b1a28a95cb75d4c0d5c002c7c585948d`. PR #149 required no database apply.
 
-Runtime AI, credentials, Momo/client contact, Client provisioning, owner confirmation, media rights, external providers, publishing, billing, activation, and incremental spend remain disabled. Preserve the exact inert Vercel shutdown sentinel until the external Git integration is independently verified disconnected. PR #148 remains the deployed application-release identity; this cleanup must not predict its own merge SHA.
+Machine state is `verified_reconciliation_cleanup_deployed`, release state is `post_release_cleanup_deployed`, and delivery remains reviewed/manual. The evidence-only closeout PR changes no file under `artifacts/veroxa-sites`, so it does not require a Sites version 16 checkpoint. Runtime AI, credentials, Momo/client contact, Client provisioning, owner confirmation, media rights, external providers, publishing, billing, activation, and incremental spend remain disabled. Branch deletion remains unavailable. Preserve the exact inert Vercel shutdown sentinel because the external Vercel Git integration is not verified disconnected.
 
 ## Production-reconciliation override (historical pre-PR #148 checkpoint)
 
@@ -38,10 +38,10 @@ Veroxa now uses the ChatGPT Sites application/deployment surface. This is not a 
 - ChatGPT Sites is the primary application and deployment surface.
 - Vercel is retired. Sites is the sole deployment surface; GitHub `main` plus verified Sites checkpoints are the recovery path.
 - The root `vercel.json` is a temporary, inert shutdown sentinel whose only allowed behavior is `git.deploymentEnabled: false`; it prevents the still-connected legacy Git integration from starting builds and must never contain runtime, route, build, or hosting configuration. Remove it only after the Vercel dashboard integration is independently confirmed disconnected and the post-release cleanup gate is explicitly approved.
-- `veroxasystems.com` and `www.veroxasystems.com` are attached to Sites with active provider and SSL status as last verified on 2026-07-13.
+- `veroxasystems.com` and `www.veroxasystems.com` are attached to Sites and were verified with the successful Sites version 15 deployment on 2026-07-14.
 - The approved Sites visual direction is the presentation layer. It must preserve the existing Veroxa OS rather than replace it.
 - `CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md` controls the build, green-merge, hold, RR, and deployment command meanings.
-- For PR #144 continuity, GitHub's post-merge PR metadata identifies the exact merged source and Sites checkpoint metadata must independently prove the Sites version 10 deployment; the pre-merge source record intentionally contains no PR #144 commit.
+- GitHub's merged PR metadata and the independent Sites checkpoint identify the reviewed source and deployment lineage. Evidence-only closeout changes that do not touch `artifacts/veroxa-sites` require no additional Sites deployment.
 
 ## ChatGPT-managed build, merge, and deployment workflow
 
@@ -86,11 +86,11 @@ The hosting migration did not by itself authorize any of the following. Later sc
 - public/client exposure of Team-only data;
 - changing verified business truth without confirmation.
 
-Deployed Sites version 9 uses approved-user password authentication plus secure-email-link Supabase authentication for recovery, with active profile/membership enforcement, protected password replacement, and the no-new-spend Momo operating foundation. Public signup remains disabled. Faraz confirmed password sign-in; hosted reauthentication and old-session revocation remain unverified. The undeployed Vite `AUTH_MODE = placeholder` path is historical/internal and its root `/api/pilot-access` deployment adapter is retired. Roles remain `client` and `team` only. Momo owner walkthrough and pilot activation remain blocked without explicit Faraz approval.
+Deployed Sites version 15 retains approved-user password authentication plus secure-email-link Supabase authentication for recovery, with active profile/membership enforcement, protected password replacement, and the no-new-spend Momo operating foundation. Public signup remains disabled. Faraz confirmed password sign-in; hosted reauthentication and old-session revocation remain unverified. The undeployed Vite `AUTH_MODE = placeholder` path is historical/internal and its root `/api/pilot-access` deployment adapter is retired. Roles remain `client` and `team` only. Momo owner walkthrough and pilot activation remain blocked without explicit Faraz approval.
 
-## Migration architecture
+## Delivery architecture
 
-During migration, Veroxa has two layers with one source of truth:
+Veroxa has two layers with one source of truth:
 
 - **Canonical product layer:** the existing GitHub Veroxa application, domain models, route contracts, docs, tests, and guardrails.
 - **Sites delivery layer:** a Sites-compatible application shell that adopts the approved visual system and progressively reaches canonical route and behavior parity.
@@ -99,7 +99,7 @@ New product rules must be added to the canonical GitHub layer first or in the sa
 
 ## Custom-domain state and stabilization gate
 
-Faraz approved public Sites access and completed the Namecheap DNS changes. As last verified on 2026-07-13:
+Faraz approved public Sites access and completed the Namecheap DNS changes. As last verified with Sites version 15 on 2026-07-14:
 
 - the Sites project access mode is public;
 - `veroxasystems.com` is active with active SSL and no reported domain error;

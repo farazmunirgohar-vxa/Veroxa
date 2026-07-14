@@ -131,7 +131,7 @@ for (const marker of [
   "does not become an operational client",
   "Other restaurants",
   "VEROXA_DEPLOYMENT_MANIFEST.json",
-  "Sites version 14",
+  "Sites version 15",
   "all four required workflows",
   "Mandatory post-build continuity update",
   "After every build",
@@ -237,16 +237,16 @@ for (const marker of [
 }
 
 for (const marker of [
-  "165ff82ab46b0a0985605ffcfb6efa687982eca5",
-  "57ccb8d1cce596baf782b03525c80161c11af8f3",
-  "Sites version 14",
-  "4f0a4f82d774a63c231a294704ae177ddbbe13c665567db33bdebab815331799",
+  "9749b68ce2cfc383deeae6aa63c413019ef61385",
+  "e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0",
+  "Sites version 15",
+  "ba06cd39ab7782987a6504678e4a3533a9943d078ba5dd9f93dbe8eeb0c5178f",
   "20260714022859_reconcile_audit_v3_and_function_search_paths.sql",
   "192505ca4631e55f35b28f0c849a7d380bc1a709e5ae89adca742d7d349da45e",
   "20260714022911_ai_budget_and_momo_manual_pilot_contract.sql",
   "ebc2ea499a24b79da1baaffa02423488b1a28a95cb75d4c0d5c002c7c585948d",
-  "verified_reconciliation_cleanup_candidate",
-  "post_release_cleanup_built_for_review",
+  "verified_reconciliation_cleanup_deployed",
+  "post_release_cleanup_deployed",
   "reviewed_manual_deployment_only",
   // Preserve the exact pre-PR #148 drift baseline as historical evidence.
   "674e1a7c0d140c9b281029277baeb2e68962dac2",
