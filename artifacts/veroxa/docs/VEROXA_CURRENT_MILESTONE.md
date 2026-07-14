@@ -1,171 +1,177 @@
 # Veroxa Current Milestone
 
-## 2026-07-13 — PR #145, Supabase 10, and Sites v11 verified production state
+Status: highest-priority governing build direction as of 2026-07-14.
 
-- Verified source: PR #145 passed review at exact head b007de99eb6c927f6d7ede56d7d4fffe8cbc0f0d and is merged to GitHub main at 9aa74631e393bc0303c820cc7671f818d617778c.
-- Verified data: Supabase has all 10 production migrations applied and verified. Restaurant Audit V2 is remote migration version 20260713212046 with SQL SHA-256 f4bfff7ac94ade68a2c4f761c5627dbcfe82d5800a0a8a46ce42b13e5b930693.
-- Verified hosting: Sites version 11 succeeded in production from checkout source 4bef697e230791403211cb9c60f769ebcb4f39c7. Both custom domains are active with healthy SSL.
-- Live product state: Restaurant Audit Center V2 and the simplified Momo Team information architecture are live. Audit V2 provides the deterministic score out of 100, room-for-improvement findings, 30/60/90-day plan, and save-or-discard preview flow. Team remains organized under the Momo's House San Antonio folder with a Momo-only Work Board and focused content/approval views.
-- Conversion boundary: a reviewed audit may create only a pending, non-operational restaurant profile after exact explicit consent. It never auto-creates a client identity, membership, active workspace, onboarding activation, publishing authority, paid service, or charge.
-- Operating boundary: Momo's House San Antonio remains the only operational restaurant and remains blocked until its owner-confirmed truth, permissioned media, provider authority, and remaining readiness evidence are complete. No runtime or paid AI, Meta/Google connection, external SEO/social execution, publishing, outbound contact, owner/client contact, or activation was authorized by this release.
-- Supersession: older current-looking PR #143, PR #144-pending, Sites version 9/10, nine-migration, unshipped-candidate, or Audit V1 wording below is historical and superseded by this verified section.
+Read this file first before planning, building, reviewing, merging, deploying, or recommending Momo outreach. If an older roadmap or status note conflicts with this file, follow this file and Faraz's newest explicit instruction.
 
-Status: highest-priority current milestone as of 2026-07-13.
+Also read:
 
-Current build: the seven-system Momo no-new-spend operating foundation is applied through nine production migrations. PR #143 was reviewed at head `009276dbbf2639dc1eb5296bf62906f9f8ac45f1` and merged at operational commit `49a5250d6ce7bd8d78f19e415641563e2260ace8`; Supabase migration 9 is applied and verified. Sites version 9 deployed successfully from checkout source `69871c51f8e80d1802539a6bca52e3ce5b4ff71c`, and both custom domains are active with healthy SSL. Faraz's Gmail Team identity, protected Team/Momo route, and approved-user password sign-in remain verified, with secure-email-link recovery retained and public signup disabled. Hosted reauthentication and old-session revocation have not been verified. Momo remains operationally blocked until owner-confirmed truth, permissioned media, provider access, and remaining operating evidence are complete.
+- `MOMO_FOUNDING_PILOT_COMMITMENT_AND_ONBOARDING_GATE.md`
+- `MOMO_100_READINESS_SEVEN_SYSTEM_CONTRACT.md` (full-automation gate; not the narrower onboarding authority)
+- `CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md`
+- `ACTIVE_DOCS_INDEX.md`
+- `VEROXA_LOCKED_OPERATING_MEMORY.md`
+- `CURRENT_BUILD_STATUS.md`
+- `VEROXA_DEPLOYMENT_MANIFEST.json`
+- `../veroxa-sites/app/momo-readiness-tracker.json`
 
-## PR #144 continuity release — post-merge Sites version 10 required
+## Current verified delivery state
 
-PR #144 reconciles the durable documents, release checkpoint, guardrails, Sites-bundled readiness evidence, and ninth-migration ledger to the verified PR #143 operational foundation. Its database-source change is limited to renaming the ninth source file to the remote version `20260713191147_momo_zero_cost_operating_rehearsal_v1.sql`; SQL, schema, content, and migration count remain unchanged at SHA-256 `07cdb0a41b3d81e23e2c9432b139ae219c2b4671fed7cd18f761d4c4d6a79f2a`. It changes no operational behavior, external connection, or activation authority. Because the readiness evidence is bundled into Sites source, the exact merged PR #144 state must be published and verified as Sites version 10 after merge. Sites version 10 is not already deployed, and this committed record must never embed or predict PR #144's merge SHA; external GitHub PR metadata and Sites checkpoint metadata are the future authorities for that exact post-merge identity.
+- GitHub `main` is canonical at `674e1a7c0d140c9b281029277baeb2e68962dac2`, but it does not currently contain the exact live product and database source.
+- Live ChatGPT Sites version 13 is checkout `dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805`; `veroxasystems.com` and `www.veroxasystems.com` remain active with healthy SSL.
+- Supabase has 11 applied production migrations. The latest is `20260713222721_upgrade_restaurant_audit_engine_v3_partial_scoring.sql`, SHA-256 `304eb98db628b09fa245fba156160b043c1ba9ba2f9aeb689086a6a18ad234b2`.
+- Live Sites Audit V3 and migration 11 are ahead of canonical GitHub. This is a production/source drift condition, not verified parity.
+- The production-reconciliation worktree imports that observed source and adds controls. The reconciliation candidate is unmerged and undeployed. No merge commit or future Sites version is predicted.
+- `VEROXA_DEPLOYMENT_MANIFEST.json` is the machine-readable release record. CI must verify its deterministic source and migration trees and generate an attestation from the exact `GITHUB_SHA` before merge can be considered.
+- Product deployments are frozen except for the exact reviewed reconciliation release after all four required workflows are green and GitHub reports zero unresolved review threads. AI, credentials, Momo/client contact, activation, providers, publishing, billing, and new spend remain disabled.
+- Vercel is retired and must not be restored.
+- Supabase is the sole Auth, Postgres, and private-storage backend.
+- Faraz's approved Team identity and protected Team/Momo access are operational.
+- Restaurant Audit Center V3 is live for non-client restaurants.
+- Momo's House San Antonio is the only operational restaurant scope.
+- The Momo seven-system production foundation, manual operating rehearsal, Team work structure, approval controls, readiness evidence, monitoring, and fail-closed provider preflight exist.
+- Momo remains blocked from active onboarding until the evidence-based onboarding gate passes and Faraz explicitly approves contact.
 
-The seven requested no-new-spend steps are now deployed as an operational foundation:
+Older PR #145, Supabase-10, Sites-v11, and Audit-V2 statements in lower history describe prior checkpoints and do not override this observed production state.
 
-1. **Source and delivery reconciliation:** PR #143, Supabase migration 9, Sites version 9, Sites-only deployment, and the inert Vercel Git-deployment shutdown sentinel are reconciled; dashboard disconnection remains an owner-only follow-up.
-2. **Client identity and onboarding:** the explicit-ack Momo client provisioning helper, all 18 locked truth fields, and transactional Team/client onboarding and presence review are production-available without inventing an owner identity or owner data. The helper remains unexecuted.
-3. **Media and rights:** the exact `momo-media-rights-v1` attestation and SHA-256 provenance, Team quality review, human tagging, and zero-cost manual classification path are production-available. No real permissioned Momo media or rights record exists.
-4. **Manual content:** the deterministic six-pillar human-written cycle, current truth/media checks, immutable provenance, platform variants, approvals, and calendar gates are production-available without a runtime AI call. Runtime AI remains inactive.
-5. **Operations, reports, and recovery:** transactional work states, fixed evidence-backed report narratives, monitoring/alerts, bounded retries, one-shot recovery, and linked activity evidence are production-available; real operating-history and recovery evidence remain incomplete.
-6. **Meta and Google preflight:** database-only, no-credential checks fail closed on missing owner authority, capability, or connection state and never contact either provider. Meta and Google remain disconnected.
-7. **Atomic final rehearsal:** the immutable readiness snapshot permits only a rehearsal-mode No-Go while blockers remain; no Go, activation, provider call, owner contact, or publication action is exposed.
+## Relationship and commercial direction
 
-Read this file before planning, building, reviewing, merging, or deploying Veroxa. If an older roadmap, status note, or historical plan conflicts with this file, follow this file and Faraz's newest explicit instruction.
+Momo's House has already agreed to onboard as Veroxa's founding pilot restaurant. Momo understands that Veroxa is still being built as a product and platform, and Faraz has told them he will contact them when it is ready.
 
-## Milestone
+Do not treat Momo as an uncommitted prospect and do not design another sales-conversion flow for them.
 
-The next milestone is **Momo's House San Antonio 100% readiness**.
+Momo is free during the remaining build and founding-pilot operating period. Do not create a subscription, invoice, checkout, trial expiration, payment method, retroactive balance, or charge for Momo.
 
-Momo's House San Antonio is Veroxa's only operational client and restaurant workspace for the remainder of this milestone. Team Faraz is being built to operate Momo end to end with the maximum safe level of AI assistance and automation.
+Charging Momo may begin only when:
 
-The only capability that may operate across other restaurants during this milestone is the standalone, fully functional **Restaurant Audit Center** for non-client restaurants inside the Team Portal.
+- Veroxa has operated Momo dependably through multiple real cycles;
+- the service can be repeated for additional restaurants without rebuilding the platform;
+- security, support, reporting, monitoring, and recovery are dependable;
+- Faraz is ready to expand and market Veroxa to additional restaurants; and
+- Faraz separately approves and communicates the commercial transition.
 
-## Locked operating scope
+This founding-pilot arrangement overrides generic public pricing for Momo until Faraz explicitly changes it.
+
+## Current milestone
+
+The active milestone is:
+
+**Complete and prove the secure, persistent, human-controlled Momo operating loop, then begin the already-agreed onboarding.**
+
+Stop adding disconnected planning, checklist, or dashboard pages unless they directly enable, operate, verify, or clarify a real workflow.
+
+The immediate build priority is not another conceptual surface. It is to close the remaining operational evidence gaps across:
+
+1. Momo Client identity provisioning and separate Team/Client account verification.
+2. Restaurant membership and RLS isolation.
+3. Persistent, resumable Momo onboarding.
+4. Owner-confirmed restaurant truth and sensitive-claim controls.
+5. Private media upload, rights, consent, Team review, and safe reuse.
+6. Persistent messages, structured requests, corrections, and Team work items.
+7. Truthful content drafting, approval, scheduling, and manual publication records.
+8. Activity evidence, weekly updates, monthly reports, and honest attribution language.
+9. Monitoring, retries, recovery, backups, and rollback.
+10. Mobile and browser end-to-end QA using distinct Team and Client sessions.
+
+## Required first-pilot operating loop
+
+Prove this complete loop before Momo onboarding is declared ready:
+
+`onboarding -> owner-confirmed truth -> permissioned media -> truthful draft -> Team/Faraz review -> schedule -> manual publication record -> client status -> activity evidence -> weekly/monthly report`
+
+The first pilot should use reviewed manual execution where external connectors are unavailable.
+
+Runtime AI, Meta, Google, and automated publishing are modular later activations. They do not all need to be live before Momo onboarding when the secure persistent manual loop works end to end and unavailable capabilities are represented honestly.
+
+## AI, integrations, and cost direction
+
+- Continue the free-first rule.
+- Build production-quality components with existing resources.
+- Do not add a paid service, usage commitment, or subscription without Faraz's explicit approval.
+- Deterministic/manual content operation comes before runtime AI.
+- Runtime AI requires a proven manual loop, server-side secrets, cost approval, structured outputs, safety checks, and Team/Faraz review before customer-visible use.
+- Meta, Google, delivery, website, and publishing connections require Momo owner authority, supported platform capability, secure credential handling, and separate Faraz approval.
+- No external action may bypass the approval and evidence system.
+- Never invent restaurant facts, media rights, provider access, activity, metrics, readiness, results, reviews, ranking, revenue, ROI, customers, orders, reach, or growth.
+
+## Exact Momo onboarding gate
+
+Do not decide readiness from a date estimate or from a green PR alone. Tell Momo that Veroxa is ready to begin onboarding only when all conditions below pass:
+
+- A separate approved Momo Client identity can be provisioned securely without public signup.
+- Team and Client accounts are distinct and tested.
+- RLS and restaurant membership isolation are proven, including negative cross-tenant tests.
+- The deployed Sites source exactly matches reviewed and merged GitHub source.
+- Client routes contain no unsupported completed, reviewed, sent, published, or performance claims.
+- The complete onboarding flow persists to Supabase and resumes without data loss.
+- Business-truth fields distinguish confirmed, pending confirmation, optional, and internal-review states.
+- Private media upload, rights attestation, consent, review, and retrieval work on supported mobile and desktop browsers.
+- Messages and structured requests work across separate devices.
+- Team work, approvals, blockers, and activity evidence persist correctly.
+- One complete internal rehearsal succeeds through onboarding, media, draft, approval, manual publication record, activity evidence, and weekly report.
+- Reports are based only on real recorded activity.
+- Monitoring, retry, recovery, backup, and rollback are tested for the pilot-critical path.
+- Mobile/browser QA passes for the exact Momo Team and Client journeys.
+- No open critical or high-severity security or data-integrity defect remains.
+- The readiness system records an evidence-backed Go for onboarding; no synthetic percentage substitutes for the gate.
+- Faraz explicitly approves contacting Momo and scheduling the onboarding.
+
+## Scope boundaries
 
 ### Momo's House San Antonio
 
-All restaurant operations are Momo-specific:
-
-- production identity, authorization, restaurant-scoped data, and storage;
-- restaurant intelligence and owner-confirmed business truth;
-- the locked restaurant growth infrastructure onboarding flow;
-- media intake, rights, AI classification, quality review, tagging, and reuse;
-- AI-assisted strategy, concepts, captions, platform variants, and approvals;
-- content planning, scheduling, approved publishing, retries, and activity history;
-- Facebook and Instagram handling through approved Meta Business access;
-- Google Business Profile, local SEO, reviews, and visibility work;
-- website and menu/contact-path SEO checks and prepared actions;
-- delivery-platform presence monitoring where access and platform capabilities allow;
-- client messages, requests, Team work, blockers, approvals, and notifications;
-- verified weekly updates, monthly reports, and operating intelligence;
-- monitoring, security, recovery, and readiness verification.
-
-Do not build generic multi-client operating dashboards, client lists, onboarding queues, media queues, content operations, publishing, or reporting for other restaurants during this milestone.
+Momo remains the only operational restaurant until the founding pilot succeeds. Build and verify Momo-specific identity, truth, onboarding, media, content, approvals, work, reporting, monitoring, and recovery.
 
 ### Other restaurants
 
-Other restaurants may exist only as Team-owned audit records or prospects in the Restaurant Audit Center. An audited restaurant does not become an operational client unless Faraz separately and explicitly approves conversion.
+Other restaurants remain Restaurant Audit Center records or explicitly consented pending, non-operational profiles. An audit or pending profile must not automatically create a Client identity, membership, operational workspace, onboarding, publishing authority, paid service, or charge.
 
-The Audit Center must be able to:
+An audited restaurant does not become an operational client unless Faraz separately and explicitly approves conversion.
 
-- find or manually enter a restaurant;
-- run and save an online-presence audit;
-- review Google, website, social, menu/order paths, reviews, content, and local SEO;
-- store Team notes, findings, evidence, and recommended actions;
-- re-run an audit and compare changes over time;
-- prepare a reviewed, honest audit report.
+Any future conversion to an operational client requires Faraz's separate explicit approval.
 
-Auditing another restaurant must not automatically create:
+## ChatGPT, Codex, GitHub, Supabase, and Sites alignment
 
-- a client account;
-- a restaurant operations workspace;
-- onboarding;
-- media or content workflows;
-- operational Team work items;
-- reporting or publishing access;
-- a conversion into an active client.
-
-Any future conversion from audit prospect to operational client requires Faraz's separate explicit approval.
-
-## Automation target
-
-Build Veroxa to automate as much internal preparation and safe execution as platform capabilities allow. Automation should analyze, classify, draft, recommend, organize, route, schedule, monitor, and report so Faraz primarily reviews exceptions, approvals, and material decisions.
-
-Automation remains controlled:
-
-- owner confirmation is required for hours, menu, prices, offers, access, services, dietary claims, and other business truth;
-- AI output must pass the configured Veroxa approval gate before customer-visible use during the pilot;
-- negative-review responses and reputation-sensitive language require human review;
-- only approved work may publish automatically;
-- external platform permissions and API capabilities must be verified rather than assumed;
-- no invented metrics, activity, integrations, readiness, results, or restaurant facts.
-
-This milestone authorizes the product direction toward production AI, automation, social handling, and SEO integration. It does not mean those systems are already active, and it does not independently authorize contacting Momo, creating external credentials, connecting owner-controlled accounts, or publishing before the required build and activation gates are satisfied.
-
-For this milestone, **100% readiness** means the scoped Momo capabilities are persistent, truthful, tested end to end, monitored, recoverable, and able to pass their documented activation gates. It is not a claim that credentials, owner access, external connections, or publishing are already active. Separate approval remains required for Momo contact, owner-controlled accounts or credentials, owner-confirmed business truth, media rights, reputation-sensitive actions, and external publishing.
-
-## Current verified technical state
-
-- GitHub `main` includes merged PR #134 (`bb7ea6add62a0e7c337c23d9d48880a9d034c0d3`), which established the synchronized Sites delivery layer, current milestone, and ChatGPT-managed build protocol.
-- GitHub PR #135 is merged to `main` at `184821f1b94d3801d23742c5bb7d9571e9be27e6`. Its SHA-locked reviewed head passed CI, Sites Verify, Supabase Verify, Veroxa Verify, and focused final delta RR covering latest-run review, audit identity/event integrity, Sites intake reliability, UI draft/navigation/accessibility, and repeat-review checkpoints. Vercel is retired.
-- The connected Supabase project is healthy. All nine production migrations are applied and verified; the Momo operating migration, advisor hardening, and zero-cost operating rehearsal migration passed the applicable clean-reset CI, pgTAP, database lint, production application, and post-apply verification. All scoped operating tables force RLS.
-- Momo's House San Antonio is the only enabled operational restaurant scope. Legacy demo rows are preserved, and the ten broad M024 development policies are removed from the production migration chain.
-- Deployed Sites version 9 implements signed Supabase sessions, server route guards, active profile plus active Momo membership checks, RLS, private restaurant storage, secure-email-link recovery, approved-user password sign-in, protected password replacement, callback safety, and the no-new-spend Momo operating surfaces. Faraz confirmed password sign-in. Public signup remains disabled; hosted reauthentication and rejection of old sessions after a password change remain unverified.
-- Public app-driven Auth user creation remains disabled. The approved Gmail Team identity is confirmed and has signed in with an active Team profile and active Momo membership; production protected-route browser verification is complete. No Momo client identity is provisioned.
-- The Restaurant Audit Center is durable and separate from operational clients: signed public intake, consent, idempotency, rate limits, Team queue/manual entry, notes, evidence-backed findings, run history/comparison, reviewed-report gates, and immutable reviewed records are implemented.
-- Final release hardening requires the latest reviewed run/report to close a request, separates same-name audit locations instead of auto-merging them, records append-only lifecycle events, validates failed-run reasons/timestamps/source snapshots, proves affected browser mutations, and labels the 100-row queue view truthfully.
-- Remote catalog, RLS/role, public-intake isolation, and transactional Team workflow tests pass. The active migration chain matches all nine remote-applied versions; eight never-applied prototype migrations are archived outside the active directory. Advisor review records no error-level issue; the duplicate uploader index is removed. Intentional scoped security-definer helpers, fresh unused-index notices, legacy warnings, and disabled native leaked-password protection remain documented; password login is restricted to approved identities and uses a bypassable HIBP partial-hash client check until a future paid Auth-boundary control is approved.
-- PR #143 reviewed head `009276dbbf2639dc1eb5296bf62906f9f8ac45f1` merged as operational commit `49a5250d6ce7bd8d78f19e415641563e2260ace8`; its operational release is deployed as Sites version 9 from checkout source `69871c51f8e80d1802539a6bca52e3ce5b4ff71c`. The checkpoint and both custom live domains are verified active with healthy SSL. PR #144 must receive a separate post-merge Sites version 10 checkpoint whose exact source identity is recorded externally, not guessed inside this source.
-- `RR_CHECKPOINT.md` and its machine-readable fingerprint record now route future work to delta or changed-boundary review, preventing unchanged evidence from being repeated.
-- Owner-confirmed Momo business data, live onboarding, uploads, runtime AI, Meta/Google connections, social handling, SEO execution, publishing, outbound contact, and outcome metrics remain inactive.
-- The deployed seven-system foundation provides fail-closed contracts and persistence for Restaurant Intelligence/onboarding, media intelligence, content/approvals/calendar, Meta, Google/local visibility, work/reports/recovery, and the final gate. It does not convert prepared adapters into live integrations.
-- Real Team Auth provisioning, confirmation, initial sign-in, protected Team/Momo browser smoke, password setup, and password sign-in are complete for Faraz's approved Gmail identity without exposing a privileged key. Hosted reauthentication and old-session revocation remain a separate unverified security-hardening check and must not be described as verified.
-- Runtime AI, Meta, Google writes, publishing, and visibility monitoring are **inactive pending authorized access**. No Momo owner truth or media rights are invented to make a readiness score pass.
-
-## Mandatory two-lane tracking
-
-Veroxa progress must track both the platform build and Momo's House operational readiness after every build. A green Veroxa build or deployment does not by itself mean Momo is ready.
-
-- **Veroxa delivery state:** source, PR, checks, migrations, deployment, domain, security, and RR evidence.
-- **Momo readiness state:** identity/access, business truth/onboarding, media/rights, AI/automation, Meta/social, Google/SEO/reviews, website/menu/ordering, operations/reporting/monitoring, and activation/recovery.
-- `momo-readiness-tracker.json` is the repository's machine-readable release baseline/checkpoint for Momo readiness. The scoped Supabase `veroxa_readiness_dimensions` rows and readiness RPC are authoritative for the live Team operational view. Every release-baseline dimension still requires evidence, blockers, and a next action; do not present the file as a substitute for current database state.
-- Do not calculate or publish a readiness percentage. Overall Momo readiness becomes verified only when every required dimension is verified and no blocker remains.
-- This readiness tracker applies only to Momo's House San Antonio. Other restaurants remain Audit Center records only.
-
-## Latest completed build and exact next build
-
-The deployed release completed steps 1–9 below across source, data, GitHub, Supabase, and Sites. Step 10 remains blocked by real-world evidence and external authority.
-
-The current deployed foundation is **Momo 100% Readiness Seven-System V1**:
-
-- persist owner-confirmed restaurant identity, hours, address, phone, menu, services, dietary/halal claims, contacts, brand voice, goals, and required presence-stack state;
-- provide Team review and Momo safe-empty/client-confirmation views backed only by verified records;
-- make onboarding readiness measurable without contacting Momo, inventing facts, or connecting owner-controlled platforms;
-- prepare modular adapters for later media, AI, Meta, Google, SEO, ordering, and publishing connections without adding new spend.
-
-The deployed foundation also provides media rights/reuse, AI/content approvals/calendar, provider-neutral Meta/Google operations, work/retry/recovery/reporting, and the fail-closed final readiness gate. The runtime truth and evidence requirements are locked in `MOMO_100_READINESS_SEVEN_SYSTEM_CONTRACT.md`.
-
-## Current build sequence
-
-1. **Complete and deployed:** reconcile GitHub, Sites, current milestone memory, and truthful Momo states.
-2. **Complete and deployed:** establish the secure Supabase foundation for Team Faraz and Momo only.
-3. **Complete and deployed:** make the Team Restaurant Audit Center effective for non-client restaurants without creating operational workspaces.
-4. **Complete and deployed foundation:** persistent Momo Restaurant Intelligence Profile and onboarding flow.
-5. **Complete and deployed foundation:** Momo media intake, rights, Team review, reuse, and provider-neutral AI media intelligence.
-6. **Complete and deployed foundation:** Momo content strategy, captions, platform variants, approvals, calendar, and provider-neutral publishing jobs.
-7. **Complete and deployed foundation:** Meta and Google Business Profile connection/readiness contracts, local SEO, reviews, website checks, and visibility actions; live providers remain inactive.
-8. **Complete and deployed foundation:** work orchestration, activity/evidence, retries, recovery, monitoring, and reporting.
-9. **Complete and deployed foundation:** deterministic source/database/guardrail tests plus controlled external identity/Auth smoke commands that are not run by CI.
-10. **Blocked until evidence is complete:** Momo 100%-readiness gate, owner walkthrough, and activation decision.
+- ChatGPT is Faraz's primary Veroxa command center.
+- ChatGPT and Faraz determine the next outcome together.
+- Codex is the engineering implementation workflow invoked through ChatGPT.
+- GitHub `main` is canonical.
+- Supabase is the sole production data/auth/storage backend.
+- ChatGPT Sites is the sole deployment surface.
+- Every Sites deployment must use the exact reviewed and merged GitHub source.
+- A GitHub merge and Sites deployment are separate actions unless Faraz authorizes both.
+- Every build must update the durable direction, current status, affected readiness evidence, and Faraz's plain-language handoff.
 
 ## Mandatory post-build continuity update
 
-After every build, ChatGPT must update the durable record and Faraz's handoff. A build is not complete until the applicable items below are current:
+After every build, record the actual GitHub, workflow, Supabase, Sites, domain, parity, freeze, activation, and readiness state. Candidate work must remain labeled unmerged and undeployed, and the handoff must say what remains inactive.
 
-1. Update this file with the completed work, actual current state, blockers, and exact next build.
-2. Update `CURRENT_BUILD_STATUS.md` with the PR, commit, checks, merge state, deployment state, and runtime truth.
-3. Update the release-baseline `momo-readiness-tracker.json` with evidence-backed release status, blockers, and next actions for every affected dimension, and reconcile the authoritative Supabase operational readiness records whenever their evidence changes.
-4. Update `VEROXA_LOCKED_OPERATING_MEMORY.md` when product direction, authority, scope, or a durable decision changes.
-5. Update `ACTIVE_DOCS_INDEX.md` when the governing document set changes.
-6. Record Sites, Supabase, integration, or custom-domain state when the build changes or verifies it.
-7. Give Faraz a plain-language handoff covering what was built, what now works, what remains inactive, blockers, and the recommended next step.
+## Mandatory two-lane reporting
 
-For a held PR, record that the work is built but not merged or deployed. For a merged build, record the exact merged state. For an authorized deployment, record the verified production result and rollback status.
+Every build and review must report two separate states:
+
+- **Veroxa delivery state:** source, PR, checks, migrations, security, deployment, domain, parity, and rollback.
+- **Momo onboarding readiness:** Client identity, data isolation, truth, onboarding, media, workflow, rehearsal, QA, recovery, and Faraz approval.
+
+A successful build or deployment does not itself authorize contacting Momo. Momo onboarding also does not require every future paid integration to be active when the secure manual operating loop is complete and truthful.
+
+## Exact next build category
+
+Finish the ordered reconciliation release before broader product work:
+
+1. Keep the deployment and activation freeze in force.
+2. Complete the single reconciliation candidate and exact production-source inventory.
+3. Pass deterministic source/migration parity checks, AI and database contract tests, and all four required GitHub workflows; resolve every review thread.
+4. Merge only the exact reviewed head, then republish and verify Sites from that exact merge without predicting its commit or Sites version beforehand.
+5. Run the Momo visual/manual gate honestly without contacting Momo or manufacturing evidence; keep the decision No-Go while real evidence is absent.
+6. Keep AI/provider activation deferred until the manual loop, cost controls, explicit budget approval, and separate runtime authorization exist.
+7. Perform cleanup only after the reconciliation release is verified.
+
+Post-release cleanup is a separate controlled change. Before it begins:
+
+- record exact GitHub/Sites/database parity and a tested rollback checkpoint;
+- classify each old branch through PR history and ownership rather than relying only on Git ancestry;
+- preserve any unique work and obtain explicit approval before deleting branches;
+- remove legacy Vite from active workspace/build/verification paths before archiving or deleting its source, with a recoverable tag or commit;
+- independently verify the external Vercel Git integration is disconnected; and
+- remove the inert Vercel shutdown sentinel only after that disconnection and the cleanup change are reviewed.

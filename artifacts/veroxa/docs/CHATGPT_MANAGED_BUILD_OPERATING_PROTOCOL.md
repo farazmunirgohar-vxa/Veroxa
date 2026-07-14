@@ -1,12 +1,14 @@
 # ChatGPT-Managed Veroxa Build Operating Protocol
 
-Status: active operating authority as of 2026-07-12.
+Status: active operating authority as of 2026-07-14.
 
 ## Purpose
 
 Faraz uses ChatGPT as the primary Veroxa command center. Faraz and ChatGPT decide the next product outcome together, then ChatGPT invokes Codex and the connected engineering tools internally to complete the authorized work. Faraz does not need to open a separate Codex, GitHub, Sites, terminal, or IDE window or copy a prompt between them for routine Veroxa work.
 
-The current milestone is Momo's House San Antonio 100% readiness. Momo's House San Antonio is the only operational client and restaurant workspace during this milestone. Team Faraz is Momo-focused; the standalone, fully functional Restaurant Audit Center is the only capability that may operate for non-client restaurants. An audited restaurant does not become an operational client unless Faraz separately and explicitly approves conversion. Read `VEROXA_CURRENT_MILESTONE.md` before planning or building.
+The current milestone is to complete and prove the secure, persistent, human-controlled Momo operating loop and evidence-based onboarding gate. Momo's House San Antonio is the agreed free founding pilot and the only operational restaurant scope. Team Faraz is Momo-focused; the standalone Restaurant Audit Center is the only capability that may operate for non-client restaurants. An audited restaurant does not become an operational client unless Faraz separately and explicitly approves conversion. Runtime AI and external providers are later modular activations, not prerequisites for a truthful manual pilot. Read `VEROXA_CURRENT_MILESTONE.md` and `MOMO_FOUNDING_PILOT_COMMITMENT_AND_ONBOARDING_GATE.md` before planning or building.
+
+Production reconciliation is currently frozen except for one exact reviewed release. GitHub `main` is canonical at `674e1a7c0d140c9b281029277baeb2e68962dac2`; live Sites version 13 (`dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805`) and production Supabase migration 11 are ahead. The candidate is not merged or deployed. `VEROXA_DEPLOYMENT_MANIFEST.json` is the machine-readable freeze/parity record and CI must generate an exact-`GITHUB_SHA` attestation.
 
 The platform responsibilities remain distinct:
 
@@ -65,6 +67,8 @@ A pull request is green only when all applicable conditions are true:
 - relevant local type checks, tests, lint, production builds, route checks, and guardrails pass;
 - when the Sites delivery layer changes, its isolated build, rendered-route tests, lint, and artifact validation pass;
 - required GitHub checks are successful;
+- the four required workflows—`CI`, `Sites`, `Supabase`, and `Veroxa Verify`—are successful for the exact candidate head;
+- the deployment manifest and deterministic source/migration trees verify, and CI preserves an attestation bound to the exact `GITHUB_SHA`;
 - the pull request is mergeable and its exact head commit has not changed since the final review;
 - no unresolved actionable review thread or known critical/high-severity defect remains;
 - RR finds no fixable merge blocker;
@@ -108,15 +112,20 @@ A command applies only to the agreed task. It is not blanket authority to merge 
 
 ## Current hosted-state truth
 
-As last verified on 2026-07-13:
+As last verified on 2026-07-14:
+
+- GitHub `main` is canonical at `674e1a7c0d140c9b281029277baeb2e68962dac2`, but production is ahead and parity is not currently established;
+- live Sites version 13 is checkout `dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805`;
+- Supabase has 11 applied migrations; migration 11 is `20260713222721_upgrade_restaurant_audit_engine_v3_partial_scoring.sql`, SHA-256 `304eb98db628b09fa245fba156160b043c1ba9ba2f9aeb689086a6a18ad234b2`;
+- the reconciliation worktree is not merged, not republished, and not authority to change production;
+- product deployment is frozen except the exact reviewed reconciliation release; AI, credentials, Momo/client contact, activation, providers, publishing, billing, and new spend remain disabled;
 
 - the Veroxa Sites project is active and publicly accessible;
 - `veroxasystems.com` and `www.veroxasystems.com` are attached to Sites;
 - both custom domains report active provider and SSL status with no reported domain error;
 - future verified Sites deployments use the existing domains and do not require routine Namecheap edits;
 - Vercel is retired; Sites checkpoints and GitHub source provide the deployment and recovery path;
-- PR #143 reviewed head `009276dbbf2639dc1eb5296bf62906f9f8ac45f1` merged at operational commit `49a5250d6ce7bd8d78f19e415641563e2260ace8`; all nine production migrations are applied and verified;
-- Sites version 9 deployed successfully from checkout source `69871c51f8e80d1802539a6bca52e3ce5b4ff71c` and implements protected Supabase sessions, active profile/membership checks, RLS, durable audit intake, protected Client/Team routes, and the no-new-spend Momo operating foundation;
+- the earlier PR #143 / nine-migration / Sites-version-9 bullets below are historical lineage, not current production identity;
 - Faraz's approved Gmail Team identity, Team/Momo access, protected-route Safari smoke, and approved-user password sign-in are verified; hosted reauthentication and old-session revocation remain unverified;
 - Momo client identity, owner-confirmed data, external publishing, payments, and live platform integrations remain blocked.
 - the ninth migration source filename is reconciled to remote version `20260713191147_momo_zero_cost_operating_rehearsal_v1.sql`; SQL, schema, content, and migration count are unchanged at SHA-256 `07cdb0a41b3d81e23e2c9432b139ae219c2b4671fed7cd18f761d4c4d6a79f2a`;

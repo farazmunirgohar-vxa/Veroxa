@@ -1,6 +1,17 @@
 # RR Release Checkpoint
 
-## 2026-07-13 — PR #145, Supabase 10, and Sites v11 verified production state
+## 2026-07-14 — production-reconciliation checkpoint candidate
+
+- Canonical GitHub `main` is `674e1a7c0d140c9b281029277baeb2e68962dac2`; live Sites version 13 is checkout `dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805`; production Supabase has 11 applied migrations. Production is ahead of canonical source.
+- Migration 11 is `20260713222721_upgrade_restaurant_audit_engine_v3_partial_scoring.sql`, SHA-256 `304eb98db628b09fa245fba156160b043c1ba9ba2f9aeb689086a6a18ad234b2`.
+- The reconciliation candidate is unmerged and undeployed. `VEROXA_DEPLOYMENT_MANIFEST.json` snapshots its reviewed source/migration trees without predicting a merge SHA or Sites version; CI emits the exact-`GITHUB_SHA` attestation.
+- Release gate: all four required workflows green, zero unresolved GitHub review threads, deterministic tree parity, exact migration ledger parity, and post-merge republish/verification from the exact merged source.
+- Freeze: no other product deployment; no AI/provider activation, credential, Momo/client contact, provisioning, publication, billing, external write, or new spend.
+- Momo review scope is visual/manual only and must remain No-Go without real same-owner identity, truth, media-rights, workflow, report, recovery, and QA evidence.
+- Cleanup is deferred: preserve the Vercel shutdown sentinel, and do not prune branches or remove legacy Vite until parity, rollback evidence, ownership review, and explicit approval exist.
+- The 2026-07-13 checkpoint below is historical lineage, not the current production baseline.
+
+## 2026-07-13 — PR #145, Supabase 10, and Sites v11 verified production state (historical)
 
 - Verified source: PR #145 passed review at exact head b007de99eb6c927f6d7ede56d7d4fffe8cbc0f0d and is merged to GitHub main at 9aa74631e393bc0303c820cc7671f818d617778c.
 - Verified data: Supabase has all 10 production migrations applied and verified. Restaurant Audit V2 is remote migration version 20260713212046 with SQL SHA-256 f4bfff7ac94ade68a2c4f761c5627dbcfe82d5800a0a8a46ce42b13e5b930693.

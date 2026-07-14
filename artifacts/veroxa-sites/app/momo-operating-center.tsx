@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import type { VeroxaRole } from "./veroxa-supabase";
 import {
   MOMO_MANUAL_CONTENT_PILLARS,
@@ -22,16 +22,22 @@ import {
 } from "./momo-operating-gates";
 import {
   addMomoMediaTag,
+  appendMomoRequestMessage,
   completeMomoRecoveryRun,
   createMomoContentDraft,
   createMomoReportDraft,
   createMomoContentStrategy,
   createMomoPlatformVariant,
+  createMomoClientRequest,
+  createMomoClientRequestWork,
   createMomoWorkItem,
   decideMomoApproval,
   emptyMomoWorkspaceData,
   getMomoMediaPreviewUrl,
   loadMomoWorkspaceData,
+  loadMomoClientRequests,
+  loadMomoRequestThread,
+  newMomoRequestIdempotencyKey,
   prepareMomoAiJob,
   queueMomoPublication,
   requestMomoApproval,
@@ -49,6 +55,7 @@ import {
   submitMomoContentConfirmation,
   submitMomoConfirmation,
   transitionMomoWorkItem,
+  transitionMomoClientRequest,
   transitionMomoAlert,
   updateMomoOnboardingStep,
   updateMomoPresenceProfile,
@@ -58,6 +65,8 @@ import {
   type MomoApproval,
   type MomoConfirmation,
   type MomoMediaAsset,
+  type MomoClientRequest,
+  type MomoRequestMessage,
   type MomoWorkspaceData,
   type MomoWorkspaceSection,
   type MomoProviderPreflight,
@@ -76,6 +85,7 @@ type LoadState =
   | { status: "error"; data: MomoWorkspaceData; error: string };
 
 const sectionForView = (view: string): MomoWorkspaceSection => {
+  if (view === "requests" || view === "team-requests") return "requests";
   if (view === "onboarding" || view === "team-intelligence") return "intelligence";
   if (view === "media" || view === "team-media") return "media";
   if (view === "content" || view === "team-content") return "content";
@@ -285,6 +295,7 @@ export function MomoOperatingCenter({ view, access, onNavigate, notify }: Props)
     run,
   };
 
+  if (view === "requests" || view === "team-requests") return <RequestsPanel role={access.role} restaurantId={access.restaurantId!} notify={notify} onNavigate={onNavigate} />;
   if (view === "onboarding" || view === "team-intelligence") return <IntelligencePanel {...shared} />;
   if (view === "media" || view === "team-media") return <MediaPanel {...shared} />;
   if (view === "content" || view === "team-content") return <ContentPanel {...shared} />;
@@ -322,12 +333,317 @@ function DashboardPanel({ data, role, onNavigate }: PanelProps & { onNavigate: (
       <article><span>Blocked work</span><strong>{blockedWork}</strong><small>requires action</small></article>
     </section>
     <section className="momo-module-grid">
+      <Module title="Client requests" detail="A private request thread can start the manual work loop without activating services, publishing, or inventing completion." status="manual_only" action="Open requests" onClick={() => onNavigate(role === "team" ? "team-requests" : "requests")} />
       <Module title="Restaurant setup" detail={data.truth.length ? `${data.truth.length} persistent fields available.` : "No owner-confirmed restaurant truth yet."} status={data.truth.length ? "in_progress" : "not_started"} action="Open restaurant setup" onClick={() => onNavigate(role === "team" ? "team-intelligence" : "onboarding")} />
       <Module title="Media library" detail={data.media.length ? `${data.media.length} assets; ${data.mediaRights.length} rights records.` : "No Momo media has been uploaded."} status={data.media.length ? "in_progress" : "not_started"} action="Open media library" onClick={() => onNavigate(role === "team" ? "team-media" : "media")} />
       <Module title="Content & approvals" detail={data.contentItems.length ? `${data.contentItems.length} content items; ${pendingApprovals} pending approvals.` : "No strategy or content draft exists."} status={pendingApprovals ? "approval_required" : data.contentItems.length ? "in_progress" : "not_started"} action="Open content" onClick={() => onNavigate(role === "team" ? "team-content" : "content")} />
       <Module title="Online presence" detail={data.connections.length ? `${eligibleConnections} of ${data.connections.length} provider records have current owner authorization, capability, and verification.` : "Meta and Google are not represented as connected."} status={eligibleConnections > 0 ? "connected" : "blocked"} action="Review online presence" onClick={() => onNavigate(role === "team" ? "team-presence" : "services")} />
       <Module title="Reporting" detail={data.reports.length ? `${data.reports.length} evidence-backed report records.` : "No reviewed report is available."} status={data.reports.length ? "in_progress" : "not_started"} action="Open reports" onClick={() => onNavigate(role === "team" ? "team-reports" : "reports")} />
       <Module title="Final readiness gate" detail={gate ? `${gate.verified_count} of ${gate.required_count} required dimensions verified; ${gate.blocker_count} blockers.` : "The production readiness gate has no evaluated record."} status={gate?.overall_status || "not_evaluated"} action="Review readiness" onClick={() => onNavigate(role === "team" ? "team-readiness" : "onboarding")} />
+    </section>
+  </div>;
+}
+
+const requestErrorMessage = (code: string) => {
+  if (["active_client_request_author_required", "request_thread_access_denied", "momo_team_request_transition_required", "momo_team_client_request_work_required", "request_list_access_or_limit_denied", "request_thread_access_or_limit_denied"].includes(code)) {
+    return "This signed account no longer has the required Momo request access. Nothing was changed.";
+  }
+  if (["invalid_client_request_payload", "invalid_request_message_payload", "invalid_client_request_transition", "invalid_client_request_work_payload"].includes(code)) {
+    return "The request details are outside the allowed length, type, priority, or state boundary. Review the highlighted fields and try again.";
+  }
+  if (["client_request_idempotency_conflict", "request_message_idempotency_conflict", "client_request_transition_idempotency_conflict", "client_request_work_idempotency_conflict"].includes(code)) {
+    return "This retry no longer matches its original payload. Reload the request before trying again.";
+  }
+  if (["client_request_rate_or_open_limit_reached", "request_message_rate_or_thread_limit_reached"].includes(code)) {
+    return "The bounded request limit was reached. Wait before adding another record.";
+  }
+  if (code === "request_thread_is_closed") return "This request is closed. Its private history remains visible, but no new messages can be added.";
+  if (code === "invalid_client_request_state_transition") return "That request state changed. Reload it before choosing the next step.";
+  if (code === "request_data_invalid") return "The request response did not match the verified contract, so it was not displayed.";
+  return "The database did not accept this request action. Nothing is being represented as complete.";
+};
+
+type RequestsPanelProps = {
+  role: VeroxaRole;
+  restaurantId: string;
+  notify: (message: string) => void;
+  onNavigate: (view: string) => void;
+};
+
+function RequestsPanel({ role, restaurantId, notify, onNavigate }: RequestsPanelProps) {
+  const [requests, setRequests] = useState<MomoClientRequest[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [listState, setListState] = useState<"loading" | "ready" | "error">("loading");
+  const [thread, setThread] = useState<MomoRequestMessage[]>([]);
+  const [threadState, setThreadState] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [threadRequestId, setThreadRequestId] = useState<string | null>(null);
+  const threadLoadSequence = useRef(0);
+  const [actionBusy, setActionBusy] = useState(false);
+  const [requestType, setRequestType] = useState<MomoClientRequest["requestType"]>("support");
+  const [requestTitle, setRequestTitle] = useState("");
+  const [requestDetails, setRequestDetails] = useState("");
+  const [requestPriority, setRequestPriority] = useState<MomoClientRequest["priority"]>("normal");
+  const [requestKey, setRequestKey] = useState(() => newMomoRequestIdempotencyKey("request"));
+  const [messageBody, setMessageBody] = useState("");
+  const [messageKey, setMessageKey] = useState(() => newMomoRequestIdempotencyKey("message"));
+  const [transitionNotes, setTransitionNotes] = useState("");
+  const [transitionAttempt, setTransitionAttempt] = useState<{ signature: string; key: string } | null>(null);
+  const [workType, setWorkType] = useState("onboarding");
+  const [workTitle, setWorkTitle] = useState("");
+  const [workDescription, setWorkDescription] = useState("");
+  const [workPriority, setWorkPriority] = useState(3);
+  const [workDueAt, setWorkDueAt] = useState("");
+  const [workKey, setWorkKey] = useState(() => newMomoRequestIdempotencyKey("work"));
+  const [lastLinkedWorkId, setLastLinkedWorkId] = useState<string | null>(null);
+
+  const reloadRequests = useCallback(async (preferredId?: string) => {
+    setListState("loading");
+    try {
+      const next = await loadMomoClientRequests({ restaurantId, limit: 25 });
+      setRequests(next);
+      setSelectedId((current) => {
+        const preferred = preferredId && next.some((request) => request.id === preferredId) ? preferredId : null;
+        const retained = current && next.some((request) => request.id === current) ? current : null;
+        return preferred || retained || next[0]?.id || null;
+      });
+      setListState("ready");
+    } catch (error) {
+      setRequests([]);
+      setSelectedId(null);
+      setListState("error");
+      notify(requestErrorMessage(error instanceof Error ? error.message : ""));
+    }
+  }, [notify, restaurantId]);
+
+  const reloadThread = useCallback(async (requestId: string) => {
+    const sequence = ++threadLoadSequence.current;
+    setThread([]);
+    setThreadRequestId(null);
+    setThreadState("loading");
+    try {
+      const next = await loadMomoRequestThread({ requestId, limit: 50 });
+      if (sequence !== threadLoadSequence.current) return;
+      setThread(next);
+      setThreadRequestId(requestId);
+      setThreadState("ready");
+    } catch (error) {
+      if (sequence !== threadLoadSequence.current) return;
+      setThread([]);
+      setThreadRequestId(requestId);
+      setThreadState("error");
+      notify(requestErrorMessage(error instanceof Error ? error.message : ""));
+    }
+  }, [notify]);
+
+  useEffect(() => {
+    let active = true;
+    void loadMomoClientRequests({ restaurantId, limit: 25 })
+      .then((next) => {
+        if (!active) return;
+        setRequests(next);
+        setSelectedId(next[0]?.id || null);
+        setListState("ready");
+      })
+      .catch(() => {
+        if (!active) return;
+        setRequests([]);
+        setSelectedId(null);
+        setListState("error");
+      });
+    return () => { active = false; };
+  }, [restaurantId]);
+  useEffect(() => {
+    if (!selectedId) {
+      threadLoadSequence.current += 1;
+      Promise.resolve().then(() => {
+        setThread([]);
+        setThreadRequestId(null);
+        setThreadState("idle");
+      });
+      return;
+    }
+    let active = true;
+    const requestId = selectedId;
+    const sequence = ++threadLoadSequence.current;
+    Promise.resolve().then(() => {
+      if (!active || sequence !== threadLoadSequence.current) return;
+      setThread([]);
+      setThreadRequestId(null);
+      setThreadState("loading");
+    });
+    void loadMomoRequestThread({ requestId, limit: 50 })
+      .then((next) => {
+        if (!active || sequence !== threadLoadSequence.current) return;
+        setThread(next);
+        setThreadRequestId(requestId);
+        setThreadState("ready");
+      })
+      .catch(() => {
+        if (!active || sequence !== threadLoadSequence.current) return;
+        setThread([]);
+        setThreadRequestId(requestId);
+        setThreadState("error");
+      });
+    return () => { active = false; };
+  }, [selectedId]);
+
+  const selected = requests.find((request) => request.id === selectedId) || null;
+  const requestClosed = selected ? ["completed", "cancelled"].includes(selected.status) : false;
+  const visibleThread = threadRequestId === selectedId ? thread : [];
+  const visibleThreadState = threadRequestId === selectedId ? threadState : selectedId ? "loading" : "idle";
+  const requestFormValid = requestTitle.trim().length >= 3 && requestTitle.trim().length <= 200
+    && requestDetails.trim().length >= 3 && requestDetails.trim().length <= 5000;
+  const messageValid = messageBody.trim().length >= 1 && messageBody.trim().length <= 5000;
+  const transitionValid = transitionNotes.trim().length >= 5 && transitionNotes.trim().length <= 2000;
+  const dueDate = workDueAt ? new Date(workDueAt) : null;
+  const workFormValid = workTitle.trim().length >= 3 && workTitle.trim().length <= 200
+    && workDescription.length <= 5000 && Number.isInteger(workPriority) && workPriority >= 1 && workPriority <= 5
+    && (!dueDate || (!Number.isNaN(dueDate.valueOf()) && dueDate > new Date()));
+
+  async function performRequestAction<T>(action: () => Promise<T>, success: string, preferredId?: (value: T) => string | undefined) {
+    if (actionBusy) return { ok: false as const };
+    setActionBusy(true);
+    try {
+      const value = await action();
+      const nextId = preferredId?.(value) || selectedId || undefined;
+      notify(success);
+      await reloadRequests(nextId);
+      if (nextId) await reloadThread(nextId);
+      return { ok: true as const, value };
+    } catch (error) {
+      notify(requestErrorMessage(error instanceof Error ? error.message : ""));
+      return { ok: false as const };
+    } finally {
+      setActionBusy(false);
+    }
+  }
+
+  const submitClientRequest = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (role !== "client" || !requestFormValid) return;
+    const result = await performRequestAction(
+      () => createMomoClientRequest({ restaurantId, requestType, title: requestTitle, details: requestDetails, priority: requestPriority, idempotencyKey: requestKey }),
+      "Private Momo request recorded. This does not activate services or approve public work.",
+      (requestId) => requestId,
+    );
+    if (result.ok) {
+      setRequestTitle("");
+      setRequestDetails("");
+      setRequestPriority("normal");
+      setRequestKey(newMomoRequestIdempotencyKey("request"));
+    }
+  };
+
+  const submitMessage = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!selected || requestClosed || !messageValid) return;
+    const result = await performRequestAction(
+      () => appendMomoRequestMessage({ requestId: selected.id, body: messageBody, idempotencyKey: messageKey }),
+      "Message added to the private request thread.",
+      () => selected.id,
+    );
+    if (result.ok) {
+      setMessageBody("");
+      setMessageKey(newMomoRequestIdempotencyKey("message"));
+    }
+  };
+
+  const transitionRequest = async (targetStatus: "acknowledged" | "in_progress" | "completed" | "cancelled") => {
+    if (role !== "team" || !selected || !transitionValid) return;
+    const signature = `${selected.id}:${targetStatus}:${transitionNotes.trim()}`;
+    const idempotencyKey = transitionAttempt?.signature === signature
+      ? transitionAttempt.key
+      : newMomoRequestIdempotencyKey("transition");
+    setTransitionAttempt({ signature, key: idempotencyKey });
+    const result = await performRequestAction(
+      () => transitionMomoClientRequest({ requestId: selected.id, targetStatus, notes: transitionNotes, idempotencyKey }),
+      `Request moved to ${labelStatus(targetStatus)} with a recorded Team note.`,
+      () => selected.id,
+    );
+    if (result.ok) {
+      setTransitionNotes("");
+      setTransitionAttempt(null);
+    }
+  };
+
+  const submitLinkedWork = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (role !== "team" || !selected || !workFormValid || !["acknowledged", "in_progress"].includes(selected.status)) return;
+    const result = await performRequestAction(
+      () => createMomoClientRequestWork({ requestId: selected.id, workType, title: workTitle, description: workDescription, priority: workPriority, idempotencyKey: workKey, dueAt: workDueAt || undefined }),
+      "Request-linked work queued through the private Team contract.",
+      () => selected.id,
+    );
+    if (result.ok) {
+      setLastLinkedWorkId(result.value);
+      setWorkTitle("");
+      setWorkDescription("");
+      setWorkDueAt("");
+      setWorkKey(newMomoRequestIdempotencyKey("work"));
+    }
+  };
+
+  const nextTransitions = selected?.status === "open" ? ["acknowledged", "cancelled"] as const
+    : selected?.status === "acknowledged" ? ["in_progress", "cancelled"] as const
+      : selected?.status === "in_progress" ? ["completed", "cancelled"] as const
+        : [] as const;
+
+  return <div className="view momo-request-view">
+    <MomoIntro eyebrow="MOMO’S HOUSE SAN ANTONIO · PRIVATE REQUESTS" title={role === "team" ? "Client request queue" : "Ask Veroxa for help"} description={role === "team" ? "A manual, auditable path from a real Client request to acknowledged work. No request can activate Momo, publish content, or prove readiness by itself." : "Create a private request for Team Faraz and keep its conversation in one place. Requests do not approve public work or turn on any service."} />
+    <SafetyBoundary role={role} />
+    <section className="momo-request-no-go" role="status">
+      <div><strong>Manual pilot remains No-Go</strong><span>A request is operating evidence only. Verified owner identity, all 18 truth confirmations, media rights, readiness evidence, and the full reviewed recovery loop are still separate requirements.</span></div>
+      <StatusBadge status="no_go" />
+    </section>
+
+    {role === "client" && <form className="momo-panel momo-form momo-request-create" onSubmit={(event) => void submitClientRequest(event)}>
+      <div className="momo-panel-heading"><div><p className="eyebrow">NEW PRIVATE REQUEST</p><h2>What do you need?</h2><small>Saved only under this signed Client identity.</small></div><StatusBadge status="manual_only" /></div>
+      <div className="momo-form-grid">
+        <label>Request type<select value={requestType} onChange={(event) => { setRequestType(event.target.value as MomoClientRequest["requestType"]); setRequestKey(newMomoRequestIdempotencyKey("request")); }}><option value="support">General support</option><option value="onboarding">Onboarding</option><option value="truth_update">Restaurant information</option><option value="media">Media</option><option value="content">Content</option><option value="website">Website</option><option value="reporting">Reporting</option></select></label>
+        <label>Priority<select value={requestPriority} onChange={(event) => { setRequestPriority(event.target.value as MomoClientRequest["priority"]); setRequestKey(newMomoRequestIdempotencyKey("request")); }}><option value="normal">Normal</option><option value="urgent">Urgent</option></select></label>
+        <label className="wide">Short title<input value={requestTitle} minLength={3} maxLength={200} onChange={(event) => { setRequestTitle(event.target.value); setRequestKey(newMomoRequestIdempotencyKey("request")); }} placeholder="Example: Help confirm holiday hours" required /></label>
+        <label className="wide">Useful detail<textarea value={requestDetails} minLength={3} maxLength={5000} rows={4} onChange={(event) => { setRequestDetails(event.target.value); setRequestKey(newMomoRequestIdempotencyKey("request")); }} placeholder="Describe the requested outcome without sharing passwords or payment details." required /></label>
+      </div>
+      <p className="momo-form-note">Team Faraz must acknowledge the request before linking work. Urgent is a queue label, not a guarantee of immediate completion.</p>
+      <button className="secondary-button" disabled={actionBusy || !requestFormValid}>Send private request</button>
+    </form>}
+
+    <section className="momo-request-layout">
+      <article className="momo-panel momo-request-list-panel">
+        <div className="momo-panel-heading"><div><p className="eyebrow">REQUEST QUEUE</p><h2>{role === "team" ? "Most recent Client requests" : "Your requests"}</h2><small>Bounded to the 25 most recent accessible records.</small></div><span>{requests.length}</span></div>
+        {listState === "loading" && requests.length === 0 ? <EmptyState title="Loading private requests…" detail="No fixture or cached request is shown." />
+          : listState === "error" ? <EmptyState title="Requests are unavailable." detail="No request is being inferred. Reload when database access is restored." />
+            : requests.length === 0 ? <EmptyState title="No request records exist." detail={role === "team" ? "No Momo Client request has been persisted. Team work will not be invented to make this queue look active." : "Your signed Client identity has not created a request. The manual pilot remains safely empty."} />
+              : <div className="momo-request-list">{requests.map((request) => <button type="button" key={request.id} className={selectedId === request.id ? "active" : ""} onClick={() => { threadLoadSequence.current += 1; setThread([]); setThreadRequestId(null); setThreadState("loading"); setSelectedId(request.id); setWorkKey(newMomoRequestIdempotencyKey("work")); setLastLinkedWorkId(null); }} aria-pressed={selectedId === request.id}><span><strong>{request.title}</strong><small>{labelStatus(request.requestType)} · {formatDate(request.createdAt)}</small></span><span><StatusBadge status={request.status} />{request.priority === "urgent" && <em>Urgent</em>}</span></button>)}</div>}
+        <button type="button" className="momo-request-refresh" disabled={listState === "loading" || actionBusy} onClick={() => void reloadRequests(selectedId || undefined)}>Refresh verified records</button>
+      </article>
+
+      <article className="momo-panel momo-request-thread-panel">
+        {!selected ? <EmptyState title="Choose a request." detail="Its private thread, allowed next state, and linked-work control will appear here." /> : <>
+          <div className="momo-request-detail-head"><div><p className="eyebrow">{labelStatus(selected.requestType)} · {labelStatus(selected.priority)} priority</p><h2>{selected.title}</h2><p>{selected.details}</p><small>Created {formatDate(selected.createdAt)} · updated {formatDate(selected.updatedAt)}</small></div><StatusBadge status={selected.status} /></div>
+          <section className="momo-request-thread" aria-label={`Private messages for ${selected.title}`}>
+            {visibleThreadState === "loading" ? <EmptyState title="Loading the private thread…" detail="Only database messages are shown." />
+              : visibleThreadState === "error" ? <EmptyState title="Thread unavailable." detail="No message is being inferred or cached." />
+                : visibleThread.length === 0 ? <EmptyState title="No messages yet." detail="The request details above are the only persisted context." />
+                  : [...visibleThread].reverse().map((message) => <article className={message.senderRole === role ? "mine" : ""} key={message.id}><header><strong>{message.senderRole === "team" ? "Team Faraz" : "Momo Client"}</strong><small>{formatDate(message.createdAt)}</small></header><p>{message.body}</p></article>)}
+          </section>
+          {requestClosed
+            ? <p className="momo-form-note">This request is closed. Its private history remains visible and immutable; new messages cannot be added.</p>
+            : <form className="momo-request-message-form" onSubmit={(event) => void submitMessage(event)}><label><span>Add a private message</span><textarea value={messageBody} maxLength={5000} rows={3} onChange={(event) => { setMessageBody(event.target.value); setMessageKey(newMomoRequestIdempotencyKey("message")); }} placeholder="Add useful context. Do not share passwords or payment details." /></label><button className="secondary-button" disabled={actionBusy || !messageValid}>Send message</button></form>}
+
+          {role === "team" && <section className="momo-request-team-controls">
+            <div><p className="eyebrow">TEAM STATE CONTROL</p><h3>Record the next reviewed state</h3><p>Each transition writes the note into the same private thread and emits bounded activity.</p></div>
+            {nextTransitions.length === 0 ? <p className="momo-form-note">This request is closed. Its history remains visible and immutable.</p> : <><label>Transition note<textarea value={transitionNotes} minLength={5} maxLength={2000} rows={3} onChange={(event) => { setTransitionNotes(event.target.value); setTransitionAttempt(null); }} placeholder="Explain what was reviewed or why the request is closing." /></label><div className="momo-request-actions">{nextTransitions.map((target) => <button type="button" key={target} disabled={actionBusy || !transitionValid} onClick={() => void transitionRequest(target)}>{target === "cancelled" ? "Cancel with reason" : target === "acknowledged" ? "Acknowledge request" : target === "in_progress" ? "Start request" : "Complete request"}</button>)}</div></>}
+          </section>}
+
+          {role === "team" && ["acknowledged", "in_progress"].includes(selected.status) && <form className="momo-request-work-form" onSubmit={(event) => void submitLinkedWork(event)}>
+            <div><p className="eyebrow">REQUEST-LINKED WORK</p><h3>Queue one traceable work item</h3><p>The request link is assigned only inside the database RPC; the browser never writes either private request table.</p></div>
+            <div className="momo-form-grid"><label>Work type<select value={workType} onChange={(event) => { setWorkType(event.target.value); setWorkKey(newMomoRequestIdempotencyKey("work")); }}><option value="onboarding">Onboarding</option><option value="truth_review">Truth review</option><option value="media">Media</option><option value="content">Content</option><option value="publishing">Publishing</option><option value="google">Google</option><option value="seo">SEO</option><option value="reviews">Reviews</option><option value="website">Website</option><option value="reporting">Reporting</option><option value="monitoring">Monitoring</option><option value="recovery">Recovery</option></select></label><label>Priority (1–5)<input type="number" min={1} max={5} step={1} value={workPriority} onChange={(event) => { setWorkPriority(Number(event.target.value)); setWorkKey(newMomoRequestIdempotencyKey("work")); }} /></label><label className="wide">Work title<input value={workTitle} minLength={3} maxLength={200} onChange={(event) => { setWorkTitle(event.target.value); setWorkKey(newMomoRequestIdempotencyKey("work")); }} required /></label><label className="wide">Internal detail<textarea value={workDescription} maxLength={5000} rows={3} onChange={(event) => { setWorkDescription(event.target.value); setWorkKey(newMomoRequestIdempotencyKey("work")); }} /></label><label>Optional due time<input type="datetime-local" value={workDueAt} onChange={(event) => { setWorkDueAt(event.target.value); setWorkKey(newMomoRequestIdempotencyKey("work")); }} /></label></div>
+            <button className="secondary-button" disabled={actionBusy || !workFormValid}>Queue linked work</button>
+            {lastLinkedWorkId && <div className="momo-callout"><strong>Linked work recorded</strong><p>Work reference {lastLinkedWorkId.slice(0, 8)}… is now traceable from this request.</p><button type="button" onClick={() => onNavigate("team-work")}>Open Work Board</button></div>}
+          </form>}
+        </>}
+      </article>
     </section>
   </div>;
 }
@@ -1040,6 +1356,7 @@ function WorkItemCard({ item, role, busy, run }: PanelProps & { item: MomoWorksp
   return <article>
     <div><strong>{item.title}</strong><StatusBadge status={item.status} /></div>
     <p>{item.description || item.blocked_reason || "No detail recorded"}</p>
+    {item.client_request_id && <small className="momo-request-reference">Client request · {item.client_request_id.slice(0, 8)}…</small>}
     <small>{labelStatus(item.work_type)} · attempts {item.attempt_count}/{item.max_attempts} · due {formatDate(item.due_at)} · retry after {formatDate(item.next_attempt_at)}</small>
     {role === "team" && !["completed", "cancelled"].includes(item.status) && <label>Evidence or failure detail<input value={reason} onChange={(event) => setReason(event.target.value)} placeholder="At least 10 characters" /></label>}
     {role === "team" && ["queued", "retrying"].includes(item.status) && <button type="button" disabled={busy || (item.status === "retrying" && !retryDue)} onClick={() => void run(() => transitionMomoWorkItem({ workItemId: item.id, targetStatus: "in_progress" }), item.status === "retrying" ? "Due retry started with aligned attempt history." : "Work item started with an auditable transition.")}>{item.status === "retrying" ? "Start due retry" : "Start work"}</button>}

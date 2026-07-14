@@ -2,7 +2,17 @@
 
 Status: Short index for Faraz, Codex, and future ChatGPT/Codex sessions.
 
-## 2026-07-13 — PR #145, Supabase 10, and Sites v11 verified production state
+## 2026-07-14 — current production-reconciliation state
+
+- Start with `VEROXA_CURRENT_MILESTONE.md`, `MOMO_FOUNDING_PILOT_COMMITMENT_AND_ONBOARDING_GATE.md`, `ACTIVE_DOCS_INDEX.md`, and `VEROXA_LOCKED_OPERATING_MEMORY.md`.
+- Read `VEROXA_DEPLOYMENT_MANIFEST.json` for the machine-readable release state. It records the freeze, disabled activation surfaces, observed baseline, deterministic source/migration trees, and deferred cleanup gates; the CI attestation supplies the exact reviewed `GITHUB_SHA`.
+- GitHub `main` is canonical at `674e1a7c0d140c9b281029277baeb2e68962dac2`. Live Sites version 13 is checkout `dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805`, and production Supabase has 11 applied migrations, so production is currently ahead of GitHub.
+- The reconciliation candidate is unmerged and undeployed. It predicts neither a merge SHA nor a Sites version.
+- Deployment is frozen except for the exact reviewed reconciliation release after all four workflows pass and review threads are resolved. Runtime AI, Momo/client contact, activation, external providers, publishing, billing, and new spend remain disabled.
+- Momo is the agreed free founding pilot. The secure persistent manual operating loop and evidence-based onboarding gate—not maximum automation—govern readiness.
+- Preserve the Vercel shutdown sentinel and defer branch deletion/legacy Vite removal until the documented post-release safety gates pass.
+
+## 2026-07-13 — PR #145, Supabase 10, and Sites v11 verified production state (historical)
 
 - Verified source: PR #145 passed review at exact head b007de99eb6c927f6d7ede56d7d4fffe8cbc0f0d and is merged to GitHub main at 9aa74631e393bc0303c820cc7671f818d617778c.
 - Verified data: Supabase has all 10 production migrations applied and verified. Restaurant Audit V2 is remote migration version 20260713212046 with SQL SHA-256 f4bfff7ac94ade68a2c4f761c5627dbcfe82d5800a0a8a46ce42b13e5b930693.
@@ -16,6 +26,8 @@ Use `ACTIVE_DOCS_INDEX.md` first as the highest-level current source-of-truth in
 
 - `ACTIVE_DOCS_INDEX.md`
 - `VEROXA_CURRENT_MILESTONE.md`
+- `MOMO_FOUNDING_PILOT_COMMITMENT_AND_ONBOARDING_GATE.md`
+- `VEROXA_DEPLOYMENT_MANIFEST.json`
 - `CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md`
 - `CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md`
 - `VEROXA_LOCKED_OPERATING_MEMORY.md`

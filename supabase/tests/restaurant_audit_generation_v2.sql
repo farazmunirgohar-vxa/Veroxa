@@ -10,19 +10,19 @@ begin
      or to_regprocedure('public.complete_team_generated_audit_run_v2(uuid,jsonb,jsonb,text,text,text)') is null
      or to_regprocedure('public.save_team_generated_audit_rerun_v2(uuid,uuid,jsonb,jsonb,text,text,text,text)') is null
      or to_regprocedure('public.veroxa_convert_reviewed_audit_to_pending_profile_v1(uuid,text,text,text,text,timestamp with time zone,text)') is null then
-    raise exception 'Restaurant Audit V2 RPC surface is incomplete';
+    raise exception 'Restaurant Audit V3 persistence RPC surface is incomplete';
   end if;
   if has_function_privilege('anon', 'public.save_team_generated_audit_v2(text,text,text,text,text,jsonb,jsonb,text,text,text,text)', 'execute')
      or has_function_privilege('anon', 'public.complete_team_generated_audit_run_v2(uuid,jsonb,jsonb,text,text,text)', 'execute')
      or has_function_privilege('anon', 'public.save_team_generated_audit_rerun_v2(uuid,uuid,jsonb,jsonb,text,text,text,text)', 'execute')
      or has_function_privilege('anon', 'public.veroxa_convert_reviewed_audit_to_pending_profile_v1(uuid,text,text,text,text,timestamp with time zone,text)', 'execute') then
-    raise exception 'anonymous role can execute a Team-only Audit V2 function';
+    raise exception 'anonymous role can execute a Team-only Audit V3 persistence function';
   end if;
   if not has_function_privilege('authenticated', 'public.save_team_generated_audit_v2(text,text,text,text,text,jsonb,jsonb,text,text,text,text)', 'execute')
      or not has_function_privilege('authenticated', 'public.complete_team_generated_audit_run_v2(uuid,jsonb,jsonb,text,text,text)', 'execute')
      or not has_function_privilege('authenticated', 'public.save_team_generated_audit_rerun_v2(uuid,uuid,jsonb,jsonb,text,text,text,text)', 'execute')
      or not has_function_privilege('authenticated', 'public.veroxa_convert_reviewed_audit_to_pending_profile_v1(uuid,text,text,text,text,timestamp with time zone,text)', 'execute') then
-    raise exception 'authenticated Team role cannot reach Audit V2 functions';
+    raise exception 'authenticated Team role cannot reach Audit V3 persistence functions';
   end if;
   if to_regclass('veroxa_private.audit_onboarding_conversions') is null then
     raise exception 'private audit onboarding conversion provenance is missing';
@@ -32,7 +32,7 @@ begin
     raise exception 'private audit onboarding conversion provenance is browser-readable or writable';
   end if;
 end $$;
-$catalog$, 'Restaurant Audit V2 catalog, grants, and private conversion boundary are valid');
+$catalog$, 'Restaurant Audit V3 catalog, grants, and private conversion boundary are valid');
 
 select lives_ok($workflow$
 do $$
@@ -60,22 +60,22 @@ declare
   v_before_count bigint;
   v_after_count bigint;
   v_snapshot jsonb := jsonb_build_object(
-    'engineVersion', 'restaurant-audit-v2',
-    'schemaVersion', 2,
-    'overallScore', 50,
+    'engineVersion', 'restaurant-audit-v3',
+    'schemaVersion', 3,
+    'overallScore', 55,
     'maxScore', 100,
     'evidenceCoverage', 100,
     'confidence', 'high',
     'categories', jsonb_build_array(
       jsonb_build_object('key','google_business_profile','label','Google Business Profile','weight',20,'status','confirmed_present','score',20,'evidenceUrl','https://audit.example/google','note','Profile reviewed.'),
       jsonb_build_object('key','website_experience','label','Website Experience','weight',15,'status','confirmed_present','score',15,'evidenceUrl','https://audit.example/website','note','Website reviewed.'),
-      jsonb_build_object('key','menu_and_ordering','label','Menu and Ordering Paths','weight',20,'status','confirmed_missing','score',0,'evidenceUrl','https://audit.example/menu','note','Menu path needs work.'),
+      jsonb_build_object('key','menu_and_ordering','label','Menu and Ordering Paths','weight',20,'status','confirmed_missing','score',5,'evidenceUrl','https://audit.example/menu','note','Menu path exists but has verified weaknesses.'),
       jsonb_build_object('key','social_presence','label','Social Presence','weight',15,'status','confirmed_present','score',15,'evidenceUrl','https://audit.example/social','note','Social profile reviewed.'),
       jsonb_build_object('key','reviews_and_trust','label','Reviews and Trust','weight',15,'status','confirmed_missing','score',0,'evidenceUrl','https://audit.example/reviews','note','Review response gap confirmed.'),
       jsonb_build_object('key','local_search_consistency','label','Local Search Consistency','weight',15,'status','confirmed_missing','score',0,'evidenceUrl','https://audit.example/local','note','Local details mismatch confirmed.')
     ),
     'improvementAreas', jsonb_build_array(
-      jsonb_build_object('key','menu_and_ordering','label','Menu and Ordering Paths','kind','confirmed_gap','priority','high','potentialPoints',20,'summary','A material menu, ordering, hours, or service-path gap was confirmed.','recommendedAction','Verify the restaurant-owned menu and ordering details, then prepare a clear path correction for review.'),
+      jsonb_build_object('key','menu_and_ordering','label','Menu and Ordering Paths','kind','confirmed_gap','priority','high','potentialPoints',15,'summary','A material menu, ordering, hours, or service-path gap was confirmed.','recommendedAction','Verify the restaurant-owned menu and ordering details, then prepare a clear path correction for review.'),
       jsonb_build_object('key','reviews_and_trust','label','Reviews and Trust','kind','confirmed_gap','priority','medium','potentialPoints',15,'summary','A material review visibility, response, or trust-signal gap was confirmed.','recommendedAction','Document the verified review gap and prepare a human-reviewed response or trust-maintenance workflow.'),
       jsonb_build_object('key','local_search_consistency','label','Local Search Consistency','kind','confirmed_gap','priority','medium','potentialPoints',15,'summary','A material local identity, location wording, or directions-path gap was confirmed.','recommendedAction','Verify name, address, phone, location wording, and directions evidence before preparing consistency corrections.')
     ),
@@ -102,7 +102,7 @@ declare
       )
     ),
     'generatedAt', '2026-07-13T20:00:00.000Z',
-    'honestyNote', 'This is a provisional online-presence assessment based only on explicitly confirmed or unknown Team-reviewed signals. It does not guarantee rankings, customers, orders, revenue, profit, ROI, or any other outcome. Unknown signals require verification before the audit is treated as complete.'
+    'honestyNote', 'This is a provisional online-presence assessment based only on cited public evidence and Team-reviewed signals. Scores may be partial when a system exists but has verified weaknesses. It does not guarantee rankings, customers, orders, revenue, profit, ROI, or any other outcome. Unknown signals require verification before the audit is treated as complete.'
   );
   v_findings jsonb := jsonb_build_array(
     jsonb_build_object('category','Menu and Ordering Paths','severity','high','title','Menu path gap confirmed','summary','The reviewed menu path needs work.','evidenceUrl','https://audit.example/menu','evidenceLabel','Menu evidence','recommendedAction','Correct the reviewed menu path.'),
@@ -137,7 +137,7 @@ begin
   from public.save_team_generated_audit_v2(
     'Audit V2 Restaurant', 'Austin', 'TX', 'https://audit.example',
     'https://audit.example/google', v_snapshot, v_findings,
-    'The reviewed sources produce a provisional 50 out of 100 online-presence score.',
+    'The reviewed sources produce a provisional 55 out of 100 online-presence score.',
     'Correct the verified menu, review-response, and local-consistency gaps across the 30, 60, and 90 day plan.',
     'Generated Audit V2 pgTAP record.', 'audit-v2-save-key-00000001'
   ) saved;
@@ -146,7 +146,7 @@ begin
   from public.save_team_generated_audit_v2(
     'Audit V2 Restaurant', 'Austin', 'TX', 'https://audit.example',
     'https://audit.example/google', v_snapshot, v_findings,
-    'The reviewed sources produce a provisional 50 out of 100 online-presence score.',
+    'The reviewed sources produce a provisional 55 out of 100 online-presence score.',
     'Correct the verified menu, review-response, and local-consistency gaps across the 30, 60, and 90 day plan.',
     'Generated Audit V2 pgTAP record.', 'audit-v2-save-key-00000001'
   ) saved;
@@ -156,8 +156,9 @@ begin
   if not exists (
     select 1 from public.audit_runs
     where id = v_run_id and status = 'ready_for_review'
-      and generator_version = 'restaurant-audit-v2'
-      and score_snapshot ->> 'overallScore' = '50'
+      and generator_version = 'restaurant-audit-v3'
+      and score_snapshot ->> 'overallScore' = '55'
+      and score_snapshot #>> '{categories,2,score}' = '5'
   ) or not exists (
     select 1 from public.audit_reports
     where audit_run_id = v_run_id and status = 'ready_for_review'
@@ -178,7 +179,7 @@ begin
   into v_completed_request_id, v_completed_run_id
   from public.complete_team_generated_audit_run_v2(
     v_complete_run_id, v_snapshot, v_findings,
-    'The completed draft now has a provisional 50 out of 100 online-presence score.',
+    'The completed draft now has a provisional 55 out of 100 online-presence score.',
     'Correct the verified menu, review-response, and local-consistency gaps across the 30, 60, and 90 day plan.',
     'audit-v2-save-key-00000001'
   ) completed;
@@ -189,7 +190,7 @@ begin
   select completed.run_id into v_repeat_completed_run_id
   from public.complete_team_generated_audit_run_v2(
     v_complete_run_id, v_snapshot, v_findings,
-    'The completed draft now has a provisional 50 out of 100 online-presence score.',
+    'The completed draft now has a provisional 55 out of 100 online-presence score.',
     'Correct the verified menu, review-response, and local-consistency gaps across the 30, 60, and 90 day plan.',
     'audit-v2-save-key-00000001'
   ) completed;
@@ -203,7 +204,7 @@ begin
   select rerun.run_id into v_rerun_run_id
   from public.save_team_generated_audit_rerun_v2(
     v_complete_request_id, v_complete_run_id, v_snapshot, v_findings,
-    'The re-audit retains a provisional 50 out of 100 online-presence score.',
+    'The re-audit retains a provisional 55 out of 100 online-presence score.',
     'Continue the verified 30, 60, and 90 day plan without assuming an outcome.',
     'Compared with the reviewed baseline; the confirmed score is unchanged.',
     'audit-v2-save-key-00000001'
@@ -211,7 +212,7 @@ begin
   select rerun.run_id into v_repeat_rerun_run_id
   from public.save_team_generated_audit_rerun_v2(
     v_complete_request_id, v_complete_run_id, v_snapshot, v_findings,
-    'The re-audit retains a provisional 50 out of 100 online-presence score.',
+    'The re-audit retains a provisional 55 out of 100 online-presence score.',
     'Continue the verified 30, 60, and 90 day plan without assuming an outcome.',
     'Compared with the reviewed baseline; the confirmed score is unchanged.',
     'audit-v2-save-key-00000001'

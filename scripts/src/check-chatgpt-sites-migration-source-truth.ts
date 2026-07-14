@@ -18,6 +18,12 @@ const protocol = read(
 );
 const memory = read("artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md");
 const status = read("artifacts/veroxa/docs/CURRENT_BUILD_STATUS.md");
+const foundingPilot = read(
+  "artifacts/veroxa/docs/MOMO_FOUNDING_PILOT_COMMITMENT_AND_ONBOARDING_GATE.md",
+);
+const deploymentManifest = read(
+  "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json",
+);
 const migration = read(
   "artifacts/veroxa/docs/CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md",
 );
@@ -67,6 +73,8 @@ const sourceTruth = [
   migration,
   lockedModel,
   currentStateReadme,
+  foundingPilot,
+  deploymentManifest,
 ].join("\n");
 const governedDocs = [
   agents,
@@ -78,6 +86,8 @@ const governedDocs = [
   migration,
   lockedModel,
   currentStateReadme,
+  foundingPilot,
+  deploymentManifest,
   preBuild,
   currentMaster,
   aiStrategy,
@@ -93,13 +103,14 @@ const governedDocs = [
 
 for (const marker of [
   "Momo's House San Antonio",
-  "only operational client and restaurant workspace",
-  "standalone, fully functional",
+  "founding pilot",
+  "secure, persistent, human-controlled Momo operating loop",
   "Restaurant Audit Center",
   "does not become an operational client",
   "Other restaurants",
-  "100% readiness",
-  "maximum safe level of AI assistance and automation",
+  "VEROXA_DEPLOYMENT_MANIFEST.json",
+  "Sites version 13",
+  "all four required workflows",
   "Mandatory post-build continuity update",
   "After every build",
 ]) {
@@ -205,6 +216,26 @@ for (const marker of [
     `Active migration source-of-truth missing marker: ${marker}`,
   );
 }
+
+for (const marker of [
+  "674e1a7c0d140c9b281029277baeb2e68962dac2",
+  "dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805",
+  "Sites version 13",
+  "20260713222721_upgrade_restaurant_audit_engine_v3_partial_scoring.sql",
+  "304eb98db628b09fa245fba156160b043c1ba9ba2f9aeb689086a6a18ad234b2",
+  "candidate_not_merged_not_deployed",
+  "frozen_except_authorized_reconciliation",
+]) {
+  must(
+    sourceTruth.includes(marker),
+    `Active source truth missing production-reconciliation marker: ${marker}`,
+  );
+}
+must(
+  /futureMergedGitHubCommit"\s*:\s*null/.test(deploymentManifest) &&
+    /futureSitesVersion"\s*:\s*null/.test(deploymentManifest),
+  "Deployment manifest must not predict a merge commit or future Sites version.",
+);
 
 for (const marker of [
   "secure-email-link Supabase authentication",

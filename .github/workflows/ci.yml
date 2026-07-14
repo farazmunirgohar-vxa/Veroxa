@@ -39,6 +39,24 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Verify deployment manifest and four-workflow policy
+        run: |
+          pnpm --filter @workspace/scripts run check-deployment-manifest
+          pnpm --filter @workspace/scripts run check-release-workflow-policy
+
+      - name: Generate exact-commit deployment attestation
+        env:
+          VEROXA_ATTESTATION_OUTPUT: ${{ runner.temp }}/veroxa-deployment-attestation.json
+        run: pnpm --filter @workspace/scripts run generate-deployment-attestation
+
+      - name: Upload exact-commit deployment attestation
+        uses: actions/upload-artifact@v4
+        with:
+          name: veroxa-deployment-attestation-${{ github.sha }}
+          path: ${{ runner.temp }}/veroxa-deployment-attestation.json
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Typecheck
         run: pnpm run typecheck
 

@@ -4,6 +4,8 @@ import test from "node:test";
 import {
   RESTAURANT_AUDIT_CATEGORY_DEFINITIONS,
   RESTAURANT_AUDIT_ENGINE_VERSION,
+  RESTAURANT_AUDIT_RESEARCH_MODEL,
+  RESTAURANT_AUDIT_RESEARCH_PRICING_VERSION,
   RESTAURANT_AUDIT_SCHEMA_VERSION,
   generateRestaurantAuditSnapshot,
   isRestaurantAuditSnapshot,
@@ -29,15 +31,15 @@ test("locks six neutral weighted categories to a 100-point maximum", () => {
 
 test("treats omitted signals as unknown without inventing evidence", () => {
   const snapshot = generateRestaurantAuditSnapshot({ generatedAt: GENERATED_AT });
-  assert.equal(snapshot.engineVersion, "restaurant-audit-v2");
-  assert.equal(snapshot.schemaVersion, 2);
+  assert.equal(snapshot.engineVersion, "restaurant-audit-v3");
+  assert.equal(snapshot.schemaVersion, 3);
   assert.equal(snapshot.overallScore, 0);
   assert.equal(snapshot.maxScore, 100);
   assert.equal(snapshot.evidenceCoverage, 0);
   assert.equal(snapshot.confidence, "low");
   assert.ok(snapshot.categories.every((category) => category.status === "unknown"));
   assert.ok(snapshot.categories.every((category) => category.evidenceUrl === null));
-  assert.equal(snapshot.improvementAreas.length, 3);
+  assert.equal(snapshot.improvementAreas.length, 6);
   assert.ok(snapshot.improvementAreas.every((item) => item.kind === "verification_needed"));
 });
 
@@ -72,6 +74,7 @@ test("credits only confirmed-present categories and separates gaps from unknowns
       ["menu_and_ordering", "confirmed_gap"],
       ["website_experience", "confirmed_gap"],
       ["reviews_and_trust", "verification_needed"],
+      ["local_search_consistency", "verification_needed"],
     ],
   );
   assert.equal(
@@ -81,7 +84,42 @@ test("credits only confirmed-present categories and separates gaps from unknowns
   assert.equal(snapshot.categories[0].note, "Team checked the current profile.");
 });
 
-test("produces cautious top-three fixes and distinct 30, 60, and 90 day stages", () => {
+test("credits evidence-backed partial points without treating a weak system as complete", () => {
+  const snapshot = generateRestaurantAuditSnapshot({
+    generatedAt: GENERATED_AT,
+    categories: {
+      google_business_profile: {
+        status: "confirmed_missing",
+        score: 14,
+        evidenceUrl: "https://example.com/google",
+        note: "The profile exists, but important details conflict with other public sources.",
+      },
+      website_experience: {
+        status: "confirmed_missing",
+        score: 12,
+        evidenceUrl: "https://example.com/",
+        note: "The website works, but contains a visible location-state warning.",
+      },
+    },
+  });
+
+  assert.equal(snapshot.overallScore, 26);
+  assert.equal(snapshot.evidenceCoverage, 35);
+  assert.equal(snapshot.categories[0].score, 14);
+  assert.equal(snapshot.improvementAreas[0].potentialPoints, 6);
+  assert.equal(isRestaurantAuditSnapshot(snapshot), true);
+  assert.throws(
+    () => generateRestaurantAuditSnapshot({
+      generatedAt: GENERATED_AT,
+      categories: {
+        website_experience: { status: "confirmed_missing", score: 15 },
+      },
+    }),
+    /score_invalid/,
+  );
+});
+
+test("retains every weakness while limiting fix-first priorities to three", () => {
   const snapshot = generateRestaurantAuditSnapshot({
     generatedAt: GENERATED_AT,
     categories: Object.fromEntries(
@@ -95,8 +133,11 @@ test("produces cautious top-three fixes and distinct 30, 60, and 90 day stages",
   assert.equal(snapshot.overallScore, 0);
   assert.equal(snapshot.evidenceCoverage, 100);
   assert.equal(snapshot.confidence, "high");
-  assert.equal(snapshot.improvementAreas.length, 3);
+  assert.equal(snapshot.improvementAreas.length, 6);
   assert.equal(snapshot.fixFirst.length, 3);
+  assert.equal(snapshot.plan.days_0_30.length, 6);
+  assert.equal(snapshot.plan.days_31_60.length, 6);
+  assert.equal(snapshot.plan.days_61_90.length, 6);
   assert.ok(snapshot.plan.days_0_30.length > 0);
   assert.ok(snapshot.plan.days_31_60.length > 0);
   assert.ok(snapshot.plan.days_61_90.length > 0);
@@ -156,6 +197,36 @@ test("is deterministic, versioned, JSON-safe, and parseable", () => {
     isRestaurantAuditSnapshot({ ...first, overallScore: 101 }),
     false,
   );
+});
+
+test("retains only a strictly validated optional AI research ledger reference", () => {
+  const researchRef = {
+    researchId: "11111111-1111-4111-8111-111111111111",
+    requestHash: "a".repeat(64),
+    model: RESTAURANT_AUDIT_RESEARCH_MODEL,
+    pricingVersion: RESTAURANT_AUDIT_RESEARCH_PRICING_VERSION,
+  };
+  const snapshot = generateRestaurantAuditSnapshot({
+    generatedAt: GENERATED_AT,
+    researchRef,
+  });
+  assert.deepEqual(snapshot.researchRef, researchRef);
+  assert.deepEqual(parseRestaurantAuditSnapshot(JSON.stringify(snapshot)), snapshot);
+
+  for (const invalid of [
+    { ...researchRef, researchId: "not-a-uuid" },
+    { ...researchRef, requestHash: "A".repeat(64) },
+    { ...researchRef, model: "different-model" },
+    { ...researchRef, pricingVersion: "mutable-pricing" },
+    { ...researchRef, extra: "not-allowed" },
+  ]) {
+    assert.throws(
+      () => generateRestaurantAuditSnapshot({ generatedAt: GENERATED_AT, researchRef: invalid }),
+      /research_reference_invalid/,
+    );
+    assert.equal(parseRestaurantAuditSnapshot({ ...snapshot, researchRef: invalid }), null);
+  }
+  assert.equal(parseRestaurantAuditSnapshot({ ...snapshot, unexpected: true }), null);
 });
 
 test("parser rejects snapshots whose derived score, confidence, priorities, or plan were altered", () => {
@@ -218,14 +289,14 @@ test("rejects invalid timestamps and invalid runtime signal states", () => {
   );
 });
 
-test("engine source has no network, model, pricing, package, client, or cuisine favoritism", async () => {
+test("engine stays offline and keeps research metadata out of scoring or billing logic", async () => {
   const source = await readFile(
     new URL("../app/restaurant-audit-engine.ts", import.meta.url),
     "utf8",
   );
   assert.doesNotMatch(source, /\bfetch\s*\(/);
-  assert.doesNotMatch(source, /OpenAI|anthropic|gemini|model call/i);
-  assert.doesNotMatch(source, /\bpricing\b|\bpackage\b|\bclient\b/i);
+  assert.doesNotMatch(source, /XMLHttpRequest|anthropic|gemini|model call|responses\.create|chat\.completions/i);
+  assert.doesNotMatch(source, /actualMicrousd|reservedMicrousd|inputTokens|outputTokens|webSearchCalls|\bpackage\b|\bclient\b/i);
   assert.doesNotMatch(source, /\bmomo\b|\bhalal\b|\buzbek\b|\bnepali\b|\bmediterranean\b/i);
   assert.doesNotMatch(source, /Date\.now\(|Math\.random\(|crypto\.randomUUID\(/);
 });

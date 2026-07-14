@@ -1,4 +1,17 @@
-## 2026-07-13 — PR #145, Supabase 10, and Sites v11 verified production state
+## 2026-07-14 — locked production reconciliation and founding-pilot direction
+
+- `CVR` means **Complete Veroxa Review**: Veroxa code review, build-direction review, Codex review, GitHub review, Sites review, and recommended next steps.
+- Momo's House San Antonio has already agreed to onboard as Veroxa's free founding pilot. Complete and prove the secure, persistent, human-controlled operating loop before contact. Manual execution is valid for the pilot; paid AI and live provider automation are later modular activations, not prerequisites for truthful onboarding.
+- Canonical GitHub `main` is `674e1a7c0d140c9b281029277baeb2e68962dac2`. Observed production is ahead: live Sites version 13 uses checkout `dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805`, and Supabase has 11 applied migrations.
+- Exact migration 11 source: `20260713222721_upgrade_restaurant_audit_engine_v3_partial_scoring.sql`, SHA-256 `304eb98db628b09fa245fba156160b043c1ba9ba2f9aeb689086a6a18ad234b2`.
+- The reconciliation candidate is unmerged and undeployed. Do not invent its merge SHA, future Sites version, review result, or live status.
+- `VEROXA_DEPLOYMENT_MANIFEST.json` is the machine-readable freeze and parity record. CI must verify the committed deterministic trees and emit an exact-`GITHUB_SHA` attestation. Merge additionally requires all four workflows green and zero unresolved GitHub review threads.
+- Freeze all product deployments except that exact reviewed reconciliation release. Keep runtime AI, credentials, owner/client contact, Momo activation, providers, publishing, billing, and new spend disabled.
+- A visual/manual Momo review may prove UI behavior but cannot manufacture Client identity, owner confirmations, media rights, work, activity, reports, recovery, or a readiness Go.
+- Keep the Vercel shutdown sentinel until the external integration is independently confirmed disconnected. Branch pruning and legacy Vite removal remain deferred post-release work with rollback, ownership, and explicit approval gates.
+- This section supersedes older automation-first, Supabase-10, Sites-v11, Audit-V2, and “100% readiness requires live AI/providers” statements wherever they conflict.
+
+## 2026-07-13 — PR #145, Supabase 10, and Sites v11 verified production state (historical)
 
 - Verified source: PR #145 passed review at exact head b007de99eb6c927f6d7ede56d7d4fffe8cbc0f0d and is merged to GitHub main at 9aa74631e393bc0303c820cc7671f818d617778c.
 - Verified data: Supabase has all 10 production migrations applied and verified. Restaurant Audit V2 is remote migration version 20260713212046 with SQL SHA-256 f4bfff7ac94ade68a2c4f761c5627dbcfe82d5800a0a8a46ce42b13e5b930693.

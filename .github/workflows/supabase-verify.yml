@@ -1,15 +1,13 @@
 name: Supabase Verify
 
 on:
+  workflow_dispatch:
   pull_request:
-    paths:
-      - "supabase/**"
-      - ".github/workflows/supabase-verify.yml"
+    branches:
+      - main
   push:
-    branches: [main]
-    paths:
-      - "supabase/**"
-      - ".github/workflows/supabase-verify.yml"
+    branches:
+      - main
 
 permissions:
   contents: read

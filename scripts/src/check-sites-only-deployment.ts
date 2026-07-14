@@ -4,123 +4,134 @@ import { resolve } from "node:path";
 const root = resolve(import.meta.dirname, "../..");
 const failures: string[] = [];
 const read = (path: string) => readFileSync(resolve(root, path), "utf8");
+const must = (condition: boolean, message: string) => {
+  if (!condition) failures.push(message);
+};
 
 for (const retiredPath of ["api/audit-requests.ts", "api/pilot-access.ts"]) {
-  if (existsSync(resolve(root, retiredPath))) failures.push(`Retired Vercel artifact still exists: ${retiredPath}`);
+  must(!existsSync(resolve(root, retiredPath)), `Retired Vercel artifact exists: ${retiredPath}`);
 }
 
 const vercelShutdownPath = resolve(root, "vercel.json");
-if (!existsSync(vercelShutdownPath)) {
-  failures.push("The temporary Vercel automatic-deployment shutdown sentinel is missing.");
-} else {
+must(existsSync(vercelShutdownPath), "The Vercel automatic-deployment shutdown sentinel is missing.");
+if (existsSync(vercelShutdownPath)) {
   try {
-    const sentinel = JSON.parse(readFileSync(vercelShutdownPath, "utf8")) as Record<string, unknown>;
-    const git = sentinel.git as Record<string, unknown> | undefined;
-    const topLevelKeys = Object.keys(sentinel).sort();
-    const gitKeys = git ? Object.keys(git).sort() : [];
-    if (
-      JSON.stringify(topLevelKeys) !== JSON.stringify(["$schema", "git"]) ||
-      sentinel.$schema !== "https://openapi.vercel.sh/vercel.json" ||
-      JSON.stringify(gitKeys) !== JSON.stringify(["deploymentEnabled"]) ||
-      git?.deploymentEnabled !== false
-    ) {
-      failures.push("vercel.json must remain the exact inert automatic-deployment shutdown sentinel.");
-    }
+    const sentinel = JSON.parse(readFileSync(vercelShutdownPath, "utf8")) as {
+      $schema?: unknown;
+      git?: Record<string, unknown>;
+    };
+    must(
+      JSON.stringify(Object.keys(sentinel).sort()) === JSON.stringify(["$schema", "git"]) &&
+        sentinel.$schema === "https://openapi.vercel.sh/vercel.json" &&
+        JSON.stringify(Object.keys(sentinel.git ?? {}).sort()) ===
+          JSON.stringify(["deploymentEnabled"]) &&
+        sentinel.git?.deploymentEnabled === false,
+      "vercel.json must remain the exact inert shutdown sentinel.",
+    );
   } catch {
     failures.push("vercel.json is not valid JSON.");
   }
 }
 
-const protocol = read("artifacts/veroxa/docs/CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md");
-const sourceTruth = read("artifacts/veroxa/docs/CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md");
-const activeIndex = read("artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md");
-const agents = read("AGENTS.md");
-const milestone = read("artifacts/veroxa/docs/VEROXA_CURRENT_MILESTONE.md");
-const status = read("artifacts/veroxa/docs/CURRENT_BUILD_STATUS.md");
-const currentState = read("artifacts/veroxa/docs/README_CURRENT_STATE.md");
-const readinessTracker = JSON.parse(
+const documents = [
+  "AGENTS.md",
+  "artifacts/veroxa/docs/CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md",
+  "artifacts/veroxa/docs/CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md",
+  "artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md",
+  "artifacts/veroxa/docs/VEROXA_CURRENT_MILESTONE.md",
+  "artifacts/veroxa/docs/CURRENT_BUILD_STATUS.md",
+  "artifacts/veroxa/docs/README_CURRENT_STATE.md",
+  "artifacts/veroxa/docs/RR_CHECKPOINT.md",
+].map((path) => ({ path, source: read(path).slice(0, 14_000) }));
+const combined = documents.map(({ source }) => source).join("\n");
+for (const marker of [
+  "Vercel is retired",
+  "674e1a7c0d140c9b281029277baeb2e68962dac2",
+  "dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805",
+  "Sites version 13",
+  "candidate",
+]) {
+  must(combined.includes(marker), `Current source truth is missing delivery marker: ${marker}`);
+}
+for (const banned of [
+  "Vercel is the new primary deployment target",
+  "Vercel remains rollback",
+  "Vercel is temporary rollback",
+  "GitHub + Codex + Vercel",
+  "Use Vercel as the deployment target",
+]) {
+  must(!combined.includes(banned), `Current source truth restores retired Vercel behavior: ${banned}`);
+}
+must(
+  /shutdown sentinel[\s\S]{0,500}(?:external|dashboard)[\s\S]{0,300}disconnect/i.test(combined),
+  "Current source truth must retain the sentinel until external Vercel Git disconnection is verified.",
+);
+
+const hostingPath = "artifacts/veroxa-sites/.openai/hosting.json";
+must(existsSync(resolve(root, hostingPath)), "Sites hosting identity is missing.");
+if (existsSync(resolve(root, hostingPath))) {
+  const hosting = JSON.parse(read(hostingPath)) as { project_id?: unknown };
+  must(
+    hosting.project_id === "appgprj_6a53d07c7c28819182801cf35dfd30de",
+    "Sites project identity drifted.",
+  );
+}
+
+const readiness = JSON.parse(
   read("artifacts/veroxa-sites/app/momo-readiness-tracker.json"),
 ) as {
   schemaVersion: number;
-  lastVerifiedOperationalRelease: {
-    pullRequest: number;
-    reviewedHead: string;
-    mergedOperationalCommit: string;
-    sitesCheckoutSourceCommit: string;
-    sitesVersion: number;
+  observedProductionState: {
+    canonicalGitHubMainCommit: string;
+    liveSitesVersion: number;
+    liveSitesCheckoutSourceCommit: string;
     productionMigrations: number;
-    databaseVerified: boolean;
-    customDomainsVerified: boolean;
+    sourceParityVerified: boolean;
+  };
+  reconciliationCandidate: {
+    state: string;
+    deploymentFrozen: boolean;
+    sitesCandidatePublished: boolean;
   };
 };
-const preBuild = read("artifacts/veroxa/docs/PRE_BUILD_STABILITY_CHECKLIST.md");
-const rrCheckpoint = read("artifacts/veroxa/docs/RR_CHECKPOINT.md");
-const before = (source: string, marker: string) => source.split(marker)[0];
-const currentGuidance = [
-  protocol,
-  sourceTruth,
-  before(activeIndex, "## 2026-06-21"),
-  before(agents, "## 2026-06-21"),
-  milestone,
-  before(status, "## 2026-07-13 — Momo Seven-System"),
-  currentState,
-  before(preBuild, "## 2026-06-04"),
-  rrCheckpoint,
-];
-const combined = currentGuidance.join("\n");
+must(
+  readiness.schemaVersion === 4 &&
+    readiness.observedProductionState.canonicalGitHubMainCommit ===
+      "674e1a7c0d140c9b281029277baeb2e68962dac2" &&
+    readiness.observedProductionState.liveSitesVersion === 13 &&
+    readiness.observedProductionState.liveSitesCheckoutSourceCommit ===
+      "dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805" &&
+    readiness.observedProductionState.productionMigrations === 11 &&
+    !readiness.observedProductionState.sourceParityVerified &&
+    readiness.reconciliationCandidate.state === "candidate_not_merged_not_deployed" &&
+    readiness.reconciliationCandidate.deploymentFrozen &&
+    !readiness.reconciliationCandidate.sitesCandidatePublished,
+  "Sites-bundled readiness evidence must preserve production drift and the undeployed freeze.",
+);
 
-if (!combined.includes("Vercel is retired")) failures.push("Current source truth must explicitly record that Vercel is retired.");
-for (const activePhrase of [
-  "Vercel remains temporary",
-  "Vercel remains a temporary",
-  "Vercel remains available temporarily",
-  "Vercel deployment remains a temporary",
-  "Vercel remains rollback",
-  "Vercel is temporary rollback",
-  "with Vercel retained temporarily",
-  "keep its existing compatibility configuration",
-  "Root `vercel.json` keeps",
-  "The Vite/Vercel rollback keeps",
-  "The live domain remains on the prior shell",
-  "current unmerged candidate",
-  "unmerged, undeployed candidate",
-]) {
-  if (combined.includes(activePhrase)) failures.push(`Current source truth restored retired deployment language: ${activePhrase}`);
-}
-if (!existsSync(resolve(root, "artifacts/veroxa-sites/.openai/hosting.json"))) {
-  failures.push("Sites hosting identity is missing.");
-}
-if (
-  !currentState.includes("PR #145") ||
-  !currentState.includes("b007de99eb6c927f6d7ede56d7d4fffe8cbc0f0d") ||
-  !currentState.includes("9aa74631e393bc0303c820cc7671f818d617778c") ||
-  !currentState.includes("4bef697e230791403211cb9c60f769ebcb4f39c7") ||
-  !currentState.includes("Sites version 11") ||
-  !currentState.includes("all 10 production migrations applied and verified")
-) {
-  failures.push("Current-state index must record the verified PR #145 / Sites version 11 / ten-migration operational release.");
-}
-const verifiedRelease = readinessTracker.lastVerifiedOperationalRelease;
-if (
-  readinessTracker.schemaVersion !== 3 ||
-  verifiedRelease.pullRequest !== 145 ||
-  verifiedRelease.reviewedHead !== "b007de99eb6c927f6d7ede56d7d4fffe8cbc0f0d" ||
-  verifiedRelease.mergedOperationalCommit !== "9aa74631e393bc0303c820cc7671f818d617778c" ||
-  verifiedRelease.sitesCheckoutSourceCommit !== "4bef697e230791403211cb9c60f769ebcb4f39c7" ||
-  verifiedRelease.sitesVersion !== 11 ||
-  verifiedRelease.productionMigrations !== 10 ||
-  !verifiedRelease.databaseVerified ||
-  !verifiedRelease.customDomainsVerified
-) {
-  failures.push("Sites-bundled readiness evidence must match the verified PR #145 / Sites version 11 / ten-migration release before the next checkpoint.");
-}
-if (!preBuild.includes("GitHub `main` plus verified Sites checkpoints are the recovery path")) {
-  failures.push("Pre-build checklist must use GitHub main plus verified Sites checkpoints for recovery.");
-}
-for (const workflow of readdirSync(resolve(root, ".github/workflows")).filter((name) => /\.ya?ml$/.test(name))) {
-  if (/vercel/i.test(read(`.github/workflows/${workflow}`))) {
-    failures.push(`GitHub workflow still depends on retired Vercel behavior: ${workflow}`);
-  }
+const manifest = JSON.parse(
+  read("artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json"),
+) as {
+  sitesProjectId: string;
+  releaseState: string;
+  deploymentFreeze: { automaticDeploymentsAllowed: boolean };
+  cleanupState: { vercelSentinelRemovalAllowed: boolean };
+};
+must(
+  manifest.sitesProjectId === "appgprj_6a53d07c7c28819182801cf35dfd30de" &&
+    manifest.releaseState === "candidate_not_merged_not_deployed" &&
+    !manifest.deploymentFreeze.automaticDeploymentsAllowed &&
+    !manifest.cleanupState.vercelSentinelRemovalAllowed,
+  "Deployment manifest must bind Sites identity and keep deployment/Vercel cleanup frozen.",
+);
+
+for (const workflow of readdirSync(resolve(root, ".github/workflows")).filter((name) =>
+  /\.ya?ml$/.test(name),
+)) {
+  must(
+    !/vercel/i.test(read(`.github/workflows/${workflow}`)),
+    `GitHub workflow depends on retired Vercel behavior: ${workflow}`,
+  );
 }
 
 if (failures.length) {
@@ -129,4 +140,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log("Sites-only deployment guardrail passed; Vercel is retired and automatic deployments are disabled.");
+console.log("Sites-only deployment guardrail passed; Sites is sole delivery and Vercel stays inert.");

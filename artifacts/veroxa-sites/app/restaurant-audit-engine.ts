@@ -1,5 +1,8 @@
-export const RESTAURANT_AUDIT_ENGINE_VERSION = "restaurant-audit-v2" as const;
-export const RESTAURANT_AUDIT_SCHEMA_VERSION = 2 as const;
+export const RESTAURANT_AUDIT_ENGINE_VERSION = "restaurant-audit-v3" as const;
+export const RESTAURANT_AUDIT_SCHEMA_VERSION = 3 as const;
+export const RESTAURANT_AUDIT_RESEARCH_MODEL = "gpt-5.6-luna" as const;
+export const RESTAURANT_AUDIT_RESEARCH_PRICING_VERSION =
+  "openai-gpt-5.6-luna-web-2026-07-14-v2" as const;
 
 export const RESTAURANT_AUDIT_SIGNAL_STATUSES = [
   "confirmed_present",
@@ -22,6 +25,7 @@ export type RestaurantAuditConfidence = "low" | "medium" | "high";
 
 export type RestaurantAuditCategoryInput = {
   status: RestaurantAuditSignalStatus;
+  score?: number | null;
   evidenceUrl?: string | null;
   note?: string | null;
 };
@@ -35,6 +39,14 @@ export type RestaurantAuditEngineInput = {
   categories?: Partial<
     Record<RestaurantAuditCategoryKey, RestaurantAuditCategoryInput>
   >;
+  researchRef?: RestaurantAuditResearchRef | null;
+};
+
+export type RestaurantAuditResearchRef = {
+  researchId: string;
+  requestHash: string;
+  model: typeof RESTAURANT_AUDIT_RESEARCH_MODEL;
+  pricingVersion: typeof RESTAURANT_AUDIT_RESEARCH_PRICING_VERSION;
 };
 
 export type RestaurantAuditCategorySnapshot = {
@@ -83,6 +95,7 @@ export type RestaurantAuditSnapshot = {
   plan: RestaurantAuditPlan;
   generatedAt: string;
   honestyNote: string;
+  researchRef?: RestaurantAuditResearchRef;
 };
 
 type RestaurantAuditCategoryDefinition = {
@@ -177,7 +190,7 @@ export const RESTAURANT_AUDIT_CATEGORY_DEFINITIONS: readonly RestaurantAuditCate
 ] as const;
 
 export const RESTAURANT_AUDIT_HONESTY_NOTE =
-  "This is a provisional online-presence assessment based only on explicitly confirmed or unknown Team-reviewed signals. It does not guarantee rankings, customers, orders, revenue, profit, ROI, or any other outcome. Unknown signals require verification before the audit is treated as complete.";
+  "This is a provisional online-presence assessment based only on cited public evidence and Team-reviewed signals. Scores may be partial when a system exists but has verified weaknesses. It does not guarantee rankings, customers, orders, revenue, profit, ROI, or any other outcome. Unknown signals require verification before the audit is treated as complete.";
 
 const statusSet = new Set<string>(RESTAURANT_AUDIT_SIGNAL_STATUSES);
 const categoryKeySet = new Set<string>(
@@ -193,6 +206,30 @@ function normalizedGeneratedAt(value: string): string {
     throw new Error("restaurant_audit_generated_at_invalid");
   }
   return new Date(timestamp).toISOString();
+}
+
+function normalizedResearchRef(
+  value: RestaurantAuditResearchRef | null | undefined | unknown,
+): RestaurantAuditResearchRef | undefined {
+  if (value === null || value === undefined) return undefined;
+  if (
+    !isPlainObject(value)
+    || !hasOnlyKeys(value, ["researchId", "requestHash", "model", "pricingVersion"])
+    || typeof value.researchId !== "string"
+    || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(value.researchId)
+    || typeof value.requestHash !== "string"
+    || !/^[0-9a-f]{64}$/.test(value.requestHash)
+    || value.model !== RESTAURANT_AUDIT_RESEARCH_MODEL
+    || value.pricingVersion !== RESTAURANT_AUDIT_RESEARCH_PRICING_VERSION
+  ) {
+    throw new Error("restaurant_audit_research_reference_invalid");
+  }
+  return {
+    researchId: value.researchId,
+    requestHash: value.requestHash,
+    model: RESTAURANT_AUDIT_RESEARCH_MODEL,
+    pricingVersion: RESTAURANT_AUDIT_RESEARCH_PRICING_VERSION,
+  };
 }
 
 function normalizedEvidenceUrl(value: string | null | undefined): string | null {
@@ -213,6 +250,20 @@ function normalizedEvidenceUrl(value: string | null | undefined): string | null 
 function normalizedNote(value: string | null | undefined): string | null {
   const note = value?.trim();
   return note ? note.slice(0, 2_000) : null;
+}
+
+function normalizedScore(
+  status: RestaurantAuditSignalStatus,
+  value: number | null | undefined,
+  weight: number,
+): number {
+  if (status === "unknown") return 0;
+  if (status === "confirmed_present") return weight;
+  if (value === null || value === undefined) return 0;
+  if (!Number.isInteger(value) || value < 0 || value >= weight) {
+    throw new Error("restaurant_audit_score_invalid");
+  }
+  return value;
 }
 
 function confidenceForCoverage(coverage: number): RestaurantAuditConfidence {
@@ -236,7 +287,7 @@ function improvementForCategory(
       label: category.label,
       kind: "confirmed_gap",
       priority: priorityForWeight(category.weight),
-      potentialPoints: category.weight,
+      potentialPoints: category.weight - category.score,
       summary: definition.gapSummary,
       recommendedAction: definition.firstAction,
     };
@@ -314,6 +365,7 @@ export function generateRestaurantAuditSnapshot(
   input: RestaurantAuditEngineInput,
 ): RestaurantAuditSnapshot {
   const generatedAt = normalizedGeneratedAt(input.generatedAt);
+  const researchRef = normalizedResearchRef(input.researchRef);
   const categories = RESTAURANT_AUDIT_CATEGORY_DEFINITIONS.map((definition) => {
     const observation = input.categories?.[definition.key];
     const status = observation?.status ?? "unknown";
@@ -325,7 +377,7 @@ export function generateRestaurantAuditSnapshot(
       label: definition.label,
       weight: definition.weight,
       status,
-      score: status === "confirmed_present" ? definition.weight : 0,
+      score: normalizedScore(status, observation?.score, definition.weight),
       evidenceUrl: normalizedEvidenceUrl(observation?.evidenceUrl),
       note: normalizedNote(observation?.note),
     } satisfies RestaurantAuditCategorySnapshot;
@@ -364,9 +416,8 @@ export function generateRestaurantAuditSnapshot(
         return right.potentialPoints - left.potentialPoints;
       }
       return (definitionOrder.get(left.key) ?? 0) - (definitionOrder.get(right.key) ?? 0);
-    })
-    .slice(0, 3);
-  const fixFirst = improvementAreas.map((improvement) => ({
+    });
+  const fixFirst = improvementAreas.slice(0, 3).map((improvement) => ({
     key: improvement.key,
     title:
       improvement.kind === "confirmed_gap"
@@ -389,6 +440,7 @@ export function generateRestaurantAuditSnapshot(
     plan: planForImprovements(improvementAreas),
     generatedAt,
     honestyNote: RESTAURANT_AUDIT_HONESTY_NOTE,
+    ...(researchRef ? { researchRef } : {}),
   };
 }
 
@@ -456,6 +508,27 @@ export function isRestaurantAuditSnapshot(
   value: unknown,
 ): value is RestaurantAuditSnapshot {
   if (!isPlainObject(value)) return false;
+  let researchRef: RestaurantAuditResearchRef | undefined;
+  try {
+    researchRef = normalizedResearchRef(value.researchRef);
+  } catch {
+    return false;
+  }
+  if (!hasOnlyKeys(value, [
+    "engineVersion",
+    "schemaVersion",
+    "overallScore",
+    "maxScore",
+    "evidenceCoverage",
+    "confidence",
+    "categories",
+    "improvementAreas",
+    "fixFirst",
+    "plan",
+    "generatedAt",
+    "honestyNote",
+    ...(researchRef ? ["researchRef"] : []),
+  ])) return false;
   if (
     value.engineVersion !== RESTAURANT_AUDIT_ENGINE_VERSION ||
     value.schemaVersion !== RESTAURANT_AUDIT_SCHEMA_VERSION ||
@@ -505,12 +578,15 @@ export function isRestaurantAuditSnapshot(
     const definition = RESTAURANT_AUDIT_CATEGORY_DEFINITIONS.find(
       (item) => item.key === category.key,
     );
+    const categoryScore = category.score as number;
     if (
       !definition ||
       category.label !== definition.label ||
       category.weight !== definition.weight ||
-      category.score !==
-        (category.status === "confirmed_present" ? definition.weight : 0)
+      (category.status === "unknown" && categoryScore !== 0) ||
+      (category.status === "confirmed_present" && categoryScore !== definition.weight) ||
+      (category.status === "confirmed_missing"
+        && (categoryScore < 0 || categoryScore >= definition.weight))
     ) {
       return false;
     }
@@ -534,11 +610,13 @@ export function isRestaurantAuditSnapshot(
   try {
     expected = generateRestaurantAuditSnapshot({
       generatedAt: value.generatedAt,
+      researchRef,
       categories: Object.fromEntries(
         categories.map((category) => [
           category.key,
           {
             status: category.status,
+            score: category.score,
             evidenceUrl: category.evidenceUrl,
             note: category.note,
           },

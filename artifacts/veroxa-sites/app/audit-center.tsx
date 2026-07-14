@@ -35,9 +35,12 @@ import {
 } from "./veroxa-supabase";
 import {
   RESTAURANT_AUDIT_CATEGORY_DEFINITIONS,
+  RESTAURANT_AUDIT_RESEARCH_MODEL,
+  RESTAURANT_AUDIT_RESEARCH_PRICING_VERSION,
   generateRestaurantAuditSnapshot,
   parseRestaurantAuditSnapshot,
   type RestaurantAuditCategoryKey,
+  type RestaurantAuditResearchRef,
   type RestaurantAuditSignalStatus,
   type RestaurantAuditSnapshot,
 } from "./restaurant-audit-engine";
@@ -59,6 +62,8 @@ const findingSeverities: AuditFindingSeverity[] = [
   "critical",
 ];
 
+const AI_RESEARCH_MAX_ACTUAL_MICROUSD = 1_920_200;
+
 function latestRun(record: AuditQueueRecord | null): AuditRun | null {
   if (!record?.audit_runs?.length) return null;
   return [...record.audit_runs].sort((a, b) => b.run_number - a.run_number)[0];
@@ -74,6 +79,7 @@ function formatDate(value: string): string {
 
 type AuditBuilderSignal = {
   status: RestaurantAuditSignalStatus;
+  score: number;
   evidenceUrl: string;
   note: string;
 };
@@ -89,16 +95,62 @@ type AuditBuilderState = {
   categories: Record<RestaurantAuditCategoryKey, AuditBuilderSignal>;
 };
 
+type AiResearchIdentityKey =
+  | "restaurantName" | "city" | "state" | "websiteUrl" | "googleProfileUrl";
+
+export type AiResearchPayload = Pick<AuditBuilderState, AiResearchIdentityKey> & {
+  targetRequestId: string | null;
+};
+
+type AiResearchSource = {
+  url: string;
+  title: string;
+  sourceType: string;
+};
+
+type AiResearchProvenance = {
+  identityKey: string;
+  identityNote: string;
+  identityEvidenceUrls: string[];
+  sources: AiResearchSource[];
+  researchRef: RestaurantAuditResearchRef;
+  actualMicrousd: number;
+};
+
+type ParsedAiResearchResult = Omit<AiResearchProvenance, "identityKey"> & {
+  categories: Array<AuditBuilderSignal & { key: RestaurantAuditCategoryKey }>;
+  websiteUrl: string;
+  googleProfileUrl: string;
+};
+
 type AuditBuilderTarget =
   | { kind: "new" }
   | { kind: "existing"; requestId: string; runId: string }
   | { kind: "rerun"; requestId: string; previousRunId: string };
 
+function targetRequestIdFor(target: AuditBuilderTarget): string | null {
+  return target.kind === "new" ? null : target.requestId;
+}
+
+function aiResearchPayloadFor(
+  input: AuditBuilderState,
+  target: AuditBuilderTarget,
+): AiResearchPayload {
+  return {
+    targetRequestId: targetRequestIdFor(target),
+    restaurantName: input.restaurantName,
+    city: input.city,
+    state: input.state,
+    websiteUrl: input.websiteUrl,
+    googleProfileUrl: input.googleProfileUrl,
+  };
+}
+
 function emptyAuditSignals(): Record<RestaurantAuditCategoryKey, AuditBuilderSignal> {
   return Object.fromEntries(
     RESTAURANT_AUDIT_CATEGORY_DEFINITIONS.map((category) => [
       category.key,
-      { status: "unknown", evidenceUrl: "", note: "" },
+      { status: "unknown", score: 0, evidenceUrl: "", note: "" },
     ]),
   ) as Record<RestaurantAuditCategoryKey, AuditBuilderSignal>;
 }
@@ -123,6 +175,336 @@ function validHttpUrl(value: string): boolean {
   } catch {
     return false;
   }
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function normalizedResearchHostname(hostname: string): string {
+  const lower = hostname.toLowerCase().replace(/\.$/, "");
+  return lower.startsWith("www.") ? lower.slice(4) : lower;
+}
+
+function isPublicResearchIpv4(hostname: string): boolean {
+  const parts = hostname.split(".");
+  if (parts.length !== 4 || parts.some((part) => !/^\d{1,3}$/.test(part))) return true;
+  const octets = parts.map(Number);
+  if (octets.some((part) => part < 0 || part > 255)) return false;
+  const [a, b] = octets;
+  return !(
+    a === 0
+    || a === 10
+    || a === 127
+    || (a === 100 && b >= 64 && b <= 127)
+    || (a === 169 && b === 254)
+    || (a === 172 && b >= 16 && b <= 31)
+    || (a === 192 && b === 0)
+    || (a === 192 && b === 168)
+    || (a === 198 && (b === 18 || b === 19))
+    || a >= 224
+  );
+}
+
+function isPublicResearchHostname(hostname: string): boolean {
+  const host = normalizedResearchHostname(hostname);
+  if (
+    !host
+    || host === "localhost"
+    || host.endsWith(".localhost")
+    || host.endsWith(".local")
+    || host.endsWith(".internal")
+    || host.endsWith(".test")
+    || host.endsWith(".invalid")
+    || host.includes(":")
+  ) return false;
+  return isPublicResearchIpv4(host);
+}
+
+function normalizedResearchUrl(value: string): string | null {
+  const candidate = value.trim();
+  if (!candidate) return "";
+  if (candidate.length > 2_000) return null;
+  try {
+    const url = new URL(candidate);
+    if (
+      !["http:", "https:"].includes(url.protocol)
+      || url.username
+      || url.password
+      || !isPublicResearchHostname(url.hostname)
+    ) return null;
+    url.hash = "";
+    url.searchParams.sort();
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
+export function normalizeAiResearchPayload(
+  input: AiResearchPayload,
+): AiResearchPayload | null {
+  const restaurantName = input.restaurantName.trim();
+  const city = input.city.trim();
+  const state = input.state.trim();
+  const websiteUrl = normalizedResearchUrl(input.websiteUrl);
+  const googleProfileUrl = normalizedResearchUrl(input.googleProfileUrl);
+  const targetRequestId = input.targetRequestId === null
+    ? null
+    : typeof input.targetRequestId === "string"
+      && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(input.targetRequestId)
+      ? input.targetRequestId.toLowerCase()
+      : undefined;
+  if (
+    restaurantName.length < 2
+    || restaurantName.length > 160
+    || city.length < 2
+    || city.length > 100
+    || state.length < 2
+    || state.length > 40
+    || websiteUrl === null
+    || googleProfileUrl === null
+    || targetRequestId === undefined
+  ) return null;
+  return { targetRequestId, restaurantName, city, state, websiteUrl, googleProfileUrl };
+}
+
+export function aiResearchPayloadKey(input: AiResearchPayload): string {
+  const normalized = normalizeAiResearchPayload(input);
+  if (normalized) return JSON.stringify(normalized);
+  return `invalid:${JSON.stringify({
+    targetRequestId: input.targetRequestId,
+    restaurantName: input.restaurantName.trim(),
+    city: input.city.trim(),
+    state: input.state.trim(),
+    websiteUrl: input.websiteUrl.trim(),
+    googleProfileUrl: input.googleProfileUrl.trim(),
+  })}`;
+}
+
+async function sha256(value: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return [...new Uint8Array(digest)]
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+export async function aiResearchRequestHash(payload: AiResearchPayload): Promise<string> {
+  return sha256(JSON.stringify({
+    version: 1,
+    model: RESTAURANT_AUDIT_RESEARCH_MODEL,
+    pricingVersion: RESTAURANT_AUDIT_RESEARCH_PRICING_VERSION,
+    maxToolCalls: 4,
+    maxOutputTokens: 2_400,
+    targetRequestId: payload.targetRequestId,
+    restaurantName: payload.restaurantName,
+    city: payload.city,
+    state: payload.state,
+    websiteUrl: payload.websiteUrl,
+    googleProfileUrl: payload.googleProfileUrl,
+  }));
+}
+
+function researchEvidenceKey(value: string): string {
+  try {
+    const url = new URL(value);
+    const tracking = [...url.searchParams.keys()].filter((key) =>
+      key.toLowerCase().startsWith("utm_")
+      || ["fbclid", "gclid", "gbraid", "wbraid", "mc_cid", "mc_eid"].includes(key.toLowerCase()));
+    for (const key of tracking) url.searchParams.delete(key);
+    url.searchParams.sort();
+    const path = url.pathname.length > 1 ? url.pathname.replace(/\/+$/, "") : "/";
+    return `${normalizedResearchHostname(url.hostname)}${path}${url.search}`;
+  } catch {
+    return "";
+  }
+}
+
+function researchBaseDomain(value: string): string {
+  const parts = normalizedResearchHostname(new URL(value).hostname).split(".");
+  if (parts.length <= 2) return parts.join(".");
+  const lastTwo = parts.slice(-2).join(".");
+  const multipartSuffixes = new Set(["co.uk", "org.uk", "com.au", "com.pk", "co.in", "co.nz"]);
+  return multipartSuffixes.has(lastTwo) ? parts.slice(-3).join(".") : lastTwo;
+}
+
+function researchHostsMatch(first: string, second: string): boolean {
+  try {
+    const firstHost = normalizedResearchHostname(new URL(first).hostname);
+    const secondHost = normalizedResearchHostname(new URL(second).hostname);
+    return firstHost === secondHost
+      || firstHost.endsWith(`.${secondHost}`)
+      || secondHost.endsWith(`.${firstHost}`);
+  } catch {
+    return false;
+  }
+}
+
+function normalizedResearchIdentityPhrase(value: string): string {
+  return value.normalize("NFKD").toLocaleLowerCase("en-US")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .replace(/\s+/g, " ");
+}
+
+function researchNoteContainsIdentity(note: string, expected: string): boolean {
+  const normalizedNote = normalizedResearchIdentityPhrase(note);
+  const normalizedExpected = normalizedResearchIdentityPhrase(expected);
+  return Boolean(normalizedExpected && ` ${normalizedNote} `.includes(` ${normalizedExpected} `));
+}
+
+export function parseAiResearchResult(
+  value: unknown,
+  expectedRequestHash: string,
+  expectedPayload: AiResearchPayload,
+): ParsedAiResearchResult | null {
+  if (!isPlainObject(value)) return null;
+  if (
+    typeof value.researchId !== "string"
+    || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(value.researchId)
+    || value.requestHash !== expectedRequestHash
+    || value.targetRequestId !== expectedPayload.targetRequestId
+    || !/^[0-9a-f]{64}$/.test(expectedRequestHash)
+    || value.model !== RESTAURANT_AUDIT_RESEARCH_MODEL
+    || value.pricingVersion !== RESTAURANT_AUDIT_RESEARCH_PRICING_VERSION
+    || !Number.isSafeInteger(value.actualMicrousd)
+    || (value.actualMicrousd as number) < 0
+    || (value.actualMicrousd as number) > AI_RESEARCH_MAX_ACTUAL_MICROUSD
+  ) return null;
+
+  if (!Array.isArray(value.sources) || value.sources.length < 2) return null;
+  const sources: AiResearchSource[] = [];
+  for (const item of value.sources) {
+    if (!isPlainObject(item) || typeof item.url !== "string") return null;
+    const url = normalizedResearchUrl(item.url);
+    const sourceType = typeof item.sourceType === "string" ? item.sourceType.trim() : "";
+    if (
+      !url
+      || typeof item.title !== "string"
+      || item.title.length > 300
+      || sourceType.length < 1
+      || sourceType.length > 40
+    ) return null;
+    sources.push({ url, title: item.title.trim(), sourceType });
+  }
+  const sourceKeys = new Set(sources.map((source) => researchEvidenceKey(source.url)));
+
+  if (!Array.isArray(value.identityEvidenceUrls)) return null;
+  const identityEvidenceUrls = [...new Map(value.identityEvidenceUrls.map((item) => {
+    const url = typeof item === "string" ? normalizedResearchUrl(item) : null;
+    return url ? [researchEvidenceKey(url), url] as const : ["", ""] as const;
+  }).filter(([key, url]) => key && url)).values()];
+  if (
+    identityEvidenceUrls.length < 2
+    || identityEvidenceUrls.length > 4
+    || identityEvidenceUrls.some((url) => !sourceKeys.has(researchEvidenceKey(url)))
+    || new Set(identityEvidenceUrls.map(researchBaseDomain)).size < 2
+    || (expectedPayload.websiteUrl
+      && !identityEvidenceUrls.some((url) => researchHostsMatch(url, expectedPayload.websiteUrl)))
+    || (expectedPayload.googleProfileUrl
+      && !identityEvidenceUrls.some((url) => researchEvidenceKey(url) === researchEvidenceKey(expectedPayload.googleProfileUrl)))
+  ) return null;
+
+  if (typeof value.identityNote !== "string") return null;
+  const identityNote = value.identityNote.trim();
+  if (
+    identityNote.length < 10
+    || identityNote.length > 1_000
+    || !researchNoteContainsIdentity(identityNote, expectedPayload.restaurantName)
+    || !researchNoteContainsIdentity(identityNote, expectedPayload.city)
+    || !researchNoteContainsIdentity(identityNote, expectedPayload.state)
+  ) return null;
+
+  if (!Array.isArray(value.categories) || value.categories.length !== RESTAURANT_AUDIT_CATEGORY_DEFINITIONS.length) return null;
+  const categoryInput = new Map<string, Record<string, unknown>>();
+  for (const item of value.categories) {
+    if (!isPlainObject(item) || typeof item.key !== "string" || categoryInput.has(item.key)) return null;
+    categoryInput.set(item.key, item);
+  }
+  const categories: ParsedAiResearchResult["categories"] = [];
+  for (const definition of RESTAURANT_AUDIT_CATEGORY_DEFINITIONS) {
+    const item = categoryInput.get(definition.key);
+    if (
+      !item
+      || typeof item.status !== "string"
+      || typeof item.evidenceUrl !== "string"
+      || typeof item.note !== "string"
+      || item.note.length > 2_000
+    ) return null;
+    const status = item.status as RestaurantAuditSignalStatus;
+    const score = Number(item.score);
+    const evidenceUrl = typeof item.evidenceUrl === "string" ? normalizedResearchUrl(item.evidenceUrl) : null;
+    const note = item.note.trim();
+    if (status === "confirmed_present") {
+      if (score !== definition.weight || !evidenceUrl || !sourceKeys.has(researchEvidenceKey(evidenceUrl)) || note.length < 10) return null;
+    } else if (status === "confirmed_missing") {
+      if (!Number.isInteger(score) || score < 0 || score >= definition.weight || !evidenceUrl || !sourceKeys.has(researchEvidenceKey(evidenceUrl)) || note.length < 10) return null;
+    } else if (status !== "unknown" || score !== 0 || evidenceUrl) {
+      return null;
+    }
+    categories.push({ key: definition.key, status, score, evidenceUrl: evidenceUrl || "", note });
+  }
+
+  const websiteUrl = value.websiteUrl === null ? "" : typeof value.websiteUrl === "string" ? normalizedResearchUrl(value.websiteUrl) : null;
+  const googleProfileUrl = value.googleProfileUrl === null ? "" : typeof value.googleProfileUrl === "string" ? normalizedResearchUrl(value.googleProfileUrl) : null;
+  if (
+    websiteUrl === null
+    || googleProfileUrl === null
+    || (expectedPayload.websiteUrl && websiteUrl !== expectedPayload.websiteUrl)
+    || (websiteUrl && (!sourceKeys.has(researchEvidenceKey(websiteUrl))
+      || !identityEvidenceUrls.some((url) => researchHostsMatch(url, websiteUrl))))
+    || (expectedPayload.googleProfileUrl && googleProfileUrl !== expectedPayload.googleProfileUrl)
+    || (googleProfileUrl && (!sourceKeys.has(researchEvidenceKey(googleProfileUrl))
+      || !identityEvidenceUrls.some((url) => researchEvidenceKey(url) === researchEvidenceKey(googleProfileUrl))))
+  ) return null;
+
+  return {
+    identityNote,
+    identityEvidenceUrls,
+    sources,
+    researchRef: {
+      researchId: value.researchId,
+      requestHash: expectedRequestHash,
+      model: RESTAURANT_AUDIT_RESEARCH_MODEL,
+      pricingVersion: RESTAURANT_AUDIT_RESEARCH_PRICING_VERSION,
+    },
+    actualMicrousd: value.actualMicrousd as number,
+    categories,
+    websiteUrl,
+    googleProfileUrl,
+  };
+}
+
+export function aiResearchErrorMessage(code: string): string {
+  if (code === "ai_audit_disabled") {
+    return "AI research is disabled. No provider call or charge was made; keep using manual review until a budget is explicitly approved.";
+  }
+  if (code === "ai_configuration_unavailable") {
+    return "AI research remains unavailable because its provider or server-side budget controls are not configured. Nothing was applied.";
+  }
+  if (code === "ai_budget_exhausted") {
+    return "The approved daily AI research budget has been reached. No additional research was run; continue manually or wait for a newly approved budget window.";
+  }
+  if (["ai_budget_unavailable", "ai_budget_finalization_failed"].includes(code)) {
+    return "AI research stopped because the server could not safely reserve or finalize its budget ledger. Nothing was applied.";
+  }
+  if (code === "idempotency_conflict") {
+    return "This retry reference is already bound to a different restaurant payload. Nothing was applied; retry to create a new payload-bound reference.";
+  }
+  if (code === "ai_previous_attempt_failed") {
+    return "The previous provider attempt was finalized as failed. Nothing was applied; retry to create a fresh protected reference.";
+  }
+  if (code === "ai_research_in_progress") {
+    return "This exact research request is already processing. Wait briefly, then retry; the same protected retry reference will be reused.";
+  }
+  if (code === "invalid_idempotency_key") {
+    return "The browser could not create a valid protected retry reference. Reload the Audit Center before trying again.";
+  }
+  if (["invalid_restaurant_identity", "invalid_request"].includes(code)) {
+    return "The restaurant identity could not be safely normalized for research. Check the name, location, and public URLs.";
+  }
+  return "AI research could not be completed or safely validated. Nothing was applied or saved.";
 }
 
 function auditScoreStyle(score: number): CSSProperties {
@@ -179,6 +561,11 @@ export function RestaurantAuditCenter({
   const [builderTarget, setBuilderTarget] = useState<AuditBuilderTarget>({ kind: "new" });
   const [preview, setPreview] = useState<RestaurantAuditSnapshot | null>(null);
   const [previewSaveKey, setPreviewSaveKey] = useState("");
+  const [aiResearching, setAiResearching] = useState(false);
+  const [aiResearchProvenance, setAiResearchProvenance] = useState<AiResearchProvenance | null>(null);
+  const aiResearchAttemptRef = useRef<{ payloadKey: string; idempotencyKey: string } | null>(null);
+  const builderRef = useRef(builder);
+  const builderTargetRef = useRef<AuditBuilderTarget>({ kind: "new" });
   const [onboardingConsent, setOnboardingConsent] = useState(false);
   const [onboardingChannel, setOnboardingChannel] = useState<"written" | "email" | "signed_form" | "recorded_call">("written");
   const [onboardingEvidence, setOnboardingEvidence] = useState("");
@@ -261,6 +648,7 @@ export function RestaurantAuditCenter({
   );
   const hasUnsavedDetail = Boolean(
     preview ||
+      aiResearchProvenance ||
       hasBuilderDraft ||
       onboardingConsent ||
       onboardingEvidence.trim() ||
@@ -318,6 +706,10 @@ export function RestaurantAuditCenter({
     runRef.current = run;
     previousRunRef.current = previousRun;
   }, [run, previousRun]);
+
+  useEffect(() => {
+    builderRef.current = builder;
+  }, [builder]);
 
   useEffect(() => {
     const activeRun = runRef.current;
@@ -407,11 +799,38 @@ export function RestaurantAuditCenter({
     }
   }
 
-  function resetGeneratedAuditDraft(show = false) {
-    setBuilder(emptyAuditBuilder());
-    setBuilderTarget({ kind: "new" });
+  function clearAiResearchDraft(clearAttempt = true) {
+    setAiResearchProvenance(null);
+    if (clearAttempt) aiResearchAttemptRef.current = null;
+  }
+
+  function updateBuilderIdentity(
+    key: AiResearchIdentityKey,
+    value: string,
+  ) {
+    const current = builderRef.current;
+    const next = { ...current, [key]: value };
+    if (
+      aiResearchPayloadKey(aiResearchPayloadFor(current, builderTargetRef.current))
+      !== aiResearchPayloadKey(aiResearchPayloadFor(next, builderTargetRef.current))
+    ) {
+      clearAiResearchDraft();
+    }
+    builderRef.current = next;
+    setBuilder(next);
     setPreview(null);
     setPreviewSaveKey("");
+  }
+
+  function resetGeneratedAuditDraft(show = false) {
+    setBuilder(emptyAuditBuilder());
+    builderRef.current = emptyAuditBuilder();
+    const nextTarget: AuditBuilderTarget = { kind: "new" };
+    builderTargetRef.current = nextTarget;
+    setBuilderTarget(nextTarget);
+    setPreview(null);
+    setPreviewSaveKey("");
+    clearAiResearchDraft();
     setShowGenerator(show);
   }
 
@@ -456,6 +875,93 @@ export function RestaurantAuditCenter({
     setPreviewSaveKey("");
   }
 
+  async function researchWithAi() {
+    if (aiResearching || busy) return;
+    const researchPayload = normalizeAiResearchPayload(
+      aiResearchPayloadFor(builderRef.current, builderTargetRef.current),
+    );
+    if (!researchPayload) {
+      setError("Add a valid restaurant name, city, state, and public URLs before running AI research.");
+      return;
+    }
+    const payloadKey = JSON.stringify(researchPayload);
+    const previousAttempt = aiResearchAttemptRef.current;
+    const idempotencyKey = previousAttempt?.payloadKey === payloadKey
+      ? previousAttempt.idempotencyKey
+      : crypto.randomUUID();
+    aiResearchAttemptRef.current = { payloadKey, idempotencyKey };
+    setAiResearching(true);
+    setError("");
+    try {
+      const expectedRequestHash = await aiResearchRequestHash(researchPayload);
+      const response = await fetch("/api/team/restaurant-audits/research", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "idempotency-key": idempotencyKey,
+        },
+        body: JSON.stringify({
+          ...researchPayload,
+          idempotencyKey,
+        }),
+      });
+      const rawResult = await response.json().catch(() => null) as unknown;
+      const errorCode = isPlainObject(rawResult) && typeof rawResult.error === "string"
+        ? rawResult.error
+        : "";
+      if (!response.ok) {
+        if (errorCode === "idempotency_conflict" || errorCode === "ai_previous_attempt_failed") {
+          aiResearchAttemptRef.current = null;
+        }
+        throw new Error(aiResearchErrorMessage(errorCode));
+      }
+      const result = parseAiResearchResult(rawResult, expectedRequestHash, researchPayload);
+      if (!result) {
+        throw new Error("AI research returned evidence that did not match this exact restaurant request. Nothing was applied or saved.");
+      }
+      if (
+        aiResearchPayloadKey(aiResearchPayloadFor(builderRef.current, builderTargetRef.current))
+        !== payloadKey
+      ) {
+        throw new Error("The restaurant identity changed while research was running. The stale result was not applied; run research again for the current identity.");
+      }
+      const researched = emptyAuditSignals();
+      for (const category of result.categories) {
+        if (researched[category.key]) researched[category.key] = {
+          status: category.status,
+          score: category.score,
+          evidenceUrl: category.evidenceUrl,
+          note: category.note,
+        };
+      }
+      const nextBuilder = {
+        ...builderRef.current,
+        websiteUrl: result.websiteUrl || builderRef.current.websiteUrl,
+        googleProfileUrl: result.googleProfileUrl || builderRef.current.googleProfileUrl,
+        categories: researched,
+      };
+      builderRef.current = nextBuilder;
+      setBuilder(nextBuilder);
+      setAiResearchProvenance({
+        identityKey: aiResearchPayloadKey(
+          aiResearchPayloadFor(nextBuilder, builderTargetRef.current),
+        ),
+        identityNote: result.identityNote,
+        identityEvidenceUrls: result.identityEvidenceUrls,
+        sources: result.sources,
+        researchRef: result.researchRef,
+        actualMicrousd: result.actualMicrousd,
+      });
+      setPreview(null);
+      setPreviewSaveKey("");
+      notify(`AI research prefilling complete with ${result.sources.length} retained sources; review every source and score before saving`);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "AI research could not be completed.");
+    } finally {
+      setAiResearching(false);
+    }
+  }
+
   function startNewGeneratedAudit() {
     if (busy) return;
     if (!confirmDiscardDetail()) return;
@@ -489,7 +995,7 @@ export function RestaurantAuditCenter({
       signals.menu_and_ordering.evidenceUrl = selected.audit_restaurants.website_url;
       signals.local_search_consistency.evidenceUrl = selected.audit_restaurants.website_url;
     }
-    setBuilder({
+    const nextBuilder = {
       ...emptyAuditBuilder(),
       restaurantName: selected.audit_restaurants.restaurant_name,
       city: selected.audit_restaurants.city,
@@ -497,10 +1003,15 @@ export function RestaurantAuditCenter({
       websiteUrl: selected.audit_restaurants.website_url || "",
       googleProfileUrl: selected.audit_restaurants.google_profile_url || "",
       categories: signals,
-    });
-    setBuilderTarget(isReviewedRerun
+    };
+    builderRef.current = nextBuilder;
+    setBuilder(nextBuilder);
+    clearAiResearchDraft();
+    const nextTarget: AuditBuilderTarget = isReviewedRerun
       ? { kind: "rerun", requestId: selected.id, previousRunId: run.id }
-      : { kind: "existing", requestId: selected.id, runId: run.id });
+      : { kind: "existing", requestId: selected.id, runId: run.id };
+    builderTargetRef.current = nextTarget;
+    setBuilderTarget(nextTarget);
     setPreview(null);
     setPreviewSaveKey("");
     setShowGenerator(true);
@@ -541,13 +1052,25 @@ export function RestaurantAuditCenter({
       setError("A re-audit needs a specific comparison note of at least 10 characters.");
       return;
     }
+    if (
+      aiResearchProvenance
+      && aiResearchProvenance.identityKey !== aiResearchPayloadKey(
+        aiResearchPayloadFor(builder, builderTargetRef.current),
+      )
+    ) {
+      clearAiResearchDraft();
+      setError("The restaurant identity changed after AI research. Its stale provenance was cleared; run research again before attaching a research reference.");
+      return;
+    }
     const snapshot = generateRestaurantAuditSnapshot({
       generatedAt: new Date().toISOString(),
+      researchRef: aiResearchProvenance?.researchRef,
       categories: Object.fromEntries(
         RESTAURANT_AUDIT_CATEGORY_DEFINITIONS.map((category) => [
           category.key,
           {
             status: builder.categories[category.key].status,
+            score: builder.categories[category.key].score,
             evidenceUrl: builder.categories[category.key].evidenceUrl,
             note: builder.categories[category.key].note,
           },
@@ -749,21 +1272,29 @@ export function RestaurantAuditCenter({
         </div>
         <form onSubmit={generatePreview}>
           <div className="audit-field-grid audit-identity-grid">
-            <label>Restaurant name<input required minLength={2} value={builder.restaurantName} onChange={(event) => { setBuilder((current) => ({ ...current, restaurantName: event.target.value })); setPreview(null); }}/></label>
-            <label>City<input required minLength={2} value={builder.city} onChange={(event) => { setBuilder((current) => ({ ...current, city: event.target.value })); setPreview(null); }}/></label>
-            <label>State<input required minLength={2} value={builder.state} onChange={(event) => { setBuilder((current) => ({ ...current, state: event.target.value })); setPreview(null); }}/></label>
-            <label>Website<input type="url" placeholder="https://" value={builder.websiteUrl} onChange={(event) => { setBuilder((current) => ({ ...current, websiteUrl: event.target.value })); setPreview(null); }}/></label>
-            <label>Google profile<input type="url" placeholder="https://" value={builder.googleProfileUrl} onChange={(event) => { setBuilder((current) => ({ ...current, googleProfileUrl: event.target.value })); setPreview(null); }}/></label>
+            <label>Restaurant name<input required minLength={2} value={builder.restaurantName} onChange={(event) => updateBuilderIdentity("restaurantName", event.target.value)}/></label>
+            <label>City<input required minLength={2} value={builder.city} onChange={(event) => updateBuilderIdentity("city", event.target.value)}/></label>
+            <label>State<input required minLength={2} value={builder.state} onChange={(event) => updateBuilderIdentity("state", event.target.value)}/></label>
+            <label>Website<input type="url" placeholder="https://" value={builder.websiteUrl} onChange={(event) => updateBuilderIdentity("websiteUrl", event.target.value)}/></label>
+            <label>Google profile<input type="url" placeholder="https://" value={builder.googleProfileUrl} onChange={(event) => updateBuilderIdentity("googleProfileUrl", event.target.value)}/></label>
             <label>Team note<input value={builder.teamNote} onChange={(event) => { setBuilder((current) => ({ ...current, teamNote: event.target.value })); setPreview(null); }} placeholder="Optional internal context"/></label>
             {builderTarget.kind === "rerun" && <label className="wide">What changed since the reviewed audit?<textarea required minLength={10} rows={2} value={builder.comparisonSummary} onChange={(event) => { setBuilder((current) => ({ ...current, comparisonSummary: event.target.value })); setPreview(null); }}/></label>}
           </div>
 
+          <div className="audit-ai-research-actions"><div><strong>AI + live web research</strong><span>Prefills cited evidence and partial scores. Nothing is saved until Team review.</span></div><button type="button" className="secondary-button" onClick={() => void researchWithAi()} disabled={busy || aiResearching}>{aiResearching ? "Researching the web…" : "Research and prefill"}</button></div>
+          {aiResearchProvenance && <section className="audit-preview-section audit-research-provenance" aria-label="Retained AI research provenance">
+            <div className="panel-heading"><div><p className="eyebrow">RETAINED RESEARCH PROVENANCE</p><h3>Identity corroboration and all consulted sources</h3><p>{aiResearchProvenance.identityNote}</p></div><span>{aiResearchProvenance.sources.length} sources</span></div>
+            <div className="audit-submitted-sources"><small>Identity evidence</small>{aiResearchProvenance.identityEvidenceUrls.map((url) => <a key={url} href={url} target="_blank" rel="noreferrer">{new URL(url).hostname} ↗</a>)}</div>
+            <details className="audit-breakdown" open><summary>All consulted sources ({aiResearchProvenance.sources.length})</summary><ul>{aiResearchProvenance.sources.map((source, index) => <li key={`${source.url}:${index}`}><a href={source.url} target="_blank" rel="noreferrer">{source.title || source.url} ↗</a><small>{source.sourceType} · {source.url}</small></li>)}</ul></details>
+            <p className="audit-honesty-note">Research ledger reference <code>{aiResearchProvenance.researchRef.researchId}</code> · request hash <code>{aiResearchProvenance.researchRef.requestHash}</code> · recorded cost ${(aiResearchProvenance.actualMicrousd / 1_000_000).toFixed(4)}. Saving retains only the validated ledger reference; the complete source provenance remains in the protected research ledger.</p>
+          </section>}
           <div className="audit-signal-grid">
             {RESTAURANT_AUDIT_CATEGORY_DEFINITIONS.map((category) => {
               const signal = builder.categories[category.key];
               return <fieldset key={category.key} className={`audit-signal-card signal-${signal.status}`}>
                 <legend>{category.label}<span>{category.weight} points</span></legend>
-                <label>Observed state<select value={signal.status} onChange={(event) => updateBuilderSignal(category.key, { status: event.target.value as RestaurantAuditSignalStatus })}><option value="unknown">Unknown / verify</option><option value="confirmed_present">Confirmed present</option><option value="confirmed_missing">Confirmed missing or weak</option></select></label>
+                <label>Observed state<select value={signal.status} onChange={(event) => { const status = event.target.value as RestaurantAuditSignalStatus; updateBuilderSignal(category.key, { status, score: status === "confirmed_present" ? category.weight : 0 }); }}><option value="unknown">Unknown / verify</option><option value="confirmed_present">Verified strong / full points</option><option value="confirmed_missing">Verified weak or missing</option></select></label>
+                <label>Verified score<input type="number" min={0} max={Math.max(0, category.weight - 1)} step={1} disabled={signal.status !== "confirmed_missing"} value={signal.status === "confirmed_present" ? category.weight : signal.score} onChange={(event) => updateBuilderSignal(category.key, { score: Number(event.target.value) })}/><span>out of {category.weight}</span></label>
                 <label>Source URL<input type="url" required={signal.status !== "unknown"} value={signal.evidenceUrl} onChange={(event) => updateBuilderSignal(category.key, { evidenceUrl: event.target.value })} placeholder={signal.status === "unknown" ? "Optional until verified" : "https:// source checked"}/></label>
                 <label>Observation<textarea rows={2} value={signal.note} onChange={(event) => updateBuilderSignal(category.key, { note: event.target.value })} placeholder="What did you observe?"/></label>
               </fieldset>;
@@ -777,9 +1308,9 @@ export function RestaurantAuditCenter({
         <div className="audit-preview-banner"><span>UNSAVED PREVIEW</span><strong>Review this result, then Save or Discard.</strong></div>
         <div className="audit-score-hero">
           <div className="audit-score-value" style={auditScoreStyle(preview.overallScore)}><strong>{preview.overallScore}</strong><span>/100</span></div>
-          <div><p className="eyebrow">PROVISIONAL ONLINE-PRESENCE SCORE</p><h2>{builder.restaurantName || "Restaurant audit"}</h2><p>{preview.evidenceCoverage}% evidence coverage · {preview.confidence} confidence</p><p><strong>Room to improve:</strong> {100 - preview.overallScore} points across confirmed gaps and still-unverified areas.</p></div>
+          <div><p className="eyebrow">PROVISIONAL ONLINE-PRESENCE SCORE</p><h2>{builder.restaurantName || "Restaurant audit"}</h2><p>{preview.evidenceCoverage}% evidence coverage · {preview.confidence} confidence</p>{preview.evidenceCoverage < 100 && <p className="audit-evidence-warning"><strong>Incomplete evidence:</strong> {100 - preview.evidenceCoverage}% of the weighted audit is still unverified. Do not treat this score as final.</p>}<p><strong>Room to improve:</strong> {100 - preview.overallScore} points across confirmed gaps and still-unverified areas.</p></div>
         </div>
-        <div className="audit-preview-section"><div className="panel-heading"><div><p className="eyebrow">ROOM FOR IMPROVEMENT</p><h3>Top priorities</h3></div></div><div className="audit-improvement-grid">{preview.improvementAreas.length ? preview.improvementAreas.map((item) => <article key={item.key}><span>{item.kind === "confirmed_gap" ? "Confirmed gap" : "Verify first"}</span><strong>{item.label}</strong><p>{item.summary}</p><small>Up to {item.potentialPoints} points · {item.priority} priority</small></article>) : <article><span>Maintain</span><strong>No gap confirmed</strong><p>Keep the evidence current and compare again in 60–90 days.</p></article>}</div></div>
+        <div className="audit-preview-section"><div className="panel-heading"><div><p className="eyebrow">ROOM FOR IMPROVEMENT</p><h3>All gaps and verification needs</h3></div></div><div className="audit-improvement-grid">{preview.improvementAreas.length ? preview.improvementAreas.map((item) => <article key={item.key}><span>{item.kind === "confirmed_gap" ? "Confirmed gap" : "Verify first"}</span><strong>{item.label}</strong><p>{item.summary}</p><small>Up to {item.potentialPoints} points · {item.priority} priority</small></article>) : <article><span>Maintain</span><strong>No gap confirmed</strong><p>Keep the evidence current and compare again in 60–90 days.</p></article>}</div></div>
         <div className="audit-preview-section"><div className="panel-heading"><div><p className="eyebrow">WHAT VEROXA FIXES FIRST</p><h3>First actions</h3></div></div><ol className="audit-fix-list">{preview.fixFirst.length ? preview.fixFirst.map((item) => <li key={item.key}><strong>{item.title}</strong><span>{item.action}</span></li>) : <li><strong>Maintain the verified baseline</strong><span>Recheck sources before any future recommendation.</span></li>}</ol></div>
         <div className="audit-plan-grid">
           <article><span>0–30 days</span><strong>Verify and correct</strong><ul>{preview.plan.days_0_30.map((item) => <li key={item}>{item}</li>)}</ul></article>
@@ -853,8 +1384,9 @@ export function RestaurantAuditCenter({
 
             {savedSnapshot && <section className="panel audit-saved-result">
               <div className="audit-preview-banner saved"><span>SAVED AUDIT · RUN {run.run_number}</span><strong>{run.status === "reviewed" ? "Human reviewed" : "Awaiting Team review"}</strong></div>
-              <div className="audit-score-hero compact"><div className="audit-score-value" style={auditScoreStyle(savedSnapshot.overallScore)}><strong>{savedSnapshot.overallScore}</strong><span>/100</span></div><div><p className="eyebrow">SAVED SCORE</p><h2>{100 - savedSnapshot.overallScore} potential points across confirmed gaps and unverified areas</h2><p>{savedSnapshot.evidenceCoverage}% evidence coverage · {savedSnapshot.confidence} confidence</p></div></div>
-              <div className="audit-saved-priorities"><p className="eyebrow">SAVED PRIORITIES</p><div className="audit-improvement-grid">{savedSnapshot.improvementAreas.length ? savedSnapshot.improvementAreas.map((item) => <article key={item.key}><span>{item.kind === "confirmed_gap" ? "Confirmed gap" : "Verify first"}</span><strong>{item.label}</strong><p>{item.summary}</p><small>Up to {item.potentialPoints} points · {item.priority} priority</small></article>) : <article><span>Maintain</span><strong>No gap confirmed</strong><p>Keep the reviewed evidence current and compare it again in 60–90 days.</p></article>}</div></div>
+              <div className="audit-score-hero compact"><div className="audit-score-value" style={auditScoreStyle(savedSnapshot.overallScore)}><strong>{savedSnapshot.overallScore}</strong><span>/100</span></div><div><p className="eyebrow">SAVED SCORE</p><h2>{100 - savedSnapshot.overallScore} potential points across confirmed gaps and unverified areas</h2><p>{savedSnapshot.evidenceCoverage}% evidence coverage · {savedSnapshot.confidence} confidence</p>{savedSnapshot.evidenceCoverage < 100 && <p className="audit-evidence-warning"><strong>Incomplete evidence:</strong> this saved result remains provisional until every weighted area is verified.</p>}</div></div>
+              {savedSnapshot.researchRef && <p className="audit-honesty-note"><strong>Validated AI research reference:</strong> <code>{savedSnapshot.researchRef.researchId}</code> · {savedSnapshot.researchRef.model} · {savedSnapshot.researchRef.pricingVersion}. The protected ledger holds its full source provenance.</p>}
+              <div className="audit-saved-priorities"><p className="eyebrow">SAVED GAPS + VERIFICATION NEEDS</p><div className="audit-improvement-grid">{savedSnapshot.improvementAreas.length ? savedSnapshot.improvementAreas.map((item) => <article key={item.key}><span>{item.kind === "confirmed_gap" ? "Confirmed gap" : "Verify first"}</span><strong>{item.label}</strong><p>{item.summary}</p><small>Up to {item.potentialPoints} points · {item.priority} priority</small></article>) : <article><span>Maintain</span><strong>No gap confirmed</strong><p>Keep the reviewed evidence current and compare it again in 60–90 days.</p></article>}</div></div>
               <div className="audit-plan-grid compact"><article><span>0–30 days</span><ul>{savedSnapshot.plan.days_0_30.map((item) => <li key={item}>{item}</li>)}</ul></article><article><span>31–60 days</span><ul>{savedSnapshot.plan.days_31_60.map((item) => <li key={item}>{item}</li>)}</ul></article><article><span>61–90 days</span><ul>{savedSnapshot.plan.days_61_90.map((item) => <li key={item}>{item}</li>)}</ul></article></div>
               <p className="audit-honesty-note">{savedSnapshot.honestyNote}</p>
             </section>}
