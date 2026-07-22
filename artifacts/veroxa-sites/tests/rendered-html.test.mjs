@@ -7,6 +7,7 @@ import {
   pwnedRangeContainsHash,
   sha1Hex,
 } from "../app/veroxa-password.mjs";
+import { updateHardenedVeroxaPassword } from "../app/veroxa-password-update.ts";
 
 const developmentPreviewMeta =
   /<meta(?=[^>]*\bname=["']codex-preview["'])(?=[^>]*\bcontent=["']development["'])[^>]*>/i;
@@ -44,6 +45,33 @@ test("checks leaked passwords with only a padded five-character hash prefix", as
     isVeroxaPasswordCompromised(candidate, async () => new Response("unavailable", { status: 503 })),
     /password_check_unavailable/,
   );
+});
+
+test("reports a thrown refresh-session revocation as incomplete after changing the password", async () => {
+  const originalFetch = globalThis.fetch;
+  let passwordUpdated = false;
+  globalThis.fetch = async () => new Response("", { status: 200 });
+  try {
+    const result = await updateHardenedVeroxaPassword({
+      auth: {
+        getUser: async () => ({
+          data: { user: { last_sign_in_at: new Date().toISOString() } },
+          error: null,
+        }),
+        updateUser: async () => {
+          passwordUpdated = true;
+          return { error: null };
+        },
+        signOut: async () => {
+          throw new Error("network_unavailable");
+        },
+      },
+    }, "Unit-Test-Only-Key-47!");
+    assert.equal(passwordUpdated, true);
+    assert.deepEqual(result, { otherRefreshSessionsRevoked: false });
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });
 
 test("renders development preview metadata", async () => {

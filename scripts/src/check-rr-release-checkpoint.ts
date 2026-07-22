@@ -275,7 +275,7 @@ const expected = {
   },
   candidate: {
     sourceFileCount: 79,
-    sourceTreeSha256: "e2bca9aa1213fb13114e1f65e0d622c657ec1804481658bd7796a805822d0946",
+    sourceTreeSha256: "6223dbcb6e7644615a3fc7bca1d86a89ee4167c37ca12ddf9a92918ce321a9ad",
     migrationFileCount: 15,
     migrationTreeSha256: "9eb4e5e16e2abea40143dad453bfcc2fcca27de6a7907d1f997af998b5c7dc0a",
     migration: "20260722000100_momo_client_media_status_v1.sql",
@@ -681,7 +681,8 @@ must(
     passwordUpdate.includes("isVeroxaPasswordCompromised") &&
     passwordUpdate.includes("updateUser({ password })") &&
     passwordUpdate.includes('signOut({ scope: "others" })') &&
-    passwordUpdate.includes("otherRefreshSessionsRevoked: !revocationError"),
+    passwordUpdate.includes("otherRefreshSessionsRevoked: !revocationError") &&
+    passwordUpdate.includes("otherRefreshSessionsRevoked: false"),
   "Shared hardened password-update boundary is incomplete or overclaims refresh-session revocation.",
 );
 must(

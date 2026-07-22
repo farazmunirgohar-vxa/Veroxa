@@ -27,6 +27,10 @@ export async function updateHardenedVeroxaPassword(
 
   const { error } = await client.auth.updateUser({ password });
   if (error) throw new Error("password_update_failed");
-  const { error: revocationError } = await client.auth.signOut({ scope: "others" });
-  return { otherRefreshSessionsRevoked: !revocationError };
+  try {
+    const { error: revocationError } = await client.auth.signOut({ scope: "others" });
+    return { otherRefreshSessionsRevoked: !revocationError };
+  } catch {
+    return { otherRefreshSessionsRevoked: false };
+  }
 }
