@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "recordKind": "momo_media_v20_live_closeout",
+  "recordedAt": "2026-07-22",
+  "status": "deployed_foundation_momo_no_go",
+  "supersedesForCurrentLiveStatus": "MOMO_MEDIA_V19_LIVE_CLOSEOUT.json",
+  "github": {
+    "repository": "farazmunirgohar-vxa/Veroxa",
+    "pullRequest": 152,
+    "reviewedHead": "b170c4339ae43755f17a19d74107cb75c6b198d3",
+    "mergedCommit": "29e90d40fa05d67d2a6246f9a0ba64fe1b9099b7",
+    "zeroUnresolvedReviewThreads": true,
+    "workflows": {
+      "ci": { "runId": 29959377311, "status": "success" },
+      "sitesVerify": { "runId": 29959376803, "status": "success" },
+      "veroxaVerify": { "runId": 29959377049, "status": "success" },
+      "supabaseVerify": {
+        "runId": 29959376805,
+        "status": "success",
+        "databaseTestsPassed": 19,
+        "databaseTestsTotal": 19,
+        "functionLintPassed": true
+      }
+    }
+  },
+  "sites": {
+    "projectId": "appgprj_6a53d07c7c28819182801cf35dfd30de",
+    "versionNumber": 20,
+    "versionId": "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_89567fb2856c8191a0f4a16a7f27ac55",
+    "checkoutCommit": "aceb17bb446854d48a71e54ba814591cf2c19d33",
+    "deploymentId": "appgdep_6a613745f8508191b29aa128e7e3f2a4",
+    "deploymentStatus": "succeeded",
+    "liveUrl": "https://veroxasystems.com",
+    "customDomains": [
+      { "hostname": "veroxasystems.com", "status": "active", "sslStatus": "active", "providerStatus": "active" },
+      { "hostname": "www.veroxasystems.com", "status": "active", "sslStatus": "active", "providerStatus": "active" }
+    ],
+    "workerErrorsFirst15Minutes": 0
+  },
+  "sourceParity": {
+    "sitesFileCount": 79,
+    "sitesTreeSha256": "5ae5da11de0ae202d33f31dea08ddd337b0b5323aa857d543f3c259f8662a4c2",
+    "migrationFileCount": 15,
+    "migrationTreeSha256": "9eb4e5e16e2abea40143dad453bfcc2fcca27de6a7907d1f997af998b5c7dc0a"
+  },
+  "database": {
+    "databaseChangeRequiredForV20": false,
+    "productionMigrationCount": 15,
+    "latestAppliedMigration": "20260722000100_momo_client_media_status_v1.sql"
+  },
+  "momoOperationalEvidence": {
+    "icloudClientReady": true,
+    "gmailTeamReady": true,
+    "uploadedAssets": 1,
+    "rightsRecords": 1,
+    "currentConfirmedRights": 1,
+    "currentApprovedReviews": 0,
+    "readyPrivateOwnerRenditions": 0,
+    "authenticatedClientTeamRehearsalPerformed": false,
+    "readiness": "no_go"
+  },
+  "boundaries": {
+    "googleConnected": false,
+    "socialConnected": false,
+    "externalPublishingEnabled": false,
+    "liveAiEnabled": false,
+    "authorizedOneTimeSpendUsd": 20,
+    "verifiedActualSpendUsd": 0,
+    "recurringProviderActivation": false
+  },
+  "nextEvidence": [
+    "Gmail Team completes the real upload review, private derivative inspection, and Ready transition.",
+    "iCloud Client verifies the resulting prepared image and minimal Ready status on mobile and desktop.",
+    "Any defect receives a step-level evidence packet and executable regression before Momo readiness advances."
+  ]
+}

@@ -91,12 +91,12 @@ type Checkpoint = {
     basedOnGitHubMainCommit: string;
     pullRequest: number | null;
     githubMerged: boolean;
-    futureMergedGitHubCommit: null;
-    futureSitesVersion: null;
+    futureMergedGitHubCommit: string | null;
+    futureSitesVersion: number | null;
     reviewedLocally: boolean;
     localReviewPassed: boolean;
-    allFourWorkflowsGreen: null;
-    zeroUnresolvedReviewThreads: null;
+    allFourWorkflowsGreen: boolean | null;
+    zeroUnresolvedReviewThreads: boolean | null;
     sourceFileCount: number;
     sourceTreeSha256: string;
     migrationFileCount: number;
@@ -247,8 +247,8 @@ type DeploymentManifest = {
     basedOnGitHubMainCommit: string;
     pullRequest: number | null;
     githubMerged: boolean;
-    futureMergedGitHubCommit: null;
-    futureSitesVersion: null;
+    futureMergedGitHubCommit: string | null;
+    futureSitesVersion: number | null;
     reviewedLocally: boolean;
     sourceFileCount: number;
     sourceTreeSha256: string;
@@ -313,13 +313,13 @@ const expected = {
     migrationSha: "9e748a46e050b9b8884a5df46eba6617cac061d075272ab4e233d2c1609fb367",
   },
   current: {
-    pullRequest: 151,
-    reviewedHead: "e5c40c02a79df91f424cd51a51e9f1c7e1b7147a",
-    githubMain: "bcd9b9da1796e72c0b9b546e9944a4e7e419c1b4",
-    sitesCommit: "5b7884983e2891cb8f55aef3d9553e981853be23",
-    sitesVersion: 19,
+    pullRequest: 152,
+    reviewedHead: "b170c4339ae43755f17a19d74107cb75c6b198d3",
+    githubMain: "29e90d40fa05d67d2a6246f9a0ba64fe1b9099b7",
+    sitesCommit: "aceb17bb446854d48a71e54ba814591cf2c19d33",
+    sitesVersion: 20,
     sourceFileCount: 79,
-    sourceTreeSha256: "6223dbcb6e7644615a3fc7bca1d86a89ee4167c37ca12ddf9a92918ce321a9ad",
+    sourceTreeSha256: "5ae5da11de0ae202d33f31dea08ddd337b0b5323aa857d543f3c259f8662a4c2",
     productionMigrations: 15,
     migration: "20260722000100_momo_client_media_status_v1.sql",
     migrationSha: "5cd7444906e5f5184e30cc7594542c71995a372b8143e5097f975d354f0925c7",
@@ -349,10 +349,9 @@ const checkpoint = readJson<Checkpoint>(
 );
 must(checkpoint.schemaVersion === 6, "RR checkpoint schema must be 6.");
 must(
-  checkpoint.checkpoint === "momo-readiness-copy-sites-v20-candidate-2026-07-22" &&
-    checkpoint.status ===
-      "local_candidate_reviewed_unmerged_unpublished_unapplied",
-  "RR checkpoint must identify the reviewed local candidate without claiming release.",
+  checkpoint.checkpoint === "momo-readiness-copy-sites-v20-published-2026-07-22" &&
+    checkpoint.status === "published_sites_v20_no_database_change",
+  "RR checkpoint must identify the published Sites v20 no-database-change follow-up.",
 );
 
 const observed = checkpoint.observedProductionBaseline;
@@ -406,7 +405,7 @@ must(
     currentRelease.sitesSourceParityVerified &&
     currentRelease.migrationContentParityVerified &&
     currentRelease.migrationFilenameParityVerified,
-  "RR checkpoint must preserve the exact PR #151 / Sites v19 / migration-15 live baseline.",
+  "RR checkpoint must preserve the exact PR #152 / Sites v20 / migration-15 live baseline.",
 );
 must(
   checkpoint.deployedOperationalRelease.supersededAsLiveBaseline &&
@@ -439,16 +438,16 @@ must(
 const candidate = checkpoint.releaseCandidate;
 must(
   candidate.manifest === "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json" &&
-    candidate.state === "reviewed_locally_unmerged_unpublished_unapplied" &&
-    candidate.basedOnGitHubMainCommit === expected.current.githubMain &&
+    candidate.state === "published_sites_followup_no_database_change" &&
+    candidate.basedOnGitHubMainCommit === "bcd9b9da1796e72c0b9b546e9944a4e7e419c1b4" &&
     candidate.pullRequest === 152 &&
-    !candidate.githubMerged &&
-    candidate.futureMergedGitHubCommit === null &&
-    candidate.futureSitesVersion === null &&
+    candidate.githubMerged &&
+    candidate.futureMergedGitHubCommit === expected.current.githubMain &&
+    candidate.futureSitesVersion === expected.current.sitesVersion &&
     candidate.reviewedLocally &&
     candidate.localReviewPassed &&
-    candidate.allFourWorkflowsGreen === null &&
-    candidate.zeroUnresolvedReviewThreads === null &&
+    candidate.allFourWorkflowsGreen === true &&
+    candidate.zeroUnresolvedReviewThreads === true &&
     candidate.sourceFileCount === expected.candidate.sourceFileCount &&
     candidate.sourceTreeSha256 === expected.candidate.sourceTreeSha256 &&
     candidate.migrationFileCount === expected.candidate.migrationFileCount &&
@@ -458,8 +457,8 @@ must(
     !candidate.databaseChangesRequired &&
     !candidate.databaseMigrationApplied &&
     candidate.sitesPublishRequired &&
-    !candidate.sitesCandidatePublished,
-  "RR candidate must remain exact, locally reviewed, unmerged, unpublished, and unapplied.",
+    candidate.sitesCandidatePublished,
+  "RR v20 follow-up must remain exact, locally reviewed, merged, published, and no-database-change.",
 );
 
 const audit = checkpoint.auditAndTeamRelease;
@@ -667,12 +666,12 @@ must(
     manifest.observedProductionDrift.databaseAppliedThroughLatestObserved &&
     !manifest.observedProductionDrift.candidateParityVerified &&
     manifest.releaseCandidate.status ===
-      "reviewed_locally_unmerged_unpublished_unapplied" &&
-    manifest.releaseCandidate.basedOnGitHubMainCommit === expected.current.githubMain &&
+      "published_sites_followup_no_database_change" &&
+    manifest.releaseCandidate.basedOnGitHubMainCommit === "bcd9b9da1796e72c0b9b546e9944a4e7e419c1b4" &&
     manifest.releaseCandidate.pullRequest === 152 &&
-    !manifest.releaseCandidate.githubMerged &&
-    manifest.releaseCandidate.futureMergedGitHubCommit === null &&
-    manifest.releaseCandidate.futureSitesVersion === null &&
+    manifest.releaseCandidate.githubMerged &&
+    manifest.releaseCandidate.futureMergedGitHubCommit === expected.current.githubMain &&
+    manifest.releaseCandidate.futureSitesVersion === expected.current.sitesVersion &&
     manifest.releaseCandidate.reviewedLocally &&
     manifest.releaseCandidate.sourceFileCount === expected.candidate.sourceFileCount &&
     manifest.releaseCandidate.sourceTreeSha256 === expected.candidate.sourceTreeSha256 &&
@@ -687,14 +686,14 @@ must(
     !manifest.releaseCandidate.databaseChangesRequired &&
     !manifest.releaseCandidate.databaseMigrationApplied &&
     manifest.releaseCandidate.sitesPublishRequired &&
-    !manifest.releaseCandidate.sitesPublished &&
-    manifest.source.evidenceScope === "local_release_candidate" &&
+    manifest.releaseCandidate.sitesPublished &&
+    manifest.source.evidenceScope === "published_sites_v20" &&
     manifest.source.fileCount === expected.candidate.sourceFileCount &&
     manifest.source.treeSha256 === expected.candidate.sourceTreeSha256 &&
-    manifest.migrations.evidenceScope === "local_release_candidate" &&
+    manifest.migrations.evidenceScope === "current_verified_release" &&
     manifest.migrations.fileCount === expected.candidate.migrationFileCount &&
     manifest.migrations.treeSha256 === expected.candidate.migrationTreeSha256,
-  "Deployment manifest disagrees with the historical release, observed drift, or local candidate checkpoint.",
+  "Deployment manifest disagrees with the historical release, observed drift, or published v20 checkpoint.",
 );
 for (const [name, value] of Object.entries(manifest.activationState)) {
   must(value === false, `Manifest activation state must remain false: ${name}`);
@@ -807,5 +806,5 @@ if (failures.length) {
 }
 
 console.log(
-  "RR release-evidence checkpoint passed: historical PR #149 and observed v18 drift are preserved, PR #151 / Sites v19 is current, and the Sites-only candidate remains unmerged and unpublished.",
+  "RR release-evidence checkpoint passed: historical PR #149 and observed v18 drift are preserved, PR #152 / Sites v20 is current, and the Sites-only follow-up is published with no database change.",
 );

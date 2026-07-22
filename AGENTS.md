@@ -1,11 +1,17 @@
-## 2026-07-22 — verified PR #151 / Sites v19 production override
+## 2026-07-22 — verified PR #152 / Sites v20 production override
+
+- `artifacts/veroxa/docs/MOMO_MEDIA_V20_LIVE_CLOSEOUT.json` is the current machine-readable live authority. PR #152 reviewed head `b170c4339ae43755f17a19d74107cb75c6b198d3` merged at `29e90d40fa05d67d2a6246f9a0ba64fe1b9099b7` after all four workflows passed.
+- Sites version 20 succeeded from checkout `aceb17bb446854d48a71e54ba814591cf2c19d33`; both custom domains, SSL, and provider status are active, and the first 15-minute Worker-error check returned zero events. It made no database change.
+- Momo remains No-Go: the authenticated Client/Team media rehearsal is not yet performed, and Google, social, publishing, live AI, and external providers remain inactive.
+
+## 2026-07-22 — verified PR #151 / Sites v19 production override (historical)
 
 - PR #151 passed all four exact-head workflows with zero unresolved review threads at reviewed head `e5c40c02a79df91f424cd51a51e9f1c7e1b7147a` and merged to GitHub `main` at `bcd9b9da1796e72c0b9b546e9944a4e7e419c1b4`.
 - Sites version 19 succeeded from checkout `5b7884983e2891cb8f55aef3d9553e981853be23`; the public site, both custom domains, and SSL were verified, and the initial post-deploy Worker error check returned zero errors.
 - Production Supabase has 15 applied migrations. Migration 15's live RLS, direct-grant, Client-RPC, privileged-function, and storage-policy checks passed.
 - The iCloud account is the active Momo Client development proxy and Gmail is the separate active Team identity. One real private upload and one current confirmed rights record exist; approved Team reviews and Ready renditions remain zero pending the real two-role browser rehearsal.
 - Runtime AI, Google/social, providers, external writes, and publishing remain locked. Nothing was published; verified spend is USD $0 of the authorized one-time USD $20 ceiling. Momo remains evidence-based **No-Go**.
-- `artifacts/veroxa/docs/MOMO_MEDIA_V19_LIVE_CLOSEOUT.json` is the current machine-readable live authority. All lower release-state wording—including PR #149 / Sites v15 and PR #143 / Sites v9 markers—is historical lineage only.
+- `artifacts/veroxa/docs/MOMO_MEDIA_V19_LIVE_CLOSEOUT.json` is historical live evidence. All lower release-state wording—including PR #149 / Sites v15 and PR #143 / Sites v9 markers—is historical lineage only.
 
 ## 2026-07-14 — verified PR #149 cleanup and Sites v15 deployment override
 

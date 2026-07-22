@@ -46,6 +46,50 @@ const foundingPilot = read(
 const deploymentManifest = read(
   "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json",
 );
+const deploymentManifestRecord = JSON.parse(deploymentManifest) as {
+  currentVerifiedRelease?: {
+    reviewedHead?: string;
+    githubMainCommit?: string;
+    sitesVersion?: number;
+  };
+  releaseCandidate?: {
+    status?: string;
+    pullRequest?: number | null;
+    githubMerged?: boolean;
+    sitesPublished?: boolean;
+    futureMergedGitHubCommit?: string | null;
+    futureSitesVersion?: number | null;
+  };
+};
+const v20CloseoutRecord = JSON.parse(
+  read("artifacts/veroxa/docs/MOMO_MEDIA_V20_LIVE_CLOSEOUT.json"),
+) as {
+  recordKind?: string;
+  status?: string;
+  github?: {
+    pullRequest?: number;
+    reviewedHead?: string;
+    mergedCommit?: string;
+    zeroUnresolvedReviewThreads?: boolean;
+    workflows?: Record<string, { status?: string }>;
+  };
+  sites?: {
+    versionNumber?: number;
+    deploymentStatus?: string;
+  };
+};
+const rrReleaseCheckpointRecord = JSON.parse(
+  read("artifacts/veroxa/docs/RR_RELEASE_CHECKPOINT.json"),
+) as {
+  releaseCandidate?: {
+    pullRequest?: number | null;
+    futureMergedGitHubCommit?: string | null;
+    futureSitesVersion?: number | null;
+    allFourWorkflowsGreen?: boolean | null;
+    zeroUnresolvedReviewThreads?: boolean | null;
+    sitesCandidatePublished?: boolean;
+  };
+};
 const migration = read(
   "artifacts/veroxa/docs/CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md",
 );
@@ -260,10 +304,55 @@ for (const marker of [
     `Active source truth missing production-reconciliation marker: ${marker}`,
   );
 }
+const releaseCandidate = deploymentManifestRecord.releaseCandidate;
+const closeoutGithub = v20CloseoutRecord.github;
+const closeoutSites = v20CloseoutRecord.sites;
+const rrPublishedCandidate = rrReleaseCheckpointRecord.releaseCandidate;
+const publishedCloseoutMatchesCandidate =
+  closeoutGithub !== undefined &&
+  closeoutSites !== undefined &&
+  v20CloseoutRecord.recordKind === "momo_media_v20_live_closeout" &&
+  v20CloseoutRecord.status === "deployed_foundation_momo_no_go" &&
+  closeoutGithub.pullRequest === releaseCandidate?.pullRequest &&
+  closeoutGithub.reviewedHead ===
+    deploymentManifestRecord.currentVerifiedRelease?.reviewedHead &&
+  closeoutGithub.mergedCommit ===
+    releaseCandidate?.futureMergedGitHubCommit &&
+  closeoutGithub.zeroUnresolvedReviewThreads === true &&
+  Object.values(closeoutGithub.workflows ?? {}).length === 4 &&
+  Object.values(closeoutGithub.workflows ?? {}).every(
+    (workflow) => workflow.status === "success",
+  ) &&
+  closeoutSites.versionNumber ===
+    releaseCandidate?.futureSitesVersion &&
+  closeoutSites.deploymentStatus === "succeeded";
+const rrPublishedEvidenceMatchesCandidate =
+  rrPublishedCandidate !== undefined &&
+  rrPublishedCandidate.pullRequest ===
+    releaseCandidate?.pullRequest &&
+  rrPublishedCandidate.futureMergedGitHubCommit ===
+    releaseCandidate?.futureMergedGitHubCommit &&
+  rrPublishedCandidate.futureSitesVersion ===
+    releaseCandidate?.futureSitesVersion &&
+  rrPublishedCandidate.allFourWorkflowsGreen === true &&
+  rrPublishedCandidate.zeroUnresolvedReviewThreads ===
+    true &&
+  rrPublishedCandidate.sitesCandidatePublished === true;
+const releaseCandidateIsPublishedEvidence =
+  releaseCandidate?.status === "published_sites_followup_no_database_change" &&
+  releaseCandidate.githubMerged === true &&
+  releaseCandidate.sitesPublished === true &&
+  releaseCandidate.futureMergedGitHubCommit ===
+    deploymentManifestRecord.currentVerifiedRelease?.githubMainCommit &&
+  releaseCandidate.futureSitesVersion ===
+    deploymentManifestRecord.currentVerifiedRelease?.sitesVersion &&
+  publishedCloseoutMatchesCandidate &&
+  rrPublishedEvidenceMatchesCandidate;
 must(
-  /futureMergedGitHubCommit"\s*:\s*null/.test(deploymentManifest) &&
-    /futureSitesVersion"\s*:\s*null/.test(deploymentManifest),
-  "Deployment manifest must not predict a merge commit or future Sites version.",
+  (releaseCandidate?.futureMergedGitHubCommit == null &&
+    releaseCandidate?.futureSitesVersion == null) ||
+    releaseCandidateIsPublishedEvidence,
+  "Deployment manifest must not predict a merge commit or future Sites version; populated values must be verified published evidence.",
 );
 
 for (const marker of [
