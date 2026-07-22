@@ -31,17 +31,23 @@ begin
   end if;
 
   select expected.policy_name into missing_policy
-  from unnest(array[
-    'veroxa_profiles_self_or_team_select',
-    'veroxa_restaurants_member_select',
-    'veroxa_members_self_or_team_select',
-    'veroxa_media_team_select',
-    'veroxa_media_client_insert',
-    'veroxa_restaurant_media_client_insert',
-    'veroxa_restaurant_media_member_select'
-  ]) expected(policy_name)
+  from (values
+    ('public', 'veroxa_user_profiles', 'veroxa_profiles_self_or_team_select'),
+    ('public', 'veroxa_restaurants', 'veroxa_restaurants_member_select'),
+    ('public', 'veroxa_restaurant_members', 'veroxa_members_self_or_team_select'),
+    ('public', 'veroxa_media_assets', 'veroxa_media_team_select'),
+    ('public', 'veroxa_media_assets', 'veroxa_media_client_insert'),
+    ('storage', 'objects', 'veroxa_restaurant_media_client_upload_insert'),
+    ('storage', 'objects', 'veroxa_restaurant_media_client_delete_orphan'),
+    ('storage', 'objects', 'veroxa_restaurant_media_team_rendition_insert'),
+    ('storage', 'objects', 'veroxa_restaurant_media_team_orphan_rendition_delete'),
+    ('storage', 'objects', 'veroxa_restaurant_media_member_select')
+  ) expected(schema_name, table_name, policy_name)
   where not exists (
-    select 1 from pg_policies where policyname = expected.policy_name
+    select 1 from pg_policies
+    where schemaname = expected.schema_name
+      and tablename = expected.table_name
+      and policyname = expected.policy_name
   ) limit 1;
   if missing_policy is not null then
     raise exception 'required Momo tenant policy is missing: %', missing_policy;

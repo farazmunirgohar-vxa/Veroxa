@@ -138,7 +138,7 @@ declare
   client_id uuid := '10000000-0000-4000-8000-000000000152';
   asset_id uuid := '30000000-0000-4000-8000-000000000151';
   storage_object_id uuid;
-  storage_object_version text;
+  storage_object_version text := 'momo-client-media-status-test-version-v1';
   source_hash text := repeat('a', 64);
   output_hash text := repeat('b', 64);
   recipe_hash text := repeat('c', 64);
@@ -206,9 +206,9 @@ begin
     restaurant_id, asset_id, 'approved', 90, 'Verified migration test image.',
     true, true, team_id, now()
   );
-  insert into storage.objects (bucket_id, name, owner_id, metadata)
+  insert into storage.objects (bucket_id, name, owner_id, version, metadata)
   values (
-    'restaurant-media', rendition_path, team_id::text,
+    'restaurant-media', rendition_path, team_id::text, storage_object_version,
     '{"mimetype":"image/jpeg","size":4321}'::jsonb
   ) returning id, version into storage_object_id, storage_object_version;
   if storage_object_version is null then
@@ -228,6 +228,8 @@ begin
     'development_proxy', team_id, storage_object_id, storage_object_version, now()
   );
 
+  perform set_config('request.jwt.claims', jsonb_build_object(
+    'sub', client_id::text, 'role', 'authenticated')::text, true);
   execute 'set local role authenticated';
   result := public.veroxa_momo_client_media_status_v1(restaurant_id);
   if jsonb_array_length(result) <> 1

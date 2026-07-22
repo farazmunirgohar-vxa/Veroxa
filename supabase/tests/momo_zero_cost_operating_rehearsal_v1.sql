@@ -190,6 +190,32 @@ begin
       'authenticated', 'authenticated', 'momo-rehearsal-authorizer@veroxa.invalid', now(),
       '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now());
 
+  -- This rollback-only rehearsal exercises owner-authorized workflows through
+  -- the same audited authority path used in production. The .invalid accounts
+  -- and explicit fixture evidence keep synthetic verification isolated.
+  perform set_config('request.jwt.claims', jsonb_build_object(
+    'sub', v_team_user_id::text, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  perform public.veroxa_assign_momo_real_owner_authority_v1(
+    v_restaurant_id,
+    'momo-rehearsal-client@veroxa.invalid',
+    jsonb_build_object(
+      'method', 'owner_meeting',
+      'verifiedAt', to_char(now() at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
+      'details', 'Rollback-only transactional real-owner workflow fixture.'
+    )
+  );
+  perform public.veroxa_assign_momo_real_owner_authority_v1(
+    v_restaurant_id,
+    'momo-rehearsal-authorizer@veroxa.invalid',
+    jsonb_build_object(
+      'method', 'verified_manager_invite',
+      'verifiedAt', to_char(now() at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
+      'details', 'Rollback-only transactional provider-authority fixture.'
+    )
+  );
+  execute 'reset role';
+
   insert into public.veroxa_onboarding_steps
     (restaurant_id, step_key, title, position)
   values
