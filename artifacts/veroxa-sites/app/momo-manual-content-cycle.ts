@@ -201,7 +201,7 @@ const semanticTokens = (value: string) =>
     .replace(/[^a-z0-9%$]+/g, " ")
     .trim();
 
-const numericTokens = (value: string) =>
+const numericTokens = (value: string): string[] =>
   semanticTokens(value).match(/\d+(?:\.\d+)?/g) ?? [];
 
 export const momoTruthValueSupportsSensitiveClaim = (

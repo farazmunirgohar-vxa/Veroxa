@@ -9,10 +9,20 @@ export const deploymentManifestPath = resolve(
 );
 
 export const TREE_HASH_ALGORITHM = "veroxa-path-null-content-null-sha256-v1";
+export const REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE =
+  "local_candidate_reviewed_unmerged_unpublished_unapplied";
+export const REVIEWED_LOCAL_CANDIDATE_STATUS =
+  "reviewed_locally_unmerged_unpublished_unapplied";
+export const REFRESHED_LOCAL_CANDIDATE_RELEASE_STATE =
+  "local_candidate_fingerprints_refreshed_review_required_unmerged_unpublished_unapplied";
+export const REFRESHED_LOCAL_CANDIDATE_STATUS =
+  "fingerprints_refreshed_review_required_unmerged_unpublished_unapplied";
+
+type Nullable<T> = T | null;
 
 export type DeploymentManifest = {
-  schemaVersion: number;
-  recordKind: string;
+  schemaVersion: 3;
+  recordKind: "veroxa_production_reconciliation_manifest";
   releaseState: string;
   canonicalRepository: string;
   canonicalBranch: string;
@@ -46,15 +56,44 @@ export type DeploymentManifest = {
     migrationContentParityVerified: boolean;
     migrationFilenameParityVerified: boolean;
   };
+  observedProductionDrift: {
+    observedAt: string;
+    evidenceStatus: string;
+    canonicalGitHubMainCommit: string;
+    githubSourceParityVerified: boolean;
+    sitesVersion: number;
+    sitesCheckoutCommit: Nullable<string>;
+    sourceFileCount: Nullable<number>;
+    sourceTreeSha256: Nullable<string>;
+    sitesSourceParityVerified: boolean;
+    productionMigrationCount: number;
+    latestProductionMigration: string;
+    latestProductionMigrationSha256: string;
+    databaseLedgerObserved: boolean;
+    databaseAppliedThroughLatestObserved: boolean;
+    candidateParityVerified: boolean;
+  };
   releaseCandidate: {
     status: string;
+    basedOnGitHubMainCommit: string;
+    pullRequest: Nullable<number>;
+    githubMerged: boolean;
     futureMergedGitHubCommit: null;
     futureSitesVersion: null;
+    reviewedLocally: boolean;
+    sourceFileCount: number;
+    sourceTreeSha256: string;
+    migrationFileCount: number;
+    migrationTreeSha256: string;
+    latestCandidateMigration: string;
+    latestCandidateMigrationSha256: string;
     databaseChangesRequired: boolean;
+    databaseMigrationApplied: boolean;
     sitesPublishRequired: boolean;
     sitesPublished: boolean;
   };
   source: {
+    evidenceScope: string;
     root: string;
     mappingTarget: string;
     hashAlgorithm: string;
@@ -63,6 +102,7 @@ export type DeploymentManifest = {
     generatedPathExclusions: string[];
   };
   migrations: {
+    evidenceScope: string;
     root: string;
     hashAlgorithm: string;
     fileCount: number;
@@ -86,6 +126,15 @@ export type DeploymentManifest = {
     externalPublishingEnabled: boolean;
     momoActivationExecuted: boolean;
   };
+  activationStateScope: string;
+  currentRuntimeIdentityObservation: {
+    observedAt: string;
+    teamIdentityProvisioned: boolean;
+    momoDevelopmentProxyClientIdentityProvisioned: boolean;
+    momoRealOwnerClientIdentityProvisioned: boolean;
+    developmentClientEvidenceClass: string;
+    scope: string;
+  };
   cleanupState: {
     inventoryReviewed: boolean;
     branchDeletionCapabilityAvailable: boolean;
@@ -97,6 +146,54 @@ export type DeploymentManifest = {
     blocker: string;
   };
 };
+
+export function assertUnreleasedLocalCandidateManifest(
+  manifest: DeploymentManifest,
+): void {
+  const failures: string[] = [];
+  if (manifest.schemaVersion !== 3) failures.push("schemaVersion must be 3");
+  if (manifest.recordKind !== "veroxa_production_reconciliation_manifest") {
+    failures.push("recordKind must identify the production reconciliation manifest");
+  }
+  if (![REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE, REFRESHED_LOCAL_CANDIDATE_RELEASE_STATE].includes(manifest.releaseState)) {
+    failures.push("releaseState must remain an unreleased local-candidate state");
+  }
+  if (![REVIEWED_LOCAL_CANDIDATE_STATUS, REFRESHED_LOCAL_CANDIDATE_STATUS].includes(manifest.releaseCandidate.status)) {
+    failures.push("releaseCandidate.status must remain an unreleased local-candidate state");
+  }
+  if (manifest.releaseCandidate.pullRequest !== null) failures.push("pullRequest must remain null");
+  if (manifest.releaseCandidate.githubMerged) failures.push("githubMerged must remain false");
+  if (manifest.releaseCandidate.futureMergedGitHubCommit !== null) failures.push("futureMergedGitHubCommit must remain null");
+  if (manifest.releaseCandidate.futureSitesVersion !== null) failures.push("futureSitesVersion must remain null");
+  if (manifest.releaseCandidate.databaseMigrationApplied) failures.push("databaseMigrationApplied must remain false");
+  if (manifest.releaseCandidate.sitesPublished) failures.push("sitesPublished must remain false");
+  if (manifest.observedProductionDrift.candidateParityVerified) failures.push("candidateParityVerified must remain false");
+  if (manifest.source.evidenceScope !== "local_release_candidate" || manifest.source.root !== "artifacts/veroxa-sites") {
+    failures.push("source must remain scoped to the local Sites release candidate");
+  }
+  if (manifest.migrations.evidenceScope !== "local_release_candidate" || manifest.migrations.root !== "supabase/migrations") {
+    failures.push("migrations must remain scoped to the local migration candidate");
+  }
+  if (manifest.source.hashAlgorithm !== TREE_HASH_ALGORITHM || manifest.migrations.hashAlgorithm !== TREE_HASH_ALGORITHM) {
+    failures.push("candidate trees must use the canonical deterministic hash algorithm");
+  }
+  if (failures.length) {
+    throw new Error(`Unsafe deployment manifest state: ${failures.join("; ")}`);
+  }
+}
+
+export function assertReviewedLocalCandidateManifest(
+  manifest: DeploymentManifest,
+): void {
+  assertUnreleasedLocalCandidateManifest(manifest);
+  if (
+    manifest.releaseState !== REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE ||
+    manifest.releaseCandidate.status !== REVIEWED_LOCAL_CANDIDATE_STATUS ||
+    !manifest.releaseCandidate.reviewedLocally
+  ) {
+    throw new Error("Deployment attestation requires the explicitly reviewed local candidate state");
+  }
+}
 
 function normalized(relativePath: string): string {
   return relativePath.split(sep).join("/");

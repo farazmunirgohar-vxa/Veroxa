@@ -1,6 +1,3 @@
-// Node's built-in TypeScript test runner needs the explicit extension; the
-// Sites build is no-emit and resolves the same source module directly.
-// @ts-expect-error TS5097 -- intentional explicit TypeScript source import.
 import { RESTAURANT_AUDIT_CATEGORY_DEFINITIONS } from "../../../../restaurant-audit-engine.ts";
 
 export const AI_AUDIT_MODEL = "gpt-5.6-luna" as const;

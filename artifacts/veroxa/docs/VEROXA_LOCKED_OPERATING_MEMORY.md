@@ -1,4 +1,29 @@
-## 2026-07-14 — locked verified PR #149 / Sites v15 release state
+## 2026-07-22 — locked live/candidate separation and adaptive operating lessons
+
+### Current truth
+
+- The latest observed production state is Sites version 18 with 14 applied Supabase migrations. `faraz.munir.gohar@icloud.com` is the active Momo Client identity; Faraz's approved Gmail identity is the separate active Team identity; password login works for both roles.
+- One real Momo image upload and its rights record exist. Treat this as upload-intake evidence only.
+- The reviewed local candidate fixes the shared session race, introduces the task-first Momo media workflow, and adds migration 15. It passed Sites lint, TypeScript, production build, and 114 Sites tests; independent code and UX reviews found no remaining code blocker.
+- Migration 15 is a forward-only repair for verified live-v14 broad default table privileges, affected tables without forced RLS, and direct `service_role` execution of legacy readiness functions, including `veroxa_record_momo_no_go_v1`, while preserving authenticated Team access, in addition to fail-closed Client rendition readback.
+- The candidate remains unmerged, unpublished, and unapplied. Production remains Sites version 18 with 14 migrations and retains those observed catalog findings. Never turn source-only repair evidence into a live claim.
+- Google and social accounts remain disconnected, publishing remains off, the scoped rehearsal ceiling is USD $20, and verified actual spend is USD $0.
+- Momo remains **No-Go**. Identity, login, and upload evidence do not manufacture owner confirmation, current media approval, rendered output, recovery, reporting, publication, or final readiness.
+- PR #149 and Sites version 15 remain verified historical lineage only.
+
+### Durable lessons from verified work
+
+- **Actions follow prerequisites:** show the next required task before exposing or emphasizing an action that cannot yet succeed. A blocked control must state the exact evidence or review that unlocks it.
+- **Real object first:** select and display the newest relevant real restaurant object before synthetic fixtures, placeholders, or technical demonstrations. Keep synthetic material clearly labeled and subordinate.
+- **Rendered proof, not URL issuance:** a signed URL, storage row, or successful request is not proof that a person can see and use an image. Media verification requires rendered original/derivative proof and safe role-scoped readback.
+- **Consent invalidates on material change:** if ownership, rights scope, usage purpose, source content, transformation, or other material consent context changes, prior consent/approval cannot be silently reused; current evidence must be collected or revalidated.
+- **Ready is derived:** calculate Ready from current rights, current review, current source lineage, current rendition, and safe readback evidence. Never trust a stale stored badge or historical status alone.
+- **Refresh parent and child state:** after a mutation, refresh both the changed record and every parent summary, list, count, badge, or workflow state that depends on it. A successful child write with a stale parent view is not a complete interaction.
+- **Canonical migration identity before fingerprints:** source-only Supabase migrations must use the canonical 14-digit version format; prefer provider CLI generation when available. Ledger guards must validate both exact ordered membership and version format before release fingerprints are bound.
+- **No invented day-one history:** reconstruct learning only from recorded evidence. If an earlier fact, decision, or lesson was never preserved, label it unknown rather than backfilling a convenient narrative.
+- **Step-level evidence packets:** every meaningful step closes with what happened, why it happened, the reusable rule, the prevention or regression test, and the proof. Volatile status stays in canonical project/release records; only repeatable verified lessons become durable operating rules.
+
+## 2026-07-14 — locked verified PR #149 / Sites v15 release state (historical checkpoint)
 
 - `CVR` means **Complete Veroxa Review**: Veroxa code review, build-direction review, Codex review, GitHub review, Sites review, and recommended next steps.
 - PR #149 passed all four required workflows with zero unresolved review threads at reviewed head `0d2c6e47fbfe1c44a2f0ff19fbb158001ed9365a` and merged at `9749b68ce2cfc383deeae6aa63c413019ef61385`.

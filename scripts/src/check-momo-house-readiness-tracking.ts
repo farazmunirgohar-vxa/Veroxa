@@ -7,111 +7,81 @@ const trackerPath = resolve(
   "artifacts/veroxa-sites/app/momo-readiness-tracker.json",
 );
 const trackerText = readFileSync(trackerPath, "utf8");
+
+type ReadinessDimension = {
+  label: string;
+  required: boolean;
+  status: string;
+  evidence: string[];
+  blockers: string[];
+  nextAction: string;
+};
+
 const tracker = JSON.parse(trackerText) as {
   schemaVersion: number;
   recordKind: string;
-  operationalAuthority: string;
   restaurant: string;
   milestone: string;
   overallStatus: string;
   overallRule: string;
   lastReviewedAt: string;
-  foundingPilotOnboardingGate: {
-    authority: string;
-    manualOperationAllowed: boolean;
-    runtimeAiRequired: boolean;
-    metaConnectionRequired: boolean;
-    googleConnectionRequired: boolean;
-    automatedPublishingRequired: boolean;
-    ownerContactAuthorized: boolean;
-    clientProvisioningAuthorized: boolean;
-    readinessDecision: string;
-    reason: string;
-  };
-  releaseEvidenceBoundary: {
-    authority: string;
-    bundlesCurrentDeploymentIdentity: boolean;
-    reviewedManualDeploymentsOnly: boolean;
-    databaseChangesRequiredForThisReadinessRecord: boolean;
+  identityBoundary: {
+    teamAccountRole: string;
+    developmentClientAccountRole: string;
+    developmentClientAuthority: string;
+    developmentClientIsOwner: boolean;
     rule: string;
   };
-  activationState: Record<string, boolean>;
-  deployedNoCostFoundation: {
-    releaseState: string;
-    forwardMigrationApplied: boolean;
-    forwardMigrationVerified: boolean;
-    sourceParityAuthority: string;
-    momoClientIdentityProvisioned: boolean;
-    ownerConfirmedBusinessTruthVerified: boolean;
-    permissionedMediaVerified: boolean;
-    externalProvidersConnected: boolean;
-    externalPublishingVerified: boolean;
-    activationExecuted: boolean;
+  gateState: Record<string, boolean>;
+  spendingBoundary: {
+    authorizedOneTimeCeilingUsd: number;
+    incurredUsd: number;
+    recurringSpendAuthorized: boolean;
+    providerActivationAuthorized: boolean;
+    rule: string;
   };
-  auditAndTeamRelease: {
-    releaseState: string;
-    auditV3PartialScoreAndPlanLive: boolean;
-    canonicalSourceParityClaimed: boolean;
-    simplifiedMomoTeamIALive: boolean;
-    pendingProfileRequiresExplicitConsent: boolean;
-    createsOperationalClient: boolean;
-    newIncrementalSpendApproved: boolean;
-  };
-  statusDefinitions: Record<string, string>;
-  dimensions: Record<
-    string,
-    {
-      label: string;
-      required: boolean;
-      status: string;
-      evidence: string[];
-      blockers: string[];
-      nextAction: string;
-    }
-  >;
-  otherRestaurants: {
-    allowedCapability: string;
-    automaticOperationalConversion: boolean;
-    readinessTrackingAllowed: boolean;
-  };
-  costPolicy: { newIncrementalSpendApproved: boolean; rule: string };
+  dimensions: Record<string, ReadinessDimension>;
 };
 
 const failures: string[] = [];
 const must = (condition: boolean, message: string) => {
   if (!condition) failures.push(message);
 };
-const allowedStatuses = new Set([
-  "not_started",
-  "foundation_ready",
-  "in_progress",
-  "blocked",
-  "ready_for_review",
-  "verified",
-]);
-const requiredDimensions = [
-  "production_foundation",
-  "team_identity_and_access",
-  "business_truth_and_onboarding",
-  "media_and_rights",
-  "ai_and_automation",
-  "meta_social",
-  "google_seo_and_reviews",
-  "website_menu_and_ordering",
-  "operations_reporting_and_monitoring",
-  "activation_and_recovery",
-];
+const exactKeys = (value: Record<string, unknown>, expected: readonly string[]) =>
+  JSON.stringify(Object.keys(value).sort()) === JSON.stringify([...expected].sort());
 
-must(tracker.schemaVersion === 6, "Momo readiness tracker schema must be 6.");
+const expectedGateKeys = [
+  "authenticatedTeamOneClickRehearsalPassed",
+  "ownerAuthorityVerified",
+  "ownerContactAuthorized",
+  "providerAccessAuthorized",
+  "providerConnectionsActive",
+  "runtimeModelEnabled",
+  "publicActionsEnabled",
+  "activationAllowed",
+] as const;
+const expectedDimensions = {
+  development_identity_and_data: true,
+  database_security_and_controls: true,
+  media_editing_and_lineage: true,
+  ai_and_automation: true,
+  publication_tracking_and_metrics: true,
+  seo_workspace: true,
+  authenticated_team_rehearsal: true,
+  owner_authority_and_consent: false,
+  provider_access_and_public_actions: false,
+  activation: false,
+} as const;
+
+must(tracker.schemaVersion === 8, "Momo readiness tracker schema must be 8.");
 must(
-  tracker.recordKind === "production_readiness_checkpoint" &&
-    tracker.operationalAuthority.includes("Supabase"),
-  "Momo readiness tracker must preserve Supabase operational authority.",
+  tracker.recordKind === "momo_preconnection_readiness",
+  "Momo readiness tracker must retain the schema-8 preconnection record kind.",
 );
 must(
   tracker.restaurant === "Momo's House San Antonio" &&
-    /founding-pilot onboarding gate/i.test(tracker.milestone),
-  "Momo readiness tracker restaurant or milestone drifted.",
+    /before requesting owner or provider access/i.test(tracker.milestone),
+  "Momo readiness tracker restaurant or preconnection milestone drifted.",
 );
 must(
   /^\d{4}-\d{2}-\d{2}$/.test(tracker.lastReviewedAt),
@@ -119,121 +89,81 @@ must(
 );
 must(
   tracker.overallStatus === "blocked" &&
-    tracker.overallRule.includes("Do not calculate or publish a readiness percentage"),
-  "Momo readiness must remain blocked and prohibit synthetic percentages.",
+    /fail-closed no-go/i.test(tracker.overallRule) &&
+    /no result.*authorizes owner contact, provider access.*public action.*activation/i.test(tracker.overallRule),
+  "Momo readiness must remain fail-closed No-Go without owner, provider, public-action, or activation authority.",
 );
 must(
-  !/readinessPercentage|readinessPercent|completionPercentage|completionPercent/i.test(
-    trackerText,
-  ),
+  !/readinessPercentage|readinessPercent|completionPercentage|completionPercent/i.test(trackerText),
   "Momo readiness tracker must not contain a synthetic percentage field.",
 );
 
-const founding = tracker.foundingPilotOnboardingGate;
+const identity = tracker.identityBoundary;
 must(
-  founding.authority === "MOMO_FOUNDING_PILOT_COMMITMENT_AND_ONBOARDING_GATE.md" &&
-    founding.manualOperationAllowed &&
-    !founding.runtimeAiRequired &&
-    !founding.metaConnectionRequired &&
-    !founding.googleConnectionRequired &&
-    !founding.automatedPublishingRequired &&
-    !founding.ownerContactAuthorized &&
-    !founding.clientProvisioningAuthorized &&
-    founding.readinessDecision === "no_go" &&
-    founding.reason.length > 0,
-  "Founding-pilot gate overstates authorization or treats paid automation as required.",
+  identity.teamAccountRole === "team" &&
+    identity.developmentClientAccountRole === "client" &&
+    identity.developmentClientAuthority === "development_proxy" &&
+    !identity.developmentClientIsOwner &&
+    /never approve owner actions, provider access, public content, or activation/i.test(identity.rule),
+  "The iCloud Client identity must remain a non-owner development proxy with no consequential authority.",
 );
 
-const releaseEvidence = tracker.releaseEvidenceBoundary;
 must(
-  releaseEvidence.authority.includes("VEROXA_DEPLOYMENT_MANIFEST.json") &&
-    releaseEvidence.authority.includes("external GitHub, Sites, and Supabase") &&
-    !releaseEvidence.bundlesCurrentDeploymentIdentity &&
-    releaseEvidence.reviewedManualDeploymentsOnly &&
-    !releaseEvidence.databaseChangesRequiredForThisReadinessRecord &&
-    /never asserts its own current Sites version/i.test(releaseEvidence.rule) &&
-    !/165ff82ab46b0a0985605ffcfb6efa687982eca5|57ccb8d1cce596baf782b03525c80161c11af8f3|9749b68ce2cfc383deeae6aa63c413019ef61385|e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0|ba06cd39ab7782987a6504678e4a3533a9943d078ba5dd9f93dbe8eeb0c5178f|Sites version 15|sitesCandidatePublished|futureSitesVersion/.test(trackerText),
-  "Deployable readiness evidence must remain stable and externalize exact deployment identity.",
+  exactKeys(tracker.gateState, expectedGateKeys),
+  "Schema-8 readiness gate fields are incomplete or unexpected.",
 );
-for (const [name, value] of Object.entries(tracker.activationState)) {
-  must(value === false, `Momo activation state must remain false: ${name}`);
+for (const key of expectedGateKeys) {
+  must(tracker.gateState[key] === false, `Momo readiness gate must remain false: ${key}`);
 }
 
-const deployed = tracker.deployedNoCostFoundation;
+const spending = tracker.spendingBoundary;
 must(
-  deployed.releaseState === "deployed_foundation_external_release_evidence" &&
-    deployed.forwardMigrationApplied &&
-    deployed.forwardMigrationVerified &&
-    deployed.sourceParityAuthority === "external_release_records" &&
-    !deployed.momoClientIdentityProvisioned &&
-    !deployed.ownerConfirmedBusinessTruthVerified &&
-    !deployed.permissionedMediaVerified &&
-    !deployed.externalProvidersConnected &&
-    !deployed.externalPublishingVerified &&
-    !deployed.activationExecuted,
-  "Momo foundation overstates source parity, identity, data, providers, or activation.",
-);
-const release = tracker.auditAndTeamRelease;
-must(
-  release.releaseState === "audit_v3_foundation_external_release_evidence" &&
-    release.auditV3PartialScoreAndPlanLive &&
-    !release.canonicalSourceParityClaimed &&
-    release.simplifiedMomoTeamIALive &&
-    release.pendingProfileRequiresExplicitConsent &&
-    !release.createsOperationalClient &&
-    !release.newIncrementalSpendApproved,
-  "Audit V3 tracker evidence is incomplete or overstates conversion, parity, or spend.",
+  spending.authorizedOneTimeCeilingUsd === 20 &&
+    spending.incurredUsd === 0 &&
+    !spending.recurringSpendAuthorized &&
+    !spending.providerActivationAuthorized &&
+    /authorization is not an incurred charge/i.test(spending.rule) &&
+    /does not authorize recurring spend, provider activation, account connection, publishing, or activation/i.test(spending.rule),
+  "Momo spending truth must distinguish the scoped $20 ceiling from $0 incurred and prohibit recurring/provider activation.",
 );
 
 must(
-  JSON.stringify(Object.keys(tracker.dimensions).sort()) ===
-    JSON.stringify([...requiredDimensions].sort()),
-  "Momo readiness dimensions are incomplete or unexpected.",
+  exactKeys(tracker.dimensions, Object.keys(expectedDimensions)),
+  "Schema-8 Momo readiness dimensions are incomplete or unexpected.",
 );
-for (const key of requiredDimensions) {
+for (const [key, required] of Object.entries(expectedDimensions)) {
   const dimension = tracker.dimensions[key];
-  must(dimension.required, `Momo readiness dimension must remain required: ${key}`);
-  must(
-    Boolean(dimension.label) && Boolean(dimension.nextAction),
-    `Momo readiness dimension is incomplete: ${key}`,
-  );
-  must(allowedStatuses.has(dimension.status), `Invalid dimension status: ${key}`);
-  must(dimension.evidence.length > 0, `Dimension must cite evidence: ${key}`);
-  must(
-    dimension.status !== "verified" || dimension.blockers.length === 0,
-    `Verified dimension cannot retain blockers: ${key}`,
-  );
-  must(
-    dimension.status !== "blocked" || dimension.blockers.length > 0,
-    `Blocked dimension must name blockers: ${key}`,
-  );
+  must(dimension?.required === required, `Momo readiness required flag drifted: ${key}`);
+  must(Boolean(dimension?.label) && Boolean(dimension?.nextAction), `Momo readiness dimension is incomplete: ${key}`);
+  must(dimension?.status === "blocked", `Fail-closed Momo readiness dimension must remain blocked: ${key}`);
+  must((dimension?.evidence.length ?? 0) > 0, `Momo readiness dimension must cite evidence: ${key}`);
+  must((dimension?.blockers.length ?? 0) > 0, `Blocked Momo readiness dimension must name blockers: ${key}`);
 }
-must(
-  tracker.dimensions.production_foundation.status === "verified" &&
-    tracker.dimensions.production_foundation.blockers.length === 0 &&
-    tracker.dimensions.team_identity_and_access.status === "verified" &&
-    tracker.dimensions.activation_and_recovery.status === "blocked",
-  "Readiness dimensions must separate the verified platform foundation from blocked Momo activation.",
-);
-must(
-  !requiredDimensions.every(
-    (key) => tracker.dimensions[key].status === "verified",
-  ),
-  "Momo readiness cannot be fully verified while locked blockers remain.",
-);
 
 must(
-  tracker.otherRestaurants.allowedCapability ===
-    "Restaurant Audit Center + explicit-consent non-operational pending profile only" &&
-    !tracker.otherRestaurants.automaticOperationalConversion &&
-    !tracker.otherRestaurants.readinessTrackingAllowed,
-  "Momo readiness tracker drifted into multi-restaurant operations.",
+  tracker.dimensions.authenticated_team_rehearsal.blockers.some((item) => /has not completed successfully/i.test(item)) &&
+    tracker.dimensions.owner_authority_and_consent.blockers.some((item) => /not been contacted or verified/i.test(item)) &&
+    tracker.dimensions.provider_access_and_public_actions.blockers.some((item) => /no provider credential/i.test(item)) &&
+    tracker.dimensions.activation.blockers.some((item) => /gates are false/i.test(item)),
+  "Momo No-Go must name the rehearsal, owner, provider, and activation blockers.",
 );
-must(
-  !tracker.costPolicy.newIncrementalSpendApproved &&
-    tracker.costPolicy.rule.includes("no-new-spend"),
-  "Momo readiness tracker must preserve the free-first boundary.",
-);
+
+for (const obsoleteSchema6Key of [
+  "operationalAuthority",
+  "foundingPilotOnboardingGate",
+  "releaseEvidenceBoundary",
+  "activationState",
+  "deployedNoCostFoundation",
+  "auditAndTeamRelease",
+  "statusDefinitions",
+  "otherRestaurants",
+  "costPolicy",
+]) {
+  must(
+    !Object.prototype.hasOwnProperty.call(tracker, obsoleteSchema6Key),
+    `Schema-8 readiness tracker must not restore obsolete schema-6 field: ${obsoleteSchema6Key}`,
+  );
+}
 
 for (const file of [
   "artifacts/veroxa/docs/VEROXA_CURRENT_MILESTONE.md",
@@ -251,4 +181,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log("Momo founding-pilot readiness tracking guardrail passed.");
+console.log("Momo schema-8 preconnection readiness guardrail passed.");

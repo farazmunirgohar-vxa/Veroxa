@@ -398,10 +398,11 @@ test("Team navigation and Momo work/content controls keep every state reachable 
 });
 
 test("Momo operating center uses live tenant data and exact production contracts", async () => {
-  const [page, center, data] = await Promise.all([
+  const [page, center, data, migration] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/momo-operating-center.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/momo-data.ts", import.meta.url), "utf8"),
+    readFile(new URL("../supabase/migrations/20260716035027_momo_preconnection_foundation.sql", import.meta.url), "utf8"),
   ]);
 
   assert.match(page, /<MomoOperatingCenter/, "Protected routes must use the database-backed operating center");
@@ -435,8 +436,10 @@ test("Momo operating center uses live tenant data and exact production contracts
   assert.match(data, /usageScope:\s*string\[\]/, "Media rights scope input must be an explicit token array");
   assert.match(data, /p_usage_scope:\s*input\.usageScope/, "Media registration RPC must receive the validated JSON token array");
   assert.match(center, /"instagram", "facebook", "google_business", "website"/, "Media rights UI must start from allowed provider tokens");
-  assert.match(data, /safety_flags:\s*\["live_provider_not_connected", "human_review_required"\]/, "AI safety flags must be a JSON array");
-  assert.match(data, /provider_key:\s*null[\s\S]*?model_key:\s*null/, "AI preparation must remain provider neutral");
+  assert.match(data, /\.rpc\("veroxa_prepare_momo_ai_job_v1"/, "AI preparation must use the server-validated contract");
+  assert.doesNotMatch(data, /from\("veroxa_ai_jobs"\)[\s\S]{0,200}\.insert\(/, "Team code must not insert forgeable AI fixtures directly");
+  assert.match(migration, /'\["live_provider_not_connected","human_review_required"\]'::jsonb/, "AI safety flags must be an exact JSON array");
+  assert.match(migration, /p_restaurant_id, p_job_kind, p_subject_type, p_subject_id, 'blocked',[\s\S]{0,180}?null, null, 'v1-provider-neutral'/, "AI preparation must remain provider neutral and blocked");
   assert.match(data, /\.rpc\("veroxa_momo_readiness_summary_v1"/, "Final readiness must use the database gate");
   assert.match(data, /\.rpc\("veroxa_momo_client_snapshot_v1"/, "Client reads must use the sanitized snapshot");
   assert.match(data, /\.rpc\("veroxa_apply_confirmation_v1"/, "Team confirmation decisions must be transactional");

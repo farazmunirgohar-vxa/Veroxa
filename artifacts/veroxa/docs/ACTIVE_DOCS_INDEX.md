@@ -2,7 +2,19 @@
 
 Status: highest-level current source-of-truth index. Read this file before relying on older Veroxa documents.
 
-## 2026-07-14 — verified PR #149 cleanup and Sites v15 override
+## 2026-07-22 — current live-state and local-candidate override
+
+- `VEROXA_CURRENT_MILESTONE.md`, `CURRENT_BUILD_STATUS.md`, and `VEROXA_LOCKED_OPERATING_MEMORY.md` contain the current July 22 two-lane truth. Read their July 22 sections before any lower historical checkpoint.
+- Observed production is Sites version 18 with 14 applied Supabase migrations. The iCloud identity is the active Momo Client, the approved Gmail identity is the separate active Team member, password login works for both, and one real Momo image upload exists.
+- The reviewed local candidate fixes the shared session race, introduces the task-first media workflow, and adds forward migration 15. Sites lint, TypeScript, production build, and all 114 Sites tests passed; independent code and UX reviews found no remaining code blocker.
+- Migration 15 is the source-only, forward repair for verified live-v14 broad default table privileges, affected tables without forced RLS, and direct `service_role` execution of legacy readiness functions, including `veroxa_record_momo_no_go_v1`, while preserving authenticated Team access, plus fail-closed Client rendition readback.
+- Candidate status is strictly **unmerged, unpublished, and unapplied**. Production remains Sites version 18 with 14 migrations and retains those observed catalog findings. No current document may present candidate behavior or migration 15 as live.
+- Google/social connections and publishing remain off. The scoped ceiling is USD $20, verified spend is USD $0, and no recurring/provider activation occurred.
+- Momo remains **No-Go**. Login and upload evidence are real but partial; no document may convert them into complete onboarding or operating-loop readiness.
+- The durable July 22 interaction and learning rules are locked in `VEROXA_LOCKED_OPERATING_MEMORY.md`: prerequisites before actions, real-object-first, rendered proof rather than URL issuance, consent invalidation after material change, Ready derived from current evidence, parent/child refresh after mutation, no invented day-one history, and step-level evidence packets.
+- PR #149 / Sites v15 remains verified historical lineage. All v15 wording below is a historical checkpoint, not a current production override.
+
+## 2026-07-14 — verified PR #149 cleanup and Sites v15 override (historical checkpoint)
 
 - Verified GitHub release: PR #149 reviewed head `0d2c6e47fbfe1c44a2f0ff19fbb158001ed9365a` passed all four workflows with zero unresolved review threads and merged at `9749b68ce2cfc383deeae6aa63c413019ef61385`.
 - Verified hosting: Sites version 15 succeeded from checkout `e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0`; its 55-file source tree SHA-256 is `ba06cd39ab7782987a6504678e4a3533a9943d078ba5dd9f93dbe8eeb0c5178f`. Public access and both custom domains were verified.

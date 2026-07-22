@@ -1,8 +1,8 @@
 {
-  "schemaVersion": 5,
-  "checkpoint": "post-release-cleanup-deployed-2026-07-14",
-  "status": "verified_reconciliation_cleanup_deployed",
-  "reviewedAt": "2026-07-14",
+  "schemaVersion": 6,
+  "checkpoint": "momo-media-usability-local-candidate-2026-07-22",
+  "status": "local_candidate_reviewed_unmerged_unpublished_unapplied",
+  "reviewedAt": "2026-07-22",
   "deployedOperationalRelease": {
     "supersededAsLiveBaseline": true,
     "pullRequest": 145,
@@ -44,16 +44,45 @@
     "migrationContentParityVerified": true,
     "migrationFilenameParityVerified": true
   },
+  "observedProductionDrift": {
+    "observedAt": "2026-07-22",
+    "evidenceStatus": "observed_live_not_source_reconciled",
+    "canonicalGitHubMainCommit": "4f95b30413632b4d30a289c7f4b9011f37a37b80",
+    "githubSourceParityVerified": false,
+    "sitesVersion": 18,
+    "sitesCheckoutSourceCommit": null,
+    "sourceFileCount": null,
+    "sourceTreeSha256": null,
+    "sitesSourceParityVerified": false,
+    "productionMigrations": 14,
+    "latestProductionMigration": "20260716035027_momo_preconnection_foundation.sql",
+    "latestProductionMigrationSha256": "9e748a46e050b9b8884a5df46eba6617cac061d075272ab4e233d2c1609fb367",
+    "databaseLedgerObserved": true,
+    "databaseAppliedThroughLatestObserved": true,
+    "candidateParityVerified": false
+  },
   "releaseCandidate": {
     "manifest": "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json",
-    "state": "post_release_cleanup_deployed",
+    "state": "reviewed_locally_unmerged_unpublished_unapplied",
+    "basedOnGitHubMainCommit": "4f95b30413632b4d30a289c7f4b9011f37a37b80",
+    "pullRequest": null,
+    "githubMerged": false,
     "futureMergedGitHubCommit": null,
     "futureSitesVersion": null,
-    "allFourWorkflowsGreen": true,
-    "zeroUnresolvedReviewThreads": true,
-    "databaseChangesRequired": false,
+    "reviewedLocally": true,
+    "localReviewPassed": true,
+    "allFourWorkflowsGreen": null,
+    "zeroUnresolvedReviewThreads": null,
+    "sourceFileCount": 78,
+    "sourceTreeSha256": "abc09f655d3e68f22054ef41e552773eb85047093f986f5afe2421f96ca91c28",
+    "migrationFileCount": 15,
+    "migrationTreeSha256": "9eb4e5e16e2abea40143dad453bfcc2fcca27de6a7907d1f997af998b5c7dc0a",
+    "latestCandidateMigration": "20260722000100_momo_client_media_status_v1.sql",
+    "latestCandidateMigrationSha256": "5cd7444906e5f5184e30cc7594542c71995a372b8143e5097f975d354f0925c7",
+    "databaseChangesRequired": true,
+    "databaseMigrationApplied": false,
     "sitesPublishRequired": true,
-    "sitesCandidatePublished": true
+    "sitesCandidatePublished": false
   },
   "auditAndTeamRelease": {
     "releaseState": "verified_reconciliation_cleanup_deployed",
@@ -82,7 +111,8 @@
     "auditV3ProductionSaveTransactionVerified": false,
     "hostedReauthenticationVerified": false,
     "oldSessionRevocationVerified": false,
-    "momoClientIdentityProvisioned": false,
+    "momoDevelopmentProxyClientIdentityProvisioned": true,
+    "momoRealOwnerClientIdentityProvisioned": false,
     "ownerConfirmedBusinessTruthVerified": false,
     "permissionedMediaVerified": false,
     "aiWebResearchEnabled": false,
@@ -113,7 +143,9 @@
     "20260713212046_restaurant_audit_generation_v2.sql",
     "20260713222721_upgrade_restaurant_audit_engine_v3_partial_scoring.sql",
     "20260714022859_reconcile_audit_v3_and_function_search_paths.sql",
-    "20260714022911_ai_budget_and_momo_manual_pilot_contract.sql"
+    "20260714022911_ai_budget_and_momo_manual_pilot_contract.sql",
+    "20260716035027_momo_preconnection_foundation.sql",
+    "20260722000100_momo_client_media_status_v1.sql"
   ],
   "reusableEvidence": [
     "Momo-only tenancy, role matrix, RLS, and safe-empty client boundary",
@@ -123,7 +155,9 @@
     "Thirteen applied production migrations, including exact migration 13 20260714022911 with SHA-256 ebc2ea499a24b79da1baaffa02423488b1a28a95cb75d4c0d5c002c7c585948d",
     "PR #149 merge commit 9749b68ce2cfc383deeae6aa63c413019ef61385 finalized exact Sites and Supabase migration filename/content parity without applying a database change",
     "Verified Sites version 15 checkout e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0 with 55-file source tree ba06cd39ab7782987a6504678e4a3533a9943d078ba5dd9f93dbe8eeb0c5178f and both custom domains active with SSL healthy",
-    "PR #149 archived legacy Vite from active development and deployed stable readiness evidence without enabling any activation path"
+    "PR #149 archived legacy Vite from active development and deployed stable readiness evidence without enabling any activation path",
+    "Observed live drift on 2026-07-22 is Sites version 18 plus 14 applied migrations; no Sites checkout commit or live source hash was available, so neither is asserted",
+    "The local 78-file Sites tree abc09f655d3e68f22054ef41e552773eb85047093f986f5afe2421f96ca91c28 and 15-migration tree 9eb4e5e16e2abea40143dad453bfcc2fcca27de6a7907d1f997af998b5c7dc0a are reviewed candidate evidence only, not a merge, publication, or database apply"
   ],
   "fullReviewTriggers": [
     "authentication, sessions, identity allowlist, role or membership authorization",
@@ -150,6 +184,8 @@
         "supabase/migrations/20260713222721_upgrade_restaurant_audit_engine_v3_partial_scoring.sql",
         "supabase/migrations/20260714022859_reconcile_audit_v3_and_function_search_paths.sql",
         "supabase/migrations/20260714022911_ai_budget_and_momo_manual_pilot_contract.sql",
+        "supabase/migrations/20260716035027_momo_preconnection_foundation.sql",
+        "supabase/migrations/20260722000100_momo_client_media_status_v1.sql",
         "supabase/tests/momo_production_tenant_rls_hardening.sql",
         "supabase/tests/momo_full_operating_system_v1.sql",
         "supabase/tests/momo_zero_cost_operating_rehearsal_v1.sql",
@@ -157,10 +193,11 @@
         "supabase/tests/restaurant_audit_generation_v2.sql",
         "supabase/tests/production_reconciliation_hardening.sql",
         "supabase/tests/legacy_policy_cleanup_coexistence.sql",
+        "supabase/tests/momo_client_media_status_v1.sql",
         "scripts/src/check-supabase-migration-ledger.ts",
         ".github/workflows/supabase-verify.yml"
       ],
-      "sha256": "f3a51ee332101c32f0e5de6794fc6b842e45ed455292537aa5b7b48caa83e96c"
+      "sha256": "da99cdb9b4bd1f5950cbde57b61b48ab5a7bee0b2244165bfbb2dcfccc2e237f"
     },
     "auth_access": {
       "review": "full-on-change",
@@ -168,11 +205,15 @@
         "artifacts/veroxa-sites/app/veroxa-supabase-server.ts",
         "artifacts/veroxa-sites/app/veroxa-supabase.ts",
         "artifacts/veroxa-sites/app/veroxa-password.mjs",
+        "artifacts/veroxa-sites/app/account-security.tsx",
+        "artifacts/veroxa-sites/app/account/security/page.tsx",
+        "artifacts/veroxa-sites/app/client/[[...slug]]/page.tsx",
+        "artifacts/veroxa-sites/app/momo-client-data.ts",
         "artifacts/veroxa-sites/app/auth/callback/route.ts",
         "artifacts/veroxa-sites/app/[...slug]/page.tsx",
         "artifacts/veroxa-sites/proxy.ts"
       ],
-      "sha256": "3a100a84a5893fe636e8192c2e1444dd72f894a486f837970e9823a4aa3f8d21"
+      "sha256": "ccad707e1ca97f7bed764a68d1909c59f5ab886afc050cf6147639576b0d7070"
     },
     "audit_runtime": {
       "review": "full-on-change",
@@ -187,7 +228,7 @@
         "scripts/src/check-audit-intake-adapter-contracts.ts",
         "scripts/src/check-restaurant-audit-center-v1.ts"
       ],
-      "sha256": "e1fdb793e3bc6254c5f7c3710393ccbc485075207ace2d6da4a227207f746b96"
+      "sha256": "bc515f1837a209699d0f25ce9f9950d454a62c5f5d91b5b2af7b6d5782b0f28c"
     },
     "delivery": {
       "review": "full-on-change",
@@ -213,7 +254,7 @@
         ".github/workflows/supabase-verify.yml",
         ".github/workflows/veroxa-verify.yml"
       ],
-      "sha256": "78236bd76ce8e4309874d8bcfe5ec4bb51729685bc94e4f3004a0e4790be50ad"
+      "sha256": "6379c9146d387dd8eabfcd6fbf179d498a4278781f3c1be23fa673b97e28d685"
     },
     "product_scope": {
       "review": "full-on-change",
@@ -231,7 +272,7 @@
         "AGENTS.md",
         "artifacts/veroxa/docs/RR_CHECKPOINT.md"
       ],
-      "sha256": "0f6cec76a87a85cf5e25f51f636f00aa89f951552b8507f763ec71208f6169b5"
+      "sha256": "dd4d05a4f8c0a4414e6bf5f418555a77fbac5932a441d48cc7898e635b2deddc"
     },
     "momo_readiness_tracking": {
       "review": "evidence-delta-on-change",
@@ -240,17 +281,19 @@
         "artifacts/veroxa-sites/app/momo-readiness-types.ts",
         "scripts/src/check-momo-house-readiness-tracking.ts"
       ],
-      "sha256": "274ac0dac48015515fca74a013a0fa1af1e7ff5e033e84020f8dea2639aa5c0f"
+      "sha256": "1c472a49d67b4eaf427129d2dc8a2369cb229cb51a19afb55cb5570e399a50f6"
     },
     "presentation_surfaces": {
       "review": "delta-unless-boundary-crossed",
       "files": [
         "artifacts/veroxa-sites/app/page.tsx",
         "artifacts/veroxa-sites/app/globals.css",
+        "artifacts/veroxa-sites/app/momo-client-portal.tsx",
+        "artifacts/veroxa-sites/app/momo-team-preconnection-center.tsx",
         "artifacts/veroxa-sites/tests/rendered-html.test.mjs",
         "artifacts/veroxa/src/pages/free-audit.tsx"
       ],
-      "sha256": "d962f4a20a1a6caa5a1dba23cb8eec068438624f55059f3e60e4b3baa5232e76"
+      "sha256": "8b081ade59319b2abdf953e8398e8d5d2ff7845f43b321bb95149dc5d88c23f2"
     },
     "momo_operations_contract": {
       "review": "full-on-change",
@@ -259,12 +302,28 @@
         "artifacts/veroxa/src/domain/momoOperationsV1/providerAdapters.ts",
         "artifacts/veroxa/src/domain/momoOperationsV1/readiness.ts",
         "artifacts/veroxa-sites/app/momo-data.ts",
+        "artifacts/veroxa-sites/app/momo-ai-automation-rehearsal.ts",
+        "artifacts/veroxa-sites/app/momo-client-data.ts",
+        "artifacts/veroxa-sites/app/momo-client-portal.tsx",
+        "artifacts/veroxa-sites/app/momo-evidence-boundary.ts",
+        "artifacts/veroxa-sites/app/momo-growth-evidence.ts",
+        "artifacts/veroxa-sites/app/momo-image-renderer.ts",
         "artifacts/veroxa-sites/app/momo-operating-center.tsx",
         "artifacts/veroxa-sites/app/momo-manual-content-cycle.ts",
+        "artifacts/veroxa-sites/app/momo-media-guidance.ts",
+        "artifacts/veroxa-sites/app/momo-media-workflow.ts",
+        "artifacts/veroxa-sites/app/momo-metrics-rehearsal.ts",
         "artifacts/veroxa-sites/app/momo-operating-gates.ts",
+        "artifacts/veroxa-sites/app/momo-preconnection-readiness.ts",
+        "artifacts/veroxa-sites/app/momo-publication-rehearsal.ts",
+        "artifacts/veroxa-sites/app/momo-seo-workbench.ts",
+        "artifacts/veroxa-sites/app/momo-team-preconnection-center.tsx",
+        "artifacts/veroxa-sites/app/momo-team-preconnection-data.ts",
         "artifacts/veroxa-sites/tests/momo-manual-content-cycle.test.mjs",
         "artifacts/veroxa-sites/tests/momo-operating-gates.test.mjs",
         "artifacts/veroxa-sites/tests/momo-client-snapshot-hydration.test.mjs",
+        "artifacts/veroxa-sites/tests/momo-media-guidance.test.mjs",
+        "artifacts/veroxa-sites/tests/momo-preconnection-systems.test.mjs",
         "scripts/src/approved-team-identity.ts",
         "scripts/src/provision-approved-team-identity.ts",
         "scripts/src/smoke-approved-team-auth.ts",
@@ -279,7 +338,7 @@
         "package.json",
         "pnpm-lock.yaml"
       ],
-      "sha256": "6b1d68dcf24eca583e9ddcd6778bc14f3e32a4cb92485a0968ffde517ac19451"
+      "sha256": "9460320513a3199d235d495ed362209418ec9ca3299b801a77a1c57e40a9302b"
     }
   },
   "activationGates": [
