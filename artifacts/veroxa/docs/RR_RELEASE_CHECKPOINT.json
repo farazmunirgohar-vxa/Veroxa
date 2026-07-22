@@ -266,6 +266,7 @@
         "artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md",
         "artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md",
         "artifacts/veroxa/docs/CURRENT_BUILD_STATUS.md",
+        "artifacts/veroxa/docs/MOMO_MEDIA_V19_LIVE_CLOSEOUT.json",
         "artifacts/veroxa/docs/README_CURRENT_STATE.md",
         "artifacts/veroxa/docs/PRE_BUILD_STABILITY_CHECKLIST.md",
         "artifacts/veroxa/docs/CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md",
@@ -273,7 +274,7 @@
         "AGENTS.md",
         "artifacts/veroxa/docs/RR_CHECKPOINT.md"
       ],
-      "sha256": "dd4d05a4f8c0a4414e6bf5f418555a77fbac5932a441d48cc7898e635b2deddc"
+      "sha256": "6f66411f1fd5ac4e292632fff4d62e7a50e37169a54415e42edf574823c31aba"
     },
     "momo_readiness_tracking": {
       "review": "evidence-delta-on-change",

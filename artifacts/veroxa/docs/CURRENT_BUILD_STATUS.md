@@ -1,4 +1,14 @@
-## 2026-07-22 — Momo access/media usability candidate; reviewed locally, not released
+## 2026-07-22 — PR #151 / Sites v19 Momo media foundation deployed
+
+- **GitHub:** PR #151 passed CI, Sites Verify, Veroxa Verify, and Supabase Verify at exact reviewed head `e5c40c02a79df91f424cd51a51e9f1c7e1b7147a`, with 19/19 database tests, database lint, and zero unresolved review threads. It merged to `main` at `bcd9b9da1796e72c0b9b546e9944a4e7e419c1b4`.
+- **Sites:** version 19 deployed successfully from checkout commit `5b7884983e2891cb8f55aef3d9553e981853be23`. `veroxasystems.com` and `www.veroxasystems.com` are active with active SSL; the first 30-minute error-log check returned zero Worker errors.
+- **Supabase:** migration `momo_client_media_status_v1` is applied as remote ledger version `20260722210026`; production now has 15 migrations. Live checks verified forced RLS on all 15 hardened tables, zero anon/service-role direct table grants, zero authenticated direct mutation grants, revoked legacy service-role readiness execution, hardened Client RPCs, and the current rendition storage policy.
+- **Product:** the shared login race repair and task-first `Upload -> Review -> Improve -> Ready` flow are live. The newest real upload is the working object, prerequisites are explicit, Team must inspect before approval, consent invalidates after material changes, and Ready is derived from current rights/review/rendition/readback evidence.
+- **Live Momo evidence:** iCloud Client and Gmail Team identities are active and password-ready. One real upload and one current confirmed rights record exist; Team-approved reviews and ready private owner renditions remain zero. This is the correct next-step state, not a failure.
+- **Boundaries:** zero providers are connected; runtime AI and all external writes remain locked; Google/social remain disconnected; nothing was published; verified spend remains USD $0 of the authorized one-time USD $20 ceiling.
+- **Readiness:** Momo remains **No-Go** until Faraz completes the real Client/Team browser rehearsal and the remaining owner, recovery, reporting, and operating-loop evidence. `MOMO_MEDIA_V19_LIVE_CLOSEOUT.json` is the machine-readable live closeout.
+
+## 2026-07-22 — Momo access/media usability candidate (historical pre-release checkpoint)
 
 - **Observed production:** ChatGPT Sites version 18 is live and Supabase has 14 applied migrations. The verified PR #149 / Sites v15 checkpoint below is retained as historical release lineage, not current live truth.
 - **Identity evidence:** `faraz.munir.gohar@icloud.com` is the active Momo Client identity and Faraz's approved Gmail identity is the separate active Team identity. Password login works for both roles.

@@ -2,7 +2,17 @@
 
 Status: highest-level current source-of-truth index. Read this file before relying on older Veroxa documents.
 
-## 2026-07-22 — current live-state and local-candidate override
+## 2026-07-22 — PR #151 / Sites v19 live override
+
+- `MOMO_MEDIA_V19_LIVE_CLOSEOUT.json` is the current machine-readable release closeout. It supersedes the pre-release candidate state for live-status questions while preserving that earlier evidence as history.
+- PR #151 passed all four exact-head workflows with 19/19 database tests and zero unresolved review threads, then merged at `bcd9b9da1796e72c0b9b546e9944a4e7e419c1b4`.
+- Sites version 19 is live from `5b7884983e2891cb8f55aef3d9553e981853be23`; both custom domains and SSL are active, and the initial post-deploy Worker error check found zero errors.
+- Supabase has 15 applied migrations. Migration 15's live RLS, grant, RPC, privileged-function, and storage-policy checks all passed.
+- iCloud Client and Gmail Team remain ready. One real upload and one current confirmed rights record exist; approved Team review and Ready rendition counts remain zero, so the next truthful test is `Review -> Improve -> Ready -> Client readback`.
+- Google/social, providers, runtime AI, and all external writes remain disconnected or locked. Nothing was published and spend remains USD $0 of USD $20.
+- Momo remains **No-Go** pending the real browser and operating evidence; a green technical deployment does not manufacture readiness.
+
+## 2026-07-22 — live-state and local-candidate override (historical pre-release checkpoint)
 
 - `VEROXA_CURRENT_MILESTONE.md`, `CURRENT_BUILD_STATUS.md`, and `VEROXA_LOCKED_OPERATING_MEMORY.md` contain the current July 22 two-lane truth. Read their July 22 sections before any lower historical checkpoint.
 - Observed production is Sites version 18 with 14 applied Supabase migrations. The iCloud identity is the active Momo Client, the approved Gmail identity is the separate active Team member, password login works for both, and one real Momo image upload exists.

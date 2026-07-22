@@ -2,7 +2,16 @@
 
 Status: Short index for Faraz, Codex, and future ChatGPT/Codex sessions.
 
-## 2026-07-14 — current verified PR #149 / Sites v15 state
+## 2026-07-22 — current PR #151 / Sites v19 state
+
+- Start with `MOMO_MEDIA_V19_LIVE_CLOSEOUT.json`, then `VEROXA_CURRENT_MILESTONE.md`, `CURRENT_BUILD_STATUS.md`, `ACTIVE_DOCS_INDEX.md`, and `VEROXA_LOCKED_OPERATING_MEMORY.md`.
+- PR #151 passed all four exact-head workflows and merged at `bcd9b9da1796e72c0b9b546e9944a4e7e419c1b4`.
+- Sites version 19 is live from checkout `5b7884983e2891cb8f55aef3d9553e981853be23`; `veroxasystems.com` and `www.veroxasystems.com` plus SSL are active, with zero errors in the initial 30-minute Worker-log check.
+- Supabase has 15 applied migrations; migration 15's live RLS, grants, Client RPC, privileged-function, and storage-policy checks passed.
+- iCloud Client and Gmail Team are ready. One upload and one current rights record exist; approved review and Ready rendition counts remain zero until Faraz runs the real Team workflow.
+- Google/social, providers, live AI, and external writes remain locked. Nothing was published; spend is USD $0 of USD $20; Momo remains No-Go.
+
+## 2026-07-14 — verified PR #149 / Sites v15 state (historical)
 
 - Start with `VEROXA_CURRENT_MILESTONE.md`, `ACTIVE_DOCS_INDEX.md`, `VEROXA_LOCKED_OPERATING_MEMORY.md`, and the machine release records.
 - PR #149 passed all four required workflows with zero unresolved review threads at reviewed head `0d2c6e47fbfe1c44a2f0ff19fbb158001ed9365a` and merged at `9749b68ce2cfc383deeae6aa63c413019ef61385`.

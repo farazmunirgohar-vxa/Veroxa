@@ -15,7 +15,17 @@ Also read:
 - `VEROXA_DEPLOYMENT_MANIFEST.json`
 - `../veroxa-sites/app/momo-readiness-tracker.json`
 
-## 2026-07-22 — current live truth and reviewed local candidate
+## 2026-07-22 — current PR #151 / Sites v19 live truth
+
+- PR #151 reviewed head `e5c40c02a79df91f424cd51a51e9f1c7e1b7147a` passed all four workflows with zero unresolved review threads and merged at `bcd9b9da1796e72c0b9b546e9944a4e7e419c1b4`.
+- Sites version 19 is live from checkout `5b7884983e2891cb8f55aef3d9553e981853be23`; both Veroxa custom domains and SSL are active, and the post-deploy Worker error check was empty.
+- Supabase now has 15 applied migrations. Migration 15 is live and verified for forced RLS, narrow table grants, revoked legacy privileged readiness execution, restaurant-scoped Client rendition readback, and the current storage policy.
+- The iCloud Client and Gmail Team identities remain active. Momo has one real upload and one current confirmed rights record, but zero approved Team reviews and zero Ready private owner renditions. The next milestone action is the real browser rehearsal: Team review, image improvement, Ready approval, then Client readback.
+- External providers, AI live calls, Google/social connections, scheduling, and publishing remain locked. Spend is USD $0 of the authorized one-time USD $20 ceiling.
+- Momo remains evidence-based **No-Go** after the technical release. Deployment proves the foundation, not real-owner approval, browser usability, recovery, reporting, or complete operating readiness.
+- Read `MOMO_MEDIA_V19_LIVE_CLOSEOUT.json` for the exact machine-readable release evidence. The pre-release deployment manifest remains immutable candidate evidence and is not the latest live-status authority.
+
+## 2026-07-22 — reviewed local candidate (historical pre-release checkpoint)
 
 - The latest observed production application is ChatGPT Sites version 18. Production Supabase has 14 applied migrations. This is live observation, not a claim that GitHub, Sites, and Supabase are currently reconciled.
 - `faraz.munir.gohar@icloud.com` is provisioned as the active Momo Client identity, and Faraz's approved Gmail identity remains the separate active Team identity. Password login works for both roles.
