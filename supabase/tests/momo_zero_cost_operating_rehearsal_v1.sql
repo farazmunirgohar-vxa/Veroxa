@@ -665,15 +665,15 @@ begin
     'Owner withdraws Facebook presence authority.');
 
   execute 'reset role';
+  if veroxa_private.provider_presence_authority_current_v1(
+      v_restaurant_id, 'meta', 'facebook_publish') then
+    raise exception 'Pending owner presence withdrawal did not freeze provider authority';
+  end if;
   perform set_config('request.jwt.claims', jsonb_build_object(
     'sub', v_team_user_id::text, 'role', 'authenticated')::text, true);
   execute 'set local role authenticated';
   select * into v_preflight from public.veroxa_provider_preflight_v1(
     v_restaurant_id, 'meta', 'facebook_publish');
-  if veroxa_private.provider_presence_authority_current_v1(
-      v_restaurant_id, 'meta', 'facebook_publish') then
-    raise exception 'Pending owner presence withdrawal did not freeze preflight';
-  end if;
   if v_preflight.allowed or not (v_preflight.blockers @>
       '[{"code":"external_runtime_locked"}]'::jsonb) then
     raise exception 'Credential-free preflight did not remain universally locked';
