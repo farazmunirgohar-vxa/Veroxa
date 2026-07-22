@@ -23,7 +23,7 @@ Also read:
 - The iCloud Client and Gmail Team identities remain active. Momo has one real upload and one current confirmed rights record, but zero approved Team reviews and zero Ready private owner renditions. The next milestone action is the real browser rehearsal: Team review, image improvement, Ready approval, then Client readback.
 - External providers, AI live calls, Google/social connections, scheduling, and publishing remain locked. Spend is USD $0 of the authorized one-time USD $20 ceiling.
 - Momo remains evidence-based **No-Go** after the technical release. Deployment proves the foundation, not real-owner approval, browser usability, recovery, reporting, or complete operating readiness.
-- Read `MOMO_MEDIA_V19_LIVE_CLOSEOUT.json` for the exact machine-readable release evidence. The pre-release deployment manifest remains immutable candidate evidence and is not the latest live-status authority.
+- Read `MOMO_MEDIA_V19_LIVE_CLOSEOUT.json` for the exact version-19 release evidence. The deployment manifest and RR checkpoint now preserve that verified baseline while separately fingerprinting the narrow Sites v20 readiness-copy candidate; neither candidate evidence nor a future version number may be treated as live before green merge and checkpoint verification.
 
 ## 2026-07-22 — reviewed local candidate (historical pre-release checkpoint)
 

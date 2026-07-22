@@ -1,6 +1,6 @@
 {
   "schemaVersion": 6,
-  "checkpoint": "momo-media-usability-local-candidate-2026-07-22",
+  "checkpoint": "momo-readiness-copy-sites-v20-candidate-2026-07-22",
   "status": "local_candidate_reviewed_unmerged_unpublished_unapplied",
   "reviewedAt": "2026-07-22",
   "deployedOperationalRelease": {
@@ -44,6 +44,25 @@
     "migrationContentParityVerified": true,
     "migrationFilenameParityVerified": true
   },
+  "currentVerifiedRelease": {
+    "pullRequest": 151,
+    "reviewedHead": "e5c40c02a79df91f424cd51a51e9f1c7e1b7147a",
+    "mergedOperationalCommit": "bcd9b9da1796e72c0b9b546e9944a4e7e419c1b4",
+    "sitesCheckoutSourceCommit": "5b7884983e2891cb8f55aef3d9553e981853be23",
+    "sitesVersion": 19,
+    "sourceFileCount": 79,
+    "sourceTreeSha256": "6223dbcb6e7644615a3fc7bca1d86a89ee4167c37ca12ddf9a92918ce321a9ad",
+    "productionMigrations": 15,
+    "latestProductionMigration": "20260722000100_momo_client_media_status_v1.sql",
+    "latestProductionMigrationSha256": "5cd7444906e5f5184e30cc7594542c71995a372b8143e5097f975d354f0925c7",
+    "databaseApplied": true,
+    "databaseVerified": true,
+    "sitesProductionVerified": true,
+    "customDomainsVerified": true,
+    "sitesSourceParityVerified": true,
+    "migrationContentParityVerified": true,
+    "migrationFilenameParityVerified": true
+  },
   "observedProductionDrift": {
     "observedAt": "2026-07-22",
     "evidenceStatus": "observed_live_not_source_reconciled",
@@ -64,8 +83,8 @@
   "releaseCandidate": {
     "manifest": "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json",
     "state": "reviewed_locally_unmerged_unpublished_unapplied",
-    "basedOnGitHubMainCommit": "4f95b30413632b4d30a289c7f4b9011f37a37b80",
-    "pullRequest": null,
+    "basedOnGitHubMainCommit": "bcd9b9da1796e72c0b9b546e9944a4e7e419c1b4",
+    "pullRequest": 152,
     "githubMerged": false,
     "futureMergedGitHubCommit": null,
     "futureSitesVersion": null,
@@ -74,12 +93,12 @@
     "allFourWorkflowsGreen": null,
     "zeroUnresolvedReviewThreads": null,
     "sourceFileCount": 79,
-    "sourceTreeSha256": "6223dbcb6e7644615a3fc7bca1d86a89ee4167c37ca12ddf9a92918ce321a9ad",
+    "sourceTreeSha256": "5ae5da11de0ae202d33f31dea08ddd337b0b5323aa857d543f3c259f8662a4c2",
     "migrationFileCount": 15,
     "migrationTreeSha256": "9eb4e5e16e2abea40143dad453bfcc2fcca27de6a7907d1f997af998b5c7dc0a",
     "latestCandidateMigration": "20260722000100_momo_client_media_status_v1.sql",
     "latestCandidateMigrationSha256": "5cd7444906e5f5184e30cc7594542c71995a372b8143e5097f975d354f0925c7",
-    "databaseChangesRequired": true,
+    "databaseChangesRequired": false,
     "databaseMigrationApplied": false,
     "sitesPublishRequired": true,
     "sitesCandidatePublished": false
@@ -197,7 +216,7 @@
         "scripts/src/check-supabase-migration-ledger.ts",
         ".github/workflows/supabase-verify.yml"
       ],
-      "sha256": "3036e57369c80b6ba341040f3e2ed6d91b38d2223b9f2c87aabca1b196ae998e"
+      "sha256": "945a809dcedd6ef2f7639928be5f35675a8d27187cc1575bad330c2f83ec9682"
     },
     "auth_access": {
       "review": "full-on-change",
@@ -255,7 +274,7 @@
         ".github/workflows/supabase-verify.yml",
         ".github/workflows/veroxa-verify.yml"
       ],
-      "sha256": "c7addbda252e8bc0524241cbddc81446c4e50ab22529eb99d733c64eb5e4f7bf"
+      "sha256": "51bd0d46bf8a43fb5de0f20df1997fa4ee2f8b3c4ea310def00aa0e111ba22aa"
     },
     "product_scope": {
       "review": "full-on-change",
@@ -274,7 +293,7 @@
         "AGENTS.md",
         "artifacts/veroxa/docs/RR_CHECKPOINT.md"
       ],
-      "sha256": "6f66411f1fd5ac4e292632fff4d62e7a50e37169a54415e42edf574823c31aba"
+      "sha256": "ad38ead85fd5c819dfcc994f8c316b6c79128df40e284624b06bfed90008166a"
     },
     "momo_readiness_tracking": {
       "review": "evidence-delta-on-change",
@@ -283,7 +302,7 @@
         "artifacts/veroxa-sites/app/momo-readiness-types.ts",
         "scripts/src/check-momo-house-readiness-tracking.ts"
       ],
-      "sha256": "1c472a49d67b4eaf427129d2dc8a2369cb229cb51a19afb55cb5570e399a50f6"
+      "sha256": "a4824b7ad256f1ca08801a45db9addd39d198dde257454fdb6afc488c6e1c806"
     },
     "presentation_surfaces": {
       "review": "delta-unless-boundary-crossed",

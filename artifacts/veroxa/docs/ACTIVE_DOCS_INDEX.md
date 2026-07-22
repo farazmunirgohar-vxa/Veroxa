@@ -2,6 +2,12 @@
 
 Status: highest-level current source-of-truth index. Read this file before relying on older Veroxa documents.
 
+## 2026-07-22 — Sites v20 readiness-copy reconciliation candidate
+
+- PR #151 / Sites v19 / 15 migrations remains the verified live baseline. A narrow follow-up candidate corrects stale migration-availability and v15-current wording without changing database, identity, media, provider, publishing, or spending behavior.
+- The candidate is Sites-only because `momo-readiness-tracker.json` is bundled on protected Team routes. It must pass exact-head review and all release workflows, merge, and receive a separate Sites checkpoint before it can replace version 19.
+- Momo remains **No-Go**. This correction updates release truth; it does not create a Team rehearsal result, owner authority, an approved review, a Ready rendition, a provider connection, or a public action.
+
 ## 2026-07-22 — PR #151 / Sites v19 live override
 
 - `MOMO_MEDIA_V19_LIVE_CLOSEOUT.json` is the current machine-readable release closeout. It supersedes the pre-release candidate state for live-status questions while preserving that earlier evidence as history.

@@ -11,6 +11,7 @@
 
 ### New durable lessons
 
+- **Bundled truth follows deployment discipline even when not rendered:** a protected server-bundled readiness record is part of the deployable source tree even if the current component discards its prop. Correcting it requires a reviewed source fingerprint and GitHub/Sites parity; do not hide deployable drift behind the phrase “documentation-only.”
 - **Test the latest contract, not historical wording:** when a later migration intentionally replaces an RPC response, keep testing the safety invariant through the current public contract and test narrower private helpers only from a privileged rollback-only fixture context.
 - **Partial success must stay truthful:** if a password changes but refresh-session revocation fails or throws, report the password change and the incomplete revocation separately; never collapse it into either full success or full failure.
 - **Release truth closes after production proof:** pre-release fingerprints remain useful historical evidence, but live merge, migration, deployment, domain, error-log, identity, and operational-state facts require a separate post-release closeout.

@@ -65,14 +65,14 @@ Current strategy markers:
 - Active stack: **ChatGPT-managed GitHub + Codex + ChatGPT Sites**. **Vercel is retired** and is not a deployment or rollback path.
 - **GitHub `main` is canonical**; GitHub merge and Sites deployment are separate actions.
 - `Build it` means build/test/PR/CI/RR and green merge; `Build it, but hold for review` stops at the green PR; `Build and deploy it` also syncs the exact merged source to Sites, checkpoints, deploys, and verifies the live domains.
-- Sites is public; `veroxasystems.com` and `www.veroxasystems.com` were verified with the Sites version 15 deployment on 2026-07-14.
-- Current verified operational foundation: PR #149 reviewed head `0d2c6e47fbfe1c44a2f0ff19fbb158001ed9365a`, merged commit `9749b68ce2cfc383deeae6aa63c413019ef61385`, Sites version 15 checkout `e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0`, 55-file source SHA-256 `ba06cd39ab7782987a6504678e4a3533a9943d078ba5dd9f93dbe8eeb0c5178f`, and 13 applied migrations with filename/content parity. Public marketing and audit intake are anonymous. Client and Team routes use Supabase sessions plus active profile/membership authorization; Momo Client access, owner-confirmed data, permissioned media, runtime AI, providers, publishing, and activation remain blocked.
+- Sites is public; `veroxasystems.com` and `www.veroxasystems.com` were verified with the Sites version 19 deployment on 2026-07-22.
+- Current verified technical/deployed foundation: PR #151 reviewed head `e5c40c02a79df91f424cd51a51e9f1c7e1b7147a`, merged commit `bcd9b9da1796e72c0b9b546e9944a4e7e419c1b4`, Sites version 19 checkout `5b7884983e2891cb8f55aef3d9553e981853be23`, and 15 applied migrations. Public marketing and audit intake are anonymous. Client and Team routes use Supabase sessions plus active profile/membership authorization; the iCloud Client and Gmail Team identities are ready, with one private upload and one current confirmed rights record. Approved Team reviews and Ready renditions remain zero, and real-owner authority, runtime AI, providers, publishing, and activation remain blocked. Momo remains **No-Go**.
 - **Replit is historical only**.
 - Active roles: **Client and Team**.
 - **Owner/Operator parked**.
 - The legacy Vite `AUTH_MODE = placeholder` implementation is historical/internal and is not deployed or a rollback authority. Sites production authentication is Supabase-backed.
 - Veroxa should be theoretically complete in preview/manual/pre-live mode before paid infrastructure is activated.
-- The Momo production data/auth foundation and standalone Restaurant Audit Center V3 are the current release. Veroxa is still AI-ready but not connected.
+- The Momo production data/auth foundation, task-first private media foundation, and standalone Restaurant Audit Center V3 are the current release. Veroxa is still AI-ready but not connected.
 - Veroxa is integration-ready but not connected.
 - Restaurant Onboarding has a deployed persistence and workflow foundation but still lacks complete owner-confirmed Momo evidence.
 - Active public offer: **Complete Online Presence — $495/month**. `ACTIVE_DOCS_INDEX.md` is the current doc index and pricing source pointer; Starter/Growth/Premium and $295/$995 language are historical/deprecated only.

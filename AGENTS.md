@@ -1,3 +1,12 @@
+## 2026-07-22 — verified PR #151 / Sites v19 production override
+
+- PR #151 passed all four exact-head workflows with zero unresolved review threads at reviewed head `e5c40c02a79df91f424cd51a51e9f1c7e1b7147a` and merged to GitHub `main` at `bcd9b9da1796e72c0b9b546e9944a4e7e419c1b4`.
+- Sites version 19 succeeded from checkout `5b7884983e2891cb8f55aef3d9553e981853be23`; the public site, both custom domains, and SSL were verified, and the initial post-deploy Worker error check returned zero errors.
+- Production Supabase has 15 applied migrations. Migration 15's live RLS, direct-grant, Client-RPC, privileged-function, and storage-policy checks passed.
+- The iCloud account is the active Momo Client development proxy and Gmail is the separate active Team identity. One real private upload and one current confirmed rights record exist; approved Team reviews and Ready renditions remain zero pending the real two-role browser rehearsal.
+- Runtime AI, Google/social, providers, external writes, and publishing remain locked. Nothing was published; verified spend is USD $0 of the authorized one-time USD $20 ceiling. Momo remains evidence-based **No-Go**.
+- `artifacts/veroxa/docs/MOMO_MEDIA_V19_LIVE_CLOSEOUT.json` is the current machine-readable live authority. All lower release-state wording—including PR #149 / Sites v15 and PR #143 / Sites v9 markers—is historical lineage only.
+
 ## 2026-07-14 — verified PR #149 cleanup and Sites v15 deployment override
 
 - PR #149 passed all four required workflows with zero unresolved review threads at reviewed head `0d2c6e47fbfe1c44a2f0ff19fbb158001ed9365a` and merged to GitHub `main` at `9749b68ce2cfc383deeae6aa63c413019ef61385`.
