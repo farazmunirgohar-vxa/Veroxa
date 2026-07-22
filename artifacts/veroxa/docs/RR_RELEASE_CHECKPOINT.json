@@ -339,7 +339,7 @@
         "package.json",
         "pnpm-lock.yaml"
       ],
-      "sha256": "0d9c5cda12dbc66f2440b3923795712a4cdf3639788640205cdca4cb569cc68a"
+      "sha256": "8660c1d20cfbd18685ddd273d0aadb991cc99385cf3f3de8e042b2ede0189673"
     }
   },
   "activationGates": [
