@@ -73,6 +73,26 @@ export type DeploymentManifest = {
     databaseAppliedThroughLatestObserved: boolean;
     candidateParityVerified: boolean;
   };
+  currentVerifiedRelease: {
+    pullRequest: number;
+    reviewedHead: string;
+    githubMainCommit: string;
+    sitesCheckoutCommit: string;
+    sitesVersion: number;
+    sourceFileCount: number;
+    sourceTreeSha256: string;
+    productionMigrationCount: number;
+    latestProductionMigration: string;
+    latestProductionMigrationSha256: string;
+    databaseApplied: boolean;
+    databaseVerified: boolean;
+    sitesPublished: boolean;
+    sitesVerified: boolean;
+    customDomainsVerified: boolean;
+    sitesSourceParityVerified: boolean;
+    migrationContentParityVerified: boolean;
+    migrationFilenameParityVerified: boolean;
+  };
   releaseCandidate: {
     status: string;
     basedOnGitHubMainCommit: string;
@@ -161,11 +181,21 @@ export function assertUnreleasedLocalCandidateManifest(
   if (![REVIEWED_LOCAL_CANDIDATE_STATUS, REFRESHED_LOCAL_CANDIDATE_STATUS].includes(manifest.releaseCandidate.status)) {
     failures.push("releaseCandidate.status must remain an unreleased local-candidate state");
   }
-  if (manifest.releaseCandidate.pullRequest !== null) failures.push("pullRequest must remain null");
+  if (
+    manifest.releaseCandidate.pullRequest !== null &&
+    (!Number.isInteger(manifest.releaseCandidate.pullRequest) ||
+      manifest.releaseCandidate.pullRequest < 1)
+  ) {
+    failures.push("pullRequest must be null before PR creation or a positive known PR number");
+  }
   if (manifest.releaseCandidate.githubMerged) failures.push("githubMerged must remain false");
   if (manifest.releaseCandidate.futureMergedGitHubCommit !== null) failures.push("futureMergedGitHubCommit must remain null");
   if (manifest.releaseCandidate.futureSitesVersion !== null) failures.push("futureSitesVersion must remain null");
-  if (manifest.releaseCandidate.databaseMigrationApplied) failures.push("databaseMigrationApplied must remain false");
+  if (manifest.releaseCandidate.databaseMigrationApplied) {
+    failures.push(
+      "databaseMigrationApplied must remain false for every unreleased candidate, including a no-database-change candidate",
+    );
+  }
   if (manifest.releaseCandidate.sitesPublished) failures.push("sitesPublished must remain false");
   if (manifest.observedProductionDrift.candidateParityVerified) failures.push("candidateParityVerified must remain false");
   if (manifest.source.evidenceScope !== "local_release_candidate" || manifest.source.root !== "artifacts/veroxa-sites") {

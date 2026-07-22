@@ -127,7 +127,7 @@
         "The one-click sequence has not completed successfully against Supabase as an authenticated Team user.",
         "No persisted preconnection pass is claimed."
       ],
-      "nextAction": "Run the Team-only rehearsal once the reviewed migration is available, inspect every result, and keep all external actions disabled."
+      "nextAction": "Run the authenticated Team-only rehearsal against the applied migration, inspect its persisted result, and keep all external actions disabled."
     },
     "owner_authority_and_consent": {
       "label": "Owner authority, consent, and handoff",

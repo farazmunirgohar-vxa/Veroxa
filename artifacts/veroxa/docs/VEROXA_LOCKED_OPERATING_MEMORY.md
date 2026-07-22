@@ -1,4 +1,22 @@
-## 2026-07-22 — locked live/candidate separation and adaptive operating lessons
+## 2026-07-22 — locked PR #151 / Sites v19 production checkpoint
+
+### Verified live truth
+
+- PR #151 passed all four workflows at reviewed head `e5c40c02a79df91f424cd51a51e9f1c7e1b7147a`, including 19/19 database tests and lint, with zero unresolved review threads; it merged at `bcd9b9da1796e72c0b9b546e9944a4e7e419c1b4`.
+- Sites version 19 deployed from checkout `5b7884983e2891cb8f55aef3d9553e981853be23`. Both custom domains and SSL are active, and the first post-deploy error-log check returned zero Worker errors.
+- Supabase has 15 applied migrations. Migration 15's live verification passed: 15 hardened tables force RLS, anon/service-role direct table grants are zero, authenticated direct mutation grants are zero, legacy service-role readiness execution is revoked, Client media RPCs remain actor-checked, and the rendition storage policy is current.
+- iCloud Client and Gmail Team identities are active and password-ready. Momo has one real upload and one current confirmed rights record; approved Team reviews and Ready owner-asset renditions remain zero. That is the intended pre-review state.
+- Zero providers are connected. Runtime AI and all external writes remain locked. Google/social are disconnected, nothing was published, and verified spend is USD $0 of the authorized one-time USD $20 ceiling.
+- Momo remains **No-Go**. The next evidence packet is the real two-role browser rehearsal: Team reviews and improves the image, Team marks it Ready only after current evidence passes, and Client verifies the prepared readback.
+
+### New durable lessons
+
+- **Bundled truth follows deployment discipline even when not rendered:** a protected server-bundled readiness record is part of the deployable source tree even if the current component discards its prop. Correcting it requires a reviewed source fingerprint and GitHub/Sites parity; do not hide deployable drift behind the phrase “documentation-only.”
+- **Test the latest contract, not historical wording:** when a later migration intentionally replaces an RPC response, keep testing the safety invariant through the current public contract and test narrower private helpers only from a privileged rollback-only fixture context.
+- **Partial success must stay truthful:** if a password changes but refresh-session revocation fails or throws, report the password change and the incomplete revocation separately; never collapse it into either full success or full failure.
+- **Release truth closes after production proof:** pre-release fingerprints remain useful historical evidence, but live merge, migration, deployment, domain, error-log, identity, and operational-state facts require a separate post-release closeout.
+
+## 2026-07-22 — locked live/candidate separation and adaptive operating lessons (historical pre-release checkpoint)
 
 ### Current truth
 

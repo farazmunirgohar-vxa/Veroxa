@@ -62,10 +62,30 @@ type Manifest = {
     databaseAppliedThroughLatestObserved: boolean;
     candidateParityVerified: boolean;
   };
+  currentVerifiedRelease: {
+    pullRequest: number;
+    reviewedHead: string;
+    githubMainCommit: string;
+    sitesCheckoutCommit: string;
+    sitesVersion: number;
+    sourceFileCount: number;
+    sourceTreeSha256: string;
+    productionMigrationCount: number;
+    latestProductionMigration: string;
+    latestProductionMigrationSha256: string;
+    databaseApplied: boolean;
+    databaseVerified: boolean;
+    sitesPublished: boolean;
+    sitesVerified: boolean;
+    customDomainsVerified: boolean;
+    sitesSourceParityVerified: boolean;
+    migrationContentParityVerified: boolean;
+    migrationFilenameParityVerified: boolean;
+  };
   releaseCandidate: {
     status: string;
     basedOnGitHubMainCommit: string;
-    pullRequest: null;
+    pullRequest: number | null;
     githubMerged: boolean;
     futureMergedGitHubCommit: null;
     futureSitesVersion: null;
@@ -155,7 +175,7 @@ const verified = {
   latestProductionMigrationSha256:
     "ebc2ea499a24b79da1baaffa02423488b1a28a95cb75d4c0d5c002c7c585948d",
 };
-const live = {
+const historicalDrift = {
   canonicalGitHubMainCommit: "4f95b30413632b4d30a289c7f4b9011f37a37b80",
   sitesVersion: 18,
   productionMigrationCount: 14,
@@ -163,10 +183,24 @@ const live = {
   latestProductionMigrationSha256:
     "9e748a46e050b9b8884a5df46eba6617cac061d075272ab4e233d2c1609fb367",
 };
-const candidate = {
+const currentVerified = {
+  pullRequest: 151,
+  reviewedHead: "e5c40c02a79df91f424cd51a51e9f1c7e1b7147a",
+  githubMainCommit: "bcd9b9da1796e72c0b9b546e9944a4e7e419c1b4",
+  sitesCheckoutCommit: "5b7884983e2891cb8f55aef3d9553e981853be23",
+  sitesVersion: 19,
   sourceFileCount: 79,
   sourceTreeSha256:
     "6223dbcb6e7644615a3fc7bca1d86a89ee4167c37ca12ddf9a92918ce321a9ad",
+  productionMigrationCount: 15,
+  latestProductionMigration: "20260722000100_momo_client_media_status_v1.sql",
+  latestProductionMigrationSha256:
+    "5cd7444906e5f5184e30cc7594542c71995a372b8143e5097f975d354f0925c7",
+};
+const candidate = {
+  sourceFileCount: 79,
+  sourceTreeSha256:
+    "5ae5da11de0ae202d33f31dea08ddd337b0b5323aa857d543f3c259f8662a4c2",
   migrationFileCount: 15,
   migrationTreeSha256:
     "9eb4e5e16e2abea40143dad453bfcc2fcca27de6a7907d1f997af998b5c7dc0a",
@@ -183,7 +217,7 @@ must(
 must(
   manifest.releaseState ===
     "local_candidate_reviewed_unmerged_unpublished_unapplied",
-  "The manifest must identify the local candidate without claiming release.",
+  "The manifest must identify the reviewed local candidate without claiming release.",
 );
 must(
   manifest.canonicalRepository === "farazmunirgohar-vxa/Veroxa" &&
@@ -235,28 +269,58 @@ const observed = manifest.observedProductionDrift;
 must(
   observed.observedAt === "2026-07-22" &&
     observed.evidenceStatus === "observed_live_not_source_reconciled" &&
-    observed.canonicalGitHubMainCommit === live.canonicalGitHubMainCommit &&
+    observed.canonicalGitHubMainCommit ===
+      historicalDrift.canonicalGitHubMainCommit &&
     !observed.githubSourceParityVerified &&
-    observed.sitesVersion === live.sitesVersion &&
+    observed.sitesVersion === historicalDrift.sitesVersion &&
     observed.sitesCheckoutCommit === null &&
     observed.sourceFileCount === null &&
     observed.sourceTreeSha256 === null &&
     !observed.sitesSourceParityVerified &&
-    observed.productionMigrationCount === live.productionMigrationCount &&
-    observed.latestProductionMigration === live.latestProductionMigration &&
+    observed.productionMigrationCount ===
+      historicalDrift.productionMigrationCount &&
+    observed.latestProductionMigration ===
+      historicalDrift.latestProductionMigration &&
     observed.latestProductionMigrationSha256 ===
-      live.latestProductionMigrationSha256 &&
+      historicalDrift.latestProductionMigrationSha256 &&
     observed.databaseLedgerObserved &&
     observed.databaseAppliedThroughLatestObserved &&
     !observed.candidateParityVerified,
-  "Observed Sites v18 / 14-migration drift must remain explicit and must not invent a checkout or source hash.",
+  "Historical Sites v18 / 14-migration drift must remain explicit and must not invent a checkout or source hash.",
+);
+
+const current = manifest.currentVerifiedRelease;
+must(
+  current.pullRequest === currentVerified.pullRequest &&
+    current.reviewedHead === currentVerified.reviewedHead &&
+    current.githubMainCommit === currentVerified.githubMainCommit &&
+    current.sitesCheckoutCommit === currentVerified.sitesCheckoutCommit &&
+    current.sitesVersion === currentVerified.sitesVersion &&
+    current.sourceFileCount === currentVerified.sourceFileCount &&
+    current.sourceTreeSha256 === currentVerified.sourceTreeSha256 &&
+    current.productionMigrationCount ===
+      currentVerified.productionMigrationCount &&
+    current.latestProductionMigration ===
+      currentVerified.latestProductionMigration &&
+    current.latestProductionMigrationSha256 ===
+      currentVerified.latestProductionMigrationSha256 &&
+    current.databaseApplied &&
+    current.databaseVerified &&
+    current.sitesPublished &&
+    current.sitesVerified &&
+    current.customDomainsVerified &&
+    current.sitesSourceParityVerified &&
+    current.migrationContentParityVerified &&
+    current.migrationFilenameParityVerified,
+  "PR #151 / Sites v19 must remain the exact current verified release, including reviewed head, merged main, database apply, domains, and source/migration parity.",
 );
 
 const releaseCandidate = manifest.releaseCandidate;
 must(
   releaseCandidate.status === "reviewed_locally_unmerged_unpublished_unapplied" &&
-    releaseCandidate.basedOnGitHubMainCommit === live.canonicalGitHubMainCommit &&
-    releaseCandidate.pullRequest === null &&
+    releaseCandidate.basedOnGitHubMainCommit ===
+      currentVerified.githubMainCommit &&
+    releaseCandidate.pullRequest === 152 &&
     !releaseCandidate.githubMerged &&
     releaseCandidate.futureMergedGitHubCommit === null &&
     releaseCandidate.futureSitesVersion === null &&
@@ -268,11 +332,11 @@ must(
     releaseCandidate.latestCandidateMigration === candidate.latestMigration &&
     releaseCandidate.latestCandidateMigrationSha256 ===
       candidate.latestMigrationSha256 &&
-    releaseCandidate.databaseChangesRequired &&
+    !releaseCandidate.databaseChangesRequired &&
     !releaseCandidate.databaseMigrationApplied &&
     releaseCandidate.sitesPublishRequired &&
     !releaseCandidate.sitesPublished,
-  "The candidate must remain exact, locally reviewed, unmerged, unpublished, and unapplied.",
+  "The new candidate must remain exact, based on current main, locally reviewed, no-database-change, unmerged, unpublished, and unapplied.",
 );
 
 must(
@@ -330,7 +394,10 @@ must(
 );
 for (const [filename, sha256] of Object.entries({
   [verified.latestProductionMigration]: verified.latestProductionMigrationSha256,
-  [live.latestProductionMigration]: live.latestProductionMigrationSha256,
+  [historicalDrift.latestProductionMigration]:
+    historicalDrift.latestProductionMigrationSha256,
+  [currentVerified.latestProductionMigration]:
+    currentVerified.latestProductionMigrationSha256,
   [candidate.latestMigration]: candidate.latestMigrationSha256,
 })) {
   const path = resolve(migrationRoot, filename);
@@ -396,5 +463,5 @@ if (failures.length) {
 }
 
 console.log(
-  `Veroxa release evidence passed: historical PR #149 / Sites v15 preserved; observed Sites v18 + 14 migrations remain drift; local ${sourceTree.fileCount}-file / ${migrationTree.fileCount}-migration candidate is unmerged, unpublished, and unapplied.`,
+  `Veroxa release evidence passed: historical PR #149 / Sites v15 and observed Sites v18 drift preserved; PR #151 / Sites v19 is the current verified release; local ${sourceTree.fileCount}-file / ${migrationTree.fileCount}-migration no-database-change candidate is reviewed, unmerged, unpublished, and unapplied.`,
 );
