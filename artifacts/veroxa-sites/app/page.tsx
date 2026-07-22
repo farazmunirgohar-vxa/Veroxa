@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 import { RestaurantAuditCenter } from "./audit-center";
 import { MomoOperatingCenter } from "./momo-operating-center";
@@ -264,10 +265,10 @@ export function VeroxaApp({
   return (
     <main className="app-shell" aria-label={isTeam ? "Secure Team route · Momo-only production boundary" : "Secure Momo client route"}>
       <aside className="sidebar">
-        <button className="brand" onClick={() => changeView(isTeam ? "team" : "home")} aria-label="Veroxa home">
+        <Link className="brand" href={isTeam ? "/team/momo" : "/client/dashboard"} aria-label="Veroxa home">
           <span className="brand-mark"><span>V</span></span>
           <span className="brand-copy"><strong>VEROXA</strong><small>GROWTH SYSTEMS</small></span>
-        </button>
+        </Link>
 
         <nav className={isTeam ? "main-nav team-main-nav" : "main-nav"} aria-label="Main navigation">
           <p className="nav-label">{isTeam ? "TEAM FARAZ" : "CLIENT PORTAL"}</p>
@@ -285,19 +286,19 @@ export function VeroxaApp({
             </button>
             <div id="momo-workspace-navigation" className="team-workspace-children" aria-label="Momo’s House San Antonio sections" hidden={!momoFolderExpanded}>
               {momoWorkspaceNav.map((item) => (
-                <button key={item.id} className={view === item.id ? "nav-item active" : "nav-item"} onClick={() => changeView(item.id)} aria-current={view === item.id ? "page" : undefined}>
+                <Link key={item.id} href={item.path} className={view === item.id ? "nav-item active" : "nav-item"} aria-current={view === item.id ? "page" : undefined}>
                   <Icon name={item.icon} size={17}/><span>{item.label}</span>
-                </button>
+                </Link>
               ))}
             </div>
             <p className="nav-label team-tools-label">TEAM TOOL</p>
-            <button className={view === auditCenterNav.id ? "nav-item active team-audit-link" : "nav-item team-audit-link"} onClick={() => changeView(auditCenterNav.id)} aria-current={view === auditCenterNav.id ? "page" : undefined}>
+            <Link href={auditCenterNav.path} className={view === auditCenterNav.id ? "nav-item active team-audit-link" : "nav-item team-audit-link"} aria-current={view === auditCenterNav.id ? "page" : undefined}>
               <Icon name={auditCenterNav.icon} size={19}/><span>{auditCenterNav.label}</span>
-            </button>
+            </Link>
           </> : activeNav.map((item) => (
-            <button key={item.id} className={view === item.id ? "nav-item active" : "nav-item"} onClick={() => changeView(item.id)} aria-current={view === item.id ? "page" : undefined}>
+            <Link key={item.id} href={item.path} className={view === item.id ? "nav-item active" : "nav-item"} aria-current={view === item.id ? "page" : undefined}>
               <Icon name={item.icon} size={19}/><span>{item.label}</span>
-            </button>
+            </Link>
           ))}
         </nav>
 
@@ -308,11 +309,11 @@ export function VeroxaApp({
           <p>{isTeam ? "No public action without Faraz review and confirmed business truth." : "Verified Momo records will appear only after Team review and owner confirmation."}</p>
           <button onClick={() => { setToast(isTeam ? "Operating guardrails are active" : "Client workspace is safely waiting for verified records"); window.setTimeout(() => setToast(""), 2600); }}>{isTeam ? "Review guardrails" : "View safe status"} <Icon name="arrow" size={15}/></button>
         </div>
-        <button className="profile-card" onClick={() => changeView("security")} title="Account security">
+        <Link className="profile-card" href="/account/security" title="Account security">
           <span className="avatar">{isTeam ? "FM" : "MK"}</span>
           <span><strong>{access.status === "authenticated" ? access.value.displayName : isTeam ? "Team Faraz" : "Momo’s House"}</strong><small>Account security · password</small></span>
           <Icon name="chevron" size={16}/>
-        </button>
+        </Link>
       </aside>
 
       <section className="workspace">
@@ -321,8 +322,8 @@ export function VeroxaApp({
           <div className="breadcrumbs">{isTeam ? view === "team-audits" ? <><span>Team Faraz</span><b>/</b><strong>Restaurant Audit Center</strong></> : <><span>Team Faraz</span><b>/</b><span>Momo’s House San Antonio</span><b>/</b><strong>{activeLabel}</strong></> : <><span>Client portal</span><b>/</b><strong>{activeLabel}</strong></>}</div>
           <div className="top-actions">
             <span className="live-pill"><i/> Authenticated</span>
-            <button className="icon-button" aria-label="Notifications"><Icon name="bell" size={19}/></button>
-            <button className="top-avatar" aria-label="Sign out" title="Sign out" onClick={() => void handleSignOut()} disabled={signOutBusy}>{isTeam ? "FM" : "MH"}</button>
+            <Link className="top-avatar" href="/account/security" aria-label="Open account security" title="Account security">{isTeam ? "FM" : "MH"}</Link>
+            <button className="top-sign-out" onClick={() => void handleSignOut()} disabled={signOutBusy}>{signOutBusy ? "Signing out…" : "Sign out"}</button>
           </div>
         </header>
 
@@ -352,7 +353,7 @@ export function VeroxaApp({
         </div>
 
         {!isTeam && <nav className="mobile-nav" aria-label="Mobile navigation">
-          {activeNav.map((item) => <button key={item.id} className={view === item.id ? "active" : ""} onClick={() => changeView(item.id)} aria-current={view === item.id ? "page" : undefined}><Icon name={item.icon} size={18}/><span>{item.label}</span></button>)}
+          {activeNav.map((item) => <Link key={item.id} href={item.path} className={view === item.id ? "active" : ""} aria-current={view === item.id ? "page" : undefined}><Icon name={item.icon} size={18}/><span>{item.label}</span></Link>)}
         </nav>}
       </section>
 

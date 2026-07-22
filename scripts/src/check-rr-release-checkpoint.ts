@@ -49,14 +49,43 @@ type Checkpoint = {
     migrationContentParityVerified: boolean;
     migrationFilenameParityVerified: boolean;
   };
+  observedProductionDrift: {
+    observedAt: string;
+    evidenceStatus: string;
+    canonicalGitHubMainCommit: string;
+    githubSourceParityVerified: boolean;
+    sitesVersion: number;
+    sitesCheckoutSourceCommit: null;
+    sourceFileCount: null;
+    sourceTreeSha256: null;
+    sitesSourceParityVerified: boolean;
+    productionMigrations: number;
+    latestProductionMigration: string;
+    latestProductionMigrationSha256: string;
+    databaseLedgerObserved: boolean;
+    databaseAppliedThroughLatestObserved: boolean;
+    candidateParityVerified: boolean;
+  };
   releaseCandidate: {
     manifest: string;
     state: string;
+    basedOnGitHubMainCommit: string;
+    pullRequest: null;
+    githubMerged: boolean;
     futureMergedGitHubCommit: null;
     futureSitesVersion: null;
-    allFourWorkflowsGreen: boolean;
-    zeroUnresolvedReviewThreads: boolean;
+    reviewedLocally: boolean;
+    localReviewPassed: boolean;
+    allFourWorkflowsGreen: null;
+    zeroUnresolvedReviewThreads: null;
+    sourceFileCount: number;
+    sourceTreeSha256: string;
+    migrationFileCount: number;
+    migrationTreeSha256: string;
+    latestCandidateMigration: string;
+    latestCandidateMigrationSha256: string;
     databaseChangesRequired: boolean;
+    databaseMigrationApplied: boolean;
     sitesPublishRequired: boolean;
     sitesCandidatePublished: boolean;
   };
@@ -105,41 +134,34 @@ type Checkpoint = {
 type Readiness = {
   schemaVersion: number;
   recordKind: string;
-  operationalAuthority: string;
+  restaurant: string;
   milestone: string;
   overallStatus: string;
-  foundingPilotOnboardingGate: {
-    manualOperationAllowed: boolean;
-    runtimeAiRequired: boolean;
-    ownerContactAuthorized: boolean;
-    clientProvisioningAuthorized: boolean;
-    readinessDecision: string;
-  };
-  releaseEvidenceBoundary: {
-    authority: string;
-    bundlesCurrentDeploymentIdentity: boolean;
-    reviewedManualDeploymentsOnly: boolean;
-    databaseChangesRequiredForThisReadinessRecord: boolean;
+  overallRule: string;
+  lastReviewedAt: string;
+  identityBoundary: {
+    teamAccountRole: string;
+    developmentClientAccountRole: string;
+    developmentClientAuthority: string;
+    developmentClientIsOwner: boolean;
     rule: string;
   };
-  activationState: Record<string, boolean>;
-  auditAndTeamRelease: {
-    releaseState: string;
-    auditV3PartialScoreAndPlanLive: boolean;
-    canonicalSourceParityClaimed: boolean;
-    createsOperationalClient: boolean;
-    newIncrementalSpendApproved: boolean;
+  spendingBoundary: {
+    authorizedOneTimeCeilingUsd: number;
+    incurredUsd: number;
+    recurringSpendAuthorized: boolean;
+    providerActivationAuthorized: boolean;
+    rule: string;
   };
-  dimensions: { production_foundation: { status: string; blockers: string[] } };
-  otherRestaurants: {
-    allowedCapability: string;
-    automaticOperationalConversion: boolean;
-    readinessTrackingAllowed: boolean;
-  };
-  costPolicy: { newIncrementalSpendApproved: boolean };
+  gateState: Record<string, boolean>;
+  dimensions: Record<
+    string,
+    { required: boolean; status: string; evidence: string[]; blockers: string[] }
+  >;
 };
 
 type DeploymentManifest = {
+  schemaVersion: number;
   releaseState: string;
   observedProductionBaseline: {
     githubMainCommit: string;
@@ -164,12 +186,51 @@ type DeploymentManifest = {
     migrationContentParityVerified: boolean;
     migrationFilenameParityVerified: boolean;
   };
+  observedProductionDrift: {
+    observedAt: string;
+    evidenceStatus: string;
+    canonicalGitHubMainCommit: string;
+    githubSourceParityVerified: boolean;
+    sitesVersion: number;
+    sitesCheckoutCommit: null;
+    sourceFileCount: null;
+    sourceTreeSha256: null;
+    sitesSourceParityVerified: boolean;
+    productionMigrationCount: number;
+    latestProductionMigration: string;
+    latestProductionMigrationSha256: string;
+    databaseLedgerObserved: boolean;
+    databaseAppliedThroughLatestObserved: boolean;
+    candidateParityVerified: boolean;
+  };
   releaseCandidate: {
+    status: string;
+    basedOnGitHubMainCommit: string;
+    pullRequest: null;
+    githubMerged: boolean;
     futureMergedGitHubCommit: null;
     futureSitesVersion: null;
+    reviewedLocally: boolean;
+    sourceFileCount: number;
+    sourceTreeSha256: string;
+    migrationFileCount: number;
+    migrationTreeSha256: string;
+    latestCandidateMigration: string;
+    latestCandidateMigrationSha256: string;
     databaseChangesRequired: boolean;
+    databaseMigrationApplied: boolean;
     sitesPublishRequired: boolean;
     sitesPublished: boolean;
+  };
+  source: {
+    evidenceScope: string;
+    fileCount: number;
+    treeSha256: string;
+  };
+  migrations: {
+    evidenceScope: string;
+    fileCount: number;
+    treeSha256: string;
   };
   activationState: Record<string, boolean>;
   cleanupState: {
@@ -205,6 +266,21 @@ const expected = {
     migration: "20260714022911_ai_budget_and_momo_manual_pilot_contract.sql",
     migrationSha: "ebc2ea499a24b79da1baaffa02423488b1a28a95cb75d4c0d5c002c7c585948d",
   },
+  live: {
+    githubMain: "4f95b30413632b4d30a289c7f4b9011f37a37b80",
+    sitesVersion: 18,
+    productionMigrations: 14,
+    migration: "20260716035027_momo_preconnection_foundation.sql",
+    migrationSha: "9e748a46e050b9b8884a5df46eba6617cac061d075272ab4e233d2c1609fb367",
+  },
+  candidate: {
+    sourceFileCount: 79,
+    sourceTreeSha256: "6223dbcb6e7644615a3fc7bca1d86a89ee4167c37ca12ddf9a92918ce321a9ad",
+    migrationFileCount: 15,
+    migrationTreeSha256: "9eb4e5e16e2abea40143dad453bfcc2fcca27de6a7907d1f997af998b5c7dc0a",
+    migration: "20260722000100_momo_client_media_status_v1.sql",
+    migrationSha: "5cd7444906e5f5184e30cc7594542c71995a372b8143e5097f975d354f0925c7",
+  },
 };
 
 function groupHash(files: string[]): string {
@@ -220,11 +296,12 @@ function groupHash(files: string[]): string {
 const checkpoint = readJson<Checkpoint>(
   "artifacts/veroxa/docs/RR_RELEASE_CHECKPOINT.json",
 );
-must(checkpoint.schemaVersion === 5, "RR checkpoint schema must be 5.");
+must(checkpoint.schemaVersion === 6, "RR checkpoint schema must be 6.");
 must(
-  checkpoint.checkpoint === "post-release-cleanup-deployed-2026-07-14" &&
-    checkpoint.status === "verified_reconciliation_cleanup_deployed",
-  "RR checkpoint must identify the deployed PR #149 reconciliation cleanup.",
+  checkpoint.checkpoint === "momo-media-usability-local-candidate-2026-07-22" &&
+    checkpoint.status ===
+      "local_candidate_reviewed_unmerged_unpublished_unapplied",
+  "RR checkpoint must identify the reviewed local candidate without claiming release.",
 );
 
 const observed = checkpoint.observedProductionBaseline;
@@ -267,18 +344,50 @@ must(
   "The historical PR #145 checkpoint must remain explicit but superseded as live truth.",
 );
 
+const live = checkpoint.observedProductionDrift;
+must(
+  live.observedAt === "2026-07-22" &&
+    live.evidenceStatus === "observed_live_not_source_reconciled" &&
+    live.canonicalGitHubMainCommit === expected.live.githubMain &&
+    !live.githubSourceParityVerified &&
+    live.sitesVersion === expected.live.sitesVersion &&
+    live.sitesCheckoutSourceCommit === null &&
+    live.sourceFileCount === null &&
+    live.sourceTreeSha256 === null &&
+    !live.sitesSourceParityVerified &&
+    live.productionMigrations === expected.live.productionMigrations &&
+    live.latestProductionMigration === expected.live.migration &&
+    live.latestProductionMigrationSha256 === expected.live.migrationSha &&
+    live.databaseLedgerObserved &&
+    live.databaseAppliedThroughLatestObserved &&
+    !live.candidateParityVerified,
+  "RR checkpoint must record observed Sites v18 / 14-migration drift without inventing a checkout or live source hash.",
+);
+
 const candidate = checkpoint.releaseCandidate;
 must(
   candidate.manifest === "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json" &&
-    candidate.state === "post_release_cleanup_deployed" &&
+    candidate.state === "reviewed_locally_unmerged_unpublished_unapplied" &&
+    candidate.basedOnGitHubMainCommit === expected.live.githubMain &&
+    candidate.pullRequest === null &&
+    !candidate.githubMerged &&
     candidate.futureMergedGitHubCommit === null &&
     candidate.futureSitesVersion === null &&
-    candidate.allFourWorkflowsGreen &&
-    candidate.zeroUnresolvedReviewThreads &&
-    !candidate.databaseChangesRequired &&
+    candidate.reviewedLocally &&
+    candidate.localReviewPassed &&
+    candidate.allFourWorkflowsGreen === null &&
+    candidate.zeroUnresolvedReviewThreads === null &&
+    candidate.sourceFileCount === expected.candidate.sourceFileCount &&
+    candidate.sourceTreeSha256 === expected.candidate.sourceTreeSha256 &&
+    candidate.migrationFileCount === expected.candidate.migrationFileCount &&
+    candidate.migrationTreeSha256 === expected.candidate.migrationTreeSha256 &&
+    candidate.latestCandidateMigration === expected.candidate.migration &&
+    candidate.latestCandidateMigrationSha256 === expected.candidate.migrationSha &&
+    candidate.databaseChangesRequired &&
+    !candidate.databaseMigrationApplied &&
     candidate.sitesPublishRequired &&
-    candidate.sitesCandidatePublished,
-  "RR cleanup lifecycle must remain unpredicted, database-neutral, green, reviewed, and deployed.",
+    !candidate.sitesCandidatePublished,
+  "RR candidate must remain exact, locally reviewed, unmerged, unpublished, and unapplied.",
 );
 
 const audit = checkpoint.auditAndTeamRelease;
@@ -297,14 +406,14 @@ must(
     audit.pendingProfileRequiresExplicitConsent &&
     !audit.createsOperationalClient &&
     !audit.newIncrementalSpendApproved,
-  "RR Audit V3 evidence must preserve final release parity without overstating conversion or spend.",
+  "Historical PR #149 Audit V3 evidence must remain immutable without overstating conversion or spend.",
 );
 
 for (const inactive of [
   "hostedReauthenticationVerified",
   "oldSessionRevocationVerified",
   "auditV3ProductionSaveTransactionVerified",
-  "momoClientIdentityProvisioned",
+  "momoRealOwnerClientIdentityProvisioned",
   "ownerConfirmedBusinessTruthVerified",
   "permissionedMediaVerified",
   "aiWebResearchEnabled",
@@ -317,6 +426,7 @@ for (const inactive of [
 }
 for (const active of [
   "teamIdentityProvisioned",
+  "momoDevelopmentProxyClientIdentityProvisioned",
   "authenticatedProtectedRouteVerified",
   "passwordSignInVerifiedByUser",
   "auditV3SaveContractVerified",
@@ -373,51 +483,48 @@ const readiness = readJson<Readiness>(
   "artifacts/veroxa-sites/app/momo-readiness-tracker.json",
 );
 must(
-  readiness.schemaVersion === 6 &&
-    readiness.recordKind === "production_readiness_checkpoint" &&
-    readiness.operationalAuthority.includes("Supabase") &&
+  readiness.schemaVersion === 8 &&
+    readiness.recordKind === "momo_preconnection_readiness" &&
+    readiness.restaurant === "Momo's House San Antonio" &&
     readiness.overallStatus === "blocked" &&
-    /founding-pilot onboarding gate/i.test(readiness.milestone),
-  "Momo readiness record is not the blocked founding-pilot checkpoint.",
+    readiness.lastReviewedAt === "2026-07-22" &&
+    /before requesting owner or provider access/i.test(readiness.milestone) &&
+    /fail-closed No-Go/i.test(readiness.overallRule),
+  "Momo readiness record is not the current fail-closed preconnection checkpoint.",
 );
 must(
-  readiness.foundingPilotOnboardingGate.manualOperationAllowed &&
-    !readiness.foundingPilotOnboardingGate.runtimeAiRequired &&
-    !readiness.foundingPilotOnboardingGate.ownerContactAuthorized &&
-    !readiness.foundingPilotOnboardingGate.clientProvisioningAuthorized &&
-    readiness.foundingPilotOnboardingGate.readinessDecision === "no_go",
-  "Momo founding-pilot gate overstates authorization or requires paid AI.",
+  readiness.identityBoundary.teamAccountRole === "team" &&
+    readiness.identityBoundary.developmentClientAccountRole === "client" &&
+    readiness.identityBoundary.developmentClientAuthority === "development_proxy" &&
+    !readiness.identityBoundary.developmentClientIsOwner &&
+    /temporary development evidence only/i.test(readiness.identityBoundary.rule),
+  "Momo readiness must preserve the iCloud development-proxy boundary.",
 );
-const readinessEvidence = readiness.releaseEvidenceBoundary;
 must(
-  readinessEvidence.authority.includes("VEROXA_DEPLOYMENT_MANIFEST.json") &&
-    !readinessEvidence.bundlesCurrentDeploymentIdentity &&
-    readinessEvidence.reviewedManualDeploymentsOnly &&
-    !readinessEvidence.databaseChangesRequiredForThisReadinessRecord &&
-    /never asserts its own current Sites version/i.test(readinessEvidence.rule),
-  "Readiness record must externalize exact deployment evidence and remain stable across checkpoints.",
+  readiness.spendingBoundary.authorizedOneTimeCeilingUsd === 20 &&
+    readiness.spendingBoundary.incurredUsd === 0 &&
+    !readiness.spendingBoundary.recurringSpendAuthorized &&
+    !readiness.spendingBoundary.providerActivationAuthorized &&
+    /Authorization is not an incurred charge/.test(readiness.spendingBoundary.rule),
+  "Readiness must distinguish the $20 one-time ceiling from $0 incurred and no provider activation.",
 );
-for (const [name, value] of Object.entries(readiness.activationState)) {
-  must(value === false, `Readiness activation state must remain false: ${name}`);
+for (const [name, value] of Object.entries(readiness.gateState)) {
+  must(value === false, `Readiness gate must remain fail-closed: ${name}`);
 }
 must(
-  readiness.auditAndTeamRelease.releaseState ===
-    "audit_v3_foundation_external_release_evidence" &&
-    readiness.auditAndTeamRelease.auditV3PartialScoreAndPlanLive &&
-    !readiness.auditAndTeamRelease.canonicalSourceParityClaimed &&
-    !readiness.auditAndTeamRelease.createsOperationalClient &&
-    !readiness.auditAndTeamRelease.newIncrementalSpendApproved &&
-    readiness.dimensions.production_foundation.status === "verified" &&
-    readiness.dimensions.production_foundation.blockers.length === 0 &&
-    !readiness.otherRestaurants.automaticOperationalConversion &&
-    !readiness.otherRestaurants.readinessTrackingAllowed &&
-    !readiness.costPolicy.newIncrementalSpendApproved,
-  "Readiness evidence must keep deployment identity external and client conversion/spend inactive.",
+  Object.keys(readiness.dimensions).length >= 10 &&
+    Object.values(readiness.dimensions).every(
+      (dimension) => dimension.status === "blocked" && dimension.blockers.length > 0,
+    ) &&
+    readiness.dimensions.authenticated_team_rehearsal?.required === true &&
+    readiness.dimensions.owner_authority_and_consent?.required === false,
+  "Every readiness dimension must remain blocked with evidence boundaries and required gates distinguished.",
 );
 
 const manifest = readJson<DeploymentManifest>(candidate.manifest);
 must(
-  manifest.releaseState === checkpoint.status &&
+  manifest.schemaVersion === 3 &&
+    manifest.releaseState === checkpoint.status &&
     manifest.observedProductionBaseline.githubMainCommit === expected.historical.githubMain &&
     manifest.observedProductionBaseline.sitesCheckoutCommit === expected.historical.sitesCommit &&
     manifest.observedProductionBaseline.sitesVersion === expected.historical.sitesVersion &&
@@ -446,12 +553,55 @@ must(
     manifest.verifiedReconciliationRelease.sitesSourceParityVerified &&
     manifest.verifiedReconciliationRelease.migrationContentParityVerified &&
     manifest.verifiedReconciliationRelease.migrationFilenameParityVerified &&
+    manifest.observedProductionDrift.observedAt === "2026-07-22" &&
+    manifest.observedProductionDrift.evidenceStatus ===
+      "observed_live_not_source_reconciled" &&
+    manifest.observedProductionDrift.canonicalGitHubMainCommit ===
+      expected.live.githubMain &&
+    !manifest.observedProductionDrift.githubSourceParityVerified &&
+    manifest.observedProductionDrift.sitesVersion === expected.live.sitesVersion &&
+    manifest.observedProductionDrift.sitesCheckoutCommit === null &&
+    manifest.observedProductionDrift.sourceFileCount === null &&
+    manifest.observedProductionDrift.sourceTreeSha256 === null &&
+    !manifest.observedProductionDrift.sitesSourceParityVerified &&
+    manifest.observedProductionDrift.productionMigrationCount ===
+      expected.live.productionMigrations &&
+    manifest.observedProductionDrift.latestProductionMigration ===
+      expected.live.migration &&
+    manifest.observedProductionDrift.latestProductionMigrationSha256 ===
+      expected.live.migrationSha &&
+    manifest.observedProductionDrift.databaseLedgerObserved &&
+    manifest.observedProductionDrift.databaseAppliedThroughLatestObserved &&
+    !manifest.observedProductionDrift.candidateParityVerified &&
+    manifest.releaseCandidate.status ===
+      "reviewed_locally_unmerged_unpublished_unapplied" &&
+    manifest.releaseCandidate.basedOnGitHubMainCommit === expected.live.githubMain &&
+    manifest.releaseCandidate.pullRequest === null &&
+    !manifest.releaseCandidate.githubMerged &&
     manifest.releaseCandidate.futureMergedGitHubCommit === null &&
     manifest.releaseCandidate.futureSitesVersion === null &&
-    !manifest.releaseCandidate.databaseChangesRequired &&
+    manifest.releaseCandidate.reviewedLocally &&
+    manifest.releaseCandidate.sourceFileCount === expected.candidate.sourceFileCount &&
+    manifest.releaseCandidate.sourceTreeSha256 === expected.candidate.sourceTreeSha256 &&
+    manifest.releaseCandidate.migrationFileCount ===
+      expected.candidate.migrationFileCount &&
+    manifest.releaseCandidate.migrationTreeSha256 ===
+      expected.candidate.migrationTreeSha256 &&
+    manifest.releaseCandidate.latestCandidateMigration ===
+      expected.candidate.migration &&
+    manifest.releaseCandidate.latestCandidateMigrationSha256 ===
+      expected.candidate.migrationSha &&
+    manifest.releaseCandidate.databaseChangesRequired &&
+    !manifest.releaseCandidate.databaseMigrationApplied &&
     manifest.releaseCandidate.sitesPublishRequired &&
-    manifest.releaseCandidate.sitesPublished,
-  "Deployment manifest disagrees with the RR deployed reconciliation state.",
+    !manifest.releaseCandidate.sitesPublished &&
+    manifest.source.evidenceScope === "local_release_candidate" &&
+    manifest.source.fileCount === expected.candidate.sourceFileCount &&
+    manifest.source.treeSha256 === expected.candidate.sourceTreeSha256 &&
+    manifest.migrations.evidenceScope === "local_release_candidate" &&
+    manifest.migrations.fileCount === expected.candidate.migrationFileCount &&
+    manifest.migrations.treeSha256 === expected.candidate.migrationTreeSha256,
+  "Deployment manifest disagrees with the historical release, observed drift, or local candidate checkpoint.",
 );
 for (const [name, value] of Object.entries(manifest.activationState)) {
   must(value === false, `Manifest activation state must remain false: ${name}`);
@@ -510,6 +660,10 @@ const password = readFileSync(
   resolve(root, "artifacts/veroxa-sites/app/veroxa-password.mjs"),
   "utf8",
 );
+const passwordUpdate = readFileSync(
+  resolve(root, "artifacts/veroxa-sites/app/veroxa-password-update.ts"),
+  "utf8",
+);
 const route = readFileSync(
   resolve(root, "artifacts/veroxa-sites/app/[...slug]/page.tsx"),
   "utf8",
@@ -517,10 +671,19 @@ const route = readFileSync(
 must(
   auth.includes("shouldCreateUser: false") &&
     auth.includes("signInWithPassword") &&
-    auth.includes("updateUser({ password })") &&
     !/resetPasswordForEmail|\.auth\.signUp/.test(auth) &&
     auth.includes('await client.auth.signOut({ scope: "local" }).catch'),
   "Approved-user password/email-link boundary is incomplete or public signup drifted.",
+);
+must(
+  passwordUpdate.includes("getUser()") &&
+    passwordUpdate.includes("last_sign_in_at") &&
+    passwordUpdate.includes("isVeroxaPasswordCompromised") &&
+    passwordUpdate.includes("updateUser({ password })") &&
+    passwordUpdate.includes('signOut({ scope: "others" })') &&
+    passwordUpdate.includes("otherRefreshSessionsRevoked: !revocationError") &&
+    passwordUpdate.includes("otherRefreshSessionsRevoked: false"),
+  "Shared hardened password-update boundary is incomplete or overclaims refresh-session revocation.",
 );
 must(
   password.includes("api.pwnedpasswords.com/range/${prefix}") &&
@@ -550,4 +713,6 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log("RR production-reconciliation checkpoint guardrail passed.");
+console.log(
+  "RR release-evidence checkpoint passed: historical PR #149 preserved, live v18 drift recorded, and the local candidate remains unmerged, unpublished, and unapplied.",
+);

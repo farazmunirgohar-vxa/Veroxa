@@ -21,6 +21,16 @@ Required hosted variables:
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 - `AUDIT_INTAKE_HMAC_SECRET` (secret; must match the protected Supabase intake configuration)
 
+## Momo readiness model
+
+Momo readiness has three deliberately separate states:
+
+1. **Implemented and tested:** the repository contains the Team-only image editor, immutable media lineage, provider-neutral AI contract, three-channel publication rehearsal, bounded retry/dead-letter/recovery, source-specific metrics, tracking, public-evidence SEO planning, exact owner consent, and account-handoff controls.
+2. **Preconnection verified:** the protected Supabase gate requires recent release evidence plus durable, private rehearsals. A pass means only that Team Faraz may request narrowly scoped owner access. It never enables a provider or public write.
+3. **Live activation:** real-owner authority, confirmed business facts and rights, exact action approval, owner-controlled manager access, provider credentials, delivery/read-back checks, and any separately approved cost are still required. The activation result remains false until a later release explicitly changes that boundary.
+
+The temporary iCloud Client identity is classified as a development proxy, not Momo owner evidence. Momo-facing routes receive plain requests, drafts, decisions, schedules, and approved reports only; AI, automation, provider, queue, retry, readiness, and technical evidence remain Team-only. Team can run the complete no-cost disconnected rehearsal from one protected action without contacting Meta, Google, an AI provider, or Momo's owner.
+
 ## Runtime foundation
 
 A clean full-stack starter running on

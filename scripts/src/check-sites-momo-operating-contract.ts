@@ -5,14 +5,24 @@ const root = resolve(import.meta.dirname, "../..");
 const read = (path: string) => readFileSync(resolve(root, path), "utf8");
 const data = read("artifacts/veroxa-sites/app/momo-data.ts");
 const ui = read("artifacts/veroxa-sites/app/momo-operating-center.tsx");
+const teamMediaUi = read("artifacts/veroxa-sites/app/momo-team-preconnection-center.tsx");
+const clientData = read("artifacts/veroxa-sites/app/momo-client-data.ts");
+const clientUi = read("artifacts/veroxa-sites/app/momo-client-portal.tsx");
+const page = read("artifacts/veroxa-sites/app/page.tsx");
+const mediaGuidance = read("artifacts/veroxa-sites/app/momo-media-guidance.ts");
 const manualCycle = read("artifacts/veroxa-sites/app/momo-manual-content-cycle.ts");
 const operatingGates = read("artifacts/veroxa-sites/app/momo-operating-gates.ts");
 const gateTests = read("artifacts/veroxa-sites/tests/momo-operating-gates.test.mjs");
 const hydrationTests = read("artifacts/veroxa-sites/tests/momo-client-snapshot-hydration.test.mjs");
+const mediaGuidanceTests = read("artifacts/veroxa-sites/tests/momo-media-guidance.test.mjs");
+const clientMediaProjection = read("artifacts/veroxa-sites/supabase/migrations/20260722000100_momo_client_media_status_v1.sql");
 const combined = `${data}\n${ui}\n${manualCycle}\n${operatingGates}`;
 const failures: string[] = [];
 const must = (condition: boolean, message: string) => {
   if (!condition) failures.push(message);
+};
+const mustMatch = (source: string, pattern: RegExp, message: string) => {
+  must(pattern.test(source), message);
 };
 
 const forbidden = [
@@ -94,7 +104,6 @@ for (const marker of [
 for (const marker of [
   "usageScope: string[]",
   "usage_scope: input.usageScope",
-  'safety_flags: ["live_provider_not_connected", "human_review_required"]',
   'status: "pending"',
   "created_by: user.id",
   'rpc("veroxa_momo_client_snapshot_v1"',
@@ -130,6 +139,7 @@ for (const marker of [
   'rpc("veroxa_transition_momo_alert_v1"',
   'rpc("veroxa_update_momo_onboarding_step_v1"',
   'rpc("veroxa_update_momo_presence_v1"',
+  'rpc("veroxa_prepare_momo_ai_job_v1"',
   'table: "veroxa_content_input_ledger"',
   'table: "veroxa_activation_decisions"',
   "p_pillar: input.pillar",
@@ -138,8 +148,6 @@ for (const marker of [
   'timezone: String(item.timezone || "America/Chicago")',
   'query.key === "truth" || query.key === "confirmations"',
   "export function hydrateMomoClientSnapshot",
-  "eligible_capabilities",
-  "item.eligibleCapabilities",
 ]) {
   must(data.includes(marker), `Sites data adapter missing a required write contract: ${marker}`);
 }
@@ -197,6 +205,7 @@ must(!data.includes('.from("veroxa_restaurant_contacts").update'), "Sites Team c
 must(!data.includes('.from("veroxa_media_tags").upsert'), "Sites media tagging must preserve provenance through the protected server contract");
 must(!data.includes('.from("veroxa_media_asset_tags").upsert'), "Sites media links must preserve provenance through the protected server contract");
 must(!data.includes('.from("veroxa_content_variants").insert'), "Sites manual variants must use the actor-bound provenance contract");
+must(!data.includes('.from("veroxa_ai_jobs").insert'), "Sites AI preparation must use the server-side fail-closed contract");
 must(!data.includes('rpc("veroxa_create_truth_revision_v1"'), "Sites must not retain the revoked legacy single-field truth RPC");
 must(ui.includes("momoLocalDate(event.occurred_at)"), "Report preview dates must be interpreted in America/Chicago");
 must(ui.includes('["facebook_publish", "instagram_publish"]'), "Meta preflight must cover Facebook and Instagram independently");
@@ -237,9 +246,134 @@ for (const marker of [
   "never invents content or variant approval",
   "rejects malformed calendar rows",
   "drops rows whose status is absent",
-  "preserves only server-derived eligible capabilities",
+  "ignores provider and technical-readiness blocks entirely",
 ]) {
   must(hydrationTests.includes(marker), `Client snapshot fail-closed fixture missing: ${marker}`);
+}
+
+const clientHydrationStart = data.indexOf("export function hydrateMomoClientSnapshot");
+const clientHydrationEnd = data.indexOf("export async function loadMomoWorkspaceData", clientHydrationStart);
+const clientHydration = clientHydrationStart >= 0
+  ? data.slice(clientHydrationStart, clientHydrationEnd >= 0 ? clientHydrationEnd : data.length)
+  : "";
+must(Boolean(clientHydration), "Client snapshot hydration boundary is missing");
+must(!clientHydration.includes("raw.connections"), "The legacy workspace hydrator must not expose provider connection internals to Client routes");
+must(!clientHydration.includes("raw.readiness"), "The legacy workspace hydrator must not expose technical readiness internals to Client routes");
+
+// A Team review is evidence only after the private media has actually decoded
+// in the browser and the reviewer explicitly confirms the visual inspection.
+for (const marker of [
+  "export function momoMediaReviewCanSave",
+  "input.previewRendered",
+  "input.inspectionConfirmed",
+  "input.notes.trim().length >= 10",
+]) {
+  must(mediaGuidance.includes(marker), `Rendered-preview review gate missing: ${marker}`);
+}
+must(ui.includes("momoMediaReviewCanSave"), "Team media review must consume the rendered-preview evidence gate");
+mustMatch(ui, /onLoadedData=\{\(\) => setPreviewRendered\(true\)\}/, "Team video review must wait for successful rendering");
+mustMatch(ui, /onLoad=\{\(\) => setPreviewRendered\(true\)\}/, "Team image review must wait for successful decoding");
+must(ui.includes("inspectionConfirmed"), "Team media review must require an explicit inspection attestation");
+
+// Changing the file, preparation scope, expiry, or completing an upload must
+// invalidate the earlier checkbox attestation instead of silently reusing it.
+must((clientUi.match(/setRightsConfirmed\(false\)/g) || []).length >= 4,
+  "Client media changes must invalidate the earlier rights attestation");
+mustMatch(clientUi, /const toggle = \(item: string\) => \{\s*setRightsConfirmed\(false\);[\s\S]*?setScope\(/,
+  "Changing Client preparation scope must invalidate rights attestation");
+mustMatch(clientUi, /const chooseFile = \(next: File \| null\) => \{[\s\S]*?setRightsConfirmed\(false\);/,
+  "Changing the Client file must invalidate rights attestation");
+mustMatch(clientUi, /type="date"[\s\S]*?onChange=\{\(event\) => \{ setRightsConfirmed\(false\); setExpiresAt\(/,
+  "Changing Client rights expiry must invalidate rights attestation");
+
+// Ready is a current-state computation: exact source lineage, owner scope,
+// evidence class, write lock, review state, and a rendered derivative all gate it.
+for (const marker of [
+  'input.sourceKind === "owner_asset"',
+  "input.sourceAssetId === input.assetId",
+  "input.sourceKey === input.assetId",
+  "input.sourceContentSha256 === input.assetContentSha256",
+  "input.usageScope.includes(input.intendedUse)",
+  "input.renditionEvidenceClass === input.rightsEvidenceClass",
+  'input.renditionStatus === "ready"',
+  "input.externalWriteAllowed === false",
+]) {
+  must(mediaGuidance.includes(marker), `Current rendition eligibility gate missing: ${marker}`);
+}
+must(teamMediaUi.includes("momoRenditionMatchesCurrentEvidence"), "Team Ready must re-check current rendition evidence");
+must(teamMediaUi.includes("renderedRenditionId === currentRendition.id"), "Team Ready must require the current derivative to render successfully");
+mustMatch(teamMediaUi, /await persistMomoImageRendition\([\s\S]*?if \(asset\) await onWorkspaceRefresh\?\.\(\);/,
+  "A real rendition save must refresh the authoritative parent workspace before Ready is evaluated");
+must(ui.includes("onWorkspaceRefresh={reloadWorkspace}"), "The Team media workspace must provide its authoritative refresh boundary");
+
+// Both roles need a plainly labelled escape hatch; account avatars alone are
+// navigation, not a discoverable sign-out control.
+mustMatch(clientUi, /className="client-sign-out"[\s\S]*?onClick=\{signOut\}[\s\S]*?>Sign out<\/button>/,
+  "Client desktop must expose an explicit sign-out action");
+mustMatch(clientUi, /className="client-more-sign-out"[\s\S]*?onClick=\{signOut\}[\s\S]*?>Sign out of Veroxa<\/button>/,
+  "Client mobile navigation must expose an explicit sign-out action");
+mustMatch(page, /className="top-sign-out"[\s\S]*?handleSignOut\(\)[\s\S]*?Sign out/,
+  "Team desktop must expose an explicit sign-out action");
+mustMatch(page, /className="team-mobile-sign-out"[\s\S]*?handleSignOut\(\)[\s\S]*?Sign out/,
+  "Team mobile navigation must expose an explicit sign-out action");
+
+// Client Ready data comes from a minimal tenant-scoped projection. The broad
+// snapshot cannot mint rendition readiness, and malformed projection rows clear it.
+for (const marker of [
+  "mediaReadbackAvailable: false",
+  "renditionStatus: null",
+  "export function mergeMomoClientMediaReadback",
+  "knownAssetIds.has(assetId)",
+  "pathParts[1] === restaurantId",
+  'rpc("veroxa_momo_client_media_status_v1"',
+]) {
+  must(clientData.includes(marker), `Client media projection boundary missing: ${marker}`);
+}
+for (const marker of [
+  "security definer",
+  "set search_path = ''",
+  "veroxa_current_user_has_active_restaurant(target_restaurant_id)",
+  "rights.evidence_class = caller_evidence_class",
+  "review.is_current",
+  "review.status = 'approved'",
+  "review.public_use_approved",
+  "rendition.source_kind = 'owner_asset'",
+  "rendition.source_key = asset.id::text",
+  "rendition.source_content_sha256 = asset.content_sha256",
+  "rights.usage_scope ? rendition.intended_use",
+  "rendition.output_hash_attested_at is not null",
+  "not rendition.external_write_allowed",
+  "object.version = rendition.storage_object_version",
+  "public.veroxa_momo_client_can_read_rendition_v1(name)",
+  "from public, anon, authenticated, service_role",
+  "to authenticated",
+]) {
+  must(clientMediaProjection.includes(marker), `Tenant-safe Client rendition projection missing: ${marker}`);
+}
+for (const privateKey of ["contentSha256", "recipe", "renditionId"]) {
+  must(!clientMediaProjection.includes(`'${privateKey}'`), `Client rendition projection exposes Team-only field: ${privateKey}`);
+}
+for (const marker of [
+  "alter table public.%I force row level security",
+  "revoke all privileges on table public.%I from public, anon, authenticated, service_role",
+  "public.veroxa_run_momo_readiness_gate_v1(uuid)",
+  "public.veroxa_record_momo_no_go_v1(uuid,uuid,text,boolean)",
+  "public.veroxa_run_momo_preconnection_gate_v1(uuid)",
+  "from public, anon, service_role",
+]) {
+  must(clientMediaProjection.includes(marker), `Forward-only migration hardening missing: ${marker}`);
+}
+must(!/grant[\s\S]{0,400}\bto service_role\b/i.test(clientMediaProjection),
+  "Forward-only migration must not restore a direct service-role table or function grant");
+for (const fixture of [
+  "Team review cannot be saved from a signed URL alone",
+  "Team rendition eligibility follows current lineage, scope, evidence, and write lock",
+  "Client rendition projection exposes only a fail-closed per-asset Ready status",
+  "Forward migration removes legacy broad table and readiness privileges",
+  "Client readback merge is the only path to Ready and rejects malformed or conflicting rows",
+  "File, scope, expiry, and completed upload must invalidate the prior rights attestation",
+]) {
+  must(mediaGuidanceTests.toLowerCase().includes(fixture.toLowerCase()), `Executable media safety fixture missing: ${fixture}`);
 }
 
 for (const marker of [

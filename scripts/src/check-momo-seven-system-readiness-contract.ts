@@ -301,7 +301,7 @@ for (const marker of [
   "We offer delivery.",
   "We serve steamed chicken momo.",
   "We are open until 11 PM.",
-  "Pending owner presence withdrawal did not freeze preflight",
+  "Pending owner presence withdrawal did not freeze provider authority",
   "Owner content rejection did not cancel queue and calendar",
   "Attempt ledger did not preserve initial plus retry history",
   "Unsafe report narrative was accepted",

@@ -1,4 +1,17 @@
-## 2026-07-14 — PR #149 cleanup merged and Sites v15 deployed
+## 2026-07-22 — Momo access/media usability candidate; reviewed locally, not released
+
+- **Observed production:** ChatGPT Sites version 18 is live and Supabase has 14 applied migrations. The verified PR #149 / Sites v15 checkpoint below is retained as historical release lineage, not current live truth.
+- **Identity evidence:** `faraz.munir.gohar@icloud.com` is the active Momo Client identity and Faraz's approved Gmail identity is the separate active Team identity. Password login works for both roles.
+- **Real-data evidence:** one real Momo image upload and its rights record exist in private storage. This proves upload intake only; it does not prove preparation, rendered readback, Ready status, publication, or end-to-end onboarding readiness.
+- **Candidate source:** the local, unmerged candidate fixes the shared login/session race and presents a task-first `Upload -> Review -> Improve -> Ready` flow. It selects the newest real upload first, exposes prerequisites before actions, adds real original/prepared comparison, and derives Ready from current rights, review, rendition, and readback evidence.
+- **Candidate database:** forward migration 15 adds fail-closed, restaurant-scoped Client rendition status/readback and repairs verified live-v14 catalog findings: broad default table privileges, affected tables without forced RLS, and direct `service_role` execution of legacy readiness functions, including `veroxa_record_momo_no_go_v1`, while preserving authenticated Team access.
+- **Database boundary:** migration 15 is source-only and has not been applied. Production remains on 14 migrations and retains those observed catalog findings; the candidate repair is not a production-security claim.
+- **Verification:** Sites lint, TypeScript, production build, and all 114 Sites tests passed. The Supabase workflow now includes an executable migration-15 pgTAP regression for forced RLS and grants, revoked privileged readiness access, current-evidence rendition readback, storage policy enforcement, and cross-tenant denial. Independent code, database, and UX reviews found no remaining local code blocker; the GitHub clean-reset run remains the external proof gate.
+- **Release boundary:** the candidate is unmerged, unpublished, and unapplied. Live production remains Sites version 18 with 14 migrations.
+- **External/cost boundary:** Google and social accounts are disconnected, publishing is off, and no external action occurred. The authorized one-time rehearsal ceiling is USD $20; verified actual spend is USD $0, with no recurring/provider activation.
+- **Readiness:** Momo remains **No-Go**. The verified identities, login, upload, and green candidate are partial evidence and do not complete the operating-loop, browser/mobile, recovery, reporting, or final approval gates.
+
+## 2026-07-14 — PR #149 cleanup merged and Sites v15 deployed (historical checkpoint)
 
 - Verified GitHub release: PR #149 reviewed head `0d2c6e47fbfe1c44a2f0ff19fbb158001ed9365a` passed all four required workflows with zero unresolved review threads and merged at `9749b68ce2cfc383deeae6aa63c413019ef61385`.
 - Verified hosting: Sites version 15 succeeded from checkout `e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0`. The 55-file source tree SHA-256 is `ba06cd39ab7782987a6504678e4a3533a9943d078ba5dd9f93dbe8eeb0c5178f`; public access and both custom domains were verified.

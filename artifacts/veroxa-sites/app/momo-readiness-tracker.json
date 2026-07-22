@@ -1,248 +1,171 @@
 {
-  "schemaVersion": 6,
-  "recordKind": "production_readiness_checkpoint",
-  "operationalAuthority": "The scoped Supabase veroxa_readiness_dimensions records and veroxa_momo_readiness_summary_v1 RPC are authoritative for the live Team view. This file records repository release evidence and is not automatically synchronized with production rows.",
+  "schemaVersion": 8,
+  "recordKind": "momo_preconnection_readiness",
   "restaurant": "Momo's House San Antonio",
-  "milestone": "Secure, persistent, human-controlled Momo founding-pilot onboarding gate",
+  "milestone": "Momo-only readiness before requesting owner or provider access",
   "overallStatus": "blocked",
-  "overallRule": "Do not calculate or publish a readiness percentage. Founding-pilot onboarding requires every condition in MOMO_FOUNDING_PILOT_COMMITMENT_AND_ONBOARDING_GATE.md plus Faraz's explicit contact approval. Full automation readiness remains a separate later gate.",
-  "lastReviewedAt": "2026-07-14",
-  "foundingPilotOnboardingGate": {
-    "authority": "MOMO_FOUNDING_PILOT_COMMITMENT_AND_ONBOARDING_GATE.md",
-    "relationship": "Momo has already agreed to onboard as Veroxa's free founding pilot.",
-    "manualOperationAllowed": true,
-    "runtimeAiRequired": false,
-    "metaConnectionRequired": false,
-    "googleConnectionRequired": false,
-    "automatedPublishingRequired": false,
+  "overallRule": "Momo remains fail-closed No-Go. Implemented preconnection controls and development-proxy evidence are not operating-readiness proof. Readiness stays blocked until the required authenticated rehearsal and real-authority evidence pass; no result in this record authorizes owner contact, provider access, a model call, a public action, publishing, or activation.",
+  "lastReviewedAt": "2026-07-22",
+  "identityBoundary": {
+    "teamAccountRole": "team",
+    "developmentClientAccountRole": "client",
+    "developmentClientAuthority": "development_proxy",
+    "developmentClientIsOwner": false,
+    "rule": "The iCloud Client account is temporary development evidence only. Its Momo data may support internal rehearsal, but it can never approve owner actions, provider access, public content, or activation."
+  },
+  "gateState": {
+    "authenticatedTeamOneClickRehearsalPassed": false,
+    "ownerAuthorityVerified": false,
     "ownerContactAuthorized": false,
-    "clientProvisioningAuthorized": false,
-    "readinessDecision": "no_go",
-    "reason": "No approved Momo Client identity, same-owner confirmation chain, permissioned media, complete request-to-recovery evidence chain, browser QA, or explicit Faraz contact approval exists."
+    "providerAccessAuthorized": false,
+    "providerConnectionsActive": false,
+    "runtimeModelEnabled": false,
+    "publicActionsEnabled": false,
+    "activationAllowed": false
   },
-  "releaseEvidenceBoundary": {
-    "authority": "VEROXA_DEPLOYMENT_MANIFEST.json plus external GitHub, Sites, and Supabase release records",
-    "bundlesCurrentDeploymentIdentity": false,
-    "reviewedManualDeploymentsOnly": true,
-    "databaseChangesRequiredForThisReadinessRecord": false,
-    "rule": "This Sites-bundled readiness record never asserts its own current Sites version, checkout commit, publication state, or canonical-main commit."
-  },
-  "activationState": {
-    "runtimeAiEnabled": false,
-    "momoContactAuthorized": false,
-    "momoClientProvisioned": false,
-    "externalProvidersConnected": false,
-    "externalPublishingEnabled": false,
-    "billingEnabled": false,
-    "newIncrementalSpendApproved": false
-  },
-  "lastVerifiedOperationalRelease": {
-    "supersededAsLiveBaseline": true,
-    "pullRequest": 145,
-    "reviewedHead": "b007de99eb6c927f6d7ede56d7d4fffe8cbc0f0d",
-    "mergedOperationalCommit": "9aa74631e393bc0303c820cc7671f818d617778c",
-    "sitesCheckoutSourceCommit": "4bef697e230791403211cb9c60f769ebcb4f39c7",
-    "sitesVersion": 11,
-    "productionMigrations": 10,
-    "databaseVerified": true,
-    "customDomainsVerified": true
-  },
-  "deployedNoCostFoundation": {
-    "releaseState": "deployed_foundation_external_release_evidence",
-    "forwardMigrationApplied": true,
-    "forwardMigrationVerified": true,
-    "sourceParityAuthority": "external_release_records",
-    "momoClientIdentityProvisioned": false,
-    "ownerConfirmedBusinessTruthVerified": false,
-    "permissionedMediaVerified": false,
-    "externalProvidersConnected": false,
-    "externalPublishingVerified": false,
-    "activationExecuted": false,
-    "components": {
-      "momoClientIdentity": "A server-only, explicit-ack, idempotent provisioning helper and deterministic mock checks are prepared but unexecuted; no Momo client identity is approved or provisioned.",
-      "restaurantIntelligence": "PR #143 deploys all 18 locked truth fields and Team onboarding/presence review UI wired to transactional RPC paths; no owner-confirmed data has been entered.",
-      "mediaIntelligence": "PR #143 deploys the exact momo-media-rights-v1 attestation provenance and Team quality review plus human tags as the no-cost manual classification path; no AI provider is called.",
-      "manualContent": "PR #143 deploys a deterministic six-pillar manual content cycle with owner-confirmed-truth and permissioned-media validation plus immutable input provenance.",
-      "providerPreflight": "PR #143 deploys Meta and Google no-credential preflights that read Veroxa records only, fail closed, and never contact a provider.",
-      "operationsReportingRecovery": "PR #143 and the verified ninth migration deploy transactional work, reporting, monitoring, bounded retry/recovery, and linked activity evidence without asserting real operating history.",
-      "finalGate": "PR #143 and the verified ninth migration deploy an atomic rehearsal that derives an immutable readiness snapshot and records only a rehearsal-mode No-Go while blockers remain; no Go or activation action is exposed."
-    }
-  },
-  "auditAndTeamRelease": {
-    "releaseState": "audit_v3_foundation_external_release_evidence",
-    "auditV3PartialScoreAndPlanLive": true,
-    "canonicalSourceParityClaimed": false,
-    "simplifiedMomoTeamIALive": true,
-    "pendingProfileRequiresExplicitConsent": true,
-    "createsOperationalClient": false,
-    "newIncrementalSpendApproved": false
-  },
-  "statusDefinitions": {
-    "not_started": "No production-quality implementation or verified evidence exists yet.",
-    "foundation_ready": "Production-grade boundaries or contracts exist, but the capability is not operationally verified.",
-    "in_progress": "Evidence-backed implementation is underway and remaining work is explicit.",
-    "blocked": "A required approval, owner-confirmed fact, credential, permission, or prerequisite is missing.",
-    "ready_for_review": "Implementation and evidence are complete enough for the required review gate.",
-    "verified": "The capability passed its required production, authorization, and operating checks."
+  "spendingBoundary": {
+    "authorizedOneTimeCeilingUsd": 20,
+    "incurredUsd": 0,
+    "recurringSpendAuthorized": false,
+    "providerActivationAuthorized": false,
+    "rule": "Faraz authorized a one-time ceiling of up to $20 for this Momo setup and media rehearsal. Authorization is not an incurred charge and does not authorize recurring spend, provider activation, account connection, publishing, or activation."
   },
   "dimensions": {
-    "production_foundation": {
-      "label": "Production foundation",
+    "development_identity_and_data": {
+      "label": "Development identity and Momo data boundary",
       "required": true,
-      "status": "verified",
+      "status": "blocked",
       "evidence": [
-        "PR #138 merged the reviewed seven-system Momo operating foundation at commit 48630c62b9429238ab39b5b919d7689d189352f8.",
-        "The deployed no-cost foundation includes Audit V3, AI budget/provenance controls, and the private manual-pilot request contract.",
-        "Exact GitHub, Sites, domain, and Supabase deployment identity is maintained in the external release manifest and checkpoint records, not in this deployable Sites bundle.",
-        "This record therefore remains stable across reviewed deployments and cannot claim its own future publication state."
-      ],
-      "blockers": [],
-      "nextAction": "Preserve reviewed-only deployment and external attestation controls without enabling AI, Client provisioning, external providers, publishing, or spend."
-    },
-    "team_identity_and_access": {
-      "label": "Team identity and authenticated access",
-      "required": true,
-      "status": "verified",
-      "evidence": [
-        "Supabase Auth, active profile/membership checks, server route guards, and RLS are deployed; public account creation remains disabled.",
-        "PR #142 deploys approved-user password sign-in plus a protected account-security route while preserving secure-email-link recovery and disabled public signup.",
-        "The deployed password policy requires 12–72 ASCII characters with uppercase, lowercase, number, and supported symbol. A padded HIBP five-character hash-prefix check adds no-cost, bypassable defense in depth; native Auth-boundary leaked-password enforcement remains unavailable on Supabase Free.",
-        "PR #138 adds an idempotent server-only Admin provisioning command and a bounded authenticated Team/Momo Auth/RLS smoke harness.",
-        "Faraz's approved Gmail Team identity is confirmed, has signed in, and has an active Team profile plus active Momo membership without exposing a privileged key.",
-        "The mistaken secondary identity has disabled portal profile and Momo membership access.",
-        "The route-scoped runtime-config repair is live and passes the Sites no-build-time-env production build plus positive/negative rendered login regression tests.",
-        "Production Auth logs prove the temporary send failure was Supabase's built-in email limit; the request was rejected before protected-route or RLS evaluation, and the neutral UI does not disclose account existence.",
-        "The hosted Auth Site URL and exact production callback are configured. Production logs prove Gmail magic-link verification, token issuance, and session reads; Faraz confirmed the protected Team/Momo route opened in Safari.",
-        "Faraz confirmed the deployed approved-user password sign-in works. Hosted reauthentication and old-session revocation have not been verified."
-      ],
-      "blockers": [],
-      "nextAction": "Preserve approved-user password sign-in and secure-email-link recovery. Verify hosted reauthentication and rejection of an old session after password replacement before claiming those controls are complete. Custom SMTP and native leaked-password enforcement remain deferred with no new spend approved."
-    },
-    "business_truth_and_onboarding": {
-      "label": "Business truth and onboarding",
-      "required": true,
-      "status": "in_progress",
-      "evidence": [
-        "The locked onboarding flow is Audit to Prefill to Owner verification to Veroxa gap completion to Final approval.",
-        "PR #138 adds persistent field-level truth, contacts, onboarding, presence, client confirmation snapshots, Team review, and an evidence-backed readiness gate.",
-        "PR #143 and the verified ninth migration deploy all 18 locked truth fields and Team onboarding/presence RPC UI; the Momo client provisioning helper remains explicit-ack and unexecuted."
+        "The Team account and temporary iCloud Client account can be used for controlled development sign-in.",
+        "The repository classifies the iCloud account as development_proxy rather than real_owner.",
+        "Development-proxy evidence is separated from owner-authorized evidence."
       ],
       "blockers": [
-        "No approved Momo client identity is provisioned.",
-        "Production owner-confirmed identity, hours, menu, services, contacts, dietary/halal claims, brand voice, goals, and presence-stack records are not complete.",
-        "Uncertain facts cannot be used publicly before owner confirmation."
+        "No verified Momo owner authority exists.",
+        "Development data cannot authorize an external or public action."
       ],
-      "nextAction": "After an approved owner email is supplied, execute the explicit-ack client helper and collect real owner-confirmed Momo truth without inventing missing facts."
+      "nextAction": "Keep the iCloud account development-only and use it solely for the authenticated internal rehearsal."
     },
-    "media_and_rights": {
-      "label": "Media, rights, and intelligence",
+    "database_security_and_controls": {
+      "label": "Database security and preconnection controls",
       "required": true,
-      "status": "in_progress",
+      "status": "blocked",
       "evidence": [
-        "Private Momo storage policies and an internal media/content inventory model exist.",
-        "PR #138 adds client-authored media/rights intake, Team review, tags, provider-neutral classification jobs, and rights-gated reuse history.",
-        "PR #143 deploys the exact momo-media-rights-v1 attestation plus SHA-256 provenance and Team quality review/human-tag manual classification without an AI provider call."
+        "The repository defines Momo-scoped access controls, exact action-consent boundaries, cache expiry, evidence classification, runtime locks, and server-derived gates.",
+        "Rollback-oriented checks exercise caller roles and fail-closed contracts without retaining rehearsal data.",
+        "The reviewed Momo preconnection migration is applied in Veroxa Dev: all expected tables have RLS, runtime controls remain locked, provider connections remain absent, and the evidence manifest is valid."
       ],
       "blockers": [
-        "No production Momo media inventory with verified usage rights exists.",
-        "Upload, review, classification, and reuse have not been verified end to end."
+        "The authenticated Team one-click rehearsal has not passed against Supabase."
       ],
-      "nextAction": "Provision client access and verify one real owner-authorized upload through review, tagging, and reuse."
+      "nextAction": "Run the authenticated Team rehearsal and inspect its persisted gate result."
+    },
+    "media_editing_and_lineage": {
+      "label": "Media editing, rights, and lineage",
+      "required": true,
+      "status": "blocked",
+      "evidence": [
+        "The repository includes safe image presets, deterministic edit recipes, browser rendering, output hashing, alt text, storage paths, and rendition lineage.",
+        "Media placement and rehearsal contracts require scoped renditions and keep external writes disabled."
+      ],
+      "blockers": [
+        "Authenticated Team upload, render, register, read, placement, and cleanup have not passed the one-click Supabase rehearsal.",
+        "No real-owner media rights are available for public use."
+      ],
+      "nextAction": "Run the authenticated Team rehearsal with synthetic media and verify the complete private rendition lifecycle."
     },
     "ai_and_automation": {
-      "label": "AI and safe automation",
-      "required": true,
-      "status": "foundation_ready",
-      "evidence": [
-        "Brand voice, controlled drafting, approval queue, and human-review rules exist.",
-        "PR #138 adds persistent strategies, captions, platform variants, owner/Team/publishing approvals, calendar records, bounded job attempts, and fail-closed provider adapters.",
-        "PR #143 deploys a deterministic six-pillar manual content cycle that validates confirmed truth and permissioned media and records immutable input provenance without calling runtime AI."
-      ],
-      "blockers": [
-        "Runtime AI provider calls are inactive.",
-        "Verified business truth and permissioned media inputs are incomplete.",
-        "Production runtime AI, retry, audit, monitoring, and cost controls are not verified end to end."
-      ],
-      "nextAction": "Verify the deployed provider-neutral workflow with real approved inputs, then connect a live provider only after credentials and any incremental spend are explicitly approved."
-    },
-    "meta_social": {
-      "label": "Meta social handling",
+      "label": "AI contract and safe automation",
       "required": true,
       "status": "blocked",
       "evidence": [
-        "PR #138 adds not-connected Meta state, platform-specific capability gates, separate editorial/publishing approvals, queues, attempts, and recovery records without tokens.",
-        "PR #143 deploys a no-credential database preflight that reports missing authorization, capability, or connection state and never contacts Meta."
+        "The repository includes a provider-neutral structured-output contract, grounding fields, human-review requirements, idempotency, bounded retries, recovery, and audit records.",
+        "Offline rehearsal keeps model calls and external writes disabled."
       ],
       "blockers": [
-        "Owner-controlled Meta access and publishing permission are not connected or verified.",
-        "No production social publishing workflow has passed approval, retry, and activity-history tests."
+        "The complete automation lifecycle has not passed the authenticated Team one-click rehearsal.",
+        "No runtime model is enabled."
       ],
-      "nextAction": "Verify the fail-closed Meta foundation, then obtain owner-controlled Meta access and required permissions before enabling any adapter or publication."
+      "nextAction": "Exercise the offline AI and automation contracts through the authenticated Team rehearsal without calling a model."
     },
-    "google_seo_and_reviews": {
-      "label": "Google, local SEO, and reviews",
+    "publication_tracking_and_metrics": {
+      "label": "Publication rehearsal, tracking, and metrics",
       "required": true,
       "status": "blocked",
       "evidence": [
-        "PR #138 adds not-connected Google state, local presence/website/menu checks, review-response approval gates, visibility snapshots, and capability-gated provider records.",
-        "PR #143 deploys a no-credential database preflight that reports missing authorization, capability, or connection state and never contacts Google."
+        "The repository includes no-write publication scenarios for Facebook, Instagram, and Google Business.",
+        "Tracking contracts normalize campaign parameters, reject identifying data, and keep source metrics separate."
       ],
       "blockers": [
-        "Owner-controlled Google access is not connected or verified.",
-        "Reputation-sensitive response and publishing permissions are not active.",
-        "No verified baseline or production monitoring history exists."
+        "The complete channel and failure matrix has not passed the authenticated Team one-click rehearsal.",
+        "No provider is connected and no public publishing is authorized."
       ],
-      "nextAction": "Verify the fail-closed Google foundation, then obtain owner-controlled Business Profile access and required permissions before live checks, replies, or writes."
+      "nextAction": "Run the private multi-channel publication, tracking, and metrics rehearsal and confirm that every receipt remains simulated."
     },
-    "website_menu_and_ordering": {
-      "label": "Website, menu, and ordering paths",
-      "required": true,
-      "status": "in_progress",
-      "evidence": [
-        "PR #138 persists website, menu, ordering, contact-path, and local SEO checks with evidence, findings, and recommended actions."
-      ],
-      "blockers": [
-        "Current owner-confirmed menu, hours, links, services, and website access are incomplete.",
-        "No external website or ordering-platform write is authorized."
-      ],
-      "nextAction": "Record the real owner-confirmed URLs, menu, and hours, then run evidence-backed checks."
-    },
-    "operations_reporting_and_monitoring": {
-      "label": "Operations, reporting, and monitoring",
-      "required": true,
-      "status": "in_progress",
-      "evidence": [
-        "Momo work, reporting, activity, and readiness surfaces exist with honest safe-empty states.",
-        "PR #138 adds persistent work, attempts, activity, reports, monitors, alerts, recovery runs, transactional retry/backoff, and client-safe approved reports.",
-        "PR #143 and the verified ninth migration deploy transactional work transitions, evidence-backed reporting, monitoring, bounded retry/recovery, and linked activity evidence."
-      ],
-      "blockers": [
-        "Production Momo work history, platform activity, weekly updates, monthly reporting, alerts, retries, and recovery are not verified end to end."
-      ],
-      "nextAction": "Verify a real work item, retry, monitored failure/recovery, and evidence-backed report end to end before treating the deployed workflow foundation as operating history."
-    },
-    "activation_and_recovery": {
-      "label": "Activation, recovery, and owner walkthrough",
+    "seo_workspace": {
+      "label": "SEO evidence and reversible change planning",
       "required": true,
       "status": "blocked",
       "evidence": [
-        "Activation remains a separate decision and cannot be inferred from foundation readiness.",
-        "PR #143 and the verified ninth migration deploy an atomic rehearsal that derives an immutable readiness snapshot and records only a rehearsal-mode No-Go while blockers remain; no Go action is exposed."
+        "The repository includes public-page evidence capture, structured findings, reversible title and description drafts, structured-data validation, and rollback snapshots.",
+        "SEO preparation does not require a website write."
       ],
       "blockers": [
-        "All other required readiness dimensions are not verified.",
-        "Momo owner contact, walkthrough, credentials, permissions, and publishing require separate explicit approval."
+        "The SEO baseline and change-plan flow has not passed the authenticated Team one-click rehearsal.",
+        "No website change is authorized."
       ],
-      "nextAction": "Run the final Momo go/no-go gate only after every required readiness dimension is verified and all remaining approvals are explicit."
+      "nextAction": "Persist and validate the public-evidence SEO baseline and reversible draft during the authenticated Team rehearsal."
+    },
+    "authenticated_team_rehearsal": {
+      "label": "Authenticated Team one-click rehearsal",
+      "required": true,
+      "status": "blocked",
+      "evidence": [
+        "A Team-only control is implemented to run the private media, AI, automation, publication, tracking, metrics, SEO, and preconnection-gate sequence."
+      ],
+      "blockers": [
+        "The one-click sequence has not completed successfully against Supabase as an authenticated Team user.",
+        "No persisted preconnection pass is claimed."
+      ],
+      "nextAction": "Run the Team-only rehearsal once the reviewed migration is available, inspect every result, and keep all external actions disabled."
+    },
+    "owner_authority_and_consent": {
+      "label": "Owner authority, consent, and handoff",
+      "required": false,
+      "status": "blocked",
+      "evidence": [
+        "Owner authority and exact-action consent are separate from development-proxy access."
+      ],
+      "blockers": [
+        "The actual Momo owner has not been contacted or verified.",
+        "No owner consent or account handoff is authorized."
+      ],
+      "nextAction": "Do nothing until the internal preconnection gate is reviewed and Faraz separately authorizes owner contact."
+    },
+    "provider_access_and_public_actions": {
+      "label": "Provider access and public actions",
+      "required": false,
+      "status": "blocked",
+      "evidence": [
+        "Meta, Google Business, website, model, and publishing adapters remain behind disabled runtime controls."
+      ],
+      "blockers": [
+        "No provider credential or owner-controlled access is authorized.",
+        "No model call, provider read, provider write, website write, review reply, or public post is enabled."
+      ],
+      "nextAction": "Keep every connection inactive until owner authority and each exact permission are obtained after preconnection review."
+    },
+    "activation": {
+      "label": "Activation",
+      "required": false,
+      "status": "blocked",
+      "evidence": [
+        "Activation is a separate final decision and cannot be inferred from repository completion or a rehearsal."
+      ],
+      "blockers": [
+        "Owner, provider, public-action, and activation gates are false."
+      ],
+      "nextAction": "Do not activate Momo until all later authorization and operating gates pass."
     }
-  },
-  "otherRestaurants": {
-    "allowedCapability": "Restaurant Audit Center + explicit-consent non-operational pending profile only",
-    "automaticOperationalConversion": false,
-    "readinessTrackingAllowed": false
-  },
-  "costPolicy": {
-    "newIncrementalSpendApproved": false,
-    "rule": "Complete production-quality no-new-spend components first. Keep paid or usage-based connections modular and inactive until explicit approval."
   }
 }

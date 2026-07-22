@@ -1,5 +1,8 @@
 "use client";
 
+/* Signed private URLs cannot use the Next image optimizer. */
+/* eslint-disable @next/next/no-img-element */
+
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import type { VeroxaRole } from "./veroxa-supabase";
 import {
@@ -20,6 +23,8 @@ import {
   normalizedMomoHttpsUrl as normalizedHttpsUrl,
   resolveLatestMomoPresenceConfirmation,
 } from "./momo-operating-gates";
+import { MomoTeamPreconnectionCenter } from "./momo-team-preconnection-center";
+import { momoMediaReviewCanSave } from "./momo-media-guidance";
 import {
   addMomoMediaTag,
   appendMomoRequestMessage,
@@ -293,6 +298,7 @@ export function MomoOperatingCenter({ view, access, onNavigate, notify }: Props)
     restaurantId: access.restaurantId!,
     busy,
     run,
+    reloadWorkspace: reload,
   };
 
   if (view === "requests" || view === "team-requests") return <RequestsPanel role={access.role} restaurantId={access.restaurantId!} notify={notify} onNavigate={onNavigate} />;
@@ -312,6 +318,7 @@ type PanelProps = {
   restaurantId: string;
   busy: boolean;
   run: (action: () => Promise<void>, success: string) => Promise<void>;
+  reloadWorkspace: () => Promise<void>;
 };
 
 function DashboardPanel({ data, role, onNavigate }: PanelProps & { onNavigate: (view: string) => void }) {
@@ -860,15 +867,22 @@ function ContactForm({ data, role, restaurantId, busy, run }: PanelProps) {
 }
 
 function MediaPanel(props: PanelProps) {
-  const { data, role, restaurantId, busy, run } = props;
+  const { data, role, restaurantId, busy, run, reloadWorkspace } = props;
   const [file, setFile] = useState<File | null>(null);
   const [rights, setRights] = useState(false);
   const [scope, setScope] = useState<string[]>(["instagram", "facebook", "google_business", "website"]);
   const [expiresAt, setExpiresAt] = useState("");
   const momoToday = momoLocalDate(new Date().toISOString());
   const invalidExpiry = Boolean(expiresAt && expiresAt < momoToday);
+  const realImages = data.media.filter((asset) => /^image\/(jpeg|png|webp)$/.test(asset.mime_type));
+  const [selectedImageChoice, setSelectedImageId] = useState(realImages[0]?.id || "");
+  const selectedImageId = realImages.some((asset) => asset.id === selectedImageChoice) ? selectedImageChoice : realImages[0]?.id || "";
+  const mediaLibrary = <section className="momo-panel">
+    <div className="momo-panel-heading"><div><p className="eyebrow">{role === "team" ? "STEP 2 · REVIEW" : "YOUR MEDIA"}</p><h2>{role === "team" ? "Review real Momo assets" : "Private originals and status"}</h2>{role === "team" && <small>Review the newest upload first, then send it directly to the image editor below.</small>}</div><span>{data.media.length}</span></div>
+    {data.media.length === 0 ? <EmptyState title="No media has been uploaded." detail="Nothing is classified, approved, or reusable until a real asset and rights record exist." /> : <div className="momo-media-grid">{data.media.map((asset) => <MediaAssetCard key={asset.id} asset={asset} selectedForEditor={selectedImageId === asset.id} onSelectForEditor={role === "team" && /^image\/(jpeg|png|webp)$/.test(asset.mime_type) ? () => { setSelectedImageId(asset.id); window.setTimeout(() => document.getElementById("momo-team-image-editor")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0); } : undefined} {...props} />)}</div>}
+  </section>;
   return <div className="view">
-    <MomoIntro eyebrow="MEDIA INTAKE + INTELLIGENCE" title="Rights before reuse" description="Every asset is private, tenant-scoped, rights-tracked, quality-reviewed, tagged, and reusable only after explicit approval." />
+    <MomoIntro eyebrow="MEDIA WORKFLOW" title={role === "team" ? "Review, improve, then mark ready" : "Upload and follow the status"} description="Every original stays private and unchanged. The workflow shows exactly what is available now and what must happen next." />
     <SafetyBoundary role={role} />
     {role === "client" ? <form className="momo-panel momo-upload" onSubmit={(event) => {
       event.preventDefault();
@@ -885,15 +899,13 @@ function MediaPanel(props: PanelProps) {
       <label className="momo-check"><input type="checkbox" checked={rights} onChange={(event) => setRights(event.target.checked)} required /><span>I confirm I own or have permission to provide this media for the selected Veroxa usage scopes.</span></label>
       <p className="momo-form-note">Consent text is stored as immutable attestation version <code>momo-media-rights-v1</code> with its SHA-256 fingerprint.</p>
       <button className="primary-button" disabled={busy || !file || !rights || scope.length === 0 || invalidExpiry}>{busy ? "Uploading…" : "Upload with rights record"}</button>
-    </form> : <section className="momo-boundary"><strong>Owner media intake required</strong><span>Team can review, tag, classify, and record reuse only after the Momo owner uploads the asset and attests its usage rights in the client workspace.</span><em>Awaiting owner</em></section>}
-    <section className="momo-panel">
-      <div className="momo-panel-heading"><div><p className="eyebrow">MEDIA LIBRARY</p><h2>Real Momo assets</h2></div><span>{data.media.length}</span></div>
-      {data.media.length === 0 ? <EmptyState title="No media has been uploaded." detail="Nothing is classified, approved, or reusable until a real asset and rights record exist." /> : <div className="momo-media-grid">{data.media.map((asset) => <MediaAssetCard key={asset.id} asset={asset} {...props} />)}</div>}
-    </section>
+    </form> : data.media.length === 0 ? <section className="momo-boundary"><strong>Owner media intake required</strong><span>Team can review, tag, classify, and record reuse only after the Momo owner uploads the asset and attests its usage rights in the client workspace.</span><em>Awaiting owner</em></section> : null}
+    {mediaLibrary}
+    {role === "team" && <MomoTeamPreconnectionCenter mode="media" restaurantId={restaurantId} workspace={data} preferredAssetId={selectedImageId} onPreferredAssetChange={setSelectedImageId} onWorkspaceRefresh={reloadWorkspace} />}
   </div>;
 }
 
-function MediaAssetCard({ asset, data, role, restaurantId, busy, run }: PanelProps & { asset: MomoMediaAsset }) {
+function MediaAssetCard({ asset, data, role, restaurantId, busy, run, selectedForEditor = false, onSelectForEditor }: PanelProps & { asset: MomoMediaAsset; selectedForEditor?: boolean; onSelectForEditor?: () => void }) {
   const rights = data.mediaRights.find((item) => item.asset_id === asset.id);
   const review = data.mediaReviews.find((item) => item.asset_id === asset.id && item.is_current);
   const [quality, setQuality] = useState(review?.quality_score || 70);
@@ -904,16 +916,28 @@ function MediaAssetCard({ asset, data, role, restaurantId, busy, run }: PanelPro
   const [previewUrl, setPreviewUrl] = useState("");
   const [previewError, setPreviewError] = useState("");
   const [previewBusy, setPreviewBusy] = useState(false);
+  const [previewRendered, setPreviewRendered] = useState(false);
+  const [inspectionConfirmed, setInspectionConfirmed] = useState(false);
   const linkedTags = data.mediaAssetTags.filter((item) => item.asset_id === asset.id).map((link) => data.mediaTags.find((item) => item.id === link.tag_id)?.label).filter(Boolean);
   const approvedForReuse = mediaIsCurrentlyUsable(data, asset.id);
   const approvedForInternalReuse = mediaIsCurrentlyUsable(data, asset.id, "internal");
-  return <article className="momo-media-card">
-    <div className="momo-media-icon">{previewUrl ? (asset.mime_type.startsWith("video/") ? <video src={previewUrl} controls /> : <span className="momo-image-preview" style={{ backgroundImage: `url("${previewUrl.replaceAll('"', "%22")}")` }} role="img" aria-label="Private Momo media preview" />) : asset.mime_type.startsWith("video/") ? "VIDEO" : "PHOTO"}</div>
+  useEffect(() => {
+    if (!selectedForEditor || !asset.storage_path || previewUrl) return;
+    let active = true;
+    void getMomoMediaPreviewUrl(asset.storage_path)
+      .then((url) => { if (active) setPreviewUrl(url); })
+      .catch(() => { if (active) setPreviewError("The private preview could not be opened. Do not approve this asset until it is visible."); });
+    return () => { active = false; };
+  }, [asset.storage_path, previewUrl, selectedForEditor]);
+  return <article id={`momo-media-${asset.id}`} className={selectedForEditor ? "momo-media-card selected" : "momo-media-card"}>
+    <div className="momo-media-icon">{previewUrl ? (asset.mime_type.startsWith("video/") ? <video src={previewUrl} controls onLoadedData={() => setPreviewRendered(true)} onError={() => { setPreviewRendered(false); setInspectionConfirmed(false); setPreviewError("The private video could not be rendered. Do not approve this asset."); }} /> : <img className="momo-image-preview" src={previewUrl} alt={`Private preview of ${asset.display_name || asset.original_file_name || "Momo media"}`} onLoad={() => setPreviewRendered(true)} onError={() => { setPreviewRendered(false); setInspectionConfirmed(false); setPreviewError("The private image could not be rendered. Do not approve this asset."); }} />) : asset.mime_type.startsWith("video/") ? "VIDEO" : "PHOTO"}</div>
     <div className="momo-media-heading"><span><strong>{asset.display_name || asset.original_file_name || asset.storage_path.split("/").at(-1) || "Private media"}</strong><small>{Math.max(1, Math.round(asset.file_size / 1024))} KB · {formatDate(asset.created_at)}</small></span><StatusBadge status={asset.status} /></div>
     <div className="momo-facts"><span>Rights<strong>{rights ? labelStatus(rights.rights_status) : "Missing"}</strong><small>{rights?.attestation_version || "No attestation"}</small></span><span>Quality<strong>{review?.quality_score ?? "Not reviewed"}</strong></span><span>Reuse<strong>{asset.reuse_count || 0}</strong></span></div>
     {asset.storage_path && <button className="momo-preview-button" disabled={previewBusy} onClick={() => {
       setPreviewBusy(true);
       setPreviewError("");
+      setPreviewRendered(false);
+      setInspectionConfirmed(false);
       void getMomoMediaPreviewUrl(asset.storage_path)
         .then(setPreviewUrl)
         .catch(() => setPreviewError("The private preview link could not be opened. The asset remains private and unchanged."))
@@ -924,13 +948,18 @@ function MediaAssetCard({ asset, data, role, restaurantId, busy, run }: PanelPro
     {role === "team" && <div className="momo-review-box">
       <label>Quality 0–100<input type="number" min={0} max={100} value={quality} onChange={(event) => setQuality(Number(event.target.value))} /></label>
       <label className="wide">Review notes<textarea value={notes} onChange={(event) => setNotes(event.target.value)} rows={2} /></label>
-      <label className="momo-check wide"><input type="checkbox" checked={approved} onChange={(event) => setApproved(event.target.checked)} /><span>Approved for public use</span></label>
-      <button disabled={busy || !rights} onClick={() => void run(() => reviewMomoMedia({ restaurantId, assetId: asset.id, status: approved ? "approved" : "changes_requested", qualityScore: quality, qualityNotes: notes, publicUseApproved: approved }), "Media review saved.")}>Save review</button>
+      <label className="momo-check wide"><input type="checkbox" checked={approved} onChange={(event) => setApproved(event.target.checked)} /><span>Approved for public-use preparation (this does not post)</span></label>
+      <label className="momo-check wide"><input type="checkbox" checked={inspectionConfirmed} disabled={!previewRendered} onChange={(event) => setInspectionConfirmed(event.target.checked)} /><span>I inspected the rendered private preview for this review.</span></label>
+      <button disabled={busy || !momoMediaReviewCanSave({ hasRights: Boolean(rights), previewRendered, inspectionConfirmed, notes })} onClick={() => void run(() => reviewMomoMedia({ restaurantId, assetId: asset.id, status: approved ? "approved" : "changes_requested", qualityScore: quality, qualityNotes: notes, publicUseApproved: approved }), "Media review saved. No external action occurred.")}>Save review</button>
+      {!previewRendered && <p className="momo-warning wide">Wait for the private preview to render successfully before recording a review.</p>}
+      {notes.trim().length < 10 && <p className="momo-form-note wide">Record at least 10 characters of visible quality evidence or requested changes.</p>}
       <div className="momo-tag-input"><input placeholder="Add a tag" value={tag} onChange={(event) => setTag(event.target.value)} /><button disabled={busy || !tag.trim()} onClick={() => void run(() => addMomoMediaTag({ restaurantId, assetId: asset.id, label: tag }), "Media tag added.")}>Add tag</button></div>
       <button className="momo-provider-action" disabled={busy} onClick={() => void run(() => prepareMomoAiJob(restaurantId, "media_classification", "media_asset", asset.id), "Provider-neutral classification job prepared; no AI call was made.")}>Prepare deferred AI classification</button>
       <p className="momo-form-note wide">No-cost route: Team quality review plus human tags is the operational classification. The deferred AI job is recorded only as blocked and makes no provider call.</p>
       <button className="momo-provider-action" disabled={busy || !approvedForInternalReuse} onClick={() => void run(() => recordMomoMediaReuse({ restaurantId, assetId: asset.id, platform: "internal", usageKind: "internal_reference" }), "Approved media reuse recorded in the audit trail.")}>Record approved internal reuse</button>
       {approvedForReuse && !approvedForInternalReuse && <p className="momo-form-note wide">Internal reuse was not included in the owner-attested usage scopes.</p>}
+      {onSelectForEditor && <button className="momo-provider-action" disabled={busy} onClick={onSelectForEditor}>{selectedForEditor ? "Selected for preparation" : approvedForReuse ? "Prepare this image next" : "Select and review this image"}</button>}
+      {onSelectForEditor && !approvedForReuse && <p className="momo-form-note wide">Selecting opens the original. Preparation remains fail-closed until rights and review are current.</p>}
     </div>}
     {role === "client" && rights?.id && rights.rights_status !== "revoked" && <div className="momo-review-box"><label className="wide">Reason to stop future use<textarea value={rightsReason} onChange={(event) => setRightsReason(event.target.value)} rows={2} placeholder="Tell Veroxa why these rights should be revoked" /></label><button className="momo-provider-action" disabled={busy || rightsReason.trim().length < 10} onClick={() => void run(() => revokeMomoMediaRights({ restaurantId, mediaRightsId: rights.id, reason: rightsReason }), "Media rights revoked immediately. New reuse and publication are blocked.")}>Revoke future media use</button><p className="momo-form-note wide">Revocation takes effect immediately and is recorded in the audit trail. It does not delete historical usage records.</p></div>}
     {!rights && <p className="momo-warning">This asset cannot be approved or reused because its rights record is missing.</p>}
@@ -1021,6 +1050,7 @@ function ContentPanel(props: PanelProps) {
   return <div className="view">
     <MomoIntro eyebrow="AI CONTENT + APPROVAL CALENDAR" title="Prepared, reviewed, controlled" description="Strategy, captions, platform variants, approvals, and calendar entries are persistent. Runtime AI and publishing remain separate gated actions." />
     <SafetyBoundary role={role} />
+    {role === "team" && <MomoTeamPreconnectionCenter mode="publication" restaurantId={restaurantId} workspace={data} />}
     <div className="momo-content-tabs" role="tablist" aria-label="Content and approvals sections">
       <button type="button" id="content-tab-attention" role="tab" aria-selected={activeSection === "attention"} aria-controls="content-panel-attention" className={activeSection === "attention" ? "active" : ""} onClick={() => setActiveSection("attention")}><span>Needs attention</span><b>{attentionCount}</b></button>
       {role === "team" && <button type="button" id="content-tab-create" role="tab" aria-selected={activeSection === "create"} aria-controls="content-panel-create" className={activeSection === "create" ? "active" : ""} onClick={() => setActiveSection("create")}><span>Create content</span></button>}
@@ -1217,6 +1247,7 @@ function ConnectionsPanel(props: PanelProps) {
   return <div className="view">
     <MomoIntro eyebrow="META + GOOGLE + LOCAL PRESENCE" title="Connections are permissions, not assumptions" description="Provider access, capabilities, owner authorization, publishing, Google checks, reviews, website/menu truth, and visibility evidence remain separately tracked." />
     <SafetyBoundary role={role} />
+    {role === "team" && <MomoTeamPreconnectionCenter mode="seo" restaurantId={restaurantId} workspace={data} />}
     <section className="momo-panel">
       <div className="momo-panel-heading"><div><p className="eyebrow">PROVIDER CONNECTIONS</p><h2>Meta and Google access</h2></div><span>{data.connections.length}</span></div>
       {data.connections.length === 0 ? <EmptyState title="No provider is connected." detail="Veroxa has no represented Meta or Google permission. No token or secret is stored in these records." /> : <div className="momo-card-grid">{data.connections.map((connection) => {
@@ -1405,6 +1436,7 @@ function ReadinessPanel({ data, role, restaurantId, busy, run }: PanelProps) {
   return <div className="view">
     <MomoIntro eyebrow="FINAL MOMO READINESS GATE" title={gate?.can_activate ? "Eligible for final go / no-go review" : "Activation remains blocked"} description="This gate never infers readiness from deployment, code completion, or a partial score. Every required dimension must be verified and every blocker cleared." />
     <SafetyBoundary role={role} />
+    {role === "team" && <MomoTeamPreconnectionCenter mode="readiness" restaurantId={restaurantId} workspace={data} />}
     {role === "team" && <section className="momo-panel momo-form"><div className="momo-panel-heading"><div><p className="eyebrow">STEP 7 REHEARSAL</p><h2>Derived final go / no-go evaluation</h2></div><StatusBadge status={rehearsalResult?.status || "not_evaluated"} /></div><p className="momo-form-note">This action derives a new immutable snapshot from current database records. When blockers remain, it records a rehearsal-only No-Go decision. It cannot activate Momo and exposes no Go action.</p><button className="secondary-button" disabled={busy} onClick={() => void run(async () => {
       const result = await runMomoNoGoRehearsal({ restaurantId, reason: "No-cost final rehearsal. Activation remains blocked until every required dimension and external authority is verified." });
       setRehearsalResult(result);

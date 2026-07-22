@@ -17,6 +17,8 @@ const hydrateInTypescriptRuntime = (raw) => {
       calendar: hydrated.calendar,
       reports: hydrated.reports,
       connections: hydrated.connections,
+      readiness: hydrated.readiness,
+      readinessGate: hydrated.readinessGate,
     }));
   `;
   const result = spawnSync(
@@ -40,7 +42,7 @@ test("client calendar hydration never invents content or variant approval", () =
       variantId: "variant-1",
       platform: "instagram",
       caption: "Plain factual caption.",
-      calendarStatus: "approved",
+      calendarStatus: "scheduled",
       scheduledFor: "2026-07-20T18:00:00.000Z",
       timezone: "America/Chicago",
     }],
@@ -48,7 +50,7 @@ test("client calendar hydration never invents content or variant approval", () =
 
   assert.equal(hydrated.contentItems[0].status, "unknown");
   assert.equal(hydrated.variants[0].status, "unknown");
-  assert.equal(hydrated.calendar[0].status, "approved");
+  assert.equal(hydrated.calendar[0].status, "scheduled");
 });
 
 test("client hydration preserves explicit state and rejects malformed calendar rows", () => {
@@ -62,14 +64,14 @@ test("client hydration preserves explicit state and rejects malformed calendar r
         variantStatus: "pending",
         platform: "facebook",
         caption: "Complete caption.",
-        calendarStatus: "queued",
+        calendarStatus: "scheduled",
       },
       {
         contentItemId: "content-2",
         title: "Missing caption",
         variantId: "variant-2",
         platform: "instagram",
-        calendarStatus: "approved",
+        calendarStatus: "queued",
       },
     ],
   });
@@ -104,7 +106,7 @@ test("client report hydration drops rows whose status is absent instead of appro
   assert.equal(hydrated.reports[0].status, "pending");
 });
 
-test("client connection hydration preserves only server-derived eligible capabilities", () => {
+test("client hydration ignores provider and technical-readiness blocks entirely", () => {
   const hydrated = hydrateInTypescriptRuntime({
     connections: [{
       provider: "meta",
@@ -115,9 +117,13 @@ test("client connection hydration preserves only server-derived eligible capabil
       capabilities: ["must_not_be_hydrated"],
       ownerAuthorizedBy: "must_not_be_hydrated",
     }],
+    readiness: {
+      dimensions: [{ dimensionKey: "provider_runtime", label: "Provider runtime", status: "blocked" }],
+      latestGate: { status: "blocked", requiredCount: 7, blockerCount: 3, canActivate: false },
+    },
   });
 
-  assert.deepEqual(hydrated.connections[0].eligible_capabilities, ["instagram_publish"]);
-  assert.deepEqual(hydrated.connections[0].capabilities, []);
-  assert.equal(hydrated.connections[0].owner_authorized_by, null);
+  assert.deepEqual(hydrated.connections, []);
+  assert.deepEqual(hydrated.readiness, []);
+  assert.equal(hydrated.readinessGate, null);
 });

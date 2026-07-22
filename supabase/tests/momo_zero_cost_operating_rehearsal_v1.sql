@@ -190,6 +190,32 @@ begin
       'authenticated', 'authenticated', 'momo-rehearsal-authorizer@veroxa.invalid', now(),
       '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now());
 
+  -- This rollback-only rehearsal exercises owner-authorized workflows through
+  -- the same audited authority path used in production. The .invalid accounts
+  -- and explicit fixture evidence keep synthetic verification isolated.
+  perform set_config('request.jwt.claims', jsonb_build_object(
+    'sub', v_team_user_id::text, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+  perform public.veroxa_assign_momo_real_owner_authority_v1(
+    v_restaurant_id,
+    'momo-rehearsal-client@veroxa.invalid',
+    jsonb_build_object(
+      'method', 'owner_meeting',
+      'verifiedAt', to_char(now() at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
+      'details', 'Rollback-only transactional real-owner workflow fixture.'
+    )
+  );
+  perform public.veroxa_assign_momo_real_owner_authority_v1(
+    v_restaurant_id,
+    'momo-rehearsal-authorizer@veroxa.invalid',
+    jsonb_build_object(
+      'method', 'verified_manager_invite',
+      'verifiedAt', to_char(now() at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
+      'details', 'Rollback-only transactional provider-authority fixture.'
+    )
+  );
+  execute 'reset role';
+
   insert into public.veroxa_onboarding_steps
     (restaurant_id, step_key, title, position)
   values
@@ -456,6 +482,14 @@ begin
     where id = v_presence_id and owner_confirmation_id = v_confirmation_id
       and access_status = 'degraded' and public_url = 'https://example.com/'
   ) then raise exception 'Degraded presence did not retain exact owner evidence'; end if;
+  perform public.veroxa_update_momo_presence_v1(
+    v_restaurant_id, v_presence_id, 'https://example.com/', 'connected',
+    'owner_confirmed', 'Exact owner evidence restores connected rehearsal access.', v_confirmation_id);
+  if not exists (
+    select 1 from public.veroxa_presence_profiles
+    where id = v_presence_id and owner_confirmation_id = v_confirmation_id
+      and access_status = 'connected' and public_url = 'https://example.com/'
+  ) then raise exception 'Connected presence did not require and retain exact owner evidence'; end if;
 
   perform * from public.veroxa_review_momo_media_v1(
     v_asset_id, 'approved', 90::smallint, 'Clear permissioned rehearsal media.', true);
@@ -631,14 +665,18 @@ begin
     'Owner withdraws Facebook presence authority.');
 
   execute 'reset role';
+  if veroxa_private.provider_presence_authority_current_v1(
+      v_restaurant_id, 'meta', 'facebook_publish') then
+    raise exception 'Pending owner presence withdrawal did not freeze provider authority';
+  end if;
   perform set_config('request.jwt.claims', jsonb_build_object(
     'sub', v_team_user_id::text, 'role', 'authenticated')::text, true);
   execute 'set local role authenticated';
   select * into v_preflight from public.veroxa_provider_preflight_v1(
     v_restaurant_id, 'meta', 'facebook_publish');
   if v_preflight.allowed or not (v_preflight.blockers @>
-      '[{"code":"owner_presence_authority_withdrawn"}]'::jsonb) then
-    raise exception 'Pending owner presence withdrawal did not freeze preflight';
+      '[{"code":"external_runtime_locked"}]'::jsonb) then
+    raise exception 'Credential-free preflight did not remain universally locked';
   end if;
   begin
     perform public.veroxa_queue_momo_publication_v1(

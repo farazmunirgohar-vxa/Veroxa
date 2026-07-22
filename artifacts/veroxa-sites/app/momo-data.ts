@@ -105,6 +105,7 @@ export type MomoMediaAsset = {
   original_file_name?: string | null;
   mime_type: string;
   file_size: number;
+  content_sha256?: string | null;
   uploaded_by: string;
   status: string;
   reuse_count: number;
@@ -124,6 +125,7 @@ export type MomoMediaRight = {
   expires_at: string | null;
   confirmed_by: string | null;
   confirmed_at: string | null;
+  evidence_class?: "unknown" | "development_proxy" | "synthetic" | "real_owner";
 };
 
 export type MomoMediaReview = {
@@ -524,8 +526,8 @@ const intelligenceQueries: QueryDefinition[] = [
 ];
 
 const mediaQueries: QueryDefinition[] = [
-  { key: "media", table: "veroxa_media_assets", columns: "id, restaurant_id, storage_path, original_file_name, mime_type, file_size, uploaded_by, status, reuse_count, last_used_at, created_at, updated_at", order: "created_at", ascending: false },
-  { key: "mediaRights", table: "veroxa_media_rights", columns: "id, restaurant_id, asset_id, rights_status, usage_scope, attestation_version, attestation_sha256, valid_from, expires_at, confirmed_by, confirmed_at, created_at, updated_at", order: "created_at", ascending: false },
+  { key: "media", table: "veroxa_media_assets", columns: "id, restaurant_id, storage_path, original_file_name, mime_type, file_size, content_sha256, uploaded_by, status, reuse_count, last_used_at, created_at, updated_at", order: "created_at", ascending: false },
+  { key: "mediaRights", table: "veroxa_media_rights", columns: "id, restaurant_id, asset_id, rights_status, usage_scope, attestation_version, attestation_sha256, valid_from, expires_at, confirmed_by, confirmed_at, evidence_class, created_at, updated_at", order: "created_at", ascending: false },
   { key: "mediaReviews", table: "veroxa_media_reviews", columns: "id, restaurant_id, asset_id, status, quality_score, quality_notes, public_use_approved, is_current, reviewed_by, reviewed_at, created_at, updated_at", order: "created_at", ascending: false },
   { key: "mediaTags", table: "veroxa_media_tags", columns: "id, restaurant_id, slug, label, source, created_at, updated_at", order: "label" },
   { key: "mediaAssetTags", table: "veroxa_media_asset_tags", columns: "restaurant_id, asset_id, tag_id, source, confidence, created_at", order: "created_at", ascending: false },
@@ -588,9 +590,6 @@ export function hydrateMomoClientSnapshot(raw: Record<string, unknown>, restaura
   const onboarding = raw.onboarding && typeof raw.onboarding === "object"
     ? raw.onboarding as Record<string, unknown>
     : {};
-  const readiness = raw.readiness && typeof raw.readiness === "object"
-    ? raw.readiness as Record<string, unknown>
-    : {};
   const rows = (value: unknown) => Array.isArray(value) ? value.filter((item): item is Record<string, unknown> => Boolean(item && typeof item === "object")) : [];
 
   result.truth = rows(onboarding.truthFields).map((item) => ({
@@ -620,15 +619,6 @@ export function hydrateMomoClientSnapshot(raw: Record<string, unknown>, restaura
     last_checked_at: item.lastCheckedAt ? String(item.lastCheckedAt) : null,
     notes: null,
   }));
-  result.connections = rows(raw.connections).map((item) => ({
-    id: String(item.provider), provider: String(item.provider),
-    external_account_id: null, display_label: null, status: String(item.status),
-    capabilities: [], eligible_capabilities: Array.isArray(item.eligibleCapabilities) ? item.eligibleCapabilities : [],
-    scopes: [], owner_authorized_by: null,
-    owner_authorized_at: item.ownerAuthorizedAt ? String(item.ownerAuthorizedAt) : null,
-    last_verified_at: item.lastVerifiedAt ? String(item.lastVerifiedAt) : null,
-    last_error: null,
-  }));
   result.confirmations = rows(raw.confirmations).map((item) => ({
     id: String(item.id), subject_type: String(item.subjectType),
     subject_id: item.subjectId ? String(item.subjectId) : null,
@@ -638,24 +628,6 @@ export function hydrateMomoClientSnapshot(raw: Record<string, unknown>, restaura
     reviewed_at: item.reviewedAt ? String(item.reviewedAt) : null,
     created_at: item.submittedAt ? String(item.submittedAt) : "",
   }));
-  result.readiness = rows(readiness.dimensions).map((item) => ({
-    id: String(item.dimensionKey), dimension_key: String(item.dimensionKey),
-    label: String(item.label), required: Boolean(item.required), status: String(item.status),
-    evidence: [], blockers: [], verified_by: null,
-    verified_at: item.verifiedAt ? String(item.verifiedAt) : null, updated_at: "",
-  }));
-  const latestGate = readiness.latestGate && typeof readiness.latestGate === "object"
-    ? readiness.latestGate as Record<string, unknown>
-    : null;
-  if (latestGate && latestGate.status) {
-    result.readinessGate = {
-      required_count: Number(latestGate.requiredCount || 0),
-      verified_count: Number(latestGate.verifiedCount || 0),
-      blocker_count: Number(latestGate.blockerCount || 0),
-      overall_status: String(latestGate.currentStatus || latestGate.status),
-      can_activate: latestGate.canActivate === true,
-    };
-  }
   for (const item of rows(raw.media)) {
     const assetId = String(item.id);
     result.media.push({
@@ -689,7 +661,8 @@ export function hydrateMomoClientSnapshot(raw: Record<string, unknown>, restaura
     const platform = clientSnapshotString(item.platform);
     const caption = clientSnapshotString(item.caption);
     const calendarStatus = clientSnapshotString(item.calendarStatus);
-    if (!itemId || !title || !variantId || !platform || !caption || !calendarStatus) continue;
+    if (!itemId || !title || !variantId || !platform || !caption || !calendarStatus
+      || !["scheduled", "published"].includes(calendarStatus)) continue;
     if (!result.contentItems.some((content) => content.id === itemId)) result.contentItems.push({
       id: itemId, strategy_id: null, primary_media_asset_id: null, title,
       // Client calendar visibility is not approval evidence for either source row.
@@ -1332,26 +1305,13 @@ export async function prepareMomoAiJob(
   subjectType: string,
   subjectId: string,
 ): Promise<void> {
-  const client = requiredClient();
-  const user = await currentUser();
-  const { data, error } = await client.from("veroxa_ai_jobs").insert({
-    restaurant_id: restaurantId,
-    job_kind: jobKind,
-    subject_type: subjectType,
-    subject_id: subjectId,
-    status: "blocked",
-    provider_key: null,
-    model_key: null,
-    prompt_version: "v1-provider-neutral",
-    input_payload: { subject_id: subjectId },
-    output_payload: null,
-    safety_flags: ["live_provider_not_connected", "human_review_required"],
-    attempt_count: 0,
-    max_attempts: 3,
-    last_error: "Provider connection not authorized",
-    created_by: user.id,
-  }).select("id").single();
-  if (error || !data) throw new Error("ai_job_prepare_failed");
+  const { data, error } = await requiredClient().rpc("veroxa_prepare_momo_ai_job_v1", {
+    p_restaurant_id: restaurantId,
+    p_job_kind: jobKind,
+    p_subject_type: subjectType,
+    p_subject_id: subjectId,
+  });
+  if (error || typeof data !== "string") throw new Error("ai_job_prepare_failed");
 }
 
 export async function createMomoContentStrategy(input: {

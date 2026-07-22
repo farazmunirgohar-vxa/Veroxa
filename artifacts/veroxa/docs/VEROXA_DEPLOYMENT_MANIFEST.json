@@ -1,7 +1,7 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "recordKind": "veroxa_production_reconciliation_manifest",
-  "releaseState": "verified_reconciliation_cleanup_deployed",
+  "releaseState": "local_candidate_reviewed_unmerged_unpublished_unapplied",
   "canonicalRepository": "farazmunirgohar-vxa/Veroxa",
   "canonicalBranch": "main",
   "sitesProjectId": "appgprj_6a53d07c7c28819182801cf35dfd30de",
@@ -34,20 +34,49 @@
     "migrationContentParityVerified": true,
     "migrationFilenameParityVerified": true
   },
+  "observedProductionDrift": {
+    "observedAt": "2026-07-22",
+    "evidenceStatus": "observed_live_not_source_reconciled",
+    "canonicalGitHubMainCommit": "4f95b30413632b4d30a289c7f4b9011f37a37b80",
+    "githubSourceParityVerified": false,
+    "sitesVersion": 18,
+    "sitesCheckoutCommit": null,
+    "sourceFileCount": null,
+    "sourceTreeSha256": null,
+    "sitesSourceParityVerified": false,
+    "productionMigrationCount": 14,
+    "latestProductionMigration": "20260716035027_momo_preconnection_foundation.sql",
+    "latestProductionMigrationSha256": "9e748a46e050b9b8884a5df46eba6617cac061d075272ab4e233d2c1609fb367",
+    "databaseLedgerObserved": true,
+    "databaseAppliedThroughLatestObserved": true,
+    "candidateParityVerified": false
+  },
   "releaseCandidate": {
-    "status": "post_release_cleanup_deployed",
+    "status": "reviewed_locally_unmerged_unpublished_unapplied",
+    "basedOnGitHubMainCommit": "4f95b30413632b4d30a289c7f4b9011f37a37b80",
+    "pullRequest": null,
+    "githubMerged": false,
     "futureMergedGitHubCommit": null,
     "futureSitesVersion": null,
-    "databaseChangesRequired": false,
+    "reviewedLocally": true,
+    "sourceFileCount": 79,
+    "sourceTreeSha256": "6223dbcb6e7644615a3fc7bca1d86a89ee4167c37ca12ddf9a92918ce321a9ad",
+    "migrationFileCount": 15,
+    "migrationTreeSha256": "9eb4e5e16e2abea40143dad453bfcc2fcca27de6a7907d1f997af998b5c7dc0a",
+    "latestCandidateMigration": "20260722000100_momo_client_media_status_v1.sql",
+    "latestCandidateMigrationSha256": "5cd7444906e5f5184e30cc7594542c71995a372b8143e5097f975d354f0925c7",
+    "databaseChangesRequired": true,
+    "databaseMigrationApplied": false,
     "sitesPublishRequired": true,
-    "sitesPublished": true
+    "sitesPublished": false
   },
   "source": {
+    "evidenceScope": "local_release_candidate",
     "root": "artifacts/veroxa-sites",
     "mappingTarget": "Sites repository root",
     "hashAlgorithm": "veroxa-path-null-content-null-sha256-v1",
-    "fileCount": 55,
-    "treeSha256": "ba06cd39ab7782987a6504678e4a3533a9943d078ba5dd9f93dbe8eeb0c5178f",
+    "fileCount": 79,
+    "treeSha256": "6223dbcb6e7644615a3fc7bca1d86a89ee4167c37ca12ddf9a92918ce321a9ad",
     "generatedPathExclusions": [
       ".git",
       ".next",
@@ -62,10 +91,11 @@
     ]
   },
   "migrations": {
+    "evidenceScope": "local_release_candidate",
     "root": "supabase/migrations",
     "hashAlgorithm": "veroxa-path-null-content-null-sha256-v1",
-    "fileCount": 13,
-    "treeSha256": "fae322010f6c2ffbad1dbf695024ef7cfaf2cdb08f172fe6d113909c09fec093"
+    "fileCount": 15,
+    "treeSha256": "9eb4e5e16e2abea40143dad453bfcc2fcca27de6a7907d1f997af998b5c7dc0a"
   },
   "deploymentFreeze": {
     "state": "reviewed_manual_deployment_only",
@@ -84,6 +114,15 @@
     "externalProvidersConnected": false,
     "externalPublishingEnabled": false,
     "momoActivationExecuted": false
+  },
+  "activationStateScope": "Historical PR #149 release authorization snapshot; current runtime identity and media observations are tracked outside this release-evidence manifest.",
+  "currentRuntimeIdentityObservation": {
+    "observedAt": "2026-07-22",
+    "teamIdentityProvisioned": true,
+    "momoDevelopmentProxyClientIdentityProvisioned": true,
+    "momoRealOwnerClientIdentityProvisioned": false,
+    "developmentClientEvidenceClass": "development_proxy",
+    "scope": "The iCloud account is an active Client development proxy for pre-owner testing; it is not Momo owner authority and cannot authorize consequential external action."
   },
   "cleanupState": {
     "inventoryReviewed": true,

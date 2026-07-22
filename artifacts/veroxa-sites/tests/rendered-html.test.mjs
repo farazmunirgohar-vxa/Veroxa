@@ -7,6 +7,7 @@ import {
   pwnedRangeContainsHash,
   sha1Hex,
 } from "../app/veroxa-password.mjs";
+import { updateHardenedVeroxaPassword } from "../app/veroxa-password-update.ts";
 
 const developmentPreviewMeta =
   /<meta(?=[^>]*\bname=["']codex-preview["'])(?=[^>]*\bcontent=["']development["'])[^>]*>/i;
@@ -44,6 +45,33 @@ test("checks leaked passwords with only a padded five-character hash prefix", as
     isVeroxaPasswordCompromised(candidate, async () => new Response("unavailable", { status: 503 })),
     /password_check_unavailable/,
   );
+});
+
+test("reports a thrown refresh-session revocation as incomplete after changing the password", async () => {
+  const originalFetch = globalThis.fetch;
+  let passwordUpdated = false;
+  globalThis.fetch = async () => new Response("", { status: 200 });
+  try {
+    const result = await updateHardenedVeroxaPassword({
+      auth: {
+        getUser: async () => ({
+          data: { user: { last_sign_in_at: new Date().toISOString() } },
+          error: null,
+        }),
+        updateUser: async () => {
+          passwordUpdated = true;
+          return { error: null };
+        },
+        signOut: async () => {
+          throw new Error("network_unavailable");
+        },
+      },
+    }, "Unit-Test-Only-Key-47!");
+    assert.equal(passwordUpdated, true);
+    assert.deepEqual(result, { otherRefreshSessionsRevoked: false });
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });
 
 test("renders development preview metadata", async () => {
@@ -247,12 +275,15 @@ test("Momo readiness evidence remains in the protected server bundle", async () 
 });
 
 test("audit UI keeps contact, draft-isolation, mutation, and mobile-navigation guardrails", async () => {
-  const [page, center, data, protectedRoute, authCallback] = await Promise.all([
+  const [page, center, data, protectedRoute, authCallback, accountSecurity, clientData, passwordUpdate] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/audit-center.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/veroxa-supabase.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/[...slug]/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/auth/callback/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/account-security.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/momo-client-data.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/veroxa-password-update.ts", import.meta.url), "utf8"),
   ]);
 
   assert.match(page, /!contactEmail && !contactPhone/, "Public intake must require email or phone");
@@ -271,9 +302,16 @@ test("audit UI keeps contact, draft-isolation, mutation, and mobile-navigation g
   assert.match(data, /veroxa_auth_return_to/, "Magic-link return paths must be preserved outside the callback URL allowlist");
   assert.match(data, /Domain=veroxasystems\.com/, "Recovery return cookie must survive the www-to-apex callback");
   assert.match(data, /signInWithPassword/, "Approved identities must support permanent password sign-in");
-  assert.match(data, /updateUser\(\{ password \}\)/, "A freshly authenticated user must be able to replace their password");
+  assert.match(passwordUpdate, /getUser\(\)[\s\S]*?last_sign_in_at[\s\S]*?isVeroxaPasswordCompromised[\s\S]*?updateUser\(\{ password \}\)/, "Every account password replacement must use recent-sign-in and compromised-password checks");
   assert.match(data, /signOut\(\{ scope: "local" \}\)/, "Failed post-login authorization must clear the new browser session");
-  assert.match(data, /signOut\(\{ scope: "others" \}\)/, "Password replacement must revoke other refresh sessions when available");
+  assert.match(passwordUpdate, /signOut\(\{ scope: "others" \}\)/, "Password replacement must revoke other refresh sessions when available");
+  assert.match(passwordUpdate, /otherRefreshSessionsRevoked: !revocationError/, "Password replacement must report whether other refresh sessions were actually revoked");
+  assert.match(data, /updateHardenedVeroxaPassword\(client, password\)/, "The legacy account surface must use the shared hardened password path");
+  assert.match(clientData, /updateHardenedVeroxaPassword\(requiredClient\(\), password\)/, "The protected Account route must use the same hardened password path without importing Team modules");
+  assert.match(accountSecurity, /updateMomoClientPassword/, "The protected Account route must call its role-neutral hardened adapter");
+  assert.match(accountSecurity, /existing access can remain until its current token expires/, "Password success copy must not overclaim immediate access-token revocation");
+  assert.match(accountSecurity, /could not revoke other refresh sessions/, "A revocation failure must remain visible after a successful password change");
+  assert.doesNotMatch(clientData, /auth\.updateUser|signOut\(\{ scope: "others" \}\)/, "Client data must not retain a weaker duplicate password implementation");
   assert.doesNotMatch(data, /resetPasswordForEmail|\.auth\.signUp/, "Password recovery must reuse the existing approved-user email-link path without enabling public signup");
   assert.match(page, /name="password"[\s\S]*?autocomplete="new-password"/i, "Account security must use a non-prefilled new-password field");
   assert.match(page, /email or password is incorrect, or this account is not approved/i, "Password failures must use one non-enumerating message");
@@ -398,10 +436,11 @@ test("Team navigation and Momo work/content controls keep every state reachable 
 });
 
 test("Momo operating center uses live tenant data and exact production contracts", async () => {
-  const [page, center, data] = await Promise.all([
+  const [page, center, data, migration] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/momo-operating-center.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/momo-data.ts", import.meta.url), "utf8"),
+    readFile(new URL("../supabase/migrations/20260716035027_momo_preconnection_foundation.sql", import.meta.url), "utf8"),
   ]);
 
   assert.match(page, /<MomoOperatingCenter/, "Protected routes must use the database-backed operating center");
@@ -435,8 +474,10 @@ test("Momo operating center uses live tenant data and exact production contracts
   assert.match(data, /usageScope:\s*string\[\]/, "Media rights scope input must be an explicit token array");
   assert.match(data, /p_usage_scope:\s*input\.usageScope/, "Media registration RPC must receive the validated JSON token array");
   assert.match(center, /"instagram", "facebook", "google_business", "website"/, "Media rights UI must start from allowed provider tokens");
-  assert.match(data, /safety_flags:\s*\["live_provider_not_connected", "human_review_required"\]/, "AI safety flags must be a JSON array");
-  assert.match(data, /provider_key:\s*null[\s\S]*?model_key:\s*null/, "AI preparation must remain provider neutral");
+  assert.match(data, /\.rpc\("veroxa_prepare_momo_ai_job_v1"/, "AI preparation must use the server-validated contract");
+  assert.doesNotMatch(data, /from\("veroxa_ai_jobs"\)[\s\S]{0,200}\.insert\(/, "Team code must not insert forgeable AI fixtures directly");
+  assert.match(migration, /'\["live_provider_not_connected","human_review_required"\]'::jsonb/, "AI safety flags must be an exact JSON array");
+  assert.match(migration, /p_restaurant_id, p_job_kind, p_subject_type, p_subject_id, 'blocked',[\s\S]{0,180}?null, null, 'v1-provider-neutral'/, "AI preparation must remain provider neutral and blocked");
   assert.match(data, /\.rpc\("veroxa_momo_readiness_summary_v1"/, "Final readiness must use the database gate");
   assert.match(data, /\.rpc\("veroxa_momo_client_snapshot_v1"/, "Client reads must use the sanitized snapshot");
   assert.match(data, /\.rpc\("veroxa_apply_confirmation_v1"/, "Team confirmation decisions must be transactional");
