@@ -670,9 +670,13 @@ begin
   execute 'set local role authenticated';
   select * into v_preflight from public.veroxa_provider_preflight_v1(
     v_restaurant_id, 'meta', 'facebook_publish');
-  if v_preflight.allowed or not (v_preflight.blockers @>
-      '[{"code":"owner_presence_authority_withdrawn"}]'::jsonb) then
+  if veroxa_private.provider_presence_authority_current_v1(
+      v_restaurant_id, 'meta', 'facebook_publish') then
     raise exception 'Pending owner presence withdrawal did not freeze preflight';
+  end if;
+  if v_preflight.allowed or not (v_preflight.blockers @>
+      '[{"code":"external_runtime_locked"}]'::jsonb) then
+    raise exception 'Credential-free preflight did not remain universally locked';
   end if;
   begin
     perform public.veroxa_queue_momo_publication_v1(

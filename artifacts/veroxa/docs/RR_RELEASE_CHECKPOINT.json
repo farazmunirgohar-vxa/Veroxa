@@ -197,7 +197,7 @@
         "scripts/src/check-supabase-migration-ledger.ts",
         ".github/workflows/supabase-verify.yml"
       ],
-      "sha256": "7498f89b477f298930e6563c5dc4b59c2ab16adee624a7d5e4cbea9b22f11ec7"
+      "sha256": "ff4c99883a65fd30cc8f13b335335dd1afbc8b3d8fdccb7940c56ee7533ce513"
     },
     "auth_access": {
       "review": "full-on-change",
