@@ -73,8 +73,8 @@
     "localReviewPassed": true,
     "allFourWorkflowsGreen": null,
     "zeroUnresolvedReviewThreads": null,
-    "sourceFileCount": 78,
-    "sourceTreeSha256": "abc09f655d3e68f22054ef41e552773eb85047093f986f5afe2421f96ca91c28",
+    "sourceFileCount": 79,
+    "sourceTreeSha256": "e2bca9aa1213fb13114e1f65e0d622c657ec1804481658bd7796a805822d0946",
     "migrationFileCount": 15,
     "migrationTreeSha256": "9eb4e5e16e2abea40143dad453bfcc2fcca27de6a7907d1f997af998b5c7dc0a",
     "latestCandidateMigration": "20260722000100_momo_client_media_status_v1.sql",
@@ -197,7 +197,7 @@
         "scripts/src/check-supabase-migration-ledger.ts",
         ".github/workflows/supabase-verify.yml"
       ],
-      "sha256": "8b3331938c865191f889c6621391e4f18db472b53097bed12fe249b62fa80374"
+      "sha256": "7498f89b477f298930e6563c5dc4b59c2ab16adee624a7d5e4cbea9b22f11ec7"
     },
     "auth_access": {
       "review": "full-on-change",
@@ -205,6 +205,7 @@
         "artifacts/veroxa-sites/app/veroxa-supabase-server.ts",
         "artifacts/veroxa-sites/app/veroxa-supabase.ts",
         "artifacts/veroxa-sites/app/veroxa-password.mjs",
+        "artifacts/veroxa-sites/app/veroxa-password-update.ts",
         "artifacts/veroxa-sites/app/account-security.tsx",
         "artifacts/veroxa-sites/app/account/security/page.tsx",
         "artifacts/veroxa-sites/app/client/[[...slug]]/page.tsx",
@@ -213,7 +214,7 @@
         "artifacts/veroxa-sites/app/[...slug]/page.tsx",
         "artifacts/veroxa-sites/proxy.ts"
       ],
-      "sha256": "ccad707e1ca97f7bed764a68d1909c59f5ab886afc050cf6147639576b0d7070"
+      "sha256": "dc9adf8629e282c4da2eae9ecd0d019c9f8bb61924c1d83e74298dc338140920"
     },
     "audit_runtime": {
       "review": "full-on-change",
@@ -254,7 +255,7 @@
         ".github/workflows/supabase-verify.yml",
         ".github/workflows/veroxa-verify.yml"
       ],
-      "sha256": "6379c9146d387dd8eabfcd6fbf179d498a4278781f3c1be23fa673b97e28d685"
+      "sha256": "934c74f716a00e11d5fed4b967aebffa37631a003d3ea15913b3a04cfbf86e51"
     },
     "product_scope": {
       "review": "full-on-change",
@@ -293,7 +294,7 @@
         "artifacts/veroxa-sites/tests/rendered-html.test.mjs",
         "artifacts/veroxa/src/pages/free-audit.tsx"
       ],
-      "sha256": "8b081ade59319b2abdf953e8398e8d5d2ff7845f43b321bb95149dc5d88c23f2"
+      "sha256": "da4c0931ab14b1d9857c1217bf53e81a79262eda35686d538fab6de9d2499220"
     },
     "momo_operations_contract": {
       "review": "full-on-change",
@@ -338,7 +339,7 @@
         "package.json",
         "pnpm-lock.yaml"
       ],
-      "sha256": "9460320513a3199d235d495ed362209418ec9ca3299b801a77a1c57e40a9302b"
+      "sha256": "0d9c5cda12dbc66f2440b3923795712a4cdf3639788640205cdca4cb569cc68a"
     }
   },
   "activationGates": [

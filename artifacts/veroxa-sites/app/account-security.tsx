@@ -32,12 +32,21 @@ export function AccountSecurity({
     setBusy(true);
     setMessage("");
     try {
-      await updateMomoClientPassword(password);
+      const { otherRefreshSessionsRevoked } = await updateMomoClientPassword(password);
       setPassword("");
       setConfirmation("");
-      setMessage("Password updated. Other signed-in devices were signed out.");
-    } catch {
-      setMessage("The password was not changed. Sign in again if your session is old, then retry.");
+      setMessage(otherRefreshSessionsRevoked
+        ? "Password updated. Other devices cannot refresh their sessions; existing access can remain until its current token expires."
+        : "Password updated, but Veroxa could not revoke other refresh sessions. Sign out on those devices manually.");
+    } catch (caught) {
+      const failure = caught instanceof Error ? caught.message : "password_update_failed";
+      setMessage(failure === "recent_sign_in_required" || failure === "session_required"
+        ? "For security, sign in again before replacing the password."
+        : failure === "compromised_password"
+          ? "That password appears in known breach data. Choose a different unique password."
+          : failure === "password_check_unavailable"
+            ? "The leaked-password check is unavailable, so the password was not changed. Please retry."
+            : "The password was not changed. Check the requirements and retry.");
     } finally {
       setBusy(false);
     }

@@ -247,12 +247,15 @@ test("Momo readiness evidence remains in the protected server bundle", async () 
 });
 
 test("audit UI keeps contact, draft-isolation, mutation, and mobile-navigation guardrails", async () => {
-  const [page, center, data, protectedRoute, authCallback] = await Promise.all([
+  const [page, center, data, protectedRoute, authCallback, accountSecurity, clientData, passwordUpdate] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/audit-center.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/veroxa-supabase.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/[...slug]/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/auth/callback/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/account-security.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/momo-client-data.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/veroxa-password-update.ts", import.meta.url), "utf8"),
   ]);
 
   assert.match(page, /!contactEmail && !contactPhone/, "Public intake must require email or phone");
@@ -271,9 +274,16 @@ test("audit UI keeps contact, draft-isolation, mutation, and mobile-navigation g
   assert.match(data, /veroxa_auth_return_to/, "Magic-link return paths must be preserved outside the callback URL allowlist");
   assert.match(data, /Domain=veroxasystems\.com/, "Recovery return cookie must survive the www-to-apex callback");
   assert.match(data, /signInWithPassword/, "Approved identities must support permanent password sign-in");
-  assert.match(data, /updateUser\(\{ password \}\)/, "A freshly authenticated user must be able to replace their password");
+  assert.match(passwordUpdate, /getUser\(\)[\s\S]*?last_sign_in_at[\s\S]*?isVeroxaPasswordCompromised[\s\S]*?updateUser\(\{ password \}\)/, "Every account password replacement must use recent-sign-in and compromised-password checks");
   assert.match(data, /signOut\(\{ scope: "local" \}\)/, "Failed post-login authorization must clear the new browser session");
-  assert.match(data, /signOut\(\{ scope: "others" \}\)/, "Password replacement must revoke other refresh sessions when available");
+  assert.match(passwordUpdate, /signOut\(\{ scope: "others" \}\)/, "Password replacement must revoke other refresh sessions when available");
+  assert.match(passwordUpdate, /otherRefreshSessionsRevoked: !revocationError/, "Password replacement must report whether other refresh sessions were actually revoked");
+  assert.match(data, /updateHardenedVeroxaPassword\(client, password\)/, "The legacy account surface must use the shared hardened password path");
+  assert.match(clientData, /updateHardenedVeroxaPassword\(requiredClient\(\), password\)/, "The protected Account route must use the same hardened password path without importing Team modules");
+  assert.match(accountSecurity, /updateMomoClientPassword/, "The protected Account route must call its role-neutral hardened adapter");
+  assert.match(accountSecurity, /existing access can remain until its current token expires/, "Password success copy must not overclaim immediate access-token revocation");
+  assert.match(accountSecurity, /could not revoke other refresh sessions/, "A revocation failure must remain visible after a successful password change");
+  assert.doesNotMatch(clientData, /auth\.updateUser|signOut\(\{ scope: "others" \}\)/, "Client data must not retain a weaker duplicate password implementation");
   assert.doesNotMatch(data, /resetPasswordForEmail|\.auth\.signUp/, "Password recovery must reuse the existing approved-user email-link path without enabling public signup");
   assert.match(page, /name="password"[\s\S]*?autocomplete="new-password"/i, "Account security must use a non-prefilled new-password field");
   assert.match(page, /email or password is incorrect, or this account is not approved/i, "Password failures must use one non-enumerating message");

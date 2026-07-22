@@ -482,6 +482,14 @@ begin
     where id = v_presence_id and owner_confirmation_id = v_confirmation_id
       and access_status = 'degraded' and public_url = 'https://example.com/'
   ) then raise exception 'Degraded presence did not retain exact owner evidence'; end if;
+  perform public.veroxa_update_momo_presence_v1(
+    v_restaurant_id, v_presence_id, 'https://example.com/', 'connected',
+    'owner_confirmed', 'Exact owner evidence restores connected rehearsal access.', v_confirmation_id);
+  if not exists (
+    select 1 from public.veroxa_presence_profiles
+    where id = v_presence_id and owner_confirmation_id = v_confirmation_id
+      and access_status = 'connected' and public_url = 'https://example.com/'
+  ) then raise exception 'Connected presence did not require and retain exact owner evidence'; end if;
 
   perform * from public.veroxa_review_momo_media_v1(
     v_asset_id, 'approved', 90::smallint, 'Clear permissioned rehearsal media.', true);

@@ -240,7 +240,7 @@ must(
     candidate.futureMergedGitHubCommit === null &&
     candidate.futureSitesVersion === null &&
     candidate.reviewedLocally &&
-    candidate.sourceFileCount === 78 &&
+    candidate.sourceFileCount === 79 &&
     candidate.migrationFileCount === 15 &&
     !candidate.databaseMigrationApplied &&
     candidate.sitesPublishRequired &&

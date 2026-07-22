@@ -274,8 +274,8 @@ const expected = {
     migrationSha: "9e748a46e050b9b8884a5df46eba6617cac061d075272ab4e233d2c1609fb367",
   },
   candidate: {
-    sourceFileCount: 78,
-    sourceTreeSha256: "abc09f655d3e68f22054ef41e552773eb85047093f986f5afe2421f96ca91c28",
+    sourceFileCount: 79,
+    sourceTreeSha256: "e2bca9aa1213fb13114e1f65e0d622c657ec1804481658bd7796a805822d0946",
     migrationFileCount: 15,
     migrationTreeSha256: "9eb4e5e16e2abea40143dad453bfcc2fcca27de6a7907d1f997af998b5c7dc0a",
     migration: "20260722000100_momo_client_media_status_v1.sql",
@@ -660,6 +660,10 @@ const password = readFileSync(
   resolve(root, "artifacts/veroxa-sites/app/veroxa-password.mjs"),
   "utf8",
 );
+const passwordUpdate = readFileSync(
+  resolve(root, "artifacts/veroxa-sites/app/veroxa-password-update.ts"),
+  "utf8",
+);
 const route = readFileSync(
   resolve(root, "artifacts/veroxa-sites/app/[...slug]/page.tsx"),
   "utf8",
@@ -667,10 +671,18 @@ const route = readFileSync(
 must(
   auth.includes("shouldCreateUser: false") &&
     auth.includes("signInWithPassword") &&
-    auth.includes("updateUser({ password })") &&
     !/resetPasswordForEmail|\.auth\.signUp/.test(auth) &&
     auth.includes('await client.auth.signOut({ scope: "local" }).catch'),
   "Approved-user password/email-link boundary is incomplete or public signup drifted.",
+);
+must(
+  passwordUpdate.includes("getUser()") &&
+    passwordUpdate.includes("last_sign_in_at") &&
+    passwordUpdate.includes("isVeroxaPasswordCompromised") &&
+    passwordUpdate.includes("updateUser({ password })") &&
+    passwordUpdate.includes('signOut({ scope: "others" })') &&
+    passwordUpdate.includes("otherRefreshSessionsRevoked: !revocationError"),
+  "Shared hardened password-update boundary is incomplete or overclaims refresh-session revocation.",
 );
 must(
   password.includes("api.pwnedpasswords.com/range/${prefix}") &&

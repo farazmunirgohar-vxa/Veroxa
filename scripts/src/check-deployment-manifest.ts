@@ -164,9 +164,9 @@ const live = {
     "9e748a46e050b9b8884a5df46eba6617cac061d075272ab4e233d2c1609fb367",
 };
 const candidate = {
-  sourceFileCount: 78,
+  sourceFileCount: 79,
   sourceTreeSha256:
-    "abc09f655d3e68f22054ef41e552773eb85047093f986f5afe2421f96ca91c28",
+    "e2bca9aa1213fb13114e1f65e0d622c657ec1804481658bd7796a805822d0946",
   migrationFileCount: 15,
   migrationTreeSha256:
     "9eb4e5e16e2abea40143dad453bfcc2fcca27de6a7907d1f997af998b5c7dc0a",

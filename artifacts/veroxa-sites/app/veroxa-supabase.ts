@@ -1,10 +1,7 @@
 import { createBrowserClient } from "@supabase/ssr";
 import type { SupabaseClient, User } from "@supabase/supabase-js";
-import {
-  getVeroxaPasswordIssue,
-  isVeroxaPasswordCompromised,
-} from "./veroxa-password.mjs";
 import type { RestaurantAuditSnapshot } from "./restaurant-audit-engine";
+import { updateHardenedVeroxaPassword } from "./veroxa-password-update.ts";
 
 export { getVeroxaPasswordIssue } from "./veroxa-password.mjs";
 
@@ -295,25 +292,12 @@ export async function signInWithVeroxaPassword(
   return access;
 }
 
-export async function updateVeroxaPassword(password: string): Promise<void> {
+export async function updateVeroxaPassword(
+  password: string,
+): Promise<{ otherRefreshSessionsRevoked: boolean }> {
   const client = getVeroxaSupabase();
   if (!client) throw new Error("configuration_unavailable");
-  if (getVeroxaPasswordIssue(password)) throw new Error("weak_password");
-
-  const { data, error: userError } = await client.auth.getUser();
-  if (userError || !data.user) throw new Error("session_required");
-  const lastSignInAt = Date.parse(data.user.last_sign_in_at || "");
-  if (!Number.isFinite(lastSignInAt) || Date.now() - lastSignInAt > 24 * 60 * 60 * 1000) {
-    throw new Error("recent_sign_in_required");
-  }
-
-  if (await isVeroxaPasswordCompromised(password)) {
-    throw new Error("compromised_password");
-  }
-
-  const { error } = await client.auth.updateUser({ password });
-  if (error) throw new Error("password_update_failed");
-  await client.auth.signOut({ scope: "others" }).catch(() => undefined);
+  return updateHardenedVeroxaPassword(client, password);
 }
 
 function safeReturnTo(value: string | null | undefined): string {

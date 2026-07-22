@@ -1,5 +1,6 @@
 import { createBrowserClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { updateHardenedVeroxaPassword } from "./veroxa-password-update.ts";
 
 export type MomoClientPublicConfig = {
   url: string;
@@ -620,8 +621,8 @@ export async function signOutMomoClient(): Promise<void> {
   if (error) throw new Error("sign_out_failed");
 }
 
-export async function updateMomoClientPassword(password: string): Promise<void> {
-  const { error } = await requiredClient().auth.updateUser({ password });
-  if (error) throw new Error("password_update_failed");
-  await requiredClient().auth.signOut({ scope: "others" }).catch(() => undefined);
+export async function updateMomoClientPassword(
+  password: string,
+): Promise<{ otherRefreshSessionsRevoked: boolean }> {
+  return updateHardenedVeroxaPassword(requiredClient(), password);
 }
