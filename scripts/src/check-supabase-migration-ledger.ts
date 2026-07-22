@@ -168,8 +168,7 @@ const sitesMigrationSnapshots = sqlFiles("artifacts/veroxa-sites/supabase/migrat
 const archived = sqlFiles("supabase/archive/legacy_unapplied_migrations");
 if (
   manifest.schemaVersion !== 3 ||
-  manifest.releaseState !==
-    "local_candidate_reviewed_unmerged_unpublished_unapplied" ||
+  manifest.releaseState !== "published_sites_v20_no_database_change" ||
   historicalRelease.productionMigrationCount !== immutableHistoricalMigrations.length ||
   historicalRelease.latestProductionMigration !== immutableHistoricalMigrations.at(-1) ||
   historicalRelease.latestProductionMigrationSha256 !==
@@ -187,14 +186,14 @@ if (
   throw new Error("Historical observed production drift must remain distinct at Sites v18 / 14 applied migrations.");
 }
 if (
-  currentRelease.pullRequest !== 151 ||
-  currentRelease.reviewedHead !== "e5c40c02a79df91f424cd51a51e9f1c7e1b7147a" ||
-  currentRelease.githubMainCommit !== "bcd9b9da1796e72c0b9b546e9944a4e7e419c1b4" ||
-  currentRelease.sitesCheckoutCommit !== "5b7884983e2891cb8f55aef3d9553e981853be23" ||
-  currentRelease.sitesVersion !== 19 ||
+  currentRelease.pullRequest !== 152 ||
+  currentRelease.reviewedHead !== "b170c4339ae43755f17a19d74107cb75c6b198d3" ||
+  currentRelease.githubMainCommit !== "29e90d40fa05d67d2a6246f9a0ba64fe1b9099b7" ||
+  currentRelease.sitesCheckoutCommit !== "aceb17bb446854d48a71e54ba814591cf2c19d33" ||
+  currentRelease.sitesVersion !== 20 ||
   currentRelease.sourceFileCount !== 79 ||
   currentRelease.sourceTreeSha256 !==
-    "6223dbcb6e7644615a3fc7bca1d86a89ee4167c37ca12ddf9a92918ce321a9ad" ||
+    "5ae5da11de0ae202d33f31dea08ddd337b0b5323aa857d543f3c259f8662a4c2" ||
   currentRelease.productionMigrationCount !== expectedCandidateLedger.length ||
   currentRelease.latestProductionMigration !== "20260722000100_momo_client_media_status_v1.sql" ||
   currentRelease.latestProductionMigrationSha256 !==
@@ -209,27 +208,27 @@ if (
   !currentRelease.migrationFilenameParityVerified
 ) {
   throw new Error(
-    "Current verified release must remain bound to PR #151, Sites v19, and 15 applied migrations.",
+    "Current verified release must remain bound to PR #152, Sites v20, and 15 applied migrations.",
   );
 }
 if (
-  candidate.status !== "reviewed_locally_unmerged_unpublished_unapplied" ||
-  candidate.basedOnGitHubMainCommit !== currentRelease.githubMainCommit ||
+  candidate.status !== "published_sites_followup_no_database_change" ||
+  candidate.basedOnGitHubMainCommit !== "bcd9b9da1796e72c0b9b546e9944a4e7e419c1b4" ||
   candidate.pullRequest !== 152 ||
-  candidate.githubMerged ||
-  candidate.futureMergedGitHubCommit !== null ||
-  candidate.futureSitesVersion !== null ||
+  !candidate.githubMerged ||
+  candidate.futureMergedGitHubCommit !== currentRelease.githubMainCommit ||
+  candidate.futureSitesVersion !== currentRelease.sitesVersion ||
   candidate.migrationFileCount !== currentRelease.productionMigrationCount ||
   candidate.latestCandidateMigration !== currentRelease.latestProductionMigration ||
   candidate.latestCandidateMigrationSha256 !== currentRelease.latestProductionMigrationSha256 ||
   candidate.databaseChangesRequired ||
   candidate.databaseMigrationApplied ||
-  candidate.sitesPublished ||
+  !candidate.sitesPublished ||
   manifest.migrations.fileCount !== candidate.migrationFileCount ||
   manifest.migrations.treeSha256 !== candidate.migrationTreeSha256
 ) {
   throw new Error(
-    "The v20 readiness-copy candidate must remain Sites-only, based on PR #151, with no database change or publication claimed.",
+    "The v20 readiness-copy follow-up must remain Sites-only, based on PR #151, published with no database change.",
   );
 }
 if (
@@ -339,5 +338,5 @@ for (const filename of expectedSitesMigrationSnapshots) {
 }
 
 console.log(
-  "Supabase migration ledger guardrail passed; PR #151 / Sites v19 is verified through migration 15 and the v20 candidate requires no database change.",
+  "Supabase migration ledger guardrail passed; PR #152 / Sites v20 is verified through migration 15 and required no database change.",
 );

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
   "recordKind": "veroxa_production_reconciliation_manifest",
-  "releaseState": "local_candidate_reviewed_unmerged_unpublished_unapplied",
+  "releaseState": "published_sites_v20_no_database_change",
   "canonicalRepository": "farazmunirgohar-vxa/Veroxa",
   "canonicalBranch": "main",
   "sitesProjectId": "appgprj_6a53d07c7c28819182801cf35dfd30de",
@@ -34,7 +34,7 @@
     "migrationContentParityVerified": true,
     "migrationFilenameParityVerified": true
   },
-  "currentVerifiedRelease": {
+  "previousVerifiedRelease": {
     "pullRequest": 151,
     "reviewedHead": "e5c40c02a79df91f424cd51a51e9f1c7e1b7147a",
     "githubMainCommit": "bcd9b9da1796e72c0b9b546e9944a4e7e419c1b4",
@@ -42,6 +42,26 @@
     "sitesVersion": 19,
     "sourceFileCount": 79,
     "sourceTreeSha256": "6223dbcb6e7644615a3fc7bca1d86a89ee4167c37ca12ddf9a92918ce321a9ad",
+    "productionMigrationCount": 15,
+    "latestProductionMigration": "20260722000100_momo_client_media_status_v1.sql",
+    "latestProductionMigrationSha256": "5cd7444906e5f5184e30cc7594542c71995a372b8143e5097f975d354f0925c7",
+    "databaseApplied": true,
+    "databaseVerified": true,
+    "sitesPublished": true,
+    "sitesVerified": true,
+    "customDomainsVerified": true,
+    "sitesSourceParityVerified": true,
+    "migrationContentParityVerified": true,
+    "migrationFilenameParityVerified": true
+  },
+  "currentVerifiedRelease": {
+    "pullRequest": 152,
+    "reviewedHead": "b170c4339ae43755f17a19d74107cb75c6b198d3",
+    "githubMainCommit": "29e90d40fa05d67d2a6246f9a0ba64fe1b9099b7",
+    "sitesCheckoutCommit": "aceb17bb446854d48a71e54ba814591cf2c19d33",
+    "sitesVersion": 20,
+    "sourceFileCount": 79,
+    "sourceTreeSha256": "5ae5da11de0ae202d33f31dea08ddd337b0b5323aa857d543f3c259f8662a4c2",
     "productionMigrationCount": 15,
     "latestProductionMigration": "20260722000100_momo_client_media_status_v1.sql",
     "latestProductionMigrationSha256": "5cd7444906e5f5184e30cc7594542c71995a372b8143e5097f975d354f0925c7",
@@ -72,12 +92,12 @@
     "candidateParityVerified": false
   },
   "releaseCandidate": {
-    "status": "reviewed_locally_unmerged_unpublished_unapplied",
+    "status": "published_sites_followup_no_database_change",
     "basedOnGitHubMainCommit": "bcd9b9da1796e72c0b9b546e9944a4e7e419c1b4",
     "pullRequest": 152,
-    "githubMerged": false,
-    "futureMergedGitHubCommit": null,
-    "futureSitesVersion": null,
+    "githubMerged": true,
+    "futureMergedGitHubCommit": "29e90d40fa05d67d2a6246f9a0ba64fe1b9099b7",
+    "futureSitesVersion": 20,
     "reviewedLocally": true,
     "sourceFileCount": 79,
     "sourceTreeSha256": "5ae5da11de0ae202d33f31dea08ddd337b0b5323aa857d543f3c259f8662a4c2",
@@ -88,10 +108,10 @@
     "databaseChangesRequired": false,
     "databaseMigrationApplied": false,
     "sitesPublishRequired": true,
-    "sitesPublished": false
+    "sitesPublished": true
   },
   "source": {
-    "evidenceScope": "local_release_candidate",
+    "evidenceScope": "published_sites_v20",
     "root": "artifacts/veroxa-sites",
     "mappingTarget": "Sites repository root",
     "hashAlgorithm": "veroxa-path-null-content-null-sha256-v1",
@@ -111,7 +131,7 @@
     ]
   },
   "migrations": {
-    "evidenceScope": "local_release_candidate",
+    "evidenceScope": "current_verified_release",
     "root": "supabase/migrations",
     "hashAlgorithm": "veroxa-path-null-content-null-sha256-v1",
     "fileCount": 15,

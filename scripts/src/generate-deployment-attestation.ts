@@ -1,7 +1,7 @@
 import { mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 import {
-  assertReviewedLocalCandidateManifest,
+  assertDeploymentAttestationManifest,
   deploymentManifestPath,
   ensureParentPath,
   hashTree,
@@ -13,7 +13,7 @@ import {
 } from "./release-manifest";
 
 const manifest = readDeploymentManifest();
-assertReviewedLocalCandidateManifest(manifest);
+assertDeploymentAttestationManifest(manifest);
 const githubSha = (process.env.GITHUB_SHA || "").trim().toLowerCase();
 if (!/^[a-f0-9]{40}$/.test(githubSha)) {
   throw new Error("GITHUB_SHA must be the exact 40-character commit under attestation");
@@ -35,7 +35,7 @@ if (
   migrationTree.fileCount !== manifest.releaseCandidate.migrationFileCount ||
   migrationTree.sha256 !== manifest.releaseCandidate.migrationTreeSha256
 ) {
-  throw new Error("Refusing to attest source whose deterministic hashes do not match every schema-3 candidate fingerprint");
+  throw new Error("Refusing to attest source whose deterministic hashes do not match every schema-3 release fingerprint");
 }
 if (!migrationTree.files.includes(manifest.releaseCandidate.latestCandidateMigration)) {
   throw new Error("Refusing to attest a candidate whose latest migration is absent from the deterministic migration tree");
@@ -81,6 +81,7 @@ writeJson(output, {
     provesProductionParity: false,
   },
   releaseCandidate: manifest.releaseCandidate,
+  currentVerifiedRelease: manifest.currentVerifiedRelease,
   observedProductionDrift: manifest.observedProductionDrift,
   source: {
     evidenceScope: manifest.source.evidenceScope,

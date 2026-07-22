@@ -87,8 +87,8 @@ type Manifest = {
     basedOnGitHubMainCommit: string;
     pullRequest: number | null;
     githubMerged: boolean;
-    futureMergedGitHubCommit: null;
-    futureSitesVersion: null;
+    futureMergedGitHubCommit: string | null;
+    futureSitesVersion: number | null;
     reviewedLocally: boolean;
     sourceFileCount: number;
     sourceTreeSha256: string;
@@ -184,14 +184,14 @@ const historicalDrift = {
     "9e748a46e050b9b8884a5df46eba6617cac061d075272ab4e233d2c1609fb367",
 };
 const currentVerified = {
-  pullRequest: 151,
-  reviewedHead: "e5c40c02a79df91f424cd51a51e9f1c7e1b7147a",
-  githubMainCommit: "bcd9b9da1796e72c0b9b546e9944a4e7e419c1b4",
-  sitesCheckoutCommit: "5b7884983e2891cb8f55aef3d9553e981853be23",
-  sitesVersion: 19,
+  pullRequest: 152,
+  reviewedHead: "b170c4339ae43755f17a19d74107cb75c6b198d3",
+  githubMainCommit: "29e90d40fa05d67d2a6246f9a0ba64fe1b9099b7",
+  sitesCheckoutCommit: "aceb17bb446854d48a71e54ba814591cf2c19d33",
+  sitesVersion: 20,
   sourceFileCount: 79,
   sourceTreeSha256:
-    "6223dbcb6e7644615a3fc7bca1d86a89ee4167c37ca12ddf9a92918ce321a9ad",
+    "5ae5da11de0ae202d33f31dea08ddd337b0b5323aa857d543f3c259f8662a4c2",
   productionMigrationCount: 15,
   latestProductionMigration: "20260722000100_momo_client_media_status_v1.sql",
   latestProductionMigrationSha256:
@@ -215,9 +215,8 @@ must(
   "Deployment manifest record kind is invalid.",
 );
 must(
-  manifest.releaseState ===
-    "local_candidate_reviewed_unmerged_unpublished_unapplied",
-  "The manifest must identify the reviewed local candidate without claiming release.",
+  manifest.releaseState === "published_sites_v20_no_database_change",
+  "The manifest must identify the published Sites v20 no-database-change follow-up.",
 );
 must(
   manifest.canonicalRepository === "farazmunirgohar-vxa/Veroxa" &&
@@ -312,18 +311,18 @@ must(
     current.sitesSourceParityVerified &&
     current.migrationContentParityVerified &&
     current.migrationFilenameParityVerified,
-  "PR #151 / Sites v19 must remain the exact current verified release, including reviewed head, merged main, database apply, domains, and source/migration parity.",
+  "PR #152 / Sites v20 must remain the exact current verified release, including reviewed head, merged main, domains, and source/migration parity.",
 );
 
 const releaseCandidate = manifest.releaseCandidate;
 must(
-  releaseCandidate.status === "reviewed_locally_unmerged_unpublished_unapplied" &&
+  releaseCandidate.status === "published_sites_followup_no_database_change" &&
     releaseCandidate.basedOnGitHubMainCommit ===
-      currentVerified.githubMainCommit &&
+      "bcd9b9da1796e72c0b9b546e9944a4e7e419c1b4" &&
     releaseCandidate.pullRequest === 152 &&
-    !releaseCandidate.githubMerged &&
-    releaseCandidate.futureMergedGitHubCommit === null &&
-    releaseCandidate.futureSitesVersion === null &&
+    releaseCandidate.githubMerged &&
+    releaseCandidate.futureMergedGitHubCommit === currentVerified.githubMainCommit &&
+    releaseCandidate.futureSitesVersion === currentVerified.sitesVersion &&
     releaseCandidate.reviewedLocally &&
     releaseCandidate.sourceFileCount === candidate.sourceFileCount &&
     releaseCandidate.sourceTreeSha256 === candidate.sourceTreeSha256 &&
@@ -335,16 +334,16 @@ must(
     !releaseCandidate.databaseChangesRequired &&
     !releaseCandidate.databaseMigrationApplied &&
     releaseCandidate.sitesPublishRequired &&
-    !releaseCandidate.sitesPublished,
-  "The new candidate must remain exact, based on current main, locally reviewed, no-database-change, unmerged, unpublished, and unapplied.",
+    releaseCandidate.sitesPublished,
+  "The v20 follow-up must remain exact, merged, published, and no-database-change.",
 );
 
 must(
-  manifest.source.evidenceScope === "local_release_candidate" &&
+  manifest.source.evidenceScope === "published_sites_v20" &&
     manifest.source.root === "artifacts/veroxa-sites" &&
     manifest.source.mappingTarget === "Sites repository root" &&
     manifest.source.hashAlgorithm === TREE_HASH_ALGORITHM,
-  "Candidate Sites source mapping or evidence scope drifted.",
+  "Published Sites v20 source mapping or evidence scope drifted.",
 );
 const sourceRoot = resolve(repoRoot, manifest.source.root);
 must(existsSync(sourceRoot), "Canonical Sites source root is missing.");
@@ -356,9 +355,9 @@ must(
     sourceTree.sha256 === candidate.sourceTreeSha256 &&
     sourceTree.fileCount === manifest.source.fileCount &&
     sourceTree.sha256 === manifest.source.treeSha256,
-  `Local Sites candidate drifted (actual ${sourceTree.fileCount}/${sourceTree.sha256}).`,
+  `Published Sites v20 source drifted (actual ${sourceTree.fileCount}/${sourceTree.sha256}).`,
 );
-must(sourceTree.files.includes(".npmrc"), "Candidate Sites source must include .npmrc.");
+must(sourceTree.files.includes(".npmrc"), "Published Sites source must include .npmrc.");
 for (const excluded of [
   ".git",
   ".next",
@@ -378,10 +377,10 @@ for (const excluded of [
 }
 
 must(
-  manifest.migrations.evidenceScope === "local_release_candidate" &&
+  manifest.migrations.evidenceScope === "current_verified_release" &&
     manifest.migrations.root === "supabase/migrations" &&
     manifest.migrations.hashAlgorithm === TREE_HASH_ALGORITHM,
-  "Candidate migration-tree mapping or evidence scope drifted.",
+  "Current-release migration-tree mapping or evidence scope drifted.",
 );
 const migrationRoot = resolve(repoRoot, manifest.migrations.root);
 const migrationTree = hashTree(migrationRoot, { suffix: ".sql" });
@@ -390,7 +389,7 @@ must(
     migrationTree.sha256 === candidate.migrationTreeSha256 &&
     migrationTree.fileCount === manifest.migrations.fileCount &&
     migrationTree.sha256 === manifest.migrations.treeSha256,
-  `Local migration candidate drifted (actual ${migrationTree.fileCount}/${migrationTree.sha256}).`,
+  `Current-release migration tree drifted (actual ${migrationTree.fileCount}/${migrationTree.sha256}).`,
 );
 for (const [filename, sha256] of Object.entries({
   [verified.latestProductionMigration]: verified.latestProductionMigrationSha256,
@@ -463,5 +462,5 @@ if (failures.length) {
 }
 
 console.log(
-  `Veroxa release evidence passed: historical PR #149 / Sites v15 and observed Sites v18 drift preserved; PR #151 / Sites v19 is the current verified release; local ${sourceTree.fileCount}-file / ${migrationTree.fileCount}-migration no-database-change candidate is reviewed, unmerged, unpublished, and unapplied.`,
+  `Veroxa release evidence passed: historical PR #149 / Sites v15 and observed Sites v18 drift preserved; PR #152 / Sites v20 is the current verified release with ${sourceTree.fileCount} Sites files and ${migrationTree.fileCount} migrations; no v20 database change was required.`,
 );

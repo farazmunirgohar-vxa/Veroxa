@@ -2,11 +2,11 @@
 
 Status: Short index for Faraz, Codex, and future ChatGPT/Codex sessions.
 
-## 2026-07-22 — current PR #151 / Sites v19 state
+## 2026-07-22 — current PR #152 / Sites v20 state
 
-- Start with `MOMO_MEDIA_V19_LIVE_CLOSEOUT.json`, then `VEROXA_CURRENT_MILESTONE.md`, `CURRENT_BUILD_STATUS.md`, `ACTIVE_DOCS_INDEX.md`, and `VEROXA_LOCKED_OPERATING_MEMORY.md`.
-- PR #151 passed all four exact-head workflows and merged at `bcd9b9da1796e72c0b9b546e9944a4e7e419c1b4`.
-- Sites version 19 is live from checkout `5b7884983e2891cb8f55aef3d9553e981853be23`; `veroxasystems.com` and `www.veroxasystems.com` plus SSL are active, with zero errors in the initial 30-minute Worker-log check.
+- Start with `MOMO_MEDIA_V20_LIVE_CLOSEOUT.json`, then `VEROXA_CURRENT_MILESTONE.md`, `CURRENT_BUILD_STATUS.md`, `ACTIVE_DOCS_INDEX.md`, and `VEROXA_LOCKED_OPERATING_MEMORY.md`.
+- PR #152 passed all four exact-head workflows and merged at `29e90d40fa05d67d2a6246f9a0ba64fe1b9099b7`.
+- Sites version 20 is live from checkout `aceb17bb446854d48a71e54ba814591cf2c19d33`; `veroxasystems.com` and `www.veroxasystems.com` plus SSL/provider are active, with zero Worker errors in the initial 15-minute check. No database change was required.
 - Supabase has 15 applied migrations; migration 15's live RLS, grants, Client RPC, privileged-function, and storage-policy checks passed.
 - iCloud Client and Gmail Team are ready. One upload and one current rights record exist; approved review and Ready rendition counts remain zero until Faraz runs the real Team workflow.
 - Google/social, providers, live AI, and external writes remain locked. Nothing was published; spend is USD $0 of USD $20; Momo remains No-Go.
@@ -65,8 +65,8 @@ Current strategy markers:
 - Active stack: **ChatGPT-managed GitHub + Codex + ChatGPT Sites**. **Vercel is retired** and is not a deployment or rollback path.
 - **GitHub `main` is canonical**; GitHub merge and Sites deployment are separate actions.
 - `Build it` means build/test/PR/CI/RR and green merge; `Build it, but hold for review` stops at the green PR; `Build and deploy it` also syncs the exact merged source to Sites, checkpoints, deploys, and verifies the live domains.
-- Sites is public; `veroxasystems.com` and `www.veroxasystems.com` were verified with the Sites version 19 deployment on 2026-07-22.
-- Current verified technical/deployed foundation: PR #151 reviewed head `e5c40c02a79df91f424cd51a51e9f1c7e1b7147a`, merged commit `bcd9b9da1796e72c0b9b546e9944a4e7e419c1b4`, Sites version 19 checkout `5b7884983e2891cb8f55aef3d9553e981853be23`, and 15 applied migrations. Public marketing and audit intake are anonymous. Client and Team routes use Supabase sessions plus active profile/membership authorization; the iCloud Client and Gmail Team identities are ready, with one private upload and one current confirmed rights record. Approved Team reviews and Ready renditions remain zero, and real-owner authority, runtime AI, providers, publishing, and activation remain blocked. Momo remains **No-Go**.
+- Sites is public; `veroxasystems.com` and `www.veroxasystems.com` were verified with the Sites version 20 deployment on 2026-07-22.
+- Current verified technical/deployed foundation: PR #152 reviewed head `b170c4339ae43755f17a19d74107cb75c6b198d3`, merged commit `29e90d40fa05d67d2a6246f9a0ba64fe1b9099b7`, Sites version 20 checkout `aceb17bb446854d48a71e54ba814591cf2c19d33`, and 15 applied migrations. PR #151 / Sites version 19 remains immutable historical evidence for the underlying media and database release. Public marketing and audit intake are anonymous. Client and Team routes use Supabase sessions plus active profile/membership authorization; the iCloud Client and Gmail Team identities are ready, with one private upload and one current confirmed rights record. Approved Team reviews and Ready renditions remain zero, and real-owner authority, runtime AI, providers, publishing, and activation remain blocked. Momo remains **No-Go**.
 - **Replit is historical only**.
 - Active roles: **Client and Team**.
 - **Owner/Operator parked**.

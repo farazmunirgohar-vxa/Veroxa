@@ -1,9 +1,8 @@
-## 2026-07-22 — Sites v20 readiness-copy reconciliation candidate
+## 2026-07-22 — PR #152 / Sites v20 readiness-copy follow-up deployed
 
-- **Why this exists:** post-release review found one protected readiness next action that still said migration 15 was unavailable and lower current-state markers that still called PR #149 / Sites v15 current. The live media workflow is not regressing; this candidate repairs the operating record that guides Team and future sessions.
-- **Scope:** update the static Team readiness next action to run against the applied migration; align the current-state index and repository instructions to PR #151 / Sites v19; preserve every false readiness gate, Momo No-Go, zero providers, disabled external writes, and USD $0 actual spend.
-- **Release model:** PR #151 / Sites v19 / 15 migrations is now the exact current verified baseline in the deployment manifest and RR checkpoint. The candidate is a 79-file Sites-only delta based on merged commit `bcd9b9da1796e72c0b9b546e9944a4e7e419c1b4`; it requires no database change.
-- **Boundary:** because `momo-readiness-tracker.json` is part of the protected Sites bundle, exact GitHub/Sites parity requires a new checkpoint after a green merge even though the changed readiness record is not rendered by the current page component. Until that happens, Sites version 19 remains the verified live release.
+- **Live truth:** `MOMO_MEDIA_V20_LIVE_CLOSEOUT.json` records PR #152, its four green workflows, and successful Sites version 20 deployment from checkout `aceb17bb446854d48a71e54ba814591cf2c19d33`.
+- **Scope:** v20 corrected the protected readiness record and release markers. It changed no database schema or data, connections, publishing, AI activation, or actual spend.
+- **Readiness:** Momo remains **No-Go** until the authenticated Client/Team media rehearsal and the later owner, recovery, reporting, and operating-loop evidence pass.
 
 ## 2026-07-22 — PR #151 / Sites v19 Momo media foundation deployed
 

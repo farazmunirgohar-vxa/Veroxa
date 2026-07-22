@@ -1,4 +1,10 @@
-## 2026-07-22 — locked PR #151 / Sites v19 production checkpoint
+## 2026-07-22 — locked PR #152 / Sites v20 production checkpoint
+
+- PR #152 passed all four workflows at reviewed head `b170c4339ae43755f17a19d74107cb75c6b198d3`, with zero unresolved review threads, and merged at `29e90d40fa05d67d2a6246f9a0ba64fe1b9099b7`.
+- Sites version 20 deployed from checkout `aceb17bb446854d48a71e54ba814591cf2c19d33`; both custom domains, SSL, and provider status are active, and the first 15-minute error-log check returned zero Worker events.
+- V20 was a protected Sites-source evidence follow-up only: it made no database change, did not perform the authenticated Client/Team rehearsal, and did not change Momo No-Go, external-connection, publishing, AI, or spend boundaries.
+
+## 2026-07-22 — locked PR #151 / Sites v19 production checkpoint (historical)
 
 ### Verified live truth
 

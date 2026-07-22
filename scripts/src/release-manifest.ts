@@ -17,6 +17,10 @@ export const REFRESHED_LOCAL_CANDIDATE_RELEASE_STATE =
   "local_candidate_fingerprints_refreshed_review_required_unmerged_unpublished_unapplied";
 export const REFRESHED_LOCAL_CANDIDATE_STATUS =
   "fingerprints_refreshed_review_required_unmerged_unpublished_unapplied";
+export const PUBLISHED_SITES_RELEASE_STATE =
+  "published_sites_v20_no_database_change";
+export const PUBLISHED_SITES_FOLLOWUP_STATUS =
+  "published_sites_followup_no_database_change";
 
 type Nullable<T> = T | null;
 
@@ -98,8 +102,8 @@ export type DeploymentManifest = {
     basedOnGitHubMainCommit: string;
     pullRequest: Nullable<number>;
     githubMerged: boolean;
-    futureMergedGitHubCommit: null;
-    futureSitesVersion: null;
+    futureMergedGitHubCommit: Nullable<string>;
+    futureSitesVersion: Nullable<number>;
     reviewedLocally: boolean;
     sourceFileCount: number;
     sourceTreeSha256: string;
@@ -223,6 +227,106 @@ export function assertReviewedLocalCandidateManifest(
   ) {
     throw new Error("Deployment attestation requires the explicitly reviewed local candidate state");
   }
+}
+
+export function assertPublishedSitesFollowupManifest(
+  manifest: DeploymentManifest,
+): void {
+  const failures: string[] = [];
+  const candidate = manifest.releaseCandidate;
+  const current = manifest.currentVerifiedRelease;
+  if (manifest.schemaVersion !== 3) failures.push("schemaVersion must be 3");
+  if (manifest.recordKind !== "veroxa_production_reconciliation_manifest") {
+    failures.push("recordKind must identify the production reconciliation manifest");
+  }
+  if (manifest.releaseState !== PUBLISHED_SITES_RELEASE_STATE) {
+    failures.push("releaseState must identify the verified Sites v20 publication");
+  }
+  if (candidate.status !== PUBLISHED_SITES_FOLLOWUP_STATUS) {
+    failures.push("releaseCandidate.status must identify the published Sites-only follow-up");
+  }
+  if (!Number.isInteger(candidate.pullRequest) || (candidate.pullRequest ?? 0) < 1) {
+    failures.push("published follow-up must retain its pull request number");
+  }
+  if (!candidate.githubMerged || !candidate.sitesPublished || !candidate.reviewedLocally) {
+    failures.push("published follow-up must be reviewed, merged, and published");
+  }
+  if (
+    !candidate.futureMergedGitHubCommit ||
+    !/^[a-f0-9]{40}$/.test(candidate.futureMergedGitHubCommit) ||
+    candidate.futureMergedGitHubCommit !== current.githubMainCommit
+  ) {
+    failures.push("published merge evidence must equal the current verified GitHub commit");
+  }
+  if (
+    candidate.futureSitesVersion !== current.sitesVersion ||
+    !Number.isInteger(candidate.futureSitesVersion)
+  ) {
+    failures.push("published Sites evidence must equal the current verified Sites version");
+  }
+  if (
+    candidate.databaseChangesRequired ||
+    candidate.databaseMigrationApplied ||
+    !candidate.sitesPublishRequired
+  ) {
+    failures.push("published v20 follow-up must remain Sites-only with no database change");
+  }
+  if (
+    manifest.source.evidenceScope !== "published_sites_v20" ||
+    manifest.source.root !== "artifacts/veroxa-sites" ||
+    manifest.migrations.evidenceScope !== "current_verified_release" ||
+    manifest.migrations.root !== "supabase/migrations"
+  ) {
+    failures.push("published source and migration evidence scopes must remain exact");
+  }
+  if (
+    manifest.source.hashAlgorithm !== TREE_HASH_ALGORITHM ||
+    manifest.migrations.hashAlgorithm !== TREE_HASH_ALGORITHM
+  ) {
+    failures.push("published trees must use the canonical deterministic hash algorithm");
+  }
+  if (
+    candidate.sourceFileCount !== manifest.source.fileCount ||
+    candidate.sourceTreeSha256 !== manifest.source.treeSha256 ||
+    candidate.migrationFileCount !== manifest.migrations.fileCount ||
+    candidate.migrationTreeSha256 !== manifest.migrations.treeSha256 ||
+    current.sourceFileCount !== manifest.source.fileCount ||
+    current.sourceTreeSha256 !== manifest.source.treeSha256 ||
+    current.productionMigrationCount !== manifest.migrations.fileCount ||
+    candidate.latestCandidateMigration !== current.latestProductionMigration ||
+    candidate.latestCandidateMigrationSha256 !==
+      current.latestProductionMigrationSha256
+  ) {
+    failures.push("published candidate, current release, source, and migration fingerprints must agree");
+  }
+  if (
+    !current.databaseApplied ||
+    !current.databaseVerified ||
+    !current.sitesPublished ||
+    !current.sitesVerified ||
+    !current.customDomainsVerified ||
+    !current.sitesSourceParityVerified ||
+    !current.migrationContentParityVerified ||
+    !current.migrationFilenameParityVerified
+  ) {
+    failures.push("current published release must retain every verified production evidence flag");
+  }
+  if (failures.length) {
+    throw new Error(`Unsafe published deployment manifest state: ${failures.join("; ")}`);
+  }
+}
+
+export function assertDeploymentAttestationManifest(
+  manifest: DeploymentManifest,
+): void {
+  if (
+    manifest.releaseState === PUBLISHED_SITES_RELEASE_STATE ||
+    manifest.releaseCandidate.status === PUBLISHED_SITES_FOLLOWUP_STATUS
+  ) {
+    assertPublishedSitesFollowupManifest(manifest);
+    return;
+  }
+  assertReviewedLocalCandidateManifest(manifest);
 }
 
 function normalized(relativePath: string): string {

@@ -305,8 +305,7 @@ must(
 must(
   manifest.schemaVersion === 3 &&
     manifest.sitesProjectId === "appgprj_6a53d07c7c28819182801cf35dfd30de" &&
-    manifest.releaseState ===
-      "local_candidate_reviewed_unmerged_unpublished_unapplied" &&
+    manifest.releaseState === "published_sites_v20_no_database_change" &&
     historicalRelease.pullRequest === 149 &&
     historicalRelease.githubMainCommit === "9749b68ce2cfc383deeae6aa63c413019ef61385" &&
     historicalRelease.sitesCheckoutCommit === "e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0" &&
@@ -327,14 +326,14 @@ must(
     historicalRelease.sitesSourceParityVerified &&
     historicalRelease.migrationContentParityVerified &&
     historicalRelease.migrationFilenameParityVerified &&
-    currentRelease.pullRequest === 151 &&
-    currentRelease.reviewedHead === "e5c40c02a79df91f424cd51a51e9f1c7e1b7147a" &&
-    currentRelease.githubMainCommit === "bcd9b9da1796e72c0b9b546e9944a4e7e419c1b4" &&
-    currentRelease.sitesCheckoutCommit === "5b7884983e2891cb8f55aef3d9553e981853be23" &&
-    currentRelease.sitesVersion === 19 &&
+    currentRelease.pullRequest === 152 &&
+    currentRelease.reviewedHead === "b170c4339ae43755f17a19d74107cb75c6b198d3" &&
+    currentRelease.githubMainCommit === "29e90d40fa05d67d2a6246f9a0ba64fe1b9099b7" &&
+    currentRelease.sitesCheckoutCommit === "aceb17bb446854d48a71e54ba814591cf2c19d33" &&
+    currentRelease.sitesVersion === 20 &&
     currentRelease.sourceFileCount === 79 &&
     currentRelease.sourceTreeSha256 ===
-      "6223dbcb6e7644615a3fc7bca1d86a89ee4167c37ca12ddf9a92918ce321a9ad" &&
+      "5ae5da11de0ae202d33f31dea08ddd337b0b5323aa857d543f3c259f8662a4c2" &&
     currentRelease.productionMigrationCount === 15 &&
     currentRelease.latestProductionMigration ===
       "20260722000100_momo_client_media_status_v1.sql" &&
@@ -367,12 +366,12 @@ must(
     observedProduction.databaseLedgerObserved &&
     observedProduction.databaseAppliedThroughLatestObserved &&
     !observedProduction.candidateParityVerified &&
-    candidate.status === "reviewed_locally_unmerged_unpublished_unapplied" &&
-    candidate.basedOnGitHubMainCommit === currentRelease.githubMainCommit &&
+    candidate.status === "published_sites_followup_no_database_change" &&
+    candidate.basedOnGitHubMainCommit === "bcd9b9da1796e72c0b9b546e9944a4e7e419c1b4" &&
     candidate.pullRequest === 152 &&
-    !candidate.githubMerged &&
-    candidate.futureMergedGitHubCommit === null &&
-    candidate.futureSitesVersion === null &&
+    candidate.githubMerged &&
+    candidate.futureMergedGitHubCommit === currentRelease.githubMainCommit &&
+    candidate.futureSitesVersion === currentRelease.sitesVersion &&
     candidate.reviewedLocally &&
     candidate.sourceFileCount === 79 &&
     candidate.sourceTreeSha256 ===
@@ -387,7 +386,7 @@ must(
     !candidate.databaseChangesRequired &&
     !candidate.databaseMigrationApplied &&
     candidate.sitesPublishRequired &&
-    !candidate.sitesPublished &&
+    candidate.sitesPublished &&
     manifest.source.fileCount === candidate.sourceFileCount &&
     manifest.source.treeSha256 === candidate.sourceTreeSha256 &&
     manifest.migrations.fileCount === candidate.migrationFileCount &&
@@ -395,12 +394,12 @@ must(
     !manifest.cleanupState.branchDeletionCapabilityAvailable &&
     !manifest.cleanupState.externalVercelGitDisconnectionVerified &&
     manifest.cleanupState.vercelShutdownSentinelRequired,
-  "Schema-3 deployment manifest must preserve PR #149 / Sites v15 history and observed v18 drift, prove PR #151 / Sites v19 / 15 migrations as current, and keep the reviewed 79-file Sites v20 candidate unpublished and database-change-free.",
+  "Schema-3 deployment manifest must preserve PR #149 / Sites v15 history and observed v18 drift, prove PR #152 / Sites v20 / 15 migrations as current, and retain the published 79-file v20 no-database-change follow-up.",
 );
 
 must(
   checkpoint.schemaVersion === 6 &&
-    checkpoint.checkpoint === "momo-readiness-copy-sites-v20-candidate-2026-07-22" &&
+    checkpoint.checkpoint === "momo-readiness-copy-sites-v20-published-2026-07-22" &&
     checkpoint.status === manifest.releaseState &&
     checkpoint.verifiedReconciliationRelease.pullRequest === historicalRelease.pullRequest &&
     checkpoint.verifiedReconciliationRelease.githubMainCommit === historicalRelease.githubMainCommit &&
@@ -491,8 +490,8 @@ must(
     checkpoint.releaseCandidate.futureSitesVersion === candidate.futureSitesVersion &&
     checkpoint.releaseCandidate.reviewedLocally === candidate.reviewedLocally &&
     checkpoint.releaseCandidate.localReviewPassed &&
-    checkpoint.releaseCandidate.allFourWorkflowsGreen === null &&
-    checkpoint.releaseCandidate.zeroUnresolvedReviewThreads === null &&
+    checkpoint.releaseCandidate.allFourWorkflowsGreen === true &&
+    checkpoint.releaseCandidate.zeroUnresolvedReviewThreads === true &&
     checkpoint.releaseCandidate.sourceFileCount === candidate.sourceFileCount &&
     checkpoint.releaseCandidate.sourceTreeSha256 === candidate.sourceTreeSha256 &&
     checkpoint.releaseCandidate.migrationFileCount === candidate.migrationFileCount &&
@@ -506,7 +505,7 @@ must(
     checkpoint.releaseCandidate.databaseMigrationApplied === candidate.databaseMigrationApplied &&
     checkpoint.releaseCandidate.sitesPublishRequired === candidate.sitesPublishRequired &&
     checkpoint.releaseCandidate.sitesCandidatePublished === candidate.sitesPublished,
-  "RR checkpoint must match PR #151 / Sites v19 / 15-migration live proof and the separate reviewed, unpublished Sites v20 candidate without inventing a database apply.",
+  "RR checkpoint must match PR #152 / Sites v20 / 15-migration live proof and the published Sites-only v20 follow-up without inventing a database apply.",
 );
 
 for (const workflow of readdirSync(resolve(root, ".github/workflows")).filter((name) =>
@@ -525,5 +524,5 @@ if (failures.length) {
 }
 
 console.log(
-  "Sites-only deployment guardrail passed; PR #151 / Sites v19 / 15 migrations is current, the Sites v20 candidate remains unpublished with no database change, and Vercel stays inert.",
+  "Sites-only deployment guardrail passed; PR #152 / Sites v20 / 15 migrations is current, the v20 follow-up is published with no database change, and Vercel stays inert.",
 );

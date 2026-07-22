@@ -2,15 +2,15 @@
 
 Status: highest-level current source-of-truth index. Read this file before relying on older Veroxa documents.
 
-## 2026-07-22 — Sites v20 readiness-copy reconciliation candidate
+## 2026-07-22 — PR #152 / Sites v20 live override
 
-- PR #151 / Sites v19 / 15 migrations remains the verified live baseline. A narrow follow-up candidate corrects stale migration-availability and v15-current wording without changing database, identity, media, provider, publishing, or spending behavior.
-- The candidate is Sites-only because `momo-readiness-tracker.json` is bundled on protected Team routes. It must pass exact-head review and all release workflows, merge, and receive a separate Sites checkpoint before it can replace version 19.
+- `MOMO_MEDIA_V20_LIVE_CLOSEOUT.json` is the current machine-readable live authority. PR #152 merged after four green exact-head workflows; Sites version 20 is live from checkout `aceb17bb446854d48a71e54ba814591cf2c19d33` with active domains/SSL/provider and zero Worker errors in its first 15 minutes.
+- This was a Sites-only follow-up: no database change was required or applied. Momo remains No-Go pending the authenticated Client/Team rehearsal; external connections, publishing, live AI, and actual spend remain unchanged.
 - Momo remains **No-Go**. This correction updates release truth; it does not create a Team rehearsal result, owner authority, an approved review, a Ready rendition, a provider connection, or a public action.
 
 ## 2026-07-22 — PR #151 / Sites v19 live override
 
-- `MOMO_MEDIA_V19_LIVE_CLOSEOUT.json` is the current machine-readable release closeout. It supersedes the pre-release candidate state for live-status questions while preserving that earlier evidence as history.
+- `MOMO_MEDIA_V19_LIVE_CLOSEOUT.json` is historical release evidence; v20 supersedes it for current live-status questions.
 - PR #151 passed all four exact-head workflows with 19/19 database tests and zero unresolved review threads, then merged at `bcd9b9da1796e72c0b9b546e9944a4e7e419c1b4`.
 - Sites version 19 is live from `5b7884983e2891cb8f55aef3d9553e981853be23`; both custom domains and SSL are active, and the initial post-deploy Worker error check found zero errors.
 - Supabase has 15 applied migrations. Migration 15's live RLS, grant, RPC, privileged-function, and storage-policy checks all passed.
