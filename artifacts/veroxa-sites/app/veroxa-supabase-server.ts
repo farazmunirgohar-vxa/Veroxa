@@ -1,4 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 
 export type ServerAccess = {
@@ -10,6 +11,12 @@ export type ServerAccess = {
 export type ServerSupabasePublicConfig = {
   url: string;
   publishableKey: string;
+};
+
+export type ServerVeroxaContext = {
+  access: ServerAccess;
+  userId: string;
+  client: SupabaseClient;
 };
 
 export function getServerSupabasePublicConfig(): ServerSupabasePublicConfig | null {
@@ -36,7 +43,7 @@ export function getServerSupabasePublicConfig(): ServerSupabasePublicConfig | nu
   }
 }
 
-export async function getServerVeroxaAccess(): Promise<ServerAccess | null> {
+export async function getServerVeroxaContext(): Promise<ServerVeroxaContext | null> {
   const config = getServerSupabasePublicConfig();
   if (!config) return null;
   const cookieStore = await cookies();
@@ -80,8 +87,17 @@ export async function getServerVeroxaAccess(): Promise<ServerAccess | null> {
     return null;
   }
   return {
-    role: profile.role,
-    displayName: profile.display_name || userData.user.email || (profile.role === "team" ? "Team Faraz" : "Momo’s House"),
-    restaurantId: membership.restaurant_id,
+    access: {
+      role: profile.role,
+      displayName: profile.display_name || userData.user.email || (profile.role === "team" ? "Team Faraz" : "Momo’s House"),
+      restaurantId: membership.restaurant_id,
+    },
+    userId: userData.user.id,
+    client,
   };
+}
+
+export async function getServerVeroxaAccess(): Promise<ServerAccess | null> {
+  const context = await getServerVeroxaContext();
+  return context?.access || null;
 }

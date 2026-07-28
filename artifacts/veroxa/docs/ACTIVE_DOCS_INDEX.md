@@ -2,6 +2,13 @@
 
 Status: highest-level current source-of-truth index. Read this file before relying on older Veroxa documents.
 
+## 2026-07-28 — Media AI candidate override
+
+- Read `VEROXA_CURRENT_MILESTONE.md`, `VEROXA_DEPLOYMENT_MANIFEST.json`, and `RR_RELEASE_CHECKPOINT.json` first for the reviewed Media AI candidate. `MOMO_MEDIA_V20_LIVE_CLOSEOUT.json` remains the current production authority until a later release is actually verified.
+- The candidate is unmerged, migration 16 is unapplied, and no new Sites version is published. The server-side OpenAI credential exists, but live Media AI remains disabled; actual spend is USD $0.
+- Only Image Enhancement is authorized for model-backed activation, under the USD $2 internal lifetime reservation ceiling inside Faraz's USD $20 one-time ceiling. Caption, deterministic review/compliance, social/Google, publishing, owner-controlled providers, and Momo activation are not activated.
+- `artifacts/veroxa-sites/app/momo-readiness-tracker.json` records the expired-rights blocker and preserves Momo No-Go.
+
 ## 2026-07-22 — PR #152 / Sites v20 live override
 
 - `MOMO_MEDIA_V20_LIVE_CLOSEOUT.json` is the current machine-readable live authority. PR #152 merged after four green exact-head workflows; Sites version 20 is live from checkout `aceb17bb446854d48a71e54ba814591cf2c19d33` with active domains/SSL/provider and zero Worker errors in its first 15 minutes.

@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
@@ -90,8 +91,18 @@ const manifest = JSON.parse(
     sitesPublishRequired: boolean;
     sitesPublished: boolean;
   };
-  source: { fileCount: number; treeSha256: string };
-  migrations: { fileCount: number; treeSha256: string };
+  source: {
+    evidenceScope: string;
+    root: string;
+    fileCount: number;
+    treeSha256: string;
+  };
+  migrations: {
+    evidenceScope: string;
+    root: string;
+    fileCount: number;
+    treeSha256: string;
+  };
   cleanupState: {
     branchDeletionCapabilityAvailable: boolean;
     externalVercelGitDisconnectionVerified: boolean;
@@ -186,6 +197,19 @@ const historicalRelease = manifest.verifiedReconciliationRelease;
 const currentRelease = manifest.currentVerifiedRelease;
 const observedProduction = manifest.observedProductionDrift;
 const candidate = manifest.releaseCandidate;
+const reviewedLocalCandidateReleaseState =
+  "local_candidate_reviewed_unmerged_unpublished_unapplied";
+const reviewedLocalCandidateStatus =
+  "reviewed_locally_unmerged_unpublished_unapplied";
+const candidateBaseMain =
+  "979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6";
+const mediaAiMigration =
+  "20260728044916_momo_media_ai_pilot_v1.sql";
+const mediaAiMigrationPath = resolve(
+  root,
+  "supabase/migrations",
+  mediaAiMigration,
+);
 
 for (const retiredPath of ["api/audit-requests.ts", "api/pilot-access.ts"]) {
   must(!existsSync(resolve(root, retiredPath)), `Retired Vercel artifact exists: ${retiredPath}`);
@@ -221,6 +245,7 @@ const documents = [
   "artifacts/veroxa/docs/CURRENT_BUILD_STATUS.md",
   "artifacts/veroxa/docs/README_CURRENT_STATE.md",
   "artifacts/veroxa/docs/RR_CHECKPOINT.md",
+  "artifacts/veroxa/docs/MOMO_MEDIA_V20_LIVE_CLOSEOUT.json",
   "artifacts/veroxa/docs/MOMO_MEDIA_V19_LIVE_CLOSEOUT.json",
 ].map((path) => ({ path, source: read(path).slice(0, 14_000) }));
 const combined = documents.map(({ source }) => source).join("\n");
@@ -305,7 +330,7 @@ must(
 must(
   manifest.schemaVersion === 3 &&
     manifest.sitesProjectId === "appgprj_6a53d07c7c28819182801cf35dfd30de" &&
-    manifest.releaseState === "published_sites_v20_no_database_change" &&
+    manifest.releaseState === reviewedLocalCandidateReleaseState &&
     historicalRelease.pullRequest === 149 &&
     historicalRelease.githubMainCommit === "9749b68ce2cfc383deeae6aa63c413019ef61385" &&
     historicalRelease.sitesCheckoutCommit === "e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0" &&
@@ -366,40 +391,56 @@ must(
     observedProduction.databaseLedgerObserved &&
     observedProduction.databaseAppliedThroughLatestObserved &&
     !observedProduction.candidateParityVerified &&
-    candidate.status === "published_sites_followup_no_database_change" &&
-    candidate.basedOnGitHubMainCommit === "bcd9b9da1796e72c0b9b546e9944a4e7e419c1b4" &&
-    candidate.pullRequest === 152 &&
-    candidate.githubMerged &&
-    candidate.futureMergedGitHubCommit === currentRelease.githubMainCommit &&
-    candidate.futureSitesVersion === currentRelease.sitesVersion &&
+    candidate.status === reviewedLocalCandidateStatus &&
+    candidate.basedOnGitHubMainCommit === candidateBaseMain &&
+    candidate.pullRequest === null &&
+    !candidate.githubMerged &&
+    candidate.futureMergedGitHubCommit === null &&
+    candidate.futureSitesVersion === null &&
     candidate.reviewedLocally &&
-    candidate.sourceFileCount === 79 &&
-    candidate.sourceTreeSha256 ===
-      "5ae5da11de0ae202d33f31dea08ddd337b0b5323aa857d543f3c259f8662a4c2" &&
-    candidate.migrationFileCount === 15 &&
-    candidate.migrationTreeSha256 ===
-      "9eb4e5e16e2abea40143dad453bfcc2fcca27de6a7907d1f997af998b5c7dc0a" &&
-    candidate.latestCandidateMigration ===
-      "20260722000100_momo_client_media_status_v1.sql" &&
-    candidate.latestCandidateMigrationSha256 ===
-      "5cd7444906e5f5184e30cc7594542c71995a372b8143e5097f975d354f0925c7" &&
-    !candidate.databaseChangesRequired &&
+    candidate.sourceFileCount > currentRelease.sourceFileCount &&
+    /^[a-f0-9]{64}$/.test(candidate.sourceTreeSha256) &&
+    candidate.migrationFileCount === currentRelease.productionMigrationCount + 1 &&
+    /^[a-f0-9]{64}$/.test(candidate.migrationTreeSha256) &&
+    candidate.latestCandidateMigration === mediaAiMigration &&
+    /^[a-f0-9]{64}$/.test(candidate.latestCandidateMigrationSha256) &&
+    candidate.databaseChangesRequired &&
     !candidate.databaseMigrationApplied &&
     candidate.sitesPublishRequired &&
-    candidate.sitesPublished &&
+    !candidate.sitesPublished &&
+    manifest.source.evidenceScope === "local_release_candidate" &&
+    manifest.source.root === "artifacts/veroxa-sites" &&
     manifest.source.fileCount === candidate.sourceFileCount &&
     manifest.source.treeSha256 === candidate.sourceTreeSha256 &&
+    manifest.migrations.evidenceScope === "local_release_candidate" &&
+    manifest.migrations.root === "supabase/migrations" &&
     manifest.migrations.fileCount === candidate.migrationFileCount &&
     manifest.migrations.treeSha256 === candidate.migrationTreeSha256 &&
     !manifest.cleanupState.branchDeletionCapabilityAvailable &&
     !manifest.cleanupState.externalVercelGitDisconnectionVerified &&
     manifest.cleanupState.vercelShutdownSentinelRequired,
-  "Schema-3 deployment manifest must preserve PR #149 / Sites v15 history and observed v18 drift, prove PR #152 / Sites v20 / 15 migrations as current, and retain the published 79-file v20 no-database-change follow-up.",
+  "Schema-3 deployment manifest must preserve PR #149 / Sites v15 history and observed v18 drift, prove PR #152 / Sites v20 / migration 15 as current, and describe only the reviewed local Media AI candidate as unmerged, unpublished, and unapplied.",
 );
 
 must(
+  existsSync(mediaAiMigrationPath),
+  `Reviewed local Media AI candidate is missing migration 16: ${mediaAiMigration}.`,
+);
+if (existsSync(mediaAiMigrationPath)) {
+  const mediaAiMigrationSha256 = createHash("sha256")
+    .update(readFileSync(mediaAiMigrationPath))
+    .digest("hex");
+  must(
+    candidate.latestCandidateMigrationSha256 === mediaAiMigrationSha256,
+    "Reviewed local Media AI candidate migration-16 checksum disagrees with canonical source.",
+  );
+}
+
+must(
   checkpoint.schemaVersion === 6 &&
-    checkpoint.checkpoint === "momo-readiness-copy-sites-v20-published-2026-07-22" &&
+    /media-ai/i.test(checkpoint.checkpoint) &&
+    /candidate/i.test(checkpoint.checkpoint) &&
+    !/(published|deployed)/i.test(checkpoint.checkpoint) &&
     checkpoint.status === manifest.releaseState &&
     checkpoint.verifiedReconciliationRelease.pullRequest === historicalRelease.pullRequest &&
     checkpoint.verifiedReconciliationRelease.githubMainCommit === historicalRelease.githubMainCommit &&
@@ -490,8 +531,8 @@ must(
     checkpoint.releaseCandidate.futureSitesVersion === candidate.futureSitesVersion &&
     checkpoint.releaseCandidate.reviewedLocally === candidate.reviewedLocally &&
     checkpoint.releaseCandidate.localReviewPassed &&
-    checkpoint.releaseCandidate.allFourWorkflowsGreen === true &&
-    checkpoint.releaseCandidate.zeroUnresolvedReviewThreads === true &&
+    checkpoint.releaseCandidate.allFourWorkflowsGreen === null &&
+    checkpoint.releaseCandidate.zeroUnresolvedReviewThreads === null &&
     checkpoint.releaseCandidate.sourceFileCount === candidate.sourceFileCount &&
     checkpoint.releaseCandidate.sourceTreeSha256 === candidate.sourceTreeSha256 &&
     checkpoint.releaseCandidate.migrationFileCount === candidate.migrationFileCount &&
@@ -505,7 +546,7 @@ must(
     checkpoint.releaseCandidate.databaseMigrationApplied === candidate.databaseMigrationApplied &&
     checkpoint.releaseCandidate.sitesPublishRequired === candidate.sitesPublishRequired &&
     checkpoint.releaseCandidate.sitesCandidatePublished === candidate.sitesPublished,
-  "RR checkpoint must match PR #152 / Sites v20 / 15-migration live proof and the published Sites-only v20 follow-up without inventing a database apply.",
+  "RR checkpoint must match PR #152 / Sites v20 / migration-15 live proof and the reviewed local Media AI candidate without inventing a PR, merge, Sites publication, database apply, hosted-workflow result, or review-thread result.",
 );
 
 for (const workflow of readdirSync(resolve(root, ".github/workflows")).filter((name) =>
@@ -524,5 +565,5 @@ if (failures.length) {
 }
 
 console.log(
-  "Sites-only deployment guardrail passed; PR #152 / Sites v20 / 15 migrations is current, the v20 follow-up is published with no database change, and Vercel stays inert.",
+  "Sites-only deployment guardrail passed; PR #152 / Sites v20 / migration 15 remains current, the reviewed local Media AI candidate is unmerged, unpublished, and unapplied, and Vercel stays inert.",
 );

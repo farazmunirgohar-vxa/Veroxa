@@ -1,3 +1,11 @@
+## 2026-07-28 — reviewed Media AI candidate (not live)
+
+- PR #152 / Sites version 20 / 15 applied migrations remains the exact verified production baseline. The Media AI work is a separate reviewed local candidate based on GitHub `main` commit `979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6`; it is not merged, migration 16 is not applied, and no later Sites version is published.
+- The existing Momo **Review → Improve → Ready** flow now has a candidate server-side Image Enhancement path using `gpt-image-2`. The existing deterministic Media Review and Compliance contracts govern it; Caption, Compliance, and Media Review are not separate model calls in this release.
+- The OpenAI credential is provisioned only as a server secret. The live Media AI flag remains off, provider/real-edit proof remains pending, actual spend is USD $0, the database enforces a USD $2 lifetime reservation ceiling inside Faraz's USD $20 one-time authorization, and recurring spend is not authorized.
+- The current Momo upload's rights are expired. No real image may cross the provider boundary until rights are current and Team review is approved; every AI result stays private until the exact candidate is decoded, inspected, attested, and explicitly approved.
+- Momo remains **No-Go**. Google/social, owner-controlled provider access, external writes, automatic publishing, and Momo activation remain locked.
+
 ## 2026-07-22 — verified PR #152 / Sites v20 production override
 
 - `artifacts/veroxa/docs/MOMO_MEDIA_V20_LIVE_CLOSEOUT.json` is the current machine-readable live authority. PR #152 reviewed head `b170c4339ae43755f17a19d74107cb75c6b198d3` merged at `29e90d40fa05d67d2a6246f9a0ba64fe1b9099b7` after all four workflows passed.

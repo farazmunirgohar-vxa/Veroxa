@@ -40,6 +40,22 @@ const tracker = JSON.parse(trackerText) as {
     providerActivationAuthorized: boolean;
     rule: string;
   };
+  mediaAiPilot: {
+    scope: string;
+    userAuthorizedScopedActivation: boolean;
+    openAiCredentialProvisionedServerSide: boolean;
+    liveRuntimeEnabled: boolean;
+    providerCanaryPassed: boolean;
+    realEditPassed: boolean;
+    userCeilingUsd: number;
+    internalLifetimeReservationCeilingUsd: number;
+    incurredUsd: number;
+    recurringSpendAuthorized: boolean;
+    currentMomoUploadRightsStatus: string;
+    firstRealUseRequiresCurrentRights: boolean;
+    firstRealUseRequiresTeamReview: boolean;
+    rule: string;
+  };
   dimensions: Record<string, ReadinessDimension>;
 };
 
@@ -72,6 +88,22 @@ const expectedDimensions = {
   provider_access_and_public_actions: false,
   activation: false,
 } as const;
+const expectedMediaAiPilotKeys = [
+  "scope",
+  "userAuthorizedScopedActivation",
+  "openAiCredentialProvisionedServerSide",
+  "liveRuntimeEnabled",
+  "providerCanaryPassed",
+  "realEditPassed",
+  "userCeilingUsd",
+  "internalLifetimeReservationCeilingUsd",
+  "incurredUsd",
+  "recurringSpendAuthorized",
+  "currentMomoUploadRightsStatus",
+  "firstRealUseRequiresCurrentRights",
+  "firstRealUseRequiresTeamReview",
+  "rule",
+] as const;
 
 must(tracker.schemaVersion === 8, "Momo readiness tracker schema must be 8.");
 must(
@@ -84,13 +116,16 @@ must(
   "Momo readiness tracker restaurant or preconnection milestone drifted.",
 );
 must(
-  /^\d{4}-\d{2}-\d{2}$/.test(tracker.lastReviewedAt),
-  "Momo readiness review date is invalid.",
+  tracker.lastReviewedAt === "2026-07-28",
+  "Momo readiness review date must match the scoped Media AI evidence review.",
 );
 must(
   tracker.overallStatus === "blocked" &&
     /fail-closed no-go/i.test(tracker.overallRule) &&
-    /no result.*authorizes owner contact, provider access.*public action.*activation/i.test(tracker.overallRule),
+    /only server-side Image Enhancement/i.test(tracker.overallRule) &&
+    /does not authorize owner contact, owner-controlled provider access, social or Google connections, a public action, publishing, or Momo activation/i.test(
+      tracker.overallRule,
+    ),
   "Momo readiness must remain fail-closed No-Go without owner, provider, public-action, or activation authority.",
 );
 must(
@@ -123,8 +158,47 @@ must(
     !spending.recurringSpendAuthorized &&
     !spending.providerActivationAuthorized &&
     /authorization is not an incurred charge/i.test(spending.rule) &&
-    /does not authorize recurring spend, provider activation, account connection, publishing, or activation/i.test(spending.rule),
-  "Momo spending truth must distinguish the scoped $20 ceiling from $0 incurred and prohibit recurring/provider activation.",
+    /providerActivationAuthorized remains false for owner-controlled provider accounts, social or Google connections, publishing, and Momo activation/i.test(
+      spending.rule,
+    ),
+  "Momo spending truth must distinguish the scoped $20 ceiling from $0 incurred and keep broad provider activation false.",
+);
+
+const mediaAiPilot = tracker.mediaAiPilot;
+must(
+  exactKeys(
+    mediaAiPilot as unknown as Record<string, unknown>,
+    expectedMediaAiPilotKeys,
+  ),
+  "The Media AI pilot evidence fields are incomplete or unexpected.",
+);
+must(
+  mediaAiPilot.scope === "image_enhancement_only" &&
+    mediaAiPilot.userAuthorizedScopedActivation &&
+    mediaAiPilot.openAiCredentialProvisionedServerSide &&
+    !mediaAiPilot.liveRuntimeEnabled &&
+    !mediaAiPilot.providerCanaryPassed &&
+    !mediaAiPilot.realEditPassed,
+  "Media AI must remain a user-authorized, server-credentialed Image Enhancement pilot that is not live or provider-proven pre-release.",
+);
+must(
+  mediaAiPilot.userCeilingUsd === spending.authorizedOneTimeCeilingUsd &&
+    mediaAiPilot.userCeilingUsd === 20 &&
+    mediaAiPilot.internalLifetimeReservationCeilingUsd === 2 &&
+    mediaAiPilot.incurredUsd === spending.incurredUsd &&
+    mediaAiPilot.incurredUsd === 0 &&
+    !mediaAiPilot.recurringSpendAuthorized &&
+    !spending.recurringSpendAuthorized,
+  "Media AI cost evidence must preserve the $20 user ceiling, $2 internal lifetime ceiling, $0 incurred, and no recurring spend.",
+);
+must(
+  mediaAiPilot.currentMomoUploadRightsStatus === "expired" &&
+    mediaAiPilot.firstRealUseRequiresCurrentRights &&
+    mediaAiPilot.firstRealUseRequiresTeamReview &&
+    /first real use requires current rights and an approved Team review/i.test(
+      mediaAiPilot.rule,
+    ),
+  "Media AI first use must remain blocked by expired rights until current rights and Team review exist.",
 );
 
 must(
@@ -143,9 +217,19 @@ for (const [key, required] of Object.entries(expectedDimensions)) {
 must(
   tracker.dimensions.authenticated_team_rehearsal.blockers.some((item) => /has not completed successfully/i.test(item)) &&
     tracker.dimensions.owner_authority_and_consent.blockers.some((item) => /not been contacted or verified/i.test(item)) &&
-    tracker.dimensions.provider_access_and_public_actions.blockers.some((item) => /no provider credential/i.test(item)) &&
+    tracker.dimensions.provider_access_and_public_actions.blockers.some((item) => /no owner-controlled provider account, social connection, or Google connection/i.test(item)) &&
     tracker.dimensions.activation.blockers.some((item) => /gates are false/i.test(item)),
   "Momo No-Go must name the rehearsal, owner, provider, and activation blockers.",
+);
+
+const aiDimension = tracker.dimensions.ai_and_automation;
+must(
+  aiDimension.evidence.some((item) => /scoped server-side OpenAI Image Enhancement pilot only/i.test(item)) &&
+    aiDimension.evidence.some((item) => /\$20.*\$2.*\$0.*no recurring spend/i.test(item)) &&
+    aiDimension.blockers.some((item) => /live Media AI runtime remains disabled/i.test(item)) &&
+    aiDimension.blockers.some((item) => /provider canary nor a real image edit has passed/i.test(item)) &&
+    aiDimension.blockers.some((item) => /current Momo upload rights are expired.*current rights and an approved Team review/i.test(item)),
+  "The AI readiness dimension must preserve the authorized scope, cost truth, disabled runtime, unpassed provider proof, and expired-rights blocker.",
 );
 
 for (const obsoleteSchema6Key of [

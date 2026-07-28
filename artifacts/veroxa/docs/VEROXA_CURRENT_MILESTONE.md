@@ -1,6 +1,6 @@
 # Veroxa Current Milestone
 
-Status: highest-priority governing build direction as of 2026-07-22.
+Status: highest-priority governing build direction as of 2026-07-28.
 
 Read this file first before planning, building, reviewing, merging, deploying, or recommending Momo outreach. If an older roadmap or status note conflicts with this file, follow this file and Faraz's newest explicit instruction.
 
@@ -14,6 +14,15 @@ Also read:
 - `CURRENT_BUILD_STATUS.md`
 - `VEROXA_DEPLOYMENT_MANIFEST.json`
 - `../veroxa-sites/app/momo-readiness-tracker.json`
+
+## 2026-07-28 — reviewed Media AI release candidate
+
+- **Live baseline:** PR #152, Sites version 20, and 15 applied Supabase migrations remain current. The Media AI candidate is based on canonical `main` commit `979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6` and remains unmerged, unpublished, and unapplied.
+- **Authorized scope:** Image Enhancement AI is the only authorized model-backed candidate activation. Media Review and Compliance remain deterministic human-controlled contracts; Caption generation, AI web research, Meta, Google, publishing, and other model-backed roles remain inactive.
+- **Cost truth:** the OpenAI key is server-only, the live flag remains off, provider/real-edit proof remains pending, actual spend is USD $0, the internal lifetime reservation ceiling is USD $2, the user-authorized one-time ceiling is USD $20, and recurring spend is not authorized.
+- **First-use blocker:** the current Momo upload rights are expired. A real Image Enhancement request requires current rights, an approved Team review, explicit processing consent, and later inspection of the exact private candidate before approval.
+- **Release rule:** merge only the exact reviewed tree after all four GitHub workflows pass with zero unresolved review threads; only then apply migration 16 and publish the matching Sites source. Momo remains No-Go and no external publishing is authorized.
+- `artifacts/veroxa-sites/app/momo-readiness-tracker.json` is the bundled fail-closed readiness record for this candidate.
 
 ## 2026-07-22 — current PR #152 / Sites v20 live truth
 

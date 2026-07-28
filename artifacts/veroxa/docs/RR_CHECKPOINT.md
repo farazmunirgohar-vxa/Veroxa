@@ -1,5 +1,13 @@
 # RR Release Checkpoint
 
+## 2026-07-28 — Media AI v1 reviewed local candidate
+
+- PR #152 / Sites version 20 / 15 applied migrations remains the verified production baseline. Candidate base is canonical `main` commit `979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6`; the candidate is unmerged, unpublished, and unapplied.
+- Migration 16 adds the private Media AI candidate ledger, budget wallet, idempotent lifecycle RPCs, tenant/role/RLS boundaries, conservative accounting, and explicit inspection-before-Ready. It is source-only until the exact reviewed PR passes all four workflows and zero unresolved review threads.
+- The server-side OpenAI credential is provisioned, the live flag is false, provider and real-edit proof are pending, actual spend is USD $0, internal lifetime reservations are capped at USD $2, the user ceiling is USD $20, and recurring spend is not authorized.
+- Image Enhancement is the only model-backed candidate scope. The current Momo upload rights are expired, so first real use requires current rights and approved Team review. No Google/social connection, external write, automatic publish, or Momo activation is authorized.
+- Machine evidence is in `VEROXA_DEPLOYMENT_MANIFEST.json`, `RR_RELEASE_CHECKPOINT.json`, and `artifacts/veroxa-sites/app/momo-readiness-tracker.json`.
+
 ## 2026-07-14 — verified PR #149 cleanup and Sites v15 checkpoint
 
 - PR #149 reviewed head `0d2c6e47fbfe1c44a2f0ff19fbb158001ed9365a` passed all four required workflows with zero unresolved review threads and merged at `9749b68ce2cfc383deeae6aa63c413019ef61385`.

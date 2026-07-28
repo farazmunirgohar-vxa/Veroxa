@@ -1,3 +1,12 @@
+## 2026-07-28 — Media AI v1 reviewed local candidate
+
+- **Production unchanged:** PR #152 / Sites version 20 / migration 15 remains live. This candidate is based on canonical `main` commit `979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6`; it has not merged, migration 16 has not been applied, and no new Sites version is published.
+- **Candidate behavior:** Team can request one fixed-purpose server-side Image Enhancement edit only after current rights, approved review, explicit consent, verified source bytes, and a database reservation. It uses `gpt-image-2`, makes one provider call with no automatic retry, stores a private candidate, and requires exact decoded-image inspection plus attestation before Ready.
+- **Security and accounting:** tenant/RLS/role checks, source/version/hash lineage, per-asset active-attempt uniqueness, idempotency, conservative failure accounting, and a USD $2 lifetime internal reservation ceiling are enforced in migration 16. Faraz's separate ceiling is USD $20; actual spend remains USD $0 and recurring spend is not authorized.
+- **Activation state:** the OpenAI key is provisioned server-side, but the live Media AI flag is false and provider/real-edit proof is pending. The current upload rights are expired, so no Momo image is eligible yet.
+- **Boundaries:** the manual editor remains the no-cost fallback. Caption, Media Review, and Compliance do not become separate model calls; Google/social, owner-controlled providers, external writes, publishing, and Momo activation stay locked. Momo remains No-Go.
+- **Evidence:** `momo-readiness-tracker.json`, `VEROXA_DEPLOYMENT_MANIFEST.json`, and `RR_RELEASE_CHECKPOINT.json` distinguish the candidate from the verified v20 baseline.
+
 ## 2026-07-22 — PR #152 / Sites v20 readiness-copy follow-up deployed
 
 - **Live truth:** `MOMO_MEDIA_V20_LIVE_CLOSEOUT.json` records PR #152, its four green workflows, and successful Sites version 20 deployment from checkout `aceb17bb446854d48a71e54ba814591cf2c19d33`.

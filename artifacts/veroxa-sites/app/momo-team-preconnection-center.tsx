@@ -14,19 +14,35 @@ import {
 import { inspectMomoImageBlob, renderMomoImageEdit } from "./momo-image-renderer";
 import {
   MOMO_PUBLIC_SEO_EVIDENCE,
+  closeMomoMediaAiAttempt,
   getMomoTeamMediaSource,
+  generateMomoMediaAiCandidate,
   loadMomoTeamPreconnectionData,
   momoBlobSha256,
+  approveMomoMediaAiCandidate,
   persistMomoImageRendition,
   persistMomoAiContractRehearsal,
   persistMomoMetricsRehearsalSuite,
   persistMomoPublicationRehearsalSuite,
   persistMomoSeoWorkspace,
   requestMomoActionConsent,
+  rejectMomoMediaAiCandidate,
   runMomoPreconnectionGate,
   type MomoActionKind,
   type MomoTeamPreconnectionData,
 } from "./momo-team-preconnection-data";
+import {
+  MOMO_MEDIA_AI_GOALS,
+  MOMO_MEDIA_AI_MAX_SOURCE_BYTES,
+  MOMO_MEDIA_AI_PILOT_CAP_MICROUSD,
+  MOMO_MEDIA_AI_PRESETS,
+  MOMO_MEDIA_AI_PROCESSING_ATTESTATION,
+  MOMO_MEDIA_AI_RESERVATION_MICROUSD,
+  momoMediaAiErrorMessage,
+  momoMediaAiInspectionAllowsApproval,
+  type MomoMediaAiGoal,
+  type MomoMediaAiQuality,
+} from "./momo-media-ai-contract";
 import { analyzeMomoSeoEvidence, buildMomoSeoChangePlan } from "./momo-seo-workbench";
 import { MOMO_GROWTH_EVIDENCE } from "./momo-growth-evidence";
 import { momoRenditionMatchesCurrentEvidence, resolveMomoMediaWorkflow } from "./momo-media-guidance";
@@ -43,11 +59,14 @@ type Props = {
 const EMPTY: MomoTeamPreconnectionData = {
   runtimeControls: [], renditions: [], publicationRehearsals: [], seoBaselines: [], seoChangeSets: [], gateRuns: [],
   actionConsents: [], trackingContracts: [], releaseAttestations: [], aiRehearsals: [], metricsRehearsals: [],
+  mediaAiCandidates: [],
 };
 
 const titleCase = (value: string) => value.replace(/[._-]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 const formatDate = (value: string | null | undefined) => value ? new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)) : "Not recorded";
 const jsonArray = (value: unknown): unknown[] => Array.isArray(value) ? value : [];
+const newMomoMediaAiIdempotencyKey = () => `momo-media-ai-${crypto.randomUUID()}`;
+const pilotDollars = (microusd: number) => `$${(microusd / 1_000_000).toFixed(2)}`;
 
 function Badge({ value }: { value: string }) {
   return <span className={`status-badge ${value}`}>{titleCase(value)}</span>;
@@ -129,34 +148,51 @@ export function MomoTeamPreconnectionCenter({ mode, restaurantId, workspace, pre
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [dataObservedAtMs, setDataObservedAtMs] = useState(0);
 
   const refresh = async () => {
     const next = await loadMomoTeamPreconnectionData(restaurantId);
     setData(next);
+    setDataObservedAtMs(Date.now());
     setState("ready");
   };
 
   useEffect(() => {
     let active = true;
     void loadMomoTeamPreconnectionData(restaurantId)
-      .then((next) => { if (active) { setData(next); setState("ready"); } })
+      .then((next) => {
+        if (active) {
+          setData(next);
+          setDataObservedAtMs(Date.now());
+          setState("ready");
+        }
+      })
       .catch(() => { if (active) setState("error"); });
     return () => { active = false; };
   }, [restaurantId]);
 
-  const run = async (action: () => Promise<void>, success: string) => {
+  const run = async (
+    action: () => Promise<void>,
+    success: string,
+    options: { refreshAfterSuccess?: boolean } = {},
+  ) => {
     if (busy) return;
     setBusy(true);
     setMessage("");
     try {
       await action();
-      await refresh();
+      if (options.refreshAfterSuccess !== false) await refresh();
       setMessage(success);
     } catch (error) {
-      const stage = error instanceof Error && /^[a-z0-9_]{3,80}$/.test(error.message)
-        ? titleCase(error.message)
+      const code = error instanceof Error && /^[a-z0-9_]{3,80}$/.test(error.message)
+        ? error.message
+        : "";
+      const stage = code
+        ? titleCase(code)
         : "Unknown Internal Stage";
-      setMessage(`The Team rehearsal was not saved. No external action occurred. Team-only stage: ${stage}.`);
+      setMessage(code.includes("media_ai") || code.startsWith("provider_") || code.startsWith("candidate_") || code === "source_not_ready" || code === "idempotency_conflict"
+        ? momoMediaAiErrorMessage(code)
+        : `The Team rehearsal was not saved. No external action occurred. Team-only stage: ${stage}.`);
     } finally {
       setBusy(false);
     }
@@ -165,7 +201,7 @@ export function MomoTeamPreconnectionCenter({ mode, restaurantId, workspace, pre
   if (state === "loading") return <section className="momo-panel"><p>Loading Team-only preconnection evidence…</p></section>;
   if (state === "error") return <section className="momo-panel"><p className="momo-warning">Preconnection records are unavailable until the protected database migration is active.</p></section>;
   return <>
-    {mode === "media" && <MomoTeamImageEditor key={preferredAssetId || workspace?.media[0]?.id || "no-real-media"} restaurantId={restaurantId} workspace={workspace} preferredAssetId={preferredAssetId} onPreferredAssetChange={onPreferredAssetChange} onWorkspaceRefresh={onWorkspaceRefresh} data={data} busy={busy} run={run} />}
+    {mode === "media" && <MomoTeamImageEditor key={preferredAssetId || workspace?.media[0]?.id || "no-real-media"} restaurantId={restaurantId} workspace={workspace} preferredAssetId={preferredAssetId} onPreferredAssetChange={onPreferredAssetChange} onWorkspaceRefresh={onWorkspaceRefresh} refreshData={refresh} dataObservedAtMs={dataObservedAtMs} data={data} busy={busy} run={run} />}
     {mode === "publication" && <MomoPublicationRehearsal restaurantId={restaurantId} data={data} busy={busy} run={run} />}
     {mode === "seo" && <MomoSeoWorkbench restaurantId={restaurantId} data={data} busy={busy} run={run} />}
     {mode === "readiness" && <><MomoAutomationContract restaurantId={restaurantId} data={data} busy={busy} run={run} /><MomoPreconnectionGate restaurantId={restaurantId} data={data} busy={busy} run={run} /></>}
@@ -174,16 +210,22 @@ export function MomoTeamPreconnectionCenter({ mode, restaurantId, workspace, pre
 }
 
 function MomoTeamImageEditor({
-  restaurantId, workspace, preferredAssetId, onPreferredAssetChange, onWorkspaceRefresh, data, busy, run,
+  restaurantId, workspace, preferredAssetId, onPreferredAssetChange, onWorkspaceRefresh, refreshData, dataObservedAtMs, data, busy, run,
 }: {
   restaurantId: string;
   workspace?: MomoWorkspaceData;
   preferredAssetId?: string;
   onPreferredAssetChange?: (assetId: string) => void;
   onWorkspaceRefresh?: () => Promise<void>;
+  refreshData: () => Promise<void>;
+  dataObservedAtMs: number;
   data: MomoTeamPreconnectionData;
   busy: boolean;
-  run: (action: () => Promise<void>, success: string) => Promise<void>;
+  run: (
+    action: () => Promise<void>,
+    success: string,
+    options?: { refreshAfterSuccess?: boolean },
+  ) => Promise<void>;
 }) {
   const editableAssets = (workspace?.media || []).filter((asset) => /^image\/(jpeg|png|webp)$/.test(asset.mime_type));
   const [sourceAssetId, setSourceAssetId] = useState(() => preferredAssetId || editableAssets[0]?.id || "");
@@ -197,6 +239,17 @@ function MomoTeamImageEditor({
   const [format, setFormat] = useState<"image/jpeg" | "image/png" | "image/webp">("image/jpeg");
   const [quality, setQuality] = useState(0.9);
   const [altText, setAltText] = useState("Momo’s House food image prepared for private review.");
+  const [aiGoal, setAiGoal] = useState<MomoMediaAiGoal>("lighting_color");
+  const [aiQuality, setAiQuality] = useState<MomoMediaAiQuality>("low");
+  const [aiProcessingConsent, setAiProcessingConsent] = useState(false);
+  const [aiIdempotencyKey, setAiIdempotencyKey] = useState(newMomoMediaAiIdempotencyKey);
+  const [aiReadbackRequired, setAiReadbackRequired] = useState(false);
+  const [renderedAiCandidateToken, setRenderedAiCandidateToken] = useState("");
+  const [aiInspection, setAiInspection] = useState({
+    candidateToken: "",
+    confirmed: false,
+    notes: "",
+  });
   const selectedAsset = editableAssets.find((asset) => asset.id === sourceAssetId);
   const selectedRights = selectedAsset ? workspace?.mediaRights.find((item) => item.asset_id === selectedAsset.id) : null;
   const selectedReview = selectedAsset ? workspace?.mediaReviews.find((item) => item.asset_id === selectedAsset.id && item.is_current) : null;
@@ -221,6 +274,60 @@ function MomoTeamImageEditor({
     }))
     : undefined;
   const visibleRendition = currentRendition || previousRendition;
+  const selectedAiCandidates = selectedAsset
+    ? data.mediaAiCandidates.filter((item) => item.source_asset_id === selectedAsset.id)
+    : [];
+  const pendingAiCandidate = selectedAiCandidates.find((item) => item.status === "pending_review");
+  const providerRunningAiCandidate = selectedAiCandidates.find((item) => item.status === "provider_running");
+  const reservedAiCandidate = selectedAiCandidates.find((item) => item.status === "reserved");
+  const activeAiCandidate = pendingAiCandidate
+    || providerRunningAiCandidate
+    || reservedAiCandidate;
+  const providerRunningMayClose = Boolean(
+    providerRunningAiCandidate?.provider_started_at
+    && Date.parse(providerRunningAiCandidate.provider_started_at)
+      <= dataObservedAtMs - 10 * 60 * 1000,
+  );
+  const candidatePreviewToken = pendingAiCandidate?.storage_path
+    && pendingAiCandidate.storage_object_version
+    && pendingAiCandidate.content_sha256
+    ? [
+      pendingAiCandidate.id,
+      pendingAiCandidate.storage_path,
+      pendingAiCandidate.storage_object_version,
+      pendingAiCandidate.content_sha256,
+    ].join(":")
+    : "";
+  const aiCandidateRendered = Boolean(
+    candidatePreviewToken
+    && renderedAiCandidateToken === candidatePreviewToken,
+  );
+  const aiInspectionConfirmed = aiInspection.candidateToken === candidatePreviewToken
+    && aiInspection.confirmed;
+  const aiInspectionNotes = aiInspection.candidateToken === candidatePreviewToken
+    ? aiInspection.notes
+    : "";
+  const aiApprovalReady = momoMediaAiInspectionAllowsApproval({
+    candidateToken: candidatePreviewToken,
+    renderedToken: renderedAiCandidateToken,
+    inspectionToken: aiInspection.candidateToken,
+    inspectionConfirmed: aiInspection.confirmed,
+    inspectionNotes: aiInspection.notes,
+  });
+  const mediaAiCommittedMicrousd = data.mediaAiCandidates.reduce(
+    (total, item) => total + (
+      typeof item.accounted_microusd === "number"
+        ? item.accounted_microusd
+        : item.status === "reserved" || item.status === "provider_running"
+          ? item.reserved_microusd
+          : 0
+    ),
+    0,
+  );
+  const mediaAiRemainingMicrousd = Math.max(
+    0,
+    MOMO_MEDIA_AI_PILOT_CAP_MICROUSD - mediaAiCommittedMicrousd,
+  );
   const [renderedRenditionId, setRenderedRenditionId] = useState("");
   const selectedWorkflow = resolveMomoMediaWorkflow({
     hasAsset: Boolean(selectedAsset),
@@ -237,6 +344,36 @@ function MomoTeamImageEditor({
   const scopeAllowsPreset = synthetic || selectedUsageScope.includes(selectedPresetUse);
   const showEditor = synthetic || selectedWorkflow.reviewApproved;
   const canRender = synthetic || (selectedWorkflow.reviewApproved && scopeAllowsPreset);
+  const mediaAiEnabled = Boolean(data.runtimeControls[0]?.ai_live_calls);
+  const sourceFitsMediaAi = Boolean(
+    selectedAsset
+    && selectedAsset.file_size > 0
+    && selectedAsset.file_size <= MOMO_MEDIA_AI_MAX_SOURCE_BYTES,
+  );
+  const canGenerateAi = Boolean(
+    !synthetic
+    && selectedAsset
+    && selectedWorkflow.reviewApproved
+    && scopeAllowsPreset
+    && sourceFitsMediaAi
+    && mediaAiEnabled
+    && !activeAiCandidate
+    && !aiReadbackRequired
+    && altText.trim()
+    && aiProcessingConsent
+    && aiIdempotencyKey,
+  );
+
+  const resetAiRequest = () => {
+    setAiProcessingConsent(false);
+    setAiInspection({
+      candidateToken: "",
+      confirmed: false,
+      notes: "",
+    });
+    setRenderedAiCandidateToken("");
+    setAiIdempotencyKey(newMomoMediaAiIdempotencyKey());
+  };
 
   const createRendition = async () => {
     const asset = synthetic ? null : editableAssets.find((item) => item.id === sourceAssetId);
@@ -293,28 +430,147 @@ function MomoTeamImageEditor({
     if (asset) await onWorkspaceRefresh?.();
   };
 
+  const createAiCandidate = async () => {
+    if (!selectedAsset) throw new Error("source_not_ready");
+    setAiReadbackRequired(true);
+    try {
+      await generateMomoMediaAiCandidate({
+        restaurantId,
+        assetId: selectedAsset.id,
+        goal: aiGoal,
+        preset,
+        quality: aiQuality,
+        altText: altText.trim(),
+        idempotencyKey: aiIdempotencyKey,
+        processingConsent: true,
+      });
+    } catch (error) {
+      try {
+        await refreshData();
+        setAiReadbackRequired(false);
+      } catch {
+        throw new Error("media_ai_readback_required");
+      }
+      throw error;
+    }
+    try {
+      await refreshData();
+    } catch {
+      throw new Error("media_ai_readback_required");
+    }
+    setAiReadbackRequired(false);
+    resetAiRequest();
+  };
+
+  const approveAiCandidate = async () => {
+    if (
+      !pendingAiCandidate?.content_sha256
+      || !aiApprovalReady
+    ) throw new Error("invalid_momo_media_ai_approval");
+    await approveMomoMediaAiCandidate({
+      candidateId: pendingAiCandidate.id,
+      contentSha256: pendingAiCandidate.content_sha256,
+      inspectionNotes: aiInspectionNotes.trim(),
+    });
+    resetAiRequest();
+    await onWorkspaceRefresh?.();
+  };
+
+  const rejectAiCandidate = async () => {
+    if (
+      !pendingAiCandidate?.content_sha256
+      || aiInspectionNotes.trim().length < 10
+    ) throw new Error("invalid_momo_media_ai_rejection");
+    await rejectMomoMediaAiCandidate({
+      candidateId: pendingAiCandidate.id,
+      contentSha256: pendingAiCandidate.content_sha256,
+      inspectionNotes: aiInspectionNotes.trim(),
+    });
+    resetAiRequest();
+  };
+
+  const closeAiAttempt = async () => {
+    const candidate = reservedAiCandidate || (
+      providerRunningMayClose ? providerRunningAiCandidate : undefined
+    );
+    if (!candidate) throw new Error("momo_media_ai_attempt_not_closeable");
+    await closeMomoMediaAiAttempt(candidate.id);
+    resetAiRequest();
+  };
+
   return <section id="momo-team-image-editor" className="momo-panel momo-form momo-guided-editor">
     <div className="momo-panel-heading"><div><p className="eyebrow">STEP 3 · PREPARE</p><h2>Create a private channel-sized version</h2><small>The newest real image is selected automatically. Ready means technically verified and available for visual review—not posted.</small></div><Badge value={selectedWorkflow.ready ? "ready" : canRender ? "available" : "blocked"} /></div>
     <div className="momo-media-journey team-media-journey" aria-label="Team media workflow"><ol><li className={selectedWorkflow.uploaded ? "done" : "current"}><b>1</b><span><strong>Uploaded</strong><small>Private original</small></span></li><li className={selectedWorkflow.reviewApproved ? "done" : selectedWorkflow.uploaded ? "current" : ""}><b>2</b><span><strong>Team review</strong><small>{selectedWorkflow.reviewApproved ? "Review approved" : "Required first"}</small></span></li><li className={selectedWorkflow.improvementReady ? "done" : selectedWorkflow.reviewApproved ? "current" : ""}><b>3</b><span><strong>Prepare</strong><small>{selectedWorkflow.improvementReady ? "Rendered and opened" : "Size and appearance"}</small></span></li><li className={selectedWorkflow.ready ? "done" : ""}><b>4</b><span><strong>Ready</strong><small>{selectedWorkflow.ready ? "Compare below" : "After verification"}</small></span></li></ol><em>Team only · no posting</em></div>
     {selectedRights && <p className="momo-form-note">Evidence class: <strong>{titleCase(selectedRights.evidence_class || "unknown")}</strong>{selectedRights.evidence_class === "development_proxy" ? " · rehearsal evidence only; this does not prove owner onboarding readiness" : ""}.</p>}
     {editableAssets.length === 0 ? <p className="momo-warning">No supported real image is available. Ask the Client to upload a JPG, PNG, or WebP image first.</p> : <>
-      <label>Real source image<select value={sourceAssetId} onChange={(event) => { const next = event.target.value; setSourceAssetId(next); if (next !== "synthetic-fixture-v1") onPreferredAssetChange?.(next); }}>{editableAssets.map((asset) => <option key={asset.id} value={asset.id}>{asset.original_file_name || asset.storage_path.split("/").at(-1)}</option>)}{synthetic && <option value="synthetic-fixture-v1">Built-in synthetic test card</option>}</select></label>
-      {selectedAsset && <div className="momo-editor-preview-grid"><TeamPrivateImagePreview key={selectedAsset.storage_path} storagePath={selectedAsset.storage_path} alt={`Private original ${selectedAsset.original_file_name || "Momo image"}`} label="Original · unchanged" />{visibleRendition ? <TeamPrivateImagePreview key={visibleRendition.storage_path} storagePath={visibleRendition.storage_path} alt={visibleRendition.alt_text} label={`${selectedWorkflow.ready ? "Ready for private review" : "Previous private version · not currently Ready"} · ${visibleRendition.width}×${visibleRendition.height}`} renditionId={currentRendition?.id === visibleRendition.id ? currentRendition.id : undefined} setRenderedRenditionId={currentRendition?.id === visibleRendition.id ? setRenderedRenditionId : undefined} /> : <div className="momo-editor-preview-empty"><strong>Prepared version</strong><span>{selectedWorkflow.reviewApproved ? "Choose the output below, then render privately." : "Complete Team review first."}</span></div>}</div>}
+      <label>Real source image<select value={sourceAssetId} onChange={(event) => { const next = event.target.value; resetAiRequest(); setSourceAssetId(next); if (next !== "synthetic-fixture-v1") onPreferredAssetChange?.(next); }}>{editableAssets.map((asset) => <option key={asset.id} value={asset.id}>{asset.original_file_name || asset.storage_path.split("/").at(-1)}</option>)}{synthetic && <option value="synthetic-fixture-v1">Built-in synthetic test card</option>}</select></label>
+      {selectedAsset && <div className="momo-editor-preview-grid"><TeamPrivateImagePreview key={selectedAsset.storage_path} storagePath={selectedAsset.storage_path} alt={`Private original ${selectedAsset.original_file_name || "Momo image"}`} label="Original · unchanged" />{visibleRendition ? <TeamPrivateImagePreview key={visibleRendition.storage_path} storagePath={visibleRendition.storage_path} alt={visibleRendition.alt_text} label={`${selectedWorkflow.ready ? "Ready for private review" : "Previous private version · not currently Ready"} · ${visibleRendition.width}×${visibleRendition.height}`} expectedContentSha256={visibleRendition.content_sha256} renditionId={currentRendition?.id === visibleRendition.id ? currentRendition.id : undefined} setRenderedRenditionId={currentRendition?.id === visibleRendition.id ? setRenderedRenditionId : undefined} /> : <div className="momo-editor-preview-empty"><strong>Prepared version</strong><span>{selectedWorkflow.reviewApproved ? "Choose the output below, then render privately." : "Complete Team review first."}</span></div>}</div>}
     </>}
     {!synthetic && selectedAsset && !selectedWorkflow.reviewApproved && <div className="momo-editor-blocker" role="status"><strong>Review unlocks improvement</strong><p>{!selectedWorkflow.rightsConfirmed ? "This image does not have a confirmed rights record, so Veroxa must fail closed." : "In Step 2 above, record the quality review and approve public-use preparation. That permission does not post or connect any account."}</p><a href={`#momo-media-${selectedAsset.id}`}>Go to this image’s review</a></div>}
     {!synthetic && selectedWorkflow.reviewApproved && !scopeAllowsPreset && <div className="momo-editor-blocker" role="status"><strong>This output is outside the permitted uses</strong><p>The owner’s current rights do not include {titleCase(selectedPresetUse)}. Choose an allowed output preset or obtain a new rights record; Veroxa will not render it.</p></div>}
     {showEditor && <>
-      <div className="momo-form-grid momo-editor-essentials"><label>Output preset<select value={preset} onChange={(event) => { const next = event.target.value as MomoImagePresetKey; setPreset(next); if (next === "google_business_square" && format === "image/webp") setFormat("image/jpeg"); }}>{Object.entries(MOMO_IMAGE_PRESETS).map(([key, item]) => <option key={key} value={key}>{item.label} · {item.width}×{item.height}</option>)}</select></label><label className="wide">Accessible description<textarea value={altText} maxLength={280} rows={2} onChange={(event) => setAltText(event.target.value)} /></label></div>
+      <div className="momo-form-grid momo-editor-essentials"><label>Output preset<select value={preset} onChange={(event) => { const next = event.target.value as MomoImagePresetKey; resetAiRequest(); setPreset(next); if (next === "google_business_square" && format === "image/webp") setFormat("image/jpeg"); }}>{Object.entries(MOMO_IMAGE_PRESETS).map(([key, item]) => <option key={key} value={key}>{item.label} · {item.width}×{item.height}</option>)}</select></label><label className="wide">Accessible description<textarea value={altText} maxLength={280} rows={2} onChange={(event) => { resetAiRequest(); setAltText(event.target.value); }} /></label></div>
       <details className="momo-operations-details momo-editor-advanced"><summary><span><strong>Advanced image settings</strong><small>Focal position, orientation, appearance, format, and compression.</small></span><b>Optional</b></summary><div className="momo-form-grid"><label>Horizontal focal point<input type="range" min={0} max={100} value={focalX} onChange={(event) => setFocalX(Number(event.target.value))} /><small>{focalX < 34 ? "Left" : focalX > 66 ? "Right" : "Center"}</small></label><label>Vertical focal point<input type="range" min={0} max={100} value={focalY} onChange={(event) => setFocalY(Number(event.target.value))} /><small>{focalY < 34 ? "Top" : focalY > 66 ? "Bottom" : "Center"}</small></label><label>Rotation<select value={rotation} onChange={(event) => setRotation(Number(event.target.value) as 0 | 90 | 180 | 270)}><option value={0}>0°</option><option value={90}>90°</option><option value={180}>180°</option><option value={270}>270°</option></select></label><label>Format<select value={format} onChange={(event) => setFormat(event.target.value as typeof format)}><option value="image/webp" disabled={preset === "google_business_square"}>WebP</option><option value="image/jpeg">JPEG</option><option value="image/png">PNG</option></select></label><label>Brightness<input type="range" min={80} max={120} value={brightness} onChange={(event) => setBrightness(Number(event.target.value))} /><small>{brightness}%</small></label><label>Contrast<input type="range" min={80} max={120} value={contrast} onChange={(event) => setContrast(Number(event.target.value))} /><small>{contrast}%</small></label><label>Saturation<input type="range" min={75} max={125} value={saturation} onChange={(event) => setSaturation(Number(event.target.value))} /><small>{saturation}%</small></label><label>Quality<input type="range" min={0.5} max={1} step={0.01} value={quality} onChange={(event) => setQuality(Number(event.target.value))} /><small>{Math.round(quality * 100)}%</small></label></div></details>
       <p className="momo-form-note">The original is never changed. The derivative keeps an exact recipe, dimensions, source/output hashes, lineage, alt text, and private storage path.</p>
       <button className="primary-button momo-render-button" disabled={busy || !altText.trim() || !canRender} onClick={() => void run(createRendition, "Private channel-sized version rendered, technically verified, and linked to its unchanged original. Compare both versions before any later use.")}>{busy ? "Rendering and verifying…" : "Create private prepared version"}</button>
     </>}
-    <details className="momo-operations-details momo-editor-technical"><summary><span><strong>Technical rehearsal tools</strong><small>Synthetic fixtures for Team-only contract testing.</small></span><b>Advanced</b></summary><div className="momo-decision"><button type="button" disabled={busy} onClick={() => { setSourceAssetId("synthetic-fixture-v1"); setAltText("Synthetic Momo workflow test card used only to validate the image editor."); }}>Select synthetic test card</button><button type="button" disabled={busy} onClick={() => void run(() => persistMomoSyntheticChannelFixtures(restaurantId), "Facebook, Instagram, and Google synthetic media fixtures were rendered and stored privately.")}>Render all 3 synthetic fixtures</button></div></details>
+    {!synthetic && selectedAsset && <section className="momo-media-ai-pilot" aria-labelledby="momo-media-ai-title">
+      <div className="momo-panel-heading"><div><p className="eyebrow">AI PILOT · PRIVATE CANDIDATE</p><h3 id="momo-media-ai-title">Improve with AI</h3><small>One server-side OpenAI edit, then mandatory Team inspection. The original remains unchanged and nothing publishes.</small></div><Badge value={pendingAiCandidate ? "review_required" : mediaAiEnabled ? "available" : "blocked"} /></div>
+      <div className="momo-media-ai-budget"><span>Pilot request ledger<strong>{pilotDollars(mediaAiRemainingMicrousd)} remaining</strong></span><small>{pilotDollars(mediaAiCommittedMicrousd)} conservatively accounted against a database-enforced $2.00 internal reservation ceiling · $0.10 low / $0.25 medium reservation per attempt; provider billing is tracked separately</small></div>
+      {!mediaAiEnabled && <p className="momo-warning">The protected Media AI runtime is not active. The free manual editor above remains available.</p>}
+      {!sourceFitsMediaAi && <p className="momo-warning">This source is larger than the Media AI pilot’s 20 MB private-processing limit. The free manual editor remains available; upload a current image at or below 20 MB to use AI.</p>}
+      {aiReadbackRequired && <p className="momo-warning">Authoritative AI attempt history is unavailable. The original request key is preserved and new paid requests are blocked; refresh this Team workspace before continuing.</p>}
+      {reservedAiCandidate && <div className="momo-editor-blocker" role="status"><strong>Unused reservation can be closed</strong><p>The provider boundary was not crossed and $0 is accounted. Close this interrupted reservation before starting a fresh request.</p><button type="button" disabled={busy} onClick={() => void run(closeAiAttempt, "The unused reservation was closed at $0 accounted. A fresh request may now be created.")}>Close unused reservation</button></div>}
+      {providerRunningAiCandidate && <div className="momo-editor-blocker" role="status"><strong>Provider boundary already crossed</strong><p>Veroxa will never send this exact request twice. {providerRunningMayClose ? "Its 10-minute safety window has elapsed; close it as uncertain and conservatively account the full reservation." : "Wait up to 10 minutes, then refresh. If no final result appears, the attempt can be closed without retrying the provider."}</p>{providerRunningMayClose && <button type="button" disabled={busy} onClick={() => void run(closeAiAttempt, "The uncertain attempt was closed, fully accounted, and will never be retried.")}>Close uncertain attempt</button>}</div>}
+      {pendingAiCandidate?.storage_path && pendingAiCandidate.content_sha256 && candidatePreviewToken ? <>
+        <div className="momo-editor-preview-grid momo-media-ai-comparison">
+          <TeamPrivateImagePreview storagePath={selectedAsset.storage_path} alt={`Private original ${selectedAsset.original_file_name || "Momo image"}`} label="Original · unchanged" />
+          <TeamPrivateImagePreview key={candidatePreviewToken} storagePath={pendingAiCandidate.storage_path} alt={pendingAiCandidate.alt_text} label={`AI candidate · ${pendingAiCandidate.output_width}×${pendingAiCandidate.output_height} · not Ready`} expectedContentSha256={pendingAiCandidate.content_sha256} previewToken={candidatePreviewToken} setRenderedPreviewToken={setRenderedAiCandidateToken} />
+        </div>
+        <div className="momo-media-ai-review">
+          <p className="momo-form-note">{aiCandidateRendered ? "The exact private candidate decoded and its SHA-256 matched the database record." : "Open the exact private candidate successfully before approval unlocks."}</p>
+          <label className="wide">Inspection notes<textarea value={aiInspectionNotes} minLength={10} maxLength={1000} rows={3} onChange={(event) => setAiInspection({ candidateToken: candidatePreviewToken, confirmed: aiInspectionConfirmed, notes: event.target.value })} placeholder="What stayed faithful, and what did you inspect closely?" /></label>
+          <label className="momo-check"><input type="checkbox" checked={aiInspectionConfirmed} disabled={!aiCandidateRendered} onChange={(event) => setAiInspection({ candidateToken: candidatePreviewToken, confirmed: event.target.checked, notes: aiInspectionNotes })} /><span>I inspected the decoded candidate and verified it does not invent food, portions, ingredients, text, or claims.</span></label>
+          <div className="momo-decision">
+            <button className="primary-button" disabled={busy || !aiApprovalReady} onClick={() => void run(approveAiCandidate, "The inspected AI candidate is now a private Ready rendition. It was not posted or sent to any restaurant account.")}>{busy ? "Saving decision…" : "Approve candidate as Ready"}</button>
+            <button type="button" disabled={busy || aiInspectionNotes.trim().length < 10} onClick={() => void run(rejectAiCandidate, "The AI candidate was rejected and remains unavailable to the Client. Nothing was published.")}>Reject candidate</button>
+          </div>
+        </div>
+      </> : <div className="momo-media-ai-controls">
+        <div className="momo-form-grid">
+          <label>Improvement goal<select value={aiGoal} onChange={(event) => { resetAiRequest(); setAiGoal(event.target.value as MomoMediaAiGoal); }}>{Object.entries(MOMO_MEDIA_AI_GOALS).map(([key, value]) => <option key={key} value={key}>{value.label}</option>)}</select></label>
+          <label>AI quality<select value={aiQuality} onChange={(event) => { resetAiRequest(); setAiQuality(event.target.value as MomoMediaAiQuality); }}><option value="low">Low · up to {pilotDollars(MOMO_MEDIA_AI_RESERVATION_MICROUSD.low)}</option><option value="medium">Medium · up to {pilotDollars(MOMO_MEDIA_AI_RESERVATION_MICROUSD.medium)}</option></select></label>
+        </div>
+        <p className="momo-form-note">AI output: {MOMO_MEDIA_AI_PRESETS[preset].width}×{MOMO_MEDIA_AI_PRESETS[preset].height} PNG for {titleCase(MOMO_MEDIA_AI_PRESETS[preset].intendedUse)}. The prompt is fixed by Veroxa; free-form instructions are not sent.</p>
+        <label className="momo-check momo-media-ai-consent"><input type="checkbox" checked={aiProcessingConsent} onChange={(event) => setAiProcessingConsent(event.target.checked)} /><span>{MOMO_MEDIA_AI_PROCESSING_ATTESTATION} This one attempt reserves up to {pilotDollars(MOMO_MEDIA_AI_RESERVATION_MICROUSD[aiQuality])} and is never automatically retried.</span></label>
+        <button className="primary-button momo-media-ai-generate" disabled={busy || !canGenerateAi || mediaAiRemainingMicrousd < MOMO_MEDIA_AI_RESERVATION_MICROUSD[aiQuality]} onClick={() => void run(createAiCandidate, "One private AI candidate was created and verified. Open and inspect it before deciding whether it may become Ready.", { refreshAfterSuccess: false })}>{busy ? "Creating one private candidate…" : "Create one private AI candidate"}</button>
+      </div>}
+      {selectedAiCandidates.length > 0 && <details className="momo-operations-details"><summary><span><strong>AI attempt history</strong><small>Conservative accounting and private review state.</small></span><b>{selectedAiCandidates.length}</b></summary><div className="momo-record-list">{selectedAiCandidates.slice(0, 8).map((item) => <article key={item.id}><div><strong>{MOMO_MEDIA_AI_GOALS[item.goal].label} · {titleCase(item.quality)}</strong><p>{item.accounted_microusd === null ? `${pilotDollars(item.reserved_microusd)} reserved` : `${pilotDollars(item.accounted_microusd)} conservatively accounted`} · {item.output_width}×{item.output_height}</p><small>{formatDate(item.requested_at)} · no external write</small></div><Badge value={item.status} /></article>)}</div></details>}
+    </section>}
+    <details className="momo-operations-details momo-editor-technical"><summary><span><strong>Technical rehearsal tools</strong><small>Synthetic fixtures for Team-only contract testing.</small></span><b>Advanced</b></summary><div className="momo-decision"><button type="button" disabled={busy} onClick={() => { resetAiRequest(); setSourceAssetId("synthetic-fixture-v1"); setAltText("Synthetic Momo workflow test card used only to validate the image editor."); }}>Select synthetic test card</button><button type="button" disabled={busy} onClick={() => void run(() => persistMomoSyntheticChannelFixtures(restaurantId), "Facebook, Instagram, and Google synthetic media fixtures were rendered and stored privately.")}>Render all 3 synthetic fixtures</button></div></details>
     {data.renditions.length > 0 && <details className="momo-operations-details"><summary><span><strong>Rendition history</strong><small>Private outputs with immutable technical evidence.</small></span><b>{data.renditions.length}</b></summary><div className="momo-record-list">{data.renditions.slice(0, 6).map((item) => <article key={item.id}><div><strong>{titleCase(item.intended_use)} · {item.width}×{item.height}</strong><p>{item.alt_text}</p><small>{item.source_kind} · recipe {item.recipe_fingerprint.slice(0, 12)}… · output {item.content_sha256.slice(0, 12)}… · {formatDate(item.created_at)}</small></div><Badge value={item.external_write_allowed ? "invalid" : item.status} /></article>)}</div></details>}
   </section>;
 }
 
-function TeamPrivateImagePreview({ storagePath, alt, label, renditionId, setRenderedRenditionId }: { storagePath: string; alt: string; label: string; renditionId?: string; setRenderedRenditionId?: (id: string) => void }) {
+function TeamPrivateImagePreview({
+  storagePath,
+  alt,
+  label,
+  expectedContentSha256,
+  renditionId,
+  setRenderedRenditionId,
+  previewToken,
+  setRenderedPreviewToken,
+}: {
+  storagePath: string;
+  alt: string;
+  label: string;
+  expectedContentSha256?: string;
+  renditionId?: string;
+  setRenderedRenditionId?: (id: string) => void;
+  previewToken?: string;
+  setRenderedPreviewToken?: (token: string) => void;
+}) {
   const [url, setUrl] = useState("");
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
 
@@ -322,19 +578,29 @@ function TeamPrivateImagePreview({ storagePath, alt, label, renditionId, setRend
     let active = true;
     let objectUrl = "";
     void getMomoTeamMediaSource(storagePath)
-      .then((blob) => {
+      .then(async (blob) => {
+        if (!active) return;
+        if (expectedContentSha256 && await momoBlobSha256(blob) !== expectedContentSha256) {
+          throw new Error("private_preview_hash_mismatch");
+        }
         if (!active) return;
         objectUrl = URL.createObjectURL(blob);
         setUrl(objectUrl);
       })
-      .catch(() => { if (active) { setState("error"); setRenderedRenditionId?.(""); } });
+      .catch(() => {
+        if (active) {
+          setState("error");
+          setRenderedRenditionId?.("");
+          setRenderedPreviewToken?.("");
+        }
+      });
     return () => {
       active = false;
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [setRenderedRenditionId, storagePath]);
+  }, [expectedContentSha256, setRenderedPreviewToken, setRenderedRenditionId, storagePath]);
 
-  return <figure className="momo-editor-preview"><figcaption>{label}</figcaption>{state === "error" ? <span>Private preview unavailable</span> : !url ? <span>Opening private preview…</span> : <img src={url} alt={alt} onLoad={() => { setState("ready"); if (renditionId) setRenderedRenditionId?.(renditionId); }} onError={() => { setState("error"); setRenderedRenditionId?.(""); }} />}</figure>;
+  return <figure className="momo-editor-preview"><figcaption>{label}</figcaption>{state === "error" ? <span>Private preview unavailable</span> : !url ? <span>Opening private preview…</span> : <img src={url} alt={alt} onLoad={() => { setState("ready"); if (renditionId) setRenderedRenditionId?.(renditionId); if (previewToken) setRenderedPreviewToken?.(previewToken); }} onError={() => { setState("error"); setRenderedRenditionId?.(""); setRenderedPreviewToken?.(""); }} />}</figure>;
 }
 
 function MomoPublicationRehearsal({ restaurantId, data, busy, run }: { restaurantId: string; data: MomoTeamPreconnectionData; busy: boolean; run: (action: () => Promise<void>, success: string) => Promise<void> }) {
@@ -361,7 +627,7 @@ function MomoAutomationContract({ restaurantId, data, busy, run }: { restaurantI
     <p>The AI rehearsal validates structured output, grounding, provenance, unsupported-claim blocking, human review, and all three channel variants without calling a model. Metrics fixtures validate source-specific fields, deduplication, missing-versus-zero handling, safe rates, and no cross-channel reach, causality, or ROI claim.</p>
     <div className="momo-decision"><button disabled={busy} onClick={() => void run(() => persistMomoAiContractRehearsal(restaurantId), "The offline AI output contract was persisted with grounding and human-review evidence. No model was called.")}>Run offline AI contract</button><button disabled={busy} onClick={() => void run(() => persistMomoMetricsRehearsalSuite(restaurantId), "Four source-specific metrics contracts were persisted as synthetic evidence.")}>Run metrics contract suite</button></div>
     <button className="secondary-button" disabled={busy} onClick={() => void run(() => persistMomoCompleteFreeRehearsalSuite(restaurantId), "The complete free Momo rehearsal suite ran: private media, AI contract, metrics, SEO, publishing failure matrix, tracking, and the preconnection gate. No provider was contacted and nothing was published.")}>{busy ? "Running free readiness suite…" : "Run all free Momo readiness rehearsals"}</button>
-    <small>{data.aiRehearsals.length} AI contract rehearsal(s) · {metricSources.size}/4 metrics sources · provider calls and external writes locked</small>
+    <small>{data.aiRehearsals.length} offline AI contract rehearsal(s) · {metricSources.size}/4 metrics sources · publishing and all external writes remain locked; the separately budgeted Media AI pilot is reviewed in Media</small>
   </section>;
 }
 
@@ -386,7 +652,7 @@ function MomoSeoWorkbench({ restaurantId, data, busy, run }: { restaurantId: str
 function MomoPreconnectionGate({ restaurantId, data, busy, run }: { restaurantId: string; data: MomoTeamPreconnectionData; busy: boolean; run: (action: () => Promise<void>, success: string) => Promise<void> }) {
   const latest = data.gateRuns[0];
   const controls = data.runtimeControls[0];
-  const locked = controls && !controls.ai_live_calls && !controls.provider_writes && !controls.review_replies && !controls.website_writes && !controls.external_scheduling;
+  const externalWritesLocked = controls && !controls.provider_writes && !controls.review_replies && !controls.website_writes && !controls.external_scheduling;
   const [actionKind, setActionKind] = useState<MomoActionKind>("access_connection");
   const [subjectKey, setSubjectKey] = useState("momo_google_manager_access_v1");
   const [description, setDescription] = useState("Allow Veroxa's separate manager account to connect to the Momo House Google Business Profile. No password is shared and no profile change is included.");
@@ -407,7 +673,7 @@ function MomoPreconnectionGate({ restaurantId, data, busy, run }: { restaurantId
   return <section className="momo-panel">
     <div className="momo-panel-heading"><div><p className="eyebrow">PRECONNECTION GATE · TEAM ONLY</p><h2>{latest?.status === "pass" ? "Ready to request owner access" : "Preconnection evidence still blocked"}</h2></div><Badge value={latest?.status || "not_evaluated"} /></div>
     <p>This is separate from production activation. It may pass with Meta, Google, website access, and live AI disconnected. Passing means only that Veroxa’s internal Momo workflows are ready for an owner access conversation.</p>
-    <div className="momo-facts"><span>Runtime controls<strong>{locked ? "All locked" : "Invalid"}</strong></span><span>Release attestations<strong>{data.releaseAttestations.length}</strong></span><span>Image derivatives<strong>{data.renditions.length}</strong></span><span>Publication rehearsals<strong>{data.publicationRehearsals.length}</strong></span><span>SEO plans<strong>{data.seoChangeSets.length}</strong></span></div>
+    <div className="momo-facts"><span>External actions<strong>{externalWritesLocked ? "All locked" : "Invalid"}</strong></span><span>Media AI pilot<strong>{controls?.ai_live_calls ? "Active" : "Locked"}</strong></span><span>Release attestations<strong>{data.releaseAttestations.length}</strong></span><span>Image derivatives<strong>{data.renditions.length}</strong></span><span>Publication rehearsals<strong>{data.publicationRehearsals.length}</strong></span><span>SEO plans<strong>{data.seoChangeSets.length}</strong></span></div>
     <button className="secondary-button" disabled={busy} onClick={() => void run(async () => { await runMomoPreconnectionGate(restaurantId); }, "A new Team-only preconnection snapshot was recorded. Production activation remains false.")}>Evaluate preconnection gate</button>
     {latest && <><div className={latest.status === "pass" ? "momo-callout" : "momo-warning"}><strong>{latest.status === "pass" ? "Preconnection pass" : "Blocked"}</strong><p>{latest.status === "pass" ? "Internal workflows are ready for a scoped owner access request. No account is connected and nothing is activated." : `${latest.blockers.length} required check(s) remain: ${latest.blockers.map(titleCase).join(", ")}.`}</p><small>Evaluated {formatDate(latest.evaluated_at)} · activation: false</small></div><div className="momo-record-list">{Object.entries(latest.checks).map(([key, passed]) => <article key={key}><div><strong>{titleCase(key)}</strong></div><Badge value={passed ? "verified" : "blocked"} /></article>)}</div></>}
     <details className="momo-operations-details"><summary><span><strong>Exact owner action request</strong><small>Prepared for the future verified owner. The temporary development proxy cannot see or decide these requests.</small></span><b>{data.actionConsents.length} records</b></summary><div className="momo-form-grid"><label>Action<select value={actionKind} onChange={(event) => setActionKind(event.target.value as MomoActionKind)}><option value="access_connection">Access connection</option><option value="business_profile_change">Business profile change</option><option value="google_post">Google post</option><option value="social_post">Social post</option><option value="review_reply">Review reply</option><option value="website_change">Website change</option></select></label><label>Stable action key<input value={subjectKey} onChange={(event) => setSubjectKey(event.target.value)} /></label><label className="wide">Owner-visible description<textarea rows={3} value={description} onChange={(event) => setDescription(event.target.value)} /></label><label>Exact target<input value={target} onChange={(event) => setTarget(event.target.value)} /></label><label>Exact operation<input value={operation} onChange={(event) => setOperation(event.target.value)} /></label>{actionKind === "business_profile_change" ? <><label>Current owner-visible value<input value={currentValue} onChange={(event) => setCurrentValue(event.target.value)} /></label><label>Proposed owner-visible value<input value={proposedValue} onChange={(event) => setProposedValue(event.target.value)} /></label></> : actionKind !== "access_connection" ? <label className="wide">Exact content preview<textarea rows={3} value={scopeDetail} onChange={(event) => setScopeDetail(event.target.value)} /></label> : null}</div><button disabled={busy || subjectKey.trim().length < 3 || description.trim().length < 10 || target.trim().length < 2 || operation.trim().length < 2 || (actionKind === "business_profile_change" && (currentValue.trim().length === 0 || proposedValue.trim().length === 0)) || (!["access_connection", "business_profile_change"].includes(actionKind) && scopeDetail.trim().length === 0)} onClick={() => void run(requestConsent, "An exact seven-day owner decision request was created. No external action occurred.")}>Create exact decision request</button>{data.actionConsents.length > 0 && <div className="momo-record-list">{data.actionConsents.map((item) => <article key={item.id}><div><strong>{titleCase(item.action_kind)}</strong><p>{item.client_description}</p><small>{item.subject_key} · expires {formatDate(item.expires_at)}</small></div><Badge value={item.status} /></article>)}</div>}</details>
