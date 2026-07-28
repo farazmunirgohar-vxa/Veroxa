@@ -800,7 +800,7 @@ begin
 end $$;
 
 -- Cache data is readable only through the TTL-aware RPC; direct Team SELECT is
--- intentionally empty. The hard purge removes an expired payload.
+-- denied. The hard purge removes an expired payload.
 do $$
 declare
   cache_id uuid;
@@ -832,10 +832,17 @@ begin
     'google_business',
     'rr-cache-fixture'
   );
-  if cache_id is null or cached -> 'payload' <> '{"hours":"fixture-only"}'::jsonb
-    or (select count(*) from public.veroxa_external_content_cache) <> 0 then
+  if cache_id is null
+    or cached is null
+    or cached -> 'payload' is distinct from '{"hours":"fixture-only"}'::jsonb then
     raise exception 'momo_cache_boundary_failed';
   end if;
+  begin
+    perform 1 from public.veroxa_external_content_cache limit 1;
+    raise exception 'momo_cache_direct_team_select_allowed';
+  exception when sqlstate '42501' then
+    null;
+  end;
   perform set_config('veroxa.test.cache_id', cache_id::text, true);
 end $$;
 
