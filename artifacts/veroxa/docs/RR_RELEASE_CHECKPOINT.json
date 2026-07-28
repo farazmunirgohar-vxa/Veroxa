@@ -103,7 +103,7 @@
     "manifest": "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json",
     "state": "reviewed_locally_unmerged_unpublished_unapplied",
     "basedOnGitHubMainCommit": "979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6",
-    "pullRequest": null,
+    "pullRequest": 154,
     "githubMerged": false,
     "futureMergedGitHubCommit": null,
     "futureSitesVersion": null,
@@ -246,7 +246,7 @@
         "scripts/src/check-supabase-migration-ledger.ts",
         ".github/workflows/supabase-verify.yml"
       ],
-      "sha256": "a72cca1ed9bc16d65f5eb3cef996d1146fdb6fcd11d11ed54820ca78bcd7165c"
+      "sha256": "9bfae5ee1b92a94ff40af3570fc993695eb52ef934dbdeac8abf310c3602b1a0"
     },
     "media_ai_runtime": {
       "review": "full-on-change",
@@ -325,7 +325,7 @@
         ".github/workflows/supabase-verify.yml",
         ".github/workflows/veroxa-verify.yml"
       ],
-      "sha256": "30c42f8a6e455803bc1f14e81bb63dd05e4449b5d162f12de00e6ce81b5500dd"
+      "sha256": "7d9ed7d5452ddea7557427d9897ec117b755c826bd2b66b37a377507be39d0b3"
     },
     "product_scope": {
       "review": "full-on-change",

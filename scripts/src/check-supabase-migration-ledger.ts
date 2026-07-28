@@ -230,8 +230,7 @@ if (
   candidate.status !== "reviewed_locally_unmerged_unpublished_unapplied" ||
   candidate.basedOnGitHubMainCommit !==
     "979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6" ||
-  (candidate.pullRequest !== null &&
-    (!Number.isInteger(candidate.pullRequest) || candidate.pullRequest < 1)) ||
+  candidate.pullRequest !== 154 ||
   candidate.githubMerged ||
   candidate.futureMergedGitHubCommit !== null ||
   candidate.futureSitesVersion !== null ||

@@ -94,7 +94,7 @@
   "releaseCandidate": {
     "status": "reviewed_locally_unmerged_unpublished_unapplied",
     "basedOnGitHubMainCommit": "979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6",
-    "pullRequest": null,
+    "pullRequest": 154,
     "githubMerged": false,
     "futureMergedGitHubCommit": null,
     "futureSitesVersion": null,

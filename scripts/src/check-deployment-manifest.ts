@@ -327,7 +327,7 @@ const releaseCandidate = manifest.releaseCandidate;
 must(
   releaseCandidate.status === REVIEWED_LOCAL_CANDIDATE_STATUS &&
     releaseCandidate.basedOnGitHubMainCommit === candidate.basedOnGitHubMainCommit &&
-    releaseCandidate.pullRequest === null &&
+    releaseCandidate.pullRequest === 154 &&
     !releaseCandidate.githubMerged &&
     releaseCandidate.futureMergedGitHubCommit === null &&
     releaseCandidate.futureSitesVersion === null &&

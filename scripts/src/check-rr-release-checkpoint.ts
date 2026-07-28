@@ -457,7 +457,7 @@ must(
   candidate.manifest === "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json" &&
     candidate.state === "reviewed_locally_unmerged_unpublished_unapplied" &&
     candidate.basedOnGitHubMainCommit === expected.candidate.basedOnGitHubMainCommit &&
-    candidate.pullRequest === null &&
+    candidate.pullRequest === 154 &&
     !candidate.githubMerged &&
     candidate.futureMergedGitHubCommit === null &&
     candidate.futureSitesVersion === null &&
@@ -712,7 +712,7 @@ must(
       "reviewed_locally_unmerged_unpublished_unapplied" &&
     manifest.releaseCandidate.basedOnGitHubMainCommit ===
       expected.candidate.basedOnGitHubMainCommit &&
-    manifest.releaseCandidate.pullRequest === null &&
+    manifest.releaseCandidate.pullRequest === 154 &&
     !manifest.releaseCandidate.githubMerged &&
     manifest.releaseCandidate.futureMergedGitHubCommit === null &&
     manifest.releaseCandidate.futureSitesVersion === null &&

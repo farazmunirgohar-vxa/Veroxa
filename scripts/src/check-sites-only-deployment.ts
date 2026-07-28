@@ -393,7 +393,7 @@ must(
     !observedProduction.candidateParityVerified &&
     candidate.status === reviewedLocalCandidateStatus &&
     candidate.basedOnGitHubMainCommit === candidateBaseMain &&
-    candidate.pullRequest === null &&
+    candidate.pullRequest === 154 &&
     !candidate.githubMerged &&
     candidate.futureMergedGitHubCommit === null &&
     candidate.futureSitesVersion === null &&
