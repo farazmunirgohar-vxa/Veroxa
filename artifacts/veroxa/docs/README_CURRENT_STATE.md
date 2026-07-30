@@ -2,6 +2,13 @@
 
 Status: Short index for Faraz, Codex, and future ChatGPT/Codex sessions.
 
+## 2026-07-30 — high-quality Media AI candidate; v20 remains live
+
+- For candidate truth, start with `VEROXA_CURRENT_MILESTONE.md`, `VEROXA_DEPLOYMENT_MANIFEST.json`, `RR_RELEASE_CHECKPOINT.json`, and `artifacts/veroxa-sites/app/momo-readiness-tracker.json`.
+- For production truth, `MOMO_MEDIA_V20_LIVE_CLOSEOUT.json` remains authoritative: PR #152, Sites version 20, and 15 applied migrations are live.
+- The Media AI candidate is based on `979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6`, unmerged/unpublished/unapplied, and limited to high-fidelity standing Image Enhancement automation. The key is provisioned, the live flag is off, and spend is USD $0. USD $20 is the automatic authorization threshold for each job—not a lifetime budget—and a job expected above it requires fresh Faraz authorization before provider use.
+- The current upload rights are expired. No real request is eligible until rights are current and Team review is approved. Momo remains No-Go; Google/social, external publishing, and owner-controlled provider access remain locked.
+
 ## 2026-07-22 — current PR #152 / Sites v20 state
 
 - Start with `MOMO_MEDIA_V20_LIVE_CLOSEOUT.json`, then `VEROXA_CURRENT_MILESTONE.md`, `CURRENT_BUILD_STATUS.md`, `ACTIVE_DOCS_INDEX.md`, and `VEROXA_LOCKED_OPERATING_MEMORY.md`.

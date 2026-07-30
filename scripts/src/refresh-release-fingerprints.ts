@@ -94,9 +94,9 @@ manifest.releaseCandidate.migrationTreeSha256 = migrations.sha256;
 manifest.releaseCandidate.latestCandidateMigration = latestCandidateMigration;
 manifest.releaseCandidate.latestCandidateMigrationSha256 = latestCandidateMigrationSha256;
 
-if (fingerprintsChanged) {
-  const reviewedRefreshConfirmed =
-    process.env.VEROXA_REVIEWED_FINGERPRINT_REFRESH === "true";
+const reviewedRefreshConfirmed =
+  process.env.VEROXA_REVIEWED_FINGERPRINT_REFRESH === "true";
+if (fingerprintsChanged || reviewedRefreshConfirmed) {
   manifest.releaseState = reviewedRefreshConfirmed
     ? REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE
     : REFRESHED_LOCAL_CANDIDATE_RELEASE_STATE;

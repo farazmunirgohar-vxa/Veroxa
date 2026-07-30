@@ -1,3 +1,12 @@
+## 2026-07-30 — Media AI v2 high-quality local candidate
+
+- **Production unchanged:** PR #152 / Sites version 20 / migration 15 remains live. This candidate is based on canonical `main` commit `979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6`; it has not merged, migration 16 has not been applied, and no new Sites version is published.
+- **Candidate behavior:** When the Team workspace observes current rights plus an approved review, standing automation may create one high-fidelity private Image Enhancement candidate for that exact source, review, and output preset. `gpt-image-2` receives verified source bytes, makes at most one provider call with no automatic retry, returns the selected high-resolution PNG, and requires exact decoded-image inspection plus attestation before Ready.
+- **Security and accounting:** tenant/RLS/role checks, source/version/hash lineage, per-asset active-attempt uniqueness, deterministic idempotency, conservative failure accounting, and the user-authorized USD $20 per-job automatic authorization threshold are enforced in migration 16. An individual job expected above $20 pauses for fresh Faraz authorization before provider use. Actual spend remains USD $0.
+- **Activation state:** the OpenAI key is provisioned server-side, but the live Media AI flag is false and provider/real-edit proof is pending. The Team-only runtime-status check verifies both protected server configuration and exact `gpt-image-2` model access before the UI can treat AI as available. The current upload rights are expired, so no Momo image is eligible yet.
+- **Boundaries:** the manual editor remains the no-cost fallback. Caption, Media Review, and Compliance do not become separate model calls; Google/social, owner-controlled providers, external writes, publishing, and Momo activation stay locked. Momo remains No-Go.
+- **Evidence:** `momo-readiness-tracker.json`, `VEROXA_DEPLOYMENT_MANIFEST.json`, and `RR_RELEASE_CHECKPOINT.json` distinguish the candidate from the verified v20 baseline.
+
 ## 2026-07-22 — PR #152 / Sites v20 readiness-copy follow-up deployed
 
 - **Live truth:** `MOMO_MEDIA_V20_LIVE_CLOSEOUT.json` records PR #152, its four green workflows, and successful Sites version 20 deployment from checkout `aceb17bb446854d48a71e54ba814591cf2c19d33`.

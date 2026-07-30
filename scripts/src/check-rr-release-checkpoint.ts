@@ -124,7 +124,7 @@ type Checkpoint = {
     createsOperationalClient: boolean;
     newIncrementalSpendApproved: boolean;
   };
-  runtimeVerification: Record<string, boolean>;
+  runtimeVerification: Record<string, boolean | number>;
   scope: {
     operationalRestaurant: string;
     relationship: string;
@@ -166,10 +166,27 @@ type Readiness = {
     rule: string;
   };
   spendingBoundary: {
-    authorizedOneTimeCeilingUsd: number;
+    automaticAuthorizationThresholdUsd: number;
     incurredUsd: number;
-    recurringSpendAuthorized: boolean;
+    standingPerJobSpendAuthorized: boolean;
+    subscriptionOrUnboundedSpendAuthorized: boolean;
     providerActivationAuthorized: boolean;
+    rule: string;
+  };
+  mediaAiPilot: {
+    scope: string;
+    userAuthorizedScopedActivation: boolean;
+    openAiCredentialProvisionedServerSide: boolean;
+    liveRuntimeEnabled: boolean;
+    providerCanaryPassed: boolean;
+    realEditPassed: boolean;
+    automaticAuthorizationThresholdUsd: number;
+    incurredUsd: number;
+    standingPerJobSpendAuthorized: boolean;
+    subscriptionOrUnboundedSpendAuthorized: boolean;
+    currentMomoUploadRightsStatus: string;
+    firstRealUseRequiresCurrentRights: boolean;
+    firstRealUseRequiresTeamReview: boolean;
     rule: string;
   };
   gateState: Record<string, boolean>;
@@ -325,12 +342,13 @@ const expected = {
     migrationSha: "5cd7444906e5f5184e30cc7594542c71995a372b8143e5097f975d354f0925c7",
   },
   candidate: {
-    sourceFileCount: 79,
-    sourceTreeSha256: "5ae5da11de0ae202d33f31dea08ddd337b0b5323aa857d543f3c259f8662a4c2",
-    migrationFileCount: 15,
-    migrationTreeSha256: "9eb4e5e16e2abea40143dad453bfcc2fcca27de6a7907d1f997af998b5c7dc0a",
-    migration: "20260722000100_momo_client_media_status_v1.sql",
-    migrationSha: "5cd7444906e5f5184e30cc7594542c71995a372b8143e5097f975d354f0925c7",
+    basedOnGitHubMainCommit: "979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6",
+    sourceFileCount: 88,
+    sourceTreeSha256: "60c2e069d6a5f54480c8ee3151e28ccc7d920e52fd5e3b978f47f41dec4013bb",
+    migrationFileCount: 16,
+    migrationTreeSha256: "09aab45cda17810b52a07429700a4557308405d40a3983635d6bb7848dd4c729",
+    migration: "20260728044916_momo_media_ai_pilot_v1.sql",
+    migrationSha: "efae63b4344570934d1d66b47ef1fce4fcd16343a2fe9dd8352607e0784d09a1",
   },
 };
 
@@ -347,11 +365,11 @@ function groupHash(files: string[]): string {
 const checkpoint = readJson<Checkpoint>(
   "artifacts/veroxa/docs/RR_RELEASE_CHECKPOINT.json",
 );
-must(checkpoint.schemaVersion === 6, "RR checkpoint schema must be 6.");
+must(checkpoint.schemaVersion === 7, "RR checkpoint schema must be 7.");
 must(
-  checkpoint.checkpoint === "momo-readiness-copy-sites-v20-published-2026-07-22" &&
-    checkpoint.status === "published_sites_v20_no_database_change",
-  "RR checkpoint must identify the published Sites v20 no-database-change follow-up.",
+  checkpoint.checkpoint === "momo-media-ai-v2-high-quality-local-candidate-2026-07-30" &&
+    checkpoint.status === "local_candidate_reviewed_unmerged_unpublished_unapplied",
+  "RR checkpoint must identify the reviewed, unmerged, unpublished, and unapplied Media AI candidate.",
 );
 
 const observed = checkpoint.observedProductionBaseline;
@@ -438,27 +456,27 @@ must(
 const candidate = checkpoint.releaseCandidate;
 must(
   candidate.manifest === "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json" &&
-    candidate.state === "published_sites_followup_no_database_change" &&
-    candidate.basedOnGitHubMainCommit === "bcd9b9da1796e72c0b9b546e9944a4e7e419c1b4" &&
-    candidate.pullRequest === 152 &&
-    candidate.githubMerged &&
-    candidate.futureMergedGitHubCommit === expected.current.githubMain &&
-    candidate.futureSitesVersion === expected.current.sitesVersion &&
+    candidate.state === "reviewed_locally_unmerged_unpublished_unapplied" &&
+    candidate.basedOnGitHubMainCommit === expected.candidate.basedOnGitHubMainCommit &&
+    candidate.pullRequest === 154 &&
+    !candidate.githubMerged &&
+    candidate.futureMergedGitHubCommit === null &&
+    candidate.futureSitesVersion === null &&
     candidate.reviewedLocally &&
     candidate.localReviewPassed &&
-    candidate.allFourWorkflowsGreen === true &&
-    candidate.zeroUnresolvedReviewThreads === true &&
+    candidate.allFourWorkflowsGreen === null &&
+    candidate.zeroUnresolvedReviewThreads === null &&
     candidate.sourceFileCount === expected.candidate.sourceFileCount &&
     candidate.sourceTreeSha256 === expected.candidate.sourceTreeSha256 &&
     candidate.migrationFileCount === expected.candidate.migrationFileCount &&
     candidate.migrationTreeSha256 === expected.candidate.migrationTreeSha256 &&
     candidate.latestCandidateMigration === expected.candidate.migration &&
     candidate.latestCandidateMigrationSha256 === expected.candidate.migrationSha &&
-    !candidate.databaseChangesRequired &&
+    candidate.databaseChangesRequired &&
     !candidate.databaseMigrationApplied &&
     candidate.sitesPublishRequired &&
-    candidate.sitesCandidatePublished,
-  "RR v20 follow-up must remain exact, locally reviewed, merged, published, and no-database-change.",
+    !candidate.sitesCandidatePublished,
+  "The RR Media AI candidate must remain exact, locally reviewed, unmerged, unpublished, and unapplied.",
 );
 
 const audit = checkpoint.auditAndTeamRelease;
@@ -488,7 +506,8 @@ for (const inactive of [
   "ownerConfirmedBusinessTruthVerified",
   "permissionedMediaVerified",
   "aiWebResearchEnabled",
-  "openAiCredentialProvisioned",
+  "mediaAiLiveRuntimeEnabled",
+  "mediaAiProviderCanaryPassed",
   "externalProvidersConnected",
   "externalPublishingVerified",
   "activationExecuted",
@@ -501,9 +520,25 @@ for (const active of [
   "authenticatedProtectedRouteVerified",
   "passwordSignInVerifiedByUser",
   "auditV3SaveContractVerified",
+  "openAiCredentialProvisioned",
 ]) {
   must(checkpoint.runtimeVerification[active] === true, `Verified runtime state regressed: ${active}`);
 }
+must(
+  checkpoint.runtimeVerification.mediaAiAutomaticAuthorizationThresholdUsd === 20 &&
+    !(
+      "mediaAiInternalLifetimeReservationCeilingUsd"
+      in checkpoint.runtimeVerification
+    ) &&
+    checkpoint.runtimeVerification.mediaAiIncurredUsd === 0 &&
+    checkpoint.runtimeVerification.mediaAiStandingPerJobSpendAuthorized === true &&
+    checkpoint.runtimeVerification.mediaAiSubscriptionOrUnboundedSpendAuthorized === false &&
+    !(
+      "mediaAiRecurringSpendAuthorized"
+      in checkpoint.runtimeVerification
+    ),
+  "Runtime Media AI evidence must preserve standing per-job authorization, the $20 threshold, $0 incurred, and no subscription or unbounded spend.",
+);
 
 must(
   checkpoint.scope.operationalRestaurant === "Momo's House San Antonio" &&
@@ -521,7 +556,7 @@ must(checkpoint.fullReviewTriggers.length >= 4, "RR full-review triggers are inc
 for (const marker of [
   "No Momo owner truth or media rights may be invented",
   "all four workflows",
-  "inactive pending exact authorization",
+  "Media AI activation remains scoped",
 ]) {
   must(
     checkpoint.activationGates.some((gate) => gate.includes(marker)),
@@ -554,11 +589,11 @@ const readiness = readJson<Readiness>(
   "artifacts/veroxa-sites/app/momo-readiness-tracker.json",
 );
 must(
-  readiness.schemaVersion === 8 &&
+  readiness.schemaVersion === 9 &&
     readiness.recordKind === "momo_preconnection_readiness" &&
     readiness.restaurant === "Momo's House San Antonio" &&
     readiness.overallStatus === "blocked" &&
-    readiness.lastReviewedAt === "2026-07-22" &&
+    readiness.lastReviewedAt === "2026-07-30" &&
     /before requesting owner or provider access/i.test(readiness.milestone) &&
     /fail-closed No-Go/i.test(readiness.overallRule),
   "Momo readiness record is not the current fail-closed preconnection checkpoint.",
@@ -572,12 +607,30 @@ must(
   "Momo readiness must preserve the iCloud development-proxy boundary.",
 );
 must(
-  readiness.spendingBoundary.authorizedOneTimeCeilingUsd === 20 &&
+    readiness.spendingBoundary.automaticAuthorizationThresholdUsd === 20 &&
     readiness.spendingBoundary.incurredUsd === 0 &&
-    !readiness.spendingBoundary.recurringSpendAuthorized &&
+    readiness.spendingBoundary.standingPerJobSpendAuthorized &&
+    !readiness.spendingBoundary.subscriptionOrUnboundedSpendAuthorized &&
     !readiness.spendingBoundary.providerActivationAuthorized &&
     /Authorization is not an incurred charge/.test(readiness.spendingBoundary.rule),
-  "Readiness must distinguish the $20 one-time ceiling from $0 incurred and no provider activation.",
+  "Readiness must distinguish the $20 per-job authorization threshold from $0 incurred and no provider activation.",
+);
+must(
+  readiness.mediaAiPilot.scope === "image_enhancement_only" &&
+    readiness.mediaAiPilot.userAuthorizedScopedActivation &&
+    readiness.mediaAiPilot.openAiCredentialProvisionedServerSide &&
+    !readiness.mediaAiPilot.liveRuntimeEnabled &&
+    !readiness.mediaAiPilot.providerCanaryPassed &&
+    !readiness.mediaAiPilot.realEditPassed &&
+    readiness.mediaAiPilot.automaticAuthorizationThresholdUsd === 20 &&
+    readiness.mediaAiPilot.incurredUsd === 0 &&
+    readiness.mediaAiPilot.standingPerJobSpendAuthorized &&
+    !readiness.mediaAiPilot.subscriptionOrUnboundedSpendAuthorized &&
+    readiness.mediaAiPilot.currentMomoUploadRightsStatus === "expired" &&
+    readiness.mediaAiPilot.firstRealUseRequiresCurrentRights &&
+    readiness.mediaAiPilot.firstRealUseRequiresTeamReview &&
+    /Image Enhancement/i.test(readiness.mediaAiPilot.rule),
+  "Readiness must preserve the narrow, credentialed, disabled, zero-spend Media AI path with its per-job authorization threshold and current-rights blocker.",
 );
 for (const [name, value] of Object.entries(readiness.gateState)) {
   must(value === false, `Readiness gate must remain fail-closed: ${name}`);
@@ -666,12 +719,13 @@ must(
     manifest.observedProductionDrift.databaseAppliedThroughLatestObserved &&
     !manifest.observedProductionDrift.candidateParityVerified &&
     manifest.releaseCandidate.status ===
-      "published_sites_followup_no_database_change" &&
-    manifest.releaseCandidate.basedOnGitHubMainCommit === "bcd9b9da1796e72c0b9b546e9944a4e7e419c1b4" &&
-    manifest.releaseCandidate.pullRequest === 152 &&
-    manifest.releaseCandidate.githubMerged &&
-    manifest.releaseCandidate.futureMergedGitHubCommit === expected.current.githubMain &&
-    manifest.releaseCandidate.futureSitesVersion === expected.current.sitesVersion &&
+      "reviewed_locally_unmerged_unpublished_unapplied" &&
+    manifest.releaseCandidate.basedOnGitHubMainCommit ===
+      expected.candidate.basedOnGitHubMainCommit &&
+    manifest.releaseCandidate.pullRequest === 154 &&
+    !manifest.releaseCandidate.githubMerged &&
+    manifest.releaseCandidate.futureMergedGitHubCommit === null &&
+    manifest.releaseCandidate.futureSitesVersion === null &&
     manifest.releaseCandidate.reviewedLocally &&
     manifest.releaseCandidate.sourceFileCount === expected.candidate.sourceFileCount &&
     manifest.releaseCandidate.sourceTreeSha256 === expected.candidate.sourceTreeSha256 &&
@@ -683,17 +737,17 @@ must(
       expected.candidate.migration &&
     manifest.releaseCandidate.latestCandidateMigrationSha256 ===
       expected.candidate.migrationSha &&
-    !manifest.releaseCandidate.databaseChangesRequired &&
+    manifest.releaseCandidate.databaseChangesRequired &&
     !manifest.releaseCandidate.databaseMigrationApplied &&
     manifest.releaseCandidate.sitesPublishRequired &&
-    manifest.releaseCandidate.sitesPublished &&
-    manifest.source.evidenceScope === "published_sites_v20" &&
+    !manifest.releaseCandidate.sitesPublished &&
+    manifest.source.evidenceScope === "local_release_candidate" &&
     manifest.source.fileCount === expected.candidate.sourceFileCount &&
     manifest.source.treeSha256 === expected.candidate.sourceTreeSha256 &&
-    manifest.migrations.evidenceScope === "current_verified_release" &&
+    manifest.migrations.evidenceScope === "local_release_candidate" &&
     manifest.migrations.fileCount === expected.candidate.migrationFileCount &&
     manifest.migrations.treeSha256 === expected.candidate.migrationTreeSha256,
-  "Deployment manifest disagrees with the historical release, observed drift, or published v20 checkpoint.",
+  "Deployment manifest disagrees with the historical/current live release or the reviewed Media AI candidate.",
 );
 for (const [name, value] of Object.entries(manifest.activationState)) {
   must(value === false, `Manifest activation state must remain false: ${name}`);
@@ -738,7 +792,7 @@ const milestone = readFileSync(
 for (const marker of [
   "founding pilot",
   "secure, persistent, human-controlled Momo operating loop",
-  "Runtime AI, Meta, Google, and automated publishing are modular later activations",
+  "Image Enhancement AI is the only authorized model-backed candidate activation",
   "Momo's House San Antonio is the only operational restaurant scope",
 ]) {
   must(milestone.includes(marker), `Current milestone marker missing: ${marker}`);
@@ -806,5 +860,5 @@ if (failures.length) {
 }
 
 console.log(
-  "RR release-evidence checkpoint passed: historical PR #149 and observed v18 drift are preserved, PR #152 / Sites v20 is current, and the Sites-only follow-up is published with no database change.",
+  "RR release-evidence checkpoint passed: historical PR #149 and observed v18 drift are preserved, PR #152 / Sites v20 / migration 15 remains current, and the reviewed Media AI candidate remains unmerged, unpublished, and unapplied.",
 );

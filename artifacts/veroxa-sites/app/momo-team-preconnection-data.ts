@@ -13,6 +13,18 @@ import { momoSha256 } from "./momo-media-workflow";
 import { runMomoAiContractRehearsal } from "./momo-ai-automation-rehearsal";
 import { normalizeMomoMetricsRehearsal, type MomoMetricsSource } from "./momo-metrics-rehearsal";
 import { inspectMomoImageBlob } from "./momo-image-renderer";
+import {
+  MOMO_MEDIA_AI_APPROVAL_ATTESTATION,
+  MOMO_MEDIA_AI_PROCESSING_ATTESTATION,
+  MOMO_MEDIA_AI_REJECTION_ATTESTATION,
+  isMomoMediaAiCandidateStatus,
+  isMomoMediaAiHash,
+  isMomoMediaAiUuid,
+  momoMediaAiFetch,
+  type MomoMediaAiGoal,
+  type MomoMediaAiQuality,
+} from "./momo-media-ai-contract";
+import type { MomoImagePresetKey } from "./momo-media-workflow";
 
 export type MomoTeamPreconnectionData = {
   runtimeControls: Array<{
@@ -44,6 +56,43 @@ export type MomoTeamPreconnectionData = {
     status: string;
     external_write_allowed: false;
     created_at: string;
+  }>;
+  mediaAiCandidates: Array<{
+    id: string;
+    source_asset_id: string;
+    source_content_sha256: string;
+    review_id: string;
+    goal: MomoMediaAiGoal;
+    preset_key: MomoImagePresetKey;
+    intended_use: string;
+    quality: MomoMediaAiQuality;
+    output_width: number;
+    output_height: number;
+    alt_text: string;
+    model: "gpt-image-2";
+    status: "reserved" | "provider_running" | "pending_review" | "approved" | "rejected" | "failed";
+    reserved_microusd: number;
+    accounted_microusd: number | null;
+    accounting_basis:
+      | "zero_pre_provider"
+      | "provider_usage_estimate"
+      | "conservative_reservation"
+      | null;
+    provider_usage: unknown | null;
+    provider_called: boolean;
+    provider_started_at: string | null;
+    provider_error_code: string | null;
+    storage_path: string | null;
+    storage_object_version: string | null;
+    file_size: number | null;
+    content_sha256: string | null;
+    evidence_class: "development_proxy" | "real_owner";
+    requested_at: string;
+    generated_at: string | null;
+    inspected_at: string | null;
+    inspection_notes: string | null;
+    rendition_id: string | null;
+    external_write_allowed: false;
   }>;
   publicationRehearsals: Array<{
     id: string;
@@ -194,6 +243,7 @@ function isMomoStorageObjectConflict(error: unknown): boolean {
 
 export async function loadMomoTeamPreconnectionData(restaurantId: string): Promise<MomoTeamPreconnectionData> {
   const client = requiredClient();
+  const mediaAiCandidateFields = "id, source_asset_id, source_content_sha256, review_id, goal, preset_key, intended_use, quality, output_width, output_height, alt_text, model, status, reserved_microusd, accounted_microusd, accounting_basis, provider_usage, provider_called, provider_started_at, provider_error_code, storage_path, storage_object_version, file_size, content_sha256, evidence_class, requested_at, generated_at, inspected_at, inspection_notes, rendition_id, external_write_allowed";
   const queries = await Promise.all([
     client.from("veroxa_momo_runtime_controls").select("restaurant_id, ai_live_calls, provider_writes, review_replies, website_writes, external_scheduling, updated_at").eq("restaurant_id", restaurantId),
     client.from("veroxa_media_renditions").select("id, source_kind, source_asset_id, source_key, source_content_sha256, storage_path, mime_type, file_size, width, height, content_sha256, recipe_fingerprint, edit_recipe, intended_use, alt_text, evidence_class, status, external_write_allowed, created_at").eq("restaurant_id", restaurantId).order("created_at", { ascending: false }).limit(25),
@@ -206,6 +256,9 @@ export async function loadMomoTeamPreconnectionData(restaurantId: string): Promi
     client.from("veroxa_momo_release_attestations").select("id, release_key, test_count, checks, status, verified_at").eq("restaurant_id", restaurantId).order("verified_at", { ascending: false }).limit(10),
     client.from("veroxa_ai_jobs").select("id, prompt_version, model_key, input_sha256, output_sha256, grounding_report, evidence_keys, provider_called, external_write_allowed, human_review_required, status, rehearsal_attested_at").eq("restaurant_id", restaurantId).eq("rehearsal_contract_version", "momo-ai-contract-rehearsal-v1").order("created_at", { ascending: false }).limit(10),
     client.from("veroxa_visibility_snapshots").select("id, source, period_start, period_end, metrics, snapshot_sha256, evidence_class, external_write_allowed, captured_at").eq("restaurant_id", restaurantId).eq("schema_version", "momo-metrics-rehearsal-v1").order("captured_at", { ascending: false }).limit(20),
+    client.rpc("veroxa_momo_media_ai_operational_window_v1", {
+      p_restaurant_id: restaurantId,
+    }).select(mediaAiCandidateFields),
   ]);
   if (queries.some((query) => query.error)) throw new Error("preconnection_data_unavailable");
   return {
@@ -220,8 +273,184 @@ export async function loadMomoTeamPreconnectionData(restaurantId: string): Promi
     releaseAttestations: (queries[8].data || []) as MomoTeamPreconnectionData["releaseAttestations"],
     aiRehearsals: (queries[9].data || []) as MomoTeamPreconnectionData["aiRehearsals"],
     metricsRehearsals: (queries[10].data || []) as MomoTeamPreconnectionData["metricsRehearsals"],
+    mediaAiCandidates: (queries[11].data || []) as MomoTeamPreconnectionData["mediaAiCandidates"],
   };
 }
+
+export type MomoMediaAiRuntimeStatus = {
+  enabled: boolean;
+  providerConfigured: boolean;
+  modelMetadataVisible: boolean;
+  lifecycleAdminHealthy: boolean;
+  preflightReady: boolean;
+};
+
+export async function getMomoMediaAiRuntimeStatus(): Promise<MomoMediaAiRuntimeStatus> {
+  const response = await momoMediaAiFetch(fetch, "/api/team/media-ai/status", {
+    method: "GET",
+    credentials: "same-origin",
+    cache: "no-store",
+  });
+  let body: unknown;
+  try {
+    body = await response.json();
+  } catch {
+    throw new Error("media_ai_runtime_unavailable");
+  }
+  const statusKeys = [
+    "enabled",
+    "providerConfigured",
+    "modelMetadataVisible",
+    "lifecycleAdminHealthy",
+    "preflightReady",
+  ];
+  if (
+    !response.ok
+    || !body
+    || typeof body !== "object"
+    || Array.isArray(body)
+    || Object.keys(body).length !== statusKeys.length
+    || statusKeys.some((key) => !(key in body))
+    || typeof (body as { enabled?: unknown }).enabled !== "boolean"
+    || typeof (body as { providerConfigured?: unknown }).providerConfigured
+      !== "boolean"
+    || typeof (body as { modelMetadataVisible?: unknown }).modelMetadataVisible
+      !== "boolean"
+    || typeof (body as { lifecycleAdminHealthy?: unknown })
+      .lifecycleAdminHealthy !== "boolean"
+    || typeof (body as { preflightReady?: unknown }).preflightReady
+      !== "boolean"
+  ) throw new Error("media_ai_runtime_unavailable");
+  return body as MomoMediaAiRuntimeStatus;
+}
+
+export async function generateMomoMediaAiCandidate(input: {
+  restaurantId: string;
+  assetId: string;
+  goal: MomoMediaAiGoal;
+  preset: MomoImagePresetKey;
+  quality: MomoMediaAiQuality;
+  altText: string;
+  idempotencyKey: string;
+  standingAutomation: true;
+}): Promise<{ candidateId: string; status: string }> {
+  const response = await momoMediaAiFetch(fetch, "/api/team/media-ai/improve", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "idempotency-key": input.idempotencyKey,
+    },
+    body: JSON.stringify({
+      restaurantId: input.restaurantId,
+      assetId: input.assetId,
+      goal: input.goal,
+      preset: input.preset,
+      quality: input.quality,
+      altText: input.altText,
+      standingAutomation: input.standingAutomation,
+      idempotencyKey: input.idempotencyKey,
+    }),
+  });
+  let body: unknown;
+  try {
+    body = await response.json();
+  } catch {
+    throw new Error("media_ai_transport_uncertain");
+  }
+  if (!response.ok) {
+    const code = body && typeof body === "object" && "error" in body
+      ? String((body as { error?: unknown }).error || "")
+      : "";
+    throw new Error(/^[a-z0-9_]{3,80}$/.test(code)
+      ? code
+      : "media_ai_transport_uncertain");
+  }
+  if (
+    !body
+    || typeof body !== "object"
+    || !isMomoMediaAiUuid((body as { candidateId?: unknown }).candidateId)
+    || !isMomoMediaAiCandidateStatus((body as { status?: unknown }).status)
+  ) throw new Error("media_ai_transport_uncertain");
+  return {
+    candidateId: (body as { candidateId: string }).candidateId,
+    status: String((body as { status: string }).status),
+  };
+}
+
+export async function approveMomoMediaAiCandidate(input: {
+  candidateId: string;
+  contentSha256: string;
+  inspectionNotes: string;
+}): Promise<string> {
+  if (
+    !isMomoMediaAiUuid(input.candidateId)
+    || !isMomoMediaAiHash(input.contentSha256)
+    || input.inspectionNotes !== input.inspectionNotes.trim()
+    || input.inspectionNotes.length < 10
+    || input.inspectionNotes.length > 1000
+  ) throw new Error("invalid_momo_media_ai_approval");
+  const client = requiredClient();
+  const { data, error } = await client.rpc(
+    "veroxa_approve_momo_media_ai_candidate_v1",
+    {
+      p_candidate_id: input.candidateId,
+      p_expected_content_sha256: input.contentSha256,
+      p_inspection_attestation_text: MOMO_MEDIA_AI_APPROVAL_ATTESTATION,
+      p_inspection_notes: input.inspectionNotes,
+    },
+  );
+  if (error || !isMomoMediaAiUuid(data)) {
+    throw new Error("momo_media_ai_approval_failed");
+  }
+  return data;
+}
+
+export async function rejectMomoMediaAiCandidate(input: {
+  candidateId: string;
+  contentSha256: string;
+  inspectionNotes: string;
+}): Promise<string> {
+  if (
+    !isMomoMediaAiUuid(input.candidateId)
+    || !isMomoMediaAiHash(input.contentSha256)
+    || input.inspectionNotes !== input.inspectionNotes.trim()
+    || input.inspectionNotes.length < 10
+    || input.inspectionNotes.length > 1000
+  ) throw new Error("invalid_momo_media_ai_rejection");
+  const client = requiredClient();
+  const { data, error } = await client.rpc(
+    "veroxa_reject_momo_media_ai_candidate_v1",
+    {
+      p_candidate_id: input.candidateId,
+      p_expected_content_sha256: input.contentSha256,
+      p_inspection_attestation_text: MOMO_MEDIA_AI_REJECTION_ATTESTATION,
+      p_inspection_notes: input.inspectionNotes,
+    },
+  );
+  if (error || data !== input.candidateId) {
+    throw new Error("momo_media_ai_rejection_failed");
+  }
+  return data;
+}
+
+export async function closeMomoMediaAiAttempt(
+  candidateId: string,
+): Promise<string> {
+  if (!isMomoMediaAiUuid(candidateId)) {
+    throw new Error("invalid_momo_media_ai_attempt");
+  }
+  const client = requiredClient();
+  const { data, error } = await client.rpc(
+    "veroxa_close_momo_media_ai_attempt_v1",
+    { p_candidate_id: candidateId },
+  );
+  if (error || data !== candidateId) {
+    throw new Error("momo_media_ai_attempt_not_closeable");
+  }
+  return data;
+}
+
+export { MOMO_MEDIA_AI_PROCESSING_ATTESTATION };
 
 export async function momoBlobSha256(blob: Blob): Promise<string> {
   const digest = await crypto.subtle.digest("SHA-256", await blob.arrayBuffer());

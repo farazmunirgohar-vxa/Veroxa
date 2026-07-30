@@ -1,11 +1,11 @@
 {
-  "schemaVersion": 8,
+  "schemaVersion": 9,
   "recordKind": "momo_preconnection_readiness",
   "restaurant": "Momo's House San Antonio",
   "milestone": "Momo-only readiness before requesting owner or provider access",
   "overallStatus": "blocked",
-  "overallRule": "Momo remains fail-closed No-Go. Implemented preconnection controls and development-proxy evidence are not operating-readiness proof. Readiness stays blocked until the required authenticated rehearsal and real-authority evidence pass; no result in this record authorizes owner contact, provider access, a model call, a public action, publishing, or activation.",
-  "lastReviewedAt": "2026-07-22",
+  "overallRule": "Momo remains fail-closed No-Go. Implemented preconnection controls, development-proxy evidence, and the separately authorized high-fidelity Media AI automation are not operating-readiness proof. The narrow Media AI authorization covers only server-side Image Enhancement after its reviewed release and required media evidence; it does not authorize owner contact, owner-controlled provider access, social or Google connections, a public action, publishing, or Momo activation.",
+  "lastReviewedAt": "2026-07-30",
   "identityBoundary": {
     "teamAccountRole": "team",
     "developmentClientAccountRole": "client",
@@ -24,11 +24,28 @@
     "activationAllowed": false
   },
   "spendingBoundary": {
-    "authorizedOneTimeCeilingUsd": 20,
+    "automaticAuthorizationThresholdUsd": 20,
     "incurredUsd": 0,
-    "recurringSpendAuthorized": false,
+    "standingPerJobSpendAuthorized": true,
+    "subscriptionOrUnboundedSpendAuthorized": false,
     "providerActivationAuthorized": false,
-    "rule": "Faraz authorized a one-time ceiling of up to $20 for this Momo setup and media rehearsal. Authorization is not an incurred charge and does not authorize recurring spend, provider activation, account connection, publishing, or activation."
+    "rule": "Faraz authorized standing per-job spend for high-quality Momo Image Enhancement, with $20 as the automatic authorization threshold for each job rather than a quality, lifetime, or cumulative ceiling. Before an individual request is expected to exceed $20, Veroxa must obtain fresh authorization. This release has no batch runner, subscription, or unbounded spend authority. Authorization is not an incurred charge and does not authorize owner-controlled provider accounts, social or Google connections, publishing, or Momo activation; the separate internal Media AI boundary below governs the server-side image model only."
+  },
+  "mediaAiPilot": {
+    "scope": "image_enhancement_only",
+    "userAuthorizedScopedActivation": true,
+    "openAiCredentialProvisionedServerSide": true,
+    "liveRuntimeEnabled": false,
+    "providerCanaryPassed": false,
+    "realEditPassed": false,
+    "automaticAuthorizationThresholdUsd": 20,
+    "incurredUsd": 0,
+    "standingPerJobSpendAuthorized": true,
+    "subscriptionOrUnboundedSpendAuthorized": false,
+    "currentMomoUploadRightsStatus": "expired",
+    "firstRealUseRequiresCurrentRights": true,
+    "firstRealUseRequiresTeamReview": true,
+    "rule": "The user authorized standing per-job high-fidelity server-side OpenAI Image Enhancement. The credential is provisioned server-side, but the live runtime remains disabled before the reviewed release and neither a provider canary nor a real edit has passed. Each image may carry an authorization hold of up to $20; returned provider usage is recorded when available, otherwise the hold remains conservative. $20 is a per-job threshold, not a lifetime or cumulative wallet. A job expected above that amount must pause for Faraz’s authorization before it crosses the provider boundary; no batch runner, subscription, or unbounded spend is authorized, and $0 has been incurred. Momo's current upload rights are expired, so the first real use requires current rights and an approved Team review before any image may cross the provider boundary."
   },
   "dimensions": {
     "development_identity_and_data": {
@@ -80,13 +97,17 @@
       "status": "blocked",
       "evidence": [
         "The repository includes a provider-neutral structured-output contract, grounding fields, human-review requirements, idempotency, bounded retries, recovery, and audit records.",
-        "Offline rehearsal keeps model calls and external writes disabled."
+        "Faraz authorized Momo-only high-fidelity server-side OpenAI Image Enhancement; the OpenAI credential is provisioned server-side.",
+        "The automatic authorization threshold is $20 per job; returned provider usage is recorded when available and otherwise the full authorization hold remains conservative. Incurred spend is $0, and fresh authorization is required only when a job is expected to exceed $20.",
+        "Offline rehearsal keeps public actions and external writes disabled."
       ],
       "blockers": [
         "The complete automation lifecycle has not passed the authenticated Team one-click rehearsal.",
-        "No runtime model is enabled."
+        "The live Media AI runtime remains disabled before the reviewed release.",
+        "Neither a provider canary nor a real image edit has passed.",
+        "The current Momo upload rights are expired; the first real Image Enhancement request requires current rights and an approved Team review."
       ],
-      "nextAction": "Exercise the offline AI and automation contracts through the authenticated Team rehearsal without calling a model."
+      "nextAction": "Complete the reviewed release with the runtime still disabled, then enable only high-fidelity standing Image Enhancement automation and allow the first real attempt only after current rights and Team review; do not publish or retry automatically."
     },
     "publication_tracking_and_metrics": {
       "label": "Publication rehearsal, tracking, and metrics",
@@ -147,11 +168,12 @@
       "required": false,
       "status": "blocked",
       "evidence": [
-        "Meta, Google Business, website, model, and publishing adapters remain behind disabled runtime controls."
+        "The OpenAI credential is provisioned server-side only for the separately scoped high-fidelity Image Enhancement automation.",
+        "Meta, Google Business, social, website, and publishing adapters remain behind disabled runtime controls."
       ],
       "blockers": [
-        "No provider credential or owner-controlled access is authorized.",
-        "No model call, provider read, provider write, website write, review reply, or public post is enabled."
+        "No owner-controlled provider account, social connection, or Google connection is authorized or active.",
+        "The scoped Media AI runtime remains disabled and unproven; no provider read, provider write, website write, review reply, or public post is enabled."
       ],
       "nextAction": "Keep every connection inactive until owner authority and each exact permission are obtained after preconnection review."
     },
