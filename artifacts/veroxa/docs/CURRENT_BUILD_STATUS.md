@@ -1,4 +1,13 @@
-## 2026-07-30 — Media AI v2 high-quality local candidate
+## 2026-07-30 — v21 live; signed lifecycle bridge under review
+
+- **Verified production:** PR #154 is merged at `72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695`; Sites version 21 is live from checkout `8c50dd6726629e77d22f07eb6aac9f6982001902`; migration 16 is applied and verified. The 88-file v21 source hash is `60c2e069d6a5f54480c8ee3151e28ccc7d920e52fd5e3b978f47f41dec4013bb`.
+- **Fail-closed runtime:** the server-only OpenAI credential, database capability, and hosted flag are present, but the v21 worker cannot perform privileged lifecycle transitions. No provider call, candidate, or spend has occurred.
+- **Candidate behavior:** a narrow Ed25519-signed Supabase Edge bridge exposes only preflight/start/complete/fail, derives the actor from a revalidated Team JWT, validates exact payloads, and permits one exact terminal database reconciliation without retrying OpenAI. It changes no migration and remains unmerged and unpublished.
+- **Required proof:** Deno 2.1 format/lint/typecheck, all 155 application regressions, repository guards, four hosted workflows, zero review threads, deployed missing/tampered/Team/Client auth checks, matching Sites release, and clean runtime logs.
+- **First real use:** current Momo media rights are expired. No real image may be sent until rights and Team review are current. Spend remains USD $0; jobs expected above the USD $20 per-job threshold require fresh authorization.
+- **Boundaries:** manual editing remains available; AI candidates remain private; public publishing, Google/social, and Momo activation stay locked. Momo remains No-Go.
+
+## 2026-07-30 — Media AI v2 high-quality local candidate (historical pre-v21 checkpoint)
 
 - **Production unchanged:** PR #152 / Sites version 20 / migration 15 remains live. This candidate is based on canonical `main` commit `979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6`; it has not merged, migration 16 has not been applied, and no new Sites version is published.
 - **Candidate behavior:** When the Team workspace observes current rights plus an approved review, standing automation may create one high-fidelity private Image Enhancement candidate for that exact source, review, and output preset. `gpt-image-2` receives verified source bytes, makes at most one provider call with no automatic retry, returns the selected high-resolution PNG, and requires exact decoded-image inspection plus attestation before Ready.

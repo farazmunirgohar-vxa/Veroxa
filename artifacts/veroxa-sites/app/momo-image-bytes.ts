@@ -174,7 +174,7 @@ function inspectPng(bytes: Uint8Array): PngInspection | null {
     bytes.byteOffset,
     bytes.byteLength,
   );
-  let offset = PNG_SIGNATURE.length;
+  let offset: number = PNG_SIGNATURE.length;
   let header: Omit<PngInspection, "imageDataChunks"> | null = null;
   let colorType = -1;
   let bitDepth = -1;
@@ -320,8 +320,10 @@ async function validPngPixelStream(
         controller.close();
       },
     });
+    const decompressor = new DecompressionStream("deflate") as unknown as
+      ReadableWritablePair<Uint8Array, Uint8Array>;
     reader = compressed
-      .pipeThrough(new DecompressionStream("deflate"))
+      .pipeThrough(decompressor)
       .getReader();
     let passIndex = 0;
     let rowsRemaining = plan[0].rows;

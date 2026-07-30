@@ -1,4 +1,13 @@
-## 2026-07-30 — high-quality Momo Media AI candidate (not live)
+## 2026-07-30 — verified v21 foundation and lifecycle-bridge candidate
+
+- PR #154 is merged at `72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695`; Sites version 21 is live from checkout `8c50dd6726629e77d22f07eb6aac9f6982001902`; production Supabase has 16 applied migrations through `momo_media_ai_pilot_v1`.
+- The OpenAI key, migration-16 capability, and hosted Media AI flag are present, but version 21 remains safely fail-closed because Sites does not hold a broad Supabase service credential. Do not call the feature active from configuration alone.
+- The current candidate adds a narrow signed Supabase Edge lifecycle bridge for only preflight/start/complete/fail. It is based on GitHub `main` `72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695`, changes no database migration, and remains unmerged and unpublished.
+- The bridge must pass Deno format/lint/typecheck, all four hosted workflows, zero unresolved review threads, a deployed no-image authentication matrix, exact Sites source parity, and post-deploy logs before effective runtime can be claimed.
+- Momo's current upload rights are expired. No real image or billable provider canary is allowed until rights are current and Team review is approved. Spend remains USD $0; USD $20 is the per-job automatic authorization threshold, and larger jobs require fresh authorization.
+- Momo remains **No-Go**. Google/social, owner-controlled providers, external writes, publishing, and activation remain locked.
+
+## 2026-07-30 — high-quality Momo Media AI candidate (historical pre-v21 checkpoint)
 
 - PR #152 / Sites version 20 / 15 applied migrations remains the exact verified production baseline. The Media AI work is a separate reviewed local candidate based on GitHub `main` commit `979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6`; it is not merged, migration 16 is not applied, and no later Sites version is published.
 - The existing Momo **Review → Improve → Ready** flow now has a candidate high-quality, automated faithful-enhancement path using `gpt-image-2`. It selects a high-resolution output for the Team-selected destination, keeps the original unchanged, and creates exactly one private candidate per approved request. The deterministic Media Review and Compliance contracts govern it; Caption, Compliance, and Media Review are not separate model calls in this release.

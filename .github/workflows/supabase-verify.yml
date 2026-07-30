@@ -21,10 +21,19 @@ jobs:
       - uses: supabase/setup-cli@v1
         with:
           version: 2.109.1
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.1.14
       - name: Verify pinned CLI and reviewed config
         run: |
           test "$(supabase --version)" = "2.109.1"
+          test "$(deno --version | head -n 1)" = "deno 2.1.14 (stable, release, x86_64-unknown-linux-gnu)"
           test -f supabase/config.toml
+      - name: Verify Media AI Edge function
+        run: |
+          deno fmt --check supabase/functions
+          deno lint supabase/functions
+          deno check --node-modules-dir=auto supabase/functions/momo-media-ai-lifecycle/index.ts
       - name: Start local Supabase
         run: supabase start
       - name: Apply the complete migration chain

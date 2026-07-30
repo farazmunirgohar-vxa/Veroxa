@@ -249,10 +249,10 @@ const aiDimension = tracker.dimensions.ai_and_automation;
 must(
   aiDimension.evidence.some((item) => /Momo-only high-fidelity server-side OpenAI Image Enhancement/i.test(item)) &&
     aiDimension.evidence.some((item) => /automatic authorization threshold is \$20 per job.*returned provider usage.*Incurred spend is \$0.*exceed \$20/i.test(item)) &&
-    aiDimension.blockers.some((item) => /live Media AI runtime remains disabled/i.test(item)) &&
+    aiDimension.blockers.some((item) => /effective Media AI runtime remains fail-closed.*lifecycle bridge.*authenticated Team preflight/i.test(item)) &&
     aiDimension.blockers.some((item) => /provider canary nor a real image edit has passed/i.test(item)) &&
     aiDimension.blockers.some((item) => /current Momo upload rights are expired.*current rights and an approved Team review/i.test(item)),
-  "The AI readiness dimension must preserve the authorized scope, cost truth, disabled runtime, unpassed provider proof, and expired-rights blocker.",
+  "The AI readiness dimension must preserve the authorized scope, cost truth, fail-closed bridge/preflight boundary, unpassed provider proof, and expired-rights blocker.",
 );
 
 for (const obsoleteSchema6Key of [

@@ -60,6 +60,26 @@ export type DeploymentManifest = {
     migrationContentParityVerified: boolean;
     migrationFilenameParityVerified: boolean;
   };
+  previousVerifiedRelease: {
+    pullRequest: number;
+    reviewedHead: string;
+    githubMainCommit: string;
+    sitesCheckoutCommit: string;
+    sitesVersion: number;
+    sourceFileCount: number;
+    sourceTreeSha256: string;
+    productionMigrationCount: number;
+    latestProductionMigration: string;
+    latestProductionMigrationSha256: string;
+    databaseApplied: boolean;
+    databaseVerified: boolean;
+    sitesPublished: boolean;
+    sitesVerified: boolean;
+    customDomainsVerified: boolean;
+    sitesSourceParityVerified: boolean;
+    migrationContentParityVerified: boolean;
+    migrationFilenameParityVerified: boolean;
+  };
   observedProductionDrift: {
     observedAt: string;
     evidenceStatus: string;

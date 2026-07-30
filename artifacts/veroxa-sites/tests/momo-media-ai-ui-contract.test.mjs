@@ -33,6 +33,14 @@ const openAiAccessUrl = new URL(
   "../app/momo-media-ai-openai-access.ts",
   import.meta.url,
 );
+const lifecycleBridgeUrl = new URL(
+  "../app/momo-media-ai-lifecycle-bridge.ts",
+  import.meta.url,
+);
+const lifecycleEdgeFunctionUrl = new URL(
+  "../supabase/functions/momo-media-ai-lifecycle/index.ts",
+  import.meta.url,
+);
 
 test("high-fidelity Media AI remains an automatic, approval-controlled private path beside the free manual editor", async () => {
   const center = await readFile(centerUrl, "utf8");
@@ -402,11 +410,12 @@ test("lost Media AI responses preserve the request key and block fresh paid work
 });
 
 test("the Team UI requires a separately verified server runtime before a paid automatic attempt", async () => {
-  const [center, data, status, openAiAccess] = await Promise.all([
+  const [center, data, status, openAiAccess, bridge] = await Promise.all([
     readFile(centerUrl, "utf8"),
     readFile(dataUrl, "utf8"),
     readFile(statusUrl, "utf8"),
     readFile(openAiAccessUrl, "utf8"),
+    readFile(lifecycleBridgeUrl, "utf8"),
   ]);
 
   assert.match(data, /momoMediaAiFetch\(fetch, "\/api\/team\/media-ai\/status"/);
@@ -434,8 +443,16 @@ test("the Team UI requires a separately verified server runtime before a paid au
   assert.match(status, /preflightReady/);
   assert.match(
     status,
-    /admin\.rpc\([\s\S]*?"veroxa_momo_media_ai_lifecycle_preflight_v1"[\s\S]*?p_restaurant_id: restaurantId[\s\S]*?p_actor_id: actorId/,
+    /invokeMomoMediaAiLifecycleBridge[\s\S]*?operation: "preflight"[\s\S]*?restaurantId/,
   );
+  assert.match(bridge, /VEROXA_MEDIA_AI_BRIDGE_PRIVATE_KEY/);
+  assert.match(bridge, /authorization: `Bearer \$\{accessToken\}`/);
+  assert.match(bridge, /crypto\.subtle\.sign/);
+  assert.match(bridge, /"x-veroxa-media-ai-signature": signature/);
+  assert.match(bridge, /"x-veroxa-media-ai-nonce": nonce/);
+  assert.match(bridge, /"x-veroxa-media-ai-timestamp-ms": timestampMs/);
+  assert.match(bridge, /AbortSignal\.timeout\(20_000\)/);
+  assert.doesNotMatch(bridge, /SUPABASE_SECRET_KEY|SUPABASE_SERVICE_ROLE_KEY/);
   assert.doesNotMatch(status, /\bmodelAccessible\b|\bavailable\b|images\/edits/i);
   assert.match(openAiAccess, /https:\/\/api\.openai\.com\/v1\/models\/\$\{MOMO_MEDIA_AI_MODEL\}/);
   assert.match(openAiAccess, /method:\s*"GET"/);
@@ -505,10 +522,12 @@ test("inspection state from candidate A cannot approve candidate B", () => {
   }), false);
 });
 
-test("human decisions remain actor-checked while provider lifecycle RPCs are server-only", async () => {
-  const [data, route] = await Promise.all([
+test("human decisions remain actor-checked while provider lifecycle RPCs cross only the protected Edge bridge", async () => {
+  const [data, route, bridge, edgeFunction] = await Promise.all([
     readFile(dataUrl, "utf8"),
     readFile(routeUrl, "utf8"),
+    readFile(lifecycleBridgeUrl, "utf8"),
+    readFile(lifecycleEdgeFunctionUrl, "utf8"),
   ]);
 
   for (const rpc of [
@@ -523,20 +542,38 @@ test("human decisions remain actor-checked while provider lifecycle RPCs are ser
   );
   assert.doesNotMatch(data, /service[_-]?role/i);
   assert.match(route, /getServerVeroxaContext/);
-  assert.match(route, /process\.env\.SUPABASE_SECRET_KEY/);
-  assert.match(route, /providerConfigured: Boolean\(openAiKey && admin\)/);
   assert.match(
     route,
-    /admin\.rpc\(\s*"veroxa_start_momo_media_ai_provider_v1"[\s\S]*?p_actor_id: actor\.userId/,
+    /providerConfigured: Boolean\(openAiKey && bridgeConfig\)/,
   );
   assert.match(
     route,
-    /admin\.rpc\(\s*"veroxa_complete_momo_media_ai_candidate_v1"[\s\S]*?p_actor_id: actor\.userId/,
+    /invokeMomoMediaAiLifecycleBridge[\s\S]*?operation: "start"[\s\S]*?candidateId: input\.candidateId[\s\S]*?requestHash: input\.requestHash/,
   );
   assert.match(
     route,
-    /admin\.rpc\(\s*"veroxa_fail_momo_media_ai_candidate_v1"[\s\S]*?p_actor_id: actor\.userId/,
+    /reconcileMomoMediaAiTerminalLifecycleBridge[\s\S]*?operation: "complete"[\s\S]*?providerRequestId: input\.providerRequestId/,
   );
+  assert.match(
+    route,
+    /reconcileMomoMediaAiTerminalLifecycleBridge[\s\S]*?operation: "fail"[\s\S]*?errorCode: input\.errorCode/,
+  );
+  assert.match(bridge, /client\.auth\.getSession\(\)/);
+  assert.match(bridge, /redirect: "error"/);
+  assert.match(edgeFunction, /BRIDGE_PUBLIC_KEY_SPKI_BASE64/);
+  assert.match(edgeFunction, /verifyMomoMediaAiBridgeSignature/);
+  assert.match(edgeFunction, /userClient\.auth\.getUser/);
+  assert.match(edgeFunction, /p_actor_id: userData\.user\.id/g);
+  for (const rpc of [
+    "veroxa_momo_media_ai_lifecycle_preflight_v1",
+    "veroxa_start_momo_media_ai_provider_v1",
+    "veroxa_complete_momo_media_ai_candidate_v1",
+    "veroxa_fail_momo_media_ai_candidate_v1",
+  ]) {
+    assert.match(edgeFunction, new RegExp(`"${rpc}"`));
+  }
+  assert.doesNotMatch(route, /SUPABASE_SECRET_KEY|SUPABASE_SERVICE_ROLE_KEY/);
+  assert.doesNotMatch(bridge, /SUPABASE_SECRET_KEY|SUPABASE_SERVICE_ROLE_KEY/);
   assert.match(route, /VEROXA_MEDIA_AI_ENABLED === "true"/);
   assert.match(route, /process\.env\.OPENAI_API_KEY/);
   assert.doesNotMatch(route, /NEXT_PUBLIC_OPENAI|VITE_OPENAI/);

@@ -4,7 +4,7 @@
   "restaurant": "Momo's House San Antonio",
   "milestone": "Momo-only readiness before requesting owner or provider access",
   "overallStatus": "blocked",
-  "overallRule": "Momo remains fail-closed No-Go. Implemented preconnection controls, development-proxy evidence, and the separately authorized high-fidelity Media AI automation are not operating-readiness proof. The narrow Media AI authorization covers only server-side Image Enhancement after its reviewed release and required media evidence; it does not authorize owner contact, owner-controlled provider access, social or Google connections, a public action, publishing, or Momo activation.",
+  "overallRule": "Momo remains fail-closed No-Go. Version 21 and migration 16 provide the reviewed high-fidelity Media AI automation foundation, but effective runtime proof still requires the narrow lifecycle-bridge release plus an authenticated Team preflight. The Image Enhancement authorization does not authorize owner contact, owner-controlled provider access, social or Google connections, a public action, publishing, or Momo activation.",
   "lastReviewedAt": "2026-07-30",
   "identityBoundary": {
     "teamAccountRole": "team",
@@ -45,7 +45,7 @@
     "currentMomoUploadRightsStatus": "expired",
     "firstRealUseRequiresCurrentRights": true,
     "firstRealUseRequiresTeamReview": true,
-    "rule": "The user authorized standing per-job high-fidelity server-side OpenAI Image Enhancement. The credential is provisioned server-side, but the live runtime remains disabled before the reviewed release and neither a provider canary nor a real edit has passed. Each image may carry an authorization hold of up to $20; returned provider usage is recorded when available, otherwise the hold remains conservative. $20 is a per-job threshold, not a lifetime or cumulative wallet. A job expected above that amount must pause for Faraz’s authorization before it crosses the provider boundary; no batch runner, subscription, or unbounded spend is authorized, and $0 has been incurred. Momo's current upload rights are expired, so the first real use requires current rights and an approved Team review before any image may cross the provider boundary."
+    "rule": "The user authorized standing per-job high-fidelity server-side OpenAI Image Enhancement. Version 21, migration 16, the server-only OpenAI credential, and the hosted runtime flag are present, but effective runtime remains unverified until the narrow lifecycle bridge and an authenticated Team preflight both pass; neither a provider canary nor a real edit has passed. Each image may carry an authorization hold of up to $20; returned provider usage is recorded when available, otherwise the hold remains conservative. $20 is a per-job threshold, not a lifetime or cumulative wallet. A job expected above that amount must pause for Faraz’s authorization before it crosses the provider boundary; no batch runner, subscription, or unbounded spend is authorized, and $0 has been incurred. Momo's current upload rights are expired, so the first real use requires current rights and an approved Team review before any image may cross the provider boundary."
   },
   "dimensions": {
     "development_identity_and_data": {
@@ -96,18 +96,18 @@
       "required": true,
       "status": "blocked",
       "evidence": [
-        "The repository includes a provider-neutral structured-output contract, grounding fields, human-review requirements, idempotency, bounded retries, recovery, and audit records.",
-        "Faraz authorized Momo-only high-fidelity server-side OpenAI Image Enhancement; the OpenAI credential is provisioned server-side.",
+        "Version 21 and migration 16 provide the private-candidate ledger, exact source lineage, human inspection gate, idempotency, no-paid-retry boundary, recovery, and audit records.",
+        "Faraz authorized Momo-only high-fidelity server-side OpenAI Image Enhancement; the OpenAI credential and hosted runtime flag are server-side.",
         "The automatic authorization threshold is $20 per job; returned provider usage is recorded when available and otherwise the full authorization hold remains conservative. Incurred spend is $0, and fresh authorization is required only when a job is expected to exceed $20.",
         "Offline rehearsal keeps public actions and external writes disabled."
       ],
       "blockers": [
         "The complete automation lifecycle has not passed the authenticated Team one-click rehearsal.",
-        "The live Media AI runtime remains disabled before the reviewed release.",
+        "The effective Media AI runtime remains fail-closed until the narrow lifecycle bridge is deployed and an authenticated Team preflight passes.",
         "Neither a provider canary nor a real image edit has passed.",
         "The current Momo upload rights are expired; the first real Image Enhancement request requires current rights and an approved Team review."
       ],
-      "nextAction": "Complete the reviewed release with the runtime still disabled, then enable only high-fidelity standing Image Enhancement automation and allow the first real attempt only after current rights and Team review; do not publish or retry automatically."
+      "nextAction": "Deploy and verify the narrow lifecycle bridge without sending an image, then allow the first real high-fidelity attempt only after current rights and Team review; do not publish or retry OpenAI automatically."
     },
     "publication_tracking_and_metrics": {
       "label": "Publication rehearsal, tracking, and metrics",

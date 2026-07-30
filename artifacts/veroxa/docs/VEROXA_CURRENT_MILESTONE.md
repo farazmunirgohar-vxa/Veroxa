@@ -15,7 +15,17 @@ Also read:
 - `VEROXA_DEPLOYMENT_MANIFEST.json`
 - `../veroxa-sites/app/momo-readiness-tracker.json`
 
-## 2026-07-30 — high-quality Momo Media AI release candidate
+## 2026-07-30 — verified v21 foundation and lifecycle-bridge candidate
+
+- **Live baseline:** PR #154 reviewed head `4a7a2122bb71defc0f1db0c795b4c4c8fdb930a5` merged at `72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695`; Sites v21 is live from checkout `8c50dd6726629e77d22f07eb6aac9f6982001902`; production Supabase has 16 applied migrations through `20260728044916_momo_media_ai_pilot_v1.sql`.
+- **Effective runtime truth:** the OpenAI key, migration-16 capability, and hosted Media AI flag are present, but version 21 remains safely fail-closed because its Sites worker has no broad Supabase service credential and the narrow signed lifecycle bridge is not yet deployed. Configuration is not end-to-end proof.
+- **Current candidate:** a no-database-change release adds a signed Supabase Edge bridge limited to Media AI preflight/start/complete/fail, with Team JWT revalidation, strict payloads, exact terminal reconciliation, and no OpenAI retry. It is based on canonical `main` `72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695` and remains unmerged and unpublished.
+- **Release rule:** require Deno format/lint/typecheck, the full application and repository gates, all four green hosted workflows, zero unresolved review threads, and a deployed no-image auth matrix before enabling the Team control. The bridge deploys before the matching Sites release.
+- **First-use blocker and cost:** the current Momo upload rights are expired, so no real image or billable canary is allowed. Spend remains USD $0; USD $20 is the per-job automatic authorization threshold, not a lifetime cap, and a larger job requires fresh authorization.
+- **Boundaries:** AI output stays private until exact Team inspection and approval. Google/social, owner-controlled providers, public publishing, and Momo activation remain locked. Momo remains No-Go.
+- `artifacts/veroxa-sites/app/momo-readiness-tracker.json` preserves the fail-closed runtime, expired-rights, and No-Go evidence.
+
+## 2026-07-30 — high-quality Momo Media AI release candidate (historical pre-v21 checkpoint)
 
 - **Live baseline:** PR #152, Sites version 20, and 15 applied Supabase migrations remain current. The Media AI candidate is based on canonical `main` commit `979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6` and remains unmerged, unpublished, and unapplied.
 - **Authorized scope:** Image Enhancement AI is the only authorized model-backed candidate activation. When the Team workspace observes a rights-current, approved Momo image, standing automation may create one high-fidelity private `gpt-image-2` candidate at the selected destination’s high-resolution preset. Media Review and Compliance remain deterministic human-controlled contracts; Caption generation, AI web research, Meta, Google, publishing, and other model-backed roles remain inactive.

@@ -51,6 +51,9 @@ enabled = false
 max_buckets = 10
 max_indexes = 5
 
+[functions.momo-media-ai-lifecycle]
+verify_jwt = true
+
 [auth]
 enabled = true
 site_url = "http://127.0.0.1:3000"
