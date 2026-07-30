@@ -1,9 +1,9 @@
-## 2026-07-28 — locked Media AI activation boundary
+## 2026-07-30 — locked high-quality Media AI activation boundary
 
 - PR #152 / Sites version 20 / migration 15 remains live. The reviewed Media AI candidate is based on canonical `main` commit `979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6` and remains unmerged, unpublished, and unapplied.
-- Only server-side Image Enhancement is authorized as a model-backed candidate activation. Do not describe Media Review, Caption, or Compliance as independently connected model agents; review/compliance remain deterministic and human-controlled in this release.
-- The OpenAI credential is server-only. Before release, the runtime flag is false, provider/real-edit proof is pending, and actual spend is USD $0. Migration 16's wallet limits internal lifetime reservations to USD $2 inside Faraz's USD $20 one-time authorization; no recurring spend is authorized.
-- No Momo image may reach the provider unless current rights, approved Team review, explicit consent, verified source lineage, and the billable-boundary reservation all pass. Provider uncertainty is conservatively accounted; no automatic paid retry is allowed.
+- Only high-fidelity standing server-side Image Enhancement automation is authorized as a model-backed candidate activation. It must faithfully preserve the photographed dish and uses `gpt-image-2` with a selected high-resolution preset for the chosen destination. Do not describe Media Review, Caption, or Compliance as independently connected model agents; review/compliance remain deterministic and human-controlled in this release.
+- The OpenAI credential is server-only. Before release, the runtime flag is false, provider/real-edit proof is pending, and actual spend is USD $0. Migration 16 treats USD $20 as the per-job automatic authorization threshold, not a lifetime budget; an individual job expected above it requires fresh Faraz authorization before provider use.
+- No Momo image may reach the provider unless current rights, approved Team review, standing-automation authorization, verified source lineage, exact model access, and the billable-boundary reservation all pass. Provider uncertainty is conservatively accounted; no automatic paid retry is allowed.
 - AI output is a private candidate, never a silent overwrite. The exact decoded candidate must be hash-matched, inspected, attested, and explicitly approved before Ready. Google/social, external writes, publishing, and Momo activation remain locked.
 - The current upload rights are expired, so first real use is blocked. Momo remains No-Go. `momo-readiness-tracker.json` carries this current fail-closed evidence.
 

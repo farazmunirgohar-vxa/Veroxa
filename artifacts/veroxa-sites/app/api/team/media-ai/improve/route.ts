@@ -1,8 +1,13 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { momoBytesSha256, inspectMomoPngBytes } from "../../../../momo-image-bytes";
+import {
+  inspectMomoImageBytesFully,
+  momoBytesSha256,
+} from "../../../../momo-image-bytes";
+import { verifyMomoMediaAiOpenAiAccess } from "../../../../momo-media-ai-openai-access";
 import { getServerVeroxaContext } from "../../../../veroxa-supabase-server";
 import {
   createMomoMediaAiPostHandler,
+  type MomoMediaAiProviderUsage,
   type MomoMediaAiReservation,
   type MomoMediaAiReserveInput,
 } from "./core";
@@ -157,6 +162,13 @@ function dependenciesFor(
   return {
     enabled: process.env.VEROXA_MEDIA_AI_ENABLED === "true",
     providerConfigured: Boolean(openAiKey && admin),
+    async verifyProviderAccess() {
+      return Boolean(
+        openAiKey
+        && admin
+        && await verifyMomoMediaAiOpenAiAccess(openAiKey),
+      );
+    },
     async authenticate() {
       return actor;
     },
@@ -202,7 +214,7 @@ function dependenciesFor(
           authorization: `Bearer ${openAiKey}`,
         },
         body,
-        signal: AbortSignal.timeout(120_000),
+        signal: AbortSignal.timeout(180_000),
       });
     },
     async storeCandidate(input: {
@@ -238,13 +250,16 @@ function dependenciesFor(
         if (readback.error || !readback.data) {
           throw new Error("media_ai_candidate_readback_failed");
         }
+        if (readback.data.size !== input.output.size) {
+          throw new Error("media_ai_candidate_readback_mismatch");
+        }
         const bytes = new Uint8Array(await readback.data.arrayBuffer());
-        const dimensions = inspectMomoPngBytes(bytes);
+        const inspection = await inspectMomoImageBytesFully(bytes);
         if (
           await momoBytesSha256(bytes) !== input.contentSha256
-          || !dimensions
-          || dimensions.width !== input.width
-          || dimensions.height !== input.height
+          || inspection?.mimeType !== "image/png"
+          || inspection.width !== input.width
+          || inspection.height !== input.height
           || bytes.byteLength !== input.output.size
         ) throw new Error("media_ai_candidate_readback_mismatch");
       } catch (error) {
@@ -268,6 +283,9 @@ function dependenciesFor(
       width: number;
       height: number;
       contentSha256: string;
+      accountedMicrousd: number;
+      accountingBasis: "provider_usage_estimate" | "conservative_reservation";
+      providerUsage: MomoMediaAiProviderUsage | null;
     }) {
       if (!admin) throw new Error("media_ai_configuration_unavailable");
       const { data, error } = await admin.rpc(
@@ -281,6 +299,9 @@ function dependenciesFor(
           p_width: input.width,
           p_height: input.height,
           p_content_sha256: input.contentSha256,
+          p_accounted_microusd: input.accountedMicrousd,
+          p_accounting_basis: input.accountingBasis,
+          p_provider_usage: input.providerUsage,
           p_actor_id: actor.userId,
         },
       );

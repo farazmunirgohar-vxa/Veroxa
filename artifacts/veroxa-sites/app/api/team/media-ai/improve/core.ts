@@ -6,10 +6,12 @@ import {
   MOMO_MEDIA_AI_MODEL,
   MOMO_MEDIA_AI_PROCESSING_ATTESTATION,
   MOMO_MEDIA_AI_PROMPT_VERSION,
+  MOMO_MEDIA_AI_AUTHORIZATION_THRESHOLD_MICROUSD,
   isMomoMediaAiGoal,
   isMomoMediaAiHash,
   isMomoMediaAiIdempotencyKey,
   isMomoMediaAiPreset,
+  isMomoMediaAiProviderSize,
   isMomoMediaAiQuality,
   isMomoMediaAiUuid,
   type MomoMediaAiGoal,
@@ -17,14 +19,14 @@ import {
 } from "../../../../momo-media-ai-contract.ts";
 import {
   decodeMomoBase64Png,
-  detectMomoImageMimeType,
+  inspectMomoImageBytesFully,
   inspectMomoPngBytes,
   momoBytesSha256,
   momoOwnedArrayBuffer,
 } from "../../../../momo-image-bytes.ts";
 import type { MomoImagePresetKey } from "../../../../momo-media-workflow.ts";
 
-const MAX_PROVIDER_RESPONSE_BYTES = 36_000_000;
+const MAX_PROVIDER_RESPONSE_BYTES = 75_000_000;
 
 export type MomoMediaAiActor = {
   role: "team" | "client";
@@ -63,9 +65,20 @@ export type MomoMediaAiReserveInput = {
   processingAttestation: typeof MOMO_MEDIA_AI_PROCESSING_ATTESTATION;
 };
 
+export type MomoMediaAiProviderUsage = {
+  input_tokens: number;
+  input_tokens_details: {
+    image_tokens: number;
+    text_tokens: number;
+  };
+  output_tokens: number;
+  total_tokens: number;
+};
+
 export type MomoMediaAiDependencies = {
   enabled: boolean;
   providerConfigured: boolean;
+  verifyProviderAccess(): Promise<boolean>;
   hashBytes?(bytes: Uint8Array): Promise<string>;
   authenticate(): Promise<MomoMediaAiActor | null>;
   reserve(input: MomoMediaAiReserveInput): Promise<MomoMediaAiReservation>;
@@ -94,6 +107,9 @@ export type MomoMediaAiDependencies = {
     width: number;
     height: number;
     contentSha256: string;
+    accountedMicrousd: number;
+    accountingBasis: "provider_usage_estimate" | "conservative_reservation";
+    providerUsage: MomoMediaAiProviderUsage | null;
   }): Promise<void>;
   fail(input: {
     candidateId: string;
@@ -194,7 +210,7 @@ async function parseRequest(request: Request): Promise<NormalizedRequest> {
     "preset",
     "quality",
     "altText",
-    "processingConsent",
+    "standingAutomation",
     "idempotencyKey",
   ]);
   if (Object.keys(body).some((key) => !allowedKeys.has(key))) {
@@ -214,7 +230,7 @@ async function parseRequest(request: Request): Promise<NormalizedRequest> {
     || body.altText !== body.altText.trim()
     || body.altText.length < 1
     || body.altText.length > 280
-    || body.processingConsent !== true
+    || body.standingAutomation !== true
     || !isMomoMediaAiIdempotencyKey(bodyKey)
     || (headerKey && headerKey !== bodyKey)
   ) throw new PublicRouteError("invalid_request", 400);
@@ -252,12 +268,13 @@ function stableRequestSnapshot(
 
 function imagePrompt(goal: MomoMediaAiGoal): string {
   return [
-    "Create one faithful professional food-photo edit of the provided image.",
+    "Create one high-quality, faithful professional food-photo edit of the provided image.",
     `Allowed improvement: ${MOMO_MEDIA_AI_GOALS[goal].instruction}`,
-    "Preserve the exact real dish, ingredients, portions, plating, packaging, restaurant marks, readable text, and factual setting already present.",
+    "Preserve the exact real dish, ingredients, portions, plating, packaging, restaurant marks, readable text, and factual setting already present in the source.",
     "Do not invent, remove, replace, or materially reshape any food, ingredient, garnish, sauce, steam, serving item, logo, label, person, price, claim, text overlay, or promotional prop.",
     "Do not make the portion appear larger or the food appear materially different from the original.",
-    "Keep the result photorealistic and suitable only as a private Team candidate for human inspection.",
+    "Retain all readable text and branding exactly; do not add any text.",
+    "Keep the result photorealistic, natural rather than overprocessed, and suitable only as a private Team candidate for human inspection.",
   ].join(" ");
 }
 
@@ -274,7 +291,7 @@ function providerForm(
       : "jpg";
   form.set("model", MOMO_MEDIA_AI_MODEL);
   form.set(
-    "image",
+    "image[]",
     new File([momoOwnedArrayBuffer(source)], `momo-source.${extension}`, {
       type: reservation.sourceMimeType,
     }),
@@ -286,8 +303,11 @@ function providerForm(
   );
   form.set("quality", input.quality);
   form.set("output_format", "png");
+  form.set("background", "opaque");
   form.set("moderation", "auto");
   form.set("n", "1");
+  // gpt-image-2 processes edit inputs at high fidelity by default and does not
+  // accept an input_fidelity override.
   return form;
 }
 
@@ -312,9 +332,9 @@ async function boundedProviderJson(
   }
 }
 
-function providerImage(
+async function providerImage(
   payload: Record<string, unknown>,
-): Uint8Array | null {
+): Promise<Uint8Array | null> {
   const data = payload.data;
   if (!Array.isArray(data) || data.length !== 1 || !isPlainObject(data[0])) {
     return null;
@@ -323,6 +343,71 @@ function providerImage(
     data[0].b64_json,
     MOMO_MEDIA_AI_MAX_OUTPUT_BYTES,
   );
+}
+
+function nonNegativeSafeInteger(value: unknown): number | null {
+  return Number.isSafeInteger(value) && Number(value) >= 0
+    ? Number(value)
+    : null;
+}
+
+function providerAccounting(
+  payload: Record<string, unknown>,
+  conservativeMicrousd: number,
+): {
+  accountedMicrousd: number;
+  accountingBasis: "provider_usage_estimate" | "conservative_reservation";
+  providerUsage: MomoMediaAiProviderUsage | null;
+} {
+  const usage = isPlainObject(payload.usage) ? payload.usage : null;
+  const details = usage && isPlainObject(usage.input_tokens_details)
+    ? usage.input_tokens_details
+    : null;
+  const inputTokens = nonNegativeSafeInteger(usage?.input_tokens);
+  const imageTokens = nonNegativeSafeInteger(details?.image_tokens);
+  const textTokens = nonNegativeSafeInteger(details?.text_tokens);
+  const outputTokens = nonNegativeSafeInteger(usage?.output_tokens);
+  const totalTokens = nonNegativeSafeInteger(usage?.total_tokens);
+  if (
+    inputTokens !== null
+    && imageTokens !== null
+    && textTokens !== null
+    && outputTokens !== null
+    && totalTokens !== null
+    && inputTokens === imageTokens + textTokens
+    && totalTokens === inputTokens + outputTokens
+  ) {
+    // Standard GPT Image 2 rates at the locked pricing version:
+    // text input $5/M, image input $8/M, image output $30/M.
+    const estimatedMicrousd =
+      textTokens * 5 + imageTokens * 8 + outputTokens * 30;
+    if (
+      Number.isSafeInteger(estimatedMicrousd)
+      && estimatedMicrousd > 0
+      && estimatedMicrousd <= conservativeMicrousd
+      && estimatedMicrousd
+        <= MOMO_MEDIA_AI_AUTHORIZATION_THRESHOLD_MICROUSD
+    ) {
+      return {
+        accountedMicrousd: estimatedMicrousd,
+        accountingBasis: "provider_usage_estimate",
+        providerUsage: {
+          input_tokens: inputTokens,
+          input_tokens_details: {
+            image_tokens: imageTokens,
+            text_tokens: textTokens,
+          },
+          output_tokens: outputTokens,
+          total_tokens: totalTokens,
+        },
+      };
+    }
+  }
+  return {
+    accountedMicrousd: conservativeMicrousd,
+    accountingBasis: "conservative_reservation",
+    providerUsage: null,
+  };
 }
 
 async function safeFail(
@@ -349,8 +434,11 @@ function mapReservationError(error: unknown): PublicRouteError {
     /source_not_eligible|current_rights_review_required|storage_object_required/i
       .test(message)
   ) return new PublicRouteError("source_not_ready", 409);
-  if (/pilot_wallet_exhausted/i.test(message)) {
-    return new PublicRouteError("media_ai_wallet_exhausted", 429);
+  if (
+    /authorization_required|authorization_threshold_reached|pilot_wallet_exhausted/i
+      .test(message)
+  ) {
+    return new PublicRouteError("media_ai_authorization_required", 409);
   }
   if (/failed_attempt_cannot_replay/i.test(message)) {
     return new PublicRouteError("media_ai_previous_attempt_failed", 409);
@@ -402,8 +490,20 @@ export function createMomoMediaAiPostHandler(
       if (input.restaurantId !== actor.restaurantId.toLowerCase()) {
         throw new PublicRouteError("team_access_required", 403);
       }
+      let providerAccessible = false;
+      try {
+        providerAccessible = await dependencies.verifyProviderAccess();
+      } catch {
+        providerAccessible = false;
+      }
+      if (!providerAccessible) {
+        throw new PublicRouteError(
+          "media_ai_configuration_unavailable",
+          503,
+        );
+      }
       const idempotencyHash = await sha256Text(
-        `${actor.restaurantId.toLowerCase()}:${actor.userId.toLowerCase()}:${input.idempotencyKey}`,
+        `${input.restaurantId}:${input.idempotencyKey}`,
       );
       const requestHash = await sha256Text(
         JSON.stringify(stableRequestSnapshot(input)),
@@ -440,6 +540,20 @@ export function createMomoMediaAiPostHandler(
       if (reservation.status === "provider_running") {
         throw new PublicRouteError("media_ai_in_progress", 409);
       }
+      if (
+        !isMomoMediaAiProviderSize(
+          reservation.outputWidth,
+          reservation.outputHeight,
+        )
+      ) {
+        await safeFail(
+          dependencies,
+          reservation,
+          requestHash,
+          "provider_size_invalid",
+        );
+        throw new PublicRouteError("media_ai_configuration_unavailable", 503);
+      }
 
       let sourceBytes: Uint8Array;
       try {
@@ -452,9 +566,9 @@ export function createMomoMediaAiPostHandler(
           || source.size > MOMO_MEDIA_AI_MAX_SOURCE_BYTES
         ) throw new Error();
         sourceBytes = new Uint8Array(await source.arrayBuffer());
+        const sourceInspection = await inspectMomoImageBytesFully(sourceBytes);
         if (
-          detectMomoImageMimeType(sourceBytes)
-            !== reservation.sourceMimeType
+          sourceInspection?.mimeType !== reservation.sourceMimeType
           || await hashBytes(sourceBytes)
             !== reservation.sourceContentSha256
         ) throw new Error();
@@ -527,8 +641,11 @@ export function createMomoMediaAiPostHandler(
         || providerResponse.headers.get("openai-request-id")?.trim()
         || "";
       const outputBytes = providerPayload
-        ? providerImage(providerPayload)
+        ? await providerImage(providerPayload)
         : null;
+      const accounting = providerPayload
+        ? providerAccounting(providerPayload, reservation.reservedMicrousd)
+        : providerAccounting({}, reservation.reservedMicrousd);
       const dimensions = outputBytes
         ? inspectMomoPngBytes(outputBytes)
         : null;
@@ -593,6 +710,7 @@ export function createMomoMediaAiPostHandler(
           width: dimensions.width,
           height: dimensions.height,
           contentSha256,
+          ...accounting,
         });
       } catch {
         throw new PublicRouteError(
@@ -608,7 +726,8 @@ export function createMomoMediaAiPostHandler(
         width: dimensions.width,
         height: dimensions.height,
         contentSha256,
-        accountedMicrousd: reservation.reservedMicrousd,
+        accountedMicrousd: accounting.accountedMicrousd,
+        accountingBasis: accounting.accountingBasis,
         externalWriteAllowed: false,
       }, 200);
     } catch (error) {

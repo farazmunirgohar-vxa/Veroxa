@@ -61,6 +61,7 @@ export type MomoTeamPreconnectionData = {
     id: string;
     source_asset_id: string;
     source_content_sha256: string;
+    review_id: string;
     goal: MomoMediaAiGoal;
     preset_key: MomoImagePresetKey;
     intended_use: string;
@@ -72,6 +73,12 @@ export type MomoTeamPreconnectionData = {
     status: "reserved" | "provider_running" | "pending_review" | "approved" | "rejected" | "failed";
     reserved_microusd: number;
     accounted_microusd: number | null;
+    accounting_basis:
+      | "zero_pre_provider"
+      | "provider_usage_estimate"
+      | "conservative_reservation"
+      | null;
+    provider_usage: unknown | null;
     provider_called: boolean;
     provider_started_at: string | null;
     provider_error_code: string | null;
@@ -236,6 +243,7 @@ function isMomoStorageObjectConflict(error: unknown): boolean {
 
 export async function loadMomoTeamPreconnectionData(restaurantId: string): Promise<MomoTeamPreconnectionData> {
   const client = requiredClient();
+  const mediaAiCandidateFields = "id, source_asset_id, source_content_sha256, review_id, goal, preset_key, intended_use, quality, output_width, output_height, alt_text, model, status, reserved_microusd, accounted_microusd, accounting_basis, provider_usage, provider_called, provider_started_at, provider_error_code, storage_path, storage_object_version, file_size, content_sha256, evidence_class, requested_at, generated_at, inspected_at, inspection_notes, rendition_id, external_write_allowed";
   const queries = await Promise.all([
     client.from("veroxa_momo_runtime_controls").select("restaurant_id, ai_live_calls, provider_writes, review_replies, website_writes, external_scheduling, updated_at").eq("restaurant_id", restaurantId),
     client.from("veroxa_media_renditions").select("id, source_kind, source_asset_id, source_key, source_content_sha256, storage_path, mime_type, file_size, width, height, content_sha256, recipe_fingerprint, edit_recipe, intended_use, alt_text, evidence_class, status, external_write_allowed, created_at").eq("restaurant_id", restaurantId).order("created_at", { ascending: false }).limit(25),
@@ -248,7 +256,9 @@ export async function loadMomoTeamPreconnectionData(restaurantId: string): Promi
     client.from("veroxa_momo_release_attestations").select("id, release_key, test_count, checks, status, verified_at").eq("restaurant_id", restaurantId).order("verified_at", { ascending: false }).limit(10),
     client.from("veroxa_ai_jobs").select("id, prompt_version, model_key, input_sha256, output_sha256, grounding_report, evidence_keys, provider_called, external_write_allowed, human_review_required, status, rehearsal_attested_at").eq("restaurant_id", restaurantId).eq("rehearsal_contract_version", "momo-ai-contract-rehearsal-v1").order("created_at", { ascending: false }).limit(10),
     client.from("veroxa_visibility_snapshots").select("id, source, period_start, period_end, metrics, snapshot_sha256, evidence_class, external_write_allowed, captured_at").eq("restaurant_id", restaurantId).eq("schema_version", "momo-metrics-rehearsal-v1").order("captured_at", { ascending: false }).limit(20),
-    client.from("veroxa_momo_media_ai_candidates").select("id, source_asset_id, source_content_sha256, goal, preset_key, intended_use, quality, output_width, output_height, alt_text, model, status, reserved_microusd, accounted_microusd, provider_called, provider_started_at, provider_error_code, storage_path, storage_object_version, file_size, content_sha256, evidence_class, requested_at, generated_at, inspected_at, inspection_notes, rendition_id, external_write_allowed").eq("restaurant_id", restaurantId).order("requested_at", { ascending: false }).limit(25),
+    client.rpc("veroxa_momo_media_ai_operational_window_v1", {
+      p_restaurant_id: restaurantId,
+    }).select(mediaAiCandidateFields),
   ]);
   if (queries.some((query) => query.error)) throw new Error("preconnection_data_unavailable");
   return {
@@ -267,6 +277,53 @@ export async function loadMomoTeamPreconnectionData(restaurantId: string): Promi
   };
 }
 
+export type MomoMediaAiRuntimeStatus = {
+  enabled: boolean;
+  providerConfigured: boolean;
+  modelMetadataVisible: boolean;
+  lifecycleAdminHealthy: boolean;
+  preflightReady: boolean;
+};
+
+export async function getMomoMediaAiRuntimeStatus(): Promise<MomoMediaAiRuntimeStatus> {
+  const response = await momoMediaAiFetch(fetch, "/api/team/media-ai/status", {
+    method: "GET",
+    credentials: "same-origin",
+    cache: "no-store",
+  });
+  let body: unknown;
+  try {
+    body = await response.json();
+  } catch {
+    throw new Error("media_ai_runtime_unavailable");
+  }
+  const statusKeys = [
+    "enabled",
+    "providerConfigured",
+    "modelMetadataVisible",
+    "lifecycleAdminHealthy",
+    "preflightReady",
+  ];
+  if (
+    !response.ok
+    || !body
+    || typeof body !== "object"
+    || Array.isArray(body)
+    || Object.keys(body).length !== statusKeys.length
+    || statusKeys.some((key) => !(key in body))
+    || typeof (body as { enabled?: unknown }).enabled !== "boolean"
+    || typeof (body as { providerConfigured?: unknown }).providerConfigured
+      !== "boolean"
+    || typeof (body as { modelMetadataVisible?: unknown }).modelMetadataVisible
+      !== "boolean"
+    || typeof (body as { lifecycleAdminHealthy?: unknown })
+      .lifecycleAdminHealthy !== "boolean"
+    || typeof (body as { preflightReady?: unknown }).preflightReady
+      !== "boolean"
+  ) throw new Error("media_ai_runtime_unavailable");
+  return body as MomoMediaAiRuntimeStatus;
+}
+
 export async function generateMomoMediaAiCandidate(input: {
   restaurantId: string;
   assetId: string;
@@ -275,7 +332,7 @@ export async function generateMomoMediaAiCandidate(input: {
   quality: MomoMediaAiQuality;
   altText: string;
   idempotencyKey: string;
-  processingConsent: true;
+  standingAutomation: true;
 }): Promise<{ candidateId: string; status: string }> {
   const response = await momoMediaAiFetch(fetch, "/api/team/media-ai/improve", {
     method: "POST",
@@ -290,7 +347,7 @@ export async function generateMomoMediaAiCandidate(input: {
       preset: input.preset,
       quality: input.quality,
       altText: input.altText,
-      processingConsent: input.processingConsent,
+      standingAutomation: input.standingAutomation,
       idempotencyKey: input.idempotencyKey,
     }),
   });

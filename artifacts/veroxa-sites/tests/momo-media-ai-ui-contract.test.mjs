@@ -2,6 +2,9 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
+  MOMO_MEDIA_AI_AUTOMATIC_PRESET,
+  momoMediaAiAccountingLabel,
+  momoMediaAiAutomaticAttemptScope,
   momoMediaAiFetch,
   momoMediaAiInspectionAllowsApproval,
 } from "../app/momo-media-ai-contract.ts";
@@ -18,8 +21,16 @@ const routeUrl = new URL(
   "../app/api/team/media-ai/improve/route.ts",
   import.meta.url,
 );
+const statusUrl = new URL(
+  "../app/api/team/media-ai/status/route.ts",
+  import.meta.url,
+);
+const openAiAccessUrl = new URL(
+  "../app/momo-media-ai-openai-access.ts",
+  import.meta.url,
+);
 
-test("Media AI remains an approval-controlled private path beside the free manual editor", async () => {
+test("high-fidelity Media AI remains an automatic, approval-controlled private path beside the free manual editor", async () => {
   const center = await readFile(centerUrl, "utf8");
 
   assert.match(
@@ -29,25 +40,36 @@ test("Media AI remains an approval-controlled private path beside the free manua
   );
   assert.match(
     center,
-    /One server-side OpenAI edit, then mandatory Team inspection/,
+    /When this Team workspace observes a rights-current, approved Momo image, it starts one fixed server-side OpenAI edit automatically/,
   );
   assert.match(
     center,
-    /database-enforced \$2\.00 internal reservation ceiling[\s\S]*?provider billing is tracked separately/,
+    /Automatic authorization[\s\S]*?every active attempt plus the 25 newest terminal attempts[\s\S]*?Each high-fidelity attempt reserves up to[\s\S]*?individual job requiring more than \$20 stops and asks Faraz[\s\S]*?no batch runner/,
   );
   assert.match(
     center,
-    /The prompt is fixed by Veroxa; free-form instructions are not sent/,
+    /Automatic profile:[\s\S]*?MOMO_MEDIA_AI_AUTOMATIC_GOAL/,
+  );
+  assert.match(center, /quality: MOMO_MEDIA_AI_AUTOMATIC_QUALITY/);
+  assert.match(
+    center,
+    /The prompt is fixed by Veroxa; free-form instructions are never sent/,
   );
   assert.match(
     center,
-    /processingConsent:\s*true/,
-    "Only the exact checked one-request attestation may reach the server.",
+    /standingAutomation:\s*true/,
+    "Only the fixed standing-automation path may reach the server.",
   );
   assert.match(
     center,
-    /is never automatically retried/,
+    /at most one automatic attempt[\s\S]*?never be retried automatically/,
   );
+  assert.match(
+    center,
+    /useEffect\(\(\) => \{[\s\S]*?automaticAttemptedKeys\.current\.has\(automaticIdempotencyKey\)[\s\S]*?automaticAttemptedKeys\.current\.add\(automaticIdempotencyKey\)[\s\S]*?startAutomaticAiCandidate/,
+  );
+  assert.match(center, /Authorize one manual retry/);
+  assert.doesNotMatch(center, /aiProcessingConsent|setAiProcessingConsent/);
   assert.match(
     center,
     /externalWriteAllowed|no external write/,
@@ -59,13 +81,58 @@ test("Media AI remains an approval-controlled private path beside the free manua
   );
 });
 
-test("request-shaping changes invalidate consent and bind a fresh idempotency key", async () => {
-  const center = await readFile(centerUrl, "utf8");
+test("every actionable Media AI attempt remains visible outside the bounded terminal history", async () => {
+  const data = await readFile(dataUrl, "utf8");
 
   assert.match(
-    center,
-    /const resetAiRequest = \(\) => \{[\s\S]*?setAiProcessingConsent\(false\)[\s\S]*?setAiIdempotencyKey\(newMomoMediaAiIdempotencyKey\(\)\)/,
+    data,
+    /rpc\("veroxa_momo_media_ai_operational_window_v1",[\s\S]*?p_restaurant_id: restaurantId[\s\S]*?\.select\(mediaAiCandidateFields\)/,
+    "One database snapshot must return every actionable candidate plus bounded terminal history.",
   );
+});
+
+test("the paid standing scope is deterministic and independent of the free manual preset", async () => {
+  const center = await readFile(centerUrl, "utf8");
+  const input = {
+    assetId: "10000000-0000-4000-8000-000000000001",
+    reviewId: "20000000-0000-4000-8000-000000000002",
+    sourceContentSha256: "a".repeat(64),
+    retryNonce: 0,
+  };
+  const standingScope = momoMediaAiAutomaticAttemptScope(input);
+
+  assert.ok(standingScope);
+  assert.equal(standingScope.preset, MOMO_MEDIA_AI_AUTOMATIC_PRESET);
+  assert.deepEqual(
+    momoMediaAiAutomaticAttemptScope(input),
+    standingScope,
+    "The exact asset and review must always resolve to the same standing job.",
+  );
+  for (const freeManualPreset of [
+    "instagram_square",
+    "google_business_square",
+    "website_hero",
+  ]) {
+    assert.equal(
+      momoMediaAiAutomaticAttemptScope({
+        ...input,
+        manualPreset: freeManualPreset,
+      })?.idempotencyKey,
+      standingScope.idempotencyKey,
+      `Changing the free manual preset to ${freeManualPreset} must not change the paid job.`,
+    );
+  }
+  assert.notEqual(
+    momoMediaAiAutomaticAttemptScope({ ...input, reviewId: "30000000-0000-4000-8000-000000000003" })?.idempotencyKey,
+    standingScope.idempotencyKey,
+  );
+  assert.notEqual(
+    momoMediaAiAutomaticAttemptScope({ ...input, retryNonce: 1 })?.idempotencyKey,
+    standingScope.idempotencyKey,
+    "Only the explicit retry action may create another request for the fixed format.",
+  );
+  assert.match(center, /Any future additional AI format requires a separate explicit action/);
+  assert.match(center, /The free manual editor preset does not change this paid request/);
   assert.match(
     center,
     /await approveMomoMediaAiCandidate\([\s\S]*?resetAiRequest\(\);/,
@@ -74,15 +141,37 @@ test("request-shaping changes invalidate consent and bind a fresh idempotency ke
     center,
     /await rejectMomoMediaAiCandidate\([\s\S]*?resetAiRequest\(\);/,
   );
-  for (const stateChange of [
+  assert.match(
+    center,
     /onChange=\{\(event\) => \{ const next = event\.target\.value; resetAiRequest\(\); setSourceAssetId\(next\)/,
-    /onChange=\{\(event\) => \{ const next = event\.target\.value as MomoImagePresetKey; resetAiRequest\(\); setPreset\(next\)/,
-    /onChange=\{\(event\) => \{ resetAiRequest\(\); setAltText\(event\.target\.value\); \}\}/,
-    /onChange=\{\(event\) => \{ resetAiRequest\(\); setAiGoal\(event\.target\.value as MomoMediaAiGoal\); \}\}/,
-    /onChange=\{\(event\) => \{ resetAiRequest\(\); setAiQuality\(event\.target\.value as MomoMediaAiQuality\); \}\}/,
-  ]) {
-    assert.match(center, stateChange);
-  }
+  );
+});
+
+test("pre-provider zero accounting is labeled truthfully", () => {
+  assert.equal(
+    momoMediaAiAccountingLabel({
+      reservedMicrousd: 20_000_000,
+      accountedMicrousd: 0,
+      accountingBasis: "zero_pre_provider",
+    }),
+    "$0 accounted; provider not called",
+  );
+  assert.equal(
+    momoMediaAiAccountingLabel({
+      reservedMicrousd: 20_000_000,
+      accountedMicrousd: 1_250_000,
+      accountingBasis: "provider_usage_estimate",
+    }),
+    "$1.25 provider usage estimate",
+  );
+  assert.equal(
+    momoMediaAiAccountingLabel({
+      reservedMicrousd: 20_000_000,
+      accountedMicrousd: null,
+      accountingBasis: null,
+    }),
+    "$20.00 authorization hold",
+  );
 });
 
 test("lost Media AI responses preserve the request key and block fresh paid work until readback", async () => {
@@ -98,7 +187,7 @@ test("lost Media AI responses preserve the request key and block fresh paid work
   );
   assert.match(
     center,
-    /setAiReadbackRequired\(true\)[\s\S]*?await generateMomoMediaAiCandidate\([\s\S]*?catch \(error\) \{[\s\S]*?await refreshData\(\)[\s\S]*?throw error[\s\S]*?await refreshData\(\)[\s\S]*?resetAiRequest\(\)/,
+    /setAiReadbackRequired\(true\)[\s\S]*?await generateMomoMediaAiCandidate\([\s\S]*?catch \(error\) \{[\s\S]*?await refreshData\(\)[\s\S]*?throw error[\s\S]*?await refreshData\(\)/,
   );
   assert.match(
     center,
@@ -121,6 +210,48 @@ test("lost Media AI responses preserve the request key and block fresh paid work
     ),
     /media_ai_transport_uncertain/,
   );
+});
+
+test("the Team UI requires a separately verified server runtime before a paid automatic attempt", async () => {
+  const [center, data, status, openAiAccess] = await Promise.all([
+    readFile(centerUrl, "utf8"),
+    readFile(dataUrl, "utf8"),
+    readFile(statusUrl, "utf8"),
+    readFile(openAiAccessUrl, "utf8"),
+  ]);
+
+  assert.match(data, /momoMediaAiFetch\(fetch, "\/api\/team\/media-ai\/status"/);
+  assert.match(data, /modelMetadataVisible:\s*boolean/);
+  assert.match(data, /lifecycleAdminHealthy:\s*boolean/);
+  assert.match(data, /preflightReady:\s*boolean/);
+  assert.doesNotMatch(data, /\bmodelAccessible\b|\bavailable\b/);
+  assert.match(
+    data,
+    /review_id,[\s\S]*?accounting_basis,[\s\S]*?provider_usage/,
+  );
+  assert.match(center, /getMomoMediaAiRuntimeStatus\(\)/);
+  assert.match(center, /const mediaAiPreflightReady = mediaAiDatabaseEnabled[\s\S]*?mediaAiRuntime\.value\?\.preflightReady === true/);
+  assert.match(
+    center,
+    /&& mediaAiPreflightReady[\s\S]*?&& !busy[\s\S]*?&& !activeAiCandidate/,
+  );
+  assert.match(center, /startAutomaticAiCandidate/);
+  assert.match(status, /getServerVeroxaContext/);
+  assert.match(status, /VEROXA_MEDIA_AI_ENABLED === "true"/);
+  assert.match(status, /process\.env\.OPENAI_API_KEY/);
+  assert.match(status, /verifyMomoMediaAiOpenAiAccess/);
+  assert.match(status, /modelMetadataVisible/);
+  assert.match(status, /lifecycleAdminHealthy/);
+  assert.match(status, /preflightReady/);
+  assert.match(
+    status,
+    /admin\.rpc\([\s\S]*?"veroxa_momo_media_ai_lifecycle_preflight_v1"[\s\S]*?p_restaurant_id: restaurantId[\s\S]*?p_actor_id: actorId/,
+  );
+  assert.doesNotMatch(status, /\bmodelAccessible\b|\bavailable\b|images\/edits/i);
+  assert.match(openAiAccess, /https:\/\/api\.openai\.com\/v1\/models\/\$\{MOMO_MEDIA_AI_MODEL\}/);
+  assert.match(openAiAccess, /method:\s*"GET"/);
+  assert.doesNotMatch(openAiAccess, /images\/edits/);
+  assert.doesNotMatch(status, /NEXT_PUBLIC_OPENAI|VITE_OPENAI|authorization:\s*`Bearer/);
 });
 
 test("Ready approval is bound to the exact hashed and decoded private candidate", async () => {

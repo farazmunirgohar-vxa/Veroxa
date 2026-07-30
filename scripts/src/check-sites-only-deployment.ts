@@ -320,7 +320,7 @@ const releaseIdentityMarkers = [
   "futureSitesVersion",
 ];
 must(
-  readiness.schemaVersion === 8 &&
+  readiness.schemaVersion === 9 &&
     readiness.overallStatus === "blocked" &&
     /No-Go/i.test(readiness.overallRule) &&
     !releaseIdentityMarkers.some((marker) => readinessText.includes(marker)),
@@ -437,7 +437,7 @@ if (existsSync(mediaAiMigrationPath)) {
 }
 
 must(
-  checkpoint.schemaVersion === 6 &&
+  checkpoint.schemaVersion === 7 &&
     /media-ai/i.test(checkpoint.checkpoint) &&
     /candidate/i.test(checkpoint.checkpoint) &&
     !/(published|deployed)/i.test(checkpoint.checkpoint) &&

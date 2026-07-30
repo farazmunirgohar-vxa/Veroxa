@@ -152,7 +152,7 @@ const currentRelease = manifest.currentVerifiedRelease;
 const candidate = manifest.releaseCandidate;
 const mediaAiCandidateMigration = "20260728044916_momo_media_ai_pilot_v1.sql";
 const mediaAiCandidateMigrationSha256 =
-  "45d9f7fad5842fdb47e8229c49a7875c5c4bf8f320281ce666fd45e38b42f192";
+  "efae63b4344570934d1d66b47ef1fce4fcd16343a2fe9dd8352607e0784d09a1";
 const expectedCurrentLiveLedger = [
   ...immutableHistoricalMigrations,
   observedProduction.latestProductionMigration,
@@ -250,7 +250,7 @@ if (
   );
 }
 if (
-  checkpoint.schemaVersion !== 6 ||
+  checkpoint.schemaVersion !== 7 ||
   checkpoint.status !== manifest.releaseState ||
   checkpoint.observedProductionDrift.productionMigrations !==
     observedProduction.productionMigrationCount ||

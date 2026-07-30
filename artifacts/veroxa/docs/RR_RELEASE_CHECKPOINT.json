@@ -1,8 +1,8 @@
 {
-  "schemaVersion": 6,
-  "checkpoint": "momo-media-ai-v1-local-candidate-2026-07-28",
+  "schemaVersion": 7,
+  "checkpoint": "momo-media-ai-v2-high-quality-local-candidate-2026-07-30",
   "status": "local_candidate_reviewed_unmerged_unpublished_unapplied",
-  "reviewedAt": "2026-07-28",
+  "reviewedAt": "2026-07-30",
   "deployedOperationalRelease": {
     "supersededAsLiveBaseline": true,
     "pullRequest": 145,
@@ -111,12 +111,12 @@
     "localReviewPassed": true,
     "allFourWorkflowsGreen": null,
     "zeroUnresolvedReviewThreads": null,
-    "sourceFileCount": 86,
-    "sourceTreeSha256": "734fa452f308215f3521ba830bab602df9ed67a85161a602feb3b446a8c42058",
+    "sourceFileCount": 88,
+    "sourceTreeSha256": "5c51a660ee2cf902ed1f2863278bad966132df28ab2d0195a9aeb43019fc7885",
     "migrationFileCount": 16,
-    "migrationTreeSha256": "e0a085c322e7c717a4e0a3c3262a5e3aa98ac1356d688c6f2a0d31343255e32d",
+    "migrationTreeSha256": "09aab45cda17810b52a07429700a4557308405d40a3983635d6bb7848dd4c729",
     "latestCandidateMigration": "20260728044916_momo_media_ai_pilot_v1.sql",
-    "latestCandidateMigrationSha256": "45d9f7fad5842fdb47e8229c49a7875c5c4bf8f320281ce666fd45e38b42f192",
+    "latestCandidateMigrationSha256": "efae63b4344570934d1d66b47ef1fce4fcd16343a2fe9dd8352607e0784d09a1",
     "databaseChangesRequired": true,
     "databaseMigrationApplied": false,
     "sitesPublishRequired": true,
@@ -157,10 +157,10 @@
     "openAiCredentialProvisioned": true,
     "mediaAiLiveRuntimeEnabled": false,
     "mediaAiProviderCanaryPassed": false,
-    "mediaAiAuthorizedCeilingUsd": 20,
-    "mediaAiInternalLifetimeReservationCeilingUsd": 2,
+    "mediaAiAutomaticAuthorizationThresholdUsd": 20,
     "mediaAiIncurredUsd": 0,
-    "mediaAiRecurringSpendAuthorized": false,
+    "mediaAiStandingPerJobSpendAuthorized": true,
+    "mediaAiSubscriptionOrUnboundedSpendAuthorized": false,
     "externalProvidersConnected": false,
     "externalPublishingVerified": false,
     "activationExecuted": false
@@ -204,7 +204,7 @@
     "Observed live drift on 2026-07-22 is Sites version 18 plus 14 applied migrations; no Sites checkout commit or live source hash was available, so neither is asserted",
     "PR #152 / Sites version 20 / migration 15 remains the exact verified live baseline while later candidate evidence is reviewed separately",
     "The Media AI candidate is based on canonical main commit 979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6 and remains unmerged, unpublished, and unapplied",
-    "The OpenAI credential is provisioned server-side, but the live Media AI flag is false, provider and real-edit proof are pending, actual spend is USD $0, the internal reservation ceiling is USD $2, and recurring spend is not authorized"
+    "The OpenAI credential is provisioned server-side, but the live Media AI flag is false, provider and real-edit proof are pending, actual spend is USD $0, and USD $20 is a per-job automatic authorization threshold: a larger individual job requires fresh authorization before reaching OpenAI; this release has no batch runner"
   ],
   "fullReviewTriggers": [
     "authentication, sessions, identity allowlist, role or membership authorization",
@@ -246,7 +246,7 @@
         "scripts/src/check-supabase-migration-ledger.ts",
         ".github/workflows/supabase-verify.yml"
       ],
-      "sha256": "8dd43c21f62b4cb8d048dd9b4733e34e707d523961960168203e1e361b6d66a1"
+      "sha256": "3155f4f965e07134784d7c7fd8d61f0532bbcc66a86d4bf1767e7f8803cc89bc"
     },
     "media_ai_runtime": {
       "review": "full-on-change",
@@ -267,7 +267,7 @@
         "supabase/migrations/20260728044916_momo_media_ai_pilot_v1.sql",
         "supabase/tests/momo_preconnection_integration.sql"
       ],
-      "sha256": "6e094996c5cec25ac03c1c127f63744ff9250082ae74f9d1a62b015d77a3bb70"
+      "sha256": "edcaf2f74b9fe7f3b71cf8bd5ebae0df253886c2b26d45f7b8ebb72edd17da14"
     },
     "auth_access": {
       "review": "full-on-change",
@@ -325,7 +325,7 @@
         ".github/workflows/supabase-verify.yml",
         ".github/workflows/veroxa-verify.yml"
       ],
-      "sha256": "e15c77d903f982f70b44e67ee706e5fdb8e465247d1e2d280710c285d65f3ec2"
+      "sha256": "1d768c929c448f40ed00a4de30110e8cfcb80ee3fb0f3f8caf88168fdd7de2d3"
     },
     "product_scope": {
       "review": "full-on-change",
@@ -345,7 +345,7 @@
         "AGENTS.md",
         "artifacts/veroxa/docs/RR_CHECKPOINT.md"
       ],
-      "sha256": "0851bd1bbbc83b7e5049510ea49059809aef09d4a5950e65a67c9fc0df966ffe"
+      "sha256": "c8b24a893ab5aaaff5f437b9eeb2ae2b85950b76e70f78e62d86d5e2920d4c64"
     },
     "momo_readiness_tracking": {
       "review": "evidence-delta-on-change",
@@ -354,7 +354,7 @@
         "artifacts/veroxa-sites/app/momo-readiness-types.ts",
         "scripts/src/check-momo-house-readiness-tracking.ts"
       ],
-      "sha256": "1fa94d89a11e3a512922f1cffa11d329e8be3532f57d49aad4b7f10884d451e5"
+      "sha256": "41bdc4708fd51ddb7f0db98713493db763774d4b6dd8f20ac830b3f07431a840"
     },
     "presentation_surfaces": {
       "review": "delta-unless-boundary-crossed",
@@ -366,7 +366,7 @@
         "artifacts/veroxa-sites/tests/rendered-html.test.mjs",
         "artifacts/veroxa/src/pages/free-audit.tsx"
       ],
-      "sha256": "5f131d2793e6560925e8cb03ad3d50775c7b05e2b963a6c370db59c518efc85a"
+      "sha256": "6c0a37fb36f54108f45934d3fe0d2de1a63c6bd079087cb0c378ce0b4e62c477"
     },
     "momo_operations_contract": {
       "review": "full-on-change",
@@ -411,7 +411,7 @@
         "package.json",
         "pnpm-lock.yaml"
       ],
-      "sha256": "43146fd3b5f93d6165f6798035c15383dafc5d72915d72e7f08ce2e370b1c045"
+      "sha256": "c4cfe18ff42329d347dba6e1c33d414973379147d6a8fe2e95744325bfac8895"
     }
   },
   "activationGates": [
@@ -419,7 +419,7 @@
     "Preserve the user-confirmed approved-user password login and secure-email-link recovery boundary",
     "Hosted reauthentication and old-session revocation remain unverified and must not be claimed as complete",
     "No Momo owner truth or media rights may be invented to satisfy readiness",
-    "Media AI activation remains scoped to Image Enhancement through the reviewed Team route, current rights and review, the $2 internal reservation ceiling, and explicit inspection; AI web research, Caption model calls, Compliance model calls, Meta, Google, SEO writes, publishing, outbound contact, Client provisioning, billing, and Momo activation remain inactive",
+    "Media AI activation remains scoped to high-fidelity automated Image Enhancement through the reviewed Team route, current rights and review, the $20 per-job authorization threshold, and explicit inspection; AI web research, Caption model calls, Compliance model calls, Meta, Google, SEO writes, publishing, outbound contact, Client provisioning, billing, and Momo activation remain inactive",
     "Allow only exact reviewed and merged GitHub source to be deployed manually after all four workflows are green and GitHub reports zero unresolved review threads"
   ],
   "cleanupGate": {

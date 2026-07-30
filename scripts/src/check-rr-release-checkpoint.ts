@@ -166,9 +166,10 @@ type Readiness = {
     rule: string;
   };
   spendingBoundary: {
-    authorizedOneTimeCeilingUsd: number;
+    automaticAuthorizationThresholdUsd: number;
     incurredUsd: number;
-    recurringSpendAuthorized: boolean;
+    standingPerJobSpendAuthorized: boolean;
+    subscriptionOrUnboundedSpendAuthorized: boolean;
     providerActivationAuthorized: boolean;
     rule: string;
   };
@@ -179,10 +180,10 @@ type Readiness = {
     liveRuntimeEnabled: boolean;
     providerCanaryPassed: boolean;
     realEditPassed: boolean;
-    userCeilingUsd: number;
-    internalLifetimeReservationCeilingUsd: number;
+    automaticAuthorizationThresholdUsd: number;
     incurredUsd: number;
-    recurringSpendAuthorized: boolean;
+    standingPerJobSpendAuthorized: boolean;
+    subscriptionOrUnboundedSpendAuthorized: boolean;
     currentMomoUploadRightsStatus: string;
     firstRealUseRequiresCurrentRights: boolean;
     firstRealUseRequiresTeamReview: boolean;
@@ -342,12 +343,12 @@ const expected = {
   },
   candidate: {
     basedOnGitHubMainCommit: "979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6",
-    sourceFileCount: 86,
-    sourceTreeSha256: "734fa452f308215f3521ba830bab602df9ed67a85161a602feb3b446a8c42058",
+    sourceFileCount: 88,
+    sourceTreeSha256: "5c51a660ee2cf902ed1f2863278bad966132df28ab2d0195a9aeb43019fc7885",
     migrationFileCount: 16,
-    migrationTreeSha256: "e0a085c322e7c717a4e0a3c3262a5e3aa98ac1356d688c6f2a0d31343255e32d",
+    migrationTreeSha256: "09aab45cda17810b52a07429700a4557308405d40a3983635d6bb7848dd4c729",
     migration: "20260728044916_momo_media_ai_pilot_v1.sql",
-    migrationSha: "45d9f7fad5842fdb47e8229c49a7875c5c4bf8f320281ce666fd45e38b42f192",
+    migrationSha: "efae63b4344570934d1d66b47ef1fce4fcd16343a2fe9dd8352607e0784d09a1",
   },
 };
 
@@ -364,9 +365,9 @@ function groupHash(files: string[]): string {
 const checkpoint = readJson<Checkpoint>(
   "artifacts/veroxa/docs/RR_RELEASE_CHECKPOINT.json",
 );
-must(checkpoint.schemaVersion === 6, "RR checkpoint schema must be 6.");
+must(checkpoint.schemaVersion === 7, "RR checkpoint schema must be 7.");
 must(
-  checkpoint.checkpoint === "momo-media-ai-v1-local-candidate-2026-07-28" &&
+  checkpoint.checkpoint === "momo-media-ai-v2-high-quality-local-candidate-2026-07-30" &&
     checkpoint.status === "local_candidate_reviewed_unmerged_unpublished_unapplied",
   "RR checkpoint must identify the reviewed, unmerged, unpublished, and unapplied Media AI candidate.",
 );
@@ -524,11 +525,19 @@ for (const active of [
   must(checkpoint.runtimeVerification[active] === true, `Verified runtime state regressed: ${active}`);
 }
 must(
-  checkpoint.runtimeVerification.mediaAiAuthorizedCeilingUsd === 20 &&
-    checkpoint.runtimeVerification.mediaAiInternalLifetimeReservationCeilingUsd === 2 &&
+  checkpoint.runtimeVerification.mediaAiAutomaticAuthorizationThresholdUsd === 20 &&
+    !(
+      "mediaAiInternalLifetimeReservationCeilingUsd"
+      in checkpoint.runtimeVerification
+    ) &&
     checkpoint.runtimeVerification.mediaAiIncurredUsd === 0 &&
-    checkpoint.runtimeVerification.mediaAiRecurringSpendAuthorized === false,
-  "Runtime Media AI evidence must separate the $20 authorization, $2 internal reservation ceiling, $0 incurred, and no recurring spend.",
+    checkpoint.runtimeVerification.mediaAiStandingPerJobSpendAuthorized === true &&
+    checkpoint.runtimeVerification.mediaAiSubscriptionOrUnboundedSpendAuthorized === false &&
+    !(
+      "mediaAiRecurringSpendAuthorized"
+      in checkpoint.runtimeVerification
+    ),
+  "Runtime Media AI evidence must preserve standing per-job authorization, the $20 threshold, $0 incurred, and no subscription or unbounded spend.",
 );
 
 must(
@@ -580,11 +589,11 @@ const readiness = readJson<Readiness>(
   "artifacts/veroxa-sites/app/momo-readiness-tracker.json",
 );
 must(
-  readiness.schemaVersion === 8 &&
+  readiness.schemaVersion === 9 &&
     readiness.recordKind === "momo_preconnection_readiness" &&
     readiness.restaurant === "Momo's House San Antonio" &&
     readiness.overallStatus === "blocked" &&
-    readiness.lastReviewedAt === "2026-07-28" &&
+    readiness.lastReviewedAt === "2026-07-30" &&
     /before requesting owner or provider access/i.test(readiness.milestone) &&
     /fail-closed No-Go/i.test(readiness.overallRule),
   "Momo readiness record is not the current fail-closed preconnection checkpoint.",
@@ -598,12 +607,13 @@ must(
   "Momo readiness must preserve the iCloud development-proxy boundary.",
 );
 must(
-  readiness.spendingBoundary.authorizedOneTimeCeilingUsd === 20 &&
+    readiness.spendingBoundary.automaticAuthorizationThresholdUsd === 20 &&
     readiness.spendingBoundary.incurredUsd === 0 &&
-    !readiness.spendingBoundary.recurringSpendAuthorized &&
+    readiness.spendingBoundary.standingPerJobSpendAuthorized &&
+    !readiness.spendingBoundary.subscriptionOrUnboundedSpendAuthorized &&
     !readiness.spendingBoundary.providerActivationAuthorized &&
     /Authorization is not an incurred charge/.test(readiness.spendingBoundary.rule),
-  "Readiness must distinguish the $20 one-time ceiling from $0 incurred and no provider activation.",
+  "Readiness must distinguish the $20 per-job authorization threshold from $0 incurred and no provider activation.",
 );
 must(
   readiness.mediaAiPilot.scope === "image_enhancement_only" &&
@@ -612,15 +622,15 @@ must(
     !readiness.mediaAiPilot.liveRuntimeEnabled &&
     !readiness.mediaAiPilot.providerCanaryPassed &&
     !readiness.mediaAiPilot.realEditPassed &&
-    readiness.mediaAiPilot.userCeilingUsd === 20 &&
-    readiness.mediaAiPilot.internalLifetimeReservationCeilingUsd === 2 &&
+    readiness.mediaAiPilot.automaticAuthorizationThresholdUsd === 20 &&
     readiness.mediaAiPilot.incurredUsd === 0 &&
-    !readiness.mediaAiPilot.recurringSpendAuthorized &&
+    readiness.mediaAiPilot.standingPerJobSpendAuthorized &&
+    !readiness.mediaAiPilot.subscriptionOrUnboundedSpendAuthorized &&
     readiness.mediaAiPilot.currentMomoUploadRightsStatus === "expired" &&
     readiness.mediaAiPilot.firstRealUseRequiresCurrentRights &&
     readiness.mediaAiPilot.firstRealUseRequiresTeamReview &&
     /Image Enhancement/i.test(readiness.mediaAiPilot.rule),
-  "Readiness must preserve the narrow, credentialed, disabled, zero-spend Media AI pilot and its current rights blocker.",
+  "Readiness must preserve the narrow, credentialed, disabled, zero-spend Media AI path with its per-job authorization threshold and current-rights blocker.",
 );
 for (const [name, value] of Object.entries(readiness.gateState)) {
   must(value === false, `Readiness gate must remain fail-closed: ${name}`);

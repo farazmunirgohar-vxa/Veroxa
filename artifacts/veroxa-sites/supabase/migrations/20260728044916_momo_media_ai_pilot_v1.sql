@@ -1,11 +1,13 @@
--- Momo Media AI pilot v1
+-- Momo Media AI high-fidelity automation v2
 --
 -- Connects the existing Team-only Review -> Improve -> Ready workflow to a
 -- private, approval-controlled image-edit provider path. This migration:
 --   * enables only internal AI image processing for Momo;
 --   * keeps every external account/write/scheduling control locked;
---   * enforces a non-recurring USD 2.00 internal reservation ceiling while
---     provider billing remains governed separately;
+--   * uses GPT Image 2's high-quality/high-fidelity image-edit path for Momo;
+--   * allows automatic high-fidelity processing when an individual job stays
+--     within the USD 20.00 authorization threshold; this release has no batch
+--     runner, and any future larger job requires fresh Faraz authorization;
 --   * stores provider output as a private candidate until a Team member opens,
 --     inspects, and explicitly approves it;
 --   * never changes the original asset or publishes a candidate.
@@ -17,7 +19,7 @@ revoke all on schema veroxa_private from public, anon, authenticated;
 -- The former constraint intentionally locked every runtime capability. Media
 -- AI is an internal provider call, not an external restaurant-account write.
 -- Keep all consequential external controls immutably false while allowing the
--- separately budgeted ai_live_calls flag to be enabled for this pilot.
+-- separately authorized ai_live_calls flag to be enabled for this release.
 alter table public.veroxa_momo_runtime_controls
   drop constraint if exists veroxa_momo_runtime_controls_all_locked;
 alter table public.veroxa_momo_runtime_controls
@@ -28,6 +30,16 @@ alter table public.veroxa_momo_runtime_controls
     and not external_scheduling
   );
 
+-- GPT Image 2 can return a verified high-resolution opaque PNG above the
+-- original 25 MiB manual-editor envelope. Widen only the durable rendition-row
+-- constraint; the legacy manual registration RPC keeps its narrower cap.
+alter table public.veroxa_media_renditions
+  drop constraint if exists veroxa_media_renditions_file_size_check;
+alter table public.veroxa_media_renditions
+  add constraint veroxa_media_renditions_file_size_check check (
+    file_size > 0 and file_size <= 52428800
+  );
+
 create table veroxa_private.momo_media_ai_wallets (
   restaurant_id uuid primary key
     references public.veroxa_restaurants(id) on delete cascade,
@@ -35,18 +47,18 @@ create table veroxa_private.momo_media_ai_wallets (
   model text not null default 'gpt-image-2'
     check (model = 'gpt-image-2'),
   pricing_version text not null
-    default 'openai-gpt-image-2-2026-07-28-v1'
-    check (pricing_version = 'openai-gpt-image-2-2026-07-28-v1'),
-  low_reservation_microusd bigint not null default 100000
-    check (low_reservation_microusd = 100000),
-  medium_reservation_microusd bigint not null default 250000
-    check (medium_reservation_microusd = 250000),
-  lifetime_budget_microusd bigint not null default 2000000
-    check (lifetime_budget_microusd between 0 and 2000000),
-  lifetime_request_limit integer not null default 20
-    check (lifetime_request_limit between 0 and 20),
+    default 'openai-gpt-image-2-2026-07-30-v2'
+    check (pricing_version = 'openai-gpt-image-2-2026-07-30-v2'),
+  high_reservation_microusd bigint not null default 20000000
+    check (high_reservation_microusd = 20000000),
+  automatic_authorization_threshold_microusd bigint not null default 20000000
+    check (automatic_authorization_threshold_microusd between 0 and 20000000),
+  standing_automation_authorized boolean not null default false,
+  standing_automation_version text not null
+    default 'momo-media-ai-standing-v1'
+    check (standing_automation_version = 'momo-media-ai-standing-v1'),
   updated_at timestamptz not null default clock_timestamp(),
-  updated_reason text not null default 'momo-media-ai-pilot-v1'
+  updated_reason text not null default 'momo-media-ai-high-fidelity-v2'
     check (char_length(btrim(updated_reason)) between 3 and 200)
 );
 
@@ -78,14 +90,14 @@ create table public.veroxa_momo_media_ai_candidates (
     check (rights_attestation_sha256 ~ '^[0-9a-f]{64}$'),
   review_id uuid not null references public.veroxa_media_reviews(id),
   goal text not null
-    check (goal in ('lighting_color','food_focus','background_cleanup')),
+    check (goal = 'professional_food_finish'),
   preset_key text not null check (preset_key in (
     'instagram_square','instagram_portrait','instagram_story',
     'facebook_feed','google_business_square','website_hero'
   )),
   intended_use text not null
     check (intended_use in ('facebook','instagram','google_business','website')),
-  quality text not null check (quality in ('low','medium')),
+  quality text not null check (quality = 'high'),
   output_width integer not null check (output_width between 16 and 3840),
   output_height integer not null check (output_height between 16 and 3840),
   output_mime_type text not null default 'image/png'
@@ -94,23 +106,37 @@ create table public.veroxa_momo_media_ai_candidates (
     check (char_length(btrim(alt_text)) between 1 and 280),
   model text not null check (model = 'gpt-image-2'),
   prompt_version text not null
-    check (prompt_version = 'momo-media-ai-v1'),
+    check (prompt_version = 'momo-media-ai-v2'),
   pricing_version text not null
-    check (pricing_version = 'openai-gpt-image-2-2026-07-28-v1'),
+    check (pricing_version = 'openai-gpt-image-2-2026-07-30-v2'),
   idempotency_hash text not null check (idempotency_hash ~ '^[0-9a-f]{64}$'),
   request_hash text not null check (request_hash ~ '^[0-9a-f]{64}$'),
   request_snapshot jsonb not null check (jsonb_typeof(request_snapshot) = 'object'),
   processing_attestation_version text not null
-    check (processing_attestation_version = 'momo-media-ai-processing-v1'),
+    check (processing_attestation_version = 'momo-media-ai-processing-v2'),
   processing_attestation_text text not null,
   processing_attestation_sha256 text not null
     check (processing_attestation_sha256 ~ '^[0-9a-f]{64}$'),
   requested_by uuid not null references public.veroxa_user_profiles(user_id),
   requested_at timestamptz not null default clock_timestamp(),
   reserved_microusd bigint not null
-    check (reserved_microusd in (100000,250000)),
+    check (reserved_microusd = 20000000),
   accounted_microusd bigint
-    check (accounted_microusd is null or accounted_microusd in (0,100000,250000)),
+    check (
+      accounted_microusd is null
+      or accounted_microusd between 0 and 20000000
+    ),
+  accounting_basis text check (
+    accounting_basis is null
+    or accounting_basis in (
+      'zero_pre_provider',
+      'provider_usage_estimate',
+      'conservative_reservation'
+    )
+  ),
+  provider_usage jsonb check (
+    provider_usage is null or jsonb_typeof(provider_usage) = 'object'
+  ),
   status text not null default 'reserved' check (status in (
     'reserved','provider_running','pending_review','approved','rejected','failed'
   )),
@@ -127,7 +153,7 @@ create table public.veroxa_momo_media_ai_candidates (
   storage_path text unique,
   storage_object_id uuid,
   storage_object_version text,
-  file_size bigint check (file_size is null or file_size between 1 and 26214400),
+  file_size bigint check (file_size is null or file_size between 1 and 52428800),
   content_sha256 text check (
     content_sha256 is null or content_sha256 ~ '^[0-9a-f]{64}$'
   ),
@@ -150,27 +176,34 @@ create table public.veroxa_momo_media_ai_candidates (
   unique (restaurant_id, idempotency_hash),
   constraint veroxa_momo_media_ai_output_dimensions check (
     (preset_key = 'instagram_square'
-      and output_width = 1024 and output_height = 1024
+      and output_width = 2048 and output_height = 2048
       and intended_use = 'instagram')
     or (preset_key = 'instagram_portrait'
-      and output_width = 1024 and output_height = 1280
+      and output_width = 2048 and output_height = 2560
       and intended_use = 'instagram')
     or (preset_key = 'instagram_story'
-      and output_width = 1024 and output_height = 1824
+      and output_width = 1440 and output_height = 2560
       and intended_use = 'instagram')
     or (preset_key = 'facebook_feed'
-      and output_width = 1024 and output_height = 1280
+      and output_width = 2048 and output_height = 2560
       and intended_use = 'facebook')
     or (preset_key = 'google_business_square'
-      and output_width = 1024 and output_height = 1024
+      and output_width = 2048 and output_height = 2048
       and intended_use = 'google_business')
     or (preset_key = 'website_hero'
-      and output_width = 1536 and output_height = 864
+      and output_width = 2560 and output_height = 1440
       and intended_use = 'website')
+  ),
+  constraint veroxa_momo_media_ai_gpt_image_2_size check (
+    output_width % 16 = 0
+    and output_height % 16 = 0
+    and output_width * output_height between 655360 and 8294400
+    and greatest(output_width, output_height)::numeric
+      / least(output_width, output_height)::numeric <= 3
   ),
   constraint veroxa_momo_media_ai_processing_attestation check (
     processing_attestation_text =
-      'I confirm this Team-only AI request may send the selected private image to OpenAI solely to create one private improvement candidate. It will not alter the original or publish anything.'
+      'Momo Media AI standing automation may send each eligible, rights-current, Team-approved private image to OpenAI solely to create one high-fidelity private improvement candidate. It will not alter the original, retry automatically, mark Ready without inspection, or publish anything.'
     and processing_attestation_sha256 = encode(
       extensions.digest(
         convert_to(processing_attestation_text, 'UTF8'),
@@ -179,79 +212,125 @@ create table public.veroxa_momo_media_ai_candidates (
       'hex'
     )
   ),
+  constraint veroxa_momo_media_ai_accounting_contract check (
+    coalesce((
+      (
+        accounted_microusd is null
+        and accounting_basis is null
+        and provider_usage is null
+      )
+      or (
+        accounted_microusd = 0
+        and accounting_basis = 'zero_pre_provider'
+        and provider_usage is null
+      )
+      or (
+        accounted_microusd between 1 and reserved_microusd
+        and accounting_basis = 'provider_usage_estimate'
+        and provider_usage is not null
+      )
+      or (
+        accounted_microusd = reserved_microusd
+        and accounting_basis = 'conservative_reservation'
+        and provider_usage is null
+      )
+    ), false)
+  ),
   constraint veroxa_momo_media_ai_state_contract check (
-    (
-      status = 'reserved'
-      and not provider_called
-      and provider_started_at is null
-      and accounted_microusd is null
-      and storage_path is null
-      and content_sha256 is null
-      and rendition_id is null
-    )
-    or (
-      status = 'provider_running'
-      and provider_called
-      and provider_started_at is not null
-      and accounted_microusd is null
-      and storage_path is null
-      and content_sha256 is null
-      and rendition_id is null
-    )
-    or (
-      status = 'pending_review'
-      and provider_called
-      and provider_started_at is not null
-      and accounted_microusd = reserved_microusd
-      and provider_request_id is not null
-      and storage_path is not null
-      and storage_object_id is not null
-      and storage_object_version is not null
-      and file_size is not null
-      and content_sha256 is not null
-      and generated_at is not null
-      and rendition_id is null
-      and inspected_by is null
-      and inspected_at is null
-    )
-    or (
-      status = 'approved'
-      and provider_called
-      and accounted_microusd = reserved_microusd
-      and storage_path is not null
-      and storage_object_id is not null
-      and storage_object_version is not null
-      and content_sha256 is not null
-      and inspection_attestation_version = 'momo-media-ai-inspection-v1'
-      and inspection_attestation_text is not null
-      and inspection_notes is not null
-      and inspected_by is not null
-      and inspected_at is not null
-      and rendition_id is not null
-    )
-    or (
-      status = 'rejected'
-      and provider_called
-      and accounted_microusd = reserved_microusd
-      and storage_path is not null
-      and storage_object_id is not null
-      and content_sha256 is not null
-      and inspection_attestation_version = 'momo-media-ai-inspection-v1'
-      and inspection_attestation_text is not null
-      and inspection_notes is not null
-      and inspected_by is not null
-      and inspected_at is not null
-      and rendition_id is null
-    )
-    or (
-      status = 'failed'
-      and accounted_microusd = case when provider_called then reserved_microusd else 0 end
-      and provider_error_code is not null
-      and storage_path is null
-      and storage_object_id is null
-      and content_sha256 is null
-      and rendition_id is null
-    )
+    coalesce((
+      (
+        status = 'reserved'
+        and not provider_called
+        and provider_started_at is null
+        and accounted_microusd is null
+        and storage_path is null
+        and content_sha256 is null
+        and rendition_id is null
+      )
+      or (
+        status = 'provider_running'
+        and provider_called
+        and provider_started_at is not null
+        and accounted_microusd is null
+        and storage_path is null
+        and content_sha256 is null
+        and rendition_id is null
+      )
+      or (
+        status = 'pending_review'
+        and provider_called
+        and provider_started_at is not null
+        and accounted_microusd between 1 and reserved_microusd
+        and accounting_basis in (
+          'provider_usage_estimate',
+          'conservative_reservation'
+        )
+        and provider_request_id is not null
+        and storage_path is not null
+        and storage_object_id is not null
+        and storage_object_version is not null
+        and file_size is not null
+        and content_sha256 is not null
+        and generated_at is not null
+        and rendition_id is null
+        and inspected_by is null
+        and inspected_at is null
+      )
+      or (
+        status = 'approved'
+        and provider_called
+        and accounted_microusd between 1 and reserved_microusd
+        and accounting_basis in (
+          'provider_usage_estimate',
+          'conservative_reservation'
+        )
+        and storage_path is not null
+        and storage_object_id is not null
+        and storage_object_version is not null
+        and content_sha256 is not null
+        and inspection_attestation_version = 'momo-media-ai-inspection-v1'
+        and inspection_attestation_text is not null
+        and inspection_notes is not null
+        and inspected_by is not null
+        and inspected_at is not null
+        and rendition_id is not null
+      )
+      or (
+        status = 'rejected'
+        and provider_called
+        and accounted_microusd between 1 and reserved_microusd
+        and accounting_basis in (
+          'provider_usage_estimate',
+          'conservative_reservation'
+        )
+        and storage_path is not null
+        and storage_object_id is not null
+        and content_sha256 is not null
+        and inspection_attestation_version = 'momo-media-ai-inspection-v1'
+        and inspection_attestation_text is not null
+        and inspection_notes is not null
+        and inspected_by is not null
+        and inspected_at is not null
+        and rendition_id is null
+      )
+      or (
+        status = 'failed'
+        and accounted_microusd = case
+          when provider_called then reserved_microusd
+          else 0
+        end
+        and accounting_basis = case
+          when provider_called then 'conservative_reservation'
+          else 'zero_pre_provider'
+        end
+        and provider_usage is null
+        and provider_error_code is not null
+        and storage_path is null
+        and storage_object_id is null
+        and content_sha256 is null
+        and rendition_id is null
+      )
+    ), false)
   )
 );
 
@@ -283,6 +362,55 @@ revoke all on table public.veroxa_momo_media_ai_candidates
   from public, anon, authenticated, service_role;
 grant select on table public.veroxa_momo_media_ai_candidates
   to authenticated;
+
+-- One statement and therefore one MVCC snapshot returns every actionable
+-- attempt plus a bounded terminal history. RLS remains authoritative because
+-- this read helper executes with the authenticated caller's privileges.
+create or replace function
+public.veroxa_momo_media_ai_operational_window_v1(
+  p_restaurant_id uuid
+)
+returns setof public.veroxa_momo_media_ai_candidates
+language sql
+stable
+security invoker
+set search_path = ''
+as $$
+  with active_candidates as (
+    select candidate.*
+    from public.veroxa_momo_media_ai_candidates candidate
+    where candidate.restaurant_id = p_restaurant_id
+      and candidate.status in (
+        'reserved',
+        'provider_running',
+        'pending_review'
+      )
+  ),
+  terminal_candidates as (
+    select candidate.*
+    from public.veroxa_momo_media_ai_candidates candidate
+    where candidate.restaurant_id = p_restaurant_id
+      and candidate.status in ('approved','rejected','failed')
+    order by candidate.requested_at desc
+    limit 25
+  )
+  select candidate_window.*
+  from (
+    select active_candidate.*
+    from active_candidates active_candidate
+    union all
+    select terminal_candidate.*
+    from terminal_candidates terminal_candidate
+  ) candidate_window
+  order by candidate_window.requested_at desc;
+$$;
+
+revoke all on function
+  public.veroxa_momo_media_ai_operational_window_v1(uuid)
+from public, anon, authenticated, service_role;
+grant execute on function
+  public.veroxa_momo_media_ai_operational_window_v1(uuid)
+to authenticated;
 
 create or replace function
 veroxa_private.momo_media_ai_actor_has_operational_team_v1(
@@ -323,6 +451,65 @@ revoke all on function
   veroxa_private.momo_media_ai_actor_has_operational_team_v1(uuid,uuid)
 from public, anon, authenticated, service_role;
 
+-- Read-only server preflight. The hosted status route passes the actor ID from
+-- a separately validated Team session, and this service-only function
+-- revalidates that exact actor, tenant, runtime, and standing authorization
+-- before the UI may treat the lifecycle bridge as healthy.
+create or replace function
+public.veroxa_momo_media_ai_lifecycle_preflight_v1(
+  p_restaurant_id uuid,
+  p_actor_id uuid
+)
+returns table (
+  lifecycle_admin_healthy boolean
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select coalesce((
+    p_restaurant_id is not null
+    and p_actor_id is not null
+    and veroxa_private.momo_media_ai_actor_has_operational_team_v1(
+      p_restaurant_id,
+      p_actor_id
+    )
+    and exists (
+      select 1
+      from veroxa_private.operational_restaurant_scope scope
+      join public.veroxa_restaurants restaurant
+        on restaurant.id = scope.restaurant_id
+      join public.veroxa_momo_runtime_controls control
+        on control.restaurant_id = scope.restaurant_id
+      join veroxa_private.momo_media_ai_wallets wallet
+        on wallet.restaurant_id = scope.restaurant_id
+      where scope.scope_key = 'momo_house_san_antonio'
+        and scope.enabled
+        and scope.restaurant_id = p_restaurant_id
+        and restaurant.name = 'Momo''s House San Antonio'
+        and restaurant.city = 'San Antonio'
+        and restaurant.state = 'TX'
+        and restaurant.status =
+          'active'::public.veroxa_account_status_v1
+        and control.ai_live_calls
+        and not control.provider_writes
+        and not control.review_replies
+        and not control.website_writes
+        and not control.external_scheduling
+        and wallet.enabled
+        and wallet.standing_automation_authorized
+        and wallet.standing_automation_version =
+          'momo-media-ai-standing-v1'
+        and wallet.high_reservation_microusd = 20000000
+        and wallet.automatic_authorization_threshold_microusd = 20000000
+        and wallet.model = 'gpt-image-2'
+        and wallet.pricing_version =
+          'openai-gpt-image-2-2026-07-30-v2'
+    )
+  ), false) as lifecycle_admin_healthy;
+$$;
+
 create or replace function public.veroxa_reserve_momo_media_ai_candidate_v1(
   p_restaurant_id uuid,
   p_source_asset_id uuid,
@@ -361,8 +548,6 @@ declare
   v_use text;
   v_width integer;
   v_height integer;
-  v_request_count bigint;
-  v_committed_microusd bigint;
   v_attestation_hash text;
   v_snapshot jsonb;
   v_reservation_microusd bigint;
@@ -373,14 +558,14 @@ begin
   end if;
   if p_source_asset_id is null
     or p_goal is null
-    or p_goal not in ('lighting_color','food_focus','background_cleanup')
+    or p_goal <> 'professional_food_finish'
     or p_preset_key is null
     or p_preset_key not in (
       'instagram_square','instagram_portrait','instagram_story',
       'facebook_feed','google_business_square','website_hero'
     )
     or p_quality is null
-    or p_quality not in ('low','medium')
+    or p_quality <> 'high'
     or p_alt_text is null
     or p_alt_text is distinct from btrim(p_alt_text)
     or char_length(p_alt_text) not between 1 and 280
@@ -389,7 +574,7 @@ begin
     or p_request_hash is null
     or p_request_hash !~ '^[0-9a-f]{64}$'
     or p_processing_attestation_text is distinct from
-      'I confirm this Team-only AI request may send the selected private image to OpenAI solely to create one private improvement candidate. It will not alter the original or publish anything.'
+      'Momo Media AI standing automation may send each eligible, rights-current, Team-approved private image to OpenAI solely to create one high-fidelity private improvement candidate. It will not alter the original, retry automatically, mark Ready without inspection, or publish anything.'
   then
     raise exception using errcode = '22023',
       message = 'invalid_momo_media_ai_request';
@@ -405,20 +590,20 @@ begin
       when 'website_hero' then 'website'
     end,
     case p_preset_key
-      when 'instagram_square' then 1024
-      when 'instagram_portrait' then 1024
-      when 'instagram_story' then 1024
-      when 'facebook_feed' then 1024
-      when 'google_business_square' then 1024
-      when 'website_hero' then 1536
+      when 'instagram_square' then 2048
+      when 'instagram_portrait' then 2048
+      when 'instagram_story' then 1440
+      when 'facebook_feed' then 2048
+      when 'google_business_square' then 2048
+      when 'website_hero' then 2560
     end,
     case p_preset_key
-      when 'instagram_square' then 1024
-      when 'instagram_portrait' then 1280
-      when 'instagram_story' then 1824
-      when 'facebook_feed' then 1280
-      when 'google_business_square' then 1024
-      when 'website_hero' then 864
+      when 'instagram_square' then 2048
+      when 'instagram_portrait' then 2560
+      when 'instagram_story' then 2560
+      when 'facebook_feed' then 2560
+      when 'google_business_square' then 2048
+      when 'website_hero' then 1440
     end
   into v_use, v_width, v_height;
 
@@ -564,36 +749,19 @@ begin
   for update;
   if not found
     or not v_wallet.enabled
-    or v_wallet.lifetime_budget_microusd <= 0
-    or v_wallet.lifetime_request_limit <= 0
+    or not v_wallet.standing_automation_authorized
+    or v_wallet.automatic_authorization_threshold_microusd <= 0
   then
     raise exception using errcode = '55000',
       message = 'momo_media_ai_wallet_disabled';
   end if;
-  v_reservation_microusd := case p_quality
-    when 'medium' then v_wallet.medium_reservation_microusd
-    else v_wallet.low_reservation_microusd
-  end;
+  v_reservation_microusd := v_wallet.high_reservation_microusd;
 
-  select
-    count(*),
-    coalesce(sum(
-      case
-        when candidate.status in ('reserved','provider_running')
-          then candidate.reserved_microusd
-        else coalesce(candidate.accounted_microusd, 0)
-      end
-    ), 0)
-  into v_request_count, v_committed_microusd
-  from public.veroxa_momo_media_ai_candidates candidate
-  where candidate.restaurant_id = p_restaurant_id;
-
-  if v_request_count >= v_wallet.lifetime_request_limit
-    or v_committed_microusd + v_reservation_microusd
-      > v_wallet.lifetime_budget_microusd
+  if v_reservation_microusd
+      > v_wallet.automatic_authorization_threshold_microusd
   then
     raise exception using errcode = '54000',
-      message = 'momo_media_ai_pilot_wallet_exhausted';
+      message = 'momo_media_ai_authorization_required';
   end if;
 
   v_attestation_hash := encode(
@@ -621,7 +789,7 @@ begin
     'outputHeight', v_height,
     'altText', p_alt_text,
     'model', v_wallet.model,
-    'promptVersion', 'momo-media-ai-v1',
+    'promptVersion', 'momo-media-ai-v2',
     'pricingVersion', v_wallet.pricing_version
   );
 
@@ -679,12 +847,12 @@ begin
     v_height,
     p_alt_text,
     v_wallet.model,
-    'momo-media-ai-v1',
+    'momo-media-ai-v2',
     v_wallet.pricing_version,
     p_idempotency_hash,
     p_request_hash,
     v_snapshot,
-    'momo-media-ai-processing-v1',
+    'momo-media-ai-processing-v2',
     p_processing_attestation_text,
     v_attestation_hash,
     (select auth.uid()),
@@ -723,10 +891,6 @@ as $$
 declare
   v_candidate public.veroxa_momo_media_ai_candidates%rowtype;
 begin
-  if (select auth.role()) is distinct from 'service_role' then
-    raise exception using errcode = '42501',
-      message = 'momo_media_ai_server_required';
-  end if;
   select candidate.* into v_candidate
   from public.veroxa_momo_media_ai_candidates candidate
   where candidate.id = p_candidate_id
@@ -758,34 +922,20 @@ begin
     from veroxa_private.momo_media_ai_wallets wallet
     where wallet.restaurant_id = v_candidate.restaurant_id
       and wallet.enabled
-      and wallet.lifetime_budget_microusd > 0
-      and wallet.lifetime_request_limit > 0
+      and wallet.standing_automation_authorized
+      and wallet.standing_automation_version = 'momo-media-ai-standing-v1'
+      and wallet.automatic_authorization_threshold_microusd > 0
       and wallet.model = v_candidate.model
       and wallet.pricing_version = v_candidate.pricing_version
-      and v_candidate.reserved_microusd = case v_candidate.quality
-        when 'medium' then wallet.medium_reservation_microusd
-        else wallet.low_reservation_microusd
-      end
-      and (
-        select count(*)
-        from public.veroxa_momo_media_ai_candidates candidate
-        where candidate.restaurant_id = v_candidate.restaurant_id
-      ) <= wallet.lifetime_request_limit
-      and (
-        select coalesce(sum(
-          case
-            when candidate.status in ('reserved','provider_running')
-              then candidate.reserved_microusd
-            else coalesce(candidate.accounted_microusd, 0)
-          end
-        ), 0)
-        from public.veroxa_momo_media_ai_candidates candidate
-        where candidate.restaurant_id = v_candidate.restaurant_id
-      ) <= wallet.lifetime_budget_microusd
+      and v_candidate.quality = 'high'
+      and v_candidate.reserved_microusd = wallet.high_reservation_microusd
+      and v_candidate.reserved_microusd
+        <= wallet.automatic_authorization_threshold_microusd
   ) then
     update public.veroxa_momo_media_ai_candidates candidate
     set status = 'failed',
         accounted_microusd = 0,
+        accounting_basis = 'zero_pre_provider',
         provider_error_code = 'wallet_invalidated_before_provider',
         updated_at = clock_timestamp()
     where candidate.id = v_candidate.id;
@@ -842,6 +992,7 @@ begin
     update public.veroxa_momo_media_ai_candidates candidate
     set status = 'failed',
         accounted_microusd = 0,
+        accounting_basis = 'zero_pre_provider',
         provider_error_code = 'source_invalidated_before_provider',
         updated_at = clock_timestamp()
     where candidate.id = v_candidate.id;
@@ -873,6 +1024,9 @@ create or replace function public.veroxa_complete_momo_media_ai_candidate_v1(
   p_width integer,
   p_height integer,
   p_content_sha256 text,
+  p_accounted_microusd bigint,
+  p_accounting_basis text,
+  p_provider_usage jsonb,
   p_actor_id uuid
 )
 returns uuid
@@ -884,11 +1038,12 @@ declare
   v_candidate public.veroxa_momo_media_ai_candidates%rowtype;
   v_object record;
   v_expected_path text;
+  v_usage_input_tokens bigint;
+  v_usage_image_tokens bigint;
+  v_usage_text_tokens bigint;
+  v_usage_output_tokens bigint;
+  v_usage_total_tokens bigint;
 begin
-  if (select auth.role()) is distinct from 'service_role' then
-    raise exception using errcode = '42501',
-      message = 'momo_media_ai_server_required';
-  end if;
   select candidate.* into v_candidate
   from public.veroxa_momo_media_ai_candidates candidate
   where candidate.id = p_candidate_id
@@ -905,14 +1060,82 @@ begin
     or not v_candidate.provider_called
     or nullif(btrim(coalesce(p_provider_request_id, '')), '') is null
     or char_length(btrim(p_provider_request_id)) > 200
-    or p_file_size not between 1 and 26214400
+    or p_file_size is null
+    or p_file_size not between 1 and 52428800
     or p_width is distinct from v_candidate.output_width
     or p_height is distinct from v_candidate.output_height
     or p_content_sha256 is null
     or p_content_sha256 !~ '^[0-9a-f]{64}$'
+    or p_accounted_microusd is null
+    or p_accounted_microusd not between 1 and v_candidate.reserved_microusd
+    or p_accounting_basis is null
+    or p_accounting_basis not in (
+      'provider_usage_estimate',
+      'conservative_reservation'
+    )
+    or (
+      p_accounting_basis = 'provider_usage_estimate'
+      and (
+        p_provider_usage is null
+        or jsonb_typeof(p_provider_usage) <> 'object'
+      )
+    )
+    or (
+      p_accounting_basis = 'conservative_reservation'
+      and (
+        p_provider_usage is not null
+        or p_accounted_microusd <> v_candidate.reserved_microusd
+      )
+    )
   then
     raise exception using errcode = '22023',
       message = 'invalid_momo_media_ai_completion';
+  end if;
+  if p_accounting_basis = 'provider_usage_estimate' then
+    if coalesce(jsonb_typeof(p_provider_usage -> 'input_tokens'), '')
+          <> 'number'
+      or coalesce(jsonb_typeof(p_provider_usage -> 'input_tokens_details'), '')
+          <> 'object'
+      or coalesce(jsonb_typeof(
+        p_provider_usage -> 'input_tokens_details' -> 'image_tokens'
+      ), '') <> 'number'
+      or coalesce(jsonb_typeof(
+        p_provider_usage -> 'input_tokens_details' -> 'text_tokens'
+      ), '') <> 'number'
+      or coalesce(jsonb_typeof(p_provider_usage -> 'output_tokens'), '')
+          <> 'number'
+      or coalesce(jsonb_typeof(p_provider_usage -> 'total_tokens'), '')
+          <> 'number'
+      or coalesce(p_provider_usage ->> 'input_tokens', '') !~ '^[0-9]{1,7}$'
+      or coalesce(
+        p_provider_usage -> 'input_tokens_details' ->> 'image_tokens', ''
+      ) !~ '^[0-9]{1,7}$'
+      or coalesce(
+        p_provider_usage -> 'input_tokens_details' ->> 'text_tokens', ''
+      ) !~ '^[0-9]{1,7}$'
+      or coalesce(p_provider_usage ->> 'output_tokens', '') !~ '^[0-9]{1,7}$'
+      or coalesce(p_provider_usage ->> 'total_tokens', '') !~ '^[0-9]{1,7}$'
+    then
+      raise exception using errcode = '22023',
+        message = 'invalid_momo_media_ai_provider_usage';
+    end if;
+    v_usage_input_tokens := (p_provider_usage ->> 'input_tokens')::bigint;
+    v_usage_image_tokens := (
+      p_provider_usage -> 'input_tokens_details' ->> 'image_tokens'
+    )::bigint;
+    v_usage_text_tokens := (
+      p_provider_usage -> 'input_tokens_details' ->> 'text_tokens'
+    )::bigint;
+    v_usage_output_tokens := (p_provider_usage ->> 'output_tokens')::bigint;
+    v_usage_total_tokens := (p_provider_usage ->> 'total_tokens')::bigint;
+    if v_usage_input_tokens <> v_usage_image_tokens + v_usage_text_tokens
+      or v_usage_total_tokens <> v_usage_input_tokens + v_usage_output_tokens
+      or p_accounted_microusd <> v_usage_text_tokens * 5
+        + v_usage_image_tokens * 8 + v_usage_output_tokens * 30
+    then
+      raise exception using errcode = '22023',
+        message = 'momo_media_ai_provider_usage_accounting_mismatch';
+    end if;
   end if;
   v_expected_path :=
     'restaurants/' || v_candidate.restaurant_id::text
@@ -939,7 +1162,9 @@ begin
 
   update public.veroxa_momo_media_ai_candidates candidate
   set status = 'pending_review',
-      accounted_microusd = candidate.reserved_microusd,
+      accounted_microusd = p_accounted_microusd,
+      accounting_basis = p_accounting_basis,
+      provider_usage = p_provider_usage,
       provider_request_id = btrim(p_provider_request_id),
       storage_path = p_storage_path,
       storage_object_id = v_object.id,
@@ -967,10 +1192,6 @@ as $$
 declare
   v_candidate public.veroxa_momo_media_ai_candidates%rowtype;
 begin
-  if (select auth.role()) is distinct from 'service_role' then
-    raise exception using errcode = '42501',
-      message = 'momo_media_ai_server_required';
-  end if;
   select candidate.* into v_candidate
   from public.veroxa_momo_media_ai_candidates candidate
   where candidate.id = p_candidate_id
@@ -996,6 +1217,11 @@ begin
         when candidate.provider_called then candidate.reserved_microusd
         else 0
       end,
+      accounting_basis = case
+        when candidate.provider_called then 'conservative_reservation'
+        else 'zero_pre_provider'
+      end,
+      provider_usage = null,
       provider_error_code = p_error_code,
       updated_at = clock_timestamp()
   where candidate.id = v_candidate.id;
@@ -1031,6 +1257,8 @@ begin
     update public.veroxa_momo_media_ai_candidates candidate
     set status = 'failed',
         accounted_microusd = 0,
+        accounting_basis = 'zero_pre_provider',
+        provider_usage = null,
         provider_error_code = 'reservation_cancelled',
         updated_at = clock_timestamp()
     where candidate.id = v_candidate.id;
@@ -1043,6 +1271,8 @@ begin
     update public.veroxa_momo_media_ai_candidates candidate
     set status = 'failed',
         accounted_microusd = candidate.reserved_microusd,
+        accounting_basis = 'conservative_reservation',
+        provider_usage = null,
         provider_error_code = 'provider_result_unreconciled',
         updated_at = clock_timestamp()
     where candidate.id = v_candidate.id;
@@ -1172,7 +1402,7 @@ begin
   end if;
 
   v_recipe := jsonb_build_object(
-    'version', 'momo-media-ai-v1',
+    'version', 'momo-media-ai-v2',
     'candidateId', v_candidate.id,
     'preset', v_candidate.preset_key,
     'goal', v_candidate.goal,
@@ -1189,7 +1419,7 @@ begin
   v_fingerprint := encode(
     extensions.digest(
       convert_to(jsonb_build_object(
-        'version', 'momo-media-ai-v1',
+        'version', 'momo-media-ai-v2',
         'restaurantId', v_candidate.restaurant_id,
         'sourceAssetId', v_candidate.source_asset_id,
         'sourceContentSha256', v_candidate.source_content_sha256,
@@ -1240,7 +1470,7 @@ begin
     v_candidate.content_sha256,
     v_fingerprint,
     v_recipe,
-    'momo-media-ai-v1',
+    'momo-media-ai-v2',
     v_candidate.preset_key,
     v_candidate.intended_use,
     v_candidate.alt_text,
@@ -1365,9 +1595,11 @@ revoke all on function public.veroxa_reserve_momo_media_ai_candidate_v1(
 ), public.veroxa_start_momo_media_ai_provider_v1(
   uuid,text,uuid
 ), public.veroxa_complete_momo_media_ai_candidate_v1(
-  uuid,text,text,text,bigint,integer,integer,text,uuid
+  uuid,text,text,text,bigint,integer,integer,text,bigint,text,jsonb,uuid
 ), public.veroxa_fail_momo_media_ai_candidate_v1(
   uuid,text,text,uuid
+), public.veroxa_momo_media_ai_lifecycle_preflight_v1(
+  uuid,uuid
 ), public.veroxa_close_momo_media_ai_attempt_v1(
   uuid
 ), public.veroxa_approve_momo_media_ai_candidate_v1(
@@ -1391,13 +1623,15 @@ to authenticated;
 grant execute on function public.veroxa_start_momo_media_ai_provider_v1(
   uuid,text,uuid
 ), public.veroxa_complete_momo_media_ai_candidate_v1(
-  uuid,text,text,text,bigint,integer,integer,text,uuid
+  uuid,text,text,text,bigint,integer,integer,text,bigint,text,jsonb,uuid
 ), public.veroxa_fail_momo_media_ai_candidate_v1(
   uuid,text,text,uuid
+), public.veroxa_momo_media_ai_lifecycle_preflight_v1(
+  uuid,uuid
 )
 to service_role;
 
--- Enable only the exact Momo pilot row. The identity is resolved from
+-- Enable only the exact Momo automation row. The identity is resolved from
 -- canonical restaurant data rather than a generated UUID. A clean schema has
 -- no production tenant yet, so zero matches is a valid no-op; duplicate
 -- production identities still fail closed.
@@ -1414,27 +1648,29 @@ begin
     and restaurant.state = 'TX'
     and restaurant.status = 'active';
   if v_match_count > 1 then
-    raise exception 'momo_media_ai_pilot_restaurant_not_unique';
+    raise exception 'momo_media_ai_automation_restaurant_not_unique';
   end if;
 
   if v_match_count = 1 then
     insert into veroxa_private.momo_media_ai_wallets (
       restaurant_id,
       enabled,
-      lifetime_budget_microusd,
-      lifetime_request_limit,
+      automatic_authorization_threshold_microusd,
+      standing_automation_authorized,
       updated_reason
     ) values (
       v_restaurant_id,
       true,
-      2000000,
-      20,
-      'User-approved Momo Media AI pilot; USD 2.00 internal reservation ceiling.'
+      20000000,
+      true,
+      'User-approved standing Momo Media AI automation; USD 20.00 per-job threshold; no batch runner.'
     )
     on conflict (restaurant_id) do update
     set enabled = excluded.enabled,
-        lifetime_budget_microusd = excluded.lifetime_budget_microusd,
-        lifetime_request_limit = excluded.lifetime_request_limit,
+        automatic_authorization_threshold_microusd =
+          excluded.automatic_authorization_threshold_microusd,
+        standing_automation_authorized =
+          excluded.standing_automation_authorized,
         updated_at = clock_timestamp(),
         updated_reason = excluded.updated_reason;
 

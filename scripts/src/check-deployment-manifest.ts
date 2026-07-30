@@ -202,15 +202,15 @@ const currentVerified = {
 };
 const candidate = {
   basedOnGitHubMainCommit: "979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6",
-  sourceFileCount: 86,
+  sourceFileCount: 88,
   sourceTreeSha256:
-    "734fa452f308215f3521ba830bab602df9ed67a85161a602feb3b446a8c42058",
+    "5c51a660ee2cf902ed1f2863278bad966132df28ab2d0195a9aeb43019fc7885",
   migrationFileCount: 16,
   migrationTreeSha256:
-    "e0a085c322e7c717a4e0a3c3262a5e3aa98ac1356d688c6f2a0d31343255e32d",
+    "09aab45cda17810b52a07429700a4557308405d40a3983635d6bb7848dd4c729",
   latestMigration: "20260728044916_momo_media_ai_pilot_v1.sql",
   latestMigrationSha256:
-    "45d9f7fad5842fdb47e8229c49a7875c5c4bf8f320281ce666fd45e38b42f192",
+    "efae63b4344570934d1d66b47ef1fce4fcd16343a2fe9dd8352607e0784d09a1",
 };
 
 must(manifest.schemaVersion === 3, "Deployment manifest schema version must be 3.");

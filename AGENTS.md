@@ -1,8 +1,8 @@
-## 2026-07-28 — reviewed Media AI candidate (not live)
+## 2026-07-30 — high-quality Momo Media AI candidate (not live)
 
 - PR #152 / Sites version 20 / 15 applied migrations remains the exact verified production baseline. The Media AI work is a separate reviewed local candidate based on GitHub `main` commit `979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6`; it is not merged, migration 16 is not applied, and no later Sites version is published.
-- The existing Momo **Review → Improve → Ready** flow now has a candidate server-side Image Enhancement path using `gpt-image-2`. The existing deterministic Media Review and Compliance contracts govern it; Caption, Compliance, and Media Review are not separate model calls in this release.
-- The OpenAI credential is provisioned only as a server secret. The live Media AI flag remains off, provider/real-edit proof remains pending, actual spend is USD $0, the database enforces a USD $2 lifetime reservation ceiling inside Faraz's USD $20 one-time authorization, and recurring spend is not authorized.
+- The existing Momo **Review → Improve → Ready** flow now has a candidate high-quality, automated faithful-enhancement path using `gpt-image-2`. It selects a high-resolution output for the Team-selected destination, keeps the original unchanged, and creates exactly one private candidate per approved request. The deterministic Media Review and Compliance contracts govern it; Caption, Compliance, and Media Review are not separate model calls in this release.
+- The OpenAI credential is provisioned only as a server secret. The live Media AI flag remains off, provider/real-edit proof remains pending, and actual spend is USD $0. The database treats USD $20 as a per-job automatic authorization threshold—not a lifetime or recurring budget: an individual job above that estimate must obtain fresh Faraz authorization before it reaches OpenAI.
 - The current Momo upload's rights are expired. No real image may cross the provider boundary until rights are current and Team review is approved; every AI result stays private until the exact candidate is decoded, inspected, attested, and explicitly approved.
 - Momo remains **No-Go**. Google/social, owner-controlled provider access, external writes, automatic publishing, and Momo activation remain locked.
 

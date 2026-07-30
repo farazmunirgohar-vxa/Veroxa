@@ -1,41 +1,31 @@
 import type { MomoImagePresetKey } from "./momo-media-workflow";
 
 export const MOMO_MEDIA_AI_MODEL = "gpt-image-2" as const;
-export const MOMO_MEDIA_AI_PROMPT_VERSION = "momo-media-ai-v1" as const;
+export const MOMO_MEDIA_AI_PROMPT_VERSION = "momo-media-ai-v2" as const;
 export const MOMO_MEDIA_AI_PRICING_VERSION =
-  "openai-gpt-image-2-2026-07-28-v1" as const;
+  "openai-gpt-image-2-2026-07-30-v2" as const;
 export const MOMO_MEDIA_AI_PROCESSING_ATTESTATION_VERSION =
-  "momo-media-ai-processing-v1" as const;
+  "momo-media-ai-processing-v2" as const;
 export const MOMO_MEDIA_AI_INSPECTION_ATTESTATION_VERSION =
   "momo-media-ai-inspection-v1" as const;
 
 export const MOMO_MEDIA_AI_PROCESSING_ATTESTATION =
-  "I confirm this Team-only AI request may send the selected private image to OpenAI solely to create one private improvement candidate. It will not alter the original or publish anything.";
+  "Momo Media AI standing automation may send each eligible, rights-current, Team-approved private image to OpenAI solely to create one high-fidelity private improvement candidate. It will not alter the original, retry automatically, mark Ready without inspection, or publish anything.";
 export const MOMO_MEDIA_AI_APPROVAL_ATTESTATION =
   "I opened and inspected this private AI candidate, verified that it preserves the real dish without invented food or claims, and approve it only for the selected Ready use.";
 export const MOMO_MEDIA_AI_REJECTION_ATTESTATION =
   "I reject this private AI candidate. It must not become Ready or be used outside this Team-only review.";
 
 export const MOMO_MEDIA_AI_GOALS = {
-  lighting_color: {
-    label: "Improve lighting and color",
+  professional_food_finish: {
+    label: "Automatic professional food finish",
     instruction:
-      "Correct exposure, white balance, natural color, and gentle contrast only.",
-  },
-  food_focus: {
-    label: "Strengthen food focus",
-    instruction:
-      "Improve framing and local clarity so the existing dish is the visual focus.",
-  },
-  background_cleanup: {
-    label: "Clean the non-food background",
-    instruction:
-      "Remove only minor visual distractions from the non-food background while keeping the real setting believable.",
+      "Automatically improve exposure, white balance, natural color, gentle contrast, food focus, and minor non-food background distractions while preserving the exact photographed meal.",
   },
 } as const;
 
 export type MomoMediaAiGoal = keyof typeof MOMO_MEDIA_AI_GOALS;
-export type MomoMediaAiQuality = "low" | "medium";
+export type MomoMediaAiQuality = "high";
 export type MomoMediaAiCandidateStatus =
   | "reserved"
   | "provider_running"
@@ -55,45 +45,60 @@ export const MOMO_MEDIA_AI_PRESETS: Record<
   MomoMediaAiPresetContract
 > = {
   instagram_square: {
-    width: 1024,
-    height: 1024,
+    width: 2048,
+    height: 2048,
     intendedUse: "instagram",
   },
   instagram_portrait: {
-    width: 1024,
-    height: 1280,
+    width: 2048,
+    height: 2560,
     intendedUse: "instagram",
   },
   instagram_story: {
-    width: 1024,
-    height: 1824,
+    width: 1440,
+    height: 2560,
     intendedUse: "instagram",
   },
   facebook_feed: {
-    width: 1024,
-    height: 1280,
+    width: 2048,
+    height: 2560,
     intendedUse: "facebook",
   },
   google_business_square: {
-    width: 1024,
-    height: 1024,
+    width: 2048,
+    height: 2048,
     intendedUse: "google_business",
   },
   website_hero: {
-    width: 1536,
-    height: 864,
+    width: 2560,
+    height: 1440,
     intendedUse: "website",
   },
 };
 
+export const MOMO_MEDIA_AI_AUTOMATIC_GOAL =
+  "professional_food_finish" as const;
+export const MOMO_MEDIA_AI_AUTOMATIC_QUALITY = "high" as const;
+// Standing automation has one deliberately fixed output. The manual editor's
+// channel preset is a separate, free workflow and must never create paid jobs.
+// A future additional AI format requires its own explicit user action.
+export const MOMO_MEDIA_AI_AUTOMATIC_PRESET =
+  "instagram_portrait" as const satisfies MomoImagePresetKey;
+// Each individual attempt is authorized up to this conservative ceiling.
+// Provider usage is reconciled when OpenAI returns token usage; an uncertain
+// post-provider attempt keeps the full ceiling rather than claiming $0.
 export const MOMO_MEDIA_AI_RESERVATION_MICROUSD = {
-  low: 100_000,
-  medium: 250_000,
+  high: 20_000_000,
 } as const;
-export const MOMO_MEDIA_AI_PILOT_CAP_MICROUSD = 2_000_000 as const;
+// This is a per-job approval threshold, never a lifetime or recurring budget.
+export const MOMO_MEDIA_AI_AUTHORIZATION_THRESHOLD_MICROUSD =
+  20_000_000 as const;
 export const MOMO_MEDIA_AI_MAX_BODY_BYTES = 4_096 as const;
 export const MOMO_MEDIA_AI_MAX_SOURCE_BYTES = 20_971_520 as const;
-export const MOMO_MEDIA_AI_MAX_OUTPUT_BYTES = 26_214_400 as const;
+export const MOMO_MEDIA_AI_MAX_OUTPUT_BYTES = 52_428_800 as const;
+export const MOMO_MEDIA_AI_MAX_EDGE_PIXELS = 3_840 as const;
+export const MOMO_MEDIA_AI_MAX_TOTAL_PIXELS = 8_294_400 as const;
+export const MOMO_MEDIA_AI_MIN_TOTAL_PIXELS = 655_360 as const;
 
 export async function momoMediaAiFetch(
   fetcher: (
@@ -123,7 +128,30 @@ export function isMomoMediaAiGoal(value: unknown): value is MomoMediaAiGoal {
 export function isMomoMediaAiQuality(
   value: unknown,
 ): value is MomoMediaAiQuality {
-  return value === "low" || value === "medium";
+  return value === "high";
+}
+
+export function isMomoMediaAiProviderSize(
+  width: unknown,
+  height: unknown,
+): boolean {
+  if (
+    typeof width !== "number"
+    || typeof height !== "number"
+    || !Number.isInteger(width)
+    || !Number.isInteger(height)
+    || width < 16
+    || height < 16
+    || width > MOMO_MEDIA_AI_MAX_EDGE_PIXELS
+    || height > MOMO_MEDIA_AI_MAX_EDGE_PIXELS
+    || width % 16 !== 0
+    || height % 16 !== 0
+  ) return false;
+  const pixels = width * height;
+  const ratio = Math.max(width, height) / Math.min(width, height);
+  return pixels >= MOMO_MEDIA_AI_MIN_TOTAL_PIXELS
+    && pixels <= MOMO_MEDIA_AI_MAX_TOTAL_PIXELS
+    && ratio <= 3;
 }
 
 export function isMomoMediaAiPreset(
@@ -160,6 +188,61 @@ export function isMomoMediaAiIdempotencyKey(
   return typeof value === "string" && IDEMPOTENCY_PATTERN.test(value);
 }
 
+export function momoMediaAiAutomaticAttemptScope(input: {
+  assetId: string;
+  reviewId: string;
+  sourceContentSha256: string;
+  retryNonce: number;
+}): {
+  goal: typeof MOMO_MEDIA_AI_AUTOMATIC_GOAL;
+  preset: typeof MOMO_MEDIA_AI_AUTOMATIC_PRESET;
+  quality: typeof MOMO_MEDIA_AI_AUTOMATIC_QUALITY;
+  idempotencyKey: string;
+} | null {
+  if (
+    !isMomoMediaAiUuid(input.assetId)
+    || !isMomoMediaAiUuid(input.reviewId)
+    || !isMomoMediaAiHash(input.sourceContentSha256)
+    || !Number.isSafeInteger(input.retryNonce)
+    || input.retryNonce < 0
+    || input.retryNonce > 9_999
+  ) return null;
+
+  const idempotencyKey = [
+    "momo-ai-v2",
+    input.assetId,
+    input.reviewId,
+    input.sourceContentSha256.slice(0, 16),
+    MOMO_MEDIA_AI_AUTOMATIC_PRESET,
+    input.retryNonce,
+  ].join(":");
+  if (!isMomoMediaAiIdempotencyKey(idempotencyKey)) return null;
+
+  return {
+    goal: MOMO_MEDIA_AI_AUTOMATIC_GOAL,
+    preset: MOMO_MEDIA_AI_AUTOMATIC_PRESET,
+    quality: MOMO_MEDIA_AI_AUTOMATIC_QUALITY,
+    idempotencyKey,
+  };
+}
+
+export function momoMediaAiAccountingLabel(input: {
+  reservedMicrousd: number;
+  accountedMicrousd: number | null;
+  accountingBasis: string | null;
+}): string {
+  if (input.accountedMicrousd === null) {
+    return `$${(input.reservedMicrousd / 1_000_000).toFixed(2)} authorization hold`;
+  }
+  if (input.accountingBasis === "zero_pre_provider") {
+    return "$0 accounted; provider not called";
+  }
+  if (input.accountingBasis === "provider_usage_estimate") {
+    return `$${(input.accountedMicrousd / 1_000_000).toFixed(2)} provider usage estimate`;
+  }
+  return `$${(input.accountedMicrousd / 1_000_000).toFixed(2)} conservative authorization hold`;
+}
+
 export function momoMediaAiInspectionAllowsApproval(input: {
   candidateToken: string;
   renderedToken: string;
@@ -180,18 +263,22 @@ export function momoMediaAiErrorMessage(code: string): string {
       "Media AI is disabled. No provider call or charge occurred.",
     media_ai_configuration_unavailable:
       "Media AI is not fully connected. No provider call or charge occurred.",
+    media_ai_runtime_unavailable:
+      "The protected Media AI runtime could not be verified. No provider call or charge occurred.",
+    media_ai_automation_not_ready:
+      "Automatic high-fidelity processing is not ready for this source. No provider call or charge occurred.",
     team_access_required:
       "An active Veroxa Team session is required.",
     cross_site_request_rejected:
       "The request was rejected because it did not originate from Veroxa.",
     invalid_request:
-      "Choose a valid image, goal, output, quality, description, and one-request processing confirmation.",
+      "Choose a valid image, goal, output, quality, description, and standing-automation request.",
     invalid_idempotency_key:
       "This request could not be safely identified. Refresh the Team workspace and try again.",
     source_not_ready:
       "This image needs current rights, original-file verification, and an approved Team review before AI processing.",
-    media_ai_wallet_exhausted:
-      "The $2 Media AI pilot wallet has reached its hard limit. No provider call occurred.",
+    media_ai_authorization_required:
+      "This Media AI job is estimated above the $20 automatic authorization threshold. No provider call occurred; obtain Faraz’s authorization before it can run.",
     media_ai_in_progress:
       "This exact AI request has already crossed the provider boundary and will not be sent twice.",
     media_ai_previous_attempt_failed:

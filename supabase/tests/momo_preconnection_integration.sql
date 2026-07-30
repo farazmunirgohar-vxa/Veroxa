@@ -100,10 +100,11 @@ begin
     );
 
     insert into veroxa_private.momo_media_ai_wallets (
-      restaurant_id, enabled, lifetime_budget_microusd,
-      lifetime_request_limit, updated_reason
+      restaurant_id, enabled, automatic_authorization_threshold_microusd,
+      standing_automation_authorized,
+      updated_reason
     ) values (
-      matched_restaurant_id, true, 2000000, 20,
+      matched_restaurant_id, true, 20000000, true,
       'Rollback-only clean-reset Media AI wallet fixture.'
     );
 
@@ -184,8 +185,9 @@ begin
   end if;
 end $$;
 
--- Migration 16 adds one Team-select-only candidate table, four human-decision
--- RPCs, and three narrowly server-only lifecycle RPCs. Supabase default
+-- Migration 16 adds one Team-select-only candidate table, one snapshot read
+-- RPC, four human-decision RPCs, and four narrowly server-only lifecycle RPCs.
+-- Supabase default
 -- privileges must not create a direct table or mixed-authority bypass.
 do $$
 declare
@@ -324,6 +326,7 @@ begin
   end if;
 
   foreach target_function in array array[
+    'public.veroxa_momo_media_ai_operational_window_v1(uuid)'::regprocedure,
     'public.veroxa_reserve_momo_media_ai_candidate_v1(uuid,uuid,text,text,text,text,text,text,text)'::regprocedure,
     'public.veroxa_close_momo_media_ai_attempt_v1(uuid)'::regprocedure,
     'public.veroxa_approve_momo_media_ai_candidate_v1(uuid,text,text,text)'::regprocedure,
@@ -344,8 +347,9 @@ begin
 
   foreach target_function in array array[
     'public.veroxa_start_momo_media_ai_provider_v1(uuid,text,uuid)'::regprocedure,
-    'public.veroxa_complete_momo_media_ai_candidate_v1(uuid,text,text,text,bigint,integer,integer,text,uuid)'::regprocedure,
-    'public.veroxa_fail_momo_media_ai_candidate_v1(uuid,text,text,uuid)'::regprocedure
+    'public.veroxa_complete_momo_media_ai_candidate_v1(uuid,text,text,text,bigint,integer,integer,text,bigint,text,jsonb,uuid)'::regprocedure,
+    'public.veroxa_fail_momo_media_ai_candidate_v1(uuid,text,text,uuid)'::regprocedure,
+    'public.veroxa_momo_media_ai_lifecycle_preflight_v1(uuid,uuid)'::regprocedure
   ]
   loop
     if not has_function_privilege(
@@ -369,14 +373,30 @@ begin
     raise exception 'momo_media_ai_private_helper_acl_invalid';
   end if;
 
+  target_function :=
+    'public.veroxa_momo_media_ai_operational_window_v1(uuid)'::regprocedure;
+  if exists (
+    select 1
+    from pg_catalog.pg_proc procedure
+    where procedure.oid = target_function
+      and (
+        procedure.prosecdef
+        or coalesce(array_to_string(procedure.proconfig, ','), '')
+          not like '%search_path=%'
+      )
+  ) then
+    raise exception 'momo_media_ai_operational_window_security_invalid';
+  end if;
+
   if exists (
     select 1
     from pg_catalog.pg_proc procedure
     where procedure.oid = any(array[
       'public.veroxa_reserve_momo_media_ai_candidate_v1(uuid,uuid,text,text,text,text,text,text,text)'::regprocedure,
       'public.veroxa_start_momo_media_ai_provider_v1(uuid,text,uuid)'::regprocedure,
-      'public.veroxa_complete_momo_media_ai_candidate_v1(uuid,text,text,text,bigint,integer,integer,text,uuid)'::regprocedure,
+      'public.veroxa_complete_momo_media_ai_candidate_v1(uuid,text,text,text,bigint,integer,integer,text,bigint,text,jsonb,uuid)'::regprocedure,
       'public.veroxa_fail_momo_media_ai_candidate_v1(uuid,text,text,uuid)'::regprocedure,
+      'public.veroxa_momo_media_ai_lifecycle_preflight_v1(uuid,uuid)'::regprocedure,
       'public.veroxa_close_momo_media_ai_attempt_v1(uuid)'::regprocedure,
       'public.veroxa_approve_momo_media_ai_candidate_v1(uuid,text,text,text)'::regprocedure,
       'public.veroxa_reject_momo_media_ai_candidate_v1(uuid,text,text,text)'::regprocedure,
@@ -399,15 +419,132 @@ begin
       and wallet.enabled
       and wallet.model = 'gpt-image-2'
       and wallet.pricing_version =
-        'openai-gpt-image-2-2026-07-28-v1'
-      and wallet.low_reservation_microusd = 100000
-      and wallet.medium_reservation_microusd = 250000
-      and wallet.lifetime_budget_microusd = 2000000
-      and wallet.lifetime_request_limit = 20
+        'openai-gpt-image-2-2026-07-30-v2'
+      and wallet.high_reservation_microusd = 20000000
+      and wallet.automatic_authorization_threshold_microusd = 20000000
+      and wallet.standing_automation_authorized
+      and wallet.standing_automation_version =
+        'momo-media-ai-standing-v1'
   ) then
     raise exception 'momo_media_ai_wallet_seed_invalid';
   end if;
+
+  if not exists (
+    select 1
+    from pg_catalog.pg_constraint constraint_row
+    join pg_catalog.pg_class relation
+      on relation.oid = constraint_row.conrelid
+    join pg_catalog.pg_namespace namespace
+      on namespace.oid = relation.relnamespace
+    where namespace.nspname = 'public'
+      and relation.relname = 'veroxa_media_renditions'
+      and constraint_row.conname =
+        'veroxa_media_renditions_file_size_check'
+      and pg_catalog.pg_get_constraintdef(constraint_row.oid)
+        like '%52428800%'
+  ) then
+    raise exception 'momo_media_ai_rendition_size_envelope_invalid';
+  end if;
 end $$;
+
+-- The non-mutating lifecycle preflight is callable only through the validated
+-- server bridge. Browser roles cannot invoke it, and the service role still
+-- receives no direct table access.
+select set_config('request.jwt.claim.sub', '', true);
+select set_config('request.jwt.claim.role', 'anon', true);
+set local role anon;
+
+do $$
+begin
+  begin
+    perform lifecycle_admin_healthy
+    from public.veroxa_momo_media_ai_lifecycle_preflight_v1(
+      current_setting('veroxa.test.restaurant_id')::uuid,
+      current_setting('veroxa.test.team_id')::uuid
+    );
+    raise exception 'momo_media_ai_anon_preflight_was_accepted';
+  exception when sqlstate '42501' then
+    null;
+  end;
+end $$;
+
+reset role;
+
+select set_config(
+  'request.jwt.claim.sub',
+  current_setting('veroxa.test.team_id'),
+  true
+);
+select set_config('request.jwt.claim.role', 'authenticated', true);
+set local role authenticated;
+
+do $$
+begin
+  begin
+    perform lifecycle_admin_healthy
+    from public.veroxa_momo_media_ai_lifecycle_preflight_v1(
+      current_setting('veroxa.test.restaurant_id')::uuid,
+      current_setting('veroxa.test.team_id')::uuid
+    );
+    raise exception 'momo_media_ai_authenticated_preflight_was_accepted';
+  exception when sqlstate '42501' then
+    null;
+  end;
+end $$;
+
+reset role;
+
+select set_config('request.jwt.claim.sub', '', true);
+select set_config('request.jwt.claim.role', '', true);
+set local role service_role;
+
+do $$
+declare
+  healthy boolean;
+  wrong_actor_healthy boolean;
+begin
+  select preflight.lifecycle_admin_healthy
+  into healthy
+  from public.veroxa_momo_media_ai_lifecycle_preflight_v1(
+    current_setting('veroxa.test.restaurant_id')::uuid,
+    current_setting('veroxa.test.team_id')::uuid
+  ) preflight;
+  if healthy is distinct from true then
+    raise exception 'momo_media_ai_service_preflight_not_healthy';
+  end if;
+
+  select preflight.lifecycle_admin_healthy
+  into wrong_actor_healthy
+  from public.veroxa_momo_media_ai_lifecycle_preflight_v1(
+    current_setting('veroxa.test.restaurant_id')::uuid,
+    current_setting('veroxa.test.proxy_id')::uuid
+  ) preflight;
+  if wrong_actor_healthy is distinct from false then
+    raise exception 'momo_media_ai_service_preflight_accepted_wrong_actor';
+  end if;
+
+  begin
+    perform wallet.restaurant_id
+    from veroxa_private.momo_media_ai_wallets wallet
+    where wallet.restaurant_id =
+      current_setting('veroxa.test.restaurant_id')::uuid;
+    raise exception 'momo_media_ai_service_wallet_read_was_accepted';
+  exception when sqlstate '42501' then
+    null;
+  end;
+
+  begin
+    perform candidate.id
+    from public.veroxa_momo_media_ai_candidates candidate
+    where candidate.restaurant_id =
+      current_setting('veroxa.test.restaurant_id')::uuid;
+    raise exception 'momo_media_ai_service_candidate_read_was_accepted';
+  exception when sqlstate '42501' then
+    null;
+  end;
+end $$;
+
+reset role;
 
 -- Team can create an exact, idempotent consent request. Nested technical
 -- before/after payloads fail closed.
@@ -2288,19 +2425,19 @@ declare
   first_reservation record;
   repeated_reservation record;
   processing_attestation constant text :=
-    'I confirm this Team-only AI request may send the selected private image to OpenAI solely to create one private improvement candidate. It will not alter the original or publish anything.';
+    'Momo Media AI standing automation may send each eligible, rights-current, Team-approved private image to OpenAI solely to create one high-fidelity private improvement candidate. It will not alter the original, retry automatically, mark Ready without inspection, or publish anything.';
 begin
   select * into first_reservation
   from public.veroxa_reserve_momo_media_ai_candidate_v1(
-    target_restaurant_id, ai_asset_id, 'lighting_color',
-    'instagram_portrait', 'low',
+    target_restaurant_id, ai_asset_id, 'professional_food_finish',
+    'instagram_portrait', 'high',
     'Private rollback-only Media AI candidate for exact workflow verification.',
     repeat('1', 64), repeat('2', 64), processing_attestation
   );
   select * into repeated_reservation
   from public.veroxa_reserve_momo_media_ai_candidate_v1(
-    target_restaurant_id, ai_asset_id, 'lighting_color',
-    'instagram_portrait', 'low',
+    target_restaurant_id, ai_asset_id, 'professional_food_finish',
+    'instagram_portrait', 'high',
     'Private rollback-only Media AI candidate for exact workflow verification.',
     repeat('1', 64), repeat('2', 64), processing_attestation
   );
@@ -2308,16 +2445,26 @@ begin
     or repeated_reservation.candidate_id <> first_reservation.candidate_id
     or first_reservation.candidate_status <> 'reserved'
     or first_reservation.source_content_sha256 <> repeat('c', 64)
-    or first_reservation.output_width <> 1024
-    or first_reservation.output_height <> 1280
+    or first_reservation.output_width <> 2048
+    or first_reservation.output_height <> 2560
     or first_reservation.intended_use <> 'instagram'
-    or first_reservation.reserved_microusd <> 100000 then
+    or first_reservation.reserved_microusd <> 20000000 then
     raise exception 'momo_media_ai_reservation_not_exact_or_idempotent';
+  end if;
+  if (
+    select count(*)
+    from public.veroxa_momo_media_ai_operational_window_v1(
+      target_restaurant_id
+    ) candidate
+    where candidate.id = first_reservation.candidate_id
+      and candidate.status = 'reserved'
+  ) <> 1 then
+    raise exception 'momo_media_ai_operational_window_missing_active_attempt';
   end if;
   begin
     perform public.veroxa_reserve_momo_media_ai_candidate_v1(
-      target_restaurant_id, ai_asset_id, 'lighting_color',
-      'instagram_portrait', 'low',
+    target_restaurant_id, ai_asset_id, 'professional_food_finish',
+    'instagram_portrait', 'high',
       'Private rollback-only Media AI candidate for exact workflow verification.',
       repeat('1', 64), repeat('f', 64), processing_attestation
     );
@@ -2327,8 +2474,8 @@ begin
   end;
   begin
     perform public.veroxa_reserve_momo_media_ai_candidate_v1(
-      target_restaurant_id, ai_asset_id, 'food_focus',
-      'instagram_square', 'low',
+      target_restaurant_id, ai_asset_id, 'professional_food_finish',
+      'instagram_square', 'high',
       'A second key must not create another active candidate for one asset.',
       repeat('0', 64), repeat('9', 64), processing_attestation
     );
@@ -2355,6 +2502,14 @@ declare
 begin
   if (select count(*) from public.veroxa_momo_media_ai_candidates) <> 0 then
     raise exception 'momo_media_ai_candidate_leaked_to_client';
+  end if;
+  if (
+    select count(*)
+    from public.veroxa_momo_media_ai_operational_window_v1(
+      current_setting('veroxa.test.restaurant_id')::uuid
+    )
+  ) <> 0 then
+    raise exception 'momo_media_ai_operational_window_leaked_to_client';
   end if;
   client_media := public.veroxa_momo_client_media_status_v1(
     current_setting('veroxa.test.restaurant_id')::uuid
@@ -2411,7 +2566,7 @@ end $$;
 reset role;
 
 select set_config('request.jwt.claim.sub', '', true);
-select set_config('request.jwt.claim.role', 'service_role', true);
+select set_config('request.jwt.claim.role', '', true);
 set local role service_role;
 
 do $$
@@ -2452,12 +2607,48 @@ end $$;
 reset role;
 
 do $$
+begin
+  if (
+    select count(*)
+    from pg_catalog.pg_constraint constraint_row
+    where constraint_row.conname in (
+      'veroxa_momo_media_ai_accounting_contract',
+      'veroxa_momo_media_ai_state_contract'
+    )
+      and pg_catalog.pg_get_constraintdef(constraint_row.oid)
+        ilike '%COALESCE%'
+  ) <> 2 then
+    raise exception 'momo_media_ai_null_safe_constraints_missing';
+  end if;
+  begin
+    update public.veroxa_momo_media_ai_candidates candidate
+    set status = 'pending_review',
+        accounted_microusd = null,
+        accounting_basis = 'provider_usage_estimate',
+        provider_usage = '{}'::jsonb,
+        provider_request_id = 'req_rr_media_ai_null_invariant_v1',
+        storage_path = 'rollback-only/null-invariant.png',
+        storage_object_id = gen_random_uuid(),
+        storage_object_version = 'rr-null-invariant-v1',
+        file_size = 1,
+        content_sha256 = repeat('f', 64),
+        generated_at = clock_timestamp()
+    where candidate.id =
+      current_setting('veroxa.test.media_ai_approved_candidate_id')::uuid;
+    raise exception 'momo_media_ai_null_state_invariant_was_accepted';
+  exception when check_violation then
+    null;
+  end;
+end $$;
+
+do $$
 declare
-  restaurant_id uuid := current_setting('veroxa.test.restaurant_id')::uuid;
+  target_restaurant_id uuid :=
+    current_setting('veroxa.test.restaurant_id')::uuid;
   team_user_id uuid := current_setting('veroxa.test.team_id')::uuid;
   candidate_id uuid :=
     current_setting('veroxa.test.media_ai_approved_candidate_id')::uuid;
-  approved_path text := 'restaurants/' || restaurant_id::text
+  approved_path text := 'restaurants/' || target_restaurant_id::text
     || '/renditions/' || candidate_id::text
     || '/' || repeat('d', 64) || '.png';
 begin
@@ -2465,7 +2656,7 @@ begin
     id, bucket_id, name, owner, metadata, version, owner_id
   ) values (
     gen_random_uuid(), 'restaurant-media', approved_path, team_user_id,
-    '{"mimetype":"image/png","size":7100,"cacheControl":"3600"}'::jsonb,
+    '{"mimetype":"image/png","size":30000000,"cacheControl":"3600"}'::jsonb,
     'rr-media-ai-approved-v1', team_user_id::text
   );
   perform set_config('veroxa.test.media_ai_approved_path', approved_path, true);
@@ -2473,20 +2664,49 @@ begin
   set enabled = false,
       updated_at = clock_timestamp()
   where scope.scope_key = 'momo_house_san_antonio'
-    and scope.restaurant_id = restaurant_id;
+    and scope.restaurant_id = target_restaurant_id;
 end $$;
 
 select set_config('request.jwt.claim.sub', '', true);
-select set_config('request.jwt.claim.role', 'service_role', true);
+select set_config('request.jwt.claim.role', '', true);
 set local role service_role;
 
 do $$
 begin
+  begin
+    perform public.veroxa_complete_momo_media_ai_candidate_v1(
+      current_setting('veroxa.test.media_ai_approved_candidate_id')::uuid,
+      repeat('2', 64), 'req_rr_media_ai_null_accounting_v1',
+      current_setting('veroxa.test.media_ai_approved_path'),
+      30000000, 2048, 2560, repeat('d', 64),
+      null::bigint, null::text, null::jsonb,
+      current_setting('veroxa.test.team_id')::uuid
+    );
+    raise exception 'momo_media_ai_null_accounting_was_accepted';
+  exception when sqlstate '22023' then
+    null;
+  end;
+  begin
+    perform public.veroxa_complete_momo_media_ai_candidate_v1(
+      current_setting('veroxa.test.media_ai_approved_candidate_id')::uuid,
+      repeat('2', 64), 'req_rr_media_ai_bad_usage_v1',
+      current_setting('veroxa.test.media_ai_approved_path'),
+      30000000, 2048, 2560, repeat('d', 64),
+      68500, 'provider_usage_estimate',
+      '{"input_tokens":1100,"input_tokens_details":{"image_tokens":1000,"text_tokens":100},"output_tokens":2001,"total_tokens":3101}'::jsonb,
+      current_setting('veroxa.test.team_id')::uuid
+    );
+    raise exception 'momo_media_ai_provider_usage_mismatch_was_accepted';
+  exception when sqlstate '22023' then
+    null;
+  end;
   perform public.veroxa_complete_momo_media_ai_candidate_v1(
     current_setting('veroxa.test.media_ai_approved_candidate_id')::uuid,
     repeat('2', 64), 'req_rr_media_ai_approved_v1',
     current_setting('veroxa.test.media_ai_approved_path'),
-    7100, 1024, 1280, repeat('d', 64),
+    30000000, 2048, 2560, repeat('d', 64),
+    68500, 'provider_usage_estimate',
+    '{"input_tokens":1100,"input_tokens_details":{"image_tokens":1000,"text_tokens":100},"output_tokens":2000,"total_tokens":3100}'::jsonb,
     current_setting('veroxa.test.team_id')::uuid
   );
 end $$;
@@ -2535,7 +2755,9 @@ begin
     where candidate.id =
       current_setting('veroxa.test.media_ai_approved_candidate_id')::uuid
       and candidate.status = 'pending_review'
-      and candidate.accounted_microusd = 100000
+      and candidate.accounted_microusd = 68500
+      and candidate.accounting_basis = 'provider_usage_estimate'
+      and candidate.provider_usage ->> 'total_tokens' = '3100'
       and candidate.provider_called
       and not candidate.external_write_allowed
       and candidate.rendition_id is null
@@ -2561,6 +2783,16 @@ declare
 begin
   if (select count(*) from public.veroxa_momo_media_ai_candidates) <> 0 then
     raise exception 'momo_media_ai_pending_candidate_leaked_to_client';
+  end if;
+  if exists (
+    select 1
+    from storage.objects object
+    where object.bucket_id = 'restaurant-media'
+      and object.name = current_setting(
+        'veroxa.test.media_ai_approved_path'
+      )
+  ) then
+    raise exception 'momo_media_ai_pending_candidate_bytes_leaked_to_client';
   end if;
   client_media := public.veroxa_momo_client_media_status_v1(
     current_setting('veroxa.test.restaurant_id')::uuid
@@ -2673,13 +2905,13 @@ do $$
 declare
   rejected record;
   processing_attestation constant text :=
-    'I confirm this Team-only AI request may send the selected private image to OpenAI solely to create one private improvement candidate. It will not alter the original or publish anything.';
+    'Momo Media AI standing automation may send each eligible, rights-current, Team-approved private image to OpenAI solely to create one high-fidelity private improvement candidate. It will not alter the original, retry automatically, mark Ready without inspection, or publish anything.';
 begin
   select * into rejected
   from public.veroxa_reserve_momo_media_ai_candidate_v1(
     current_setting('veroxa.test.restaurant_id')::uuid,
     current_setting('veroxa.test.media_ai_asset_id')::uuid,
-    'background_cleanup', 'instagram_square', 'low',
+    'professional_food_finish', 'instagram_square', 'high',
     'Private rollback-only Media AI rejection candidate.',
     repeat('3', 64), repeat('4', 64), processing_attestation
   );
@@ -2696,7 +2928,7 @@ end $$;
 reset role;
 
 select set_config('request.jwt.claim.sub', '', true);
-select set_config('request.jwt.claim.role', 'service_role', true);
+select set_config('request.jwt.claim.role', '', true);
 set local role service_role;
 
 do $$
@@ -2738,7 +2970,7 @@ begin
 end $$;
 
 select set_config('request.jwt.claim.sub', '', true);
-select set_config('request.jwt.claim.role', 'service_role', true);
+select set_config('request.jwt.claim.role', '', true);
 set local role service_role;
 
 do $$
@@ -2747,7 +2979,8 @@ begin
     current_setting('veroxa.test.media_ai_rejected_candidate_id')::uuid,
     repeat('4', 64), 'req_rr_media_ai_rejected_v1',
     current_setting('veroxa.test.media_ai_rejected_path'),
-    7200, 1024, 1024, repeat('e', 64),
+    7200, 2048, 2048, repeat('e', 64),
+    20000000, 'conservative_reservation', null,
     current_setting('veroxa.test.team_id')::uuid
   );
 end $$;
@@ -2775,7 +3008,8 @@ begin
       current_setting('veroxa.test.media_ai_rejected_candidate_id')::uuid
       and candidate.status = 'rejected'
       and candidate.rendition_id is null
-      and candidate.accounted_microusd = 100000
+      and candidate.accounted_microusd = 20000000
+      and candidate.accounting_basis = 'conservative_reservation'
   ) or exists (
     select 1
     from public.veroxa_media_renditions rendition
@@ -2799,13 +3033,13 @@ declare
   unused record;
   wallet_blocked record;
   processing_attestation constant text :=
-    'I confirm this Team-only AI request may send the selected private image to OpenAI solely to create one private improvement candidate. It will not alter the original or publish anything.';
+    'Momo Media AI standing automation may send each eligible, rights-current, Team-approved private image to OpenAI solely to create one high-fidelity private improvement candidate. It will not alter the original, retry automatically, mark Ready without inspection, or publish anything.';
 begin
   select * into unused
   from public.veroxa_reserve_momo_media_ai_candidate_v1(
     current_setting('veroxa.test.restaurant_id')::uuid,
     current_setting('veroxa.test.media_ai_asset_id')::uuid,
-    'food_focus', 'instagram_square', 'low',
+    'professional_food_finish', 'instagram_square', 'high',
     'Rollback-only unused Media AI reservation.',
     repeat('5', 64), repeat('6', 64), processing_attestation
   );
@@ -2819,6 +3053,7 @@ begin
       and candidate.status = 'failed'
       and not candidate.provider_called
       and candidate.accounted_microusd = 0
+      and candidate.accounting_basis = 'zero_pre_provider'
       and candidate.provider_error_code = 'reservation_cancelled'
   ) then
     raise exception 'momo_media_ai_unused_reservation_not_closed_at_zero';
@@ -2828,7 +3063,7 @@ begin
   from public.veroxa_reserve_momo_media_ai_candidate_v1(
     current_setting('veroxa.test.restaurant_id')::uuid,
     current_setting('veroxa.test.media_ai_asset_id')::uuid,
-    'food_focus', 'instagram_square', 'low',
+    'professional_food_finish', 'instagram_square', 'high',
     'Rollback-only Media AI wallet kill-switch candidate.',
     repeat('b', 64), repeat('c', 64), processing_attestation
   );
@@ -2841,16 +3076,17 @@ end $$;
 
 reset role;
 
--- A reservation is not authority to spend later. Disabling the wallet after
--- reservation must terminalize the candidate at $0 before the provider call.
+-- A reservation is not authority to spend later. Revoking standing automation
+-- after reservation must terminalize the candidate at $0 before provider use.
 update veroxa_private.momo_media_ai_wallets wallet
-set enabled = false,
+set enabled = true,
+    standing_automation_authorized = false,
     updated_reason = 'Rollback-only provider-boundary kill-switch test.'
 where wallet.restaurant_id =
   current_setting('veroxa.test.restaurant_id')::uuid;
 
 select set_config('request.jwt.claim.sub', '', true);
-select set_config('request.jwt.claim.role', 'service_role', true);
+select set_config('request.jwt.claim.role', '', true);
 set local role service_role;
 
 do $$
@@ -2881,6 +3117,7 @@ begin
       and candidate.status = 'failed'
       and not candidate.provider_called
       and candidate.accounted_microusd = 0
+      and candidate.accounting_basis = 'zero_pre_provider'
       and candidate.provider_error_code =
         'wallet_invalidated_before_provider'
   ) then
@@ -2890,6 +3127,7 @@ end $$;
 
 update veroxa_private.momo_media_ai_wallets wallet
 set enabled = true,
+    standing_automation_authorized = true,
     updated_reason = 'Rollback-only provider-boundary kill-switch restored.'
 where wallet.restaurant_id =
   current_setting('veroxa.test.restaurant_id')::uuid;
@@ -2902,13 +3140,13 @@ do $$
 declare
   terminal_failure record;
   processing_attestation constant text :=
-    'I confirm this Team-only AI request may send the selected private image to OpenAI solely to create one private improvement candidate. It will not alter the original or publish anything.';
+    'Momo Media AI standing automation may send each eligible, rights-current, Team-approved private image to OpenAI solely to create one high-fidelity private improvement candidate. It will not alter the original, retry automatically, mark Ready without inspection, or publish anything.';
 begin
   select * into terminal_failure
   from public.veroxa_reserve_momo_media_ai_candidate_v1(
     current_setting('veroxa.test.restaurant_id')::uuid,
     current_setting('veroxa.test.media_ai_asset_id')::uuid,
-    'food_focus', 'instagram_square', 'low',
+    'professional_food_finish', 'instagram_square', 'high',
     'Rollback-only Media AI terminal failure candidate.',
     repeat('d', 64), repeat('e', 64), processing_attestation
   );
@@ -2924,7 +3162,7 @@ reset role;
 -- Cross the provider boundary while authority is current. The matching server
 -- failure must remain able to reconcile spend after scope is later disabled.
 select set_config('request.jwt.claim.sub', '', true);
-select set_config('request.jwt.claim.role', 'service_role', true);
+select set_config('request.jwt.claim.role', '', true);
 set local role service_role;
 
 do $$
@@ -2956,7 +3194,7 @@ where scope.scope_key = 'momo_house_san_antonio'
     current_setting('veroxa.test.restaurant_id')::uuid;
 
 select set_config('request.jwt.claim.sub', '', true);
-select set_config('request.jwt.claim.role', 'service_role', true);
+select set_config('request.jwt.claim.role', '', true);
 set local role service_role;
 
 do $$
@@ -2980,7 +3218,8 @@ begin
       current_setting('veroxa.test.media_ai_terminal_failure_candidate_id')::uuid
       and candidate.status = 'failed'
       and candidate.provider_called
-      and candidate.accounted_microusd = 100000
+      and candidate.accounted_microusd = 20000000
+      and candidate.accounting_basis = 'conservative_reservation'
       and candidate.provider_error_code = 'rollback_provider_failure'
   ) then
     raise exception 'momo_media_ai_post_scope_failure_not_reconciled';
@@ -3002,13 +3241,13 @@ do $$
 declare
   uncertain record;
   processing_attestation constant text :=
-    'I confirm this Team-only AI request may send the selected private image to OpenAI solely to create one private improvement candidate. It will not alter the original or publish anything.';
+    'Momo Media AI standing automation may send each eligible, rights-current, Team-approved private image to OpenAI solely to create one high-fidelity private improvement candidate. It will not alter the original, retry automatically, mark Ready without inspection, or publish anything.';
 begin
   select * into uncertain
   from public.veroxa_reserve_momo_media_ai_candidate_v1(
     current_setting('veroxa.test.restaurant_id')::uuid,
     current_setting('veroxa.test.media_ai_asset_id')::uuid,
-    'food_focus', 'instagram_square', 'low',
+    'professional_food_finish', 'instagram_square', 'high',
     'Rollback-only uncertain Media AI provider attempt.',
     repeat('7', 64), repeat('8', 64), processing_attestation
   );
@@ -3029,7 +3268,7 @@ where scope.scope_key = 'momo_house_san_antonio'
     current_setting('veroxa.test.restaurant_id')::uuid;
 
 select set_config('request.jwt.claim.sub', '', true);
-select set_config('request.jwt.claim.role', 'service_role', true);
+select set_config('request.jwt.claim.role', '', true);
 set local role service_role;
 
 do $$
@@ -3056,7 +3295,7 @@ where scope.scope_key = 'momo_house_san_antonio'
     current_setting('veroxa.test.restaurant_id')::uuid;
 
 select set_config('request.jwt.claim.sub', '', true);
-select set_config('request.jwt.claim.role', 'service_role', true);
+select set_config('request.jwt.claim.role', '', true);
 set local role service_role;
 
 do $$
@@ -3116,7 +3355,8 @@ begin
       current_setting('veroxa.test.media_ai_uncertain_candidate_id')::uuid
       and candidate.status = 'failed'
       and candidate.provider_called
-      and candidate.accounted_microusd = 100000
+      and candidate.accounted_microusd = 20000000
+      and candidate.accounting_basis = 'conservative_reservation'
       and candidate.provider_error_code = 'provider_result_unreconciled'
   ) then
     raise exception 'momo_media_ai_uncertain_attempt_not_accounted_on_close';
@@ -3126,8 +3366,8 @@ end $$;
 reset role;
 
 update veroxa_private.momo_media_ai_wallets wallet
-set lifetime_budget_microusd = 400000,
-    updated_reason = 'Rollback-only exact wallet-cap test.'
+set automatic_authorization_threshold_microusd = 1000000,
+    updated_reason = 'Rollback-only exact authorization-threshold test.'
 where wallet.restaurant_id =
   current_setting('veroxa.test.restaurant_id')::uuid;
 
@@ -3138,17 +3378,17 @@ set local role authenticated;
 do $$
 declare
   processing_attestation constant text :=
-    'I confirm this Team-only AI request may send the selected private image to OpenAI solely to create one private improvement candidate. It will not alter the original or publish anything.';
+    'Momo Media AI standing automation may send each eligible, rights-current, Team-approved private image to OpenAI solely to create one high-fidelity private improvement candidate. It will not alter the original, retry automatically, mark Ready without inspection, or publish anything.';
 begin
   begin
     perform public.veroxa_reserve_momo_media_ai_candidate_v1(
       current_setting('veroxa.test.restaurant_id')::uuid,
       current_setting('veroxa.test.media_ai_asset_id')::uuid,
-      'food_focus', 'instagram_square', 'low',
-      'This request must be rejected by the exact pilot wallet ceiling.',
+    'professional_food_finish', 'instagram_square', 'high',
+      'This request must be rejected by the exact automatic authorization threshold.',
       repeat('9', 64), repeat('a', 64), processing_attestation
     );
-    raise exception 'momo_media_ai_wallet_cap_was_exceeded';
+    raise exception 'momo_media_ai_authorization_requirement_was_bypassed';
   exception when sqlstate '54000' then
     null;
   end;
@@ -3156,8 +3396,8 @@ begin
     or (
       select sum(candidate.accounted_microusd)
       from public.veroxa_momo_media_ai_candidates candidate
-    ) <> 400000 then
-    raise exception 'momo_media_ai_wallet_accounting_not_conservative';
+    ) <> 60068500 then
+    raise exception 'momo_media_ai_accounting_not_conservative';
   end if;
 end $$;
 
