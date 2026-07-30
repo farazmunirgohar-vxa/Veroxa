@@ -2,7 +2,15 @@
 
 Status: highest-level current source-of-truth index. Read this file before relying on older Veroxa documents.
 
-## 2026-07-30 — high-quality Media AI candidate override
+## 2026-07-30 — verified v21 and lifecycle-bridge candidate override
+
+- Read `VEROXA_CURRENT_MILESTONE.md`, `VEROXA_DEPLOYMENT_MANIFEST.json`, `RR_RELEASE_CHECKPOINT.json`, and `momo-readiness-tracker.json` first.
+- PR #154 / Sites version 21 / migration 16 is verified live. Exact GitHub main is `72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695`; exact Sites checkout is `8c50dd6726629e77d22f07eb6aac9f6982001902`.
+- Effective Media AI remains fail-closed despite the server-only OpenAI key, live database capability, and hosted flag. The current no-database-change candidate adds the narrow signed Supabase Edge lifecycle bridge and matching Sites source; it is unmerged and unpublished.
+- Only high-fidelity standing Image Enhancement automation is authorized for model-backed activation. USD $20 is the per-job automatic authorization threshold; a larger job requires fresh authorization. Caption, deterministic review/compliance, social/Google, public publishing, owner-controlled providers, and Momo activation are not activated.
+- Current Momo media rights are expired; provider canary, real edit, and incurred spend remain zero. `artifacts/veroxa-sites/app/momo-readiness-tracker.json` preserves Momo No-Go.
+
+## 2026-07-30 — high-quality Media AI candidate override (historical pre-v21 checkpoint)
 
 - Read `VEROXA_CURRENT_MILESTONE.md`, `VEROXA_DEPLOYMENT_MANIFEST.json`, and `RR_RELEASE_CHECKPOINT.json` first for the reviewed Media AI candidate. `MOMO_MEDIA_V20_LIVE_CLOSEOUT.json` remains the current production authority until a later release is actually verified.
 - The candidate is unmerged, migration 16 is unapplied, and no new Sites version is published. The server-side OpenAI credential exists, but live Media AI remains disabled; actual spend is USD $0.

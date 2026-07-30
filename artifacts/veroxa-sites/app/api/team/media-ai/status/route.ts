@@ -1,57 +1,15 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import {
+  getMomoMediaAiLifecycleBridgeConfig,
+  invokeMomoMediaAiLifecycleBridge,
+  type MomoMediaAiLifecycleBridgeConfig,
+} from "../../../../momo-media-ai-lifecycle-bridge";
 import { verifyMomoMediaAiOpenAiAccess } from "../../../../momo-media-ai-openai-access";
 import { getServerVeroxaContext } from "../../../../veroxa-supabase-server";
 
 export const runtime = "edge";
 
-type ServerSupabaseConfig = {
-  url: string;
-  secretKey: string;
-};
-
-function serverSupabaseConfig(): ServerSupabaseConfig | null {
-  const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
-  const canonicalSecret = process.env.SUPABASE_SECRET_KEY?.trim();
-  const legacyServiceRole = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
-  const secretKey = canonicalSecret?.startsWith("sb_secret_")
-    ? canonicalSecret
-    : legacyServiceRole
-      && !legacyServiceRole.startsWith("sb_publishable_")
-      && legacyServiceRole.split(".").length === 3
-      ? legacyServiceRole
-      : "";
-  if (!rawUrl || !secretKey) return null;
-  try {
-    const url = new URL(rawUrl);
-    if (
-      url.protocol !== "https:"
-      || !url.hostname.endsWith(".supabase.co")
-      || url.username
-      || url.password
-      || url.port
-      || (url.pathname !== "/" && url.pathname !== "")
-      || url.search
-      || url.hash
-    ) return null;
-    return { url: url.origin, secretKey };
-  } catch {
-    return null;
-  }
-}
-
-const serverConfig = serverSupabaseConfig();
-const lifecycleAdmin = serverConfig
-  ? createClient(serverConfig.url, serverConfig.secretKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-      detectSessionInUrl: false,
-    },
-    global: {
-      headers: { "x-veroxa-server-purpose": "momo-media-ai-preflight-v1" },
-    },
-  })
-  : null;
+const lifecycleBridgeConfig = getMomoMediaAiLifecycleBridgeConfig();
 
 function response(body: Record<string, boolean>, status: number): Response {
   return Response.json(body, {
@@ -64,20 +22,25 @@ function response(body: Record<string, boolean>, status: number): Response {
   });
 }
 
-async function lifecycleAdminHealthy(
-  admin: SupabaseClient | null,
+async function lifecycleBridgeHealthy(
+  client: SupabaseClient,
+  bridgeConfig: MomoMediaAiLifecycleBridgeConfig | null,
   restaurantId: string,
-  actorId: string,
 ): Promise<boolean> {
-  if (!admin) return false;
-  const { data, error } = await admin.rpc(
-    "veroxa_momo_media_ai_lifecycle_preflight_v1",
-    {
-      p_restaurant_id: restaurantId,
-      p_actor_id: actorId,
-    },
-  );
-  if (error) return false;
+  if (!bridgeConfig) return false;
+  let data: unknown;
+  try {
+    data = await invokeMomoMediaAiLifecycleBridge<unknown>(
+      client,
+      bridgeConfig,
+      {
+        operation: "preflight",
+        restaurantId,
+      },
+    );
+  } catch {
+    return false;
+  }
   const value = Array.isArray(data) ? data[0] : data;
   if (
     !value
@@ -102,16 +65,16 @@ export async function GET(): Promise<Response> {
   }
   const enabled = process.env.VEROXA_MEDIA_AI_ENABLED === "true";
   const openAiKey = process.env.OPENAI_API_KEY?.trim() || "";
-  const providerConfigured = Boolean(openAiKey && lifecycleAdmin);
+  const providerConfigured = Boolean(openAiKey && lifecycleBridgeConfig);
   const [modelMetadataVisible, lifecycleAdminHealthyResult] =
     await Promise.all([
       providerConfigured
         ? verifyMomoMediaAiOpenAiAccess(openAiKey)
         : Promise.resolve(false),
-      lifecycleAdminHealthy(
-        lifecycleAdmin,
+      lifecycleBridgeHealthy(
+        context.client,
+        lifecycleBridgeConfig,
         context.access.restaurantId,
-        context.userId,
       ),
     ]);
   return response({

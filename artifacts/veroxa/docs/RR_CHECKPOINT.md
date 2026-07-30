@@ -1,6 +1,16 @@
 # RR Release Checkpoint
 
-## 2026-07-30 — Media AI v2 high-quality local candidate
+## 2026-07-30 — v21 production and lifecycle-bridge candidate
+
+- PR #154 / Sites version 21 / 16 applied migrations is the verified production baseline. Exact identities are GitHub `72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695`, Sites checkout `8c50dd6726629e77d22f07eb6aac9f6982001902`, 88-file source `60c2e069d6a5f54480c8ee3151e28ccc7d920e52fd5e3b978f47f41dec4013bb`, and 16-migration tree `09aab45cda17810b52a07429700a4557308405d40a3983635d6bb7848dd4c729`.
+- Effective Media AI is still fail-closed. The OpenAI key, migration-16 capability, and hosted flag are present, but version 21 lacks the narrow privileged lifecycle connection.
+- The current no-database-change candidate adds the Ed25519-signed Supabase Edge lifecycle bridge and matching Sites helper. It is based on `72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695`, unmerged, and unpublished.
+- Release requires green Deno format/lint/typecheck, application and repository gates, four hosted workflows, zero unresolved review threads, deployed no-image auth checks, bridge-first ordering, exact Sites parity, and post-deploy logs.
+- Provider canary and real edit remain pending; current Momo rights are expired; incurred spend is USD $0. USD $20 remains the per-job automatic authorization threshold.
+- Momo remains No-Go; no automatic retry, public publishing, Google/social connection, or activation is authorized.
+- Machine evidence is in `VEROXA_DEPLOYMENT_MANIFEST.json`, `RR_RELEASE_CHECKPOINT.json`, and `artifacts/veroxa-sites/app/momo-readiness-tracker.json`.
+
+## 2026-07-30 — Media AI v2 high-quality local candidate (historical pre-v21 checkpoint)
 
 - PR #152 / Sites version 20 / 15 applied migrations remains the verified production baseline. Candidate base is canonical `main` commit `979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6`; the candidate is unmerged, unpublished, and unapplied.
 - Migration 16 adds the private Media AI candidate ledger, budget wallet, idempotent lifecycle RPCs, tenant/role/RLS boundaries, conservative accounting, and explicit inspection-before-Ready. It is source-only until the exact reviewed PR passes all four workflows and zero unresolved review threads.

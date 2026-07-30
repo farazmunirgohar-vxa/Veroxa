@@ -1,6 +1,6 @@
 {
   "schemaVersion": 7,
-  "checkpoint": "momo-media-ai-v2-high-quality-local-candidate-2026-07-30",
+  "checkpoint": "momo-media-ai-lifecycle-bridge-local-candidate-2026-07-30",
   "status": "local_candidate_reviewed_unmerged_unpublished_unapplied",
   "reviewedAt": "2026-07-30",
   "deployedOperationalRelease": {
@@ -45,13 +45,13 @@
     "migrationFilenameParityVerified": true
   },
   "previousVerifiedRelease": {
-    "pullRequest": 151,
-    "reviewedHead": "e5c40c02a79df91f424cd51a51e9f1c7e1b7147a",
-    "mergedOperationalCommit": "bcd9b9da1796e72c0b9b546e9944a4e7e419c1b4",
-    "sitesCheckoutSourceCommit": "5b7884983e2891cb8f55aef3d9553e981853be23",
-    "sitesVersion": 19,
+    "pullRequest": 152,
+    "reviewedHead": "b170c4339ae43755f17a19d74107cb75c6b198d3",
+    "mergedOperationalCommit": "29e90d40fa05d67d2a6246f9a0ba64fe1b9099b7",
+    "sitesCheckoutSourceCommit": "aceb17bb446854d48a71e54ba814591cf2c19d33",
+    "sitesVersion": 20,
     "sourceFileCount": 79,
-    "sourceTreeSha256": "6223dbcb6e7644615a3fc7bca1d86a89ee4167c37ca12ddf9a92918ce321a9ad",
+    "sourceTreeSha256": "5ae5da11de0ae202d33f31dea08ddd337b0b5323aa857d543f3c259f8662a4c2",
     "productionMigrations": 15,
     "latestProductionMigration": "20260722000100_momo_client_media_status_v1.sql",
     "latestProductionMigrationSha256": "5cd7444906e5f5184e30cc7594542c71995a372b8143e5097f975d354f0925c7",
@@ -64,16 +64,16 @@
     "migrationFilenameParityVerified": true
   },
   "currentVerifiedRelease": {
-    "pullRequest": 152,
-    "reviewedHead": "b170c4339ae43755f17a19d74107cb75c6b198d3",
-    "mergedOperationalCommit": "29e90d40fa05d67d2a6246f9a0ba64fe1b9099b7",
-    "sitesCheckoutSourceCommit": "aceb17bb446854d48a71e54ba814591cf2c19d33",
-    "sitesVersion": 20,
-    "sourceFileCount": 79,
-    "sourceTreeSha256": "5ae5da11de0ae202d33f31dea08ddd337b0b5323aa857d543f3c259f8662a4c2",
-    "productionMigrations": 15,
-    "latestProductionMigration": "20260722000100_momo_client_media_status_v1.sql",
-    "latestProductionMigrationSha256": "5cd7444906e5f5184e30cc7594542c71995a372b8143e5097f975d354f0925c7",
+    "pullRequest": 154,
+    "reviewedHead": "4a7a2122bb71defc0f1db0c795b4c4c8fdb930a5",
+    "mergedOperationalCommit": "72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695",
+    "sitesCheckoutSourceCommit": "8c50dd6726629e77d22f07eb6aac9f6982001902",
+    "sitesVersion": 21,
+    "sourceFileCount": 88,
+    "sourceTreeSha256": "60c2e069d6a5f54480c8ee3151e28ccc7d920e52fd5e3b978f47f41dec4013bb",
+    "productionMigrations": 16,
+    "latestProductionMigration": "20260728044916_momo_media_ai_pilot_v1.sql",
+    "latestProductionMigrationSha256": "efae63b4344570934d1d66b47ef1fce4fcd16343a2fe9dd8352607e0784d09a1",
     "databaseApplied": true,
     "databaseVerified": true,
     "sitesProductionVerified": true,
@@ -102,8 +102,8 @@
   "releaseCandidate": {
     "manifest": "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json",
     "state": "reviewed_locally_unmerged_unpublished_unapplied",
-    "basedOnGitHubMainCommit": "979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6",
-    "pullRequest": 154,
+    "basedOnGitHubMainCommit": "72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695",
+    "pullRequest": null,
     "githubMerged": false,
     "futureMergedGitHubCommit": null,
     "futureSitesVersion": null,
@@ -111,13 +111,13 @@
     "localReviewPassed": true,
     "allFourWorkflowsGreen": null,
     "zeroUnresolvedReviewThreads": null,
-    "sourceFileCount": 88,
-    "sourceTreeSha256": "60c2e069d6a5f54480c8ee3151e28ccc7d920e52fd5e3b978f47f41dec4013bb",
+    "sourceFileCount": 93,
+    "sourceTreeSha256": "8bc4ef94c0f670ff128774e26a9de3d9849269f74b6e5c5af05f07ee0c9e5490",
     "migrationFileCount": 16,
     "migrationTreeSha256": "09aab45cda17810b52a07429700a4557308405d40a3983635d6bb7848dd4c729",
     "latestCandidateMigration": "20260728044916_momo_media_ai_pilot_v1.sql",
     "latestCandidateMigrationSha256": "efae63b4344570934d1d66b47ef1fce4fcd16343a2fe9dd8352607e0784d09a1",
-    "databaseChangesRequired": true,
+    "databaseChangesRequired": false,
     "databaseMigrationApplied": false,
     "sitesPublishRequired": true,
     "sitesCandidatePublished": false
@@ -202,9 +202,9 @@
     "Verified Sites version 15 checkout e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0 with 55-file source tree ba06cd39ab7782987a6504678e4a3533a9943d078ba5dd9f93dbe8eeb0c5178f and both custom domains active with SSL healthy",
     "PR #149 archived legacy Vite from active development and deployed stable readiness evidence without enabling any activation path",
     "Observed live drift on 2026-07-22 is Sites version 18 plus 14 applied migrations; no Sites checkout commit or live source hash was available, so neither is asserted",
-    "PR #152 / Sites version 20 / migration 15 remains the exact verified live baseline while later candidate evidence is reviewed separately",
-    "The Media AI candidate is based on canonical main commit 979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6 and remains unmerged, unpublished, and unapplied",
-    "The OpenAI credential is provisioned server-side, but the live Media AI flag is false, provider and real-edit proof are pending, actual spend is USD $0, and USD $20 is a per-job automatic authorization threshold: a larger individual job requires fresh authorization before reaching OpenAI; this release has no batch runner"
+    "PR #154 / Sites version 21 / migration 16 is the exact verified live baseline: GitHub main 72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695, Sites checkout 8c50dd6726629e77d22f07eb6aac9f6982001902, 88-file source 60c2e069d6a5f54480c8ee3151e28ccc7d920e52fd5e3b978f47f41dec4013bb, and 16-migration ledger 09aab45cda17810b52a07429700a4557308405d40a3983635d6bb7848dd4c729",
+    "The no-database-change lifecycle-bridge candidate is based on canonical main commit 72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695 and remains unmerged and unpublished; migration 16 is already live and unchanged",
+    "The OpenAI credential, migration-16 capability, and hosted runtime flag are present, but effective Media AI remains fail-closed until the signed Edge lifecycle bridge and matching Sites source are released and an authenticated Team preflight passes. No provider canary or real edit has passed, actual spend is USD $0, and USD $20 is a per-job automatic authorization threshold: a larger individual job requires fresh authorization before reaching OpenAI; this release has no batch runner"
   ],
   "fullReviewTriggers": [
     "authentication, sessions, identity allowlist, role or membership authorization",
@@ -218,6 +218,8 @@
       "review": "full-on-change",
       "files": [
         "supabase/config.toml",
+        "supabase/functions/_shared/momo-media-ai-lifecycle-contract.ts",
+        "supabase/functions/momo-media-ai-lifecycle/index.ts",
         "supabase/migrations/20260712213930_momo_production_foundation_v1.sql",
         "supabase/migrations/20260712213939_restaurant_audit_center_v1.sql",
         "supabase/migrations/20260712214343_production_foundation_advisor_hardening.sql",
@@ -246,7 +248,7 @@
         "scripts/src/check-supabase-migration-ledger.ts",
         ".github/workflows/supabase-verify.yml"
       ],
-      "sha256": "d27ce4daf0a60f977601a6b90f6f2a99c7bde3bb43d8fef892b3c668421068d8"
+      "sha256": "2663acd5dd00ffa9aa019ac0a5b94c1e2637472757567043f71b151d16a152a9"
     },
     "media_ai_runtime": {
       "review": "full-on-change",
@@ -254,20 +256,30 @@
         "artifacts/veroxa-sites/.env.example",
         "artifacts/veroxa-sites/app/api/team/media-ai/improve/core.ts",
         "artifacts/veroxa-sites/app/api/team/media-ai/improve/route.ts",
+        "artifacts/veroxa-sites/app/api/team/media-ai/status/route.ts",
         "artifacts/veroxa-sites/app/momo-image-bytes.ts",
         "artifacts/veroxa-sites/app/momo-image-renderer.ts",
         "artifacts/veroxa-sites/app/momo-media-ai-contract.ts",
+        "artifacts/veroxa-sites/app/momo-media-ai-lifecycle-bridge.ts",
         "artifacts/veroxa-sites/app/momo-team-preconnection-center.tsx",
         "artifacts/veroxa-sites/app/momo-team-preconnection-data.ts",
         "artifacts/veroxa-sites/app/veroxa-supabase-server.ts",
+        "artifacts/veroxa-sites/supabase/config.toml",
+        "artifacts/veroxa-sites/supabase/functions/_shared/momo-media-ai-lifecycle-contract.ts",
+        "artifacts/veroxa-sites/supabase/functions/momo-media-ai-lifecycle/index.ts",
         "artifacts/veroxa-sites/supabase/migrations/20260728044916_momo_media_ai_pilot_v1.sql",
         "artifacts/veroxa-sites/supabase/tests/momo_preconnection_integration.sql",
+        "artifacts/veroxa-sites/tests/momo-media-ai-lifecycle-bridge.test.mjs",
         "artifacts/veroxa-sites/tests/momo-media-ai-route.test.mjs",
         "artifacts/veroxa-sites/tests/momo-media-ai-ui-contract.test.mjs",
+        "artifacts/veroxa-sites/tsconfig.json",
+        "supabase/config.toml",
+        "supabase/functions/_shared/momo-media-ai-lifecycle-contract.ts",
+        "supabase/functions/momo-media-ai-lifecycle/index.ts",
         "supabase/migrations/20260728044916_momo_media_ai_pilot_v1.sql",
         "supabase/tests/momo_preconnection_integration.sql"
       ],
-      "sha256": "44962e36d0ae60a8d4f85e99bce47826ab4b6244902ca63588b79c68f0b8569e"
+      "sha256": "c3d4a0865c9168f561727e4e843e7fb28138f0a6c5c3a64edf5272e2ec506309"
     },
     "auth_access": {
       "review": "full-on-change",
@@ -325,7 +337,7 @@
         ".github/workflows/supabase-verify.yml",
         ".github/workflows/veroxa-verify.yml"
       ],
-      "sha256": "edb0a491376bfec897f6f8133ee1a01f328979545ba84f12f40e2e718d7c52c5"
+      "sha256": "5e5f76c30e32dbefcd0ef7f29ade1ecb6ccee283a37446ee67688136e89e4d0e"
     },
     "product_scope": {
       "review": "full-on-change",
@@ -345,7 +357,7 @@
         "AGENTS.md",
         "artifacts/veroxa/docs/RR_CHECKPOINT.md"
       ],
-      "sha256": "c8b24a893ab5aaaff5f437b9eeb2ae2b85950b76e70f78e62d86d5e2920d4c64"
+      "sha256": "c78a8fd3480b9394a306a3dc0ebd9bb42e45c42be2f4dd3c93371982f4962ced"
     },
     "momo_readiness_tracking": {
       "review": "evidence-delta-on-change",
@@ -354,7 +366,7 @@
         "artifacts/veroxa-sites/app/momo-readiness-types.ts",
         "scripts/src/check-momo-house-readiness-tracking.ts"
       ],
-      "sha256": "41bdc4708fd51ddb7f0db98713493db763774d4b6dd8f20ac830b3f07431a840"
+      "sha256": "69646af0f0c8d041a62d9c81de67897af47b18baa4de40bf1a3c275c085a76d8"
     },
     "presentation_surfaces": {
       "review": "delta-unless-boundary-crossed",

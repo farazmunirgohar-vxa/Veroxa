@@ -49,6 +49,25 @@ type Checkpoint = {
     migrationContentParityVerified: boolean;
     migrationFilenameParityVerified: boolean;
   };
+  previousVerifiedRelease: {
+    pullRequest: number;
+    reviewedHead: string;
+    mergedOperationalCommit: string;
+    sitesCheckoutSourceCommit: string;
+    sitesVersion: number;
+    sourceFileCount: number;
+    sourceTreeSha256: string;
+    productionMigrations: number;
+    latestProductionMigration: string;
+    latestProductionMigrationSha256: string;
+    databaseApplied: boolean;
+    databaseVerified: boolean;
+    sitesProductionVerified: boolean;
+    customDomainsVerified: boolean;
+    sitesSourceParityVerified: boolean;
+    migrationContentParityVerified: boolean;
+    migrationFilenameParityVerified: boolean;
+  };
   currentVerifiedRelease: {
     pullRequest: number;
     reviewedHead: string;
@@ -329,7 +348,7 @@ const expected = {
     migration: "20260716035027_momo_preconnection_foundation.sql",
     migrationSha: "9e748a46e050b9b8884a5df46eba6617cac061d075272ab4e233d2c1609fb367",
   },
-  current: {
+  previous: {
     pullRequest: 152,
     reviewedHead: "b170c4339ae43755f17a19d74107cb75c6b198d3",
     githubMain: "29e90d40fa05d67d2a6246f9a0ba64fe1b9099b7",
@@ -341,10 +360,22 @@ const expected = {
     migration: "20260722000100_momo_client_media_status_v1.sql",
     migrationSha: "5cd7444906e5f5184e30cc7594542c71995a372b8143e5097f975d354f0925c7",
   },
-  candidate: {
-    basedOnGitHubMainCommit: "979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6",
+  current: {
+    pullRequest: 154,
+    reviewedHead: "4a7a2122bb71defc0f1db0c795b4c4c8fdb930a5",
+    githubMain: "72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695",
+    sitesCommit: "8c50dd6726629e77d22f07eb6aac9f6982001902",
+    sitesVersion: 21,
     sourceFileCount: 88,
     sourceTreeSha256: "60c2e069d6a5f54480c8ee3151e28ccc7d920e52fd5e3b978f47f41dec4013bb",
+    productionMigrations: 16,
+    migration: "20260728044916_momo_media_ai_pilot_v1.sql",
+    migrationSha: "efae63b4344570934d1d66b47ef1fce4fcd16343a2fe9dd8352607e0784d09a1",
+  },
+  candidate: {
+    basedOnGitHubMainCommit: "72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695",
+    sourceFileCount: 93,
+    sourceTreeSha256: "8bc4ef94c0f670ff128774e26a9de3d9849269f74b6e5c5af05f07ee0c9e5490",
     migrationFileCount: 16,
     migrationTreeSha256: "09aab45cda17810b52a07429700a4557308405d40a3983635d6bb7848dd4c729",
     migration: "20260728044916_momo_media_ai_pilot_v1.sql",
@@ -367,9 +398,9 @@ const checkpoint = readJson<Checkpoint>(
 );
 must(checkpoint.schemaVersion === 7, "RR checkpoint schema must be 7.");
 must(
-  checkpoint.checkpoint === "momo-media-ai-v2-high-quality-local-candidate-2026-07-30" &&
+  checkpoint.checkpoint === "momo-media-ai-lifecycle-bridge-local-candidate-2026-07-30" &&
     checkpoint.status === "local_candidate_reviewed_unmerged_unpublished_unapplied",
-  "RR checkpoint must identify the reviewed, unmerged, unpublished, and unapplied Media AI candidate.",
+  "RR checkpoint must identify the reviewed, unmerged, and unpublished lifecycle-bridge candidate.",
 );
 
 const observed = checkpoint.observedProductionBaseline;
@@ -404,6 +435,29 @@ must(
     verifiedRelease.migrationFilenameParityVerified,
   "RR checkpoint must preserve PR #149 Sites and migration content/filename parity.",
 );
+const previousRelease = checkpoint.previousVerifiedRelease;
+must(
+  previousRelease.pullRequest === expected.previous.pullRequest &&
+    previousRelease.reviewedHead === expected.previous.reviewedHead &&
+    previousRelease.mergedOperationalCommit === expected.previous.githubMain &&
+    previousRelease.sitesCheckoutSourceCommit === expected.previous.sitesCommit &&
+    previousRelease.sitesVersion === expected.previous.sitesVersion &&
+    previousRelease.sourceFileCount === expected.previous.sourceFileCount &&
+    previousRelease.sourceTreeSha256 === expected.previous.sourceTreeSha256 &&
+    previousRelease.productionMigrations ===
+      expected.previous.productionMigrations &&
+    previousRelease.latestProductionMigration === expected.previous.migration &&
+    previousRelease.latestProductionMigrationSha256 ===
+      expected.previous.migrationSha &&
+    previousRelease.databaseApplied &&
+    previousRelease.databaseVerified &&
+    previousRelease.sitesProductionVerified &&
+    previousRelease.customDomainsVerified &&
+    previousRelease.sitesSourceParityVerified &&
+    previousRelease.migrationContentParityVerified &&
+    previousRelease.migrationFilenameParityVerified,
+  "RR checkpoint must preserve the exact PR #152 / Sites v20 previous release.",
+);
 const currentRelease = checkpoint.currentVerifiedRelease;
 must(
   currentRelease.pullRequest === expected.current.pullRequest &&
@@ -423,7 +477,7 @@ must(
     currentRelease.sitesSourceParityVerified &&
     currentRelease.migrationContentParityVerified &&
     currentRelease.migrationFilenameParityVerified,
-  "RR checkpoint must preserve the exact PR #152 / Sites v20 / migration-15 live baseline.",
+  "RR checkpoint must preserve the exact PR #154 / Sites v21 / migration-16 live baseline.",
 );
 must(
   checkpoint.deployedOperationalRelease.supersededAsLiveBaseline &&
@@ -458,7 +512,7 @@ must(
   candidate.manifest === "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json" &&
     candidate.state === "reviewed_locally_unmerged_unpublished_unapplied" &&
     candidate.basedOnGitHubMainCommit === expected.candidate.basedOnGitHubMainCommit &&
-    candidate.pullRequest === 154 &&
+    candidate.pullRequest === null &&
     !candidate.githubMerged &&
     candidate.futureMergedGitHubCommit === null &&
     candidate.futureSitesVersion === null &&
@@ -472,11 +526,11 @@ must(
     candidate.migrationTreeSha256 === expected.candidate.migrationTreeSha256 &&
     candidate.latestCandidateMigration === expected.candidate.migration &&
     candidate.latestCandidateMigrationSha256 === expected.candidate.migrationSha &&
-    candidate.databaseChangesRequired &&
+    !candidate.databaseChangesRequired &&
     !candidate.databaseMigrationApplied &&
     candidate.sitesPublishRequired &&
     !candidate.sitesCandidatePublished,
-  "The RR Media AI candidate must remain exact, locally reviewed, unmerged, unpublished, and unapplied.",
+  "The RR lifecycle-bridge candidate must remain exact, locally reviewed, unmerged, unpublished, and no-database-change.",
 );
 
 const audit = checkpoint.auditAndTeamRelease;
@@ -722,7 +776,7 @@ must(
       "reviewed_locally_unmerged_unpublished_unapplied" &&
     manifest.releaseCandidate.basedOnGitHubMainCommit ===
       expected.candidate.basedOnGitHubMainCommit &&
-    manifest.releaseCandidate.pullRequest === 154 &&
+    manifest.releaseCandidate.pullRequest === null &&
     !manifest.releaseCandidate.githubMerged &&
     manifest.releaseCandidate.futureMergedGitHubCommit === null &&
     manifest.releaseCandidate.futureSitesVersion === null &&
@@ -737,7 +791,7 @@ must(
       expected.candidate.migration &&
     manifest.releaseCandidate.latestCandidateMigrationSha256 ===
       expected.candidate.migrationSha &&
-    manifest.releaseCandidate.databaseChangesRequired &&
+    !manifest.releaseCandidate.databaseChangesRequired &&
     !manifest.releaseCandidate.databaseMigrationApplied &&
     manifest.releaseCandidate.sitesPublishRequired &&
     !manifest.releaseCandidate.sitesPublished &&
@@ -747,7 +801,7 @@ must(
     manifest.migrations.evidenceScope === "local_release_candidate" &&
     manifest.migrations.fileCount === expected.candidate.migrationFileCount &&
     manifest.migrations.treeSha256 === expected.candidate.migrationTreeSha256,
-  "Deployment manifest disagrees with the historical/current live release or the reviewed Media AI candidate.",
+  "Deployment manifest disagrees with the historical/current live release or the reviewed no-database-change lifecycle-bridge candidate.",
 );
 for (const [name, value] of Object.entries(manifest.activationState)) {
   must(value === false, `Manifest activation state must remain false: ${name}`);
@@ -860,5 +914,5 @@ if (failures.length) {
 }
 
 console.log(
-  "RR release-evidence checkpoint passed: historical PR #149 and observed v18 drift are preserved, PR #152 / Sites v20 / migration 15 remains current, and the reviewed Media AI candidate remains unmerged, unpublished, and unapplied.",
+  "RR release-evidence checkpoint passed: historical PR #149 and observed v18 drift are preserved, PR #152 / Sites v20 is previous, PR #154 / Sites v21 / migration 16 is current, and the reviewed no-database-change lifecycle-bridge candidate remains unmerged and unpublished.",
 );

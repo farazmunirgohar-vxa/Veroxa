@@ -15,6 +15,26 @@ const manifest = readJson<{
     latestProductionMigration: string;
     latestProductionMigrationSha256: string;
   };
+  previousVerifiedRelease: {
+    pullRequest: number;
+    reviewedHead: string;
+    githubMainCommit: string;
+    sitesCheckoutCommit: string;
+    sitesVersion: number;
+    sourceFileCount: number;
+    sourceTreeSha256: string;
+    productionMigrationCount: number;
+    latestProductionMigration: string;
+    latestProductionMigrationSha256: string;
+    databaseApplied: boolean;
+    databaseVerified: boolean;
+    sitesPublished: boolean;
+    sitesVerified: boolean;
+    customDomainsVerified: boolean;
+    sitesSourceParityVerified: boolean;
+    migrationContentParityVerified: boolean;
+    migrationFilenameParityVerified: boolean;
+  };
   currentVerifiedRelease: {
     pullRequest: number;
     reviewedHead: string;
@@ -148,6 +168,7 @@ const immutableHistoricalChecksums: Record<string, string> = {
 };
 const historicalRelease = manifest.verifiedReconciliationRelease;
 const observedProduction = manifest.observedProductionDrift;
+const previousRelease = manifest.previousVerifiedRelease;
 const currentRelease = manifest.currentVerifiedRelease;
 const candidate = manifest.releaseCandidate;
 const mediaAiCandidateMigration = "20260728044916_momo_media_ai_pilot_v1.sql";
@@ -156,12 +177,10 @@ const mediaAiCandidateMigrationSha256 =
 const expectedCurrentLiveLedger = [
   ...immutableHistoricalMigrations,
   observedProduction.latestProductionMigration,
+  previousRelease.latestProductionMigration,
   currentRelease.latestProductionMigration,
 ];
-const expectedCandidateLedger = [
-  ...expectedCurrentLiveLedger,
-  mediaAiCandidateMigration,
-];
+const expectedCandidateLedger = [...expectedCurrentLiveLedger];
 const expectedArchived = [
   "20260601000000_m024a_first_client_metadata_schema.sql",
   "20260615010100_live_automation_v1_database_foundation.sql",
@@ -201,18 +220,45 @@ if (
   throw new Error("Historical observed production drift must remain distinct at Sites v18 / 14 applied migrations.");
 }
 if (
-  currentRelease.pullRequest !== 152 ||
-  currentRelease.reviewedHead !== "b170c4339ae43755f17a19d74107cb75c6b198d3" ||
-  currentRelease.githubMainCommit !== "29e90d40fa05d67d2a6246f9a0ba64fe1b9099b7" ||
-  currentRelease.sitesCheckoutCommit !== "aceb17bb446854d48a71e54ba814591cf2c19d33" ||
-  currentRelease.sitesVersion !== 20 ||
-  currentRelease.sourceFileCount !== 79 ||
-  currentRelease.sourceTreeSha256 !==
+  previousRelease.pullRequest !== 152 ||
+  previousRelease.reviewedHead !== "b170c4339ae43755f17a19d74107cb75c6b198d3" ||
+  previousRelease.githubMainCommit !== "29e90d40fa05d67d2a6246f9a0ba64fe1b9099b7" ||
+  previousRelease.sitesCheckoutCommit !== "aceb17bb446854d48a71e54ba814591cf2c19d33" ||
+  previousRelease.sitesVersion !== 20 ||
+  previousRelease.sourceFileCount !== 79 ||
+  previousRelease.sourceTreeSha256 !==
     "5ae5da11de0ae202d33f31dea08ddd337b0b5323aa857d543f3c259f8662a4c2" ||
-  currentRelease.productionMigrationCount !== expectedCurrentLiveLedger.length ||
-  currentRelease.latestProductionMigration !== "20260722000100_momo_client_media_status_v1.sql" ||
-  currentRelease.latestProductionMigrationSha256 !==
+  previousRelease.productionMigrationCount !== 15 ||
+  previousRelease.latestProductionMigration !==
+    "20260722000100_momo_client_media_status_v1.sql" ||
+  previousRelease.latestProductionMigrationSha256 !==
     "5cd7444906e5f5184e30cc7594542c71995a372b8143e5097f975d354f0925c7" ||
+  !previousRelease.databaseApplied ||
+  !previousRelease.databaseVerified ||
+  !previousRelease.sitesPublished ||
+  !previousRelease.sitesVerified ||
+  !previousRelease.customDomainsVerified ||
+  !previousRelease.sitesSourceParityVerified ||
+  !previousRelease.migrationContentParityVerified ||
+  !previousRelease.migrationFilenameParityVerified
+) {
+  throw new Error(
+    "Previous verified release must remain bound to PR #152, Sites v20, and 15 applied migrations.",
+  );
+}
+if (
+  currentRelease.pullRequest !== 154 ||
+  currentRelease.reviewedHead !== "4a7a2122bb71defc0f1db0c795b4c4c8fdb930a5" ||
+  currentRelease.githubMainCommit !== "72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695" ||
+  currentRelease.sitesCheckoutCommit !== "8c50dd6726629e77d22f07eb6aac9f6982001902" ||
+  currentRelease.sitesVersion !== 21 ||
+  currentRelease.sourceFileCount !== 88 ||
+  currentRelease.sourceTreeSha256 !==
+    "60c2e069d6a5f54480c8ee3151e28ccc7d920e52fd5e3b978f47f41dec4013bb" ||
+  currentRelease.productionMigrationCount !== expectedCurrentLiveLedger.length ||
+  currentRelease.latestProductionMigration !== mediaAiCandidateMigration ||
+  currentRelease.latestProductionMigrationSha256 !==
+    mediaAiCandidateMigrationSha256 ||
   !currentRelease.databaseApplied ||
   !currentRelease.databaseVerified ||
   !currentRelease.sitesPublished ||
@@ -223,14 +269,14 @@ if (
   !currentRelease.migrationFilenameParityVerified
 ) {
   throw new Error(
-    "Current verified release must remain bound to PR #152, Sites v20, and 15 applied migrations.",
+    "Current verified release must remain bound to PR #154, Sites v21, and 16 applied migrations.",
   );
 }
 if (
   candidate.status !== "reviewed_locally_unmerged_unpublished_unapplied" ||
   candidate.basedOnGitHubMainCommit !==
-    "979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6" ||
-  candidate.pullRequest !== 154 ||
+    "72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695" ||
+  candidate.pullRequest !== null ||
   candidate.githubMerged ||
   candidate.futureMergedGitHubCommit !== null ||
   candidate.futureSitesVersion !== null ||
@@ -238,7 +284,7 @@ if (
   candidate.migrationFileCount !== expectedCandidateLedger.length ||
   candidate.latestCandidateMigration !== mediaAiCandidateMigration ||
   candidate.latestCandidateMigrationSha256 !== mediaAiCandidateMigrationSha256 ||
-  !candidate.databaseChangesRequired ||
+  candidate.databaseChangesRequired ||
   candidate.databaseMigrationApplied ||
   !candidate.sitesPublishRequired ||
   candidate.sitesPublished ||
@@ -246,7 +292,7 @@ if (
   manifest.migrations.treeSha256 !== candidate.migrationTreeSha256
 ) {
   throw new Error(
-    "The Media AI release must remain a reviewed, unmerged, unapplied, unpublished 16-migration candidate based on canonical main.",
+    "The lifecycle-bridge release must remain a reviewed, unmerged, unpublished, no-database-change candidate based on canonical main and the live 16-migration ledger.",
   );
 }
 if (
@@ -317,8 +363,8 @@ if (JSON.stringify(candidateLedger) !== JSON.stringify(expectedCandidateLedger))
 }
 const expectedSitesMigrationSnapshots = [
   observedProduction.latestProductionMigration,
+  previousRelease.latestProductionMigration,
   currentRelease.latestProductionMigration,
-  mediaAiCandidateMigration,
 ];
 if (
   JSON.stringify(sitesMigrationSnapshots) !==
@@ -364,5 +410,5 @@ for (const filename of expectedSitesMigrationSnapshots) {
 }
 
 console.log(
-  "Supabase migration ledger guardrail passed; PR #152 / Sites v20 remains live through migration 15, while Media AI migration 16 is reviewed, unapplied, unpublished, and byte-identical in the root and Sites candidate trees.",
+  "Supabase migration ledger guardrail passed; PR #152 / Sites v20 remains the previous release, PR #154 / Sites v21 is live through migration 16, and the lifecycle-bridge candidate makes no database change.",
 );

@@ -1,4 +1,14 @@
-## 2026-07-30 — locked high-quality Media AI activation boundary
+## 2026-07-30 — locked v21 and lifecycle-bridge boundary
+
+- PR #154 / Sites version 21 / migration 16 is verified live: GitHub `72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695`, Sites checkout `8c50dd6726629e77d22f07eb6aac9f6982001902`, and 16 applied migrations.
+- Treat configured credentials, a database kill switch, and a hosted flag as necessary but insufficient. Effective Media AI remains fail-closed until the narrow lifecycle bridge, its server signing key, the matching Sites source, and an authenticated Team preflight are jointly verified.
+- Never place a broad Supabase service credential in Sites for this feature. The approved bridge may expose only preflight/start/complete/fail; it must derive the actor from Auth, bind method/path/token/body/timestamp/nonce in the signature, enforce exact schemas, and never retry OpenAI.
+- A terminal bridge response may be reconciled once only against the exact persisted tuple. A provider-start uncertainty remains a conservative authorization hold, not proof of actual provider spend.
+- Current Momo rights are expired. No real image or billable canary may run until rights and Team review are current. Spend remains USD $0; USD $20 is the automatic threshold for each job, not a lifetime cap.
+- AI output remains private until the exact stored candidate is decoded, inspected, attested, and approved. Google/social, public publishing, and Momo activation remain locked. Momo remains No-Go.
+- `momo-readiness-tracker.json` carries the current fail-closed evidence.
+
+## 2026-07-30 — locked high-quality Media AI activation boundary (historical pre-v21 checkpoint)
 
 - PR #152 / Sites version 20 / migration 15 remains live. The reviewed Media AI candidate is based on canonical `main` commit `979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6` and remains unmerged, unpublished, and unapplied.
 - Only high-fidelity standing server-side Image Enhancement automation is authorized as a model-backed candidate activation. It must faithfully preserve the photographed dish and uses `gpt-image-2` with a selected high-resolution preset for the chosen destination. Do not describe Media Review, Caption, or Compliance as independently connected model agents; review/compliance remain deterministic and human-controlled in this release.

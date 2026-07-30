@@ -65,6 +65,26 @@ type Manifest = {
     databaseAppliedThroughLatestObserved: boolean;
     candidateParityVerified: boolean;
   };
+  previousVerifiedRelease: {
+    pullRequest: number;
+    reviewedHead: string;
+    githubMainCommit: string;
+    sitesCheckoutCommit: string;
+    sitesVersion: number;
+    sourceFileCount: number;
+    sourceTreeSha256: string;
+    productionMigrationCount: number;
+    latestProductionMigration: string;
+    latestProductionMigrationSha256: string;
+    databaseApplied: boolean;
+    databaseVerified: boolean;
+    sitesPublished: boolean;
+    sitesVerified: boolean;
+    customDomainsVerified: boolean;
+    sitesSourceParityVerified: boolean;
+    migrationContentParityVerified: boolean;
+    migrationFilenameParityVerified: boolean;
+  };
   currentVerifiedRelease: {
     pullRequest: number;
     reviewedHead: string;
@@ -186,7 +206,7 @@ const historicalDrift = {
   latestProductionMigrationSha256:
     "9e748a46e050b9b8884a5df46eba6617cac061d075272ab4e233d2c1609fb367",
 };
-const currentVerified = {
+const previousVerified = {
   pullRequest: 152,
   reviewedHead: "b170c4339ae43755f17a19d74107cb75c6b198d3",
   githubMainCommit: "29e90d40fa05d67d2a6246f9a0ba64fe1b9099b7",
@@ -200,11 +220,25 @@ const currentVerified = {
   latestProductionMigrationSha256:
     "5cd7444906e5f5184e30cc7594542c71995a372b8143e5097f975d354f0925c7",
 };
-const candidate = {
-  basedOnGitHubMainCommit: "979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6",
+const currentVerified = {
+  pullRequest: 154,
+  reviewedHead: "4a7a2122bb71defc0f1db0c795b4c4c8fdb930a5",
+  githubMainCommit: "72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695",
+  sitesCheckoutCommit: "8c50dd6726629e77d22f07eb6aac9f6982001902",
+  sitesVersion: 21,
   sourceFileCount: 88,
   sourceTreeSha256:
     "60c2e069d6a5f54480c8ee3151e28ccc7d920e52fd5e3b978f47f41dec4013bb",
+  productionMigrationCount: 16,
+  latestProductionMigration: "20260728044916_momo_media_ai_pilot_v1.sql",
+  latestProductionMigrationSha256:
+    "efae63b4344570934d1d66b47ef1fce4fcd16343a2fe9dd8352607e0784d09a1",
+};
+const candidate = {
+  basedOnGitHubMainCommit: "72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695",
+  sourceFileCount: 93,
+  sourceTreeSha256:
+    "8bc4ef94c0f670ff128774e26a9de3d9849269f74b6e5c5af05f07ee0c9e5490",
   migrationFileCount: 16,
   migrationTreeSha256:
     "09aab45cda17810b52a07429700a4557308405d40a3983635d6bb7848dd4c729",
@@ -220,12 +254,12 @@ must(
 );
 must(
   manifest.releaseState === REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE,
-  "The manifest must identify the reviewed, unmerged, unpublished, and unapplied Media AI candidate.",
+  "The manifest must identify the reviewed, unmerged, and unpublished lifecycle-bridge candidate.",
 );
 try {
   assertReviewedLocalCandidateManifest(readDeploymentManifest());
 } catch (error) {
-  failures.push(`The Media AI candidate manifest is not fail-closed: ${String(error)}`);
+  failures.push(`The lifecycle-bridge candidate manifest is not fail-closed: ${String(error)}`);
 }
 must(
   manifest.canonicalRepository === "farazmunirgohar-vxa/Veroxa" &&
@@ -298,6 +332,31 @@ must(
 );
 
 const current = manifest.currentVerifiedRelease;
+const previous = manifest.previousVerifiedRelease;
+must(
+  previous.pullRequest === previousVerified.pullRequest &&
+    previous.reviewedHead === previousVerified.reviewedHead &&
+    previous.githubMainCommit === previousVerified.githubMainCommit &&
+    previous.sitesCheckoutCommit === previousVerified.sitesCheckoutCommit &&
+    previous.sitesVersion === previousVerified.sitesVersion &&
+    previous.sourceFileCount === previousVerified.sourceFileCount &&
+    previous.sourceTreeSha256 === previousVerified.sourceTreeSha256 &&
+    previous.productionMigrationCount ===
+      previousVerified.productionMigrationCount &&
+    previous.latestProductionMigration ===
+      previousVerified.latestProductionMigration &&
+    previous.latestProductionMigrationSha256 ===
+      previousVerified.latestProductionMigrationSha256 &&
+    previous.databaseApplied &&
+    previous.databaseVerified &&
+    previous.sitesPublished &&
+    previous.sitesVerified &&
+    previous.customDomainsVerified &&
+    previous.sitesSourceParityVerified &&
+    previous.migrationContentParityVerified &&
+    previous.migrationFilenameParityVerified,
+  "PR #152 / Sites v20 must remain the exact previous verified release.",
+);
 must(
   current.pullRequest === currentVerified.pullRequest &&
     current.reviewedHead === currentVerified.reviewedHead &&
@@ -320,14 +379,14 @@ must(
     current.sitesSourceParityVerified &&
     current.migrationContentParityVerified &&
     current.migrationFilenameParityVerified,
-  "PR #152 / Sites v20 must remain the exact current verified release, including reviewed head, merged main, domains, and source/migration parity.",
+  "PR #154 / Sites v21 / migration 16 must remain the exact current verified release, including reviewed head, merged main, domains, and source/migration parity.",
 );
 
 const releaseCandidate = manifest.releaseCandidate;
 must(
-  releaseCandidate.status === REVIEWED_LOCAL_CANDIDATE_STATUS &&
+    releaseCandidate.status === REVIEWED_LOCAL_CANDIDATE_STATUS &&
     releaseCandidate.basedOnGitHubMainCommit === candidate.basedOnGitHubMainCommit &&
-    releaseCandidate.pullRequest === 154 &&
+    releaseCandidate.pullRequest === null &&
     !releaseCandidate.githubMerged &&
     releaseCandidate.futureMergedGitHubCommit === null &&
     releaseCandidate.futureSitesVersion === null &&
@@ -339,11 +398,11 @@ must(
     releaseCandidate.latestCandidateMigration === candidate.latestMigration &&
     releaseCandidate.latestCandidateMigrationSha256 ===
       candidate.latestMigrationSha256 &&
-    releaseCandidate.databaseChangesRequired &&
+    !releaseCandidate.databaseChangesRequired &&
     !releaseCandidate.databaseMigrationApplied &&
     releaseCandidate.sitesPublishRequired &&
     !releaseCandidate.sitesPublished,
-  "The Media AI candidate must remain exact, locally reviewed, unmerged, unpublished, and unapplied.",
+  "The lifecycle-bridge candidate must remain exact, locally reviewed, unmerged, unpublished, and no-database-change.",
 );
 
 must(
@@ -351,7 +410,7 @@ must(
     manifest.source.root === "artifacts/veroxa-sites" &&
     manifest.source.mappingTarget === "Sites repository root" &&
     manifest.source.hashAlgorithm === TREE_HASH_ALGORITHM,
-  "Media AI candidate Sites source mapping or evidence scope drifted.",
+  "Lifecycle-bridge candidate Sites source mapping or evidence scope drifted.",
 );
 const sourceRoot = resolve(repoRoot, manifest.source.root);
 must(existsSync(sourceRoot), "Canonical Sites source root is missing.");
@@ -363,7 +422,7 @@ must(
     sourceTree.sha256 === candidate.sourceTreeSha256 &&
     sourceTree.fileCount === manifest.source.fileCount &&
     sourceTree.sha256 === manifest.source.treeSha256,
-  `Media AI candidate Sites source drifted (actual ${sourceTree.fileCount}/${sourceTree.sha256}).`,
+  `Lifecycle-bridge candidate Sites source drifted (actual ${sourceTree.fileCount}/${sourceTree.sha256}).`,
 );
 must(sourceTree.files.includes(".npmrc"), "Published Sites source must include .npmrc.");
 for (const excluded of [
@@ -388,7 +447,7 @@ must(
   manifest.migrations.evidenceScope === "local_release_candidate" &&
     manifest.migrations.root === "supabase/migrations" &&
     manifest.migrations.hashAlgorithm === TREE_HASH_ALGORITHM,
-  "Media AI candidate migration-tree mapping or evidence scope drifted.",
+  "Lifecycle-bridge candidate migration-tree mapping or evidence scope drifted.",
 );
 const migrationRoot = resolve(repoRoot, manifest.migrations.root);
 const migrationTree = hashTree(migrationRoot, { suffix: ".sql" });
@@ -397,7 +456,15 @@ must(
     migrationTree.sha256 === candidate.migrationTreeSha256 &&
     migrationTree.fileCount === manifest.migrations.fileCount &&
     migrationTree.sha256 === manifest.migrations.treeSha256,
-  `Media AI candidate migration tree drifted (actual ${migrationTree.fileCount}/${migrationTree.sha256}).`,
+  `Lifecycle-bridge candidate migration tree drifted (actual ${migrationTree.fileCount}/${migrationTree.sha256}).`,
+);
+must(
+  candidate.migrationFileCount === currentVerified.productionMigrationCount &&
+    candidate.migrationTreeSha256 === manifest.migrations.treeSha256 &&
+    candidate.latestMigration === currentVerified.latestProductionMigration &&
+    candidate.latestMigrationSha256 ===
+      currentVerified.latestProductionMigrationSha256,
+  "No-database-change bridge candidate must retain the exact verified v21 migration ledger.",
 );
 for (const [filename, sha256] of Object.entries({
   [verified.latestProductionMigration]: verified.latestProductionMigrationSha256,
@@ -470,5 +537,5 @@ if (failures.length) {
 }
 
 console.log(
-  `Veroxa release evidence passed: historical PR #149 / Sites v15 and observed Sites v18 drift are preserved; PR #152 / Sites v20 / migration 15 remains current; the reviewed Media AI candidate is separately bound to ${sourceTree.fileCount} Sites files and ${migrationTree.fileCount} migrations and remains unmerged, unpublished, and unapplied.`,
+  `Veroxa release evidence passed: historical PR #149 / Sites v15 and observed Sites v18 drift are preserved; PR #152 / Sites v20 remains previous; PR #154 / Sites v21 / migration 16 is current; the reviewed no-database-change lifecycle-bridge candidate is bound to ${sourceTree.fileCount} Sites files and the unchanged ${migrationTree.fileCount}-migration ledger and remains unmerged and unpublished.`,
 );

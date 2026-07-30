@@ -1,8 +1,14 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   inspectMomoImageBytesFully,
   momoBytesSha256,
 } from "../../../../momo-image-bytes";
+import {
+  getMomoMediaAiLifecycleBridgeConfig,
+  invokeMomoMediaAiLifecycleBridge,
+  reconcileMomoMediaAiTerminalLifecycleBridge,
+  type MomoMediaAiLifecycleBridgeConfig,
+} from "../../../../momo-media-ai-lifecycle-bridge";
 import { verifyMomoMediaAiOpenAiAccess } from "../../../../momo-media-ai-openai-access";
 import { getServerVeroxaContext } from "../../../../veroxa-supabase-server";
 import {
@@ -18,50 +24,7 @@ const OPENAI_IMAGE_EDIT_URL = "https://api.openai.com/v1/images/edits";
 const openAiKey = process.env.OPENAI_API_KEY?.trim() || "";
 
 type RpcRow = Record<string, unknown>;
-
-function serverSupabaseConfig(): { url: string; secretKey: string } | null {
-  const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
-  const canonicalSecret = process.env.SUPABASE_SECRET_KEY?.trim();
-  const legacyServiceRole = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
-  const secretKey = canonicalSecret?.startsWith("sb_secret_")
-    ? canonicalSecret
-    : legacyServiceRole
-      && !legacyServiceRole.startsWith("sb_publishable_")
-      && legacyServiceRole.split(".").length === 3
-      ? legacyServiceRole
-      : "";
-  if (!rawUrl || !secretKey) return null;
-  try {
-    const url = new URL(rawUrl);
-    if (
-      url.protocol !== "https:"
-      || !url.hostname.endsWith(".supabase.co")
-      || url.username
-      || url.password
-      || url.port
-      || (url.pathname !== "/" && url.pathname !== "")
-      || url.search
-      || url.hash
-    ) return null;
-    return { url: url.origin, secretKey };
-  } catch {
-    return null;
-  }
-}
-
-const serverConfig = serverSupabaseConfig();
-const lifecycleAdmin = serverConfig
-  ? createClient(serverConfig.url, serverConfig.secretKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-      detectSessionInUrl: false,
-    },
-    global: {
-      headers: { "x-veroxa-server-purpose": "momo-media-ai-lifecycle-v1" },
-    },
-  })
-  : null;
+const lifecycleBridgeConfig = getMomoMediaAiLifecycleBridgeConfig();
 
 function firstRow(value: unknown): RpcRow | null {
   const row = Array.isArray(value) ? value[0] : value;
@@ -152,7 +115,7 @@ function requiredRpcId(value: unknown, expected: string): void {
 
 function dependenciesFor(
   client: SupabaseClient,
-  admin: SupabaseClient | null,
+  bridgeConfig: MomoMediaAiLifecycleBridgeConfig | null,
   actor: {
     role: "team" | "client";
     restaurantId: string | null;
@@ -161,11 +124,11 @@ function dependenciesFor(
 ) {
   return {
     enabled: process.env.VEROXA_MEDIA_AI_ENABLED === "true",
-    providerConfigured: Boolean(openAiKey && admin),
+    providerConfigured: Boolean(openAiKey && bridgeConfig),
     async verifyProviderAccess() {
       return Boolean(
         openAiKey
-        && admin
+        && bridgeConfig
         && await verifyMomoMediaAiOpenAiAccess(openAiKey),
       );
     },
@@ -186,16 +149,18 @@ function dependenciesFor(
       candidateId: string;
       requestHash: string;
     }) {
-      if (!admin) throw new Error("media_ai_configuration_unavailable");
-      const { data, error } = await admin.rpc(
-        "veroxa_start_momo_media_ai_provider_v1",
+      if (!bridgeConfig) {
+        throw new Error("media_ai_configuration_unavailable");
+      }
+      const data = await invokeMomoMediaAiLifecycleBridge<unknown>(
+        client,
+        bridgeConfig,
         {
-          p_candidate_id: input.candidateId,
-          p_request_hash: input.requestHash,
-          p_actor_id: actor.userId,
+          operation: "start",
+          candidateId: input.candidateId,
+          requestHash: input.requestHash,
         },
       );
-      if (error) throw new Error(error.message);
       const row = firstRow(data);
       if (
         row?.candidate_id !== input.candidateId
@@ -287,25 +252,27 @@ function dependenciesFor(
       accountingBasis: "provider_usage_estimate" | "conservative_reservation";
       providerUsage: MomoMediaAiProviderUsage | null;
     }) {
-      if (!admin) throw new Error("media_ai_configuration_unavailable");
-      const { data, error } = await admin.rpc(
-        "veroxa_complete_momo_media_ai_candidate_v1",
+      if (!bridgeConfig) {
+        throw new Error("media_ai_configuration_unavailable");
+      }
+      const data = await reconcileMomoMediaAiTerminalLifecycleBridge<unknown>(
+        client,
+        bridgeConfig,
         {
-          p_candidate_id: input.candidateId,
-          p_request_hash: input.requestHash,
-          p_provider_request_id: input.providerRequestId,
-          p_storage_path: input.storagePath,
-          p_file_size: input.fileSize,
-          p_width: input.width,
-          p_height: input.height,
-          p_content_sha256: input.contentSha256,
-          p_accounted_microusd: input.accountedMicrousd,
-          p_accounting_basis: input.accountingBasis,
-          p_provider_usage: input.providerUsage,
-          p_actor_id: actor.userId,
+          operation: "complete",
+          candidateId: input.candidateId,
+          requestHash: input.requestHash,
+          providerRequestId: input.providerRequestId,
+          storagePath: input.storagePath,
+          fileSize: input.fileSize,
+          width: input.width,
+          height: input.height,
+          contentSha256: input.contentSha256,
+          accountedMicrousd: input.accountedMicrousd,
+          accountingBasis: input.accountingBasis,
+          providerUsage: input.providerUsage,
         },
       );
-      if (error) throw new Error(error.message);
       requiredRpcId(data, input.candidateId);
     },
     async fail(input: {
@@ -313,17 +280,19 @@ function dependenciesFor(
       requestHash: string;
       errorCode: string;
     }) {
-      if (!admin) throw new Error("media_ai_configuration_unavailable");
-      const { data, error } = await admin.rpc(
-        "veroxa_fail_momo_media_ai_candidate_v1",
+      if (!bridgeConfig) {
+        throw new Error("media_ai_configuration_unavailable");
+      }
+      const data = await reconcileMomoMediaAiTerminalLifecycleBridge<unknown>(
+        client,
+        bridgeConfig,
         {
-          p_candidate_id: input.candidateId,
-          p_request_hash: input.requestHash,
-          p_error_code: input.errorCode,
-          p_actor_id: actor.userId,
+          operation: "fail",
+          candidateId: input.candidateId,
+          requestHash: input.requestHash,
+          errorCode: input.errorCode,
         },
       );
-      if (error) throw new Error(error.message);
       requiredRpcId(data, input.candidateId);
     },
   };
@@ -333,7 +302,7 @@ export async function POST(request: Request): Promise<Response> {
   const context = await getServerVeroxaContext();
   if (!context) {
     return createMomoMediaAiPostHandler({
-      ...dependenciesFor({} as SupabaseClient, lifecycleAdmin, {
+      ...dependenciesFor({} as SupabaseClient, lifecycleBridgeConfig, {
         role: "client",
         restaurantId: null,
         userId: "00000000-0000-4000-8000-000000000000",
@@ -342,7 +311,7 @@ export async function POST(request: Request): Promise<Response> {
     })(request);
   }
   return createMomoMediaAiPostHandler(
-    dependenciesFor(context.client, lifecycleAdmin, {
+    dependenciesFor(context.client, lifecycleBridgeConfig, {
       role: context.access.role,
       restaurantId: context.access.restaurantId,
       userId: context.userId,
