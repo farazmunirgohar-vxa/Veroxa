@@ -112,7 +112,7 @@
     "allFourWorkflowsGreen": null,
     "zeroUnresolvedReviewThreads": null,
     "sourceFileCount": 88,
-    "sourceTreeSha256": "1a0a355cba214fd8deafa4ac90ec7475dfc3e1705c3ca72865ed6dd6048082bf",
+    "sourceTreeSha256": "60c2e069d6a5f54480c8ee3151e28ccc7d920e52fd5e3b978f47f41dec4013bb",
     "migrationFileCount": 16,
     "migrationTreeSha256": "09aab45cda17810b52a07429700a4557308405d40a3983635d6bb7848dd4c729",
     "latestCandidateMigration": "20260728044916_momo_media_ai_pilot_v1.sql",
@@ -267,7 +267,7 @@
         "supabase/migrations/20260728044916_momo_media_ai_pilot_v1.sql",
         "supabase/tests/momo_preconnection_integration.sql"
       ],
-      "sha256": "a7a6b032cc210d4016149368dee90811da38e5e1f95eee1685fdb82ee99360e7"
+      "sha256": "44962e36d0ae60a8d4f85e99bce47826ab4b6244902ca63588b79c68f0b8569e"
     },
     "auth_access": {
       "review": "full-on-change",
@@ -325,7 +325,7 @@
         ".github/workflows/supabase-verify.yml",
         ".github/workflows/veroxa-verify.yml"
       ],
-      "sha256": "9df735ac80052dee6a2e18d0454e7ac50dc98065fd540a7fd175c3c74eb304e4"
+      "sha256": "edb0a491376bfec897f6f8133ee1a01f328979545ba84f12f40e2e718d7c52c5"
     },
     "product_scope": {
       "review": "full-on-change",
@@ -366,7 +366,7 @@
         "artifacts/veroxa-sites/tests/rendered-html.test.mjs",
         "artifacts/veroxa/src/pages/free-audit.tsx"
       ],
-      "sha256": "6c0a37fb36f54108f45934d3fe0d2de1a63c6bd079087cb0c378ce0b4e62c477"
+      "sha256": "d0b7f8beab646c3904a10a5cf62c2508d81a69511355550865174bfe3a987b4b"
     },
     "momo_operations_contract": {
       "review": "full-on-change",
@@ -411,7 +411,7 @@
         "package.json",
         "pnpm-lock.yaml"
       ],
-      "sha256": "c4cfe18ff42329d347dba6e1c33d414973379147d6a8fe2e95744325bfac8895"
+      "sha256": "e870440358ef2e0d0817a9e31b8f4713886a009c83b9daafc1dba5568663350b"
     }
   },
   "activationGates": [

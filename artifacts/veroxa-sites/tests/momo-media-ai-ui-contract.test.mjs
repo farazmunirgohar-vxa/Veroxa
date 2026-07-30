@@ -2,11 +2,15 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
-  MOMO_MEDIA_AI_AUTOMATIC_PRESET,
+  MOMO_MEDIA_AI_PRESETS,
   momoMediaAiAccountingLabel,
+  momoMediaAiAutomaticAttemptCanStart,
+  momoMediaAiAttemptNeedsManualRetry,
   momoMediaAiAutomaticAttemptScope,
+  momoMediaAiFailedAttemptScopeKey,
   momoMediaAiFetch,
   momoMediaAiInspectionAllowsApproval,
+  momoMediaAiNextUnattemptedRetryScope,
 } from "../app/momo-media-ai-contract.ts";
 
 const centerUrl = new URL(
@@ -40,7 +44,7 @@ test("high-fidelity Media AI remains an automatic, approval-controlled private p
   );
   assert.match(
     center,
-    /When this Team workspace observes a rights-current, approved Momo image, it starts one fixed server-side OpenAI edit automatically/,
+    /When this Team workspace observes a rights-current, approved Momo image, it starts one server-side OpenAI edit for the selected output destination/,
   );
   assert.match(
     center,
@@ -81,58 +85,207 @@ test("high-fidelity Media AI remains an automatic, approval-controlled private p
   );
 });
 
-test("every actionable Media AI attempt remains visible outside the bounded terminal history", async () => {
-  const data = await readFile(dataUrl, "utf8");
+test("active attempts remain visible and an authoritative omitted failure still unlocks only a manual retry", async () => {
+  const [center, data] = await Promise.all([
+    readFile(centerUrl, "utf8"),
+    readFile(dataUrl, "utf8"),
+  ]);
 
   assert.match(
     data,
     /rpc\("veroxa_momo_media_ai_operational_window_v1",[\s\S]*?p_restaurant_id: restaurantId[\s\S]*?\.select\(mediaAiCandidateFields\)/,
     "One database snapshot must return every actionable candidate plus bounded terminal history.",
   );
+  const scopeKey = "momo-ai-v2:10000000-0000-4000-8000-000000000001:20000000-0000-4000-8000-000000000002:aaaaaaaaaaaaaaaa:website_hero:0";
+  assert.equal(
+    momoMediaAiFailedAttemptScopeKey(
+      new Error("media_ai_previous_attempt_failed"),
+      scopeKey,
+    ),
+    scopeKey,
+  );
+  for (const error of [
+    new Error("media_ai_transport_uncertain"),
+    new Error("media_ai_readback_required"),
+    "media_ai_previous_attempt_failed",
+  ]) {
+    assert.equal(momoMediaAiFailedAttemptScopeKey(error, scopeKey), "");
+  }
+  assert.equal(
+    momoMediaAiFailedAttemptScopeKey(
+      new Error("media_ai_previous_attempt_failed"),
+      "invalid key",
+    ),
+    "",
+  );
+  assert.match(
+    center,
+    /const failedScopeKey = momoMediaAiFailedAttemptScopeKey\([\s\S]*?await refreshData\(\)[\s\S]*?setAuthoritativeFailedAttemptKeys/,
+    "Only an exact authoritative failed-replay response followed by a successful readback may unlock retry.",
+  );
+  assert.match(
+    center,
+    /momoMediaAiAttemptNeedsManualRetry\(\{[\s\S]*?matchingStatus: matchingAutomaticAttempt\?\.status,[\s\S]*?authoritativeFailedAttemptKeys\.has\(automaticIdempotencyKey\)/,
+  );
+  assert.equal(momoMediaAiAttemptNeedsManualRetry({
+    matchingStatus: undefined,
+    exactFailedReplayKeyKnown: true,
+  }), true);
+  assert.equal(momoMediaAiAttemptNeedsManualRetry({
+    matchingStatus: "failed",
+    exactFailedReplayKeyKnown: false,
+  }), true);
+  for (const matchingStatus of ["approved", "rejected", "pending_review"]) {
+    assert.equal(momoMediaAiAttemptNeedsManualRetry({
+      matchingStatus,
+      exactFailedReplayKeyKnown: true,
+    }), false, `${matchingStatus} database state must outrank a stale fallback key`);
+  }
+  const retryScopeInput = {
+    assetId: "10000000-0000-4000-8000-000000000001",
+    reviewId: "20000000-0000-4000-8000-000000000002",
+    sourceContentSha256: "a".repeat(64),
+    preset: "website_hero",
+    currentNonce: 0,
+    retryIssuing: false,
+    retryAllowed: true,
+    attemptedKeys: new Set(),
+  };
+  const firstRetry = momoMediaAiNextUnattemptedRetryScope(retryScopeInput);
+  assert.equal(firstRetry?.retryNonce, 1);
+  assert.equal(momoMediaAiNextUnattemptedRetryScope({
+    ...retryScopeInput,
+    retryIssuing: true,
+  }), null, "A rapid second click cannot issue another retry scope.");
+  assert.equal(momoMediaAiNextUnattemptedRetryScope({
+    ...retryScopeInput,
+    retryIssuing: false,
+    retryAllowed: false,
+  }), null);
+  const nonceZero = momoMediaAiAutomaticAttemptScope({
+    ...retryScopeInput,
+    retryNonce: 0,
+  });
+  assert.ok(nonceZero);
+  assert.ok(firstRetry);
+  const afterReset = momoMediaAiNextUnattemptedRetryScope({
+    ...retryScopeInput,
+    currentNonce: 0,
+    attemptedKeys: new Set([
+      nonceZero.idempotencyKey,
+      firstRetry.idempotencyKey,
+    ]),
+  });
+  assert.equal(
+    afterReset?.retryNonce,
+    2,
+    "Reselecting a destination after nonce 0 and 1 failed must choose a fresh local key.",
+  );
+  assert.match(
+    center,
+    /authorizeAiRetry[\s\S]*?momoMediaAiNextUnattemptedRetryScope\(\{[\s\S]*?attemptedKeys: automaticAttemptedKeys\.current[\s\S]*?aiRetryIssuingRef\.current = true;[\s\S]*?next\.delete\(automaticIdempotencyKey\)[\s\S]*?setAiRetryNonce\(nextRetryScope\.retryNonce\)/,
+  );
+  assert.match(
+    center,
+    /automaticAttemptKnownFailed && !activeAiCandidate && !aiRetryIssuing[\s\S]*?onClick=\{authorizeAiRetry\}/,
+  );
+  assert.match(
+    center,
+    /await refreshData\(\);[\s\S]*?aiRetryIssuingRef\.current = false;[\s\S]*?setAiRetryIssuing\(false\)/,
+  );
 });
 
-test("the paid standing scope is deterministic and independent of the free manual preset", async () => {
+test("the paid standing scope is deterministic for the exact Team-selected destination", async () => {
   const center = await readFile(centerUrl, "utf8");
-  const input = {
+  const base = {
     assetId: "10000000-0000-4000-8000-000000000001",
     reviewId: "20000000-0000-4000-8000-000000000002",
     sourceContentSha256: "a".repeat(64),
     retryNonce: 0,
   };
-  const standingScope = momoMediaAiAutomaticAttemptScope(input);
-
-  assert.ok(standingScope);
-  assert.equal(standingScope.preset, MOMO_MEDIA_AI_AUTOMATIC_PRESET);
-  assert.deepEqual(
-    momoMediaAiAutomaticAttemptScope(input),
-    standingScope,
-    "The exact asset and review must always resolve to the same standing job.",
-  );
-  for (const freeManualPreset of [
-    "instagram_square",
-    "google_business_square",
-    "website_hero",
-  ]) {
-    assert.equal(
-      momoMediaAiAutomaticAttemptScope({
-        ...input,
-        manualPreset: freeManualPreset,
-      })?.idempotencyKey,
-      standingScope.idempotencyKey,
-      `Changing the free manual preset to ${freeManualPreset} must not change the paid job.`,
+  const scopes = new Map();
+  for (const selectedPreset of Object.keys(MOMO_MEDIA_AI_PRESETS)) {
+    const input = { ...base, preset: selectedPreset };
+    const standingScope = momoMediaAiAutomaticAttemptScope(input);
+    assert.ok(standingScope);
+    assert.equal(standingScope.preset, selectedPreset);
+    assert.deepEqual(
+      momoMediaAiAutomaticAttemptScope(input),
+      standingScope,
+      "The exact asset, review, and destination must resolve to one stable job.",
     );
+    scopes.set(selectedPreset, standingScope.idempotencyKey);
   }
+  assert.equal(new Set(scopes.values()).size, Object.keys(MOMO_MEDIA_AI_PRESETS).length);
+  const standingScope = momoMediaAiAutomaticAttemptScope({
+    ...base,
+    preset: "instagram_portrait",
+  });
+  assert.ok(standingScope);
   assert.notEqual(
-    momoMediaAiAutomaticAttemptScope({ ...input, reviewId: "30000000-0000-4000-8000-000000000003" })?.idempotencyKey,
+    momoMediaAiAutomaticAttemptScope({
+      ...base,
+      preset: "instagram_portrait",
+      reviewId: "30000000-0000-4000-8000-000000000003",
+    })?.idempotencyKey,
     standingScope.idempotencyKey,
   );
   assert.notEqual(
-    momoMediaAiAutomaticAttemptScope({ ...input, retryNonce: 1 })?.idempotencyKey,
+    momoMediaAiAutomaticAttemptScope({
+      ...base,
+      preset: "instagram_portrait",
+      retryNonce: 1,
+    })?.idempotencyKey,
     standingScope.idempotencyKey,
-    "Only the explicit retry action may create another request for the fixed format.",
+    "Only the explicit retry action may create another request for that destination.",
   );
-  assert.match(center, /Any future additional AI format requires a separate explicit action/);
-  assert.match(center, /The free manual editor preset does not change this paid request/);
+  assert.equal(
+    momoMediaAiAutomaticAttemptScope({
+      ...base,
+      preset: "not_a_destination",
+    }),
+    null,
+  );
+  assert.equal(
+    momoMediaAiAutomaticAttemptScope({
+      ...base,
+      preset: undefined,
+    }),
+    null,
+    "No paid scope exists before the Team explicitly selects an AI destination.",
+  );
+  assert.match(
+    center,
+    /automaticAttemptScope = selectedAsset && selectedReview && aiPreset[\s\S]*?momoMediaAiAutomaticAttemptScope\(\{[\s\S]*?sourceContentSha256:[\s\S]*?preset: aiPreset,[\s\S]*?retryNonce: aiRetryNonce/,
+  );
+  assert.match(
+    center,
+    /item\.preset_key === selectedAutomaticPreset/,
+  );
+  assert.match(
+    center,
+    /generateMomoMediaAiCandidate\(\{[\s\S]*?preset: selectedAutomaticPreset/,
+  );
+  assert.match(
+    center,
+    /AI output destination<select[\s\S]*?setAiDestinationSelection\(next && selectedAsset && selectedReview && selectedAsset\.content_sha256/,
+  );
+  assert.doesNotMatch(
+    center,
+    /preset:\s*MOMO_MEDIA_AI_(?:AUTOMATIC|DEFAULT)_PRESET/,
+  );
+  assert.match(
+    center,
+    /Output preset<select[\s\S]{0,500}?setPreset\(next\)/,
+    "The free manual output control remains separate.",
+  );
+  assert.doesNotMatch(
+    center.match(/Output preset<select[\s\S]{0,500}?<\/select>/)?.[0] || "",
+    /setAiDestinationSelection|resetAiRequest/,
+    "Changing the free manual preset must never authorize a paid job.",
+  );
+  assert.match(center, /Choosing another AI destination is the explicit action for one different format/);
+  assert.match(center, /The free manual-editor preset never authorizes a paid request/);
   assert.match(
     center,
     /await approveMomoMediaAiCandidate\([\s\S]*?resetAiRequest\(\);/,
@@ -143,8 +296,44 @@ test("the paid standing scope is deterministic and independent of the free manua
   );
   assert.match(
     center,
-    /onChange=\{\(event\) => \{ const next = event\.target\.value; resetAiRequest\(\); setSourceAssetId\(next\)/,
+    /onChange=\{\(event\) => \{ const next = event\.target\.value; resetAiRequest\(\); setAiDestinationSelection\(null\); setSourceAssetId\(next\)/,
   );
+});
+
+test("automatic dispatch requires explicit AI destination scope and runs once per exact key", () => {
+  const ready = {
+    idempotencyKey: "momo-ai-v2:10000000-0000-4000-8000-000000000001:20000000-0000-4000-8000-000000000002:aaaaaaaaaaaaaaaa:website_hero:0",
+    retryNonce: 0,
+    sourceEligible: true,
+    reviewApproved: true,
+    rightsScopeAllowsPreset: true,
+    sourceFits: true,
+    preflightReady: true,
+    busy: false,
+    hasActiveCandidate: false,
+    matchingAttemptExists: false,
+    attemptKnownFailed: false,
+    readbackRequired: false,
+    withinAuthorization: true,
+    alreadyAttempted: false,
+  };
+  assert.equal(momoMediaAiAutomaticAttemptCanStart({
+    ...ready,
+    idempotencyKey: "",
+  }), false, "No explicit AI destination means no paid request key.");
+  assert.equal(momoMediaAiAutomaticAttemptCanStart(ready), true);
+  assert.equal(momoMediaAiAutomaticAttemptCanStart({
+    ...ready,
+    alreadyAttempted: true,
+  }), false, "A rerender cannot dispatch the exact key twice.");
+  assert.equal(momoMediaAiAutomaticAttemptCanStart({
+    ...ready,
+    hasActiveCandidate: true,
+  }), false);
+  assert.equal(momoMediaAiAutomaticAttemptCanStart({
+    ...ready,
+    readbackRequired: true,
+  }), false);
 });
 
 test("pre-provider zero accounting is labeled truthfully", () => {
@@ -233,7 +422,7 @@ test("the Team UI requires a separately verified server runtime before a paid au
   assert.match(center, /const mediaAiPreflightReady = mediaAiDatabaseEnabled[\s\S]*?mediaAiRuntime\.value\?\.preflightReady === true/);
   assert.match(
     center,
-    /&& mediaAiPreflightReady[\s\S]*?&& !busy[\s\S]*?&& !activeAiCandidate/,
+    /momoMediaAiAutomaticAttemptCanStart\(\{[\s\S]*?preflightReady: mediaAiPreflightReady,[\s\S]*?busy,[\s\S]*?hasActiveCandidate: Boolean\(activeAiCandidate\)/,
   );
   assert.match(center, /startAutomaticAiCandidate/);
   assert.match(status, /getServerVeroxaContext/);

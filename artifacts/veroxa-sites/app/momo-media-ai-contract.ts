@@ -79,11 +79,6 @@ export const MOMO_MEDIA_AI_PRESETS: Record<
 export const MOMO_MEDIA_AI_AUTOMATIC_GOAL =
   "professional_food_finish" as const;
 export const MOMO_MEDIA_AI_AUTOMATIC_QUALITY = "high" as const;
-// Standing automation has one deliberately fixed output. The manual editor's
-// channel preset is a separate, free workflow and must never create paid jobs.
-// A future additional AI format requires its own explicit user action.
-export const MOMO_MEDIA_AI_AUTOMATIC_PRESET =
-  "instagram_portrait" as const satisfies MomoImagePresetKey;
 // Each individual attempt is authorized up to this conservative ceiling.
 // Provider usage is reconciled when OpenAI returns token usage; an uncertain
 // post-provider attempt keeps the full ceiling rather than claiming $0.
@@ -192,10 +187,11 @@ export function momoMediaAiAutomaticAttemptScope(input: {
   assetId: string;
   reviewId: string;
   sourceContentSha256: string;
+  preset: MomoImagePresetKey;
   retryNonce: number;
 }): {
   goal: typeof MOMO_MEDIA_AI_AUTOMATIC_GOAL;
-  preset: typeof MOMO_MEDIA_AI_AUTOMATIC_PRESET;
+  preset: MomoImagePresetKey;
   quality: typeof MOMO_MEDIA_AI_AUTOMATIC_QUALITY;
   idempotencyKey: string;
 } | null {
@@ -203,6 +199,7 @@ export function momoMediaAiAutomaticAttemptScope(input: {
     !isMomoMediaAiUuid(input.assetId)
     || !isMomoMediaAiUuid(input.reviewId)
     || !isMomoMediaAiHash(input.sourceContentSha256)
+    || !isMomoMediaAiPreset(input.preset)
     || !Number.isSafeInteger(input.retryNonce)
     || input.retryNonce < 0
     || input.retryNonce > 9_999
@@ -213,17 +210,114 @@ export function momoMediaAiAutomaticAttemptScope(input: {
     input.assetId,
     input.reviewId,
     input.sourceContentSha256.slice(0, 16),
-    MOMO_MEDIA_AI_AUTOMATIC_PRESET,
+    input.preset,
     input.retryNonce,
   ].join(":");
   if (!isMomoMediaAiIdempotencyKey(idempotencyKey)) return null;
 
   return {
     goal: MOMO_MEDIA_AI_AUTOMATIC_GOAL,
-    preset: MOMO_MEDIA_AI_AUTOMATIC_PRESET,
+    preset: input.preset,
     quality: MOMO_MEDIA_AI_AUTOMATIC_QUALITY,
     idempotencyKey,
   };
+}
+
+export function momoMediaAiFailedAttemptScopeKey(
+  error: unknown,
+  automaticIdempotencyKey: string,
+): string {
+  return error instanceof Error
+    && error.message === "media_ai_previous_attempt_failed"
+    && isMomoMediaAiIdempotencyKey(automaticIdempotencyKey)
+    ? automaticIdempotencyKey
+    : "";
+}
+
+export function momoMediaAiAttemptNeedsManualRetry(input: {
+  matchingStatus: MomoMediaAiCandidateStatus | undefined;
+  exactFailedReplayKeyKnown: boolean;
+}): boolean {
+  return input.matchingStatus === undefined
+    ? input.exactFailedReplayKeyKnown
+    : input.matchingStatus === "failed";
+}
+
+export function momoMediaAiAutomaticAttemptCanStart(input: {
+  idempotencyKey: string;
+  retryNonce: number;
+  sourceEligible: boolean;
+  reviewApproved: boolean;
+  rightsScopeAllowsPreset: boolean;
+  sourceFits: boolean;
+  preflightReady: boolean;
+  busy: boolean;
+  hasActiveCandidate: boolean;
+  matchingAttemptExists: boolean;
+  attemptKnownFailed: boolean;
+  readbackRequired: boolean;
+  withinAuthorization: boolean;
+  alreadyAttempted: boolean;
+}): boolean {
+  return isMomoMediaAiIdempotencyKey(input.idempotencyKey)
+    && Number.isSafeInteger(input.retryNonce)
+    && input.retryNonce >= 0
+    && input.sourceEligible
+    && input.reviewApproved
+    && input.rightsScopeAllowsPreset
+    && input.sourceFits
+    && input.preflightReady
+    && !input.busy
+    && !input.hasActiveCandidate
+    && (
+      (!input.matchingAttemptExists && !input.attemptKnownFailed)
+      || input.retryNonce > 0
+    )
+    && !input.readbackRequired
+    && input.withinAuthorization
+    && !input.alreadyAttempted;
+}
+
+export function momoMediaAiNextUnattemptedRetryScope(input: {
+  assetId: string;
+  reviewId: string;
+  sourceContentSha256: string;
+  preset: MomoImagePresetKey;
+  currentNonce: number;
+  retryIssuing: boolean;
+  retryAllowed: boolean;
+  attemptedKeys: ReadonlySet<string>;
+}): {
+  retryNonce: number;
+  idempotencyKey: string;
+} | null {
+  if (
+    input.retryIssuing
+    || !input.retryAllowed
+    || !Number.isSafeInteger(input.currentNonce)
+    || input.currentNonce < 0
+    || input.currentNonce >= 9_999
+  ) return null;
+  for (
+    let retryNonce = input.currentNonce + 1;
+    retryNonce <= 9_999;
+    retryNonce += 1
+  ) {
+    const scope = momoMediaAiAutomaticAttemptScope({
+      assetId: input.assetId,
+      reviewId: input.reviewId,
+      sourceContentSha256: input.sourceContentSha256,
+      preset: input.preset,
+      retryNonce,
+    });
+    if (scope && !input.attemptedKeys.has(scope.idempotencyKey)) {
+      return {
+        retryNonce,
+        idempotencyKey: scope.idempotencyKey,
+      };
+    }
+  }
+  return null;
 }
 
 export function momoMediaAiAccountingLabel(input: {

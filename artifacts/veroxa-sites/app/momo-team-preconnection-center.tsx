@@ -35,7 +35,6 @@ import {
 } from "./momo-team-preconnection-data";
 import {
   MOMO_MEDIA_AI_AUTHORIZATION_THRESHOLD_MICROUSD,
-  MOMO_MEDIA_AI_AUTOMATIC_PRESET,
   MOMO_MEDIA_AI_AUTOMATIC_GOAL,
   MOMO_MEDIA_AI_AUTOMATIC_QUALITY,
   MOMO_MEDIA_AI_GOALS,
@@ -44,9 +43,13 @@ import {
   MOMO_MEDIA_AI_PROCESSING_ATTESTATION,
   MOMO_MEDIA_AI_RESERVATION_MICROUSD,
   momoMediaAiAccountingLabel,
+  momoMediaAiAutomaticAttemptCanStart,
+  momoMediaAiAttemptNeedsManualRetry,
   momoMediaAiAutomaticAttemptScope,
   momoMediaAiErrorMessage,
+  momoMediaAiFailedAttemptScopeKey,
   momoMediaAiInspectionAllowsApproval,
+  momoMediaAiNextUnattemptedRetryScope,
 } from "./momo-media-ai-contract";
 import { analyzeMomoSeoEvidence, buildMomoSeoChangePlan } from "./momo-seo-workbench";
 import { MOMO_GROWTH_EVIDENCE } from "./momo-growth-evidence";
@@ -233,7 +236,14 @@ function MomoTeamImageEditor({
 }) {
   const editableAssets = (workspace?.media || []).filter((asset) => /^image\/(jpeg|png|webp)$/.test(asset.mime_type));
   const [sourceAssetId, setSourceAssetId] = useState(() => preferredAssetId || editableAssets[0]?.id || "");
-  const [preset, setPreset] = useState<MomoImagePresetKey>("instagram_portrait");
+  const [preset, setPreset] =
+    useState<MomoImagePresetKey>("instagram_portrait");
+  const [aiDestinationSelection, setAiDestinationSelection] = useState<{
+    assetId: string;
+    reviewId: string;
+    sourceContentSha256: string;
+    preset: MomoImagePresetKey;
+  } | null>(null);
   const [rotation, setRotation] = useState<0 | 90 | 180 | 270>(0);
   const [brightness, setBrightness] = useState(103);
   const [contrast, setContrast] = useState(105);
@@ -245,6 +255,12 @@ function MomoTeamImageEditor({
   const [altText, setAltText] = useState("Momo’s House food image prepared for private review.");
   const [aiRetryNonce, setAiRetryNonce] = useState(0);
   const automaticAttemptedKeys = useRef(new Set<string>());
+  const [automaticAttemptedKeySnapshot, setAutomaticAttemptedKeySnapshot] =
+    useState<ReadonlySet<string>>(() => new Set());
+  const aiRetryIssuingRef = useRef(false);
+  const [aiRetryIssuing, setAiRetryIssuing] = useState(false);
+  const [authoritativeFailedAttemptKeys, setAuthoritativeFailedAttemptKeys] =
+    useState<ReadonlySet<string>>(() => new Set());
   const [aiReadbackRequired, setAiReadbackRequired] = useState(false);
   const [mediaAiRuntime, setMediaAiRuntime] = useState<{
     state: "checking" | "ready" | "unavailable";
@@ -259,6 +275,14 @@ function MomoTeamImageEditor({
   const selectedAsset = editableAssets.find((asset) => asset.id === sourceAssetId);
   const selectedRights = selectedAsset ? workspace?.mediaRights.find((item) => item.asset_id === selectedAsset.id) : null;
   const selectedReview = selectedAsset ? workspace?.mediaReviews.find((item) => item.asset_id === selectedAsset.id && item.is_current) : null;
+  const aiPreset =
+    aiDestinationSelection
+    && aiDestinationSelection.assetId === selectedAsset?.id
+    && aiDestinationSelection.reviewId === selectedReview?.id
+    && aiDestinationSelection.sourceContentSha256
+      === selectedAsset?.content_sha256
+      ? aiDestinationSelection.preset
+      : "";
   const selectedUsageScope = jsonArray(selectedRights?.usage_scope).filter((item): item is string => typeof item === "string");
   const previousRendition = selectedAsset
     ? data.renditions.find((item) => item.source_asset_id === selectedAsset.id && item.status === "ready")
@@ -283,12 +307,25 @@ function MomoTeamImageEditor({
   const selectedAiCandidates = selectedAsset
     ? data.mediaAiCandidates.filter((item) => item.source_asset_id === selectedAsset.id)
     : [];
-  const matchingAutomaticAttempt = selectedAsset && selectedReview
+  const automaticAttemptScope = selectedAsset && selectedReview && aiPreset
+    ? momoMediaAiAutomaticAttemptScope({
+      assetId: selectedAsset.id,
+      reviewId: selectedReview.id,
+      sourceContentSha256: selectedAsset.content_sha256 || "",
+      preset: aiPreset,
+      retryNonce: aiRetryNonce,
+    })
+    : null;
+  const selectedAutomaticPreset = automaticAttemptScope?.preset;
+  const automaticIdempotencyKey =
+    automaticAttemptScope?.idempotencyKey || "";
+  const matchingAutomaticAttempt =
+    selectedAsset && selectedReview && selectedAutomaticPreset
     ? selectedAiCandidates.find((item) =>
       item.source_content_sha256 === selectedAsset.content_sha256
       && item.review_id === selectedReview.id
       && item.goal === MOMO_MEDIA_AI_AUTOMATIC_GOAL
-      && item.preset_key === MOMO_MEDIA_AI_AUTOMATIC_PRESET)
+      && item.preset_key === selectedAutomaticPreset)
     : undefined;
   const pendingAiCandidate = selectedAiCandidates.find((item) => item.status === "pending_review");
   const providerRunningAiCandidate = selectedAiCandidates.find((item) => item.status === "provider_running");
@@ -351,10 +388,15 @@ function MomoTeamImageEditor({
   const synthetic = sourceAssetId === "synthetic-fixture-v1";
   const selectedPresetUse = MOMO_IMAGE_PRESETS[preset].intendedUse;
   const scopeAllowsPreset = synthetic || selectedUsageScope.includes(selectedPresetUse);
-  const automaticPresetUse =
-    MOMO_MEDIA_AI_PRESETS[MOMO_MEDIA_AI_AUTOMATIC_PRESET].intendedUse;
+  const automaticPresetContract = selectedAutomaticPreset
+    ? MOMO_MEDIA_AI_PRESETS[selectedAutomaticPreset]
+    : null;
+  const automaticPresetUse = automaticPresetContract?.intendedUse || "";
   const scopeAllowsAutomaticPreset =
-    selectedUsageScope.includes(automaticPresetUse);
+    Boolean(
+      automaticPresetUse
+      && selectedUsageScope.includes(automaticPresetUse)
+    );
   const showEditor = synthetic || selectedWorkflow.reviewApproved;
   const canRender = synthetic || (selectedWorkflow.reviewApproved && scopeAllowsPreset);
   const mediaAiDatabaseEnabled = Boolean(data.runtimeControls[0]?.ai_live_calls);
@@ -380,31 +422,34 @@ function MomoTeamImageEditor({
   const automaticProfileWithinAuthorization =
     MOMO_MEDIA_AI_RESERVATION_MICROUSD.high
       <= MOMO_MEDIA_AI_AUTHORIZATION_THRESHOLD_MICROUSD;
-  const selectedAssetContentSha256 = selectedAsset?.content_sha256 || "";
-  const automaticAttemptScope = selectedAsset && selectedReview
-    ? momoMediaAiAutomaticAttemptScope({
-      assetId: selectedAsset.id,
-      reviewId: selectedReview.id,
-      sourceContentSha256: selectedAssetContentSha256,
-      retryNonce: aiRetryNonce,
-    })
-    : null;
-  const automaticIdempotencyKey =
-    automaticAttemptScope?.idempotencyKey || "";
-  const canStartAutomaticAi = Boolean(
-    !synthetic
-    && selectedAsset
-    && selectedWorkflow.reviewApproved
-    && scopeAllowsAutomaticPreset
-    && sourceFitsMediaAi
-    && mediaAiPreflightReady
-    && !busy
-    && !activeAiCandidate
-    && (!matchingAutomaticAttempt || aiRetryNonce > 0)
-    && !aiReadbackRequired
-    && automaticProfileWithinAuthorization
-    && automaticIdempotencyKey,
-  );
+  const automaticAttemptKnownFailed = momoMediaAiAttemptNeedsManualRetry({
+    matchingStatus: matchingAutomaticAttempt?.status,
+    exactFailedReplayKeyKnown: Boolean(
+      automaticIdempotencyKey
+      && authoritativeFailedAttemptKeys.has(automaticIdempotencyKey)
+    ),
+  });
+  const canStartAutomaticAi = momoMediaAiAutomaticAttemptCanStart({
+    idempotencyKey: automaticIdempotencyKey,
+    retryNonce: aiRetryNonce,
+    sourceEligible: Boolean(
+      !synthetic
+      && selectedAsset
+      && selectedAutomaticPreset
+    ),
+    reviewApproved: selectedWorkflow.reviewApproved,
+    rightsScopeAllowsPreset: scopeAllowsAutomaticPreset,
+    sourceFits: sourceFitsMediaAi,
+    preflightReady: mediaAiPreflightReady,
+    busy,
+    hasActiveCandidate: Boolean(activeAiCandidate),
+    matchingAttemptExists: Boolean(matchingAutomaticAttempt),
+    attemptKnownFailed: automaticAttemptKnownFailed,
+    readbackRequired: aiReadbackRequired,
+    withinAuthorization: automaticProfileWithinAuthorization,
+    alreadyAttempted:
+      automaticAttemptedKeySnapshot.has(automaticIdempotencyKey),
+  });
 
   const resetAiRequest = () => {
     setAiRetryNonce(0);
@@ -414,6 +459,46 @@ function MomoTeamImageEditor({
       notes: "",
     });
     setRenderedAiCandidateToken("");
+  };
+
+  const authorizeAiRetry = () => {
+    if (
+      !selectedAsset
+      || !selectedReview
+      || !selectedAutomaticPreset
+      || !selectedAsset.content_sha256
+    ) return;
+    const nextRetryScope = momoMediaAiNextUnattemptedRetryScope({
+      assetId: selectedAsset.id,
+      reviewId: selectedReview.id,
+      sourceContentSha256: selectedAsset.content_sha256,
+      preset: selectedAutomaticPreset,
+      currentNonce: aiRetryNonce,
+      retryIssuing: aiRetryIssuingRef.current,
+      retryAllowed: Boolean(
+        automaticAttemptKnownFailed
+        && automaticIdempotencyKey
+        && !activeAiCandidate
+        && !busy
+        && !aiReadbackRequired
+        && selectedWorkflow.reviewApproved
+        && scopeAllowsAutomaticPreset
+        && sourceFitsMediaAi
+        && mediaAiPreflightReady
+        && automaticProfileWithinAuthorization
+      ),
+      attemptedKeys: automaticAttemptedKeys.current,
+    });
+    if (!nextRetryScope) return;
+    aiRetryIssuingRef.current = true;
+    setAiRetryIssuing(true);
+    setAuthoritativeFailedAttemptKeys((current) => {
+      if (!current.has(automaticIdempotencyKey)) return current;
+      const next = new Set(current);
+      next.delete(automaticIdempotencyKey);
+      return next;
+    });
+    setAiRetryNonce(nextRetryScope.retryNonce);
   };
 
   const createRendition = async () => {
@@ -514,23 +599,38 @@ function MomoTeamImageEditor({
       || automaticAttemptedKeys.current.has(automaticIdempotencyKey)
     ) return;
     const startAutomaticAiCandidate = async () => {
-      if (!selectedAsset) throw new Error("source_not_ready");
+      if (!selectedAsset || !selectedAutomaticPreset) {
+        throw new Error("source_not_ready");
+      }
       setAiReadbackRequired(true);
       try {
         await generateMomoMediaAiCandidate({
           restaurantId,
           assetId: selectedAsset.id,
           goal: MOMO_MEDIA_AI_AUTOMATIC_GOAL,
-          preset: MOMO_MEDIA_AI_AUTOMATIC_PRESET,
+          preset: selectedAutomaticPreset,
           quality: MOMO_MEDIA_AI_AUTOMATIC_QUALITY,
           altText: "Momo’s House food image prepared as a private high-fidelity AI candidate.",
           idempotencyKey: automaticIdempotencyKey,
           standingAutomation: true,
         });
       } catch (error) {
+        const failedScopeKey = momoMediaAiFailedAttemptScopeKey(
+          error,
+          automaticIdempotencyKey,
+        );
         try {
           await refreshData();
           setAiReadbackRequired(false);
+          aiRetryIssuingRef.current = false;
+          setAiRetryIssuing(false);
+          if (failedScopeKey) {
+            setAuthoritativeFailedAttemptKeys((current) => {
+              const next = new Set(current);
+              next.add(failedScopeKey);
+              return next;
+            });
+          }
         } catch {
           throw new Error("media_ai_readback_required");
         }
@@ -542,6 +642,8 @@ function MomoTeamImageEditor({
         throw new Error("media_ai_readback_required");
       }
       setAiReadbackRequired(false);
+      aiRetryIssuingRef.current = false;
+      setAiRetryIssuing(false);
       setAiInspection({
         candidateToken: "",
         confirmed: false,
@@ -550,6 +652,12 @@ function MomoTeamImageEditor({
       setRenderedAiCandidateToken("");
     };
     automaticAttemptedKeys.current.add(automaticIdempotencyKey);
+    setAutomaticAttemptedKeySnapshot((current) => {
+      if (current.has(automaticIdempotencyKey)) return current;
+      const next = new Set(current);
+      next.add(automaticIdempotencyKey);
+      return next;
+    });
     void run(
       startAutomaticAiCandidate,
       "Standing Momo automation created and verified one high-fidelity private AI candidate. Open and inspect it before deciding whether it may become Ready.",
@@ -561,6 +669,7 @@ function MomoTeamImageEditor({
     refreshData,
     restaurantId,
     selectedAsset,
+    selectedAutomaticPreset,
     run,
   ]);
 
@@ -569,27 +678,29 @@ function MomoTeamImageEditor({
     <div className="momo-media-journey team-media-journey" aria-label="Team media workflow"><ol><li className={selectedWorkflow.uploaded ? "done" : "current"}><b>1</b><span><strong>Uploaded</strong><small>Private original</small></span></li><li className={selectedWorkflow.reviewApproved ? "done" : selectedWorkflow.uploaded ? "current" : ""}><b>2</b><span><strong>Team review</strong><small>{selectedWorkflow.reviewApproved ? "Review approved" : "Required first"}</small></span></li><li className={selectedWorkflow.improvementReady ? "done" : selectedWorkflow.reviewApproved ? "current" : ""}><b>3</b><span><strong>Prepare</strong><small>{selectedWorkflow.improvementReady ? "Rendered and opened" : "Size and appearance"}</small></span></li><li className={selectedWorkflow.ready ? "done" : ""}><b>4</b><span><strong>Ready</strong><small>{selectedWorkflow.ready ? "Compare below" : "After verification"}</small></span></li></ol><em>Team only · no posting</em></div>
     {selectedRights && <p className="momo-form-note">Evidence class: <strong>{titleCase(selectedRights.evidence_class || "unknown")}</strong>{selectedRights.evidence_class === "development_proxy" ? " · rehearsal evidence only; this does not prove owner onboarding readiness" : ""}.</p>}
     {editableAssets.length === 0 ? <p className="momo-warning">No supported real image is available. Ask the Client to upload a JPG, PNG, or WebP image first.</p> : <>
-      <label>Real source image<select value={sourceAssetId} onChange={(event) => { const next = event.target.value; resetAiRequest(); setSourceAssetId(next); if (next !== "synthetic-fixture-v1") onPreferredAssetChange?.(next); }}>{editableAssets.map((asset) => <option key={asset.id} value={asset.id}>{asset.original_file_name || asset.storage_path.split("/").at(-1)}</option>)}{synthetic && <option value="synthetic-fixture-v1">Built-in synthetic test card</option>}</select></label>
+      <label>Real source image<select value={sourceAssetId} disabled={busy || aiReadbackRequired || aiRetryIssuing || Boolean(activeAiCandidate)} onChange={(event) => { const next = event.target.value; resetAiRequest(); setAiDestinationSelection(null); setSourceAssetId(next); if (next !== "synthetic-fixture-v1") onPreferredAssetChange?.(next); }}>{editableAssets.map((asset) => <option key={asset.id} value={asset.id}>{asset.original_file_name || asset.storage_path.split("/").at(-1)}</option>)}{synthetic && <option value="synthetic-fixture-v1">Built-in synthetic test card</option>}</select></label>
       {selectedAsset && <div className="momo-editor-preview-grid"><TeamPrivateImagePreview key={selectedAsset.storage_path} storagePath={selectedAsset.storage_path} alt={`Private original ${selectedAsset.original_file_name || "Momo image"}`} label="Original · unchanged" />{visibleRendition ? <TeamPrivateImagePreview key={visibleRendition.storage_path} storagePath={visibleRendition.storage_path} alt={visibleRendition.alt_text} label={`${selectedWorkflow.ready ? "Ready for private review" : "Previous private version · not currently Ready"} · ${visibleRendition.width}×${visibleRendition.height}`} expectedContentSha256={visibleRendition.content_sha256} renditionId={currentRendition?.id === visibleRendition.id ? currentRendition.id : undefined} setRenderedRenditionId={currentRendition?.id === visibleRendition.id ? setRenderedRenditionId : undefined} /> : <div className="momo-editor-preview-empty"><strong>Prepared version</strong><span>{selectedWorkflow.reviewApproved ? "Choose the output below, then render privately." : "Complete Team review first."}</span></div>}</div>}
     </>}
     {!synthetic && selectedAsset && !selectedWorkflow.reviewApproved && <div className="momo-editor-blocker" role="status"><strong>Review unlocks improvement</strong><p>{!selectedWorkflow.rightsConfirmed ? "This image does not have a confirmed rights record, so Veroxa must fail closed." : "In Step 2 above, record the quality review and approve public-use preparation. That permission does not post or connect any account."}</p><a href={`#momo-media-${selectedAsset.id}`}>Go to this image’s review</a></div>}
     {!synthetic && selectedWorkflow.reviewApproved && !scopeAllowsPreset && <div className="momo-editor-blocker" role="status"><strong>This output is outside the permitted uses</strong><p>The owner’s current rights do not include {titleCase(selectedPresetUse)}. Choose an allowed output preset or obtain a new rights record; Veroxa will not render it.</p></div>}
     {showEditor && <>
-      <div className="momo-form-grid momo-editor-essentials"><label>Output preset<select value={preset} onChange={(event) => { const next = event.target.value as MomoImagePresetKey; setPreset(next); if (next === "google_business_square" && format === "image/webp") setFormat("image/jpeg"); }}>{Object.entries(MOMO_IMAGE_PRESETS).map(([key, item]) => <option key={key} value={key}>{item.label} · {item.width}×{item.height}</option>)}</select></label><label className="wide">Accessible description<textarea value={altText} maxLength={280} rows={2} onChange={(event) => setAltText(event.target.value)} /></label></div>
+      <div className="momo-form-grid momo-editor-essentials"><label>Output preset<select value={preset} disabled={busy} onChange={(event) => { const next = event.target.value as MomoImagePresetKey; setPreset(next); if (next === "google_business_square" && format === "image/webp") setFormat("image/jpeg"); }}>{Object.entries(MOMO_IMAGE_PRESETS).map(([key, item]) => <option key={key} value={key}>{item.label} · {item.width}×{item.height}</option>)}</select></label><label className="wide">Accessible description<textarea value={altText} maxLength={280} rows={2} onChange={(event) => setAltText(event.target.value)} /></label></div>
       <details className="momo-operations-details momo-editor-advanced"><summary><span><strong>Advanced image settings</strong><small>Focal position, orientation, appearance, format, and compression.</small></span><b>Optional</b></summary><div className="momo-form-grid"><label>Horizontal focal point<input type="range" min={0} max={100} value={focalX} onChange={(event) => setFocalX(Number(event.target.value))} /><small>{focalX < 34 ? "Left" : focalX > 66 ? "Right" : "Center"}</small></label><label>Vertical focal point<input type="range" min={0} max={100} value={focalY} onChange={(event) => setFocalY(Number(event.target.value))} /><small>{focalY < 34 ? "Top" : focalY > 66 ? "Bottom" : "Center"}</small></label><label>Rotation<select value={rotation} onChange={(event) => setRotation(Number(event.target.value) as 0 | 90 | 180 | 270)}><option value={0}>0°</option><option value={90}>90°</option><option value={180}>180°</option><option value={270}>270°</option></select></label><label>Format<select value={format} onChange={(event) => setFormat(event.target.value as typeof format)}><option value="image/webp" disabled={preset === "google_business_square"}>WebP</option><option value="image/jpeg">JPEG</option><option value="image/png">PNG</option></select></label><label>Brightness<input type="range" min={80} max={120} value={brightness} onChange={(event) => setBrightness(Number(event.target.value))} /><small>{brightness}%</small></label><label>Contrast<input type="range" min={80} max={120} value={contrast} onChange={(event) => setContrast(Number(event.target.value))} /><small>{contrast}%</small></label><label>Saturation<input type="range" min={75} max={125} value={saturation} onChange={(event) => setSaturation(Number(event.target.value))} /><small>{saturation}%</small></label><label>Quality<input type="range" min={0.5} max={1} step={0.01} value={quality} onChange={(event) => setQuality(Number(event.target.value))} /><small>{Math.round(quality * 100)}%</small></label></div></details>
       <p className="momo-form-note">The original is never changed. The derivative keeps an exact recipe, dimensions, source/output hashes, lineage, alt text, and private storage path.</p>
       <button className="primary-button momo-render-button" disabled={busy || !altText.trim() || !canRender} onClick={() => void run(createRendition, "Private channel-sized version rendered, technically verified, and linked to its unchanged original. Compare both versions before any later use.")}>{busy ? "Rendering and verifying…" : "Create private prepared version"}</button>
     </>}
     {!synthetic && selectedAsset && <section className="momo-media-ai-pilot" aria-labelledby="momo-media-ai-title">
-      <div className="momo-panel-heading"><div><p className="eyebrow">STANDING AUTOMATION · PRIVATE CANDIDATE</p><h3 id="momo-media-ai-title">High-fidelity food finishing</h3><small>When this Team workspace observes a rights-current, approved Momo image, it starts one fixed server-side OpenAI edit automatically. The original remains unchanged; retries, Ready approval, and publishing are never automatic.</small></div><Badge value={pendingAiCandidate ? "review_required" : mediaAiRuntime.state === "checking" ? "checking" : mediaAiPreflightReady ? "preflight_ready" : "blocked"} /></div>
+      <div className="momo-panel-heading"><div><p className="eyebrow">STANDING AUTOMATION · PRIVATE CANDIDATE</p><h3 id="momo-media-ai-title">High-fidelity food finishing</h3><small>When this Team workspace observes a rights-current, approved Momo image, it starts one server-side OpenAI edit for the selected output destination. The original remains unchanged; retries, Ready approval, and publishing are never automatic.</small></div><Badge value={pendingAiCandidate ? "review_required" : mediaAiRuntime.state === "checking" ? "checking" : mediaAiPreflightReady ? "preflight_ready" : "blocked"} /></div>
       <div className="momo-media-ai-budget"><span>Automatic authorization<strong>up to {mediaAiDollars(MOMO_MEDIA_AI_AUTHORIZATION_THRESHOLD_MICROUSD)} per job</strong></span><small>{mediaAiDollars(mediaAiCommittedMicrousd)} recorded across the loaded operational window: every active attempt plus the 25 newest terminal attempts. Each high-fidelity attempt reserves up to the per-job threshold. Completed requests use OpenAI’s returned usage when available; otherwise they retain the conservative authorization hold; an individual job requiring more than $20 stops and asks Faraz before OpenAI is called. This release has no batch runner.</small></div>
       {!mediaAiDatabaseEnabled && <p className="momo-warning">The database control for Media AI is not active. No provider call or charge can occur; the free manual editor remains available.</p>}
       {mediaAiDatabaseEnabled && mediaAiRuntime.state === "checking" && <p className="momo-form-note">Checking the protected server credential, Team-bound lifecycle bridge, and <code>gpt-image-2</code> model metadata before an eligible attempt may start…</p>}
       {mediaAiDatabaseEnabled && mediaAiRuntime.state === "unavailable" && <p className="momo-warning">The protected server runtime could not be verified. No provider call or charge can occur until that check succeeds.</p>}
       {mediaAiDatabaseEnabled && mediaAiRuntime.state === "ready" && !mediaAiRuntime.value?.preflightReady && <p className="momo-warning">The database control is active, but the protected credential, Team-bound lifecycle bridge, or <code>gpt-image-2</code> metadata check did not pass. No image request or charge can occur.</p>}
       {mediaAiPreflightReady && <p className="momo-form-note">Server preflight passed. This proves configuration, Team-bound lifecycle authority, and model metadata visibility—not Images Edit entitlement. The first eligible provider response remains the fail-closed entitlement proof.</p>}
+      <label>AI output destination<select value={aiPreset} disabled={busy || aiReadbackRequired || aiRetryIssuing || Boolean(activeAiCandidate) || !selectedWorkflow.reviewApproved} onChange={(event) => { const next = event.target.value as MomoImagePresetKey | ""; resetAiRequest(); setAiDestinationSelection(next && selectedAsset && selectedReview && selectedAsset.content_sha256 ? { assetId: selectedAsset.id, reviewId: selectedReview.id, sourceContentSha256: selectedAsset.content_sha256, preset: next } : null); }}><option value="">Choose a destination before any paid request</option>{Object.entries(MOMO_MEDIA_AI_PRESETS).map(([key, item]) => <option key={key} value={key}>{MOMO_IMAGE_PRESETS[key as MomoImagePresetKey].label} · {item.width}×{item.height}</option>)}</select></label>
+      {!selectedAutomaticPreset && <p className="momo-form-note">No AI destination is authorized yet. Choosing one is the explicit Team action that permits one automatic high-fidelity request for this exact image and review.</p>}
       {!sourceFitsMediaAi && <p className="momo-warning">This source is larger than Media AI’s 20 MB private-processing limit. The free manual editor remains available; upload a current image at or below 20 MB to use AI.</p>}
-      {selectedWorkflow.reviewApproved && !scopeAllowsAutomaticPreset && <p className="momo-warning">Standing AI uses the fixed {titleCase(automaticPresetUse)} portrait output, which is not included in the current rights scope. No paid request will start. Changing the free manual editor preset does not change the AI output; any future additional AI format will require an explicit action.</p>}
+      {selectedWorkflow.reviewApproved && selectedAutomaticPreset && !scopeAllowsAutomaticPreset && <p className="momo-warning">The selected {titleCase(automaticPresetUse)} AI destination is not included in the current rights scope. No paid request will start. Choose an allowed AI destination or obtain a new rights record.</p>}
       {aiReadbackRequired && <p className="momo-warning">Authoritative AI attempt history is unavailable. The original request key is preserved and new paid requests are blocked; refresh this Team workspace before continuing.</p>}
       {reservedAiCandidate && <div className="momo-editor-blocker" role="status"><strong>Unused reservation can be closed</strong><p>The provider boundary was not crossed and $0 is accounted. Close this interrupted reservation before starting a fresh request.</p><button type="button" disabled={busy} onClick={() => void run(closeAiAttempt, "The unused reservation was closed at $0 accounted. A fresh request may now be created.")}>Close unused reservation</button></div>}
       {providerRunningAiCandidate && <div className="momo-editor-blocker" role="status"><strong>Provider boundary already crossed</strong><p>Veroxa will never send this exact request twice. {providerRunningMayClose ? "Its 10-minute safety window has elapsed; close it as uncertain and conservatively account the full reservation." : "Wait up to 10 minutes, then refresh. If no final result appears, the attempt can be closed without retrying the provider."}</p>{providerRunningMayClose && <button type="button" disabled={busy} onClick={() => void run(closeAiAttempt, "The uncertain attempt was closed, fully accounted, and will never be retried.")}>Close uncertain attempt</button>}</div>}
@@ -608,12 +719,10 @@ function MomoTeamImageEditor({
           </div>
         </div>
       </> : <div className="momo-media-ai-controls">
-        <p className="momo-form-note">Automatic profile: {MOMO_MEDIA_AI_GOALS[MOMO_MEDIA_AI_AUTOMATIC_GOAL].label} at high fidelity. Fixed output: {MOMO_MEDIA_AI_PRESETS[MOMO_MEDIA_AI_AUTOMATIC_PRESET].width}×{MOMO_MEDIA_AI_PRESETS[MOMO_MEDIA_AI_AUTOMATIC_PRESET].height} PNG for {titleCase(MOMO_MEDIA_AI_PRESETS[MOMO_MEDIA_AI_AUTOMATIC_PRESET].intendedUse)}. The free manual editor preset does not change this paid request. The prompt is fixed by Veroxa; free-form instructions are never sent.</p>
-        <p className="momo-form-note">{MOMO_MEDIA_AI_PROCESSING_ATTESTATION} The portal starts at most one automatic attempt for this exact asset and review. Any future additional AI format requires a separate explicit action; this release does not automate one.</p>
+        {automaticPresetContract && <p className="momo-form-note">Automatic profile: {MOMO_MEDIA_AI_GOALS[MOMO_MEDIA_AI_AUTOMATIC_GOAL].label} at high fidelity. Selected AI output: {automaticPresetContract.width}×{automaticPresetContract.height} PNG for {titleCase(automaticPresetContract.intendedUse)}. Choosing another AI destination is the explicit action for one different format. The free manual-editor preset never authorizes a paid request. The prompt is fixed by Veroxa; free-form instructions are never sent.</p>}
+        <p className="momo-form-note">{MOMO_MEDIA_AI_PROCESSING_ATTESTATION} The portal starts at most one automatic attempt for this exact asset, review, and selected destination. It never retries the provider automatically.</p>
         {canStartAutomaticAi && <p className="momo-form-note" role="status">This eligible image is entering the standing automation now. The provider will never be retried automatically.</p>}
-        {matchingAutomaticAttempt?.status === "failed" && !activeAiCandidate && <button type="button" className="secondary-button" disabled={busy || aiReadbackRequired} onClick={() => {
-          setAiRetryNonce((value) => value + 1);
-        }}>Authorize one manual retry</button>}
+        {automaticAttemptKnownFailed && !activeAiCandidate && !aiRetryIssuing && <button type="button" className="secondary-button" disabled={busy || aiReadbackRequired || !mediaAiPreflightReady || !selectedWorkflow.reviewApproved || !scopeAllowsAutomaticPreset || !sourceFitsMediaAi} onClick={authorizeAiRetry}>Authorize one manual retry</button>}
       </div>}
       {selectedAiCandidates.length > 0 && <details className="momo-operations-details"><summary><span><strong>AI attempt history</strong><small>Usage-aware accounting and private review state.</small></span><b>{selectedAiCandidates.length}</b></summary><div className="momo-record-list">{selectedAiCandidates.slice(0, 8).map((item) => <article key={item.id}><div><strong>{MOMO_MEDIA_AI_GOALS[item.goal].label} · {titleCase(item.quality)}</strong><p>{momoMediaAiAccountingLabel({ reservedMicrousd: item.reserved_microusd, accountedMicrousd: item.accounted_microusd, accountingBasis: item.accounting_basis })} · {item.output_width}×{item.output_height}</p><small>{formatDate(item.requested_at)} · no external write</small></div><Badge value={item.status} /></article>)}</div></details>}
     </section>}

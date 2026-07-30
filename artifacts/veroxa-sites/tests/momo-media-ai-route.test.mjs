@@ -381,6 +381,25 @@ test("an above-threshold request blocks before the provider boundary", async () 
   assert.equal(calls.provider.length, 0);
 });
 
+test("an authoritative failed replay exposes a manual-retry signal without crossing the provider boundary", async () => {
+  const { handler, calls } = harness({
+    reserve: async () => {
+      throw new Error("momo_media_ai_failed_attempt_cannot_replay");
+    },
+  });
+  const response = await handler(request());
+  assert.equal(response.status, 409);
+  assert.equal(
+    (await json(response)).error,
+    "media_ai_previous_attempt_failed",
+  );
+  assert.deepEqual(calls.order, []);
+  assert.equal(calls.provider.length, 0);
+  assert.equal(calls.store.length, 0);
+  assert.equal(calls.complete.length, 0);
+  assert.equal(calls.fail.length, 0);
+});
+
 test("requires exact standing authorization, enums, ids, body bounds, and idempotency agreement", async () => {
   const { handler, calls } = harness();
   for (const invalid of [
@@ -477,6 +496,38 @@ test("executes one exact provider call after source verification and before priv
   assert.equal(calls.complete[0].accountingBasis, "conservative_reservation");
   assert.equal(calls.complete[0].providerUsage, null);
   assert.equal(response.headers.get("cache-control"), "no-store, max-age=0");
+});
+
+test("binds nonportrait Team destinations to reservation and exact provider size", async () => {
+  for (const presetKey of [
+    "google_business_square",
+    "website_hero",
+  ]) {
+    const preset = MOMO_MEDIA_AI_PRESETS[presetKey];
+    let reserveInput;
+    let providerForm;
+    const { handler } = harness({
+      async reserve(input) {
+        reserveInput = input;
+        return reservation({
+          outputWidth: preset.width,
+          outputHeight: preset.height,
+          intendedUse: preset.intendedUse,
+        });
+      },
+      async callOpenAI(body) {
+        providerForm = body;
+        return providerResponse(png(preset.width, preset.height));
+      },
+    });
+    const response = await handler(request({ preset: presetKey }));
+    assert.equal(response.status, 200);
+    assert.equal(reserveInput.preset, presetKey);
+    assert.equal(
+      providerForm.get("size"),
+      `${preset.width}x${preset.height}`,
+    );
+  }
 });
 
 test("standing automation idempotency is stable across Team operators for the same restaurant and key", async () => {
