@@ -344,7 +344,7 @@ const expected = {
   candidate: {
     basedOnGitHubMainCommit: "979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6",
     sourceFileCount: 88,
-    sourceTreeSha256: "5c51a660ee2cf902ed1f2863278bad966132df28ab2d0195a9aeb43019fc7885",
+    sourceTreeSha256: "1a0a355cba214fd8deafa4ac90ec7475dfc3e1705c3ca72865ed6dd6048082bf",
     migrationFileCount: 16,
     migrationTreeSha256: "09aab45cda17810b52a07429700a4557308405d40a3983635d6bb7848dd4c729",
     migration: "20260728044916_momo_media_ai_pilot_v1.sql",

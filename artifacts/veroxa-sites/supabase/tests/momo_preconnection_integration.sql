@@ -6,6 +6,8 @@
 -- evidence or authority change may survive the rollback.
 
 begin;
+create extension if not exists pgtap with schema extensions;
+select plan(1);
 
 -- Hosted verification applies every migration to a clean database before this
 -- transactional suite runs. Production data is deliberately not a migration,
@@ -3849,11 +3851,8 @@ end $$;
 
 reset role;
 
+select pass(
+  'Momo preconnection and Media AI integration contracts pass and remain rollback-only'
+);
+select * from finish();
 rollback;
-
-select jsonb_build_object(
-  'suite', 'momo_preconnection_integration',
-  'status', 'passed',
-  'externalWrites', false,
-  'rolledBackBySuite', true
-) as result;
