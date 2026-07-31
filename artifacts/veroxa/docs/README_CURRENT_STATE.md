@@ -2,7 +2,15 @@
 
 Status: Short index for Faraz, Codex, and future ChatGPT/Codex sessions.
 
-## 2026-07-30 — v21 live; lifecycle bridge remains a candidate
+## 2026-07-30 — v22 signed lifecycle bridge live
+
+- Start with `MOMO_MEDIA_V22_LIVE_CLOSEOUT.json`, `VEROXA_CURRENT_MILESTONE.md`, `VEROXA_DEPLOYMENT_MANIFEST.json`, and `RR_RELEASE_CHECKPOINT.json`. The bundled readiness tracker is the immutable v22 pre-deploy snapshot for No-Go/rights/spend evidence, not current bridge-deployment authority.
+- PR #155 merged at `d1f6a9a78ac54cd5447689d5f8b3d42466daf479`; Sites v22 is live from checkout `83bf6496a02559bf7bbc3fe9bc02ff7f9f8b3f6e`; the exact 93-file source hash is `8bc4ef94c0f670ff128774e26a9de3d9849269f74b6e5c5af05f07ee0c9e5490`.
+- The JWT-protected signed lifecycle bridge, masked signing key, OpenAI key, and runtime flag are deployed. Migration 16 is unchanged; missing-JWT and unauthenticated status probes fail closed; custom domains and SSL are active.
+- Authenticated Team preflight and the real Team/Client rehearsal remain pending. The current upload rights are expired; candidates, provider calls, and incurred spend remain zero.
+- USD $20 remains the automatic threshold per job. AI output stays private; Google/social, public publishing, owner-controlled providers, and activation remain locked. Momo remains No-Go.
+
+## 2026-07-30 — v21 live; lifecycle bridge remains a candidate (historical pre-v22 checkpoint)
 
 - Start with `VEROXA_CURRENT_MILESTONE.md`, `VEROXA_DEPLOYMENT_MANIFEST.json`, `RR_RELEASE_CHECKPOINT.json`, and `artifacts/veroxa-sites/app/momo-readiness-tracker.json`.
 - PR #154 is merged at `72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695`; Sites version 21 is live from `8c50dd6726629e77d22f07eb6aac9f6982001902`; migration 16 is applied and verified.
@@ -13,17 +21,17 @@ Status: Short index for Faraz, Codex, and future ChatGPT/Codex sessions.
 ## 2026-07-30 — high-quality Media AI candidate; v20 remains live (historical pre-v21 checkpoint)
 
 - For candidate truth, start with `VEROXA_CURRENT_MILESTONE.md`, `VEROXA_DEPLOYMENT_MANIFEST.json`, `RR_RELEASE_CHECKPOINT.json`, and `artifacts/veroxa-sites/app/momo-readiness-tracker.json`.
-- For production truth, `MOMO_MEDIA_V20_LIVE_CLOSEOUT.json` remains authoritative: PR #152, Sites version 20, and 15 applied migrations are live.
+- At that historical checkpoint, `MOMO_MEDIA_V20_LIVE_CLOSEOUT.json` was authoritative: PR #152, Sites version 20, and 15 applied migrations were live.
 - The Media AI candidate is based on `979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6`, unmerged/unpublished/unapplied, and limited to high-fidelity standing Image Enhancement automation. The key is provisioned, the live flag is off, and spend is USD $0. USD $20 is the automatic authorization threshold for each job—not a lifetime budget—and a job expected above it requires fresh Faraz authorization before provider use.
 - The current upload rights are expired. No real request is eligible until rights are current and Team review is approved. Momo remains No-Go; Google/social, external publishing, and owner-controlled provider access remain locked.
 
-## 2026-07-22 — current PR #152 / Sites v20 state
+## 2026-07-22 — PR #152 / Sites v20 state (historical)
 
-- Start with `MOMO_MEDIA_V20_LIVE_CLOSEOUT.json`, then `VEROXA_CURRENT_MILESTONE.md`, `CURRENT_BUILD_STATUS.md`, `ACTIVE_DOCS_INDEX.md`, and `VEROXA_LOCKED_OPERATING_MEMORY.md`.
+- `MOMO_MEDIA_V20_LIVE_CLOSEOUT.json` preserves the exact historical v20 state; use the v22 closeout and current governing docs for production truth.
 - PR #152 passed all four exact-head workflows and merged at `29e90d40fa05d67d2a6246f9a0ba64fe1b9099b7`.
 - Sites version 20 is live from checkout `aceb17bb446854d48a71e54ba814591cf2c19d33`; `veroxasystems.com` and `www.veroxasystems.com` plus SSL/provider are active, with zero Worker errors in the initial 15-minute check. No database change was required.
 - Supabase has 15 applied migrations; migration 15's live RLS, grants, Client RPC, privileged-function, and storage-policy checks passed.
-- iCloud Client and Gmail Team are ready. One upload and one current rights record exist; approved review and Ready rendition counts remain zero until Faraz runs the real Team workflow.
+- At that historical checkpoint, iCloud Client and Gmail Team were ready. One upload and one then-current rights record existed; approved review and Ready rendition counts remained zero.
 - Google/social, providers, live AI, and external writes remain locked. Nothing was published; spend is USD $0 of USD $20; Momo remains No-Go.
 
 ## 2026-07-14 — verified PR #149 / Sites v15 state (historical)
@@ -80,14 +88,14 @@ Current strategy markers:
 - Active stack: **ChatGPT-managed GitHub + Codex + ChatGPT Sites**. **Vercel is retired** and is not a deployment or rollback path.
 - **GitHub `main` is canonical**; GitHub merge and Sites deployment are separate actions.
 - `Build it` means build/test/PR/CI/RR and green merge; `Build it, but hold for review` stops at the green PR; `Build and deploy it` also syncs the exact merged source to Sites, checkpoints, deploys, and verifies the live domains.
-- Sites is public; `veroxasystems.com` and `www.veroxasystems.com` were verified with the Sites version 20 deployment on 2026-07-22.
-- Current verified technical/deployed foundation: PR #152 reviewed head `b170c4339ae43755f17a19d74107cb75c6b198d3`, merged commit `29e90d40fa05d67d2a6246f9a0ba64fe1b9099b7`, Sites version 20 checkout `aceb17bb446854d48a71e54ba814591cf2c19d33`, and 15 applied migrations. PR #151 / Sites version 19 remains immutable historical evidence for the underlying media and database release. Public marketing and audit intake are anonymous. Client and Team routes use Supabase sessions plus active profile/membership authorization; the iCloud Client and Gmail Team identities are ready, with one private upload and one current confirmed rights record. Approved Team reviews and Ready renditions remain zero, and real-owner authority, runtime AI, providers, publishing, and activation remain blocked. Momo remains **No-Go**.
+- Sites is public; `veroxasystems.com` and `www.veroxasystems.com` were most recently verified with Sites version 22 on 2026-07-30.
+- Current verified technical/deployed foundation: PR #155 reviewed head `96a6c00857b438b37c2e8d99329c0f556de850a2`, merged commit `d1f6a9a78ac54cd5447689d5f8b3d42466daf479`, Sites version 22 checkout `83bf6496a02559bf7bbc3fe9bc02ff7f9f8b3f6e`, and 16 applied migrations. PR #154 / Sites version 21 and the v20/v19 closeouts remain immutable historical evidence. Public marketing and audit intake are anonymous. Client and Team routes use Supabase sessions plus active profile/membership authorization; the iCloud Client and Gmail Team identities remain provisioned, with one private upload whose rights are now expired. AI candidates, provider calls, approved Team reviews, Ready renditions, and accounted spend remain zero; authenticated Team preflight and the two-account rehearsal are pending. Public publishing and activation remain blocked. Momo remains **No-Go**.
 - **Replit is historical only**.
 - Active roles: **Client and Team**.
 - **Owner/Operator parked**.
 - The legacy Vite `AUTH_MODE = placeholder` implementation is historical/internal and is not deployed or a rollback authority. Sites production authentication is Supabase-backed.
 - Veroxa should be theoretically complete in preview/manual/pre-live mode before paid infrastructure is activated.
-- The Momo production data/auth foundation, task-first private media foundation, and standalone Restaurant Audit Center V3 are the current release. Veroxa is still AI-ready but not connected.
+- The Momo production data/auth foundation, task-first private media foundation, standalone Restaurant Audit Center V3, and signed Media AI lifecycle bridge are the current release. The bridge is deployed, while authenticated provider-use proof remains pending.
 - Veroxa is integration-ready but not connected.
 - Restaurant Onboarding has a deployed persistence and workflow foundation but still lacks complete owner-confirmed Momo evidence.
 - Active public offer: **Complete Online Presence — $495/month**. `ACTIVE_DOCS_INDEX.md` is the current doc index and pricing source pointer; Starter/Growth/Premium and $295/$995 language are historical/deprecated only.

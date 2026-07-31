@@ -1,4 +1,14 @@
-## 2026-07-30 — locked v21 and lifecycle-bridge boundary
+## 2026-07-30 — locked v22 signed lifecycle-bridge boundary
+
+- PR #155 / Sites v22 is the verified live source release: reviewed head `96a6c00857b438b37c2e8d99329c0f556de850a2`, GitHub main `d1f6a9a78ac54cd5447689d5f8b3d42466daf479`, Sites checkout `83bf6496a02559bf7bbc3fe9bc02ff7f9f8b3f6e`, and 93-file hash `8bc4ef94c0f670ff128774e26a9de3d9849269f74b6e5c5af05f07ee0c9e5490`.
+- `MOMO_MEDIA_V22_LIVE_CLOSEOUT.json` is the current machine-readable production closeout. The bundled readiness tracker is the immutable v22 pre-deploy snapshot for No-Go/rights/spend evidence; it is not current bridge-deployment authority.
+- The approved bridge is deployed with JWT verification and the matching masked Ed25519 Sites key. It remains limited to preflight/start/complete/fail, derives the actor from Auth, binds method/path/token/body/timestamp/nonce, and never retries OpenAI.
+- Deployment is not authenticated workflow proof. Keep effective Media AI fail-closed until a real Team preflight passes; keep Momo No-Go until renewed rights and the Team/Client rehearsal pass.
+- Migration 16 is unchanged. Current rights are expired; candidate count, provider-call count, and accounted spend are zero. No real image or billable canary may run yet.
+- USD $20 is the automatic threshold per job, not a lifetime cap. A larger job requires fresh authorization. Every AI result remains private until exact Team inspection and approval.
+- Google/social, owner-controlled providers, public publishing, and Momo activation remain locked. `momo-readiness-tracker.json` carries the fail-closed proof state.
+
+## 2026-07-30 — locked v21 and lifecycle-bridge boundary (historical pre-v22 checkpoint)
 
 - PR #154 / Sites version 21 / migration 16 is verified live: GitHub `72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695`, Sites checkout `8c50dd6726629e77d22f07eb6aac9f6982001902`, and 16 applied migrations.
 - Treat configured credentials, a database kill switch, and a hosted flag as necessary but insufficient. Effective Media AI remains fail-closed until the narrow lifecycle bridge, its server signing key, the matching Sites source, and an authenticated Team preflight are jointly verified.
@@ -6,18 +16,18 @@
 - A terminal bridge response may be reconciled once only against the exact persisted tuple. A provider-start uncertainty remains a conservative authorization hold, not proof of actual provider spend.
 - Current Momo rights are expired. No real image or billable canary may run until rights and Team review are current. Spend remains USD $0; USD $20 is the automatic threshold for each job, not a lifetime cap.
 - AI output remains private until the exact stored candidate is decoded, inspected, attested, and approved. Google/social, public publishing, and Momo activation remain locked. Momo remains No-Go.
-- `momo-readiness-tracker.json` carries the current fail-closed evidence.
+- At that historical checkpoint, `momo-readiness-tracker.json` carried the fail-closed evidence.
 
 ## 2026-07-30 — locked high-quality Media AI activation boundary (historical pre-v21 checkpoint)
 
-- PR #152 / Sites version 20 / migration 15 remains live. The reviewed Media AI candidate is based on canonical `main` commit `979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6` and remains unmerged, unpublished, and unapplied.
+- At that historical checkpoint, PR #152 / Sites version 20 / migration 15 remained live. The reviewed Media AI candidate was based on canonical `main` commit `979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6` and remained unmerged, unpublished, and unapplied.
 - Only high-fidelity standing server-side Image Enhancement automation is authorized as a model-backed candidate activation. It must faithfully preserve the photographed dish and uses `gpt-image-2` with a selected high-resolution preset for the chosen destination. Do not describe Media Review, Caption, or Compliance as independently connected model agents; review/compliance remain deterministic and human-controlled in this release.
 - The OpenAI credential is server-only. Before release, the runtime flag is false, provider/real-edit proof is pending, and actual spend is USD $0. Migration 16 treats USD $20 as the per-job automatic authorization threshold, not a lifetime budget; an individual job expected above it requires fresh Faraz authorization before provider use.
 - No Momo image may reach the provider unless current rights, approved Team review, standing-automation authorization, verified source lineage, exact model access, and the billable-boundary reservation all pass. Provider uncertainty is conservatively accounted; no automatic paid retry is allowed.
 - AI output is a private candidate, never a silent overwrite. The exact decoded candidate must be hash-matched, inspected, attested, and explicitly approved before Ready. Google/social, external writes, publishing, and Momo activation remain locked.
 - The current upload rights are expired, so first real use is blocked. Momo remains No-Go. `momo-readiness-tracker.json` carries this current fail-closed evidence.
 
-## 2026-07-22 — locked PR #152 / Sites v20 production checkpoint
+## 2026-07-22 — locked PR #152 / Sites v20 production checkpoint (historical)
 
 - PR #152 passed all four workflows at reviewed head `b170c4339ae43755f17a19d74107cb75c6b198d3`, with zero unresolved review threads, and merged at `29e90d40fa05d67d2a6246f9a0ba64fe1b9099b7`.
 - Sites version 20 deployed from checkout `aceb17bb446854d48a71e54ba814591cf2c19d33`; both custom domains, SSL, and provider status are active, and the first 15-minute error-log check returned zero Worker events.
@@ -30,7 +40,7 @@
 - PR #151 passed all four workflows at reviewed head `e5c40c02a79df91f424cd51a51e9f1c7e1b7147a`, including 19/19 database tests and lint, with zero unresolved review threads; it merged at `bcd9b9da1796e72c0b9b546e9944a4e7e419c1b4`.
 - Sites version 19 deployed from checkout `5b7884983e2891cb8f55aef3d9553e981853be23`. Both custom domains and SSL are active, and the first post-deploy error-log check returned zero Worker errors.
 - Supabase has 15 applied migrations. Migration 15's live verification passed: 15 hardened tables force RLS, anon/service-role direct table grants are zero, authenticated direct mutation grants are zero, legacy service-role readiness execution is revoked, Client media RPCs remain actor-checked, and the rendition storage policy is current.
-- iCloud Client and Gmail Team identities are active and password-ready. Momo has one real upload and one current confirmed rights record; approved Team reviews and Ready owner-asset renditions remain zero. That is the intended pre-review state.
+- At that historical checkpoint, iCloud Client and Gmail Team identities were active and password-ready. Momo had one real upload and one then-current confirmed rights record; approved Team reviews and Ready owner-asset renditions remained zero.
 - Zero providers are connected. Runtime AI and all external writes remain locked. Google/social are disconnected, nothing was published, and verified spend is USD $0 of the authorized one-time USD $20 ceiling.
 - Momo remains **No-Go**. The next evidence packet is the real two-role browser rehearsal: Team reviews and improves the image, Team marks it Ready only after current evidence passes, and Client verifies the prepared readback.
 

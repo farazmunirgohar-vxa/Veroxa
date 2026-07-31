@@ -12,10 +12,20 @@ Also read:
 - `ACTIVE_DOCS_INDEX.md`
 - `VEROXA_LOCKED_OPERATING_MEMORY.md`
 - `CURRENT_BUILD_STATUS.md`
+- `MOMO_MEDIA_V22_LIVE_CLOSEOUT.json`
 - `VEROXA_DEPLOYMENT_MANIFEST.json`
-- `../veroxa-sites/app/momo-readiness-tracker.json`
+- `../veroxa-sites/app/momo-readiness-tracker.json` (immutable v22 pre-deploy No-Go/rights/spend snapshot; not current bridge-deployment authority)
 
-## 2026-07-30 — verified v21 foundation and lifecycle-bridge candidate
+## 2026-07-30 — verified v22 signed Media AI bridge release
+
+- **Verified release:** PR #155 reviewed head `96a6c00857b438b37c2e8d99329c0f556de850a2` passed all four workflows with zero review threads and merged at `d1f6a9a78ac54cd5447689d5f8b3d42466daf479`.
+- **Sites and database:** Sites v22 is live from checkout `83bf6496a02559bf7bbc3fe9bc02ff7f9f8b3f6e`; its 93-file source hash is `8bc4ef94c0f670ff128774e26a9de3d9849269f74b6e5c5af05f07ee0c9e5490`. Production remains at the same 16 migrations and migration tree `09aab45cda17810b52a07429700a4557308405d40a3983635d6bb7848dd4c729`.
+- **Bridge truth:** the JWT-protected Edge function, matching Ed25519 Sites secret, OpenAI secret, and runtime flag are deployed. Missing-JWT and unauthenticated Team-route probes fail closed; both custom domains and SSL are active; no Worker exception or Edge 5xx was observed.
+- **Proof still required:** effective authenticated Media AI remains unproven until a real Team preflight succeeds and the Team/Client rehearsal passes. The bundled readiness tracker therefore remains fail-closed rather than manufacturing an activation result.
+- **First-use blocker and cost:** the current Momo upload rights are expired. No real image or billable provider canary is allowed. Candidates, provider calls, and incurred spend remain zero; USD $20 is the per-job automatic threshold, and a larger job requires fresh authorization.
+- **Boundaries:** every AI result stays private until exact Team inspection and approval. Google/social, owner-controlled providers, public publishing, and Momo activation remain locked. Momo remains No-Go.
+
+## 2026-07-30 — verified v21 foundation and lifecycle-bridge candidate (historical pre-v22 checkpoint)
 
 - **Live baseline:** PR #154 reviewed head `4a7a2122bb71defc0f1db0c795b4c4c8fdb930a5` merged at `72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695`; Sites v21 is live from checkout `8c50dd6726629e77d22f07eb6aac9f6982001902`; production Supabase has 16 applied migrations through `20260728044916_momo_media_ai_pilot_v1.sql`.
 - **Effective runtime truth:** the OpenAI key, migration-16 capability, and hosted Media AI flag are present, but version 21 remains safely fail-closed because its Sites worker has no broad Supabase service credential and the narrow signed lifecycle bridge is not yet deployed. Configuration is not end-to-end proof.
@@ -27,22 +37,22 @@ Also read:
 
 ## 2026-07-30 — high-quality Momo Media AI release candidate (historical pre-v21 checkpoint)
 
-- **Live baseline:** PR #152, Sites version 20, and 15 applied Supabase migrations remain current. The Media AI candidate is based on canonical `main` commit `979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6` and remains unmerged, unpublished, and unapplied.
+- **Historical live baseline:** at that checkpoint, PR #152, Sites version 20, and 15 applied Supabase migrations were current. The Media AI candidate was based on canonical `main` commit `979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6` and remained unmerged, unpublished, and unapplied.
 - **Authorized scope:** Image Enhancement AI is the only authorized model-backed candidate activation. When the Team workspace observes a rights-current, approved Momo image, standing automation may create one high-fidelity private `gpt-image-2` candidate at the selected destination’s high-resolution preset. Media Review and Compliance remain deterministic human-controlled contracts; Caption generation, AI web research, Meta, Google, publishing, and other model-backed roles remain inactive.
 - **Cost truth:** the OpenAI key is server-only, the live flag remains off, provider/real-edit proof remains pending, and actual spend is USD $0. The database treats USD $20 as the per-job automatic authorization threshold, not a lifetime budget. Any individual job expected above that amount must obtain fresh Faraz authorization before it reaches OpenAI.
 - **First-use blocker:** the current Momo upload rights are expired. A real Image Enhancement attempt requires current rights, an approved Team review, the standing-automation authorization, and later inspection of the exact private candidate before approval.
 - **Release rule:** merge only the exact reviewed tree after all four GitHub workflows pass with zero unresolved review threads; only then apply migration 16 and publish the matching Sites source. Momo remains No-Go and no external publishing is authorized.
 - `artifacts/veroxa-sites/app/momo-readiness-tracker.json` is the bundled fail-closed readiness record for this candidate.
 
-## 2026-07-22 — current PR #152 / Sites v20 live truth
+## 2026-07-22 — PR #152 / Sites v20 live truth (historical)
 
 - PR #152 reviewed head `b170c4339ae43755f17a19d74107cb75c6b198d3` passed all four workflows with zero unresolved review threads and merged at `29e90d40fa05d67d2a6246f9a0ba64fe1b9099b7`.
 - Sites version 20 is live from checkout `aceb17bb446854d48a71e54ba814591cf2c19d33`; both Veroxa custom domains, SSL, and provider status are active, and the first 15-minute Worker error check was empty. This Sites-only follow-up required no database change.
 - Supabase now has 15 applied migrations. Migration 15 is live and verified for forced RLS, narrow table grants, revoked legacy privileged readiness execution, restaurant-scoped Client rendition readback, and the current storage policy.
-- The iCloud Client and Gmail Team identities remain active. Momo has one real upload and one current confirmed rights record, but zero approved Team reviews and zero Ready private owner renditions. The next milestone action is the real browser rehearsal: Team review, image improvement, Ready approval, then Client readback.
+- At that checkpoint, the iCloud Client and Gmail Team identities were active. Momo had one real upload and one then-current confirmed rights record, but zero approved Team reviews and zero Ready private owner renditions.
 - External providers, AI live calls, Google/social connections, scheduling, and publishing remain locked. Spend is USD $0 of the authorized one-time USD $20 ceiling.
 - Momo remains evidence-based **No-Go** after the technical release. Deployment proves the foundation, not real-owner approval, browser usability, recovery, reporting, or complete operating readiness.
-- Read `MOMO_MEDIA_V20_LIVE_CLOSEOUT.json` for the exact current release evidence. Version 19 remains preserved as historical live evidence; neither release establishes Momo operational readiness.
+- Read `MOMO_MEDIA_V20_LIVE_CLOSEOUT.json` for exact historical v20 release evidence. Version 19 remains preserved as earlier historical live evidence; neither release established Momo operational readiness.
 
 ## 2026-07-22 — reviewed local candidate (historical pre-release checkpoint)
 

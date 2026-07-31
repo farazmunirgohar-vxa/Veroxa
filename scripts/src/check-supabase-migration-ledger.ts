@@ -94,6 +94,25 @@ const checkpoint = readJson<{
     databaseAppliedThroughLatestObserved: boolean;
     candidateParityVerified: boolean;
   };
+  previousVerifiedRelease: {
+    pullRequest: number;
+    reviewedHead: string;
+    mergedOperationalCommit: string;
+    sitesCheckoutSourceCommit: string;
+    sitesVersion: number;
+    sourceFileCount: number;
+    sourceTreeSha256: string;
+    productionMigrations: number;
+    latestProductionMigration: string;
+    latestProductionMigrationSha256: string;
+    databaseApplied: boolean;
+    databaseVerified: boolean;
+    sitesProductionVerified: boolean;
+    customDomainsVerified: boolean;
+    sitesSourceParityVerified: boolean;
+    migrationContentParityVerified: boolean;
+    migrationFilenameParityVerified: boolean;
+  };
   currentVerifiedRelease: {
     pullRequest: number;
     reviewedHead: string;
@@ -174,10 +193,14 @@ const candidate = manifest.releaseCandidate;
 const mediaAiCandidateMigration = "20260728044916_momo_media_ai_pilot_v1.sql";
 const mediaAiCandidateMigrationSha256 =
   "efae63b4344570934d1d66b47ef1fce4fcd16343a2fe9dd8352607e0784d09a1";
+const momoClientMediaMigration =
+  "20260722000100_momo_client_media_status_v1.sql";
+const momoClientMediaMigrationSha256 =
+  "5cd7444906e5f5184e30cc7594542c71995a372b8143e5097f975d354f0925c7";
 const expectedCurrentLiveLedger = [
   ...immutableHistoricalMigrations,
   observedProduction.latestProductionMigration,
-  previousRelease.latestProductionMigration,
+  momoClientMediaMigration,
   currentRelease.latestProductionMigration,
 ];
 const expectedCandidateLedger = [...expectedCurrentLiveLedger];
@@ -201,8 +224,7 @@ const sitesMigrationSnapshots = sqlFiles("artifacts/veroxa-sites/supabase/migrat
 const archived = sqlFiles("supabase/archive/legacy_unapplied_migrations");
 if (
   manifest.schemaVersion !== 3 ||
-  manifest.releaseState !==
-    "local_candidate_reviewed_unmerged_unpublished_unapplied" ||
+  manifest.releaseState !== "published_sites_v22_no_database_change" ||
   historicalRelease.productionMigrationCount !== immutableHistoricalMigrations.length ||
   historicalRelease.latestProductionMigration !== immutableHistoricalMigrations.at(-1) ||
   historicalRelease.latestProductionMigrationSha256 !==
@@ -220,19 +242,18 @@ if (
   throw new Error("Historical observed production drift must remain distinct at Sites v18 / 14 applied migrations.");
 }
 if (
-  previousRelease.pullRequest !== 152 ||
-  previousRelease.reviewedHead !== "b170c4339ae43755f17a19d74107cb75c6b198d3" ||
-  previousRelease.githubMainCommit !== "29e90d40fa05d67d2a6246f9a0ba64fe1b9099b7" ||
-  previousRelease.sitesCheckoutCommit !== "aceb17bb446854d48a71e54ba814591cf2c19d33" ||
-  previousRelease.sitesVersion !== 20 ||
-  previousRelease.sourceFileCount !== 79 ||
+  previousRelease.pullRequest !== 154 ||
+  previousRelease.reviewedHead !== "4a7a2122bb71defc0f1db0c795b4c4c8fdb930a5" ||
+  previousRelease.githubMainCommit !== "72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695" ||
+  previousRelease.sitesCheckoutCommit !== "8c50dd6726629e77d22f07eb6aac9f6982001902" ||
+  previousRelease.sitesVersion !== 21 ||
+  previousRelease.sourceFileCount !== 88 ||
   previousRelease.sourceTreeSha256 !==
-    "5ae5da11de0ae202d33f31dea08ddd337b0b5323aa857d543f3c259f8662a4c2" ||
-  previousRelease.productionMigrationCount !== 15 ||
-  previousRelease.latestProductionMigration !==
-    "20260722000100_momo_client_media_status_v1.sql" ||
+    "60c2e069d6a5f54480c8ee3151e28ccc7d920e52fd5e3b978f47f41dec4013bb" ||
+  previousRelease.productionMigrationCount !== expectedCurrentLiveLedger.length ||
+  previousRelease.latestProductionMigration !== mediaAiCandidateMigration ||
   previousRelease.latestProductionMigrationSha256 !==
-    "5cd7444906e5f5184e30cc7594542c71995a372b8143e5097f975d354f0925c7" ||
+    mediaAiCandidateMigrationSha256 ||
   !previousRelease.databaseApplied ||
   !previousRelease.databaseVerified ||
   !previousRelease.sitesPublished ||
@@ -243,18 +264,18 @@ if (
   !previousRelease.migrationFilenameParityVerified
 ) {
   throw new Error(
-    "Previous verified release must remain bound to PR #152, Sites v20, and 15 applied migrations.",
+    "Previous verified release must remain bound to PR #154, Sites v21, and 16 applied migrations.",
   );
 }
 if (
-  currentRelease.pullRequest !== 154 ||
-  currentRelease.reviewedHead !== "4a7a2122bb71defc0f1db0c795b4c4c8fdb930a5" ||
-  currentRelease.githubMainCommit !== "72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695" ||
-  currentRelease.sitesCheckoutCommit !== "8c50dd6726629e77d22f07eb6aac9f6982001902" ||
-  currentRelease.sitesVersion !== 21 ||
-  currentRelease.sourceFileCount !== 88 ||
+  currentRelease.pullRequest !== 155 ||
+  currentRelease.reviewedHead !== "96a6c00857b438b37c2e8d99329c0f556de850a2" ||
+  currentRelease.githubMainCommit !== "d1f6a9a78ac54cd5447689d5f8b3d42466daf479" ||
+  currentRelease.sitesCheckoutCommit !== "83bf6496a02559bf7bbc3fe9bc02ff7f9f8b3f6e" ||
+  currentRelease.sitesVersion !== 22 ||
+  currentRelease.sourceFileCount !== 93 ||
   currentRelease.sourceTreeSha256 !==
-    "60c2e069d6a5f54480c8ee3151e28ccc7d920e52fd5e3b978f47f41dec4013bb" ||
+    "8bc4ef94c0f670ff128774e26a9de3d9849269f74b6e5c5af05f07ee0c9e5490" ||
   currentRelease.productionMigrationCount !== expectedCurrentLiveLedger.length ||
   currentRelease.latestProductionMigration !== mediaAiCandidateMigration ||
   currentRelease.latestProductionMigrationSha256 !==
@@ -269,17 +290,18 @@ if (
   !currentRelease.migrationFilenameParityVerified
 ) {
   throw new Error(
-    "Current verified release must remain bound to PR #154, Sites v21, and 16 applied migrations.",
+    "Current verified release must remain bound to PR #155, Sites v22, and 16 applied migrations.",
   );
 }
 if (
-  candidate.status !== "reviewed_locally_unmerged_unpublished_unapplied" ||
+  candidate.status !== "published_sites_followup_no_database_change" ||
   candidate.basedOnGitHubMainCommit !==
     "72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695" ||
-  candidate.pullRequest !== null ||
-  candidate.githubMerged ||
-  candidate.futureMergedGitHubCommit !== null ||
-  candidate.futureSitesVersion !== null ||
+  candidate.pullRequest !== 155 ||
+  !candidate.githubMerged ||
+  candidate.futureMergedGitHubCommit !==
+    "d1f6a9a78ac54cd5447689d5f8b3d42466daf479" ||
+  candidate.futureSitesVersion !== 22 ||
   !candidate.reviewedLocally ||
   candidate.migrationFileCount !== expectedCandidateLedger.length ||
   candidate.latestCandidateMigration !== mediaAiCandidateMigration ||
@@ -287,12 +309,12 @@ if (
   candidate.databaseChangesRequired ||
   candidate.databaseMigrationApplied ||
   !candidate.sitesPublishRequired ||
-  candidate.sitesPublished ||
+  !candidate.sitesPublished ||
   manifest.migrations.fileCount !== candidate.migrationFileCount ||
   manifest.migrations.treeSha256 !== candidate.migrationTreeSha256
 ) {
   throw new Error(
-    "The lifecycle-bridge release must remain a reviewed, unmerged, unpublished, no-database-change candidate based on canonical main and the live 16-migration ledger.",
+    "The lifecycle-bridge release must remain the reviewed and published PR #155 / Sites v22 no-database-change follow-up based on the prior canonical main and the live 16-migration ledger.",
   );
 }
 if (
@@ -310,6 +332,33 @@ if (
     observedProduction.databaseAppliedThroughLatestObserved ||
   checkpoint.observedProductionDrift.candidateParityVerified !==
     observedProduction.candidateParityVerified ||
+  checkpoint.previousVerifiedRelease.pullRequest !== previousRelease.pullRequest ||
+  checkpoint.previousVerifiedRelease.reviewedHead !== previousRelease.reviewedHead ||
+  checkpoint.previousVerifiedRelease.mergedOperationalCommit !==
+    previousRelease.githubMainCommit ||
+  checkpoint.previousVerifiedRelease.sitesCheckoutSourceCommit !==
+    previousRelease.sitesCheckoutCommit ||
+  checkpoint.previousVerifiedRelease.sitesVersion !== previousRelease.sitesVersion ||
+  checkpoint.previousVerifiedRelease.sourceFileCount !== previousRelease.sourceFileCount ||
+  checkpoint.previousVerifiedRelease.sourceTreeSha256 !== previousRelease.sourceTreeSha256 ||
+  checkpoint.previousVerifiedRelease.productionMigrations !==
+    previousRelease.productionMigrationCount ||
+  checkpoint.previousVerifiedRelease.latestProductionMigration !==
+    previousRelease.latestProductionMigration ||
+  checkpoint.previousVerifiedRelease.latestProductionMigrationSha256 !==
+    previousRelease.latestProductionMigrationSha256 ||
+  checkpoint.previousVerifiedRelease.databaseApplied !== previousRelease.databaseApplied ||
+  checkpoint.previousVerifiedRelease.databaseVerified !== previousRelease.databaseVerified ||
+  checkpoint.previousVerifiedRelease.sitesProductionVerified !==
+    previousRelease.sitesVerified ||
+  checkpoint.previousVerifiedRelease.customDomainsVerified !==
+    previousRelease.customDomainsVerified ||
+  checkpoint.previousVerifiedRelease.sitesSourceParityVerified !==
+    previousRelease.sitesSourceParityVerified ||
+  checkpoint.previousVerifiedRelease.migrationContentParityVerified !==
+    previousRelease.migrationContentParityVerified ||
+  checkpoint.previousVerifiedRelease.migrationFilenameParityVerified !==
+    previousRelease.migrationFilenameParityVerified ||
   checkpoint.currentVerifiedRelease.pullRequest !== currentRelease.pullRequest ||
   checkpoint.currentVerifiedRelease.reviewedHead !== currentRelease.reviewedHead ||
   checkpoint.currentVerifiedRelease.mergedOperationalCommit !== currentRelease.githubMainCommit ||
@@ -343,8 +392,8 @@ if (
   checkpoint.releaseCandidate.futureSitesVersion !== candidate.futureSitesVersion ||
   checkpoint.releaseCandidate.reviewedLocally !== candidate.reviewedLocally ||
   !checkpoint.releaseCandidate.localReviewPassed ||
-  checkpoint.releaseCandidate.allFourWorkflowsGreen !== null ||
-  checkpoint.releaseCandidate.zeroUnresolvedReviewThreads !== null ||
+  checkpoint.releaseCandidate.allFourWorkflowsGreen !== true ||
+  checkpoint.releaseCandidate.zeroUnresolvedReviewThreads !== true ||
   checkpoint.releaseCandidate.migrationFileCount !== candidate.migrationFileCount ||
   checkpoint.releaseCandidate.migrationTreeSha256 !== candidate.migrationTreeSha256 ||
   checkpoint.releaseCandidate.latestCandidateMigration !== candidate.latestCandidateMigration ||
@@ -363,7 +412,7 @@ if (JSON.stringify(candidateLedger) !== JSON.stringify(expectedCandidateLedger))
 }
 const expectedSitesMigrationSnapshots = [
   observedProduction.latestProductionMigration,
-  previousRelease.latestProductionMigration,
+  momoClientMediaMigration,
   currentRelease.latestProductionMigration,
 ];
 if (
@@ -387,11 +436,13 @@ for (const filename of expectedCandidateLedger) {
     immutableHistoricalChecksums[filename] ??
     (filename === observedProduction.latestProductionMigration
       ? observedProduction.latestProductionMigrationSha256
-      : filename === currentRelease.latestProductionMigration
-        ? currentRelease.latestProductionMigrationSha256
-        : filename === mediaAiCandidateMigration
-          ? mediaAiCandidateMigrationSha256
-          : undefined);
+      : filename === momoClientMediaMigration
+        ? momoClientMediaMigrationSha256
+        : filename === currentRelease.latestProductionMigration
+          ? currentRelease.latestProductionMigrationSha256
+          : filename === mediaAiCandidateMigration
+            ? mediaAiCandidateMigrationSha256
+            : undefined);
   if (expectedChecksum) {
     const actualChecksum = createHash("sha256").update(source).digest("hex");
     if (actualChecksum !== expectedChecksum) {
@@ -410,5 +461,5 @@ for (const filename of expectedSitesMigrationSnapshots) {
 }
 
 console.log(
-  "Supabase migration ledger guardrail passed; PR #152 / Sites v20 remains the previous release, PR #154 / Sites v21 is live through migration 16, and the lifecycle-bridge candidate makes no database change.",
+  "Supabase migration ledger guardrail passed; PR #154 / Sites v21 remains the previous release, PR #155 / Sites v22 is live through the unchanged 16-migration ledger, and the lifecycle-bridge follow-up made no database change.",
 );

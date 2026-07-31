@@ -50,7 +50,13 @@ const deploymentManifestRecord = JSON.parse(deploymentManifest) as {
   currentVerifiedRelease?: {
     reviewedHead?: string;
     githubMainCommit?: string;
+    sitesCheckoutCommit?: string;
     sitesVersion?: number;
+    sourceFileCount?: number;
+    sourceTreeSha256?: string;
+    productionMigrationCount?: number;
+    latestProductionMigration?: string;
+    latestProductionMigrationSha256?: string;
   };
   releaseCandidate?: {
     status?: string;
@@ -59,6 +65,104 @@ const deploymentManifestRecord = JSON.parse(deploymentManifest) as {
     sitesPublished?: boolean;
     futureMergedGitHubCommit?: string | null;
     futureSitesVersion?: number | null;
+  };
+};
+const v22CloseoutRecord = JSON.parse(
+  read("artifacts/veroxa/docs/MOMO_MEDIA_V22_LIVE_CLOSEOUT.json"),
+) as {
+  recordKind?: string;
+  status?: string;
+  github?: {
+    pullRequest?: number;
+    reviewedHead?: string;
+    mergedCommit?: string;
+    zeroUnresolvedReviewThreads?: boolean;
+    workflows?: {
+      ci?: { runId?: number; status?: string };
+      sitesVerify?: { runId?: number; status?: string };
+      supabaseVerify?: {
+        runId?: number;
+        status?: string;
+        fullMigrationResetPassed?: boolean;
+        databaseTestsPassed?: boolean;
+        functionFormatLintAndCheckPassed?: boolean;
+      };
+      veroxaVerify?: { runId?: number; status?: string };
+    };
+  };
+  sites?: {
+    versionNumber?: number;
+    checkoutCommit?: string;
+    deploymentStatus?: string;
+    liveUrl?: string;
+    environmentRevision?: number;
+    customDomains?: Array<{
+      hostname?: string;
+      httpStatus?: number;
+      status?: string;
+      sslStatus?: string;
+      providerStatus?: string;
+    }>;
+  };
+  sourceParity?: {
+    sitesFileCount?: number;
+    sitesTreeSha256?: string;
+    migrationFileCount?: number;
+    migrationTreeSha256?: string;
+  };
+  database?: {
+    databaseChangeRequiredForV22?: boolean;
+    databaseMigrationAppliedByV22?: boolean;
+    productionMigrationCount?: number;
+    latestAppliedMigration?: string;
+    latestAppliedMigrationSha256?: string;
+  };
+  lifecycleBridge?: {
+    deployed?: boolean;
+    edgeFunction?: string;
+    edgeFunctionVersion?: number;
+    edgeFunctionStatus?: string;
+    verifyJwt?: boolean;
+    matchingSitesSigningKeyConfigured?: boolean;
+    openAiCredentialConfiguredServerSide?: boolean;
+    missingJwtEdgeRequestHttpStatus?: number;
+    unauthenticatedTeamStatusHttpStatus?: number;
+    unauthenticatedStatusResponseFailClosed?: boolean;
+    authenticatedSignatureMatrixPassed?: boolean;
+    authenticatedTeamPreflightPassed?: boolean;
+    effectiveAuthenticatedWorkflowVerified?: boolean;
+    providerCanaryPassed?: boolean;
+    realEditPassed?: boolean;
+  };
+  postDeployVerification?: {
+    workerExceptionObserved?: boolean;
+    edge5xxObserved?: boolean;
+  };
+  momoOperationalEvidence?: {
+    uploadedAssets?: number;
+    currentUploadRightsStatus?: string;
+    aiCandidates?: number;
+    providerCalls?: number;
+    accountedSpendUsd?: number;
+    authenticatedClientTeamRehearsalPerformed?: boolean;
+    readiness?: string;
+  };
+  boundaries?: {
+    momoOnly?: boolean;
+    highQualityModel?: string;
+    privateCandidateUntilTeamApproval?: boolean;
+    misleadingFoodEditsProhibited?: boolean;
+    automaticAuthorizationThresholdUsdPerJob?: number;
+    authorizationRequiredAboveThreshold?: boolean;
+    automaticBatchRunnerEnabled?: boolean;
+    subscriptionOrUnboundedSpendAuthorized?: boolean;
+    googleConnected?: boolean;
+    socialConnected?: boolean;
+    ownerControlledProvidersConnected?: boolean;
+    externalPublishingEnabled?: boolean;
+    recurringProviderActivation?: boolean;
+    allExternalWriteSwitchesLocked?: boolean;
+    momoActivationExecuted?: boolean;
   };
 };
 const v20CloseoutRecord = JSON.parse(
@@ -75,7 +179,12 @@ const v20CloseoutRecord = JSON.parse(
   };
   sites?: {
     versionNumber?: number;
+    checkoutCommit?: string;
     deploymentStatus?: string;
+  };
+  database?: {
+    productionMigrationCount?: number;
+    latestAppliedMigration?: string;
   };
 };
 const rrReleaseCheckpointRecord = JSON.parse(
@@ -291,7 +400,7 @@ for (const marker of [
   "ebc2ea499a24b79da1baaffa02423488b1a28a95cb75d4c0d5c002c7c585948d",
   "verified_reconciliation_cleanup_deployed",
   "post_release_cleanup_deployed",
-  "reviewed_manual_deployment_only",
+  "verified_manual_deployment_complete",
   // Preserve the exact pre-PR #148 drift baseline as historical evidence.
   "674e1a7c0d140c9b281029277baeb2e68962dac2",
   "dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805",
@@ -305,27 +414,164 @@ for (const marker of [
   );
 }
 const releaseCandidate = deploymentManifestRecord.releaseCandidate;
-const closeoutGithub = v20CloseoutRecord.github;
-const closeoutSites = v20CloseoutRecord.sites;
+const historicalV20Github = v20CloseoutRecord.github;
+const historicalV20Sites = v20CloseoutRecord.sites;
+const historicalV20Database = v20CloseoutRecord.database;
+must(
+  historicalV20Github !== undefined &&
+    historicalV20Sites !== undefined &&
+    historicalV20Database !== undefined &&
+    v20CloseoutRecord.recordKind === "momo_media_v20_live_closeout" &&
+    v20CloseoutRecord.status === "deployed_foundation_momo_no_go" &&
+    historicalV20Github.pullRequest === 152 &&
+    historicalV20Github.reviewedHead ===
+      "b170c4339ae43755f17a19d74107cb75c6b198d3" &&
+    historicalV20Github.mergedCommit ===
+      "29e90d40fa05d67d2a6246f9a0ba64fe1b9099b7" &&
+    historicalV20Github.zeroUnresolvedReviewThreads === true &&
+    Object.values(historicalV20Github.workflows ?? {}).length === 4 &&
+    Object.values(historicalV20Github.workflows ?? {}).every(
+      (workflow) => workflow.status === "success",
+    ) &&
+    historicalV20Sites.versionNumber === 20 &&
+    historicalV20Sites.checkoutCommit ===
+      "aceb17bb446854d48a71e54ba814591cf2c19d33" &&
+    historicalV20Sites.deploymentStatus === "succeeded" &&
+    historicalV20Database.productionMigrationCount === 15 &&
+    historicalV20Database.latestAppliedMigration ===
+      "20260722000100_momo_client_media_status_v1.sql",
+  "Immutable Sites v20 closeout evidence must remain exact and independently historical.",
+);
+
+const closeoutGithub = v22CloseoutRecord.github;
+const closeoutSites = v22CloseoutRecord.sites;
+const closeoutSource = v22CloseoutRecord.sourceParity;
+const closeoutDatabase = v22CloseoutRecord.database;
+const closeoutBridge = v22CloseoutRecord.lifecycleBridge;
+const closeoutPostDeploy = v22CloseoutRecord.postDeployVerification;
+const closeoutMomo = v22CloseoutRecord.momoOperationalEvidence;
+const closeoutBoundaries = v22CloseoutRecord.boundaries;
 const rrPublishedCandidate = rrReleaseCheckpointRecord.releaseCandidate;
 const publishedCloseoutMatchesCandidate =
   closeoutGithub !== undefined &&
   closeoutSites !== undefined &&
-  v20CloseoutRecord.recordKind === "momo_media_v20_live_closeout" &&
-  v20CloseoutRecord.status === "deployed_foundation_momo_no_go" &&
+  closeoutSource !== undefined &&
+  closeoutDatabase !== undefined &&
+  closeoutBridge !== undefined &&
+  closeoutPostDeploy !== undefined &&
+  closeoutMomo !== undefined &&
+  closeoutBoundaries !== undefined &&
+  v22CloseoutRecord.recordKind === "momo_media_v22_live_closeout" &&
+  v22CloseoutRecord.status === "deployed_lifecycle_bridge_momo_no_go" &&
   closeoutGithub.pullRequest === releaseCandidate?.pullRequest &&
+  closeoutGithub.pullRequest === 155 &&
   closeoutGithub.reviewedHead ===
     deploymentManifestRecord.currentVerifiedRelease?.reviewedHead &&
+  closeoutGithub.reviewedHead ===
+    "96a6c00857b438b37c2e8d99329c0f556de850a2" &&
   closeoutGithub.mergedCommit ===
     releaseCandidate?.futureMergedGitHubCommit &&
+  closeoutGithub.mergedCommit ===
+    "d1f6a9a78ac54cd5447689d5f8b3d42466daf479" &&
   closeoutGithub.zeroUnresolvedReviewThreads === true &&
-  Object.values(closeoutGithub.workflows ?? {}).length === 4 &&
+  JSON.stringify(Object.keys(closeoutGithub.workflows ?? {}).sort()) ===
+    JSON.stringify(["ci", "sitesVerify", "supabaseVerify", "veroxaVerify"]) &&
   Object.values(closeoutGithub.workflows ?? {}).every(
     (workflow) => workflow.status === "success",
   ) &&
+  closeoutGithub.workflows?.ci?.runId === 30591061627 &&
+  closeoutGithub.workflows?.sitesVerify?.runId === 30591061604 &&
+  closeoutGithub.workflows?.supabaseVerify?.runId === 30591061598 &&
+  closeoutGithub.workflows?.supabaseVerify?.fullMigrationResetPassed === true &&
+  closeoutGithub.workflows?.supabaseVerify?.databaseTestsPassed === true &&
+  closeoutGithub.workflows?.supabaseVerify
+    ?.functionFormatLintAndCheckPassed === true &&
+  closeoutGithub.workflows?.veroxaVerify?.runId === 30591061628 &&
   closeoutSites.versionNumber ===
     releaseCandidate?.futureSitesVersion &&
-  closeoutSites.deploymentStatus === "succeeded";
+  closeoutSites.versionNumber === 22 &&
+  closeoutSites.checkoutCommit ===
+    deploymentManifestRecord.currentVerifiedRelease?.sitesCheckoutCommit &&
+  closeoutSites.checkoutCommit ===
+    "83bf6496a02559bf7bbc3fe9bc02ff7f9f8b3f6e" &&
+  closeoutSites.deploymentStatus === "succeeded" &&
+  closeoutSites.liveUrl === "https://veroxasystems.com" &&
+  closeoutSites.environmentRevision === 5 &&
+  JSON.stringify(closeoutSites.customDomains) ===
+    JSON.stringify([
+      {
+        hostname: "veroxasystems.com",
+        httpStatus: 200,
+        status: "active",
+        sslStatus: "active",
+        providerStatus: "active",
+      },
+      {
+        hostname: "www.veroxasystems.com",
+        httpStatus: 200,
+        status: "active",
+        sslStatus: "active",
+        providerStatus: "active",
+      },
+    ]) &&
+  closeoutSource.sitesFileCount ===
+    deploymentManifestRecord.currentVerifiedRelease?.sourceFileCount &&
+  closeoutSource.sitesFileCount === 93 &&
+  closeoutSource.sitesTreeSha256 ===
+    deploymentManifestRecord.currentVerifiedRelease?.sourceTreeSha256 &&
+  closeoutSource.sitesTreeSha256 ===
+    "8bc4ef94c0f670ff128774e26a9de3d9849269f74b6e5c5af05f07ee0c9e5490" &&
+  closeoutSource.migrationFileCount ===
+    deploymentManifestRecord.currentVerifiedRelease?.productionMigrationCount &&
+  closeoutSource.migrationTreeSha256 ===
+    "09aab45cda17810b52a07429700a4557308405d40a3983635d6bb7848dd4c729" &&
+  closeoutDatabase.databaseChangeRequiredForV22 === false &&
+  closeoutDatabase.databaseMigrationAppliedByV22 === false &&
+  closeoutDatabase.productionMigrationCount ===
+    deploymentManifestRecord.currentVerifiedRelease?.productionMigrationCount &&
+  closeoutDatabase.latestAppliedMigration ===
+    deploymentManifestRecord.currentVerifiedRelease?.latestProductionMigration &&
+  closeoutDatabase.latestAppliedMigrationSha256 ===
+    deploymentManifestRecord.currentVerifiedRelease?.latestProductionMigrationSha256 &&
+  closeoutBridge.deployed === true &&
+  closeoutBridge.edgeFunction === "momo-media-ai-lifecycle" &&
+  closeoutBridge.edgeFunctionVersion === 1 &&
+  closeoutBridge.edgeFunctionStatus === "ACTIVE" &&
+  closeoutBridge.verifyJwt === true &&
+  closeoutBridge.matchingSitesSigningKeyConfigured === true &&
+  closeoutBridge.openAiCredentialConfiguredServerSide === true &&
+  closeoutBridge.missingJwtEdgeRequestHttpStatus === 401 &&
+  closeoutBridge.unauthenticatedTeamStatusHttpStatus === 403 &&
+  closeoutBridge.unauthenticatedStatusResponseFailClosed === true &&
+  closeoutBridge.authenticatedSignatureMatrixPassed === false &&
+  closeoutBridge.authenticatedTeamPreflightPassed === false &&
+  closeoutBridge.effectiveAuthenticatedWorkflowVerified === false &&
+  closeoutBridge.providerCanaryPassed === false &&
+  closeoutBridge.realEditPassed === false &&
+  closeoutPostDeploy.workerExceptionObserved === false &&
+  closeoutPostDeploy.edge5xxObserved === false &&
+  closeoutMomo.uploadedAssets === 1 &&
+  closeoutMomo.currentUploadRightsStatus === "expired" &&
+  closeoutMomo.aiCandidates === 0 &&
+  closeoutMomo.providerCalls === 0 &&
+  closeoutMomo.accountedSpendUsd === 0 &&
+  closeoutMomo.authenticatedClientTeamRehearsalPerformed === false &&
+  closeoutMomo.readiness === "no_go" &&
+  closeoutBoundaries.momoOnly === true &&
+  closeoutBoundaries.highQualityModel === "gpt-image-2" &&
+  closeoutBoundaries.privateCandidateUntilTeamApproval === true &&
+  closeoutBoundaries.misleadingFoodEditsProhibited === true &&
+  closeoutBoundaries.automaticAuthorizationThresholdUsdPerJob === 20 &&
+  closeoutBoundaries.authorizationRequiredAboveThreshold === true &&
+  closeoutBoundaries.automaticBatchRunnerEnabled === false &&
+  closeoutBoundaries.subscriptionOrUnboundedSpendAuthorized === false &&
+  closeoutBoundaries.googleConnected === false &&
+  closeoutBoundaries.socialConnected === false &&
+  closeoutBoundaries.ownerControlledProvidersConnected === false &&
+  closeoutBoundaries.externalPublishingEnabled === false &&
+  closeoutBoundaries.recurringProviderActivation === false &&
+  closeoutBoundaries.allExternalWriteSwitchesLocked === true &&
+  closeoutBoundaries.momoActivationExecuted === false;
 const rrPublishedEvidenceMatchesCandidate =
   rrPublishedCandidate !== undefined &&
   rrPublishedCandidate.pullRequest ===

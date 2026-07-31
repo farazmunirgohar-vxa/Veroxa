@@ -18,7 +18,7 @@ export const REFRESHED_LOCAL_CANDIDATE_RELEASE_STATE =
 export const REFRESHED_LOCAL_CANDIDATE_STATUS =
   "fingerprints_refreshed_review_required_unmerged_unpublished_unapplied";
 export const PUBLISHED_SITES_RELEASE_STATE =
-  "published_sites_v20_no_database_change";
+  "published_sites_v22_no_database_change";
 export const PUBLISHED_SITES_FOLLOWUP_STATUS =
   "published_sites_followup_no_database_change";
 
@@ -254,19 +254,26 @@ export function assertPublishedSitesFollowupManifest(
 ): void {
   const failures: string[] = [];
   const candidate = manifest.releaseCandidate;
+  const previous = manifest.previousVerifiedRelease;
   const current = manifest.currentVerifiedRelease;
   if (manifest.schemaVersion !== 3) failures.push("schemaVersion must be 3");
   if (manifest.recordKind !== "veroxa_production_reconciliation_manifest") {
     failures.push("recordKind must identify the production reconciliation manifest");
   }
   if (manifest.releaseState !== PUBLISHED_SITES_RELEASE_STATE) {
-    failures.push("releaseState must identify the verified Sites v20 publication");
+    failures.push("releaseState must identify the verified Sites v22 publication");
   }
   if (candidate.status !== PUBLISHED_SITES_FOLLOWUP_STATUS) {
     failures.push("releaseCandidate.status must identify the published Sites-only follow-up");
   }
   if (!Number.isInteger(candidate.pullRequest) || (candidate.pullRequest ?? 0) < 1) {
     failures.push("published follow-up must retain its pull request number");
+  }
+  if (candidate.pullRequest !== current.pullRequest) {
+    failures.push("published follow-up pull request must equal the current verified release");
+  }
+  if (candidate.basedOnGitHubMainCommit !== previous.githubMainCommit) {
+    failures.push("published follow-up base must equal the previous verified GitHub release");
   }
   if (!candidate.githubMerged || !candidate.sitesPublished || !candidate.reviewedLocally) {
     failures.push("published follow-up must be reviewed, merged, and published");
@@ -289,10 +296,20 @@ export function assertPublishedSitesFollowupManifest(
     candidate.databaseMigrationApplied ||
     !candidate.sitesPublishRequired
   ) {
-    failures.push("published v20 follow-up must remain Sites-only with no database change");
+    failures.push("published v22 follow-up must remain Sites-only with no database change");
   }
   if (
-    manifest.source.evidenceScope !== "published_sites_v20" ||
+    previous.productionMigrationCount !== current.productionMigrationCount ||
+    previous.latestProductionMigration !== current.latestProductionMigration ||
+    previous.latestProductionMigrationSha256 !==
+      current.latestProductionMigrationSha256
+  ) {
+    failures.push(
+      "published no-database-change follow-up must preserve the previous verified migration ledger",
+    );
+  }
+  if (
+    manifest.source.evidenceScope !== "published_sites_v22" ||
     manifest.source.root !== "artifacts/veroxa-sites" ||
     manifest.migrations.evidenceScope !== "current_verified_release" ||
     manifest.migrations.root !== "supabase/migrations"
