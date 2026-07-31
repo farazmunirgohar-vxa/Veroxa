@@ -1,10 +1,10 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
-  REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE,
-  REVIEWED_LOCAL_CANDIDATE_STATUS,
+  PUBLISHED_SITES_FOLLOWUP_STATUS,
+  PUBLISHED_SITES_RELEASE_STATE,
   TREE_HASH_ALGORITHM,
-  assertReviewedLocalCandidateManifest,
+  assertPublishedSitesFollowupManifest,
   deploymentManifestPath,
   hashTree,
   readDeploymentManifest,
@@ -207,20 +207,6 @@ const historicalDrift = {
     "9e748a46e050b9b8884a5df46eba6617cac061d075272ab4e233d2c1609fb367",
 };
 const previousVerified = {
-  pullRequest: 152,
-  reviewedHead: "b170c4339ae43755f17a19d74107cb75c6b198d3",
-  githubMainCommit: "29e90d40fa05d67d2a6246f9a0ba64fe1b9099b7",
-  sitesCheckoutCommit: "aceb17bb446854d48a71e54ba814591cf2c19d33",
-  sitesVersion: 20,
-  sourceFileCount: 79,
-  sourceTreeSha256:
-    "5ae5da11de0ae202d33f31dea08ddd337b0b5323aa857d543f3c259f8662a4c2",
-  productionMigrationCount: 15,
-  latestProductionMigration: "20260722000100_momo_client_media_status_v1.sql",
-  latestProductionMigrationSha256:
-    "5cd7444906e5f5184e30cc7594542c71995a372b8143e5097f975d354f0925c7",
-};
-const currentVerified = {
   pullRequest: 154,
   reviewedHead: "4a7a2122bb71defc0f1db0c795b4c4c8fdb930a5",
   githubMainCommit: "72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695",
@@ -229,6 +215,20 @@ const currentVerified = {
   sourceFileCount: 88,
   sourceTreeSha256:
     "60c2e069d6a5f54480c8ee3151e28ccc7d920e52fd5e3b978f47f41dec4013bb",
+  productionMigrationCount: 16,
+  latestProductionMigration: "20260728044916_momo_media_ai_pilot_v1.sql",
+  latestProductionMigrationSha256:
+    "efae63b4344570934d1d66b47ef1fce4fcd16343a2fe9dd8352607e0784d09a1",
+};
+const currentVerified = {
+  pullRequest: 155,
+  reviewedHead: "96a6c00857b438b37c2e8d99329c0f556de850a2",
+  githubMainCommit: "d1f6a9a78ac54cd5447689d5f8b3d42466daf479",
+  sitesCheckoutCommit: "83bf6496a02559bf7bbc3fe9bc02ff7f9f8b3f6e",
+  sitesVersion: 22,
+  sourceFileCount: 93,
+  sourceTreeSha256:
+    "8bc4ef94c0f670ff128774e26a9de3d9849269f74b6e5c5af05f07ee0c9e5490",
   productionMigrationCount: 16,
   latestProductionMigration: "20260728044916_momo_media_ai_pilot_v1.sql",
   latestProductionMigrationSha256:
@@ -253,13 +253,13 @@ must(
   "Deployment manifest record kind is invalid.",
 );
 must(
-  manifest.releaseState === REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE,
-  "The manifest must identify the reviewed, unmerged, and unpublished lifecycle-bridge candidate.",
+  manifest.releaseState === PUBLISHED_SITES_RELEASE_STATE,
+  "The manifest must identify the verified Sites v22 lifecycle-bridge publication.",
 );
 try {
-  assertReviewedLocalCandidateManifest(readDeploymentManifest());
+  assertPublishedSitesFollowupManifest(readDeploymentManifest());
 } catch (error) {
-  failures.push(`The lifecycle-bridge candidate manifest is not fail-closed: ${String(error)}`);
+  failures.push(`The published lifecycle-bridge manifest is not fail-closed: ${String(error)}`);
 }
 must(
   manifest.canonicalRepository === "farazmunirgohar-vxa/Veroxa" &&
@@ -355,7 +355,7 @@ must(
     previous.sitesSourceParityVerified &&
     previous.migrationContentParityVerified &&
     previous.migrationFilenameParityVerified,
-  "PR #152 / Sites v20 must remain the exact previous verified release.",
+  "PR #154 / Sites v21 must remain the exact previous verified release.",
 );
 must(
   current.pullRequest === currentVerified.pullRequest &&
@@ -379,17 +379,17 @@ must(
     current.sitesSourceParityVerified &&
     current.migrationContentParityVerified &&
     current.migrationFilenameParityVerified,
-  "PR #154 / Sites v21 / migration 16 must remain the exact current verified release, including reviewed head, merged main, domains, and source/migration parity.",
+  "PR #155 / Sites v22 / migration 16 must remain the exact current verified release, including reviewed head, merged main, domains, and source/migration parity.",
 );
 
 const releaseCandidate = manifest.releaseCandidate;
 must(
-    releaseCandidate.status === REVIEWED_LOCAL_CANDIDATE_STATUS &&
+    releaseCandidate.status === PUBLISHED_SITES_FOLLOWUP_STATUS &&
     releaseCandidate.basedOnGitHubMainCommit === candidate.basedOnGitHubMainCommit &&
-    releaseCandidate.pullRequest === null &&
-    !releaseCandidate.githubMerged &&
-    releaseCandidate.futureMergedGitHubCommit === null &&
-    releaseCandidate.futureSitesVersion === null &&
+    releaseCandidate.pullRequest === currentVerified.pullRequest &&
+    releaseCandidate.githubMerged &&
+    releaseCandidate.futureMergedGitHubCommit === currentVerified.githubMainCommit &&
+    releaseCandidate.futureSitesVersion === currentVerified.sitesVersion &&
     releaseCandidate.reviewedLocally &&
     releaseCandidate.sourceFileCount === candidate.sourceFileCount &&
     releaseCandidate.sourceTreeSha256 === candidate.sourceTreeSha256 &&
@@ -401,16 +401,16 @@ must(
     !releaseCandidate.databaseChangesRequired &&
     !releaseCandidate.databaseMigrationApplied &&
     releaseCandidate.sitesPublishRequired &&
-    !releaseCandidate.sitesPublished,
-  "The lifecycle-bridge candidate must remain exact, locally reviewed, unmerged, unpublished, and no-database-change.",
+    releaseCandidate.sitesPublished,
+  "The lifecycle-bridge release must remain exact, reviewed, merged, published, and no-database-change.",
 );
 
 must(
-  manifest.source.evidenceScope === "local_release_candidate" &&
+  manifest.source.evidenceScope === "published_sites_v22" &&
     manifest.source.root === "artifacts/veroxa-sites" &&
     manifest.source.mappingTarget === "Sites repository root" &&
     manifest.source.hashAlgorithm === TREE_HASH_ALGORITHM,
-  "Lifecycle-bridge candidate Sites source mapping or evidence scope drifted.",
+  "Published lifecycle-bridge Sites source mapping or evidence scope drifted.",
 );
 const sourceRoot = resolve(repoRoot, manifest.source.root);
 must(existsSync(sourceRoot), "Canonical Sites source root is missing.");
@@ -422,7 +422,7 @@ must(
     sourceTree.sha256 === candidate.sourceTreeSha256 &&
     sourceTree.fileCount === manifest.source.fileCount &&
     sourceTree.sha256 === manifest.source.treeSha256,
-  `Lifecycle-bridge candidate Sites source drifted (actual ${sourceTree.fileCount}/${sourceTree.sha256}).`,
+  `Published lifecycle-bridge Sites source drifted (actual ${sourceTree.fileCount}/${sourceTree.sha256}).`,
 );
 must(sourceTree.files.includes(".npmrc"), "Published Sites source must include .npmrc.");
 for (const excluded of [
@@ -444,10 +444,10 @@ for (const excluded of [
 }
 
 must(
-  manifest.migrations.evidenceScope === "local_release_candidate" &&
+  manifest.migrations.evidenceScope === "current_verified_release" &&
     manifest.migrations.root === "supabase/migrations" &&
     manifest.migrations.hashAlgorithm === TREE_HASH_ALGORITHM,
-  "Lifecycle-bridge candidate migration-tree mapping or evidence scope drifted.",
+  "Published lifecycle-bridge migration-tree mapping or evidence scope drifted.",
 );
 const migrationRoot = resolve(repoRoot, manifest.migrations.root);
 const migrationTree = hashTree(migrationRoot, { suffix: ".sql" });
@@ -456,7 +456,7 @@ must(
     migrationTree.sha256 === candidate.migrationTreeSha256 &&
     migrationTree.fileCount === manifest.migrations.fileCount &&
     migrationTree.sha256 === manifest.migrations.treeSha256,
-  `Lifecycle-bridge candidate migration tree drifted (actual ${migrationTree.fileCount}/${migrationTree.sha256}).`,
+  `Published lifecycle-bridge migration tree drifted (actual ${migrationTree.fileCount}/${migrationTree.sha256}).`,
 );
 must(
   candidate.migrationFileCount === currentVerified.productionMigrationCount &&
@@ -464,7 +464,7 @@ must(
     candidate.latestMigration === currentVerified.latestProductionMigration &&
     candidate.latestMigrationSha256 ===
       currentVerified.latestProductionMigrationSha256,
-  "No-database-change bridge candidate must retain the exact verified v21 migration ledger.",
+  "No-database-change bridge release must retain the exact verified v22 migration ledger.",
 );
 for (const [filename, sha256] of Object.entries({
   [verified.latestProductionMigration]: verified.latestProductionMigrationSha256,
@@ -486,11 +486,11 @@ const hosting = JSON.parse(
 ) as { project_id?: unknown };
 must(
   hosting.project_id === manifest.sitesProjectId,
-  "Candidate Sites hosting manifest and deployment manifest disagree.",
+  "Published Sites hosting manifest and deployment manifest disagree.",
 );
 
 must(
-  manifest.deploymentFreeze.state === "reviewed_manual_deployment_only" &&
+  manifest.deploymentFreeze.state === "verified_manual_deployment_complete" &&
     !manifest.deploymentFreeze.automaticDeploymentsAllowed &&
     manifest.deploymentFreeze.allowedDeployment.includes("reviewed and merged") &&
     manifest.deploymentFreeze.releaseCondition.includes("production parity"),
@@ -537,5 +537,5 @@ if (failures.length) {
 }
 
 console.log(
-  `Veroxa release evidence passed: historical PR #149 / Sites v15 and observed Sites v18 drift are preserved; PR #152 / Sites v20 remains previous; PR #154 / Sites v21 / migration 16 is current; the reviewed no-database-change lifecycle-bridge candidate is bound to ${sourceTree.fileCount} Sites files and the unchanged ${migrationTree.fileCount}-migration ledger and remains unmerged and unpublished.`,
+  `Veroxa release evidence passed: historical PR #149 / Sites v15 and observed Sites v18 drift are preserved; PR #154 / Sites v21 remains previous; PR #155 / Sites v22 / migration 16 is current; the reviewed no-database-change lifecycle bridge is bound to ${sourceTree.fileCount} published Sites files and the unchanged ${migrationTree.fileCount}-migration ledger.`,
 );

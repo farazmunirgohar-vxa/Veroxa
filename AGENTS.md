@@ -1,23 +1,33 @@
-## 2026-07-30 — verified v21 foundation and lifecycle-bridge candidate
+## 2026-07-30 — verified v22 signed Media AI bridge release
+
+- PR #155 passed all four exact-head workflows at reviewed head `96a6c00857b438b37c2e8d99329c0f556de850a2`, had zero review threads, and merged at `d1f6a9a78ac54cd5447689d5f8b3d42466daf479`.
+- `artifacts/veroxa/docs/MOMO_MEDIA_V22_LIVE_CLOSEOUT.json` is the current machine-readable production closeout. The bundled `momo-readiness-tracker.json` remains the immutable v22 pre-deploy snapshot for No-Go/rights/spend facts; it is not the authority for whether the bridge was deployed.
+- Sites version 22 is live from checkout `83bf6496a02559bf7bbc3fe9bc02ff7f9f8b3f6e`. Its 93-file source hash is `8bc4ef94c0f670ff128774e26a9de3d9849269f74b6e5c5af05f07ee0c9e5490`; both custom domains and SSL are active.
+- The JWT-protected Supabase Edge lifecycle bridge is active, the matching Sites signing secret is masked, and the hosted no-JWT and unauthenticated-route probes fail closed. Migration 16 was already live and did not change.
+- Do not call the authenticated workflow proven yet. A real Team preflight and Client/Team rehearsal remain pending, and Momo's current upload rights are expired. No real image or billable canary may run until rights and Team review are current.
+- AI candidates remain private until exact Team inspection and approval. Candidate count, provider-call count, and accounted spend remain zero; USD $20 is the per-job automatic threshold and larger jobs require fresh authorization.
+- Momo remains **No-Go**. Google/social, owner-controlled providers, external writes, publishing, and activation remain locked.
+
+## 2026-07-30 — verified v21 foundation and lifecycle-bridge candidate (historical pre-v22 checkpoint)
 
 - PR #154 is merged at `72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695`; Sites version 21 is live from checkout `8c50dd6726629e77d22f07eb6aac9f6982001902`; production Supabase has 16 applied migrations through `momo_media_ai_pilot_v1`.
 - The OpenAI key, migration-16 capability, and hosted Media AI flag are present, but version 21 remains safely fail-closed because Sites does not hold a broad Supabase service credential. Do not call the feature active from configuration alone.
-- The current candidate adds a narrow signed Supabase Edge lifecycle bridge for only preflight/start/complete/fail. It is based on GitHub `main` `72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695`, changes no database migration, and remains unmerged and unpublished.
+- At that historical checkpoint, the candidate added a narrow signed Supabase Edge lifecycle bridge for only preflight/start/complete/fail. It was based on GitHub `main` `72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695`, changed no database migration, and remained unmerged and unpublished.
 - The bridge must pass Deno format/lint/typecheck, all four hosted workflows, zero unresolved review threads, a deployed no-image authentication matrix, exact Sites source parity, and post-deploy logs before effective runtime can be claimed.
 - Momo's current upload rights are expired. No real image or billable provider canary is allowed until rights are current and Team review is approved. Spend remains USD $0; USD $20 is the per-job automatic authorization threshold, and larger jobs require fresh authorization.
 - Momo remains **No-Go**. Google/social, owner-controlled providers, external writes, publishing, and activation remain locked.
 
 ## 2026-07-30 — high-quality Momo Media AI candidate (historical pre-v21 checkpoint)
 
-- PR #152 / Sites version 20 / 15 applied migrations remains the exact verified production baseline. The Media AI work is a separate reviewed local candidate based on GitHub `main` commit `979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6`; it is not merged, migration 16 is not applied, and no later Sites version is published.
+- At that historical checkpoint, PR #152 / Sites version 20 / 15 applied migrations was the exact verified production baseline. The Media AI work was a separate reviewed local candidate based on GitHub `main` commit `979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6`; it was not merged, migration 16 was not applied, and no later Sites version was published.
 - The existing Momo **Review → Improve → Ready** flow now has a candidate high-quality, automated faithful-enhancement path using `gpt-image-2`. It selects a high-resolution output for the Team-selected destination, keeps the original unchanged, and creates exactly one private candidate per approved request. The deterministic Media Review and Compliance contracts govern it; Caption, Compliance, and Media Review are not separate model calls in this release.
 - The OpenAI credential is provisioned only as a server secret. The live Media AI flag remains off, provider/real-edit proof remains pending, and actual spend is USD $0. The database treats USD $20 as a per-job automatic authorization threshold—not a lifetime or recurring budget: an individual job above that estimate must obtain fresh Faraz authorization before it reaches OpenAI.
 - The current Momo upload's rights are expired. No real image may cross the provider boundary until rights are current and Team review is approved; every AI result stays private until the exact candidate is decoded, inspected, attested, and explicitly approved.
 - Momo remains **No-Go**. Google/social, owner-controlled provider access, external writes, automatic publishing, and Momo activation remain locked.
 
-## 2026-07-22 — verified PR #152 / Sites v20 production override
+## 2026-07-22 — verified PR #152 / Sites v20 production override (historical)
 
-- `artifacts/veroxa/docs/MOMO_MEDIA_V20_LIVE_CLOSEOUT.json` is the current machine-readable live authority. PR #152 reviewed head `b170c4339ae43755f17a19d74107cb75c6b198d3` merged at `29e90d40fa05d67d2a6246f9a0ba64fe1b9099b7` after all four workflows passed.
+- `artifacts/veroxa/docs/MOMO_MEDIA_V20_LIVE_CLOSEOUT.json` is immutable historical live evidence. PR #152 reviewed head `b170c4339ae43755f17a19d74107cb75c6b198d3` merged at `29e90d40fa05d67d2a6246f9a0ba64fe1b9099b7` after all four workflows passed.
 - Sites version 20 succeeded from checkout `aceb17bb446854d48a71e54ba814591cf2c19d33`; both custom domains, SSL, and provider status are active, and the first 15-minute Worker-error check returned zero events. It made no database change.
 - Momo remains No-Go: the authenticated Client/Team media rehearsal is not yet performed, and Google, social, publishing, live AI, and external providers remain inactive.
 
@@ -26,7 +36,7 @@
 - PR #151 passed all four exact-head workflows with zero unresolved review threads at reviewed head `e5c40c02a79df91f424cd51a51e9f1c7e1b7147a` and merged to GitHub `main` at `bcd9b9da1796e72c0b9b546e9944a4e7e419c1b4`.
 - Sites version 19 succeeded from checkout `5b7884983e2891cb8f55aef3d9553e981853be23`; the public site, both custom domains, and SSL were verified, and the initial post-deploy Worker error check returned zero errors.
 - Production Supabase has 15 applied migrations. Migration 15's live RLS, direct-grant, Client-RPC, privileged-function, and storage-policy checks passed.
-- The iCloud account is the active Momo Client development proxy and Gmail is the separate active Team identity. One real private upload and one current confirmed rights record exist; approved Team reviews and Ready renditions remain zero pending the real two-role browser rehearsal.
+- At that historical checkpoint, the iCloud account was the active Momo Client development proxy and Gmail was the separate active Team identity. One real private upload and one then-current confirmed rights record existed; approved Team reviews and Ready renditions remained zero pending the real two-role browser rehearsal.
 - Runtime AI, Google/social, providers, external writes, and publishing remain locked. Nothing was published; verified spend is USD $0 of the authorized one-time USD $20 ceiling. Momo remains evidence-based **No-Go**.
 - `artifacts/veroxa/docs/MOMO_MEDIA_V19_LIVE_CLOSEOUT.json` is historical live evidence. All lower release-state wording—including PR #149 / Sites v15 and PR #143 / Sites v9 markers—is historical lineage only.
 

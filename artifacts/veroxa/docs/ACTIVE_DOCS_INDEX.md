@@ -2,7 +2,15 @@
 
 Status: highest-level current source-of-truth index. Read this file before relying on older Veroxa documents.
 
-## 2026-07-30 — verified v21 and lifecycle-bridge candidate override
+## 2026-07-30 — verified v22 signed bridge release override
+
+- Read `MOMO_MEDIA_V22_LIVE_CLOSEOUT.json`, `VEROXA_CURRENT_MILESTONE.md`, `VEROXA_DEPLOYMENT_MANIFEST.json`, and `RR_RELEASE_CHECKPOINT.json` first. The bundled `momo-readiness-tracker.json` is the immutable v22 pre-deploy snapshot for No-Go/rights/spend evidence, not current bridge-deployment authority.
+- PR #155 merged at `d1f6a9a78ac54cd5447689d5f8b3d42466daf479`; Sites v22 is live from `83bf6496a02559bf7bbc3fe9bc02ff7f9f8b3f6e`; the verified 93-file source hash is `8bc4ef94c0f670ff128774e26a9de3d9849269f74b6e5c5af05f07ee0c9e5490`.
+- The narrow JWT-protected, Ed25519-signed lifecycle bridge is deployed. Migration 16 remains unchanged, both domains and SSL are active, and missing-JWT/unauthenticated probes fail closed.
+- Authenticated Team preflight, renewed rights, the first private provider edit, and the Team/Client rehearsal remain pending. AI candidates, provider calls, and spend are zero; `momo-readiness-tracker.json` therefore remains No-Go.
+- USD $20 is the automatic threshold per job; larger jobs require fresh authorization. Google/social, public publishing, owner-controlled providers, and Momo activation remain locked.
+
+## 2026-07-30 — verified v21 and lifecycle-bridge candidate override (historical pre-v22 checkpoint)
 
 - Read `VEROXA_CURRENT_MILESTONE.md`, `VEROXA_DEPLOYMENT_MANIFEST.json`, `RR_RELEASE_CHECKPOINT.json`, and `momo-readiness-tracker.json` first.
 - PR #154 / Sites version 21 / migration 16 is verified live. Exact GitHub main is `72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695`; exact Sites checkout is `8c50dd6726629e77d22f07eb6aac9f6982001902`.
@@ -12,24 +20,24 @@ Status: highest-level current source-of-truth index. Read this file before relyi
 
 ## 2026-07-30 — high-quality Media AI candidate override (historical pre-v21 checkpoint)
 
-- Read `VEROXA_CURRENT_MILESTONE.md`, `VEROXA_DEPLOYMENT_MANIFEST.json`, and `RR_RELEASE_CHECKPOINT.json` first for the reviewed Media AI candidate. `MOMO_MEDIA_V20_LIVE_CLOSEOUT.json` remains the current production authority until a later release is actually verified.
+- At that historical checkpoint, `MOMO_MEDIA_V20_LIVE_CLOSEOUT.json` remained the production authority while the reviewed Media AI candidate was still unmerged.
 - The candidate is unmerged, migration 16 is unapplied, and no new Sites version is published. The server-side OpenAI credential exists, but live Media AI remains disabled; actual spend is USD $0.
 - Only high-fidelity standing Image Enhancement automation is authorized for model-backed activation. USD $20 is the per-job automatic authorization threshold; an individual job expected above it requires fresh Faraz authorization before provider use. Caption, deterministic review/compliance, social/Google, publishing, owner-controlled providers, and Momo activation are not activated.
 - `artifacts/veroxa-sites/app/momo-readiness-tracker.json` records the expired-rights blocker and preserves Momo No-Go.
 
-## 2026-07-22 — PR #152 / Sites v20 live override
+## 2026-07-22 — PR #152 / Sites v20 live override (historical)
 
-- `MOMO_MEDIA_V20_LIVE_CLOSEOUT.json` is the current machine-readable live authority. PR #152 merged after four green exact-head workflows; Sites version 20 is live from checkout `aceb17bb446854d48a71e54ba814591cf2c19d33` with active domains/SSL/provider and zero Worker errors in its first 15 minutes.
+- `MOMO_MEDIA_V20_LIVE_CLOSEOUT.json` is immutable historical live evidence. PR #152 merged after four green exact-head workflows; Sites version 20 deployed from checkout `aceb17bb446854d48a71e54ba814591cf2c19d33` with active domains/SSL/provider and zero Worker errors in its first 15 minutes.
 - This was a Sites-only follow-up: no database change was required or applied. Momo remains No-Go pending the authenticated Client/Team rehearsal; external connections, publishing, live AI, and actual spend remain unchanged.
 - Momo remains **No-Go**. This correction updates release truth; it does not create a Team rehearsal result, owner authority, an approved review, a Ready rendition, a provider connection, or a public action.
 
-## 2026-07-22 — PR #151 / Sites v19 live override
+## 2026-07-22 — PR #151 / Sites v19 live override (historical)
 
-- `MOMO_MEDIA_V19_LIVE_CLOSEOUT.json` is historical release evidence; v20 supersedes it for current live-status questions.
+- `MOMO_MEDIA_V19_LIVE_CLOSEOUT.json` is historical release evidence; v20 superseded it for then-current live-status questions.
 - PR #151 passed all four exact-head workflows with 19/19 database tests and zero unresolved review threads, then merged at `bcd9b9da1796e72c0b9b546e9944a4e7e419c1b4`.
 - Sites version 19 is live from `5b7884983e2891cb8f55aef3d9553e981853be23`; both custom domains and SSL are active, and the initial post-deploy Worker error check found zero errors.
 - Supabase has 15 applied migrations. Migration 15's live RLS, grant, RPC, privileged-function, and storage-policy checks all passed.
-- iCloud Client and Gmail Team remain ready. One real upload and one current confirmed rights record exist; approved Team review and Ready rendition counts remain zero, so the next truthful test is `Review -> Improve -> Ready -> Client readback`.
+- At that historical checkpoint, iCloud Client and Gmail Team were ready. One real upload and one then-current confirmed rights record existed; approved Team review and Ready rendition counts remained zero.
 - Google/social, providers, runtime AI, and all external writes remain disconnected or locked. Nothing was published and spend remains USD $0 of USD $20.
 - Momo remains **No-Go** pending the real browser and operating evidence; a green technical deployment does not manufacture readiness.
 

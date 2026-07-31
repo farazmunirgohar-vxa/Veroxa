@@ -1,8 +1,17 @@
 # RR Release Checkpoint
 
-## 2026-07-30 — v21 production and lifecycle-bridge candidate
+## 2026-07-30 — verified v22 signed lifecycle bridge publication
 
-- PR #154 / Sites version 21 / 16 applied migrations is the verified production baseline. Exact identities are GitHub `72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695`, Sites checkout `8c50dd6726629e77d22f07eb6aac9f6982001902`, 88-file source `60c2e069d6a5f54480c8ee3151e28ccc7d920e52fd5e3b978f47f41dec4013bb`, and 16-migration tree `09aab45cda17810b52a07429700a4557308405d40a3983635d6bb7848dd4c729`.
+- PR #155 passed all four exact-head workflows at `96a6c00857b438b37c2e8d99329c0f556de850a2`, had zero review threads, and merged at `d1f6a9a78ac54cd5447689d5f8b3d42466daf479`.
+- Sites v22 succeeded from checkout `83bf6496a02559bf7bbc3fe9bc02ff7f9f8b3f6e`; its exact 93-file tree is `8bc4ef94c0f670ff128774e26a9de3d9849269f74b6e5c5af05f07ee0c9e5490`. The 16-migration tree remains `09aab45cda17810b52a07429700a4557308405d40a3983635d6bb7848dd4c729`.
+- The Edge bridge is active with JWT verification and the matching Sites signing secret is masked. Missing-JWT and unauthenticated status probes fail closed; both custom domains and SSL are active.
+- Effective authenticated Media AI proof remains pending Team preflight and the real Team/Client rehearsal. Current rights are expired; candidates, provider calls, and spend are zero.
+- USD $20 remains the per-job automatic authorization threshold. AI output stays private until Team inspection; Google/social, external writes, public publishing, and activation remain locked. Momo remains No-Go.
+- Current machine evidence is in `MOMO_MEDIA_V22_LIVE_CLOSEOUT.json`, `VEROXA_DEPLOYMENT_MANIFEST.json`, and `RR_RELEASE_CHECKPOINT.json`. The bundled readiness tracker is the immutable v22 pre-deploy snapshot for No-Go/rights/spend, not current bridge-deployment authority.
+
+## 2026-07-30 — v21 production and lifecycle-bridge candidate (historical pre-v22 checkpoint)
+
+- At that historical checkpoint, PR #154 / Sites version 21 / 16 applied migrations was the verified production baseline. Exact identities were GitHub `72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695`, Sites checkout `8c50dd6726629e77d22f07eb6aac9f6982001902`, 88-file source `60c2e069d6a5f54480c8ee3151e28ccc7d920e52fd5e3b978f47f41dec4013bb`, and 16-migration tree `09aab45cda17810b52a07429700a4557308405d40a3983635d6bb7848dd4c729`.
 - Effective Media AI is still fail-closed. The OpenAI key, migration-16 capability, and hosted flag are present, but version 21 lacks the narrow privileged lifecycle connection.
 - The current no-database-change candidate adds the Ed25519-signed Supabase Edge lifecycle bridge and matching Sites helper. It is based on `72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695`, unmerged, and unpublished.
 - Release requires green Deno format/lint/typecheck, application and repository gates, four hosted workflows, zero unresolved review threads, deployed no-image auth checks, bridge-first ordering, exact Sites parity, and post-deploy logs.
@@ -12,7 +21,7 @@
 
 ## 2026-07-30 — Media AI v2 high-quality local candidate (historical pre-v21 checkpoint)
 
-- PR #152 / Sites version 20 / 15 applied migrations remains the verified production baseline. Candidate base is canonical `main` commit `979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6`; the candidate is unmerged, unpublished, and unapplied.
+- At that historical checkpoint, PR #152 / Sites version 20 / 15 applied migrations was the verified production baseline. Candidate base was canonical `main` commit `979ced364e9b94f42a5e9aece7e1aa9cfc8fa1c6`; the candidate was unmerged, unpublished, and unapplied.
 - Migration 16 adds the private Media AI candidate ledger, budget wallet, idempotent lifecycle RPCs, tenant/role/RLS boundaries, conservative accounting, and explicit inspection-before-Ready. It is source-only until the exact reviewed PR passes all four workflows and zero unresolved review threads.
 - The server-side OpenAI credential is provisioned, the live flag is false, provider and real-edit proof are pending, and actual spend is USD $0. USD $20 is the per-job automatic authorization threshold—not a lifetime budget—and an individual job expected above it requires fresh Faraz authorization before provider use.
 - High-fidelity standing Image Enhancement automation is the only model-backed candidate scope. The current Momo upload rights are expired, so first real use requires current rights and approved Team review. No automatic retry, Google/social connection, external write, automatic publish, or Momo activation is authorized.

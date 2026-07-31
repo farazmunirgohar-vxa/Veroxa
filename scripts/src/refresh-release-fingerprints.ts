@@ -4,9 +4,10 @@ import { resolve } from "node:path";
 import {
   REFRESHED_LOCAL_CANDIDATE_RELEASE_STATE,
   REFRESHED_LOCAL_CANDIDATE_STATUS,
+  PUBLISHED_SITES_RELEASE_STATE,
   REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE,
   REVIEWED_LOCAL_CANDIDATE_STATUS,
-  assertUnreleasedLocalCandidateManifest,
+  assertDeploymentAttestationManifest,
   deploymentManifestPath,
   hashTree,
   readDeploymentManifest,
@@ -57,7 +58,8 @@ function groupHash(files: string[]): string {
 }
 
 const manifest = readDeploymentManifest();
-assertUnreleasedLocalCandidateManifest(manifest);
+assertDeploymentAttestationManifest(manifest);
+const published = manifest.releaseState === PUBLISHED_SITES_RELEASE_STATE;
 const source = hashTree(resolve(repoRoot, manifest.source.root), {
   exclusions: manifest.source.generatedPathExclusions,
 });
@@ -82,6 +84,11 @@ const fingerprintsChanged =
   manifest.releaseCandidate.migrationTreeSha256 !== migrations.sha256 ||
   manifest.releaseCandidate.latestCandidateMigration !== latestCandidateMigration ||
   manifest.releaseCandidate.latestCandidateMigrationSha256 !== latestCandidateMigrationSha256;
+if (published && fingerprintsChanged) {
+  throw new Error(
+    "Published Sites or migration fingerprints changed; create and review a new release candidate instead of rewriting published evidence",
+  );
+}
 
 manifest.source.fileCount = source.fileCount;
 manifest.source.treeSha256 = source.sha256;
@@ -96,7 +103,7 @@ manifest.releaseCandidate.latestCandidateMigrationSha256 = latestCandidateMigrat
 
 const reviewedRefreshConfirmed =
   process.env.VEROXA_REVIEWED_FINGERPRINT_REFRESH === "true";
-if (fingerprintsChanged || reviewedRefreshConfirmed) {
+if (!published && (fingerprintsChanged || reviewedRefreshConfirmed)) {
   manifest.releaseState = reviewedRefreshConfirmed
     ? REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE
     : REFRESHED_LOCAL_CANDIDATE_RELEASE_STATE;
@@ -124,8 +131,10 @@ rr.releaseCandidate.futureSitesVersion =
 rr.releaseCandidate.reviewedLocally = manifest.releaseCandidate.reviewedLocally;
 rr.releaseCandidate.localReviewPassed =
   manifest.releaseCandidate.reviewedLocally;
-rr.releaseCandidate.allFourWorkflowsGreen = null;
-rr.releaseCandidate.zeroUnresolvedReviewThreads = null;
+if (!published) {
+  rr.releaseCandidate.allFourWorkflowsGreen = null;
+  rr.releaseCandidate.zeroUnresolvedReviewThreads = null;
+}
 rr.releaseCandidate.sourceFileCount = manifest.releaseCandidate.sourceFileCount;
 rr.releaseCandidate.sourceTreeSha256 = manifest.releaseCandidate.sourceTreeSha256;
 rr.releaseCandidate.migrationFileCount =
