@@ -14,7 +14,7 @@ test("Client and Team request routes use the bounded private RPC contract", asyn
   assert.match(page, /"\/client\/requests": "requests"/);
   assert.match(page, /"\/team\/momo\/requests": "team-requests"/);
   assert.match(page, /label: "Requests"/);
-  assert.match(page, /label: "Client Requests"/);
+  assert.match(page, /id: "team-requests", label: "Client requests"/, "The private request route must remain available as a focused task without crowding the daily navigation");
 
   for (const rpc of [
     "veroxa_create_client_request_v1",

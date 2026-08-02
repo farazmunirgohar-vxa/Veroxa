@@ -2,6 +2,14 @@
 
 Status: highest-level current source-of-truth index. Read this file before relying on older Veroxa documents.
 
+## 2026-08-02 — v36 live-status and GitHub-reconciliation override
+
+- Read `MOMO_UPLOAD_V36_LIVE_CLOSEOUT.json`, `VEROXA_CURRENT_MILESTONE.md`, `CURRENT_BUILD_STATUS.md`, `VEROXA_DEPLOYMENT_MANIFEST.json`, and `RR_RELEASE_CHECKPOINT.json` first.
+- Sites v36 checkout `b8122642b72e5d4e6e74c379469f2a157781ab3d` is live with 185 canonical files (`caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7`) and 37 migrations (`9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90`). GitHub `main` remains v22 until the controlled reconciliation PR passes and merges.
+- The bundled readiness tracker is immutable historical v22 evidence. It is intentionally not rewritten inside an exact live-source mirror and is not current production authority.
+- V36 automates verified intake, exact-byte deduplication, internal content packaging, and unscheduled Ready evidence. Team Faraz sees consolidated exceptions. Bad media is preserved and diagnosed; it is not automatically edited or resized, and near-duplicate merging remains advisory.
+- No real v36 upload, provider call, or Ready package has been created. External providers, schedules, publishing, posting, replies, website writes, and activation remain locked.
+
 ## 2026-07-30 — verified v22 signed bridge release override
 
 - Read `MOMO_MEDIA_V22_LIVE_CLOSEOUT.json`, `VEROXA_CURRENT_MILESTONE.md`, `VEROXA_DEPLOYMENT_MANIFEST.json`, and `RR_RELEASE_CHECKPOINT.json` first. The bundled `momo-readiness-tracker.json` is the immutable v22 pre-deploy snapshot for No-Go/rights/spend evidence, not current bridge-deployment authority.

@@ -651,7 +651,7 @@ test("Momo client source graph excludes Team operating modules and labels", asyn
   assert.ok(clientAssets.length >= 3, "role-specific client assets were emitted");
   const compiledText = (await Promise.all(clientAssets.map((name) => readFile(`${assetDirectory}/${name}`, "utf8")))).join("\n");
   for (const forbidden of [
-    "Prepare deferred AI classification",
+    "Prepare classification record",
     "Provider-neutral AI job",
     "Prepare dormant queue metadata",
     "No readiness percentage",

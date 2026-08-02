@@ -1,5 +1,16 @@
 # RR Release Checkpoint
 
+## 2026-08-02 — Sites v36 live / GitHub reconciliation candidate
+
+- Live Sites v36 checkout `b8122642b72e5d4e6e74c379469f2a157781ab3d` and the clean mirror match at 185 canonical files, SHA-256 `caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7`; generated `.vinext` cache is excluded.
+- Production has 37 migrations through `20260802020000_momo_pipeline_query_indexes_v2.sql`; the exact ledger hash is `9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90`.
+- GitHub `main` is still v22 at `302621bf6b9ab78320abe4175b45b56e9e64ae2a`. The reconciliation candidate predicts no merge SHA or future Sites version and causes no database apply or Sites deployment.
+- Previously completed release gates were 371/371 tests, build, lint, typecheck, rollback migration compilation, and frozen production verification. The parity branch must repeat applicable local checks and all four GitHub workflows.
+- Exact duplicates reuse canonical byte identity without combining rights; each source upload and immutable event remains attributable. Team defaults to consolidated exceptions; Ready is internal and unscheduled.
+- Bad media becomes one preserved, evidenced exception. V36 does not auto-edit or auto-resize, and near-duplicate merging is advisory.
+- No real v36 upload, provider call, or Ready package exists. Queues, schedules, connections, publishing, posting, replies, website writes, and activation remain empty/off.
+- Machine evidence is in `MOMO_UPLOAD_V36_LIVE_CLOSEOUT.json`, `VEROXA_DEPLOYMENT_MANIFEST.json`, and `RR_RELEASE_CHECKPOINT.json`.
+
 ## 2026-07-30 — verified v22 signed lifecycle bridge publication
 
 - PR #155 passed all four exact-head workflows at `96a6c00857b438b37c2e8d99329c0f556de850a2`, had zero review threads, and merged at `d1f6a9a78ac54cd5447689d5f8b3d42466daf479`.

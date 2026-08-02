@@ -9,73 +9,92 @@ const must = (condition: boolean, message: string) => {
   if (!condition) failures.push(message);
 };
 
+type ManifestRelease = {
+  pullRequest: number;
+  reviewedHead?: string;
+  githubMainCommit: string;
+  sitesCheckoutCommit: string;
+  sitesVersion: number;
+  sourceFileCount: number;
+  sourceTreeSha256: string;
+  productionMigrationCount: number;
+  latestProductionMigration: string;
+  latestProductionMigrationSha256: string;
+  databaseApplied: boolean;
+  databaseVerified: boolean;
+  sitesPublished: boolean;
+  sitesVerified: boolean;
+  customDomainsVerified: boolean;
+  sitesSourceParityVerified: boolean;
+  migrationContentParityVerified: boolean;
+  migrationFilenameParityVerified: boolean;
+};
+
+type ManifestObservation = {
+  observedAt: string;
+  evidenceStatus: string;
+  canonicalGitHubMainCommit: string;
+  githubMainMatchesCandidate: boolean;
+  sitesVersion: number;
+  sitesCheckoutCommit: string;
+  sourceFileCount: number;
+  sourceTreeSha256: string;
+  candidateSourceMatchesLiveSites: boolean;
+  productionMigrationCount: number;
+  migrationTreeSha256: string;
+  latestProductionMigration: string;
+  latestProductionMigrationSha256: string;
+  databaseLedgerObserved: boolean;
+  databaseAppliedThroughLatestObserved: boolean;
+  candidateMigrationsMatchLiveLedger: boolean;
+  fullReleaseGatePassed: boolean;
+};
+
+type Candidate = {
+  status: string;
+  actionScope: string;
+  basedOnGitHubMainCommit: string;
+  pullRequest: number | null;
+  githubMerged: boolean;
+  futureMergedGitHubCommit: string | null;
+  futureSitesVersion: number | null;
+  reviewedLocally: boolean;
+  candidateSourceMatchesLiveSites: boolean;
+  candidateMigrationsMatchLiveLedger: boolean;
+  githubMainMatchesCandidate: boolean;
+  fullReleaseGatePassed: boolean;
+  sourceFileCount: number;
+  sourceTreeSha256: string;
+  migrationFileCount: number;
+  migrationTreeSha256: string;
+  latestCandidateMigration: string;
+  latestCandidateMigrationSha256: string;
+  databaseChangesRequired: boolean;
+  databaseMigrationApplied: boolean;
+  sitesPublishRequired: boolean;
+  sitesPublished: boolean;
+};
+
 const manifest = JSON.parse(
   read("artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json"),
 ) as {
   schemaVersion: number;
   sitesProjectId: string;
   releaseState: string;
-  deploymentFreeze: { automaticDeploymentsAllowed: boolean };
-  verifiedReconciliationRelease: {
-    pullRequest: number;
-    githubMainCommit: string;
-    sitesCheckoutCommit: string;
-    sitesVersion: number;
-    sourceFileCount: number;
-    sourceTreeSha256: string;
-    productionMigrationCount: number;
-    latestProductionMigration: string;
-    latestProductionMigrationSha256: string;
-    databaseApplied: boolean;
-    databaseVerified: boolean;
-    sitesPublished: boolean;
-    sitesVerified: boolean;
-    customDomainsVerified: boolean;
-    sitesSourceParityVerified: boolean;
-    migrationContentParityVerified: boolean;
-    migrationFilenameParityVerified: boolean;
+  deploymentFreeze: {
+    state: string;
+    automaticDeploymentsAllowed: boolean;
+    allowedDeployment: string;
+    releaseCondition: string;
   };
-  previousVerifiedRelease: {
-    pullRequest: number;
+  verifiedReconciliationRelease: ManifestRelease;
+  previousVerifiedRelease: ManifestRelease & { reviewedHead: string };
+  lastGitHubParityRelease: ManifestRelease & {
+    evidenceScope: string;
+    supersededAsLiveBaseline: boolean;
     reviewedHead: string;
-    githubMainCommit: string;
-    sitesCheckoutCommit: string;
-    sitesVersion: number;
-    sourceFileCount: number;
-    sourceTreeSha256: string;
-    productionMigrationCount: number;
-    latestProductionMigration: string;
-    latestProductionMigrationSha256: string;
-    databaseApplied: boolean;
-    databaseVerified: boolean;
-    sitesPublished: boolean;
-    sitesVerified: boolean;
-    customDomainsVerified: boolean;
-    sitesSourceParityVerified: boolean;
-    migrationContentParityVerified: boolean;
-    migrationFilenameParityVerified: boolean;
   };
-  currentVerifiedRelease: {
-    pullRequest: number;
-    reviewedHead: string;
-    githubMainCommit: string;
-    sitesCheckoutCommit: string;
-    sitesVersion: number;
-    sourceFileCount: number;
-    sourceTreeSha256: string;
-    productionMigrationCount: number;
-    latestProductionMigration: string;
-    latestProductionMigrationSha256: string;
-    databaseApplied: boolean;
-    databaseVerified: boolean;
-    sitesPublished: boolean;
-    sitesVerified: boolean;
-    customDomainsVerified: boolean;
-    sitesSourceParityVerified: boolean;
-    migrationContentParityVerified: boolean;
-    migrationFilenameParityVerified: boolean;
-  };
-  observedProductionDrift: {
+  historicalProductionObservations: Array<{
     observedAt: string;
     evidenceStatus: string;
     canonicalGitHubMainCommit: string;
@@ -90,32 +109,15 @@ const manifest = JSON.parse(
     latestProductionMigrationSha256: string;
     databaseLedgerObserved: boolean;
     databaseAppliedThroughLatestObserved: boolean;
-    candidateParityVerified: boolean;
-  };
-  releaseCandidate: {
-    status: string;
-    basedOnGitHubMainCommit: string;
-    pullRequest: number | null;
-    githubMerged: boolean;
-    futureMergedGitHubCommit: string | null;
-    futureSitesVersion: number | null;
-    reviewedLocally: boolean;
-    sourceFileCount: number;
-    sourceTreeSha256: string;
-    migrationFileCount: number;
-    migrationTreeSha256: string;
-    latestCandidateMigration: string;
-    latestCandidateMigrationSha256: string;
-    databaseChangesRequired: boolean;
-    databaseMigrationApplied: boolean;
-    sitesPublishRequired: boolean;
-    sitesPublished: boolean;
-  };
+  }>;
+  currentProductionObservation: ManifestObservation;
+  releaseCandidate: Candidate;
   source: {
     evidenceScope: string;
     root: string;
     fileCount: number;
     treeSha256: string;
+    generatedPathExclusions: string[];
   };
   migrations: {
     evidenceScope: string;
@@ -125,72 +127,52 @@ const manifest = JSON.parse(
   };
   cleanupState: {
     branchDeletionCapabilityAvailable: boolean;
+    branchDeletionAllowed: boolean;
     externalVercelGitDisconnectionVerified: boolean;
     vercelShutdownSentinelRequired: boolean;
   };
 };
+
+type CheckpointRelease = {
+  pullRequest: number;
+  reviewedHead?: string;
+  mergedOperationalCommit: string;
+  sitesCheckoutSourceCommit: string;
+  sitesVersion: number;
+  sourceFileCount: number;
+  sourceTreeSha256: string;
+  productionMigrations: number;
+  latestProductionMigration: string;
+  latestProductionMigrationSha256: string;
+  databaseApplied: boolean;
+  databaseVerified: boolean;
+  sitesProductionVerified: boolean;
+  customDomainsVerified: boolean;
+  sitesSourceParityVerified: boolean;
+  migrationContentParityVerified: boolean;
+  migrationFilenameParityVerified: boolean;
+};
+
 const checkpoint = JSON.parse(
   read("artifacts/veroxa/docs/RR_RELEASE_CHECKPOINT.json"),
 ) as {
   schemaVersion: number;
   checkpoint: string;
   status: string;
-  verifiedReconciliationRelease: {
-    pullRequest: number;
+  reviewedAt: string;
+  verifiedReconciliationRelease: Omit<
+    CheckpointRelease,
+    "databaseApplied" | "reviewedHead"
+  > & {
     githubMainCommit: string;
-    sitesCheckoutSourceCommit: string;
-    sitesVersion: number;
-    sourceFileCount: number;
-    sourceTreeSha256: string;
-    productionMigrations: number;
-    latestProductionMigration: string;
-    latestProductionMigrationSha256: string;
-    databaseVerified: boolean;
-    sitesProductionVerified: boolean;
-    customDomainsVerified: boolean;
-    sitesSourceParityVerified: boolean;
-    migrationContentParityVerified: boolean;
-    migrationFilenameParityVerified: boolean;
   };
-  previousVerifiedRelease: {
-    pullRequest: number;
+  previousVerifiedRelease: CheckpointRelease & { reviewedHead: string };
+  lastGitHubParityRelease: CheckpointRelease & {
+    evidenceScope: string;
+    supersededAsLiveBaseline: boolean;
     reviewedHead: string;
-    mergedOperationalCommit: string;
-    sitesCheckoutSourceCommit: string;
-    sitesVersion: number;
-    sourceFileCount: number;
-    sourceTreeSha256: string;
-    productionMigrations: number;
-    latestProductionMigration: string;
-    latestProductionMigrationSha256: string;
-    databaseApplied: boolean;
-    databaseVerified: boolean;
-    sitesProductionVerified: boolean;
-    customDomainsVerified: boolean;
-    sitesSourceParityVerified: boolean;
-    migrationContentParityVerified: boolean;
-    migrationFilenameParityVerified: boolean;
   };
-  currentVerifiedRelease: {
-    pullRequest: number;
-    reviewedHead: string;
-    mergedOperationalCommit: string;
-    sitesCheckoutSourceCommit: string;
-    sitesVersion: number;
-    sourceFileCount: number;
-    sourceTreeSha256: string;
-    productionMigrations: number;
-    latestProductionMigration: string;
-    latestProductionMigrationSha256: string;
-    databaseApplied: boolean;
-    databaseVerified: boolean;
-    sitesProductionVerified: boolean;
-    customDomainsVerified: boolean;
-    sitesSourceParityVerified: boolean;
-    migrationContentParityVerified: boolean;
-    migrationFilenameParityVerified: boolean;
-  };
-  observedProductionDrift: {
+  historicalProductionObservations: Array<{
     observedAt: string;
     evidenceStatus: string;
     canonicalGitHubMainCommit: string;
@@ -205,11 +187,30 @@ const checkpoint = JSON.parse(
     latestProductionMigrationSha256: string;
     databaseLedgerObserved: boolean;
     databaseAppliedThroughLatestObserved: boolean;
-    candidateParityVerified: boolean;
+  }>;
+  currentProductionObservation: {
+    observedAt: string;
+    evidenceStatus: string;
+    canonicalGitHubMainCommit: string;
+    githubMainMatchesCandidate: boolean;
+    sitesVersion: number;
+    sitesCheckoutSourceCommit: string;
+    sourceFileCount: number;
+    sourceTreeSha256: string;
+    candidateSourceMatchesLiveSites: boolean;
+    productionMigrations: number;
+    migrationTreeSha256: string;
+    latestProductionMigration: string;
+    latestProductionMigrationSha256: string;
+    databaseLedgerObserved: boolean;
+    databaseAppliedThroughLatestObserved: boolean;
+    candidateMigrationsMatchLiveLedger: boolean;
+    fullReleaseGatePassed: boolean;
   };
   releaseCandidate: {
     manifest: string;
     state: string;
+    actionScope: string;
     basedOnGitHubMainCommit: string;
     pullRequest: number | null;
     githubMerged: boolean;
@@ -219,6 +220,10 @@ const checkpoint = JSON.parse(
     localReviewPassed: boolean;
     allFourWorkflowsGreen: boolean | null;
     zeroUnresolvedReviewThreads: boolean | null;
+    candidateSourceMatchesLiveSites: boolean;
+    candidateMigrationsMatchLiveLedger: boolean;
+    githubMainMatchesCandidate: boolean;
+    fullReleaseGatePassed: boolean;
     sourceFileCount: number;
     sourceTreeSha256: string;
     migrationFileCount: number;
@@ -232,31 +237,32 @@ const checkpoint = JSON.parse(
   };
 };
 
-const historicalRelease = manifest.verifiedReconciliationRelease;
-const previousRelease = manifest.previousVerifiedRelease;
-const currentRelease = manifest.currentVerifiedRelease;
-const observedProduction = manifest.observedProductionDrift;
-const candidate = manifest.releaseCandidate;
-const publishedSitesReleaseState =
-  "published_sites_v22_no_database_change";
-const publishedSitesFollowupStatus =
-  "published_sites_followup_no_database_change";
-const candidateBaseMain =
-  "72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695";
-const mediaAiMigration =
-  "20260728044916_momo_media_ai_pilot_v1.sql";
-const mediaAiMigrationPath = resolve(
-  root,
-  "supabase/migrations",
-  mediaAiMigration,
-);
+const v36 = {
+  githubBase: "302621bf6b9ab78320abe4175b45b56e9e64ae2a",
+  sitesCheckout: "b8122642b72e5d4e6e74c379469f2a157781ab3d",
+  sourceFileCount: 185,
+  sourceSha256:
+    "caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7",
+  migrationFileCount: 37,
+  migrationSha256:
+    "9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90",
+  latestMigration: "20260802020000_momo_pipeline_query_indexes_v2.sql",
+  latestMigrationSha256:
+    "106d346be34583446d22de0f6866b5b8937feb766a3a229339dbf1c1768fdfcd",
+};
 
 for (const retiredPath of ["api/audit-requests.ts", "api/pilot-access.ts"]) {
-  must(!existsSync(resolve(root, retiredPath)), `Retired Vercel artifact exists: ${retiredPath}`);
+  must(
+    !existsSync(resolve(root, retiredPath)),
+    `Retired Vercel artifact exists: ${retiredPath}`,
+  );
 }
 
 const vercelShutdownPath = resolve(root, "vercel.json");
-must(existsSync(vercelShutdownPath), "The Vercel automatic-deployment shutdown sentinel is missing.");
+must(
+  existsSync(vercelShutdownPath),
+  "The Vercel automatic-deployment shutdown sentinel is missing.",
+);
 if (existsSync(vercelShutdownPath)) {
   try {
     const sentinel = JSON.parse(readFileSync(vercelShutdownPath, "utf8")) as {
@@ -264,7 +270,8 @@ if (existsSync(vercelShutdownPath)) {
       git?: Record<string, unknown>;
     };
     must(
-      JSON.stringify(Object.keys(sentinel).sort()) === JSON.stringify(["$schema", "git"]) &&
+      JSON.stringify(Object.keys(sentinel).sort()) ===
+        JSON.stringify(["$schema", "git"]) &&
         sentinel.$schema === "https://openapi.vercel.sh/vercel.json" &&
         JSON.stringify(Object.keys(sentinel.git ?? {}).sort()) ===
           JSON.stringify(["deploymentEnabled"]) &&
@@ -285,30 +292,27 @@ const documents = [
   "artifacts/veroxa/docs/CURRENT_BUILD_STATUS.md",
   "artifacts/veroxa/docs/README_CURRENT_STATE.md",
   "artifacts/veroxa/docs/RR_CHECKPOINT.md",
+  "artifacts/veroxa/docs/MOMO_UPLOAD_V36_LIVE_CLOSEOUT.json",
   "artifacts/veroxa/docs/MOMO_MEDIA_V22_LIVE_CLOSEOUT.json",
-  "artifacts/veroxa/docs/MOMO_MEDIA_V20_LIVE_CLOSEOUT.json",
-  "artifacts/veroxa/docs/MOMO_MEDIA_V19_LIVE_CLOSEOUT.json",
-].map((path) => ({ path, source: read(path).slice(0, 14_000) }));
+].map((path) => ({ path, source: read(path).slice(0, 18_000) }));
 const combined = documents.map(({ source }) => source).join("\n");
 for (const marker of [
   "Vercel is retired",
-  `PR #${currentRelease.pullRequest}`,
-  currentRelease.reviewedHead,
-  currentRelease.githubMainCommit,
-  currentRelease.sitesCheckoutCommit,
-  `Sites version ${currentRelease.sitesVersion}`,
-  `${currentRelease.productionMigrationCount} applied migrations`,
-  "Sites v21",
-  "Sites-only",
-  historicalRelease.githubMainCommit,
-  historicalRelease.sitesCheckoutCommit,
-  `Sites version ${historicalRelease.sitesVersion}`,
-  historicalRelease.sourceTreeSha256,
-  "post_release_cleanup_deployed",
-  `Sites version ${observedProduction.sitesVersion}`,
-  `${observedProduction.productionMigrationCount} applied migrations`,
+  "PR #149",
+  "PR #154",
+  "PR #155",
+  "Sites v22",
+  "Sites v36",
+  "37 migrations",
+  v36.githubBase,
+  v36.sitesCheckout,
+  v36.sourceSha256,
+  v36.migrationSha256,
 ]) {
-  must(combined.includes(marker), `Current source truth is missing delivery marker: ${marker}`);
+  must(
+    combined.includes(marker),
+    `Current source truth is missing delivery marker: ${marker}`,
+  );
 }
 for (const banned of [
   "Vercel is the new primary deployment target",
@@ -317,51 +321,57 @@ for (const banned of [
   "GitHub + Codex + Vercel",
   "Use Vercel as the deployment target",
 ]) {
-  must(!combined.includes(banned), `Current source truth restores retired Vercel behavior: ${banned}`);
+  must(
+    !combined.includes(banned),
+    `Current source truth restores retired Vercel behavior: ${banned}`,
+  );
 }
 must(
-  /shutdown sentinel[\s\S]{0,500}(?:external|dashboard)[\s\S]{0,300}disconnect/i.test(combined),
+  /shutdown sentinel[\s\S]{0,500}(?:external|dashboard)[\s\S]{0,300}disconnect/i.test(
+    combined,
+  ),
   "Current source truth must retain the sentinel until external Vercel Git disconnection is verified.",
 );
 
 const hostingPath = "artifacts/veroxa-sites/.openai/hosting.json";
-must(existsSync(resolve(root, hostingPath)), "Sites hosting identity is missing.");
+must(
+  existsSync(resolve(root, hostingPath)),
+  "Sites hosting identity is missing.",
+);
 if (existsSync(resolve(root, hostingPath))) {
   const hosting = JSON.parse(read(hostingPath)) as { project_id?: unknown };
   must(
-    hosting.project_id === "appgprj_6a53d07c7c28819182801cf35dfd30de",
+    hosting.project_id === "appgprj_6a53d07c7c28819182801cf35dfd30de" &&
+      hosting.project_id === manifest.sitesProjectId,
     "Sites project identity drifted.",
   );
 }
 
-const readiness = JSON.parse(
-  read("artifacts/veroxa-sites/app/momo-readiness-tracker.json"),
-) as {
+const readinessPath = "artifacts/veroxa-sites/app/momo-readiness-tracker.json";
+const readiness = JSON.parse(read(readinessPath)) as {
   schemaVersion: number;
   overallStatus: string;
   overallRule: string;
 };
-const readinessText = read("artifacts/veroxa-sites/app/momo-readiness-tracker.json");
+const readinessText = read(readinessPath);
 const releaseIdentityMarkers = [
-  historicalRelease.githubMainCommit,
-  historicalRelease.sitesCheckoutCommit,
-  historicalRelease.sourceTreeSha256,
-  previousRelease.reviewedHead,
-  previousRelease.githubMainCommit,
-  previousRelease.sitesCheckoutCommit,
-  previousRelease.sourceTreeSha256,
-  currentRelease.reviewedHead,
-  currentRelease.githubMainCommit,
-  currentRelease.sitesCheckoutCommit,
-  currentRelease.sourceTreeSha256,
-  currentRelease.latestProductionMigrationSha256,
-  candidate.sourceTreeSha256,
-  candidate.migrationTreeSha256,
-  `Sites version ${historicalRelease.sitesVersion}`,
-  `Sites version ${observedProduction.sitesVersion}`,
-  `Sites version ${currentRelease.sitesVersion}`,
-  "Sites version 20",
-  "sitesCandidatePublished",
+  manifest.verifiedReconciliationRelease.githubMainCommit,
+  manifest.verifiedReconciliationRelease.sitesCheckoutCommit,
+  manifest.verifiedReconciliationRelease.sourceTreeSha256,
+  manifest.previousVerifiedRelease.reviewedHead,
+  manifest.previousVerifiedRelease.githubMainCommit,
+  manifest.previousVerifiedRelease.sitesCheckoutCommit,
+  manifest.previousVerifiedRelease.sourceTreeSha256,
+  manifest.lastGitHubParityRelease.reviewedHead,
+  manifest.lastGitHubParityRelease.githubMainCommit,
+  manifest.lastGitHubParityRelease.sitesCheckoutCommit,
+  manifest.lastGitHubParityRelease.sourceTreeSha256,
+  v36.githubBase,
+  v36.sitesCheckout,
+  v36.sourceSha256,
+  v36.migrationSha256,
+  "Sites version 36",
+  "fullReleaseGatePassed",
   "futureSitesVersion",
 ];
 must(
@@ -372,281 +382,328 @@ must(
   "Sites-bundled readiness evidence must externalize exact deployment identity and remain stable across publications.",
 );
 
+const pr149 = manifest.verifiedReconciliationRelease;
+const pr154 = manifest.previousVerifiedRelease;
+const pr155 = manifest.lastGitHubParityRelease;
 must(
-  manifest.schemaVersion === 3 &&
+  manifest.schemaVersion === 4 &&
     manifest.sitesProjectId === "appgprj_6a53d07c7c28819182801cf35dfd30de" &&
-    manifest.releaseState === publishedSitesReleaseState &&
-    historicalRelease.pullRequest === 149 &&
-    historicalRelease.githubMainCommit === "9749b68ce2cfc383deeae6aa63c413019ef61385" &&
-    historicalRelease.sitesCheckoutCommit === "e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0" &&
-    historicalRelease.sitesVersion === 15 &&
-    historicalRelease.sourceFileCount === 55 &&
-    historicalRelease.sourceTreeSha256 ===
+    pr149.pullRequest === 149 &&
+    pr149.githubMainCommit === "9749b68ce2cfc383deeae6aa63c413019ef61385" &&
+    pr149.sitesCheckoutCommit === "e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0" &&
+    pr149.sitesVersion === 15 &&
+    pr149.sourceFileCount === 55 &&
+    pr149.sourceTreeSha256 ===
       "ba06cd39ab7782987a6504678e4a3533a9943d078ba5dd9f93dbe8eeb0c5178f" &&
-    historicalRelease.productionMigrationCount === 13 &&
-    historicalRelease.latestProductionMigration ===
-      "20260714022911_ai_budget_and_momo_manual_pilot_contract.sql" &&
-    historicalRelease.latestProductionMigrationSha256 ===
-      "ebc2ea499a24b79da1baaffa02423488b1a28a95cb75d4c0d5c002c7c585948d" &&
-    !historicalRelease.databaseApplied &&
-    historicalRelease.databaseVerified &&
-    historicalRelease.sitesPublished &&
-    historicalRelease.sitesVerified &&
-    historicalRelease.customDomainsVerified &&
-    historicalRelease.sitesSourceParityVerified &&
-    historicalRelease.migrationContentParityVerified &&
-    historicalRelease.migrationFilenameParityVerified &&
-    previousRelease.pullRequest === 154 &&
-    previousRelease.reviewedHead === "4a7a2122bb71defc0f1db0c795b4c4c8fdb930a5" &&
-    previousRelease.githubMainCommit === "72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695" &&
-    previousRelease.sitesCheckoutCommit === "8c50dd6726629e77d22f07eb6aac9f6982001902" &&
-    previousRelease.sitesVersion === 21 &&
-    previousRelease.sourceFileCount === 88 &&
-    previousRelease.sourceTreeSha256 ===
+    pr149.productionMigrationCount === 13 &&
+    !pr149.databaseApplied &&
+    pr149.databaseVerified &&
+    pr149.sitesPublished &&
+    pr149.sitesVerified &&
+    pr149.customDomainsVerified &&
+    pr149.sitesSourceParityVerified &&
+    pr149.migrationContentParityVerified &&
+    pr149.migrationFilenameParityVerified &&
+    pr154.pullRequest === 154 &&
+    pr154.reviewedHead === "4a7a2122bb71defc0f1db0c795b4c4c8fdb930a5" &&
+    pr154.githubMainCommit === "72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695" &&
+    pr154.sitesCheckoutCommit === "8c50dd6726629e77d22f07eb6aac9f6982001902" &&
+    pr154.sitesVersion === 21 &&
+    pr154.sourceFileCount === 88 &&
+    pr154.sourceTreeSha256 ===
       "60c2e069d6a5f54480c8ee3151e28ccc7d920e52fd5e3b978f47f41dec4013bb" &&
-    previousRelease.productionMigrationCount === 16 &&
-    previousRelease.latestProductionMigration ===
-      "20260728044916_momo_media_ai_pilot_v1.sql" &&
-    previousRelease.latestProductionMigrationSha256 ===
-      "efae63b4344570934d1d66b47ef1fce4fcd16343a2fe9dd8352607e0784d09a1" &&
-    previousRelease.databaseApplied &&
-    previousRelease.databaseVerified &&
-    previousRelease.sitesPublished &&
-    previousRelease.sitesVerified &&
-    previousRelease.customDomainsVerified &&
-    previousRelease.sitesSourceParityVerified &&
-    previousRelease.migrationContentParityVerified &&
-    previousRelease.migrationFilenameParityVerified &&
-    currentRelease.pullRequest === 155 &&
-    currentRelease.reviewedHead === "96a6c00857b438b37c2e8d99329c0f556de850a2" &&
-    currentRelease.githubMainCommit === "d1f6a9a78ac54cd5447689d5f8b3d42466daf479" &&
-    currentRelease.sitesCheckoutCommit === "83bf6496a02559bf7bbc3fe9bc02ff7f9f8b3f6e" &&
-    currentRelease.sitesVersion === 22 &&
-    currentRelease.sourceFileCount === 93 &&
-    currentRelease.sourceTreeSha256 ===
+    pr154.productionMigrationCount === 16 &&
+    pr154.databaseApplied &&
+    pr154.databaseVerified &&
+    pr154.sitesPublished &&
+    pr154.sitesVerified &&
+    pr154.customDomainsVerified &&
+    pr154.sitesSourceParityVerified &&
+    pr154.migrationContentParityVerified &&
+    pr154.migrationFilenameParityVerified &&
+    pr155.evidenceScope === "last_github_sites_parity_release" &&
+    pr155.supersededAsLiveBaseline &&
+    pr155.pullRequest === 155 &&
+    pr155.reviewedHead === "96a6c00857b438b37c2e8d99329c0f556de850a2" &&
+    pr155.githubMainCommit === "d1f6a9a78ac54cd5447689d5f8b3d42466daf479" &&
+    pr155.sitesCheckoutCommit === "83bf6496a02559bf7bbc3fe9bc02ff7f9f8b3f6e" &&
+    pr155.sitesVersion === 22 &&
+    pr155.sourceFileCount === 93 &&
+    pr155.sourceTreeSha256 ===
       "8bc4ef94c0f670ff128774e26a9de3d9849269f74b6e5c5af05f07ee0c9e5490" &&
-    currentRelease.productionMigrationCount === 16 &&
-    currentRelease.latestProductionMigration ===
-      "20260728044916_momo_media_ai_pilot_v1.sql" &&
-    currentRelease.latestProductionMigrationSha256 ===
-      "efae63b4344570934d1d66b47ef1fce4fcd16343a2fe9dd8352607e0784d09a1" &&
-    currentRelease.databaseApplied &&
-    currentRelease.databaseVerified &&
-    currentRelease.sitesPublished &&
-    currentRelease.sitesVerified &&
-    currentRelease.customDomainsVerified &&
-    currentRelease.sitesSourceParityVerified &&
-    currentRelease.migrationContentParityVerified &&
-    currentRelease.migrationFilenameParityVerified &&
-    !manifest.deploymentFreeze.automaticDeploymentsAllowed &&
-    observedProduction.observedAt === "2026-07-22" &&
-    observedProduction.evidenceStatus === "observed_live_not_source_reconciled" &&
-    observedProduction.canonicalGitHubMainCommit ===
-      "4f95b30413632b4d30a289c7f4b9011f37a37b80" &&
-    !observedProduction.githubSourceParityVerified &&
-    observedProduction.sitesVersion === 18 &&
-    observedProduction.sitesCheckoutCommit === null &&
-    observedProduction.sourceFileCount === null &&
-    observedProduction.sourceTreeSha256 === null &&
-    !observedProduction.sitesSourceParityVerified &&
-    observedProduction.productionMigrationCount === 14 &&
-    observedProduction.latestProductionMigration ===
-      "20260716035027_momo_preconnection_foundation.sql" &&
-    observedProduction.latestProductionMigrationSha256 ===
-      "9e748a46e050b9b8884a5df46eba6617cac061d075272ab4e233d2c1609fb367" &&
-    observedProduction.databaseLedgerObserved &&
-    observedProduction.databaseAppliedThroughLatestObserved &&
-    !observedProduction.candidateParityVerified &&
-    candidate.status === publishedSitesFollowupStatus &&
-    candidate.basedOnGitHubMainCommit === candidateBaseMain &&
-    candidate.pullRequest === currentRelease.pullRequest &&
-    candidate.githubMerged &&
-    candidate.futureMergedGitHubCommit === currentRelease.githubMainCommit &&
-    candidate.futureSitesVersion === currentRelease.sitesVersion &&
-    candidate.reviewedLocally &&
-    candidate.sourceFileCount === currentRelease.sourceFileCount &&
-    candidate.sourceTreeSha256 === currentRelease.sourceTreeSha256 &&
-    candidate.migrationFileCount === currentRelease.productionMigrationCount &&
-    /^[a-f0-9]{64}$/.test(candidate.migrationTreeSha256) &&
-    candidate.latestCandidateMigration === mediaAiMigration &&
-    /^[a-f0-9]{64}$/.test(candidate.latestCandidateMigrationSha256) &&
-    !candidate.databaseChangesRequired &&
-    !candidate.databaseMigrationApplied &&
-    candidate.sitesPublishRequired &&
-    candidate.sitesPublished &&
-    manifest.source.evidenceScope === "published_sites_v22" &&
-    manifest.source.root === "artifacts/veroxa-sites" &&
-    manifest.source.fileCount === candidate.sourceFileCount &&
-    manifest.source.treeSha256 === candidate.sourceTreeSha256 &&
-    manifest.migrations.evidenceScope === "current_verified_release" &&
-    manifest.migrations.root === "supabase/migrations" &&
-    manifest.migrations.fileCount === candidate.migrationFileCount &&
-    manifest.migrations.treeSha256 === candidate.migrationTreeSha256 &&
-    !manifest.cleanupState.branchDeletionCapabilityAvailable &&
-    !manifest.cleanupState.externalVercelGitDisconnectionVerified &&
-    manifest.cleanupState.vercelShutdownSentinelRequired,
-  "Schema-3 deployment manifest must preserve PR #149 / Sites v15 history and observed v18 drift, retain PR #154 / Sites v21 as previous, prove PR #155 / Sites v22 / migration 16 as current, and bind the reviewed no-database-change lifecycle bridge to its published release.",
+    pr155.productionMigrationCount === 16 &&
+    pr155.databaseApplied &&
+    pr155.databaseVerified &&
+    pr155.sitesPublished &&
+    pr155.sitesVerified &&
+    pr155.customDomainsVerified &&
+    pr155.sitesSourceParityVerified &&
+    pr155.migrationContentParityVerified &&
+    pr155.migrationFilenameParityVerified,
+  "Schema-4 deployment manifest must preserve immutable PR #149 / v15, PR #154 / v21, and last GitHub-parity PR #155 / v22 release proof.",
 );
 
+const historical = manifest.historicalProductionObservations;
+const live = manifest.currentProductionObservation;
+const candidate = manifest.releaseCandidate;
 must(
-  existsSync(mediaAiMigrationPath),
-  `Current v22 migration 16 is missing from canonical source: ${mediaAiMigration}.`,
+  historical.length === 1 &&
+    historical[0]?.observedAt === "2026-07-22" &&
+    historical[0].evidenceStatus === "historical_live_not_source_reconciled" &&
+    historical[0].sitesVersion === 18 &&
+    historical[0].sitesCheckoutCommit === null &&
+    historical[0].sourceFileCount === null &&
+    historical[0].sourceTreeSha256 === null &&
+    !historical[0].githubSourceParityVerified &&
+    !historical[0].sitesSourceParityVerified &&
+    historical[0].productionMigrationCount === 14 &&
+    historical[0].databaseLedgerObserved &&
+    historical[0].databaseAppliedThroughLatestObserved &&
+    live.observedAt === "2026-08-02" &&
+    live.canonicalGitHubMainCommit === v36.githubBase &&
+    !live.githubMainMatchesCandidate &&
+    live.sitesVersion === 36 &&
+    live.sitesCheckoutCommit === v36.sitesCheckout &&
+    live.sourceFileCount === v36.sourceFileCount &&
+    live.sourceTreeSha256 === v36.sourceSha256 &&
+    live.candidateSourceMatchesLiveSites &&
+    live.productionMigrationCount === v36.migrationFileCount &&
+    live.migrationTreeSha256 === v36.migrationSha256 &&
+    live.latestProductionMigration === v36.latestMigration &&
+    live.latestProductionMigrationSha256 === v36.latestMigrationSha256 &&
+    live.databaseLedgerObserved &&
+    live.databaseAppliedThroughLatestObserved &&
+    live.candidateMigrationsMatchLiveLedger &&
+    !live.fullReleaseGatePassed &&
+    candidate.actionScope === "github_reconciliation_candidate" &&
+    candidate.basedOnGitHubMainCommit === v36.githubBase &&
+    candidate.pullRequest === null &&
+    !candidate.githubMerged &&
+    candidate.futureMergedGitHubCommit === null &&
+    candidate.futureSitesVersion === null &&
+    candidate.candidateSourceMatchesLiveSites &&
+    candidate.candidateMigrationsMatchLiveLedger &&
+    !candidate.githubMainMatchesCandidate &&
+    !candidate.fullReleaseGatePassed &&
+    candidate.sourceFileCount === v36.sourceFileCount &&
+    candidate.sourceTreeSha256 === v36.sourceSha256 &&
+    candidate.migrationFileCount === v36.migrationFileCount &&
+    candidate.migrationTreeSha256 === v36.migrationSha256 &&
+    candidate.latestCandidateMigration === v36.latestMigration &&
+    candidate.latestCandidateMigrationSha256 === v36.latestMigrationSha256 &&
+    !candidate.databaseChangesRequired &&
+    !candidate.databaseMigrationApplied &&
+    !candidate.sitesPublishRequired &&
+    !candidate.sitesPublished &&
+    manifest.source.evidenceScope ===
+      "github_reconciliation_candidate_matching_live_sites_v36" &&
+    manifest.source.root === "artifacts/veroxa-sites" &&
+    manifest.source.fileCount === v36.sourceFileCount &&
+    manifest.source.treeSha256 === v36.sourceSha256 &&
+    manifest.migrations.evidenceScope ===
+      "github_reconciliation_candidate_matching_live_ledger_v36" &&
+    manifest.migrations.root === "supabase/migrations" &&
+    manifest.migrations.fileCount === v36.migrationFileCount &&
+    manifest.migrations.treeSha256 === v36.migrationSha256 &&
+    !manifest.deploymentFreeze.automaticDeploymentsAllowed &&
+    manifest.deploymentFreeze.state ===
+      "production_frozen_github_reconciliation_review_required" &&
+    manifest.cleanupState.branchDeletionCapabilityAvailable &&
+    !manifest.cleanupState.branchDeletionAllowed &&
+    !manifest.cleanupState.externalVercelGitDisconnectionVerified &&
+    manifest.cleanupState.vercelShutdownSentinelRequired,
+  "Sites-v36 reconciliation must match live source and migration evidence while GitHub parity and every candidate action remain false.",
 );
-if (existsSync(mediaAiMigrationPath)) {
-  const mediaAiMigrationSha256 = createHash("sha256")
-    .update(readFileSync(mediaAiMigrationPath))
+
+const latestMigrationPath = resolve(
+  root,
+  "supabase/migrations",
+  v36.latestMigration,
+);
+must(
+  existsSync(latestMigrationPath),
+  `Latest v36 migration is missing from canonical source: ${v36.latestMigration}.`,
+);
+if (existsSync(latestMigrationPath)) {
+  const actual = createHash("sha256")
+    .update(readFileSync(latestMigrationPath))
     .digest("hex");
   must(
-    candidate.latestCandidateMigrationSha256 === mediaAiMigrationSha256,
-    "Current v22 migration-16 checksum disagrees with canonical source.",
+    actual === v36.latestMigrationSha256,
+    "Latest v36 migration checksum disagrees with canonical source.",
   );
 }
 
+const checkpoint149 = checkpoint.verifiedReconciliationRelease;
+const checkpoint154 = checkpoint.previousVerifiedRelease;
+const checkpoint155 = checkpoint.lastGitHubParityRelease;
+const checkpointHistorical = checkpoint.historicalProductionObservations;
+const checkpointLive = checkpoint.currentProductionObservation;
+const checkpointCandidate = checkpoint.releaseCandidate;
 must(
-  checkpoint.schemaVersion === 7 &&
-    /media-ai/i.test(checkpoint.checkpoint) &&
-    /published/i.test(checkpoint.checkpoint) &&
+  checkpoint.schemaVersion === 8 &&
+    /v36/i.test(checkpoint.checkpoint) &&
+    /github-reconciliation/i.test(checkpoint.checkpoint) &&
     checkpoint.status === manifest.releaseState &&
-    checkpoint.verifiedReconciliationRelease.pullRequest === historicalRelease.pullRequest &&
-    checkpoint.verifiedReconciliationRelease.githubMainCommit === historicalRelease.githubMainCommit &&
-    checkpoint.verifiedReconciliationRelease.sitesCheckoutSourceCommit ===
-      historicalRelease.sitesCheckoutCommit &&
-    checkpoint.verifiedReconciliationRelease.sitesVersion === historicalRelease.sitesVersion &&
-    checkpoint.verifiedReconciliationRelease.sourceFileCount === historicalRelease.sourceFileCount &&
-    checkpoint.verifiedReconciliationRelease.sourceTreeSha256 ===
-      historicalRelease.sourceTreeSha256 &&
-    checkpoint.verifiedReconciliationRelease.productionMigrations ===
-      historicalRelease.productionMigrationCount &&
-    checkpoint.verifiedReconciliationRelease.latestProductionMigration ===
-      historicalRelease.latestProductionMigration &&
-    checkpoint.verifiedReconciliationRelease.latestProductionMigrationSha256 ===
-      historicalRelease.latestProductionMigrationSha256 &&
-    checkpoint.verifiedReconciliationRelease.databaseVerified ===
-      historicalRelease.databaseVerified &&
-    checkpoint.verifiedReconciliationRelease.sitesProductionVerified ===
-      historicalRelease.sitesVerified &&
-    checkpoint.verifiedReconciliationRelease.customDomainsVerified ===
-      historicalRelease.customDomainsVerified &&
-    checkpoint.verifiedReconciliationRelease.sitesSourceParityVerified ===
-      historicalRelease.sitesSourceParityVerified &&
-    checkpoint.verifiedReconciliationRelease.migrationContentParityVerified ===
-      historicalRelease.migrationContentParityVerified &&
-    checkpoint.verifiedReconciliationRelease.migrationFilenameParityVerified ===
-      historicalRelease.migrationFilenameParityVerified &&
-    checkpoint.previousVerifiedRelease.pullRequest === previousRelease.pullRequest &&
-    checkpoint.previousVerifiedRelease.reviewedHead === previousRelease.reviewedHead &&
-    checkpoint.previousVerifiedRelease.mergedOperationalCommit ===
-      previousRelease.githubMainCommit &&
-    checkpoint.previousVerifiedRelease.sitesCheckoutSourceCommit ===
-      previousRelease.sitesCheckoutCommit &&
-    checkpoint.previousVerifiedRelease.sitesVersion === previousRelease.sitesVersion &&
-    checkpoint.previousVerifiedRelease.sourceFileCount ===
-      previousRelease.sourceFileCount &&
-    checkpoint.previousVerifiedRelease.sourceTreeSha256 ===
-      previousRelease.sourceTreeSha256 &&
-    checkpoint.previousVerifiedRelease.productionMigrations ===
-      previousRelease.productionMigrationCount &&
-    checkpoint.previousVerifiedRelease.latestProductionMigration ===
-      previousRelease.latestProductionMigration &&
-    checkpoint.previousVerifiedRelease.latestProductionMigrationSha256 ===
-      previousRelease.latestProductionMigrationSha256 &&
-    checkpoint.previousVerifiedRelease.databaseApplied ===
-      previousRelease.databaseApplied &&
-    checkpoint.previousVerifiedRelease.databaseVerified ===
-      previousRelease.databaseVerified &&
-    checkpoint.previousVerifiedRelease.sitesProductionVerified ===
-      previousRelease.sitesVerified &&
-    checkpoint.previousVerifiedRelease.customDomainsVerified ===
-      previousRelease.customDomainsVerified &&
-    checkpoint.previousVerifiedRelease.sitesSourceParityVerified ===
-      previousRelease.sitesSourceParityVerified &&
-    checkpoint.previousVerifiedRelease.migrationContentParityVerified ===
-      previousRelease.migrationContentParityVerified &&
-    checkpoint.previousVerifiedRelease.migrationFilenameParityVerified ===
-      previousRelease.migrationFilenameParityVerified &&
-    checkpoint.currentVerifiedRelease.pullRequest === currentRelease.pullRequest &&
-    checkpoint.currentVerifiedRelease.reviewedHead === currentRelease.reviewedHead &&
-    checkpoint.currentVerifiedRelease.mergedOperationalCommit ===
-      currentRelease.githubMainCommit &&
-    checkpoint.currentVerifiedRelease.sitesCheckoutSourceCommit ===
-      currentRelease.sitesCheckoutCommit &&
-    checkpoint.currentVerifiedRelease.sitesVersion === currentRelease.sitesVersion &&
-    checkpoint.currentVerifiedRelease.sourceFileCount === currentRelease.sourceFileCount &&
-    checkpoint.currentVerifiedRelease.sourceTreeSha256 ===
-      currentRelease.sourceTreeSha256 &&
-    checkpoint.currentVerifiedRelease.productionMigrations ===
-      currentRelease.productionMigrationCount &&
-    checkpoint.currentVerifiedRelease.latestProductionMigration ===
-      currentRelease.latestProductionMigration &&
-    checkpoint.currentVerifiedRelease.latestProductionMigrationSha256 ===
-      currentRelease.latestProductionMigrationSha256 &&
-    checkpoint.currentVerifiedRelease.databaseApplied === currentRelease.databaseApplied &&
-    checkpoint.currentVerifiedRelease.databaseVerified === currentRelease.databaseVerified &&
-    checkpoint.currentVerifiedRelease.sitesProductionVerified === currentRelease.sitesVerified &&
-    checkpoint.currentVerifiedRelease.customDomainsVerified ===
-      currentRelease.customDomainsVerified &&
-    checkpoint.currentVerifiedRelease.sitesSourceParityVerified ===
-      currentRelease.sitesSourceParityVerified &&
-    checkpoint.currentVerifiedRelease.migrationContentParityVerified ===
-      currentRelease.migrationContentParityVerified &&
-    checkpoint.currentVerifiedRelease.migrationFilenameParityVerified ===
-      currentRelease.migrationFilenameParityVerified &&
-    checkpoint.observedProductionDrift.observedAt === observedProduction.observedAt &&
-    checkpoint.observedProductionDrift.evidenceStatus === observedProduction.evidenceStatus &&
-    checkpoint.observedProductionDrift.canonicalGitHubMainCommit ===
-      observedProduction.canonicalGitHubMainCommit &&
-    checkpoint.observedProductionDrift.githubSourceParityVerified ===
-      observedProduction.githubSourceParityVerified &&
-    checkpoint.observedProductionDrift.sitesVersion === observedProduction.sitesVersion &&
-    checkpoint.observedProductionDrift.sitesCheckoutSourceCommit ===
-      observedProduction.sitesCheckoutCommit &&
-    checkpoint.observedProductionDrift.sourceFileCount === observedProduction.sourceFileCount &&
-    checkpoint.observedProductionDrift.sourceTreeSha256 === observedProduction.sourceTreeSha256 &&
-    checkpoint.observedProductionDrift.sitesSourceParityVerified ===
-      observedProduction.sitesSourceParityVerified &&
-    checkpoint.observedProductionDrift.productionMigrations ===
-      observedProduction.productionMigrationCount &&
-    checkpoint.observedProductionDrift.latestProductionMigration ===
-      observedProduction.latestProductionMigration &&
-    checkpoint.observedProductionDrift.latestProductionMigrationSha256 ===
-      observedProduction.latestProductionMigrationSha256 &&
-    checkpoint.observedProductionDrift.databaseLedgerObserved ===
-      observedProduction.databaseLedgerObserved &&
-    checkpoint.observedProductionDrift.databaseAppliedThroughLatestObserved ===
-      observedProduction.databaseAppliedThroughLatestObserved &&
-    checkpoint.observedProductionDrift.candidateParityVerified ===
-      observedProduction.candidateParityVerified &&
-    checkpoint.releaseCandidate.manifest ===
+    checkpoint.reviewedAt === "2026-08-02" &&
+    checkpoint149.pullRequest === pr149.pullRequest &&
+    checkpoint149.githubMainCommit === pr149.githubMainCommit &&
+    checkpoint149.sitesCheckoutSourceCommit === pr149.sitesCheckoutCommit &&
+    checkpoint149.sitesVersion === pr149.sitesVersion &&
+    checkpoint149.sourceFileCount === pr149.sourceFileCount &&
+    checkpoint149.sourceTreeSha256 === pr149.sourceTreeSha256 &&
+    checkpoint149.productionMigrations === pr149.productionMigrationCount &&
+    checkpoint149.latestProductionMigration ===
+      pr149.latestProductionMigration &&
+    checkpoint149.latestProductionMigrationSha256 ===
+      pr149.latestProductionMigrationSha256 &&
+    checkpoint149.databaseVerified === pr149.databaseVerified &&
+    checkpoint149.sitesProductionVerified === pr149.sitesVerified &&
+    checkpoint149.customDomainsVerified === pr149.customDomainsVerified &&
+    checkpoint149.sitesSourceParityVerified ===
+      pr149.sitesSourceParityVerified &&
+    checkpoint149.migrationContentParityVerified ===
+      pr149.migrationContentParityVerified &&
+    checkpoint149.migrationFilenameParityVerified ===
+      pr149.migrationFilenameParityVerified &&
+    checkpoint154.pullRequest === pr154.pullRequest &&
+    checkpoint154.reviewedHead === pr154.reviewedHead &&
+    checkpoint154.mergedOperationalCommit === pr154.githubMainCommit &&
+    checkpoint154.sitesCheckoutSourceCommit === pr154.sitesCheckoutCommit &&
+    checkpoint154.sitesVersion === pr154.sitesVersion &&
+    checkpoint154.sourceFileCount === pr154.sourceFileCount &&
+    checkpoint154.sourceTreeSha256 === pr154.sourceTreeSha256 &&
+    checkpoint154.productionMigrations === pr154.productionMigrationCount &&
+    checkpoint154.latestProductionMigration ===
+      pr154.latestProductionMigration &&
+    checkpoint154.latestProductionMigrationSha256 ===
+      pr154.latestProductionMigrationSha256 &&
+    checkpoint154.databaseApplied === pr154.databaseApplied &&
+    checkpoint154.databaseVerified === pr154.databaseVerified &&
+    checkpoint154.sitesProductionVerified === pr154.sitesVerified &&
+    checkpoint154.customDomainsVerified === pr154.customDomainsVerified &&
+    checkpoint154.sitesSourceParityVerified ===
+      pr154.sitesSourceParityVerified &&
+    checkpoint154.migrationContentParityVerified ===
+      pr154.migrationContentParityVerified &&
+    checkpoint154.migrationFilenameParityVerified ===
+      pr154.migrationFilenameParityVerified &&
+    checkpoint155.evidenceScope === pr155.evidenceScope &&
+    checkpoint155.supersededAsLiveBaseline === pr155.supersededAsLiveBaseline &&
+    checkpoint155.pullRequest === pr155.pullRequest &&
+    checkpoint155.reviewedHead === pr155.reviewedHead &&
+    checkpoint155.mergedOperationalCommit === pr155.githubMainCommit &&
+    checkpoint155.sitesCheckoutSourceCommit === pr155.sitesCheckoutCommit &&
+    checkpoint155.sitesVersion === pr155.sitesVersion &&
+    checkpoint155.sourceFileCount === pr155.sourceFileCount &&
+    checkpoint155.sourceTreeSha256 === pr155.sourceTreeSha256 &&
+    checkpoint155.productionMigrations === pr155.productionMigrationCount &&
+    checkpoint155.latestProductionMigration ===
+      pr155.latestProductionMigration &&
+    checkpoint155.latestProductionMigrationSha256 ===
+      pr155.latestProductionMigrationSha256 &&
+    checkpoint155.databaseApplied === pr155.databaseApplied &&
+    checkpoint155.databaseVerified === pr155.databaseVerified &&
+    checkpoint155.sitesProductionVerified === pr155.sitesVerified &&
+    checkpoint155.customDomainsVerified === pr155.customDomainsVerified &&
+    checkpoint155.sitesSourceParityVerified ===
+      pr155.sitesSourceParityVerified &&
+    checkpoint155.migrationContentParityVerified ===
+      pr155.migrationContentParityVerified &&
+    checkpoint155.migrationFilenameParityVerified ===
+      pr155.migrationFilenameParityVerified &&
+    checkpointHistorical.length === 1 &&
+    checkpointHistorical[0]?.observedAt === historical[0]?.observedAt &&
+    checkpointHistorical[0].evidenceStatus === historical[0].evidenceStatus &&
+    checkpointHistorical[0].canonicalGitHubMainCommit ===
+      historical[0].canonicalGitHubMainCommit &&
+    checkpointHistorical[0].githubSourceParityVerified ===
+      historical[0].githubSourceParityVerified &&
+    checkpointHistorical[0].sitesVersion === historical[0].sitesVersion &&
+    checkpointHistorical[0].sitesCheckoutSourceCommit ===
+      historical[0].sitesCheckoutCommit &&
+    checkpointHistorical[0].sourceFileCount === historical[0].sourceFileCount &&
+    checkpointHistorical[0].sourceTreeSha256 ===
+      historical[0].sourceTreeSha256 &&
+    checkpointHistorical[0].sitesSourceParityVerified ===
+      historical[0].sitesSourceParityVerified &&
+    checkpointHistorical[0].productionMigrations ===
+      historical[0].productionMigrationCount &&
+    checkpointHistorical[0].latestProductionMigration ===
+      historical[0].latestProductionMigration &&
+    checkpointHistorical[0].latestProductionMigrationSha256 ===
+      historical[0].latestProductionMigrationSha256 &&
+    checkpointHistorical[0].databaseLedgerObserved ===
+      historical[0].databaseLedgerObserved &&
+    checkpointHistorical[0].databaseAppliedThroughLatestObserved ===
+      historical[0].databaseAppliedThroughLatestObserved &&
+    checkpointLive.observedAt === live.observedAt &&
+    checkpointLive.evidenceStatus === live.evidenceStatus &&
+    checkpointLive.canonicalGitHubMainCommit ===
+      live.canonicalGitHubMainCommit &&
+    checkpointLive.githubMainMatchesCandidate ===
+      live.githubMainMatchesCandidate &&
+    checkpointLive.sitesVersion === live.sitesVersion &&
+    checkpointLive.sitesCheckoutSourceCommit === live.sitesCheckoutCommit &&
+    checkpointLive.sourceFileCount === live.sourceFileCount &&
+    checkpointLive.sourceTreeSha256 === live.sourceTreeSha256 &&
+    checkpointLive.candidateSourceMatchesLiveSites ===
+      live.candidateSourceMatchesLiveSites &&
+    checkpointLive.productionMigrations === live.productionMigrationCount &&
+    checkpointLive.migrationTreeSha256 === live.migrationTreeSha256 &&
+    checkpointLive.latestProductionMigration ===
+      live.latestProductionMigration &&
+    checkpointLive.latestProductionMigrationSha256 ===
+      live.latestProductionMigrationSha256 &&
+    checkpointLive.databaseLedgerObserved === live.databaseLedgerObserved &&
+    checkpointLive.databaseAppliedThroughLatestObserved ===
+      live.databaseAppliedThroughLatestObserved &&
+    checkpointLive.candidateMigrationsMatchLiveLedger ===
+      live.candidateMigrationsMatchLiveLedger &&
+    checkpointLive.fullReleaseGatePassed === live.fullReleaseGatePassed &&
+    checkpointCandidate.manifest ===
       "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json" &&
-    checkpoint.releaseCandidate.state === candidate.status &&
-    checkpoint.releaseCandidate.basedOnGitHubMainCommit ===
+    checkpointCandidate.state === candidate.status &&
+    checkpointCandidate.actionScope === candidate.actionScope &&
+    checkpointCandidate.basedOnGitHubMainCommit ===
       candidate.basedOnGitHubMainCommit &&
-    checkpoint.releaseCandidate.pullRequest === candidate.pullRequest &&
-    checkpoint.releaseCandidate.githubMerged === candidate.githubMerged &&
-    checkpoint.releaseCandidate.futureMergedGitHubCommit === candidate.futureMergedGitHubCommit &&
-    checkpoint.releaseCandidate.futureSitesVersion === candidate.futureSitesVersion &&
-    checkpoint.releaseCandidate.reviewedLocally === candidate.reviewedLocally &&
-    checkpoint.releaseCandidate.localReviewPassed &&
-    checkpoint.releaseCandidate.allFourWorkflowsGreen === true &&
-    checkpoint.releaseCandidate.zeroUnresolvedReviewThreads === true &&
-    checkpoint.releaseCandidate.sourceFileCount === candidate.sourceFileCount &&
-    checkpoint.releaseCandidate.sourceTreeSha256 === candidate.sourceTreeSha256 &&
-    checkpoint.releaseCandidate.migrationFileCount === candidate.migrationFileCount &&
-    checkpoint.releaseCandidate.migrationTreeSha256 === candidate.migrationTreeSha256 &&
-    checkpoint.releaseCandidate.latestCandidateMigration ===
+    checkpointCandidate.pullRequest === candidate.pullRequest &&
+    checkpointCandidate.githubMerged === candidate.githubMerged &&
+    checkpointCandidate.futureMergedGitHubCommit ===
+      candidate.futureMergedGitHubCommit &&
+    checkpointCandidate.futureSitesVersion === candidate.futureSitesVersion &&
+    checkpointCandidate.reviewedLocally === candidate.reviewedLocally &&
+    checkpointCandidate.localReviewPassed === candidate.reviewedLocally &&
+    checkpointCandidate.allFourWorkflowsGreen === null &&
+    checkpointCandidate.zeroUnresolvedReviewThreads === null &&
+    checkpointCandidate.candidateSourceMatchesLiveSites ===
+      candidate.candidateSourceMatchesLiveSites &&
+    checkpointCandidate.candidateMigrationsMatchLiveLedger ===
+      candidate.candidateMigrationsMatchLiveLedger &&
+    checkpointCandidate.githubMainMatchesCandidate ===
+      candidate.githubMainMatchesCandidate &&
+    checkpointCandidate.fullReleaseGatePassed ===
+      candidate.fullReleaseGatePassed &&
+    checkpointCandidate.sourceFileCount === candidate.sourceFileCount &&
+    checkpointCandidate.sourceTreeSha256 === candidate.sourceTreeSha256 &&
+    checkpointCandidate.migrationFileCount === candidate.migrationFileCount &&
+    checkpointCandidate.migrationTreeSha256 === candidate.migrationTreeSha256 &&
+    checkpointCandidate.latestCandidateMigration ===
       candidate.latestCandidateMigration &&
-    checkpoint.releaseCandidate.latestCandidateMigrationSha256 ===
+    checkpointCandidate.latestCandidateMigrationSha256 ===
       candidate.latestCandidateMigrationSha256 &&
-    checkpoint.releaseCandidate.databaseChangesRequired ===
+    checkpointCandidate.databaseChangesRequired ===
       candidate.databaseChangesRequired &&
-    checkpoint.releaseCandidate.databaseMigrationApplied === candidate.databaseMigrationApplied &&
-    checkpoint.releaseCandidate.sitesPublishRequired === candidate.sitesPublishRequired &&
-    checkpoint.releaseCandidate.sitesCandidatePublished === candidate.sitesPublished,
-  "RR checkpoint must match PR #154 / Sites v21 previous proof, PR #155 / Sites v22 / migration-16 live proof, and the reviewed published no-database-change lifecycle bridge without inventing a database apply.",
+    checkpointCandidate.databaseMigrationApplied ===
+      candidate.databaseMigrationApplied &&
+    checkpointCandidate.sitesPublishRequired ===
+      candidate.sitesPublishRequired &&
+    checkpointCandidate.sitesCandidatePublished === candidate.sitesPublished,
+  "RR checkpoint must preserve historical release evidence and match the exact unmerged Sites-v36 GitHub reconciliation candidate without inventing publication, database apply, or full-gate proof.",
 );
 
-for (const workflow of readdirSync(resolve(root, ".github/workflows")).filter((name) =>
-  /\.ya?ml$/.test(name),
+for (const workflow of readdirSync(resolve(root, ".github/workflows")).filter(
+  (name) => /\.ya?ml$/.test(name),
 )) {
   must(
     !/vercel/i.test(read(`.github/workflows/${workflow}`)),
@@ -661,5 +718,5 @@ if (failures.length) {
 }
 
 console.log(
-  "Sites-only deployment guardrail passed; PR #154 / Sites v21 is previous, PR #155 / Sites v22 / migration 16 is current, the reviewed no-database-change lifecycle bridge is published, and Vercel stays inert.",
+  "Sites-only deployment guardrail passed: immutable PR #149 / v15, PR #154 / v21, and last GitHub-parity PR #155 / v22 evidence is preserved; the candidate matches live Sites v36 and the 37-migration ledger while GitHub parity, deployment, database apply, and the full release gate remain false; Vercel stays inert.",
 );

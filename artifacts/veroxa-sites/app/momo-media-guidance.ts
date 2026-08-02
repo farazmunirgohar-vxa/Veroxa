@@ -14,16 +14,38 @@ export type MomoMediaWorkflow = {
   nextAction: MomoMediaWorkflowAction;
 };
 
-export function momoMediaReviewCanSave(input: {
-  hasRights: boolean;
+export type MomoMediaReviewSaveInput = {
+  hasCurrentRealOwnerRights: boolean;
+  verifiedBytes: boolean;
+  platformReadyOriginal: boolean;
   previewRendered: boolean;
   inspectionConfirmed: boolean;
   notes: string;
-}): boolean {
-  return input.hasRights
-    && input.previewRendered
-    && input.inspectionConfirmed
-    && input.notes.trim().length >= 10;
+  qualityScore: number | null;
+  publicUseApproved: boolean;
+};
+
+export function momoMediaReviewSaveBlockers(input: MomoMediaReviewSaveInput): string[] {
+  const blockers: string[] = [];
+  if (!input.hasCurrentRealOwnerRights) blockers.push("Current real-owner media rights are required.");
+  if (!input.verifiedBytes) blockers.push("Server byte verification must finish first.");
+  if (!input.previewRendered) blockers.push("Open the private preview and wait for it to render.");
+  if (!input.inspectionConfirmed) blockers.push("Confirm that you inspected the rendered private preview.");
+  if (input.notes.trim().length < 10) blockers.push("Add at least 10 characters of visible quality notes.");
+  if (!Number.isInteger(input.qualityScore) || input.qualityScore === null || input.qualityScore < 0 || input.qualityScore > 100) {
+    blockers.push("Enter a Team quality score from 0 to 100.");
+  }
+  if (input.publicUseApproved && input.qualityScore !== null && input.qualityScore < 80) {
+    blockers.push("Public-use acceptance requires a Team quality score of at least 80.");
+  }
+  if (input.publicUseApproved && !input.platformReadyOriginal) {
+    blockers.push("The exact original must meet the Instagram, Facebook, and Google image profile before content preparation.");
+  }
+  return blockers;
+}
+
+export function momoMediaReviewCanSave(input: MomoMediaReviewSaveInput): boolean {
+  return momoMediaReviewSaveBlockers(input).length === 0;
 }
 
 export function momoRenditionMatchesCurrentEvidence(input: {

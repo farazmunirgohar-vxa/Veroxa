@@ -204,6 +204,9 @@ const semanticTokens = (value: string) =>
 const numericTokens = (value: string): string[] =>
   semanticTokens(value).match(/\d+(?:\.\d+)?/g) ?? [];
 
+const truthHasNegativeStatus = (value: string): boolean =>
+  /\b(?:no|not|none|false|unavailable|disabled|unknown|unverified|unconfirmed|declined|expired|revoked)\b/.test(value);
+
 export const momoTruthValueSupportsSensitiveClaim = (
   truthValue: string,
   claimText: string,
@@ -219,6 +222,12 @@ export const momoTruthValueSupportsSensitiveClaim = (
     const plainClaim = claim.replace(/\b(?:we|are|is)\b/g, " ").replace(/\s+/g, " ").trim();
     return plainClaim === "halal" && /\b(?:true|yes|halal)\b/.test(truth);
   }
+
+  // Fail closed when an owner field is explicitly negative or unresolved.
+  // Matching the same noun (for example, "order online") must never turn an
+  // unavailable service into a positive public claim.
+  if (["offer", "price", "hours", "service", "dietary", "menu", "ranking"].includes(category) &&
+    truthHasNegativeStatus(truth)) return false;
 
   if (category === "price") {
     const numbers = numericTokens(claim);

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent, type MouseEvent } from "react";
 import { RestaurantAuditCenter } from "./audit-center";
 import { MomoOperatingCenter } from "./momo-operating-center";
 import type { MomoReadinessTracker } from "./momo-readiness-types";
@@ -99,20 +99,30 @@ const clientNav: { id: View; label: string; icon: IconName; path: string }[] = [
   { id: "services", label: "Services", icon: "grid", path: "/client/services" },
 ];
 
-const momoWorkspaceNav: { id: View; label: string; icon: IconName; path: string }[] = [
-  { id: "team", label: "Overview", icon: "home", path: "/team/momo" },
-  { id: "team-requests", label: "Client Requests", icon: "message", path: "/team/momo/requests" },
-  { id: "team-work", label: "Work Board", icon: "grid", path: "/team/momo/work" },
-  { id: "team-intelligence", label: "Restaurant Setup", icon: "spark", path: "/team/momo/intelligence" },
-  { id: "team-media", label: "Media Library", icon: "image", path: "/team/momo/media" },
-  { id: "team-content", label: "Content & Approvals", icon: "calendar", path: "/team/momo/content" },
-  { id: "team-presence", label: "Online Presence", icon: "globe", path: "/team/momo/presence" },
-  { id: "team-reports", label: "Reports", icon: "chart", path: "/team/momo/reports" },
-  { id: "team-readiness", label: "Readiness", icon: "shield", path: "/team/momo/readiness" },
+const momoPrimaryNav: { id: View; label: string; icon: IconName; path: string }[] = [
+  { id: "team", label: "Today", icon: "home", path: "/team/momo" },
+  { id: "team-work", label: "Work", icon: "grid", path: "/team/momo/work" },
+  { id: "team-media", label: "Media", icon: "image", path: "/team/momo/media" },
+  { id: "team-content", label: "Content", icon: "check", path: "/team/momo/content" },
+  { id: "team-intelligence", label: "Momo profile", icon: "spark", path: "/team/momo/intelligence" },
 ];
 
-const auditCenterNav = { id: "team-audits" as View, label: "Restaurant Audit Center", icon: "shield" as IconName, path: "/team/audits" };
-const teamNav = [...momoWorkspaceNav, auditCenterNav];
+const momoFocusedTaskNav: { id: View; label: string; icon: IconName; path: string }[] = [
+  { id: "team-requests", label: "Client requests", icon: "message", path: "/team/momo/requests" },
+  { id: "team-presence", label: "Online presence", icon: "globe", path: "/team/momo/presence" },
+  { id: "team-reports", label: "Reports", icon: "chart", path: "/team/momo/reports" },
+  { id: "team-readiness", label: "Readiness details", icon: "shield", path: "/team/momo/readiness" },
+];
+
+const auditCenterNav = { id: "team-audits" as View, label: "Restaurant audits", icon: "shield" as IconName, path: "/team/audits" };
+const teamNav = [...momoPrimaryNav, ...momoFocusedTaskNav, auditCenterNav];
+const teamPrimaryParent: Partial<Record<View, View>> = {
+  "team-requests": "team-work",
+  "team-presence": "team-intelligence",
+  "team-reports": "team",
+  "team-readiness": "team",
+  "team-audits": "team",
+};
 
 const routeToView: Record<string, View> = {
   "/": "public",
@@ -166,7 +176,6 @@ export function VeroxaApp({
   const [view, setView] = useState<View>(routeToView[initialPath] ?? "public");
   const [toast, setToast] = useState("");
   const [signOutBusy, setSignOutBusy] = useState(false);
-  const [momoFolderExpanded, setMomoFolderExpanded] = useState(() => routeToView[initialPath] !== "team-audits");
   const [access, setAccess] = useState<
     | { status: "loading"; value: null }
     | { status: "guest"; value: null }
@@ -177,8 +186,6 @@ export function VeroxaApp({
     const syncRoute = () => {
       const next = routeToView[window.location.pathname] ?? "public";
       setView(next);
-      if (next === "team-audits") setMomoFolderExpanded(false);
-      else if (next.startsWith("team")) setMomoFolderExpanded(true);
     };
     syncRoute();
     window.addEventListener("popstate", syncRoute);
@@ -212,11 +219,15 @@ export function VeroxaApp({
       window.location.assign("/login");
       return;
     }
-    if (next === "team-audits") setMomoFolderExpanded(false);
-    else if (next.startsWith("team")) setMomoFolderExpanded(true);
     setView(next);
     const nextPath = viewToPath[next] ?? "/";
     if (window.location.pathname !== nextPath) window.history.pushState({}, "", nextPath);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleWorkspaceLink = (event: MouseEvent<HTMLAnchorElement>, next: View) => {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    setView(next);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -265,50 +276,40 @@ export function VeroxaApp({
   return (
     <main className="app-shell" aria-label={isTeam ? "Secure Team route · Momo-only production boundary" : "Secure Momo client route"}>
       <aside className="sidebar">
-        <Link className="brand" href={isTeam ? "/team/momo" : "/client/dashboard"} aria-label="Veroxa home">
+        <Link className="brand" href={isTeam ? "/team/momo" : "/client/dashboard"} onClick={(event) => handleWorkspaceLink(event, isTeam ? "team" : "home")} aria-label="Veroxa home">
           <span className="brand-mark"><span>V</span></span>
           <span className="brand-copy"><strong>VEROXA</strong><small>GROWTH SYSTEMS</small></span>
         </Link>
 
         <nav className={isTeam ? "main-nav team-main-nav" : "main-nav"} aria-label="Main navigation">
-          <p className="nav-label">{isTeam ? "TEAM FARAZ" : "CLIENT PORTAL"}</p>
+          <p className="nav-label">{isTeam ? "MOMO’S HOUSE" : "CLIENT PORTAL"}</p>
           {isTeam ? <>
-            <button
-              className={view === "team-audits" ? "team-workspace-folder" : "team-workspace-folder active"}
-              onClick={() => setMomoFolderExpanded((expanded) => !expanded)}
-              aria-expanded={momoFolderExpanded}
-              aria-controls="momo-workspace-navigation"
-              aria-label={(momoFolderExpanded ? "Collapse" : "Expand") + " Momo’s House San Antonio folder"}
-            >
-              <span className="team-folder-icon"><Icon name="grid" size={18}/></span>
-              <span><strong>Momo’s House</strong><small>San Antonio · only operating client</small></span>
-              <Icon name="chevron" size={15}/>
-            </button>
-            <div id="momo-workspace-navigation" className="team-workspace-children" aria-label="Momo’s House San Antonio sections" hidden={!momoFolderExpanded}>
-              {momoWorkspaceNav.map((item) => (
-                <Link key={item.id} href={item.path} className={view === item.id ? "nav-item active" : "nav-item"} aria-current={view === item.id ? "page" : undefined}>
+            <div className="team-client-context" aria-label="Current client">
+              <span className="team-folder-icon">M</span>
+              <span><strong>Momo’s House</strong><small>Upload → ready to post</small></span>
+              <em>Live</em>
+            </div>
+            <div className="team-primary-navigation" aria-label="Momo operating sections">
+              {momoPrimaryNav.map((item) => (
+                <Link key={item.id} href={item.path} onClick={(event) => handleWorkspaceLink(event, item.id)} className={view === item.id ? "nav-item active" : "nav-item"} aria-current={view === item.id ? "page" : undefined}>
                   <Icon name={item.icon} size={17}/><span>{item.label}</span>
                 </Link>
               ))}
             </div>
-            <p className="nav-label team-tools-label">TEAM TOOL</p>
-            <Link href={auditCenterNav.path} className={view === auditCenterNav.id ? "nav-item active team-audit-link" : "nav-item team-audit-link"} aria-current={view === auditCenterNav.id ? "page" : undefined}>
-              <Icon name={auditCenterNav.icon} size={19}/><span>{auditCenterNav.label}</span>
-            </Link>
           </> : activeNav.map((item) => (
-            <Link key={item.id} href={item.path} className={view === item.id ? "nav-item active" : "nav-item"} aria-current={view === item.id ? "page" : undefined}>
+            <Link key={item.id} href={item.path} onClick={(event) => handleWorkspaceLink(event, item.id)} className={view === item.id ? "nav-item active" : "nav-item"} aria-current={view === item.id ? "page" : undefined}>
               <Icon name={item.icon} size={19}/><span>{item.label}</span>
             </Link>
           ))}
         </nav>
 
         <div className="sidebar-spacer" />
-        <div className="help-card">
+        {isTeam ? <div className="team-release-boundary"><span><i/> READY-TO-POST MODE</span><small>External posting is off</small></div> : <div className="help-card">
           <span className="help-icon"><Icon name="message" size={18}/></span>
-          <strong>{isTeam ? "Safety boundary" : "Need something?"}</strong>
-          <p>{isTeam ? "No public action without Faraz review and confirmed business truth." : "Verified Momo records will appear only after Team review and owner confirmation."}</p>
-          <button onClick={() => { setToast(isTeam ? "Operating guardrails are active" : "Client workspace is safely waiting for verified records"); window.setTimeout(() => setToast(""), 2600); }}>{isTeam ? "Review guardrails" : "View safe status"} <Icon name="arrow" size={15}/></button>
-        </div>
+          <strong>Need something?</strong>
+          <p>Verified Momo records will appear only after Team review and owner confirmation.</p>
+          <button onClick={() => { setToast("Client workspace is safely waiting for verified records"); window.setTimeout(() => setToast(""), 2600); }}>View safe status <Icon name="arrow" size={15}/></button>
+        </div>}
         <Link className="profile-card" href="/account/security" title="Account security">
           <span className="avatar">{isTeam ? "FM" : "MK"}</span>
           <span><strong>{access.status === "authenticated" ? access.value.displayName : isTeam ? "Team Faraz" : "Momo’s House"}</strong><small>Account security · password</small></span>
@@ -319,9 +320,9 @@ export function VeroxaApp({
       <section className="workspace">
         <header className="topbar">
           <div className="mobile-brand"><span className="brand-mark"><span>V</span></span><strong>VEROXA</strong></div>
-          <div className="breadcrumbs">{isTeam ? view === "team-audits" ? <><span>Team Faraz</span><b>/</b><strong>Restaurant Audit Center</strong></> : <><span>Team Faraz</span><b>/</b><span>Momo’s House San Antonio</span><b>/</b><strong>{activeLabel}</strong></> : <><span>Client portal</span><b>/</b><strong>{activeLabel}</strong></>}</div>
+          <div className="breadcrumbs">{isTeam ? view === "team-audits" ? <><span>Veroxa</span><b>/</b><strong>Restaurant audits</strong></> : <><span>Momo’s House</span><b>/</b><strong>{activeLabel}</strong></> : <><span>Client portal</span><b>/</b><strong>{activeLabel}</strong></>}</div>
           <div className="top-actions">
-            <span className="live-pill"><i/> Authenticated</span>
+            <span className="live-pill"><i/> {isTeam ? "Momo live · posting off" : "Authenticated"}</span>
             <Link className="top-avatar" href="/account/security" aria-label="Open account security" title="Account security">{isTeam ? "FM" : "MH"}</Link>
             <button className="top-sign-out" onClick={() => void handleSignOut()} disabled={signOutBusy}>{signOutBusy ? "Signing out…" : "Sign out"}</button>
           </div>
@@ -329,12 +330,9 @@ export function VeroxaApp({
 
         {isTeam && <div className="team-mobile-workspace-bar">
           <label className="team-mobile-section-picker">
-            <span>{view === "team-audits" ? "Team tool" : "Momo’s House San Antonio"}</span>
-            <select value={view} onChange={(event) => changeView(event.target.value as View)} aria-label="Choose Team workspace section">
-              <optgroup label="Momo’s House San Antonio">
-                {momoWorkspaceNav.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
-              </optgroup>
-              <optgroup label="Team tool"><option value={auditCenterNav.id}>{auditCenterNav.label}</option></optgroup>
+            <span>Momo’s House</span>
+            <select value={teamPrimaryParent[view] ?? view} onChange={(event) => changeView(event.target.value as View)} aria-label="Choose Team workspace section">
+              {momoPrimaryNav.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
             </select>
           </label>
           <button className="team-mobile-sign-out" onClick={() => void handleSignOut()} disabled={signOutBusy}><Icon name="close" size={17}/><span>{signOutBusy ? "Signing out" : "Sign out"}</span></button>
@@ -344,6 +342,7 @@ export function VeroxaApp({
           {view === "team-audits" && <RestaurantAuditCenter notify={(message) => { setToast(message); window.setTimeout(() => setToast(""), 2600); }} />}
           {view !== "team-audits" && access.status === "authenticated" && (
             <MomoOperatingCenter
+              key={view}
               view={view}
               access={access.value}
               onNavigate={(next) => changeView(next as View)}
@@ -353,7 +352,7 @@ export function VeroxaApp({
         </div>
 
         {!isTeam && <nav className="mobile-nav" aria-label="Mobile navigation">
-          {activeNav.map((item) => <Link key={item.id} href={item.path} className={view === item.id ? "active" : ""} aria-current={view === item.id ? "page" : undefined}><Icon name={item.icon} size={18}/><span>{item.label}</span></Link>)}
+          {activeNav.map((item) => <Link key={item.id} href={item.path} onClick={(event) => handleWorkspaceLink(event, item.id)} className={view === item.id ? "active" : ""} aria-current={view === item.id ? "page" : undefined}><Icon name={item.icon} size={18}/><span>{item.label}</span></Link>)}
         </nav>}
       </section>
 
@@ -390,15 +389,29 @@ function PublicHome({ onNavigate }: { onNavigate: (view: View) => void }) {
         </div>
         <div className="public-trust"><span><Icon name="check" size={15}/> No contract</span><span><Icon name="check" size={15}/> Cancel anytime</span><span><Icon name="shield" size={15}/> Veroxa review before public work</span></div>
       </div>
-      <div className="public-system-card">
-        <div className="system-card-head"><span>VEROXA OPERATING FLOW</span><i>Pre-live</i></div>
-        <div className="system-flow">
-          <SystemStep number="01" title="Audit" text="Find visibility gaps and restaurant opportunities." />
-          <SystemStep number="02" title="Prepare" text="Turn business truth and media into exact actions." />
-          <SystemStep number="03" title="Review" text="Faraz reviews public-facing work before release." />
-          <SystemStep number="04" title="Report" text="Show what happened, what is blocked, and what is next." />
-        </div>
-      </div>
+      <figure className="public-hero-media">
+        {/* The Sites runtime optimizer rejects this bundled asset; direct delivery is 74 KB and preserves LCP priority. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          className="public-hero-photo"
+          src="/brand/veroxa-hospitality-hero.webp"
+          alt="A restaurant team member placing a shared dish on a welcoming table"
+          width={1536}
+          height={1024}
+          loading="eager"
+          fetchPriority="high"
+          decoding="async"
+        />
+        <figcaption className="public-system-card">
+          <div className="system-card-head"><span>VEROXA OPERATING FLOW</span><i>Review controlled</i></div>
+          <div className="system-flow">
+            <SystemStep number="01" title="Audit" text="Find the clearest opportunities." />
+            <SystemStep number="02" title="Prepare" text="Turn truth and media into action." />
+            <SystemStep number="03" title="Review" text="Approve public-facing work." />
+            <SystemStep number="04" title="Report" text="See outcomes and the next step." />
+          </div>
+        </figcaption>
+      </figure>
     </section>
 
     <section className="public-modules">

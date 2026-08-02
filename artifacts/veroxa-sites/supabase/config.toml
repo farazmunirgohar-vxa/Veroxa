@@ -1,2 +1,11 @@
 [functions.momo-media-ai-lifecycle]
 verify_jwt = true
+
+[functions.momo-content-ai-lifecycle]
+verify_jwt = true
+
+[functions.momo-content-ai-webhook-lifecycle]
+verify_jwt = false
+
+[functions.momo-content-ai-dispatch-lifecycle]
+verify_jwt = false

@@ -1,6 +1,14 @@
 # ChatGPT Sites Migration and Source-of-Truth
 
-Status: active migration and deployment authority as of 2026-07-14.
+Status: active migration and deployment authority as of 2026-08-02.
+
+## Sites v36 live-source reconciliation override
+
+Sites v36 is live from checkout `b8122642b72e5d4e6e74c379469f2a157781ab3d`. After excluding the tracked-but-generated `.vinext` cache, the live checkout and `artifacts/veroxa-sites` mirror contain the same 185 canonical files at tree SHA-256 `caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7`. Production Supabase has 37 applied migrations through `20260802020000_momo_pipeline_query_indexes_v2.sql`; the 37-file canonical migration tree is `9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90`.
+
+GitHub `main` remains at v22 commit `302621bf6b9ab78320abe4175b45b56e9e64ae2a`, so v36 is verified live drift rather than canonical parity. The reconciliation candidate must remain unmerged, unapplied, and unpublished-from-GitHub until its exact head passes CI, Sites Verify, Supabase Verify, Veroxa Verify, and review-thread clearance. This branch makes no production change; after merge, verify that canonical GitHub and the already-live Sites tree still match before considering any separate deployment.
+
+V36 contains only the internal Momo upload-to-unscheduled-Veroxa-Ready workflow. It preserves immutable lineage and current rights, consolidates exact duplicates, keeps near-duplicate merging advisory, and sends real blockers to one Team exception. Bad media is not automatically edited or resized. No external provider, posting, scheduling, publishing, reply, website write, test upload, or activation is authorized by reconciliation.
 
 ## Verified PR #149 cleanup and Sites v15 deployment override
 

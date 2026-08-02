@@ -287,6 +287,8 @@ test("audit UI keeps contact, draft-isolation, mutation, and mobile-navigation g
   ]);
 
   assert.match(page, /!contactEmail && !contactPhone/, "Public intake must require email or phone");
+  assert.doesNotMatch(page, /from "next\/image"/, "The public hero must not use the unsupported production image optimizer");
+  assert.match(page, /<img[\s\S]*?src="\/brand\/veroxa-hospitality-hero\.webp"/, "The public hero must load its bundled image directly");
   assert.match(page, /state\.kind !== "success" && <form/, "A successful submission must hide the completed form");
   assert.match(page, /setFormStartedAt\(new Date\(\)\.toISOString\(\)\)/, "A new submission must rotate timing state");
   assert.match(page, /refreshExpiredAuditSession/, "An old open audit form must refresh its security timestamp");
@@ -354,16 +356,19 @@ test("Team stays Momo-focused and generated audits preview before atomic save", 
 
   for (const marker of [
     "Momo’s House",
-    "San Antonio · only operating client",
-    "Work Board",
-    "Media Library",
-    "Online Presence",
+    "Upload → ready to post",
+    "Today",
+    "Work",
+    "Media",
+    "Content",
+    "Momo profile",
+    "READY-TO-POST MODE",
+    "External posting is off",
     '"/team/momo/media"',
-    '"/team/momo/presence"',
-    "Restaurant Audit Center",
   ]) {
     assert.match(page, new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), `Team navigation missing ${marker}`);
   }
+  assert.doesNotMatch(page, /More workspace tools/, "Inactive and advanced destinations must not crowd Team navigation");
   assert.doesNotMatch(page, /const teamNav[\s\S]{0,350}Dashboard[\s\S]{0,350}Audit Center[\s\S]{0,350}Work[\s\S]{0,350}Intelligence/, "Team navigation must not return to the scattered flat list");
 
   for (const marker of [
@@ -408,19 +413,22 @@ test("Team stays Momo-focused and generated audits preview before atomic save", 
   assert.match(data, /This does not activate services, connect accounts, authorize publishing, or create charges\./, "Onboarding conversion must use the exact non-activation consent");
 });
 
-test("Team navigation and Momo work/content controls keep every state reachable without exposing backend clutter", async () => {
+test("Team navigation exposes only live daily work while focused routes remain reachable from real tasks", async () => {
   const [page, center] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/momo-operating-center.tsx", import.meta.url), "utf8"),
   ]);
 
-  assert.match(page, /const \[momoFolderExpanded, setMomoFolderExpanded\]/, "Momo navigation must have a real folder state");
-  assert.match(page, /useState\(\(\) => routeToView\[initialPath\] !== "team-audits"\)/, "The initial Audit Center route must default the Momo folder closed");
-  assert.match(page, /if \(next === "team-audits"\) setMomoFolderExpanded\(false\)/, "Audit Center navigation must close the Momo folder");
-  assert.match(page, /else if \(next\.startsWith\("team"\)\) setMomoFolderExpanded\(true\)/, "Momo navigation must open its folder");
-  assert.match(page, /aria-expanded=\{momoFolderExpanded\}/, "The Momo folder must expose its state to assistive technology");
-  assert.match(page, /aria-controls="momo-workspace-navigation"/, "The folder toggle must identify its controlled navigation");
-  assert.match(page, /hidden=\{!momoFolderExpanded\}/, "Collapsed Momo navigation must hide its child routes");
+  assert.match(page, /const momoPrimaryNav[\s\S]*?label: "Today"[\s\S]*?label: "Work"[\s\S]*?label: "Media"[\s\S]*?label: "Content"[\s\S]*?label: "Momo profile"/, "The daily map must stay limited to five useful destinations");
+  assert.match(page, /const teamPrimaryParent/, "Focused routes must return to a stable daily parent on mobile");
+  assert.match(page, /value=\{teamPrimaryParent\[view\] \?\? view\}/, "Mobile navigation must remain valid on a focused task route");
+  assert.doesNotMatch(page, /More workspace tools/, "The daily map must not expose advanced navigation");
+  assert.match(center, /title="Today"/, "Team home must open as a calm daily workspace");
+  assert.match(center, /VEROXA IS WORKING ON/, "Team home must show active work");
+  assert.match(center, /COMPLETED RECENTLY/, "Team home must show recent outcomes");
+  assert.match(center, /External posting off/, "The release boundary must remain unmistakable");
+  assert.doesNotMatch(center, /Six clear stages/, "Detailed readiness must not crowd Team home");
+  assert.doesNotMatch(center, /Math\.round\([^\n]*verified_count/, "Team readiness must not imply false percentage precision");
 
   assert.match(center, /const waitingForApproval = item\.status === "waiting_approval"/, "Waiting-approval work must have an explicit UI state");
   assert.match(center, /waitingForApproval[\s\S]{0,900}targetStatus: "in_progress", reason[\s\S]{0,250}Resume after approval/, "Approved work must be resumable with recorded evidence");
@@ -429,10 +437,13 @@ test("Team navigation and Momo work/content controls keep every state reachable 
 
   assert.match(center, /useState<ContentWorkspaceSection>\("attention"\)/, "Content must open on the action-first section");
   assert.match(center, /id="content-tab-attention"[\s\S]{0,500}Needs attention/, "Content must expose a Needs attention tab");
-  assert.match(center, /id="content-tab-create"[\s\S]{0,500}Create content/, "Team creation controls must stay reachable behind a focused tab");
-  assert.match(center, /id="content-tab-library"[\s\S]{0,500}Library &amp; calendar/, "Content records and calendar must stay reachable behind one library tab");
+  assert.doesNotMatch(center, /id="content-tab-create"|<span>Create<\/span>/, "The retired manual-create branch must not return to the daily portal");
+  assert.doesNotMatch(center, /id="content-tab-library"/, "The duplicate legacy content library must remain removed");
+  assert.match(center, /id="content-tab-ready"[\s\S]{0,500}Veroxa Ready/, "Validated v2 packages must stay reachable behind one unscheduled Veroxa Ready tab");
   assert.match(center, /hidden=\{activeSection !== "attention"\}/, "Inactive content panels must use progressive disclosure");
-  assert.match(center, /orderedApprovals\.map/, "Pending approval records must render before decision history");
+  assert.match(center, /openIncidents\.map\(\(incident\)/, "Only unresolved consolidated v2 incidents must enter the visible Team attention queue");
+  assert.match(center, /legacyReviewRuns\.map\(\(item\) => <ContentPackageReviewCard/, "Legacy manual review controls must remain available only inside history and recovery");
+  assert.match(center, /VEROXA READY · UNSCHEDULED/, "Veroxa Ready must explicitly exclude scheduling and posting");
 });
 
 test("Momo operating center uses live tenant data and exact production contracts", async () => {
@@ -456,6 +467,7 @@ test("Momo operating center uses live tenant data and exact production contracts
     "veroxa_publish_queue", "veroxa_local_presence_checks", "veroxa_review_records",
     "veroxa_visibility_snapshots", "veroxa_work_items", "veroxa_activity_events",
     "veroxa_reports", "veroxa_monitor_checks", "veroxa_alerts", "veroxa_recovery_runs",
+    "veroxa_momo_exception_incidents_v2", "veroxa_momo_ready_packages_v2", "veroxa_momo_ready_variants_v2",
   ]) {
     assert.match(data, new RegExp(`"${table}"`), `${table} must be loaded through the central Momo data contract`);
   }
@@ -472,8 +484,11 @@ test("Momo operating center uses live tenant data and exact production contracts
 
   assert.doesNotMatch(center + data, /"team_verified"|"google_business_profile"|"content_variants"|"owner_content_approval"|"team_content_approval"|"needs_better_version"|status:\s*"scheduled"|status:\s*"draft"|RLS protected/, "Invalid enum values and implementation jargon must stay out");
   assert.match(data, /usageScope:\s*string\[\]/, "Media rights scope input must be an explicit token array");
-  assert.match(data, /p_usage_scope:\s*input\.usageScope/, "Media registration RPC must receive the validated JSON token array");
-  assert.match(center, /"instagram", "facebook", "google_business", "website"/, "Media rights UI must start from allowed provider tokens");
+  assert.match(data, /const usageScope = \[\.\.\.new Set\(input\.usageScope\)\]/, "Media rights tokens must be deduplicated before registration");
+  assert.match(data, /usageScope\.some\(\(scope\) => !\["facebook", "instagram", "google_business"\]\.includes\(scope\)\)/, "Media rights tokens must be allowlisted before registration");
+  assert.match(data, /p_usage_scope:\s*usageScope/, "Media registration RPC must receive only the validated token array");
+  assert.match(center, /"instagram", "facebook", "google_business"/, "Media rights UI must start from the three supported ready-package providers");
+  assert.doesNotMatch(center, /"instagram", "facebook", "google_business", "website"/, "Website rights must not appear in the upload-to-ready release");
   assert.match(data, /\.rpc\("veroxa_prepare_momo_ai_job_v1"/, "AI preparation must use the server-validated contract");
   assert.doesNotMatch(data, /from\("veroxa_ai_jobs"\)[\s\S]{0,200}\.insert\(/, "Team code must not insert forgeable AI fixtures directly");
   assert.match(migration, /'\["live_provider_not_connected","human_review_required"\]'::jsonb/, "AI safety flags must be an exact JSON array");
@@ -520,7 +535,10 @@ test("Momo operating center uses live tenant data and exact production contracts
   assert.match(data, /confirmationKind:\s*"content_direction"[\s\S]*?decision:\s*"confirm"/, "Owner content confirmation must append a dedicated confirmation record");
   assert.doesNotMatch(data, /from\("veroxa_confirmations"\)\.insert/, "Client confirmation submissions must not bypass the subject-validating RPC");
   assert.match(center, /Confirm this content direction/, "Clients must be able to submit an owner content-direction confirmation");
-  assert.match(center, /subjectType:\s*"content_variant"[\s\S]*?approvalKind:\s*"team_review"/, "Pending platform variants must have a reachable Team-review gate");
+  assert.match(center, /function ContentPackageReviewCard[\s\S]*?approveMomoContentPackage/, "The exact generated package must have a reachable Team-review gate");
+  assert.match(center, /mediaRendered[\s\S]*?mediaInspected[\s\S]*?Approve exact package and save plan/, "Team approval must require the exact media to render and be inspected");
+  assert.match(center, /packageInspected[\s\S]*?factual claims, every platform caption, SEO phrases, hashtags, alt text, calls to action[\s\S]*?!packageInspected/, "Team approval must require explicit inspection of every public package component");
+  assert.match(center, /const postText = \[variant\.caption, variant\.call_to_action\.text, variant\.hashtags\.join/, "Ready copy must include the reviewed CTA between caption and hashtags");
   assert.match(center, /subjectType:\s*"report"[\s\S]*?approvalKind:\s*"report_release"/, "Pending reports must have a reachable release review");
   assert.doesNotMatch(center, /approvalKind:\s*item\.requires_owner_confirmation\s*\?\s*"owner_confirmation"/, "Owner content confirmation must not be represented by a Team approval row");
   assert.match(data, /rpc\("veroxa_add_momo_media_tag_v1"/, "Media tagging must preserve provenance through the protected RPC");
@@ -540,24 +558,38 @@ test("Momo operating center uses live tenant data and exact production contracts
   assert.match(center, /No provider is connected/, "Missing integrations must have an honest safe-empty state");
   assert.match(center, /Confirm as shown/, "Owners must be able to confirm an unchanged Team prefill");
   assert.match(center, /Run no-credential preflight/, "Team must be able to prove Meta and Google fail closed without credentials");
-  assert.match(center, /Run final no-go rehearsal/, "Team must be able to persist a final No-Go rehearsal without activation");
+  assert.match(center, /Recheck readiness/, "Team must be able to persist a final No-Go rehearsal without activation");
   assert.match(center, /Save step review/, "Team must be able to record onboarding evidence through the narrow contract");
   assert.match(center, /Save presence review/, "Team must be able to record presence evidence through the narrow contract");
   assert.match(center, /accessAuthorized/, "Presence connection must require an explicit owner access-authorization decision");
   assert.match(center, /This does not connect or publish anything now/, "Owner access authorization must preserve the no-execution boundary");
   assert.match(center, /resolveLatestMomoPresenceConfirmation/, "Team connected state must use the latest URL-bound owner access resolution");
-  assert.match(center, /Immutable content evidence/, "Team must be able to audit content-input provenance");
+  assert.match(center, /Immutable source \{packageRun\.source_content_sha256\.slice/, "Team must see the exact media fingerprint bound to a generated package");
+  assert.match(center, /Model \{packageRun\.model\} · prompt \{packageRun\.prompt_version\} · immutable output/, "Provider and immutable output provenance must stay reachable in audit details");
   assert.match(center, /Immutable go \/ no-go evidence/, "Team must be able to audit activation decisions");
   assert.match(center, /momoLocalDate\(event\.occurred_at\)/, "Report preview counts must use Momo local dates");
   assert.match(center, /Content pillar:/, "Owner content confirmation must display the material pillar context");
   assert.match(center, /"facebook_publish", "instagram_publish"/, "Meta preflight must cover Facebook and Instagram independently");
-  assert.match(center, /formatZonedDate\(entry\.scheduled_for, entry\.timezone\)/, "Calendar display must honor the stored IANA timezone");
-  assert.match(center, /A current future America\/Chicago schedule is required before publishing approval/, "Publishing approval must bind to a current future Momo-local schedule");
-  assert.match(center, /momoCalendarEntryIsCurrentApproved\(entry\)/, "Canceled, failed, draft, or past calendar rows must not unlock publishing approval");
-  assert.match(center, /preflight\?\.allowed[\s\S]*?Prepare dormant queue metadata/, "Queue preparation must remain hidden until the no-credential provider preflight passes");
-  assert.match(center, /mediaIsCurrentlyUsable\(data, item\.primary_media_asset_id/, "Text-only and stale-media directions must remain outside the public variant workflow");
-  assert.match(center, /validateMomoPlatformVariantCaption/, "Manual variants and later review gates must lint sensitive claims against owner truth");
-  assert.match(center, /selectedTruth\.map[\s\S]*?selectedMedia\?\.id[\s\S]*?selectedTruth\.map/, "Draft submission must use only the exact currently validated truth and media selections");
+  assert.match(center, /formatZonedDate\(variant\.scheduled_for, variant\.timezone\)/, "Ready-package display must honor the stored IANA timezone");
+  assert.match(center, /resolveMomoContentPackageReadiness\(data, item\.id\)/, "Ready must be recomputed from current rights, media, package, and schedule evidence");
+  assert.match(center, /\.filter\(\(entry\) => entry\.readiness\.ready\)/, "Blocked or stale packages must not appear as Ready");
+  assert.match(center, /const workspaceLoadSequence = useRef\(0\)/, "Workspace refreshes must have a monotonic sequence guard");
+  assert.match(center, /requestSequence === workspaceLoadSequence\.current/, "An older Ready response must never overwrite a newer blocked readback");
+  assert.match(center, /window\.addEventListener\("focus", refreshVisibleWorkspace\)/, "Ready evidence must refresh when the portal regains focus");
+  assert.match(center, /document\.addEventListener\("visibilitychange", refreshVisibleWorkspace\)/, "Ready evidence must refresh when the tab becomes visible");
+  assert.match(center, /window\.setInterval\(refreshVisibleWorkspace, 45_000\)/, "An open Ready tab must periodically refresh expiring evidence");
+  assert.match(center, /getMomoReadyPackageStatus\(readyPackage\.id\) !== "ready_to_post"[\s\S]*?await reloadWorkspace\(\)/, "Copy and download must recheck authoritative Ready status immediately before use");
+  assert.match(center, /runFreshReadyAction\(\(\) => \{[\s\S]*?link\.click\(\)/, "Exact-media download must use the fresh Ready gate");
+  assert.match(center, /runFreshReadyAction\(async \(\) => \{[\s\S]*?navigator\.clipboard\.writeText\(postText\)/, "Post-text copy must use the fresh Ready gate");
+  assert.match(center, /Plans no longer Ready/, "A latest blocked Ready package must remain visible as a Team action");
+  assert.match(center, /Open Media to rebuild/, "A blocked immutable package must have a reachable replacement workflow");
+  assert.match(center, /replacementContentNeeded/, "A blocked materialized run must not deadlock media regeneration");
+  assert.match(center, /mediaQualityPassed/, "The approval control must independently enforce the strict media-quality gate");
+  assert.match(await readFile(new URL("../app/api/team/content-ai/approve/core.ts", import.meta.url), "utf8"), /loadReadyStatus\(readyPackageId\)/, "Approval and replay must recompute authoritative Ready status before responding");
+  assert.match(center, /No provider queue or external post exists/, "Ready must explicitly stop before provider execution");
+  assert.doesNotMatch(center, /Prepare dormant queue metadata|queueMomoPublication|Request publishing approval/, "Daily content work must not expose posting or dormant provider-queue controls");
+  assert.match(center, /getMomoVerifiedMediaPreviewObjectUrl\([\s\S]*?contentSha256: packageRun\.source_content_sha256/, "Package review must open the exact hash-verified private image");
+  assert.match(center, /approved_payload\.masterCaption/, "Ready must render the exact approved package rather than regenerating copy");
   assert.match(center, /presenceResolution\.exactUrlConfirmed/, "Presence activation must use the latest exact URL-bound owner decision");
   assert.match(data, /timezone:\s*String\(item\.timezone \|\| "America\/Chicago"\)/, "Client calendar hydration must preserve the stored IANA timezone");
   assert.match(center, /Revoke future media use/, "Owners must have an immediate media-rights revocation path");

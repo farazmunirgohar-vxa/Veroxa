@@ -82,7 +82,6 @@ begin
     'public.veroxa_retry_work_item_v1(uuid)',
     'public.veroxa_transition_momo_alert_v1(uuid,text,text)',
     'public.veroxa_provider_preflight_v1(uuid,text,text)',
-    'public.veroxa_queue_momo_publication_v1(uuid,uuid,uuid,uuid)',
     'public.veroxa_run_momo_no_go_rehearsal_v1(uuid,text)'
   ] loop
     if to_regprocedure(function_name) is null then
@@ -101,6 +100,25 @@ begin
       raise exception 'Hardened RPC execute privileges are unsafe: %', function_name;
     end if;
   end loop;
+
+  function_name :=
+    'public.veroxa_queue_momo_publication_v1(uuid,uuid,uuid,uuid)';
+  if to_regprocedure(function_name) is null then
+    raise exception 'Posting-off publication guard RPC is missing';
+  end if;
+  if not exists (
+    select 1 from pg_proc
+    where oid = to_regprocedure(function_name)
+      and prosecdef
+      and 'search_path=""' = any(coalesce(proconfig, '{}'::text[]))
+  ) then
+    raise exception 'Posting-off publication guard lost hardened posture';
+  end if;
+  if has_function_privilege('anon', function_name, 'execute')
+     or has_function_privilege('authenticated', function_name, 'execute')
+     or has_function_privilege('service_role', function_name, 'execute') then
+    raise exception 'Posting-off publication guard became externally executable';
+  end if;
 
   if has_function_privilege(
        'authenticated',

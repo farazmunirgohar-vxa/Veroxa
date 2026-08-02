@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "recordKind": "momo_upload_v36_live_closeout",
+  "recordedAt": "2026-08-02",
+  "status": "sites_v36_live_external_actions_frozen_github_parity_pending",
+  "supersedesForCurrentLiveStatus": "MOMO_MEDIA_V22_LIVE_CLOSEOUT.json",
+  "scope": {
+    "restaurant": "Momo's House San Antonio",
+    "workflow": "private_media_upload_to_unscheduled_veroxa_ready",
+    "externalSchedulingIncluded": false,
+    "externalPublishingIncluded": false,
+    "externalProviderConnectionIncluded": false
+  },
+  "sites": {
+    "versionNumber": 36,
+    "checkoutCommit": "b8122642b72e5d4e6e74c379469f2a157781ab3d",
+    "deploymentStatus": "succeeded",
+    "productionLive": true,
+    "deploymentId": null,
+    "canonicalSourceFileCount": 185,
+    "generatedPathExclusions": [
+      ".git",
+      ".next",
+      ".sites-runtime",
+      ".vinext",
+      ".wrangler",
+      "dist",
+      "node_modules",
+      "outputs",
+      "tsconfig.tsbuildinfo",
+      "work"
+    ],
+    "sourceTreeSha256": "caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7"
+  },
+  "github": {
+    "repository": "farazmunirgohar-vxa/Veroxa",
+    "currentMainRelease": "v22",
+    "currentMainCommit": "302621bf6b9ab78320abe4175b45b56e9e64ae2a",
+    "v36ParityStatus": "pending_pr_creation",
+    "v36ParityPullRequest": null,
+    "v36ParityReviewedHead": null,
+    "v36ParityMergedCommit": null,
+    "v36ParitySourceTreeSha256": "caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7",
+    "candidateSourceMatchesLiveSites": true,
+    "githubMainMatchesCandidate": false,
+    "fullReleaseGatePassed": false
+  },
+  "database": {
+    "productionMigrationCount": 37,
+    "migrationTreeSha256": "9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90",
+    "latestAppliedMigration": "20260802020000_momo_pipeline_query_indexes_v2.sql",
+    "latestAppliedMigrationSha256": "106d346be34583446d22de0f6866b5b8937feb766a3a229339dbf1c1768fdfcd",
+    "v36MigrationsLive": true,
+    "candidateMigrationsMatchLiveLedger": true,
+    "rollbackCompilationPreviouslyPassed": true
+  },
+  "verification": {
+    "status": "green_before_live_release",
+    "testsPassed": 371,
+    "testsTotal": 371,
+    "productionBuildPassed": true,
+    "lintPassed": true,
+    "typecheckPassed": true,
+    "rollbackMigrationCompilationPassed": true,
+    "verificationArtifactSha256": null
+  },
+  "internalWorkers": [
+    {
+      "function": "momo-content-ai-webhook-lifecycle",
+      "entrypoint": "supabase/functions/momo-content-ai-webhook-lifecycle/index.ts",
+      "updatedForV36": true,
+      "status": "active",
+      "deployedVersion": null,
+      "deployedSourceSha256": null
+    },
+    {
+      "function": "momo-content-ai-lifecycle",
+      "entrypoint": "supabase/functions/momo-content-ai-lifecycle/index.ts",
+      "updatedForV36": true,
+      "status": "active",
+      "deployedVersion": null,
+      "deployedSourceSha256": null
+    }
+  ],
+  "pipelineBehavior": {
+    "exactDuplicateHandling": "reuse_one_canonical_exact_byte_identity_while_preserving_each_upload_rights_record_and_audit_lineage",
+    "legacyDuplicateJobsConsolidated": 5,
+    "legacyDuplicateJobsDeleted": 0,
+    "nearDuplicateMerge": "advisory_only",
+    "badMediaOutcome": "one_consolidated_exception_with_recorded_evidence",
+    "badMediaAutomaticEditOrResize": false,
+    "badMediaOriginalPreserved": true,
+    "readyState": "veroxa_ready",
+    "readyStateScheduled": false,
+    "readyStatePublished": false,
+    "teamDefaultWork": "exception_only",
+    "immutableLineageRequired": true
+  },
+  "productionSafetyState": {
+    "publishQueue": "empty",
+    "externalScheduleQueue": "empty",
+    "externalProviderConnections": "empty",
+    "webhookAndRecoveryBacklog": "empty",
+    "externalPublishingEnabled": false,
+    "externalSchedulingEnabled": false,
+    "providerWritesEnabled": false,
+    "reviewRepliesEnabled": false,
+    "websiteWritesEnabled": false,
+    "allExternalWriteControlsLocked": true,
+    "momoActivationExecuted": false
+  },
+  "releaseBoundary": "Version 36 proves the internal Momo upload-to-Veroxa-Ready path only. Veroxa Ready is unscheduled internal evidence, not approval to connect, schedule, publish, post, reply, or write to an external provider."
+}

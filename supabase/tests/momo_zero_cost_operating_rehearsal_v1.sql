@@ -43,7 +43,6 @@ begin
     'public.veroxa_transition_work_item_v1(uuid,public.veroxa_job_status_v1,text,text,boolean,jsonb)',
     'public.veroxa_transition_momo_alert_v1(uuid,text,text)',
     'public.veroxa_provider_preflight_v1(uuid,text,text)',
-    'public.veroxa_queue_momo_publication_v1(uuid,uuid,uuid,uuid)',
     'public.veroxa_run_momo_no_go_rehearsal_v1(uuid,text)'
   ] loop
     if to_regprocedure(function_name) is null then
@@ -61,6 +60,24 @@ begin
       raise exception 'RPC execute privilege is unsafe: %', function_name;
     end if;
   end loop;
+
+  function_name :=
+    'public.veroxa_queue_momo_publication_v1(uuid,uuid,uuid,uuid)';
+  if to_regprocedure(function_name) is null then
+    raise exception 'Posting-off publication guard RPC is missing';
+  end if;
+  if not exists (
+    select 1 from pg_proc
+    where oid = to_regprocedure(function_name) and prosecdef
+      and 'search_path=""' = any(coalesce(proconfig, '{}'::text[]))
+  ) then
+    raise exception 'Posting-off publication guard lost hardened posture';
+  end if;
+  if has_function_privilege('anon', function_name, 'execute')
+     or has_function_privilege('authenticated', function_name, 'execute')
+     or has_function_privilege('service_role', function_name, 'execute') then
+    raise exception 'Posting-off publication guard became externally executable';
+  end if;
 
   foreach table_name in array array[
     'veroxa_restaurant_truth_fields','veroxa_restaurant_contacts',
@@ -145,8 +162,6 @@ declare
   v_second_variant_id uuid;
   v_approval_id uuid;
   v_publish_approval_id uuid;
-  v_queue_id uuid;
-  v_second_queue_id uuid;
   v_work_id uuid;
   v_retry_work_id uuid;
   v_recovery_work_id uuid;
@@ -502,7 +517,8 @@ begin
   exception when insufficient_privilege then null;
   end;
 
-  -- First prepared item: owner content rejection must cancel queue and calendar.
+  -- First prepared item: owner rejection cancels its prepared calendar while
+  -- the v36 posting-off boundary keeps the publication queue empty.
   v_item_id := public.veroxa_create_manual_content_draft_v1(
     v_restaurant_id, null, v_asset_id, 'Manual Momo story',
     'A warm behind-the-scenes story.', 'A warm Momo story.', false,
@@ -535,22 +551,15 @@ begin
   returning id into v_publish_approval_id;
   perform * from public.veroxa_apply_approval_v1(
     v_publish_approval_id, 'approved', 'Prepared publication reviewed.');
-  v_queue_id := public.veroxa_queue_momo_publication_v1(
-    v_restaurant_id, v_connection_id, v_variant_id, v_publish_approval_id);
   begin
-    update public.veroxa_publish_queue set status = 'queued' where id = v_queue_id;
-    raise exception 'Provider runtime executed during zero-cost rehearsal';
+    perform public.veroxa_queue_momo_publication_v1(
+      v_restaurant_id, v_connection_id, v_variant_id, v_publish_approval_id);
+    raise exception 'Posting-off publication RPC became executable';
   exception when insufficient_privilege then null;
   end;
-  execute 'reset role';
-  begin
-    update public.veroxa_publish_queue set status = 'queued' where id = v_queue_id;
-    raise exception 'Privileged fixture bypassed inactive provider runtime';
-  exception when object_not_in_prerequisite_state then null;
-  end;
-  perform set_config('request.jwt.claims', jsonb_build_object(
-    'sub', v_team_user_id::text, 'role', 'authenticated')::text, true);
-  execute 'set local role authenticated';
+  if exists (select 1 from public.veroxa_publish_queue) then
+    raise exception 'Posting-off rehearsal created a publication queue row';
+  end if;
 
   execute 'reset role';
   perform set_config('request.jwt.claims', jsonb_build_object(
@@ -567,16 +576,15 @@ begin
   begin
     perform public.veroxa_queue_momo_publication_v1(
       v_restaurant_id, v_connection_id, v_variant_id, v_publish_approval_id);
-    raise exception 'New queue ignored pending owner content rejection';
-  exception when check_violation then null;
+    raise exception 'Posting-off publication RPC became executable after rejection';
+  exception when insufficient_privilege then null;
   end;
   perform * from public.veroxa_apply_confirmation_v1(
     v_confirmation_id, 'approved', null, 'Owner content rejection applied.');
-  if not exists (select 1 from public.veroxa_publish_queue
-      where id = v_queue_id and status = 'cancelled')
+  if exists (select 1 from public.veroxa_publish_queue)
      or not exists (select 1 from public.veroxa_content_calendar
       where variant_id = v_variant_id and status = 'cancelled') then
-    raise exception 'Owner content rejection did not cancel queue and calendar';
+    raise exception 'Owner content rejection did not preserve an empty queue and cancel the prepared calendar';
   end if;
 
   -- Second prepared item: pending presence withdrawal freezes, approval revokes.
@@ -603,8 +611,12 @@ begin
   values (v_restaurant_id, 'publish', v_second_variant_id, 'publishing', v_team_user_id)
   returning id into v_publish_approval_id;
   perform * from public.veroxa_apply_approval_v1(v_publish_approval_id, 'approved', 'Second publish reviewed.');
-  v_second_queue_id := public.veroxa_queue_momo_publication_v1(
-    v_restaurant_id, v_connection_id, v_second_variant_id, v_publish_approval_id);
+  begin
+    perform public.veroxa_queue_momo_publication_v1(
+      v_restaurant_id, v_connection_id, v_second_variant_id, v_publish_approval_id);
+    raise exception 'Posting-off publication RPC became executable for second item';
+  exception when insufficient_privilege then null;
+  end;
 
   execute 'reset role';
   perform set_config('request.jwt.claims', jsonb_build_object(
@@ -681,18 +693,17 @@ begin
   begin
     perform public.veroxa_queue_momo_publication_v1(
       v_restaurant_id, v_connection_id, v_second_variant_id, v_publish_approval_id);
-    raise exception 'Pending presence withdrawal allowed a new queue';
-  exception when check_violation then null;
+    raise exception 'Posting-off publication RPC became executable during withdrawal';
+  exception when insufficient_privilege then null;
   end;
   perform * from public.veroxa_apply_confirmation_v1(
     v_confirmation_id, 'approved', null, 'Presence withdrawal applied.');
   if not exists (select 1 from public.veroxa_provider_connections
       where id = v_connection_id and status = 'revoked')
-     or not exists (select 1 from public.veroxa_publish_queue
-      where id = v_second_queue_id and status = 'cancelled')
+     or exists (select 1 from public.veroxa_publish_queue)
      or not exists (select 1 from public.veroxa_activity_events
       where subject_id = v_presence_id and event_type = 'presence_authorization_withdrawn') then
-    raise exception 'Approved presence withdrawal did not revoke and cancel atomically';
+    raise exception 'Approved presence withdrawal did not revoke with posting still empty';
   end if;
 
   execute 'reset role';

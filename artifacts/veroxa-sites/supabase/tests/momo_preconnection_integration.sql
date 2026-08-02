@@ -2204,7 +2204,15 @@ declare
   item_approval_id uuid;
   variant_approval_id uuid;
   real_truth_id uuid;
+  predecessor_truth_id uuid;
   truth_confirmation_id uuid;
+  reconfirmation_id uuid;
+  correction_confirmation_id uuid;
+  downgrade_confirmation_id uuid;
+  authority_change_confirmation_id uuid;
+  latest_confirmation_id uuid;
+  unlinked_truth_id uuid;
+  unlinked_content_id uuid;
   truth_value jsonb;
   truth_section text;
   truth_field_ids uuid[];
@@ -2297,6 +2305,110 @@ begin
   ) then
     raise exception 'momo_real_variant_truth_not_classified_real_owner';
   end if;
+
+  -- An unchanged attestation of an already confirmed truth creates one new
+  -- immutable revision. The confirmation keeps its exact submitted predecessor;
+  -- the private application ledger points from that predecessor to the result.
+  predecessor_truth_id := real_truth_id;
+  perform set_config('request.jwt.claim.sub', proxy_user_id::text, true);
+  reconfirmation_id := public.veroxa_submit_momo_confirmation_v1(
+    target_restaurant_id, 'truth_field', predecessor_truth_id,
+    'business_truth', 'confirm', null,
+    'Rollback-only unchanged real-owner truth reattestation.'
+  );
+  perform set_config('request.jwt.claim.sub', team_user_id::text, true);
+  perform public.veroxa_apply_confirmation_v1(
+    reconfirmation_id, 'approved', null,
+    'Rollback-only unchanged real-owner truth reattestation.'
+  );
+  select field.id into real_truth_id
+  from public.veroxa_restaurant_truth_fields field
+  where field.restaurant_id = target_restaurant_id
+    and field.supersedes_id = predecessor_truth_id
+    and field.is_current and field.status = 'owner_confirmed';
+  if real_truth_id is null
+     or not exists (
+       select 1
+       from public.veroxa_restaurant_truth_fields predecessor
+       join public.veroxa_restaurant_truth_fields result
+         on result.supersedes_id = predecessor.id
+       join public.veroxa_confirmations confirmation
+         on confirmation.id = reconfirmation_id
+       join veroxa_private.momo_truth_confirmation_applications application
+         on application.confirmation_id = confirmation.id
+       where predecessor.id = predecessor_truth_id
+         and not predecessor.is_current
+         and predecessor.status = 'superseded'
+         and result.id = real_truth_id
+         and result.value_json = predecessor.value_json
+         and result.owner_confirmed_by = proxy_user_id
+         and result.owner_confirmed_at = confirmation.submitted_at
+         and result.evidence_class = 'real_owner'
+         and confirmation.subject_id = predecessor.id
+         and confirmation.submitted_subject_id = predecessor.id
+         and confirmation.subject_snapshot ->> 'id' = predecessor.id::text
+         and confirmation.status = 'approved'
+         and confirmation.evidence_class = 'real_owner'
+         and application.submitted_truth_id = predecessor.id
+         and application.applied_truth_id = result.id
+         and application.applied_by = confirmation.reviewed_by
+         and application.applied_at = confirmation.reviewed_at
+     ) then
+    raise exception 'momo_real_owner_reconfirmation_lineage_invalid';
+  end if;
+
+  begin
+    perform public.veroxa_apply_confirmation_v1(
+      reconfirmation_id, 'approved', null,
+      'Rollback-only replay must fail.'
+    );
+    raise exception 'momo_real_owner_reconfirmation_replay_was_accepted';
+  exception when sqlstate '23514' then
+    if sqlerrm <> 'confirmation_already_decided' then raise; end if;
+  end;
+
+  -- A correction follows the same immutable lineage and applies only the
+  -- owner's exact canonical value.
+  predecessor_truth_id := real_truth_id;
+  perform set_config('request.jwt.claim.sub', proxy_user_id::text, true);
+  correction_confirmation_id := public.veroxa_submit_momo_confirmation_v1(
+    target_restaurant_id, 'truth_field', predecessor_truth_id,
+    'business_truth', 'correct',
+    jsonb_build_object('text', 'Warm, welcoming, specific, and owner reviewed.'),
+    'Rollback-only corrected real-owner truth reattestation.'
+  );
+  perform set_config('request.jwt.claim.sub', team_user_id::text, true);
+  perform public.veroxa_apply_confirmation_v1(
+    correction_confirmation_id, 'approved', null,
+    'Rollback-only corrected real-owner truth reattestation.'
+  );
+  select field.id into real_truth_id
+  from public.veroxa_restaurant_truth_fields field
+  where field.restaurant_id = target_restaurant_id
+    and field.supersedes_id = predecessor_truth_id
+    and field.is_current and field.status = 'owner_confirmed';
+  if real_truth_id is null
+     or not exists (
+       select 1
+       from public.veroxa_restaurant_truth_fields result
+       join public.veroxa_confirmations confirmation
+         on confirmation.id = correction_confirmation_id
+       join veroxa_private.momo_truth_confirmation_applications application
+         on application.confirmation_id = confirmation.id
+       where result.id = real_truth_id
+         and result.value_json = jsonb_build_object(
+           'text', 'Warm, welcoming, specific, and owner reviewed.'
+         )
+         and result.supersedes_id = predecessor_truth_id
+         and confirmation.subject_id = predecessor_truth_id
+         and confirmation.submitted_subject_id = predecessor_truth_id
+         and confirmation.submitted_at = result.owner_confirmed_at
+         and application.submitted_truth_id = predecessor_truth_id
+         and application.applied_truth_id = result.id
+     ) then
+    raise exception 'momo_real_owner_correction_lineage_invalid';
+  end if;
+
   truth_field_ids := array[real_truth_id];
   real_content_item_id := public.veroxa_create_manual_content_draft_v1(
     target_restaurant_id, null, owner_asset_id,
@@ -2304,10 +2416,133 @@ begin
     'Internal content workflow rehearsal for Momo House San Antonio.',
     caption, false, truth_field_ids, 'Momo Cravings'
   );
+
+  -- The current-input validator must fail closed when the newest applicable
+  -- confirmation is pending or rejected. Roll back this isolated probe so the
+  -- valid approved lineage remains available to the remaining suite.
+  begin
+    perform set_config('request.jwt.claim.sub', proxy_user_id::text, true);
+    latest_confirmation_id := public.veroxa_submit_momo_confirmation_v1(
+      target_restaurant_id, 'truth_field', real_truth_id,
+      'business_truth', 'confirm', null,
+      'Rollback-only latest-confirmation boundary fixture.'
+    );
+    perform set_config('request.jwt.claim.sub', team_user_id::text, true);
+    if veroxa_private.content_inputs_current_v1(
+         real_content_item_id, target_restaurant_id, null
+       ) then
+      raise exception 'momo_truth_input_with_pending_confirmation_passed_ready_gate';
+    end if;
+    perform public.veroxa_apply_confirmation_v1(
+      latest_confirmation_id, 'rejected', null,
+      'Rollback-only rejected latest-confirmation boundary fixture.'
+    );
+    if veroxa_private.content_inputs_current_v1(
+         real_content_item_id, target_restaurant_id, null
+       ) then
+      raise exception 'momo_truth_input_with_rejected_confirmation_passed_ready_gate';
+    end if;
+    raise exception using errcode = 'P0002',
+      message = 'rollback_latest_confirmation_boundary_fixture';
+  exception when sqlstate 'P0002' then
+    if sqlerrm <> 'rollback_latest_confirmation_boundary_fixture' then raise; end if;
+  end;
+
+  -- A structurally valid current real-owner truth with no applicable
+  -- confirmation must also fail closed. This isolated probe is rolled back so
+  -- it cannot change the valid current truth used by later tests.
+  begin
+    update public.veroxa_restaurant_truth_fields field
+    set is_current = false, status = 'superseded'
+    where field.id = real_truth_id;
+    insert into public.veroxa_restaurant_truth_fields (
+      restaurant_id, field_key, section, value_json, status, source, is_current,
+      owner_confirmed_by, owner_confirmed_at, supersedes_id, created_by
+    )
+    select field.restaurant_id, field.field_key, field.section, field.value_json,
+      'owner_confirmed', 'owner', true, proxy_user_id, clock_timestamp(),
+      field.id, team_user_id
+    from public.veroxa_restaurant_truth_fields field
+    where field.id = real_truth_id
+    returning id into unlinked_truth_id;
+    unlinked_content_id := public.veroxa_create_manual_content_draft_v1(
+      target_restaurant_id, null, null,
+      'Momo content workflow rehearsal',
+      'Internal content workflow rehearsal for Momo House San Antonio.',
+      caption, false, array[unlinked_truth_id], 'Momo Cravings'
+    );
+    if veroxa_private.content_inputs_current_v1(
+         unlinked_content_id, target_restaurant_id, null
+       ) then
+      raise exception 'momo_truth_input_without_confirmation_passed_ready_gate';
+    end if;
+    raise exception using errcode = 'P0002',
+      message = 'rollback_missing_confirmation_boundary_fixture';
+  exception when sqlstate 'P0002' then
+    if sqlerrm <> 'rollback_missing_confirmation_boundary_fixture' then raise; end if;
+  end;
+
   update public.veroxa_momo_evidence_authorities authority
   set evidence_class = 'development_proxy', notes = 'Temporary Momo development proxy.'
   where authority.restaurant_id = target_restaurant_id
     and authority.user_id = proxy_user_id;
+
+  -- A development proxy cannot replace current real-owner truth.
+  begin
+    perform set_config('request.jwt.claim.sub', proxy_user_id::text, true);
+    downgrade_confirmation_id := public.veroxa_submit_momo_confirmation_v1(
+      target_restaurant_id, 'truth_field', real_truth_id,
+      'business_truth', 'confirm', null,
+      'Rollback-only evidence downgrade denial.'
+    );
+    perform set_config('request.jwt.claim.sub', team_user_id::text, true);
+    perform public.veroxa_apply_confirmation_v1(
+      downgrade_confirmation_id, 'approved', null,
+      'Rollback-only evidence downgrade denial.'
+    );
+    raise exception 'momo_truth_evidence_downgrade_was_accepted';
+  exception when sqlstate '23514' then
+    if sqlerrm <> 'truth_confirmation_evidence_cannot_be_downgraded' then
+      raise;
+    end if;
+  end;
+
+  -- Authority assigned after submission cannot launder frozen proxy evidence
+  -- into a real-owner confirmation. The failed subtransaction restores the
+  -- development-proxy authority before the suite continues.
+  begin
+    perform set_config('request.jwt.claim.sub', proxy_user_id::text, true);
+    authority_change_confirmation_id := public.veroxa_submit_momo_confirmation_v1(
+      target_restaurant_id, 'truth_field', real_truth_id,
+      'business_truth', 'confirm', null,
+      'Rollback-only authority-change race denial.'
+    );
+    update public.veroxa_momo_evidence_authorities authority
+    set evidence_class = 'real_owner', notes = 'Rollback-only race attempt.'
+    where authority.restaurant_id = target_restaurant_id
+      and authority.user_id = proxy_user_id;
+    perform set_config('request.jwt.claim.sub', team_user_id::text, true);
+    perform public.veroxa_apply_confirmation_v1(
+      authority_change_confirmation_id, 'approved', null,
+      'Rollback-only authority-change race denial.'
+    );
+    raise exception 'momo_truth_authority_change_was_laundered';
+  exception when sqlstate '40001' then
+    if sqlerrm <> 'truth_confirmation_authority_changed_resubmit_required' then
+      raise;
+    end if;
+  end;
+  perform set_config('request.jwt.claim.sub', team_user_id::text, true);
+
+  if not exists (
+    select 1
+    from public.veroxa_restaurant_truth_fields field
+    where field.id = real_truth_id and field.is_current
+      and field.status = 'owner_confirmed'
+      and field.evidence_class = 'real_owner'
+  ) then
+    raise exception 'momo_truth_denials_changed_current_real_owner_truth';
+  end if;
 
   insert into public.veroxa_approvals (
     restaurant_id, subject_type, subject_id, approval_kind, status,
@@ -2360,7 +2595,7 @@ begin
   perform set_config('veroxa.test.real_variant_caption', caption, true);
 end $$;
 
--- A separate development-proxy asset proves the complete Media AI pilot
+-- A separate rollback-only real-owner asset proves the complete Media AI pilot
 -- boundary without sending bytes to a provider: verified source and rights,
 -- one reserved provider crossing, private candidate storage, Team inspection,
 -- Client invisibility before approval, and Ready readback only afterward.
@@ -2370,26 +2605,68 @@ declare
   team_user_id uuid := current_setting('veroxa.test.team_id')::uuid;
   proxy_user_id uuid := current_setting('veroxa.test.proxy_id')::uuid;
   ai_asset_id uuid := gen_random_uuid();
+  source_object_id uuid := gen_random_uuid();
+  verification_snapshot jsonb;
+  verification_canonical text;
   source_path text := 'restaurants/' || target_restaurant_id::text
-    || '/uploads/2000/01/' || ai_asset_id::text || '.png';
+    || '/uploads/2000/01/' || ai_asset_id::text || '.jpg';
 begin
+  verification_snapshot := jsonb_build_object(
+    'schemaVersion', 1,
+    'verifierVersion', 'momo-image-byte-verifier-2026-07-31-v1',
+    'restaurantId', target_restaurant_id,
+    'assetId', ai_asset_id,
+    'storagePath', source_path,
+    'storageObjectId', source_object_id,
+    'storageObjectVersion', 'rr-media-ai-source-v1',
+    'detectedMime', 'image/jpeg',
+    'fileSize', 12000,
+    'width', 1400,
+    'height', 1050,
+    'contentSha256', repeat('c', 64)
+  );
+  verification_canonical :=
+    veroxa_private.momo_canonical_json_v1(verification_snapshot);
   insert into storage.objects (
     id, bucket_id, name, owner, metadata, version, owner_id
   ) values (
-    gen_random_uuid(), 'restaurant-media', source_path, proxy_user_id,
-    '{"mimetype":"image/png","size":6100,"cacheControl":"3600"}'::jsonb,
+    source_object_id, 'restaurant-media', source_path, proxy_user_id,
+    '{"mimetype":"image/jpeg","size":12000,"cacheControl":"3600"}'::jsonb,
     'rr-media-ai-source-v1', proxy_user_id::text
   );
 
   perform set_config('request.jwt.claim.sub', proxy_user_id::text, true);
   perform set_config('request.jwt.claim.role', 'authenticated', true);
+  update public.veroxa_momo_evidence_authorities authority
+  set evidence_class = 'real_owner',
+      notes = 'Rollback-only verified Media AI owner fixture.'
+  where authority.restaurant_id = target_restaurant_id
+    and authority.user_id = proxy_user_id;
   insert into public.veroxa_media_assets (
     id, restaurant_id, storage_path, original_file_name, mime_type, file_size,
     uploaded_by, status, content_sha256, width, height
   ) values (
     ai_asset_id, target_restaurant_id, source_path,
-    'rr-media-ai-source.png', 'image/png', 6100, proxy_user_id,
+    'rr-media-ai-source.jpg', 'image/jpeg', 12000, proxy_user_id,
     'ready_to_use', repeat('c', 64), 1400, 1050
+  );
+  insert into public.veroxa_momo_media_intake_verifications (
+    restaurant_id, asset_id, storage_path, storage_object_id,
+    storage_object_version, declared_mime_type, detected_mime_type,
+    file_size, width, height, content_sha256, verifier_version,
+    verification_snapshot, verification_canonical, verification_sha256,
+    idempotency_hash,
+    status, initiated_by
+  ) values (
+    target_restaurant_id, ai_asset_id, source_path, source_object_id,
+    'rr-media-ai-source-v1', 'image/jpeg', 'image/jpeg',
+    12000, 1400, 1050, repeat('c', 64),
+    'momo-image-byte-verifier-2026-07-31-v1',
+    verification_snapshot, verification_canonical,
+    encode(extensions.digest(convert_to(
+      verification_canonical, 'UTF8'
+    ), 'sha256'), 'hex'),
+    repeat('e', 64), 'verified', proxy_user_id
   );
   insert into public.veroxa_media_rights (
     restaurant_id, asset_id, rights_status, usage_scope,
@@ -2401,7 +2678,7 @@ begin
     'I confirm I own or have permission to provide this media for the selected Veroxa usage scopes.',
     '8d6b83d28e393313e52ac32e54eda8286e4c305617ea8722aedc9729a887628f',
     now() - interval '1 day', now() + interval '30 days',
-    proxy_user_id, now(), 'development_proxy'
+    proxy_user_id, now(), 'real_owner'
   );
 
   perform set_config('request.jwt.claim.sub', team_user_id::text, true);
@@ -3486,6 +3763,9 @@ begin
     'instagram', alt_text, 'real_owner'
   );
 
+  -- Prove a clean RPC transaction: earlier workflow flags in this long harness
+  -- must not authorize the immutable usage insert for rendition attachment.
+  perform set_config('veroxa.trusted_media_usage_write', 'off', true);
   placement_id := public.veroxa_attach_momo_rendition_v1(
     target_restaurant_id,
     current_setting('veroxa.test.real_content_item_id')::uuid,
@@ -3516,7 +3796,8 @@ begin
           and usage.asset_id = owner_asset_id
           and usage.content_item_id = current_setting('veroxa.test.real_content_item_id')::uuid
           and usage.platform = 'instagram'
-          and usage.external_reference = 'rendition:' || primary_id::text) <> 1 then
+          and usage.usage_kind = 'draft'
+          and usage.external_reference is null) <> 1 then
     raise exception 'momo_real_variant_media_placement_not_persisted_idempotently';
   end if;
 

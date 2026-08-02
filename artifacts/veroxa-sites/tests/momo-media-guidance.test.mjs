@@ -3,11 +3,17 @@ import test from "node:test";
 import { readFile } from "node:fs/promises";
 import {
   momoMediaReviewCanSave,
+  momoMediaReviewSaveBlockers,
   momoRenditionMatchesCurrentEvidence,
   resolveMomoMediaWorkflow,
 } from "../app/momo-media-guidance.ts";
-import { mergeMomoClientMediaReadback, parseMomoClientSnapshot } from "../app/momo-client-data.ts";
+import {
+  mergeMomoClientMediaReadback,
+  mergeMomoClientUploadPipelineV2,
+  parseMomoClientSnapshot,
+} from "../app/momo-client-data.ts";
 import { deriveMomoCoverCropAtFocalPoint } from "../app/momo-media-workflow.ts";
+import { momoOriginalMediaMeetsPlatformReadyProfile } from "../app/momo-operating-gates.ts";
 
 const NOW = Date.parse("2026-07-22T12:00:00.000Z");
 const approved = {
@@ -55,12 +61,77 @@ test("media guidance fails closed for future, expired, malformed, or revoked rig
 });
 
 test("Team review cannot be saved from a signed URL alone", () => {
-  const review = { hasRights: true, previewRendered: true, inspectionConfirmed: true, notes: "Food is sharp and evenly lit." };
+  const review = {
+    hasCurrentRealOwnerRights: true,
+    verifiedBytes: true,
+    platformReadyOriginal: true,
+    previewRendered: true,
+    inspectionConfirmed: true,
+    notes: "Food is sharp and evenly lit.",
+    qualityScore: 88,
+    publicUseApproved: true,
+  };
   assert.equal(momoMediaReviewCanSave(review), true);
   assert.equal(momoMediaReviewCanSave({ ...review, previewRendered: false }), false);
   assert.equal(momoMediaReviewCanSave({ ...review, inspectionConfirmed: false }), false);
-  assert.equal(momoMediaReviewCanSave({ ...review, hasRights: false }), false);
+  assert.equal(momoMediaReviewCanSave({ ...review, hasCurrentRealOwnerRights: false }), false);
+  assert.equal(momoMediaReviewCanSave({ ...review, verifiedBytes: false }), false);
+  assert.equal(momoMediaReviewCanSave({ ...review, platformReadyOriginal: false }), false);
+  assert.equal(momoMediaReviewCanSave({ ...review, qualityScore: 79 }), false);
   assert.equal(momoMediaReviewCanSave({ ...review, notes: "too short" }), false);
+  assert.deepEqual(momoMediaReviewSaveBlockers(review), []);
+  assert.deepEqual(momoMediaReviewSaveBlockers({
+    hasCurrentRealOwnerRights: false,
+    verifiedBytes: false,
+    platformReadyOriginal: false,
+    previewRendered: false,
+    inspectionConfirmed: false,
+    notes: "short",
+    qualityScore: null,
+    publicUseApproved: true,
+  }), [
+    "Current real-owner media rights are required.",
+    "Server byte verification must finish first.",
+    "Open the private preview and wait for it to render.",
+    "Confirm that you inspected the rendered private preview.",
+    "Add at least 10 characters of visible quality notes.",
+    "Enter a Team quality score from 0 to 100.",
+    "The exact original must meet the Instagram, Facebook, and Google image profile before content preparation.",
+  ]);
+});
+
+test("the exact original must satisfy the shared three-platform image profile", () => {
+  const ready = { mimeType: "image/jpeg", fileSize: 512_000, width: 1080, height: 1350 };
+  assert.equal(momoOriginalMediaMeetsPlatformReadyProfile(ready), true);
+  assert.equal(momoOriginalMediaMeetsPlatformReadyProfile({ ...ready, mimeType: "image/png" }), false);
+  assert.equal(momoOriginalMediaMeetsPlatformReadyProfile({ ...ready, fileSize: 5 * 1024 * 1024 + 1 }), false);
+  assert.equal(momoOriginalMediaMeetsPlatformReadyProfile({ ...ready, width: 319 }), false);
+  assert.equal(momoOriginalMediaMeetsPlatformReadyProfile({ ...ready, width: 3000, height: 1000 }), false);
+});
+
+test("Team interaction controls explain safety locks and route links resynchronize the active workspace", async () => {
+  const [page, operating, styles] = await Promise.all([
+    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/momo-operating-center.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+  ]);
+  assert.match(page, /const handleWorkspaceLink = \([\s\S]*?setView\(next\)[\s\S]*?\};/, "Route-link navigation must update the visible workspace immediately");
+  assert.ok((page.match(/handleWorkspaceLink\(event, item\.id\)/g) || []).length >= 3, "Rendered route links must share the active-workspace synchronization handler");
+  assert.match(page, /team-mobile-section-picker[\s\S]*?onChange=\{\(event\) => changeView\(event\.target\.value as View\)\}/, "The compact Team selector must synchronize route and workspace state");
+  assert.match(operating, /momoMediaReviewSaveBlockers\(reviewSaveInput\)/, "Save review must expose its exact unmet prerequisites");
+  assert.match(operating, /aria-disabled=\{!reviewCanSave \|\| busy \|\| contentPreparationBusy \|\| contentPreparationNeedsRefresh \|\| Boolean\(activeContentRun\) \|\| Boolean\(contentRunInFlight\)\}/, "Save review must announce local preparation and authoritative server locks without swallowing an explanatory prerequisite click");
+  assert.match(operating, /if \(!reviewCanSave\)[\s\S]*?setReviewSaveAttempted\(true\)/, "A locked Save review click must reveal actionable guidance");
+  for (const tabId of ["content-tab-attention", "content-tab-ready"]) {
+    const tabMarkup = operating.match(new RegExp(`<button[^>]*id="${tabId}"[^>]*>`))?.[0];
+    assert.ok(tabMarkup, `${tabId} must remain rendered`);
+    assert.match(tabMarkup, /onClick=/, `${tabId} must remain interactive`);
+    assert.doesNotMatch(tabMarkup, /\bdisabled=/, `${tabId} must never inherit a workflow prerequisite lock`);
+  }
+  assert.doesNotMatch(operating, /id="content-tab-create"|id="content-tab-library"/, "Inactive legacy content branches must not remain in the portal source");
+  assert.match(operating, /getMomoVerifiedMediaPreviewObjectUrl/, "Final Team approval must verify the exact bound media bytes");
+  assert.match(operating, /mediaInspected/, "Final Team approval must require explicit exact-media inspection");
+  assert.match(styles, /\.toast[^}]*pointer-events:\s*none/, "Transient success messages must never intercept another click");
+  assert.match(styles, /\.momo-review-box button:disabled[^}]*cursor:\s*not-allowed/, "Other locked controls must look intentionally unavailable");
 });
 
 test("Team rendition eligibility follows current lineage, scope, evidence, and write lock", () => {
@@ -124,17 +195,15 @@ test("Client and Team source preserve real links, real-image-first selection, in
   assert.match(team, /renderedRenditionId === currentRendition\.id/, "Team Ready must require the current derivative to render successfully");
   assert.match(team, /onLoad=\{\(\) => \{ setState\("ready"\)/, "Derivative readiness must be driven by actual image load");
   assert.match(team, /await persistMomoImageRendition\([\s\S]*?if \(asset\) await onWorkspaceRefresh\?\.\(\)/, "First rendition must refresh the authoritative parent asset hash before Ready is evaluated");
-  assert.match(operating, /\{mediaLibrary\}[\s\S]*?<MomoTeamPreconnectionCenter mode="media"/, "Team review must appear before the image editor");
-  assert.match(operating, /onWorkspaceRefresh=\{reloadWorkspace\}/, "Media workspace must provide the parent refresh boundary to the nested editor");
-  assert.match(operating, /Approved for public-use preparation \(this does not post\)/, "Review copy must separate preparation permission from posting");
-  assert.match(operating, /onLoadedData=\{\(\) => setPreviewRendered\(true\)\}/, "Video review must wait for rendered media");
+  assert.doesNotMatch(operating, /<MomoTeamPreconnectionCenter mode="media"/, "Inactive image-preparation tools must stay out of the daily media workflow");
+  assert.match(operating, /Accept this exact original for the authorized Ready packages \(this does not post\)/, "Review copy must bind the exact original without implying posting");
   assert.match(operating, /onLoad=\{\(\) => setPreviewRendered\(true\)\}/, "Image review must wait for decoded media");
   assert.match(operating, /inspectionConfirmed/, "Team must explicitly attest visual inspection");
   assert.match(page, /className="top-sign-out"[\s\S]*?Sign out/, "Team desktop must expose a plainly labeled sign-out action");
 });
 
 test("Client rendition projection exposes only a fail-closed per-asset Ready status", async () => {
-  const sql = await readFile(new URL("../supabase/migrations/20260722000100_momo_client_media_status_v1.sql", import.meta.url), "utf8");
+  const sql = await readFile(new URL("../supabase/migrations/20260722210026_momo_client_media_status_v1.sql", import.meta.url), "utf8");
   assert.match(sql, /security definer[\s\S]*?set search_path = ''/i);
   assert.match(sql, /auth\.uid\(\)[\s\S]*?veroxa_current_user_has_active_restaurant/);
   assert.match(sql, /asset\.status = 'ready_to_use'/);
@@ -153,7 +222,7 @@ test("Client rendition projection exposes only a fail-closed per-asset Ready sta
 });
 
 test("Forward migration removes legacy broad table and readiness privileges", async () => {
-  const sql = await readFile(new URL("../supabase/migrations/20260722000100_momo_client_media_status_v1.sql", import.meta.url), "utf8");
+  const sql = await readFile(new URL("../supabase/migrations/20260722210026_momo_client_media_status_v1.sql", import.meta.url), "utf8");
   const hardenedTables = [
     "veroxa_campaign_tracking_contracts",
     "veroxa_content_media_placements",
@@ -226,4 +295,76 @@ test("Client readback merge is the only path to Ready and rejects malformed or c
     assert.equal(rejected.media[0].renditionStatus, null);
     assert.equal(rejected.media[0].renditionStoragePath, null);
   }
+});
+
+test("Client v2 readback accepts only coherent unscheduled pipeline states", async () => {
+  const restaurantId = "00000000-0000-4000-8000-000000000010";
+  const assetId = "00000000-0000-4000-8000-000000000001";
+  const canonicalId = "00000000-0000-4000-8000-000000000002";
+  const readyPackageId = "00000000-0000-4000-8000-000000000003";
+  const snapshot = parseMomoClientSnapshot({ media: [{
+    id: assetId,
+    storagePath: `restaurants/${restaurantId}/uploads/2026/08/00000000-0000-4000-8000-000000000099.jpg`,
+    displayFileName: "duplicate.jpg",
+    mimeType: "image/jpeg",
+    fileSize: 10240,
+    status: "uploaded",
+    createdAt: "2026-08-02T12:00:00.000Z",
+  }, {
+    id: canonicalId,
+    storagePath: `restaurants/${restaurantId}/uploads/2026/08/00000000-0000-4000-8000-000000000098.jpg`,
+    displayFileName: "canonical.jpg",
+    mimeType: "image/jpeg",
+    fileSize: 10240,
+    status: "uploaded",
+    createdAt: "2026-08-01T12:00:00.000Z",
+  }] });
+  const valid = {
+    asset_id: assetId,
+    canonical_asset_id: canonicalId,
+    verification_status: "verified",
+    pipeline_status: "veroxa_ready",
+    is_exact_duplicate: true,
+    processing_asset_id: canonicalId,
+    is_processing_source: false,
+    reason_codes: [],
+    ready_package_id: readyPackageId,
+    external_write_allowed: false,
+  };
+  const merged = mergeMomoClientUploadPipelineV2(snapshot, [valid]);
+  assert.equal(merged.mediaPipelineReadbackAvailable, true);
+  assert.equal(merged.media[0].pipelineStatus, "veroxa_ready");
+  assert.equal(merged.media[0].exactDuplicate, true);
+  assert.equal(merged.media[0].processingAssetId, canonicalId);
+  assert.equal(merged.media[0].isProcessingSource, false);
+  assert.equal(merged.media[0].readyPackageId, readyPackageId);
+
+  for (const invalid of [
+    null,
+    [{ ...valid, external_write_allowed: true }],
+    [{ ...valid, canonical_asset_id: assetId }],
+    [{ ...valid, verification_status: null }],
+    [{ ...valid, ready_package_id: null }],
+    [{ ...valid, processing_asset_id: null }],
+    [{ ...valid, is_processing_source: true }],
+    [{ ...valid, processing_asset_id: "00000000-0000-4000-8000-000000000099" }],
+    [{ ...valid, reason_codes: ["z_problem", "a_problem"] }],
+    [valid, valid],
+  ]) {
+    const rejected = mergeMomoClientUploadPipelineV2(merged, invalid);
+    assert.equal(rejected.media[0].pipelineStatus, null);
+    assert.equal(rejected.media[0].readyPackageId, null);
+  }
+
+  const sql = await readFile(new URL(
+    "../supabase/migrations/20260802013000_momo_client_pipeline_readback_v2.sql",
+    import.meta.url,
+  ), "utf8");
+  assert.match(sql, /momo_actor_has_operational_membership_v1\([\s\S]*?auth\.uid\(\)/);
+  assert.match(sql, /candidate\.automation_identity_id = link\.identity_id/);
+  assert.match(sql, /candidate\.identity_id = link\.identity_id[\s\S]*?candidate\.content_ai_run_id = run\.id/);
+  assert.match(sql, /processing_asset_id uuid,[\s\S]*?is_processing_source boolean/);
+  assert.match(sql, /revoke all on function public\.veroxa_momo_client_upload_status_v2\(uuid\)[\s\S]*?from public, anon, authenticated, service_role/);
+  assert.match(sql, /grant execute on function public\.veroxa_momo_client_upload_status_v2\(uuid\)[\s\S]*?to authenticated/);
+  assert.doesNotMatch(sql, /\bscheduled_for\b|\bcaption\b|\boutput_payload\b|\bprovider_writes\b/);
 });
