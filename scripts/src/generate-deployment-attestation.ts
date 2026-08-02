@@ -1,6 +1,7 @@
 import { mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 import {
+  VERIFIED_GITHUB_PARITY_RELEASE_STATE,
   assertDeploymentAttestationManifest,
   deploymentManifestPath,
   ensureParentPath,
@@ -14,6 +15,8 @@ import {
 
 const manifest = readDeploymentManifest();
 assertDeploymentAttestationManifest(manifest);
+const recordsCompletedParity =
+  manifest.releaseState === VERIFIED_GITHUB_PARITY_RELEASE_STATE;
 const githubSha = (process.env.GITHUB_SHA || "").trim().toLowerCase();
 if (!/^[a-f0-9]{40}$/.test(githubSha)) {
   throw new Error(
@@ -75,7 +78,9 @@ mkdirSync(ensureParentPath(output), { recursive: true });
 writeJson(output, {
   schemaVersion: 3,
   recordKind: "veroxa_ci_deployment_attestation",
-  attestationScope: "exact_ci_candidate_checkout_only_not_production_parity",
+  attestationScope: recordsCompletedParity
+    ? "exact_ci_closeout_checkout_only_preserving_observed_v36_parity"
+    : "exact_ci_candidate_checkout_only_not_production_parity",
   generatedAt: new Date().toISOString(),
   repository: manifest.canonicalRepository,
   ref: process.env.GITHUB_REF || null,
@@ -94,6 +99,12 @@ writeJson(output, {
     provesProductionParity: false,
   },
   releaseCandidate: manifest.releaseCandidate,
+  referencedGitHubReconciliation: manifest.githubReconciliationEvidence
+    ? {
+        ...manifest.githubReconciliationEvidence,
+        reverifiedByThisAttestation: false,
+      }
+    : null,
   lastGitHubParityRelease: manifest.lastGitHubParityRelease,
   historicalProductionObservations: manifest.historicalProductionObservations,
   referencedProductionObservation: {

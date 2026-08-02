@@ -1,6 +1,17 @@
 import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import {
+  VERIFIED_DEPLOYMENT_FREEZE_STATE,
+  VERIFIED_GITHUB_PARITY_RELEASE_STATE,
+  VERIFIED_GITHUB_PARITY_STATUS,
+  VERIFIED_MIGRATION_EVIDENCE_SCOPE,
+  VERIFIED_PRODUCTION_EVIDENCE_STATUS,
+  VERIFIED_SOURCE_EVIDENCE_SCOPE,
+  V36_GITHUB_RECONCILIATION,
+  V36_OPERATIONAL_COMMIT_SCOPE,
+  type GitHubReconciliationEvidence,
+} from "./release-manifest";
 
 const root = resolve(import.meta.dirname, "../..");
 const failures: string[] = [];
@@ -34,6 +45,7 @@ type ManifestObservation = {
   observedAt: string;
   evidenceStatus: string;
   canonicalGitHubMainCommit: string;
+  canonicalGitHubMainCommitScope: string;
   githubMainMatchesCandidate: boolean;
   sitesVersion: number;
   sitesCheckoutCommit: string;
@@ -111,6 +123,7 @@ const manifest = JSON.parse(
     databaseAppliedThroughLatestObserved: boolean;
   }>;
   currentProductionObservation: ManifestObservation;
+  githubReconciliationEvidence: GitHubReconciliationEvidence;
   releaseCandidate: Candidate;
   source: {
     evidenceScope: string;
@@ -192,6 +205,7 @@ const checkpoint = JSON.parse(
     observedAt: string;
     evidenceStatus: string;
     canonicalGitHubMainCommit: string;
+    canonicalGitHubMainCommitScope: string;
     githubMainMatchesCandidate: boolean;
     sitesVersion: number;
     sitesCheckoutSourceCommit: string;
@@ -207,6 +221,7 @@ const checkpoint = JSON.parse(
     candidateMigrationsMatchLiveLedger: boolean;
     fullReleaseGatePassed: boolean;
   };
+  githubReconciliationEvidence: GitHubReconciliationEvidence;
   releaseCandidate: {
     manifest: string;
     state: string;
@@ -239,6 +254,7 @@ const checkpoint = JSON.parse(
 
 const v36 = {
   githubBase: "302621bf6b9ab78320abe4175b45b56e9e64ae2a",
+  githubMain: V36_GITHUB_RECONCILIATION.mergedCommit,
   sitesCheckout: "b8122642b72e5d4e6e74c379469f2a157781ab3d",
   sourceFileCount: 185,
   sourceSha256:
@@ -301,10 +317,11 @@ for (const marker of [
   "PR #149",
   "PR #154",
   "PR #155",
+  "PR #157",
   "Sites v22",
   "Sites v36",
   "37 migrations",
-  v36.githubBase,
+  v36.githubMain,
   v36.sitesCheckout,
   v36.sourceSha256,
   v36.migrationSha256,
@@ -367,6 +384,8 @@ const releaseIdentityMarkers = [
   manifest.lastGitHubParityRelease.sitesCheckoutCommit,
   manifest.lastGitHubParityRelease.sourceTreeSha256,
   v36.githubBase,
+  v36.githubMain,
+  V36_GITHUB_RECONCILIATION.reviewedHead,
   v36.sitesCheckout,
   v36.sourceSha256,
   v36.migrationSha256,
@@ -460,8 +479,10 @@ must(
     historical[0].databaseLedgerObserved &&
     historical[0].databaseAppliedThroughLatestObserved &&
     live.observedAt === "2026-08-02" &&
-    live.canonicalGitHubMainCommit === v36.githubBase &&
-    !live.githubMainMatchesCandidate &&
+    live.evidenceStatus === VERIFIED_PRODUCTION_EVIDENCE_STATUS &&
+    live.canonicalGitHubMainCommit === v36.githubMain &&
+    live.canonicalGitHubMainCommitScope === V36_OPERATIONAL_COMMIT_SCOPE &&
+    live.githubMainMatchesCandidate &&
     live.sitesVersion === 36 &&
     live.sitesCheckoutCommit === v36.sitesCheckout &&
     live.sourceFileCount === v36.sourceFileCount &&
@@ -474,17 +495,20 @@ must(
     live.databaseLedgerObserved &&
     live.databaseAppliedThroughLatestObserved &&
     live.candidateMigrationsMatchLiveLedger &&
-    !live.fullReleaseGatePassed &&
+    live.fullReleaseGatePassed &&
+    manifest.releaseState === VERIFIED_GITHUB_PARITY_RELEASE_STATE &&
+    candidate.status === VERIFIED_GITHUB_PARITY_STATUS &&
     candidate.actionScope === "github_reconciliation_candidate" &&
     candidate.basedOnGitHubMainCommit === v36.githubBase &&
-    candidate.pullRequest === null &&
-    !candidate.githubMerged &&
-    candidate.futureMergedGitHubCommit === null &&
+    candidate.pullRequest === V36_GITHUB_RECONCILIATION.pullRequest &&
+    candidate.githubMerged &&
+    candidate.futureMergedGitHubCommit === v36.githubMain &&
     candidate.futureSitesVersion === null &&
+    candidate.reviewedLocally &&
     candidate.candidateSourceMatchesLiveSites &&
     candidate.candidateMigrationsMatchLiveLedger &&
-    !candidate.githubMainMatchesCandidate &&
-    !candidate.fullReleaseGatePassed &&
+    candidate.githubMainMatchesCandidate &&
+    candidate.fullReleaseGatePassed &&
     candidate.sourceFileCount === v36.sourceFileCount &&
     candidate.sourceTreeSha256 === v36.sourceSha256 &&
     candidate.migrationFileCount === v36.migrationFileCount &&
@@ -495,24 +519,28 @@ must(
     !candidate.databaseMigrationApplied &&
     !candidate.sitesPublishRequired &&
     !candidate.sitesPublished &&
-    manifest.source.evidenceScope ===
-      "github_reconciliation_candidate_matching_live_sites_v36" &&
+    manifest.source.evidenceScope === VERIFIED_SOURCE_EVIDENCE_SCOPE &&
     manifest.source.root === "artifacts/veroxa-sites" &&
     manifest.source.fileCount === v36.sourceFileCount &&
     manifest.source.treeSha256 === v36.sourceSha256 &&
-    manifest.migrations.evidenceScope ===
-      "github_reconciliation_candidate_matching_live_ledger_v36" &&
+    manifest.migrations.evidenceScope === VERIFIED_MIGRATION_EVIDENCE_SCOPE &&
     manifest.migrations.root === "supabase/migrations" &&
     manifest.migrations.fileCount === v36.migrationFileCount &&
     manifest.migrations.treeSha256 === v36.migrationSha256 &&
     !manifest.deploymentFreeze.automaticDeploymentsAllowed &&
-    manifest.deploymentFreeze.state ===
-      "production_frozen_github_reconciliation_review_required" &&
+    manifest.deploymentFreeze.state === VERIFIED_DEPLOYMENT_FREEZE_STATE &&
     manifest.cleanupState.branchDeletionCapabilityAvailable &&
     !manifest.cleanupState.branchDeletionAllowed &&
     !manifest.cleanupState.externalVercelGitDisconnectionVerified &&
     manifest.cleanupState.vercelShutdownSentinelRequired,
-  "Sites-v36 reconciliation must match live source and migration evidence while GitHub parity and every candidate action remain false.",
+  "PR #157 GitHub parity must match already-live v36 source and migration evidence without claiming any Sites publish or database apply.",
+);
+must(
+  JSON.stringify(manifest.githubReconciliationEvidence) ===
+    JSON.stringify(V36_GITHUB_RECONCILIATION) &&
+    JSON.stringify(checkpoint.githubReconciliationEvidence) ===
+      JSON.stringify(V36_GITHUB_RECONCILIATION),
+  "Manifest and RR must preserve exact PR #157 review, merge, and workflow evidence.",
 );
 
 const latestMigrationPath = resolve(
@@ -641,6 +669,8 @@ must(
     checkpointLive.evidenceStatus === live.evidenceStatus &&
     checkpointLive.canonicalGitHubMainCommit ===
       live.canonicalGitHubMainCommit &&
+    checkpointLive.canonicalGitHubMainCommitScope ===
+      live.canonicalGitHubMainCommitScope &&
     checkpointLive.githubMainMatchesCandidate ===
       live.githubMainMatchesCandidate &&
     checkpointLive.sitesVersion === live.sitesVersion &&
@@ -674,8 +704,8 @@ must(
     checkpointCandidate.futureSitesVersion === candidate.futureSitesVersion &&
     checkpointCandidate.reviewedLocally === candidate.reviewedLocally &&
     checkpointCandidate.localReviewPassed === candidate.reviewedLocally &&
-    checkpointCandidate.allFourWorkflowsGreen === null &&
-    checkpointCandidate.zeroUnresolvedReviewThreads === null &&
+    checkpointCandidate.allFourWorkflowsGreen === true &&
+    checkpointCandidate.zeroUnresolvedReviewThreads === true &&
     checkpointCandidate.candidateSourceMatchesLiveSites ===
       candidate.candidateSourceMatchesLiveSites &&
     checkpointCandidate.candidateMigrationsMatchLiveLedger ===
@@ -699,7 +729,7 @@ must(
     checkpointCandidate.sitesPublishRequired ===
       candidate.sitesPublishRequired &&
     checkpointCandidate.sitesCandidatePublished === candidate.sitesPublished,
-  "RR checkpoint must preserve historical release evidence and match the exact unmerged Sites-v36 GitHub reconciliation candidate without inventing publication, database apply, or full-gate proof.",
+  "RR checkpoint must preserve historical release evidence and match verified PR #157 GitHub parity without inventing a Sites publication or database apply.",
 );
 
 for (const workflow of readdirSync(resolve(root, ".github/workflows")).filter(
@@ -718,5 +748,5 @@ if (failures.length) {
 }
 
 console.log(
-  "Sites-only deployment guardrail passed: immutable PR #149 / v15, PR #154 / v21, and last GitHub-parity PR #155 / v22 evidence is preserved; the candidate matches live Sites v36 and the 37-migration ledger while GitHub parity, deployment, database apply, and the full release gate remain false; Vercel stays inert.",
+  "Sites-only deployment guardrail passed: immutable PR #149 / v15, PR #154 / v21, and historical parity PR #155 / v22 evidence is preserved; PR #157 merged GitHub main matches live Sites v36 and the 37-migration ledger without a Sites publish or database apply; Vercel stays inert.",
 );

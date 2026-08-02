@@ -1,6 +1,14 @@
 import { createHash } from "node:crypto";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { resolve } from "node:path";
+import {
+  VERIFIED_GITHUB_PARITY_RELEASE_STATE,
+  VERIFIED_GITHUB_PARITY_STATUS,
+  VERIFIED_PRODUCTION_EVIDENCE_STATUS,
+  V36_GITHUB_RECONCILIATION,
+  V36_OPERATIONAL_COMMIT_SCOPE,
+  type GitHubReconciliationEvidence,
+} from "./release-manifest";
 
 const repoRoot = resolve(import.meta.dirname, "../..");
 const read = (path: string) => readFileSync(resolve(repoRoot, path), "utf8");
@@ -69,6 +77,7 @@ const deploymentManifestRecord = JSON.parse(deploymentManifest) as {
   currentProductionObservation?: {
     evidenceStatus?: string;
     canonicalGitHubMainCommit?: string;
+    canonicalGitHubMainCommitScope?: string;
     githubMainMatchesCandidate?: boolean;
     sitesVersion?: number;
     sitesCheckoutCommit?: string;
@@ -84,6 +93,7 @@ const deploymentManifestRecord = JSON.parse(deploymentManifest) as {
     candidateMigrationsMatchLiveLedger?: boolean;
     fullReleaseGatePassed?: boolean;
   };
+  githubReconciliationEvidence?: GitHubReconciliationEvidence;
   releaseCandidate?: {
     status?: string;
     actionScope?: string;
@@ -128,11 +138,22 @@ const v36CloseoutRecord = JSON.parse(
     repository?: string;
     currentMainRelease?: string;
     currentMainCommit?: string;
+    currentMainCommitScope?: string;
     v36ParityStatus?: string;
     v36ParityPullRequest?: number | null;
     v36ParityReviewedHead?: string | null;
     v36ParityMergedCommit?: string | null;
     v36ParitySourceTreeSha256?: string;
+    candidateSourceMatchesLiveSites?: boolean;
+    githubMainMatchesCandidate?: boolean;
+    fullReleaseGatePassed?: boolean;
+    zeroUnresolvedReviewThreads?: boolean;
+    preMergeWorkflows?: GitHubReconciliationEvidence["preMergeWorkflows"];
+    postMergePushWorkflows?: GitHubReconciliationEvidence["postMergePushWorkflows"];
+    databaseChangesRequired?: boolean;
+    databaseMigrationAppliedByParityRelease?: boolean;
+    sitesPublishRequired?: boolean;
+    sitesPublishedByParityRelease?: boolean;
   };
   database?: {
     productionMigrationCount?: number;
@@ -320,6 +341,8 @@ const rrReleaseCheckpointRecord = JSON.parse(
     latestProductionMigrationSha256?: string;
   };
   currentProductionObservation?: {
+    canonicalGitHubMainCommit?: string;
+    canonicalGitHubMainCommitScope?: string;
     sitesVersion?: number;
     productionMigrations?: number;
     migrationTreeSha256?: string;
@@ -328,6 +351,7 @@ const rrReleaseCheckpointRecord = JSON.parse(
     githubMainMatchesCandidate?: boolean;
     fullReleaseGatePassed?: boolean;
   };
+  githubReconciliationEvidence?: GitHubReconciliationEvidence;
   releaseCandidate?: {
     state?: string;
     actionScope?: string;
@@ -757,15 +781,14 @@ const rrCurrentProduction =
   rrReleaseCheckpointRecord.currentProductionObservation;
 must(
   deploymentManifestRecord.schemaVersion === 4 &&
-    [
-      "live_sites_v36_github_reconciliation_fingerprints_refreshed_review_required",
-      "live_sites_v36_github_reconciliation_reviewed_unmerged",
-    ].includes(deploymentManifestRecord.releaseState ?? "") &&
-    currentProduction?.evidenceStatus ===
-      "sites_v36_live_github_reconciliation_in_progress" &&
+    deploymentManifestRecord.releaseState ===
+      VERIFIED_GITHUB_PARITY_RELEASE_STATE &&
+    currentProduction?.evidenceStatus === VERIFIED_PRODUCTION_EVIDENCE_STATUS &&
     currentProduction.canonicalGitHubMainCommit ===
-      "302621bf6b9ab78320abe4175b45b56e9e64ae2a" &&
-    currentProduction.githubMainMatchesCandidate === false &&
+      V36_GITHUB_RECONCILIATION.mergedCommit &&
+    currentProduction.canonicalGitHubMainCommitScope ===
+      V36_OPERATIONAL_COMMIT_SCOPE &&
+    currentProduction.githubMainMatchesCandidate === true &&
     currentProduction.sitesVersion === 36 &&
     currentProduction.sitesCheckoutCommit ===
       "b8122642b72e5d4e6e74c379469f2a157781ab3d" &&
@@ -783,74 +806,75 @@ must(
     currentProduction.databaseLedgerObserved === true &&
     currentProduction.databaseAppliedThroughLatestObserved === true &&
     currentProduction.candidateMigrationsMatchLiveLedger === true &&
-    currentProduction.fullReleaseGatePassed === false,
-  "Schema-4 manifest must record live Sites v36 and its 37-migration ledger as the current observation while GitHub parity remains pending.",
+    currentProduction.fullReleaseGatePassed === true &&
+    JSON.stringify(deploymentManifestRecord.githubReconciliationEvidence) ===
+      JSON.stringify(V36_GITHUB_RECONCILIATION),
+  "Schema-4 manifest must record live Sites v36 and its 37-migration ledger with exact verified PR #157 GitHub parity.",
 );
 must(
   rrReleaseCheckpointRecord.schemaVersion === 8 &&
     rrReleaseCheckpointRecord.status ===
       deploymentManifestRecord.releaseState &&
+    rrCurrentProduction?.canonicalGitHubMainCommit ===
+      V36_GITHUB_RECONCILIATION.mergedCommit &&
+    rrCurrentProduction.canonicalGitHubMainCommitScope ===
+      V36_OPERATIONAL_COMMIT_SCOPE &&
     rrCurrentProduction?.sitesVersion === 36 &&
     rrCurrentProduction.productionMigrations === 37 &&
     rrCurrentProduction.migrationTreeSha256 ===
       "9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90" &&
     rrCurrentProduction.candidateSourceMatchesLiveSites === true &&
     rrCurrentProduction.candidateMigrationsMatchLiveLedger === true &&
-    rrCurrentProduction.githubMainMatchesCandidate === false &&
-    rrCurrentProduction.fullReleaseGatePassed === false,
-  "Schema-8 RR checkpoint must agree with the live v36 reconciliation observation.",
+    rrCurrentProduction.githubMainMatchesCandidate === true &&
+    rrCurrentProduction.fullReleaseGatePassed === true &&
+    JSON.stringify(rrReleaseCheckpointRecord.githubReconciliationEvidence) ===
+      JSON.stringify(V36_GITHUB_RECONCILIATION),
+  "Schema-8 RR checkpoint must agree with verified live-v36 GitHub parity.",
 );
 
 const rrCandidate = rrReleaseCheckpointRecord.releaseCandidate;
-const allowedManifestCandidateStates = [
-  "fingerprints_refreshed_review_required_unmerged",
-  "reviewed_locally_unmerged",
-];
-const allowedReleaseStates = [
-  "live_sites_v36_github_reconciliation_fingerprints_refreshed_review_required",
-  "live_sites_v36_github_reconciliation_reviewed_unmerged",
-];
 must(
   releaseCandidate !== undefined &&
-    allowedManifestCandidateStates.includes(releaseCandidate.status ?? "") &&
-    allowedReleaseStates.includes(
-      deploymentManifestRecord.releaseState ?? "",
-    ) &&
+    releaseCandidate.status === VERIFIED_GITHUB_PARITY_STATUS &&
+    deploymentManifestRecord.releaseState ===
+      VERIFIED_GITHUB_PARITY_RELEASE_STATE &&
     releaseCandidate.actionScope === "github_reconciliation_candidate" &&
     releaseCandidate.basedOnGitHubMainCommit ===
       "302621bf6b9ab78320abe4175b45b56e9e64ae2a" &&
-    releaseCandidate.pullRequest === null &&
-    releaseCandidate.githubMerged === false &&
-    releaseCandidate.futureMergedGitHubCommit === null &&
+    releaseCandidate.pullRequest === V36_GITHUB_RECONCILIATION.pullRequest &&
+    releaseCandidate.githubMerged === true &&
+    releaseCandidate.futureMergedGitHubCommit ===
+      V36_GITHUB_RECONCILIATION.mergedCommit &&
     releaseCandidate.futureSitesVersion === null &&
     releaseCandidate.candidateSourceMatchesLiveSites === true &&
     releaseCandidate.candidateMigrationsMatchLiveLedger === true &&
-    releaseCandidate.githubMainMatchesCandidate === false &&
-    releaseCandidate.fullReleaseGatePassed === false &&
+    releaseCandidate.githubMainMatchesCandidate === true &&
+    releaseCandidate.fullReleaseGatePassed === true &&
     releaseCandidate.databaseChangesRequired === false &&
     releaseCandidate.databaseMigrationApplied === false &&
     releaseCandidate.sitesPublishRequired === false &&
     releaseCandidate.sitesPublished === false,
-  "Manifest candidate must remain an exact unmerged v36 GitHub reconciliation with null future evidence and no candidate database apply or Sites publish.",
+  "Manifest must preserve exact merged PR #157 parity with no candidate database apply or Sites publish.",
 );
 must(
   rrCandidate !== undefined &&
-    allowedManifestCandidateStates.includes(rrCandidate.state ?? "") &&
+    rrCandidate.state === VERIFIED_GITHUB_PARITY_STATUS &&
     rrCandidate.actionScope === "github_reconciliation_candidate" &&
-    rrCandidate.pullRequest === null &&
-    rrCandidate.githubMerged === false &&
-    rrCandidate.futureMergedGitHubCommit === null &&
+    rrCandidate.pullRequest === V36_GITHUB_RECONCILIATION.pullRequest &&
+    rrCandidate.githubMerged === true &&
+    rrCandidate.futureMergedGitHubCommit ===
+      V36_GITHUB_RECONCILIATION.mergedCommit &&
     rrCandidate.futureSitesVersion === null &&
     rrCandidate.candidateSourceMatchesLiveSites === true &&
     rrCandidate.candidateMigrationsMatchLiveLedger === true &&
-    rrCandidate.githubMainMatchesCandidate === false &&
-    rrCandidate.fullReleaseGatePassed === false &&
-    rrCandidate.allFourWorkflowsGreen === null &&
-    rrCandidate.zeroUnresolvedReviewThreads === null &&
+    rrCandidate.githubMainMatchesCandidate === true &&
+    rrCandidate.fullReleaseGatePassed === true &&
+    rrCandidate.allFourWorkflowsGreen === true &&
+    rrCandidate.zeroUnresolvedReviewThreads === true &&
     rrCandidate.databaseMigrationApplied === false &&
     rrCandidate.sitesPublishRequired === false &&
     rrCandidate.sitesCandidatePublished === false,
-  "RR candidate must remain reviewable and unmerged with no predicted PR, head, merge, Sites version, database apply, or publication evidence.",
+  "RR must preserve exact merged PR #157 parity without inventing a Sites version, database apply, or publication.",
 );
 
 const v36Scope = v36CloseoutRecord.scope;
@@ -864,7 +888,7 @@ must(
   v36CloseoutRecord.schemaVersion === 1 &&
     v36CloseoutRecord.recordKind === "momo_upload_v36_live_closeout" &&
     v36CloseoutRecord.status ===
-      "sites_v36_live_external_actions_frozen_github_parity_pending" &&
+      "sites_v36_live_external_actions_frozen_github_parity_verified" &&
     v36CloseoutRecord.supersedesForCurrentLiveStatus ===
       "MOMO_MEDIA_V22_LIVE_CLOSEOUT.json" &&
     v36Scope?.restaurant === "Momo's House San Antonio" &&
@@ -879,15 +903,29 @@ must(
     v36Sites.sourceTreeSha256 ===
       "caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7" &&
     v36Github?.repository === "farazmunirgohar-vxa/Veroxa" &&
-    v36Github.currentMainRelease === "v22" &&
-    v36Github.currentMainCommit ===
-      "302621bf6b9ab78320abe4175b45b56e9e64ae2a" &&
-    v36Github.v36ParityStatus === "pending_pr_creation" &&
-    v36Github.v36ParityPullRequest === null &&
-    v36Github.v36ParityReviewedHead === null &&
-    v36Github.v36ParityMergedCommit === null &&
+    v36Github.currentMainRelease === "v36" &&
+    v36Github.currentMainCommit === V36_GITHUB_RECONCILIATION.mergedCommit &&
+    v36Github.currentMainCommitScope === V36_OPERATIONAL_COMMIT_SCOPE &&
+    v36Github.v36ParityStatus === VERIFIED_GITHUB_PARITY_STATUS &&
+    v36Github.v36ParityPullRequest === V36_GITHUB_RECONCILIATION.pullRequest &&
+    v36Github.v36ParityReviewedHead ===
+      V36_GITHUB_RECONCILIATION.reviewedHead &&
+    v36Github.v36ParityMergedCommit ===
+      V36_GITHUB_RECONCILIATION.mergedCommit &&
     v36Github.v36ParitySourceTreeSha256 ===
       "caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7" &&
+    v36Github.candidateSourceMatchesLiveSites === true &&
+    v36Github.githubMainMatchesCandidate === true &&
+    v36Github.fullReleaseGatePassed === true &&
+    v36Github.zeroUnresolvedReviewThreads === true &&
+    JSON.stringify(v36Github.preMergeWorkflows) ===
+      JSON.stringify(V36_GITHUB_RECONCILIATION.preMergeWorkflows) &&
+    JSON.stringify(v36Github.postMergePushWorkflows) ===
+      JSON.stringify(V36_GITHUB_RECONCILIATION.postMergePushWorkflows) &&
+    v36Github.databaseChangesRequired === false &&
+    v36Github.databaseMigrationAppliedByParityRelease === false &&
+    v36Github.sitesPublishRequired === false &&
+    v36Github.sitesPublishedByParityRelease === false &&
     v36Database?.productionMigrationCount === 37 &&
     v36Database.latestAppliedMigration ===
       "20260802020000_momo_pipeline_query_indexes_v2.sql" &&
@@ -906,7 +944,7 @@ must(
     v36CloseoutRecord.internalWorkers.every(
       (worker) => worker.updatedForV36 === true && worker.status === "active",
     ),
-  "MOMO_UPLOAD_V36_LIVE_CLOSEOUT.json must preserve the verified live v36 observation separately from the pending GitHub reconciliation.",
+  "MOMO_UPLOAD_V36_LIVE_CLOSEOUT.json must preserve verified live v36 separately from PR #157's no-publish, no-apply GitHub reconciliation.",
 );
 must(
   v36Pipeline?.exactDuplicateHandling ===

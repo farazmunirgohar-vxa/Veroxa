@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "recordKind": "momo_upload_v36_live_closeout",
   "recordedAt": "2026-08-02",
-  "status": "sites_v36_live_external_actions_frozen_github_parity_pending",
+  "status": "sites_v36_live_external_actions_frozen_github_parity_verified",
   "supersedesForCurrentLiveStatus": "MOMO_MEDIA_V22_LIVE_CLOSEOUT.json",
   "scope": {
     "restaurant": "Momo's House San Antonio",
@@ -34,16 +34,58 @@
   },
   "github": {
     "repository": "farazmunirgohar-vxa/Veroxa",
-    "currentMainRelease": "v22",
-    "currentMainCommit": "302621bf6b9ab78320abe4175b45b56e9e64ae2a",
-    "v36ParityStatus": "pending_pr_creation",
-    "v36ParityPullRequest": null,
-    "v36ParityReviewedHead": null,
-    "v36ParityMergedCommit": null,
+    "currentMainRelease": "v36",
+    "currentMainCommit": "aafebf93a6bc40f9578c29f4a25371f8203d0387",
+    "v36ParityStatus": "github_reconciliation_merged_parity_verified",
+    "v36ParityPullRequest": 157,
+    "v36ParityReviewedHead": "d3a63d25644fc699d1f521f8f803e5bd95daae49",
+    "v36ParityMergedCommit": "aafebf93a6bc40f9578c29f4a25371f8203d0387",
     "v36ParitySourceTreeSha256": "caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7",
     "candidateSourceMatchesLiveSites": true,
-    "githubMainMatchesCandidate": false,
-    "fullReleaseGatePassed": false
+    "githubMainMatchesCandidate": true,
+    "fullReleaseGatePassed": true,
+    "zeroUnresolvedReviewThreads": true,
+    "preMergeWorkflows": {
+      "ci": {
+        "runId": 30764961514,
+        "status": "success"
+      },
+      "sitesVerify": {
+        "runId": 30764961531,
+        "status": "success"
+      },
+      "supabaseVerify": {
+        "runId": 30764961516,
+        "status": "success"
+      },
+      "veroxaVerify": {
+        "runId": 30764961539,
+        "status": "success"
+      }
+    },
+    "postMergePushWorkflows": {
+      "ci": {
+        "runId": 30767748950,
+        "status": "success"
+      },
+      "sitesVerify": {
+        "runId": 30767748969,
+        "status": "success"
+      },
+      "supabaseVerify": {
+        "runId": 30767748993,
+        "status": "success"
+      },
+      "veroxaVerify": {
+        "runId": 30767748953,
+        "status": "success"
+      }
+    },
+    "databaseChangesRequired": false,
+    "databaseMigrationAppliedByParityRelease": false,
+    "sitesPublishRequired": false,
+    "sitesPublishedByParityRelease": false,
+    "currentMainCommitScope": "v36_operational_parity_commit_not_closeout_pr_head"
   },
   "database": {
     "productionMigrationCount": 37,

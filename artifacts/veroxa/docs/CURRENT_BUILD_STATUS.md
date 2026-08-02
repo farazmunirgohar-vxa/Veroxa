@@ -1,12 +1,13 @@
-## 2026-08-02 — v36 live source recovered; GitHub reconciliation candidate
+## 2026-08-02 — v36 live source recovered; GitHub parity verified
 
 - **Production:** Sites v36 succeeded from checkout `b8122642b72e5d4e6e74c379469f2a157781ab3d`; production has 37 migrations through `20260802020000_momo_pipeline_query_indexes_v2.sql`, and the two changed content-processing workers are active.
 - **Exact parity artifact:** the mirror contains 185 canonical Sites files at `caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7` and 37 migrations at `9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90`. Generated `.vinext` cache is deliberately excluded.
-- **GitHub:** canonical `main` is still v22 at `302621bf6b9ab78320abe4175b45b56e9e64ae2a`; no competing v23-v36 branch or open PR exists. The parity branch remains unmerged and has not been deployed from GitHub.
+- **GitHub:** PR #157 passed its four exact-head workflows at `d3a63d25644fc699d1f521f8f803e5bd95daae49`, had zero unresolved review threads, and merged to canonical `main` at `aafebf93a6bc40f9578c29f4a25371f8203d0387`; all four push workflows also passed. Main now matches live v36.
+- **Release boundary:** PR #157 required and performed no Sites publish and no database apply. PR #155 / Sites v22 remains historical parity evidence.
 - **Pipeline:** exact duplicates consolidate behind immutable canonical byte identity while uploads and rights stay distinct; Ready is unscheduled; Team Faraz is exception-only; provider-called or uncertain failures never receive an automatic paid retry.
 - **Known boundary:** v36 records one precise bad-media exception but does not auto-edit or auto-resize. Near-duplicate merging is advisory, and the legacy rendition editor remains separate.
 - **Verification:** the live release previously passed 371/371 tests, production build, lint, typecheck, and rollback migration compilation. No real v36 upload, content-AI run, or Ready package was created.
-- **Safety:** queues, schedules, provider connections, and external writes remain empty/off. This reconciliation authorizes no scheduling, publishing, posting, provider canary, or activation.
+- **Safety:** queues, schedules, provider connections, and external writes remain empty/off. Verified GitHub parity authorizes no scheduling, publishing, posting, provider canary, deployment, database apply, or activation.
 
 ## 2026-07-30 — v22 signed lifecycle bridge live
 

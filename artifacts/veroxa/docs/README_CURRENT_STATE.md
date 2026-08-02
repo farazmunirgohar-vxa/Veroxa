@@ -2,11 +2,12 @@
 
 Status: Short index for Faraz, Codex, and future ChatGPT/Codex sessions.
 
-## 2026-08-02 — Sites v36 live; GitHub reconciliation pending
+## 2026-08-02 — Sites v36 live; GitHub parity verified
 
 - Start with `MOMO_UPLOAD_V36_LIVE_CLOSEOUT.json`, `VEROXA_CURRENT_MILESTONE.md`, `VEROXA_DEPLOYMENT_MANIFEST.json`, and `RR_RELEASE_CHECKPOINT.json`.
 - Sites v36 checkout `b8122642b72e5d4e6e74c379469f2a157781ab3d` is live; its canonical 185-file hash is `caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7`. Production has 37 migrations at tree hash `9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90`.
-- GitHub `main` remains v22 at `302621bf6b9ab78320abe4175b45b56e9e64ae2a`; the current work is an unmerged source-reconciliation candidate, not a new deployment.
+- PR #157 reviewed head `d3a63d25644fc699d1f521f8f803e5bd95daae49` merged to GitHub `main` at `aafebf93a6bc40f9578c29f4a25371f8203d0387` after four green workflows and zero unresolved review threads; all four push workflows also passed. Main now matches live v36.
+- PR #157 was evidence-backed source reconciliation, not a Sites deployment or database apply. PR #155 / Sites v22 remains historical parity evidence.
 - V36 provides exact-byte deduplication, immutable lineage, automated internal content packaging, unscheduled Ready evidence, and exception-only Team work. Bad media is diagnosed and preserved, not auto-edited or resized; near duplicates remain advisory.
 - No real v36 upload, provider call, or Ready package exists. External scheduling, posting, publishing, connections, replies, website writes, and activation remain locked.
 

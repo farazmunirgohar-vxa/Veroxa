@@ -1,7 +1,7 @@
 {
   "schemaVersion": 8,
   "checkpoint": "momo-upload-veroxa-ready-v36-github-reconciliation-2026-08-02",
-  "status": "live_sites_v36_github_reconciliation_reviewed_unmerged",
+  "status": "live_sites_v36_github_parity_verified",
   "reviewedAt": "2026-08-02",
   "deployedOperationalRelease": {
     "supersededAsLiveBaseline": true,
@@ -104,9 +104,9 @@
   ],
   "currentProductionObservation": {
     "observedAt": "2026-08-02",
-    "evidenceStatus": "sites_v36_live_github_reconciliation_in_progress",
-    "canonicalGitHubMainCommit": "302621bf6b9ab78320abe4175b45b56e9e64ae2a",
-    "githubMainMatchesCandidate": false,
+    "evidenceStatus": "sites_v36_live_github_parity_verified",
+    "canonicalGitHubMainCommit": "aafebf93a6bc40f9578c29f4a25371f8203d0387",
+    "githubMainMatchesCandidate": true,
     "sitesVersion": 36,
     "sitesCheckoutSourceCommit": "b8122642b72e5d4e6e74c379469f2a157781ab3d",
     "sourceFileCount": 185,
@@ -119,25 +119,26 @@
     "databaseLedgerObserved": true,
     "databaseAppliedThroughLatestObserved": true,
     "candidateMigrationsMatchLiveLedger": true,
-    "fullReleaseGatePassed": false
+    "fullReleaseGatePassed": true,
+    "canonicalGitHubMainCommitScope": "v36_operational_parity_commit_not_closeout_pr_head"
   },
   "releaseCandidate": {
     "manifest": "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json",
-    "state": "reviewed_locally_unmerged",
+    "state": "github_reconciliation_merged_parity_verified",
     "actionScope": "github_reconciliation_candidate",
     "basedOnGitHubMainCommit": "302621bf6b9ab78320abe4175b45b56e9e64ae2a",
-    "pullRequest": null,
-    "githubMerged": false,
-    "futureMergedGitHubCommit": null,
+    "pullRequest": 157,
+    "githubMerged": true,
+    "futureMergedGitHubCommit": "aafebf93a6bc40f9578c29f4a25371f8203d0387",
     "futureSitesVersion": null,
     "reviewedLocally": true,
     "localReviewPassed": true,
-    "allFourWorkflowsGreen": null,
-    "zeroUnresolvedReviewThreads": null,
+    "allFourWorkflowsGreen": true,
+    "zeroUnresolvedReviewThreads": true,
     "candidateSourceMatchesLiveSites": true,
     "candidateMigrationsMatchLiveLedger": true,
-    "githubMainMatchesCandidate": false,
-    "fullReleaseGatePassed": false,
+    "githubMainMatchesCandidate": true,
+    "fullReleaseGatePassed": true,
     "sourceFileCount": 185,
     "sourceTreeSha256": "caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7",
     "migrationFileCount": 37,
@@ -270,7 +271,7 @@
     "The OpenAI credential, signed Edge bridge, migration-16 capability, and hosted runtime flag are deployed. Effective authenticated legacy Media AI proof remains pending a Team preflight and renewed media rights; no provider canary or real edit has passed, actual spend is USD $0, and USD $20 remains a per-job automatic authorization threshold with no batch runner",
     "Sites v36 checkout b8122642b72e5d4e6e74c379469f2a157781ab3d is live with the 185-file canonical source tree caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7 after excluding generated .vinext cache",
     "Production has 37 migrations through 20260802020000_momo_pipeline_query_indexes_v2.sql; the exact 37-file ledger hash is 9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90",
-    "The v36 source is live ahead of canonical GitHub. This candidate mirrors that source without scheduling, publishing, provider connection, test upload, provider canary, or external write"
+    "PR #157 reviewed head d3a63d25644fc699d1f521f8f803e5bd95daae49 merged at aafebf93a6bc40f9578c29f4a25371f8203d0387; all four pre-merge and post-merge-push workflows succeeded with zero unresolved review threads, and GitHub main matches the already-live Sites v36 / 37-migration evidence without a Sites publish or database apply by PR #157"
   ],
   "fullReviewTriggers": [
     "authentication, sessions, identity allowlist, role or membership authorization",
@@ -341,7 +342,7 @@
         "supabase/tests/restaurant_audit_center_v1.sql",
         "supabase/tests/restaurant_audit_generation_v2.sql"
       ],
-      "sha256": "73d522b2386c9de73833f5326a43d05d1146952b3825fbe6e9684fd064080054"
+      "sha256": "4ffb5d594a95a8e6379eafebb65f211b4de31845778b3e19eef6984f718edeae"
     },
     "media_ai_runtime": {
       "review": "full-on-change",
@@ -430,9 +431,11 @@
         ".github/workflows/ci.yml",
         ".github/workflows/sites-verify.yml",
         ".github/workflows/supabase-verify.yml",
-        ".github/workflows/veroxa-verify.yml"
+        ".github/workflows/veroxa-verify.yml",
+        "scripts/src/record-post-merge-parity-closeout.ts",
+        "scripts/package.json"
       ],
-      "sha256": "d1406ede9aa8986a983d9ed770a6985481b7610fc829a776df599c83c4f962a1"
+      "sha256": "e5460779b6b91560eaabab9900821c538e931c9e6874d0829c5eec3ac17c09c0"
     },
     "product_scope": {
       "review": "full-on-change",
@@ -454,7 +457,7 @@
         "AGENTS.md",
         "artifacts/veroxa/docs/RR_CHECKPOINT.md"
       ],
-      "sha256": "9ab6a9e5de112fec34ada3233162ac6eafbd281a8da8e138f916b090c79c5d59"
+      "sha256": "f44a1217c86938d8f06dab8e5f49c079cf74921a5e16c808497a56c3ec96e5ea"
     },
     "momo_readiness_tracking": {
       "review": "evidence-delta-on-change",
@@ -520,7 +523,7 @@
         "package.json",
         "pnpm-lock.yaml"
       ],
-      "sha256": "1ad4924e1c3365734a1fbd0ca744cf0e853fffaf7a2fb72dd30afdbde2699b18"
+      "sha256": "982cdc9c36c87d3f6e39a258a0eba2c2d57ae52b9640da711ac342aa24ca4ef0"
     },
     "momo_upload_to_ready_runtime": {
       "review": "full-on-change",
@@ -768,7 +771,7 @@
         "supabase/tests/restaurant_audit_center_v1.sql",
         "supabase/tests/restaurant_audit_generation_v2.sql"
       ],
-      "sha256": "590689a436f9fed2950aa42b2fd69e167cea4d097e342af78ff593cbd4d47a8d"
+      "sha256": "a1534706fe64461784b9def241b7ba61e1726fc6c0e0f765c29bc2153130e7c8"
     }
   },
   "activationGates": [
@@ -778,7 +781,7 @@
     "No Momo owner truth or media rights may be invented to satisfy readiness",
     "The v36 content pipeline may create only an internal, unscheduled Veroxa Ready package after current rights, technical media, claim, budget, and immutable-lineage gates pass; bad media remains one exception and is not auto-edited or resized",
     "Meta, Google, SEO provider writes, publishing, scheduling, outbound contact, billing, external review replies, and Momo activation remain inactive",
-    "Allow only exact reviewed and merged GitHub source to be deployed manually after all four workflows are green and GitHub reports zero unresolved review threads"
+    "PR #157 reconciled exact reviewed GitHub source to already-live v36 without a Sites deployment or database apply; every future production change requires a new reviewed release and explicit deployment authority"
   ],
   "cleanupGate": {
     "inventoryReviewed": true,
@@ -789,5 +792,47 @@
     "legacyViteArchived": true,
     "legacyViteRemovalAllowed": false,
     "requiredBeforeCleanup": "Verified production parity and rollback evidence remain required. Branch deletion also requires an available GitHub branch-delete capability; Vercel sentinel removal requires independently verified external Git disconnection and explicit approval."
+  },
+  "githubReconciliationEvidence": {
+    "pullRequest": 157,
+    "reviewedHead": "d3a63d25644fc699d1f521f8f803e5bd95daae49",
+    "mergedCommit": "aafebf93a6bc40f9578c29f4a25371f8203d0387",
+    "zeroUnresolvedReviewThreads": true,
+    "preMergeWorkflows": {
+      "ci": {
+        "runId": 30764961514,
+        "status": "success"
+      },
+      "sitesVerify": {
+        "runId": 30764961531,
+        "status": "success"
+      },
+      "supabaseVerify": {
+        "runId": 30764961516,
+        "status": "success"
+      },
+      "veroxaVerify": {
+        "runId": 30764961539,
+        "status": "success"
+      }
+    },
+    "postMergePushWorkflows": {
+      "ci": {
+        "runId": 30767748950,
+        "status": "success"
+      },
+      "sitesVerify": {
+        "runId": 30767748969,
+        "status": "success"
+      },
+      "supabaseVerify": {
+        "runId": 30767748993,
+        "status": "success"
+      },
+      "veroxaVerify": {
+        "runId": 30767748953,
+        "status": "success"
+      }
+    }
   }
 }
