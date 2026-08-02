@@ -1,0 +1,6 @@
+# Preserve the byte-exact live v36 migration mirrors while keeping Git's
+# blank-at-EOF check enabled everywhere else.
+artifacts/veroxa-sites/supabase/migrations/20260802002812_momo_real_owner_truth_reconfirmation.sql whitespace=-blank-at-eof
+artifacts/veroxa-sites/supabase/migrations/20260802003123_momo_truth_confirmation_application_lineage.sql whitespace=-blank-at-eof
+supabase/migrations/20260802002812_momo_real_owner_truth_reconfirmation.sql whitespace=-blank-at-eof
+supabase/migrations/20260802003123_momo_truth_confirmation_application_lineage.sql whitespace=-blank-at-eof

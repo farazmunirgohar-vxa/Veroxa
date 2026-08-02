@@ -1,10 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
-  PUBLISHED_SITES_FOLLOWUP_STATUS,
-  PUBLISHED_SITES_RELEASE_STATE,
   TREE_HASH_ALGORITHM,
-  assertPublishedSitesFollowupManifest,
   deploymentManifestPath,
   hashTree,
   readDeploymentManifest,
@@ -12,7 +9,47 @@ import {
   sha256File,
 } from "./release-manifest";
 
-type Nullable<T> = T | null;
+type VerifiedRelease = {
+  pullRequest: number;
+  reviewedHead?: string;
+  githubMainCommit: string;
+  sitesCheckoutCommit: string;
+  sitesVersion: number;
+  sourceFileCount: number;
+  sourceTreeSha256: string;
+  productionMigrationCount: number;
+  latestProductionMigration: string;
+  latestProductionMigrationSha256: string;
+  databaseApplied: boolean;
+  databaseVerified: boolean;
+  sitesPublished: boolean;
+  sitesVerified: boolean;
+  customDomainsVerified: boolean;
+  sitesSourceParityVerified: boolean;
+  migrationContentParityVerified: boolean;
+  migrationFilenameParityVerified: boolean;
+};
+
+type ProductionObservation = {
+  observedAt: string;
+  evidenceStatus: string;
+  canonicalGitHubMainCommit: string;
+  githubMainMatchesCandidate: boolean;
+  sitesVersion: number;
+  sitesCheckoutCommit: string;
+  sourceFileCount: number;
+  sourceTreeSha256: string;
+  candidateSourceMatchesLiveSites: boolean;
+  productionMigrationCount: number;
+  migrationTreeSha256: string;
+  latestProductionMigration: string;
+  latestProductionMigrationSha256: string;
+  databaseLedgerObserved: boolean;
+  databaseAppliedThroughLatestObserved: boolean;
+  candidateMigrationsMatchLiveLedger: boolean;
+  fullReleaseGatePassed: boolean;
+};
+
 type Manifest = {
   schemaVersion: number;
   recordKind: string;
@@ -21,6 +58,7 @@ type Manifest = {
   canonicalBranch: string;
   sitesProjectId: string;
   observedProductionBaseline: {
+    reviewedAt: string;
     githubMainCommit: string;
     sitesCheckoutCommit: string;
     sitesVersion: number;
@@ -29,90 +67,43 @@ type Manifest = {
     latestProductionMigrationSha256: string;
     sourceParityVerified: boolean;
   };
-  verifiedReconciliationRelease: {
-    pullRequest: number;
-    githubMainCommit: string;
-    sitesCheckoutCommit: string;
-    sitesVersion: number;
-    sourceFileCount: number;
-    sourceTreeSha256: string;
-    productionMigrationCount: number;
-    latestProductionMigration: string;
-    latestProductionMigrationSha256: string;
-    databaseApplied: boolean;
-    databaseVerified: boolean;
-    sitesPublished: boolean;
-    sitesVerified: boolean;
-    customDomainsVerified: boolean;
-    sitesSourceParityVerified: boolean;
-    migrationContentParityVerified: boolean;
-    migrationFilenameParityVerified: boolean;
+  verifiedReconciliationRelease: VerifiedRelease;
+  previousVerifiedRelease: VerifiedRelease & { reviewedHead: string };
+  lastGitHubParityRelease: VerifiedRelease & {
+    evidenceScope: string;
+    supersededAsLiveBaseline: boolean;
+    reviewedHead: string;
   };
-  observedProductionDrift: {
+  historicalProductionObservations: Array<{
     observedAt: string;
     evidenceStatus: string;
     canonicalGitHubMainCommit: string;
     githubSourceParityVerified: boolean;
     sitesVersion: number;
-    sitesCheckoutCommit: Nullable<string>;
-    sourceFileCount: Nullable<number>;
-    sourceTreeSha256: Nullable<string>;
+    sitesCheckoutCommit: string | null;
+    sourceFileCount: number | null;
+    sourceTreeSha256: string | null;
     sitesSourceParityVerified: boolean;
     productionMigrationCount: number;
     latestProductionMigration: string;
     latestProductionMigrationSha256: string;
     databaseLedgerObserved: boolean;
     databaseAppliedThroughLatestObserved: boolean;
-    candidateParityVerified: boolean;
-  };
-  previousVerifiedRelease: {
-    pullRequest: number;
-    reviewedHead: string;
-    githubMainCommit: string;
-    sitesCheckoutCommit: string;
-    sitesVersion: number;
-    sourceFileCount: number;
-    sourceTreeSha256: string;
-    productionMigrationCount: number;
-    latestProductionMigration: string;
-    latestProductionMigrationSha256: string;
-    databaseApplied: boolean;
-    databaseVerified: boolean;
-    sitesPublished: boolean;
-    sitesVerified: boolean;
-    customDomainsVerified: boolean;
-    sitesSourceParityVerified: boolean;
-    migrationContentParityVerified: boolean;
-    migrationFilenameParityVerified: boolean;
-  };
-  currentVerifiedRelease: {
-    pullRequest: number;
-    reviewedHead: string;
-    githubMainCommit: string;
-    sitesCheckoutCommit: string;
-    sitesVersion: number;
-    sourceFileCount: number;
-    sourceTreeSha256: string;
-    productionMigrationCount: number;
-    latestProductionMigration: string;
-    latestProductionMigrationSha256: string;
-    databaseApplied: boolean;
-    databaseVerified: boolean;
-    sitesPublished: boolean;
-    sitesVerified: boolean;
-    customDomainsVerified: boolean;
-    sitesSourceParityVerified: boolean;
-    migrationContentParityVerified: boolean;
-    migrationFilenameParityVerified: boolean;
-  };
+  }>;
+  currentProductionObservation: ProductionObservation;
   releaseCandidate: {
     status: string;
+    actionScope: string;
     basedOnGitHubMainCommit: string;
     pullRequest: number | null;
     githubMerged: boolean;
     futureMergedGitHubCommit: string | null;
     futureSitesVersion: number | null;
     reviewedLocally: boolean;
+    candidateSourceMatchesLiveSites: boolean;
+    candidateMigrationsMatchLiveLedger: boolean;
+    githubMainMatchesCandidate: boolean;
+    fullReleaseGatePassed: boolean;
     sourceFileCount: number;
     sourceTreeSha256: string;
     migrationFileCount: number;
@@ -174,7 +165,8 @@ const must = (condition: boolean, message: string) => {
   if (!condition) failures.push(message);
 };
 
-const historical = {
+const baseline = {
+  reviewedAt: "2026-07-13",
   githubMainCommit: "674e1a7c0d140c9b281029277baeb2e68962dac2",
   sitesCheckoutCommit: "dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805",
   sitesVersion: 13,
@@ -184,7 +176,7 @@ const historical = {
   latestProductionMigrationSha256:
     "304eb98db628b09fa245fba156160b043c1ba9ba2f9aeb689086a6a18ad234b2",
 };
-const verified = {
+const pr149 = {
   pullRequest: 149,
   githubMainCommit: "9749b68ce2cfc383deeae6aa63c413019ef61385",
   sitesCheckoutCommit: "e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0",
@@ -198,15 +190,7 @@ const verified = {
   latestProductionMigrationSha256:
     "ebc2ea499a24b79da1baaffa02423488b1a28a95cb75d4c0d5c002c7c585948d",
 };
-const historicalDrift = {
-  canonicalGitHubMainCommit: "4f95b30413632b4d30a289c7f4b9011f37a37b80",
-  sitesVersion: 18,
-  productionMigrationCount: 14,
-  latestProductionMigration: "20260716035027_momo_preconnection_foundation.sql",
-  latestProductionMigrationSha256:
-    "9e748a46e050b9b8884a5df46eba6617cac061d075272ab4e233d2c1609fb367",
-};
-const previousVerified = {
+const pr154 = {
   pullRequest: 154,
   reviewedHead: "4a7a2122bb71defc0f1db0c795b4c4c8fdb930a5",
   githubMainCommit: "72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695",
@@ -220,7 +204,7 @@ const previousVerified = {
   latestProductionMigrationSha256:
     "efae63b4344570934d1d66b47ef1fce4fcd16343a2fe9dd8352607e0784d09a1",
 };
-const currentVerified = {
+const pr155 = {
   pullRequest: 155,
   reviewedHead: "96a6c00857b438b37c2e8d99329c0f556de850a2",
   githubMainCommit: "d1f6a9a78ac54cd5447689d5f8b3d42466daf479",
@@ -234,33 +218,78 @@ const currentVerified = {
   latestProductionMigrationSha256:
     "efae63b4344570934d1d66b47ef1fce4fcd16343a2fe9dd8352607e0784d09a1",
 };
-const candidate = {
-  basedOnGitHubMainCommit: "72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695",
-  sourceFileCount: 93,
+const v18 = {
+  observedAt: "2026-07-22",
+  evidenceStatus: "historical_live_not_source_reconciled",
+  canonicalGitHubMainCommit: "4f95b30413632b4d30a289c7f4b9011f37a37b80",
+  sitesVersion: 18,
+  productionMigrationCount: 14,
+  latestProductionMigration: "20260716035027_momo_preconnection_foundation.sql",
+  latestProductionMigrationSha256:
+    "9e748a46e050b9b8884a5df46eba6617cac061d075272ab4e233d2c1609fb367",
+};
+const v36 = {
+  observedAt: "2026-08-02",
+  canonicalGitHubMainCommit: "302621bf6b9ab78320abe4175b45b56e9e64ae2a",
+  sitesVersion: 36,
+  sitesCheckoutCommit: "b8122642b72e5d4e6e74c379469f2a157781ab3d",
+  sourceFileCount: 185,
   sourceTreeSha256:
-    "8bc4ef94c0f670ff128774e26a9de3d9849269f74b6e5c5af05f07ee0c9e5490",
-  migrationFileCount: 16,
+    "caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7",
+  productionMigrationCount: 37,
   migrationTreeSha256:
-    "09aab45cda17810b52a07429700a4557308405d40a3983635d6bb7848dd4c729",
-  latestMigration: "20260728044916_momo_media_ai_pilot_v1.sql",
-  latestMigrationSha256:
-    "efae63b4344570934d1d66b47ef1fce4fcd16343a2fe9dd8352607e0784d09a1",
+    "9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90",
+  latestProductionMigration:
+    "20260802020000_momo_pipeline_query_indexes_v2.sql",
+  latestProductionMigrationSha256:
+    "106d346be34583446d22de0f6866b5b8937feb766a3a229339dbf1c1768fdfcd",
 };
 
-must(manifest.schemaVersion === 3, "Deployment manifest schema version must be 3.");
+const sameReleaseIdentity = (
+  actual: VerifiedRelease,
+  expected: typeof pr149 | typeof pr154 | typeof pr155,
+) =>
+  actual.pullRequest === expected.pullRequest &&
+  actual.githubMainCommit === expected.githubMainCommit &&
+  actual.sitesCheckoutCommit === expected.sitesCheckoutCommit &&
+  actual.sitesVersion === expected.sitesVersion &&
+  actual.sourceFileCount === expected.sourceFileCount &&
+  actual.sourceTreeSha256 === expected.sourceTreeSha256 &&
+  actual.productionMigrationCount === expected.productionMigrationCount &&
+  actual.latestProductionMigration === expected.latestProductionMigration &&
+  actual.latestProductionMigrationSha256 ===
+    expected.latestProductionMigrationSha256 &&
+  (!("reviewedHead" in expected) ||
+    actual.reviewedHead === expected.reviewedHead);
+
+const fullyVerified = (release: VerifiedRelease) =>
+  release.databaseVerified &&
+  release.sitesPublished &&
+  release.sitesVerified &&
+  release.customDomainsVerified &&
+  release.sitesSourceParityVerified &&
+  release.migrationContentParityVerified &&
+  release.migrationFilenameParityVerified;
+
+must(
+  manifest.schemaVersion === 4,
+  "Deployment manifest schema version must be 4.",
+);
 must(
   manifest.recordKind === "veroxa_production_reconciliation_manifest",
   "Deployment manifest record kind is invalid.",
 );
+const refreshedReleaseState =
+  "live_sites_v36_github_reconciliation_fingerprints_refreshed_review_required";
+const reviewedReleaseState =
+  "live_sites_v36_github_reconciliation_reviewed_unmerged";
+const refreshedCandidateStatus =
+  "fingerprints_refreshed_review_required_unmerged";
+const reviewedCandidateStatus = "reviewed_locally_unmerged";
 must(
-  manifest.releaseState === PUBLISHED_SITES_RELEASE_STATE,
-  "The manifest must identify the verified Sites v22 lifecycle-bridge publication.",
+  [refreshedReleaseState, reviewedReleaseState].includes(manifest.releaseState),
+  "Release state must remain an unmerged Sites-v36 GitHub reconciliation state.",
 );
-try {
-  assertPublishedSitesFollowupManifest(readDeploymentManifest());
-} catch (error) {
-  failures.push(`The published lifecycle-bridge manifest is not fail-closed: ${String(error)}`);
-}
 must(
   manifest.canonicalRepository === "farazmunirgohar-vxa/Veroxa" &&
     manifest.canonicalBranch === "main",
@@ -271,146 +300,138 @@ must(
   "Sites project identity drifted.",
 );
 
-const baseline = manifest.observedProductionBaseline;
+const observedBaseline = manifest.observedProductionBaseline;
 must(
-  baseline.githubMainCommit === historical.githubMainCommit &&
-    baseline.sitesCheckoutCommit === historical.sitesCheckoutCommit &&
-    baseline.sitesVersion === historical.sitesVersion &&
-    baseline.productionMigrationCount === historical.productionMigrationCount &&
-    baseline.latestProductionMigration === historical.latestProductionMigration &&
-    baseline.latestProductionMigrationSha256 ===
-      historical.latestProductionMigrationSha256 &&
-    !baseline.sourceParityVerified,
-  "The pre-PR #148 drift baseline must remain immutable historical evidence.",
+  observedBaseline.reviewedAt === baseline.reviewedAt &&
+    observedBaseline.githubMainCommit === baseline.githubMainCommit &&
+    observedBaseline.sitesCheckoutCommit === baseline.sitesCheckoutCommit &&
+    observedBaseline.sitesVersion === baseline.sitesVersion &&
+    observedBaseline.productionMigrationCount ===
+      baseline.productionMigrationCount &&
+    observedBaseline.latestProductionMigration ===
+      baseline.latestProductionMigration &&
+    observedBaseline.latestProductionMigrationSha256 ===
+      baseline.latestProductionMigrationSha256 &&
+    !observedBaseline.sourceParityVerified,
+  "The pre-PR #148 production baseline must remain immutable historical evidence.",
 );
 
-const release = manifest.verifiedReconciliationRelease;
+const release149 = manifest.verifiedReconciliationRelease;
 must(
-  release.pullRequest === verified.pullRequest &&
-    release.githubMainCommit === verified.githubMainCommit &&
-    release.sitesCheckoutCommit === verified.sitesCheckoutCommit &&
-    release.sitesVersion === verified.sitesVersion &&
-    release.sourceFileCount === verified.sourceFileCount &&
-    release.sourceTreeSha256 === verified.sourceTreeSha256 &&
-    release.productionMigrationCount === verified.productionMigrationCount &&
-    release.latestProductionMigration === verified.latestProductionMigration &&
-    release.latestProductionMigrationSha256 ===
-      verified.latestProductionMigrationSha256 &&
-    !release.databaseApplied &&
-    release.databaseVerified &&
-    release.sitesPublished &&
-    release.sitesVerified &&
-    release.customDomainsVerified &&
-    release.sitesSourceParityVerified &&
-    release.migrationContentParityVerified &&
-    release.migrationFilenameParityVerified,
+  sameReleaseIdentity(release149, pr149) &&
+    !release149.databaseApplied &&
+    fullyVerified(release149),
   "PR #149 / Sites v15 historical release proof changed.",
 );
-
-const observed = manifest.observedProductionDrift;
+const release154 = manifest.previousVerifiedRelease;
 must(
-  observed.observedAt === "2026-07-22" &&
-    observed.evidenceStatus === "observed_live_not_source_reconciled" &&
-    observed.canonicalGitHubMainCommit ===
-      historicalDrift.canonicalGitHubMainCommit &&
-    !observed.githubSourceParityVerified &&
-    observed.sitesVersion === historicalDrift.sitesVersion &&
-    observed.sitesCheckoutCommit === null &&
-    observed.sourceFileCount === null &&
-    observed.sourceTreeSha256 === null &&
-    !observed.sitesSourceParityVerified &&
-    observed.productionMigrationCount ===
-      historicalDrift.productionMigrationCount &&
-    observed.latestProductionMigration ===
-      historicalDrift.latestProductionMigration &&
-    observed.latestProductionMigrationSha256 ===
-      historicalDrift.latestProductionMigrationSha256 &&
-    observed.databaseLedgerObserved &&
-    observed.databaseAppliedThroughLatestObserved &&
-    !observed.candidateParityVerified,
-  "Historical Sites v18 / 14-migration drift must remain explicit and must not invent a checkout or source hash.",
+  sameReleaseIdentity(release154, pr154) &&
+    release154.databaseApplied &&
+    fullyVerified(release154),
+  "PR #154 / Sites v21 historical release proof changed.",
 );
-
-const current = manifest.currentVerifiedRelease;
-const previous = manifest.previousVerifiedRelease;
+const release155 = manifest.lastGitHubParityRelease;
 must(
-  previous.pullRequest === previousVerified.pullRequest &&
-    previous.reviewedHead === previousVerified.reviewedHead &&
-    previous.githubMainCommit === previousVerified.githubMainCommit &&
-    previous.sitesCheckoutCommit === previousVerified.sitesCheckoutCommit &&
-    previous.sitesVersion === previousVerified.sitesVersion &&
-    previous.sourceFileCount === previousVerified.sourceFileCount &&
-    previous.sourceTreeSha256 === previousVerified.sourceTreeSha256 &&
-    previous.productionMigrationCount ===
-      previousVerified.productionMigrationCount &&
-    previous.latestProductionMigration ===
-      previousVerified.latestProductionMigration &&
-    previous.latestProductionMigrationSha256 ===
-      previousVerified.latestProductionMigrationSha256 &&
-    previous.databaseApplied &&
-    previous.databaseVerified &&
-    previous.sitesPublished &&
-    previous.sitesVerified &&
-    previous.customDomainsVerified &&
-    previous.sitesSourceParityVerified &&
-    previous.migrationContentParityVerified &&
-    previous.migrationFilenameParityVerified,
-  "PR #154 / Sites v21 must remain the exact previous verified release.",
-);
-must(
-  current.pullRequest === currentVerified.pullRequest &&
-    current.reviewedHead === currentVerified.reviewedHead &&
-    current.githubMainCommit === currentVerified.githubMainCommit &&
-    current.sitesCheckoutCommit === currentVerified.sitesCheckoutCommit &&
-    current.sitesVersion === currentVerified.sitesVersion &&
-    current.sourceFileCount === currentVerified.sourceFileCount &&
-    current.sourceTreeSha256 === currentVerified.sourceTreeSha256 &&
-    current.productionMigrationCount ===
-      currentVerified.productionMigrationCount &&
-    current.latestProductionMigration ===
-      currentVerified.latestProductionMigration &&
-    current.latestProductionMigrationSha256 ===
-      currentVerified.latestProductionMigrationSha256 &&
-    current.databaseApplied &&
-    current.databaseVerified &&
-    current.sitesPublished &&
-    current.sitesVerified &&
-    current.customDomainsVerified &&
-    current.sitesSourceParityVerified &&
-    current.migrationContentParityVerified &&
-    current.migrationFilenameParityVerified,
-  "PR #155 / Sites v22 / migration 16 must remain the exact current verified release, including reviewed head, merged main, domains, and source/migration parity.",
-);
-
-const releaseCandidate = manifest.releaseCandidate;
-must(
-    releaseCandidate.status === PUBLISHED_SITES_FOLLOWUP_STATUS &&
-    releaseCandidate.basedOnGitHubMainCommit === candidate.basedOnGitHubMainCommit &&
-    releaseCandidate.pullRequest === currentVerified.pullRequest &&
-    releaseCandidate.githubMerged &&
-    releaseCandidate.futureMergedGitHubCommit === currentVerified.githubMainCommit &&
-    releaseCandidate.futureSitesVersion === currentVerified.sitesVersion &&
-    releaseCandidate.reviewedLocally &&
-    releaseCandidate.sourceFileCount === candidate.sourceFileCount &&
-    releaseCandidate.sourceTreeSha256 === candidate.sourceTreeSha256 &&
-    releaseCandidate.migrationFileCount === candidate.migrationFileCount &&
-    releaseCandidate.migrationTreeSha256 === candidate.migrationTreeSha256 &&
-    releaseCandidate.latestCandidateMigration === candidate.latestMigration &&
-    releaseCandidate.latestCandidateMigrationSha256 ===
-      candidate.latestMigrationSha256 &&
-    !releaseCandidate.databaseChangesRequired &&
-    !releaseCandidate.databaseMigrationApplied &&
-    releaseCandidate.sitesPublishRequired &&
-    releaseCandidate.sitesPublished,
-  "The lifecycle-bridge release must remain exact, reviewed, merged, published, and no-database-change.",
+  release155.evidenceScope === "last_github_sites_parity_release" &&
+    release155.supersededAsLiveBaseline &&
+    sameReleaseIdentity(release155, pr155) &&
+    release155.databaseApplied &&
+    fullyVerified(release155),
+  "PR #155 / Sites v22 must remain the exact last GitHub-to-Sites parity release.",
 );
 
 must(
-  manifest.source.evidenceScope === "published_sites_v22" &&
+  manifest.historicalProductionObservations.length === 1,
+  "Historical production observations must preserve the one source-unreconciled v18 record.",
+);
+const historicalObservation = manifest.historicalProductionObservations[0];
+must(
+  historicalObservation?.observedAt === v18.observedAt &&
+    historicalObservation.evidenceStatus === v18.evidenceStatus &&
+    historicalObservation.canonicalGitHubMainCommit ===
+      v18.canonicalGitHubMainCommit &&
+    !historicalObservation.githubSourceParityVerified &&
+    historicalObservation.sitesVersion === v18.sitesVersion &&
+    historicalObservation.sitesCheckoutCommit === null &&
+    historicalObservation.sourceFileCount === null &&
+    historicalObservation.sourceTreeSha256 === null &&
+    !historicalObservation.sitesSourceParityVerified &&
+    historicalObservation.productionMigrationCount ===
+      v18.productionMigrationCount &&
+    historicalObservation.latestProductionMigration ===
+      v18.latestProductionMigration &&
+    historicalObservation.latestProductionMigrationSha256 ===
+      v18.latestProductionMigrationSha256 &&
+    historicalObservation.databaseLedgerObserved &&
+    historicalObservation.databaseAppliedThroughLatestObserved,
+  "Historical Sites v18 / 14-migration drift evidence changed or invented source identity.",
+);
+
+const observation = manifest.currentProductionObservation;
+must(
+  observation.observedAt === v36.observedAt &&
+    observation.evidenceStatus ===
+      "sites_v36_live_github_reconciliation_in_progress" &&
+    observation.canonicalGitHubMainCommit === v36.canonicalGitHubMainCommit &&
+    !observation.githubMainMatchesCandidate &&
+    observation.sitesVersion === v36.sitesVersion &&
+    observation.sitesCheckoutCommit === v36.sitesCheckoutCommit &&
+    observation.sourceFileCount === v36.sourceFileCount &&
+    observation.sourceTreeSha256 === v36.sourceTreeSha256 &&
+    observation.candidateSourceMatchesLiveSites &&
+    observation.productionMigrationCount === v36.productionMigrationCount &&
+    observation.migrationTreeSha256 === v36.migrationTreeSha256 &&
+    observation.latestProductionMigration === v36.latestProductionMigration &&
+    observation.latestProductionMigrationSha256 ===
+      v36.latestProductionMigrationSha256 &&
+    observation.databaseLedgerObserved &&
+    observation.databaseAppliedThroughLatestObserved &&
+    observation.candidateMigrationsMatchLiveLedger &&
+    !observation.fullReleaseGatePassed,
+  "Current production must remain the exact observed Sites v36 / 37-migration state ahead of GitHub main.",
+);
+
+const candidate = manifest.releaseCandidate;
+const statePairIsValid =
+  (manifest.releaseState === refreshedReleaseState &&
+    candidate.status === refreshedCandidateStatus &&
+    !candidate.reviewedLocally) ||
+  (manifest.releaseState === reviewedReleaseState &&
+    candidate.status === reviewedCandidateStatus &&
+    candidate.reviewedLocally);
+must(statePairIsValid, "Release and candidate review states are inconsistent.");
+must(
+  candidate.actionScope === "github_reconciliation_candidate" &&
+    candidate.basedOnGitHubMainCommit === v36.canonicalGitHubMainCommit &&
+    candidate.pullRequest === null &&
+    !candidate.githubMerged &&
+    candidate.futureMergedGitHubCommit === null &&
+    candidate.futureSitesVersion === null &&
+    candidate.candidateSourceMatchesLiveSites &&
+    candidate.candidateMigrationsMatchLiveLedger &&
+    !candidate.githubMainMatchesCandidate &&
+    !candidate.fullReleaseGatePassed &&
+    candidate.sourceFileCount === v36.sourceFileCount &&
+    candidate.sourceTreeSha256 === v36.sourceTreeSha256 &&
+    candidate.migrationFileCount === v36.productionMigrationCount &&
+    candidate.migrationTreeSha256 === v36.migrationTreeSha256 &&
+    candidate.latestCandidateMigration === v36.latestProductionMigration &&
+    candidate.latestCandidateMigrationSha256 ===
+      v36.latestProductionMigrationSha256 &&
+    !candidate.databaseChangesRequired &&
+    !candidate.databaseMigrationApplied &&
+    !candidate.sitesPublishRequired &&
+    !candidate.sitesPublished,
+  "The v36 GitHub reconciliation candidate must match live source and migrations while all candidate actions remain unmerged, unpublished, and unapplied.",
+);
+
+must(
+  manifest.source.evidenceScope ===
+    "github_reconciliation_candidate_matching_live_sites_v36" &&
     manifest.source.root === "artifacts/veroxa-sites" &&
     manifest.source.mappingTarget === "Sites repository root" &&
     manifest.source.hashAlgorithm === TREE_HASH_ALGORITHM,
-  "Published lifecycle-bridge Sites source mapping or evidence scope drifted.",
+  "Sites-v36 reconciliation source mapping or evidence scope drifted.",
 );
 const sourceRoot = resolve(repoRoot, manifest.source.root);
 must(existsSync(sourceRoot), "Canonical Sites source root is missing.");
@@ -418,14 +439,19 @@ const sourceTree = hashTree(sourceRoot, {
   exclusions: manifest.source.generatedPathExclusions,
 });
 must(
-  sourceTree.fileCount === candidate.sourceFileCount &&
-    sourceTree.sha256 === candidate.sourceTreeSha256 &&
+  sourceTree.fileCount === v36.sourceFileCount &&
+    sourceTree.sha256 === v36.sourceTreeSha256 &&
     sourceTree.fileCount === manifest.source.fileCount &&
-    sourceTree.sha256 === manifest.source.treeSha256,
-  `Published lifecycle-bridge Sites source drifted (actual ${sourceTree.fileCount}/${sourceTree.sha256}).`,
+    sourceTree.sha256 === manifest.source.treeSha256 &&
+    sourceTree.fileCount === candidate.sourceFileCount &&
+    sourceTree.sha256 === candidate.sourceTreeSha256,
+  `Sites-v36 reconciliation source drifted (actual ${sourceTree.fileCount}/${sourceTree.sha256}).`,
 );
-must(sourceTree.files.includes(".npmrc"), "Published Sites source must include .npmrc.");
-for (const excluded of [
+must(
+  sourceTree.files.includes(".npmrc"),
+  "Canonical Sites source must include .npmrc.",
+);
+const requiredExclusions = [
   ".git",
   ".next",
   ".sites-runtime",
@@ -436,49 +462,45 @@ for (const excluded of [
   "outputs",
   "tsconfig.tsbuildinfo",
   "work",
-]) {
-  must(
-    manifest.source.generatedPathExclusions.includes(excluded),
-    `Sites sync exclusions must name generated path: ${excluded}`,
-  );
-}
+];
+must(
+  requiredExclusions.every((entry) =>
+    manifest.source.generatedPathExclusions.includes(entry),
+  ),
+  "Sites source exclusions must preserve every generated/runtime path.",
+);
 
 must(
-  manifest.migrations.evidenceScope === "current_verified_release" &&
+  manifest.migrations.evidenceScope ===
+    "github_reconciliation_candidate_matching_live_ledger_v36" &&
     manifest.migrations.root === "supabase/migrations" &&
     manifest.migrations.hashAlgorithm === TREE_HASH_ALGORITHM,
-  "Published lifecycle-bridge migration-tree mapping or evidence scope drifted.",
+  "Live-ledger reconciliation migration mapping or evidence scope drifted.",
 );
 const migrationRoot = resolve(repoRoot, manifest.migrations.root);
 const migrationTree = hashTree(migrationRoot, { suffix: ".sql" });
 must(
-  migrationTree.fileCount === candidate.migrationFileCount &&
-    migrationTree.sha256 === candidate.migrationTreeSha256 &&
+  migrationTree.fileCount === v36.productionMigrationCount &&
+    migrationTree.sha256 === v36.migrationTreeSha256 &&
     migrationTree.fileCount === manifest.migrations.fileCount &&
-    migrationTree.sha256 === manifest.migrations.treeSha256,
-  `Published lifecycle-bridge migration tree drifted (actual ${migrationTree.fileCount}/${migrationTree.sha256}).`,
+    migrationTree.sha256 === manifest.migrations.treeSha256 &&
+    migrationTree.fileCount === candidate.migrationFileCount &&
+    migrationTree.sha256 === candidate.migrationTreeSha256,
+  `Live-ledger reconciliation migration tree drifted (actual ${migrationTree.fileCount}/${migrationTree.sha256}).`,
+);
+const latestMigrationPath = resolve(
+  migrationRoot,
+  v36.latestProductionMigration,
 );
 must(
-  candidate.migrationFileCount === currentVerified.productionMigrationCount &&
-    candidate.migrationTreeSha256 === manifest.migrations.treeSha256 &&
-    candidate.latestMigration === currentVerified.latestProductionMigration &&
-    candidate.latestMigrationSha256 ===
-      currentVerified.latestProductionMigrationSha256,
-  "No-database-change bridge release must retain the exact verified v22 migration ledger.",
+  existsSync(latestMigrationPath),
+  `Latest live migration is absent: ${v36.latestProductionMigration}`,
 );
-for (const [filename, sha256] of Object.entries({
-  [verified.latestProductionMigration]: verified.latestProductionMigrationSha256,
-  [historicalDrift.latestProductionMigration]:
-    historicalDrift.latestProductionMigrationSha256,
-  [currentVerified.latestProductionMigration]:
-    currentVerified.latestProductionMigrationSha256,
-  [candidate.latestMigration]: candidate.latestMigrationSha256,
-})) {
-  const path = resolve(migrationRoot, filename);
-  must(existsSync(path), `Release-evidence migration is absent: ${filename}`);
-  if (existsSync(path)) {
-    must(sha256File(path) === sha256, `Release-evidence migration changed: ${filename}`);
-  }
+if (existsSync(latestMigrationPath)) {
+  must(
+    sha256File(latestMigrationPath) === v36.latestProductionMigrationSha256,
+    `Latest live migration changed: ${v36.latestProductionMigration}`,
+  );
 }
 
 const hosting = JSON.parse(
@@ -486,15 +508,23 @@ const hosting = JSON.parse(
 ) as { project_id?: unknown };
 must(
   hosting.project_id === manifest.sitesProjectId,
-  "Published Sites hosting manifest and deployment manifest disagree.",
+  "Sites hosting manifest and deployment manifest disagree.",
 );
 
 must(
-  manifest.deploymentFreeze.state === "verified_manual_deployment_complete" &&
+  manifest.deploymentFreeze.state ===
+    "production_frozen_github_reconciliation_review_required" &&
     !manifest.deploymentFreeze.automaticDeploymentsAllowed &&
-    manifest.deploymentFreeze.allowedDeployment.includes("reviewed and merged") &&
-    manifest.deploymentFreeze.releaseCondition.includes("production parity"),
-  "Delivery must remain reviewed, manual, and fail-closed.",
+    /No Sites deployment or database apply is required/i.test(
+      manifest.deploymentFreeze.allowedDeployment,
+    ) &&
+    /all four workflows are green/i.test(
+      manifest.deploymentFreeze.releaseCondition,
+    ) &&
+    /review threads are clear/i.test(
+      manifest.deploymentFreeze.releaseCondition,
+    ),
+  "GitHub reconciliation must remain frozen, reviewed, manual, and fail-closed.",
 );
 for (const [name, value] of Object.entries(manifest.activationState)) {
   must(value === false, `Historical PR #149 activation state changed: ${name}`);
@@ -506,24 +536,30 @@ must(
   "Activation-state evidence scope must remain historical and explicit.",
 );
 must(
-  manifest.currentRuntimeIdentityObservation.observedAt === "2026-07-22" &&
+  manifest.currentRuntimeIdentityObservation.observedAt === "2026-08-02" &&
     manifest.currentRuntimeIdentityObservation.teamIdentityProvisioned &&
-    manifest.currentRuntimeIdentityObservation.momoDevelopmentProxyClientIdentityProvisioned &&
-    !manifest.currentRuntimeIdentityObservation.momoRealOwnerClientIdentityProvisioned &&
-    manifest.currentRuntimeIdentityObservation.developmentClientEvidenceClass === "development_proxy" &&
-    /not Momo owner authority/i.test(manifest.currentRuntimeIdentityObservation.scope),
-  "Current identity evidence must distinguish the iCloud development proxy from future real-owner authority.",
+    manifest.currentRuntimeIdentityObservation
+      .momoDevelopmentProxyClientIdentityProvisioned &&
+    !manifest.currentRuntimeIdentityObservation
+      .momoRealOwnerClientIdentityProvisioned &&
+    manifest.currentRuntimeIdentityObservation
+      .developmentClientEvidenceClass === "development_proxy" &&
+    /not Momo owner authority/i.test(
+      manifest.currentRuntimeIdentityObservation.scope,
+    ),
+  "Runtime identity evidence must distinguish the development proxy from real-owner authority.",
 );
 must(
   manifest.cleanupState.inventoryReviewed &&
-    !manifest.cleanupState.branchDeletionCapabilityAvailable &&
+    manifest.cleanupState.branchDeletionCapabilityAvailable &&
     !manifest.cleanupState.branchDeletionAllowed &&
     manifest.cleanupState.legacyViteArchived &&
     !manifest.cleanupState.legacyViteRemovalAllowed &&
     !manifest.cleanupState.externalVercelGitDisconnectionVerified &&
     manifest.cleanupState.vercelShutdownSentinelRequired &&
+    /cleanup remains unauthorized/i.test(manifest.cleanupState.blocker) &&
     /external Vercel Git disconnection/i.test(manifest.cleanupState.blocker),
-  "Cleanup must preserve branch, legacy-removal, and Vercel safety gates.",
+  "Cleanup and Vercel safety gates drifted.",
 );
 must(
   deploymentManifestPath.endsWith("VEROXA_DEPLOYMENT_MANIFEST.json"),
@@ -537,5 +573,5 @@ if (failures.length) {
 }
 
 console.log(
-  `Veroxa release evidence passed: historical PR #149 / Sites v15 and observed Sites v18 drift are preserved; PR #154 / Sites v21 remains previous; PR #155 / Sites v22 / migration 16 is current; the reviewed no-database-change lifecycle bridge is bound to ${sourceTree.fileCount} published Sites files and the unchanged ${migrationTree.fileCount}-migration ledger.`,
+  `Veroxa release evidence passed: immutable PR #149 / Sites v15, PR #154 / Sites v21, and last GitHub parity PR #155 / Sites v22 evidence is preserved; the GitHub reconciliation candidate matches live Sites v36 (${sourceTree.fileCount} files) and its ${migrationTree.fileCount}-migration ledger while GitHub main and the full release gate remain false.`,
 );

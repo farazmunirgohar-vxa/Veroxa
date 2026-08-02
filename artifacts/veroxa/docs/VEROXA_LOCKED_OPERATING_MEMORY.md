@@ -1,3 +1,14 @@
+## 2026-08-02 — locked v36 internal-ready and source-reconciliation boundary
+
+- Sites v36 is live from checkout `b8122642b72e5d4e6e74c379469f2a157781ab3d`; its canonical 185-file tree is `caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7`. Production is at 37 migrations through `20260802020000_momo_pipeline_query_indexes_v2.sql`.
+- GitHub `main` remains v22 at `302621bf6b9ab78320abe4175b45b56e9e64ae2a`. Do not rewrite history: v22 remains the last GitHub-parity release and v36 remains observed live production until the exact reconciliation head merges.
+- Exact-byte identity may consolidate processing only. Never merge, copy, or infer rights between uploads; preserve each original, uploader, rights record, selected processing source, run, transition, exception, and Ready event.
+- Ready means an internal, unscheduled evidence package. It never grants posting, scheduling, publishing, provider connection, website writing, review replying, or activation authority.
+- Team Faraz defaults to one consolidated exception per genuine blocker. Routine v2 scheduling and approval work must not return.
+- Near-duplicate similarity is advisory. Bad media is preserved and diagnosed; the v2 path does not auto-edit or auto-resize it. Do not describe the separate legacy rendition flow as automatic v2 preparation.
+- Provider-called or uncertain failures may not trigger a second paid attempt. Only conclusively zero-provider terminal failures may create one bounded retry child with append-only recovery evidence.
+- No real post-v36 upload, provider call, or Ready package exists. Keep all external actions frozen and do not create proof by manufacturing customer data or a canary.
+
 ## 2026-07-30 — locked v22 signed lifecycle-bridge boundary
 
 - PR #155 / Sites v22 is the verified live source release: reviewed head `96a6c00857b438b37c2e8d99329c0f556de850a2`, GitHub main `d1f6a9a78ac54cd5447689d5f8b3d42466daf479`, Sites checkout `83bf6496a02559bf7bbc3fe9bc02ff7f9f8b3f6e`, and 93-file hash `8bc4ef94c0f670ff128774e26a9de3d9849269f74b6e5c5af05f07ee0c9e5490`.

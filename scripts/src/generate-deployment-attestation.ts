@@ -16,7 +16,9 @@ const manifest = readDeploymentManifest();
 assertDeploymentAttestationManifest(manifest);
 const githubSha = (process.env.GITHUB_SHA || "").trim().toLowerCase();
 if (!/^[a-f0-9]{40}$/.test(githubSha)) {
-  throw new Error("GITHUB_SHA must be the exact 40-character commit under attestation");
+  throw new Error(
+    "GITHUB_SHA must be the exact 40-character commit under attestation",
+  );
 }
 
 const sourceTree = hashTree(resolve(repoRoot, manifest.source.root), {
@@ -35,10 +37,18 @@ if (
   migrationTree.fileCount !== manifest.releaseCandidate.migrationFileCount ||
   migrationTree.sha256 !== manifest.releaseCandidate.migrationTreeSha256
 ) {
-  throw new Error("Refusing to attest source whose deterministic hashes do not match every schema-3 release fingerprint");
+  throw new Error(
+    "Refusing to attest source whose deterministic hashes do not match every schema-4 candidate fingerprint",
+  );
 }
-if (!migrationTree.files.includes(manifest.releaseCandidate.latestCandidateMigration)) {
-  throw new Error("Refusing to attest a candidate whose latest migration is absent from the deterministic migration tree");
+if (
+  !migrationTree.files.includes(
+    manifest.releaseCandidate.latestCandidateMigration,
+  )
+) {
+  throw new Error(
+    "Refusing to attest a candidate whose latest migration is absent from the deterministic migration tree",
+  );
 }
 const latestCandidateMigrationSha256 = sha256File(
   resolve(
@@ -51,7 +61,9 @@ if (
   latestCandidateMigrationSha256 !==
   manifest.releaseCandidate.latestCandidateMigrationSha256
 ) {
-  throw new Error("Refusing to attest a candidate whose latest migration fingerprint is stale");
+  throw new Error(
+    "Refusing to attest a candidate whose latest migration fingerprint is stale",
+  );
 }
 
 const output = resolve(
@@ -61,8 +73,9 @@ const output = resolve(
 );
 mkdirSync(ensureParentPath(output), { recursive: true });
 writeJson(output, {
-  schemaVersion: 2,
+  schemaVersion: 3,
   recordKind: "veroxa_ci_deployment_attestation",
+  attestationScope: "exact_ci_candidate_checkout_only_not_production_parity",
   generatedAt: new Date().toISOString(),
   repository: manifest.canonicalRepository,
   ref: process.env.GITHUB_REF || null,
@@ -81,20 +94,32 @@ writeJson(output, {
     provesProductionParity: false,
   },
   releaseCandidate: manifest.releaseCandidate,
-  currentVerifiedRelease: manifest.currentVerifiedRelease,
-  observedProductionDrift: manifest.observedProductionDrift,
+  lastGitHubParityRelease: manifest.lastGitHubParityRelease,
+  historicalProductionObservations: manifest.historicalProductionObservations,
+  referencedProductionObservation: {
+    ...manifest.currentProductionObservation,
+    reverifiedByThisAttestation: false,
+  },
+  productionEvidenceBoundary: {
+    provesLiveSitesVersion: false,
+    provesLiveDatabaseLedger: false,
+    provesGitHubMainParity: false,
+    provesProductionParity: false,
+  },
   source: {
     evidenceScope: manifest.source.evidenceScope,
     root: manifest.source.root,
     fileCount: sourceTree.fileCount,
     treeSha256: sourceTree.sha256,
+    generatedPathExclusions: [...manifest.source.generatedPathExclusions],
   },
   migrations: {
     evidenceScope: manifest.migrations.evidenceScope,
     root: manifest.migrations.root,
     fileCount: migrationTree.fileCount,
     treeSha256: migrationTree.sha256,
-    latestCandidateMigration: manifest.releaseCandidate.latestCandidateMigration,
+    latestCandidateMigration:
+      manifest.releaseCandidate.latestCandidateMigration,
     latestCandidateMigrationSha256,
   },
   deploymentFreeze: manifest.deploymentFreeze,

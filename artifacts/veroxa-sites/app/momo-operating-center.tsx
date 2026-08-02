@@ -6,46 +6,43 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import type { VeroxaRole } from "./veroxa-supabase";
 import {
-  MOMO_MANUAL_CONTENT_PILLARS,
-  buildMomoManualContentCycle,
-  validateMomoPlatformVariantCaption,
-  type MomoManualContentPillar,
-  type MomoManualContentCycleResult,
-} from "./momo-manual-content-cycle";
-import {
   MOMO_MANUAL_REPORT_NARRATIVES,
-  momoCalendarEntryIsCurrentApproved,
+  momoContentAiRunNeedsRecovery,
   momoConnectionIsCurrentlyEligible as connectionIsCurrentlyEligible,
-  momoContentSelectionsAreCurrent,
   momoMediaIsCurrentlyUsable as mediaIsCurrentlyUsable,
+  momoOriginalMediaMeetsPlatformReadyProfile,
   momoReportNarrativeIsSafeWithoutProviderMetrics,
   momoTruthFieldIsCurrentlyUsable,
   normalizedMomoHttpsUrl as normalizedHttpsUrl,
+  resolveMomoAssetPipeline,
+  resolveMomoContentPackageReadiness,
   resolveLatestMomoPresenceConfirmation,
 } from "./momo-operating-gates";
 import { MomoTeamPreconnectionCenter } from "./momo-team-preconnection-center";
-import { momoMediaReviewCanSave } from "./momo-media-guidance";
+import { momoMediaReviewCanSave, momoMediaReviewSaveBlockers } from "./momo-media-guidance";
+import { buildMomoTeamSummary } from "./momo-team-summary";
 import {
   addMomoMediaTag,
   appendMomoRequestMessage,
   completeMomoRecoveryRun,
-  createMomoContentDraft,
+  approveMomoContentPackage,
   createMomoReportDraft,
-  createMomoContentStrategy,
-  createMomoPlatformVariant,
   createMomoClientRequest,
   createMomoClientRequestWork,
   createMomoWorkItem,
   decideMomoApproval,
   emptyMomoWorkspaceData,
   getMomoMediaPreviewUrl,
+  getMomoReadyPackageStatus,
+  getMomoVerifiedMediaPreviewObjectUrl,
+  generateMomoContentPackage,
   loadMomoWorkspaceData,
   loadMomoClientRequests,
   loadMomoRequestThread,
   newMomoRequestIdempotencyKey,
-  prepareMomoAiJob,
-  queueMomoPublication,
   requestMomoApproval,
+  requestMomoContentPackageRevision,
+  retryMomoMediaVerification,
   recordMomoMediaReuse,
   recordMomoMonitorCheck,
   reviseMomoReportDraft,
@@ -55,7 +52,6 @@ import {
   revokeMomoMediaRights,
   saveMomoContact,
   saveMomoTruthRevisions,
-  scheduleMomoVariant,
   startMomoRecoveryRun,
   submitMomoContentConfirmation,
   submitMomoConfirmation,
@@ -69,6 +65,8 @@ import {
   runMomoNoGoRehearsal,
   type MomoApproval,
   type MomoConfirmation,
+  type MomoContentAiRun,
+  type MomoReadyPackage,
   type MomoMediaAsset,
   type MomoClientRequest,
   type MomoRequestMessage,
@@ -102,9 +100,6 @@ const sectionForView = (view: string): MomoWorkspaceSection => {
 
 const labelStatus = (value: string | null | undefined) =>
   (value || "not recorded").replaceAll("_", " ").replace(/\b\w/g, (character) => character.toUpperCase());
-
-const approvalBlocksNewRequest = (approval: MomoApproval | undefined) =>
-  Boolean(approval && ["pending", "in_review", "approved"].includes(approval.status));
 
 const momoApprovalPairIsAllowed = (approval: Pick<MomoApproval, "subject_type" | "approval_kind">) => new Set([
   "content_strategy:team_review",
@@ -190,10 +185,65 @@ const momoLocalDate = (value: string): string => {
   return `${part("year")}-${part("month")}-${part("day")}`;
 };
 
-const requiredPublishCapability = (platform: string) =>
-  platform === "facebook" ? "facebook_publish"
-    : platform === "instagram" ? "instagram_publish"
-      : "google_business_publish";
+const MOMO_MEDIA_DEFAULT_SCOPE = ["instagram", "facebook", "google_business"] as const;
+const MOMO_CHICAGO_SCHEDULE_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/u;
+
+const momoChicagoLocalMinute = (value: Date): string => {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Chicago",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(value);
+  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((item) => item.type === type)?.value || "";
+  return `${part("year")}-${part("month")}-${part("day")}T${part("hour")}:${part("minute")}`;
+};
+
+const momoChicagoScheduleIsFuture = (value: string, now: number): boolean =>
+  MOMO_CHICAGO_SCHEDULE_PATTERN.test(value) && value > momoChicagoLocalMinute(new Date(now));
+
+const MOMO_ACTION_ERROR_MESSAGES: Readonly<Record<string, string>> = {
+  unsupported_media_type: "Use a JPG image.",
+  invalid_media_type: "Use a JPG image.",
+  invalid_media_size: "Choose a JPG between 10 KB and 5 MB.",
+  media_not_platform_ready: "Use a JPG from 320 × 250 px up to a 12,000 px maximum edge, with an aspect ratio from 4:5 to 1.91:1.",
+  media_verification_failed: "The upload was stored privately, but server byte verification did not complete. It is not eligible for content preparation.",
+  media_verification_unavailable: "Secure verification is temporarily unavailable. The private upload is preserved; use Retry secure verification on that item.",
+  content_ai_disabled: "Content preparation is paused. No AI call was started and nothing was marked Ready.",
+  content_ai_configuration_unavailable: "The secure AI connection is not configured for Momo. No AI call was started and nothing was marked Ready.",
+  content_ai_budget_unavailable: "Momo’s authorized AI budget is unavailable or exhausted. No paid AI call was started and nothing was marked Ready.",
+  content_ai_budget_contract_exceeded: "The provider reported usage outside the approved per-package cost contract. The attempt was blocked and nothing was marked Ready.",
+  content_ai_in_progress: "This exact image already has a content package in progress. A second paid AI call was not started; refresh shortly.",
+  content_ai_previous_attempt_failed: "The previous preparation attempt is closed. Refresh to review its blocked status before Team starts a reviewed replacement.",
+  content_ai_provider_failed: "The AI provider did not return a usable package. The attempt was recorded, no automatic retry was made, and nothing was marked Ready.",
+  content_ai_provider_incomplete: "The AI provider stopped before returning a complete package. The attempt was recorded, no automatic retry was made, and nothing was marked Ready.",
+  content_ai_recovery_unavailable: "The stored AI result could not be checked right now. The same paid request remains recoverable; refresh this card later and do not start a new one.",
+  content_ai_token_budget_exhausted: "The AI provider reached its output limit before finishing the package. The attempt was recorded and nothing was marked Ready.",
+  content_ai_finalization_uncertain: "The AI call may have completed, but Veroxa could not confirm its final audit record. Do not retry yet; refresh first to avoid a duplicate paid call.",
+  content_ai_quality_gate_failed: "The package did not pass the factual, SEO, hashtag, or accessibility gate. Nothing was marked ready.",
+  content_ai_unavailable: "Content preparation is temporarily unavailable. No package was marked Ready; refresh before retrying.",
+  source_not_ready: "The exact image, rights, media review, or owner-truth evidence no longer passes. Open Media and review the current blockers.",
+  idempotency_conflict: "This action no longer matches the original content request. Refresh before trying again.",
+  content_schedule_must_be_future: "Choose a future America/Chicago time for every platform. Nothing was marked Ready.",
+  invalid_schedule: "Choose a future America/Chicago time for every platform. Nothing was marked Ready.",
+  content_package_not_reviewable: "This package is no longer awaiting Team review. Refresh to see its current status.",
+  content_package_hash_mismatch: "The reviewed copy no longer matches the immutable package. Refresh before taking another action.",
+  content_package_approval_unavailable: "The Ready record could not be confirmed. Nothing is being represented as Ready; refresh before retrying.",
+  content_package_no_longer_ready: "This plan is no longer Ready because current rights, media, timing, or another release gate changed. Open Media to rebuild it from current evidence.",
+  revision_note_required: "Add a clear revision note of at least 10 characters.",
+  team_prefill_required: "Team Faraz must create the review field before the owner can submit a correction.",
+  owner_confirmation_locked: "This owner-confirmed fact is locked. Request a new owner correction instead of overwriting it.",
+  retry_limit_reached: "This item reached its retry limit. Start a reviewed recovery action instead.",
+  manual_cycle_invalid: "The manual content inputs changed or are not verified. Validate the no-cost brief again before saving.",
+  variant_claim_evidence_invalid: "This caption contains a sensitive claim without an explicitly selected, semantically matching owner-confirmed truth field.",
+};
+
+const momoActionErrorMessage = (code: string): string => Object.hasOwn(MOMO_ACTION_ERROR_MESSAGES, code)
+  ? MOMO_ACTION_ERROR_MESSAGES[code]
+  : "The database did not accept this change. Nothing is being represented as complete.";
 
 const externalEvidenceWorkTypes = new Set([
   "publishing",
@@ -217,12 +267,26 @@ function MomoIntro({ eyebrow, title, description, actions }: { eyebrow: string; 
 }
 
 function SafetyBoundary({ role }: { role: VeroxaRole }) {
+  if (role === "team") return null;
   return <section className="momo-boundary">
-    <strong>{role === "team" ? "Approval-controlled production workspace" : "Owner-confirmation workspace"}</strong>
-    <span>{role === "team"
-      ? "Database records are live. AI preparation, Meta, Google, publishing, and review responses remain inactive unless a real connection and the required approval both exist."
-      : "Your confirmation is stored as a pending proposal for Team review. It does not change public restaurant truth or give Veroxa permission to publish automatically."}</span>
+    <strong>Owner-confirmation workspace</strong>
+    <span>Your confirmation is stored as a pending proposal for Team review. It does not change public restaurant truth or give Veroxa permission to publish automatically.</span>
     <em>Protected workspace</em>
+  </section>;
+}
+
+function TeamSystemTools({ title, detail, children }: { title: string; detail: string; children: React.ReactNode }) {
+  const [opened, setOpened] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const toggle = () => {
+    setOpened(true);
+    setExpanded((current) => !current);
+  };
+  return <section className="team-system-tools">
+    <button type="button" onClick={toggle} aria-expanded={expanded}>
+      <span><strong>{title}</strong><small>{detail}</small></span><em>{expanded ? "Hide" : "Open only when needed"}</em>
+    </button>
+    {opened && <div className="team-system-tools-body" hidden={!expanded}>{children}</div>}
   </section>;
 }
 
@@ -230,37 +294,66 @@ export function MomoOperatingCenter({ view, access, onNavigate, notify }: Props)
   const section = sectionForView(view);
   const [state, setState] = useState<LoadState>({ status: "loading", data: emptyMomoWorkspaceData(), error: null });
   const [busy, setBusy] = useState(false);
+  const workspaceLoadSequence = useRef(0);
 
   const reload = useCallback(async () => {
+    const requestSequence = ++workspaceLoadSequence.current;
     if (!access.restaurantId) {
-      setState({ status: "error", data: emptyMomoWorkspaceData(), error: "This account has no active Momo restaurant membership." });
+      if (requestSequence === workspaceLoadSequence.current) {
+        setState({ status: "error", data: emptyMomoWorkspaceData(), error: "This account has no active Momo restaurant membership." });
+      }
       return;
     }
     setState((current) => ({ status: "loading", data: current.data, error: null }));
     try {
       const data = await loadMomoWorkspaceData(access.restaurantId, section, access.role);
-      setState({ status: "ready", data, error: null });
+      if (requestSequence === workspaceLoadSequence.current) setState({ status: "ready", data, error: null });
     } catch {
-      setState({ status: "error", data: emptyMomoWorkspaceData(), error: "Verified Momo data could not be loaded. No cached or sample records are being shown." });
+      if (requestSequence === workspaceLoadSequence.current) {
+        setState({ status: "error", data: emptyMomoWorkspaceData(), error: "Verified Momo data could not be loaded. No cached or sample records are being shown." });
+      }
     }
   }, [access.restaurantId, access.role, section]);
 
   useEffect(() => {
     if (!access.restaurantId) {
-      Promise.resolve().then(() => setState({ status: "error", data: emptyMomoWorkspaceData(), error: "This account has no active Momo restaurant membership." }));
+      const requestSequence = ++workspaceLoadSequence.current;
+      Promise.resolve().then(() => {
+        if (requestSequence === workspaceLoadSequence.current) {
+          setState({ status: "error", data: emptyMomoWorkspaceData(), error: "This account has no active Momo restaurant membership." });
+        }
+      });
       return;
     }
     let active = true;
+    const requestSequence = ++workspaceLoadSequence.current;
     const restaurantId = access.restaurantId;
     void loadMomoWorkspaceData(restaurantId, section, access.role)
       .then((data) => {
-        if (active) setState({ status: "ready", data, error: null });
+        if (active && requestSequence === workspaceLoadSequence.current) setState({ status: "ready", data, error: null });
       })
       .catch(() => {
-        if (active) setState({ status: "error", data: emptyMomoWorkspaceData(), error: "Verified Momo data could not be loaded. No cached or sample records are being shown." });
+        if (active && requestSequence === workspaceLoadSequence.current) {
+          setState({ status: "error", data: emptyMomoWorkspaceData(), error: "Verified Momo data could not be loaded. No cached or sample records are being shown." });
+        }
       });
     return () => { active = false; };
   }, [access.restaurantId, access.role, section]);
+
+  useEffect(() => {
+    if (!access.restaurantId) return;
+    const refreshVisibleWorkspace = () => {
+      if (document.visibilityState === "visible") void reload();
+    };
+    window.addEventListener("focus", refreshVisibleWorkspace);
+    document.addEventListener("visibilitychange", refreshVisibleWorkspace);
+    const timer = window.setInterval(refreshVisibleWorkspace, 45_000);
+    return () => {
+      window.removeEventListener("focus", refreshVisibleWorkspace);
+      document.removeEventListener("visibilitychange", refreshVisibleWorkspace);
+      window.clearInterval(timer);
+    };
+  }, [access.restaurantId, reload]);
 
   const run = async (action: () => Promise<void>, success: string) => {
     if (busy) return;
@@ -271,15 +364,7 @@ export function MomoOperatingCenter({ view, access, onNavigate, notify }: Props)
       await reload();
     } catch (error) {
       const code = error instanceof Error ? error.message : "";
-      const message = code === "unsupported_media_type" ? "Use JPG, PNG, WebP, HEIC, MP4, MOV, or WebM."
-        : code === "invalid_media_size" ? "Choose a non-empty file no larger than 100 MB."
-        : code === "team_prefill_required" ? "Team Faraz must create the review field before the owner can submit a correction."
-        : code === "owner_confirmation_locked" ? "This owner-confirmed fact is locked. Request a new owner correction instead of overwriting it."
-        : code === "retry_limit_reached" ? "This item reached its retry limit. Start a reviewed recovery action instead."
-        : code === "manual_cycle_invalid" ? "The manual content inputs changed or are not verified. Validate the no-cost brief again before saving."
-        : code === "variant_claim_evidence_invalid" ? "This caption contains a sensitive claim without an explicitly selected, semantically matching owner-confirmed truth field."
-        : "The database did not accept this change. Nothing is being represented as complete.";
-      notify(message);
+      notify(momoActionErrorMessage(code));
     } finally {
       setBusy(false);
     }
@@ -299,12 +384,13 @@ export function MomoOperatingCenter({ view, access, onNavigate, notify }: Props)
     busy,
     run,
     reloadWorkspace: reload,
+    notify,
   };
 
   if (view === "requests" || view === "team-requests") return <RequestsPanel role={access.role} restaurantId={access.restaurantId!} notify={notify} onNavigate={onNavigate} />;
   if (view === "onboarding" || view === "team-intelligence") return <IntelligencePanel {...shared} />;
   if (view === "media" || view === "team-media") return <MediaPanel {...shared} />;
-  if (view === "content" || view === "team-content") return <ContentPanel {...shared} />;
+  if (view === "content" || view === "team-content") return <ContentPanel {...shared} onNavigate={onNavigate} />;
   if (view === "services" || view === "team-presence") return <ConnectionsPanel {...shared} />;
   if (view === "team-work") return <OperationsPanel {...shared} mode="work" />;
   if (view === "reports" || view === "team-reports") return <OperationsPanel {...shared} mode="reports" />;
@@ -319,6 +405,7 @@ type PanelProps = {
   busy: boolean;
   run: (action: () => Promise<void>, success: string) => Promise<void>;
   reloadWorkspace: () => Promise<void>;
+  notify: (message: string) => void;
 };
 
 function DashboardPanel({ data, role, onNavigate }: PanelProps & { onNavigate: (view: string) => void }) {
@@ -330,6 +417,54 @@ function DashboardPanel({ data, role, onNavigate }: PanelProps & { onNavigate: (
     : connectionIsCurrentlyEligible(connection, "facebook_publish") || connectionIsCurrentlyEligible(connection, "instagram_publish")).length;
   const currentOwnerTruth = data.truth.filter((item) => momoTruthFieldIsCurrentlyUsable(data, item.id)).length;
   const gate = data.readinessGate;
+  if (role === "team") {
+    const summary = buildMomoTeamSummary(data);
+    const nextAction = summary.nextAction;
+    const activeWork = data.work
+      .filter((item) => ["waiting_approval", "blocked", "failed", "in_progress", "retrying", "queued"].includes(item.status))
+      .slice(0, 4);
+    return <div className="view team-today-view">
+      <MomoIntro eyebrow="MOMO’S HOUSE" title="Today" description="Your decisions, Veroxa’s active work, and the next useful step—nothing else." />
+
+      <section className="team-live-strip" aria-label="Momo operating boundary">
+        <span><i/><strong>Momo is live</strong><small>Upload → review → content → ready to post</small></span>
+        <em>External posting off</em>
+      </section>
+
+      <section className="team-focus-grid">
+        <article className="team-attention-panel">
+          <header><div><p className="eyebrow">DO NOW</p><h2>Needs your attention</h2><p>Ordered by urgency and impact.</p></div><span>{summary.attention.length}</span></header>
+          {summary.attention.length === 0 ? <div className="team-all-clear"><span>✓</span><div><strong>No immediate decision is waiting.</strong><p>You can continue with the next Momo milestone.</p></div></div> : <div className="team-attention-list">
+            {summary.attention.map((item, index) => <button type="button" key={item.key} className={`team-attention-item ${item.tone}`} onClick={() => onNavigate(item.destination)}>
+              <span>{index + 1}</span><span><strong>{item.title}</strong><small>{item.detail}</small></span><b>{item.action} →</b>
+            </button>)}
+          </div>}
+        </article>
+
+        <aside className="team-next-card">
+          <p className="eyebrow">NEXT MOVE</p>
+          <span className="team-next-mark">→</span>
+          <h2>{nextAction?.title || "Keep the pilot moving"}</h2>
+          <p>{nextAction?.detail || "Open Work to continue the next Momo task."}</p>
+          <button type="button" onClick={() => onNavigate(nextAction?.destination || "team-work")}>{nextAction && "action" in nextAction ? nextAction.action : "Open work"}</button>
+          <small>Posting stays off in this release.</small>
+        </aside>
+      </section>
+
+      <section className="team-bottom-grid">
+        <article className="team-active-panel">
+          <header><div><p className="eyebrow">VEROXA IS WORKING ON</p><h2>Active Momo work</h2></div>{activeWork.length > 0 && <button type="button" onClick={() => onNavigate("team-work")}>Open Work</button>}</header>
+          {activeWork.length === 0 ? <div className="team-recent-empty"><strong>No active task is recorded.</strong><p>Add the next Momo task only when there is real work to perform.</p></div> : <div className="team-active-list">
+            {activeWork.map((item) => <button type="button" key={item.id} onClick={() => onNavigate("team-work")}><span><strong>{item.title}</strong><small>{labelStatus(item.work_type)}</small></span><StatusBadge status={item.status} /></button>)}
+          </div>}
+        </article>
+        <article className="team-recent-panel">
+          <header><div><p className="eyebrow">COMPLETED RECENTLY</p><h2>Latest recorded updates</h2></div></header>
+          {summary.recentUpdates.length === 0 ? <div className="team-recent-empty"><strong>No progress update has been recorded yet.</strong><p>Completed Momo work will appear here automatically.</p></div> : <div className="team-recent-list">{summary.recentUpdates.map((item) => <div key={item.id}><span>✓</span><strong>{item.title}</strong><small>{formatDate(item.occurredAt)}</small></div>)}</div>}
+        </article>
+      </section>
+    </div>;
+  }
   return <div className="view">
     <MomoIntro eyebrow="MOMO’S HOUSE SAN ANTONIO · ONLY OPERATING CLIENT" title="Momo’s House workspace" description="One focused place for today’s work, restaurant setup, media, content approvals, online presence, reports, and readiness." />
     <SafetyBoundary role={role} />
@@ -340,13 +475,13 @@ function DashboardPanel({ data, role, onNavigate }: PanelProps & { onNavigate: (
       <article><span>Blocked work</span><strong>{blockedWork}</strong><small>requires action</small></article>
     </section>
     <section className="momo-module-grid">
-      <Module title="Client requests" detail="A private request thread can start the manual work loop without activating services, publishing, or inventing completion." status="manual_only" action="Open requests" onClick={() => onNavigate(role === "team" ? "team-requests" : "requests")} />
-      <Module title="Restaurant setup" detail={data.truth.length ? `${data.truth.length} persistent fields available.` : "No owner-confirmed restaurant truth yet."} status={data.truth.length ? "in_progress" : "not_started"} action="Open restaurant setup" onClick={() => onNavigate(role === "team" ? "team-intelligence" : "onboarding")} />
-      <Module title="Media library" detail={data.media.length ? `${data.media.length} assets; ${data.mediaRights.length} rights records.` : "No Momo media has been uploaded."} status={data.media.length ? "in_progress" : "not_started"} action="Open media library" onClick={() => onNavigate(role === "team" ? "team-media" : "media")} />
-      <Module title="Content & approvals" detail={data.contentItems.length ? `${data.contentItems.length} content items; ${pendingApprovals} pending approvals.` : "No strategy or content draft exists."} status={pendingApprovals ? "approval_required" : data.contentItems.length ? "in_progress" : "not_started"} action="Open content" onClick={() => onNavigate(role === "team" ? "team-content" : "content")} />
-      <Module title="Online presence" detail={data.connections.length ? `${eligibleConnections} of ${data.connections.length} provider records have current owner authorization, capability, and verification.` : "Meta and Google are not represented as connected."} status={eligibleConnections > 0 ? "connected" : "blocked"} action="Review online presence" onClick={() => onNavigate(role === "team" ? "team-presence" : "services")} />
-      <Module title="Reporting" detail={data.reports.length ? `${data.reports.length} evidence-backed report records.` : "No reviewed report is available."} status={data.reports.length ? "in_progress" : "not_started"} action="Open reports" onClick={() => onNavigate(role === "team" ? "team-reports" : "reports")} />
-      <Module title="Final readiness gate" detail={gate ? `${gate.verified_count} of ${gate.required_count} required dimensions verified; ${gate.blocker_count} blockers.` : "The production readiness gate has no evaluated record."} status={gate?.overall_status || "not_evaluated"} action="Review readiness" onClick={() => onNavigate(role === "team" ? "team-readiness" : "onboarding")} />
+      <Module title="Client requests" detail="A private request thread can start the manual work loop without activating services, publishing, or inventing completion." status="manual_only" action="Open requests" onClick={() => onNavigate("requests")} />
+      <Module title="Restaurant setup" detail={data.truth.length ? `${data.truth.length} persistent fields available.` : "No owner-confirmed restaurant truth yet."} status={data.truth.length ? "in_progress" : "not_started"} action="Open restaurant setup" onClick={() => onNavigate("onboarding")} />
+      <Module title="Media library" detail={data.media.length ? `${data.media.length} assets; ${data.mediaRights.length} rights records.` : "No Momo media has been uploaded."} status={data.media.length ? "in_progress" : "not_started"} action="Open media library" onClick={() => onNavigate("media")} />
+      <Module title="Content & approvals" detail={data.contentItems.length ? `${data.contentItems.length} content items; ${pendingApprovals} pending approvals.` : "No strategy or content draft exists."} status={pendingApprovals ? "approval_required" : data.contentItems.length ? "in_progress" : "not_started"} action="Open content" onClick={() => onNavigate("content")} />
+      <Module title="Online presence" detail={data.connections.length ? `${eligibleConnections} of ${data.connections.length} provider records have current owner authorization, capability, and verification.` : "Meta and Google are not represented as connected."} status={eligibleConnections > 0 ? "connected" : "blocked"} action="Review online presence" onClick={() => onNavigate("services")} />
+      <Module title="Reporting" detail={data.reports.length ? `${data.reports.length} evidence-backed report records.` : "No reviewed report is available."} status={data.reports.length ? "in_progress" : "not_started"} action="Open reports" onClick={() => onNavigate("reports")} />
+      <Module title="Final readiness gate" detail={gate ? `${gate.verified_count} of ${gate.required_count} required dimensions verified; ${gate.blocker_count} blockers.` : "The production readiness gate has no evaluated record."} status={gate?.overall_status || "not_evaluated"} action="Review readiness" onClick={() => onNavigate("onboarding")} />
     </section>
   </div>;
 }
@@ -596,7 +731,7 @@ function RequestsPanel({ role, restaurantId, notify, onNavigate }: RequestsPanel
         : [] as const;
 
   return <div className="view momo-request-view">
-    <MomoIntro eyebrow="MOMO’S HOUSE SAN ANTONIO · PRIVATE REQUESTS" title={role === "team" ? "Client request queue" : "Ask Veroxa for help"} description={role === "team" ? "A manual, auditable path from a real Client request to acknowledged work. No request can activate Momo, publish content, or prove readiness by itself." : "Create a private request for Team Faraz and keep its conversation in one place. Requests do not approve public work or turn on any service."} />
+    <MomoIntro eyebrow="MOMO INBOX" title={role === "team" ? "Requests that need a response" : "Ask Veroxa for help"} description={role === "team" ? "Read the request, reply, and record the next clear step." : "Create a private request for Team Faraz and keep its conversation in one place. Requests do not approve public work or turn on any service."} />
     <SafetyBoundary role={role} />
     <section className="momo-request-no-go" role="status">
       <div><strong>Manual pilot remains No-Go</strong><span>A request is operating evidence only. Verified owner identity, all 18 truth confirmations, media rights, readiness evidence, and the full reviewed recovery loop are still separate requirements.</span></div>
@@ -680,44 +815,64 @@ const truthDefinitions = [
   ["goals.customer_action", "goals", "Desired customer action", "textarea"],
 ] as const;
 
+type MomoProfileSection = "profile" | "owner" | "setup";
+
 function IntelligencePanel(props: PanelProps) {
   const { data, role, busy, run } = props;
+  const [activeSection, setActiveSection] = useState<MomoProfileSection>("profile");
   const currentOwnerTruth = data.truth.filter((item) => momoTruthFieldIsCurrentlyUsable(data, item.id)).length;
   const currentOwnerContacts = data.contacts.filter((item) => item.status === "owner_confirmed" && subjectHasNoContraryOwnerIntent(data.confirmations, "contact", item.id)).length;
   const currentVerifiedOnboarding = data.onboarding.filter((item) => {
     const latest = latestSubjectConfirmation(data.confirmations, "onboarding_step", item.id);
     return item.status === "verified" && latest?.status === "approved" && ["confirm", "correct"].includes(latest.decision || "");
   }).length;
-  return <div className="view">
-    <MomoIntro eyebrow="RESTAURANT INTELLIGENCE + ONBOARDING" title="Owner-confirmed business truth" description="Identity, hours, menu, services, dietary claims, contacts, voice, goals, presence, and onboarding evidence are stored with explicit confirmation states." />
-    <SafetyBoundary role={role} />
+  const pendingConfirmations = data.confirmations.filter((item) => ["pending", "in_review"].includes(item.status));
+  const confirmationHistory = data.confirmations.filter((item) => !["pending", "in_review"].includes(item.status));
+  const confirmationRecord = (confirmation: MomoWorkspaceData["confirmations"][number]) => {
+    const presenceWithdrawal = confirmation.subject_type === "presence_profile" && confirmation.decision === "reject";
+    const ownerRejection = confirmation.decision === "reject";
+    return <article key={confirmation.id}><div><strong>{labelStatus(confirmation.confirmation_kind)}</strong><p>{valueText(confirmation.proposed_value) || confirmation.notes || "No proposed value"}</p><small>{labelStatus(confirmation.subject_type)} · owner decision: {labelStatus(confirmation.decision)} · {formatDate(confirmation.created_at)}</small></div><StatusBadge status={confirmation.status} />{role === "team" && confirmation.status === "pending" && <div className="momo-decision">{(["confirm", "correct"].includes(confirmation.decision || "") || ownerRejection) && <button disabled={busy} onClick={() => void run(() => reviewMomoConfirmation(confirmation, "approved"), presenceWithdrawal ? "Owner presence withdrawal approved and applied." : ownerRejection ? "Owner rejection approved and applied as a blocking state." : "Owner confirmation approved and applied.")}>{presenceWithdrawal ? "Approve withdrawal" : ownerRejection ? "Approve owner rejection" : "Approve and apply"}</button>}<button disabled={busy} onClick={() => void run(() => reviewMomoConfirmation(confirmation, "changes_requested"), ["reject", "needs_help"].includes(confirmation.decision || "") ? "Owner blocker acknowledged for follow-up." : "Changes requested from the owner.")}>{["reject", "needs_help"].includes(confirmation.decision || "") ? "Acknowledge blocker" : "Request changes"}</button></div>}</article>;
+  };
+  const profileEditor = <>
     <RestaurantTruthForm key={data.truth.map((item) => `${item.id}:${item.updated_at}`).join("|")} {...props} />
     <ContactForm key={data.contacts.map((item) => `${item.id}:${item.updated_at}`).join("|")} {...props} />
+  </>;
+  const ownerReview = <section className="momo-panel">
+    <div className="momo-panel-heading"><div><p className="eyebrow">OWNER REVIEW</p><h2>Decisions waiting now</h2></div><span>{pendingConfirmations.length}</span></div>
+    {pendingConfirmations.length === 0 ? <EmptyState title="No owner decision is waiting." detail="Owner changes appear here only after a real submission." /> : <div className="momo-record-list">{pendingConfirmations.map(confirmationRecord)}</div>}
+    {confirmationHistory.length > 0 && <details className="momo-work-history momo-profile-history"><summary><span><strong>Decision history</strong><small>Open only when you need the audit trail.</small></span><b>{confirmationHistory.length}</b></summary><div className="momo-record-list">{confirmationHistory.map(confirmationRecord)}</div></details>}
+  </section>;
+  const setupDetails = <>
     <section className="momo-split">
       <article className="momo-panel">
-        <div className="momo-panel-heading"><div><p className="eyebrow">CURRENT TRUTH</p><h2>Field-level confirmation</h2></div><span>{data.truth.length}</span></div>
-        {data.truth.length === 0 ? <EmptyState title="No restaurant truth has been recorded." detail="Use the form above to add owner-confirmed facts. Unconfirmed facts remain absent." /> : <div className="momo-record-list">
-          {data.truth.map((field) => <article key={field.id}><div><strong>{labelStatus(field.field_key)}</strong><p>{valueText(field.value_json) || "Empty value"}</p><small>{labelStatus(field.section)} · {field.source}</small></div><StatusBadge status={field.status === "owner_confirmed" && !momoTruthFieldIsCurrentlyUsable(data, field.id) ? "owner_blocked" : field.status} /></article>)}
-        </div>}
+        <div className="momo-panel-heading"><div><p className="eyebrow">CURRENT TRUTH</p><h2>Field confirmation</h2></div><span>{data.truth.length}</span></div>
+        {data.truth.length === 0 ? <EmptyState title="No restaurant truth has been recorded." detail="Use Profile to add facts. Unconfirmed facts remain absent." /> : <div className="momo-record-list">{data.truth.map((field) => <article key={field.id}><div><strong>{labelStatus(field.field_key)}</strong><p>{valueText(field.value_json) || "Empty value"}</p><small>{labelStatus(field.section)} · {field.source}</small></div><StatusBadge status={field.status === "owner_confirmed" && !momoTruthFieldIsCurrentlyUsable(data, field.id) ? "owner_blocked" : field.status} /></article>)}</div>}
       </article>
       <article className="momo-panel">
-        <div className="momo-panel-heading"><div><p className="eyebrow">ONBOARDING</p><h2>Evidence-based steps</h2></div><span>{data.onboarding.length}</span></div>
-        {data.onboarding.length === 0 ? <EmptyState title="No onboarding steps exist." detail="A step is never treated as complete without a stored record and evidence." /> : <div className="momo-record-list">{data.onboarding.map((step) => <OnboardingStepRow key={step.id} step={step} {...props} />)}</div>}
+        <div className="momo-panel-heading"><div><p className="eyebrow">ONBOARDING</p><h2>Required setup</h2></div><span>{data.onboarding.length}</span></div>
+        {data.onboarding.length === 0 ? <EmptyState title="No onboarding steps exist." detail="A step is never complete without a stored record and evidence." /> : <div className="momo-record-list">{data.onboarding.map((step) => <OnboardingStepRow key={step.id} step={step} {...props} />)}</div>}
       </article>
     </section>
     <section className="momo-panel">
-      <div className="momo-panel-heading"><div><p className="eyebrow">CONFIRMATION QUEUE</p><h2>Owner proposals and Team decisions</h2></div><span>{data.confirmations.length}</span></div>
-      {data.confirmations.length === 0 ? <EmptyState title="No confirmation is waiting." detail="Owner changes and confirmations appear here only after a real submission." /> : <div className="momo-record-list">{data.confirmations.map((confirmation) => {
-        const presenceWithdrawal = confirmation.subject_type === "presence_profile" && confirmation.decision === "reject";
-        const ownerRejection = confirmation.decision === "reject";
-        return <article key={confirmation.id}><div><strong>{labelStatus(confirmation.confirmation_kind)}</strong><p>{valueText(confirmation.proposed_value) || confirmation.notes || "No proposed value"}</p><small>{labelStatus(confirmation.subject_type)} · owner decision: {labelStatus(confirmation.decision)} · {formatDate(confirmation.created_at)}</small></div><StatusBadge status={confirmation.status} />{role === "team" && confirmation.status === "pending" && <div className="momo-decision">{(["confirm", "correct"].includes(confirmation.decision || "") || ownerRejection) && <button disabled={busy} onClick={() => void run(() => reviewMomoConfirmation(confirmation, "approved"), presenceWithdrawal ? "Owner presence withdrawal approved and applied." : ownerRejection ? "Owner rejection approved and applied as a blocking state." : "Owner confirmation approved and applied.")}>{presenceWithdrawal ? "Approve withdrawal" : ownerRejection ? "Approve owner rejection" : "Approve and apply"}</button>}<button disabled={busy} onClick={() => void run(() => reviewMomoConfirmation(confirmation, "changes_requested"), ["reject", "needs_help"].includes(confirmation.decision || "") ? "Owner blocker acknowledged for follow-up." : "Changes requested from the owner.")}>{["reject", "needs_help"].includes(confirmation.decision || "") ? "Acknowledge blocker" : "Request changes"}</button></div>}</article>;
-      })}</div>}
+      <div className="momo-panel-heading"><div><p className="eyebrow">PRESENCE</p><h2>Public profiles</h2></div><span>{data.presence.length}</span></div>
+      {data.presence.length === 0 ? <EmptyState title="No public profile is configured." detail="Google, Instagram, Facebook, website, and ordering links remain unverified." /> : <div className="momo-card-grid">{data.presence.map((profile) => <PresenceProfileCard key={profile.id} profile={profile} {...props} />)}</div>}
     </section>
-    <section className="momo-panel">
-      <div className="momo-panel-heading"><div><p className="eyebrow">PRESENCE STACK</p><h2>Verified access and public truth</h2></div><span>{data.presence.length}</span></div>
-      {data.presence.length === 0 ? <EmptyState title="No presence profile is configured." detail="Google, Instagram, Facebook, website, and ordering links remain unverified." /> : <div className="momo-card-grid">{data.presence.map((profile) => <PresenceProfileCard key={profile.id} profile={profile} {...props} />)}</div>}
-    </section>
-    {role === "team" && <section className="momo-boundary"><strong>Owner activation handoff is prepared, not executed</strong><span>{currentOwnerTruth} of {data.truth.length} truth fields are currently owner confirmed; {currentOwnerContacts} current confirmed contacts; {currentVerifiedOnboarding} of {data.onboarding.length} onboarding steps currently verified. Client identity provisioning, outreach, and credentials remain blocked until an approved owner contact is supplied.</span><em>Zero-cost hold</em></section>}
+    {role === "team" && <section className="momo-profile-summary"><span><strong>{currentOwnerTruth}/{data.truth.length}</strong> confirmed facts</span><span><strong>{currentOwnerContacts}</strong> confirmed contacts</span><span><strong>{currentVerifiedOnboarding}/{data.onboarding.length}</strong> verified setup steps</span><em>Posting off</em></section>}
+  </>;
+
+  return <div className="view">
+    <MomoIntro eyebrow="MOMO’S HOUSE" title="Momo profile" description="Restaurant facts, responsible contacts, owner decisions, and required setup." />
+    <SafetyBoundary role={role} />
+    {role === "team" ? <>
+      <nav className="momo-content-tabs momo-profile-tabs" aria-label="Momo profile sections">
+        <button type="button" className={activeSection === "profile" ? "active" : ""} onClick={() => setActiveSection("profile")}>Profile</button>
+        <button type="button" className={activeSection === "owner" ? "active" : ""} onClick={() => setActiveSection("owner")}>Owner review{pendingConfirmations.length > 0 && <b>{pendingConfirmations.length}</b>}</button>
+        <button type="button" className={activeSection === "setup" ? "active" : ""} onClick={() => setActiveSection("setup")}>Setup details</button>
+      </nav>
+      <section hidden={activeSection !== "profile"}>{profileEditor}</section>
+      <section hidden={activeSection !== "owner"}>{ownerReview}</section>
+      <section hidden={activeSection !== "setup"}>{setupDetails}</section>
+    </> : <>{profileEditor}{ownerReview}{setupDetails}</>}
   </div>;
 }
 
@@ -867,48 +1022,82 @@ function ContactForm({ data, role, restaurantId, busy, run }: PanelProps) {
 }
 
 function MediaPanel(props: PanelProps) {
-  const { data, role, restaurantId, busy, run, reloadWorkspace } = props;
+  const { data, role, restaurantId, busy, run } = props;
   const [file, setFile] = useState<File | null>(null);
   const [rights, setRights] = useState(false);
-  const [scope, setScope] = useState<string[]>(["instagram", "facebook", "google_business", "website"]);
+  const [scope, setScope] = useState<string[]>(() => [...MOMO_MEDIA_DEFAULT_SCOPE]);
   const [expiresAt, setExpiresAt] = useState("");
+  const [recoveryAssetId, setRecoveryAssetId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const momoToday = momoLocalDate(new Date().toISOString());
   const invalidExpiry = Boolean(expiresAt && expiresAt < momoToday);
-  const realImages = data.media.filter((asset) => /^image\/(jpeg|png|webp)$/.test(asset.mime_type));
-  const [selectedImageChoice, setSelectedImageId] = useState(realImages[0]?.id || "");
-  const selectedImageId = realImages.some((asset) => asset.id === selectedImageChoice) ? selectedImageChoice : realImages[0]?.id || "";
+  const orderedMedia = [...data.media].sort((left, right) => {
+    const order = { team_review: 0, blocked: 1, uploaded: 2, analyzing: 3, preparing_content: 4, veroxa_ready: 5, ready_to_post: 6 } as const;
+    return order[resolveMomoAssetPipeline(data, left.id).state] - order[resolveMomoAssetPipeline(data, right.id).state]
+      || Date.parse(right.created_at) - Date.parse(left.created_at);
+  });
+  const openIncidents = data.exceptionIncidentsV2.filter((item) => item.status === "open" && ["media_intake", "rights_reconciliation", "automation_reservation"].includes(item.stage));
+  const recoveryAsset = recoveryAssetId ? data.media.find((asset) => asset.id === recoveryAssetId) : undefined;
+  const recoveryEvent = recoveryAssetId
+    ? data.exceptionEventsV2.find((event) =>
+      event.source_asset_id === recoveryAssetId && event.event_kind !== "resolved" &&
+      openIncidents.some((incident) => incident.id === event.incident_id)
+    )
+    : undefined;
+  const historyMedia = orderedMedia.filter((asset) => asset.id !== recoveryAssetId);
   const mediaLibrary = <section className="momo-panel">
-    <div className="momo-panel-heading"><div><p className="eyebrow">{role === "team" ? "STEP 2 · REVIEW" : "YOUR MEDIA"}</p><h2>{role === "team" ? "Review real Momo assets" : "Private originals and status"}</h2>{role === "team" && <small>Review the newest upload first, then send it directly to the image editor below.</small>}</div><span>{data.media.length}</span></div>
-    {data.media.length === 0 ? <EmptyState title="No media has been uploaded." detail="Nothing is classified, approved, or reusable until a real asset and rights record exist." /> : <div className="momo-media-grid">{data.media.map((asset) => <MediaAssetCard key={asset.id} asset={asset} selectedForEditor={selectedImageId === asset.id} onSelectForEditor={role === "team" && /^image\/(jpeg|png|webp)$/.test(asset.mime_type) ? () => { setSelectedImageId(asset.id); window.setTimeout(() => document.getElementById("momo-team-image-editor")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0); } : undefined} {...props} />)}</div>}
+    <div className="momo-panel-heading"><div><p className="eyebrow">YOUR MEDIA</p><h2>Private originals and status</h2></div><span>{data.media.length}</span></div>
+    {data.media.length === 0 ? <EmptyState title="No media has been uploaded." detail="Nothing enters preparation until a real image and rights record exist." /> : <div className="momo-media-grid">{orderedMedia.map((asset) => <MediaAssetCard key={asset.id} asset={asset} {...props} />)}</div>}
   </section>;
   return <div className="view">
-    <MomoIntro eyebrow="MEDIA WORKFLOW" title={role === "team" ? "Review, improve, then mark ready" : "Upload and follow the status"} description="Every original stays private and unchanged. The workflow shows exactly what is available now and what must happen next." />
+    <MomoIntro eyebrow="MOMO’S HOUSE" title="Media" description={role === "team" ? "Team Faraz sees only consolidated exceptions. Routine upload, duplicate reuse, and preparation stay automatic." : "Upload a private Momo image and follow it to Veroxa Ready."} />
     <SafetyBoundary role={role} />
     {role === "client" ? <form className="momo-panel momo-upload" onSubmit={(event) => {
       event.preventDefault();
       if (!file || !rights || invalidExpiry) return;
-      void run(() => uploadMomoMedia({ restaurantId, file, usageScope: scope, expiresAt }), "Media and usage rights saved for review.");
+      void run(async () => {
+        await uploadMomoMedia({ restaurantId, file, usageScope: scope, expiresAt });
+        setFile(null);
+        setRights(false);
+        setScope([...MOMO_MEDIA_DEFAULT_SCOPE]);
+        setExpiresAt("");
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      }, "Media and usage rights saved for review.");
     }}>
-      <div><p className="eyebrow">PRIVATE MEDIA INTAKE</p><h2>Upload Momo media</h2><p>JPG, PNG, WebP, HEIC, MP4, MOV, or WebM · maximum 100 MB.</p></div>
-      <label className="momo-file">Media file<input type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,video/mp4,video/quicktime,video/webm" onChange={(event) => setFile(event.target.files?.[0] || null)} required /></label>
+      <div><p className="eyebrow">PRIVATE MEDIA INTAKE</p><h2>Upload one platform-ready Momo image</h2><p>JPG only · 10 KB–5 MB · 320 × 250 px minimum · 12,000 px maximum edge · ratio 4:5–1.91:1.</p></div>
+      <label className="momo-file">Image file<input ref={fileInputRef} type="file" accept="image/jpeg,.jpg,.jpeg" onChange={(event) => setFile(event.target.files?.[0] || null)} required /></label>
       <fieldset className="momo-scope"><legend>Usage scope</legend>{[
         ["instagram", "Instagram"], ["facebook", "Facebook"], ["google_business", "Google Business Profile"],
-        ["website", "Website"], ["internal", "Internal review and reporting"],
       ].map(([value, label]) => <label className="momo-check" key={value}><input type="checkbox" checked={scope.includes(value)} onChange={(event) => setScope((current) => event.target.checked ? [...current, value] : current.filter((item) => item !== value))} /><span>{label}</span></label>)}</fieldset>
       <label>Rights expiry (optional)<input type="date" min={momoToday} value={expiresAt} onChange={(event) => setExpiresAt(event.target.value)} /></label>
       <label className="momo-check"><input type="checkbox" checked={rights} onChange={(event) => setRights(event.target.checked)} required /><span>I confirm I own or have permission to provide this media for the selected Veroxa usage scopes.</span></label>
-      <p className="momo-form-note">Consent text is stored as immutable attestation version <code>momo-media-rights-v1</code> with its SHA-256 fingerprint.</p>
+      <p className="momo-form-note">The original stays private. Veroxa verifies its bytes before it can enter content preparation.</p>
       <button className="primary-button" disabled={busy || !file || !rights || scope.length === 0 || invalidExpiry}>{busy ? "Uploading…" : "Upload with rights record"}</button>
-    </form> : data.media.length === 0 ? <section className="momo-boundary"><strong>Owner media intake required</strong><span>Team can review, tag, classify, and record reuse only after the Momo owner uploads the asset and attests its usage rights in the client workspace.</span><em>Awaiting owner</em></section> : null}
-    {mediaLibrary}
-    {role === "team" && <MomoTeamPreconnectionCenter mode="media" restaurantId={restaurantId} workspace={data} preferredAssetId={selectedImageId} onPreferredAssetChange={setSelectedImageId} onWorkspaceRefresh={reloadWorkspace} />}
+    </form> : <>
+      <section className="momo-panel" id="momo-media-exceptions"><div className="momo-panel-heading"><div><p className="eyebrow">EXCEPTION-ONLY QUEUE</p><h2>Media issues that need Team Faraz</h2><small>Repeated occurrences with the same canonical asset, stage, policy, and blockers appear once.</small></div><span>{openIncidents.length}</span></div>
+        {openIncidents.length === 0 ? <EmptyState title="No media exception needs Team Faraz." detail="Routine verified uploads and exact duplicates continue automatically. Nothing is scheduled, posted, or connected." /> : <div className="momo-record-list">{openIncidents.map((incident) => {
+          const latestEvent = data.exceptionEventsV2.find((event) =>
+            event.incident_id === incident.id && event.event_kind !== "resolved" && event.source_asset_id
+          );
+          const sourceAssetId = latestEvent?.source_asset_id ?? null;
+          const sourceExists = Boolean(sourceAssetId && data.media.some((asset) => asset.id === sourceAssetId));
+          return <article key={incident.id}><div><strong>{incident.stage === "media_intake" ? "Upload verification" : incident.stage === "rights_reconciliation" ? "Rights reconciliation" : "Automatic preparation start"}</strong><p>{jsonList(incident.blockers).map(labelStatus).join(" · ") || "Verified evidence needs review."}</p><small>Canonical incident · {incident.occurrence_count} occurrence{incident.occurrence_count === 1 ? "" : "s"} consolidated · last seen {formatDate(incident.last_seen_at)}</small>{sourceAssetId && <small>Recovery source {sourceAssetId.slice(0, 8)}… · canonical identity {incident.canonical_asset_id.slice(0, 8)}…</small>}{jsonList(incident.warnings).length > 0 && <p className="momo-form-note">Warnings: {jsonList(incident.warnings).map(labelStatus).join(" · ")}</p>}</div><StatusBadge status="needs_attention" /><button type="button" className="momo-provider-action" disabled={!sourceExists} onClick={() => sourceAssetId && setRecoveryAssetId(sourceAssetId)}>{recoveryAssetId === sourceAssetId ? "Recovery controls open" : sourceExists ? "Open recovery controls" : "Recovery source unavailable"}</button></article>;
+        })}</div>}
+      </section>
+      {recoveryAsset && <section className="momo-panel"><div className="momo-panel-heading"><div><p className="eyebrow">MANUAL RECOVERY</p><h2>Exact exception source</h2><small>Use only for this immutable source event. Canonical identity {recoveryEvent?.canonical_asset_id.slice(0, 8) || "unknown"}… remains separate from the selected upload and its permission history.</small></div><button type="button" onClick={() => setRecoveryAssetId(null)}>Close</button></div><div className="momo-media-grid"><MediaAssetCard asset={recoveryAsset} {...props} /></div></section>}
+      {historyMedia.length > 0 && <details className="momo-work-history"><summary><span><strong>Media history & manual recovery</strong><small>Routine and legacy rows stay out of the daily queue. Open only for audit or controlled recovery.</small></span><b>{historyMedia.length}</b></summary><div className="momo-media-grid">{historyMedia.map((asset) => <MediaAssetCard key={asset.id} asset={asset} {...props} />)}</div></details>}
+    </>}
+    {role === "client" && mediaLibrary}
   </div>;
 }
 
-function MediaAssetCard({ asset, data, role, restaurantId, busy, run, selectedForEditor = false, onSelectForEditor }: PanelProps & { asset: MomoMediaAsset; selectedForEditor?: boolean; onSelectForEditor?: () => void }) {
+type MomoContentPreparationState = "idle" | "saving_review" | "queueing" | "refreshing" | "needs_refresh";
+
+function MediaAssetCard({ asset, data, role, restaurantId, busy, run, reloadWorkspace, notify }: PanelProps & { asset: MomoMediaAsset }) {
   const rights = data.mediaRights.find((item) => item.asset_id === asset.id);
   const review = data.mediaReviews.find((item) => item.asset_id === asset.id && item.is_current);
-  const [quality, setQuality] = useState(review?.quality_score || 70);
+  const intake = data.mediaIntake.find((item) => item.asset_id === asset.id && item.status === "verified");
+  const [quality, setQuality] = useState<number | "">(review?.quality_score ?? "");
   const [notes, setNotes] = useState(review?.quality_notes || "");
   const [approved, setApproved] = useState(review?.public_use_approved || false);
   const [tag, setTag] = useState("");
@@ -918,21 +1107,169 @@ function MediaAssetCard({ asset, data, role, restaurantId, busy, run, selectedFo
   const [previewBusy, setPreviewBusy] = useState(false);
   const [previewRendered, setPreviewRendered] = useState(false);
   const [inspectionConfirmed, setInspectionConfirmed] = useState(false);
+  const [reviewSaveAttempted, setReviewSaveAttempted] = useState(false);
+  const [reviewExpanded, setReviewExpanded] = useState(false);
+  const [reviewReferenceTime] = useState(() => Date.now());
+  const [contentPreparationState, setContentPreparationState] = useState<MomoContentPreparationState>("idle");
+  const [contentPreparationError, setContentPreparationError] = useState("");
+  const contentPreparationMounted = useRef(true);
+  const contentPreparationRequestActive = useRef(false);
+  const displayedReviewExpanded = reviewExpanded;
+  const pipeline = resolveMomoAssetPipeline(data, asset.id);
   const linkedTags = data.mediaAssetTags.filter((item) => item.asset_id === asset.id).map((link) => data.mediaTags.find((item) => item.id === link.tag_id)?.label).filter(Boolean);
   const approvedForReuse = mediaIsCurrentlyUsable(data, asset.id);
   const approvedForInternalReuse = mediaIsCurrentlyUsable(data, asset.id, "internal");
+  const rightsCurrent = Boolean(
+    rights?.rights_status === "confirmed" && rights.evidence_class === "real_owner" &&
+    (!rights.valid_from || Date.parse(rights.valid_from) <= reviewReferenceTime) &&
+    (!rights.expires_at || Date.parse(rights.expires_at) > reviewReferenceTime),
+  );
+  const verifiedBytes = Boolean(
+    intake && asset.content_sha256 && intake.content_sha256 === asset.content_sha256 &&
+    intake.detected_mime_type === asset.mime_type && intake.file_size === asset.file_size,
+  );
+  const platformReadyOriginal = Boolean(verifiedBytes && intake && momoOriginalMediaMeetsPlatformReadyProfile({
+    mimeType: intake.detected_mime_type,
+    fileSize: intake.file_size,
+    width: intake.width,
+    height: intake.height,
+  }));
+  const identityLink = data.mediaIdentityLinksV2.find((item) => item.asset_id === asset.id);
+  const automaticContentRun = identityLink
+    ? data.contentAiRuns.find((item) =>
+      item.decision_mode === "automation_policy_v2" &&
+      item.automation_identity_id === identityLink.identity_id
+    )
+    : undefined;
+  const automaticProcessingLink = automaticContentRun
+    ? data.mediaIdentityLinksV2.find((item) =>
+      item.identity_id === automaticContentRun.automation_identity_id &&
+      item.asset_id === automaticContentRun.source_asset_id
+    )
+    : undefined;
+  const latestContentRun = data.contentAiRuns.find((item) =>
+    item.decision_mode === "team_review_v1" && item.source_asset_id === asset.id
+  );
+  const staleContentRun = latestContentRun && momoContentAiRunNeedsRecovery(latestContentRun)
+    ? latestContentRun
+    : undefined;
+  const materializedReadyPackage = latestContentRun?.status === "materialized"
+    ? data.readyPackages.find((item) => item.content_ai_run_id === latestContentRun.id)
+    : undefined;
+  const replacementContentNeeded = latestContentRun?.status === "materialized" && (
+    !materializedReadyPackage || !resolveMomoContentPackageReadiness(data, materializedReadyPackage.id).ready
+  );
+  const activeContentRun = latestContentRun && !["failed", "rejected"].includes(latestContentRun.status) &&
+    !replacementContentNeeded
+    ? latestContentRun
+    : undefined;
+  const numericQuality = quality === "" ? null : quality;
+  const reviewSaveInput = {
+    hasCurrentRealOwnerRights: rightsCurrent,
+    verifiedBytes,
+    platformReadyOriginal,
+    previewRendered,
+    inspectionConfirmed,
+    notes,
+    qualityScore: numericQuality,
+    publicUseApproved: approved,
+  };
+  const reviewSaveBlockers = momoMediaReviewSaveBlockers(reviewSaveInput);
+  const reviewCanSave = momoMediaReviewCanSave(reviewSaveInput);
+  const contentPreparationBusy = ["saving_review", "queueing", "refreshing"].includes(contentPreparationState);
+  const contentPreparationNeedsRefresh = contentPreparationState === "needs_refresh";
+  const contentRunInFlight = [activeContentRun, staleContentRun].find((run) =>
+    run && ["reserved", "provider_running", "result_staged"].includes(run.status),
+  );
+  const persistCurrentMediaReview = async (): Promise<string> => {
+    if (numericQuality === null) throw new Error("media_quality_score_required");
+    const sameCurrentReview = Boolean(
+      review && review.status === (approved ? "approved" : "changes_requested") &&
+      review.public_use_approved === approved && review.quality_score === numericQuality &&
+      (review.quality_notes || "").trim() === notes.trim(),
+    );
+    const canReuseAcceptedReview = Boolean(
+      latestContentRun &&
+      ["reserved", "provider_running", "result_staged"].includes(latestContentRun.status),
+    );
+    return sameCurrentReview && (!latestContentRun || canReuseAcceptedReview)
+      ? review!.id
+      : reviewMomoMedia({ restaurantId, assetId: asset.id, status: approved ? "approved" : "changes_requested", qualityScore: numericQuality, qualityNotes: notes, publicUseApproved: approved });
+  };
+  const queueContentPackage = async (reviewId: string) => {
+    if (contentPreparationMounted.current) setContentPreparationState("queueing");
+    const result = await generateMomoContentPackage({
+      restaurantId,
+      assetId: asset.id,
+      idempotencyKey: `momo-content-${reviewId}`,
+    });
+    notify(result.status === "queued"
+      ? "Content preparation is safely queued. You can leave this page; the verified Momo package will continue in the background."
+      : result.status === "provider_running"
+      ? "AI preparation is running in the background. No second paid call was started."
+      : result.status === "finalizing"
+      ? "The AI result is saved and Veroxa is finishing its quality checks."
+      : "The high-quality content package is ready for Team review. External posting remains off.");
+    if (contentPreparationMounted.current) {
+      setContentPreparationState("refreshing");
+      await reloadWorkspace();
+      if (contentPreparationMounted.current) setContentPreparationState("idle");
+    }
+  };
+  const prepareContentPackage = async () => {
+    if (busy || contentPreparationRequestActive.current || contentPreparationState !== "idle" || activeContentRun || contentRunInFlight || !reviewCanSave || !approved) return;
+    contentPreparationRequestActive.current = true;
+    setContentPreparationError("");
+    setContentPreparationState("saving_review");
+    try {
+      const reviewId = await persistCurrentMediaReview();
+      await queueContentPackage(reviewId);
+    } catch (error) {
+      const code = error instanceof Error ? error.message : "";
+      const message = momoActionErrorMessage(code);
+      notify(message);
+      if (contentPreparationMounted.current) {
+        setContentPreparationError(message);
+        setContentPreparationState("needs_refresh");
+      }
+    } finally {
+      contentPreparationRequestActive.current = false;
+    }
+  };
+  const refreshContentPreparationStatus = async () => {
+    if (contentPreparationState === "refreshing") return;
+    try {
+      setContentPreparationState("refreshing");
+      await reloadWorkspace();
+      if (contentPreparationMounted.current) {
+        setContentPreparationError("");
+        setContentPreparationState("idle");
+      }
+    } catch {
+      if (contentPreparationMounted.current) {
+        setContentPreparationError("The latest preparation status could not be loaded. The background job remains unchanged.");
+        setContentPreparationState("needs_refresh");
+      }
+    }
+  };
   useEffect(() => {
-    if (!selectedForEditor || !asset.storage_path || previewUrl) return;
+    contentPreparationMounted.current = true;
+    return () => { contentPreparationMounted.current = false; };
+  }, []);
+  useEffect(() => {
+    if (!reviewExpanded || !asset.storage_path || previewUrl) return;
     let active = true;
     void getMomoMediaPreviewUrl(asset.storage_path)
       .then((url) => { if (active) setPreviewUrl(url); })
       .catch(() => { if (active) setPreviewError("The private preview could not be opened. Do not approve this asset until it is visible."); });
     return () => { active = false; };
-  }, [asset.storage_path, previewUrl, selectedForEditor]);
-  return <article id={`momo-media-${asset.id}`} className={selectedForEditor ? "momo-media-card selected" : "momo-media-card"}>
+  }, [asset.storage_path, previewUrl, reviewExpanded]);
+  return <article id={`momo-media-${asset.id}`} className="momo-media-card">
     <div className="momo-media-icon">{previewUrl ? (asset.mime_type.startsWith("video/") ? <video src={previewUrl} controls onLoadedData={() => setPreviewRendered(true)} onError={() => { setPreviewRendered(false); setInspectionConfirmed(false); setPreviewError("The private video could not be rendered. Do not approve this asset."); }} /> : <img className="momo-image-preview" src={previewUrl} alt={`Private preview of ${asset.display_name || asset.original_file_name || "Momo media"}`} onLoad={() => setPreviewRendered(true)} onError={() => { setPreviewRendered(false); setInspectionConfirmed(false); setPreviewError("The private image could not be rendered. Do not approve this asset."); }} />) : asset.mime_type.startsWith("video/") ? "VIDEO" : "PHOTO"}</div>
-    <div className="momo-media-heading"><span><strong>{asset.display_name || asset.original_file_name || asset.storage_path.split("/").at(-1) || "Private media"}</strong><small>{Math.max(1, Math.round(asset.file_size / 1024))} KB · {formatDate(asset.created_at)}</small></span><StatusBadge status={asset.status} /></div>
-    <div className="momo-facts"><span>Rights<strong>{rights ? labelStatus(rights.rights_status) : "Missing"}</strong><small>{rights?.attestation_version || "No attestation"}</small></span><span>Quality<strong>{review?.quality_score ?? "Not reviewed"}</strong></span><span>Reuse<strong>{asset.reuse_count || 0}</strong></span></div>
+    <div className="momo-media-heading"><span><strong>{asset.display_name || asset.original_file_name || asset.storage_path.split("/").at(-1) || "Private media"}</strong><small>{Math.max(1, Math.round(asset.file_size / 1024))} KB · {formatDate(asset.created_at)}</small></span><StatusBadge status={pipeline.state} /></div>
+    {pipeline.blockers[0] && <p className="momo-form-note">{pipeline.blockers[0]}</p>}
+    {identityLink && <div className="momo-callout"><strong>{pipeline.state === "veroxa_ready" ? "Veroxa Ready without Team review" : pipeline.state === "preparing_content" ? "Automatic preparation is active" : "Exact-byte identity verified"}</strong><p>{identityLink.link_kind === "exact_duplicate" ? "This upload keeps its own immutable permission record while sharing an exact-byte processing identity with the canonical original." : "This is the canonical exact-byte identity. Every linked upload keeps its own immutable permission record."} {automaticContentRun && automaticProcessingLink ? `Processing uses verified upload ${automaticProcessingLink.asset_id.slice(0, 8)}… and only that upload’s rights evidence.` : "A processing source has not been selected yet."} Nothing is scheduled, posted, or externally connected.</p></div>}
+    {!intake && <button className="momo-preview-button" disabled={busy} onClick={() => void run(() => retryMomoMediaVerification({ restaurantId, assetId: asset.id, storagePath: asset.storage_path }), "Server byte verification completed. This image can now continue through review.")}>{busy ? "Verifying…" : "Retry secure verification"}</button>}
     {asset.storage_path && <button className="momo-preview-button" disabled={previewBusy} onClick={() => {
       setPreviewBusy(true);
       setPreviewError("");
@@ -945,190 +1282,358 @@ function MediaAssetCard({ asset, data, role, restaurantId, busy, run, selectedFo
     }}>{previewBusy ? "Opening…" : previewUrl ? "Refresh private preview" : "Open private preview"}</button>}
     {previewError && <p className="momo-warning" role="alert">{previewError}</p>}
     {linkedTags.length > 0 && <div className="momo-tag-row">{linkedTags.map((item) => <span key={item}>{item}</span>)}</div>}
-    {role === "team" && <div className="momo-review-box">
-      <label>Quality 0–100<input type="number" min={0} max={100} value={quality} onChange={(event) => setQuality(Number(event.target.value))} /></label>
+    {role === "team" && !identityLink && <details className="momo-media-review-controls" open={displayedReviewExpanded} onToggle={(event) => setReviewExpanded(event.currentTarget.open)}>
+      <summary><span><strong>{review ? "Media review" : "Review this media"}</strong><small>{review ? `${review.quality_score ?? "No score"} · ${labelStatus(review.status)}` : "Preview, inspect, then prepare the content package"}</small></span><b>{displayedReviewExpanded ? "Hide" : "Open"}</b></summary>
+      <div className="momo-review-box">
+      <label>Team quality score 0–100<input type="number" min={0} max={100} value={quality} onChange={(event) => setQuality(event.target.value === "" ? "" : Number(event.target.value))} /></label>
       <label className="wide">Review notes<textarea value={notes} onChange={(event) => setNotes(event.target.value)} rows={2} /></label>
-      <label className="momo-check wide"><input type="checkbox" checked={approved} onChange={(event) => setApproved(event.target.checked)} /><span>Approved for public-use preparation (this does not post)</span></label>
+      <label className="momo-check wide"><input type="checkbox" checked={approved} onChange={(event) => setApproved(event.target.checked)} /><span>Accept this exact original for the authorized Ready packages (this does not post)</span></label>
       <label className="momo-check wide"><input type="checkbox" checked={inspectionConfirmed} disabled={!previewRendered} onChange={(event) => setInspectionConfirmed(event.target.checked)} /><span>I inspected the rendered private preview for this review.</span></label>
-      <button disabled={busy || !momoMediaReviewCanSave({ hasRights: Boolean(rights), previewRendered, inspectionConfirmed, notes })} onClick={() => void run(() => reviewMomoMedia({ restaurantId, assetId: asset.id, status: approved ? "approved" : "changes_requested", qualityScore: quality, qualityNotes: notes, publicUseApproved: approved }), "Media review saved. No external action occurred.")}>Save review</button>
-      {!previewRendered && <p className="momo-warning wide">Wait for the private preview to render successfully before recording a review.</p>}
-      {notes.trim().length < 10 && <p className="momo-form-note wide">Record at least 10 characters of visible quality evidence or requested changes.</p>}
-      <div className="momo-tag-input"><input placeholder="Add a tag" value={tag} onChange={(event) => setTag(event.target.value)} /><button disabled={busy || !tag.trim()} onClick={() => void run(() => addMomoMediaTag({ restaurantId, assetId: asset.id, label: tag }), "Media tag added.")}>Add tag</button></div>
-      <button className="momo-provider-action" disabled={busy} onClick={() => void run(() => prepareMomoAiJob(restaurantId, "media_classification", "media_asset", asset.id), "Provider-neutral classification job prepared; no AI call was made.")}>Prepare deferred AI classification</button>
-      <p className="momo-form-note wide">No-cost route: Team quality review plus human tags is the operational classification. The deferred AI job is recorded only as blocked and makes no provider call.</p>
-      <button className="momo-provider-action" disabled={busy || !approvedForInternalReuse} onClick={() => void run(() => recordMomoMediaReuse({ restaurantId, assetId: asset.id, platform: "internal", usageKind: "internal_reference" }), "Approved media reuse recorded in the audit trail.")}>Record approved internal reuse</button>
-      {approvedForReuse && !approvedForInternalReuse && <p className="momo-form-note wide">Internal reuse was not included in the owner-attested usage scopes.</p>}
-      {onSelectForEditor && <button className="momo-provider-action" disabled={busy} onClick={onSelectForEditor}>{selectedForEditor ? "Selected for preparation" : approvedForReuse ? "Prepare this image next" : "Select and review this image"}</button>}
-      {onSelectForEditor && !approvedForReuse && <p className="momo-form-note wide">Selecting opens the original. Preparation remains fail-closed until rights and review are current.</p>}
-    </div>}
+      <button
+        type="button"
+        className="momo-review-save"
+        disabled={busy || contentPreparationBusy || contentPreparationNeedsRefresh || Boolean(activeContentRun) || Boolean(contentRunInFlight)}
+        aria-disabled={!reviewCanSave || busy || contentPreparationBusy || contentPreparationNeedsRefresh || Boolean(activeContentRun) || Boolean(contentRunInFlight)}
+        aria-describedby={`momo-review-save-status-${asset.id}`}
+        onClick={() => {
+          if (!reviewCanSave) {
+            setReviewSaveAttempted(true);
+            return;
+          }
+          setReviewSaveAttempted(false);
+          if (approved) void prepareContentPackage();
+          else void run(async () => { await persistCurrentMediaReview(); }, "Media review saved with changes requested.");
+        }}
+      >{contentPreparationState === "saving_review" ? "Saving approved review…" : contentPreparationState === "queueing" ? "Queueing content preparation…" : contentPreparationState === "refreshing" ? "Refreshing status…" : contentPreparationNeedsRefresh ? "Refresh package status" : busy ? "Saving…" : replacementContentNeeded ? "Rebuild current content package" : approved ? "Approve media and prepare content" : "Save review"}</button>
+      {contentPreparationState === "saving_review" && <div className="momo-review-save-status ready wide" role="status" aria-live="polite"><strong>Saving the exact approved media review</strong><p>The paid AI request has not started yet. Other portal actions remain available.</p></div>}
+      {contentPreparationState === "queueing" && <div className="momo-review-save-status ready wide" role="status" aria-live="polite"><strong>Queueing this exact Momo package</strong><p>You can continue working or leave the portal after confirmation. Preparation runs in the background, duplicate paid calls are blocked, and external posting remains off.</p></div>}
+      {contentPreparationState === "refreshing" && <div className="momo-review-save-status ready wide" role="status" aria-live="polite"><strong>Refreshing the authoritative package status…</strong></div>}
+      {contentPreparationError && !contentRunInFlight && <div className="momo-review-save-status blocked emphasized wide" role="alert"><strong>Preparation needs a status refresh</strong><p>{contentPreparationError}</p><button type="button" className="momo-preview-button" disabled={busy || contentPreparationState === "refreshing"} onClick={() => void refreshContentPreparationStatus()}>Refresh package status</button></div>}
+      {contentRunInFlight && !contentPreparationBusy && <div className="momo-review-save-status ready wide" role="status" aria-live="polite"><strong>{contentRunInFlight.status === "result_staged" ? "Quality checks are finishing" : contentRunInFlight.status === "provider_running" ? "AI content is being prepared" : "Content preparation is queued"}</strong><p>{contentRunInFlight.status === "result_staged" ? "The exact AI result and cost record are safely stored while Veroxa finishes the Team-review transition." : contentRunInFlight.status === "provider_running" ? "The verified image is with the AI quality pipeline. You can leave this page while it continues." : "The exact image, rights, facts, and budget are reserved for the background worker."} Duplicate paid calls are blocked and external posting remains off.</p><button type="button" className="momo-preview-button" disabled={busy || contentPreparationBusy} onClick={() => void refreshContentPreparationStatus()}>{contentPreparationState === "refreshing" ? "Refreshing…" : "Refresh status"}</button></div>}
+      {activeContentRun && !contentRunInFlight && <p className="momo-form-note wide">Content preparation already exists for this accepted image: {labelStatus(activeContentRun.status)}. Open Content when it needs Team review; external posting remains off.</p>}
+      {staleContentRun && <p className="momo-warning wide">This preparation is taking longer than normal. Signed background recovery is continuing against the same stored request; Veroxa will not start a second AI call. Refresh only updates what you see here, and external posting remains off.</p>}
+      {replacementContentNeeded && <p className="momo-warning wide">The previous immutable plan is no longer Ready. Reinspect this image to create a new reviewed package and future Chicago plan; the old audit record remains unchanged.</p>}
+      {reviewCanSave && contentPreparationState === "idle" && !activeContentRun && <div id={`momo-review-save-status-${asset.id}`} className="momo-review-save-status ready wide" role="status" aria-live="polite"><strong>Ready to save</strong></div>}
+      {!reviewCanSave && reviewSaveAttempted && <div id={`momo-review-save-status-${asset.id}`} className="momo-review-save-status blocked emphasized wide" role="status" aria-live="polite"><strong>Complete these before saving</strong><ul>{reviewSaveBlockers.map((blocker) => <li key={blocker}>{blocker}</li>)}</ul></div>}
+      {!reviewCanSave && !reviewSaveAttempted && <p id={`momo-review-save-status-${asset.id}`} className="momo-form-note wide">Open the private preview, inspect it, and add useful notes before saving.</p>}
+      <details className="team-inline-advanced wide"><summary>More media controls</summary><div>
+        <div className="momo-tag-input"><input placeholder="Add an internal media tag" value={tag} onChange={(event) => setTag(event.target.value)} /><button disabled={busy || !tag.trim()} onClick={() => void run(() => addMomoMediaTag({ restaurantId, assetId: asset.id, label: tag }), "Media tag added.")}>Add tag</button></div>
+        <p className="momo-form-note">Tags are internal organization aids. Public hashtags are generated and validated separately.</p>
+        <button className="momo-provider-action" disabled={busy || !approvedForInternalReuse} onClick={() => void run(() => recordMomoMediaReuse({ restaurantId, assetId: asset.id, platform: "internal", usageKind: "internal_reference" }), "Approved media reuse recorded in the audit trail.")}>Record approved internal reuse</button>
+        {approvedForReuse && !approvedForInternalReuse && <p className="momo-form-note">Internal reuse was not included in the owner-approved usage.</p>}
+      </div></details>
+      </div>
+    </details>}
     {role === "client" && rights?.id && rights.rights_status !== "revoked" && <div className="momo-review-box"><label className="wide">Reason to stop future use<textarea value={rightsReason} onChange={(event) => setRightsReason(event.target.value)} rows={2} placeholder="Tell Veroxa why these rights should be revoked" /></label><button className="momo-provider-action" disabled={busy || rightsReason.trim().length < 10} onClick={() => void run(() => revokeMomoMediaRights({ restaurantId, mediaRightsId: rights.id, reason: rightsReason }), "Media rights revoked immediately. New reuse and publication are blocked.")}>Revoke future media use</button><p className="momo-form-note wide">Revocation takes effect immediately and is recorded in the audit trail. It does not delete historical usage records.</p></div>}
-    {!rights && <p className="momo-warning">This asset cannot be approved or reused because its rights record is missing.</p>}
+    {!rights && role === "client" && <p className="momo-warning">This asset cannot be approved or reused because its rights record is missing.</p>}
   </article>;
 }
 
-type ContentWorkspaceSection = "attention" | "create" | "library";
+type ContentWorkspaceSection = "attention" | "ready";
 
-function ContentPanel(props: PanelProps) {
-  const { data, role, restaurantId, busy, run } = props;
+const suggestedMomoSchedule = (window: string, index: number): string => {
+  const target = new Date(Date.now() + (24 + index * 2) * 60 * 60 * 1000);
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Chicago", year: "numeric", month: "2-digit", day: "2-digit",
+  }).formatToParts(target);
+  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((item) => item.type === type)?.value || "";
+  const hour = window === "lunch" ? "11:30" : window === "afternoon" ? "15:00" : window === "dinner" ? "18:30" : "12:00";
+  return `${part("year")}-${part("month")}-${part("day")}T${hour}`;
+};
+
+function ContentPackageReviewCard({ packageRun, ...props }: PanelProps & { packageRun: MomoContentAiRun }) {
+  const { busy, restaurantId, run } = props;
+  const output = packageRun.output_payload;
+  const [mediaUrl, setMediaUrl] = useState("");
+  const [mediaBusy, setMediaBusy] = useState(false);
+  const [mediaError, setMediaError] = useState("");
+  const [mediaRendered, setMediaRendered] = useState(false);
+  const [mediaInspected, setMediaInspected] = useState(false);
+  const [packageInspected, setPackageInspected] = useState(false);
+  const [revisionNotes, setRevisionNotes] = useState("");
+  const [scheduleReferenceTime, setScheduleReferenceTime] = useState(() => Date.now());
+  const [schedules, setSchedules] = useState<Record<string, string>>(() => Object.fromEntries(
+    (output?.variants || []).map((variant, index) => [variant.platform, suggestedMomoSchedule(variant.scheduleWindow, index)]),
+  ));
+  useEffect(() => () => {
+    if (mediaUrl.startsWith("blob:")) URL.revokeObjectURL(mediaUrl);
+  }, [mediaUrl]);
+  useEffect(() => {
+    const timer = window.setInterval(() => setScheduleReferenceTime(Date.now()), 30_000);
+    return () => window.clearInterval(timer);
+  }, []);
+  if (!output) return <article className="momo-content-card"><p className="momo-warning">This package has no verified output and cannot be reviewed.</p></article>;
+  const hashtags = new Map(output.hashtags.map((item) => [item.id, item.tag]));
+  const seo = new Map(output.seoPhrases.map((item) => [item.id, item.phrase]));
+  const mediaQualityPassed = output.assetAssessment.qualityScore >= 4 &&
+    output.assetAssessment.qualityIssues.length === 1 && output.assetAssessment.qualityIssues[0] === "none";
+  const invalidSchedulePlatforms = output.variants.filter((variant) =>
+    !momoChicagoScheduleIsFuture(schedules[variant.platform] || "", scheduleReferenceTime),
+  );
+  const scheduleReady = invalidSchedulePlatforms.length === 0;
+  const earliestChicagoSchedule = momoChicagoLocalMinute(new Date(scheduleReferenceTime + 60_000));
+  return <article className="momo-content-card momo-content-package-review">
+    <div className="momo-panel-heading"><div><p className="eyebrow">TEAM PACKAGE REVIEW</p><strong>{output.direction.pillar}</strong><small>{output.direction.angle}</small></div><StatusBadge status="team_review" /></div>
+    <p>{output.assetAssessment.visualSummary}</p>
+    <div className="momo-review-box">
+      <button type="button" className="momo-preview-button" disabled={mediaBusy} onClick={() => {
+        setMediaBusy(true);
+        setMediaError("");
+        setMediaRendered(false);
+        setMediaInspected(false);
+        void getMomoVerifiedMediaPreviewObjectUrl({
+          storagePath: packageRun.source_storage_path,
+          contentSha256: packageRun.source_content_sha256,
+          fileSize: packageRun.source_file_size,
+          mimeType: packageRun.source_mime_type,
+        })
+          .then(setMediaUrl)
+          .catch(() => setMediaError("The exact private final image could not be opened. This package cannot become Ready."))
+          .finally(() => setMediaBusy(false));
+      }}>{mediaBusy ? "Opening…" : mediaUrl ? "Refresh exact final image" : "Open exact final image"}</button>
+      {mediaUrl && <img className="momo-image-preview" src={mediaUrl} alt="Exact private Momo image bound to this content package" onLoad={(event) => {
+        const exactDimensions = event.currentTarget.naturalWidth === packageRun.source_width && event.currentTarget.naturalHeight === packageRun.source_height;
+        setMediaRendered(exactDimensions);
+        if (!exactDimensions) {
+          setMediaInspected(false);
+          setMediaError("The rendered dimensions do not match the immutable media record. This package cannot become Ready.");
+        }
+      }} onError={() => { setMediaRendered(false); setMediaInspected(false); setMediaError("The exact private final image did not render. This package cannot become Ready."); }} />}
+      {mediaError && <p className="momo-warning" role="alert">{mediaError}</p>}
+      <label className="momo-check wide"><input type="checkbox" disabled={!mediaRendered} checked={mediaInspected} onChange={(event) => setMediaInspected(event.target.checked)} /><span>I inspected this exact rendered image and confirm it is the final media for every listed platform.</span></label>
+      <p className="momo-form-note wide">Immutable source {packageRun.source_content_sha256.slice(0, 12)}… · {packageRun.source_width} × {packageRun.source_height} · {Math.round(packageRun.source_file_size / 1024)} KB</p>
+    </div>
+    <div className="momo-facts"><span>Media quality<strong>{output.assetAssessment.qualityScore}/5</strong></span><span>Objective<strong>{labelStatus(output.direction.objective)}</strong></span><span>Platforms<strong>{output.variants.length}</strong></span></div>
+    {mediaQualityPassed
+      ? <div className="momo-callout"><strong>Quality gate passed</strong><p>Clear media · factual grounding · accessibility · local discoverability · platform rules</p></div>
+      : <div className="momo-warning" role="alert"><strong>Media quality blocks Ready</strong><p>{output.assetAssessment.qualityIssues.map(labelStatus).join(" · ")} · score {output.assetAssessment.qualityScore}/5</p></div>}
+    <details><summary><strong>Master direction and accessibility</strong></summary><div className="momo-review-box"><p className="momo-caption">{output.masterCaption}</p><p><strong>Alt text:</strong> {output.altText}</p><div className="momo-tag-row">{output.seoPhrases.map((item) => <span key={item.id}>{item.phrase}</span>)}</div></div></details>
+    <div className="momo-content-list">{output.variants.map((variant) => <details key={variant.platform} open={variant.platform === "instagram"}>
+      <summary><span><strong>{labelStatus(variant.platform)}</strong><small>{labelStatus(variant.scheduleWindow)} recommendation</small></span></summary>
+      <div className="momo-review-box">
+        <p className="momo-caption">{variant.caption}</p>
+        {variant.hashtagIds.length > 0 && <div><strong>Hashtags</strong><div className="momo-tag-row">{variant.hashtagIds.map((id) => <span key={id}>{hashtags.get(id)}</span>)}</div></div>}
+        <div><strong>Local SEO</strong><div className="momo-tag-row">{variant.seoPhraseIds.map((id) => <span key={id}>{seo.get(id)}</span>)}</div></div>
+        <p><strong>Alt text:</strong> {output.altText}</p>
+        <p><strong>Call to action:</strong> {variant.cta.text || "No CTA needed for this post."}</p>
+        <label>Planned time · America/Chicago<input type="datetime-local" min={earliestChicagoSchedule} aria-invalid={!momoChicagoScheduleIsFuture(schedules[variant.platform] || "", scheduleReferenceTime)} value={schedules[variant.platform] || ""} onChange={(event) => {
+          setSchedules((current) => ({ ...current, [variant.platform]: event.target.value }));
+          setScheduleReferenceTime(Date.now());
+          setPackageInspected(false);
+        }} /></label>
+      </div>
+    </details>)}</div>
+    {output.uncertainties.length > 0 && <div className="momo-warning"><strong>Review notes from AI</strong>{output.uncertainties.map((item) => <p key={`${item.field}:${item.reason}`}>{item.reason}</p>)}</div>}
+    {!scheduleReady && <p className="momo-warning" role="alert">Choose a future America/Chicago time for {invalidSchedulePlatforms.map((variant) => labelStatus(variant.platform)).join(", ")} before approval.</p>}
+    <label className="momo-check wide"><input type="checkbox" checked={packageInspected} onChange={(event) => setPackageInspected(event.target.checked)} /><span>I reviewed the factual claims, every platform caption, SEO phrases, hashtags, alt text, calls to action, and future Chicago timing shown above.</span></label>
+    <div className="momo-decision"><button className="primary-button" disabled={busy || !mediaQualityPassed || !scheduleReady || !mediaRendered || !mediaInspected || !packageInspected} onClick={() => void run(async () => {
+      const submissionTime = Date.now();
+      setScheduleReferenceTime(submissionTime);
+      if (!output.variants.every((variant) => momoChicagoScheduleIsFuture(schedules[variant.platform] || "", submissionTime))) {
+        throw new Error("content_schedule_must_be_future");
+      }
+      await approveMomoContentPackage({ restaurantId, runId: packageRun.id, schedules: schedules as Record<"facebook" | "instagram" | "google_business", string>, inspectionAttestation: packageInspected });
+    }, "Package approved and saved as Ready to post. External posting remains off.")}>{busy ? "Saving…" : "Approve exact package and save plan"}</button></div>
+    {(!mediaRendered || !mediaInspected) && <p className="momo-form-note">Open, render, and inspect the exact final image before approval.</p>}
+    <details className="team-inline-advanced"><summary>Reject this package</summary><div className="momo-review-box"><label>Why it should not become Ready<textarea rows={3} value={revisionNotes} onChange={(event) => setRevisionNotes(event.target.value)} /></label><button disabled={busy || revisionNotes.trim().length < 10} onClick={() => void run(() => requestMomoContentPackageRevision({ runId: packageRun.id, notes: revisionNotes }), "Package rejected and kept out of Ready.")}>Reject package</button></div></details>
+    <details className="team-inline-advanced"><summary>Audit details</summary><p className="momo-form-note">Model {packageRun.model} · prompt {packageRun.prompt_version} · immutable output {packageRun.output_sha256?.slice(0, 12)}… · external writes disabled</p></details>
+  </article>;
+}
+
+function ReadyContentPackageCard({
+  readyPackage,
+  variants,
+  reloadWorkspace,
+}: {
+  readyPackage: MomoReadyPackage;
+  variants: MomoWorkspaceData["readyPackageVariants"];
+  reloadWorkspace: () => Promise<void>;
+}) {
+  const [mediaUrl, setMediaUrl] = useState("");
+  const [mediaBusy, setMediaBusy] = useState(false);
+  const [mediaError, setMediaError] = useState("");
+  const [copyState, setCopyState] = useState("");
+  const [actionBusy, setActionBusy] = useState(false);
+  const [actionError, setActionError] = useState("");
+  useEffect(() => () => {
+    if (mediaUrl.startsWith("blob:")) URL.revokeObjectURL(mediaUrl);
+  }, [mediaUrl]);
+  const runFreshReadyAction = async (action: () => Promise<void> | void) => {
+    if (actionBusy) return;
+    setActionBusy(true);
+    setActionError("");
+    try {
+      if (await getMomoReadyPackageStatus(readyPackage.id) !== "ready_to_post") {
+        setActionError("This plan is no longer Ready. Its current evidence or timing must be rebuilt before use.");
+        await reloadWorkspace();
+        return;
+      }
+      await action();
+    } catch {
+      setActionError("Current Ready status could not be verified. Copy and download remain blocked.");
+    } finally {
+      setActionBusy(false);
+    }
+  };
+  return <article className="momo-content-card">
+    <div className="momo-panel-heading"><div><strong>{readyPackage.approved_payload.direction.pillar}</strong><small>{readyPackage.approved_payload.direction.angle}</small></div><StatusBadge status="ready_to_post" /></div>
+    <button type="button" className="momo-preview-button" disabled={mediaBusy} onClick={() => {
+      setMediaBusy(true);
+      setMediaError("");
+      void getMomoVerifiedMediaPreviewObjectUrl({
+        storagePath: readyPackage.source_storage_path,
+        contentSha256: readyPackage.source_content_sha256,
+        fileSize: readyPackage.source_file_size,
+        mimeType: readyPackage.source_mime_type,
+      }).then(setMediaUrl).catch(() => setMediaError("The exact final image is no longer verifiable. Ready is blocked.")).finally(() => setMediaBusy(false));
+    }}>{mediaBusy ? "Verifying…" : mediaUrl ? "Reverify final image" : "Verify final image"}</button>
+    {mediaUrl && <><img className="momo-image-preview" src={mediaUrl} alt={readyPackage.approved_payload.altText} /><button type="button" className="secondary-button" disabled={actionBusy} onClick={() => void runFreshReadyAction(() => {
+      const link = document.createElement("a");
+      link.href = mediaUrl;
+      link.download = `momo-ready-${readyPackage.id}.jpg`;
+      link.click();
+    })}>{actionBusy ? "Rechecking…" : "Download exact JPG"}</button></>}
+    {mediaError && <p className="momo-warning" role="alert">{mediaError}</p>}
+    {actionError && <p className="momo-warning" role="alert">{actionError}</p>}
+    <p className="momo-caption">{readyPackage.approved_payload.masterCaption}</p>
+    <div className="momo-content-list">{variants.map((variant) => <details key={variant.id} open={variant.platform === "instagram"}>
+      <summary><span><strong>{labelStatus(variant.platform)}</strong><small>{formatZonedDate(variant.scheduled_for, variant.timezone)}</small></span></summary>
+      <div className="momo-review-box">
+        <p className="momo-caption">{variant.caption}</p>
+        {variant.hashtags.length > 0 && <div><strong>Hashtags</strong><div className="momo-tag-row">{variant.hashtags.map((tag) => <span key={tag}>{tag}</span>)}</div></div>}
+        <div><strong>Local SEO applied</strong><div className="momo-tag-row">{variant.seo_phrases.map((phrase) => <span key={phrase}>{phrase}</span>)}</div></div>
+        <p><strong>Alt text:</strong> {variant.alt_text}</p>
+        <p><strong>Call to action:</strong> {variant.call_to_action.text || "No CTA for this post."}</p>
+        <button type="button" className="momo-provider-action" disabled={actionBusy} onClick={() => void runFreshReadyAction(async () => {
+          const postText = [variant.caption, variant.call_to_action.text, variant.hashtags.join(" ")].filter(Boolean).join("\n\n");
+          try {
+            await navigator.clipboard.writeText(postText);
+            setCopyState(`${variant.platform}:copied`);
+          } catch {
+            setCopyState(`${variant.platform}:failed`);
+          }
+        })}>{actionBusy ? "Rechecking…" : copyState === `${variant.platform}:copied` ? "Copied" : "Copy post text"}</button>
+        {copyState === `${variant.platform}:failed` && <p className="momo-warning" role="alert">Copy was blocked by this browser. Select the text manually.</p>}
+      </div>
+    </details>)}</div>
+    <p className="momo-form-note">Ready for manual posting with one immutable, verified image. No provider queue or external post exists.</p>
+  </article>;
+}
+
+function VeroxaReadyPackageCard({
+  readyPackage,
+  variants,
+  packageRun,
+}: {
+  readyPackage: MomoWorkspaceData["veroxaReadyPackagesV2"][number];
+  variants: MomoWorkspaceData["veroxaReadyVariantsV2"];
+  packageRun: MomoContentAiRun | undefined;
+}) {
+  const [mediaUrl, setMediaUrl] = useState("");
+  const [mediaBusy, setMediaBusy] = useState(false);
+  const [mediaError, setMediaError] = useState("");
+  const [copyState, setCopyState] = useState("");
+  useEffect(() => () => {
+    if (mediaUrl.startsWith("blob:")) URL.revokeObjectURL(mediaUrl);
+  }, [mediaUrl]);
+  return <article className="momo-content-card">
+    <div className="momo-panel-heading"><div><strong>{readyPackage.output_payload.direction.pillar}</strong><small>{readyPackage.output_payload.direction.angle}</small></div><StatusBadge status="veroxa_ready" /></div>
+    <div className="momo-callout"><strong>Unscheduled by design</strong><p>This immutable package has verified media, claims, captions, SEO phrases, hashtags, and alt text. It has no posting time, publishing approval, provider connection, or external write.</p></div>
+    <button type="button" className="momo-preview-button" disabled={mediaBusy} onClick={() => {
+      setMediaBusy(true);
+      setMediaError("");
+      void getMomoVerifiedMediaPreviewObjectUrl({
+        storagePath: readyPackage.source_storage_path,
+        contentSha256: readyPackage.source_content_sha256,
+        fileSize: readyPackage.source_file_size,
+        mimeType: readyPackage.source_mime_type,
+      }).then(setMediaUrl).catch(() => setMediaError("The exact private image could not be reverified. The package remains stored, unscheduled, and unposted.")).finally(() => setMediaBusy(false));
+    }}>{mediaBusy ? "Verifying…" : mediaUrl ? "Reverify exact image" : "Verify exact image"}</button>
+    {mediaUrl && <><img className="momo-image-preview" src={mediaUrl} alt={readyPackage.output_payload.altText} /><button type="button" className="secondary-button" onClick={() => {
+      const link = document.createElement("a");
+      link.href = mediaUrl;
+      link.download = `momo-veroxa-ready-${readyPackage.id}.jpg`;
+      link.click();
+    }}>Download verified JPG</button></>}
+    {mediaError && <p className="momo-warning" role="alert">{mediaError}</p>}
+    <p className="momo-caption">{readyPackage.output_payload.masterCaption}</p>
+    <div className="momo-content-list">{variants.map((variant) => <details key={variant.id} open={variant.platform === "instagram"}>
+      <summary><span><strong>{labelStatus(variant.platform)}</strong><small>No schedule · no posting</small></span></summary>
+      <div className="momo-review-box">
+        <p className="momo-caption">{variant.caption}</p>
+        {variant.hashtags.length > 0 && <div><strong>Validated hashtags</strong><div className="momo-tag-row">{variant.hashtags.map((tag) => <span key={tag}>{tag}</span>)}</div></div>}
+        <div><strong>Validated local SEO</strong><div className="momo-tag-row">{variant.seo_phrases.map((phrase) => <span key={phrase}>{phrase}</span>)}</div></div>
+        <p><strong>Alt text:</strong> {variant.alt_text}</p>
+        <p><strong>Call to action:</strong> {variant.call_to_action.text || "No call to action."}</p>
+        <small>{variant.claim_ids.length} validated claim reference{variant.claim_ids.length === 1 ? "" : "s"} · external writes disabled</small>
+        <button type="button" className="momo-provider-action" onClick={() => {
+          const copy = [variant.caption, variant.call_to_action.text, variant.hashtags.join(" ")].filter(Boolean).join("\n\n");
+          void navigator.clipboard.writeText(copy).then(() => setCopyState(`${variant.platform}:copied`)).catch(() => setCopyState(`${variant.platform}:failed`));
+        }}>{copyState === `${variant.platform}:copied` ? "Copied private draft" : "Copy private draft"}</button>
+        {copyState === `${variant.platform}:failed` && <p className="momo-warning" role="alert">Copy was blocked by this browser. The package remains unchanged and unposted.</p>}
+      </div>
+    </details>)}</div>
+    <details className="team-inline-advanced"><summary>Immutable audit evidence</summary><p className="momo-form-note">Canonical identity {readyPackage.canonical_asset_id.slice(0, 8)}… · selected processing upload {readyPackage.source_asset_id.slice(0, 8)}… · rights record {readyPackage.rights_id.slice(0, 8)}… · intake verification {readyPackage.intake_verification_id.slice(0, 8)}…</p><p className="momo-form-note">Policy {readyPackage.policy_version} · output {readyPackage.output_sha256.slice(0, 12)}… · validation {readyPackage.validation_sha256.slice(0, 12)}… · ready {formatDate(readyPackage.ready_at)} · {packageRun?.automation_retry_generation === 1 ? `bounded zero-provider recovery of run ${packageRun.automation_retry_of_run_id?.slice(0, 8)}…` : "initial generation"} · no schedule · no external write</p></details>
+  </article>;
+}
+
+function ContentPanel(props: PanelProps & { onNavigate: (view: string) => void }) {
+  const { data, role, onNavigate } = props;
   const [activeSection, setActiveSection] = useState<ContentWorkspaceSection>("attention");
-  const [strategyTitle, setStrategyTitle] = useState("");
-  const [goals, setGoals] = useState("");
-  const [pillars, setPillars] = useState("");
-  const [voice, setVoice] = useState("");
-  const [draftTitle, setDraftTitle] = useState("");
-  const [concept, setConcept] = useState("");
-  const [caption, setCaption] = useState("");
-  const [ownerRequired, setOwnerRequired] = useState(true);
-  const [strategyId, setStrategyId] = useState("");
-  const [mediaAssetId, setMediaAssetId] = useState("");
-  const [truthInputIds, setTruthInputIds] = useState<string[]>([]);
-  const [requestedPlatforms, setRequestedPlatforms] = useState<Array<"facebook" | "instagram" | "google_business">>(["facebook", "instagram", "google_business"]);
-  const [pillar, setPillar] = useState<MomoManualContentPillar>(MOMO_MANUAL_CONTENT_PILLARS[0]);
-  const [manualCycle, setManualCycle] = useState<MomoManualContentCycleResult | null>(null);
-  const [manualCycleFingerprint, setManualCycleFingerprint] = useState("");
-  const currentInputFingerprint = JSON.stringify({
-    strategyId,
-    mediaAssetId,
-    truthInputIds: [...truthInputIds].sort(),
-    requestedPlatforms: [...requestedPlatforms].sort(),
-    pillar,
-    draftTitle,
-    concept,
-    caption,
-    ownerRequired,
-  });
-  const currentManualCycle = manualCycleFingerprint === currentInputFingerprint ? manualCycle : null;
-  const confirmedTruth = data.truth.filter((item) => momoTruthFieldIsCurrentlyUsable(data, item.id) && valueText(item.value_json));
-  const readyMedia = data.media.filter((item) => mediaIsCurrentlyUsable(data, item.id));
-  const approvedStrategies = data.strategies.filter((item) => item.status === "approved");
-  const selectedTruth = confirmedTruth.filter((item) => truthInputIds.includes(item.id));
-  const selectedMedia = mediaAssetId ? readyMedia.find((item) => item.id === mediaAssetId) : undefined;
-  const selectedStrategy = strategyId ? approvedStrategies.find((item) => item.id === strategyId) : undefined;
-  const approvalNeedsAttention = (status: string) => ["pending", "in_review"].includes(status);
-  const orderedApprovals = [...data.approvals].sort((left, right) =>
-    Number(!approvalNeedsAttention(left.status)) - Number(!approvalNeedsAttention(right.status)));
-  const attentionCount = data.pendingContentConfirmations.length
-    + data.approvals.filter((approval) => approvalNeedsAttention(approval.status)).length;
-  const libraryCount = data.contentItems.length + data.calendar.length;
-  const selectionsCurrent = momoContentSelectionsAreCurrent({
-    selectedTruthIds: truthInputIds,
-    currentTruthIds: confirmedTruth.map((item) => item.id),
-    selectedMediaId: mediaAssetId,
-    currentMediaIds: readyMedia.map((item) => item.id),
-    selectedStrategyId: strategyId,
-    currentStrategyIds: approvedStrategies.map((item) => item.id),
-  });
-
-  const buildCurrentManualCycle = () => {
-    const rights = selectedMedia ? data.mediaRights.find((item) => item.asset_id === selectedMedia.id) : null;
-    const review = selectedMedia ? data.mediaReviews.find((item) => item.asset_id === selectedMedia.id && item.is_current) : null;
-    return buildMomoManualContentCycle({
-      workingTitle: draftTitle,
-      pillar,
-      internalAngle: [concept, caption].filter(Boolean).join("\n"),
-      ownerConfirmedTruth: selectedTruth.map((item) => ({ id: item.id, fieldKey: item.field_key, label: labelStatus(item.field_key), value: valueText(item.value_json) })),
-      requestedPlatforms,
-      usePublicMedia: Boolean(mediaAssetId),
-      media: selectedMedia && rights && review ? {
-        id: selectedMedia.id,
-        label: selectedMedia.display_name || selectedMedia.original_file_name || "Permissioned media",
-        rightsStatus: rights.rights_status as "confirmed" | "pending" | "restricted" | "expired" | "revoked",
-        reviewStatus: review.status as "approved" | "pending" | "in_review" | "changes_requested" | "rejected",
-        publicUseApproved: review.public_use_approved,
-        usageScope: jsonList(rights.usage_scope).filter((item): item is "facebook" | "instagram" | "google_business" => ["facebook", "instagram", "google_business"].includes(item)),
-        expiresAt: rights.expires_at,
-      } : null,
-      asOf: new Date().toISOString(),
-    });
-  };
-
-  const prepareManualCycle = () => {
-    const result = buildCurrentManualCycle();
-    setManualCycle(result);
-    setManualCycleFingerprint(currentInputFingerprint);
-  };
+  const openIncidents = data.exceptionIncidentsV2.filter((item) => item.status === "open" && ["content_processing", "content_validation"].includes(item.stage));
+  const legacyReviewRuns = data.contentAiRuns.filter((item) => item.decision_mode === "team_review_v1" && item.status === "pending_review" && item.output_payload);
+  const legacyFailedRuns = data.contentAiRuns.filter((item) => item.status === "failed");
+  const packageStates = data.readyPackages
+    .map((item) => ({ item, readiness: resolveMomoContentPackageReadiness(data, item.id) }))
+    .sort((left, right) => Date.parse(right.item.ready_at) - Date.parse(left.item.ready_at));
+  const latestPackageByAsset = new Map<string, string>();
+  for (const entry of packageStates) {
+    if (!latestPackageByAsset.has(entry.item.source_asset_id)) latestPackageByAsset.set(entry.item.source_asset_id, entry.item.id);
+  }
+  const legacyReadyPackages = packageStates.filter((entry) => entry.readiness.ready);
+  const legacyBlockedReadyPackages = packageStates.filter((entry) =>
+    !entry.readiness.ready && latestPackageByAsset.get(entry.item.source_asset_id) === entry.item.id,
+  );
+  const latestAutomationRunByIdentity = new Map<string, string>();
+  for (const run of data.contentAiRuns) {
+    if (run.decision_mode === "automation_policy_v2" && run.automation_identity_id &&
+      !latestAutomationRunByIdentity.has(run.automation_identity_id)) {
+      latestAutomationRunByIdentity.set(run.automation_identity_id, run.id);
+    }
+  }
+  const veroxaReadyPackages = data.veroxaReadyPackagesV2.filter((item) =>
+    latestAutomationRunByIdentity.get(item.identity_id) === item.content_ai_run_id
+  );
+  const legacyHistoryCount = legacyReviewRuns.length + legacyFailedRuns.length + packageStates.length + data.contentItems.length;
+  const attentionCount = role === "team"
+    ? openIncidents.length
+    : data.pendingContentConfirmations.length;
   return <div className="view">
-    <MomoIntro eyebrow="AI CONTENT + APPROVAL CALENDAR" title="Prepared, reviewed, controlled" description="Strategy, captions, platform variants, approvals, and calendar entries are persistent. Runtime AI and publishing remain separate gated actions." />
+    <MomoIntro eyebrow="MOMO’S HOUSE" title="Content" description="Team Faraz handles consolidated exceptions only. Validated packages become Veroxa Ready without a schedule, post, or external connection." />
     <SafetyBoundary role={role} />
-    {role === "team" && <MomoTeamPreconnectionCenter mode="publication" restaurantId={restaurantId} workspace={data} />}
-    <div className="momo-content-tabs" role="tablist" aria-label="Content and approvals sections">
+    <div className="momo-content-tabs" role="tablist" aria-label="Content package sections">
       <button type="button" id="content-tab-attention" role="tab" aria-selected={activeSection === "attention"} aria-controls="content-panel-attention" className={activeSection === "attention" ? "active" : ""} onClick={() => setActiveSection("attention")}><span>Needs attention</span><b>{attentionCount}</b></button>
-      {role === "team" && <button type="button" id="content-tab-create" role="tab" aria-selected={activeSection === "create"} aria-controls="content-panel-create" className={activeSection === "create" ? "active" : ""} onClick={() => setActiveSection("create")}><span>Create content</span></button>}
-      <button type="button" id="content-tab-library" role="tab" aria-selected={activeSection === "library"} aria-controls="content-panel-library" className={activeSection === "library" ? "active" : ""} onClick={() => setActiveSection("library")}><span>Library &amp; calendar</span><b>{libraryCount}</b></button>
+      <button type="button" id="content-tab-ready" role="tab" aria-selected={activeSection === "ready"} aria-controls="content-panel-ready" className={activeSection === "ready" ? "active" : ""} onClick={() => setActiveSection("ready")}><span>Veroxa Ready</span><b>{veroxaReadyPackages.length}</b></button>
     </div>
-    {role === "team" && <div id="content-panel-create" className="momo-content-tabpanel" role="tabpanel" aria-labelledby="content-tab-create" hidden={activeSection !== "create"}>
-    <section className="momo-split">
-      <form className="momo-panel momo-form" onSubmit={(event) => {
-        event.preventDefault();
-        void run(() => createMomoContentStrategy({ restaurantId, title: strategyTitle, goals: goals.split(",").map((item) => item.trim()).filter(Boolean), pillars: pillars.split(",").map((item) => item.trim()).filter(Boolean), brandVoice: voice }), "Draft content strategy saved.");
-      }}>
-        <div className="momo-panel-heading"><div><p className="eyebrow">STRATEGY</p><h2>New strategy draft</h2></div><StatusBadge status="pending" /></div>
-        <label>Title<input value={strategyTitle} onChange={(event) => setStrategyTitle(event.target.value)} required /></label>
-        <label>Goals<input value={goals} onChange={(event) => setGoals(event.target.value)} placeholder="Comma separated" required /></label>
-        <label>Content pillars<textarea value={pillars} onChange={(event) => setPillars(event.target.value)} rows={3} required /></label>
-        <label>Brand voice snapshot<textarea value={voice} onChange={(event) => setVoice(event.target.value)} rows={3} required /></label>
-        <button className="secondary-button" disabled={busy}>Save strategy draft</button>
-      </form>
-      <form className="momo-panel momo-form" onSubmit={(event) => {
-        event.preventDefault();
-        void run(async () => {
-          const freshCycle = buildCurrentManualCycle();
-          setManualCycle(freshCycle);
-          setManualCycleFingerprint(currentInputFingerprint);
-          if (!freshCycle.inputsVerified || !selectionsCurrent) throw new Error("manual_cycle_invalid");
-          await createMomoContentDraft({ restaurantId, strategyId: selectedStrategy?.id, mediaAssetId: selectedMedia?.id, truthFieldIds: selectedTruth.map((item) => item.id), pillar, title: draftTitle, concept, masterCaption: caption, requiresOwnerConfirmation: ownerRequired });
-        }, "Content draft saved without publishing.");
-      }}>
-        <div className="momo-panel-heading"><div><p className="eyebrow">NO-COST MANUAL CYCLE</p><h2>Human-written master draft</h2></div><StatusBadge status="internal_hypothesis" /></div>
-        <label>Locked content pillar<select value={pillar} onChange={(event) => setPillar(event.target.value as MomoManualContentPillar)}>{MOMO_MANUAL_CONTENT_PILLARS.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
-        <label>Approved strategy (optional)<select value={strategyId} onChange={(event) => setStrategyId(event.target.value)}><option value="">No strategy selected</option>{approvedStrategies.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select></label>
-        <fieldset className="momo-scope"><legend>Requested public platforms</legend>{(["facebook", "instagram", "google_business"] as const).map((target) => <label className="momo-check" key={target}><input type="checkbox" checked={requestedPlatforms.includes(target)} onChange={(event) => setRequestedPlatforms((current) => event.target.checked ? [...new Set([...current, target])] : current.filter((item) => item !== target))} /><span>{labelStatus(target)}</span></label>)}</fieldset>
-        <label>Permissioned media (explicit)<select value={mediaAssetId} onChange={(event) => setMediaAssetId(event.target.value)}><option value="">Text-only internal direction</option>{readyMedia.map((item) => <option key={item.id} value={item.id}>{item.display_name || item.original_file_name || item.id}</option>)}</select></label>
-        <label>Title<input value={draftTitle} onChange={(event) => setDraftTitle(event.target.value)} required /></label>
-        <label>Concept<textarea value={concept} onChange={(event) => setConcept(event.target.value)} rows={3} required /></label>
-        <label>Master caption<textarea value={caption} onChange={(event) => setCaption(event.target.value)} rows={5} required /></label>
-        <fieldset className="momo-scope"><legend>Owner-confirmed truth inputs</legend>{confirmedTruth.length === 0 ? <span>No owner-confirmed truth is available.</span> : confirmedTruth.map((item) => <label className="momo-check" key={item.id}><input type="checkbox" checked={truthInputIds.includes(item.id)} onChange={(event) => setTruthInputIds((current) => event.target.checked ? [...current, item.id] : current.filter((id) => id !== item.id))} /><span>{labelStatus(item.field_key)}</span></label>)}</fieldset>
-        <label className="momo-check"><input type="checkbox" checked={ownerRequired} onChange={(event) => setOwnerRequired(event.target.checked)} /><span>Require owner confirmation</span></label>
-        <button type="button" className="secondary-button" disabled={busy} onClick={prepareManualCycle}>Validate no-cost manual brief</button>
-        {!selectionsCurrent && <p className="momo-warning">A selected truth field, strategy, or media record is no longer currently eligible. Re-select current evidence before validating or saving.</p>}
-        {currentManualCycle && <div className={currentManualCycle.inputsVerified ? "momo-callout" : "momo-warning"}><strong>{currentManualCycle.inputsVerified ? "Inputs verified for an internal brief" : "Manual cycle remains blocked"}</strong>{currentManualCycle.issues.map((issue) => <p key={`${issue.code}:${issue.field}`}>{issue.message}</p>)}{currentManualCycle.brief && <p>Three human-editable platform skeletons prepared. Approval, publishing, and readiness remain false until the separate database gates pass.</p>}</div>}
-        <button className="secondary-button" disabled={busy || !selectionsCurrent || !currentManualCycle?.inputsVerified || truthInputIds.length === 0}>Save gated content draft</button>
-      </form>
-    </section>
-    </div>}
     <div id="content-panel-attention" className="momo-content-tabpanel" role="tabpanel" aria-labelledby="content-tab-attention" hidden={activeSection !== "attention"}>
-    {role === "client" && <section className="momo-panel">
-      <div className="momo-panel-heading"><div><p className="eyebrow">OWNER CONTENT CONFIRMATION</p><h2>Directions waiting for your decision</h2></div><span>{data.pendingContentConfirmations.length}</span></div>
-      {data.pendingContentConfirmations.length === 0 ? <EmptyState title="No content direction needs confirmation." detail="Only Momo content that explicitly requires owner confirmation appears here." /> : <div className="momo-content-list">{data.pendingContentConfirmations.map((item) => <PendingContentConfirmationCard key={item.content_item_id} item={item} {...props} />)}</div>}
-    </section>}
-    {role === "team" && <section className="momo-panel">
-      <div className="momo-panel-heading"><div><p className="eyebrow">STRATEGIES</p><h2>Strategy review queue</h2></div><span>{data.strategies.length}</span></div>
-      {data.strategies.length === 0 ? <EmptyState title="No strategy draft exists." detail="A strategy must be persisted before Team review can be requested." /> : <div className="momo-record-list">{data.strategies.map((strategy) => {
-        const approval = data.approvals.find((item) => item.subject_type === "content_strategy" && item.subject_id === strategy.id && item.approval_kind === "team_review");
-        return <article key={strategy.id}><div><strong>{strategy.title}</strong><p>{jsonList(strategy.pillars).join(" · ") || "No pillars recorded"}</p></div><StatusBadge status={approval?.status || strategy.status} />{strategy.status !== "approved" && !approvalBlocksNewRequest(approval) && <button disabled={busy} onClick={() => void run(() => requestMomoApproval({ restaurantId, subjectType: "content_strategy", subjectId: strategy.id, approvalKind: "team_review" }), "Strategy review requested.")}>Request Team review</button>}</article>;
-      })}</div>}
-    </section>}
-    <section className="momo-panel">
-      <div className="momo-panel-heading"><div><p className="eyebrow">APPROVAL QUEUE</p><h2>Human decisions</h2></div><span>{data.approvals.length}</span></div>
-      {data.approvals.length === 0 ? <EmptyState title="No approval requests exist." detail="No content, variant, review response, or publication is treated as approved." /> : <div className="momo-record-list">{orderedApprovals.map((approval) => <ApprovalRow key={approval.id} approval={approval} {...props} />)}</div>}
-    </section>
+      {role === "team" && <section className="momo-panel"><div className="momo-panel-heading"><div><p className="eyebrow">EXCEPTION-ONLY QUEUE</p><h2>Content issues that need Team Faraz</h2><small>Routine processing, successful validation, and legacy pending review rows do not count as attention.</small></div><span>{openIncidents.length}</span></div>{openIncidents.length === 0 ? <EmptyState title="No content exception needs Team Faraz." detail="Automatic preparation may continue in the background. Nothing is scheduled, posted, or connected." /> : <div className="momo-record-list">{openIncidents.map((incident) => <article key={incident.id}><div><strong>{incident.stage === "content_processing" ? "Content processing needs recovery" : "Content validation needs review"}</strong><p>{jsonList(incident.blockers).map(labelStatus).join(" · ") || "Verified evidence needs review."}</p><small>Canonical incident · {incident.occurrence_count} occurrence{incident.occurrence_count === 1 ? "" : "s"} consolidated · last seen {formatDate(incident.last_seen_at)}</small>{jsonList(incident.warnings).length > 0 && <p className="momo-form-note">Warnings: {jsonList(incident.warnings).map(labelStatus).join(" · ")}</p>}</div><StatusBadge status="needs_attention" /><button type="button" className="momo-provider-action" onClick={() => onNavigate("team-media")}>Open media exception recovery</button></article>)}</div>}</section>}
+      {role === "client" && <section className="momo-panel"><div className="momo-panel-heading"><div><p className="eyebrow">YOUR DECISIONS</p><h2>Content confirmations</h2></div><span>{data.pendingContentConfirmations.length}</span></div>{data.pendingContentConfirmations.length === 0 ? <EmptyState title="Nothing needs your decision." detail="Team Faraz will show only a content direction that specifically needs owner confirmation." /> : <div className="momo-content-list">{data.pendingContentConfirmations.map((item) => <PendingContentConfirmationCard key={item.content_item_id} item={item} {...props} />)}</div>}</section>}
     </div>
-    <div id="content-panel-library" className="momo-content-tabpanel" role="tabpanel" aria-labelledby="content-tab-library" hidden={activeSection !== "library"}>
-    {role === "team" && <section className="momo-panel">
-      <div className="momo-panel-heading"><div><p className="eyebrow">INPUT PROVENANCE</p><h2>Immutable content evidence</h2></div><span>{data.contentInputs.length}</span></div>
-      {data.contentInputs.length === 0 ? <EmptyState title="No gated content input has been recorded." detail="Saving a manual draft records owner-confirmed truth and permissioned-media fingerprints here; draft text alone is never treated as verified input." /> : <div className="momo-record-list">{data.contentInputs.map((entry) => <article key={entry.id}><div><strong>{labelStatus(entry.input_kind)}</strong><p>{entry.truth_field_id ? "Owner-confirmed truth snapshot" : entry.media_asset_id ? `Media rights ${entry.rights_attestation_version || "version not recorded"}` : "Recorded content input"}</p><small>Draft {entry.content_item_id.slice(0, 8)} · fingerprint {entry.input_sha256.slice(0, 12)}… · {formatDate(entry.recorded_at)}</small></div><StatusBadge status="immutable" /></article>)}</div>}
-    </section>}
-    <section className="momo-panel">
-      <div className="momo-panel-heading"><div><p className="eyebrow">CONTENT ITEMS</p><h2>Drafts and platform variants</h2></div><span>{data.contentItems.length}</span></div>
-      {data.contentItems.length === 0 ? <EmptyState title="No content draft exists." detail="AI does not generate content from missing business truth or unapproved media." /> : <div className="momo-content-list">{data.contentItems.map((item) => <ContentItemCard key={item.id} item={item} {...props} />)}</div>}
-    </section>
-    <section className="momo-panel">
-      <div className="momo-panel-heading"><div><p className="eyebrow">CONTENT CALENDAR</p><h2>Approved schedule records</h2></div><span>{data.calendar.length}</span></div>
-      {data.calendar.length === 0 ? <EmptyState title="The calendar is empty." detail="Nothing is scheduled or represented as published." /> : <div className="momo-card-grid">{data.calendar.map((entry) => <article className="momo-small-card" key={entry.id}><div><strong>{data.variants.find((item) => item.id === entry.variant_id)?.platform || "Variant"}</strong><StatusBadge status={entry.status} /></div><p>{formatZonedDate(entry.scheduled_for, entry.timezone)}</p><small>{entry.published_at ? `Published ${formatDate(entry.published_at)}` : `Not published · ${entry.timezone}`}</small></article>)}</div>}
-    </section>
+    <div id="content-panel-ready" className="momo-content-tabpanel" role="tabpanel" aria-labelledby="content-tab-ready" hidden={activeSection !== "ready"}>
+      <section className="momo-panel"><div className="momo-panel-heading"><div><p className="eyebrow">VEROXA READY · UNSCHEDULED</p><h2>Validated Momo packages</h2><small>Ready means evidence-complete inside Veroxa. It never means scheduled, approved to publish, posted, or externally connected.</small></div><span>{veroxaReadyPackages.length}</span></div>
+        {veroxaReadyPackages.length === 0 ? <EmptyState title="Nothing is Veroxa Ready yet." detail="Only an exact package with verified media, owner truth, rights, claim validation, captions, SEO, hashtags, and alt text can appear here. Scheduling and posting remain outside this workflow." /> : <div className="momo-content-list">{veroxaReadyPackages.map((item) => <VeroxaReadyPackageCard key={item.id} readyPackage={item} variants={data.veroxaReadyVariantsV2.filter((variant) => variant.ready_package_id === item.id)} packageRun={data.contentAiRuns.find((run) => run.id === item.content_ai_run_id)} />)}</div>}
+      </section>
+      {role === "team" && legacyHistoryCount > 0 && <details className="momo-work-history"><summary><span><strong>Legacy v1 history & manual recovery</strong><small>Scheduled v1 plans and manual approval controls are preserved for audit or controlled recovery, outside the v2 daily queue.</small></span><b>{legacyHistoryCount}</b></summary><div className="momo-content-list">
+        {legacyReviewRuns.map((item) => <ContentPackageReviewCard key={item.id} packageRun={item} {...props} />)}
+        {legacyReadyPackages.map(({ item, readiness }) => <ReadyContentPackageCard key={item.id} readyPackage={item} variants={readiness.variants} reloadWorkspace={props.reloadWorkspace} />)}
+        {legacyBlockedReadyPackages.map(({ item, readiness }) => <article key={item.id}><div><strong>Plans no longer Ready · {item.approved_payload.direction.pillar}</strong><p>{readiness.blockers.join(" · ")}</p><small>Immutable scheduled v1 history; rebuild only through controlled manual recovery.</small></div><StatusBadge status="blocked" /><button type="button" className="momo-provider-action" onClick={() => onNavigate("team-media")}>Open Media to rebuild</button></article>)}
+        {legacyFailedRuns.map((item) => <article key={item.id}><div><strong>Historical content run</strong><p>{labelStatus(item.provider_error_code || "quality gate failed")}</p></div><StatusBadge status="blocked" /></article>)}
+        {data.contentItems.map((item) => <article key={item.id}><div><strong>{item.title}</strong><p>{item.concept || "No concept recorded"}</p></div><StatusBadge status={item.status} /></article>)}
+      </div></details>}
     </div>
   </div>;
 }
+
 
 function PendingContentConfirmationCard({ item, restaurantId, busy, run }: PanelProps & { item: MomoWorkspaceData["pendingContentConfirmations"][number] }) {
   const [notes, setNotes] = useState("");
@@ -1153,101 +1658,13 @@ function ApprovalRow({ approval, role, busy, run }: PanelProps & { approval: Mom
   return <article><div><strong>{labelStatus(approval.approval_kind)}</strong><p>{labelStatus(approval.subject_type)} · requested {formatDate(approval.requested_at)}</p>{approval.decision_notes && <small>{approval.decision_notes}</small>}</div><StatusBadge status={allowedPair ? approval.status : "invalid_contract"} />{!allowedPair && <p className="momo-warning">This legacy approval kind/subject pair is not actionable.</p>}{role === "team" && allowedPair && approval.status === "pending" && <div className="momo-decision"><input aria-label="Decision notes" placeholder="Decision note" value={notes} onChange={(event) => setNotes(event.target.value)} /><button disabled={busy} onClick={() => void run(() => decideMomoApproval(approval.id, "approved", notes), "Team approval recorded and applied.")}>Approve</button><button disabled={busy} onClick={() => void run(() => decideMomoApproval(approval.id, "rejected", notes), "Rejection recorded.")}>Reject</button></div>}</article>;
 }
 
-function ContentItemCard({ item, data, role, restaurantId, busy, run }: PanelProps & { item: MomoWorkspaceData["contentItems"][number] }) {
-  const itemVariants = data.variants.filter((variant) => variant.content_item_id === item.id);
-  const [platform, setPlatform] = useState("instagram");
-  const [caption, setCaption] = useState("");
-  const [scheduleVariant, setScheduleVariant] = useState("");
-  const [scheduledFor, setScheduledFor] = useState("");
-  const [preflights, setPreflights] = useState<Record<string, MomoProviderPreflight>>({});
-  const asPublicPlatform = (value: string) => value as "facebook" | "instagram" | "google_business";
-  const itemTruthInputs = data.contentInputs
-    .filter((entry) => entry.content_item_id === item.id && entry.input_kind === "owner_confirmed_truth" && entry.truth_field_id);
-  const itemTruthIds = new Set(itemTruthInputs.map((entry) => entry.truth_field_id!));
-  const truthInputsCurrent = itemTruthInputs.length > 0 && itemTruthInputs.every((entry) => momoTruthFieldIsCurrentlyUsable(data, entry.truth_field_id));
-  const itemOwnerTruth = data.truth
-    .filter((truth) => itemTruthIds.has(truth.id) && momoTruthFieldIsCurrentlyUsable(data, truth.id) && valueText(truth.value_json))
-    .map((truth) => ({ id: truth.id, fieldKey: truth.field_key, label: labelStatus(truth.field_key), value: valueText(truth.value_json) }));
-  const itemClaimIssues = validateMomoPlatformVariantCaption({
-    caption: [item.title, item.concept, item.master_caption || ""].join("\n"),
-    ownerConfirmedTruth: itemOwnerTruth,
-  });
-  const proposedVariantIssues = validateMomoPlatformVariantCaption({ caption, ownerConfirmedTruth: itemOwnerTruth });
-  const itemHasPublishEligibleMedia = (["facebook", "instagram", "google_business"] as const)
-    .some((target) => mediaIsCurrentlyUsable(data, item.primary_media_asset_id, target));
-  const selectedPlatformEligible = mediaIsCurrentlyUsable(data, item.primary_media_asset_id, asPublicPlatform(platform));
-  const schedulableVariants = itemVariants.filter((variant) => truthInputsCurrent && itemClaimIssues.length === 0 && variant.status === "approved"
-    && mediaIsCurrentlyUsable(data, item.primary_media_asset_id, asPublicPlatform(variant.platform))
-    && validateMomoPlatformVariantCaption({ caption: variant.caption, ownerConfirmedTruth: itemOwnerTruth }).length === 0);
-  const selectedScheduleVariant = schedulableVariants.find((variant) => variant.id === scheduleVariant);
-  return <article className="momo-content-card">
-    <div className="momo-panel-heading"><div><strong>{item.title}</strong><small>{item.concept}</small></div><StatusBadge status={item.status} /></div>
-    <p className="momo-caption">{item.master_caption || "No master caption recorded."}</p>
-    <div className="momo-variant-list">{itemVariants.map((variant) => {
-      const publishingApproval = data.approvals.find((approval) => approval.subject_id === variant.id && approval.approval_kind === "publishing" && ["content_variant", "publish"].includes(approval.subject_type));
-      const provider = variant.platform === "google_business" ? "google_business" : "meta";
-      const connection = data.connections.find((item) => item.provider === provider && item.status === "connected");
-      const capability = requiredPublishCapability(variant.platform);
-      const connectionEligible = connectionIsCurrentlyEligible(connection, capability);
-      const queued = data.publishQueue.find((item) => item.variant_id === variant.id);
-      const calendarEntry = data.calendar.find((entry) => entry.variant_id === variant.id && momoCalendarEntryIsCurrentApproved(entry));
-      const teamReview = data.approvals.find((approval) => approval.subject_id === variant.id && approval.subject_type === "content_variant" && approval.approval_kind === "team_review");
-      const variantClaimIssues = validateMomoPlatformVariantCaption({ caption: variant.caption, ownerConfirmedTruth: itemOwnerTruth });
-      const publicVariantEligible = truthInputsCurrent && itemClaimIssues.length === 0 && variantClaimIssues.length === 0 && mediaIsCurrentlyUsable(data, item.primary_media_asset_id, asPublicPlatform(variant.platform));
-      const scheduledMediaEligible = Boolean(calendarEntry?.scheduled_for && mediaIsCurrentlyUsable(
-        data,
-        item.primary_media_asset_id,
-        asPublicPlatform(variant.platform),
-        Date.parse(calendarEntry.scheduled_for),
-      ));
-      const mediaRights = data.mediaRights.find((rights) => rights.asset_id === item.primary_media_asset_id);
-      const mediaReview = data.mediaReviews.find((review) => review.asset_id === item.primary_media_asset_id && review.is_current);
-      const preflightKey = [variant.id, connection?.id || "none", connection?.owner_authorized_at || "none", connection?.last_verified_at || "none", capability, calendarEntry?.id || "none", calendarEntry?.scheduled_for || "none", mediaRights?.attestation_sha256 || "none", mediaRights?.valid_from || "none", mediaRights?.expires_at || "none", mediaReview?.id || "none", mediaReview?.reviewed_at || "none"].join(":");
-      const preflight = preflights[preflightKey];
-      return <article key={variant.id}>
-        <span><strong>{labelStatus(variant.platform)}</strong><small>{variant.caption}</small></span>
-        <StatusBadge status={queued?.status || teamReview?.status || variant.status} />
-        {role === "team" && variant.status !== "approved" && publicVariantEligible && !approvalBlocksNewRequest(teamReview) && <button disabled={busy} onClick={() => void run(() => requestMomoApproval({ restaurantId, subjectType: "content_variant", subjectId: variant.id, approvalKind: "team_review" }), "Variant review requested.")}>Request Team review</button>}
-        {role === "team" && variantClaimIssues.map((issue) => <small key={`${variant.id}:${issue.code}:${issue.field}`}>{issue.message}</small>)}
-        {role === "team" && !publicVariantEligible && <small>This variant is internal-only until its attached media has current owner rights, public-use review, and matching platform scope.</small>}
-        {role === "team" && variant.status === "approved" && publicVariantEligible && calendarEntry && scheduledMediaEligible && !approvalBlocksNewRequest(publishingApproval) && <button disabled={busy} onClick={() => void run(() => requestMomoApproval({ restaurantId, subjectType: "content_variant", subjectId: variant.id, approvalKind: "publishing" }), "Publishing approval requested against the exact current schedule.")}>Request publishing approval</button>}
-        {role === "team" && variant.status === "approved" && publicVariantEligible && !calendarEntry && <small>A current future America/Chicago schedule is required before publishing approval.</small>}
-        {role === "team" && variant.status === "approved" && publicVariantEligible && calendarEntry && !scheduledMediaEligible && <small>The attached media rights do not cover the exact scheduled publication time.</small>}
-        {role === "team" && publishingApproval?.status === "approved" && publicVariantEligible && scheduledMediaEligible && calendarEntry && connectionEligible && !queued && <button disabled={busy} onClick={() => void run(async () => {
-          const result = await runMomoProviderPreflight({ restaurantId, provider: provider as "meta" | "google_business", requiredCapability: capability });
-          setPreflights((current) => ({ ...current, [preflightKey]: result }));
-        }, `${labelStatus(capability)} no-credential preflight completed without a provider call.`)}>Run publication preflight</button>}
-        {role === "team" && publishingApproval?.status === "approved" && (!calendarEntry || !publicVariantEligible || !scheduledMediaEligible || !connectionEligible) && <small>Queueing remains blocked until the exact schedule, media rights through the scheduled time, owner authorization, capability, and post-authorization verification are current.</small>}
-        {preflight && <div className={preflight.allowed ? "momo-callout" : "momo-warning"}><strong>{preflight.allowed ? "Preflight passed" : "Provider execution remains blocked"}</strong><p>{jsonList(preflight.blockers).join(" · ") || "No provider authority was returned."}</p></div>}
-        {role === "team" && publishingApproval?.status === "approved" && publicVariantEligible && scheduledMediaEligible && connection && connectionEligible && preflight?.allowed && !queued && calendarEntry && <button disabled={busy} onClick={() => void run(() => queueMomoPublication({ restaurantId, connectionId: connection.id, variantId: variant.id, approvalId: publishingApproval.id }), "Approved scheduled item added to the dormant provider queue. No external call has run yet.")}>Prepare dormant queue metadata</button>}
-      </article>;
-    })}</div>
-    {role === "team" && <div className="momo-variant-form">
-      <select value={platform} onChange={(event) => setPlatform(event.target.value)}><option value="instagram">Instagram</option><option value="facebook">Facebook</option><option value="google_business">Google Business Profile</option></select>
-      <textarea value={caption} onChange={(event) => setCaption(event.target.value)} placeholder="Platform-specific caption" rows={3} />
-      <button disabled={busy || !truthInputsCurrent || item.status !== "approved" || !caption.trim() || !selectedPlatformEligible || proposedVariantIssues.length > 0 || itemClaimIssues.length > 0} onClick={() => void run(async () => {
-        if (validateMomoPlatformVariantCaption({ caption, ownerConfirmedTruth: itemOwnerTruth }).length > 0) throw new Error("variant_claim_evidence_invalid");
-        await createMomoPlatformVariant({ restaurantId, contentItemId: item.id, platform, caption });
-      }, "Manual platform variant saved.")}>Add manual variant</button>
-      {item.status !== "approved" && <p className="momo-warning">Approve the media-backed content direction before creating platform variants.</p>}
-      {!truthInputsCurrent && <p className="momo-warning">A recorded owner-truth input is no longer current or has newer unresolved owner intent. Review, variants, schedules, and queueing remain blocked.</p>}
-      {proposedVariantIssues.map((issue) => <p className="momo-warning" key={`proposed:${issue.code}:${issue.field}`}>{issue.message}</p>)}
-      {itemClaimIssues.map((issue) => <p className="momo-warning" key={`item:${issue.code}:${issue.field}`}>The source direction is blocked: {issue.message}</p>)}
-      {!selectedPlatformEligible && <p className="momo-warning">Text-only or stale-media directions remain internal. Attach currently permissioned, reviewed media with {labelStatus(platform)} scope before creating a public variant.</p>}
-      <button disabled={busy} onClick={() => void run(() => prepareMomoAiJob(restaurantId, "platform_variants", "content_item", item.id), "Provider-neutral AI job prepared; no model call was made.")}>Prepare AI variants</button>
-      {item.requires_owner_confirmation ? <p className="momo-warning">Awaiting owner content-direction confirmation. Team review remains blocked.</p> : !truthInputsCurrent ? <p className="momo-warning">Owner-truth provenance is stale or disputed.</p> : itemClaimIssues.length > 0 ? <p className="momo-warning">This direction contains a sensitive claim without explicit matching owner-truth support.</p> : !itemHasPublishEligibleMedia ? <p className="momo-warning">This content direction remains internal-only; Team/public review requires current permissioned media.</p> : item.status !== "approved" && !approvalBlocksNewRequest(data.approvals.find((approval) => approval.subject_type === "content_item" && approval.subject_id === item.id && approval.approval_kind === "team_review")) && <button disabled={busy} onClick={() => void run(() => requestMomoApproval({ restaurantId, subjectType: "content_item", subjectId: item.id, approvalKind: "team_review" }), "Content review requested.")}>Request Team review</button>}
-      {itemVariants.length > 0 && <><select value={scheduleVariant} onChange={(event) => setScheduleVariant(event.target.value)}><option value="">Choose approved media-backed variant</option>{schedulableVariants.map((variant) => <option key={variant.id} value={variant.id}>{labelStatus(variant.platform)}</option>)}</select><input type="datetime-local" value={scheduledFor} onChange={(event) => setScheduledFor(event.target.value)} /><button disabled={busy || !selectedScheduleVariant || !scheduledFor} onClick={() => void run(() => scheduleMomoVariant({ restaurantId, variantId: selectedScheduleVariant!.id, scheduledFor, timezone: "America/Chicago" }), "Calendar entry saved. Publishing remains separately gated.")}>Add to calendar</button></>}
-    </div>}
-  </article>;
-}
 
 function ConnectionsPanel(props: PanelProps) {
   const { data, role, restaurantId, busy, run } = props;
   const [preflights, setPreflights] = useState<Record<string, MomoProviderPreflight>>({});
   return <div className="view">
-    <MomoIntro eyebrow="META + GOOGLE + LOCAL PRESENCE" title="Connections are permissions, not assumptions" description="Provider access, capabilities, owner authorization, publishing, Google checks, reviews, website/menu truth, and visibility evidence remain separately tracked." />
+    <MomoIntro eyebrow="MOMO ONLINE PRESENCE" title="See what is connected and what is missing" description="Review Google, social accounts, local visibility, website checks, and customer reviews in one place." />
     <SafetyBoundary role={role} />
-    {role === "team" && <MomoTeamPreconnectionCenter mode="seo" restaurantId={restaurantId} workspace={data} />}
     <section className="momo-panel">
       <div className="momo-panel-heading"><div><p className="eyebrow">PROVIDER CONNECTIONS</p><h2>Meta and Google access</h2></div><span>{data.connections.length}</span></div>
       {data.connections.length === 0 ? <EmptyState title="No provider is connected." detail="Veroxa has no represented Meta or Google permission. No token or secret is stored in these records." /> : <div className="momo-card-grid">{data.connections.map((connection) => {
@@ -1273,6 +1690,7 @@ function ConnectionsPanel(props: PanelProps) {
       const evidenceRecorded = jsonList(snapshot.evidence).length > 0;
       return <article className="momo-small-card" key={snapshot.id}><div><strong>{labelStatus(snapshot.source)}</strong><StatusBadge status={evidenceRecorded ? "evidence_recorded" : "unverified"} /></div><p>{jsonList(snapshot.metrics).join(" · ") || "No metrics recorded"}</p><small>{snapshot.period_start} – {snapshot.period_end}</small>{!evidenceRecorded && <p className="momo-warning">This legacy row has no source evidence and is not treated as verified.</p>}</article>;
     })}</div>}</section>
+    {role === "team" && <TeamSystemTools title="SEO system checks" detail="Technical evidence and rehearsal controls stay closed during normal review."><MomoTeamPreconnectionCenter mode="seo" restaurantId={restaurantId} workspace={data} /></TeamSystemTools>}
   </div>;
 }
 
@@ -1293,30 +1711,39 @@ function OperationsPanel(props: PanelProps & { mode: "work" | "reports" }) {
   });
 
   if (mode === "work") {
-    const workLanes = [
+    const workGroups = [
       { key: "attention", label: "Needs attention", detail: "Approval, blocker, or failure", statuses: ["waiting_approval", "blocked", "failed"] },
-      { key: "doing", label: "Doing now", detail: "Active or retrying", statuses: ["in_progress", "retrying"] },
-      { key: "next", label: "Up next", detail: "Ready to begin", statuses: ["queued"] },
-      { key: "done", label: "Done", detail: "Completed or closed", statuses: ["completed", "cancelled"] },
+      { key: "active", label: "Active work", detail: "In progress, retrying, or ready to begin", statuses: ["in_progress", "retrying", "queued"] },
+      { key: "done", label: "Completed", detail: "Recent completed or cancelled work", statuses: ["completed", "cancelled"] },
     ] as const;
+    const visibleGroups = workGroups.map((group) => ({
+      ...group,
+      items: data.work.filter((item) => (group.statuses as readonly string[]).includes(item.status)),
+    }));
+    const currentGroups = visibleGroups.filter((group) => group.key !== "done" && group.items.length > 0);
+    const completedGroup = visibleGroups.find((group) => group.key === "done")!;
+    const openAlerts = data.alerts.filter((item) => item.status !== "resolved").length;
+    const activeRecovery = data.recovery.filter((item) => ["queued", "in_progress", "retrying"].includes(item.status)).length;
 
     return <div className="view momo-work-view">
-      <MomoIntro eyebrow="MOMO’S HOUSE SAN ANTONIO · WORK BOARD" title="What needs action now" description="Every task on this board belongs only to Momo’s House. Detailed attempts, evidence, retries, alerts, and recovery remain attached behind each simple work state." />
+      <MomoIntro eyebrow="MOMO’S HOUSE" title="Work" description="Only active tasks, decisions, and blockers appear by default." />
       <SafetyBoundary role={role} />
-      {role === "team" && <form className="momo-panel momo-inline-form momo-work-create" onSubmit={(event) => {
-        event.preventDefault();
-        void run(() => createMomoWorkItem({ restaurantId, workType, title, description, priority: 3 }), "Momo work item queued.");
-      }}><div><p className="eyebrow">ADD MOMO WORK</p><h2>Create one clear task</h2></div><label>Type<select value={workType} onChange={(event) => setWorkType(event.target.value)}><option value="onboarding">Onboarding</option><option value="truth_review">Truth review</option><option value="media">Media</option><option value="content">Content</option><option value="publishing">Publishing</option><option value="google">Google</option><option value="seo">SEO</option><option value="reviews">Reviews</option><option value="website">Website</option><option value="reporting">Reporting</option><option value="monitoring">Monitoring</option><option value="recovery">Recovery</option></select></label><label>Task title<input value={title} onChange={(event) => setTitle(event.target.value)} required /></label><label>Useful detail<input value={description} onChange={(event) => setDescription(event.target.value)} /></label><button className="secondary-button" disabled={busy || !title.trim()}>Add to Momo board</button></form>}
-      <section className="momo-work-board" aria-label="Momo’s House San Antonio work board">
-        {workLanes.map((lane) => {
-          const items = data.work.filter((item) => (lane.statuses as readonly string[]).includes(item.status));
-          return <section className={`momo-work-lane ${lane.key}`} key={lane.key}>
-            <header><span><strong>{lane.label}</strong><small>{lane.detail}</small></span><b>{items.length}</b></header>
-            {items.length === 0 ? <EmptyState title={`Nothing ${lane.label.toLowerCase()}.`} detail="This lane will update from Momo’s persisted work states." /> : <div className="momo-work-grid">{items.map((item) => <WorkItemCard key={item.id} item={item} {...props} />)}</div>}
-          </section>;
-        })}
-      </section>
-      {role === "team" && <details className="momo-operations-details">
+      {role === "team" && <details className="team-add-work">
+        <summary><span><strong>Add a Momo task</strong><small>Use only when there is real work to perform.</small></span><b>+</b></summary>
+        <form className="momo-inline-form momo-work-create" onSubmit={(event) => {
+          event.preventDefault();
+          void run(() => createMomoWorkItem({ restaurantId, workType, title, description, priority: 3 }), "Momo work item queued.");
+        }}><label>Type<select value={workType} onChange={(event) => setWorkType(event.target.value)}><option value="onboarding">Onboarding</option><option value="truth_review">Truth review</option><option value="media">Media</option><option value="content">Content</option><option value="publishing">Ready-to-post preparation</option><option value="google">Google</option><option value="seo">SEO</option><option value="reviews">Reviews</option><option value="website">Website</option><option value="reporting">Reporting</option><option value="monitoring">Monitoring</option><option value="recovery">Recovery</option></select></label><label>Task title<input value={title} onChange={(event) => setTitle(event.target.value)} required /></label><label>Useful detail<input value={description} onChange={(event) => setDescription(event.target.value)} /></label><button className="secondary-button" disabled={busy || !title.trim()}>Add task</button></form>
+      </details>}
+      {data.work.length === 0 ? <EmptyState title="No Momo work is recorded." detail="Add the first task only when there is real work to begin." /> : <section className="momo-work-stream" aria-label="Momo’s House work">
+        {currentGroups.map((group) => <section className={`momo-work-section ${group.key}`} key={group.key}>
+          <header><span><strong>{group.label}</strong><small>{group.detail}</small></span><b>{group.items.length}</b></header>
+          <div className="momo-work-grid">{group.items.map((item) => <WorkItemCard key={item.id} item={item} {...props} />)}</div>
+        </section>)}
+        {currentGroups.length === 0 && <EmptyState title="No active task needs attention." detail="Completed history remains available below." />}
+        {completedGroup.items.length > 0 && <details className="momo-work-history"><summary><span><strong>Completed work</strong><small>Open only when you need history.</small></span><b>{completedGroup.items.length}</b></summary><div className="momo-work-grid">{completedGroup.items.map((item) => <WorkItemCard key={item.id} item={item} {...props} />)}</div></details>}
+      </section>}
+      {role === "team" && (openAlerts > 0 || activeRecovery > 0) && <details className="momo-operations-details">
         <summary><span><strong>Monitoring & recovery</strong><small>Open only when an operational exception needs review.</small></span><b>{data.alerts.filter((item) => item.status !== "resolved").length} open alerts</b></summary>
         <div className="momo-operations-detail-body">
           <MonitorCheckForm {...props} />
@@ -1330,7 +1757,7 @@ function OperationsPanel(props: PanelProps & { mode: "work" | "reports" }) {
   }
 
   return <div className="view">
-    <MomoIntro eyebrow="MOMO’S HOUSE SAN ANTONIO · REPORTS" title="Reviewed activity before claims" description="Weekly and monthly reports use reviewed, report-eligible Momo activity. Missing outcomes stay missing." />
+    <MomoIntro eyebrow="MOMO PROGRESS UPDATES" title="Clear reports backed by completed work" description="Prepare simple weekly or monthly updates from reviewed Momo activity." />
     <SafetyBoundary role={role} />
     {role === "team" && <form className="momo-panel momo-form" onSubmit={(event) => {
       event.preventDefault();
@@ -1434,13 +1861,8 @@ function ReadinessPanel({ data, role, restaurantId, busy, run }: PanelProps) {
   const required = data.readiness.filter((item) => item.required);
   const [rehearsalResult, setRehearsalResult] = useState<{ status: string; blocker_count: number; can_activate: boolean } | null>(null);
   return <div className="view">
-    <MomoIntro eyebrow="FINAL MOMO READINESS GATE" title={gate?.can_activate ? "Eligible for final go / no-go review" : "Activation remains blocked"} description="This gate never infers readiness from deployment, code completion, or a partial score. Every required dimension must be verified and every blocker cleared." />
+    <MomoIntro eyebrow="MOMO PILOT PROGRESS" title={gate?.can_activate ? "Ready for final review" : "See what remains before launch"} description="Each required stage shows its evidence, blockers, and next action. Partial work is never shown as ready." />
     <SafetyBoundary role={role} />
-    {role === "team" && <MomoTeamPreconnectionCenter mode="readiness" restaurantId={restaurantId} workspace={data} />}
-    {role === "team" && <section className="momo-panel momo-form"><div className="momo-panel-heading"><div><p className="eyebrow">STEP 7 REHEARSAL</p><h2>Derived final go / no-go evaluation</h2></div><StatusBadge status={rehearsalResult?.status || "not_evaluated"} /></div><p className="momo-form-note">This action derives a new immutable snapshot from current database records. When blockers remain, it records a rehearsal-only No-Go decision. It cannot activate Momo and exposes no Go action.</p><button className="secondary-button" disabled={busy} onClick={() => void run(async () => {
-      const result = await runMomoNoGoRehearsal({ restaurantId, reason: "No-cost final rehearsal. Activation remains blocked until every required dimension and external authority is verified." });
-      setRehearsalResult(result);
-    }, "Readiness rehearsal recorded. No activation, provider call, owner contact, or publication occurred.")}>Run final no-go rehearsal</button>{rehearsalResult && <div className={rehearsalResult.can_activate ? "momo-callout" : "momo-warning"}><strong>{rehearsalResult.can_activate ? "All derived prerequisites passed; separate human authority is still required" : "No-Go recorded"}</strong><p>{rehearsalResult.blocker_count} blocker(s) remain. The rehearsal did not change provider, owner, publishing, or activation state.</p></div>}</section>}
     <section className={`momo-gate ${gate?.can_activate ? "pass" : "blocked"}`}>
       <div><p className="eyebrow">OVERALL STATE</p><strong>{labelStatus(gate?.overall_status || "not_evaluated")}</strong><span>{gate?.can_activate ? "All database-enforced prerequisites passed. Final human approval is still a separate decision." : "No publishing, account action, or live provider execution may begin."}</span></div>
       <article><strong>{gate?.verified_count ?? 0}</strong><span>required dimensions verified</span></article>
@@ -1450,5 +1872,12 @@ function ReadinessPanel({ data, role, restaurantId, busy, run }: PanelProps) {
     {data.readiness.length === 0 ? <EmptyState title="No readiness dimensions exist." detail="Momo cannot be marked ready without persisted dimensions and a successful database gate." /> : <section className="momo-readiness-grid">{data.readiness.map((dimension) => <article key={dimension.id}><div><h2>{dimension.label}</h2><StatusBadge status={dimension.status} /></div><section><p className="eyebrow">EVIDENCE</p>{jsonList(dimension.evidence).length ? <ul>{jsonList(dimension.evidence).map((item) => <li key={item}>{item}</li>)}</ul> : <p>No evidence recorded.</p>}</section><section className="momo-blockers"><p className="eyebrow">BLOCKERS</p>{jsonList(dimension.blockers).length ? <ul>{jsonList(dimension.blockers).map((item) => <li key={item}>{item}</li>)}</ul> : <p>No blocker recorded.</p>}</section><small>Last updated {formatDate(dimension.updated_at)}</small></article>)}</section>}
     {role === "team" && <section className="momo-panel"><div className="momo-panel-heading"><div><p className="eyebrow">ACTIVATION DECISION HISTORY</p><h2>Immutable go / no-go evidence</h2></div><span>{data.activationDecisions.length}</span></div>{data.activationDecisions.length === 0 ? <EmptyState title="No activation decision has been recorded." detail="A no-cost rehearsal writes only a No-Go when blockers remain; no Go action is exposed." /> : <div className="momo-record-list">{data.activationDecisions.map((decision) => <article key={decision.id}><div><strong>{labelStatus(decision.decision)}</strong><p>{decision.reason}</p><small>{labelStatus(decision.mode)} · {formatDate(decision.decided_at)}</small></div><StatusBadge status={decision.decision} /></article>)}</div>}</section>}
     <section className="momo-boundary"><strong>No readiness percentage is calculated</strong><span>The final gate is pass/fail. A count is shown for evidence, but partial completion is never converted into a readiness percentage. Other restaurants remain Restaurant Audit Center records only.</span><em>{gate?.can_activate ? "Review required" : "Blocked"}</em></section>
+    {role === "team" && <TeamSystemTools title="Readiness system checks" detail="Automation contracts and rehearsal controls stay closed during normal progress review."><>
+      <section className="momo-panel momo-form"><div className="momo-panel-heading"><div><p className="eyebrow">FINAL REHEARSAL</p><h2>Recheck the launch gate</h2></div><StatusBadge status={rehearsalResult?.status || "not_evaluated"} /></div><p className="momo-form-note">This records a new No-Go snapshot when requirements are still unfinished. It cannot activate Momo.</p><button className="secondary-button" disabled={busy} onClick={() => void run(async () => {
+        const result = await runMomoNoGoRehearsal({ restaurantId, reason: "No-cost final rehearsal. Activation remains blocked until every required dimension and external authority is verified." });
+        setRehearsalResult(result);
+      }, "Readiness rehearsal recorded. No activation, provider call, owner contact, or publication occurred.")}>Recheck readiness</button>{rehearsalResult && <div className={rehearsalResult.can_activate ? "momo-callout" : "momo-warning"}><strong>{rehearsalResult.can_activate ? "Requirements passed; final human review is still required" : "Still blocked"}</strong><p>{rehearsalResult.blocker_count} blocker(s) remain.</p></div>}</section>
+      <MomoTeamPreconnectionCenter mode="readiness" restaurantId={restaurantId} workspace={data} />
+    </></TeamSystemTools>}
   </div>;
 }

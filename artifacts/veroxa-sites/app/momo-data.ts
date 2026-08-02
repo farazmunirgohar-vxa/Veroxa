@@ -1,5 +1,7 @@
 import type { User } from "@supabase/supabase-js";
 import { getVeroxaSupabase } from "./veroxa-supabase";
+import type { MomoContentAiPackageOutput, MomoContentPlatform } from "./momo-content-ai-contract";
+import { finalizeMomoMediaUpload } from "./momo-media-finalize-client";
 
 export type MomoWorkspaceSection =
   | "dashboard"
@@ -105,6 +107,8 @@ export type MomoMediaAsset = {
   original_file_name?: string | null;
   mime_type: string;
   file_size: number;
+  width?: number | null;
+  height?: number | null;
   content_sha256?: string | null;
   uploaded_by: string;
   status: string;
@@ -164,6 +168,209 @@ export type MomoMediaUsage = {
   external_reference: string | null;
 };
 
+export type MomoMediaIntakeVerification = {
+  id: string;
+  restaurant_id: string;
+  asset_id: string;
+  detected_mime_type: string;
+  file_size: number;
+  width: number;
+  height: number;
+  content_sha256: string;
+  verifier_version: string;
+  status: "verified";
+  verified_at: string;
+};
+
+export type MomoContentAiRun = {
+  id: string;
+  restaurant_id: string;
+  source_asset_id: string;
+  intake_verification_id: string;
+  source_storage_path: string;
+  source_storage_object_id: string;
+  source_storage_object_version: string;
+  source_mime_type: "image/jpeg";
+  source_file_size: number;
+  source_width: number;
+  source_height: number;
+  source_content_sha256: string;
+  rights_id: string;
+  rights_attestation_sha256: string;
+  review_id: string | null;
+  request_hash: string;
+  target_platforms: MomoContentPlatform[];
+  truth_snapshot: unknown;
+  truth_snapshot_sha256: string;
+  status: "reserved" | "provider_running" | "result_staged" | "pending_review" | "materialized" | "rejected" | "failed";
+  model: string;
+  prompt_version: string;
+  output_payload: MomoContentAiPackageOutput | null;
+  output_sha256: string | null;
+  validation_report: unknown;
+  provider_error_code: string | null;
+  provider_started_at: string | null;
+  accounted_microusd: number | null;
+  team_decided_at: string | null;
+  decision_mode: "team_review_v1" | "automation_policy_v2";
+  automation_policy_version: string | null;
+  automation_identity_id: string | null;
+  automation_initiated_by: string | null;
+  automation_retry_of_run_id: string | null;
+  automation_retry_generation: 0 | 1;
+  created_at?: string;
+  requested_at: string;
+  updated_at: string;
+};
+
+export type MomoReadyPackage = {
+  id: string;
+  restaurant_id: string;
+  content_ai_run_id: string;
+  source_asset_id: string;
+  source_storage_path: string;
+  source_storage_object_id: string;
+  source_storage_object_version: string;
+  source_mime_type: "image/jpeg";
+  source_file_size: number;
+  source_width: number;
+  source_height: number;
+  source_content_sha256: string;
+  review_id: string;
+  approved_payload: MomoContentAiPackageOutput;
+  approved_payload_sha256: string;
+  schedule_snapshot: Record<string, string>;
+  status: "ready_to_post";
+  approved_by: string;
+  ready_at: string;
+};
+
+export type MomoReadyPackageVariant = {
+  id: string;
+  restaurant_id: string;
+  ready_package_id: string;
+  platform: MomoContentPlatform;
+  media_source_kind: "original_accepted";
+  media_asset_id: string;
+  media_review_id: string;
+  media_storage_path: string;
+  media_storage_object_id: string;
+  media_storage_object_version: string;
+  media_mime_type: "image/jpeg";
+  media_file_size: number;
+  media_width: number;
+  media_height: number;
+  media_content_sha256: string;
+  caption: string;
+  hashtags: string[];
+  seo_phrases: string[];
+  alt_text: string;
+  call_to_action: { kind?: string; text?: string };
+  scheduled_for: string;
+  timezone: "America/Chicago";
+  status: "ready_to_post";
+};
+
+export type MomoReadyPackageStatus = {
+  ready_package_id: string;
+  effective_status: "ready_to_post" | "blocked";
+  blockers: string[];
+};
+
+export type MomoMediaIdentityLinkV2 = {
+  id: string;
+  restaurant_id: string;
+  identity_id: string;
+  asset_id: string;
+  verification_id: string;
+  canonical_asset_id: string;
+  link_kind: "canonical" | "exact_duplicate";
+  content_sha256: string;
+  rights_id: string;
+  rights_attestation_sha256: string;
+  created_at: string;
+};
+
+export type MomoExceptionIncidentV2 = {
+  id: string;
+  restaurant_id: string;
+  canonical_asset_id: string;
+  stage: "media_intake" | "rights_reconciliation" | "automation_reservation" | "content_processing" | "content_validation";
+  policy_version: string;
+  blocker_set_sha256: string;
+  status: "open" | "resolved";
+  blockers: unknown;
+  warnings: unknown;
+  evidence_sha256: string;
+  occurrence_count: number;
+  first_seen_at: string;
+  last_seen_at: string;
+  resolved_at: string | null;
+  external_write_allowed: false;
+};
+
+export type MomoExceptionEventV2 = {
+  id: string;
+  incident_id: string;
+  restaurant_id: string;
+  canonical_asset_id: string;
+  source_asset_id: string | null;
+  content_ai_run_id: string | null;
+  stage: MomoExceptionIncidentV2["stage"];
+  event_kind: "opened" | "repeated" | "resolved";
+  policy_version: string;
+  blockers: unknown;
+  warnings: unknown;
+  evidence_sha256: string;
+  occurred_at: string;
+};
+
+export type MomoVeroxaReadyPackageV2 = {
+  id: string;
+  restaurant_id: string;
+  content_ai_run_id: string;
+  identity_id: string;
+  canonical_asset_id: string;
+  source_asset_id: string;
+  intake_verification_id: string;
+  rights_id: string;
+  rights_attestation_sha256: string;
+  truth_snapshot_sha256: string;
+  source_storage_path: string;
+  source_storage_object_id: string;
+  source_storage_object_version: string;
+  source_mime_type: "image/jpeg";
+  source_file_size: number;
+  source_width: number;
+  source_height: number;
+  source_content_sha256: string;
+  output_payload: MomoContentAiPackageOutput;
+  output_sha256: string;
+  validation_report: unknown;
+  validation_sha256: string;
+  decision_mode: "automation_policy_v2";
+  policy_version: "momo-upload-veroxa-ready-2026-08-02-v2";
+  status: "veroxa_ready";
+  external_write_allowed: false;
+  ready_at: string;
+};
+
+export type MomoVeroxaReadyVariantV2 = {
+  id: string;
+  restaurant_id: string;
+  ready_package_id: string;
+  platform: MomoContentPlatform;
+  caption: string;
+  hashtags: string[];
+  seo_phrases: string[];
+  alt_text: string;
+  call_to_action: { kind?: string; text?: string };
+  claim_ids: string[];
+  status: "veroxa_ready";
+  external_write_allowed: false;
+  created_at: string;
+};
+
 export type MomoAiJob = {
   id: string;
   job_kind: string;
@@ -180,6 +387,9 @@ export type MomoAiJob = {
   max_attempts: number;
   next_attempt_at: string | null;
   last_error: string | null;
+  superseded_by_job_id: string | null;
+  superseded_at: string | null;
+  supersession_reason: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -475,7 +685,17 @@ export type MomoWorkspaceData = {
   mediaTags: MomoMediaTag[];
   mediaAssetTags: MomoMediaAssetTag[];
   mediaUsage: MomoMediaUsage[];
+  mediaIntake: MomoMediaIntakeVerification[];
+  mediaIdentityLinksV2: MomoMediaIdentityLinkV2[];
   aiJobs: MomoAiJob[];
+  contentAiRuns: MomoContentAiRun[];
+  readyPackages: MomoReadyPackage[];
+  readyPackageVariants: MomoReadyPackageVariant[];
+  readyPackageStatuses: MomoReadyPackageStatus[];
+  exceptionIncidentsV2: MomoExceptionIncidentV2[];
+  exceptionEventsV2: MomoExceptionEventV2[];
+  veroxaReadyPackagesV2: MomoVeroxaReadyPackageV2[];
+  veroxaReadyVariantsV2: MomoVeroxaReadyVariantV2[];
   strategies: MomoContentStrategy[];
   contentItems: MomoContentItem[];
   pendingContentConfirmations: MomoPendingContentConfirmation[];
@@ -500,7 +720,9 @@ export type MomoWorkspaceData = {
 export const emptyMomoWorkspaceData = (): MomoWorkspaceData => ({
   truth: [], contacts: [], onboarding: [], presence: [], confirmations: [],
   readiness: [], readinessGate: null, media: [], mediaRights: [], mediaReviews: [],
-  mediaTags: [], mediaAssetTags: [], mediaUsage: [], aiJobs: [], strategies: [],
+  mediaTags: [], mediaAssetTags: [], mediaUsage: [], mediaIntake: [], mediaIdentityLinksV2: [], aiJobs: [],
+  contentAiRuns: [], readyPackages: [], readyPackageVariants: [], readyPackageStatuses: [],
+  exceptionIncidentsV2: [], exceptionEventsV2: [], veroxaReadyPackagesV2: [], veroxaReadyVariantsV2: [], strategies: [],
   contentItems: [], pendingContentConfirmations: [], variants: [], approvals: [], calendar: [], connections: [],
   publishQueue: [], localChecks: [], reviews: [], visibility: [], work: [],
   activity: [], reports: [], monitors: [], alerts: [], recovery: [],
@@ -514,6 +736,8 @@ type QueryDefinition = {
   order?: string;
   ascending?: boolean;
   limit?: number;
+  equals?: Record<string, string | boolean>;
+  isNull?: string;
 };
 
 const intelligenceQueries: QueryDefinition[] = [
@@ -526,16 +750,27 @@ const intelligenceQueries: QueryDefinition[] = [
 ];
 
 const mediaQueries: QueryDefinition[] = [
-  { key: "media", table: "veroxa_media_assets", columns: "id, restaurant_id, storage_path, original_file_name, mime_type, file_size, content_sha256, uploaded_by, status, reuse_count, last_used_at, created_at, updated_at", order: "created_at", ascending: false },
+  { key: "media", table: "veroxa_media_assets", columns: "id, restaurant_id, storage_path, original_file_name, mime_type, file_size, width, height, content_sha256, uploaded_by, status, reuse_count, last_used_at, created_at, updated_at", order: "created_at", ascending: false },
   { key: "mediaRights", table: "veroxa_media_rights", columns: "id, restaurant_id, asset_id, rights_status, usage_scope, attestation_version, attestation_sha256, valid_from, expires_at, confirmed_by, confirmed_at, evidence_class, created_at, updated_at", order: "created_at", ascending: false },
   { key: "mediaReviews", table: "veroxa_media_reviews", columns: "id, restaurant_id, asset_id, status, quality_score, quality_notes, public_use_approved, is_current, reviewed_by, reviewed_at, created_at, updated_at", order: "created_at", ascending: false },
   { key: "mediaTags", table: "veroxa_media_tags", columns: "id, restaurant_id, slug, label, source, created_at, updated_at", order: "label" },
   { key: "mediaAssetTags", table: "veroxa_media_asset_tags", columns: "restaurant_id, asset_id, tag_id, source, confidence, created_at", order: "created_at", ascending: false },
   { key: "mediaUsage", table: "veroxa_media_usage", columns: "id, restaurant_id, asset_id, content_item_id, platform, usage_kind, used_at, external_reference, created_at", order: "used_at", ascending: false },
-  { key: "aiJobs", table: "veroxa_ai_jobs", columns: "id, restaurant_id, job_kind, subject_type, subject_id, status, provider_key, model_key, prompt_version, input_payload, output_payload, safety_flags, attempt_count, max_attempts, next_attempt_at, last_error, created_at, updated_at", order: "created_at", ascending: false },
+  { key: "mediaIntake", table: "veroxa_momo_media_intake_verifications", columns: "id, restaurant_id, asset_id, detected_mime_type, file_size, width, height, content_sha256, verifier_version, status, verified_at", order: "verified_at", ascending: false },
+  { key: "mediaIdentityLinksV2", table: "veroxa_momo_media_asset_identity_links_v2", columns: "id, restaurant_id, identity_id, asset_id, verification_id, canonical_asset_id, link_kind, content_sha256, rights_id, rights_attestation_sha256, created_at", order: "created_at", ascending: false, limit: 200 },
+  { key: "contentAiRuns", table: "veroxa_momo_content_ai_runs", columns: "id, restaurant_id, source_asset_id, intake_verification_id, source_storage_path, source_storage_object_id, source_storage_object_version, source_mime_type, source_file_size, source_width, source_height, source_content_sha256, rights_id, rights_attestation_sha256, review_id, request_hash, target_platforms, truth_snapshot, truth_snapshot_sha256, status, model, prompt_version, output_payload, output_sha256, validation_report, provider_error_code, provider_started_at, accounted_microusd, team_decided_at, decision_mode, automation_policy_version, automation_identity_id, automation_initiated_by, automation_retry_of_run_id, automation_retry_generation, requested_at, updated_at", order: "requested_at", ascending: false },
+  { key: "aiJobs", table: "veroxa_ai_jobs", columns: "id, restaurant_id, job_kind, subject_type, subject_id, status, provider_key, model_key, prompt_version, input_payload, output_payload, safety_flags, attempt_count, max_attempts, next_attempt_at, last_error, superseded_by_job_id, superseded_at, supersession_reason, created_at, updated_at", order: "created_at", ascending: false, isNull: "superseded_by_job_id" },
+  { key: "exceptionIncidentsV2", table: "veroxa_momo_exception_incidents_v2", columns: "id, restaurant_id, canonical_asset_id, stage, policy_version, blocker_set_sha256, status, blockers, warnings, evidence_sha256, occurrence_count, first_seen_at, last_seen_at, resolved_at, external_write_allowed", order: "last_seen_at", ascending: false, equals: { status: "open", external_write_allowed: false } },
+  // Routine Team reads keep immutable lineage bounded and omit the large
+  // evidence snapshot/canonical payload; hashes preserve audit correlation.
+  { key: "exceptionEventsV2", table: "veroxa_momo_exception_events_v2", columns: "id, incident_id, restaurant_id, canonical_asset_id, source_asset_id, content_ai_run_id, stage, event_kind, policy_version, blockers, warnings, evidence_sha256, occurred_at", order: "occurred_at", ascending: false, limit: 200 },
 ];
 
 const contentQueries: QueryDefinition[] = [
+  { key: "readyPackages", table: "veroxa_momo_ready_packages", columns: "id, restaurant_id, content_ai_run_id, source_asset_id, source_storage_path, source_storage_object_id, source_storage_object_version, source_mime_type, source_file_size, source_width, source_height, source_content_sha256, review_id, approved_payload, approved_payload_sha256, schedule_snapshot, status, approved_by, ready_at", order: "ready_at", ascending: false },
+  { key: "readyPackageVariants", table: "veroxa_momo_ready_package_variants", columns: "id, restaurant_id, ready_package_id, platform, media_source_kind, media_asset_id, media_review_id, media_storage_path, media_storage_object_id, media_storage_object_version, media_mime_type, media_file_size, media_width, media_height, media_content_sha256, caption, hashtags, seo_phrases, alt_text, call_to_action, scheduled_for, timezone, status", order: "scheduled_for" },
+  { key: "veroxaReadyPackagesV2", table: "veroxa_momo_ready_packages_v2", columns: "id, restaurant_id, content_ai_run_id, identity_id, canonical_asset_id, source_asset_id, intake_verification_id, rights_id, rights_attestation_sha256, truth_snapshot_sha256, source_storage_path, source_storage_object_id, source_storage_object_version, source_mime_type, source_file_size, source_width, source_height, source_content_sha256, output_payload, output_sha256, validation_report, validation_sha256, decision_mode, policy_version, status, external_write_allowed, ready_at", order: "ready_at", ascending: false, equals: { status: "veroxa_ready", external_write_allowed: false } },
+  { key: "veroxaReadyVariantsV2", table: "veroxa_momo_ready_variants_v2", columns: "id, restaurant_id, ready_package_id, platform, caption, hashtags, seo_phrases, alt_text, call_to_action, claim_ids, status, external_write_allowed, created_at", order: "platform", equals: { status: "veroxa_ready", external_write_allowed: false } },
   { key: "strategies", table: "veroxa_content_strategies", columns: "id, restaurant_id, title, status, goals, pillars, brand_voice_snapshot, approved_by, approved_at, created_at, updated_at", order: "created_at", ascending: false },
   { key: "contentItems", table: "veroxa_content_items", columns: "id, restaurant_id, strategy_id, primary_media_asset_id, title, concept, master_caption, manual_pillar, status, requires_owner_confirmation, created_by, approved_by, approved_at, created_at, updated_at", order: "created_at", ascending: false },
   { key: "variants", table: "veroxa_content_variants", columns: "id, restaurant_id, content_item_id, platform, caption, metadata, status, approved_by, approved_at, created_at, updated_at", order: "created_at", ascending: false },
@@ -565,7 +800,10 @@ const readinessQueries: QueryDefinition[] = [
 function queriesForSection(section: MomoWorkspaceSection): QueryDefinition[] {
   if (section === "requests") return [];
   if (section === "intelligence") return intelligenceQueries;
-  if (section === "media") return mediaQueries;
+  if (section === "media") return [
+    ...mediaQueries,
+    ...contentQueries.filter((query) => ["readyPackages", "readyPackageVariants", "veroxaReadyPackagesV2", "veroxaReadyVariantsV2"].includes(query.key)),
+  ];
   if (section === "content") return [
     ...intelligenceQueries.filter((query) => query.key === "truth" || query.key === "confirmations"),
     ...mediaQueries,
@@ -733,6 +971,8 @@ export async function loadMomoWorkspaceData(
   const definitions = queriesForSection(section);
   const responses = await Promise.all(definitions.map(async (definition) => {
     let query = client.from(definition.table).select(definition.columns).eq("restaurant_id", restaurantId);
+    for (const [column, value] of Object.entries(definition.equals ?? {})) query = query.eq(column, value);
+    if (definition.isNull) query = query.is(definition.isNull, null);
     if (definition.order) {
       query = query.order(definition.order, { ascending: definition.ascending ?? true });
     }
@@ -743,6 +983,23 @@ export async function loadMomoWorkspaceData(
   for (const { definition, response } of responses) {
     if (response.error) throw new Error("workspace_data_unavailable");
     (result[definition.key] as unknown[]) = response.data ?? [];
+  }
+  if (result.readyPackages.length > 0) {
+    const statuses = await Promise.all(result.readyPackages.map(async (readyPackage) => {
+      const { data, error } = await client.rpc("veroxa_momo_ready_package_status_v1", {
+        p_ready_package_id: readyPackage.id,
+      });
+      if (error) throw new Error("workspace_data_unavailable");
+      const row = Array.isArray(data) ? data[0] : data;
+      if (!row || typeof row !== "object") throw new Error("workspace_data_unavailable");
+      const value = row as Record<string, unknown>;
+      return {
+        ready_package_id: String(value.ready_package_id || ""),
+        effective_status: value.effective_status === "ready_to_post" ? "ready_to_post" as const : "blocked" as const,
+        blockers: Array.isArray(value.blockers) ? value.blockers.filter((item): item is string => typeof item === "string") : ["readiness_unknown"],
+      };
+    }));
+    result.readyPackageStatuses = statuses.filter((item) => item.ready_package_id);
   }
   if (section === "readiness" || section === "dashboard") {
     const { data, error } = await client.rpc("veroxa_momo_readiness_summary_v1", {
@@ -1185,9 +1442,7 @@ export async function updateMomoPresenceProfile(input: {
 
 function safeMediaExtension(file: File): string {
   const byMime: Record<string, string> = {
-    "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp",
-    "image/heic": "heic", "image/heif": "heif", "video/mp4": "mp4",
-    "video/quicktime": "mov", "video/webm": "webm",
+    "image/jpeg": "jpg",
   };
   const extension = byMime[file.type];
   if (!extension) throw new Error("unsupported_media_type");
@@ -1200,7 +1455,12 @@ export async function uploadMomoMedia(input: {
   usageScope: string[];
   expiresAt?: string;
 }): Promise<void> {
-  if (input.file.size <= 0 || input.file.size > 104857600) throw new Error("invalid_media_size");
+  if (input.file.size < 10 * 1024 || input.file.size > 5 * 1024 * 1024) throw new Error("invalid_media_size");
+  if (input.file.type !== "image/jpeg") throw new Error("invalid_media_type");
+  const usageScope = [...new Set(input.usageScope)];
+  if (usageScope.length < 1 || usageScope.some((scope) => !["facebook", "instagram", "google_business"].includes(scope))) {
+    throw new Error("invalid_media_scope");
+  }
   const client = requiredClient();
   const extension = safeMediaExtension(input.file);
   const now = new Date();
@@ -1218,13 +1478,30 @@ export async function uploadMomoMedia(input: {
     p_file_size: input.file.size,
     p_original_file_name: input.file.name,
     p_intake_notes: null,
-    p_usage_scope: input.usageScope,
+    p_usage_scope: usageScope,
     p_expires_on: input.expiresAt || null,
   });
   if (registration.error || !registration.data) {
     await client.storage.from("restaurant-media").remove([storagePath]);
     throw new Error("media_registration_failed");
   }
+  const registered = Array.isArray(registration.data)
+    ? registration.data[0]
+    : registration.data;
+  const assetId = registered && typeof registered === "object"
+    && typeof (registered as { asset_id?: unknown }).asset_id === "string"
+    ? (registered as { asset_id: string }).asset_id
+    : "";
+  if (!assetId) throw new Error("media_registration_failed");
+  await finalizeMomoMediaUpload({ restaurantId: input.restaurantId, assetId, storagePath });
+}
+
+export async function retryMomoMediaVerification(input: {
+  restaurantId: string;
+  assetId: string;
+  storagePath: string;
+}): Promise<void> {
+  await finalizeMomoMediaUpload(input);
 }
 
 export async function reviewMomoMedia(input: {
@@ -1234,7 +1511,7 @@ export async function reviewMomoMedia(input: {
   qualityScore: number;
   qualityNotes: string;
   publicUseApproved: boolean;
-}): Promise<void> {
+}): Promise<string> {
   const client = requiredClient();
   const { data, error } = await client.rpc("veroxa_review_momo_media_v1", {
     p_asset_id: input.assetId,
@@ -1244,6 +1521,122 @@ export async function reviewMomoMedia(input: {
     p_public_use_approved: input.publicUseApproved,
   });
   if (error || !data) throw new Error("media_review_failed");
+  const row = Array.isArray(data) ? data[0] : data;
+  if (!row || typeof row !== "object" || typeof (row as { review_id?: unknown }).review_id !== "string") {
+    throw new Error("media_review_failed");
+  }
+  return (row as { review_id: string }).review_id;
+}
+
+async function boundedPortalJson(
+  response: Response,
+  onErrorBody?: (body: Record<string, unknown>) => void,
+): Promise<Record<string, unknown>> {
+  const text = await response.text();
+  if (!text || text.length > 300000) throw new Error("portal_response_invalid");
+  let value: unknown;
+  try { value = JSON.parse(text); } catch { throw new Error("portal_response_invalid"); }
+  if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("portal_response_invalid");
+  if (!response.ok) {
+    onErrorBody?.(value as Record<string, unknown>);
+    const code = typeof (value as { error?: unknown }).error === "string"
+      ? (value as { error: string }).error
+      : "portal_action_failed";
+    throw new Error(code);
+  }
+  return value as Record<string, unknown>;
+}
+
+export async function generateMomoContentPackage(input: {
+  restaurantId: string;
+  assetId: string;
+  idempotencyKey: string;
+}): Promise<{ runId: string; status: "queued" | "provider_running" | "finalizing" | "pending_team_review" | "pending_review" | "materialized" | "rejected" }> {
+  const idempotencyKey = input.idempotencyKey;
+  const response = await fetch("/api/team/content-ai/package", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "idempotency-key": idempotencyKey,
+    },
+    body: JSON.stringify({
+      restaurantId: input.restaurantId,
+      assetId: input.assetId,
+      standingAutomation: true,
+      idempotencyKey,
+    }),
+    credentials: "same-origin",
+    cache: "no-store",
+  });
+  const body = await boundedPortalJson(response);
+  const status = typeof body.status === "string" ? body.status : "";
+  const allowedStatuses = [
+    "queued",
+    "provider_running",
+    "finalizing",
+    "pending_team_review",
+    "pending_review",
+    "materialized",
+    "rejected",
+  ] as const;
+  if (typeof body.runId !== "string" || !allowedStatuses.includes(
+    status as typeof allowedStatuses[number],
+  )) {
+    throw new Error("content_package_response_invalid");
+  }
+  return {
+    runId: body.runId,
+    status: status as typeof allowedStatuses[number],
+  };
+}
+
+export async function approveMomoContentPackage(input: {
+  restaurantId: string;
+  runId: string;
+  schedules: Record<MomoContentPlatform, string> | Partial<Record<MomoContentPlatform, string>>;
+  inspectionAttestation: boolean;
+}): Promise<string> {
+  if (input.inspectionAttestation !== true) throw new Error("package_inspection_required");
+  const response = await fetch("/api/team/content-ai/approve", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      restaurantId: input.restaurantId,
+      runId: input.runId,
+      schedules: input.schedules,
+      inspectionAttestation: input.inspectionAttestation,
+    }),
+    credentials: "same-origin",
+    cache: "no-store",
+  });
+  const body = await boundedPortalJson(response);
+  if (typeof body.readyPackageId !== "string") throw new Error("ready_package_response_invalid");
+  return body.readyPackageId;
+}
+
+export async function getMomoReadyPackageStatus(readyPackageId: string): Promise<"ready_to_post" | "blocked"> {
+  const client = requiredClient();
+  const { data, error } = await client.rpc("veroxa_momo_ready_package_status_v1", {
+    p_ready_package_id: readyPackageId,
+  });
+  if (error) throw new Error("ready_status_unavailable");
+  const row = Array.isArray(data) ? data[0] : data;
+  if (!row || typeof row !== "object") throw new Error("ready_status_unavailable");
+  const status = (row as { effective_status?: unknown }).effective_status;
+  if (status !== "ready_to_post" && status !== "blocked") throw new Error("ready_status_unavailable");
+  return status;
+}
+
+export async function requestMomoContentPackageRevision(input: {
+  runId: string;
+  notes: string;
+}): Promise<void> {
+  if (input.notes.trim().length < 10) throw new Error("revision_note_required");
+  const { data, error } = await requiredClient().rpc(
+    "veroxa_reject_momo_content_ai_run_v1",
+    { p_run_id: input.runId, p_notes: input.notes.trim() },
+  );
+  if (error || typeof data !== "string") throw new Error("content_package_revision_failed");
 }
 
 export async function revokeMomoMediaRights(input: {
@@ -1279,6 +1672,25 @@ export async function getMomoMediaPreviewUrl(storagePath: string): Promise<strin
   const { data, error } = await client.storage.from("restaurant-media").createSignedUrl(storagePath, 300);
   if (error || !data?.signedUrl) throw new Error("media_preview_failed");
   return data.signedUrl;
+}
+
+export async function getMomoVerifiedMediaPreviewObjectUrl(input: {
+  storagePath: string;
+  contentSha256: string;
+  fileSize: number;
+  mimeType: "image/jpeg";
+}): Promise<string> {
+  const signedUrl = await getMomoMediaPreviewUrl(input.storagePath);
+  const response = await fetch(signedUrl, { cache: "no-store", credentials: "omit" });
+  if (!response.ok) throw new Error("media_preview_verification_failed");
+  const blob = await response.blob();
+  if (blob.size !== input.fileSize || blob.type.split(";", 1)[0].trim() !== input.mimeType) {
+    throw new Error("media_preview_verification_failed");
+  }
+  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", await blob.arrayBuffer()));
+  const contentSha256 = Array.from(digest, (byte) => byte.toString(16).padStart(2, "0")).join("");
+  if (contentSha256 !== input.contentSha256) throw new Error("media_preview_verification_failed");
+  return URL.createObjectURL(blob);
 }
 
 export async function recordMomoMediaReuse(input: {

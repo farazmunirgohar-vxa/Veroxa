@@ -9,7 +9,10 @@ const must = (condition: boolean, message: string) => {
   if (!condition) failures.push(message);
 };
 
-function archivedRuntimeHash(entries: string[]): { fileCount: number; sha256: string } {
+function archivedRuntimeHash(entries: string[]): {
+  fileCount: number;
+  sha256: string;
+} {
   const files: string[] = [];
   const walk = (path: string) => {
     const absolute = resolve(repoRoot, path);
@@ -47,7 +50,12 @@ const deploymentManifest = read(
   "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json",
 );
 const deploymentManifestRecord = JSON.parse(deploymentManifest) as {
-  currentVerifiedRelease?: {
+  schemaVersion?: number;
+  releaseState?: string;
+  lastGitHubParityRelease?: {
+    evidenceScope?: string;
+    supersededAsLiveBaseline?: boolean;
+    pullRequest?: number;
     reviewedHead?: string;
     githubMainCommit?: string;
     sitesCheckoutCommit?: string;
@@ -58,14 +66,123 @@ const deploymentManifestRecord = JSON.parse(deploymentManifest) as {
     latestProductionMigration?: string;
     latestProductionMigrationSha256?: string;
   };
+  currentProductionObservation?: {
+    evidenceStatus?: string;
+    canonicalGitHubMainCommit?: string;
+    githubMainMatchesCandidate?: boolean;
+    sitesVersion?: number;
+    sitesCheckoutCommit?: string;
+    sourceFileCount?: number;
+    sourceTreeSha256?: string;
+    candidateSourceMatchesLiveSites?: boolean;
+    productionMigrationCount?: number;
+    migrationTreeSha256?: string;
+    latestProductionMigration?: string;
+    latestProductionMigrationSha256?: string;
+    databaseLedgerObserved?: boolean;
+    databaseAppliedThroughLatestObserved?: boolean;
+    candidateMigrationsMatchLiveLedger?: boolean;
+    fullReleaseGatePassed?: boolean;
+  };
   releaseCandidate?: {
     status?: string;
+    actionScope?: string;
+    basedOnGitHubMainCommit?: string;
     pullRequest?: number | null;
     githubMerged?: boolean;
+    reviewedLocally?: boolean;
+    candidateSourceMatchesLiveSites?: boolean;
+    candidateMigrationsMatchLiveLedger?: boolean;
+    githubMainMatchesCandidate?: boolean;
+    fullReleaseGatePassed?: boolean;
+    databaseChangesRequired?: boolean;
+    databaseMigrationApplied?: boolean;
+    sitesPublishRequired?: boolean;
     sitesPublished?: boolean;
     futureMergedGitHubCommit?: string | null;
     futureSitesVersion?: number | null;
   };
+};
+const v36CloseoutRecord = JSON.parse(
+  read("artifacts/veroxa/docs/MOMO_UPLOAD_V36_LIVE_CLOSEOUT.json"),
+) as {
+  schemaVersion?: number;
+  recordKind?: string;
+  status?: string;
+  supersedesForCurrentLiveStatus?: string;
+  scope?: {
+    restaurant?: string;
+    workflow?: string;
+    externalSchedulingIncluded?: boolean;
+    externalPublishingIncluded?: boolean;
+    externalProviderConnectionIncluded?: boolean;
+  };
+  sites?: {
+    versionNumber?: number;
+    checkoutCommit?: string;
+    deploymentStatus?: string;
+    productionLive?: boolean;
+    sourceTreeSha256?: string;
+  };
+  github?: {
+    repository?: string;
+    currentMainRelease?: string;
+    currentMainCommit?: string;
+    v36ParityStatus?: string;
+    v36ParityPullRequest?: number | null;
+    v36ParityReviewedHead?: string | null;
+    v36ParityMergedCommit?: string | null;
+    v36ParitySourceTreeSha256?: string;
+  };
+  database?: {
+    productionMigrationCount?: number;
+    latestAppliedMigration?: string;
+    latestAppliedMigrationSha256?: string;
+    v36MigrationsLive?: boolean;
+    rollbackCompilationPreviouslyPassed?: boolean;
+  };
+  verification?: {
+    status?: string;
+    testsPassed?: number;
+    testsTotal?: number;
+    productionBuildPassed?: boolean;
+    lintPassed?: boolean;
+    typecheckPassed?: boolean;
+    rollbackMigrationCompilationPassed?: boolean;
+  };
+  internalWorkers?: Array<{
+    function?: string;
+    status?: string;
+    updatedForV36?: boolean;
+  }>;
+  pipelineBehavior?: {
+    exactDuplicateHandling?: string;
+    legacyDuplicateJobsConsolidated?: number;
+    legacyDuplicateJobsDeleted?: number;
+    nearDuplicateMerge?: string;
+    badMediaOutcome?: string;
+    badMediaAutomaticEditOrResize?: boolean;
+    badMediaOriginalPreserved?: boolean;
+    readyState?: string;
+    readyStateScheduled?: boolean;
+    readyStatePublished?: boolean;
+    teamDefaultWork?: string;
+    immutableLineageRequired?: boolean;
+  };
+  productionSafetyState?: {
+    publishQueue?: string;
+    externalScheduleQueue?: string;
+    externalProviderConnections?: string;
+    webhookAndRecoveryBacklog?: string;
+    externalPublishingEnabled?: boolean;
+    externalSchedulingEnabled?: boolean;
+    providerWritesEnabled?: boolean;
+    reviewRepliesEnabled?: boolean;
+    websiteWritesEnabled?: boolean;
+    allExternalWriteControlsLocked?: boolean;
+    momoActivationExecuted?: boolean;
+  };
+  releaseBoundary?: string;
 };
 const v22CloseoutRecord = JSON.parse(
   read("artifacts/veroxa/docs/MOMO_MEDIA_V22_LIVE_CLOSEOUT.json"),
@@ -190,12 +307,44 @@ const v20CloseoutRecord = JSON.parse(
 const rrReleaseCheckpointRecord = JSON.parse(
   read("artifacts/veroxa/docs/RR_RELEASE_CHECKPOINT.json"),
 ) as {
+  schemaVersion?: number;
+  status?: string;
+  lastGitHubParityRelease?: {
+    evidenceScope?: string;
+    supersededAsLiveBaseline?: boolean;
+    pullRequest?: number;
+    mergedOperationalCommit?: string;
+    sitesVersion?: number;
+    productionMigrations?: number;
+    latestProductionMigration?: string;
+    latestProductionMigrationSha256?: string;
+  };
+  currentProductionObservation?: {
+    sitesVersion?: number;
+    productionMigrations?: number;
+    migrationTreeSha256?: string;
+    candidateSourceMatchesLiveSites?: boolean;
+    candidateMigrationsMatchLiveLedger?: boolean;
+    githubMainMatchesCandidate?: boolean;
+    fullReleaseGatePassed?: boolean;
+  };
   releaseCandidate?: {
+    state?: string;
+    actionScope?: string;
     pullRequest?: number | null;
+    githubMerged?: boolean;
     futureMergedGitHubCommit?: string | null;
     futureSitesVersion?: number | null;
+    reviewedLocally?: boolean;
+    candidateSourceMatchesLiveSites?: boolean;
+    candidateMigrationsMatchLiveLedger?: boolean;
+    githubMainMatchesCandidate?: boolean;
+    fullReleaseGatePassed?: boolean;
+    localReviewPassed?: boolean;
     allFourWorkflowsGreen?: boolean | null;
     zeroUnresolvedReviewThreads?: boolean | null;
+    databaseMigrationApplied?: boolean;
+    sitesPublishRequired?: boolean;
     sitesCandidatePublished?: boolean;
   };
 };
@@ -400,7 +549,10 @@ for (const marker of [
   "ebc2ea499a24b79da1baaffa02423488b1a28a95cb75d4c0d5c002c7c585948d",
   "verified_reconciliation_cleanup_deployed",
   "post_release_cleanup_deployed",
-  "verified_manual_deployment_complete",
+  "Sites v36",
+  "MOMO_UPLOAD_V36_LIVE_CLOSEOUT.json",
+  "20260802020000_momo_pipeline_query_indexes_v2.sql",
+  "9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90",
   // Preserve the exact pre-PR #148 drift baseline as historical evidence.
   "674e1a7c0d140c9b281029277baeb2e68962dac2",
   "dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805",
@@ -451,8 +603,11 @@ const closeoutBridge = v22CloseoutRecord.lifecycleBridge;
 const closeoutPostDeploy = v22CloseoutRecord.postDeployVerification;
 const closeoutMomo = v22CloseoutRecord.momoOperationalEvidence;
 const closeoutBoundaries = v22CloseoutRecord.boundaries;
-const rrPublishedCandidate = rrReleaseCheckpointRecord.releaseCandidate;
-const publishedCloseoutMatchesCandidate =
+const lastGitHubParityRelease =
+  deploymentManifestRecord.lastGitHubParityRelease;
+const rrLastGitHubParityRelease =
+  rrReleaseCheckpointRecord.lastGitHubParityRelease;
+const historicalV22CloseoutIsExact =
   closeoutGithub !== undefined &&
   closeoutSites !== undefined &&
   closeoutSource !== undefined &&
@@ -463,16 +618,9 @@ const publishedCloseoutMatchesCandidate =
   closeoutBoundaries !== undefined &&
   v22CloseoutRecord.recordKind === "momo_media_v22_live_closeout" &&
   v22CloseoutRecord.status === "deployed_lifecycle_bridge_momo_no_go" &&
-  closeoutGithub.pullRequest === releaseCandidate?.pullRequest &&
   closeoutGithub.pullRequest === 155 &&
-  closeoutGithub.reviewedHead ===
-    deploymentManifestRecord.currentVerifiedRelease?.reviewedHead &&
-  closeoutGithub.reviewedHead ===
-    "96a6c00857b438b37c2e8d99329c0f556de850a2" &&
-  closeoutGithub.mergedCommit ===
-    releaseCandidate?.futureMergedGitHubCommit &&
-  closeoutGithub.mergedCommit ===
-    "d1f6a9a78ac54cd5447689d5f8b3d42466daf479" &&
+  closeoutGithub.reviewedHead === "96a6c00857b438b37c2e8d99329c0f556de850a2" &&
+  closeoutGithub.mergedCommit === "d1f6a9a78ac54cd5447689d5f8b3d42466daf479" &&
   closeoutGithub.zeroUnresolvedReviewThreads === true &&
   JSON.stringify(Object.keys(closeoutGithub.workflows ?? {}).sort()) ===
     JSON.stringify(["ci", "sitesVerify", "supabaseVerify", "veroxaVerify"]) &&
@@ -484,16 +632,11 @@ const publishedCloseoutMatchesCandidate =
   closeoutGithub.workflows?.supabaseVerify?.runId === 30591061598 &&
   closeoutGithub.workflows?.supabaseVerify?.fullMigrationResetPassed === true &&
   closeoutGithub.workflows?.supabaseVerify?.databaseTestsPassed === true &&
-  closeoutGithub.workflows?.supabaseVerify
-    ?.functionFormatLintAndCheckPassed === true &&
+  closeoutGithub.workflows?.supabaseVerify?.functionFormatLintAndCheckPassed ===
+    true &&
   closeoutGithub.workflows?.veroxaVerify?.runId === 30591061628 &&
-  closeoutSites.versionNumber ===
-    releaseCandidate?.futureSitesVersion &&
   closeoutSites.versionNumber === 22 &&
-  closeoutSites.checkoutCommit ===
-    deploymentManifestRecord.currentVerifiedRelease?.sitesCheckoutCommit &&
-  closeoutSites.checkoutCommit ===
-    "83bf6496a02559bf7bbc3fe9bc02ff7f9f8b3f6e" &&
+  closeoutSites.checkoutCommit === "83bf6496a02559bf7bbc3fe9bc02ff7f9f8b3f6e" &&
   closeoutSites.deploymentStatus === "succeeded" &&
   closeoutSites.liveUrl === "https://veroxasystems.com" &&
   closeoutSites.environmentRevision === 5 &&
@@ -514,25 +657,19 @@ const publishedCloseoutMatchesCandidate =
         providerStatus: "active",
       },
     ]) &&
-  closeoutSource.sitesFileCount ===
-    deploymentManifestRecord.currentVerifiedRelease?.sourceFileCount &&
   closeoutSource.sitesFileCount === 93 &&
   closeoutSource.sitesTreeSha256 ===
-    deploymentManifestRecord.currentVerifiedRelease?.sourceTreeSha256 &&
-  closeoutSource.sitesTreeSha256 ===
     "8bc4ef94c0f670ff128774e26a9de3d9849269f74b6e5c5af05f07ee0c9e5490" &&
-  closeoutSource.migrationFileCount ===
-    deploymentManifestRecord.currentVerifiedRelease?.productionMigrationCount &&
+  closeoutSource.migrationFileCount === 16 &&
   closeoutSource.migrationTreeSha256 ===
     "09aab45cda17810b52a07429700a4557308405d40a3983635d6bb7848dd4c729" &&
   closeoutDatabase.databaseChangeRequiredForV22 === false &&
   closeoutDatabase.databaseMigrationAppliedByV22 === false &&
-  closeoutDatabase.productionMigrationCount ===
-    deploymentManifestRecord.currentVerifiedRelease?.productionMigrationCount &&
+  closeoutDatabase.productionMigrationCount === 16 &&
   closeoutDatabase.latestAppliedMigration ===
-    deploymentManifestRecord.currentVerifiedRelease?.latestProductionMigration &&
+    "20260728044916_momo_media_ai_pilot_v1.sql" &&
   closeoutDatabase.latestAppliedMigrationSha256 ===
-    deploymentManifestRecord.currentVerifiedRelease?.latestProductionMigrationSha256 &&
+    "efae63b4344570934d1d66b47ef1fce4fcd16343a2fe9dd8352607e0784d09a1" &&
   closeoutBridge.deployed === true &&
   closeoutBridge.edgeFunction === "momo-media-ai-lifecycle" &&
   closeoutBridge.edgeFunctionVersion === 1 &&
@@ -572,33 +709,241 @@ const publishedCloseoutMatchesCandidate =
   closeoutBoundaries.recurringProviderActivation === false &&
   closeoutBoundaries.allExternalWriteSwitchesLocked === true &&
   closeoutBoundaries.momoActivationExecuted === false;
-const rrPublishedEvidenceMatchesCandidate =
-  rrPublishedCandidate !== undefined &&
-  rrPublishedCandidate.pullRequest ===
-    releaseCandidate?.pullRequest &&
-  rrPublishedCandidate.futureMergedGitHubCommit ===
-    releaseCandidate?.futureMergedGitHubCommit &&
-  rrPublishedCandidate.futureSitesVersion ===
-    releaseCandidate?.futureSitesVersion &&
-  rrPublishedCandidate.allFourWorkflowsGreen === true &&
-  rrPublishedCandidate.zeroUnresolvedReviewThreads ===
-    true &&
-  rrPublishedCandidate.sitesCandidatePublished === true;
-const releaseCandidateIsPublishedEvidence =
-  releaseCandidate?.status === "published_sites_followup_no_database_change" &&
-  releaseCandidate.githubMerged === true &&
-  releaseCandidate.sitesPublished === true &&
-  releaseCandidate.futureMergedGitHubCommit ===
-    deploymentManifestRecord.currentVerifiedRelease?.githubMainCommit &&
-  releaseCandidate.futureSitesVersion ===
-    deploymentManifestRecord.currentVerifiedRelease?.sitesVersion &&
-  publishedCloseoutMatchesCandidate &&
-  rrPublishedEvidenceMatchesCandidate;
+
 must(
-  (releaseCandidate?.futureMergedGitHubCommit == null &&
-    releaseCandidate?.futureSitesVersion == null) ||
-    releaseCandidateIsPublishedEvidence,
-  "Deployment manifest must not predict a merge commit or future Sites version; populated values must be verified published evidence.",
+  historicalV22CloseoutIsExact,
+  "MOMO_MEDIA_V22_LIVE_CLOSEOUT.json must remain immutable historical evidence for the last GitHub-to-Sites parity release only.",
+);
+must(
+  lastGitHubParityRelease?.evidenceScope ===
+    "last_github_sites_parity_release" &&
+    lastGitHubParityRelease.supersededAsLiveBaseline === true &&
+    lastGitHubParityRelease.pullRequest === 155 &&
+    lastGitHubParityRelease.reviewedHead ===
+      "96a6c00857b438b37c2e8d99329c0f556de850a2" &&
+    lastGitHubParityRelease.githubMainCommit ===
+      "d1f6a9a78ac54cd5447689d5f8b3d42466daf479" &&
+    lastGitHubParityRelease.sitesCheckoutCommit ===
+      "83bf6496a02559bf7bbc3fe9bc02ff7f9f8b3f6e" &&
+    lastGitHubParityRelease.sitesVersion === 22 &&
+    lastGitHubParityRelease.sourceFileCount === 93 &&
+    lastGitHubParityRelease.sourceTreeSha256 ===
+      "8bc4ef94c0f670ff128774e26a9de3d9849269f74b6e5c5af05f07ee0c9e5490" &&
+    lastGitHubParityRelease.productionMigrationCount === 16 &&
+    lastGitHubParityRelease.latestProductionMigration ===
+      "20260728044916_momo_media_ai_pilot_v1.sql" &&
+    lastGitHubParityRelease.latestProductionMigrationSha256 ===
+      "efae63b4344570934d1d66b47ef1fce4fcd16343a2fe9dd8352607e0784d09a1",
+  "Schema-4 manifest must classify PR #155 / Sites v22 as superseded historical GitHub parity, not current production.",
+);
+must(
+  rrLastGitHubParityRelease?.evidenceScope ===
+    "last_github_sites_parity_release" &&
+    rrLastGitHubParityRelease.supersededAsLiveBaseline === true &&
+    rrLastGitHubParityRelease.pullRequest === 155 &&
+    rrLastGitHubParityRelease.mergedOperationalCommit ===
+      "d1f6a9a78ac54cd5447689d5f8b3d42466daf479" &&
+    rrLastGitHubParityRelease.sitesVersion === 22 &&
+    rrLastGitHubParityRelease.productionMigrations === 16 &&
+    rrLastGitHubParityRelease.latestProductionMigration ===
+      "20260728044916_momo_media_ai_pilot_v1.sql" &&
+    rrLastGitHubParityRelease.latestProductionMigrationSha256 ===
+      "efae63b4344570934d1d66b47ef1fce4fcd16343a2fe9dd8352607e0784d09a1",
+  "Schema-8 RR checkpoint must preserve the same historical Sites v22 parity evidence.",
+);
+
+const currentProduction = deploymentManifestRecord.currentProductionObservation;
+const rrCurrentProduction =
+  rrReleaseCheckpointRecord.currentProductionObservation;
+must(
+  deploymentManifestRecord.schemaVersion === 4 &&
+    [
+      "live_sites_v36_github_reconciliation_fingerprints_refreshed_review_required",
+      "live_sites_v36_github_reconciliation_reviewed_unmerged",
+    ].includes(deploymentManifestRecord.releaseState ?? "") &&
+    currentProduction?.evidenceStatus ===
+      "sites_v36_live_github_reconciliation_in_progress" &&
+    currentProduction.canonicalGitHubMainCommit ===
+      "302621bf6b9ab78320abe4175b45b56e9e64ae2a" &&
+    currentProduction.githubMainMatchesCandidate === false &&
+    currentProduction.sitesVersion === 36 &&
+    currentProduction.sitesCheckoutCommit ===
+      "b8122642b72e5d4e6e74c379469f2a157781ab3d" &&
+    currentProduction.sourceFileCount === 185 &&
+    currentProduction.sourceTreeSha256 ===
+      "caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7" &&
+    currentProduction.candidateSourceMatchesLiveSites === true &&
+    currentProduction.productionMigrationCount === 37 &&
+    currentProduction.migrationTreeSha256 ===
+      "9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90" &&
+    currentProduction.latestProductionMigration ===
+      "20260802020000_momo_pipeline_query_indexes_v2.sql" &&
+    currentProduction.latestProductionMigrationSha256 ===
+      "106d346be34583446d22de0f6866b5b8937feb766a3a229339dbf1c1768fdfcd" &&
+    currentProduction.databaseLedgerObserved === true &&
+    currentProduction.databaseAppliedThroughLatestObserved === true &&
+    currentProduction.candidateMigrationsMatchLiveLedger === true &&
+    currentProduction.fullReleaseGatePassed === false,
+  "Schema-4 manifest must record live Sites v36 and its 37-migration ledger as the current observation while GitHub parity remains pending.",
+);
+must(
+  rrReleaseCheckpointRecord.schemaVersion === 8 &&
+    rrReleaseCheckpointRecord.status ===
+      deploymentManifestRecord.releaseState &&
+    rrCurrentProduction?.sitesVersion === 36 &&
+    rrCurrentProduction.productionMigrations === 37 &&
+    rrCurrentProduction.migrationTreeSha256 ===
+      "9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90" &&
+    rrCurrentProduction.candidateSourceMatchesLiveSites === true &&
+    rrCurrentProduction.candidateMigrationsMatchLiveLedger === true &&
+    rrCurrentProduction.githubMainMatchesCandidate === false &&
+    rrCurrentProduction.fullReleaseGatePassed === false,
+  "Schema-8 RR checkpoint must agree with the live v36 reconciliation observation.",
+);
+
+const rrCandidate = rrReleaseCheckpointRecord.releaseCandidate;
+const allowedManifestCandidateStates = [
+  "fingerprints_refreshed_review_required_unmerged",
+  "reviewed_locally_unmerged",
+];
+const allowedReleaseStates = [
+  "live_sites_v36_github_reconciliation_fingerprints_refreshed_review_required",
+  "live_sites_v36_github_reconciliation_reviewed_unmerged",
+];
+must(
+  releaseCandidate !== undefined &&
+    allowedManifestCandidateStates.includes(releaseCandidate.status ?? "") &&
+    allowedReleaseStates.includes(
+      deploymentManifestRecord.releaseState ?? "",
+    ) &&
+    releaseCandidate.actionScope === "github_reconciliation_candidate" &&
+    releaseCandidate.basedOnGitHubMainCommit ===
+      "302621bf6b9ab78320abe4175b45b56e9e64ae2a" &&
+    releaseCandidate.pullRequest === null &&
+    releaseCandidate.githubMerged === false &&
+    releaseCandidate.futureMergedGitHubCommit === null &&
+    releaseCandidate.futureSitesVersion === null &&
+    releaseCandidate.candidateSourceMatchesLiveSites === true &&
+    releaseCandidate.candidateMigrationsMatchLiveLedger === true &&
+    releaseCandidate.githubMainMatchesCandidate === false &&
+    releaseCandidate.fullReleaseGatePassed === false &&
+    releaseCandidate.databaseChangesRequired === false &&
+    releaseCandidate.databaseMigrationApplied === false &&
+    releaseCandidate.sitesPublishRequired === false &&
+    releaseCandidate.sitesPublished === false,
+  "Manifest candidate must remain an exact unmerged v36 GitHub reconciliation with null future evidence and no candidate database apply or Sites publish.",
+);
+must(
+  rrCandidate !== undefined &&
+    allowedManifestCandidateStates.includes(rrCandidate.state ?? "") &&
+    rrCandidate.actionScope === "github_reconciliation_candidate" &&
+    rrCandidate.pullRequest === null &&
+    rrCandidate.githubMerged === false &&
+    rrCandidate.futureMergedGitHubCommit === null &&
+    rrCandidate.futureSitesVersion === null &&
+    rrCandidate.candidateSourceMatchesLiveSites === true &&
+    rrCandidate.candidateMigrationsMatchLiveLedger === true &&
+    rrCandidate.githubMainMatchesCandidate === false &&
+    rrCandidate.fullReleaseGatePassed === false &&
+    rrCandidate.allFourWorkflowsGreen === null &&
+    rrCandidate.zeroUnresolvedReviewThreads === null &&
+    rrCandidate.databaseMigrationApplied === false &&
+    rrCandidate.sitesPublishRequired === false &&
+    rrCandidate.sitesCandidatePublished === false,
+  "RR candidate must remain reviewable and unmerged with no predicted PR, head, merge, Sites version, database apply, or publication evidence.",
+);
+
+const v36Scope = v36CloseoutRecord.scope;
+const v36Sites = v36CloseoutRecord.sites;
+const v36Github = v36CloseoutRecord.github;
+const v36Database = v36CloseoutRecord.database;
+const v36Verification = v36CloseoutRecord.verification;
+const v36Pipeline = v36CloseoutRecord.pipelineBehavior;
+const v36Safety = v36CloseoutRecord.productionSafetyState;
+must(
+  v36CloseoutRecord.schemaVersion === 1 &&
+    v36CloseoutRecord.recordKind === "momo_upload_v36_live_closeout" &&
+    v36CloseoutRecord.status ===
+      "sites_v36_live_external_actions_frozen_github_parity_pending" &&
+    v36CloseoutRecord.supersedesForCurrentLiveStatus ===
+      "MOMO_MEDIA_V22_LIVE_CLOSEOUT.json" &&
+    v36Scope?.restaurant === "Momo's House San Antonio" &&
+    v36Scope.workflow === "private_media_upload_to_unscheduled_veroxa_ready" &&
+    v36Scope.externalSchedulingIncluded === false &&
+    v36Scope.externalPublishingIncluded === false &&
+    v36Scope.externalProviderConnectionIncluded === false &&
+    v36Sites?.versionNumber === 36 &&
+    v36Sites.checkoutCommit === "b8122642b72e5d4e6e74c379469f2a157781ab3d" &&
+    v36Sites.deploymentStatus === "succeeded" &&
+    v36Sites.productionLive === true &&
+    v36Sites.sourceTreeSha256 ===
+      "caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7" &&
+    v36Github?.repository === "farazmunirgohar-vxa/Veroxa" &&
+    v36Github.currentMainRelease === "v22" &&
+    v36Github.currentMainCommit ===
+      "302621bf6b9ab78320abe4175b45b56e9e64ae2a" &&
+    v36Github.v36ParityStatus === "pending_pr_creation" &&
+    v36Github.v36ParityPullRequest === null &&
+    v36Github.v36ParityReviewedHead === null &&
+    v36Github.v36ParityMergedCommit === null &&
+    v36Github.v36ParitySourceTreeSha256 ===
+      "caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7" &&
+    v36Database?.productionMigrationCount === 37 &&
+    v36Database.latestAppliedMigration ===
+      "20260802020000_momo_pipeline_query_indexes_v2.sql" &&
+    v36Database.latestAppliedMigrationSha256 ===
+      "106d346be34583446d22de0f6866b5b8937feb766a3a229339dbf1c1768fdfcd" &&
+    v36Database.v36MigrationsLive === true &&
+    v36Database.rollbackCompilationPreviouslyPassed === true &&
+    v36Verification?.status === "green_before_live_release" &&
+    v36Verification.testsPassed === 371 &&
+    v36Verification.testsTotal === 371 &&
+    v36Verification.productionBuildPassed === true &&
+    v36Verification.lintPassed === true &&
+    v36Verification.typecheckPassed === true &&
+    v36Verification.rollbackMigrationCompilationPassed === true &&
+    v36CloseoutRecord.internalWorkers?.length === 2 &&
+    v36CloseoutRecord.internalWorkers.every(
+      (worker) => worker.updatedForV36 === true && worker.status === "active",
+    ),
+  "MOMO_UPLOAD_V36_LIVE_CLOSEOUT.json must preserve the verified live v36 observation separately from the pending GitHub reconciliation.",
+);
+must(
+  v36Pipeline?.exactDuplicateHandling ===
+    "reuse_one_canonical_exact_byte_identity_while_preserving_each_upload_rights_record_and_audit_lineage" &&
+    v36Pipeline.legacyDuplicateJobsConsolidated === 5 &&
+    v36Pipeline.legacyDuplicateJobsDeleted === 0 &&
+    v36Pipeline.nearDuplicateMerge === "advisory_only" &&
+    v36Pipeline.badMediaOutcome ===
+      "one_consolidated_exception_with_recorded_evidence" &&
+    v36Pipeline.badMediaAutomaticEditOrResize === false &&
+    v36Pipeline.badMediaOriginalPreserved === true &&
+    v36Pipeline.readyState === "veroxa_ready" &&
+    v36Pipeline.readyStateScheduled === false &&
+    v36Pipeline.readyStatePublished === false &&
+    v36Pipeline.teamDefaultWork === "exception_only" &&
+    v36Pipeline.immutableLineageRequired === true,
+  "v36 policy must consolidate exact-byte duplicates, keep near-duplicates advisory, preserve originals, and never auto-edit or resize failed media.",
+);
+must(
+  v36Safety?.publishQueue === "empty" &&
+    v36Safety.externalScheduleQueue === "empty" &&
+    v36Safety.externalProviderConnections === "empty" &&
+    v36Safety.webhookAndRecoveryBacklog === "empty" &&
+    v36Safety.externalPublishingEnabled === false &&
+    v36Safety.externalSchedulingEnabled === false &&
+    v36Safety.providerWritesEnabled === false &&
+    v36Safety.reviewRepliesEnabled === false &&
+    v36Safety.websiteWritesEnabled === false &&
+    v36Safety.allExternalWriteControlsLocked === true &&
+    v36Safety.momoActivationExecuted === false &&
+    /unscheduled internal evidence/.test(
+      v36CloseoutRecord.releaseBoundary ?? "",
+    ) &&
+    /not approval to connect, schedule, publish, post, reply, or write/.test(
+      v36CloseoutRecord.releaseBoundary ?? "",
+    ),
+  "v36 closeout must keep every external schedule, publish, provider-write, reply, website-write, and activation boundary frozen.",
 );
 
 for (const marker of [
@@ -699,7 +1044,9 @@ must(
   "Sites README must record current public access.",
 );
 must(
-  sitesReadme.includes("Client and Team routes require a verified Supabase session"),
+  sitesReadme.includes(
+    "Client and Team routes require a verified Supabase session",
+  ),
   "Sites README must record the protected Client/Team route boundary.",
 );
 for (const bannedSitesCopy of [

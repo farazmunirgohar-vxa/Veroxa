@@ -1,7 +1,7 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "recordKind": "veroxa_production_reconciliation_manifest",
-  "releaseState": "published_sites_v22_no_database_change",
+  "releaseState": "live_sites_v36_github_reconciliation_reviewed_unmerged",
   "canonicalRepository": "farazmunirgohar-vxa/Veroxa",
   "canonicalBranch": "main",
   "sitesProjectId": "appgprj_6a53d07c7c28819182801cf35dfd30de",
@@ -54,7 +54,9 @@
     "migrationContentParityVerified": true,
     "migrationFilenameParityVerified": true
   },
-  "currentVerifiedRelease": {
+  "lastGitHubParityRelease": {
+    "evidenceScope": "last_github_sites_parity_release",
+    "supersededAsLiveBaseline": true,
     "pullRequest": 155,
     "reviewedHead": "96a6c00857b438b37c2e8d99329c0f556de850a2",
     "githubMainCommit": "d1f6a9a78ac54cd5447689d5f8b3d42466daf479",
@@ -74,49 +76,74 @@
     "migrationContentParityVerified": true,
     "migrationFilenameParityVerified": true
   },
-  "observedProductionDrift": {
-    "observedAt": "2026-07-22",
-    "evidenceStatus": "observed_live_not_source_reconciled",
-    "canonicalGitHubMainCommit": "4f95b30413632b4d30a289c7f4b9011f37a37b80",
-    "githubSourceParityVerified": false,
-    "sitesVersion": 18,
-    "sitesCheckoutCommit": null,
-    "sourceFileCount": null,
-    "sourceTreeSha256": null,
-    "sitesSourceParityVerified": false,
-    "productionMigrationCount": 14,
-    "latestProductionMigration": "20260716035027_momo_preconnection_foundation.sql",
-    "latestProductionMigrationSha256": "9e748a46e050b9b8884a5df46eba6617cac061d075272ab4e233d2c1609fb367",
+  "historicalProductionObservations": [
+    {
+      "observedAt": "2026-07-22",
+      "evidenceStatus": "historical_live_not_source_reconciled",
+      "canonicalGitHubMainCommit": "4f95b30413632b4d30a289c7f4b9011f37a37b80",
+      "githubSourceParityVerified": false,
+      "sitesVersion": 18,
+      "sitesCheckoutCommit": null,
+      "sourceFileCount": null,
+      "sourceTreeSha256": null,
+      "sitesSourceParityVerified": false,
+      "productionMigrationCount": 14,
+      "latestProductionMigration": "20260716035027_momo_preconnection_foundation.sql",
+      "latestProductionMigrationSha256": "9e748a46e050b9b8884a5df46eba6617cac061d075272ab4e233d2c1609fb367",
+      "databaseLedgerObserved": true,
+      "databaseAppliedThroughLatestObserved": true
+    }
+  ],
+  "currentProductionObservation": {
+    "observedAt": "2026-08-02",
+    "evidenceStatus": "sites_v36_live_github_reconciliation_in_progress",
+    "canonicalGitHubMainCommit": "302621bf6b9ab78320abe4175b45b56e9e64ae2a",
+    "githubMainMatchesCandidate": false,
+    "sitesVersion": 36,
+    "sitesCheckoutCommit": "b8122642b72e5d4e6e74c379469f2a157781ab3d",
+    "sourceFileCount": 185,
+    "sourceTreeSha256": "caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7",
+    "candidateSourceMatchesLiveSites": true,
+    "productionMigrationCount": 37,
+    "migrationTreeSha256": "9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90",
+    "latestProductionMigration": "20260802020000_momo_pipeline_query_indexes_v2.sql",
+    "latestProductionMigrationSha256": "106d346be34583446d22de0f6866b5b8937feb766a3a229339dbf1c1768fdfcd",
     "databaseLedgerObserved": true,
     "databaseAppliedThroughLatestObserved": true,
-    "candidateParityVerified": false
+    "candidateMigrationsMatchLiveLedger": true,
+    "fullReleaseGatePassed": false
   },
   "releaseCandidate": {
-    "status": "published_sites_followup_no_database_change",
-    "basedOnGitHubMainCommit": "72c7fd73d3d2dff40ddd91bca2ef01d1ca8cb695",
-    "pullRequest": 155,
-    "githubMerged": true,
-    "futureMergedGitHubCommit": "d1f6a9a78ac54cd5447689d5f8b3d42466daf479",
-    "futureSitesVersion": 22,
+    "status": "reviewed_locally_unmerged",
+    "actionScope": "github_reconciliation_candidate",
+    "basedOnGitHubMainCommit": "302621bf6b9ab78320abe4175b45b56e9e64ae2a",
+    "pullRequest": null,
+    "githubMerged": false,
+    "futureMergedGitHubCommit": null,
+    "futureSitesVersion": null,
     "reviewedLocally": true,
-    "sourceFileCount": 93,
-    "sourceTreeSha256": "8bc4ef94c0f670ff128774e26a9de3d9849269f74b6e5c5af05f07ee0c9e5490",
-    "migrationFileCount": 16,
-    "migrationTreeSha256": "09aab45cda17810b52a07429700a4557308405d40a3983635d6bb7848dd4c729",
-    "latestCandidateMigration": "20260728044916_momo_media_ai_pilot_v1.sql",
-    "latestCandidateMigrationSha256": "efae63b4344570934d1d66b47ef1fce4fcd16343a2fe9dd8352607e0784d09a1",
+    "candidateSourceMatchesLiveSites": true,
+    "candidateMigrationsMatchLiveLedger": true,
+    "githubMainMatchesCandidate": false,
+    "fullReleaseGatePassed": false,
+    "sourceFileCount": 185,
+    "sourceTreeSha256": "caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7",
+    "migrationFileCount": 37,
+    "migrationTreeSha256": "9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90",
+    "latestCandidateMigration": "20260802020000_momo_pipeline_query_indexes_v2.sql",
+    "latestCandidateMigrationSha256": "106d346be34583446d22de0f6866b5b8937feb766a3a229339dbf1c1768fdfcd",
     "databaseChangesRequired": false,
     "databaseMigrationApplied": false,
-    "sitesPublishRequired": true,
-    "sitesPublished": true
+    "sitesPublishRequired": false,
+    "sitesPublished": false
   },
   "source": {
-    "evidenceScope": "published_sites_v22",
+    "evidenceScope": "github_reconciliation_candidate_matching_live_sites_v36",
     "root": "artifacts/veroxa-sites",
     "mappingTarget": "Sites repository root",
     "hashAlgorithm": "veroxa-path-null-content-null-sha256-v1",
-    "fileCount": 93,
-    "treeSha256": "8bc4ef94c0f670ff128774e26a9de3d9849269f74b6e5c5af05f07ee0c9e5490",
+    "fileCount": 185,
+    "treeSha256": "caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7",
     "generatedPathExclusions": [
       ".git",
       ".next",
@@ -131,17 +158,17 @@
     ]
   },
   "migrations": {
-    "evidenceScope": "current_verified_release",
+    "evidenceScope": "github_reconciliation_candidate_matching_live_ledger_v36",
     "root": "supabase/migrations",
     "hashAlgorithm": "veroxa-path-null-content-null-sha256-v1",
-    "fileCount": 16,
-    "treeSha256": "09aab45cda17810b52a07429700a4557308405d40a3983635d6bb7848dd4c729"
+    "fileCount": 37,
+    "treeSha256": "9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90"
   },
   "deploymentFreeze": {
-    "state": "verified_manual_deployment_complete",
+    "state": "production_frozen_github_reconciliation_review_required",
     "automaticDeploymentsAllowed": false,
-    "allowedDeployment": "Only exact reviewed and merged GitHub source may be synchronized, saved, and deployed manually through Sites.",
-    "releaseCondition": "All four workflows must be green, review threads clear, and post-deployment production parity independently verified."
+    "allowedDeployment": "No Sites deployment or database apply is required while the reviewed candidate hashes remain identical to live Sites v36 and the 37-migration production ledger.",
+    "releaseCondition": "Merge only the exact reviewed head after all four workflows are green and review threads are clear; then independently recheck GitHub-to-live source parity and stop if any hash differs."
   },
   "activationState": {
     "newIncrementalSpendApproved": false,
@@ -157,7 +184,7 @@
   },
   "activationStateScope": "Historical PR #149 release authorization snapshot; current runtime identity and media observations are tracked outside this release-evidence manifest.",
   "currentRuntimeIdentityObservation": {
-    "observedAt": "2026-07-22",
+    "observedAt": "2026-08-02",
     "teamIdentityProvisioned": true,
     "momoDevelopmentProxyClientIdentityProvisioned": true,
     "momoRealOwnerClientIdentityProvisioned": false,
@@ -166,12 +193,12 @@
   },
   "cleanupState": {
     "inventoryReviewed": true,
-    "branchDeletionCapabilityAvailable": false,
+    "branchDeletionCapabilityAvailable": true,
     "branchDeletionAllowed": false,
     "legacyViteArchived": true,
     "legacyViteRemovalAllowed": false,
     "externalVercelGitDisconnectionVerified": false,
     "vercelShutdownSentinelRequired": true,
-    "blocker": "Branch deletion is unavailable in the connected GitHub surface. Keep the shutdown sentinel until external Vercel Git disconnection is independently completed and verified."
+    "blocker": "Branch deletion capability is available but cleanup remains unauthorized. Keep the shutdown sentinel until external Vercel Git disconnection is independently completed and verified."
   }
 }

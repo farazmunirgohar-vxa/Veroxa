@@ -29,16 +29,324 @@ jobs:
           test "$(supabase --version)" = "2.109.1"
           test "$(deno --version | head -n 1)" = "deno 2.1.14 (stable, release, x86_64-unknown-linux-gnu)"
           test -f supabase/config.toml
-      - name: Verify Media AI Edge function
+      - name: Verify Edge functions
         run: |
-          deno fmt --check supabase/functions
+          # Keep the already-active v36 worker copies byte-identical to their
+          # deployed source. They are linted and type-checked below; formatting
+          # remains enforced for the pre-v36 worker that was already canonical.
+          deno fmt --check \
+            supabase/functions/_shared/momo-media-ai-lifecycle-contract.ts \
+            supabase/functions/momo-media-ai-lifecycle/index.ts
           deno lint supabase/functions
-          deno check --node-modules-dir=auto supabase/functions/momo-media-ai-lifecycle/index.ts
-      - name: Start local Supabase
-        run: supabase start
-      - name: Apply the complete migration chain
-        run: supabase db reset --local
+          for edge_entrypoint in \
+            supabase/functions/momo-media-ai-lifecycle/index.ts \
+            supabase/functions/momo-content-ai-dispatch-lifecycle/index.ts \
+            supabase/functions/momo-content-ai-lifecycle/index.ts \
+            supabase/functions/momo-content-ai-webhook-lifecycle/index.ts
+          do
+            deno check --node-modules-dir=auto "$edge_entrypoint"
+          done
+      - name: Apply the complete migration chain from its production prerequisite
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Migration 17 is intentionally fail-closed: it may only install over
+          # the one already-authorized Momo tenant that existed in production.
+          # Start from migration 1, create deterministic local-only identities,
+          # then apply the remaining byte-identical migration history. This is
+          # application data, never an extra migration or a hosted credential.
+          first_migration="20260712213930_momo_production_foundation_v1.sql"
+          pending_dir="$(mktemp -d)"
+          migration_checksums="$(mktemp)"
+          test -f "supabase/migrations/$first_migration"
+          find supabase/migrations -maxdepth 1 -type f -name '*.sql' -print0 \
+            | sort -z \
+            | xargs -0 sha256sum > "$migration_checksums"
+
+          restore_pending_migrations() {
+            while IFS= read -r -d '' migration; do
+              mv "$migration" supabase/migrations/
+            done < <(find "$pending_dir" -maxdepth 1 -type f -name '*.sql' -print0)
+          }
+          cleanup_interposition() {
+            restore_pending_migrations
+            rm -f "$migration_checksums"
+            rmdir "$pending_dir" 2>/dev/null || true
+          }
+          trap cleanup_interposition EXIT
+
+          while IFS= read -r -d '' migration; do
+            mv "$migration" "$pending_dir/"
+          done < <(find supabase/migrations -maxdepth 1 -type f -name '*.sql' \
+            ! -name "$first_migration" -print0)
+          test "$(find supabase/migrations -maxdepth 1 -type f -name '*.sql' | wc -l)" -eq 1
+          test "$(find "$pending_dir" -maxdepth 1 -type f -name '*.sql' | wc -l)" -eq 36
+
+          supabase start
+
+          mapfile -t database_containers < <(
+            docker ps --filter 'name=supabase_db_' --format '{{.ID}}'
+          )
+          test "${#database_containers[@]}" -eq 1
+          database_container="${database_containers[0]}"
+
+          docker exec -i "$database_container" \
+            psql --set ON_ERROR_STOP=1 --username postgres --dbname postgres <<'SQL'
+          begin;
+          do $fixture$
+          declare
+            fixture_restaurant_id constant uuid :=
+              '20000000-0000-4000-8000-000000000160';
+            fixture_team_id constant uuid :=
+              '10000000-0000-4000-8000-000000000160';
+            fixture_client_id constant uuid :=
+              '10000000-0000-4000-8000-000000000161';
+          begin
+            if (
+              select array_agg(migration.version order by migration.version)
+              from supabase_migrations.schema_migrations migration
+            ) is distinct from array['20260712213930']::text[] then
+              raise exception 'ci_momo_prerequisite_requires_exact_migration_1';
+            end if;
+            if exists (select 1 from public.veroxa_restaurants)
+               or exists (select 1 from public.veroxa_user_profiles)
+               or exists (
+                 select 1
+                 from veroxa_private.operational_restaurant_scope
+               ) then
+              raise exception 'ci_momo_prerequisite_requires_clean_application_data';
+            end if;
+
+            insert into public.veroxa_restaurants (
+              id, name, city, state, timezone, status
+            ) values (
+              fixture_restaurant_id,
+              'Momo''s House San Antonio',
+              'San Antonio',
+              'TX',
+              'America/Chicago',
+              'active'
+            );
+            insert into veroxa_private.operational_restaurant_scope (
+              scope_key, restaurant_id, enabled
+            ) values (
+              'momo_house_san_antonio', fixture_restaurant_id, true
+            );
+            insert into veroxa_private.auth_identity_allowlist (
+              email, role, display_name, restaurant_id, enabled
+            ) values
+              (
+                'faraz.munir.gohar@gmail.com', 'team',
+                'CI Momo Team Authorizer', fixture_restaurant_id, true
+              ),
+              (
+                'faraz.munir.gohar@icloud.com', 'client',
+                'CI Momo Development Proxy', fixture_restaurant_id, true
+              );
+
+            -- UUID-only local Auth rows contain no password, session, API key,
+            -- provider token, or authority outside this disposable database.
+            insert into auth.users (
+              id, instance_id, aud, role, email, email_confirmed_at,
+              raw_app_meta_data, raw_user_meta_data, created_at, updated_at
+            ) values
+              (
+                fixture_team_id,
+                '00000000-0000-0000-0000-000000000000',
+                'authenticated', 'authenticated',
+                'faraz.munir.gohar@gmail.com', now(),
+                '{"provider":"email","providers":["email"]}'::jsonb,
+                '{}'::jsonb, now(), now()
+              ),
+              (
+                fixture_client_id,
+                '00000000-0000-0000-0000-000000000000',
+                'authenticated', 'authenticated',
+                'faraz.munir.gohar@icloud.com', now(),
+                '{"provider":"email","providers":["email"]}'::jsonb,
+                '{}'::jsonb, now(), now()
+              );
+
+            if (
+              select count(*)
+              from public.veroxa_restaurant_members member
+              join public.veroxa_user_profiles profile
+                on profile.user_id = member.user_id
+              where member.restaurant_id = fixture_restaurant_id
+                and member.status = 'active'
+                and profile.status = 'active'
+                and member.role = profile.role
+            ) <> 2 then
+              raise exception 'ci_momo_prerequisite_membership_provisioning_failed';
+            end if;
+          end
+          $fixture$;
+          commit;
+          SQL
+
+          restore_pending_migrations
+          trap - EXIT
+          rmdir "$pending_dir"
+          test "$(find supabase/migrations -maxdepth 1 -type f -name '*.sql' | wc -l)" -eq 37
+          sha256sum --check --quiet "$migration_checksums"
+          rm "$migration_checksums"
+          git diff --exit-code -- supabase/migrations
+          supabase migration up --local
+
+          expected_versions="$(
+            find supabase/migrations -maxdepth 1 -type f -name '*.sql' \
+              -printf '%f\n' | sed 's/_.*//' | sort
+          )"
+          actual_versions="$(
+            docker exec -i "$database_container" \
+              psql --tuples-only --no-align --username postgres --dbname postgres \
+              --command 'select version from supabase_migrations.schema_migrations order by version'
+          )"
+          test "$actual_versions" = "$expected_versions"
+
+          docker exec -i "$database_container" \
+            psql --set ON_ERROR_STOP=1 --username postgres --dbname postgres <<'SQL'
+          do $assert_complete_chain$
+          declare
+            fixture_restaurant_id constant uuid :=
+              '20000000-0000-4000-8000-000000000160';
+          begin
+            if (select count(*) from supabase_migrations.schema_migrations) <> 37 then
+              raise exception 'ci_complete_migration_ledger_invalid';
+            end if;
+            if (
+              select count(*)
+              from veroxa_private.operational_restaurant_scope scope
+              where scope.scope_key = 'momo_house_san_antonio'
+                and scope.restaurant_id = fixture_restaurant_id
+                and scope.enabled
+            ) <> 1 then
+              raise exception 'ci_momo_operational_scope_invalid';
+            end if;
+            if not exists (
+              select 1
+              from veroxa_private.momo_ai_budget_controls budget
+              join public.veroxa_restaurant_members member
+                on member.restaurant_id = budget.restaurant_id
+               and member.user_id = budget.authorized_by
+              join public.veroxa_user_profiles profile
+                on profile.user_id = budget.authorized_by
+              where budget.restaurant_id = fixture_restaurant_id
+                and budget.enabled
+                and budget.authorization_cap_microusd = 100000000
+                and budget.scope_key = 'momo-upload-to-ready-v1'
+                and not budget.external_publishing_authorized
+                and member.role = 'team' and member.status = 'active'
+                and profile.role = 'team' and profile.status = 'active'
+            ) then
+              raise exception 'ci_momo_budget_authorizer_invalid';
+            end if;
+            if not exists (
+              select 1
+              from public.veroxa_momo_runtime_controls runtime
+              where runtime.restaurant_id = fixture_restaurant_id
+                and runtime.ai_live_calls
+                and not runtime.provider_writes
+                and not runtime.review_replies
+                and not runtime.website_writes
+                and not runtime.external_scheduling
+            ) then
+              raise exception 'ci_momo_runtime_controls_invalid';
+            end if;
+            if not exists (
+              select 1
+              from veroxa_private.momo_media_ai_wallets wallet
+              where wallet.restaurant_id = fixture_restaurant_id
+                and wallet.enabled
+                and wallet.standing_automation_authorized
+                and wallet.automatic_authorization_threshold_microusd = 20000000
+            ) then
+              raise exception 'ci_momo_media_wallet_invalid';
+            end if;
+            if exists (select 1 from public.veroxa_publish_queue)
+               or exists (select 1 from public.veroxa_publish_attempts)
+               or exists (select 1 from public.veroxa_content_calendar)
+               or exists (select 1 from net.http_request_queue)
+               or exists (select 1 from net._http_response)
+               or exists (
+                 select 1
+                 from vault.secrets secret
+                 where secret.name in (
+                   'momo_content_ai_dispatch_endpoint_v1',
+                   'momo_content_ai_recovery_endpoint_v1',
+                   'momo_content_ai_internal_hmac_v1'
+                 )
+               ) then
+              raise exception 'ci_external_write_or_runtime_secret_fixture_forbidden';
+            end if;
+            if (select count(*) from public.veroxa_restaurants) <> 1 then
+              raise exception 'ci_fixture_cleanup_scope_ambiguous';
+            end if;
+          end
+          $assert_complete_chain$;
+
+          -- The full chain has now proved its production precondition. Remove
+          -- only the deterministic application rows so each rollback-only
+          -- pgTAP file starts from the same clean data state as before v36.
+          truncate table public.veroxa_restaurants cascade;
+          delete from auth.users
+          where id in (
+            '10000000-0000-4000-8000-000000000160'::uuid,
+            '10000000-0000-4000-8000-000000000161'::uuid
+          );
+
+          do $assert_clean_test_state$
+          begin
+            if exists (select 1 from public.veroxa_restaurants)
+               or exists (select 1 from public.veroxa_user_profiles)
+               or exists (select 1 from public.veroxa_restaurant_members)
+               or exists (
+                 select 1
+                 from veroxa_private.operational_restaurant_scope
+               )
+               or exists (
+                 select 1
+                 from veroxa_private.auth_identity_allowlist
+               )
+               or exists (select 1 from public.veroxa_restaurant_truth_fields)
+               or exists (select 1 from public.veroxa_momo_runtime_controls)
+               or exists (
+                 select 1
+                 from veroxa_private.momo_media_ai_wallets
+               )
+               or exists (
+                 select 1
+                 from veroxa_private.momo_ai_budget_controls
+               )
+               or exists (
+                 select 1
+                 from auth.users auth_user
+                 where auth_user.id in (
+                   '10000000-0000-4000-8000-000000000160'::uuid,
+                   '10000000-0000-4000-8000-000000000161'::uuid
+                 )
+               )
+               or (select count(*) from supabase_migrations.schema_migrations) <> 37 then
+              raise exception 'ci_momo_fixture_cleanup_failed';
+            end if;
+          end
+          $assert_clean_test_state$;
+          SQL
       - name: Run database tests
         run: supabase test db
+      - name: Verify tests queued no outbound database request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t database_containers < <(
+            docker ps --filter 'name=supabase_db_' --format '{{.ID}}'
+          )
+          test "${#database_containers[@]}" -eq 1
+          test "$(
+            docker exec -i "${database_containers[0]}" \
+              psql --tuples-only --no-align --username postgres --dbname postgres \
+              --command 'select (select count(*) from net.http_request_queue) + (select count(*) from net._http_response)'
+          )" -eq 0
       - name: Lint database functions
         run: supabase db lint --level error --fail-on error
