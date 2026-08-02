@@ -1,6 +1,15 @@
 import { createHash } from "node:crypto";
 import { readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import {
+  VERIFIED_GITHUB_PARITY_RELEASE_STATE,
+  VERIFIED_GITHUB_PARITY_STATUS,
+  VERIFIED_MIGRATION_EVIDENCE_SCOPE,
+  VERIFIED_PRODUCTION_EVIDENCE_STATUS,
+  V36_GITHUB_RECONCILIATION,
+  V36_OPERATIONAL_COMMIT_SCOPE,
+  type GitHubReconciliationEvidence,
+} from "./release-manifest";
 
 const root = resolve(import.meta.dirname, "../..");
 const readJson = <T>(path: string): T =>
@@ -15,6 +24,7 @@ const SITES_V36_SOURCE_SHA256 =
   "caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7";
 const GITHUB_MAIN_AT_RECONCILIATION =
   "302621bf6b9ab78320abe4175b45b56e9e64ae2a";
+const GITHUB_MAIN_AFTER_RECONCILIATION = V36_GITHUB_RECONCILIATION.mergedCommit;
 
 const expectedMigrationLedger = [
   "20260712213930_momo_production_foundation_v1.sql",
@@ -121,6 +131,7 @@ type LastGitHubParityRelease = {
 type CurrentProductionObservation = {
   evidenceStatus: string;
   canonicalGitHubMainCommit: string;
+  canonicalGitHubMainCommitScope: string;
   githubMainMatchesCandidate: boolean;
   sitesVersion: number;
   sitesCheckoutCommit?: string;
@@ -150,6 +161,7 @@ type Manifest = {
     latestProductionMigration: string;
   }>;
   currentProductionObservation: CurrentProductionObservation;
+  githubReconciliationEvidence: GitHubReconciliationEvidence;
   releaseCandidate: ReleaseCandidate;
   migrations: {
     evidenceScope: string;
@@ -171,6 +183,7 @@ type Checkpoint = {
     latestProductionMigration: string;
   }>;
   currentProductionObservation: CurrentProductionObservation;
+  githubReconciliationEvidence: GitHubReconciliationEvidence;
   releaseCandidate: ReleaseCandidate;
   databaseMigrations: string[];
 };
@@ -243,10 +256,12 @@ function assertCurrentProductionObservation(
   label: string,
 ): void {
   if (
-    observation.evidenceStatus !==
-      "sites_v36_live_github_reconciliation_in_progress" ||
-    observation.canonicalGitHubMainCommit !== GITHUB_MAIN_AT_RECONCILIATION ||
-    observation.githubMainMatchesCandidate ||
+    observation.evidenceStatus !== VERIFIED_PRODUCTION_EVIDENCE_STATUS ||
+    observation.canonicalGitHubMainCommit !==
+      GITHUB_MAIN_AFTER_RECONCILIATION ||
+    observation.canonicalGitHubMainCommitScope !==
+      V36_OPERATIONAL_COMMIT_SCOPE ||
+    !observation.githubMainMatchesCandidate ||
     observation.sitesVersion !== 36 ||
     (observation.sitesCheckoutCommit ??
       observation.sitesCheckoutSourceCommit) !==
@@ -261,10 +276,10 @@ function assertCurrentProductionObservation(
     !observation.databaseLedgerObserved ||
     !observation.databaseAppliedThroughLatestObserved ||
     !observation.candidateMigrationsMatchLiveLedger ||
-    observation.fullReleaseGatePassed
+    !observation.fullReleaseGatePassed
   ) {
     throw new Error(
-      `${label} must preserve the live Sites v36 / 37-migration observation separately from unresolved GitHub parity.`,
+      `${label} must preserve the live Sites v36 / 37-migration observation with verified GitHub parity.`,
     );
   }
 }
@@ -273,24 +288,20 @@ function assertReconciliationCandidate(
   candidate: ReleaseCandidate,
   label: string,
 ): void {
-  const allowedStatuses = new Set([
-    "fingerprints_refreshed_review_required_unmerged",
-    "reviewed_locally_unmerged",
-  ]);
   const published =
     candidate.sitesPublished ?? candidate.sitesCandidatePublished;
   if (
-    !allowedStatuses.has(candidate.status ?? candidate.state ?? "") ||
+    (candidate.status ?? candidate.state) !== VERIFIED_GITHUB_PARITY_STATUS ||
     candidate.actionScope !== "github_reconciliation_candidate" ||
     candidate.basedOnGitHubMainCommit !== GITHUB_MAIN_AT_RECONCILIATION ||
-    candidate.pullRequest !== null ||
-    candidate.githubMerged ||
-    candidate.futureMergedGitHubCommit !== null ||
+    candidate.pullRequest !== V36_GITHUB_RECONCILIATION.pullRequest ||
+    !candidate.githubMerged ||
+    candidate.futureMergedGitHubCommit !== GITHUB_MAIN_AFTER_RECONCILIATION ||
     candidate.futureSitesVersion !== null ||
     !candidate.candidateSourceMatchesLiveSites ||
     !candidate.candidateMigrationsMatchLiveLedger ||
-    candidate.githubMainMatchesCandidate ||
-    candidate.fullReleaseGatePassed ||
+    !candidate.githubMainMatchesCandidate ||
+    !candidate.fullReleaseGatePassed ||
     candidate.sourceFileCount !== 185 ||
     candidate.sourceTreeSha256 !== SITES_V36_SOURCE_SHA256 ||
     candidate.migrationFileCount !== expectedMigrationLedger.length ||
@@ -303,17 +314,14 @@ function assertReconciliationCandidate(
     published !== false
   ) {
     throw new Error(
-      `${label} must remain an exact, unmerged GitHub reconciliation candidate that did not apply or publish v36.`,
+      `${label} must preserve exact merged PR #157 parity without claiming it applied or published v36.`,
     );
   }
 }
 
 if (
   manifest.schemaVersion !== 4 ||
-  ![
-    "live_sites_v36_github_reconciliation_fingerprints_refreshed_review_required",
-    "live_sites_v36_github_reconciliation_reviewed_unmerged",
-  ].includes(manifest.releaseState)
+  manifest.releaseState !== VERIFIED_GITHUB_PARITY_RELEASE_STATE
 ) {
   throw new Error(
     "Deployment manifest must use the schema-4 v36 reconciliation state.",
@@ -346,6 +354,16 @@ assertCurrentProductionObservation(
 );
 assertReconciliationCandidate(manifest.releaseCandidate, "Deployment manifest");
 assertReconciliationCandidate(checkpoint.releaseCandidate, "RR checkpoint");
+if (
+  JSON.stringify(manifest.githubReconciliationEvidence) !==
+    JSON.stringify(V36_GITHUB_RECONCILIATION) ||
+  JSON.stringify(checkpoint.githubReconciliationEvidence) !==
+    JSON.stringify(V36_GITHUB_RECONCILIATION)
+) {
+  throw new Error(
+    "Manifest and RR must preserve the exact PR #157 reviewed head, merge, workflows, and zero-thread evidence.",
+  );
+}
 
 if (
   manifest.releaseCandidate.reviewedLocally !==
@@ -378,8 +396,7 @@ for (const [label, observations] of [
 }
 
 if (
-  manifest.migrations.evidenceScope !==
-    "github_reconciliation_candidate_matching_live_ledger_v36" ||
+  manifest.migrations.evidenceScope !== VERIFIED_MIGRATION_EVIDENCE_SCOPE ||
   manifest.migrations.root !== "supabase/migrations" ||
   manifest.migrations.hashAlgorithm !==
     "veroxa-path-null-content-null-sha256-v1" ||
@@ -466,5 +483,5 @@ if (latestMigrationHash !== LATEST_MIGRATION_SHA256) {
 }
 
 console.log(
-  "Supabase migration ledger guardrail passed: root and Sites mirrors contain the exact 37-file live v36 ledger; v22 timestamp aliases remain historical evidence only; the GitHub reconciliation candidate is unmerged and applied no database change.",
+  "Supabase migration ledger guardrail passed: root and Sites mirrors contain the exact 37-file live v36 ledger; v22 timestamp aliases remain historical evidence only; merged PR #157 reconciled GitHub parity and applied no database change.",
 );

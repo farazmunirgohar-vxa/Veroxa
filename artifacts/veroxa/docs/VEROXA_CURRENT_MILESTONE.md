@@ -17,14 +17,15 @@ Also read:
 - `VEROXA_DEPLOYMENT_MANIFEST.json`
 - `../veroxa-sites/app/momo-readiness-tracker.json` (immutable v22 pre-deploy No-Go/rights/spend snapshot; not current bridge-deployment authority)
 
-## 2026-08-02 — Momo upload-to-Veroxa-Ready v36 live; GitHub parity candidate
+## 2026-08-02 — Momo upload-to-Veroxa-Ready v36 live; GitHub parity verified
 
 - **Live runtime:** Sites v36 is live from `b8122642b72e5d4e6e74c379469f2a157781ab3d`; its canonical 185-file source tree is `caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7`. Supabase has 37 migrations through `20260802020000_momo_pipeline_query_indexes_v2.sql` with tree hash `9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90`.
-- **Current build:** reconcile that exact live source into GitHub from base `302621bf6b9ab78320abe4175b45b56e9e64ae2a`; do not merge or deploy until the exact candidate head passes the four repository workflows and review is clear.
+- **GitHub parity:** PR #157 passed all four workflows at reviewed head `d3a63d25644fc699d1f521f8f803e5bd95daae49`, had zero unresolved review threads, merged at `aafebf93a6bc40f9578c29f4a25371f8203d0387`, and passed all four push workflows. GitHub main now matches the already-live v36 source and 37-migration ledger.
+- **Reconciliation boundary:** PR #157 required and performed no Sites publish and no database apply. PR #155 / Sites v22 remains historical parity evidence.
 - **Internal behavior:** a valid Momo JPG is finalized immediately; exact-byte duplicates reuse one canonical processing identity without combining permissions; each upload, rights record, transition, exception, and Ready event remains attributable and append-only. Ready is internal and unscheduled. Team Faraz handles consolidated exceptions rather than routine scheduling or approval work.
 - **Media boundary:** near-duplicate merging remains advisory. A bad image is preserved and becomes one evidenced exception; v36 does not automatically resize or edit it. The separate legacy Team rendition flow is not part of the automatic v2 chain.
 - **Proof boundary:** the pre-release gates passed 371/371 tests plus build, lint, typecheck, and rollback compilation, but no real v36 upload, provider call, or Ready package exists. Momo therefore remains No-Go for activation or external action.
-- **Freeze:** no posting, scheduling, publishing, provider connection, review reply, website write, test upload, provider canary, or Momo activation is authorized by this source reconciliation.
+- **Freeze:** no posting, scheduling, publishing, provider connection, review reply, website write, test upload, provider canary, Sites deployment, database apply, or Momo activation is authorized by verified GitHub parity.
 
 ## 2026-07-30 — verified v22 signed Media AI bridge release
 

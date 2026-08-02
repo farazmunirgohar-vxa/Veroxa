@@ -1,7 +1,7 @@
 {
   "schemaVersion": 4,
   "recordKind": "veroxa_production_reconciliation_manifest",
-  "releaseState": "live_sites_v36_github_reconciliation_reviewed_unmerged",
+  "releaseState": "live_sites_v36_github_parity_verified",
   "canonicalRepository": "farazmunirgohar-vxa/Veroxa",
   "canonicalBranch": "main",
   "sitesProjectId": "appgprj_6a53d07c7c28819182801cf35dfd30de",
@@ -96,9 +96,9 @@
   ],
   "currentProductionObservation": {
     "observedAt": "2026-08-02",
-    "evidenceStatus": "sites_v36_live_github_reconciliation_in_progress",
-    "canonicalGitHubMainCommit": "302621bf6b9ab78320abe4175b45b56e9e64ae2a",
-    "githubMainMatchesCandidate": false,
+    "evidenceStatus": "sites_v36_live_github_parity_verified",
+    "canonicalGitHubMainCommit": "aafebf93a6bc40f9578c29f4a25371f8203d0387",
+    "githubMainMatchesCandidate": true,
     "sitesVersion": 36,
     "sitesCheckoutCommit": "b8122642b72e5d4e6e74c379469f2a157781ab3d",
     "sourceFileCount": 185,
@@ -111,21 +111,22 @@
     "databaseLedgerObserved": true,
     "databaseAppliedThroughLatestObserved": true,
     "candidateMigrationsMatchLiveLedger": true,
-    "fullReleaseGatePassed": false
+    "fullReleaseGatePassed": true,
+    "canonicalGitHubMainCommitScope": "v36_operational_parity_commit_not_closeout_pr_head"
   },
   "releaseCandidate": {
-    "status": "reviewed_locally_unmerged",
+    "status": "github_reconciliation_merged_parity_verified",
     "actionScope": "github_reconciliation_candidate",
     "basedOnGitHubMainCommit": "302621bf6b9ab78320abe4175b45b56e9e64ae2a",
-    "pullRequest": null,
-    "githubMerged": false,
-    "futureMergedGitHubCommit": null,
+    "pullRequest": 157,
+    "githubMerged": true,
+    "futureMergedGitHubCommit": "aafebf93a6bc40f9578c29f4a25371f8203d0387",
     "futureSitesVersion": null,
     "reviewedLocally": true,
     "candidateSourceMatchesLiveSites": true,
     "candidateMigrationsMatchLiveLedger": true,
-    "githubMainMatchesCandidate": false,
-    "fullReleaseGatePassed": false,
+    "githubMainMatchesCandidate": true,
+    "fullReleaseGatePassed": true,
     "sourceFileCount": 185,
     "sourceTreeSha256": "caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7",
     "migrationFileCount": 37,
@@ -138,7 +139,7 @@
     "sitesPublished": false
   },
   "source": {
-    "evidenceScope": "github_reconciliation_candidate_matching_live_sites_v36",
+    "evidenceScope": "github_main_matching_live_sites_v36",
     "root": "artifacts/veroxa-sites",
     "mappingTarget": "Sites repository root",
     "hashAlgorithm": "veroxa-path-null-content-null-sha256-v1",
@@ -158,17 +159,17 @@
     ]
   },
   "migrations": {
-    "evidenceScope": "github_reconciliation_candidate_matching_live_ledger_v36",
+    "evidenceScope": "github_main_matching_live_ledger_v36",
     "root": "supabase/migrations",
     "hashAlgorithm": "veroxa-path-null-content-null-sha256-v1",
     "fileCount": 37,
     "treeSha256": "9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90"
   },
   "deploymentFreeze": {
-    "state": "production_frozen_github_reconciliation_review_required",
+    "state": "production_frozen_github_parity_verified",
     "automaticDeploymentsAllowed": false,
-    "allowedDeployment": "No Sites deployment or database apply is required while the reviewed candidate hashes remain identical to live Sites v36 and the 37-migration production ledger.",
-    "releaseCondition": "Merge only the exact reviewed head after all four workflows are green and review threads are clear; then independently recheck GitHub-to-live source parity and stop if any hash differs."
+    "allowedDeployment": "No Sites deployment or database apply is required: PR #157 reconciled GitHub main to the already-live Sites v36 and 37-migration production ledger.",
+    "releaseCondition": "GitHub parity is verified and production remains frozen. Any future production change requires a new reviewed release with exact source and migration evidence plus explicit deployment authority."
   },
   "activationState": {
     "newIncrementalSpendApproved": false,
@@ -200,5 +201,47 @@
     "externalVercelGitDisconnectionVerified": false,
     "vercelShutdownSentinelRequired": true,
     "blocker": "Branch deletion capability is available but cleanup remains unauthorized. Keep the shutdown sentinel until external Vercel Git disconnection is independently completed and verified."
+  },
+  "githubReconciliationEvidence": {
+    "pullRequest": 157,
+    "reviewedHead": "d3a63d25644fc699d1f521f8f803e5bd95daae49",
+    "mergedCommit": "aafebf93a6bc40f9578c29f4a25371f8203d0387",
+    "zeroUnresolvedReviewThreads": true,
+    "preMergeWorkflows": {
+      "ci": {
+        "runId": 30764961514,
+        "status": "success"
+      },
+      "sitesVerify": {
+        "runId": 30764961531,
+        "status": "success"
+      },
+      "supabaseVerify": {
+        "runId": 30764961516,
+        "status": "success"
+      },
+      "veroxaVerify": {
+        "runId": 30764961539,
+        "status": "success"
+      }
+    },
+    "postMergePushWorkflows": {
+      "ci": {
+        "runId": 30767748950,
+        "status": "success"
+      },
+      "sitesVerify": {
+        "runId": 30767748969,
+        "status": "success"
+      },
+      "supabaseVerify": {
+        "runId": 30767748993,
+        "status": "success"
+      },
+      "veroxaVerify": {
+        "runId": 30767748953,
+        "status": "success"
+      }
+    }
   }
 }

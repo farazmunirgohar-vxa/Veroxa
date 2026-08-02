@@ -3,10 +3,19 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
   TREE_HASH_ALGORITHM,
+  VERIFIED_DEPLOYMENT_FREEZE_STATE,
+  VERIFIED_GITHUB_PARITY_RELEASE_STATE,
+  VERIFIED_GITHUB_PARITY_STATUS,
+  VERIFIED_MIGRATION_EVIDENCE_SCOPE,
+  VERIFIED_PRODUCTION_EVIDENCE_STATUS,
+  VERIFIED_SOURCE_EVIDENCE_SCOPE,
+  V36_GITHUB_RECONCILIATION,
+  V36_OPERATIONAL_COMMIT_SCOPE,
   hashTree,
   readDeploymentManifest,
   repoRoot,
   sha256File,
+  type GitHubReconciliationEvidence,
 } from "./release-manifest";
 
 type ReleaseProof = {
@@ -60,6 +69,7 @@ type ProductionObservation = {
   observedAt: string;
   evidenceStatus: string;
   canonicalGitHubMainCommit: string;
+  canonicalGitHubMainCommitScope: string;
   githubMainMatchesCandidate: boolean;
   sitesVersion: number;
   sitesCheckoutCommit?: string;
@@ -124,6 +134,7 @@ type Checkpoint = {
   lastGitHubParityRelease: ReleaseProof;
   historicalProductionObservations: HistoricalObservation[];
   currentProductionObservation: ProductionObservation;
+  githubReconciliationEvidence: GitHubReconciliationEvidence;
   releaseCandidate: Candidate;
   databaseMigrations: string[];
   reusableEvidence: string[];
@@ -144,6 +155,7 @@ type Manifest = {
   lastGitHubParityRelease: ReleaseProof;
   historicalProductionObservations: HistoricalObservation[];
   currentProductionObservation: ProductionObservation;
+  githubReconciliationEvidence: GitHubReconciliationEvidence;
   releaseCandidate: Candidate;
   source: {
     evidenceScope: string;
@@ -190,7 +202,8 @@ function groupHash(files: string[]): string {
 }
 
 const expected = {
-  githubMain: "302621bf6b9ab78320abe4175b45b56e9e64ae2a",
+  githubMain: V36_GITHUB_RECONCILIATION.mergedCommit,
+  basedOnGitHubMain: "302621bf6b9ab78320abe4175b45b56e9e64ae2a",
   sitesCheckout: "b8122642b72e5d4e6e74c379469f2a157781ab3d",
   sitesVersion: 36,
   sourceFileCount: 185,
@@ -203,6 +216,24 @@ const expected = {
   latestMigrationSha256:
     "106d346be34583446d22de0f6866b5b8937feb766a3a229339dbf1c1768fdfcd",
 };
+
+const requiredReleaseStateTools = [
+  {
+    command: "refresh-release-fingerprints",
+    file: "scripts/src/refresh-release-fingerprints.ts",
+    invocation: "tsx ./src/refresh-release-fingerprints.ts",
+  },
+  {
+    command: "record-local-release-review",
+    file: "scripts/src/record-local-release-review.ts",
+    invocation: "tsx ./src/record-local-release-review.ts",
+  },
+  {
+    command: "record-post-merge-parity-closeout",
+    file: "scripts/src/record-post-merge-parity-closeout.ts",
+    invocation: "tsx ./src/record-post-merge-parity-closeout.ts",
+  },
+] as const;
 
 const v22 = {
   pullRequest: 155,
@@ -226,16 +257,9 @@ const manifest = readDeploymentManifest() as unknown as Manifest;
 const closeout = readJson<Record<string, unknown>>(
   "artifacts/veroxa/docs/MOMO_UPLOAD_V36_LIVE_CLOSEOUT.json",
 );
-
-const refreshedManifestState =
-  "live_sites_v36_github_reconciliation_fingerprints_refreshed_review_required";
-const reviewedManifestState =
-  "live_sites_v36_github_reconciliation_reviewed_unmerged";
-const refreshedCandidateState =
-  "fingerprints_refreshed_review_required_unmerged";
-const reviewedCandidateState = "reviewed_locally_unmerged";
-const refreshed = checkpoint.status === refreshedManifestState;
-const reviewed = checkpoint.status === reviewedManifestState;
+const scriptsPackage = readJson<{ scripts?: Record<string, unknown> }>(
+  "scripts/package.json",
+);
 
 must(checkpoint.schemaVersion === 8, "RR checkpoint schema must be 8.");
 must(manifest.schemaVersion === 4, "Deployment manifest schema must be 4.");
@@ -245,7 +269,10 @@ must(
     checkpoint.reviewedAt === "2026-08-02",
   "RR checkpoint identity or review date drifted.",
 );
-must(refreshed || reviewed, "RR checkpoint has an unsafe reconciliation state.");
+must(
+  checkpoint.status === VERIFIED_GITHUB_PARITY_RELEASE_STATE,
+  "RR checkpoint must identify verified v36 GitHub parity.",
+);
 must(
   manifest.releaseState === checkpoint.status,
   "Manifest and RR reconciliation states disagree.",
@@ -258,7 +285,10 @@ must(
   "Canonical repository, branch, Sites project, or manifest kind drifted.",
 );
 
-for (const proof of [checkpoint.lastGitHubParityRelease, manifest.lastGitHubParityRelease]) {
+for (const proof of [
+  checkpoint.lastGitHubParityRelease,
+  manifest.lastGitHubParityRelease,
+]) {
   must(
     proof.evidenceScope === "last_github_sites_parity_release" &&
       proof.supersededAsLiveBaseline === true &&
@@ -325,10 +355,11 @@ for (const observation of [
 ]) {
   must(
     observation.observedAt === "2026-08-02" &&
-      observation.evidenceStatus ===
-        "sites_v36_live_github_reconciliation_in_progress" &&
+      observation.evidenceStatus === VERIFIED_PRODUCTION_EVIDENCE_STATUS &&
       observation.canonicalGitHubMainCommit === expected.githubMain &&
-      !observation.githubMainMatchesCandidate &&
+      observation.canonicalGitHubMainCommitScope ===
+        V36_OPERATIONAL_COMMIT_SCOPE &&
+      observation.githubMainMatchesCandidate &&
       observation.sitesVersion === expected.sitesVersion &&
       (observation.sitesCheckoutCommit ??
         observation.sitesCheckoutSourceCommit) === expected.sitesCheckout &&
@@ -344,7 +375,7 @@ for (const observation of [
       observation.databaseLedgerObserved &&
       observation.databaseAppliedThroughLatestObserved &&
       observation.candidateMigrationsMatchLiveLedger &&
-      !observation.fullReleaseGatePassed,
+      observation.fullReleaseGatePassed,
     "Sites v36 / 37-migration current production observation drifted.",
   );
 }
@@ -353,19 +384,19 @@ const candidates = [checkpoint.releaseCandidate, manifest.releaseCandidate];
 for (const candidate of candidates) {
   const state = candidate.state ?? candidate.status;
   must(
-    state === (reviewed ? reviewedCandidateState : refreshedCandidateState) &&
+    state === VERIFIED_GITHUB_PARITY_STATUS &&
       candidate.actionScope === "github_reconciliation_candidate" &&
-      candidate.basedOnGitHubMainCommit === expected.githubMain &&
-      (candidate.pullRequest === null ||
-        (Number.isInteger(candidate.pullRequest) && (candidate.pullRequest ?? 0) > 0)) &&
-      !candidate.githubMerged &&
-      candidate.futureMergedGitHubCommit === null &&
+      candidate.basedOnGitHubMainCommit === expected.basedOnGitHubMain &&
+      candidate.pullRequest === V36_GITHUB_RECONCILIATION.pullRequest &&
+      candidate.githubMerged &&
+      candidate.futureMergedGitHubCommit ===
+        V36_GITHUB_RECONCILIATION.mergedCommit &&
       candidate.futureSitesVersion === null &&
-      candidate.reviewedLocally === reviewed &&
+      candidate.reviewedLocally &&
       candidate.candidateSourceMatchesLiveSites &&
       candidate.candidateMigrationsMatchLiveLedger &&
-      !candidate.githubMainMatchesCandidate &&
-      !candidate.fullReleaseGatePassed &&
+      candidate.githubMainMatchesCandidate &&
+      candidate.fullReleaseGatePassed &&
       candidate.sourceFileCount === expected.sourceFileCount &&
       candidate.sourceTreeSha256 === expected.sourceTreeSha256 &&
       candidate.migrationFileCount === expected.migrationFileCount &&
@@ -381,10 +412,17 @@ for (const candidate of candidates) {
   );
 }
 must(
-  checkpoint.releaseCandidate.localReviewPassed === reviewed &&
-    checkpoint.releaseCandidate.allFourWorkflowsGreen === null &&
-    checkpoint.releaseCandidate.zeroUnresolvedReviewThreads === null,
-  "Local and hosted review evidence must remain separately scoped.",
+  checkpoint.releaseCandidate.localReviewPassed === true &&
+    checkpoint.releaseCandidate.allFourWorkflowsGreen === true &&
+    checkpoint.releaseCandidate.zeroUnresolvedReviewThreads === true,
+  "Local review, hosted workflows, and zero-thread evidence must all be verified.",
+);
+must(
+  JSON.stringify(checkpoint.githubReconciliationEvidence) ===
+    JSON.stringify(manifest.githubReconciliationEvidence) &&
+    JSON.stringify(checkpoint.githubReconciliationEvidence) ===
+      JSON.stringify(V36_GITHUB_RECONCILIATION),
+  "Manifest and RR must preserve the exact PR #157 GitHub evidence.",
 );
 
 const sourceTree = hashTree(resolve(repoRoot, manifest.source.root), {
@@ -394,8 +432,7 @@ const migrationTree = hashTree(resolve(repoRoot, manifest.migrations.root), {
   suffix: ".sql",
 });
 must(
-  manifest.source.evidenceScope ===
-    "github_reconciliation_candidate_matching_live_sites_v36" &&
+  manifest.source.evidenceScope === VERIFIED_SOURCE_EVIDENCE_SCOPE &&
     manifest.source.root === "artifacts/veroxa-sites" &&
     manifest.source.mappingTarget === "Sites repository root" &&
     manifest.source.hashAlgorithm === TREE_HASH_ALGORITHM &&
@@ -406,8 +443,7 @@ must(
   `Canonical Sites tree drifted (actual ${sourceTree.fileCount}/${sourceTree.sha256}).`,
 );
 must(
-  manifest.migrations.evidenceScope ===
-    "github_reconciliation_candidate_matching_live_ledger_v36" &&
+  manifest.migrations.evidenceScope === VERIFIED_MIGRATION_EVIDENCE_SCOPE &&
     manifest.migrations.root === "supabase/migrations" &&
     manifest.migrations.hashAlgorithm === TREE_HASH_ALGORITHM &&
     manifest.migrations.fileCount === expected.migrationFileCount &&
@@ -415,8 +451,9 @@ must(
     migrationTree.fileCount === expected.migrationFileCount &&
     migrationTree.sha256 === expected.migrationTreeSha256 &&
     migrationTree.files.at(-1) === expected.latestMigration &&
-    sha256File(resolve(repoRoot, manifest.migrations.root, expected.latestMigration)) ===
-      expected.latestMigrationSha256,
+    sha256File(
+      resolve(repoRoot, manifest.migrations.root, expected.latestMigration),
+    ) === expected.latestMigrationSha256,
   `Canonical migration tree drifted (actual ${migrationTree.fileCount}/${migrationTree.sha256}).`,
 );
 must(
@@ -455,7 +492,25 @@ const requiredGroups = [
   "momo_upload_to_ready_runtime",
 ];
 for (const name of requiredGroups) {
-  must(Boolean(checkpoint.boundaryGroups[name]), `RR boundary group is missing: ${name}`);
+  must(
+    Boolean(checkpoint.boundaryGroups[name]),
+    `RR boundary group is missing: ${name}`,
+  );
+}
+const deliveryFiles = checkpoint.boundaryGroups.delivery?.files ?? [];
+must(
+  deliveryFiles.includes("scripts/package.json"),
+  "RR delivery boundary must include scripts/package.json.",
+);
+for (const tool of requiredReleaseStateTools) {
+  must(
+    deliveryFiles.includes(tool.file),
+    `RR delivery boundary must include ${tool.file}.`,
+  );
+  must(
+    scriptsPackage.scripts?.[tool.command] === tool.invocation,
+    `Release-state command ${tool.command} is missing or drifted.`,
+  );
 }
 for (const [name, group] of Object.entries(checkpoint.boundaryGroups)) {
   must(
@@ -469,7 +524,10 @@ for (const [name, group] of Object.entries(checkpoint.boundaryGroups)) {
     `RR boundary group ${name} contains duplicate files.`,
   );
   for (const file of group.files) {
-    must(existsSync(resolve(repoRoot, file)), `RR boundary file is missing: ${file}`);
+    must(
+      existsSync(resolve(repoRoot, file)),
+      `RR boundary file is missing: ${file}`,
+    );
   }
   if (group.files.every((file) => existsSync(resolve(repoRoot, file)))) {
     must(
@@ -520,8 +578,12 @@ must(
   "Runtime verification must preserve the frozen v36 queue, duplicate, and bad-media boundaries.",
 );
 must(
-  checkpoint.activationGates.some((gate) => /unscheduled Veroxa Ready/i.test(gate)) &&
-    checkpoint.activationGates.some((gate) => /publishing, scheduling/i.test(gate)),
+  checkpoint.activationGates.some((gate) =>
+    /unscheduled Veroxa Ready/i.test(gate),
+  ) &&
+    checkpoint.activationGates.some((gate) =>
+      /publishing, scheduling/i.test(gate),
+    ),
   "Activation gates must describe internal unscheduled Ready and frozen external actions.",
 );
 must(
@@ -537,25 +599,41 @@ const closeoutGithub = closeout.github as Record<string, unknown>;
 const closeoutDatabase = closeout.database as Record<string, unknown>;
 const closeoutVerification = closeout.verification as Record<string, unknown>;
 const closeoutPipeline = closeout.pipelineBehavior as Record<string, unknown>;
-const closeoutSafety = closeout.productionSafetyState as Record<string, unknown>;
+const closeoutSafety = closeout.productionSafetyState as Record<
+  string,
+  unknown
+>;
 must(
   closeout.schemaVersion === 1 &&
     closeout.recordKind === "momo_upload_v36_live_closeout" &&
     closeout.status ===
-      "sites_v36_live_external_actions_frozen_github_parity_pending" &&
+      "sites_v36_live_external_actions_frozen_github_parity_verified" &&
     closeoutSites.versionNumber === expected.sitesVersion &&
     closeoutSites.checkoutCommit === expected.sitesCheckout &&
     closeoutSites.canonicalSourceFileCount === expected.sourceFileCount &&
     closeoutSites.sourceTreeSha256 === expected.sourceTreeSha256 &&
     closeoutGithub.currentMainCommit === expected.githubMain &&
+    closeoutGithub.currentMainCommitScope === V36_OPERATIONAL_COMMIT_SCOPE &&
+    closeoutGithub.v36ParityStatus === VERIFIED_GITHUB_PARITY_STATUS &&
     closeoutGithub.v36ParitySourceTreeSha256 === expected.sourceTreeSha256 &&
     closeoutGithub.candidateSourceMatchesLiveSites === true &&
-    closeoutGithub.githubMainMatchesCandidate === false &&
-    closeoutGithub.fullReleaseGatePassed === false &&
-    (closeoutGithub.v36ParityPullRequest === null ||
-      (typeof closeoutGithub.v36ParityPullRequest === "number" &&
-        closeoutGithub.v36ParityPullRequest > 0)) &&
-    closeoutGithub.v36ParityMergedCommit === null &&
+    closeoutGithub.githubMainMatchesCandidate === true &&
+    closeoutGithub.fullReleaseGatePassed === true &&
+    closeoutGithub.v36ParityPullRequest ===
+      V36_GITHUB_RECONCILIATION.pullRequest &&
+    closeoutGithub.v36ParityReviewedHead ===
+      V36_GITHUB_RECONCILIATION.reviewedHead &&
+    closeoutGithub.v36ParityMergedCommit ===
+      V36_GITHUB_RECONCILIATION.mergedCommit &&
+    closeoutGithub.zeroUnresolvedReviewThreads === true &&
+    JSON.stringify(closeoutGithub.preMergeWorkflows) ===
+      JSON.stringify(V36_GITHUB_RECONCILIATION.preMergeWorkflows) &&
+    JSON.stringify(closeoutGithub.postMergePushWorkflows) ===
+      JSON.stringify(V36_GITHUB_RECONCILIATION.postMergePushWorkflows) &&
+    closeoutGithub.databaseChangesRequired === false &&
+    closeoutGithub.databaseMigrationAppliedByParityRelease === false &&
+    closeoutGithub.sitesPublishRequired === false &&
+    closeoutGithub.sitesPublishedByParityRelease === false &&
     closeoutDatabase.productionMigrationCount === expected.migrationFileCount &&
     closeoutDatabase.migrationTreeSha256 === expected.migrationTreeSha256 &&
     closeoutDatabase.candidateMigrationsMatchLiveLedger === true &&
@@ -587,24 +665,30 @@ for (const document of [
   "artifacts/veroxa/docs/README_CURRENT_STATE.md",
 ]) {
   const text = readFileSync(resolve(repoRoot, document), "utf8");
-  must(/Sites v36/i.test(text), `Current governing document lacks Sites v36: ${document}`);
+  must(
+    /Sites v36/i.test(text),
+    `Current governing document lacks Sites v36: ${document}`,
+  );
   must(
     /bad media|bad-media|bad image|failing media/i.test(text) &&
-      /auto-edit|automatically (?:edit|resize)|does not automatically/i.test(text),
+      /auto-edit|automatically (?:edit|resize)|does not automatically/i.test(
+        text,
+      ),
     `Current governing document omits the no-auto-edit bad-media boundary: ${document}`,
   );
 }
 
 must(
-  manifest.deploymentFreeze.state ===
-    "production_frozen_github_reconciliation_review_required" &&
+  manifest.deploymentFreeze.state === VERIFIED_DEPLOYMENT_FREEZE_STATE &&
     !manifest.deploymentFreeze.automaticDeploymentsAllowed &&
     /No Sites deployment or database apply is required/.test(
       manifest.deploymentFreeze.allowedDeployment,
     ) &&
-    /all four workflows/.test(manifest.deploymentFreeze.releaseCondition) &&
-    /stop if any hash differs/.test(manifest.deploymentFreeze.releaseCondition),
-  "Deployment freeze must keep reconciliation manual, hash-bound, and fail-closed.",
+    /future production change/i.test(
+      manifest.deploymentFreeze.releaseCondition,
+    ) &&
+    /new reviewed release/i.test(manifest.deploymentFreeze.releaseCondition),
+  "Deployment freeze must preserve verified parity and gate every future production change.",
 );
 
 if (failures.length) {
@@ -614,5 +698,5 @@ if (failures.length) {
 }
 
 console.log(
-  `RR checkpoint passed: v22 remains historical GitHub/Sites parity; Sites v36 matches the ${sourceTree.fileCount}-file reconciliation candidate; all ${migrationTree.fileCount} migrations and ${Object.keys(checkpoint.boundaryGroups).length} review boundaries are fingerprinted; external actions remain frozen.`,
+  `RR checkpoint passed: v22 remains historical GitHub/Sites parity; PR #157 merged GitHub main matches live Sites v36 (${sourceTree.fileCount} files) and all ${migrationTree.fileCount} migrations; ${Object.keys(checkpoint.boundaryGroups).length} review boundaries are fingerprinted and external actions remain frozen.`,
 );

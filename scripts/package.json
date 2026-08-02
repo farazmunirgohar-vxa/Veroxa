@@ -61,6 +61,7 @@
     "generate-deployment-attestation": "tsx ./src/generate-deployment-attestation.ts",
     "refresh-release-fingerprints": "tsx ./src/refresh-release-fingerprints.ts",
     "record-local-release-review": "tsx ./src/record-local-release-review.ts",
+    "record-post-merge-parity-closeout": "tsx ./src/record-post-merge-parity-closeout.ts",
     "check-rr-release-checkpoint": "tsx ./src/check-rr-release-checkpoint.ts",
     "check-momo-house-readiness-tracking": "tsx ./src/check-momo-house-readiness-tracking.ts",
     "check-live-automation-media-upload-storage": "tsx ./src/check-live-automation-media-upload-storage.ts",

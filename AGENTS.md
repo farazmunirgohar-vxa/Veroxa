@@ -1,13 +1,14 @@
-## 2026-08-02 — Sites v36 live; GitHub source reconciliation in progress
+## 2026-08-02 — Sites v36 live; GitHub parity verified
 
-- Sites v36 is live from checkout `b8122642b72e5d4e6e74c379469f2a157781ab3d`. Excluding generated `.vinext` cache, its 185-file canonical tree is `caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7` and exactly matches `artifacts/veroxa-sites` on the reconciliation branch.
+- Sites v36 is live from checkout `b8122642b72e5d4e6e74c379469f2a157781ab3d`. Excluding generated `.vinext` cache, its 185-file canonical tree is `caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7` and exactly matches `artifacts/veroxa-sites` in canonical GitHub source/main.
 - Production Supabase has 37 applied migrations through `20260802020000_momo_pipeline_query_indexes_v2.sql`; the canonical 37-file migration tree is `9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90`.
-- GitHub `main` remains at v22 commit `302621bf6b9ab78320abe4175b45b56e9e64ae2a`. Treat the v36 mirror as an unmerged, unapplied, unpublished-from-GitHub reconciliation candidate until its exact head passes all four workflows and review.
+- PR #157 passed all four pre-merge workflows at reviewed head `d3a63d25644fc699d1f521f8f803e5bd95daae49`, had zero unresolved review threads, and merged to GitHub `main` at `aafebf93a6bc40f9578c29f4a25371f8203d0387`. All four push-to-`main` workflows then passed. GitHub main now matches the already-live v36 source and 37-migration ledger.
+- PR #157 was source reconciliation only: it required and performed no Sites publish and no database migration apply. PR #155 / Sites v22 remains preserved as the historical GitHub/Sites parity predecessor.
 - `artifacts/veroxa/docs/MOMO_UPLOAD_V36_LIVE_CLOSEOUT.json` is the current live-status record. The bundled `momo-readiness-tracker.json` remains immutable historical v22 evidence and must not override the v36 closeout.
 - The internal v2 path canonicalizes exact-byte duplicates while preserving each upload, rights record, and audit event; keeps near-duplicate merging advisory; creates an unscheduled internal Veroxa Ready package only after evidence is final; and presents Team Faraz with consolidated exceptions instead of routine approvals.
 - Do not overstate image preparation: v36 accepts an unchanged JPG only when its technical and quality gates pass. Failing media is preserved with one consolidated exception; v36 does not auto-edit or auto-resize it.
 - The release gates previously passed 371/371 tests, build, lint, typecheck, and rollback migration compilation. No post-v36 real upload, content-AI provider call, or Ready package has been created, so authenticated real-media proof remains pending.
-- Publishing, scheduling, external providers, provider writes, review replies, website writes, and Momo activation remain locked. Do not create a test upload or provider canary during GitHub reconciliation.
+- Publishing, scheduling, external providers, provider writes, review replies, website writes, and Momo activation remain locked. No test upload or provider canary was created during GitHub reconciliation.
 
 ## 2026-07-30 — verified v22 signed Media AI bridge release
 

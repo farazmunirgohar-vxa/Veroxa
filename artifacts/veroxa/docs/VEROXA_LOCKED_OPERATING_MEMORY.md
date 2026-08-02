@@ -1,7 +1,8 @@
-## 2026-08-02 — locked v36 internal-ready and source-reconciliation boundary
+## 2026-08-02 — locked v36 internal-ready and verified GitHub-parity boundary
 
 - Sites v36 is live from checkout `b8122642b72e5d4e6e74c379469f2a157781ab3d`; its canonical 185-file tree is `caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7`. Production is at 37 migrations through `20260802020000_momo_pipeline_query_indexes_v2.sql`.
-- GitHub `main` remains v22 at `302621bf6b9ab78320abe4175b45b56e9e64ae2a`. Do not rewrite history: v22 remains the last GitHub-parity release and v36 remains observed live production until the exact reconciliation head merges.
+- PR #157 reviewed head `d3a63d25644fc699d1f521f8f803e5bd95daae49` passed four workflows with zero unresolved review threads, merged to GitHub `main` at `aafebf93a6bc40f9578c29f4a25371f8203d0387`, and passed four push workflows. Main now matches live v36. Preserve PR #155 / Sites v22 as historical parity evidence; do not rewrite its lineage.
+- PR #157 was GitHub reconciliation only and performed neither a Sites publish nor a database apply. A future production change requires a new reviewed release and explicit deployment authority.
 - Exact-byte identity may consolidate processing only. Never merge, copy, or infer rights between uploads; preserve each original, uploader, rights record, selected processing source, run, transition, exception, and Ready event.
 - Ready means an internal, unscheduled evidence package. It never grants posting, scheduling, publishing, provider connection, website writing, review replying, or activation authority.
 - Team Faraz defaults to one consolidated exception per genuine blocker. Routine v2 scheduling and approval work must not return.

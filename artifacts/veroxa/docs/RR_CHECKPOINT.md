@@ -1,11 +1,12 @@
 # RR Release Checkpoint
 
-## 2026-08-02 — Sites v36 live / GitHub reconciliation candidate
+## 2026-08-02 — Sites v36 live / GitHub parity verified
 
 - Live Sites v36 checkout `b8122642b72e5d4e6e74c379469f2a157781ab3d` and the clean mirror match at 185 canonical files, SHA-256 `caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7`; generated `.vinext` cache is excluded.
 - Production has 37 migrations through `20260802020000_momo_pipeline_query_indexes_v2.sql`; the exact ledger hash is `9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90`.
-- GitHub `main` is still v22 at `302621bf6b9ab78320abe4175b45b56e9e64ae2a`. The reconciliation candidate predicts no merge SHA or future Sites version and causes no database apply or Sites deployment.
-- Previously completed release gates were 371/371 tests, build, lint, typecheck, rollback migration compilation, and frozen production verification. The parity branch must repeat applicable local checks and all four GitHub workflows.
+- PR #157 reviewed head `d3a63d25644fc699d1f521f8f803e5bd95daae49` passed all four workflows with zero unresolved review threads and merged at `aafebf93a6bc40f9578c29f4a25371f8203d0387`; all four push-to-main workflows also passed. GitHub main now matches the live source and ledger.
+- PR #157 caused no database apply and no Sites deployment. PR #155 / Sites v22 remains preserved as historical parity evidence.
+- Release gates include 371/371 application tests, build, lint, typecheck, rollback migration compilation, the four exact-head workflows, the four push workflows, and frozen production verification.
 - Exact duplicates reuse canonical byte identity without combining rights; each source upload and immutable event remains attributable. Team defaults to consolidated exceptions; Ready is internal and unscheduled.
 - Bad media becomes one preserved, evidenced exception. V36 does not auto-edit or auto-resize, and near-duplicate merging is advisory.
 - No real v36 upload, provider call, or Ready package exists. Queues, schedules, connections, publishing, posting, replies, website writes, and activation remain empty/off.

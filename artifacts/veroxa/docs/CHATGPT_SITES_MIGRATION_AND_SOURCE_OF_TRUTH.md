@@ -2,11 +2,15 @@
 
 Status: active migration and deployment authority as of 2026-08-02.
 
-## Sites v36 live-source reconciliation override
+## Sites v36 verified GitHub-parity override
 
 Sites v36 is live from checkout `b8122642b72e5d4e6e74c379469f2a157781ab3d`. After excluding the tracked-but-generated `.vinext` cache, the live checkout and `artifacts/veroxa-sites` mirror contain the same 185 canonical files at tree SHA-256 `caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7`. Production Supabase has 37 applied migrations through `20260802020000_momo_pipeline_query_indexes_v2.sql`; the 37-file canonical migration tree is `9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90`.
 
-GitHub `main` remains at v22 commit `302621bf6b9ab78320abe4175b45b56e9e64ae2a`, so v36 is verified live drift rather than canonical parity. The reconciliation candidate must remain unmerged, unapplied, and unpublished-from-GitHub until its exact head passes CI, Sites Verify, Supabase Verify, Veroxa Verify, and review-thread clearance. This branch makes no production change; after merge, verify that canonical GitHub and the already-live Sites tree still match before considering any separate deployment.
+PR #157 passed CI, Sites Verify, Supabase Verify, and Veroxa Verify at reviewed head `d3a63d25644fc699d1f521f8f803e5bd95daae49`, had zero unresolved review threads, and merged to GitHub `main` at `aafebf93a6bc40f9578c29f4a25371f8203d0387`. All four push-to-main workflows then passed. Canonical GitHub now matches the already-live Sites tree and production migration ledger.
+
+PR #157 performed no Sites publish and no database apply; it reconciled source already live before the PR. PR #155 / Sites v22 remains immutable historical parity evidence. This evidence-only closeout also requires no Sites deployment or database apply, and its CI attestation binds only the closeout checkout—not the earlier merge or a production action.
+
+Machine evidence scopes commit `aafebf93a6bc40f9578c29f4a25371f8203d0387` as `v36_operational_parity_commit_not_closeout_pr_head`: it is the reviewed v36 reconciliation merge, not a prediction of this evidence-only closeout PR's eventual head or merge commit. The closeout must not record that future SHA or create a recursive third PR.
 
 V36 contains only the internal Momo upload-to-unscheduled-Veroxa-Ready workflow. It preserves immutable lineage and current rights, consolidates exact duplicates, keeps near-duplicate merging advisory, and sends real blockers to one Team exception. Bad media is not automatically edited or resized. No external provider, posting, scheduling, publishing, reply, website write, test upload, or activation is authorized by reconciliation.
 
