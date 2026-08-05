@@ -2,6 +2,13 @@
 
 Status: Short index for Faraz, Codex, and future ChatGPT/Codex sessions.
 
+## 2026-08-05 — retired source permanently removed
+
+- Start with `RETIRED_SOURCE_REMOVAL.md` for the cleanup boundary.
+- The old Vite/Replit application and its obsolete checks are no longer present in the current tree. `artifacts/veroxa-sites` is the sole deployable app; GitHub `main`, Sites checkpoints, Supabase source, and active operating docs remain authoritative.
+- Reviewed duplicate branches are deletion-authorized, with protected `main` as the final branch set after the cleanup PR merges.
+- No runtime deployment, data migration, external action, Momo activation, or spend is included. The Vercel sentinel remains inert until its external Git integration is verified disconnected.
+
 ## 2026-08-02 — Sites v36 live; GitHub parity verified
 
 - Start with `MOMO_UPLOAD_V36_LIVE_CLOSEOUT.json`, `VEROXA_CURRENT_MILESTONE.md`, `VEROXA_DEPLOYMENT_MANIFEST.json`, and `RR_RELEASE_CHECKPOINT.json`.

@@ -1,3 +1,11 @@
+## 2026-08-05 — permanent repository cleanup
+
+- The cleanup candidate permanently removes 671 retired Vite/Replit runtime/configuration files, 65 runtime-only verification scripts, the obsolete archive marker, and the unused `hello` scaffold from the current repository tree.
+- Active Sites source, 339 tracked operating/evidence documents, Supabase migrations/functions, APIs, identity helpers, and current release/source-truth checks are preserved.
+- CI now rejects any return of the retired paths and any automation command that points to a deleted check. Root build/typecheck no longer carries a legacy workspace exclusion.
+- Reviewed pre-cleanup non-default GitHub branches are authorized for deletion; the final remote branch set is protected `main` only after the cleanup pull request merges and its head branch is deleted.
+- No production behavior changes: no Sites deployment, database migration, provider connection, public publishing, Momo activation, or spend is part of this cleanup. The inert Vercel shutdown sentinel remains pending independently verified external disconnection.
+
 ## 2026-08-02 — v36 live source recovered; GitHub parity verified
 
 - **Production:** Sites v36 succeeded from checkout `b8122642b72e5d4e6e74c379469f2a157781ab3d`; production has 37 migrations through `20260802020000_momo_pipeline_query_indexes_v2.sql`, and the two changed content-processing workers are active.
@@ -127,7 +135,7 @@
 - Scope: build the seven requested Momo systems together—Restaurant Intelligence/onboarding; approved Team identity and authenticated smoke; media rights/intelligence/reuse; AI content/approvals/calendar; Meta handling; Google/local visibility; and work/reports/retries/recovery/final readiness.
 - Git state: PR #138 is merged to `main` at `48630c62b9429238ab39b5b919d7689d189352f8`. Its exact reviewed head `068f2c7e6bb094bb16329106ca54fed06fe66aca` passed CI, Sites Verify, Veroxa Verify, clean Supabase reset, pgTAP, and error-level database lint before the SHA-locked squash merge.
 - Contract: `MOMO_100_READINESS_SEVEN_SYSTEM_CONTRACT.md` separates the verified deployed foundation from provider connection, external authority, operational evidence, and final readiness.
-- Source direction: the canonical provider-neutral contracts under `artifacts/veroxa/src/domain/momoOperationsV1/` fail closed for unapproved providers/spend and require a 100% evidence-backed score with no required blocker.
+- Source direction: the canonical provider-neutral contract is implemented by the active Sites gates (`momo-operating-gates.ts`, `momo-preconnection-readiness.ts`, and `momo-evidence-boundary.ts`) plus the Supabase operating migrations. It fails closed for unapproved providers/spend and requires a 100% evidence-backed score with no required blocker; the retired Vite-domain duplicate was permanently removed on 2026-08-05.
 - Client data boundary: operational base tables remain Team-only; the client adapter uses the explicit-auth, role-sanitized `veroxa_momo_client_snapshot_v1` contract so internal provider/error/AI payload columns are not exposed.
 - Historical identity state at PR #138: the server-only provisioning helper existed but had not been used in that release. This is superseded by PR #142 evidence that Faraz's approved Gmail identity is confirmed, signed in, active for Team/Momo, and password-verified; the Momo client helper remains unexecuted.
 - Historical Auth-smoke state at PR #138: the harness was prepared and the browser smoke was then unverified. This is superseded by the later verified Safari protected-route smoke and password sign-in; hosted reauthentication and old-session revocation alone remain unverified.
@@ -279,7 +287,6 @@ AUTH_MODE remains placeholder. /api/pilot-access remains active. Roles remain cl
 
 # Veroxa Launch Simplification Source of Truth
 
-
 ## 2026-06-15 — PR 100 RR patch: password recovery and active workspace enforcement
 
 - Password reset completion was added/prepared for real-auth mode: reset email request remains client-safe, recovery links can show a set-new-password form, password mismatch is handled safely, and successful updates return the user to normal sign-in.
@@ -350,7 +357,6 @@ AUTH_MODE remains placeholder. /api/pilot-access remains active. Roles remain cl
 - The next build is an AI/automation readiness blueprint, not live AI activation.
 - After the 80% mark, Faraz chooses the A-Z review route before paid systems are connected.
 
-
 ## 2026-06-04 — 90% pre-paid OS final alignment
 
 - Final public launch offer is still **Complete Online Presence — $495/month** with weekly updates, monthly online presence report, website alignment/refinement if access is provided, and portal request response/review/answer within 24 hours.
@@ -361,6 +367,7 @@ AUTH_MODE remains placeholder. /api/pilot-access remains active. Roles remain cl
 - Team Portal complexity remains deferred. Current priority is public/client/onboarding/reporting/proof/request-facing 90% readiness before paid systems.
 - No live auth, storage, AI, API writes, production database work, payments, publishing connectors, webhooks, cron jobs, or automated customer-visible execution were added; `AUTH_MODE` remains `placeholder`.
 - Next recommended build stage: Client-facing weekly update + monthly report polish; backend SOP docs for Pakistan execution; audit-to-onboarding flow polish; still no live systems yet.
+
 ## 2026-06-04 — Final launch offer lock / Post-PR67 alignment
 
 - One active public offer: **Complete Online Presence — $495/month**. Starter, Growth, Premium, Local Presence, Full Presence, old Complete Presence, $295, and $995 language are historical/internal only and must not be shown as active public pricing.
@@ -373,7 +380,6 @@ AUTH_MODE remains placeholder. /api/pilot-access remains active. Roles remain cl
 - Weekly update means what Veroxa worked on, what was posted/prepared, what is pending, what media is needed, what the client needs to confirm, and what is next. Monthly report remains the deeper proof/reporting layer.
 - Advanced Team OS complexity is later. Current focus is public/client/onboarding/reporting/proof/request-facing 90% before paid systems. Team surfaces should remain stable and action-focused; do not add complex Team command-center features unless explicitly requested.
 - No live auth/storage/AI/connectors/payments/API writes, publishing, webhooks, cron jobs, production database work, or automated customer-visible execution are added or allowed in this alignment. `AUTH_MODE` remains `placeholder`.
-
 
 Status: Current as of 2026-06-04 for preview/manual/pre-live Veroxa.
 
@@ -584,7 +590,6 @@ PR #70 built the 90% pre-paid/manual OS foundations for client readiness, weekly
 - No live systems were added: no production auth, database/storage writes, live AI, payments, connectors, publishing, webhooks, cron jobs, background jobs, or automated customer-visible execution.
 - Next recommended step: post-PR77 active-doc alignment, CI E2E wiring, scanner safety tests, future live-data guardrails, and RR before any paid/live system planning.
 
-
 ## 2026-06-07 — Real pilot mode lock
 
 - Veroxa is moving from public demo/preview portal exposure into **real pilot pre-live/manual mode**.
@@ -614,7 +619,6 @@ PR #70 built the 90% pre-paid/manual OS foundations for client readiness, weekly
 - No live portal DB wiring was added.
 - No media uploads, messages runtime, profile correction runtime, activity log runtime, AI runtime, or report generation was added.
 - Momo owner walkthrough remains blocked until full Live Automation V1 is built and approved.
-
 
 ## 2026-06-15 — PR #102 Media Upload + Storage Foundation
 
@@ -686,7 +690,6 @@ GitHub PR #109 adds Momo Live Pilot Readiness Gate only. PR #108 Reports From Ac
 
 GitHub PR #111 adds Controlled Momo Pilot Activation Gate only. PR #109 Momo Live Pilot Readiness Gate is already merged. PR #110 Post-PR109 Momo readiness alignment is already merged. This PR does not activate the pilot by default, does not activate real auth, does not create client credentials, does not contact Momo’s House, does not publish externally, does not create platform integrations, and does not add payments, webhooks, cron jobs, or background jobs. `AUTH_MODE` remains `placeholder`; `/api/pilot-access` remains active. Momo owner walkthrough remains blocked until Faraz explicitly approves activation/walkthrough after the gate. Future real-world activation steps require a separate explicit Faraz approval.
 
-
 ## 2026-06-19 — PR #112 Post-PR111 Activation Gate Alignment
 
 GitHub PR #112 is **Post-PR111 Activation Gate Alignment + Business Truth Status Hardening**. PR #109 Momo Live Pilot Readiness Gate is already merged, PR #110 Post-PR109 Momo readiness alignment is already merged, and PR #111 Controlled Momo Pilot Activation Gate is already merged. PR #112 corrects activation/readiness gate interpretation of current business-truth profile-field statuses (`please_review`, `pre_filled`, `confirmed`, `optional`, `veroxa_review`) and removes stale PR #110 activation-gate wording. PR #112 is corrective alignment only: it does not activate the pilot, does not activate real auth, does not create credentials, does not contact Momo’s House, does not publish externally, does not create platform integrations, and does not add payments, webhooks, cron jobs, or background jobs. `AUTH_MODE` remains `placeholder`, `/api/pilot-access` remains active, Momo owner walkthrough remains blocked, no next activation PR is approved by default, and Future real-world activation requires separate explicit Faraz approval.
@@ -753,6 +756,7 @@ PR #118 is controlled AI draft generation foundation only. AI generation is disa
 AUTH_MODE remains placeholder. /api/pilot-access remains active. Roles remain client/team only. Momo owner walkthrough remains blocked. No next activation PR is approved by default. Future real-world activation requires separate explicit Faraz approval.
 
 Business-truth changes require owner confirmation before any public/customer-visible use. Media usage rights require owner confirmation before public/customer-visible use. Sensitive claims are blocked until owner-confirmed. AI may use only confirmed business truth and permissioned media in later internal drafts. All future AI output requires Team/Faraz review before customer-visible use.
+
 ## GitHub PR #119 — AI Draft Approval Queue
 
 GitHub PR #119 adds AI Draft Approval Queue only. PR #109 Momo Live Pilot Readiness Gate is merged. PR #110 Post-PR109 Momo readiness alignment is merged. PR #111 Controlled Momo Pilot Activation Gate is merged. PR #112 Post-PR111 Activation Gate Alignment + Business Truth Status Hardening is merged. PR #113 Post-PR112 Source-of-Truth Finalization is merged. PR #114 Momo Internal Pilot Prep Pack is merged. PR #115 Momo Business Truth Review Pack is merged. PR #116 Momo Media + Content Inventory Pack is merged. PR #117 Momo Brand Voice + AI Prompt Rules Pack is merged. PR #118 Controlled AI Draft Generation Foundation is merged or immediately prior.

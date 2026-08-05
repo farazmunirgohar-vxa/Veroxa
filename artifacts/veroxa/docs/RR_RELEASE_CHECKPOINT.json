@@ -410,6 +410,7 @@
     "delivery": {
       "review": "full-on-change",
       "files": [
+        "artifacts/api-server/package.json",
         "artifacts/veroxa-sites/.npmrc",
         "artifacts/veroxa-sites/.openai/hosting.json",
         "artifacts/veroxa-sites/package.json",
@@ -417,9 +418,11 @@
         "artifacts/veroxa-sites/scripts/validate-artifact.sh",
         ".gitattributes",
         "vercel.json",
-        "artifacts/veroxa/e2e/route-auth-data-boundary.e2e.ts",
+        "package.json",
+        "pnpm-workspace.yaml",
         "scripts/src/check-sites-only-deployment.ts",
         "scripts/src/check-chatgpt-sites-migration-source-truth.ts",
+        "scripts/src/check-retired-source-removed.ts",
         "scripts/src/check-deployment-manifest.ts",
         "scripts/src/check-release-workflow-policy.ts",
         "scripts/src/generate-deployment-attestation.ts",
@@ -428,6 +431,7 @@
         "scripts/src/release-manifest.ts",
         "scripts/src/check-rr-release-checkpoint.ts",
         "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json",
+        "artifacts/veroxa/docs/RETIRED_SOURCE_REMOVAL.md",
         ".github/workflows/ci.yml",
         ".github/workflows/sites-verify.yml",
         ".github/workflows/supabase-verify.yml",
@@ -435,7 +439,7 @@
         "scripts/src/record-post-merge-parity-closeout.ts",
         "scripts/package.json"
       ],
-      "sha256": "e5460779b6b91560eaabab9900821c538e931c9e6874d0829c5eec3ac17c09c0"
+      "sha256": "4b6b66094a57caadb9a9608707510b8b627a080a7083f5725fa8ad738d0c711c"
     },
     "product_scope": {
       "review": "full-on-change",
@@ -454,10 +458,12 @@
         "artifacts/veroxa/docs/PRE_BUILD_STABILITY_CHECKLIST.md",
         "artifacts/veroxa/docs/CHATGPT_MANAGED_BUILD_OPERATING_PROTOCOL.md",
         "artifacts/veroxa/docs/CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md",
+        "artifacts/veroxa/docs/POST_RELEASE_BRANCH_AND_PROVIDER_CLEANUP.md",
+        "artifacts/veroxa/docs/RETIRED_SOURCE_REMOVAL.md",
         "AGENTS.md",
         "artifacts/veroxa/docs/RR_CHECKPOINT.md"
       ],
-      "sha256": "f44a1217c86938d8f06dab8e5f49c079cf74921a5e16c808497a56c3ec96e5ea"
+      "sha256": "ce1c74f2554550bc3c9e64ec24896a31719507500d2cf0fe9053a50fd5dd16b4"
     },
     "momo_readiness_tracking": {
       "review": "evidence-delta-on-change",
@@ -475,17 +481,13 @@
         "artifacts/veroxa-sites/app/globals.css",
         "artifacts/veroxa-sites/app/momo-client-portal.tsx",
         "artifacts/veroxa-sites/app/momo-team-preconnection-center.tsx",
-        "artifacts/veroxa-sites/tests/rendered-html.test.mjs",
-        "artifacts/veroxa/src/pages/free-audit.tsx"
+        "artifacts/veroxa-sites/tests/rendered-html.test.mjs"
       ],
-      "sha256": "d09170b579fa729e9ef0b4ab9c387b302514f431fbaf3eb4a88029e82ea0f9ca"
+      "sha256": "717f03f8ebd323cd833a850fc157083f540f70950f976c8d9d1266fe19ae22f6"
     },
     "momo_operations_contract": {
       "review": "full-on-change",
       "files": [
-        "artifacts/veroxa/src/domain/momoOperationsV1/types.ts",
-        "artifacts/veroxa/src/domain/momoOperationsV1/providerAdapters.ts",
-        "artifacts/veroxa/src/domain/momoOperationsV1/readiness.ts",
         "artifacts/veroxa-sites/app/momo-data.ts",
         "artifacts/veroxa-sites/app/momo-ai-automation-rehearsal.ts",
         "artifacts/veroxa-sites/app/momo-client-data.ts",
@@ -516,14 +518,12 @@
         "scripts/src/approved-momo-client-identity.ts",
         "scripts/src/provision-approved-momo-client-identity.ts",
         "scripts/src/check-approved-momo-client-identity-provisioning.ts",
-        "scripts/src/check-momo-seven-system-readiness-contract.ts",
         "scripts/src/check-sites-momo-operating-contract.ts",
-        "scripts/src/check-live-automation-media-upload-storage.ts",
         "scripts/package.json",
         "package.json",
         "pnpm-lock.yaml"
       ],
-      "sha256": "982cdc9c36c87d3f6e39a258a0eba2c2d57ae52b9640da711ac342aa24ca4ef0"
+      "sha256": "b7bf69e8b9f8e8bfb3b7591fb2093ce34247fa2448694d04c9a716fd0400788f"
     },
     "momo_upload_to_ready_runtime": {
       "review": "full-on-change",

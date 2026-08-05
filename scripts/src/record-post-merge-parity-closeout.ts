@@ -61,10 +61,12 @@ const expectedMigrations = {
   latestSha256: V36_LIVE_PARITY_EVIDENCE.latestMigrationSha256,
 };
 const requiredReleaseToolCommands = {
-  "refresh-release-fingerprints": "tsx ./src/refresh-release-fingerprints.ts",
-  "record-local-release-review": "tsx ./src/record-local-release-review.ts",
+  "refresh-release-fingerprints":
+    "node --import tsx ./src/refresh-release-fingerprints.ts",
+  "record-local-release-review":
+    "node --import tsx ./src/record-local-release-review.ts",
   "record-post-merge-parity-closeout":
-    "tsx ./src/record-post-merge-parity-closeout.ts",
+    "node --import tsx ./src/record-post-merge-parity-closeout.ts",
 } as const;
 
 type RrCheckpoint = {

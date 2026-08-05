@@ -1,10 +1,10 @@
 # Momo 100% Readiness — Seven-System Contract
 
-Status: full-automation contract and historical foundation record, reviewed 2026-07-14. This document separates source readiness, deployment, runtime connection, and activation so a prepared adapter or screen is never reported as a live provider connection.
+Status: full-automation contract and historical foundation record, source authority refreshed 2026-08-05. This document separates source readiness, deployment, runtime connection, and activation so a prepared adapter or screen is never reported as a live provider connection.
 
 This contract does not replace the narrower founding-pilot onboarding authority in `MOMO_FOUNDING_PILOT_COMMITMENT_AND_ONBOARDING_GATE.md`. Momo may begin the already-agreed free pilot after the secure, persistent, human-controlled manual operating loop and exact evidence gate pass; runtime AI, Meta, Google, and automated publishing remain later modular activations. The 100% seven-system gate still governs any claim of full automation readiness.
 
-Current delivery state: PR #149 passed all four workflows with zero unresolved review threads at reviewed head `0d2c6e47fbfe1c44a2f0ff19fbb158001ed9365a` and merged at `9749b68ce2cfc383deeae6aa63c413019ef61385`. Sites version 15 succeeded from checkout `e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0`; its verified 55-file source SHA-256 is `ba06cd39ab7782987a6504678e4a3533a9943d078ba5dd9f93dbe8eeb0c5178f`, and public/custom-domain checks passed. Supabase remains at 13 migrations with exact filename/content parity; PR #149 required no database apply. State is `verified_reconciliation_cleanup_deployed` / `post_release_cleanup_deployed`. This release does not enable runtime AI, contact Momo, provision a Client, connect a provider, publish, bill, activate, or approve new spend; the Momo readiness decision remains No-Go. The evidence-only closeout PR requires no Sites v16 because it changes no Sites source. Branch deletion remains unavailable, and the Vercel shutdown sentinel remains until external Git disconnection is independently verified.
+Current delivery state: PR #149 passed all four workflows with zero unresolved review threads at reviewed head `0d2c6e47fbfe1c44a2f0ff19fbb158001ed9365a` and merged at `9749b68ce2cfc383deeae6aa63c413019ef61385`. Sites version 15 succeeded from checkout `e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0`; its verified 55-file source SHA-256 is `ba06cd39ab7782987a6504678e4a3533a9943d078ba5dd9f93dbe8eeb0c5178f`, and public/custom-domain checks passed. Supabase remains at 13 migrations with exact filename/content parity; PR #149 required no database apply. State is `verified_reconciliation_cleanup_deployed` / `post_release_cleanup_deployed`. This release does not enable runtime AI, contact Momo, provision a Client, connect a provider, publish, bill, activate, or approve new spend; the Momo readiness decision remains No-Go. The evidence-only closeout PR requires no Sites v16 because it changes no Sites source. Permanent non-main branch deletion is separately authorized but remains pending an authenticated GitHub session, and the Vercel shutdown sentinel remains until external Git disconnection is independently verified.
 
 ## Status vocabulary
 
@@ -75,15 +75,18 @@ Current delivery state: PR #149 passed all four workflows with zero unresolved r
 
 ## Provider-neutral source contracts
 
-The canonical TypeScript contracts are under `artifacts/veroxa/src/domain/momoOperationsV1/`:
+The canonical executable contract now lives only in the active Sites and Supabase source. The former Vite-domain copy was a retired duplicate and was permanently removed on 2026-08-05.
 
-- `types.ts` locks confirmation, connection, provider-result, and readiness states.
-- `providerAdapters.ts` keeps media AI, content AI, publishing, and visibility behind fail-closed adapters. The default adapter returns `provider_not_authorized` or `incremental_spend_not_approved` and never a fabricated completion.
-- `readiness.ts` returns `ready` only at 100% with no required blocker, rejects duplicate/invalid weights, and requires evidence for every passed check.
+- `artifacts/veroxa-sites/app/momo-operating-gates.ts` resolves media, content-package, publication, provider, and final readiness states from durable evidence and fails closed on any missing or incoherent prerequisite.
+- `artifacts/veroxa-sites/app/momo-preconnection-readiness.ts` keeps owner-access readiness separate from activation and makes activation impossible from rehearsal evidence.
+- `artifacts/veroxa-sites/app/momo-evidence-boundary.ts` permits live evaluation only for explicitly classified real-owner evidence.
+- `artifacts/veroxa-sites/app/momo-data.ts` is the typed Sites-to-Supabase read/write boundary; operational base tables remain protected and client reads stay sanitized.
+- `supabase/migrations/20260713010710_momo_full_operating_system_v1.sql` is the durable seven-system foundation. Later migrations, including `20260802010000_momo_upload_veroxa_ready_v2.sql` and `20260802013000_momo_client_pipeline_readback_v2.sql`, add exact-byte lineage, immutable rights/evidence links, disabled external writes, and client-safe status projection without weakening the final gate.
 
 ## Verification and controlled external commands
 
-- `pnpm --filter @workspace/scripts run check-momo-seven-system-readiness-contract`
+- `pnpm --filter @workspace/scripts run check-sites-momo-operating-contract`
+- `pnpm --filter @workspace/scripts run check-momo-house-readiness-tracking`
 - `pnpm --filter @workspace/scripts run check-approved-team-identity-provisioning`
 - `pnpm --filter @workspace/scripts run check-approved-momo-client-identity-provisioning`
 - `pnpm run verify:veroxa`

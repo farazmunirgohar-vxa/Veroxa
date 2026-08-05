@@ -1,6 +1,6 @@
 # Veroxa Current Milestone
 
-Status: highest-priority governing build direction as of 2026-08-02.
+Status: highest-priority governing build direction as of 2026-08-05.
 
 Read this file first before planning, building, reviewing, merging, deploying, or recommending Momo outreach. If an older roadmap or status note conflicts with this file, follow this file and Faraz's newest explicit instruction.
 
@@ -15,7 +15,16 @@ Also read:
 - `MOMO_UPLOAD_V36_LIVE_CLOSEOUT.json`
 - `MOMO_MEDIA_V22_LIVE_CLOSEOUT.json`
 - `VEROXA_DEPLOYMENT_MANIFEST.json`
+- `RETIRED_SOURCE_REMOVAL.md`
 - `../veroxa-sites/app/momo-readiness-tracker.json` (immutable v22 pre-deploy No-Go/rights/spend snapshot; not current bridge-deployment authority)
+
+## 2026-08-05 — permanent repository cleanup
+
+- Verified v36 source and migration parity satisfied the cleanup gate, and Faraz explicitly authorized permanent deletion of retired files and duplicate branches.
+- The legacy Vite/Replit runtime and its obsolete checks are removed from the current tree. Current engineering must use `artifacts/veroxa-sites`, `supabase`, the API packages, and the remaining release/source-truth guardrails.
+- The branch end state is protected `main` only. Historical commits remain immutable audit lineage; they are not active source, a rollback app, or a reason to preserve duplicate remote branches.
+- The cleanup is behavior-neutral for production: no Sites deployment, database migration, provider connection, public action, Momo activation, or spend is included.
+- Keep the exact inert Vercel shutdown sentinel until external Vercel Git disconnection is independently verified. Its presence does not make Vercel an active platform.
 
 ## 2026-08-02 — Momo upload-to-Veroxa-Ready v36 live; GitHub parity verified
 

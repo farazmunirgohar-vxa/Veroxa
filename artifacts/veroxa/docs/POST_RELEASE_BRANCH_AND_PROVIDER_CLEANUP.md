@@ -1,6 +1,14 @@
 # Post-release branch and provider cleanup
 
-Status reviewed: 2026-07-14.
+Status reviewed: 2026-08-05. Permanent source and reviewed-branch cleanup explicitly authorized.
+
+## 2026-08-05 completion override
+
+- The prior ownership-review and source-parity gates are satisfied by the verified v36 release and Faraz's explicit deletion instruction.
+- Remove every reviewed pre-cleanup non-default remote branch. After merge, remove the cleanup head branch as well, leaving protected `main` only.
+- The retired Vite/Replit runtime, package/configuration surface, working-tree archive marker, and runtime-only checks are permanently removed from the current tree. See `RETIRED_SOURCE_REMOVAL.md`.
+- Immutable Git history preserves audit lineage. It is not an active branch fallback, deployable archive, or rollback application.
+- Provider state and production data are outside this deletion scope and remain fail-closed. The root Vercel shutdown sentinel remains until external Git disconnection is independently verified.
 
 This record keeps cleanup truthful after PR #149 reviewed head `0d2c6e47fbfe1c44a2f0ff19fbb158001ed9365a` merged at `9749b68ce2cfc383deeae6aa63c413019ef61385` and its exact Sites source was verified in successful Sites version 15 checkout `e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0`. The 55-file deployed source SHA-256 is `ba06cd39ab7782987a6504678e4a3533a9943d078ba5dd9f93dbe8eeb0c5178f`; public access and both custom domains passed verification. Supabase remains at 13 migrations with filename/content parity, and PR #149 required no database apply. State is `verified_reconciliation_cleanup_deployed` / `post_release_cleanup_deployed`.
 
