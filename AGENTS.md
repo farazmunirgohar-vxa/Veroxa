@@ -1,3 +1,11 @@
+## 2026-08-05 — permanent retired-source and branch cleanup
+
+- Faraz explicitly authorized permanent deletion of retired files and duplicate branches after the verified v36 GitHub/Sites/Supabase parity checkpoint.
+- The retired Vite/Replit runtime, its package/configuration surface, its archived working-tree copy, its obsolete checks, and the unused script scaffold are removed from the current repository tree. `artifacts/veroxa-sites` is the sole deployable application source; `artifacts/veroxa/docs` and `supabase` remain active source/evidence.
+- Do not recreate a branch-held, working-tree, deployment, or rollback copy of the deleted runtime. Immutable Git commit history is sufficient audit lineage. `scripts/src/check-retired-source-removed.ts` must remain green.
+- Delete all reviewed pre-cleanup non-default remote branches; after the cleanup pull request merges, delete its head branch too so GitHub retains only protected `main`.
+- This repository cleanup does not deploy Sites, apply a database migration, connect a provider, publish externally, spend funds, or activate Momo. The inert root `vercel.json` remains until external Vercel Git disconnection is independently verified; it is a safety control, not active platform source.
+
 ## 2026-08-02 — Sites v36 live; GitHub parity verified
 
 - Sites v36 is live from checkout `b8122642b72e5d4e6e74c379469f2a157781ab3d`. Excluding generated `.vinext` cache, its 185-file canonical tree is `caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7` and exactly matches `artifacts/veroxa-sites` in canonical GitHub source/main.
@@ -147,7 +155,6 @@ Current docs authority: read `artifacts/veroxa/docs/VEROXA_CURRENT_MILESTONE.md`
 - Public/customer-visible actions still require Veroxa/Faraz approval before anything goes live.
 - Business-truth changes still require client confirmation before approval or execution, including hours, menu, prices, offers, links, sensitive claims, and complaint/reputation-impacting language.
 
-
 ## 2026-06-04 — 90% pre-paid OS final alignment
 
 - Final public launch offer is still **Complete Online Presence — $495/month** with weekly updates, monthly online presence report, website alignment/refinement if access is provided, and portal request response/review/answer within 24 hours.
@@ -157,6 +164,7 @@ Current docs authority: read `artifacts/veroxa/docs/VEROXA_CURRENT_MILESTONE.md`
 - Internal-only value proof: **$9,900/month** is the minimum online-influenced sales channel value baseline for a $495 client at 5% margin; healthy is $15k–$25k/month, strong is $25k+/month with clearer action signals. This is not extra new sales and must not appear on public/client pages.
 - Team Portal complexity remains deferred. Current priority is public/client/onboarding/reporting/proof/request-facing 90% readiness before paid systems.
 - No live auth, storage, AI, API writes, production database work, payments, publishing connectors, webhooks, cron jobs, or automated customer-visible execution were added; `AUTH_MODE` remains `placeholder`.
+
 ## 2026-06-04 — Final launch offer lock / Post-PR67 alignment
 
 - One active public offer: **Complete Online Presence — $495/month**. Starter, Growth, Premium, Local Presence, Full Presence, old Complete Presence, $295, and $995 language are historical/internal only and must not be shown as active public pricing.
@@ -169,7 +177,6 @@ Current docs authority: read `artifacts/veroxa/docs/VEROXA_CURRENT_MILESTONE.md`
 - Weekly update means what Veroxa worked on, what was posted/prepared, what is pending, what media is needed, what the client needs to confirm, and what is next. Monthly report remains the deeper proof/reporting layer.
 - Advanced Team OS complexity is later. Current focus is public/client/onboarding/reporting/proof/request-facing 90% before paid systems. Team surfaces should remain stable and action-focused; do not add complex Team command-center features unless explicitly requested.
 - No live auth/storage/AI/connectors/payments/API writes, publishing, webhooks, cron jobs, production database work, or automated customer-visible execution are added or allowed in this alignment. `AUTH_MODE` remains `placeholder`.
-
 
 This file is the repo-level operating guide for Codex and any coding agent working on Veroxa. If a task prompt conflicts with this file, follow the user's newest explicit instruction. Otherwise, treat this file as the locked Veroxa working model.
 

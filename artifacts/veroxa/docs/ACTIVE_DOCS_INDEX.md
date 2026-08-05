@@ -2,6 +2,13 @@
 
 Status: highest-level current source-of-truth index. Read this file before relying on older Veroxa documents.
 
+## 2026-08-05 — permanent retired-source and branch cleanup override
+
+- Faraz explicitly approved permanent deletion after verified Sites v36, GitHub, and 37-migration parity. `RETIRED_SOURCE_REMOVAL.md` records the exact repository boundary.
+- The legacy Vite/Replit runtime, its configuration, archived working-tree copy, obsolete runtime-only checks, and unused script scaffold are removed. `artifacts/veroxa-sites` is the sole deployable application source; active operating docs and Supabase source remain preserved.
+- Reviewed pre-cleanup GitHub branches are deletion-authorized. The target end state is protected `main` only after the cleanup pull request merges and its temporary head branch is removed.
+- This is source-control cleanup only. It performs no Sites publish, database apply, provider connection, external write, Momo activation, or spend. The inert Vercel shutdown sentinel remains a required control until the external Git integration is independently verified disconnected.
+
 ## 2026-08-02 — v36 live-status and verified GitHub-parity override
 
 - Read `MOMO_UPLOAD_V36_LIVE_CLOSEOUT.json`, `VEROXA_CURRENT_MILESTONE.md`, `CURRENT_BUILD_STATUS.md`, `VEROXA_DEPLOYMENT_MANIFEST.json`, and `RR_RELEASE_CHECKPOINT.json` first.
@@ -250,6 +257,7 @@ Status: highest-level active contributor guide and current source-of-truth index
 - Momo owner walkthrough remains blocked until the full Live Automation V1 sequence is implemented and approved.
 
 ## Current source-of-truth docs
+
 - `VEROXA_DEPLOYMENT_MANIFEST.json` — machine-readable production observation, candidate tree, deployment freeze, activation state, and deferred cleanup gates. The eventual exact commit comes only from the CI attestation.
 - `MOMO_FOUNDING_PILOT_COMMITMENT_AND_ONBOARDING_GATE.md` — relationship, free founding-pilot, secure manual-loop, evidence-gate, and contact-approval authority.
 - `momo-readiness-tracker.json` — evidence-backed readiness tracking for Momo's House San Antonio only; every required dimension must be verified before overall readiness can be verified, and other restaurants remain Audit Center-only.
@@ -267,7 +275,6 @@ Status: highest-level active contributor guide and current source-of-truth index
 - `MOMO_MEDIA_CONTENT_INVENTORY_PACK.md` — PR #116 source of truth for Momo media/content inventory; internal-only media review with no upload, no generated/fake media, no publishing, and owner-confirmed usage rights required before public use.
 - `MOMO_BUSINESS_TRUTH_REVIEW_PACK.md` — PR #115 source of truth for Momo business-truth review; owner confirmation remains required before any public/customer-visible use of business-truth changes or sensitive claims.
 - `MOMO_INTERNAL_PILOT_PREP_PACK.md` — PR #114 source of truth for Momo internal pilot prep; internal preparation only, no activation, no real auth, no credentials, no Momo contact, no publishing, and no integrations.
-
 
 These files reflect the current Veroxa operating truth and override historical/archive strategy notes. If another doc conflicts with this index, do not override this index; treat the conflicting note as stale until Faraz explicitly refreshes it:
 
@@ -359,7 +366,6 @@ Historical docs remain useful as reference, but they must not override current s
 
 Production/custom-domain login is now Real Login V1 pilot portal access for Momo House San Antonio and Team Faraz only. Public preview-login language and public preview credentials are retired from `/login`. `AUTH_MODE` remains `placeholder` until production-auth readiness is explicitly approved; Real Login V1 is deterministic/manual pilot access, not secure production auth.
 
-
 ## 2026-06-07 — Real pilot mode lock
 
 - Veroxa is moving from public demo/preview portal exposure into **real pilot pre-live/manual mode**.
@@ -394,7 +400,6 @@ Production/custom-domain login is now Real Login V1 pilot portal access for Momo
 - Current safe pilot login remains `/api/pilot-access`; no portal page is live database-powered yet.
 - `LIVE_AUTOMATION_V1_DATABASE_FOUNDATION.md` is the setup and safety reference for the new migration, tables, status models, RLS baseline, TypeScript contracts, and later Momo/Team Faraz setup notes.
 - Momo owner walkthrough remains blocked until the full Live Automation V1 sequence is implemented and approved.
-
 
 ## 2026-06-19 — PR #112 Post-PR111 Activation Gate Alignment
 
@@ -449,6 +454,7 @@ PR #118 is controlled AI draft generation foundation only. AI generation is disa
 AUTH_MODE remains placeholder. /api/pilot-access remains active. Roles remain client/team only. Momo owner walkthrough remains blocked. No next activation PR is approved by default. Future real-world activation requires separate explicit Faraz approval.
 
 Business-truth changes require owner confirmation before any public/customer-visible use. Media usage rights require owner confirmation before any public/customer-visible use. Sensitive claims are blocked until owner-confirmed. AI may use only confirmed business truth and permissioned media in later internal drafts. All future AI output requires Team/Faraz review before customer-visible use.
+
 ## GitHub PR #119 — AI Draft Approval Queue
 
 GitHub PR #119 adds AI Draft Approval Queue only. PR #109 Momo Live Pilot Readiness Gate is merged. PR #110 Post-PR109 Momo readiness alignment is merged. PR #111 Controlled Momo Pilot Activation Gate is merged. PR #112 Post-PR111 Activation Gate Alignment + Business Truth Status Hardening is merged. PR #113 Post-PR112 Source-of-Truth Finalization is merged. PR #114 Momo Internal Pilot Prep Pack is merged. PR #115 Momo Business Truth Review Pack is merged. PR #116 Momo Media + Content Inventory Pack is merged. PR #117 Momo Brand Voice + AI Prompt Rules Pack is merged. PR #118 Controlled AI Draft Generation Foundation is merged or immediately prior.

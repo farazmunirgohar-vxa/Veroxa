@@ -1,3 +1,11 @@
+## 2026-08-05 — locked permanent cleanup boundary
+
+- Faraz explicitly authorized permanent removal of the retired Vite/Replit source and duplicate GitHub branches after verified v36 parity.
+- `artifacts/veroxa-sites` is the only deployable application source. Preserve `artifacts/veroxa/docs`, `supabase`, current API/release guardrails, and immutable Git history; do not restore the retired runtime as a working-tree archive, branch fallback, deployment target, or rollback path.
+- The required repository end state is protected `main` only after the temporary cleanup branch is merged and deleted.
+- This authority is limited to repository files and branches. It authorizes no production-data deletion, Sites publish, migration apply, provider connection, external write, Momo activation, or spend.
+- Preserve the root Vercel shutdown sentinel until external Git disconnection is independently verified; the sentinel is an inert safety control.
+
 ## 2026-08-02 — locked v36 internal-ready and verified GitHub-parity boundary
 
 - Sites v36 is live from checkout `b8122642b72e5d4e6e74c379469f2a157781ab3d`; its canonical 185-file tree is `caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7`. Production is at 37 migrations through `20260802020000_momo_pipeline_query_indexes_v2.sql`.
@@ -371,7 +379,6 @@ When future Codex or ChatGPT work sees conflicts:
 
 GitHub PR #111 adds Controlled Momo Pilot Activation Gate only after PR #109 Momo Live Pilot Readiness Gate and PR #110 Post-PR109 Momo readiness alignment were merged. This decision gate is Team-only and read-only. It does not activate the pilot by default, does not activate real auth, does not create client credentials, does not contact Momo’s House, does not publish externally, does not create platform integrations, and does not add payments, webhooks, cron jobs, or background jobs. `AUTH_MODE` remains `placeholder`, `/api/pilot-access` remains active, and Momo owner walkthrough remains blocked until Faraz explicitly approves activation/walkthrough after the gate. Future real-world activation steps require a separate explicit Faraz approval.
 
-
 ## 2026-06-19 — PR #112 Post-PR111 Activation Gate Alignment
 
 GitHub PR #112 is **Post-PR111 Activation Gate Alignment + Business Truth Status Hardening**. PR #109 Momo Live Pilot Readiness Gate is already merged, PR #110 Post-PR109 Momo readiness alignment is already merged, and PR #111 Controlled Momo Pilot Activation Gate is already merged. PR #112 corrects activation/readiness gate interpretation of current business-truth profile-field statuses (`please_review`, `pre_filled`, `confirmed`, `optional`, `veroxa_review`) and removes stale PR #110 activation-gate wording. PR #112 is corrective alignment only: it does not activate the pilot, does not activate real auth, does not create credentials, does not contact Momo’s House, does not publish externally, does not create platform integrations, and does not add payments, webhooks, cron jobs, or background jobs. `AUTH_MODE` remains `placeholder`, `/api/pilot-access` remains active, Momo owner walkthrough remains blocked, no next activation PR is approved by default, and Future real-world activation requires separate explicit Faraz approval.
@@ -438,6 +445,7 @@ PR #118 is controlled AI draft generation foundation only. AI generation is disa
 AUTH_MODE remains placeholder. /api/pilot-access remains active. Roles remain client/team only. Momo owner walkthrough remains blocked. No next activation PR is approved by default. Future real-world activation requires separate explicit Faraz approval.
 
 Business-truth changes require owner confirmation before any public/customer-visible use. Media usage rights require owner confirmation before public/customer-visible use. Sensitive claims are blocked until owner-confirmed. AI may use only confirmed business truth and permissioned media in later internal drafts. All future AI output requires Team/Faraz review before customer-visible use.
+
 ## GitHub PR #119 — AI Draft Approval Queue
 
 GitHub PR #119 adds AI Draft Approval Queue only. PR #109 Momo Live Pilot Readiness Gate is merged. PR #110 Post-PR109 Momo readiness alignment is merged. PR #111 Controlled Momo Pilot Activation Gate is merged. PR #112 Post-PR111 Activation Gate Alignment + Business Truth Status Hardening is merged. PR #113 Post-PR112 Source-of-Truth Finalization is merged. PR #114 Momo Internal Pilot Prep Pack is merged. PR #115 Momo Business Truth Review Pack is merged. PR #116 Momo Media + Content Inventory Pack is merged. PR #117 Momo Brand Voice + AI Prompt Rules Pack is merged. PR #118 Controlled AI Draft Generation Foundation is merged or immediately prior.

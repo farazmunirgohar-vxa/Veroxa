@@ -1,5 +1,4 @@
-import { createHash } from "node:crypto";
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
   VERIFIED_GITHUB_PARITY_RELEASE_STATE,
@@ -16,30 +15,6 @@ const failures: string[] = [];
 const must = (condition: boolean, message: string) => {
   if (!condition) failures.push(message);
 };
-
-function archivedRuntimeHash(entries: string[]): {
-  fileCount: number;
-  sha256: string;
-} {
-  const files: string[] = [];
-  const walk = (path: string) => {
-    const absolute = resolve(repoRoot, path);
-    if (statSync(absolute).isDirectory()) {
-      for (const name of readdirSync(absolute).sort()) walk(`${path}/${name}`);
-    } else {
-      files.push(path);
-    }
-  };
-  for (const entry of entries) walk(entry);
-  const hash = createHash("sha256");
-  for (const file of files.sort()) {
-    hash.update(file, "utf8");
-    hash.update("\0");
-    hash.update(readFileSync(resolve(repoRoot, file)));
-    hash.update("\0");
-  }
-  return { fileCount: files.length, sha256: hash.digest("hex") };
-}
 
 const agents = read("AGENTS.md");
 const activeDocs = read("artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md");
@@ -409,7 +384,9 @@ const alignedCurrentDocs = [
 const sitesRouter = read("artifacts/veroxa-sites/app/page.tsx");
 const sitesReadme = read("artifacts/veroxa-sites/README.md");
 const sitesHosting = read("artifacts/veroxa-sites/.openai/hosting.json");
-const legacyArchive = read("artifacts/veroxa/ARCHIVED.md");
+const retiredSourceRemoval = read(
+  "artifacts/veroxa/docs/RETIRED_SOURCE_REMOVAL.md",
+);
 const workspace = read("pnpm-workspace.yaml");
 const sourceTruth = [
   agents,
@@ -1144,29 +1121,29 @@ must(
 );
 must(
   workspace.includes("!artifacts/veroxa-sites") &&
-    workspace.includes("!artifacts/veroxa") &&
-    legacyArchive.includes("archived from active development") &&
-    legacyArchive.includes("not the canonical production application"),
-  "Root workspace must isolate Sites and archive legacy Vite from active development.",
+    !workspace.includes("!artifacts/veroxa\n") &&
+    retiredSourceRemoval.includes("authorized permanent repository cleanup") &&
+    retiredSourceRemoval.includes("sole deployable Veroxa application source"),
+  "Root workspace must isolate Sites and record permanent retired-source removal.",
 );
-const legacyRuntime = archivedRuntimeHash([
+for (const retiredPath of [
   "artifacts/veroxa/src",
   "artifacts/veroxa/public",
   "artifacts/veroxa/e2e",
+  "artifacts/veroxa/.replit-artifact",
   "artifacts/veroxa/.env.example",
   "artifacts/veroxa/components.json",
   "artifacts/veroxa/index.html",
   "artifacts/veroxa/package.json",
   "artifacts/veroxa/tsconfig.json",
   "artifacts/veroxa/vite.config.ts",
-]);
-must(
-  legacyRuntime.fileCount === 670 &&
-    legacyRuntime.sha256 ===
-      "34c9133b9e672f9396357cbb7ba1fa46d7d2f3c5d513548fde9e31c32f566a49" &&
-    legacyArchive.includes(legacyRuntime.sha256),
-  "Archived Vite runtime changed without an explicit reactivation decision and archive-hash update.",
-);
+  "artifacts/veroxa/ARCHIVED.md",
+]) {
+  must(
+    !existsSync(resolve(repoRoot, retiredPath)),
+    `Retired Vite/Replit source returned: ${retiredPath}`,
+  );
+}
 
 if (failures.length) {
   console.error("ChatGPT Sites migration source-of-truth guardrail failed:");

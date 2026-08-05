@@ -221,17 +221,17 @@ const requiredReleaseStateTools = [
   {
     command: "refresh-release-fingerprints",
     file: "scripts/src/refresh-release-fingerprints.ts",
-    invocation: "tsx ./src/refresh-release-fingerprints.ts",
+    invocation: "node --import tsx ./src/refresh-release-fingerprints.ts",
   },
   {
     command: "record-local-release-review",
     file: "scripts/src/record-local-release-review.ts",
-    invocation: "tsx ./src/record-local-release-review.ts",
+    invocation: "node --import tsx ./src/record-local-release-review.ts",
   },
   {
     command: "record-post-merge-parity-closeout",
     file: "scripts/src/record-post-merge-parity-closeout.ts",
-    invocation: "tsx ./src/record-post-merge-parity-closeout.ts",
+    invocation: "node --import tsx ./src/record-post-merge-parity-closeout.ts",
   },
 ] as const;
 

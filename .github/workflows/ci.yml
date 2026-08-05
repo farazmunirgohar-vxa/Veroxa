@@ -39,8 +39,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Verify deployment manifest and four-workflow policy
+      - name: Verify repository boundary and release policy
         run: |
+          pnpm --filter @workspace/scripts run check-retired-source-removed
           pnpm --filter @workspace/scripts run check-deployment-manifest
           pnpm --filter @workspace/scripts run check-release-workflow-policy
 
@@ -63,20 +64,5 @@ jobs:
       - name: Build
         run: pnpm run build
 
-      - name: Demo route guardrail
-        run: pnpm --filter @workspace/scripts run check-demo-routes
-
-      - name: Pricing drift guardrail
-        run: pnpm --filter @workspace/scripts run check-pricing-drift
-
-      - name: Portal separation guardrail
-        run: pnpm --filter @workspace/scripts run check-portal-separation
-
-      - name: Business rule guardrail
-        run: pnpm --filter @workspace/scripts run check-business-guardrails
-
-      - name: ChatGPT-managed Sites source-of-truth guardrail
-        run: pnpm --filter @workspace/scripts run check-chatgpt-sites-migration-source-truth
-
-      - name: First-client readiness guardrail
-        run: pnpm --filter @workspace/scripts run check-first-client-readiness
+      - name: Current Veroxa guardrails
+        run: pnpm run verify:veroxa

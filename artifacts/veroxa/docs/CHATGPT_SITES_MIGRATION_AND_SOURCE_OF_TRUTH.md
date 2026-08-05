@@ -14,6 +14,12 @@ Machine evidence scopes commit `aafebf93a6bc40f9578c29f4a25371f8203d0387` as `v3
 
 V36 contains only the internal Momo upload-to-unscheduled-Veroxa-Ready workflow. It preserves immutable lineage and current rights, consolidates exact duplicates, keeps near-duplicate merging advisory, and sends real blockers to one Team exception. Bad media is not automatically edited or resized. No external provider, posting, scheduling, publishing, reply, website write, test upload, or activation is authorized by reconciliation.
 
+## 2026-08-05 — permanent retired-source cleanup override
+
+Verified Sites v36/GitHub/Supabase parity and Faraz's explicit instruction satisfy the documented cleanup gate. The retired Vite/Replit runtime, archive copy, configuration, and runtime-only checks are permanently absent from the current tree; reviewed duplicate remote branches are deletion-authorized. `artifacts/veroxa-sites` remains the sole deployable application source, GitHub `main` remains canonical, and immutable commit history preserves audit lineage without keeping a duplicate runnable application.
+
+This cleanup is not a Sites deployment or database change and grants no activation, publishing, provider, or spend authority. The root Vercel shutdown sentinel remains until external Vercel Git disconnection is independently verified.
+
 ## Verified PR #149 cleanup and Sites v15 deployment override
 
 PR #149 passed all four required workflows with zero unresolved review threads at reviewed head `0d2c6e47fbfe1c44a2f0ff19fbb158001ed9365a` and merged to GitHub `main` at `9749b68ce2cfc383deeae6aa63c413019ef61385`.
