@@ -439,7 +439,7 @@
         "scripts/src/record-post-merge-parity-closeout.ts",
         "scripts/package.json"
       ],
-      "sha256": "d10412726cfb660a460cb52ef07ba9ffeb0d3e22dfcf8f9a71b3ac124cbbcb30"
+      "sha256": "4b6b66094a57caadb9a9608707510b8b627a080a7083f5725fa8ad738d0c711c"
     },
     "product_scope": {
       "review": "full-on-change",
@@ -463,7 +463,7 @@
         "AGENTS.md",
         "artifacts/veroxa/docs/RR_CHECKPOINT.md"
       ],
-      "sha256": "53ecffd55e371406be2a80d6554426de0a738ab1e03466e82e860013a6efc342"
+      "sha256": "ce1c74f2554550bc3c9e64ec24896a31719507500d2cf0fe9053a50fd5dd16b4"
     },
     "momo_readiness_tracking": {
       "review": "evidence-delta-on-change",

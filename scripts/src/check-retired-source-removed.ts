@@ -62,6 +62,50 @@ for (const marker of [
   );
 }
 
+const activeContractDocs = [
+  "artifacts/veroxa/docs/MOMO_100_READINESS_SEVEN_SYSTEM_CONTRACT.md",
+  "artifacts/veroxa/docs/CURRENT_BUILD_STATUS.md",
+  "artifacts/veroxa/docs/RR_CHECKPOINT.md",
+] as const;
+const retiredContractPath =
+  ["artifacts", "veroxa", "src", "domain", "momoOperationsV1"].join("/") + "/";
+const retiredContractCommand = [
+  "check",
+  "momo",
+  "seven",
+  "system",
+  "readiness",
+  "contract",
+].join("-");
+for (const path of activeContractDocs) {
+  const source = readFileSync(absolute(path), "utf8");
+  must(
+    !source.includes(retiredContractPath),
+    `Active contract document points to retired source: ${path}`,
+  );
+  must(
+    !source.includes(retiredContractCommand),
+    `Active contract document points to a retired check: ${path}`,
+  );
+}
+
+const sevenSystemContract = readFileSync(
+  absolute(activeContractDocs[0]),
+  "utf8",
+);
+for (const marker of [
+  "artifacts/veroxa-sites/app/momo-operating-gates.ts",
+  "artifacts/veroxa-sites/app/momo-preconnection-readiness.ts",
+  "artifacts/veroxa-sites/app/momo-evidence-boundary.ts",
+  "supabase/migrations/20260713010710_momo_full_operating_system_v1.sql",
+  "check-sites-momo-operating-contract",
+]) {
+  must(
+    sevenSystemContract.includes(marker),
+    `Active seven-system contract is missing current authority: ${marker}`,
+  );
+}
+
 const scriptsPackagePath = absolute("scripts/package.json");
 const scriptsPackageSource = readFileSync(scriptsPackagePath, "utf8");
 const scriptsPackage = JSON.parse(scriptsPackageSource) as {
@@ -129,5 +173,5 @@ if (failures.length) {
 }
 
 console.log(
-  "Retired-source removal guardrail passed: the Vite/Replit tree is absent, active Sites/docs/Supabase source is preserved, and automation references resolve.",
+  "Retired-source removal guardrail passed: the Vite/Replit tree is absent, active Sites/docs/Supabase source is preserved, current contract pointers are enforced, and automation references resolve.",
 );
