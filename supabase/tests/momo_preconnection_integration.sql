@@ -4104,7 +4104,7 @@ reset role;
 -- request still replays successfully and returns the newly blocked status,
 -- while preserving terminal intent and its original snapshot hash.
 update public.veroxa_media_rights rights
-set expires_at = clock_timestamp() - interval '1 second'
+set expires_at = pg_catalog.now() - interval '1 second'
 from public.veroxa_momo_ready_packages_v2 ready
 where ready.id =
     current_setting('veroxa.test.ready_review_package_1')::uuid
@@ -4149,7 +4149,7 @@ reset role;
 -- approvable.  Rights drift changes the authoritative hash, so the old hash
 -- fails while the current blocked hash may append one terminal discard.
 update public.veroxa_media_rights rights
-set expires_at = clock_timestamp() - interval '1 second'
+set expires_at = pg_catalog.now() - interval '1 second'
 from public.veroxa_momo_ready_packages_v2 ready
 where ready.id =
     current_setting('veroxa.test.ready_review_package_2')::uuid
