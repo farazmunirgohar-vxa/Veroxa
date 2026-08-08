@@ -181,9 +181,9 @@
     "githubMainMatchesCandidate": false,
     "fullReleaseGatePassed": false,
     "sourceFileCount": 200,
-    "sourceTreeSha256": "929e05cf68a6af5176811f49321ec108e617b93a08153b65b3f86b109d0c8c18",
+    "sourceTreeSha256": "39e7ae496f7e353c24069a4a179235fd2bed0feb24f83eaed1c684fb9b39a43e",
     "migrationFileCount": 42,
-    "migrationTreeSha256": "dc565dd1f5f4a5efe6a2b253e7437e93f6364b5581c56bb811969fa7241a7a84",
+    "migrationTreeSha256": "e19e1d7cc102ba1e6297de1860d005f19cbbb2dfd3873ed195af0c89d92b829c",
     "latestCandidateMigration": "20260808002609_future_object_default_acl_hardening.sql",
     "latestCandidateMigrationSha256": "ab41ed8adf7170d81dc60a51607b12497cae6d52f1c28f63639e4fef6392e01a",
     "pendingMigrations": [
@@ -281,7 +281,7 @@
     "mappingTarget": "Sites repository root candidate",
     "hashAlgorithm": "veroxa-path-null-content-null-sha256-v1",
     "fileCount": 200,
-    "treeSha256": "929e05cf68a6af5176811f49321ec108e617b93a08153b65b3f86b109d0c8c18",
+    "treeSha256": "39e7ae496f7e353c24069a4a179235fd2bed0feb24f83eaed1c684fb9b39a43e",
     "generatedPathExclusions": [
       ".git",
       ".next",
@@ -309,9 +309,9 @@
     "mirrorRoot": "artifacts/veroxa-sites/supabase/migrations",
     "hashAlgorithm": "veroxa-path-null-content-null-sha256-v1",
     "fileCount": 42,
-    "treeSha256": "dc565dd1f5f4a5efe6a2b253e7437e93f6364b5581c56bb811969fa7241a7a84",
+    "treeSha256": "e19e1d7cc102ba1e6297de1860d005f19cbbb2dfd3873ed195af0c89d92b829c",
     "mirrorFileCount": 42,
-    "mirrorTreeSha256": "dc565dd1f5f4a5efe6a2b253e7437e93f6364b5581c56bb811969fa7241a7a84"
+    "mirrorTreeSha256": "e19e1d7cc102ba1e6297de1860d005f19cbbb2dfd3873ed195af0c89d92b829c"
   },
   "deploymentFreeze": {
     "state": "local_candidate_predeployment_frozen",

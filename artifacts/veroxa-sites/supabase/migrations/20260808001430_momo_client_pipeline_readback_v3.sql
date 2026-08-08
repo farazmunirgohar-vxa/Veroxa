@@ -135,6 +135,8 @@ begin
         or candidate.valid_from <= pg_catalog.now())
       and (candidate.expires_at is null
         or candidate.expires_at > pg_catalog.now())
+      and (run.id is null
+        or run.target_platforms <@ candidate.usage_scope)
     limit 1
   ) asset_rights on true
   left join lateral (

@@ -31,7 +31,7 @@ const must = __name((condition: boolean, message: string) => {
 const CORRECTED_LIVE_MIGRATION_TREE_SHA256 =
   "d306d26cb633ef943afdb7efd01a3cde70249a096ef783d1b0d51eb5d4a1a429";
 const CANDIDATE_MIGRATION_TREE_SHA256 =
-  "dc565dd1f5f4a5efe6a2b253e7437e93f6364b5581c56bb811969fa7241a7a84";
+  "e19e1d7cc102ba1e6297de1860d005f19cbbb2dfd3873ed195af0c89d92b829c";
 const CORRECTED_LIVE_LATEST_MIGRATION =
   "20260802063829_momo_pipeline_query_indexes_v2.sql";
 const pendingForwardMigrations = [
