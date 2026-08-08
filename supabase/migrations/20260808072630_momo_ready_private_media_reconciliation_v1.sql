@@ -3084,45 +3084,45 @@ AS $function$
 declare
   run public.veroxa_momo_content_ai_runs%rowtype;
   canonical_asset_id uuid;
-  restaurant_id uuid;
-  asset_id uuid;
-  verification_id uuid;
+  v_restaurant_id uuid;
+  v_asset_id uuid;
+  v_verification_id uuid;
   private_intake public.veroxa_private_media_assessment_intakes_v1%rowtype;
 begin
   if p_operation = 'advance_verified_asset'
      and veroxa_private.momo_jsonb_exact_keys_v2(p_payload, array[
        'restaurantId','assetId','verificationId','actorId'
      ]) then
-    restaurant_id := (p_payload ->> 'restaurantId')::uuid;
-    asset_id := (p_payload ->> 'assetId')::uuid;
-    verification_id := (p_payload ->> 'verificationId')::uuid;
+    v_restaurant_id := (p_payload ->> 'restaurantId')::uuid;
+    v_asset_id := (p_payload ->> 'assetId')::uuid;
+    v_verification_id := (p_payload ->> 'verificationId')::uuid;
     select * into private_intake
     from public.veroxa_private_media_assessment_intakes_v1 candidate
-    where candidate.id = verification_id
-      and candidate.restaurant_id = restaurant_id
-      and candidate.asset_id = asset_id
+    where candidate.id = v_verification_id
+      and candidate.restaurant_id = v_restaurant_id
+      and candidate.asset_id = v_asset_id
       and candidate.status = 'verified';
     if private_intake.id is null
        or not private_intake.platform_ready
        or veroxa_private.momo_source_media_discarded_v1(
-         restaurant_id, private_intake.content_sha256
+         v_restaurant_id, private_intake.content_sha256
        )
        or not exists (
          select 1
          from public.veroxa_media_rights rights
-         where rights.restaurant_id = restaurant_id
-           and rights.asset_id = asset_id
+         where rights.restaurant_id = v_restaurant_id
+           and rights.asset_id = v_asset_id
            and veroxa_private.momo_media_has_current_food_association_v2(
-             restaurant_id,
-             asset_id,
+             v_restaurant_id,
+             v_asset_id,
              rights.id,
              private_intake.content_sha256
            )
        ) then
       return pg_catalog.jsonb_build_object(
-        'verificationId', verification_id,
+        'verificationId', v_verification_id,
         'status', 'verified',
-        'canonicalAssetId', asset_id,
+        'canonicalAssetId', v_asset_id,
         'duplicateAssetId', null::uuid
       );
     end if;

@@ -250,10 +250,13 @@
     "diffCheckExitCode": 0,
     "repairMigrationParserPassed": true,
     "sqlFixtureParserPassed": true,
+    "hostedCleanChainApplyPassed": true,
+    "hostedFullPgTapPassed": false,
+    "hostedFullPgTapRerunPending": true,
     "hostedDatabaseExecutionPassed": false,
-    "repairMigrationSha256": "31d842d70d551e83bac6754886dbbb529a87831d790360199b89ad21f5158d5b",
+    "repairMigrationSha256": "e1e6e0610c815e449b7ea7c169c258e03bfefc5451e4d04ada2b35d687656606",
     "preconnectionFixtureSha256": "8d9051a7599f7c82ec17781a0369fca2efc6367649f31db50c0e96dd25639902",
-    "ownerFixtureSha256": "58b761976b80bfc9873a5a4f4f83b9b28c73af60cf7123128ecd6c8e57c0b8bb",
+    "ownerFixtureSha256": "1e16e1e4d03a1ff35fe25cda626c25f176f1b05b711fd3e7a26f581550484a24",
     "fullOperatingSystemFixtureSha256": "f20ac4e5927543277e520fbfd7104ded39fd11fa14995bf227fb64384dba5480",
     "zeroCostFixtureSha256": "13e246455692d5005d688fcc68aea4805a7d64bc87c2604edf8db26599b06cbe"
   },
@@ -330,11 +333,11 @@
     "githubMainMatchesCandidate": false,
     "fullReleaseGatePassed": false,
     "sourceFileCount": 213,
-    "sourceTreeSha256": "fea48a96042005062d83cdd3741b660a0e392774d0a0d0bc7edf9937cb8bb548",
+    "sourceTreeSha256": "b7a0881ef6be8fe5d739fff45acadd57db093abc87d41e7c1534d4692ecf5eb9",
     "migrationFileCount": 47,
-    "migrationTreeSha256": "2729e3e390c726ad25cb74f13e188ba9ce63f75df3de6c29610f7de641537f0a",
+    "migrationTreeSha256": "895ddcfc268b9033f62aa3be40088f196a7bed2ed23ed1c5052938dc5509214b",
     "latestCandidateMigration": "20260808072630_momo_ready_private_media_reconciliation_v1.sql",
-    "latestCandidateMigrationSha256": "31d842d70d551e83bac6754886dbbb529a87831d790360199b89ad21f5158d5b",
+    "latestCandidateMigrationSha256": "e1e6e0610c815e449b7ea7c169c258e03bfefc5451e4d04ada2b35d687656606",
     "pendingMigrations": [
       "20260808072630_momo_ready_private_media_reconciliation_v1.sql"
     ],
@@ -412,7 +415,7 @@
         "requiresCompletedStep": "review_merge_unified_repair_candidate",
         "explicitReviewRequired": true,
         "completed": false,
-        "verification": "Apply only the reviewed 180,130-byte payload at SHA-256 31d842d7 through Supabase MCP while every registered mutable ingress and decision RPC grant remains revoked; capture the generated ledger version."
+        "verification": "Apply only the reviewed 180,162-byte payload at SHA-256 e1e6e061 through Supabase MCP while every registered mutable ingress and decision RPC grant remains revoked; capture the generated ledger version."
       },
       {
         "order": 5,
@@ -565,7 +568,7 @@
     "mappingTarget": "Sites repository root candidate",
     "hashAlgorithm": "veroxa-path-null-content-null-sha256-v1",
     "fileCount": 213,
-    "treeSha256": "fea48a96042005062d83cdd3741b660a0e392774d0a0d0bc7edf9937cb8bb548",
+    "treeSha256": "b7a0881ef6be8fe5d739fff45acadd57db093abc87d41e7c1534d4692ecf5eb9",
     "generatedPathExclusions": [
       ".git",
       ".next",
@@ -593,9 +596,9 @@
     "mirrorRoot": "artifacts/veroxa-sites/supabase/migrations",
     "hashAlgorithm": "veroxa-path-null-content-null-sha256-v1",
     "fileCount": 47,
-    "treeSha256": "2729e3e390c726ad25cb74f13e188ba9ce63f75df3de6c29610f7de641537f0a",
+    "treeSha256": "895ddcfc268b9033f62aa3be40088f196a7bed2ed23ed1c5052938dc5509214b",
     "mirrorFileCount": 47,
-    "mirrorTreeSha256": "2729e3e390c726ad25cb74f13e188ba9ce63f75df3de6c29610f7de641537f0a"
+    "mirrorTreeSha256": "895ddcfc268b9033f62aa3be40088f196a7bed2ed23ed1c5052938dc5509214b"
   },
   "deploymentFreeze": {
     "state": "registered_mutable_rpc_ingress_and_decision_hold_active_verified",
@@ -701,7 +704,7 @@
   "generatedVersionCloseouts": {
     "repair": {
       "sourceProvisionalFilename": "20260808072630_momo_ready_private_media_reconciliation_v1.sql",
-      "sourceSha256": "31d842d70d551e83bac6754886dbbb529a87831d790360199b89ad21f5158d5b",
+      "sourceSha256": "e1e6e0610c815e449b7ea7c169c258e03bfefc5451e4d04ada2b35d687656606",
       "actualLedgerFilename": null,
       "actualLedgerVersion": null,
       "pullRequest": null,
@@ -896,18 +899,21 @@
     "additionalDatabaseChangesRequired": true,
     "localStaticReviewPassed": true,
     "localParserPassed": true,
+    "hostedCleanChainApplyPassed": true,
+    "hostedFullPgTapPassed": false,
+    "hostedFullPgTapRerunPending": true,
     "hostedDatabaseExecutionPassed": false,
     "databaseApplyAuthorized": true,
     "evidenceScope": "live46_prefix_plus_exact_local_candidate47_repair_reviewed_hosted_execution_pending",
     "repairMigrationFilename": "20260808072630_momo_ready_private_media_reconciliation_v1.sql",
-    "repairMigrationSha256": "31d842d70d551e83bac6754886dbbb529a87831d790360199b89ad21f5158d5b",
-    "repairMigrationByteLength": 180130,
+    "repairMigrationSha256": "e1e6e0610c815e449b7ea7c169c258e03bfefc5451e4d04ada2b35d687656606",
+    "repairMigrationByteLength": 180162,
     "livePrefixMigrationCount": 46,
     "livePrefixMigrationTreeSha256": "a575a605c65252386d5d55c26b1a9cf4c88c85e854c74ca0486ecd1ec1f6d3d0",
     "candidateMigrationCount": 47,
-    "candidateMigrationTreeSha256": "2729e3e390c726ad25cb74f13e188ba9ce63f75df3de6c29610f7de641537f0a",
+    "candidateMigrationTreeSha256": "895ddcfc268b9033f62aa3be40088f196a7bed2ed23ed1c5052938dc5509214b",
     "preconnectionFixtureSha256": "8d9051a7599f7c82ec17781a0369fca2efc6367649f31db50c0e96dd25639902",
-    "ownerFixtureSha256": "58b761976b80bfc9873a5a4f4f83b9b28c73af60cf7123128ecd6c8e57c0b8bb",
+    "ownerFixtureSha256": "1e16e1e4d03a1ff35fe25cda626c25f176f1b05b711fd3e7a26f581550484a24",
     "fullOperatingSystemFixtureSha256": "f20ac4e5927543277e520fbfd7104ded39fd11fa14995bf227fb64384dba5480",
     "zeroCostFixtureSha256": "13e246455692d5005d688fcc68aea4805a7d64bc87c2604edf8db26599b06cbe",
     "expectedProductionMigrationCountAfterRepair": 47,

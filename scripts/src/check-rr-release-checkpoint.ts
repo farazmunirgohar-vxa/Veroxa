@@ -110,6 +110,17 @@ must(
   "RR forward-repair block does not mirror the manifest database review.",
 );
 must(
+  rr.applicationQualityEvidence.hostedCleanChainApplyPassed === true &&
+    rr.applicationQualityEvidence.hostedFullPgTapPassed === false &&
+    rr.applicationQualityEvidence.hostedFullPgTapRerunPending === true &&
+    rr.applicationQualityEvidence.hostedDatabaseExecutionPassed === false &&
+    rr.databaseContractReview.hostedCleanChainApplyPassed === true &&
+    rr.databaseContractReview.hostedFullPgTapPassed === false &&
+    rr.databaseContractReview.hostedFullPgTapRerunPending === true &&
+    rr.databaseContractReview.functionalVerificationPassed === false,
+  "RR must preserve the hosted clean-chain/full-pgTAP evidence boundary.",
+);
+must(
   rr.runtimeVerification.registeredMutableRpcIngressHoldVerified === true &&
     rr.runtimeVerification.fullMutableIngressHoldVerified === undefined &&
     rr.runtimeVerification.candidateEdgeV2Deployed === false &&

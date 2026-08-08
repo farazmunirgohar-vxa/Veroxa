@@ -276,11 +276,48 @@ begin
     raise exception 'Association lost source-first terminal lock order';
   end if;
 
-  foreach function_name in array array[
-    'public.veroxa_reserve_momo_content_ai_run_v1(uuid,uuid,text,text,text)',
-    'public.veroxa_start_momo_content_ai_run_v1(uuid,text,uuid,uuid)',
-    'public.veroxa_begin_momo_content_ai_dispatch_v1(uuid,text,uuid,uuid,text)',
+  function_source := lower(pg_catalog.pg_get_functiondef(to_regprocedure(
+    'public.veroxa_reserve_momo_content_ai_run_v1(uuid,uuid,text,text,text)'
+  )));
+  if position('lock_momo_source_media_v1' in function_source) = 0
+     or position('momo_source_media_discarded_v1' in function_source) = 0
+     or position('source_media_discarded_terminal' in function_source) = 0
+     or position('pg_advisory_xact_lock' in function_source) = 0
+     or position('lock_momo_source_media_v1' in function_source) >
+       position('momo_source_media_discarded_v1' in function_source)
+     or position('momo_source_media_discarded_v1' in function_source) >
+       position('pg_advisory_xact_lock' in function_source)
+     or position('lock_momo_source_media_v1' in function_source) >
+       position('pg_advisory_xact_lock' in function_source)
+     or position('for share' in function_source) = 0
+     or position('momo_source_media_discarded_v1' in function_source) >
+       position('for share' in function_source)
+     or position('lock_momo_source_media_v1' in function_source) >
+       position('for share' in function_source) then
+    raise exception
+      'Content reservation lost inline source-first lock order';
+  end if;
+
+  function_source := lower(pg_catalog.pg_get_functiondef(to_regprocedure(
     'veroxa_private.momo_materialize_veroxa_ready_v2(jsonb)'
+  )));
+  if position('lock_momo_source_media_v1' in function_source) = 0
+     or position('momo_source_media_discarded_v1' in function_source) = 0
+     or position('source_media_discarded_terminal' in function_source) = 0
+     or position('for update' in function_source) = 0
+     or position('lock_momo_source_media_v1' in function_source) >
+       position('momo_source_media_discarded_v1' in function_source)
+     or position('momo_source_media_discarded_v1' in function_source) >
+       position('for update' in function_source)
+     or position('lock_momo_source_media_v1' in function_source) >
+       position('for update' in function_source) then
+    raise exception
+      'Ready materialization lost inline source-first lock order';
+  end if;
+
+  foreach function_name in array array[
+    'public.veroxa_start_momo_content_ai_run_v1(uuid,text,uuid,uuid)',
+    'public.veroxa_begin_momo_content_ai_dispatch_v1(uuid,text,uuid,uuid,text)'
   ] loop
     function_source := lower(pg_catalog.pg_get_functiondef(
       to_regprocedure(function_name)
@@ -876,9 +913,9 @@ begin
     raise exception 'Overrun assessment fixture did not start exactly once';
   end if;
 
-  -- Reserve a second source before the first provider settles. The settlement
-  -- below raises known tenant commitment to the full USD 20 ceiling, so this
-  -- stale reservation must terminal-zero-fail instead of making another call.
+  -- Reserve a second source before the first provider settles. The measured
+  -- v2 settlement remains below the USD 20 tenant ceiling, so the independent
+  -- reservation must still be allowed to make its one provider call.
   execute 'reset role';
   insert into storage.objects (
     bucket_id, name, owner, version, metadata, owner_id
@@ -1007,10 +1044,10 @@ begin
       and assessment.status = 'failed'
       and assessment.provider_called
       and assessment.provider_response_id = 'resp_overrun12345678'
-      and assessment.accounted_microusd = 19500000
+      and assessment.accounted_microusd = 10635000
       and assessment.accounting_basis = 'provider_usage_estimate'
       and assessment.provider_usage =
-        '{"input_tokens":200000,"output_tokens":1000}'::jsonb
+        '{"input_tokens":1050000,"output_tokens":3000,"total_tokens":1053000}'::jsonb
       and assessment.output_payload is null
       and assessment.completed_at is not null
       and (
@@ -1026,24 +1063,23 @@ begin
     select 1
     from public.veroxa_private_media_assessments_v1 assessment
     where assessment.id = cap_blocked_assessment_id
-      and assessment.status = 'failed'
-      and not assessment.provider_called
-      and assessment.provider_started_at is null
+      and assessment.status = 'provider_running'
+      and assessment.provider_called
+      and assessment.provider_started_at is not null
       and assessment.provider_response_id is null
       and assessment.provider_usage is null
-      and assessment.accounted_microusd = 0
-      and assessment.accounting_basis = 'zero_pre_provider'
-      and assessment.provider_error_code =
-        'twenty_usd_cap_exceeded_before_provider'
-      and assessment.completed_at is not null
+      and assessment.accounted_microusd is null
+      and assessment.accounting_basis is null
+      and assessment.provider_error_code is null
+      and assessment.completed_at is null
       and (
         select count(*)
         from public.veroxa_private_media_assessment_events_v1 event
         where event.assessment_id = assessment.id
-          and event.event_kind = 'failed'
+          and event.event_kind = 'provider_started'
       ) = 1
   ) then
-    raise exception 'Post-overrun reservation was not released fail-closed';
+    raise exception 'Below-cap overrun corrupted the independent reservation';
   end if;
 
   insert into storage.objects (

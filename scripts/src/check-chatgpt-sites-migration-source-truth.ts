@@ -1,9 +1,11 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
+  APPLICATION_QUALITY_EVIDENCE,
   CURRENT_PARTIAL_ROLLOUT_EVIDENCE,
   LIVE46_MIGRATION_EVIDENCE,
   LOCAL_CANDIDATE_BASE_COMMIT,
+  LOCAL_CANDIDATE_SOURCE_EVIDENCE,
   PR165_DRAFT_CHECKPOINT,
   REPAIR_MIGRATION_EVIDENCE,
   assertReviewedLocalCandidateManifest,
@@ -85,7 +87,13 @@ for (const path of authorityDocs) {
     "PR #165",
     PR165_DRAFT_CHECKPOINT.openingDraftHead,
     PR165_DRAFT_CHECKPOINT.openingDraftTree,
+    LOCAL_CANDIDATE_SOURCE_EVIDENCE.treeSha256,
+    REPAIR_MIGRATION_EVIDENCE.candidateTreeSha256,
+    REPAIR_MIGRATION_EVIDENCE.sha256,
+    APPLICATION_QUALITY_EVIDENCE.ownerFixtureSha256,
     "non-final",
+    "clean-chain migration apply",
+    "full hosted pgTAP",
     "registered mutable-RPC hold",
     "unregistered orphan object",
     "Edge v6",
@@ -100,6 +108,6 @@ if (failures.length > 0) {
   process.exitCode = 1;
 } else {
   console.log(
-    "PASS: current docs split GitHub main, independent Sites v39, live46, held candidate47, and live/candidate Edge truth.",
+    "PASS: current docs split GitHub main, independent Sites v39, live46, held candidate47, partial hosted verification, and live/candidate Edge truth.",
   );
 }

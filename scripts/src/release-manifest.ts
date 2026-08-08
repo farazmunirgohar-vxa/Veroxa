@@ -194,17 +194,17 @@ export const LOCAL_CANDIDATE_PENDING_MIGRATIONS = [
 export const LOCAL_CANDIDATE_SOURCE_EVIDENCE = {
   fileCount: 213,
   treeSha256:
-    "fea48a96042005062d83cdd3741b660a0e392774d0a0d0bc7edf9937cb8bb548",
+    "b7a0881ef6be8fe5d739fff45acadd57db093abc87d41e7c1534d4692ecf5eb9",
   reviewPassed: true,
 } as const;
 
 export const REPAIR_MIGRATION_EVIDENCE = {
   filename: "20260808072630_momo_ready_private_media_reconciliation_v1.sql",
-  byteLength: 180_130,
-  sha256: "31d842d70d551e83bac6754886dbbb529a87831d790360199b89ad21f5158d5b",
+  byteLength: 180_162,
+  sha256: "e1e6e0610c815e449b7ea7c169c258e03bfefc5451e4d04ada2b35d687656606",
   candidateFileCount: 47,
   candidateTreeSha256:
-    "2729e3e390c726ad25cb74f13e188ba9ce63f75df3de6c29610f7de641537f0a",
+    "895ddcfc268b9033f62aa3be40088f196a7bed2ed23ed1c5052938dc5509214b",
 } as const;
 
 export const PRIVATE_MEDIA_MIGRATION_EVIDENCE = {
@@ -250,12 +250,15 @@ export const APPLICATION_QUALITY_EVIDENCE = {
   diffCheckExitCode: 0,
   repairMigrationParserPassed: true,
   sqlFixtureParserPassed: true,
+  hostedCleanChainApplyPassed: true,
+  hostedFullPgTapPassed: false,
+  hostedFullPgTapRerunPending: true,
   hostedDatabaseExecutionPassed: false,
   repairMigrationSha256: REPAIR_MIGRATION_EVIDENCE.sha256,
   preconnectionFixtureSha256:
     "8d9051a7599f7c82ec17781a0369fca2efc6367649f31db50c0e96dd25639902",
   ownerFixtureSha256:
-    "58b761976b80bfc9873a5a4f4f83b9b28c73af60cf7123128ecd6c8e57c0b8bb",
+    "1e16e1e4d03a1ff35fe25cda626c25f176f1b05b711fd3e7a26f581550484a24",
   fullOperatingSystemFixtureSha256:
     "f20ac4e5927543277e520fbfd7104ded39fd11fa14995bf227fb64384dba5480",
   zeroCostFixtureSha256:
@@ -334,6 +337,9 @@ export const DATABASE_CONTRACT_REVIEW = {
   forwardRepairRequired: true,
   functionalVerificationPassed: false,
   additionalDatabaseChangesRequired: true,
+  hostedCleanChainApplyPassed: true,
+  hostedFullPgTapPassed: false,
+  hostedFullPgTapRerunPending: true,
   databaseApplyAuthorized: true,
 } as const;
 
@@ -400,6 +406,9 @@ type ApplicationQualityEvidence = {
   diffCheckExitCode?: number;
   repairMigrationParserPassed?: boolean;
   sqlFixtureParserPassed?: boolean;
+  hostedCleanChainApplyPassed?: boolean;
+  hostedFullPgTapPassed?: boolean;
+  hostedFullPgTapRerunPending?: boolean;
   hostedDatabaseExecutionPassed?: boolean;
   repairMigrationSha256?: string;
   preconnectionFixtureSha256?: string;
@@ -536,6 +545,9 @@ export type DeploymentManifest = {
     forwardRepairRequired: boolean;
     functionalVerificationPassed: boolean;
     additionalDatabaseChangesRequired: boolean;
+    hostedCleanChainApplyPassed?: boolean;
+    hostedFullPgTapPassed?: boolean;
+    hostedFullPgTapRerunPending?: boolean;
     databaseApplyAuthorized: boolean;
     evidenceScope?: string;
     repairMigrationFilename?: Nullable<string>;
@@ -821,6 +833,9 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
     !review || review.status !== DATABASE_CONTRACT_REVIEW.status ||
     review.forwardRepairRequired !== true || review.functionalVerificationPassed !== false ||
     review.additionalDatabaseChangesRequired !== true || review.databaseApplyAuthorized !== true ||
+    review.hostedCleanChainApplyPassed !== true ||
+    review.hostedFullPgTapPassed !== false ||
+    review.hostedFullPgTapRerunPending !== true ||
     review.repairMigrationFilename !== REPAIR_MIGRATION_EVIDENCE.filename ||
     review.repairMigrationSha256 !== REPAIR_MIGRATION_EVIDENCE.sha256 ||
     review.repairMigrationByteLength !== REPAIR_MIGRATION_EVIDENCE.byteLength ||

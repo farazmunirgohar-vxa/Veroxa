@@ -55,6 +55,17 @@ must(
   "Reviewed local candidate fingerprints or quality evidence drifted.",
 );
 must(
+  manifest.applicationQualityEvidence?.hostedCleanChainApplyPassed === true &&
+    manifest.applicationQualityEvidence.hostedFullPgTapPassed === false &&
+    manifest.applicationQualityEvidence.hostedFullPgTapRerunPending === true &&
+    manifest.applicationQualityEvidence.hostedDatabaseExecutionPassed === false &&
+    manifest.databaseContractReview?.hostedCleanChainApplyPassed === true &&
+    manifest.databaseContractReview.hostedFullPgTapPassed === false &&
+    manifest.databaseContractReview.hostedFullPgTapRerunPending === true &&
+    manifest.databaseContractReview.functionalVerificationPassed === false,
+  "Hosted clean-chain apply evidence must not be promoted to full pgTAP or functional verification.",
+);
+must(
   manifest.edgeDeployment?.currentRepositorySourceParity === false &&
     manifest.edgeCandidate?.contractSha256 ===
       PRIVATE_MEDIA_EDGE_CANDIDATE.contractSha256 &&
