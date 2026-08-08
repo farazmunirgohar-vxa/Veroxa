@@ -1,3 +1,7 @@
+-- Forward repair for production where 20260808001430 was applied before
+-- the displayed exact-duplicate rights-scope correction. Reassert the full
+-- Client v3 definition and its fail-closed execution boundary.
+
 -- Sanitized Client readback for the private Momo upload -> Veroxa Ready flow.
 --
 -- A displayed upload never inherits permission from the canonical processing
@@ -135,6 +139,8 @@ begin
         or candidate.valid_from <= pg_catalog.now())
       and (candidate.expires_at is null
         or candidate.expires_at > pg_catalog.now())
+      and (run.id is null
+        or run.target_platforms <@ candidate.usage_scope)
     limit 1
   ) asset_rights on true
   left join lateral (

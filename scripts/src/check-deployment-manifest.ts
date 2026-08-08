@@ -7,10 +7,12 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
   GENERATED_PATH_EXCLUSIONS,
+  CURRENT_PARTIAL_ROLLOUT_EVIDENCE,
   HISTORICAL_REPOSITORY_MIGRATION_EVIDENCE_SCOPE,
   LIVE_MIGRATION_EVIDENCE_SCOPE,
   LIVE_PRODUCTION_EVIDENCE_STATUS,
   LOCAL_CANDIDATE_MIGRATION_EVIDENCE_SCOPE,
+  LOCAL_CANDIDATE_APPLIED_MIGRATIONS,
   LOCAL_CANDIDATE_PENDING_MIGRATIONS,
   LOCAL_CANDIDATE_SOURCE_EVIDENCE_SCOPE,
   TREE_HASH_ALGORITHM,
@@ -35,18 +37,18 @@ try {
 const live = manifest.currentProductionObservation;
 must(
   live.evidenceStatus === LIVE_PRODUCTION_EVIDENCE_STATUS &&
-    live.sourceTreeSha256 === V36_LIVE_PARITY_EVIDENCE.sourceTreeSha256 &&
-    live.migrationTreeSha256 === V36_LIVE_PARITY_EVIDENCE.migrationTreeSha256 &&
+    live.sourceTreeSha256 === CURRENT_PARTIAL_ROLLOUT_EVIDENCE.sourceTreeSha256 &&
+    live.migrationTreeSha256 === CURRENT_PARTIAL_ROLLOUT_EVIDENCE.migrationTreeSha256 &&
     live.migrationTreeEvidenceScope === LIVE_MIGRATION_EVIDENCE_SCOPE &&
     live.historicalRepositoryMigrationTreeSha256 ===
       V36_LIVE_PARITY_EVIDENCE.historicalRepositoryMigrationTreeSha256 &&
     live.historicalRepositoryMigrationTreeEvidenceScope ===
       HISTORICAL_REPOSITORY_MIGRATION_EVIDENCE_SCOPE &&
     live.latestProductionMigration ===
-      V36_LIVE_PARITY_EVIDENCE.latestMigration &&
+      CURRENT_PARTIAL_ROLLOUT_EVIDENCE.latestMigration &&
     live.latestProductionMigrationSha256 ===
-      V36_LIVE_PARITY_EVIDENCE.latestMigrationSha256,
-  "Live baseline must distinguish the exact observed remote 37-ledger from the historical v36 repository/Sites-mirror fingerprint.",
+      CURRENT_PARTIAL_ROLLOUT_EVIDENCE.latestMigrationSha256,
+  "Current production must distinguish Sites v37 / exact remote 40-ledger from the historical v36 baseline.",
 );
 const historicalParity = manifest.historicalV36GitHubReconciliationEvidence;
 must(
@@ -112,7 +114,7 @@ must(
 must(
   sourceTree.sha256 !== live.sourceTreeSha256 ||
     sourceTree.fileCount !== live.sourceFileCount,
-  "Changed candidate Sites source must not be represented as the live v36 tree.",
+  "Changed corrective Sites source must not be represented as the live v37 tree.",
 );
 must(
   sourceTree.files.includes(".env.example"),
@@ -134,7 +136,7 @@ const mirrorTree = hashTree(resolve(repoRoot, manifest.migrations.mirrorRoot!), 
   suffix: ".sql",
 });
 must(
-  migrationTree.fileCount === 42 &&
+  migrationTree.fileCount === 43 &&
     migrationTree.fileCount === manifest.migrations.fileCount &&
     migrationTree.sha256 === manifest.migrations.treeSha256 &&
     mirrorTree.fileCount === manifest.migrations.mirrorFileCount &&
@@ -145,12 +147,14 @@ must(
   `Candidate migration/mirror fingerprint drifted (root ${migrationTree.fileCount}/${migrationTree.sha256}; mirror ${mirrorTree.fileCount}/${mirrorTree.sha256}).`,
 );
 must(
-  JSON.stringify(manifest.releaseCandidate.pendingMigrations) ===
-    JSON.stringify(LOCAL_CANDIDATE_PENDING_MIGRATIONS) &&
+    JSON.stringify(manifest.releaseCandidate.pendingMigrations) ===
+      JSON.stringify(LOCAL_CANDIDATE_PENDING_MIGRATIONS) &&
+    JSON.stringify(manifest.releaseCandidate.databaseMigrationsApplied) ===
+      JSON.stringify(LOCAL_CANDIDATE_APPLIED_MIGRATIONS) &&
     LOCAL_CANDIDATE_PENDING_MIGRATIONS.every((migration) =>
       migrationTree.files.includes(migration),
     ) &&
-    migrationTree.files.at(-1) === LOCAL_CANDIDATE_PENDING_MIGRATIONS[4],
+    migrationTree.files.at(-1) === LOCAL_CANDIDATE_PENDING_MIGRATIONS[0],
   "Candidate pending-migration inventory or ordering drifted.",
 );
 const latestCandidatePath = resolve(
@@ -183,5 +187,5 @@ if (failures.length) {
   process.exit(1);
 }
 console.log(
-  `Veroxa policy-eval-closed local candidate evidence passed: live baseline remains Sites v36 / exact remote 37-ledger ${live.migrationTreeSha256}; candidate is unpublished and unapplied at ${sourceTree.fileCount} Sites files / ${migrationTree.fileCount} migrations with a blocked six-operation rollout.`,
+  `Veroxa forward-repair evidence passed: Sites v37 / exact remote 42-ledger ${live.migrationTreeSha256} is paused at Client v3 repair; the reviewed corrective candidate is ${sourceTree.fileCount} Sites files / ${migrationTree.fileCount} migrations.`,
 );

@@ -1,12 +1,13 @@
 {
-  "schemaVersion": 10,
-  "recordKind": "veroxa_local_predeployment_release_checkpoint",
-  "checkpoint": "pre-momo-local-candidate-policy-eval-2026-08-08",
-  "status": "reviewed_local_predeployment_candidate",
+  "schemaVersion": 11,
+  "recordKind": "veroxa_staged_rollout_forward_repair_checkpoint",
+  "checkpoint": "momo-staged-rollout-forward-repair-2026-08-08",
+  "status": "staged_rollout_forward_repair_reviewed",
   "reviewedAt": "2026-08-08",
-  "candidateRevision": "policy_eval_closeout_2026_08_08",
+  "candidateRevision": "client_v3_displayed_rights_forward_repair_2026_08_08",
   "knownResiduals": [
-    "Exact live membership evidence shows postgres is not a member of supabase_admin. Migration 20260808002609 therefore skips supabase_admin default ACLs and is not comprehensive default-ACL closure."
+    "Exact live membership evidence shows postgres is not a member of supabase_admin. Migration 20260808002609 therefore skips supabase_admin default ACLs and is not comprehensive default-ACL closure.",
+    "Production applied immutable 20260808001430_momo_client_pipeline_readback_v3.sql bytes at SHA-256 987186e74590c6e484ebfee47e1c7ed384e2b4dc8c4a97ad7243ae38feb765cc before PR #161 merged changed source bytes. Corrective source must restore that applied file exactly and carry the displayed-rights repair only in forward migration 20260808040400_momo_client_pipeline_displayed_rights_scope_fix.sql."
   ],
   "previousVerifiedRelease": {
     "pullRequest": 154,
@@ -70,24 +71,24 @@
   ],
   "currentProductionObservation": {
     "observedAt": "2026-08-08",
-    "sitesBaselineObservedAt": "2026-08-02",
+    "sitesBaselineObservedAt": "2026-08-08",
     "migrationLedgerObservedAt": "2026-08-08",
-    "evidenceStatus": "immutable_sites_v36_live_baseline",
-    "canonicalGitHubMainCommit": "aafebf93a6bc40f9578c29f4a25371f8203d0387",
-    "canonicalGitHubMainCommitScope": "v36_operational_parity_commit_not_closeout_pr_head",
-    "githubParityVerifiedAtObservation": true,
-    "sitesVersion": 36,
-    "sitesCheckoutCommit": "b8122642b72e5d4e6e74c379469f2a157781ab3d",
-    "sourceFileCount": 185,
-    "sourceTreeSha256": "caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7",
-    "sourceEvidenceScope": "historical_live_sites_v36",
-    "productionMigrationCount": 37,
-    "migrationTreeSha256": "d306d26cb633ef943afdb7efd01a3cde70249a096ef783d1b0d51eb5d4a1a429",
+    "evidenceStatus": "sites_v37_live_database42_partial_rollout",
+    "canonicalGitHubMainCommit": "65dfe0e921c4bb1d66c273ec33f36d10bbf2e84d",
+    "canonicalGitHubMainCommitScope": "momo_readiness_candidate_merged_sites_v37_database_partial",
+    "githubParityVerifiedAtObservation": false,
+    "sitesVersion": 37,
+    "sitesCheckoutCommit": "61e9ace7723ef56f42111f320327187596406944",
+    "sourceFileCount": 200,
+    "sourceTreeSha256": "929e05cf68a6af5176811f49321ec108e617b93a08153b65b3f86b109d0c8c18",
+    "sourceEvidenceScope": "observed_live_sites_v37_exact_source",
+    "productionMigrationCount": 42,
+    "migrationTreeSha256": "dc565dd1f5f4a5efe6a2b253e7437e93f6364b5581c56bb811969fa7241a7a84",
     "migrationTreeEvidenceScope": "observed_remote_ledger_exact_names_and_bytes",
     "historicalRepositoryMigrationTreeSha256": "9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90",
     "historicalRepositoryMigrationTreeEvidenceScope": "historical_v36_repository_and_sites_mirror_not_remote_ledger",
-    "latestProductionMigration": "20260802063829_momo_pipeline_query_indexes_v2.sql",
-    "latestProductionMigrationSha256": "106d346be34583446d22de0f6866b5b8937feb766a3a229339dbf1c1768fdfcd",
+    "latestProductionMigration": "20260808002609_future_object_default_acl_hardening.sql",
+    "latestProductionMigrationSha256": "ab41ed8adf7170d81dc60a51607b12497cae6d52f1c28f63639e4fef6392e01a",
     "databaseLedgerObserved": true,
     "databaseAppliedThroughLatestObserved": true,
     "githubMainMatchesCandidate": false,
@@ -135,11 +136,11 @@
   },
   "releaseCandidate": {
     "manifest": "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json",
-    "state": "reviewed_local_predeployment",
+    "state": "staged_rollout_paused_for_forward_repair",
     "localReviewPassed": true,
-    "status": "reviewed_local_predeployment",
-    "actionScope": "pre_momo_readiness_predeployment_candidate",
-    "basedOnGitHubMainCommit": "a9413e22dc2ee29a4fa3b299dfc8661808dd635f",
+    "status": "staged_rollout_paused_for_forward_repair",
+    "actionScope": "momo_client_v3_forward_repair_candidate",
+    "basedOnGitHubMainCommit": "65dfe0e921c4bb1d66c273ec33f36d10bbf2e84d",
     "pullRequest": null,
     "githubMerged": false,
     "futureMergedGitHubCommit": null,
@@ -151,32 +152,34 @@
     "candidateMigrationsMatchLiveLedger": false,
     "githubMainMatchesCandidate": false,
     "fullReleaseGatePassed": false,
-    "sourceFileCount": 200,
-    "sourceTreeSha256": "39e7ae496f7e353c24069a4a179235fd2bed0feb24f83eaed1c684fb9b39a43e",
-    "migrationFileCount": 42,
-    "migrationTreeSha256": "e19e1d7cc102ba1e6297de1860d005f19cbbb2dfd3873ed195af0c89d92b829c",
-    "latestCandidateMigration": "20260808002609_future_object_default_acl_hardening.sql",
-    "latestCandidateMigrationSha256": "ab41ed8adf7170d81dc60a51607b12497cae6d52f1c28f63639e4fef6392e01a",
+    "sourceFileCount": 201,
+    "sourceTreeSha256": "a007f78d2826aa9b9f372f1aec8cae4d768e759ba15e6b7cf7281a013b79db3e",
+    "migrationFileCount": 43,
+    "migrationTreeSha256": "3efcc5266275463665f45eed9320cd3bf108abe623c2a7771558789ecd1c669e",
+    "latestCandidateMigration": "20260808040400_momo_client_pipeline_displayed_rights_scope_fix.sql",
+    "latestCandidateMigrationSha256": "3255058ddb4a406757d27b5e9d4c61c6462bff24bde64da6c6573637a3fdbaac",
     "pendingMigrations": [
+      "20260808040400_momo_client_pipeline_displayed_rights_scope_fix.sql"
+    ],
+    "databaseChangesRequired": true,
+    "databaseMigrationApplied": false,
+    "databaseMigrationsApplied": [
       "20260808001210_audit_intake_envelope_v2.sql",
       "20260808001430_momo_client_pipeline_readback_v3.sql",
       "20260808001842_retire_audit_intake_v1.sql",
       "20260808001853_retire_momo_client_pipeline_readback_v2.sql",
       "20260808002609_future_object_default_acl_hardening.sql"
     ],
-    "databaseChangesRequired": true,
-    "databaseMigrationApplied": false,
-    "databaseMigrationsApplied": [],
-    "databaseApplyAuthorized": false,
+    "databaseApplyAuthorized": true,
     "sitesPublishRequired": true,
     "sitesPublished": false,
-    "sitesPublishAuthorized": false,
-    "deploymentAuthorized": false,
+    "sitesPublishAuthorized": true,
+    "deploymentAuthorized": true,
     "activationExecuted": false,
-    "rolloutStatus": "blocked_not_started"
+    "rolloutStatus": "staged_rollout_paused_for_forward_repair"
   },
   "rolloutSequence": {
-    "status": "blocked_not_started",
+    "status": "staged_rollout_paused_for_forward_repair",
     "steps": [
       {
         "order": 1,
@@ -186,8 +189,8 @@
         "migration": "20260808001210_audit_intake_envelope_v2.sql",
         "requiresCompletedStep": null,
         "explicitReviewRequired": true,
-        "completed": false,
-        "verification": "Verify the Audit intake v2 RPC and grants before continuing."
+        "completed": true,
+        "verification": "Applied in production and verified before the rollout advanced to the Client v3 boundary."
       },
       {
         "order": 2,
@@ -197,30 +200,30 @@
         "migration": "20260808001430_momo_client_pipeline_readback_v3.sql",
         "requiresCompletedStep": "apply_audit_intake_v2",
         "explicitReviewRequired": true,
-        "completed": false,
-        "verification": "Verify the sanitized Client v3 RPC boundary and grants before publication."
+        "completed": true,
+        "verification": "Applied and verified in production at immutable SHA-256 987186e74590c6e484ebfee47e1c7ed384e2b4dc8c4a97ad7243ae38feb765cc."
       },
       {
         "order": 3,
-        "stage": "sites_publish_verify",
+        "stage": "sites_v37_publish_verify",
         "id": "publish_and_verify_audit_v2_and_client_v3_routes",
         "action": "sites_publish_and_verify",
         "migration": null,
         "requiresCompletedStep": "apply_client_pipeline_readback_v3",
         "explicitReviewRequired": true,
-        "completed": false,
-        "verification": "Publish the reviewed Sites candidate and verify Audit v2 plus Client v3 routes in production."
+        "completed": true,
+        "verification": "Sites v37 was published and observed at checkout 61e9ace7723ef56f42111f320327187596406944 with 200 files at the exact live source fingerprint."
       },
       {
         "order": 4,
-        "stage": "stage_2_post_publish",
+        "stage": "stage_2_partial_post_publish",
         "id": "retire_audit_intake_v1",
         "action": "database_migration",
         "migration": "20260808001842_retire_audit_intake_v1.sql",
         "requiresCompletedStep": "publish_and_verify_audit_v2_and_client_v3_routes",
         "explicitReviewRequired": true,
-        "completed": false,
-        "verification": "Retire Audit intake v1 only after production route verification succeeds."
+        "completed": true,
+        "verification": "Applied and verified in production before the rollout continued to the remaining post-publish migrations."
       },
       {
         "order": 5,
@@ -230,8 +233,8 @@
         "migration": "20260808001853_retire_momo_client_pipeline_readback_v2.sql",
         "requiresCompletedStep": "retire_audit_intake_v1",
         "explicitReviewRequired": true,
-        "completed": false,
-        "verification": "Retire Client readback v2 only after the Client v3 production route is verified."
+        "completed": true,
+        "verification": "Applied and verified in production before the rollout advanced to future-object default-ACL hardening."
       },
       {
         "order": 6,
@@ -241,44 +244,70 @@
         "migration": "20260808002609_future_object_default_acl_hardening.sql",
         "requiresCompletedStep": "retire_client_pipeline_readback_v2",
         "explicitReviewRequired": true,
+        "completed": true,
+        "verification": "Applied and verified in production with the known residual preserved: postgres is not a supabase_admin member, so that role remains skipped."
+      },
+      {
+        "order": 7,
+        "stage": "corrective_database_repair",
+        "id": "repair_client_pipeline_displayed_rights_scope",
+        "action": "database_migration",
+        "migration": "20260808040400_momo_client_pipeline_displayed_rights_scope_fix.sql",
+        "requiresCompletedStep": "review_and_apply_future_default_acl_hardening",
+        "explicitReviewRequired": true,
         "completed": false,
-        "verification": "Confirm the known residual: live postgres is not a supabase_admin member, so 02609 skips that role and is not comprehensive default-ACL closure."
+        "verification": "Next action: after exact corrective-PR review and green gates, apply 040400 and verify that the displayed upload cannot inherit broader shared-run rights."
+      },
+      {
+        "order": 8,
+        "stage": "corrective_sites_v38_publish_verify",
+        "id": "republish_and_verify_repaired_client_v3",
+        "action": "sites_publish_and_verify",
+        "migration": null,
+        "requiresCompletedStep": "repair_client_pipeline_displayed_rights_scope",
+        "explicitReviewRequired": true,
+        "completed": false,
+        "verification": "Publish and verify the corrected Sites v38 source only after 040400 is applied and its live behavior is verified."
       }
     ]
   },
   "databaseEvidence": {
     "liveBaseline": {
-      "migrationFileCount": 37,
-      "exactRemoteLedgerTreeSha256": "d306d26cb633ef943afdb7efd01a3cde70249a096ef783d1b0d51eb5d4a1a429",
+      "migrationFileCount": 42,
+      "exactRemoteLedgerTreeSha256": "dc565dd1f5f4a5efe6a2b253e7437e93f6364b5581c56bb811969fa7241a7a84",
       "evidenceScope": "observed_remote_ledger_exact_names_and_bytes",
-      "latestMigration": "20260802063829_momo_pipeline_query_indexes_v2.sql",
-      "latestMigrationSha256": "106d346be34583446d22de0f6866b5b8937feb766a3a229339dbf1c1768fdfcd",
+      "latestMigration": "20260808002609_future_object_default_acl_hardening.sql",
+      "latestMigrationSha256": "ab41ed8adf7170d81dc60a51607b12497cae6d52f1c28f63639e4fef6392e01a",
       "historicalRepositoryMigrationTreeSha256": "9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90",
       "historicalRepositoryEvidenceScope": "historical_v36_repository_and_sites_mirror_not_remote_ledger"
     },
     "candidate": {
-      "migrationFileCount": 42,
-      "migrationTreeSha256": "e19e1d7cc102ba1e6297de1860d005f19cbbb2dfd3873ed195af0c89d92b829c",
+      "migrationFileCount": 43,
+      "migrationTreeSha256": "3efcc5266275463665f45eed9320cd3bf108abe623c2a7771558789ecd1c669e",
       "pendingMigrations": [
+        "20260808040400_momo_client_pipeline_displayed_rights_scope_fix.sql"
+      ],
+      "appliedMigrations": [
         "20260808001210_audit_intake_envelope_v2.sql",
         "20260808001430_momo_client_pipeline_readback_v3.sql",
         "20260808001842_retire_audit_intake_v1.sql",
         "20260808001853_retire_momo_client_pipeline_readback_v2.sql",
         "20260808002609_future_object_default_acl_hardening.sql"
-      ],
-      "appliedMigrations": []
+      ]
     }
   },
   "reusableEvidence": [
     "Historical Sites v36 source and PR #157 GitHub parity remain immutable evidence only.",
-    "Exact observed live remote ledger is 37 migrations through 20260802063829_momo_pipeline_query_indexes_v2.sql.",
+    "Sites v37 is live from checkout 61e9ace7723ef56f42111f320327187596406944 with 200 files at 929e05cf68a6af5176811f49321ec108e617b93a08153b65b3f86b109d0c8c18; canonical GitHub main is 65dfe0e921c4bb1d66c273ec33f36d10bbf2e84d.",
+    "Exact observed live remote ledger is 42 migrations at dc565dd1f5f4a5efe6a2b253e7437e93f6364b5581c56bb811969fa7241a7a84 through 20260808002609_future_object_default_acl_hardening.sql.",
     "The 9f5d71e6 fingerprint is historical v36 repository and Sites-mirror evidence, not the exact remote ledger.",
+    "Applied 01430 is immutable at 987186e74590c6e484ebfee47e1c7ed384e2b4dc8c4a97ad7243ae38feb765cc; the sole pending repair is forward migration 20260808040400_momo_client_pipeline_displayed_rights_scope_fix.sql, followed by corrected Sites v38 publication and verification.",
     "MOMO_PRIVATE_POLICY_EVAL_2026-08-08.json is reusable only for local synthetic policy validation: the final 10/10 live cases passed, final-v3 request controls are source-hash-proven, earlier settings are report-recorded only, and the evidence does not claim an atomic cross-process lifetime cost ledger.",
     "Migration 02609 is not comprehensive default-ACL closure: exact live evidence shows postgres is not a supabase_admin member, so that role is skipped."
   ],
   "activationGates": [
-    "The candidate is local, unpublished, and unapplied; no PR, workflows, or activation occurred.",
-    "Apply 01210 then 01430; publish and verify Audit v2 plus Client v3; only then apply 01842, 01853, and review 02609 while retaining the known supabase_admin default-ACL residual."
+    "The corrective candidate has no pull request, merge, hosted workflow result, repair apply, or corrected Sites v38 publication. Original Sites v37 and five rollout migrations are live; provider and Momo activation remain false.",
+    "After exact local review plus the four required exact-head workflows and zero unresolved review threads, apply and verify 040400; then publish and verify corrected Sites v38. No provider connection, external publication, or Momo activation is authorized."
   ],
   "runtimeVerification": {
     "externalProvidersConnected": false,

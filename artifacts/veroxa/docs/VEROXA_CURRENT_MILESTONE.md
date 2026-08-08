@@ -1,15 +1,16 @@
 # Veroxa Current Milestone
 
-Status: highest-priority governing build direction as of 2026-08-05.
+Status: highest-priority governing build direction as of 2026-08-08.
 
 Read this file first before planning, building, reviewing, merging, deploying, or recommending Momo outreach. If an older roadmap or status note conflicts with this file, follow this file and Faraz's newest explicit instruction.
 
-## 2026-08-08 — reviewed local predeployment candidate (current)
+## 2026-08-08 — staged rollout paused for forward repair (current)
 
-- **Observed live baseline:** Sites v36 remains 185 files at `caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7`. The exact remote 37-migration ledger reconstructed on 2026-08-08 is `d306d26cb633ef943afdb7efd01a3cde70249a096ef783d1b0d51eb5d4a1a429` through `20260802063829_momo_pipeline_query_indexes_v2.sql` (SHA-256 `106d346be34583446d22de0f6866b5b8937feb766a3a229339dbf1c1768fdfcd`). `9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90` is the historical v36 repository/Sites-mirror fingerprint, not the exact remote ledger.
-- **Candidate truth:** the candidate is local, unpublished, and unapplied: 200 Sites files at `39e7ae496f7e353c24069a4a179235fd2bed0feb24f83eaed1c684fb9b39a43e`, with 42 mirrored migrations at `e19e1d7cc102ba1e6297de1860d005f19cbbb2dfd3873ed195af0c89d92b829c`. There is no PR, merge, workflow result, database apply, Sites publish, production provider connection, or activation evidence.
-- **Private policy evaluation:** the final blinded `gpt-5.6-luna` pass succeeded on 10/10 live cases and 27/27 combined checks after two safe failed specification passes. The retained reports record 30 no-retry requests with `store:false`, no tools, and no external writes; current source hashes independently bind those controls only for the final 10-request v3 pass. The completed aggregate conservative cost upper bound was USD $0.0080502 of the authorized USD $2; the runner has no atomic cross-process lifetime ledger. `MOMO_PRIVATE_POLICY_EVAL_2026-08-08.json` binds this scope and its limitations. This is local synthetic control evidence, not production-provider, Momo-rehearsal, deployment, or activation proof.
-- **Blocked rollout and known ACL residual:** apply stage 1 migrations `01210` and `01430`; publish and verify Audit v2 plus Client v3; then apply stage 2 migrations `01842`, `01853`, and separately review `02609`. Exact live membership evidence shows `postgres` is not a member of `supabase_admin`, so `02609` will skip `supabase_admin` default ACLs. This remains a known residual; the migration is not comprehensive default-ACL closure.
+- **Observed production:** Sites v37 is live from checkout `61e9ace7723ef56f42111f320327187596406944`, with 200 files at `929e05cf68a6af5176811f49321ec108e617b93a08153b65b3f86b109d0c8c18`. Production has 42 applied migrations at `dc565dd1f5f4a5efe6a2b253e7437e93f6364b5581c56bb811969fa7241a7a84`, through `02609`. Canonical GitHub `main` and corrective-candidate base are `65dfe0e921c4bb1d66c273ec33f36d10bbf2e84d`.
+- **Immutable source truth:** applied `20260808001430_momo_client_pipeline_readback_v3.sql` is permanently bound to SHA-256 `987186e74590c6e484ebfee47e1c7ed384e2b4dc8c4a97ad7243ae38feb765cc`. Do not rewrite it to match PR #161; restore those exact bytes in source and carry the displayed-rights change only in `20260808040400_momo_client_pipeline_displayed_rights_scope_fix.sql`.
+- **Corrective candidate:** 201 Sites files at `a007f78d2826aa9b9f372f1aec8cae4d768e759ba15e6b7cf7281a013b79db3e` and 43 mirrored migrations at `3efcc5266275463665f45eed9320cd3bf108abe623c2a7771558789ecd1c669e`. Its pull request is null; `040400` is the sole pending migration; no corrected Sites v38 publication has occurred.
+- **Next build/release gate:** `01210`, immutable `01430`, Sites v37, `01842`, `01853`, and `02609` are complete. Production authority is granted for this exact correction, while automatic deployment remains disabled. Review the exact corrective candidate, require all four exact-head workflows and zero unresolved threads, apply and verify `040400`, then publish and verify corrected Sites v38.
+- **Safety boundary:** `02609` is applied but remains non-comprehensive because live `postgres` is not a `supabase_admin` member and that role was skipped. Private policy-eval results remain local synthetic evidence. Providers, external publishing authority, owner authority, and Momo activation remain locked.
 
 Also read:
 

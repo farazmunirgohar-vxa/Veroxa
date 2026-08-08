@@ -2,13 +2,15 @@
 
 Status: active migration and deployment authority as of 2026-08-08.
 
-## Reviewed local predeployment candidate — current authority
+## Staged rollout paused for forward repair — current authority
 
-Sites v36 remains the immutable live baseline: 185 files at `caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7`. The exact remote 37-migration ledger reconstructed on 2026-08-08 is `d306d26cb633ef943afdb7efd01a3cde70249a096ef783d1b0d51eb5d4a1a429` through `20260802063829_momo_pipeline_query_indexes_v2.sql` (file SHA-256 `106d346be34583446d22de0f6866b5b8937feb766a3a229339dbf1c1768fdfcd`). `9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90` is the historical v36 repository/Sites-mirror fingerprint, not the exact remote ledger.
+Sites v37 is live from checkout `61e9ace7723ef56f42111f320327187596406944`: 200 canonical files at `929e05cf68a6af5176811f49321ec108e617b93a08153b65b3f86b109d0c8c18`. Production Supabase has 42 applied migrations at exact remote-ledger tree `dc565dd1f5f4a5efe6a2b253e7437e93f6364b5581c56bb811969fa7241a7a84`, through `20260808002609_future_object_default_acl_hardening.sql` (SHA-256 `ab41ed8adf7170d81dc60a51607b12497cae6d52f1c28f63639e4fef6392e01a`). Canonical GitHub `main` is `65dfe0e921c4bb1d66c273ec33f36d10bbf2e84d`.
 
-The reviewed policy-eval-closed candidate is local, unpublished, and unapplied: 200 Sites files at `39e7ae496f7e353c24069a4a179235fd2bed0feb24f83eaed1c684fb9b39a43e`, with 42 mirrored migrations at `e19e1d7cc102ba1e6297de1860d005f19cbbb2dfd3873ed195af0c89d92b829c`. Its private synthetic policy evidence is hash-bound in `MOMO_PRIVATE_POLICY_EVAL_2026-08-08.json`; final v3 passed 10/10 live cases plus 27/27 combined checks, and the completed three-attempt aggregate stayed under USD $2. The evidence explicitly records that only final-v3 request controls are source-hash-proven and no atomic cross-process lifetime cost ledger exists. No PR, merge, hosted workflows, database apply, Sites publication, production provider connection, or activation has occurred.
+The database applied `20260808001430_momo_client_pipeline_readback_v3.sql` before PR #161 merged different source bytes. Applied history is immutable: `01430` must remain exactly `987186e74590c6e484ebfee47e1c7ed384e2b4dc8c4a97ad7243ae38feb765cc`. The corrective branch is `agent/momo-client-v3-forward-scope-repair`; it restores those bytes and places the displayed-rights change only in `20260808040400_momo_client_pipeline_displayed_rights_scope_fix.sql` (SHA-256 `3255058ddb4a406757d27b5e9d4c61c6462bff24bde64da6c6573637a3fdbaac`).
 
-The rollout is blocked: apply `01210` and `01430`; publish and verify Audit v2 plus Client v3; only then apply `01842`, `01853`, and explicitly review `02609`. Exact live membership evidence shows `postgres` is not a member of `supabase_admin`, so `02609` will skip `supabase_admin` default ACLs. That is a known residual; this migration must not be described as comprehensive default-ACL closure.
+The exact corrective candidate contains 201 Sites files at `a007f78d2826aa9b9f372f1aec8cae4d768e759ba15e6b7cf7281a013b79db3e` and 43 mirrored migrations at `3efcc5266275463665f45eed9320cd3bf108abe623c2a7771558789ecd1c669e`. Its pull request is null; local review passed; `040400` is the sole pending migration; corrected Sites v38 is unpublished. Production authority is granted for this exact sequence, but automatic deployment remains disabled: pass the hosted gates, apply and verify `040400`, then publish and verify Sites v38.
+
+Completed steps are `01210`, immutable `01430`, Sites v37, `01842`, `01853`, and `02609`. Applied `02609` remains non-comprehensive because live `postgres` is not a `supabase_admin` member and the role was skipped. The private policy evaluation remains local synthetic evidence; no provider connection, external publishing authority, owner authority, or Momo activation is established.
 
 ## Sites v36 verified GitHub-parity override
 

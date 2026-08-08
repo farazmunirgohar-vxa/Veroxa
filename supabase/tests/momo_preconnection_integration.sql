@@ -2701,6 +2701,225 @@ begin
   perform set_config('veroxa.test.media_ai_asset_id', ai_asset_id::text, true);
 end $$;
 
+-- An exact-byte duplicate keeps its own displayed permission boundary.  A
+-- broader canonical source may drive the shared processing run, but it must
+-- not make a narrower displayed upload look authorized for that run's scope.
+savepoint momo_v3_narrow_duplicate;
+
+do $$
+declare
+  target_restaurant_id uuid :=
+    current_setting('veroxa.test.restaurant_id')::uuid;
+  team_user_id uuid := current_setting('veroxa.test.team_id')::uuid;
+  proxy_user_id uuid := current_setting('veroxa.test.proxy_id')::uuid;
+  narrow_asset_id uuid :=
+    current_setting('veroxa.test.media_ai_asset_id')::uuid;
+  broad_asset_id uuid := gen_random_uuid();
+  broad_object_id uuid := gen_random_uuid();
+  broad_verification_id uuid;
+  narrow_verification_id uuid;
+  broad_path text := 'restaurants/' || target_restaurant_id::text
+    || '/uploads/2000/01/' || broad_asset_id::text || '.jpg';
+  verification_snapshot jsonb;
+  verification_canonical text;
+begin
+  perform set_config('request.jwt.claim.sub', proxy_user_id::text, true);
+  perform set_config('request.jwt.claim.role', 'authenticated', true);
+
+  insert into public.veroxa_restaurant_truth_fields (
+    restaurant_id, field_key, section, value_json, status, source, is_current,
+    owner_confirmed_by, owner_confirmed_at, created_by
+  )
+  select target_restaurant_id, fixture.field_key, fixture.section,
+    jsonb_build_object('text', fixture.field_value),
+    'owner_confirmed', 'owner', true,
+    proxy_user_id, clock_timestamp(), team_user_id
+  from (values
+    ('identity.display_name', 'identity', 'Momo displayed-rights fixture'),
+    ('identity.cuisine', 'identity', 'Nepalese cuisine'),
+    ('address.primary', 'address', 'San Antonio, Texas'),
+    ('menu.primary', 'menu', 'Momo and restaurant menu fixture.')
+  ) fixture(field_key, section, field_value)
+  where not exists (
+    select 1
+    from public.veroxa_restaurant_truth_fields current_field
+    where current_field.restaurant_id = target_restaurant_id
+      and current_field.field_key = fixture.field_key
+      and current_field.is_current
+  );
+
+  verification_snapshot := jsonb_build_object(
+    'schemaVersion', 1,
+    'verifierVersion', 'momo-image-byte-verifier-2026-07-31-v1',
+    'restaurantId', target_restaurant_id,
+    'assetId', broad_asset_id,
+    'storagePath', broad_path,
+    'storageObjectId', broad_object_id,
+    'storageObjectVersion', 'rr-displayed-rights-broad-v1',
+    'detectedMime', 'image/jpeg',
+    'fileSize', 12000,
+    'width', 1400,
+    'height', 1050,
+    'contentSha256', repeat('c', 64)
+  );
+  verification_canonical :=
+    veroxa_private.momo_canonical_json_v1(verification_snapshot);
+
+  insert into storage.objects (
+    id, bucket_id, name, owner, metadata, version, owner_id
+  ) values (
+    broad_object_id, 'restaurant-media', broad_path, proxy_user_id,
+    '{"mimetype":"image/jpeg","size":12000,"cacheControl":"3600"}'::jsonb,
+    'rr-displayed-rights-broad-v1', proxy_user_id::text
+  );
+  insert into public.veroxa_media_assets (
+    id, restaurant_id, storage_path, original_file_name, mime_type, file_size,
+    uploaded_by, status, content_sha256, width, height
+  ) values (
+    broad_asset_id, target_restaurant_id, broad_path,
+    'rr-displayed-rights-broad.jpg', 'image/jpeg', 12000, proxy_user_id,
+    'ready_to_use', repeat('c', 64), 1400, 1050
+  );
+  insert into public.veroxa_momo_media_intake_verifications (
+    restaurant_id, asset_id, storage_path, storage_object_id,
+    storage_object_version, declared_mime_type, detected_mime_type,
+    file_size, width, height, content_sha256, verifier_version,
+    verification_snapshot, verification_canonical, verification_sha256,
+    idempotency_hash, status, initiated_by, verified_at
+  ) values (
+    target_restaurant_id, broad_asset_id, broad_path, broad_object_id,
+    'rr-displayed-rights-broad-v1', 'image/jpeg', 'image/jpeg',
+    12000, 1400, 1050, repeat('c', 64),
+    'momo-image-byte-verifier-2026-07-31-v1',
+    verification_snapshot, verification_canonical,
+    encode(extensions.digest(convert_to(
+      verification_canonical, 'UTF8'
+    ), 'sha256'), 'hex'),
+    repeat('d', 64), 'verified', proxy_user_id,
+    clock_timestamp() - interval '1 day'
+  ) returning id into broad_verification_id;
+  insert into public.veroxa_media_rights (
+    restaurant_id, asset_id, rights_status, usage_scope,
+    attestation_version, attestation_text, attestation_sha256,
+    valid_from, expires_at, confirmed_by, confirmed_at, evidence_class
+  ) values (
+    target_restaurant_id, broad_asset_id, 'confirmed',
+    '["facebook","google_business","instagram"]'::jsonb,
+    'momo-media-rights-v1',
+    'I confirm I own or have permission to provide this media for the selected Veroxa usage scopes.',
+    '8d6b83d28e393313e52ac32e54eda8286e4c305617ea8722aedc9729a887628f',
+    now() - interval '1 day', now() + interval '30 days',
+    proxy_user_id, now(), 'real_owner'
+  );
+
+  select verification.id into narrow_verification_id
+  from public.veroxa_momo_media_intake_verifications verification
+  where verification.restaurant_id = target_restaurant_id
+    and verification.asset_id = narrow_asset_id
+    and verification.status = 'verified';
+  if broad_verification_id is null or narrow_verification_id is null then
+    raise exception 'momo_displayed_rights_verification_fixture_missing';
+  end if;
+
+  perform set_config(
+    'veroxa.test.displayed_rights_broad_asset_id', broad_asset_id::text, true
+  );
+  perform set_config(
+    'veroxa.test.displayed_rights_broad_verification_id',
+    broad_verification_id::text, true
+  );
+  perform set_config(
+    'veroxa.test.displayed_rights_narrow_verification_id',
+    narrow_verification_id::text, true
+  );
+end $$;
+
+select set_config('request.jwt.claim.role', 'service_role', true);
+set local role service_role;
+
+do $$
+declare
+  target_restaurant_id uuid :=
+    current_setting('veroxa.test.restaurant_id')::uuid;
+  proxy_user_id uuid := current_setting('veroxa.test.proxy_id')::uuid;
+begin
+  perform public.veroxa_momo_upload_pipeline_v2(
+    'advance_verified_asset',
+    jsonb_build_object(
+      'restaurantId', target_restaurant_id,
+      'assetId',
+        current_setting('veroxa.test.displayed_rights_broad_asset_id')::uuid,
+      'verificationId',
+        current_setting(
+          'veroxa.test.displayed_rights_broad_verification_id'
+        )::uuid,
+      'actorId', proxy_user_id
+    )
+  );
+  perform public.veroxa_momo_upload_pipeline_v2(
+    'advance_verified_asset',
+    jsonb_build_object(
+      'restaurantId', target_restaurant_id,
+      'assetId', current_setting('veroxa.test.media_ai_asset_id')::uuid,
+      'verificationId',
+        current_setting(
+          'veroxa.test.displayed_rights_narrow_verification_id'
+        )::uuid,
+      'actorId', proxy_user_id
+    )
+  );
+end $$;
+
+reset role;
+select set_config('request.jwt.claim.sub', current_setting('veroxa.test.proxy_id'), true);
+select set_config('request.jwt.claim.role', 'authenticated', true);
+set local role authenticated;
+
+do $$
+declare
+  target_restaurant_id uuid :=
+    current_setting('veroxa.test.restaurant_id')::uuid;
+  narrow_asset_id uuid :=
+    current_setting('veroxa.test.media_ai_asset_id')::uuid;
+  broad_asset_id uuid :=
+    current_setting('veroxa.test.displayed_rights_broad_asset_id')::uuid;
+  narrow_status record;
+  broad_status record;
+begin
+  select status.* into narrow_status
+  from public.veroxa_momo_client_upload_status_v3(
+    target_restaurant_id
+  ) status
+  where status.asset_id = narrow_asset_id;
+  select status.* into broad_status
+  from public.veroxa_momo_client_upload_status_v3(
+    target_restaurant_id
+  ) status
+  where status.asset_id = broad_asset_id;
+
+  if narrow_status.asset_id is null
+    or narrow_status.verification_status is distinct from 'verified'
+    or narrow_status.pipeline_status is distinct from 'needs_attention'
+    or narrow_status.is_exact_duplicate is distinct from true
+    or narrow_status.attention_reasons is distinct from
+      '["permission_needs_update"]'::jsonb
+    or narrow_status.external_write_allowed is distinct from false then
+    raise exception 'momo_displayed_narrow_rights_scope_not_fail_closed';
+  end if;
+  if broad_status.asset_id is null
+    or broad_status.verification_status is distinct from 'verified'
+    or broad_status.pipeline_status is distinct from 'processing'
+    or broad_status.is_exact_duplicate is distinct from false
+    or broad_status.attention_reasons is distinct from '[]'::jsonb
+    or broad_status.external_write_allowed is distinct from false then
+    raise exception 'momo_canonical_broad_rights_processing_status_invalid';
+  end if;
+end $$;
+
+reset role;
+rollback to savepoint momo_v3_narrow_duplicate;
+release savepoint momo_v3_narrow_duplicate;
+
 select set_config('request.jwt.claim.sub', current_setting('veroxa.test.team_id'), true);
 select set_config('request.jwt.claim.role', 'authenticated', true);
 set local role authenticated;

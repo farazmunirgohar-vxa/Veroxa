@@ -2,12 +2,13 @@
 
 Status: Short index for Faraz, Codex, and future ChatGPT/Codex sessions.
 
-## 2026-08-08 — reviewed local predeployment candidate (current)
+## 2026-08-08 — staged rollout paused for forward repair (current)
 
-- Sites v36 remains the immutable live baseline at 185 files / `caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7`. The exact remote 37-migration ledger reconstructed on 2026-08-08 is `d306d26cb633ef943afdb7efd01a3cde70249a096ef783d1b0d51eb5d4a1a429` through `20260802063829_momo_pipeline_query_indexes_v2.sql` (file SHA-256 `106d346be34583446d22de0f6866b5b8937feb766a3a229339dbf1c1768fdfcd`). `9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90` is the historical v36 repository/Sites-mirror fingerprint, not the exact remote ledger.
-- The candidate is local, unpublished, and unapplied: 200 Sites files / `39e7ae496f7e353c24069a4a179235fd2bed0feb24f83eaed1c684fb9b39a43e`; 42 mirrored migrations / `e19e1d7cc102ba1e6297de1860d005f19cbbb2dfd3873ed195af0c89d92b829c`. No PR, merge, workflows, database apply, Sites publish, production provider connection, or activation occurred.
-- Start with `MOMO_PRIVATE_POLICY_EVAL_2026-08-08.json` for the private synthetic model-control result: final 10/10 live and 27/27 combined checks, two retained earlier failed attempts, and 30 total transmissions of the same ten logical cases. The reports record no retries, `store:false`, no tools or writes; only final v3 has source-hash proof of those controls. Completed aggregate cost upper bound is USD $0.0080502 under USD $2, without an atomic cross-process lifetime ledger. It is not production or Momo-rehearsal evidence.
-- The staged rollout remains blocked: apply `01210` and `01430`; publish/verify Audit v2 plus Client v3; then apply `01842`, `01853`, and only after explicit review, `02609`. Exact live evidence shows `postgres` is not a member of `supabase_admin`, so `02609` skips that role's default ACLs and is not comprehensive default-ACL closure.
+- Start with `VEROXA_DEPLOYMENT_MANIFEST.json` and `RR_RELEASE_CHECKPOINT.json`. Sites v37 is live from `61e9ace7723ef56f42111f320327187596406944` (200 files / `929e05cf68a6af5176811f49321ec108e617b93a08153b65b3f86b109d0c8c18`); live Supabase is 42 migrations / `dc565dd1f5f4a5efe6a2b253e7437e93f6364b5581c56bb811969fa7241a7a84` through `02609`; canonical `main` is `65dfe0e921c4bb1d66c273ec33f36d10bbf2e84d`.
+- Applied `01430` is immutable at `987186e74590c6e484ebfee47e1c7ed384e2b4dc8c4a97ad7243ae38feb765cc`. The corrective branch `agent/momo-client-v3-forward-scope-repair` restores it and adds sole pending migration `20260808040400_momo_client_pipeline_displayed_rights_scope_fix.sql`.
+- The corrective candidate is 201 Sites files / `a007f78d2826aa9b9f372f1aec8cae4d768e759ba15e6b7cf7281a013b79db3e` and 43 mirrored migrations / `3efcc5266275463665f45eed9320cd3bf108abe623c2a7771558789ecd1c669e`. Its PR is null; local review passed; `040400` and corrected Sites v38 are not live.
+- Completed: `01210`, immutable `01430`, Sites v37, `01842`, `01853`, and `02609`. Production authority is granted but automation remains disabled: pass exact gates, apply/verify `040400`, then publish/verify Sites v38.
+- Applied `02609` still skipped `supabase_admin`; it is not comprehensive ACL closure. Private policy-eval evidence remains local-only, and no provider, external publishing authority, or Momo activation is enabled.
 
 ## 2026-08-05 — retired source permanently removed
 

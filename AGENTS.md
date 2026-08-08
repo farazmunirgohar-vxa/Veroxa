@@ -1,3 +1,11 @@
+## 2026-08-08 — staged rollout paused for forward repair
+
+- Current production is Sites v37 from checkout `61e9ace7723ef56f42111f320327187596406944` (200 files, `929e05cf68a6af5176811f49321ec108e617b93a08153b65b3f86b109d0c8c18`) plus 42 applied Supabase migrations at exact tree `dc565dd1f5f4a5efe6a2b253e7437e93f6364b5581c56bb811969fa7241a7a84`, through `20260808002609_future_object_default_acl_hardening.sql`. Canonical GitHub `main` is `65dfe0e921c4bb1d66c273ec33f36d10bbf2e84d`.
+- Applied migration `20260808001430_momo_client_pipeline_readback_v3.sql` is immutable at SHA-256 `987186e74590c6e484ebfee47e1c7ed384e2b4dc8c4a97ad7243ae38feb765cc`. Never replace its applied bytes with PR #161's changed source. Restore the immutable file in source and implement the displayed-rights change only in `20260808040400_momo_client_pipeline_displayed_rights_scope_fix.sql`.
+- The corrective branch is `agent/momo-client-v3-forward-scope-repair`, based on `main` `65dfe0e921c4bb1d66c273ec33f36d10bbf2e84d`. Its exact candidate is 201 Sites files at `a007f78d2826aa9b9f372f1aec8cae4d768e759ba15e6b7cf7281a013b79db3e` and 43 mirrored migrations at `3efcc5266275463665f45eed9320cd3bf108abe623c2a7771558789ecd1c669e`. Corrective PR is null; local review passed.
+- Rollout history is `01210` complete → immutable `01430` complete → Sites v37 complete → `01842` complete → `01853` complete → `02609` complete. The only pending database migration is `040400`; corrected Sites v38 publish/verify follows it. Production permission exists for this exact sequence, but automatic deployments remain disabled and every encoded local/hosted gate still applies.
+- `02609` remains non-comprehensive: live `postgres` is not a `supabase_admin` member, so that role was skipped. No provider connection, external publishing authority, owner authority, or Momo activation is implied or authorized by this repair rollout.
+
 ## 2026-08-05 — permanent retired-source and branch cleanup
 
 - Faraz explicitly authorized permanent deletion of retired files and duplicate branches after the verified v36 GitHub/Sites/Supabase parity checkpoint.

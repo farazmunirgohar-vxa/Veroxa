@@ -10,8 +10,9 @@ export const deploymentManifestPath = resolve(
 
 export const TREE_HASH_ALGORITHM = "veroxa-path-null-content-null-sha256-v1";
 export const REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE =
-  "reviewed_local_predeployment_candidate";
-export const REVIEWED_LOCAL_CANDIDATE_STATUS = "reviewed_local_predeployment";
+  "staged_rollout_forward_repair_reviewed";
+export const REVIEWED_LOCAL_CANDIDATE_STATUS =
+  "staged_rollout_paused_for_forward_repair";
 export const REFRESHED_LOCAL_CANDIDATE_RELEASE_STATE =
   "local_predeployment_fingerprints_refreshed_review_required";
 export const REFRESHED_LOCAL_CANDIDATE_STATUS =
@@ -31,11 +32,11 @@ export const VERIFIED_MIGRATION_EVIDENCE_SCOPE =
 export const V36_OPERATIONAL_COMMIT_SCOPE =
   "v36_operational_parity_commit_not_closeout_pr_head";
 export const RECONCILIATION_CANDIDATE_ACTION_SCOPE =
-  "pre_momo_readiness_predeployment_candidate";
+  "momo_client_v3_forward_repair_candidate";
 export const LOCAL_CANDIDATE_SOURCE_EVIDENCE_SCOPE =
-  "exact_local_predeployment_sites_source";
+  "exact_local_forward_repair_sites_source";
 export const LOCAL_CANDIDATE_MIGRATION_EVIDENCE_SCOPE =
-  "exact_local_predeployment_migration_tree";
+  "exact_local_forward_repair_migration_tree";
 // Compatibility aliases for historical recorder code; schema 6 validates the
 // local-candidate names above.
 export const RECONCILIATION_SOURCE_EVIDENCE_SCOPE =
@@ -43,15 +44,15 @@ export const RECONCILIATION_SOURCE_EVIDENCE_SCOPE =
 export const RECONCILIATION_MIGRATION_EVIDENCE_SCOPE =
   LOCAL_CANDIDATE_MIGRATION_EVIDENCE_SCOPE;
 export const LOCAL_CANDIDATE_DEPLOYMENT_FREEZE_STATE =
-  "local_candidate_predeployment_frozen";
+  "staged_rollout_paused_client_v3_repair_required";
 export const LOCAL_CANDIDATE_REVISION =
-  "policy_eval_closeout_2026_08_08";
+  "client_v3_displayed_rights_forward_repair_2026_08_08";
 export const POLICY_EVALUATION_EVIDENCE_PATH =
   "artifacts/veroxa/docs/MOMO_PRIVATE_POLICY_EVAL_2026-08-08.json";
 export const POLICY_EVALUATION_EVIDENCE_SHA256 =
   "f3b254d6822bbe65c2149e4fbb7e4ee68601ab4ead34fae242590e9c560ed549";
 export const LIVE_PRODUCTION_EVIDENCE_STATUS =
-  "immutable_sites_v36_live_baseline";
+  "sites_v37_live_database42_partial_rollout";
 export const LIVE_MIGRATION_EVIDENCE_SCOPE =
   "observed_remote_ledger_exact_names_and_bytes";
 export const HISTORICAL_REPOSITORY_MIGRATION_EVIDENCE_SCOPE =
@@ -115,14 +116,47 @@ export const V36_LIVE_PARITY_EVIDENCE = {
     "106d346be34583446d22de0f6866b5b8937feb766a3a229339dbf1c1768fdfcd",
 } as const;
 
+export const CURRENT_PARTIAL_ROLLOUT_EVIDENCE = {
+  observedAt: "2026-08-08",
+  sitesObservedAt: "2026-08-08",
+  migrationLedgerObservedAt: "2026-08-08",
+  canonicalGitHubMainCommit:
+    "65dfe0e921c4bb1d66c273ec33f36d10bbf2e84d",
+  canonicalGitHubMainCommitScope:
+    "momo_readiness_candidate_merged_sites_v37_database_partial",
+  sitesVersion: 37,
+  sitesCheckoutCommit: "61e9ace7723ef56f42111f320327187596406944",
+  sourceFileCount: 200,
+  sourceTreeSha256:
+    "929e05cf68a6af5176811f49321ec108e617b93a08153b65b3f86b109d0c8c18",
+  sourceEvidenceScope: "observed_live_sites_v37_exact_source",
+  migrationFileCount: 42,
+  migrationTreeSha256:
+    "dc565dd1f5f4a5efe6a2b253e7437e93f6364b5581c56bb811969fa7241a7a84",
+  latestMigration: "20260808002609_future_object_default_acl_hardening.sql",
+  latestMigrationSha256:
+    "ab41ed8adf7170d81dc60a51607b12497cae6d52f1c28f63639e4fef6392e01a",
+} as const;
+
 export const LOCAL_CANDIDATE_BASE_COMMIT =
-  "a9413e22dc2ee29a4fa3b299dfc8661808dd635f";
-export const LOCAL_CANDIDATE_PENDING_MIGRATIONS = [
+  "65dfe0e921c4bb1d66c273ec33f36d10bbf2e84d";
+export const LOCAL_CANDIDATE_ROLLOUT_MIGRATIONS = [
   "20260808001210_audit_intake_envelope_v2.sql",
   "20260808001430_momo_client_pipeline_readback_v3.sql",
   "20260808001842_retire_audit_intake_v1.sql",
   "20260808001853_retire_momo_client_pipeline_readback_v2.sql",
   "20260808002609_future_object_default_acl_hardening.sql",
+  "20260808040400_momo_client_pipeline_displayed_rights_scope_fix.sql",
+] as const;
+export const LOCAL_CANDIDATE_APPLIED_MIGRATIONS = [
+  "20260808001210_audit_intake_envelope_v2.sql",
+  "20260808001430_momo_client_pipeline_readback_v3.sql",
+  "20260808001842_retire_audit_intake_v1.sql",
+  "20260808001853_retire_momo_client_pipeline_readback_v2.sql",
+  "20260808002609_future_object_default_acl_hardening.sql",
+] as const;
+export const LOCAL_CANDIDATE_PENDING_MIGRATIONS = [
+  "20260808040400_momo_client_pipeline_displayed_rights_scope_fix.sql",
 ] as const;
 
 export const VERIFIED_DEPLOYMENT_ALLOWED_ACTION =
@@ -394,50 +428,55 @@ function rolloutIsFailClosed(
   steps: NonNullable<DeploymentManifest["rolloutSequence"]>["steps"],
 ): boolean {
   const expected = [
-    [1, "stage_1_pre_publish", "apply_audit_intake_v2", "database_migration", LOCAL_CANDIDATE_PENDING_MIGRATIONS[0], null],
-    [2, "stage_1_pre_publish", "apply_client_pipeline_readback_v3", "database_migration", LOCAL_CANDIDATE_PENDING_MIGRATIONS[1], "apply_audit_intake_v2"],
-    [3, "sites_publish_verify", "publish_and_verify_audit_v2_and_client_v3_routes", "sites_publish_and_verify", null, "apply_client_pipeline_readback_v3"],
-    [4, "stage_2_post_publish", "retire_audit_intake_v1", "database_migration", LOCAL_CANDIDATE_PENDING_MIGRATIONS[2], "publish_and_verify_audit_v2_and_client_v3_routes"],
-    [5, "stage_2_post_publish", "retire_client_pipeline_readback_v2", "database_migration", LOCAL_CANDIDATE_PENDING_MIGRATIONS[3], "retire_audit_intake_v1"],
-    [6, "stage_2_post_publish", "review_and_apply_future_default_acl_hardening", "database_migration", LOCAL_CANDIDATE_PENDING_MIGRATIONS[4], "retire_client_pipeline_readback_v2"],
+    [1, "stage_1_pre_publish", "apply_audit_intake_v2", "database_migration", LOCAL_CANDIDATE_ROLLOUT_MIGRATIONS[0], null, true],
+    [2, "stage_1_pre_publish", "apply_client_pipeline_readback_v3", "database_migration", LOCAL_CANDIDATE_ROLLOUT_MIGRATIONS[1], "apply_audit_intake_v2", true],
+    [3, "sites_v37_publish_verify", "publish_and_verify_audit_v2_and_client_v3_routes", "sites_publish_and_verify", null, "apply_client_pipeline_readback_v3", true],
+    [4, "stage_2_partial_post_publish", "retire_audit_intake_v1", "database_migration", LOCAL_CANDIDATE_ROLLOUT_MIGRATIONS[2], "publish_and_verify_audit_v2_and_client_v3_routes", true],
+    [5, "stage_2_post_publish", "retire_client_pipeline_readback_v2", "database_migration", LOCAL_CANDIDATE_ROLLOUT_MIGRATIONS[3], "retire_audit_intake_v1", true],
+    [6, "stage_2_post_publish", "review_and_apply_future_default_acl_hardening", "database_migration", LOCAL_CANDIDATE_ROLLOUT_MIGRATIONS[4], "retire_client_pipeline_readback_v2", true],
+    [7, "corrective_database_repair", "repair_client_pipeline_displayed_rights_scope", "database_migration", LOCAL_CANDIDATE_ROLLOUT_MIGRATIONS[5], "review_and_apply_future_default_acl_hardening", false],
+    [8, "corrective_sites_v38_publish_verify", "republish_and_verify_repaired_client_v3", "sites_publish_and_verify", null, "repair_client_pipeline_displayed_rights_scope", false],
   ] as const;
   return steps.length === expected.length && steps.every((step, index) => {
     const wanted = expected[index];
     return step.order === wanted[0] && step.stage === wanted[1] &&
       step.id === wanted[2] && step.action === wanted[3] &&
       step.migration === wanted[4] && step.requiresCompletedStep === wanted[5] &&
-      step.explicitReviewRequired && !step.completed &&
+      step.explicitReviewRequired && step.completed === wanted[6] &&
       step.verification.trim().length >= 20;
   });
 }
 
-function assertSchema6LocalCandidate(manifest: DeploymentManifest): void {
+function assertSchema7ForwardRepairCandidate(manifest: DeploymentManifest): void {
   const failures: string[] = [];
   const candidate = manifest.releaseCandidate;
   const live = manifest.currentProductionObservation;
   const policy = manifest.policyEvaluationEvidence;
   const policyPath = resolve(repoRoot, POLICY_EVALUATION_EVIDENCE_PATH);
 
-  if (manifest.recordKind !== "veroxa_local_predeployment_candidate_manifest") {
-    failures.push("recordKind must identify a local predeployment candidate");
+  if (manifest.recordKind !== "veroxa_staged_rollout_forward_repair_manifest") {
+    failures.push("recordKind must identify the staged forward-repair candidate");
   }
   if (manifest.releaseState !== REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE ||
     candidate.status !== REVIEWED_LOCAL_CANDIDATE_STATUS ||
     !candidate.reviewedLocally || manifest.reviewedAt !== "2026-08-08") {
-    failures.push("release and candidate must remain reviewed local predeployment states");
+    failures.push("release and candidate must remain reviewed forward-repair states");
   }
   if (manifest.candidateRevision !== LOCAL_CANDIDATE_REVISION) {
-    failures.push("candidate revision must identify the policy-eval closeout");
+    failures.push("candidate revision must identify the Client v3 forward repair");
   }
-  if (manifest.knownResiduals?.length !== 1 ||
+  if (manifest.knownResiduals?.length !== 2 ||
     !/postgres is not a member of supabase_admin[\s\S]*02609[\s\S]*skips supabase_admin[\s\S]*not comprehensive default-ACL closure/iu.test(
       manifest.knownResiduals[0] ?? "",
+    ) ||
+    !/01430[\s\S]*987186e7[\s\S]*040400[\s\S]*displayed[_-]rights/iu.test(
+      manifest.knownResiduals[1] ?? "",
     )) {
-    failures.push("known supabase_admin default-ACL residual is missing or overclaimed");
+    failures.push("known ACL and immutable-migration forward-repair residuals are missing or overclaimed");
   }
   if (manifest.canonicalRepository !== "farazmunirgohar-vxa/Veroxa" ||
     manifest.canonicalBranch !== "main" ||
-    manifest.candidateBranch !== "agent/momo-readiness-closeout" ||
+    manifest.candidateBranch !== "agent/momo-client-v3-forward-scope-repair" ||
     manifest.sitesProjectId !== "appgprj_6a53d07c7c28819182801cf35dfd30de") {
     failures.push("repository, branch, or Sites project identity drifted");
   }
@@ -464,39 +503,46 @@ function assertSchema6LocalCandidate(manifest: DeploymentManifest): void {
     failures.push("historical PR #157 evidence changed");
   }
   if (live.evidenceStatus !== LIVE_PRODUCTION_EVIDENCE_STATUS ||
-    live.observedAt !== V36_LIVE_PARITY_EVIDENCE.migrationLedgerObservedAt ||
-    live.sitesBaselineObservedAt !== V36_LIVE_PARITY_EVIDENCE.sitesObservedAt ||
-    live.migrationLedgerObservedAt !== V36_LIVE_PARITY_EVIDENCE.migrationLedgerObservedAt ||
-    live.canonicalGitHubMainCommit !== V36_GITHUB_RECONCILIATION.mergedCommit ||
-    live.canonicalGitHubMainCommitScope !== V36_OPERATIONAL_COMMIT_SCOPE ||
-    live.sitesVersion !== 36 || live.sitesCheckoutCommit !== V36_LIVE_PARITY_EVIDENCE.sitesCheckoutCommit ||
-    live.sourceFileCount !== 185 || live.sourceTreeSha256 !== V36_LIVE_PARITY_EVIDENCE.sourceTreeSha256 ||
-    live.productionMigrationCount !== 37 || live.migrationTreeSha256 !== V36_LIVE_PARITY_EVIDENCE.migrationTreeSha256 ||
+    live.observedAt !== CURRENT_PARTIAL_ROLLOUT_EVIDENCE.observedAt ||
+    live.sitesBaselineObservedAt !== CURRENT_PARTIAL_ROLLOUT_EVIDENCE.sitesObservedAt ||
+    live.migrationLedgerObservedAt !== CURRENT_PARTIAL_ROLLOUT_EVIDENCE.migrationLedgerObservedAt ||
+    live.canonicalGitHubMainCommit !== CURRENT_PARTIAL_ROLLOUT_EVIDENCE.canonicalGitHubMainCommit ||
+    live.canonicalGitHubMainCommitScope !== CURRENT_PARTIAL_ROLLOUT_EVIDENCE.canonicalGitHubMainCommitScope ||
+    live.githubParityVerifiedAtObservation ||
+    live.sitesVersion !== CURRENT_PARTIAL_ROLLOUT_EVIDENCE.sitesVersion ||
+    live.sitesCheckoutCommit !== CURRENT_PARTIAL_ROLLOUT_EVIDENCE.sitesCheckoutCommit ||
+    live.sourceFileCount !== CURRENT_PARTIAL_ROLLOUT_EVIDENCE.sourceFileCount ||
+    live.sourceTreeSha256 !== CURRENT_PARTIAL_ROLLOUT_EVIDENCE.sourceTreeSha256 ||
+    live.sourceEvidenceScope !== CURRENT_PARTIAL_ROLLOUT_EVIDENCE.sourceEvidenceScope ||
+    live.productionMigrationCount !== CURRENT_PARTIAL_ROLLOUT_EVIDENCE.migrationFileCount ||
+    live.migrationTreeSha256 !== CURRENT_PARTIAL_ROLLOUT_EVIDENCE.migrationTreeSha256 ||
     live.migrationTreeEvidenceScope !== LIVE_MIGRATION_EVIDENCE_SCOPE ||
     live.historicalRepositoryMigrationTreeSha256 !== V36_LIVE_PARITY_EVIDENCE.historicalRepositoryMigrationTreeSha256 ||
     live.historicalRepositoryMigrationTreeEvidenceScope !== HISTORICAL_REPOSITORY_MIGRATION_EVIDENCE_SCOPE ||
-    live.latestProductionMigration !== V36_LIVE_PARITY_EVIDENCE.latestMigration ||
-    live.latestProductionMigrationSha256 !== V36_LIVE_PARITY_EVIDENCE.latestMigrationSha256 ||
+    live.latestProductionMigration !== CURRENT_PARTIAL_ROLLOUT_EVIDENCE.latestMigration ||
+    live.latestProductionMigrationSha256 !== CURRENT_PARTIAL_ROLLOUT_EVIDENCE.latestMigrationSha256 ||
     !live.databaseLedgerObserved || !live.databaseAppliedThroughLatestObserved ||
     live.githubMainMatchesCandidate || live.candidateSourceMatchesLiveSites ||
     live.candidateMigrationsMatchLiveLedger || live.fullReleaseGatePassed) {
-    failures.push("immutable Sites v36 / exact remote 37-migration baseline drifted");
+    failures.push("current Sites v37 / exact remote 42-migration rollout drifted");
   }
   if (candidate.actionScope !== RECONCILIATION_CANDIDATE_ACTION_SCOPE ||
     candidate.basedOnGitHubMainCommit !== LOCAL_CANDIDATE_BASE_COMMIT ||
     candidate.pullRequest !== null || candidate.githubMerged ||
     candidate.futureMergedGitHubCommit !== null || candidate.futureSitesVersion !== null ||
     candidate.allFourWorkflowsGreen !== null || candidate.zeroUnresolvedReviewThreads !== null ||
-    candidate.githubMainMatchesCandidate || candidate.fullReleaseGatePassed ||
+    candidate.githubMainMatchesCandidate || candidate.candidateSourceMatchesLiveSites ||
+    candidate.candidateMigrationsMatchLiveLedger || candidate.fullReleaseGatePassed ||
     !candidate.databaseChangesRequired || candidate.databaseMigrationApplied ||
-    JSON.stringify(candidate.databaseMigrationsApplied) !== "[]" ||
-    candidate.databaseApplyAuthorized || !candidate.sitesPublishRequired ||
-    candidate.sitesPublished || candidate.sitesPublishAuthorized ||
-    candidate.deploymentAuthorized || candidate.activationExecuted ||
-    candidate.rolloutStatus !== "blocked_not_started" ||
-    candidate.migrationFileCount !== 42 ||
+    JSON.stringify(candidate.databaseMigrationsApplied) !==
+      JSON.stringify(LOCAL_CANDIDATE_APPLIED_MIGRATIONS) ||
+    !candidate.databaseApplyAuthorized || !candidate.sitesPublishRequired ||
+    candidate.sitesPublished || !candidate.sitesPublishAuthorized ||
+    !candidate.deploymentAuthorized || candidate.activationExecuted ||
+    candidate.rolloutStatus !== "staged_rollout_paused_for_forward_repair" ||
+    candidate.migrationFileCount !== 43 ||
     JSON.stringify(candidate.pendingMigrations) !== JSON.stringify(LOCAL_CANDIDATE_PENDING_MIGRATIONS)) {
-    failures.push("candidate state overclaims external release, apply, publish, or activation evidence");
+    failures.push("candidate state does not match the authorized partial rollout and pending repair");
   }
   if (manifest.source.evidenceScope !== LOCAL_CANDIDATE_SOURCE_EVIDENCE_SCOPE ||
     manifest.source.root !== "artifacts/veroxa-sites" ||
@@ -517,15 +563,15 @@ function assertSchema6LocalCandidate(manifest: DeploymentManifest): void {
     failures.push("candidate migration root and Sites mirror evidence is incoherent");
   }
   const rollout = manifest.rolloutSequence;
-  if (!rollout || rollout.status !== "blocked_not_started" ||
+  if (!rollout || rollout.status !== "staged_rollout_paused_for_forward_repair" ||
     !rolloutIsFailClosed(rollout.steps)) {
     failures.push("candidate rollout sequence is incomplete, reordered, or overclaimed");
   }
   if (manifest.deploymentFreeze.state !== LOCAL_CANDIDATE_DEPLOYMENT_FREEZE_STATE ||
     manifest.deploymentFreeze.automaticDeploymentsAllowed ||
-    manifest.deploymentFreeze.databaseApplyAuthorized ||
-    manifest.deploymentFreeze.sitesPublishAuthorized ||
-    !/01210[\s\S]*01430[\s\S]*publish[\s\S]*01842[\s\S]*01853[\s\S]*02609/iu.test(
+    !manifest.deploymentFreeze.databaseApplyAuthorized ||
+    !manifest.deploymentFreeze.sitesPublishAuthorized ||
+    !/040400[\s\S]*publish/iu.test(
       manifest.deploymentFreeze.releaseCondition,
     )) {
     failures.push("deployment freeze does not preserve the required staged rollout");
@@ -547,8 +593,8 @@ function assertSchema6LocalCandidate(manifest: DeploymentManifest): void {
 export function assertUnreleasedLocalCandidateManifest(
   manifest: DeploymentManifest,
 ): void {
-  if (manifest.schemaVersion === 6) {
-    assertSchema6LocalCandidate(manifest);
+  if (manifest.schemaVersion === 7) {
+    assertSchema7ForwardRepairCandidate(manifest);
     return;
   }
   const failures: string[] = [];
@@ -792,7 +838,7 @@ export function assertVerifiedGitHubParityManifest(
   _manifest: DeploymentManifest,
 ): void {
   throw new Error(
-    "Schema 6 records a local predeployment candidate; terminal GitHub parity must be recorded by a future schema with fresh PR, workflow, database, and Sites evidence",
+    "Schema 7 records a staged forward-repair candidate; terminal parity requires fresh PR, workflow, database, and Sites evidence",
   );
 }
 
@@ -800,7 +846,7 @@ export function assertPublishedSitesFollowupManifest(
   _manifest: DeploymentManifest,
 ): void {
   throw new Error(
-    "Schema 6 has no published candidate: database apply and Sites publication remain unauthorized and unobserved",
+    "Schema 7 records only the partial Sites v37 rollout; the Client v3 repair and corrected Sites publication remain unobserved",
   );
 }
 

@@ -1,3 +1,11 @@
+## 2026-08-08 — locked staged-rollout forward-repair boundary
+
+- Sites v37 is live from checkout `61e9ace7723ef56f42111f320327187596406944`, with 200 files at `929e05cf68a6af5176811f49321ec108e617b93a08153b65b3f86b109d0c8c18`. Production Supabase is the exact 42-migration ledger `dc565dd1f5f4a5efe6a2b253e7437e93f6364b5581c56bb811969fa7241a7a84` through `20260808002609_future_object_default_acl_hardening.sql`. Canonical GitHub `main` is `65dfe0e921c4bb1d66c273ec33f36d10bbf2e84d`.
+- Never rewrite an applied migration. Production applied `20260808001430_momo_client_pipeline_readback_v3.sql` at SHA-256 `987186e74590c6e484ebfee47e1c7ed384e2b4dc8c4a97ad7243ae38feb765cc`; canonical source must restore those bytes exactly. The displayed-rights correction belongs only in forward migration `20260808040400_momo_client_pipeline_displayed_rights_scope_fix.sql`.
+- The corrective branch is `agent/momo-client-v3-forward-scope-repair`, with 201 Sites files at `a007f78d2826aa9b9f372f1aec8cae4d768e759ba15e6b7cf7281a013b79db3e` and 43 mirrored migrations at `3efcc5266275463665f45eed9320cd3bf108abe623c2a7771558789ecd1c669e`. Its PR is null and local review passed. Do not describe `040400` or corrected Sites v38 as live.
+- `01210`, immutable `01430`, Sites v37, `01842`, `01853`, and `02609` are complete. Authority is granted for the exact corrective sequence, but automatic deployment remains disabled: pass exact gates, apply and verify `040400`, then publish and verify Sites v38.
+- Applied `02609` skipped `supabase_admin` because live `postgres` is not a member; preserve this non-comprehensive ACL residual. Provider connections, external publishing authority, owner authority, and Momo activation remain locked.
+
 ## 2026-08-05 — locked permanent cleanup boundary
 
 - Faraz explicitly authorized permanent removal of the retired Vite/Replit source and duplicate GitHub branches after verified v36 parity.
