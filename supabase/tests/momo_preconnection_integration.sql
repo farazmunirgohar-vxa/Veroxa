@@ -3390,7 +3390,6 @@ set local role service_role;
 do $$
 declare
   fixture_position integer;
-  fixture_run public.veroxa_momo_content_ai_runs%rowtype;
   claimed record;
   begun record;
   lifecycle_id uuid;
@@ -3511,19 +3510,13 @@ begin
       raise exception 'momo_ready_review_result_complete_failed';
     end if;
 
-    select run.* into fixture_run
-    from public.veroxa_momo_content_ai_runs run
-    where run.id = current_setting(
-      'veroxa.test.ready_review_run_' || fixture_position::text
-    )::uuid;
-    if fixture_run.status <> 'pending_review' then
-      raise exception 'momo_ready_review_result_not_pending';
-    end if;
     perform public.veroxa_momo_upload_pipeline_v2(
       'materialize_veroxa_ready',
       jsonb_build_object(
-        'runId', fixture_run.id,
-        'requestHash', fixture_run.request_hash
+        'runId', claimed.run_id,
+        'requestHash', current_setting(
+          'veroxa.test.ready_review_request_' || fixture_position::text
+        )
       )
     );
   end loop;

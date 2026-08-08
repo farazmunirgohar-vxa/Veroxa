@@ -202,9 +202,9 @@ const pgtapFixturePath = resolve(
 );
 must(
   sha256File(pgtapFixturePath) ===
-      "0a9503c4f80cf8453b9d3473186d6d77b5a0ba06504ba036ce5eba98f7b0bcf8" &&
+      "29c8ab63fd40f2fa91713969955422df7c58031286790847150865b36d7f08ab" &&
     checkpoint.reusableEvidence.some((entry: string) =>
-      /46 statements\/19[\s\S]*354\/88[\s\S]*0a9503c4[\s\S]*89\/89/iu.test(
+      /46 statements\/19[\s\S]*354\/88[\s\S]*29c8ab63[\s\S]*89\/89/iu.test(
         entry,
       ),
     ),
