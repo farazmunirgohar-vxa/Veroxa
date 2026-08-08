@@ -255,7 +255,7 @@
     "hostedFullPgTapRerunPending": true,
     "hostedDatabaseExecutionPassed": false,
     "repairMigrationSha256": "e1e6e0610c815e449b7ea7c169c258e03bfefc5451e4d04ada2b35d687656606",
-    "preconnectionFixtureSha256": "1e08caa59c9782184eb7271ed91dd9f791f62fd7fcaf6b4bb50fa7e7cceaf6ed",
+    "preconnectionFixtureSha256": "ea57d57bc9b4117495b6ba794230551ca1daf82e8eadf6c295f16b42c237dc0f",
     "ownerFixtureSha256": "1e16e1e4d03a1ff35fe25cda626c25f176f1b05b711fd3e7a26f581550484a24",
     "fullOperatingSystemFixtureSha256": "f20ac4e5927543277e520fbfd7104ded39fd11fa14995bf227fb64384dba5480",
     "zeroCostFixtureSha256": "13e246455692d5005d688fcc68aea4805a7d64bc87c2604edf8db26599b06cbe"
@@ -912,7 +912,7 @@
     "livePrefixMigrationTreeSha256": "a575a605c65252386d5d55c26b1a9cf4c88c85e854c74ca0486ecd1ec1f6d3d0",
     "candidateMigrationCount": 47,
     "candidateMigrationTreeSha256": "895ddcfc268b9033f62aa3be40088f196a7bed2ed23ed1c5052938dc5509214b",
-    "preconnectionFixtureSha256": "1e08caa59c9782184eb7271ed91dd9f791f62fd7fcaf6b4bb50fa7e7cceaf6ed",
+    "preconnectionFixtureSha256": "ea57d57bc9b4117495b6ba794230551ca1daf82e8eadf6c295f16b42c237dc0f",
     "ownerFixtureSha256": "1e16e1e4d03a1ff35fe25cda626c25f176f1b05b711fd3e7a26f581550484a24",
     "fullOperatingSystemFixtureSha256": "f20ac4e5927543277e520fbfd7104ded39fd11fa14995bf227fb64384dba5480",
     "zeroCostFixtureSha256": "13e246455692d5005d688fcc68aea4805a7d64bc87c2604edf8db26599b06cbe",

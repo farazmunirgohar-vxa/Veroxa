@@ -5171,6 +5171,9 @@ declare
     || current_setting('veroxa.test.restaurant_id')
     || '/uploads/2000/01/' || extensions.gen_random_uuid()::text || '.jpg';
   clone_object_version text := 'rr-ready-same-source-clone-v1';
+  clone_verification_snapshot jsonb;
+  clone_verification_canonical text;
+  clone_verification_sha256 text;
 begin
   insert into storage.objects (
     id, bucket_id, name, owner, metadata, version, owner_id
@@ -5198,6 +5201,36 @@ begin
   where source.id = source_asset_id;
   execute 'alter table public.veroxa_media_assets enable trigger user';
 
+  select pg_catalog.jsonb_build_object(
+    'schemaVersion', 1,
+    'verifierVersion', source.verifier_version,
+    'restaurantId', target_restaurant_id,
+    'assetId', clone_asset_id,
+    'storagePath', clone_path,
+    'storageObjectId', clone_object_id,
+    'storageObjectVersion', clone_object_version,
+    'detectedMime', source.detected_mime_type,
+    'fileSize', source.file_size,
+    'width', source.width,
+    'height', source.height,
+    'contentSha256', source.content_sha256
+  )
+  into clone_verification_snapshot
+  from public.veroxa_momo_media_intake_verifications source
+  where source.id = source_verification_id
+    and source.restaurant_id = target_restaurant_id
+    and source.asset_id = source_asset_id;
+  if not found then
+    raise exception 'momo_ready_same_source_verification_source_missing';
+  end if;
+  clone_verification_canonical :=
+    veroxa_private.momo_canonical_json_v1(
+      clone_verification_snapshot
+    );
+  clone_verification_sha256 := pg_catalog.encode(extensions.digest(
+    pg_catalog.convert_to(clone_verification_canonical, 'UTF8'), 'sha256'
+  ), 'hex');
+
   execute 'alter table public.veroxa_momo_media_intake_verifications disable trigger user';
   insert into public.veroxa_momo_media_intake_verifications
   select clone.*
@@ -5216,6 +5249,9 @@ begin
           'UTF8'
         ), 'sha256'
       ), 'hex'),
+      'verification_snapshot', clone_verification_snapshot,
+      'verification_canonical', clone_verification_canonical,
+      'verification_sha256', clone_verification_sha256,
       'initiated_at', pg_catalog.clock_timestamp(),
       'verified_at', pg_catalog.clock_timestamp()
     )
