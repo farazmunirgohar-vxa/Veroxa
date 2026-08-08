@@ -6,12 +6,13 @@ const __name = <T>(target: T, value: string): T =>
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
-  ACTIVE_ROLLOUT_DATABASE_EVIDENCE,
   GENERATED_PATH_EXCLUSIONS,
+  CURRENT_PARTIAL_ROLLOUT_EVIDENCE,
   HISTORICAL_REPOSITORY_MIGRATION_EVIDENCE_SCOPE,
   LIVE_MIGRATION_EVIDENCE_SCOPE,
   LIVE_PRODUCTION_EVIDENCE_STATUS,
   LOCAL_CANDIDATE_MIGRATION_EVIDENCE_SCOPE,
+  LOCAL_CANDIDATE_APPLIED_MIGRATIONS,
   LOCAL_CANDIDATE_PENDING_MIGRATIONS,
   LOCAL_CANDIDATE_SOURCE_EVIDENCE_SCOPE,
   TREE_HASH_ALGORITHM,
@@ -36,19 +37,18 @@ try {
 const live = manifest.currentProductionObservation;
 must(
   live.evidenceStatus === LIVE_PRODUCTION_EVIDENCE_STATUS &&
-    live.sourceTreeSha256 === V36_LIVE_PARITY_EVIDENCE.sourceTreeSha256 &&
-    live.migrationTreeSha256 ===
-      ACTIVE_ROLLOUT_DATABASE_EVIDENCE.migrationTreeSha256 &&
+    live.sourceTreeSha256 === CURRENT_PARTIAL_ROLLOUT_EVIDENCE.sourceTreeSha256 &&
+    live.migrationTreeSha256 === CURRENT_PARTIAL_ROLLOUT_EVIDENCE.migrationTreeSha256 &&
     live.migrationTreeEvidenceScope === LIVE_MIGRATION_EVIDENCE_SCOPE &&
     live.historicalRepositoryMigrationTreeSha256 ===
       V36_LIVE_PARITY_EVIDENCE.historicalRepositoryMigrationTreeSha256 &&
     live.historicalRepositoryMigrationTreeEvidenceScope ===
       HISTORICAL_REPOSITORY_MIGRATION_EVIDENCE_SCOPE &&
     live.latestProductionMigration ===
-      ACTIVE_ROLLOUT_DATABASE_EVIDENCE.latestMigration &&
+      CURRENT_PARTIAL_ROLLOUT_EVIDENCE.latestMigration &&
     live.latestProductionMigrationSha256 ===
-      ACTIVE_ROLLOUT_DATABASE_EVIDENCE.latestMigrationSha256,
-  "Live baseline must preserve the deployed Sites v36 source while distinguishing the exact observed 43-row database cutover from the historical v36 repository fingerprint.",
+      CURRENT_PARTIAL_ROLLOUT_EVIDENCE.latestMigrationSha256,
+  "Current production must distinguish Sites v37 / exact remote live43 repair evidence from the historical v36 baseline.",
 );
 const historicalParity = manifest.historicalV36GitHubReconciliationEvidence;
 must(
@@ -114,7 +114,7 @@ must(
 must(
   sourceTree.sha256 !== live.sourceTreeSha256 ||
     sourceTree.fileCount !== live.sourceFileCount,
-  "Changed candidate Sites source must not be represented as the live v36 tree.",
+  "Changed corrective Sites source must not be represented as the live v37 tree.",
 );
 must(
   sourceTree.files.includes(".env.example"),
@@ -147,14 +147,20 @@ must(
   `Candidate migration/mirror fingerprint drifted (root ${migrationTree.fileCount}/${migrationTree.sha256}; mirror ${mirrorTree.fileCount}/${mirrorTree.sha256}).`,
 );
 must(
-  JSON.stringify(manifest.releaseCandidate.pendingMigrations) ===
-    JSON.stringify(LOCAL_CANDIDATE_PENDING_MIGRATIONS) &&
-    LOCAL_CANDIDATE_PENDING_MIGRATIONS.every((migration) =>
+    JSON.stringify(manifest.releaseCandidate.pendingMigrations) ===
+      JSON.stringify(LOCAL_CANDIDATE_PENDING_MIGRATIONS) &&
+    JSON.stringify(manifest.releaseCandidate.databaseMigrationsApplied) ===
+      JSON.stringify(LOCAL_CANDIDATE_APPLIED_MIGRATIONS) &&
+    LOCAL_CANDIDATE_APPLIED_MIGRATIONS.every((migration) =>
       migrationTree.files.includes(migration),
     ) &&
+    manifest.releaseCandidate.databaseMigrationApplied === true &&
+    manifest.releaseCandidate.databaseChangesRequired === false &&
+    manifest.releaseCandidate.candidateMigrationsMatchLiveLedger === true &&
+    migrationTree.sha256 === live.migrationTreeSha256 &&
     migrationTree.files.at(-1) ===
       manifest.releaseCandidate.latestCandidateMigration,
-  "Candidate pending-migration inventory or ordering drifted.",
+  "Candidate applied-migration inventory, live parity, or ordering drifted.",
 );
 const latestCandidatePath = resolve(
   repoRoot,
@@ -186,5 +192,5 @@ if (failures.length) {
   process.exit(1);
 }
 console.log(
-  `Veroxa cutover evidence passed: the exact ${live.productionMigrationCount}-migration database candidate is live, Sites remains v36, and the ${sourceTree.fileCount}-file Sites candidate is the only pending release step.`,
+  `Veroxa corrective-release evidence passed: Sites v37 remains live, exact remote live43 ${live.migrationTreeSha256} includes the verified Client v3 repair, and only the reviewed ${sourceTree.fileCount}-file Sites v38 candidate remains unpublished.`,
 );

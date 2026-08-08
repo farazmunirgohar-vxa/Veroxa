@@ -393,7 +393,7 @@ test("Client v3 readback accepts only sanitized coherent pipeline states", async
     assert.deepEqual(rejected.media[0].pipelineAttentionReasons, []);
   }
 
-  const [sql, repair, retirement, clientData] = await Promise.all([
+  const [sql, rightsScopeRepair, retirement, clientData] = await Promise.all([
     readFile(new URL("../supabase/migrations/20260808001430_momo_client_pipeline_readback_v3.sql", import.meta.url), "utf8"),
     readFile(new URL("../supabase/migrations/20260808041629_repair_momo_client_v3_displayed_asset_scope.sql", import.meta.url), "utf8"),
     readFile(new URL("../supabase/migrations/20260808001853_retire_momo_client_pipeline_readback_v2.sql", import.meta.url), "utf8"),
@@ -404,10 +404,14 @@ test("Client v3 readback accepts only sanitized coherent pipeline states", async
   assert.match(sql, /candidate\.identity_id = link\.identity_id[\s\S]*?candidate\.content_ai_run_id = run\.id/);
   assert.match(sql, /asset_rights[\s\S]*?rights_status = 'confirmed'[\s\S]*?expires_at > pg_catalog\.now\(\)/u);
   assert.doesNotMatch(
-    sql.match(/left join lateral \(\s*select candidate\.id\s*from public\.veroxa_media_rights candidate[\s\S]*?\) asset_rights on true/u)?.[0] || "",
-    /run\.target_platforms <@ candidate\.usage_scope/u,
+    sql,
+    /and \(run\.id is null\s*or run\.target_platforms <@ candidate\.usage_scope\)/u,
   );
-  const assetRightsJoin = repair.match(
+  assert.match(
+    rightsScopeRepair,
+    /create or replace function public\.veroxa_momo_client_upload_status_v3\(\s*target_restaurant_id uuid\s*\)/u,
+  );
+  const assetRightsJoin = rightsScopeRepair.match(
     /left join lateral \(\s*select candidate\.id\s*from public\.veroxa_media_rights candidate[\s\S]*?\) asset_rights on true/u,
   )?.[0] || "";
   assert.match(

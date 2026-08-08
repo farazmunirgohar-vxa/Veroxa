@@ -1,15 +1,15 @@
 {
-  "schemaVersion": 6,
-  "recordKind": "veroxa_local_predeployment_candidate_manifest",
-  "releaseState": "reviewed_local_predeployment_candidate",
+  "schemaVersion": 7,
+  "recordKind": "veroxa_staged_rollout_forward_repair_manifest",
+  "releaseState": "staged_rollout_database_repair_verified_sites_v38_pending",
   "reviewedAt": "2026-08-08",
-  "candidateRevision": "client_v3_scope_repair_2026_08_08",
+  "candidateRevision": "client_v3_corrected_sites_v38_2026_08_08",
   "knownResiduals": [
     "Exact live membership evidence shows postgres is not a member of supabase_admin. Migration 20260808002609 therefore skips supabase_admin default ACLs and is not comprehensive default-ACL closure."
   ],
   "canonicalRepository": "farazmunirgohar-vxa/Veroxa",
   "canonicalBranch": "main",
-  "candidateBranch": "agent/repair-client-v3-scope",
+  "candidateBranch": "agent/momo-client-v3-forward-scope-repair",
   "sitesProjectId": "appgprj_6a53d07c7c28819182801cf35dfd30de",
   "observedProductionBaseline": {
     "reviewedAt": "2026-07-13",
@@ -102,17 +102,18 @@
   ],
   "currentProductionObservation": {
     "observedAt": "2026-08-08",
-    "sitesBaselineObservedAt": "2026-08-02",
+    "sitesBaselineObservedAt": "2026-08-08",
     "migrationLedgerObservedAt": "2026-08-08",
-    "evidenceStatus": "sites_v36_database_cutover_complete_sites_pending",
-    "canonicalGitHubMainCommit": "65dfe0e921c4bb1d66c273ec33f36d10bbf2e84d",
-    "canonicalGitHubMainCommitScope": "sites_v36_database_cutover_complete_sites_pending",
-    "githubParityVerifiedAtObservation": true,
-    "sitesVersion": 36,
-    "sitesCheckoutCommit": "b8122642b72e5d4e6e74c379469f2a157781ab3d",
-    "sourceFileCount": 185,
-    "sourceTreeSha256": "caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7",
-    "sourceEvidenceScope": "historical_live_sites_v36",
+    "evidenceStatus": "sites_v37_live_database43_repair_verified",
+    "canonicalGitHubMainCommit": "ca47aeff7ab44a69b6ce039608ae27fea6c3c326",
+    "canonicalGitHubMainMergePullRequest": 162,
+    "canonicalGitHubMainCommitScope": "pr162_merged_main_lineage_sites_v37_database_repair_verified",
+    "githubParityVerifiedAtObservation": false,
+    "sitesVersion": 37,
+    "sitesCheckoutCommit": "61e9ace7723ef56f42111f320327187596406944",
+    "sourceFileCount": 200,
+    "sourceTreeSha256": "929e05cf68a6af5176811f49321ec108e617b93a08153b65b3f86b109d0c8c18",
+    "sourceEvidenceScope": "observed_live_sites_v37_exact_source",
     "productionMigrationCount": 43,
     "migrationTreeSha256": "8a49f00ab3bd6d9623100fec238939b6cb81f17d67d0e2d3a4426559c137e41c",
     "migrationTreeEvidenceScope": "observed_remote_ledger_exact_names_and_bytes",
@@ -166,10 +167,10 @@
     "completedAggregateBelowAuthorizedCeiling": true
   },
   "releaseCandidate": {
-    "status": "reviewed_local_predeployment",
-    "actionScope": "pre_momo_readiness_predeployment_candidate",
-    "basedOnGitHubMainCommit": "65dfe0e921c4bb1d66c273ec33f36d10bbf2e84d",
-    "pullRequest": 162,
+    "status": "staged_rollout_paused_for_corrective_sites_publish",
+    "actionScope": "momo_client_v3_corrective_sites_v38_candidate",
+    "basedOnGitHubMainCommit": "ca47aeff7ab44a69b6ce039608ae27fea6c3c326",
+    "pullRequest": 163,
     "githubMerged": false,
     "futureMergedGitHubCommit": null,
     "futureSitesVersion": null,
@@ -181,13 +182,13 @@
     "githubMainMatchesCandidate": false,
     "fullReleaseGatePassed": false,
     "sourceFileCount": 201,
-    "sourceTreeSha256": "cb6624557c1d6bb0f55ccd436b1f99acbf660ddacf7635f16c480d1f8a2f1912",
+    "sourceTreeSha256": "4edae9660343cda362968bd08e544ba5a154c90a902ac961365ceb32ea820292",
     "migrationFileCount": 43,
     "migrationTreeSha256": "8a49f00ab3bd6d9623100fec238939b6cb81f17d67d0e2d3a4426559c137e41c",
     "latestCandidateMigration": "20260808041629_repair_momo_client_v3_displayed_asset_scope.sql",
     "latestCandidateMigrationSha256": "6cbf3f80d028d3fe54093b14bae59314913b4f0bfacfbf31fce4aa2a24e429ba",
     "pendingMigrations": [],
-    "databaseChangesRequired": true,
+    "databaseChangesRequired": false,
     "databaseMigrationApplied": true,
     "databaseMigrationsApplied": [
       "20260808001210_audit_intake_envelope_v2.sql",
@@ -197,16 +198,16 @@
       "20260808002609_future_object_default_acl_hardening.sql",
       "20260808041629_repair_momo_client_v3_displayed_asset_scope.sql"
     ],
-    "databaseApplyAuthorized": false,
+    "databaseApplyAuthorized": true,
     "sitesPublishRequired": true,
     "sitesPublished": false,
     "sitesPublishAuthorized": true,
     "deploymentAuthorized": true,
     "activationExecuted": false,
-    "rolloutStatus": "database_complete_sites_urgent"
+    "rolloutStatus": "staged_rollout_paused_for_corrective_sites_publish"
   },
   "rolloutSequence": {
-    "status": "database_complete_sites_urgent",
+    "status": "staged_rollout_paused_for_corrective_sites_publish",
     "steps": [
       {
         "order": 1,
@@ -217,7 +218,7 @@
         "requiresCompletedStep": null,
         "explicitReviewRequired": true,
         "completed": true,
-        "verification": "Verify the Audit intake v2 RPC and grants before continuing."
+        "verification": "Applied in production and verified before the rollout advanced to the Client v3 boundary."
       },
       {
         "order": 2,
@@ -228,72 +229,83 @@
         "requiresCompletedStep": "apply_audit_intake_v2",
         "explicitReviewRequired": true,
         "completed": true,
-        "verification": "Verify the sanitized Client v3 RPC boundary and grants before publication."
+        "verification": "Applied and verified in production at immutable SHA-256 987186e74590c6e484ebfee47e1c7ed384e2b4dc8c4a97ad7243ae38feb765cc."
       },
       {
         "order": 3,
-        "stage": "emergency_database_cutover",
-        "id": "retire_audit_intake_v1",
-        "action": "database_migration",
-        "migration": "20260808001842_retire_audit_intake_v1.sql",
+        "stage": "sites_v37_publish_verify",
+        "id": "publish_and_verify_audit_v2_and_client_v3_routes",
+        "action": "sites_publish_and_verify",
+        "migration": null,
         "requiresCompletedStep": "apply_client_pipeline_readback_v3",
         "explicitReviewRequired": true,
         "completed": true,
-        "verification": "Audit intake v1 is retired; Sites must use the verified v2 route."
+        "verification": "Sites v37 was published and observed at checkout 61e9ace7723ef56f42111f320327187596406944 with 200 files at the exact live source fingerprint."
       },
       {
         "order": 4,
-        "stage": "emergency_database_cutover",
+        "stage": "stage_2_partial_post_publish",
+        "id": "retire_audit_intake_v1",
+        "action": "database_migration",
+        "migration": "20260808001842_retire_audit_intake_v1.sql",
+        "requiresCompletedStep": "publish_and_verify_audit_v2_and_client_v3_routes",
+        "explicitReviewRequired": true,
+        "completed": true,
+        "verification": "Applied and verified in production before the rollout continued to the remaining post-publish migrations."
+      },
+      {
+        "order": 5,
+        "stage": "stage_2_post_publish",
         "id": "retire_client_pipeline_readback_v2",
         "action": "database_migration",
         "migration": "20260808001853_retire_momo_client_pipeline_readback_v2.sql",
         "requiresCompletedStep": "retire_audit_intake_v1",
         "explicitReviewRequired": true,
         "completed": true,
-        "verification": "Client readback v2 is retired; Sites must use the sanitized v3 route."
+        "verification": "Applied and verified in production before the rollout advanced to future-object default-ACL hardening."
       },
       {
-        "order": 5,
-        "stage": "emergency_database_cutover",
-        "id": "apply_future_default_acl_hardening",
+        "order": 6,
+        "stage": "stage_2_post_publish",
+        "id": "review_and_apply_future_default_acl_hardening",
         "action": "database_migration",
         "migration": "20260808002609_future_object_default_acl_hardening.sql",
         "requiresCompletedStep": "retire_client_pipeline_readback_v2",
         "explicitReviewRequired": true,
         "completed": true,
-        "verification": "Default ACL hardening is applied with the recorded supabase_admin membership residual."
-      },
-      {
-        "order": 6,
-        "stage": "emergency_database_cutover",
-        "id": "repair_client_v3_displayed_asset_scope",
-        "action": "database_migration",
-        "migration": "20260808041629_repair_momo_client_v3_displayed_asset_scope.sql",
-        "requiresCompletedStep": "apply_future_default_acl_hardening",
-        "explicitReviewRequired": true,
-        "completed": true,
-        "verification": "The exact forward repair is ledgered and Client v3 enforces each displayed asset's usage scope."
+        "verification": "Applied and verified in production with the known residual preserved: postgres is not a supabase_admin member, so that role remains skipped."
       },
       {
         "order": 7,
-        "stage": "urgent_sites_publish_verify",
-        "id": "publish_and_verify_audit_v2_and_client_v3_routes",
+        "stage": "corrective_database_repair",
+        "id": "repair_client_pipeline_displayed_rights_scope",
+        "action": "database_migration",
+        "migration": "20260808041629_repair_momo_client_v3_displayed_asset_scope.sql",
+        "requiresCompletedStep": "review_and_apply_future_default_acl_hardening",
+        "explicitReviewRequired": true,
+        "completed": true,
+        "verification": "Applied and verified in production as ledger version 20260808041629: one 7,293-byte statement at SHA-256 6cbf3f80d028d3fe54093b14bae59314913b4f0bfacfbf31fce4aa2a24e429ba. The corrected displayed-asset predicate, independent run-rights scope check, SECURITY DEFINER with empty search_path, authenticated-only ACL, valid actor path, random cross-tenant denial, and external_write_allowed=false all passed."
+      },
+      {
+        "order": 8,
+        "stage": "corrective_sites_v38_publish_verify",
+        "id": "republish_and_verify_repaired_client_v3",
         "action": "sites_publish_and_verify",
         "migration": null,
-        "requiresCompletedStep": "repair_client_v3_displayed_asset_scope",
+        "requiresCompletedStep": "repair_client_pipeline_displayed_rights_scope",
         "explicitReviewRequired": true,
         "completed": false,
-        "verification": "Publish the reviewed Sites candidate immediately and verify Audit v2 plus Client v3 routes in production."
+        "verification": "Sole pending release action: publish and verify the corrected Sites v38 source against the already-applied and verified 041629 function."
       }
     ]
   },
   "source": {
-    "evidenceScope": "exact_local_predeployment_sites_source",
+    "evidenceScope": "exact_local_corrective_sites_v38_source",
     "root": "artifacts/veroxa-sites",
     "mappingTarget": "Sites repository root candidate",
     "hashAlgorithm": "veroxa-path-null-content-null-sha256-v1",
     "fileCount": 201,
-    "treeSha256": "cb6624557c1d6bb0f55ccd436b1f99acbf660ddacf7635f16c480d1f8a2f1912",
+    "treeSha256": "4edae9660343cda362968bd08e544ba5a154c90a902ac961365ceb32ea820292",
     "generatedPathExclusions": [
       ".git",
       ".next",
@@ -316,7 +328,7 @@
     ]
   },
   "migrations": {
-    "evidenceScope": "exact_local_predeployment_migration_tree",
+    "evidenceScope": "exact_local_live43_repair_migration_tree",
     "root": "supabase/migrations",
     "mirrorRoot": "artifacts/veroxa-sites/supabase/migrations",
     "hashAlgorithm": "veroxa-path-null-content-null-sha256-v1",
@@ -326,12 +338,12 @@
     "mirrorTreeSha256": "8a49f00ab3bd6d9623100fec238939b6cb81f17d67d0e2d3a4426559c137e41c"
   },
   "deploymentFreeze": {
-    "state": "urgent_sites_cutover_database_complete",
+    "state": "staged_rollout_corrective_sites_publish_required",
     "automaticDeploymentsAllowed": false,
-    "databaseApplyAuthorized": false,
+    "databaseApplyAuthorized": true,
     "sitesPublishAuthorized": true,
-    "allowedDeployment": "Database cutover is complete. The only remaining authorized release action is publishing and verifying the exact reviewed Sites candidate. External restaurant publishing remains prohibited.",
-    "releaseCondition": "Database cutover is complete; publish and verify Sites against Audit v2 and corrected Client v3 while every provider, scheduling, and external publishing control remains locked."
+    "allowedDeployment": "Production authority is granted for the exact corrected Sites v38 release, but automatic deployment remains disabled. The 041629 database repair is already applied and verified; after exact candidate review plus the four required exact-head workflows and review-thread gate, the only remaining release action is publish and verify corrected Sites v38.",
+    "releaseCondition": "01210, immutable 01430, the original Sites v37 publish, 01842, 01853, 02609, and verified 041629 are complete. Publish and verify corrected Sites v38 next. Preserve the known supabase_admin default-ACL residual; no provider connection, external publication, or Momo activation is authorized."
   },
   "activationState": {
     "newIncrementalSpendApproved": false,
@@ -345,7 +357,7 @@
     "externalPublishingEnabled": false,
     "momoActivationExecuted": false
   },
-  "activationStateScope": "Current local predeployment candidate production/hosted activation state only. The false openAiCredentialProvisioned flag means no hosted production provider credential is provisioned or connected; it does not describe or authorize any local eval-only credential. Every spend, owner-contact, provider, publication, and activation gate remains false.",
+  "activationStateScope": "Current staged-rollout production/hosted activation state only. Sites v37 publication is release infrastructure evidence, not external Momo publishing authority. The false openAiCredentialProvisioned flag means no hosted production provider credential is provisioned or connected; it does not describe or authorize any local eval-only credential. Every spend, owner-contact, provider, external publication, and activation gate remains false.",
   "currentRuntimeIdentityObservation": {
     "observedAt": "2026-08-02",
     "teamIdentityProvisioned": true,

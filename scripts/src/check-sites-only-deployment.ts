@@ -6,7 +6,8 @@ const __name = <T>(target: T, value: string): T =>
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
-  ACTIVE_ROLLOUT_APPLIED_MIGRATIONS,
+  CURRENT_PARTIAL_ROLLOUT_EVIDENCE,
+  LOCAL_CANDIDATE_APPLIED_MIGRATIONS,
   LOCAL_CANDIDATE_PENDING_MIGRATIONS,
   REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE,
   V36_LIVE_PARITY_EVIDENCE,
@@ -75,22 +76,24 @@ const checkpoint = JSON.parse(
   read("artifacts/veroxa/docs/RR_RELEASE_CHECKPOINT.json"),
 );
 must(
-  checkpoint.schemaVersion === 10 &&
-    checkpoint.recordKind === "veroxa_local_predeployment_release_checkpoint" &&
+  checkpoint.schemaVersion === 11 &&
+    checkpoint.recordKind === "veroxa_staged_rollout_forward_repair_checkpoint" &&
     checkpoint.status === REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE,
-  "RR checkpoint must identify the schema-10 reviewed local candidate.",
+  "RR checkpoint must identify the schema-11 repair-verified corrective-Sites candidate.",
 );
 must(
-  checkpoint.releaseCandidate?.pullRequest === 162 &&
+  checkpoint.releaseCandidate?.pullRequest === 163 &&
     checkpoint.releaseCandidate.githubMerged === false &&
     checkpoint.releaseCandidate.databaseMigrationApplied === true &&
+    checkpoint.releaseCandidate.databaseChangesRequired === false &&
+    checkpoint.releaseCandidate.candidateMigrationsMatchLiveLedger === true &&
     JSON.stringify(checkpoint.releaseCandidate.databaseMigrationsApplied) ===
-      JSON.stringify(ACTIVE_ROLLOUT_APPLIED_MIGRATIONS) &&
+      JSON.stringify(LOCAL_CANDIDATE_APPLIED_MIGRATIONS) &&
     checkpoint.releaseCandidate.sitesPublished === false &&
     checkpoint.releaseCandidate.deploymentAuthorized === true &&
     checkpoint.releaseCandidate.activationExecuted === false &&
     checkpoint.releaseCandidate.fullReleaseGatePassed === false,
-  "RR checkpoint must preserve PR #162 and all six applied migrations while keeping merge, Sites publication, full-gate, and activation incomplete.",
+  "RR checkpoint must preserve open PR #163 and the verified database repair while leaving merge, exact-head workflow/review evidence, Sites republish, full gate, and activation incomplete.",
 );
 const hostingPath = resolve(
   repoRoot,
@@ -117,7 +120,7 @@ const migrationMirrorTree = hashTree(
 must(
   sourceTree.fileCount === manifest.source.fileCount &&
     sourceTree.sha256 === manifest.source.treeSha256 &&
-    sourceTree.sha256 !== V36_LIVE_PARITY_EVIDENCE.sourceTreeSha256,
+    sourceTree.sha256 !== CURRENT_PARTIAL_ROLLOUT_EVIDENCE.sourceTreeSha256,
   `Local Sites candidate fingerprint drifted (actual ${sourceTree.fileCount}/${sourceTree.sha256}).`,
 );
 must(
@@ -129,7 +132,7 @@ must(
       JSON.stringify(migrationTree.files) &&
     JSON.stringify(manifest.releaseCandidate.pendingMigrations) ===
       JSON.stringify(LOCAL_CANDIDATE_PENDING_MIGRATIONS) &&
-    migrationTree.sha256 !== V36_LIVE_PARITY_EVIDENCE.migrationTreeSha256,
+    migrationTree.sha256 === CURRENT_PARTIAL_ROLLOUT_EVIDENCE.migrationTreeSha256,
   `Local migration candidate fingerprint drifted (root ${migrationTree.fileCount}/${migrationTree.sha256}; mirror ${migrationMirrorTree.fileCount}/${migrationMirrorTree.sha256}).`,
 );
 const readinessPath = "artifacts/veroxa-sites/app/momo-readiness-tracker.json";
@@ -155,20 +158,22 @@ must(
   "Sites-bundled readiness evidence must remain fail-closed No-Go.",
 );
 must(
-  manifest.deploymentFreeze.automaticDeploymentsAllowed === false &&
-    manifest.deploymentFreeze.databaseApplyAuthorized === false &&
+  !manifest.deploymentFreeze.automaticDeploymentsAllowed &&
+    manifest.deploymentFreeze.databaseApplyAuthorized === true &&
     manifest.deploymentFreeze.sitesPublishAuthorized === true &&
-    manifest.releaseCandidate.databaseApplyAuthorized === false &&
+    manifest.releaseCandidate.databaseApplyAuthorized === true &&
     manifest.releaseCandidate.databaseMigrationApplied === true &&
+    manifest.releaseCandidate.databaseChangesRequired === false &&
+    manifest.releaseCandidate.candidateMigrationsMatchLiveLedger === true &&
     JSON.stringify(manifest.releaseCandidate.databaseMigrationsApplied) ===
-      JSON.stringify(ACTIVE_ROLLOUT_APPLIED_MIGRATIONS) &&
+      JSON.stringify(LOCAL_CANDIDATE_APPLIED_MIGRATIONS) &&
     manifest.releaseCandidate.sitesPublishAuthorized === true &&
-    manifest.releaseCandidate.sitesPublished === false &&
+    !manifest.releaseCandidate.sitesPublished &&
     manifest.releaseCandidate.deploymentAuthorized === true &&
-    manifest.releaseCandidate.activationExecuted === false &&
-    manifest.releaseCandidate.fullReleaseGatePassed === false &&
+    !manifest.releaseCandidate.activationExecuted &&
+    !manifest.releaseCandidate.fullReleaseGatePassed &&
     Object.values(manifest.activationState).every((value) => value === false),
-  "Staged rollout authorization must remain explicit while Sites publication and every external activation remain incomplete.",
+  "The database repair must remain recorded as verified while corrected Sites v38 publication, the full gate, and activation stay gated and unexecuted.",
 );
 if (failures.length) {
   console.error("Sites-only deployment guardrail failed:");
@@ -176,5 +181,5 @@ if (failures.length) {
   process.exit(1);
 }
 console.log(
-  `Sites-only deployment guardrail passed: Vercel remains retired; all ${migrationTree.fileCount} database migrations are live, the ${sourceTree.fileCount}-file Sites candidate is unpublished, and every external activation remains closed.`,
+  `Sites-only deployment guardrail passed: Vercel remains retired; Sites v37 and all ${migrationTree.fileCount} migrations are live, while the corrected ${sourceTree.fileCount}-file Sites v38 candidate remains unpublished and activation remains closed.`,
 );
