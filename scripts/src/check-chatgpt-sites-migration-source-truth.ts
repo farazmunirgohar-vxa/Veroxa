@@ -1,21 +1,63 @@
-import { existsSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
+const __name = <T>(target: T, value: string): T =>
+  Object.defineProperty(target as object, "name", {
+    value,
+    configurable: true,
+  }) as T;
+import { createHash } from "node:crypto";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { join, resolve } from "node:path";
 import {
-  VERIFIED_GITHUB_PARITY_RELEASE_STATE,
+  HISTORICAL_REPOSITORY_MIGRATION_EVIDENCE_SCOPE,
+  LIVE_MIGRATION_EVIDENCE_SCOPE,
+  LIVE_PRODUCTION_EVIDENCE_STATUS,
+  LOCAL_CANDIDATE_PENDING_MIGRATIONS,
+  REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE,
+  REVIEWED_LOCAL_CANDIDATE_STATUS,
   VERIFIED_GITHUB_PARITY_STATUS,
-  VERIFIED_PRODUCTION_EVIDENCE_STATUS,
   V36_GITHUB_RECONCILIATION,
+  V36_LIVE_PARITY_EVIDENCE,
   V36_OPERATIONAL_COMMIT_SCOPE,
-  type GitHubReconciliationEvidence,
+  assertReviewedLocalCandidateManifest,
 } from "./release-manifest";
-
 const repoRoot = resolve(import.meta.dirname, "../..");
-const read = (path: string) => readFileSync(resolve(repoRoot, path), "utf8");
+const read = __name(
+  (path: string) => readFileSync(resolve(repoRoot, path), "utf8"),
+  "read",
+);
 const failures: string[] = [];
-const must = (condition: boolean, message: string) => {
+const must = __name((condition: boolean, message: string) => {
   if (!condition) failures.push(message);
-};
-
+}, "must");
+const CORRECTED_LIVE_MIGRATION_TREE_SHA256 =
+  "d306d26cb633ef943afdb7efd01a3cde70249a096ef783d1b0d51eb5d4a1a429";
+const CANDIDATE_MIGRATION_TREE_SHA256 =
+  "dc565dd1f5f4a5efe6a2b253e7437e93f6364b5581c56bb811969fa7241a7a84";
+const CORRECTED_LIVE_LATEST_MIGRATION =
+  "20260802063829_momo_pipeline_query_indexes_v2.sql";
+const pendingForwardMigrations = [
+  "20260808001210_audit_intake_envelope_v2.sql",
+  "20260808001430_momo_client_pipeline_readback_v3.sql",
+  "20260808001842_retire_audit_intake_v1.sql",
+  "20260808001853_retire_momo_client_pipeline_readback_v2.sql",
+  "20260808002609_future_object_default_acl_hardening.sql",
+];
+function sqlFiles(directory: string): string[] {
+  return readdirSync(resolve(repoRoot, directory))
+    .filter((filename) => filename.endsWith(".sql"))
+    .sort();
+}
+__name(sqlFiles, "sqlFiles");
+function migrationTreeHash(directory: string, files: string[]): string {
+  const hash = createHash("sha256");
+  for (const filename of files) {
+    hash.update(filename, "utf8");
+    hash.update("\0");
+    hash.update(readFileSync(join(repoRoot, directory, filename)));
+    hash.update("\0");
+  }
+  return hash.digest("hex");
+}
+__name(migrationTreeHash, "migrationTreeHash");
 const agents = read("AGENTS.md");
 const activeDocs = read("artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md");
 const currentMilestone = read(
@@ -32,321 +74,23 @@ const foundingPilot = read(
 const deploymentManifest = read(
   "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json",
 );
-const deploymentManifestRecord = JSON.parse(deploymentManifest) as {
-  schemaVersion?: number;
-  releaseState?: string;
-  lastGitHubParityRelease?: {
-    evidenceScope?: string;
-    supersededAsLiveBaseline?: boolean;
-    pullRequest?: number;
-    reviewedHead?: string;
-    githubMainCommit?: string;
-    sitesCheckoutCommit?: string;
-    sitesVersion?: number;
-    sourceFileCount?: number;
-    sourceTreeSha256?: string;
-    productionMigrationCount?: number;
-    latestProductionMigration?: string;
-    latestProductionMigrationSha256?: string;
-  };
-  currentProductionObservation?: {
-    evidenceStatus?: string;
-    canonicalGitHubMainCommit?: string;
-    canonicalGitHubMainCommitScope?: string;
-    githubMainMatchesCandidate?: boolean;
-    sitesVersion?: number;
-    sitesCheckoutCommit?: string;
-    sourceFileCount?: number;
-    sourceTreeSha256?: string;
-    candidateSourceMatchesLiveSites?: boolean;
-    productionMigrationCount?: number;
-    migrationTreeSha256?: string;
-    latestProductionMigration?: string;
-    latestProductionMigrationSha256?: string;
-    databaseLedgerObserved?: boolean;
-    databaseAppliedThroughLatestObserved?: boolean;
-    candidateMigrationsMatchLiveLedger?: boolean;
-    fullReleaseGatePassed?: boolean;
-  };
-  githubReconciliationEvidence?: GitHubReconciliationEvidence;
-  releaseCandidate?: {
-    status?: string;
-    actionScope?: string;
-    basedOnGitHubMainCommit?: string;
-    pullRequest?: number | null;
-    githubMerged?: boolean;
-    reviewedLocally?: boolean;
-    candidateSourceMatchesLiveSites?: boolean;
-    candidateMigrationsMatchLiveLedger?: boolean;
-    githubMainMatchesCandidate?: boolean;
-    fullReleaseGatePassed?: boolean;
-    databaseChangesRequired?: boolean;
-    databaseMigrationApplied?: boolean;
-    sitesPublishRequired?: boolean;
-    sitesPublished?: boolean;
-    futureMergedGitHubCommit?: string | null;
-    futureSitesVersion?: number | null;
-  };
-};
+const deploymentManifestRecord = JSON.parse(deploymentManifest);
+const localCandidateManifest = JSON.parse(deploymentManifest);
 const v36CloseoutRecord = JSON.parse(
   read("artifacts/veroxa/docs/MOMO_UPLOAD_V36_LIVE_CLOSEOUT.json"),
-) as {
-  schemaVersion?: number;
-  recordKind?: string;
-  status?: string;
-  supersedesForCurrentLiveStatus?: string;
-  scope?: {
-    restaurant?: string;
-    workflow?: string;
-    externalSchedulingIncluded?: boolean;
-    externalPublishingIncluded?: boolean;
-    externalProviderConnectionIncluded?: boolean;
-  };
-  sites?: {
-    versionNumber?: number;
-    checkoutCommit?: string;
-    deploymentStatus?: string;
-    productionLive?: boolean;
-    sourceTreeSha256?: string;
-  };
-  github?: {
-    repository?: string;
-    currentMainRelease?: string;
-    currentMainCommit?: string;
-    currentMainCommitScope?: string;
-    v36ParityStatus?: string;
-    v36ParityPullRequest?: number | null;
-    v36ParityReviewedHead?: string | null;
-    v36ParityMergedCommit?: string | null;
-    v36ParitySourceTreeSha256?: string;
-    candidateSourceMatchesLiveSites?: boolean;
-    githubMainMatchesCandidate?: boolean;
-    fullReleaseGatePassed?: boolean;
-    zeroUnresolvedReviewThreads?: boolean;
-    preMergeWorkflows?: GitHubReconciliationEvidence["preMergeWorkflows"];
-    postMergePushWorkflows?: GitHubReconciliationEvidence["postMergePushWorkflows"];
-    databaseChangesRequired?: boolean;
-    databaseMigrationAppliedByParityRelease?: boolean;
-    sitesPublishRequired?: boolean;
-    sitesPublishedByParityRelease?: boolean;
-  };
-  database?: {
-    productionMigrationCount?: number;
-    latestAppliedMigration?: string;
-    latestAppliedMigrationSha256?: string;
-    v36MigrationsLive?: boolean;
-    rollbackCompilationPreviouslyPassed?: boolean;
-  };
-  verification?: {
-    status?: string;
-    testsPassed?: number;
-    testsTotal?: number;
-    productionBuildPassed?: boolean;
-    lintPassed?: boolean;
-    typecheckPassed?: boolean;
-    rollbackMigrationCompilationPassed?: boolean;
-  };
-  internalWorkers?: Array<{
-    function?: string;
-    status?: string;
-    updatedForV36?: boolean;
-  }>;
-  pipelineBehavior?: {
-    exactDuplicateHandling?: string;
-    legacyDuplicateJobsConsolidated?: number;
-    legacyDuplicateJobsDeleted?: number;
-    nearDuplicateMerge?: string;
-    badMediaOutcome?: string;
-    badMediaAutomaticEditOrResize?: boolean;
-    badMediaOriginalPreserved?: boolean;
-    readyState?: string;
-    readyStateScheduled?: boolean;
-    readyStatePublished?: boolean;
-    teamDefaultWork?: string;
-    immutableLineageRequired?: boolean;
-  };
-  productionSafetyState?: {
-    publishQueue?: string;
-    externalScheduleQueue?: string;
-    externalProviderConnections?: string;
-    webhookAndRecoveryBacklog?: string;
-    externalPublishingEnabled?: boolean;
-    externalSchedulingEnabled?: boolean;
-    providerWritesEnabled?: boolean;
-    reviewRepliesEnabled?: boolean;
-    websiteWritesEnabled?: boolean;
-    allExternalWriteControlsLocked?: boolean;
-    momoActivationExecuted?: boolean;
-  };
-  releaseBoundary?: string;
-};
+);
 const v22CloseoutRecord = JSON.parse(
   read("artifacts/veroxa/docs/MOMO_MEDIA_V22_LIVE_CLOSEOUT.json"),
-) as {
-  recordKind?: string;
-  status?: string;
-  github?: {
-    pullRequest?: number;
-    reviewedHead?: string;
-    mergedCommit?: string;
-    zeroUnresolvedReviewThreads?: boolean;
-    workflows?: {
-      ci?: { runId?: number; status?: string };
-      sitesVerify?: { runId?: number; status?: string };
-      supabaseVerify?: {
-        runId?: number;
-        status?: string;
-        fullMigrationResetPassed?: boolean;
-        databaseTestsPassed?: boolean;
-        functionFormatLintAndCheckPassed?: boolean;
-      };
-      veroxaVerify?: { runId?: number; status?: string };
-    };
-  };
-  sites?: {
-    versionNumber?: number;
-    checkoutCommit?: string;
-    deploymentStatus?: string;
-    liveUrl?: string;
-    environmentRevision?: number;
-    customDomains?: Array<{
-      hostname?: string;
-      httpStatus?: number;
-      status?: string;
-      sslStatus?: string;
-      providerStatus?: string;
-    }>;
-  };
-  sourceParity?: {
-    sitesFileCount?: number;
-    sitesTreeSha256?: string;
-    migrationFileCount?: number;
-    migrationTreeSha256?: string;
-  };
-  database?: {
-    databaseChangeRequiredForV22?: boolean;
-    databaseMigrationAppliedByV22?: boolean;
-    productionMigrationCount?: number;
-    latestAppliedMigration?: string;
-    latestAppliedMigrationSha256?: string;
-  };
-  lifecycleBridge?: {
-    deployed?: boolean;
-    edgeFunction?: string;
-    edgeFunctionVersion?: number;
-    edgeFunctionStatus?: string;
-    verifyJwt?: boolean;
-    matchingSitesSigningKeyConfigured?: boolean;
-    openAiCredentialConfiguredServerSide?: boolean;
-    missingJwtEdgeRequestHttpStatus?: number;
-    unauthenticatedTeamStatusHttpStatus?: number;
-    unauthenticatedStatusResponseFailClosed?: boolean;
-    authenticatedSignatureMatrixPassed?: boolean;
-    authenticatedTeamPreflightPassed?: boolean;
-    effectiveAuthenticatedWorkflowVerified?: boolean;
-    providerCanaryPassed?: boolean;
-    realEditPassed?: boolean;
-  };
-  postDeployVerification?: {
-    workerExceptionObserved?: boolean;
-    edge5xxObserved?: boolean;
-  };
-  momoOperationalEvidence?: {
-    uploadedAssets?: number;
-    currentUploadRightsStatus?: string;
-    aiCandidates?: number;
-    providerCalls?: number;
-    accountedSpendUsd?: number;
-    authenticatedClientTeamRehearsalPerformed?: boolean;
-    readiness?: string;
-  };
-  boundaries?: {
-    momoOnly?: boolean;
-    highQualityModel?: string;
-    privateCandidateUntilTeamApproval?: boolean;
-    misleadingFoodEditsProhibited?: boolean;
-    automaticAuthorizationThresholdUsdPerJob?: number;
-    authorizationRequiredAboveThreshold?: boolean;
-    automaticBatchRunnerEnabled?: boolean;
-    subscriptionOrUnboundedSpendAuthorized?: boolean;
-    googleConnected?: boolean;
-    socialConnected?: boolean;
-    ownerControlledProvidersConnected?: boolean;
-    externalPublishingEnabled?: boolean;
-    recurringProviderActivation?: boolean;
-    allExternalWriteSwitchesLocked?: boolean;
-    momoActivationExecuted?: boolean;
-  };
-};
+);
 const v20CloseoutRecord = JSON.parse(
   read("artifacts/veroxa/docs/MOMO_MEDIA_V20_LIVE_CLOSEOUT.json"),
-) as {
-  recordKind?: string;
-  status?: string;
-  github?: {
-    pullRequest?: number;
-    reviewedHead?: string;
-    mergedCommit?: string;
-    zeroUnresolvedReviewThreads?: boolean;
-    workflows?: Record<string, { status?: string }>;
-  };
-  sites?: {
-    versionNumber?: number;
-    checkoutCommit?: string;
-    deploymentStatus?: string;
-  };
-  database?: {
-    productionMigrationCount?: number;
-    latestAppliedMigration?: string;
-  };
-};
+);
 const rrReleaseCheckpointRecord = JSON.parse(
   read("artifacts/veroxa/docs/RR_RELEASE_CHECKPOINT.json"),
-) as {
-  schemaVersion?: number;
-  status?: string;
-  lastGitHubParityRelease?: {
-    evidenceScope?: string;
-    supersededAsLiveBaseline?: boolean;
-    pullRequest?: number;
-    mergedOperationalCommit?: string;
-    sitesVersion?: number;
-    productionMigrations?: number;
-    latestProductionMigration?: string;
-    latestProductionMigrationSha256?: string;
-  };
-  currentProductionObservation?: {
-    canonicalGitHubMainCommit?: string;
-    canonicalGitHubMainCommitScope?: string;
-    sitesVersion?: number;
-    productionMigrations?: number;
-    migrationTreeSha256?: string;
-    candidateSourceMatchesLiveSites?: boolean;
-    candidateMigrationsMatchLiveLedger?: boolean;
-    githubMainMatchesCandidate?: boolean;
-    fullReleaseGatePassed?: boolean;
-  };
-  githubReconciliationEvidence?: GitHubReconciliationEvidence;
-  releaseCandidate?: {
-    state?: string;
-    actionScope?: string;
-    pullRequest?: number | null;
-    githubMerged?: boolean;
-    futureMergedGitHubCommit?: string | null;
-    futureSitesVersion?: number | null;
-    reviewedLocally?: boolean;
-    candidateSourceMatchesLiveSites?: boolean;
-    candidateMigrationsMatchLiveLedger?: boolean;
-    githubMainMatchesCandidate?: boolean;
-    fullReleaseGatePassed?: boolean;
-    localReviewPassed?: boolean;
-    allFourWorkflowsGreen?: boolean | null;
-    zeroUnresolvedReviewThreads?: boolean | null;
-    databaseMigrationApplied?: boolean;
-    sitesPublishRequired?: boolean;
-    sitesCandidatePublished?: boolean;
-  };
-};
+);
+const rrLocalCandidateRecord = JSON.parse(
+  read("artifacts/veroxa/docs/RR_RELEASE_CHECKPOINT.json"),
+);
 const migration = read(
   "artifacts/veroxa/docs/CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md",
 );
@@ -425,7 +169,65 @@ const governedDocs = [
   ...alignedCurrentDocs,
   sitesReadme,
 ].join("\n");
-
+const rootMigrationLedger = sqlFiles("supabase/migrations");
+const sitesMigrationLedger = sqlFiles(
+  "artifacts/veroxa-sites/supabase/migrations",
+);
+const correctedLiveMigrationLedger = rootMigrationLedger.slice(
+  0,
+  -pendingForwardMigrations.length,
+);
+const sitesCorrectedLiveMigrationLedger = sitesMigrationLedger.slice(
+  0,
+  -pendingForwardMigrations.length,
+);
+must(
+  JSON.stringify(rootMigrationLedger) === JSON.stringify(sitesMigrationLedger),
+  "Root and Sites candidate migration inventories must remain identical.",
+);
+must(
+  JSON.stringify(
+    rootMigrationLedger.slice(-pendingForwardMigrations.length),
+  ) === JSON.stringify(pendingForwardMigrations) &&
+    JSON.stringify(
+      sitesMigrationLedger.slice(-pendingForwardMigrations.length),
+    ) === JSON.stringify(pendingForwardMigrations),
+  "Only the reviewed 01210/01430/01842/01853/02609 forward migrations may follow the corrected live ledger, and all must remain candidate-only.",
+);
+must(
+  correctedLiveMigrationLedger.length === 37 &&
+    JSON.stringify(correctedLiveMigrationLedger) ===
+      JSON.stringify(sitesCorrectedLiveMigrationLedger) &&
+    correctedLiveMigrationLedger.at(-1) === CORRECTED_LIVE_LATEST_MIGRATION &&
+    migrationTreeHash("supabase/migrations", correctedLiveMigrationLedger) ===
+      CORRECTED_LIVE_MIGRATION_TREE_SHA256 &&
+    migrationTreeHash(
+      "artifacts/veroxa-sites/supabase/migrations",
+      sitesCorrectedLiveMigrationLedger,
+    ) === CORRECTED_LIVE_MIGRATION_TREE_SHA256,
+  "Active migration source must preserve the exact corrected 37-row production ledger through 20260802063829.",
+);
+must(
+  rootMigrationLedger.length === 42 &&
+    migrationTreeHash("supabase/migrations", rootMigrationLedger) ===
+      CANDIDATE_MIGRATION_TREE_SHA256 &&
+    migrationTreeHash(
+      "artifacts/veroxa-sites/supabase/migrations",
+      sitesMigrationLedger,
+    ) === CANDIDATE_MIGRATION_TREE_SHA256,
+  "Local candidate migration inventory must contain the corrected live 37 plus exactly five unapplied forward migrations.",
+);
+for (const retiredNormalizedFilename of [
+  "20260802010000_momo_upload_veroxa_ready_v2.sql",
+  "20260802013000_momo_client_pipeline_readback_v2.sql",
+  "20260802020000_momo_pipeline_query_indexes_v2.sql",
+]) {
+  must(
+    !rootMigrationLedger.includes(retiredNormalizedFilename) &&
+      !sitesMigrationLedger.includes(retiredNormalizedFilename),
+    `Normalized non-ledger migration timestamp remains active: ${retiredNormalizedFilename}`,
+  );
+}
 for (const marker of [
   "Momo's House San Antonio",
   "founding pilot",
@@ -444,7 +246,6 @@ for (const marker of [
     `Current milestone missing locked scope marker: ${marker}`,
   );
 }
-
 for (const document of [agents, activeDocs, protocol, memory, status]) {
   for (const marker of [
     "VEROXA_CURRENT_MILESTONE.md",
@@ -458,7 +259,6 @@ for (const document of [agents, activeDocs, protocol, memory, status]) {
     );
   }
 }
-
 for (const marker of [
   "Mandatory post-build continuity update",
   "After every build",
@@ -471,7 +271,6 @@ for (const marker of [
     `Build protocol missing continuity marker: ${marker}`,
   );
 }
-
 for (const path of [
   "/",
   "/free-audit",
@@ -501,7 +300,6 @@ for (const path of [
     `Migration document missing grouped route: ${path}`,
   );
 }
-
 for (const path of [
   "/",
   "/free-audit",
@@ -519,11 +317,10 @@ for (const path of [
   "/team/audits",
 ]) {
   must(
-    sitesRouter.includes(`\"${path}\"`),
+    sitesRouter.includes(`"${path}"`),
     `Sites delivery layer missing migration-critical route: ${path}`,
   );
 }
-
 for (const marker of [
   "GitHub `main` remains the canonical source of truth",
   "ChatGPT is Faraz's primary",
@@ -538,7 +335,6 @@ for (const marker of [
     `Active migration source-of-truth missing marker: ${marker}`,
   );
 }
-
 for (const marker of [
   "9749b68ce2cfc383deeae6aa63c413019ef61385",
   "e4f72a7c0a3a5744508cf4ef8cf0a191aec817c0",
@@ -552,9 +348,8 @@ for (const marker of [
   "post_release_cleanup_deployed",
   "Sites v36",
   "MOMO_UPLOAD_V36_LIVE_CLOSEOUT.json",
-  "20260802020000_momo_pipeline_query_indexes_v2.sql",
+  "20260802063829_momo_pipeline_query_indexes_v2.sql",
   "9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90",
-  // Preserve the exact pre-PR #148 drift baseline as historical evidence.
   "674e1a7c0d140c9b281029277baeb2e68962dac2",
   "dd67c2dfbdc1317fd8ecf1fd3cf07aeeafa29805",
   "Sites version 13",
@@ -566,14 +361,14 @@ for (const marker of [
     `Active source truth missing production-reconciliation marker: ${marker}`,
   );
 }
-const releaseCandidate = deploymentManifestRecord.releaseCandidate;
+const releaseCandidate = localCandidateManifest.releaseCandidate;
 const historicalV20Github = v20CloseoutRecord.github;
 const historicalV20Sites = v20CloseoutRecord.sites;
 const historicalV20Database = v20CloseoutRecord.database;
 must(
-  historicalV20Github !== undefined &&
-    historicalV20Sites !== undefined &&
-    historicalV20Database !== undefined &&
+  historicalV20Github !== void 0 &&
+    historicalV20Sites !== void 0 &&
+    historicalV20Database !== void 0 &&
     v20CloseoutRecord.recordKind === "momo_media_v20_live_closeout" &&
     v20CloseoutRecord.status === "deployed_foundation_momo_no_go" &&
     historicalV20Github.pullRequest === 152 &&
@@ -584,7 +379,7 @@ must(
     historicalV20Github.zeroUnresolvedReviewThreads === true &&
     Object.values(historicalV20Github.workflows ?? {}).length === 4 &&
     Object.values(historicalV20Github.workflows ?? {}).every(
-      (workflow) => workflow.status === "success",
+      (workflow: any) => workflow.status === "success",
     ) &&
     historicalV20Sites.versionNumber === 20 &&
     historicalV20Sites.checkoutCommit ===
@@ -595,7 +390,6 @@ must(
       "20260722000100_momo_client_media_status_v1.sql",
   "Immutable Sites v20 closeout evidence must remain exact and independently historical.",
 );
-
 const closeoutGithub = v22CloseoutRecord.github;
 const closeoutSites = v22CloseoutRecord.sites;
 const closeoutSource = v22CloseoutRecord.sourceParity;
@@ -609,14 +403,14 @@ const lastGitHubParityRelease =
 const rrLastGitHubParityRelease =
   rrReleaseCheckpointRecord.lastGitHubParityRelease;
 const historicalV22CloseoutIsExact =
-  closeoutGithub !== undefined &&
-  closeoutSites !== undefined &&
-  closeoutSource !== undefined &&
-  closeoutDatabase !== undefined &&
-  closeoutBridge !== undefined &&
-  closeoutPostDeploy !== undefined &&
-  closeoutMomo !== undefined &&
-  closeoutBoundaries !== undefined &&
+  closeoutGithub !== void 0 &&
+  closeoutSites !== void 0 &&
+  closeoutSource !== void 0 &&
+  closeoutDatabase !== void 0 &&
+  closeoutBridge !== void 0 &&
+  closeoutPostDeploy !== void 0 &&
+  closeoutMomo !== void 0 &&
+  closeoutBoundaries !== void 0 &&
   v22CloseoutRecord.recordKind === "momo_media_v22_live_closeout" &&
   v22CloseoutRecord.status === "deployed_lifecycle_bridge_momo_no_go" &&
   closeoutGithub.pullRequest === 155 &&
@@ -626,7 +420,7 @@ const historicalV22CloseoutIsExact =
   JSON.stringify(Object.keys(closeoutGithub.workflows ?? {}).sort()) ===
     JSON.stringify(["ci", "sitesVerify", "supabaseVerify", "veroxaVerify"]) &&
   Object.values(closeoutGithub.workflows ?? {}).every(
-    (workflow) => workflow.status === "success",
+    (workflow: any) => workflow.status === "success",
   ) &&
   closeoutGithub.workflows?.ci?.runId === 30591061627 &&
   closeoutGithub.workflows?.sitesVerify?.runId === 30591061604 &&
@@ -710,7 +504,6 @@ const historicalV22CloseoutIsExact =
   closeoutBoundaries.recurringProviderActivation === false &&
   closeoutBoundaries.allExternalWriteSwitchesLocked === true &&
   closeoutBoundaries.momoActivationExecuted === false;
-
 must(
   historicalV22CloseoutIsExact,
   "MOMO_MEDIA_V22_LIVE_CLOSEOUT.json must remain immutable historical evidence for the last GitHub-to-Sites parity release only.",
@@ -735,125 +528,124 @@ must(
       "20260728044916_momo_media_ai_pilot_v1.sql" &&
     lastGitHubParityRelease.latestProductionMigrationSha256 ===
       "efae63b4344570934d1d66b47ef1fce4fcd16343a2fe9dd8352607e0784d09a1",
-  "Schema-4 manifest must classify PR #155 / Sites v22 as superseded historical GitHub parity, not current production.",
+  "Schema-6 manifest must classify PR #155 / Sites v22 as superseded historical GitHub parity, not current production.",
 );
 must(
   rrLastGitHubParityRelease?.evidenceScope ===
     "last_github_sites_parity_release" &&
     rrLastGitHubParityRelease.supersededAsLiveBaseline === true &&
     rrLastGitHubParityRelease.pullRequest === 155 &&
-    rrLastGitHubParityRelease.mergedOperationalCommit ===
+    rrLastGitHubParityRelease.githubMainCommit ===
       "d1f6a9a78ac54cd5447689d5f8b3d42466daf479" &&
     rrLastGitHubParityRelease.sitesVersion === 22 &&
-    rrLastGitHubParityRelease.productionMigrations === 16 &&
+    rrLastGitHubParityRelease.productionMigrationCount === 16 &&
     rrLastGitHubParityRelease.latestProductionMigration ===
       "20260728044916_momo_media_ai_pilot_v1.sql" &&
     rrLastGitHubParityRelease.latestProductionMigrationSha256 ===
       "efae63b4344570934d1d66b47ef1fce4fcd16343a2fe9dd8352607e0784d09a1",
-  "Schema-8 RR checkpoint must preserve the same historical Sites v22 parity evidence.",
+  "Schema-10 RR checkpoint must preserve the same historical Sites v22 parity evidence.",
 );
-
-const currentProduction = deploymentManifestRecord.currentProductionObservation;
-const rrCurrentProduction =
-  rrReleaseCheckpointRecord.currentProductionObservation;
+try {
+  assertReviewedLocalCandidateManifest(localCandidateManifest);
+} catch (error) {
+  must(
+    false,
+    `Schema-6 local candidate manifest is invalid: ${
+      error instanceof Error ? error.message : String(error)
+    }`,
+  );
+}
+const currentProduction = localCandidateManifest.currentProductionObservation;
 must(
-  deploymentManifestRecord.schemaVersion === 4 &&
-    deploymentManifestRecord.releaseState ===
-      VERIFIED_GITHUB_PARITY_RELEASE_STATE &&
-    currentProduction?.evidenceStatus === VERIFIED_PRODUCTION_EVIDENCE_STATUS &&
-    currentProduction.canonicalGitHubMainCommit ===
-      V36_GITHUB_RECONCILIATION.mergedCommit &&
-    currentProduction.canonicalGitHubMainCommitScope ===
-      V36_OPERATIONAL_COMMIT_SCOPE &&
-    currentProduction.githubMainMatchesCandidate === true &&
-    currentProduction.sitesVersion === 36 &&
-    currentProduction.sitesCheckoutCommit ===
-      "b8122642b72e5d4e6e74c379469f2a157781ab3d" &&
-    currentProduction.sourceFileCount === 185 &&
-    currentProduction.sourceTreeSha256 ===
-      "caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7" &&
-    currentProduction.candidateSourceMatchesLiveSites === true &&
+  localCandidateManifest.schemaVersion === 6 &&
+    localCandidateManifest.releaseState ===
+      REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE &&
+    currentProduction.evidenceStatus === LIVE_PRODUCTION_EVIDENCE_STATUS &&
     currentProduction.productionMigrationCount === 37 &&
     currentProduction.migrationTreeSha256 ===
-      "9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90" &&
+      V36_LIVE_PARITY_EVIDENCE.migrationTreeSha256 &&
+    currentProduction.migrationTreeEvidenceScope ===
+      LIVE_MIGRATION_EVIDENCE_SCOPE &&
+    currentProduction.historicalRepositoryMigrationTreeSha256 ===
+      V36_LIVE_PARITY_EVIDENCE.historicalRepositoryMigrationTreeSha256 &&
+    currentProduction.historicalRepositoryMigrationTreeEvidenceScope ===
+      HISTORICAL_REPOSITORY_MIGRATION_EVIDENCE_SCOPE &&
     currentProduction.latestProductionMigration ===
-      "20260802020000_momo_pipeline_query_indexes_v2.sql" &&
+      V36_LIVE_PARITY_EVIDENCE.latestMigration &&
     currentProduction.latestProductionMigrationSha256 ===
-      "106d346be34583446d22de0f6866b5b8937feb766a3a229339dbf1c1768fdfcd" &&
-    currentProduction.databaseLedgerObserved === true &&
-    currentProduction.databaseAppliedThroughLatestObserved === true &&
-    currentProduction.candidateMigrationsMatchLiveLedger === true &&
-    currentProduction.fullReleaseGatePassed === true &&
-    JSON.stringify(deploymentManifestRecord.githubReconciliationEvidence) ===
-      JSON.stringify(V36_GITHUB_RECONCILIATION),
-  "Schema-4 manifest must record live Sites v36 and its 37-migration ledger with exact verified PR #157 GitHub parity.",
+      V36_LIVE_PARITY_EVIDENCE.latestMigrationSha256 &&
+    !currentProduction.candidateSourceMatchesLiveSites &&
+    !currentProduction.candidateMigrationsMatchLiveLedger &&
+    !currentProduction.githubMainMatchesCandidate &&
+    !currentProduction.fullReleaseGatePassed &&
+    JSON.stringify(
+      localCandidateManifest.historicalV36GitHubReconciliationEvidence,
+    ) === JSON.stringify(V36_GITHUB_RECONCILIATION),
+  "Schema-6 manifest must separate the exact remote live37 baseline from the unreleased local candidate and preserve PR #157 only as historical evidence.",
 );
 must(
-  rrReleaseCheckpointRecord.schemaVersion === 8 &&
-    rrReleaseCheckpointRecord.status ===
-      deploymentManifestRecord.releaseState &&
-    rrCurrentProduction?.canonicalGitHubMainCommit ===
-      V36_GITHUB_RECONCILIATION.mergedCommit &&
-    rrCurrentProduction.canonicalGitHubMainCommitScope ===
-      V36_OPERATIONAL_COMMIT_SCOPE &&
-    rrCurrentProduction?.sitesVersion === 36 &&
-    rrCurrentProduction.productionMigrations === 37 &&
+  releaseCandidate.status === REVIEWED_LOCAL_CANDIDATE_STATUS &&
+    releaseCandidate.migrationFileCount === 42 &&
+    releaseCandidate.migrationTreeSha256 === CANDIDATE_MIGRATION_TREE_SHA256 &&
+    JSON.stringify(releaseCandidate.pendingMigrations) ===
+      JSON.stringify(LOCAL_CANDIDATE_PENDING_MIGRATIONS) &&
+    !releaseCandidate.databaseMigrationApplied &&
+    releaseCandidate.databaseMigrationsApplied.length === 0 &&
+    !releaseCandidate.databaseApplyAuthorized &&
+    !releaseCandidate.sitesPublished &&
+    !releaseCandidate.sitesPublishAuthorized &&
+    !releaseCandidate.deploymentAuthorized &&
+    !releaseCandidate.activationExecuted &&
+    !releaseCandidate.fullReleaseGatePassed,
+  "Schema-6 manifest must keep all five forward migrations candidate-only, unapplied, unpublished, and unauthorized.",
+);
+const rrCurrentProduction = rrLocalCandidateRecord.currentProductionObservation;
+const rrCandidate = rrLocalCandidateRecord.releaseCandidate;
+must(
+  rrLocalCandidateRecord.schemaVersion === 10 &&
+    rrLocalCandidateRecord.recordKind ===
+      "veroxa_local_predeployment_release_checkpoint" &&
+    rrLocalCandidateRecord.status === REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE &&
+    rrCurrentProduction?.evidenceStatus === LIVE_PRODUCTION_EVIDENCE_STATUS &&
+    rrCurrentProduction.productionMigrationCount === 37 &&
     rrCurrentProduction.migrationTreeSha256 ===
-      "9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90" &&
-    rrCurrentProduction.candidateSourceMatchesLiveSites === true &&
-    rrCurrentProduction.candidateMigrationsMatchLiveLedger === true &&
-    rrCurrentProduction.githubMainMatchesCandidate === true &&
-    rrCurrentProduction.fullReleaseGatePassed === true &&
-    JSON.stringify(rrReleaseCheckpointRecord.githubReconciliationEvidence) ===
-      JSON.stringify(V36_GITHUB_RECONCILIATION),
-  "Schema-8 RR checkpoint must agree with verified live-v36 GitHub parity.",
-);
-
-const rrCandidate = rrReleaseCheckpointRecord.releaseCandidate;
-must(
-  releaseCandidate !== undefined &&
-    releaseCandidate.status === VERIFIED_GITHUB_PARITY_STATUS &&
-    deploymentManifestRecord.releaseState ===
-      VERIFIED_GITHUB_PARITY_RELEASE_STATE &&
-    releaseCandidate.actionScope === "github_reconciliation_candidate" &&
-    releaseCandidate.basedOnGitHubMainCommit ===
-      "302621bf6b9ab78320abe4175b45b56e9e64ae2a" &&
-    releaseCandidate.pullRequest === V36_GITHUB_RECONCILIATION.pullRequest &&
-    releaseCandidate.githubMerged === true &&
-    releaseCandidate.futureMergedGitHubCommit ===
-      V36_GITHUB_RECONCILIATION.mergedCommit &&
-    releaseCandidate.futureSitesVersion === null &&
-    releaseCandidate.candidateSourceMatchesLiveSites === true &&
-    releaseCandidate.candidateMigrationsMatchLiveLedger === true &&
-    releaseCandidate.githubMainMatchesCandidate === true &&
-    releaseCandidate.fullReleaseGatePassed === true &&
-    releaseCandidate.databaseChangesRequired === false &&
-    releaseCandidate.databaseMigrationApplied === false &&
-    releaseCandidate.sitesPublishRequired === false &&
-    releaseCandidate.sitesPublished === false,
-  "Manifest must preserve exact merged PR #157 parity with no candidate database apply or Sites publish.",
+      V36_LIVE_PARITY_EVIDENCE.migrationTreeSha256 &&
+    rrCurrentProduction.migrationTreeEvidenceScope ===
+      LIVE_MIGRATION_EVIDENCE_SCOPE &&
+    rrCurrentProduction.historicalRepositoryMigrationTreeSha256 ===
+      V36_LIVE_PARITY_EVIDENCE.historicalRepositoryMigrationTreeSha256 &&
+    rrCurrentProduction.historicalRepositoryMigrationTreeEvidenceScope ===
+      HISTORICAL_REPOSITORY_MIGRATION_EVIDENCE_SCOPE &&
+    !rrCurrentProduction.candidateSourceMatchesLiveSites &&
+    !rrCurrentProduction.candidateMigrationsMatchLiveLedger &&
+    !rrCurrentProduction.githubMainMatchesCandidate &&
+    !rrCurrentProduction.fullReleaseGatePassed &&
+    JSON.stringify(
+      rrLocalCandidateRecord.historicalV36GitHubReconciliationEvidence,
+    ) === JSON.stringify(V36_GITHUB_RECONCILIATION),
+  "Schema-10 RR checkpoint must preserve the corrected live37 baseline separately from the local candidate.",
 );
 must(
-  rrCandidate !== undefined &&
-    rrCandidate.state === VERIFIED_GITHUB_PARITY_STATUS &&
-    rrCandidate.actionScope === "github_reconciliation_candidate" &&
-    rrCandidate.pullRequest === V36_GITHUB_RECONCILIATION.pullRequest &&
-    rrCandidate.githubMerged === true &&
-    rrCandidate.futureMergedGitHubCommit ===
-      V36_GITHUB_RECONCILIATION.mergedCommit &&
-    rrCandidate.futureSitesVersion === null &&
-    rrCandidate.candidateSourceMatchesLiveSites === true &&
-    rrCandidate.candidateMigrationsMatchLiveLedger === true &&
-    rrCandidate.githubMainMatchesCandidate === true &&
-    rrCandidate.fullReleaseGatePassed === true &&
-    rrCandidate.allFourWorkflowsGreen === true &&
-    rrCandidate.zeroUnresolvedReviewThreads === true &&
+  rrCandidate?.state === REVIEWED_LOCAL_CANDIDATE_STATUS &&
+    rrCandidate.migrationFileCount === 42 &&
+    rrCandidate.migrationTreeSha256 === CANDIDATE_MIGRATION_TREE_SHA256 &&
+    JSON.stringify(rrCandidate.pendingMigrations) ===
+      JSON.stringify(LOCAL_CANDIDATE_PENDING_MIGRATIONS) &&
     rrCandidate.databaseMigrationApplied === false &&
-    rrCandidate.sitesPublishRequired === false &&
-    rrCandidate.sitesCandidatePublished === false,
-  "RR must preserve exact merged PR #157 parity without inventing a Sites version, database apply, or publication.",
+    rrCandidate.databaseMigrationsApplied?.length === 0 &&
+    rrCandidate.databaseApplyAuthorized === false &&
+    rrCandidate.sitesPublished === false &&
+    rrCandidate.sitesPublishAuthorized === false &&
+    rrCandidate.deploymentAuthorized === false &&
+    rrCandidate.activationExecuted === false &&
+    rrCandidate.fullReleaseGatePassed === false &&
+    rrLocalCandidateRecord.rolloutSequence?.status === "blocked_not_started" &&
+    rrLocalCandidateRecord.rolloutSequence.steps?.length === 6 &&
+    rrLocalCandidateRecord.rolloutSequence.steps.every(
+      (step: { completed: boolean }) => step.completed === false,
+    ),
+  "Schema-10 RR checkpoint must keep the five forward migrations and six-step rollout blocked and unexecuted.",
 );
-
 const v36Scope = v36CloseoutRecord.scope;
 const v36Sites = v36CloseoutRecord.sites;
 const v36Github = v36CloseoutRecord.github;
@@ -919,7 +711,8 @@ must(
     v36Verification.rollbackMigrationCompilationPassed === true &&
     v36CloseoutRecord.internalWorkers?.length === 2 &&
     v36CloseoutRecord.internalWorkers.every(
-      (worker) => worker.updatedForV36 === true && worker.status === "active",
+      (worker: { updatedForV36: boolean; status: string }) =>
+        worker.updatedForV36 === true && worker.status === "active",
     ),
   "MOMO_UPLOAD_V36_LIVE_CLOSEOUT.json must preserve verified live v36 separately from PR #157's no-publish, no-apply GitHub reconciliation.",
 );
@@ -960,7 +753,6 @@ must(
     ),
   "v36 closeout must keep every external schedule, publish, provider-write, reply, website-write, and activation boundary frozen.",
 );
-
 for (const marker of [
   "secure-email-link Supabase authentication",
   "approved-user password authentication",
@@ -974,7 +766,6 @@ for (const marker of [
     `Migration authority missing safety marker: ${marker}`,
   );
 }
-
 for (const document of [agents, migration, memory]) {
   for (const command of [
     "`Build it`",
@@ -988,7 +779,6 @@ for (const document of [agents, migration, memory]) {
     );
   }
 }
-
 for (const marker of [
   "Faraz uses ChatGPT as the primary Veroxa command center",
   "GitHub `main`",
@@ -1004,7 +794,6 @@ for (const marker of [
     `ChatGPT-managed operating protocol missing marker: ${marker}`,
   );
 }
-
 for (const marker of [
   "production authentication",
   "real customer/client data",
@@ -1021,7 +810,6 @@ for (const marker of [
     `ChatGPT-managed operating protocol missing pause boundary: ${marker}`,
   );
 }
-
 must(
   /`Build it` does not independently authorize a ChatGPT Sites production deployment/.test(
     protocol,
@@ -1144,12 +932,10 @@ for (const retiredPath of [
     `Retired Vite/Replit source returned: ${retiredPath}`,
   );
 }
-
 if (failures.length) {
   console.error("ChatGPT Sites migration source-of-truth guardrail failed:");
   for (const failure of failures) console.error(`- ${failure}`);
   process.exit(1);
 }
-
 console.log("ChatGPT Sites migration source-of-truth guardrail passed.");
 import "./check-momo-house-readiness-tracking";

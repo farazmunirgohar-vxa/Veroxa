@@ -26,6 +26,9 @@ const siteServer = read("artifacts/veroxa-sites/app/veroxa-supabase-server.ts");
 const siteIntake = read(
   "artifacts/veroxa-sites/app/api/audit-requests/route.ts",
 );
+const siteIntakeEnvelope = read(
+  "artifacts/veroxa-sites/app/audit-intake-envelope.ts",
+);
 const siteCenter = read("artifacts/veroxa-sites/app/audit-center.tsx");
 const siteRoutes = read("artifacts/veroxa-sites/app/[...slug]/page.tsx");
 const siteProxy = read("artifacts/veroxa-sites/proxy.ts");
@@ -106,7 +109,7 @@ for (const marker of [
   "reviewed_request_requires_reviewed_report",
 ]) {
   must(
-    migration.includes(marker) && releaseHardening.includes(marker),
+    releaseHardening.includes(marker),
     `Audit Center release hardening missing: ${marker}`,
   );
 }
@@ -130,12 +133,16 @@ for (const marker of [
   "AUDIT_INTAKE_HMAC_SECRET",
   "consentVersion",
   "idempotencyKey",
-  "hmacHex",
   "return response({ accepted: false }, 429)",
   "202",
 ]) {
   must(siteIntake.includes(marker), `Sites intake missing: ${marker}`);
 }
+must(
+  siteIntakeEnvelope.includes("hmacHex") &&
+    siteIntake.includes("authorizeAuditIntake"),
+  "Sites intake missing its v2 canonical HMAC envelope boundary",
+);
 
 for (const marker of [
   "createBrowserClient",

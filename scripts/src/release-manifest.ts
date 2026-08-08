@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve, sep } from "node:path";
 
 export const repoRoot = resolve(import.meta.dirname, "../..");
@@ -10,12 +10,12 @@ export const deploymentManifestPath = resolve(
 
 export const TREE_HASH_ALGORITHM = "veroxa-path-null-content-null-sha256-v1";
 export const REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE =
-  "live_sites_v36_github_reconciliation_reviewed_unmerged";
-export const REVIEWED_LOCAL_CANDIDATE_STATUS = "reviewed_locally_unmerged";
+  "reviewed_local_predeployment_candidate";
+export const REVIEWED_LOCAL_CANDIDATE_STATUS = "reviewed_local_predeployment";
 export const REFRESHED_LOCAL_CANDIDATE_RELEASE_STATE =
-  "live_sites_v36_github_reconciliation_fingerprints_refreshed_review_required";
+  "local_predeployment_fingerprints_refreshed_review_required";
 export const REFRESHED_LOCAL_CANDIDATE_STATUS =
-  "fingerprints_refreshed_review_required_unmerged";
+  "local_predeployment_review_required";
 export const VERIFIED_GITHUB_PARITY_RELEASE_STATE =
   "live_sites_v36_github_parity_verified";
 export const VERIFIED_GITHUB_PARITY_STATUS =
@@ -31,11 +31,31 @@ export const VERIFIED_MIGRATION_EVIDENCE_SCOPE =
 export const V36_OPERATIONAL_COMMIT_SCOPE =
   "v36_operational_parity_commit_not_closeout_pr_head";
 export const RECONCILIATION_CANDIDATE_ACTION_SCOPE =
-  "github_reconciliation_candidate";
+  "pre_momo_readiness_predeployment_candidate";
+export const LOCAL_CANDIDATE_SOURCE_EVIDENCE_SCOPE =
+  "exact_local_predeployment_sites_source";
+export const LOCAL_CANDIDATE_MIGRATION_EVIDENCE_SCOPE =
+  "exact_local_predeployment_migration_tree";
+// Compatibility aliases for historical recorder code; schema 6 validates the
+// local-candidate names above.
 export const RECONCILIATION_SOURCE_EVIDENCE_SCOPE =
-  "github_reconciliation_candidate_matching_live_sites_v36";
+  LOCAL_CANDIDATE_SOURCE_EVIDENCE_SCOPE;
 export const RECONCILIATION_MIGRATION_EVIDENCE_SCOPE =
-  "github_reconciliation_candidate_matching_live_ledger_v36";
+  LOCAL_CANDIDATE_MIGRATION_EVIDENCE_SCOPE;
+export const LOCAL_CANDIDATE_DEPLOYMENT_FREEZE_STATE =
+  "local_candidate_predeployment_frozen";
+export const LOCAL_CANDIDATE_REVISION =
+  "policy_eval_closeout_2026_08_08";
+export const POLICY_EVALUATION_EVIDENCE_PATH =
+  "artifacts/veroxa/docs/MOMO_PRIVATE_POLICY_EVAL_2026-08-08.json";
+export const POLICY_EVALUATION_EVIDENCE_SHA256 =
+  "f3b254d6822bbe65c2149e4fbb7e4ee68601ab4ead34fae242590e9c560ed549";
+export const LIVE_PRODUCTION_EVIDENCE_STATUS =
+  "immutable_sites_v36_live_baseline";
+export const LIVE_MIGRATION_EVIDENCE_SCOPE =
+  "observed_remote_ledger_exact_names_and_bytes";
+export const HISTORICAL_REPOSITORY_MIGRATION_EVIDENCE_SCOPE =
+  "historical_v36_repository_and_sites_mirror_not_remote_ledger";
 export const GENERATED_PATH_EXCLUSIONS = [
   ".git",
   ".next",
@@ -47,6 +67,14 @@ export const GENERATED_PATH_EXCLUSIONS = [
   "outputs",
   "tsconfig.tsbuildinfo",
   "work",
+  ".env",
+  ".env.local",
+  ".env.development",
+  ".env.development.local",
+  ".env.production",
+  ".env.production.local",
+  ".env.test",
+  ".env.test.local",
 ] as const;
 
 export const V36_GITHUB_RECONCILIATION = {
@@ -69,7 +97,9 @@ export const V36_GITHUB_RECONCILIATION = {
 } as const;
 
 export const V36_LIVE_PARITY_EVIDENCE = {
-  observedAt: "2026-08-02",
+  sitesObservedAt: "2026-08-02",
+  migrationLedgerObservedAt: "2026-08-08",
+  observedAt: "2026-08-08",
   sitesVersion: 36,
   sitesCheckoutCommit: "b8122642b72e5d4e6e74c379469f2a157781ab3d",
   sourceFileCount: 185,
@@ -77,16 +107,28 @@ export const V36_LIVE_PARITY_EVIDENCE = {
     "caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7",
   migrationFileCount: 37,
   migrationTreeSha256:
+    "d306d26cb633ef943afdb7efd01a3cde70249a096ef783d1b0d51eb5d4a1a429",
+  historicalRepositoryMigrationTreeSha256:
     "9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90",
-  latestMigration: "20260802020000_momo_pipeline_query_indexes_v2.sql",
+  latestMigration: "20260802063829_momo_pipeline_query_indexes_v2.sql",
   latestMigrationSha256:
     "106d346be34583446d22de0f6866b5b8937feb766a3a229339dbf1c1768fdfcd",
 } as const;
 
+export const LOCAL_CANDIDATE_BASE_COMMIT =
+  "a9413e22dc2ee29a4fa3b299dfc8661808dd635f";
+export const LOCAL_CANDIDATE_PENDING_MIGRATIONS = [
+  "20260808001210_audit_intake_envelope_v2.sql",
+  "20260808001430_momo_client_pipeline_readback_v3.sql",
+  "20260808001842_retire_audit_intake_v1.sql",
+  "20260808001853_retire_momo_client_pipeline_readback_v2.sql",
+  "20260808002609_future_object_default_acl_hardening.sql",
+] as const;
+
 export const VERIFIED_DEPLOYMENT_ALLOWED_ACTION =
-  "No Sites deployment or database apply is required: PR #157 reconciled GitHub main to the already-live Sites v36 and 37-migration production ledger.";
+  "Historical only: PR #157 reconciled GitHub main to the already-live Sites v36 baseline without publishing Sites or applying a database migration.";
 export const VERIFIED_RELEASE_CONDITION =
-  "GitHub parity is verified and production remains frozen. Any future production change requires a new reviewed release with exact source and migration evidence plus explicit deployment authority.";
+  "Historical v36 parity does not authorize the current candidate. Any candidate deployment requires a new reviewed release and the encoded rollout sequence.";
 
 const WORKFLOW_EVIDENCE_KEYS = [
   "ci",
@@ -111,9 +153,9 @@ const ACTIVATION_STATE_KEYS = [
 // Schema 4 deliberately has no state that treats this GitHub candidate as the
 // actor that published the already-live Sites source or applied its migrations.
 export const PUBLISHED_SITES_RELEASE_STATE =
-  "published_sites_v22_no_database_change";
+  "historical_published_state_not_valid_for_schema_6";
 export const PUBLISHED_SITES_FOLLOWUP_STATUS =
-  "published_sites_followup_no_database_change";
+  "historical_published_status_not_valid_for_schema_6";
 
 type Nullable<T> = T | null;
 
@@ -179,6 +221,8 @@ type HistoricalProductionObservation = {
 
 type CurrentProductionObservation = {
   observedAt: string;
+  sitesBaselineObservedAt?: string;
+  migrationLedgerObservedAt?: string;
   evidenceStatus: string;
   canonicalGitHubMainCommit: string;
   canonicalGitHubMainCommitScope?: string;
@@ -196,19 +240,49 @@ type CurrentProductionObservation = {
   databaseAppliedThroughLatestObserved: boolean;
   candidateMigrationsMatchLiveLedger: boolean;
   fullReleaseGatePassed: boolean;
+  githubParityVerifiedAtObservation?: boolean;
+  sourceEvidenceScope?: string;
+  migrationTreeEvidenceScope?: string;
+  historicalRepositoryMigrationTreeSha256?: string;
+  historicalRepositoryMigrationTreeEvidenceScope?: string;
 };
 
 export type DeploymentManifest = {
-  schemaVersion: 4;
-  recordKind: "veroxa_production_reconciliation_manifest";
+  schemaVersion: number;
+  recordKind: string;
   releaseState: string;
+  reviewedAt?: string;
+  candidateRevision?: string;
+  knownResiduals?: string[];
   canonicalRepository: string;
   canonicalBranch: string;
+  candidateBranch?: string;
   sitesProjectId: string;
   lastGitHubParityRelease: GitHubParityRelease;
   historicalProductionObservations: HistoricalProductionObservation[];
   currentProductionObservation: CurrentProductionObservation;
   githubReconciliationEvidence?: GitHubReconciliationEvidence;
+  historicalV36GitHubReconciliationEvidence?: GitHubReconciliationEvidence;
+  policyEvaluationEvidence?: {
+    path: string;
+    sha256: string;
+    model: string;
+    logicalCases: number;
+    totalModelRequests: number;
+    finalLiveCasesPassed: number;
+    finalLiveCasesTotal: number;
+    finalCombinedChecksPassed: number;
+    finalCombinedChecksTotal: number;
+    cumulativeCostUpperBoundUsd: number;
+    authorizedCeilingUsd: number;
+    privateOnly: boolean;
+    responseStorage: boolean;
+    toolsEnabled: boolean;
+    externalWritesAllowed: boolean;
+    allAttemptSettingsIndependentlyHashBound: boolean;
+    crossProcessCostLedgerEnforced: boolean;
+    completedAggregateBelowAuthorizedCeiling: boolean;
+  };
   releaseCandidate: {
     status: string;
     actionScope: typeof RECONCILIATION_CANDIDATE_ACTION_SCOPE;
@@ -218,6 +292,8 @@ export type DeploymentManifest = {
     futureMergedGitHubCommit: Nullable<string>;
     futureSitesVersion: Nullable<number>;
     reviewedLocally: boolean;
+    allFourWorkflowsGreen?: boolean | null;
+    zeroUnresolvedReviewThreads?: boolean | null;
     sourceFileCount: number;
     sourceTreeSha256: string;
     migrationFileCount: number;
@@ -228,6 +304,13 @@ export type DeploymentManifest = {
     databaseMigrationApplied: boolean;
     sitesPublishRequired: boolean;
     sitesPublished: boolean;
+    pendingMigrations?: string[];
+    databaseMigrationsApplied?: string[];
+    databaseApplyAuthorized?: boolean;
+    sitesPublishAuthorized?: boolean;
+    deploymentAuthorized?: boolean;
+    activationExecuted?: boolean;
+    rolloutStatus?: string;
     candidateSourceMatchesLiveSites: boolean;
     candidateMigrationsMatchLiveLedger: boolean;
     githubMainMatchesCandidate: boolean;
@@ -248,10 +331,15 @@ export type DeploymentManifest = {
     hashAlgorithm: string;
     fileCount: number;
     treeSha256: string;
+    mirrorRoot?: string;
+    mirrorFileCount?: number;
+    mirrorTreeSha256?: string;
   };
   deploymentFreeze: {
     state: string;
     automaticDeploymentsAllowed: boolean;
+    databaseApplyAuthorized?: boolean;
+    sitesPublishAuthorized?: boolean;
     allowedDeployment: string;
     releaseCondition: string;
   };
@@ -286,11 +374,183 @@ export type DeploymentManifest = {
     vercelShutdownSentinelRequired: boolean;
     blocker: string;
   };
+  rolloutSequence?: {
+    status: string;
+    steps: Array<{
+      order: number;
+      stage: string;
+      id: string;
+      action: string;
+      migration: string | null;
+      requiresCompletedStep: string | null;
+      explicitReviewRequired: boolean;
+      completed: boolean;
+      verification: string;
+    }>;
+  };
 };
+
+function rolloutIsFailClosed(
+  steps: NonNullable<DeploymentManifest["rolloutSequence"]>["steps"],
+): boolean {
+  const expected = [
+    [1, "stage_1_pre_publish", "apply_audit_intake_v2", "database_migration", LOCAL_CANDIDATE_PENDING_MIGRATIONS[0], null],
+    [2, "stage_1_pre_publish", "apply_client_pipeline_readback_v3", "database_migration", LOCAL_CANDIDATE_PENDING_MIGRATIONS[1], "apply_audit_intake_v2"],
+    [3, "sites_publish_verify", "publish_and_verify_audit_v2_and_client_v3_routes", "sites_publish_and_verify", null, "apply_client_pipeline_readback_v3"],
+    [4, "stage_2_post_publish", "retire_audit_intake_v1", "database_migration", LOCAL_CANDIDATE_PENDING_MIGRATIONS[2], "publish_and_verify_audit_v2_and_client_v3_routes"],
+    [5, "stage_2_post_publish", "retire_client_pipeline_readback_v2", "database_migration", LOCAL_CANDIDATE_PENDING_MIGRATIONS[3], "retire_audit_intake_v1"],
+    [6, "stage_2_post_publish", "review_and_apply_future_default_acl_hardening", "database_migration", LOCAL_CANDIDATE_PENDING_MIGRATIONS[4], "retire_client_pipeline_readback_v2"],
+  ] as const;
+  return steps.length === expected.length && steps.every((step, index) => {
+    const wanted = expected[index];
+    return step.order === wanted[0] && step.stage === wanted[1] &&
+      step.id === wanted[2] && step.action === wanted[3] &&
+      step.migration === wanted[4] && step.requiresCompletedStep === wanted[5] &&
+      step.explicitReviewRequired && !step.completed &&
+      step.verification.trim().length >= 20;
+  });
+}
+
+function assertSchema6LocalCandidate(manifest: DeploymentManifest): void {
+  const failures: string[] = [];
+  const candidate = manifest.releaseCandidate;
+  const live = manifest.currentProductionObservation;
+  const policy = manifest.policyEvaluationEvidence;
+  const policyPath = resolve(repoRoot, POLICY_EVALUATION_EVIDENCE_PATH);
+
+  if (manifest.recordKind !== "veroxa_local_predeployment_candidate_manifest") {
+    failures.push("recordKind must identify a local predeployment candidate");
+  }
+  if (manifest.releaseState !== REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE ||
+    candidate.status !== REVIEWED_LOCAL_CANDIDATE_STATUS ||
+    !candidate.reviewedLocally || manifest.reviewedAt !== "2026-08-08") {
+    failures.push("release and candidate must remain reviewed local predeployment states");
+  }
+  if (manifest.candidateRevision !== LOCAL_CANDIDATE_REVISION) {
+    failures.push("candidate revision must identify the policy-eval closeout");
+  }
+  if (manifest.knownResiduals?.length !== 1 ||
+    !/postgres is not a member of supabase_admin[\s\S]*02609[\s\S]*skips supabase_admin[\s\S]*not comprehensive default-ACL closure/iu.test(
+      manifest.knownResiduals[0] ?? "",
+    )) {
+    failures.push("known supabase_admin default-ACL residual is missing or overclaimed");
+  }
+  if (manifest.canonicalRepository !== "farazmunirgohar-vxa/Veroxa" ||
+    manifest.canonicalBranch !== "main" ||
+    manifest.candidateBranch !== "agent/momo-readiness-closeout" ||
+    manifest.sitesProjectId !== "appgprj_6a53d07c7c28819182801cf35dfd30de") {
+    failures.push("repository, branch, or Sites project identity drifted");
+  }
+  if (manifest.githubReconciliationEvidence !== undefined) {
+    failures.push("current candidate cannot claim GitHub reconciliation evidence");
+  }
+  if (!policy || policy.path !== POLICY_EVALUATION_EVIDENCE_PATH ||
+    policy.sha256 !== POLICY_EVALUATION_EVIDENCE_SHA256 ||
+    policy.model !== "gpt-5.6-luna" || policy.logicalCases !== 10 ||
+    policy.totalModelRequests !== 30 || policy.finalLiveCasesPassed !== 10 ||
+    policy.finalLiveCasesTotal !== 10 || policy.finalCombinedChecksPassed !== 27 ||
+    policy.finalCombinedChecksTotal !== 27 ||
+    policy.cumulativeCostUpperBoundUsd !== 0.0080502 ||
+    policy.authorizedCeilingUsd !== 2 || !policy.privateOnly ||
+    policy.responseStorage || policy.toolsEnabled || policy.externalWritesAllowed ||
+    policy.allAttemptSettingsIndependentlyHashBound ||
+    policy.crossProcessCostLedgerEnforced ||
+    !policy.completedAggregateBelowAuthorizedCeiling ||
+    !existsSync(policyPath) || sha256File(policyPath) !== POLICY_EVALUATION_EVIDENCE_SHA256) {
+    failures.push("private policy-evaluation evidence is missing, stale, or unsafe");
+  }
+  if (JSON.stringify(manifest.historicalV36GitHubReconciliationEvidence) !==
+    JSON.stringify(V36_GITHUB_RECONCILIATION)) {
+    failures.push("historical PR #157 evidence changed");
+  }
+  if (live.evidenceStatus !== LIVE_PRODUCTION_EVIDENCE_STATUS ||
+    live.observedAt !== V36_LIVE_PARITY_EVIDENCE.migrationLedgerObservedAt ||
+    live.sitesBaselineObservedAt !== V36_LIVE_PARITY_EVIDENCE.sitesObservedAt ||
+    live.migrationLedgerObservedAt !== V36_LIVE_PARITY_EVIDENCE.migrationLedgerObservedAt ||
+    live.canonicalGitHubMainCommit !== V36_GITHUB_RECONCILIATION.mergedCommit ||
+    live.canonicalGitHubMainCommitScope !== V36_OPERATIONAL_COMMIT_SCOPE ||
+    live.sitesVersion !== 36 || live.sitesCheckoutCommit !== V36_LIVE_PARITY_EVIDENCE.sitesCheckoutCommit ||
+    live.sourceFileCount !== 185 || live.sourceTreeSha256 !== V36_LIVE_PARITY_EVIDENCE.sourceTreeSha256 ||
+    live.productionMigrationCount !== 37 || live.migrationTreeSha256 !== V36_LIVE_PARITY_EVIDENCE.migrationTreeSha256 ||
+    live.migrationTreeEvidenceScope !== LIVE_MIGRATION_EVIDENCE_SCOPE ||
+    live.historicalRepositoryMigrationTreeSha256 !== V36_LIVE_PARITY_EVIDENCE.historicalRepositoryMigrationTreeSha256 ||
+    live.historicalRepositoryMigrationTreeEvidenceScope !== HISTORICAL_REPOSITORY_MIGRATION_EVIDENCE_SCOPE ||
+    live.latestProductionMigration !== V36_LIVE_PARITY_EVIDENCE.latestMigration ||
+    live.latestProductionMigrationSha256 !== V36_LIVE_PARITY_EVIDENCE.latestMigrationSha256 ||
+    !live.databaseLedgerObserved || !live.databaseAppliedThroughLatestObserved ||
+    live.githubMainMatchesCandidate || live.candidateSourceMatchesLiveSites ||
+    live.candidateMigrationsMatchLiveLedger || live.fullReleaseGatePassed) {
+    failures.push("immutable Sites v36 / exact remote 37-migration baseline drifted");
+  }
+  if (candidate.actionScope !== RECONCILIATION_CANDIDATE_ACTION_SCOPE ||
+    candidate.basedOnGitHubMainCommit !== LOCAL_CANDIDATE_BASE_COMMIT ||
+    candidate.pullRequest !== null || candidate.githubMerged ||
+    candidate.futureMergedGitHubCommit !== null || candidate.futureSitesVersion !== null ||
+    candidate.allFourWorkflowsGreen !== null || candidate.zeroUnresolvedReviewThreads !== null ||
+    candidate.githubMainMatchesCandidate || candidate.fullReleaseGatePassed ||
+    !candidate.databaseChangesRequired || candidate.databaseMigrationApplied ||
+    JSON.stringify(candidate.databaseMigrationsApplied) !== "[]" ||
+    candidate.databaseApplyAuthorized || !candidate.sitesPublishRequired ||
+    candidate.sitesPublished || candidate.sitesPublishAuthorized ||
+    candidate.deploymentAuthorized || candidate.activationExecuted ||
+    candidate.rolloutStatus !== "blocked_not_started" ||
+    candidate.migrationFileCount !== 42 ||
+    JSON.stringify(candidate.pendingMigrations) !== JSON.stringify(LOCAL_CANDIDATE_PENDING_MIGRATIONS)) {
+    failures.push("candidate state overclaims external release, apply, publish, or activation evidence");
+  }
+  if (manifest.source.evidenceScope !== LOCAL_CANDIDATE_SOURCE_EVIDENCE_SCOPE ||
+    manifest.source.root !== "artifacts/veroxa-sites" ||
+    manifest.source.hashAlgorithm !== TREE_HASH_ALGORITHM ||
+    JSON.stringify(manifest.source.generatedPathExclusions) !== JSON.stringify(GENERATED_PATH_EXCLUSIONS) ||
+    manifest.source.fileCount !== candidate.sourceFileCount ||
+    manifest.source.treeSha256 !== candidate.sourceTreeSha256) {
+    failures.push("candidate source fingerprint evidence is incoherent");
+  }
+  if (manifest.migrations.evidenceScope !== LOCAL_CANDIDATE_MIGRATION_EVIDENCE_SCOPE ||
+    manifest.migrations.root !== "supabase/migrations" ||
+    manifest.migrations.mirrorRoot !== "artifacts/veroxa-sites/supabase/migrations" ||
+    manifest.migrations.hashAlgorithm !== TREE_HASH_ALGORITHM ||
+    manifest.migrations.fileCount !== candidate.migrationFileCount ||
+    manifest.migrations.treeSha256 !== candidate.migrationTreeSha256 ||
+    manifest.migrations.mirrorFileCount !== candidate.migrationFileCount ||
+    manifest.migrations.mirrorTreeSha256 !== candidate.migrationTreeSha256) {
+    failures.push("candidate migration root and Sites mirror evidence is incoherent");
+  }
+  const rollout = manifest.rolloutSequence;
+  if (!rollout || rollout.status !== "blocked_not_started" ||
+    !rolloutIsFailClosed(rollout.steps)) {
+    failures.push("candidate rollout sequence is incomplete, reordered, or overclaimed");
+  }
+  if (manifest.deploymentFreeze.state !== LOCAL_CANDIDATE_DEPLOYMENT_FREEZE_STATE ||
+    manifest.deploymentFreeze.automaticDeploymentsAllowed ||
+    manifest.deploymentFreeze.databaseApplyAuthorized ||
+    manifest.deploymentFreeze.sitesPublishAuthorized ||
+    !/01210[\s\S]*01430[\s\S]*publish[\s\S]*01842[\s\S]*01853[\s\S]*02609/iu.test(
+      manifest.deploymentFreeze.releaseCondition,
+    )) {
+    failures.push("deployment freeze does not preserve the required staged rollout");
+  }
+  if (JSON.stringify(Object.keys(manifest.activationState).sort()) !==
+    JSON.stringify([...ACTIVATION_STATE_KEYS].sort()) ||
+    ACTIVATION_STATE_KEYS.some((key) => manifest.activationState[key] !== false)) {
+    failures.push("activation and external-action state must remain exactly all-false");
+  }
+  if (!/production|hosted/iu.test(manifest.activationStateScope) ||
+    !/local eval-only credential/iu.test(manifest.activationStateScope)) {
+    failures.push("activation scope must distinguish hosted production credentials from local eval-only credentials");
+  }
+  if (failures.length) {
+    throw new Error(`Unsafe local candidate manifest: ${failures.join("; ")}`);
+  }
+}
 
 export function assertUnreleasedLocalCandidateManifest(
   manifest: DeploymentManifest,
 ): void {
+  if (manifest.schemaVersion === 6) {
+    assertSchema6LocalCandidate(manifest);
+    return;
+  }
   const failures: string[] = [];
   const candidate = manifest.releaseCandidate;
   const live = manifest.currentProductionObservation;
@@ -529,206 +789,24 @@ function sameWorkflowEvidence(
 }
 
 export function assertVerifiedGitHubParityManifest(
-  manifest: DeploymentManifest,
+  _manifest: DeploymentManifest,
 ): void {
-  const failures: string[] = [];
-  const candidate = manifest.releaseCandidate;
-  const live = manifest.currentProductionObservation;
-  const evidence = manifest.githubReconciliationEvidence;
-  const lastParity = manifest.lastGitHubParityRelease;
-  if (manifest.schemaVersion !== 4) failures.push("schemaVersion must be 4");
-  if (manifest.recordKind !== "veroxa_production_reconciliation_manifest") {
-    failures.push(
-      "recordKind must identify the production reconciliation manifest",
-    );
-  }
-  if (
-    manifest.canonicalRepository !== "farazmunirgohar-vxa/Veroxa" ||
-    manifest.canonicalBranch !== "main" ||
-    manifest.sitesProjectId !== "appgprj_6a53d07c7c28819182801cf35dfd30de"
-  ) {
-    failures.push(
-      "terminal parity evidence must retain the canonical repository, branch, and Sites project",
-    );
-  }
-  if (manifest.releaseState !== VERIFIED_GITHUB_PARITY_RELEASE_STATE) {
-    failures.push("releaseState must identify verified v36 GitHub parity");
-  }
-  if (candidate.status !== VERIFIED_GITHUB_PARITY_STATUS) {
-    failures.push(
-      "releaseCandidate.status must identify the merged parity reconciliation",
-    );
-  }
-  if (
-    candidate.actionScope !== RECONCILIATION_CANDIDATE_ACTION_SCOPE ||
-    candidate.basedOnGitHubMainCommit !==
-      "302621bf6b9ab78320abe4175b45b56e9e64ae2a" ||
-    candidate.pullRequest !== V36_GITHUB_RECONCILIATION.pullRequest ||
-    !candidate.githubMerged ||
-    candidate.futureMergedGitHubCommit !==
-      V36_GITHUB_RECONCILIATION.mergedCommit ||
-    candidate.futureSitesVersion !== null ||
-    !candidate.reviewedLocally ||
-    !candidate.candidateSourceMatchesLiveSites ||
-    !candidate.candidateMigrationsMatchLiveLedger ||
-    !candidate.githubMainMatchesCandidate ||
-    !candidate.fullReleaseGatePassed
-  ) {
-    failures.push(
-      "releaseCandidate must preserve the exact reviewed PR #157 merge and verified parity evidence",
-    );
-  }
-  if (
-    candidate.databaseChangesRequired ||
-    candidate.databaseMigrationApplied ||
-    candidate.sitesPublishRequired ||
-    candidate.sitesPublished
-  ) {
-    failures.push(
-      "PR #157 reconciliation must not claim a Sites publication or database apply",
-    );
-  }
-  if (
-    live.evidenceStatus !== VERIFIED_PRODUCTION_EVIDENCE_STATUS ||
-    live.observedAt !== V36_LIVE_PARITY_EVIDENCE.observedAt ||
-    live.canonicalGitHubMainCommit !== V36_GITHUB_RECONCILIATION.mergedCommit ||
-    live.canonicalGitHubMainCommitScope !== V36_OPERATIONAL_COMMIT_SCOPE ||
-    !live.githubMainMatchesCandidate ||
-    live.sitesVersion !== V36_LIVE_PARITY_EVIDENCE.sitesVersion ||
-    live.sitesCheckoutCommit !== V36_LIVE_PARITY_EVIDENCE.sitesCheckoutCommit ||
-    !live.candidateSourceMatchesLiveSites ||
-    live.productionMigrationCount !==
-      V36_LIVE_PARITY_EVIDENCE.migrationFileCount ||
-    !live.databaseLedgerObserved ||
-    !live.databaseAppliedThroughLatestObserved ||
-    !live.candidateMigrationsMatchLiveLedger ||
-    !live.fullReleaseGatePassed
-  ) {
-    failures.push(
-      "currentProductionObservation must preserve live v36 while proving GitHub main parity",
-    );
-  }
-  if (
-    !evidence ||
-    evidence.pullRequest !== V36_GITHUB_RECONCILIATION.pullRequest ||
-    evidence.reviewedHead !== V36_GITHUB_RECONCILIATION.reviewedHead ||
-    evidence.mergedCommit !== V36_GITHUB_RECONCILIATION.mergedCommit ||
-    !evidence.zeroUnresolvedReviewThreads ||
-    !sameWorkflowEvidence(
-      evidence.preMergeWorkflows,
-      V36_GITHUB_RECONCILIATION.preMergeWorkflows,
-    ) ||
-    !sameWorkflowEvidence(
-      evidence.postMergePushWorkflows,
-      V36_GITHUB_RECONCILIATION.postMergePushWorkflows,
-    )
-  ) {
-    failures.push(
-      "GitHub reconciliation evidence must retain the exact reviewed head, merge, workflows, and zero-thread result",
-    );
-  }
-  if (
-    manifest.source.evidenceScope !== VERIFIED_SOURCE_EVIDENCE_SCOPE ||
-    manifest.source.root !== "artifacts/veroxa-sites" ||
-    manifest.source.mappingTarget !== "Sites repository root" ||
-    manifest.migrations.evidenceScope !== VERIFIED_MIGRATION_EVIDENCE_SCOPE ||
-    manifest.migrations.root !== "supabase/migrations" ||
-    manifest.source.hashAlgorithm !== TREE_HASH_ALGORITHM ||
-    manifest.migrations.hashAlgorithm !== TREE_HASH_ALGORITHM
-  ) {
-    failures.push(
-      "terminal parity evidence must retain the canonical source and migration roots and hash algorithm",
-    );
-  }
-  if (
-    manifest.source.fileCount !== V36_LIVE_PARITY_EVIDENCE.sourceFileCount ||
-    manifest.source.treeSha256 !== V36_LIVE_PARITY_EVIDENCE.sourceTreeSha256 ||
-    manifest.migrations.fileCount !==
-      V36_LIVE_PARITY_EVIDENCE.migrationFileCount ||
-    manifest.migrations.treeSha256 !==
-      V36_LIVE_PARITY_EVIDENCE.migrationTreeSha256 ||
-    candidate.latestCandidateMigration !==
-      V36_LIVE_PARITY_EVIDENCE.latestMigration ||
-    candidate.latestCandidateMigrationSha256 !==
-      V36_LIVE_PARITY_EVIDENCE.latestMigrationSha256 ||
-    JSON.stringify(manifest.source.generatedPathExclusions) !==
-      JSON.stringify(GENERATED_PATH_EXCLUSIONS)
-  ) {
-    failures.push(
-      "terminal parity evidence must retain the exact live v36 trees, latest migration, and generated-path exclusions",
-    );
-  }
-  if (
-    live.sourceFileCount !== manifest.source.fileCount ||
-    live.sourceTreeSha256 !== manifest.source.treeSha256 ||
-    live.productionMigrationCount !== manifest.migrations.fileCount ||
-    live.migrationTreeSha256 !== manifest.migrations.treeSha256 ||
-    candidate.sourceFileCount !== manifest.source.fileCount ||
-    candidate.sourceTreeSha256 !== manifest.source.treeSha256 ||
-    candidate.migrationFileCount !== manifest.migrations.fileCount ||
-    candidate.migrationTreeSha256 !== manifest.migrations.treeSha256 ||
-    live.latestProductionMigration !== candidate.latestCandidateMigration ||
-    live.latestProductionMigrationSha256 !==
-      candidate.latestCandidateMigrationSha256
-  ) {
-    failures.push(
-      "terminal candidate, GitHub main, and live production fingerprints must remain identical",
-    );
-  }
-  if (
-    manifest.deploymentFreeze.state !== VERIFIED_DEPLOYMENT_FREEZE_STATE ||
-    manifest.deploymentFreeze.automaticDeploymentsAllowed ||
-    manifest.deploymentFreeze.allowedDeployment !==
-      VERIFIED_DEPLOYMENT_ALLOWED_ACTION ||
-    manifest.deploymentFreeze.releaseCondition !== VERIFIED_RELEASE_CONDITION
-  ) {
-    failures.push(
-      "verified GitHub parity must preserve the production deployment freeze",
-    );
-  }
-  if (
-    JSON.stringify(Object.keys(manifest.activationState).sort()) !==
-      JSON.stringify([...ACTIVATION_STATE_KEYS].sort()) ||
-    ACTIVATION_STATE_KEYS.some((key) => manifest.activationState[key] !== false)
-  ) {
-    failures.push(
-      "verified GitHub parity must retain the exact all-false activation and external-action state",
-    );
-  }
-  if (
-    !lastParity.supersededAsLiveBaseline ||
-    lastParity.pullRequest !== 155 ||
-    lastParity.sitesVersion !== 22 ||
-    !lastParity.sitesSourceParityVerified ||
-    !lastParity.migrationContentParityVerified ||
-    !lastParity.migrationFilenameParityVerified
-  ) {
-    failures.push(
-      "lastGitHubParityRelease must preserve PR #155 / Sites v22 as historical parity evidence",
-    );
-  }
-  if (failures.length) {
-    throw new Error(
-      `Unsafe verified GitHub parity manifest state: ${failures.join("; ")}`,
-    );
-  }
+  throw new Error(
+    "Schema 6 records a local predeployment candidate; terminal GitHub parity must be recorded by a future schema with fresh PR, workflow, database, and Sites evidence",
+  );
 }
 
 export function assertPublishedSitesFollowupManifest(
   _manifest: DeploymentManifest,
 ): void {
   throw new Error(
-    "Schema 4 does not permit a published-candidate assertion: Sites v36 and its migrations predate this unmerged GitHub reconciliation candidate",
+    "Schema 6 has no published candidate: database apply and Sites publication remain unauthorized and unobserved",
   );
 }
 
 export function assertDeploymentAttestationManifest(
   manifest: DeploymentManifest,
 ): void {
-  if (manifest.releaseState === VERIFIED_GITHUB_PARITY_RELEASE_STATE) {
-    assertVerifiedGitHubParityManifest(manifest);
-    return;
-  }
   assertReviewedLocalCandidateManifest(manifest);
 }
 

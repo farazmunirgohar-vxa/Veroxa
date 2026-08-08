@@ -57,6 +57,17 @@ jobs:
           # then apply the remaining byte-identical migration history. This is
           # application data, never an extra migration or a hosted credential.
           first_migration="20260712213930_momo_production_foundation_v1.sql"
+          expected_versions="$(
+            find supabase/migrations -maxdepth 1 -type f -name '*.sql' \
+              -printf '%f\n' | sed 's/_.*//' | sort
+          )"
+          candidate_migration_count="$(
+            printf '%s\n' "$expected_versions" | sed '/^$/d' | wc -l
+          )"
+          test "$candidate_migration_count" -gt 1
+          test "$(printf '%s\n' "$expected_versions" | uniq | wc -l)" \
+            -eq "$candidate_migration_count"
+          pending_migration_count="$((candidate_migration_count - 1))"
           pending_dir="$(mktemp -d)"
           migration_checksums="$(mktemp)"
           test -f "supabase/migrations/$first_migration"
@@ -81,7 +92,8 @@ jobs:
           done < <(find supabase/migrations -maxdepth 1 -type f -name '*.sql' \
             ! -name "$first_migration" -print0)
           test "$(find supabase/migrations -maxdepth 1 -type f -name '*.sql' | wc -l)" -eq 1
-          test "$(find "$pending_dir" -maxdepth 1 -type f -name '*.sql' | wc -l)" -eq 36
+          test "$(find "$pending_dir" -maxdepth 1 -type f -name '*.sql' | wc -l)" \
+            -eq "$pending_migration_count"
 
           supabase start
 
@@ -188,16 +200,18 @@ jobs:
           restore_pending_migrations
           trap - EXIT
           rmdir "$pending_dir"
-          test "$(find supabase/migrations -maxdepth 1 -type f -name '*.sql' | wc -l)" -eq 37
+          test "$(find supabase/migrations -maxdepth 1 -type f -name '*.sql' | wc -l)" \
+            -eq "$candidate_migration_count"
           sha256sum --check --quiet "$migration_checksums"
           rm "$migration_checksums"
           git diff --exit-code -- supabase/migrations
+
+          # Applying the whole candidate chain is allowed only in this
+          # disposable local database. Production must stage 20260808001210,
+          # deploy and verify Sites v2, then apply 20260808001842; never
+          # bulk-apply retire-v1 before the Sites v2 cutover is verified.
           supabase migration up --local
 
-          expected_versions="$(
-            find supabase/migrations -maxdepth 1 -type f -name '*.sql' \
-              -printf '%f\n' | sed 's/_.*//' | sort
-          )"
           actual_versions="$(
             docker exec -i "$database_container" \
               psql --tuples-only --no-align --username postgres --dbname postgres \
@@ -206,13 +220,22 @@ jobs:
           test "$actual_versions" = "$expected_versions"
 
           docker exec -i "$database_container" \
-            psql --set ON_ERROR_STOP=1 --username postgres --dbname postgres <<'SQL'
+            psql --set ON_ERROR_STOP=1 \
+              --set candidate_migration_count="$candidate_migration_count" \
+              --username postgres --dbname postgres <<'SQL'
+          select set_config(
+            'veroxa.ci_candidate_migration_count',
+            :'candidate_migration_count',
+            false
+          );
+
           do $assert_complete_chain$
           declare
             fixture_restaurant_id constant uuid :=
               '20000000-0000-4000-8000-000000000160';
           begin
-            if (select count(*) from supabase_migrations.schema_migrations) <> 37 then
+            if (select count(*) from supabase_migrations.schema_migrations) <>
+               current_setting('veroxa.ci_candidate_migration_count')::integer then
               raise exception 'ci_complete_migration_ledger_invalid';
             end if;
             if (
@@ -327,7 +350,8 @@ jobs:
                    '10000000-0000-4000-8000-000000000161'::uuid
                  )
                )
-               or (select count(*) from supabase_migrations.schema_migrations) <> 37 then
+               or (select count(*) from supabase_migrations.schema_migrations) <>
+                  current_setting('veroxa.ci_candidate_migration_count')::integer then
               raise exception 'ci_momo_fixture_cleanup_failed';
             end if;
           end

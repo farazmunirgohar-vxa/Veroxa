@@ -2,6 +2,13 @@
 
 Status: highest-level current source-of-truth index. Read this file before relying on older Veroxa documents.
 
+## 2026-08-08 — reviewed local predeployment candidate (current)
+
+- The immutable live baseline remains Sites v36: 185 files at `caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7`. The exact remote 37-migration ledger reconstructed on 2026-08-08 is `d306d26cb633ef943afdb7efd01a3cde70249a096ef783d1b0d51eb5d4a1a429` through `20260802063829_momo_pipeline_query_indexes_v2.sql` (file SHA-256 `106d346be34583446d22de0f6866b5b8937feb766a3a229339dbf1c1768fdfcd`). `9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90` is the historical v36 repository/Sites-mirror fingerprint, not the exact remote ledger.
+- The reviewed candidate is local, unpublished, and unapplied: 200 Sites files at `929e05cf68a6af5176811f49321ec108e617b93a08153b65b3f86b109d0c8c18` plus 42 mirrored migrations at `dc565dd1f5f4a5efe6a2b253e7437e93f6364b5581c56bb811969fa7241a7a84`. No PR, merge, hosted workflow result, database apply, Sites publication, provider connection, or activation has occurred.
+- `MOMO_PRIVATE_POLICY_EVAL_2026-08-08.json` records three transparent blinded attempts over the same ten synthetic cases. The final attempt passed 10/10 model cases and 27/27 combined checks. The reports record all 30 requests as no-retry, `store:false`, tool-free, and external-write-free; source hashes independently bind those controls only for final v3. The completed aggregate cost upper bound is USD $0.0080502 under USD $2; no atomic cross-process lifetime ledger is claimed. This evidence is local-only and does not prove Momo rehearsal or production activation.
+- Rollout is blocked: apply `01210` then `01430`; publish and verify Audit v2 plus Client v3; only then apply `01842`, `01853`, and explicitly review `02609`. Exact live membership evidence shows `postgres` is not a member of `supabase_admin`, so `02609` will skip that role's default ACLs. This is a known residual, not comprehensive default-ACL closure.
+
 ## 2026-08-05 — permanent retired-source and branch cleanup override
 
 - Faraz explicitly approved permanent deletion after verified Sites v36, GitHub, and 37-migration parity. `RETIRED_SOURCE_REMOVAL.md` records the exact repository boundary.
@@ -12,7 +19,7 @@ Status: highest-level current source-of-truth index. Read this file before relyi
 ## 2026-08-02 — v36 live-status and verified GitHub-parity override
 
 - Read `MOMO_UPLOAD_V36_LIVE_CLOSEOUT.json`, `VEROXA_CURRENT_MILESTONE.md`, `CURRENT_BUILD_STATUS.md`, `VEROXA_DEPLOYMENT_MANIFEST.json`, and `RR_RELEASE_CHECKPOINT.json` first.
-- Sites v36 checkout `b8122642b72e5d4e6e74c379469f2a157781ab3d` is live with 185 canonical files (`caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7`) and 37 migrations (`9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90`). PR #157 reviewed head `d3a63d25644fc699d1f521f8f803e5bd95daae49` merged at `aafebf93a6bc40f9578c29f4a25371f8203d0387`; its four pre-merge and four push-to-main workflows passed with zero unresolved review threads, so GitHub main now matches that already-live source and ledger.
+- Sites v36 checkout `b8122642b72e5d4e6e74c379469f2a157781ab3d` is live with 185 canonical files (`caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7`). PR #157 reviewed head `d3a63d25644fc699d1f521f8f803e5bd95daae49` merged at `aafebf93a6bc40f9578c29f4a25371f8203d0387`; its four pre-merge and four push-to-main workflows passed with zero unresolved review threads, establishing historical v36 repository/Sites-mirror parity. The exact remote-ledger identity is the later 2026-08-08 reconstruction above.
 - PR #157 performed no Sites publish and no database apply. PR #155 / Sites v22 remains historical parity evidence rather than current production authority.
 - The bundled readiness tracker is immutable historical v22 evidence. It is intentionally not rewritten inside an exact live-source mirror and is not current production authority.
 - V36 automates verified intake, exact-byte deduplication, internal content packaging, and unscheduled Ready evidence. Team Faraz sees consolidated exceptions. Bad media is preserved and diagnosed; it is not automatically edited or resized, and near-duplicate merging remains advisory.

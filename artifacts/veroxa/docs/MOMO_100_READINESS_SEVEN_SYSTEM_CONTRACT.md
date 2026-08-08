@@ -81,7 +81,7 @@ The canonical executable contract now lives only in the active Sites and Supabas
 - `artifacts/veroxa-sites/app/momo-preconnection-readiness.ts` keeps owner-access readiness separate from activation and makes activation impossible from rehearsal evidence.
 - `artifacts/veroxa-sites/app/momo-evidence-boundary.ts` permits live evaluation only for explicitly classified real-owner evidence.
 - `artifacts/veroxa-sites/app/momo-data.ts` is the typed Sites-to-Supabase read/write boundary; operational base tables remain protected and client reads stay sanitized.
-- `supabase/migrations/20260713010710_momo_full_operating_system_v1.sql` is the durable seven-system foundation. Later migrations, including `20260802010000_momo_upload_veroxa_ready_v2.sql` and `20260802013000_momo_client_pipeline_readback_v2.sql`, add exact-byte lineage, immutable rights/evidence links, disabled external writes, and client-safe status projection without weakening the final gate.
+- `supabase/migrations/20260713010710_momo_full_operating_system_v1.sql` is the durable seven-system foundation. Later migrations, including `20260802063124_momo_upload_veroxa_ready_v2.sql` and `20260802063133_momo_client_pipeline_readback_v2.sql`, add exact-byte lineage, immutable rights/evidence links, disabled external writes, and client-safe status projection without weakening the final gate.
 
 ## Verification and controlled external commands
 

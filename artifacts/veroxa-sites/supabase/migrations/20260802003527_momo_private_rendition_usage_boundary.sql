@@ -77,3 +77,4 @@ revoke all on function public.veroxa_attach_momo_rendition_v1(
 grant execute on function public.veroxa_attach_momo_rendition_v1(
   uuid,uuid,uuid,uuid,text,text,smallint,text,jsonb
 ) to authenticated;
+

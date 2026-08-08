@@ -4,6 +4,13 @@ Status: highest-priority governing build direction as of 2026-08-05.
 
 Read this file first before planning, building, reviewing, merging, deploying, or recommending Momo outreach. If an older roadmap or status note conflicts with this file, follow this file and Faraz's newest explicit instruction.
 
+## 2026-08-08 — reviewed local predeployment candidate (current)
+
+- **Observed live baseline:** Sites v36 remains 185 files at `caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7`. The exact remote 37-migration ledger reconstructed on 2026-08-08 is `d306d26cb633ef943afdb7efd01a3cde70249a096ef783d1b0d51eb5d4a1a429` through `20260802063829_momo_pipeline_query_indexes_v2.sql` (SHA-256 `106d346be34583446d22de0f6866b5b8937feb766a3a229339dbf1c1768fdfcd`). `9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90` is the historical v36 repository/Sites-mirror fingerprint, not the exact remote ledger.
+- **Candidate truth:** the candidate is local, unpublished, and unapplied: 200 Sites files at `929e05cf68a6af5176811f49321ec108e617b93a08153b65b3f86b109d0c8c18`, with 42 mirrored migrations at `dc565dd1f5f4a5efe6a2b253e7437e93f6364b5581c56bb811969fa7241a7a84`. There is no PR, merge, workflow result, database apply, Sites publish, production provider connection, or activation evidence.
+- **Private policy evaluation:** the final blinded `gpt-5.6-luna` pass succeeded on 10/10 live cases and 27/27 combined checks after two safe failed specification passes. The retained reports record 30 no-retry requests with `store:false`, no tools, and no external writes; current source hashes independently bind those controls only for the final 10-request v3 pass. The completed aggregate conservative cost upper bound was USD $0.0080502 of the authorized USD $2; the runner has no atomic cross-process lifetime ledger. `MOMO_PRIVATE_POLICY_EVAL_2026-08-08.json` binds this scope and its limitations. This is local synthetic control evidence, not production-provider, Momo-rehearsal, deployment, or activation proof.
+- **Blocked rollout and known ACL residual:** apply stage 1 migrations `01210` and `01430`; publish and verify Audit v2 plus Client v3; then apply stage 2 migrations `01842`, `01853`, and separately review `02609`. Exact live membership evidence shows `postgres` is not a member of `supabase_admin`, so `02609` will skip `supabase_admin` default ACLs. This remains a known residual; the migration is not comprehensive default-ACL closure.
+
 Also read:
 
 - `MOMO_FOUNDING_PILOT_COMMITMENT_AND_ONBOARDING_GATE.md`
@@ -28,8 +35,8 @@ Also read:
 
 ## 2026-08-02 — Momo upload-to-Veroxa-Ready v36 live; GitHub parity verified
 
-- **Live runtime:** Sites v36 is live from `b8122642b72e5d4e6e74c379469f2a157781ab3d`; its canonical 185-file source tree is `caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7`. Supabase has 37 migrations through `20260802020000_momo_pipeline_query_indexes_v2.sql` with tree hash `9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90`.
-- **GitHub parity:** PR #157 passed all four workflows at reviewed head `d3a63d25644fc699d1f521f8f803e5bd95daae49`, had zero unresolved review threads, merged at `aafebf93a6bc40f9578c29f4a25371f8203d0387`, and passed all four push workflows. GitHub main now matches the already-live v36 source and 37-migration ledger.
+- **Historical live runtime:** Sites v36 is live from `b8122642b72e5d4e6e74c379469f2a157781ab3d`; its canonical 185-file source tree is `caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7`. Its historical repository/Sites mirror had 37 migrations at `9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90`; the exact remote-ledger reconstruction is recorded in the current section above.
+- **Historical GitHub parity:** PR #157 passed all four workflows at reviewed head `d3a63d25644fc699d1f521f8f803e5bd95daae49`, had zero unresolved review threads, merged at `aafebf93a6bc40f9578c29f4a25371f8203d0387`, and passed all four push workflows. It established v36 source and repository/Sites-mirror parity; it does not prove the current local candidate or the later reconstructed remote-ledger identity.
 - **Reconciliation boundary:** PR #157 required and performed no Sites publish and no database apply. PR #155 / Sites v22 remains historical parity evidence.
 - **Internal behavior:** a valid Momo JPG is finalized immediately; exact-byte duplicates reuse one canonical processing identity without combining permissions; each upload, rights record, transition, exception, and Ready event remains attributable and append-only. Ready is internal and unscheduled. Team Faraz handles consolidated exceptions rather than routine scheduling or approval work.
 - **Media boundary:** near-duplicate merging remains advisory. A bad image is preserved and becomes one evidenced exception; v36 does not automatically resize or edit it. The separate legacy Team rendition flow is not part of the automatic v2 chain.

@@ -21,6 +21,7 @@ import {
   uploadMomoClientMedia,
   type MomoClientMessage,
   type MomoClientMediaUploadOutcome,
+  type MomoClientAttentionReason,
   type MomoClientPublicConfig,
   type MomoClientRequest,
   type MomoClientSnapshot,
@@ -62,6 +63,12 @@ const EMPTY_SNAPSHOT: MomoClientSnapshot = {
 };
 
 const label = (value: string) => value.replace(/[._-]+/g, " ").replace(/\b\w/g, (character) => character.toUpperCase());
+const clientAttentionMessage: Record<MomoClientAttentionReason, string> = {
+  permission_needs_update: "Permission needs to be renewed or confirmed before preparation can continue.",
+  image_needs_replacement: "This image needs a clearer replacement before preparation can continue.",
+  checking_temporarily_unavailable: "Veroxa cannot confirm this image right now. Please try again later.",
+  preparation_needs_veroxa_review: "Team Faraz is reviewing this image and will ask if you need to act.",
+};
 const when = (value: string | null) => {
   if (!value || !Number.isFinite(Date.parse(value))) return "Not recorded";
   return new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
@@ -223,7 +230,7 @@ function Dashboard({ snapshot }: { snapshot: MomoClientSnapshot }) {
     <Intro eyebrow="MOMO’S HOUSE SAN ANTONIO" title="Momo’s House workspace" description="Review restaurant details, share media, make content decisions, send requests, and read approved updates." />
     <section className="momo-boundary"><strong>Your decisions stay in your control</strong><span>Veroxa keeps work private until the required review and your approval are recorded.</span><em>Private</em></section>
     <section className="momo-metrics"><article><span>Profile details</span><strong>{snapshot.profile.truthFields.length}</strong><small>restaurant facts on file</small></article><article><span>Media</span><strong>{snapshot.media.length}</strong><small>private items shared</small></article><article><span>Content decisions</span><strong>{pendingDecisions}</strong><small>waiting for you</small></article><article><span>Approved updates</span><strong>{snapshot.reports.length}</strong><small>available reports</small></article></section>
-    <section className="momo-module-grid client-action-grid"><a href={clientRoutes.requests}><strong>Requests</strong><span>Ask Veroxa for help and keep the conversation together.</span><b>Open requests →</b></a><a href={clientRoutes.setup}><strong>Restaurant setup</strong><span>Review the business details Veroxa has on file.</span><b>Review setup →</b></a><a href={clientRoutes.media}><strong>Media library</strong><span>Share a private JPG food image and follow it to unscheduled Veroxa Ready.</span><b>Open media →</b></a><a href={clientRoutes.content}><strong>Content</strong><span>Review only directions that need your decision; routine preparation stays automatic.</span><b>Open content →</b></a><a href={clientRoutes.reports}><strong>Reports</strong><span>Read only approved, evidence-backed updates.</span><b>Open reports →</b></a><a href={clientRoutes.services}><strong>Services</strong><span>See public profile records and what information may be needed later.</span><b>Review records →</b></a></section>
+    <section className="momo-module-grid client-action-grid"><a href={clientRoutes.requests}><strong>Requests</strong><span>Ask Veroxa for help and keep the conversation together.</span><b>Open requests →</b></a><a href={clientRoutes.setup}><strong>Restaurant setup</strong><span>Review the business details Veroxa has on file.</span><b>Review setup →</b></a><a href={clientRoutes.media}><strong>Media library</strong><span>Share a private JPG food image and follow it to unscheduled Veroxa Ready.</span><b>Open media →</b></a><a href={clientRoutes.content}><strong>Content</strong><span>Review only directions that need your decision; routine preparation continues privately.</span><b>Open content →</b></a><a href={clientRoutes.reports}><strong>Reports</strong><span>Read only approved, evidence-backed updates.</span><b>Open reports →</b></a><a href={clientRoutes.services}><strong>Services</strong><span>See public profile records and what information may be needed later.</span><b>Review records →</b></a></section>
   </div>;
 }
 
@@ -283,18 +290,18 @@ function Setup({ snapshot, restaurantId, busy, run }: { snapshot: MomoClientSnap
 
 function mediaUploadAttentionMessage(errorCode: string, retryAvailable: boolean): string {
   const retry = retryAvailable
-    ? " Use Retry automatic verification below; the saved original will be checked again without another upload."
+    ? " Use Retry verification below; the saved original will be checked again without another upload."
     : " Refresh the media library or ask Veroxa for help; do not upload repeated copies.";
   if (errorCode === "media_not_platform_ready") {
-    return `Your original was saved privately, but this JPG did not pass the automatic byte, dimensions, or aspect-ratio checks. It was not marked verified.${retry}`;
+    return `Your original was saved privately, but this JPG did not pass the file, dimensions, or aspect-ratio checks. It was not marked verified.${retry}`;
   }
   if (errorCode === "media_verification_failed") {
-    return `Your original was saved privately, but its storage record could not be matched safely. It was not marked verified.${retry}`;
+    return `Your original was saved privately, but Veroxa could not match it safely. It was not marked verified.${retry}`;
   }
   if (errorCode === "media_registration_response_invalid") {
-    return "Your original was saved privately, but Veroxa could not confirm its registration identifier. It was not marked verified. Refresh the media library or ask Veroxa for help; do not upload repeated copies.";
+    return "Your original was saved privately, but Veroxa could not confirm it. It was not marked verified. Refresh the media library or ask Veroxa for help; do not upload repeated copies.";
   }
-  return `Your original was saved privately, but automatic verification could not finish. Nothing was posted or connected.${retry}`;
+  return `Your original was saved privately, but verification could not finish. Nothing was posted or connected.${retry}`;
 }
 
 function Media({ snapshot, restaurantId, busy, run }: { snapshot: MomoClientSnapshot; restaurantId: string; busy: boolean; run: MomoClientRun }) {
@@ -344,8 +351,8 @@ function Media({ snapshot, restaurantId, busy, run }: { snapshot: MomoClientSnap
     setPendingVerification(null);
     setUploadError("");
     return outcome.status === "duplicate"
-      ? "These exact bytes were already verified. Veroxa linked this upload to one processing identity while preserving its separate permission record. Nothing was posted."
-      : "Your image was saved privately and passed automatic verification. Nothing was posted or connected.";
+      ? "Veroxa recognized the same image and avoided duplicate work. This upload and its permission history remain separate. Nothing was posted."
+      : "Your image was saved privately and passed verification. Nothing was posted or connected.";
   };
   const submitUpload = async (): Promise<string> => {
     if (!file) throw new Error("media_file_required");
@@ -375,34 +382,39 @@ function Media({ snapshot, restaurantId, busy, run }: { snapshot: MomoClientSnap
     renditionStatus: newest?.renditionStatus,
   });
   const newestV2Known = Boolean(newest?.pipelineStatus);
-  const newestV2Ready = newest?.pipelineStatus === "veroxa_ready";
+  const newestV2Ready = newest?.pipelineStatus === "veroxa_ready" &&
+    newestWorkflow.rightsConfirmed;
   const newestV2Verified = newest?.pipelineVerificationStatus === "verified";
-  const newestV2Preparing = newest?.pipelineStatus === "processing";
-  const newestV2Attention = newest?.pipelineStatus === "needs_attention";
+  const newestV2Preparing = newest?.pipelineStatus === "processing" &&
+    newestWorkflow.rightsConfirmed;
+  const newestV2Attention = newest?.pipelineStatus === "needs_attention" ||
+    (newestV2Known && !newestWorkflow.rightsConfirmed);
   const newestReady = newestV2Ready || (!newestV2Known && newestWorkflow.ready);
-  const newestVerified = newestV2Known ? newestV2Verified : newestWorkflow.reviewApproved;
+  const newestVerified = newestV2Known
+    ? newestV2Verified && !newestV2Attention
+    : newestWorkflow.reviewApproved;
   const newestPrepared = newestV2Known
     ? newestV2Preparing || newestV2Ready
     : newestWorkflow.improvementReady;
 
   const readbackUnavailable = Boolean(newest && newestWorkflow.reviewApproved && !snapshot.mediaReadbackAvailable);
-  return <div className="view"><Intro eyebrow="PRIVATE MEDIA" title="Share real Momo food images" description="Upload one eligible JPG for automatic private verification. Team Faraz steps in only if a real exception needs attention; nothing is posted from this screen." />
+  return <div className="view"><Intro eyebrow="PRIVATE MEDIA" title="Share real Momo food images" description="Upload one eligible JPG for private verification. Team Faraz steps in only if a real exception needs attention; nothing is posted from this screen." />
     <section className="momo-media-journey" aria-label="Media workflow">
-      <div><p className="eyebrow">WHAT HAPPENS NEXT</p><h2>{newestReady ? "Your newest image is Veroxa Ready" : newestV2Attention ? "Your newest upload needs one exception resolved" : newest ? "Your newest upload is in progress" : "Your first upload starts here"}</h2><p>{newest && !snapshot.mediaPipelineReadbackAvailable ? "The automatic workflow status is temporarily unavailable. Your original remains private and unchanged." : newest && !newestEditable ? "This earlier file is safely stored, but this format is not supported by the verified workflow." : newest?.exactDuplicate ? `Veroxa linked these exact bytes to one processing identity without duplicate work. This upload keeps its own permission history${newest.processingAssetId ? `; the current processing source is ${newest.isProcessingSource ? "this upload" : `verified upload ${newest.processingAssetId.slice(0, 8)}…`}` : ""}.` : newestV2Ready ? "A verified processing upload is bound to an evidence-complete, unscheduled content package. Its permission record is the only permission evidence used. Nothing was posted or connected." : newestV2Attention ? "The workflow stopped safely with recorded evidence. Team Faraz sees one consolidated exception instead of routine tasks." : newestV2Preparing ? "The selected verified image passed intake. Captions, claims, SEO, hashtags, and alt text are being prepared privately using only that upload’s permission record." : newestV2Verified ? "The exact saved bytes and this upload’s permission record are verified; private content preparation will continue automatically." : readbackUnavailable ? "Legacy rendition status is temporarily unavailable. Your original remains private and unchanged." : newestWorkflow.nextAction === "ready" && newest?.renditionStoragePath ? "The unchanged original and verified legacy rendition are available below. Nothing was posted." : newestWorkflow.nextAction === "confirm_rights" ? "The permission record needs attention before work can continue." : "Choose a real Momo JPG below."}</p></div>
-      <ol><li className={newestWorkflow.uploaded ? "done" : "current"}><b>1</b><span><strong>Uploaded</strong><small>{newestWorkflow.uploaded ? "Private original saved" : "Choose a file"}</small></span></li><li className={newestVerified ? "done" : newestWorkflow.uploaded ? "current" : ""}><b>2</b><span><strong>Verify</strong><small>{newestVerified ? "Exact bytes and rights verified" : "Automatic file checks"}</small></span></li><li className={newestPrepared ? newestV2Ready ? "done" : "current" : newestVerified ? "current" : ""}><b>3</b><span><strong>Prepare content</strong><small>{newestV2Ready ? "Claims and copy validated" : "Private AI preparation"}</small></span></li><li className={newestReady ? "done" : ""}><b>4</b><span><strong>Veroxa Ready</strong><small>{newestReady ? "Evidence complete · unscheduled" : "No schedule or posting"}</small></span></li></ol>
+      <div><p className="eyebrow">WHAT HAPPENS NEXT</p><h2>{newestReady ? "Your newest image is Veroxa Ready" : newestV2Attention ? "Your newest upload needs one exception resolved" : newest ? "Your newest upload is in progress" : "Your first upload starts here"}</h2><p>{newest && !snapshot.mediaPipelineReadbackAvailable ? "The workflow status is temporarily unavailable. Your original remains private and unchanged." : newest && !newestEditable ? "This earlier file is safely stored, but this format is not supported by the verified workflow." : newestV2Attention ? "Preparation stopped safely. Team Faraz sees one clear exception instead of routine tasks." : newest?.exactDuplicate ? "Veroxa recognized the same image and avoided duplicate work. This upload and its permission history remain separate." : newestV2Ready ? "This image is evidence-complete and unscheduled. Nothing was posted or connected." : newestV2Preparing ? "This verified image is being prepared privately using its current permission record." : newestV2Verified ? "The verified image passed Veroxa’s content and permission checks; private preparation can continue." : readbackUnavailable ? "Legacy rendition status is temporarily unavailable. Your original remains private and unchanged." : newestWorkflow.nextAction === "ready" && newest?.renditionStoragePath ? "The unchanged original and verified legacy rendition are available below. Nothing was posted." : newestWorkflow.nextAction === "confirm_rights" ? "The permission record needs attention before work can continue." : "Choose a real Momo JPG below."}</p></div>
+      <ol><li className={newestWorkflow.uploaded ? "done" : "current"}><b>1</b><span><strong>Uploaded</strong><small>{newestWorkflow.uploaded ? "Private original saved" : "Choose a file"}</small></span></li><li className={newestVerified ? "done" : newestWorkflow.uploaded ? "current" : ""}><b>2</b><span><strong>Verify</strong><small>{newestVerified ? "Image and permission verified" : "Private file checks"}</small></span></li><li className={newestPrepared ? newestV2Ready ? "done" : "current" : newestVerified ? "current" : ""}><b>3</b><span><strong>Prepare content</strong><small>{newestV2Ready ? "Claims and copy validated" : "Private preparation"}</small></span></li><li className={newestReady ? "done" : ""}><b>4</b><span><strong>Veroxa Ready</strong><small>{newestReady ? "Evidence complete · unscheduled" : "No schedule or posting"}</small></span></li></ol>
       <em>Private · no posting</em>
     </section>
-    <form id="client-media-upload" className="momo-panel momo-form client-media-upload" onSubmit={(event) => { event.preventDefault(); if (!file || !rightsConfirmed || invalidExpiry) return; void run(submitUpload, "Your image passed automatic verification."); }}>
+    <form id="client-media-upload" className="momo-panel momo-form client-media-upload" onSubmit={(event) => { event.preventDefault(); if (!file || !rightsConfirmed || invalidExpiry) return; void run(submitUpload, "Your image passed verification."); }}>
       <div className="momo-panel-heading"><div><p className="eyebrow">STEP 1 · UPLOAD</p><h2>Add a real Momo food image</h2><small>JPG · 10 KB to 5 MB · the private original remains unchanged.</small></div></div>
       <label className="client-file-picker">Food image<input key={uploadKey} type="file" accept="image/jpeg,.jpg,.jpeg" onChange={(event) => chooseFile(event.target.files?.[0] || null)} /><span>{file ? file.name : "Choose from your phone or computer"}</span></label>
       {uploadError && <p className="momo-warning" role="alert">{uploadError}</p>}
-      {pendingVerification && <button type="button" className="momo-preview-button" disabled={busy} onClick={() => void run(retryVerification, "Automatic verification completed.")}>{busy ? "Checking saved original…" : "Retry automatic verification"}</button>}
+      {pendingVerification && <button type="button" className="momo-preview-button" disabled={busy} onClick={() => void run(retryVerification, "Verification completed.")}>{busy ? "Checking saved original…" : "Retry verification"}</button>}
       <details className="client-media-permission"><summary><span>Allowed preparation</span><strong>{scope.length ? scope.map(label).join(", ") : "Choose at least one"}</strong></summary><fieldset className="momo-scope"><legend>Where Veroxa may prepare this image</legend>{[["instagram", "Instagram"], ["facebook", "Facebook"], ["google_business", "Google Business"]].map(([value, text]) => <label className="momo-check" key={value}><input type="checkbox" checked={scope.includes(value)} onChange={() => toggle(value)} /><span>{text}</span></label>)}</fieldset><label>Permission end date (optional)<input type="date" min={momoToday} value={expiresAt} onChange={(event) => { setRightsConfirmed(false); setExpiresAt(event.target.value); }} /></label>{invalidExpiry && <p className="momo-warning">Choose today or a future date.</p>}</details>
       <label className="momo-check client-rights-check"><input type="checkbox" checked={rightsConfirmed} onChange={(event) => setRightsConfirmed(event.target.checked)} /><span>I confirm I own this image or have permission to provide it for the selected preparation uses.</span></label>
-      <p className="momo-form-note">Selecting a preparation use does not connect an account or authorize posting. Veroxa verifies the exact saved bytes; a failed check keeps the original private and offers a retry without another upload.</p>
+      <p className="momo-form-note">Selecting a preparation use does not connect an account or authorize posting. A failed check keeps the original private and offers a retry without another upload.</p>
       <button className="primary-button" disabled={busy || !file || !rightsConfirmed || scope.length === 0 || invalidExpiry || Boolean(pendingVerification)}>{busy ? "Uploading and verifying…" : "Upload and verify privately"}</button>
     </form>
-    {!snapshot.mediaPipelineReadbackAvailable && snapshot.media.length > 0 && <p className="momo-warning client-readback-warning" role="status">Automatic workflow status is temporarily unavailable. Originals and permissions remain safe; refresh this page to check again.</p>}
+    {!snapshot.mediaPipelineReadbackAvailable && snapshot.media.length > 0 && <p className="momo-warning client-readback-warning" role="status">Preparation status is temporarily unavailable. Originals and permissions remain safe; refresh this page to check again.</p>}
     <section className="momo-panel" id="client-media-library"><div className="momo-panel-heading"><div><p className="eyebrow">YOUR MEDIA</p><h2>Private originals and verified history</h2><small>Newest first. Veroxa uses an unchanged original when it already meets the platform-safe envelope; any actual legacy rendition is labeled separately.</small></div><span>{snapshot.media.length}</span></div>{snapshot.media.length === 0 ? <Empty title="No media has been shared." detail="Upload a first image above when it is ready." /> : <div className="momo-card-grid client-media-grid">{snapshot.media.map((item, index) => <ClientMediaCard key={item.id} item={item} eager={index === 0} readbackAvailable={snapshot.mediaReadbackAvailable} restaurantId={restaurantId} busy={busy} revokeReason={revokeReason[item.id] || ""} setRevokeReason={(value) => setRevokeReason((current) => ({ ...current, [item.id]: value }))} run={run} />)}</div>}</section>
   </div>;
 }
@@ -439,26 +451,29 @@ function ClientMediaCard({
 
   const editableImage = item.mimeType === "image/jpeg";
   const v2Known = item.pipelineStatus !== null;
-  const v2Ready = item.pipelineStatus === "veroxa_ready";
+  const v2Ready = item.pipelineStatus === "veroxa_ready" && workflow.rightsConfirmed;
   const v2Verified = item.pipelineVerificationStatus === "verified";
-  const v2Preparing = item.pipelineStatus === "processing";
-  const v2Attention = item.pipelineStatus === "needs_attention";
+  const v2Preparing = item.pipelineStatus === "processing" && workflow.rightsConfirmed;
+  const v2Attention = item.pipelineStatus === "needs_attention" ||
+    (v2Known && !workflow.rightsConfirmed);
+  const v2AttentionReasons: MomoClientAttentionReason[] = workflow.rightsConfirmed
+    ? item.pipelineAttentionReasons
+    : ["permission_needs_update"];
   const ready = v2Ready || (!v2Known && workflow.ready);
-  const status = item.pipelineStatus ?? (workflow.ready ? "ready" : workflow.reviewApproved
+  const status = v2Attention ? "needs_attention" : item.pipelineStatus ?? (workflow.ready ? "ready" : workflow.reviewApproved
     ? "approved_for_improvement" : item.reviewStatus || item.status);
   return <article className="momo-small-card client-media-card">
     <div className={ready ? "client-media-comparison ready" : "client-media-comparison"}><ClientPrivateMediaPreview storagePath={item.storagePath} mimeType={item.mimeType} alt={`Private original ${item.displayFileName}`} label="Original · unchanged" eager={eager} />{item.renditionStatus === "ready" && item.renditionStoragePath && <ClientPrivateMediaPreview storagePath={item.renditionStoragePath} mimeType="image/jpeg" alt={item.renditionAltText || `Prepared version of ${item.displayFileName}`} label={`Legacy rendition · ${item.renditionWidth}×${item.renditionHeight}`} eager={eager} />}</div>
     <div><strong>{item.displayFileName}</strong><Status value={status} /></div>
     <p>{label(item.mimeType)} · {(item.fileSize / 1024 / 1024).toFixed(1)} MB</p>
-    <div className="client-media-steps" aria-label={`Workflow status for ${item.displayFileName}`}><span className="done">Uploaded</span><span className={v2Known ? v2Verified ? "done" : "current" : workflow.reviewApproved ? "done" : "current"}>Verify</span><span className={v2Known ? v2Ready ? "done" : v2Preparing || v2Verified ? "current" : "" : workflow.improvementReady ? "done" : workflow.reviewApproved ? "current" : ""}>Prepare content</span><span className={ready ? "done" : ""}>Veroxa Ready</span></div>
+    <div className="client-media-steps" aria-label={`Workflow status for ${item.displayFileName}`}><span className="done">Uploaded</span><span className={v2Known ? v2Verified && !v2Attention ? "done" : "current" : workflow.reviewApproved ? "done" : "current"}>Verify</span><span className={v2Known ? v2Ready ? "done" : v2Preparing || (v2Verified && !v2Attention) ? "current" : "" : workflow.improvementReady ? "done" : workflow.reviewApproved ? "current" : ""}>Prepare content</span><span className={ready ? "done" : ""}>Veroxa Ready</span></div>
     <small>Allowed: {item.usageScope.map(label).join(", ") || "No uses"} · {item.expiresAt ? `expires ${when(item.expiresAt)}` : "no expiry set"}</small>
     {!editableImage && <p className="momo-warning">This earlier file remains private, but this format cannot enter the verified workflow. Upload an eligible JPG replacement or <a href={clientRoutes.requests}>ask Veroxa for help</a>.</p>}
-    {item.exactDuplicate && <p className="momo-form-note">Exact bytes linked to canonical identity {item.canonicalAssetId?.slice(0, 8)}…; this upload and its permission history remain separate and preserved.</p>}
-    {item.processingAssetId && <p className="momo-form-note">Current processing source: {item.isProcessingSource ? "this verified upload" : `verified upload ${item.processingAssetId.slice(0, 8)}…`}. Veroxa uses only the selected source’s permission evidence; permissions from exact duplicates are never combined or copied.</p>}
-    {v2Attention && <p className="momo-warning">The workflow stopped safely. {item.pipelineReasonCodes.length ? item.pipelineReasonCodes.map(label).join(" · ") : "Team Faraz has one consolidated exception to resolve."}</p>}
-    {v2Preparing && <p className="momo-form-note">Verified original · automatic factual captions, SEO phrases, hashtags, alt text, and claim checks are in progress.</p>}
-    {v2Ready && <p className="momo-callout"><strong>Veroxa Ready · unscheduled.</strong> The selected unchanged processing upload is bound to an evidence-complete content package. Nothing was posted, scheduled, or connected.</p>}
-    {!v2Known && workflow.nextAction === "team_review" && <p className="momo-form-note">Next: automatic quality and permission checks continue. Team Faraz sees only a real exception.</p>}
+    {item.exactDuplicate && <p className="momo-form-note">Veroxa recognized the same image and avoided duplicate work. This upload and its permission history remain separate.</p>}
+    {v2Attention && <p className="momo-warning">Preparation stopped safely. {v2AttentionReasons.length ? v2AttentionReasons.map((reason) => clientAttentionMessage[reason]).join(" ") : "Team Faraz is reviewing it and will ask if you need to act."}</p>}
+    {v2Preparing && <p className="momo-form-note">Verified original · private factual preparation is in progress.</p>}
+    {v2Ready && <p className="momo-callout"><strong>Veroxa Ready · unscheduled.</strong> This image is evidence-complete. Nothing was posted, scheduled, or connected.</p>}
+    {!v2Known && workflow.nextAction === "team_review" && <p className="momo-form-note">Next: private quality and permission checks continue. Team Faraz sees only a real exception.</p>}
     {!v2Known && workflow.nextAction === "confirm_rights" && <p className="momo-warning">Permission is missing, expired, or withdrawn. <a href={clientRoutes.requests}>Ask Veroxa to help renew or replace this image.</a></p>}
     {!v2Known && workflow.nextAction === "improve" && (readbackAvailable ? <p className="momo-callout">This legacy item is approved for a separate private rendition. Its unchanged original remains preserved.</p> : <p className="momo-warning">Veroxa cannot verify the legacy rendition status right now. Refresh this page before taking action.</p>)}
     {!v2Known && workflow.nextAction === "ready" && <p className="momo-callout"><strong>Legacy private rendition ready.</strong> Compare any separately labeled rendition with the unchanged original above. Nothing was posted or connected.</p>}

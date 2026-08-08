@@ -1,6 +1,9 @@
+import { BoundedRequestBodyError, readBoundedRequestText } from "../../bounded-request.ts";
+import { authorizeAuditIntake } from "../../audit-intake-envelope.ts";
+
 export const runtime = "edge";
 
-const CONSENT_VERSION = "2026-07-12";
+const CONSENT_VERSION = "2026-07-12" as const;
 const MAX_BODY_BYTES = 16_384;
 
 type IntakeBody = {
@@ -29,7 +32,7 @@ function safeHttpUrl(value: unknown): string | null {
   if (!raw) return null;
   try {
     const url = new URL(raw);
-    if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) return null;
+    if (!["http:", "https:"].includes(url.protocol) || url.username || url.password) return null;
     return url.toString();
   } catch {
     return null;
@@ -47,25 +50,7 @@ function response(body: Record<string, unknown>, status: number): Response {
   });
 }
 
-async function hmacHex(secret: string, value: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const key = await crypto.subtle.importKey(
-    "raw",
-    encoder.encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
-  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(value));
-  return Array.from(new Uint8Array(signature), (byte) => byte.toString(16).padStart(2, "0")).join("");
-}
-
 export async function POST(request: Request): Promise<Response> {
-  const configuredLength = Number(request.headers.get("content-length") || 0);
-  if (!Number.isFinite(configuredLength) || configuredLength > MAX_BODY_BYTES) {
-    return response({ accepted: false }, 413);
-  }
-
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   const intakeSecret = process.env.AUDIT_INTAKE_HMAC_SECRET;
@@ -73,12 +58,9 @@ export async function POST(request: Request): Promise<Response> {
 
   let rawBody = "";
   try {
-    rawBody = await request.text();
-  } catch {
-    return response({ accepted: false }, 400);
-  }
-  if (new TextEncoder().encode(rawBody).byteLength > MAX_BODY_BYTES) {
-    return response({ accepted: false }, 413);
+    rawBody = await readBoundedRequestText(request, MAX_BODY_BYTES);
+  } catch (error) {
+    return response({ accepted: false }, error instanceof BoundedRequestBodyError ? error.status : 400);
   }
 
   let body: IntakeBody;
@@ -105,21 +87,14 @@ export async function POST(request: Request): Promise<Response> {
   const formStartedAt = text(body.formStartedAt, 64);
   const honeypot = text(body.honeypot, 200) || null;
 
-  if (
-    restaurantName.length < 2 ||
-    city.length < 2 ||
-    state.length < 2 ||
-    (!contactEmail && !contactPhone) ||
-    !formStartedAt ||
-    idempotencyKey.length < 16 ||
-    body.consentVersion !== CONSENT_VERSION ||
-    body.consentToContact !== true
-  ) {
+  if (restaurantName.length < 2 || city.length < 2 || state.length < 2 ||
+    (!contactEmail && !contactPhone) || !formStartedAt || idempotencyKey.length < 16 ||
+    body.consentVersion !== CONSENT_VERSION || body.consentToContact !== true) {
     return response({ accepted: false }, 400);
   }
   if (body.websiteUrl && !websiteUrl) return response({ accepted: false }, 400);
   if (body.googleProfileUrl && !googleProfileUrl) return response({ accepted: false }, 400);
-  if (contactEmail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contactEmail)) {
+  if (contactEmail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/u.test(contactEmail)) {
     return response({ accepted: false }, 400);
   }
   const phoneDigits = contactPhone?.replace(/\D/g, "") || "";
@@ -128,13 +103,35 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   const trustedIp = request.headers.get("cf-connecting-ip")?.trim().slice(0, 80) || "unknown";
-  const day = new Date().toISOString().slice(0, 10);
-  const fingerprint = await hmacHex(intakeSecret, `ip:${trustedIp}|contact:${contactEmail || contactPhone}|day:${day}`);
-  const intakeToken = await hmacHex(intakeSecret, fingerprint);
+  let authorization: Awaited<ReturnType<typeof authorizeAuditIntake>>;
+  try {
+    authorization = await authorizeAuditIntake({
+      secret: intakeSecret,
+      trustedIp,
+      fields: {
+        restaurantName,
+        city,
+        state,
+        websiteUrl,
+        googleProfileUrl,
+        contactName,
+        contactEmail,
+        contactPhone,
+        contactNote,
+        consentToContact: true,
+        consentVersion: CONSENT_VERSION,
+        formStartedAt,
+        honeypot,
+        idempotencyKey,
+      },
+    });
+  } catch {
+    return response({ accepted: false }, 503);
+  }
 
   let upstream: Response;
   try {
-    upstream = await fetch(`${url.replace(/\/$/, "")}/rest/v1/rpc/submit_audit_request_v1`, {
+    upstream = await fetch(`${url.replace(/\/$/, "")}/rest/v1/rpc/submit_audit_request_v2`, {
       method: "POST",
       headers: {
         apikey: publishableKey,
@@ -155,20 +152,31 @@ export async function POST(request: Request): Promise<Response> {
         p_consent_version: CONSENT_VERSION,
         p_form_started_at: formStartedAt,
         p_honeypot: honeypot,
-        p_fingerprint: fingerprint,
-        p_intake_token: intakeToken,
+        p_fingerprint: authorization.ipQuotaFingerprint,
+        p_intake_token: authorization.intakeToken,
         p_idempotency_key: idempotencyKey,
+        p_envelope_version: authorization.envelopeVersion,
+        p_envelope_issued_at: authorization.issuedAt,
+        p_envelope_expires_at: authorization.expiresAt,
+        p_envelope_nonce: authorization.nonce,
+        p_envelope_canonical: authorization.canonical,
+        p_ip_quota_fingerprint: authorization.ipQuotaFingerprint,
       }),
       signal: AbortSignal.timeout(8_000),
     });
   } catch {
     return response({ accepted: false }, 503);
   }
-  const data = await upstream.json().catch(() => null) as Array<{ reference_code?: string }> | { message?: string } | null;
+  const data = await upstream.json().catch(() => null) as
+    | Array<{ reference_code?: string }>
+    | { message?: string }
+    | null;
   if (!upstream.ok) {
     const errorText = JSON.stringify(data || {});
     if (errorText.includes("rate_limited")) return response({ accepted: false }, 429);
-    if (errorText.includes("submission_rejected") || upstream.status === 400) return response({ accepted: false }, 400);
+    if (errorText.includes("submission_rejected") || upstream.status === 400) {
+      return response({ accepted: false }, 400);
+    }
     return response({ accepted: false }, 503);
   }
   const reference = Array.isArray(data) ? data[0]?.reference_code : null;

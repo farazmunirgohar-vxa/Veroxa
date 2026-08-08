@@ -1,12 +1,20 @@
 # ChatGPT Sites Migration and Source-of-Truth
 
-Status: active migration and deployment authority as of 2026-08-02.
+Status: active migration and deployment authority as of 2026-08-08.
+
+## Reviewed local predeployment candidate — current authority
+
+Sites v36 remains the immutable live baseline: 185 files at `caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7`. The exact remote 37-migration ledger reconstructed on 2026-08-08 is `d306d26cb633ef943afdb7efd01a3cde70249a096ef783d1b0d51eb5d4a1a429` through `20260802063829_momo_pipeline_query_indexes_v2.sql` (file SHA-256 `106d346be34583446d22de0f6866b5b8937feb766a3a229339dbf1c1768fdfcd`). `9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90` is the historical v36 repository/Sites-mirror fingerprint, not the exact remote ledger.
+
+The reviewed policy-eval-closed candidate is local, unpublished, and unapplied: 200 Sites files at `929e05cf68a6af5176811f49321ec108e617b93a08153b65b3f86b109d0c8c18`, with 42 mirrored migrations at `dc565dd1f5f4a5efe6a2b253e7437e93f6364b5581c56bb811969fa7241a7a84`. Its private synthetic policy evidence is hash-bound in `MOMO_PRIVATE_POLICY_EVAL_2026-08-08.json`; final v3 passed 10/10 live cases plus 27/27 combined checks, and the completed three-attempt aggregate stayed under USD $2. The evidence explicitly records that only final-v3 request controls are source-hash-proven and no atomic cross-process lifetime cost ledger exists. No PR, merge, hosted workflows, database apply, Sites publication, production provider connection, or activation has occurred.
+
+The rollout is blocked: apply `01210` and `01430`; publish and verify Audit v2 plus Client v3; only then apply `01842`, `01853`, and explicitly review `02609`. Exact live membership evidence shows `postgres` is not a member of `supabase_admin`, so `02609` will skip `supabase_admin` default ACLs. That is a known residual; this migration must not be described as comprehensive default-ACL closure.
 
 ## Sites v36 verified GitHub-parity override
 
-Sites v36 is live from checkout `b8122642b72e5d4e6e74c379469f2a157781ab3d`. After excluding the tracked-but-generated `.vinext` cache, the live checkout and `artifacts/veroxa-sites` mirror contain the same 185 canonical files at tree SHA-256 `caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7`. Production Supabase has 37 applied migrations through `20260802020000_momo_pipeline_query_indexes_v2.sql`; the 37-file canonical migration tree is `9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90`.
+Sites v36 is live from checkout `b8122642b72e5d4e6e74c379469f2a157781ab3d`. After excluding the tracked-but-generated `.vinext` cache, the historical live checkout and repository mirror contain the same 185 canonical files at tree SHA-256 `caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7`. The historical 37-file repository/Sites-mirror migration tree is `9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90`; use the current authority above for the exact remote-ledger name and fingerprint.
 
-PR #157 passed CI, Sites Verify, Supabase Verify, and Veroxa Verify at reviewed head `d3a63d25644fc699d1f521f8f803e5bd95daae49`, had zero unresolved review threads, and merged to GitHub `main` at `aafebf93a6bc40f9578c29f4a25371f8203d0387`. All four push-to-main workflows then passed. Canonical GitHub now matches the already-live Sites tree and production migration ledger.
+PR #157 passed CI, Sites Verify, Supabase Verify, and Veroxa Verify at reviewed head `d3a63d25644fc699d1f521f8f803e5bd95daae49`, had zero unresolved review threads, and merged to GitHub `main` at `aafebf93a6bc40f9578c29f4a25371f8203d0387`. All four push-to-main workflows then passed. That is historical v36 GitHub/source/repository-mirror evidence; it does not prove this local candidate or the later exact remote-ledger reconstruction.
 
 PR #157 performed no Sites publish and no database apply; it reconciled source already live before the PR. PR #155 / Sites v22 remains immutable historical parity evidence. This evidence-only closeout also requires no Sites deployment or database apply, and its CI attestation binds only the closeout checkout—not the earlier merge or a production action.
 

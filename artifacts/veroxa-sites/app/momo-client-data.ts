@@ -107,12 +107,8 @@ export type MomoClientSnapshot = {
     renditionHeight: number | null;
     pipelineStatus: "uploaded" | "verified" | "processing" | "needs_attention" | "veroxa_ready" | null;
     pipelineVerificationStatus: "verified" | null;
-    canonicalAssetId: string | null;
     exactDuplicate: boolean;
-    processingAssetId: string | null;
-    isProcessingSource: boolean;
-    pipelineReasonCodes: string[];
-    readyPackageId: string | null;
+    pipelineAttentionReasons: MomoClientAttentionReason[];
   }>;
   contentDirections: Array<{
     contentItemId: string;
@@ -330,12 +326,8 @@ export function parseMomoClientSnapshot(value: unknown): MomoClientSnapshot {
       renditionHeight: null,
       pipelineStatus: null,
       pipelineVerificationStatus: null,
-      canonicalAssetId: null,
       exactDuplicate: false,
-      processingAssetId: null,
-      isProcessingSource: false,
-      pipelineReasonCodes: [],
-      readyPackageId: null,
+      pipelineAttentionReasons: [],
     })).filter((row) => row.id
       && /^restaurants\/[0-9a-f-]{36}\/uploads\//.test(row.storagePath)
       && Number.isFinite(row.fileSize) && row.fileSize > 0 && row.fileSize <= 104857600
@@ -384,9 +376,29 @@ export function parseMomoClientSnapshot(value: unknown): MomoClientSnapshot {
 const MOMO_CLIENT_PIPELINE_STATUSES = new Set([
   "uploaded", "verified", "processing", "needs_attention", "veroxa_ready",
 ]);
-const MOMO_CLIENT_REASON_CODE = /^[a-z0-9][a-z0-9_]{1,79}$/u;
+const MOMO_CLIENT_ATTENTION_ORDER = [
+  "permission_needs_update",
+  "image_needs_replacement",
+  "checking_temporarily_unavailable",
+  "preparation_needs_veroxa_review",
+] as const;
+export type MomoClientAttentionReason = typeof MOMO_CLIENT_ATTENTION_ORDER[number];
+const MOMO_CLIENT_ATTENTION_REASONS = new Set<MomoClientAttentionReason>(
+  MOMO_CLIENT_ATTENTION_ORDER,
+);
 
-export function mergeMomoClientUploadPipelineV2(
+function momoClientMediaRightsCurrent(
+  item: MomoClientSnapshot["media"][number],
+  now = Date.now(),
+): boolean {
+  const validFrom = item.validFrom ? Date.parse(item.validFrom) : null;
+  const expiresAt = item.expiresAt ? Date.parse(item.expiresAt) : null;
+  return item.rightsStatus === "confirmed"
+    && (validFrom === null || (Number.isFinite(validFrom) && validFrom <= now))
+    && (expiresAt === null || (Number.isFinite(expiresAt) && expiresAt > now));
+}
+
+export function mergeMomoClientUploadPipelineV3(
   snapshot: MomoClientSnapshot,
   value: unknown,
 ): MomoClientSnapshot {
@@ -397,78 +409,64 @@ export function mergeMomoClientUploadPipelineV2(
       ...item,
       pipelineStatus: null,
       pipelineVerificationStatus: null,
-      canonicalAssetId: null,
       exactDuplicate: false,
-      processingAssetId: null,
-      isProcessingSource: false,
-      pipelineReasonCodes: [],
-      readyPackageId: null,
+      pipelineAttentionReasons: [],
     })),
   };
   if (!Array.isArray(value)) return cleared;
 
   type PipelineReadback = Pick<MomoClientSnapshot["media"][number],
-    "pipelineStatus" | "pipelineVerificationStatus" | "canonicalAssetId" |
-    "exactDuplicate" | "processingAssetId" | "isProcessingSource" |
-    "pipelineReasonCodes" | "readyPackageId">;
-  const knownAssetIds = new Set(snapshot.media.map((item) => item.id));
+    "pipelineStatus" | "pipelineVerificationStatus" | "exactDuplicate" |
+    "pipelineAttentionReasons">;
+  const mediaById = new Map(snapshot.media.map((item) => [item.id, item]));
+  const knownAssetIds = new Set(mediaById.keys());
   const byAsset = new Map<string, PipelineReadback>();
   const duplicates = new Set<string>();
   for (const candidate of value) {
     if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) continue;
     const row = candidate as Record<string, unknown>;
     const assetId = typeof row.asset_id === "string" ? row.asset_id.toLowerCase() : "";
-    const canonicalAssetId = typeof row.canonical_asset_id === "string"
-      ? row.canonical_asset_id.toLowerCase() : "";
     const pipelineStatus = typeof row.pipeline_status === "string"
       ? row.pipeline_status : "";
-    const processingAssetId = row.processing_asset_id === null
-      ? null : typeof row.processing_asset_id === "string"
-        ? row.processing_asset_id.toLowerCase() : "";
-    const readyPackageId = row.ready_package_id === null
-      ? null : typeof row.ready_package_id === "string"
-        ? row.ready_package_id.toLowerCase() : "";
-    const reasonCodes = Array.isArray(row.reason_codes)
-      ? row.reason_codes.filter((item): item is string =>
-        typeof item === "string" && MOMO_CLIENT_REASON_CODE.test(item))
+    const attentionReasons = Array.isArray(row.attention_reasons)
+      ? row.attention_reasons.filter((item): item is MomoClientAttentionReason =>
+        typeof item === "string" && MOMO_CLIENT_ATTENTION_REASONS.has(
+          item as MomoClientAttentionReason,
+        ))
       : [];
-    const sortedReasons = reasonCodes.every((item, index) =>
-      index === 0 || String(reasonCodes[index - 1]) < item);
+    const sortedReasons = attentionReasons.every((item, index) =>
+      index === 0 || MOMO_CLIENT_ATTENTION_ORDER.indexOf(attentionReasons[index - 1]) <
+        MOMO_CLIENT_ATTENTION_ORDER.indexOf(item));
     const verificationStatus = row.verification_status === null
       ? null : row.verification_status === "verified" ? "verified" : "invalid";
-    if (!knownAssetIds.has(assetId) || !isMomoContentUuid(canonicalAssetId) ||
-      !MOMO_CLIENT_PIPELINE_STATUSES.has(pipelineStatus) ||
+    if (!knownAssetIds.has(assetId) || !MOMO_CLIENT_PIPELINE_STATUSES.has(pipelineStatus) ||
       typeof row.is_exact_duplicate !== "boolean" ||
-      typeof row.is_processing_source !== "boolean" ||
       row.external_write_allowed !== false || verificationStatus === "invalid" ||
-      !Array.isArray(row.reason_codes) || reasonCodes.length !== row.reason_codes.length ||
-      reasonCodes.length > 16 || new Set(reasonCodes).size !== reasonCodes.length ||
-      !sortedReasons || (readyPackageId !== null && !isMomoContentUuid(readyPackageId)) ||
-      (processingAssetId !== null && (!isMomoContentUuid(processingAssetId) ||
-        !knownAssetIds.has(processingAssetId))) ||
-      row.is_processing_source !== (processingAssetId === assetId) ||
-      (row.is_exact_duplicate && canonicalAssetId === assetId) ||
-      (!row.is_exact_duplicate && canonicalAssetId !== assetId) ||
+      !Array.isArray(row.attention_reasons) ||
+      attentionReasons.length !== row.attention_reasons.length ||
+      attentionReasons.length > MOMO_CLIENT_ATTENTION_ORDER.length ||
+      new Set(attentionReasons).size !== attentionReasons.length || !sortedReasons ||
       (["verified", "processing", "veroxa_ready"].includes(pipelineStatus) &&
         verificationStatus !== "verified") ||
-      (["processing", "veroxa_ready"].includes(pipelineStatus) &&
-        processingAssetId === null) ||
-      (pipelineStatus === "veroxa_ready" && readyPackageId === null) ||
-      (pipelineStatus !== "veroxa_ready" && readyPackageId !== null)) continue;
+      ((pipelineStatus === "needs_attention") !== (attentionReasons.length > 0))) continue;
     if (byAsset.has(assetId)) {
       duplicates.add(assetId);
       byAsset.delete(assetId);
       continue;
     }
+    const mediaItem = mediaById.get(assetId)!;
+    const rightsCurrent = momoClientMediaRightsCurrent(mediaItem);
+    const effectivePipelineStatus = rightsCurrent
+      ? pipelineStatus as PipelineReadback["pipelineStatus"]
+      : "needs_attention";
+    const effectiveAttentionReasons: MomoClientAttentionReason[] = rightsCurrent
+      ? attentionReasons
+      : ["permission_needs_update"];
     byAsset.set(assetId, {
-      pipelineStatus: pipelineStatus as PipelineReadback["pipelineStatus"],
+      pipelineStatus: effectivePipelineStatus,
       pipelineVerificationStatus: verificationStatus,
-      canonicalAssetId,
       exactDuplicate: row.is_exact_duplicate,
-      processingAssetId,
-      isProcessingSource: row.is_processing_source,
-      pipelineReasonCodes: reasonCodes,
-      readyPackageId,
+      pipelineAttentionReasons: effectiveAttentionReasons,
     });
   }
   for (const assetId of duplicates) byAsset.delete(assetId);
@@ -558,11 +556,11 @@ export async function loadMomoClientSnapshot(restaurantId: string): Promise<Momo
   const withRenditions = readback.error
     ? snapshot
     : mergeMomoClientMediaReadback(snapshot, readback.data, restaurantId);
-  const pipeline = await client.rpc("veroxa_momo_client_upload_status_v2", {
+  const pipeline = await client.rpc("veroxa_momo_client_upload_status_v3", {
     target_restaurant_id: restaurantId,
   });
   if (pipeline.error) return withRenditions;
-  return mergeMomoClientUploadPipelineV2(withRenditions, pipeline.data);
+  return mergeMomoClientUploadPipelineV3(withRenditions, pipeline.data);
 }
 
 const requestTypes = new Set<MomoClientRequest["requestType"]>([

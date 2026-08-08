@@ -3,11 +3,11 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const migration = await readFile(new URL(
-  "../supabase/migrations/20260802010000_momo_upload_veroxa_ready_v2.sql",
+  "../supabase/migrations/20260802063124_momo_upload_veroxa_ready_v2.sql",
   import.meta.url,
 ), "utf8");
 const queryIndexesMigration = await readFile(new URL(
-  "../supabase/migrations/20260802020000_momo_pipeline_query_indexes_v2.sql",
+  "../supabase/migrations/20260802063829_momo_pipeline_query_indexes_v2.sql",
   import.meta.url,
 ), "utf8");
 const lifecycle = await readFile(new URL(

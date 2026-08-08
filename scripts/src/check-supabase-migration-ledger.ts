@@ -1,32 +1,48 @@
+const __name = <T>(target: T, value: string): T =>
+  Object.defineProperty(target as object, "name", {
+    value,
+    configurable: true,
+  }) as T;
 import { createHash } from "node:crypto";
 import { readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
-  VERIFIED_GITHUB_PARITY_RELEASE_STATE,
-  VERIFIED_GITHUB_PARITY_STATUS,
-  VERIFIED_MIGRATION_EVIDENCE_SCOPE,
-  VERIFIED_PRODUCTION_EVIDENCE_STATUS,
-  V36_GITHUB_RECONCILIATION,
-  V36_OPERATIONAL_COMMIT_SCOPE,
-  type GitHubReconciliationEvidence,
+  HISTORICAL_REPOSITORY_MIGRATION_EVIDENCE_SCOPE,
+  LIVE_MIGRATION_EVIDENCE_SCOPE,
+  LOCAL_CANDIDATE_MIGRATION_EVIDENCE_SCOPE,
+  LOCAL_CANDIDATE_PENDING_MIGRATIONS,
+  TREE_HASH_ALGORITHM,
+  V36_LIVE_PARITY_EVIDENCE,
+  assertReviewedLocalCandidateManifest,
+  hashTree,
+  readDeploymentManifest,
+  repoRoot,
 } from "./release-manifest";
-
-const root = resolve(import.meta.dirname, "../..");
-const readJson = <T>(path: string): T =>
-  JSON.parse(readFileSync(resolve(root, path), "utf8")) as T;
-
-const EXPECTED_MIGRATION_TREE_SHA256 =
-  "9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90";
-const LATEST_MIGRATION = "20260802020000_momo_pipeline_query_indexes_v2.sql";
-const LATEST_MIGRATION_SHA256 =
-  "106d346be34583446d22de0f6866b5b8937feb766a3a229339dbf1c1768fdfcd";
-const SITES_V36_SOURCE_SHA256 =
-  "caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7";
-const GITHUB_MAIN_AT_RECONCILIATION =
-  "302621bf6b9ab78320abe4175b45b56e9e64ae2a";
-const GITHUB_MAIN_AFTER_RECONCILIATION = V36_GITHUB_RECONCILIATION.mergedCommit;
-
-const expectedMigrationLedger = [
+const EXPECTED_CANDIDATE_TREE_SHA256 =
+  "dc565dd1f5f4a5efe6a2b253e7437e93f6364b5581c56bb811969fa7241a7a84";
+const EXPECTED_PENDING_HASHES = new Map<string, string>([
+  [
+    "20260808001210_audit_intake_envelope_v2.sql",
+    "dbfe78e26034fa3d70851513f686c15cb332de128a242076953e90b372140983",
+  ],
+  [
+    "20260808001430_momo_client_pipeline_readback_v3.sql",
+    "987186e74590c6e484ebfee47e1c7ed384e2b4dc8c4a97ad7243ae38feb765cc",
+  ],
+  [
+    "20260808001842_retire_audit_intake_v1.sql",
+    "194b8737c12d4725bc978caa2c0b67135db6c954a34c07464bfffa4bc9dd1206",
+  ],
+  [
+    "20260808001853_retire_momo_client_pipeline_readback_v2.sql",
+    "dee985a72833f78ffcf9ed6fa18ab231ae5f00fdb10e0737d4de83e82e61ce2d",
+  ],
+  [
+    "20260808002609_future_object_default_acl_hardening.sql",
+    "ab41ed8adf7170d81dc60a51607b12497cae6d52f1c28f63639e4fef6392e01a",
+  ],
+]);
+const correctedLiveMigrationLedger = [
   "20260712213930_momo_production_foundation_v1.sql",
   "20260712213939_restaurant_audit_center_v1.sql",
   "20260712214343_production_foundation_advisor_hardening.sql",
@@ -61,16 +77,23 @@ const expectedMigrationLedger = [
   "20260802003527_momo_private_rendition_usage_boundary.sql",
   "20260802004536_momo_content_input_confirmation_fail_closed.sql",
   "20260802004541_momo_rendition_usage_transaction_boundary.sql",
+  "20260802063124_momo_upload_veroxa_ready_v2.sql",
+  "20260802063133_momo_client_pipeline_readback_v2.sql",
+  "20260802063829_momo_pipeline_query_indexes_v2.sql",
+];
+const expectedCandidateLedger = [
+  ...correctedLiveMigrationLedger,
+  ...LOCAL_CANDIDATE_PENDING_MIGRATIONS,
+];
+const retiredNormalizedFilenames = [
   "20260802010000_momo_upload_veroxa_ready_v2.sql",
   "20260802013000_momo_client_pipeline_readback_v2.sql",
-  LATEST_MIGRATION,
-] as const;
-
-const retiredActiveFilenames = [
+  "20260802020000_momo_pipeline_query_indexes_v2.sql",
+];
+const retiredHistoricalAliases = [
   "20260722000100_momo_client_media_status_v1.sql",
   "20260728044916_momo_media_ai_pilot_v1.sql",
-] as const;
-
+];
 const expectedArchived = [
   "20260601000000_m024a_first_client_metadata_schema.sql",
   "20260615010100_live_automation_v1_database_foundation.sql",
@@ -80,350 +103,64 @@ const expectedArchived = [
   "20260616010600_activity_log_foundation.sql",
   "20260616010700_ai_draft_preparation_foundation.sql",
   "20260616010800_reports_from_activity_foundation.sql",
-] as const;
-
-type ReleaseCandidate = {
-  status?: string;
-  state?: string;
-  actionScope: string;
-  basedOnGitHubMainCommit: string;
-  pullRequest: number | null;
-  githubMerged: boolean;
-  futureMergedGitHubCommit: string | null;
-  futureSitesVersion: number | null;
-  reviewedLocally: boolean;
-  candidateSourceMatchesLiveSites: boolean;
-  candidateMigrationsMatchLiveLedger: boolean;
-  githubMainMatchesCandidate: boolean;
-  fullReleaseGatePassed: boolean;
-  sourceFileCount: number;
-  sourceTreeSha256: string;
-  migrationFileCount: number;
-  migrationTreeSha256: string;
-  latestCandidateMigration: string;
-  latestCandidateMigrationSha256: string;
-  databaseChangesRequired: boolean;
-  databaseMigrationApplied: boolean;
-  sitesPublishRequired: boolean;
-  sitesPublished?: boolean;
-  sitesCandidatePublished?: boolean;
-  localReviewPassed?: boolean;
-  allFourWorkflowsGreen?: boolean | null;
-  zeroUnresolvedReviewThreads?: boolean | null;
-};
-
-type LastGitHubParityRelease = {
-  evidenceScope: string;
-  supersededAsLiveBaseline: boolean;
-  pullRequest: number;
-  githubMainCommit?: string;
-  mergedOperationalCommit?: string;
-  sitesVersion: number;
-  productionMigrationCount?: number;
-  productionMigrations?: number;
-  latestProductionMigration: string;
-  latestProductionMigrationSha256: string;
-  sitesSourceParityVerified: boolean;
-  migrationContentParityVerified: boolean;
-  migrationFilenameParityVerified: boolean;
-};
-
-type CurrentProductionObservation = {
-  evidenceStatus: string;
-  canonicalGitHubMainCommit: string;
-  canonicalGitHubMainCommitScope: string;
-  githubMainMatchesCandidate: boolean;
-  sitesVersion: number;
-  sitesCheckoutCommit?: string;
-  sitesCheckoutSourceCommit?: string;
-  sourceFileCount: number;
-  sourceTreeSha256: string;
-  candidateSourceMatchesLiveSites: boolean;
-  productionMigrationCount?: number;
-  productionMigrations?: number;
-  migrationTreeSha256: string;
-  latestProductionMigration: string;
-  latestProductionMigrationSha256: string;
-  databaseLedgerObserved: boolean;
-  databaseAppliedThroughLatestObserved: boolean;
-  candidateMigrationsMatchLiveLedger: boolean;
-  fullReleaseGatePassed: boolean;
-};
-
-type Manifest = {
-  schemaVersion: number;
-  releaseState: string;
-  lastGitHubParityRelease: LastGitHubParityRelease;
-  historicalProductionObservations: Array<{
-    sitesVersion: number;
-    productionMigrationCount: number;
-    productionMigrations?: number;
-    latestProductionMigration: string;
-  }>;
-  currentProductionObservation: CurrentProductionObservation;
-  githubReconciliationEvidence: GitHubReconciliationEvidence;
-  releaseCandidate: ReleaseCandidate;
-  migrations: {
-    evidenceScope: string;
-    root: string;
-    hashAlgorithm: string;
-    fileCount: number;
-    treeSha256: string;
-  };
-};
-
-type Checkpoint = {
-  schemaVersion: number;
-  status: string;
-  lastGitHubParityRelease: LastGitHubParityRelease;
-  historicalProductionObservations: Array<{
-    sitesVersion: number;
-    productionMigrations?: number;
-    productionMigrationCount?: number;
-    latestProductionMigration: string;
-  }>;
-  currentProductionObservation: CurrentProductionObservation;
-  githubReconciliationEvidence: GitHubReconciliationEvidence;
-  releaseCandidate: ReleaseCandidate;
-  databaseMigrations: string[];
-};
-
-const manifest = readJson<Manifest>(
-  "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json",
-);
-const checkpoint = readJson<Checkpoint>(
-  "artifacts/veroxa/docs/RR_RELEASE_CHECKPOINT.json",
-);
-
+];
 function sqlFiles(directory: string): string[] {
-  return readdirSync(resolve(root, directory))
-    .filter((name) => name.endsWith(".sql"))
+  return readdirSync(resolve(repoRoot, directory))
+    .filter((filename) => filename.endsWith(".sql"))
     .sort();
 }
-
-function migrationTreeHash(
-  directory: string,
-  files: readonly string[],
-): string {
+__name(sqlFiles, "sqlFiles");
+function sha256(path: string): string {
+  return createHash("sha256").update(readFileSync(path)).digest("hex");
+}
+__name(sha256, "sha256");
+function migrationTreeHash(directory: string, files: string[]): string {
   const hash = createHash("sha256");
   for (const filename of files) {
     hash.update(filename, "utf8");
     hash.update("\0");
-    hash.update(readFileSync(resolve(root, directory, filename)));
+    hash.update(readFileSync(resolve(repoRoot, directory, filename)));
     hash.update("\0");
   }
   return hash.digest("hex");
 }
-
-function productionMigrationCount(
-  observation: CurrentProductionObservation,
-): number | undefined {
-  return (
-    observation.productionMigrationCount ?? observation.productionMigrations
-  );
-}
-
-function assertLastGitHubParityRelease(
-  release: LastGitHubParityRelease,
-  label: string,
-): void {
-  const migrationCount =
-    release.productionMigrationCount ?? release.productionMigrations;
-  if (
-    release.evidenceScope !== "last_github_sites_parity_release" ||
-    !release.supersededAsLiveBaseline ||
-    release.pullRequest !== 155 ||
-    (release.githubMainCommit ?? release.mergedOperationalCommit) !==
-      "d1f6a9a78ac54cd5447689d5f8b3d42466daf479" ||
-    release.sitesVersion !== 22 ||
-    migrationCount !== 16 ||
-    release.latestProductionMigration !==
-      "20260728044916_momo_media_ai_pilot_v1.sql" ||
-    release.latestProductionMigrationSha256 !==
-      "efae63b4344570934d1d66b47ef1fce4fcd16343a2fe9dd8352607e0784d09a1" ||
-    !release.sitesSourceParityVerified ||
-    !release.migrationContentParityVerified ||
-    !release.migrationFilenameParityVerified
-  ) {
-    throw new Error(
-      `${label} must preserve PR #155 / Sites v22 solely as the last GitHub-to-Sites parity release.`,
-    );
-  }
-}
-
-function assertCurrentProductionObservation(
-  observation: CurrentProductionObservation,
-  label: string,
-): void {
-  if (
-    observation.evidenceStatus !== VERIFIED_PRODUCTION_EVIDENCE_STATUS ||
-    observation.canonicalGitHubMainCommit !==
-      GITHUB_MAIN_AFTER_RECONCILIATION ||
-    observation.canonicalGitHubMainCommitScope !==
-      V36_OPERATIONAL_COMMIT_SCOPE ||
-    !observation.githubMainMatchesCandidate ||
-    observation.sitesVersion !== 36 ||
-    (observation.sitesCheckoutCommit ??
-      observation.sitesCheckoutSourceCommit) !==
-      "b8122642b72e5d4e6e74c379469f2a157781ab3d" ||
-    observation.sourceFileCount !== 185 ||
-    observation.sourceTreeSha256 !== SITES_V36_SOURCE_SHA256 ||
-    !observation.candidateSourceMatchesLiveSites ||
-    productionMigrationCount(observation) !== expectedMigrationLedger.length ||
-    observation.migrationTreeSha256 !== EXPECTED_MIGRATION_TREE_SHA256 ||
-    observation.latestProductionMigration !== LATEST_MIGRATION ||
-    observation.latestProductionMigrationSha256 !== LATEST_MIGRATION_SHA256 ||
-    !observation.databaseLedgerObserved ||
-    !observation.databaseAppliedThroughLatestObserved ||
-    !observation.candidateMigrationsMatchLiveLedger ||
-    !observation.fullReleaseGatePassed
-  ) {
-    throw new Error(
-      `${label} must preserve the live Sites v36 / 37-migration observation with verified GitHub parity.`,
-    );
-  }
-}
-
-function assertReconciliationCandidate(
-  candidate: ReleaseCandidate,
-  label: string,
-): void {
-  const published =
-    candidate.sitesPublished ?? candidate.sitesCandidatePublished;
-  if (
-    (candidate.status ?? candidate.state) !== VERIFIED_GITHUB_PARITY_STATUS ||
-    candidate.actionScope !== "github_reconciliation_candidate" ||
-    candidate.basedOnGitHubMainCommit !== GITHUB_MAIN_AT_RECONCILIATION ||
-    candidate.pullRequest !== V36_GITHUB_RECONCILIATION.pullRequest ||
-    !candidate.githubMerged ||
-    candidate.futureMergedGitHubCommit !== GITHUB_MAIN_AFTER_RECONCILIATION ||
-    candidate.futureSitesVersion !== null ||
-    !candidate.candidateSourceMatchesLiveSites ||
-    !candidate.candidateMigrationsMatchLiveLedger ||
-    !candidate.githubMainMatchesCandidate ||
-    !candidate.fullReleaseGatePassed ||
-    candidate.sourceFileCount !== 185 ||
-    candidate.sourceTreeSha256 !== SITES_V36_SOURCE_SHA256 ||
-    candidate.migrationFileCount !== expectedMigrationLedger.length ||
-    candidate.migrationTreeSha256 !== EXPECTED_MIGRATION_TREE_SHA256 ||
-    candidate.latestCandidateMigration !== LATEST_MIGRATION ||
-    candidate.latestCandidateMigrationSha256 !== LATEST_MIGRATION_SHA256 ||
-    candidate.databaseChangesRequired ||
-    candidate.databaseMigrationApplied ||
-    candidate.sitesPublishRequired ||
-    published !== false
-  ) {
-    throw new Error(
-      `${label} must preserve exact merged PR #157 parity without claiming it applied or published v36.`,
-    );
-  }
-}
-
-if (
-  manifest.schemaVersion !== 4 ||
-  manifest.releaseState !== VERIFIED_GITHUB_PARITY_RELEASE_STATE
-) {
+__name(migrationTreeHash, "migrationTreeHash");
+const manifest = readDeploymentManifest();
+try {
+  assertReviewedLocalCandidateManifest(manifest);
+} catch (error) {
   throw new Error(
-    "Deployment manifest must use the schema-4 v36 reconciliation state.",
+    `Deployment manifest does not preserve live/candidate separation: ${
+      error instanceof Error ? error.message : String(error)
+    }`,
   );
 }
-if (
-  checkpoint.schemaVersion !== 8 ||
-  checkpoint.status !== manifest.releaseState
-) {
-  throw new Error(
-    "RR checkpoint must use schema 8 and match the deployment-manifest state.",
-  );
-}
-
-assertLastGitHubParityRelease(
-  manifest.lastGitHubParityRelease,
-  "Deployment manifest",
-);
-assertLastGitHubParityRelease(
-  checkpoint.lastGitHubParityRelease,
-  "RR checkpoint",
-);
-assertCurrentProductionObservation(
-  manifest.currentProductionObservation,
-  "Deployment manifest",
-);
-assertCurrentProductionObservation(
-  checkpoint.currentProductionObservation,
-  "RR checkpoint",
-);
-assertReconciliationCandidate(manifest.releaseCandidate, "Deployment manifest");
-assertReconciliationCandidate(checkpoint.releaseCandidate, "RR checkpoint");
-if (
-  JSON.stringify(manifest.githubReconciliationEvidence) !==
-    JSON.stringify(V36_GITHUB_RECONCILIATION) ||
-  JSON.stringify(checkpoint.githubReconciliationEvidence) !==
-    JSON.stringify(V36_GITHUB_RECONCILIATION)
-) {
-  throw new Error(
-    "Manifest and RR must preserve the exact PR #157 reviewed head, merge, workflows, and zero-thread evidence.",
-  );
-}
-
-if (
-  manifest.releaseCandidate.reviewedLocally !==
-    checkpoint.releaseCandidate.reviewedLocally ||
-  manifest.releaseCandidate.status !== checkpoint.releaseCandidate.state ||
-  manifest.releaseCandidate.migrationTreeSha256 !==
-    checkpoint.releaseCandidate.migrationTreeSha256 ||
-  manifest.releaseCandidate.latestCandidateMigrationSha256 !==
-    checkpoint.releaseCandidate.latestCandidateMigrationSha256
-) {
-  throw new Error(
-    "RR checkpoint and deployment manifest candidate evidence disagree.",
-  );
-}
-
-for (const [label, observations] of [
-  ["Deployment manifest", manifest.historicalProductionObservations],
-  ["RR checkpoint", checkpoint.historicalProductionObservations],
-] as const) {
-  if (
-    observations.length !== 1 ||
-    observations[0]?.sitesVersion !== 18 ||
-    (observations[0]?.productionMigrationCount ??
-      observations[0]?.productionMigrations) !== 14 ||
-    observations[0]?.latestProductionMigration !==
-      "20260716035027_momo_preconnection_foundation.sql"
-  ) {
-    throw new Error(`${label} historical production observation drifted.`);
-  }
-}
-
-if (
-  manifest.migrations.evidenceScope !== VERIFIED_MIGRATION_EVIDENCE_SCOPE ||
-  manifest.migrations.root !== "supabase/migrations" ||
-  manifest.migrations.hashAlgorithm !==
-    "veroxa-path-null-content-null-sha256-v1" ||
-  manifest.migrations.fileCount !== expectedMigrationLedger.length ||
-  manifest.migrations.treeSha256 !== EXPECTED_MIGRATION_TREE_SHA256
-) {
-  throw new Error(
-    "Manifest migration evidence is not the exact live v36 ledger.",
-  );
-}
-
 const rootLedger = sqlFiles("supabase/migrations");
 const sitesLedger = sqlFiles("artifacts/veroxa-sites/supabase/migrations");
 const archivedLedger = sqlFiles("supabase/archive/legacy_unapplied_migrations");
-
-if (JSON.stringify(rootLedger) !== JSON.stringify(expectedMigrationLedger)) {
-  throw new Error(`Root migration ledger drifted: ${rootLedger.join(", ")}`);
-}
-if (JSON.stringify(sitesLedger) !== JSON.stringify(expectedMigrationLedger)) {
-  throw new Error(`Sites migration ledger drifted: ${sitesLedger.join(", ")}`);
-}
+const pendingSet = new Set<string>(LOCAL_CANDIDATE_PENDING_MIGRATIONS);
+const rootLiveLedger = rootLedger.filter(
+  (filename) => !pendingSet.has(filename),
+);
+const sitesLiveLedger = sitesLedger.filter(
+  (filename) => !pendingSet.has(filename),
+);
 if (
-  JSON.stringify(checkpoint.databaseMigrations) !==
-  JSON.stringify(expectedMigrationLedger)
+  JSON.stringify(rootLedger) !== JSON.stringify(expectedCandidateLedger) ||
+  JSON.stringify(sitesLedger) !== JSON.stringify(expectedCandidateLedger)
 ) {
   throw new Error(
-    "RR checkpoint migration ledger is not the exact 37-file live ledger.",
+    "Root and Sites migration inventories must contain the corrected live 37 followed by exactly five candidate-only migrations.",
+  );
+}
+if (
+  JSON.stringify(rootLiveLedger) !==
+    JSON.stringify(correctedLiveMigrationLedger) ||
+  JSON.stringify(sitesLiveLedger) !==
+    JSON.stringify(correctedLiveMigrationLedger)
+) {
+  throw new Error(
+    "Corrected live migration baseline no longer matches the exact 37-row remote ledger.",
   );
 }
 if (JSON.stringify(archivedLedger) !== JSON.stringify(expectedArchived)) {
@@ -431,57 +168,130 @@ if (JSON.stringify(archivedLedger) !== JSON.stringify(expectedArchived)) {
     `Archived legacy migration set drifted: ${archivedLedger.join(", ")}`,
   );
 }
-
-for (const retiredFilename of retiredActiveFilenames) {
-  if (
-    rootLedger.includes(retiredFilename) ||
-    sitesLedger.includes(retiredFilename)
-  ) {
-    throw new Error(
-      `Historical v22 timestamp must not be required as an active migration: ${retiredFilename}`,
-    );
+for (const filename of [
+  ...retiredNormalizedFilenames,
+  ...retiredHistoricalAliases,
+]) {
+  if (rootLedger.includes(filename) || sitesLedger.includes(filename)) {
+    throw new Error(`Non-ledger timestamp is active: ${filename}`);
   }
 }
-
-for (const filename of expectedMigrationLedger) {
+for (const filename of expectedCandidateLedger) {
   const rootSource = readFileSync(
-    resolve(root, "supabase/migrations", filename),
+    resolve(repoRoot, "supabase/migrations", filename),
   );
   const sitesSource = readFileSync(
-    resolve(root, "artifacts/veroxa-sites/supabase/migrations", filename),
+    resolve(repoRoot, "artifacts/veroxa-sites/supabase/migrations", filename),
   );
   if (
-    !/^\d{14}_.+\.sql$/.test(filename) ||
+    !/^\d{14}_.+\.sql$/u.test(filename) ||
     rootSource.toString().trim().length < 50
   ) {
     throw new Error(`Invalid canonical migration: ${filename}`);
   }
   if (!rootSource.equals(sitesSource)) {
-    throw new Error(`Root/Sites migration content parity failed: ${filename}`);
+    throw new Error(`Root/Sites migration parity failed: ${filename}`);
   }
 }
-
-const rootTreeHash = migrationTreeHash("supabase/migrations", rootLedger);
-const sitesTreeHash = migrationTreeHash(
+const rootLiveTreeHash = migrationTreeHash(
+  "supabase/migrations",
+  rootLiveLedger,
+);
+const sitesLiveTreeHash = migrationTreeHash(
   "artifacts/veroxa-sites/supabase/migrations",
-  sitesLedger,
+  sitesLiveLedger,
 );
 if (
-  rootTreeHash !== EXPECTED_MIGRATION_TREE_SHA256 ||
-  sitesTreeHash !== EXPECTED_MIGRATION_TREE_SHA256
+  rootLiveTreeHash !== V36_LIVE_PARITY_EVIDENCE.migrationTreeSha256 ||
+  sitesLiveTreeHash !== V36_LIVE_PARITY_EVIDENCE.migrationTreeSha256 ||
+  rootLiveLedger.length !== 37 ||
+  sitesLiveLedger.length !== 37
 ) {
   throw new Error(
-    `Migration tree hash drifted (root=${rootTreeHash}, Sites=${sitesTreeHash}).`,
+    `Exact remote live baseline drifted (root=${rootLiveTreeHash}, Sites=${sitesLiveTreeHash}).`,
   );
 }
-
-const latestMigrationHash = createHash("sha256")
-  .update(readFileSync(resolve(root, "supabase/migrations", LATEST_MIGRATION)))
-  .digest("hex");
-if (latestMigrationHash !== LATEST_MIGRATION_SHA256) {
-  throw new Error(`Latest migration content drifted: ${LATEST_MIGRATION}`);
+const rootCandidateTree = hashTree(
+  resolve(repoRoot, manifest.migrations.root),
+  { suffix: ".sql" },
+);
+const sitesCandidateTree = hashTree(
+  resolve(repoRoot, manifest.migrations.mirrorRoot!),
+  { suffix: ".sql" },
+);
+if (
+  rootCandidateTree.fileCount !== 42 ||
+  sitesCandidateTree.fileCount !== 42 ||
+  rootCandidateTree.sha256 !== EXPECTED_CANDIDATE_TREE_SHA256 ||
+  sitesCandidateTree.sha256 !== EXPECTED_CANDIDATE_TREE_SHA256 ||
+  manifest.migrations.evidenceScope !==
+    LOCAL_CANDIDATE_MIGRATION_EVIDENCE_SCOPE ||
+  manifest.migrations.hashAlgorithm !== TREE_HASH_ALGORITHM ||
+  manifest.migrations.fileCount !== rootCandidateTree.fileCount ||
+  manifest.migrations.mirrorFileCount !== sitesCandidateTree.fileCount ||
+  manifest.migrations.treeSha256 !== rootCandidateTree.sha256 ||
+  manifest.migrations.mirrorTreeSha256 !== sitesCandidateTree.sha256 ||
+  manifest.releaseCandidate.migrationTreeSha256 !== rootCandidateTree.sha256 ||
+  manifest.releaseCandidate.migrationFileCount !== 42
+) {
+  throw new Error(
+    `Local candidate fingerprint drifted (root=${rootCandidateTree.fileCount}/${rootCandidateTree.sha256}, Sites=${sitesCandidateTree.fileCount}/${sitesCandidateTree.sha256}).`,
+  );
 }
-
+if (
+  JSON.stringify(manifest.releaseCandidate.pendingMigrations) !==
+    JSON.stringify(LOCAL_CANDIDATE_PENDING_MIGRATIONS) ||
+  manifest.releaseCandidate.databaseMigrationApplied ||
+  manifest.releaseCandidate.databaseMigrationsApplied?.length !== 0 ||
+  manifest.releaseCandidate.databaseApplyAuthorized ||
+  manifest.releaseCandidate.deploymentAuthorized
+) {
+  throw new Error(
+    "Forward migrations must remain candidate-only, unapplied, and unauthorized.",
+  );
+}
+for (const filename of LOCAL_CANDIDATE_PENDING_MIGRATIONS) {
+  const actualHash = sha256(resolve(repoRoot, "supabase/migrations", filename));
+  if (actualHash !== EXPECTED_PENDING_HASHES.get(filename)) {
+    throw new Error(`Pending candidate migration content drifted: ${filename}`);
+  }
+}
+const latestLiveHash = sha256(
+  resolve(
+    repoRoot,
+    "supabase/migrations",
+    V36_LIVE_PARITY_EVIDENCE.latestMigration,
+  ),
+);
+if (latestLiveHash !== V36_LIVE_PARITY_EVIDENCE.latestMigrationSha256) {
+  throw new Error(
+    `Latest corrected live migration drifted: ${V36_LIVE_PARITY_EVIDENCE.latestMigration}`,
+  );
+}
+const historicalCloseout = JSON.parse(
+  readFileSync(
+    resolve(
+      repoRoot,
+      "artifacts/veroxa/docs/MOMO_UPLOAD_V36_LIVE_CLOSEOUT.json",
+    ),
+    "utf8",
+  ),
+);
+if (
+  historicalCloseout.database?.migrationTreeSha256 !==
+    V36_LIVE_PARITY_EVIDENCE.historicalRepositoryMigrationTreeSha256 ||
+  historicalCloseout.database.latestAppliedMigration !==
+    "20260802020000_momo_pipeline_query_indexes_v2.sql" ||
+  manifest.currentProductionObservation.migrationTreeEvidenceScope !==
+    LIVE_MIGRATION_EVIDENCE_SCOPE ||
+  manifest.currentProductionObservation
+    .historicalRepositoryMigrationTreeEvidenceScope !==
+    HISTORICAL_REPOSITORY_MIGRATION_EVIDENCE_SCOPE
+) {
+  throw new Error(
+    "Historical v36 repository evidence must remain immutable and explicitly separate from the corrected remote ledger.",
+  );
+}
 console.log(
-  "Supabase migration ledger guardrail passed: root and Sites mirrors contain the exact 37-file live v36 ledger; v22 timestamp aliases remain historical evidence only; merged PR #157 reconciled GitHub parity and applied no database change.",
+  "Supabase migration ledger guardrail passed: exact remote live37 d306d26c is mirrored byte-for-byte; five ordered forward migrations remain a 42-file local candidate only; historical v36 repository evidence is preserved separately.",
 );

@@ -3,38 +3,13 @@
 -- =============================================================
 -- Creates a versioned production identity/tenant/storage model without
 -- deleting or reshaping the older seeded demo schema. Legacy demo tables are
--- preserved, and their broad M024 development policies are removed. Momo's House San Antonio is the
+-- preserved but browser access is revoked. Momo's House San Antonio is the
 -- only operational scope. Other restaurants belong only in Audit Center.
 -- =============================================================
 
 create extension if not exists pgcrypto;
 create schema if not exists veroxa_private;
 revoke all on schema veroxa_private from public, anon, authenticated;
-
--- The legacy Vite demo schema remains available for rollback inspection, but
--- it must never be reachable through a broad browser policy. Remove the ten
--- development policies introduced by M024A without deleting or rewriting
--- their seeded rows; the remaining legacy policies keep their existing RLS.
-do $$
-declare item text[];
-begin
-  foreach item slice 1 in array array[
-    array['clients','clients_dev_authenticated_select'],
-    array['restaurant_upload_keys','restaurant_upload_keys_dev_authenticated_select'],
-    array['upload_submissions','upload_submissions_dev_authenticated_select'],
-    array['upload_submissions','upload_submissions_dev_authenticated_insert'],
-    array['upload_submissions','upload_submissions_dev_authenticated_update'],
-    array['direction_requests','direction_requests_dev_authenticated_select'],
-    array['direction_requests','direction_requests_dev_authenticated_insert'],
-    array['direction_requests','direction_requests_dev_authenticated_update'],
-    array['team_review_decisions','team_review_decisions_dev_authenticated_select'],
-    array['team_review_decisions','team_review_decisions_dev_authenticated_insert']
-  ] loop
-    if to_regclass('public.' || item[1]) is not null then
-      execute format('drop policy if exists %I on public.%I', item[2], item[1]);
-    end if;
-  end loop;
-end $$;
 
 do $$ begin
   create type public.veroxa_role_v1 as enum ('client', 'team');

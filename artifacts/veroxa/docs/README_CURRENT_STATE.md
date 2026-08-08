@@ -2,6 +2,13 @@
 
 Status: Short index for Faraz, Codex, and future ChatGPT/Codex sessions.
 
+## 2026-08-08 — reviewed local predeployment candidate (current)
+
+- Sites v36 remains the immutable live baseline at 185 files / `caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7`. The exact remote 37-migration ledger reconstructed on 2026-08-08 is `d306d26cb633ef943afdb7efd01a3cde70249a096ef783d1b0d51eb5d4a1a429` through `20260802063829_momo_pipeline_query_indexes_v2.sql` (file SHA-256 `106d346be34583446d22de0f6866b5b8937feb766a3a229339dbf1c1768fdfcd`). `9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90` is the historical v36 repository/Sites-mirror fingerprint, not the exact remote ledger.
+- The candidate is local, unpublished, and unapplied: 200 Sites files / `929e05cf68a6af5176811f49321ec108e617b93a08153b65b3f86b109d0c8c18`; 42 mirrored migrations / `dc565dd1f5f4a5efe6a2b253e7437e93f6364b5581c56bb811969fa7241a7a84`. No PR, merge, workflows, database apply, Sites publish, production provider connection, or activation occurred.
+- Start with `MOMO_PRIVATE_POLICY_EVAL_2026-08-08.json` for the private synthetic model-control result: final 10/10 live and 27/27 combined checks, two retained earlier failed attempts, and 30 total transmissions of the same ten logical cases. The reports record no retries, `store:false`, no tools or writes; only final v3 has source-hash proof of those controls. Completed aggregate cost upper bound is USD $0.0080502 under USD $2, without an atomic cross-process lifetime ledger. It is not production or Momo-rehearsal evidence.
+- The staged rollout remains blocked: apply `01210` and `01430`; publish/verify Audit v2 plus Client v3; then apply `01842`, `01853`, and only after explicit review, `02609`. Exact live evidence shows `postgres` is not a member of `supabase_admin`, so `02609` skips that role's default ACLs and is not comprehensive default-ACL closure.
+
 ## 2026-08-05 — retired source permanently removed
 
 - Start with `RETIRED_SOURCE_REMOVAL.md` for the cleanup boundary.
@@ -12,7 +19,7 @@ Status: Short index for Faraz, Codex, and future ChatGPT/Codex sessions.
 ## 2026-08-02 — Sites v36 live; GitHub parity verified
 
 - Start with `MOMO_UPLOAD_V36_LIVE_CLOSEOUT.json`, `VEROXA_CURRENT_MILESTONE.md`, `VEROXA_DEPLOYMENT_MANIFEST.json`, and `RR_RELEASE_CHECKPOINT.json`.
-- Sites v36 checkout `b8122642b72e5d4e6e74c379469f2a157781ab3d` is live; its canonical 185-file hash is `caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7`. Production has 37 migrations at tree hash `9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90`.
+- Sites v36 checkout `b8122642b72e5d4e6e74c379469f2a157781ab3d` is live; its canonical 185-file hash is `caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7`. Its historical repository/Sites-mirror migration tree is `9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90`; use the current section above for exact remote-ledger evidence.
 - PR #157 reviewed head `d3a63d25644fc699d1f521f8f803e5bd95daae49` merged to GitHub `main` at `aafebf93a6bc40f9578c29f4a25371f8203d0387` after four green workflows and zero unresolved review threads; all four push workflows also passed. Main now matches live v36.
 - PR #157 was evidence-backed source reconciliation, not a Sites deployment or database apply. PR #155 / Sites v22 remains historical parity evidence.
 - V36 provides exact-byte deduplication, immutable lineage, automated internal content packaging, unscheduled Ready evidence, and exception-only Team work. Bad media is diagnosed and preserved, not auto-edited or resized; near duplicates remain advisory.

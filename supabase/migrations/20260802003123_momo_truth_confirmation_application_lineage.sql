@@ -1093,3 +1093,4 @@ revoke all on function public.veroxa_momo_manual_pilot_gate_v1(uuid)
 grant execute on function public.veroxa_momo_manual_pilot_gate_v1(uuid)
   to authenticated;
 
+

@@ -1,3 +1,10 @@
+## 2026-08-08 — reviewed local predeployment candidate
+
+- **Live evidence boundary:** Sites v36 remains 185 files at `caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7`. The exact remote 37-migration ledger reconstructed on 2026-08-08 is `d306d26cb633ef943afdb7efd01a3cde70249a096ef783d1b0d51eb5d4a1a429` through `20260802063829_momo_pipeline_query_indexes_v2.sql` (file SHA-256 `106d346be34583446d22de0f6866b5b8937feb766a3a229339dbf1c1768fdfcd`). `9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90` is the historical v36 repository/Sites-mirror fingerprint, not the exact remote ledger.
+- **Candidate evidence:** the candidate is local, unpublished, and unapplied: 200 Sites files at `929e05cf68a6af5176811f49321ec108e617b93a08153b65b3f86b109d0c8c18`; 42 mirrored migrations at `dc565dd1f5f4a5efe6a2b253e7437e93f6364b5581c56bb811969fa7241a7a84`. No PR, merge, workflow, database apply, Sites publication, provider connection, or activation occurred.
+- **Private model evidence:** the third blinded pass completed at 10/10 live cases and 27/27 combined checks. The first two attempts each passed 8/10 and were retained as evidence of prompt-specification fixes, not erased. Their reports record all 30 requests as synthetic, no-retry, `store:false`, tool-free, and external-write-free; source hashes independently prove those request controls only for the final v3 pass. The completed aggregate accounted cost upper bound is USD $0.0080502 of USD $2, but the runner has no atomic cross-process lifetime ledger. Evidence: `MOMO_PRIVATE_POLICY_EVAL_2026-08-08.json`.
+- **Sequence and known ACL residual:** apply `01210` and `01430`; publish/verify Audit v2 and Client v3; then apply `01842`, `01853`, and only after explicit review, `02609`. Exact live membership evidence shows `postgres` is not a member of `supabase_admin`, so `02609` will skip `supabase_admin` default ACLs; it is not comprehensive default-ACL closure. Every step remains blocked and incomplete.
+
 ## 2026-08-05 — permanent repository cleanup
 
 - The cleanup candidate permanently removes 671 retired Vite/Replit runtime/configuration files, 65 runtime-only verification scripts, the obsolete archive marker, and the unused `hello` scaffold from the current repository tree.
@@ -8,8 +15,8 @@
 
 ## 2026-08-02 — v36 live source recovered; GitHub parity verified
 
-- **Production:** Sites v36 succeeded from checkout `b8122642b72e5d4e6e74c379469f2a157781ab3d`; production has 37 migrations through `20260802020000_momo_pipeline_query_indexes_v2.sql`, and the two changed content-processing workers are active.
-- **Exact parity artifact:** the mirror contains 185 canonical Sites files at `caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7` and 37 migrations at `9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90`. Generated `.vinext` cache is deliberately excluded.
+- **Historical production:** Sites v36 succeeded from checkout `b8122642b72e5d4e6e74c379469f2a157781ab3d`; its 37-migration remote ledger is identified by the later exact reconstruction above, and the two changed content-processing workers were observed active.
+- **Historical parity artifact:** the mirror contains 185 canonical Sites files at `caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7` and 37 repository/Sites-mirror migrations at `9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90`. Generated `.vinext` cache is deliberately excluded.
 - **GitHub:** PR #157 passed its four exact-head workflows at `d3a63d25644fc699d1f521f8f803e5bd95daae49`, had zero unresolved review threads, and merged to canonical `main` at `aafebf93a6bc40f9578c29f4a25371f8203d0387`; all four push workflows also passed. Main now matches live v36.
 - **Release boundary:** PR #157 required and performed no Sites publish and no database apply. PR #155 / Sites v22 remains historical parity evidence.
 - **Pipeline:** exact duplicates consolidate behind immutable canonical byte identity while uploads and rights stay distinct; Ready is unscheduled; Team Faraz is exception-only; provider-called or uncertain failures never receive an automatic paid retry.

@@ -1491,7 +1491,6 @@ begin
      or p_run_id is null
      or p_request_hash is null
      or p_request_hash !~ '^[0-9a-f]{64}$'
-     or p_outcome is null
      or p_outcome not in ('processed','failed')
      or (p_outcome = 'processed' and p_error_code is not null)
      or (p_outcome = 'failed'
@@ -2582,18 +2581,11 @@ begin
      and run.provider_response_id is null
      and run.provider_usage is null
      and run.output_payload is null
-     and run.output_canonical is null
-     and run.output_sha256 is null
      and run.validation_report is null
-     and run.validation_canonical is null
-     and run.validation_sha256 is null
      and run.provider_error_code is null
      and run.accounted_microusd is null
      and run.accounting_basis is null
      and run.completed_at is null
-     and run.team_decided_by is null
-     and run.team_decided_at is null
-     and run.decision_notes is null
      and not exists (
        select 1
        from veroxa_private.momo_content_ai_result_outbox outbox

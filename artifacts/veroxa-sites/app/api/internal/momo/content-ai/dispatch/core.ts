@@ -1,5 +1,6 @@
 import {
   MOMO_CONTENT_AI_MAX_BODY_BYTES,
+  MOMO_CONTENT_AI_MAX_REQUEST_MICROUSD,
   MOMO_CONTENT_AI_MAX_SOURCE_BYTES,
   isMomoContentUuid,
   type MomoContentPlatform,
@@ -18,6 +19,10 @@ import {
 } from "../../../../../momo-content-ai-provider-request.ts";
 import { momoContentAiProviderPayloadBelongsToRun } from "../../../../../momo-content-ai-result.ts";
 import { readBoundedResponseBytes } from "../../../../../bounded-response.ts";
+import {
+  MOMO_AI_MAX_AUTOMATIC_MICROUSD,
+  evaluateMomoAiTaskPreflight,
+} from "../../../../../momo-ai-task-preflight.ts";
 
 const CANONICAL_WAKE_BODY = '{"schemaVersion":1}';
 const WAKE_CONTEXT =
@@ -28,6 +33,7 @@ const HMAC = /^[0-9a-f]{64}$/u;
 const MAX_WAKE_BYTES = Math.min(1_024, MOMO_CONTENT_AI_MAX_BODY_BYTES);
 
 type MomoContentAiDispatchClaim = MomoContentAiReservation & {
+  restaurantId: string;
   requestedBy: string;
   signedSourceUrl: string;
   attemptCount: number;
@@ -319,6 +325,7 @@ function dispatchClaim(
     return null;
   }
   return {
+    restaurantId: row.restaurant_id,
     runId: row.run_id,
     status: "reserved",
     requestHash: row.request_hash,
@@ -405,6 +412,27 @@ export function createMomoContentAiDispatchHandler(
         return false;
       }
     };
+
+    const controlPreflight = evaluateMomoAiTaskPreflight({
+      taskKind: "content_package_generation",
+      actorRole: "system",
+      restaurantId: claim.restaurantId,
+      authorizedRestaurantId: claim.restaurantId,
+      requestedTools: ["openai.responses.create"],
+      consequence: "private_draft",
+      estimatedMicrousd: MOMO_CONTENT_AI_MAX_REQUEST_MICROUSD,
+      authorizedMicrousd: MOMO_AI_MAX_AUTOMATIC_MICROUSD,
+      untrustedDataBoundary: true,
+      humanReviewRequired: true,
+      externalActionAuthorized: false,
+    });
+    if (!controlPreflight.allowed) {
+      const recorded = await release("task_preflight_denied", false);
+      return noStore({
+        status: recorded ? "blocked" : "finalization_uncertain",
+        externalWriteAllowed: false,
+      }, recorded ? 422 : 503);
+    }
 
     if (!momoContentAiReservationFitsProviderEnvelope(claim)) {
       const recorded = await release("provider_input_envelope_exceeded", false);
