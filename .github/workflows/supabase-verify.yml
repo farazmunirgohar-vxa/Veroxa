@@ -53,9 +53,10 @@ jobs:
 
           # Migration 17 is intentionally fail-closed: it may only install over
           # the one already-authorized Momo tenant that existed in production.
-          # Start from migration 1, create deterministic local-only identities,
-          # then apply the remaining byte-identical migration history. This is
-          # application data, never an extra migration or a hosted credential.
+          # Start from migration 1, create deterministic local-only identities
+          # for that exact public tenant UUID, then apply the remaining
+          # byte-identical migration history. This is application data, never
+          # an extra migration or a hosted credential.
           first_migration="20260712213930_momo_production_foundation_v1.sql"
           expected_versions="$(
             find supabase/migrations -maxdepth 1 -type f -name '*.sql' \
@@ -109,7 +110,7 @@ jobs:
           do $fixture$
           declare
             fixture_restaurant_id constant uuid :=
-              '20000000-0000-4000-8000-000000000160';
+              '6386d7e3-7966-4498-a13e-8736590bd505';
             fixture_team_id constant uuid :=
               '10000000-0000-4000-8000-000000000160';
             fixture_client_id constant uuid :=
@@ -232,7 +233,7 @@ jobs:
           do $assert_complete_chain$
           declare
             fixture_restaurant_id constant uuid :=
-              '20000000-0000-4000-8000-000000000160';
+              '6386d7e3-7966-4498-a13e-8736590bd505';
           begin
             if (select count(*) from supabase_migrations.schema_migrations) <>
                current_setting('veroxa.ci_candidate_migration_count')::integer then
@@ -269,7 +270,7 @@ jobs:
               select 1
               from public.veroxa_momo_runtime_controls runtime
               where runtime.restaurant_id = fixture_restaurant_id
-                and runtime.ai_live_calls
+                and not runtime.ai_live_calls
                 and not runtime.provider_writes
                 and not runtime.review_replies
                 and not runtime.website_writes

@@ -312,11 +312,11 @@
     "status": "held_private_media_repair_locally_reviewed_remote_gates_pending",
     "actionScope": "private_media_assessment_generic_food_ready_decisions_source_global_discard_repair",
     "basedOnGitHubMainCommit": "f57a6f5a04d482353f32ccebb43ff5f225e3b8a9",
-    "pullRequest": null,
-    "pullRequestDraft": false,
-    "observedDraftPullRequestHead": null,
-    "observedDraftPullRequestTree": null,
-    "draftHeadEvidenceScope": null,
+    "pullRequest": 165,
+    "pullRequestDraft": true,
+    "observedDraftPullRequestHead": "9176e50436db7328401a91d64b536948ed4ef915",
+    "observedDraftPullRequestTree": "01a79b952c6356b2cb1c54dc262541f1ad4fd198",
+    "draftHeadEvidenceScope": "observed_remote_pr165_opening_draft_checkpoint_not_exact_final_head",
     "githubMerged": false,
     "futureMergedGitHubCommit": null,
     "futureSitesVersion": null,
@@ -401,7 +401,7 @@
       "requiresCompletedStep": "verify_registered_mutable_rpc_hold_and_zero_work",
         "explicitReviewRequired": true,
         "completed": false,
-        "verification": "Open a fresh PR from agent/momo-private-assessment-ready-unified; require the exact final head, four green workflows, zero unresolved review threads, approval, and provider-returned merge identity."
+        "verification": "PR #165 is open as draft from agent/momo-private-assessment-ready-unified at the observed non-final opening head 9176e50436db7328401a91d64b536948ed4ef915 and tree 01a79b952c6356b2cb1c54dc262541f1ad4fd198 on base f57a6f5a04d482353f32ccebb43ff5f225e3b8a9. Before merge, capture the exact final head and require four green workflows, zero unresolved review threads, approval, and provider-returned merge identity."
       },
       {
         "order": 4,

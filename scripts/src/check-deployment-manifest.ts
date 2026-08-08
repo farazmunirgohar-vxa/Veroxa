@@ -4,6 +4,7 @@ import {
   LIVE46_MIGRATION_EVIDENCE,
   LOCAL_CANDIDATE_BASE_COMMIT,
   LOCAL_CANDIDATE_SOURCE_EVIDENCE,
+  PR165_DRAFT_CHECKPOINT,
   PRIVATE_MEDIA_EDGE_CANDIDATE,
   REPAIR_MIGRATION_EVIDENCE,
   assertReviewedLocalCandidateManifest,
@@ -67,8 +68,17 @@ must(
   "Registered mutable-RPC hold must disclose the limited orphan-storage residual.",
 );
 must(
-  manifest.releaseCandidate.pullRequest === null &&
+  manifest.releaseCandidate.pullRequest === PR165_DRAFT_CHECKPOINT.pullRequest &&
+    manifest.releaseCandidate.pullRequestDraft === true &&
+    manifest.releaseCandidate.observedDraftPullRequestHead ===
+      PR165_DRAFT_CHECKPOINT.openingDraftHead &&
+    manifest.releaseCandidate.observedDraftPullRequestTree ===
+      PR165_DRAFT_CHECKPOINT.openingDraftTree &&
+    manifest.releaseCandidate.draftHeadEvidenceScope ===
+      PR165_DRAFT_CHECKPOINT.evidenceScope &&
     manifest.releaseCandidate.githubMerged === false &&
+    manifest.releaseCandidate.allFourWorkflowsGreen === null &&
+    manifest.releaseCandidate.zeroUnresolvedReviewThreads === null &&
     manifest.releaseCandidate.databaseMigrationApplied === false &&
     manifest.releaseCandidate.sitesPublished === false &&
     manifest.releaseCandidate.edgeDeployed === false &&

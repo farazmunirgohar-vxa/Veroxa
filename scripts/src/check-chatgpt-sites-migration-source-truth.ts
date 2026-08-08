@@ -4,6 +4,7 @@ import {
   CURRENT_PARTIAL_ROLLOUT_EVIDENCE,
   LIVE46_MIGRATION_EVIDENCE,
   LOCAL_CANDIDATE_BASE_COMMIT,
+  PR165_DRAFT_CHECKPOINT,
   REPAIR_MIGRATION_EVIDENCE,
   assertReviewedLocalCandidateManifest,
   readDeploymentManifest,
@@ -72,7 +73,7 @@ for (const path of authorityDocs) {
   const text = read(path);
   must(!/^(<<<<<<<|=======|>>>>>>>)/mu.test(text), `${path} contains merge markers.`);
   must(
-    (text.match(/\(current authority\)/giu) ?? []).length === 1,
+    (text.match(/^## .*\(current authority\)$/gmu) ?? []).length === 1,
     `${path} must contain exactly one current-authority heading.`,
   );
   for (const marker of [
@@ -81,6 +82,10 @@ for (const path of authorityDocs) {
     "Sites v39",
     "live46",
     REPAIR_MIGRATION_EVIDENCE.filename,
+    "PR #165",
+    PR165_DRAFT_CHECKPOINT.openingDraftHead,
+    PR165_DRAFT_CHECKPOINT.openingDraftTree,
+    "non-final",
     "registered mutable-RPC hold",
     "unregistered orphan object",
     "Edge v6",

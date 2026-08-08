@@ -320,6 +320,15 @@ export const PR164_INTEGRATION_EVIDENCE = {
   zeroUnresolvedReviewThreads: false,
 } as const;
 
+export const PR165_DRAFT_CHECKPOINT = {
+  pullRequest: 165,
+  baseMainCommit: LOCAL_CANDIDATE_BASE_COMMIT,
+  openingDraftHead: "9176e50436db7328401a91d64b536948ed4ef915",
+  openingDraftTree: "01a79b952c6356b2cb1c54dc262541f1ad4fd198",
+  evidenceScope:
+    "observed_remote_pr165_opening_draft_checkpoint_not_exact_final_head",
+} as const;
+
 export const DATABASE_CONTRACT_REVIEW = {
   status: "local_repair_review_passed_hosted_execution_pending",
   forwardRepairRequired: true,
@@ -739,7 +748,11 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
     candidate.status !== REVIEWED_LOCAL_CANDIDATE_STATUS ||
     candidate.actionScope !== RECONCILIATION_CANDIDATE_ACTION_SCOPE ||
     candidate.basedOnGitHubMainCommit !== LOCAL_CANDIDATE_BASE_COMMIT ||
-    candidate.pullRequest !== null || candidate.pullRequestDraft !== false ||
+    candidate.pullRequest !== PR165_DRAFT_CHECKPOINT.pullRequest ||
+    candidate.pullRequestDraft !== true ||
+    candidate.observedDraftPullRequestHead !== PR165_DRAFT_CHECKPOINT.openingDraftHead ||
+    candidate.observedDraftPullRequestTree !== PR165_DRAFT_CHECKPOINT.openingDraftTree ||
+    candidate.draftHeadEvidenceScope !== PR165_DRAFT_CHECKPOINT.evidenceScope ||
     candidate.githubMerged || candidate.futureMergedGitHubCommit !== null ||
     candidate.futureSitesVersion !== null || !candidate.reviewedLocally ||
     candidate.sourceReviewPassed !== true || candidate.qualityReviewPassed !== true ||
