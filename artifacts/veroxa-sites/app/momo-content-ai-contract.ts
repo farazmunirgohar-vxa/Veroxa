@@ -1,10 +1,10 @@
 export const MOMO_CONTENT_AI_MODEL = "gpt-5.6-sol" as const;
 export const MOMO_CONTENT_AI_PROMPT_VERSION =
-  "momo-content-package-2026-08-01-v4" as const;
+  "momo-content-package-2026-08-08-v5" as const;
 export const MOMO_CONTENT_AI_SCHEMA_VERSION =
   "momo-content-package-v1" as const;
 export const MOMO_CONTENT_AI_VALIDATOR_VERSION =
-  "momo-content-validator-2026-08-01-v4" as const;
+  "momo-content-validator-2026-08-08-v5" as const;
 export const MOMO_CONTENT_AI_PRICING_VERSION =
   "openai-gpt-5.6-sol-2026-08-01-v2" as const;
 export const MOMO_CONTENT_AI_MAX_BODY_BYTES = 4_096;
@@ -53,6 +53,32 @@ export const MOMO_CONTENT_AI_MAX_CACHE_WRITE_REQUEST_MICROUSD = Math.ceil(
 );
 export const MOMO_READY_TEAM_INSPECTION_ATTESTATION =
   "Team Faraz reviewed the final media, factual claims, platform copy, SEO phrases, hashtags, alt text, calls to action, and future America/Chicago plan. This package is ready for manual posting only; no external publishing is authorized." as const;
+export const MOMO_READY_V2_TEAM_INSPECTION_ATTESTATION =
+  "Team Faraz reviewed the exact rendered image, generic visual assessment and tags, owner-grounded public copy, alt text, calls to action, and the current evidence snapshot. This approval permits manual copy and download only; it does not schedule, post, connect a provider, or authorize any external write." as const;
+export const MOMO_READY_V2_TEAM_INSPECTION_ATTESTATION_VERSION =
+  "momo-ready-team-inspection-2026-08-08-v1" as const;
+export const MOMO_READY_V2_TEAM_INSPECTION_ATTESTATION_SHA256 =
+  "0b63edc9a23252c32fbddd866a42f475cefef7ddc0a54badc58465fd080b30e0" as const;
+
+export const MOMO_CONTENT_AI_MIN_INTERNAL_TAG_CONFIDENCE = 0.7 as const;
+
+export const MOMO_CONTENT_AI_INTERNAL_TAG_TAXONOMY = [
+  { slug: "food", label: "Food" },
+  { slug: "plated-food", label: "Plated food" },
+  { slug: "serving", label: "Serving" },
+  { slug: "plate", label: "Plate" },
+  { slug: "bowl", label: "Bowl" },
+  { slug: "tray", label: "Tray" },
+  { slug: "table-setting", label: "Table setting" },
+  { slug: "restaurant-setting", label: "Restaurant setting" },
+  { slug: "close-up", label: "Close-up" },
+  { slug: "overhead-view", label: "Overhead view" },
+  { slug: "handheld-food", label: "Handheld food" },
+  { slug: "shared-serving", label: "Shared serving" },
+  { slug: "packaged-food", label: "Packaged food" },
+  { slug: "multiple-items", label: "Multiple items" },
+  { slug: "people-present", label: "People present" },
+] as const;
 
 export const MOMO_CONTENT_PLATFORMS = [
   "facebook",
@@ -276,9 +302,9 @@ export const MOMO_CONTENT_PACKAGE_JSON_SCHEMA = {
         type: "object", additionalProperties: false,
         required: ["slug", "label", "confidence"],
         properties: {
-          slug: { type: "string", pattern: "^[a-z0-9]+(?:-[a-z0-9]+){0,5}$", maxLength: 80 },
-          label: stringSchema(1, 80),
-          confidence: { type: "number", minimum: 0, maximum: 1 },
+          slug: { enum: MOMO_CONTENT_AI_INTERNAL_TAG_TAXONOMY.map((item) => item.slug) },
+          label: { enum: MOMO_CONTENT_AI_INTERNAL_TAG_TAXONOMY.map((item) => item.label) },
+          confidence: { type: "number", minimum: MOMO_CONTENT_AI_MIN_INTERNAL_TAG_CONFIDENCE, maximum: 1 },
         },
       },
     },

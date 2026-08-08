@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  buildMomoCanonicalVisualDescription,
   buildMomoAllowedHashtags,
   buildMomoAllowedSeoPhrases,
   validateMomoContentPackage,
@@ -10,6 +11,210 @@ import { context, output } from "./momo-content-fixture.mjs";
 test("validates a grounded, platform-specific Momo package", () => {
   const result = validateMomoContentPackage(output(), context);
   assert.equal(result.ok, true, result.ok ? "" : result.blockers.join(","));
+});
+
+test("accepts an authorized generic food photo without identifying it as a Momo dish", () => {
+  const value = output();
+  const result = validateMomoContentPackage(value, context);
+  assert.equal(result.ok, true, result.ok ? "" : result.blockers.join(","));
+  assert.doesNotMatch(value.assetAssessment.visualSummary, /momo|nepalese|ingredient|menu/iu);
+});
+
+test("requires one exact neutral visual description for assessment and alt text", () => {
+  const mismatch = output();
+  mismatch.assetAssessment.visualSummary = "Food presentation: Food; Plated food; Table setting.";
+  const mismatchResult = validateMomoContentPackage(mismatch, context);
+  assert.equal(mismatchResult.ok, false);
+  assert.ok(mismatchResult.blockers.includes("visual_assessment_alt_text_mismatch"));
+  assert.ok(mismatchResult.blockers.includes("visual_description_not_canonical"));
+
+  for (const injected of ["Falafel", "KFC food", "Quinoa patty", "Quux blorf"]) {
+    const value = output();
+    const description = `Food presentation: Food; Table setting; Plated food; ${injected}.`;
+    value.assetAssessment.visualSummary = description;
+    value.altText = description;
+    value.claims.find((claim) => claim.id === "claim-visible").exactText = description;
+    const result = validateMomoContentPackage(value, context);
+    assert.equal(result.ok, false, injected);
+    assert.ok(result.blockers.includes("visual_description_not_canonical"), injected);
+  }
+});
+
+test("accepts exact tag-derived visual descriptions for three and ten safe tags", () => {
+  const three = output();
+  assert.equal(
+    buildMomoCanonicalVisualDescription(three.internalMediaTags),
+    "Food presentation: Food; Table setting; Plated food.",
+  );
+  const threeResult = validateMomoContentPackage(three, context);
+  assert.equal(threeResult.ok, true, threeResult.ok ? "" : threeResult.blockers.join(","));
+
+  const ten = output();
+  ten.internalMediaTags = [
+    { slug: "food", label: "Food", confidence: 0.99 },
+    { slug: "plated-food", label: "Plated food", confidence: 0.98 },
+    { slug: "serving", label: "Serving", confidence: 0.97 },
+    { slug: "plate", label: "Plate", confidence: 0.96 },
+    { slug: "bowl", label: "Bowl", confidence: 0.95 },
+    { slug: "tray", label: "Tray", confidence: 0.94 },
+    { slug: "table-setting", label: "Table setting", confidence: 0.93 },
+    { slug: "close-up", label: "Close-up", confidence: 0.92 },
+    { slug: "multiple-items", label: "Multiple items", confidence: 0.91 },
+    { slug: "people-present", label: "People present", confidence: 0.9 },
+  ];
+  const description = buildMomoCanonicalVisualDescription(ten.internalMediaTags);
+  ten.assetAssessment.visualSummary = description;
+  ten.altText = description;
+  ten.claims.find((claim) => claim.id === "claim-visible").exactText = description;
+  const tenResult = validateMomoContentPackage(ten, context);
+  assert.equal(tenResult.ok, true, tenResult.ok ? "" : tenResult.blockers.join(","));
+  assert.ok(description.length <= 180);
+});
+
+test("rejects reordered labels, extra prose, and missing or extra visual claims", () => {
+  for (const description of [
+    "Food presentation: Plated food; Food; Table setting.",
+    "Food presentation: Food; Table setting; Plated food. Falafel on a plate.",
+  ]) {
+    const value = output();
+    value.assetAssessment.visualSummary = description;
+    value.altText = description;
+    value.claims.find((claim) => claim.id === "claim-visible").exactText = description;
+    const result = validateMomoContentPackage(value, context);
+    assert.equal(result.ok, false, description);
+    assert.ok(result.blockers.includes("visual_description_not_canonical"), description);
+  }
+
+  const missing = output();
+  missing.claims = missing.claims.filter((claim) => claim.id !== "claim-visible");
+  const missingResult = validateMomoContentPackage(missing, context);
+  assert.equal(missingResult.ok, false);
+  assert.ok(missingResult.blockers.includes("canonical_visual_claim_required"));
+
+  const extra = output();
+  extra.claims.push({
+    ...extra.claims.find((claim) => claim.id === "claim-visible"),
+    id: "claim-visible-extra",
+  });
+  const extraResult = validateMomoContentPackage(extra, context);
+  assert.equal(extraResult.ok, false);
+  assert.ok(extraResult.blockers.includes("canonical_visual_claim_required"));
+});
+
+test("accurately records but rejects non-food subjects before Ready", () => {
+  for (const subject of ["drink", "interior", "other"]) {
+    const value = output();
+    value.assetAssessment.subject = subject;
+    const result = validateMomoContentPackage(value, context);
+    assert.equal(result.ok, false, subject);
+    assert.ok(result.blockers.includes("media_subject_not_food"), subject);
+    assert.ok(!result.blockers.includes("schema_invalid"), "the provider may accurately classify non-food pixels");
+  }
+});
+
+test("rejects low-confidence, mismatched, missing, or visually incoherent internal tags", () => {
+  const lowConfidence = output();
+  lowConfidence.internalMediaTags[0].confidence = 0.69;
+  const lowResult = validateMomoContentPackage(lowConfidence, context);
+  assert.equal(lowResult.ok, false);
+  assert.ok(lowResult.blockers.includes("internal_tag_confidence_too_low"));
+
+  const mismatchedPair = output();
+  mismatchedPair.internalMediaTags[0].label = "Plate";
+  const pairResult = validateMomoContentPackage(mismatchedPair, context);
+  assert.equal(pairResult.ok, false);
+  assert.ok(pairResult.blockers.includes("internal_tag_not_allowlisted"));
+
+  const missingFood = output();
+  missingFood.internalMediaTags[0] = { slug: "plate", label: "Plate", confidence: 0.9 };
+  const missingResult = validateMomoContentPackage(missingFood, context);
+  assert.equal(missingResult.ok, false);
+  assert.ok(missingResult.blockers.includes("internal_tag_food_required"));
+
+  const incoherent = output();
+  incoherent.internalMediaTags[1] = { slug: "bowl", label: "Bowl", confidence: 0.9 };
+  const incoherentResult = validateMomoContentPackage(incoherent, context);
+  assert.equal(incoherentResult.ok, false);
+  assert.ok(incoherentResult.blockers.includes("internal_tag_semantic_mismatch"));
+});
+
+test("blocks every free-form dish, cuisine, brand, ingredient, and owner-identity visual description", () => {
+  for (const summary of [
+    "A pizza is centered on a white plate against a blue table setting.",
+    "A Nepalese cuisine serving is centered on a white plate at a table.",
+    "A Coca-Cola branded food item is centered on a white plate at a table.",
+    "A chicken ingredient appears in the plated food serving at the table.",
+    "A Momo's House serving is centered on a white plate at a table.",
+  ]) {
+    const value = output();
+    value.assetAssessment.visualSummary = summary;
+    value.altText = summary;
+    value.claims.find((claim) => claim.id === "claim-visible").exactText = summary;
+    const result = validateMomoContentPackage(value, context);
+    assert.equal(result.ok, false, summary);
+    assert.ok(result.blockers.includes("visual_description_not_canonical"), summary);
+  }
+});
+
+test("keeps visible-media claims out of owner-grounded public copy", () => {
+  const value = output();
+  const visible = value.claims.find((claim) => claim.id === "claim-visible");
+  assert.ok(visible);
+  visible.appearsIn = ["master", "alt_text", "instagram", "facebook", "google_business"];
+  value.masterCaption = value.masterCaption.replace(
+    "brings Nepalese cuisine",
+    "serves this plated serving with Nepalese cuisine",
+  );
+  for (const variant of value.variants) {
+    variant.caption = variant.caption.replace(
+      "Nepalese cuisine",
+      "this plated serving with Nepalese cuisine",
+    );
+    variant.claimIds.push(visible.id);
+  }
+  const result = validateMomoContentPackage(value, context);
+  assert.equal(result.ok, false);
+  assert.ok(result.blockers.includes("visual_claim_not_alt_only"));
+});
+
+test("keeps owner-truth claims out of visual alt text", () => {
+  const value = output();
+  const ownerClaim = value.claims.find((claim) => claim.id === "claim-brand");
+  assert.ok(ownerClaim);
+  ownerClaim.appearsIn.push("alt_text");
+  value.altText += " Momo's House.";
+  const result = validateMomoContentPackage(value, context);
+  assert.equal(result.ok, false);
+  assert.ok(result.blockers.includes("owner_truth_claim_in_alt_text"));
+});
+
+test("does not confuse generic presentation words in owner menu truth with food identity", () => {
+  const broadMenuContext = {
+    ...context,
+    truthFields: context.truthFields.map((field) => field.fieldKey === "menu.primary"
+      ? { ...field, value: "Snacks, dishes, meals, plates, and servings" }
+      : field),
+  };
+  const result = validateMomoContentPackage(output(), broadMenuContext);
+  assert.equal(result.ok, true, result.ok ? "" : result.blockers.join(","));
+});
+
+test("canonical tag descriptions cannot inherit accented owner identity", () => {
+  const accentedContext = {
+    ...context,
+    truthFields: context.truthFields.map((field) =>
+      field.fieldKey === "identity.display_name"
+        ? { ...field, value: "Café Verde" }
+        : field),
+  };
+  const value = output();
+  const leaked = "Food presentation: Food; Table setting; Plated food; Cafe Verde.";
+  value.assetAssessment.visualSummary = leaked;
+  value.altText = leaked;
+  value.claims.find((claim) => claim.id === "claim-visible").exactText = leaked;
+  const result = validateMomoContentPackage(value, accentedContext);
+  assert.equal(result.ok, false);
+  assert.ok(result.blockers.includes("visual_description_not_canonical"));
 });
 
 test("rejects every posting-time recommendation before immutable staging", () => {
@@ -140,11 +345,11 @@ test("rejects subjective words hidden inside an otherwise visual claim", () => {
   assert.ok(result.blockers.includes("visual_claim_not_objective"));
 });
 
-test("allows the fixture's narrow objective visual observation only in alt text", () => {
+test("allows the fixture's canonical whole-string visual observation only in alt text", () => {
   const value = output();
   const visual = value.claims.find((claim) => claim.id === "claim-visible");
   assert.deepEqual(visual?.appearsIn, ["alt_text"]);
-  assert.equal(visual?.exactText, "plated serving");
+  assert.equal(visual?.exactText, "Food presentation: Food; Table setting; Plated food.");
   const result = validateMomoContentPackage(value, context);
   assert.equal(result.ok, true, result.ok ? "" : result.blockers.join(","));
 });
@@ -369,13 +574,12 @@ test("uses deterministic SEO candidates instead of unordered token bags", () => 
   }
 });
 
-test("requires objective alt text to contain a declared visible-media visual span", () => {
+test("requires the exact canonical alt text to have one whole-string visible-media claim", () => {
   const value = output();
   value.claims = value.claims.filter((claim) => claim.id !== "claim-visible");
-  value.altText = "A warm softly lit restaurant setting with a clear view and simple table.";
   const result = validateMomoContentPackage(value, context);
   assert.equal(result.ok, false);
-  assert.ok(result.blockers.includes("alt_visual_claim_required"));
+  assert.ok(result.blockers.includes("canonical_visual_claim_required"));
 });
 
 test("negative owner truth cannot authorize an online-order CTA", () => {

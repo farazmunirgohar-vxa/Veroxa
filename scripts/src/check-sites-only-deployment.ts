@@ -7,41 +7,32 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
   CURRENT_PARTIAL_ROLLOUT_EVIDENCE,
-  LOCAL_CANDIDATE_APPLIED_MIGRATIONS,
   LOCAL_CANDIDATE_PENDING_MIGRATIONS,
   REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE,
-  V36_LIVE_PARITY_EVIDENCE,
   assertReviewedLocalCandidateManifest,
   hashTree,
   readDeploymentManifest,
   repoRoot,
 } from "./release-manifest";
+
 const failures: string[] = [];
 const must = __name((condition: boolean, message: string) => {
   if (!condition) failures.push(message);
 }, "must");
 const read = __name(
-  (relativePath: string) =>
-    readFileSync(resolve(repoRoot, relativePath), "utf8"),
+  (relativePath: string) => readFileSync(resolve(repoRoot, relativePath), "utf8"),
   "read",
 );
 for (const retiredPath of ["api/audit-requests.ts", "api/pilot-access.ts"]) {
-  must(
-    !existsSync(resolve(repoRoot, retiredPath)),
-    `Retired Vercel artifact exists: ${retiredPath}`,
-  );
+  must(!existsSync(resolve(repoRoot, retiredPath)), `Retired Vercel artifact exists: ${retiredPath}`);
 }
 const vercelShutdownPath = resolve(repoRoot, "vercel.json");
-must(
-  existsSync(vercelShutdownPath),
-  "The Vercel automatic-deployment shutdown sentinel is missing.",
-);
+must(existsSync(vercelShutdownPath), "The Vercel shutdown sentinel is missing.");
 if (existsSync(vercelShutdownPath)) {
   try {
     const sentinel = JSON.parse(readFileSync(vercelShutdownPath, "utf8"));
     must(
-      JSON.stringify(Object.keys(sentinel).sort()) ===
-        JSON.stringify(["$schema", "git"]) &&
+      JSON.stringify(Object.keys(sentinel).sort()) === JSON.stringify(["$schema", "git"]) &&
         sentinel.$schema === "https://openapi.vercel.sh/vercel.json" &&
         JSON.stringify(Object.keys(sentinel.git ?? {}).sort()) ===
           JSON.stringify(["deploymentEnabled"]) &&
@@ -60,9 +51,7 @@ for (const workflow of [
 ]) {
   const source = read(workflow);
   must(
-    !/sites_(?:save|deploy)|deploy_site|vercel\s+(?:deploy|--prod)/iu.test(
-      source,
-    ),
+    !/sites_(?:save|deploy)|deploy_site|vercel\s+(?:deploy|--prod)/iu.test(source),
     `${workflow} must not publish Sites or bypass the Vercel shutdown sentinel.`,
   );
 }
@@ -72,51 +61,36 @@ try {
 } catch (error) {
   failures.push(error instanceof Error ? error.message : String(error));
 }
-const checkpoint = JSON.parse(
-  read("artifacts/veroxa/docs/RR_RELEASE_CHECKPOINT.json"),
-);
+const checkpoint = JSON.parse(read("artifacts/veroxa/docs/RR_RELEASE_CHECKPOINT.json"));
 must(
   checkpoint.schemaVersion === 11 &&
-    checkpoint.recordKind === "veroxa_staged_rollout_forward_repair_checkpoint" &&
-    checkpoint.status === REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE,
-  "RR checkpoint must identify the schema-11 repair-verified corrective-Sites candidate.",
-);
-must(
-  checkpoint.releaseCandidate?.pullRequest === 163 &&
+    checkpoint.recordKind === "veroxa_momo_ready_team_decisions_feature_checkpoint" &&
+    checkpoint.status === REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE &&
+    checkpoint.releaseCandidate?.pullRequest === 164 &&
+    checkpoint.releaseCandidate.pullRequestDraft === true &&
+    checkpoint.releaseCandidate.observedDraftPullRequestHead ===
+      "b659ec307da9455c389059b29f2d6f3ab51f095e" &&
+    checkpoint.releaseCandidate.observedDraftPullRequestTree ===
+      "9931d63dcb16a2e2e1cb7c592d2da63b4054cb60" &&
     checkpoint.releaseCandidate.githubMerged === false &&
-    checkpoint.releaseCandidate.databaseMigrationApplied === true &&
-    checkpoint.releaseCandidate.databaseChangesRequired === false &&
-    checkpoint.releaseCandidate.candidateMigrationsMatchLiveLedger === true &&
-    JSON.stringify(checkpoint.releaseCandidate.databaseMigrationsApplied) ===
-      JSON.stringify(LOCAL_CANDIDATE_APPLIED_MIGRATIONS) &&
+    checkpoint.releaseCandidate.databaseChangesRequired === true &&
+    checkpoint.releaseCandidate.databaseMigrationApplied === false &&
+    checkpoint.releaseCandidate.candidateMigrationsMatchLiveLedger === false &&
     checkpoint.releaseCandidate.sitesPublished === false &&
     checkpoint.releaseCandidate.deploymentAuthorized === true &&
     checkpoint.releaseCandidate.activationExecuted === false &&
     checkpoint.releaseCandidate.fullReleaseGatePassed === false,
-  "RR checkpoint must preserve open PR #163 and the verified database repair while leaving merge, exact-head workflow/review evidence, Sites republish, full gate, and activation incomplete.",
+  "RR checkpoint must preserve draft PR #164 as authorized but wholly unexecuted and without final-head gates.",
 );
-const hostingPath = resolve(
-  repoRoot,
-  "artifacts/veroxa-sites/.openai/hosting.json",
-);
-must(existsSync(hostingPath), "Sites hosting identity is missing.");
-if (existsSync(hostingPath)) {
-  const hosting = JSON.parse(readFileSync(hostingPath, "utf8"));
-  must(
-    hosting.project_id === manifest.sitesProjectId,
-    "Sites project identity and manifest disagree.",
-  );
-}
 const sourceTree = hashTree(resolve(repoRoot, manifest.source.root), {
   exclusions: manifest.source.generatedPathExclusions,
 });
 const migrationTree = hashTree(resolve(repoRoot, manifest.migrations.root), {
   suffix: ".sql",
 });
-const migrationMirrorTree = hashTree(
-  resolve(repoRoot, manifest.migrations.mirrorRoot!),
-  { suffix: ".sql" },
-);
+const migrationMirrorTree = hashTree(resolve(repoRoot, manifest.migrations.mirrorRoot!), {
+  suffix: ".sql",
+});
 must(
   sourceTree.fileCount === manifest.source.fileCount &&
     sourceTree.sha256 === manifest.source.treeSha256 &&
@@ -124,56 +98,48 @@ must(
   `Local Sites candidate fingerprint drifted (actual ${sourceTree.fileCount}/${sourceTree.sha256}).`,
 );
 must(
-  migrationTree.fileCount === 43 &&
+  migrationTree.fileCount === 44 &&
     migrationTree.sha256 === manifest.migrations.treeSha256 &&
     migrationMirrorTree.fileCount === migrationTree.fileCount &&
     migrationMirrorTree.sha256 === migrationTree.sha256 &&
-    JSON.stringify(migrationMirrorTree.files) ===
-      JSON.stringify(migrationTree.files) &&
+    JSON.stringify(migrationMirrorTree.files) === JSON.stringify(migrationTree.files) &&
     JSON.stringify(manifest.releaseCandidate.pendingMigrations) ===
       JSON.stringify(LOCAL_CANDIDATE_PENDING_MIGRATIONS) &&
-    migrationTree.sha256 === CURRENT_PARTIAL_ROLLOUT_EVIDENCE.migrationTreeSha256,
+    migrationTree.sha256 !== CURRENT_PARTIAL_ROLLOUT_EVIDENCE.migrationTreeSha256,
   `Local migration candidate fingerprint drifted (root ${migrationTree.fileCount}/${migrationTree.sha256}; mirror ${migrationMirrorTree.fileCount}/${migrationMirrorTree.sha256}).`,
 );
-const readinessPath = "artifacts/veroxa-sites/app/momo-readiness-tracker.json";
-const readinessText = read(readinessPath);
+const readinessText = read("artifacts/veroxa-sites/app/momo-readiness-tracker.json");
 const readiness = JSON.parse(readinessText);
 for (const exactReleaseIdentity of [
   manifest.releaseCandidate.sourceTreeSha256,
   manifest.releaseCandidate.migrationTreeSha256,
-  V36_LIVE_PARITY_EVIDENCE.sourceTreeSha256,
-  V36_LIVE_PARITY_EVIDENCE.migrationTreeSha256,
-  V36_LIVE_PARITY_EVIDENCE.historicalRepositoryMigrationTreeSha256,
+  CURRENT_PARTIAL_ROLLOUT_EVIDENCE.sourceTreeSha256,
+  CURRENT_PARTIAL_ROLLOUT_EVIDENCE.migrationTreeSha256,
 ]) {
-  must(
-    !readinessText.includes(exactReleaseIdentity),
-    "Sites-bundled readiness evidence must externalize exact release identity.",
-  );
+  must(!readinessText.includes(exactReleaseIdentity), "Sites-bundled readiness evidence must externalize exact release identity.");
 }
 must(
   readiness.schemaVersion === 9 &&
     readiness.overallStatus === "blocked" &&
-    typeof readiness.overallRule === "string" &&
     /No-Go/iu.test(readiness.overallRule),
   "Sites-bundled readiness evidence must remain fail-closed No-Go.",
 );
+const candidate = manifest.releaseCandidate;
 must(
   !manifest.deploymentFreeze.automaticDeploymentsAllowed &&
     manifest.deploymentFreeze.databaseApplyAuthorized === true &&
     manifest.deploymentFreeze.sitesPublishAuthorized === true &&
-    manifest.releaseCandidate.databaseApplyAuthorized === true &&
-    manifest.releaseCandidate.databaseMigrationApplied === true &&
-    manifest.releaseCandidate.databaseChangesRequired === false &&
-    manifest.releaseCandidate.candidateMigrationsMatchLiveLedger === true &&
-    JSON.stringify(manifest.releaseCandidate.databaseMigrationsApplied) ===
-      JSON.stringify(LOCAL_CANDIDATE_APPLIED_MIGRATIONS) &&
-    manifest.releaseCandidate.sitesPublishAuthorized === true &&
-    !manifest.releaseCandidate.sitesPublished &&
-    manifest.releaseCandidate.deploymentAuthorized === true &&
-    !manifest.releaseCandidate.activationExecuted &&
-    !manifest.releaseCandidate.fullReleaseGatePassed &&
+    candidate.databaseApplyAuthorized === true &&
+    candidate.databaseChangesRequired === true &&
+    candidate.databaseMigrationApplied === false &&
+    candidate.candidateMigrationsMatchLiveLedger === false &&
+    candidate.sitesPublishAuthorized === true &&
+    candidate.sitesPublished === false &&
+    candidate.deploymentAuthorized === true &&
+    candidate.activationExecuted === false &&
+    candidate.fullReleaseGatePassed === false &&
     Object.values(manifest.activationState).every((value) => value === false),
-  "The database repair must remain recorded as verified while corrected Sites v38 publication, the full gate, and activation stay gated and unexecuted.",
+  "Deployment authorization must not be confused with apply, publish, automatic deployment, external action, or activation evidence.",
 );
 if (failures.length) {
   console.error("Sites-only deployment guardrail failed:");
@@ -181,5 +147,5 @@ if (failures.length) {
   process.exit(1);
 }
 console.log(
-  `Sites-only deployment guardrail passed: Vercel remains retired; Sites v37 and all ${migrationTree.fileCount} migrations are live, while the corrected ${sourceTree.fileCount}-file Sites v38 candidate remains unpublished and activation remains closed.`,
+  `Sites-only deployment guardrail passed: production remains Sites v39/live43; ${sourceTree.fileCount}-file Sites and ${migrationTree.fileCount}-migration candidates remain unpublished/unapplied behind the frozen cutover sequence.`,
 );

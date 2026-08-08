@@ -19,15 +19,19 @@ import {
   repoRoot,
 } from "./release-manifest";
 const EXPECTED_CANDIDATE_TREE_SHA256 =
-  "8a49f00ab3bd6d9623100fec238939b6cb81f17d67d0e2d3a4426559c137e41c";
+  "9cc0bba007b6a0c06edf33563fb1bc3f4650811f8f8ea1639cc58c7028ac7324";
 const EXPECTED_CURRENT_LIVE_TREE_SHA256 =
   "8a49f00ab3bd6d9623100fec238939b6cb81f17d67d0e2d3a4426559c137e41c";
 const EXPECTED_CURRENT_LIVE_SITES_TREE_SHA256 =
-  "929e05cf68a6af5176811f49321ec108e617b93a08153b65b3f86b109d0c8c18";
-const EXPECTED_CANDIDATE_SITES_TREE_SHA256 =
   "4edae9660343cda362968bd08e544ba5a154c90a902ac961365ceb32ea820292";
+const EXPECTED_CANDIDATE_SITES_TREE_SHA256 =
+  "357f6b336993d2c306c102d5be2699d7145a3144041eeb9753a2a43c48fe869e";
 const REPAIR_MIGRATION =
   "20260808041629_repair_momo_client_v3_displayed_asset_scope.sql";
+const PROVISIONAL_V5_MIGRATION =
+  "20260808045812_momo_ready_team_decisions_and_food_tags_v2.sql";
+const PROVISIONAL_V5_MIGRATION_SHA256 =
+  "9cf6f0080d38d58d3c1939d928444701b1954bf5cfe96bf7f3e80077bad45cc0";
 const APPLIED_FORWARD_MIGRATIONS = [
   "20260808001210_audit_intake_envelope_v2.sql",
   "20260808001430_momo_client_pipeline_readback_v3.sql",
@@ -175,7 +179,7 @@ if (
   JSON.stringify(sitesLedger) !== JSON.stringify(expectedCandidateLedger)
 ) {
   throw new Error(
-    "Root and Sites migration inventories must contain immutable historical37 and the exact six-migration live rollout through the verified 041629 repair.",
+    "Root and Sites inventories must preserve immutable live43 and add only the mirrored provisional v5 migration.",
   );
 }
 if (
@@ -262,8 +266,8 @@ const sitesCandidateTree = hashTree(
   { suffix: ".sql" },
 );
 if (
-  rootCandidateTree.fileCount !== 43 ||
-  sitesCandidateTree.fileCount !== 43 ||
+  rootCandidateTree.fileCount !== 44 ||
+  sitesCandidateTree.fileCount !== 44 ||
   rootCandidateTree.sha256 !== EXPECTED_CANDIDATE_TREE_SHA256 ||
   sitesCandidateTree.sha256 !== EXPECTED_CANDIDATE_TREE_SHA256 ||
   manifest.migrations.evidenceScope !==
@@ -274,7 +278,7 @@ if (
   manifest.migrations.treeSha256 !== rootCandidateTree.sha256 ||
   manifest.migrations.mirrorTreeSha256 !== sitesCandidateTree.sha256 ||
   manifest.releaseCandidate.migrationTreeSha256 !== rootCandidateTree.sha256 ||
-  manifest.releaseCandidate.migrationFileCount !== 43
+  manifest.releaseCandidate.migrationFileCount !== 44
 ) {
   throw new Error(
     `Local candidate fingerprint drifted (root=${rootCandidateTree.fileCount}/${rootCandidateTree.sha256}, Sites=${sitesCandidateTree.fileCount}/${sitesCandidateTree.sha256}).`,
@@ -283,9 +287,9 @@ if (
 const currentProduction = manifest.currentProductionObservation;
 if (
   manifest.schemaVersion !== 7 ||
-  currentProduction.sitesVersion !== 37 ||
-  !currentProduction.sitesCheckoutCommit.startsWith("61e9ace") ||
-  currentProduction.sourceFileCount !== 200 ||
+  currentProduction.sitesVersion !== 39 ||
+  !currentProduction.sitesCheckoutCommit.startsWith("8749a7d") ||
+  currentProduction.sourceFileCount !== 201 ||
   currentProduction.sourceTreeSha256 !==
     EXPECTED_CURRENT_LIVE_SITES_TREE_SHA256 ||
   currentProduction.productionMigrationCount !== 43 ||
@@ -296,22 +300,22 @@ if (
     EXPECTED_APPLIED_FORWARD_HASHES.get(REPAIR_MIGRATION) ||
   !currentProduction.databaseLedgerObserved ||
   !currentProduction.databaseAppliedThroughLatestObserved ||
-  !currentProduction.candidateMigrationsMatchLiveLedger ||
+  currentProduction.candidateMigrationsMatchLiveLedger ||
   currentProduction.fullReleaseGatePassed
 ) {
   throw new Error(
-    "Schema-7 production evidence must identify exact Sites v37 / 61e9ace and the exact live43 ledger through the verified 041629 repair without claiming corrected Sites parity.",
+    "Schema-7 production evidence must identify exact GitHub-main/Sites-v39 parity and live43 without claiming DB44 candidate parity.",
   );
 }
 if (
   JSON.stringify(manifest.releaseCandidate.pendingMigrations) !==
     JSON.stringify(LOCAL_CANDIDATE_PENDING_MIGRATIONS) ||
-  !manifest.releaseCandidate.databaseMigrationApplied ||
-  manifest.releaseCandidate.databaseChangesRequired ||
-  !manifest.releaseCandidate.candidateMigrationsMatchLiveLedger ||
+  manifest.releaseCandidate.databaseMigrationApplied ||
+  !manifest.releaseCandidate.databaseChangesRequired ||
+  manifest.releaseCandidate.candidateMigrationsMatchLiveLedger ||
   JSON.stringify(manifest.releaseCandidate.databaseMigrationsApplied) !==
     JSON.stringify(APPLIED_FORWARD_MIGRATIONS) ||
-  manifest.releaseCandidate.sourceFileCount !== 201 ||
+  manifest.releaseCandidate.sourceFileCount !== 203 ||
   manifest.releaseCandidate.sourceTreeSha256 !==
     EXPECTED_CANDIDATE_SITES_TREE_SHA256 ||
   manifest.releaseCandidate.futureSitesVersion !== null ||
@@ -321,39 +325,45 @@ if (
   !manifest.releaseCandidate.deploymentAuthorized
 ) {
   throw new Error(
-    "Release evidence must record all six rollout migrations applied through 041629, no pending database migration, and an authorized but not-yet-published corrective Sites candidate whose version is not preassigned.",
+    "Release evidence must record live43 separately from the authorized but unapplied provisional DB44 and unpublished v5 Sites candidate.",
   );
 }
 const rolloutSteps = manifest.rolloutSequence?.steps ?? [];
-const migrationStep = (filename: string) =>
-  rolloutSteps.find((step) => step.migration === filename);
-const originalSitesPublish = rolloutSteps.find(
-  (step) => step.id === "publish_and_verify_audit_v2_and_client_v3_routes",
+const provisionalApply = rolloutSteps.find(
+  (step) => step.id === "apply_momo_ready_v5_exact_bytes",
 );
-const repairStep = migrationStep(REPAIR_MIGRATION);
-const correctiveSitesPublish = rolloutSteps.find(
-  (step) => step.id === "republish_and_verify_repaired_client_v3",
+const generatedVersionReconciliation = rolloutSteps.find(
+  (step) => step.id === "reconcile_generated_migration_version",
+);
+const sitesPublish = rolloutSteps.find(
+  (step) => step.id === "publish_v5_sites_candidate",
 );
 if (
-  rolloutSteps.length !== 8 ||
-  APPLIED_FORWARD_MIGRATIONS.some(
-    (filename) => migrationStep(filename)?.completed !== true,
+  rolloutSteps.length !== 9 ||
+  rolloutSteps.some(
+    (step) => step.completed || !step.explicitReviewRequired,
   ) ||
-  originalSitesPublish?.action !== "sites_publish_and_verify" ||
-  originalSitesPublish.completed !== true ||
-  originalSitesPublish.requiresCompletedStep !==
-    migrationStep(APPLIED_FORWARD_MIGRATIONS[1])?.id ||
-  repairStep?.id !== "repair_client_pipeline_displayed_rights_scope" ||
-  repairStep.action !== "database_migration" ||
-  repairStep.completed !== true ||
-  repairStep.requiresCompletedStep !==
-    migrationStep(APPLIED_FORWARD_MIGRATIONS[4])?.id ||
-  correctiveSitesPublish?.action !== "sites_publish_and_verify" ||
-  correctiveSitesPublish.completed !== false ||
-  correctiveSitesPublish.requiresCompletedStep !== repairStep.id
+  rolloutSteps[1]?.id !== "freeze_content_v4_ingress" ||
+  rolloutSteps[2]?.id !== "drain_v4_content_work" ||
+  provisionalApply?.migration !== PROVISIONAL_V5_MIGRATION ||
+  provisionalApply.action !== "database_migration" ||
+  provisionalApply.requiresCompletedStep !== "drain_v4_content_work" ||
+  !/Supabase MCP[\s\S]*generated production ledger version/iu.test(
+    provisionalApply.verification,
+  ) ||
+  generatedVersionReconciliation?.action !==
+    "github_followup_reconciliation" ||
+  generatedVersionReconciliation.requiresCompletedStep !==
+    "verify_database_v5_and_legacy_v4_boundaries" ||
+  !/renam(?:e|es) both migration mirrors[\s\S]*without changing SQL bytes/iu.test(
+    generatedVersionReconciliation.verification,
+  ) ||
+  sitesPublish?.action !== "sites_publish_and_verify" ||
+  sitesPublish.requiresCompletedStep !==
+    "reconcile_generated_migration_version"
 ) {
   throw new Error(
-    "Rollout evidence must mark all six live migrations and original Sites v37 publish complete, then keep only the dependent corrective Sites v38 republish pending.",
+    "Rollout evidence must preserve the all-pending freeze/drain/MCP-apply/generated-version-reconcile/Sites-publish order.",
   );
 }
 for (const filename of APPLIED_FORWARD_MIGRATIONS) {
@@ -363,6 +373,12 @@ for (const filename of APPLIED_FORWARD_MIGRATIONS) {
       `Applied production migration content drifted: ${filename}`,
     );
   }
+}
+const provisionalHash = sha256(
+  resolve(repoRoot, "supabase/migrations", PROVISIONAL_V5_MIGRATION),
+);
+if (provisionalHash !== PROVISIONAL_V5_MIGRATION_SHA256) {
+  throw new Error("Provisional v5 migration bytes drifted");
 }
 const latestLiveHash = sha256(
   resolve(
@@ -401,5 +417,5 @@ if (
   );
 }
 console.log(
-  "Supabase migration ledger guardrail passed: historical37 d306d26c is immutable; live43 8a49f00a through verified 041629 exactly matches both migration mirrors; corrected Sites v38 publication is the sole pending rollout action.",
+  "Supabase migration ledger guardrail passed: historical37 and live43 are immutable; provisional DB44 is mirrored at exact bytes and remains unapplied behind freeze/drain and mandatory generated-version source reconciliation.",
 );

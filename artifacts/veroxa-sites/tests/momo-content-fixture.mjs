@@ -26,7 +26,7 @@ export function output() {
     schemaVersion: "momo-content-package-v1",
     assetAssessment: {
       subject: "food",
-      visualSummary: "A plated serving is centered against a simple restaurant table setting.",
+      visualSummary: "Food presentation: Food; Table setting; Plated food.",
       qualityScore: 4,
       qualityIssues: ["none"],
     },
@@ -37,7 +37,7 @@ export function output() {
       audienceIntent: "Help San Antonio diners recognize the restaurant and cuisine.",
     },
     masterCaption: "Momo's House brings Nepalese cuisine to San Antonio for a local restaurant introduction.",
-    altText: "A plated serving centered on a restaurant table with a softly lit background.",
+    altText: "Food presentation: Food; Table setting; Plated food.",
     seoPhrases: [
       { id: "seo-brand", phrase: "Momo's House", kind: "brand", truthFieldIds: [IDS.name] },
       { id: "seo-cuisine", phrase: "Nepalese cuisine", kind: "cuisine", truthFieldIds: [IDS.cuisine] },
@@ -48,7 +48,7 @@ export function output() {
       { id: "claim-brand", exactText: "Momo's House", source: "owner_truth", category: "restaurant_name", truthFieldIds: [IDS.name], appearsIn: ["master", "instagram", "facebook", "google_business"] },
       { id: "claim-cuisine", exactText: "Nepalese cuisine", source: "owner_truth", category: "cuisine", truthFieldIds: [IDS.cuisine], appearsIn: ["master", "instagram", "facebook", "google_business"] },
       { id: "claim-local", exactText: "San Antonio", source: "owner_truth", category: "location", truthFieldIds: [IDS.address], appearsIn: ["master", "instagram", "facebook", "google_business"] },
-      { id: "claim-visible", exactText: "plated serving", source: "visible_media", category: "visual", truthFieldIds: [], appearsIn: ["alt_text"] },
+      { id: "claim-visible", exactText: "Food presentation: Food; Table setting; Plated food.", source: "visible_media", category: "visual", truthFieldIds: [], appearsIn: ["alt_text"] },
     ],
     variants: [
       {
@@ -82,7 +82,7 @@ export function output() {
     internalMediaTags: [
       { slug: "food", label: "Food", confidence: 0.96 },
       { slug: "table-setting", label: "Table setting", confidence: 0.83 },
-      { slug: "local-discovery", label: "Local discovery", confidence: 0.8 },
+      { slug: "plated-food", label: "Plated food", confidence: 0.8 },
     ],
     uncertainties: [],
   };

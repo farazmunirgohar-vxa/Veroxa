@@ -1,7 +1,15 @@
 import type { User } from "@supabase/supabase-js";
-import { getVeroxaSupabase } from "./veroxa-supabase";
-import type { MomoContentAiPackageOutput, MomoContentPlatform } from "./momo-content-ai-contract";
-import { finalizeMomoMediaUpload } from "./momo-media-finalize-client";
+import { getVeroxaSupabase } from "./veroxa-supabase.ts";
+import {
+  MOMO_READY_V2_TEAM_INSPECTION_ATTESTATION,
+  MOMO_READY_V2_TEAM_INSPECTION_ATTESTATION_SHA256,
+  MOMO_READY_V2_TEAM_INSPECTION_ATTESTATION_VERSION,
+  isMomoContentHash,
+  isMomoContentUuid,
+  type MomoContentAiPackageOutput,
+  type MomoContentPlatform,
+} from "./momo-content-ai-contract.ts";
+import { finalizeMomoMediaUpload } from "./momo-media-finalize-client.ts";
 
 export type MomoWorkspaceSection =
   | "dashboard"
@@ -205,6 +213,7 @@ export type MomoContentAiRun = {
   status: "reserved" | "provider_running" | "result_staged" | "pending_review" | "materialized" | "rejected" | "failed";
   model: string;
   prompt_version: string;
+  validator_version: string;
   output_payload: MomoContentAiPackageOutput | null;
   output_sha256: string | null;
   validation_report: unknown;
@@ -369,6 +378,51 @@ export type MomoVeroxaReadyVariantV2 = {
   status: "veroxa_ready";
   external_write_allowed: false;
   created_at: string;
+};
+
+export type MomoReadyReviewStateV2 =
+  | "awaiting_team_review"
+  | "approved_for_manual_export"
+  | "discarded"
+  | "blocked";
+
+export type MomoReadyReviewStatusV2 = {
+  ready_package_id: string;
+  review_state: MomoReadyReviewStateV2;
+  terminal_decision: "approved_for_manual_export" | "discarded" | null;
+  decision_review_snapshot_sha256: string | null;
+  decision_id: string | null;
+  decided_by: string | null;
+  decided_at: string | null;
+  decision_reason: string | null;
+  inspection_attestation_version: string | null;
+  inspection_attestation_text: string | null;
+  inspection_attestation_sha256: string | null;
+  current_review_snapshot_sha256: string;
+  snapshot_current: boolean;
+  can_manual_export: boolean;
+  external_write_allowed: false;
+  blocker_codes: string[];
+};
+
+export type MomoReadyReviewDecisionV2 = {
+  decision_id: string;
+  ready_package_id: string;
+  review_state: "approved_for_manual_export" | "discarded" | "blocked";
+  terminal_decision: "approved_for_manual_export" | "discarded";
+  decision_review_snapshot_sha256: string;
+  replayed: boolean;
+  decided_by: string;
+  decided_at: string;
+  decision_reason: string | null;
+  inspection_attestation_version: string | null;
+  inspection_attestation_text: string | null;
+  inspection_attestation_sha256: string | null;
+  current_review_snapshot_sha256: string;
+  snapshot_current: boolean;
+  can_manual_export: boolean;
+  external_write_allowed: false;
+  blocker_codes: string[];
 };
 
 export type MomoAiJob = {
@@ -696,6 +750,7 @@ export type MomoWorkspaceData = {
   exceptionEventsV2: MomoExceptionEventV2[];
   veroxaReadyPackagesV2: MomoVeroxaReadyPackageV2[];
   veroxaReadyVariantsV2: MomoVeroxaReadyVariantV2[];
+  readyReviewStatusesV2: MomoReadyReviewStatusV2[];
   strategies: MomoContentStrategy[];
   contentItems: MomoContentItem[];
   pendingContentConfirmations: MomoPendingContentConfirmation[];
@@ -722,7 +777,7 @@ export const emptyMomoWorkspaceData = (): MomoWorkspaceData => ({
   readiness: [], readinessGate: null, media: [], mediaRights: [], mediaReviews: [],
   mediaTags: [], mediaAssetTags: [], mediaUsage: [], mediaIntake: [], mediaIdentityLinksV2: [], aiJobs: [],
   contentAiRuns: [], readyPackages: [], readyPackageVariants: [], readyPackageStatuses: [],
-  exceptionIncidentsV2: [], exceptionEventsV2: [], veroxaReadyPackagesV2: [], veroxaReadyVariantsV2: [], strategies: [],
+  exceptionIncidentsV2: [], exceptionEventsV2: [], veroxaReadyPackagesV2: [], veroxaReadyVariantsV2: [], readyReviewStatusesV2: [], strategies: [],
   contentItems: [], pendingContentConfirmations: [], variants: [], approvals: [], calendar: [], connections: [],
   publishQueue: [], localChecks: [], reviews: [], visibility: [], work: [],
   activity: [], reports: [], monitors: [], alerts: [], recovery: [],
@@ -735,6 +790,8 @@ type QueryDefinition = {
   columns: string;
   order?: string;
   ascending?: boolean;
+  secondaryOrder?: string;
+  secondaryAscending?: boolean;
   limit?: number;
   equals?: Record<string, string | boolean>;
   isNull?: string;
@@ -758,7 +815,7 @@ const mediaQueries: QueryDefinition[] = [
   { key: "mediaUsage", table: "veroxa_media_usage", columns: "id, restaurant_id, asset_id, content_item_id, platform, usage_kind, used_at, external_reference, created_at", order: "used_at", ascending: false },
   { key: "mediaIntake", table: "veroxa_momo_media_intake_verifications", columns: "id, restaurant_id, asset_id, detected_mime_type, file_size, width, height, content_sha256, verifier_version, status, verified_at", order: "verified_at", ascending: false },
   { key: "mediaIdentityLinksV2", table: "veroxa_momo_media_asset_identity_links_v2", columns: "id, restaurant_id, identity_id, asset_id, verification_id, canonical_asset_id, link_kind, content_sha256, rights_id, rights_attestation_sha256, created_at", order: "created_at", ascending: false, limit: 200 },
-  { key: "contentAiRuns", table: "veroxa_momo_content_ai_runs", columns: "id, restaurant_id, source_asset_id, intake_verification_id, source_storage_path, source_storage_object_id, source_storage_object_version, source_mime_type, source_file_size, source_width, source_height, source_content_sha256, rights_id, rights_attestation_sha256, review_id, request_hash, target_platforms, truth_snapshot, truth_snapshot_sha256, status, model, prompt_version, output_payload, output_sha256, validation_report, provider_error_code, provider_started_at, accounted_microusd, team_decided_at, decision_mode, automation_policy_version, automation_identity_id, automation_initiated_by, automation_retry_of_run_id, automation_retry_generation, requested_at, updated_at", order: "requested_at", ascending: false },
+  { key: "contentAiRuns", table: "veroxa_momo_content_ai_runs", columns: "id, restaurant_id, source_asset_id, intake_verification_id, source_storage_path, source_storage_object_id, source_storage_object_version, source_mime_type, source_file_size, source_width, source_height, source_content_sha256, rights_id, rights_attestation_sha256, review_id, request_hash, target_platforms, truth_snapshot, truth_snapshot_sha256, status, model, prompt_version, validator_version, output_payload, output_sha256, validation_report, provider_error_code, provider_started_at, accounted_microusd, team_decided_at, decision_mode, automation_policy_version, automation_identity_id, automation_initiated_by, automation_retry_of_run_id, automation_retry_generation, requested_at, updated_at", order: "requested_at", ascending: false },
   { key: "aiJobs", table: "veroxa_ai_jobs", columns: "id, restaurant_id, job_kind, subject_type, subject_id, status, provider_key, model_key, prompt_version, input_payload, output_payload, safety_flags, attempt_count, max_attempts, next_attempt_at, last_error, superseded_by_job_id, superseded_at, supersession_reason, created_at, updated_at", order: "created_at", ascending: false, isNull: "superseded_by_job_id" },
   { key: "exceptionIncidentsV2", table: "veroxa_momo_exception_incidents_v2", columns: "id, restaurant_id, canonical_asset_id, stage, policy_version, blocker_set_sha256, status, blockers, warnings, evidence_sha256, occurrence_count, first_seen_at, last_seen_at, resolved_at, external_write_allowed", order: "last_seen_at", ascending: false, equals: { status: "open", external_write_allowed: false } },
   // Routine Team reads keep immutable lineage bounded and omit the large
@@ -769,7 +826,7 @@ const mediaQueries: QueryDefinition[] = [
 const contentQueries: QueryDefinition[] = [
   { key: "readyPackages", table: "veroxa_momo_ready_packages", columns: "id, restaurant_id, content_ai_run_id, source_asset_id, source_storage_path, source_storage_object_id, source_storage_object_version, source_mime_type, source_file_size, source_width, source_height, source_content_sha256, review_id, approved_payload, approved_payload_sha256, schedule_snapshot, status, approved_by, ready_at", order: "ready_at", ascending: false },
   { key: "readyPackageVariants", table: "veroxa_momo_ready_package_variants", columns: "id, restaurant_id, ready_package_id, platform, media_source_kind, media_asset_id, media_review_id, media_storage_path, media_storage_object_id, media_storage_object_version, media_mime_type, media_file_size, media_width, media_height, media_content_sha256, caption, hashtags, seo_phrases, alt_text, call_to_action, scheduled_for, timezone, status", order: "scheduled_for" },
-  { key: "veroxaReadyPackagesV2", table: "veroxa_momo_ready_packages_v2", columns: "id, restaurant_id, content_ai_run_id, identity_id, canonical_asset_id, source_asset_id, intake_verification_id, rights_id, rights_attestation_sha256, truth_snapshot_sha256, source_storage_path, source_storage_object_id, source_storage_object_version, source_mime_type, source_file_size, source_width, source_height, source_content_sha256, output_payload, output_sha256, validation_report, validation_sha256, decision_mode, policy_version, status, external_write_allowed, ready_at", order: "ready_at", ascending: false, equals: { status: "veroxa_ready", external_write_allowed: false } },
+  { key: "veroxaReadyPackagesV2", table: "veroxa_momo_ready_packages_v2", columns: "id, restaurant_id, content_ai_run_id, identity_id, canonical_asset_id, source_asset_id, intake_verification_id, rights_id, rights_attestation_sha256, truth_snapshot_sha256, source_storage_path, source_storage_object_id, source_storage_object_version, source_mime_type, source_file_size, source_width, source_height, source_content_sha256, output_payload, output_sha256, validation_report, validation_sha256, decision_mode, policy_version, status, external_write_allowed, ready_at", order: "ready_at", ascending: false, secondaryOrder: "id", secondaryAscending: true, limit: 50, equals: { status: "veroxa_ready", external_write_allowed: false } },
   { key: "veroxaReadyVariantsV2", table: "veroxa_momo_ready_variants_v2", columns: "id, restaurant_id, ready_package_id, platform, caption, hashtags, seo_phrases, alt_text, call_to_action, claim_ids, status, external_write_allowed, created_at", order: "platform", equals: { status: "veroxa_ready", external_write_allowed: false } },
   { key: "strategies", table: "veroxa_content_strategies", columns: "id, restaurant_id, title, status, goals, pillars, brand_voice_snapshot, approved_by, approved_at, created_at, updated_at", order: "created_at", ascending: false },
   { key: "contentItems", table: "veroxa_content_items", columns: "id, restaurant_id, strategy_id, primary_media_asset_id, title, concept, master_caption, manual_pillar, status, requires_owner_confirmation, created_by, approved_by, approved_at, created_at, updated_at", order: "created_at", ascending: false },
@@ -948,6 +1005,247 @@ export function hydrateMomoClientSnapshot(raw: Record<string, unknown>, restaura
   return result;
 }
 
+const MOMO_READY_REVIEW_STATES_V2 = new Set<MomoReadyReviewStateV2>([
+  "awaiting_team_review",
+  "approved_for_manual_export",
+  "discarded",
+  "blocked",
+]);
+
+const nullableReadyReviewString = (value: unknown): string | null =>
+  value === null || value === undefined
+    ? null
+    : typeof value === "string" && value === value.trim() && value.length > 0
+    ? value
+    : null;
+
+export function parseMomoReadyReviewStatusV2(
+  raw: unknown,
+): MomoReadyReviewStatusV2 | null {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+  const row = raw as Record<string, unknown>;
+  const expectedKeys = [
+    "ready_package_id", "review_state", "terminal_decision",
+    "decision_review_snapshot_sha256", "decision_id", "decided_by",
+    "decided_at", "decision_reason", "inspection_attestation_version",
+    "inspection_attestation_text", "inspection_attestation_sha256",
+    "current_review_snapshot_sha256",
+    "snapshot_current", "can_manual_export", "external_write_allowed",
+    "blocker_codes",
+  ].sort();
+  if (Object.keys(row).sort().join(",") !== expectedKeys.join(",")) return null;
+  const reviewState = row.review_state;
+  const blockers = row.blocker_codes;
+  if (!isMomoContentUuid(row.ready_package_id) ||
+    typeof reviewState !== "string" ||
+    !MOMO_READY_REVIEW_STATES_V2.has(reviewState as MomoReadyReviewStateV2) ||
+    !isMomoContentHash(row.current_review_snapshot_sha256) ||
+    typeof row.snapshot_current !== "boolean" ||
+    typeof row.can_manual_export !== "boolean" ||
+    row.external_write_allowed !== false ||
+    !Array.isArray(blockers) || blockers.length > 12 ||
+    !blockers.every((item) => typeof item === "string" && item.length > 0 && item.length < 80) ||
+    new Set(blockers).size !== blockers.length) {
+    return null;
+  }
+  const decisionId = nullableReadyReviewString(row.decision_id);
+  const terminalDecision = nullableReadyReviewString(row.terminal_decision);
+  const decisionSnapshotSha256 = nullableReadyReviewString(
+    row.decision_review_snapshot_sha256,
+  );
+  const decidedBy = nullableReadyReviewString(row.decided_by);
+  const decidedAt = nullableReadyReviewString(row.decided_at);
+  const decisionReason = nullableReadyReviewString(row.decision_reason);
+  const attestationVersion = nullableReadyReviewString(row.inspection_attestation_version);
+  const attestationText = nullableReadyReviewString(row.inspection_attestation_text);
+  const attestationSha256 = nullableReadyReviewString(row.inspection_attestation_sha256);
+  const decisionMetadataCount = [decisionId, decidedBy, decidedAt]
+    .filter(Boolean).length;
+  const attestationMetadataCount = [attestationVersion, attestationText, attestationSha256]
+    .filter(Boolean).length;
+  const attestationExact = attestationVersion === MOMO_READY_V2_TEAM_INSPECTION_ATTESTATION_VERSION &&
+    attestationText === MOMO_READY_V2_TEAM_INSPECTION_ATTESTATION &&
+    attestationSha256 === MOMO_READY_V2_TEAM_INSPECTION_ATTESTATION_SHA256;
+  if ([
+    "terminal_decision", "decision_review_snapshot_sha256",
+    "decision_id", "decided_by", "decided_at", "decision_reason",
+    "inspection_attestation_version", "inspection_attestation_text",
+    "inspection_attestation_sha256",
+  ].some((field) =>
+    row[field] !== null && row[field] !== undefined && nullableReadyReviewString(row[field]) === null
+  ) ||
+    (terminalDecision !== null &&
+      !["approved_for_manual_export", "discarded"].includes(terminalDecision)) ||
+    (decisionSnapshotSha256 !== null &&
+      !isMomoContentHash(decisionSnapshotSha256)) ||
+    ((terminalDecision === null) !== (decisionSnapshotSha256 === null)) ||
+    ![0, 3].includes(attestationMetadataCount) ||
+    (attestationMetadataCount === 3 && !attestationExact) ||
+    (decisionId && !isMomoContentUuid(decisionId)) ||
+    (decidedBy && !isMomoContentUuid(decidedBy)) ||
+    (decidedAt && Number.isNaN(Date.parse(decidedAt))) ||
+    (decisionReason && decisionReason.length > 500) ||
+    (reviewState !== "approved_for_manual_export" && row.can_manual_export) ||
+    ((terminalDecision === null && decisionMetadataCount !== 0) ||
+      (terminalDecision !== null && decisionMetadataCount !== 3)) ||
+    (terminalDecision !== null && row.snapshot_current !==
+      (decisionSnapshotSha256 === row.current_review_snapshot_sha256)) ||
+    (reviewState === "awaiting_team_review" &&
+      (terminalDecision !== null || decisionSnapshotSha256 !== null ||
+        Boolean(decisionId || decidedBy || decidedAt || decisionReason) ||
+        attestationMetadataCount !== 0 || !row.snapshot_current || blockers.length !== 0)) ||
+    (reviewState === "approved_for_manual_export" &&
+      (terminalDecision !== "approved_for_manual_export" ||
+        decisionReason !== null || !row.snapshot_current || !row.can_manual_export ||
+        blockers.length !== 0 || !attestationExact)) ||
+    (reviewState === "discarded" &&
+      (terminalDecision !== "discarded" || !decisionReason ||
+        decisionReason.length < 4 || row.can_manual_export ||
+        attestationMetadataCount !== 0 ||
+        (!row.snapshot_current && blockers.length === 0))) ||
+    (reviewState === "blocked" &&
+      (row.can_manual_export || blockers.length === 0 ||
+        (terminalDecision === null &&
+          (decisionSnapshotSha256 !== null || decisionMetadataCount !== 0 ||
+            decisionReason !== null || attestationMetadataCount !== 0 ||
+            !row.snapshot_current)) ||
+        (terminalDecision !== null &&
+          (terminalDecision !== "approved_for_manual_export" ||
+            decisionMetadataCount !== 3 || decisionReason !== null ||
+            !attestationExact || row.snapshot_current))))) {
+    return null;
+  }
+  return {
+    ready_package_id: row.ready_package_id.toLowerCase(),
+    review_state: reviewState as MomoReadyReviewStateV2,
+    terminal_decision: terminalDecision as
+      | "approved_for_manual_export"
+      | "discarded"
+      | null,
+    decision_review_snapshot_sha256: decisionSnapshotSha256,
+    decision_id: decisionId,
+    decided_by: decidedBy,
+    decided_at: decidedAt,
+    decision_reason: decisionReason,
+    inspection_attestation_version: attestationVersion,
+    inspection_attestation_text: attestationText,
+    inspection_attestation_sha256: attestationSha256,
+    current_review_snapshot_sha256: row.current_review_snapshot_sha256,
+    snapshot_current: row.snapshot_current,
+    can_manual_export: row.can_manual_export,
+    external_write_allowed: false,
+    blocker_codes: [...new Set(blockers)].sort(),
+  };
+}
+
+export function momoReadyReviewAllowsManualExport(
+  status: MomoReadyReviewStatusV2 | null | undefined,
+): boolean {
+  return Boolean(status &&
+    status.review_state === "approved_for_manual_export" &&
+    status.terminal_decision === "approved_for_manual_export" &&
+    status.decision_review_snapshot_sha256 ===
+      status.current_review_snapshot_sha256 &&
+    isMomoContentUuid(status.ready_package_id) &&
+    isMomoContentUuid(status.decision_id) &&
+    isMomoContentUuid(status.decided_by) &&
+    typeof status.decided_at === "string" &&
+    !Number.isNaN(Date.parse(status.decided_at)) &&
+    status.decision_reason === null &&
+    status.snapshot_current &&
+    status.can_manual_export &&
+    status.blocker_codes.length === 0 &&
+    status.inspection_attestation_version === MOMO_READY_V2_TEAM_INSPECTION_ATTESTATION_VERSION &&
+    status.inspection_attestation_text === MOMO_READY_V2_TEAM_INSPECTION_ATTESTATION &&
+    status.inspection_attestation_sha256 === MOMO_READY_V2_TEAM_INSPECTION_ATTESTATION_SHA256 &&
+    status.external_write_allowed === false &&
+    isMomoContentHash(status.current_review_snapshot_sha256));
+}
+
+export function momoReadyReviewCanApprove(
+  status: MomoReadyReviewStatusV2 | null | undefined,
+): boolean {
+  return Boolean(status && status.review_state === "awaiting_team_review" &&
+    status.terminal_decision === null &&
+    status.decision_review_snapshot_sha256 === null &&
+    status.decision_id === null && status.decided_by === null &&
+    status.decided_at === null && status.decision_reason === null &&
+    status.inspection_attestation_version === null &&
+    status.inspection_attestation_text === null &&
+    status.inspection_attestation_sha256 === null &&
+    status.snapshot_current && status.blocker_codes.length === 0 &&
+    status.external_write_allowed === false &&
+    isMomoContentHash(status.current_review_snapshot_sha256));
+}
+
+export function momoReadyReviewCanDiscard(
+  status: MomoReadyReviewStatusV2 | null | undefined,
+): boolean {
+  return Boolean(status &&
+    ["awaiting_team_review", "blocked"].includes(status.review_state) &&
+    status.terminal_decision === null &&
+    status.decision_review_snapshot_sha256 === null &&
+    ((status.review_state === "awaiting_team_review" &&
+      status.blocker_codes.length === 0) ||
+      (status.review_state === "blocked" &&
+        status.blocker_codes.length > 0)) &&
+    status.decision_id === null && status.decided_by === null &&
+    status.decided_at === null && status.decision_reason === null &&
+    status.inspection_attestation_version === null &&
+    status.inspection_attestation_text === null &&
+    status.inspection_attestation_sha256 === null && status.snapshot_current &&
+    status.external_write_allowed === false &&
+    isMomoContentHash(status.current_review_snapshot_sha256));
+}
+
+export async function getMomoReadyReviewStatusV2(input: {
+  restaurantId: string;
+  readyPackageId: string;
+}): Promise<MomoReadyReviewStatusV2> {
+  if (!isMomoContentUuid(input.restaurantId) ||
+    !isMomoContentUuid(input.readyPackageId)) {
+    throw new Error("ready_review_status_unavailable");
+  }
+  const { data, error } = await requiredClient().rpc(
+    "veroxa_momo_ready_review_status_v2",
+    {
+      p_restaurant_id: input.restaurantId.toLowerCase(),
+      p_ready_package_id: input.readyPackageId.toLowerCase(),
+    },
+  );
+  if (error) throw new Error("ready_review_status_unavailable");
+  const matches = (Array.isArray(data) ? data : data ? [data] : [])
+    .map(parseMomoReadyReviewStatusV2)
+    .filter((status): status is MomoReadyReviewStatusV2 =>
+      Boolean(status && status.ready_package_id === input.readyPackageId.toLowerCase())
+    );
+  if (matches.length !== 1) throw new Error("ready_review_status_unavailable");
+  return matches[0];
+}
+
+function unavailableMomoReadyReviewStatus(
+  readyPackageId: string,
+): MomoReadyReviewStatusV2 {
+  return {
+    ready_package_id: readyPackageId,
+    review_state: "blocked",
+    terminal_decision: null,
+    decision_review_snapshot_sha256: null,
+    decision_id: null,
+    decided_by: null,
+    decided_at: null,
+    decision_reason: null,
+    inspection_attestation_version: null,
+    inspection_attestation_text: null,
+    inspection_attestation_sha256: null,
+    current_review_snapshot_sha256: "",
+    snapshot_current: false,
+    can_manual_export: false,
+    external_write_allowed: false,
+    blocker_codes: ["review_status_unavailable"],
+  };
+}
+
 export async function loadMomoWorkspaceData(
   restaurantId: string,
   section: MomoWorkspaceSection,
@@ -968,13 +1266,24 @@ export async function loadMomoWorkspaceData(
     return hydrateMomoClientSnapshot(payload, restaurantId);
   }
   const result = emptyMomoWorkspaceData();
-  const definitions = queriesForSection(section);
+  const requestedDefinitions = queriesForSection(section);
+  const shouldLoadReadyVariantsV2 = requestedDefinitions.some(
+    (definition) => definition.key === "veroxaReadyVariantsV2",
+  );
+  const definitions = requestedDefinitions.filter(
+    (definition) => definition.key !== "veroxaReadyVariantsV2",
+  );
   const responses = await Promise.all(definitions.map(async (definition) => {
     let query = client.from(definition.table).select(definition.columns).eq("restaurant_id", restaurantId);
     for (const [column, value] of Object.entries(definition.equals ?? {})) query = query.eq(column, value);
     if (definition.isNull) query = query.is(definition.isNull, null);
     if (definition.order) {
       query = query.order(definition.order, { ascending: definition.ascending ?? true });
+    }
+    if (definition.secondaryOrder) {
+      query = query.order(definition.secondaryOrder, {
+        ascending: definition.secondaryAscending ?? true,
+      });
     }
     if (definition.limit) query = query.limit(definition.limit);
     const response = await query;
@@ -983,6 +1292,33 @@ export async function loadMomoWorkspaceData(
   for (const { definition, response } of responses) {
     if (response.error) throw new Error("workspace_data_unavailable");
     (result[definition.key] as unknown[]) = response.data ?? [];
+  }
+  if (shouldLoadReadyVariantsV2 && result.veroxaReadyPackagesV2.length > 0) {
+    const readyPackageIds = result.veroxaReadyPackagesV2.map((item) => item.id);
+    const definition = contentQueries.find(
+      (item) => item.key === "veroxaReadyVariantsV2",
+    )!;
+    const { data, error } = await client.from(definition.table)
+      .select(definition.columns)
+      .eq("restaurant_id", restaurantId)
+      .eq("status", "veroxa_ready")
+      .eq("external_write_allowed", false)
+      .in("ready_package_id", readyPackageIds)
+      .order("ready_package_id", { ascending: true })
+      .order("platform", { ascending: true })
+      .limit(Math.min(readyPackageIds.length * 3, 150));
+    if (error) throw new Error("workspace_data_unavailable");
+    const variants = (data ?? []) as unknown as MomoVeroxaReadyVariantV2[];
+    const counts = new Map<string, number>();
+    for (const variant of variants) {
+      if (!readyPackageIds.includes(variant.ready_package_id)) {
+        throw new Error("workspace_data_unavailable");
+      }
+      const count = (counts.get(variant.ready_package_id) ?? 0) + 1;
+      if (count > 3) throw new Error("workspace_data_unavailable");
+      counts.set(variant.ready_package_id, count);
+    }
+    result.veroxaReadyVariantsV2 = variants;
   }
   if (result.readyPackages.length > 0) {
     const statuses = await Promise.all(result.readyPackages.map(async (readyPackage) => {
@@ -1000,6 +1336,22 @@ export async function loadMomoWorkspaceData(
       };
     }));
     result.readyPackageStatuses = statuses.filter((item) => item.ready_package_id);
+  }
+  if (result.veroxaReadyPackagesV2.length > 0) {
+    const { data, error } = await client.rpc("veroxa_momo_ready_review_status_v2", {
+      p_restaurant_id: restaurantId,
+    });
+    if (error) throw new Error("workspace_data_unavailable");
+    const parsed = (Array.isArray(data) ? data : data ? [data] : [])
+      .map(parseMomoReadyReviewStatusV2)
+      .filter((item): item is MomoReadyReviewStatusV2 => Boolean(item));
+    if (new Set(parsed.map((item) => item.ready_package_id)).size !== parsed.length) {
+      throw new Error("workspace_data_unavailable");
+    }
+    const byPackageId = new Map(parsed.map((item) => [item.ready_package_id, item]));
+    result.readyReviewStatusesV2 = result.veroxaReadyPackagesV2.map((readyPackage) =>
+      byPackageId.get(readyPackage.id) ?? unavailableMomoReadyReviewStatus(readyPackage.id)
+    );
   }
   if (section === "readiness" || section === "dashboard") {
     const { data, error } = await client.rpc("veroxa_momo_readiness_summary_v1", {
@@ -1625,6 +1977,136 @@ export async function getMomoReadyPackageStatus(readyPackageId: string): Promise
   const status = (row as { effective_status?: unknown }).effective_status;
   if (status !== "ready_to_post" && status !== "blocked") throw new Error("ready_status_unavailable");
   return status;
+}
+
+export function parseMomoReadyReviewDecisionV2(
+  raw: unknown,
+  expected: {
+    readyPackageId: string;
+    decision: "approved_for_manual_export" | "discarded";
+    expectedReviewSnapshotSha256: string;
+    reason?: string | null;
+  },
+): MomoReadyReviewDecisionV2 | null {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw) ||
+    !isMomoContentUuid(expected.readyPackageId) ||
+    !isMomoContentHash(expected.expectedReviewSnapshotSha256)) return null;
+  const reason = expected.reason?.trim() || null;
+  if (expected.decision === "discarded" &&
+    (!reason || reason.length < 4 || reason.length > 500)) return null;
+  const row = raw as Record<string, unknown>;
+  const expectedKeys = [
+    "decision_id", "ready_package_id", "review_state", "terminal_decision",
+    "decision_review_snapshot_sha256", "replayed",
+    "decided_by", "decided_at", "decision_reason",
+    "inspection_attestation_version", "inspection_attestation_text",
+    "inspection_attestation_sha256",
+    "current_review_snapshot_sha256", "snapshot_current",
+    "can_manual_export", "external_write_allowed", "blocker_codes",
+  ].sort();
+  const responseReason = nullableReadyReviewString(row.decision_reason);
+  const responseAttestationVersion = nullableReadyReviewString(row.inspection_attestation_version);
+  const responseAttestationText = nullableReadyReviewString(row.inspection_attestation_text);
+  const responseAttestationSha256 = nullableReadyReviewString(row.inspection_attestation_sha256);
+  const responseDecisionSnapshotSha256 = nullableReadyReviewString(
+    row.decision_review_snapshot_sha256,
+  );
+  const responseAttestationExact =
+    responseAttestationVersion === MOMO_READY_V2_TEAM_INSPECTION_ATTESTATION_VERSION &&
+    responseAttestationText === MOMO_READY_V2_TEAM_INSPECTION_ATTESTATION &&
+    responseAttestationSha256 === MOMO_READY_V2_TEAM_INSPECTION_ATTESTATION_SHA256;
+  if (Object.keys(row).sort().join(",") !== expectedKeys.join(",") ||
+    !isMomoContentUuid(row.decision_id) ||
+    row.ready_package_id !== expected.readyPackageId.toLowerCase() ||
+    row.terminal_decision !== expected.decision ||
+    responseDecisionSnapshotSha256 !== expected.expectedReviewSnapshotSha256 ||
+    !["approved_for_manual_export", "discarded", "blocked"].includes(
+      String(row.review_state),
+    ) ||
+    typeof row.replayed !== "boolean" ||
+    !isMomoContentUuid(row.decided_by) ||
+    typeof row.decided_at !== "string" || Number.isNaN(Date.parse(row.decided_at)) ||
+    !isMomoContentHash(row.current_review_snapshot_sha256) ||
+    typeof row.snapshot_current !== "boolean" ||
+    row.snapshot_current !==
+      (row.current_review_snapshot_sha256 === responseDecisionSnapshotSha256) ||
+    typeof row.can_manual_export !== "boolean" ||
+    row.external_write_allowed !== false ||
+    !Array.isArray(row.blocker_codes) || row.blocker_codes.length > 12 ||
+    !row.blocker_codes.every((item) => typeof item === "string" && item.length > 0 && item.length < 80) ||
+    new Set(row.blocker_codes).size !== row.blocker_codes.length ||
+    (!row.snapshot_current && row.blocker_codes.length === 0) ||
+    (!row.replayed && (!row.snapshot_current ||
+      row.current_review_snapshot_sha256 !== expected.expectedReviewSnapshotSha256)) ||
+    (expected.decision === "approved_for_manual_export" &&
+      (row.decision_reason !== null || !responseAttestationExact ||
+        (row.review_state === "approved_for_manual_export"
+          ? (!row.can_manual_export || !row.snapshot_current ||
+            row.blocker_codes.length !== 0)
+          : row.review_state === "blocked"
+          ? (!row.replayed || row.can_manual_export || row.snapshot_current ||
+            row.blocker_codes.length === 0)
+          : true))) ||
+    (expected.decision === "discarded" &&
+      (row.review_state !== "discarded" || row.can_manual_export ||
+        !responseReason || responseReason.length < 4 ||
+        responseReason.length > 500 || responseReason !== reason ||
+        row.inspection_attestation_version !== null ||
+        row.inspection_attestation_text !== null ||
+        row.inspection_attestation_sha256 !== null))) return null;
+  return {
+    decision_id: row.decision_id.toLowerCase(),
+    ready_package_id: row.ready_package_id,
+    review_state: row.review_state as MomoReadyReviewDecisionV2["review_state"],
+    terminal_decision: expected.decision,
+    decision_review_snapshot_sha256: responseDecisionSnapshotSha256,
+    replayed: row.replayed,
+    decided_by: row.decided_by.toLowerCase(),
+    decided_at: row.decided_at,
+    decision_reason: responseReason,
+    inspection_attestation_version: responseAttestationVersion,
+    inspection_attestation_text: responseAttestationText,
+    inspection_attestation_sha256: responseAttestationSha256,
+    current_review_snapshot_sha256: row.current_review_snapshot_sha256,
+    snapshot_current: row.snapshot_current,
+    can_manual_export: row.can_manual_export,
+    external_write_allowed: false,
+    blocker_codes: [...row.blocker_codes],
+  };
+}
+
+export async function decideMomoReadyPackageV2(input: {
+  readyPackageId: string;
+  decision: "approved_for_manual_export" | "discarded";
+  expectedReviewSnapshotSha256: string;
+  reason?: string | null;
+}): Promise<MomoReadyReviewDecisionV2> {
+  if (!isMomoContentUuid(input.readyPackageId) ||
+    !isMomoContentHash(input.expectedReviewSnapshotSha256)) {
+    throw new Error("ready_review_input_invalid");
+  }
+  const reason = input.reason?.trim() || null;
+  if (input.decision === "discarded" &&
+    (!reason || reason.length < 4 || reason.length > 500)) {
+    throw new Error("ready_review_discard_reason_required");
+  }
+  const { data, error } = await requiredClient().rpc(
+    "veroxa_decide_momo_ready_package_v2",
+    {
+      p_ready_package_id: input.readyPackageId.toLowerCase(),
+      p_decision: input.decision,
+      p_expected_review_snapshot_sha256: input.expectedReviewSnapshotSha256,
+      p_reason: input.decision === "discarded" ? reason : null,
+      p_inspection_attestation: input.decision === "approved_for_manual_export"
+        ? MOMO_READY_V2_TEAM_INSPECTION_ATTESTATION
+        : null,
+    },
+  );
+  if (error) throw new Error("ready_review_decision_failed");
+  const raw = Array.isArray(data) ? data[0] : data;
+  const parsed = parseMomoReadyReviewDecisionV2(raw, input);
+  if (!parsed) throw new Error("ready_review_decision_failed");
+  return parsed;
 }
 
 export async function requestMomoContentPackageRevision(input: {

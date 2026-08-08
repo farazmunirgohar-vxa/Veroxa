@@ -1,12 +1,14 @@
 # RR Release Checkpoint
 
-## 2026-08-08 — database repair verified; corrected Sites v38 pending
+## 2026-08-08 — Ready decisions + generic-food v2 reviewed candidate
 
-- Live Sites is v37 at checkout `61e9ace7723ef56f42111f320327187596406944`: 200 files / `929e05cf68a6af5176811f49321ec108e617b93a08153b65b3f86b109d0c8c18`. Live Supabase is 43 migrations / `8a49f00ab3bd6d9623100fec238939b6cb81f17d67d0e2d3a4426559c137e41c`, through verified `041629`. PR #162 is already merged as GitHub `main` and candidate base `ca47aeff7ab44a69b6ce039608ae27fea6c3c326`; that repository change does not advance Sites or the database.
-- Applied `01430` is immutable at `987186e74590c6e484ebfee47e1c7ed384e2b4dc8c4a97ad7243ae38feb765cc`. The corrective branch preserves it and mirrors applied forward repair `20260808041629_repair_momo_client_v3_displayed_asset_scope.sql`, SHA-256 `6cbf3f80d028d3fe54093b14bae59314913b4f0bfacfbf31fce4aa2a24e429ba`.
-- Exact candidate fingerprints are 201 Sites files / `4edae9660343cda362968bd08e544ba5a154c90a902ac961365ceb32ea820292` and 43 mirrored migrations / `8a49f00ab3bd6d9623100fec238939b6cb81f17d67d0e2d3a4426559c137e41c`. PR #163 is open but not merged; exact-final-head workflows and review-thread evidence remain unrecorded. Local review passed; the database correction is applied/verified and only Sites v38 publication remains pending.
-- Completed: `01210`, immutable `01430`, Sites v37, `01842`, `01853`, `02609`, and verified `041629`. Production authority exists, but automation remains off: green local/hosted gates first, then publish/verify Sites v38. No database change remains pending.
-- `02609` is applied but not comprehensive default-ACL closure because live `postgres` is not a `supabase_admin` member and that role was skipped. Providers, external publishing authority, and Momo activation remain false; private policy-eval evidence remains local-only.
+- Verified production is GitHub main `59b1604d887547e2804bdd6d63c97292385dcebb` from merged PR #163, Sites v39 checkout `8749a7d442d3bb068ce626a9d297b8b227493446` (201 files / `4edae9660343cda362968bd08e544ba5a154c90a902ac961365ceb32ea820292`), and exact live43 / `8a49f00ab3bd6d9623100fec238939b6cb81f17d67d0e2d3a4426559c137e41c` through `041629`. Historical repository/Sites-mirror fingerprint `9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90` remains separate.
+- Draft PR #164 is open from `agent/momo-generic-food-ready-review-v5`, base main59b, at observed opening head `b659ec307da9455c389059b29f2d6f3ab51f095e` / tree `9931d63dcb16a2e2e1cb7c592d2da63b4054cb60`. This is not final-head gate evidence. The reviewed candidate remains 203 Sites files / `357f6b336993d2c306c102d5be2699d7145a3144041eeb9753a2a43c48fe869e` plus 44 mirrored migrations / `9cc0bba007b6a0c06edf33563fb1bc3f4650811f8f8ea1639cc58c7028ac7324`. PR #164 is unmerged; exact-final-head workflows/reviews, database apply, Sites publish, and activation are unclaimed.
+- Pending source migration `20260808045812_momo_ready_team_decisions_and_food_tags_v2.sql` is mirrored at exact SHA-256 `9cf6f0080d38d58d3c1939d928444701b1954bf5cfe96bf7f3e80077bad45cc0`. Supabase MCP generates the live version. After exact-byte apply, the generated version must be verified and both mirrors renamed to it with unchanged bytes in a terminal follow-up PR before Sites publication.
+- Release order is green feature PR → freeze reservation/auto-advance/dispatch ingress → drain v4 and staged work to zero → exact-byte MCP apply and DB verification → generated-version reconciliation PR → exact terminal Sites publish/verify → bounded ingress restore. Every step remains pending; neither DB-first nor Sites-first is safe without freeze/drain.
+- Scoped production permission exists while automatic deployment stays off. `02609` remains non-comprehensive because live `postgres` is not a `supabase_admin` member. Providers, external/public writes, schedules, posts, review replies, website writes, and Momo activation remain false.
+
+## 2026-08-08 — historical corrective Sites checkpoint
 
 ## 2026-08-02 — Sites v36 live / GitHub parity verified
 

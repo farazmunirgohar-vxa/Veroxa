@@ -286,7 +286,7 @@ export function VeroxaApp({
           {isTeam ? <>
             <div className="team-client-context" aria-label="Current client">
               <span className="team-folder-icon">M</span>
-              <span><strong>Momo’s House</strong><small>Upload → ready to post</small></span>
+              <span><strong>Momo’s House</strong><small>Upload → Veroxa Ready → Team decision</small></span>
               <em>Live</em>
             </div>
             <div className="team-primary-navigation" aria-label="Momo operating sections">
