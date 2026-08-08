@@ -8,12 +8,21 @@ import {
   MOMO_CONTENT_AI_MAX_SOURCE_WIDTH,
   isMomoContentUuid,
 } from "../../../momo-content-ai-contract.ts";
+import {
+  VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_ASPECT_RATIO,
+  VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_DECODED_PIXELS,
+  VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_DIMENSION,
+  VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_SOURCE_BYTES,
+  VEROXA_PRIVATE_MEDIA_ASSESSMENT_MIN_ASPECT_RATIO,
+  VEROXA_PRIVATE_MEDIA_ASSESSMENT_MIN_DIMENSION,
+  VEROXA_PRIVATE_MEDIA_ASSESSMENT_MIN_SOURCE_BYTES,
+  VEROXA_PRIVATE_MEDIA_MIME_TYPES,
+  type VeroxaPrivateMediaMimeType,
+} from "../../../veroxa-private-media-assessment.ts";
 import { parseMomoMediaFinalizeResult } from "../../../momo-media-finalize-contract.ts";
 
 const MAX_BODY_BYTES = 2_048;
-const MIN_SOURCE_BYTES = 10 * 1024;
-const MAX_SOURCE_BYTES = 5 * 1024 * 1024;
-const VERIFIER_VERSION = "momo-image-byte-verifier-2026-07-31-v1";
+const VERIFIER_VERSION = "veroxa-private-image-byte-verifier-2026-08-08-v1";
 
 type Actor = { role: "team" | "client"; restaurantId: string | null; userId: string };
 type ObjectInfo = {
@@ -47,7 +56,7 @@ export type MomoMediaFinalizeDependencies = {
     storagePath: string;
     storageObjectId: string;
     storageObjectVersion: string;
-    detectedMime: "image/jpeg";
+    detectedMime: VeroxaPrivateMediaMimeType;
     fileSize: number;
     width: number;
     height: number;
@@ -108,7 +117,7 @@ async function parse(request: Request): Promise<ParsedInput> {
   if (Object.keys(value).sort().join(",") !== "assetId,restaurantId,storagePath" ||
     !isMomoContentUuid(value.restaurantId) || !isMomoContentUuid(value.assetId) ||
     typeof value.storagePath !== "string" || value.storagePath.length > 500 ||
-    !new RegExp(`^restaurants/${value.restaurantId}/uploads/[0-9]{4}/(0[1-9]|1[0-2])/[0-9a-f-]{36}\\.(jpg|jpeg)$`, "u").test(value.storagePath)) throw new PublicError("invalid_request", 400);
+    !new RegExp(`^restaurants/${value.restaurantId}/uploads/[0-9]{4}/(0[1-9]|1[0-2])/[0-9a-f-]{36}\\.(jpg|jpeg|png)$`, "u").test(value.storagePath)) throw new PublicError("invalid_request", 400);
   return { restaurantId: value.restaurantId.toLowerCase(), assetId: value.assetId.toLowerCase(), storagePath: value.storagePath };
 }
 
@@ -157,7 +166,9 @@ export function createMomoMediaFinalizeHandler(dependencies: MomoMediaFinalizeDe
       observed.declaredSize = Number.isSafeInteger(info.size) ? info.size : null;
       observed.downloadedSize = Number.isSafeInteger(blob.size) ? blob.size : null;
       if (!isMomoContentUuid(info.id) || !info.version || info.version.length > 200 || info.bucketId !== "restaurant-media" ||
-        info.name !== input.storagePath || !Number.isSafeInteger(info.size) || info.size < MIN_SOURCE_BYTES || info.size > MAX_SOURCE_BYTES ||
+        info.name !== input.storagePath || !Number.isSafeInteger(info.size) ||
+        info.size < VEROXA_PRIVATE_MEDIA_ASSESSMENT_MIN_SOURCE_BYTES ||
+        info.size > VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_SOURCE_BYTES ||
         blob.size !== info.size) throw new PublicError("media_verification_failed", 422);
       const bytes = new Uint8Array(await blob.arrayBuffer());
       const inspection = await inspectMomoImageBytesFully(bytes);
@@ -165,22 +176,42 @@ export function createMomoMediaFinalizeHandler(dependencies: MomoMediaFinalizeDe
       observed.width = inspection?.width ?? null;
       observed.height = inspection?.height ?? null;
       const aspectRatio = inspection ? inspection.width / inspection.height : 0;
-      if (!inspection || inspection.mimeType !== "image/jpeg" || inspection.width < 320 || inspection.height < 250 ||
-        inspection.width > MOMO_CONTENT_AI_MAX_SOURCE_WIDTH || inspection.height > MOMO_CONTENT_AI_MAX_SOURCE_HEIGHT ||
-        aspectRatio < 0.8 || aspectRatio > 1.91 || info.contentType.split(";", 1)[0].trim() !== inspection.mimeType) {
-        throw new PublicError("media_not_platform_ready", 422);
+      const expectedExtension = inspection?.mimeType === "image/png"
+        ? ".png"
+        : ".jpg";
+      if (!inspection || !VEROXA_PRIVATE_MEDIA_MIME_TYPES.includes(
+        inspection.mimeType as VeroxaPrivateMediaMimeType,
+      ) || inspection.width < VEROXA_PRIVATE_MEDIA_ASSESSMENT_MIN_DIMENSION ||
+        inspection.height < VEROXA_PRIVATE_MEDIA_ASSESSMENT_MIN_DIMENSION ||
+        inspection.width > Math.min(
+          MOMO_CONTENT_AI_MAX_SOURCE_WIDTH,
+          VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_DIMENSION,
+        ) || inspection.height > Math.min(
+          MOMO_CONTENT_AI_MAX_SOURCE_HEIGHT,
+          VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_DIMENSION,
+        ) || !Number.isSafeInteger(inspection.width * inspection.height) ||
+        inspection.width * inspection.height >
+          VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_DECODED_PIXELS ||
+        aspectRatio < VEROXA_PRIVATE_MEDIA_ASSESSMENT_MIN_ASPECT_RATIO ||
+        aspectRatio > VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_ASPECT_RATIO ||
+        info.contentType.split(";", 1)[0].trim() !== inspection.mimeType ||
+        !(inspection.mimeType === "image/jpeg"
+          ? /\.(jpg|jpeg)$/u.test(input.storagePath)
+          : input.storagePath.endsWith(expectedExtension))) {
+        throw new PublicError("media_not_assessable", 422);
       }
+      const detectedMime = inspection.mimeType as VeroxaPrivateMediaMimeType;
       const contentSha256 = await momoBytesSha256(bytes);
       observed.contentSha256 = contentSha256;
       const verificationSnapshot = {
-        schemaVersion: 1,
+        schemaVersion: 3,
         verifierVersion: VERIFIER_VERSION,
         restaurantId: input.restaurantId,
         assetId: input.assetId,
         storagePath: input.storagePath,
         storageObjectId: info.id,
         storageObjectVersion: info.version,
-        detectedMime: inspection.mimeType,
+        detectedMime,
         fileSize: bytes.byteLength,
         width: inspection.width,
         height: inspection.height,
@@ -195,7 +226,7 @@ export function createMomoMediaFinalizeHandler(dependencies: MomoMediaFinalizeDe
         storagePath: input.storagePath,
         storageObjectId: info.id,
         storageObjectVersion: info.version,
-        detectedMime: inspection.mimeType,
+        detectedMime,
         fileSize: bytes.byteLength,
         width: inspection.width,
         height: inspection.height,
@@ -212,6 +243,7 @@ export function createMomoMediaFinalizeHandler(dependencies: MomoMediaFinalizeDe
         "media_verification_unavailable",
         "media_verification_failed",
         "media_not_platform_ready",
+        "media_not_assessable",
       ].includes(error.code)) {
         const outcome = error.code === "media_verification_unavailable"
           ? "unavailable" as const

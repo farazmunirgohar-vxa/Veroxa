@@ -140,13 +140,19 @@ test("rejects storage metadata mismatch before byte finalization", async () => {
   assert.match(calls.recordFailure[0].idempotencySha256, /^[0-9a-f]{64}$/u);
 });
 
-test("rejects non-JPG bytes, out-of-envelope dimensions, and unsafe aspect ratios", async () => {
+test("accepts a common portrait and rejects non-images, unsafe dimensions, and extreme ratios", async () => {
+  const portrait = harness({
+    download: async () => new Blob([jpeg(900, 1200)], { type: "image/jpeg" }),
+    info: async () => ({ id: OBJECT_ID, version: "storage-v1", name: STORAGE_PATH, bucketId: "restaurant-media", size: jpeg(900, 1200).length, contentType: "image/jpeg" }),
+  });
+  assert.equal((await portrait.handler(request())).status, 200);
+
   const cases = [
     new Uint8Array(10 * 1024).fill(0x01),
-    jpeg(319, 250),
+    jpeg(127, 250),
     jpeg(12_001, 7_000),
     jpeg(9_601, 12_001),
-    jpeg(320, 500),
+    jpeg(128, 400),
     jpeg(1200, 250),
   ];
   for (const source of cases) {
@@ -160,7 +166,7 @@ test("rejects non-JPG bytes, out-of-envelope dimensions, and unsafe aspect ratio
     });
     const response = await handler(request());
     assert.equal(response.status, 422);
-    assert.equal((await response.json()).error, "media_not_platform_ready");
+    assert.equal((await response.json()).error, "media_not_assessable");
     assert.equal(calls.length, 0);
   }
 });

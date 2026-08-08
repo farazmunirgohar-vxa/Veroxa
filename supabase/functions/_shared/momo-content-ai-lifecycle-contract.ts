@@ -14,7 +14,7 @@ export type MomoContentAiLifecycleRequest =
     storagePath: string;
     storageObjectId: string;
     storageObjectVersion: string;
-    detectedMime: "image/jpeg";
+    detectedMime: "image/jpeg" | "image/png";
     fileSize: number;
     width: number;
     height: number;
@@ -34,6 +34,52 @@ export type MomoContentAiLifecycleRequest =
     evidenceCanonical: string;
     evidenceSha256: string;
     idempotencySha256: string;
+  }
+  | {
+    operation: "reserve_private_assessment";
+    restaurantId: string;
+    assetId: string;
+    requestHash: string;
+    idempotencyHash: string;
+    model: "gpt-5.6-sol";
+    promptVersion: "veroxa-private-media-assessment-2026-08-08-v2";
+    schemaVersion: "veroxa-private-media-assessment-v1";
+    reservedMicrousd: 1_000_000;
+  }
+  | {
+    operation: "start_private_assessment";
+    assessmentId: string;
+    requestHash: string;
+  }
+  | {
+    operation: "complete_private_assessment";
+    assessmentId: string;
+    requestHash: string;
+    providerResponseId: string;
+    output: JsonObject;
+    outputCanonical: string;
+    outputSha256: string;
+    accountedMicrousd: number;
+    accountingBasis: "provider_usage_estimate" | "conservative_reservation";
+    providerUsage: {
+      input_tokens: number;
+      output_tokens: number;
+      total_tokens: number;
+    } | null;
+  }
+  | {
+    operation: "fail_private_assessment";
+    assessmentId: string;
+    requestHash: string;
+    providerResponseId: string | null;
+    errorCode: string;
+    providerCalled: boolean;
+    accountedMicrousd: number | null;
+    providerUsage: {
+      input_tokens: number;
+      output_tokens: number;
+      total_tokens: number;
+    } | null;
   }
   | { operation: "complete_staged"; runId: string; requestHash: string }
   | {
@@ -146,11 +192,13 @@ export function validMomoContentAiLifecycleRequest(body: JsonObject): body is Mo
       typeof body.storagePath === "string" && body.storagePath.length >= 40 && body.storagePath.length <= 500 &&
       typeof body.storageObjectId === "string" && UUID.test(body.storageObjectId) &&
       typeof body.storageObjectVersion === "string" && body.storageObjectVersion.length >= 1 && body.storageObjectVersion.length <= 200 &&
-      body.detectedMime === "image/jpeg" &&
-      Number.isSafeInteger(body.fileSize) && Number(body.fileSize) >= 10_240 && Number(body.fileSize) <= 5_242_880 &&
-      Number.isSafeInteger(body.width) && Number(body.width) >= 320 && Number(body.width) <= 12_000 &&
-      Number.isSafeInteger(body.height) && Number(body.height) >= 250 && Number(body.height) <= 12_000 &&
-      Number(body.width) / Number(body.height) >= 0.8 && Number(body.width) / Number(body.height) <= 1.91 &&
+      ["image/jpeg", "image/png"].includes(String(body.detectedMime)) &&
+      Number.isSafeInteger(body.fileSize) && Number(body.fileSize) >= 10_240 && Number(body.fileSize) <= 10_485_760 &&
+      Number.isSafeInteger(body.width) && Number(body.width) >= 128 && Number(body.width) <= 12_000 &&
+      Number.isSafeInteger(body.height) && Number(body.height) >= 128 && Number(body.height) <= 12_000 &&
+      Number.isSafeInteger(Number(body.width) * Number(body.height)) &&
+      Number(body.width) * Number(body.height) <= 16_777_216 &&
+      Number(body.width) / Number(body.height) >= 0.4 && Number(body.width) / Number(body.height) <= 2.5 &&
       typeof body.contentSha256 === "string" && SHA256.test(body.contentSha256) &&
       isPlainObject(body.verificationSnapshot) &&
       typeof body.verificationCanonical === "string" && body.verificationCanonical.length >= 2 && body.verificationCanonical.length <= 20_000 &&
@@ -176,6 +224,71 @@ export function validMomoContentAiLifecycleRequest(body: JsonObject): body is Mo
       body.evidenceCanonical.length >= 2 && body.evidenceCanonical.length <= 32_768 &&
       typeof body.evidenceSha256 === "string" && SHA256.test(body.evidenceSha256) &&
       typeof body.idempotencySha256 === "string" && SHA256.test(body.idempotencySha256);
+  }
+  if (body.operation === "reserve_private_assessment") {
+    return exact(body, [
+      "operation", "restaurantId", "assetId", "requestHash",
+      "idempotencyHash", "model", "promptVersion", "schemaVersion",
+      "reservedMicrousd",
+    ]) && typeof body.restaurantId === "string" && UUID.test(body.restaurantId) &&
+      typeof body.assetId === "string" && UUID.test(body.assetId) &&
+      typeof body.requestHash === "string" && SHA256.test(body.requestHash) &&
+      typeof body.idempotencyHash === "string" && SHA256.test(body.idempotencyHash) &&
+      body.model === "gpt-5.6-sol" &&
+      body.promptVersion === "veroxa-private-media-assessment-2026-08-08-v2" &&
+      body.schemaVersion === "veroxa-private-media-assessment-v1" &&
+      body.reservedMicrousd === 1_000_000;
+  }
+  if (body.operation === "start_private_assessment") {
+    return exact(body, ["operation", "assessmentId", "requestHash"]) &&
+      typeof body.assessmentId === "string" && UUID.test(body.assessmentId) &&
+      typeof body.requestHash === "string" && SHA256.test(body.requestHash);
+  }
+  if (body.operation === "complete_private_assessment") {
+    const measured = body.providerUsage === null
+      ? null
+      : usageMicrousd(body.providerUsage, 3_000);
+    return exact(body, [
+      "operation", "assessmentId", "requestHash", "providerResponseId",
+      "output", "outputCanonical", "outputSha256", "accountedMicrousd",
+      "accountingBasis", "providerUsage",
+    ]) && typeof body.assessmentId === "string" && UUID.test(body.assessmentId) &&
+      typeof body.requestHash === "string" && SHA256.test(body.requestHash) &&
+      typeof body.providerResponseId === "string" &&
+      /^resp_[A-Za-z0-9_-]{8,195}$/u.test(body.providerResponseId) &&
+      isPlainObject(body.output) &&
+      typeof body.outputCanonical === "string" &&
+      body.outputCanonical.length >= 2 && body.outputCanonical.length <= 32_768 &&
+      typeof body.outputSha256 === "string" && SHA256.test(body.outputSha256) &&
+      Number.isSafeInteger(body.accountedMicrousd) &&
+      Number(body.accountedMicrousd) >= 1 && Number(body.accountedMicrousd) <= 1_000_000 &&
+      (body.accountingBasis === "provider_usage_estimate"
+        ? measured !== null && measured === body.accountedMicrousd
+        : body.accountingBasis === "conservative_reservation" &&
+          body.providerUsage === null && body.accountedMicrousd === 1_000_000);
+  }
+  if (body.operation === "fail_private_assessment") {
+    const measured = body.providerUsage === null
+      ? null
+      : usageMicrousd(body.providerUsage, 3_000);
+    return exact(body, [
+      "operation", "assessmentId", "requestHash", "providerResponseId",
+      "errorCode", "providerCalled", "accountedMicrousd", "providerUsage",
+    ]) && typeof body.assessmentId === "string" && UUID.test(body.assessmentId) &&
+      typeof body.requestHash === "string" && SHA256.test(body.requestHash) &&
+      (body.providerResponseId === null ||
+        typeof body.providerResponseId === "string" &&
+        /^resp_[A-Za-z0-9_-]{8,195}$/u.test(body.providerResponseId)) &&
+      typeof body.errorCode === "string" && ERROR_CODE.test(body.errorCode) &&
+      typeof body.providerCalled === "boolean" &&
+      (body.providerCalled
+        ? body.providerUsage === null
+          ? body.accountedMicrousd === 1_000_000
+          : body.providerResponseId !== null && measured !== null &&
+            measured > 1_000_000 && measured <= 20_000_000 &&
+            body.accountedMicrousd === measured
+        : body.providerResponseId === null && body.accountedMicrousd === null &&
+          body.providerUsage === null);
   }
   if (body.operation === "complete_staged") {
     return exact(body, ["operation", "runId", "requestHash"]) && typeof body.runId === "string" && UUID.test(body.runId) && typeof body.requestHash === "string" && SHA256.test(body.requestHash);

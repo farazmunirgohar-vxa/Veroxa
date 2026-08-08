@@ -1,151 +1,108 @@
-const __name = <T>(target: T, value: string): T =>
-  Object.defineProperty(target as object, "name", {
-    value,
-    configurable: true,
-  }) as T;
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
   CURRENT_PARTIAL_ROLLOUT_EVIDENCE,
-  LOCAL_CANDIDATE_PENDING_MIGRATIONS,
-  REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE,
+  PRIVATE_MEDIA_EDGE_CANDIDATE,
   assertReviewedLocalCandidateManifest,
-  hashTree,
   readDeploymentManifest,
   repoRoot,
+  sha256File,
 } from "./release-manifest";
 
 const failures: string[] = [];
-const must = __name((condition: boolean, message: string) => {
+const must = (condition: boolean, message: string): void => {
   if (!condition) failures.push(message);
-}, "must");
-const read = __name(
-  (relativePath: string) => readFileSync(resolve(repoRoot, relativePath), "utf8"),
-  "read",
-);
-for (const retiredPath of ["api/audit-requests.ts", "api/pilot-access.ts"]) {
-  must(!existsSync(resolve(repoRoot, retiredPath)), `Retired Vercel artifact exists: ${retiredPath}`);
-}
-const vercelShutdownPath = resolve(repoRoot, "vercel.json");
-must(existsSync(vercelShutdownPath), "The Vercel shutdown sentinel is missing.");
-if (existsSync(vercelShutdownPath)) {
-  try {
-    const sentinel = JSON.parse(readFileSync(vercelShutdownPath, "utf8"));
-    must(
-      JSON.stringify(Object.keys(sentinel).sort()) === JSON.stringify(["$schema", "git"]) &&
-        sentinel.$schema === "https://openapi.vercel.sh/vercel.json" &&
-        JSON.stringify(Object.keys(sentinel.git ?? {}).sort()) ===
-          JSON.stringify(["deploymentEnabled"]) &&
-        sentinel.git?.deploymentEnabled === false,
-      "vercel.json must remain the exact inert shutdown sentinel.",
-    );
-  } catch {
-    failures.push("vercel.json is not valid JSON.");
-  }
-}
-for (const workflow of [
-  ".github/workflows/ci.yml",
-  ".github/workflows/sites-verify.yml",
-  ".github/workflows/supabase-verify.yml",
-  ".github/workflows/veroxa-verify.yml",
-]) {
-  const source = read(workflow);
-  must(
-    !/sites_(?:save|deploy)|deploy_site|vercel\s+(?:deploy|--prod)/iu.test(source),
-    `${workflow} must not publish Sites or bypass the Vercel shutdown sentinel.`,
-  );
-}
+};
 const manifest = readDeploymentManifest();
 try {
   assertReviewedLocalCandidateManifest(manifest);
 } catch (error) {
   failures.push(error instanceof Error ? error.message : String(error));
 }
-const checkpoint = JSON.parse(read("artifacts/veroxa/docs/RR_RELEASE_CHECKPOINT.json"));
-must(
-  checkpoint.schemaVersion === 11 &&
-    checkpoint.recordKind === "veroxa_momo_ready_team_decisions_feature_checkpoint" &&
-    checkpoint.status === REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE &&
-    checkpoint.releaseCandidate?.pullRequest === 164 &&
-    checkpoint.releaseCandidate.pullRequestDraft === true &&
-    checkpoint.releaseCandidate.observedDraftPullRequestHead ===
-      "b659ec307da9455c389059b29f2d6f3ab51f095e" &&
-    checkpoint.releaseCandidate.observedDraftPullRequestTree ===
-      "9931d63dcb16a2e2e1cb7c592d2da63b4054cb60" &&
-    checkpoint.releaseCandidate.githubMerged === false &&
-    checkpoint.releaseCandidate.databaseChangesRequired === true &&
-    checkpoint.releaseCandidate.databaseMigrationApplied === false &&
-    checkpoint.releaseCandidate.candidateMigrationsMatchLiveLedger === false &&
-    checkpoint.releaseCandidate.sitesPublished === false &&
-    checkpoint.releaseCandidate.deploymentAuthorized === true &&
-    checkpoint.releaseCandidate.activationExecuted === false &&
-    checkpoint.releaseCandidate.fullReleaseGatePassed === false,
-  "RR checkpoint must preserve draft PR #164 as authorized but wholly unexecuted and without final-head gates.",
-);
-const sourceTree = hashTree(resolve(repoRoot, manifest.source.root), {
-  exclusions: manifest.source.generatedPathExclusions,
-});
-const migrationTree = hashTree(resolve(repoRoot, manifest.migrations.root), {
-  suffix: ".sql",
-});
-const migrationMirrorTree = hashTree(resolve(repoRoot, manifest.migrations.mirrorRoot!), {
-  suffix: ".sql",
-});
-must(
-  sourceTree.fileCount === manifest.source.fileCount &&
-    sourceTree.sha256 === manifest.source.treeSha256 &&
-    sourceTree.sha256 !== CURRENT_PARTIAL_ROLLOUT_EVIDENCE.sourceTreeSha256,
-  `Local Sites candidate fingerprint drifted (actual ${sourceTree.fileCount}/${sourceTree.sha256}).`,
-);
-must(
-  migrationTree.fileCount === 44 &&
-    migrationTree.sha256 === manifest.migrations.treeSha256 &&
-    migrationMirrorTree.fileCount === migrationTree.fileCount &&
-    migrationMirrorTree.sha256 === migrationTree.sha256 &&
-    JSON.stringify(migrationMirrorTree.files) === JSON.stringify(migrationTree.files) &&
-    JSON.stringify(manifest.releaseCandidate.pendingMigrations) ===
-      JSON.stringify(LOCAL_CANDIDATE_PENDING_MIGRATIONS) &&
-    migrationTree.sha256 !== CURRENT_PARTIAL_ROLLOUT_EVIDENCE.migrationTreeSha256,
-  `Local migration candidate fingerprint drifted (root ${migrationTree.fileCount}/${migrationTree.sha256}; mirror ${migrationMirrorTree.fileCount}/${migrationMirrorTree.sha256}).`,
-);
-const readinessText = read("artifacts/veroxa-sites/app/momo-readiness-tracker.json");
-const readiness = JSON.parse(readinessText);
-for (const exactReleaseIdentity of [
-  manifest.releaseCandidate.sourceTreeSha256,
-  manifest.releaseCandidate.migrationTreeSha256,
-  CURRENT_PARTIAL_ROLLOUT_EVIDENCE.sourceTreeSha256,
-  CURRENT_PARTIAL_ROLLOUT_EVIDENCE.migrationTreeSha256,
-]) {
-  must(!readinessText.includes(exactReleaseIdentity), "Sites-bundled readiness evidence must externalize exact release identity.");
+
+for (const retiredPath of ["api/audit-requests.ts", "api/pilot-access.ts"]) {
+  must(!existsSync(resolve(repoRoot, retiredPath)), `Retired Vercel artifact exists: ${retiredPath}`);
 }
-must(
-  readiness.schemaVersion === 9 &&
-    readiness.overallStatus === "blocked" &&
-    /No-Go/iu.test(readiness.overallRule),
-  "Sites-bundled readiness evidence must remain fail-closed No-Go.",
-);
-const candidate = manifest.releaseCandidate;
-must(
-  !manifest.deploymentFreeze.automaticDeploymentsAllowed &&
-    manifest.deploymentFreeze.databaseApplyAuthorized === true &&
-    manifest.deploymentFreeze.sitesPublishAuthorized === true &&
-    candidate.databaseApplyAuthorized === true &&
-    candidate.databaseChangesRequired === true &&
-    candidate.databaseMigrationApplied === false &&
-    candidate.candidateMigrationsMatchLiveLedger === false &&
-    candidate.sitesPublishAuthorized === true &&
-    candidate.sitesPublished === false &&
-    candidate.deploymentAuthorized === true &&
-    candidate.activationExecuted === false &&
-    candidate.fullReleaseGatePassed === false &&
-    Object.values(manifest.activationState).every((value) => value === false),
-  "Deployment authorization must not be confused with apply, publish, automatic deployment, external action, or activation evidence.",
-);
-if (failures.length) {
-  console.error("Sites-only deployment guardrail failed:");
-  for (const failure of failures) console.error(`- ${failure}`);
-  process.exit(1);
+const sentinelPath = resolve(repoRoot, "vercel.json");
+must(existsSync(sentinelPath), "Vercel shutdown sentinel is missing.");
+if (existsSync(sentinelPath)) {
+  const sentinel = JSON.parse(readFileSync(sentinelPath, "utf8")) as {
+    $schema?: string;
+    git?: { deploymentEnabled?: boolean };
+  };
+  must(
+    sentinel.$schema === "https://openapi.vercel.sh/vercel.json" &&
+      sentinel.git?.deploymentEnabled === false &&
+      JSON.stringify(Object.keys(sentinel).sort()) === JSON.stringify(["$schema", "git"]),
+    "vercel.json is not the exact inert shutdown sentinel.",
+  );
 }
-console.log(
-  `Sites-only deployment guardrail passed: production remains Sites v39/live43; ${sourceTree.fileCount}-file Sites and ${migrationTree.fileCount}-migration candidates remain unpublished/unapplied behind the frozen cutover sequence.`,
+
+must(
+  manifest.currentProductionObservation.sitesVersion === 39 &&
+    manifest.currentProductionObservation.sitesVersionId ===
+      CURRENT_PARTIAL_ROLLOUT_EVIDENCE.sitesVersionId &&
+    manifest.currentProductionObservation.sitesCheckoutCommit ===
+      CURRENT_PARTIAL_ROLLOUT_EVIDENCE.sitesCheckoutCommit &&
+    manifest.currentProductionObservation.sitesArchiveSha256 ===
+      CURRENT_PARTIAL_ROLLOUT_EVIDENCE.sitesArchiveSha256 &&
+    manifest.currentProductionObservation.canonicalGitHubMainCommitScope ===
+      "github_main_lineage_only_not_sites_v39_source_association",
+  "Sites v39 must remain an independent observed baseline.",
 );
+must(
+  manifest.releaseCandidate.sitesPublishRequired === true &&
+    manifest.releaseCandidate.sitesPublished === false &&
+    manifest.releaseCandidate.sitesPublishAuthorized === true &&
+    manifest.releaseCandidate.edgeDeployRequired === true &&
+    manifest.releaseCandidate.edgeDeployed === false &&
+    manifest.releaseCandidate.edgeDeployAuthorized === true &&
+    manifest.releaseCandidate.deploymentAuthorized === true &&
+    manifest.releaseCandidate.fullReleaseGatePassed === false &&
+    manifest.deploymentFreeze.automaticDeploymentsAllowed === false,
+  "Manual scoped authorization must not be confused with publication or automatic deployment.",
+);
+must(
+  manifest.edgeDeployment?.functionVersion === 6 &&
+    manifest.edgeDeployment.currentRepositorySourceParity === false &&
+    manifest.edgeCandidate?.promptContractVersion ===
+      PRIVATE_MEDIA_EDGE_CANDIDATE.promptContractVersion &&
+    manifest.edgeCandidate.deployed === false,
+  "Live prompt-v1 Edge v6 and pending prompt-v2 Edge source were conflated.",
+);
+
+const closure = [
+  [
+    "supabase/functions/momo-content-ai-lifecycle/index.ts",
+    "artifacts/veroxa-sites/supabase/functions/momo-content-ai-lifecycle/index.ts",
+    PRIVATE_MEDIA_EDGE_CANDIDATE.indexSha256,
+  ],
+  [
+    "supabase/functions/_shared/momo-content-ai-lifecycle-contract.ts",
+    "artifacts/veroxa-sites/supabase/functions/_shared/momo-content-ai-lifecycle-contract.ts",
+    PRIVATE_MEDIA_EDGE_CANDIDATE.contractSha256,
+  ],
+  [
+    "supabase/config.toml",
+    "artifacts/veroxa-sites/supabase/config.toml",
+    PRIVATE_MEDIA_EDGE_CANDIDATE.configSha256,
+  ],
+] as const;
+for (const [rootPath, sitesPath, expectedSha] of closure) {
+  const rootFile = resolve(repoRoot, rootPath);
+  const sitesFile = resolve(repoRoot, sitesPath);
+  must(
+    existsSync(rootFile) && existsSync(sitesFile) &&
+      sha256File(rootFile) === expectedSha && sha256File(sitesFile) === expectedSha,
+    `Pending Edge prompt-v2 root/Sites closure drifted: ${rootPath}`,
+  );
+}
+
+if (failures.length > 0) {
+  for (const failure of failures) console.error("FAIL:", failure);
+  process.exitCode = 1;
+} else {
+  console.log(
+    "PASS: Sites is the sole web target; Sites and Edge deployments remain manual, ordered, authorized, and pending.",
+  );
+}

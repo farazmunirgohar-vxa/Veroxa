@@ -1,7 +1,6 @@
 import { mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 import {
-  VERIFIED_GITHUB_PARITY_RELEASE_STATE,
   assertDeploymentAttestationManifest,
   deploymentManifestPath,
   ensureParentPath,
@@ -15,8 +14,6 @@ import {
 
 const manifest = readDeploymentManifest();
 assertDeploymentAttestationManifest(manifest);
-const recordsCompletedParity =
-  manifest.releaseState === VERIFIED_GITHUB_PARITY_RELEASE_STATE;
 const githubSha = (process.env.GITHUB_SHA || "").trim().toLowerCase();
 if (!/^[a-f0-9]{40}$/.test(githubSha)) {
   throw new Error(
@@ -41,7 +38,7 @@ if (
   migrationTree.sha256 !== manifest.releaseCandidate.migrationTreeSha256
 ) {
   throw new Error(
-    "Refusing to attest source whose deterministic hashes do not match every schema-4 candidate fingerprint",
+    "Refusing to attest source whose deterministic hashes do not match every schema-10 candidate fingerprint",
   );
 }
 if (
@@ -76,11 +73,10 @@ const output = resolve(
 );
 mkdirSync(ensureParentPath(output), { recursive: true });
 writeJson(output, {
-  schemaVersion: 3,
+  schemaVersion: 4,
   recordKind: "veroxa_ci_deployment_attestation",
-  attestationScope: recordsCompletedParity
-    ? "exact_ci_closeout_checkout_only_preserving_observed_v36_parity"
-    : "exact_ci_candidate_checkout_only_not_production_parity",
+  attestationScope:
+    "exact_ci_schema10_held_repair_checkout_only_not_remote_or_runtime_parity",
   generatedAt: new Date().toISOString(),
   repository: manifest.canonicalRepository,
   ref: process.env.GITHUB_REF || null,
@@ -95,7 +91,10 @@ writeJson(output, {
     githubSha,
     provesGitHubMerge: false,
     provesSitesPublication: false,
+    provesEdgeDeployment: false,
     provesDatabaseMigrationApply: false,
+    provesOperationalHold: false,
+    provesActivationRoutineInstallOrInvocation: false,
     provesProductionParity: false,
   },
   releaseCandidate: manifest.releaseCandidate,
@@ -115,6 +114,8 @@ writeJson(output, {
     provesLiveSitesVersion: false,
     provesLiveDatabaseLedger: false,
     provesGitHubMainParity: false,
+    provesOperationalHold: false,
+    provesLiveEdgeIdentity: false,
     provesProductionParity: false,
   },
   source: {
@@ -133,6 +134,19 @@ writeJson(output, {
       manifest.releaseCandidate.latestCandidateMigration,
     latestCandidateMigrationSha256,
   },
+  applicationQualityEvidence: manifest.applicationQualityEvidence,
+  databaseContractReview: manifest.databaseContractReview,
+  referencedLiveEdgeObservation: manifest.edgeDeployment
+    ? { ...manifest.edgeDeployment, reverifiedByThisAttestation: false }
+    : null,
+  edgeCandidate: manifest.edgeCandidate,
+  referencedOperationalHold: manifest.operationalHold
+    ? { ...manifest.operationalHold, reverifiedByThisAttestation: false }
+    : null,
+  activationRoutine: manifest.activationRoutine,
+  generatedVersionCloseouts: manifest.generatedVersionCloseouts,
+  deploymentParity: manifest.deploymentParity,
+  rolloutSequence: manifest.rolloutSequence,
   deploymentFreeze: manifest.deploymentFreeze,
   activationState: manifest.activationState,
   activationStateScope: manifest.activationStateScope,

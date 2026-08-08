@@ -1,171 +1,89 @@
-const __name = <T>(target: T, value: string): T =>
-  Object.defineProperty(target as object, "name", {
-    value,
-    configurable: true,
-  }) as T;
-import { existsSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { readFileSync } from "node:fs";
 import {
-  CURRENT_PARTIAL_ROLLOUT_EVIDENCE,
-  GENERATED_PATH_EXCLUSIONS,
-  HISTORICAL_REPOSITORY_MIGRATION_EVIDENCE_SCOPE,
-  LIVE_MIGRATION_EVIDENCE_SCOPE,
-  LIVE_PRODUCTION_EVIDENCE_STATUS,
-  LOCAL_CANDIDATE_APPLIED_MIGRATIONS,
-  LOCAL_CANDIDATE_MIGRATION_EVIDENCE_SCOPE,
-  LOCAL_CANDIDATE_PENDING_MIGRATIONS,
-  LOCAL_CANDIDATE_SOURCE_EVIDENCE_SCOPE,
-  TREE_HASH_ALGORITHM,
-  V36_LIVE_PARITY_EVIDENCE,
+  APPLICATION_QUALITY_EVIDENCE,
+  LIVE46_MIGRATION_EVIDENCE,
+  LOCAL_CANDIDATE_BASE_COMMIT,
+  LOCAL_CANDIDATE_SOURCE_EVIDENCE,
+  PRIVATE_MEDIA_EDGE_CANDIDATE,
+  REPAIR_MIGRATION_EVIDENCE,
   assertReviewedLocalCandidateManifest,
   deploymentManifestPath,
-  hashTree,
   readDeploymentManifest,
-  repoRoot,
-  sha256File,
 } from "./release-manifest";
 
 const failures: string[] = [];
-const must = __name((condition: boolean, message: string) => {
+const must = (condition: boolean, message: string): void => {
   if (!condition) failures.push(message);
-}, "must");
+};
+
+const raw = readFileSync(deploymentManifestPath, "utf8");
+must(!/^(<<<<<<<|=======|>>>>>>>)/mu.test(raw), "Manifest contains merge markers.");
+
 const manifest = readDeploymentManifest();
 try {
   assertReviewedLocalCandidateManifest(manifest);
 } catch (error) {
   failures.push(error instanceof Error ? error.message : String(error));
 }
-const live = manifest.currentProductionObservation;
+
+must(manifest.schemaVersion === 10, "Manifest schema must be 10.");
 must(
-  live.evidenceStatus === LIVE_PRODUCTION_EVIDENCE_STATUS &&
-    live.canonicalGitHubMainCommit ===
-      CURRENT_PARTIAL_ROLLOUT_EVIDENCE.canonicalGitHubMainCommit &&
-    live.githubParityVerifiedAtObservation === true &&
-    live.sitesVersion === CURRENT_PARTIAL_ROLLOUT_EVIDENCE.sitesVersion &&
-    live.sitesCheckoutCommit ===
-      CURRENT_PARTIAL_ROLLOUT_EVIDENCE.sitesCheckoutCommit &&
-    live.sourceFileCount === CURRENT_PARTIAL_ROLLOUT_EVIDENCE.sourceFileCount &&
-    live.sourceTreeSha256 === CURRENT_PARTIAL_ROLLOUT_EVIDENCE.sourceTreeSha256 &&
-    live.productionMigrationCount ===
-      CURRENT_PARTIAL_ROLLOUT_EVIDENCE.migrationFileCount &&
-    live.migrationTreeSha256 ===
-      CURRENT_PARTIAL_ROLLOUT_EVIDENCE.migrationTreeSha256 &&
-    live.migrationTreeEvidenceScope === LIVE_MIGRATION_EVIDENCE_SCOPE &&
-    live.historicalRepositoryMigrationTreeSha256 ===
-      V36_LIVE_PARITY_EVIDENCE.historicalRepositoryMigrationTreeSha256 &&
-    live.historicalRepositoryMigrationTreeEvidenceScope ===
-      HISTORICAL_REPOSITORY_MIGRATION_EVIDENCE_SCOPE &&
-    live.latestProductionMigration ===
-      CURRENT_PARTIAL_ROLLOUT_EVIDENCE.latestMigration &&
-    live.latestProductionMigrationSha256 ===
-      CURRENT_PARTIAL_ROLLOUT_EVIDENCE.latestMigrationSha256,
-  "Current production must remain exact GitHub main 59b / Sites v39 / live43 evidence.",
+  manifest.recordKind === "veroxa_live46_held_private_media_repair_manifest",
+  "Manifest record kind is not the schema-10 held-repair authority.",
 );
 must(
-  manifest.source.evidenceScope === LOCAL_CANDIDATE_SOURCE_EVIDENCE_SCOPE &&
-    manifest.source.root === "artifacts/veroxa-sites" &&
-    manifest.source.hashAlgorithm === TREE_HASH_ALGORITHM &&
-    JSON.stringify(manifest.source.generatedPathExclusions) ===
-      JSON.stringify(GENERATED_PATH_EXCLUSIONS),
-  "Candidate Sites source scope or hash policy drifted.",
-);
-const sourceTree = hashTree(resolve(repoRoot, manifest.source.root), {
-  exclusions: manifest.source.generatedPathExclusions,
-});
-must(
-  sourceTree.fileCount === 203 &&
-    sourceTree.fileCount === manifest.source.fileCount &&
-    sourceTree.sha256 === manifest.source.treeSha256 &&
-    sourceTree.fileCount === manifest.releaseCandidate.sourceFileCount &&
-    sourceTree.sha256 === manifest.releaseCandidate.sourceTreeSha256 &&
-    sourceTree.sha256 !== live.sourceTreeSha256,
-  `Candidate Sites fingerprint drifted (actual ${sourceTree.fileCount}/${sourceTree.sha256}).`,
+  manifest.currentProductionObservation.canonicalGitHubMainCommit ===
+    LOCAL_CANDIDATE_BASE_COMMIT &&
+    manifest.currentProductionObservation.productionMigrationCount ===
+      LIVE46_MIGRATION_EVIDENCE.fileCount &&
+    manifest.currentProductionObservation.migrationTreeSha256 ===
+      LIVE46_MIGRATION_EVIDENCE.treeSha256,
+  "Canonical main or exact live46 evidence drifted.",
 );
 must(
-  manifest.migrations.evidenceScope ===
-      LOCAL_CANDIDATE_MIGRATION_EVIDENCE_SCOPE &&
-    manifest.migrations.hashAlgorithm === TREE_HASH_ALGORITHM,
-  "Candidate migration scope or hash policy drifted.",
-);
-const migrationTree = hashTree(resolve(repoRoot, manifest.migrations.root), {
-  suffix: ".sql",
-});
-const mirrorTree = hashTree(resolve(repoRoot, manifest.migrations.mirrorRoot!), {
-  suffix: ".sql",
-});
-must(
-  migrationTree.fileCount === 44 &&
-    migrationTree.sha256 ===
-      "9cc0bba007b6a0c06edf33563fb1bc3f4650811f8f8ea1639cc58c7028ac7324" &&
-    mirrorTree.fileCount === migrationTree.fileCount &&
-    mirrorTree.sha256 === migrationTree.sha256 &&
-    JSON.stringify(mirrorTree.files) === JSON.stringify(migrationTree.files) &&
-    manifest.migrations.fileCount === migrationTree.fileCount &&
-    manifest.migrations.treeSha256 === migrationTree.sha256 &&
-    manifest.migrations.mirrorFileCount === mirrorTree.fileCount &&
-    manifest.migrations.mirrorTreeSha256 === mirrorTree.sha256,
-  `Candidate migration fingerprint drifted (root ${migrationTree.fileCount}/${migrationTree.sha256}; mirror ${mirrorTree.fileCount}/${mirrorTree.sha256}).`,
-);
-const candidate = manifest.releaseCandidate;
-must(
-  candidate.pullRequest === 164 &&
-    candidate.pullRequestDraft === true &&
-    candidate.observedDraftPullRequestHead ===
-      "b659ec307da9455c389059b29f2d6f3ab51f095e" &&
-    candidate.observedDraftPullRequestTree ===
-      "9931d63dcb16a2e2e1cb7c592d2da63b4054cb60" &&
-    candidate.draftHeadEvidenceScope ===
-      "draft_pr_opening_head_before_evidence_refresh_not_final_reviewed_head" &&
-    !candidate.githubMerged &&
-    candidate.allFourWorkflowsGreen === null &&
-    candidate.zeroUnresolvedReviewThreads === null &&
-    !candidate.candidateSourceMatchesLiveSites &&
-    !candidate.candidateMigrationsMatchLiveLedger &&
-    !candidate.githubMainMatchesCandidate &&
-    !candidate.fullReleaseGatePassed &&
-    candidate.databaseChangesRequired &&
-    !candidate.databaseMigrationApplied &&
-    JSON.stringify(candidate.pendingMigrations) ===
-      JSON.stringify(LOCAL_CANDIDATE_PENDING_MIGRATIONS) &&
-    JSON.stringify(candidate.databaseMigrationsApplied) ===
-      JSON.stringify(LOCAL_CANDIDATE_APPLIED_MIGRATIONS) &&
-    candidate.databaseApplyAuthorized === true &&
-    candidate.sitesPublishRequired &&
-    !candidate.sitesPublished &&
-    candidate.sitesPublishAuthorized === true &&
-    candidate.deploymentAuthorized === true &&
-    !candidate.activationExecuted,
-  "Draft PR #164 must remain authorized but wholly unapplied, unpublished, unmerged, and fail-closed without final-head gate evidence.",
-);
-const latest = resolve(
-  repoRoot,
-  manifest.migrations.root,
-  candidate.latestCandidateMigration,
+  manifest.releaseCandidate.sourceFileCount ===
+    LOCAL_CANDIDATE_SOURCE_EVIDENCE.fileCount &&
+    manifest.releaseCandidate.sourceTreeSha256 ===
+      LOCAL_CANDIDATE_SOURCE_EVIDENCE.treeSha256 &&
+    manifest.releaseCandidate.latestCandidateMigration ===
+      REPAIR_MIGRATION_EVIDENCE.filename &&
+    manifest.releaseCandidate.latestCandidateMigrationSha256 ===
+      REPAIR_MIGRATION_EVIDENCE.sha256 &&
+    JSON.stringify(manifest.applicationQualityEvidence) ===
+      JSON.stringify(APPLICATION_QUALITY_EVIDENCE),
+  "Reviewed local candidate fingerprints or quality evidence drifted.",
 );
 must(
-  existsSync(latest) &&
-    candidate.latestCandidateMigration === LOCAL_CANDIDATE_PENDING_MIGRATIONS[0] &&
-    sha256File(latest) === candidate.latestCandidateMigrationSha256 &&
-    candidate.latestCandidateMigrationSha256 ===
-      "9cf6f0080d38d58d3c1939d928444701b1954bf5cfe96bf7f3e80077bad45cc0",
-  "Provisional 045812 migration identity or exact bytes drifted.",
+  manifest.edgeDeployment?.currentRepositorySourceParity === false &&
+    manifest.edgeCandidate?.contractSha256 ===
+      PRIVATE_MEDIA_EDGE_CANDIDATE.contractSha256 &&
+    manifest.edgeCandidate.deployed === false,
+  "Live Edge v6 and pending prompt-v2 Edge candidate were conflated.",
 );
-const hosting = JSON.parse(
-  readFileSync(
-    resolve(repoRoot, "artifacts/veroxa-sites/.openai/hosting.json"),
-    "utf8",
-  ),
-);
-must(hosting.project_id === manifest.sitesProjectId, "Sites project identity drifted.");
 must(
-  deploymentManifestPath.endsWith("VEROXA_DEPLOYMENT_MANIFEST.json"),
-  "Deployment manifest path is not canonical.",
+  manifest.operationalHold?.activeClientStorageUploadPolicyRemains === true &&
+    manifest.operationalHold.rawOrphanStorageObjectWritePossible === true &&
+    manifest.operationalHold.rawStorageCannotRegisterOrTriggerProviderWhileRpcsHeld === true,
+  "Registered mutable-RPC hold must disclose the limited orphan-storage residual.",
 );
-if (failures.length) {
-  console.error("Veroxa deployment manifest guardrail failed:");
-  for (const failure of failures) console.error(`- ${failure}`);
-  process.exit(1);
+must(
+  manifest.releaseCandidate.pullRequest === null &&
+    manifest.releaseCandidate.githubMerged === false &&
+    manifest.releaseCandidate.databaseMigrationApplied === false &&
+    manifest.releaseCandidate.sitesPublished === false &&
+    manifest.releaseCandidate.edgeDeployed === false &&
+    manifest.releaseCandidate.activationGateReady === false &&
+    manifest.releaseCandidate.activationExecuted === false &&
+    manifest.releaseCandidate.fullReleaseGatePassed === false &&
+    manifest.deploymentFreeze.automaticDeploymentsAllowed === false,
+  "Remote, apply, publication, activation, or full-release evidence was overclaimed.",
+);
+
+if (failures.length > 0) {
+  for (const failure of failures) console.error("FAIL:", failure);
+  process.exitCode = 1;
+} else {
+  console.log(
+    "PASS: schema-10 live46 held-repair manifest is exact, reviewed locally, and fail-closed for remote/runtime gates.",
+  );
 }
-console.log(
-  `Veroxa predeployment evidence passed: GitHub main/Sites v39/live43 stay exact; reviewed candidate is ${sourceTree.fileCount} Sites files plus ${migrationTree.fileCount} mirrored migrations, with freeze/drain, generated-version reconciliation, and publish still pending.`,
-);

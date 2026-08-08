@@ -21,6 +21,8 @@ import {
 import { MomoTeamPreconnectionCenter } from "./momo-team-preconnection-center";
 import { momoMediaReviewCanSave, momoMediaReviewSaveBlockers } from "./momo-media-guidance";
 import { buildMomoTeamSummary } from "./momo-team-summary";
+import { uploadMomoTeamPrivateMedia } from "./momo-client-data";
+import type { VeroxaPrivateMediaAssessment } from "./veroxa-private-media-assessment";
 import {
   MOMO_CONTENT_AI_PROMPT_VERSION,
   MOMO_CONTENT_AI_VALIDATOR_VERSION,
@@ -271,7 +273,7 @@ const externalEvidenceWorkTypes = new Set([
 
 function StatusBadge({ status }: { status: string }) {
   const visibleStatus = status === "approved_for_manual_export"
-    ? "Approved for manual posting"
+    ? "Approved for manual export"
     : labelStatus(status);
   return <span className={`momo-status ${status.toLowerCase().replaceAll("_", "-")}`}>{visibleStatus}</span>;
 }
@@ -1068,7 +1070,7 @@ function MediaPanel(props: PanelProps) {
     {data.media.length === 0 ? <EmptyState title="No media has been uploaded." detail="Nothing enters preparation until a real image and rights record exist." /> : <div className="momo-media-grid">{orderedMedia.map((asset) => <MediaAssetCard key={asset.id} asset={asset} {...props} />)}</div>}
   </section>;
   return <div className="view">
-    <MomoIntro eyebrow="MOMO’S HOUSE" title="Media" description={role === "team" ? "Team Faraz sees only consolidated exceptions. Routine upload, duplicate reuse, and preparation stay automatic." : "Upload a private food image you are authorized to use and follow it to Veroxa Ready."} />
+    <MomoIntro eyebrow="MOMO’S HOUSE" title="Media" description={role === "team" ? "Run a private assessment-only food upload or resolve a consolidated exception. Assessment tags never authorize restaurant use or posting." : "Upload a private food image you are authorized to use and follow it to Veroxa Ready."} />
     <SafetyBoundary role={role} />
     {role === "client" ? <form className="momo-panel momo-upload" onSubmit={(event) => {
       event.preventDefault();
@@ -1092,6 +1094,11 @@ function MediaPanel(props: PanelProps) {
       <p className="momo-form-note">The original stays private. Veroxa verifies its bytes before it can enter content preparation.</p>
       <button className="primary-button" disabled={busy || !file || !rights || scope.length === 0 || invalidExpiry}>{busy ? "Uploading…" : "Upload with rights record"}</button>
     </form> : <>
+      <TeamPrivateAssessmentIntake
+        restaurantId={restaurantId}
+        busy={busy}
+        run={run}
+      />
       <section className="momo-panel" id="momo-media-exceptions"><div className="momo-panel-heading"><div><p className="eyebrow">EXCEPTION-ONLY QUEUE</p><h2>Media issues that need Team Faraz</h2><small>Repeated occurrences with the same canonical asset, stage, policy, and blockers appear once.</small></div><span>{openIncidents.length}</span></div>
         {openIncidents.length === 0 ? <EmptyState title="No media exception needs Team Faraz." detail="Routine verified uploads and exact duplicates continue automatically. Nothing is scheduled, posted, or connected." /> : <div className="momo-record-list">{openIncidents.map((incident) => {
           const latestEvent = data.exceptionEventsV2.find((event) =>
@@ -1107,6 +1114,81 @@ function MediaPanel(props: PanelProps) {
     </>}
     {role === "client" && mediaLibrary}
   </div>;
+}
+
+function TeamPrivateAssessmentIntake({
+  restaurantId,
+  busy,
+  run,
+}: Pick<PanelProps, "restaurantId" | "busy" | "run">) {
+  const [file, setFile] = useState<File | null>(null);
+  const [rightsConfirmed, setRightsConfirmed] = useState(false);
+  const [assessmentRequested, setAssessmentRequested] = useState(false);
+  const [assessment, setAssessment] =
+    useState<VeroxaPrivateMediaAssessment | null>(null);
+  const [localError, setLocalError] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const selectFile = (next: File | null) => {
+    setAssessment(null);
+    setLocalError("");
+    if (!next) {
+      setFile(null);
+      return;
+    }
+    if (!["image/jpeg", "image/png"].includes(next.type) ||
+      next.size < 10 * 1024 || next.size > 10 * 1024 * 1024) {
+      setFile(null);
+      setLocalError("Choose a valid JPEG or PNG from 10 KB through 10 MB.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+    setFile(next);
+  };
+  return <section className="momo-panel" aria-label="Team private food assessment">
+    <div className="momo-panel-heading"><div><p className="eyebrow">PRIVATE ASSESSMENT</p><h2>Recognize and tag a food image</h2><small>JPEG or PNG · 10 KB–10 MB · private assessment only</small></div><StatusBadge status="no_external_write" /></div>
+    <form className="momo-form momo-upload" onSubmit={(event) => {
+      event.preventDefault();
+      if (!file || !rightsConfirmed || !assessmentRequested) return;
+      setLocalError("");
+      void run(async () => {
+        const outcome = await uploadMomoTeamPrivateMedia({
+          restaurantId,
+          file,
+        });
+        if (outcome.status === "uploaded_but_needs_attention") {
+          setLocalError(
+            "The private original was retained, but assessment could not finish. No provider or external write was authorized.",
+          );
+          throw new Error(outcome.errorCode);
+        }
+        if (!outcome.assessment) {
+          setLocalError(
+            "The private original was verified, but visual tags are not ready yet.",
+          );
+          throw new Error(outcome.assessmentErrorCode ||
+            "private_media_assessment_unavailable");
+        }
+        setAssessment(outcome.assessment.assessment);
+        setFile(null);
+        setRightsConfirmed(false);
+        setAssessmentRequested(false);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      }, "Private food recognition and tags are ready. Nothing was posted.");
+    }}>
+      <label className="momo-file">Food image<input
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/png,.jpg,.jpeg,.png"
+        onChange={(event) => selectFile(event.target.files?.[0] || null)}
+      /></label>
+      {localError && <p className="momo-warning" role="alert">{localError}</p>}
+      <label className="momo-check"><input type="checkbox" checked={rightsConfirmed} onChange={(event) => setRightsConfirmed(event.target.checked)} /><span>I own this image or have permission to submit it for this private assessment.</span></label>
+      <label className="momo-check"><input type="checkbox" checked={assessmentRequested} onChange={(event) => setAssessmentRequested(event.target.checked)} /><span>Analyze the pixels now and create private confidence-aware food tags.</span></label>
+      <p className="momo-form-note">Team intake is assessment-only and records development-proxy evidence. It cannot claim a current Momo offering, become Ready, schedule, or post. A real owner must separately upload or confirm eligible media for restaurant use.</p>
+      <button className="primary-button" disabled={busy || !file || !rightsConfirmed || !assessmentRequested}>{busy ? "Assessing privately…" : "Upload, recognize, and tag"}</button>
+    </form>
+    {assessment && <section className="client-private-assessment" aria-label="Latest Team private visual assessment"><p className="eyebrow">VISIBLE EVIDENCE ONLY</p><strong>{assessment.visualSummary}</strong><div className="momo-tag-row">{assessment.tags.map((tag) => <span key={tag.slug} title={tag.uncertainty || "Directly visible"}>{tag.label} · {Math.round(tag.confidence * 100)}%</span>)}</div><small>{assessment.uncertainties.join(" ")}</small><p className="momo-form-note">“Possible” food identities are private visual hypotheses, not restaurant facts. They are never copied into public claims.</p></section>}
+  </section>;
 }
 
 type MomoContentPreparationState = "idle" | "saving_review" | "queueing" | "refreshing" | "needs_refresh";
@@ -1628,14 +1710,14 @@ function VeroxaReadyPackageCard({
       throw new Error("ready_review_replay_blocked");
     }
   }, decision === "approved_for_manual_export"
-    ? "Exact current package approved for manual posting. External posting remains disabled."
-    : "Package discarded from manual export. Its media, evidence, and decision history were retained.");
+    ? "Exact current package approved for manual export. Only manual copy and download are unlocked; external posting remains disabled."
+    : "Exact source media discarded from future content and Veroxa Ready. All same-byte duplicates for this restaurant are excluded; immutable bytes and evidence remain retained.");
   return <article className="momo-content-card">
     <div className="momo-panel-heading"><div><strong>{readyPackage.output_payload.direction.pillar}</strong><small>{readyPackage.output_payload.direction.angle}</small></div><StatusBadge status={reviewState} /></div>
     <div className="momo-callout"><strong>Unscheduled by design</strong><p>This immutable package has verified media, claims, captions, SEO phrases, hashtags, and alt text. It has no posting time, provider connection, or external write. Manual copy and download stay locked until Team approves this exact current review snapshot.</p></div>
     {reviewState === "awaiting_team_review" && <div className="momo-callout"><strong>Team review required</strong><p>Open and inspect the exact image, visual assessment, tags, and public copy. Approval unlocks only manual copy and download; it never schedules or posts.</p></div>}
-    {manualExportAllowed && <div className="momo-callout"><strong>Approved for manual posting</strong><p>This exact current snapshot may be copied or downloaded manually. Scheduling, provider posting, and every external write remain disabled.</p></div>}
-    {reviewState === "discarded" && <div className="momo-warning"><strong>Discarded from manual export</strong><p>{reviewStatus?.decision_reason}</p><p>The immutable package, original media, rights evidence, and decision history remain retained. Nothing was deleted or posted.</p></div>}
+    {manualExportAllowed && <div className="momo-callout"><strong>Approved for manual export</strong><p>This exact current snapshot may be copied or downloaded manually. Scheduling, provider posting, and every external write remain disabled.</p></div>}
+    {reviewState === "discarded" && <div className="momo-warning"><strong>Source media discarded from future content and Veroxa Ready</strong><p>{reviewStatus?.decision_reason}</p><p>Every upload and asset record for this restaurant with the same exact-byte SHA-256 hash is permanently excluded from future preparation and Ready. The immutable original bytes, package, rights evidence, and decision history remain retained. Nothing was posted.</p></div>}
     {reviewState === "blocked" && <div className="momo-warning" role="alert"><strong>Manual export blocked</strong><p>{reviewBlockers.map(labelStatus).join(" · ") || "Current approval could not be verified."}</p></div>}
     <button type="button" className="momo-preview-button" disabled={mediaBusy} onClick={() => {
       setMediaBusy(true);
@@ -1684,7 +1766,7 @@ function VeroxaReadyPackageCard({
         {copyState === `${variant.platform}:failed` && <p className="momo-warning" role="alert">Copy was blocked by this browser. The package remains unchanged and unposted.</p>}
       </div>
     </details>)}</div>
-    {(canApprove || canDiscard) && <section className="momo-review-box">{canApprove && <><label className="momo-check wide"><input type="checkbox" checked={reviewConfirmed} onChange={(event) => setReviewConfirmedSnapshotSha256(event.target.checked ? reviewStatus?.current_review_snapshot_sha256 ?? null : null)} disabled={!mediaRendered} /><span>{MOMO_READY_V2_TEAM_INSPECTION_ATTESTATION}</span></label><div className="momo-decision"><button type="button" className="primary-button" disabled={busy || !mediaRendered || !reviewConfirmed} onClick={() => void decide("approved_for_manual_export")}>{busy ? "Saving…" : "Approve for manual posting"}</button></div></>}{canDiscard && <details className="team-inline-advanced"><summary>Discard this Ready package</summary><div className="momo-review-box"><label>Reason retained in decision history<textarea rows={3} minLength={4} maxLength={500} value={discardReason} onChange={(event) => setDiscardReason(event.target.value)} /></label><button type="button" disabled={busy || discardReason.trim().length < 4 || discardReason.trim().length > 500} onClick={() => void decide("discarded")}>Discard without deleting media</button><p className="momo-form-note">Discard is terminal for this immutable package. It hides every export helper but preserves the package, media, rights evidence, and audit history.</p></div></details>}</section>}
+    {(canApprove || canDiscard) && <section className="momo-review-box">{canApprove && <><label className="momo-check wide"><input type="checkbox" checked={reviewConfirmed} onChange={(event) => setReviewConfirmedSnapshotSha256(event.target.checked ? reviewStatus?.current_review_snapshot_sha256 ?? null : null)} disabled={!mediaRendered} /><span>{MOMO_READY_V2_TEAM_INSPECTION_ATTESTATION}</span></label><div className="momo-decision"><button type="button" className="primary-button" disabled={busy || !mediaRendered || !reviewConfirmed} onClick={() => void decide("approved_for_manual_export")}>{busy ? "Saving…" : "Approve for manual export"}</button></div></>}{canDiscard && <details className="team-inline-advanced"><summary>Discard this source media</summary><div className="momo-review-box"><label>Reason retained in decision history<textarea rows={3} minLength={4} maxLength={500} value={discardReason} onChange={(event) => setDiscardReason(event.target.value)} /></label><button type="button" disabled={busy || discardReason.trim().length < 4 || discardReason.trim().length > 500} onClick={() => void decide("discarded")}>Discard source from future Ready</button><p className="momo-form-note">Discard is terminal for these exact image bytes across every same-byte upload and asset record for this restaurant. Future content and Veroxa Ready are blocked, while immutable bytes, the package, rights evidence, and audit history remain retained.</p></div></details>}</section>}
     {!manualExportAllowed && reviewState !== "discarded" && <p className="momo-form-note">Manual copy and download are unavailable until the exact current Team approval is verified.</p>}
     <details className="team-inline-advanced"><summary>Immutable audit evidence</summary><p className="momo-form-note">Canonical identity {readyPackage.canonical_asset_id.slice(0, 8)}… · selected processing upload {readyPackage.source_asset_id.slice(0, 8)}… · rights record {readyPackage.rights_id.slice(0, 8)}… · intake verification {readyPackage.intake_verification_id.slice(0, 8)}…</p><p className="momo-form-note">Policy {readyPackage.policy_version} · output {readyPackage.output_sha256.slice(0, 12)}… · validation {readyPackage.validation_sha256.slice(0, 12)}… · ready {formatDate(readyPackage.ready_at)} · {packageRun?.automation_retry_generation === 1 ? `bounded zero-provider recovery of run ${packageRun.automation_retry_of_run_id?.slice(0, 8)}…` : "initial generation"} · no schedule · no external write</p></details>
   </article>;
@@ -1718,7 +1800,9 @@ function ContentPanel(props: PanelProps & { onNavigate: (view: string) => void }
     latestAutomationRunByIdentity.get(item.identity_id) === item.content_ai_run_id
   );
   const pendingReadyReviews = data.readyReviewStatusesV2.filter((status) =>
-    momoReadyReviewCanApprove(status) || momoReadyReviewCanDiscard(status)
+    momoReadyReviewCanApprove(status) ||
+      (status.terminal_decision === null &&
+        momoReadyReviewCanDiscard(status))
   );
   const legacyHistoryCount = legacyReviewRuns.length + legacyFailedRuns.length + packageStates.length + data.contentItems.length;
   const attentionCount = role === "team"

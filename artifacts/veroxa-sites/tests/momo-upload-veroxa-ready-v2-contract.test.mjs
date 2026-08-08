@@ -547,13 +547,15 @@ test("the signed lifecycle performs finalize then advance and persists bounded i
     "if (body.operation === \"finalize_upload\")",
     "if (body.operation === \"record_intake_attempt\")",
   );
-  const finalizeRpc = finalize.indexOf("veroxa_finalize_momo_media_intake_v1");
+  const finalizeRpc = finalize.indexOf("veroxa_finalize_private_media_assessment_intake_v1");
+  const platformGate = finalize.indexOf("if (!finalized.platform_ready)");
   const advanceRpc = finalize.indexOf("veroxa_momo_upload_pipeline_v2");
-  const success = finalize.indexOf("return response({ data }, 200)");
-  assert.ok(finalizeRpc >= 0 && advanceRpc > finalizeRpc && success > advanceRpc);
+  const success = finalize.lastIndexOf("return response({ data }, 200)");
+  assert.ok(finalizeRpc >= 0 && platformGate > finalizeRpc && advanceRpc > platformGate && success > advanceRpc);
+  assert.match(finalize, /if \(!finalized\.platform_ready\) \{[\s\S]*?status: "verified"[\s\S]*?canonicalAssetId: body\.assetId/u);
   assert.match(finalize, /p_operation: "advance_verified_asset"/u);
   assert.match(finalize, /verificationId,[\s\S]*?actorId: userData\.user\.id/u);
-  assert.match(finalize, /finalizeError \|\| typeof verificationId !== "string" \|\| !UUID\.test\(verificationId\)/u);
+  assert.match(finalize, /finalizeError \|\| !isPlainObject\(finalized\)[\s\S]*?typeof finalized\.intake_id !== "string"[\s\S]*?finalized\.external_write_allowed !== false/u);
 
   const failureLedger = between(
     lifecycle,
@@ -574,7 +576,7 @@ test("the signed lifecycle performs finalize then advance and persists bounded i
 
   assert.match(finalizeRoute, /operation: "finalize_upload", \.\.\.input/u);
   assert.match(finalizeRoute, /operation: "record_intake_attempt",[\s\S]*?\.\.\.input/u);
-  assert.match(finalizeCore, /\[\s*"media_verification_unavailable",\s*"media_verification_failed",\s*"media_not_platform_ready",\s*\]\.includes\(error\.code\)/u);
+  assert.match(finalizeCore, /\[\s*"media_verification_unavailable",\s*"media_verification_failed",\s*"media_not_platform_ready",\s*"media_not_assessable",\s*\]\.includes\(error\.code\)/u);
   assert.match(finalizeCore, /`momo-intake-failure-v2:\$\{evidenceSha256\}`/u);
   assert.match(finalizeCore, /recordedIntakeFailure\(recorded, input\.assetId\)[\s\S]*?media_verification_unavailable/u);
 });

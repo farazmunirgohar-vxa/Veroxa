@@ -1181,21 +1181,39 @@ export function momoReadyReviewCanApprove(
 export function momoReadyReviewCanDiscard(
   status: MomoReadyReviewStatusV2 | null | undefined,
 ): boolean {
-  return Boolean(status &&
-    ["awaiting_team_review", "blocked"].includes(status.review_state) &&
-    status.terminal_decision === null &&
+  if (!status || status.review_state === "discarded" ||
+    status.external_write_allowed !== false ||
+    !isMomoContentHash(status.current_review_snapshot_sha256)) return false;
+  const undecided = status.terminal_decision === null &&
     status.decision_review_snapshot_sha256 === null &&
-    ((status.review_state === "awaiting_team_review" &&
-      status.blocker_codes.length === 0) ||
-      (status.review_state === "blocked" &&
-        status.blocker_codes.length > 0)) &&
     status.decision_id === null && status.decided_by === null &&
     status.decided_at === null && status.decision_reason === null &&
     status.inspection_attestation_version === null &&
     status.inspection_attestation_text === null &&
     status.inspection_attestation_sha256 === null && status.snapshot_current &&
-    status.external_write_allowed === false &&
-    isMomoContentHash(status.current_review_snapshot_sha256));
+    ((status.review_state === "awaiting_team_review" &&
+      status.blocker_codes.length === 0) ||
+      (status.review_state === "blocked" &&
+        status.blocker_codes.length > 0));
+  const approved = status.terminal_decision ===
+      "approved_for_manual_export" &&
+    isMomoContentHash(status.decision_review_snapshot_sha256) &&
+    isMomoContentUuid(status.decision_id) &&
+    isMomoContentUuid(status.decided_by) &&
+    typeof status.decided_at === "string" &&
+    !Number.isNaN(Date.parse(status.decided_at)) &&
+    status.decision_reason === null &&
+    status.inspection_attestation_version ===
+      MOMO_READY_V2_TEAM_INSPECTION_ATTESTATION_VERSION &&
+    status.inspection_attestation_text ===
+      MOMO_READY_V2_TEAM_INSPECTION_ATTESTATION &&
+    status.inspection_attestation_sha256 ===
+      MOMO_READY_V2_TEAM_INSPECTION_ATTESTATION_SHA256 &&
+    ((status.review_state === "approved_for_manual_export" &&
+      status.blocker_codes.length === 0) ||
+      (status.review_state === "blocked" &&
+        status.blocker_codes.length > 0));
+  return undecided || approved;
 }
 
 export async function getMomoReadyReviewStatusV2(input: {

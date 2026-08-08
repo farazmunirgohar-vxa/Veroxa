@@ -82,10 +82,10 @@ for (const literal of forbidden) {
   );
 }
 
-// v36 makes the Momo upload-to-Ready contract the active daily workflow. The
-// scheduled/manual v1 surface remains historical recovery evidence only.
+// The unified candidate keeps v2 upload-to-Ready as the active daily workflow,
+// adds Team-private assessment intake, and retains v1 only as recovery history.
 for (const marker of [
-  "Team Faraz sees only consolidated exceptions",
+  "Run a private assessment-only food upload or resolve a consolidated exception",
   "EXCEPTION-ONLY QUEUE",
   "Veroxa Ready without Team review",
   "Legacy v1 history & manual recovery",
@@ -103,8 +103,8 @@ for (const marker of [
 }
 for (const marker of [
   "unscheduled Veroxa Ready",
-  "Veroxa recognized the same image and avoided duplicate work",
-  "This upload and its permission history remain separate",
+  "Identical bytes reused only the private visual assessment",
+  "Permission and restaurant association remain separate for this upload",
   "Veroxa Ready · unscheduled",
   "Nothing was posted, scheduled, or connected",
 ]) {
@@ -587,7 +587,7 @@ mustMatch(
 );
 mustMatch(
   clientUi,
-  /const chooseFile = \(next: File \| null\) => \{[\s\S]*?setRightsConfirmed\(false\);/,
+  /const chooseFile = async \(next: File \| null\) => \{[\s\S]*?setRightsConfirmed\(false\);/,
   "Changing the Client file must invalidate rights attestation",
 );
 mustMatch(
@@ -642,7 +642,7 @@ must(
 );
 must(
   ui.includes("selected processing upload") &&
-    clientUi.includes("The verified image passed Veroxa’s content and permission checks"),
+    clientUi.includes("Permission and restaurant association remain separate for this upload"),
   "Team Ready diagnostics must retain source lineage while the Client surface stays implementation-safe",
 );
 const readyCardStart = ui.indexOf("function VeroxaReadyPackageCard");
@@ -778,7 +778,7 @@ for (const fixture of [
 
 for (const fixture of [
   "Team v2 reads are scoped to open incidents, unscheduled Ready, and active legacy jobs",
-  "Team media and content surfaces are incident-only while v1 controls remain in history",
+  "Team media supports assessment-only recognition while content remains decision-scoped",
   "Client copy presents safe outcomes without internal processing details",
 ]) {
   must(

@@ -16,6 +16,7 @@ export const MOMO_AI_TOOLS = [
 export type MomoAiTool = typeof MOMO_AI_TOOLS[number];
 export type MomoAiTaskKind =
   | "content_package_generation"
+  | "private_media_assessment"
   | "restaurant_research"
   | "media_improvement"
   | "private_evaluation";
@@ -59,6 +60,12 @@ type TaskPolicy = {
 const TASK_POLICIES: Record<MomoAiTaskKind, TaskPolicy> = {
   content_package_generation: {
     actorRoles: ["system"],
+    tools: ["openai.responses.create"],
+    consequence: "private_draft",
+    humanReviewRequired: true,
+  },
+  private_media_assessment: {
+    actorRoles: ["team", "client"],
     tools: ["openai.responses.create"],
     consequence: "private_draft",
     humanReviewRequired: true,

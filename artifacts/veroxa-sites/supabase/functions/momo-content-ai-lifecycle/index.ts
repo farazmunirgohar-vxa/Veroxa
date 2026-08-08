@@ -119,8 +119,8 @@ Deno.serve(async (request: Request): Promise<Response> => {
   });
 
   if (body.operation === "finalize_upload") {
-    const { data: verificationId, error: finalizeError } = await admin.rpc(
-      "veroxa_finalize_momo_media_intake_v1",
+    const { data: finalizeData, error: finalizeError } = await admin.rpc(
+      "veroxa_finalize_private_media_assessment_intake_v1",
       {
         p_restaurant_id: body.restaurantId,
         p_asset_id: body.assetId,
@@ -138,8 +138,22 @@ Deno.serve(async (request: Request): Promise<Response> => {
         p_actor_id: userData.user.id,
       },
     );
-    if (finalizeError || typeof verificationId !== "string" || !UUID.test(verificationId)) {
+    const finalized = Array.isArray(finalizeData) ? finalizeData[0] : finalizeData;
+    if (finalizeError || !isPlainObject(finalized) ||
+      typeof finalized.intake_id !== "string" || !UUID.test(finalized.intake_id) ||
+      finalized.asset_id !== body.assetId ||
+      typeof finalized.platform_ready !== "boolean" ||
+      finalized.external_write_allowed !== false) {
       return response({ error: "lifecycle_rpc_rejected" }, 409);
+    }
+    const verificationId = finalized.intake_id;
+    if (!finalized.platform_ready) {
+      return response({ data: {
+        verificationId,
+        status: "verified",
+        canonicalAssetId: body.assetId,
+        duplicateAssetId: null,
+      } }, 200);
     }
     const { data, error } = await admin.rpc("veroxa_momo_upload_pipeline_v2", {
       p_operation: "advance_verified_asset",
@@ -172,6 +186,87 @@ Deno.serve(async (request: Request): Promise<Response> => {
       },
     });
     if (error || !isPlainObject(data)) {
+      return response({ error: "lifecycle_rpc_rejected" }, 409);
+    }
+    return response({ data }, 200);
+  }
+
+  if (body.operation === "reserve_private_assessment") {
+    const { data, error } = await admin.rpc(
+      "veroxa_reserve_private_media_assessment_v1",
+      {
+        p_restaurant_id: body.restaurantId,
+        p_asset_id: body.assetId,
+        p_request_hash: body.requestHash,
+        p_idempotency_hash: body.idempotencyHash,
+        p_model: body.model,
+        p_prompt_version: body.promptVersion,
+        p_schema_version: body.schemaVersion,
+        p_reserved_microusd: body.reservedMicrousd,
+        p_actor_id: userData.user.id,
+      },
+    );
+    const row = Array.isArray(data) ? data[0] : data;
+    if (error || !isPlainObject(row)) {
+      return response({ error: "lifecycle_rpc_rejected" }, 409);
+    }
+    return response({ data: row }, 200);
+  }
+
+  if (body.operation === "start_private_assessment") {
+    const { data, error } = await admin.rpc(
+      "veroxa_start_private_media_assessment_provider_v1",
+      {
+        p_assessment_id: body.assessmentId,
+        p_request_hash: body.requestHash,
+        p_actor_id: userData.user.id,
+      },
+    );
+    const row = Array.isArray(data) ? data[0] : data;
+    if (error || !isPlainObject(row)) {
+      return response({ error: "lifecycle_rpc_rejected" }, 409);
+    }
+    return response({ data: row }, 200);
+  }
+
+  if (body.operation === "complete_private_assessment") {
+    const { data, error } = await admin.rpc(
+      "veroxa_complete_private_media_assessment_v1",
+      {
+        p_assessment_id: body.assessmentId,
+        p_request_hash: body.requestHash,
+        p_provider_response_id: body.providerResponseId,
+        p_output: body.output,
+        p_output_canonical: body.outputCanonical,
+        p_output_sha256: body.outputSha256,
+        p_accounted_microusd: body.accountedMicrousd,
+        p_accounting_basis: body.accountingBasis,
+        p_provider_usage: body.providerUsage,
+        p_actor_id: userData.user.id,
+      },
+    );
+    const row = Array.isArray(data) ? data[0] : data;
+    if (error || !isPlainObject(row)) {
+      return response({ error: "lifecycle_rpc_rejected" }, 409);
+    }
+    return response({ data: row }, 200);
+  }
+
+  if (body.operation === "fail_private_assessment") {
+    const { data, error } = await admin.rpc(
+      "veroxa_fail_private_media_assessment_v1",
+      {
+        p_assessment_id: body.assessmentId,
+        p_request_hash: body.requestHash,
+        p_provider_response_id: body.providerResponseId,
+        p_error_code: body.errorCode,
+        p_provider_called: body.providerCalled,
+        p_accounted_microusd: body.accountedMicrousd,
+        p_provider_usage: body.providerUsage,
+        p_actor_id: userData.user.id,
+      },
+    );
+    if (error || data !== body.assessmentId) {
       return response({ error: "lifecycle_rpc_rejected" }, 409);
     }
     return response({ data }, 200);

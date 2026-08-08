@@ -33,19 +33,38 @@ function finalizeUpload() {
   };
 }
 
-test("content lifecycle accepts only the exact three-platform JPG intake profile", () => {
+test("private assessment intake accepts only its bounded JPEG and PNG envelope", () => {
   assert.equal(validMomoContentAiLifecycleRequest(finalizeUpload()), true);
 
-  for (const mutation of [
+  for (const supported of [
     { detectedMime: "image/png" },
+    { fileSize: 10_240 },
+    { fileSize: 10_485_760 },
+    { width: 128, height: 320 },
+    { width: 300, height: 750 },
+    { width: 750, height: 300 },
+    { width: 4_096, height: 4_096 },
+  ]) {
+    assert.equal(
+      validMomoContentAiLifecycleRequest({ ...finalizeUpload(), ...supported }),
+      true,
+      JSON.stringify(supported),
+    );
+  }
+
+  for (const mutation of [
+    { detectedMime: "image/heic" },
+    { detectedMime: "image/gif" },
+    { detectedMime: "image/webp" },
     { fileSize: 10_239 },
-    { fileSize: 5_242_881 },
-    { width: 319 },
-    { height: 249 },
+    { fileSize: 10_485_761 },
+    { width: 127 },
+    { height: 127 },
     { width: 12_001 },
     { height: 12_001 },
-    { width: 1_080, height: 2_000 },
-    { width: 2_000, height: 1_000 },
+    { width: 4_097, height: 4_096 },
+    { width: 399, height: 1_000 },
+    { width: 2_501, height: 1_000 },
   ]) {
     assert.equal(
       validMomoContentAiLifecycleRequest({ ...finalizeUpload(), ...mutation }),
@@ -53,6 +72,56 @@ test("content lifecycle accepts only the exact three-platform JPG intake profile
       JSON.stringify(mutation),
     );
   }
+});
+
+test("private assessment reservation accepts only the current v2 prompt", () => {
+  const reservation = {
+    operation: "reserve_private_assessment",
+    restaurantId: UUID,
+    assetId: "22222222-2222-4222-8222-222222222222",
+    requestHash: SHA,
+    idempotencyHash: "b".repeat(64),
+    model: "gpt-5.6-sol",
+    promptVersion: "veroxa-private-media-assessment-2026-08-08-v2",
+    schemaVersion: "veroxa-private-media-assessment-v1",
+    reservedMicrousd: 1_000_000,
+  };
+  assert.equal(validMomoContentAiLifecycleRequest(reservation), true);
+  assert.equal(validMomoContentAiLifecycleRequest({
+    ...reservation,
+    promptVersion: "veroxa-private-media-assessment-2026-08-08-v1",
+  }), false);
+});
+
+test("private assessment failure settles a known provider overrun exactly", () => {
+  const overrun = {
+    operation: "fail_private_assessment",
+    assessmentId: UUID,
+    requestHash: SHA,
+    providerResponseId: "resp_private_assessment_0001",
+    errorCode: "provider_usage_exceeded_reservation",
+    providerCalled: true,
+    accountedMicrousd: 1_090_000,
+    providerUsage: {
+      input_tokens: 200_000,
+      output_tokens: 3_000,
+      total_tokens: 203_000,
+    },
+  };
+  assert.equal(validMomoContentAiLifecycleRequest(overrun), true);
+  assert.equal(validMomoContentAiLifecycleRequest({
+    ...overrun,
+    accountedMicrousd: 1_000_000,
+  }), false);
+  assert.equal(validMomoContentAiLifecycleRequest({
+    ...overrun,
+    providerResponseId: null,
+  }), false);
+  assert.equal(validMomoContentAiLifecycleRequest({
+    ...overrun,
+    providerUsage: null,
+    accountedMicrousd: 1_000_000,
+  }), true, "an unknown called-provider failure conservatively settles the reservation");
 });
 
 function stageResult(overrides = {}) {

@@ -7,6 +7,23 @@ import {
 } from "./momo-media-finalize-client.ts";
 import type { MomoMediaFinalizeApiResult } from "./momo-media-finalize-contract.ts";
 import { updateHardenedVeroxaPassword } from "./veroxa-password-update.ts";
+import { getVeroxaSupabase } from "./veroxa-supabase.ts";
+import {
+  requestVeroxaPrivateMediaAssessment,
+  VeroxaPrivateMediaAssessmentRequestError,
+  type VeroxaPrivateMediaAssessmentApiResult,
+} from "./veroxa-private-media-assessment-client.ts";
+import {
+  VEROXA_MEDIA_RESTAURANT_ASSOCIATIONS,
+  VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_SOURCE_BYTES,
+  VEROXA_PRIVATE_MEDIA_ASSESSMENT_MIN_SOURCE_BYTES,
+  VEROXA_PRIVATE_MEDIA_MIME_TYPES,
+  parseVeroxaPrivateMediaAssessment,
+  type VeroxaMediaEvidenceClass,
+  type VeroxaMediaRestaurantAssociation,
+  type VeroxaPrivateMediaAssessment,
+  type VeroxaPrivateMediaMimeType,
+} from "./veroxa-private-media-assessment.ts";
 
 export type MomoClientPublicConfig = {
   url: string;
@@ -29,6 +46,7 @@ export type MomoClientDecision = {
 export type MomoClientSnapshot = {
   mediaReadbackAvailable: boolean;
   mediaPipelineReadbackAvailable: boolean;
+  mediaAssessmentReadbackAvailable: boolean;
   profile: {
     truthFields: Array<{
       id: string;
@@ -109,6 +127,17 @@ export type MomoClientSnapshot = {
     pipelineVerificationStatus: "verified" | null;
     exactDuplicate: boolean;
     pipelineAttentionReasons: MomoClientAttentionReason[];
+    sourceContentSha256: string | null;
+    platformReady: boolean;
+    privateAssessmentStatus: "reserved" | "provider_running" | "completed" | "failed" | null;
+    privateAssessment: VeroxaPrivateMediaAssessment | null;
+    assessmentReusedFromId: string | null;
+    restaurantAssociation: VeroxaMediaRestaurantAssociation | null;
+    associationEvidenceClass: VeroxaMediaEvidenceClass | null;
+    associationId: string | null;
+    associationRecordedAt: string | null;
+    sourceMediaDiscarded: boolean;
+    sourceMediaDiscardedAt: string | null;
   }>;
   contentDirections: Array<{
     contentItemId: string;
@@ -242,6 +271,7 @@ export function parseMomoClientSnapshot(value: unknown): MomoClientSnapshot {
   return {
     mediaReadbackAvailable: false,
     mediaPipelineReadbackAvailable: false,
+    mediaAssessmentReadbackAvailable: false,
     profile: {
       truthFields: records(onboarding.truthFields).map((row) => ({
         id: String(row.id || ""),
@@ -328,6 +358,17 @@ export function parseMomoClientSnapshot(value: unknown): MomoClientSnapshot {
       pipelineVerificationStatus: null,
       exactDuplicate: false,
       pipelineAttentionReasons: [],
+      sourceContentSha256: null,
+      platformReady: false,
+      privateAssessmentStatus: null,
+      privateAssessment: null,
+      assessmentReusedFromId: null,
+      restaurantAssociation: null,
+      associationEvidenceClass: null,
+      associationId: null,
+      associationRecordedAt: null,
+      sourceMediaDiscarded: false,
+      sourceMediaDiscardedAt: null,
     })).filter((row) => row.id
       && /^restaurants\/[0-9a-f-]{36}\/uploads\//.test(row.storagePath)
       && Number.isFinite(row.fileSize) && row.fileSize > 0 && row.fileSize <= 104857600
@@ -405,12 +446,24 @@ export function mergeMomoClientUploadPipelineV3(
   const cleared: MomoClientSnapshot = {
     ...snapshot,
     mediaPipelineReadbackAvailable: false,
+    mediaAssessmentReadbackAvailable: false,
     media: snapshot.media.map((item) => ({
       ...item,
       pipelineStatus: null,
       pipelineVerificationStatus: null,
       exactDuplicate: false,
       pipelineAttentionReasons: [],
+      sourceContentSha256: null,
+      platformReady: false,
+      privateAssessmentStatus: null,
+      privateAssessment: null,
+      assessmentReusedFromId: null,
+      restaurantAssociation: null,
+      associationEvidenceClass: null,
+      associationId: null,
+      associationRecordedAt: null,
+      sourceMediaDiscarded: false,
+      sourceMediaDiscardedAt: null,
     })),
   };
   if (!Array.isArray(value)) return cleared;
@@ -474,6 +527,165 @@ export function mergeMomoClientUploadPipelineV3(
     ...cleared,
     mediaPipelineReadbackAvailable: true,
     media: cleared.media.map((item) => ({ ...item, ...(byAsset.get(item.id) || {}) })),
+  };
+}
+
+const VEROXA_PRIVATE_ASSESSMENT_STATUSES = new Set([
+  "reserved",
+  "provider_running",
+  "completed",
+  "failed",
+]);
+
+export function mergeMomoClientUploadPipelineV4(
+  snapshot: MomoClientSnapshot,
+  value: unknown,
+): MomoClientSnapshot {
+  if (!Array.isArray(value)) return mergeMomoClientUploadPipelineV3(snapshot, null);
+  type AssessmentReadback = Pick<MomoClientSnapshot["media"][number],
+    "sourceContentSha256" | "platformReady" |
+    "privateAssessmentStatus" | "privateAssessment" |
+    "assessmentReusedFromId" | "restaurantAssociation" |
+    "associationEvidenceClass" | "associationId" |
+    "associationRecordedAt" | "sourceMediaDiscarded" |
+    "sourceMediaDiscardedAt">;
+  const known = new Set(snapshot.media.map((item) => item.id));
+  const byAsset = new Map<string, AssessmentReadback>();
+  const baseRowByAsset = new Map<string, unknown>();
+  const duplicates = new Set<string>();
+  for (const candidate of value) {
+    if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) {
+      continue;
+    }
+    const row = candidate as Record<string, unknown>;
+    const assetId = typeof row.asset_id === "string"
+      ? row.asset_id.toLowerCase()
+      : "";
+    if (!known.has(assetId) || duplicates.has(assetId)) continue;
+    if (byAsset.has(assetId)) {
+      duplicates.add(assetId);
+      byAsset.delete(assetId);
+      baseRowByAsset.delete(assetId);
+      continue;
+    }
+    const sourceContentSha256 = typeof row.source_content_sha256 === "string"
+      && /^[0-9a-f]{64}$/u.test(row.source_content_sha256)
+      ? row.source_content_sha256
+      : null;
+    const status = row.private_assessment_status === null
+      ? null
+      : typeof row.private_assessment_status === "string" &&
+          VEROXA_PRIVATE_ASSESSMENT_STATUSES.has(row.private_assessment_status)
+        ? row.private_assessment_status as AssessmentReadback["privateAssessmentStatus"]
+        : "invalid";
+    const assessment = row.private_assessment === null
+      ? null
+      : parseVeroxaPrivateMediaAssessment(row.private_assessment);
+    const reusedFrom = row.assessment_reused_from_id === null
+      ? null
+      : isMomoContentUuid(row.assessment_reused_from_id)
+        ? row.assessment_reused_from_id.toLowerCase()
+        : "invalid";
+    const association = row.restaurant_association === null
+      ? null
+      : typeof row.restaurant_association === "string" &&
+          VEROXA_MEDIA_RESTAURANT_ASSOCIATIONS.includes(
+            row.restaurant_association as VeroxaMediaRestaurantAssociation,
+          )
+        ? row.restaurant_association as VeroxaMediaRestaurantAssociation
+        : "invalid";
+    const associationEvidenceClass = row.association_evidence_class === null
+      ? null
+      : row.association_evidence_class === "real_owner" ||
+          row.association_evidence_class === "development_proxy"
+        ? row.association_evidence_class
+        : "invalid";
+    const associationId = row.association_id === null
+      ? null
+      : isMomoContentUuid(row.association_id)
+        ? row.association_id.toLowerCase()
+        : "invalid";
+    const associationRecordedAt = row.association_recorded_at === null
+      ? null
+      : dateValue(row.association_recorded_at);
+    const associationFieldsNull = association === null &&
+      associationEvidenceClass === null && associationId === null &&
+      associationRecordedAt === null;
+    const associationFieldsPresent = association !== null &&
+      association !== "invalid" && associationEvidenceClass !== null &&
+      associationEvidenceClass !== "invalid" && associationId !== null &&
+      associationId !== "invalid" && associationRecordedAt !== null;
+    const hasSourceMediaDiscarded = Object.prototype.hasOwnProperty.call(
+      row,
+      "source_media_discarded",
+    );
+    const hasSourceMediaDiscardedAt = Object.prototype.hasOwnProperty.call(
+      row,
+      "source_media_discarded_at",
+    );
+    const sourceMediaDiscarded = hasSourceMediaDiscarded &&
+      typeof row.source_media_discarded === "boolean"
+      ? row.source_media_discarded
+      : null;
+    const sourceMediaDiscardedAt = !hasSourceMediaDiscardedAt
+      ? "invalid"
+      : row.source_media_discarded_at === null
+      ? null
+      : dateValue(row.source_media_discarded_at) ?? "invalid";
+    const sourceDiscardFieldsCoherent = sourceMediaDiscarded === true
+      ? sourceMediaDiscardedAt !== null && sourceMediaDiscardedAt !== "invalid" &&
+        row.pipeline_status === "verified"
+      : sourceMediaDiscarded === false && sourceMediaDiscardedAt === null;
+    if (!sourceContentSha256 || typeof row.platform_ready !== "boolean" ||
+      status === "invalid" || reusedFrom === "invalid" ||
+      association === "invalid" || associationEvidenceClass === "invalid" ||
+      associationId === "invalid" ||
+      (status === "completed") !== Boolean(assessment) ||
+      (reusedFrom !== null && status !== "completed") ||
+      (!associationFieldsNull && !associationFieldsPresent) ||
+      sourceMediaDiscarded === null || !sourceDiscardFieldsCoherent ||
+      row.external_write_allowed !== false) continue;
+    byAsset.set(assetId, {
+      sourceContentSha256,
+      platformReady: row.platform_ready,
+      privateAssessmentStatus: status,
+      privateAssessment: assessment,
+      assessmentReusedFromId: reusedFrom,
+      restaurantAssociation: association,
+      associationEvidenceClass,
+      associationId,
+      associationRecordedAt,
+      sourceMediaDiscarded,
+      sourceMediaDiscardedAt: sourceMediaDiscardedAt === "invalid"
+        ? null
+        : sourceMediaDiscardedAt,
+    });
+    baseRowByAsset.set(assetId, candidate);
+  }
+  for (const assetId of duplicates) {
+    byAsset.delete(assetId);
+    baseRowByAsset.delete(assetId);
+  }
+  const withPipeline = mergeMomoClientUploadPipelineV3(
+    snapshot,
+    [...baseRowByAsset.values()],
+  );
+  return {
+    ...withPipeline,
+    mediaAssessmentReadbackAvailable: true,
+    media: withPipeline.media.map((item) => {
+      const assessment = byAsset.get(item.id);
+      if (!assessment || item.pipelineStatus === null) return item;
+      return assessment.sourceMediaDiscarded
+        ? {
+          ...item,
+          ...assessment,
+          pipelineStatus: "verified" as const,
+          pipelineVerificationStatus: "verified" as const,
+          pipelineAttentionReasons: [],
+        }
+        : { ...item, ...assessment };
+    }),
   };
 }
 
@@ -556,11 +768,16 @@ export async function loadMomoClientSnapshot(restaurantId: string): Promise<Momo
   const withRenditions = readback.error
     ? snapshot
     : mergeMomoClientMediaReadback(snapshot, readback.data, restaurantId);
-  const pipeline = await client.rpc("veroxa_momo_client_upload_status_v3", {
-    target_restaurant_id: restaurantId,
+  const pipelineV4 = await client.rpc("veroxa_momo_client_upload_status_v4", {
+    p_restaurant_id: restaurantId,
   });
-  if (pipeline.error) return withRenditions;
-  return mergeMomoClientUploadPipelineV3(withRenditions, pipeline.data);
+  if (!pipelineV4.error) {
+    return mergeMomoClientUploadPipelineV4(withRenditions, pipelineV4.data);
+  }
+  // v3 cannot represent the terminal source-media tombstone. Falling back
+  // could therefore show discarded bytes as Ready during a transient v4
+  // failure. Keep all pipeline/Ready state unavailable until v4 is readable.
+  return withRenditions;
 }
 
 const requestTypes = new Set<MomoClientRequest["requestType"]>([
@@ -668,41 +885,71 @@ export async function submitMomoClientDecision(input: {
   if (error || !data) throw new Error("decision_save_failed");
 }
 
-const MOMO_CLIENT_MIN_MEDIA_BYTES = 10 * 1024;
-const MOMO_CLIENT_MAX_MEDIA_BYTES = 5 * 1024 * 1024;
+const MOMO_CLIENT_MIN_MEDIA_BYTES =
+  VEROXA_PRIVATE_MEDIA_ASSESSMENT_MIN_SOURCE_BYTES;
+const MOMO_CLIENT_MAX_MEDIA_BYTES =
+  VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_SOURCE_BYTES;
 const MOMO_CLIENT_MEDIA_SCOPES = ["facebook", "instagram", "google_business"] as const;
+const MOMO_TEAM_PRIVATE_MEDIA_SCOPE = "internal" as const;
 
 type MomoClientMediaUploadClient = Pick<SupabaseClient, "storage" | "rpc">;
 
 export type MomoClientMediaUploadOutcome = (MomoMediaFinalizeApiResult & {
   assetId: string;
   storagePath: string;
+  rightsId?: string | null;
+  assessment?: VeroxaPrivateMediaAssessmentApiResult | null;
+  assessmentErrorCode?: string | null;
+  associationRecorded?: boolean;
 }) | {
   status: "uploaded_but_needs_attention";
   assetId: string | null;
   storagePath: string;
   errorCode: string;
   externalWriteAllowed: false;
+  rightsId?: string | null;
 };
 
 export type MomoClientMediaUploadDependencies = {
   client: MomoClientMediaUploadClient;
   finalize?: typeof finalizeMomoMediaUpload;
+  assess?: typeof requestVeroxaPrivateMediaAssessment;
+  recordAssociation?: (input: {
+    restaurantId: string;
+    assetId: string;
+    rightsId: string;
+    expectedSourceContentSha256: string;
+    association: VeroxaMediaRestaurantAssociation;
+    note: string;
+  }) => Promise<MomoMediaAssociationResult>;
+  registrationRpc?:
+    | "veroxa_register_momo_media_v2"
+    | "veroxa_register_team_private_media_v1";
+  skipAssociation?: boolean;
   now?: () => Date;
   randomUuid?: () => string;
 };
 
-function registrationAssetId(value: unknown): string | null {
+function registrationIds(value: unknown): {
+  assetId: string;
+  rightsId: string;
+} | null {
   const row = Array.isArray(value) ? value[0] : value;
   if (!row || typeof row !== "object" || Array.isArray(row)) return null;
-  const assetId = (row as { asset_id?: unknown }).asset_id;
-  return isMomoContentUuid(assetId) ? assetId.toLowerCase() : null;
+  const record = row as { asset_id?: unknown; rights_id?: unknown };
+  return isMomoContentUuid(record.asset_id) && isMomoContentUuid(record.rights_id)
+    ? {
+      assetId: record.asset_id.toLowerCase(),
+      rightsId: record.rights_id.toLowerCase(),
+    }
+    : null;
 }
 
 function uploadAttention(
   assetId: string | null,
   storagePath: string,
   error: unknown,
+  rightsId: string | null = null,
 ): MomoClientMediaUploadOutcome {
   const errorCode = error instanceof MomoMediaFinalizeRequestError
     ? error.code
@@ -715,6 +962,7 @@ function uploadAttention(
     storagePath,
     errorCode,
     externalWriteAllowed: false,
+    rightsId,
   };
 }
 
@@ -734,56 +982,139 @@ export async function uploadMomoClientMediaWithDependencies(input: {
   restaurantId: string;
   file: File;
   usageScope: string[];
+  restaurantAssociation: VeroxaMediaRestaurantAssociation;
+  associationNote?: string;
   expiresAt?: string;
 }, dependencies: MomoClientMediaUploadDependencies): Promise<MomoClientMediaUploadOutcome> {
   if (!isMomoContentUuid(input.restaurantId)) throw new Error("invalid_restaurant_id");
-  if (input.file.type !== "image/jpeg") throw new Error("invalid_media_type");
+  if (!VEROXA_PRIVATE_MEDIA_MIME_TYPES.includes(
+    input.file.type as VeroxaPrivateMediaMimeType,
+  )) throw new Error("invalid_media_type");
   if (input.file.size < MOMO_CLIENT_MIN_MEDIA_BYTES || input.file.size > MOMO_CLIENT_MAX_MEDIA_BYTES) {
     throw new Error("invalid_media_size");
   }
+  if (!VEROXA_MEDIA_RESTAURANT_ASSOCIATIONS.includes(
+    input.restaurantAssociation,
+  )) throw new Error("invalid_restaurant_association");
   const usageScope = [...new Set(input.usageScope)];
-  if (usageScope.length < 1 || usageScope.some((scope) => !MOMO_CLIENT_MEDIA_SCOPES.includes(scope as typeof MOMO_CLIENT_MEDIA_SCOPES[number]))) {
+  const teamAssessmentOnly = dependencies.registrationRpc ===
+    "veroxa_register_team_private_media_v1";
+  const scopeValid = teamAssessmentOnly
+    ? usageScope.length === 1 && usageScope[0] === MOMO_TEAM_PRIVATE_MEDIA_SCOPE
+    : usageScope.length >= 1 && usageScope.every((scope) =>
+      MOMO_CLIENT_MEDIA_SCOPES.includes(
+        scope as typeof MOMO_CLIENT_MEDIA_SCOPES[number],
+      )
+    );
+  if (!scopeValid) {
     throw new Error("invalid_media_scope");
   }
   const now = (dependencies.now ?? (() => new Date()))();
   const objectId = (dependencies.randomUuid ?? (() => crypto.randomUUID()))();
   if (!isMomoContentUuid(objectId)) throw new Error("media_upload_failed");
-  const storagePath = `restaurants/${input.restaurantId.toLowerCase()}/uploads/${now.getUTCFullYear()}/${String(now.getUTCMonth() + 1).padStart(2, "0")}/${objectId.toLowerCase()}.jpg`;
+  const extension = input.file.type === "image/png" ? "png" : "jpg";
+  const storagePath = `restaurants/${input.restaurantId.toLowerCase()}/uploads/${now.getUTCFullYear()}/${String(now.getUTCMonth() + 1).padStart(2, "0")}/${objectId.toLowerCase()}.${extension}`;
   const uploaded = await dependencies.client.storage.from("restaurant-media").upload(storagePath, input.file, {
     contentType: input.file.type,
     upsert: false,
   });
   if (uploaded.error) throw new Error("media_upload_failed");
-  const registration = await dependencies.client.rpc("veroxa_register_momo_media_v2", {
-    p_restaurant_id: input.restaurantId.toLowerCase(),
-    p_storage_path: storagePath,
-    p_mime_type: input.file.type,
-    p_file_size: input.file.size,
-    p_original_file_name: input.file.name,
-    p_intake_notes: null,
-    p_usage_scope: usageScope,
-    p_expires_on: input.expiresAt || null,
-  });
+  const registration = await dependencies.client.rpc(
+    dependencies.registrationRpc ?? "veroxa_register_momo_media_v2",
+    {
+      p_restaurant_id: input.restaurantId.toLowerCase(),
+      p_storage_path: storagePath,
+      p_mime_type: input.file.type,
+      p_file_size: input.file.size,
+      p_original_file_name: input.file.name,
+      p_intake_notes: null,
+      p_usage_scope: usageScope,
+      p_expires_on: input.expiresAt || null,
+    },
+  );
   if (registration.error || !registration.data) {
     await dependencies.client.storage.from("restaurant-media").remove([storagePath]);
     throw new Error("media_registration_failed");
   }
-  const assetId = registrationAssetId(registration.data);
-  if (!assetId) return uploadAttention(null, storagePath, "media_registration_response_invalid");
-  return finalizeRegisteredMomoClientMedia({
+  const registered = registrationIds(registration.data);
+  if (!registered) return uploadAttention(null, storagePath, "media_registration_response_invalid");
+  const finalized = await finalizeRegisteredMomoClientMedia({
     restaurantId: input.restaurantId.toLowerCase(),
-    assetId,
+    assetId: registered.assetId,
     storagePath,
   }, dependencies.finalize ?? finalizeMomoMediaUpload);
+  if (finalized.status === "uploaded_but_needs_attention") {
+    return { ...finalized, rightsId: registered.rightsId };
+  }
+  let assessment: VeroxaPrivateMediaAssessmentApiResult | null = null;
+  let assessmentErrorCode: string | null = null;
+  try {
+    assessment = await (dependencies.assess ??
+      requestVeroxaPrivateMediaAssessment)({
+        restaurantId: input.restaurantId.toLowerCase(),
+        assetId: registered.assetId,
+      });
+  } catch (error) {
+    assessmentErrorCode = error instanceof VeroxaPrivateMediaAssessmentRequestError
+      ? error.code
+      : "private_media_assessment_unavailable";
+  }
+  let associationRecorded = false;
+  if (assessment && !dependencies.skipAssociation) {
+    try {
+      await (dependencies.recordAssociation ??
+        recordMomoMediaRestaurantAssociation)({
+          restaurantId: input.restaurantId.toLowerCase(),
+          assetId: registered.assetId,
+          rightsId: registered.rightsId,
+          expectedSourceContentSha256: assessment.sourceContentSha256,
+          association: input.restaurantAssociation,
+          note: input.associationNote?.trim() ||
+            "Association selected during private media intake.",
+        });
+      associationRecorded = true;
+    } catch {
+      associationRecorded = false;
+    }
+  }
+  return {
+    ...finalized,
+    rightsId: registered.rightsId,
+    assessment,
+    assessmentErrorCode,
+    associationRecorded,
+  };
 }
 
 export async function uploadMomoClientMedia(input: {
   restaurantId: string;
   file: File;
   usageScope: string[];
+  restaurantAssociation: VeroxaMediaRestaurantAssociation;
+  associationNote?: string;
   expiresAt?: string;
 }): Promise<MomoClientMediaUploadOutcome> {
   return uploadMomoClientMediaWithDependencies(input, { client: requiredClient() });
+}
+
+export async function uploadMomoTeamPrivateMedia(input: {
+  restaurantId: string;
+  file: File;
+  expiresAt?: string;
+}): Promise<MomoClientMediaUploadOutcome> {
+  const teamClient = getVeroxaSupabase();
+  if (!teamClient) throw new Error("configuration_unavailable");
+  return uploadMomoClientMediaWithDependencies({
+    ...input,
+    usageScope: [MOMO_TEAM_PRIVATE_MEDIA_SCOPE],
+    restaurantAssociation: "not_for_restaurant",
+    associationNote:
+      "Team private assessment only; no restaurant-offering claim.",
+  }, {
+    client: teamClient,
+    registrationRpc: "veroxa_register_team_private_media_v1",
+    skipAssociation: true,
+  });
 }
 
 export async function retryMomoClientMediaVerification(input: {
@@ -794,11 +1125,99 @@ export async function retryMomoClientMediaVerification(input: {
   if (!isMomoContentUuid(input.restaurantId) || !isMomoContentUuid(input.assetId)) {
     throw new Error("invalid_media_retry");
   }
-  return finalizeRegisteredMomoClientMedia({
+  const finalized = await finalizeRegisteredMomoClientMedia({
     restaurantId: input.restaurantId.toLowerCase(),
     assetId: input.assetId.toLowerCase(),
     storagePath: input.storagePath,
   }, finalizeMomoMediaUpload);
+  if (finalized.status === "uploaded_but_needs_attention") return finalized;
+  try {
+    const assessment = await requestVeroxaPrivateMediaAssessment({
+      restaurantId: input.restaurantId.toLowerCase(),
+      assetId: input.assetId.toLowerCase(),
+    });
+    return { ...finalized, assessment, assessmentErrorCode: null };
+  } catch (error) {
+    return {
+      ...finalized,
+      assessment: null,
+      assessmentErrorCode:
+        error instanceof VeroxaPrivateMediaAssessmentRequestError
+          ? error.code
+          : "private_media_assessment_unavailable",
+    };
+  }
+}
+
+export type MomoMediaAssociationResult = {
+  associationId: string;
+  assetId: string;
+  association: VeroxaMediaRestaurantAssociation;
+  associationEvidenceClass: VeroxaMediaEvidenceClass;
+  recordedAt: string;
+  externalWriteAllowed: false;
+};
+
+export async function recordMomoMediaRestaurantAssociation(input: {
+  restaurantId: string;
+  assetId: string;
+  rightsId: string;
+  expectedSourceContentSha256: string;
+  association: VeroxaMediaRestaurantAssociation;
+  note: string;
+}): Promise<MomoMediaAssociationResult> {
+  if (!isMomoContentUuid(input.restaurantId) ||
+    !isMomoContentUuid(input.assetId) || !isMomoContentUuid(input.rightsId) ||
+    !/^[0-9a-f]{64}$/u.test(input.expectedSourceContentSha256) ||
+    !VEROXA_MEDIA_RESTAURANT_ASSOCIATIONS.includes(input.association) ||
+    input.note.trim().length < 3 || input.note.trim().length > 2_000) {
+    throw new Error("media_association_invalid");
+  }
+  const { data, error } = await requiredClient().rpc(
+    "veroxa_record_media_restaurant_association_v1",
+    {
+      p_restaurant_id: input.restaurantId.toLowerCase(),
+      p_asset_id: input.assetId.toLowerCase(),
+      p_rights_id: input.rightsId.toLowerCase(),
+      p_expected_source_content_sha256: input.expectedSourceContentSha256,
+      p_association: input.association,
+      p_note: input.note.trim(),
+    },
+  );
+  const row = Array.isArray(data) ? data[0] : data;
+  if (error || !row || typeof row !== "object" || Array.isArray(row)) {
+    throw new Error("media_association_save_failed");
+  }
+  const result = row as Record<string, unknown>;
+  const associationId = typeof result.association_id === "string"
+    ? result.association_id.toLowerCase()
+    : "";
+  const assetId = typeof result.asset_id === "string"
+    ? result.asset_id.toLowerCase()
+    : "";
+  const recordedAt = dateValue(result.recorded_at);
+  if (!isMomoContentUuid(associationId) || assetId !== input.assetId.toLowerCase() ||
+    result.association !== input.association ||
+    (result.association_evidence_class !== "real_owner" &&
+      result.association_evidence_class !== "development_proxy") ||
+    !recordedAt || result.external_write_allowed !== false) {
+    throw new Error("media_association_save_failed");
+  }
+  return {
+    associationId,
+    assetId,
+    association: input.association,
+    associationEvidenceClass: result.association_evidence_class,
+    recordedAt,
+    externalWriteAllowed: false,
+  };
+}
+
+export async function assessMomoClientMedia(input: {
+  restaurantId: string;
+  assetId: string;
+}): Promise<VeroxaPrivateMediaAssessmentApiResult> {
+  return requestVeroxaPrivateMediaAssessment(input);
 }
 
 export async function getMomoClientMediaPreview(storagePath: string): Promise<string> {
