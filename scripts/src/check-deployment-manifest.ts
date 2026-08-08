@@ -6,6 +6,7 @@ const __name = <T>(target: T, value: string): T =>
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
+  ACTIVE_ROLLOUT_DATABASE_EVIDENCE,
   GENERATED_PATH_EXCLUSIONS,
   HISTORICAL_REPOSITORY_MIGRATION_EVIDENCE_SCOPE,
   LIVE_MIGRATION_EVIDENCE_SCOPE,
@@ -36,17 +37,18 @@ const live = manifest.currentProductionObservation;
 must(
   live.evidenceStatus === LIVE_PRODUCTION_EVIDENCE_STATUS &&
     live.sourceTreeSha256 === V36_LIVE_PARITY_EVIDENCE.sourceTreeSha256 &&
-    live.migrationTreeSha256 === V36_LIVE_PARITY_EVIDENCE.migrationTreeSha256 &&
+    live.migrationTreeSha256 ===
+      ACTIVE_ROLLOUT_DATABASE_EVIDENCE.migrationTreeSha256 &&
     live.migrationTreeEvidenceScope === LIVE_MIGRATION_EVIDENCE_SCOPE &&
     live.historicalRepositoryMigrationTreeSha256 ===
       V36_LIVE_PARITY_EVIDENCE.historicalRepositoryMigrationTreeSha256 &&
     live.historicalRepositoryMigrationTreeEvidenceScope ===
       HISTORICAL_REPOSITORY_MIGRATION_EVIDENCE_SCOPE &&
     live.latestProductionMigration ===
-      V36_LIVE_PARITY_EVIDENCE.latestMigration &&
+      ACTIVE_ROLLOUT_DATABASE_EVIDENCE.latestMigration &&
     live.latestProductionMigrationSha256 ===
-      V36_LIVE_PARITY_EVIDENCE.latestMigrationSha256,
-  "Live baseline must distinguish the exact observed remote 37-ledger from the historical v36 repository/Sites-mirror fingerprint.",
+      ACTIVE_ROLLOUT_DATABASE_EVIDENCE.latestMigrationSha256,
+  "Live baseline must preserve the deployed Sites v36 source while distinguishing the exact observed 43-row database cutover from the historical v36 repository fingerprint.",
 );
 const historicalParity = manifest.historicalV36GitHubReconciliationEvidence;
 must(
@@ -134,7 +136,7 @@ const mirrorTree = hashTree(resolve(repoRoot, manifest.migrations.mirrorRoot!), 
   suffix: ".sql",
 });
 must(
-  migrationTree.fileCount === 42 &&
+  migrationTree.fileCount === 43 &&
     migrationTree.fileCount === manifest.migrations.fileCount &&
     migrationTree.sha256 === manifest.migrations.treeSha256 &&
     mirrorTree.fileCount === manifest.migrations.mirrorFileCount &&
@@ -150,7 +152,8 @@ must(
     LOCAL_CANDIDATE_PENDING_MIGRATIONS.every((migration) =>
       migrationTree.files.includes(migration),
     ) &&
-    migrationTree.files.at(-1) === LOCAL_CANDIDATE_PENDING_MIGRATIONS[4],
+    migrationTree.files.at(-1) ===
+      manifest.releaseCandidate.latestCandidateMigration,
   "Candidate pending-migration inventory or ordering drifted.",
 );
 const latestCandidatePath = resolve(
@@ -183,5 +186,5 @@ if (failures.length) {
   process.exit(1);
 }
 console.log(
-  `Veroxa policy-eval-closed local candidate evidence passed: live baseline remains Sites v36 / exact remote 37-ledger ${live.migrationTreeSha256}; candidate is unpublished and unapplied at ${sourceTree.fileCount} Sites files / ${migrationTree.fileCount} migrations with a blocked six-operation rollout.`,
+  `Veroxa cutover evidence passed: the exact ${live.productionMigrationCount}-migration database candidate is live, Sites remains v36, and the ${sourceTree.fileCount}-file Sites candidate is the only pending release step.`,
 );

@@ -1,10 +1,9 @@
--- Sanitized Client readback for the private Momo upload -> Veroxa Ready flow.
+-- Forward repair for Client v3 after the original 01430 migration reached
+-- production before the displayed-asset usage-scope correction was merged.
 --
--- A displayed upload never inherits permission from the canonical processing
--- source.  Its identity link must still bind its own current real-owner rights,
--- and any processing run must independently bind current rights for its source.
--- Internal identifiers, provider details, blocker payloads, and generated
--- content remain outside this authenticated Client boundary.
+-- Keep 01430 immutable at its applied bytes. This migration redefines the
+-- complete sanitized function so each displayed upload must satisfy its own
+-- current permission scope before it can inherit a Ready state.
 
 create or replace function public.veroxa_momo_client_upload_status_v3(
   target_restaurant_id uuid
@@ -135,6 +134,8 @@ begin
         or candidate.valid_from <= pg_catalog.now())
       and (candidate.expires_at is null
         or candidate.expires_at > pg_catalog.now())
+      and (run.id is null
+        or run.target_platforms <@ candidate.usage_scope)
     limit 1
   ) asset_rights on true
   left join lateral (
