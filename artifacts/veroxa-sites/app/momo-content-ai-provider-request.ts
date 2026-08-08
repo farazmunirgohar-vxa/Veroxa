@@ -25,6 +25,10 @@ import {
   buildMomoAllowedSeoPhrases,
 } from "./momo-content-package-validation.ts";
 import { readBoundedResponseBytes } from "./bounded-response.ts";
+import {
+  MOMO_AI_CONTROL_POLICY_VERSION,
+  MOMO_AI_TOOL_REGISTRY_VERSION,
+} from "./momo-ai-task-preflight.ts";
 
 export type MomoContentAiReservation = {
   runId: string;
@@ -128,6 +132,8 @@ export function buildMomoContentAiProviderBody(
     metadata: {
       veroxa_run_id: reservation.runId,
       veroxa_request_hash: reservation.requestHash,
+      veroxa_policy_version: MOMO_AI_CONTROL_POLICY_VERSION,
+      veroxa_tool_registry: MOMO_AI_TOOL_REGISTRY_VERSION,
     },
     input: [{
       role: "user",

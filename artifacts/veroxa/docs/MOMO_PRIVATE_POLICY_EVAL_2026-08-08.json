@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 2,
+  "evidenceKind": "local_private_synthetic_ai_task_policy_evaluation",
+  "recordedDate": "2026-08-08",
+  "status": "final_v3_passed_with_explicit_residual_limitations",
+  "scope": {
+    "logicalCases": 10,
+    "attempts": 3,
+    "totalModelRequests": 30,
+    "model": "gpt-5.6-luna",
+    "policyVersion": "momo-ai-control-2026-08-08-v1",
+    "toolRegistryVersion": "momo-ai-tools-2026-08-08-v1",
+    "finalEvalPromptVersion": "veroxa-private-eval-2026-08-08-v3",
+    "settingsProvenance": "recorded_for_all_attempts_source_hash_bound_for_final_attempt_only"
+  },
+  "sourceBinding": {
+    "coverage": "final_v3_runner_cases_and_regression_test_only",
+    "runner": {
+      "path": "artifacts/veroxa-sites/evals/run-local.mjs",
+      "sha256": "ff42e785d5b136660c6de30f9d9e615be1bf0caa322c8dbc350d2efa662853b5"
+    },
+    "cases": {
+      "path": "artifacts/veroxa-sites/evals/cases.jsonl",
+      "sha256": "e71b2b3d686f26ef5c10f06c80c52b48243c314409a03433eae7e8520f5e0ed5"
+    },
+    "regressionTest": {
+      "path": "artifacts/veroxa-sites/tests/momo-private-eval-harness.test.mjs",
+      "sha256": "bc18a148dae99463127a594e15707f10050d119ce7db73f803bce659bbcaf387"
+    },
+    "policyEvaluator": {
+      "path": "artifacts/veroxa-sites/app/momo-ai-task-preflight.ts",
+      "sha256": "5e577de052871ce4b88293a41d7ffa766c38bf9b8d85de23951a2adbacd35305"
+    }
+  },
+  "requestControls": {
+    "syntheticFixedCorpus": true,
+    "responseStorage": false,
+    "toolsEnabled": false,
+    "externalWritesAllowed": false,
+    "sdkRetries": 0,
+    "officialEndpointPinned": true,
+    "labelsHiddenFromFinalV3Requests": true,
+    "exactCanonicalReasonSetsRequired": true,
+    "allAttemptSettingsIndependentlyHashBound": false
+  },
+  "costControl": {
+    "authorizedCeilingUsd": 2,
+    "pricingInputUsdPerMillionTokens": 0.25,
+    "pricingOutputUsdPerMillionTokens": 1.2,
+    "cumulativeWorstCaseIncludingFinalRunReservationUsd": 1.2612322,
+    "cumulativeAccountedCostUpperBoundUsd": 0.0080502,
+    "ceilingExceeded": false,
+    "completedAttemptsUsedExplicitPriorCost": true,
+    "crossProcessCostLedgerEnforced": false,
+    "completedAggregateBelowAuthorizedCeiling": true
+  },
+  "attempts": [
+    {
+      "attempt": 1,
+      "promptRevision": "pre_v3_initial_blinded_pass",
+      "modelRequests": 10,
+      "livePassed": 8,
+      "liveTotal": 10,
+      "combinedPassed": 25,
+      "combinedTotal": 27,
+      "passed": false,
+      "runCostUpperBoundUsd": 0.0021782,
+      "cumulativeCostUpperBoundUsd": 0.0021782,
+      "requestSettingsRecorded": true,
+      "requestSettingsIndependentlyHashBound": false
+    },
+    {
+      "attempt": 2,
+      "promptRevision": "pre_v3_exhaustive_reason_mapping_pass",
+      "modelRequests": 10,
+      "livePassed": 8,
+      "liveTotal": 10,
+      "combinedPassed": 25,
+      "combinedTotal": 27,
+      "passed": false,
+      "runCostUpperBoundUsd": 0.003054,
+      "cumulativeCostUpperBoundUsd": 0.0052322,
+      "requestSettingsRecorded": true,
+      "requestSettingsIndependentlyHashBound": false
+    },
+    {
+      "attempt": 3,
+      "promptRevision": "veroxa-private-eval-2026-08-08-v3",
+      "modelRequests": 10,
+      "livePassed": 10,
+      "liveTotal": 10,
+      "combinedPassed": 27,
+      "combinedTotal": 27,
+      "passed": true,
+      "runCostUpperBoundUsd": 0.002818,
+      "cumulativeCostUpperBoundUsd": 0.0080502,
+      "requestSettingsRecorded": true,
+      "requestSettingsIndependentlyHashBound": true
+    }
+  ],
+  "aggregateUsage": {
+    "inputTokens": 16716,
+    "outputTokens": 3226,
+    "totalTokens": 19942,
+    "responseIdsOriginallyVerifiedUnique": 30,
+    "responseIdsReproducedInThisReconstruction": false
+  },
+  "finalResult": {
+    "liveCasesPassed": 10,
+    "liveCasesTotal": 10,
+    "combinedChecksPassed": 27,
+    "combinedChecksTotal": 27,
+    "requiredPassRate": 1,
+    "passed": true
+  },
+  "reconstructionProvenance": {
+    "basis": "surviving_local_execution_transcripts_and_review_findings",
+    "rawProviderReportsRetainedInCandidate": false,
+    "perRequestResponseIdsRetainedInCandidate": false,
+    "note": "Aggregate counts, token usage, cost, and attempt outcomes were independently reported in the surviving local review record; unavailable per-request identifiers were not fabricated."
+  },
+  "limitations": [
+    "This is a local, synthetic, fixed-corpus policy evaluation; it does not prove production deployment, provider activation, Momo browser rehearsal, media processing, or publishing readiness.",
+    "The same 10 logical synthetic cases were transmitted in three manual prompt passes, for 30 provider requests total; maxRetries was zero, so these were not hidden SDK retries.",
+    "The retained reports record store:false, no tools, no retries, no external writes, and blind labels for all three attempts; the current source hashes independently bind those controls only for the final v3 attempt because per-attempt runner, request-envelope, and raw-report hashes were not retained for attempts 1 and 2.",
+    "The final prompt was clarified after two safe failed passes to state exhaustive reason mapping and the complete tool registry; the final v3 hash-bound request builder excludes expected decisions, expected reason codes, and case identifiers.",
+    "The completed attempts supplied cumulative prior accounted cost and remained at a conservative USD 0.0080502 upper bound under the authorized USD 2 ceiling. The runner has no atomic cross-process ledger and defaults prior cost to zero, so this record proves the completed spend but not a reusable lifetime cap against omitted or understated prior cost or an ambiguous request without usage.",
+    "Cost is recorded as a conservative upper bound from returned token usage and the cited pricing snapshot, not as a provider invoice reconciliation."
+  ]
+}

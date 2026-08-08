@@ -374,8 +374,8 @@ test("USD6 conservative terminal accounting remains an exact supported path", ()
 });
 
 test("webhook leasing is forward-only and leaves the frozen release chain unchanged", () => {
-  assert.equal(sha256(sql), "fad2f417c3ac359dbb81fc6f55e5ef46e5d69f397051ea08190c2a2baa9d63af");
-  assert.equal(sha256(advisorSql), "8904b5dd9562b9bd0f9439ae3180d5a20714b47af6fa437dd299d810dc816783");
+  assert.equal(sha256(sql), "d877e288fc2652de9a7d170ceb56f368534fbf60a6a597f746c0d86a72547756");
+  assert.equal(sha256(advisorSql), "56d7d723b76e7c7c778b76ec6bbd6f46373025738724a742ceb87cac56a419a9");
   assert.equal(sha256(dispatchSql), "ce9b6ac433ff0e9653c6e38ef7226823066de65142d6286506b35ce40b69c17f");
   assert.match(webhookLeaseSql, /lock table public\.veroxa_momo_content_ai_runs\s+in access exclusive mode/u);
   assert.match(webhookLeaseSql, /lock table veroxa_private\.momo_content_ai_webhook_events\s+in access exclusive mode/u);

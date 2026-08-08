@@ -1,10 +1,17 @@
 # RR Release Checkpoint
 
+## 2026-08-08 — reviewed local predeployment candidate
+
+- Sites v36 remains the immutable live baseline at 185 files / `caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7`. The exact remote 37-migration ledger reconstructed on 2026-08-08 is `d306d26cb633ef943afdb7efd01a3cde70249a096ef783d1b0d51eb5d4a1a429` through `20260802063829_momo_pipeline_query_indexes_v2.sql` (file SHA-256 `106d346be34583446d22de0f6866b5b8937feb766a3a229339dbf1c1768fdfcd`). `9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90` is the historical v36 repository/Sites-mirror fingerprint, not the exact remote ledger.
+- The candidate is local, unpublished, and unapplied: 200 Sites files / `929e05cf68a6af5176811f49321ec108e617b93a08153b65b3f86b109d0c8c18`; 42 mirrored migrations / `dc565dd1f5f4a5efe6a2b253e7437e93f6364b5581c56bb811969fa7241a7a84`. No PR, merge, workflow, database apply, Sites publish, provider connection, full release gate, or activation is evidenced.
+- Private policy-evaluation evidence is hash-bound in `MOMO_PRIVATE_POLICY_EVAL_2026-08-08.json`: the final blinded attempt passed 10/10 live cases and 27/27 combined checks, while two earlier 8/10 attempts remain recorded. Their reports record all 30 requests as synthetic, no-retry, `store:false`, tool-free, and external-write-free; current source hashes independently prove those controls only for final v3. The completed aggregate conservative cost upper bound is USD $0.0080502 of USD $2, without an atomic cross-process lifetime ledger. Reuse this only for the AI task-policy boundary, not for deployment, provider activation, or Momo rehearsal.
+- All operations remain incomplete: apply `01210`, then `01430`; publish and verify Audit v2 plus Client v3; then apply `01842`, `01853`, and only after explicit review, `02609`. Exact live membership evidence shows `postgres` is not a member of `supabase_admin`; the migration will skip that role's default ACLs. This known residual prevents any claim of comprehensive default-ACL closure.
+
 ## 2026-08-02 — Sites v36 live / GitHub parity verified
 
 - Live Sites v36 checkout `b8122642b72e5d4e6e74c379469f2a157781ab3d` and the clean mirror match at 185 canonical files, SHA-256 `caed6456debceb723c42869744cb4065439eb73d36df0726a1ffae6fe8a98fc7`; generated `.vinext` cache is excluded.
-- Production has 37 migrations through `20260802020000_momo_pipeline_query_indexes_v2.sql`; the exact ledger hash is `9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90`.
-- PR #157 reviewed head `d3a63d25644fc699d1f521f8f803e5bd95daae49` passed all four workflows with zero unresolved review threads and merged at `aafebf93a6bc40f9578c29f4a25371f8203d0387`; all four push-to-main workflows also passed. GitHub main now matches the live source and ledger.
+- The historical v36 repository/Sites mirror has 37 migrations at `9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90`; the exact remote-ledger reconstruction is recorded in the current checkpoint above.
+- PR #157 reviewed head `d3a63d25644fc699d1f521f8f803e5bd95daae49` passed all four workflows with zero unresolved review threads and merged at `aafebf93a6bc40f9578c29f4a25371f8203d0387`; all four push-to-main workflows also passed. This remains historical v36 source/repository-mirror evidence and does not prove the local candidate.
 - PR #157 caused no database apply and no Sites deployment. PR #155 / Sites v22 remains preserved as historical parity evidence.
 - Release gates include 371/371 application tests, build, lint, typecheck, rollback migration compilation, the four exact-head workflows, the four push workflows, and frozen production verification.
 - Exact duplicates reuse canonical byte identity without combining rights; each source upload and immutable event remains attributable. Team defaults to consolidated exceptions; Ready is internal and unscheduled.

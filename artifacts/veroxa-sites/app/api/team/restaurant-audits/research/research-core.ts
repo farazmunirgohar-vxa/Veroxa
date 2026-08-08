@@ -1,4 +1,8 @@
 import { RESTAURANT_AUDIT_CATEGORY_DEFINITIONS } from "../../../../restaurant-audit-engine.ts";
+import {
+  MOMO_AI_MAX_AUTOMATIC_MICROUSD,
+  evaluateMomoAiTaskPreflight,
+} from "../../../../momo-ai-task-preflight.ts";
 
 export const AI_AUDIT_MODEL = "gpt-5.6-luna" as const;
 export const AI_AUDIT_PRICING_VERSION = "openai-gpt-5.6-luna-web-2026-07-14-v2" as const;
@@ -685,6 +689,26 @@ export function createResearchPostHandler(deps: ResearchDependencies): (request:
     }
     if (!actor || actor.role !== "team" || !actor.restaurantId) {
       return noStore({ error: "team_access_required" }, 403);
+    }
+    const controlPreflight = evaluateMomoAiTaskPreflight({
+      taskKind: "restaurant_research",
+      actorRole: actor.role,
+      restaurantId: actor.restaurantId,
+      authorizedRestaurantId: actor.restaurantId,
+      requestedTools: ["openai.responses.create", "openai.web_search"],
+      consequence: "read_only_research",
+      estimatedMicrousd: AI_AUDIT_RESERVED_MICROUSD,
+      authorizedMicrousd: MOMO_AI_MAX_AUTOMATIC_MICROUSD,
+      untrustedDataBoundary: true,
+      humanReviewRequired: true,
+      externalActionAuthorized: false,
+    });
+    if (!controlPreflight.allowed) {
+      return noStore({
+        error: controlPreflight.decision === "approval_required"
+          ? "ai_budget_approval_required"
+          : "ai_control_preflight_denied",
+      }, controlPreflight.decision === "approval_required" ? 409 : 403);
     }
     if (!originAllowed(request)) return noStore({ error: "cross_site_request_rejected" }, 403);
     if (!deps.enabled) return noStore({ error: "ai_audit_disabled" }, 503);

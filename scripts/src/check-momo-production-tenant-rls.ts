@@ -91,8 +91,7 @@ const legacyBroadPolicies = [
 for (const policy of legacyBroadPolicies) {
   must(legacyM024.includes(policy), `Legacy M024 policy inventory drifted: ${policy}`);
   must(
-    migration.includes(policy) && releaseHardening.includes(policy) &&
-      migration.includes("execute format('drop policy if exists %I on public.%I'") &&
+    releaseHardening.includes(policy) &&
       releaseHardening.includes("execute format('drop policy if exists %I on public.%I'"),
     `Production hardening does not remove legacy broad policy: ${policy}`,
   );

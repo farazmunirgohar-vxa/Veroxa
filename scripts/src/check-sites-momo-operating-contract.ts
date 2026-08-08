@@ -44,7 +44,7 @@ const clientMediaProjection = read(
   "artifacts/veroxa-sites/supabase/migrations/20260722210026_momo_client_media_status_v1.sql",
 );
 const v2UploadContract = read(
-  "artifacts/veroxa-sites/supabase/migrations/20260802010000_momo_upload_veroxa_ready_v2.sql",
+  "artifacts/veroxa-sites/supabase/migrations/20260802063124_momo_upload_veroxa_ready_v2.sql",
 );
 const combined = `${data}\n${ui}\n${manualCycle}\n${operatingGates}`;
 const failures: string[] = [];
@@ -103,8 +103,8 @@ for (const marker of [
 }
 for (const marker of [
   "unscheduled Veroxa Ready",
-  "Exact bytes linked to canonical identity",
-  "permissions from exact duplicates are never combined or copied",
+  "Veroxa recognized the same image and avoided duplicate work",
+  "This upload and its permission history remain separate",
   "Veroxa Ready · unscheduled",
   "Nothing was posted, scheduled, or connected",
 ]) {
@@ -642,8 +642,8 @@ must(
 );
 must(
   ui.includes("selected processing upload") &&
-    clientUi.includes("selected unchanged processing upload"),
-  "The v36 Ready surfaces must identify the unchanged rights-bearing processing upload",
+    clientUi.includes("The verified image passed Veroxa’s content and permission checks"),
+  "Team Ready diagnostics must retain source lineage while the Client surface stays implementation-safe",
 );
 const readyCardStart = ui.indexOf("function VeroxaReadyPackageCard");
 const readyCardEnd = ui.indexOf("function ContentPanel", readyCardStart + 1);
@@ -767,6 +767,7 @@ for (const fixture of [
   "Client rendition projection exposes only a fail-closed per-asset Ready status",
   "Forward migration removes legacy broad table and readiness privileges",
   "Client readback merge is the only path to Ready and rejects malformed or conflicting rows",
+  "Client v3 readback accepts only sanitized coherent pipeline states",
   "File, scope, expiry, and completed upload must invalidate the prior rights attestation",
 ]) {
   must(
@@ -778,7 +779,7 @@ for (const fixture of [
 for (const fixture of [
   "Team v2 reads are scoped to open incidents, unscheduled Ready, and active legacy jobs",
   "Team media and content surfaces are incident-only while v1 controls remain in history",
-  "Client duplicate copy keeps canonical identity separate from processing rights",
+  "Client copy presents safe outcomes without internal processing details",
 ]) {
   must(
     v2TeamSurfaceTests.includes(fixture),

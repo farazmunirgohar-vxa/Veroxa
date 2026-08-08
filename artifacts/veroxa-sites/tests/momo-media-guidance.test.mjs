@@ -9,7 +9,7 @@ import {
 } from "../app/momo-media-guidance.ts";
 import {
   mergeMomoClientMediaReadback,
-  mergeMomoClientUploadPipelineV2,
+  mergeMomoClientUploadPipelineV3,
   parseMomoClientSnapshot,
 } from "../app/momo-client-data.ts";
 import { deriveMomoCoverCropAtFocalPoint } from "../app/momo-media-workflow.ts";
@@ -182,6 +182,12 @@ test("Client and Team source preserve real links, real-image-first selection, in
   assert.match(client, /getMomoClientMediaPreview\(storagePath\)/, "Client media must open signed private original and derivative previews inline");
   assert.match(client, /<img src=\{previewUrl\}/, "Client must show the actual private image instead of a placeholder");
   assert.match(client, /renditionStatus: item\.renditionStatus/, "Client Ready must come from sanitized rendition readback");
+  assert.match(client, /const newestVerified = newestV2Known[\s\S]*?newestV2Verified && !newestV2Attention/, "Client progress must not call image permissions verified while current rights need attention");
+  assert.match(client, /const newestV2Ready =[^;]*&&\s*newestWorkflow\.rightsConfirmed/, "The Client journey must re-check current rights before showing Ready");
+  assert.match(client, /const newestV2Preparing =[^;]*&&\s*newestWorkflow\.rightsConfirmed/, "The Client journey must re-check current rights before showing preparation");
+  assert.match(client, /const newestV2Attention =[^;]*\|\|\s*\(newestV2Known && !newestWorkflow\.rightsConfirmed\)/, "The Client journey must surface cached rows whose rights became stale");
+  assert.match(client, /newestV2Attention \? "Preparation stopped safely[\s\S]*?: newest\?\.exactDuplicate \?/, "A duplicate must not hide a current-rights exception in the Client journey");
+  assert.match(client, /v2Verified && !v2Attention \? "done" : "current"/, "Each Client media card must keep verification incomplete while current rights need attention");
   assert.match(clientData, /veroxa_momo_client_media_status_v1/, "Client must load the protected minimal rendition status projection");
   assert.match(page, /<Link key=\{item\.id\} href=\{item\.path\}/, "Team navigation must use reliable route links");
 
@@ -297,12 +303,11 @@ test("Client readback merge is the only path to Ready and rejects malformed or c
   }
 });
 
-test("Client v2 readback accepts only coherent unscheduled pipeline states", async () => {
+test("Client v3 readback accepts only sanitized coherent pipeline states", async () => {
   const restaurantId = "00000000-0000-4000-8000-000000000010";
   const assetId = "00000000-0000-4000-8000-000000000001";
   const canonicalId = "00000000-0000-4000-8000-000000000002";
-  const readyPackageId = "00000000-0000-4000-8000-000000000003";
-  const snapshot = parseMomoClientSnapshot({ media: [{
+  const media = [{
     id: assetId,
     storagePath: `restaurants/${restaurantId}/uploads/2026/08/00000000-0000-4000-8000-000000000099.jpg`,
     displayFileName: "duplicate.jpg",
@@ -310,6 +315,11 @@ test("Client v2 readback accepts only coherent unscheduled pipeline states", asy
     fileSize: 10240,
     status: "uploaded",
     createdAt: "2026-08-02T12:00:00.000Z",
+    rightsId: "00000000-0000-4000-8000-000000000011",
+    rightsStatus: "confirmed",
+    usageScope: ["facebook", "instagram", "google_business"],
+    validFrom: "2026-08-01T00:00:00.000Z",
+    expiresAt: "2030-08-01T00:00:00.000Z",
   }, {
     id: canonicalId,
     storagePath: `restaurants/${restaurantId}/uploads/2026/08/00000000-0000-4000-8000-000000000098.jpg`,
@@ -318,53 +328,90 @@ test("Client v2 readback accepts only coherent unscheduled pipeline states", asy
     fileSize: 10240,
     status: "uploaded",
     createdAt: "2026-08-01T12:00:00.000Z",
-  }] });
+    rightsId: "00000000-0000-4000-8000-000000000012",
+    rightsStatus: "confirmed",
+    usageScope: ["facebook", "instagram", "google_business"],
+    validFrom: "2026-08-01T00:00:00.000Z",
+    expiresAt: "2030-08-01T00:00:00.000Z",
+  }];
+  const snapshot = parseMomoClientSnapshot({ media });
   const valid = {
     asset_id: assetId,
-    canonical_asset_id: canonicalId,
     verification_status: "verified",
     pipeline_status: "veroxa_ready",
     is_exact_duplicate: true,
-    processing_asset_id: canonicalId,
-    is_processing_source: false,
-    reason_codes: [],
-    ready_package_id: readyPackageId,
+    attention_reasons: [],
     external_write_allowed: false,
   };
-  const merged = mergeMomoClientUploadPipelineV2(snapshot, [valid]);
+  const merged = mergeMomoClientUploadPipelineV3(snapshot, [valid]);
   assert.equal(merged.mediaPipelineReadbackAvailable, true);
   assert.equal(merged.media[0].pipelineStatus, "veroxa_ready");
   assert.equal(merged.media[0].exactDuplicate, true);
-  assert.equal(merged.media[0].processingAssetId, canonicalId);
-  assert.equal(merged.media[0].isProcessingSource, false);
-  assert.equal(merged.media[0].readyPackageId, readyPackageId);
+  const attention = mergeMomoClientUploadPipelineV3(snapshot, [{
+    ...valid,
+    pipeline_status: "needs_attention",
+    attention_reasons: [
+      "permission_needs_update",
+      "image_needs_replacement",
+      "checking_temporarily_unavailable",
+      "preparation_needs_veroxa_review",
+    ],
+  }]);
+  assert.deepEqual(attention.media[0].pipelineAttentionReasons, [
+    "permission_needs_update",
+    "image_needs_replacement",
+    "checking_temporarily_unavailable",
+    "preparation_needs_veroxa_review",
+  ]);
+  assert.doesNotMatch(JSON.stringify(attention.media[0].pipelineAttentionReasons), /provider_|content_processing|media_quality|rights_differ/u);
+
+  for (const rightsOverride of [
+    { rightsStatus: "revoked" },
+    { expiresAt: "2026-08-07T00:00:00.000Z" },
+  ]) {
+    const staleRightsSnapshot = parseMomoClientSnapshot({
+      media: [{ ...media[0], ...rightsOverride }],
+    });
+    const staleRights = mergeMomoClientUploadPipelineV3(staleRightsSnapshot, [valid]);
+    assert.equal(staleRights.media[0].pipelineStatus, "needs_attention");
+    assert.deepEqual(staleRights.media[0].pipelineAttentionReasons, [
+      "permission_needs_update",
+    ]);
+  }
 
   for (const invalid of [
     null,
     [{ ...valid, external_write_allowed: true }],
-    [{ ...valid, canonical_asset_id: assetId }],
     [{ ...valid, verification_status: null }],
-    [{ ...valid, ready_package_id: null }],
-    [{ ...valid, processing_asset_id: null }],
-    [{ ...valid, is_processing_source: true }],
-    [{ ...valid, processing_asset_id: "00000000-0000-4000-8000-000000000099" }],
-    [{ ...valid, reason_codes: ["z_problem", "a_problem"] }],
+    [{ ...valid, attention_reasons: ["internal_provider_error"] }],
+    [{ ...valid, attention_reasons: ["preparation_needs_veroxa_review"], pipeline_status: "verified" }],
+    [{ ...valid, attention_reasons: ["image_needs_replacement", "permission_needs_update"], pipeline_status: "needs_attention" }],
     [valid, valid],
   ]) {
-    const rejected = mergeMomoClientUploadPipelineV2(merged, invalid);
+    const rejected = mergeMomoClientUploadPipelineV3(merged, invalid);
     assert.equal(rejected.media[0].pipelineStatus, null);
-    assert.equal(rejected.media[0].readyPackageId, null);
+    assert.deepEqual(rejected.media[0].pipelineAttentionReasons, []);
   }
 
-  const sql = await readFile(new URL(
-    "../supabase/migrations/20260802013000_momo_client_pipeline_readback_v2.sql",
-    import.meta.url,
-  ), "utf8");
+  const [sql, retirement, clientData] = await Promise.all([
+    readFile(new URL("../supabase/migrations/20260808001430_momo_client_pipeline_readback_v3.sql", import.meta.url), "utf8"),
+    readFile(new URL("../supabase/migrations/20260808001853_retire_momo_client_pipeline_readback_v2.sql", import.meta.url), "utf8"),
+    readFile(new URL("../app/momo-client-data.ts", import.meta.url), "utf8"),
+  ]);
   assert.match(sql, /momo_actor_has_operational_membership_v1\([\s\S]*?auth\.uid\(\)/);
   assert.match(sql, /candidate\.automation_identity_id = link\.identity_id/);
   assert.match(sql, /candidate\.identity_id = link\.identity_id[\s\S]*?candidate\.content_ai_run_id = run\.id/);
-  assert.match(sql, /processing_asset_id uuid,[\s\S]*?is_processing_source boolean/);
-  assert.match(sql, /revoke all on function public\.veroxa_momo_client_upload_status_v2\(uuid\)[\s\S]*?from public, anon, authenticated, service_role/);
-  assert.match(sql, /grant execute on function public\.veroxa_momo_client_upload_status_v2\(uuid\)[\s\S]*?to authenticated/);
-  assert.doesNotMatch(sql, /\bscheduled_for\b|\bcaption\b|\boutput_payload\b|\bprovider_writes\b/);
+  assert.match(sql, /asset_rights[\s\S]*?rights_status = 'confirmed'[\s\S]*?expires_at > pg_catalog\.now\(\)/u);
+  assert.match(sql, /run_rights[\s\S]*?run\.target_platforms <@ candidate\.usage_scope/u);
+  assert.match(sql, /candidate\.source_asset_id =\s*run\.source_asset_id[\s\S]*?candidate\.rights_id =\s*run\.rights_id[\s\S]*?candidate\.rights_attestation_sha256 =\s*run\.rights_attestation_sha256/u);
+  assert.match(sql, /permission_needs_update/u);
+  const returnContract = sql.match(/returns table \(([\s\S]*?)\)\s*language/u)?.[1] || "";
+  assert.match(returnContract, /asset_id uuid,[\s\S]*?attention_reasons jsonb,[\s\S]*?external_write_allowed boolean/);
+  assert.doesNotMatch(returnContract, /canonical|processing|package|provider|incident|reason_codes/iu);
+  assert.doesNotMatch(sql, /candidate\.blockers|provider_error_code|candidate\.reason_codes/iu);
+  assert.match(sql, /grant execute on function public\.veroxa_momo_client_upload_status_v3\(uuid\)[\s\S]*?to authenticated/);
+  assert.match(retirement, /revoke execute on function public\.veroxa_momo_client_upload_status_v2\(uuid\)[\s\S]*?from public, anon, authenticated, service_role/);
+  assert.match(clientData, /client\.rpc\("veroxa_momo_client_upload_status_v3"/u);
+  assert.match(clientData, /rightsCurrent[\s\S]*?"needs_attention"[\s\S]*?"permission_needs_update"/u);
+  assert.doesNotMatch(clientData, /row\.(?:canonical_asset_id|processing_asset_id|ready_package_id|reason_codes|provider_error_code)/u);
 });

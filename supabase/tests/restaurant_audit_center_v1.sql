@@ -71,15 +71,25 @@ begin
       operational_fk.source_table, operational_fk.target_table;
   end if;
 
+  if to_regprocedure('public.submit_audit_request_v2(text,text,text,text,text,text,text,text,text,boolean,text,timestamp with time zone,text,text,text,text,integer,timestamp with time zone,timestamp with time zone,text,text,text)') is null then
+    raise exception 'signed public Audit Center intake v2 function is missing';
+  end if;
   if to_regprocedure('public.submit_audit_request_v1(text,text,text,text,text,text,text,text,text,boolean,text,timestamp with time zone,text,text,text,text)') is null then
-    raise exception 'validated public Audit Center intake function is missing';
+    raise exception 'retired public Audit Center intake v1 function is missing';
   end if;
   if has_function_privilege('anon', 'public.create_team_audit_v1(text,text,text,text,text,text,text,text)', 'execute')
      or has_function_privilege('anon', 'public.start_audit_rerun_v1(uuid)', 'execute') then
     raise exception 'anonymous role can execute a Team-only Audit Center function';
   end if;
-  if has_function_privilege('authenticated', 'public.submit_audit_request_v1(text,text,text,text,text,text,text,text,text,boolean,text,timestamp with time zone,text,text,text,text)', 'execute') then
-    raise exception 'signed-in users can bypass the server-only public intake route';
+  if not has_function_privilege('anon', 'public.submit_audit_request_v2(text,text,text,text,text,text,text,text,text,boolean,text,timestamp with time zone,text,text,text,text,integer,timestamp with time zone,timestamp with time zone,text,text,text)', 'execute')
+     or has_function_privilege('authenticated', 'public.submit_audit_request_v2(text,text,text,text,text,text,text,text,text,boolean,text,timestamp with time zone,text,text,text,text,integer,timestamp with time zone,timestamp with time zone,text,text,text)', 'execute')
+     or has_function_privilege('service_role', 'public.submit_audit_request_v2(text,text,text,text,text,text,text,text,text,boolean,text,timestamp with time zone,text,text,text,text,integer,timestamp with time zone,timestamp with time zone,text,text,text)', 'execute') then
+    raise exception 'signed public Audit Center intake v2 privileges are unsafe';
+  end if;
+  if has_function_privilege('anon', 'public.submit_audit_request_v1(text,text,text,text,text,text,text,text,text,boolean,text,timestamp with time zone,text,text,text,text)', 'execute')
+     or has_function_privilege('authenticated', 'public.submit_audit_request_v1(text,text,text,text,text,text,text,text,text,boolean,text,timestamp with time zone,text,text,text,text)', 'execute')
+     or has_function_privilege('service_role', 'public.submit_audit_request_v1(text,text,text,text,text,text,text,text,text,boolean,text,timestamp with time zone,text,text,text,text)', 'execute') then
+    raise exception 'retired public Audit Center intake v1 remains executable';
   end if;
   if not has_function_privilege('authenticated', 'public.create_team_audit_v1(text,text,text,text,text,text,text,text)', 'execute')
      or not has_function_privilege('authenticated', 'public.start_audit_rerun_v1(uuid)', 'execute') then
@@ -153,6 +163,11 @@ declare
   v_secret text := repeat('c', 64);
   v_fingerprint text;
   v_token text;
+  v_envelope_issued_at timestamptz;
+  v_envelope_expires_at timestamptz;
+  v_envelope_nonce text;
+  v_envelope_canonical text;
+  v_form_started_at timestamptz := transaction_timestamp() - interval '4 seconds';
 begin
   insert into public.veroxa_restaurants (id, name, city, state, status)
   values (v_restaurant_id, 'Momo Test Scope', 'San Antonio', 'TX', 'active');
@@ -324,26 +339,59 @@ begin
   insert into private.audit_intake_config (singleton, hmac_secret)
   values (true, v_secret)
   on conflict (singleton) do update set hmac_secret = excluded.hmac_secret;
-  v_fingerprint := 'ci-public-fingerprint-1';
-  v_token := encode(extensions.hmac(v_fingerprint, v_secret, 'sha256'), 'hex');
+  v_fingerprint := encode(
+    extensions.hmac('ci-public-fingerprint-1', v_secret, 'sha256'), 'hex'
+  );
+  v_envelope_issued_at := transaction_timestamp();
+  v_envelope_expires_at := v_envelope_issued_at + interval '2 minutes';
+  v_envelope_nonce := repeat('1', 64);
+  v_envelope_canonical := jsonb_build_object(
+    'schema', 'veroxa.public-audit-intake-envelope',
+    'version', 1,
+    'issuedAt', v_envelope_issued_at,
+    'expiresAt', v_envelope_expires_at,
+    'nonce', v_envelope_nonce,
+    'ipQuotaFingerprint', v_fingerprint,
+    'restaurantName', 'CI Test Restaurant',
+    'city', 'Austin',
+    'state', 'TX',
+    'websiteUrl', 'https://untrusted.example',
+    'googleProfileUrl', 'https://www.google.com/maps/place/untrusted',
+    'contactName', 'Public CI',
+    'contactEmail', 'public-ci@example.invalid',
+    'contactPhone', null,
+    'contactNote', 'Public context',
+    'consentToContact', true,
+    'consentVersion', '2026-07-12',
+    'formStartedAt', v_form_started_at,
+    'honeypot', null,
+    'idempotencyKey', 'ci-idempotency-key-0001'
+  )::text;
+  v_token := encode(
+    extensions.hmac(v_envelope_canonical, v_secret, 'sha256'), 'hex'
+  );
   begin
     perform set_config('request.jwt.claims', '{"role":"anon"}', true);
     execute 'set local role anon';
     select submitted.request_id into v_public_request_id
-    from public.submit_audit_request_v1(
+    from public.submit_audit_request_v2(
       'CI Test Restaurant', 'Austin', 'TX', 'https://untrusted.example',
       'https://www.google.com/maps/place/untrusted', 'Public CI',
       'public-ci@example.invalid', null, 'Public context', true, '2026-07-12',
-      now() - interval '4 seconds', null, v_fingerprint, v_token,
-      'ci-idempotency-key-0001'
+      v_form_started_at, null, v_fingerprint, v_token,
+      'ci-idempotency-key-0001', 1, v_envelope_issued_at,
+      v_envelope_expires_at, v_envelope_nonce, v_envelope_canonical,
+      v_fingerprint
     ) submitted;
     select submitted.request_id into v_repeat_request_id
-    from public.submit_audit_request_v1(
+    from public.submit_audit_request_v2(
       'CI Test Restaurant', 'Austin', 'TX', 'https://untrusted.example',
       'https://www.google.com/maps/place/untrusted', 'Public CI',
       'public-ci@example.invalid', null, 'Public context', true, '2026-07-12',
-      now() - interval '4 seconds', null, v_fingerprint, v_token,
-      'ci-idempotency-key-0001'
+      v_form_started_at, null, v_fingerprint, v_token,
+      'ci-idempotency-key-0001', 1, v_envelope_issued_at,
+      v_envelope_expires_at, v_envelope_nonce, v_envelope_canonical,
+      v_fingerprint
     ) submitted;
     execute 'reset role';
   exception when others then
@@ -375,23 +423,83 @@ begin
     perform set_config('request.jwt.claims', '{"role":"anon"}', true);
     execute 'set local role anon';
     for v_rate_index in 2..3 loop
-      v_fingerprint := 'ci-public-fingerprint-' || v_rate_index::text;
-      v_token := encode(extensions.hmac(v_fingerprint, v_secret, 'sha256'), 'hex');
-      perform * from public.submit_audit_request_v1(
+      v_fingerprint := encode(extensions.hmac(
+        'ci-public-fingerprint-' || v_rate_index::text,
+        v_secret,
+        'sha256'
+      ), 'hex');
+      v_envelope_nonce := lpad(to_hex(v_rate_index), 64, '0');
+      v_envelope_canonical := jsonb_build_object(
+        'schema', 'veroxa.public-audit-intake-envelope',
+        'version', 1,
+        'issuedAt', v_envelope_issued_at,
+        'expiresAt', v_envelope_expires_at,
+        'nonce', v_envelope_nonce,
+        'ipQuotaFingerprint', v_fingerprint,
+        'restaurantName', 'CI Rate Restaurant ' || v_rate_index::text,
+        'city', 'Austin',
+        'state', 'TX',
+        'websiteUrl', null,
+        'googleProfileUrl', null,
+        'contactName', 'Public CI',
+        'contactEmail', 'public-ci@example.invalid',
+        'contactPhone', null,
+        'contactNote', null,
+        'consentToContact', true,
+        'consentVersion', '2026-07-12',
+        'formStartedAt', v_form_started_at,
+        'honeypot', null,
+        'idempotencyKey', 'ci-idempotency-key-000' || v_rate_index::text
+      )::text;
+      v_token := encode(
+        extensions.hmac(v_envelope_canonical, v_secret, 'sha256'), 'hex'
+      );
+      perform * from public.submit_audit_request_v2(
         'CI Rate Restaurant ' || v_rate_index::text, 'Austin', 'TX', null, null,
         'Public CI', 'public-ci@example.invalid', null, null, true, '2026-07-12',
-        now() - interval '4 seconds', null, v_fingerprint, v_token,
-        'ci-idempotency-key-000' || v_rate_index::text
+        v_form_started_at, null, v_fingerprint, v_token,
+        'ci-idempotency-key-000' || v_rate_index::text, 1,
+        v_envelope_issued_at, v_envelope_expires_at, v_envelope_nonce,
+        v_envelope_canonical, v_fingerprint
       );
     end loop;
-    v_fingerprint := 'ci-public-fingerprint-4';
-    v_token := encode(extensions.hmac(v_fingerprint, v_secret, 'sha256'), 'hex');
+    v_fingerprint := encode(
+      extensions.hmac('ci-public-fingerprint-4', v_secret, 'sha256'), 'hex'
+    );
+    v_envelope_nonce := lpad(to_hex(4), 64, '0');
+    v_envelope_canonical := jsonb_build_object(
+      'schema', 'veroxa.public-audit-intake-envelope',
+      'version', 1,
+      'issuedAt', v_envelope_issued_at,
+      'expiresAt', v_envelope_expires_at,
+      'nonce', v_envelope_nonce,
+      'ipQuotaFingerprint', v_fingerprint,
+      'restaurantName', 'CI Rate Restaurant 4',
+      'city', 'Austin',
+      'state', 'TX',
+      'websiteUrl', null,
+      'googleProfileUrl', null,
+      'contactName', 'Public CI',
+      'contactEmail', 'public-ci@example.invalid',
+      'contactPhone', null,
+      'contactNote', null,
+      'consentToContact', true,
+      'consentVersion', '2026-07-12',
+      'formStartedAt', v_form_started_at,
+      'honeypot', null,
+      'idempotencyKey', 'ci-idempotency-key-0004'
+    )::text;
+    v_token := encode(
+      extensions.hmac(v_envelope_canonical, v_secret, 'sha256'), 'hex'
+    );
     begin
-      perform * from public.submit_audit_request_v1(
+      perform * from public.submit_audit_request_v2(
         'CI Rate Restaurant 4', 'Austin', 'TX', null, null,
         'Public CI', 'public-ci@example.invalid', null, null, true, '2026-07-12',
-        now() - interval '4 seconds', null, v_fingerprint, v_token,
-        'ci-idempotency-key-0004'
+        v_form_started_at, null, v_fingerprint, v_token,
+        'ci-idempotency-key-0004', 1, v_envelope_issued_at,
+        v_envelope_expires_at, v_envelope_nonce, v_envelope_canonical,
+        v_fingerprint
       );
       raise exception 'rate_limit_not_enforced';
     exception when sqlstate 'P0001' then

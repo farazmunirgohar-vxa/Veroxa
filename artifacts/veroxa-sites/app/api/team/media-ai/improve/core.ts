@@ -25,6 +25,10 @@ import {
   momoOwnedArrayBuffer,
 } from "../../../../momo-image-bytes.ts";
 import type { MomoImagePresetKey } from "../../../../momo-media-workflow.ts";
+import {
+  MOMO_AI_MAX_AUTOMATIC_MICROUSD,
+  evaluateMomoAiTaskPreflight,
+} from "../../../../momo-ai-task-preflight.ts";
 
 const MAX_PROVIDER_RESPONSE_BYTES = 75_000_000;
 
@@ -489,6 +493,27 @@ export function createMomoMediaAiPostHandler(
       const input = await parseRequest(request);
       if (input.restaurantId !== actor.restaurantId.toLowerCase()) {
         throw new PublicRouteError("team_access_required", 403);
+      }
+      const controlPreflight = evaluateMomoAiTaskPreflight({
+        taskKind: "media_improvement",
+        actorRole: actor.role,
+        restaurantId: input.restaurantId,
+        authorizedRestaurantId: actor.restaurantId,
+        requestedTools: ["openai.images.edit"],
+        consequence: "private_media_candidate",
+        estimatedMicrousd: MOMO_MEDIA_AI_AUTHORIZATION_THRESHOLD_MICROUSD,
+        authorizedMicrousd: MOMO_AI_MAX_AUTOMATIC_MICROUSD,
+        untrustedDataBoundary: true,
+        humanReviewRequired: true,
+        externalActionAuthorized: false,
+      });
+      if (!controlPreflight.allowed) {
+        throw new PublicRouteError(
+          controlPreflight.decision === "approval_required"
+            ? "media_ai_budget_approval_required"
+            : "media_ai_control_preflight_denied",
+          controlPreflight.decision === "approval_required" ? 409 : 403,
+        );
       }
       let providerAccessible = false;
       try {

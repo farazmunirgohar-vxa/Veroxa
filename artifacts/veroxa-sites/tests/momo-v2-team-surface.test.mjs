@@ -5,7 +5,7 @@ import test from "node:test";
 test("Team v2 reads are scoped to open incidents, unscheduled Ready, and active legacy jobs", async () => {
   const [data, migration] = await Promise.all([
     readFile(new URL("../app/momo-data.ts", import.meta.url), "utf8"),
-    readFile(new URL("../supabase/migrations/20260802010000_momo_upload_veroxa_ready_v2.sql", import.meta.url), "utf8"),
+    readFile(new URL("../supabase/migrations/20260802063124_momo_upload_veroxa_ready_v2.sql", import.meta.url), "utf8"),
   ]);
 
   assert.match(migration, /create table public\.veroxa_momo_exception_incidents_v2/);
@@ -49,9 +49,17 @@ test("Team media and content surfaces are incident-only while v1 controls remain
   assert.match(ready, /selected processing upload[\s\S]{0,300}rights record/);
 });
 
-test("Client duplicate copy keeps canonical identity separate from processing rights", async () => {
-  const portal = await readFile(new URL("../app/momo-client-portal.tsx", import.meta.url), "utf8");
-  assert.match(portal, /Current processing source:/);
-  assert.match(portal, /permissions from exact duplicates are never combined or copied/);
-  assert.doesNotMatch(portal, /canonical (asset|original).{0,120}(rights|permission) (is|are|was|were) used/iu);
+test("Client copy presents safe outcomes without internal processing details", async () => {
+  const [portal, data] = await Promise.all([
+    readFile(new URL("../app/momo-client-portal.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/momo-client-data.ts", import.meta.url), "utf8"),
+  ]);
+  assert.match(portal, /Veroxa recognized the same image and avoided duplicate work/);
+  assert.match(portal, /v2AttentionReasons\.map\(\(reason\) => clientAttentionMessage\[reason\]\)/);
+  assert.match(portal, /pipelineStatus === "veroxa_ready" && workflow\.rightsConfirmed/);
+  assert.match(data, /client\.rpc\("veroxa_momo_client_upload_status_v3"/);
+  assert.match(data, /pipelineAttentionReasons: effectiveAttentionReasons/);
+  assert.doesNotMatch(portal, /\bAI\b|\bautomatic(?:ally)?\b|provider_|content_ai_|canonical identity|processing identity|processing source|exact (?:saved )?bytes|storage record|registration identifier|processing upload/iu);
+  assert.doesNotMatch(portal, /processingAssetId\.slice|canonicalAssetId\?\.slice/);
+  assert.doesNotMatch(data, /row\.(?:canonical_asset_id|processing_asset_id|ready_package_id|reason_codes|provider_error_code)/u);
 });

@@ -94,9 +94,6 @@ create table if not exists public.audit_requests (
   constraint audit_requests_contact_required check (
     source <> 'public_intake' or contact_email is not null or contact_phone is not null
   ),
-  constraint audit_requests_contact_phone_shape check (
-    contact_phone is null or char_length(regexp_replace(contact_phone, '[^0-9]', '', 'g')) between 7 and 15
-  ),
   constraint audit_requests_public_consent_required check (
     source <> 'public_intake'
     or (consent_to_contact and consent_version is not null and consent_at is not null)
@@ -196,27 +193,6 @@ create index if not exists audit_notes_request_created_idx
 create index if not exists audit_events_request_created_idx
   on public.audit_events (audit_request_id, created_at desc);
 
-create or replace function private.protect_public_audit_restaurant_identity()
-returns trigger
-language plpgsql
-security definer
-set search_path = pg_catalog, public
-as $$
-begin
-  if coalesce(auth.role(), '') = 'anon' then
-    new.website_url := case when tg_op = 'UPDATE' then old.website_url else null end;
-    new.google_profile_url := case when tg_op = 'UPDATE' then old.google_profile_url else null end;
-    new.phone := case when tg_op = 'UPDATE' then old.phone else null end;
-  end if;
-  return new;
-end;
-$$;
-revoke all on function private.protect_public_audit_restaurant_identity() from public, anon, authenticated;
-drop trigger if exists audit_restaurants_public_identity_guard on public.audit_restaurants;
-create trigger audit_restaurants_public_identity_guard
-before insert or update on public.audit_restaurants
-for each row execute function private.protect_public_audit_restaurant_identity();
-
 drop trigger if exists audit_restaurants_set_updated_at on public.audit_restaurants;
 create trigger audit_restaurants_set_updated_at before update on public.audit_restaurants
 for each row execute function veroxa_private.set_updated_at();
@@ -290,14 +266,13 @@ security definer
 set search_path = pg_catalog, public
 as $$
 begin
-  if tg_table_name = 'audit_runs' then
-    if old.status::text = 'reviewed' then
-      raise exception using errcode = '55000', message = 'reviewed_audit_run_is_immutable';
-    end if;
-  elsif tg_table_name = 'audit_reports' then
-    if old.status::text = 'reviewed' then
-      raise exception using errcode = '55000', message = 'reviewed_audit_report_is_immutable';
-    end if;
+  if tg_table_name = 'audit_runs'
+     and old.status = 'reviewed'::public.audit_run_status then
+    raise exception using errcode = '55000', message = 'reviewed_audit_run_is_immutable';
+  end if;
+  if tg_table_name = 'audit_reports'
+     and old.status = 'reviewed'::public.audit_report_status then
+    raise exception using errcode = '55000', message = 'reviewed_audit_report_is_immutable';
   end if;
   return case when tg_op = 'DELETE' then old else new end;
 end;
@@ -333,86 +308,6 @@ revoke all on function private.enforce_reviewed_finding_immutability() from publ
 drop trigger if exists audit_findings_reviewed_immutable on public.audit_findings;
 create trigger audit_findings_reviewed_immutable before insert or update or delete on public.audit_findings
 for each row execute function private.enforce_reviewed_finding_immutability();
-
-create or replace function private.enforce_audit_review_gates()
-returns trigger
-language plpgsql
-security definer
-set search_path = pg_catalog, public
-as $$
-declare
-  target_request_id uuid;
-  target_run_number integer;
-  target_run_status public.audit_run_status;
-begin
-  if tg_table_name = 'audit_runs'
-     and new.status::text = 'reviewed'
-     and old.status::text is distinct from new.status::text then
-    if not exists (
-      select 1 from public.audit_findings finding
-      where finding.audit_run_id = new.id
-        and finding.evidence_url is not null
-    ) then
-      raise exception using errcode = '23514', message = 'reviewed_run_requires_evidence_backed_finding';
-    end if;
-    if new.run_number > 1 and char_length(btrim(coalesce(new.comparison_summary, ''))) < 10 then
-      raise exception using errcode = '23514', message = 'reviewed_rerun_requires_comparison';
-    end if;
-    new.reviewed_by := auth.uid();
-    new.reviewed_at := now();
-    new.completed_at := coalesce(new.completed_at, now());
-  elsif tg_table_name = 'audit_reports'
-        and new.status::text = 'reviewed'
-        and (tg_op = 'INSERT' or old.status::text is distinct from new.status::text) then
-    select run.status, run.run_number
-      into target_run_status, target_run_number
-    from public.audit_runs run where run.id = new.audit_run_id;
-    if target_run_status is distinct from 'reviewed'::public.audit_run_status then
-      raise exception using errcode = '23514', message = 'reviewed_report_requires_reviewed_run';
-    end if;
-    if char_length(btrim(new.executive_summary)) < 20
-       or char_length(btrim(new.priority_actions)) < 20 then
-      raise exception using errcode = '23514', message = 'reviewed_report_requires_complete_summary';
-    end if;
-    if not exists (
-      select 1 from public.audit_findings finding
-      where finding.audit_run_id = new.audit_run_id
-        and finding.evidence_url is not null
-    ) then
-      raise exception using errcode = '23514', message = 'reviewed_report_requires_evidence';
-    end if;
-    new.reviewed_by := auth.uid();
-    new.reviewed_at := now();
-  elsif tg_table_name = 'audit_requests'
-        and new.status::text = 'reviewed'
-        and old.status::text is distinct from new.status::text then
-    target_request_id := new.id;
-    if not exists (
-      select 1
-      from public.audit_reports report
-      join public.audit_runs run on run.id = report.audit_run_id
-      where run.audit_request_id = target_request_id
-        and report.status = 'reviewed'::public.audit_report_status
-    ) then
-      raise exception using errcode = '23514', message = 'reviewed_request_requires_reviewed_report';
-    end if;
-    new.reviewed_by := auth.uid();
-    new.reviewed_at := now();
-  end if;
-  return new;
-end;
-$$;
-revoke all on function private.enforce_audit_review_gates() from public, anon, authenticated;
-
-drop trigger if exists audit_runs_review_gate on public.audit_runs;
-create trigger audit_runs_review_gate before update on public.audit_runs
-for each row execute function private.enforce_audit_review_gates();
-drop trigger if exists audit_reports_review_gate on public.audit_reports;
-create trigger audit_reports_review_gate before insert or update on public.audit_reports
-for each row execute function private.enforce_audit_review_gates();
-drop trigger if exists audit_requests_review_gate on public.audit_requests;
-create trigger audit_requests_review_gate before update on public.audit_requests
-for each row execute function private.enforce_audit_review_gates();
 
 create or replace function public.submit_audit_request_v1(
   p_restaurant_name text,
@@ -528,19 +423,14 @@ begin
   ) values (
     v_name, lower(regexp_replace(v_name, '[^a-zA-Z0-9]+', ' ', 'g')),
     v_city, lower(regexp_replace(v_city, '[^a-zA-Z0-9]+', ' ', 'g')),
-    v_state, lower(v_state), null, null, null, 'public_intake'
+    v_state, lower(v_state), v_website, v_google, v_phone, 'public_intake'
   )
   on conflict (normalized_name, normalized_city, normalized_state)
-  do nothing
+  do update set
+    website_url = coalesce(excluded.website_url, public.audit_restaurants.website_url),
+    google_profile_url = coalesce(excluded.google_profile_url, public.audit_restaurants.google_profile_url),
+    phone = coalesce(excluded.phone, public.audit_restaurants.phone)
   returning id into v_restaurant_id;
-
-  if v_restaurant_id is null then
-    select id into v_restaurant_id
-    from public.audit_restaurants
-    where normalized_name = lower(regexp_replace(v_name, '[^a-zA-Z0-9]+', ' ', 'g'))
-      and normalized_city = lower(regexp_replace(v_city, '[^a-zA-Z0-9]+', ' ', 'g'))
-      and normalized_state = lower(v_state);
-  end if;
 
   v_reference := 'VA-' || upper(substr(replace(v_request_id::text, '-', ''), 1, 10));
   insert into public.audit_requests (
@@ -584,7 +474,7 @@ create or replace function public.create_team_audit_v1(
 )
 returns table(request_id uuid, reference_code text, request_status text)
 language plpgsql
-security invoker
+security definer
 set search_path = pg_catalog, public
 as $$
 declare
@@ -644,7 +534,7 @@ $$;
 create or replace function public.start_audit_rerun_v1(p_audit_request_id uuid)
 returns uuid
 language plpgsql
-security invoker
+security definer
 set search_path = pg_catalog, public
 as $$
 declare
@@ -675,11 +565,10 @@ end;
 $$;
 
 revoke all on function public.submit_audit_request_v1(text,text,text,text,text,text,text,text,text,boolean,text,timestamptz,text,text,text,text) from public;
-revoke all on function public.submit_audit_request_v1(text,text,text,text,text,text,text,text,text,boolean,text,timestamptz,text,text,text,text) from authenticated;
-grant execute on function public.submit_audit_request_v1(text,text,text,text,text,text,text,text,text,boolean,text,timestamptz,text,text,text,text) to anon;
-revoke all on function public.create_team_audit_v1(text,text,text,text,text,text,text,text) from public, anon;
+grant execute on function public.submit_audit_request_v1(text,text,text,text,text,text,text,text,text,boolean,text,timestamptz,text,text,text,text) to anon, authenticated;
+revoke all on function public.create_team_audit_v1(text,text,text,text,text,text,text,text) from public;
 grant execute on function public.create_team_audit_v1(text,text,text,text,text,text,text,text) to authenticated;
-revoke all on function public.start_audit_rerun_v1(uuid) from public, anon;
+revoke all on function public.start_audit_rerun_v1(uuid) from public;
 grant execute on function public.start_audit_rerun_v1(uuid) to authenticated;
 
 comment on table public.audit_restaurants is

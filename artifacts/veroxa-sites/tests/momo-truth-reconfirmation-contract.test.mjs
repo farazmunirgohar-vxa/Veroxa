@@ -23,7 +23,7 @@ const historical = [
   ],
   [
     "../supabase/migrations/20260802002812_momo_real_owner_truth_reconfirmation.sql",
-    "9606d63728fa3d87a09ea2216cd9a700b37336cde9b5c140f449023366a7bd09",
+    "e6e2922b2637b1addadf92b0e26cccb618d30647e37352c4f4fb7bd760e76632",
   ],
 ];
 

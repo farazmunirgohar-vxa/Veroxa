@@ -552,3 +552,4 @@ revoke all on function public.veroxa_apply_confirmation_v1(uuid, public.veroxa_r
 grant execute on function public.veroxa_apply_confirmation_v1(uuid, public.veroxa_review_status_v1, jsonb, text)
   to authenticated;
 
+
