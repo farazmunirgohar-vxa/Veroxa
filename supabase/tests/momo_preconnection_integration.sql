@@ -2710,7 +2710,6 @@ do $$
 declare
   target_restaurant_id uuid :=
     current_setting('veroxa.test.restaurant_id')::uuid;
-  team_user_id uuid := current_setting('veroxa.test.team_id')::uuid;
   proxy_user_id uuid := current_setting('veroxa.test.proxy_id')::uuid;
   narrow_asset_id uuid :=
     current_setting('veroxa.test.media_ai_asset_id')::uuid;
@@ -2733,7 +2732,7 @@ begin
   select target_restaurant_id, fixture.field_key, fixture.section,
     jsonb_build_object('text', fixture.field_value),
     'owner_confirmed', 'owner', true,
-    proxy_user_id, clock_timestamp(), team_user_id
+    proxy_user_id, clock_timestamp(), proxy_user_id
   from (values
     ('identity.display_name', 'identity', 'Momo displayed-rights fixture'),
     ('identity.cuisine', 'identity', 'Nepalese cuisine'),
