@@ -356,7 +356,7 @@ test("Team stays Momo-focused and generated audits preview before atomic save", 
 
   for (const marker of [
     "Momo’s House",
-    "Upload → ready to post",
+    "Upload → Veroxa Ready → Team decision",
     "Today",
     "Work",
     "Media",

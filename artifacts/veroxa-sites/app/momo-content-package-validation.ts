@@ -1,4 +1,6 @@
 import {
+  MOMO_CONTENT_AI_INTERNAL_TAG_TAXONOMY,
+  MOMO_CONTENT_AI_MIN_INTERNAL_TAG_CONFIDENCE,
   MOMO_CONTENT_AI_SCHEMA_VERSION,
   MOMO_CONTENT_PLATFORMS,
   type MomoContentAiPackageOutput,
@@ -40,24 +42,6 @@ const UNSUPPORTED_UNGROUNDED_CLAIM_PATTERNS = [
   /\b(?:offers?|provides?)\b/iu,
   /\b(?:warm|welcoming|inviting)\s+(?:dining|restaurant|setting|space|atmosphere|environment)\b/iu,
 ];
-const NON_OBJECTIVE_VISUAL_CLAIM_PATTERNS = [
-  ...BLOCKED_MARKETING_PATTERNS,
-  ...UNSUPPORTED_UNGROUNDED_CLAIM_PATTERNS,
-  /\b(?:amazing|appealing|appetizing|beautiful|gorgeous|mouthwatering|perfect|premium|stunning|tempting|high[- ]quality|quality|experience)\b/iu,
-  /\b(?:customers?|crowd|fans?|guests?|diners?|locals?)\b/iu,
-  /\b(?:serves?|available|menu|offer|service)\b/iu,
-];
-const OBJECTIVE_VISUAL_ANCHORS = new Set([
-  "background", "bowl", "counter", "cup", "dish", "door", "exterior", "food",
-  "foreground", "glass", "hand", "hands", "interior", "light", "lighting", "person",
-  "people", "plate", "plated", "restaurant", "serving", "sign", "table", "tray", "window",
-]);
-const OBJECTIVE_VISUAL_WORDS = new Set([
-  "an", "and", "at", "background", "beside", "bowl", "centered", "counter", "cup",
-  "dish", "door", "exterior", "food", "foreground", "glass", "hand", "hands", "in",
-  "interior", "light", "lighting", "near", "on", "person", "people", "plate", "plated",
-  "restaurant", "serving", "sign", "softly", "table", "the", "tray", "window", "with",
-]);
 const ALT_BLOCKED_PATTERNS = [
   /^(?:an? )?(?:image|photo|picture) of\b/iu,
   /\b(best|delicious|mouthwatering|must[- ]try|irresistible)\b/iu,
@@ -72,6 +56,25 @@ const QUALITY_ISSUES = new Set([
   "blur", "dark", "overexposed", "glare", "cropped_subject",
   "busy_background", "readable_text", "possible_logo_or_watermark", "none",
 ]);
+const INTERNAL_TAG_LABELS = new Map<string, string>(
+  MOMO_CONTENT_AI_INTERNAL_TAG_TAXONOMY.map((item) => [item.slug, item.label]),
+);
+const INTERNAL_TAG_SUMMARY_SUPPORT: Readonly<Partial<Record<string, RegExp>>> = {
+  serving: /\b(?:serving|served)\b/iu,
+  "plated-food": /\b(?:plate|plated)\b/iu,
+  plate: /\b(?:plate|plated)\b/iu,
+  bowl: /\bbowl\b/iu,
+  tray: /\btray\b/iu,
+  "table-setting": /\btable\b/iu,
+  "restaurant-setting": /\brestaurant\b/iu,
+  "close-up": /\b(?:close[ -]?up|closeup)\b/iu,
+  "overhead-view": /\b(?:overhead|top[ -]down|from above)\b/iu,
+  "handheld-food": /\b(?:hand|hands|held|handheld)\b/iu,
+  "shared-serving": /\b(?:shared serving|serving platter|platter)\b/iu,
+  "packaged-food": /\b(?:package|packaged|wrapper|container)\b/iu,
+  "multiple-items": /\b(?:multiple|several|two|three|four|items)\b/iu,
+  "people-present": /\b(?:person|people)\b/iu,
+};
 const CLAIM_FIELD_PATTERNS: Record<string, readonly RegExp[]> = {
   restaurant_name: [/^identity\.display_name$/iu],
   location: [/^address\./iu],
@@ -320,13 +323,21 @@ function containsUnsupportedUngroundedClaim(
   return UNSUPPORTED_UNGROUNDED_CLAIM_PATTERNS.some((pattern) => pattern.test(remainder));
 }
 
-function isObjectiveVisualClaim(claim: MomoContentAiPackageOutput["claims"][number]): boolean {
-  if (claim.source !== "visible_media" || claim.category !== "visual") return false;
-  const claimWords = words(claim.exactText);
-  return claimWords.length > 0 && claimWords.length <= 12 &&
-    claimWords.some((word) => OBJECTIVE_VISUAL_ANCHORS.has(word)) &&
-    claimWords.every((word) => OBJECTIVE_VISUAL_WORDS.has(word)) &&
-    !NON_OBJECTIVE_VISUAL_CLAIM_PATTERNS.some((pattern) => pattern.test(claim.exactText));
+export function buildMomoCanonicalVisualDescription(
+  tags: readonly Pick<MomoContentAiPackageOutput["internalMediaTags"][number], "label">[],
+): string {
+  return `Food presentation: ${tags.map((tag) => tag.label).join("; ")}.`;
+}
+
+function isCanonicalVisualClaim(
+  claim: MomoContentAiPackageOutput["claims"][number],
+  expectedVisualDescription: string,
+): boolean {
+  return claim.source === "visible_media" &&
+    claim.category === "visual" &&
+    claim.exactText === expectedVisualDescription &&
+    claim.truthFieldIds.length === 0 &&
+    claim.appearsIn.length === 1 && claim.appearsIn[0] === "alt_text";
 }
 
 function ctaGroundingValid(
@@ -498,7 +509,17 @@ export function validateMomoContentPackage(
   if (targetPlatforms.length !== actualPlatforms.length ||
     targetPlatforms.some((platform, index) => platform !== actualPlatforms[index])) blockers.add("platform_scope_mismatch");
   if (new Set(actualPlatforms).size !== actualPlatforms.length) blockers.add("duplicate_platform");
-
+  if (output.assetAssessment.subject !== "food") blockers.add("media_subject_not_food");
+  const expectedVisualDescription = buildMomoCanonicalVisualDescription(
+    output.internalMediaTags,
+  );
+  if (output.assetAssessment.visualSummary !== output.altText) {
+    blockers.add("visual_assessment_alt_text_mismatch");
+  }
+  if (output.assetAssessment.visualSummary !== expectedVisualDescription ||
+    output.altText !== expectedVisualDescription) {
+    blockers.add("visual_description_not_canonical");
+  }
   if (duplicateIds(output.seoPhrases) || duplicateIds(output.hashtags) || duplicateIds(output.claims)) blockers.add("duplicate_identifier");
   const seoIds = new Set(output.seoPhrases.map((item) => item.id));
   const hashtagIds = new Set(output.hashtags.map((item) => item.id));
@@ -543,7 +564,11 @@ export function validateMomoContentPackage(
 
   if (/\r|\n/u.test(output.altText) || emojiCount(output.altText) > 0 ||
     ALT_BLOCKED_PATTERNS.some((pattern) => pattern.test(output.altText))) blockers.add("alt_text_invalid");
-  if (!output.claims.some((claim) => isObjectiveVisualClaim(claim) && claim.appearsIn.includes("alt_text"))) blockers.add("alt_visual_claim_required");
+  const visualClaims = output.claims.filter((claim) => claim.source === "visible_media");
+  if (visualClaims.length !== 1 ||
+    !isCanonicalVisualClaim(visualClaims[0], expectedVisualDescription)) {
+    blockers.add("canonical_visual_claim_required");
+  }
   if (BLOCKED_MARKETING_PATTERNS.some((pattern) => pattern.test(output.masterCaption)) || uppercaseMarketing(output.masterCaption)) blockers.add("master_copy_unsafe");
   if (repeatedCopy(output.masterCaption)) blockers.add("master_copy_stuffed");
   if (validateMomoPlatformVariantCaption({ caption: output.masterCaption, ownerConfirmedTruth: truthForSensitiveValidation }).length) blockers.add("master_sensitive_claim_unsupported");
@@ -554,6 +579,13 @@ export function validateMomoContentPackage(
   if (uncoveredEditorialTokens(output, "alt_text").length) blockers.add("alt_business_claim_unledgered");
 
   for (const claim of output.claims) {
+    if (claim.source === "visible_media" &&
+      (claim.appearsIn.length !== 1 || claim.appearsIn[0] !== "alt_text")) {
+      blockers.add("visual_claim_not_alt_only");
+    }
+    if (claim.source === "owner_truth" && claim.appearsIn.includes("alt_text")) {
+      blockers.add("owner_truth_claim_in_alt_text");
+    }
     if (claim.category === "ranking") blockers.add("ranking_claim");
     if (claim.source === "owner_truth") {
       if (!claim.truthFieldIds.length || claim.truthFieldIds.some((id) => !truth.has(id))) blockers.add("claim_truth_missing");
@@ -563,7 +595,10 @@ export function validateMomoContentPackage(
     if (claim.source === "visible_media" && VISUAL_ONLY_BLOCKED_CATEGORIES.has(claim.category)) blockers.add("claim_inferred_from_pixels");
     if (claim.source === "editorial" && (claim.category !== "other" || words(claim.exactText).some((token) => !EDITORIAL_SAFE_WORDS.has(token)))) blockers.add("editorial_business_claim");
     if (claim.source === "visible_media" && claim.category !== "visual") blockers.add("visual_claim_category_mismatch");
-    if (claim.source === "visible_media" && claim.category === "visual" && !isObjectiveVisualClaim(claim)) blockers.add("visual_claim_not_objective");
+    if (claim.source === "visible_media" &&
+      !isCanonicalVisualClaim(claim, expectedVisualDescription)) {
+      blockers.add("visual_claim_not_objective");
+    }
     if (claim.source !== "owner_truth" && UNSUPPORTED_UNGROUNDED_CLAIM_PATTERNS.some((pattern) => pattern.test(claim.exactText))) blockers.add("unsupported_marketing_claim");
     const destinations = ["master", "alt_text", ...actualPlatforms] as Array<
       "master" | "alt_text" | MomoContentPlatform
@@ -627,6 +662,19 @@ export function validateMomoContentPackage(
 
   const tagSlugs = output.internalMediaTags.map((item) => item.slug);
   if (new Set(tagSlugs).size !== tagSlugs.length) blockers.add("duplicate_internal_tag");
+  if (!tagSlugs.includes("food")) blockers.add("internal_tag_food_required");
+  for (const tag of output.internalMediaTags) {
+    if (INTERNAL_TAG_LABELS.get(tag.slug) !== tag.label) {
+      blockers.add("internal_tag_not_allowlisted");
+    }
+    if (tag.confidence < MOMO_CONTENT_AI_MIN_INTERNAL_TAG_CONFIDENCE) {
+      blockers.add("internal_tag_confidence_too_low");
+    }
+    const summarySupport = INTERNAL_TAG_SUMMARY_SUPPORT[tag.slug];
+    if (summarySupport && !summarySupport.test(output.assetAssessment.visualSummary)) {
+      blockers.add("internal_tag_semantic_mismatch");
+    }
+  }
   if (output.uncertainties.some((item) => item.severity === "blocking")) blockers.add("blocking_uncertainty");
   if (Number(output.assetAssessment.qualityScore) < 4) blockers.add("media_quality_too_low");
   if (output.assetAssessment.qualityIssues.some((issue) => issue !== "none")) blockers.add("media_quality_issue_detected");

@@ -2,13 +2,15 @@
 
 Status: Short index for Faraz, Codex, and future ChatGPT/Codex sessions.
 
-## 2026-08-08 — database repair verified; corrected Sites v38 pending (current)
+## 2026-08-08 — Ready decisions + generic-food v2 candidate (current)
 
-- Start with `VEROXA_DEPLOYMENT_MANIFEST.json` and `RR_RELEASE_CHECKPOINT.json`. Sites v37 is live from `61e9ace7723ef56f42111f320327187596406944` (200 files / `929e05cf68a6af5176811f49321ec108e617b93a08153b65b3f86b109d0c8c18`); live Supabase is 43 migrations / `8a49f00ab3bd6d9623100fec238939b6cb81f17d67d0e2d3a4426559c137e41c` through `041629`. PR #162 is already merged as canonical `main` and candidate base `ca47aeff7ab44a69b6ce039608ae27fea6c3c326`; this repository advance does not change production.
-- Applied `01430` is immutable at `987186e74590c6e484ebfee47e1c7ed384e2b4dc8c4a97ad7243ae38feb765cc`. The corrective branch `agent/momo-client-v3-forward-scope-repair` preserves it and mirrors applied repair `20260808041629_repair_momo_client_v3_displayed_asset_scope.sql` at `6cbf3f80d028d3fe54093b14bae59314913b4f0bfacfbf31fce4aa2a24e429ba`.
-- The corrective candidate is 201 Sites files / `4edae9660343cda362968bd08e544ba5a154c90a902ac961365ceb32ea820292` and 43 mirrored migrations / `8a49f00ab3bd6d9623100fec238939b6cb81f17d67d0e2d3a4426559c137e41c`. Its migration tree matches live43. PR #163 is open but not merged; exact-final-head workflows and review-thread evidence remain unrecorded. Local review passed, and corrected Sites v38 is not live.
-- Completed: `01210`, immutable `01430`, Sites v37, `01842`, `01853`, `02609`, and verified `041629`. Production authority is granted but automation remains disabled: pass exact gates, then publish/verify Sites v38. No database migration remains pending.
-- Applied `02609` still skipped `supabase_admin`; it is not comprehensive ACL closure. Private policy-eval evidence remains local-only, and no provider, external publishing authority, or Momo activation is enabled.
+- Start with `VEROXA_DEPLOYMENT_MANIFEST.json` and `RR_RELEASE_CHECKPOINT.json`. Production is GitHub main `59b1604d887547e2804bdd6d63c97292385dcebb` from merged PR #163, Sites v39 checkout `8749a7d442d3bb068ce626a9d297b8b227493446` (201 files / `4edae9660343cda362968bd08e544ba5a154c90a902ac961365ceb32ea820292`), and exact live43 / `8a49f00ab3bd6d9623100fec238939b6cb81f17d67d0e2d3a4426559c137e41c` through verified `041629`. Historical repository/Sites-mirror evidence remains `9f5d71e6487a00a9676d70dbc7022d383fd16e32f3f2a367c8d1ff7608031c90`.
+- The locally reviewed branch `agent/momo-readiness-closeout` is based on exact main59b and has no PR. Current candidate identity is 203 Sites files / `fce38a41f6afc94d5999d3268baea3c72012a8205f1bf97008e3f04900db6b37` and 44 mirrored migrations / `7ea30e35ee2dd88fc936521d352ef1b5794b6bfea981afd7e1b9b5c8a22af16c`. It is unmerged, unapplied, and unpublished.
+- Pending source migration `20260808045812_momo_ready_team_decisions_and_food_tags_v2.sql` is mirrored at exact SHA-256 `3d6394b402247d599f80466855dc14326d48add91f359b70a5cd75a9058fd441`. Supabase MCP will generate the live version; after exact-byte apply, both mirrors must be renamed to that observed version in an immediate green follow-up PR before Sites publication.
+- Required order is feature PR merge → freeze new reservation/auto-advance/dispatch ingress → drain v4 work to zero → exact-byte database apply and verification → generated-version source reconciliation → exact terminal Sites publish/verify → bounded internal ingress restore. Neither DB-first nor Sites-first is safe without freeze/drain.
+- Scoped database/Sites permission exists, automatic deployment does not. Applied `02609` still carries the non-comprehensive `supabase_admin` ACL residual. Providers, public writes, schedules, posts, review replies, website writes, and Momo activation remain disabled.
+
+## 2026-08-08 — historical corrective Sites checkpoint
 
 ## 2026-08-05 — retired source permanently removed
 

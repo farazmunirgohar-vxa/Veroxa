@@ -43,7 +43,7 @@ function identity() {
 function exceptionRequest(overrides = {}) {
   const core = {
     stage: "content_validation",
-    policyVersion: "momo-content-validator-2026-08-01-v4",
+    policyVersion: "momo-content-validator-2026-08-08-v5",
     blockers: ["media_quality_issue_detected", "media_quality_too_low"],
     warnings: [],
     evidenceSnapshot: {

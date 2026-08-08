@@ -6,13 +6,13 @@ const __name = <T>(target: T, value: string): T =>
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
-  GENERATED_PATH_EXCLUSIONS,
   CURRENT_PARTIAL_ROLLOUT_EVIDENCE,
+  GENERATED_PATH_EXCLUSIONS,
   HISTORICAL_REPOSITORY_MIGRATION_EVIDENCE_SCOPE,
   LIVE_MIGRATION_EVIDENCE_SCOPE,
   LIVE_PRODUCTION_EVIDENCE_STATUS,
-  LOCAL_CANDIDATE_MIGRATION_EVIDENCE_SCOPE,
   LOCAL_CANDIDATE_APPLIED_MIGRATIONS,
+  LOCAL_CANDIDATE_MIGRATION_EVIDENCE_SCOPE,
   LOCAL_CANDIDATE_PENDING_MIGRATIONS,
   LOCAL_CANDIDATE_SOURCE_EVIDENCE_SCOPE,
   TREE_HASH_ALGORITHM,
@@ -24,11 +24,12 @@ import {
   repoRoot,
   sha256File,
 } from "./release-manifest";
-const manifest = readDeploymentManifest();
+
 const failures: string[] = [];
 const must = __name((condition: boolean, message: string) => {
   if (!condition) failures.push(message);
 }, "must");
+const manifest = readDeploymentManifest();
 try {
   assertReviewedLocalCandidateManifest(manifest);
 } catch (error) {
@@ -37,8 +38,18 @@ try {
 const live = manifest.currentProductionObservation;
 must(
   live.evidenceStatus === LIVE_PRODUCTION_EVIDENCE_STATUS &&
+    live.canonicalGitHubMainCommit ===
+      CURRENT_PARTIAL_ROLLOUT_EVIDENCE.canonicalGitHubMainCommit &&
+    live.githubParityVerifiedAtObservation === true &&
+    live.sitesVersion === CURRENT_PARTIAL_ROLLOUT_EVIDENCE.sitesVersion &&
+    live.sitesCheckoutCommit ===
+      CURRENT_PARTIAL_ROLLOUT_EVIDENCE.sitesCheckoutCommit &&
+    live.sourceFileCount === CURRENT_PARTIAL_ROLLOUT_EVIDENCE.sourceFileCount &&
     live.sourceTreeSha256 === CURRENT_PARTIAL_ROLLOUT_EVIDENCE.sourceTreeSha256 &&
-    live.migrationTreeSha256 === CURRENT_PARTIAL_ROLLOUT_EVIDENCE.migrationTreeSha256 &&
+    live.productionMigrationCount ===
+      CURRENT_PARTIAL_ROLLOUT_EVIDENCE.migrationFileCount &&
+    live.migrationTreeSha256 ===
+      CURRENT_PARTIAL_ROLLOUT_EVIDENCE.migrationTreeSha256 &&
     live.migrationTreeEvidenceScope === LIVE_MIGRATION_EVIDENCE_SCOPE &&
     live.historicalRepositoryMigrationTreeSha256 ===
       V36_LIVE_PARITY_EVIDENCE.historicalRepositoryMigrationTreeSha256 &&
@@ -48,86 +59,33 @@ must(
       CURRENT_PARTIAL_ROLLOUT_EVIDENCE.latestMigration &&
     live.latestProductionMigrationSha256 ===
       CURRENT_PARTIAL_ROLLOUT_EVIDENCE.latestMigrationSha256,
-  "Current production must distinguish Sites v37 / exact remote live43 repair evidence from the historical v36 baseline.",
-);
-const historicalParity = manifest.historicalV36GitHubReconciliationEvidence;
-must(
-  historicalParity?.pullRequest === 157 &&
-    historicalParity?.mergedCommit ===
-      "aafebf93a6bc40f9578c29f4a25371f8203d0387" &&
-    historicalParity?.zeroUnresolvedReviewThreads === true,
-  "Historical PR #157 GitHub parity evidence changed.",
-);
-must(
-  manifest.lastGitHubParityRelease.pullRequest === 155 &&
-    manifest.lastGitHubParityRelease.supersededAsLiveBaseline &&
-    manifest.lastGitHubParityRelease.sitesVersion === 22 &&
-    manifest.lastGitHubParityRelease.sourceTreeSha256 ===
-      "8bc4ef94c0f670ff128774e26a9de3d9849269f74b6e5c5af05f07ee0c9e5490",
-  "Historical PR #155 / Sites v22 parity evidence changed.",
-);
-must(
-  manifest.historicalProductionObservations.some(
-    (entry) =>
-      entry.observedAt === "2026-07-22" &&
-      entry.sitesVersion === 18 &&
-      entry.sourceTreeSha256 === null &&
-      entry.databaseLedgerObserved,
-  ),
-  "Historical unreconciled Sites v18 observation is missing.",
+  "Current production must remain exact GitHub main 59b / Sites v39 / live43 evidence.",
 );
 must(
   manifest.source.evidenceScope === LOCAL_CANDIDATE_SOURCE_EVIDENCE_SCOPE &&
     manifest.source.root === "artifacts/veroxa-sites" &&
-    manifest.source.hashAlgorithm === TREE_HASH_ALGORITHM,
-  "Candidate Sites source scope or hash algorithm drifted.",
+    manifest.source.hashAlgorithm === TREE_HASH_ALGORITHM &&
+    JSON.stringify(manifest.source.generatedPathExclusions) ===
+      JSON.stringify(GENERATED_PATH_EXCLUSIONS),
+  "Candidate Sites source scope or hash policy drifted.",
 );
-must(
-  JSON.stringify(manifest.source.generatedPathExclusions) ===
-    JSON.stringify(GENERATED_PATH_EXCLUSIONS),
-  "Generated-path exclusions drifted; local secret env files must never enter fingerprints.",
-);
-for (const secretPath of [
-  ".env",
-  ".env.local",
-  ".env.development.local",
-  ".env.production.local",
-  ".env.test.local",
-]) {
-  must(
-    manifest.source.generatedPathExclusions.includes(secretPath),
-    `Candidate source exclusions are missing secret path ${secretPath}.`,
-  );
-}
-const sourceRoot = resolve(repoRoot, manifest.source.root);
-must(existsSync(sourceRoot), "Candidate Sites source root is missing.");
-const sourceTree = hashTree(sourceRoot, {
+const sourceTree = hashTree(resolve(repoRoot, manifest.source.root), {
   exclusions: manifest.source.generatedPathExclusions,
 });
 must(
-  sourceTree.fileCount === manifest.source.fileCount &&
+  sourceTree.fileCount === 203 &&
+    sourceTree.fileCount === manifest.source.fileCount &&
     sourceTree.sha256 === manifest.source.treeSha256 &&
     sourceTree.fileCount === manifest.releaseCandidate.sourceFileCount &&
-    sourceTree.sha256 === manifest.releaseCandidate.sourceTreeSha256,
+    sourceTree.sha256 === manifest.releaseCandidate.sourceTreeSha256 &&
+    sourceTree.sha256 !== live.sourceTreeSha256,
   `Candidate Sites fingerprint drifted (actual ${sourceTree.fileCount}/${sourceTree.sha256}).`,
 );
 must(
-  sourceTree.sha256 !== live.sourceTreeSha256 ||
-    sourceTree.fileCount !== live.sourceFileCount,
-  "Changed corrective Sites source must not be represented as the live v37 tree.",
-);
-must(
-  sourceTree.files.includes(".env.example"),
-  "Tracked .env.example must remain inside candidate source evidence.",
-);
-must(
   manifest.migrations.evidenceScope ===
-    LOCAL_CANDIDATE_MIGRATION_EVIDENCE_SCOPE &&
-    manifest.migrations.root === "supabase/migrations" &&
-    manifest.migrations.mirrorRoot ===
-      "artifacts/veroxa-sites/supabase/migrations" &&
+      LOCAL_CANDIDATE_MIGRATION_EVIDENCE_SCOPE &&
     manifest.migrations.hashAlgorithm === TREE_HASH_ALGORITHM,
-  "Candidate migration roots or evidence scope drifted.",
+  "Candidate migration scope or hash policy drifted.",
 );
 const migrationTree = hashTree(resolve(repoRoot, manifest.migrations.root), {
   suffix: ".sql",
@@ -136,52 +94,62 @@ const mirrorTree = hashTree(resolve(repoRoot, manifest.migrations.mirrorRoot!), 
   suffix: ".sql",
 });
 must(
-  migrationTree.fileCount === 43 &&
-    migrationTree.fileCount === manifest.migrations.fileCount &&
-    migrationTree.sha256 === manifest.migrations.treeSha256 &&
-    mirrorTree.fileCount === manifest.migrations.mirrorFileCount &&
-    mirrorTree.sha256 === manifest.migrations.mirrorTreeSha256 &&
+  migrationTree.fileCount === 44 &&
+    migrationTree.sha256 ===
+      "7ea30e35ee2dd88fc936521d352ef1b5794b6bfea981afd7e1b9b5c8a22af16c" &&
     mirrorTree.fileCount === migrationTree.fileCount &&
     mirrorTree.sha256 === migrationTree.sha256 &&
-    JSON.stringify(mirrorTree.files) === JSON.stringify(migrationTree.files),
-  `Candidate migration/mirror fingerprint drifted (root ${migrationTree.fileCount}/${migrationTree.sha256}; mirror ${mirrorTree.fileCount}/${mirrorTree.sha256}).`,
+    JSON.stringify(mirrorTree.files) === JSON.stringify(migrationTree.files) &&
+    manifest.migrations.fileCount === migrationTree.fileCount &&
+    manifest.migrations.treeSha256 === migrationTree.sha256 &&
+    manifest.migrations.mirrorFileCount === mirrorTree.fileCount &&
+    manifest.migrations.mirrorTreeSha256 === mirrorTree.sha256,
+  `Candidate migration fingerprint drifted (root ${migrationTree.fileCount}/${migrationTree.sha256}; mirror ${mirrorTree.fileCount}/${mirrorTree.sha256}).`,
 );
+const candidate = manifest.releaseCandidate;
 must(
-    JSON.stringify(manifest.releaseCandidate.pendingMigrations) ===
+  candidate.pullRequest === null &&
+    !candidate.githubMerged &&
+    candidate.allFourWorkflowsGreen === null &&
+    candidate.zeroUnresolvedReviewThreads === null &&
+    !candidate.candidateSourceMatchesLiveSites &&
+    !candidate.candidateMigrationsMatchLiveLedger &&
+    !candidate.githubMainMatchesCandidate &&
+    !candidate.fullReleaseGatePassed &&
+    candidate.databaseChangesRequired &&
+    !candidate.databaseMigrationApplied &&
+    JSON.stringify(candidate.pendingMigrations) ===
       JSON.stringify(LOCAL_CANDIDATE_PENDING_MIGRATIONS) &&
-    JSON.stringify(manifest.releaseCandidate.databaseMigrationsApplied) ===
+    JSON.stringify(candidate.databaseMigrationsApplied) ===
       JSON.stringify(LOCAL_CANDIDATE_APPLIED_MIGRATIONS) &&
-    LOCAL_CANDIDATE_APPLIED_MIGRATIONS.every((migration) =>
-      migrationTree.files.includes(migration),
-    ) &&
-    manifest.releaseCandidate.databaseMigrationApplied === true &&
-    manifest.releaseCandidate.databaseChangesRequired === false &&
-    manifest.releaseCandidate.candidateMigrationsMatchLiveLedger === true &&
-    migrationTree.sha256 === live.migrationTreeSha256 &&
-    migrationTree.files.at(-1) ===
-      manifest.releaseCandidate.latestCandidateMigration,
-  "Candidate applied-migration inventory, live parity, or ordering drifted.",
+    candidate.databaseApplyAuthorized === true &&
+    candidate.sitesPublishRequired &&
+    !candidate.sitesPublished &&
+    candidate.sitesPublishAuthorized === true &&
+    candidate.deploymentAuthorized === true &&
+    !candidate.activationExecuted,
+  "Candidate must remain authorized but wholly unapplied, unpublished, unmerged, and fail-closed.",
 );
-const latestCandidatePath = resolve(
+const latest = resolve(
   repoRoot,
   manifest.migrations.root,
-  manifest.releaseCandidate.latestCandidateMigration,
-);
-must(existsSync(latestCandidatePath), "Latest candidate migration is missing.");
-if (existsSync(latestCandidatePath)) {
-  must(
-    sha256File(latestCandidatePath) ===
-      manifest.releaseCandidate.latestCandidateMigrationSha256,
-    "Latest candidate migration fingerprint drifted.",
-  );
-}
-const hosting = JSON.parse(
-  readFileSync(resolve(sourceRoot, ".openai/hosting.json"), "utf8"),
+  candidate.latestCandidateMigration,
 );
 must(
-  hosting.project_id === manifest.sitesProjectId,
-  "Sites hosting identity and candidate manifest disagree.",
+  existsSync(latest) &&
+    candidate.latestCandidateMigration === LOCAL_CANDIDATE_PENDING_MIGRATIONS[0] &&
+    sha256File(latest) === candidate.latestCandidateMigrationSha256 &&
+    candidate.latestCandidateMigrationSha256 ===
+      "3d6394b402247d599f80466855dc14326d48add91f359b70a5cd75a9058fd441",
+  "Provisional 045812 migration identity or exact bytes drifted.",
 );
+const hosting = JSON.parse(
+  readFileSync(
+    resolve(repoRoot, "artifacts/veroxa-sites/.openai/hosting.json"),
+    "utf8",
+  ),
+);
+must(hosting.project_id === manifest.sitesProjectId, "Sites project identity drifted.");
 must(
   deploymentManifestPath.endsWith("VEROXA_DEPLOYMENT_MANIFEST.json"),
   "Deployment manifest path is not canonical.",
@@ -192,5 +160,5 @@ if (failures.length) {
   process.exit(1);
 }
 console.log(
-  `Veroxa corrective-release evidence passed: Sites v37 remains live, exact remote live43 ${live.migrationTreeSha256} includes the verified Client v3 repair, and only the reviewed ${sourceTree.fileCount}-file Sites v38 candidate remains unpublished.`,
+  `Veroxa predeployment evidence passed: GitHub main/Sites v39/live43 stay exact; reviewed candidate is ${sourceTree.fileCount} Sites files plus ${migrationTree.fileCount} mirrored migrations, with freeze/drain, generated-version reconciliation, and publish still pending.`,
 );

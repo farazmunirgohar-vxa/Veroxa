@@ -2919,6 +2919,1442 @@ reset role;
 rollback to savepoint momo_v3_narrow_duplicate;
 release savepoint momo_v3_narrow_duplicate;
 
+-- Ready-v2 Team decisions are a private, append-only overlay.  This isolated
+-- fixture materializes one current v5 food package and one historical v4
+-- non-food package, then proves authorization, freshness, terminal replay,
+-- discard preservation, and SQL/runtime food-contract parity without leaving
+-- durable rows behind.
+savepoint momo_ready_decisions_v2;
+
+do $$
+declare
+  target_restaurant_id uuid :=
+    current_setting('veroxa.test.restaurant_id')::uuid;
+  proxy_user_id uuid := current_setting('veroxa.test.proxy_id')::uuid;
+  team_user_id uuid := current_setting('veroxa.test.team_id')::uuid;
+  asset_id uuid;
+  object_id uuid;
+  verification_id uuid;
+  source_path text;
+  object_version text;
+  content_hash text;
+  verification_snapshot jsonb;
+  verification_canonical text;
+  fixture_position integer;
+begin
+  perform set_config('request.jwt.claim.sub', proxy_user_id::text, true);
+  perform set_config('request.jwt.claim.role', 'authenticated', true);
+
+  update public.veroxa_restaurant_truth_fields field
+  set is_current = false, status = 'superseded'
+  where field.restaurant_id = target_restaurant_id
+    and field.is_current
+    and field.field_key in (
+      'identity.display_name','identity.cuisine',
+      'address.primary','menu.primary'
+    );
+  insert into public.veroxa_restaurant_truth_fields (
+    restaurant_id, field_key, section, value_json, status, source,
+    is_current, owner_confirmed_by, owner_confirmed_at, created_by
+  )
+  select target_restaurant_id, fixture.field_key, fixture.section,
+    jsonb_build_object('text', fixture.field_value),
+    'owner_confirmed', 'owner', true,
+    proxy_user_id, clock_timestamp(), proxy_user_id
+  from (values
+    ('identity.display_name', 'identity', 'Momo''s House'),
+    ('identity.cuisine', 'identity', 'Nepalese cuisine'),
+    ('address.primary', 'address', 'San Antonio, Texas'),
+    ('menu.primary', 'menu', 'Momos and Nepalese snacks')
+  ) fixture(field_key, section, field_value);
+
+  for fixture_position in 1..2 loop
+    asset_id := gen_random_uuid();
+    object_id := gen_random_uuid();
+    object_version := 'rr-ready-review-v' || fixture_position::text;
+    content_hash := encode(extensions.digest(convert_to(
+      'momo-ready-review-content:' || asset_id::text, 'UTF8'
+    ), 'sha256'), 'hex');
+    source_path := 'restaurants/' || target_restaurant_id::text
+      || '/uploads/2000/01/' || asset_id::text || '.jpg';
+    verification_snapshot := jsonb_build_object(
+      'schemaVersion', 1,
+      'verifierVersion',
+        'momo-image-byte-verifier-2026-07-31-v1',
+      'restaurantId', target_restaurant_id,
+      'assetId', asset_id,
+      'storagePath', source_path,
+      'storageObjectId', object_id,
+      'storageObjectVersion', object_version,
+      'detectedMime', 'image/jpeg',
+      'fileSize', 12000,
+      'width', 1400,
+      'height', 1050,
+      'contentSha256', content_hash
+    );
+    verification_canonical :=
+      veroxa_private.momo_canonical_json_v1(verification_snapshot);
+
+    insert into storage.objects (
+      id, bucket_id, name, owner, metadata, version, owner_id
+    ) values (
+      object_id, 'restaurant-media', source_path, proxy_user_id,
+      '{"mimetype":"image/jpeg","size":12000,"cacheControl":"3600"}'::jsonb,
+      object_version, proxy_user_id::text
+    );
+    insert into public.veroxa_media_assets (
+      id, restaurant_id, storage_path, original_file_name, mime_type,
+      file_size, uploaded_by, status, content_sha256, width, height
+    ) values (
+      asset_id, target_restaurant_id, source_path,
+      'rr-ready-review-' || fixture_position::text || '.jpg',
+      'image/jpeg', 12000, proxy_user_id, 'ready_to_use', content_hash,
+      1400, 1050
+    );
+    insert into public.veroxa_momo_media_intake_verifications (
+      restaurant_id, asset_id, storage_path, storage_object_id,
+      storage_object_version, declared_mime_type, detected_mime_type,
+      file_size, width, height, content_sha256, verifier_version,
+      verification_snapshot, verification_canonical, verification_sha256,
+      idempotency_hash, status, initiated_by
+    ) values (
+      target_restaurant_id, asset_id, source_path, object_id,
+      object_version, 'image/jpeg', 'image/jpeg', 12000, 1400, 1050,
+      content_hash, 'momo-image-byte-verifier-2026-07-31-v1',
+      verification_snapshot, verification_canonical,
+      encode(extensions.digest(convert_to(
+        verification_canonical, 'UTF8'
+      ), 'sha256'), 'hex'),
+      encode(extensions.digest(convert_to(
+        'momo-ready-review-verification:' || asset_id::text, 'UTF8'
+      ), 'sha256'), 'hex'),
+      'verified', proxy_user_id
+    ) returning id into verification_id;
+    insert into public.veroxa_media_rights (
+      restaurant_id, asset_id, rights_status, usage_scope,
+      attestation_version, attestation_text, attestation_sha256,
+      valid_from, expires_at, confirmed_by, confirmed_at, evidence_class
+    ) values (
+      target_restaurant_id, asset_id, 'confirmed', '["instagram"]'::jsonb,
+      'momo-media-rights-v1',
+      'I confirm I own or have permission to provide this media for the selected Veroxa usage scopes.',
+      '8d6b83d28e393313e52ac32e54eda8286e4c305617ea8722aedc9729a887628f',
+      now() - interval '1 day', now() + interval '30 days',
+      proxy_user_id, now(), 'real_owner'
+    );
+
+    perform set_config('request.jwt.claim.sub', team_user_id::text, true);
+    insert into public.veroxa_media_reviews (
+      restaurant_id, asset_id, status, quality_score, quality_notes,
+      public_use_approved, is_current, reviewed_by, reviewed_at
+    ) values (
+      target_restaurant_id, asset_id, 'approved', 95,
+      'Rollback-only Ready-v2 Team decision source review.',
+      true, true, team_user_id, now()
+    );
+    perform set_config('request.jwt.claim.sub', proxy_user_id::text, true);
+
+    perform set_config(
+      'veroxa.test.ready_review_asset_' || fixture_position::text,
+      asset_id::text, true
+    );
+    perform set_config(
+      'veroxa.test.ready_review_verification_' || fixture_position::text,
+      verification_id::text, true
+    );
+  end loop;
+end $$;
+
+select set_config('request.jwt.claim.role', 'service_role', true);
+set local role service_role;
+
+do $$
+declare
+  target_restaurant_id uuid :=
+    current_setting('veroxa.test.restaurant_id')::uuid;
+  proxy_user_id uuid := current_setting('veroxa.test.proxy_id')::uuid;
+  fixture_position integer;
+begin
+  for fixture_position in 1..2 loop
+    perform public.veroxa_momo_upload_pipeline_v2(
+      'advance_verified_asset',
+      jsonb_build_object(
+        'restaurantId', target_restaurant_id,
+        'assetId', current_setting(
+          'veroxa.test.ready_review_asset_' || fixture_position::text
+        )::uuid,
+        'verificationId', current_setting(
+          'veroxa.test.ready_review_verification_' || fixture_position::text
+        )::uuid,
+        'actorId', proxy_user_id
+      )
+    );
+  end loop;
+end $$;
+
+reset role;
+
+do $$
+declare
+  target_restaurant_id uuid :=
+    current_setting('veroxa.test.restaurant_id')::uuid;
+  fixture_run public.veroxa_momo_content_ai_runs%rowtype;
+  fixture_position integer;
+  is_historical_v4 boolean;
+  brand_truth_id text;
+  cuisine_truth_id text;
+  address_truth_id text;
+  output_payload jsonb;
+  output_canonical text;
+  output_sha text;
+  validation_report jsonb;
+  validation_canonical text;
+  validation_sha text;
+  provider_response text;
+  dispatch_wake record;
+  wake_run_id uuid;
+  wake_fixture_position integer;
+begin
+  for fixture_position in 1..2 loop
+    select run.* into fixture_run
+    from public.veroxa_momo_content_ai_runs run
+    where run.restaurant_id = target_restaurant_id
+      and run.source_asset_id = current_setting(
+        'veroxa.test.ready_review_asset_' || fixture_position::text
+      )::uuid
+      and run.decision_mode = 'automation_policy_v2'
+    order by run.requested_at desc, run.id desc
+    limit 1;
+    if fixture_run.id is null or fixture_run.status <> 'reserved' then
+      raise exception 'momo_ready_review_run_fixture_missing';
+    end if;
+
+    is_historical_v4 := fixture_position = 2;
+    if is_historical_v4 then
+      update public.veroxa_momo_content_ai_runs run
+      set prompt_version = 'momo-content-package-2026-08-01-v4',
+          validator_version = 'momo-content-validator-2026-08-01-v4'
+      where run.id = fixture_run.id
+      returning run.* into fixture_run;
+    end if;
+
+    select field ->> 'id' into brand_truth_id
+    from jsonb_array_elements(fixture_run.truth_snapshot) field
+    where field ->> 'fieldKey' = 'identity.display_name';
+    select field ->> 'id' into cuisine_truth_id
+    from jsonb_array_elements(fixture_run.truth_snapshot) field
+    where field ->> 'fieldKey' = 'identity.cuisine';
+    select field ->> 'id' into address_truth_id
+    from jsonb_array_elements(fixture_run.truth_snapshot) field
+    where field ->> 'fieldKey' = 'address.primary';
+
+    output_payload := jsonb_build_object(
+      'schemaVersion', 'momo-content-package-v1',
+      'assetAssessment', jsonb_build_object(
+        'subject', case when is_historical_v4 then 'interior' else 'food' end,
+        'visualSummary',
+          case when is_historical_v4
+            then 'A plated serving is centered on a simple restaurant table setting.'
+            else 'Food presentation: Food; Table setting; Plated food.'
+          end,
+        'qualityScore', 4,
+        'qualityIssues', '["none"]'::jsonb
+      ),
+      'direction', jsonb_build_object(
+        'pillar', 'Local Discovery',
+        'objective', 'local_discovery',
+        'angle',
+          'Introduce local diners to a clear Momo''s House dining moment.',
+        'audienceIntent',
+          'Help San Antonio diners recognize the restaurant and cuisine.'
+      ),
+      'masterCaption',
+        'Momo''s House brings Nepalese cuisine to San Antonio for a local restaurant introduction.',
+      'altText',
+        case when is_historical_v4
+          then 'A plated serving is centered on a simple restaurant table setting.'
+          else 'Food presentation: Food; Table setting; Plated food.'
+        end,
+      'seoPhrases', jsonb_build_array(
+        jsonb_build_object(
+          'id', 'seo-brand', 'phrase', 'Momo''s House', 'kind', 'brand',
+          'truthFieldIds', jsonb_build_array(brand_truth_id)
+        ),
+        jsonb_build_object(
+          'id', 'seo-cuisine', 'phrase', 'Nepalese cuisine',
+          'kind', 'cuisine',
+          'truthFieldIds', jsonb_build_array(cuisine_truth_id)
+        ),
+        jsonb_build_object(
+          'id', 'seo-local', 'phrase', 'San Antonio restaurant',
+          'kind', 'locality',
+          'truthFieldIds', jsonb_build_array(address_truth_id)
+        )
+      ),
+      'hashtags', jsonb_build_array(
+        jsonb_build_object(
+          'id', 'tag-1', 'tag', '#MomoHouse', 'kind', 'brand',
+          'truthFieldIds', jsonb_build_array(brand_truth_id)
+        ),
+        jsonb_build_object(
+          'id', 'tag-2', 'tag', '#SanAntonio', 'kind', 'locality',
+          'truthFieldIds', jsonb_build_array(address_truth_id)
+        ),
+        jsonb_build_object(
+          'id', 'tag-3', 'tag', '#NepaleseFood', 'kind', 'cuisine',
+          'truthFieldIds', jsonb_build_array(cuisine_truth_id)
+        )
+      ),
+      'claims', jsonb_build_array(
+        jsonb_build_object(
+          'id', 'claim-brand', 'exactText', 'Momo''s House',
+          'source', 'owner_truth', 'category', 'restaurant_name',
+          'truthFieldIds', jsonb_build_array(brand_truth_id),
+          'appearsIn', '["master","instagram"]'::jsonb
+        ),
+        jsonb_build_object(
+          'id', 'claim-cuisine', 'exactText', 'Nepalese cuisine',
+          'source', 'owner_truth', 'category', 'cuisine',
+          'truthFieldIds', jsonb_build_array(cuisine_truth_id),
+          'appearsIn', '["master","instagram"]'::jsonb
+        ),
+        jsonb_build_object(
+          'id', 'claim-local', 'exactText', 'San Antonio',
+          'source', 'owner_truth', 'category', 'location',
+          'truthFieldIds', jsonb_build_array(address_truth_id),
+          'appearsIn', '["master","instagram"]'::jsonb
+        ),
+        jsonb_build_object(
+          'id', 'claim-visible', 'exactText',
+          case when is_historical_v4
+            then 'plated serving'
+            else 'Food presentation: Food; Table setting; Plated food.'
+          end,
+          'source', 'visible_media', 'category', 'visual',
+          'truthFieldIds', '[]'::jsonb,
+          'appearsIn', '["alt_text"]'::jsonb
+        )
+      ),
+      'variants', jsonb_build_array(jsonb_build_object(
+        'platform', 'instagram',
+        'caption',
+          'Momo''s House brings Nepalese cuisine to a local table. Discover this San Antonio restaurant introduction for diners.',
+        'claimIds',
+          '["claim-brand","claim-cuisine","claim-local"]'::jsonb,
+        'seoPhraseIds',
+          '["seo-brand","seo-cuisine","seo-local"]'::jsonb,
+        'hashtagIds', '["tag-1","tag-2","tag-3"]'::jsonb,
+        'cta', jsonb_build_object('kind', 'visit', 'text', 'Plan a visit.'),
+        'scheduleWindow', 'unspecified'
+      )),
+      'internalMediaTags', jsonb_build_array(
+        jsonb_build_object(
+          'slug', 'food', 'label', 'Food', 'confidence', 0.96
+        ),
+        jsonb_build_object(
+          'slug', 'table-setting', 'label', 'Table setting',
+          'confidence', 0.83
+        ),
+        jsonb_build_object(
+          'slug', 'plated-food', 'label', 'Plated food',
+          'confidence', 0.80
+        )
+      ),
+      'uncertainties', '[]'::jsonb
+    );
+    if not veroxa_private.momo_current_content_contract_valid_v2(
+      output_payload, fixture_run.target_platforms,
+      fixture_run.truth_snapshot, fixture_run.prompt_version,
+      fixture_run.validator_version
+    ) then
+      raise exception 'momo_ready_review_output_fixture_invalid';
+    end if;
+
+    output_canonical :=
+      veroxa_private.momo_canonical_json_v1(output_payload);
+    output_sha := encode(extensions.digest(convert_to(
+      output_canonical, 'UTF8'
+    ), 'sha256'), 'hex');
+    validation_report := jsonb_build_object(
+      'validatorVersion', fixture_run.validator_version,
+      'passed', true,
+      'platformSet', fixture_run.target_platforms
+    );
+    validation_canonical :=
+      veroxa_private.momo_canonical_json_v1(validation_report);
+    validation_sha := encode(extensions.digest(convert_to(
+      validation_canonical, 'UTF8'
+    ), 'sha256'), 'hex');
+    provider_response := case when is_historical_v4
+      then 'resp_readyv4fixture2' else 'resp_readyv5fixture1' end;
+
+    perform set_config(
+      'veroxa.test.ready_review_run_' || fixture_position::text,
+      fixture_run.id::text, true
+    );
+    perform set_config(
+      'veroxa.test.ready_review_request_' || fixture_position::text,
+      fixture_run.request_hash, true
+    );
+    perform set_config(
+      'veroxa.test.ready_review_actor_' || fixture_position::text,
+      fixture_run.requested_by::text, true
+    );
+    perform set_config(
+      'veroxa.test.ready_review_reserved_' || fixture_position::text,
+      fixture_run.reserved_microusd::text, true
+    );
+    perform set_config(
+      'veroxa.test.ready_review_output_' || fixture_position::text,
+      output_payload::text, true
+    );
+    perform set_config(
+      'veroxa.test.ready_review_output_canonical_' || fixture_position::text,
+      output_canonical, true
+    );
+    perform set_config(
+      'veroxa.test.ready_review_output_sha_' || fixture_position::text,
+      output_sha, true
+    );
+    perform set_config(
+      'veroxa.test.ready_review_validation_' || fixture_position::text,
+      validation_report::text, true
+    );
+    perform set_config(
+      'veroxa.test.ready_review_validation_canonical_' ||
+        fixture_position::text,
+      validation_canonical, true
+    );
+    perform set_config(
+      'veroxa.test.ready_review_validation_sha_' || fixture_position::text,
+      validation_sha, true
+    );
+    perform set_config(
+      'veroxa.test.ready_review_response_' || fixture_position::text,
+      provider_response, true
+    );
+  end loop;
+
+  -- Exercise the real dispatch state machine. A direct reserved -> pending
+  -- fixture update would violate the deferred RUN/dispatch-outbox coupling.
+  for fixture_position in 1..2 loop
+    select issued.* into dispatch_wake
+    from veroxa_private.issue_momo_content_ai_dispatch_wake_v1() issued;
+    if dispatch_wake.wake_nonce is null then
+      raise exception 'momo_ready_review_dispatch_wake_missing';
+    end if;
+    select wake.run_id into wake_run_id
+    from veroxa_private.momo_content_ai_dispatch_wakes wake
+    where wake.nonce = dispatch_wake.wake_nonce;
+    if wake_run_id = current_setting(
+      'veroxa.test.ready_review_run_1'
+    )::uuid then
+      wake_fixture_position := 1;
+    elsif wake_run_id = current_setting(
+      'veroxa.test.ready_review_run_2'
+    )::uuid then
+      wake_fixture_position := 2;
+    else
+      raise exception 'momo_ready_review_dispatch_wake_wrong_run';
+    end if;
+    perform set_config(
+      'veroxa.test.ready_review_wake_' || wake_fixture_position::text,
+      dispatch_wake.wake_nonce::text, true
+    );
+    perform set_config(
+      'veroxa.test.ready_review_wake_ms_' || wake_fixture_position::text,
+      dispatch_wake.wake_signed_at_ms::text, true
+    );
+    perform set_config(
+      'veroxa.test.ready_review_lease_' || wake_fixture_position::text,
+      extensions.gen_random_uuid()::text, true
+    );
+    perform set_config(
+      'veroxa.test.ready_review_claim_' || wake_fixture_position::text,
+      extensions.gen_random_uuid()::text, true
+    );
+    perform set_config(
+      'veroxa.test.ready_review_provider_request_' ||
+        wake_fixture_position::text,
+      encode(extensions.digest(convert_to(
+        'momo-ready-review-provider-request:' || wake_run_id::text,
+        'UTF8'
+      ), 'sha256'), 'hex'), true
+    );
+  end loop;
+end $$;
+
+select set_config('request.jwt.claim.role', 'service_role', true);
+set local role service_role;
+
+do $$
+declare
+  fixture_position integer;
+  fixture_run public.veroxa_momo_content_ai_runs%rowtype;
+  claimed record;
+  begun record;
+  lifecycle_id uuid;
+begin
+  for fixture_position in 1..2 loop
+    select result.* into claimed
+    from public.veroxa_claim_momo_content_ai_dispatch_v1(
+      current_setting(
+        'veroxa.test.ready_review_wake_' || fixture_position::text
+      )::uuid,
+      current_setting(
+        'veroxa.test.ready_review_wake_ms_' || fixture_position::text
+      )::bigint,
+      current_setting(
+        'veroxa.test.ready_review_lease_' || fixture_position::text
+      )::uuid
+    ) result;
+    if claimed.run_id is distinct from current_setting(
+      'veroxa.test.ready_review_run_' || fixture_position::text
+    )::uuid then
+      raise exception 'momo_ready_review_dispatch_claim_failed';
+    end if;
+
+    select result.* into begun
+    from public.veroxa_begin_momo_content_ai_dispatch_v1(
+      current_setting(
+        'veroxa.test.ready_review_run_' || fixture_position::text
+      )::uuid,
+      current_setting(
+        'veroxa.test.ready_review_request_' || fixture_position::text
+      ),
+      current_setting(
+        'veroxa.test.ready_review_lease_' || fixture_position::text
+      )::uuid,
+      current_setting(
+        'veroxa.test.ready_review_claim_' || fixture_position::text
+      )::uuid,
+      current_setting(
+        'veroxa.test.ready_review_provider_request_' ||
+          fixture_position::text
+      )
+    ) result;
+    if begun.run_id is distinct from claimed.run_id
+       or begun.should_call is distinct from true
+       or begun.run_status is distinct from 'provider_running' then
+      raise exception 'momo_ready_review_dispatch_begin_failed';
+    end if;
+
+    lifecycle_id := public.veroxa_bind_momo_content_ai_dispatch_response_v1(
+      claimed.run_id,
+      current_setting(
+        'veroxa.test.ready_review_request_' || fixture_position::text
+      ),
+      current_setting(
+        'veroxa.test.ready_review_lease_' || fixture_position::text
+      )::uuid,
+      current_setting(
+        'veroxa.test.ready_review_claim_' || fixture_position::text
+      )::uuid,
+      current_setting(
+        'veroxa.test.ready_review_response_' || fixture_position::text
+      )
+    );
+    if lifecycle_id is distinct from claimed.run_id then
+      raise exception 'momo_ready_review_dispatch_bind_failed';
+    end if;
+
+    lifecycle_id := public.veroxa_stage_momo_content_ai_result_v1(
+      claimed.run_id,
+      current_setting(
+        'veroxa.test.ready_review_request_' || fixture_position::text
+      ),
+      current_setting(
+        'veroxa.test.ready_review_response_' || fixture_position::text
+      ),
+      current_setting(
+        'veroxa.test.ready_review_output_' || fixture_position::text
+      )::jsonb,
+      current_setting(
+        'veroxa.test.ready_review_output_canonical_' ||
+          fixture_position::text
+      ),
+      current_setting(
+        'veroxa.test.ready_review_output_sha_' || fixture_position::text
+      ),
+      current_setting(
+        'veroxa.test.ready_review_validation_' || fixture_position::text
+      )::jsonb,
+      current_setting(
+        'veroxa.test.ready_review_validation_canonical_' ||
+          fixture_position::text
+      ),
+      current_setting(
+        'veroxa.test.ready_review_validation_sha_' || fixture_position::text
+      ),
+      current_setting(
+        'veroxa.test.ready_review_reserved_' || fixture_position::text
+      )::bigint,
+      'conservative_reservation', null,
+      current_setting(
+        'veroxa.test.ready_review_actor_' || fixture_position::text
+      )::uuid
+    );
+    if lifecycle_id is distinct from claimed.run_id then
+      raise exception 'momo_ready_review_result_stage_failed';
+    end if;
+
+    lifecycle_id := public.veroxa_complete_staged_momo_content_ai_run_v1(
+      claimed.run_id,
+      current_setting(
+        'veroxa.test.ready_review_request_' || fixture_position::text
+      ),
+      current_setting(
+        'veroxa.test.ready_review_actor_' || fixture_position::text
+      )::uuid
+    );
+    if lifecycle_id is distinct from claimed.run_id then
+      raise exception 'momo_ready_review_result_complete_failed';
+    end if;
+
+    select run.* into fixture_run
+    from public.veroxa_momo_content_ai_runs run
+    where run.id = current_setting(
+      'veroxa.test.ready_review_run_' || fixture_position::text
+    )::uuid;
+    if fixture_run.status <> 'pending_review' then
+      raise exception 'momo_ready_review_result_not_pending';
+    end if;
+    perform public.veroxa_momo_upload_pipeline_v2(
+      'materialize_veroxa_ready',
+      jsonb_build_object(
+        'runId', fixture_run.id,
+        'requestHash', fixture_run.request_hash
+      )
+    );
+  end loop;
+end $$;
+
+reset role;
+
+do $$
+declare
+  fixture_position integer;
+  ready_id uuid;
+begin
+  for fixture_position in 1..2 loop
+    select ready.id into ready_id
+    from public.veroxa_momo_ready_packages_v2 ready
+    where ready.content_ai_run_id = current_setting(
+      'veroxa.test.ready_review_run_' || fixture_position::text
+    )::uuid;
+    if ready_id is null then
+      raise exception 'momo_ready_review_materialization_missing';
+    end if;
+    if not exists (
+      select 1
+      from public.veroxa_momo_content_ai_runs run
+      join veroxa_private.momo_content_ai_dispatch_outbox dispatch
+        on dispatch.run_id = run.id
+      join veroxa_private.momo_content_ai_result_outbox result
+        on result.run_id = run.id and result.request_hash = run.request_hash
+      where run.id = current_setting(
+        'veroxa.test.ready_review_run_' || fixture_position::text
+      )::uuid
+        and run.status = 'pending_review'
+        and dispatch.state = 'terminal'
+        and result.state = 'applied'
+    ) then
+      raise exception 'momo_ready_review_lifecycle_not_terminal';
+    end if;
+    perform set_config(
+      'veroxa.test.ready_review_package_' || fixture_position::text,
+      ready_id::text, true
+    );
+  end loop;
+end $$;
+
+-- Execute the v5 SQL semantic boundary against the same adversarial vectors
+-- used by the runtime validator.  Historical v4 remains readable, but only
+-- v5 food output is eligible for a new Team approval.
+do $$
+declare
+  v5_run public.veroxa_momo_content_ai_runs%rowtype;
+  candidate jsonb;
+  ten_tags jsonb;
+  ten_tag_text constant text :=
+    'Food presentation: Food; Plated food; Serving; Plate; Bowl; Tray; Table setting; Restaurant setting; Close-up; Overhead view.';
+begin
+  select run.* into v5_run
+  from public.veroxa_momo_content_ai_runs run
+  where run.id = current_setting('veroxa.test.ready_review_run_1')::uuid;
+  if not veroxa_private.momo_current_content_contract_valid_v2(
+    v5_run.output_payload, v5_run.target_platforms, v5_run.truth_snapshot,
+    v5_run.prompt_version, v5_run.validator_version
+  ) then
+    raise exception 'momo_ready_v5_food_contract_rejected_valid_output';
+  end if;
+
+  ten_tags := jsonb_build_array(
+    jsonb_build_object(
+      'slug', 'food', 'label', 'Food', 'confidence', 0.96
+    ),
+    jsonb_build_object(
+      'slug', 'plated-food', 'label', 'Plated food', 'confidence', 0.90
+    ),
+    jsonb_build_object(
+      'slug', 'serving', 'label', 'Serving', 'confidence', 0.90
+    ),
+    jsonb_build_object(
+      'slug', 'plate', 'label', 'Plate', 'confidence', 0.90
+    ),
+    jsonb_build_object(
+      'slug', 'bowl', 'label', 'Bowl', 'confidence', 0.90
+    ),
+    jsonb_build_object(
+      'slug', 'tray', 'label', 'Tray', 'confidence', 0.90
+    ),
+    jsonb_build_object(
+      'slug', 'table-setting', 'label', 'Table setting', 'confidence', 0.90
+    ),
+    jsonb_build_object(
+      'slug', 'restaurant-setting', 'label', 'Restaurant setting',
+      'confidence', 0.90
+    ),
+    jsonb_build_object(
+      'slug', 'close-up', 'label', 'Close-up', 'confidence', 0.90
+    ),
+    jsonb_build_object(
+      'slug', 'overhead-view', 'label', 'Overhead view', 'confidence', 0.90
+    )
+  );
+  candidate := jsonb_set(
+    jsonb_set(
+      jsonb_set(
+        jsonb_set(
+          v5_run.output_payload, '{internalMediaTags}', ten_tags
+        ),
+        '{assetAssessment,visualSummary}', to_jsonb(ten_tag_text)
+      ),
+      '{altText}', to_jsonb(ten_tag_text)
+    ),
+    '{claims,3,exactText}', to_jsonb(ten_tag_text)
+  );
+  if not veroxa_private.momo_content_food_tags_valid_v2(
+    candidate, v5_run.truth_snapshot
+  ) then
+    raise exception 'momo_ready_ten_tag_canonical_output_was_rejected';
+  end if;
+
+  candidate := jsonb_set(
+    v5_run.output_payload, '{internalMediaTags}',
+    jsonb_build_array(
+      v5_run.output_payload #> '{internalMediaTags,1}',
+      v5_run.output_payload #> '{internalMediaTags,0}',
+      v5_run.output_payload #> '{internalMediaTags,2}'
+    )
+  );
+  if veroxa_private.momo_content_food_tags_valid_v2(
+    candidate, v5_run.truth_snapshot
+  ) then
+    raise exception 'momo_ready_reordered_tags_without_new_text_were_accepted';
+  end if;
+
+  candidate := jsonb_set(
+    jsonb_set(
+      jsonb_set(
+        v5_run.output_payload, '{internalMediaTags,0,label}',
+        '"Meals"'::jsonb
+      ),
+      '{assetAssessment,visualSummary}',
+      '"Food presentation: Meals; Table setting; Plated food."'::jsonb
+    ),
+    '{altText}',
+    '"Food presentation: Meals; Table setting; Plated food."'::jsonb
+  );
+  candidate := jsonb_set(
+    candidate, '{claims,3,exactText}',
+    '"Food presentation: Meals; Table setting; Plated food."'::jsonb
+  );
+  if veroxa_private.momo_content_food_tags_valid_v2(
+    candidate, v5_run.truth_snapshot
+  ) then
+    raise exception 'momo_ready_tampered_tag_label_was_accepted';
+  end if;
+
+  candidate := jsonb_set(
+    jsonb_set(
+      jsonb_set(
+        v5_run.output_payload, '{assetAssessment,visualSummary}',
+        '"Food presentation: Food; Table setting; Plated food. Extra prose."'::jsonb
+      ),
+      '{altText}',
+      '"Food presentation: Food; Table setting; Plated food. Extra prose."'::jsonb
+    ),
+    '{claims,3,exactText}',
+    '"Food presentation: Food; Table setting; Plated food. Extra prose."'::jsonb
+  );
+  if veroxa_private.momo_content_food_tags_valid_v2(
+    candidate, v5_run.truth_snapshot
+  ) then
+    raise exception 'momo_ready_extra_visual_prose_was_accepted';
+  end if;
+
+  candidate := jsonb_set(
+    v5_run.output_payload, '{assetAssessment,subject}', '"other"'::jsonb
+  );
+  if veroxa_private.momo_content_food_tags_valid_v2(
+    candidate, v5_run.truth_snapshot
+  ) then
+    raise exception 'momo_ready_non_food_classification_was_accepted';
+  end if;
+
+  candidate := jsonb_set(
+    v5_run.output_payload, '{assetAssessment,visualSummary}',
+    '"A different plated serving is centered on a restaurant table."'::jsonb
+  );
+  if veroxa_private.momo_content_food_tags_valid_v2(
+    candidate, v5_run.truth_snapshot
+  ) then
+    raise exception 'momo_ready_visual_summary_alt_mismatch_was_accepted';
+  end if;
+
+  candidate := jsonb_set(
+    jsonb_set(
+      v5_run.output_payload, '{assetAssessment,visualSummary}',
+      '"A falafel is centered on a plate at a simple table setting."'::jsonb
+    ),
+    '{altText}',
+    '"A falafel is centered on a plate at a simple table setting."'::jsonb
+  );
+  candidate := jsonb_set(
+    candidate, '{claims,3,exactText}',
+    '"A falafel is centered on a plate at a simple table setting."'::jsonb
+  );
+  if veroxa_private.momo_content_food_tags_valid_v2(
+    candidate, v5_run.truth_snapshot
+  ) then
+    raise exception 'momo_ready_unknown_dish_inference_was_accepted';
+  end if;
+
+  candidate := jsonb_set(
+    jsonb_set(
+      v5_run.output_payload, '{assetAssessment,visualSummary}',
+      '"KFC food is centered on a plate at a simple table setting."'::jsonb
+    ),
+    '{altText}',
+    '"KFC food is centered on a plate at a simple table setting."'::jsonb
+  );
+  candidate := jsonb_set(
+    candidate, '{claims,3,exactText}',
+    '"KFC food is centered on a plate at a simple table setting."'::jsonb
+  );
+  if veroxa_private.momo_content_food_tags_valid_v2(
+    candidate, v5_run.truth_snapshot
+  ) then
+    raise exception 'momo_ready_unknown_brand_inference_was_accepted';
+  end if;
+
+  candidate := jsonb_set(
+    jsonb_set(
+      v5_run.output_payload, '{assetAssessment,visualSummary}',
+      '"A quinoa patty is centered on a plate at a table setting."'::jsonb
+    ),
+    '{altText}',
+    '"A quinoa patty is centered on a plate at a table setting."'::jsonb
+  );
+  candidate := jsonb_set(
+    candidate, '{claims,3,exactText}',
+    '"A quinoa patty is centered on a plate at a table setting."'::jsonb
+  );
+  if veroxa_private.momo_content_food_tags_valid_v2(
+    candidate, v5_run.truth_snapshot
+  ) then
+    raise exception 'momo_ready_unknown_ingredient_inference_was_accepted';
+  end if;
+
+  candidate := jsonb_set(
+    jsonb_set(
+      v5_run.output_payload, '{assetAssessment,visualSummary}',
+      '"A Quux is centered on a plate at a simple table setting."'::jsonb
+    ),
+    '{altText}',
+    '"A Quux is centered on a plate at a simple table setting."'::jsonb
+  );
+  candidate := jsonb_set(
+    candidate, '{claims,3,exactText}',
+    '"A Quux is centered on a plate at a simple table setting."'::jsonb
+  );
+  if veroxa_private.momo_content_food_tags_valid_v2(
+    candidate, v5_run.truth_snapshot
+  ) then
+    raise exception 'momo_ready_unbounded_visual_noun_was_accepted';
+  end if;
+
+  candidate := jsonb_set(
+    jsonb_set(
+      v5_run.output_payload, '{assetAssessment,visualSummary}',
+      '"A pizza is centered on a plate at a simple table setting."'::jsonb
+    ),
+    '{altText}',
+    '"A pizza is centered on a plate at a simple table setting."'::jsonb
+  );
+  candidate := jsonb_set(
+    candidate, '{claims,3,exactText}',
+    '"A pizza is centered on a plate at a simple table setting."'::jsonb
+  );
+  if veroxa_private.momo_content_food_tags_valid_v2(
+    candidate, v5_run.truth_snapshot
+  ) then
+    raise exception 'momo_ready_named_dish_inference_was_accepted';
+  end if;
+
+  candidate := jsonb_set(
+    jsonb_set(
+      v5_run.output_payload, '{assetAssessment,visualSummary}',
+      '"Nepalese food is centered on a plate at a table setting."'::jsonb
+    ),
+    '{altText}',
+    '"Nepalese food is centered on a plate at a table setting."'::jsonb
+  );
+  candidate := jsonb_set(
+    candidate, '{claims,3,exactText}',
+    '"Nepalese food is centered on a plate at a table setting."'::jsonb
+  );
+  if veroxa_private.momo_content_food_tags_valid_v2(
+    candidate, v5_run.truth_snapshot
+  ) then
+    raise exception 'momo_ready_cuisine_inference_was_accepted';
+  end if;
+
+  candidate := jsonb_set(
+    jsonb_set(
+      v5_run.output_payload, '{assetAssessment,visualSummary}',
+      '"Coca-Cola is centered on a plate at a simple table setting."'::jsonb
+    ),
+    '{altText}',
+    '"Coca-Cola is centered on a plate at a simple table setting."'::jsonb
+  );
+  candidate := jsonb_set(
+    candidate, '{claims,3,exactText}',
+    '"Coca-Cola is centered on a plate at a simple table setting."'::jsonb
+  );
+  if veroxa_private.momo_content_food_tags_valid_v2(
+    candidate, v5_run.truth_snapshot
+  ) then
+    raise exception 'momo_ready_brand_inference_was_accepted';
+  end if;
+
+  candidate := jsonb_set(
+    jsonb_set(
+      v5_run.output_payload, '{assetAssessment,visualSummary}',
+      '"Chicken is centered on a plate at a simple table setting."'::jsonb
+    ),
+    '{altText}',
+    '"Chicken is centered on a plate at a simple table setting."'::jsonb
+  );
+  candidate := jsonb_set(
+    candidate, '{claims,3,exactText}',
+    '"Chicken is centered on a plate at a simple table setting."'::jsonb
+  );
+  if veroxa_private.momo_content_food_tags_valid_v2(
+    candidate, v5_run.truth_snapshot
+  ) then
+    raise exception 'momo_ready_ingredient_inference_was_accepted';
+  end if;
+
+  candidate := jsonb_set(
+    v5_run.output_payload, '{internalMediaTags,0,confidence}', '0.69'::jsonb
+  );
+  if veroxa_private.momo_content_food_tags_valid_v2(
+    candidate, v5_run.truth_snapshot
+  ) then
+    raise exception 'momo_ready_low_confidence_tag_was_accepted';
+  end if;
+
+  candidate := jsonb_set(
+    v5_run.output_payload, '{internalMediaTags}',
+    (v5_run.output_payload -> 'internalMediaTags') || jsonb_build_array(
+      jsonb_build_object(
+        'slug', 'Food', 'label', 'Food', 'confidence', 0.90
+      )
+    )
+  );
+  if veroxa_private.momo_content_food_tags_valid_v2(
+    candidate, v5_run.truth_snapshot
+  ) then
+    raise exception 'momo_ready_case_duplicate_tag_was_accepted';
+  end if;
+
+  candidate := jsonb_set(
+    v5_run.output_payload, '{claims}',
+    (v5_run.output_payload -> 'claims') || jsonb_build_array(
+      jsonb_build_object(
+        'id', 'claim-visible-extra',
+        'exactText',
+          'Food presentation: Food; Table setting; Plated food.',
+        'source', 'visible_media', 'category', 'visual',
+        'truthFieldIds', '[]'::jsonb,
+        'appearsIn', '["alt_text"]'::jsonb
+      )
+    )
+  );
+  if veroxa_private.momo_content_food_tags_valid_v2(
+    candidate, v5_run.truth_snapshot
+  ) then
+    raise exception 'momo_ready_extra_visible_claim_was_accepted';
+  end if;
+
+  candidate := jsonb_set(
+    v5_run.output_payload, '{claims}',
+    (v5_run.output_payload -> 'claims') - 3
+  );
+  if veroxa_private.momo_content_food_tags_valid_v2(
+    candidate, v5_run.truth_snapshot
+  ) then
+    raise exception 'momo_ready_missing_visible_claim_was_accepted';
+  end if;
+
+  candidate := jsonb_set(
+    jsonb_set(
+      jsonb_set(
+        v5_run.output_payload, '{masterCaption}',
+        '"Momo''s House serves this plated serving with Nepalese cuisine."'::jsonb
+      ),
+      '{variants,0,caption}',
+      '"Momo''s House serves this plated serving with Nepalese cuisine for San Antonio restaurant diners."'::jsonb
+    ),
+    '{claims,3,appearsIn}', '["alt_text","instagram"]'::jsonb
+  );
+  candidate := jsonb_set(
+    candidate, '{claims,0,appearsIn}',
+    '["master","alt_text","instagram"]'::jsonb
+  );
+  if veroxa_private.momo_content_food_tags_valid_v2(
+    candidate, v5_run.truth_snapshot
+  ) then
+    raise exception 'momo_ready_owner_visible_caption_association_was_accepted';
+  end if;
+end $$;
+
+-- Client and cross-tenant callers cannot read or decide; authenticated users
+-- also have no direct table path around the SECURITY DEFINER API.
+select set_config('request.jwt.claim.sub', current_setting('veroxa.test.proxy_id'), true);
+select set_config('request.jwt.claim.role', 'authenticated', true);
+set local role authenticated;
+
+do $$
+begin
+  begin
+    perform 1
+    from public.veroxa_momo_ready_review_status_v2(
+      current_setting('veroxa.test.restaurant_id')::uuid, null
+    );
+    raise exception 'momo_ready_client_status_access_was_allowed';
+  exception when sqlstate '42501' then
+    null;
+  end;
+  begin
+    perform 1
+    from public.veroxa_decide_momo_ready_package_v2(
+      current_setting('veroxa.test.ready_review_package_1')::uuid,
+      'discarded', repeat('0', 64), 'Client cannot decide.', null
+    );
+    raise exception 'momo_ready_client_decision_was_allowed';
+  exception when sqlstate '42501' then
+    null;
+  end;
+end $$;
+
+reset role;
+select set_config('request.jwt.claim.sub', current_setting('veroxa.test.team_id'), true);
+select set_config('request.jwt.claim.role', 'authenticated', true);
+set local role authenticated;
+
+do $$
+declare
+  target_restaurant_id uuid :=
+    current_setting('veroxa.test.restaurant_id')::uuid;
+  v5_ready_id uuid :=
+    current_setting('veroxa.test.ready_review_package_1')::uuid;
+  v4_ready_id uuid :=
+    current_setting('veroxa.test.ready_review_package_2')::uuid;
+  v5_status record;
+  v5_repeat record;
+  v4_status record;
+  decision_result record;
+  list_count integer;
+  fixed_attestation constant text :=
+    'Team Faraz reviewed the exact rendered image, generic visual assessment and tags, owner-grounded public copy, alt text, calls to action, and the current evidence snapshot. This approval permits manual copy and download only; it does not schedule, post, connect a provider, or authorize any external write.';
+begin
+  begin
+    perform 1
+    from veroxa_private.momo_ready_decisions_v2 decision
+    limit 1;
+    raise exception 'momo_ready_direct_decision_table_access_was_allowed';
+  exception when sqlstate '42501' then
+    null;
+  end;
+  begin
+    perform 1
+    from public.veroxa_momo_ready_review_status_v2(gen_random_uuid(), null);
+    raise exception 'momo_ready_cross_tenant_status_was_allowed';
+  exception when sqlstate '42501' then
+    null;
+  end;
+
+  select count(*) into list_count
+  from public.veroxa_momo_ready_review_status_v2(
+    target_restaurant_id, null
+  );
+  if list_count < 2 or list_count > 50 then
+    raise exception 'momo_ready_status_list_not_bounded';
+  end if;
+  if exists (
+    select 1
+    from public.veroxa_momo_ready_review_status_v2(
+      target_restaurant_id, gen_random_uuid()
+    )
+  ) then
+    raise exception 'momo_ready_unknown_exact_status_returned_row';
+  end if;
+
+  select status.* into v5_status
+  from public.veroxa_momo_ready_review_status_v2(
+    target_restaurant_id, v5_ready_id
+  ) status;
+  select status.* into v5_repeat
+  from public.veroxa_momo_ready_review_status_v2(
+    target_restaurant_id, v5_ready_id
+  ) status;
+  if v5_status.ready_package_id is null
+    or v5_status.review_state <> 'awaiting_team_review'
+    or v5_status.terminal_decision is not null
+    or v5_status.decision_review_snapshot_sha256 is not null
+    or v5_status.current_review_snapshot_sha256 !~ '^[0-9a-f]{64}$'
+    or v5_status.current_review_snapshot_sha256 is distinct from
+      v5_repeat.current_review_snapshot_sha256
+    or not v5_status.snapshot_current
+    or v5_status.can_manual_export
+    or v5_status.external_write_allowed
+    or v5_status.blocker_codes <> '[]'::jsonb then
+    raise exception 'momo_ready_current_v5_status_invalid';
+  end if;
+
+  select status.* into v4_status
+  from public.veroxa_momo_ready_review_status_v2(
+    target_restaurant_id, v4_ready_id
+  ) status;
+  if v4_status.ready_package_id is null
+    or v4_status.review_state <> 'blocked'
+    or v4_status.terminal_decision is not null
+    or not v4_status.snapshot_current
+    or v4_status.can_manual_export
+    or v4_status.external_write_allowed
+    or not (v4_status.blocker_codes ? 'validator_changed') then
+    raise exception 'momo_ready_historical_v4_was_approvable';
+  end if;
+  perform set_config(
+    'veroxa.test.ready_review_v4_initial_sha',
+    v4_status.current_review_snapshot_sha256, true
+  );
+
+  select decision.* into decision_result
+  from public.veroxa_decide_momo_ready_package_v2(
+    v5_ready_id, 'approved_for_manual_export',
+    v5_status.current_review_snapshot_sha256, null, fixed_attestation
+  ) decision;
+  if decision_result.review_state <> 'approved_for_manual_export'
+    or decision_result.terminal_decision <>
+      'approved_for_manual_export'
+    or decision_result.decision_review_snapshot_sha256 is distinct from
+      v5_status.current_review_snapshot_sha256
+    or decision_result.replayed
+    or not decision_result.snapshot_current
+    or not decision_result.can_manual_export
+    or decision_result.external_write_allowed
+    or decision_result.inspection_attestation_version <>
+      'momo-ready-team-inspection-2026-08-08-v1'
+    or decision_result.inspection_attestation_text is distinct from
+      fixed_attestation
+    or decision_result.inspection_attestation_sha256 !~
+      '^[0-9a-f]{64}$' then
+    raise exception 'momo_ready_exact_current_approval_invalid';
+  end if;
+  perform set_config(
+    'veroxa.test.ready_review_v5_approval_sha',
+    v5_status.current_review_snapshot_sha256, true
+  );
+
+  select decision.* into decision_result
+  from public.veroxa_decide_momo_ready_package_v2(
+    v5_ready_id, 'approved_for_manual_export',
+    v5_status.current_review_snapshot_sha256, null, fixed_attestation
+  ) decision;
+  if not decision_result.replayed
+    or decision_result.terminal_decision <>
+      'approved_for_manual_export' then
+    raise exception 'momo_ready_exact_approval_replay_failed';
+  end if;
+  begin
+    perform 1
+    from public.veroxa_decide_momo_ready_package_v2(
+      v5_ready_id, 'discarded',
+      v5_status.current_review_snapshot_sha256,
+      'Conflicting terminal discard.', null
+    );
+    raise exception 'momo_ready_terminal_conflict_was_allowed';
+  exception when sqlstate '23505' then
+    if sqlerrm <> 'momo_ready_terminal_decision_conflict_v2' then
+      raise;
+    end if;
+  end;
+end $$;
+
+reset role;
+
+-- Rights drift after approval cannot re-enable export.  An exact immutable
+-- request still replays successfully and returns the newly blocked status,
+-- while preserving terminal intent and its original snapshot hash.
+update public.veroxa_media_rights rights
+set expires_at = clock_timestamp() - interval '1 second'
+from public.veroxa_momo_ready_packages_v2 ready
+where ready.id =
+    current_setting('veroxa.test.ready_review_package_1')::uuid
+  and rights.id = ready.rights_id;
+
+select set_config('request.jwt.claim.sub', current_setting('veroxa.test.team_id'), true);
+select set_config('request.jwt.claim.role', 'authenticated', true);
+set local role authenticated;
+
+do $$
+declare
+  ready_id uuid :=
+    current_setting('veroxa.test.ready_review_package_1')::uuid;
+  replay_result record;
+  fixed_attestation constant text :=
+    'Team Faraz reviewed the exact rendered image, generic visual assessment and tags, owner-grounded public copy, alt text, calls to action, and the current evidence snapshot. This approval permits manual copy and download only; it does not schedule, post, connect a provider, or authorize any external write.';
+begin
+  select decision.* into replay_result
+  from public.veroxa_decide_momo_ready_package_v2(
+    ready_id, 'approved_for_manual_export',
+    current_setting('veroxa.test.ready_review_v5_approval_sha'),
+    null, fixed_attestation
+  ) decision;
+  if not replay_result.replayed
+    or replay_result.review_state <> 'blocked'
+    or replay_result.terminal_decision <>
+      'approved_for_manual_export'
+    or replay_result.decision_review_snapshot_sha256 is distinct from
+      current_setting('veroxa.test.ready_review_v5_approval_sha')
+    or replay_result.snapshot_current
+    or replay_result.can_manual_export
+    or replay_result.external_write_allowed
+    or not (replay_result.blocker_codes ? 'review_snapshot_stale')
+    or not (replay_result.blocker_codes ? 'rights_changed') then
+    raise exception 'momo_ready_stale_approval_replay_invalid';
+  end if;
+end $$;
+
+reset role;
+
+-- Historical v4/non-food Ready remains readable and discardable, but never
+-- approvable.  Rights drift changes the authoritative hash, so the old hash
+-- fails while the current blocked hash may append one terminal discard.
+update public.veroxa_media_rights rights
+set expires_at = clock_timestamp() - interval '1 second'
+from public.veroxa_momo_ready_packages_v2 ready
+where ready.id =
+    current_setting('veroxa.test.ready_review_package_2')::uuid
+  and rights.id = ready.rights_id;
+
+select set_config('request.jwt.claim.sub', current_setting('veroxa.test.team_id'), true);
+select set_config('request.jwt.claim.role', 'authenticated', true);
+set local role authenticated;
+
+do $$
+declare
+  target_restaurant_id uuid :=
+    current_setting('veroxa.test.restaurant_id')::uuid;
+  ready_id uuid :=
+    current_setting('veroxa.test.ready_review_package_2')::uuid;
+  blocked_status record;
+  decision_result record;
+  fixed_attestation constant text :=
+    'Team Faraz reviewed the exact rendered image, generic visual assessment and tags, owner-grounded public copy, alt text, calls to action, and the current evidence snapshot. This approval permits manual copy and download only; it does not schedule, post, connect a provider, or authorize any external write.';
+begin
+  select status.* into blocked_status
+  from public.veroxa_momo_ready_review_status_v2(
+    target_restaurant_id, ready_id
+  ) status;
+  if blocked_status.review_state <> 'blocked'
+    or blocked_status.terminal_decision is not null
+    or not blocked_status.snapshot_current
+    or blocked_status.can_manual_export
+    or blocked_status.external_write_allowed
+    or not (blocked_status.blocker_codes ? 'validator_changed')
+    or not (blocked_status.blocker_codes ? 'rights_changed')
+    or blocked_status.current_review_snapshot_sha256 is not distinct from
+      current_setting('veroxa.test.ready_review_v4_initial_sha') then
+    raise exception 'momo_ready_blocked_undecided_status_invalid';
+  end if;
+
+  begin
+    perform 1
+    from public.veroxa_decide_momo_ready_package_v2(
+      ready_id, 'discarded',
+      current_setting('veroxa.test.ready_review_v4_initial_sha'),
+      'Discard obsolete historical package.', null
+    );
+    raise exception 'momo_ready_stale_discard_hash_was_allowed';
+  exception when sqlstate '23514' then
+    if sqlerrm <> 'momo_ready_review_snapshot_stale_v2' then
+      raise;
+    end if;
+  end;
+
+  begin
+    perform 1
+    from public.veroxa_decide_momo_ready_package_v2(
+      ready_id, 'approved_for_manual_export',
+      blocked_status.current_review_snapshot_sha256,
+      null, fixed_attestation
+    );
+    raise exception 'momo_ready_blocked_approval_was_allowed';
+  exception when sqlstate '23514' then
+    if sqlerrm <> 'momo_ready_approval_blocked_v2' then
+      raise;
+    end if;
+  end;
+
+  select decision.* into decision_result
+  from public.veroxa_decide_momo_ready_package_v2(
+    ready_id, 'discarded',
+    blocked_status.current_review_snapshot_sha256,
+    'Discard obsolete historical package.', null
+  ) decision;
+  if decision_result.review_state <> 'discarded'
+    or decision_result.terminal_decision <> 'discarded'
+    or decision_result.decision_review_snapshot_sha256 is distinct from
+      blocked_status.current_review_snapshot_sha256
+    or decision_result.replayed
+    or not decision_result.snapshot_current
+    or decision_result.can_manual_export
+    or decision_result.external_write_allowed
+    or decision_result.decision_reason <>
+      'Discard obsolete historical package.'
+    or decision_result.inspection_attestation_version is not null
+    or decision_result.inspection_attestation_text is not null
+    or decision_result.inspection_attestation_sha256 is not null then
+    raise exception 'momo_ready_blocked_discard_invalid';
+  end if;
+
+  select decision.* into decision_result
+  from public.veroxa_decide_momo_ready_package_v2(
+    ready_id, 'discarded',
+    blocked_status.current_review_snapshot_sha256,
+    'Discard obsolete historical package.', null
+  ) decision;
+  if not decision_result.replayed
+    or decision_result.terminal_decision <> 'discarded' then
+    raise exception 'momo_ready_exact_discard_replay_failed';
+  end if;
+  begin
+    perform 1
+    from public.veroxa_decide_momo_ready_package_v2(
+      ready_id, 'approved_for_manual_export',
+      blocked_status.current_review_snapshot_sha256,
+      null, fixed_attestation
+    );
+    raise exception 'momo_ready_discard_terminal_conflict_was_allowed';
+  exception when sqlstate '23505' then
+    if sqlerrm <> 'momo_ready_terminal_decision_conflict_v2' then
+      raise;
+    end if;
+  end;
+end $$;
+
+reset role;
+
+do $$
+declare
+  target_restaurant_id uuid :=
+    current_setting('veroxa.test.restaurant_id')::uuid;
+  fixture_position integer;
+  ready_id uuid;
+  run_id uuid;
+  asset_id uuid;
+begin
+  for fixture_position in 1..2 loop
+    ready_id := current_setting(
+      'veroxa.test.ready_review_package_' || fixture_position::text
+    )::uuid;
+    run_id := current_setting(
+      'veroxa.test.ready_review_run_' || fixture_position::text
+    )::uuid;
+    asset_id := current_setting(
+      'veroxa.test.ready_review_asset_' || fixture_position::text
+    )::uuid;
+    if not exists (
+         select 1 from public.veroxa_momo_ready_packages_v2 ready
+         where ready.id = ready_id
+           and ready.restaurant_id = target_restaurant_id
+           and not ready.external_write_allowed
+       )
+       or not exists (
+         select 1 from public.veroxa_momo_ready_variants_v2 variant
+         where variant.ready_package_id = ready_id
+           and variant.restaurant_id = target_restaurant_id
+           and not variant.external_write_allowed
+       )
+       or not exists (
+         select 1 from public.veroxa_momo_content_ai_runs run
+         where run.id = run_id and run.source_asset_id = asset_id
+       )
+       or not exists (
+         select 1 from public.veroxa_media_assets asset
+         where asset.id = asset_id
+           and asset.restaurant_id = target_restaurant_id
+       )
+       or not exists (
+         select 1
+         from public.veroxa_momo_media_intake_verifications verification
+         where verification.id = current_setting(
+           'veroxa.test.ready_review_verification_' || fixture_position::text
+         )::uuid
+           and verification.asset_id = asset_id
+       )
+       or not exists (
+         select 1
+         from public.veroxa_momo_ready_packages_v2 ready
+         join public.veroxa_media_rights rights on rights.id = ready.rights_id
+         join storage.objects object
+           on object.id = ready.source_storage_object_id
+          and object.bucket_id = 'restaurant-media'
+          and object.name = ready.source_storage_path
+         where ready.id = ready_id
+           and rights.asset_id = asset_id
+       ) then
+      raise exception 'momo_ready_discard_deleted_evidence';
+    end if;
+  end loop;
+  if (
+    select count(*)
+    from veroxa_private.momo_ready_decisions_v2 decision
+    where decision.ready_package_id in (
+      current_setting('veroxa.test.ready_review_package_1')::uuid,
+      current_setting('veroxa.test.ready_review_package_2')::uuid
+    )
+  ) <> 2
+    or exists (
+      select 1
+      from veroxa_private.momo_ready_decisions_v2 decision
+      where decision.ready_package_id in (
+        current_setting('veroxa.test.ready_review_package_1')::uuid,
+        current_setting('veroxa.test.ready_review_package_2')::uuid
+      ) and decision.external_write_allowed
+    ) then
+    raise exception 'momo_ready_terminal_audit_rows_invalid';
+  end if;
+end $$;
+
+rollback to savepoint momo_ready_decisions_v2;
+release savepoint momo_ready_decisions_v2;
+
 select set_config('request.jwt.claim.sub', current_setting('veroxa.test.team_id'), true);
 select set_config('request.jwt.claim.role', 'authenticated', true);
 set local role authenticated;

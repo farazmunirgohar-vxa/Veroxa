@@ -1,10 +1,10 @@
 {
   "schemaVersion": 11,
-  "recordKind": "veroxa_staged_rollout_forward_repair_checkpoint",
-  "checkpoint": "momo-staged-rollout-forward-repair-2026-08-08",
-  "status": "staged_rollout_database_repair_verified_sites_v38_pending",
+  "recordKind": "veroxa_momo_ready_team_decisions_feature_checkpoint",
+  "checkpoint": "momo-ready-team-decisions-food-tags-v2-2026-08-08",
+  "status": "local_momo_ready_v2_candidate_database_and_sites_pending",
   "reviewedAt": "2026-08-08",
-  "candidateRevision": "client_v3_corrected_sites_v38_2026_08_08",
+  "candidateRevision": "momo_ready_team_decisions_and_food_tags_v2_2026_08_08",
   "knownResiduals": [
     "Exact live membership evidence shows postgres is not a member of supabase_admin. Migration 20260808002609 therefore skips supabase_admin default ACLs and is not comprehensive default-ACL closure."
   ],
@@ -72,16 +72,16 @@
     "observedAt": "2026-08-08",
     "sitesBaselineObservedAt": "2026-08-08",
     "migrationLedgerObservedAt": "2026-08-08",
-    "evidenceStatus": "sites_v37_live_database43_repair_verified",
-    "canonicalGitHubMainCommit": "ca47aeff7ab44a69b6ce039608ae27fea6c3c326",
-    "canonicalGitHubMainMergePullRequest": 162,
-    "canonicalGitHubMainCommitScope": "pr162_merged_main_lineage_sites_v37_database_repair_verified",
-    "githubParityVerifiedAtObservation": false,
-    "sitesVersion": 37,
-    "sitesCheckoutCommit": "61e9ace7723ef56f42111f320327187596406944",
-    "sourceFileCount": 200,
-    "sourceTreeSha256": "929e05cf68a6af5176811f49321ec108e617b93a08153b65b3f86b109d0c8c18",
-    "sourceEvidenceScope": "observed_live_sites_v37_exact_source",
+    "evidenceStatus": "sites_v39_live_database43_github_main_parity_verified",
+    "canonicalGitHubMainCommit": "59b1604d887547e2804bdd6d63c97292385dcebb",
+    "canonicalGitHubMainMergePullRequest": 163,
+    "canonicalGitHubMainCommitScope": "pr163_merged_main_sites_v39_database43_verified",
+    "githubParityVerifiedAtObservation": true,
+    "sitesVersion": 39,
+    "sitesCheckoutCommit": "8749a7d442d3bb068ce626a9d297b8b227493446",
+    "sourceFileCount": 201,
+    "sourceTreeSha256": "4edae9660343cda362968bd08e544ba5a154c90a902ac961365ceb32ea820292",
+    "sourceEvidenceScope": "observed_live_sites_v39_exact_source",
     "productionMigrationCount": 43,
     "migrationTreeSha256": "8a49f00ab3bd6d9623100fec238939b6cb81f17d67d0e2d3a4426559c137e41c",
     "migrationTreeEvidenceScope": "observed_remote_ledger_exact_names_and_bytes",
@@ -93,7 +93,7 @@
     "databaseAppliedThroughLatestObserved": true,
     "githubMainMatchesCandidate": false,
     "candidateSourceMatchesLiveSites": false,
-    "candidateMigrationsMatchLiveLedger": true,
+    "candidateMigrationsMatchLiveLedger": false,
     "fullReleaseGatePassed": false
   },
   "historicalV36GitHubReconciliationEvidence": {
@@ -136,12 +136,12 @@
   },
   "releaseCandidate": {
     "manifest": "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json",
-    "state": "staged_rollout_paused_for_corrective_sites_publish",
+    "state": "predeployment_v5_cutover_freeze_required",
     "localReviewPassed": true,
-    "status": "staged_rollout_paused_for_corrective_sites_publish",
-    "actionScope": "momo_client_v3_corrective_sites_v38_candidate",
-    "basedOnGitHubMainCommit": "ca47aeff7ab44a69b6ce039608ae27fea6c3c326",
-    "pullRequest": 163,
+    "status": "predeployment_v5_cutover_freeze_required",
+    "actionScope": "momo_ready_team_decisions_and_generic_food_v2_candidate",
+    "basedOnGitHubMainCommit": "59b1604d887547e2804bdd6d63c97292385dcebb",
+    "pullRequest": null,
     "githubMerged": false,
     "futureMergedGitHubCommit": null,
     "futureSitesVersion": null,
@@ -149,18 +149,20 @@
     "allFourWorkflowsGreen": null,
     "zeroUnresolvedReviewThreads": null,
     "candidateSourceMatchesLiveSites": false,
-    "candidateMigrationsMatchLiveLedger": true,
+    "candidateMigrationsMatchLiveLedger": false,
     "githubMainMatchesCandidate": false,
     "fullReleaseGatePassed": false,
-    "sourceFileCount": 201,
-    "sourceTreeSha256": "4edae9660343cda362968bd08e544ba5a154c90a902ac961365ceb32ea820292",
-    "migrationFileCount": 43,
-    "migrationTreeSha256": "8a49f00ab3bd6d9623100fec238939b6cb81f17d67d0e2d3a4426559c137e41c",
-    "latestCandidateMigration": "20260808041629_repair_momo_client_v3_displayed_asset_scope.sql",
-    "latestCandidateMigrationSha256": "6cbf3f80d028d3fe54093b14bae59314913b4f0bfacfbf31fce4aa2a24e429ba",
-    "pendingMigrations": [],
-    "databaseChangesRequired": false,
-    "databaseMigrationApplied": true,
+    "sourceFileCount": 203,
+    "sourceTreeSha256": "fce38a41f6afc94d5999d3268baea3c72012a8205f1bf97008e3f04900db6b37",
+    "migrationFileCount": 44,
+    "migrationTreeSha256": "7ea30e35ee2dd88fc936521d352ef1b5794b6bfea981afd7e1b9b5c8a22af16c",
+    "latestCandidateMigration": "20260808045812_momo_ready_team_decisions_and_food_tags_v2.sql",
+    "latestCandidateMigrationSha256": "3d6394b402247d599f80466855dc14326d48add91f359b70a5cd75a9058fd441",
+    "pendingMigrations": [
+      "20260808045812_momo_ready_team_decisions_and_food_tags_v2.sql"
+    ],
+    "databaseChangesRequired": true,
+    "databaseMigrationApplied": false,
     "databaseMigrationsApplied": [
       "20260808001210_audit_intake_envelope_v2.sql",
       "20260808001430_momo_client_pipeline_readback_v3.sql",
@@ -175,98 +177,109 @@
     "sitesPublishAuthorized": true,
     "deploymentAuthorized": true,
     "activationExecuted": false,
-    "rolloutStatus": "staged_rollout_paused_for_corrective_sites_publish"
+    "rolloutStatus": "predeployment_v5_cutover_freeze_required"
   },
   "rolloutSequence": {
-    "status": "staged_rollout_paused_for_corrective_sites_publish",
+    "status": "predeployment_v5_cutover_freeze_required",
     "steps": [
       {
         "order": 1,
-        "stage": "stage_1_pre_publish",
-        "id": "apply_audit_intake_v2",
-        "action": "database_migration",
-        "migration": "20260808001210_audit_intake_envelope_v2.sql",
+        "stage": "candidate_pr",
+        "id": "merge_reviewed_v5_candidate",
+        "action": "github_merge",
+        "migration": null,
         "requiresCompletedStep": null,
         "explicitReviewRequired": true,
-        "completed": true,
-        "verification": "Applied in production and verified before the rollout advanced to the Client v3 boundary."
+        "completed": false,
+        "verification": "Create the feature pull request from exact GitHub main 59b1604d887547e2804bdd6d63c97292385dcebb, require the four exact-head workflows and zero unresolved review threads, and merge only the reviewed candidate."
       },
       {
         "order": 2,
-        "stage": "stage_1_pre_publish",
-        "id": "apply_client_pipeline_readback_v3",
-        "action": "database_migration",
-        "migration": "20260808001430_momo_client_pipeline_readback_v3.sql",
-        "requiresCompletedStep": "apply_audit_intake_v2",
+        "stage": "cutover_freeze",
+        "id": "freeze_content_v4_ingress",
+        "action": "runtime_freeze",
+        "migration": null,
+        "requiresCompletedStep": "merge_reviewed_v5_candidate",
         "explicitReviewRequired": true,
-        "completed": true,
-        "verification": "Applied and verified in production at immutable SHA-256 987186e74590c6e484ebfee47e1c7ed384e2b4dc8c4a97ad7243ae38feb765cc."
+        "completed": false,
+        "verification": "Freeze every new content/package reservation path plus verified-upload auto-advance and dispatch ingress; keep ai_live_calls and all provider/public write controls false."
       },
       {
         "order": 3,
-        "stage": "sites_v37_publish_verify",
-        "id": "publish_and_verify_audit_v2_and_client_v3_routes",
-        "action": "sites_publish_and_verify",
+        "stage": "cutover_drain",
+        "id": "drain_v4_content_work",
+        "action": "runtime_drain_verify",
         "migration": null,
-        "requiresCompletedStep": "apply_client_pipeline_readback_v3",
+        "requiresCompletedStep": "freeze_content_v4_ingress",
         "explicitReviewRequired": true,
-        "completed": true,
-        "verification": "Sites v37 was published and observed at checkout 61e9ace7723ef56f42111f320327187596406944 with 200 files at the exact live source fingerprint."
+        "completed": false,
+        "verification": "Prove zero relevant v4 reserved, provider_running, result_staged, and pending_review work and zero staged webhook, outbox, or unsettled-cost activity before the schema boundary changes."
       },
       {
         "order": 4,
-        "stage": "stage_2_partial_post_publish",
-        "id": "retire_audit_intake_v1",
+        "stage": "database_apply",
+        "id": "apply_momo_ready_v5_exact_bytes",
         "action": "database_migration",
-        "migration": "20260808001842_retire_audit_intake_v1.sql",
-        "requiresCompletedStep": "publish_and_verify_audit_v2_and_client_v3_routes",
+        "migration": "20260808045812_momo_ready_team_decisions_and_food_tags_v2.sql",
+        "requiresCompletedStep": "drain_v4_content_work",
         "explicitReviewRequired": true,
-        "completed": true,
-        "verification": "Applied and verified in production before the rollout continued to the remaining post-publish migrations."
+        "completed": false,
+        "verification": "Use the Supabase MCP migration apply path with the exact reviewed SQL bytes at SHA-256 3d6394b402247d599f80466855dc14326d48add91f359b70a5cd75a9058fd441. The MCP-generated production ledger version must be captured; 045812 is the pre-apply source identity, not a promised live version."
       },
       {
         "order": 5,
-        "stage": "stage_2_post_publish",
-        "id": "retire_client_pipeline_readback_v2",
-        "action": "database_migration",
-        "migration": "20260808001853_retire_momo_client_pipeline_readback_v2.sql",
-        "requiresCompletedStep": "retire_audit_intake_v1",
+        "stage": "database_verify",
+        "id": "verify_database_v5_and_legacy_v4_boundaries",
+        "action": "database_verify",
+        "migration": null,
+        "requiresCompletedStep": "apply_momo_ready_v5_exact_bytes",
         "explicitReviewRequired": true,
-        "completed": true,
-        "verification": "Applied and verified in production before the rollout advanced to future-object default-ACL hardening."
+        "completed": false,
+        "verification": "Verify the generated live version and exact statement bytes, v5 validators and decision RPCs, v4 readability and discard compatibility, Team-only ACL/RLS, cross-tenant denial, direct-table denial, append-only decisions, and external-write locks."
       },
       {
         "order": 6,
-        "stage": "stage_2_post_publish",
-        "id": "review_and_apply_future_default_acl_hardening",
-        "action": "database_migration",
-        "migration": "20260808002609_future_object_default_acl_hardening.sql",
-        "requiresCompletedStep": "retire_client_pipeline_readback_v2",
+        "stage": "generated_version_reconciliation",
+        "id": "reconcile_generated_migration_version",
+        "action": "github_followup_reconciliation",
+        "migration": null,
+        "requiresCompletedStep": "verify_database_v5_and_legacy_v4_boundaries",
         "explicitReviewRequired": true,
-        "completed": true,
-        "verification": "Applied and verified in production with the known residual preserved: postgres is not a supabase_admin member, so that role remains skipped."
+        "completed": false,
+        "verification": "Immediately open, review, and merge a terminal follow-up PR that renames both migration mirrors from 045812 to the actual Supabase-generated ledger version without changing SQL bytes, then refresh exact live/candidate/Sites fingerprints and hosted workflow evidence."
       },
       {
         "order": 7,
-        "stage": "corrective_database_repair",
-        "id": "repair_client_pipeline_displayed_rights_scope",
-        "action": "database_migration",
-        "migration": "20260808041629_repair_momo_client_v3_displayed_asset_scope.sql",
-        "requiresCompletedStep": "review_and_apply_future_default_acl_hardening",
+        "stage": "sites_v5_publish",
+        "id": "publish_v5_sites_candidate",
+        "action": "sites_publish_and_verify",
+        "migration": null,
+        "requiresCompletedStep": "reconcile_generated_migration_version",
         "explicitReviewRequired": true,
-        "completed": true,
-        "verification": "Applied and verified in production as ledger version 20260808041629: one 7,293-byte statement at SHA-256 6cbf3f80d028d3fe54093b14bae59314913b4f0bfacfbf31fce4aa2a24e429ba. The corrected displayed-asset predicate, independent run-rights scope check, SECURITY DEFINER with empty search_path, authenticated-only ACL, valid actor path, random cross-tenant denial, and external_write_allowed=false all passed."
+        "completed": false,
+        "verification": "Publish the exact terminal reconciled v5 Sites source while ingress remains frozen; do not preassign the Sites version and do not use the pre-reconciliation source fingerprint as post-apply parity evidence."
       },
       {
         "order": 8,
-        "stage": "corrective_sites_v38_publish_verify",
-        "id": "republish_and_verify_repaired_client_v3",
-        "action": "sites_publish_and_verify",
+        "stage": "post_publish_verify",
+        "id": "verify_team_ready_and_generic_food_release",
+        "action": "post_deploy_verify",
         "migration": null,
-        "requiresCompletedStep": "repair_client_pipeline_displayed_rights_scope",
+        "requiresCompletedStep": "publish_v5_sites_candidate",
         "explicitReviewRequired": true,
         "completed": false,
-        "verification": "Sole pending release action: publish and verify the corrected Sites v38 source against the already-applied and verified 041629 function."
+        "verification": "Verify exact deployed source parity, custom domains, Team-only approve/discard behavior, current snapshot freshness, idempotent/conflicting decisions, retained discard evidence, current-approval copy/download/export gating, generic-food positives and adversarial negatives, and all external denials."
+      },
+      {
+        "order": 9,
+        "stage": "bounded_restore",
+        "id": "restore_bounded_internal_ingress",
+        "action": "runtime_restore",
+        "migration": null,
+        "requiresCompletedStep": "verify_team_ready_and_generic_food_release",
+        "explicitReviewRequired": true,
+        "completed": false,
+        "verification": "Only after every prior gate passes, restore the previously authorized bounded internal ingress state. Provider connections, public writes, scheduling, posting, review replies, website writes, and activation remain disabled."
       }
     ]
   },
@@ -281,9 +294,11 @@
       "historicalRepositoryEvidenceScope": "historical_v36_repository_and_sites_mirror_not_remote_ledger"
     },
     "candidate": {
-      "migrationFileCount": 43,
-      "migrationTreeSha256": "8a49f00ab3bd6d9623100fec238939b6cb81f17d67d0e2d3a4426559c137e41c",
-      "pendingMigrations": [],
+      "migrationFileCount": 44,
+      "migrationTreeSha256": "7ea30e35ee2dd88fc936521d352ef1b5794b6bfea981afd7e1b9b5c8a22af16c",
+      "pendingMigrations": [
+        "20260808045812_momo_ready_team_decisions_and_food_tags_v2.sql"
+      ],
       "appliedMigrations": [
         "20260808001210_audit_intake_envelope_v2.sql",
         "20260808001430_momo_client_pipeline_readback_v3.sql",
@@ -296,16 +311,20 @@
   },
   "reusableEvidence": [
     "Historical Sites v36 source and PR #157 GitHub parity remain immutable evidence only.",
-    "PR #162 is merged as canonical GitHub main ca47aeff7ab44a69b6ce039608ae27fea6c3c326 and is the corrective-candidate base. This advances repository lineage only: Sites v37 remains live from checkout 61e9ace7723ef56f42111f320327187596406944 with 200 files at 929e05cf68a6af5176811f49321ec108e617b93a08153b65b3f86b109d0c8c18.",
-    "Exact observed live remote ledger is 43 migrations at 8a49f00ab3bd6d9623100fec238939b6cb81f17d67d0e2d3a4426559c137e41c through 20260808041629_repair_momo_client_v3_displayed_asset_scope.sql; it exactly matches both local migration mirrors.",
+    "PR #163 is merged as canonical GitHub main 59b1604d887547e2804bdd6d63c97292385dcebb. Sites v39 is live from checkout 8749a7d442d3bb068ce626a9d297b8b227493446 with 201 files at 4edae9660343cda362968bd08e544ba5a154c90a902ac961365ceb32ea820292 and matches that reviewed production baseline.",
+    "Exact observed live remote ledger remains 43 migrations at 8a49f00ab3bd6d9623100fec238939b6cb81f17d67d0e2d3a4426559c137e41c through 20260808041629_repair_momo_client_v3_displayed_asset_scope.sql. The candidate adds one mirrored, unapplied migration and therefore intentionally does not match live43.",
     "The 9f5d71e6 fingerprint is historical v36 repository and Sites-mirror evidence, not the exact remote ledger.",
-    "Applied 01430 is immutable at 987186e74590c6e484ebfee47e1c7ed384e2b4dc8c4a97ad7243ae38feb765cc. Forward repair 20260808041629_repair_momo_client_v3_displayed_asset_scope.sql is applied and verified at SHA-256 6cbf3f80d028d3fe54093b14bae59314913b4f0bfacfbf31fce4aa2a24e429ba; only corrected Sites v38 publication and verification remain.",
+    "Applied 01430 is immutable at 987186e74590c6e484ebfee47e1c7ed384e2b4dc8c4a97ad7243ae38feb765cc. Forward repair 20260808041629_repair_momo_client_v3_displayed_asset_scope.sql remains applied and verified at SHA-256 6cbf3f80d028d3fe54093b14bae59314913b4f0bfacfbf31fce4aa2a24e429ba.",
+    "The pre-apply source migration 20260808045812_momo_ready_team_decisions_and_food_tags_v2.sql is mirrored at exact SHA-256 3d6394b402247d599f80466855dc14326d48add91f359b70a5cd75a9058fd441. Supabase MCP generates the live ledger version; after apply, a mandatory terminal follow-up PR must rename both mirrors to that observed version without changing SQL bytes before Sites publication.",
+    "Local implementation gates are green: TypeScript, lint, verified build, 410/410 application tests, migration parser 46 statements/19 PL/pgSQL bodies, pgTAP parser 354/88 at exact fixture SHA-256 0a9503c4f80cf8453b9d3473186d6d77b5a0ba06504ba036ce5eba98f7b0bcf8, and 89/89 focused SQL/contract checks. Hosted database execution and exact-head GitHub workflow evidence remain future gates.",
     "MOMO_PRIVATE_POLICY_EVAL_2026-08-08.json is reusable only for local synthetic policy validation: the final 10/10 live cases passed, final-v3 request controls are source-hash-proven, earlier settings are report-recorded only, and the evidence does not claim an atomic cross-process lifetime cost ledger.",
     "Migration 02609 is not comprehensive default-ACL closure: exact live evidence shows postgres is not a supabase_admin member, so that role is skipped."
   ],
   "activationGates": [
-    "Corrective PR #163 is open, but it has no merge, exact-final-head hosted workflow result, resolved-review-thread evidence, or corrected Sites v38 publication. Original Sites v37 and all six rollout migrations, including verified 041629, are live; provider and Momo activation remain false.",
-    "After exact local review plus the four required exact-head workflows and zero unresolved review threads, publish and verify corrected Sites v38. No database change remains pending, and no provider connection, external publication, or Momo activation is authorized."
+    "No feature PR exists yet. Create it from exact canonical main 59b1604d887547e2804bdd6d63c97292385dcebb, bind review to its final head, require all four workflows and zero unresolved review threads, and merge before production cutover.",
+    "Before database apply, freeze all new content/package reservation and verified-upload auto-advance/dispatch ingress and drain every v4 nonterminal, webhook, outbox, and unsettled-cost path to zero. Keep ai_live_calls and all provider/public write controls false.",
+    "Apply only the exact reviewed 3d6394b4 SQL bytes through Supabase MCP. Capture its generated ledger version, verify the full Team-only/RLS/replay/retention/v4-compatibility matrix, then merge an immediate follow-up PR that renames both migration mirrors to that generated version with unchanged bytes and refreshes all fingerprints.",
+    "Publish and verify the terminal reconciled v5 Sites source only after database verification and generated-version source reconciliation. Restore bounded internal ingress only after exact source/custom-domain/security checks pass; external providers, public writes, scheduling, posting, review replies, website writes, and Momo activation remain false."
   ],
   "runtimeVerification": {
     "externalProvidersConnected": false,

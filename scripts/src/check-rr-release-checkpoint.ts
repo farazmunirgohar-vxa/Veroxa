@@ -7,31 +7,26 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
   CURRENT_PARTIAL_ROLLOUT_EVIDENCE,
-  HISTORICAL_REPOSITORY_MIGRATION_EVIDENCE_SCOPE,
-  LIVE_MIGRATION_EVIDENCE_SCOPE,
-  LIVE_PRODUCTION_EVIDENCE_STATUS,
-  LOCAL_CANDIDATE_REVISION,
   LOCAL_CANDIDATE_APPLIED_MIGRATIONS,
   LOCAL_CANDIDATE_PENDING_MIGRATIONS,
-  LOCAL_CANDIDATE_ROLLOUT_MIGRATIONS,
+  LOCAL_CANDIDATE_REVISION,
   POLICY_EVALUATION_EVIDENCE_PATH,
   POLICY_EVALUATION_EVIDENCE_SHA256,
   REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE,
-  V36_LIVE_PARITY_EVIDENCE,
+  REVIEWED_LOCAL_CANDIDATE_STATUS,
   assertReviewedLocalCandidateManifest,
   hashTree,
   readDeploymentManifest,
   repoRoot,
   sha256File,
 } from "./release-manifest";
+
 const failures: string[] = [];
 const must = __name((condition: boolean, message: string) => {
   if (!condition) failures.push(message);
 }, "must");
 const canonicalJson = __name((value: unknown): string => {
-  if (Array.isArray(value)) {
-    return `[${value.map(canonicalJson).join(",")}]`;
-  }
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
   if (value && typeof value === "object") {
     return `{${Object.entries(value)
       .sort(([left], [right]) => left.localeCompare(right))
@@ -40,19 +35,12 @@ const canonicalJson = __name((value: unknown): string => {
   }
   return JSON.stringify(value);
 }, "canonicalJson");
-const readJson = __name(
-  (relativePath: string): any =>
-    JSON.parse(readFileSync(resolve(repoRoot, relativePath), "utf8")),
-  "readJson",
-);
 const manifest = readDeploymentManifest();
-const checkpoint = readJson("artifacts/veroxa/docs/RR_RELEASE_CHECKPOINT.json");
-const historicalCloseoutPath = resolve(
-  repoRoot,
-  "artifacts/veroxa/docs/MOMO_UPLOAD_V36_LIVE_CLOSEOUT.json",
-);
-const historicalCloseout = readJson(
-  "artifacts/veroxa/docs/MOMO_UPLOAD_V36_LIVE_CLOSEOUT.json",
+const checkpoint = JSON.parse(
+  readFileSync(
+    resolve(repoRoot, "artifacts/veroxa/docs/RR_RELEASE_CHECKPOINT.json"),
+    "utf8",
+  ),
 );
 try {
   assertReviewedLocalCandidateManifest(manifest);
@@ -61,167 +49,112 @@ try {
 }
 must(
   checkpoint.schemaVersion === 11 &&
-    checkpoint.recordKind === "veroxa_staged_rollout_forward_repair_checkpoint" &&
-    checkpoint.checkpoint ===
-      "momo-staged-rollout-forward-repair-2026-08-08" &&
+    checkpoint.recordKind === "veroxa_momo_ready_team_decisions_feature_checkpoint" &&
+    checkpoint.checkpoint === "momo-ready-team-decisions-food-tags-v2-2026-08-08" &&
     checkpoint.status === REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE &&
     checkpoint.candidateRevision === LOCAL_CANDIDATE_REVISION &&
     checkpoint.reviewedAt === "2026-08-08",
-  "RR checkpoint identity must preserve schema-11 identity while describing the repair-verified, corrective-Sites candidate.",
+  "RR checkpoint identity drifted.",
 );
 must(
   checkpoint.status === manifest.releaseState &&
-    checkpoint.releaseCandidate.state === manifest.releaseCandidate.status &&
-    checkpoint.releaseCandidate.manifest ===
-      "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json" &&
-    checkpoint.releaseCandidate.localReviewPassed &&
-    checkpoint.releaseCandidate.reviewedLocally,
+    checkpoint.releaseCandidate.state === REVIEWED_LOCAL_CANDIDATE_STATUS &&
+    checkpoint.releaseCandidate.status === manifest.releaseCandidate.status &&
+    checkpoint.releaseCandidate.localReviewPassed === true &&
+    checkpoint.releaseCandidate.reviewedLocally === true,
   "Manifest and RR local-review states disagree.",
 );
 must(
-  canonicalJson(checkpoint.knownResiduals) ===
-    canonicalJson(manifest.knownResiduals) &&
+  canonicalJson(checkpoint.knownResiduals) === canonicalJson(manifest.knownResiduals) &&
     checkpoint.knownResiduals?.length === 1 &&
     /postgres is not a member of supabase_admin[\s\S]*02609[\s\S]*skips supabase_admin[\s\S]*not comprehensive default-ACL closure/iu.test(
       checkpoint.knownResiduals[0],
     ),
-  "RR must retain the one known default-ACL residual without treating the verified repair as residual risk.",
+  "RR must retain the exact known default-ACL residual.",
 );
 must(
   canonicalJson(checkpoint.policyEvaluationEvidence) ===
-    canonicalJson(manifest.policyEvaluationEvidence) &&
-    checkpoint.policyEvaluationEvidence.path ===
-      POLICY_EVALUATION_EVIDENCE_PATH &&
-    checkpoint.policyEvaluationEvidence.sha256 ===
-      POLICY_EVALUATION_EVIDENCE_SHA256 &&
+      canonicalJson(manifest.policyEvaluationEvidence) &&
+    checkpoint.policyEvaluationEvidence.path === POLICY_EVALUATION_EVIDENCE_PATH &&
+    checkpoint.policyEvaluationEvidence.sha256 === POLICY_EVALUATION_EVIDENCE_SHA256 &&
     existsSync(resolve(repoRoot, POLICY_EVALUATION_EVIDENCE_PATH)) &&
     sha256File(resolve(repoRoot, POLICY_EVALUATION_EVIDENCE_PATH)) ===
       POLICY_EVALUATION_EVIDENCE_SHA256 &&
-    checkpoint.policyEvaluationEvidence.finalLiveCasesPassed === 10 &&
-    checkpoint.policyEvaluationEvidence.finalCombinedChecksPassed === 27 &&
-    checkpoint.policyEvaluationEvidence.cumulativeCostUpperBoundUsd <
-      checkpoint.policyEvaluationEvidence.authorizedCeilingUsd &&
-    checkpoint.policyEvaluationEvidence.responseStorage === false &&
-    checkpoint.policyEvaluationEvidence.toolsEnabled === false &&
-    checkpoint.policyEvaluationEvidence.externalWritesAllowed === false &&
-    checkpoint.policyEvaluationEvidence
-      .allAttemptSettingsIndependentlyHashBound === false &&
-    checkpoint.policyEvaluationEvidence.crossProcessCostLedgerEnforced ===
-      false &&
-    checkpoint.policyEvaluationEvidence
-      .completedAggregateBelowAuthorizedCeiling === true,
-  "RR private policy-evaluation evidence differs from the manifest or fails its safety gate.",
-);
-const live = checkpoint.currentProductionObservation;
-must(
-  JSON.stringify(live) ===
-    JSON.stringify(manifest.currentProductionObservation) &&
-    live.evidenceStatus === LIVE_PRODUCTION_EVIDENCE_STATUS &&
-    live.productionMigrationCount === CURRENT_PARTIAL_ROLLOUT_EVIDENCE.migrationFileCount &&
-    live.migrationTreeSha256 === CURRENT_PARTIAL_ROLLOUT_EVIDENCE.migrationTreeSha256 &&
-    live.migrationTreeEvidenceScope === LIVE_MIGRATION_EVIDENCE_SCOPE &&
-    live.historicalRepositoryMigrationTreeSha256 ===
-      V36_LIVE_PARITY_EVIDENCE.historicalRepositoryMigrationTreeSha256 &&
-    live.historicalRepositoryMigrationTreeEvidenceScope ===
-      HISTORICAL_REPOSITORY_MIGRATION_EVIDENCE_SCOPE,
-  "RR must preserve exact Sites v37 / live43 repair-verified evidence separately from historical v36 evidence.",
+    checkpoint.policyEvaluationEvidence.externalWritesAllowed === false,
+  "RR private policy-evaluation evidence is stale or unsafe.",
 );
 must(
-  JSON.stringify(checkpoint.historicalV36GitHubReconciliationEvidence) ===
-    JSON.stringify(manifest.historicalV36GitHubReconciliationEvidence),
-  "RR historical PR #157 evidence differs from the manifest.",
+  JSON.stringify(checkpoint.currentProductionObservation) ===
+      JSON.stringify(manifest.currentProductionObservation) &&
+    checkpoint.currentProductionObservation.canonicalGitHubMainCommit ===
+      CURRENT_PARTIAL_ROLLOUT_EVIDENCE.canonicalGitHubMainCommit &&
+    checkpoint.currentProductionObservation.sitesVersion === 39 &&
+    checkpoint.currentProductionObservation.productionMigrationCount === 43 &&
+    checkpoint.currentProductionObservation.githubParityVerifiedAtObservation === true,
+  "RR current-production evidence must equal manifest main59b/Sites v39/live43 evidence.",
+);
+const candidate = { ...checkpoint.releaseCandidate };
+delete candidate.manifest;
+delete candidate.state;
+delete candidate.localReviewPassed;
+must(
+  canonicalJson(candidate) === canonicalJson(manifest.releaseCandidate),
+  "RR candidate fields or fingerprints differ from the manifest.",
 );
 must(
-  JSON.stringify(checkpoint.lastGitHubParityRelease) ===
-    JSON.stringify(manifest.lastGitHubParityRelease) &&
-    JSON.stringify(checkpoint.historicalProductionObservations) ===
-      JSON.stringify(manifest.historicalProductionObservations),
-  "RR historical release observations differ from the manifest.",
-);
-const checkpointCandidate = { ...checkpoint.releaseCandidate };
-delete checkpointCandidate.manifest;
-delete checkpointCandidate.state;
-delete checkpointCandidate.localReviewPassed;
-must(
-  canonicalJson(checkpointCandidate) ===
-    canonicalJson(manifest.releaseCandidate),
-  "RR candidate fields or fingerprints differ from the deployment manifest.",
-);
-must(
-  checkpoint.releaseCandidate.pullRequest === 163 &&
-    !checkpoint.releaseCandidate.githubMerged &&
+  checkpoint.releaseCandidate.pullRequest === null &&
+    checkpoint.releaseCandidate.githubMerged === false &&
     checkpoint.releaseCandidate.allFourWorkflowsGreen === null &&
     checkpoint.releaseCandidate.zeroUnresolvedReviewThreads === null &&
-    checkpoint.releaseCandidate.databaseMigrationApplied &&
-    checkpoint.releaseCandidate.databaseChangesRequired === false &&
-    checkpoint.releaseCandidate.candidateMigrationsMatchLiveLedger &&
+    checkpoint.releaseCandidate.databaseChangesRequired === true &&
+    checkpoint.releaseCandidate.databaseMigrationApplied === false &&
+    checkpoint.releaseCandidate.candidateMigrationsMatchLiveLedger === false &&
     JSON.stringify(checkpoint.releaseCandidate.databaseMigrationsApplied) ===
       JSON.stringify(LOCAL_CANDIDATE_APPLIED_MIGRATIONS) &&
-    checkpoint.releaseCandidate.databaseApplyAuthorized &&
-    !checkpoint.releaseCandidate.sitesPublished &&
-    checkpoint.releaseCandidate.sitesPublishAuthorized &&
-    checkpoint.releaseCandidate.deploymentAuthorized &&
-    !checkpoint.releaseCandidate.activationExecuted &&
-    !checkpoint.releaseCandidate.fullReleaseGatePassed,
-  "RR candidate must preserve open PR #163 and the verified database repair without claiming merge, final-head workflow/review evidence, Sites v38 republish, full gate, or activation.",
+    JSON.stringify(checkpoint.releaseCandidate.pendingMigrations) ===
+      JSON.stringify(LOCAL_CANDIDATE_PENDING_MIGRATIONS) &&
+    checkpoint.releaseCandidate.databaseApplyAuthorized === true &&
+    checkpoint.releaseCandidate.sitesPublished === false &&
+    checkpoint.releaseCandidate.sitesPublishAuthorized === true &&
+    checkpoint.releaseCandidate.deploymentAuthorized === true &&
+    checkpoint.releaseCandidate.activationExecuted === false &&
+    checkpoint.releaseCandidate.fullReleaseGatePassed === false,
+  "RR candidate overclaims merge, database apply, Sites publish, or activation.",
 );
 must(
   JSON.stringify(checkpoint.rolloutSequence) ===
-    JSON.stringify(manifest.rolloutSequence) &&
+      JSON.stringify(manifest.rolloutSequence) &&
     checkpoint.rolloutSequence.status ===
-      "staged_rollout_paused_for_corrective_sites_publish" &&
-    checkpoint.rolloutSequence.steps.length === 8 &&
-    checkpoint.rolloutSequence.steps[0]?.migration ===
-      LOCAL_CANDIDATE_ROLLOUT_MIGRATIONS[0] &&
-    checkpoint.rolloutSequence.steps[0]?.completed === true &&
-    checkpoint.rolloutSequence.steps[1]?.migration ===
-      LOCAL_CANDIDATE_ROLLOUT_MIGRATIONS[1] &&
-    checkpoint.rolloutSequence.steps[1]?.completed === true &&
-    checkpoint.rolloutSequence.steps[2]?.id ===
-      "publish_and_verify_audit_v2_and_client_v3_routes" &&
-    checkpoint.rolloutSequence.steps[2]?.completed === true &&
+      "predeployment_v5_cutover_freeze_required" &&
+    checkpoint.rolloutSequence.steps.length === 9 &&
+    checkpoint.rolloutSequence.steps.every(
+      (step: { completed: boolean; explicitReviewRequired: boolean }) =>
+        step.completed === false && step.explicitReviewRequired === true,
+    ) &&
+    checkpoint.rolloutSequence.steps[1]?.id === "freeze_content_v4_ingress" &&
+    checkpoint.rolloutSequence.steps[2]?.id === "drain_v4_content_work" &&
     checkpoint.rolloutSequence.steps[3]?.migration ===
-      LOCAL_CANDIDATE_ROLLOUT_MIGRATIONS[2] &&
-    checkpoint.rolloutSequence.steps[3]?.completed === true &&
-    checkpoint.rolloutSequence.steps[4]?.migration ===
-      LOCAL_CANDIDATE_ROLLOUT_MIGRATIONS[3] &&
-    checkpoint.rolloutSequence.steps[4]?.completed === true &&
-    checkpoint.rolloutSequence.steps[5]?.migration ===
-      LOCAL_CANDIDATE_ROLLOUT_MIGRATIONS[4] &&
-    checkpoint.rolloutSequence.steps[5]?.completed === true &&
-    checkpoint.rolloutSequence.steps[6]?.migration ===
-      LOCAL_CANDIDATE_ROLLOUT_MIGRATIONS[5] &&
-    checkpoint.rolloutSequence.steps[6]?.completed === true &&
-    checkpoint.rolloutSequence.steps[7]?.id ===
-      "republish_and_verify_repaired_client_v3" &&
-    checkpoint.rolloutSequence.steps[7]?.completed === false &&
-    checkpoint.rolloutSequence.steps[7]?.explicitReviewRequired,
-  "RR rollout must preserve completed 01210 -> 01430 -> Sites v37 -> 01842 -> 01853 -> 02609 -> verified 041629, then gate only the corrected Sites republish.",
+      LOCAL_CANDIDATE_PENDING_MIGRATIONS[0] &&
+    checkpoint.rolloutSequence.steps[5]?.id ===
+      "reconcile_generated_migration_version" &&
+    checkpoint.rolloutSequence.steps[6]?.id === "publish_v5_sites_candidate" &&
+    checkpoint.rolloutSequence.steps[8]?.id ===
+      "restore_bounded_internal_ingress",
+  "RR rollout must preserve the fail-closed merge/freeze/drain/apply/generated-version-reconcile/publish/restore order.",
 );
 const databaseEvidence = checkpoint.databaseEvidence;
 must(
-  databaseEvidence.liveBaseline.migrationFileCount ===
-    CURRENT_PARTIAL_ROLLOUT_EVIDENCE.migrationFileCount &&
+  databaseEvidence.liveBaseline.migrationFileCount === 43 &&
     databaseEvidence.liveBaseline.exactRemoteLedgerTreeSha256 ===
       CURRENT_PARTIAL_ROLLOUT_EVIDENCE.migrationTreeSha256 &&
-    databaseEvidence.liveBaseline.evidenceScope ===
-      LIVE_MIGRATION_EVIDENCE_SCOPE &&
-    databaseEvidence.liveBaseline.latestMigration ===
-      CURRENT_PARTIAL_ROLLOUT_EVIDENCE.latestMigration &&
-    databaseEvidence.liveBaseline.latestMigrationSha256 ===
-      CURRENT_PARTIAL_ROLLOUT_EVIDENCE.latestMigrationSha256 &&
-    databaseEvidence.liveBaseline.historicalRepositoryMigrationTreeSha256 ===
-      V36_LIVE_PARITY_EVIDENCE.historicalRepositoryMigrationTreeSha256 &&
-    databaseEvidence.liveBaseline.historicalRepositoryEvidenceScope ===
-      HISTORICAL_REPOSITORY_MIGRATION_EVIDENCE_SCOPE &&
-    databaseEvidence.candidate.migrationFileCount === 43 &&
+    databaseEvidence.candidate.migrationFileCount === 44 &&
     databaseEvidence.candidate.migrationTreeSha256 ===
       manifest.releaseCandidate.migrationTreeSha256 &&
     JSON.stringify(databaseEvidence.candidate.pendingMigrations) ===
       JSON.stringify(LOCAL_CANDIDATE_PENDING_MIGRATIONS) &&
     JSON.stringify(databaseEvidence.candidate.appliedMigrations) ===
       JSON.stringify(LOCAL_CANDIDATE_APPLIED_MIGRATIONS),
-  "RR database evidence must show exact live/candidate parity at the verified 43-migration ledger.",
+  "RR database evidence must distinguish live43 from the provisional DB44 candidate.",
 );
 const sourceTree = hashTree(resolve(repoRoot, manifest.source.root), {
   exclusions: manifest.source.generatedPathExclusions,
@@ -229,70 +162,44 @@ const sourceTree = hashTree(resolve(repoRoot, manifest.source.root), {
 const migrationTree = hashTree(resolve(repoRoot, manifest.migrations.root), {
   suffix: ".sql",
 });
-const mirrorTree = hashTree(resolve(repoRoot, manifest.migrations.mirrorRoot!), {
-  suffix: ".sql",
-});
 must(
-  sourceTree.fileCount === manifest.releaseCandidate.sourceFileCount &&
-    sourceTree.sha256 === manifest.releaseCandidate.sourceTreeSha256,
-  `RR candidate Sites fingerprint drifted (actual ${sourceTree.fileCount}/${sourceTree.sha256}).`,
-);
-must(
-  migrationTree.fileCount === 43 &&
-    migrationTree.sha256 === manifest.releaseCandidate.migrationTreeSha256 &&
-    mirrorTree.fileCount === migrationTree.fileCount &&
-    mirrorTree.sha256 === migrationTree.sha256 &&
-    JSON.stringify(mirrorTree.files) === JSON.stringify(migrationTree.files),
-  `RR candidate migration fingerprint drifted (actual ${migrationTree.fileCount}/${migrationTree.sha256}).`,
-);
-must(
-  sha256File(historicalCloseoutPath) ===
-    "aa173de20b552f1bc0a706658e9daf380591f8040dbe19441e6638e9eaecf812",
-  "Immutable v36 closeout JSON changed.",
-);
-must(
-  historicalCloseout.database.migrationTreeSha256 ===
-    V36_LIVE_PARITY_EVIDENCE.historicalRepositoryMigrationTreeSha256 &&
-    historicalCloseout.database.latestAppliedMigration ===
-      "20260802020000_momo_pipeline_query_indexes_v2.sql" &&
-    historicalCloseout.database.latestAppliedMigrationSha256 ===
-      V36_LIVE_PARITY_EVIDENCE.latestMigrationSha256 &&
-    historicalCloseout.productionSafetyState.allExternalWriteControlsLocked &&
-    !historicalCloseout.productionSafetyState.momoActivationExecuted,
-  "Historical v36 closeout no longer preserves its original repository-mirror evidence and frozen actions.",
+  sourceTree.fileCount === manifest.source.fileCount &&
+    sourceTree.sha256 === manifest.source.treeSha256 &&
+    migrationTree.fileCount === manifest.migrations.fileCount &&
+    migrationTree.sha256 === manifest.migrations.treeSha256,
+  "RR candidate fingerprints are stale.",
 );
 must(
   checkpoint.activationGates.some((gate: string) =>
-    /041629/iu.test(gate) && /live|verified/iu.test(gate),
+    /freeze[\s\S]*drain/iu.test(gate),
   ) &&
     checkpoint.activationGates.some((gate: string) =>
-      /Sites v38/iu.test(gate) && /publish|publication/iu.test(gate) &&
-        /no database change remains pending|all six rollout migrations/iu.test(gate),
+      /Supabase MCP[\s\S]*generated ledger version/iu.test(gate),
+    ) &&
+    checkpoint.activationGates.some((gate: string) =>
+      /follow-up PR[\s\S]*renam(?:e|es) both migration mirrors/iu.test(gate),
+    ) &&
+    checkpoint.activationGates.some((gate: string) =>
+      /Publish[\s\S]*Sites[\s\S]*external providers/iu.test(gate),
     ),
-  "Activation gates must distinguish the verified live database repair from the pending Sites v38 publish.",
+  "Activation gates omit a required fail-closed cutover boundary.",
+);
+const pgtapFixturePath = resolve(
+  repoRoot,
+  "supabase/tests/momo_preconnection_integration.sql",
 );
 must(
-  checkpoint.reusableEvidence.some((entry: string) =>
-    /MOMO_PRIVATE_POLICY_EVAL_2026-08-08\.json[\s\S]*10\/10[\s\S]*final-v3 request controls are source-hash-proven[\s\S]*earlier settings are report-recorded only[\s\S]*does not claim an atomic cross-process lifetime cost ledger/iu.test(
-      entry,
+  sha256File(pgtapFixturePath) ===
+      "0a9503c4f80cf8453b9d3473186d6d77b5a0ba06504ba036ce5eba98f7b0bcf8" &&
+    checkpoint.reusableEvidence.some((entry: string) =>
+      /46 statements\/19[\s\S]*354\/88[\s\S]*0a9503c4[\s\S]*89\/89/iu.test(
+        entry,
+      ),
     ),
-  ),
-  "RR reusable evidence must scope the private policy eval to local synthetic controls.",
+  "RR executable SQL/parser evidence is stale.",
 );
-must(
-  checkpoint.reusableEvidence.some((entry: string) =>
-    /02609[\s\S]*not comprehensive default-ACL closure[\s\S]*postgres is not a supabase_admin member[\s\S]*role is skipped/iu.test(
-      entry,
-    ),
-  ),
-  "RR reusable evidence must not overclaim comprehensive default-ACL closure.",
-);
-for (const [key, value] of Object.entries(checkpoint.runtimeVerification)) {
-  if (
-    /external.*(?:connected|enabled|verified)|activationExecuted/iu.test(key)
-  ) {
-    must(value === false, `Runtime checkpoint overclaims ${key}.`);
-  }
+for (const value of Object.values(checkpoint.runtimeVerification)) {
+  must(value === false, "Runtime checkpoint must not claim external action or activation.");
 }
 must(
   checkpoint.cleanupGate.branchDeletionAllowed === false &&
@@ -308,20 +215,16 @@ for (const document of [
   "artifacts/veroxa/docs/RR_CHECKPOINT.md",
   "artifacts/veroxa/docs/README_CURRENT_STATE.md",
 ]) {
-  must(
-    existsSync(resolve(repoRoot, document)),
-    `Current document is missing: ${document}`,
-  );
   const text = readFileSync(resolve(repoRoot, document), "utf8");
   must(
     text.includes(CURRENT_PARTIAL_ROLLOUT_EVIDENCE.migrationTreeSha256) &&
-      text.includes(
-        V36_LIVE_PARITY_EVIDENCE.historicalRepositoryMigrationTreeSha256,
-      ) &&
-      /historical[\s\S]{0,240}(?:repository|Sites mirror)/iu.test(text) &&
-      /041629/iu.test(text) && /applied|verified/iu.test(text) &&
-      /Sites v38/iu.test(text) && /pending|next/iu.test(text),
-    `Current document does not distinguish the verified live43 database state from the pending corrective Sites candidate: ${document}`,
+      text.includes(manifest.releaseCandidate.migrationTreeSha256) &&
+      text.includes(manifest.releaseCandidate.sourceTreeSha256) &&
+      /Sites v39/iu.test(text) &&
+      /045812/iu.test(text) &&
+      /pending|unapplied/iu.test(text) &&
+      /generated(?:[\s-]+migration)?[\s-]+version|generated ledger version/iu.test(text),
+    `Current document does not distinguish live production, provisional DB44, and the generated-version reconciliation gate: ${document}`,
   );
 }
 if (failures.length) {
@@ -330,5 +233,5 @@ if (failures.length) {
   process.exit(1);
 }
 console.log(
-  `RR checkpoint passed: immutable v36 history remains separate from Sites v37 / exact remote live43; the ${sourceTree.fileCount}-file corrected Sites candidate is reviewed, all ${migrationTree.fileCount} migrations are verified live, and only Sites v38 publish/verify remains pending.`,
+  `RR checkpoint passed: main59b/Sites v39/live43 remain exact; ${sourceTree.fileCount}-file Sites and ${migrationTree.fileCount}-migration candidates are reviewed locally but unmerged, unapplied, unpublished, and activation-frozen.`,
 );

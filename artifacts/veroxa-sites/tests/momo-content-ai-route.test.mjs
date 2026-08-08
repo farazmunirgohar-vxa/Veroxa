@@ -2,7 +2,11 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { createMomoContentAiPostHandler } from "../app/api/team/content-ai/package/core.ts";
-import { MOMO_CONTENT_AI_MAX_BODY_BYTES } from "../app/momo-content-ai-contract.ts";
+import {
+  MOMO_CONTENT_AI_MAX_BODY_BYTES,
+  MOMO_CONTENT_AI_PROMPT_VERSION,
+  MOMO_CONTENT_AI_VALIDATOR_VERSION,
+} from "../app/momo-content-ai-contract.ts";
 
 const RESTAURANT_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const OTHER_RESTAURANT_ID = "99999999-9999-4999-8999-999999999999";
@@ -16,6 +20,10 @@ const teamRouteSource = await readFile(new URL(
 ), "utf8");
 const workerRouteSource = await readFile(new URL(
   "../app/api/internal/momo/content-ai/dispatch/route.ts",
+  import.meta.url,
+), "utf8");
+const packageCoreSource = await readFile(new URL(
+  "../app/api/team/content-ai/package/core.ts",
   import.meta.url,
 ), "utf8");
 
@@ -104,6 +112,18 @@ test("queues one exact Momo package and returns before provider work", async () 
   });
   assert.match(calls.reserve[0].idempotencyHash, /^[0-9a-f]{64}$/u);
   assert.match(calls.reserve[0].clientRequestHash, /^[0-9a-f]{64}$/u);
+});
+
+test("v5 prompt and validator identities are bound into the reservation fingerprint", () => {
+  assert.equal(MOMO_CONTENT_AI_PROMPT_VERSION, "momo-content-package-2026-08-08-v5");
+  assert.equal(MOMO_CONTENT_AI_VALIDATOR_VERSION, "momo-content-validator-2026-08-08-v5");
+  const fingerprint = packageCoreSource.slice(
+    packageCoreSource.indexOf("const clientRequestHash"),
+    packageCoreSource.indexOf("let reservation"),
+  );
+  assert.match(fingerprint, /promptVersion: MOMO_CONTENT_AI_PROMPT_VERSION/u);
+  assert.match(fingerprint, /validatorVersion: MOMO_CONTENT_AI_VALIDATOR_VERSION/u);
+  assert.doesNotMatch(fingerprint, /2026-08-01-v4/u);
 });
 
 test("maps only authoritative database states into quiet portal states", async () => {

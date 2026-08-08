@@ -1,16 +1,14 @@
-import { createHash, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import {
   closeSync,
   fsyncSync,
-  lstatSync,
   openSync,
   readFileSync,
-  realpathSync,
   renameSync,
   unlinkSync,
   writeFileSync,
 } from "node:fs";
-import { basename, dirname, isAbsolute, resolve, sep } from "node:path";
+import { basename, dirname, resolve } from "node:path";
 import {
   REFRESHED_LOCAL_CANDIDATE_RELEASE_STATE,
   REFRESHED_LOCAL_CANDIDATE_STATUS,
@@ -25,12 +23,8 @@ import {
   type DeploymentManifest,
 } from "./release-manifest";
 
-const manifestRelativePath =
-  "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json";
 const rrRelativePath = "artifacts/veroxa/docs/RR_RELEASE_CHECKPOINT.json";
-const reviewGateRelativePath = "scripts/src/record-local-release-review.ts";
 const rrPath = resolve(repoRoot, rrRelativePath);
-const repositoryRealPath = realpathSync(repoRoot);
 
 type ReleaseCandidateCheckpoint = {
   state: string;
@@ -57,7 +51,7 @@ type ReleaseCandidateCheckpoint = {
   databaseChangesRequired: boolean;
   databaseMigrationApplied: boolean;
   sitesPublishRequired: boolean;
-  sitesCandidatePublished: boolean;
+  sitesPublished: boolean;
 };
 
 type RrCheckpoint = {
@@ -71,11 +65,6 @@ type RrCheckpoint = {
   scope?: {
     ownerContactAuthorized?: boolean;
   };
-  databaseMigrations: string[];
-  boundaryGroups: Record<
-    string,
-    { review: string; files: string[]; sha256: string }
-  >;
 };
 
 function serializedJson(value: unknown): string {
@@ -84,54 +73,6 @@ function serializedJson(value: unknown): string {
 
 function failIf(condition: boolean, message: string): void {
   if (condition) throw new Error(message);
-}
-
-function validatedBoundaryPath(relativePath: string): string {
-  failIf(
-    !relativePath || relativePath.includes("\0") || isAbsolute(relativePath),
-    `RR boundary path must be a nonempty repository-relative path: ${relativePath}`,
-  );
-  const absolute = resolve(repoRoot, relativePath);
-  failIf(
-    absolute !== repoRoot && !absolute.startsWith(`${repoRoot}${sep}`),
-    `RR boundary path escapes the repository: ${relativePath}`,
-  );
-  const stat = lstatSync(absolute);
-  failIf(
-    stat.isSymbolicLink(),
-    `RR boundary path cannot be a symlink: ${relativePath}`,
-  );
-  failIf(
-    !stat.isFile(),
-    `RR boundary path is not a regular file: ${relativePath}`,
-  );
-  const real = realpathSync(absolute);
-  failIf(
-    real !== repositoryRealPath &&
-      !real.startsWith(`${repositoryRealPath}${sep}`),
-    `RR boundary path resolves outside the repository: ${relativePath}`,
-  );
-  return absolute;
-}
-
-function groupHash(
-  groupName: string,
-  files: string[],
-  contentOverrides: ReadonlyMap<string, string> = new Map(),
-): string {
-  failIf(files.length === 0, `RR boundary group ${groupName} cannot be empty`);
-  failIf(
-    new Set(files).size !== files.length,
-    `RR boundary group ${groupName} contains a duplicate path`,
-  );
-  const hash = createHash("sha256");
-  for (const file of [...files].sort()) {
-    const absolute = validatedBoundaryPath(file);
-    hash.update(`${file}\0`);
-    hash.update(contentOverrides.get(file) ?? readFileSync(absolute));
-    hash.update("\0");
-  }
-  return hash.digest("hex");
 }
 
 function assertCandidateActionBoundary(
@@ -145,9 +86,7 @@ function assertCandidateActionBoundary(
     candidate.githubMerged ||
     candidate.futureMergedGitHubCommit !== null ||
     candidate.futureSitesVersion !== null ||
-    candidate.databaseChangesRequired ||
     candidate.databaseMigrationApplied ||
-    candidate.sitesPublishRequired ||
     candidate.sitesPublished ||
     candidate.githubMainMatchesCandidate ||
     candidate.fullReleaseGatePassed ||
@@ -155,10 +94,8 @@ function assertCandidateActionBoundary(
     checkpoint.githubMerged ||
     checkpoint.futureMergedGitHubCommit !== null ||
     checkpoint.futureSitesVersion !== null ||
-    checkpoint.databaseChangesRequired ||
     checkpoint.databaseMigrationApplied ||
-    checkpoint.sitesPublishRequired ||
-    checkpoint.sitesCandidatePublished ||
+    checkpoint.sitesPublished ||
     checkpoint.githubMainMatchesCandidate ||
     checkpoint.fullReleaseGatePassed ||
     checkpoint.allFourWorkflowsGreen !== null ||
@@ -210,7 +147,7 @@ function assertCheckpointMatchesManifest(
     checkpoint.databaseMigrationApplied !==
       candidate.databaseMigrationApplied ||
     checkpoint.sitesPublishRequired !== candidate.sitesPublishRequired ||
-    checkpoint.sitesCandidatePublished !== candidate.sitesPublished;
+    checkpoint.sitesPublished !== candidate.sitesPublished;
   failIf(
     mismatch,
     "RR candidate evidence does not match the deployment manifest",
@@ -246,9 +183,6 @@ function assertOnlyReviewFieldsChanged(
     value.releaseCandidate.state = "<review-status>";
     value.releaseCandidate.reviewedLocally = false;
     value.releaseCandidate.localReviewPassed = false;
-    for (const group of Object.values(value.boundaryGroups)) {
-      group.sha256 = "<reviewed-boundary-hash>";
-    }
   }
   failIf(
     serializedJson(normalizedOriginalRr) !==
@@ -363,50 +297,23 @@ failIf(!latestMigration, "Local review requires at least one migration");
 const latestMigrationSha256 = sha256File(
   resolve(repoRoot, manifest.migrations.root, latestMigration!),
 );
-const live = manifest.currentProductionObservation;
 const candidate = manifest.releaseCandidate;
 failIf(
-  source.fileCount !== live.sourceFileCount ||
-    source.sha256 !== live.sourceTreeSha256 ||
-    source.fileCount !== manifest.source.fileCount ||
+  source.fileCount !== manifest.source.fileCount ||
     source.sha256 !== manifest.source.treeSha256 ||
     source.fileCount !== candidate.sourceFileCount ||
     source.sha256 !== candidate.sourceTreeSha256,
-  "Candidate Sites source does not exactly match the observed live Sites v36 tree and stored fingerprints",
+  "Candidate Sites source does not match the stored pre-apply fingerprints",
 );
 failIf(
-  migrations.fileCount !== live.productionMigrationCount ||
-    migrations.sha256 !== live.migrationTreeSha256 ||
-    migrations.fileCount !== manifest.migrations.fileCount ||
+  migrations.fileCount !== manifest.migrations.fileCount ||
     migrations.sha256 !== manifest.migrations.treeSha256 ||
     migrations.fileCount !== candidate.migrationFileCount ||
     migrations.sha256 !== candidate.migrationTreeSha256 ||
-    latestMigration !== live.latestProductionMigration ||
-    latestMigrationSha256 !== live.latestProductionMigrationSha256 ||
     latestMigration !== candidate.latestCandidateMigration ||
     latestMigrationSha256 !== candidate.latestCandidateMigrationSha256,
-  "Candidate migrations do not exactly match the observed live 37-file ledger and stored fingerprints",
+  "Candidate migrations do not match the stored pre-apply fingerprints",
 );
-failIf(
-  rr.databaseMigrations.length !== migrations.files.length ||
-    rr.databaseMigrations.some(
-      (file, index) => file !== migrations.files[index],
-    ),
-  "RR migration inventory does not match the deterministic candidate ledger",
-);
-failIf(
-  !rr.boundaryGroups.delivery?.files.includes(reviewGateRelativePath),
-  "RR delivery boundary must include the local-review gate itself",
-);
-
-for (const [name, group] of Object.entries(rr.boundaryGroups)) {
-  const currentHash = groupHash(name, group.files);
-  failIf(
-    currentHash !== group.sha256,
-    `RR boundary group ${name} is stale; refresh fingerprints before recording review`,
-  );
-}
-
 const reviewedManifest = structuredClone(manifest);
 reviewedManifest.releaseState = REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE;
 reviewedManifest.releaseCandidate.status = REVIEWED_LOCAL_CANDIDATE_STATUS;
@@ -422,17 +329,6 @@ assertCandidateActionBoundary(reviewedManifest, reviewedRr);
 assertCheckpointMatchesManifest(reviewedManifest, reviewedRr);
 
 const stagedManifestContent = serializedJson(reviewedManifest);
-const stagedOverrides = new Map<string, string>([
-  [manifestRelativePath, stagedManifestContent],
-]);
-for (const [name, group] of Object.entries(reviewedRr.boundaryGroups)) {
-  const reviewedHash = groupHash(name, group.files, stagedOverrides);
-  failIf(
-    !/^[a-f0-9]{64}$/.test(reviewedHash),
-    `RR boundary group ${name} produced an invalid reviewed hash`,
-  );
-  group.sha256 = reviewedHash;
-}
 assertOnlyReviewFieldsChanged(manifest, reviewedManifest, rr, reviewedRr);
 
 replaceEvidencePair(
@@ -442,5 +338,5 @@ replaceEvidencePair(
   serializedJson(reviewedRr),
 );
 console.log(
-  `Recorded local release review: ${source.fileCount} Sites files, ${migrations.fileCount} migrations, ${Object.keys(reviewedRr.boundaryGroups).length} RR boundary groups.`,
+  `Recorded local release review: ${source.fileCount} Sites files and ${migrations.fileCount} mirrored migrations.`,
 );

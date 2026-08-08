@@ -36,9 +36,11 @@ test("Team media and content surfaces are incident-only while v1 controls remain
   assert.match(media, /latestEvent[\s\S]{0,500}event\.source_asset_id/);
   assert.match(media, /setRecoveryAssetId\(sourceAssetId\)/, "recovery must open the immutable exception source, not assume canonical bytes own the selected rights");
 
-  assert.match(content, /const attentionCount = role === "team"[\s\S]{0,120}\? openIncidents\.length/);
+  assert.match(content, /const attentionCount = role === "team"[\s\S]{0,160}\? openIncidents\.length \+ pendingReadyReviews\.length/);
   assert.doesNotMatch(content, /\? legacyReviewRuns\.length|\? legacyFailedRuns\.length/);
   assert.match(content, /EXCEPTION-ONLY QUEUE/);
+  assert.match(content, /READY REVIEW QUEUE/);
+  assert.match(content, /manual copy and download remain locked/);
   assert.match(content, /Legacy v1 history & manual recovery/);
   assert.match(content, /legacyReviewRuns\.map\(\(item\) => <ContentPackageReviewCard/);
 
@@ -57,6 +59,11 @@ test("Client copy presents safe outcomes without internal processing details", a
   assert.match(portal, /Veroxa recognized the same image and avoided duplicate work/);
   assert.match(portal, /v2AttentionReasons\.map\(\(reason\) => clientAttentionMessage\[reason\]\)/);
   assert.match(portal, /pipelineStatus === "veroxa_ready" && workflow\.rightsConfirmed/);
+  assert.match(portal, /Share food images you may use/);
+  assert.match(portal, /Add any clear food image you may use/);
+  assert.match(portal, /It does not need to be a confirmed Momo menu item/);
+  assert.match(portal, /own this image or have permission to provide it/);
+  assert.doesNotMatch(portal, /Share real Momo food images|Add a real Momo food image|Choose a real Momo JPG/);
   assert.match(data, /client\.rpc\("veroxa_momo_client_upload_status_v3"/);
   assert.match(data, /pipelineAttentionReasons: effectiveAttentionReasons/);
   assert.doesNotMatch(portal, /\bAI\b|\bautomatic(?:ally)?\b|provider_|content_ai_|canonical identity|processing identity|processing source|exact (?:saved )?bytes|storage record|registration identifier|processing upload/iu);

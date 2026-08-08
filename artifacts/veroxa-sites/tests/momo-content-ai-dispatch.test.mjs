@@ -13,7 +13,9 @@ import {
   MOMO_CONTENT_AI_MAX_REQUEST_MICROUSD,
   MOMO_CONTENT_AI_MAX_SOURCE_BYTES,
   MOMO_CONTENT_AI_MODEL,
+  MOMO_CONTENT_AI_PROMPT_VERSION,
   MOMO_CONTENT_AI_RESERVATION_MICROUSD,
+  MOMO_CONTENT_AI_VALIDATOR_VERSION,
 } from "../app/momo-content-ai-contract.ts";
 import {
   buildMomoContentAiProviderBody,
@@ -213,6 +215,20 @@ test("sends one exact hashed provider request only after the durable send intent
   assert.equal(providerBody.background, true);
   assert.equal(providerBody.metadata.veroxa_run_id, RUN_ID);
   assert.equal(providerBody.metadata.veroxa_request_hash, REQUEST_HASH);
+  assert.equal(MOMO_CONTENT_AI_PROMPT_VERSION, "momo-content-package-2026-08-08-v5");
+  assert.equal(MOMO_CONTENT_AI_VALIDATOR_VERSION, "momo-content-validator-2026-08-08-v5");
+  assert.match(providerBody.instructions, /image may show any food/iu);
+  assert.match(providerBody.instructions, /never infer or name a dish, cuisine, restaurant, brand, ingredient/iu);
+  assert.match(providerBody.instructions, /only subject food can pass Veroxa validation/iu);
+  assert.match(providerBody.instructions, /masterCaption and every platform caption image-independent/iu);
+  assert.match(providerBody.instructions, /Create exactly one visible_media claim and no others/iu);
+  assert.match(providerBody.instructions, /owner_truth claims must never appear in alt_text/iu);
+  assert.match(providerBody.instructions, /Food presentation: \$\{labels joined with '; '\}\./u);
+  assert.match(providerBody.instructions, /Set assetAssessment\.visualSummary and altText to that exact string/iu);
+  assert.match(providerBody.instructions, /visible_media claim's exactText to that entire exact string/iu);
+  assert.doesNotMatch(providerBody.instructions, /editor for Momo's House/iu);
+  assert.equal(providerBody.text.format.schema.properties.assetAssessment.properties.subject.enum.includes("other"), true);
+  assert.equal(providerBody.text.format.schema.properties.internalMediaTags.items.properties.confidence.minimum, 0.7);
   assert.match(providerBody.safety_identifier, /^momo-team-[0-9a-f]{48}$/u);
   assert.equal(calls.bind[0].providerResponseId, "resp_momo_content_001");
   assert.equal(calls.release.length, 0);
