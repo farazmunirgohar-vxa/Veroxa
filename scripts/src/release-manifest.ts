@@ -256,7 +256,7 @@ export const APPLICATION_QUALITY_EVIDENCE = {
   hostedDatabaseExecutionPassed: false,
   repairMigrationSha256: REPAIR_MIGRATION_EVIDENCE.sha256,
   preconnectionFixtureSha256:
-    "8d9051a7599f7c82ec17781a0369fca2efc6367649f31db50c0e96dd25639902",
+    "1e08caa59c9782184eb7271ed91dd9f791f62fd7fcaf6b4bb50fa7e7cceaf6ed",
   ownerFixtureSha256:
     "1e16e1e4d03a1ff35fe25cda626c25f176f1b05b711fd3e7a26f581550484a24",
   fullOperatingSystemFixtureSha256:

@@ -3294,6 +3294,8 @@ begin
     )::text,
     true
   );
+  perform set_config('request.jwt.claim.sub', team_user_id::text, true);
+  perform set_config('request.jwt.claim.role', 'authenticated', true);
   execute 'set local role authenticated';
 
   begin
@@ -3429,6 +3431,8 @@ begin
 
   execute 'reset role';
   perform set_config('request.jwt.claims', '{"role":"anon"}', true);
+  perform set_config('request.jwt.claim.sub', '', true);
+  perform set_config('request.jwt.claim.role', 'anon', true);
   execute 'set local role anon';
   begin
     perform 1
@@ -3450,6 +3454,8 @@ begin
     )::text,
     true
   );
+  perform set_config('request.jwt.claim.sub', proxy_user_id::text, true);
+  perform set_config('request.jwt.claim.role', 'authenticated', true);
   execute 'set local role authenticated';
   begin
     perform 1

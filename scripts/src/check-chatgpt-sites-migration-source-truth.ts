@@ -90,6 +90,7 @@ for (const path of authorityDocs) {
     LOCAL_CANDIDATE_SOURCE_EVIDENCE.treeSha256,
     REPAIR_MIGRATION_EVIDENCE.candidateTreeSha256,
     REPAIR_MIGRATION_EVIDENCE.sha256,
+    APPLICATION_QUALITY_EVIDENCE.preconnectionFixtureSha256,
     APPLICATION_QUALITY_EVIDENCE.ownerFixtureSha256,
     "non-final",
     "clean-chain migration apply",
