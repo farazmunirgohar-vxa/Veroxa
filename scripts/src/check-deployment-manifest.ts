@@ -48,7 +48,7 @@ must(
       CURRENT_PARTIAL_ROLLOUT_EVIDENCE.latestMigration &&
     live.latestProductionMigrationSha256 ===
       CURRENT_PARTIAL_ROLLOUT_EVIDENCE.latestMigrationSha256,
-  "Current production must distinguish Sites v37 / exact remote 40-ledger from the historical v36 baseline.",
+  "Current production must distinguish Sites v37 / exact remote live43 repair evidence from the historical v36 baseline.",
 );
 const historicalParity = manifest.historicalV36GitHubReconciliationEvidence;
 must(
@@ -151,11 +151,16 @@ must(
       JSON.stringify(LOCAL_CANDIDATE_PENDING_MIGRATIONS) &&
     JSON.stringify(manifest.releaseCandidate.databaseMigrationsApplied) ===
       JSON.stringify(LOCAL_CANDIDATE_APPLIED_MIGRATIONS) &&
-    LOCAL_CANDIDATE_PENDING_MIGRATIONS.every((migration) =>
+    LOCAL_CANDIDATE_APPLIED_MIGRATIONS.every((migration) =>
       migrationTree.files.includes(migration),
     ) &&
-    migrationTree.files.at(-1) === LOCAL_CANDIDATE_PENDING_MIGRATIONS[0],
-  "Candidate pending-migration inventory or ordering drifted.",
+    manifest.releaseCandidate.databaseMigrationApplied === true &&
+    manifest.releaseCandidate.databaseChangesRequired === false &&
+    manifest.releaseCandidate.candidateMigrationsMatchLiveLedger === true &&
+    migrationTree.sha256 === live.migrationTreeSha256 &&
+    migrationTree.files.at(-1) ===
+      manifest.releaseCandidate.latestCandidateMigration,
+  "Candidate applied-migration inventory, live parity, or ordering drifted.",
 );
 const latestCandidatePath = resolve(
   repoRoot,
@@ -187,5 +192,5 @@ if (failures.length) {
   process.exit(1);
 }
 console.log(
-  `Veroxa forward-repair evidence passed: Sites v37 / exact remote 42-ledger ${live.migrationTreeSha256} is paused at Client v3 repair; the reviewed corrective candidate is ${sourceTree.fileCount} Sites files / ${migrationTree.fileCount} migrations.`,
+  `Veroxa corrective-release evidence passed: Sites v37 remains live, exact remote live43 ${live.migrationTreeSha256} includes the verified Client v3 repair, and only the reviewed ${sourceTree.fileCount}-file Sites v38 candidate remains unpublished.`,
 );

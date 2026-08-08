@@ -2,12 +2,12 @@
 
 Status: Short index for Faraz, Codex, and future ChatGPT/Codex sessions.
 
-## 2026-08-08 — staged rollout paused for forward repair (current)
+## 2026-08-08 — database repair verified; corrected Sites v38 pending (current)
 
-- Start with `VEROXA_DEPLOYMENT_MANIFEST.json` and `RR_RELEASE_CHECKPOINT.json`. Sites v37 is live from `61e9ace7723ef56f42111f320327187596406944` (200 files / `929e05cf68a6af5176811f49321ec108e617b93a08153b65b3f86b109d0c8c18`); live Supabase is 42 migrations / `dc565dd1f5f4a5efe6a2b253e7437e93f6364b5581c56bb811969fa7241a7a84` through `02609`; canonical `main` is `65dfe0e921c4bb1d66c273ec33f36d10bbf2e84d`.
-- Applied `01430` is immutable at `987186e74590c6e484ebfee47e1c7ed384e2b4dc8c4a97ad7243ae38feb765cc`. The corrective branch `agent/momo-client-v3-forward-scope-repair` restores it and adds sole pending migration `20260808040400_momo_client_pipeline_displayed_rights_scope_fix.sql`.
-- The corrective candidate is 201 Sites files / `a007f78d2826aa9b9f372f1aec8cae4d768e759ba15e6b7cf7281a013b79db3e` and 43 mirrored migrations / `3efcc5266275463665f45eed9320cd3bf108abe623c2a7771558789ecd1c669e`. Its PR is null; local review passed; `040400` and corrected Sites v38 are not live.
-- Completed: `01210`, immutable `01430`, Sites v37, `01842`, `01853`, and `02609`. Production authority is granted but automation remains disabled: pass exact gates, apply/verify `040400`, then publish/verify Sites v38.
+- Start with `VEROXA_DEPLOYMENT_MANIFEST.json` and `RR_RELEASE_CHECKPOINT.json`. Sites v37 is live from `61e9ace7723ef56f42111f320327187596406944` (200 files / `929e05cf68a6af5176811f49321ec108e617b93a08153b65b3f86b109d0c8c18`); live Supabase is 43 migrations / `8a49f00ab3bd6d9623100fec238939b6cb81f17d67d0e2d3a4426559c137e41c` through `041629`; canonical `main` is `65dfe0e921c4bb1d66c273ec33f36d10bbf2e84d`.
+- Applied `01430` is immutable at `987186e74590c6e484ebfee47e1c7ed384e2b4dc8c4a97ad7243ae38feb765cc`. The corrective branch `agent/momo-client-v3-forward-scope-repair` preserves it and mirrors applied repair `20260808041629_repair_momo_client_v3_displayed_asset_scope.sql` at `6cbf3f80d028d3fe54093b14bae59314913b4f0bfacfbf31fce4aa2a24e429ba`.
+- The corrective candidate is 201 Sites files / `4edae9660343cda362968bd08e544ba5a154c90a902ac961365ceb32ea820292` and 43 mirrored migrations / `8a49f00ab3bd6d9623100fec238939b6cb81f17d67d0e2d3a4426559c137e41c`. Its migration tree matches live43. PR #163 is open but not merged; exact-final-head workflows and review-thread evidence remain unrecorded. Local review passed, and corrected Sites v38 is not live.
+- Completed: `01210`, immutable `01430`, Sites v37, `01842`, `01853`, `02609`, and verified `041629`. Production authority is granted but automation remains disabled: pass exact gates, then publish/verify Sites v38. No database migration remains pending.
 - Applied `02609` still skipped `supabase_admin`; it is not comprehensive ACL closure. Private policy-eval evidence remains local-only, and no provider, external publishing authority, or Momo activation is enabled.
 
 ## 2026-08-05 — retired source permanently removed
