@@ -4268,39 +4268,40 @@ declare
   target_restaurant_id uuid :=
     current_setting('veroxa.test.restaurant_id')::uuid;
   fixture_position integer;
-  ready_id uuid;
-  run_id uuid;
-  asset_id uuid;
+  fixture_ready_id uuid;
+  fixture_run_id uuid;
+  fixture_asset_id uuid;
 begin
   for fixture_position in 1..2 loop
-    ready_id := current_setting(
+    fixture_ready_id := current_setting(
       'veroxa.test.ready_review_package_' || fixture_position::text
     )::uuid;
-    run_id := current_setting(
+    fixture_run_id := current_setting(
       'veroxa.test.ready_review_run_' || fixture_position::text
     )::uuid;
-    asset_id := current_setting(
+    fixture_asset_id := current_setting(
       'veroxa.test.ready_review_asset_' || fixture_position::text
     )::uuid;
     if not exists (
          select 1 from public.veroxa_momo_ready_packages_v2 ready
-         where ready.id = ready_id
+         where ready.id = fixture_ready_id
            and ready.restaurant_id = target_restaurant_id
            and not ready.external_write_allowed
        )
        or not exists (
          select 1 from public.veroxa_momo_ready_variants_v2 variant
-         where variant.ready_package_id = ready_id
+         where variant.ready_package_id = fixture_ready_id
            and variant.restaurant_id = target_restaurant_id
            and not variant.external_write_allowed
        )
        or not exists (
          select 1 from public.veroxa_momo_content_ai_runs run
-         where run.id = run_id and run.source_asset_id = asset_id
+         where run.id = fixture_run_id
+           and run.source_asset_id = fixture_asset_id
        )
        or not exists (
          select 1 from public.veroxa_media_assets asset
-         where asset.id = asset_id
+         where asset.id = fixture_asset_id
            and asset.restaurant_id = target_restaurant_id
        )
        or not exists (
@@ -4309,7 +4310,7 @@ begin
          where verification.id = current_setting(
            'veroxa.test.ready_review_verification_' || fixture_position::text
          )::uuid
-           and verification.asset_id = asset_id
+           and verification.asset_id = fixture_asset_id
        )
        or not exists (
          select 1
@@ -4319,8 +4320,8 @@ begin
            on object.id = ready.source_storage_object_id
           and object.bucket_id = 'restaurant-media'
           and object.name = ready.source_storage_path
-         where ready.id = ready_id
-           and rights.asset_id = asset_id
+         where ready.id = fixture_ready_id
+           and rights.asset_id = fixture_asset_id
        ) then
       raise exception 'momo_ready_discard_deleted_evidence';
     end if;
