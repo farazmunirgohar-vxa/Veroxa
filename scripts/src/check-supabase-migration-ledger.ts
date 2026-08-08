@@ -7,9 +7,12 @@ import { createHash } from "node:crypto";
 import { readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
+  ACTIVE_ROLLOUT_APPLIED_MIGRATIONS,
+  ACTIVE_ROLLOUT_DATABASE_EVIDENCE,
   HISTORICAL_REPOSITORY_MIGRATION_EVIDENCE_SCOPE,
   LIVE_MIGRATION_EVIDENCE_SCOPE,
   LOCAL_CANDIDATE_MIGRATION_EVIDENCE_SCOPE,
+  LOCAL_CANDIDATE_FORWARD_MIGRATIONS,
   LOCAL_CANDIDATE_PENDING_MIGRATIONS,
   TREE_HASH_ALGORITHM,
   V36_LIVE_PARITY_EVIDENCE,
@@ -19,7 +22,7 @@ import {
   repoRoot,
 } from "./release-manifest";
 const EXPECTED_CANDIDATE_TREE_SHA256 =
-  "e19e1d7cc102ba1e6297de1860d005f19cbbb2dfd3873ed195af0c89d92b829c";
+  "8a49f00ab3bd6d9623100fec238939b6cb81f17d67d0e2d3a4426559c137e41c";
 const EXPECTED_PENDING_HASHES = new Map<string, string>([
   [
     "20260808001210_audit_intake_envelope_v2.sql",
@@ -27,7 +30,7 @@ const EXPECTED_PENDING_HASHES = new Map<string, string>([
   ],
   [
     "20260808001430_momo_client_pipeline_readback_v3.sql",
-    "b3671ef8a292f88e55bb733ceeda473ecf3095fd6048d20519fc7d5ddebe28ff",
+    "987186e74590c6e484ebfee47e1c7ed384e2b4dc8c4a97ad7243ae38feb765cc",
   ],
   [
     "20260808001842_retire_audit_intake_v1.sql",
@@ -40,6 +43,10 @@ const EXPECTED_PENDING_HASHES = new Map<string, string>([
   [
     "20260808002609_future_object_default_acl_hardening.sql",
     "ab41ed8adf7170d81dc60a51607b12497cae6d52f1c28f63639e4fef6392e01a",
+  ],
+  [
+    "20260808041629_repair_momo_client_v3_displayed_asset_scope.sql",
+    "6cbf3f80d028d3fe54093b14bae59314913b4f0bfacfbf31fce4aa2a24e429ba",
   ],
 ]);
 const correctedLiveMigrationLedger = [
@@ -83,8 +90,12 @@ const correctedLiveMigrationLedger = [
 ];
 const expectedCandidateLedger = [
   ...correctedLiveMigrationLedger,
-  ...LOCAL_CANDIDATE_PENDING_MIGRATIONS,
+  ...LOCAL_CANDIDATE_FORWARD_MIGRATIONS,
 ];
+const expectedActiveRolloutLedger = [
+  ...correctedLiveMigrationLedger,
+  ...ACTIVE_ROLLOUT_APPLIED_MIGRATIONS,
+].sort();
 const retiredNormalizedFilenames = [
   "20260802010000_momo_upload_veroxa_ready_v2.sql",
   "20260802013000_momo_client_pipeline_readback_v2.sql",
@@ -150,17 +161,17 @@ if (
   JSON.stringify(sitesLedger) !== JSON.stringify(expectedCandidateLedger)
 ) {
   throw new Error(
-    "Root and Sites migration inventories must contain the corrected live 37 followed by exactly five candidate-only migrations.",
+    "Root and Sites migration inventories must contain the historical live 37 followed by exactly six forward migrations.",
   );
 }
 if (
   JSON.stringify(rootLiveLedger) !==
-    JSON.stringify(correctedLiveMigrationLedger) ||
+    JSON.stringify(expectedActiveRolloutLedger) ||
   JSON.stringify(sitesLiveLedger) !==
-    JSON.stringify(correctedLiveMigrationLedger)
+    JSON.stringify(expectedActiveRolloutLedger)
 ) {
   throw new Error(
-    "Corrected live migration baseline no longer matches the exact 37-row remote ledger.",
+    "Active rollout ledger no longer matches the exact 39-row remote observation.",
   );
 }
 if (JSON.stringify(archivedLedger) !== JSON.stringify(expectedArchived)) {
@@ -202,10 +213,10 @@ const sitesLiveTreeHash = migrationTreeHash(
   sitesLiveLedger,
 );
 if (
-  rootLiveTreeHash !== V36_LIVE_PARITY_EVIDENCE.migrationTreeSha256 ||
-  sitesLiveTreeHash !== V36_LIVE_PARITY_EVIDENCE.migrationTreeSha256 ||
-  rootLiveLedger.length !== 37 ||
-  sitesLiveLedger.length !== 37
+  rootLiveTreeHash !== ACTIVE_ROLLOUT_DATABASE_EVIDENCE.migrationTreeSha256 ||
+  sitesLiveTreeHash !== ACTIVE_ROLLOUT_DATABASE_EVIDENCE.migrationTreeSha256 ||
+  rootLiveLedger.length !== ACTIVE_ROLLOUT_DATABASE_EVIDENCE.migrationFileCount ||
+  sitesLiveLedger.length !== ACTIVE_ROLLOUT_DATABASE_EVIDENCE.migrationFileCount
 ) {
   throw new Error(
     `Exact remote live baseline drifted (root=${rootLiveTreeHash}, Sites=${sitesLiveTreeHash}).`,
@@ -220,8 +231,8 @@ const sitesCandidateTree = hashTree(
   { suffix: ".sql" },
 );
 if (
-  rootCandidateTree.fileCount !== 42 ||
-  sitesCandidateTree.fileCount !== 42 ||
+  rootCandidateTree.fileCount !== 43 ||
+  sitesCandidateTree.fileCount !== 43 ||
   rootCandidateTree.sha256 !== EXPECTED_CANDIDATE_TREE_SHA256 ||
   sitesCandidateTree.sha256 !== EXPECTED_CANDIDATE_TREE_SHA256 ||
   manifest.migrations.evidenceScope !==
@@ -232,7 +243,7 @@ if (
   manifest.migrations.treeSha256 !== rootCandidateTree.sha256 ||
   manifest.migrations.mirrorTreeSha256 !== sitesCandidateTree.sha256 ||
   manifest.releaseCandidate.migrationTreeSha256 !== rootCandidateTree.sha256 ||
-  manifest.releaseCandidate.migrationFileCount !== 42
+  manifest.releaseCandidate.migrationFileCount !== 43
 ) {
   throw new Error(
     `Local candidate fingerprint drifted (root=${rootCandidateTree.fileCount}/${rootCandidateTree.sha256}, Sites=${sitesCandidateTree.fileCount}/${sitesCandidateTree.sha256}).`,
@@ -241,16 +252,17 @@ if (
 if (
   JSON.stringify(manifest.releaseCandidate.pendingMigrations) !==
     JSON.stringify(LOCAL_CANDIDATE_PENDING_MIGRATIONS) ||
-  manifest.releaseCandidate.databaseMigrationApplied ||
-  manifest.releaseCandidate.databaseMigrationsApplied?.length !== 0 ||
+  !manifest.releaseCandidate.databaseMigrationApplied ||
+  JSON.stringify(manifest.releaseCandidate.databaseMigrationsApplied) !==
+    JSON.stringify(ACTIVE_ROLLOUT_APPLIED_MIGRATIONS) ||
   manifest.releaseCandidate.databaseApplyAuthorized ||
-  manifest.releaseCandidate.deploymentAuthorized
+  !manifest.releaseCandidate.deploymentAuthorized
 ) {
   throw new Error(
-    "Forward migrations must remain candidate-only, unapplied, and unauthorized.",
+    "Rollout evidence must preserve all six applied forward migrations with no remaining database apply authorization.",
   );
 }
-for (const filename of LOCAL_CANDIDATE_PENDING_MIGRATIONS) {
+for (const filename of LOCAL_CANDIDATE_FORWARD_MIGRATIONS) {
   const actualHash = sha256(resolve(repoRoot, "supabase/migrations", filename));
   if (actualHash !== EXPECTED_PENDING_HASHES.get(filename)) {
     throw new Error(`Pending candidate migration content drifted: ${filename}`);
@@ -260,12 +272,12 @@ const latestLiveHash = sha256(
   resolve(
     repoRoot,
     "supabase/migrations",
-    V36_LIVE_PARITY_EVIDENCE.latestMigration,
+    ACTIVE_ROLLOUT_DATABASE_EVIDENCE.latestMigration,
   ),
 );
-if (latestLiveHash !== V36_LIVE_PARITY_EVIDENCE.latestMigrationSha256) {
+if (latestLiveHash !== ACTIVE_ROLLOUT_DATABASE_EVIDENCE.latestMigrationSha256) {
   throw new Error(
-    `Latest corrected live migration drifted: ${V36_LIVE_PARITY_EVIDENCE.latestMigration}`,
+    `Latest active rollout migration drifted: ${ACTIVE_ROLLOUT_DATABASE_EVIDENCE.latestMigration}`,
   );
 }
 const historicalCloseout = JSON.parse(
@@ -293,5 +305,5 @@ if (
   );
 }
 console.log(
-  "Supabase migration ledger guardrail passed: exact remote live37 d306d26c is mirrored byte-for-byte; five ordered forward migrations remain a 42-file local candidate only; historical v36 repository evidence is preserved separately.",
+  "Supabase migration ledger guardrail passed: the exact remote live43 tree is mirrored byte-for-byte, all six forward migrations are recorded as applied, and historical v36 evidence stays separate.",
 );

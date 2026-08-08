@@ -395,7 +395,7 @@ test("Client v3 readback accepts only sanitized coherent pipeline states", async
 
   const [sql, repair, retirement, clientData] = await Promise.all([
     readFile(new URL("../supabase/migrations/20260808001430_momo_client_pipeline_readback_v3.sql", import.meta.url), "utf8"),
-    readFile(new URL("../supabase/migrations/20260808035535_repair_momo_client_v3_displayed_asset_scope.sql", import.meta.url), "utf8"),
+    readFile(new URL("../supabase/migrations/20260808041629_repair_momo_client_v3_displayed_asset_scope.sql", import.meta.url), "utf8"),
     readFile(new URL("../supabase/migrations/20260808001853_retire_momo_client_pipeline_readback_v2.sql", import.meta.url), "utf8"),
     readFile(new URL("../app/momo-client-data.ts", import.meta.url), "utf8"),
   ]);

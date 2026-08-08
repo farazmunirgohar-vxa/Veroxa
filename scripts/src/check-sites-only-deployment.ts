@@ -6,6 +6,7 @@ const __name = <T>(target: T, value: string): T =>
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
+  ACTIVE_ROLLOUT_APPLIED_MIGRATIONS,
   LOCAL_CANDIDATE_PENDING_MIGRATIONS,
   REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE,
   V36_LIVE_PARITY_EVIDENCE,
@@ -80,15 +81,16 @@ must(
   "RR checkpoint must identify the schema-10 reviewed local candidate.",
 );
 must(
-  checkpoint.releaseCandidate?.pullRequest === null &&
+  checkpoint.releaseCandidate?.pullRequest === 162 &&
     checkpoint.releaseCandidate.githubMerged === false &&
-    checkpoint.releaseCandidate.databaseMigrationApplied === false &&
-    checkpoint.releaseCandidate.databaseMigrationsApplied?.length === 0 &&
+    checkpoint.releaseCandidate.databaseMigrationApplied === true &&
+    JSON.stringify(checkpoint.releaseCandidate.databaseMigrationsApplied) ===
+      JSON.stringify(ACTIVE_ROLLOUT_APPLIED_MIGRATIONS) &&
     checkpoint.releaseCandidate.sitesPublished === false &&
-    checkpoint.releaseCandidate.deploymentAuthorized === false &&
+    checkpoint.releaseCandidate.deploymentAuthorized === true &&
     checkpoint.releaseCandidate.activationExecuted === false &&
     checkpoint.releaseCandidate.fullReleaseGatePassed === false,
-  "RR checkpoint must not claim PR, merge, database apply, Sites publish, deployment, full-gate, or activation evidence.",
+  "RR checkpoint must preserve PR #162 and all six applied migrations while keeping merge, Sites publication, full-gate, and activation incomplete.",
 );
 const hostingPath = resolve(
   repoRoot,
@@ -119,7 +121,7 @@ must(
   `Local Sites candidate fingerprint drifted (actual ${sourceTree.fileCount}/${sourceTree.sha256}).`,
 );
 must(
-  migrationTree.fileCount === 42 &&
+  migrationTree.fileCount === 43 &&
     migrationTree.sha256 === manifest.migrations.treeSha256 &&
     migrationMirrorTree.fileCount === migrationTree.fileCount &&
     migrationMirrorTree.sha256 === migrationTree.sha256 &&
@@ -153,19 +155,20 @@ must(
   "Sites-bundled readiness evidence must remain fail-closed No-Go.",
 );
 must(
-  !manifest.deploymentFreeze.automaticDeploymentsAllowed &&
-    !manifest.deploymentFreeze.databaseApplyAuthorized &&
-    !manifest.deploymentFreeze.sitesPublishAuthorized &&
-    !manifest.releaseCandidate.databaseApplyAuthorized &&
-    !manifest.releaseCandidate.databaseMigrationApplied &&
-    manifest.releaseCandidate.databaseMigrationsApplied?.length === 0 &&
-    !manifest.releaseCandidate.sitesPublishAuthorized &&
-    !manifest.releaseCandidate.sitesPublished &&
-    !manifest.releaseCandidate.deploymentAuthorized &&
-    !manifest.releaseCandidate.activationExecuted &&
-    !manifest.releaseCandidate.fullReleaseGatePassed &&
+  manifest.deploymentFreeze.automaticDeploymentsAllowed === false &&
+    manifest.deploymentFreeze.databaseApplyAuthorized === false &&
+    manifest.deploymentFreeze.sitesPublishAuthorized === true &&
+    manifest.releaseCandidate.databaseApplyAuthorized === false &&
+    manifest.releaseCandidate.databaseMigrationApplied === true &&
+    JSON.stringify(manifest.releaseCandidate.databaseMigrationsApplied) ===
+      JSON.stringify(ACTIVE_ROLLOUT_APPLIED_MIGRATIONS) &&
+    manifest.releaseCandidate.sitesPublishAuthorized === true &&
+    manifest.releaseCandidate.sitesPublished === false &&
+    manifest.releaseCandidate.deploymentAuthorized === true &&
+    manifest.releaseCandidate.activationExecuted === false &&
+    manifest.releaseCandidate.fullReleaseGatePassed === false &&
     Object.values(manifest.activationState).every((value) => value === false),
-  "Local candidate must remain unpublished, unapplied, undeployed, unactivated, and unauthorized.",
+  "Staged rollout authorization must remain explicit while Sites publication and every external activation remain incomplete.",
 );
 if (failures.length) {
   console.error("Sites-only deployment guardrail failed:");
@@ -173,5 +176,5 @@ if (failures.length) {
   process.exit(1);
 }
 console.log(
-  `Sites-only deployment guardrail passed: Vercel remains retired; the ${sourceTree.fileCount}-file Sites / ${migrationTree.fileCount}-migration local candidate is fingerprinted but unpublished and unapplied; all deployment and activation gates remain closed.`,
+  `Sites-only deployment guardrail passed: Vercel remains retired; all ${migrationTree.fileCount} database migrations are live, the ${sourceTree.fileCount}-file Sites candidate is unpublished, and every external activation remains closed.`,
 );

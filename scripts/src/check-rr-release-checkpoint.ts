@@ -6,6 +6,8 @@ const __name = <T>(target: T, value: string): T =>
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
+  ACTIVE_ROLLOUT_APPLIED_MIGRATIONS,
+  ACTIVE_ROLLOUT_DATABASE_EVIDENCE,
   HISTORICAL_REPOSITORY_MIGRATION_EVIDENCE_SCOPE,
   LIVE_MIGRATION_EVIDENCE_SCOPE,
   LIVE_PRODUCTION_EVIDENCE_STATUS,
@@ -114,14 +116,14 @@ must(
   JSON.stringify(live) ===
     JSON.stringify(manifest.currentProductionObservation) &&
     live.evidenceStatus === LIVE_PRODUCTION_EVIDENCE_STATUS &&
-    live.productionMigrationCount === 37 &&
-    live.migrationTreeSha256 === V36_LIVE_PARITY_EVIDENCE.migrationTreeSha256 &&
+    live.productionMigrationCount === ACTIVE_ROLLOUT_DATABASE_EVIDENCE.migrationFileCount &&
+    live.migrationTreeSha256 === ACTIVE_ROLLOUT_DATABASE_EVIDENCE.migrationTreeSha256 &&
     live.migrationTreeEvidenceScope === LIVE_MIGRATION_EVIDENCE_SCOPE &&
     live.historicalRepositoryMigrationTreeSha256 ===
       V36_LIVE_PARITY_EVIDENCE.historicalRepositoryMigrationTreeSha256 &&
     live.historicalRepositoryMigrationTreeEvidenceScope ===
       HISTORICAL_REPOSITORY_MIGRATION_EVIDENCE_SCOPE,
-  "RR must preserve the exact remote live-37 baseline separately from the historical repository fingerprint.",
+  "RR must preserve the exact remote live-43 database cutover separately from historical v36 evidence.",
 );
 must(
   JSON.stringify(checkpoint.historicalV36GitHubReconciliationEvidence) ===
@@ -145,63 +147,63 @@ must(
   "RR candidate fields or fingerprints differ from the deployment manifest.",
 );
 must(
-  checkpoint.releaseCandidate.pullRequest === null &&
+  checkpoint.releaseCandidate.pullRequest === 162 &&
     !checkpoint.releaseCandidate.githubMerged &&
     checkpoint.releaseCandidate.allFourWorkflowsGreen === null &&
     checkpoint.releaseCandidate.zeroUnresolvedReviewThreads === null &&
-    !checkpoint.releaseCandidate.databaseMigrationApplied &&
-    checkpoint.releaseCandidate.databaseMigrationsApplied.length === 0 &&
+    checkpoint.releaseCandidate.databaseMigrationApplied &&
+    JSON.stringify(checkpoint.releaseCandidate.databaseMigrationsApplied) ===
+      JSON.stringify(ACTIVE_ROLLOUT_APPLIED_MIGRATIONS) &&
     !checkpoint.releaseCandidate.databaseApplyAuthorized &&
     !checkpoint.releaseCandidate.sitesPublished &&
-    !checkpoint.releaseCandidate.sitesPublishAuthorized &&
-    !checkpoint.releaseCandidate.deploymentAuthorized &&
+    checkpoint.releaseCandidate.sitesPublishAuthorized &&
+    checkpoint.releaseCandidate.deploymentAuthorized &&
     !checkpoint.releaseCandidate.activationExecuted &&
     !checkpoint.releaseCandidate.fullReleaseGatePassed,
-  "RR candidate overclaims PR, workflow, database, Sites, deployment, or activation evidence.",
+  "RR candidate does not match the database-complete, Sites-pending cutover state.",
 );
 must(
   JSON.stringify(checkpoint.rolloutSequence) ===
     JSON.stringify(manifest.rolloutSequence) &&
-    checkpoint.rolloutSequence.status === "blocked_not_started" &&
-    checkpoint.rolloutSequence.steps.every(
-      (step: { completed: boolean }) => !step.completed,
+    checkpoint.rolloutSequence.status === "database_complete_sites_urgent" &&
+    checkpoint.rolloutSequence.steps.length === 7 &&
+    checkpoint.rolloutSequence.steps.slice(0, 6).every(
+      (step: { completed: boolean }) => step.completed,
     ) &&
-    checkpoint.rolloutSequence.steps[0]?.migration ===
-      LOCAL_CANDIDATE_PENDING_MIGRATIONS[0] &&
-    checkpoint.rolloutSequence.steps[1]?.migration ===
-      LOCAL_CANDIDATE_PENDING_MIGRATIONS[1] &&
-    checkpoint.rolloutSequence.steps[3]?.migration ===
-      LOCAL_CANDIDATE_PENDING_MIGRATIONS[2] &&
-    checkpoint.rolloutSequence.steps[2]?.id ===
+    checkpoint.rolloutSequence.steps[6]?.completed === false &&
+    checkpoint.rolloutSequence.steps
+      .slice(0, 6)
+      .every(
+        (step: { migration: string }, index: number) =>
+          step.migration === ACTIVE_ROLLOUT_APPLIED_MIGRATIONS[index],
+      ) &&
+    checkpoint.rolloutSequence.steps[6]?.id ===
       "publish_and_verify_audit_v2_and_client_v3_routes" &&
-    checkpoint.rolloutSequence.steps[4]?.migration ===
-      LOCAL_CANDIDATE_PENDING_MIGRATIONS[3] &&
-    checkpoint.rolloutSequence.steps[5]?.migration ===
-      LOCAL_CANDIDATE_PENDING_MIGRATIONS[4] &&
-    checkpoint.rolloutSequence.steps[5]?.explicitReviewRequired,
-  "RR rollout must remain stage 1 (01210 + 01430) -> publish/verify Audit v2 + Client v3 -> stage 2 (01842 + 01853 + explicitly reviewed 02609).",
+    checkpoint.rolloutSequence.steps[6]?.explicitReviewRequired,
+  "RR rollout must preserve all six completed database steps and the one pending Sites publish/verify step.",
 );
 const databaseEvidence = checkpoint.databaseEvidence;
 must(
-  databaseEvidence.liveBaseline.migrationFileCount === 37 &&
+  databaseEvidence.liveBaseline.migrationFileCount === ACTIVE_ROLLOUT_DATABASE_EVIDENCE.migrationFileCount &&
     databaseEvidence.liveBaseline.exactRemoteLedgerTreeSha256 ===
-      V36_LIVE_PARITY_EVIDENCE.migrationTreeSha256 &&
+      ACTIVE_ROLLOUT_DATABASE_EVIDENCE.migrationTreeSha256 &&
     databaseEvidence.liveBaseline.evidenceScope ===
       LIVE_MIGRATION_EVIDENCE_SCOPE &&
     databaseEvidence.liveBaseline.latestMigration ===
-      V36_LIVE_PARITY_EVIDENCE.latestMigration &&
+      ACTIVE_ROLLOUT_DATABASE_EVIDENCE.latestMigration &&
     databaseEvidence.liveBaseline.latestMigrationSha256 ===
-      V36_LIVE_PARITY_EVIDENCE.latestMigrationSha256 &&
+      ACTIVE_ROLLOUT_DATABASE_EVIDENCE.latestMigrationSha256 &&
     databaseEvidence.liveBaseline.historicalRepositoryMigrationTreeSha256 ===
       V36_LIVE_PARITY_EVIDENCE.historicalRepositoryMigrationTreeSha256 &&
     databaseEvidence.liveBaseline.historicalRepositoryEvidenceScope ===
       HISTORICAL_REPOSITORY_MIGRATION_EVIDENCE_SCOPE &&
-    databaseEvidence.candidate.migrationFileCount === 42 &&
+    databaseEvidence.candidate.migrationFileCount === 43 &&
     databaseEvidence.candidate.migrationTreeSha256 ===
       manifest.releaseCandidate.migrationTreeSha256 &&
     JSON.stringify(databaseEvidence.candidate.pendingMigrations) ===
       JSON.stringify(LOCAL_CANDIDATE_PENDING_MIGRATIONS) &&
-    databaseEvidence.candidate.appliedMigrations.length === 0,
+    JSON.stringify(databaseEvidence.candidate.appliedMigrations) ===
+      JSON.stringify(ACTIVE_ROLLOUT_APPLIED_MIGRATIONS),
   "RR database evidence does not preserve live/candidate separation.",
 );
 const sourceTree = hashTree(resolve(repoRoot, manifest.source.root), {
@@ -219,7 +221,7 @@ must(
   `RR candidate Sites fingerprint drifted (actual ${sourceTree.fileCount}/${sourceTree.sha256}).`,
 );
 must(
-  migrationTree.fileCount === 42 &&
+  migrationTree.fileCount === 43 &&
     migrationTree.sha256 === manifest.releaseCandidate.migrationTreeSha256 &&
     mirrorTree.fileCount === migrationTree.fileCount &&
     mirrorTree.sha256 === migrationTree.sha256 &&
@@ -244,14 +246,16 @@ must(
 );
 must(
   checkpoint.activationGates.some((gate: string) =>
-    /local|unpublished|unapplied/i.test(gate),
+    /PR #162[\s\S]*all six forward database migrations are applied[\s\S]*Sites remains v36/iu.test(
+      gate,
+    ),
   ) &&
     checkpoint.activationGates.some((gate: string) =>
-      /01210[\s\S]*01430[\s\S]*publish[\s\S]*01842[\s\S]*01853[\s\S]*02609/iu.test(
+      /Publish[\s\S]*Sites[\s\S]*Audit v2[\s\S]*corrected Client v3/iu.test(
         gate,
       ),
     ),
-  "Activation gates must describe the local-only candidate and staged rollout.",
+  "Activation gates must describe the database-complete urgent Sites cutover.",
 );
 must(
   checkpoint.reusableEvidence.some((entry: string) =>
@@ -311,5 +315,5 @@ if (failures.length) {
   process.exit(1);
 }
 console.log(
-  `RR checkpoint passed: immutable v36 history remains separate from the exact remote 37-ledger; the policy-eval-closed local candidate fingerprints ${sourceTree.fileCount} Sites files / ${migrationTree.fileCount} migrations are reviewed but unpublished, unapplied, and blocked behind the six-step rollout.`,
+  `RR checkpoint passed: immutable v36 history remains separate from the exact remote 43-ledger; all six database steps are complete, and the ${sourceTree.fileCount}-file Sites candidate is the only pending rollout step.`,
 );

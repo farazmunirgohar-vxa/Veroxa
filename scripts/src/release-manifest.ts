@@ -43,15 +43,15 @@ export const RECONCILIATION_SOURCE_EVIDENCE_SCOPE =
 export const RECONCILIATION_MIGRATION_EVIDENCE_SCOPE =
   LOCAL_CANDIDATE_MIGRATION_EVIDENCE_SCOPE;
 export const LOCAL_CANDIDATE_DEPLOYMENT_FREEZE_STATE =
-  "local_candidate_predeployment_frozen";
+  "urgent_sites_cutover_database_complete";
 export const LOCAL_CANDIDATE_REVISION =
-  "policy_eval_closeout_2026_08_08";
+  "client_v3_scope_repair_2026_08_08";
 export const POLICY_EVALUATION_EVIDENCE_PATH =
   "artifacts/veroxa/docs/MOMO_PRIVATE_POLICY_EVAL_2026-08-08.json";
 export const POLICY_EVALUATION_EVIDENCE_SHA256 =
   "f3b254d6822bbe65c2149e4fbb7e4ee68601ab4ead34fae242590e9c560ed549";
 export const LIVE_PRODUCTION_EVIDENCE_STATUS =
-  "immutable_sites_v36_live_baseline";
+  "sites_v36_database_cutover_complete_sites_pending";
 export const LIVE_MIGRATION_EVIDENCE_SCOPE =
   "observed_remote_ledger_exact_names_and_bytes";
 export const HISTORICAL_REPOSITORY_MIGRATION_EVIDENCE_SCOPE =
@@ -115,14 +115,28 @@ export const V36_LIVE_PARITY_EVIDENCE = {
     "106d346be34583446d22de0f6866b5b8937feb766a3a229339dbf1c1768fdfcd",
 } as const;
 
+export const ACTIVE_ROLLOUT_DATABASE_EVIDENCE = {
+  migrationFileCount: 43,
+  migrationTreeSha256:
+    "8a49f00ab3bd6d9623100fec238939b6cb81f17d67d0e2d3a4426559c137e41c",
+  latestMigration: "20260808041629_repair_momo_client_v3_displayed_asset_scope.sql",
+  latestMigrationSha256:
+    "6cbf3f80d028d3fe54093b14bae59314913b4f0bfacfbf31fce4aa2a24e429ba",
+} as const;
+
 export const LOCAL_CANDIDATE_BASE_COMMIT =
-  "a9413e22dc2ee29a4fa3b299dfc8661808dd635f";
-export const LOCAL_CANDIDATE_PENDING_MIGRATIONS = [
+  "65dfe0e921c4bb1d66c273ec33f36d10bbf2e84d";
+export const ACTIVE_ROLLOUT_APPLIED_MIGRATIONS = [
   "20260808001210_audit_intake_envelope_v2.sql",
   "20260808001430_momo_client_pipeline_readback_v3.sql",
   "20260808001842_retire_audit_intake_v1.sql",
   "20260808001853_retire_momo_client_pipeline_readback_v2.sql",
   "20260808002609_future_object_default_acl_hardening.sql",
+  "20260808041629_repair_momo_client_v3_displayed_asset_scope.sql",
+] as const;
+export const LOCAL_CANDIDATE_PENDING_MIGRATIONS = [] as const;
+export const LOCAL_CANDIDATE_FORWARD_MIGRATIONS = [
+  ...ACTIVE_ROLLOUT_APPLIED_MIGRATIONS,
 ] as const;
 
 export const VERIFIED_DEPLOYMENT_ALLOWED_ACTION =
@@ -394,19 +408,20 @@ function rolloutIsFailClosed(
   steps: NonNullable<DeploymentManifest["rolloutSequence"]>["steps"],
 ): boolean {
   const expected = [
-    [1, "stage_1_pre_publish", "apply_audit_intake_v2", "database_migration", LOCAL_CANDIDATE_PENDING_MIGRATIONS[0], null],
-    [2, "stage_1_pre_publish", "apply_client_pipeline_readback_v3", "database_migration", LOCAL_CANDIDATE_PENDING_MIGRATIONS[1], "apply_audit_intake_v2"],
-    [3, "sites_publish_verify", "publish_and_verify_audit_v2_and_client_v3_routes", "sites_publish_and_verify", null, "apply_client_pipeline_readback_v3"],
-    [4, "stage_2_post_publish", "retire_audit_intake_v1", "database_migration", LOCAL_CANDIDATE_PENDING_MIGRATIONS[2], "publish_and_verify_audit_v2_and_client_v3_routes"],
-    [5, "stage_2_post_publish", "retire_client_pipeline_readback_v2", "database_migration", LOCAL_CANDIDATE_PENDING_MIGRATIONS[3], "retire_audit_intake_v1"],
-    [6, "stage_2_post_publish", "review_and_apply_future_default_acl_hardening", "database_migration", LOCAL_CANDIDATE_PENDING_MIGRATIONS[4], "retire_client_pipeline_readback_v2"],
+    [1, "stage_1_pre_publish", "apply_audit_intake_v2", "database_migration", ACTIVE_ROLLOUT_APPLIED_MIGRATIONS[0], null, true],
+    [2, "stage_1_pre_publish", "apply_client_pipeline_readback_v3", "database_migration", ACTIVE_ROLLOUT_APPLIED_MIGRATIONS[1], "apply_audit_intake_v2", true],
+    [3, "emergency_database_cutover", "retire_audit_intake_v1", "database_migration", ACTIVE_ROLLOUT_APPLIED_MIGRATIONS[2], "apply_client_pipeline_readback_v3", true],
+    [4, "emergency_database_cutover", "retire_client_pipeline_readback_v2", "database_migration", ACTIVE_ROLLOUT_APPLIED_MIGRATIONS[3], "retire_audit_intake_v1", true],
+    [5, "emergency_database_cutover", "apply_future_default_acl_hardening", "database_migration", ACTIVE_ROLLOUT_APPLIED_MIGRATIONS[4], "retire_client_pipeline_readback_v2", true],
+    [6, "emergency_database_cutover", "repair_client_v3_displayed_asset_scope", "database_migration", ACTIVE_ROLLOUT_APPLIED_MIGRATIONS[5], "apply_future_default_acl_hardening", true],
+    [7, "urgent_sites_publish_verify", "publish_and_verify_audit_v2_and_client_v3_routes", "sites_publish_and_verify", null, "repair_client_v3_displayed_asset_scope", false],
   ] as const;
   return steps.length === expected.length && steps.every((step, index) => {
     const wanted = expected[index];
     return step.order === wanted[0] && step.stage === wanted[1] &&
       step.id === wanted[2] && step.action === wanted[3] &&
       step.migration === wanted[4] && step.requiresCompletedStep === wanted[5] &&
-      step.explicitReviewRequired && !step.completed &&
+      step.explicitReviewRequired && step.completed === wanted[6] &&
       step.verification.trim().length >= 20;
   });
 }
@@ -437,7 +452,7 @@ function assertSchema6LocalCandidate(manifest: DeploymentManifest): void {
   }
   if (manifest.canonicalRepository !== "farazmunirgohar-vxa/Veroxa" ||
     manifest.canonicalBranch !== "main" ||
-    manifest.candidateBranch !== "agent/momo-readiness-closeout" ||
+    manifest.candidateBranch !== "agent/repair-client-v3-scope" ||
     manifest.sitesProjectId !== "appgprj_6a53d07c7c28819182801cf35dfd30de") {
     failures.push("repository, branch, or Sites project identity drifted");
   }
@@ -467,34 +482,35 @@ function assertSchema6LocalCandidate(manifest: DeploymentManifest): void {
     live.observedAt !== V36_LIVE_PARITY_EVIDENCE.migrationLedgerObservedAt ||
     live.sitesBaselineObservedAt !== V36_LIVE_PARITY_EVIDENCE.sitesObservedAt ||
     live.migrationLedgerObservedAt !== V36_LIVE_PARITY_EVIDENCE.migrationLedgerObservedAt ||
-    live.canonicalGitHubMainCommit !== V36_GITHUB_RECONCILIATION.mergedCommit ||
-    live.canonicalGitHubMainCommitScope !== V36_OPERATIONAL_COMMIT_SCOPE ||
+    live.canonicalGitHubMainCommit !== LOCAL_CANDIDATE_BASE_COMMIT ||
+    live.canonicalGitHubMainCommitScope !== "sites_v36_database_cutover_complete_sites_pending" ||
     live.sitesVersion !== 36 || live.sitesCheckoutCommit !== V36_LIVE_PARITY_EVIDENCE.sitesCheckoutCommit ||
     live.sourceFileCount !== 185 || live.sourceTreeSha256 !== V36_LIVE_PARITY_EVIDENCE.sourceTreeSha256 ||
-    live.productionMigrationCount !== 37 || live.migrationTreeSha256 !== V36_LIVE_PARITY_EVIDENCE.migrationTreeSha256 ||
+    live.productionMigrationCount !== ACTIVE_ROLLOUT_DATABASE_EVIDENCE.migrationFileCount ||
+    live.migrationTreeSha256 !== ACTIVE_ROLLOUT_DATABASE_EVIDENCE.migrationTreeSha256 ||
     live.migrationTreeEvidenceScope !== LIVE_MIGRATION_EVIDENCE_SCOPE ||
     live.historicalRepositoryMigrationTreeSha256 !== V36_LIVE_PARITY_EVIDENCE.historicalRepositoryMigrationTreeSha256 ||
     live.historicalRepositoryMigrationTreeEvidenceScope !== HISTORICAL_REPOSITORY_MIGRATION_EVIDENCE_SCOPE ||
-    live.latestProductionMigration !== V36_LIVE_PARITY_EVIDENCE.latestMigration ||
-    live.latestProductionMigrationSha256 !== V36_LIVE_PARITY_EVIDENCE.latestMigrationSha256 ||
+    live.latestProductionMigration !== ACTIVE_ROLLOUT_DATABASE_EVIDENCE.latestMigration ||
+    live.latestProductionMigrationSha256 !== ACTIVE_ROLLOUT_DATABASE_EVIDENCE.latestMigrationSha256 ||
     !live.databaseLedgerObserved || !live.databaseAppliedThroughLatestObserved ||
     live.githubMainMatchesCandidate || live.candidateSourceMatchesLiveSites ||
-    live.candidateMigrationsMatchLiveLedger || live.fullReleaseGatePassed) {
-    failures.push("immutable Sites v36 / exact remote 37-migration baseline drifted");
+    !live.candidateMigrationsMatchLiveLedger || live.fullReleaseGatePassed) {
+    failures.push("Sites v36 / exact remote 43-migration database-complete observation drifted");
   }
   if (candidate.actionScope !== RECONCILIATION_CANDIDATE_ACTION_SCOPE ||
     candidate.basedOnGitHubMainCommit !== LOCAL_CANDIDATE_BASE_COMMIT ||
-    candidate.pullRequest !== null || candidate.githubMerged ||
+    candidate.pullRequest !== 162 || candidate.githubMerged ||
     candidate.futureMergedGitHubCommit !== null || candidate.futureSitesVersion !== null ||
     candidate.allFourWorkflowsGreen !== null || candidate.zeroUnresolvedReviewThreads !== null ||
     candidate.githubMainMatchesCandidate || candidate.fullReleaseGatePassed ||
-    !candidate.databaseChangesRequired || candidate.databaseMigrationApplied ||
-    JSON.stringify(candidate.databaseMigrationsApplied) !== "[]" ||
+    !candidate.databaseChangesRequired || !candidate.databaseMigrationApplied ||
+    JSON.stringify(candidate.databaseMigrationsApplied) !== JSON.stringify(ACTIVE_ROLLOUT_APPLIED_MIGRATIONS) ||
     candidate.databaseApplyAuthorized || !candidate.sitesPublishRequired ||
-    candidate.sitesPublished || candidate.sitesPublishAuthorized ||
-    candidate.deploymentAuthorized || candidate.activationExecuted ||
-    candidate.rolloutStatus !== "blocked_not_started" ||
-    candidate.migrationFileCount !== 42 ||
+    candidate.sitesPublished || !candidate.sitesPublishAuthorized ||
+    !candidate.deploymentAuthorized || candidate.activationExecuted ||
+    candidate.rolloutStatus !== "database_complete_sites_urgent" ||
+    candidate.migrationFileCount !== 43 ||
     JSON.stringify(candidate.pendingMigrations) !== JSON.stringify(LOCAL_CANDIDATE_PENDING_MIGRATIONS)) {
     failures.push("candidate state overclaims external release, apply, publish, or activation evidence");
   }
@@ -517,15 +533,15 @@ function assertSchema6LocalCandidate(manifest: DeploymentManifest): void {
     failures.push("candidate migration root and Sites mirror evidence is incoherent");
   }
   const rollout = manifest.rolloutSequence;
-  if (!rollout || rollout.status !== "blocked_not_started" ||
+  if (!rollout || rollout.status !== "database_complete_sites_urgent" ||
     !rolloutIsFailClosed(rollout.steps)) {
     failures.push("candidate rollout sequence is incomplete, reordered, or overclaimed");
   }
   if (manifest.deploymentFreeze.state !== LOCAL_CANDIDATE_DEPLOYMENT_FREEZE_STATE ||
     manifest.deploymentFreeze.automaticDeploymentsAllowed ||
     manifest.deploymentFreeze.databaseApplyAuthorized ||
-    manifest.deploymentFreeze.sitesPublishAuthorized ||
-    !/01210[\s\S]*01430[\s\S]*publish[\s\S]*01842[\s\S]*01853[\s\S]*02609/iu.test(
+    !manifest.deploymentFreeze.sitesPublishAuthorized ||
+    !/database[\s\S]*complete[\s\S]*publish[\s\S]*Sites/iu.test(
       manifest.deploymentFreeze.releaseCondition,
     )) {
     failures.push("deployment freeze does not preserve the required staged rollout");

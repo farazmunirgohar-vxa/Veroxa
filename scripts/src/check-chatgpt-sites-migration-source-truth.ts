@@ -7,9 +7,12 @@ import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import {
+  ACTIVE_ROLLOUT_APPLIED_MIGRATIONS,
+  ACTIVE_ROLLOUT_DATABASE_EVIDENCE,
   HISTORICAL_REPOSITORY_MIGRATION_EVIDENCE_SCOPE,
   LIVE_MIGRATION_EVIDENCE_SCOPE,
   LIVE_PRODUCTION_EVIDENCE_STATUS,
+  LOCAL_CANDIDATE_FORWARD_MIGRATIONS,
   LOCAL_CANDIDATE_PENDING_MIGRATIONS,
   REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE,
   REVIEWED_LOCAL_CANDIDATE_STATUS,
@@ -31,16 +34,10 @@ const must = __name((condition: boolean, message: string) => {
 const CORRECTED_LIVE_MIGRATION_TREE_SHA256 =
   "d306d26cb633ef943afdb7efd01a3cde70249a096ef783d1b0d51eb5d4a1a429";
 const CANDIDATE_MIGRATION_TREE_SHA256 =
-  "e19e1d7cc102ba1e6297de1860d005f19cbbb2dfd3873ed195af0c89d92b829c";
+  "8a49f00ab3bd6d9623100fec238939b6cb81f17d67d0e2d3a4426559c137e41c";
 const CORRECTED_LIVE_LATEST_MIGRATION =
   "20260802063829_momo_pipeline_query_indexes_v2.sql";
-const pendingForwardMigrations = [
-  "20260808001210_audit_intake_envelope_v2.sql",
-  "20260808001430_momo_client_pipeline_readback_v3.sql",
-  "20260808001842_retire_audit_intake_v1.sql",
-  "20260808001853_retire_momo_client_pipeline_readback_v2.sql",
-  "20260808002609_future_object_default_acl_hardening.sql",
-];
+const pendingForwardMigrations = [...LOCAL_CANDIDATE_FORWARD_MIGRATIONS];
 function sqlFiles(directory: string): string[] {
   return readdirSync(resolve(repoRoot, directory))
     .filter((filename) => filename.endsWith(".sql"))
@@ -181,6 +178,13 @@ const sitesCorrectedLiveMigrationLedger = sitesMigrationLedger.slice(
   0,
   -pendingForwardMigrations.length,
 );
+const pendingRolloutSet = new Set<string>(LOCAL_CANDIDATE_PENDING_MIGRATIONS);
+const activeRolloutMigrationLedger = rootMigrationLedger.filter(
+  (filename) => !pendingRolloutSet.has(filename),
+);
+const sitesActiveRolloutMigrationLedger = sitesMigrationLedger.filter(
+  (filename) => !pendingRolloutSet.has(filename),
+);
 must(
   JSON.stringify(rootMigrationLedger) === JSON.stringify(sitesMigrationLedger),
   "Root and Sites candidate migration inventories must remain identical.",
@@ -192,7 +196,7 @@ must(
     JSON.stringify(
       sitesMigrationLedger.slice(-pendingForwardMigrations.length),
     ) === JSON.stringify(pendingForwardMigrations),
-  "Only the reviewed 01210/01430/01842/01853/02609 forward migrations may follow the corrected live ledger, and all must remain candidate-only.",
+  "Only the reviewed six-file forward migration set may follow the corrected historical ledger.",
 );
 must(
   correctedLiveMigrationLedger.length === 37 &&
@@ -205,17 +209,32 @@ must(
       "artifacts/veroxa-sites/supabase/migrations",
       sitesCorrectedLiveMigrationLedger,
     ) === CORRECTED_LIVE_MIGRATION_TREE_SHA256,
-  "Active migration source must preserve the exact corrected 37-row production ledger through 20260802063829.",
+  "Historical migration source must preserve the exact corrected 37-row v36 ledger through 20260802063829.",
 );
 must(
-  rootMigrationLedger.length === 42 &&
+  activeRolloutMigrationLedger.length ===
+    ACTIVE_ROLLOUT_DATABASE_EVIDENCE.migrationFileCount &&
+    JSON.stringify(activeRolloutMigrationLedger) ===
+      JSON.stringify(sitesActiveRolloutMigrationLedger) &&
+    activeRolloutMigrationLedger.at(-1) ===
+      ACTIVE_ROLLOUT_DATABASE_EVIDENCE.latestMigration &&
+    migrationTreeHash("supabase/migrations", activeRolloutMigrationLedger) ===
+      ACTIVE_ROLLOUT_DATABASE_EVIDENCE.migrationTreeSha256 &&
+    migrationTreeHash(
+      "artifacts/veroxa-sites/supabase/migrations",
+      sitesActiveRolloutMigrationLedger,
+    ) === ACTIVE_ROLLOUT_DATABASE_EVIDENCE.migrationTreeSha256,
+  "Active rollout migration source must preserve the exact observed 39-row production ledger.",
+);
+must(
+  rootMigrationLedger.length === 43 &&
     migrationTreeHash("supabase/migrations", rootMigrationLedger) ===
       CANDIDATE_MIGRATION_TREE_SHA256 &&
     migrationTreeHash(
       "artifacts/veroxa-sites/supabase/migrations",
       sitesMigrationLedger,
     ) === CANDIDATE_MIGRATION_TREE_SHA256,
-  "Local candidate migration inventory must contain the corrected live 37 plus exactly five unapplied forward migrations.",
+  "Local candidate migration inventory must contain the historical 37 plus exactly six forward migrations.",
 );
 for (const retiredNormalizedFilename of [
   "20260802010000_momo_upload_veroxa_ready_v2.sql",
@@ -561,9 +580,10 @@ must(
     localCandidateManifest.releaseState ===
       REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE &&
     currentProduction.evidenceStatus === LIVE_PRODUCTION_EVIDENCE_STATUS &&
-    currentProduction.productionMigrationCount === 37 &&
+    currentProduction.productionMigrationCount ===
+      ACTIVE_ROLLOUT_DATABASE_EVIDENCE.migrationFileCount &&
     currentProduction.migrationTreeSha256 ===
-      V36_LIVE_PARITY_EVIDENCE.migrationTreeSha256 &&
+      ACTIVE_ROLLOUT_DATABASE_EVIDENCE.migrationTreeSha256 &&
     currentProduction.migrationTreeEvidenceScope ===
       LIVE_MIGRATION_EVIDENCE_SCOPE &&
     currentProduction.historicalRepositoryMigrationTreeSha256 ===
@@ -571,33 +591,34 @@ must(
     currentProduction.historicalRepositoryMigrationTreeEvidenceScope ===
       HISTORICAL_REPOSITORY_MIGRATION_EVIDENCE_SCOPE &&
     currentProduction.latestProductionMigration ===
-      V36_LIVE_PARITY_EVIDENCE.latestMigration &&
+      ACTIVE_ROLLOUT_DATABASE_EVIDENCE.latestMigration &&
     currentProduction.latestProductionMigrationSha256 ===
-      V36_LIVE_PARITY_EVIDENCE.latestMigrationSha256 &&
+      ACTIVE_ROLLOUT_DATABASE_EVIDENCE.latestMigrationSha256 &&
     !currentProduction.candidateSourceMatchesLiveSites &&
-    !currentProduction.candidateMigrationsMatchLiveLedger &&
+    currentProduction.candidateMigrationsMatchLiveLedger &&
     !currentProduction.githubMainMatchesCandidate &&
     !currentProduction.fullReleaseGatePassed &&
     JSON.stringify(
       localCandidateManifest.historicalV36GitHubReconciliationEvidence,
     ) === JSON.stringify(V36_GITHUB_RECONCILIATION),
-  "Schema-6 manifest must separate the exact remote live37 baseline from the unreleased local candidate and preserve PR #157 only as historical evidence.",
+  "Schema-6 manifest must preserve the exact remote live43 database cutover separately from Sites v36 and keep PR #157 historical.",
 );
 must(
   releaseCandidate.status === REVIEWED_LOCAL_CANDIDATE_STATUS &&
-    releaseCandidate.migrationFileCount === 42 &&
+    releaseCandidate.migrationFileCount === 43 &&
     releaseCandidate.migrationTreeSha256 === CANDIDATE_MIGRATION_TREE_SHA256 &&
     JSON.stringify(releaseCandidate.pendingMigrations) ===
       JSON.stringify(LOCAL_CANDIDATE_PENDING_MIGRATIONS) &&
-    !releaseCandidate.databaseMigrationApplied &&
-    releaseCandidate.databaseMigrationsApplied.length === 0 &&
+    releaseCandidate.databaseMigrationApplied &&
+    JSON.stringify(releaseCandidate.databaseMigrationsApplied) ===
+      JSON.stringify(ACTIVE_ROLLOUT_APPLIED_MIGRATIONS) &&
     !releaseCandidate.databaseApplyAuthorized &&
     !releaseCandidate.sitesPublished &&
-    !releaseCandidate.sitesPublishAuthorized &&
-    !releaseCandidate.deploymentAuthorized &&
+    releaseCandidate.sitesPublishAuthorized &&
+    releaseCandidate.deploymentAuthorized &&
     !releaseCandidate.activationExecuted &&
     !releaseCandidate.fullReleaseGatePassed,
-  "Schema-6 manifest must keep all five forward migrations candidate-only, unapplied, unpublished, and unauthorized.",
+  "Schema-6 manifest must preserve all six applied migrations and keep only Sites publication pending.",
 );
 const rrCurrentProduction = rrLocalCandidateRecord.currentProductionObservation;
 const rrCandidate = rrLocalCandidateRecord.releaseCandidate;
@@ -607,9 +628,10 @@ must(
       "veroxa_local_predeployment_release_checkpoint" &&
     rrLocalCandidateRecord.status === REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE &&
     rrCurrentProduction?.evidenceStatus === LIVE_PRODUCTION_EVIDENCE_STATUS &&
-    rrCurrentProduction.productionMigrationCount === 37 &&
+    rrCurrentProduction.productionMigrationCount ===
+      ACTIVE_ROLLOUT_DATABASE_EVIDENCE.migrationFileCount &&
     rrCurrentProduction.migrationTreeSha256 ===
-      V36_LIVE_PARITY_EVIDENCE.migrationTreeSha256 &&
+      ACTIVE_ROLLOUT_DATABASE_EVIDENCE.migrationTreeSha256 &&
     rrCurrentProduction.migrationTreeEvidenceScope ===
       LIVE_MIGRATION_EVIDENCE_SCOPE &&
     rrCurrentProduction.historicalRepositoryMigrationTreeSha256 ===
@@ -617,34 +639,37 @@ must(
     rrCurrentProduction.historicalRepositoryMigrationTreeEvidenceScope ===
       HISTORICAL_REPOSITORY_MIGRATION_EVIDENCE_SCOPE &&
     !rrCurrentProduction.candidateSourceMatchesLiveSites &&
-    !rrCurrentProduction.candidateMigrationsMatchLiveLedger &&
+    rrCurrentProduction.candidateMigrationsMatchLiveLedger &&
     !rrCurrentProduction.githubMainMatchesCandidate &&
     !rrCurrentProduction.fullReleaseGatePassed &&
     JSON.stringify(
       rrLocalCandidateRecord.historicalV36GitHubReconciliationEvidence,
     ) === JSON.stringify(V36_GITHUB_RECONCILIATION),
-  "Schema-10 RR checkpoint must preserve the corrected live37 baseline separately from the local candidate.",
+  "Schema-10 RR checkpoint must preserve the exact live43 database cutover separately from Sites v36.",
 );
 must(
   rrCandidate?.state === REVIEWED_LOCAL_CANDIDATE_STATUS &&
-    rrCandidate.migrationFileCount === 42 &&
+    rrCandidate.migrationFileCount === 43 &&
     rrCandidate.migrationTreeSha256 === CANDIDATE_MIGRATION_TREE_SHA256 &&
     JSON.stringify(rrCandidate.pendingMigrations) ===
       JSON.stringify(LOCAL_CANDIDATE_PENDING_MIGRATIONS) &&
-    rrCandidate.databaseMigrationApplied === false &&
-    rrCandidate.databaseMigrationsApplied?.length === 0 &&
+    rrCandidate.databaseMigrationApplied === true &&
+    JSON.stringify(rrCandidate.databaseMigrationsApplied) ===
+      JSON.stringify(ACTIVE_ROLLOUT_APPLIED_MIGRATIONS) &&
     rrCandidate.databaseApplyAuthorized === false &&
     rrCandidate.sitesPublished === false &&
-    rrCandidate.sitesPublishAuthorized === false &&
-    rrCandidate.deploymentAuthorized === false &&
+    rrCandidate.sitesPublishAuthorized === true &&
+    rrCandidate.deploymentAuthorized === true &&
     rrCandidate.activationExecuted === false &&
     rrCandidate.fullReleaseGatePassed === false &&
-    rrLocalCandidateRecord.rolloutSequence?.status === "blocked_not_started" &&
-    rrLocalCandidateRecord.rolloutSequence.steps?.length === 6 &&
-    rrLocalCandidateRecord.rolloutSequence.steps.every(
-      (step: { completed: boolean }) => step.completed === false,
-    ),
-  "Schema-10 RR checkpoint must keep the five forward migrations and six-step rollout blocked and unexecuted.",
+    rrLocalCandidateRecord.rolloutSequence?.status ===
+      "database_complete_sites_urgent" &&
+    rrLocalCandidateRecord.rolloutSequence.steps?.length === 7 &&
+    rrLocalCandidateRecord.rolloutSequence.steps
+      .slice(0, 6)
+      .every((step: { completed: boolean }) => step.completed === true) &&
+    rrLocalCandidateRecord.rolloutSequence.steps[6]?.completed === false,
+  "Schema-10 RR checkpoint must preserve six completed database steps and one pending Sites step.",
 );
 const v36Scope = v36CloseoutRecord.scope;
 const v36Sites = v36CloseoutRecord.sites;
