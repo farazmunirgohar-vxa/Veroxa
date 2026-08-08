@@ -121,9 +121,10 @@ export const CURRENT_PARTIAL_ROLLOUT_EVIDENCE = {
   sitesObservedAt: "2026-08-08",
   migrationLedgerObservedAt: "2026-08-08",
   canonicalGitHubMainCommit:
-    "65dfe0e921c4bb1d66c273ec33f36d10bbf2e84d",
+    "ca47aeff7ab44a69b6ce039608ae27fea6c3c326",
+  canonicalGitHubMainMergePullRequest: 162,
   canonicalGitHubMainCommitScope:
-    "momo_readiness_candidate_merged_sites_v37_database_repair_verified",
+    "pr162_merged_main_lineage_sites_v37_database_repair_verified",
   sitesVersion: 37,
   sitesCheckoutCommit: "61e9ace7723ef56f42111f320327187596406944",
   sourceFileCount: 200,
@@ -139,7 +140,7 @@ export const CURRENT_PARTIAL_ROLLOUT_EVIDENCE = {
 } as const;
 
 export const LOCAL_CANDIDATE_BASE_COMMIT =
-  "65dfe0e921c4bb1d66c273ec33f36d10bbf2e84d";
+  "ca47aeff7ab44a69b6ce039608ae27fea6c3c326";
 export const LOCAL_CANDIDATE_ROLLOUT_MIGRATIONS = [
   "20260808001210_audit_intake_envelope_v2.sql",
   "20260808001430_momo_client_pipeline_readback_v3.sql",
@@ -258,6 +259,7 @@ type CurrentProductionObservation = {
   migrationLedgerObservedAt?: string;
   evidenceStatus: string;
   canonicalGitHubMainCommit: string;
+  canonicalGitHubMainMergePullRequest?: number;
   canonicalGitHubMainCommitScope?: string;
   githubMainMatchesCandidate: boolean;
   sitesVersion: number;
@@ -503,6 +505,7 @@ function assertSchema7ForwardRepairCandidate(manifest: DeploymentManifest): void
     live.sitesBaselineObservedAt !== CURRENT_PARTIAL_ROLLOUT_EVIDENCE.sitesObservedAt ||
     live.migrationLedgerObservedAt !== CURRENT_PARTIAL_ROLLOUT_EVIDENCE.migrationLedgerObservedAt ||
     live.canonicalGitHubMainCommit !== CURRENT_PARTIAL_ROLLOUT_EVIDENCE.canonicalGitHubMainCommit ||
+    live.canonicalGitHubMainMergePullRequest !== CURRENT_PARTIAL_ROLLOUT_EVIDENCE.canonicalGitHubMainMergePullRequest ||
     live.canonicalGitHubMainCommitScope !== CURRENT_PARTIAL_ROLLOUT_EVIDENCE.canonicalGitHubMainCommitScope ||
     live.githubParityVerifiedAtObservation ||
     live.sitesVersion !== CURRENT_PARTIAL_ROLLOUT_EVIDENCE.sitesVersion ||
