@@ -19,7 +19,7 @@ import {
   repoRoot,
 } from "./release-manifest";
 const EXPECTED_CANDIDATE_TREE_SHA256 =
-  "dc565dd1f5f4a5efe6a2b253e7437e93f6364b5581c56bb811969fa7241a7a84";
+  "e19e1d7cc102ba1e6297de1860d005f19cbbb2dfd3873ed195af0c89d92b829c";
 const EXPECTED_PENDING_HASHES = new Map<string, string>([
   [
     "20260808001210_audit_intake_envelope_v2.sql",
@@ -27,7 +27,7 @@ const EXPECTED_PENDING_HASHES = new Map<string, string>([
   ],
   [
     "20260808001430_momo_client_pipeline_readback_v3.sql",
-    "987186e74590c6e484ebfee47e1c7ed384e2b4dc8c4a97ad7243ae38feb765cc",
+    "b3671ef8a292f88e55bb733ceeda473ecf3095fd6048d20519fc7d5ddebe28ff",
   ],
   [
     "20260808001842_retire_audit_intake_v1.sql",

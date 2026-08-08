@@ -402,6 +402,13 @@ test("Client v3 readback accepts only sanitized coherent pipeline states", async
   assert.match(sql, /candidate\.automation_identity_id = link\.identity_id/);
   assert.match(sql, /candidate\.identity_id = link\.identity_id[\s\S]*?candidate\.content_ai_run_id = run\.id/);
   assert.match(sql, /asset_rights[\s\S]*?rights_status = 'confirmed'[\s\S]*?expires_at > pg_catalog\.now\(\)/u);
+  const assetRightsJoin = sql.match(
+    /left join lateral \(\s*select candidate\.id\s*from public\.veroxa_media_rights candidate[\s\S]*?\) asset_rights on true/u,
+  )?.[0] || "";
+  assert.match(
+    assetRightsJoin,
+    /and \(run\.id is null\s*or run\.target_platforms <@ candidate\.usage_scope\)/u,
+  );
   assert.match(sql, /run_rights[\s\S]*?run\.target_platforms <@ candidate\.usage_scope/u);
   assert.match(sql, /candidate\.source_asset_id =\s*run\.source_asset_id[\s\S]*?candidate\.rights_id =\s*run\.rights_id[\s\S]*?candidate\.rights_attestation_sha256 =\s*run\.rights_attestation_sha256/u);
   assert.match(sql, /permission_needs_update/u);
