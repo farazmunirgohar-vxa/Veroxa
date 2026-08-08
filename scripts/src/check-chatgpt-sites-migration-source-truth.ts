@@ -33,11 +33,11 @@ const HISTORICAL_LIVE_MIGRATION_TREE_SHA256 =
 const CURRENT_LIVE_MIGRATION_TREE_SHA256 =
   "8a49f00ab3bd6d9623100fec238939b6cb81f17d67d0e2d3a4426559c137e41c";
 const CANDIDATE_MIGRATION_TREE_SHA256 =
-  "7ea30e35ee2dd88fc936521d352ef1b5794b6bfea981afd7e1b9b5c8a22af16c";
+  "9cc0bba007b6a0c06edf33563fb1bc3f4650811f8f8ea1639cc58c7028ac7324";
 const CURRENT_LIVE_SITES_TREE_SHA256 =
   "4edae9660343cda362968bd08e544ba5a154c90a902ac961365ceb32ea820292";
 const CANDIDATE_SITES_TREE_SHA256 =
-  "fce38a41f6afc94d5999d3268baea3c72012a8205f1bf97008e3f04900db6b37";
+  "357f6b336993d2c306c102d5be2699d7145a3144041eeb9753a2a43c48fe869e";
 const HISTORICAL_LIVE_LATEST_MIGRATION =
   "20260802063829_momo_pipeline_query_indexes_v2.sql";
 const CURRENT_LIVE_LATEST_MIGRATION =
@@ -652,6 +652,15 @@ must(
 );
 must(
   releaseCandidate.status === REVIEWED_LOCAL_CANDIDATE_STATUS &&
+    releaseCandidate.pullRequest === 164 &&
+    releaseCandidate.pullRequestDraft === true &&
+    releaseCandidate.observedDraftPullRequestHead ===
+      "b659ec307da9455c389059b29f2d6f3ab51f095e" &&
+    releaseCandidate.observedDraftPullRequestTree ===
+      "9931d63dcb16a2e2e1cb7c592d2da63b4054cb60" &&
+    releaseCandidate.githubMerged === false &&
+    releaseCandidate.allFourWorkflowsGreen === null &&
+    releaseCandidate.zeroUnresolvedReviewThreads === null &&
     releaseCandidate.futureSitesVersion === null &&
     releaseCandidate.sourceFileCount === 203 &&
     releaseCandidate.sourceTreeSha256 === CANDIDATE_SITES_TREE_SHA256 &&
@@ -712,6 +721,15 @@ must(
 );
 must(
   rrCandidate?.state === REVIEWED_LOCAL_CANDIDATE_STATUS &&
+    rrCandidate.pullRequest === 164 &&
+    rrCandidate.pullRequestDraft === true &&
+    rrCandidate.observedDraftPullRequestHead ===
+      "b659ec307da9455c389059b29f2d6f3ab51f095e" &&
+    rrCandidate.observedDraftPullRequestTree ===
+      "9931d63dcb16a2e2e1cb7c592d2da63b4054cb60" &&
+    rrCandidate.githubMerged === false &&
+    rrCandidate.allFourWorkflowsGreen === null &&
+    rrCandidate.zeroUnresolvedReviewThreads === null &&
     rrCandidate.futureSitesVersion === null &&
     rrCandidate.sourceFileCount === 203 &&
     rrCandidate.sourceTreeSha256 === CANDIDATE_SITES_TREE_SHA256 &&

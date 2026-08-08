@@ -9,7 +9,7 @@
   ],
   "canonicalRepository": "farazmunirgohar-vxa/Veroxa",
   "canonicalBranch": "main",
-  "candidateBranch": "agent/momo-readiness-closeout",
+  "candidateBranch": "agent/momo-generic-food-ready-review-v5",
   "sitesProjectId": "appgprj_6a53d07c7c28819182801cf35dfd30de",
   "observedProductionBaseline": {
     "reviewedAt": "2026-07-13",
@@ -170,7 +170,11 @@
     "status": "predeployment_v5_cutover_freeze_required",
     "actionScope": "momo_ready_team_decisions_and_generic_food_v2_candidate",
     "basedOnGitHubMainCommit": "59b1604d887547e2804bdd6d63c97292385dcebb",
-    "pullRequest": null,
+    "pullRequest": 164,
+    "pullRequestDraft": true,
+    "observedDraftPullRequestHead": "b659ec307da9455c389059b29f2d6f3ab51f095e",
+    "observedDraftPullRequestTree": "9931d63dcb16a2e2e1cb7c592d2da63b4054cb60",
+    "draftHeadEvidenceScope": "draft_pr_opening_head_before_evidence_refresh_not_final_reviewed_head",
     "githubMerged": false,
     "futureMergedGitHubCommit": null,
     "futureSitesVersion": null,
@@ -182,11 +186,11 @@
     "githubMainMatchesCandidate": false,
     "fullReleaseGatePassed": false,
     "sourceFileCount": 203,
-    "sourceTreeSha256": "fce38a41f6afc94d5999d3268baea3c72012a8205f1bf97008e3f04900db6b37",
+    "sourceTreeSha256": "357f6b336993d2c306c102d5be2699d7145a3144041eeb9753a2a43c48fe869e",
     "migrationFileCount": 44,
-    "migrationTreeSha256": "7ea30e35ee2dd88fc936521d352ef1b5794b6bfea981afd7e1b9b5c8a22af16c",
+    "migrationTreeSha256": "9cc0bba007b6a0c06edf33563fb1bc3f4650811f8f8ea1639cc58c7028ac7324",
     "latestCandidateMigration": "20260808045812_momo_ready_team_decisions_and_food_tags_v2.sql",
-    "latestCandidateMigrationSha256": "3d6394b402247d599f80466855dc14326d48add91f359b70a5cd75a9058fd441",
+    "latestCandidateMigrationSha256": "9cf6f0080d38d58d3c1939d928444701b1954bf5cfe96bf7f3e80077bad45cc0",
     "pendingMigrations": [
       "20260808045812_momo_ready_team_decisions_and_food_tags_v2.sql"
     ],
@@ -220,7 +224,7 @@
         "requiresCompletedStep": null,
         "explicitReviewRequired": true,
         "completed": false,
-        "verification": "Create the feature pull request from exact GitHub main 59b1604d887547e2804bdd6d63c97292385dcebb, require the four exact-head workflows and zero unresolved review threads, and merge only the reviewed candidate."
+        "verification": "Draft PR #164 is open from exact GitHub main 59b1604d887547e2804bdd6d63c97292385dcebb. Its observed opening head is b659ec307da9455c389059b29f2d6f3ab51f095e with Git tree 9931d63dcb16a2e2e1cb7c592d2da63b4054cb60; this is not final-head evidence. Promote only after the exact final head has all four workflows green and zero unresolved review threads, then merge only that reviewed head."
       },
       {
         "order": 2,
@@ -253,7 +257,7 @@
         "requiresCompletedStep": "drain_v4_content_work",
         "explicitReviewRequired": true,
         "completed": false,
-        "verification": "Use the Supabase MCP migration apply path with the exact reviewed SQL bytes at SHA-256 3d6394b402247d599f80466855dc14326d48add91f359b70a5cd75a9058fd441. The MCP-generated production ledger version must be captured; 045812 is the pre-apply source identity, not a promised live version."
+        "verification": "Use the Supabase MCP migration apply path with the exact reviewed SQL bytes at SHA-256 9cf6f0080d38d58d3c1939d928444701b1954bf5cfe96bf7f3e80077bad45cc0. The MCP-generated production ledger version must be captured; 045812 is the pre-apply source identity, not a promised live version."
       },
       {
         "order": 5,
@@ -318,7 +322,7 @@
     "mappingTarget": "Sites repository root candidate",
     "hashAlgorithm": "veroxa-path-null-content-null-sha256-v1",
     "fileCount": 203,
-    "treeSha256": "fce38a41f6afc94d5999d3268baea3c72012a8205f1bf97008e3f04900db6b37",
+    "treeSha256": "357f6b336993d2c306c102d5be2699d7145a3144041eeb9753a2a43c48fe869e",
     "generatedPathExclusions": [
       ".git",
       ".next",
@@ -346,9 +350,9 @@
     "mirrorRoot": "artifacts/veroxa-sites/supabase/migrations",
     "hashAlgorithm": "veroxa-path-null-content-null-sha256-v1",
     "fileCount": 44,
-    "treeSha256": "7ea30e35ee2dd88fc936521d352ef1b5794b6bfea981afd7e1b9b5c8a22af16c",
+    "treeSha256": "9cc0bba007b6a0c06edf33563fb1bc3f4650811f8f8ea1639cc58c7028ac7324",
     "mirrorFileCount": 44,
-    "mirrorTreeSha256": "7ea30e35ee2dd88fc936521d352ef1b5794b6bfea981afd7e1b9b5c8a22af16c"
+    "mirrorTreeSha256": "9cc0bba007b6a0c06edf33563fb1bc3f4650811f8f8ea1639cc58c7028ac7324"
   },
   "deploymentFreeze": {
     "state": "predeployment_v5_cutover_freeze_required",

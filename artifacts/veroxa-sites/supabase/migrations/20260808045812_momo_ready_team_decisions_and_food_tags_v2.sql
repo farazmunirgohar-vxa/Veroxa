@@ -201,7 +201,7 @@ as $function$
 declare
   legacy_hardening_payload jsonb;
   legacy_visual_claim constant text :=
-    'Food on a plate with a table setting.';
+    'Food centered on a plate with a table.';
 begin
   if (
     p_prompt_version,

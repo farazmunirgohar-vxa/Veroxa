@@ -320,6 +320,10 @@ export type DeploymentManifest = {
     actionScope: typeof RECONCILIATION_CANDIDATE_ACTION_SCOPE;
     basedOnGitHubMainCommit: string;
     pullRequest: Nullable<number>;
+    pullRequestDraft?: boolean;
+    observedDraftPullRequestHead?: Nullable<string>;
+    observedDraftPullRequestTree?: Nullable<string>;
+    draftHeadEvidenceScope?: Nullable<string>;
     githubMerged: boolean;
     futureMergedGitHubCommit: Nullable<string>;
     futureSitesVersion: Nullable<number>;
@@ -478,7 +482,7 @@ function assertSchema7ForwardRepairCandidate(manifest: DeploymentManifest): void
   }
   if (manifest.canonicalRepository !== "farazmunirgohar-vxa/Veroxa" ||
     manifest.canonicalBranch !== "main" ||
-    manifest.candidateBranch !== "agent/momo-readiness-closeout" ||
+    manifest.candidateBranch !== "agent/momo-generic-food-ready-review-v5" ||
     manifest.sitesProjectId !== "appgprj_6a53d07c7c28819182801cf35dfd30de") {
     failures.push("repository, branch, or Sites project identity drifted");
   }
@@ -531,7 +535,14 @@ function assertSchema7ForwardRepairCandidate(manifest: DeploymentManifest): void
   }
   if (candidate.actionScope !== RECONCILIATION_CANDIDATE_ACTION_SCOPE ||
     candidate.basedOnGitHubMainCommit !== LOCAL_CANDIDATE_BASE_COMMIT ||
-    candidate.pullRequest !== null || candidate.githubMerged ||
+    candidate.pullRequest !== 164 || candidate.pullRequestDraft !== true ||
+    candidate.observedDraftPullRequestHead !==
+      "b659ec307da9455c389059b29f2d6f3ab51f095e" ||
+    candidate.observedDraftPullRequestTree !==
+      "9931d63dcb16a2e2e1cb7c592d2da63b4054cb60" ||
+    candidate.draftHeadEvidenceScope !==
+      "draft_pr_opening_head_before_evidence_refresh_not_final_reviewed_head" ||
+    candidate.githubMerged ||
     candidate.futureMergedGitHubCommit !== null || candidate.futureSitesVersion !== null ||
     candidate.allFourWorkflowsGreen !== null || candidate.zeroUnresolvedReviewThreads !== null ||
     candidate.githubMainMatchesCandidate || candidate.candidateSourceMatchesLiveSites ||
@@ -544,11 +555,11 @@ function assertSchema7ForwardRepairCandidate(manifest: DeploymentManifest): void
     !candidate.deploymentAuthorized || candidate.activationExecuted ||
     candidate.rolloutStatus !== "predeployment_v5_cutover_freeze_required" ||
     candidate.sourceFileCount !== 203 ||
-    candidate.sourceTreeSha256 !== "fce38a41f6afc94d5999d3268baea3c72012a8205f1bf97008e3f04900db6b37" ||
+    candidate.sourceTreeSha256 !== "357f6b336993d2c306c102d5be2699d7145a3144041eeb9753a2a43c48fe869e" ||
     candidate.migrationFileCount !== 44 ||
-    candidate.migrationTreeSha256 !== "7ea30e35ee2dd88fc936521d352ef1b5794b6bfea981afd7e1b9b5c8a22af16c" ||
+    candidate.migrationTreeSha256 !== "9cc0bba007b6a0c06edf33563fb1bc3f4650811f8f8ea1639cc58c7028ac7324" ||
     candidate.latestCandidateMigration !== LOCAL_CANDIDATE_PENDING_MIGRATIONS[0] ||
-    candidate.latestCandidateMigrationSha256 !== "3d6394b402247d599f80466855dc14326d48add91f359b70a5cd75a9058fd441" ||
+    candidate.latestCandidateMigrationSha256 !== "9cf6f0080d38d58d3c1939d928444701b1954bf5cfe96bf7f3e80077bad45cc0" ||
     JSON.stringify(candidate.pendingMigrations) !== JSON.stringify(LOCAL_CANDIDATE_PENDING_MIGRATIONS)) {
     failures.push("candidate state does not match the unapplied DB44 and unpublished v5 Sites release");
   }

@@ -66,7 +66,12 @@ must(
   checkpoint.schemaVersion === 11 &&
     checkpoint.recordKind === "veroxa_momo_ready_team_decisions_feature_checkpoint" &&
     checkpoint.status === REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE &&
-    checkpoint.releaseCandidate?.pullRequest === null &&
+    checkpoint.releaseCandidate?.pullRequest === 164 &&
+    checkpoint.releaseCandidate.pullRequestDraft === true &&
+    checkpoint.releaseCandidate.observedDraftPullRequestHead ===
+      "b659ec307da9455c389059b29f2d6f3ab51f095e" &&
+    checkpoint.releaseCandidate.observedDraftPullRequestTree ===
+      "9931d63dcb16a2e2e1cb7c592d2da63b4054cb60" &&
     checkpoint.releaseCandidate.githubMerged === false &&
     checkpoint.releaseCandidate.databaseChangesRequired === true &&
     checkpoint.releaseCandidate.databaseMigrationApplied === false &&
@@ -75,7 +80,7 @@ must(
     checkpoint.releaseCandidate.deploymentAuthorized === true &&
     checkpoint.releaseCandidate.activationExecuted === false &&
     checkpoint.releaseCandidate.fullReleaseGatePassed === false,
-  "RR checkpoint must preserve the authorized but wholly unexecuted feature release.",
+  "RR checkpoint must preserve draft PR #164 as authorized but wholly unexecuted and without final-head gates.",
 );
 const sourceTree = hashTree(resolve(repoRoot, manifest.source.root), {
   exclusions: manifest.source.generatedPathExclusions,

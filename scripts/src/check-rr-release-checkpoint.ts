@@ -102,7 +102,14 @@ must(
   "RR candidate fields or fingerprints differ from the manifest.",
 );
 must(
-  checkpoint.releaseCandidate.pullRequest === null &&
+  checkpoint.releaseCandidate.pullRequest === 164 &&
+    checkpoint.releaseCandidate.pullRequestDraft === true &&
+    checkpoint.releaseCandidate.observedDraftPullRequestHead ===
+      "b659ec307da9455c389059b29f2d6f3ab51f095e" &&
+    checkpoint.releaseCandidate.observedDraftPullRequestTree ===
+      "9931d63dcb16a2e2e1cb7c592d2da63b4054cb60" &&
+    checkpoint.releaseCandidate.draftHeadEvidenceScope ===
+      "draft_pr_opening_head_before_evidence_refresh_not_final_reviewed_head" &&
     checkpoint.releaseCandidate.githubMerged === false &&
     checkpoint.releaseCandidate.allFourWorkflowsGreen === null &&
     checkpoint.releaseCandidate.zeroUnresolvedReviewThreads === null &&
@@ -119,7 +126,7 @@ must(
     checkpoint.releaseCandidate.deploymentAuthorized === true &&
     checkpoint.releaseCandidate.activationExecuted === false &&
     checkpoint.releaseCandidate.fullReleaseGatePassed === false,
-  "RR candidate overclaims merge, database apply, Sites publish, or activation.",
+  "RR draft PR #164 evidence is stale or overclaims final-head gates, merge, database apply, Sites publish, or activation.",
 );
 must(
   JSON.stringify(checkpoint.rolloutSequence) ===
@@ -171,6 +178,11 @@ must(
 );
 must(
   checkpoint.activationGates.some((gate: string) =>
+    /Draft PR #164[\s\S]*b659ec307da9455c389059b29f2d6f3ab51f095e[\s\S]*not final-head/iu.test(
+      gate,
+    ),
+  ) &&
+    checkpoint.activationGates.some((gate: string) =>
     /freeze[\s\S]*drain/iu.test(gate),
   ) &&
     checkpoint.activationGates.some((gate: string) =>
@@ -223,7 +235,11 @@ for (const document of [
       /Sites v39/iu.test(text) &&
       /045812/iu.test(text) &&
       /pending|unapplied/iu.test(text) &&
-      /generated(?:[\s-]+migration)?[\s-]+version|generated ledger version/iu.test(text),
+      /generated(?:[\s-]+migration)?[\s-]+version|generated ledger version/iu.test(text) &&
+      /draft PR #164/iu.test(text) &&
+      text.includes("b659ec307da9455c389059b29f2d6f3ab51f095e") &&
+      text.includes("9931d63dcb16a2e2e1cb7c592d2da63b4054cb60") &&
+      /final-head/iu.test(text),
     `Current document does not distinguish live production, provisional DB44, and the generated-version reconciliation gate: ${document}`,
   );
 }

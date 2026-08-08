@@ -31,6 +31,10 @@ type ReleaseCandidateCheckpoint = {
   actionScope: string;
   basedOnGitHubMainCommit: string;
   pullRequest: number | null;
+  pullRequestDraft: boolean;
+  observedDraftPullRequestHead: string | null;
+  observedDraftPullRequestTree: string | null;
+  draftHeadEvidenceScope: string | null;
   githubMerged: boolean;
   futureMergedGitHubCommit: string | null;
   futureSitesVersion: number | null;
@@ -82,7 +86,12 @@ function assertCandidateActionBoundary(
   const candidate = manifest.releaseCandidate;
   const checkpoint = rr.releaseCandidate;
   const unsafe =
-    candidate.pullRequest !== null ||
+    candidate.pullRequest !== 164 ||
+    candidate.pullRequestDraft !== true ||
+    candidate.observedDraftPullRequestHead !==
+      "b659ec307da9455c389059b29f2d6f3ab51f095e" ||
+    candidate.observedDraftPullRequestTree !==
+      "9931d63dcb16a2e2e1cb7c592d2da63b4054cb60" ||
     candidate.githubMerged ||
     candidate.futureMergedGitHubCommit !== null ||
     candidate.futureSitesVersion !== null ||
@@ -90,7 +99,12 @@ function assertCandidateActionBoundary(
     candidate.sitesPublished ||
     candidate.githubMainMatchesCandidate ||
     candidate.fullReleaseGatePassed ||
-    checkpoint.pullRequest !== null ||
+    checkpoint.pullRequest !== 164 ||
+    checkpoint.pullRequestDraft !== true ||
+    checkpoint.observedDraftPullRequestHead !==
+      "b659ec307da9455c389059b29f2d6f3ab51f095e" ||
+    checkpoint.observedDraftPullRequestTree !==
+      "9931d63dcb16a2e2e1cb7c592d2da63b4054cb60" ||
     checkpoint.githubMerged ||
     checkpoint.futureMergedGitHubCommit !== null ||
     checkpoint.futureSitesVersion !== null ||
@@ -128,6 +142,13 @@ function assertCheckpointMatchesManifest(
   const mismatch =
     checkpoint.actionScope !== candidate.actionScope ||
     checkpoint.basedOnGitHubMainCommit !== candidate.basedOnGitHubMainCommit ||
+    checkpoint.pullRequest !== candidate.pullRequest ||
+    checkpoint.pullRequestDraft !== candidate.pullRequestDraft ||
+    checkpoint.observedDraftPullRequestHead !==
+      candidate.observedDraftPullRequestHead ||
+    checkpoint.observedDraftPullRequestTree !==
+      candidate.observedDraftPullRequestTree ||
+    checkpoint.draftHeadEvidenceScope !== candidate.draftHeadEvidenceScope ||
     checkpoint.candidateSourceMatchesLiveSites !==
       candidate.candidateSourceMatchesLiveSites ||
     checkpoint.candidateMigrationsMatchLiveLedger !==

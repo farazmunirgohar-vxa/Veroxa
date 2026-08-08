@@ -96,7 +96,7 @@ const mirrorTree = hashTree(resolve(repoRoot, manifest.migrations.mirrorRoot!), 
 must(
   migrationTree.fileCount === 44 &&
     migrationTree.sha256 ===
-      "7ea30e35ee2dd88fc936521d352ef1b5794b6bfea981afd7e1b9b5c8a22af16c" &&
+      "9cc0bba007b6a0c06edf33563fb1bc3f4650811f8f8ea1639cc58c7028ac7324" &&
     mirrorTree.fileCount === migrationTree.fileCount &&
     mirrorTree.sha256 === migrationTree.sha256 &&
     JSON.stringify(mirrorTree.files) === JSON.stringify(migrationTree.files) &&
@@ -108,7 +108,14 @@ must(
 );
 const candidate = manifest.releaseCandidate;
 must(
-  candidate.pullRequest === null &&
+  candidate.pullRequest === 164 &&
+    candidate.pullRequestDraft === true &&
+    candidate.observedDraftPullRequestHead ===
+      "b659ec307da9455c389059b29f2d6f3ab51f095e" &&
+    candidate.observedDraftPullRequestTree ===
+      "9931d63dcb16a2e2e1cb7c592d2da63b4054cb60" &&
+    candidate.draftHeadEvidenceScope ===
+      "draft_pr_opening_head_before_evidence_refresh_not_final_reviewed_head" &&
     !candidate.githubMerged &&
     candidate.allFourWorkflowsGreen === null &&
     candidate.zeroUnresolvedReviewThreads === null &&
@@ -128,7 +135,7 @@ must(
     candidate.sitesPublishAuthorized === true &&
     candidate.deploymentAuthorized === true &&
     !candidate.activationExecuted,
-  "Candidate must remain authorized but wholly unapplied, unpublished, unmerged, and fail-closed.",
+  "Draft PR #164 must remain authorized but wholly unapplied, unpublished, unmerged, and fail-closed without final-head gate evidence.",
 );
 const latest = resolve(
   repoRoot,
@@ -140,7 +147,7 @@ must(
     candidate.latestCandidateMigration === LOCAL_CANDIDATE_PENDING_MIGRATIONS[0] &&
     sha256File(latest) === candidate.latestCandidateMigrationSha256 &&
     candidate.latestCandidateMigrationSha256 ===
-      "3d6394b402247d599f80466855dc14326d48add91f359b70a5cd75a9058fd441",
+      "9cf6f0080d38d58d3c1939d928444701b1954bf5cfe96bf7f3e80077bad45cc0",
   "Provisional 045812 migration identity or exact bytes drifted.",
 );
 const hosting = JSON.parse(
