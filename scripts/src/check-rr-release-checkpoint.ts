@@ -112,7 +112,7 @@ must(
 );
 must(
   rr.checkpoint ===
-      "live50-media-upload-one-step-handoff-external-actions-held-2026-08-09" &&
+      "live52-media-upload-one-step-team-processor-external-actions-held-2026-08-09" &&
     Array.isArray(rr.activationGates) &&
     rr.activationGates.length === 4 &&
     rr.activationGates.some((gate: unknown) =>
@@ -133,6 +133,9 @@ must(
 must(
   rr.mediaUploadHandoff?.clientActionAfterUpload === "none" &&
     rr.mediaUploadHandoff?.processingOwner === "veroxa_team" &&
+    rr.mediaUploadHandoff?.legacyV2AuthenticatedExecute === false &&
+    rr.mediaUploadHandoff?.teamProcessorAvailable === true &&
+    rr.mediaUploadHandoff?.instructionApplicationCount === 0 &&
     rr.mediaUploadHandoff?.existingUploadRequiresClientRetry === false &&
     rr.mediaUploadHandoff?.openMediaIntakeExceptionCount === 3 &&
     rr.mediaUploadHandoff?.allMediaIntakeExceptionsExternalLocked === true,

@@ -1811,68 +1811,57 @@ export async function updateMomoPresenceProfile(input: {
   if (error || !data) throw new Error("presence_update_failed");
 }
 
-function safeMediaExtension(file: File): string {
-  const byMime: Record<string, string> = {
-    "image/jpeg": "jpg",
-  };
-  const extension = byMime[file.type];
-  if (!extension) throw new Error("unsupported_media_type");
-  return extension;
-}
-
-export async function uploadMomoMedia(input: {
-  restaurantId: string;
-  file: File;
-  usageScope: string[];
-  expiresAt?: string;
-}): Promise<void> {
-  if (input.file.size < 10 * 1024 || input.file.size > 5 * 1024 * 1024) throw new Error("invalid_media_size");
-  if (input.file.type !== "image/jpeg") throw new Error("invalid_media_type");
-  const usageScope = [...new Set(input.usageScope)];
-  if (usageScope.length < 1 || usageScope.some((scope) => !["facebook", "instagram", "google_business"].includes(scope))) {
-    throw new Error("invalid_media_scope");
-  }
-  const client = requiredClient();
-  const extension = safeMediaExtension(input.file);
-  const now = new Date();
-  const objectId = crypto.randomUUID();
-  const storagePath = `restaurants/${input.restaurantId}/uploads/${now.getUTCFullYear()}/${String(now.getUTCMonth() + 1).padStart(2, "0")}/${objectId}.${extension}`;
-  const uploaded = await client.storage.from("restaurant-media").upload(storagePath, input.file, {
-    contentType: input.file.type,
-    upsert: false,
-  });
-  if (uploaded.error) throw new Error("media_upload_failed");
-  const registration = await client.rpc("veroxa_register_momo_media_v2", {
-    p_restaurant_id: input.restaurantId,
-    p_storage_path: storagePath,
-    p_mime_type: input.file.type,
-    p_file_size: input.file.size,
-    p_original_file_name: input.file.name,
-    p_intake_notes: null,
-    p_usage_scope: usageScope,
-    p_expires_on: input.expiresAt || null,
-  });
-  if (registration.error || !registration.data) {
-    await client.storage.from("restaurant-media").remove([storagePath]);
-    throw new Error("media_registration_failed");
-  }
-  const registered = Array.isArray(registration.data)
-    ? registration.data[0]
-    : registration.data;
-  const assetId = registered && typeof registered === "object"
-    && typeof (registered as { asset_id?: unknown }).asset_id === "string"
-    ? (registered as { asset_id: string }).asset_id
-    : "";
-  if (!assetId) throw new Error("media_registration_failed");
-  await finalizeMomoMediaUpload({ restaurantId: input.restaurantId, assetId, storagePath });
-}
-
 export async function retryMomoMediaVerification(input: {
   restaurantId: string;
   assetId: string;
   storagePath: string;
 }): Promise<void> {
   await finalizeMomoMediaUpload(input);
+}
+
+export async function applyMomoMediaUploadInstruction(input: {
+  restaurantId: string;
+  assetId: string;
+}): Promise<void> {
+  if (!isMomoContentUuid(input.restaurantId) ||
+      !isMomoContentUuid(input.assetId)) {
+    throw new Error("media_instruction_processor_failed");
+  }
+  const { data, error } = await requiredClient().rpc(
+    "veroxa_apply_momo_media_upload_instruction_v1",
+    {
+      p_restaurant_id: input.restaurantId,
+      p_asset_id: input.assetId,
+    },
+  );
+  if (error || !data) throw new Error("media_instruction_processor_failed");
+  const row = Array.isArray(data) ? data[0] : data;
+  if (!row || typeof row !== "object" || Array.isArray(row)) {
+    throw new Error("media_instruction_processor_failed");
+  }
+  const result = row as {
+    upload_instruction_id?: unknown;
+    association_id?: unknown;
+    application_status?: unknown;
+    external_write_allowed?: unknown;
+  };
+  if (!isMomoContentUuid(result.upload_instruction_id) ||
+      result.external_write_allowed !== false ||
+      typeof result.application_status !== "string") {
+    throw new Error("media_instruction_processor_failed");
+  }
+  if (result.application_status === "awaiting_private_assessment") {
+    throw new Error("media_instruction_awaiting_private_assessment");
+  }
+  if (result.application_status ===
+      "needs_restaurant_fact_or_permission") {
+    throw new Error("media_instruction_needs_restaurant_fact_or_permission");
+  }
+  if (!["applied", "applied_existing", "already_applied"].includes(
+    result.application_status,
+  ) || !isMomoContentUuid(result.association_id)) {
+    throw new Error("media_instruction_processor_failed");
+  }
 }
 
 export async function reviewMomoMedia(input: {

@@ -94,6 +94,8 @@ for (const path of authorityDocs) {
     "USD 0 incremental spend",
     "clientActionAfterUpload=none",
     "processingOwner=veroxa_team",
+    "authenticated v2 execute is revoked",
+    "Team-only saved-instruction processor",
     "3 open Team media-intake exceptions",
     "no re-upload or retry",
   ]) {

@@ -447,11 +447,14 @@ test("Team navigation exposes only live daily work while focused routes remain r
 });
 
 test("Momo operating center uses live tenant data and exact production contracts", async () => {
-  const [page, center, data, migration] = await Promise.all([
+  const [page, center, data, clientData, migration, processorMigration, processorFix] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/momo-operating-center.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/momo-data.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/momo-client-data.ts", import.meta.url), "utf8"),
     readFile(new URL("../supabase/migrations/20260716035027_momo_preconnection_foundation.sql", import.meta.url), "utf8"),
+    readFile(new URL("../supabase/migrations/20260809231409_momo_media_instruction_team_processing_v1.sql", import.meta.url), "utf8"),
+    readFile(new URL("../supabase/migrations/20260809232154_momo_media_instruction_team_processor_fix_v1.sql", import.meta.url), "utf8"),
   ]);
 
   assert.match(page, /<MomoOperatingCenter/, "Protected routes must use the database-backed operating center");
@@ -483,10 +486,10 @@ test("Momo operating center uses live tenant data and exact production contracts
   }
 
   assert.doesNotMatch(center + data, /"team_verified"|"google_business_profile"|"content_variants"|"owner_content_approval"|"team_content_approval"|"needs_better_version"|status:\s*"scheduled"|status:\s*"draft"|RLS protected/, "Invalid enum values and implementation jargon must stay out");
-  assert.match(data, /usageScope:\s*string\[\]/, "Media rights scope input must be an explicit token array");
-  assert.match(data, /const usageScope = \[\.\.\.new Set\(input\.usageScope\)\]/, "Media rights tokens must be deduplicated before registration");
-  assert.match(data, /usageScope\.some\(\(scope\) => !\["facebook", "instagram", "google_business"\]\.includes\(scope\)\)/, "Media rights tokens must be allowlisted before registration");
-  assert.match(data, /p_usage_scope:\s*usageScope/, "Media registration RPC must receive only the validated token array");
+  assert.match(clientData, /usageScope:\s*string\[\]/, "Media rights scope input must be an explicit token array");
+  assert.match(clientData, /const usageScope = \[\.\.\.new Set\(input\.usageScope\)\]/, "Media rights tokens must be deduplicated before registration");
+  assert.match(clientData, /MOMO_CLIENT_MEDIA_SCOPES\.includes/, "Media rights tokens must be allowlisted before registration");
+  assert.match(clientData, /p_usage_scope:\s*usageScope/, "Media registration RPC must receive only the validated token array");
   assert.match(center, /"instagram", "facebook", "google_business"/, "Media rights UI must start from the three supported ready-package providers");
   assert.doesNotMatch(center, /"instagram", "facebook", "google_business", "website"/, "Website rights must not appear in the upload-to-ready release");
   assert.match(data, /\.rpc\("veroxa_prepare_momo_ai_job_v1"/, "AI preparation must use the server-validated contract");
@@ -498,8 +501,12 @@ test("Momo operating center uses live tenant data and exact production contracts
   assert.match(data, /\.rpc\("veroxa_apply_confirmation_v1"/, "Team confirmation decisions must be transactional");
   assert.match(data, /\.rpc\("veroxa_apply_approval_v1"/, "Team approval decisions must atomically update their subject");
   assert.match(data, /\.rpc\("veroxa_review_momo_media_v1"/, "Media review replacement and asset state must be atomic");
-  assert.match(data, /\.rpc\("veroxa_register_momo_media_v2"/, "Team media metadata, rights, and Momo-local expiry must be registered atomically");
-  assert.match(data, /p_expires_on:\s*input\.expiresAt \|\| null/, "Rights expiry must be sent as a Momo-local calendar date, not browser-local timestamp");
+  assert.match(clientData, /"veroxa_register_momo_media_v3"/, "Every authenticated Momo upload must save its instruction atomically");
+  assert.doesNotMatch(clientData, /"veroxa_register_momo_media_v2"/, "No browser adapter may retain the legacy instruction-bypass registration path");
+  assert.match(clientData, /p_expires_on:\s*input\.expiresAt \|\| null/, "Rights expiry must be sent as a Momo-local calendar date, not browser-local timestamp");
+  assert.match(data, /\.rpc\([\s\S]{0,80}"veroxa_apply_momo_media_upload_instruction_v1"/, "Team must apply the immutable saved instruction through the narrow processor");
+  assert.match(processorMigration, /revoke all on function public\.veroxa_register_momo_media_v2\([\s\S]{0,180}from public, anon, authenticated, service_role;/, "The legacy browser bypass must be revoked");
+  assert.match(processorFix, /instruction_submitted_by,[\s\S]{0,120}instruction_evidence_class,[\s\S]{0,120}applied_by/, "The Team application audit must preserve uploader evidence and Team attribution");
   assert.match(data, /\.rpc\("veroxa_retry_work_item_v1"/, "Retries must write the bounded attempt ledger transactionally");
   assert.match(data, /\.rpc\("veroxa_submit_momo_confirmation_v1"/, "Owner decisions must use the subject-validating transactional contract");
   assert.match(data, /\.rpc\("veroxa_create_manual_content_draft_v1"/, "Manual drafts must validate owner-confirmed truth and media inputs transactionally");

@@ -141,7 +141,7 @@ export const INTERNAL_AI_RELEASE_EVIDENCE = {
 
 export const MEDIA_UPLOAD_HANDOFF_EVIDENCE = {
   observedAt: "2026-08-09",
-  status: "live_fix_complete_canonical_reconciliation_in_progress",
+  status: "live_fix_complete_team_processor_added_canonical_reconciliation_in_progress",
   baseMainCommit: "23148b90e34f75cb7212b85fe2312cbed8c169ab",
   baseMainPullRequest: 173,
   candidateBranch: "agent/momo-media-one-step-handoff",
@@ -157,22 +157,31 @@ export const MEDIA_UPLOAD_HANDOFF_EVIDENCE = {
   liveSitesSourceFileCount: 217,
   liveSitesSourceTreeSha256:
     "92c61724f2d5b26d6ba4f7d3c0679b7099ad4c37a5850824d99a7417b5de118c",
-  candidateSourceFileCount: 217,
+  candidateSourceFileCount: 219,
   candidateSourceTreeSha256:
-    "e13c7dcd1a355a20f7b3570304d768bb61bdf808d4b8da8f6df523d8617e5742",
-  migrationFileCount: 50,
+    "514e275d110d1c34dc71df235af3ebc679826b6f3c6306286b538cf23c66857e",
+  migrationFileCount: 52,
   migrationTreeSha256:
-    "0e532225ecf5fbbf4f9053aaf1d8614932a6fb94bd2f9e13c5bbf48d3affa11f",
+    "b0bc0bf80ebcd041ede7c5aa9045b9391a8bb07ab78b9de7f484c69de797bc6a",
   latestMigration:
-    "20260809222502_media_upload_instruction_handoff_v1.sql",
-  latestMigrationByteLength: 9_323,
+    "20260809232154_momo_media_instruction_team_processor_fix_v1.sql",
+  latestMigrationByteLength: 9_601,
   latestMigrationSha256:
-    "72698b4f091c9ffdc0ec5ebeda77e1ae53c0c99178aa65191467d126b5326bbd",
+    "455a75c64148cdcf7b77e0a7a4f177285d8b9143b15d6fff62a3a897b4924a3d",
+  teamProcessorMigration:
+    "20260809231409_momo_media_instruction_team_processing_v1.sql",
+  teamProcessorMigrationByteLength: 11_720,
+  teamProcessorMigrationSha256:
+    "3c4594c56a5260ce6b29eb85be46100c792512c6a47f35590ca8434dd68e02f2",
   provisionalSitesMigration:
     "20260809223000_media_upload_instruction_handoff_v1.sql",
   clientActionAfterUpload: "none",
   processingOwner: "veroxa_team",
+  legacyV2AuthenticatedExecute: false,
+  v3AuthenticatedExecute: true,
+  teamProcessorAvailable: true,
   savedInstructionCount: 0,
+  instructionApplicationCount: 0,
   unverifiedSavedUploadCount: 3,
   openMediaIntakeExceptionCount: 3,
   allMediaIntakeExceptionsExternalLocked: true,
@@ -1461,7 +1470,11 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
       )) ||
       handoff.clientActionAfterUpload !== "none" ||
       handoff.processingOwner !== "veroxa_team" ||
+      handoff.legacyV2AuthenticatedExecute !== false ||
+      handoff.v3AuthenticatedExecute !== true ||
+      handoff.teamProcessorAvailable !== true ||
       handoff.savedInstructionCount !== 0 ||
+      handoff.instructionApplicationCount !== 0 ||
       handoff.unverifiedSavedUploadCount !== 3 ||
       handoff.openMediaIntakeExceptionCount !== 3 ||
       handoff.allMediaIntakeExceptionsExternalLocked !== true ||

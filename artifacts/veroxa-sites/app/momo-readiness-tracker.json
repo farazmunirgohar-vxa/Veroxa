@@ -85,7 +85,9 @@
         "The repository includes safe image presets, deterministic edit recipes, browser rendering, output hashing, alt text, storage paths, and rendition lineage.",
         "Media placement and rehearsal contracts require scoped renditions and keep external writes disabled.",
         "A real private Client upload is saved. The live one-step handoff removes Client verification, retry, assessment, and association-processing controls; Client action ends after upload success.",
-        "Generated migration 20260809222502 atomically persists future Client association instructions with registration and backfilled all three saved unverified uploads into externally locked Team media-intake exceptions.",
+        "Generated migration 20260809222502 atomically persists every future Client association instruction with registration and backfilled all three saved unverified uploads into externally locked Team media-intake exceptions.",
+        "Generated migrations 20260809231409 and 20260809232154 revoke authenticated access to the legacy v2 bypass and provide a corrected Team-only processor that applies only the immutable uploader instruction while preserving uploader evidence and Team attribution.",
+        "The Team media exception card can apply a saved instruction or perform technical verification recovery. Client surfaces expose neither action.",
         "The signed lifecycle bridge was rotated and redeployed, while provider calls, Ready decisions, and external actions remain unclaimed."
       ],
       "blockers": [
@@ -93,7 +95,7 @@
         "No post-migration upload has yet proved atomic instruction persistence through the real Client path.",
         "No real-owner media rights are available for public use."
       ],
-      "nextAction": "Team resolves the saved-upload exceptions without asking Momo to retry or re-upload; contact Momo only if a specific restaurant fact or permission is later required."
+      "nextAction": "Team uses the saved-instruction processor after private verification and assessment are complete. Resolve the three pre-fix saved-upload exceptions without inventing their missing instruction or asking Momo to retry; contact Momo only if a specific restaurant fact or permission is later required."
     },
     "ai_and_automation": {
       "label": "AI contract and safe automation",

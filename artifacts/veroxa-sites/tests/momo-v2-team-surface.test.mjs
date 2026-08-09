@@ -23,10 +23,13 @@ test("Team v2 reads are scoped to open incidents, unscheduled Ready, and active 
   assert.match(data, /if \(definition\.isNull\) query = query\.is\(definition\.isNull, null\)/);
 });
 
-test("Team media supports assessment-only recognition while content remains decision-scoped", async () => {
-  const [center, clientData] = await Promise.all([
+test("Team media supports assessment-only recognition and owns saved-instruction recovery", async () => {
+  const [center, data, clientData, processorMigration, processorFix] = await Promise.all([
     readFile(new URL("../app/momo-operating-center.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/momo-data.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/momo-client-data.ts", import.meta.url), "utf8"),
+    readFile(new URL("../supabase/migrations/20260809231409_momo_media_instruction_team_processing_v1.sql", import.meta.url), "utf8"),
+    readFile(new URL("../supabase/migrations/20260809232154_momo_media_instruction_team_processor_fix_v1.sql", import.meta.url), "utf8"),
   ]);
   const media = center.slice(center.indexOf("function MediaPanel"), center.indexOf("type MomoContentPreparationState"));
   const teamIntake = center.slice(center.indexOf("function TeamPrivateAssessmentIntake"), center.indexOf("type MomoContentPreparationState"));
@@ -51,6 +54,14 @@ test("Team media supports assessment-only recognition while content remains deci
   assert.match(media, /<MediaAssetCard asset=\{recoveryAsset\}/, "manual media recovery must remain reachable for the selected exception source");
   assert.match(media, /latestEvent[\s\S]{0,500}event\.source_asset_id/);
   assert.match(media, /setRecoveryAssetId\(sourceAssetId\)/, "recovery must open the immutable exception source, not assume canonical bytes own the selected rights");
+  assert.match(center, /role === "team" && intakeInstruction[\s\S]{0,500}Apply saved upload instruction/, "Only Team may apply the immutable upload instruction");
+  assert.match(data, /"veroxa_apply_momo_media_upload_instruction_v1"/);
+  assert.match(data, /"awaiting_private_assessment"[\s\S]{0,220}media_instruction_awaiting_private_assessment/);
+  assert.match(data, /"needs_restaurant_fact_or_permission"[\s\S]{0,220}media_instruction_needs_restaurant_fact_or_permission/);
+  assert.match(processorMigration, /revoke all on function public\.veroxa_register_momo_media_v2\([\s\S]{0,180}from public, anon, authenticated, service_role;/);
+  assert.doesNotMatch(clientData, /"veroxa_register_momo_media_v2"/, "Browser code must not retain the legacy registration bypass");
+  assert.match(processorFix, /association_id,[\s\S]{0,80}instruction_submitted_by,[\s\S]{0,80}instruction_evidence_class,[\s\S]{0,80}applied_by/);
+  assert.doesNotMatch(processorFix, /association_id,\s*association_id,/);
 
   assert.match(content, /const attentionCount = role === "team"[\s\S]{0,160}\? openIncidents\.length \+ pendingReadyReviews\.length/);
   assert.doesNotMatch(content, /\? legacyReviewRuns\.length|\? legacyFailedRuns\.length/);

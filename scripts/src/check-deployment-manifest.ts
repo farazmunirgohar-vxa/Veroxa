@@ -84,15 +84,19 @@ must(
     manifest.currentProductionObservation.candidateMigrationsMatchLiveLedger === true &&
     manifest.currentProductionObservation.fullReleaseGateScope ===
       "media_upload_one_step_handoff_live_canonical_reconciliation_pending_external_actions_held",
-  "Observed production is not the exact live50 media-handoff checkpoint.",
+  "Observed production is not the exact live52 media-handoff checkpoint.",
 );
 must(
   mediaUploadHandoff?.status === MEDIA_UPLOAD_HANDOFF_EVIDENCE.status &&
     mediaUploadHandoff.clientActionAfterUpload === "none" &&
     mediaUploadHandoff.processingOwner === "veroxa_team" &&
+    mediaUploadHandoff.legacyV2AuthenticatedExecute === false &&
+    mediaUploadHandoff.v3AuthenticatedExecute === true &&
+    mediaUploadHandoff.teamProcessorAvailable === true &&
     mediaUploadHandoff.existingUploadRequiresClientRetry === false &&
     mediaUploadHandoff.preFixInstructionRecoverable === false &&
     mediaUploadHandoff.savedInstructionCount === 0 &&
+    mediaUploadHandoff.instructionApplicationCount === 0 &&
     mediaUploadHandoff.unverifiedSavedUploadCount === 3 &&
     mediaUploadHandoff.openMediaIntakeExceptionCount === 3 &&
     mediaUploadHandoff.allMediaIntakeExceptionsExternalLocked === true &&
@@ -319,6 +323,6 @@ if (failures.length > 0) {
   process.exitCode = 1;
 } else {
   console.log(
-    "PASS: live50 media handoff is one-step for Momo, Team-owned on exception, and externally locked.",
+    "PASS: live52 media handoff is one-step for Momo, Team-processed on exception, and externally locked.",
   );
 }

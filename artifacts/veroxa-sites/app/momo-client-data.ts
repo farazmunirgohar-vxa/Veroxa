@@ -1005,7 +1005,6 @@ export type MomoClientMediaUploadDependencies = {
   }) => Promise<MomoMediaAssociationResult>;
   registrationRpc?:
     | "veroxa_register_momo_media_v3"
-    | "veroxa_register_momo_media_v2"
     | "veroxa_register_team_private_media_v1";
   skipAssociation?: boolean;
   now?: () => Date;
