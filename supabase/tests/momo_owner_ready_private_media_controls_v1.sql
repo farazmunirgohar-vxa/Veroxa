@@ -320,15 +320,23 @@ begin
   if position('lock_momo_source_media_v1' in function_source) = 0
      or position('momo_source_media_discarded_v1' in function_source) = 0
      or position('source_media_discarded_terminal' in function_source) = 0
-     or position('for update' in function_source) = 0
+     or position('momo_materialize_veroxa_ready_v5_pre_source_lock_v2'
+       in function_source) = 0
      or position('lock_momo_source_media_v1' in function_source) >
        position('momo_source_media_discarded_v1' in function_source)
      or position('momo_source_media_discarded_v1' in function_source) >
-       position('for update' in function_source)
-     or position('lock_momo_source_media_v1' in function_source) >
-       position('for update' in function_source) then
+       position(
+         'momo_materialize_veroxa_ready_v5_pre_source_lock_v2'
+         in function_source
+       ) then
     raise exception
-      'Ready materialization lost inline source-first lock order';
+      'Ready materialization wrapper lost source-first delegate order';
+  end if;
+  function_source := lower(pg_catalog.pg_get_functiondef(to_regprocedure(
+    'veroxa_private.momo_materialize_veroxa_ready_v5_pre_source_lock_v2(jsonb)'
+  )));
+  if position('for update' in function_source) = 0 then
+    raise exception 'Ready materialization delegate lost row lock';
   end if;
 
   foreach function_name in array array[
