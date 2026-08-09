@@ -141,22 +141,28 @@ export const INTERNAL_AI_RELEASE_EVIDENCE = {
 
 export const MEDIA_UPLOAD_HANDOFF_EVIDENCE = {
   observedAt: "2026-08-09",
-  status: "live_fix_complete_team_processor_added_canonical_reconciliation_in_progress",
+  status: "live_fix_complete_team_processor_github_sites_parity_verified",
   baseMainCommit: "23148b90e34f75cb7212b85fe2312cbed8c169ab",
   baseMainPullRequest: 173,
   candidateBranch: "agent/momo-media-one-step-handoff",
-  sitesVersion: 44,
+  reviewedHead: "a35c5e5900e02227a4c32c37df8387427a561676",
+  reviewedTree: "c32a478134e711aae4a9051cea38231361fed72f",
+  mergedPullRequest: 174,
+  mergedMainCommit: "13dab3f701aded8c5d62645203e875d43b983d8e",
+  allFourExactHeadWorkflowsGreen: true,
+  zeroUnresolvedReviewThreads: true,
+  sitesVersion: 45,
   sitesVersionId:
-    "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_9f17a14c35d0819185fd1a35a72601d7",
-  sitesSourceCommit: "33224b3ba401965ff8e98d4900a636f7b495ce6f",
+    "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_8f22cdda7ebc8191a2275d0f60ad4a4f",
+  sitesSourceCommit: "e6b73d285cbf6013d0c643f724e0f9a50ff14348",
   sitesArchiveFileCount: 52,
-  sitesArchiveByteLength: 6_000_640,
+  sitesArchiveByteLength: 6_010_880,
   sitesArchiveSha256:
-    "47703995c733cc85bb0e5f1f2a4254b6da7e364cd719b5e8d42603033f229457",
+    "5992c4a0764b930337c0bdc01c416dd708afb6e429e3da842c7488a702172803",
   sitesEnvironmentRevision: 13,
-  liveSitesSourceFileCount: 217,
+  liveSitesSourceFileCount: 219,
   liveSitesSourceTreeSha256:
-    "92c61724f2d5b26d6ba4f7d3c0679b7099ad4c37a5850824d99a7417b5de118c",
+    "514e275d110d1c34dc71df235af3ebc679826b6f3c6306286b538cf23c66857e",
   candidateSourceFileCount: 219,
   candidateSourceTreeSha256:
     "514e275d110d1c34dc71df235af3ebc679826b6f3c6306286b538cf23c66857e",
@@ -1387,9 +1393,9 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
       manifest.candidateRevision !== GUARDED_ROLLOUT_CANDIDATE_REVISION ||
       manifest.candidateBranch !== GUARDED_ROLLOUT_CANDIDATE_BRANCH ||
       live.canonicalGitHubMainCommit !==
-        MEDIA_UPLOAD_HANDOFF_EVIDENCE.baseMainCommit ||
+        MEDIA_UPLOAD_HANDOFF_EVIDENCE.mergedMainCommit ||
       live.canonicalGitHubMainMergePullRequest !==
-        MEDIA_UPLOAD_HANDOFF_EVIDENCE.baseMainPullRequest ||
+        MEDIA_UPLOAD_HANDOFF_EVIDENCE.mergedPullRequest ||
       candidate.basedOnGitHubMainCommit !==
         GUARDED_ROLLOUT_CANDIDATE_BASE_COMMIT ||
       candidate.pullRequest !== GUARDED_ROLLOUT_PULL_REQUEST ||
@@ -1441,6 +1447,14 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
         MEDIA_UPLOAD_HANDOFF_EVIDENCE.baseMainPullRequest ||
       handoff.candidateBranch !==
         MEDIA_UPLOAD_HANDOFF_EVIDENCE.candidateBranch ||
+      handoff.reviewedHead !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.reviewedHead ||
+      handoff.reviewedTree !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.reviewedTree ||
+      handoff.mergedPullRequest !==
+        MEDIA_UPLOAD_HANDOFF_EVIDENCE.mergedPullRequest ||
+      handoff.mergedMainCommit !==
+        MEDIA_UPLOAD_HANDOFF_EVIDENCE.mergedMainCommit ||
+      handoff.allFourExactHeadWorkflowsGreen !== true ||
+      handoff.zeroUnresolvedReviewThreads !== true ||
       handoff.sitesVersion !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.sitesVersion ||
       handoff.sitesVersionId !==
         MEDIA_UPLOAD_HANDOFF_EVIDENCE.sitesVersionId ||
@@ -1497,11 +1511,11 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
         MEDIA_UPLOAD_HANDOFF_EVIDENCE.migrationTreeSha256 ||
       live.latestProductionMigration !==
         MEDIA_UPLOAD_HANDOFF_EVIDENCE.latestMigration ||
-      live.githubParityVerifiedAtObservation !== false ||
-      live.githubMainMatchesCandidate !== false ||
-      live.candidateSourceMatchesLiveSites !== false ||
+      live.githubParityVerifiedAtObservation !== true ||
+      live.githubMainMatchesCandidate !== true ||
+      live.candidateSourceMatchesLiveSites !== true ||
       live.candidateMigrationsMatchLiveLedger !== true ||
-      live.fullReleaseGatePassed !== false
+      live.fullReleaseGatePassed !== true
     ) failures.push("Momo media one-step handoff evidence drifted");
     if (
       pending.some((filename) => !rootMigrationTree.files.includes(filename)) ||

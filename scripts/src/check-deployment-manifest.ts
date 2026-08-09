@@ -53,9 +53,9 @@ must(
   manifest.currentProductionObservation.productionMigrationCount ===
       MEDIA_UPLOAD_HANDOFF_EVIDENCE.migrationFileCount &&
     manifest.currentProductionObservation.canonicalGitHubMainCommit ===
-      MEDIA_UPLOAD_HANDOFF_EVIDENCE.baseMainCommit &&
+      MEDIA_UPLOAD_HANDOFF_EVIDENCE.mergedMainCommit &&
     manifest.currentProductionObservation.canonicalGitHubMainMergePullRequest ===
-      MEDIA_UPLOAD_HANDOFF_EVIDENCE.baseMainPullRequest &&
+      MEDIA_UPLOAD_HANDOFF_EVIDENCE.mergedPullRequest &&
     manifest.currentProductionObservation.sitesVersion ===
       MEDIA_UPLOAD_HANDOFF_EVIDENCE.sitesVersion &&
     manifest.currentProductionObservation.sitesVersionId ===
@@ -77,17 +77,25 @@ must(
     manifest.currentProductionObservation.latestProductionMigrationSha256 ===
       MEDIA_UPLOAD_HANDOFF_EVIDENCE.latestMigrationSha256 &&
     manifest.currentProductionObservation.githubParityVerifiedAtObservation ===
-      false &&
-    manifest.currentProductionObservation.githubMainMatchesCandidate === false &&
+      true &&
+    manifest.currentProductionObservation.githubMainMatchesCandidate === true &&
     manifest.currentProductionObservation.candidateSourceMatchesLiveSites ===
-      false &&
+      true &&
     manifest.currentProductionObservation.candidateMigrationsMatchLiveLedger === true &&
     manifest.currentProductionObservation.fullReleaseGateScope ===
-      "media_upload_one_step_handoff_live_canonical_reconciliation_pending_external_actions_held",
+      "media_upload_one_step_handoff_github_sites_parity_verified_external_actions_held",
   "Observed production is not the exact live52 media-handoff checkpoint.",
 );
 must(
   mediaUploadHandoff?.status === MEDIA_UPLOAD_HANDOFF_EVIDENCE.status &&
+    mediaUploadHandoff.reviewedHead === MEDIA_UPLOAD_HANDOFF_EVIDENCE.reviewedHead &&
+    mediaUploadHandoff.reviewedTree === MEDIA_UPLOAD_HANDOFF_EVIDENCE.reviewedTree &&
+    mediaUploadHandoff.mergedPullRequest ===
+      MEDIA_UPLOAD_HANDOFF_EVIDENCE.mergedPullRequest &&
+    mediaUploadHandoff.mergedMainCommit ===
+      MEDIA_UPLOAD_HANDOFF_EVIDENCE.mergedMainCommit &&
+    mediaUploadHandoff.allFourExactHeadWorkflowsGreen === true &&
+    mediaUploadHandoff.zeroUnresolvedReviewThreads === true &&
     mediaUploadHandoff.clientActionAfterUpload === "none" &&
     mediaUploadHandoff.processingOwner === "veroxa_team" &&
     mediaUploadHandoff.legacyV2AuthenticatedExecute === false &&
