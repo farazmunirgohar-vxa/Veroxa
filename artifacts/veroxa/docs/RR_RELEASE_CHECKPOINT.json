@@ -764,7 +764,7 @@
   "edgeCandidate": {
     "functionName": "momo-content-ai-lifecycle",
     "deployRequired": false,
-    "deployAuthorized": true,
+    "deployAuthorized": false,
     "deployed": true,
     "futureFunctionVersion": 7,
     "futureFunctionId": "859c73c3-2102-41b4-9da1-20582acb7212",
