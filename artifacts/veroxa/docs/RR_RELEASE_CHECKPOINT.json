@@ -126,6 +126,7 @@
     "sitesCustomDomainsVerified": true,
     "sitesRecentErrorsObserved": 0,
     "sitesArchiveFileCount": 52,
+    "sitesArchiveByteLength": 6000640,
     "sitesArchiveSha256": "74c287e655495edde605f0fc38ebc06f1ed0f19275d550c4369e491430f7cea7",
     "sourceFileCount": 216,
     "sourceTreeSha256": "96ab0a58d24c59ce176e3362730897764d039fdc2c3f8bd14d65317d1992532b",
@@ -142,7 +143,8 @@
     "githubMainMatchesCandidate": true,
     "candidateSourceMatchesLiveSites": true,
     "candidateMigrationsMatchLiveLedger": true,
-    "fullReleaseGatePassed": true
+    "fullReleaseGatePassed": true,
+    "fullReleaseGateScope": "scoped_internal_ai_release_complete_external_actions_held_no_owner_truth_or_real_upload"
   },
   "historicalV36GitHubReconciliationEvidence": {
     "pullRequest": 157,
@@ -285,6 +287,7 @@
     "candidateMigrationsMatchLiveLedger": true,
     "githubMainMatchesCandidate": true,
     "fullReleaseGatePassed": true,
+    "fullReleaseGateScope": "scoped_internal_ai_release_complete_external_actions_held_no_owner_truth_or_real_upload",
     "sourceFileCount": 216,
     "sourceTreeSha256": "96ab0a58d24c59ce176e3362730897764d039fdc2c3f8bd14d65317d1992532b",
     "migrationFileCount": 49,
@@ -310,7 +313,7 @@
       "20260809051616_guarded_internal_ai_activation_v1.sql"
     ],
     "databaseApplyAuthorized": false,
-    "sitesPublishRequired": true,
+    "sitesPublishRequired": false,
     "sitesPublished": true,
     "sitesPublishAuthorized": true,
     "edgeDeployRequired": false,
@@ -320,7 +323,8 @@
     "activationRoutineMigrationRequired": true,
     "activationRoutineMigrationApplied": true,
     "activationAuthorized": true,
-    "activationGateReady": true,
+    "activationGateReady": false,
+    "activationAuthorizationConsumed": true,
     "activationExecuted": true,
     "rolloutStatus": "internal_ai_active_external_actions_held_verified"
   },
@@ -501,7 +505,7 @@
         "requiresCompletedStep": "invoke_guarded_activation_routine",
         "explicitReviewRequired": true,
         "completed": true,
-        "verification": "Postflight proved 59 registered functions, zero missing, zero grant mismatches, zero anon grants, exact 13 authenticated/32 service-role/14 held counts, postgres-only activation ACL, all four external flags false, zero work/HTTP and one identity-bound audit event. A rollback-only authenticated role smoke verified the authorized Team identity, target membership, read-only RPC access and no direct candidate INSERT privilege; prior cross-tenant denial evidence remains authoritative because no second live restaurant existed for a fresh negative target."
+        "verification": "Postflight proved the exact ACL tuple 59 registered / 0 missing / 0 mismatched / 0 anon / 13 authenticated / 32 service-role / 14 held, one exact identity-bound event, postgres-only activation ACL, all four external flags false, zero work/HTTP, zero cost-ledger rows and zero post-activation Edge invocations. A rollback-only authenticated-role smoke proved one active Team profile, one active Momo membership, all three bounded read RPCs executable, activation execution denied, direct candidate INSERT denied, 0 Ready rows, 2 upload-status rows all external-locked and 0 media-window rows; prior live cross-tenant denial evidence remains authoritative because no second live restaurant existed for a fresh negative target."
       },
       {
         "order": 17,
@@ -512,7 +516,7 @@
         "requiresCompletedStep": "verify_post_activation_auth_budget_and_denials",
         "explicitReviewRequired": true,
         "completed": true,
-        "verification": "Recorded final live database, PR #169, Sites v41, Edge v7, runtime-control, ACL, rollback-only authenticated smoke, zero-work/HTTP/provider-call and USD 0 incremental-spend evidence. Owner contact, owner-confirmed truth, real upload, Ready decision and external publishing remain explicitly unclaimed and disabled."
+        "verification": "Authored the final scoped internal-AI evidence closeout for exact PR #169, Sites v41, Edge v7, live49 runtime, ACL, rollback-only authenticated smoke, zero-work/HTTP/cost-ledger/post-activation-Edge-invocation evidence and USD 0 incremental spend. This completion means the bounded internal-AI release evidence is present for hosted review; it does not claim a self-referential PR #170 merge identity. Owner contact, owner-confirmed truth, real upload, Ready decision and external publishing remain explicitly unclaimed and disabled."
       }
     ]
   },
@@ -583,11 +587,11 @@
   },
   "reusableEvidence": [
     "Historical Sites v36 / PR #157 parity, Sites v37/live43 / PR #162, PR #163 forward repair, and PR #164/live46 evidence remain immutable historical evidence only.",
-    "Historical PR #165 merged at e01e8e00d94ce9eb5243038bf41c202897a17460 before the subsequent #166-#168 release sequence; it is not the current main authority.",
+    "Historical PR #165 merged at e01e8e00d94ce9eb5243038bf41c202897a17460 before the subsequent #166-#169 release sequence; PR #169 / 2721545d is the release-bearing activation identity, while this evidence-only closeout does not require Sites v42.",
     "Historical Sites v39 remains preserved at exact version ID appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_388c5f82ec48819186bfd315a0d55ab8 and archive SHA-256 c5c471639303ac4488fbf1258a6e1736452eafbd43a9370473e02f6072eca7f5 as the independently observed pre-v40 baseline.",
     "Historical production live48 contained generated 20260809035302_team_private_food_assessment_reconciliation_v1.sql at 59,052 bytes / SHA-256 56c64c795ad12f1dfbe05894fd3e56a87f1d0e3376ff10edfd97760b8d2fbd5c and exact tree 1b3a575cbfbad53e811703c38681c30adf7c4b7bd716b1b193e322233d8d6ba6 before the live49 activation-routine install.",
     "The first-parity source had 48 exact migration mirrors and 214 Sites files at cec2f313e3850141117c7f69dbc1d5ad707b72ee7a7ad5f1f2efa0d6c5a34297, including the failed-assessment retry UX correction; live49 adds only the byte-preserved activation migration.",
-    "The exact prompt-v2 two-file closure is deployed as ACTIVE JWT-protected Edge v7 at bundle SHA-256 a6b00feeab795faa91d6d8d015c4ad399c526e1b35f702778a8c55aaba49503d; unauthenticated traffic remains fail-closed and no provider call was made."
+    "The exact prompt-v2 two-file closure is deployed as ACTIVE JWT-protected Edge v7 at bundle SHA-256 a6b00feeab795faa91d6d8d015c4ad399c526e1b35f702778a8c55aaba49503d; unauthenticated traffic remains fail-closed, the bounded post-activation log window contains zero invocations, and no provider call was observed."
   ],
   "activationGates": [
     "PR #169 exact head 78c1f90d passed all four required workflows with zero review threads and merged at 2721545d; exact Sites v41 and Edge v7 parity was then verified under the pre-activation hold.",
@@ -609,7 +613,7 @@
     "externalProvidersConnected": false,
     "externalPublishingEnabled": false,
     "ownerAuthorityVerified": false,
-    "activationGateReady": true,
+    "activationGateReady": false,
     "activationExecuted": true
   },
   "cleanupGate": {
@@ -824,7 +828,7 @@
     "teamPrivateStorageOrphanDeletePolicyActive": false,
     "activeClientStorageUploadPolicyRemains": true,
     "rawOrphanStorageObjectWritePossible": true,
-    "rawStorageCannotRegisterOrTriggerProviderWhileRpcsHeld": false,
+    "preActivationRawStorageCouldNotRegisterOrTriggerProviderWhileRpcsHeld": true,
     "storageHoldScope": "The pre-activation registered mutable-RPC hold ended only through the guarded invocation. Authenticated and service-role RPCs are restored exactly from source, but no real upload was exercised and provider/external action flags remain false.",
     "directTableDenialVerified": true,
     "crossTenantDenialVerified": true,
@@ -843,9 +847,9 @@
     "postActivationRemainingHeldCount": 14,
     "postActivationRelevantWorkRowCount": 0,
     "postActivationOutboundHttpRowCount": 0,
-    "heldPublicFunctionSetCount": 59,
-    "heldPublicFunctionScopeDefinition": "Every currently existing mutable public RPC in Client/Team media registration and intake finalization, private assessment reserve/provider/complete/fail, media-AI lifecycle, content-AI reserve/dispatch/webhook/recovery/result lifecycle, upload pipeline, restaurant association, Ready-v1 and Ready-v2 decision writers, plus retired Ready-v1 readbacks; excludes the bounded Ready-v2 review-status, Client-v4 upload-status, and media-AI operational-window read-only RPCs.",
-    "heldPublicFunctionScopePattern": "exact reviewed public catalog union: veroxa_register_momo_media_v*; veroxa_register_team_private_media_v*; veroxa_finalize_*media*intake_v*; veroxa_*private_media_assessment_v*; veroxa_*momo_media_ai*_v*; veroxa_*momo_content_ai*_v*; veroxa_momo_upload_pipeline_v*; veroxa_record_media_restaurant_association_v*; veroxa_decide_momo_ready_package_v*; veroxa_record_momo_ready_disposition_v*; retired veroxa_momo_team_ready_*_v1",
+    "preActivationRegisteredMutableRpcSetCount": 59,
+    "preActivationRegisteredMutableRpcSetScopeDefinition": "The exact pre-activation set covered every then-existing mutable public RPC in Client/Team media registration and intake finalization, private assessment reserve/provider/complete/fail, media-AI lifecycle, content-AI reserve/dispatch/webhook/recovery/result lifecycle, upload pipeline, restaurant association, Ready-v1 and Ready-v2 decision writers, plus retired Ready-v1 readbacks; it excluded the bounded Ready-v2 review-status, Client-v4 upload-status, and media-AI operational-window read-only RPCs.",
+    "preActivationRegisteredMutableRpcSetScopePattern": "historical exact reviewed public catalog union: veroxa_register_momo_media_v*; veroxa_register_team_private_media_v*; veroxa_finalize_*media*intake_v*; veroxa_*private_media_assessment_v*; veroxa_*momo_media_ai*_v*; veroxa_*momo_content_ai*_v*; veroxa_momo_upload_pipeline_v*; veroxa_record_media_restaurant_association_v*; veroxa_decide_momo_ready_package_v*; veroxa_record_momo_ready_disposition_v*; retired veroxa_momo_team_ready_*_v1",
     "repairPreservesRegisteredMutableRpcHold": true,
     "activationMigrationMustPreserveRegisteredMutableRpcHold": true,
     "activationRoutineInstalled": true,
@@ -869,9 +873,11 @@
     "executeGrantedToAuthenticated": false,
     "executeGrantedToServiceRole": false,
     "installMustPreserveRegisteredMutableRpcHold": true,
-    "gateReady": true,
+    "gateReady": false,
     "installed": true,
     "invoked": true,
+    "invocationGateConsumed": true,
+    "bindingScope": "compiled_first_parity_guard; final invocation identities are recorded only in activationExecution",
     "invocationRestoresOnlySourceDefinedGrants": true,
     "invocationSetsOnlyAiLiveCallsTrue": true,
     "invocationReassertsEveryExternalFlagFalse": true,
@@ -973,7 +979,7 @@
       "externalFlagsFalse": true
     }
   },
-  "activationStateScope": "Faraz authorized up to USD 20 for this scoped internal rollout with a USD 0 incremental-spend target. PR #169 merged at 2721545d after four exact-head green workflows and zero review threads; exact Sites v41 and Edge v7 parity were verified under the pre-activation hold. The postgres-only routine was then invoked once, restored only the reviewed 13 authenticated and 32 service-role grants, retained 14 RPCs held, set only ai_live_calls=true, reasserted all four external-action flags false, and recorded one identity-bound audit event. No real upload, provider call, Ready decision, owner authority, owner contact or external publication is claimed.",
+  "activationStateScope": "Faraz authorized up to USD 20 for this scoped internal rollout with a USD 0 incremental-spend target. PR #169 merged at 2721545d after four exact-head green workflows and zero review threads; exact Sites v41 and Edge v7 parity were verified under the pre-activation hold. The postgres-only routine was invoked once, consumed its one-shot gate, restored only the reviewed 13 authenticated and 32 service-role grants, retained 14 RPCs held, set only ai_live_calls=true, reasserted all four external-action flags false, and recorded one identity-bound audit event. Rollback-only authenticated-role smoke, zero cost-ledger rows and zero post-activation Edge invocations support the scoped closeout. No real upload, provider call, Ready decision, owner authority, owner contact or external publication is claimed.",
   "activationExecution": {
     "invoked": true,
     "invokedAt": "2026-08-09T05:35:42.103503Z",
@@ -1004,8 +1010,21 @@
     "authenticatedSmokePassed": true,
     "authenticatedSmokeMode": "rollback_only_database_role_and_rls_smoke_no_auth_link_or_persistent_session",
     "authenticatedSmokeTargetMembershipVisible": true,
+    "authenticatedSmokeActiveTeamProfileCount": 1,
+    "authenticatedSmokeActiveMomoMembershipCount": 1,
     "authenticatedSmokeReadOnlyRpcExecutable": true,
-    "authenticatedSmokeTargetRows": 0,
+    "authenticatedSmokeReadOnlyRpcExecuteCount": 3,
+    "authenticatedSmokeReadOnlyRpcSignatures": [
+      "veroxa_momo_ready_review_status_v2(uuid,uuid)",
+      "veroxa_momo_client_upload_status_v4(uuid)",
+      "veroxa_momo_media_ai_operational_window_v1(uuid)"
+    ],
+    "authenticatedSmokeActivationExecute": false,
+    "authenticatedSmokeReadyRowCount": 0,
+    "authenticatedSmokeReadyRowsExternalLocked": true,
+    "authenticatedSmokeUploadStatusRowCount": 2,
+    "authenticatedSmokeUploadRowsExternalLocked": true,
+    "authenticatedSmokeMediaWindowRowCount": 0,
     "authenticatedSmokeDirectCandidateInsertPrivilege": false,
     "authenticatedSmokeFreshCrossTenantTargetAvailable": false,
     "directTableDenialVerified": true,
@@ -1014,10 +1033,18 @@
     "budgetGuardVerified": true,
     "externalActionsRemainDisabled": true,
     "providerCallsObserved": 0,
+    "providerCallEvidenceScope": "zero cost-ledger provider_called rows, zero work or outbound HTTP, exact activation payload providerCallObserved=false, and zero bounded Edge invocations after activation; not universal third-party telemetry",
+    "costLedgerRowCount": 0,
+    "costLedgerProviderCalledRowCount": 0,
+    "costLedgerAccountedMicrousd": 0,
+    "postActivationEdgeInvocationCount": 0,
+    "postActivationEdgeLogWindowStartedAt": "2026-08-09T05:35:42.103503Z",
+    "postActivationEdgeLogEvidenceScope": "bounded Supabase Edge log window through final postflight; historical pre-activation v6 unauthenticated 401 excluded",
     "incrementalSpendUsd": 0,
     "finalReleaseEvidenceRecorded": true
   },
   "fullReleaseGatePassed": true,
+  "fullReleaseGateScope": "scoped_internal_ai_release_complete_external_actions_held_no_owner_truth_or_real_upload",
   "rolloutEvidence": {
     "initialObservation": {
       "canonicalGitHubMainCommit": "39bf713705685636f0d20a2ca068c738d4f414b4",
@@ -1108,6 +1135,76 @@
       "relevantWorkRowCount": 0,
       "outboundHttpRowCount": 0,
       "activationAuditEventCount": 0
+    },
+    "activationCloseoutGitHubRelease": {
+      "pullRequest": 169,
+      "baseCommit": "60dbfd047ff2f7ed21d630e785746aa4e6f228b4",
+      "openingHead": "96e13e155b8203192181afae26fe391cb6d36191",
+      "exactHead": "78c1f90d1412375b136aa18adcf9c4c1addc781e",
+      "exactTree": "37cbc6d7815dde6984b2691006ac3977df1a7226",
+      "mergedCommit": "2721545d5823dbd4cbc233e7473d25393f4ff0ec",
+      "allFourExactHeadWorkflowsGreen": true,
+      "zeroUnresolvedReviewThreads": true,
+      "workflows": {
+        "ci": 31296663350,
+        "sites": 31296663318,
+        "supabase": 31296663330,
+        "veroxa": 31296663326
+      }
+    },
+    "secondRuntimeParity": {
+      "mergedGitHubCommit": "2721545d5823dbd4cbc233e7473d25393f4ff0ec",
+      "sitesVersion": 41,
+      "sitesVersionId": "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_36b5c80ee2a48191acf5bcf809fd8ad7",
+      "sitesSourceCommit": "766ba3bc2a7ebd68c1d72ae7f53d159d2edca593",
+      "sitesSourceSha256": "96ab0a58d24c59ce176e3362730897764d039fdc2c3f8bd14d65317d1992532b",
+      "sitesArchiveSha256": "74c287e655495edde605f0fc38ebc06f1ed0f19275d550c4369e491430f7cea7",
+      "sitesArchiveFileCount": 52,
+      "sitesArchiveByteLength": 6000640,
+      "edgeFunctionVersion": 7,
+      "edgeFunctionId": "859c73c3-2102-41b4-9da1-20582acb7212",
+      "edgeBundleSha256": "a6b00feeab795faa91d6d8d015c4ad399c526e1b35f702778a8c55aaba49503d",
+      "holdReverifiedBeforeActivation": true,
+      "preActivationRegisteredRpcCount": 59,
+      "preActivationLeakedRpcCount": 0,
+      "preActivationRelevantWorkRowCount": 0,
+      "preActivationOutboundHttpRowCount": 0
+    },
+    "activationPostflightVerification": {
+      "invokedAt": "2026-08-09T05:35:42.103503Z",
+      "activationAuditEventId": "d31dc513-f953-4aca-9746-3f69447a6ae8",
+      "registeredRpcCount": 59,
+      "missingRpcCount": 0,
+      "grantMismatchCount": 0,
+      "anonGrantCount": 0,
+      "authenticatedGrantCount": 13,
+      "serviceRoleGrantCount": 32,
+      "remainingHeldCount": 14,
+      "aiLiveCalls": true,
+      "externalFlagsFalse": true,
+      "relevantWorkRowCount": 0,
+      "outboundHttpRowCount": 0,
+      "activationAuditEventCount": 1,
+      "activationRoutineAppRoleGrantCount": 0,
+      "exactActivationEventPayloadVerified": true,
+      "authenticatedSmokeActiveTeamProfileCount": 1,
+      "authenticatedSmokeActiveMomoMembershipCount": 1,
+      "authenticatedSmokeReadOnlyRpcExecuteCount": 3,
+      "authenticatedSmokeActivationExecute": false,
+      "authenticatedSmokeDirectCandidateInsertPrivilege": false,
+      "authenticatedSmokeReadyRowCount": 0,
+      "authenticatedSmokeReadyRowsExternalLocked": true,
+      "authenticatedSmokeUploadStatusRowCount": 2,
+      "authenticatedSmokeUploadRowsExternalLocked": true,
+      "authenticatedSmokeMediaWindowRowCount": 0,
+      "costLedgerRowCount": 0,
+      "costLedgerProviderCalledRowCount": 0,
+      "costLedgerAccountedMicrousd": 0,
+      "postActivationEdgeInvocationCount": 0,
+      "postActivationEdgeLogWindowStartedAt": "2026-08-09T05:35:42.103503Z",
+      "providerCallsObserved": 0,
+      "providerCallEvidenceScope": "bounded database, activation-event, HTTP and Supabase Edge log evidence; not universal third-party telemetry",
+      "incrementalSpendUsd": 0
     }
   }
 }
