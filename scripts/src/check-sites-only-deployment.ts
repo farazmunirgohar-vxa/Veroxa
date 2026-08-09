@@ -36,14 +36,19 @@ if (existsSync(sentinelPath)) {
   );
 }
 must(
-  manifest.currentProductionObservation.sitesVersion >= 39 &&
+    manifest.currentProductionObservation.sitesVersion >= 39 &&
     manifest.currentProductionObservation.sitesLiveUrl === "https://veroxasystems.com" &&
     manifest.currentProductionObservation.sitesCustomDomainsVerified === true &&
-    manifest.releaseCandidate.sitesPublishAuthorized === true &&
-    manifest.releaseCandidate.edgeDeployAuthorized === true &&
-    manifest.releaseCandidate.deploymentAuthorized === true &&
+    manifest.releaseCandidate.sitesPublished === true &&
+    manifest.releaseCandidate.edgeDeployed === true &&
+    manifest.releaseCandidate.sitesPublishAuthorized === false &&
+    manifest.releaseCandidate.edgeDeployAuthorized === false &&
+    manifest.releaseCandidate.deploymentAuthorized === false &&
+    manifest.releaseCandidate.activationAuthorized === false &&
+    manifest.releaseCandidate.activationAuthorizationConsumed === true &&
+    manifest.deploymentFreeze.rolloutAuthorizationConsumed === true &&
     manifest.deploymentFreeze.automaticDeploymentsAllowed === false,
-  "Sites/Edge authorization or sole-hosting evidence drifted.",
+  "Sites/Edge completion, consumed authorization, or sole-hosting evidence drifted.",
 );
 must(
   manifest.operationalHold?.providerWrites === false &&

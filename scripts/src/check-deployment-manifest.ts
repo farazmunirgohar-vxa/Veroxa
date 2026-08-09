@@ -268,6 +268,10 @@ must(
       INTERNAL_AI_RELEASE_EVIDENCE.fullReleaseGateScope &&
     manifest.activationState.momoActivationExecuted === false &&
     manifest.activationState.scopedInternalAiActivationAuthorizationConsumed === true &&
+    manifest.releaseCandidate.sitesPublishAuthorized === false &&
+    manifest.releaseCandidate.edgeDeployAuthorized === false &&
+    manifest.releaseCandidate.deploymentAuthorized === false &&
+    manifest.releaseCandidate.activationAuthorized === false &&
     manifest.deploymentFreeze.activationGateReady === false &&
     manifest.deploymentFreeze.rolloutAuthorizationConsumed === true &&
     manifest.deploymentFreeze.deploymentAuthorized === false &&
