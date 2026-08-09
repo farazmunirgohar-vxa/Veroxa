@@ -29,6 +29,9 @@ const activationCloseout = manifest.generatedVersionCloseouts?.activation as
 const firstHeld = manifest.deploymentParity?.firstHeld as
   | Record<string, unknown>
   | undefined;
+const secondHeld = manifest.deploymentParity?.secondHeld as
+  | Record<string, unknown>
+  | undefined;
 must(
   manifest.schemaVersion === 10 &&
     manifest.recordKind === "veroxa_guarded_internal_ai_rollout_manifest",
@@ -43,7 +46,7 @@ must(
     manifest.currentProductionObservation.latestProductionMigrationSha256 ===
       "22d5e82f683c3dd9d4b3d9c5b4e5003cf3a769f67dde340e98deee3ba3afb8ba" &&
     manifest.currentProductionObservation.candidateMigrationsMatchLiveLedger === true,
-  "Observed production is not the exact held live49 ledger.",
+  "Observed production is not the exact active live49 ledger.",
 );
 must(
   repairCloseout?.actualLedgerVersion === "20260809035302" &&
@@ -60,10 +63,14 @@ must(
   "Live48 generated-version closeout is not recorded exactly.",
 );
 must(
-    manifest.releaseCandidate.githubMerged === false &&
+    manifest.releaseCandidate.githubMerged === true &&
     manifest.releaseCandidate.databaseMigrationApplied === true &&
     manifest.releaseCandidate.pendingMigrations?.length === 0 &&
-    manifest.releaseCandidate.allFourWorkflowsGreen === null &&
+    manifest.releaseCandidate.allFourWorkflowsGreen === true &&
+    manifest.releaseCandidate.zeroUnresolvedReviewThreads === true &&
+    manifest.releaseCandidate.futureMergedGitHubCommit ===
+      "2721545d5823dbd4cbc233e7473d25393f4ff0ec" &&
+    manifest.releaseCandidate.futureSitesVersion === 41 &&
     manifest.databaseContractReview?.localStaticReviewPassed === true &&
     manifest.databaseContractReview.hostedCleanChainApplyPassed === true &&
     manifest.databaseContractReview.hostedFullPgTapPassed === true &&
@@ -82,18 +89,22 @@ must(
     manifest.activationRoutine.sourceReviewAllFourWorkflowsGreen === true &&
     manifest.activationRoutine.sourceReviewZeroUnresolvedThreads === true &&
     manifest.activationRoutine.installed === true &&
-    manifest.activationRoutine.invoked === false &&
+    manifest.activationRoutine.invoked === true &&
     manifest.activationRoutine.postgresOnly === true &&
     manifest.activationRoutine.executeGrantedToPublic === false &&
     manifest.activationRoutine.executeGrantedToAnon === false &&
     manifest.activationRoutine.executeGrantedToAuthenticated === false &&
     manifest.activationRoutine.executeGrantedToServiceRole === false &&
-    activationCloseout?.completed === false &&
+    activationCloseout?.completed === true &&
     activationCloseout.unchangedBytesVerified === true &&
     activationCloseout.actualLedgerVersion === "20260809051616" &&
     activationCloseout.actualLedgerFilename ===
-      "20260809051616_guarded_internal_ai_activation_v1.sql",
-  "Dormant activation install or generated-version evidence is incomplete.",
+      "20260809051616_guarded_internal_ai_activation_v1.sql" &&
+    activationCloseout.mergedCommit ===
+      "2721545d5823dbd4cbc233e7473d25393f4ff0ec" &&
+    activationCloseout.allFourExactHeadWorkflowsGreen === true &&
+    activationCloseout.zeroUnresolvedReviewThreads === true,
+  "Activation install, invocation, or generated-version evidence is incomplete.",
 );
 must(
   firstHeld?.verified === true &&
@@ -107,17 +118,34 @@ must(
   "First GitHub/Sites/Edge parity is not verified under hold.",
 );
 must(
-  manifest.operationalHold?.aiLiveCalls === false &&
+  secondHeld?.verified === true &&
+    secondHeld.holdReverified === true &&
+    secondHeld.aiLiveCalls === false &&
+    secondHeld.externalFlagsFalse === true &&
+    secondHeld.mergedGitHubCommit ===
+      "2721545d5823dbd4cbc233e7473d25393f4ff0ec" &&
+    secondHeld.sitesVersion === 41 &&
+    secondHeld.edgeFunctionVersion === 7,
+  "Second GitHub/Sites/Edge parity is not verified under hold.",
+);
+must(
+  manifest.operationalHold?.aiLiveCalls === true &&
     manifest.operationalHold.providerWrites === false &&
     manifest.operationalHold.reviewReplies === false &&
     manifest.operationalHold.websiteWrites === false &&
     manifest.operationalHold.externalScheduling === false &&
-    manifest.operationalHold.postCorrectionLeakedRpcCount === 0 &&
-    manifest.releaseCandidate.sitesPublished === false &&
+    manifest.operationalHold.postActivationGrantMismatchCount === 0 &&
+    manifest.operationalHold.postActivationAuthenticatedGrantCount === 13 &&
+    manifest.operationalHold.postActivationServiceRoleGrantCount === 32 &&
+    manifest.operationalHold.postActivationRemainingHeldCount === 14 &&
+    manifest.releaseCandidate.sitesPublished === true &&
     manifest.releaseCandidate.edgeDeployed === true &&
-    manifest.releaseCandidate.activationExecuted === false &&
+    manifest.releaseCandidate.activationExecuted === true &&
+    manifest.activationExecution?.providerCallsObserved === 0 &&
+    manifest.activationExecution?.incrementalSpendUsd === 0 &&
+    manifest.fullReleaseGatePassed === true &&
     manifest.deploymentFreeze.automaticDeploymentsAllowed === false,
-  "Hold, publication, or activation state was overclaimed.",
+  "Post-activation grants, external locks, or zero-cost evidence is incomplete.",
 );
 
 if (failures.length > 0) {
@@ -125,6 +153,6 @@ if (failures.length > 0) {
   process.exitCode = 1;
 } else {
   console.log(
-    "PASS: dormant activation is installed at held live49 and its source-only generated-version closeout is staged.",
+    "PASS: live49 internal AI is activated with exact grants, external actions held, and final parity recorded.",
   );
 }
