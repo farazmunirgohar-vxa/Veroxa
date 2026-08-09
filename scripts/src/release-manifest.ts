@@ -195,17 +195,17 @@ export const LOCAL_CANDIDATE_PENDING_MIGRATIONS = [
 export const LOCAL_CANDIDATE_SOURCE_EVIDENCE = {
   fileCount: 214,
   treeSha256:
-    "059ce34b01568709573d7ff6545432c86a1d7953dfdff28e44bd6a7a9b53983c",
+    "51a1c8cc6ba5cc1601b52e5d979cac58a5ef0eeef7b2b748b24c7de74a890c77",
   reviewPassed: true,
 } as const;
 
 export const REPAIR_MIGRATION_EVIDENCE = {
   filename: "20260809024500_team_private_food_assessment_reconciliation_v1.sql",
-  byteLength: 52_273,
-  sha256: "b71b3b6d7dcea1b3b89a191464fa8f2c3cf25e6a55bed940721c8be3e8749b6c",
+  byteLength: 53_249,
+  sha256: "162ffaed3f2c7cd0c78d8b877e29ecc36110dcdd5510747ef67a5a3f49050d64",
   candidateFileCount: 48,
   candidateTreeSha256:
-    "3d60e3fdbf329d881a96afbc6e6b544df8e60f97a577254b5b3824607ebfcf7a",
+    "f4a1393cd92115624bacacdb0ab3aa788a8e23377172949c44c6a3173f4e85b1",
 } as const;
 
 export const PRIVATE_MEDIA_MIGRATION_EVIDENCE = {

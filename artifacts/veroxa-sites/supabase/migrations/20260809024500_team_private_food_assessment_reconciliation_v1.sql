@@ -1446,6 +1446,32 @@ revoke all on function
     uuid, uuid, uuid, text
   ) from public, anon, authenticated, service_role;
 
+-- Reassert the production runtime hold as part of the forward patch itself.
+-- Earlier activation history enabled internal AI for the scoped tenant, while
+-- the live47 emergency hold was an operational transaction rather than a
+-- migration. Candidate48 must therefore be clean-chain safe and leave every
+-- external boundary plus internal AI disabled until the later audited routine.
+do $$
+begin
+  update public.veroxa_momo_runtime_controls runtime
+  set ai_live_calls = false,
+      provider_writes = false,
+      review_replies = false,
+      website_writes = false,
+      external_scheduling = false,
+      updated_at = pg_catalog.clock_timestamp()
+  where runtime.restaurant_id in (
+    select scope.restaurant_id
+    from veroxa_private.operational_restaurant_scope scope
+    where scope.scope_key = 'momo_house_san_antonio'
+      and scope.enabled
+  );
+  if not found then
+    raise exception 'momo_private_assessment_runtime_hold_target_missing';
+  end if;
+end;
+$$;
+
 -- The forward patch ends in the exact operational hold. Client and Team
 -- registration plus assessment mutation remain unreachable until the later
 -- identity-bound activation routine is installed and invoked.
@@ -1464,4 +1490,3 @@ revoke all on function
     uuid, uuid, text, text, text, text, text, bigint, uuid
   )
   from public, anon, authenticated, service_role;
-
