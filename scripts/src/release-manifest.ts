@@ -1191,6 +1191,10 @@ function completedRolloutStageHasEvidence(
         manifest.fullReleaseGateScope ===
           INTERNAL_AI_RELEASE_EVIDENCE.fullReleaseGateScope &&
         candidate.sitesPublishRequired === false &&
+        candidate.sitesPublishAuthorized === false &&
+        candidate.edgeDeployAuthorized === false &&
+        candidate.deploymentAuthorized === false &&
+        candidate.activationAuthorized === false &&
         candidate.activationGateReady === false &&
         manifest.deploymentFreeze.activationGateReady === false &&
         manifest.deploymentFreeze.rolloutAuthorizationConsumed === true &&
