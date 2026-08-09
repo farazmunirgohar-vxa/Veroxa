@@ -1,7 +1,7 @@
 {
   "schemaVersion": 14,
   "recordKind": "veroxa_guarded_internal_ai_rollout_checkpoint",
-  "checkpoint": "first-parity-verified-dormant-activation-review-2026-08-09",
+  "checkpoint": "live49-activation-generated-version-closeout-review-2026-08-09",
   "status": "live49_activation_generated_version_closeout_review_pending_under_hold",
   "reviewedAt": "2026-08-09",
   "candidateRevision": "live49_activation_generated_version_closeout_2026_08_09",
@@ -583,22 +583,22 @@
   },
   "reusableEvidence": [
     "Historical Sites v36 / PR #157 parity, Sites v37/live43 / PR #162, PR #163 forward repair, and PR #164/live46 evidence remain immutable historical evidence only.",
-    "Canonical GitHub main is e01e8e00d94ce9eb5243038bf41c202897a17460 from merged PR #165; independently observed Sites v39 is still not attributed to that source.",
-    "Sites v39 remains the independently observed live baseline at exact version ID appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_388c5f82ec48819186bfd315a0d55ab8 and archive SHA-256 c5c471639303ac4488fbf1258a6e1736452eafbd43a9370473e02f6072eca7f5.",
-    "Production live48 contains generated 20260809035302_team_private_food_assessment_reconciliation_v1.sql at 59,052 bytes / SHA-256 56c64c795ad12f1dfbe05894fd3e56a87f1d0e3376ff10edfd97760b8d2fbd5c and exact tree 1b3a575cbfbad53e811703c38681c30adf7c4b7bd716b1b193e322233d8d6ba6.",
-    "The closeout candidate has 48 exact migration mirrors and 214 Sites files at cec2f313e3850141117c7f69dbc1d5ad707b72ee7a7ad5f1f2efa0d6c5a34297, including the failed-assessment retry UX correction.",
-    "Live Edge v6 remains prompt v1 and fail-closed for unauthenticated traffic. Candidate prompt v2 source is root/mirror exact at index SHA-256 867d85fe555a5f7d9d48d62698f4b1fb95d4e0769fc299020953cf5054d8720d and contract SHA-256 38ab001ea71f5d6299f6dea99291342a37bb5cee7ce53a392581fce2941f5a72; it is not deployed."
+    "Historical PR #165 merged at e01e8e00d94ce9eb5243038bf41c202897a17460 before the subsequent #166-#168 release sequence; it is not the current main authority.",
+    "Historical Sites v39 remains preserved at exact version ID appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_388c5f82ec48819186bfd315a0d55ab8 and archive SHA-256 c5c471639303ac4488fbf1258a6e1736452eafbd43a9370473e02f6072eca7f5 as the independently observed pre-v40 baseline.",
+    "Historical production live48 contained generated 20260809035302_team_private_food_assessment_reconciliation_v1.sql at 59,052 bytes / SHA-256 56c64c795ad12f1dfbe05894fd3e56a87f1d0e3376ff10edfd97760b8d2fbd5c and exact tree 1b3a575cbfbad53e811703c38681c30adf7c4b7bd716b1b193e322233d8d6ba6 before the live49 activation-routine install.",
+    "The first-parity source had 48 exact migration mirrors and 214 Sites files at cec2f313e3850141117c7f69dbc1d5ad707b72ee7a7ad5f1f2efa0d6c5a34297, including the failed-assessment retry UX correction; live49 adds only the byte-preserved activation migration.",
+    "The exact prompt-v2 two-file closure is deployed as ACTIVE JWT-protected Edge v7 at bundle SHA-256 a6b00feeab795faa91d6d8d015c4ad399c526e1b35f702778a8c55aaba49503d; unauthenticated traffic remains fail-closed and no provider call was made."
   ],
   "activationGates": [
-    "PR #165 passed the exact-head application, clean-chain, pgTAP, zero-outbound, and database gates and candidate48 is live. The closeout still requires exact local and hosted gates, zero unresolved review threads, merge, and Sites/Edge publication evidence.",
-    "Every registered mutable ingress and decision RPC grant, ai_live_calls, and every external flag remain held through repair apply, repair closeout, first Sites/Edge parity, dormant activation migration apply/closeout, and second Sites/Edge parity. The existing authenticated tenant-scoped Client storage policy may still create an unregistered orphan object.",
-    "The future activation migration may only install a postgres-only no-grant identity-bound routine. It is not authored, installed, gate-ready, or invoked.",
+    "At this checkpoint, PR #168 had passed the exact-head application, clean-chain, pgTAP, zero-outbound, and database gates before live49 was installed. Draft PR #169 was the source-only generated-version closeout and still required an exact green final head, zero unresolved review threads, merge, and second Sites parity evidence.",
+    "Every registered mutable ingress and decision RPC grant, ai_live_calls, and every external flag remain held through repair apply/closeout, first Sites/Edge parity, the dormant activation migration install, and the generated-version closeout candidate. They must remain held through second Sites parity and the guarded invocation gate. The existing authenticated tenant-scoped Client storage policy may still create an unregistered orphan object.",
+    "The activation migration installed a postgres-only, no-grant, identity-bound routine at live49. It remains dormant, is not gate-ready, and has not been invoked.",
     "No real upload, authenticated provider call, Ready decision, owner authority, external publication, or activation execution is claimed."
   ],
   "runtimeVerification": {
     "edgeUnauthenticatedFailClosedVerified": true,
     "edgeAuthenticatedBridgeVerified": false,
-    "candidateEdgeV2Deployed": false,
+    "candidateEdgeV2Deployed": true,
     "providerCallObserved": false,
     "realUploadObserved": false,
     "readyDispositionObserved": false,
