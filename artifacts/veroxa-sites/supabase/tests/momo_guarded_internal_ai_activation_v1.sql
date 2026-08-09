@@ -66,11 +66,25 @@ select throws_ok(
   'routine fails closed without the exact locked Momo runtime row'
 );
 
-select like(
-  pg_catalog.pg_get_functiondef(pg_catalog.to_regprocedure(
-    'veroxa_private.activate_momo_internal_ai_v1(text,integer,text,text,text,text,integer,uuid,text)'
-  )),
-  '%a1c6796b50a1072a96a40db283503d9e2c81bbae%4ee8895f68505e8ea79bf3e0f3ea3b2871ca2b2c%a6b00feeab795faa91d6d8d015c4ad399c526e1b35f702778a8c55aaba49503d%',
+select ok(
+  pg_catalog.strpos(
+    pg_catalog.pg_get_functiondef(pg_catalog.to_regprocedure(
+      'veroxa_private.activate_momo_internal_ai_v1(text,integer,text,text,text,text,integer,uuid,text)'
+    )),
+    'a1c6796b50a1072a96a40db283503d9e2c81bbae'
+  ) > 0
+  and pg_catalog.strpos(
+    pg_catalog.pg_get_functiondef(pg_catalog.to_regprocedure(
+      'veroxa_private.activate_momo_internal_ai_v1(text,integer,text,text,text,text,integer,uuid,text)'
+    )),
+    '4ee8895f68505e8ea79bf3e0f3ea3b2871ca2b2c'
+  ) > 0
+  and pg_catalog.strpos(
+    pg_catalog.pg_get_functiondef(pg_catalog.to_regprocedure(
+      'veroxa_private.activate_momo_internal_ai_v1(text,integer,text,text,text,text,integer,uuid,text)'
+    )),
+    'a6b00feeab795faa91d6d8d015c4ad399c526e1b35f702778a8c55aaba49503d'
+  ) > 0,
   'routine is bound to the reviewed first GitHub, Sites, and Edge parity'
 );
 

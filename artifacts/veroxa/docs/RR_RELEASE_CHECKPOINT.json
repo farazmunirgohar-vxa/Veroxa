@@ -286,7 +286,7 @@
     "githubMainMatchesCandidate": false,
     "fullReleaseGatePassed": false,
     "sourceFileCount": 216,
-    "sourceTreeSha256": "e0e24212a0c7dd3026c0362109ab0faba62ba3b66df1ac31e3737f92d369126e",
+    "sourceTreeSha256": "6aa459a7462f7b71cd55e8e15861bafff497b6c5a5ac4e6769a35e23fc016d51",
     "migrationFileCount": 49,
     "migrationTreeSha256": "d4335f7eadf7ef0c6161ad3f562cd5cd14cf665252c31cc9dbd0563f86779cd4",
     "latestCandidateMigration": "20260809044000_guarded_internal_ai_activation_v1.sql",

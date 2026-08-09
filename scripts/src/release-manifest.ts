@@ -226,7 +226,7 @@ export const LOCAL_CANDIDATE_PENDING_MIGRATIONS: readonly string[] = [
 export const LOCAL_CANDIDATE_SOURCE_EVIDENCE = {
   fileCount: 216,
   treeSha256:
-    "e0e24212a0c7dd3026c0362109ab0faba62ba3b66df1ac31e3737f92d369126e",
+    "6aa459a7462f7b71cd55e8e15861bafff497b6c5a5ac4e6769a35e23fc016d51",
   reviewPassed: true,
 } as const;
 
