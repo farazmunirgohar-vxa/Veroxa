@@ -100,7 +100,8 @@ test("strict Ready review states separate approval, discard, and manual export",
   assert.ok(approved);
   assert.equal(momoReadyReviewAllowsManualExport(approved), true);
   assert.equal(momoReadyReviewCanApprove(approved), false);
-  assert.equal(momoReadyReviewCanDiscard(approved), false);
+  assert.equal(momoReadyReviewCanDiscard(approved), true,
+    "Team may terminally discard exact source bytes after export approval");
   assert.equal(momoReadyReviewAllowsManualExport(approvedStatus({
     decision_id: null,
   })), false, "manual export must not trust approval without durable decision provenance");
@@ -152,7 +153,8 @@ test("an undecided blocked package may be discarded but never approved or export
     blocker_codes: ["rights_not_current"],
   }));
   assert.ok(staleApproved);
-  assert.equal(momoReadyReviewCanDiscard(staleApproved), false);
+  assert.equal(momoReadyReviewCanDiscard(staleApproved), true,
+    "a stale approval may still be replaced by a current-snapshot source discard");
   assert.equal(momoReadyReviewAllowsManualExport(staleApproved), false);
 });
 
@@ -261,7 +263,8 @@ test("Team Ready UI gates every export through fresh status and preserves discar
   assert.match(freshGate, /fresh\.current_review_snapshot_sha256[\s\S]*?reviewStatus\.current_review_snapshot_sha256/);
   assert.match(card, /runFreshManualExportAction\(\(\) => \{[\s\S]*?link\.click\(\)/);
   assert.match(card, /runFreshManualExportAction\(async \(\) => \{[\s\S]*?navigator\.clipboard\.writeText/);
-  assert.match(card, /Approve for manual posting/);
+  assert.match(card, /Approve for manual export/);
+  assert.match(card, /Only manual copy and download are unlocked; external posting remains disabled/);
   assert.match(card, /\{MOMO_READY_V2_TEAM_INSPECTION_ATTESTATION\}/);
   assert.match(card, /reviewConfirmedSnapshotSha256 ===[\s\S]{0,100}reviewStatus\.current_review_snapshot_sha256/);
   assert.match(card, /setReviewConfirmedSnapshotSha256\(event\.target\.checked \? reviewStatus\?\.current_review_snapshot_sha256 \?\? null : null\)/);
@@ -272,8 +275,9 @@ test("Team Ready UI gates every export through fresh status and preserves discar
   assert.match(card, /legacy tags are hidden; regenerate it under the current contract before approval/);
   assert.match(card, /output_payload\.internalMediaTags\.map\(\(tag\)/);
   assert.match(card, /Math\.round\(tag\.confidence \* 100\)/);
-  assert.match(card, /Discard without deleting media/);
-  assert.match(card, /original media, rights evidence, and decision history remain retained/);
+  assert.match(card, /Discard source from future Ready/);
+  assert.match(card, /terminal for these exact image bytes across every same-byte upload and asset record for this restaurant/);
+  assert.match(card, /immutable bytes, the package, rights evidence, and audit history remain retained/);
   assert.doesNotMatch(card, /storage\.from[\s\S]*?\.remove|\.delete\(/u);
   assert.match(data, /\.rpc\(\s*"veroxa_decide_momo_ready_package_v2"[\s\S]{0,800}p_inspection_attestation: input\.decision === "approved_for_manual_export"[\s\S]{0,160}\? MOMO_READY_V2_TEAM_INSPECTION_ATTESTATION[\s\S]{0,80}: null/);
   assert.match(data, /\.rpc\(\s*"veroxa_momo_ready_review_status_v2"/);
@@ -281,6 +285,6 @@ test("Team Ready UI gates every export through fresh status and preserves discar
   assert.match(data, /key: "veroxaReadyPackagesV2"[^\n]*secondaryOrder: "id"[^\n]*limit: 50/);
   assert.match(data, /\.in\("ready_package_id", readyPackageIds\)[\s\S]{0,300}\.limit\(Math\.min\(readyPackageIds\.length \* 3, 150\)\)/);
   assert.match(data, /new Set\(parsed\.map\(\(item\) => item\.ready_package_id\)\)\.size !== parsed\.length/);
-  assert.match(center, /veroxaReadyPackageIds = new Set\(veroxaReadyPackages\.map\(\(item\) => item\.id\)\)/);
-  assert.match(center, /pendingReadyReviews = data\.readyReviewStatusesV2\.filter\(\(status\) =>[\s\S]{0,180}veroxaReadyPackageIds\.has\(status\.ready_package_id\)[\s\S]{0,120}momoReadyReviewCanApprove\(status\) \|\| momoReadyReviewCanDiscard\(status\)/);
+  assert.match(center, /const veroxaReadyPackageIds = new Set\([\s\S]{0,120}veroxaReadyPackages\.map\(\(item\) => item\.id\)/);
+  assert.match(center, /pendingReadyReviews = data\.readyReviewStatusesV2\.filter\(\(status\) =>[\s\S]{0,160}veroxaReadyPackageIds\.has\(status\.ready_package_id\)[\s\S]{0,220}momoReadyReviewCanApprove\(status\) \|\|[\s\S]{0,120}status\.terminal_decision === null[\s\S]{0,120}momoReadyReviewCanDiscard\(status\)/);
 });

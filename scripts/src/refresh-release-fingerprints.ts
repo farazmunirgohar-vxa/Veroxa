@@ -34,6 +34,11 @@ type RrCheckpoint = {
 };
 
 const manifest = readDeploymentManifest();
+if (manifest.schemaVersion === 10) {
+  throw new Error(
+    "Schema-10 held-repair fingerprints are stage-bound. Refresh them only through a reviewed schema-10 evidence change that preserves the operational hold, Edge split, closeouts, parity rounds, and activation routine state.",
+  );
+}
 assertUnreleasedLocalCandidateManifest(manifest);
 if (process.env.VEROXA_REVIEWED_FINGERPRINT_REFRESH === "true") {
   throw new Error(

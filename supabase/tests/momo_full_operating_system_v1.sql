@@ -70,7 +70,6 @@ begin
     'public.veroxa_apply_confirmation_v1(uuid,public.veroxa_review_status_v1,jsonb,text)',
     'public.veroxa_create_truth_revisions_v1(uuid,jsonb)',
     'public.veroxa_save_momo_contact_prefill_v1(uuid,uuid,text,text,text,text,boolean)',
-    'public.veroxa_register_momo_media_v2(uuid,text,text,bigint,text,text,jsonb,date)',
     'public.veroxa_add_momo_media_tag_v1(uuid,uuid,text)',
     'public.veroxa_create_manual_content_draft_v1(uuid,uuid,uuid,text,text,text,boolean,uuid[],text)',
     'public.veroxa_create_manual_variant_v1(uuid,uuid,text,text)',
@@ -100,6 +99,25 @@ begin
       raise exception 'Hardened RPC execute privileges are unsafe: %', function_name;
     end if;
   end loop;
+
+  function_name :=
+    'public.veroxa_register_momo_media_v2(uuid,text,text,bigint,text,text,jsonb,date)';
+  if to_regprocedure(function_name) is null then
+    raise exception 'Held media registration RPC is missing';
+  end if;
+  if not exists (
+    select 1 from pg_proc
+    where oid = to_regprocedure(function_name)
+      and prosecdef
+      and 'search_path=""' = any(coalesce(proconfig, '{}'::text[]))
+  ) then
+    raise exception 'Held media registration RPC lost hardened posture';
+  end if;
+  if has_function_privilege('anon', function_name, 'execute')
+     or has_function_privilege('authenticated', function_name, 'execute')
+     or has_function_privilege('service_role', function_name, 'execute') then
+    raise exception 'Media registration operational hold was lifted';
+  end if;
 
   function_name :=
     'public.veroxa_queue_momo_publication_v1(uuid,uuid,uuid,uuid)';

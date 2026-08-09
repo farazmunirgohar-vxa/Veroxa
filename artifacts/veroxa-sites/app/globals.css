@@ -803,6 +803,9 @@ button { color: inherit; }
 .client-media-permission > fieldset,.client-media-permission > label,.client-media-permission > button { margin: 11px; }
 .client-media-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
 .client-media-card { min-height: 0; align-content: start; }
+.client-private-assessment { display: grid; gap: 9px; padding: 12px; border: 1px solid #d9e4d8; border-radius: 11px; background: #f3f8f1; }
+.client-private-assessment > strong { font-size: 11px; line-height: 1.55; }
+.client-private-assessment > small { color: var(--muted); font-size: 9px; line-height: 1.5; }
 .client-media-comparison { display: grid !important; grid-template-columns: 1fr; gap: 9px !important; }
 .client-media-comparison.ready { grid-template-columns: repeat(2,minmax(0,1fr)); }
 .client-media-preview { min-height: 230px; display: grid !important; grid-template-rows: auto 1fr auto; place-items: center; margin: 0; overflow: hidden; color: var(--muted); background: #edf1eb; border: 1px solid var(--line); border-radius: 12px; font-size: 10px; }

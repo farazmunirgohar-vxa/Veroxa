@@ -32,7 +32,6 @@ begin
     'public.veroxa_save_momo_contact_prefill_v1(uuid,uuid,text,text,text,text,boolean)',
     'public.veroxa_update_momo_onboarding_step_v1(uuid,uuid,public.veroxa_readiness_status_v1,jsonb,text,uuid)',
     'public.veroxa_update_momo_presence_v1(uuid,uuid,text,public.veroxa_connection_status_v1,public.veroxa_truth_status_v1,text,uuid)',
-    'public.veroxa_register_momo_media_v2(uuid,text,text,bigint,text,text,jsonb,date)',
     'public.veroxa_add_momo_media_tag_v1(uuid,uuid,text)',
     'public.veroxa_revoke_momo_media_rights_v1(uuid,uuid,text)',
     'public.veroxa_create_manual_content_draft_v1(uuid,uuid,uuid,text,text,text,boolean,uuid[],text)',
@@ -60,6 +59,24 @@ begin
       raise exception 'RPC execute privilege is unsafe: %', function_name;
     end if;
   end loop;
+
+  function_name :=
+    'public.veroxa_register_momo_media_v2(uuid,text,text,bigint,text,text,jsonb,date)';
+  if to_regprocedure(function_name) is null then
+    raise exception 'Held media registration RPC is missing';
+  end if;
+  if not exists (
+    select 1 from pg_proc
+    where oid = to_regprocedure(function_name) and prosecdef
+      and 'search_path=""' = any(coalesce(proconfig, '{}'::text[]))
+  ) then
+    raise exception 'Held media registration RPC lost hardened posture';
+  end if;
+  if has_function_privilege('anon', function_name, 'execute')
+     or has_function_privilege('authenticated', function_name, 'execute')
+     or has_function_privilege('service_role', function_name, 'execute') then
+    raise exception 'Media registration operational hold was lifted';
+  end if;
 
   function_name :=
     'public.veroxa_queue_momo_publication_v1(uuid,uuid,uuid,uuid)';
@@ -135,6 +152,12 @@ begin
 end $$;
 $catalog$, 'Zero-cost rehearsal catalog, exact shapes, grants, and RPC posture are fail-closed');
 
+-- The final schema intentionally keeps intake held. This grant is scoped to
+-- the rollback-only rehearsal transaction after the catalog proves the hold.
+grant execute on function public.veroxa_register_momo_media_v2(
+  uuid,text,text,bigint,text,text,jsonb,date
+) to authenticated;
+
 select lives_ok($workflow$
 do $$
 declare
@@ -143,7 +166,7 @@ declare
   v_client_user_id uuid := '71000000-0000-0000-0000-000000000002';
   v_authorizer_user_id uuid := '71000000-0000-0000-0000-000000000003';
   v_truth_ids uuid[];
-  v_confirmation_ids uuid[] := '{}'::uuid[];
+  v_applied_truth_ids uuid[] := '{}'::uuid[];
   v_truth_id uuid;
   v_identity_id uuid;
   v_confirmation_id uuid;
@@ -170,6 +193,7 @@ declare
   v_report_id uuid;
   v_alert_id uuid;
   v_snapshot jsonb;
+  v_subject_snapshot_sha256 text;
   v_preflight record;
   v_no_go record;
   v_claim text;
@@ -252,7 +276,7 @@ begin
   ) returning id into v_connection_id;
   insert into storage.objects (bucket_id, name, owner_id, metadata)
   values ('restaurant-media', v_storage_path, v_client_user_id::text,
-    '{"mimetype":"image/jpeg","size":1234}'::jsonb);
+    '{"mimetype":"image/jpeg","size":10240}'::jsonb);
 
   perform set_config('request.jwt.claims', jsonb_build_object(
     'sub', v_team_user_id::text, 'role', 'authenticated')::text, true);
@@ -328,11 +352,22 @@ begin
   exception when insufficient_privilege then null;
   end;
   foreach v_truth_id in array v_truth_ids loop
-    v_confirmation_id := public.veroxa_submit_momo_confirmation_v1(
-      v_restaurant_id, 'truth_field', v_truth_id, 'business_truth',
-      'confirm', null, 'Owner confirms canonical rehearsal truth.');
-    v_confirmation_ids := array_append(v_confirmation_ids, v_confirmation_id);
+    select snapshot.subject_snapshot_sha256
+      into v_subject_snapshot_sha256
+    from public.veroxa_owner_truth_subject_snapshots_v1(
+      v_restaurant_id
+    ) snapshot
+    where snapshot.truth_field_id = v_truth_id;
+    select applied.confirmation_id, applied.applied_truth_id
+      into v_confirmation_id, v_truth_id
+    from public.veroxa_owner_apply_truth_confirmation_v1(
+      v_restaurant_id, v_truth_id, v_subject_snapshot_sha256,
+      'confirm', null,
+      'Owner confirms and atomically applies canonical rehearsal truth.'
+    ) applied;
+    v_applied_truth_ids := array_append(v_applied_truth_ids, v_truth_id);
   end loop;
+  v_truth_ids := v_applied_truth_ids;
 
   -- Owner reject/needs-help is valid before a step becomes ready for review.
   v_help_confirmation_id := public.veroxa_submit_momo_confirmation_v1(
@@ -343,10 +378,6 @@ begin
   perform set_config('request.jwt.claims', jsonb_build_object(
     'sub', v_team_user_id::text, 'role', 'authenticated')::text, true);
   execute 'set local role authenticated';
-  foreach v_confirmation_id in array v_confirmation_ids loop
-    perform * from public.veroxa_apply_confirmation_v1(
-      v_confirmation_id, 'approved', null, 'Reviewed canonical owner truth.');
-  end loop;
   perform * from public.veroxa_apply_confirmation_v1(
     v_help_confirmation_id, 'changes_requested', null, 'Help request stays blocked.');
 
@@ -471,7 +502,7 @@ begin
   select registered.asset_id, registered.rights_id
     into v_asset_id, v_rights_id
   from public.veroxa_register_momo_media_v2(
-    v_restaurant_id, v_storage_path, 'image/jpeg', 1234,
+    v_restaurant_id, v_storage_path, 'image/jpeg', 10240,
     'momo-rehearsal.jpg', 'Owner-provided rehearsal media.',
     '["facebook"]'::jsonb,
     (now() at time zone 'America/Chicago')::date + 3

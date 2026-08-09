@@ -10,6 +10,7 @@ import {
 import {
   mergeMomoClientMediaReadback,
   mergeMomoClientUploadPipelineV3,
+  mergeMomoClientUploadPipelineV4,
   parseMomoClientSnapshot,
 } from "../app/momo-client-data.ts";
 import { deriveMomoCoverCropAtFocalPoint } from "../app/momo-media-workflow.ts";
@@ -183,11 +184,15 @@ test("Client and Team source preserve real links, real-image-first selection, in
   assert.match(client, /<img src=\{previewUrl\}/, "Client must show the actual private image instead of a placeholder");
   assert.match(client, /renditionStatus: item\.renditionStatus/, "Client Ready must come from sanitized rendition readback");
   assert.match(client, /const newestVerified = newestV2Known[\s\S]*?newestV2Verified && !newestV2Attention/, "Client progress must not call image permissions verified while current rights need attention");
-  assert.match(client, /const newestV2Ready =[^;]*&&\s*newestWorkflow\.rightsConfirmed/, "The Client journey must re-check current rights before showing Ready");
-  assert.match(client, /const newestV2Preparing =[^;]*&&\s*newestWorkflow\.rightsConfirmed/, "The Client journey must re-check current rights before showing preparation");
+  assert.match(client, /const newestRestaurantContentEligible = Boolean\(newest &&[\s\S]*?privateAssessmentStatus === "completed"[\s\S]*?associationEvidenceClass === "real_owner"/, "The Client journey must require a completed assessment, eligible JPEG, and real-owner association");
+  assert.match(client, /const newestV2Ready =[\s\S]*?newestWorkflow\.rightsConfirmed && newestRestaurantContentEligible/, "The Client journey must re-check current rights and association before showing Ready");
+  assert.match(client, /const newestV2Preparing =[\s\S]*?newestWorkflow\.rightsConfirmed && newestRestaurantContentEligible/, "The Client journey must re-check current rights and association before showing preparation");
   assert.match(client, /const newestV2Attention =[^;]*\|\|\s*\(newestV2Known && !newestWorkflow\.rightsConfirmed\)/, "The Client journey must surface cached rows whose rights became stale");
-  assert.match(client, /newestV2Attention \? "Preparation stopped safely[\s\S]*?: newest\?\.exactDuplicate \?/, "A duplicate must not hide a current-rights exception in the Client journey");
-  assert.match(client, /v2Verified && !v2Attention \? "done" : "current"/, "Each Client media card must keep verification incomplete while current rights need attention");
+  assert.match(client, /newestV2Attention \? "Restaurant content preparation stopped safely[\s\S]*?: newest\?\.assessmentReusedFromId \?/, "Assessment reuse must not hide a current-rights exception in the Client journey");
+  assert.match(client, /item\.privateAssessmentStatus === "completed" \? "done" : item\.sourceMediaDiscarded \? "" : "current"/, "Each Client media card must show assessment completion without reopening a discarded source");
+  assert.match(client, /const v2Preparing =[\s\S]*?workflow\.rightsConfirmed && restaurantContentEligible/, "Each Client media card must keep content preparation gated by current real-owner association");
+  assert.match(client, /const restaurantContentEligible = !item\.sourceMediaDiscarded &&[\s\S]*?item\.privateAssessmentStatus === "completed"[\s\S]*?item\.associationEvidenceClass === "real_owner"/, "Each Client media card must fail closed until its assessment and owner association are current");
+  assert.match(client, /item\.associationId \? <details[\s\S]*?It is immutable[\s\S]*?create a new permission record[\s\S]*?: !item\.sourceMediaDiscarded \? <details[\s\S]*?Record final association/, "A recorded association must be read-only and a discarded source cannot accept a new association");
   assert.match(clientData, /veroxa_momo_client_media_status_v1/, "Client must load the protected minimal rendition status projection");
   assert.match(page, /<Link key=\{item\.id\} href=\{item\.path\}/, "Team navigation must use reliable route links");
 
@@ -427,7 +432,146 @@ test("Client v3 readback accepts only sanitized coherent pipeline states", async
   assert.doesNotMatch(sql, /candidate\.blockers|provider_error_code|candidate\.reason_codes/iu);
   assert.match(sql, /grant execute on function public\.veroxa_momo_client_upload_status_v3\(uuid\)[\s\S]*?to authenticated/);
   assert.match(retirement, /revoke execute on function public\.veroxa_momo_client_upload_status_v2\(uuid\)[\s\S]*?from public, anon, authenticated, service_role/);
-  assert.match(clientData, /client\.rpc\("veroxa_momo_client_upload_status_v3"/u);
+  assert.match(clientData, /client\.rpc\("veroxa_momo_client_upload_status_v4"/u);
+  assert.doesNotMatch(clientData, /client\.rpc\("veroxa_momo_client_upload_status_v3"/u);
   assert.match(clientData, /rightsCurrent[\s\S]*?"needs_attention"[\s\S]*?"permission_needs_update"/u);
   assert.doesNotMatch(clientData, /row\.(?:canonical_asset_id|processing_asset_id|ready_package_id|reason_codes|provider_error_code)/u);
+});
+
+test("Client v4 readback adds sanitized assessment, association, and source-media discard state", async () => {
+  const restaurantId = "00000000-0000-4000-8000-000000000010";
+  const assetId = "00000000-0000-4000-8000-000000000001";
+  const rightsId = "00000000-0000-4000-8000-000000000011";
+  const reusedFromAssessmentId = "00000000-0000-4000-8000-000000000021";
+  const associationId = "00000000-0000-4000-8000-000000000031";
+  const mediaRow = {
+      id: assetId,
+      storagePath: `restaurants/${restaurantId}/uploads/2026/08/00000000-0000-4000-8000-000000000099.jpg`,
+      displayFileName: "food.jpg",
+      mimeType: "image/jpeg",
+      fileSize: 250_000,
+      status: "uploaded",
+      createdAt: "2026-08-08T12:00:00.000Z",
+      rightsId,
+      rightsStatus: "confirmed",
+      usageScope: ["facebook", "instagram", "google_business"],
+      validFrom: "2026-08-01T00:00:00.000Z",
+      expiresAt: "2030-08-01T00:00:00.000Z",
+  };
+  const snapshot = parseMomoClientSnapshot({ media: [mediaRow] });
+  const assessment = {
+    schemaVersion: "veroxa-private-media-assessment-v1",
+    subject: "food",
+    visualSummary: "Visible food portions are arranged on a plate in a close-up image.",
+    qualityScore: 4,
+    qualityIssues: ["none"],
+    tags: [{
+      slug: "food-visible",
+      label: "Food visible",
+      evidenceClass: "objective",
+      category: "scene",
+      confidence: 0.99,
+      uncertainty: null,
+    }],
+    uncertainties: [
+      "Pixels alone cannot confirm dish, ingredient, menu, or restaurant identity.",
+    ],
+  };
+  const valid = {
+    asset_id: assetId,
+    verification_status: "verified",
+    pipeline_status: "verified",
+    is_exact_duplicate: true,
+    attention_reasons: [],
+    source_content_sha256: "a".repeat(64),
+    platform_ready: true,
+    private_assessment_status: "completed",
+    private_assessment: assessment,
+    assessment_reused_from_id: reusedFromAssessmentId,
+    restaurant_association: "represents_current_restaurant_offering",
+    association_evidence_class: "real_owner",
+    association_id: associationId,
+    association_recorded_at: "2026-08-08T12:05:00.000Z",
+    source_media_discarded: false,
+    source_media_discarded_at: null,
+    external_write_allowed: false,
+  };
+  const merged = mergeMomoClientUploadPipelineV4(snapshot, [valid]);
+  assert.equal(merged.mediaAssessmentReadbackAvailable, true);
+  assert.equal(merged.media[0].privateAssessment?.tags[0].slug, "food-visible");
+  assert.equal(merged.media[0].assessmentReusedFromId, reusedFromAssessmentId);
+  assert.equal(merged.media[0].rightsId, rightsId, "assessment reuse must not replace this asset's rights");
+  assert.equal(merged.media[0].restaurantAssociation, "represents_current_restaurant_offering");
+  assert.equal(merged.media[0].associationEvidenceClass, "real_owner");
+  assert.equal(merged.media[0].platformReady, true);
+  assert.equal(merged.media[0].sourceMediaDiscarded, false);
+  assert.equal(merged.media[0].sourceMediaDiscardedAt, null);
+
+  const discardedAt = "2026-08-08T12:10:00.000Z";
+  const discarded = mergeMomoClientUploadPipelineV4(snapshot, [{
+    ...valid,
+    source_media_discarded: true,
+    source_media_discarded_at: discardedAt,
+  }]);
+  assert.equal(discarded.media[0].pipelineStatus, "verified");
+  assert.equal(discarded.media[0].sourceMediaDiscarded, true);
+  assert.equal(discarded.media[0].sourceMediaDiscardedAt, discardedAt);
+  assert.deepEqual(discarded.media[0].pipelineAttentionReasons, []);
+
+  const expiredRightsDiscarded = mergeMomoClientUploadPipelineV4(
+    parseMomoClientSnapshot({
+      media: [{ ...mediaRow, validFrom: "1999-01-01T00:00:00.000Z", expiresAt: "2000-01-01T00:00:00.000Z" }],
+    }),
+    [{ ...valid, source_media_discarded: true, source_media_discarded_at: discardedAt }],
+  );
+  assert.equal(expiredRightsDiscarded.media[0].pipelineStatus, "verified");
+  assert.equal(expiredRightsDiscarded.media[0].pipelineVerificationStatus, "verified");
+  assert.deepEqual(expiredRightsDiscarded.media[0].pipelineAttentionReasons, []);
+
+  const missingDiscardFlag = { ...valid };
+  delete missingDiscardFlag.source_media_discarded;
+  const missingDiscardedAt = { ...valid };
+  delete missingDiscardedAt.source_media_discarded_at;
+
+  for (const invalidDiscard of [
+    missingDiscardFlag,
+    missingDiscardedAt,
+    { ...valid, source_media_discarded: true, source_media_discarded_at: null },
+    { ...valid, source_media_discarded: false, source_media_discarded_at: discardedAt },
+    { ...valid, source_media_discarded: false, source_media_discarded_at: "not-a-timestamp" },
+    { ...valid, pipeline_status: "veroxa_ready", source_media_discarded: true, source_media_discarded_at: discardedAt },
+  ]) {
+    const rejectedDiscard = mergeMomoClientUploadPipelineV4(snapshot, [invalidDiscard]);
+    assert.equal(rejectedDiscard.media[0].pipelineStatus, null);
+    assert.equal(rejectedDiscard.media[0].sourceMediaDiscarded, false);
+    assert.equal(rejectedDiscard.media[0].sourceMediaDiscardedAt, null);
+  }
+
+  const malformed = mergeMomoClientUploadPipelineV4(snapshot, [{
+    ...valid,
+    private_assessment: {
+      ...assessment,
+      tags: [{
+        ...assessment.tags[0],
+        slug: "dumplings",
+        label: "Dumplings",
+      }],
+    },
+  }]);
+  assert.equal(malformed.mediaPipelineReadbackAvailable, true);
+  assert.equal(malformed.mediaAssessmentReadbackAvailable, true);
+  assert.equal(malformed.media[0].privateAssessmentStatus, null);
+  assert.equal(malformed.media[0].privateAssessment, null);
+  assert.equal(malformed.media[0].restaurantAssociation, null);
+  assert.equal(malformed.media[0].sourceMediaDiscarded, false);
+  assert.equal(malformed.media[0].pipelineStatus, null, "a malformed v4 row cannot retain Ready state");
+
+  const clientData = await readFile(new URL("../app/momo-client-data.ts", import.meta.url), "utf8");
+  const v4 = clientData.indexOf('client.rpc("veroxa_momo_client_upload_status_v4"');
+  const v3 = clientData.indexOf('client.rpc("veroxa_momo_client_upload_status_v3"');
+  assert.ok(v4 >= 0, "Client readback must use the tombstone-aware v4 contract");
+  assert.equal(v3, -1, "Client must not fall back to v3, which cannot represent a terminal source tombstone");
+  assert.match(clientData.slice(v4), /if \(!pipelineV4\.error\)/u);
+  assert.match(clientData.slice(v4), /return withRenditions/u);
+  assert.match(clientData, /source_media_discarded[\s\S]*?source_media_discarded_at/u);
 });
