@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
+  MEDIA_UPLOAD_HANDOFF_EVIDENCE,
   assertReviewedLocalCandidateManifest,
   readDeploymentManifest,
   repoRoot,
@@ -112,7 +113,7 @@ must(
 );
 must(
   rr.checkpoint ===
-      "live52-media-upload-one-step-team-processor-external-actions-held-2026-08-09" &&
+      "live52-media-upload-one-step-team-processor-parity-verified-external-actions-held-2026-08-09" &&
     Array.isArray(rr.activationGates) &&
     rr.activationGates.length === 4 &&
     rr.activationGates.some((gate: unknown) =>
@@ -133,6 +134,16 @@ must(
 must(
   rr.mediaUploadHandoff?.clientActionAfterUpload === "none" &&
     rr.mediaUploadHandoff?.processingOwner === "veroxa_team" &&
+    rr.mediaUploadHandoff?.reviewedHead ===
+      MEDIA_UPLOAD_HANDOFF_EVIDENCE.reviewedHead &&
+    rr.mediaUploadHandoff?.reviewedTree ===
+      MEDIA_UPLOAD_HANDOFF_EVIDENCE.reviewedTree &&
+    rr.mediaUploadHandoff?.mergedPullRequest ===
+      MEDIA_UPLOAD_HANDOFF_EVIDENCE.mergedPullRequest &&
+    rr.mediaUploadHandoff?.mergedMainCommit ===
+      MEDIA_UPLOAD_HANDOFF_EVIDENCE.mergedMainCommit &&
+    rr.mediaUploadHandoff?.allFourExactHeadWorkflowsGreen === true &&
+    rr.mediaUploadHandoff?.zeroUnresolvedReviewThreads === true &&
     rr.mediaUploadHandoff?.legacyV2AuthenticatedExecute === false &&
     rr.mediaUploadHandoff?.teamProcessorAvailable === true &&
     rr.mediaUploadHandoff?.instructionApplicationCount === 0 &&
