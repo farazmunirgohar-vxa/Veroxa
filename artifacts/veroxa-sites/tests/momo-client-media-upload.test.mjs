@@ -88,8 +88,12 @@ test("real client upload registers the stored JPG, parses asset_id, then finaliz
   assert.equal(result.assetId, ASSET_ID);
   assert.match(result.storagePath, /\/uploads\/2026\/08\/cccccccc-cccc-4ccc-8ccc-cccccccccccc\.jpg$/u);
   assert.equal(calls.upload.length, 1);
-  assert.equal(calls.rpc[0].name, "veroxa_register_momo_media_v2");
+  assert.equal(calls.rpc[0].name, "veroxa_register_momo_media_v3");
   assert.deepEqual(calls.rpc[0].parameters.p_usage_scope, ["instagram", "facebook"]);
+  assert.equal(calls.rpc[0].parameters.p_requested_association, "not_for_restaurant");
+  assert.equal(calls.rpc[0].parameters.p_association_note, null);
+  assert.equal(Object.hasOwn(calls.rpc[0].parameters, "p_intake_notes"), false,
+    "the database must create the versioned durable instruction itself");
   assert.deepEqual(calls.finalize[0], { restaurantId: RESTAURANT_ID, assetId: ASSET_ID, storagePath: result.storagePath });
   assert.equal(calls.assess.length, 1);
   assert.equal(calls.association.length, 1);
@@ -151,6 +155,9 @@ test("registered originals remain saved and retryable when finalization needs at
     rightsId: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
   });
   assert.equal(calls.remove.length, 0, "a registered original must never be deleted after finalize failure");
+  assert.equal(calls.rpc[0].name, "veroxa_register_momo_media_v3");
+  assert.equal(calls.rpc[0].parameters.p_requested_association, "not_for_restaurant",
+    "the upload instruction must be registered before finalization starts");
 });
 
 test("registration rollback removes only the new unregistered object", async () => {

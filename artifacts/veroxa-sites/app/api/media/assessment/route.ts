@@ -32,7 +32,6 @@ const UUID =
 const SHA256 = /^[0-9a-f]{64}$/u;
 const RESPONSE_ID = /^resp_[A-Za-z0-9_-]{8,195}$/u;
 const openAiKey = process.env.OPENAI_API_KEY?.trim() || "";
-const bridgeConfig = getMomoContentAiLifecycleBridgeConfig();
 
 function record(value: unknown): Record<string, unknown> | null {
   const row = Array.isArray(value) ? value[0] : value;
@@ -140,6 +139,7 @@ function dependencies(
     userId: string;
   },
 ) {
+  const bridgeConfig = getMomoContentAiLifecycleBridgeConfig();
   return {
     enabled: process.env.VEROXA_MOMO_CONTENT_AI_ENABLED === "true",
     providerConfigured: Boolean(openAiKey && bridgeConfig),

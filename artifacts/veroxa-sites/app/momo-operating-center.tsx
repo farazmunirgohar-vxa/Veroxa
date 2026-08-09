@@ -1194,6 +1194,16 @@ function TeamPrivateAssessmentIntake({
 type MomoContentPreparationState = "idle" | "saving_review" | "queueing" | "refreshing" | "needs_refresh";
 
 function MediaAssetCard({ asset, data, role, restaurantId, busy, run, reloadWorkspace, notify }: PanelProps & { asset: MomoMediaAsset }) {
+  const intakeInstruction = (() => {
+    if (!asset.intake_notes) return null;
+    try {
+      const value = JSON.parse(asset.intake_notes) as Record<string, unknown>;
+      return value.schemaVersion === "veroxa-media-upload-instruction-v1" &&
+        typeof value.requestedAssociation === "string"
+        ? value.requestedAssociation
+        : null;
+    } catch { return null; }
+  })();
   const rights = data.mediaRights.find((item) => item.asset_id === asset.id);
   const review = data.mediaReviews.find((item) => item.asset_id === asset.id && item.is_current);
   const intake = data.mediaIntake.find((item) => item.asset_id === asset.id && item.status === "verified");
@@ -1367,6 +1377,7 @@ function MediaAssetCard({ asset, data, role, restaurantId, busy, run, reloadWork
   return <article id={`momo-media-${asset.id}`} className="momo-media-card">
     <div className="momo-media-icon">{previewUrl ? (asset.mime_type.startsWith("video/") ? <video src={previewUrl} controls onLoadedData={() => setPreviewRendered(true)} onError={() => { setPreviewRendered(false); setInspectionConfirmed(false); setPreviewError("The private video could not be rendered. Do not approve this asset."); }} /> : <img className="momo-image-preview" src={previewUrl} alt={`Private preview of ${asset.display_name || asset.original_file_name || "Momo media"}`} onLoad={() => setPreviewRendered(true)} onError={() => { setPreviewRendered(false); setInspectionConfirmed(false); setPreviewError("The private image could not be rendered. Do not approve this asset."); }} />) : asset.mime_type.startsWith("video/") ? "VIDEO" : "PHOTO"}</div>
     <div className="momo-media-heading"><span><strong>{asset.display_name || asset.original_file_name || asset.storage_path.split("/").at(-1) || "Private media"}</strong><small>{Math.max(1, Math.round(asset.file_size / 1024))} KB · {formatDate(asset.created_at)}</small></span><StatusBadge status={pipeline.state} /></div>
+    {intakeInstruction && <p className="momo-form-note"><strong>Momo upload instruction:</strong> {labelStatus(intakeInstruction)} · technical recovery belongs to Team Faraz.</p>}
     {pipeline.blockers[0] && <p className="momo-form-note">{pipeline.blockers[0]}</p>}
     {identityLink && <div className="momo-callout"><strong>{pipeline.state === "veroxa_ready" ? "Veroxa Ready without Team review" : pipeline.state === "preparing_content" ? "Automatic preparation is active" : "Exact-byte identity verified"}</strong><p>{identityLink.link_kind === "exact_duplicate" ? "This upload keeps its own immutable permission record while sharing an exact-byte processing identity with the canonical original." : "This is the canonical exact-byte identity. Every linked upload keeps its own immutable permission record."} {automaticContentRun && automaticProcessingLink ? `Processing uses verified upload ${automaticProcessingLink.asset_id.slice(0, 8)}… and only that upload’s rights evidence.` : "A processing source has not been selected yet."} Nothing is scheduled, posted, or externally connected.</p></div>}
     {!intake && <button className="momo-preview-button" disabled={busy} onClick={() => void run(() => retryMomoMediaVerification({ restaurantId, assetId: asset.id, storagePath: asset.storage_path }), "Server byte verification completed. This image can now continue through review.")}>{busy ? "Verifying…" : "Retry secure verification"}</button>}

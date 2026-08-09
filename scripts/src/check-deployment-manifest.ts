@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import {
   INTERNAL_AI_RELEASE_EVIDENCE,
+  MEDIA_UPLOAD_HANDOFF_EVIDENCE,
   REPAIR_MIGRATION_EVIDENCE,
   assertReviewedLocalCandidateManifest,
   deploymentManifestPath,
@@ -40,41 +41,71 @@ const secondRuntimeParity = manifest.rolloutEvidence?.secondRuntimeParity as
   | undefined;
 const activationPostflightVerification = manifest.rolloutEvidence
   ?.activationPostflightVerification as Record<string, unknown> | undefined;
+const mediaUploadHandoff = manifest.mediaUploadHandoff as
+  | Record<string, any>
+  | undefined;
 must(
   manifest.schemaVersion === 10 &&
     manifest.recordKind === "veroxa_guarded_internal_ai_rollout_manifest",
   "Manifest is not the guarded internal-AI rollout authority.",
 );
 must(
-  manifest.currentProductionObservation.productionMigrationCount === 49 &&
+  manifest.currentProductionObservation.productionMigrationCount ===
+      MEDIA_UPLOAD_HANDOFF_EVIDENCE.migrationFileCount &&
     manifest.currentProductionObservation.canonicalGitHubMainCommit ===
-      INTERNAL_AI_RELEASE_EVIDENCE.mergedCommit &&
+      MEDIA_UPLOAD_HANDOFF_EVIDENCE.baseMainCommit &&
     manifest.currentProductionObservation.canonicalGitHubMainMergePullRequest ===
-      INTERNAL_AI_RELEASE_EVIDENCE.pullRequest &&
+      MEDIA_UPLOAD_HANDOFF_EVIDENCE.baseMainPullRequest &&
     manifest.currentProductionObservation.sitesVersion ===
-      INTERNAL_AI_RELEASE_EVIDENCE.sitesVersion &&
+      MEDIA_UPLOAD_HANDOFF_EVIDENCE.sitesVersion &&
     manifest.currentProductionObservation.sitesVersionId ===
-      INTERNAL_AI_RELEASE_EVIDENCE.sitesVersionId &&
+      MEDIA_UPLOAD_HANDOFF_EVIDENCE.sitesVersionId &&
     manifest.currentProductionObservation.sitesCheckoutCommit ===
-      INTERNAL_AI_RELEASE_EVIDENCE.sitesSourceCommit &&
+      MEDIA_UPLOAD_HANDOFF_EVIDENCE.sitesSourceCommit &&
     manifest.currentProductionObservation.sourceTreeSha256 ===
-      INTERNAL_AI_RELEASE_EVIDENCE.sitesSourceSha256 &&
+      MEDIA_UPLOAD_HANDOFF_EVIDENCE.liveSitesSourceTreeSha256 &&
     manifest.currentProductionObservation.sitesArchiveFileCount ===
-      INTERNAL_AI_RELEASE_EVIDENCE.sitesArchiveFileCount &&
+      MEDIA_UPLOAD_HANDOFF_EVIDENCE.sitesArchiveFileCount &&
     manifest.currentProductionObservation.sitesArchiveByteLength ===
-      INTERNAL_AI_RELEASE_EVIDENCE.sitesArchiveByteLength &&
+      MEDIA_UPLOAD_HANDOFF_EVIDENCE.sitesArchiveByteLength &&
     manifest.currentProductionObservation.sitesArchiveSha256 ===
-      INTERNAL_AI_RELEASE_EVIDENCE.sitesArchiveSha256 &&
+      MEDIA_UPLOAD_HANDOFF_EVIDENCE.sitesArchiveSha256 &&
     manifest.currentProductionObservation.latestProductionMigration ===
-      "20260809051616_guarded_internal_ai_activation_v1.sql" &&
+      MEDIA_UPLOAD_HANDOFF_EVIDENCE.latestMigration &&
     manifest.currentProductionObservation.latestProductionMigrationByteLength ===
-      24_248 &&
+      MEDIA_UPLOAD_HANDOFF_EVIDENCE.latestMigrationByteLength &&
     manifest.currentProductionObservation.latestProductionMigrationSha256 ===
-      "22d5e82f683c3dd9d4b3d9c5b4e5003cf3a769f67dde340e98deee3ba3afb8ba" &&
+      MEDIA_UPLOAD_HANDOFF_EVIDENCE.latestMigrationSha256 &&
+    manifest.currentProductionObservation.githubParityVerifiedAtObservation ===
+      false &&
+    manifest.currentProductionObservation.githubMainMatchesCandidate === false &&
+    manifest.currentProductionObservation.candidateSourceMatchesLiveSites ===
+      false &&
     manifest.currentProductionObservation.candidateMigrationsMatchLiveLedger === true &&
     manifest.currentProductionObservation.fullReleaseGateScope ===
-      INTERNAL_AI_RELEASE_EVIDENCE.fullReleaseGateScope,
-  "Observed production is not the exact active live49 ledger.",
+      "media_upload_one_step_handoff_live_canonical_reconciliation_pending_external_actions_held",
+  "Observed production is not the exact live50 media-handoff checkpoint.",
+);
+must(
+  mediaUploadHandoff?.status === MEDIA_UPLOAD_HANDOFF_EVIDENCE.status &&
+    mediaUploadHandoff.clientActionAfterUpload === "none" &&
+    mediaUploadHandoff.processingOwner === "veroxa_team" &&
+    mediaUploadHandoff.existingUploadRequiresClientRetry === false &&
+    mediaUploadHandoff.preFixInstructionRecoverable === false &&
+    mediaUploadHandoff.savedInstructionCount === 0 &&
+    mediaUploadHandoff.unverifiedSavedUploadCount === 3 &&
+    mediaUploadHandoff.openMediaIntakeExceptionCount === 3 &&
+    mediaUploadHandoff.allMediaIntakeExceptionsExternalLocked === true &&
+    mediaUploadHandoff.bridgeKeyRotated === true &&
+    mediaUploadHandoff.candidateSourceFileCount === manifest.source.fileCount &&
+    mediaUploadHandoff.candidateSourceTreeSha256 ===
+      manifest.source.treeSha256 &&
+    mediaUploadHandoff.migrationFileCount === manifest.migrations.fileCount &&
+    mediaUploadHandoff.migrationTreeSha256 ===
+      manifest.migrations.treeSha256 &&
+    JSON.stringify(mediaUploadHandoff.edgeFunctions) ===
+      JSON.stringify(MEDIA_UPLOAD_HANDOFF_EVIDENCE.edgeFunctions),
+  "Momo upload handoff or repaired Edge evidence is incomplete.",
 );
 must(
   repairCloseout?.actualLedgerVersion === "20260809035302" &&
@@ -288,6 +319,6 @@ if (failures.length > 0) {
   process.exitCode = 1;
 } else {
   console.log(
-    "PASS: live49 internal AI is activated with exact grants, external actions held, and final parity recorded.",
+    "PASS: live50 media handoff is one-step for Momo, Team-owned on exception, and externally locked.",
   );
 }

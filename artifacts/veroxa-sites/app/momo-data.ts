@@ -113,6 +113,7 @@ export type MomoMediaAsset = {
   storage_path: string;
   display_name?: string;
   original_file_name?: string | null;
+  intake_notes?: string | null;
   mime_type: string;
   file_size: number;
   width?: number | null;
@@ -807,7 +808,7 @@ const intelligenceQueries: QueryDefinition[] = [
 ];
 
 const mediaQueries: QueryDefinition[] = [
-  { key: "media", table: "veroxa_media_assets", columns: "id, restaurant_id, storage_path, original_file_name, mime_type, file_size, width, height, content_sha256, uploaded_by, status, reuse_count, last_used_at, created_at, updated_at", order: "created_at", ascending: false },
+  { key: "media", table: "veroxa_media_assets", columns: "id, restaurant_id, storage_path, original_file_name, intake_notes, mime_type, file_size, width, height, content_sha256, uploaded_by, status, reuse_count, last_used_at, created_at, updated_at", order: "created_at", ascending: false },
   { key: "mediaRights", table: "veroxa_media_rights", columns: "id, restaurant_id, asset_id, rights_status, usage_scope, attestation_version, attestation_sha256, valid_from, expires_at, confirmed_by, confirmed_at, evidence_class, created_at, updated_at", order: "created_at", ascending: false },
   { key: "mediaReviews", table: "veroxa_media_reviews", columns: "id, restaurant_id, asset_id, status, quality_score, quality_notes, public_use_approved, is_current, reviewed_by, reviewed_at, created_at, updated_at", order: "created_at", ascending: false },
   { key: "mediaTags", table: "veroxa_media_tags", columns: "id, restaurant_id, slug, label, source, created_at, updated_at", order: "label" },

@@ -498,7 +498,7 @@ test("Momo operating center uses live tenant data and exact production contracts
   assert.match(data, /\.rpc\("veroxa_apply_confirmation_v1"/, "Team confirmation decisions must be transactional");
   assert.match(data, /\.rpc\("veroxa_apply_approval_v1"/, "Team approval decisions must atomically update their subject");
   assert.match(data, /\.rpc\("veroxa_review_momo_media_v1"/, "Media review replacement and asset state must be atomic");
-  assert.match(data, /\.rpc\("veroxa_register_momo_media_v2"/, "Media metadata, rights, and Momo-local expiry must be registered atomically");
+  assert.match(data, /\.rpc\("veroxa_register_momo_media_v2"/, "Team media metadata, rights, and Momo-local expiry must be registered atomically");
   assert.match(data, /p_expires_on:\s*input\.expiresAt \|\| null/, "Rights expiry must be sent as a Momo-local calendar date, not browser-local timestamp");
   assert.match(data, /\.rpc\("veroxa_retry_work_item_v1"/, "Retries must write the bounded attempt ledger transactionally");
   assert.match(data, /\.rpc\("veroxa_submit_momo_confirmation_v1"/, "Owner decisions must use the subject-validating transactional contract");
