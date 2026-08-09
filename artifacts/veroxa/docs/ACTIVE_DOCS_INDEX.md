@@ -2,9 +2,20 @@
 
 Status: highest-level current source-of-truth index. Read this file before relying on older Veroxa documents.
 
-<!-- LIVE47_CANDIDATE48_AUTHORITY -->
+<!-- GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY -->
 
-## 2026-08-09 — exact live47 held; bounded candidate48 pending in PR #165 (current authority)
+## 2026-08-09 — live48 verified; generated-version closeout under review (current authority)
+
+- **Canonical repository:** GitHub `main` is `e01e8e00d94ce9eb5243038bf41c202897a17460` from merged PR #165. Its exact reviewed head `8623370f235cb574ea90580b146acec0acce2c49` passed CI `31293077631`, Sites `31293077642`, Supabase `31293077633`, and Veroxa `31293077646`.
+- **Production database:** Supabase is live48 through generated `20260809035302_team_private_food_assessment_reconciliation_v1.sql`, 59,052 unchanged bytes at SHA-256 `56c64c795ad12f1dfbe05894fd3e56a87f1d0e3376ff10edfd97760b8d2fbd5c`; the exact 48-migration tree is `1b3a575cbfbad53e811703c38681c30adf7c4b7bd716b1b193e322233d8d6ba6`.
+- **Safety hold:** a fresh post-apply read proves 59/59 scoped public functions exist with zero effective anon/authenticated/service-role grants, one all-false runtime row, and zero assessment, AI, dispatch, webhook, Ready, or cost work. The registered mutable-RPC hold remains active. The Client storage residual may create only an unregistered orphan object.
+- **Source closeout:** both migration mirrors now use the generated live48 filename with the reviewed 59,052 canonical bytes. The apply transport added one trailing newline (59,053 wire bytes); Supabase retains the generated name, not query bytes, and the verified SQL semantics are identical. The exact 214-file Sites candidate is `cec2f313e3850141117c7f69dbc1d5ad707b72ee7a7ad5f1f2efa0d6c5a34297`. A post-merge P1 was addressed by removing the unsupported failed-assessment retry action before publication.
+- **Live runtimes remain separate:** Sites v39 and JWT-protected Edge v6 are still the independent live baselines. This closeout has not published Sites or deployed prompt-v2 Edge.
+- **Next governed sequence:** merge the closeout → publish exact Sites and Edge parity under the hold → review/apply a dormant identity-bound postgres-only activation routine → reconcile and republish parity → invoke once only after every identity and zero-work gate matches.
+- **Authorization boundary:** Faraz authorized this scoped internal rollout up to USD 20, with a USD 0 incremental spend target. External providers, provider writes, review replies, website writes, scheduling, posts, owner contact, and public writes remain locked.
+- **Proof boundary:** no real upload, provider call, Ready decision, owner confirmation, current-offering association, external action, or activation execution is claimed.
+
+## 2026-08-09 — exact live47 held; bounded candidate48 pending in PR #165 (historical pre-apply checkpoint)
 
 - **Canonical repository and database:** GitHub `main` is `39bf713705685636f0d20a2ca068c738d4f414b4` from merged PR #166. Production Supabase is the exact immutable live47 ledger through `20260808083842_post_20260808070840_private_media_authority_repair_v1.sql` (110,797 bytes, SHA-256 `3d2ba3a86024edef024a12ff9556c4e236baa57cbf2d4d478f9514321d69abee`) at tree `87c0ecd4272949d89e7512940f91f9d9e3c6e92154616377c78ef9e3d06bfc5e`. Preserve all applied bytes, including the stronger live47 Ready-authority bridge.
 - **Live Sites and Edge remain separate observations:** Sites v39 is still independently observed at version ID `appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_388c5f82ec48819186bfd315a0d55ab8`, checkout `8749a7d442d3bb068ce626a9d297b8b227493446`, and archive SHA-256 `c5c471639303ac4488fbf1258a6e1736452eafbd43a9370473e02f6072eca7f5`. Edge v6 remains ACTIVE with `verify_jwt=true`, prompt v1, and an unauthenticated 401 smoke; the prompt-v2 candidate is not deployed.

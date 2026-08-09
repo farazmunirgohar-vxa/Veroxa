@@ -1,15 +1,16 @@
 {
   "schemaVersion": 10,
-  "recordKind": "veroxa_live47_held_candidate48_manifest",
-  "releaseState": "live47_registered_mutable_rpc_hold_active_candidate48_review_pending",
+  "recordKind": "veroxa_guarded_internal_ai_rollout_manifest",
+  "releaseState": "live48_repair_generated_version_closeout_review_pending_under_hold",
   "reviewedAt": "2026-08-09",
-  "candidateRevision": "live47_held_team_private_food_candidate_2026_08_09",
+  "candidateRevision": "live48_team_private_food_generated_version_closeout_2026_08_09",
   "knownResiduals": [
-    "Exact live membership evidence shows postgres is not a member of supabase_admin. Migration 20260808002609 therefore skips supabase_admin default ACLs and is not comprehensive default-ACL closure."
+    "Exact live membership evidence shows postgres is not a member of supabase_admin. Migration 20260808002609 therefore skips supabase_admin default ACLs and is not comprehensive default-ACL closure.",
+    "Supabase stores generated migration version and name but not submitted SQL bytes. Candidate48 canonical source remains the reviewed 59,052-byte SHA-256 56c64c79 payload; the apply transport query carried one additional trailing newline (59,053 bytes), with identical SQL tokens and verified live48 semantics."
   ],
   "canonicalRepository": "farazmunirgohar-vxa/Veroxa",
   "canonicalBranch": "main",
-  "candidateBranch": "agent/momo-private-assessment-ready-unified",
+  "candidateBranch": "agent/live48-generated-version-closeout",
   "sitesProjectId": "appgprj_6a53d07c7c28819182801cf35dfd30de",
   "observedProductionBaseline": {
     "reviewedAt": "2026-07-13",
@@ -137,10 +138,10 @@
     "observedAt": "2026-08-09",
     "sitesBaselineObservedAt": "2026-08-08",
     "migrationLedgerObservedAt": "2026-08-09",
-    "evidenceStatus": "sites_v39_live_database47_edge_v6_candidate48_pending_under_hold",
-    "canonicalGitHubMainCommit": "39bf713705685636f0d20a2ca068c738d4f414b4",
-    "canonicalGitHubMainMergePullRequest": 166,
-    "canonicalGitHubMainCommitScope": "github_main_pr166_lineage_only_not_sites_v39_source_association",
+    "evidenceStatus": "sites_v39_live_database48_edge_v6_reconciled_source_pending_under_hold",
+    "canonicalGitHubMainCommit": "e01e8e00d94ce9eb5243038bf41c202897a17460",
+    "canonicalGitHubMainMergePullRequest": 165,
+    "canonicalGitHubMainCommitScope": "github_main_pr165_candidate48_merged_sites_v39_edge_v6_still_independent",
     "githubParityVerifiedAtObservation": false,
     "sitesVersion": 39,
     "sitesVersionId": "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_388c5f82ec48819186bfd315a0d55ab8",
@@ -161,17 +162,18 @@
     "sourceFileCount": 54,
     "sourceTreeSha256": "c5c471639303ac4488fbf1258a6e1736452eafbd43a9370473e02f6072eca7f5",
     "sourceEvidenceScope": "observed_live_sites_v39_exact_archive",
-    "productionMigrationCount": 47,
-    "migrationTreeSha256": "87c0ecd4272949d89e7512940f91f9d9e3c6e92154616377c78ef9e3d06bfc5e",
+    "productionMigrationCount": 48,
+    "migrationTreeSha256": "1b3a575cbfbad53e811703c38681c30adf7c4b7bd716b1b193e322233d8d6ba6",
     "migrationTreeEvidenceScope": "observed_remote_ledger_exact_names_and_bytes",
-    "latestProductionMigration": "20260808083842_post_20260808070840_private_media_authority_repair_v1.sql",
-    "latestProductionMigrationByteLength": 110797,
-    "latestProductionMigrationSha256": "3d2ba3a86024edef024a12ff9556c4e236baa57cbf2d4d478f9514321d69abee",
+    "latestProductionMigration": "20260809035302_team_private_food_assessment_reconciliation_v1.sql",
+    "latestProductionMigrationByteLength": 59052,
+    "latestProductionMigrationSha256": "56c64c795ad12f1dfbe05894fd3e56a87f1d0e3376ff10edfd97760b8d2fbd5c",
+    "latestProductionMigrationByteEvidenceScope": "canonical_reviewed_source_bytes_ledger_name_only_transport_had_one_extra_trailing_newline",
     "databaseLedgerObserved": true,
     "databaseAppliedThroughLatestObserved": true,
     "githubMainMatchesCandidate": false,
     "candidateSourceMatchesLiveSites": false,
-    "candidateMigrationsMatchLiveLedger": false,
+    "candidateMigrationsMatchLiveLedger": true,
     "fullReleaseGatePassed": false
   },
   "historicalV36GitHubReconciliationEvidence": {
@@ -238,7 +240,7 @@
   },
   "applicationQualityEvidence": {
     "observedAt": "2026-08-09",
-    "evidenceScope": "exact_local_live47_preserving_team_private_food_candidate",
+    "evidenceScope": "exact_live48_closeout_with_hosted_candidate48_verification",
     "cleanInstallExitCode": 0,
     "buildExitCode": 0,
     "testsPassed": 431,
@@ -250,10 +252,10 @@
     "diffCheckExitCode": 0,
     "repairMigrationParserPassed": false,
     "sqlFixtureParserPassed": false,
-    "hostedCleanChainApplyPassed": false,
-    "hostedFullPgTapPassed": false,
-    "hostedFullPgTapRerunPending": true,
-    "hostedDatabaseExecutionPassed": false,
+    "hostedCleanChainApplyPassed": true,
+    "hostedFullPgTapPassed": true,
+    "hostedFullPgTapRerunPending": false,
+    "hostedDatabaseExecutionPassed": true,
     "repairMigrationSha256": "56c64c795ad12f1dfbe05894fd3e56a87f1d0e3376ff10edfd97760b8d2fbd5c",
     "preconnectionFixtureSha256": "d6d870788c1211d8209048921232e9e8b1cffa16aae1ef9a4a9516b150434b5d",
     "ownerFixtureSha256": "60db739eeeaba5be8d70e62b6ec60cf9b6db758d1509940068ef164c7fe650b5",
@@ -312,14 +314,14 @@
     "realUploadObserved": false
   },
   "releaseCandidate": {
-    "status": "held_team_private_food_reconciliation_locally_reviewed_remote_gates_pending",
+    "status": "live48_generated_version_reconciled_closeout_review_pending",
     "actionScope": "team_private_assessment_only_and_strict_food_contract_preserving_live47_ready_authority",
-    "basedOnGitHubMainCommit": "39bf713705685636f0d20a2ca068c738d4f414b4",
-    "pullRequest": 165,
+    "basedOnGitHubMainCommit": "e01e8e00d94ce9eb5243038bf41c202897a17460",
+    "pullRequest": null,
     "pullRequestDraft": true,
-    "observedDraftPullRequestHead": "9176e50436db7328401a91d64b536948ed4ef915",
-    "observedDraftPullRequestTree": "01a79b952c6356b2cb1c54dc262541f1ad4fd198",
-    "draftHeadEvidenceScope": "observed_remote_pr165_opening_draft_checkpoint_not_exact_final_head",
+    "observedDraftPullRequestHead": null,
+    "observedDraftPullRequestTree": null,
+    "draftHeadEvidenceScope": "closeout_pr_not_created",
     "githubMerged": false,
     "futureMergedGitHubCommit": null,
     "futureSitesVersion": null,
@@ -329,21 +331,19 @@
     "allFourWorkflowsGreen": null,
     "zeroUnresolvedReviewThreads": null,
     "candidateSourceMatchesLiveSites": false,
-    "candidateMigrationsMatchLiveLedger": false,
+    "candidateMigrationsMatchLiveLedger": true,
     "githubMainMatchesCandidate": false,
     "fullReleaseGatePassed": false,
     "sourceFileCount": 214,
-    "sourceTreeSha256": "fd3b8a61c0eb5781ffd80d58f6e69925fc4996474d891d3fc2915e317e17d799",
+    "sourceTreeSha256": "cec2f313e3850141117c7f69dbc1d5ad707b72ee7a7ad5f1f2efa0d6c5a34297",
     "migrationFileCount": 48,
-    "migrationTreeSha256": "1e6b179940063af767550e56f2df71a81bc445d8a6f4558585282a490790958c",
-    "latestCandidateMigration": "20260809024500_team_private_food_assessment_reconciliation_v1.sql",
+    "migrationTreeSha256": "1b3a575cbfbad53e811703c38681c30adf7c4b7bd716b1b193e322233d8d6ba6",
+    "latestCandidateMigration": "20260809035302_team_private_food_assessment_reconciliation_v1.sql",
     "latestCandidateMigrationSha256": "56c64c795ad12f1dfbe05894fd3e56a87f1d0e3376ff10edfd97760b8d2fbd5c",
-    "pendingMigrations": [
-      "20260809024500_team_private_food_assessment_reconciliation_v1.sql"
-    ],
-    "databaseChangesRequired": true,
-    "additionalDatabaseChangesRequired": true,
-    "databaseMigrationApplied": false,
+    "pendingMigrations": [],
+    "databaseChangesRequired": false,
+    "additionalDatabaseChangesRequired": false,
+    "databaseMigrationApplied": true,
     "databaseMigrationsApplied": [
       "20260808001210_audit_intake_envelope_v2.sql",
       "20260808001430_momo_client_pipeline_readback_v3.sql",
@@ -354,7 +354,8 @@
       "20260808064300_owner_truth_and_ready_disposition_v1.sql",
       "20260808064335_private_media_assessment_and_association_v1.sql",
       "20260808070840_momo_ready_team_decisions_and_food_tags_v2.sql",
-      "20260808083842_post_20260808070840_private_media_authority_repair_v1.sql"
+      "20260808083842_post_20260808070840_private_media_authority_repair_v1.sql",
+      "20260809035302_team_private_food_assessment_reconciliation_v1.sql"
     ],
     "databaseApplyAuthorized": true,
     "sitesPublishRequired": true,
@@ -369,10 +370,10 @@
     "activationAuthorized": true,
     "activationGateReady": false,
     "activationExecuted": false,
-    "rolloutStatus": "registered_mutable_rpc_hold_active_candidate48_remote_gates_pending"
+    "rolloutStatus": "live48_reconciled_closeout_review_pending_under_hold"
   },
   "rolloutSequence": {
-    "status": "registered_mutable_rpc_hold_active_candidate48_remote_gates_pending",
+    "status": "live48_repair_generated_version_closeout_review_pending_under_hold",
     "steps": [
       {
         "order": 1,
@@ -404,8 +405,8 @@
         "migration": "20260809024500_team_private_food_assessment_reconciliation_v1.sql",
         "requiresCompletedStep": "verify_registered_mutable_rpc_hold_and_zero_work",
         "explicitReviewRequired": true,
-        "completed": false,
-        "verification": "PR #165 remains draft. Rebase on current main 39bf7137, capture the exact final head, and require four green workflows plus zero unresolved review threads before merge."
+        "completed": true,
+        "verification": "PR #165 exact head 8623370f passed CI 31293077631, Sites 31293077642, Supabase 31293077633 and Veroxa 31293077646, then merged at e01e8e00. A post-merge P1 retry-UX finding is fixed in the generated-version closeout before Sites publication."
       },
       {
         "order": 4,
@@ -415,8 +416,8 @@
         "migration": "20260809024500_team_private_food_assessment_reconciliation_v1.sql",
         "requiresCompletedStep": "review_merge_team_private_food_candidate",
         "explicitReviewRequired": true,
-        "completed": false,
-        "verification": "Apply only the reviewed 59,052-byte candidate48 payload at SHA-256 56c64c79 while every scoped mutable grant and every external-action flag remains held; capture the generated ledger version."
+        "completed": true,
+        "verification": "Applied the reviewed SQL token stream under the hold; the transport query added one trailing newline (59,053 wire bytes versus 59,052 canonical source bytes), Supabase generated version 20260809035302, and the ledger does not retain SQL bytes."
       },
       {
         "order": 5,
@@ -426,8 +427,8 @@
         "migration": null,
         "requiresCompletedStep": "apply_exact_candidate48_bytes_under_hold",
         "explicitReviewRequired": true,
-        "completed": false,
-        "verification": "Verify generated live48 identity, exact bytes, Team assessment-only provenance, JPEG/PNG boundary, v2 food evidence gate, cross-tenant/direct-table denials, live47 Ready authority preservation, and the unchanged operational hold."
+        "completed": true,
+        "verification": "Live48 has 59/59 held RPCs with zero grants, one all-false runtime row, zero relevant work/cost, the security-definer empty-search-path Team function, JPEG/PNG and assessment-only guards, and the current-owner helper."
       },
       {
         "order": 6,
@@ -564,12 +565,12 @@
     ]
   },
   "source": {
-    "evidenceScope": "exact_local_live47_plus_held_candidate48_source_pre_generated_version",
+    "evidenceScope": "exact_live48_generated_version_closeout_source_under_hold",
     "root": "artifacts/veroxa-sites",
     "mappingTarget": "Sites repository root candidate",
     "hashAlgorithm": "veroxa-path-null-content-null-sha256-v1",
     "fileCount": 214,
-    "treeSha256": "fd3b8a61c0eb5781ffd80d58f6e69925fc4996474d891d3fc2915e317e17d799",
+    "treeSha256": "cec2f313e3850141117c7f69dbc1d5ad707b72ee7a7ad5f1f2efa0d6c5a34297",
     "generatedPathExclusions": [
       ".git",
       ".next",
@@ -592,14 +593,14 @@
     ]
   },
   "migrations": {
-    "evidenceScope": "exact_local_candidate48_with_exact_live47_prefix_and_one_provisional_migration",
+    "evidenceScope": "exact_live48_generated_ledger_source_mirrors",
     "root": "supabase/migrations",
     "mirrorRoot": "artifacts/veroxa-sites/supabase/migrations",
     "hashAlgorithm": "veroxa-path-null-content-null-sha256-v1",
     "fileCount": 48,
-    "treeSha256": "1e6b179940063af767550e56f2df71a81bc445d8a6f4558585282a490790958c",
+    "treeSha256": "1b3a575cbfbad53e811703c38681c30adf7c4b7bd716b1b193e322233d8d6ba6",
     "mirrorFileCount": 48,
-    "mirrorTreeSha256": "1e6b179940063af767550e56f2df71a81bc445d8a6f4558585282a490790958c"
+    "mirrorTreeSha256": "1b3a575cbfbad53e811703c38681c30adf7c4b7bd716b1b193e322233d8d6ba6"
   },
   "deploymentFreeze": {
     "state": "registered_mutable_rpc_ingress_and_decision_hold_active_verified",
@@ -617,7 +618,7 @@
     "observedAt": "2026-08-09",
     "runtimeFlagsReassertedAt": "2026-08-08T08:41:41.741433Z",
     "postObservedAt": "2026-08-08T08:42:25.760455Z",
-    "status": "active_verified_after_live47_ledger_reconciliation",
+    "status": "active_verified_after_live48_candidate_apply",
     "restaurantId": "6386d7e3-7966-4498-a13e-8736590bd505",
     "scopeKey": "momo_house_san_antonio",
     "relevantWorkTablesZeroVerified": true,
@@ -629,9 +630,10 @@
     "mutableIngressAndDecisionAclsRevoked": true,
     "privateMediaIngressAclsRevoked": true,
     "contentAndMediaAiAclsRevoked": true,
-    "livePrivateAssessmentIngressRpcCount": 7,
+    "livePrivateAssessmentIngressRpcCount": 8,
     "livePrivateAssessmentIngressRpcSignatures": [
       "veroxa_register_momo_media_v2(uuid,text,text,bigint,text,text,jsonb,date)",
+      "veroxa_register_team_private_media_v1(uuid,text,text,bigint,text,text,jsonb,date)",
       "veroxa_finalize_private_media_assessment_intake_v1(uuid,uuid,uuid,text,text,bigint,integer,integer,text,jsonb,text,text,text,uuid)",
       "veroxa_reserve_private_media_assessment_v1(uuid,uuid,text,text,text,text,text,bigint,uuid)",
       "veroxa_start_private_media_assessment_provider_v1(uuid,text,uuid)",
@@ -669,7 +671,7 @@
     "postCorrectionLeakedRpcCount": 0,
     "postCorrectionRuntimeRowCount": 1,
     "postCorrectionRelevantWorkRowCount": 0,
-    "heldPublicFunctionSetCount": 49,
+    "heldPublicFunctionSetCount": 59,
     "heldPublicFunctionScopeDefinition": "Every currently existing mutable public RPC in Client/Team media registration and intake finalization, private assessment reserve/provider/complete/fail, media-AI lifecycle, content-AI reserve/dispatch/webhook/recovery/result lifecycle, upload pipeline, restaurant association, Ready-v1 and Ready-v2 decision writers, plus retired Ready-v1 readbacks; excludes the bounded Ready-v2 review-status, Client-v4 upload-status, and media-AI operational-window read-only RPCs.",
     "heldPublicFunctionScopePattern": "exact reviewed public catalog union: veroxa_register_momo_media_v*; veroxa_register_team_private_media_v*; veroxa_finalize_*media*intake_v*; veroxa_*private_media_assessment_v*; veroxa_*momo_media_ai*_v*; veroxa_*momo_content_ai*_v*; veroxa_momo_upload_pipeline_v*; veroxa_record_media_restaurant_association_v*; veroxa_decide_momo_ready_package_v*; veroxa_record_momo_ready_disposition_v*; retired veroxa_momo_team_ready_*_v1",
     "repairPreservesRegisteredMutableRpcHold": true,
@@ -677,7 +679,7 @@
     "activationRoutineInstalled": false,
     "activationRoutineInvoked": false,
     "evidenceScope": "production_exact_momo_guarded_acl_correction_and_post_verified_registered_mutable_rpc_hold",
-    "heldPublicFunctionEvidenceScope": "fresh_live47_catalog_read_zero_effective_mutation_grants"
+    "heldPublicFunctionEvidenceScope": "fresh_live48_catalog_read_59_of_59_zero_effective_mutation_grants"
   },
   "activationRoutine": {
     "status": "future_source_tracked_migration_not_authored",
@@ -706,11 +708,15 @@
     "repair": {
       "sourceProvisionalFilename": "20260809024500_team_private_food_assessment_reconciliation_v1.sql",
       "sourceSha256": "56c64c795ad12f1dfbe05894fd3e56a87f1d0e3376ff10edfd97760b8d2fbd5c",
-      "actualLedgerFilename": null,
-      "actualLedgerVersion": null,
+      "sourceByteLength": 59052,
+      "submittedQueryTransportByteLength": 59053,
+      "transportTrailingNewlineDeltaBytes": 1,
+      "databaseLedgerStoresSqlBytes": false,
+      "actualLedgerFilename": "20260809035302_team_private_food_assessment_reconciliation_v1.sql",
+      "actualLedgerVersion": "20260809035302",
       "pullRequest": null,
       "mergedCommit": null,
-      "unchangedBytesVerified": false,
+      "unchangedBytesVerified": true,
       "completed": false
     },
     "activation": {
@@ -765,7 +771,7 @@
     "activationRoutineInvoked": false,
     "momoActivationExecuted": false
   },
-  "activationStateScope": "Faraz authorized up to USD 20 for this scoped internal rollout, with a USD 0 incremental-spend target, but authorization is not execution. Production remains live47/Sites v39/Edge v6 under the registered mutable-RPC hold with ai_live_calls=false, zero work, no provider call, no registered real upload, no Ready decision, no owner authority, and no external publication. Candidate48 is unapplied. The existing tenant-scoped Client storage policy may create an unregistered orphan object only. Any later activation remains limited to exact internal source-defined grants and ai_live_calls=true after identity-bound parity; every external flag remains false.",
+  "activationStateScope": "Faraz authorized up to USD 20 for this scoped internal rollout, with a USD 0 incremental-spend target, but authorization is not execution. Production is live48 with Sites v39 and Edge v6 still independent under the registered mutable-RPC hold; ai_live_calls=false, relevant work is zero, and no provider call, registered real upload, Ready decision, owner authority, or external publication is claimed. Candidate48 is applied and its generated filename is reconciled in the unmerged closeout. The existing tenant-scoped Client storage policy may create an unregistered orphan object only. Any later activation remains limited to exact internal source-defined grants and ai_live_calls=true after identity-bound parity; every external flag remains false.",
   "currentRuntimeIdentityObservation": {
     "observedAt": "2026-08-02",
     "teamIdentityProvisioned": true,
@@ -894,31 +900,31 @@
     "fullReleaseGatePassed": false
   },
   "databaseContractReview": {
-    "status": "local_repair_review_passed_hosted_execution_pending",
-    "forwardRepairRequired": true,
-    "functionalVerificationPassed": false,
-    "additionalDatabaseChangesRequired": true,
+    "status": "live48_repair_hosted_verified_generated_version_reconciliation_pending",
+    "forwardRepairRequired": false,
+    "functionalVerificationPassed": true,
+    "additionalDatabaseChangesRequired": false,
     "localStaticReviewPassed": true,
     "localParserPassed": false,
-    "hostedCleanChainApplyPassed": false,
-    "hostedFullPgTapPassed": false,
-    "hostedFullPgTapRerunPending": true,
-    "hostedDatabaseExecutionPassed": false,
+    "hostedCleanChainApplyPassed": true,
+    "hostedFullPgTapPassed": true,
+    "hostedFullPgTapRerunPending": false,
+    "hostedDatabaseExecutionPassed": true,
     "databaseApplyAuthorized": true,
-    "evidenceScope": "exact_live47_prefix_plus_one_held_candidate48_migration_hosted_execution_pending",
-    "repairMigrationFilename": "20260809024500_team_private_food_assessment_reconciliation_v1.sql",
+    "evidenceScope": "exact_pr165_head_hosted_green_and_live48_post_apply_hold_verified",
+    "repairMigrationFilename": "20260809035302_team_private_food_assessment_reconciliation_v1.sql",
     "repairMigrationSha256": "56c64c795ad12f1dfbe05894fd3e56a87f1d0e3376ff10edfd97760b8d2fbd5c",
     "repairMigrationByteLength": 59052,
     "livePrefixMigrationCount": 47,
     "livePrefixMigrationTreeSha256": "87c0ecd4272949d89e7512940f91f9d9e3c6e92154616377c78ef9e3d06bfc5e",
     "candidateMigrationCount": 48,
-    "candidateMigrationTreeSha256": "1e6b179940063af767550e56f2df71a81bc445d8a6f4558585282a490790958c",
+    "candidateMigrationTreeSha256": "1b3a575cbfbad53e811703c38681c30adf7c4b7bd716b1b193e322233d8d6ba6",
     "preconnectionFixtureSha256": "d6d870788c1211d8209048921232e9e8b1cffa16aae1ef9a4a9516b150434b5d",
     "ownerFixtureSha256": "60db739eeeaba5be8d70e62b6ec60cf9b6db758d1509940068ef164c7fe650b5",
     "fullOperatingSystemFixtureSha256": "f20ac4e5927543277e520fbfd7104ded39fd11fa14995bf227fb64384dba5480",
     "zeroCostFixtureSha256": "13e246455692d5005d688fcc68aea4805a7d64bc87c2604edf8db26599b06cbe",
     "expectedProductionMigrationCountAfterRepair": 48,
-    "futureProductionMigrationCount": null,
-    "futureProductionMigrationTreeSha256": null
+    "futureProductionMigrationCount": 48,
+    "futureProductionMigrationTreeSha256": "1b3a575cbfbad53e811703c38681c30adf7c4b7bd716b1b193e322233d8d6ba6"
   }
 }

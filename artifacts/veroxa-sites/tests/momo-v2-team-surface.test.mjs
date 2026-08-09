@@ -77,7 +77,11 @@ test("Client copy presents safe outcomes without internal processing details", a
   assert.match(portal, /v2AttentionReasons\.map\(\(reason\) => clientAttentionMessage\[reason\]\)/);
   assert.match(portal, /pipelineStatus === "veroxa_ready" &&[\s\S]*?workflow\.rightsConfirmed && restaurantContentEligible/);
   assert.match(portal, /exact image bytes[\s\S]*?duplicate upload and asset record for this restaurant[\s\S]*?SHA-256 hash[\s\S]*?audit evidence remain stored/);
-  assert.match(portal, /!item\.sourceMediaDiscarded && assessableImage[\s\S]*?Retry private assessment/);
+  assert.match(portal, /item\.privateAssessmentStatus === null[\s\S]*?Start private assessment/);
+  assert.match(portal, /item\.privateAssessmentStatus === "failed"[\s\S]*?cannot be retried against the same immutable request/);
+  assert.match(portal, /newest\?\.privateAssessmentStatus === "failed" \? "Your newest image needs Veroxa help"/);
+  assert.match(portal, /privateAssessmentStatus === "failed" \? "Assessment stopped safely"/);
+  assert.doesNotMatch(portal, /Retry private assessment/);
   assert.match(portal, /: !item\.sourceMediaDiscarded \? <details[\s\S]*?Record final association/);
   assert.match(portal, /!item\.sourceMediaDiscarded && item\.rightsId[\s\S]*?Withdraw future permission/);
   assert.match(portal, /!newestSourceMediaDiscarded && newestPrepared/);

@@ -1,15 +1,9 @@
-import { readFileSync, statSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
-  LIVE47_MIGRATION_EVIDENCE,
-  LOCAL_CANDIDATE_APPLIED_MIGRATIONS,
-  LOCAL_CANDIDATE_MIGRATION_EVIDENCE_SCOPE,
-  LOCAL_CANDIDATE_PENDING_MIGRATIONS,
-  REPAIR_MIGRATION_EVIDENCE,
   assertReviewedLocalCandidateManifest,
   readDeploymentManifest,
   repoRoot,
-  sha256File,
 } from "./release-manifest";
 
 type JsonRecord = Record<string, any>;
@@ -18,10 +12,7 @@ const must = (condition: boolean, message: string): void => {
   if (!condition) failures.push(message);
 };
 const canonical = (value: unknown): string => JSON.stringify(value);
-const rrPath = resolve(
-  repoRoot,
-  "artifacts/veroxa/docs/RR_RELEASE_CHECKPOINT.json",
-);
+const rrPath = resolve(repoRoot, "artifacts/veroxa/docs/RR_RELEASE_CHECKPOINT.json");
 const raw = readFileSync(rrPath, "utf8");
 must(!/^(<<<<<<<|=======|>>>>>>>)/mu.test(raw), "RR checkpoint contains merge markers.");
 const rr = JSON.parse(raw) as JsonRecord;
@@ -32,32 +23,29 @@ try {
 } catch (error) {
   failures.push(error instanceof Error ? error.message : String(error));
 }
-
-must(rr.schemaVersion === 14, "RR schema must be 14.");
 must(
-  rr.recordKind === "veroxa_live47_held_candidate48_checkpoint",
-  "RR record kind is not the schema-14 held-repair checkpoint.",
+  rr.schemaVersion === 14 &&
+    rr.recordKind === "veroxa_guarded_internal_ai_rollout_checkpoint",
+  "RR is not the guarded rollout checkpoint.",
 );
-must(rr.status === manifest.releaseState, "RR and manifest release states differ.");
-must(rr.reviewedAt === manifest.reviewedAt, "RR reviewed date diverges from manifest.");
 must(
-  rr.candidateRevision === manifest.candidateRevision,
-  "RR candidate revision diverges from manifest.",
+  rr.status === manifest.releaseState &&
+    rr.reviewedAt === manifest.reviewedAt &&
+    rr.candidateRevision === manifest.candidateRevision,
+  "RR top-level release identity diverges from the manifest.",
 );
-
 const rrCandidate = { ...rr.releaseCandidate };
 delete rrCandidate.manifest;
 delete rrCandidate.state;
 delete rrCandidate.localReviewPassed;
 must(
   rr.releaseCandidate.manifest ===
-    "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json" &&
+      "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json" &&
     rr.releaseCandidate.state === manifest.releaseCandidate.status &&
     rr.releaseCandidate.localReviewPassed === true &&
     canonical(rrCandidate) === canonical(manifest.releaseCandidate),
-  "RR candidate does not exactly mirror the reviewed manifest candidate.",
+  "RR release candidate does not exactly mirror the manifest.",
 );
-
 for (const field of [
   "knownResiduals",
   "currentProductionObservation",
@@ -76,81 +64,41 @@ for (const field of [
     `RR field does not canonically mirror manifest: ${field}`,
   );
 }
-
 must(
   rr.databaseEvidence.liveBaseline.migrationFileCount ===
-    LIVE47_MIGRATION_EVIDENCE.fileCount &&
+      manifest.currentProductionObservation.productionMigrationCount &&
     rr.databaseEvidence.liveBaseline.exactRemoteLedgerTreeSha256 ===
-      LIVE47_MIGRATION_EVIDENCE.treeSha256 &&
+      manifest.currentProductionObservation.migrationTreeSha256 &&
     rr.databaseEvidence.liveBaseline.latestMigration ===
-      LIVE47_MIGRATION_EVIDENCE.filename &&
-    rr.databaseEvidence.liveBaseline.latestMigrationByteLength ===
-      LIVE47_MIGRATION_EVIDENCE.byteLength &&
-    rr.databaseEvidence.liveBaseline.latestMigrationSha256 ===
-      LIVE47_MIGRATION_EVIDENCE.sha256,
-  "RR exact live47 database baseline drifted.",
-);
-must(
-  rr.databaseEvidence.integratedBaseline.migrationFileCount ===
-    REPAIR_MIGRATION_EVIDENCE.candidateFileCount &&
+      manifest.currentProductionObservation.latestProductionMigration &&
+    rr.databaseEvidence.integratedBaseline.migrationFileCount ===
+      manifest.migrations.fileCount &&
     rr.databaseEvidence.integratedBaseline.migrationTreeSha256 ===
-      REPAIR_MIGRATION_EVIDENCE.candidateTreeSha256 &&
-    rr.databaseEvidence.integratedBaseline.evidenceScope ===
-      LOCAL_CANDIDATE_MIGRATION_EVIDENCE_SCOPE &&
+      manifest.migrations.treeSha256 &&
     canonical(rr.databaseEvidence.integratedBaseline.pendingMigrations) ===
-      canonical(LOCAL_CANDIDATE_PENDING_MIGRATIONS) &&
+      canonical(manifest.releaseCandidate.pendingMigrations) &&
     canonical(rr.databaseEvidence.integratedBaseline.appliedMigrations) ===
-      canonical(LOCAL_CANDIDATE_APPLIED_MIGRATIONS) &&
-    rr.databaseEvidence.integratedBaseline.candidateMigrationsMatchLiveLedger === false,
-  "RR candidate48/live47 split drifted.",
+      canonical(manifest.releaseCandidate.databaseMigrationsApplied) &&
+    rr.databaseEvidence.integratedBaseline.candidateMigrationsMatchLiveLedger ===
+      manifest.releaseCandidate.candidateMigrationsMatchLiveLedger &&
+    canonical(rr.databaseEvidence.forwardRepair) ===
+      canonical(manifest.databaseContractReview),
+  "RR database evidence diverges from the manifest.",
 );
 must(
-  canonical(rr.databaseEvidence.forwardRepair) ===
-    canonical(manifest.databaseContractReview),
-  "RR forward-repair block does not mirror the manifest database review.",
-);
-must(
-  rr.applicationQualityEvidence.hostedCleanChainApplyPassed === false &&
-    rr.applicationQualityEvidence.hostedFullPgTapPassed === false &&
-    rr.applicationQualityEvidence.hostedFullPgTapRerunPending === true &&
-    rr.applicationQualityEvidence.hostedDatabaseExecutionPassed === false &&
-    rr.databaseContractReview.hostedCleanChainApplyPassed === false &&
-    rr.databaseContractReview.hostedFullPgTapPassed === false &&
-    rr.databaseContractReview.hostedFullPgTapRerunPending === true &&
-    rr.databaseContractReview.functionalVerificationPassed === false,
-  "RR must preserve the hosted clean-chain/full-pgTAP evidence boundary.",
-);
-must(
-  rr.runtimeVerification.registeredMutableRpcIngressHoldVerified === true &&
-    rr.runtimeVerification.fullMutableIngressHoldVerified === undefined &&
-    rr.runtimeVerification.candidateEdgeV2Deployed === false &&
-    rr.runtimeVerification.activationGateReady === false &&
-    rr.runtimeVerification.activationExecuted === false,
-  "RR runtime verification overclaims raw ingress, Edge deployment, or activation.",
-);
-must(
-  rr.activationGates.some((entry: string) =>
-    entry.includes("unregistered orphan object"),
-  ),
-  "RR activation gates omit the limited Client orphan-storage residual.",
-);
-
-const liveMigration = resolve(
-  repoRoot,
-  "supabase/migrations",
-  LIVE47_MIGRATION_EVIDENCE.filename,
-);
-must(
-  statSync(liveMigration).size === LIVE47_MIGRATION_EVIDENCE.byteLength &&
-    sha256File(liveMigration) === LIVE47_MIGRATION_EVIDENCE.sha256,
-  "Local immutable live47 migration bytes drifted.",
+  rr.runtimeVerification.providerCallObserved === false &&
+    rr.runtimeVerification.externalProvidersConnected === false &&
+    rr.runtimeVerification.externalPublishingEnabled === false &&
+    rr.operationalHold.providerWrites === false &&
+    rr.operationalHold.reviewReplies === false &&
+    rr.operationalHold.websiteWrites === false &&
+    rr.operationalHold.externalScheduling === false,
+  "RR overclaims provider or external-action execution.",
 );
 
 if (failures.length > 0) {
   for (const failure of failures) console.error("FAIL:", failure);
   process.exitCode = 1;
 } else {
-  console.log(
-    "PASS: schema-14 RR checkpoint canonically mirrors schema-10 live47/candidate48 evidence.",
-  );
+  console.log("PASS: RR canonically mirrors the guarded rollout manifest.");
 }

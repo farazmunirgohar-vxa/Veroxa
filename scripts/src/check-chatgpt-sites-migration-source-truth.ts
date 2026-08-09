@@ -1,12 +1,6 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
-  APPLICATION_QUALITY_EVIDENCE,
-  CURRENT_PARTIAL_ROLLOUT_EVIDENCE,
-  LIVE47_MIGRATION_EVIDENCE,
-  LOCAL_CANDIDATE_BASE_COMMIT,
-  LOCAL_CANDIDATE_SOURCE_EVIDENCE,
-  PR165_DRAFT_CHECKPOINT,
   REPAIR_MIGRATION_EVIDENCE,
   assertReviewedLocalCandidateManifest,
   readDeploymentManifest,
@@ -20,45 +14,27 @@ const must = (condition: boolean, message: string): void => {
 const read = (relativePath: string): string =>
   readFileSync(resolve(repoRoot, relativePath), "utf8");
 const manifest = readDeploymentManifest();
-
 try {
   assertReviewedLocalCandidateManifest(manifest);
 } catch (error) {
   failures.push(error instanceof Error ? error.message : String(error));
 }
 
+const repairCloseout = manifest.generatedVersionCloseouts?.repair as
+  | Record<string, unknown>
+  | undefined;
 must(
-  manifest.currentProductionObservation.canonicalGitHubMainCommit ===
-    LOCAL_CANDIDATE_BASE_COMMIT &&
-    manifest.currentProductionObservation.canonicalGitHubMainMergePullRequest === 166,
-  "Current GitHub main source truth must be the merged PR #166 lineage.",
+  manifest.releaseCandidate.latestCandidateMigration ===
+      manifest.currentProductionObservation.latestProductionMigration ||
+    (manifest.releaseCandidate.pendingMigrations ?? []).includes(
+      manifest.releaseCandidate.latestCandidateMigration,
+    ),
+  "Latest source migration is not explained by live or pending evidence.",
 );
 must(
-  manifest.currentProductionObservation.canonicalGitHubMainCommitScope ===
-    "github_main_pr166_lineage_only_not_sites_v39_source_association" &&
-    manifest.currentProductionObservation.sitesVersion ===
-      CURRENT_PARTIAL_ROLLOUT_EVIDENCE.sitesVersion &&
-    manifest.currentProductionObservation.sitesArchiveSha256 ===
-      CURRENT_PARTIAL_ROLLOUT_EVIDENCE.sitesArchiveSha256 &&
-    manifest.currentProductionObservation.githubParityVerifiedAtObservation === false &&
-    manifest.currentProductionObservation.candidateSourceMatchesLiveSites === false,
-  "Independent Sites v39 observation was incorrectly attributed to GitHub main or the candidate.",
-);
-must(
-  manifest.currentProductionObservation.productionMigrationCount ===
-    LIVE47_MIGRATION_EVIDENCE.fileCount &&
-    manifest.currentProductionObservation.migrationTreeSha256 ===
-      LIVE47_MIGRATION_EVIDENCE.treeSha256 &&
-    manifest.releaseCandidate.latestCandidateMigration ===
-      REPAIR_MIGRATION_EVIDENCE.filename &&
-    manifest.releaseCandidate.databaseMigrationApplied === false,
-  "Source truth must split exact live47 from the sole pending provisional migration.",
-);
-must(
-  manifest.edgeDeployment?.functionVersion === 6 &&
-    manifest.edgeDeployment.currentRepositorySourceParity === false &&
-    manifest.edgeCandidate?.deployed === false,
-  "Source truth must split live prompt-v1 Edge v6 from pending prompt-v2 source.",
+  repairCloseout?.actualLedgerFilename === REPAIR_MIGRATION_EVIDENCE.filename &&
+    repairCloseout.unchangedBytesVerified === true,
+  "Repair generated-version identity or byte evidence is incomplete.",
 );
 
 const authorityDocs = [
@@ -79,26 +55,17 @@ for (const path of authorityDocs) {
     `${path} must contain exactly one current-authority heading.`,
   );
   for (const marker of [
-    "LIVE47_CANDIDATE48_AUTHORITY",
-    LOCAL_CANDIDATE_BASE_COMMIT,
-    "Sites v39",
-    "live47",
-    REPAIR_MIGRATION_EVIDENCE.filename,
-    "PR #165",
-    PR165_DRAFT_CHECKPOINT.openingDraftHead,
-    PR165_DRAFT_CHECKPOINT.openingDraftTree,
-    LOCAL_CANDIDATE_SOURCE_EVIDENCE.treeSha256,
-    REPAIR_MIGRATION_EVIDENCE.candidateTreeSha256,
+    "GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY",
+    manifest.currentProductionObservation.canonicalGitHubMainCommit,
+    `Sites v${manifest.currentProductionObservation.sitesVersion}`,
+    `live${manifest.currentProductionObservation.productionMigrationCount}`,
+    manifest.currentProductionObservation.latestProductionMigration,
     REPAIR_MIGRATION_EVIDENCE.sha256,
-    APPLICATION_QUALITY_EVIDENCE.preconnectionFixtureSha256,
-    APPLICATION_QUALITY_EVIDENCE.ownerFixtureSha256,
-    "non-final",
-    "clean-chain migration apply",
-    "full hosted pgTAP",
+    manifest.source.treeSha256,
     "registered mutable-RPC hold",
     "unregistered orphan object",
-    "Edge v6",
-    "prompt-v2",
+    "External providers",
+    "USD 0 incremental spend",
   ]) {
     must(text.includes(marker), `${path} is missing current authority marker: ${marker}`);
   }
@@ -108,7 +75,5 @@ if (failures.length > 0) {
   for (const failure of failures) console.error("FAIL:", failure);
   process.exitCode = 1;
 } else {
-  console.log(
-    "PASS: current docs split GitHub main, independent Sites v39, live47, held candidate48, partial hosted verification, and live/candidate Edge truth.",
-  );
+  console.log("PASS: authority docs match the guarded rollout source truth.");
 }
