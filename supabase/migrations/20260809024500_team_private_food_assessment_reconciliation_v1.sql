@@ -1472,21 +1472,97 @@ begin
 end;
 $$;
 
--- The forward patch ends in the exact operational hold. Client and Team
--- registration plus assessment mutation remain unreachable until the later
--- identity-bound activation routine is installed and invoked.
-revoke all on function
-  public.veroxa_register_momo_media_v2(
-    uuid, text, text, bigint, text, text, jsonb, date
-  ),
-  public.veroxa_register_team_private_media_v1(
-    uuid, text, text, bigint, text, text, jsonb, date
-  ),
-  public.veroxa_finalize_private_media_assessment_intake_v1(
-    uuid, uuid, uuid, text, text, bigint, integer, integer, text,
-    jsonb, text, text, text, uuid
-  ),
-  public.veroxa_reserve_private_media_assessment_v1(
-    uuid, uuid, text, text, text, text, text, bigint, uuid
-  )
-  from public, anon, authenticated, service_role;
+-- The forward patch ends in the exact operational hold. Revoke every public
+-- function already held by the observed live47 production catalog, plus the
+-- new Team registration function. The explicit signatures make clean-chain
+-- and production parity reviewable and prevent a missing overload from being
+-- silently skipped. The three bounded authenticated read-only RPCs are not in
+-- this list and retain their existing ACLs.
+do $$
+declare
+  target_signature text;
+  target_function regprocedure;
+begin
+  foreach target_signature in array array[
+    'public.veroxa_abort_momo_content_ai_before_provider_v1(uuid,text,uuid,uuid)',
+    'public.veroxa_approve_momo_media_ai_candidate_v1(uuid,text,text,text)',
+    'public.veroxa_begin_momo_content_ai_dispatch_pre_source_lock_v1(uuid,text,uuid,uuid,text)',
+    'public.veroxa_begin_momo_content_ai_dispatch_v1(uuid,text,uuid,uuid,text)',
+    'public.veroxa_bind_momo_content_ai_dispatch_response_v1(uuid,text,uuid,uuid,text)',
+    'public.veroxa_cancel_momo_content_ai_dispatch_before_post_v1(uuid,text,uuid,uuid,text,text)',
+    'public.veroxa_claim_momo_content_ai_dispatch_v1(uuid,bigint,uuid)',
+    'public.veroxa_claim_momo_content_ai_recovery_v1(uuid,bigint)',
+    'public.veroxa_claim_momo_content_ai_webhook_v1(text,text,text,uuid,text,uuid)',
+    'public.veroxa_close_momo_media_ai_attempt_v1(uuid)',
+    'public.veroxa_complete_momo_content_ai_run_v1(uuid,text,text,jsonb,text,text,jsonb,text,text,bigint,text,jsonb,uuid)',
+    'public.veroxa_complete_momo_media_ai_candidate_v1(uuid,text,text,text,bigint,integer,integer,text,bigint,text,jsonb,uuid)',
+    'public.veroxa_complete_private_media_assessment_v1(uuid,text,text,jsonb,text,text,bigint,text,jsonb,uuid)',
+    'public.veroxa_complete_staged_momo_content_ai_run_v1(uuid,text,uuid)',
+    'public.veroxa_complete_staged_momo_content_ai_webhook_v1(text,text,uuid,uuid,text,uuid)',
+    'public.veroxa_decide_momo_ready_package_v2(uuid,text,text,text,text)',
+    'public.veroxa_fail_momo_content_ai_run_v1(uuid,text,text,text,boolean,bigint,jsonb,uuid)',
+    'public.veroxa_fail_momo_content_ai_webhook_v1(text,text,uuid,uuid,text,text,text,boolean,bigint,jsonb,uuid)',
+    'public.veroxa_fail_momo_media_ai_candidate_v1(uuid,text,text,uuid)',
+    'public.veroxa_fail_private_media_assessment_v1(uuid,text,text,text,boolean,bigint,jsonb,uuid)',
+    'public.veroxa_fail_unbound_momo_content_ai_dispatch_v1(uuid,text,uuid,uuid)',
+    'public.veroxa_finalize_momo_media_intake_v1(uuid,uuid,uuid,text,text,bigint,integer,integer,text,jsonb,text,text,text,uuid)',
+    'public.veroxa_finalize_private_media_assessment_intake_v1(uuid,uuid,uuid,text,text,bigint,integer,integer,text,jsonb,text,text,text,uuid)',
+    'public.veroxa_finish_momo_content_ai_webhook_v1(text,text,uuid,text,uuid,text,text,text)',
+    'public.veroxa_momo_client_upload_status_v2(uuid)',
+    'public.veroxa_momo_media_ai_lifecycle_preflight_v1(uuid,uuid)',
+    'public.veroxa_momo_team_ready_active_v1(uuid)',
+    'public.veroxa_momo_team_ready_evidence_v1(uuid)',
+    'public.veroxa_momo_team_ready_freshness_v1(uuid,uuid,text,text)',
+    'public.veroxa_momo_upload_pipeline_pre_private_assessment_v2(text,jsonb)',
+    'public.veroxa_momo_upload_pipeline_v2(text,jsonb)',
+    'public.veroxa_momo_upload_pipeline_v5_pre_private_authority_v2(text,jsonb)',
+    'public.veroxa_prepare_momo_ai_job_legacy_v1(uuid,text,text,uuid)',
+    'public.veroxa_queue_momo_publication_v1(uuid,uuid,uuid,uuid)',
+    'public.veroxa_reconcile_momo_content_ai_dispatch_v1(uuid,text,uuid,uuid,text)',
+    'public.veroxa_record_media_restaurant_association_v1(uuid,uuid,uuid,text,text,text)',
+    'public.veroxa_record_momo_content_ai_provider_response_v1(uuid,text,text,uuid)',
+    'public.veroxa_record_momo_original_metadata_v1(uuid,uuid,text,integer,integer)',
+    'public.veroxa_record_momo_ready_disposition_pre_source_lock_v1(uuid,uuid,text,text,text,text,jsonb)',
+    'public.veroxa_record_momo_ready_disposition_v1(uuid,uuid,text,text,text,text,jsonb)',
+    'public.veroxa_register_momo_media_v1(uuid,text,text,bigint,text,text,jsonb,timestamptz)',
+    'public.veroxa_register_momo_media_v2(uuid,text,text,bigint,text,text,jsonb,date)',
+    'public.veroxa_register_team_private_media_v1(uuid,text,text,bigint,text,text,jsonb,date)',
+    'public.veroxa_reject_momo_content_ai_dispatch_after_post_v1(uuid,text,uuid,uuid,text,integer,text,text)',
+    'public.veroxa_reject_momo_content_ai_run_v1(uuid,text)',
+    'public.veroxa_reject_momo_media_ai_candidate_v1(uuid,text,text,text)',
+    'public.veroxa_release_momo_content_ai_dispatch_v1(uuid,text,uuid,text,boolean)',
+    'public.veroxa_reserve_momo_content_ai_run_pre_source_lock_v1(uuid,uuid,text,text,text)',
+    'public.veroxa_reserve_momo_content_ai_run_v1(uuid,uuid,text,text,text)',
+    'public.veroxa_reserve_momo_content_ai_run_v5_pre_source_lock_v1(uuid,uuid,text,text,text)',
+    'public.veroxa_reserve_momo_media_ai_candidate_v1(uuid,uuid,text,text,text,text,text,text,text)',
+    'public.veroxa_reserve_private_media_assessment_v1(uuid,uuid,text,text,text,text,text,bigint,uuid)',
+    'public.veroxa_stage_momo_content_ai_result_v1(uuid,text,text,jsonb,text,text,jsonb,text,text,bigint,text,jsonb,uuid)',
+    'public.veroxa_stage_momo_content_ai_webhook_result_v1(text,text,uuid,uuid,text,text,jsonb,text,text,jsonb,text,text,bigint,text,jsonb,uuid)',
+    'public.veroxa_start_momo_content_ai_run_pre_source_lock_v1(uuid,text,uuid,uuid)',
+    'public.veroxa_start_momo_content_ai_run_v1(uuid,text,uuid,uuid)',
+    'public.veroxa_start_momo_media_ai_provider_v1(uuid,text,uuid)',
+    'public.veroxa_start_private_media_assessment_provider_v1(uuid,text,uuid)',
+    'public.veroxa_submit_momo_confirmation_pre_owner_atomic_v1(uuid,text,uuid,text,text,jsonb,text)'
+  ] loop
+    target_function := pg_catalog.to_regprocedure(target_signature);
+    if target_function is null then
+      raise exception 'momo_operational_hold_function_missing:%',
+        target_signature;
+    end if;
+    execute pg_catalog.format(
+      'revoke all on function %s from public, anon, authenticated, service_role',
+      target_function
+    );
+    if pg_catalog.has_function_privilege(
+         'anon', target_function, 'execute'
+       ) or pg_catalog.has_function_privilege(
+         'authenticated', target_function, 'execute'
+       ) or pg_catalog.has_function_privilege(
+         'service_role', target_function, 'execute'
+       ) then
+      raise exception 'momo_operational_hold_revoke_failed:%',
+        target_signature;
+    end if;
+  end loop;
+end;
+$$;
