@@ -79,16 +79,16 @@ export const SITES_MIGRATION_MIRROR_ROOT =
   "artifacts/veroxa-sites/supabase/migrations";
 export const REVIEWED_APPLICATION_TEST_TOTAL = 431;
 export const GUARDED_ROLLOUT_RELEASE_STATE =
-  "live49_activation_generated_version_closeout_review_pending_under_hold";
+  "live49_internal_ai_active_external_actions_held";
 export const GUARDED_ROLLOUT_CANDIDATE_REVISION =
-  "live49_activation_generated_version_closeout_2026_08_09";
+  "live49_internal_ai_activation_closeout_2026_08_09";
 export const GUARDED_ROLLOUT_CANDIDATE_BRANCH =
   "agent/internal-ai-activation-closeout";
 export const GUARDED_ROLLOUT_PRODUCTION_MAIN_COMMIT =
-  "60dbfd047ff2f7ed21d630e785746aa4e6f228b4";
-export const GUARDED_ROLLOUT_PRODUCTION_MAIN_PULL_REQUEST = 168;
+  "2721545d5823dbd4cbc233e7473d25393f4ff0ec";
+export const GUARDED_ROLLOUT_PRODUCTION_MAIN_PULL_REQUEST = 169;
 export const GUARDED_ROLLOUT_CANDIDATE_BASE_COMMIT =
-  GUARDED_ROLLOUT_PRODUCTION_MAIN_COMMIT;
+  "60dbfd047ff2f7ed21d630e785746aa4e6f228b4";
 export const GUARDED_ROLLOUT_PULL_REQUEST = 169;
 export const GUARDED_ROLLOUT_OPENING_DRAFT_HEAD =
   "96e13e155b8203192181afae26fe391cb6d36191";
@@ -103,7 +103,7 @@ export const ACTIVATION_SOURCE_PULL_REQUEST = 168;
 export const ACTIVATION_SOURCE_REVIEWED_HEAD =
   "d08114104f4030e31abe2514caf95c681e2b19ea";
 export const ACTIVATION_SOURCE_MERGED_MAIN_COMMIT =
-  GUARDED_ROLLOUT_PRODUCTION_MAIN_COMMIT;
+  "60dbfd047ff2f7ed21d630e785746aa4e6f228b4";
 
 export const V36_GITHUB_RECONCILIATION = {
   pullRequest: 157,
@@ -793,6 +793,8 @@ function completedRolloutStageHasEvidence(
     manifest.rolloutEvidence?.repairCloseoutGitHubRelease;
   const repairDatabaseVerification =
     manifest.rolloutEvidence?.repairDatabaseVerification;
+  const activationDatabaseVerification =
+    manifest.rolloutEvidence?.activationDatabaseVerification;
   const firstHeld = parity?.firstHeld;
   const secondHeld = parity?.secondHeld;
   const execution = manifest.activationExecution;
@@ -857,9 +859,7 @@ function completedRolloutStageHasEvidence(
         repairDatabaseVerification?.relevantWorkRowCount === 0 &&
         repairDatabaseVerification?.hostedCleanChainApplyPassed === true &&
         repairDatabaseVerification?.hostedFullPgTapPassed === true &&
-        repairDatabaseVerification?.hostedDatabaseExecutionPassed === true &&
-        hold?.registeredMutableRpcAclHoldVerified === true &&
-        hold?.postCorrectionLeakedRpcCount === 0
+        repairDatabaseVerification?.hostedDatabaseExecutionPassed === true
       );
     case 5:
       return (
@@ -926,7 +926,6 @@ function completedRolloutStageHasEvidence(
         routine?.sourceReviewAllFourWorkflowsGreen === true &&
         routine?.sourceReviewZeroUnresolvedThreads === true &&
         routine?.installStateAtSourceReview === false &&
-        routine?.invoked === false &&
         routine?.postgresOnly === true &&
         routine?.executeGrantedToPublic === false &&
         routine?.executeGrantedToAnon === false &&
@@ -936,17 +935,19 @@ function completedRolloutStageHasEvidence(
     case 10:
       return (
         routine?.installed === true &&
-        routine?.invoked === false &&
         isNonEmptyString(routine?.generatedProductionVersion) &&
         candidate.activationRoutineMigrationApplied === true &&
         routine?.executeGrantedToPublic === false &&
         routine?.executeGrantedToAnon === false &&
         routine?.executeGrantedToAuthenticated === false &&
         routine?.executeGrantedToServiceRole === false &&
-        hold?.registeredMutableRpcAclHoldVerified === true &&
-        hold?.postCorrectionLeakedRpcCount === 0 &&
-        hold?.aiLiveCalls === false &&
-        externalFlagsFalse
+        activationDatabaseVerification?.registeredMutableRpcCount === 59 &&
+        activationDatabaseVerification?.leakedMutableRpcCount === 0 &&
+        activationDatabaseVerification?.aiLiveCalls === false &&
+        activationDatabaseVerification?.externalFlagsFalse === true &&
+        activationDatabaseVerification?.relevantWorkRowCount === 0 &&
+        activationDatabaseVerification?.outboundHttpRowCount === 0 &&
+        activationDatabaseVerification?.activationAuditEventCount === 0
       );
     case 11:
       return (
@@ -955,7 +956,9 @@ function completedRolloutStageHasEvidence(
         isNonEmptyString(activationCloseout?.actualLedgerVersion) &&
         isNonEmptyString(activationCloseout?.actualLedgerFilename) &&
         isPositiveInteger(activationCloseout?.pullRequest) &&
-        isNonEmptyString(activationCloseout?.mergedCommit)
+        isNonEmptyString(activationCloseout?.mergedCommit) &&
+        activationCloseout?.allFourExactHeadWorkflowsGreen === true &&
+        activationCloseout?.zeroUnresolvedReviewThreads === true
       );
     case 12:
       return (
@@ -963,8 +966,8 @@ function completedRolloutStageHasEvidence(
         isNonEmptyString(secondHeld?.sitesVersionId) &&
         isNonEmptyString(secondHeld?.sitesSourceSha256) &&
         secondHeld?.holdReverified === true &&
-        hold?.aiLiveCalls === false &&
-        externalFlagsFalse
+        secondHeld?.aiLiveCalls === false &&
+        secondHeld?.externalFlagsFalse === true
       );
     case 13:
       return (
@@ -973,8 +976,8 @@ function completedRolloutStageHasEvidence(
         isNonEmptyString(secondHeld?.edgeBundleSha256) &&
         secondHeld?.verified === true &&
         secondHeld?.holdReverified === true &&
-        hold?.aiLiveCalls === false &&
-        externalFlagsFalse
+        secondHeld?.aiLiveCalls === false &&
+        secondHeld?.externalFlagsFalse === true
       );
     case 14:
       return (
