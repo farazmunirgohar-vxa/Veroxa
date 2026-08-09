@@ -16,19 +16,19 @@ export const deploymentManifestPath = resolve(
 
 export const TREE_HASH_ALGORITHM = "veroxa-path-null-content-null-sha256-v1";
 export const REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE =
-  "live48_repair_generated_version_closeout_review_pending_under_hold";
+  "live48_first_parity_verified_activation_migration_review_pending_under_hold";
 export const REVIEWED_LOCAL_CANDIDATE_STATUS =
-  "live48_generated_version_reconciled_closeout_review_pending";
+  "dormant_identity_bound_activation_migration_review_pending";
 export const REFRESHED_LOCAL_CANDIDATE_RELEASE_STATE =
   "integrated_candidate_fingerprints_refreshed_review_required";
 export const REFRESHED_LOCAL_CANDIDATE_STATUS =
   "integrated_candidate_review_required";
 export const RECONCILIATION_CANDIDATE_ACTION_SCOPE =
-  "team_private_assessment_only_and_strict_food_contract_preserving_live47_ready_authority";
+  "postgres_only_dormant_internal_ai_activation_preserving_external_action_locks";
 export const LOCAL_CANDIDATE_SOURCE_EVIDENCE_SCOPE =
-  "exact_live48_generated_version_closeout_source_under_hold";
+  "exact_first_parity_source_plus_dormant_activation_candidate_under_hold";
 export const LOCAL_CANDIDATE_MIGRATION_EVIDENCE_SCOPE =
-  "exact_live48_generated_ledger_source_mirrors";
+  "exact_live48_ledger_plus_one_mirrored_provisional_activation_migration";
 export const RECONCILIATION_SOURCE_EVIDENCE_SCOPE =
   LOCAL_CANDIDATE_SOURCE_EVIDENCE_SCOPE;
 export const RECONCILIATION_MIGRATION_EVIDENCE_SCOPE =
@@ -36,11 +36,11 @@ export const RECONCILIATION_MIGRATION_EVIDENCE_SCOPE =
 export const LOCAL_CANDIDATE_DEPLOYMENT_FREEZE_STATE =
   "registered_mutable_rpc_ingress_and_decision_hold_active_verified";
 export const LOCAL_CANDIDATE_REVISION =
-  "live48_team_private_food_generated_version_closeout_2026_08_09";
+  "live48_first_parity_identity_bound_activation_candidate_2026_08_09";
 export const LOCAL_CANDIDATE_BASE_COMMIT =
-  "e01e8e00d94ce9eb5243038bf41c202897a17460";
+  "a1c6796b50a1072a96a40db283503d9e2c81bbae";
 export const LIVE_PRODUCTION_EVIDENCE_STATUS =
-  "sites_v39_live_database48_edge_v6_reconciled_source_pending_under_hold";
+  "github_a1c6796b_sites_v40_database48_edge_v7_first_parity_verified_under_hold";
 export const LIVE_MIGRATION_EVIDENCE_SCOPE =
   "observed_remote_ledger_exact_names_and_bytes";
 export const HISTORICAL_REPOSITORY_MIGRATION_EVIDENCE_SCOPE =
@@ -70,6 +70,33 @@ export const GENERATED_PATH_EXCLUSIONS = [
   ".env.test",
   ".env.test.local",
 ] as const;
+
+export const DEPLOYABLE_SITES_SOURCE_ROOT = "artifacts/veroxa-sites";
+export const DEPLOYABLE_SITES_MAPPING_TARGET =
+  "Sites repository root candidate";
+export const ROOT_MIGRATION_SOURCE_ROOT = "supabase/migrations";
+export const SITES_MIGRATION_MIRROR_ROOT =
+  "artifacts/veroxa-sites/supabase/migrations";
+export const REVIEWED_APPLICATION_TEST_TOTAL = 431;
+export const GUARDED_ROLLOUT_RELEASE_STATE =
+  "live48_first_parity_verified_activation_migration_review_pending_under_hold";
+export const GUARDED_ROLLOUT_CANDIDATE_REVISION =
+  "live48_first_parity_identity_bound_activation_candidate_2026_08_09";
+export const GUARDED_ROLLOUT_CANDIDATE_BRANCH =
+  "agent/momo-internal-ai-activation-v1";
+export const GUARDED_ROLLOUT_PRODUCTION_MAIN_COMMIT =
+  "a1c6796b50a1072a96a40db283503d9e2c81bbae";
+export const GUARDED_ROLLOUT_PRODUCTION_MAIN_PULL_REQUEST = 167;
+export const GUARDED_ROLLOUT_CANDIDATE_BASE_COMMIT =
+  GUARDED_ROLLOUT_PRODUCTION_MAIN_COMMIT;
+export const GUARDED_ROLLOUT_PULL_REQUEST = null;
+export const GUARDED_ROLLOUT_OPENING_DRAFT_HEAD = null;
+export const GUARDED_ROLLOUT_OPENING_DRAFT_TREE = null;
+export const GUARDED_ROLLOUT_DRAFT_EVIDENCE_SCOPE =
+  "activation_pr_not_created";
+export const REPAIR_GITHUB_MERGED_MAIN_COMMIT =
+  "e01e8e00d94ce9eb5243038bf41c202897a17460";
+export const REPAIR_CLOSEOUT_PULL_REQUEST = 167;
 
 export const V36_GITHUB_RECONCILIATION = {
   pullRequest: 157,
@@ -111,7 +138,7 @@ export const V36_LIVE_PARITY_EVIDENCE = {
 
 export const HISTORICAL_V37_LIVE43_EVIDENCE = {
   observedAt: "2026-08-08",
-  sitesObservedAt: "2026-08-08",
+  sitesObservedAt: "2026-08-09",
   migrationLedgerObservedAt: "2026-08-08",
   canonicalGitHubMainCommit: "ca47aeff7ab44a69b6ce039608ae27fea6c3c326",
   canonicalGitHubMainMergePullRequest: 162,
@@ -137,25 +164,25 @@ export const CURRENT_PARTIAL_ROLLOUT_EVIDENCE = {
   sitesObservedAt: "2026-08-08",
   migrationLedgerObservedAt: "2026-08-09",
   canonicalGitHubMainCommit: LOCAL_CANDIDATE_BASE_COMMIT,
-  canonicalGitHubMainMergePullRequest: 165,
+  canonicalGitHubMainMergePullRequest: 167,
   canonicalGitHubMainCommitScope:
-    "github_main_lineage_only_not_sites_v39_source_association",
-  sitesVersion: 39,
+    "pr167_generated_version_closeout_merged_and_exact_first_sites_edge_parity_verified",
+  sitesVersion: 40,
   sitesVersionId:
-    "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_388c5f82ec48819186bfd315a0d55ab8",
-  sitesCheckoutCommit: "8749a7d442d3bb068ce626a9d297b8b227493446",
-  sitesArchiveFileCount: 54,
+    "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_3e8ce417e544819196aa757cc304b789",
+  sitesCheckoutCommit: "4ee8895f68505e8ea79bf3e0f3ea3b2871ca2b2c",
+  sitesArchiveFileCount: 52,
   sitesArchiveSha256:
-    "c5c471639303ac4488fbf1258a6e1736452eafbd43a9370473e02f6072eca7f5",
-  sitesDeploymentEnvironmentRevision: 10,
+    "4bc875ee7b6fd6735569df02d3c611dde095d8c85a7ff09e1ebf465a1128ab15",
+  sitesDeploymentEnvironmentRevision: 11,
   sitesEnvironmentRevision: 11,
   sitesLiveUrl: "https://veroxasystems.com",
   sitesCustomDomainsVerified: true,
   sitesRecentErrorsObserved: 0,
-  sourceFileCount: 54,
+  sourceFileCount: 214,
   sourceTreeSha256:
-    "c5c471639303ac4488fbf1258a6e1736452eafbd43a9370473e02f6072eca7f5",
-  sourceEvidenceScope: "observed_live_sites_v39_exact_archive",
+    "cec2f313e3850141117c7f69dbc1d5ad707b72ee7a7ad5f1f2efa0d6c5a34297",
+  sourceEvidenceScope: "exact_sites_v40_source_commit_and_reviewed_tree",
   migrationFileCount: 48,
   migrationTreeSha256:
     "1b3a575cbfbad53e811703c38681c30adf7c4b7bd716b1b193e322233d8d6ba6",
@@ -176,6 +203,7 @@ export const LIVE47_MIGRATION_EVIDENCE = {
 
 export const LOCAL_CANDIDATE_ROLLOUT_MIGRATIONS = [
   "20260809035302_team_private_food_assessment_reconciliation_v1.sql",
+  "20260809044000_guarded_internal_ai_activation_v1.sql",
 ] as const;
 export const LOCAL_CANDIDATE_APPLIED_MIGRATIONS = [
   "20260808001210_audit_intake_envelope_v2.sql",
@@ -190,11 +218,13 @@ export const LOCAL_CANDIDATE_APPLIED_MIGRATIONS = [
   "20260808083842_post_20260808070840_private_media_authority_repair_v1.sql",
   "20260809035302_team_private_food_assessment_reconciliation_v1.sql",
 ] as const;
-export const LOCAL_CANDIDATE_PENDING_MIGRATIONS: readonly string[] = [];
+export const LOCAL_CANDIDATE_PENDING_MIGRATIONS: readonly string[] = [
+  "20260809044000_guarded_internal_ai_activation_v1.sql",
+];
 export const LOCAL_CANDIDATE_SOURCE_EVIDENCE = {
-  fileCount: 214,
+  fileCount: 216,
   treeSha256:
-    "cec2f313e3850141117c7f69dbc1d5ad707b72ee7a7ad5f1f2efa0d6c5a34297",
+    "e0e24212a0c7dd3026c0362109ab0faba62ba3b66df1ac31e3737f92d369126e",
   reviewPassed: true,
 } as const;
 
@@ -238,7 +268,7 @@ export const PHASE1_APPLICATION_QUALITY_EVIDENCE = {
 } as const;
 export const APPLICATION_QUALITY_EVIDENCE = {
   observedAt: "2026-08-09",
-  evidenceScope: "exact_live48_closeout_with_hosted_candidate48_verification",
+  evidenceScope: "first_parity_verified_dormant_activation_candidate_local_review",
   cleanInstallExitCode: 0,
   buildExitCode: 0,
   testsPassed: 431,
@@ -266,18 +296,18 @@ export const APPLICATION_QUALITY_EVIDENCE = {
 } as const;
 
 export const PRIVATE_MEDIA_EDGE_EVIDENCE = {
-  observedAt: "2026-08-08",
+  observedAt: "2026-08-09",
   functionName: "momo-content-ai-lifecycle",
-  functionVersion: 6,
+  functionVersion: 7,
   functionId: "859c73c3-2102-41b4-9da1-20582acb7212",
   status: "ACTIVE",
   verifyJwt: true,
   ezbrSha256:
-    "acf46f086b3ab07c914d71b5ae79dca011abab84016d4c9c58ff1c9b30eb58ce",
+    "a6b00feeab795faa91d6d8d015c4ad399c526e1b35f702778a8c55aaba49503d",
   indexSha256:
     "867d85fe555a5f7d9d48d62698f4b1fb95d4e0769fc299020953cf5054d8720d",
   contractSha256:
-    "c26af8d5aa76adf42de79538a72e3c1a3794a68cf6442fdfb5f0e45bad289a10",
+    "38ab001ea71f5d6299f6dea99291342a37bb5cee7ce53a392581fce2941f5a72",
   configSha256:
     "f87f1d3fcf4cdba7865bf397ebd3a57bb3ce0e0a56270729963381db623dfaef",
   unauthenticatedPostHttpStatus: 401,
@@ -545,6 +575,8 @@ export type DeploymentManifest = {
     forwardRepairRequired: boolean;
     functionalVerificationPassed: boolean;
     additionalDatabaseChangesRequired: boolean;
+    localStaticReviewPassed?: boolean;
+    localParserPassed?: boolean;
     hostedCleanChainApplyPassed?: boolean;
     hostedFullPgTapPassed?: boolean;
     hostedFullPgTapRerunPending?: boolean;
@@ -583,7 +615,7 @@ export type DeploymentManifest = {
     logEventCount: number;
     logEventMethod: string;
     logEventHttpStatus: number;
-    logEventTimestamp: number;
+    logEventTimestamp: Nullable<number>;
     recent5xxObserved: boolean;
     exceptionObserved: boolean;
     authenticatedBridgeVerified: boolean;
@@ -630,7 +662,10 @@ export type DeploymentManifest = {
   activationRoutine?: Record<string, unknown>;
   generatedVersionCloseouts?: Record<string, unknown>;
   deploymentParity?: Record<string, unknown>;
+  rolloutEvidence?: Record<string, Record<string, unknown>>;
   currentRuntimeIdentityObservation: Record<string, unknown>;
+  activationExecution?: Nullable<Record<string, unknown>>;
+  fullReleaseGatePassed?: Nullable<boolean>;
   cleanupState: Record<string, unknown>;
   rolloutSequence?: {
     status: string;
@@ -674,6 +709,26 @@ const EXPECTED_ROLLOUT_STEP_IDS = [
   "record_final_release_evidence",
 ] as const;
 
+const ROLLOUT_STAGE_EVIDENCE_FAILURES = [
+  "step 1 observed-production identity evidence is incomplete or drifted",
+  "step 2 zero-work registered mutable-RPC hold evidence is missing",
+  "step 3 exact PR165 review, workflow, thread, or merge evidence is missing",
+  "step 4 reviewed repair bytes are not proven in the generated live48 ledger",
+  "step 5 live48 functional/security verification under hold is missing",
+  "step 6 generated-version closeout lacks exact reviewed PR167 evidence",
+  "step 7 first Sites publication identity is incomplete",
+  "step 8 first Edge publication identity or fail-closed proof is incomplete",
+  "step 9 first cross-runtime parity under hold is not proven",
+  "step 10 dormant activation source lacks exact review, binding, or no-grant evidence",
+  "step 11 dormant routine installation or retained hold is not proven",
+  "step 12 activation generated-version closeout evidence is incomplete",
+  "step 13 second Sites parity identity is incomplete",
+  "step 14 second GitHub/Sites/Edge parity under hold is not proven",
+  "step 15 guarded postgres-only activation evidence is incomplete or overbroad",
+  "step 16 post-activation authority, budget, or denial verification is incomplete",
+  "step 17 final release evidence is incomplete or claims unsupported external action",
+] as const;
+
 const LIVE_PRIVATE_INGRESS_SIGNATURES = [
   "veroxa_register_momo_media_v2(uuid,text,text,bigint,text,text,jsonb,date)",
   "veroxa_finalize_private_media_assessment_intake_v1(uuid,uuid,uuid,text,text,bigint,integer,integer,text,jsonb,text,text,text,uuid)",
@@ -700,6 +755,259 @@ function sameJson(left: unknown, right: unknown): boolean {
   return JSON.stringify(left) === JSON.stringify(right);
 }
 
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function isPositiveInteger(value: unknown): value is number {
+  return Number.isInteger(value) && Number(value) > 0;
+}
+
+function completedRolloutStageHasEvidence(
+  manifest: DeploymentManifest,
+  index: number,
+): boolean {
+  const candidate = manifest.releaseCandidate;
+  const live = manifest.currentProductionObservation;
+  const review = manifest.databaseContractReview;
+  const edgeCandidate = manifest.edgeCandidate;
+  const hold = manifest.operationalHold;
+  const routine = manifest.activationRoutine;
+  const closeouts = manifest.generatedVersionCloseouts as
+    | Record<string, Record<string, unknown>>
+    | undefined;
+  const parity = manifest.deploymentParity as
+    | Record<string, Record<string, unknown>>
+    | undefined;
+  const repairCloseout = closeouts?.repair;
+  const activationCloseout = closeouts?.activation;
+  const initialObservation = manifest.rolloutEvidence?.initialObservation;
+  const repairGitHubRelease = manifest.rolloutEvidence?.repairGitHubRelease;
+  const repairCloseoutGitHubRelease =
+    manifest.rolloutEvidence?.repairCloseoutGitHubRelease;
+  const repairDatabaseVerification =
+    manifest.rolloutEvidence?.repairDatabaseVerification;
+  const firstHeld = parity?.firstHeld;
+  const secondHeld = parity?.secondHeld;
+  const execution = manifest.activationExecution;
+  const externalFlagsFalse =
+    hold?.providerWrites === false &&
+    hold?.reviewReplies === false &&
+    hold?.websiteWrites === false &&
+    hold?.externalScheduling === false;
+
+  switch (index) {
+    case 0:
+      return (
+        initialObservation?.canonicalGitHubMainCommit ===
+          "39bf713705685636f0d20a2ca068c738d4f414b4" &&
+        initialObservation?.canonicalGitHubMainMergePullRequest === 166 &&
+        initialObservation?.sitesVersion === 39 &&
+        initialObservation?.productionMigrationCount === 47 &&
+        initialObservation?.edgeFunctionVersion === 6
+      );
+    case 1:
+      return (
+        initialObservation?.registeredMutableRpcCount === 49 &&
+        initialObservation?.leakedMutableRpcCount === 0 &&
+        initialObservation?.runtimeRowCount === 1 &&
+        initialObservation?.relevantWorkRowCount === 0 &&
+        initialObservation?.aiLiveCalls === false &&
+        initialObservation?.providerWrites === false &&
+        initialObservation?.reviewReplies === false &&
+        initialObservation?.websiteWrites === false &&
+        initialObservation?.externalScheduling === false
+      );
+    case 2:
+      return (
+        repairGitHubRelease?.pullRequest === 165 &&
+        repairGitHubRelease?.baseCommit ===
+          "39bf713705685636f0d20a2ca068c738d4f414b4" &&
+        repairGitHubRelease?.exactHead ===
+          "8623370f235cb574ea90580b146acec0acce2c49" &&
+        repairGitHubRelease?.mergedCommit ===
+          REPAIR_GITHUB_MERGED_MAIN_COMMIT &&
+        repairGitHubRelease?.allFourExactHeadWorkflowsGreen === true &&
+        repairGitHubRelease?.postMergeFollowupRequired === true &&
+        repairGitHubRelease?.followupPullRequest ===
+          REPAIR_CLOSEOUT_PULL_REQUEST
+      );
+    case 3:
+      return (
+        candidate.databaseMigrationsApplied?.includes(
+          REPAIR_MIGRATION_EVIDENCE.filename,
+        ) === true &&
+        repairCloseout?.actualLedgerVersion === "20260809035302" &&
+        repairCloseout?.actualLedgerFilename === REPAIR_MIGRATION_EVIDENCE.filename &&
+        repairCloseout?.sourceSha256 === REPAIR_MIGRATION_EVIDENCE.sha256 &&
+        repairCloseout?.unchangedBytesVerified === true
+      );
+    case 4:
+      return (
+        live.productionMigrationCount === 48 &&
+        live.latestProductionMigration === REPAIR_MIGRATION_EVIDENCE.filename &&
+        live.latestProductionMigrationSha256 ===
+          REPAIR_MIGRATION_EVIDENCE.sha256 &&
+        repairDatabaseVerification?.hostedCleanChainApplyPassed === true &&
+        repairDatabaseVerification?.hostedFullPgTapPassed === true &&
+        repairDatabaseVerification?.hostedDatabaseExecutionPassed === true &&
+        hold?.registeredMutableRpcAclHoldVerified === true &&
+        hold?.postCorrectionLeakedRpcCount === 0
+      );
+    case 5:
+      return (
+        repairCloseout?.completed === true &&
+        repairCloseout.pullRequest === REPAIR_CLOSEOUT_PULL_REQUEST &&
+        isNonEmptyString(repairCloseout.mergedCommit) &&
+        repairCloseoutGitHubRelease?.pullRequest ===
+          REPAIR_CLOSEOUT_PULL_REQUEST &&
+        repairCloseoutGitHubRelease?.exactHead ===
+          "ec7a312f59a7909203f309fa9bd5cf6c2512b125" &&
+        repairCloseoutGitHubRelease?.mergedCommit ===
+          "a1c6796b50a1072a96a40db283503d9e2c81bbae" &&
+        repairCloseoutGitHubRelease?.allFourExactHeadWorkflowsGreen === true &&
+        repairCloseoutGitHubRelease?.releaseGateCorrected === true &&
+        repairCloseoutGitHubRelease?.unresolvedActionableFindingCount === 0 &&
+        repairCloseoutGitHubRelease?.correctivePullRequest ===
+          REPAIR_CLOSEOUT_PULL_REQUEST &&
+        repairCloseoutGitHubRelease?.correctiveMergedCommit ===
+          "a1c6796b50a1072a96a40db283503d9e2c81bbae"
+      );
+    case 6:
+      return (
+        isPositiveInteger(firstHeld?.sitesVersion) &&
+        isNonEmptyString(firstHeld?.sitesVersionId) &&
+        isNonEmptyString(firstHeld?.sitesSourceSha256)
+      );
+    case 7:
+      return (
+        candidate.edgeDeployed === true &&
+        edgeCandidate?.deployed === true &&
+        isPositiveInteger(edgeCandidate?.futureFunctionVersion) &&
+        isPositiveInteger(firstHeld?.edgeFunctionVersion) &&
+        isNonEmptyString(firstHeld?.edgeFunctionId) &&
+        isNonEmptyString(firstHeld?.edgeBundleSha256)
+      );
+    case 8:
+      return (
+        firstHeld?.verified === true &&
+        firstHeld.holdReverified === true &&
+        isNonEmptyString(firstHeld.mergedGitHubCommit) &&
+        isPositiveInteger(firstHeld.sitesVersion) &&
+        isNonEmptyString(firstHeld.sitesVersionId) &&
+        isNonEmptyString(firstHeld.sitesSourceSha256) &&
+        isPositiveInteger(firstHeld.edgeFunctionVersion) &&
+        isNonEmptyString(firstHeld.edgeFunctionId) &&
+        isNonEmptyString(firstHeld.edgeBundleSha256) &&
+        firstHeld.aiLiveCalls === false &&
+        firstHeld.externalFlagsFalse === true
+      );
+    case 9:
+      return (
+        isNonEmptyString(routine?.migrationFilename) &&
+        isNonEmptyString(routine?.migrationSha256) &&
+        routine?.boundMergedGitHubCommit === firstHeld?.mergedGitHubCommit &&
+        routine?.boundSitesVersion === firstHeld?.sitesVersion &&
+        routine?.boundSitesSourceSha256 === firstHeld?.sitesSourceSha256 &&
+        routine?.boundEdgeFunctionVersion === firstHeld?.edgeFunctionVersion &&
+        routine?.boundEdgeBundleSha256 === firstHeld?.edgeBundleSha256 &&
+        routine?.sourceReviewPassed === true &&
+        isPositiveInteger(routine?.sourceReviewPullRequest) &&
+        isNonEmptyString(routine?.sourceReviewExactHead) &&
+        routine?.sourceReviewAllFourWorkflowsGreen === true &&
+        routine?.sourceReviewZeroUnresolvedThreads === true &&
+        routine?.installed === false &&
+        routine?.invoked === false &&
+        routine?.postgresOnly === true &&
+        routine?.executeGrantedToPublic === false &&
+        routine?.executeGrantedToAnon === false &&
+        routine?.executeGrantedToAuthenticated === false &&
+        routine?.executeGrantedToServiceRole === false
+      );
+    case 10:
+      return (
+        routine?.installed === true &&
+        routine?.invoked === false &&
+        isNonEmptyString(routine?.generatedProductionVersion) &&
+        candidate.activationRoutineMigrationApplied === true &&
+        routine?.executeGrantedToPublic === false &&
+        routine?.executeGrantedToAnon === false &&
+        routine?.executeGrantedToAuthenticated === false &&
+        routine?.executeGrantedToServiceRole === false &&
+        hold?.registeredMutableRpcAclHoldVerified === true &&
+        hold?.postCorrectionLeakedRpcCount === 0 &&
+        hold?.aiLiveCalls === false &&
+        externalFlagsFalse
+      );
+    case 11:
+      return (
+        activationCloseout?.completed === true &&
+        activationCloseout?.unchangedBytesVerified === true &&
+        isNonEmptyString(activationCloseout?.actualLedgerVersion) &&
+        isNonEmptyString(activationCloseout?.actualLedgerFilename) &&
+        isPositiveInteger(activationCloseout?.pullRequest) &&
+        isNonEmptyString(activationCloseout?.mergedCommit)
+      );
+    case 12:
+      return (
+        isPositiveInteger(secondHeld?.sitesVersion) &&
+        isNonEmptyString(secondHeld?.sitesVersionId) &&
+        isNonEmptyString(secondHeld?.sitesSourceSha256) &&
+        secondHeld?.holdReverified === true &&
+        hold?.aiLiveCalls === false &&
+        externalFlagsFalse
+      );
+    case 13:
+      return (
+        isPositiveInteger(secondHeld?.edgeFunctionVersion) &&
+        isNonEmptyString(secondHeld?.edgeFunctionId) &&
+        isNonEmptyString(secondHeld?.edgeBundleSha256) &&
+        secondHeld?.verified === true &&
+        secondHeld?.holdReverified === true &&
+        hold?.aiLiveCalls === false &&
+        externalFlagsFalse
+      );
+    case 14:
+      return (
+        routine?.installed === true &&
+        routine?.invoked === true &&
+        candidate.activationExecuted === true &&
+        manifest.activationState.activationRoutineInstalled === true &&
+        manifest.activationState.activationRoutineInvoked === true &&
+        manifest.activationState.momoActivationExecuted === false &&
+        execution?.invoked === true &&
+        execution?.aiLiveCallsAfter === true &&
+        execution?.externalFlagsFalseAfter === true &&
+        execution?.boundMergedGitHubCommit === secondHeld?.mergedGitHubCommit &&
+        execution?.boundSitesVersion === secondHeld?.sitesVersion &&
+        execution?.boundEdgeFunctionVersion === secondHeld?.edgeFunctionVersion
+      );
+    case 15:
+      return (
+        execution?.authenticatedSmokePassed === true &&
+        execution?.directTableDenialVerified === true &&
+        execution?.crossTenantDenialVerified === true &&
+        execution?.budgetGuardVerified === true &&
+        execution?.externalActionsRemainDisabled === true &&
+        execution?.providerCallsObserved === 0 &&
+        typeof execution?.incrementalSpendUsd === "number" &&
+        execution.incrementalSpendUsd >= 0 &&
+        execution.incrementalSpendUsd <= 20 &&
+        externalFlagsFalse
+      );
+    case 16:
+      return (
+        execution?.finalReleaseEvidenceRecorded === true &&
+        candidate.fullReleaseGatePassed === true &&
+        live.fullReleaseGatePassed === true &&
+        manifest.fullReleaseGatePassed === true &&
+        externalFlagsFalse
+      );
+    default:
+      return false;
+  }
+}
+
 function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
   const failures: string[] = [];
   const candidate = manifest.releaseCandidate;
@@ -720,20 +1028,38 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
     manifest.schemaVersion === 10 &&
     manifest.recordKind === "veroxa_guarded_internal_ai_rollout_manifest"
   ) {
-    const sourceTree = hashTree(resolve(repoRoot, manifest.source.root), {
+    if (
+      manifest.source.root !== DEPLOYABLE_SITES_SOURCE_ROOT ||
+      manifest.source.mappingTarget !== DEPLOYABLE_SITES_MAPPING_TARGET ||
+      manifest.source.hashAlgorithm !== TREE_HASH_ALGORITHM ||
+      !sameJson(
+        manifest.source.generatedPathExclusions,
+        GENERATED_PATH_EXCLUSIONS,
+      )
+    )
+      failures.push(
+        "deployable Sites source root, mapping target, hash algorithm, or exclusion policy drifted",
+      );
+    if (
+      manifest.migrations.root !== ROOT_MIGRATION_SOURCE_ROOT ||
+      manifest.migrations.mirrorRoot !== SITES_MIGRATION_MIRROR_ROOT ||
+      manifest.migrations.hashAlgorithm !== TREE_HASH_ALGORITHM
+    ) failures.push("canonical migration root or Sites mirror root drifted");
+
+    const sourceTree = hashTree(resolve(repoRoot, DEPLOYABLE_SITES_SOURCE_ROOT), {
       exclusions: [...GENERATED_PATH_EXCLUSIONS],
     });
     const rootMigrationTree = hashTree(
-      resolve(repoRoot, manifest.migrations.root),
+      resolve(repoRoot, ROOT_MIGRATION_SOURCE_ROOT),
       { suffix: ".sql" },
     );
     const mirrorMigrationTree = hashTree(
-      resolve(repoRoot, manifest.migrations.mirrorRoot ?? ""),
+      resolve(repoRoot, SITES_MIGRATION_MIRROR_ROOT),
       { suffix: ".sql" },
     );
     const pending = candidate.pendingMigrations ?? [];
     const liveMigrationTree = hashTree(
-      resolve(repoRoot, manifest.migrations.root),
+      resolve(repoRoot, ROOT_MIGRATION_SOURCE_ROOT),
       { exclusions: pending, suffix: ".sql" },
     );
     const latestSourceMigration = rootMigrationTree.files.at(-1);
@@ -757,6 +1083,25 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
         "appgprj_6a53d07c7c28819182801cf35dfd30de"
     ) failures.push("guarded rollout identity drifted");
     if (
+      manifest.releaseState !== GUARDED_ROLLOUT_RELEASE_STATE ||
+      manifest.candidateRevision !== GUARDED_ROLLOUT_CANDIDATE_REVISION ||
+      manifest.candidateBranch !== GUARDED_ROLLOUT_CANDIDATE_BRANCH ||
+      live.canonicalGitHubMainCommit !==
+        GUARDED_ROLLOUT_PRODUCTION_MAIN_COMMIT ||
+      live.canonicalGitHubMainMergePullRequest !==
+        GUARDED_ROLLOUT_PRODUCTION_MAIN_PULL_REQUEST ||
+      candidate.basedOnGitHubMainCommit !==
+        GUARDED_ROLLOUT_CANDIDATE_BASE_COMMIT ||
+      candidate.pullRequest !== GUARDED_ROLLOUT_PULL_REQUEST ||
+      candidate.observedDraftPullRequestHead !==
+        GUARDED_ROLLOUT_OPENING_DRAFT_HEAD ||
+      candidate.observedDraftPullRequestTree !==
+        GUARDED_ROLLOUT_OPENING_DRAFT_TREE ||
+      candidate.draftHeadEvidenceScope !==
+        GUARDED_ROLLOUT_DRAFT_EVIDENCE_SCOPE ||
+      repairCloseout?.pullRequest !== REPAIR_CLOSEOUT_PULL_REQUEST
+    ) failures.push("guarded rollout release lineage drifted from reviewed constants");
+    if (
       sourceTree.fileCount !== manifest.source.fileCount ||
       sourceTree.sha256 !== manifest.source.treeSha256 ||
       candidate.sourceFileCount !== sourceTree.fileCount ||
@@ -776,7 +1121,7 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
       !latestSourceMigration ||
       candidate.latestCandidateMigrationSha256 !== sha256File(resolve(
         repoRoot,
-        manifest.migrations.root,
+        ROOT_MIGRATION_SOURCE_ROOT,
         latestSourceMigration,
       ))
     ) failures.push("root/Sites migration source truth drifted");
@@ -787,12 +1132,12 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
       !latestLiveMigration ||
       live.latestProductionMigrationByteLength !== statSync(resolve(
         repoRoot,
-        manifest.migrations.root,
+        ROOT_MIGRATION_SOURCE_ROOT,
         latestLiveMigration,
       )).size ||
       live.latestProductionMigrationSha256 !== sha256File(resolve(
         repoRoot,
-        manifest.migrations.root,
+        ROOT_MIGRATION_SOURCE_ROOT,
         latestLiveMigration,
       )) ||
       live.candidateMigrationsMatchLiveLedger !== (pending.length === 0)
@@ -818,12 +1163,12 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
         : repairCloseout.mergedCommit !== null) ||
       !existsSync(resolve(
         repoRoot,
-        manifest.migrations.root,
+        ROOT_MIGRATION_SOURCE_ROOT,
         REPAIR_MIGRATION_EVIDENCE.filename,
       )) ||
       sha256File(resolve(
         repoRoot,
-        manifest.migrations.root,
+        ROOT_MIGRATION_SOURCE_ROOT,
         REPAIR_MIGRATION_EVIDENCE.filename,
       )) !== REPAIR_MIGRATION_EVIDENCE.sha256
     ) failures.push("repair generated-version closeout drifted");
@@ -864,6 +1209,14 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
         (index < completedCount ? !step.completed : step.completed)
       )
     ) failures.push("rollout completion is not one contiguous reviewed prefix");
+    for (const [index, step] of steps.entries()) {
+      if (step.completed && !completedRolloutStageHasEvidence(manifest, index)) {
+        failures.push(
+          ROLLOUT_STAGE_EVIDENCE_FAILURES[index] ??
+            `step ${index + 1} completed without mapped evidence`,
+        );
+      }
+    }
     if (
       !activationCloseout ||
       (activationCloseout.completed === true &&
@@ -1150,19 +1503,39 @@ export function assertReviewedLocalCandidateManifest(
   assertUnreleasedLocalCandidateManifest(manifest);
   if (manifest.recordKind === "veroxa_guarded_internal_ai_rollout_manifest") {
     const quality = manifest.applicationQualityEvidence;
+    const pending = manifest.releaseCandidate.pendingMigrations ?? [];
+    const dormantActivationReviewPending =
+      pending.length === 1 &&
+      manifest.activationRoutine?.installed === false &&
+      manifest.activationRoutine?.migrationFilename === pending[0];
+    const hostedDatabaseReviewComplete =
+      manifest.databaseContractReview?.hostedCleanChainApplyPassed === true &&
+      manifest.databaseContractReview?.hostedFullPgTapPassed === true &&
+      manifest.databaseContractReview?.hostedDatabaseExecutionPassed === true;
+    if (
+      !quality ||
+      !Number.isSafeInteger(quality.testsTotal) ||
+      !Number.isSafeInteger(quality.testsPassed) ||
+      !Number.isSafeInteger(quality.testsFailed) ||
+      quality.testsTotal !== REVIEWED_APPLICATION_TEST_TOTAL ||
+      quality.testsTotal <= 0 ||
+      quality.testsPassed !== REVIEWED_APPLICATION_TEST_TOTAL ||
+      quality.testsFailed !== 0
+    ) {
+      throw new Error(
+        `Reviewed application evidence must contain exactly ${REVIEWED_APPLICATION_TEST_TOTAL} passing tests; 0/0 is not evidence`,
+      );
+    }
     if (
       !manifest.releaseCandidate.reviewedLocally ||
       manifest.releaseCandidate.sourceReviewPassed !== true ||
       manifest.releaseCandidate.qualityReviewPassed !== true ||
-      !quality ||
-      quality.testsFailed !== 0 ||
-      quality.testsPassed !== quality.testsTotal ||
       quality.buildExitCode !== 0 ||
       quality.typecheckExitCode !== 0 ||
       quality.lintExitCode !== 0 ||
-      manifest.databaseContractReview?.hostedCleanChainApplyPassed !== true ||
-      manifest.databaseContractReview.hostedFullPgTapPassed !== true ||
-      manifest.databaseContractReview.hostedDatabaseExecutionPassed !== true
+      (dormantActivationReviewPending
+        ? manifest.databaseContractReview?.localStaticReviewPassed !== true
+        : !hostedDatabaseReviewComplete)
     ) {
       throw new Error(
         "Guarded rollout lacks reviewed source, application, or hosted database evidence",
