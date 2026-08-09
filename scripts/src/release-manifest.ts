@@ -79,16 +79,16 @@ export const SITES_MIGRATION_MIRROR_ROOT =
   "artifacts/veroxa-sites/supabase/migrations";
 export const REVIEWED_APPLICATION_TEST_TOTAL = 431;
 export const GUARDED_ROLLOUT_RELEASE_STATE =
-  "live49_activation_generated_version_closeout_review_pending_under_hold";
+  "live49_internal_ai_active_external_actions_held";
 export const GUARDED_ROLLOUT_CANDIDATE_REVISION =
-  "live49_activation_generated_version_closeout_2026_08_09";
+  "live49_internal_ai_activation_closeout_2026_08_09";
 export const GUARDED_ROLLOUT_CANDIDATE_BRANCH =
   "agent/internal-ai-activation-closeout";
 export const GUARDED_ROLLOUT_PRODUCTION_MAIN_COMMIT =
-  "60dbfd047ff2f7ed21d630e785746aa4e6f228b4";
-export const GUARDED_ROLLOUT_PRODUCTION_MAIN_PULL_REQUEST = 168;
+  "2721545d5823dbd4cbc233e7473d25393f4ff0ec";
+export const GUARDED_ROLLOUT_PRODUCTION_MAIN_PULL_REQUEST = 169;
 export const GUARDED_ROLLOUT_CANDIDATE_BASE_COMMIT =
-  GUARDED_ROLLOUT_PRODUCTION_MAIN_COMMIT;
+  "60dbfd047ff2f7ed21d630e785746aa4e6f228b4";
 export const GUARDED_ROLLOUT_PULL_REQUEST = 169;
 export const GUARDED_ROLLOUT_OPENING_DRAFT_HEAD =
   "96e13e155b8203192181afae26fe391cb6d36191";
@@ -103,7 +103,41 @@ export const ACTIVATION_SOURCE_PULL_REQUEST = 168;
 export const ACTIVATION_SOURCE_REVIEWED_HEAD =
   "d08114104f4030e31abe2514caf95c681e2b19ea";
 export const ACTIVATION_SOURCE_MERGED_MAIN_COMMIT =
-  GUARDED_ROLLOUT_PRODUCTION_MAIN_COMMIT;
+  "60dbfd047ff2f7ed21d630e785746aa4e6f228b4";
+export const INTERNAL_AI_RELEASE_EVIDENCE = {
+  fullReleaseGateScope:
+    "scoped_internal_ai_release_complete_external_actions_held_no_owner_truth_or_real_upload",
+  pullRequest: 169,
+  exactHead: "78c1f90d1412375b136aa18adcf9c4c1addc781e",
+  exactTree: "37cbc6d7815dde6984b2691006ac3977df1a7226",
+  mergedCommit: "2721545d5823dbd4cbc233e7473d25393f4ff0ec",
+  workflows: {
+    ci: 31296663350,
+    sites: 31296663318,
+    supabase: 31296663330,
+    veroxa: 31296663326,
+  },
+  sitesVersion: 41,
+  sitesVersionId:
+    "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_36b5c80ee2a48191acf5bcf809fd8ad7",
+  sitesSourceCommit: "766ba3bc2a7ebd68c1d72ae7f53d159d2edca593",
+  sitesSourceSha256:
+    "96ab0a58d24c59ce176e3362730897764d039fdc2c3f8bd14d65317d1992532b",
+  sitesArchiveSha256:
+    "74c287e655495edde605f0fc38ebc06f1ed0f19275d550c4369e491430f7cea7",
+  sitesArchiveFileCount: 52,
+  sitesArchiveByteLength: 6_000_640,
+  edgeFunctionVersion: 7,
+  edgeFunctionId: "859c73c3-2102-41b4-9da1-20582acb7212",
+  edgeBundleSha256:
+    "a6b00feeab795faa91d6d8d015c4ad399c526e1b35f702778a8c55aaba49503d",
+  invokedAt: "2026-08-09T05:35:42.103503Z",
+  activationAuditEventId: "d31dc513-f953-4aca-9746-3f69447a6ae8",
+  registeredRpcCount: 59,
+  authenticatedGrantCount: 13,
+  serviceRoleGrantCount: 32,
+  remainingHeldCount: 14,
+} as const;
 
 export const V36_GITHUB_RECONCILIATION = {
   pullRequest: 157,
@@ -486,6 +520,7 @@ type CurrentProductionObservation = {
   sitesCustomDomainsVerified?: boolean;
   sitesRecentErrorsObserved?: number;
   sitesArchiveFileCount?: number;
+  sitesArchiveByteLength?: number;
   sitesArchiveSha256?: string;
   sourceFileCount: number;
   sourceTreeSha256: string;
@@ -504,6 +539,7 @@ type CurrentProductionObservation = {
   candidateSourceMatchesLiveSites: boolean;
   candidateMigrationsMatchLiveLedger: boolean;
   fullReleaseGatePassed: boolean;
+  fullReleaseGateScope?: string;
 };
 
 type CandidateEvidence = {
@@ -527,6 +563,7 @@ type CandidateEvidence = {
   candidateMigrationsMatchLiveLedger: boolean;
   githubMainMatchesCandidate: boolean;
   fullReleaseGatePassed: boolean;
+  fullReleaseGateScope?: string;
   sourceFileCount: number;
   sourceTreeSha256: string;
   migrationFileCount: number;
@@ -550,6 +587,7 @@ type CandidateEvidence = {
   activationRoutineMigrationApplied?: boolean;
   activationAuthorized?: boolean;
   activationGateReady?: boolean;
+  activationAuthorizationConsumed?: boolean;
   activationExecuted?: boolean;
   rolloutStatus?: string;
 };
@@ -658,6 +696,7 @@ export type DeploymentManifest = {
     deploymentAuthorized?: boolean;
     activationAuthorized?: boolean;
     activationGateReady?: boolean;
+    rolloutAuthorizationConsumed?: boolean;
     allowedDeployment: string;
     releaseCondition: string;
   };
@@ -672,6 +711,7 @@ export type DeploymentManifest = {
   currentRuntimeIdentityObservation: Record<string, unknown>;
   activationExecution?: Nullable<Record<string, unknown>>;
   fullReleaseGatePassed?: Nullable<boolean>;
+  fullReleaseGateScope?: string;
   cleanupState: Record<string, unknown>;
   rolloutSequence?: {
     status: string;
@@ -793,6 +833,13 @@ function completedRolloutStageHasEvidence(
     manifest.rolloutEvidence?.repairCloseoutGitHubRelease;
   const repairDatabaseVerification =
     manifest.rolloutEvidence?.repairDatabaseVerification;
+  const activationDatabaseVerification =
+    manifest.rolloutEvidence?.activationDatabaseVerification;
+  const activationCloseoutGitHubRelease =
+    manifest.rolloutEvidence?.activationCloseoutGitHubRelease;
+  const secondRuntimeParity = manifest.rolloutEvidence?.secondRuntimeParity;
+  const activationPostflightVerification =
+    manifest.rolloutEvidence?.activationPostflightVerification;
   const firstHeld = parity?.firstHeld;
   const secondHeld = parity?.secondHeld;
   const execution = manifest.activationExecution;
@@ -857,9 +904,7 @@ function completedRolloutStageHasEvidence(
         repairDatabaseVerification?.relevantWorkRowCount === 0 &&
         repairDatabaseVerification?.hostedCleanChainApplyPassed === true &&
         repairDatabaseVerification?.hostedFullPgTapPassed === true &&
-        repairDatabaseVerification?.hostedDatabaseExecutionPassed === true &&
-        hold?.registeredMutableRpcAclHoldVerified === true &&
-        hold?.postCorrectionLeakedRpcCount === 0
+        repairDatabaseVerification?.hostedDatabaseExecutionPassed === true
       );
     case 5:
       return (
@@ -926,7 +971,6 @@ function completedRolloutStageHasEvidence(
         routine?.sourceReviewAllFourWorkflowsGreen === true &&
         routine?.sourceReviewZeroUnresolvedThreads === true &&
         routine?.installStateAtSourceReview === false &&
-        routine?.invoked === false &&
         routine?.postgresOnly === true &&
         routine?.executeGrantedToPublic === false &&
         routine?.executeGrantedToAnon === false &&
@@ -936,80 +980,223 @@ function completedRolloutStageHasEvidence(
     case 10:
       return (
         routine?.installed === true &&
-        routine?.invoked === false &&
         isNonEmptyString(routine?.generatedProductionVersion) &&
         candidate.activationRoutineMigrationApplied === true &&
         routine?.executeGrantedToPublic === false &&
         routine?.executeGrantedToAnon === false &&
         routine?.executeGrantedToAuthenticated === false &&
         routine?.executeGrantedToServiceRole === false &&
-        hold?.registeredMutableRpcAclHoldVerified === true &&
-        hold?.postCorrectionLeakedRpcCount === 0 &&
-        hold?.aiLiveCalls === false &&
-        externalFlagsFalse
+        activationDatabaseVerification?.registeredMutableRpcCount === 59 &&
+        activationDatabaseVerification?.leakedMutableRpcCount === 0 &&
+        activationDatabaseVerification?.aiLiveCalls === false &&
+        activationDatabaseVerification?.externalFlagsFalse === true &&
+        activationDatabaseVerification?.relevantWorkRowCount === 0 &&
+        activationDatabaseVerification?.outboundHttpRowCount === 0 &&
+        activationDatabaseVerification?.activationAuditEventCount === 0
       );
     case 11:
       return (
         activationCloseout?.completed === true &&
         activationCloseout?.unchangedBytesVerified === true &&
-        isNonEmptyString(activationCloseout?.actualLedgerVersion) &&
-        isNonEmptyString(activationCloseout?.actualLedgerFilename) &&
-        isPositiveInteger(activationCloseout?.pullRequest) &&
-        isNonEmptyString(activationCloseout?.mergedCommit)
+        activationCloseout?.actualLedgerVersion === "20260809051616" &&
+        activationCloseout?.actualLedgerFilename ===
+          "20260809051616_guarded_internal_ai_activation_v1.sql" &&
+        activationCloseout?.pullRequest ===
+          INTERNAL_AI_RELEASE_EVIDENCE.pullRequest &&
+        activationCloseout?.exactHead === INTERNAL_AI_RELEASE_EVIDENCE.exactHead &&
+        activationCloseout?.exactTree === INTERNAL_AI_RELEASE_EVIDENCE.exactTree &&
+        activationCloseout?.mergedCommit ===
+          INTERNAL_AI_RELEASE_EVIDENCE.mergedCommit &&
+        activationCloseout?.allFourExactHeadWorkflowsGreen === true &&
+        activationCloseout?.zeroUnresolvedReviewThreads === true &&
+        sameJson(
+          activationCloseout?.workflows,
+          INTERNAL_AI_RELEASE_EVIDENCE.workflows,
+        ) &&
+        activationCloseoutGitHubRelease?.pullRequest ===
+          INTERNAL_AI_RELEASE_EVIDENCE.pullRequest &&
+        activationCloseoutGitHubRelease?.openingHead ===
+          GUARDED_ROLLOUT_OPENING_DRAFT_HEAD &&
+        activationCloseoutGitHubRelease?.exactHead ===
+          INTERNAL_AI_RELEASE_EVIDENCE.exactHead &&
+        activationCloseoutGitHubRelease?.exactTree ===
+          INTERNAL_AI_RELEASE_EVIDENCE.exactTree &&
+        activationCloseoutGitHubRelease?.mergedCommit ===
+          INTERNAL_AI_RELEASE_EVIDENCE.mergedCommit &&
+        activationCloseoutGitHubRelease?.allFourExactHeadWorkflowsGreen ===
+          true &&
+        activationCloseoutGitHubRelease?.zeroUnresolvedReviewThreads === true &&
+        sameJson(
+          activationCloseoutGitHubRelease?.workflows,
+          INTERNAL_AI_RELEASE_EVIDENCE.workflows,
+        )
       );
     case 12:
       return (
-        isPositiveInteger(secondHeld?.sitesVersion) &&
-        isNonEmptyString(secondHeld?.sitesVersionId) &&
-        isNonEmptyString(secondHeld?.sitesSourceSha256) &&
+        secondHeld?.mergedGitHubCommit ===
+          INTERNAL_AI_RELEASE_EVIDENCE.mergedCommit &&
+        secondHeld?.sitesVersion === INTERNAL_AI_RELEASE_EVIDENCE.sitesVersion &&
+        secondHeld?.sitesVersionId ===
+          INTERNAL_AI_RELEASE_EVIDENCE.sitesVersionId &&
+        secondHeld?.sitesSourceCommit ===
+          INTERNAL_AI_RELEASE_EVIDENCE.sitesSourceCommit &&
+        secondHeld?.sitesSourceSha256 ===
+          INTERNAL_AI_RELEASE_EVIDENCE.sitesSourceSha256 &&
+        secondHeld?.sitesArchiveSha256 ===
+          INTERNAL_AI_RELEASE_EVIDENCE.sitesArchiveSha256 &&
         secondHeld?.holdReverified === true &&
-        hold?.aiLiveCalls === false &&
-        externalFlagsFalse
+        secondHeld?.aiLiveCalls === false &&
+        secondHeld?.externalFlagsFalse === true &&
+        secondRuntimeParity?.mergedGitHubCommit ===
+          INTERNAL_AI_RELEASE_EVIDENCE.mergedCommit &&
+        secondRuntimeParity?.sitesVersion ===
+          INTERNAL_AI_RELEASE_EVIDENCE.sitesVersion &&
+        secondRuntimeParity?.sitesVersionId ===
+          INTERNAL_AI_RELEASE_EVIDENCE.sitesVersionId &&
+        secondRuntimeParity?.sitesSourceCommit ===
+          INTERNAL_AI_RELEASE_EVIDENCE.sitesSourceCommit &&
+        secondRuntimeParity?.sitesSourceSha256 ===
+          INTERNAL_AI_RELEASE_EVIDENCE.sitesSourceSha256 &&
+        secondRuntimeParity?.sitesArchiveSha256 ===
+          INTERNAL_AI_RELEASE_EVIDENCE.sitesArchiveSha256 &&
+        secondRuntimeParity?.sitesArchiveFileCount ===
+          INTERNAL_AI_RELEASE_EVIDENCE.sitesArchiveFileCount &&
+        secondRuntimeParity?.sitesArchiveByteLength ===
+          INTERNAL_AI_RELEASE_EVIDENCE.sitesArchiveByteLength &&
+        secondRuntimeParity?.holdReverifiedBeforeActivation === true &&
+        secondRuntimeParity?.preActivationRegisteredRpcCount === 59 &&
+        secondRuntimeParity?.preActivationLeakedRpcCount === 0 &&
+        secondRuntimeParity?.preActivationRelevantWorkRowCount === 0 &&
+        secondRuntimeParity?.preActivationOutboundHttpRowCount === 0
       );
     case 13:
       return (
-        isPositiveInteger(secondHeld?.edgeFunctionVersion) &&
-        isNonEmptyString(secondHeld?.edgeFunctionId) &&
-        isNonEmptyString(secondHeld?.edgeBundleSha256) &&
+        secondHeld?.edgeFunctionVersion ===
+          INTERNAL_AI_RELEASE_EVIDENCE.edgeFunctionVersion &&
+        secondHeld?.edgeFunctionId ===
+          INTERNAL_AI_RELEASE_EVIDENCE.edgeFunctionId &&
+        secondHeld?.edgeBundleSha256 ===
+          INTERNAL_AI_RELEASE_EVIDENCE.edgeBundleSha256 &&
         secondHeld?.verified === true &&
         secondHeld?.holdReverified === true &&
-        hold?.aiLiveCalls === false &&
-        externalFlagsFalse
+        secondHeld?.aiLiveCalls === false &&
+        secondHeld?.externalFlagsFalse === true &&
+        secondRuntimeParity?.edgeFunctionVersion ===
+          INTERNAL_AI_RELEASE_EVIDENCE.edgeFunctionVersion &&
+        secondRuntimeParity?.edgeFunctionId ===
+          INTERNAL_AI_RELEASE_EVIDENCE.edgeFunctionId &&
+        secondRuntimeParity?.edgeBundleSha256 ===
+          INTERNAL_AI_RELEASE_EVIDENCE.edgeBundleSha256
       );
     case 14:
       return (
         routine?.installed === true &&
         routine?.invoked === true &&
+        routine?.gateReady === false &&
+        routine?.invocationGateConsumed === true &&
         candidate.activationExecuted === true &&
+        candidate.activationGateReady === false &&
+        candidate.activationAuthorizationConsumed === true &&
         manifest.activationState.activationRoutineInstalled === true &&
         manifest.activationState.activationRoutineInvoked === true &&
+        manifest.activationState.scopedInternalAiActivationAuthorizationConsumed ===
+          true &&
         manifest.activationState.momoActivationExecuted === false &&
         execution?.invoked === true &&
+        execution?.invokedAt === INTERNAL_AI_RELEASE_EVIDENCE.invokedAt &&
+        execution?.activationAuditEventId ===
+          INTERNAL_AI_RELEASE_EVIDENCE.activationAuditEventId &&
         execution?.aiLiveCallsAfter === true &&
         execution?.externalFlagsFalseAfter === true &&
-        execution?.boundMergedGitHubCommit === secondHeld?.mergedGitHubCommit &&
-        execution?.boundSitesVersion === secondHeld?.sitesVersion &&
-        execution?.boundEdgeFunctionVersion === secondHeld?.edgeFunctionVersion
+        execution?.boundMergedGitHubCommit ===
+          INTERNAL_AI_RELEASE_EVIDENCE.mergedCommit &&
+        execution?.boundSitesVersion ===
+          INTERNAL_AI_RELEASE_EVIDENCE.sitesVersion &&
+        execution?.boundSitesVersionId ===
+          INTERNAL_AI_RELEASE_EVIDENCE.sitesVersionId &&
+        execution?.boundSitesSourceCommit ===
+          INTERNAL_AI_RELEASE_EVIDENCE.sitesSourceCommit &&
+        execution?.boundSitesSourceSha256 ===
+          INTERNAL_AI_RELEASE_EVIDENCE.sitesSourceSha256 &&
+        execution?.boundSitesArchiveSha256 ===
+          INTERNAL_AI_RELEASE_EVIDENCE.sitesArchiveSha256 &&
+        execution?.boundEdgeFunctionVersion ===
+          INTERNAL_AI_RELEASE_EVIDENCE.edgeFunctionVersion &&
+        execution?.boundEdgeFunctionId ===
+          INTERNAL_AI_RELEASE_EVIDENCE.edgeFunctionId &&
+        execution?.boundEdgeBundleSha256 ===
+          INTERNAL_AI_RELEASE_EVIDENCE.edgeBundleSha256 &&
+        execution?.registeredRpcCount === 59 &&
+        execution?.missingRpcCount === 0 &&
+        execution?.grantMismatchCount === 0 &&
+        execution?.anonGrantCount === 0 &&
+        execution?.authenticatedGrantCount === 13 &&
+        execution?.serviceRoleGrantCount === 32 &&
+        execution?.remainingHeldCount === 14 &&
+        execution?.activationRoutineAppRoleGrantCount === 0 &&
+        execution?.relevantWorkBeforeActivation === 0 &&
+        execution?.relevantWorkAfterActivation === 0 &&
+        execution?.outboundHttpRowsAfterActivation === 0 &&
+        execution?.activationAuditEventCount === 1
       );
     case 15:
       return (
         execution?.authenticatedSmokePassed === true &&
+        execution?.authenticatedSmokeActiveTeamProfileCount === 1 &&
+        execution?.authenticatedSmokeActiveMomoMembershipCount === 1 &&
+        execution?.authenticatedSmokeReadOnlyRpcExecuteCount === 3 &&
+        execution?.authenticatedSmokeActivationExecute === false &&
+        execution?.authenticatedSmokeDirectCandidateInsertPrivilege === false &&
+        execution?.authenticatedSmokeReadyRowCount === 0 &&
+        execution?.authenticatedSmokeReadyRowsExternalLocked === true &&
+        execution?.authenticatedSmokeUploadStatusRowCount === 2 &&
+        execution?.authenticatedSmokeUploadRowsExternalLocked === true &&
+        execution?.authenticatedSmokeMediaWindowRowCount === 0 &&
         execution?.directTableDenialVerified === true &&
         execution?.crossTenantDenialVerified === true &&
         execution?.budgetGuardVerified === true &&
         execution?.externalActionsRemainDisabled === true &&
         execution?.providerCallsObserved === 0 &&
-        typeof execution?.incrementalSpendUsd === "number" &&
-        execution.incrementalSpendUsd >= 0 &&
-        execution.incrementalSpendUsd <= 20 &&
+        execution?.costLedgerRowCount === 0 &&
+        execution?.costLedgerProviderCalledRowCount === 0 &&
+        execution?.costLedgerAccountedMicrousd === 0 &&
+        execution?.postActivationEdgeInvocationCount === 0 &&
+        execution?.incrementalSpendUsd === 0 &&
+        activationPostflightVerification?.registeredRpcCount === 59 &&
+        activationPostflightVerification?.missingRpcCount === 0 &&
+        activationPostflightVerification?.grantMismatchCount === 0 &&
+        activationPostflightVerification?.anonGrantCount === 0 &&
+        activationPostflightVerification?.authenticatedGrantCount === 13 &&
+        activationPostflightVerification?.serviceRoleGrantCount === 32 &&
+        activationPostflightVerification?.remainingHeldCount === 14 &&
+        activationPostflightVerification?.activationRoutineAppRoleGrantCount ===
+          0 &&
+        activationPostflightVerification?.exactActivationEventPayloadVerified ===
+          true &&
+        activationPostflightVerification?.costLedgerRowCount === 0 &&
+        activationPostflightVerification?.postActivationEdgeInvocationCount ===
+          0 &&
         externalFlagsFalse
       );
     case 16:
       return (
         execution?.finalReleaseEvidenceRecorded === true &&
         candidate.fullReleaseGatePassed === true &&
+        candidate.fullReleaseGateScope ===
+          INTERNAL_AI_RELEASE_EVIDENCE.fullReleaseGateScope &&
         live.fullReleaseGatePassed === true &&
+        live.fullReleaseGateScope ===
+          INTERNAL_AI_RELEASE_EVIDENCE.fullReleaseGateScope &&
         manifest.fullReleaseGatePassed === true &&
+        manifest.fullReleaseGateScope ===
+          INTERNAL_AI_RELEASE_EVIDENCE.fullReleaseGateScope &&
+        candidate.sitesPublishRequired === false &&
+        candidate.activationGateReady === false &&
+        manifest.deploymentFreeze.activationGateReady === false &&
+        manifest.deploymentFreeze.rolloutAuthorizationConsumed === true &&
+        manifest.deploymentFreeze.deploymentAuthorized === false &&
+        manifest.deploymentFreeze.activationAuthorized === false &&
+        manifest.activationState.momoActivationExecuted === false &&
         externalFlagsFalse
       );
     default:
