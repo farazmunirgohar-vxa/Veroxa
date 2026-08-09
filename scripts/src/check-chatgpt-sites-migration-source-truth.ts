@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
+  INTERNAL_AI_RELEASE_EVIDENCE,
   REPAIR_MIGRATION_EVIDENCE,
   assertReviewedLocalCandidateManifest,
   readDeploymentManifest,
@@ -54,21 +55,54 @@ for (const path of authorityDocs) {
     (text.match(/^## .*\(current authority\)$/gmu) ?? []).length === 1,
     `${path} must contain exactly one current-authority heading.`,
   );
+  const currentHeading = text.match(/^## .*\(current authority\)$/mu);
+  const currentStart = currentHeading?.index ?? -1;
+  const nextHeading =
+    currentStart < 0
+      ? -1
+      : text.indexOf("\n## ", currentStart + (currentHeading?.[0].length ?? 0));
+  const currentAuthority =
+    currentStart < 0
+      ? ""
+      : text.slice(currentStart, nextHeading < 0 ? undefined : nextHeading);
   for (const marker of [
     "GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY",
     manifest.currentProductionObservation.canonicalGitHubMainCommit,
     `Sites v${manifest.currentProductionObservation.sitesVersion}`,
     `live${manifest.currentProductionObservation.productionMigrationCount}`,
     manifest.currentProductionObservation.latestProductionMigration,
-    REPAIR_MIGRATION_EVIDENCE.sha256,
     manifest.source.treeSha256,
-    "registered mutable-RPC hold",
-    "unregistered orphan object",
+    INTERNAL_AI_RELEASE_EVIDENCE.sitesVersionId,
+    INTERNAL_AI_RELEASE_EVIDENCE.sitesSourceCommit,
+    INTERNAL_AI_RELEASE_EVIDENCE.sitesArchiveSha256,
+    INTERNAL_AI_RELEASE_EVIDENCE.edgeBundleSha256,
+    INTERNAL_AI_RELEASE_EVIDENCE.invokedAt,
+    INTERNAL_AI_RELEASE_EVIDENCE.activationAuditEventId,
+    "ai_live_calls=true",
+    "13 authenticated",
+    "32 service-role",
+    "14 functions still held",
+    "one active Team profile",
+    "one active Momo membership",
+    "2 upload-status rows all external-locked",
+    "rollout authorization is consumed",
+    "no Sites v42",
     "External providers",
     "USD 0 incremental spend",
   ]) {
-    must(text.includes(marker), `${path} is missing current authority marker: ${marker}`);
+    const haystack =
+      marker === "GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY" ? text : currentAuthority;
+    must(
+      haystack.includes(marker),
+      `${path} is missing current authority marker: ${marker}`,
+    );
   }
+  must(
+    !/gate-ready but uninvoked|invoke the dormant routine|no .*activation execution|ai_live_calls=false/iu.test(
+      currentAuthority,
+    ),
+    `${path} current authority contradicts the completed activation.`,
+  );
 }
 
 if (failures.length > 0) {

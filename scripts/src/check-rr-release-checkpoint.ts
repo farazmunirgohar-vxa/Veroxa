@@ -58,12 +58,20 @@ for (const field of [
   "generatedVersionCloseouts",
   "deploymentParity",
   "rolloutSequence",
+  "rolloutEvidence",
+  "activationExecution",
 ]) {
   must(
     canonical(rr[field]) === canonical((manifest as JsonRecord)[field]),
     `RR field does not canonically mirror manifest: ${field}`,
   );
 }
+must(
+  rr.activationStateScope === manifest.activationStateScope &&
+    rr.fullReleaseGatePassed === manifest.fullReleaseGatePassed &&
+    rr.fullReleaseGateScope === manifest.fullReleaseGateScope,
+  "RR activation scope or scoped full-release gate diverges from the manifest.",
+);
 must(
   rr.databaseEvidence.liveBaseline.migrationFileCount ===
       manifest.currentProductionObservation.productionMigrationCount &&
@@ -87,6 +95,12 @@ must(
 );
 must(
   rr.runtimeVerification.providerCallObserved === false &&
+    rr.runtimeVerification.aiLiveCalls === true &&
+    rr.runtimeVerification.registeredMutableRpcIngressHoldVerified === false &&
+    rr.runtimeVerification.preActivationRegisteredMutableRpcIngressHoldVerified ===
+      true &&
+    rr.runtimeVerification.activationGateReady === false &&
+    rr.runtimeVerification.activationExecuted === true &&
     rr.runtimeVerification.externalProvidersConnected === false &&
     rr.runtimeVerification.externalPublishingEnabled === false &&
     rr.operationalHold.providerWrites === false &&
@@ -94,6 +108,45 @@ must(
     rr.operationalHold.websiteWrites === false &&
     rr.operationalHold.externalScheduling === false,
   "RR overclaims provider or external-action execution.",
+);
+must(
+  rr.checkpoint ===
+      "live49-internal-ai-active-external-actions-held-2026-08-09" &&
+    Array.isArray(rr.activationGates) &&
+    rr.activationGates.length === 4 &&
+    rr.activationGates.some((gate: unknown) =>
+      typeof gate === "string" && gate.includes("invoked exactly once"),
+    ) &&
+    rr.activationGates.some((gate: unknown) =>
+      typeof gate === "string" && gate.includes("ai_live_calls=true"),
+    ) &&
+    rr.activationGates.every(
+      (gate: unknown) =>
+        typeof gate === "string" &&
+        !/uninvoked|not gate-ready|Draft PR #169|no activation execution/i.test(
+          gate,
+        ),
+    ),
+  "RR activation-gate narrative is stale or contradicts the invoked state.",
+);
+must(
+  rr.activationExecution.invoked === true &&
+    rr.activationExecution.authenticatedSmokeActiveTeamProfileCount === 1 &&
+    rr.activationExecution.authenticatedSmokeActiveMomoMembershipCount === 1 &&
+    rr.activationExecution.authenticatedSmokeReadOnlyRpcExecuteCount === 3 &&
+    rr.activationExecution.authenticatedSmokeActivationExecute === false &&
+    rr.activationExecution.authenticatedSmokeDirectCandidateInsertPrivilege ===
+      false &&
+    rr.activationExecution.authenticatedSmokeReadyRowCount === 0 &&
+    rr.activationExecution.authenticatedSmokeUploadStatusRowCount === 2 &&
+    rr.activationExecution.authenticatedSmokeUploadRowsExternalLocked === true &&
+    rr.activationExecution.authenticatedSmokeMediaWindowRowCount === 0 &&
+    rr.activationExecution.costLedgerRowCount === 0 &&
+    rr.activationExecution.costLedgerProviderCalledRowCount === 0 &&
+    rr.activationExecution.costLedgerAccountedMicrousd === 0 &&
+    rr.activationExecution.postActivationEdgeInvocationCount === 0 &&
+    rr.activationExecution.incrementalSpendUsd === 0,
+  "RR post-activation smoke, cost, or bounded Edge-log evidence is incomplete.",
 );
 
 if (failures.length > 0) {
