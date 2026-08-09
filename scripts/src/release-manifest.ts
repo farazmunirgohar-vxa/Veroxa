@@ -79,26 +79,29 @@ export const SITES_MIGRATION_MIRROR_ROOT =
   "artifacts/veroxa-sites/supabase/migrations";
 export const REVIEWED_APPLICATION_TEST_TOTAL = 431;
 export const GUARDED_ROLLOUT_RELEASE_STATE =
-  "live48_first_parity_verified_activation_migration_review_pending_under_hold";
+  "live49_activation_generated_version_closeout_review_pending_under_hold";
 export const GUARDED_ROLLOUT_CANDIDATE_REVISION =
-  "live48_first_parity_identity_bound_activation_candidate_2026_08_09";
+  "live49_activation_generated_version_closeout_2026_08_09";
 export const GUARDED_ROLLOUT_CANDIDATE_BRANCH =
-  "agent/momo-internal-ai-activation-v1";
+  "agent/internal-ai-activation-closeout";
 export const GUARDED_ROLLOUT_PRODUCTION_MAIN_COMMIT =
-  "a1c6796b50a1072a96a40db283503d9e2c81bbae";
-export const GUARDED_ROLLOUT_PRODUCTION_MAIN_PULL_REQUEST = 167;
+  "60dbfd047ff2f7ed21d630e785746aa4e6f228b4";
+export const GUARDED_ROLLOUT_PRODUCTION_MAIN_PULL_REQUEST = 168;
 export const GUARDED_ROLLOUT_CANDIDATE_BASE_COMMIT =
   GUARDED_ROLLOUT_PRODUCTION_MAIN_COMMIT;
-export const GUARDED_ROLLOUT_PULL_REQUEST = 168;
-export const GUARDED_ROLLOUT_OPENING_DRAFT_HEAD =
-  "e81f032e3c6b0b8e611e75f43936d5618f57def1";
-export const GUARDED_ROLLOUT_OPENING_DRAFT_TREE =
-  "70f9eaad826b5ec623f05f1cb9946d5fc5bb2ccd";
+export const GUARDED_ROLLOUT_PULL_REQUEST = null;
+export const GUARDED_ROLLOUT_OPENING_DRAFT_HEAD = null;
+export const GUARDED_ROLLOUT_OPENING_DRAFT_TREE = null;
 export const GUARDED_ROLLOUT_DRAFT_EVIDENCE_SCOPE =
-  "observed_remote_pr168_opening_draft_checkpoint_not_exact_final_head";
+  "activation_closeout_pr_not_created";
 export const REPAIR_GITHUB_MERGED_MAIN_COMMIT =
   "e01e8e00d94ce9eb5243038bf41c202897a17460";
 export const REPAIR_CLOSEOUT_PULL_REQUEST = 167;
+export const ACTIVATION_SOURCE_PULL_REQUEST = 168;
+export const ACTIVATION_SOURCE_REVIEWED_HEAD =
+  "d08114104f4030e31abe2514caf95c681e2b19ea";
+export const ACTIVATION_SOURCE_MERGED_MAIN_COMMIT =
+  GUARDED_ROLLOUT_PRODUCTION_MAIN_COMMIT;
 
 export const V36_GITHUB_RECONCILIATION = {
   pullRequest: 157,
@@ -205,7 +208,7 @@ export const LIVE47_MIGRATION_EVIDENCE = {
 
 export const LOCAL_CANDIDATE_ROLLOUT_MIGRATIONS = [
   "20260809035302_team_private_food_assessment_reconciliation_v1.sql",
-  "20260809044000_guarded_internal_ai_activation_v1.sql",
+  "20260809051616_guarded_internal_ai_activation_v1.sql",
 ] as const;
 export const LOCAL_CANDIDATE_APPLIED_MIGRATIONS = [
   "20260808001210_audit_intake_envelope_v2.sql",
@@ -219,14 +222,13 @@ export const LOCAL_CANDIDATE_APPLIED_MIGRATIONS = [
   "20260808070840_momo_ready_team_decisions_and_food_tags_v2.sql",
   "20260808083842_post_20260808070840_private_media_authority_repair_v1.sql",
   "20260809035302_team_private_food_assessment_reconciliation_v1.sql",
+  "20260809051616_guarded_internal_ai_activation_v1.sql",
 ] as const;
-export const LOCAL_CANDIDATE_PENDING_MIGRATIONS: readonly string[] = [
-  "20260809044000_guarded_internal_ai_activation_v1.sql",
-];
+export const LOCAL_CANDIDATE_PENDING_MIGRATIONS: readonly string[] = [];
 export const LOCAL_CANDIDATE_SOURCE_EVIDENCE = {
   fileCount: 216,
   treeSha256:
-    "6aa459a7462f7b71cd55e8e15861bafff497b6c5a5ac4e6769a35e23fc016d51",
+    "96ab0a58d24c59ce176e3362730897764d039fdc2c3f8bd14d65317d1992532b",
   reviewPassed: true,
 } as const;
 
@@ -846,10 +848,11 @@ function completedRolloutStageHasEvidence(
       );
     case 4:
       return (
-        live.productionMigrationCount === 48 &&
-        live.latestProductionMigration === REPAIR_MIGRATION_EVIDENCE.filename &&
-        live.latestProductionMigrationSha256 ===
-          REPAIR_MIGRATION_EVIDENCE.sha256 &&
+        repairDatabaseVerification?.productionMigrationCount === 48 &&
+        repairDatabaseVerification?.heldPublicFunctionCount === 59 &&
+        repairDatabaseVerification?.leakedMutableRpcCount === 0 &&
+        repairDatabaseVerification?.runtimeRowCount === 1 &&
+        repairDatabaseVerification?.relevantWorkRowCount === 0 &&
         repairDatabaseVerification?.hostedCleanChainApplyPassed === true &&
         repairDatabaseVerification?.hostedFullPgTapPassed === true &&
         repairDatabaseVerification?.hostedDatabaseExecutionPassed === true &&
@@ -914,11 +917,13 @@ function completedRolloutStageHasEvidence(
         routine?.boundEdgeFunctionVersion === firstHeld?.edgeFunctionVersion &&
         routine?.boundEdgeBundleSha256 === firstHeld?.edgeBundleSha256 &&
         routine?.sourceReviewPassed === true &&
-        isPositiveInteger(routine?.sourceReviewPullRequest) &&
-        isNonEmptyString(routine?.sourceReviewExactHead) &&
+        routine?.sourceReviewPullRequest === ACTIVATION_SOURCE_PULL_REQUEST &&
+        routine?.sourceReviewExactHead === ACTIVATION_SOURCE_REVIEWED_HEAD &&
+        routine?.sourceReviewMergedCommit ===
+          ACTIVATION_SOURCE_MERGED_MAIN_COMMIT &&
         routine?.sourceReviewAllFourWorkflowsGreen === true &&
         routine?.sourceReviewZeroUnresolvedThreads === true &&
-        routine?.installed === false &&
+        routine?.installStateAtSourceReview === false &&
         routine?.invoked === false &&
         routine?.postgresOnly === true &&
         routine?.executeGrantedToPublic === false &&

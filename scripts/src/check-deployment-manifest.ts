@@ -35,11 +35,15 @@ must(
   "Manifest is not the guarded internal-AI rollout authority.",
 );
 must(
-  manifest.currentProductionObservation.productionMigrationCount === 48 &&
+  manifest.currentProductionObservation.productionMigrationCount === 49 &&
     manifest.currentProductionObservation.latestProductionMigration ===
-      REPAIR_MIGRATION_EVIDENCE.filename &&
-    manifest.currentProductionObservation.candidateMigrationsMatchLiveLedger === false,
-  "Observed production is not the exact held live48 prefix.",
+      "20260809051616_guarded_internal_ai_activation_v1.sql" &&
+    manifest.currentProductionObservation.latestProductionMigrationByteLength ===
+      24_248 &&
+    manifest.currentProductionObservation.latestProductionMigrationSha256 ===
+      "22d5e82f683c3dd9d4b3d9c5b4e5003cf3a769f67dde340e98deee3ba3afb8ba" &&
+    manifest.currentProductionObservation.candidateMigrationsMatchLiveLedger === true,
+  "Observed production is not the exact held live49 ledger.",
 );
 must(
   repairCloseout?.actualLedgerVersion === "20260809035302" &&
@@ -57,22 +61,27 @@ must(
 );
 must(
     manifest.releaseCandidate.githubMerged === false &&
-    manifest.releaseCandidate.databaseMigrationApplied === false &&
-    manifest.releaseCandidate.pendingMigrations?.length === 1 &&
-    manifest.releaseCandidate.pendingMigrations[0] ===
-      "20260809044000_guarded_internal_ai_activation_v1.sql" &&
+    manifest.releaseCandidate.databaseMigrationApplied === true &&
+    manifest.releaseCandidate.pendingMigrations?.length === 0 &&
     manifest.releaseCandidate.allFourWorkflowsGreen === null &&
     manifest.databaseContractReview?.localStaticReviewPassed === true &&
-    manifest.databaseContractReview.hostedCleanChainApplyPassed === false &&
-    manifest.databaseContractReview.hostedFullPgTapPassed === false,
-  "Dormant activation candidate review state is overclaimed or incomplete.",
+    manifest.databaseContractReview.hostedCleanChainApplyPassed === true &&
+    manifest.databaseContractReview.hostedFullPgTapPassed === true &&
+    manifest.databaseContractReview.hostedDatabaseExecutionPassed === true,
+  "Live49 hosted verification or source-closeout state is incomplete.",
 );
 must(
   manifest.activationRoutine?.migrationFilename ===
-      "20260809044000_guarded_internal_ai_activation_v1.sql" &&
+      "20260809051616_guarded_internal_ai_activation_v1.sql" &&
     manifest.activationRoutine.migrationSha256 ===
       "22d5e82f683c3dd9d4b3d9c5b4e5003cf3a769f67dde340e98deee3ba3afb8ba" &&
-    manifest.activationRoutine.installed === false &&
+    manifest.activationRoutine.generatedProductionVersion === "20260809051616" &&
+    manifest.activationRoutine.sourceReviewPullRequest === 168 &&
+    manifest.activationRoutine.sourceReviewExactHead ===
+      "d08114104f4030e31abe2514caf95c681e2b19ea" &&
+    manifest.activationRoutine.sourceReviewAllFourWorkflowsGreen === true &&
+    manifest.activationRoutine.sourceReviewZeroUnresolvedThreads === true &&
+    manifest.activationRoutine.installed === true &&
     manifest.activationRoutine.invoked === false &&
     manifest.activationRoutine.postgresOnly === true &&
     manifest.activationRoutine.executeGrantedToPublic === false &&
@@ -80,8 +89,11 @@ must(
     manifest.activationRoutine.executeGrantedToAuthenticated === false &&
     manifest.activationRoutine.executeGrantedToServiceRole === false &&
     activationCloseout?.completed === false &&
-    activationCloseout.unchangedBytesVerified === false,
-  "Dormant activation routine source evidence is incomplete.",
+    activationCloseout.unchangedBytesVerified === true &&
+    activationCloseout.actualLedgerVersion === "20260809051616" &&
+    activationCloseout.actualLedgerFilename ===
+      "20260809051616_guarded_internal_ai_activation_v1.sql",
+  "Dormant activation install or generated-version evidence is incomplete.",
 );
 must(
   firstHeld?.verified === true &&
@@ -113,6 +125,6 @@ if (failures.length > 0) {
   process.exitCode = 1;
 } else {
   console.log(
-    "PASS: first live48 GitHub/Sites/Edge parity is verified and the dormant activation migration remains under hold.",
+    "PASS: dormant activation is installed at held live49 and its source-only generated-version closeout is staged.",
   );
 }

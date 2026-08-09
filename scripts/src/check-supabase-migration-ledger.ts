@@ -73,5 +73,7 @@ if (failures.length > 0) {
   for (const failure of failures) console.error("FAIL:", failure);
   process.exitCode = 1;
 } else {
-  console.log("PASS: exact mirrored source matches the reconciled 48-migration ledger.");
+  console.log(
+    `PASS: exact mirrored source matches the reconciled ${rootTree.fileCount}-migration ledger.`,
+  );
 }
