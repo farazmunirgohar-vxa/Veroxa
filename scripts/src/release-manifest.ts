@@ -16,9 +16,9 @@ export const deploymentManifestPath = resolve(
 
 export const TREE_HASH_ALGORITHM = "veroxa-path-null-content-null-sha256-v1";
 export const REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE =
-  "live47_registered_mutable_rpc_hold_active_candidate48_review_pending";
+  "live48_repair_generated_version_closeout_review_pending_under_hold";
 export const REVIEWED_LOCAL_CANDIDATE_STATUS =
-  "held_team_private_food_reconciliation_locally_reviewed_remote_gates_pending";
+  "live48_generated_version_reconciled_closeout_review_pending";
 export const REFRESHED_LOCAL_CANDIDATE_RELEASE_STATE =
   "integrated_candidate_fingerprints_refreshed_review_required";
 export const REFRESHED_LOCAL_CANDIDATE_STATUS =
@@ -26,9 +26,9 @@ export const REFRESHED_LOCAL_CANDIDATE_STATUS =
 export const RECONCILIATION_CANDIDATE_ACTION_SCOPE =
   "team_private_assessment_only_and_strict_food_contract_preserving_live47_ready_authority";
 export const LOCAL_CANDIDATE_SOURCE_EVIDENCE_SCOPE =
-  "exact_local_live47_plus_held_candidate48_source_pre_generated_version";
+  "exact_live48_generated_version_closeout_source_under_hold";
 export const LOCAL_CANDIDATE_MIGRATION_EVIDENCE_SCOPE =
-  "exact_local_candidate48_with_exact_live47_prefix_and_one_provisional_migration";
+  "exact_live48_generated_ledger_source_mirrors";
 export const RECONCILIATION_SOURCE_EVIDENCE_SCOPE =
   LOCAL_CANDIDATE_SOURCE_EVIDENCE_SCOPE;
 export const RECONCILIATION_MIGRATION_EVIDENCE_SCOPE =
@@ -36,11 +36,11 @@ export const RECONCILIATION_MIGRATION_EVIDENCE_SCOPE =
 export const LOCAL_CANDIDATE_DEPLOYMENT_FREEZE_STATE =
   "registered_mutable_rpc_ingress_and_decision_hold_active_verified";
 export const LOCAL_CANDIDATE_REVISION =
-  "live47_held_team_private_food_candidate_2026_08_09";
+  "live48_team_private_food_generated_version_closeout_2026_08_09";
 export const LOCAL_CANDIDATE_BASE_COMMIT =
-  "39bf713705685636f0d20a2ca068c738d4f414b4";
+  "e01e8e00d94ce9eb5243038bf41c202897a17460";
 export const LIVE_PRODUCTION_EVIDENCE_STATUS =
-  "sites_v39_live_database47_edge_v6_candidate48_pending_under_hold";
+  "sites_v39_live_database48_edge_v6_reconciled_source_pending_under_hold";
 export const LIVE_MIGRATION_EVIDENCE_SCOPE =
   "observed_remote_ledger_exact_names_and_bytes";
 export const HISTORICAL_REPOSITORY_MIGRATION_EVIDENCE_SCOPE =
@@ -137,7 +137,7 @@ export const CURRENT_PARTIAL_ROLLOUT_EVIDENCE = {
   sitesObservedAt: "2026-08-08",
   migrationLedgerObservedAt: "2026-08-09",
   canonicalGitHubMainCommit: LOCAL_CANDIDATE_BASE_COMMIT,
-  canonicalGitHubMainMergePullRequest: 166,
+  canonicalGitHubMainMergePullRequest: 165,
   canonicalGitHubMainCommitScope:
     "github_main_lineage_only_not_sites_v39_source_association",
   sitesVersion: 39,
@@ -156,14 +156,14 @@ export const CURRENT_PARTIAL_ROLLOUT_EVIDENCE = {
   sourceTreeSha256:
     "c5c471639303ac4488fbf1258a6e1736452eafbd43a9370473e02f6072eca7f5",
   sourceEvidenceScope: "observed_live_sites_v39_exact_archive",
-  migrationFileCount: 47,
+  migrationFileCount: 48,
   migrationTreeSha256:
-    "87c0ecd4272949d89e7512940f91f9d9e3c6e92154616377c78ef9e3d06bfc5e",
+    "1b3a575cbfbad53e811703c38681c30adf7c4b7bd716b1b193e322233d8d6ba6",
   latestMigration:
-    "20260808083842_post_20260808070840_private_media_authority_repair_v1.sql",
-  latestMigrationByteLength: 110_797,
+    "20260809035302_team_private_food_assessment_reconciliation_v1.sql",
+  latestMigrationByteLength: 59_052,
   latestMigrationSha256:
-    "3d2ba3a86024edef024a12ff9556c4e236baa57cbf2d4d478f9514321d69abee",
+    "56c64c795ad12f1dfbe05894fd3e56a87f1d0e3376ff10edfd97760b8d2fbd5c",
 } as const;
 
 export const LIVE47_MIGRATION_EVIDENCE = {
@@ -175,7 +175,7 @@ export const LIVE47_MIGRATION_EVIDENCE = {
 } as const;
 
 export const LOCAL_CANDIDATE_ROLLOUT_MIGRATIONS = [
-  "20260809024500_team_private_food_assessment_reconciliation_v1.sql",
+  "20260809035302_team_private_food_assessment_reconciliation_v1.sql",
 ] as const;
 export const LOCAL_CANDIDATE_APPLIED_MIGRATIONS = [
   "20260808001210_audit_intake_envelope_v2.sql",
@@ -188,24 +188,23 @@ export const LOCAL_CANDIDATE_APPLIED_MIGRATIONS = [
   "20260808064335_private_media_assessment_and_association_v1.sql",
   "20260808070840_momo_ready_team_decisions_and_food_tags_v2.sql",
   "20260808083842_post_20260808070840_private_media_authority_repair_v1.sql",
+  "20260809035302_team_private_food_assessment_reconciliation_v1.sql",
 ] as const;
-export const LOCAL_CANDIDATE_PENDING_MIGRATIONS = [
-  "20260809024500_team_private_food_assessment_reconciliation_v1.sql",
-] as const;
+export const LOCAL_CANDIDATE_PENDING_MIGRATIONS: readonly string[] = [];
 export const LOCAL_CANDIDATE_SOURCE_EVIDENCE = {
   fileCount: 214,
   treeSha256:
-    "fd3b8a61c0eb5781ffd80d58f6e69925fc4996474d891d3fc2915e317e17d799",
+    "cec2f313e3850141117c7f69dbc1d5ad707b72ee7a7ad5f1f2efa0d6c5a34297",
   reviewPassed: true,
 } as const;
 
 export const REPAIR_MIGRATION_EVIDENCE = {
-  filename: "20260809024500_team_private_food_assessment_reconciliation_v1.sql",
+  filename: "20260809035302_team_private_food_assessment_reconciliation_v1.sql",
   byteLength: 59_052,
   sha256: "56c64c795ad12f1dfbe05894fd3e56a87f1d0e3376ff10edfd97760b8d2fbd5c",
   candidateFileCount: 48,
   candidateTreeSha256:
-    "1e6b179940063af767550e56f2df71a81bc445d8a6f4558585282a490790958c",
+    "1b3a575cbfbad53e811703c38681c30adf7c4b7bd716b1b193e322233d8d6ba6",
 } as const;
 
 export const PRIVATE_MEDIA_MIGRATION_EVIDENCE = {
@@ -239,7 +238,7 @@ export const PHASE1_APPLICATION_QUALITY_EVIDENCE = {
 } as const;
 export const APPLICATION_QUALITY_EVIDENCE = {
   observedAt: "2026-08-09",
-  evidenceScope: "exact_local_live47_preserving_team_private_food_candidate",
+  evidenceScope: "exact_live48_closeout_with_hosted_candidate48_verification",
   cleanInstallExitCode: 0,
   buildExitCode: 0,
   testsPassed: 431,
@@ -251,10 +250,10 @@ export const APPLICATION_QUALITY_EVIDENCE = {
   diffCheckExitCode: 0,
   repairMigrationParserPassed: false,
   sqlFixtureParserPassed: false,
-  hostedCleanChainApplyPassed: false,
-  hostedFullPgTapPassed: false,
-  hostedFullPgTapRerunPending: true,
-  hostedDatabaseExecutionPassed: false,
+  hostedCleanChainApplyPassed: true,
+  hostedFullPgTapPassed: true,
+  hostedFullPgTapRerunPending: false,
+  hostedDatabaseExecutionPassed: true,
   repairMigrationSha256: REPAIR_MIGRATION_EVIDENCE.sha256,
   preconnectionFixtureSha256:
     "d6d870788c1211d8209048921232e9e8b1cffa16aae1ef9a4a9516b150434b5d",
@@ -549,6 +548,7 @@ export type DeploymentManifest = {
     hostedCleanChainApplyPassed?: boolean;
     hostedFullPgTapPassed?: boolean;
     hostedFullPgTapRerunPending?: boolean;
+    hostedDatabaseExecutionPassed?: boolean;
     databaseApplyAuthorized: boolean;
     evidenceScope?: string;
     repairMigrationFilename?: Nullable<string>;
@@ -715,6 +715,169 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
   const parity = manifest.deploymentParity as
     | Record<string, Record<string, unknown>>
     | undefined;
+
+  if (
+    manifest.schemaVersion === 10 &&
+    manifest.recordKind === "veroxa_guarded_internal_ai_rollout_manifest"
+  ) {
+    const sourceTree = hashTree(resolve(repoRoot, manifest.source.root), {
+      exclusions: [...GENERATED_PATH_EXCLUSIONS],
+    });
+    const rootMigrationTree = hashTree(
+      resolve(repoRoot, manifest.migrations.root),
+      { suffix: ".sql" },
+    );
+    const mirrorMigrationTree = hashTree(
+      resolve(repoRoot, manifest.migrations.mirrorRoot ?? ""),
+      { suffix: ".sql" },
+    );
+    const pending = candidate.pendingMigrations ?? [];
+    const liveMigrationTree = hashTree(
+      resolve(repoRoot, manifest.migrations.root),
+      { exclusions: pending, suffix: ".sql" },
+    );
+    const latestSourceMigration = rootMigrationTree.files.at(-1);
+    const latestLiveMigration = liveMigrationTree.files.at(-1);
+    const steps = manifest.rolloutSequence?.steps ?? [];
+    const completedPrefix = steps.findIndex((step) => !step.completed);
+    const completedCount = completedPrefix < 0 ? steps.length : completedPrefix;
+    const repairCloseout = closeouts?.repair;
+    const activationCloseout = closeouts?.activation;
+    const externalFlagsFalse =
+      hold?.providerWrites === false &&
+      hold?.reviewReplies === false &&
+      hold?.websiteWrites === false &&
+      hold?.externalScheduling === false;
+
+    if (
+      manifest.reviewedAt !== "2026-08-09" ||
+      manifest.canonicalRepository !== "farazmunirgohar-vxa/Veroxa" ||
+      manifest.canonicalBranch !== "main" ||
+      manifest.sitesProjectId !==
+        "appgprj_6a53d07c7c28819182801cf35dfd30de"
+    ) failures.push("guarded rollout identity drifted");
+    if (
+      sourceTree.fileCount !== manifest.source.fileCount ||
+      sourceTree.sha256 !== manifest.source.treeSha256 ||
+      candidate.sourceFileCount !== sourceTree.fileCount ||
+      candidate.sourceTreeSha256 !== sourceTree.sha256
+    ) failures.push("Sites source fingerprint drifted");
+    if (
+      rootMigrationTree.fileCount !== mirrorMigrationTree.fileCount ||
+      rootMigrationTree.sha256 !== mirrorMigrationTree.sha256 ||
+      !sameJson(rootMigrationTree.files, mirrorMigrationTree.files) ||
+      manifest.migrations.fileCount !== rootMigrationTree.fileCount ||
+      manifest.migrations.treeSha256 !== rootMigrationTree.sha256 ||
+      manifest.migrations.mirrorFileCount !== mirrorMigrationTree.fileCount ||
+      manifest.migrations.mirrorTreeSha256 !== mirrorMigrationTree.sha256 ||
+      candidate.migrationFileCount !== rootMigrationTree.fileCount ||
+      candidate.migrationTreeSha256 !== rootMigrationTree.sha256 ||
+      candidate.latestCandidateMigration !== latestSourceMigration ||
+      !latestSourceMigration ||
+      candidate.latestCandidateMigrationSha256 !== sha256File(resolve(
+        repoRoot,
+        manifest.migrations.root,
+        latestSourceMigration,
+      ))
+    ) failures.push("root/Sites migration source truth drifted");
+    if (
+      live.productionMigrationCount !== liveMigrationTree.fileCount ||
+      live.migrationTreeSha256 !== liveMigrationTree.sha256 ||
+      live.latestProductionMigration !== latestLiveMigration ||
+      !latestLiveMigration ||
+      live.latestProductionMigrationByteLength !== statSync(resolve(
+        repoRoot,
+        manifest.migrations.root,
+        latestLiveMigration,
+      )).size ||
+      live.latestProductionMigrationSha256 !== sha256File(resolve(
+        repoRoot,
+        manifest.migrations.root,
+        latestLiveMigration,
+      )) ||
+      live.candidateMigrationsMatchLiveLedger !== (pending.length === 0)
+    ) failures.push("observed production migration evidence drifted");
+    if (
+      pending.some((filename) => !rootMigrationTree.files.includes(filename)) ||
+      candidate.databaseMigrationApplied !== (pending.length === 0) ||
+      candidate.databaseChangesRequired !== (pending.length > 0) ||
+      candidate.additionalDatabaseChangesRequired !== (pending.length > 0)
+    ) failures.push("pending/applied migration state drifted");
+    if (
+      !repairCloseout ||
+      repairCloseout.sourceSha256 !== REPAIR_MIGRATION_EVIDENCE.sha256 ||
+      repairCloseout.actualLedgerFilename !== REPAIR_MIGRATION_EVIDENCE.filename ||
+      repairCloseout.actualLedgerVersion !== "20260809035302" ||
+      repairCloseout.sourceByteLength !== REPAIR_MIGRATION_EVIDENCE.byteLength ||
+      repairCloseout.submittedQueryTransportByteLength !== 59_053 ||
+      repairCloseout.transportTrailingNewlineDeltaBytes !== 1 ||
+      repairCloseout.databaseLedgerStoresSqlBytes !== false ||
+      repairCloseout.unchangedBytesVerified !== true ||
+      (repairCloseout.completed === true
+        ? typeof repairCloseout.mergedCommit !== "string"
+        : repairCloseout.mergedCommit !== null) ||
+      !existsSync(resolve(
+        repoRoot,
+        manifest.migrations.root,
+        REPAIR_MIGRATION_EVIDENCE.filename,
+      )) ||
+      sha256File(resolve(
+        repoRoot,
+        manifest.migrations.root,
+        REPAIR_MIGRATION_EVIDENCE.filename,
+      )) !== REPAIR_MIGRATION_EVIDENCE.sha256
+    ) failures.push("repair generated-version closeout drifted");
+    if (
+      !externalFlagsFalse ||
+      manifest.deploymentFreeze.automaticDeploymentsAllowed ||
+      edge?.providerCallObserved !== false ||
+      edge?.realUploadObserved !== false ||
+      edgeCandidate?.providerCallObserved !== false ||
+      edgeCandidate?.realUploadObserved !== false
+    ) failures.push("external-action freeze drifted");
+    if (
+      !routine ||
+      routine.postgresOnly !== true ||
+      routine.executeGrantedToPublic !== false ||
+      routine.executeGrantedToAnon !== false ||
+      routine.executeGrantedToAuthenticated !== false ||
+      routine.executeGrantedToServiceRole !== false ||
+      routine.invocationRestoresOnlySourceDefinedGrants !== true ||
+      routine.invocationSetsOnlyAiLiveCallsTrue !== true ||
+      routine.invocationReassertsEveryExternalFlagFalse !== true
+    ) failures.push("postgres-only activation boundary drifted");
+    if (
+      candidate.activationExecuted
+        ? hold?.aiLiveCalls !== true || routine?.invoked !== true
+        : hold?.aiLiveCalls !== false ||
+          hold?.registeredMutableRpcAclHoldVerified !== true ||
+          hold?.postCorrectionLeakedRpcCount !== 0
+    ) failures.push("runtime activation/hold state drifted");
+    if (
+      steps.length !== EXPECTED_ROLLOUT_STEP_IDS.length ||
+      steps.some((step, index) =>
+        step.order !== index + 1 ||
+        step.id !== EXPECTED_ROLLOUT_STEP_IDS[index] ||
+        !step.explicitReviewRequired ||
+        step.requiresCompletedStep !==
+          (index === 0 ? null : EXPECTED_ROLLOUT_STEP_IDS[index - 1]) ||
+        (index < completedCount ? !step.completed : step.completed)
+      )
+    ) failures.push("rollout completion is not one contiguous reviewed prefix");
+    if (
+      !activationCloseout ||
+      (activationCloseout.completed === true &&
+        (activationCloseout.unchangedBytesVerified !== true ||
+          typeof activationCloseout.actualLedgerVersion !== "string" ||
+          typeof activationCloseout.actualLedgerFilename !== "string"))
+    ) failures.push("activation generated-version closeout drifted");
+    if (failures.length > 0) {
+      throw new Error(
+        "Unsafe schema-10 guarded rollout manifest: " + failures.join("; "),
+      );
+    }
+    return;
+  }
 
   if (
     manifest.schemaVersion !== 10 ||
@@ -985,6 +1148,28 @@ export function assertReviewedLocalCandidateManifest(
   manifest: DeploymentManifest,
 ): void {
   assertUnreleasedLocalCandidateManifest(manifest);
+  if (manifest.recordKind === "veroxa_guarded_internal_ai_rollout_manifest") {
+    const quality = manifest.applicationQualityEvidence;
+    if (
+      !manifest.releaseCandidate.reviewedLocally ||
+      manifest.releaseCandidate.sourceReviewPassed !== true ||
+      manifest.releaseCandidate.qualityReviewPassed !== true ||
+      !quality ||
+      quality.testsFailed !== 0 ||
+      quality.testsPassed !== quality.testsTotal ||
+      quality.buildExitCode !== 0 ||
+      quality.typecheckExitCode !== 0 ||
+      quality.lintExitCode !== 0 ||
+      manifest.databaseContractReview?.hostedCleanChainApplyPassed !== true ||
+      manifest.databaseContractReview.hostedFullPgTapPassed !== true ||
+      manifest.databaseContractReview.hostedDatabaseExecutionPassed !== true
+    ) {
+      throw new Error(
+        "Guarded rollout lacks reviewed source, application, or hosted database evidence",
+      );
+    }
+    return;
+  }
   const candidate = manifest.releaseCandidate;
   const review = manifest.databaseContractReview;
   if (

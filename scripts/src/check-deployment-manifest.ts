@@ -1,11 +1,5 @@
 import { readFileSync } from "node:fs";
 import {
-  APPLICATION_QUALITY_EVIDENCE,
-  LIVE47_MIGRATION_EVIDENCE,
-  LOCAL_CANDIDATE_BASE_COMMIT,
-  LOCAL_CANDIDATE_SOURCE_EVIDENCE,
-  PR165_DRAFT_CHECKPOINT,
-  PRIVATE_MEDIA_EDGE_CANDIDATE,
   REPAIR_MIGRATION_EVIDENCE,
   assertReviewedLocalCandidateManifest,
   deploymentManifestPath,
@@ -16,7 +10,6 @@ const failures: string[] = [];
 const must = (condition: boolean, message: string): void => {
   if (!condition) failures.push(message);
 };
-
 const raw = readFileSync(deploymentManifestPath, "utf8");
 must(!/^(<<<<<<<|=======|>>>>>>>)/mu.test(raw), "Manifest contains merge markers.");
 
@@ -27,77 +20,53 @@ try {
   failures.push(error instanceof Error ? error.message : String(error));
 }
 
-must(manifest.schemaVersion === 10, "Manifest schema must be 10.");
+const repairCloseout = manifest.generatedVersionCloseouts?.repair as
+  | Record<string, unknown>
+  | undefined;
 must(
-  manifest.recordKind === "veroxa_live47_held_candidate48_manifest",
-  "Manifest record kind is not the schema-10 held-repair authority.",
+  manifest.schemaVersion === 10 &&
+    manifest.recordKind === "veroxa_guarded_internal_ai_rollout_manifest",
+  "Manifest is not the guarded internal-AI rollout authority.",
 );
 must(
-  manifest.currentProductionObservation.canonicalGitHubMainCommit ===
-    LOCAL_CANDIDATE_BASE_COMMIT &&
-    manifest.currentProductionObservation.productionMigrationCount ===
-      LIVE47_MIGRATION_EVIDENCE.fileCount &&
-    manifest.currentProductionObservation.migrationTreeSha256 ===
-      LIVE47_MIGRATION_EVIDENCE.treeSha256,
-  "Canonical main or exact live47 evidence drifted.",
-);
-must(
-  manifest.releaseCandidate.sourceFileCount ===
-    LOCAL_CANDIDATE_SOURCE_EVIDENCE.fileCount &&
-    manifest.releaseCandidate.sourceTreeSha256 ===
-      LOCAL_CANDIDATE_SOURCE_EVIDENCE.treeSha256 &&
-    manifest.releaseCandidate.latestCandidateMigration ===
+  manifest.currentProductionObservation.productionMigrationCount === 48 &&
+    manifest.currentProductionObservation.latestProductionMigration ===
       REPAIR_MIGRATION_EVIDENCE.filename &&
-    manifest.releaseCandidate.latestCandidateMigrationSha256 ===
-      REPAIR_MIGRATION_EVIDENCE.sha256 &&
-    JSON.stringify(manifest.applicationQualityEvidence) ===
-      JSON.stringify(APPLICATION_QUALITY_EVIDENCE),
-  "Reviewed local candidate fingerprints or quality evidence drifted.",
+    manifest.currentProductionObservation.candidateMigrationsMatchLiveLedger === true,
+  "Observed production is not the exact reconciled live48 ledger.",
 );
 must(
-  manifest.applicationQualityEvidence?.hostedCleanChainApplyPassed === false &&
-    manifest.applicationQualityEvidence.hostedFullPgTapPassed === false &&
-    manifest.applicationQualityEvidence.hostedFullPgTapRerunPending === true &&
-    manifest.applicationQualityEvidence.hostedDatabaseExecutionPassed === false &&
-    manifest.databaseContractReview?.hostedCleanChainApplyPassed === false &&
-    manifest.databaseContractReview.hostedFullPgTapPassed === false &&
-    manifest.databaseContractReview.hostedFullPgTapRerunPending === true &&
-    manifest.databaseContractReview.functionalVerificationPassed === false,
-  "Hosted candidate48 execution evidence must remain pending until the exact head passes.",
+  repairCloseout?.actualLedgerVersion === "20260809035302" &&
+    repairCloseout.actualLedgerFilename === REPAIR_MIGRATION_EVIDENCE.filename &&
+    repairCloseout.sourceByteLength === REPAIR_MIGRATION_EVIDENCE.byteLength &&
+    repairCloseout.submittedQueryTransportByteLength === 59_053 &&
+    repairCloseout.transportTrailingNewlineDeltaBytes === 1 &&
+    repairCloseout.databaseLedgerStoresSqlBytes === false &&
+    repairCloseout.unchangedBytesVerified === true &&
+    repairCloseout.completed === false,
+  "Candidate48 generated-version reconciliation candidate is not staged exactly.",
 );
 must(
-  manifest.edgeDeployment?.currentRepositorySourceParity === false &&
-    manifest.edgeCandidate?.contractSha256 ===
-      PRIVATE_MEDIA_EDGE_CANDIDATE.contractSha256 &&
-    manifest.edgeCandidate.deployed === false,
-  "Live Edge v6 and pending prompt-v2 Edge candidate were conflated.",
-);
-must(
-  manifest.operationalHold?.activeClientStorageUploadPolicyRemains === true &&
-    manifest.operationalHold.rawOrphanStorageObjectWritePossible === true &&
-    manifest.operationalHold.rawStorageCannotRegisterOrTriggerProviderWhileRpcsHeld === true,
-  "Registered mutable-RPC hold must disclose the limited orphan-storage residual.",
-);
-must(
-  manifest.releaseCandidate.pullRequest === PR165_DRAFT_CHECKPOINT.pullRequest &&
-    manifest.releaseCandidate.pullRequestDraft === true &&
-    manifest.releaseCandidate.observedDraftPullRequestHead ===
-      PR165_DRAFT_CHECKPOINT.openingDraftHead &&
-    manifest.releaseCandidate.observedDraftPullRequestTree ===
-      PR165_DRAFT_CHECKPOINT.openingDraftTree &&
-    manifest.releaseCandidate.draftHeadEvidenceScope ===
-      PR165_DRAFT_CHECKPOINT.evidenceScope &&
     manifest.releaseCandidate.githubMerged === false &&
+    manifest.releaseCandidate.databaseMigrationApplied === true &&
+    (manifest.releaseCandidate.pendingMigrations ?? []).length === 0 &&
     manifest.releaseCandidate.allFourWorkflowsGreen === null &&
-    manifest.releaseCandidate.zeroUnresolvedReviewThreads === null &&
-    manifest.releaseCandidate.databaseMigrationApplied === false &&
+    manifest.databaseContractReview?.hostedCleanChainApplyPassed === true &&
+    manifest.databaseContractReview.hostedFullPgTapPassed === true,
+  "Merged/apply/hosted verification evidence is incomplete.",
+);
+must(
+  manifest.operationalHold?.aiLiveCalls === false &&
+    manifest.operationalHold.providerWrites === false &&
+    manifest.operationalHold.reviewReplies === false &&
+    manifest.operationalHold.websiteWrites === false &&
+    manifest.operationalHold.externalScheduling === false &&
+    manifest.operationalHold.postCorrectionLeakedRpcCount === 0 &&
     manifest.releaseCandidate.sitesPublished === false &&
     manifest.releaseCandidate.edgeDeployed === false &&
-    manifest.releaseCandidate.activationGateReady === false &&
     manifest.releaseCandidate.activationExecuted === false &&
-    manifest.releaseCandidate.fullReleaseGatePassed === false &&
     manifest.deploymentFreeze.automaticDeploymentsAllowed === false,
-  "Remote, apply, publication, activation, or full-release evidence was overclaimed.",
+  "Hold, publication, or activation state was overclaimed.",
 );
 
 if (failures.length > 0) {
@@ -105,6 +74,6 @@ if (failures.length > 0) {
   process.exitCode = 1;
 } else {
   console.log(
-    "PASS: schema-10 live47/candidate48 manifest is exact, reviewed locally, and fail-closed for remote/runtime gates.",
+    "PASS: live48 is source-reconciled and hosted-verified under the unchanged runtime hold.",
   );
 }

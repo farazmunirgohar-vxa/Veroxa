@@ -1,7 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
-  CURRENT_PARTIAL_ROLLOUT_EVIDENCE,
   PRIVATE_MEDIA_EDGE_CANDIDATE,
   assertReviewedLocalCandidateManifest,
   readDeploymentManifest,
@@ -19,7 +18,6 @@ try {
 } catch (error) {
   failures.push(error instanceof Error ? error.message : String(error));
 }
-
 for (const retiredPath of ["api/audit-requests.ts", "api/pilot-access.ts"]) {
   must(!existsSync(resolve(repoRoot, retiredPath)), `Retired Vercel artifact exists: ${retiredPath}`);
 }
@@ -37,40 +35,25 @@ if (existsSync(sentinelPath)) {
     "vercel.json is not the exact inert shutdown sentinel.",
   );
 }
-
 must(
-  manifest.currentProductionObservation.sitesVersion === 39 &&
-    manifest.currentProductionObservation.sitesVersionId ===
-      CURRENT_PARTIAL_ROLLOUT_EVIDENCE.sitesVersionId &&
-    manifest.currentProductionObservation.sitesCheckoutCommit ===
-      CURRENT_PARTIAL_ROLLOUT_EVIDENCE.sitesCheckoutCommit &&
-    manifest.currentProductionObservation.sitesArchiveSha256 ===
-      CURRENT_PARTIAL_ROLLOUT_EVIDENCE.sitesArchiveSha256 &&
-    manifest.currentProductionObservation.canonicalGitHubMainCommitScope ===
-      "github_main_pr166_lineage_only_not_sites_v39_source_association",
-  "Sites v39 must remain an independent observed baseline.",
-);
-must(
-  manifest.releaseCandidate.sitesPublishRequired === true &&
-    manifest.releaseCandidate.sitesPublished === false &&
+  manifest.currentProductionObservation.sitesVersion >= 39 &&
+    manifest.currentProductionObservation.sitesLiveUrl === "https://veroxasystems.com" &&
+    manifest.currentProductionObservation.sitesCustomDomainsVerified === true &&
     manifest.releaseCandidate.sitesPublishAuthorized === true &&
-    manifest.releaseCandidate.edgeDeployRequired === true &&
-    manifest.releaseCandidate.edgeDeployed === false &&
     manifest.releaseCandidate.edgeDeployAuthorized === true &&
     manifest.releaseCandidate.deploymentAuthorized === true &&
-    manifest.releaseCandidate.fullReleaseGatePassed === false &&
     manifest.deploymentFreeze.automaticDeploymentsAllowed === false,
-  "Manual scoped authorization must not be confused with publication or automatic deployment.",
+  "Sites/Edge authorization or sole-hosting evidence drifted.",
 );
 must(
-  manifest.edgeDeployment?.functionVersion === 6 &&
-    manifest.edgeDeployment.currentRepositorySourceParity === false &&
-    manifest.edgeCandidate?.promptContractVersion ===
-      PRIVATE_MEDIA_EDGE_CANDIDATE.promptContractVersion &&
-    manifest.edgeCandidate.deployed === false,
-  "Live prompt-v1 Edge v6 and pending prompt-v2 Edge source were conflated.",
+  manifest.operationalHold?.providerWrites === false &&
+    manifest.operationalHold.reviewReplies === false &&
+    manifest.operationalHold.websiteWrites === false &&
+    manifest.operationalHold.externalScheduling === false &&
+    manifest.edgeDeployment?.providerCallObserved === false &&
+    manifest.edgeCandidate?.providerCallObserved === false,
+  "Sites/Edge evidence overclaims an external action or provider call.",
 );
-
 const closure = [
   [
     "supabase/functions/momo-content-ai-lifecycle/index.ts",
@@ -89,12 +72,12 @@ const closure = [
   ],
 ] as const;
 for (const [rootPath, sitesPath, expectedSha] of closure) {
-  const rootFile = resolve(repoRoot, rootPath);
-  const sitesFile = resolve(repoRoot, sitesPath);
   must(
-    existsSync(rootFile) && existsSync(sitesFile) &&
-      sha256File(rootFile) === expectedSha && sha256File(sitesFile) === expectedSha,
-    `Pending Edge prompt-v2 root/Sites closure drifted: ${rootPath}`,
+    existsSync(resolve(repoRoot, rootPath)) &&
+      existsSync(resolve(repoRoot, sitesPath)) &&
+      sha256File(resolve(repoRoot, rootPath)) === expectedSha &&
+      sha256File(resolve(repoRoot, sitesPath)) === expectedSha,
+    `Edge root/Sites closure drifted: ${rootPath}`,
   );
 }
 
@@ -102,7 +85,5 @@ if (failures.length > 0) {
   for (const failure of failures) console.error("FAIL:", failure);
   process.exitCode = 1;
 } else {
-  console.log(
-    "PASS: Sites is the sole web target; Sites and Edge deployments remain manual, ordered, authorized, and pending.",
-  );
+  console.log("PASS: Sites is the sole web target and Edge remains JWT-guarded.");
 }

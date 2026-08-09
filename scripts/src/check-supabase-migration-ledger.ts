@@ -1,10 +1,6 @@
 import { readdirSync, statSync } from "node:fs";
 import { resolve } from "node:path";
 import {
-  LIVE47_MIGRATION_EVIDENCE,
-  LIVE_MIGRATION_EVIDENCE_SCOPE,
-  LOCAL_CANDIDATE_MIGRATION_EVIDENCE_SCOPE,
-  LOCAL_CANDIDATE_PENDING_MIGRATIONS,
   REPAIR_MIGRATION_EVIDENCE,
   assertReviewedLocalCandidateManifest,
   hashTree,
@@ -27,58 +23,34 @@ const rootNames = releaseNames(rootDir);
 const mirrorNames = releaseNames(mirrorDir);
 const rootTree = hashTree(rootDir, { suffix: ".sql" });
 const mirrorTree = hashTree(mirrorDir, { suffix: ".sql" });
-const liveRootPrefix = hashTree(rootDir, {
-  exclusions: [REPAIR_MIGRATION_EVIDENCE.filename],
-  suffix: ".sql",
-});
-const liveMirrorPrefix = hashTree(mirrorDir, {
-  exclusions: [REPAIR_MIGRATION_EVIDENCE.filename],
-  suffix: ".sql",
-});
 const manifest = readDeploymentManifest();
+const pending = manifest.releaseCandidate.pendingMigrations ?? [];
+const liveTree = hashTree(rootDir, { exclusions: pending, suffix: ".sql" });
 
 try {
   assertReviewedLocalCandidateManifest(manifest);
 } catch (error) {
   failures.push(error instanceof Error ? error.message : String(error));
 }
-
 must(
-  manifest.currentProductionObservation.migrationTreeEvidenceScope ===
-    LIVE_MIGRATION_EVIDENCE_SCOPE &&
-    manifest.migrations.evidenceScope ===
-      LOCAL_CANDIDATE_MIGRATION_EVIDENCE_SCOPE,
-  "Live-ledger and local-candidate evidence scopes drifted.",
-);
-must(
-  rootTree.fileCount === REPAIR_MIGRATION_EVIDENCE.candidateFileCount &&
-    mirrorTree.fileCount === REPAIR_MIGRATION_EVIDENCE.candidateFileCount &&
-    rootTree.sha256 === REPAIR_MIGRATION_EVIDENCE.candidateTreeSha256 &&
-    mirrorTree.sha256 === REPAIR_MIGRATION_EVIDENCE.candidateTreeSha256 &&
+  rootTree.fileCount === mirrorTree.fileCount &&
+    rootTree.sha256 === mirrorTree.sha256 &&
     JSON.stringify(rootNames) === JSON.stringify(mirrorNames) &&
     JSON.stringify(rootTree.files) === JSON.stringify(mirrorTree.files),
-  "Root/Sites candidate48 migration trees are not exact mirrors.",
+  "Root/Sites migration trees are not exact mirrors.",
 );
 must(
-  liveRootPrefix.fileCount === LIVE47_MIGRATION_EVIDENCE.fileCount &&
-    liveMirrorPrefix.fileCount === LIVE47_MIGRATION_EVIDENCE.fileCount &&
-    liveRootPrefix.sha256 === LIVE47_MIGRATION_EVIDENCE.treeSha256 &&
-    liveMirrorPrefix.sha256 === LIVE47_MIGRATION_EVIDENCE.treeSha256,
-  "Candidate does not preserve the exact immutable live47 prefix.",
-);
-must(
-  JSON.stringify(manifest.releaseCandidate.pendingMigrations) ===
-    JSON.stringify(LOCAL_CANDIDATE_PENDING_MIGRATIONS) &&
-    manifest.releaseCandidate.databaseMigrationApplied === false &&
-    manifest.releaseCandidate.candidateMigrationsMatchLiveLedger === false,
-  "The provisional repair must remain the sole unapplied candidate migration.",
-);
-must(
-  rootNames.includes(REPAIR_MIGRATION_EVIDENCE.filename) &&
-    mirrorNames.includes(REPAIR_MIGRATION_EVIDENCE.filename) &&
-    !rootNames.includes("20260808045812_momo_ready_team_decisions_and_food_tags_v2.sql") &&
-    !mirrorNames.includes("20260808045812_momo_ready_team_decisions_and_food_tags_v2.sql"),
-  "Provisional repair or generated-version source truth drifted.",
+    rootTree.fileCount === manifest.migrations.fileCount &&
+    rootTree.sha256 === manifest.migrations.treeSha256 &&
+    manifest.currentProductionObservation.productionMigrationCount ===
+      liveTree.fileCount &&
+    manifest.currentProductionObservation.migrationTreeSha256 ===
+      liveTree.sha256 &&
+    manifest.currentProductionObservation.latestProductionMigration ===
+      liveTree.files.at(-1) &&
+    manifest.releaseCandidate.candidateMigrationsMatchLiveLedger ===
+      (pending.length === 0),
+  "Source and pending-migration split do not match the observed production ledger.",
 );
 for (const filename of rootNames) {
   must(
@@ -87,35 +59,19 @@ for (const filename of rootNames) {
     `Root/Sites migration bytes differ: ${filename}`,
   );
 }
-for (const directory of [rootDir, mirrorDir]) {
-    const livePath = resolve(directory, LIVE47_MIGRATION_EVIDENCE.filename);
-  const repairPath = resolve(directory, REPAIR_MIGRATION_EVIDENCE.filename);
-  must(
-    statSync(livePath).size === LIVE47_MIGRATION_EVIDENCE.byteLength &&
-      sha256File(livePath) === LIVE47_MIGRATION_EVIDENCE.sha256,
-    `Immutable live47 migration bytes drifted in ${directory}`,
-  );
-  must(
-    statSync(repairPath).size === REPAIR_MIGRATION_EVIDENCE.byteLength &&
-      sha256File(repairPath) === REPAIR_MIGRATION_EVIDENCE.sha256,
-    `Pending repair bytes drifted in ${directory}`,
-  );
-}
-const versionCounts = new Map<string, number>();
-for (const filename of rootNames) {
-  const version = filename.split("_", 1)[0] ?? "";
-  versionCounts.set(version, (versionCounts.get(version) ?? 0) + 1);
-}
+const repairPath = resolve(rootDir, REPAIR_MIGRATION_EVIDENCE.filename);
 must(
-  [...versionCounts.values()].every((count) => count === 1),
-  "Candidate migration versions contain duplicates.",
+  rootNames.includes(REPAIR_MIGRATION_EVIDENCE.filename) &&
+    statSync(repairPath).size === REPAIR_MIGRATION_EVIDENCE.byteLength &&
+    sha256File(repairPath) === REPAIR_MIGRATION_EVIDENCE.sha256,
+  "Generated live48 repair identity or bytes drifted.",
 );
+const versions = rootNames.map((filename) => filename.split("_", 1)[0]);
+must(new Set(versions).size === versions.length, "Migration versions contain duplicates.");
 
 if (failures.length > 0) {
   for (const failure of failures) console.error("FAIL:", failure);
   process.exitCode = 1;
 } else {
-  console.log(
-    "PASS: exact immutable live47 prefix plus one mirrored provisional migration yields candidate48.",
-  );
+  console.log("PASS: exact mirrored source matches the reconciled 48-migration ledger.");
 }
