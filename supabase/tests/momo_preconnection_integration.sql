@@ -3205,6 +3205,9 @@ grant execute on function
 grant execute on function public.veroxa_decide_momo_ready_package_v2(
   uuid,text,text,text,text
 ) to authenticated;
+grant execute on function public.veroxa_record_momo_ready_disposition_v1(
+  uuid,uuid,text,text,text,text,jsonb
+) to authenticated;
 grant execute on function public.veroxa_register_team_private_media_v1(
   uuid,text,text,bigint,text,text,jsonb,date
 ) to authenticated;
@@ -5061,9 +5064,18 @@ declare
     current_setting('veroxa.test.restaurant_id')::uuid;
   ready_id uuid :=
     current_setting('veroxa.test.ready_review_package_1')::uuid;
+  ready_record public.veroxa_momo_ready_packages_v2%rowtype;
   replay_result record;
   blocked_status record;
   discard_result record;
+  discard_event_id uuid;
+  discard_note constant text :=
+    'Discard approved source after current evidence changed.';
+  discard_attestation constant jsonb := '{
+    "teamReviewed": true,
+    "noExternalWriteAuthorized": true,
+    "decisionIsFinalForThisMedia": true
+  }'::jsonb;
   fixed_attestation constant text :=
     'Team Faraz reviewed the exact rendered image, generic visual assessment and tags, owner-grounded public copy, alt text, calls to action, and the current evidence snapshot. This approval permits manual copy and download only; it does not schedule, post, connect a provider, or authorize any external write.';
 begin
@@ -5091,57 +5103,72 @@ begin
   from public.veroxa_momo_ready_review_status_v2(
     target_restaurant_id, ready_id
   ) status;
-  select decision.* into discard_result
-  from public.veroxa_decide_momo_ready_package_v2(
-    ready_id, 'discarded',
-    blocked_status.current_review_snapshot_sha256,
-    'Discard approved source after current evidence changed.', null
-  ) decision;
-  if discard_result.review_state <> 'discarded'
-    or discard_result.terminal_decision <> 'discarded'
-    or discard_result.replayed
-    or not discard_result.snapshot_current
-    or discard_result.can_manual_export
-    or discard_result.external_write_allowed then
+  select ready.* into ready_record
+  from public.veroxa_momo_ready_packages_v2 ready
+  where ready.id = ready_id
+    and ready.restaurant_id = target_restaurant_id;
+  select recorded.* into discard_result
+  from public.veroxa_record_momo_ready_disposition_v1(
+    target_restaurant_id, ready_id,
+    ready_record.output_sha256,
+    ready_record.source_content_sha256,
+    'discarded', discard_note, discard_attestation
+  ) recorded;
+  discard_event_id := discard_result.event_id;
+  select status.* into blocked_status
+  from public.veroxa_momo_ready_review_status_v2(
+    target_restaurant_id, ready_id
+  ) status;
+  if discard_event_id is null
+    or blocked_status.decision_id is distinct from discard_event_id
+    or blocked_status.review_state <> 'discarded'
+    or blocked_status.terminal_decision <> 'discarded'
+    or blocked_status.snapshot_current
+    or blocked_status.can_manual_export
+    or blocked_status.external_write_allowed
+    or not (blocked_status.blocker_codes ?
+      'source_media_discarded_terminal')
+    or not (blocked_status.blocker_codes ?
+      'authoritative_v1_snapshot_unavailable') then
     raise exception 'momo_ready_approved_then_source_discard_invalid';
   end if;
 
-  select decision.* into discard_result
-  from public.veroxa_decide_momo_ready_package_v2(
-    ready_id, 'discarded',
-    blocked_status.current_review_snapshot_sha256,
-    'Discard approved source after current evidence changed.', null
-  ) decision;
-  if not discard_result.replayed
-    or discard_result.review_state <> 'discarded'
-    or discard_result.terminal_decision <> 'discarded' then
+  select recorded.* into discard_result
+  from public.veroxa_record_momo_ready_disposition_v1(
+    target_restaurant_id, ready_id,
+    ready_record.output_sha256,
+    ready_record.source_content_sha256,
+    'discarded', discard_note, discard_attestation
+  ) recorded;
+  if discard_result.event_id is distinct from discard_event_id then
     raise exception 'momo_ready_approved_source_discard_replay_failed';
   end if;
   begin
     perform 1
-    from public.veroxa_decide_momo_ready_package_v2(
-      ready_id, 'discarded',
-      blocked_status.current_review_snapshot_sha256,
-      'Conflicting source-discard reason must not replace audit.', null
-    );
+    from public.veroxa_record_momo_ready_disposition_v1(
+      target_restaurant_id, ready_id,
+      ready_record.output_sha256,
+      ready_record.source_content_sha256,
+      'discarded',
+      'Conflicting source-discard reason must not replace audit.',
+      discard_attestation
+    ) recorded;
     raise exception 'momo_ready_source_discard_conflict_was_allowed';
   exception when sqlstate '23505' then
-    if sqlerrm <> 'momo_ready_source_discard_conflict_v2' then raise; end if;
+    if sqlerrm <> 'source_media_discard_idempotency_conflict' then raise; end if;
   end;
 
-  select decision.* into replay_result
-  from public.veroxa_decide_momo_ready_package_v2(
-    ready_id, 'approved_for_manual_export',
-    current_setting('veroxa.test.ready_review_v5_approval_sha'),
-    null, fixed_attestation
-  ) decision;
-  if not replay_result.replayed
-    or replay_result.review_state <> 'discarded'
-    or replay_result.terminal_decision <> 'discarded'
-    or replay_result.can_manual_export
-    or replay_result.external_write_allowed then
-    raise exception 'momo_ready_prior_approval_audit_did_not_yield_to_discard';
-  end if;
+  begin
+    perform 1
+    from public.veroxa_decide_momo_ready_package_v2(
+      ready_id, 'approved_for_manual_export',
+      current_setting('veroxa.test.ready_review_v5_approval_sha'),
+      null, fixed_attestation
+    );
+    raise exception 'momo_ready_discarded_source_replayed_old_approval';
+  exception when sqlstate '23514' then
+    if sqlerrm <> 'source_media_discarded_terminal' then raise; end if;
+  end;
 end $$;
 
 reset role;
@@ -5679,11 +5706,19 @@ begin
   if (
     select count(*)
     from veroxa_private.momo_ready_v2_authority_evidence_v1 authority
-    where authority.ready_package_id in (
-      current_setting('veroxa.test.ready_review_package_1')::uuid,
-      current_setting('veroxa.test.ready_review_package_2')::uuid
+    where (
+      (
+        authority.ready_package_id = current_setting(
+          'veroxa.test.ready_review_package_1'
+        )::uuid
+        and authority.requested_decision = 'approved_for_manual_export'
+      ) or (
+        authority.ready_package_id = current_setting(
+          'veroxa.test.ready_review_package_2'
+        )::uuid
+        and authority.requested_decision = 'discarded'
+      )
     )
-      and authority.requested_decision = 'discarded'
       and not authority.external_write_allowed
   ) <> 2
     or (

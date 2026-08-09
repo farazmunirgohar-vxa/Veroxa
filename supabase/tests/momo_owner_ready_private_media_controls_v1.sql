@@ -156,12 +156,20 @@ begin
   function_source := pg_catalog.pg_get_functiondef(to_regprocedure(
     'public.veroxa_record_momo_ready_disposition_v1(uuid,uuid,text,text,text,text,jsonb)'
   ));
+  if position('lock_momo_source_media_v1' in function_source) = 0
+     or position('momo_ready_v2_approval_required' in function_source) = 0
+     or position('veroxa_record_momo_ready_disposition_pre_source_lock_v1'
+       in function_source) = 0 then
+    raise exception 'Ready discard wrapper lost v2-only approval or lock';
+  end if;
+  function_source := pg_catalog.pg_get_functiondef(to_regprocedure(
+    'public.veroxa_record_momo_ready_disposition_pre_source_lock_v1(uuid,uuid,text,text,text,text,jsonb)'
+  ));
   if position('for update' in lower(function_source)) = 0
      or position('source_media_discarded_terminal' in function_source) = 0
-     or position('lock_momo_source_media_v1' in function_source) = 0
      or position('ready_package_current_evidence_refresh_required'
        in function_source) = 0 then
-    raise exception 'Ready writer lost lock, terminal, or freshness guard';
+    raise exception 'Ready discard delegate lost terminal or freshness guard';
   end if;
 
   function_source := pg_catalog.pg_get_functiondef(to_regprocedure(
