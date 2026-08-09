@@ -27,6 +27,7 @@ const rrRelativePath = "artifacts/veroxa/docs/RR_RELEASE_CHECKPOINT.json";
 const rrPath = resolve(repoRoot, rrRelativePath);
 
 type ReleaseCandidateCheckpoint = {
+  status: string;
   state: string;
   actionScope: string;
   basedOnGitHubMainCommit: string;
