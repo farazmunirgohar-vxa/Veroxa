@@ -7,9 +7,9 @@ import { getServerVeroxaContext } from "../../../veroxa-supabase-server";
 import { createMomoMediaFinalizeHandler } from "./core";
 
 export const runtime = "edge";
-const bridgeConfig = getMomoContentAiLifecycleBridgeConfig();
 
 function dependencies(client: SupabaseClient, actor: { role: "team" | "client"; restaurantId: string | null; userId: string }) {
+  const bridge = () => getMomoContentAiLifecycleBridgeConfig();
   return {
     async authenticate() { return actor; },
     async download(storagePath: string) {
@@ -30,10 +30,12 @@ function dependencies(client: SupabaseClient, actor: { role: "team" | "client"; 
       };
     },
     async finalize(input: Record<string, unknown>) {
+      const bridgeConfig = bridge();
       if (!bridgeConfig) throw new Error("media_verification_configuration_unavailable");
       return invokeMomoContentAiLifecycleBridge<unknown>(client, bridgeConfig, { operation: "finalize_upload", ...input });
     },
     async recordFailure(input: Record<string, unknown>) {
+      const bridgeConfig = bridge();
       if (!bridgeConfig) throw new Error("media_verification_configuration_unavailable");
       return invokeMomoContentAiLifecycleBridge<unknown>(client, bridgeConfig, {
         operation: "record_intake_attempt",

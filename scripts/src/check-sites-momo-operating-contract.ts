@@ -241,8 +241,6 @@ for (const marker of [
 }
 
 for (const marker of [
-  "usageScope: string[]",
-  "p_usage_scope: usageScope",
   'status: "pending"',
   "created_by: user.id",
   'rpc("veroxa_momo_client_snapshot_v1"',
@@ -270,7 +268,7 @@ for (const marker of [
   'rpc("veroxa_queue_momo_publication_v1"',
   'rpc("veroxa_create_truth_revisions_v1"',
   'rpc("veroxa_revoke_momo_media_rights_v1"',
-  'rpc("veroxa_register_momo_media_v2"',
+  'rpc(\n    "veroxa_apply_momo_media_upload_instruction_v1"',
   'rpc("veroxa_save_momo_contact_prefill_v1"',
   'rpc("veroxa_add_momo_media_tag_v1"',
   'rpc("veroxa_create_manual_variant_v1"',
@@ -293,6 +291,22 @@ for (const marker of [
     `Sites data adapter missing a required write contract: ${marker}`,
   );
 }
+
+for (const marker of [
+  "usageScope: string[]",
+  "p_usage_scope: usageScope",
+  '"veroxa_register_momo_media_v3"',
+  "p_requested_association: input.restaurantAssociation",
+]) {
+  must(
+    clientData.includes(marker),
+    `Sites Client media adapter missing the one-step upload contract: ${marker}`,
+  );
+}
+must(
+  !clientData.includes('"veroxa_register_momo_media_v2"'),
+  "Sites browser code still exposes the legacy upload instruction bypass",
+);
 
 for (const marker of [
   "submitMomoContentConfirmation",
@@ -778,7 +792,7 @@ for (const fixture of [
 
 for (const fixture of [
   "Team v2 reads are scoped to open incidents, unscheduled Ready, and active legacy jobs",
-  "Team media supports assessment-only recognition while content remains decision-scoped",
+  "Team media supports assessment-only recognition and owns saved-instruction recovery",
   "Client copy presents safe outcomes without internal processing details",
 ]) {
   must(

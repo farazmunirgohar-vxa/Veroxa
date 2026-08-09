@@ -2,5 +2,7 @@
 # blank-at-EOF check enabled everywhere else.
 artifacts/veroxa-sites/supabase/migrations/20260802002812_momo_real_owner_truth_reconfirmation.sql whitespace=-blank-at-eof
 artifacts/veroxa-sites/supabase/migrations/20260802003123_momo_truth_confirmation_application_lineage.sql whitespace=-blank-at-eof
+artifacts/veroxa-sites/supabase/migrations/20260809222502_media_upload_instruction_handoff_v1.sql whitespace=-blank-at-eof
 supabase/migrations/20260802002812_momo_real_owner_truth_reconfirmation.sql whitespace=-blank-at-eof
 supabase/migrations/20260802003123_momo_truth_confirmation_application_lineage.sql whitespace=-blank-at-eof
+supabase/migrations/20260809222502_media_upload_instruction_handoff_v1.sql whitespace=-blank-at-eof

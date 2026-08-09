@@ -49,6 +49,7 @@ must(
 for (const field of [
   "knownResiduals",
   "currentProductionObservation",
+  "mediaUploadHandoff",
   "applicationQualityEvidence",
   "databaseContractReview",
   "edgeDeployment",
@@ -111,7 +112,7 @@ must(
 );
 must(
   rr.checkpoint ===
-      "live49-internal-ai-active-external-actions-held-2026-08-09" &&
+      "live52-media-upload-one-step-team-processor-external-actions-held-2026-08-09" &&
     Array.isArray(rr.activationGates) &&
     rr.activationGates.length === 4 &&
     rr.activationGates.some((gate: unknown) =>
@@ -128,6 +129,17 @@ must(
         ),
     ),
   "RR activation-gate narrative is stale or contradicts the invoked state.",
+);
+must(
+  rr.mediaUploadHandoff?.clientActionAfterUpload === "none" &&
+    rr.mediaUploadHandoff?.processingOwner === "veroxa_team" &&
+    rr.mediaUploadHandoff?.legacyV2AuthenticatedExecute === false &&
+    rr.mediaUploadHandoff?.teamProcessorAvailable === true &&
+    rr.mediaUploadHandoff?.instructionApplicationCount === 0 &&
+    rr.mediaUploadHandoff?.existingUploadRequiresClientRetry === false &&
+    rr.mediaUploadHandoff?.openMediaIntakeExceptionCount === 3 &&
+    rr.mediaUploadHandoff?.allMediaIntakeExceptionsExternalLocked === true,
+  "RR does not preserve the one-step Client upload and Team-owned exception boundary.",
 );
 must(
   rr.activationExecution.invoked === true &&

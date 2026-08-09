@@ -8,7 +8,6 @@ import type { MomoContentAiPackageOutput, MomoContentPlatform, MomoContentTruthS
 import { createMomoContentApproveHandler } from "./core";
 
 export const runtime = "edge";
-const bridgeConfig = getMomoContentAiLifecycleBridgeConfig();
 
 function parseRun(row: Record<string, unknown>) {
   if (typeof row.id !== "string" || typeof row.restaurant_id !== "string" || typeof row.request_hash !== "string" || typeof row.status !== "string" || !Array.isArray(row.target_platforms) || !Array.isArray(row.truth_snapshot) || typeof row.output_payload !== "object" || row.output_payload === null || Array.isArray(row.output_payload) || typeof row.output_sha256 !== "string") throw new Error("content_package_readback_invalid");
@@ -25,6 +24,7 @@ function parseRun(row: Record<string, unknown>) {
 }
 
 function dependencies(client: SupabaseClient, actor: { role: "team" | "client"; restaurantId: string | null; userId: string }) {
+  const bridgeConfig = getMomoContentAiLifecycleBridgeConfig();
   return {
     async authenticate() { return actor; },
     async loadRun(runId: string, restaurantId: string) {

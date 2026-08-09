@@ -1,6 +1,7 @@
 import { mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 import {
+  MEDIA_UPLOAD_HANDOFF_EVIDENCE,
   assertDeploymentAttestationManifest,
   deploymentManifestPath,
   ensureParentPath,
@@ -32,18 +33,20 @@ if (
   sourceTree.sha256 !== manifest.source.treeSha256 ||
   migrationTree.fileCount !== manifest.migrations.fileCount ||
   migrationTree.sha256 !== manifest.migrations.treeSha256 ||
-  sourceTree.fileCount !== manifest.releaseCandidate.sourceFileCount ||
-  sourceTree.sha256 !== manifest.releaseCandidate.sourceTreeSha256 ||
-  migrationTree.fileCount !== manifest.releaseCandidate.migrationFileCount ||
-  migrationTree.sha256 !== manifest.releaseCandidate.migrationTreeSha256
+  sourceTree.fileCount !==
+    MEDIA_UPLOAD_HANDOFF_EVIDENCE.candidateSourceFileCount ||
+  sourceTree.sha256 !==
+    MEDIA_UPLOAD_HANDOFF_EVIDENCE.candidateSourceTreeSha256 ||
+  migrationTree.fileCount !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.migrationFileCount ||
+  migrationTree.sha256 !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.migrationTreeSha256
 ) {
   throw new Error(
-    "Refusing to attest source whose deterministic hashes do not match every schema-10 candidate fingerprint",
+    "Refusing to attest source whose deterministic hashes do not match the current schema-10 media-handoff candidate fingerprint",
   );
 }
 if (
   !migrationTree.files.includes(
-    manifest.releaseCandidate.latestCandidateMigration,
+    MEDIA_UPLOAD_HANDOFF_EVIDENCE.latestMigration,
   )
 ) {
   throw new Error(
@@ -54,12 +57,12 @@ const latestCandidateMigrationSha256 = sha256File(
   resolve(
     repoRoot,
     manifest.migrations.root,
-    manifest.releaseCandidate.latestCandidateMigration,
+    MEDIA_UPLOAD_HANDOFF_EVIDENCE.latestMigration,
   ),
 );
 if (
   latestCandidateMigrationSha256 !==
-  manifest.releaseCandidate.latestCandidateMigrationSha256
+  MEDIA_UPLOAD_HANDOFF_EVIDENCE.latestMigrationSha256
 ) {
   throw new Error(
     "Refusing to attest a candidate whose latest migration fingerprint is stale",
@@ -98,6 +101,7 @@ writeJson(output, {
     provesProductionParity: false,
   },
   releaseCandidate: manifest.releaseCandidate,
+  mediaUploadHandoff: manifest.mediaUploadHandoff ?? null,
   referencedGitHubReconciliation: manifest.githubReconciliationEvidence
     ? {
         ...manifest.githubReconciliationEvidence,
@@ -131,7 +135,7 @@ writeJson(output, {
     fileCount: migrationTree.fileCount,
     treeSha256: migrationTree.sha256,
     latestCandidateMigration:
-      manifest.releaseCandidate.latestCandidateMigration,
+      MEDIA_UPLOAD_HANDOFF_EVIDENCE.latestMigration,
     latestCandidateMigrationSha256,
   },
   applicationQualityEvidence: manifest.applicationQualityEvidence,

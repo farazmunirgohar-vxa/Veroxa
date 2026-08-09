@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
+  MEDIA_UPLOAD_HANDOFF_EVIDENCE,
   PRIVATE_MEDIA_EDGE_CANDIDATE,
   assertReviewedLocalCandidateManifest,
   readDeploymentManifest,
@@ -78,6 +79,21 @@ const closure = [
     "supabase/config.toml",
     "artifacts/veroxa-sites/supabase/config.toml",
     PRIVATE_MEDIA_EDGE_CANDIDATE.configSha256,
+  ],
+  [
+    "supabase/functions/momo-content-ai-dispatch-lifecycle/index.ts",
+    "artifacts/veroxa-sites/supabase/functions/momo-content-ai-dispatch-lifecycle/index.ts",
+    MEDIA_UPLOAD_HANDOFF_EVIDENCE.edgeFunctions.contentDispatch.indexSha256,
+  ],
+  [
+    "supabase/functions/momo-content-ai-webhook-lifecycle/index.ts",
+    "artifacts/veroxa-sites/supabase/functions/momo-content-ai-webhook-lifecycle/index.ts",
+    MEDIA_UPLOAD_HANDOFF_EVIDENCE.edgeFunctions.contentWebhook.indexSha256,
+  ],
+  [
+    "supabase/functions/momo-media-ai-lifecycle/index.ts",
+    "artifacts/veroxa-sites/supabase/functions/momo-media-ai-lifecycle/index.ts",
+    MEDIA_UPLOAD_HANDOFF_EVIDENCE.edgeFunctions.mediaLifecycle.indexSha256,
   ],
 ] as const;
 for (const [rootPath, sitesPath, expectedSha] of closure) {

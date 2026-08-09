@@ -21,8 +21,14 @@ import {
 import { MomoTeamPreconnectionCenter } from "./momo-team-preconnection-center";
 import { momoMediaReviewCanSave, momoMediaReviewSaveBlockers } from "./momo-media-guidance";
 import { buildMomoTeamSummary } from "./momo-team-summary";
-import { uploadMomoTeamPrivateMedia } from "./momo-client-data";
-import type { VeroxaPrivateMediaAssessment } from "./veroxa-private-media-assessment";
+import {
+  uploadMomoClientMedia,
+  uploadMomoTeamPrivateMedia,
+} from "./momo-client-data";
+import type {
+  VeroxaMediaRestaurantAssociation,
+  VeroxaPrivateMediaAssessment,
+} from "./veroxa-private-media-assessment";
 import {
   MOMO_CONTENT_AI_PROMPT_VERSION,
   MOMO_CONTENT_AI_VALIDATOR_VERSION,
@@ -30,6 +36,7 @@ import {
 } from "./momo-content-ai-contract";
 import {
   addMomoMediaTag,
+  applyMomoMediaUploadInstruction,
   appendMomoRequestMessage,
   completeMomoRecoveryRun,
   approveMomoContentPackage,
@@ -72,7 +79,6 @@ import {
   transitionMomoAlert,
   updateMomoOnboardingStep,
   updateMomoPresenceProfile,
-  uploadMomoMedia,
   runMomoProviderPreflight,
   runMomoNoGoRehearsal,
   type MomoApproval,
@@ -224,7 +230,10 @@ const MOMO_ACTION_ERROR_MESSAGES: Readonly<Record<string, string>> = {
   invalid_media_size: "Choose a JPG between 10 KB and 5 MB.",
   media_not_platform_ready: "Use a JPG from 320 × 250 px up to a 12,000 px maximum edge, with an aspect ratio from 4:5 to 1.91:1.",
   media_verification_failed: "The upload was stored privately, but server byte verification did not complete. It is not eligible for content preparation.",
-  media_verification_unavailable: "Secure verification is temporarily unavailable. The private upload is preserved; use Retry secure verification on that item.",
+  media_verification_unavailable: "Secure verification is temporarily unavailable. The private upload is preserved; Team Faraz owns the exception and Momo does not need to retry or re-upload.",
+  media_instruction_awaiting_private_assessment: "The upload instruction is saved, but its private verification or assessment is not complete. Team Faraz owns that technical recovery; do not ask Momo to retry or re-upload.",
+  media_instruction_needs_restaurant_fact_or_permission: "The upload instruction is saved, but applying it requires a real restaurant fact or permission. Contact Momo only for that specific fact or permission—not for verification or another upload.",
+  media_instruction_processor_failed: "The saved upload instruction could not be applied from current evidence. Nothing was connected or posted; review the Team exception without asking Momo to retry.",
   content_ai_disabled: "Content preparation is paused. No AI call was started and nothing was marked Ready.",
   content_ai_configuration_unavailable: "The secure AI connection is not configured for Momo. No AI call was started and nothing was marked Ready.",
   content_ai_budget_unavailable: "Momo’s authorized AI budget is unavailable or exhausted. No paid AI call was started and nothing was marked Ready.",
@@ -1047,6 +1056,10 @@ function MediaPanel(props: PanelProps) {
   const [rights, setRights] = useState(false);
   const [scope, setScope] = useState<string[]>(() => [...MOMO_MEDIA_DEFAULT_SCOPE]);
   const [expiresAt, setExpiresAt] = useState("");
+  const [restaurantAssociation, setRestaurantAssociation] =
+    useState<VeroxaMediaRestaurantAssociation>("not_for_restaurant");
+  const [privateAssessmentRequested, setPrivateAssessmentRequested] =
+    useState(false);
   const [recoveryAssetId, setRecoveryAssetId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const momoToday = momoLocalDate(new Date().toISOString());
@@ -1074,15 +1087,23 @@ function MediaPanel(props: PanelProps) {
     <SafetyBoundary role={role} />
     {role === "client" ? <form className="momo-panel momo-upload" onSubmit={(event) => {
       event.preventDefault();
-      if (!file || !rights || invalidExpiry) return;
+      if (!file || !rights || !privateAssessmentRequested || invalidExpiry) return;
       void run(async () => {
-        await uploadMomoMedia({ restaurantId, file, usageScope: scope, expiresAt });
+        await uploadMomoClientMedia({
+          restaurantId,
+          file,
+          usageScope: scope,
+          restaurantAssociation,
+          expiresAt,
+        });
         setFile(null);
         setRights(false);
         setScope([...MOMO_MEDIA_DEFAULT_SCOPE]);
         setExpiresAt("");
+        setRestaurantAssociation("not_for_restaurant");
+        setPrivateAssessmentRequested(false);
         if (fileInputRef.current) fileInputRef.current.value = "";
-      }, "Media and usage rights saved for review.");
+      }, "Your image and upload instruction are saved. Veroxa and Team Faraz own the remaining processing; nothing was posted or connected.");
     }}>
       <div><p className="eyebrow">PRIVATE MEDIA INTAKE</p><h2>Upload one clear food image you may use</h2><p>It can show any food and does not need to be a confirmed Momo menu item. JPG only · 10 KB–5 MB · 320 × 250 px minimum · 12,000 px maximum edge · ratio 4:5–1.91:1.</p></div>
       <label className="momo-file">Image file<input ref={fileInputRef} type="file" accept="image/jpeg,.jpg,.jpeg" onChange={(event) => setFile(event.target.files?.[0] || null)} required /></label>
@@ -1091,8 +1112,10 @@ function MediaPanel(props: PanelProps) {
       ].map(([value, label]) => <label className="momo-check" key={value}><input type="checkbox" checked={scope.includes(value)} onChange={(event) => setScope((current) => event.target.checked ? [...current, value] : current.filter((item) => item !== value))} /><span>{label}</span></label>)}</fieldset>
       <label>Rights expiry (optional)<input type="date" min={momoToday} value={expiresAt} onChange={(event) => setExpiresAt(event.target.value)} /></label>
       <label className="momo-check"><input type="checkbox" checked={rights} onChange={(event) => setRights(event.target.checked)} required /><span>I confirm I own this food image or have permission to provide it for the selected Veroxa usage scopes.</span></label>
-      <p className="momo-form-note">The original stays private. Veroxa verifies its bytes before it can enter content preparation.</p>
-      <button className="primary-button" disabled={busy || !file || !rights || scope.length === 0 || invalidExpiry}>{busy ? "Uploading…" : "Upload with rights record"}</button>
+      <label className="momo-check"><input type="checkbox" checked={privateAssessmentRequested} onChange={(event) => setPrivateAssessmentRequested(event.target.checked)} required /><span>Privately analyze this image now to create visual tags. This request applies only to this upload.</span></label>
+      <label>Restaurant association<select value={restaurantAssociation} onChange={(event) => setRestaurantAssociation(event.target.value as VeroxaMediaRestaurantAssociation)}><option value="not_for_restaurant">Reference only — not for restaurant use</option><option value="licensed_generic_only">Licensed generic image — not a confirmed current offering</option><option value="represents_current_restaurant_offering">Current restaurant offering — owner confirmation</option></select></label>
+      <p className="momo-form-note">The original stays private. Your association instruction is saved with the upload. After upload, Veroxa and Team Faraz own verification, assessment, and any exception; Momo does not need to retry or re-upload. Nothing is posted or connected.</p>
+      <button className="primary-button" disabled={busy || !file || !rights || !privateAssessmentRequested || scope.length === 0 || invalidExpiry}>{busy ? "Saving your upload…" : "Upload once and let Veroxa handle it"}</button>
     </form> : <>
       <TeamPrivateAssessmentIntake
         restaurantId={restaurantId}
@@ -1194,6 +1217,16 @@ function TeamPrivateAssessmentIntake({
 type MomoContentPreparationState = "idle" | "saving_review" | "queueing" | "refreshing" | "needs_refresh";
 
 function MediaAssetCard({ asset, data, role, restaurantId, busy, run, reloadWorkspace, notify }: PanelProps & { asset: MomoMediaAsset }) {
+  const intakeInstruction = (() => {
+    if (!asset.intake_notes) return null;
+    try {
+      const value = JSON.parse(asset.intake_notes) as Record<string, unknown>;
+      return value.schemaVersion === "veroxa-media-upload-instruction-v1" &&
+        typeof value.requestedAssociation === "string"
+        ? value.requestedAssociation
+        : null;
+    } catch { return null; }
+  })();
   const rights = data.mediaRights.find((item) => item.asset_id === asset.id);
   const review = data.mediaReviews.find((item) => item.asset_id === asset.id && item.is_current);
   const intake = data.mediaIntake.find((item) => item.asset_id === asset.id && item.status === "verified");
@@ -1367,9 +1400,11 @@ function MediaAssetCard({ asset, data, role, restaurantId, busy, run, reloadWork
   return <article id={`momo-media-${asset.id}`} className="momo-media-card">
     <div className="momo-media-icon">{previewUrl ? (asset.mime_type.startsWith("video/") ? <video src={previewUrl} controls onLoadedData={() => setPreviewRendered(true)} onError={() => { setPreviewRendered(false); setInspectionConfirmed(false); setPreviewError("The private video could not be rendered. Do not approve this asset."); }} /> : <img className="momo-image-preview" src={previewUrl} alt={`Private preview of ${asset.display_name || asset.original_file_name || "Momo media"}`} onLoad={() => setPreviewRendered(true)} onError={() => { setPreviewRendered(false); setInspectionConfirmed(false); setPreviewError("The private image could not be rendered. Do not approve this asset."); }} />) : asset.mime_type.startsWith("video/") ? "VIDEO" : "PHOTO"}</div>
     <div className="momo-media-heading"><span><strong>{asset.display_name || asset.original_file_name || asset.storage_path.split("/").at(-1) || "Private media"}</strong><small>{Math.max(1, Math.round(asset.file_size / 1024))} KB · {formatDate(asset.created_at)}</small></span><StatusBadge status={pipeline.state} /></div>
+    {intakeInstruction && <p className="momo-form-note"><strong>Momo upload instruction:</strong> {labelStatus(intakeInstruction)} · technical recovery belongs to Team Faraz.</p>}
     {pipeline.blockers[0] && <p className="momo-form-note">{pipeline.blockers[0]}</p>}
     {identityLink && <div className="momo-callout"><strong>{pipeline.state === "veroxa_ready" ? "Veroxa Ready without Team review" : pipeline.state === "preparing_content" ? "Automatic preparation is active" : "Exact-byte identity verified"}</strong><p>{identityLink.link_kind === "exact_duplicate" ? "This upload keeps its own immutable permission record while sharing an exact-byte processing identity with the canonical original." : "This is the canonical exact-byte identity. Every linked upload keeps its own immutable permission record."} {automaticContentRun && automaticProcessingLink ? `Processing uses verified upload ${automaticProcessingLink.asset_id.slice(0, 8)}… and only that upload’s rights evidence.` : "A processing source has not been selected yet."} Nothing is scheduled, posted, or externally connected.</p></div>}
-    {!intake && <button className="momo-preview-button" disabled={busy} onClick={() => void run(() => retryMomoMediaVerification({ restaurantId, assetId: asset.id, storagePath: asset.storage_path }), "Server byte verification completed. This image can now continue through review.")}>{busy ? "Verifying…" : "Retry secure verification"}</button>}
+    {role === "team" && intakeInstruction && <button className="momo-preview-button" disabled={busy} onClick={() => void run(() => applyMomoMediaUploadInstruction({ restaurantId, assetId: asset.id }), "Saved upload instruction applied from immutable Momo evidence. Nothing was posted or connected.")}>{busy ? "Applying…" : "Apply saved upload instruction"}</button>}
+    {role === "team" && !intake && <button className="momo-preview-button" disabled={busy} onClick={() => void run(() => retryMomoMediaVerification({ restaurantId, assetId: asset.id, storagePath: asset.storage_path }), "Server byte verification completed. This image can now continue through Team-owned assessment and instruction processing.")}>{busy ? "Verifying…" : "Retry secure verification"}</button>}
     {asset.storage_path && <button className="momo-preview-button" disabled={previewBusy} onClick={() => {
       setPreviewBusy(true);
       setPreviewError("");

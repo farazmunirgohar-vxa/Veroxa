@@ -47,18 +47,23 @@ test("Team approval stays disabled for past Chicago plans and rechecks immediate
   assert.ok(submitGuard.indexOf("content_schedule_must_be_future") < submitGuard.indexOf("await approveMomoContentPackage"), "The local future-time gate must execute before the database approval request");
 });
 
-test("a completed upload clears the file and rights form before another upload can start", () => {
+test("a one-step upload saves the instruction, clears the form, and leaves recovery with Team", () => {
   assert.match(operating, /const fileInputRef = useRef<HTMLInputElement>\(null\)/);
   assert.match(operating, /<input ref=\{fileInputRef\} type="file"/);
-  const uploadAction = operating.match(/await uploadMomoMedia\([\s\S]*?Media and usage rights saved for review\./)?.[0] || "";
+  const uploadAction = operating.match(/await uploadMomoClientMedia\([\s\S]*?Veroxa and Team Faraz own the remaining processing; nothing was posted or connected\./)?.[0] || "";
   for (const reset of [
     /setFile\(null\)/,
     /setRights\(false\)/,
     /setScope\(\[\.\.\.MOMO_MEDIA_DEFAULT_SCOPE\]\)/,
     /setExpiresAt\(""\)/,
+    /setRestaurantAssociation\("not_for_restaurant"\)/,
+    /setPrivateAssessmentRequested\(false\)/,
     /fileInputRef\.current\.value = ""/,
   ]) assert.match(uploadAction, reset);
-  assert.ok(uploadAction.indexOf("await uploadMomoMedia") < uploadAction.indexOf("setFile(null)"), "The form must reset only after upload and secure finalization succeed");
+  assert.ok(uploadAction.indexOf("await uploadMomoClientMedia") < uploadAction.indexOf("setFile(null)"), "The form must reset only after the upload and immutable instruction are saved");
+  assert.match(operating, /Upload once and let Veroxa handle it/);
+  assert.match(operating, /role === "team" && !intake[\s\S]{0,500}Retry secure verification/, "Only Team may recover a saved upload's verification");
+  assert.doesNotMatch(operating, /role === "client" && !intake[\s\S]{0,500}Retry secure verification/);
 });
 
 test("background AI preparation is card-local, enqueue-only, and duplicate-call safe", () => {

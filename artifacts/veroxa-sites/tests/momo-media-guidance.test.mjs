@@ -188,11 +188,12 @@ test("Client and Team source preserve real links, real-image-first selection, in
   assert.match(client, /const newestV2Ready =[\s\S]*?newestWorkflow\.rightsConfirmed && newestRestaurantContentEligible/, "The Client journey must re-check current rights and association before showing Ready");
   assert.match(client, /const newestV2Preparing =[\s\S]*?newestWorkflow\.rightsConfirmed && newestRestaurantContentEligible/, "The Client journey must re-check current rights and association before showing preparation");
   assert.match(client, /const newestV2Attention =[^;]*\|\|\s*\(newestV2Known && !newestWorkflow\.rightsConfirmed\)/, "The Client journey must surface cached rows whose rights became stale");
-  assert.match(client, /newestV2Attention \? "Restaurant content preparation stopped safely[\s\S]*?: newest\?\.assessmentReusedFromId \?/, "Assessment reuse must not hide a current-rights exception in the Client journey");
+  assert.match(client, /newestV2Attention \? "Preparation stopped safely and is in Team Faraz’s exception queue[\s\S]*?: newest\?\.assessmentReusedFromId \?/, "Assessment reuse must not hide a current-rights exception in the Client journey");
   assert.match(client, /item\.privateAssessmentStatus === "completed" \? "done" : item\.sourceMediaDiscarded \? "" : "current"/, "Each Client media card must show assessment completion without reopening a discarded source");
   assert.match(client, /const v2Preparing =[\s\S]*?workflow\.rightsConfirmed && restaurantContentEligible/, "Each Client media card must keep content preparation gated by current real-owner association");
   assert.match(client, /const restaurantContentEligible = !item\.sourceMediaDiscarded &&[\s\S]*?item\.privateAssessmentStatus === "completed"[\s\S]*?item\.associationEvidenceClass === "real_owner"/, "Each Client media card must fail closed until its assessment and owner association are current");
-  assert.match(client, /item\.associationId \? <details[\s\S]*?It is immutable[\s\S]*?create a new permission record[\s\S]*?: !item\.sourceMediaDiscarded \? <details[\s\S]*?Record final association/, "A recorded association must be read-only and a discarded source cannot accept a new association");
+  assert.match(client, /item\.associationId \? <details[\s\S]*?It is immutable[\s\S]*?create a new permission record[\s\S]*?: !item\.sourceMediaDiscarded \? <div className="momo-warning">[\s\S]*?Team Faraz owns this exception/, "A recorded association must be read-only while unresolved association work belongs to Team Faraz");
+  assert.doesNotMatch(client, /Finish verification|Retry verification|Start private assessment|Record final association/, "Momo must have no technical processing actions after upload");
   assert.match(clientData, /veroxa_momo_client_media_status_v1/, "Client must load the protected minimal rendition status projection");
   assert.match(page, /<Link key=\{item\.id\} href=\{item\.path\}/, "Team navigation must use reliable route links");
 
@@ -571,7 +572,7 @@ test("Client v4 readback adds sanitized assessment, association, and source-medi
   const v3 = clientData.indexOf('client.rpc("veroxa_momo_client_upload_status_v3"');
   assert.ok(v4 >= 0, "Client readback must use the tombstone-aware v4 contract");
   assert.equal(v3, -1, "Client must not fall back to v3, which cannot represent a terminal source tombstone");
-  assert.match(clientData.slice(v4), /if \(!pipelineV4\.error\)/u);
-  assert.match(clientData.slice(v4), /return withRenditions/u);
+  assert.match(clientData.slice(v4), /const withPipeline = !pipelineV4\.error/u);
+  assert.match(clientData.slice(v4), /return withPipeline/u);
   assert.match(clientData, /source_media_discarded[\s\S]*?source_media_discarded_at/u);
 });

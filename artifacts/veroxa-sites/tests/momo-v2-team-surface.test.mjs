@@ -23,10 +23,13 @@ test("Team v2 reads are scoped to open incidents, unscheduled Ready, and active 
   assert.match(data, /if \(definition\.isNull\) query = query\.is\(definition\.isNull, null\)/);
 });
 
-test("Team media supports assessment-only recognition while content remains decision-scoped", async () => {
-  const [center, clientData] = await Promise.all([
+test("Team media supports assessment-only recognition and owns saved-instruction recovery", async () => {
+  const [center, data, clientData, processorMigration, processorFix] = await Promise.all([
     readFile(new URL("../app/momo-operating-center.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/momo-data.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/momo-client-data.ts", import.meta.url), "utf8"),
+    readFile(new URL("../supabase/migrations/20260809231409_momo_media_instruction_team_processing_v1.sql", import.meta.url), "utf8"),
+    readFile(new URL("../supabase/migrations/20260809232154_momo_media_instruction_team_processor_fix_v1.sql", import.meta.url), "utf8"),
   ]);
   const media = center.slice(center.indexOf("function MediaPanel"), center.indexOf("type MomoContentPreparationState"));
   const teamIntake = center.slice(center.indexOf("function TeamPrivateAssessmentIntake"), center.indexOf("type MomoContentPreparationState"));
@@ -51,6 +54,14 @@ test("Team media supports assessment-only recognition while content remains deci
   assert.match(media, /<MediaAssetCard asset=\{recoveryAsset\}/, "manual media recovery must remain reachable for the selected exception source");
   assert.match(media, /latestEvent[\s\S]{0,500}event\.source_asset_id/);
   assert.match(media, /setRecoveryAssetId\(sourceAssetId\)/, "recovery must open the immutable exception source, not assume canonical bytes own the selected rights");
+  assert.match(center, /role === "team" && intakeInstruction[\s\S]{0,500}Apply saved upload instruction/, "Only Team may apply the immutable upload instruction");
+  assert.match(data, /"veroxa_apply_momo_media_upload_instruction_v1"/);
+  assert.match(data, /"awaiting_private_assessment"[\s\S]{0,220}media_instruction_awaiting_private_assessment/);
+  assert.match(data, /"needs_restaurant_fact_or_permission"[\s\S]{0,220}media_instruction_needs_restaurant_fact_or_permission/);
+  assert.match(processorMigration, /revoke all on function public\.veroxa_register_momo_media_v2\([\s\S]{0,180}from public, anon, authenticated, service_role;/);
+  assert.doesNotMatch(clientData, /"veroxa_register_momo_media_v2"/, "Browser code must not retain the legacy registration bypass");
+  assert.match(processorFix, /association_id,[\s\S]{0,80}instruction_submitted_by,[\s\S]{0,80}instruction_evidence_class,[\s\S]{0,80}applied_by/);
+  assert.doesNotMatch(processorFix, /association_id,\s*association_id,/);
 
   assert.match(content, /const attentionCount = role === "team"[\s\S]{0,160}\? openIncidents\.length \+ pendingReadyReviews\.length/);
   assert.doesNotMatch(content, /\? legacyReviewRuns\.length|\? legacyFailedRuns\.length/);
@@ -77,18 +88,23 @@ test("Client copy presents safe outcomes without internal processing details", a
   assert.match(portal, /v2AttentionReasons\.map\(\(reason\) => clientAttentionMessage\[reason\]\)/);
   assert.match(portal, /pipelineStatus === "veroxa_ready" &&[\s\S]*?workflow\.rightsConfirmed && restaurantContentEligible/);
   assert.match(portal, /exact image bytes[\s\S]*?duplicate upload and asset record for this restaurant[\s\S]*?SHA-256 hash[\s\S]*?audit evidence remain stored/);
-  assert.match(portal, /item\.privateAssessmentStatus === null[\s\S]*?Start private assessment/);
-  assert.match(portal, /item\.privateAssessmentStatus === "failed"[\s\S]*?cannot be retried against the same immutable request/);
-  assert.match(portal, /newest\?\.privateAssessmentStatus === "failed" \? "Your newest image needs Veroxa help"/);
+  assert.match(portal, /item\.privateAssessmentStatus === null[\s\S]*?You do not need to start or retry anything/);
+  assert.match(portal, /item\.status === "uploaded"[\s\S]*?Team Faraz owns the exception[\s\S]*?You do not need to retry or upload another copy/, "A saved upload whose verification was interrupted must become a Team-owned exception after refresh");
+  assert.doesNotMatch(portal, /Finish verification|Retry verification|Start private assessment|Record final association/);
+  assert.doesNotMatch(portal, /retryMomoClientMediaVerification|assessMomoClientMedia|recordMomoMediaRestaurantAssociation/);
+  assert.match(portal, /item\.privateAssessmentStatus === "failed"[\s\S]*?Team Faraz exception/);
+  assert.match(portal, /newest\?\.privateAssessmentStatus === "failed" \? "Team Faraz owns the assessment exception"/);
   assert.match(portal, /privateAssessmentStatus === "failed" \? "Assessment stopped safely"/);
   assert.doesNotMatch(portal, /Retry private assessment/);
-  assert.match(portal, /: !item\.sourceMediaDiscarded \? <details[\s\S]*?Record final association/);
+  assert.match(portal, /: !item\.sourceMediaDiscarded \? <div className="momo-warning">[\s\S]*?upload instruction is awaiting Veroxa resolution/);
   assert.match(portal, /!item\.sourceMediaDiscarded && item\.rightsId[\s\S]*?Withdraw future permission/);
   assert.match(portal, /!newestSourceMediaDiscarded && newestPrepared/);
   assert.doesNotMatch(portal, /Source SHA-256:\s*\{/u);
   assert.match(data, /client\.rpc\("veroxa_momo_client_upload_status_v4"/);
   assert.doesNotMatch(data, /client\.rpc\("veroxa_momo_client_upload_status_v3"/);
   assert.match(data, /pipelineAttentionReasons: effectiveAttentionReasons/);
+  assert.match(data, /"veroxa_register_momo_media_v3"/);
+  assert.match(data, /p_requested_association: input\.restaurantAssociation/);
   assert.doesNotMatch(portal, /\bAI\b|\bautomatic(?:ally)?\b|provider_|content_ai_|canonical identity|processing identity|processing source|exact (?:saved )?bytes|storage record|registration identifier|processing upload/iu);
   assert.doesNotMatch(portal, /processingAssetId\.slice|canonicalAssetId\?\.slice/);
   assert.doesNotMatch(data, /row\.(?:canonical_asset_id|processing_asset_id|ready_package_id|reason_codes|provider_error_code)/u);

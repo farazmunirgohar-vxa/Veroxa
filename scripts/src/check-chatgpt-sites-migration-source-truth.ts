@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
   INTERNAL_AI_RELEASE_EVIDENCE,
+  MEDIA_UPLOAD_HANDOFF_EVIDENCE,
   REPAIR_MIGRATION_EVIDENCE,
   assertReviewedLocalCandidateManifest,
   readDeploymentManifest,
@@ -24,12 +25,14 @@ try {
 const repairCloseout = manifest.generatedVersionCloseouts?.repair as
   | Record<string, unknown>
   | undefined;
+const mediaUploadHandoff = manifest.mediaUploadHandoff as
+  | Record<string, unknown>
+  | undefined;
 must(
-  manifest.releaseCandidate.latestCandidateMigration ===
-      manifest.currentProductionObservation.latestProductionMigration ||
-    (manifest.releaseCandidate.pendingMigrations ?? []).includes(
-      manifest.releaseCandidate.latestCandidateMigration,
-    ),
+  mediaUploadHandoff?.latestMigration ===
+      manifest.currentProductionObservation.latestProductionMigration &&
+    mediaUploadHandoff.latestMigration ===
+      MEDIA_UPLOAD_HANDOFF_EVIDENCE.latestMigration,
   "Latest source migration is not explained by live or pending evidence.",
 );
 must(
@@ -89,6 +92,12 @@ for (const path of authorityDocs) {
     "no Sites v42",
     "External providers",
     "USD 0 incremental spend",
+    "clientActionAfterUpload=none",
+    "processingOwner=veroxa_team",
+    "authenticated v2 execute is revoked",
+    "Team-only saved-instruction processor",
+    "3 open Team media-intake exceptions",
+    "no re-upload or retry",
   ]) {
     const haystack =
       marker === "GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY" ? text : currentAuthority;

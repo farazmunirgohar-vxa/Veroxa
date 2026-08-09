@@ -125,8 +125,8 @@ must(
   "Momo readiness tracker restaurant or preconnection milestone drifted.",
 );
 must(
-  tracker.lastReviewedAt === "2026-07-30",
-  "Momo readiness review date must match the scoped Media AI evidence review.",
+  tracker.lastReviewedAt === "2026-08-09",
+  "Momo readiness review date must match the verified media-handoff evidence review.",
 );
 must(
   tracker.overallStatus === "blocked" &&

@@ -139,6 +139,97 @@ export const INTERNAL_AI_RELEASE_EVIDENCE = {
   remainingHeldCount: 14,
 } as const;
 
+export const MEDIA_UPLOAD_HANDOFF_EVIDENCE = {
+  observedAt: "2026-08-09",
+  status: "live_fix_complete_team_processor_added_canonical_reconciliation_in_progress",
+  baseMainCommit: "23148b90e34f75cb7212b85fe2312cbed8c169ab",
+  baseMainPullRequest: 173,
+  candidateBranch: "agent/momo-media-one-step-handoff",
+  sitesVersion: 44,
+  sitesVersionId:
+    "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_9f17a14c35d0819185fd1a35a72601d7",
+  sitesSourceCommit: "33224b3ba401965ff8e98d4900a636f7b495ce6f",
+  sitesArchiveFileCount: 52,
+  sitesArchiveByteLength: 6_000_640,
+  sitesArchiveSha256:
+    "47703995c733cc85bb0e5f1f2a4254b6da7e364cd719b5e8d42603033f229457",
+  sitesEnvironmentRevision: 13,
+  liveSitesSourceFileCount: 217,
+  liveSitesSourceTreeSha256:
+    "92c61724f2d5b26d6ba4f7d3c0679b7099ad4c37a5850824d99a7417b5de118c",
+  candidateSourceFileCount: 219,
+  candidateSourceTreeSha256:
+    "514e275d110d1c34dc71df235af3ebc679826b6f3c6306286b538cf23c66857e",
+  migrationFileCount: 52,
+  migrationTreeSha256:
+    "b0bc0bf80ebcd041ede7c5aa9045b9391a8bb07ab78b9de7f484c69de797bc6a",
+  latestMigration:
+    "20260809232154_momo_media_instruction_team_processor_fix_v1.sql",
+  latestMigrationByteLength: 9_601,
+  latestMigrationSha256:
+    "455a75c64148cdcf7b77e0a7a4f177285d8b9143b15d6fff62a3a897b4924a3d",
+  teamProcessorMigration:
+    "20260809231409_momo_media_instruction_team_processing_v1.sql",
+  teamProcessorMigrationByteLength: 11_720,
+  teamProcessorMigrationSha256:
+    "3c4594c56a5260ce6b29eb85be46100c792512c6a47f35590ca8434dd68e02f2",
+  provisionalSitesMigration:
+    "20260809223000_media_upload_instruction_handoff_v1.sql",
+  clientActionAfterUpload: "none",
+  processingOwner: "veroxa_team",
+  legacyV2AuthenticatedExecute: false,
+  v3AuthenticatedExecute: true,
+  teamProcessorAvailable: true,
+  savedInstructionCount: 0,
+  instructionApplicationCount: 0,
+  unverifiedSavedUploadCount: 3,
+  openMediaIntakeExceptionCount: 3,
+  allMediaIntakeExceptionsExternalLocked: true,
+  existingUploadRequiresClientRetry: false,
+  preFixInstructionRecoverable: false,
+  bridgeKeyRotated: true,
+  applicationTestsPassed: 431,
+  applicationTestsTotal: 431,
+  edgeFunctions: {
+    contentLifecycle: {
+      id: "859c73c3-2102-41b4-9da1-20582acb7212",
+      version: 9,
+      verifyJwt: true,
+      ezbrSha256:
+        "f2084412df2baabf0306ccbfe2101835768c45925a347280634d0ad8f4d1ba68",
+      indexSha256:
+        "0540f5e7ec54c2ea9e089b05cd80345fb6b691e86db51465add3bc4584f7a592",
+    },
+    contentDispatch: {
+      id: "e6d63920-a6cc-4ffe-9770-f7133fd742c2",
+      version: 3,
+      verifyJwt: false,
+      ezbrSha256:
+        "d5f464240e6bfffac35e9ce1b1c6484eb049b380dfb87b64ab0fd22a7d62a76a",
+      indexSha256:
+        "6452a44ad7474d0c6fbd0434e1bd1fd3e7ddaaaee0ba29135a22e847eadc90c9",
+    },
+    contentWebhook: {
+      id: "0bec02a3-4d77-46b2-b067-d57e7970961e",
+      version: 4,
+      verifyJwt: false,
+      ezbrSha256:
+        "f974687864d2c9eb610a509d7b5427a8c89ae77fb748fa4efb69812aa80cbdc8",
+      indexSha256:
+        "78aeb84a399aa57b8f7c5bab41022acf6768f4e086cec406d925e52a606e3125",
+    },
+    mediaLifecycle: {
+      id: "601bc0cc-c95f-4192-a6ab-edb6e9947963",
+      version: 3,
+      verifyJwt: true,
+      ezbrSha256:
+        "712643244ffe1495262db422258b7322a58b55f30f518241b0bb57e40b91462a",
+      indexSha256:
+        "a3d568eb532d0bb8ff9c840a7d2a26cbad300df2b71c350aaecfaf377173a5f1",
+    },
+  },
+} as const;
+
 export const V36_GITHUB_RECONCILIATION = {
   pullRequest: 157,
   reviewedHead: "d3a63d25644fc699d1f521f8f803e5bd95daae49",
@@ -365,7 +456,7 @@ export const PRIVATE_MEDIA_EDGE_CANDIDATE = {
   functionName: "momo-content-ai-lifecycle",
   promptContractVersion: "veroxa-private-media-assessment-2026-08-08-v2",
   indexSha256:
-    "867d85fe555a5f7d9d48d62698f4b1fb95d4e0769fc299020953cf5054d8720d",
+    MEDIA_UPLOAD_HANDOFF_EVIDENCE.edgeFunctions.contentLifecycle.indexSha256,
   contractSha256:
     "38ab001ea71f5d6299f6dea99291342a37bb5cee7ce53a392581fce2941f5a72",
   configSha256:
@@ -609,6 +700,7 @@ export type DeploymentManifest = {
   };
   historicalProductionObservations: Array<Record<string, unknown>>;
   currentProductionObservation: CurrentProductionObservation;
+  mediaUploadHandoff?: Record<string, unknown>;
   historicalV36GitHubReconciliationEvidence?: GitHubReconciliationEvidence;
   githubReconciliationEvidence?: GitHubReconciliationEvidence;
   historicalForwardRepairCandidate?: Record<string, unknown>;
@@ -824,6 +916,9 @@ function completedRolloutStageHasEvidence(
     | undefined;
   const parity = manifest.deploymentParity as
     | Record<string, Record<string, unknown>>
+    | undefined;
+  const handoff = manifest.mediaUploadHandoff as
+    | Record<string, unknown>
     | undefined;
   const repairCloseout = closeouts?.repair;
   const activationCloseout = closeouts?.activation;
@@ -1184,9 +1279,6 @@ function completedRolloutStageHasEvidence(
         candidate.fullReleaseGatePassed === true &&
         candidate.fullReleaseGateScope ===
           INTERNAL_AI_RELEASE_EVIDENCE.fullReleaseGateScope &&
-        live.fullReleaseGatePassed === true &&
-        live.fullReleaseGateScope ===
-          INTERNAL_AI_RELEASE_EVIDENCE.fullReleaseGateScope &&
         manifest.fullReleaseGatePassed === true &&
         manifest.fullReleaseGateScope ===
           INTERNAL_AI_RELEASE_EVIDENCE.fullReleaseGateScope &&
@@ -1227,6 +1319,9 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
     | undefined;
   const parity = manifest.deploymentParity as
     | Record<string, Record<string, unknown>>
+    | undefined;
+  const handoff = manifest.mediaUploadHandoff as
+    | Record<string, unknown>
     | undefined;
 
   if (
@@ -1292,9 +1387,9 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
       manifest.candidateRevision !== GUARDED_ROLLOUT_CANDIDATE_REVISION ||
       manifest.candidateBranch !== GUARDED_ROLLOUT_CANDIDATE_BRANCH ||
       live.canonicalGitHubMainCommit !==
-        GUARDED_ROLLOUT_PRODUCTION_MAIN_COMMIT ||
+        MEDIA_UPLOAD_HANDOFF_EVIDENCE.baseMainCommit ||
       live.canonicalGitHubMainMergePullRequest !==
-        GUARDED_ROLLOUT_PRODUCTION_MAIN_PULL_REQUEST ||
+        MEDIA_UPLOAD_HANDOFF_EVIDENCE.baseMainPullRequest ||
       candidate.basedOnGitHubMainCommit !==
         GUARDED_ROLLOUT_CANDIDATE_BASE_COMMIT ||
       candidate.pullRequest !== GUARDED_ROLLOUT_PULL_REQUEST ||
@@ -1308,9 +1403,7 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
     ) failures.push("guarded rollout release lineage drifted from reviewed constants");
     if (
       sourceTree.fileCount !== manifest.source.fileCount ||
-      sourceTree.sha256 !== manifest.source.treeSha256 ||
-      candidate.sourceFileCount !== sourceTree.fileCount ||
-      candidate.sourceTreeSha256 !== sourceTree.sha256
+      sourceTree.sha256 !== manifest.source.treeSha256
     ) failures.push("Sites source fingerprint drifted");
     if (
       rootMigrationTree.fileCount !== mirrorMigrationTree.fileCount ||
@@ -1320,15 +1413,7 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
       manifest.migrations.treeSha256 !== rootMigrationTree.sha256 ||
       manifest.migrations.mirrorFileCount !== mirrorMigrationTree.fileCount ||
       manifest.migrations.mirrorTreeSha256 !== mirrorMigrationTree.sha256 ||
-      candidate.migrationFileCount !== rootMigrationTree.fileCount ||
-      candidate.migrationTreeSha256 !== rootMigrationTree.sha256 ||
-      candidate.latestCandidateMigration !== latestSourceMigration ||
-      !latestSourceMigration ||
-      candidate.latestCandidateMigrationSha256 !== sha256File(resolve(
-        repoRoot,
-        ROOT_MIGRATION_SOURCE_ROOT,
-        latestSourceMigration,
-      ))
+      !latestSourceMigration
     ) failures.push("root/Sites migration source truth drifted");
     if (
       live.productionMigrationCount !== liveMigrationTree.fileCount ||
@@ -1347,6 +1432,77 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
       )) ||
       live.candidateMigrationsMatchLiveLedger !== (pending.length === 0)
     ) failures.push("observed production migration evidence drifted");
+    if (
+      !handoff ||
+      !latestSourceMigration ||
+      handoff.status !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.status ||
+      handoff.baseMainCommit !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.baseMainCommit ||
+      handoff.baseMainPullRequest !==
+        MEDIA_UPLOAD_HANDOFF_EVIDENCE.baseMainPullRequest ||
+      handoff.candidateBranch !==
+        MEDIA_UPLOAD_HANDOFF_EVIDENCE.candidateBranch ||
+      handoff.sitesVersion !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.sitesVersion ||
+      handoff.sitesVersionId !==
+        MEDIA_UPLOAD_HANDOFF_EVIDENCE.sitesVersionId ||
+      handoff.sitesSourceCommit !==
+        MEDIA_UPLOAD_HANDOFF_EVIDENCE.sitesSourceCommit ||
+      handoff.sitesArchiveSha256 !==
+        MEDIA_UPLOAD_HANDOFF_EVIDENCE.sitesArchiveSha256 ||
+      handoff.sitesEnvironmentRevision !==
+        MEDIA_UPLOAD_HANDOFF_EVIDENCE.sitesEnvironmentRevision ||
+      handoff.liveSitesSourceTreeSha256 !==
+        MEDIA_UPLOAD_HANDOFF_EVIDENCE.liveSitesSourceTreeSha256 ||
+      handoff.candidateSourceFileCount !== sourceTree.fileCount ||
+      handoff.candidateSourceTreeSha256 !== sourceTree.sha256 ||
+      handoff.migrationFileCount !== rootMigrationTree.fileCount ||
+      handoff.migrationTreeSha256 !== rootMigrationTree.sha256 ||
+      !latestSourceMigration ||
+      handoff.latestMigration !== latestSourceMigration ||
+      handoff.latestMigrationByteLength !== statSync(resolve(
+        repoRoot,
+        ROOT_MIGRATION_SOURCE_ROOT,
+        latestSourceMigration,
+      )).size ||
+      handoff.latestMigrationSha256 !== sha256File(resolve(
+        repoRoot,
+        ROOT_MIGRATION_SOURCE_ROOT,
+        latestSourceMigration,
+      )) ||
+      handoff.clientActionAfterUpload !== "none" ||
+      handoff.processingOwner !== "veroxa_team" ||
+      handoff.legacyV2AuthenticatedExecute !== false ||
+      handoff.v3AuthenticatedExecute !== true ||
+      handoff.teamProcessorAvailable !== true ||
+      handoff.savedInstructionCount !== 0 ||
+      handoff.instructionApplicationCount !== 0 ||
+      handoff.unverifiedSavedUploadCount !== 3 ||
+      handoff.openMediaIntakeExceptionCount !== 3 ||
+      handoff.allMediaIntakeExceptionsExternalLocked !== true ||
+      handoff.existingUploadRequiresClientRetry !== false ||
+      handoff.preFixInstructionRecoverable !== false ||
+      handoff.bridgeKeyRotated !== true ||
+      handoff.applicationTestsPassed !== 431 ||
+      handoff.applicationTestsTotal !== 431 ||
+      live.sitesVersion !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.sitesVersion ||
+      live.sitesVersionId !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.sitesVersionId ||
+      live.sitesCheckoutCommit !==
+        MEDIA_UPLOAD_HANDOFF_EVIDENCE.sitesSourceCommit ||
+      live.sourceFileCount !==
+        MEDIA_UPLOAD_HANDOFF_EVIDENCE.liveSitesSourceFileCount ||
+      live.sourceTreeSha256 !==
+        MEDIA_UPLOAD_HANDOFF_EVIDENCE.liveSitesSourceTreeSha256 ||
+      live.productionMigrationCount !==
+        MEDIA_UPLOAD_HANDOFF_EVIDENCE.migrationFileCount ||
+      live.migrationTreeSha256 !==
+        MEDIA_UPLOAD_HANDOFF_EVIDENCE.migrationTreeSha256 ||
+      live.latestProductionMigration !==
+        MEDIA_UPLOAD_HANDOFF_EVIDENCE.latestMigration ||
+      live.githubParityVerifiedAtObservation !== false ||
+      live.githubMainMatchesCandidate !== false ||
+      live.candidateSourceMatchesLiveSites !== false ||
+      live.candidateMigrationsMatchLiveLedger !== true ||
+      live.fullReleaseGatePassed !== false
+    ) failures.push("Momo media one-step handoff evidence drifted");
     if (
       pending.some((filename) => !rootMigrationTree.files.includes(filename)) ||
       candidate.databaseMigrationApplied !== (pending.length === 0) ||

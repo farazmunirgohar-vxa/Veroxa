@@ -8,7 +8,7 @@ import {
 } from "../_shared/momo-content-ai-dispatch-lifecycle-contract.ts";
 
 const BRIDGE_PUBLIC_KEY_SPKI_BASE64 =
-  "MCowBQYDK2VwAyEAu68hoOLgdP56mNDaTR6zr8m1HfLuFRXUnIi/DRM6mOY=";
+  "MCowBQYDK2VwAyEAg/XOvj5uPdmqMKfWyh0jChnrtIoCHuaHODprsPRGo50=";
 const MAX_REQUEST_BYTES = 20_000;
 
 function response(body: JsonObject, status: number): Response {
