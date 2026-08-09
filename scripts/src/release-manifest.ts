@@ -1196,6 +1196,11 @@ function completedRolloutStageHasEvidence(
         candidate.deploymentAuthorized === false &&
         candidate.activationAuthorized === false &&
         candidate.activationGateReady === false &&
+        manifest.edgeCandidate?.deployAuthorized === false &&
+        manifest.activationState.newIncrementalSpendApproved === false &&
+        manifest.activationState.scopedInternalAiActivationAuthorized === false &&
+        manifest.activationState.scopedInternalAiActivationAuthorizationConsumed ===
+          true &&
         manifest.deploymentFreeze.activationGateReady === false &&
         manifest.deploymentFreeze.rolloutAuthorizationConsumed === true &&
         manifest.deploymentFreeze.deploymentAuthorized === false &&

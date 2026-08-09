@@ -272,6 +272,9 @@ must(
     manifest.releaseCandidate.edgeDeployAuthorized === false &&
     manifest.releaseCandidate.deploymentAuthorized === false &&
     manifest.releaseCandidate.activationAuthorized === false &&
+    manifest.edgeCandidate?.deployAuthorized === false &&
+    manifest.activationState.newIncrementalSpendApproved === false &&
+    manifest.activationState.scopedInternalAiActivationAuthorized === false &&
     manifest.deploymentFreeze.activationGateReady === false &&
     manifest.deploymentFreeze.rolloutAuthorizationConsumed === true &&
     manifest.deploymentFreeze.deploymentAuthorized === false &&

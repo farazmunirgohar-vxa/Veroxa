@@ -46,6 +46,10 @@ must(
     manifest.releaseCandidate.deploymentAuthorized === false &&
     manifest.releaseCandidate.activationAuthorized === false &&
     manifest.releaseCandidate.activationAuthorizationConsumed === true &&
+    manifest.edgeCandidate?.deployAuthorized === false &&
+    manifest.activationState.newIncrementalSpendApproved === false &&
+    manifest.activationState.scopedInternalAiActivationAuthorized === false &&
+    manifest.activationState.scopedInternalAiActivationAuthorizationConsumed === true &&
     manifest.deploymentFreeze.rolloutAuthorizationConsumed === true &&
     manifest.deploymentFreeze.automaticDeploymentsAllowed === false,
   "Sites/Edge completion, consumed authorization, or sole-hosting evidence drifted.",
