@@ -3151,35 +3151,35 @@ begin
   end if;
   if has_table_privilege(
        'authenticated',
-       'veroxa_private.momo_ready_source_discards_v2', 'select'
+       'veroxa_private.momo_ready_v2_authority_evidence_v1', 'select'
      )
      or has_table_privilege(
        'authenticated',
-       'veroxa_private.momo_ready_source_discards_v2', 'insert'
+       'veroxa_private.momo_ready_v2_authority_evidence_v1', 'insert'
      )
      or has_table_privilege(
        'authenticated',
-       'veroxa_private.momo_ready_source_discards_v2', 'update'
+       'veroxa_private.momo_ready_v2_authority_evidence_v1', 'update'
      )
      or has_table_privilege(
        'authenticated',
-       'veroxa_private.momo_ready_source_discards_v2', 'delete'
+       'veroxa_private.momo_ready_v2_authority_evidence_v1', 'delete'
      )
      or has_table_privilege(
        'service_role',
-       'veroxa_private.momo_ready_source_discards_v2', 'select'
+       'veroxa_private.momo_ready_v2_authority_evidence_v1', 'select'
      )
      or has_table_privilege(
        'service_role',
-       'veroxa_private.momo_ready_source_discards_v2', 'insert'
+       'veroxa_private.momo_ready_v2_authority_evidence_v1', 'insert'
      )
      or has_table_privilege(
        'service_role',
-       'veroxa_private.momo_ready_source_discards_v2', 'update'
+       'veroxa_private.momo_ready_v2_authority_evidence_v1', 'update'
      )
      or has_table_privilege(
        'service_role',
-       'veroxa_private.momo_ready_source_discards_v2', 'delete'
+       'veroxa_private.momo_ready_v2_authority_evidence_v1', 'delete'
      ) then
     raise exception 'momo_ready_source_discard_table_acl_too_broad';
   end if;
@@ -3857,7 +3857,7 @@ begin
       update public.veroxa_private_media_assessments_v1 assessment
       set output_payload = private_assessment_output #- '{tags,0}'
       where assessment.id = private_assessment_id;
-      if veroxa_private.momo_media_has_current_food_association_v2(
+      if veroxa_private.media_has_current_real_owner_association_v1(
            target_restaurant_id, asset_id, rights_id, content_hash
          ) then
         raise exception 'momo_ready_missing_objective_food_tag_was_eligible';
@@ -3868,7 +3868,7 @@ begin
         private_assessment_output, '{tags,0,confidence}', '0.69'::jsonb
       )
       where assessment.id = private_assessment_id;
-      if veroxa_private.momo_media_has_current_food_association_v2(
+      if veroxa_private.media_has_current_real_owner_association_v1(
            target_restaurant_id, asset_id, rights_id, content_hash
          ) then
         raise exception 'momo_ready_low_confidence_food_tag_was_eligible';
@@ -3880,7 +3880,7 @@ begin
         to_jsonb('Food detected'::text)
       )
       where assessment.id = private_assessment_id;
-      if veroxa_private.momo_media_has_current_food_association_v2(
+      if veroxa_private.media_has_current_real_owner_association_v1(
            target_restaurant_id, asset_id, rights_id, content_hash
          ) then
         raise exception 'momo_ready_forged_food_label_was_eligible';
@@ -3892,7 +3892,7 @@ begin
         to_jsonb('object'::text)
       )
       where assessment.id = private_assessment_id;
-      if veroxa_private.momo_media_has_current_food_association_v2(
+      if veroxa_private.media_has_current_real_owner_association_v1(
            target_restaurant_id, asset_id, rights_id, content_hash
          ) then
         raise exception 'momo_ready_forged_food_category_was_eligible';
@@ -3904,7 +3904,7 @@ begin
         to_jsonb('inferred'::text)
       )
       where assessment.id = private_assessment_id;
-      if veroxa_private.momo_media_has_current_food_association_v2(
+      if veroxa_private.media_has_current_real_owner_association_v1(
            target_restaurant_id, asset_id, rights_id, content_hash
          ) then
         raise exception 'momo_ready_forged_food_evidence_was_eligible';
@@ -3915,7 +3915,7 @@ begin
         private_assessment_output, '{subject}', to_jsonb('drink'::text)
       )
       where assessment.id = private_assessment_id;
-      if veroxa_private.momo_media_has_current_food_association_v2(
+      if veroxa_private.media_has_current_real_owner_association_v1(
            target_restaurant_id, asset_id, rights_id, content_hash
          ) then
         raise exception 'momo_ready_non_food_subject_was_eligible';
@@ -3925,7 +3925,7 @@ begin
       set output_payload = private_assessment_output
       where assessment.id = private_assessment_id;
       execute 'alter table public.veroxa_private_media_assessments_v1 enable trigger user';
-      if not veroxa_private.momo_media_has_current_food_association_v2(
+      if not veroxa_private.media_has_current_real_owner_association_v1(
            target_restaurant_id, asset_id, rights_id, content_hash
          ) then
         raise exception 'momo_ready_exact_objective_food_tag_was_ineligible';
@@ -5150,6 +5150,10 @@ reset role;
 -- distinct asset/run/package over package A's source hash after A is
 -- discarded; package B must read discarded and its direct approval path must
 -- fail before any package-local evidence could bypass the tombstone.
+-- Flush valid deferred FK work before this privileged rollback-only fixture
+-- temporarily disables immutable user triggers on the cloned rows.
+set constraints all immediate;
+
 do $$
 declare
   source_ready_id uuid :=
@@ -5674,12 +5678,13 @@ begin
   end if;
   if (
     select count(*)
-    from veroxa_private.momo_ready_source_discards_v2 source_discard
-    where source_discard.ready_package_id in (
+    from veroxa_private.momo_ready_v2_authority_evidence_v1 authority
+    where authority.ready_package_id in (
       current_setting('veroxa.test.ready_review_package_1')::uuid,
       current_setting('veroxa.test.ready_review_package_2')::uuid
     )
-      and not source_discard.external_write_allowed
+      and authority.requested_decision = 'discarded'
+      and not authority.external_write_allowed
   ) <> 2
     or (
       select count(*)

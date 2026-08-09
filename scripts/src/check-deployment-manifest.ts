@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import {
   APPLICATION_QUALITY_EVIDENCE,
-  LIVE46_MIGRATION_EVIDENCE,
+  LIVE47_MIGRATION_EVIDENCE,
   LOCAL_CANDIDATE_BASE_COMMIT,
   LOCAL_CANDIDATE_SOURCE_EVIDENCE,
   PR165_DRAFT_CHECKPOINT,
@@ -29,17 +29,17 @@ try {
 
 must(manifest.schemaVersion === 10, "Manifest schema must be 10.");
 must(
-  manifest.recordKind === "veroxa_live46_held_private_media_repair_manifest",
+  manifest.recordKind === "veroxa_live47_held_candidate48_manifest",
   "Manifest record kind is not the schema-10 held-repair authority.",
 );
 must(
   manifest.currentProductionObservation.canonicalGitHubMainCommit ===
     LOCAL_CANDIDATE_BASE_COMMIT &&
     manifest.currentProductionObservation.productionMigrationCount ===
-      LIVE46_MIGRATION_EVIDENCE.fileCount &&
+      LIVE47_MIGRATION_EVIDENCE.fileCount &&
     manifest.currentProductionObservation.migrationTreeSha256 ===
-      LIVE46_MIGRATION_EVIDENCE.treeSha256,
-  "Canonical main or exact live46 evidence drifted.",
+      LIVE47_MIGRATION_EVIDENCE.treeSha256,
+  "Canonical main or exact live47 evidence drifted.",
 );
 must(
   manifest.releaseCandidate.sourceFileCount ===
@@ -55,15 +55,15 @@ must(
   "Reviewed local candidate fingerprints or quality evidence drifted.",
 );
 must(
-  manifest.applicationQualityEvidence?.hostedCleanChainApplyPassed === true &&
+  manifest.applicationQualityEvidence?.hostedCleanChainApplyPassed === false &&
     manifest.applicationQualityEvidence.hostedFullPgTapPassed === false &&
     manifest.applicationQualityEvidence.hostedFullPgTapRerunPending === true &&
     manifest.applicationQualityEvidence.hostedDatabaseExecutionPassed === false &&
-    manifest.databaseContractReview?.hostedCleanChainApplyPassed === true &&
+    manifest.databaseContractReview?.hostedCleanChainApplyPassed === false &&
     manifest.databaseContractReview.hostedFullPgTapPassed === false &&
     manifest.databaseContractReview.hostedFullPgTapRerunPending === true &&
     manifest.databaseContractReview.functionalVerificationPassed === false,
-  "Hosted clean-chain apply evidence must not be promoted to full pgTAP or functional verification.",
+  "Hosted candidate48 execution evidence must remain pending until the exact head passes.",
 );
 must(
   manifest.edgeDeployment?.currentRepositorySourceParity === false &&
@@ -105,6 +105,6 @@ if (failures.length > 0) {
   process.exitCode = 1;
 } else {
   console.log(
-    "PASS: schema-10 live46 held-repair manifest is exact, reviewed locally, and fail-closed for remote/runtime gates.",
+    "PASS: schema-10 live47/candidate48 manifest is exact, reviewed locally, and fail-closed for remote/runtime gates.",
   );
 }

@@ -285,5 +285,6 @@ test("Team Ready UI gates every export through fresh status and preserves discar
   assert.match(data, /key: "veroxaReadyPackagesV2"[^\n]*secondaryOrder: "id"[^\n]*limit: 50/);
   assert.match(data, /\.in\("ready_package_id", readyPackageIds\)[\s\S]{0,300}\.limit\(Math\.min\(readyPackageIds\.length \* 3, 150\)\)/);
   assert.match(data, /new Set\(parsed\.map\(\(item\) => item\.ready_package_id\)\)\.size !== parsed\.length/);
-  assert.match(center, /pendingReadyReviews = data\.readyReviewStatusesV2\.filter\(\(status\) =>[\s\S]{0,220}momoReadyReviewCanApprove\(status\) \|\|[\s\S]{0,120}status\.terminal_decision === null[\s\S]{0,120}momoReadyReviewCanDiscard\(status\)/);
+  assert.match(center, /const veroxaReadyPackageIds = new Set\([\s\S]{0,120}veroxaReadyPackages\.map\(\(item\) => item\.id\)/);
+  assert.match(center, /pendingReadyReviews = data\.readyReviewStatusesV2\.filter\(\(status\) =>[\s\S]{0,160}veroxaReadyPackageIds\.has\(status\.ready_package_id\)[\s\S]{0,220}momoReadyReviewCanApprove\(status\) \|\|[\s\S]{0,120}status\.terminal_decision === null[\s\S]{0,120}momoReadyReviewCanDiscard\(status\)/);
 });

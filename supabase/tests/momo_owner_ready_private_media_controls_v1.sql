@@ -176,7 +176,7 @@ begin
   function_source := pg_catalog.pg_get_functiondef(to_regprocedure(
     'veroxa_private.momo_advance_verified_asset_v2(jsonb)'
   ));
-  if position('momo_media_has_current_food_association_v2'
+  if position('media_has_current_real_owner_association_v1'
        in function_source) = 0
      or position('link.asset_id' in function_source) = 0
      or position('for share' in lower(function_source)) = 0
@@ -1319,18 +1319,20 @@ begin
        ) then
       raise exception 'Retired Ready-v1 authority remained callable';
     end if;
-    if to_regclass('veroxa_private.momo_ready_source_discards_v2') is null
+    if to_regclass(
+         'veroxa_private.momo_ready_v2_authority_evidence_v1'
+       ) is null
        or not exists (
          select 1
          from pg_catalog.pg_class relation
          where relation.oid =
-           'veroxa_private.momo_ready_source_discards_v2'::regclass
+           'veroxa_private.momo_ready_v2_authority_evidence_v1'::regclass
            and relation.relrowsecurity
            and relation.relforcerowsecurity
        )
        or has_table_privilege(
          'authenticated',
-         'veroxa_private.momo_ready_source_discards_v2', 'select'
+         'veroxa_private.momo_ready_v2_authority_evidence_v1', 'select'
        )
        or not exists (
          select 1
@@ -1341,7 +1343,7 @@ begin
              'veroxa_momo_ready_disposition_event_immutable_v1'
            and not trigger_record.tgisinternal
        ) then
-      raise exception 'Ready disposition history or v2 tombstone lost guard';
+      raise exception 'Ready disposition history or v2 authority lost guard';
     end if;
     return;
   end if;

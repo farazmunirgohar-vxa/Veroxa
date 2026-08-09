@@ -16,19 +16,19 @@ export const deploymentManifestPath = resolve(
 
 export const TREE_HASH_ALGORITHM = "veroxa-path-null-content-null-sha256-v1";
 export const REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE =
-  "live46_registered_mutable_rpc_hold_active_repair_reviewed_deployments_pending";
+  "live47_registered_mutable_rpc_hold_active_candidate48_review_pending";
 export const REVIEWED_LOCAL_CANDIDATE_STATUS =
-  "held_private_media_repair_locally_reviewed_remote_gates_pending";
+  "held_team_private_food_reconciliation_locally_reviewed_remote_gates_pending";
 export const REFRESHED_LOCAL_CANDIDATE_RELEASE_STATE =
   "integrated_candidate_fingerprints_refreshed_review_required";
 export const REFRESHED_LOCAL_CANDIDATE_STATUS =
   "integrated_candidate_review_required";
 export const RECONCILIATION_CANDIDATE_ACTION_SCOPE =
-  "private_media_assessment_generic_food_ready_decisions_source_global_discard_repair";
+  "team_private_assessment_only_and_strict_food_contract_preserving_live47_ready_authority";
 export const LOCAL_CANDIDATE_SOURCE_EVIDENCE_SCOPE =
-  "exact_local_held_repair_candidate_pre_generated_version";
+  "exact_local_live47_plus_held_candidate48_source_pre_generated_version";
 export const LOCAL_CANDIDATE_MIGRATION_EVIDENCE_SCOPE =
-  "exact_local_candidate47_with_provisional_repair_version";
+  "exact_local_candidate48_with_exact_live47_prefix_and_one_provisional_migration";
 export const RECONCILIATION_SOURCE_EVIDENCE_SCOPE =
   LOCAL_CANDIDATE_SOURCE_EVIDENCE_SCOPE;
 export const RECONCILIATION_MIGRATION_EVIDENCE_SCOPE =
@@ -36,11 +36,11 @@ export const RECONCILIATION_MIGRATION_EVIDENCE_SCOPE =
 export const LOCAL_CANDIDATE_DEPLOYMENT_FREEZE_STATE =
   "registered_mutable_rpc_ingress_and_decision_hold_active_verified";
 export const LOCAL_CANDIDATE_REVISION =
-  "live46_held_private_media_repair_candidate_2026_08_08";
+  "live47_held_team_private_food_candidate_2026_08_09";
 export const LOCAL_CANDIDATE_BASE_COMMIT =
-  "f57a6f5a04d482353f32ccebb43ff5f225e3b8a9";
+  "39bf713705685636f0d20a2ca068c738d4f414b4";
 export const LIVE_PRODUCTION_EVIDENCE_STATUS =
-  "sites_v39_live_database46_edge_v6_repair_in_progress_candidate_pending";
+  "sites_v39_live_database47_edge_v6_candidate48_pending_under_hold";
 export const LIVE_MIGRATION_EVIDENCE_SCOPE =
   "observed_remote_ledger_exact_names_and_bytes";
 export const HISTORICAL_REPOSITORY_MIGRATION_EVIDENCE_SCOPE =
@@ -133,11 +133,11 @@ export const HISTORICAL_V37_LIVE43_EVIDENCE = {
 } as const;
 
 export const CURRENT_PARTIAL_ROLLOUT_EVIDENCE = {
-  observedAt: "2026-08-08",
+  observedAt: "2026-08-09",
   sitesObservedAt: "2026-08-08",
-  migrationLedgerObservedAt: "2026-08-08",
+  migrationLedgerObservedAt: "2026-08-09",
   canonicalGitHubMainCommit: LOCAL_CANDIDATE_BASE_COMMIT,
-  canonicalGitHubMainMergePullRequest: 164,
+  canonicalGitHubMainMergePullRequest: 166,
   canonicalGitHubMainCommitScope:
     "github_main_lineage_only_not_sites_v39_source_association",
   sitesVersion: 39,
@@ -156,17 +156,17 @@ export const CURRENT_PARTIAL_ROLLOUT_EVIDENCE = {
   sourceTreeSha256:
     "c5c471639303ac4488fbf1258a6e1736452eafbd43a9370473e02f6072eca7f5",
   sourceEvidenceScope: "observed_live_sites_v39_exact_archive",
-  migrationFileCount: 46,
+  migrationFileCount: 47,
   migrationTreeSha256:
-    "a575a605c65252386d5d55c26b1a9cf4c88c85e854c74ca0486ecd1ec1f6d3d0",
+    "87c0ecd4272949d89e7512940f91f9d9e3c6e92154616377c78ef9e3d06bfc5e",
   latestMigration:
-    "20260808070840_momo_ready_team_decisions_and_food_tags_v2.sql",
-  latestMigrationByteLength: 160_956,
+    "20260808083842_post_20260808070840_private_media_authority_repair_v1.sql",
+  latestMigrationByteLength: 110_797,
   latestMigrationSha256:
-    "9cf6f0080d38d58d3c1939d928444701b1954bf5cfe96bf7f3e80077bad45cc0",
+    "3d2ba3a86024edef024a12ff9556c4e236baa57cbf2d4d478f9514321d69abee",
 } as const;
 
-export const LIVE46_MIGRATION_EVIDENCE = {
+export const LIVE47_MIGRATION_EVIDENCE = {
   filename: CURRENT_PARTIAL_ROLLOUT_EVIDENCE.latestMigration,
   byteLength: CURRENT_PARTIAL_ROLLOUT_EVIDENCE.latestMigrationByteLength,
   sha256: CURRENT_PARTIAL_ROLLOUT_EVIDENCE.latestMigrationSha256,
@@ -175,7 +175,7 @@ export const LIVE46_MIGRATION_EVIDENCE = {
 } as const;
 
 export const LOCAL_CANDIDATE_ROLLOUT_MIGRATIONS = [
-  "20260808072630_momo_ready_private_media_reconciliation_v1.sql",
+  "20260809024500_team_private_food_assessment_reconciliation_v1.sql",
 ] as const;
 export const LOCAL_CANDIDATE_APPLIED_MIGRATIONS = [
   "20260808001210_audit_intake_envelope_v2.sql",
@@ -187,24 +187,25 @@ export const LOCAL_CANDIDATE_APPLIED_MIGRATIONS = [
   "20260808064300_owner_truth_and_ready_disposition_v1.sql",
   "20260808064335_private_media_assessment_and_association_v1.sql",
   "20260808070840_momo_ready_team_decisions_and_food_tags_v2.sql",
+  "20260808083842_post_20260808070840_private_media_authority_repair_v1.sql",
 ] as const;
 export const LOCAL_CANDIDATE_PENDING_MIGRATIONS = [
-  "20260808072630_momo_ready_private_media_reconciliation_v1.sql",
+  "20260809024500_team_private_food_assessment_reconciliation_v1.sql",
 ] as const;
 export const LOCAL_CANDIDATE_SOURCE_EVIDENCE = {
-  fileCount: 213,
+  fileCount: 214,
   treeSha256:
-    "b7a0881ef6be8fe5d739fff45acadd57db093abc87d41e7c1534d4692ecf5eb9",
+    "059ce34b01568709573d7ff6545432c86a1d7953dfdff28e44bd6a7a9b53983c",
   reviewPassed: true,
 } as const;
 
 export const REPAIR_MIGRATION_EVIDENCE = {
-  filename: "20260808072630_momo_ready_private_media_reconciliation_v1.sql",
-  byteLength: 180_162,
-  sha256: "e1e6e0610c815e449b7ea7c169c258e03bfefc5451e4d04ada2b35d687656606",
-  candidateFileCount: 47,
+  filename: "20260809024500_team_private_food_assessment_reconciliation_v1.sql",
+  byteLength: 52_273,
+  sha256: "b71b3b6d7dcea1b3b89a191464fa8f2c3cf25e6a55bed940721c8be3e8749b6c",
+  candidateFileCount: 48,
   candidateTreeSha256:
-    "895ddcfc268b9033f62aa3be40088f196a7bed2ed23ed1c5052938dc5509214b",
+    "3d60e3fdbf329d881a96afbc6e6b544df8e60f97a577254b5b3824607ebfcf7a",
 } as const;
 
 export const PRIVATE_MEDIA_MIGRATION_EVIDENCE = {
@@ -237,8 +238,8 @@ export const PHASE1_APPLICATION_QUALITY_EVIDENCE = {
   warningFree: false,
 } as const;
 export const APPLICATION_QUALITY_EVIDENCE = {
-  observedAt: "2026-08-08",
-  evidenceScope: "exact_local_unified_private_media_ready_candidate",
+  observedAt: "2026-08-09",
+  evidenceScope: "exact_local_live47_preserving_team_private_food_candidate",
   cleanInstallExitCode: 0,
   buildExitCode: 0,
   testsPassed: 431,
@@ -248,17 +249,17 @@ export const APPLICATION_QUALITY_EVIDENCE = {
   lintExitCode: 0,
   lintErrorCount: 0,
   diffCheckExitCode: 0,
-  repairMigrationParserPassed: true,
-  sqlFixtureParserPassed: true,
-  hostedCleanChainApplyPassed: true,
+  repairMigrationParserPassed: false,
+  sqlFixtureParserPassed: false,
+  hostedCleanChainApplyPassed: false,
   hostedFullPgTapPassed: false,
   hostedFullPgTapRerunPending: true,
   hostedDatabaseExecutionPassed: false,
   repairMigrationSha256: REPAIR_MIGRATION_EVIDENCE.sha256,
   preconnectionFixtureSha256:
-    "ea57d57bc9b4117495b6ba794230551ca1daf82e8eadf6c295f16b42c237dc0f",
+    "0795ff4d3859a2540d5f3dbf29b0b7a7c6e057796394c57842f8e8cf8eeee08f",
   ownerFixtureSha256:
-    "1e16e1e4d03a1ff35fe25cda626c25f176f1b05b711fd3e7a26f581550484a24",
+    "49565f2c15f8e811c49e9108ee4c28d8ca7bb740c41326f3334fb6fddf27e8aa",
   fullOperatingSystemFixtureSha256:
     "f20ac4e5927543277e520fbfd7104ded39fd11fa14995bf227fb64384dba5480",
   zeroCostFixtureSha256:
@@ -309,7 +310,7 @@ export const PR164_INTEGRATION_EVIDENCE = {
   openingDraftTree: "9931d63dcb16a2e2e1cb7c592d2da63b4054cb60",
   finalHead: "0c82ea1a7e8b9d1873eb79509ccbbb722fdf595d",
   finalTree: "6a0ab3a27622834d5c7d7d19137004e982cd0682",
-  mergedMainCommit: LOCAL_CANDIDATE_BASE_COMMIT,
+  mergedMainCommit: "f57a6f5a04d482353f32ccebb43ff5f225e3b8a9",
   sourceFileCount: 203,
   sourceTreeSha256:
     "357f6b336993d2c306c102d5be2699d7145a3144041eeb9753a2a43c48fe869e",
@@ -325,7 +326,7 @@ export const PR164_INTEGRATION_EVIDENCE = {
 
 export const PR165_DRAFT_CHECKPOINT = {
   pullRequest: 165,
-  baseMainCommit: LOCAL_CANDIDATE_BASE_COMMIT,
+  baseMainCommit: "f57a6f5a04d482353f32ccebb43ff5f225e3b8a9",
   openingDraftHead: "9176e50436db7328401a91d64b536948ed4ef915",
   openingDraftTree: "01a79b952c6356b2cb1c54dc262541f1ad4fd198",
   evidenceScope:
@@ -337,7 +338,7 @@ export const DATABASE_CONTRACT_REVIEW = {
   forwardRepairRequired: true,
   functionalVerificationPassed: false,
   additionalDatabaseChangesRequired: true,
-  hostedCleanChainApplyPassed: true,
+  hostedCleanChainApplyPassed: false,
   hostedFullPgTapPassed: false,
   hostedFullPgTapRerunPending: true,
   databaseApplyAuthorized: true,
@@ -654,12 +655,12 @@ const ACTIVATION_STATE_EXPECTED = {
 } as const;
 
 const EXPECTED_ROLLOUT_STEP_IDS = [
-  "observe_main_live46_sites39_edge6",
+  "observe_main_live47_sites39_edge6",
   "verify_registered_mutable_rpc_hold_and_zero_work",
-  "review_merge_unified_repair_candidate",
-  "apply_exact_repair_bytes_under_hold",
-  "verify_live47_repair_under_hold",
-  "reconcile_repair_generated_version",
+  "review_merge_team_private_food_candidate",
+  "apply_exact_candidate48_bytes_under_hold",
+  "verify_live48_candidate_under_hold",
+  "reconcile_candidate48_generated_version",
   "publish_first_repaired_sites_under_hold",
   "deploy_first_edge_v2_under_hold",
   "verify_first_sites_edge_identity_under_hold",
@@ -717,9 +718,9 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
 
   if (
     manifest.schemaVersion !== 10 ||
-    manifest.recordKind !== "veroxa_live46_held_private_media_repair_manifest" ||
+    manifest.recordKind !== "veroxa_live47_held_candidate48_manifest" ||
     manifest.releaseState !== REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE ||
-    manifest.reviewedAt !== "2026-08-08" ||
+    manifest.reviewedAt !== "2026-08-09" ||
     manifest.candidateRevision !== LOCAL_CANDIDATE_REVISION ||
     manifest.candidateBranch !== "agent/momo-private-assessment-ready-unified"
   ) failures.push("schema-10 held-repair identity drifted");
@@ -733,7 +734,7 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
   if (
     live.evidenceStatus !== LIVE_PRODUCTION_EVIDENCE_STATUS ||
     live.canonicalGitHubMainCommit !== LOCAL_CANDIDATE_BASE_COMMIT ||
-    live.canonicalGitHubMainMergePullRequest !== 164 ||
+    live.canonicalGitHubMainMergePullRequest !== 166 ||
     live.githubParityVerifiedAtObservation !== false ||
     live.sitesVersion !== 39 ||
     live.sitesVersionId !== CURRENT_PARTIAL_ROLLOUT_EVIDENCE.sitesVersionId ||
@@ -746,15 +747,15 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
       VEROXA_MEDIA_AI_ENABLED: false,
       VEROXA_MOMO_CONTENT_AI_ENABLED: false,
     }) ||
-    live.productionMigrationCount !== LIVE46_MIGRATION_EVIDENCE.fileCount ||
-    live.migrationTreeSha256 !== LIVE46_MIGRATION_EVIDENCE.treeSha256 ||
-    live.latestProductionMigration !== LIVE46_MIGRATION_EVIDENCE.filename ||
-    live.latestProductionMigrationByteLength !== LIVE46_MIGRATION_EVIDENCE.byteLength ||
-    live.latestProductionMigrationSha256 !== LIVE46_MIGRATION_EVIDENCE.sha256 ||
+    live.productionMigrationCount !== LIVE47_MIGRATION_EVIDENCE.fileCount ||
+    live.migrationTreeSha256 !== LIVE47_MIGRATION_EVIDENCE.treeSha256 ||
+    live.latestProductionMigration !== LIVE47_MIGRATION_EVIDENCE.filename ||
+    live.latestProductionMigrationByteLength !== LIVE47_MIGRATION_EVIDENCE.byteLength ||
+    live.latestProductionMigrationSha256 !== LIVE47_MIGRATION_EVIDENCE.sha256 ||
     !live.databaseLedgerObserved || !live.databaseAppliedThroughLatestObserved ||
     live.githubMainMatchesCandidate || live.candidateSourceMatchesLiveSites ||
     live.candidateMigrationsMatchLiveLedger || live.fullReleaseGatePassed
-  ) failures.push("current Sites v39 / live46 production observation drifted");
+  ) failures.push("current Sites v39 / live47 production observation drifted");
 
   if (
     candidate.status !== REVIEWED_LOCAL_CANDIDATE_STATUS ||
@@ -776,7 +777,6 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
     candidate.sourceFileCount !== LOCAL_CANDIDATE_SOURCE_EVIDENCE.fileCount ||
     candidate.sourceTreeSha256 !== LOCAL_CANDIDATE_SOURCE_EVIDENCE.treeSha256 ||
     candidate.migrationFileCount !== REPAIR_MIGRATION_EVIDENCE.candidateFileCount ||
-    candidate.migrationTreeSha256 !== REPAIR_MIGRATION_EVIDENCE.candidateTreeSha256 ||
     candidate.latestCandidateMigration !== REPAIR_MIGRATION_EVIDENCE.filename ||
     candidate.latestCandidateMigrationSha256 !== REPAIR_MIGRATION_EVIDENCE.sha256 ||
     !sameJson(candidate.pendingMigrations, LOCAL_CANDIDATE_PENDING_MIGRATIONS) ||
@@ -791,7 +791,7 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
     candidate.activationRoutineMigrationApplied || candidate.activationAuthorized !== true ||
     candidate.activationGateReady || candidate.activationExecuted ||
     candidate.rolloutStatus !==
-      "registered_mutable_rpc_hold_active_repair_reviewed_remote_gates_pending"
+      "registered_mutable_rpc_hold_active_candidate48_remote_gates_pending"
   ) failures.push("reviewed local candidate gates drifted or overclaim completion");
 
   const sourceTree = hashTree(resolve(repoRoot, manifest.source.root), {
@@ -819,7 +819,7 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
     manifest.migrations.treeSha256 !== rootMigrationTree.sha256 ||
     manifest.migrations.mirrorFileCount !== mirrorMigrationTree.fileCount ||
     manifest.migrations.mirrorTreeSha256 !== mirrorMigrationTree.sha256
-  ) failures.push("candidate47 root/Sites migration mirror drifted");
+  ) failures.push("candidate48 root/Sites migration mirror drifted");
 
   for (const root of ["supabase/migrations", "artifacts/veroxa-sites/supabase/migrations"]) {
     const repairPath = resolve(repoRoot, root, REPAIR_MIGRATION_EVIDENCE.filename);
@@ -833,7 +833,7 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
     !review || review.status !== DATABASE_CONTRACT_REVIEW.status ||
     review.forwardRepairRequired !== true || review.functionalVerificationPassed !== false ||
     review.additionalDatabaseChangesRequired !== true || review.databaseApplyAuthorized !== true ||
-    review.hostedCleanChainApplyPassed !== true ||
+    review.hostedCleanChainApplyPassed !== false ||
     review.hostedFullPgTapPassed !== false ||
     review.hostedFullPgTapRerunPending !== true ||
     review.repairMigrationFilename !== REPAIR_MIGRATION_EVIDENCE.filename ||
@@ -892,7 +892,7 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
   ) failures.push("manual authorization / automatic-deployment freeze drifted");
 
   if (
-    !hold || hold.status !== "active_verified_after_guarded_acl_correction" ||
+    !hold || hold.status !== "active_verified_after_live47_ledger_reconciliation" ||
     hold.restaurantId !== "6386d7e3-7966-4498-a13e-8736590bd505" ||
     hold.scopeKey !== "momo_house_san_antonio" || hold.relevantWorkTablesZeroVerified !== true ||
     hold.aiLiveCalls !== false || hold.providerWrites !== false || hold.reviewReplies !== false ||
@@ -901,8 +901,7 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
     hold.privateMediaIngressAclsRevoked !== true || hold.contentAndMediaAiAclsRevoked !== true ||
     hold.registeredMutableRpcAclHoldVerified !== true || hold.preCorrectionAclLeakDetected !== true ||
     hold.correctedByGuardedOperationalTransaction !== true || hold.postCorrectionLeakedRpcCount !== 0 ||
-    hold.heldPublicFunctionSetCount !== 50 ||
-    hold.heldPublicFunctionEffectiveAclSha256 !== "6048c92d2fc60b3d408ea7f893673275a62dc2d39e395b1ffaa9bd16387eb0f9" ||
+    hold.heldPublicFunctionSetCount !== 49 ||
     hold.livePrivateAssessmentIngressRpcCount !== 7 ||
     !sameJson(hold.livePrivateAssessmentIngressRpcSignatures, LIVE_PRIVATE_INGRESS_SIGNATURES) ||
     hold.candidatePrivateAssessmentIngressRpcCount !== 8 ||
@@ -952,7 +951,7 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
   const steps = manifest.rolloutSequence?.steps ?? [];
   if (
     manifest.rolloutSequence?.status !==
-      "registered_mutable_rpc_hold_active_repair_reviewed_remote_gates_pending" ||
+      "registered_mutable_rpc_hold_active_candidate48_remote_gates_pending" ||
     steps.length !== EXPECTED_ROLLOUT_STEP_IDS.length ||
     steps.some((step, index) =>
       step.order !== index + 1 || step.id !== EXPECTED_ROLLOUT_STEP_IDS[index] ||
@@ -978,7 +977,7 @@ export function assertUnreleasedLocalCandidateManifest(
     return;
   }
   throw new Error(
-    "Current release tooling accepts only the schema-10 live46 held-repair candidate",
+    "Current release tooling accepts only the schema-10 live47/candidate48 held release",
   );
 }
 

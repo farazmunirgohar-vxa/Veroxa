@@ -1,7 +1,7 @@
 import { readdirSync, statSync } from "node:fs";
 import { resolve } from "node:path";
 import {
-  LIVE46_MIGRATION_EVIDENCE,
+  LIVE47_MIGRATION_EVIDENCE,
   LIVE_MIGRATION_EVIDENCE_SCOPE,
   LOCAL_CANDIDATE_MIGRATION_EVIDENCE_SCOPE,
   LOCAL_CANDIDATE_PENDING_MIGRATIONS,
@@ -57,14 +57,14 @@ must(
     mirrorTree.sha256 === REPAIR_MIGRATION_EVIDENCE.candidateTreeSha256 &&
     JSON.stringify(rootNames) === JSON.stringify(mirrorNames) &&
     JSON.stringify(rootTree.files) === JSON.stringify(mirrorTree.files),
-  "Root/Sites candidate47 migration trees are not exact mirrors.",
+  "Root/Sites candidate48 migration trees are not exact mirrors.",
 );
 must(
-  liveRootPrefix.fileCount === LIVE46_MIGRATION_EVIDENCE.fileCount &&
-    liveMirrorPrefix.fileCount === LIVE46_MIGRATION_EVIDENCE.fileCount &&
-    liveRootPrefix.sha256 === LIVE46_MIGRATION_EVIDENCE.treeSha256 &&
-    liveMirrorPrefix.sha256 === LIVE46_MIGRATION_EVIDENCE.treeSha256,
-  "Candidate does not preserve the exact immutable live46 prefix.",
+  liveRootPrefix.fileCount === LIVE47_MIGRATION_EVIDENCE.fileCount &&
+    liveMirrorPrefix.fileCount === LIVE47_MIGRATION_EVIDENCE.fileCount &&
+    liveRootPrefix.sha256 === LIVE47_MIGRATION_EVIDENCE.treeSha256 &&
+    liveMirrorPrefix.sha256 === LIVE47_MIGRATION_EVIDENCE.treeSha256,
+  "Candidate does not preserve the exact immutable live47 prefix.",
 );
 must(
   JSON.stringify(manifest.releaseCandidate.pendingMigrations) ===
@@ -88,12 +88,12 @@ for (const filename of rootNames) {
   );
 }
 for (const directory of [rootDir, mirrorDir]) {
-  const livePath = resolve(directory, LIVE46_MIGRATION_EVIDENCE.filename);
+    const livePath = resolve(directory, LIVE47_MIGRATION_EVIDENCE.filename);
   const repairPath = resolve(directory, REPAIR_MIGRATION_EVIDENCE.filename);
   must(
-    statSync(livePath).size === LIVE46_MIGRATION_EVIDENCE.byteLength &&
-      sha256File(livePath) === LIVE46_MIGRATION_EVIDENCE.sha256,
-    `Immutable live46 migration bytes drifted in ${directory}`,
+    statSync(livePath).size === LIVE47_MIGRATION_EVIDENCE.byteLength &&
+      sha256File(livePath) === LIVE47_MIGRATION_EVIDENCE.sha256,
+    `Immutable live47 migration bytes drifted in ${directory}`,
   );
   must(
     statSync(repairPath).size === REPAIR_MIGRATION_EVIDENCE.byteLength &&
@@ -116,6 +116,6 @@ if (failures.length > 0) {
   process.exitCode = 1;
 } else {
   console.log(
-    "PASS: exact immutable live46 prefix plus one mirrored provisional repair yields candidate47.",
+    "PASS: exact immutable live47 prefix plus one mirrored provisional migration yields candidate48.",
   );
 }

@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import {
   APPLICATION_QUALITY_EVIDENCE,
   CURRENT_PARTIAL_ROLLOUT_EVIDENCE,
-  LIVE46_MIGRATION_EVIDENCE,
+  LIVE47_MIGRATION_EVIDENCE,
   LOCAL_CANDIDATE_BASE_COMMIT,
   LOCAL_CANDIDATE_SOURCE_EVIDENCE,
   PR165_DRAFT_CHECKPOINT,
@@ -30,12 +30,12 @@ try {
 must(
   manifest.currentProductionObservation.canonicalGitHubMainCommit ===
     LOCAL_CANDIDATE_BASE_COMMIT &&
-    manifest.currentProductionObservation.canonicalGitHubMainMergePullRequest === 164,
-  "Current GitHub main source truth must be the merged PR #164 lineage.",
+    manifest.currentProductionObservation.canonicalGitHubMainMergePullRequest === 166,
+  "Current GitHub main source truth must be the merged PR #166 lineage.",
 );
 must(
   manifest.currentProductionObservation.canonicalGitHubMainCommitScope ===
-    "github_main_lineage_only_not_sites_v39_source_association" &&
+    "github_main_pr166_lineage_only_not_sites_v39_source_association" &&
     manifest.currentProductionObservation.sitesVersion ===
       CURRENT_PARTIAL_ROLLOUT_EVIDENCE.sitesVersion &&
     manifest.currentProductionObservation.sitesArchiveSha256 ===
@@ -46,13 +46,13 @@ must(
 );
 must(
   manifest.currentProductionObservation.productionMigrationCount ===
-    LIVE46_MIGRATION_EVIDENCE.fileCount &&
+    LIVE47_MIGRATION_EVIDENCE.fileCount &&
     manifest.currentProductionObservation.migrationTreeSha256 ===
-      LIVE46_MIGRATION_EVIDENCE.treeSha256 &&
+      LIVE47_MIGRATION_EVIDENCE.treeSha256 &&
     manifest.releaseCandidate.latestCandidateMigration ===
       REPAIR_MIGRATION_EVIDENCE.filename &&
     manifest.releaseCandidate.databaseMigrationApplied === false,
-  "Source truth must split exact live46 from the sole pending provisional repair.",
+  "Source truth must split exact live47 from the sole pending provisional migration.",
 );
 must(
   manifest.edgeDeployment?.functionVersion === 6 &&
@@ -79,10 +79,10 @@ for (const path of authorityDocs) {
     `${path} must contain exactly one current-authority heading.`,
   );
   for (const marker of [
-    "LIVE46_HELD_REPAIR_AUTHORITY",
+    "LIVE47_CANDIDATE48_AUTHORITY",
     LOCAL_CANDIDATE_BASE_COMMIT,
     "Sites v39",
-    "live46",
+    "live47",
     REPAIR_MIGRATION_EVIDENCE.filename,
     "PR #165",
     PR165_DRAFT_CHECKPOINT.openingDraftHead,
@@ -109,6 +109,6 @@ if (failures.length > 0) {
   process.exitCode = 1;
 } else {
   console.log(
-    "PASS: current docs split GitHub main, independent Sites v39, live46, held candidate47, partial hosted verification, and live/candidate Edge truth.",
+    "PASS: current docs split GitHub main, independent Sites v39, live47, held candidate48, partial hosted verification, and live/candidate Edge truth.",
   );
 }

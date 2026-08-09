@@ -47,7 +47,7 @@ must(
     manifest.currentProductionObservation.sitesArchiveSha256 ===
       CURRENT_PARTIAL_ROLLOUT_EVIDENCE.sitesArchiveSha256 &&
     manifest.currentProductionObservation.canonicalGitHubMainCommitScope ===
-      "github_main_lineage_only_not_sites_v39_source_association",
+      "github_main_pr166_lineage_only_not_sites_v39_source_association",
   "Sites v39 must remain an independent observed baseline.",
 );
 must(

@@ -1,7 +1,7 @@
 import { readFileSync, statSync } from "node:fs";
 import { resolve } from "node:path";
 import {
-  LIVE46_MIGRATION_EVIDENCE,
+  LIVE47_MIGRATION_EVIDENCE,
   LOCAL_CANDIDATE_APPLIED_MIGRATIONS,
   LOCAL_CANDIDATE_MIGRATION_EVIDENCE_SCOPE,
   LOCAL_CANDIDATE_PENDING_MIGRATIONS,
@@ -35,7 +35,7 @@ try {
 
 must(rr.schemaVersion === 14, "RR schema must be 14.");
 must(
-  rr.recordKind === "veroxa_live46_held_private_media_repair_checkpoint",
+  rr.recordKind === "veroxa_live47_held_candidate48_checkpoint",
   "RR record kind is not the schema-14 held-repair checkpoint.",
 );
 must(rr.status === manifest.releaseState, "RR and manifest release states differ.");
@@ -79,16 +79,16 @@ for (const field of [
 
 must(
   rr.databaseEvidence.liveBaseline.migrationFileCount ===
-    LIVE46_MIGRATION_EVIDENCE.fileCount &&
+    LIVE47_MIGRATION_EVIDENCE.fileCount &&
     rr.databaseEvidence.liveBaseline.exactRemoteLedgerTreeSha256 ===
-      LIVE46_MIGRATION_EVIDENCE.treeSha256 &&
+      LIVE47_MIGRATION_EVIDENCE.treeSha256 &&
     rr.databaseEvidence.liveBaseline.latestMigration ===
-      LIVE46_MIGRATION_EVIDENCE.filename &&
+      LIVE47_MIGRATION_EVIDENCE.filename &&
     rr.databaseEvidence.liveBaseline.latestMigrationByteLength ===
-      LIVE46_MIGRATION_EVIDENCE.byteLength &&
+      LIVE47_MIGRATION_EVIDENCE.byteLength &&
     rr.databaseEvidence.liveBaseline.latestMigrationSha256 ===
-      LIVE46_MIGRATION_EVIDENCE.sha256,
-  "RR exact live46 database baseline drifted.",
+      LIVE47_MIGRATION_EVIDENCE.sha256,
+  "RR exact live47 database baseline drifted.",
 );
 must(
   rr.databaseEvidence.integratedBaseline.migrationFileCount ===
@@ -102,7 +102,7 @@ must(
     canonical(rr.databaseEvidence.integratedBaseline.appliedMigrations) ===
       canonical(LOCAL_CANDIDATE_APPLIED_MIGRATIONS) &&
     rr.databaseEvidence.integratedBaseline.candidateMigrationsMatchLiveLedger === false,
-  "RR candidate47/live46 split drifted.",
+  "RR candidate48/live47 split drifted.",
 );
 must(
   canonical(rr.databaseEvidence.forwardRepair) ===
@@ -110,11 +110,11 @@ must(
   "RR forward-repair block does not mirror the manifest database review.",
 );
 must(
-  rr.applicationQualityEvidence.hostedCleanChainApplyPassed === true &&
+  rr.applicationQualityEvidence.hostedCleanChainApplyPassed === false &&
     rr.applicationQualityEvidence.hostedFullPgTapPassed === false &&
     rr.applicationQualityEvidence.hostedFullPgTapRerunPending === true &&
     rr.applicationQualityEvidence.hostedDatabaseExecutionPassed === false &&
-    rr.databaseContractReview.hostedCleanChainApplyPassed === true &&
+    rr.databaseContractReview.hostedCleanChainApplyPassed === false &&
     rr.databaseContractReview.hostedFullPgTapPassed === false &&
     rr.databaseContractReview.hostedFullPgTapRerunPending === true &&
     rr.databaseContractReview.functionalVerificationPassed === false,
@@ -138,12 +138,12 @@ must(
 const liveMigration = resolve(
   repoRoot,
   "supabase/migrations",
-  LIVE46_MIGRATION_EVIDENCE.filename,
+  LIVE47_MIGRATION_EVIDENCE.filename,
 );
 must(
-  statSync(liveMigration).size === LIVE46_MIGRATION_EVIDENCE.byteLength &&
-    sha256File(liveMigration) === LIVE46_MIGRATION_EVIDENCE.sha256,
-  "Local immutable live46 migration bytes drifted.",
+  statSync(liveMigration).size === LIVE47_MIGRATION_EVIDENCE.byteLength &&
+    sha256File(liveMigration) === LIVE47_MIGRATION_EVIDENCE.sha256,
+  "Local immutable live47 migration bytes drifted.",
 );
 
 if (failures.length > 0) {
@@ -151,6 +151,6 @@ if (failures.length > 0) {
   process.exitCode = 1;
 } else {
   console.log(
-    "PASS: schema-14 RR checkpoint canonically mirrors schema-10 live46 held-repair evidence.",
+    "PASS: schema-14 RR checkpoint canonically mirrors schema-10 live47/candidate48 evidence.",
   );
 }
