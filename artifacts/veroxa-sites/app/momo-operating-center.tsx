@@ -1717,8 +1717,10 @@ function ContentPanel(props: PanelProps & { onNavigate: (view: string) => void }
   const veroxaReadyPackages = data.veroxaReadyPackagesV2.filter((item) =>
     latestAutomationRunByIdentity.get(item.identity_id) === item.content_ai_run_id
   );
+  const veroxaReadyPackageIds = new Set(veroxaReadyPackages.map((item) => item.id));
   const pendingReadyReviews = data.readyReviewStatusesV2.filter((status) =>
-    momoReadyReviewCanApprove(status) || momoReadyReviewCanDiscard(status)
+    veroxaReadyPackageIds.has(status.ready_package_id) &&
+    (momoReadyReviewCanApprove(status) || momoReadyReviewCanDiscard(status))
   );
   const legacyHistoryCount = legacyReviewRuns.length + legacyFailedRuns.length + packageStates.length + data.contentItems.length;
   const attentionCount = role === "team"
