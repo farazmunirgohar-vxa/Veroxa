@@ -259,7 +259,7 @@ export const APPLICATION_QUALITY_EVIDENCE = {
   preconnectionFixtureSha256:
     "d6d870788c1211d8209048921232e9e8b1cffa16aae1ef9a4a9516b150434b5d",
   ownerFixtureSha256:
-    "93a7c9cdfab89f4ad57750de3aad84b0372ff8d148a0345dd0473786f27fa277",
+    "cffec226ff167d4bebaf0517661c35d85282be94729950a483f62b1a961fb027",
   fullOperatingSystemFixtureSha256:
     "f20ac4e5927543277e520fbfd7104ded39fd11fa14995bf227fb64384dba5480",
   zeroCostFixtureSha256:

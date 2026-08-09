@@ -290,20 +290,28 @@ begin
   if position('lock_momo_source_media_v1' in function_source) = 0
      or position('momo_source_media_discarded_v1' in function_source) = 0
      or position('source_media_discarded_terminal' in function_source) = 0
-     or position('pg_advisory_xact_lock' in function_source) = 0
+     or position('veroxa_reserve_momo_content_ai_run_v5_pre_source_lock_v1'
+       in function_source) = 0
      or position('lock_momo_source_media_v1' in function_source) >
        position('momo_source_media_discarded_v1' in function_source)
      or position('momo_source_media_discarded_v1' in function_source) >
-       position('pg_advisory_xact_lock' in function_source)
-     or position('lock_momo_source_media_v1' in function_source) >
-       position('pg_advisory_xact_lock' in function_source)
-     or position('for share' in function_source) = 0
-     or position('momo_source_media_discarded_v1' in function_source) >
        position('for share' in function_source)
      or position('lock_momo_source_media_v1' in function_source) >
-       position('for share' in function_source) then
+       position('for share' in function_source)
+     or position('for share' in function_source) > position(
+       'veroxa_reserve_momo_content_ai_run_v5_pre_source_lock_v1'
+       in function_source
+     ) then
     raise exception
-      'Content reservation lost inline source-first lock order';
+      'Content reservation wrapper lost source-first delegate order';
+  end if;
+  function_source := lower(pg_catalog.pg_get_functiondef(to_regprocedure(
+    'public.veroxa_reserve_momo_content_ai_run_v5_pre_source_lock_v1(uuid,uuid,text,text,text)'
+  )));
+  if position('pg_advisory_xact_lock' in function_source) = 0
+     or position('for update' in function_source) = 0 then
+    raise exception
+      'Content reservation delegate lost idempotency or row locks';
   end if;
 
   function_source := lower(pg_catalog.pg_get_functiondef(to_regprocedure(
