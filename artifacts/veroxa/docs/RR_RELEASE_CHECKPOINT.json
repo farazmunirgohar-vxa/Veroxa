@@ -102,16 +102,40 @@
     "mergedCommit": "aafebf93a6bc40f9578c29f4a25371f8203d0387",
     "zeroUnresolvedReviewThreads": true,
     "preMergeWorkflows": {
-      "ci": { "runId": 30764961514, "status": "success" },
-      "sitesVerify": { "runId": 30764961531, "status": "success" },
-      "supabaseVerify": { "runId": 30764961516, "status": "success" },
-      "veroxaVerify": { "runId": 30764961539, "status": "success" }
+      "ci": {
+        "runId": 30764961514,
+        "status": "success"
+      },
+      "sitesVerify": {
+        "runId": 30764961531,
+        "status": "success"
+      },
+      "supabaseVerify": {
+        "runId": 30764961516,
+        "status": "success"
+      },
+      "veroxaVerify": {
+        "runId": 30764961539,
+        "status": "success"
+      }
     },
     "postMergePushWorkflows": {
-      "ci": { "runId": 30767748950, "status": "success" },
-      "sitesVerify": { "runId": 30767748969, "status": "success" },
-      "supabaseVerify": { "runId": 30767748993, "status": "success" },
-      "veroxaVerify": { "runId": 30767748953, "status": "success" }
+      "ci": {
+        "runId": 30767748950,
+        "status": "success"
+      },
+      "sitesVerify": {
+        "runId": 30767748969,
+        "status": "success"
+      },
+      "supabaseVerify": {
+        "runId": 30767748993,
+        "status": "success"
+      },
+      "veroxaVerify": {
+        "runId": 30767748953,
+        "status": "success"
+      }
     }
   },
   "policyEvaluationEvidence": {
@@ -135,9 +159,6 @@
     "completedAggregateBelowAuthorizedCeiling": true
   },
   "releaseCandidate": {
-    "manifest": "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json",
-    "state": "predeployment_v5_cutover_freeze_required",
-    "localReviewPassed": true,
     "status": "predeployment_v5_cutover_freeze_required",
     "actionScope": "momo_ready_team_decisions_and_generic_food_v2_candidate",
     "basedOnGitHubMainCommit": "59b1604d887547e2804bdd6d63c97292385dcebb",
@@ -157,7 +178,7 @@
     "githubMainMatchesCandidate": false,
     "fullReleaseGatePassed": false,
     "sourceFileCount": 203,
-    "sourceTreeSha256": "357f6b336993d2c306c102d5be2699d7145a3144041eeb9753a2a43c48fe869e",
+    "sourceTreeSha256": "a8d5b75ab251f3502b87ec2c99c5f3d51aa7381e0ccefbc94b6183bb92a4c1d0",
     "migrationFileCount": 44,
     "migrationTreeSha256": "9cc0bba007b6a0c06edf33563fb1bc3f4650811f8f8ea1639cc58c7028ac7324",
     "latestCandidateMigration": "20260808045812_momo_ready_team_decisions_and_food_tags_v2.sql",
@@ -181,7 +202,10 @@
     "sitesPublishAuthorized": true,
     "deploymentAuthorized": true,
     "activationExecuted": false,
-    "rolloutStatus": "predeployment_v5_cutover_freeze_required"
+    "rolloutStatus": "predeployment_v5_cutover_freeze_required",
+    "manifest": "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json",
+    "state": "predeployment_v5_cutover_freeze_required",
+    "localReviewPassed": true
   },
   "rolloutSequence": {
     "status": "predeployment_v5_cutover_freeze_required",

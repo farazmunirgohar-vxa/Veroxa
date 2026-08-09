@@ -555,7 +555,7 @@ function assertSchema7ForwardRepairCandidate(manifest: DeploymentManifest): void
     !candidate.deploymentAuthorized || candidate.activationExecuted ||
     candidate.rolloutStatus !== "predeployment_v5_cutover_freeze_required" ||
     candidate.sourceFileCount !== 203 ||
-    candidate.sourceTreeSha256 !== "357f6b336993d2c306c102d5be2699d7145a3144041eeb9753a2a43c48fe869e" ||
+    candidate.sourceTreeSha256 !== "a8d5b75ab251f3502b87ec2c99c5f3d51aa7381e0ccefbc94b6183bb92a4c1d0" ||
     candidate.migrationFileCount !== 44 ||
     candidate.migrationTreeSha256 !== "9cc0bba007b6a0c06edf33563fb1bc3f4650811f8f8ea1639cc58c7028ac7324" ||
     candidate.latestCandidateMigration !== LOCAL_CANDIDATE_PENDING_MIGRATIONS[0] ||

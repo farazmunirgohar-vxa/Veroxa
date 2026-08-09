@@ -201,6 +201,7 @@ function assertOnlyReviewFieldsChanged(
   const normalizedReviewedRr = structuredClone(reviewedRr);
   for (const value of [normalizedOriginalRr, normalizedReviewedRr]) {
     value.status = "<review-state>";
+    value.releaseCandidate.status = "<review-status>";
     value.releaseCandidate.state = "<review-status>";
     value.releaseCandidate.reviewedLocally = false;
     value.releaseCandidate.localReviewPassed = false;
@@ -343,6 +344,7 @@ assertReviewedLocalCandidateManifest(reviewedManifest);
 
 const reviewedRr = structuredClone(rr);
 reviewedRr.status = REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE;
+reviewedRr.releaseCandidate.status = REVIEWED_LOCAL_CANDIDATE_STATUS;
 reviewedRr.releaseCandidate.state = REVIEWED_LOCAL_CANDIDATE_STATUS;
 reviewedRr.releaseCandidate.reviewedLocally = true;
 reviewedRr.releaseCandidate.localReviewPassed = true;
