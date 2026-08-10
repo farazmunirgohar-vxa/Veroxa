@@ -1,5 +1,16 @@
 # Active Docs Index
 
+<!-- PROJECT_SCOPE_AND_POST_ACCESS_AUTHORITY_2026_08_10 -->
+
+## 2026-08-10 — project isolation and restaurant operating model (current authority)
+
+- **Veroxa-only scope:** Within the Veroxa project, `refresh`, `resume`, `everything`, pending-task reviews, status reports, tools, agents, artifacts, automations, budgets, permissions, and next actions are Veroxa-only unless Faraz explicitly names a cross-project scope in the current request. Conversation history, personal context, global automation lists, and shared or transient workspaces are navigation evidence only; they do not attach another project to Veroxa. Leave non-Veroxa workstreams and artifacts untouched and classify ambiguous items as `unscoped`.
+- **Onboarding authority:** Veroxa audits and pre-fills the restaurant profile; the restaurant edits or verifies restaurant truth. After that verification, Veroxa provides detailed instructions for the restaurant to grant access to the required platforms. During the current media test, the platform-access request stage remains visibly and functionally held.
+- **Post-access restaurant responsibility:** After required access is complete, the restaurant has one recurring job: privately upload authorized media. Do not send routine technical verification, retry, classification, association processing, captions, SEO, Ready review, scheduling, performance analysis, or report preparation back to the restaurant.
+- **Veroxa and Team responsibility:** Veroxa handles media integrity and quality checks, exact-duplicate control, safe improvement, uncertainty, captions, SEO, hashtags, alt text, and evidence-bound post-ready preparation. Use only restaurant truth already verified during onboarding for business claims. If an exact dish or offering association cannot be established safely, use neutral copy, abstain, or create a Team exception. Team resolves exceptions and approves or terminally discards the exact Ready package without becoming the owner of restaurant truth.
+- **Future operating loop:** Only after the current hold is explicitly lifted may the separately gated system publish Team-approved Ready media on the defined schedule, measure verified platform performance, produce a lighter weekly report, and produce a deeper monthly strategy report.
+- **Release boundary:** This record changes operating direction only. It does not deploy portal UX, mutate Supabase, delete media, connect platforms, enable provider writes, schedule or publish content, contact the restaurant, or authorize spend. Live production remains independently verified; the portal UX implementation and any bounded Momo media reset require their own reviewed candidate and release evidence.
+
 Status: highest-level current source-of-truth index. Read this file before relying on older Veroxa documents.
 
 <!-- GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY -->
