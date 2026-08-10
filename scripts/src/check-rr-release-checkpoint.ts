@@ -144,6 +144,9 @@ must(
       MEDIA_UPLOAD_HANDOFF_EVIDENCE.mergedMainCommit &&
     rr.mediaUploadHandoff?.allFourExactHeadWorkflowsGreen === true &&
     rr.mediaUploadHandoff?.zeroUnresolvedReviewThreads === true &&
+    rr.mediaUploadHandoff?.closeoutPullRequest ===
+      MEDIA_UPLOAD_HANDOFF_EVIDENCE.closeoutPullRequest &&
+    rr.mediaUploadHandoff?.closeoutEvidenceOnly === true &&
     rr.mediaUploadHandoff?.legacyV2AuthenticatedExecute === false &&
     rr.mediaUploadHandoff?.teamProcessorAvailable === true &&
     rr.mediaUploadHandoff?.instructionApplicationCount === 0 &&
