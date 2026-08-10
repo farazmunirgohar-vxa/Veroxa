@@ -56,6 +56,8 @@ must(
       MEDIA_UPLOAD_HANDOFF_EVIDENCE.mergedMainCommit &&
     manifest.currentProductionObservation.canonicalGitHubMainMergePullRequest ===
       MEDIA_UPLOAD_HANDOFF_EVIDENCE.mergedPullRequest &&
+    manifest.currentProductionObservation.canonicalGitHubMainCommitScope ===
+      MEDIA_UPLOAD_HANDOFF_EVIDENCE.operationalSourceCommitScope &&
     manifest.currentProductionObservation.sitesVersion ===
       MEDIA_UPLOAD_HANDOFF_EVIDENCE.sitesVersion &&
     manifest.currentProductionObservation.sitesVersionId ===
@@ -96,6 +98,9 @@ must(
       MEDIA_UPLOAD_HANDOFF_EVIDENCE.mergedMainCommit &&
     mediaUploadHandoff.allFourExactHeadWorkflowsGreen === true &&
     mediaUploadHandoff.zeroUnresolvedReviewThreads === true &&
+    mediaUploadHandoff.closeoutPullRequest ===
+      MEDIA_UPLOAD_HANDOFF_EVIDENCE.closeoutPullRequest &&
+    mediaUploadHandoff.closeoutEvidenceOnly === true &&
     mediaUploadHandoff.clientActionAfterUpload === "none" &&
     mediaUploadHandoff.processingOwner === "veroxa_team" &&
     mediaUploadHandoff.legacyV2AuthenticatedExecute === false &&

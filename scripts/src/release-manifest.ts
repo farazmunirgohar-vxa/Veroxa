@@ -151,6 +151,10 @@ export const MEDIA_UPLOAD_HANDOFF_EVIDENCE = {
   mergedMainCommit: "13dab3f701aded8c5d62645203e875d43b983d8e",
   allFourExactHeadWorkflowsGreen: true,
   zeroUnresolvedReviewThreads: true,
+  closeoutPullRequest: 175,
+  closeoutEvidenceOnly: true,
+  operationalSourceCommitScope:
+    "deployable application source commit from PR174; merged evidence-only PR175 does not change the 219-file Sites source; PR169 remains the immutable activation identity",
   sitesVersion: 45,
   sitesVersionId:
     "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_8f22cdda7ebc8191a2275d0f60ad4a4f",
@@ -1396,6 +1400,8 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
         MEDIA_UPLOAD_HANDOFF_EVIDENCE.mergedMainCommit ||
       live.canonicalGitHubMainMergePullRequest !==
         MEDIA_UPLOAD_HANDOFF_EVIDENCE.mergedPullRequest ||
+      live.canonicalGitHubMainCommitScope !==
+        MEDIA_UPLOAD_HANDOFF_EVIDENCE.operationalSourceCommitScope ||
       candidate.basedOnGitHubMainCommit !==
         GUARDED_ROLLOUT_CANDIDATE_BASE_COMMIT ||
       candidate.pullRequest !== GUARDED_ROLLOUT_PULL_REQUEST ||
@@ -1455,6 +1461,9 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
         MEDIA_UPLOAD_HANDOFF_EVIDENCE.mergedMainCommit ||
       handoff.allFourExactHeadWorkflowsGreen !== true ||
       handoff.zeroUnresolvedReviewThreads !== true ||
+      handoff.closeoutPullRequest !==
+        MEDIA_UPLOAD_HANDOFF_EVIDENCE.closeoutPullRequest ||
+      handoff.closeoutEvidenceOnly !== true ||
       handoff.sitesVersion !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.sitesVersion ||
       handoff.sitesVersionId !==
         MEDIA_UPLOAD_HANDOFF_EVIDENCE.sitesVersionId ||
