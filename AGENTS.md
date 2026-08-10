@@ -2,7 +2,7 @@
 
 <!-- PROJECT_SCOPE_AND_POST_ACCESS_AUTHORITY_2026_08_10 -->
 
-## 2026-08-10 — project isolation and restaurant operating model (current authority)
+## 2026-08-10 — project isolation and restaurant operating model (product direction; live release unchanged)
 
 - **Veroxa-only scope:** Within the Veroxa project, `refresh`, `resume`, `everything`, pending-task reviews, status reports, tools, agents, artifacts, automations, budgets, permissions, and next actions are Veroxa-only unless Faraz explicitly names a cross-project scope in the current request. Conversation history, personal context, global automation lists, and shared or transient workspaces are navigation evidence only; they do not attach another project to Veroxa. Leave non-Veroxa workstreams and artifacts untouched and classify ambiguous items as `unscoped`.
 - **Onboarding authority:** Veroxa audits and pre-fills the restaurant profile; the restaurant edits or verifies restaurant truth. After that verification, Veroxa provides detailed instructions for the restaurant to grant access to the required platforms. During the current media test, the platform-access request stage remains visibly and functionally held.
