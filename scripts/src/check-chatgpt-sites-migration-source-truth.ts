@@ -45,7 +45,7 @@ if (manifest.schemaVersion === 11) {
       "Storage objects",
       "nonterminal work are all zero",
       "Content lifecycle v11",
-      "Draft PR #181",
+      "PR #181 operational head",
       "external scheduling remain disabled",
       "incremental spend remains USD 0",
       "restaurant privately uploads authorized media only",

@@ -145,11 +145,11 @@ export const MEDIA_UPLOAD_HANDOFF_EVIDENCE = {
   "baseMainCommit": "fb6d8b13bf548fd144cec4ce241bd44c1cecc99f",
   "baseMainPullRequest": 179,
   "candidateBranch": "agent/v51-production-reconciliation",
-  "reviewedHead": "1aaea456097ebd89614458f6c9f7ad66b0df4a4e",
-  "reviewedTree": "ba3f565a25099636ecb775de33d2ad39db16f253",
+  "reviewedHead": "b59ba5f1ef013aab2d36a3fd108a896b64e5bfd8",
+  "reviewedTree": "6246edeea1d1ec8dc8fd5880c4fc7867001fefb5",
   "mergedPullRequest": null,
   "mergedMainCommit": null,
-  "allFourExactHeadWorkflowsGreen": false,
+  "allFourExactHeadWorkflowsGreen": true,
   "zeroUnresolvedReviewThreads": true,
   "closeoutPullRequest": null,
   "closeoutEvidenceOnly": false,
@@ -253,20 +253,20 @@ export const MEDIA_UPLOAD_HANDOFF_EVIDENCE = {
   },
   "allFourExactHeadWorkflows": {
     "ci": {
-      "runId": null,
-      "status": "pending"
+      "runId": 31647260918,
+      "status": "success"
     },
     "sitesVerify": {
-      "runId": null,
-      "status": "pending"
+      "runId": 31647260962,
+      "status": "success"
     },
     "supabaseVerify": {
-      "runId": null,
-      "status": "pending"
+      "runId": 31647260942,
+      "status": "success"
     },
     "veroxaVerify": {
-      "runId": null,
-      "status": "pending"
+      "runId": 31647260978,
+      "status": "success"
     }
   },
   "clientRightsAttestationRequired": true,
@@ -276,7 +276,7 @@ export const MEDIA_UPLOAD_HANDOFF_EVIDENCE = {
     "google_business"
   ],
   "clientRightsAttestationGuard": "media_rights_attestation_required_before_storage",
-  "operationalSourceCommitScope": "merged PR #179 baseline; draft PR #181 carries exact live v52/live55 reconciliation"
+  "operationalSourceCommitScope": "PR #181 exact operational reconciliation head; all four exact-head workflows green with zero review threads; merge pending"
 } as const;
 
 export const V36_GITHUB_RECONCILIATION = {
@@ -2027,7 +2027,7 @@ export function assertCurrentReconciliationManifest(
     candidate.basedOnGitHubMainCommit !==
       "fb6d8b13bf548fd144cec4ce241bd44c1cecc99f" ||
     candidate.pullRequest !== 181 ||
-    candidate.pullRequestDraft !== true ||
+    candidate.pullRequestDraft !== false ||
     candidate.githubMerged !== false ||
     candidate.futureMergedGitHubCommit !== null ||
     candidate.futureSitesVersion !== 52 ||
@@ -2035,11 +2035,13 @@ export function assertCurrentReconciliationManifest(
     candidate.sourceReviewPassed !== true ||
     candidate.qualityReviewPassed !== true ||
     candidateRecord.observedDraftPullRequestHead !==
-      "1aaea456097ebd89614458f6c9f7ad66b0df4a4e" ||
+      "b59ba5f1ef013aab2d36a3fd108a896b64e5bfd8" ||
     candidateRecord.observedDraftPullRequestTree !==
-      "ba3f565a25099636ecb775de33d2ad39db16f253" ||
-    candidate.allFourWorkflowsGreen !== false ||
+      "6246edeea1d1ec8dc8fd5880c4fc7867001fefb5" ||
+    candidate.allFourWorkflowsGreen !== true ||
     candidate.zeroUnresolvedReviewThreads !== true ||
+    JSON.stringify(candidateRecord.allFourExactHeadWorkflows) !==
+      JSON.stringify(MEDIA_UPLOAD_HANDOFF_EVIDENCE.allFourExactHeadWorkflows) ||
     candidate.candidateSourceMatchesLiveSites !== true ||
     candidate.candidateMigrationsMatchLiveLedger !== true ||
     candidate.githubMainMatchesCandidate !== false ||
