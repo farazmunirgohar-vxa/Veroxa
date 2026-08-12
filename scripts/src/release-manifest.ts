@@ -145,13 +145,12 @@ export const MEDIA_UPLOAD_HANDOFF_EVIDENCE = {
   "baseMainCommit": "18d7030de8b0c2fe4fdab84e2679e643dfe8d3f1",
   "baseMainPullRequest": null,
   "candidateBranch": "agent/momo-live54-reconciliation",
-  "operationalSourceCommitScope": "pre-reconciliation GitHub main; PR #179 carries the reviewed live54 candidate",
-  "reviewedHead": "8bc04cdf76a403e187f1bca4b3e691aa11afe895",
-  "reviewedTree": "c3c9df1984b44103a230fe67e316d03eb105038c",
+  "reviewedHead": "8262ab6824dddbc9fb058b1500a2f8d0f2369851",
+  "reviewedTree": "1afd667a936b5cd12df930b2341d9e9feeb4e6d2",
   "mergedPullRequest": null,
   "mergedMainCommit": null,
-  "allFourExactHeadWorkflowsGreen": false,
-  "zeroUnresolvedReviewThreads": false,
+  "allFourExactHeadWorkflowsGreen": true,
+  "zeroUnresolvedReviewThreads": true,
   "closeoutPullRequest": null,
   "closeoutEvidenceOnly": false,
   "sitesVersion": 50,
@@ -221,20 +220,20 @@ export const MEDIA_UPLOAD_HANDOFF_EVIDENCE = {
   },
   "allFourExactHeadWorkflows": {
     "ci": {
-      "runId": null,
-      "status": "pending"
+      "runId": 31633030085,
+      "status": "success"
     },
     "sitesVerify": {
-      "runId": null,
-      "status": "pending"
+      "runId": 31633030045,
+      "status": "success"
     },
     "supabaseVerify": {
-      "runId": null,
-      "status": "pending"
+      "runId": 31633030057,
+      "status": "success"
     },
     "veroxaVerify": {
-      "runId": null,
-      "status": "pending"
+      "runId": 31633030054,
+      "status": "success"
     }
   },
   "clientRightsAttestationRequired": true,
@@ -243,7 +242,8 @@ export const MEDIA_UPLOAD_HANDOFF_EVIDENCE = {
     "facebook",
     "google_business"
   ],
-  "clientRightsAttestationGuard": "media_rights_attestation_required_before_storage"
+  "clientRightsAttestationGuard": "media_rights_attestation_required_before_storage",
+  "operationalSourceCommitScope": "pre-reconciliation GitHub main; PR #179 carries the reviewed live54 candidate"
 } as const;
 
 export const V36_GITHUB_RECONCILIATION = {

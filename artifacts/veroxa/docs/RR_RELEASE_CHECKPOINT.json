@@ -275,17 +275,17 @@
     "basedOnGitHubMainCommit": "18d7030de8b0c2fe4fdab84e2679e643dfe8d3f1",
     "pullRequest": 179,
     "pullRequestDraft": true,
-    "observedDraftPullRequestHead": "8bc04cdf76a403e187f1bca4b3e691aa11afe895",
-    "observedDraftPullRequestTree": "c3c9df1984b44103a230fe67e316d03eb105038c",
-    "draftHeadEvidenceScope": "exact deployed Sites v50 source candidate; hosted workflows and thread closure pending",
+    "observedDraftPullRequestHead": "8262ab6824dddbc9fb058b1500a2f8d0f2369851",
+    "observedDraftPullRequestTree": "1afd667a936b5cd12df930b2341d9e9feeb4e6d2",
+    "draftHeadEvidenceScope": "corrected Sites v50 rights-attestation candidate; all four exact-head workflows green and zero unresolved review threads",
     "githubMerged": false,
     "futureMergedGitHubCommit": null,
     "futureSitesVersion": 50,
     "reviewedLocally": true,
     "sourceReviewPassed": true,
     "qualityReviewPassed": true,
-    "allFourWorkflowsGreen": false,
-    "zeroUnresolvedReviewThreads": false,
+    "allFourWorkflowsGreen": true,
+    "zeroUnresolvedReviewThreads": true,
     "candidateSourceMatchesLiveSites": true,
     "candidateMigrationsMatchLiveLedger": true,
     "githubMainMatchesCandidate": false,
@@ -334,20 +334,20 @@
     "rolloutStatus": "live54_rights_attestation_repair_deployed_external_actions_held_no_real_upload",
     "allFourExactHeadWorkflows": {
       "ci": {
-        "runId": null,
-        "status": "pending"
+        "runId": 31633030085,
+        "status": "success"
       },
       "sitesVerify": {
-        "runId": null,
-        "status": "pending"
+        "runId": 31633030045,
+        "status": "success"
       },
       "supabaseVerify": {
-        "runId": null,
-        "status": "pending"
+        "runId": 31633030057,
+        "status": "success"
       },
       "veroxaVerify": {
-        "runId": null,
-        "status": "pending"
+        "runId": 31633030054,
+        "status": "success"
       }
     }
   },
@@ -1241,12 +1241,12 @@
     "baseMainCommit": "18d7030de8b0c2fe4fdab84e2679e643dfe8d3f1",
     "baseMainPullRequest": null,
     "candidateBranch": "agent/momo-live54-reconciliation",
-    "reviewedHead": "8bc04cdf76a403e187f1bca4b3e691aa11afe895",
-    "reviewedTree": "c3c9df1984b44103a230fe67e316d03eb105038c",
+    "reviewedHead": "8262ab6824dddbc9fb058b1500a2f8d0f2369851",
+    "reviewedTree": "1afd667a936b5cd12df930b2341d9e9feeb4e6d2",
     "mergedPullRequest": null,
     "mergedMainCommit": null,
-    "allFourExactHeadWorkflowsGreen": false,
-    "zeroUnresolvedReviewThreads": false,
+    "allFourExactHeadWorkflowsGreen": true,
+    "zeroUnresolvedReviewThreads": true,
     "closeoutPullRequest": null,
     "closeoutEvidenceOnly": false,
     "sitesVersion": 50,
@@ -1316,20 +1316,20 @@
     },
     "allFourExactHeadWorkflows": {
       "ci": {
-        "runId": null,
-        "status": "pending"
+        "runId": 31633030085,
+        "status": "success"
       },
       "sitesVerify": {
-        "runId": null,
-        "status": "pending"
+        "runId": 31633030045,
+        "status": "success"
       },
       "supabaseVerify": {
-        "runId": null,
-        "status": "pending"
+        "runId": 31633030057,
+        "status": "success"
       },
       "veroxaVerify": {
-        "runId": null,
-        "status": "pending"
+        "runId": 31633030054,
+        "status": "success"
       }
     },
     "clientRightsAttestationRequired": true,
