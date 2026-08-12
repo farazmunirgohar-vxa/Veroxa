@@ -83,6 +83,26 @@ test("byte-verifies one scoped JPG and sends immutable evidence to finalization"
   assert.deepEqual(JSON.parse(evidence.verificationCanonical), evidence.verificationSnapshot);
 });
 
+test("accepts a high-resolution original without a total-pixel ceiling", async () => {
+  const source = jpeg(8064, 6048);
+  const { calls, handler } = harness({
+    download: async () => new Blob([source], { type: "image/jpeg" }),
+    info: async () => ({
+      id: OBJECT_ID,
+      version: "storage-v1",
+      name: STORAGE_PATH,
+      bucketId: "restaurant-media",
+      size: source.length,
+      contentType: "image/jpeg",
+    }),
+  });
+  const response = await handler(request());
+  assert.equal(response.status, 200);
+  assert.equal(calls.finalize.length, 1);
+  assert.equal(calls.finalize[0].width, 8064);
+  assert.equal(calls.finalize[0].height, 6048);
+});
+
 test("returns the canonical asset for an exact duplicate without external writes", async () => {
   const duplicate = {
     verificationId: VERIFICATION_ID,

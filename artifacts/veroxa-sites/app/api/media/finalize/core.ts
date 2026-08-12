@@ -10,7 +10,6 @@ import {
 } from "../../../momo-content-ai-contract.ts";
 import {
   VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_ASPECT_RATIO,
-  VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_DECODED_PIXELS,
   VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_DIMENSION,
   VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_SOURCE_BYTES,
   VEROXA_PRIVATE_MEDIA_ASSESSMENT_MIN_ASPECT_RATIO,
@@ -190,8 +189,6 @@ export function createMomoMediaFinalizeHandler(dependencies: MomoMediaFinalizeDe
           MOMO_CONTENT_AI_MAX_SOURCE_HEIGHT,
           VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_DIMENSION,
         ) || !Number.isSafeInteger(inspection.width * inspection.height) ||
-        inspection.width * inspection.height >
-          VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_DECODED_PIXELS ||
         aspectRatio < VEROXA_PRIVATE_MEDIA_ASSESSMENT_MIN_ASPECT_RATIO ||
         aspectRatio > VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_ASPECT_RATIO ||
         info.contentType.split(";", 1)[0].trim() !== inspection.mimeType ||
