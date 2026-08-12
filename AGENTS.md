@@ -2,6 +2,8 @@
 
 ## 2026-08-12 — Momo live54 bridge repair; source reconciliation pending (current authority)
 
+Current reconciliation markers: content lifecycle v11; USD 0 incremental spend.
+
 - **Authority:** `GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY` remains in force. External providers, external publishing, website writes, review replies, and external scheduling remain disabled; incremental spend is **USD 0**.
 - **Current database:** Supabase is live54 through `20260812042031_momo_team_content_ai_read_grants_v1.sql` (393 canonical bytes; SHA-256 `78d43d24a8249523a8866331598491e478950c7a7a8a35451b29839ccc777b96`). The two live54 migrations are mirrored in the canonical root and Sites source tree.
 - **Current Site:** Sites v49 remains served at `veroxasystems.com`; the saved release is `appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_1fe260bf5964819193b5638f2268c830`, source commit `91fefea488f1d334d47c09c5e2b251c4286e60fa`, 222-file source SHA-256 `fb1393051a8ae6cd6f13ce5a425556ccb83daeceb977c0af56fffc44683adc3f`, archive SHA-256 `0b03cd2010d248680798633eebd21ffde969c48b4670529e9c052a0abcaceabb`, and environment revision 14.
