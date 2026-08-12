@@ -1064,6 +1064,7 @@ export async function uploadMomoClientMediaWithDependencies(input: {
   file: File;
   usageScope: string[];
   restaurantAssociation: VeroxaMediaRestaurantAssociation;
+  rightsAttested?: boolean;
   associationNote?: string;
   expiresAt?: string;
 }, dependencies: MomoClientMediaUploadDependencies): Promise<MomoClientMediaUploadOutcome> {
@@ -1080,6 +1081,9 @@ export async function uploadMomoClientMediaWithDependencies(input: {
   const usageScope = [...new Set(input.usageScope)];
   const teamAssessmentOnly = dependencies.registrationRpc ===
     "veroxa_register_team_private_media_v1";
+  if (!teamAssessmentOnly && input.rightsAttested !== true) {
+    throw new Error("media_rights_attestation_required");
+  }
   const scopeValid = teamAssessmentOnly
     ? usageScope.length === 1 && usageScope[0] === MOMO_TEAM_PRIVATE_MEDIA_SCOPE
     : usageScope.length >= 1 && usageScope.every((scope) =>
@@ -1188,6 +1192,7 @@ export async function uploadMomoClientMedia(input: {
   file: File;
   usageScope: string[];
   restaurantAssociation: VeroxaMediaRestaurantAssociation;
+  rightsAttested: boolean;
   associationNote?: string;
   expiresAt?: string;
 }): Promise<MomoClientMediaUploadOutcome> {

@@ -1248,6 +1248,7 @@ function MediaPanel(props: PanelProps) {
           file,
           usageScope: scope,
           restaurantAssociation,
+          rightsAttested: rights,
           expiresAt,
         });
         setFile(null);
