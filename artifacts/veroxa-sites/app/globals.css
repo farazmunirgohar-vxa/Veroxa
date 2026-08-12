@@ -249,7 +249,8 @@ button { color: inherit; }
 .momo-metrics article { display: grid; gap: 5px; padding: 19px; background: white; border: 1px solid var(--line); border-radius: 15px; }
 .momo-metrics span,.momo-metrics small { color: var(--muted); font-size: 10px; }
 .momo-metrics strong { color: var(--ink); font: 500 32px/1 var(--font-display); }
-.momo-module-grid,.momo-card-grid,.momo-media-grid,.momo-work-grid,.momo-readiness-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+.momo-module-grid,.momo-card-grid,.momo-media-grid,.momo-work-grid,.momo-readiness-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 14px; }
+.momo-module-grid > *, .momo-card-grid > *, .momo-media-grid > *, .momo-work-grid > *, .momo-readiness-grid > * { min-width: 0; }
 .momo-module { display: grid; gap: 14px; padding: 21px; background: white; border: 1px solid var(--line); border-radius: 17px; }
 .momo-module > div,.momo-small-card > div,.momo-work-grid article > div,.momo-report-list article > div,.momo-readiness-grid > article > div,.momo-media-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .momo-module h2 { margin: 0; font: 500 20px/1.2 var(--font-display); }
@@ -281,7 +282,8 @@ button { color: inherit; }
 .momo-decision { display: flex; gap: 6px; align-items: center; }
 .momo-decision input { min-width: 125px; }
 .momo-decision button { min-height: 34px; padding: 0 8px; border: 1px solid var(--line); border-radius: 8px; }
-.momo-small-card { display: grid; gap: 12px; min-height: 145px; padding: 17px; background: #fafbf8; border: 1px solid var(--line); border-radius: 14px; }
+.momo-small-card { display: grid; gap: 12px; min-height: 145px; min-width: 0; padding: 17px; background: #fafbf8; border: 1px solid var(--line); border-radius: 14px; }
+.momo-small-card > div { min-width: 0; }
 .momo-small-card strong { font-size: 12px; }
 .momo-small-card p { margin: 0; color: var(--ink); font-size: 11px; overflow-wrap: anywhere; }
 .momo-small-card small { color: var(--muted); font-size: 9px; line-height: 1.55; }
@@ -399,7 +401,7 @@ button { color: inherit; }
 .momo-request-reference { color: var(--forest) !important; font-weight: 750; }
 
 @media (max-width: 1100px) {
-  .momo-metrics,.momo-module-grid,.momo-media-grid,.momo-work-grid { grid-template-columns: repeat(2,1fr); }
+  .momo-metrics,.momo-module-grid,.momo-card-grid,.momo-media-grid,.momo-work-grid,.momo-readiness-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .momo-inline-form { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .momo-inline-form > div:first-child { grid-column: 1/-1; }
   .momo-triple { grid-template-columns: 1fr; }
@@ -410,7 +412,7 @@ button { color: inherit; }
   .momo-intro,.momo-boundary { grid-template-columns: 1fr; flex-direction: column; align-items: flex-start; }
   .momo-intro h1 { font-size: 34px; }
   .momo-boundary { display: grid; gap: 8px; }
-  .momo-metrics,.momo-module-grid,.momo-card-grid,.momo-media-grid,.momo-work-grid,.momo-readiness-grid,.momo-split,.momo-form-grid,.momo-upload { grid-template-columns: 1fr; }
+  .momo-metrics,.momo-module-grid,.momo-card-grid,.momo-media-grid,.momo-work-grid,.momo-readiness-grid,.momo-split,.momo-form-grid,.momo-upload { grid-template-columns: minmax(0,1fr); }
   .momo-form label.wide,.momo-review-box .wide,.momo-upload > div:first-child,.momo-upload .momo-check { grid-column: 1; }
   .momo-inline-form { grid-template-columns: 1fr; }
   .momo-inline-form > div:first-child { grid-column: 1; }
@@ -430,7 +432,7 @@ button { color: inherit; }
 @media (max-width: 480px) {
   .momo-panel { padding: 17px; }
   .momo-metrics { grid-template-columns: repeat(2,1fr); }
-  .momo-review-box,.momo-variant-form { grid-template-columns: 1fr; }
+  .momo-review-box,.momo-variant-form,.momo-decision { grid-template-columns: minmax(0,1fr); }
   .momo-provider-action { grid-column: 1; }
   .momo-form input,.momo-form textarea,.momo-form select,.momo-inline-form input,.momo-inline-form select,.momo-upload input,.momo-review-box input,.momo-review-box textarea,.momo-tag-input input,.momo-variant-form input,.momo-variant-form textarea,.momo-variant-form select,.momo-decision input { font-size: 16px; }
 }
@@ -982,4 +984,58 @@ button { color: inherit; }
   .system-step strong { font-size: 16px; }
   .system-step small { font-size: 10px; }
   .momo-panel { padding: 19px; }
+}
+
+/* === Phone-first Setup Details === */
+.momo-setup-details { display: grid; gap: 14px; min-width: 0; }
+.momo-setup-summary { grid-template-columns: repeat(3,minmax(0,1fr)) minmax(220px,1.6fr) auto; margin-bottom: 0; }
+.momo-setup-next { min-width: 0; display: grid; gap: 3px; }
+.momo-setup-next strong { color: var(--forest); font-size: 12px; }
+.momo-setup-next small { color: var(--muted); font-size: 10px; line-height: 1.45; overflow-wrap: anywhere; }
+.momo-setup-disclosure,.momo-setup-history,.momo-setup-item { min-width: 0; overflow: hidden; background: var(--white); border: 1px solid var(--line); border-radius: 16px; }
+.momo-setup-disclosure > summary,.momo-setup-history > summary,.momo-setup-item > summary { list-style: none; cursor: pointer; }
+.momo-setup-disclosure > summary::-webkit-details-marker,.momo-setup-history > summary::-webkit-details-marker,.momo-setup-item > summary::-webkit-details-marker { display: none; }
+.momo-setup-disclosure > summary { min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 14px 17px; }
+.momo-setup-disclosure > summary > span,.momo-setup-history > summary > span,.momo-setup-item > summary > span { display: grid; gap: 4px; min-width: 0; }
+.momo-setup-disclosure > summary strong { color: var(--ink); font-size: 14px; overflow-wrap: anywhere; }
+.momo-setup-disclosure > summary small,.momo-setup-history > summary small,.momo-setup-item > summary small { color: var(--muted); font-size: 11px; line-height: 1.45; overflow-wrap: anywhere; }
+.momo-setup-disclosure > summary > b,.momo-setup-history > summary > b { min-width: 30px; height: 30px; display: grid; place-items: center; padding: 0 7px; color: var(--forest); background: var(--lime-soft); border-radius: 9px; font-size: 11px; }
+.momo-setup-disclosure[open] > summary,.momo-setup-history[open] > summary,.momo-setup-item[open] > summary { border-bottom: 1px solid var(--line); }
+.momo-setup-disclosure-body { display: grid; gap: 12px; min-width: 0; padding: 14px; background: #fbfbf8; }
+.momo-setup-disclosure-body > .momo-record-list,.momo-setup-disclosure-body > .momo-card-grid { margin: 0; }
+.momo-setup-history { background: #f5f6f2; border-color: #e2e6df; border-radius: 12px; }
+.momo-setup-history > summary { min-height: 56px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 12px; }
+.momo-setup-history > .momo-record-list { padding: 0 10px 10px; }
+.momo-setup-item-list { gap: 8px; }
+.momo-setup-item > summary { min-height: 60px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 12px; }
+.momo-setup-item > summary strong { color: var(--ink); font-size: 13px; overflow-wrap: anywhere; }
+.momo-setup-item > summary > .momo-status { flex: 0 0 auto; }
+.momo-setup-item-body { min-width: 0; padding: 13px; background: var(--white); }
+.momo-setup-item-body > article { display: grid; grid-template-columns: minmax(0,1fr) auto auto; gap: 12px; align-items: center; padding: 0; background: transparent; border: 0; border-radius: 0; }
+.momo-setup-item-body > article > div:first-child { min-width: 0; }
+.momo-setup-item-body .momo-compact-form { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.momo-setup-item-evidence { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.55; overflow-wrap: anywhere; }
+.momo-setup-presence-grid { gap: 10px; }
+.momo-setup-presence-grid > .momo-setup-item { min-height: 0; }
+.momo-setup-details p,.momo-setup-details small,.momo-setup-details strong { overflow-wrap: anywhere; }
+
+@media (max-width: 900px) {
+  .momo-setup-summary { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .momo-setup-summary .momo-setup-next { grid-column: 1/-1; padding-top: 10px; border-top: 1px solid rgba(26,73,53,.12); }
+  .momo-setup-summary em { grid-column: 1/-1; text-align: center; }
+  .momo-setup-details .momo-card-grid { grid-template-columns: 1fr; }
+  .momo-setup-details .momo-record-list > article { grid-template-columns: minmax(0,1fr) auto; }
+  .momo-setup-details .momo-record-list .momo-decision { grid-column: 1/-1; }
+  .momo-setup-item-body > article { grid-template-columns: minmax(0,1fr) auto; }
+  .momo-setup-item-body > article .momo-decision { grid-column: 1/-1; }
+  .momo-setup-disclosure > summary,.momo-setup-item > summary { align-items: flex-start; }
+}
+
+@media (max-width: 480px) {
+  .momo-setup-summary { grid-template-columns: 1fr 1fr; padding: 13px; }
+  .momo-setup-disclosure-body { padding: 10px; }
+  .momo-setup-disclosure > summary { min-height: 66px; padding: 12px 13px; }
+  .momo-setup-item-body { padding: 12px; }
+  .momo-setup-details .momo-record-list > article { grid-template-columns: 1fr; padding: 12px; }
+  .momo-setup-item-body > article { grid-template-columns: 1fr; }
 }

@@ -492,13 +492,17 @@ test("Momo operating center uses live tenant data and exact production contracts
   assert.match(clientData, /p_usage_scope:\s*usageScope/, "Media registration RPC must receive only the validated token array");
   assert.match(center, /"instagram", "facebook", "google_business"/, "Media rights UI must start from the three supported ready-package providers");
   assert.doesNotMatch(center, /"instagram", "facebook", "google_business", "website"/, "Website rights must not appear in the upload-to-ready release");
+  assert.match(center, /className="momo-setup-details"/, "Setup Details must use the phone-first information hierarchy");
+  assert.match(center, /className="momo-setup-disclosure"/, "Setup Details sections must be progressively disclosed");
+  assert.match(center, /currentTruthFields = data\.truth\.filter\(\(item\) => item\.is_current\)/, "Setup Details must keep historical truth outside the current view");
+  assert.match(center, /className="momo-setup-item"/, "Setup Details must expose setup and presence items one at a time");
   assert.match(data, /\.rpc\("veroxa_prepare_momo_ai_job_v1"/, "AI preparation must use the server-validated contract");
   assert.doesNotMatch(data, /from\("veroxa_ai_jobs"\)[\s\S]{0,200}\.insert\(/, "Team code must not insert forgeable AI fixtures directly");
   assert.match(migration, /'\["live_provider_not_connected","human_review_required"\]'::jsonb/, "AI safety flags must be an exact JSON array");
   assert.match(migration, /p_restaurant_id, p_job_kind, p_subject_type, p_subject_id, 'blocked',[\s\S]{0,180}?null, null, 'v1-provider-neutral'/, "AI preparation must remain provider neutral and blocked");
   assert.match(data, /\.rpc\("veroxa_momo_readiness_summary_v1"/, "Final readiness must use the database gate");
   assert.match(data, /\.rpc\("veroxa_momo_client_snapshot_v1"/, "Client reads must use the sanitized snapshot");
-  assert.match(data, /\.rpc\("veroxa_apply_confirmation_v1"/, "Team confirmation decisions must be transactional");
+  assert.doesNotMatch(data, /\.rpc\("veroxa_apply_confirmation_v1"/, "Browser adapters must not apply owner decisions on Team's behalf");
   assert.match(data, /\.rpc\("veroxa_apply_approval_v1"/, "Team approval decisions must atomically update their subject");
   assert.match(data, /\.rpc\("veroxa_review_momo_media_v1"/, "Media review replacement and asset state must be atomic");
   assert.match(clientData, /"veroxa_register_momo_media_v3"/, "Every authenticated Momo upload must save its instruction atomically");

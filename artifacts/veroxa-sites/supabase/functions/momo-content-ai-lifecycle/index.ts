@@ -8,7 +8,7 @@ import {
 } from "../_shared/momo-content-ai-lifecycle-contract.ts";
 
 const BRIDGE_PUBLIC_KEY_SPKI_BASE64 =
-  "MCowBQYDK2VwAyEAg/XOvj5uPdmqMKfWyh0jChnrtIoCHuaHODprsPRGo50=";
+  "MCowBQYDK2VwAyEAjBm4vQK6tntQcZu4E4qp+2uDef9fLSCwhoJ6i1D626M=";
 const MAX_REQUEST_BYTES = 300_000;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 

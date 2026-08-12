@@ -179,7 +179,8 @@ test("Client and Team source preserve real links, real-image-first selection, in
   assert.match(client, /className="momo-module-grid client-action-grid"[\s\S]*?<a href=\{clientRoutes\.media\}/, "Dashboard Media must be a real link");
   assert.doesNotMatch(client, /history\.pushState/, "Client routing must not depend on a click-only pushState handler");
   assert.doesNotMatch(client, /Share private photos or videos/, "Client dashboard must not promise unsupported video intake");
-  assert.ok((client.match(/setRightsConfirmed\(false\)/g) || []).length >= 4, "File, scope, expiry, and completed upload must invalidate the prior rights attestation");
+  assert.match(client, /const MOMO_CLIENT_UPLOAD_SCOPE = \["instagram", "facebook", "google_business"\]/, "Momo upload defaults must stay internal to the Team handoff");
+  assert.match(client, /onSubmit=\{\(event\) => \{ event\.preventDefault\(\); if \(!file\) return;/, "Momo must submit after a valid file is selected without extra processing gates");
   assert.match(client, /getMomoClientMediaPreview\(storagePath\)/, "Client media must open signed private original and derivative previews inline");
   assert.match(client, /<img src=\{previewUrl\}/, "Client must show the actual private image instead of a placeholder");
   assert.match(client, /renditionStatus: item\.renditionStatus/, "Client Ready must come from sanitized rendition readback");
