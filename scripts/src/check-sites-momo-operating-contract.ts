@@ -813,8 +813,12 @@ for (const fixture of [
     (fixture ===
       "File, scope, expiry, and completed upload must invalidate the prior rights attestation" &&
       oneStepClientUpload &&
+      /const chooseFile = async[\s\S]*?setRightsConfirmed\(false\)/.test(clientUi) &&
+      /const finishUploadOutcome =[\s\S]*?setRightsConfirmed\(false\)[\s\S]*?setRightsConfirmed\(false\)/.test(clientUi) &&
+      clientUi.includes("rightsAttested: rightsConfirmed") &&
       mediaGuidanceTests.includes("MOMO_CLIENT_UPLOAD_SCOPE") &&
-      mediaGuidanceTests.includes("without extra processing gates"));
+      mediaGuidanceTests.includes("fails closed for future, expired, malformed, or revoked rights") &&
+      mediaGuidanceTests.includes("explicit owner permission before creating scoped rights"));
   must(
     fixtureSatisfied,
     `Executable media safety fixture missing: ${fixture}`,
