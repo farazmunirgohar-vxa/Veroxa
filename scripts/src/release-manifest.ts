@@ -145,8 +145,8 @@ export const MEDIA_UPLOAD_HANDOFF_EVIDENCE = {
   "baseMainCommit": "fb6d8b13bf548fd144cec4ce241bd44c1cecc99f",
   "baseMainPullRequest": 179,
   "candidateBranch": "agent/v51-production-reconciliation",
-  "reviewedHead": "b59ba5f1ef013aab2d36a3fd108a896b64e5bfd8",
-  "reviewedTree": "6246edeea1d1ec8dc8fd5880c4fc7867001fefb5",
+  "reviewedHead": "51622596b20a0e0dc17ebe5e8332da8235722544",
+  "reviewedTree": "f9b89e77e8f13941e472606717fcc096766ba14a",
   "mergedPullRequest": null,
   "mergedMainCommit": null,
   "allFourExactHeadWorkflowsGreen": true,
@@ -253,19 +253,19 @@ export const MEDIA_UPLOAD_HANDOFF_EVIDENCE = {
   },
   "allFourExactHeadWorkflows": {
     "ci": {
-      "runId": 31647260918,
+      "runId": 31649258356,
       "status": "success"
     },
     "sitesVerify": {
-      "runId": 31647260962,
+      "runId": 31649258357,
       "status": "success"
     },
     "supabaseVerify": {
-      "runId": 31647260942,
+      "runId": 31649258338,
       "status": "success"
     },
     "veroxaVerify": {
-      "runId": 31647260978,
+      "runId": 31649258350,
       "status": "success"
     }
   },
@@ -2035,9 +2035,9 @@ export function assertCurrentReconciliationManifest(
     candidate.sourceReviewPassed !== true ||
     candidate.qualityReviewPassed !== true ||
     candidateRecord.observedDraftPullRequestHead !==
-      "b59ba5f1ef013aab2d36a3fd108a896b64e5bfd8" ||
+      "51622596b20a0e0dc17ebe5e8332da8235722544" ||
     candidateRecord.observedDraftPullRequestTree !==
-      "6246edeea1d1ec8dc8fd5880c4fc7867001fefb5" ||
+      "f9b89e77e8f13941e472606717fcc096766ba14a" ||
     candidate.allFourWorkflowsGreen !== true ||
     candidate.zeroUnresolvedReviewThreads !== true ||
     JSON.stringify(candidateRecord.allFourExactHeadWorkflows) !==
