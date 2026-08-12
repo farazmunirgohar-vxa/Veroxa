@@ -48,7 +48,7 @@ const v2UploadContract = read(
 );
 const combined = `${data}\n${ui}\n${manualCycle}\n${operatingGates}`;
 const oneStepClientUpload =
-  clientUi.includes("Upload once and let Veroxa handle it") &&
+  clientUi.includes("Confirm permission and upload") &&
   clientUi.includes('restaurantAssociation: "not_for_restaurant"') &&
   clientUi.includes("newestRestaurantContentEligible");
 const ownerAuthorityRequestOnly =
@@ -599,45 +599,40 @@ must(
   "Team media review must require an explicit inspection attestation",
 );
 
-// The legacy Client UI carried a checkbox attestation through file/scope/expiry
-// changes. The refreshed v49 flow intentionally submits one private upload, records
-// no restaurant association at intake, and recomputes Ready only after current
-// owner-rights and restaurant-association evidence arrives. Keep both contracts
-// guarded so the source transition cannot silently weaken the fail-closed boundary.
-if (oneStepClientUpload) {
-  for (const marker of [
-    "MOMO_CLIENT_UPLOAD_SCOPE",
-    'restaurantAssociation: "not_for_restaurant"',
-    "newestRestaurantContentEligible",
-    "newestWorkflow.rightsConfirmed",
-    "Nothing is posted or connected",
-  ]) {
-    must(
-      clientUi.includes(marker),
-      `One-step Client handoff is missing its fail-closed marker: ${marker}`,
-    );
-  }
-} else {
+// Sites v50 keeps the one-step Client handoff while restoring the owner authority
+// required before the registration RPC may create confirmed platform-scoped rights.
+must(oneStepClientUpload, "Sites v50 must keep the one-step Client upload handoff.");
+for (const marker of [
+  "MOMO_CLIENT_UPLOAD_SCOPE",
+  'restaurantAssociation: "not_for_restaurant"',
+  "newestRestaurantContentEligible",
+  "newestWorkflow.rightsConfirmed",
+  "rightsAttested: rightsConfirmed",
+  "media_rights_attestation_required",
+  "I confirm I own this image or have permission to provide it for Instagram, Facebook, and Google Business content preparation",
+  "This attestation applies only to this upload and does not authorize posting or connect any account",
+  "Nothing is posted or connected",
+]) {
   must(
-    (clientUi.match(/setRightsConfirmed\(false\)/g) || []).length >= 4,
-    "Client media changes must invalidate the earlier rights attestation",
-  );
-  mustMatch(
-    clientUi,
-    /const toggle = \(item: string\) => \{\s*setRightsConfirmed\(false\);[\s\S]*?setScope\(/,
-    "Changing Client preparation scope must invalidate rights attestation",
-  );
-  mustMatch(
-    clientUi,
-    /const chooseFile = async \(next: File \| null\) => \{[\s\S]*?setRightsConfirmed\(false\);/,
-    "Changing the Client file must invalidate rights attestation",
-  );
-  mustMatch(
-    clientUi,
-    /type="date"[\s\S]*?onChange=\{\(event\) => \{ setRightsConfirmed\(false\); setExpiresAt\(/,
-    "Changing Client rights expiry must invalidate rights attestation",
+    clientUi.includes(marker),
+    `One-step Client rights handoff is missing its fail-closed marker: ${marker}`,
   );
 }
+must(
+  clientData.includes("input.rightsAttested !== true") &&
+    clientData.includes('throw new Error("media_rights_attestation_required")'),
+  "Client media registration must reject missing owner attestation before storage",
+);
+mustMatch(
+  clientData,
+  /input\.rightsAttested !== true[\s\S]*?throw new Error\("media_rights_attestation_required"\)[\s\S]*?storage\.from\("restaurant-media"\)\.upload/,
+  "Owner attestation must be enforced before the Client upload reaches storage",
+);
+mustMatch(
+  clientUi,
+  /type="checkbox" checked=\{rightsConfirmed\}[\s\S]*?required[\s\S]*?Instagram, Facebook, and Google Business content preparation/,
+  "The one-step Client UI must expose one required, scope-specific rights attestation",
+);
 
 // Ready is a current-state computation: exact source lineage, owner scope,
 // evidence class, write lock, review state, and a rendered derivative all gate it.

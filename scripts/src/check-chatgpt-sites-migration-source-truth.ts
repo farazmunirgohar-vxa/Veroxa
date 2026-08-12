@@ -34,7 +34,7 @@ if (manifest.schemaVersion === 11) {
     const start = heading?.index ?? -1;
     const next = start < 0 ? -1 : text.indexOf("\n## ", start + (heading?.[0].length ?? 0));
     const current = start < 0 ? "" : text.slice(start, next < 0 ? undefined : next);
-    for (const marker of ["GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY","Sites v49","live54","20260812042031_momo_team_content_ai_read_grants_v1.sql","content lifecycle v11","no real new-user upload","External providers","USD 0 incremental spend","clientActionAfterUpload=none","processingOwner=veroxa_team","3 open Team media-intake exceptions"]) {
+    for (const marker of ["GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY","Sites v50","live54","20260812042031_momo_team_content_ai_read_grants_v1.sql","content lifecycle v11","no real new-user upload","External providers","USD 0 incremental spend","clientActionAfterUpload=none","processingOwner=veroxa_team","3 open Team media-intake exceptions","owner permission attestation"]) {
       must(current.includes(marker), path + " is missing schema-11 authority marker: " + marker);
     }
   }

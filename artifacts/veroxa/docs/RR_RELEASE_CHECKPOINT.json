@@ -2,9 +2,9 @@
   "schemaVersion": 15,
   "recordKind": "veroxa_momo_live54_reconciliation_checkpoint",
   "checkpoint": "live54-momo-bridge-repair-source-reconciliation-pending-external-actions-held-2026-08-12",
-  "status": "live54_sites_v49_bridge_repaired_external_actions_held",
+  "status": "live54_sites_v50_rights_attestation_repaired_external_actions_held",
   "reviewedAt": "2026-08-12",
-  "candidateRevision": "momo_live54_bridge_repair_2026-08-12",
+  "candidateRevision": "momo_live54_sites_v50_rights_attestation_repair_2026-08-12",
   "knownResiduals": [
     "Exact live membership evidence shows postgres is not a member of supabase_admin. Migration 20260808002609 therefore skips supabase_admin default ACLs and is not comprehensive default-ACL closure.",
     "Supabase stores generated migration version and name but not submitted SQL bytes. Candidate48 canonical source remains the reviewed 59,052-byte SHA-256 56c64c79 payload; the apply transport query carried one additional trailing newline (59,053 bytes), with identical SQL tokens and verified live48 semantics.",
@@ -109,14 +109,14 @@
     "observedAt": "2026-08-12",
     "sitesBaselineObservedAt": "2026-08-12",
     "migrationLedgerObservedAt": "2026-08-12",
-    "evidenceStatus": "sites_v49_database54_momo_lifecycle_bridge_repaired_external_actions_held",
+    "evidenceStatus": "sites_v50_database54_owner_rights_attestation_repaired_external_actions_held",
     "canonicalGitHubMainCommit": "18d7030de8b0c2fe4fdab84e2679e643dfe8d3f1",
     "canonicalGitHubMainMergePullRequest": null,
     "canonicalGitHubMainCommitScope": "pre-reconciliation GitHub main; PR #179 carries the reviewed live54 candidate",
     "githubParityVerifiedAtObservation": false,
-    "sitesVersion": 49,
-    "sitesVersionId": "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_1fe260bf5964819193b5638f2268c830",
-    "sitesCheckoutCommit": "91fefea488f1d334d47c09c5e2b251c4286e60fa",
+    "sitesVersion": 50,
+    "sitesVersionId": "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_435b68bbe9c08191bd9579825218fa5a",
+    "sitesCheckoutCommit": "5dc88c25a9eab02a33ce8b357cc09d5b43d0af9e",
     "sitesDeploymentEnvironmentRevision": 14,
     "sitesEnvironmentRevision": 14,
     "sitesRuntimeEnvironmentRevisionObservedAt": "2026-08-12",
@@ -130,10 +130,10 @@
     "sitesRecentErrorsObserved": 0,
     "sitesArchiveFileCount": 52,
     "sitesArchiveByteLength": 6041600,
-    "sitesArchiveSha256": "0b03cd2010d248680798633eebd21ffde969c48b4670529e9c052a0abcaceabb",
+    "sitesArchiveSha256": "9aada7a54f6da92893b0ce551d3f03b2a970ad4e28de8beb8d17540e6edce1e2",
     "sourceFileCount": 222,
-    "sourceTreeSha256": "6a9c002d259dfaac7f64acbb0ead6e37f1c7ad3aac82ad05e37cfbcd965b62b1",
-    "sourceEvidenceScope": "exact Sites v49 candidate source",
+    "sourceTreeSha256": "053cecab6ac5164f9f80d57f2d4f470f12cf2d4c92c7cd113a9ed7fc936bd8ec",
+    "sourceEvidenceScope": "exact deployed Sites v50 owner-rights-attestation repair source",
     "productionMigrationCount": 54,
     "migrationTreeSha256": "0d4566c0fddc5311a24a3ea44688e30bf05c347360a5ac36bbc336a038ca14ab",
     "migrationTreeEvidenceScope": "observed remote live54 ledger with source bytes",
@@ -147,7 +147,7 @@
     "candidateSourceMatchesLiveSites": true,
     "candidateMigrationsMatchLiveLedger": true,
     "fullReleaseGatePassed": true,
-    "fullReleaseGateScope": "momo_live54_upload_bridge_repair_external_actions_held_no_real_upload"
+    "fullReleaseGateScope": "momo_live54_rights_attestation_repair_external_actions_held_no_real_upload"
   },
   "historicalV36GitHubReconciliationEvidence": {
     "pullRequest": 157,
@@ -213,7 +213,7 @@
   },
   "applicationQualityEvidence": {
     "observedAt": "2026-08-12",
-    "evidenceScope": "exact_local_sites_v49_bridge_repair_release_gate",
+    "evidenceScope": "exact_local_sites_v50_rights_attestation_repair_release_gate",
     "cleanInstallExitCode": 0,
     "buildExitCode": 0,
     "testsPassed": 433,
@@ -268,31 +268,31 @@
   },
   "releaseCandidate": {
     "manifest": "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json",
-    "state": "live54_sites_v49_bridge_repaired_external_actions_held",
+    "state": "live54_sites_v50_rights_attestation_repaired_external_actions_held",
     "localReviewPassed": true,
-    "status": "live54_sites_v49_bridge_repaired_external_actions_held",
-    "actionScope": "bounded_momo_upload_bridge_repair_preserving_external_action_locks",
+    "status": "live54_sites_v50_rights_attestation_repaired_external_actions_held",
+    "actionScope": "bounded_momo_owner_rights_attestation_repair_preserving_external_action_locks",
     "basedOnGitHubMainCommit": "18d7030de8b0c2fe4fdab84e2679e643dfe8d3f1",
     "pullRequest": 179,
     "pullRequestDraft": true,
-    "observedDraftPullRequestHead": "99e4908ad9524099bae8f59cf142de4a02e177ba",
-    "observedDraftPullRequestTree": "912ad6cc4192a24df6d1277f999828845c036dc6",
-    "draftHeadEvidenceScope": "exact live54 source reconciliation candidate head",
+    "observedDraftPullRequestHead": "8bc04cdf76a403e187f1bca4b3e691aa11afe895",
+    "observedDraftPullRequestTree": "c3c9df1984b44103a230fe67e316d03eb105038c",
+    "draftHeadEvidenceScope": "exact deployed Sites v50 source candidate; hosted workflows and thread closure pending",
     "githubMerged": false,
     "futureMergedGitHubCommit": null,
-    "futureSitesVersion": 49,
+    "futureSitesVersion": 50,
     "reviewedLocally": true,
     "sourceReviewPassed": true,
     "qualityReviewPassed": true,
-    "allFourWorkflowsGreen": true,
-    "zeroUnresolvedReviewThreads": true,
+    "allFourWorkflowsGreen": false,
+    "zeroUnresolvedReviewThreads": false,
     "candidateSourceMatchesLiveSites": true,
     "candidateMigrationsMatchLiveLedger": true,
     "githubMainMatchesCandidate": false,
     "fullReleaseGatePassed": true,
-    "fullReleaseGateScope": "momo_live54_upload_bridge_repair_external_actions_held_no_real_upload",
+    "fullReleaseGateScope": "momo_live54_rights_attestation_repair_external_actions_held_no_real_upload",
     "sourceFileCount": 222,
-    "sourceTreeSha256": "6a9c002d259dfaac7f64acbb0ead6e37f1c7ad3aac82ad05e37cfbcd965b62b1",
+    "sourceTreeSha256": "053cecab6ac5164f9f80d57f2d4f470f12cf2d4c92c7cd113a9ed7fc936bd8ec",
     "migrationFileCount": 54,
     "migrationTreeSha256": "0d4566c0fddc5311a24a3ea44688e30bf05c347360a5ac36bbc336a038ca14ab",
     "latestCandidateMigration": "20260812042031_momo_team_content_ai_read_grants_v1.sql",
@@ -331,23 +331,23 @@
     "activationGateReady": false,
     "activationAuthorizationConsumed": true,
     "activationExecuted": true,
-    "rolloutStatus": "live54_bridge_repair_verified_external_actions_held_no_real_upload",
+    "rolloutStatus": "live54_rights_attestation_repair_deployed_external_actions_held_no_real_upload",
     "allFourExactHeadWorkflows": {
       "ci": {
-        "runId": 31629381614,
-        "status": "success"
+        "runId": null,
+        "status": "pending"
       },
       "sitesVerify": {
-        "runId": 31629381719,
-        "status": "success"
+        "runId": null,
+        "status": "pending"
       },
       "supabaseVerify": {
-        "runId": 31629381653,
-        "status": "success"
+        "runId": null,
+        "status": "pending"
       },
       "veroxaVerify": {
-        "runId": 31629381665,
-        "status": "success"
+        "runId": null,
+        "status": "pending"
       }
     }
   },
@@ -1072,7 +1072,7 @@
     "finalReleaseEvidenceRecorded": true
   },
   "fullReleaseGatePassed": true,
-  "fullReleaseGateScope": "momo_live54_upload_bridge_repair_external_actions_held_no_real_upload",
+  "fullReleaseGateScope": "momo_live54_rights_attestation_repair_external_actions_held_no_real_upload",
   "rolloutEvidence": {
     "initialObservation": {
       "canonicalGitHubMainCommit": "39bf713705685636f0d20a2ca068c738d4f414b4",
@@ -1237,29 +1237,29 @@
   },
   "mediaUploadHandoff": {
     "observedAt": "2026-08-12",
-    "status": "live54_bridge_repaired_sites_v49_external_actions_held",
+    "status": "live54_bridge_repaired_sites_v50_rights_attestation_repaired_external_actions_held",
     "baseMainCommit": "18d7030de8b0c2fe4fdab84e2679e643dfe8d3f1",
     "baseMainPullRequest": null,
     "candidateBranch": "agent/momo-live54-reconciliation",
-    "reviewedHead": "99e4908ad9524099bae8f59cf142de4a02e177ba",
-    "reviewedTree": "912ad6cc4192a24df6d1277f999828845c036dc6",
+    "reviewedHead": "8bc04cdf76a403e187f1bca4b3e691aa11afe895",
+    "reviewedTree": "c3c9df1984b44103a230fe67e316d03eb105038c",
     "mergedPullRequest": null,
     "mergedMainCommit": null,
-    "allFourExactHeadWorkflowsGreen": true,
-    "zeroUnresolvedReviewThreads": true,
+    "allFourExactHeadWorkflowsGreen": false,
+    "zeroUnresolvedReviewThreads": false,
     "closeoutPullRequest": null,
     "closeoutEvidenceOnly": false,
-    "sitesVersion": 49,
-    "sitesVersionId": "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_1fe260bf5964819193b5638f2268c830",
-    "sitesSourceCommit": "91fefea488f1d334d47c09c5e2b251c4286e60fa",
+    "sitesVersion": 50,
+    "sitesVersionId": "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_435b68bbe9c08191bd9579825218fa5a",
+    "sitesSourceCommit": "5dc88c25a9eab02a33ce8b357cc09d5b43d0af9e",
     "sitesArchiveFileCount": 52,
     "sitesArchiveByteLength": 6041600,
-    "sitesArchiveSha256": "0b03cd2010d248680798633eebd21ffde969c48b4670529e9c052a0abcaceabb",
+    "sitesArchiveSha256": "9aada7a54f6da92893b0ce551d3f03b2a970ad4e28de8beb8d17540e6edce1e2",
     "sitesEnvironmentRevision": 14,
     "liveSitesSourceFileCount": 222,
-    "liveSitesSourceTreeSha256": "6a9c002d259dfaac7f64acbb0ead6e37f1c7ad3aac82ad05e37cfbcd965b62b1",
+    "liveSitesSourceTreeSha256": "053cecab6ac5164f9f80d57f2d4f470f12cf2d4c92c7cd113a9ed7fc936bd8ec",
     "candidateSourceFileCount": 222,
-    "candidateSourceTreeSha256": "6a9c002d259dfaac7f64acbb0ead6e37f1c7ad3aac82ad05e37cfbcd965b62b1",
+    "candidateSourceTreeSha256": "053cecab6ac5164f9f80d57f2d4f470f12cf2d4c92c7cd113a9ed7fc936bd8ec",
     "migrationFileCount": 54,
     "migrationTreeSha256": "0d4566c0fddc5311a24a3ea44688e30bf05c347360a5ac36bbc336a038ca14ab",
     "latestMigration": "20260812042031_momo_team_content_ai_read_grants_v1.sql",
@@ -1316,21 +1316,28 @@
     },
     "allFourExactHeadWorkflows": {
       "ci": {
-        "runId": 31629381614,
-        "status": "success"
+        "runId": null,
+        "status": "pending"
       },
       "sitesVerify": {
-        "runId": 31629381719,
-        "status": "success"
+        "runId": null,
+        "status": "pending"
       },
       "supabaseVerify": {
-        "runId": 31629381653,
-        "status": "success"
+        "runId": null,
+        "status": "pending"
       },
       "veroxaVerify": {
-        "runId": 31629381665,
-        "status": "success"
+        "runId": null,
+        "status": "pending"
       }
-    }
+    },
+    "clientRightsAttestationRequired": true,
+    "clientRightsAttestationScopes": [
+      "instagram",
+      "facebook",
+      "google_business"
+    ],
+    "clientRightsAttestationGuard": "media_rights_attestation_required_before_storage"
   }
 }

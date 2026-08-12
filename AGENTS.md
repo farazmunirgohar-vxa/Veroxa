@@ -1,17 +1,18 @@
 <!-- GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY -->
 
-## 2026-08-12 — Momo live54 bridge repair; source reconciliation candidate validated (current authority)
+## 2026-08-12 — Momo live54 rights-attestation repair; Sites v50 deployed (current authority)
 
 Current reconciliation markers: content lifecycle v11; USD 0 incremental spend.
-- **PR #179 validation:** draft head `99e4908ad9524099bae8f59cf142de4a02e177ba` (tree `912ad6cc4192a24df6d1277f999828845c036dc6`) passed CI #479, Sites Verify #169, Supabase Verify #139, and Veroxa Verify #424; review threads: 0. GitHub `main` remains unchanged pending review/merge.
-
+- **PR #179 validation:** exact v50 source candidate `8bc04cdf76a403e187f1bca4b3e691aa11afe895` (tree `c3c9df1984b44103a230fe67e316d03eb105038c`) is locally reviewed; exact-head workflows and review-thread closure are pending on the current evidence head. GitHub `main` remains unchanged pending review/merge.
 - **Authority:** `GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY` remains in force. External providers, external publishing, website writes, review replies, and external scheduling remain disabled; incremental spend is **USD 0**.
 - **Current database:** Supabase is live54 through `20260812042031_momo_team_content_ai_read_grants_v1.sql` (393 canonical bytes; SHA-256 `78d43d24a8249523a8866331598491e478950c7a7a8a35451b29839ccc777b96`). The two live54 migrations are mirrored in the canonical root and Sites source tree.
-- **Current Site:** Sites v49 remains served at `veroxasystems.com`; the saved release is `appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_1fe260bf5964819193b5638f2268c830`, source commit `91fefea488f1d334d47c09c5e2b251c4286e60fa`, 222-file source SHA-256 `fb1393051a8ae6cd6f13ce5a425556ccb83daeceb977c0af56fffc44683adc3f`, archive SHA-256 `0b03cd2010d248680798633eebd21ffde969c48b4670529e9c052a0abcaceabb`, and environment revision 14.
-- **Bridge:** the signed content lifecycle function is ACTIVE at v11 with JWT verification; dispatch v3, webhook v4, and media lifecycle v3 remain active. The bridge source is mirrored in root and Sites. No provider call, real upload result, or Ready disposition is claimed; there was **no real new-user upload** in this pass.
-- **Handoff boundary:** `clientActionAfterUpload=none` and `processingOwner=veroxa_team`; the 3 existing saved uploads remain 3 open Team media-intake exceptions, externally locked. The Team-only saved-instruction processor remains available, and no re-upload or retry is claimed.
+- **Current Site:** Sites v50 is served at `veroxasystems.com`; the saved release is `appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_435b68bbe9c08191bd9579825218fa5a`, source commit `5dc88c25a9eab02a33ce8b357cc09d5b43d0af9e`, 222-file source SHA-256 `053cecab6ac5164f9f80d57f2d4f470f12cf2d4c92c7cd113a9ed7fc936bd8ec`, archive SHA-256 `9aada7a54f6da92893b0ce551d3f03b2a970ad4e28de8beb8d17540e6edce1e2`, and environment revision 14.
+- **Owner permission attestation:** the one-step Client upload requires an explicit owner permission attestation for Instagram, Facebook, and Google Business before confirmed scoped rights can be created. The upload adapter rejects `media_rights_attestation_required` before storage when unchecked. This does not authorize posting or connect an account.
+- **Bridge:** the signed content lifecycle function is ACTIVE at v11 with JWT verification; dispatch v3, webhook v4, and media lifecycle v3 remain active. The bridge source is mirrored in root and Sites. No provider call, Ready disposition, or real upload result is claimed; there was **no real new-user upload** in this pass.
+- **Handoff boundary:** `clientActionAfterUpload=none` and `processingOwner=veroxa_team`; authenticated v2 execute is revoked, and the 3 existing saved uploads remain 3 open Team media-intake exceptions, externally locked. The Team-only saved-instruction processor remains available, and no re-upload or retry is claimed.
 - **Guarded runtime:** `ai_live_calls=true`, 13 authenticated grants, 32 service-role grants, 14 functions still held, one active Team profile, one active Momo membership, and 2 upload-status rows all external-locked. The rollout authorization is consumed; no Sites v42 claim exists.
-- **Canonical status:** GitHub main is still `18d7030de8b0c2fe4fdab84e2679e643dfe8d3f1`; draft PR #179 contains the reviewed live54 source reconciliation candidate.
+- **Canonical status:** GitHub main is still `18d7030de8b0c2fe4fdab84e2679e643dfe8d3f1`; draft PR #179 carries the deployed v50 rights-attestation repair candidate.
+
 ## 2026-08-09 — exact live47 held; bounded candidate48 pending in PR #165 (historical pre-apply checkpoint)
 
 - **Canonical repository and database:** GitHub `main` is `39bf713705685636f0d20a2ca068c738d4f414b4` from merged PR #166. Production Supabase is the exact immutable live47 ledger through `20260808083842_post_20260808070840_private_media_authority_repair_v1.sql` (110,797 bytes, SHA-256 `3d2ba3a86024edef024a12ff9556c4e236baa57cbf2d4d478f9514321d69abee`) at tree `87c0ecd4272949d89e7512940f91f9d9e3c6e92154616377c78ef9e3d06bfc5e`. Preserve all applied bytes, including the stronger live47 Ready-authority bridge.
