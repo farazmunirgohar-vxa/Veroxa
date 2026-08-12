@@ -15,6 +15,7 @@ import {
 } from "../app/veroxa-private-media-assessment.ts";
 import {
   fullyDecodeVeroxaPrivateMediaImage,
+  veroxaPrivateMediaImageVerificationMode,
 } from "../app/veroxa-private-media-image-decode.ts";
 
 const ASSESSMENT_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
@@ -216,6 +217,17 @@ test("trusted bounded decoders accept real portrait JPEG and PNG bytes", () => {
     expectedWidth: width,
     expectedHeight: height,
   }), true);
+});
+
+test("high-resolution originals use bounded structural verification instead of upload rejection", () => {
+  assert.equal(
+    veroxaPrivateMediaImageVerificationMode(8064, 6048),
+    "bounded_structural",
+  );
+  assert.equal(
+    veroxaPrivateMediaImageVerificationMode(1200, 900),
+    "full_decode",
+  );
 });
 
 test("development proxy can assess privately but only current real-owner authority can proceed", () => {

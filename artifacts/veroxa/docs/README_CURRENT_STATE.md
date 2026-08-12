@@ -4,7 +4,21 @@ Status: Short index for Faraz, Codex, and future ChatGPT/Codex sessions.
 
 <!-- GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY -->
 
-## 2026-08-12 — Momo live54 rights-attestation repair; Sites v50 deployed (current authority)
+## 2026-08-12 — legacy media purge; high-resolution private uploads; Sites v51 deployed (current authority)
+
+Current reconciliation markers: content lifecycle v11; Sites v51; live55; USD 0 incremental spend.
+
+- **Authority and scope:** `GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY` remains in force. External providers, external publishing, review replies, website writes, and external scheduling remain disabled; incremental spend is **USD 0 incremental spend**.
+- **Owner-directed purge:** the exact three legacy private-media assets shown by the owner, their related rights/tags/incidents/attempts/events, and all three backing Storage objects were permanently deleted. Verified postcondition: **remaining media=0** and **remaining storage objects=0** for the scoped restaurant. This exceptional exact purge does not create a general automatic-deletion policy and is not recoverable.
+- **Current database:** Supabase is live55 through `20260812213939_high_resolution_private_media_v1.sql` (11,103 canonical bytes; SHA-256 `3e8471bc4216a67fd591b5b611388be2873e44eb87c957934b280681d7bfe065`). Root and Sites migration mirrors contain 55 byte-identical SQL files at tree SHA-256 `9f54211c75406b6fd6ea1e4a447e87fb7010cfa2600e7b786f947c01fc5346de`.
+- **High-resolution acceptance:** the former **16,777,216** total-pixel ceiling is removed. An 8064×6048 upload contract passes. JPEG/PNG, 10 KB–10 MB source size, 128–12,000 per-axis bounds, 0.4–2.5 aspect ratio, decodability, immutability, and hash verification remain enforced.
+- **Current Site:** Sites v51 is served at `veroxasystems.com`; release `appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_bf2be236d5f081918a7cf08e394909c9`, source commit `8044ba2d240f6113bd52535c42fff7f61226105e`, 224-file source SHA-256 `32b834666c50c02dc4dfbcca2c6aaa4c925d69b7d2157a670ef7a79bde0035eb`, environment revision 14.
+- **Quality evidence:** application tests passed **437/437**; lint and production build passed. The deployable source remains `artifacts/veroxa-sites`; the canonical root migration is mirrored into that source.
+- **Canonical synchronization:** this release candidate is based on GitHub main `fb6d8b13bf548fd144cec4ce241bd44c1cecc99f`. GitHub records the exact pull-request head, workflows, merge identity, and final main lineage; this document does not preclaim an unknown merge SHA.
+- **Runtime boundary:** content lifecycle v11 and the existing external-action locks are unchanged. The one-time exact purge helper was immediately replaced by an inert v2 function with JWT verification; the temporary purge endpoint is inert and is not a reusable delete surface.
+- **Proof boundary:** there was **no real new-user upload**, provider call, Ready disposition, schedule, post, publication, or owner contact in this pass. Production verification proves the scoped purge, migration, Site deployment, and source/test results only.
+
+## 2026-08-12 — Momo live54 rights-attestation repair; Sites v50 deployed (historical)
 
 Current reconciliation markers: content lifecycle v11; USD 0 incremental spend.
 - **PR #179 validation:** corrected v50 source/evidence candidate `8262ab6824dddbc9fb058b1500a2f8d0f2369851` (tree `1afd667a936b5cd12df930b2341d9e9feeb4e6d2`) passed CI #483 (run 31633030085), Sites Verify #173 (run 31633030045), Supabase Verify #143 (run 31633030057), and Veroxa Verify #428 (run 31633030054); review threads: 0. GitHub `main` remains unchanged pending final evidence-head validation and merge.

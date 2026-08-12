@@ -1882,88 +1882,109 @@ export function assertCurrentReconciliationManifest(
   const failures: string[] = [];
   const live = manifest.currentProductionObservation;
   const candidate = manifest.releaseCandidate;
-  const candidateRecord = candidate as unknown as Record<string, unknown>;
-  const handoff = manifest.mediaUploadHandoff as
-    | Record<string, unknown>
-    | undefined;
-  const edge = manifest.edgeDeployment;
-  const edgeCandidate = manifest.edgeCandidate;
   const hold = manifest.operationalHold;
+  const edge = manifest.edgeDeployment;
+  const highResolutionRelease = (
+    manifest as unknown as Record<string, unknown>
+  ).legacyMediaPurgeAndHighResolutionRelease as
+    | Record<string, any>
+    | undefined;
   const sourceTree = hashTree(resolve(repoRoot, DEPLOYABLE_SITES_SOURCE_ROOT), {
     exclusions: [...GENERATED_PATH_EXCLUSIONS],
   });
-  const rootMigrationTree = hashTree(resolve(repoRoot, ROOT_MIGRATION_SOURCE_ROOT), {
-    suffix: ".sql",
-  });
-  const mirrorMigrationTree = hashTree(resolve(repoRoot, SITES_MIGRATION_MIRROR_ROOT), {
-    suffix: ".sql",
-  });
+  const rootMigrationTree = hashTree(
+    resolve(repoRoot, ROOT_MIGRATION_SOURCE_ROOT),
+    { suffix: ".sql" },
+  );
+  const mirrorMigrationTree = hashTree(
+    resolve(repoRoot, SITES_MIGRATION_MIRROR_ROOT),
+    { suffix: ".sql" },
+  );
   const latestMigration = rootMigrationTree.files.at(-1);
-  const externalLocks = hold?.providerWrites === false &&
+  const latestMigrationSha256 = latestMigration
+    ? sha256File(
+        resolve(repoRoot, ROOT_MIGRATION_SOURCE_ROOT, latestMigration),
+      )
+    : null;
+  const externalLocks =
+    hold?.providerWrites === false &&
     hold?.reviewReplies === false &&
     hold?.websiteWrites === false &&
     hold?.externalScheduling === false;
 
   if (
     manifest.schemaVersion !== 11 ||
-    manifest.recordKind !== "veroxa_momo_live54_reconciliation_manifest" ||
-    manifest.releaseState !== "live54_sites_v50_rights_attestation_repaired_external_actions_held" ||
+    manifest.recordKind !==
+      "veroxa_momo_live55_high_resolution_media_manifest" ||
+    manifest.releaseState !==
+      "live55_sites_v51_legacy_media_purged_total_pixel_ceiling_removed_external_actions_held" ||
     manifest.reviewedAt !== "2026-08-12" ||
     manifest.canonicalRepository !== "farazmunirgohar-vxa/Veroxa" ||
     manifest.canonicalBranch !== "main" ||
-    manifest.sitesProjectId !== "appgprj_6a53d07c7c28819182801cf35dfd30de"
-  ) failures.push("schema-11 reconciliation identity drifted");
+    manifest.sitesProjectId !==
+      "appgprj_6a53d07c7c28819182801cf35dfd30de"
+  ) {
+    failures.push("schema-11 high-resolution release identity drifted");
+  }
 
   if (
-    sourceTree.fileCount !== 222 ||
-    sourceTree.sha256 !== "053cecab6ac5164f9f80d57f2d4f470f12cf2d4c92c7cd113a9ed7fc936bd8ec" ||
+    sourceTree.fileCount !== 224 ||
+    sourceTree.sha256 !==
+      "32b834666c50c02dc4dfbcca2c6aaa4c925d69b7d2157a670ef7a79bde0035eb" ||
     manifest.source.fileCount !== sourceTree.fileCount ||
     manifest.source.treeSha256 !== sourceTree.sha256 ||
-    rootMigrationTree.fileCount !== 54 ||
-    rootMigrationTree.sha256 !== "0d4566c0fddc5311a24a3ea44688e30bf05c347360a5ac36bbc336a038ca14ab" ||
+    rootMigrationTree.fileCount !== 55 ||
+    rootMigrationTree.sha256 !==
+      "9f54211c75406b6fd6ea1e4a447e87fb7010cfa2600e7b786f947c01fc5346de" ||
     mirrorMigrationTree.fileCount !== rootMigrationTree.fileCount ||
     mirrorMigrationTree.sha256 !== rootMigrationTree.sha256 ||
-    JSON.stringify(rootMigrationTree.files) !== JSON.stringify(mirrorMigrationTree.files) ||
+    JSON.stringify(rootMigrationTree.files) !==
+      JSON.stringify(mirrorMigrationTree.files) ||
     manifest.migrations.fileCount !== rootMigrationTree.fileCount ||
     manifest.migrations.treeSha256 !== rootMigrationTree.sha256 ||
     manifest.migrations.mirrorFileCount !== mirrorMigrationTree.fileCount ||
-    manifest.migrations.mirrorTreeSha256 !== mirrorMigrationTree.sha256
-  ) failures.push("schema-11 source or migration fingerprint drifted");
+    manifest.migrations.mirrorTreeSha256 !== mirrorMigrationTree.sha256 ||
+    latestMigration !==
+      "20260812213939_high_resolution_private_media_v1.sql" ||
+    latestMigrationSha256 !==
+      "3e8471bc4216a67fd591b5b611388be2873e44eb87c957934b280681d7bfe065"
+  ) {
+    failures.push("schema-11 source or migration fingerprint drifted");
+  }
 
   if (
-    live.sitesVersion !== 50 ||
-    live.sitesVersionId !== "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_435b68bbe9c08191bd9579825218fa5a" ||
-    live.sitesCheckoutCommit !== "5dc88c25a9eab02a33ce8b357cc09d5b43d0af9e" ||
+    live.sitesVersion !== 51 ||
+    live.sitesVersionId !==
+      "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_bf2be236d5f081918a7cf08e394909c9" ||
+    live.sitesCheckoutCommit !==
+      "8044ba2d240f6113bd52535c42fff7f61226105e" ||
     live.sitesEnvironmentRevision !== 14 ||
-    live.sitesArchiveFileCount !== 52 ||
-    live.sitesArchiveByteLength !== 6041600 ||
-    live.sitesArchiveSha256 !== "9aada7a54f6da92893b0ce551d3f03b2a970ad4e28de8beb8d17540e6edce1e2" ||
-    live.productionMigrationCount !== 54 ||
-    live.migrationTreeSha256 !== "0d4566c0fddc5311a24a3ea44688e30bf05c347360a5ac36bbc336a038ca14ab" ||
-    live.latestProductionMigration !== "20260812042031_momo_team_content_ai_read_grants_v1.sql" ||
-    live.latestProductionMigrationByteLength !== 393 ||
-    live.latestProductionMigrationSha256 !== "78d43d24a8249523a8866331598491e478950c7a7a8a35451b29839ccc777b96" ||
+    live.sourceFileCount !== sourceTree.fileCount ||
+    live.sourceTreeSha256 !== sourceTree.sha256 ||
+    live.productionMigrationCount !== 55 ||
+    live.migrationTreeSha256 !== rootMigrationTree.sha256 ||
+    live.latestProductionMigration !== latestMigration ||
+    live.latestProductionMigrationByteLength !== 11_103 ||
+    live.latestProductionMigrationSha256 !== latestMigrationSha256 ||
     live.githubMainMatchesCandidate !== false ||
     live.candidateSourceMatchesLiveSites !== true ||
     live.candidateMigrationsMatchLiveLedger !== true ||
     live.fullReleaseGatePassed !== true
-  ) failures.push("schema-11 live Sites/database observation drifted");
+  ) {
+    failures.push("schema-11 live Sites/database observation drifted");
+  }
 
   if (
-    candidate.pullRequest !== 179 ||
-    candidate.pullRequestDraft !== true ||
+    candidate.status !== manifest.releaseState ||
+    candidate.basedOnGitHubMainCommit !==
+      "fb6d8b13bf548fd144cec4ce241bd44c1cecc99f" ||
+    candidate.pullRequest !== null ||
     candidate.githubMerged !== false ||
     candidate.futureMergedGitHubCommit !== null ||
-    candidate.futureSitesVersion !== 50 ||
+    candidate.futureSitesVersion !== 51 ||
     candidate.reviewedLocally !== true ||
     candidate.sourceReviewPassed !== true ||
     candidate.qualityReviewPassed !== true ||
-    candidateRecord.observedDraftPullRequestHead !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.reviewedHead ||
-    candidateRecord.observedDraftPullRequestTree !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.reviewedTree ||
-    candidate.allFourWorkflowsGreen !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.allFourExactHeadWorkflowsGreen ||
-    candidate.zeroUnresolvedReviewThreads !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.zeroUnresolvedReviewThreads ||
-    JSON.stringify(candidateRecord.allFourExactHeadWorkflows) !==
-      JSON.stringify(MEDIA_UPLOAD_HANDOFF_EVIDENCE.allFourExactHeadWorkflows) ||
     candidate.candidateSourceMatchesLiveSites !== true ||
     candidate.candidateMigrationsMatchLiveLedger !== true ||
     candidate.githubMainMatchesCandidate !== false ||
@@ -1974,63 +1995,72 @@ export function assertCurrentReconciliationManifest(
     candidate.migrationFileCount !== rootMigrationTree.fileCount ||
     candidate.migrationTreeSha256 !== rootMigrationTree.sha256 ||
     candidate.latestCandidateMigration !== latestMigration ||
-    candidate.latestCandidateMigrationSha256 !==
-      sha256File(resolve(repoRoot, ROOT_MIGRATION_SOURCE_ROOT, latestMigration!))
-  ) failures.push("schema-11 candidate evidence or merge boundary drifted");
+    candidate.latestCandidateMigrationSha256 !== latestMigrationSha256 ||
+    candidate.databaseMigrationApplied !== true ||
+    candidate.sitesPublished !== true
+  ) {
+    failures.push("schema-11 candidate release evidence drifted");
+  }
+
+  const quality = manifest.applicationQualityEvidence;
+  if (
+    !quality ||
+    quality.testsPassed !== 437 ||
+    quality.testsTotal !== 437 ||
+    quality.testsFailed !== 0 ||
+    quality.buildExitCode !== 0 ||
+    quality.typecheckExitCode !== 0 ||
+    quality.lintExitCode !== 0
+  ) {
+    failures.push("schema-11 437-test application quality evidence drifted");
+  }
 
   if (
-    !handoff ||
-    handoff.status !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.status ||
-    handoff.reviewedHead !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.reviewedHead ||
-    handoff.reviewedTree !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.reviewedTree ||
-    handoff.allFourExactHeadWorkflowsGreen !==
-      MEDIA_UPLOAD_HANDOFF_EVIDENCE.allFourExactHeadWorkflowsGreen ||
-    handoff.zeroUnresolvedReviewThreads !==
-      MEDIA_UPLOAD_HANDOFF_EVIDENCE.zeroUnresolvedReviewThreads ||
-    JSON.stringify(handoff.allFourExactHeadWorkflows) !==
-      JSON.stringify(MEDIA_UPLOAD_HANDOFF_EVIDENCE.allFourExactHeadWorkflows) ||
-    handoff.sitesVersion !== 50 ||
-    handoff.sitesVersionId !== live.sitesVersionId ||
-    handoff.sitesSourceCommit !== live.sitesCheckoutCommit ||
-    handoff.sitesEnvironmentRevision !== 14 ||
-    handoff.liveSitesSourceFileCount !== sourceTree.fileCount ||
-    handoff.liveSitesSourceTreeSha256 !== sourceTree.sha256 ||
-    handoff.candidateSourceFileCount !== sourceTree.fileCount ||
-    handoff.candidateSourceTreeSha256 !== sourceTree.sha256 ||
-    handoff.migrationFileCount !== rootMigrationTree.fileCount ||
-    handoff.migrationTreeSha256 !== rootMigrationTree.sha256 ||
-    handoff.latestMigration !== latestMigration ||
-    handoff.latestMigrationSha256 !==
-      sha256File(resolve(repoRoot, ROOT_MIGRATION_SOURCE_ROOT, latestMigration!)) ||
-    handoff.clientRightsAttestationRequired !== true ||
-    JSON.stringify(handoff.clientRightsAttestationScopes) !==
-      JSON.stringify(["instagram", "facebook", "google_business"]) ||
-    handoff.clientRightsAttestationGuard !==
-      "media_rights_attestation_required_before_storage" ||
-    handoff.applicationTestsPassed !== 433 ||
-    handoff.applicationTestsTotal !== 433 ||
-    JSON.stringify(handoff.edgeFunctions) !==
-      JSON.stringify(MEDIA_UPLOAD_HANDOFF_EVIDENCE.edgeFunctions)
-  ) failures.push("schema-11 Momo rights-attestation handoff or Edge identity drifted");
+    !highResolutionRelease ||
+    highResolutionRelease.status !== "completed_verified" ||
+    highResolutionRelease.exactLegacyAssetCount !== 3 ||
+    highResolutionRelease.exactLegacyBackingObjectCount !== 3 ||
+    highResolutionRelease.relatedRowsPurged !== true ||
+    highResolutionRelease.databaseAssetsRemaining !== 0 ||
+    highResolutionRelease.storageObjectsRemaining !== 0 ||
+    highResolutionRelease.permanent !== true ||
+    highResolutionRelease.recoverable !== false ||
+    highResolutionRelease.broadDeletionPerformed !== false ||
+    highResolutionRelease.automaticDeletionPolicyCreated !== false ||
+    highResolutionRelease.reusablePurgeEndpointAvailable !== false ||
+    highResolutionRelease.temporaryPurgeFunctionState !==
+      "inert_v2_verify_jwt_true_http_410" ||
+    highResolutionRelease.formerTotalPixelCeiling !== 16_777_216 ||
+    highResolutionRelease.totalPixelCeilingRemoved !== true ||
+    highResolutionRelease.highResolutionContractWidth !== 8064 ||
+    highResolutionRelease.highResolutionContractHeight !== 6048 ||
+    highResolutionRelease.migration?.filename !== latestMigration ||
+    highResolutionRelease.migration?.sha256 !== latestMigrationSha256 ||
+    highResolutionRelease.migration?.totalPixelConstraintRemoved !== true ||
+    highResolutionRelease.migration?.finalizeRpcPixelCeilingRemoved !== true ||
+    highResolutionRelease.sites?.version !== 51 ||
+    highResolutionRelease.sites?.versionId !== live.sitesVersionId ||
+    highResolutionRelease.sites?.sourceCommit !== live.sitesCheckoutCommit ||
+    highResolutionRelease.sites?.deployed !== true
+  ) {
+    failures.push(
+      "schema-11 purge or high-resolution acceptance evidence drifted",
+    );
+  }
 
   if (
     edge?.functionVersion !== 11 ||
-    edge?.verifyJwt !== true ||
-    edge?.indexSha256 !== "78f25afb125b1e51a54bc27ddf0bc43875307f4cb799eef577b8c7bf4cb9cac9" ||
-    edge?.providerCallObserved !== false ||
-    edge?.realUploadObserved !== false ||
-    edgeCandidate?.deployed !== true ||
-    edgeCandidate?.deployAuthorized !== false ||
-    edgeCandidate?.futureFunctionVersion !== 11 ||
-    edgeCandidate?.indexSha256 !== "78f25afb125b1e51a54bc27ddf0bc43875307f4cb799eef577b8c7bf4cb9cac9" ||
-    edgeCandidate?.providerCallObserved !== false ||
-    edgeCandidate?.realUploadObserved !== false ||
+    edge.verifyJwt !== true ||
+    edge.providerCallObserved !== false ||
+    edge.realUploadObserved !== false ||
     !externalLocks
-  ) failures.push("schema-11 Edge or external-action lock evidence drifted");
+  ) {
+    failures.push("schema-11 Edge or external-action locks drifted");
+  }
 
   if (failures.length > 0) {
     throw new Error(
-      "Unsafe schema-11 live54 rights-attestation reconciliation manifest: " +
+      "Unsafe schema-11 live55 high-resolution media release: " +
         failures.join("; "),
     );
   }
@@ -2058,7 +2088,7 @@ export function assertReviewedLocalCandidateManifest(
   if (manifest.schemaVersion === 11) {
     assertCurrentReconciliationManifest(manifest);
     const quality = manifest.applicationQualityEvidence;
-    if (!quality || quality.testsTotal !== 433 || quality.testsPassed !== 433 || quality.testsFailed !== 0 || !manifest.releaseCandidate.reviewedLocally || manifest.releaseCandidate.sourceReviewPassed !== true || manifest.releaseCandidate.qualityReviewPassed !== true) throw new Error("Schema-11 reconciliation lacks reviewed source or 433-test evidence");
+    if (!quality || quality.testsTotal !== 437 || quality.testsPassed !== 437 || quality.testsFailed !== 0 || !manifest.releaseCandidate.reviewedLocally || manifest.releaseCandidate.sourceReviewPassed !== true || manifest.releaseCandidate.qualityReviewPassed !== true) throw new Error("Schema-11 release lacks reviewed source or 437-test evidence");
     return;
   }
   assertUnreleasedLocalCandidateManifest(manifest);

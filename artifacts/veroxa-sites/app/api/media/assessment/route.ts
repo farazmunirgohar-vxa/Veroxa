@@ -6,7 +6,6 @@ import {
 import { getServerVeroxaContext } from "../../../veroxa-supabase-server";
 import {
   VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_DIMENSION,
-  VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_DECODED_PIXELS,
   VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_SOURCE_BYTES,
   VEROXA_PRIVATE_MEDIA_ASSESSMENT_MIN_DIMENSION,
   VEROXA_PRIVATE_MEDIA_ASSESSMENT_MIN_SOURCE_BYTES,
@@ -98,7 +97,6 @@ function reservation(value: unknown): VeroxaPrivateMediaAssessmentReservation {
     height < VEROXA_PRIVATE_MEDIA_ASSESSMENT_MIN_DIMENSION ||
     height > VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_DIMENSION ||
     !Number.isSafeInteger(width * height) ||
-    width * height > VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_DECODED_PIXELS ||
     typeof row.source_content_sha256 !== "string" ||
     !SHA256.test(row.source_content_sha256) ||
     (evidenceClass !== "development_proxy" && evidenceClass !== "real_owner") ||
