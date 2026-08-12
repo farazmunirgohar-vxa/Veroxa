@@ -90,7 +90,6 @@ begin
     'public.veroxa_register_momo_media_v1(uuid,text,text,bigint,text,text,jsonb,timestamptz)',
     'public.veroxa_register_momo_media_v2(uuid,text,text,bigint,text,text,jsonb,date)',
     'public.veroxa_register_team_private_media_v1(uuid,text,text,bigint,text,text,jsonb,date)',
-    'public.veroxa_finalize_private_media_assessment_intake_v1(uuid,uuid,uuid,text,text,bigint,integer,integer,text,jsonb,text,text,text,uuid)',
     'public.veroxa_reserve_private_media_assessment_v1(uuid,uuid,text,text,text,text,text,bigint,uuid)',
     'public.veroxa_start_private_media_assessment_provider_v1(uuid,text,uuid)',
     'public.veroxa_complete_private_media_assessment_v1(uuid,text,text,jsonb,text,text,bigint,text,jsonb,uuid)',
@@ -125,6 +124,28 @@ begin
         function_name;
     end if;
   end loop;
+
+  function_name :=
+    'public.veroxa_finalize_private_media_assessment_intake_v1(uuid,uuid,uuid,text,text,bigint,integer,integer,text,jsonb,text,text,text,uuid)';
+  select procedure.prosecdef, procedure.proconfig
+    into function_record
+  from pg_catalog.pg_proc procedure
+  where procedure.oid = to_regprocedure(function_name);
+  if not found
+     or not function_record.prosecdef
+     or not ('search_path=""' = any(
+       coalesce(function_record.proconfig, '{}'::text[])
+     ))
+     or has_function_privilege('anon', function_name, 'execute')
+     or has_function_privilege(
+       'authenticated', function_name, 'execute'
+     )
+     or not has_function_privilege(
+       'service_role', function_name, 'execute'
+     ) then
+    raise exception 'Service-role lifecycle RPC posture mismatch: %',
+      function_name;
+  end if;
 
   if not exists (
     select 1
