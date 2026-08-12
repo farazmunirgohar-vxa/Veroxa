@@ -29,7 +29,6 @@ import { resolveMomoMediaWorkflow } from "./momo-media-guidance";
 import {
   hasStrongPrivateFoodEvidence,
   VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_DECODED_PIXELS,
-  type VeroxaMediaRestaurantAssociation,
 } from "./veroxa-private-media-assessment";
 
 type ClientView = "dashboard" | "requests" | "setup" | "media" | "content" | "reports" | "services";
@@ -55,6 +54,8 @@ const clientLabels: Record<ClientView, string> = {
   reports: "Reports",
   services: "Services",
 };
+
+const MOMO_CLIENT_UPLOAD_SCOPE = ["instagram", "facebook", "google_business"] as const;
 
 const pathToView = (path: string): ClientView =>
   (Object.entries(clientRoutes).find(([, value]) => value === path)?.[0] as ClientView | undefined) ?? "dashboard";
@@ -310,25 +311,12 @@ function mediaUploadAttentionMessage(errorCode: string): string {
 function Media({ snapshot, restaurantId, busy, run }: { snapshot: MomoClientSnapshot; restaurantId: string; busy: boolean; run: MomoClientRun }) {
   const [file, setFile] = useState<File | null>(null);
   const [uploadKey, setUploadKey] = useState(0);
-  const [expiresAt, setExpiresAt] = useState("");
-  const [scope, setScope] = useState<string[]>(["instagram"]);
-  const [restaurantAssociation, setRestaurantAssociation] =
-    useState<VeroxaMediaRestaurantAssociation>("not_for_restaurant");
   const [rightsConfirmed, setRightsConfirmed] = useState(false);
-  const [privateAssessmentRequested, setPrivateAssessmentRequested] =
-    useState(false);
   const [uploadError, setUploadError] = useState("");
   const [revokeReason, setRevokeReason] = useState<Record<string, string>>({});
-  const toggle = (item: string) => {
-    setRightsConfirmed(false);
-    setScope((current) => current.includes(item) ? current.filter((value) => value !== item) : [...current, item]);
-  };
-  const momoToday = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Chicago", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
-  const invalidExpiry = Boolean(expiresAt && expiresAt < momoToday);
   const chooseFile = async (next: File | null) => {
     setUploadError("");
     setRightsConfirmed(false);
-    setPrivateAssessmentRequested(false);
     if (!next) { setFile(null); return; }
     if (!["image/jpeg", "image/png"].includes(next.type)) {
       setFile(null);
@@ -368,19 +356,13 @@ function Media({ snapshot, restaurantId, busy, run }: { snapshot: MomoClientSnap
       const message = mediaUploadAttentionMessage(outcome.errorCode);
       setFile(null);
       setUploadKey((value) => value + 1);
-      setExpiresAt("");
       setRightsConfirmed(false);
-      setPrivateAssessmentRequested(false);
-      setRestaurantAssociation("not_for_restaurant");
       setUploadError(message);
       return message;
     }
     setFile(null);
     setUploadKey((value) => value + 1);
-    setExpiresAt("");
     setRightsConfirmed(false);
-    setPrivateAssessmentRequested(false);
-    setRestaurantAssociation("not_for_restaurant");
     setUploadError("");
     if (!outcome.assessment) {
       return "Your image and upload instruction were saved. Veroxa is handling the remaining private assessment; you do not need to do anything. Nothing was posted or connected.";
@@ -394,13 +376,14 @@ function Media({ snapshot, restaurantId, busy, run }: { snapshot: MomoClientSnap
   };
   const submitUpload = async (): Promise<string> => {
     if (!file) throw new Error("media_file_required");
+    if (!rightsConfirmed) throw new Error("media_rights_attestation_required");
     setUploadError("");
     return finishUploadOutcome(await uploadMomoClientMedia({
       restaurantId,
       file,
-      usageScope: scope,
-      restaurantAssociation,
-      expiresAt: expiresAt || undefined,
+      usageScope: [...MOMO_CLIENT_UPLOAD_SCOPE],
+      restaurantAssociation: "not_for_restaurant",
+      rightsAttested: rightsConfirmed,
     }));
   };
   const newest = snapshot.media[0];
@@ -450,16 +433,13 @@ function Media({ snapshot, restaurantId, busy, run }: { snapshot: MomoClientSnap
       <ol><li className={newestWorkflow.uploaded ? "done" : "current"}><b>1</b><span><strong>Uploaded</strong><small>{newestWorkflow.uploaded ? "Private original saved" : "Choose a file"}</small></span></li><li className={newest?.privateAssessmentStatus === "completed" ? "done" : newestWorkflow.uploaded ? "current" : ""}><b>2</b><span><strong>Assess privately</strong><small>{newest?.privateAssessmentStatus === "completed" ? "Neutral tags ready" : newest?.privateAssessmentStatus === "failed" ? "Assessment stopped safely" : "Visible evidence only"}</small></span></li><li className={!newestSourceMediaDiscarded && newestPrepared ? newestV2Ready ? "done" : "current" : !newestSourceMediaDiscarded && newestVerified ? "current" : ""}><b>3</b><span><strong>Prepare content</strong><small>{newestV2Ready ? "Claims and copy validated" : newestSourceMediaDiscarded ? "Permanently excluded" : "Owner rights + association required"}</small></span></li><li className={newestReady ? "done" : ""}><b>4</b><span><strong>Veroxa Ready</strong><small>{newestReady ? "Evidence complete · unscheduled" : newestSourceMediaDiscarded ? "Future use excluded" : "No schedule or posting"}</small></span></li></ol>
       <em>Private · no posting</em>
     </section>
-    <form id="client-media-upload" className="momo-panel momo-form client-media-upload" onSubmit={(event) => { event.preventDefault(); if (!file || !rightsConfirmed || !privateAssessmentRequested || invalidExpiry) return; void run(submitUpload, "Your image passed verification."); }}>
+    <form id="client-media-upload" className="momo-panel momo-form client-media-upload" onSubmit={(event) => { event.preventDefault(); if (!file || !rightsConfirmed) return; void run(submitUpload, "Your image and upload instruction were saved privately."); }}>
       <div className="momo-panel-heading"><div><p className="eyebrow">STEP 1 · UPLOAD</p><h2>Add a food image</h2><small>JPEG or PNG · portrait or landscape · up to 16,777,216 pixels · 10 KB to 10 MB · original unchanged. WebP, HEIC/HEIF, and video are not supported yet.</small></div></div>
       <label className="client-file-picker">Food image<input key={uploadKey} type="file" accept="image/jpeg,image/png,.jpg,.jpeg,.png" onChange={(event) => void chooseFile(event.target.files?.[0] || null)} /><span>{file ? file.name : "Choose from your phone or computer"}</span></label>
       {uploadError && <p className="momo-warning" role="alert">{uploadError}</p>}
-      <details className="client-media-permission"><summary><span>Allowed preparation</span><strong>{scope.length ? scope.map(label).join(", ") : "Choose at least one"}</strong></summary><fieldset className="momo-scope"><legend>Where Veroxa may prepare this image</legend>{[["instagram", "Instagram"], ["facebook", "Facebook"], ["google_business", "Google Business"]].map(([value, text]) => <label className="momo-check" key={value}><input type="checkbox" checked={scope.includes(value)} onChange={() => toggle(value)} /><span>{text}</span></label>)}</fieldset><label>Permission end date (optional)<input type="date" min={momoToday} value={expiresAt} onChange={(event) => { setRightsConfirmed(false); setExpiresAt(event.target.value); }} /></label>{invalidExpiry && <p className="momo-warning">Choose today or a future date.</p>}</details>
-      <label className="momo-check client-rights-check"><input type="checkbox" checked={rightsConfirmed} onChange={(event) => setRightsConfirmed(event.target.checked)} /><span>I confirm I own this image or have permission to provide it for the selected preparation uses.</span></label>
-      <label className="momo-check client-rights-check"><input type="checkbox" checked={privateAssessmentRequested} onChange={(event) => setPrivateAssessmentRequested(event.target.checked)} /><span>Privately analyze this image now to create visual tags. This request applies only to this upload.</span></label>
-      <label>Restaurant association<select value={restaurantAssociation} onChange={(event) => setRestaurantAssociation(event.target.value as VeroxaMediaRestaurantAssociation)}><option value="not_for_restaurant">Reference only — not for restaurant use</option><option value="licensed_generic_only">Licensed generic image — not a confirmed current offering</option><option value="represents_current_restaurant_offering">Current restaurant offering — owner confirmation</option></select></label>
-      <p className="momo-form-note">Media permission and restaurant association are separate records. The association is final for this exact permission record; correcting it requires a new permission record. Selecting a preparation use does not connect an account or authorize posting. Only a real owner can confirm a current restaurant offering for Momo content.</p>
-      <button className="primary-button" disabled={busy || !file || !rightsConfirmed || !privateAssessmentRequested || scope.length === 0 || invalidExpiry}>{busy ? "Saving your upload…" : "Upload once and let Veroxa handle it"}</button>
+      <label className="momo-check client-rights-check"><input type="checkbox" checked={rightsConfirmed} onChange={(event) => setRightsConfirmed(event.target.checked)} required /><span>I confirm I own this image or have permission to provide it for Instagram, Facebook, and Google Business content preparation. This attestation applies only to this upload and does not authorize posting or connect any account.</span></label>
+      <p className="momo-form-note">Choose the image, confirm permission, and stop there. Veroxa and Team Faraz handle the private checks, processing, and restaurant association; they will contact you only if a specific restaurant fact is genuinely needed. Nothing is posted or connected from this screen.</p>
+      <button className="primary-button" disabled={busy || !file || !rightsConfirmed}>{busy ? "Saving your upload…" : "Confirm permission and upload"}</button>
     </form>
     {!snapshot.mediaPipelineReadbackAvailable && snapshot.media.length > 0 && <p className="momo-warning client-readback-warning" role="status">Preparation status is temporarily unavailable. Originals and permissions remain safe; refresh this page to check again.</p>}
     <section className="momo-panel" id="client-media-library"><div className="momo-panel-heading"><div><p className="eyebrow">YOUR MEDIA</p><h2>Private originals and verified history</h2><small>Newest first. Veroxa uses an unchanged original when it already meets the platform-safe envelope; any actual legacy rendition is labeled separately.</small></div><span>{snapshot.media.length}</span></div>{snapshot.media.length === 0 ? <Empty title="No media has been shared." detail="Upload a first image above when it is ready." /> : <div className="momo-card-grid client-media-grid">{snapshot.media.map((item, index) => <ClientMediaCard key={item.id} item={item} eager={index === 0} readbackAvailable={snapshot.mediaReadbackAvailable} restaurantId={restaurantId} busy={busy} revokeReason={revokeReason[item.id] || ""} setRevokeReason={(value) => setRevokeReason((current) => ({ ...current, [item.id]: value }))} run={run} />)}</div>}</section>

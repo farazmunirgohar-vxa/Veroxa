@@ -78,11 +78,20 @@ function harness(overrides = {}) {
 
 test("real client upload registers the stored JPG, parses asset_id, then finalizes it", async () => {
   const { calls, dependencies } = harness();
+  await assert.rejects(uploadMomoClientMediaWithDependencies({
+    restaurantId: RESTAURANT_ID,
+    file: image(),
+    usageScope: ["instagram", "facebook"],
+    restaurantAssociation: "not_for_restaurant",
+    rightsAttested: false,
+  }, dependencies), /media_rights_attestation_required/u);
+  assert.equal(calls.upload.length, 0, "missing owner attestation must fail before storage");
   const result = await uploadMomoClientMediaWithDependencies({
     restaurantId: RESTAURANT_ID,
     file: image(),
     usageScope: ["instagram", "instagram", "facebook"],
     restaurantAssociation: "not_for_restaurant",
+    rightsAttested: true,
   }, dependencies);
   assert.equal(result.status, "verified");
   assert.equal(result.assetId, ASSET_ID);
@@ -145,6 +154,7 @@ test("registered originals remain saved and retryable when finalization needs at
     file: image(),
     usageScope: ["instagram"],
     restaurantAssociation: "not_for_restaurant",
+    rightsAttested: true,
   }, dependencies);
   assert.deepEqual(result, {
     status: "uploaded_but_needs_attention",
@@ -174,17 +184,18 @@ test("registration rollback removes only the new unregistered object", async () 
     file: image(),
     usageScope: ["instagram"],
     restaurantAssociation: "not_for_restaurant",
+    rightsAttested: true,
   }, { client, now: () => new Date("2026-08-02T12:00:00.000Z"), randomUuid: () => OBJECT_ID }), /media_registration_failed/u);
   assert.deepEqual(calls.remove, [{ bucket: "restaurant-media", paths: [calls.upload[0].path] }]);
 });
 
 test("client acceptance supports JPEG and PNG while rejecting WebP, HEIC, and out-of-envelope files", async () => {
   const { calls, dependencies } = harness();
-  const result = await uploadMomoClientMediaWithDependencies({ restaurantId: RESTAURANT_ID, file: image("image/png"), usageScope: ["instagram"], restaurantAssociation: "not_for_restaurant" }, dependencies);
+  const result = await uploadMomoClientMediaWithDependencies({ restaurantId: RESTAURANT_ID, file: image("image/png"), usageScope: ["instagram"], restaurantAssociation: "not_for_restaurant", rightsAttested: true }, dependencies);
   assert.match(result.storagePath, /\.png$/u);
   const beforeRejects = calls.upload.length;
-  await assert.rejects(() => uploadMomoClientMediaWithDependencies({ restaurantId: RESTAURANT_ID, file: image("image/webp"), usageScope: ["instagram"], restaurantAssociation: "not_for_restaurant" }, dependencies), /invalid_media_type/u);
-  await assert.rejects(() => uploadMomoClientMediaWithDependencies({ restaurantId: RESTAURANT_ID, file: image("image/heic"), usageScope: ["instagram"], restaurantAssociation: "not_for_restaurant" }, dependencies), /invalid_media_type/u);
-  await assert.rejects(() => uploadMomoClientMediaWithDependencies({ restaurantId: RESTAURANT_ID, file: image("image/jpeg", 10 * 1024 - 1), usageScope: ["instagram"], restaurantAssociation: "not_for_restaurant" }, dependencies), /invalid_media_size/u);
+  await assert.rejects(() => uploadMomoClientMediaWithDependencies({ restaurantId: RESTAURANT_ID, file: image("image/webp"), usageScope: ["instagram"], restaurantAssociation: "not_for_restaurant", rightsAttested: true }, dependencies), /invalid_media_type/u);
+  await assert.rejects(() => uploadMomoClientMediaWithDependencies({ restaurantId: RESTAURANT_ID, file: image("image/heic"), usageScope: ["instagram"], restaurantAssociation: "not_for_restaurant", rightsAttested: true }, dependencies), /invalid_media_type/u);
+  await assert.rejects(() => uploadMomoClientMediaWithDependencies({ restaurantId: RESTAURANT_ID, file: image("image/jpeg", 10 * 1024 - 1), usageScope: ["instagram"], restaurantAssociation: "not_for_restaurant", rightsAttested: true }, dependencies), /invalid_media_size/u);
   assert.equal(calls.upload.length, beforeRejects);
 });

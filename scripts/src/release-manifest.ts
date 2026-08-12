@@ -77,7 +77,7 @@ export const DEPLOYABLE_SITES_MAPPING_TARGET =
 export const ROOT_MIGRATION_SOURCE_ROOT = "supabase/migrations";
 export const SITES_MIGRATION_MIRROR_ROOT =
   "artifacts/veroxa-sites/supabase/migrations";
-export const REVIEWED_APPLICATION_TEST_TOTAL = 431;
+export const REVIEWED_APPLICATION_TEST_TOTAL = 433;
 export const GUARDED_ROLLOUT_RELEASE_STATE =
   "live49_internal_ai_active_external_actions_held";
 export const GUARDED_ROLLOUT_CANDIDATE_REVISION =
@@ -140,104 +140,110 @@ export const INTERNAL_AI_RELEASE_EVIDENCE = {
 } as const;
 
 export const MEDIA_UPLOAD_HANDOFF_EVIDENCE = {
-  observedAt: "2026-08-09",
-  status: "live_fix_complete_team_processor_github_sites_parity_verified",
-  baseMainCommit: "23148b90e34f75cb7212b85fe2312cbed8c169ab",
-  baseMainPullRequest: 173,
-  candidateBranch: "agent/momo-media-one-step-handoff",
-  reviewedHead: "a35c5e5900e02227a4c32c37df8387427a561676",
-  reviewedTree: "c32a478134e711aae4a9051cea38231361fed72f",
-  mergedPullRequest: 174,
-  mergedMainCommit: "13dab3f701aded8c5d62645203e875d43b983d8e",
-  allFourExactHeadWorkflowsGreen: true,
-  zeroUnresolvedReviewThreads: true,
-  closeoutPullRequest: 175,
-  closeoutEvidenceOnly: true,
-  operationalSourceCommitScope:
-    "deployable application source commit from PR174; merged evidence-only PR175 does not change the 219-file Sites source; PR169 remains the immutable activation identity",
-  sitesVersion: 45,
-  sitesVersionId:
-    "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_8f22cdda7ebc8191a2275d0f60ad4a4f",
-  sitesSourceCommit: "e6b73d285cbf6013d0c643f724e0f9a50ff14348",
-  sitesArchiveFileCount: 52,
-  sitesArchiveByteLength: 6_010_880,
-  sitesArchiveSha256:
-    "5992c4a0764b930337c0bdc01c416dd708afb6e429e3da842c7488a702172803",
-  sitesEnvironmentRevision: 13,
-  liveSitesSourceFileCount: 219,
-  liveSitesSourceTreeSha256:
-    "514e275d110d1c34dc71df235af3ebc679826b6f3c6306286b538cf23c66857e",
-  candidateSourceFileCount: 219,
-  candidateSourceTreeSha256:
-    "514e275d110d1c34dc71df235af3ebc679826b6f3c6306286b538cf23c66857e",
-  migrationFileCount: 52,
-  migrationTreeSha256:
-    "b0bc0bf80ebcd041ede7c5aa9045b9391a8bb07ab78b9de7f484c69de797bc6a",
-  latestMigration:
-    "20260809232154_momo_media_instruction_team_processor_fix_v1.sql",
-  latestMigrationByteLength: 9_601,
-  latestMigrationSha256:
-    "455a75c64148cdcf7b77e0a7a4f177285d8b9143b15d6fff62a3a897b4924a3d",
-  teamProcessorMigration:
-    "20260809231409_momo_media_instruction_team_processing_v1.sql",
-  teamProcessorMigrationByteLength: 11_720,
-  teamProcessorMigrationSha256:
-    "3c4594c56a5260ce6b29eb85be46100c792512c6a47f35590ca8434dd68e02f2",
-  provisionalSitesMigration:
-    "20260809223000_media_upload_instruction_handoff_v1.sql",
-  clientActionAfterUpload: "none",
-  processingOwner: "veroxa_team",
-  legacyV2AuthenticatedExecute: false,
-  v3AuthenticatedExecute: true,
-  teamProcessorAvailable: true,
-  savedInstructionCount: 0,
-  instructionApplicationCount: 0,
-  unverifiedSavedUploadCount: 3,
-  openMediaIntakeExceptionCount: 3,
-  allMediaIntakeExceptionsExternalLocked: true,
-  existingUploadRequiresClientRetry: false,
-  preFixInstructionRecoverable: false,
-  bridgeKeyRotated: true,
-  applicationTestsPassed: 431,
-  applicationTestsTotal: 431,
-  edgeFunctions: {
-    contentLifecycle: {
-      id: "859c73c3-2102-41b4-9da1-20582acb7212",
-      version: 9,
-      verifyJwt: true,
-      ezbrSha256:
-        "f2084412df2baabf0306ccbfe2101835768c45925a347280634d0ad8f4d1ba68",
-      indexSha256:
-        "0540f5e7ec54c2ea9e089b05cd80345fb6b691e86db51465add3bc4584f7a592",
+  "observedAt": "2026-08-12",
+  "status": "live54_bridge_repaired_sites_v50_rights_attestation_repaired_external_actions_held",
+  "baseMainCommit": "18d7030de8b0c2fe4fdab84e2679e643dfe8d3f1",
+  "baseMainPullRequest": null,
+  "candidateBranch": "agent/momo-live54-reconciliation",
+  "reviewedHead": "8262ab6824dddbc9fb058b1500a2f8d0f2369851",
+  "reviewedTree": "1afd667a936b5cd12df930b2341d9e9feeb4e6d2",
+  "mergedPullRequest": null,
+  "mergedMainCommit": null,
+  "allFourExactHeadWorkflowsGreen": true,
+  "zeroUnresolvedReviewThreads": true,
+  "closeoutPullRequest": null,
+  "closeoutEvidenceOnly": false,
+  "sitesVersion": 50,
+  "sitesVersionId": "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_435b68bbe9c08191bd9579825218fa5a",
+  "sitesSourceCommit": "5dc88c25a9eab02a33ce8b357cc09d5b43d0af9e",
+  "sitesArchiveFileCount": 52,
+  "sitesArchiveByteLength": 6041600,
+  "sitesArchiveSha256": "9aada7a54f6da92893b0ce551d3f03b2a970ad4e28de8beb8d17540e6edce1e2",
+  "sitesEnvironmentRevision": 14,
+  "liveSitesSourceFileCount": 222,
+  "liveSitesSourceTreeSha256": "053cecab6ac5164f9f80d57f2d4f470f12cf2d4c92c7cd113a9ed7fc936bd8ec",
+  "candidateSourceFileCount": 222,
+  "candidateSourceTreeSha256": "053cecab6ac5164f9f80d57f2d4f470f12cf2d4c92c7cd113a9ed7fc936bd8ec",
+  "migrationFileCount": 54,
+  "migrationTreeSha256": "0d4566c0fddc5311a24a3ea44688e30bf05c347360a5ac36bbc336a038ca14ab",
+  "latestMigration": "20260812042031_momo_team_content_ai_read_grants_v1.sql",
+  "latestMigrationByteLength": 393,
+  "latestMigrationSha256": "78d43d24a8249523a8866331598491e478950c7a7a8a35451b29839ccc777b96",
+  "teamProcessorMigration": "20260809231409_momo_media_instruction_team_processing_v1.sql",
+  "teamProcessorMigrationByteLength": 11720,
+  "teamProcessorMigrationSha256": "3c4594c56a5260ce6b29eb85be46100c792512c6a47f35590ca8434dd68e02f2",
+  "provisionalSitesMigration": "20260809223000_media_upload_instruction_handoff_v1.sql",
+  "clientActionAfterUpload": "none",
+  "processingOwner": "veroxa_team",
+  "legacyV2AuthenticatedExecute": false,
+  "v3AuthenticatedExecute": true,
+  "teamProcessorAvailable": true,
+  "savedInstructionCount": 0,
+  "instructionApplicationCount": 0,
+  "unverifiedSavedUploadCount": 3,
+  "openMediaIntakeExceptionCount": 3,
+  "allMediaIntakeExceptionsExternalLocked": true,
+  "existingUploadRequiresClientRetry": false,
+  "preFixInstructionRecoverable": false,
+  "bridgeKeyRotated": true,
+  "applicationTestsPassed": 433,
+  "applicationTestsTotal": 433,
+  "edgeFunctions": {
+    "contentLifecycle": {
+      "id": "859c73c3-2102-41b4-9da1-20582acb7212",
+      "version": 11,
+      "verifyJwt": true,
+      "ezbrSha256": "1d03c3be5d2e38126adfa49d9dc02de345dcee8c25bd724b66f7642efa183c04",
+      "indexSha256": "78f25afb125b1e51a54bc27ddf0bc43875307f4cb799eef577b8c7bf4cb9cac9"
     },
-    contentDispatch: {
-      id: "e6d63920-a6cc-4ffe-9770-f7133fd742c2",
-      version: 3,
-      verifyJwt: false,
-      ezbrSha256:
-        "d5f464240e6bfffac35e9ce1b1c6484eb049b380dfb87b64ab0fd22a7d62a76a",
-      indexSha256:
-        "6452a44ad7474d0c6fbd0434e1bd1fd3e7ddaaaee0ba29135a22e847eadc90c9",
+    "contentDispatch": {
+      "id": "e6d63920-a6cc-4ffe-9770-f7133fd742c2",
+      "version": 3,
+      "verifyJwt": false,
+      "ezbrSha256": "d5f464240e6bfffac35e9ce1b1c6484eb049b380dfb87b64ab0fd22a7d62a76a",
+      "indexSha256": "6452a44ad7474d0c6fbd0434e1bd1fd3e7ddaaaee0ba29135a22e847eadc90c9"
     },
-    contentWebhook: {
-      id: "0bec02a3-4d77-46b2-b067-d57e7970961e",
-      version: 4,
-      verifyJwt: false,
-      ezbrSha256:
-        "f974687864d2c9eb610a509d7b5427a8c89ae77fb748fa4efb69812aa80cbdc8",
-      indexSha256:
-        "78aeb84a399aa57b8f7c5bab41022acf6768f4e086cec406d925e52a606e3125",
+    "contentWebhook": {
+      "id": "0bec02a3-4d77-46b2-b067-d57e7970961e",
+      "version": 4,
+      "verifyJwt": false,
+      "ezbrSha256": "f974687864d2c9eb610a509d7b5427a8c89ae77fb748fa4efb69812aa80cbdc8",
+      "indexSha256": "78aeb84a399aa57b8f7c5bab41022acf6768f4e086cec406d925e52a606e3125"
     },
-    mediaLifecycle: {
-      id: "601bc0cc-c95f-4192-a6ab-edb6e9947963",
-      version: 3,
-      verifyJwt: true,
-      ezbrSha256:
-        "712643244ffe1495262db422258b7322a58b55f30f518241b0bb57e40b91462a",
-      indexSha256:
-        "a3d568eb532d0bb8ff9c840a7d2a26cbad300df2b71c350aaecfaf377173a5f1",
-    },
+    "mediaLifecycle": {
+      "id": "601bc0cc-c95f-4192-a6ab-edb6e9947963",
+      "version": 3,
+      "verifyJwt": true,
+      "ezbrSha256": "712643244ffe1495262db422258b7322a58b55f30f518241b0bb57e40b91462a",
+      "indexSha256": "a3d568eb532d0bb8ff9c840a7d2a26cbad300df2b71c350aaecfaf377173a5f1"
+    }
   },
+  "allFourExactHeadWorkflows": {
+    "ci": {
+      "runId": 31633030085,
+      "status": "success"
+    },
+    "sitesVerify": {
+      "runId": 31633030045,
+      "status": "success"
+    },
+    "supabaseVerify": {
+      "runId": 31633030057,
+      "status": "success"
+    },
+    "veroxaVerify": {
+      "runId": 31633030054,
+      "status": "success"
+    }
+  },
+  "clientRightsAttestationRequired": true,
+  "clientRightsAttestationScopes": [
+    "instagram",
+    "facebook",
+    "google_business"
+  ],
+  "clientRightsAttestationGuard": "media_rights_attestation_required_before_storage",
+  "operationalSourceCommitScope": "pre-reconciliation GitHub main; PR #179 carries the reviewed live54 candidate"
 } as const;
 
 export const V36_GITHUB_RECONCILIATION = {
@@ -1869,9 +1875,174 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
   if (failures.length > 0) throw new Error("Unsafe schema-10 held-repair manifest: " + failures.join("; "));
 }
 
+
+export function assertCurrentReconciliationManifest(
+  manifest: DeploymentManifest,
+): void {
+  const failures: string[] = [];
+  const live = manifest.currentProductionObservation;
+  const candidate = manifest.releaseCandidate;
+  const candidateRecord = candidate as unknown as Record<string, unknown>;
+  const handoff = manifest.mediaUploadHandoff as
+    | Record<string, unknown>
+    | undefined;
+  const edge = manifest.edgeDeployment;
+  const edgeCandidate = manifest.edgeCandidate;
+  const hold = manifest.operationalHold;
+  const sourceTree = hashTree(resolve(repoRoot, DEPLOYABLE_SITES_SOURCE_ROOT), {
+    exclusions: [...GENERATED_PATH_EXCLUSIONS],
+  });
+  const rootMigrationTree = hashTree(resolve(repoRoot, ROOT_MIGRATION_SOURCE_ROOT), {
+    suffix: ".sql",
+  });
+  const mirrorMigrationTree = hashTree(resolve(repoRoot, SITES_MIGRATION_MIRROR_ROOT), {
+    suffix: ".sql",
+  });
+  const latestMigration = rootMigrationTree.files.at(-1);
+  const externalLocks = hold?.providerWrites === false &&
+    hold?.reviewReplies === false &&
+    hold?.websiteWrites === false &&
+    hold?.externalScheduling === false;
+
+  if (
+    manifest.schemaVersion !== 11 ||
+    manifest.recordKind !== "veroxa_momo_live54_reconciliation_manifest" ||
+    manifest.releaseState !== "live54_sites_v50_rights_attestation_repaired_external_actions_held" ||
+    manifest.reviewedAt !== "2026-08-12" ||
+    manifest.canonicalRepository !== "farazmunirgohar-vxa/Veroxa" ||
+    manifest.canonicalBranch !== "main" ||
+    manifest.sitesProjectId !== "appgprj_6a53d07c7c28819182801cf35dfd30de"
+  ) failures.push("schema-11 reconciliation identity drifted");
+
+  if (
+    sourceTree.fileCount !== 222 ||
+    sourceTree.sha256 !== "053cecab6ac5164f9f80d57f2d4f470f12cf2d4c92c7cd113a9ed7fc936bd8ec" ||
+    manifest.source.fileCount !== sourceTree.fileCount ||
+    manifest.source.treeSha256 !== sourceTree.sha256 ||
+    rootMigrationTree.fileCount !== 54 ||
+    rootMigrationTree.sha256 !== "0d4566c0fddc5311a24a3ea44688e30bf05c347360a5ac36bbc336a038ca14ab" ||
+    mirrorMigrationTree.fileCount !== rootMigrationTree.fileCount ||
+    mirrorMigrationTree.sha256 !== rootMigrationTree.sha256 ||
+    JSON.stringify(rootMigrationTree.files) !== JSON.stringify(mirrorMigrationTree.files) ||
+    manifest.migrations.fileCount !== rootMigrationTree.fileCount ||
+    manifest.migrations.treeSha256 !== rootMigrationTree.sha256 ||
+    manifest.migrations.mirrorFileCount !== mirrorMigrationTree.fileCount ||
+    manifest.migrations.mirrorTreeSha256 !== mirrorMigrationTree.sha256
+  ) failures.push("schema-11 source or migration fingerprint drifted");
+
+  if (
+    live.sitesVersion !== 50 ||
+    live.sitesVersionId !== "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_435b68bbe9c08191bd9579825218fa5a" ||
+    live.sitesCheckoutCommit !== "5dc88c25a9eab02a33ce8b357cc09d5b43d0af9e" ||
+    live.sitesEnvironmentRevision !== 14 ||
+    live.sitesArchiveFileCount !== 52 ||
+    live.sitesArchiveByteLength !== 6041600 ||
+    live.sitesArchiveSha256 !== "9aada7a54f6da92893b0ce551d3f03b2a970ad4e28de8beb8d17540e6edce1e2" ||
+    live.productionMigrationCount !== 54 ||
+    live.migrationTreeSha256 !== "0d4566c0fddc5311a24a3ea44688e30bf05c347360a5ac36bbc336a038ca14ab" ||
+    live.latestProductionMigration !== "20260812042031_momo_team_content_ai_read_grants_v1.sql" ||
+    live.latestProductionMigrationByteLength !== 393 ||
+    live.latestProductionMigrationSha256 !== "78d43d24a8249523a8866331598491e478950c7a7a8a35451b29839ccc777b96" ||
+    live.githubMainMatchesCandidate !== false ||
+    live.candidateSourceMatchesLiveSites !== true ||
+    live.candidateMigrationsMatchLiveLedger !== true ||
+    live.fullReleaseGatePassed !== true
+  ) failures.push("schema-11 live Sites/database observation drifted");
+
+  if (
+    candidate.pullRequest !== 179 ||
+    candidate.pullRequestDraft !== true ||
+    candidate.githubMerged !== false ||
+    candidate.futureMergedGitHubCommit !== null ||
+    candidate.futureSitesVersion !== 50 ||
+    candidate.reviewedLocally !== true ||
+    candidate.sourceReviewPassed !== true ||
+    candidate.qualityReviewPassed !== true ||
+    candidateRecord.observedDraftPullRequestHead !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.reviewedHead ||
+    candidateRecord.observedDraftPullRequestTree !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.reviewedTree ||
+    candidate.allFourWorkflowsGreen !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.allFourExactHeadWorkflowsGreen ||
+    candidate.zeroUnresolvedReviewThreads !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.zeroUnresolvedReviewThreads ||
+    JSON.stringify(candidateRecord.allFourExactHeadWorkflows) !==
+      JSON.stringify(MEDIA_UPLOAD_HANDOFF_EVIDENCE.allFourExactHeadWorkflows) ||
+    candidate.candidateSourceMatchesLiveSites !== true ||
+    candidate.candidateMigrationsMatchLiveLedger !== true ||
+    candidate.githubMainMatchesCandidate !== false ||
+    candidate.fullReleaseGatePassed !== true ||
+    (candidate.pendingMigrations ?? []).length !== 0 ||
+    candidate.sourceFileCount !== sourceTree.fileCount ||
+    candidate.sourceTreeSha256 !== sourceTree.sha256 ||
+    candidate.migrationFileCount !== rootMigrationTree.fileCount ||
+    candidate.migrationTreeSha256 !== rootMigrationTree.sha256 ||
+    candidate.latestCandidateMigration !== latestMigration ||
+    candidate.latestCandidateMigrationSha256 !==
+      sha256File(resolve(repoRoot, ROOT_MIGRATION_SOURCE_ROOT, latestMigration!))
+  ) failures.push("schema-11 candidate evidence or merge boundary drifted");
+
+  if (
+    !handoff ||
+    handoff.status !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.status ||
+    handoff.reviewedHead !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.reviewedHead ||
+    handoff.reviewedTree !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.reviewedTree ||
+    handoff.allFourExactHeadWorkflowsGreen !==
+      MEDIA_UPLOAD_HANDOFF_EVIDENCE.allFourExactHeadWorkflowsGreen ||
+    handoff.zeroUnresolvedReviewThreads !==
+      MEDIA_UPLOAD_HANDOFF_EVIDENCE.zeroUnresolvedReviewThreads ||
+    JSON.stringify(handoff.allFourExactHeadWorkflows) !==
+      JSON.stringify(MEDIA_UPLOAD_HANDOFF_EVIDENCE.allFourExactHeadWorkflows) ||
+    handoff.sitesVersion !== 50 ||
+    handoff.sitesVersionId !== live.sitesVersionId ||
+    handoff.sitesSourceCommit !== live.sitesCheckoutCommit ||
+    handoff.sitesEnvironmentRevision !== 14 ||
+    handoff.liveSitesSourceFileCount !== sourceTree.fileCount ||
+    handoff.liveSitesSourceTreeSha256 !== sourceTree.sha256 ||
+    handoff.candidateSourceFileCount !== sourceTree.fileCount ||
+    handoff.candidateSourceTreeSha256 !== sourceTree.sha256 ||
+    handoff.migrationFileCount !== rootMigrationTree.fileCount ||
+    handoff.migrationTreeSha256 !== rootMigrationTree.sha256 ||
+    handoff.latestMigration !== latestMigration ||
+    handoff.latestMigrationSha256 !==
+      sha256File(resolve(repoRoot, ROOT_MIGRATION_SOURCE_ROOT, latestMigration!)) ||
+    handoff.clientRightsAttestationRequired !== true ||
+    JSON.stringify(handoff.clientRightsAttestationScopes) !==
+      JSON.stringify(["instagram", "facebook", "google_business"]) ||
+    handoff.clientRightsAttestationGuard !==
+      "media_rights_attestation_required_before_storage" ||
+    handoff.applicationTestsPassed !== 433 ||
+    handoff.applicationTestsTotal !== 433 ||
+    JSON.stringify(handoff.edgeFunctions) !==
+      JSON.stringify(MEDIA_UPLOAD_HANDOFF_EVIDENCE.edgeFunctions)
+  ) failures.push("schema-11 Momo rights-attestation handoff or Edge identity drifted");
+
+  if (
+    edge?.functionVersion !== 11 ||
+    edge?.verifyJwt !== true ||
+    edge?.indexSha256 !== "78f25afb125b1e51a54bc27ddf0bc43875307f4cb799eef577b8c7bf4cb9cac9" ||
+    edge?.providerCallObserved !== false ||
+    edge?.realUploadObserved !== false ||
+    edgeCandidate?.deployed !== true ||
+    edgeCandidate?.deployAuthorized !== false ||
+    edgeCandidate?.futureFunctionVersion !== 11 ||
+    edgeCandidate?.indexSha256 !== "78f25afb125b1e51a54bc27ddf0bc43875307f4cb799eef577b8c7bf4cb9cac9" ||
+    edgeCandidate?.providerCallObserved !== false ||
+    edgeCandidate?.realUploadObserved !== false ||
+    !externalLocks
+  ) failures.push("schema-11 Edge or external-action lock evidence drifted");
+
+  if (failures.length > 0) {
+    throw new Error(
+      "Unsafe schema-11 live54 rights-attestation reconciliation manifest: " +
+        failures.join("; "),
+    );
+  }
+}
+
 export function assertUnreleasedLocalCandidateManifest(
   manifest: DeploymentManifest,
 ): void {
+  if (manifest.schemaVersion === 11) {
+    assertCurrentReconciliationManifest(manifest);
+    return;
+  }
   if (manifest.schemaVersion === 10) {
     assertSchema10HeldRepair(manifest);
     return;
@@ -1884,6 +2055,12 @@ export function assertUnreleasedLocalCandidateManifest(
 export function assertReviewedLocalCandidateManifest(
   manifest: DeploymentManifest,
 ): void {
+  if (manifest.schemaVersion === 11) {
+    assertCurrentReconciliationManifest(manifest);
+    const quality = manifest.applicationQualityEvidence;
+    if (!quality || quality.testsTotal !== 433 || quality.testsPassed !== 433 || quality.testsFailed !== 0 || !manifest.releaseCandidate.reviewedLocally || manifest.releaseCandidate.sourceReviewPassed !== true || manifest.releaseCandidate.qualityReviewPassed !== true) throw new Error("Schema-11 reconciliation lacks reviewed source or 433-test evidence");
+    return;
+  }
   assertUnreleasedLocalCandidateManifest(manifest);
   if (manifest.recordKind === "veroxa_guarded_internal_ai_rollout_manifest") {
     const quality = manifest.applicationQualityEvidence;

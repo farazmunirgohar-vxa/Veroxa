@@ -42,6 +42,7 @@ import {
   approveMomoContentPackage,
   createMomoReportDraft,
   createMomoClientRequest,
+  createMomoTeamRequest,
   createMomoClientRequestWork,
   createMomoWorkItem,
   decideMomoReadyPackageV2,
@@ -67,7 +68,6 @@ import {
   reviseMomoReportDraft,
   retryMomoWorkItem,
   reviewMomoMedia,
-  reviewMomoConfirmation,
   revokeMomoMediaRights,
   saveMomoContact,
   saveMomoTruthRevisions,
@@ -88,6 +88,7 @@ import {
   type MomoReadyReviewStatusV2,
   type MomoMediaAsset,
   type MomoClientRequest,
+  type MomoRequestReasonCategory,
   type MomoRequestMessage,
   type MomoWorkspaceData,
   type MomoWorkspaceSection,
@@ -271,6 +272,13 @@ const momoActionErrorMessage = (code: string): string => Object.hasOwn(MOMO_ACTI
   ? MOMO_ACTION_ERROR_MESSAGES[code]
   : "The database did not accept this change. Nothing is being represented as complete.";
 
+const momoWorkspaceErrorMessage = (code: string, section: string): string => {
+  if (code === "configuration_unavailable") return "The secure Momo data connection is not configured for this deployment. No cached or sample records are being shown.";
+  if (code === "active_momo_client_required") return "This signed Client account is not currently linked to an active Momo restaurant. No cached or sample records are being shown.";
+  if (code === "workspace_snapshot_failed") return `Verified Momo data could not be loaded for the ${labelStatus(section)} view. Retry after checking the signed session; no cached or sample records are being shown.`;
+  return `Verified Momo data could not be loaded for the ${labelStatus(section)} view. Retry when the database connection is available; no cached or sample records are being shown.`;
+};
+
 const externalEvidenceWorkTypes = new Set([
   "publishing",
   "google",
@@ -337,9 +345,9 @@ export function MomoOperatingCenter({ view, access, onNavigate, notify }: Props)
     try {
       const data = await loadMomoWorkspaceData(access.restaurantId, section, access.role);
       if (requestSequence === workspaceLoadSequence.current) setState({ status: "ready", data, error: null });
-    } catch {
+    } catch (error) {
       if (requestSequence === workspaceLoadSequence.current) {
-        setState({ status: "error", data: emptyMomoWorkspaceData(), error: "Verified Momo data could not be loaded. No cached or sample records are being shown." });
+        setState({ status: "error", data: emptyMomoWorkspaceData(), error: momoWorkspaceErrorMessage(error instanceof Error ? error.message : "", section) });
       }
     }
   }, [access.restaurantId, access.role, section]);
@@ -361,9 +369,9 @@ export function MomoOperatingCenter({ view, access, onNavigate, notify }: Props)
       .then((data) => {
         if (active && requestSequence === workspaceLoadSequence.current) setState({ status: "ready", data, error: null });
       })
-      .catch(() => {
+      .catch((error) => {
         if (active && requestSequence === workspaceLoadSequence.current) {
-          setState({ status: "error", data: emptyMomoWorkspaceData(), error: "Verified Momo data could not be loaded. No cached or sample records are being shown." });
+          setState({ status: "error", data: emptyMomoWorkspaceData(), error: momoWorkspaceErrorMessage(error instanceof Error ? error.message : "", section) });
         }
       });
     return () => { active = false; };
@@ -414,6 +422,7 @@ export function MomoOperatingCenter({ view, access, onNavigate, notify }: Props)
     run,
     reloadWorkspace: reload,
     notify,
+    onNavigate,
   };
 
   if (view === "requests" || view === "team-requests") return <RequestsPanel role={access.role} restaurantId={access.restaurantId!} notify={notify} onNavigate={onNavigate} />;
@@ -435,6 +444,7 @@ type PanelProps = {
   run: (action: () => Promise<void>, success: string) => Promise<void>;
   reloadWorkspace: () => Promise<void>;
   notify: (message: string) => void;
+  onNavigate?: (view: string) => void;
 };
 
 function DashboardPanel({ data, role, onNavigate }: PanelProps & { onNavigate: (view: string) => void }) {
@@ -516,16 +526,16 @@ function DashboardPanel({ data, role, onNavigate }: PanelProps & { onNavigate: (
 }
 
 const requestErrorMessage = (code: string) => {
-  if (["active_client_request_author_required", "request_thread_access_denied", "momo_team_request_transition_required", "momo_team_client_request_work_required", "request_list_access_or_limit_denied", "request_thread_access_or_limit_denied"].includes(code)) {
+  if (["active_client_request_author_required", "request_thread_access_denied", "momo_team_request_create_required", "momo_team_request_transition_required", "momo_team_client_request_work_required", "request_list_access_or_limit_denied", "request_thread_access_or_limit_denied"].includes(code)) {
     return "This signed account no longer has the required Momo request access. Nothing was changed.";
   }
-  if (["invalid_client_request_payload", "invalid_request_message_payload", "invalid_client_request_transition", "invalid_client_request_work_payload"].includes(code)) {
+  if (["invalid_client_request_payload", "invalid_team_request_payload", "invalid_request_message_payload", "invalid_client_request_transition", "invalid_client_request_work_payload"].includes(code)) {
     return "The request details are outside the allowed length, type, priority, or state boundary. Review the highlighted fields and try again.";
   }
-  if (["client_request_idempotency_conflict", "request_message_idempotency_conflict", "client_request_transition_idempotency_conflict", "client_request_work_idempotency_conflict"].includes(code)) {
+  if (["client_request_idempotency_conflict", "team_request_idempotency_conflict", "request_message_idempotency_conflict", "client_request_transition_idempotency_conflict", "client_request_work_idempotency_conflict"].includes(code)) {
     return "This retry no longer matches its original payload. Reload the request before trying again.";
   }
-  if (["client_request_rate_or_open_limit_reached", "request_message_rate_or_thread_limit_reached"].includes(code)) {
+  if (["client_request_rate_or_open_limit_reached", "team_request_rate_or_open_limit_reached", "request_message_rate_or_thread_limit_reached"].includes(code)) {
     return "The bounded request limit was reached. Wait before adding another record.";
   }
   if (code === "request_thread_is_closed") return "This request is closed. Its private history remains visible, but no new messages can be added.";
@@ -555,6 +565,9 @@ function RequestsPanel({ role, restaurantId, notify, onNavigate }: RequestsPanel
   const [requestDetails, setRequestDetails] = useState("");
   const [requestPriority, setRequestPriority] = useState<MomoClientRequest["priority"]>("normal");
   const [requestKey, setRequestKey] = useState(() => newMomoRequestIdempotencyKey("request"));
+  const [requestCategory, setRequestCategory] = useState<MomoRequestReasonCategory>("owner_clarification");
+  const [requestPlatform, setRequestPlatform] = useState("");
+  const [requestCorrection, setRequestCorrection] = useState("");
   const [messageBody, setMessageBody] = useState("");
   const [messageKey, setMessageKey] = useState(() => newMomoRequestIdempotencyKey("message"));
   const [transitionNotes, setTransitionNotes] = useState("");
@@ -607,22 +620,8 @@ function RequestsPanel({ role, restaurantId, notify, onNavigate }: RequestsPanel
   }, [notify]);
 
   useEffect(() => {
-    let active = true;
-    void loadMomoClientRequests({ restaurantId, limit: 25 })
-      .then((next) => {
-        if (!active) return;
-        setRequests(next);
-        setSelectedId(next[0]?.id || null);
-        setListState("ready");
-      })
-      .catch(() => {
-        if (!active) return;
-        setRequests([]);
-        setSelectedId(null);
-        setListState("error");
-      });
-    return () => { active = false; };
-  }, [restaurantId]);
+    void Promise.resolve().then(() => reloadRequests());
+  }, [reloadRequests]);
   useEffect(() => {
     if (!selectedId) {
       threadLoadSequence.current += 1;
@@ -705,6 +704,37 @@ function RequestsPanel({ role, restaurantId, notify, onNavigate }: RequestsPanel
     }
   };
 
+  const submitTeamRequest = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (role !== "team" || !requestFormValid) return;
+    const result = await performRequestAction(
+      () => createMomoTeamRequest({
+        restaurantId,
+        requestType,
+        title: requestTitle,
+        details: requestDetails,
+        priority: requestPriority,
+        requestCategory,
+        context: {
+          affectedPlatform: requestPlatform.trim() || undefined,
+          suggestedCorrection: requestCorrection.trim() || undefined,
+        },
+        idempotencyKey: requestKey,
+      }),
+      "Request sent to Momo. Its response will appear in this shared thread.",
+      (requestId) => requestId,
+    );
+    if (result.ok) {
+      setRequestTitle("");
+      setRequestDetails("");
+      setRequestPriority("normal");
+      setRequestCategory("owner_clarification");
+      setRequestPlatform("");
+      setRequestCorrection("");
+      setRequestKey(newMomoRequestIdempotencyKey("request"));
+    }
+  };
+
   const submitMessage = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!selected || requestClosed || !messageValid) return;
@@ -779,19 +809,34 @@ function RequestsPanel({ role, restaurantId, notify, onNavigate }: RequestsPanel
       <button className="secondary-button" disabled={actionBusy || !requestFormValid}>Send private request</button>
     </form>}
 
+    {role === "team" && <form className="momo-panel momo-form momo-request-create" onSubmit={(event) => void submitTeamRequest(event)}>
+      <div className="momo-panel-heading"><div><p className="eyebrow">NEW MESSAGE TO MOMO</p><h2>Request clarification or a change</h2><small>This creates a shared request visible in the Momo client portal. It never changes owner truth.</small></div><StatusBadge status="owner_response" /></div>
+      <div className="momo-form-grid">
+        <label>Request type<select value={requestType} onChange={(event) => { setRequestType(event.target.value as MomoClientRequest["requestType"]); setRequestKey(newMomoRequestIdempotencyKey("request")); }}><option value="truth_update">Restaurant information</option><option value="website">Website / SEO</option><option value="content">Content</option><option value="media">Media</option><option value="onboarding">Onboarding</option><option value="reporting">Reporting</option><option value="support">General support</option></select></label>
+        <label>Reason<select value={requestCategory} onChange={(event) => { setRequestCategory(event.target.value as MomoRequestReasonCategory); setRequestKey(newMomoRequestIdempotencyKey("request")); }}>{(Object.keys(momoRequestReasonLabels) as MomoRequestReasonCategory[]).map((category) => <option key={category} value={category}>{momoRequestReasonLabels[category]}</option>)}</select></label>
+        <label className="wide">Request title<input value={requestTitle} minLength={3} maxLength={200} onChange={(event) => { setRequestTitle(event.target.value); setRequestKey(newMomoRequestIdempotencyKey("request")); }} placeholder="Example: Confirm holiday hours before the SEO update" required /></label>
+        <label>Affected platform or surface<input value={requestPlatform} maxLength={200} onChange={(event) => { setRequestPlatform(event.target.value); setRequestKey(newMomoRequestIdempotencyKey("request")); }} placeholder="Example: Google Business Profile" /></label>
+        <label>Priority<select value={requestPriority} onChange={(event) => { setRequestPriority(event.target.value as MomoClientRequest["priority"]); setRequestKey(newMomoRequestIdempotencyKey("request")); }}><option value="normal">Normal</option><option value="urgent">Urgent</option></select></label>
+        <label className="wide">Message to Momo<textarea value={requestDetails} minLength={3} maxLength={5000} rows={4} onChange={(event) => { setRequestDetails(event.target.value); setRequestKey(newMomoRequestIdempotencyKey("request")); }} placeholder="Explain what Momo needs to confirm, correct, or provide. Do not request passwords or payment details." required /></label>
+        <label className="wide">Suggested correction, if known<textarea value={requestCorrection} maxLength={2000} rows={3} onChange={(event) => { setRequestCorrection(event.target.value); setRequestKey(newMomoRequestIdempotencyKey("request")); }} placeholder="Leave blank when Momo needs to supply the fact." /></label>
+      </div>
+      <p className="momo-form-note">The request category, affected surface, and suggested correction are retained with the tenant-scoped request record and thread.</p>
+      <button className="secondary-button" disabled={actionBusy || !requestFormValid}>{actionBusy ? "Sending…" : "Send request to Momo"}</button>
+    </form>}
+
     <section className="momo-request-layout">
       <article className="momo-panel momo-request-list-panel">
-        <div className="momo-panel-heading"><div><p className="eyebrow">REQUEST QUEUE</p><h2>{role === "team" ? "Most recent Client requests" : "Your requests"}</h2><small>Bounded to the 25 most recent accessible records.</small></div><span>{requests.length}</span></div>
+        <div className="momo-panel-heading"><div><p className="eyebrow">SHARED REQUEST QUEUE</p><h2>{role === "team" ? "Messages from Momo" : "Messages & requests"}</h2><small>Bounded to the 25 most recent tenant-scoped records.</small></div><span>{requests.length}</span></div>
         {listState === "loading" && requests.length === 0 ? <EmptyState title="Loading private requests…" detail="No fixture or cached request is shown." />
           : listState === "error" ? <EmptyState title="Requests are unavailable." detail="No request is being inferred. Reload when database access is restored." />
             : requests.length === 0 ? <EmptyState title="No request records exist." detail={role === "team" ? "No Momo Client request has been persisted. Team work will not be invented to make this queue look active." : "Your signed Client identity has not created a request. The manual pilot remains safely empty."} />
-              : <div className="momo-request-list">{requests.map((request) => <button type="button" key={request.id} className={selectedId === request.id ? "active" : ""} onClick={() => { threadLoadSequence.current += 1; setThread([]); setThreadRequestId(null); setThreadState("loading"); setSelectedId(request.id); setWorkKey(newMomoRequestIdempotencyKey("work")); setLastLinkedWorkId(null); }} aria-pressed={selectedId === request.id}><span><strong>{request.title}</strong><small>{labelStatus(request.requestType)} · {formatDate(request.createdAt)}</small></span><span><StatusBadge status={request.status} />{request.priority === "urgent" && <em>Urgent</em>}</span></button>)}</div>}
+              : <div className="momo-request-list">{requests.map((request) => <button type="button" key={request.id} className={selectedId === request.id ? "active" : ""} onClick={() => { threadLoadSequence.current += 1; setThread([]); setThreadRequestId(null); setThreadState("loading"); setSelectedId(request.id); setWorkKey(newMomoRequestIdempotencyKey("work")); setLastLinkedWorkId(null); }} aria-pressed={selectedId === request.id}><span><strong>{request.title}</strong><small>{request.createdByRole === "team" ? "From Team" : "From Momo"} · {request.requestCategory ? momoRequestReasonLabels[request.requestCategory] : labelStatus(request.requestType)} · {formatDate(request.createdAt)}</small></span><span><StatusBadge status={request.status} />{request.priority === "urgent" && <em>Urgent</em>}</span></button>)}</div>}
         <button type="button" className="momo-request-refresh" disabled={listState === "loading" || actionBusy} onClick={() => void reloadRequests(selectedId || undefined)}>Refresh verified records</button>
       </article>
 
       <article className="momo-panel momo-request-thread-panel">
         {!selected ? <EmptyState title="Choose a request." detail="Its private thread, allowed next state, and linked-work control will appear here." /> : <>
-          <div className="momo-request-detail-head"><div><p className="eyebrow">{labelStatus(selected.requestType)} · {labelStatus(selected.priority)} priority</p><h2>{selected.title}</h2><p>{selected.details}</p><small>Created {formatDate(selected.createdAt)} · updated {formatDate(selected.updatedAt)}</small></div><StatusBadge status={selected.status} /></div>
+          <div className="momo-request-detail-head"><div><p className="eyebrow">{selected.requestCategory ? momoRequestReasonLabels[selected.requestCategory] : labelStatus(selected.requestType)} · {labelStatus(selected.priority)} priority</p><h2>{selected.title}</h2><p>{selected.details}</p>{(selected.context?.affectedPlatform || selected.context?.suggestedCorrection) && <div className="momo-request-reference"><small>{selected.context.affectedPlatform ? `Affected surface: ${selected.context.affectedPlatform}` : ""}{selected.context.affectedPlatform && selected.context.suggestedCorrection ? " · " : ""}{selected.context.suggestedCorrection ? `Suggested correction: ${selected.context.suggestedCorrection}` : ""}</small></div>}<small>Created {formatDate(selected.createdAt)} · updated {formatDate(selected.updatedAt)}</small></div><StatusBadge status={selected.status} /></div>
           <section className="momo-request-thread" aria-label={`Private messages for ${selected.title}`}>
             {visibleThreadState === "loading" ? <EmptyState title="Loading the private thread…" detail="Only database messages are shown." />
               : visibleThreadState === "error" ? <EmptyState title="Thread unavailable." detail="No message is being inferred or cached." />
@@ -844,12 +889,30 @@ const truthDefinitions = [
   ["goals.customer_action", "goals", "Desired customer action", "textarea"],
 ] as const;
 
+const momoRequestReasonLabels: Record<MomoRequestReasonCategory, string> = {
+  factual_error: "Factual error",
+  seo_improvement: "SEO improvement",
+  missing_evidence: "Missing evidence",
+  outdated_information: "Outdated information",
+  compliance: "Compliance",
+  owner_clarification: "Owner clarification",
+  operational_change: "Operational change",
+};
+
 type MomoProfileSection = "profile" | "owner" | "setup";
 
 function IntelligencePanel(props: PanelProps) {
-  const { data, role, busy, run } = props;
+  const { data, role, busy, run, onNavigate } = props;
   const [activeSection, setActiveSection] = useState<MomoProfileSection>("profile");
-  const currentOwnerTruth = data.truth.filter((item) => momoTruthFieldIsCurrentlyUsable(data, item.id)).length;
+  const [ownerRequest, setOwnerRequest] = useState<MomoConfirmation | null>(null);
+  const [ownerRequestCategory, setOwnerRequestCategory] = useState<MomoRequestReasonCategory>("owner_clarification");
+  const [ownerRequestTitle, setOwnerRequestTitle] = useState("");
+  const [ownerRequestDetails, setOwnerRequestDetails] = useState("");
+  const [ownerRequestPlatform, setOwnerRequestPlatform] = useState("");
+  const [ownerRequestCorrection, setOwnerRequestCorrection] = useState("");
+  const currentTruthFields = data.truth.filter((item) => item.is_current);
+  const historicalTruthFields = data.truth.filter((item) => !item.is_current);
+  const currentOwnerTruth = currentTruthFields.filter((item) => momoTruthFieldIsCurrentlyUsable(data, item.id)).length;
   const currentOwnerContacts = data.contacts.filter((item) => item.status === "owner_confirmed" && subjectHasNoContraryOwnerIntent(data.confirmations, "contact", item.id)).length;
   const currentVerifiedOnboarding = data.onboarding.filter((item) => {
     const latest = latestSubjectConfirmation(data.confirmations, "onboarding_step", item.id);
@@ -857,37 +920,108 @@ function IntelligencePanel(props: PanelProps) {
   }).length;
   const pendingConfirmations = data.confirmations.filter((item) => ["pending", "in_review"].includes(item.status));
   const confirmationHistory = data.confirmations.filter((item) => !["pending", "in_review"].includes(item.status));
+  const openOwnerRequest = (confirmation: MomoConfirmation) => {
+    setOwnerRequest(confirmation);
+    setOwnerRequestCategory("owner_clarification");
+    setOwnerRequestTitle(`Owner clarification: ${labelStatus(confirmation.confirmation_kind)}`);
+    setOwnerRequestDetails(confirmation.notes || "Please review this response and confirm or correct the information in the Momo portal.");
+    setOwnerRequestPlatform("");
+    setOwnerRequestCorrection(valueText(confirmation.proposed_value));
+  };
+  const submitOwnerRequest = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (role !== "team" || !ownerRequest || ownerRequestDetails.trim().length < 3 || ownerRequestTitle.trim().length < 3) return;
+    const requestType = ownerRequestCategory === "seo_improvement" ? "website" : "truth_update";
+    void run(async () => {
+      await createMomoTeamRequest({
+        restaurantId: props.restaurantId,
+        requestType,
+        title: ownerRequestTitle,
+        details: ownerRequestDetails,
+        priority: "normal",
+        requestCategory: ownerRequestCategory,
+        subjectType: ownerRequest.subject_type || undefined,
+        subjectId: ownerRequest.subject_id || undefined,
+        context: {
+          affectedField: labelStatus(ownerRequest.subject_type),
+          affectedPlatform: ownerRequestPlatform.trim() || undefined,
+          suggestedCorrection: ownerRequestCorrection.trim() || undefined,
+        },
+        idempotencyKey: newMomoRequestIdempotencyKey("request"),
+      });
+      setOwnerRequest(null);
+    }, "Request sent to Momo. The owner response remains pending until Momo confirms or corrects it.");
+  };
   const confirmationRecord = (confirmation: MomoWorkspaceData["confirmations"][number]) => {
-    const presenceWithdrawal = confirmation.subject_type === "presence_profile" && confirmation.decision === "reject";
-    const ownerRejection = confirmation.decision === "reject";
-    return <article key={confirmation.id}><div><strong>{labelStatus(confirmation.confirmation_kind)}</strong><p>{valueText(confirmation.proposed_value) || confirmation.notes || "No proposed value"}</p><small>{labelStatus(confirmation.subject_type)} · owner decision: {labelStatus(confirmation.decision)} · {formatDate(confirmation.created_at)}</small></div><StatusBadge status={confirmation.status} />{role === "team" && confirmation.status === "pending" && <div className="momo-decision">{(["confirm", "correct"].includes(confirmation.decision || "") || ownerRejection) && <button disabled={busy} onClick={() => void run(() => reviewMomoConfirmation(confirmation, "approved"), presenceWithdrawal ? "Owner presence withdrawal approved and applied." : ownerRejection ? "Owner rejection approved and applied as a blocking state." : "Owner confirmation approved and applied.")}>{presenceWithdrawal ? "Approve withdrawal" : ownerRejection ? "Approve owner rejection" : "Approve and apply"}</button>}<button disabled={busy} onClick={() => void run(() => reviewMomoConfirmation(confirmation, "changes_requested"), ["reject", "needs_help"].includes(confirmation.decision || "") ? "Owner blocker acknowledged for follow-up." : "Changes requested from the owner.")}>{["reject", "needs_help"].includes(confirmation.decision || "") ? "Acknowledge blocker" : "Request changes"}</button></div>}</article>;
+    return <article key={confirmation.id}>
+      <div>
+        <strong>{labelStatus(confirmation.confirmation_kind)}</strong>
+        <p>{valueText(confirmation.proposed_value) || confirmation.notes || "No proposed value"}</p>
+        <small>{labelStatus(confirmation.subject_type)} · Owner response: {labelStatus(confirmation.decision)} · {formatDate(confirmation.created_at)}</small>
+      </div>
+      <StatusBadge status={confirmation.status} />
+      {role === "team" && ["pending", "in_review"].includes(confirmation.status) && <div className="momo-decision">
+        <button type="button" disabled={busy} onClick={() => openOwnerRequest(confirmation)}>Request owner change</button>
+      </div>}
+    </article>;
   };
   const profileEditor = <>
     <RestaurantTruthForm key={data.truth.map((item) => `${item.id}:${item.updated_at}`).join("|")} {...props} />
     <ContactForm key={data.contacts.map((item) => `${item.id}:${item.updated_at}`).join("|")} {...props} />
   </>;
   const ownerReview = <section className="momo-panel">
-    <div className="momo-panel-heading"><div><p className="eyebrow">OWNER REVIEW</p><h2>Decisions waiting now</h2></div><span>{pendingConfirmations.length}</span></div>
-    {pendingConfirmations.length === 0 ? <EmptyState title="No owner decision is waiting." detail="Owner changes appear here only after a real submission." /> : <div className="momo-record-list">{pendingConfirmations.map(confirmationRecord)}</div>}
+    <div className="momo-panel-heading"><div><p className="eyebrow">OWNER REVIEW</p><h2>Responses waiting now</h2><small>Team monitors the response. Momo confirms or corrects restaurant truth in the client portal.</small></div><span>{pendingConfirmations.length}</span></div>
+    {role === "team" && <div className="momo-callout"><strong>Owner authority stays with Momo</strong><p>Use a request when facts, evidence, SEO, or operations need clarification. Team cannot approve or apply an owner response.</p><button type="button" onClick={() => onNavigate?.("team-requests")}>Open Messages &amp; requests</button></div>}
+    {pendingConfirmations.length === 0 ? <EmptyState title="No owner response is waiting." detail="Owner changes appear here only after a real submission." /> : <div className="momo-record-list">{pendingConfirmations.map(confirmationRecord)}</div>}
+    {role === "team" && ownerRequest && <form className="momo-form momo-owner-request-form" onSubmit={submitOwnerRequest}>
+      <div className="momo-panel-heading"><div><p className="eyebrow">REQUEST OWNER CHANGE</p><h2>Send a clear request to Momo</h2><small>Linked to {labelStatus(ownerRequest.subject_type)}. This does not change the owner response.</small></div><button type="button" onClick={() => setOwnerRequest(null)}>Close</button></div>
+      <div className="momo-form-grid">
+        <label>Reason<select value={ownerRequestCategory} onChange={(event) => setOwnerRequestCategory(event.target.value as MomoRequestReasonCategory)}>{(Object.keys(momoRequestReasonLabels) as MomoRequestReasonCategory[]).map((category) => <option key={category} value={category}>{momoRequestReasonLabels[category]}</option>)}</select></label>
+        <label>Affected platform or surface<input value={ownerRequestPlatform} onChange={(event) => setOwnerRequestPlatform(event.target.value)} placeholder="Example: Google Business Profile" /></label>
+        <label className="wide">Request title<input value={ownerRequestTitle} minLength={3} maxLength={200} onChange={(event) => setOwnerRequestTitle(event.target.value)} required /></label>
+        <label className="wide">Message to Momo<textarea value={ownerRequestDetails} minLength={3} maxLength={5000} rows={4} onChange={(event) => setOwnerRequestDetails(event.target.value)} required /></label>
+        <label className="wide">Suggested correction, if known<textarea value={ownerRequestCorrection} maxLength={2000} rows={3} onChange={(event) => setOwnerRequestCorrection(event.target.value)} placeholder="Leave blank when Momo needs to supply the fact." /></label>
+      </div>
+      <p className="momo-form-note">The request, category, linked record, and message are stored in the shared private thread visible to Team and Momo.</p>
+      <button className="secondary-button" disabled={busy || ownerRequestTitle.trim().length < 3 || ownerRequestDetails.trim().length < 3}>{busy ? "Sending…" : "Send request to Momo"}</button>
+    </form>}
     {confirmationHistory.length > 0 && <details className="momo-work-history momo-profile-history"><summary><span><strong>Decision history</strong><small>Open only when you need the audit trail.</small></span><b>{confirmationHistory.length}</b></summary><div className="momo-record-list">{confirmationHistory.map(confirmationRecord)}</div></details>}
   </section>;
-  const setupDetails = <>
-    <section className="momo-split">
-      <article className="momo-panel">
-        <div className="momo-panel-heading"><div><p className="eyebrow">CURRENT TRUTH</p><h2>Field confirmation</h2></div><span>{data.truth.length}</span></div>
-        {data.truth.length === 0 ? <EmptyState title="No restaurant truth has been recorded." detail="Use Profile to add facts. Unconfirmed facts remain absent." /> : <div className="momo-record-list">{data.truth.map((field) => <article key={field.id}><div><strong>{labelStatus(field.field_key)}</strong><p>{valueText(field.value_json) || "Empty value"}</p><small>{labelStatus(field.section)} · {field.source}</small></div><StatusBadge status={field.status === "owner_confirmed" && !momoTruthFieldIsCurrentlyUsable(data, field.id) ? "owner_blocked" : field.status} /></article>)}</div>}
-      </article>
-      <article className="momo-panel">
-        <div className="momo-panel-heading"><div><p className="eyebrow">ONBOARDING</p><h2>Required setup</h2></div><span>{data.onboarding.length}</span></div>
-        {data.onboarding.length === 0 ? <EmptyState title="No onboarding steps exist." detail="A step is never complete without a stored record and evidence." /> : <div className="momo-record-list">{data.onboarding.map((step) => <OnboardingStepRow key={step.id} step={step} {...props} />)}</div>}
-      </article>
-    </section>
-    <section className="momo-panel">
-      <div className="momo-panel-heading"><div><p className="eyebrow">PRESENCE</p><h2>Public profiles</h2></div><span>{data.presence.length}</span></div>
-      {data.presence.length === 0 ? <EmptyState title="No public profile is configured." detail="Google, Instagram, Facebook, website, and ordering links remain unverified." /> : <div className="momo-card-grid">{data.presence.map((profile) => <PresenceProfileCard key={profile.id} profile={profile} {...props} />)}</div>}
-    </section>
-    {role === "team" && <section className="momo-profile-summary"><span><strong>{currentOwnerTruth}/{data.truth.length}</strong> confirmed facts</span><span><strong>{currentOwnerContacts}</strong> confirmed contacts</span><span><strong>{currentVerifiedOnboarding}/{data.onboarding.length}</strong> verified setup steps</span><em>Posting off</em></section>}
-  </>;
+  const setupNextAction = pendingConfirmations.length > 0
+    ? "Review Momo's response in Owner review."
+    : currentOwnerTruth < currentTruthFields.length
+      ? "Momo still needs to confirm current business details."
+      : data.onboarding.some((step) => ["blocked", "not_started"].includes(step.status))
+        ? "Review setup items with blockers or missing evidence."
+        : "No owner response or setup blocker is waiting.";
+  const setupDetails = <div className="momo-setup-details">
+    {role === "team" && <section className="momo-profile-summary momo-setup-summary" aria-label="Setup progress">
+      <span><strong>{currentOwnerTruth}/{currentTruthFields.length}</strong> confirmed facts</span>
+      <span><strong>{currentOwnerContacts}</strong> confirmed contacts</span>
+      <span><strong>{currentVerifiedOnboarding}/{data.onboarding.length}</strong> verified setup steps</span>
+      <span className="momo-setup-next"><strong>Next action</strong><small>{setupNextAction}</small></span>
+      <em>Posting off</em>
+    </section>}
+    <details className="momo-setup-disclosure" defaultOpen={role === "client"}>
+      <summary><span><strong>Current restaurant information</strong><small>Business facts and owner-confirmation status.</small></span><b>{currentTruthFields.length}</b></summary>
+      <div className="momo-setup-disclosure-body">
+        {currentTruthFields.length === 0 ? <EmptyState title="No current restaurant truth has been recorded." detail="Use Profile to add facts. Unconfirmed facts remain absent." /> : <div className="momo-record-list">{currentTruthFields.map((field) => <article key={field.id}><div><strong>{labelStatus(field.field_key)}</strong><p>{valueText(field.value_json) || "Empty value"}</p><small>{labelStatus(field.section)} · {field.source} · Current record</small></div><StatusBadge status={field.status === "owner_confirmed" && !momoTruthFieldIsCurrentlyUsable(data, field.id) ? "owner_blocked" : field.status} /></article>)}</div>}
+        {historicalTruthFields.length > 0 && <details className="momo-setup-history"><summary><span><strong>View superseded field history</strong><small>Older values remain available for audit but are not active.</small></span><b>{historicalTruthFields.length}</b></summary><div className="momo-record-list">{historicalTruthFields.map((field) => <article key={field.id}><div><strong>{labelStatus(field.field_key)}</strong><p>{valueText(field.value_json) || "Empty value"}</p><small>{labelStatus(field.section)} · {field.source} · Historical record</small></div><StatusBadge status="superseded" /></article>)}</div></details>}
+      </div>
+    </details>
+    <details className="momo-setup-disclosure">
+      <summary><span><strong>Required setup</strong><small>Progress, evidence, and blockers—one item at a time.</small></span><b>{data.onboarding.length}</b></summary>
+      <div className="momo-setup-disclosure-body">
+        {data.onboarding.length === 0 ? <EmptyState title="No onboarding steps exist." detail="A step is never complete without a stored record and evidence." /> : <div className="momo-record-list momo-setup-item-list">{data.onboarding.map((step) => <OnboardingStepDisclosure key={step.id} step={step} {...props} />)}</div>}
+      </div>
+    </details>
+    <details className="momo-setup-disclosure">
+      <summary><span><strong>Access &amp; connections</strong><small>Public profile records and access status. Nothing is connected or published.</small></span><b>{data.presence.length}</b></summary>
+      <div className="momo-setup-disclosure-body">
+        {data.presence.length === 0 ? <EmptyState title="No public profile is configured." detail="Google, Instagram, Facebook, website, and ordering links remain unverified." /> : <div className="momo-card-grid momo-setup-presence-grid">{data.presence.map((profile) => <PresenceProfileCard key={profile.id} profile={profile} {...props} />)}</div>}
+      </div>
+    </details>
+  </div>;
 
   return <div className="view">
     <MomoIntro eyebrow="MOMO’S HOUSE" title="Momo profile" description="Restaurant facts, responsible contacts, owner decisions, and required setup." />
@@ -923,6 +1057,22 @@ function OnboardingStepRow({ step, data, role, restaurantId, busy, run }: PanelP
   return <article><div><strong>{step.title}</strong><p>{step.blocker_reason || valueText(step.completion_evidence) || "No evidence recorded"}</p></div><StatusBadge status={pending ? "pending" : contraryOwnerIntent ? "owner_blocked" : step.status} />{role === "client" && <div className="momo-decision"><button type="button" disabled={busy || pending || !readyForOwnerConfirmation} onClick={() => void run(() => submitMomoConfirmation({ restaurantId, subjectType: "onboarding_step", subjectId: step.id, confirmationKind: "onboarding", decision: "confirm", proposedValue: { stepKey: step.step_key } }), "Onboarding step confirmation queued for Team review.")}>Confirm complete</button><button type="button" disabled={busy || pending} onClick={() => void run(() => submitMomoConfirmation({ restaurantId, subjectType: "onboarding_step", subjectId: step.id, confirmationKind: "onboarding", decision: "needs_help", notes: `Owner requested help with ${step.title}.` }), "Onboarding step marked as needing help.")}>Need help</button>{!readyForOwnerConfirmation && <small>Team evidence must reach Ready for review before completion can be confirmed.</small>}</div>}{role === "team" && <div className="momo-form momo-compact-form"><label>Status<select value={status} onChange={(event) => setStatus(event.target.value)}><option value="not_started">Not started</option><option value="foundation_ready">Foundation ready</option><option value="in_progress">In progress</option><option value="blocked">Blocked</option><option value="ready_for_review">Ready for review</option><option value="verified">Verified</option></select></label><label>Evidence, one item per line<textarea value={evidence} onChange={(event) => setEvidence(event.target.value)} rows={2} /></label><label>Blocker reason<input value={blockerReason} onChange={(event) => setBlockerReason(event.target.value)} /></label>{contraryOwnerIntent && <p className="momo-warning">The latest owner decision blocks verification until a newer exact owner confirmation is approved.</p>}<button type="button" disabled={busy || pending || contraryOwnerIntent || invalidVerified || invalidBlocked} onClick={() => void run(() => updateMomoOnboardingStep({ restaurantId, stepId: step.id, status: status as Parameters<typeof updateMomoOnboardingStep>[0]["status"], completionEvidence: evidenceItems, blockerReason, confirmationId: approvedConfirmation?.id }), "Onboarding evidence and status updated.")}>Save step review</button></div>}</article>;
 }
 
+function OnboardingStepDisclosure({ step, data, role, restaurantId, busy, run }: PanelProps & { step: MomoWorkspaceData["onboarding"][number] }) {
+  const latestOwnerDecision = latestSubjectConfirmation(data.confirmations, "onboarding_step", step.id);
+  const status = latestOwnerDecision && ["pending", "in_review"].includes(latestOwnerDecision.status)
+    ? "pending"
+    : latestOwnerDecision && ["reject", "needs_help"].includes(latestOwnerDecision.decision || "")
+      ? "owner_blocked"
+      : step.status;
+  const summary = step.blocker_reason || (jsonList(step.completion_evidence).length > 0
+    ? "Evidence recorded; open to review."
+    : "No evidence recorded yet.");
+  return <details className="momo-setup-item">
+    <summary><span><strong>{step.title}</strong><small>{summary}</small></span><StatusBadge status={status} /></summary>
+    <div className="momo-setup-item-body"><OnboardingStepRow step={step} data={data} role={role} restaurantId={restaurantId} busy={busy} run={run} /></div>
+  </details>;
+}
+
 function PresenceProfileCard({ profile, data, role, restaurantId, busy, run }: PanelProps & { profile: MomoWorkspaceData["presence"][number] }) {
   const [publicUrl, setPublicUrl] = useState(profile.public_url || "");
   const [accessStatus, setAccessStatus] = useState(profile.access_status);
@@ -946,10 +1096,10 @@ function PresenceProfileCard({ profile, data, role, restaurantId, busy, run }: P
   const contraryOwnerIntent = Boolean(presenceResolution.latest && !(
     presenceResolution.latest.status === "approved" && ["confirm", "correct"].includes(presenceResolution.latest.decision || "")
   ));
-  return <article className="momo-small-card">
-    <div><strong>{labelStatus(profile.provider)}</strong><StatusBadge status={pending ? "pending" : contraryOwnerIntent ? "owner_blocked" : profile.access_status} /></div>
-    <p>{profile.public_url || "No public URL recorded"}</p>
-    <small>Truth: {labelStatus(profile.truth_status)} · checked {formatDate(profile.last_checked_at)}</small>
+  return <details className="momo-setup-item momo-presence-item">
+    <summary><span><strong>{labelStatus(profile.provider)}</strong><small>{profile.public_url || "No public URL recorded"}</small></span><StatusBadge status={pending ? "pending" : contraryOwnerIntent ? "owner_blocked" : profile.access_status} /></summary>
+    <div className="momo-setup-item-body">
+    <p className="momo-setup-item-evidence">Truth: {labelStatus(profile.truth_status)} · checked {formatDate(profile.last_checked_at)}</p>
     {role === "client" && <div className="momo-form momo-compact-form">
       <label>Correct public URL<input type="url" value={publicUrl} placeholder="https://" onChange={(event) => setPublicUrl(event.target.value)} /></label>
       <label className="momo-check"><input type="checkbox" checked={accessAuthorized} onChange={(event) => setAccessAuthorized(event.target.checked)} /><span>I authorize Veroxa to use access I separately provide for this profile. This does not connect or publish anything now.</span></label>
@@ -969,12 +1119,16 @@ function PresenceProfileCard({ profile, data, role, restaurantId, busy, run }: P
       {connectedWithoutEvidence && <p className="momo-warning">Connected or degraded requires owner-confirmed profile truth, approved owner access authorization, the confirmed HTTPS URL, and at least 10 characters of review evidence.</p>}
       <button type="button" disabled={busy || invalidUrl || ownerTruthWithoutEvidence || connectedWithoutEvidence} onClick={() => void run(() => updateMomoPresenceProfile({ restaurantId, presenceProfileId: profile.id, publicUrl: publicUrl.trim() || undefined, accessStatus: accessStatus as Parameters<typeof updateMomoPresenceProfile>[0]["accessStatus"], truthStatus: truthStatus as Parameters<typeof updateMomoPresenceProfile>[0]["truthStatus"], notes, confirmationId: ownerConfirmedUrl ? approvedConfirmation?.id : undefined }), "Presence evidence and status updated.")}>Save presence review</button>
     </div>}
-  </article>;
+    </div>
+  </details>;
 }
 
 function RestaurantTruthForm({ data, role, restaurantId, busy, run }: PanelProps) {
   const current = useMemo(() => Object.fromEntries(data.truth.filter((item) => item.is_current).map((item) => [item.field_key, valueText(item.value_json)])), [data.truth]);
   const [values, setValues] = useState<Record<string, string>>(current);
+  const changedFields = useMemo(() => truthDefinitions.filter(([key]) =>
+    (values[key] || "").trim() && (values[key] || "").trim() !== (current[key] || "").trim()
+  ), [current, values]);
 
   const storedValue = (key: string, raw: string) => key === "claims.halal"
     ? [raw.trim().toLowerCase()]
@@ -998,11 +1152,10 @@ function RestaurantTruthForm({ data, role, restaurantId, busy, run }: PanelProps
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
-    const changed = truthDefinitions.filter(([key]) => (values[key] || "").trim() && (values[key] || "").trim() !== (current[key] || "").trim());
-    if (changed.length === 0) return;
+    if (changedFields.length === 0) return;
     void run(() => saveMomoTruthRevisions({
       restaurantId,
-      revisions: changed.map(([key, section]) => {
+      revisions: changedFields.map(([key, section]) => {
         const existing = data.truth.find((item) => item.field_key === key && item.is_current);
         const raw = values[key].trim();
         const value = storedValue(key, raw);
@@ -1012,10 +1165,11 @@ function RestaurantTruthForm({ data, role, restaurantId, busy, run }: PanelProps
   };
 
   return <form className="momo-panel momo-form" onSubmit={submit}>
-    <div className="momo-panel-heading"><div><p className="eyebrow">TEAM RECORD</p><h2>Restaurant profile</h2></div><StatusBadge status="team_review" /></div>
+    <div className="momo-panel-heading"><div><p className="eyebrow">TEAM PREFILL</p><h2>Restaurant profile</h2></div><StatusBadge status="team_review" /></div>
     <div className="momo-form-grid">{truthDefinitions.map(([key,, label, type]) => <label className={type === "textarea" ? "wide" : ""} key={key}>{label}{type === "textarea" ? <textarea value={values[key] || ""} onChange={(event) => setValues((previous) => ({ ...previous, [key]: event.target.value }))} rows={3} /> : type === "halal_select" ? <select value={values[key] || ""} onChange={(event) => setValues((previous) => ({ ...previous, [key]: event.target.value }))}><option value="">Select status</option><option value="yes">Yes</option><option value="no">No</option></select> : <input type={type} value={values[key] || ""} onChange={(event) => setValues((previous) => ({ ...previous, [key]: event.target.value }))} />}</label>)}</div>
-    <p className="momo-form-note">Only populated, changed fields are saved. Public-use claims still require the configured Team review state.</p>
-    <button className="primary-button" type="submit" disabled={busy}>{busy ? "Saving…" : "Save Team revisions"}</button>
+    <p className="momo-form-note">Only populated, changed fields are saved as Team-prefilled review data. “Save Team revisions” persists a prefill; Momo must still confirm or correct each field before it becomes owner truth.</p>
+    <div className="momo-review-save-status" aria-live="polite"><strong>{changedFields.length > 0 ? `${changedFields.length} unsaved prefill change${changedFields.length === 1 ? "" : "s"}` : "No unsaved prefill changes"}</strong><span>Save persists the Team prefill; it never confirms owner truth.</span></div>
+    <button className="primary-button" type="submit" disabled={busy || changedFields.length === 0}>{busy ? "Saving prefill…" : "Save Team prefill"}</button>
   </form>;
 }
 
@@ -1031,19 +1185,19 @@ function ContactForm({ data, role, restaurantId, busy, run }: PanelProps) {
     if (!name.trim() || (!email.trim() && !phone.trim())) return;
     const existing = isPrimary ? primary : undefined;
     const success = role === "team"
-      ? "Team contact record saved."
+      ? "Team contact prefill saved. Momo confirmation is still required."
       : existing
         ? "Contact correction queued for Team review."
         : "Owner-confirmed primary contact registered.";
     void run(() => saveMomoContact({ restaurantId, existingId: existing?.id, existingStatus: existing?.status, contactKind, name, email, phone, isPrimary, role }), success);
   }}>
-    <div><p className="eyebrow">CONTACTS</p><h2>Owner and responsible managers</h2></div>
+    <div><p className="eyebrow">{role === "team" ? "TEAM PREFILL" : "CONTACTS"}</p><h2>Owner and responsible managers</h2></div>
     {role === "team" && <label>Kind<select value={contactKind} onChange={(event) => setContactKind(event.target.value)}><option value="owner">Owner</option><option value="primary">Primary</option><option value="manager">Manager</option><option value="secondary">Secondary</option></select></label>}
     <label>Name<input value={name} onChange={(event) => setName(event.target.value)} required /></label>
     <label>Email<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} /></label>
     <label>Phone<input type="tel" value={phone} onChange={(event) => setPhone(event.target.value)} /></label>
     {role === "team" && <label className="momo-check"><input type="checkbox" checked={isPrimary} onChange={(event) => setIsPrimary(event.target.checked)} /><span>Primary contact</span></label>}
-    <button className="secondary-button" disabled={busy || (!email.trim() && !phone.trim())}>Save contact</button>
+    <button className="secondary-button" disabled={busy || (!email.trim() && !phone.trim())}>{role === "team" ? "Save contact prefill" : "Save contact"}</button>
   </form>{data.contacts.length > 0 && <div className="momo-record-list momo-contact-list">{data.contacts.map((contact) => {
     const pending = data.confirmations.some((item) => item.subject_type === "contact" && item.subject_id === contact.id && ["pending", "in_review"].includes(item.status));
     return <article key={contact.id}><div><strong>{contact.name}</strong><p>{[contact.email, contact.phone].filter(Boolean).join(" · ")}</p><small>{labelStatus(contact.contact_kind)}{contact.is_primary ? " · primary" : ""}</small></div><StatusBadge status={pending ? "pending" : contact.status} />{role === "client" && <div className="momo-decision"><button type="button" disabled={busy || pending} onClick={() => void run(() => submitMomoConfirmation({ restaurantId, subjectType: "contact", subjectId: contact.id, confirmationKind: "contact", decision: "confirm", proposedValue: { name: contact.name, email: contact.email, phone: contact.phone, isPrimary: contact.is_primary } }), "Contact confirmation queued for Team review.")}>Confirm as shown</button><button type="button" disabled={busy || pending} onClick={() => void run(() => submitMomoConfirmation({ restaurantId, subjectType: "contact", subjectId: contact.id, confirmationKind: "contact", decision: "needs_help", notes: "Owner requested help correcting this contact." }), "Contact marked as needing help.")}>Need help</button></div>}</article>;
@@ -1094,6 +1248,7 @@ function MediaPanel(props: PanelProps) {
           file,
           usageScope: scope,
           restaurantAssociation,
+          rightsAttested: rights,
           expiresAt,
         });
         setFile(null);

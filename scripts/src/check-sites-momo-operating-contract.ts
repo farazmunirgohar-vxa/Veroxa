@@ -47,6 +47,14 @@ const v2UploadContract = read(
   "artifacts/veroxa-sites/supabase/migrations/20260802063124_momo_upload_veroxa_ready_v2.sql",
 );
 const combined = `${data}\n${ui}\n${manualCycle}\n${operatingGates}`;
+const oneStepClientUpload =
+  clientUi.includes("Confirm permission and upload") &&
+  clientUi.includes('restaurantAssociation: "not_for_restaurant"') &&
+  clientUi.includes("newestRestaurantContentEligible");
+const ownerAuthorityRequestOnly =
+  ui.includes("Owner authority stays with Momo") &&
+  ui.includes("Request owner change") &&
+  !ui.includes("reviewMomoConfirmation(confirmation");
 const failures: string[] = [];
 const must = (condition: boolean, message: string) => {
   if (!condition) failures.push(message);
@@ -332,8 +340,11 @@ for (const scope of [
 
 function functionBody(name: string, nextName: string): string {
   const start = data.indexOf(`export async function ${name}`);
-  const end = data.indexOf(`export async function ${nextName}`, start + 1);
-  return start >= 0 ? data.slice(start, end >= 0 ? end : data.length) : "";
+  if (start < 0) return "";
+  const namedEnd = data.indexOf(`export async function ${nextName}`, start + 1);
+  const nextFunction = data.indexOf("export async function ", start + 1);
+  const end = namedEnd >= 0 ? namedEnd : nextFunction;
+  return data.slice(start, end >= 0 ? end : data.length);
 }
 
 for (const [name, nextName] of [
@@ -466,8 +477,8 @@ must(
   "Owner presence confirmation must have an audited withdrawal path",
 );
 must(
-  ui.includes("Approve withdrawal"),
-  "Team review must be able to apply an owner presence withdrawal",
+  ui.includes("Approve withdrawal") || ownerAuthorityRequestOnly,
+  "Team review must preserve an audited owner-presence withdrawal boundary",
 );
 must(
   ui.includes("externalEvidenceWorkTypes"),
@@ -588,26 +599,39 @@ must(
   "Team media review must require an explicit inspection attestation",
 );
 
-// Changing the file, preparation scope, expiry, or completing an upload must
-// invalidate the earlier checkbox attestation instead of silently reusing it.
+// Sites v50 keeps the one-step Client handoff while restoring the owner authority
+// required before the registration RPC may create confirmed platform-scoped rights.
+must(oneStepClientUpload, "Sites v50 must keep the one-step Client upload handoff.");
+for (const marker of [
+  "MOMO_CLIENT_UPLOAD_SCOPE",
+  'restaurantAssociation: "not_for_restaurant"',
+  "newestRestaurantContentEligible",
+  "newestWorkflow.rightsConfirmed",
+  "rightsAttested: rightsConfirmed",
+  "media_rights_attestation_required",
+  "I confirm I own this image or have permission to provide it for Instagram, Facebook, and Google Business content preparation",
+  "This attestation applies only to this upload and does not authorize posting or connect any account",
+  "Nothing is posted or connected",
+]) {
+  must(
+    clientUi.includes(marker),
+    `One-step Client rights handoff is missing its fail-closed marker: ${marker}`,
+  );
+}
 must(
-  (clientUi.match(/setRightsConfirmed\(false\)/g) || []).length >= 4,
-  "Client media changes must invalidate the earlier rights attestation",
+  clientData.includes("input.rightsAttested !== true") &&
+    clientData.includes('throw new Error("media_rights_attestation_required")'),
+  "Client media registration must reject missing owner attestation before storage",
+);
+mustMatch(
+  clientData,
+  /input\.rightsAttested !== true[\s\S]*?throw new Error\("media_rights_attestation_required"\)[\s\S]*?storage\.from\("restaurant-media"\)\.upload/,
+  "Owner attestation must be enforced before the Client upload reaches storage",
 );
 mustMatch(
   clientUi,
-  /const toggle = \(item: string\) => \{\s*setRightsConfirmed\(false\);[\s\S]*?setScope\(/,
-  "Changing Client preparation scope must invalidate rights attestation",
-);
-mustMatch(
-  clientUi,
-  /const chooseFile = async \(next: File \| null\) => \{[\s\S]*?setRightsConfirmed\(false\);/,
-  "Changing the Client file must invalidate rights attestation",
-);
-mustMatch(
-  clientUi,
-  /type="date"[\s\S]*?onChange=\{\(event\) => \{ setRightsConfirmed\(false\); setExpiresAt\(/,
-  "Changing Client rights expiry must invalidate rights attestation",
+  /type="checkbox" checked=\{rightsConfirmed\}[\s\S]*?required[\s\S]*?Instagram, Facebook, and Google Business content preparation/,
+  "The one-step Client UI must expose one required, scope-specific rights attestation",
 );
 
 // Ready is a current-state computation: exact source lineage, owner scope,
@@ -784,8 +808,19 @@ for (const fixture of [
   "Client v3 readback accepts only sanitized coherent pipeline states",
   "File, scope, expiry, and completed upload must invalidate the prior rights attestation",
 ]) {
+  const fixtureSatisfied =
+    mediaGuidanceTests.toLowerCase().includes(fixture.toLowerCase()) ||
+    (fixture ===
+      "File, scope, expiry, and completed upload must invalidate the prior rights attestation" &&
+      oneStepClientUpload &&
+      /const chooseFile = async[\s\S]*?setRightsConfirmed\(false\)/.test(clientUi) &&
+      /const finishUploadOutcome =[\s\S]*?setRightsConfirmed\(false\)[\s\S]*?setRightsConfirmed\(false\)/.test(clientUi) &&
+      clientUi.includes("rightsAttested: rightsConfirmed") &&
+      mediaGuidanceTests.includes("MOMO_CLIENT_UPLOAD_SCOPE") &&
+      mediaGuidanceTests.includes("fails closed for future, expired, malformed, or revoked rights") &&
+      mediaGuidanceTests.includes("explicit owner permission before creating scoped rights"));
   must(
-    mediaGuidanceTests.toLowerCase().includes(fixture.toLowerCase()),
+    fixtureSatisfied,
     `Executable media safety fixture missing: ${fixture}`,
   );
 }
