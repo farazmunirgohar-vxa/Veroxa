@@ -1,6 +1,5 @@
 import {
   VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_DIMENSION,
-  VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_DECODED_PIXELS,
   VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_SOURCE_BYTES,
   VEROXA_PRIVATE_MEDIA_ASSESSMENT_MIN_ASPECT_RATIO,
   VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_ASPECT_RATIO,
@@ -21,7 +20,8 @@ import {
 } from "../../../veroxa-private-media-assessment.ts";
 import {
   VEROXA_PRIVATE_MEDIA_FULL_DECODE_MIME_TYPES,
-  fullyDecodeVeroxaPrivateMediaImage,
+  decodeVeroxaPrivateMediaImage,
+  type VeroxaPrivateMediaHostDecoder,
   type VeroxaPrivateMediaFullDecodeMimeType,
 } from "../../../veroxa-private-media-image-decode.ts";
 import { momoCanonicalJson } from "../../../momo-canonical-json.ts";
@@ -69,6 +69,7 @@ export type VeroxaPrivateMediaAssessmentReservation = {
 export type VeroxaPrivateMediaAssessmentDependencies = {
   enabled: boolean;
   providerConfigured: boolean;
+  decodeHighResolutionImage?: VeroxaPrivateMediaHostDecoder;
   authenticate(): Promise<VeroxaPrivateMediaAssessmentActor | null>;
   reserve(input: {
     restaurantId: string;
@@ -379,8 +380,7 @@ export function createVeroxaPrivateMediaAssessmentHandler(
           VEROXA_PRIVATE_MEDIA_ASSESSMENT_RESERVED_MICROUSD ||
         !Number.isSafeInteger(
           reservation.sourceWidth * reservation.sourceHeight,
-        ) || reservation.sourceWidth * reservation.sourceHeight >
-          VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_DECODED_PIXELS ||
+        ) ||
         !canRunVeroxaPrivateMediaAssessment({
           evidenceClass: reservation.evidenceClass,
           currentRightsReserved: true,
@@ -443,11 +443,12 @@ export function createVeroxaPrivateMediaAssessmentHandler(
           ratio > VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_ASPECT_RATIO ||
           await momoBytesSha256(sourceBytes) !==
             reservation.sourceContentSha256 ||
-          !fullyDecodeVeroxaPrivateMediaImage({
+          !await decodeVeroxaPrivateMediaImage({
             bytes: sourceBytes,
             mimeType: reservation.sourceMimeType,
             expectedWidth: reservation.sourceWidth,
             expectedHeight: reservation.sourceHeight,
+            hostDecoder: dependencies.decodeHighResolutionImage,
           })) throw new Error();
       } catch {
         await safeFail(dependencies, reservation, {

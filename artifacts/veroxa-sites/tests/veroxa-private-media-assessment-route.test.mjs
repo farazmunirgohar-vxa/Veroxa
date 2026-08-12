@@ -311,6 +311,55 @@ test("a structurally plausible random JPEG must fully decode before provider sta
   assert.equal(calls.fail[0].providerCalled, false);
 });
 
+test("a high-resolution source requires and passes a trusted host decode before OpenAI", async () => {
+  const source = structurallyPlausibleButUndecodableJpeg(8064, 6048);
+  const hostDecodes = [];
+  const { calls, handler, reservation } = await harness({
+    source,
+    decodeHighResolutionImage: async (input) => {
+      hostDecodes.push(input);
+      return true;
+    },
+    async reserve(input) {
+      calls.reserve.push(input);
+      return {
+        ...reservation,
+        requestHash: input.requestHash,
+        sourceWidth: 8064,
+        sourceHeight: 6048,
+      };
+    },
+  });
+  const response = await handler(request());
+  assert.equal(response.status, 200);
+  assert.equal(hostDecodes.length, 1);
+  assert.equal(hostDecodes[0].expectedWidth, 8064);
+  assert.equal(hostDecodes[0].expectedHeight, 6048);
+  assert.equal(calls.openai.length, 1);
+});
+
+test("a high-resolution source fails closed before OpenAI when host decoding fails", async () => {
+  const source = structurallyPlausibleButUndecodableJpeg(8064, 6048);
+  const { calls, handler, reservation } = await harness({
+    source,
+    decodeHighResolutionImage: async () => false,
+    async reserve(input) {
+      calls.reserve.push(input);
+      return {
+        ...reservation,
+        requestHash: input.requestHash,
+        sourceWidth: 8064,
+        sourceHeight: 6048,
+      };
+    },
+  });
+  const response = await handler(request());
+  assert.equal(response.status, 409);
+  assert.equal(calls.start.length, 0);
+  assert.equal(calls.openai.length, 0);
+  assert.equal(calls.fail[0].errorCode, "source_verification_failed");
+});
+
 test("a legacy WebP reservation fails closed before any paid assessment call", async () => {
   const { calls, handler, reservation } = await harness({
     async reserve(input) {

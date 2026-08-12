@@ -3088,7 +3088,6 @@ begin
     'public.veroxa_register_momo_media_v2(uuid,text,text,bigint,text,text,jsonb,date)',
     'public.veroxa_register_team_private_media_v1(uuid,text,text,bigint,text,text,jsonb,date)',
     'public.veroxa_finalize_momo_media_intake_v1(uuid,uuid,uuid,text,text,bigint,integer,integer,text,jsonb,text,text,text,uuid)',
-    'public.veroxa_finalize_private_media_assessment_intake_v1(uuid,uuid,uuid,text,text,bigint,integer,integer,text,jsonb,text,text,text,uuid)',
     'public.veroxa_reserve_private_media_assessment_v1(uuid,uuid,text,text,text,text,text,bigint,uuid)',
     'public.veroxa_start_private_media_assessment_provider_v1(uuid,text,uuid)',
     'public.veroxa_complete_private_media_assessment_v1(uuid,text,text,jsonb,text,text,bigint,text,jsonb,uuid)',
@@ -3137,6 +3136,23 @@ begin
       raise exception 'momo_repair_mutable_acl_not_held:%', held_function;
     end if;
   end loop;
+  if has_function_privilege(
+       'anon',
+       'public.veroxa_finalize_private_media_assessment_intake_v1(uuid,uuid,uuid,text,text,bigint,integer,integer,text,jsonb,text,text,text,uuid)',
+       'execute'
+     )
+     or has_function_privilege(
+       'authenticated',
+       'public.veroxa_finalize_private_media_assessment_intake_v1(uuid,uuid,uuid,text,text,bigint,integer,integer,text,jsonb,text,text,text,uuid)',
+       'execute'
+     )
+     or not has_function_privilege(
+       'service_role',
+       'public.veroxa_finalize_private_media_assessment_intake_v1(uuid,uuid,uuid,text,text,bigint,integer,integer,text,jsonb,text,text,text,uuid)',
+       'execute'
+     ) then
+    raise exception 'momo_private_media_finalize_service_role_acl_missing';
+  end if;
   if not has_function_privilege(
        'authenticated',
        'public.veroxa_momo_ready_review_status_v2(uuid,uuid)',

@@ -1,19 +1,21 @@
 {
   "schemaVersion": 11,
-  "recordKind": "veroxa_momo_live54_reconciliation_manifest",
-  "releaseState": "live54_sites_v50_rights_attestation_repaired_external_actions_held",
+  "recordKind": "veroxa_momo_live56_high_resolution_media_manifest",
+  "releaseState": "live56_sites_v53_legacy_media_purged_total_pixel_ceiling_removed_external_actions_held",
   "reviewedAt": "2026-08-12",
-  "candidateRevision": "momo_live54_sites_v50_rights_attestation_repair_2026-08-12",
+  "candidateRevision": "momo_live56_sites_v53_high_resolution_media_2026-08-12",
   "knownResiduals": [
     "Exact live membership evidence shows postgres is not a member of supabase_admin. Migration 20260808002609 therefore skips supabase_admin default ACLs and is not comprehensive default-ACL closure.",
     "Supabase stores generated migration version and name but not submitted SQL bytes. Candidate48 canonical source remains the reviewed 59,052-byte SHA-256 56c64c79 payload; the apply transport query carried one additional trailing newline (59,053 bytes), with identical SQL tokens and verified live48 semantics.",
-    "The pre-fix Momo upload instruction was not durably recorded before finalization failed, so it cannot be recovered or invented. The saved upload requires no Client retry and is now a Team-owned media-intake exception.",
     "The live51 Team processor definition compiled before its duplicated application-audit target column was reached. Live52 replaced the function before any application; the application ledger remains empty.",
-    "Six veroxa_private tables remain defense-in-depth RLS advisories. No anon or authenticated SELECT or write grants were observed; remediation is outside this media-handoff fix."
+    "Six veroxa_private tables remain defense-in-depth RLS advisories. No anon or authenticated SELECT or write grants were observed; remediation is outside this media-handoff fix.",
+    "The owner-directed purge is permanent and non-recoverable. It is an exact three-asset exception and does not authorize broad or automatic media deletion.",
+    "The 16,777,216 total-pixel acceptance ceiling is removed, but JPEG/PNG, 10 KB–10 MB source size, 128–12,000 per-axis, 0.4–2.5 aspect-ratio, decodability, immutability, and hash checks remain.",
+    "No authenticated real-user high-resolution upload was performed in this pass; 8064×6048 acceptance is established by the release contract and production migration, not by a new customer upload."
   ],
   "canonicalRepository": "farazmunirgohar-vxa/Veroxa",
   "canonicalBranch": "main",
-  "candidateBranch": "agent/momo-live54-reconciliation",
+  "candidateBranch": "agent/remove-legacy-media-pixel-cap",
   "sitesProjectId": "appgprj_6a53d07c7c28819182801cf35dfd30de",
   "observedProductionBaseline": {
     "reviewedAt": "2026-07-13",
@@ -141,14 +143,14 @@
     "observedAt": "2026-08-12",
     "sitesBaselineObservedAt": "2026-08-12",
     "migrationLedgerObservedAt": "2026-08-12",
-    "evidenceStatus": "sites_v50_database54_owner_rights_attestation_repaired_external_actions_held",
-    "canonicalGitHubMainCommit": "18d7030de8b0c2fe4fdab84e2679e643dfe8d3f1",
+    "evidenceStatus": "sites_v53_database56_exact_legacy_media_purge_high_resolution_acceptance_external_actions_held",
+    "canonicalGitHubMainCommit": "fb6d8b13bf548fd144cec4ce241bd44c1cecc99f",
     "canonicalGitHubMainMergePullRequest": null,
-    "canonicalGitHubMainCommitScope": "pre-reconciliation GitHub main; PR #179 carries the reviewed live54 candidate",
+    "canonicalGitHubMainCommitScope": "pre-synchronization base main; merge identity is recorded by GitHub after exact-head gates",
     "githubParityVerifiedAtObservation": false,
-    "sitesVersion": 50,
-    "sitesVersionId": "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_435b68bbe9c08191bd9579825218fa5a",
-    "sitesCheckoutCommit": "5dc88c25a9eab02a33ce8b357cc09d5b43d0af9e",
+    "sitesVersion": 53,
+    "sitesVersionId": "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_6e36025a6f248191a047d9bbdd04d90a",
+    "sitesCheckoutCommit": "f21cd4e9b99d601d8e3df9b221e14b513a8ac2d6",
     "sitesDeploymentEnvironmentRevision": 14,
     "sitesEnvironmentRevision": 14,
     "sitesRuntimeEnvironmentRevisionObservedAt": "2026-08-12",
@@ -162,55 +164,58 @@
     "sitesRecentErrorsObserved": 0,
     "sitesArchiveFileCount": 52,
     "sitesArchiveByteLength": 6041600,
-    "sitesArchiveSha256": "9aada7a54f6da92893b0ce551d3f03b2a970ad4e28de8beb8d17540e6edce1e2",
-    "sourceFileCount": 222,
-    "sourceTreeSha256": "053cecab6ac5164f9f80d57f2d4f470f12cf2d4c92c7cd113a9ed7fc936bd8ec",
-    "sourceEvidenceScope": "exact deployed Sites v50 owner-rights-attestation repair source",
-    "productionMigrationCount": 54,
-    "migrationTreeSha256": "0d4566c0fddc5311a24a3ea44688e30bf05c347360a5ac36bbc336a038ca14ab",
-    "migrationTreeEvidenceScope": "observed remote live54 ledger with source bytes",
-    "latestProductionMigration": "20260812042031_momo_team_content_ai_read_grants_v1.sql",
-    "latestProductionMigrationByteLength": 393,
-    "latestProductionMigrationSha256": "78d43d24a8249523a8866331598491e478950c7a7a8a35451b29839ccc777b96",
-    "latestProductionMigrationByteEvidenceScope": "exact_reviewed_source_submitted_with_generated_ledger_name; ledger_does_not_store_sql_bytes",
+    "sitesArchiveSha256": "99fd27fa4fa00f9c5522a74b0504d14fac1ccd26e9a685b343be4f6a34554c21",
+    "sourceFileCount": 227,
+    "sourceTreeSha256": "f36746fd569ee0b26c961c71e98dfc31308be4b5938a5902b145ecfbbd0c4348",
+    "sourceEvidenceScope": "exact deployed Sites v53 high-resolution media source",
+    "productionMigrationCount": 56,
+    "migrationTreeSha256": "8d6f2b940bee42462c50349101af36f5efedb4f7d4309a18167261fbd342c8fe",
+    "migrationTreeEvidenceScope": "observed remote live56 ledger with canonical source mirrored in root and Sites",
+    "latestProductionMigration": "20260812221509_restore_high_resolution_media_finalize_service_role_v1.sql",
+    "latestProductionMigrationByteLength": 652,
+    "latestProductionMigrationSha256": "8a740ea365a462e9c9dea55f795f2025bfff7f9fe4db3bb25d2bfaab535988b3",
+    "latestProductionMigrationByteEvidenceScope": "exact applied forward privilege-repair source; generated ledger records version and name",
     "databaseLedgerObserved": true,
     "databaseAppliedThroughLatestObserved": true,
     "githubMainMatchesCandidate": false,
     "candidateSourceMatchesLiveSites": true,
     "candidateMigrationsMatchLiveLedger": true,
     "fullReleaseGatePassed": true,
-    "fullReleaseGateScope": "momo_live54_rights_attestation_repair_external_actions_held_no_real_upload"
+    "fullReleaseGateScope": "exact_legacy_media_purge_and_high_resolution_private_upload_release_external_actions_held",
+    "restaurantMediaCount": 0,
+    "restaurantStorageObjectCount": 0,
+    "removedTotalPixelCeiling": 16777216
   },
   "mediaUploadHandoff": {
     "observedAt": "2026-08-12",
-    "status": "live54_bridge_repaired_sites_v50_rights_attestation_repaired_external_actions_held",
-    "baseMainCommit": "18d7030de8b0c2fe4fdab84e2679e643dfe8d3f1",
+    "status": "live56_sites_v53_legacy_media_purged_high_resolution_enabled_external_actions_held",
+    "baseMainCommit": "fb6d8b13bf548fd144cec4ce241bd44c1cecc99f",
     "baseMainPullRequest": null,
-    "candidateBranch": "agent/momo-live54-reconciliation",
-    "reviewedHead": "8262ab6824dddbc9fb058b1500a2f8d0f2369851",
-    "reviewedTree": "1afd667a936b5cd12df930b2341d9e9feeb4e6d2",
+    "candidateBranch": "agent/remove-legacy-media-pixel-cap",
+    "reviewedHead": null,
+    "reviewedTree": null,
     "mergedPullRequest": null,
     "mergedMainCommit": null,
-    "allFourExactHeadWorkflowsGreen": true,
-    "zeroUnresolvedReviewThreads": true,
+    "allFourExactHeadWorkflowsGreen": false,
+    "zeroUnresolvedReviewThreads": false,
     "closeoutPullRequest": null,
     "closeoutEvidenceOnly": false,
-    "sitesVersion": 50,
-    "sitesVersionId": "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_435b68bbe9c08191bd9579825218fa5a",
-    "sitesSourceCommit": "5dc88c25a9eab02a33ce8b357cc09d5b43d0af9e",
+    "sitesVersion": 53,
+    "sitesVersionId": "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_6e36025a6f248191a047d9bbdd04d90a",
+    "sitesSourceCommit": "f21cd4e9b99d601d8e3df9b221e14b513a8ac2d6",
     "sitesArchiveFileCount": 52,
     "sitesArchiveByteLength": 6041600,
-    "sitesArchiveSha256": "9aada7a54f6da92893b0ce551d3f03b2a970ad4e28de8beb8d17540e6edce1e2",
+    "sitesArchiveSha256": "99fd27fa4fa00f9c5522a74b0504d14fac1ccd26e9a685b343be4f6a34554c21",
     "sitesEnvironmentRevision": 14,
-    "liveSitesSourceFileCount": 222,
-    "liveSitesSourceTreeSha256": "053cecab6ac5164f9f80d57f2d4f470f12cf2d4c92c7cd113a9ed7fc936bd8ec",
-    "candidateSourceFileCount": 222,
-    "candidateSourceTreeSha256": "053cecab6ac5164f9f80d57f2d4f470f12cf2d4c92c7cd113a9ed7fc936bd8ec",
-    "migrationFileCount": 54,
-    "migrationTreeSha256": "0d4566c0fddc5311a24a3ea44688e30bf05c347360a5ac36bbc336a038ca14ab",
-    "latestMigration": "20260812042031_momo_team_content_ai_read_grants_v1.sql",
-    "latestMigrationByteLength": 393,
-    "latestMigrationSha256": "78d43d24a8249523a8866331598491e478950c7a7a8a35451b29839ccc777b96",
+    "liveSitesSourceFileCount": 227,
+    "liveSitesSourceTreeSha256": "f36746fd569ee0b26c961c71e98dfc31308be4b5938a5902b145ecfbbd0c4348",
+    "candidateSourceFileCount": 227,
+    "candidateSourceTreeSha256": "f36746fd569ee0b26c961c71e98dfc31308be4b5938a5902b145ecfbbd0c4348",
+    "migrationFileCount": 56,
+    "migrationTreeSha256": "8d6f2b940bee42462c50349101af36f5efedb4f7d4309a18167261fbd342c8fe",
+    "latestMigration": "20260812221509_restore_high_resolution_media_finalize_service_role_v1.sql",
+    "latestMigrationByteLength": 652,
+    "latestMigrationSha256": "8a740ea365a462e9c9dea55f795f2025bfff7f9fe4db3bb25d2bfaab535988b3",
     "teamProcessorMigration": "20260809231409_momo_media_instruction_team_processing_v1.sql",
     "teamProcessorMigrationByteLength": 11720,
     "teamProcessorMigrationSha256": "3c4594c56a5260ce6b29eb85be46100c792512c6a47f35590ca8434dd68e02f2",
@@ -222,14 +227,14 @@
     "teamProcessorAvailable": true,
     "savedInstructionCount": 0,
     "instructionApplicationCount": 0,
-    "unverifiedSavedUploadCount": 3,
-    "openMediaIntakeExceptionCount": 3,
+    "unverifiedSavedUploadCount": 0,
+    "openMediaIntakeExceptionCount": 0,
     "allMediaIntakeExceptionsExternalLocked": true,
     "existingUploadRequiresClientRetry": false,
     "preFixInstructionRecoverable": false,
     "bridgeKeyRotated": true,
-    "applicationTestsPassed": 433,
-    "applicationTestsTotal": 433,
+    "applicationTestsPassed": 443,
+    "applicationTestsTotal": 443,
     "edgeFunctions": {
       "contentLifecycle": {
         "id": "859c73c3-2102-41b4-9da1-20582acb7212",
@@ -262,20 +267,20 @@
     },
     "allFourExactHeadWorkflows": {
       "ci": {
-        "runId": 31633030085,
-        "status": "success"
+        "runId": null,
+        "status": "pending"
       },
       "sitesVerify": {
-        "runId": 31633030045,
-        "status": "success"
+        "runId": null,
+        "status": "pending"
       },
       "supabaseVerify": {
-        "runId": 31633030057,
-        "status": "success"
+        "runId": null,
+        "status": "pending"
       },
       "veroxaVerify": {
-        "runId": 31633030054,
-        "status": "success"
+        "runId": null,
+        "status": "pending"
       }
     },
     "clientRightsAttestationRequired": true,
@@ -284,7 +289,11 @@
       "facebook",
       "google_business"
     ],
-    "clientRightsAttestationGuard": "media_rights_attestation_required_before_storage"
+    "clientRightsAttestationGuard": "media_rights_attestation_required_before_storage",
+    "exactPurgedLegacyAssetCount": 3,
+    "backingStorageObjectsRemaining": 0,
+    "trustedHostDecodeRequired": true,
+    "pngDecodedStreamCeilingRemoved": true
   },
   "historicalV36GitHubReconciliationEvidence": {
     "pullRequest": 157,
@@ -350,11 +359,11 @@
   },
   "applicationQualityEvidence": {
     "observedAt": "2026-08-12",
-    "evidenceScope": "exact_local_sites_v50_rights_attestation_repair_release_gate",
+    "evidenceScope": "exact_local_sites_v53_high_resolution_media_release_gate",
     "cleanInstallExitCode": 0,
     "buildExitCode": 0,
-    "testsPassed": 433,
-    "testsTotal": 433,
+    "testsPassed": 443,
+    "testsTotal": 443,
     "testsFailed": 0,
     "typecheckExitCode": 0,
     "lintExitCode": 0,
@@ -367,8 +376,8 @@
     "hostedFullPgTapRerunPending": false,
     "hostedDatabaseExecutionPassed": true,
     "repairMigrationSha256": "56c64c795ad12f1dfbe05894fd3e56a87f1d0e3376ff10edfd97760b8d2fbd5c",
-    "preconnectionFixtureSha256": "d6d870788c1211d8209048921232e9e8b1cffa16aae1ef9a4a9516b150434b5d",
-    "ownerFixtureSha256": "60db739eeeaba5be8d70e62b6ec60cf9b6db758d1509940068ef164c7fe650b5",
+    "preconnectionFixtureSha256": "3da5191f7324e85e6441c9eb151a84b50f859d09d8e50d2fe3d709ac522326cc",
+    "ownerFixtureSha256": "b4dfd1f1f283b44ec2d20f2368af445569168a1c76991ba418824c0ffe0b1ad6",
     "fullOperatingSystemFixtureSha256": "f20ac4e5927543277e520fbfd7104ded39fd11fa14995bf227fb64384dba5480",
     "zeroCostFixtureSha256": "13e246455692d5005d688fcc68aea4805a7d64bc87c2604edf8db26599b06cbe"
   },
@@ -424,33 +433,33 @@
     "realUploadObserved": false
   },
   "releaseCandidate": {
-    "status": "live54_sites_v50_rights_attestation_repaired_external_actions_held",
-    "actionScope": "bounded_momo_owner_rights_attestation_repair_preserving_external_action_locks",
-    "basedOnGitHubMainCommit": "18d7030de8b0c2fe4fdab84e2679e643dfe8d3f1",
-    "pullRequest": 179,
-    "pullRequestDraft": true,
-    "observedDraftPullRequestHead": "8262ab6824dddbc9fb058b1500a2f8d0f2369851",
-    "observedDraftPullRequestTree": "1afd667a936b5cd12df930b2341d9e9feeb4e6d2",
-    "draftHeadEvidenceScope": "corrected Sites v50 rights-attestation candidate; all four exact-head workflows green and zero unresolved review threads",
+    "status": "live56_sites_v53_legacy_media_purged_total_pixel_ceiling_removed_external_actions_held",
+    "actionScope": "owner_directed_exact_legacy_media_purge_and_total_pixel_ceiling_removal_preserving_external_action_locks",
+    "basedOnGitHubMainCommit": "fb6d8b13bf548fd144cec4ce241bd44c1cecc99f",
+    "pullRequest": 180,
+    "pullRequestDraft": false,
+    "observedDraftPullRequestHead": null,
+    "observedDraftPullRequestTree": null,
+    "draftHeadEvidenceScope": "GitHub supplies exact head, workflow, review-thread, and merge evidence",
     "githubMerged": false,
     "futureMergedGitHubCommit": null,
-    "futureSitesVersion": 50,
+    "futureSitesVersion": 53,
     "reviewedLocally": true,
     "sourceReviewPassed": true,
     "qualityReviewPassed": true,
-    "allFourWorkflowsGreen": true,
-    "zeroUnresolvedReviewThreads": true,
+    "allFourWorkflowsGreen": false,
+    "zeroUnresolvedReviewThreads": false,
     "candidateSourceMatchesLiveSites": true,
     "candidateMigrationsMatchLiveLedger": true,
     "githubMainMatchesCandidate": false,
     "fullReleaseGatePassed": true,
-    "fullReleaseGateScope": "momo_live54_rights_attestation_repair_external_actions_held_no_real_upload",
-    "sourceFileCount": 222,
-    "sourceTreeSha256": "053cecab6ac5164f9f80d57f2d4f470f12cf2d4c92c7cd113a9ed7fc936bd8ec",
-    "migrationFileCount": 54,
-    "migrationTreeSha256": "0d4566c0fddc5311a24a3ea44688e30bf05c347360a5ac36bbc336a038ca14ab",
-    "latestCandidateMigration": "20260812042031_momo_team_content_ai_read_grants_v1.sql",
-    "latestCandidateMigrationSha256": "78d43d24a8249523a8866331598491e478950c7a7a8a35451b29839ccc777b96",
+    "fullReleaseGateScope": "exact_legacy_media_purge_and_high_resolution_private_upload_release_external_actions_held",
+    "sourceFileCount": 227,
+    "sourceTreeSha256": "f36746fd569ee0b26c961c71e98dfc31308be4b5938a5902b145ecfbbd0c4348",
+    "migrationFileCount": 56,
+    "migrationTreeSha256": "8d6f2b940bee42462c50349101af36f5efedb4f7d4309a18167261fbd342c8fe",
+    "latestCandidateMigration": "20260812221509_restore_high_resolution_media_finalize_service_role_v1.sql",
+    "latestCandidateMigrationSha256": "8a740ea365a462e9c9dea55f795f2025bfff7f9fe4db3bb25d2bfaab535988b3",
     "pendingMigrations": [],
     "databaseChangesRequired": false,
     "additionalDatabaseChangesRequired": false,
@@ -469,7 +478,9 @@
       "20260809035302_team_private_food_assessment_reconciliation_v1.sql",
       "20260809051616_guarded_internal_ai_activation_v1.sql",
       "20260812041824_momo_owner_request_contract_v1.sql",
-      "20260812042031_momo_team_content_ai_read_grants_v1.sql"
+      "20260812042031_momo_team_content_ai_read_grants_v1.sql",
+      "20260812214257_high_resolution_private_media_v1.sql",
+      "20260812221509_restore_high_resolution_media_finalize_service_role_v1.sql"
     ],
     "databaseApplyAuthorized": true,
     "sitesPublishRequired": false,
@@ -485,23 +496,23 @@
     "activationGateReady": false,
     "activationAuthorizationConsumed": true,
     "activationExecuted": true,
-    "rolloutStatus": "live54_rights_attestation_repair_deployed_external_actions_held_no_real_upload",
+    "rolloutStatus": "live56_sites_v53_legacy_media_purged_high_resolution_enabled_external_actions_held",
     "allFourExactHeadWorkflows": {
       "ci": {
-        "runId": 31633030085,
-        "status": "success"
+        "runId": null,
+        "status": "pending"
       },
       "sitesVerify": {
-        "runId": 31633030045,
-        "status": "success"
+        "runId": null,
+        "status": "pending"
       },
       "supabaseVerify": {
-        "runId": 31633030057,
-        "status": "success"
+        "runId": null,
+        "status": "pending"
       },
       "veroxaVerify": {
-        "runId": 31633030054,
-        "status": "success"
+        "runId": null,
+        "status": "pending"
       }
     }
   },
@@ -698,12 +709,12 @@
     ]
   },
   "source": {
-    "evidenceScope": "momo_live54_sites_v50_rights_attestation_candidate_source_tree",
+    "evidenceScope": "momo_live56_sites_v53_high_resolution_media_source_tree",
     "root": "artifacts/veroxa-sites",
     "mappingTarget": "Sites repository root candidate",
     "hashAlgorithm": "veroxa-path-null-content-null-sha256-v1",
-    "fileCount": 222,
-    "treeSha256": "053cecab6ac5164f9f80d57f2d4f470f12cf2d4c92c7cd113a9ed7fc936bd8ec",
+    "fileCount": 227,
+    "treeSha256": "f36746fd569ee0b26c961c71e98dfc31308be4b5938a5902b145ecfbbd0c4348",
     "generatedPathExclusions": [
       ".git",
       ".next",
@@ -726,14 +737,14 @@
     ]
   },
   "migrations": {
-    "evidenceScope": "exact_live54_generated_ledger_source_mirrors",
+    "evidenceScope": "exact_live56_generated_ledger_source_mirrors",
     "root": "supabase/migrations",
     "mirrorRoot": "artifacts/veroxa-sites/supabase/migrations",
     "hashAlgorithm": "veroxa-path-null-content-null-sha256-v1",
-    "fileCount": 54,
-    "treeSha256": "0d4566c0fddc5311a24a3ea44688e30bf05c347360a5ac36bbc336a038ca14ab",
-    "mirrorFileCount": 54,
-    "mirrorTreeSha256": "0d4566c0fddc5311a24a3ea44688e30bf05c347360a5ac36bbc336a038ca14ab"
+    "fileCount": 56,
+    "treeSha256": "8d6f2b940bee42462c50349101af36f5efedb4f7d4309a18167261fbd342c8fe",
+    "mirrorFileCount": 56,
+    "mirrorTreeSha256": "8d6f2b940bee42462c50349101af36f5efedb4f7d4309a18167261fbd342c8fe"
   },
   "deploymentFreeze": {
     "state": "production_live54_bridge_repair_external_actions_held",
@@ -1186,8 +1197,8 @@
     "livePrefixMigrationTreeSha256": "07d99ae31fb80bba6126fe731d45d79776d175972502f13c0b1d505032f71924",
     "candidateMigrationCount": 49,
     "candidateMigrationTreeSha256": "07d99ae31fb80bba6126fe731d45d79776d175972502f13c0b1d505032f71924",
-    "preconnectionFixtureSha256": "d6d870788c1211d8209048921232e9e8b1cffa16aae1ef9a4a9516b150434b5d",
-    "ownerFixtureSha256": "60db739eeeaba5be8d70e62b6ec60cf9b6db758d1509940068ef164c7fe650b5",
+    "preconnectionFixtureSha256": "3da5191f7324e85e6441c9eb151a84b50f859d09d8e50d2fe3d709ac522326cc",
+    "ownerFixtureSha256": "b4dfd1f1f283b44ec2d20f2368af445569168a1c76991ba418824c0ffe0b1ad6",
     "fullOperatingSystemFixtureSha256": "f20ac4e5927543277e520fbfd7104ded39fd11fa14995bf227fb64384dba5480",
     "zeroCostFixtureSha256": "13e246455692d5005d688fcc68aea4805a7d64bc87c2604edf8db26599b06cbe",
     "expectedProductionMigrationCountAfterRepair": 48,
@@ -1357,6 +1368,71 @@
       "providerCallsObserved": 0,
       "providerCallEvidenceScope": "bounded database, activation-event, HTTP and Supabase Edge log evidence; not universal third-party telemetry",
       "incrementalSpendUsd": 0
+    }
+  },
+  "legacyMediaPurgeAndHighResolutionRelease": {
+    "status": "completed_verified",
+    "observedAt": "2026-08-12",
+    "exactLegacyAssetCount": 3,
+    "exactLegacyBackingObjectCount": 3,
+    "relatedRowsPurged": true,
+    "databaseAssetsRemaining": 0,
+    "storageObjectsRemaining": 0,
+    "permanent": true,
+    "recoverable": false,
+    "broadDeletionPerformed": false,
+    "automaticDeletionPolicyCreated": false,
+    "storageDeletionTransport": "Supabase Storage API",
+    "temporaryPurgeFunctionState": "inert_v2_verify_jwt_true_http_410",
+    "reusablePurgeEndpointAvailable": false,
+    "formerTotalPixelCeiling": 16777216,
+    "totalPixelCeilingRemoved": true,
+    "highResolutionContractWidth": 8064,
+    "highResolutionContractHeight": 6048,
+    "remainingAcceptanceEnvelope": {
+      "mimeTypes": [
+        "image/jpeg",
+        "image/png"
+      ],
+      "sourceBytesMin": 10240,
+      "sourceBytesMax": 10485760,
+      "axisPixelsMin": 128,
+      "axisPixelsMax": 12000,
+      "aspectRatioMin": 0.4,
+      "aspectRatioMax": 2.5,
+      "decodabilityRequired": true,
+      "immutableHashVerificationRequired": true
+    },
+    "migration": {
+      "filename": "20260812214257_high_resolution_private_media_v1.sql",
+      "byteLength": 11103,
+      "sha256": "3e8471bc4216a67fd591b5b611388be2873e44eb87c957934b280681d7bfe065",
+      "applied": true,
+      "totalPixelConstraintRemoved": true,
+      "finalizeRpcPixelCeilingRemoved": true
+    },
+    "sites": {
+      "version": 53,
+      "versionId": "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_6e36025a6f248191a047d9bbdd04d90a",
+      "deploymentId": "appgdep_6a7cf4d262e88191927ad91bd3da72bf",
+      "sourceCommit": "f21cd4e9b99d601d8e3df9b221e14b513a8ac2d6",
+      "environmentRevision": 14,
+      "archiveFileCount": 52,
+      "archiveByteLength": 6041600,
+      "archiveSha256": "99fd27fa4fa00f9c5522a74b0504d14fac1ccd26e9a685b343be4f6a34554c21",
+      "deployed": true
+    },
+    "trustedHostDecodeRequired": true,
+    "trustedHostDecodeProvider": "Cloudflare Images binding",
+    "pngDecodedStreamCeilingRemoved": true,
+    "privilegeRepair": {
+      "filename": "20260812221509_restore_high_resolution_media_finalize_service_role_v1.sql",
+      "byteLength": 652,
+      "sha256": "8a740ea365a462e9c9dea55f795f2025bfff7f9fe4db3bb25d2bfaab535988b3",
+      "applied": true,
+      "serviceRoleExecuteRestored": true,
+      "anonExecute": false,
+      "authenticatedExecute": false
     }
   }
 }

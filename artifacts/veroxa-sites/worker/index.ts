@@ -6,6 +6,12 @@ interface Env {
   ASSETS: Fetcher;
   DB: D1Database;
   IMAGES: {
+    info(stream: ReadableStream): Promise<{
+      width: number;
+      height: number;
+      format: string;
+      fileSize: number;
+    }>;
     input(stream: ReadableStream): {
       transform(options: Record<string, unknown>): {
         output(options: { format: string; quality: number }): Promise<{ response(): Response }>;
@@ -27,6 +33,12 @@ interface ExecutionContext {
 
 const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    // Route code has no direct Worker env argument. Expose this immutable
+    // per-isolate binding before dispatch so private media can be decoded by
+    // Cloudflare Images without importing a runtime-only module at top level.
+    (globalThis as typeof globalThis & {
+      __VEROXA_IMAGES__?: Env["IMAGES"];
+    }).__VEROXA_IMAGES__ = env.IMAGES;
     const url = new URL(request.url);
 
     if (url.pathname === "/_vinext/image") {

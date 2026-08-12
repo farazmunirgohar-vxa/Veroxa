@@ -14,8 +14,13 @@ import {
   parseVeroxaPrivateMediaProviderResponse,
 } from "../app/veroxa-private-media-assessment.ts";
 import {
+  decodeVeroxaPrivateMediaImage,
   fullyDecodeVeroxaPrivateMediaImage,
+  veroxaPrivateMediaImageVerificationMode,
 } from "../app/veroxa-private-media-image-decode.ts";
+import {
+  decodeVeroxaPrivateMediaImageWithHost,
+} from "../app/veroxa-private-media-host-image-decode.ts";
 
 const ASSESSMENT_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 
@@ -216,6 +221,86 @@ test("trusted bounded decoders accept real portrait JPEG and PNG bytes", () => {
     expectedWidth: width,
     expectedHeight: height,
   }), true);
+});
+
+test("high-resolution originals require a bounded host decode instead of upload rejection", async () => {
+  assert.equal(
+    veroxaPrivateMediaImageVerificationMode(8064, 6048),
+    "host_bounded_decode",
+  );
+  assert.equal(
+    veroxaPrivateMediaImageVerificationMode(1200, 900),
+    "in_process_full_decode",
+  );
+  const bytes = Uint8Array.from([0xff, 0xd8, 0xff, 0xd9]);
+  assert.equal(await decodeVeroxaPrivateMediaImage({
+    bytes,
+    mimeType: "image/jpeg",
+    expectedWidth: 8064,
+    expectedHeight: 6048,
+  }), false, "high-resolution input fails closed without a host decoder");
+  assert.equal(await decodeVeroxaPrivateMediaImage({
+    bytes,
+    mimeType: "image/jpeg",
+    expectedWidth: 8064,
+    expectedHeight: 6048,
+    hostDecoder: async () => true,
+  }), true);
+});
+
+test("the host decoder binds native dimensions and consumes only a bounded one-pixel result", async () => {
+  const source = Uint8Array.from([0xff, 0xd8, 0xff, 0xd9]);
+  const output = Uint8Array.from([
+    0xff, 0xd8,
+    ...new Uint8Array(20),
+    0xff, 0xd9,
+  ]);
+  const transforms = [];
+  globalThis.__VEROXA_IMAGES__ = {
+    async info() {
+      return {
+        width: 8064,
+        height: 6048,
+        format: "image/jpeg",
+        fileSize: source.byteLength,
+      };
+    },
+    input() {
+      return {
+        transform(options) {
+          transforms.push(options);
+          return this;
+        },
+        async output() {
+          return {
+            response() {
+              return new Response(output, {
+                status: 200,
+                headers: { "content-type": "image/jpeg" },
+              });
+            },
+          };
+        },
+      };
+    },
+  };
+  try {
+    assert.equal(await decodeVeroxaPrivateMediaImageWithHost({
+      bytes: source,
+      mimeType: "image/jpeg",
+      expectedWidth: 8064,
+      expectedHeight: 6048,
+    }), true);
+    assert.deepEqual(transforms, [{ width: 1, height: 1, fit: "fill" }]);
+    assert.equal(await decodeVeroxaPrivateMediaImageWithHost({
+      bytes: source,
+      mimeType: "image/jpeg",
+      expectedWidth: 6048,
+      expectedHeight: 8064,
+    }), false, "host dimensions must match the immutable reservation");
+  } finally {
+    delete globalThis.__VEROXA_IMAGES__;
+  }
 });
 
 test("development proxy can assess privately but only current real-owner authority can proceed", () => {

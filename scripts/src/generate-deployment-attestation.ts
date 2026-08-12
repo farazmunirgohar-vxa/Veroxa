@@ -1,7 +1,6 @@
 import { mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 import {
-  MEDIA_UPLOAD_HANDOFF_EVIDENCE,
   assertDeploymentAttestationManifest,
   deploymentManifestPath,
   ensureParentPath,
@@ -33,20 +32,18 @@ if (
   sourceTree.sha256 !== manifest.source.treeSha256 ||
   migrationTree.fileCount !== manifest.migrations.fileCount ||
   migrationTree.sha256 !== manifest.migrations.treeSha256 ||
-  sourceTree.fileCount !==
-    MEDIA_UPLOAD_HANDOFF_EVIDENCE.candidateSourceFileCount ||
-  sourceTree.sha256 !==
-    MEDIA_UPLOAD_HANDOFF_EVIDENCE.candidateSourceTreeSha256 ||
-  migrationTree.fileCount !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.migrationFileCount ||
-  migrationTree.sha256 !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.migrationTreeSha256
+  sourceTree.fileCount !== manifest.releaseCandidate.sourceFileCount ||
+  sourceTree.sha256 !== manifest.releaseCandidate.sourceTreeSha256 ||
+  migrationTree.fileCount !== manifest.releaseCandidate.migrationFileCount ||
+  migrationTree.sha256 !== manifest.releaseCandidate.migrationTreeSha256
 ) {
   throw new Error(
-    "Refusing to attest source whose deterministic hashes do not match the current schema-10 media-handoff candidate fingerprint",
+    "Refusing to attest source whose deterministic hashes do not match the current manifest and release-candidate fingerprints",
   );
 }
 if (
   !migrationTree.files.includes(
-    MEDIA_UPLOAD_HANDOFF_EVIDENCE.latestMigration,
+    manifest.releaseCandidate.latestCandidateMigration,
   )
 ) {
   throw new Error(
@@ -57,12 +54,12 @@ const latestCandidateMigrationSha256 = sha256File(
   resolve(
     repoRoot,
     manifest.migrations.root,
-    MEDIA_UPLOAD_HANDOFF_EVIDENCE.latestMigration,
+    manifest.releaseCandidate.latestCandidateMigration,
   ),
 );
 if (
   latestCandidateMigrationSha256 !==
-  MEDIA_UPLOAD_HANDOFF_EVIDENCE.latestMigrationSha256
+  manifest.releaseCandidate.latestCandidateMigrationSha256
 ) {
   throw new Error(
     "Refusing to attest a candidate whose latest migration fingerprint is stale",
@@ -79,7 +76,7 @@ writeJson(output, {
   schemaVersion: 4,
   recordKind: "veroxa_ci_deployment_attestation",
   attestationScope:
-    "exact_ci_schema10_held_repair_checkout_only_not_remote_or_runtime_parity",
+    "exact_ci_schema11_live56_sites_v53_checkout_only_not_remote_or_runtime_parity",
   generatedAt: new Date().toISOString(),
   repository: manifest.canonicalRepository,
   ref: process.env.GITHUB_REF || null,
@@ -102,6 +99,9 @@ writeJson(output, {
   },
   releaseCandidate: manifest.releaseCandidate,
   mediaUploadHandoff: manifest.mediaUploadHandoff ?? null,
+  legacyMediaPurgeAndHighResolutionRelease:
+    (manifest as unknown as Record<string, unknown>)
+      .legacyMediaPurgeAndHighResolutionRelease ?? null,
   referencedGitHubReconciliation: manifest.githubReconciliationEvidence
     ? {
         ...manifest.githubReconciliationEvidence,
@@ -135,7 +135,7 @@ writeJson(output, {
     fileCount: migrationTree.fileCount,
     treeSha256: migrationTree.sha256,
     latestCandidateMigration:
-      MEDIA_UPLOAD_HANDOFF_EVIDENCE.latestMigration,
+      manifest.releaseCandidate.latestCandidateMigration,
     latestCandidateMigrationSha256,
   },
   applicationQualityEvidence: manifest.applicationQualityEvidence,

@@ -26,10 +26,7 @@ import {
   type MomoClientSnapshot,
 } from "./momo-client-data";
 import { resolveMomoMediaWorkflow } from "./momo-media-guidance";
-import {
-  hasStrongPrivateFoodEvidence,
-  VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_DECODED_PIXELS,
-} from "./veroxa-private-media-assessment";
+import { hasStrongPrivateFoodEvidence } from "./veroxa-private-media-assessment";
 
 type ClientView = "dashboard" | "requests" | "setup" | "media" | "content" | "reports" | "services";
 type MomoClientAction = () => Promise<void | string>;
@@ -331,16 +328,7 @@ function Media({ snapshot, restaurantId, busy, run }: { snapshot: MomoClientSnap
     if (typeof createImageBitmap === "function") {
       try {
         const bitmap = await createImageBitmap(next);
-        const pixels = bitmap.width * bitmap.height;
         bitmap.close();
-        if (!Number.isSafeInteger(pixels) || pixels < 1 ||
-          pixels > VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_DECODED_PIXELS) {
-          setFile(null);
-          setUploadError(
-            "Choose an image with no more than 16,777,216 total pixels.",
-          );
-          return;
-        }
       } catch {
         setFile(null);
         setUploadError(
@@ -434,7 +422,7 @@ function Media({ snapshot, restaurantId, busy, run }: { snapshot: MomoClientSnap
       <em>Private · no posting</em>
     </section>
     <form id="client-media-upload" className="momo-panel momo-form client-media-upload" onSubmit={(event) => { event.preventDefault(); if (!file || !rightsConfirmed) return; void run(submitUpload, "Your image and upload instruction were saved privately."); }}>
-      <div className="momo-panel-heading"><div><p className="eyebrow">STEP 1 · UPLOAD</p><h2>Add a food image</h2><small>JPEG or PNG · portrait or landscape · up to 16,777,216 pixels · 10 KB to 10 MB · original unchanged. WebP, HEIC/HEIF, and video are not supported yet.</small></div></div>
+      <div className="momo-panel-heading"><div><p className="eyebrow">STEP 1 · UPLOAD</p><h2>Add a food image</h2><small>JPEG or PNG · portrait or landscape · high-resolution originals supported · 10 KB to 10 MB · original unchanged. WebP, HEIC/HEIF, and video are not supported yet.</small></div></div>
       <label className="client-file-picker">Food image<input key={uploadKey} type="file" accept="image/jpeg,image/png,.jpg,.jpeg,.png" onChange={(event) => void chooseFile(event.target.files?.[0] || null)} /><span>{file ? file.name : "Choose from your phone or computer"}</span></label>
       {uploadError && <p className="momo-warning" role="alert">{uploadError}</p>}
       <label className="momo-check client-rights-check"><input type="checkbox" checked={rightsConfirmed} onChange={(event) => setRightsConfirmed(event.target.checked)} required /><span>I confirm I own this image or have permission to provide it for Instagram, Facebook, and Google Business content preparation. This attestation applies only to this upload and does not authorize posting or connect any account.</span></label>
