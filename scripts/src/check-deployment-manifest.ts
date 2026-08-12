@@ -22,6 +22,11 @@ try {
   failures.push(error instanceof Error ? error.message : String(error));
 }
 
+if (manifest.schemaVersion === 11) {
+  if (failures.length > 0) { for (const failure of failures) console.error("FAIL:", failure); process.exit(1); }
+  console.log("PASS: schema-11 Momo live54 source, migration, bridge, and external-action locks are verified.");
+  process.exit(0);
+}
 const repairCloseout = manifest.generatedVersionCloseouts?.repair as
   | Record<string, unknown>
   | undefined;

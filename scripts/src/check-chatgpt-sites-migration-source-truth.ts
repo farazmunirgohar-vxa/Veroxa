@@ -22,6 +22,27 @@ try {
   failures.push(error instanceof Error ? error.message : String(error));
 }
 
+
+if (manifest.schemaVersion === 11) {
+  for (const path of [
+    "AGENTS.md","artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md","artifacts/veroxa/docs/CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md","artifacts/veroxa/docs/CURRENT_BUILD_STATUS.md","artifacts/veroxa/docs/README_CURRENT_STATE.md","artifacts/veroxa/docs/RR_CHECKPOINT.md","artifacts/veroxa/docs/VEROXA_CURRENT_MILESTONE.md","artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md",
+  ]) {
+    const text = read(path);
+    must(!/^(<<<<<<<|=======|>>>>>>>)/mu.test(text), path + " contains merge markers.");
+    const heading = text.match(/^## .*?\(current authority\)$/mu);
+    must(heading !== null, path + " is missing a current-authority heading.");
+    const start = heading?.index ?? -1;
+    const next = start < 0 ? -1 : text.indexOf("\n## ", start + (heading?.[0].length ?? 0));
+    const current = start < 0 ? "" : text.slice(start, next < 0 ? undefined : next);
+    for (const marker of ["GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY","Sites v49","live54","20260812042031_momo_team_content_ai_read_grants_v1.sql","content lifecycle v11","no real new-user upload","External providers","USD 0 incremental spend","clientActionAfterUpload=none","processingOwner=veroxa_team","3 open Team media-intake exceptions"]) {
+      must(current.includes(marker), path + " is missing schema-11 authority marker: " + marker);
+    }
+  }
+  if (failures.length > 0) { for (const failure of failures) console.error("FAIL:", failure); process.exit(1); }
+  console.log("PASS: schema-11 authority docs match the live54 reconciliation.");
+  process.exit(0);
+}
+
 const repairCloseout = manifest.generatedVersionCloseouts?.repair as
   | Record<string, unknown>
   | undefined;
