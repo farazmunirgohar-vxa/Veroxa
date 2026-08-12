@@ -90,7 +90,6 @@ begin
     'public.veroxa_register_momo_media_v1(uuid,text,text,bigint,text,text,jsonb,timestamptz)',
     'public.veroxa_register_momo_media_v2(uuid,text,text,bigint,text,text,jsonb,date)',
     'public.veroxa_register_team_private_media_v1(uuid,text,text,bigint,text,text,jsonb,date)',
-    'public.veroxa_finalize_private_media_assessment_intake_v1(uuid,uuid,uuid,text,text,bigint,integer,integer,text,jsonb,text,text,text,uuid)',
     'public.veroxa_reserve_private_media_assessment_v1(uuid,uuid,text,text,text,text,text,bigint,uuid)',
     'public.veroxa_start_private_media_assessment_provider_v1(uuid,text,uuid)',
     'public.veroxa_complete_private_media_assessment_v1(uuid,text,text,jsonb,text,text,bigint,text,jsonb,uuid)',
@@ -125,6 +124,24 @@ begin
         function_name;
     end if;
   end loop;
+
+  function_name :=
+    'public.veroxa_finalize_private_media_assessment_intake_v1(uuid,uuid,uuid,text,text,bigint,integer,integer,text,jsonb,text,text,text,uuid)';
+  select procedure.prosecdef, procedure.proconfig
+    into function_record
+  from pg_catalog.pg_proc procedure
+  where procedure.oid = to_regprocedure(function_name);
+  if not found
+     or not function_record.prosecdef
+     or not ('search_path=""' = any(
+       coalesce(function_record.proconfig, '{}'::text[])
+     ))
+     or has_function_privilege('anon', function_name, 'execute')
+     or has_function_privilege('authenticated', function_name, 'execute')
+     or not has_function_privilege('service_role', function_name, 'execute') then
+    raise exception 'Lifecycle finalizer service-role posture mismatch: %',
+      function_name;
+  end if;
 
   if not exists (
     select 1
@@ -358,9 +375,9 @@ begin
 end $$;
 $catalog$, 'Control tables, RPC ACLs, locks, exact association, duplicate selection, and sanitized readback are fail closed');
 
--- The repair intentionally ends with every mutable ingress held. These grants
--- exist only inside this rollback-only test transaction, after the catalog
--- assertion above has proved the deployed posture.
+-- The repair keeps public/client mutable ingress held while the private-media
+-- lifecycle finalizer remains service-role-only. The remaining grants exist
+-- only inside this rollback-only test transaction.
 grant execute on function public.veroxa_register_momo_media_v2(
   uuid,text,text,bigint,text,text,jsonb,date
 ) to authenticated;
@@ -724,8 +741,8 @@ begin
     'storageObjectVersion', object_version_a,
     'detectedMime', 'image/jpeg',
     'fileSize', 10240,
-    'width', 800,
-    'height', 800,
+    'width', 8064,
+    'height', 6048,
     'contentSha256', source_hash
   );
   verification_canonical :=
@@ -735,23 +752,11 @@ begin
   ), 'hex');
 
   execute 'set local role service_role';
-  begin
-    perform *
-    from public.veroxa_finalize_private_media_assessment_intake_v1(
-      restaurant_id, asset_a, object_a, object_version_a,
-      'image/jpeg', 10240, 5000, 4000, source_hash,
-      verification_snapshot, verification_canonical,
-      verification_sha256, repeat('c', 64), owner_id
-    );
-    raise exception 'Decoded pixel cap was bypassed';
-  exception when sqlstate '22023' then
-    if sqlerrm <> 'invalid_private_media_upload_verification' then raise; end if;
-  end;
   select finalized.intake_id, finalized.platform_ready
     into intake_a, platform_ready
   from public.veroxa_finalize_private_media_assessment_intake_v1(
     restaurant_id, asset_a, object_a, object_version_a,
-    'image/jpeg', 10240, 800, 800, source_hash,
+    'image/jpeg', 10240, 8064, 6048, source_hash,
     verification_snapshot, verification_canonical,
     verification_sha256, repeat('c', 64), owner_id
   ) finalized;
