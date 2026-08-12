@@ -5,12 +5,16 @@ import {
 } from "../../../momo-content-ai-lifecycle-bridge";
 import { getServerVeroxaContext } from "../../../veroxa-supabase-server";
 import { createMomoMediaFinalizeHandler } from "./core";
+import {
+  decodeVeroxaPrivateMediaImageWithHost,
+} from "../../../veroxa-private-media-host-image-decode";
 
 export const runtime = "edge";
 
 function dependencies(client: SupabaseClient, actor: { role: "team" | "client"; restaurantId: string | null; userId: string }) {
   const bridge = () => getMomoContentAiLifecycleBridgeConfig();
   return {
+    decodeHighResolutionImage: decodeVeroxaPrivateMediaImageWithHost,
     async authenticate() { return actor; },
     async download(storagePath: string) {
       const { data, error } = await client.storage.from("restaurant-media").download(storagePath, undefined, { cache: "no-store" });

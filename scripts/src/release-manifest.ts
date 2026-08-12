@@ -77,7 +77,7 @@ export const DEPLOYABLE_SITES_MAPPING_TARGET =
 export const ROOT_MIGRATION_SOURCE_ROOT = "supabase/migrations";
 export const SITES_MIGRATION_MIRROR_ROOT =
   "artifacts/veroxa-sites/supabase/migrations";
-export const REVIEWED_APPLICATION_TEST_TOTAL = 437;
+export const REVIEWED_APPLICATION_TEST_TOTAL = 443;
 export const GUARDED_ROLLOUT_RELEASE_STATE =
   "live49_internal_ai_active_external_actions_held";
 export const GUARDED_ROLLOUT_CANDIDATE_REVISION =
@@ -141,7 +141,7 @@ export const INTERNAL_AI_RELEASE_EVIDENCE = {
 
 export const MEDIA_UPLOAD_HANDOFF_EVIDENCE = {
   "observedAt": "2026-08-12",
-  "status": "live55_sites_v52_high_resolution_reconciled_external_actions_held",
+  "status": "live56_sites_v53_high_resolution_reconciled_external_actions_held",
   "baseMainCommit": "fb6d8b13bf548fd144cec4ce241bd44c1cecc99f",
   "baseMainPullRequest": 179,
   "candidateBranch": "agent/v51-production-reconciliation",
@@ -153,22 +153,22 @@ export const MEDIA_UPLOAD_HANDOFF_EVIDENCE = {
   "zeroUnresolvedReviewThreads": true,
   "closeoutPullRequest": null,
   "closeoutEvidenceOnly": false,
-  "sitesVersion": 52,
-  "sitesVersionId": "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_84a25fdf11c8819189afc4ffa78691b8",
-  "sitesSourceCommit": "f0d88e3246d3c23c5d7610ca07f94640c856e722",
+  "sitesVersion": 53,
+  "sitesVersionId": "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_6e36025a6f248191a047d9bbdd04d90a",
+  "sitesSourceCommit": "f21cd4e9b99d601d8e3df9b221e14b513a8ac2d6",
   "sitesArchiveFileCount": 52,
   "sitesArchiveByteLength": 6041600,
-  "sitesArchiveSha256": "60c9e2b83d7b6ce0dd84bd16fc8fbf11b98f814d86932342c11388aac3b7d62b",
+  "sitesArchiveSha256": "99fd27fa4fa00f9c5522a74b0504d14fac1ccd26e9a685b343be4f6a34554c21",
   "sitesEnvironmentRevision": 14,
-  "liveSitesSourceFileCount": 225,
-  "liveSitesSourceTreeSha256": "7f7a16864d3424581b1f04ee07501909850c9e7a7f682657208e40ba801d8adf",
-  "candidateSourceFileCount": 225,
-  "candidateSourceTreeSha256": "7f7a16864d3424581b1f04ee07501909850c9e7a7f682657208e40ba801d8adf",
-  "migrationFileCount": 55,
-  "migrationTreeSha256": "8010eaf8a8936b6d450b0d6161308ed705560dc338705f335202243bfc26fc56",
-  "latestMigration": "20260812214257_high_resolution_private_media_v1.sql",
-  "latestMigrationByteLength": 11103,
-  "latestMigrationSha256": "3e8471bc4216a67fd591b5b611388be2873e44eb87c957934b280681d7bfe065",
+  "liveSitesSourceFileCount": 227,
+  "liveSitesSourceTreeSha256": "f36746fd569ee0b26c961c71e98dfc31308be4b5938a5902b145ecfbbd0c4348",
+  "candidateSourceFileCount": 227,
+  "candidateSourceTreeSha256": "f36746fd569ee0b26c961c71e98dfc31308be4b5938a5902b145ecfbbd0c4348",
+  "migrationFileCount": 56,
+  "migrationTreeSha256": "8d6f2b940bee42462c50349101af36f5efedb4f7d4309a18167261fbd342c8fe",
+  "latestMigration": "20260812221509_restore_high_resolution_media_finalize_service_role_v1.sql",
+  "latestMigrationByteLength": 652,
+  "latestMigrationSha256": "8a740ea365a462e9c9dea55f795f2025bfff7f9fe4db3bb25d2bfaab535988b3",
   "clientActionAfterUpload": "none",
   "processingOwner": "veroxa_team",
   "legacyV2AuthenticatedExecute": false,
@@ -210,8 +210,8 @@ export const MEDIA_UPLOAD_HANDOFF_EVIDENCE = {
     "indexSha256": "6d928ef8c06d1c97441080637467837ed309ac37f4f1285c1630c987a957bab5",
     "response": "410_legacy_media_purge_closed"
   },
-  "applicationTestsPassed": 437,
-  "applicationTestsTotal": 437,
+  "applicationTestsPassed": 443,
+  "applicationTestsTotal": 443,
   "edgeFunctions": {
     "contentLifecycle": {
       "id": "859c73c3-2102-41b4-9da1-20582acb7212",
@@ -1950,28 +1950,28 @@ export function assertCurrentReconciliationManifest(
 
   if (
     manifest.schemaVersion !== 11 ||
-    manifest.recordKind !== "veroxa_momo_live55_v52_reconciliation_manifest" ||
+    manifest.recordKind !== "veroxa_momo_live56_v53_reconciliation_manifest" ||
     manifest.releaseState !==
-      "live55_sites_v52_high_resolution_reconciled_external_actions_held" ||
+      "live56_sites_v53_high_resolution_reconciled_external_actions_held" ||
     manifest.reviewedAt !== "2026-08-12" ||
     manifest.candidateRevision !==
-      "momo_live55_sites_v52_high_resolution_reconciliation_2026-08-12" ||
+      "momo_live56_sites_v53_high_resolution_reconciliation_2026-08-12" ||
     manifest.candidateBranch !== "agent/v51-production-reconciliation" ||
     manifest.canonicalRepository !== "farazmunirgohar-vxa/Veroxa" ||
     manifest.canonicalBranch !== "main" ||
     manifest.sitesProjectId !==
       "appgprj_6a53d07c7c28819182801cf35dfd30de"
-  ) failures.push("schema-11 v52/live55 reconciliation identity drifted");
+  ) failures.push("schema-11 v53/live56 reconciliation identity drifted");
 
   if (
-    sourceTree.fileCount !== 225 ||
+    sourceTree.fileCount !== 227 ||
     sourceTree.sha256 !==
-      "7f7a16864d3424581b1f04ee07501909850c9e7a7f682657208e40ba801d8adf" ||
+      "f36746fd569ee0b26c961c71e98dfc31308be4b5938a5902b145ecfbbd0c4348" ||
     manifest.source.fileCount !== sourceTree.fileCount ||
     manifest.source.treeSha256 !== sourceTree.sha256 ||
-    rootMigrationTree.fileCount !== 55 ||
+    rootMigrationTree.fileCount !== 56 ||
     rootMigrationTree.sha256 !==
-      "8010eaf8a8936b6d450b0d6161308ed705560dc338705f335202243bfc26fc56" ||
+      "8d6f2b940bee42462c50349101af36f5efedb4f7d4309a18167261fbd342c8fe" ||
     mirrorMigrationTree.fileCount !== rootMigrationTree.fileCount ||
     mirrorMigrationTree.sha256 !== rootMigrationTree.sha256 ||
     JSON.stringify(rootMigrationTree.files) !==
@@ -1986,29 +1986,29 @@ export function assertCurrentReconciliationManifest(
 
   if (
     live.evidenceStatus !==
-      "sites_v52_database55_high_resolution_media_reconciled_storage_clean_external_actions_held" ||
+      "sites_v53_database56_high_resolution_media_reconciled_storage_clean_external_actions_held" ||
     live.canonicalGitHubMainCommit !==
       "fb6d8b13bf548fd144cec4ce241bd44c1cecc99f" ||
     live.canonicalGitHubMainMergePullRequest !== 179 ||
-    live.sitesVersion !== 52 ||
+    live.sitesVersion !== 53 ||
     live.sitesVersionId !==
-      "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_84a25fdf11c8819189afc4ffa78691b8" ||
+      "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_6e36025a6f248191a047d9bbdd04d90a" ||
     live.sitesCheckoutCommit !==
-      "f0d88e3246d3c23c5d7610ca07f94640c856e722" ||
+      "f21cd4e9b99d601d8e3df9b221e14b513a8ac2d6" ||
     live.sitesEnvironmentRevision !== 14 ||
     live.sitesArchiveFileCount !== 52 ||
     live.sitesArchiveByteLength !== 6041600 ||
     live.sitesArchiveSha256 !==
-      "60c9e2b83d7b6ce0dd84bd16fc8fbf11b98f814d86932342c11388aac3b7d62b" ||
+      "99fd27fa4fa00f9c5522a74b0504d14fac1ccd26e9a685b343be4f6a34554c21" ||
     live.sourceFileCount !== sourceTree.fileCount ||
     live.sourceTreeSha256 !== sourceTree.sha256 ||
-    live.productionMigrationCount !== 55 ||
+    live.productionMigrationCount !== 56 ||
     live.migrationTreeSha256 !== rootMigrationTree.sha256 ||
     live.latestProductionMigration !==
-      "20260812214257_high_resolution_private_media_v1.sql" ||
-    live.latestProductionMigrationByteLength !== 11103 ||
+      "20260812221509_restore_high_resolution_media_finalize_service_role_v1.sql" ||
+    live.latestProductionMigrationByteLength !== 652 ||
     live.latestProductionMigrationSha256 !==
-      "3e8471bc4216a67fd591b5b611388be2873e44eb87c957934b280681d7bfe065" ||
+      "8a740ea365a462e9c9dea55f795f2025bfff7f9fe4db3bb25d2bfaab535988b3" ||
     live.githubMainMatchesCandidate !== false ||
     live.candidateSourceMatchesLiveSites !== true ||
     live.candidateMigrationsMatchLiveLedger !== true ||
@@ -2018,7 +2018,7 @@ export function assertCurrentReconciliationManifest(
     live.mediaCleanup?.mediaRenditionCount !== 0 ||
     live.mediaCleanup?.nonterminalWorkCount !== 0 ||
     live.mediaCleanup?.completedCleanupAuditEventCount !== 1
-  ) failures.push("schema-11 live v52/live55 or cleanup observation drifted");
+  ) failures.push("schema-11 live v53/live56 or cleanup observation drifted");
 
   if (
     candidate.status !== manifest.releaseState ||
@@ -2030,7 +2030,7 @@ export function assertCurrentReconciliationManifest(
     candidate.pullRequestDraft !== false ||
     candidate.githubMerged !== false ||
     candidate.futureMergedGitHubCommit !== null ||
-    candidate.futureSitesVersion !== 52 ||
+    candidate.futureSitesVersion !== 53 ||
     candidate.reviewedLocally !== true ||
     candidate.sourceReviewPassed !== true ||
     candidate.qualityReviewPassed !== true ||
@@ -2065,8 +2065,8 @@ export function assertCurrentReconciliationManifest(
     !handoff ||
     JSON.stringify(handoff) !==
       JSON.stringify(MEDIA_UPLOAD_HANDOFF_EVIDENCE) ||
-    handoff.applicationTestsPassed !== 437 ||
-    handoff.applicationTestsTotal !== 437 ||
+    handoff.applicationTestsPassed !== 443 ||
+    handoff.applicationTestsTotal !== 443 ||
     handoff.unverifiedSavedUploadCount !== 0 ||
     handoff.openMediaIntakeExceptionCount !== 0 ||
     handoff.storageObjectCount !== 0 ||
@@ -2087,8 +2087,8 @@ export function assertCurrentReconciliationManifest(
   const quality = manifest.applicationQualityEvidence;
   if (
     !quality ||
-    quality.testsTotal !== 437 ||
-    quality.testsPassed !== 437 ||
+    quality.testsTotal !== 443 ||
+    quality.testsPassed !== 443 ||
     quality.testsFailed !== 0 ||
     quality.buildExitCode !== 0 ||
     quality.typecheckExitCode !== 0 ||
@@ -2099,7 +2099,7 @@ export function assertCurrentReconciliationManifest(
 
   if (failures.length > 0) {
     throw new Error(
-      "Unsafe schema-11 live55/Sites-v52 reconciliation manifest: " +
+      "Unsafe schema-11 live56/Sites-v53 reconciliation manifest: " +
         failures.join("; "),
     );
   }
@@ -2127,7 +2127,7 @@ export function assertReviewedLocalCandidateManifest(
   if (manifest.schemaVersion === 11) {
     assertCurrentReconciliationManifest(manifest);
     const quality = manifest.applicationQualityEvidence;
-    if (!quality || quality.testsTotal !== 437 || quality.testsPassed !== 437 || quality.testsFailed !== 0 || !manifest.releaseCandidate.reviewedLocally || manifest.releaseCandidate.sourceReviewPassed !== true || manifest.releaseCandidate.qualityReviewPassed !== true) throw new Error("Schema-11 reconciliation lacks reviewed source or 437-test evidence");
+    if (!quality || quality.testsTotal !== 443 || quality.testsPassed !== 443 || quality.testsFailed !== 0 || !manifest.releaseCandidate.reviewedLocally || manifest.releaseCandidate.sourceReviewPassed !== true || manifest.releaseCandidate.qualityReviewPassed !== true) throw new Error("Schema-11 reconciliation lacks reviewed source or 443-test evidence");
     return;
   }
   assertUnreleasedLocalCandidateManifest(manifest);

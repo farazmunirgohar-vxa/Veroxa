@@ -30,8 +30,31 @@ interface D1Database {
   dump(): Promise<ArrayBuffer>;
 }
 
+interface VeroxaImagesTransformResult {
+  response(): Response;
+}
+
+interface VeroxaImagesInput {
+  transform(options: Record<string, unknown>): VeroxaImagesInput;
+  output(options: {
+    format: string;
+    quality?: number;
+  }): Promise<VeroxaImagesTransformResult>;
+}
+
+interface VeroxaImagesBinding {
+  info(stream: ReadableStream): Promise<{
+    width: number;
+    height: number;
+    format: string;
+    fileSize: number;
+  }>;
+  input(stream: ReadableStream): VeroxaImagesInput;
+}
+
 declare module "cloudflare:workers" {
   export const env: {
     DB?: D1Database;
+    IMAGES?: VeroxaImagesBinding;
   };
 }

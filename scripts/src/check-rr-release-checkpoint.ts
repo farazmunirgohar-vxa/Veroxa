@@ -30,7 +30,7 @@ if (manifest.schemaVersion === 11) {
   delete rrCandidate.manifest;
   delete rrCandidate.state;
   delete rrCandidate.localReviewPassed;
-  must(rr.schemaVersion === 15 && rr.recordKind === "veroxa_momo_live55_v52_reconciliation_checkpoint", "RR is not the schema-11 v52/live55 reconciliation checkpoint.");
+  must(rr.schemaVersion === 15 && rr.recordKind === "veroxa_momo_live56_v53_reconciliation_checkpoint", "RR is not the schema-11 v53/live56 reconciliation checkpoint.");
   must(rr.status === manifest.releaseState && rr.reviewedAt === manifest.reviewedAt && rr.candidateRevision === manifest.candidateRevision, "RR schema-11 top-level identity diverges from the manifest.");
   must(rr.releaseCandidate.manifest === "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json" && rr.releaseCandidate.state === manifest.releaseCandidate.status && rr.releaseCandidate.localReviewPassed === true && canonical(rrCandidate) === canonical(manifest.releaseCandidate), "RR schema-11 candidate does not exactly mirror the manifest.");
   for (const field of ["currentProductionObservation","mediaUploadHandoff","applicationQualityEvidence","databaseContractReview","edgeDeployment","edgeCandidate","operationalHold","activationRoutine","generatedVersionCloseouts","deploymentParity","rolloutSequence","rolloutEvidence","activationExecution"]) {
@@ -40,7 +40,7 @@ if (manifest.schemaVersion === 11) {
   must(rr.databaseEvidence.liveBaseline.migrationFileCount === manifest.currentProductionObservation.productionMigrationCount && rr.databaseEvidence.liveBaseline.exactRemoteLedgerTreeSha256 === manifest.currentProductionObservation.migrationTreeSha256 && rr.databaseEvidence.liveBaseline.latestMigration === manifest.currentProductionObservation.latestProductionMigration && rr.databaseEvidence.integratedBaseline.migrationFileCount === manifest.migrations.fileCount && rr.databaseEvidence.integratedBaseline.migrationTreeSha256 === manifest.migrations.treeSha256 && canonical(rr.databaseEvidence.integratedBaseline.pendingMigrations) === canonical(manifest.releaseCandidate.pendingMigrations) && canonical(rr.databaseEvidence.integratedBaseline.appliedMigrations) === canonical(manifest.releaseCandidate.databaseMigrationsApplied) && rr.databaseEvidence.integratedBaseline.candidateMigrationsMatchLiveLedger === manifest.releaseCandidate.candidateMigrationsMatchLiveLedger && canonical(rr.databaseEvidence.forwardRepair) === canonical(manifest.databaseContractReview), "RR schema-11 database evidence diverges from the manifest.");
   must(rr.runtimeVerification.providerCallObserved === false && rr.runtimeVerification.realUploadObserved === false && rr.runtimeVerification.readyDispositionObserved === false && rr.runtimeVerification.externalProvidersConnected === false && rr.runtimeVerification.externalPublishingEnabled === false && rr.operationalHold.providerWrites === false && rr.operationalHold.reviewReplies === false && rr.operationalHold.websiteWrites === false && rr.operationalHold.externalScheduling === false, "RR schema-11 overclaims provider or external-action execution.");
   if (failures.length > 0) { for (const failure of failures) console.error("FAIL:", failure); process.exit(1); }
-  console.log("PASS: RR schema-11 checkpoint mirrors the live55 / Sites v52 reconciliation.");
+  console.log("PASS: RR schema-11 checkpoint mirrors the live56 / Sites v53 reconciliation.");
   process.exit(0);
 }
 

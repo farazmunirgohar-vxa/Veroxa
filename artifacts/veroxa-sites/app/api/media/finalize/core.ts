@@ -19,6 +19,10 @@ import {
   type VeroxaPrivateMediaMimeType,
 } from "../../../veroxa-private-media-assessment.ts";
 import { parseMomoMediaFinalizeResult } from "../../../momo-media-finalize-contract.ts";
+import {
+  decodeVeroxaPrivateMediaImage,
+  type VeroxaPrivateMediaHostDecoder,
+} from "../../../veroxa-private-media-image-decode.ts";
 
 const MAX_BODY_BYTES = 2_048;
 const VERIFIER_VERSION = "veroxa-private-image-byte-verifier-2026-08-08-v1";
@@ -46,6 +50,7 @@ type IntakeFailureObservation = {
 };
 
 export type MomoMediaFinalizeDependencies = {
+  decodeHighResolutionImage?: VeroxaPrivateMediaHostDecoder;
   authenticate(): Promise<Actor | null>;
   download(storagePath: string): Promise<Blob>;
   info(storagePath: string): Promise<ObjectInfo>;
@@ -198,6 +203,15 @@ export function createMomoMediaFinalizeHandler(dependencies: MomoMediaFinalizeDe
         throw new PublicError("media_not_assessable", 422);
       }
       const detectedMime = inspection.mimeType as VeroxaPrivateMediaMimeType;
+      if (!await decodeVeroxaPrivateMediaImage({
+        bytes,
+        mimeType: detectedMime,
+        expectedWidth: inspection.width,
+        expectedHeight: inspection.height,
+        hostDecoder: dependencies.decodeHighResolutionImage,
+      })) {
+        throw new PublicError("media_not_assessable", 422);
+      }
       const contentSha256 = await momoBytesSha256(bytes);
       observed.contentSha256 = contentSha256;
       const verificationSnapshot = {

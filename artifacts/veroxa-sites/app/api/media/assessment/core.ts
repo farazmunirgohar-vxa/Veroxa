@@ -20,8 +20,8 @@ import {
 } from "../../../veroxa-private-media-assessment.ts";
 import {
   VEROXA_PRIVATE_MEDIA_FULL_DECODE_MIME_TYPES,
-  fullyDecodeVeroxaPrivateMediaImage,
-  veroxaPrivateMediaImageVerificationMode,
+  decodeVeroxaPrivateMediaImage,
+  type VeroxaPrivateMediaHostDecoder,
   type VeroxaPrivateMediaFullDecodeMimeType,
 } from "../../../veroxa-private-media-image-decode.ts";
 import { momoCanonicalJson } from "../../../momo-canonical-json.ts";
@@ -69,6 +69,7 @@ export type VeroxaPrivateMediaAssessmentReservation = {
 export type VeroxaPrivateMediaAssessmentDependencies = {
   enabled: boolean;
   providerConfigured: boolean;
+  decodeHighResolutionImage?: VeroxaPrivateMediaHostDecoder;
   authenticate(): Promise<VeroxaPrivateMediaAssessmentActor | null>;
   reserve(input: {
     restaurantId: string;
@@ -431,12 +432,6 @@ export function createVeroxaPrivateMediaAssessmentHandler(
         sourceBytes = new Uint8Array(await source.arrayBuffer());
         const inspection = await inspectMomoImageBytesFully(sourceBytes);
         const ratio = inspection ? inspection.width / inspection.height : 0;
-        const verificationMode = inspection
-          ? veroxaPrivateMediaImageVerificationMode(
-            inspection.width,
-            inspection.height,
-          )
-          : null;
         if (!inspection || inspection.mimeType !== reservation.sourceMimeType ||
           inspection.width !== reservation.sourceWidth ||
           inspection.height !== reservation.sourceHeight ||
@@ -448,14 +443,13 @@ export function createVeroxaPrivateMediaAssessmentHandler(
           ratio > VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_ASPECT_RATIO ||
           await momoBytesSha256(sourceBytes) !==
             reservation.sourceContentSha256 ||
-          verificationMode === null ||
-          (verificationMode === "full_decode" &&
-            !fullyDecodeVeroxaPrivateMediaImage({
-              bytes: sourceBytes,
-              mimeType: reservation.sourceMimeType,
-              expectedWidth: reservation.sourceWidth,
-              expectedHeight: reservation.sourceHeight,
-            }))) throw new Error();
+          !await decodeVeroxaPrivateMediaImage({
+            bytes: sourceBytes,
+            mimeType: reservation.sourceMimeType,
+            expectedWidth: reservation.sourceWidth,
+            expectedHeight: reservation.sourceHeight,
+            hostDecoder: dependencies.decodeHighResolutionImage,
+          })) throw new Error();
       } catch {
         await safeFail(dependencies, reservation, {
           providerResponseId: null,

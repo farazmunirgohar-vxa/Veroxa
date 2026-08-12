@@ -65,8 +65,6 @@ type PngInspection = ImageDimensions & {
   imageDataChunks: Uint8Array[];
 };
 
-const MAX_MOMO_DECODED_PNG_BYTES = 128 * 1024 * 1024;
-
 const PNG_SIGNATURE = [
   0x89,
   0x50,
@@ -297,12 +295,33 @@ function pngScanlinePlan(
     if (
       !Number.isSafeInteger(passBytes)
       || passBytes < 1
-      || decodedBytes > MAX_MOMO_DECODED_PNG_BYTES - passBytes
+      || !Number.isSafeInteger(decodedBytes + passBytes)
     ) return null;
     decodedBytes += passBytes;
     plan.push({ rowBytes, rows });
   }
   return plan.length ? plan : null;
+}
+
+/**
+ * Returns the exact number of bytes the streaming PNG verifier must consume.
+ * This is an arithmetic/format check, not an allocation or acceptance ceiling:
+ * pixel bytes are decompressed and checked incrementally below.
+ */
+export function momoPngDecodedStreamByteLength(input: {
+  width: number;
+  height: number;
+  bitDepth: number;
+  colorType: number;
+  interlace: 0 | 1;
+}): number | null {
+  const plan = pngScanlinePlan({ ...input, imageDataChunks: [] });
+  if (!plan) return null;
+  const total = plan.reduce(
+    (sum, pass) => sum + (pass.rowBytes + 1) * pass.rows,
+    0,
+  );
+  return Number.isSafeInteger(total) && total > 0 ? total : null;
 }
 
 async function validPngPixelStream(

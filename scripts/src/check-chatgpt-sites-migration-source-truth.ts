@@ -37,9 +37,9 @@ if (manifest.schemaVersion === 11) {
     const next = start < 0 ? -1 : text.indexOf("\n## ", start + (heading?.[0].length ?? 0));
     const current = start < 0 ? "" : text.slice(start, next < 0 ? undefined : next);
     for (const marker of [
-      "Sites v52",
-      "live55",
-      "20260812214257_high_resolution_private_media_v1.sql",
+      "Sites v53",
+      "live56",
+      "20260812221509_restore_high_resolution_media_finalize_service_role_v1.sql",
       "High-resolution intake",
       "12,000-pixel per-axis",
       "Storage objects",
@@ -55,7 +55,7 @@ if (manifest.schemaVersion === 11) {
     }
     for (const marker of [
       "GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY",
-      "VEROXA_LIVE55_SITES_V52_RECONCILIATION_AUTHORITY",
+      "VEROXA_LIVE56_SITES_V53_RECONCILIATION_AUTHORITY",
     ]) {
       must(text.includes(marker), path + " is missing schema-11 authority marker: " + marker);
     }
@@ -82,7 +82,7 @@ if (manifest.schemaVersion === 11) {
     }
   }
   if (failures.length > 0) { for (const failure of failures) console.error("FAIL:", failure); process.exit(1); }
-  console.log("PASS: schema-11 authority docs match the live55 / Sites v52 reconciliation and Veroxa-only operating model.");
+  console.log("PASS: schema-11 authority docs match the live56 / Sites v53 reconciliation and Veroxa-only operating model.");
   process.exit(0);
 }
 

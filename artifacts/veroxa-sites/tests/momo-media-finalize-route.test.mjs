@@ -46,6 +46,7 @@ function harness(overrides = {}) {
   const source = jpeg();
   const calls = { download: [], info: [], finalize: [], recordFailure: [] };
   const dependencies = {
+    async decodeHighResolutionImage() { return true; },
     async authenticate() { return { role: "client", restaurantId: RESTAURANT_ID, userId: USER_ID }; },
     async download(path) { calls.download.push(path); return new Blob([source], { type: "image/jpeg" }); },
     async info(path) {
@@ -85,7 +86,12 @@ test("byte-verifies one scoped JPG and sends immutable evidence to finalization"
 
 test("accepts a high-resolution original without a total-pixel ceiling", async () => {
   const source = jpeg(8064, 6048);
+  const hostDecodes = [];
   const { calls, handler } = harness({
+    decodeHighResolutionImage: async (input) => {
+      hostDecodes.push(input);
+      return true;
+    },
     download: async () => new Blob([source], { type: "image/jpeg" }),
     info: async () => ({
       id: OBJECT_ID,
@@ -101,6 +107,31 @@ test("accepts a high-resolution original without a total-pixel ceiling", async (
   assert.equal(calls.finalize.length, 1);
   assert.equal(calls.finalize[0].width, 8064);
   assert.equal(calls.finalize[0].height, 6048);
+  assert.equal(hostDecodes.length, 1);
+  assert.equal(hostDecodes[0].mimeType, "image/jpeg");
+  assert.equal(hostDecodes[0].expectedWidth, 8064);
+  assert.equal(hostDecodes[0].expectedHeight, 6048);
+});
+
+test("high-resolution originals fail closed when the trusted host decoder rejects them", async () => {
+  const source = jpeg(8064, 6048);
+  const { calls, handler } = harness({
+    decodeHighResolutionImage: async () => false,
+    download: async () => new Blob([source], { type: "image/jpeg" }),
+    info: async () => ({
+      id: OBJECT_ID,
+      version: "storage-v1",
+      name: STORAGE_PATH,
+      bucketId: "restaurant-media",
+      size: source.length,
+      contentType: "image/jpeg",
+    }),
+  });
+  const response = await handler(request());
+  assert.equal(response.status, 422);
+  assert.equal((await response.json()).error, "media_not_assessable");
+  assert.equal(calls.finalize.length, 0);
+  assert.equal(calls.recordFailure.length, 1);
 });
 
 test("returns the canonical asset for an exact duplicate without external writes", async () => {
