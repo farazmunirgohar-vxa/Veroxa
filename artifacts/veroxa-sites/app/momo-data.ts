@@ -617,9 +617,30 @@ export type MomoClientRequest = {
   priority: "normal" | "urgent";
   status: "open" | "acknowledged" | "in_progress" | "completed" | "cancelled";
   createdBy: string;
+  createdByRole?: "team" | "client" | null;
+  requestCategory?: MomoRequestReasonCategory | null;
+  subjectType?: string | null;
+  subjectId?: string | null;
+  context?: MomoRequestContext;
+  lastMessageAt?: string | null;
   createdAt: string;
   updatedAt: string;
   completedAt: string | null;
+};
+
+export type MomoRequestReasonCategory =
+  | "factual_error"
+  | "seo_improvement"
+  | "missing_evidence"
+  | "outdated_information"
+  | "compliance"
+  | "owner_clarification"
+  | "operational_change";
+
+export type MomoRequestContext = {
+  affectedField?: string;
+  affectedPlatform?: string;
+  suggestedCorrection?: string;
 };
 
 export type MomoRequestMessage = {
@@ -1279,9 +1300,13 @@ export async function loadMomoWorkspaceData(
     const { data, error } = await client.rpc("veroxa_momo_client_snapshot_v1", {
       target_restaurant_id: restaurantId,
     });
-    if (error || !data || typeof data !== "object") throw new Error("workspace_data_unavailable");
+    if (error) {
+      const message = typeof error.message === "string" ? error.message : "";
+      throw new Error(message.includes("active_momo_client_required") ? "active_momo_client_required" : "workspace_snapshot_failed");
+    }
+    if (!data || typeof data !== "object") throw new Error("workspace_snapshot_failed");
     const payload = (Array.isArray(data) ? data[0] : data) as Record<string, unknown> | null;
-    if (!payload) throw new Error("workspace_data_unavailable");
+    if (!payload) throw new Error("workspace_snapshot_failed");
     return hydrateMomoClientSnapshot(payload, restaurantId);
   }
   const result = emptyMomoWorkspaceData();
@@ -1401,6 +1426,10 @@ const requestTypes = new Set<MomoClientRequest["requestType"]>([
 const requestStatuses = new Set<MomoClientRequest["status"]>([
   "open", "acknowledged", "in_progress", "completed", "cancelled",
 ]);
+const requestReasonCategories = new Set<MomoRequestReasonCategory>([
+  "factual_error", "seo_improvement", "missing_evidence", "outdated_information",
+  "compliance", "owner_clarification", "operational_change",
+]);
 
 const requestRpcError = (error: unknown, fallback: string) => {
   const message = error && typeof error === "object" && "message" in error
@@ -1411,6 +1440,10 @@ const requestRpcError = (error: unknown, fallback: string) => {
     "invalid_client_request_payload",
     "client_request_idempotency_conflict",
     "client_request_rate_or_open_limit_reached",
+    "momo_team_request_create_required",
+    "invalid_team_request_payload",
+    "team_request_idempotency_conflict",
+    "team_request_rate_or_open_limit_reached",
     "request_thread_access_denied",
     "request_thread_is_closed",
     "invalid_request_message_payload",
@@ -1445,12 +1478,26 @@ const requestFromJson = (row: Record<string, unknown>): MomoClientRequest | null
   const requestType = row.requestType;
   const status = row.status;
   const priority = row.priority;
+  const requestCategory = row.requestCategory;
+  const context = row.context;
+  const createdByRole = row.createdByRole;
+  const contextIsValid = context === undefined || context === null || (
+    typeof context === "object" && !Array.isArray(context)
+  );
   if (typeof row.id !== "string" || typeof requestType !== "string" || !requestTypes.has(requestType as MomoClientRequest["requestType"])
     || typeof row.title !== "string" || typeof row.details !== "string"
     || (priority !== "normal" && priority !== "urgent")
     || typeof status !== "string" || !requestStatuses.has(status as MomoClientRequest["status"])
     || typeof row.createdBy !== "string" || typeof row.createdAt !== "string"
-    || typeof row.updatedAt !== "string" || (row.completedAt !== null && typeof row.completedAt !== "string")) return null;
+    || typeof row.updatedAt !== "string" || (row.completedAt !== null && typeof row.completedAt !== "string")
+    || (requestCategory !== undefined && requestCategory !== null
+      && (typeof requestCategory !== "string" || !requestReasonCategories.has(requestCategory as MomoRequestReasonCategory)))
+    || (createdByRole !== undefined && createdByRole !== null
+      && createdByRole !== "team" && createdByRole !== "client")
+    || (row.subjectType !== undefined && row.subjectType !== null && typeof row.subjectType !== "string")
+    || (row.subjectId !== undefined && row.subjectId !== null && typeof row.subjectId !== "string")
+    || (row.lastMessageAt !== undefined && row.lastMessageAt !== null && typeof row.lastMessageAt !== "string")
+    || !contextIsValid) return null;
   return {
     id: row.id,
     requestType: requestType as MomoClientRequest["requestType"],
@@ -1459,6 +1506,12 @@ const requestFromJson = (row: Record<string, unknown>): MomoClientRequest | null
     priority,
     status: status as MomoClientRequest["status"],
     createdBy: row.createdBy,
+    createdByRole: createdByRole as MomoClientRequest["createdByRole"],
+    requestCategory: requestCategory as MomoRequestReasonCategory | null | undefined,
+    subjectType: row.subjectType as string | null | undefined,
+    subjectId: row.subjectId as string | null | undefined,
+    context: context as MomoRequestContext | undefined,
+    lastMessageAt: row.lastMessageAt as string | null | undefined,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     completedAt: row.completedAt as string | null,
@@ -1544,6 +1597,40 @@ export async function createMomoClientRequest(input: {
     || typeof row.status !== "string"
     || !requestStatuses.has(row.status as MomoClientRequest["status"])
     || typeof row.created_at !== "string") throw new Error("client_request_create_failed");
+  return row.request_id;
+}
+
+export async function createMomoTeamRequest(input: {
+  restaurantId: string;
+  requestType: MomoClientRequest["requestType"];
+  title: string;
+  details: string;
+  priority: MomoClientRequest["priority"];
+  requestCategory: MomoRequestReasonCategory;
+  subjectType?: string;
+  subjectId?: string;
+  context?: MomoRequestContext;
+  idempotencyKey: string;
+}): Promise<string> {
+  const client = requiredClient();
+  const { data, error } = await client.rpc("veroxa_create_team_request_v1", {
+    p_restaurant_id: input.restaurantId,
+    p_request_type: input.requestType,
+    p_title: input.title.trim(),
+    p_details: input.details.trim(),
+    p_priority: input.priority,
+    p_request_category: input.requestCategory,
+    p_subject_type: input.subjectType || null,
+    p_subject_id: input.subjectId || null,
+    p_context: input.context || {},
+    p_idempotency_key: input.idempotencyKey,
+  });
+  if (error) throw requestRpcError(error, "team_request_create_failed");
+  const row = singleRpcRow(data);
+  if (typeof row.request_id !== "string"
+    || typeof row.status !== "string"
+    || !requestStatuses.has(row.status as MomoClientRequest["status"])
+    || typeof row.created_at !== "string") throw new Error("team_request_create_failed");
   return row.request_id;
 }
 
@@ -1753,20 +1840,6 @@ export async function saveMomoContact(input: {
     p_is_primary: proposed.is_primary,
   });
   if (response.error || !response.data) throw new Error("contact_save_failed");
-}
-
-export async function reviewMomoConfirmation(
-  confirmation: MomoConfirmation,
-  status: "approved" | "changes_requested" | "rejected",
-): Promise<void> {
-  const client = requiredClient();
-  const { data, error } = await client.rpc("veroxa_apply_confirmation_v1", {
-    p_confirmation_id: confirmation.id,
-    p_decision: status,
-    p_applied_value: null,
-    p_review_notes: null,
-  });
-  if (error || !data) throw new Error("confirmation_review_failed");
 }
 
 export async function updateMomoOnboardingStep(input: {

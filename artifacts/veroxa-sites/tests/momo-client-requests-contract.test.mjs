@@ -67,3 +67,26 @@ test("request-linked work remains visible on the ordinary Momo work board", asyn
   assert.match(center, /item\.client_request_id &&/);
   assert.match(center, /Client request · \{item\.client_request_id\.slice\(0, 8\)\}/);
 });
+
+test("owner truth stays with Momo while Team requests remain linked and visible", async () => {
+  const [data, center, migration, grants] = await Promise.all([
+    readApp("momo-data.ts"),
+    readApp("momo-operating-center.tsx"),
+    readFile(new URL("../supabase/migrations/20260812041824_momo_owner_request_contract_v1.sql", import.meta.url), "utf8"),
+    readFile(new URL("../supabase/migrations/20260812042031_momo_team_content_ai_read_grants_v1.sql", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(data, /veroxa_create_team_request_v1/);
+  assert.match(data, /requestCategory/);
+  assert.match(center, /Request owner change/);
+  assert.match(center, /Owner authority stays with Momo/);
+  assert.match(center, /Messages &amp; requests/);
+  assert.match(center, /Suggested correction, if known/);
+  assert.doesNotMatch(center, /Approve and apply/);
+  assert.doesNotMatch(center, /reviewMomoConfirmation\(confirmation/);
+  assert.match(migration, /create or replace function public\.veroxa_create_team_request_v1/);
+  assert.match(migration, /request_category/);
+  assert.match(migration, /public\.veroxa_current_user_has_active_restaurant\(v_request\.restaurant_id\)/);
+  assert.match(migration, /'createdByRole'/);
+  assert.match(grants, /grant select \([\s\S]*automation_policy_version[\s\S]*decision_mode/);
+});

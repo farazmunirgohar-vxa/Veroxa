@@ -1,5 +1,12 @@
 <!-- GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY -->
 
+## 2026-08-12 — Momo portal ownership, request loop, data-read, and mobile repair live
+
+- The deployed Momo workspace keeps owner truth with Momo. Team can request structured factual, SEO, evidence, compliance, clarification, or operational changes, but cannot approve or apply owner confirmations.
+- Team and Momo share tenant-scoped Messages and Requests with linked context, sender role, affected surface, suggested correction, and visible response state. Team prefill saves remain non-authoritative until Momo confirms them.
+- Team data reads now fail closed with honest section-specific errors; the missing authenticated grants for current content-AI fields were repaired. Mobile decision cards stack safely.
+- Release evidence: Sites version 46 is live at https://veroxa-client-experience.fgohar1.chatgpt.site; 432 tests, lint, production build, and diff checks passed. Supabase migrations `20260812041824_momo_owner_request_contract_v1.sql` and `20260812042031_momo_team_content_ai_read_grants_v1.sql` were applied and verified. External provider writes, review replies, website writes, scheduling, posting, and owner contact remain locked.
+
 ## 2026-08-09 — media upload one-step Team processor live; GitHub/Sites parity verified (current authority)
 
 - **Momo stops after upload:** Momo's responsibility ends when the private upload succeeds. The enforced handoff is `clientActionAfterUpload=none` and `processingOwner=veroxa_team`; Client verification, retry, assessment, and association-processing controls are removed.
