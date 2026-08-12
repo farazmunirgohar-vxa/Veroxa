@@ -146,11 +146,29 @@ export const MEDIA_UPLOAD_HANDOFF_EVIDENCE = {
   "baseMainPullRequest": null,
   "candidateBranch": "agent/momo-live54-reconciliation",
   "operationalSourceCommitScope": "candidate source reconciled to live Sites v49 and live54 ledger; GitHub main parity pending PR #179",
-  "reviewedHead": "9e62d8fc870280cf409c8230e4046fbceb0563f0",
-  "reviewedTree": "f82acc315050adce2499682428c6148195fcaa1f",
+  "reviewedHead": "99e4908ad9524099bae8f59cf142de4a02e177ba",
+  "reviewedTree": "912ad6cc4192a24df6d1277f999828845c036dc6",
   "mergedPullRequest": null,
   "mergedMainCommit": null,
-  "allFourExactHeadWorkflowsGreen": false,
+  "allFourExactHeadWorkflowsGreen": true,
+  "allFourExactHeadWorkflows": {
+    "ci": {
+      "runId": 31629381614,
+      "status": "success"
+    },
+    "sitesVerify": {
+      "runId": 31629381719,
+      "status": "success"
+    },
+    "supabaseVerify": {
+      "runId": 31629381653,
+      "status": "success"
+    },
+    "veroxaVerify": {
+      "runId": 31629381665,
+      "status": "success"
+    }
+  },
   "zeroUnresolvedReviewThreads": true,
   "closeoutPullRequest": null,
   "closeoutEvidenceOnly": false,
@@ -1872,7 +1890,7 @@ export function assertCurrentReconciliationManifest(
   if (sourceTree.fileCount !== 222 || sourceTree.sha256 !== "6a9c002d259dfaac7f64acbb0ead6e37f1c7ad3aac82ad05e37cfbcd965b62b1" || manifest.source.fileCount !== sourceTree.fileCount || manifest.source.treeSha256 !== sourceTree.sha256 || rootMigrationTree.fileCount !== 54 || rootMigrationTree.sha256 !== "0d4566c0fddc5311a24a3ea44688e30bf05c347360a5ac36bbc336a038ca14ab" || mirrorMigrationTree.fileCount !== rootMigrationTree.fileCount || mirrorMigrationTree.sha256 !== rootMigrationTree.sha256 || JSON.stringify(rootMigrationTree.files) !== JSON.stringify(mirrorMigrationTree.files) || manifest.migrations.fileCount !== rootMigrationTree.fileCount || manifest.migrations.treeSha256 !== rootMigrationTree.sha256 || manifest.migrations.mirrorFileCount !== mirrorMigrationTree.fileCount || manifest.migrations.mirrorTreeSha256 !== mirrorMigrationTree.sha256) failures.push("schema-11 source or migration fingerprint drifted");
   if (live.sitesVersion !== 49 || live.sitesVersionId !== "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_1fe260bf5964819193b5638f2268c830" || live.sitesCheckoutCommit !== "91fefea488f1d334d47c09c5e2b251c4286e60fa" || live.sitesEnvironmentRevision !== 14 || live.sitesArchiveFileCount !== 52 || live.sitesArchiveByteLength !== 6041600 || live.sitesArchiveSha256 !== "0b03cd2010d248680798633eebd21ffde969c48b4670529e9c052a0abcaceabb" || live.productionMigrationCount !== 54 || live.migrationTreeSha256 !== "0d4566c0fddc5311a24a3ea44688e30bf05c347360a5ac36bbc336a038ca14ab" || live.latestProductionMigration !== "20260812042031_momo_team_content_ai_read_grants_v1.sql" || live.latestProductionMigrationByteLength !== 393 || live.latestProductionMigrationSha256 !== "78d43d24a8249523a8866331598491e478950c7a7a8a35451b29839ccc777b96" || live.githubMainMatchesCandidate !== false || live.candidateSourceMatchesLiveSites !== true || live.candidateMigrationsMatchLiveLedger !== true || live.fullReleaseGatePassed !== true) failures.push("schema-11 live Sites/database observation drifted");
   if (candidate.pullRequest !== 179 || candidate.pullRequestDraft !== true || candidate.githubMerged !== false || candidate.futureMergedGitHubCommit !== null || candidate.futureSitesVersion !== 49 || candidate.reviewedLocally !== true || candidate.sourceReviewPassed !== true || candidate.qualityReviewPassed !== true || candidate.candidateSourceMatchesLiveSites !== true || candidate.candidateMigrationsMatchLiveLedger !== true || candidate.githubMainMatchesCandidate !== false || candidate.fullReleaseGatePassed !== true || (candidate.pendingMigrations ?? []).length !== 0 || candidate.sourceFileCount !== sourceTree.fileCount || candidate.sourceTreeSha256 !== sourceTree.sha256 || candidate.migrationFileCount !== rootMigrationTree.fileCount || candidate.migrationTreeSha256 !== rootMigrationTree.sha256 || candidate.latestCandidateMigration !== latestMigration || candidate.latestCandidateMigrationSha256 !== sha256File(resolve(repoRoot, ROOT_MIGRATION_SOURCE_ROOT, latestMigration!))) failures.push("schema-11 candidate evidence or merge boundary drifted");
-  if (!handoff || handoff.status !== "live54_bridge_repaired_sites_v49_external_actions_held" || handoff.reviewedHead !== "9e62d8fc870280cf409c8230e4046fbceb0563f0" || handoff.reviewedTree !== "f82acc315050adce2499682428c6148195fcaa1f" || handoff.sitesVersion !== 49 || handoff.sitesVersionId !== live.sitesVersionId || handoff.sitesSourceCommit !== live.sitesCheckoutCommit || handoff.sitesEnvironmentRevision !== 14 || handoff.liveSitesSourceFileCount !== sourceTree.fileCount || handoff.liveSitesSourceTreeSha256 !== sourceTree.sha256 || handoff.candidateSourceFileCount !== sourceTree.fileCount || handoff.candidateSourceTreeSha256 !== sourceTree.sha256 || handoff.migrationFileCount !== rootMigrationTree.fileCount || handoff.migrationTreeSha256 !== rootMigrationTree.sha256 || handoff.latestMigration !== latestMigration || handoff.latestMigrationSha256 !== sha256File(resolve(repoRoot, ROOT_MIGRATION_SOURCE_ROOT, latestMigration!)) || handoff.applicationTestsPassed !== 433 || handoff.applicationTestsTotal !== 433 || JSON.stringify(handoff.edgeFunctions) !== JSON.stringify(MEDIA_UPLOAD_HANDOFF_EVIDENCE.edgeFunctions)) failures.push("schema-11 Momo handoff or Edge identity drifted");
+  if (!handoff || handoff.status !== "live54_bridge_repaired_sites_v49_external_actions_held" || handoff.reviewedHead !== "99e4908ad9524099bae8f59cf142de4a02e177ba" || handoff.reviewedTree !== "912ad6cc4192a24df6d1277f999828845c036dc6" || handoff.sitesVersion !== 49 || handoff.sitesVersionId !== live.sitesVersionId || handoff.sitesSourceCommit !== live.sitesCheckoutCommit || handoff.sitesEnvironmentRevision !== 14 || handoff.liveSitesSourceFileCount !== sourceTree.fileCount || handoff.liveSitesSourceTreeSha256 !== sourceTree.sha256 || handoff.candidateSourceFileCount !== sourceTree.fileCount || handoff.candidateSourceTreeSha256 !== sourceTree.sha256 || handoff.migrationFileCount !== rootMigrationTree.fileCount || handoff.migrationTreeSha256 !== rootMigrationTree.sha256 || handoff.latestMigration !== latestMigration || handoff.latestMigrationSha256 !== sha256File(resolve(repoRoot, ROOT_MIGRATION_SOURCE_ROOT, latestMigration!)) || handoff.applicationTestsPassed !== 433 || handoff.applicationTestsTotal !== 433 || JSON.stringify(handoff.edgeFunctions) !== JSON.stringify(MEDIA_UPLOAD_HANDOFF_EVIDENCE.edgeFunctions)) failures.push("schema-11 Momo handoff or Edge identity drifted");
   if (edge?.functionVersion !== 11 || edge?.verifyJwt !== true || edge?.indexSha256 !== "78f25afb125b1e51a54bc27ddf0bc43875307f4cb799eef577b8c7bf4cb9cac9" || edge?.providerCallObserved !== false || edge?.realUploadObserved !== false || edgeCandidate?.deployed !== true || edgeCandidate?.deployAuthorized !== false || edgeCandidate?.futureFunctionVersion !== 11 || edgeCandidate?.indexSha256 !== "78f25afb125b1e51a54bc27ddf0bc43875307f4cb799eef577b8c7bf4cb9cac9" || edgeCandidate?.providerCallObserved !== false || edgeCandidate?.realUploadObserved !== false || !externalLocks) failures.push("schema-11 Edge or external-action lock evidence drifted");
   if (failures.length > 0) throw new Error("Unsafe schema-11 live54 reconciliation manifest: " + failures.join("; "));
 }

@@ -275,8 +275,8 @@
     "basedOnGitHubMainCommit": "18d7030de8b0c2fe4fdab84e2679e643dfe8d3f1",
     "pullRequest": 179,
     "pullRequestDraft": true,
-    "observedDraftPullRequestHead": "9e62d8fc870280cf409c8230e4046fbceb0563f0",
-    "observedDraftPullRequestTree": "f82acc315050adce2499682428c6148195fcaa1f",
+    "observedDraftPullRequestHead": "99e4908ad9524099bae8f59cf142de4a02e177ba",
+    "observedDraftPullRequestTree": "912ad6cc4192a24df6d1277f999828845c036dc6",
     "draftHeadEvidenceScope": "exact live54 source reconciliation candidate head",
     "githubMerged": false,
     "futureMergedGitHubCommit": null,
@@ -284,7 +284,7 @@
     "reviewedLocally": true,
     "sourceReviewPassed": true,
     "qualityReviewPassed": true,
-    "allFourWorkflowsGreen": false,
+    "allFourWorkflowsGreen": true,
     "zeroUnresolvedReviewThreads": true,
     "candidateSourceMatchesLiveSites": true,
     "candidateMigrationsMatchLiveLedger": true,
@@ -331,7 +331,25 @@
     "activationGateReady": false,
     "activationAuthorizationConsumed": true,
     "activationExecuted": true,
-    "rolloutStatus": "live54_bridge_repair_verified_external_actions_held_no_real_upload"
+    "rolloutStatus": "live54_bridge_repair_verified_external_actions_held_no_real_upload",
+    "allFourExactHeadWorkflows": {
+      "ci": {
+        "runId": 31629381614,
+        "status": "success"
+      },
+      "sitesVerify": {
+        "runId": 31629381719,
+        "status": "success"
+      },
+      "supabaseVerify": {
+        "runId": 31629381653,
+        "status": "success"
+      },
+      "veroxaVerify": {
+        "runId": 31629381665,
+        "status": "success"
+      }
+    }
   },
   "rolloutSequence": {
     "status": "live49_internal_ai_active_external_actions_held",
@@ -1223,11 +1241,11 @@
     "baseMainCommit": "18d7030de8b0c2fe4fdab84e2679e643dfe8d3f1",
     "baseMainPullRequest": null,
     "candidateBranch": "agent/momo-live54-reconciliation",
-    "reviewedHead": "9e62d8fc870280cf409c8230e4046fbceb0563f0",
-    "reviewedTree": "f82acc315050adce2499682428c6148195fcaa1f",
+    "reviewedHead": "99e4908ad9524099bae8f59cf142de4a02e177ba",
+    "reviewedTree": "912ad6cc4192a24df6d1277f999828845c036dc6",
     "mergedPullRequest": null,
     "mergedMainCommit": null,
-    "allFourExactHeadWorkflowsGreen": false,
+    "allFourExactHeadWorkflowsGreen": true,
     "zeroUnresolvedReviewThreads": true,
     "closeoutPullRequest": null,
     "closeoutEvidenceOnly": false,
@@ -1294,6 +1312,24 @@
         "verifyJwt": true,
         "ezbrSha256": "712643244ffe1495262db422258b7322a58b55f30f518241b0bb57e40b91462a",
         "indexSha256": "a3d568eb532d0bb8ff9c840a7d2a26cbad300df2b71c350aaecfaf377173a5f1"
+      }
+    },
+    "allFourExactHeadWorkflows": {
+      "ci": {
+        "runId": 31629381614,
+        "status": "success"
+      },
+      "sitesVerify": {
+        "runId": 31629381719,
+        "status": "success"
+      },
+      "supabaseVerify": {
+        "runId": 31629381653,
+        "status": "success"
+      },
+      "veroxaVerify": {
+        "runId": 31629381665,
+        "status": "success"
       }
     }
   }
