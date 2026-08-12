@@ -24,22 +24,65 @@ try {
 
 
 if (manifest.schemaVersion === 11) {
-  for (const path of [
+  const authorityPaths = [
     "AGENTS.md","artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md","artifacts/veroxa/docs/CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md","artifacts/veroxa/docs/CURRENT_BUILD_STATUS.md","artifacts/veroxa/docs/README_CURRENT_STATE.md","artifacts/veroxa/docs/RR_CHECKPOINT.md","artifacts/veroxa/docs/VEROXA_CURRENT_MILESTONE.md","artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md",
-  ]) {
+  ];
+  for (const path of authorityPaths) {
     const text = read(path);
     must(!/^(<<<<<<<|=======|>>>>>>>)/mu.test(text), path + " contains merge markers.");
+    const headings = text.match(/^## .*?\(current authority\)$/gmu) ?? [];
+    must(headings.length === 1, path + " must contain exactly one current-authority heading.");
     const heading = text.match(/^## .*?\(current authority\)$/mu);
-    must(heading !== null, path + " is missing a current-authority heading.");
     const start = heading?.index ?? -1;
     const next = start < 0 ? -1 : text.indexOf("\n## ", start + (heading?.[0].length ?? 0));
     const current = start < 0 ? "" : text.slice(start, next < 0 ? undefined : next);
-    for (const marker of ["GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY","Sites v50","live54","20260812042031_momo_team_content_ai_read_grants_v1.sql","content lifecycle v11","no real new-user upload","External providers","USD 0 incremental spend","clientActionAfterUpload=none","processingOwner=veroxa_team","3 open Team media-intake exceptions","owner permission attestation"]) {
+    for (const marker of [
+      "Sites v52",
+      "live55",
+      "20260812214257_high_resolution_private_media_v1.sql",
+      "High-resolution intake",
+      "12,000-pixel per-axis",
+      "Storage objects",
+      "nonterminal work are all zero",
+      "Content lifecycle v11",
+      "Draft PR #181",
+      "external scheduling remain disabled",
+      "incremental spend remains USD 0",
+      "restaurant privately uploads authorized media only",
+      "Team resolves exceptions",
+    ]) {
       must(current.includes(marker), path + " is missing schema-11 authority marker: " + marker);
+    }
+    for (const marker of [
+      "GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY",
+      "VEROXA_LIVE55_SITES_V52_RECONCILIATION_AUTHORITY",
+    ]) {
+      must(text.includes(marker), path + " is missing schema-11 authority marker: " + marker);
+    }
+  }
+  for (const path of [
+    "AGENTS.md",
+    "artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md",
+    "artifacts/veroxa/docs/CURRENT_BUILD_STATUS.md",
+    "artifacts/veroxa/docs/VEROXA_CURRENT_MILESTONE.md",
+    "artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md",
+  ]) {
+    const text = read(path);
+    must(
+      (text.match(/PROJECT_SCOPE_AND_POST_ACCESS_AUTHORITY_2026_08_10/gu) ?? []).length === 1,
+      path + " must contain exactly one project-scope authority marker.",
+    );
+    for (const marker of [
+      "Veroxa-only scope",
+      "restaurant has one recurring job: privately upload authorized media",
+      "Veroxa and Team responsibility",
+      "Team resolves exceptions",
+    ]) {
+      must(text.includes(marker), path + " is missing project-scope authority: " + marker);
     }
   }
   if (failures.length > 0) { for (const failure of failures) console.error("FAIL:", failure); process.exit(1); }
-  console.log("PASS: schema-11 authority docs match the live54 reconciliation.");
+  console.log("PASS: schema-11 authority docs match the live55 / Sites v52 reconciliation and Veroxa-only operating model.");
   process.exit(0);
 }
 

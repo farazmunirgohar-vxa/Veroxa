@@ -6,7 +6,31 @@ Read this file first before planning, building, reviewing, merging, deploying, o
 
 <!-- GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY -->
 
-## 2026-08-12 — Momo live54 rights-attestation repair; Sites v50 deployed (current authority)
+<!-- PROJECT_SCOPE_AND_POST_ACCESS_AUTHORITY_2026_08_10 -->
+
+## 2026-08-10 — project isolation and restaurant operating model (product direction)
+
+- **Veroxa-only scope:** Within the Veroxa project, `refresh`, `resume`, `everything`, pending-task reviews, status reports, tools, agents, artifacts, automations, budgets, permissions, and next actions are Veroxa-only unless Faraz explicitly names a cross-project scope in the current request. Conversation history, personal context, global automation lists, and shared or transient workspaces are navigation evidence only; they do not attach another project to Veroxa. Leave non-Veroxa workstreams and artifacts untouched and classify ambiguous items as `unscoped`.
+- **Onboarding authority:** Veroxa audits and pre-fills the restaurant profile; the restaurant edits or verifies restaurant truth. After that verification, Veroxa provides detailed instructions for the restaurant to grant access to the required platforms. The platform-access request stage remains visibly and functionally held until Faraz explicitly lifts it.
+- **Post-access restaurant responsibility:** After required access is complete, the restaurant has one recurring job: privately upload authorized media. Do not send routine technical verification, retry, classification, association processing, captions, SEO, Ready review, scheduling, performance analysis, or report preparation back to the restaurant.
+- **Veroxa and Team responsibility:** Veroxa handles media integrity and quality checks, exact-duplicate control, safe improvement, uncertainty, captions, SEO, hashtags, alt text, and evidence-bound post-ready preparation. Use only restaurant truth already verified during onboarding for business claims. If an exact dish or offering association cannot be established safely, use neutral copy, abstain, or create a Team exception. Team resolves exceptions and approves or terminally discards the exact Ready package without becoming the owner of restaurant truth.
+- **Future operating loop:** Only after the current hold is explicitly lifted may the separately gated system publish Team-approved Ready media on the defined schedule, measure verified platform performance, produce a lighter weekly report, and produce a deeper monthly strategy report.
+- **Release boundary:** This authority does not itself connect platforms, enable provider writes, schedule or publish content, contact the restaurant, or authorize spend. Each production change still requires independently verified source, database, deployment, and release evidence.
+
+<!-- VEROXA_LIVE55_SITES_V52_RECONCILIATION_AUTHORITY -->
+
+## 2026-08-12 — Sites v52 and Supabase live55 reconciled (current authority)
+
+- **Live portal:** `https://veroxasystems.com` serves Sites v52, version `appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_84a25fdf11c8819189afc4ffa78691b8`, from Sites source `f0d88e3246d3c23c5d7610ca07f94640c856e722`. The 52-file release archive is 6,041,600 bytes at SHA-256 `60c9e2b83d7b6ce0dd84bd16fc8fbf11b98f814d86932342c11388aac3b7d62b`; environment revision 14 is active, and both apex and `www` domains have active SSL.
+- **High-resolution intake:** the obsolete 16,777,216-total-pixel ceiling is removed across portal, API, and database. The 10 MB source limit, 12,000-pixel per-axis bounds, 0.4–2.5 intake aspect-ratio bounds, byte verification, bounded decode, tenant isolation, immutable evidence, and `external_write_allowed=false` remain enforced.
+- **Live database:** Supabase is ACTIVE_HEALTHY at live55 through `20260812214257_high_resolution_private_media_v1.sql` (11,103 bytes; SHA-256 `3e8471bc4216a67fd591b5b611388be2873e44eb87c957934b280681d7bfe065`). Canonical root and Sites mirrors contain 55 byte-identical migrations at tree SHA-256 `8010eaf8a8936b6d450b0d6161308ed705560dc338705f335202243bfc26fc56`.
+- **Clean media state:** the three retired Momo uploads and four unreferenced Team-only synthetic fixtures were permanently removed only after reference and tenant-scope checks. Storage objects, media assets, renditions, rights, placements, AI candidates, Ready packages, and nonterminal work are all zero. One immutable `synthetic_media_fixture_purge_completed` activity event preserves the bounded cleanup evidence.
+- **Edge state:** the one-time purge surface is closed at `veroxa-legacy-media-purge-20260812` v11 with JWT verification and an exact HTTP 410 tombstone. Content lifecycle v11, media lifecycle v3, dispatch v3, and the signed webhook v4 remain ACTIVE without widening external authority.
+- **Repository reconciliation:** canonical GitHub `main` is `fb6d8b13bf548fd144cec4ce241bd44c1cecc99f` from PR #179. Draft PR #181 carries the exact 225-file Sites v52 source, live55 migration mirror, purge tombstone, tests, and release evidence; exact-head workflows and merge remain pending, so GitHub parity is not yet claimed.
+- **Operating responsibility:** the restaurant privately uploads authorized media only. Veroxa performs downstream integrity, assessment, safe preparation, and reporting; Team resolves exceptions and approves or terminally discards the exact Ready package. Neither Veroxa nor Team may manufacture owner truth.
+- **Platform and spend hold:** Google Business and Meta remain intentionally not connected, with no owner authorization, scopes, or capabilities. Provider writes, review replies, website writes, and external scheduling remain disabled. No account was connected, no external content was published, and incremental spend remains USD 0; Momo's separate USD 20 setup ceiling was not touched.
+
+## 2026-08-12 — Momo live54 rights-attestation repair; Sites v50 deployed (historical authority, superseded by v52/live55)
 
 Current reconciliation markers: content lifecycle v11; USD 0 incremental spend.
 - **PR #179 validation:** corrected v50 source/evidence candidate `8262ab6824dddbc9fb058b1500a2f8d0f2369851` (tree `1afd667a936b5cd12df930b2341d9e9feeb4e6d2`) passed CI #483 (run 31633030085), Sites Verify #173 (run 31633030045), Supabase Verify #143 (run 31633030057), and Veroxa Verify #428 (run 31633030054); review threads: 0. GitHub `main` remains unchanged pending final evidence-head validation and merge.

@@ -77,7 +77,7 @@ export const DEPLOYABLE_SITES_MAPPING_TARGET =
 export const ROOT_MIGRATION_SOURCE_ROOT = "supabase/migrations";
 export const SITES_MIGRATION_MIRROR_ROOT =
   "artifacts/veroxa-sites/supabase/migrations";
-export const REVIEWED_APPLICATION_TEST_TOTAL = 433;
+export const REVIEWED_APPLICATION_TEST_TOTAL = 437;
 export const GUARDED_ROLLOUT_RELEASE_STATE =
   "live49_internal_ai_active_external_actions_held";
 export const GUARDED_ROLLOUT_CANDIDATE_REVISION =
@@ -141,38 +141,34 @@ export const INTERNAL_AI_RELEASE_EVIDENCE = {
 
 export const MEDIA_UPLOAD_HANDOFF_EVIDENCE = {
   "observedAt": "2026-08-12",
-  "status": "live54_bridge_repaired_sites_v50_rights_attestation_repaired_external_actions_held",
-  "baseMainCommit": "18d7030de8b0c2fe4fdab84e2679e643dfe8d3f1",
-  "baseMainPullRequest": null,
-  "candidateBranch": "agent/momo-live54-reconciliation",
-  "reviewedHead": "8262ab6824dddbc9fb058b1500a2f8d0f2369851",
-  "reviewedTree": "1afd667a936b5cd12df930b2341d9e9feeb4e6d2",
+  "status": "live55_sites_v52_high_resolution_reconciled_external_actions_held",
+  "baseMainCommit": "fb6d8b13bf548fd144cec4ce241bd44c1cecc99f",
+  "baseMainPullRequest": 179,
+  "candidateBranch": "agent/v51-production-reconciliation",
+  "reviewedHead": "1aaea456097ebd89614458f6c9f7ad66b0df4a4e",
+  "reviewedTree": "ba3f565a25099636ecb775de33d2ad39db16f253",
   "mergedPullRequest": null,
   "mergedMainCommit": null,
-  "allFourExactHeadWorkflowsGreen": true,
+  "allFourExactHeadWorkflowsGreen": false,
   "zeroUnresolvedReviewThreads": true,
   "closeoutPullRequest": null,
   "closeoutEvidenceOnly": false,
-  "sitesVersion": 50,
-  "sitesVersionId": "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_435b68bbe9c08191bd9579825218fa5a",
-  "sitesSourceCommit": "5dc88c25a9eab02a33ce8b357cc09d5b43d0af9e",
+  "sitesVersion": 52,
+  "sitesVersionId": "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_84a25fdf11c8819189afc4ffa78691b8",
+  "sitesSourceCommit": "f0d88e3246d3c23c5d7610ca07f94640c856e722",
   "sitesArchiveFileCount": 52,
   "sitesArchiveByteLength": 6041600,
-  "sitesArchiveSha256": "9aada7a54f6da92893b0ce551d3f03b2a970ad4e28de8beb8d17540e6edce1e2",
+  "sitesArchiveSha256": "60c9e2b83d7b6ce0dd84bd16fc8fbf11b98f814d86932342c11388aac3b7d62b",
   "sitesEnvironmentRevision": 14,
-  "liveSitesSourceFileCount": 222,
-  "liveSitesSourceTreeSha256": "053cecab6ac5164f9f80d57f2d4f470f12cf2d4c92c7cd113a9ed7fc936bd8ec",
-  "candidateSourceFileCount": 222,
-  "candidateSourceTreeSha256": "053cecab6ac5164f9f80d57f2d4f470f12cf2d4c92c7cd113a9ed7fc936bd8ec",
-  "migrationFileCount": 54,
-  "migrationTreeSha256": "0d4566c0fddc5311a24a3ea44688e30bf05c347360a5ac36bbc336a038ca14ab",
-  "latestMigration": "20260812042031_momo_team_content_ai_read_grants_v1.sql",
-  "latestMigrationByteLength": 393,
-  "latestMigrationSha256": "78d43d24a8249523a8866331598491e478950c7a7a8a35451b29839ccc777b96",
-  "teamProcessorMigration": "20260809231409_momo_media_instruction_team_processing_v1.sql",
-  "teamProcessorMigrationByteLength": 11720,
-  "teamProcessorMigrationSha256": "3c4594c56a5260ce6b29eb85be46100c792512c6a47f35590ca8434dd68e02f2",
-  "provisionalSitesMigration": "20260809223000_media_upload_instruction_handoff_v1.sql",
+  "liveSitesSourceFileCount": 225,
+  "liveSitesSourceTreeSha256": "7f7a16864d3424581b1f04ee07501909850c9e7a7f682657208e40ba801d8adf",
+  "candidateSourceFileCount": 225,
+  "candidateSourceTreeSha256": "7f7a16864d3424581b1f04ee07501909850c9e7a7f682657208e40ba801d8adf",
+  "migrationFileCount": 55,
+  "migrationTreeSha256": "8010eaf8a8936b6d450b0d6161308ed705560dc338705f335202243bfc26fc56",
+  "latestMigration": "20260812214257_high_resolution_private_media_v1.sql",
+  "latestMigrationByteLength": 11103,
+  "latestMigrationSha256": "3e8471bc4216a67fd591b5b611388be2873e44eb87c957934b280681d7bfe065",
   "clientActionAfterUpload": "none",
   "processingOwner": "veroxa_team",
   "legacyV2AuthenticatedExecute": false,
@@ -180,14 +176,42 @@ export const MEDIA_UPLOAD_HANDOFF_EVIDENCE = {
   "teamProcessorAvailable": true,
   "savedInstructionCount": 0,
   "instructionApplicationCount": 0,
-  "unverifiedSavedUploadCount": 3,
-  "openMediaIntakeExceptionCount": 3,
+  "unverifiedSavedUploadCount": 0,
+  "openMediaIntakeExceptionCount": 0,
   "allMediaIntakeExceptionsExternalLocked": true,
   "existingUploadRequiresClientRetry": false,
   "preFixInstructionRecoverable": false,
   "bridgeKeyRotated": true,
-  "applicationTestsPassed": 433,
-  "applicationTestsTotal": 433,
+  "retiredRealUploadCount": 3,
+  "syntheticFixtureDeletedCount": 4,
+  "storageObjectCount": 0,
+  "mediaAssetCount": 0,
+  "mediaRenditionCount": 0,
+  "mediaRightsCount": 0,
+  "contentPlacementCount": 0,
+  "mediaCandidateCount": 0,
+  "readyPackageCount": 0,
+  "nonterminalWorkCount": 0,
+  "cleanupAuditEventCount": 1,
+  "highResolutionUploadContract": {
+    "totalPixelCeiling": null,
+    "maximumFileBytes": 10485760,
+    "maximumAxisPixels": 12000,
+    "minimumAspectRatio": 0.4,
+    "maximumAspectRatio": 2.5,
+    "boundedDecodePreserved": true
+  },
+  "purgeEndpoint": {
+    "id": "0dd3967b-343c-45b4-b7a8-14e6c962a7d3",
+    "version": 11,
+    "status": "ACTIVE",
+    "verifyJwt": true,
+    "ezbrSha256": "f18a7abb118f36d6bdf76777a68efb3a33ed5dbcc89b49aab56796af268b0696",
+    "indexSha256": "6d928ef8c06d1c97441080637467837ed309ac37f4f1285c1630c987a957bab5",
+    "response": "410_legacy_media_purge_closed"
+  },
+  "applicationTestsPassed": 437,
+  "applicationTestsTotal": 437,
   "edgeFunctions": {
     "contentLifecycle": {
       "id": "859c73c3-2102-41b4-9da1-20582acb7212",
@@ -216,24 +240,33 @@ export const MEDIA_UPLOAD_HANDOFF_EVIDENCE = {
       "verifyJwt": true,
       "ezbrSha256": "712643244ffe1495262db422258b7322a58b55f30f518241b0bb57e40b91462a",
       "indexSha256": "a3d568eb532d0bb8ff9c840a7d2a26cbad300df2b71c350aaecfaf377173a5f1"
+    },
+    "legacyMediaPurge": {
+      "id": "0dd3967b-343c-45b4-b7a8-14e6c962a7d3",
+      "version": 11,
+      "status": "ACTIVE",
+      "verifyJwt": true,
+      "ezbrSha256": "f18a7abb118f36d6bdf76777a68efb3a33ed5dbcc89b49aab56796af268b0696",
+      "indexSha256": "6d928ef8c06d1c97441080637467837ed309ac37f4f1285c1630c987a957bab5",
+      "response": "410_legacy_media_purge_closed"
     }
   },
   "allFourExactHeadWorkflows": {
     "ci": {
-      "runId": 31633030085,
-      "status": "success"
+      "runId": null,
+      "status": "pending"
     },
     "sitesVerify": {
-      "runId": 31633030045,
-      "status": "success"
+      "runId": null,
+      "status": "pending"
     },
     "supabaseVerify": {
-      "runId": 31633030057,
-      "status": "success"
+      "runId": null,
+      "status": "pending"
     },
     "veroxaVerify": {
-      "runId": 31633030054,
-      "status": "success"
+      "runId": null,
+      "status": "pending"
     }
   },
   "clientRightsAttestationRequired": true,
@@ -243,7 +276,7 @@ export const MEDIA_UPLOAD_HANDOFF_EVIDENCE = {
     "google_business"
   ],
   "clientRightsAttestationGuard": "media_rights_attestation_required_before_storage",
-  "operationalSourceCommitScope": "pre-reconciliation GitHub main; PR #179 carries the reviewed live54 candidate"
+  "operationalSourceCommitScope": "merged PR #179 baseline; draft PR #181 carries exact live v52/live55 reconciliation"
 } as const;
 
 export const V36_GITHUB_RECONCILIATION = {
@@ -647,6 +680,13 @@ type CurrentProductionObservation = {
   candidateMigrationsMatchLiveLedger: boolean;
   fullReleaseGatePassed: boolean;
   fullReleaseGateScope?: string;
+  mediaCleanup?: {
+    storageObjectCount: number;
+    mediaAssetCount: number;
+    mediaRenditionCount: number;
+    nonterminalWorkCount: number;
+    completedCleanupAuditEventCount: number;
+  };
 };
 
 type CandidateEvidence = {
@@ -1886,8 +1926,6 @@ export function assertCurrentReconciliationManifest(
   const handoff = manifest.mediaUploadHandoff as
     | Record<string, unknown>
     | undefined;
-  const edge = manifest.edgeDeployment;
-  const edgeCandidate = manifest.edgeCandidate;
   const hold = manifest.operationalHold;
   const sourceTree = hashTree(resolve(repoRoot, DEPLOYABLE_SITES_SOURCE_ROOT), {
     exclusions: [...GENERATED_PATH_EXCLUSIONS],
@@ -1899,75 +1937,113 @@ export function assertCurrentReconciliationManifest(
     suffix: ".sql",
   });
   const latestMigration = rootMigrationTree.files.at(-1);
-  const externalLocks = hold?.providerWrites === false &&
+  const purgeSource = resolve(
+    repoRoot,
+    ROOT_MIGRATION_SOURCE_ROOT,
+    "../functions/veroxa-legacy-media-purge-20260812/index.ts",
+  );
+  const externalLocks =
+    hold?.providerWrites === false &&
     hold?.reviewReplies === false &&
     hold?.websiteWrites === false &&
     hold?.externalScheduling === false;
 
   if (
     manifest.schemaVersion !== 11 ||
-    manifest.recordKind !== "veroxa_momo_live54_reconciliation_manifest" ||
-    manifest.releaseState !== "live54_sites_v50_rights_attestation_repaired_external_actions_held" ||
+    manifest.recordKind !== "veroxa_momo_live55_v52_reconciliation_manifest" ||
+    manifest.releaseState !==
+      "live55_sites_v52_high_resolution_reconciled_external_actions_held" ||
     manifest.reviewedAt !== "2026-08-12" ||
+    manifest.candidateRevision !==
+      "momo_live55_sites_v52_high_resolution_reconciliation_2026-08-12" ||
+    manifest.candidateBranch !== "agent/v51-production-reconciliation" ||
     manifest.canonicalRepository !== "farazmunirgohar-vxa/Veroxa" ||
     manifest.canonicalBranch !== "main" ||
-    manifest.sitesProjectId !== "appgprj_6a53d07c7c28819182801cf35dfd30de"
-  ) failures.push("schema-11 reconciliation identity drifted");
+    manifest.sitesProjectId !==
+      "appgprj_6a53d07c7c28819182801cf35dfd30de"
+  ) failures.push("schema-11 v52/live55 reconciliation identity drifted");
 
   if (
-    sourceTree.fileCount !== 222 ||
-    sourceTree.sha256 !== "053cecab6ac5164f9f80d57f2d4f470f12cf2d4c92c7cd113a9ed7fc936bd8ec" ||
+    sourceTree.fileCount !== 225 ||
+    sourceTree.sha256 !==
+      "7f7a16864d3424581b1f04ee07501909850c9e7a7f682657208e40ba801d8adf" ||
     manifest.source.fileCount !== sourceTree.fileCount ||
     manifest.source.treeSha256 !== sourceTree.sha256 ||
-    rootMigrationTree.fileCount !== 54 ||
-    rootMigrationTree.sha256 !== "0d4566c0fddc5311a24a3ea44688e30bf05c347360a5ac36bbc336a038ca14ab" ||
+    rootMigrationTree.fileCount !== 55 ||
+    rootMigrationTree.sha256 !==
+      "8010eaf8a8936b6d450b0d6161308ed705560dc338705f335202243bfc26fc56" ||
     mirrorMigrationTree.fileCount !== rootMigrationTree.fileCount ||
     mirrorMigrationTree.sha256 !== rootMigrationTree.sha256 ||
-    JSON.stringify(rootMigrationTree.files) !== JSON.stringify(mirrorMigrationTree.files) ||
+    JSON.stringify(rootMigrationTree.files) !==
+      JSON.stringify(mirrorMigrationTree.files) ||
     manifest.migrations.fileCount !== rootMigrationTree.fileCount ||
     manifest.migrations.treeSha256 !== rootMigrationTree.sha256 ||
     manifest.migrations.mirrorFileCount !== mirrorMigrationTree.fileCount ||
-    manifest.migrations.mirrorTreeSha256 !== mirrorMigrationTree.sha256
-  ) failures.push("schema-11 source or migration fingerprint drifted");
+    manifest.migrations.mirrorTreeSha256 !== mirrorMigrationTree.sha256 ||
+    sha256File(purgeSource) !==
+      "6d928ef8c06d1c97441080637467837ed309ac37f4f1285c1630c987a957bab5"
+  ) failures.push("schema-11 source, migration, or purge-tombstone fingerprint drifted");
 
   if (
-    live.sitesVersion !== 50 ||
-    live.sitesVersionId !== "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_435b68bbe9c08191bd9579825218fa5a" ||
-    live.sitesCheckoutCommit !== "5dc88c25a9eab02a33ce8b357cc09d5b43d0af9e" ||
+    live.evidenceStatus !==
+      "sites_v52_database55_high_resolution_media_reconciled_storage_clean_external_actions_held" ||
+    live.canonicalGitHubMainCommit !==
+      "fb6d8b13bf548fd144cec4ce241bd44c1cecc99f" ||
+    live.canonicalGitHubMainMergePullRequest !== 179 ||
+    live.sitesVersion !== 52 ||
+    live.sitesVersionId !==
+      "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_84a25fdf11c8819189afc4ffa78691b8" ||
+    live.sitesCheckoutCommit !==
+      "f0d88e3246d3c23c5d7610ca07f94640c856e722" ||
     live.sitesEnvironmentRevision !== 14 ||
     live.sitesArchiveFileCount !== 52 ||
     live.sitesArchiveByteLength !== 6041600 ||
-    live.sitesArchiveSha256 !== "9aada7a54f6da92893b0ce551d3f03b2a970ad4e28de8beb8d17540e6edce1e2" ||
-    live.productionMigrationCount !== 54 ||
-    live.migrationTreeSha256 !== "0d4566c0fddc5311a24a3ea44688e30bf05c347360a5ac36bbc336a038ca14ab" ||
-    live.latestProductionMigration !== "20260812042031_momo_team_content_ai_read_grants_v1.sql" ||
-    live.latestProductionMigrationByteLength !== 393 ||
-    live.latestProductionMigrationSha256 !== "78d43d24a8249523a8866331598491e478950c7a7a8a35451b29839ccc777b96" ||
+    live.sitesArchiveSha256 !==
+      "60c9e2b83d7b6ce0dd84bd16fc8fbf11b98f814d86932342c11388aac3b7d62b" ||
+    live.sourceFileCount !== sourceTree.fileCount ||
+    live.sourceTreeSha256 !== sourceTree.sha256 ||
+    live.productionMigrationCount !== 55 ||
+    live.migrationTreeSha256 !== rootMigrationTree.sha256 ||
+    live.latestProductionMigration !==
+      "20260812214257_high_resolution_private_media_v1.sql" ||
+    live.latestProductionMigrationByteLength !== 11103 ||
+    live.latestProductionMigrationSha256 !==
+      "3e8471bc4216a67fd591b5b611388be2873e44eb87c957934b280681d7bfe065" ||
     live.githubMainMatchesCandidate !== false ||
     live.candidateSourceMatchesLiveSites !== true ||
     live.candidateMigrationsMatchLiveLedger !== true ||
-    live.fullReleaseGatePassed !== true
-  ) failures.push("schema-11 live Sites/database observation drifted");
+    live.fullReleaseGatePassed !== true ||
+    live.mediaCleanup?.storageObjectCount !== 0 ||
+    live.mediaCleanup?.mediaAssetCount !== 0 ||
+    live.mediaCleanup?.mediaRenditionCount !== 0 ||
+    live.mediaCleanup?.nonterminalWorkCount !== 0 ||
+    live.mediaCleanup?.completedCleanupAuditEventCount !== 1
+  ) failures.push("schema-11 live v52/live55 or cleanup observation drifted");
 
   if (
-    candidate.pullRequest !== 179 ||
+    candidate.status !== manifest.releaseState ||
+    candidate.actionScope !==
+      "bounded_high_resolution_media_and_storage_cleanup_reconciliation_preserving_external_action_locks" ||
+    candidate.basedOnGitHubMainCommit !==
+      "fb6d8b13bf548fd144cec4ce241bd44c1cecc99f" ||
+    candidate.pullRequest !== 181 ||
     candidate.pullRequestDraft !== true ||
     candidate.githubMerged !== false ||
     candidate.futureMergedGitHubCommit !== null ||
-    candidate.futureSitesVersion !== 50 ||
+    candidate.futureSitesVersion !== 52 ||
     candidate.reviewedLocally !== true ||
     candidate.sourceReviewPassed !== true ||
     candidate.qualityReviewPassed !== true ||
-    candidateRecord.observedDraftPullRequestHead !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.reviewedHead ||
-    candidateRecord.observedDraftPullRequestTree !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.reviewedTree ||
-    candidate.allFourWorkflowsGreen !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.allFourExactHeadWorkflowsGreen ||
-    candidate.zeroUnresolvedReviewThreads !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.zeroUnresolvedReviewThreads ||
-    JSON.stringify(candidateRecord.allFourExactHeadWorkflows) !==
-      JSON.stringify(MEDIA_UPLOAD_HANDOFF_EVIDENCE.allFourExactHeadWorkflows) ||
+    candidateRecord.observedDraftPullRequestHead !==
+      "1aaea456097ebd89614458f6c9f7ad66b0df4a4e" ||
+    candidateRecord.observedDraftPullRequestTree !==
+      "ba3f565a25099636ecb775de33d2ad39db16f253" ||
+    candidate.allFourWorkflowsGreen !== false ||
+    candidate.zeroUnresolvedReviewThreads !== true ||
     candidate.candidateSourceMatchesLiveSites !== true ||
     candidate.candidateMigrationsMatchLiveLedger !== true ||
     candidate.githubMainMatchesCandidate !== false ||
-    candidate.fullReleaseGatePassed !== true ||
+    candidate.fullReleaseGatePassed !== false ||
     (candidate.pendingMigrations ?? []).length !== 0 ||
     candidate.sourceFileCount !== sourceTree.fileCount ||
     candidate.sourceTreeSha256 !== sourceTree.sha256 ||
@@ -1975,62 +2051,53 @@ export function assertCurrentReconciliationManifest(
     candidate.migrationTreeSha256 !== rootMigrationTree.sha256 ||
     candidate.latestCandidateMigration !== latestMigration ||
     candidate.latestCandidateMigrationSha256 !==
-      sha256File(resolve(repoRoot, ROOT_MIGRATION_SOURCE_ROOT, latestMigration!))
-  ) failures.push("schema-11 candidate evidence or merge boundary drifted");
+      sha256File(resolve(repoRoot, ROOT_MIGRATION_SOURCE_ROOT, latestMigration!)) ||
+    candidate.databaseChangesRequired !== false ||
+    candidate.databaseMigrationApplied !== true ||
+    candidate.sitesPublishRequired !== false ||
+    candidate.sitesPublished !== true ||
+    candidate.deploymentAuthorized !== false
+  ) failures.push("schema-11 PR #181 candidate or hold boundary drifted");
 
   if (
     !handoff ||
-    handoff.status !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.status ||
-    handoff.reviewedHead !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.reviewedHead ||
-    handoff.reviewedTree !== MEDIA_UPLOAD_HANDOFF_EVIDENCE.reviewedTree ||
-    handoff.allFourExactHeadWorkflowsGreen !==
-      MEDIA_UPLOAD_HANDOFF_EVIDENCE.allFourExactHeadWorkflowsGreen ||
-    handoff.zeroUnresolvedReviewThreads !==
-      MEDIA_UPLOAD_HANDOFF_EVIDENCE.zeroUnresolvedReviewThreads ||
-    JSON.stringify(handoff.allFourExactHeadWorkflows) !==
-      JSON.stringify(MEDIA_UPLOAD_HANDOFF_EVIDENCE.allFourExactHeadWorkflows) ||
-    handoff.sitesVersion !== 50 ||
-    handoff.sitesVersionId !== live.sitesVersionId ||
-    handoff.sitesSourceCommit !== live.sitesCheckoutCommit ||
-    handoff.sitesEnvironmentRevision !== 14 ||
-    handoff.liveSitesSourceFileCount !== sourceTree.fileCount ||
-    handoff.liveSitesSourceTreeSha256 !== sourceTree.sha256 ||
-    handoff.candidateSourceFileCount !== sourceTree.fileCount ||
-    handoff.candidateSourceTreeSha256 !== sourceTree.sha256 ||
-    handoff.migrationFileCount !== rootMigrationTree.fileCount ||
-    handoff.migrationTreeSha256 !== rootMigrationTree.sha256 ||
-    handoff.latestMigration !== latestMigration ||
-    handoff.latestMigrationSha256 !==
-      sha256File(resolve(repoRoot, ROOT_MIGRATION_SOURCE_ROOT, latestMigration!)) ||
-    handoff.clientRightsAttestationRequired !== true ||
-    JSON.stringify(handoff.clientRightsAttestationScopes) !==
-      JSON.stringify(["instagram", "facebook", "google_business"]) ||
-    handoff.clientRightsAttestationGuard !==
-      "media_rights_attestation_required_before_storage" ||
-    handoff.applicationTestsPassed !== 433 ||
-    handoff.applicationTestsTotal !== 433 ||
-    JSON.stringify(handoff.edgeFunctions) !==
-      JSON.stringify(MEDIA_UPLOAD_HANDOFF_EVIDENCE.edgeFunctions)
-  ) failures.push("schema-11 Momo rights-attestation handoff or Edge identity drifted");
+    JSON.stringify(handoff) !==
+      JSON.stringify(MEDIA_UPLOAD_HANDOFF_EVIDENCE) ||
+    handoff.applicationTestsPassed !== 437 ||
+    handoff.applicationTestsTotal !== 437 ||
+    handoff.unverifiedSavedUploadCount !== 0 ||
+    handoff.openMediaIntakeExceptionCount !== 0 ||
+    handoff.storageObjectCount !== 0 ||
+    handoff.mediaRenditionCount !== 0 ||
+    handoff.cleanupAuditEventCount !== 1 ||
+    (handoff.purgeEndpoint as Record<string, unknown> | undefined)
+      ?.verifyJwt !== true ||
+    (handoff.purgeEndpoint as Record<string, unknown> | undefined)
+      ?.version !== 11 ||
+    (handoff.highResolutionUploadContract as
+      | Record<string, unknown>
+      | undefined)?.totalPixelCeiling !== null ||
+    (handoff.highResolutionUploadContract as
+      | Record<string, unknown>
+      | undefined)?.boundedDecodePreserved !== true
+  ) failures.push("schema-11 handoff, cleanup, or high-resolution contract drifted");
 
+  const quality = manifest.applicationQualityEvidence;
   if (
-    edge?.functionVersion !== 11 ||
-    edge?.verifyJwt !== true ||
-    edge?.indexSha256 !== "78f25afb125b1e51a54bc27ddf0bc43875307f4cb799eef577b8c7bf4cb9cac9" ||
-    edge?.providerCallObserved !== false ||
-    edge?.realUploadObserved !== false ||
-    edgeCandidate?.deployed !== true ||
-    edgeCandidate?.deployAuthorized !== false ||
-    edgeCandidate?.futureFunctionVersion !== 11 ||
-    edgeCandidate?.indexSha256 !== "78f25afb125b1e51a54bc27ddf0bc43875307f4cb799eef577b8c7bf4cb9cac9" ||
-    edgeCandidate?.providerCallObserved !== false ||
-    edgeCandidate?.realUploadObserved !== false ||
+    !quality ||
+    quality.testsTotal !== 437 ||
+    quality.testsPassed !== 437 ||
+    quality.testsFailed !== 0 ||
+    quality.buildExitCode !== 0 ||
+    quality.typecheckExitCode !== 0 ||
+    quality.lintExitCode !== 0 ||
+    quality.lintErrorCount !== 0 ||
     !externalLocks
-  ) failures.push("schema-11 Edge or external-action lock evidence drifted");
+  ) failures.push("schema-11 quality evidence or external-action lock drifted");
 
   if (failures.length > 0) {
     throw new Error(
-      "Unsafe schema-11 live54 rights-attestation reconciliation manifest: " +
+      "Unsafe schema-11 live55/Sites-v52 reconciliation manifest: " +
         failures.join("; "),
     );
   }
@@ -2058,7 +2125,7 @@ export function assertReviewedLocalCandidateManifest(
   if (manifest.schemaVersion === 11) {
     assertCurrentReconciliationManifest(manifest);
     const quality = manifest.applicationQualityEvidence;
-    if (!quality || quality.testsTotal !== 433 || quality.testsPassed !== 433 || quality.testsFailed !== 0 || !manifest.releaseCandidate.reviewedLocally || manifest.releaseCandidate.sourceReviewPassed !== true || manifest.releaseCandidate.qualityReviewPassed !== true) throw new Error("Schema-11 reconciliation lacks reviewed source or 433-test evidence");
+    if (!quality || quality.testsTotal !== 437 || quality.testsPassed !== 437 || quality.testsFailed !== 0 || !manifest.releaseCandidate.reviewedLocally || manifest.releaseCandidate.sourceReviewPassed !== true || manifest.releaseCandidate.qualityReviewPassed !== true) throw new Error("Schema-11 reconciliation lacks reviewed source or 437-test evidence");
     return;
   }
   assertUnreleasedLocalCandidateManifest(manifest);
