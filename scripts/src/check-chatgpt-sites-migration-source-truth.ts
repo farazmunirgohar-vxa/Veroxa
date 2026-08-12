@@ -55,20 +55,21 @@ if (manifest.schemaVersion === 11) {
       start < 0 ? "" : text.slice(start, next < 0 ? undefined : next);
     for (const marker of [
       "GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY",
-      "Sites v51",
-      "live55",
-      "20260812213939_high_resolution_private_media_v1.sql",
+      "Sites v53",
+      "live56",
+      "20260812214257_high_resolution_private_media_v1.sql",
+      "20260812221509_restore_high_resolution_media_finalize_service_role_v1.sql",
       "16,777,216",
-      "total-pixel ceiling is removed",
+      "total-pixel ceiling and hidden 128 MiB PNG decoded-stream ceiling are removed",
       "remaining media=0",
       "remaining storage objects=0",
       "content lifecycle v11",
       "no real new-user upload",
       "External providers",
       "USD 0 incremental spend",
-      "437/437",
-      "appgver_bf2be236d5f081918a7cf08e394909c9",
-      "8044ba2d240f6113bd52535c42fff7f61226105e",
+      "443/443",
+      "appgver_6e36025a6f248191a047d9bbdd04d90a",
+      "f21cd4e9b99d601d8e3df9b221e14b513a8ac2d6",
       "temporary purge endpoint is inert",
     ]) {
       const haystack =
@@ -84,7 +85,7 @@ if (manifest.schemaVersion === 11) {
     process.exit(1);
   }
   console.log(
-    "PASS: schema-11 authority docs match the live55 Sites v51 high-resolution release.",
+    "PASS: schema-11 authority docs match the live56 Sites v53 high-resolution release.",
   );
   process.exit(0);
 }

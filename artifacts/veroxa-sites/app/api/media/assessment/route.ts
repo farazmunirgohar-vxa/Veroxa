@@ -22,6 +22,9 @@ import {
   createVeroxaPrivateMediaAssessmentHandler,
   type VeroxaPrivateMediaAssessmentReservation,
 } from "./core";
+import {
+  decodeVeroxaPrivateMediaImageWithHost,
+} from "../../../veroxa-private-media-host-image-decode";
 
 export const runtime = "edge";
 
@@ -141,6 +144,7 @@ function dependencies(
   return {
     enabled: process.env.VEROXA_MOMO_CONTENT_AI_ENABLED === "true",
     providerConfigured: Boolean(openAiKey && bridgeConfig),
+    decodeHighResolutionImage: decodeVeroxaPrivateMediaImageWithHost,
     async authenticate() {
       return actor;
     },

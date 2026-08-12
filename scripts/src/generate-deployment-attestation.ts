@@ -76,7 +76,7 @@ writeJson(output, {
   schemaVersion: 4,
   recordKind: "veroxa_ci_deployment_attestation",
   attestationScope:
-    "exact_ci_schema11_live55_sites_v51_checkout_only_not_remote_or_runtime_parity",
+    "exact_ci_schema11_live56_sites_v53_checkout_only_not_remote_or_runtime_parity",
   generatedAt: new Date().toISOString(),
   repository: manifest.canonicalRepository,
   ref: process.env.GITHUB_REF || null,

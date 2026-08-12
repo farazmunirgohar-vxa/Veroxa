@@ -32,8 +32,8 @@ if (manifest.schemaVersion === 11) {
   delete rrCandidate.localReviewPassed;
   must(
     rr.schemaVersion === 16 &&
-      rr.recordKind === "veroxa_momo_live55_high_resolution_media_checkpoint",
-    "RR is not the schema-11 live55 high-resolution checkpoint.",
+      rr.recordKind === "veroxa_momo_live56_high_resolution_media_checkpoint",
+    "RR is not the schema-11 live56 high-resolution checkpoint.",
   );
   must(
     rr.status === manifest.releaseState &&
@@ -118,7 +118,7 @@ if (manifest.schemaVersion === 11) {
     process.exit(1);
   }
   console.log(
-    "PASS: RR schema-11 checkpoint mirrors the live55 Sites v51 release.",
+    "PASS: RR schema-11 checkpoint mirrors the live56 Sites v53 release.",
   );
   process.exit(0);
 }

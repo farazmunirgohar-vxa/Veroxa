@@ -9,6 +9,7 @@ import {
 } from "../app/momo-media-ai-contract.ts";
 import {
   inspectMomoImageBytesFully,
+  momoPngDecodedStreamByteLength,
   momoBytesSha256,
 } from "../app/momo-image-bytes.ts";
 import {
@@ -326,6 +327,18 @@ test("fully validates complete JPEG, PNG, and WebP files and rejects truncated o
     compressed.slice(0, -1),
   );
   assert.equal(await inspectMomoImageBytesFully(truncatedDeflate), null);
+});
+
+test("high-resolution PNG stream plans have no hidden 128 MiB decoded-byte ceiling", () => {
+  const decodedBytes = momoPngDecodedStreamByteLength({
+    width: 8064,
+    height: 6048,
+    bitDepth: 8,
+    colorType: 2,
+    interlace: 0,
+  });
+  assert.equal(decodedBytes, (8064 * 3 + 1) * 6048);
+  assert.ok(decodedBytes > 128 * 1024 * 1024);
 });
 
 test("rejects unauthenticated, Client, and cross-site callers before reservation", async () => {

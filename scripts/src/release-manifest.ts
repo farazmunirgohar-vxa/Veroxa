@@ -1915,9 +1915,9 @@ export function assertCurrentReconciliationManifest(
   if (
     manifest.schemaVersion !== 11 ||
     manifest.recordKind !==
-      "veroxa_momo_live55_high_resolution_media_manifest" ||
+      "veroxa_momo_live56_high_resolution_media_manifest" ||
     manifest.releaseState !==
-      "live55_sites_v51_legacy_media_purged_total_pixel_ceiling_removed_external_actions_held" ||
+      "live56_sites_v53_legacy_media_purged_total_pixel_ceiling_removed_external_actions_held" ||
     manifest.reviewedAt !== "2026-08-12" ||
     manifest.canonicalRepository !== "farazmunirgohar-vxa/Veroxa" ||
     manifest.canonicalBranch !== "main" ||
@@ -1928,14 +1928,14 @@ export function assertCurrentReconciliationManifest(
   }
 
   if (
-    sourceTree.fileCount !== 224 ||
+    sourceTree.fileCount !== 227 ||
     sourceTree.sha256 !==
-      "32b834666c50c02dc4dfbcca2c6aaa4c925d69b7d2157a670ef7a79bde0035eb" ||
+      "f36746fd569ee0b26c961c71e98dfc31308be4b5938a5902b145ecfbbd0c4348" ||
     manifest.source.fileCount !== sourceTree.fileCount ||
     manifest.source.treeSha256 !== sourceTree.sha256 ||
-    rootMigrationTree.fileCount !== 55 ||
+    rootMigrationTree.fileCount !== 56 ||
     rootMigrationTree.sha256 !==
-      "9f54211c75406b6fd6ea1e4a447e87fb7010cfa2600e7b786f947c01fc5346de" ||
+      "8d6f2b940bee42462c50349101af36f5efedb4f7d4309a18167261fbd342c8fe" ||
     mirrorMigrationTree.fileCount !== rootMigrationTree.fileCount ||
     mirrorMigrationTree.sha256 !== rootMigrationTree.sha256 ||
     JSON.stringify(rootMigrationTree.files) !==
@@ -1945,26 +1945,26 @@ export function assertCurrentReconciliationManifest(
     manifest.migrations.mirrorFileCount !== mirrorMigrationTree.fileCount ||
     manifest.migrations.mirrorTreeSha256 !== mirrorMigrationTree.sha256 ||
     latestMigration !==
-      "20260812213939_high_resolution_private_media_v1.sql" ||
+      "20260812221509_restore_high_resolution_media_finalize_service_role_v1.sql" ||
     latestMigrationSha256 !==
-      "3e8471bc4216a67fd591b5b611388be2873e44eb87c957934b280681d7bfe065"
+      "8a740ea365a462e9c9dea55f795f2025bfff7f9fe4db3bb25d2bfaab535988b3"
   ) {
     failures.push("schema-11 source or migration fingerprint drifted");
   }
 
   if (
-    live.sitesVersion !== 51 ||
+    live.sitesVersion !== 53 ||
     live.sitesVersionId !==
-      "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_bf2be236d5f081918a7cf08e394909c9" ||
+      "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_6e36025a6f248191a047d9bbdd04d90a" ||
     live.sitesCheckoutCommit !==
-      "8044ba2d240f6113bd52535c42fff7f61226105e" ||
+      "f21cd4e9b99d601d8e3df9b221e14b513a8ac2d6" ||
     live.sitesEnvironmentRevision !== 14 ||
     live.sourceFileCount !== sourceTree.fileCount ||
     live.sourceTreeSha256 !== sourceTree.sha256 ||
-    live.productionMigrationCount !== 55 ||
+    live.productionMigrationCount !== 56 ||
     live.migrationTreeSha256 !== rootMigrationTree.sha256 ||
     live.latestProductionMigration !== latestMigration ||
-    live.latestProductionMigrationByteLength !== 11_103 ||
+    live.latestProductionMigrationByteLength !== 652 ||
     live.latestProductionMigrationSha256 !== latestMigrationSha256 ||
     live.githubMainMatchesCandidate !== false ||
     live.candidateSourceMatchesLiveSites !== true ||
@@ -1978,10 +1978,10 @@ export function assertCurrentReconciliationManifest(
     candidate.status !== manifest.releaseState ||
     candidate.basedOnGitHubMainCommit !==
       "fb6d8b13bf548fd144cec4ce241bd44c1cecc99f" ||
-    candidate.pullRequest !== null ||
+    candidate.pullRequest !== 180 ||
     candidate.githubMerged !== false ||
     candidate.futureMergedGitHubCommit !== null ||
-    candidate.futureSitesVersion !== 51 ||
+    candidate.futureSitesVersion !== 53 ||
     candidate.reviewedLocally !== true ||
     candidate.sourceReviewPassed !== true ||
     candidate.qualityReviewPassed !== true ||
@@ -2005,14 +2005,14 @@ export function assertCurrentReconciliationManifest(
   const quality = manifest.applicationQualityEvidence;
   if (
     !quality ||
-    quality.testsPassed !== 437 ||
-    quality.testsTotal !== 437 ||
+    quality.testsPassed !== 443 ||
+    quality.testsTotal !== 443 ||
     quality.testsFailed !== 0 ||
     quality.buildExitCode !== 0 ||
     quality.typecheckExitCode !== 0 ||
     quality.lintExitCode !== 0
   ) {
-    failures.push("schema-11 437-test application quality evidence drifted");
+    failures.push("schema-11 443-test application quality evidence drifted");
   }
 
   if (
@@ -2034,11 +2034,20 @@ export function assertCurrentReconciliationManifest(
     highResolutionRelease.totalPixelCeilingRemoved !== true ||
     highResolutionRelease.highResolutionContractWidth !== 8064 ||
     highResolutionRelease.highResolutionContractHeight !== 6048 ||
-    highResolutionRelease.migration?.filename !== latestMigration ||
-    highResolutionRelease.migration?.sha256 !== latestMigrationSha256 ||
+    highResolutionRelease.migration?.filename !==
+      "20260812214257_high_resolution_private_media_v1.sql" ||
+    highResolutionRelease.migration?.sha256 !==
+      "3e8471bc4216a67fd591b5b611388be2873e44eb87c957934b280681d7bfe065" ||
     highResolutionRelease.migration?.totalPixelConstraintRemoved !== true ||
     highResolutionRelease.migration?.finalizeRpcPixelCeilingRemoved !== true ||
-    highResolutionRelease.sites?.version !== 51 ||
+    highResolutionRelease.privilegeRepair?.filename !== latestMigration ||
+    highResolutionRelease.privilegeRepair?.sha256 !== latestMigrationSha256 ||
+    highResolutionRelease.privilegeRepair?.serviceRoleExecuteRestored !== true ||
+    highResolutionRelease.privilegeRepair?.anonExecute !== false ||
+    highResolutionRelease.privilegeRepair?.authenticatedExecute !== false ||
+    highResolutionRelease.trustedHostDecodeRequired !== true ||
+    highResolutionRelease.pngDecodedStreamCeilingRemoved !== true ||
+    highResolutionRelease.sites?.version !== 53 ||
     highResolutionRelease.sites?.versionId !== live.sitesVersionId ||
     highResolutionRelease.sites?.sourceCommit !== live.sitesCheckoutCommit ||
     highResolutionRelease.sites?.deployed !== true
@@ -2060,7 +2069,7 @@ export function assertCurrentReconciliationManifest(
 
   if (failures.length > 0) {
     throw new Error(
-      "Unsafe schema-11 live55 high-resolution media release: " +
+      "Unsafe schema-11 live56 high-resolution media release: " +
         failures.join("; "),
     );
   }
@@ -2088,7 +2097,7 @@ export function assertReviewedLocalCandidateManifest(
   if (manifest.schemaVersion === 11) {
     assertCurrentReconciliationManifest(manifest);
     const quality = manifest.applicationQualityEvidence;
-    if (!quality || quality.testsTotal !== 437 || quality.testsPassed !== 437 || quality.testsFailed !== 0 || !manifest.releaseCandidate.reviewedLocally || manifest.releaseCandidate.sourceReviewPassed !== true || manifest.releaseCandidate.qualityReviewPassed !== true) throw new Error("Schema-11 release lacks reviewed source or 437-test evidence");
+    if (!quality || quality.testsTotal !== 443 || quality.testsPassed !== 443 || quality.testsFailed !== 0 || !manifest.releaseCandidate.reviewedLocally || manifest.releaseCandidate.sourceReviewPassed !== true || manifest.releaseCandidate.qualityReviewPassed !== true) throw new Error("Schema-11 release lacks reviewed source or 443-test evidence");
     return;
   }
   assertUnreleasedLocalCandidateManifest(manifest);
