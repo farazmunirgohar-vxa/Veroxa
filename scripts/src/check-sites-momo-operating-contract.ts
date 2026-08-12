@@ -619,22 +619,22 @@ if (oneStepClientUpload) {
   }
 } else {
   must(
-    (clientUi.match(/setRightsConfirmed\\(false\\)/g) || []).length >= 4,
+    (clientUi.match(/setRightsConfirmed\(false\)/g) || []).length >= 4,
     "Client media changes must invalidate the earlier rights attestation",
   );
   mustMatch(
     clientUi,
-    /const toggle = \\(item: string\\) => \\{\\s*setRightsConfirmed\\(false\\);[\\s\\S]*?setScope\\(/,
+    /const toggle = \(item: string\) => \{\s*setRightsConfirmed\(false\);[\s\S]*?setScope\(/,
     "Changing Client preparation scope must invalidate rights attestation",
   );
   mustMatch(
     clientUi,
-    /const chooseFile = async \\(next: File \\| null\\) => \\{[\\s\\S]*?setRightsConfirmed\\(false\\);/,
+    /const chooseFile = async \(next: File \| null\) => \{[\s\S]*?setRightsConfirmed\(false\);/,
     "Changing the Client file must invalidate rights attestation",
   );
   mustMatch(
     clientUi,
-    /type="date"[\\s\\S]*?onChange=\\{\\(event\\) => \\{ setRightsConfirmed\\(false\\); setExpiresAt\\(/,
+    /type="date"[\s\S]*?onChange=\{\(event\) => \{ setRightsConfirmed\(false\); setExpiresAt\(/,
     "Changing Client rights expiry must invalidate rights attestation",
   );
 }
