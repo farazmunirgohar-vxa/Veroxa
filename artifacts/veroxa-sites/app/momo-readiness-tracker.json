@@ -1,11 +1,11 @@
 {
-  "schemaVersion": 10,
+  "schemaVersion": 9,
   "recordKind": "momo_preconnection_readiness",
   "restaurant": "Momo's House San Antonio",
   "milestone": "Momo-only readiness before requesting owner or provider access",
   "overallStatus": "blocked",
-  "overallRule": "Momo remains fail-closed No-Go. The reviewed durable media-ingestion candidate preserves the exact stored upload, adds bounded private verification recovery, isolates four bridge keys, and removes the stale Edge total-pixel ceiling. It is not production evidence until exact-head review, merge, migration, Edge/Sites publication, and in-place recovery are verified; private verification cannot create owner rights, a current-offering association, Ready status, a provider action, publication, or Momo activation.",
-  "lastReviewedAt": "2026-08-13",
+  "overallRule": "Momo remains fail-closed No-Go. Version 21 and migration 16 provide the reviewed high-fidelity Media AI automation foundation, but effective runtime proof still requires the narrow lifecycle-bridge release plus an authenticated Team preflight. The Image Enhancement authorization does not authorize owner contact, owner-controlled provider access, social or Google connections, a public action, publishing, or Momo activation.",
+  "lastReviewedAt": "2026-08-09",
   "identityBoundary": {
     "teamAccountRole": "team",
     "developmentClientAccountRole": "client",
@@ -84,19 +84,18 @@
       "evidence": [
         "The repository includes safe image presets, deterministic edit recipes, browser rendering, output hashing, alt text, storage paths, and rendition lineage.",
         "Media placement and rehearsal contracts require scoped renditions and keep external writes disabled.",
-        "A real private Client upload is saved. Its Storage object and registration survived while browser finalization failed before the lifecycle Edge function was invoked.",
+        "A real private Client upload is saved. The live one-step handoff removes Client verification, retry, assessment, and association-processing controls; Client action ends after upload success.",
         "Generated migration 20260809222502 atomically persists every future Client association instruction with registration and backfilled all three saved unverified uploads into externally locked Team media-intake exceptions.",
         "Generated migrations 20260809231409 and 20260809232154 revoke authenticated access to the legacy v2 bypass and provide a corrected Team-only processor that applies only the immutable uploader instruction while preserving uploader evidence and Team attribution.",
         "The Team media exception card can apply a saved instruction or perform technical verification recovery. Client surfaces expose neither action.",
-        "The reviewed candidate adds a registration-transaction outbox, bounded leased recovery, independent failure receipts, trusted decode/hash finalization, and truthful saved-and-queued UI copy.",
-        "The reviewed two-key Edge transition and four dedicated Sites signing keys avoid a cross-runtime key-rotation outage; provider calls, Ready decisions, and external actions remain unclaimed."
+        "The signed lifecycle bridge was rotated and redeployed, while provider calls, Ready decisions, and external actions remain unclaimed."
       ],
       "blockers": [
-        "The candidate is not yet merged, applied, or published, so the exact asset remains uploaded with no verification row and no durable Team incident.",
-        "The saved instruction is development-proxy evidence with requested association not_for_restaurant; recovery can verify bytes but cannot honestly make the asset Ready.",
+        "The pre-fix instruction was not durably recorded before finalization failed, so it cannot be recovered or invented; Team owns the resulting technical exception.",
+        "No post-migration upload has yet proved atomic instruction persistence through the real Client path.",
         "No real-owner media rights are available for public use."
       ],
-      "nextAction": "Pass all four exact-head workflows, merge and publish the exact reviewed candidate, recover the same Storage object in place, verify the durable receipt and external locks, then remove the temporary previous Edge public keys in a separate reviewed cleanup."
+      "nextAction": "Team uses the saved-instruction processor after private verification and assessment are complete. Resolve the three pre-fix saved-upload exceptions without inventing their missing instruction or asking Momo to retry; contact Momo only if a specific restaurant fact or permission is later required."
     },
     "ai_and_automation": {
       "label": "AI contract and safe automation",

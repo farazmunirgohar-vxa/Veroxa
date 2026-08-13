@@ -6,8 +6,9 @@ import {
   validMomoMediaAiLifecycleRequest,
   verifyMomoMediaAiBridgeSignature,
 } from "../_shared/momo-media-ai-lifecycle-contract.ts";
-import { verifyExactBridgePublicKeyTransition } from
-  "../_shared/bridge-public-key-transition.ts";
+import {
+  verifyExactBridgePublicKeyTransition,
+} from "../_shared/bridge-public-key-transition.ts";
 
 const BRIDGE_PUBLIC_KEY_SPKI_BASE64 =
   "MCowBQYDK2VwAyEApQwivBwLHZudO4CJIyOHOuvikKrlGwdf26gQJ2MPQDM=";
@@ -200,17 +201,18 @@ Deno.serve(async (request: Request): Promise<Response> => {
   if (!rawBody) return response({ error: "invalid_request" }, 400);
   const bridgeVerified = await verifyExactBridgePublicKeyTransition(
     BRIDGE_TRANSITION_PUBLIC_KEYS_SPKI_BASE64,
-    (publicKeyBase64) => verifyMomoMediaAiBridgeSignature({
-      publicKeyBase64,
-      timestampMs:
-        request.headers.get("x-veroxa-media-ai-timestamp-ms")?.trim() || "",
-      nonce: request.headers.get("x-veroxa-media-ai-nonce")?.trim() || "",
-      accessToken,
-      body: rawBody,
-      signature: request.headers.get(
-        "x-veroxa-media-ai-signature",
-      )?.trim() || "",
-    }),
+    (publicKeyBase64) =>
+      verifyMomoMediaAiBridgeSignature({
+        publicKeyBase64,
+        timestampMs:
+          request.headers.get("x-veroxa-media-ai-timestamp-ms")?.trim() || "",
+        nonce: request.headers.get("x-veroxa-media-ai-nonce")?.trim() || "",
+        accessToken,
+        body: rawBody,
+        signature: request.headers.get(
+          "x-veroxa-media-ai-signature",
+        )?.trim() || "",
+      }),
   );
   if (!bridgeVerified) {
     return response({ error: "bridge_access_required" }, 403);

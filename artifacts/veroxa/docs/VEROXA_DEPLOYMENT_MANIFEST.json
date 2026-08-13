@@ -125,7 +125,7 @@
     "fullReleaseGatePassed": false,
     "fullReleaseGateScope": "local_source_static_security_build_type_lint_and_476_test_evidence_only",
     "sourceFileCount": 234,
-    "sourceTreeSha256": "deb4c5ba4e8fcae1717498bd1b879fbf0d1a5faca8f119b61c062112ca08daa8",
+    "sourceTreeSha256": "74a02ac81a1c74fb5d532b77e4d3fbf04321b1bdd42fbd22c73027421ed82450",
     "migrationFileCount": 57,
     "migrationTreeSha256": "44883675262318f12bafe2699589e4c1b506e04d3fb54ab0e407a67fabc83d36",
     "latestCandidateMigration": "20260813163534_durable_media_ingestion_recovery.sql",
@@ -185,7 +185,7 @@
     "mappingTarget": "Sites repository root candidate",
     "hashAlgorithm": "veroxa-path-null-content-null-sha256-v1",
     "fileCount": 234,
-    "treeSha256": "deb4c5ba4e8fcae1717498bd1b879fbf0d1a5faca8f119b61c062112ca08daa8",
+    "treeSha256": "74a02ac81a1c74fb5d532b77e4d3fbf04321b1bdd42fbd22c73027421ed82450",
     "generatedPathExclusions": [
       ".git",
       ".next",
