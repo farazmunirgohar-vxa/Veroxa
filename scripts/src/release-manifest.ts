@@ -1876,6 +1876,196 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
 }
 
 
+export function assertDurableMediaIngestionCandidateManifest(
+  manifest: DeploymentManifest,
+): void {
+  const failures: string[] = [];
+  const record = manifest as unknown as Record<string, any>;
+  const candidate = manifest.releaseCandidate;
+  const quality = manifest.applicationQualityEvidence;
+  const hold = manifest.operationalHold as Record<string, unknown> | undefined;
+  const recovery = record.durableMediaIngestionRecovery as
+    | Record<string, any>
+    | undefined;
+  const sourceTree = hashTree(resolve(repoRoot, DEPLOYABLE_SITES_SOURCE_ROOT), {
+    exclusions: [...GENERATED_PATH_EXCLUSIONS],
+  });
+  const rootMigrationTree = hashTree(
+    resolve(repoRoot, ROOT_MIGRATION_SOURCE_ROOT),
+    { suffix: ".sql" },
+  );
+  const mirrorMigrationTree = hashTree(
+    resolve(repoRoot, SITES_MIGRATION_MIRROR_ROOT),
+    { suffix: ".sql" },
+  );
+  const latestMigration = rootMigrationTree.files.at(-1);
+  const expectedMigration =
+    "20260813163534_durable_media_ingestion_recovery.sql";
+  const latestMigrationSha256 = latestMigration
+    ? sha256File(resolve(repoRoot, ROOT_MIGRATION_SOURCE_ROOT, latestMigration))
+    : null;
+  const read = (path: string): string =>
+    readFileSync(resolve(repoRoot, path), "utf8");
+  const migration = read(`${ROOT_MIGRATION_SOURCE_ROOT}/${expectedMigration}`);
+
+  if (
+    manifest.schemaVersion !== 12 ||
+    manifest.recordKind !== "veroxa_momo_durable_media_ingestion_candidate" ||
+    manifest.releaseState !==
+      "reviewed_candidate_pending_merge_apply_and_publication" ||
+    manifest.reviewedAt !== "2026-08-13" ||
+    manifest.canonicalRepository !== "farazmunirgohar-vxa/Veroxa" ||
+    manifest.canonicalBranch !== "main" ||
+    manifest.candidateBranch !==
+      "agent/momo-media-durable-recovery-20260813" ||
+    manifest.sitesProjectId !==
+      "appgprj_6a53d07c7c28819182801cf35dfd30de"
+  ) failures.push("schema-12 candidate identity drifted");
+
+  if (
+    sourceTree.fileCount !== manifest.source.fileCount ||
+    sourceTree.sha256 !== manifest.source.treeSha256 ||
+    sourceTree.fileCount !== candidate.sourceFileCount ||
+    sourceTree.sha256 !== candidate.sourceTreeSha256 ||
+    rootMigrationTree.fileCount !== 57 ||
+    rootMigrationTree.fileCount !== mirrorMigrationTree.fileCount ||
+    rootMigrationTree.sha256 !== mirrorMigrationTree.sha256 ||
+    JSON.stringify(rootMigrationTree.files) !==
+      JSON.stringify(mirrorMigrationTree.files) ||
+    rootMigrationTree.fileCount !== manifest.migrations.fileCount ||
+    rootMigrationTree.sha256 !== manifest.migrations.treeSha256 ||
+    mirrorMigrationTree.fileCount !== manifest.migrations.mirrorFileCount ||
+    mirrorMigrationTree.sha256 !== manifest.migrations.mirrorTreeSha256 ||
+    rootMigrationTree.fileCount !== candidate.migrationFileCount ||
+    rootMigrationTree.sha256 !== candidate.migrationTreeSha256 ||
+    latestMigration !== expectedMigration ||
+    candidate.latestCandidateMigration !== expectedMigration ||
+    candidate.latestCandidateMigrationSha256 !== latestMigrationSha256
+  ) failures.push("schema-12 source or mirrored migration fingerprint drifted");
+
+  if (
+    candidate.basedOnGitHubMainCommit !==
+      "804f96f41fadf30e7ecca810c07fd176ab32f379" ||
+    candidate.pullRequest !== null ||
+    candidate.githubMerged !== false ||
+    candidate.futureMergedGitHubCommit !== null ||
+    candidate.reviewedLocally !== true ||
+    candidate.sourceReviewPassed !== true ||
+    candidate.qualityReviewPassed !== true ||
+    candidate.fullReleaseGatePassed !== false ||
+    JSON.stringify(candidate.pendingMigrations) !==
+      JSON.stringify([expectedMigration]) ||
+    candidate.databaseMigrationApplied !== false ||
+    candidate.sitesPublished !== false ||
+    candidate.edgeDeployed !== false
+  ) failures.push("schema-12 candidate overclaims remote release completion");
+
+  if (
+    !quality ||
+    quality.testsPassed !== 476 ||
+    quality.testsTotal !== 476 ||
+    quality.testsFailed !== 0 ||
+    quality.buildExitCode !== 0 ||
+    quality.typecheckExitCode !== 0 ||
+    quality.lintExitCode !== 0
+  ) failures.push("schema-12 local 476-test quality evidence drifted");
+
+  if (
+    hold?.providerWrites !== false ||
+    hold?.reviewReplies !== false ||
+    hold?.websiteWrites !== false ||
+    hold?.externalScheduling !== false ||
+    hold?.externalPublishing !== false ||
+    record.fullReleaseGatePassed !== false
+  ) failures.push("schema-12 external-action hold or gate drifted");
+
+  if (
+    recovery?.status !== "reviewed_source_pending_production_apply" ||
+    recovery?.strandedAssetId !==
+      "05ab2303-f7ea-4056-8f75-9cd7e523a4f4" ||
+    recovery?.storageObjectId !==
+      "3df8b899-f438-41be-9e21-f15e6e7cb6c7" ||
+    recovery?.storageObjectVersion !==
+      "a6a293a9-4364-4867-878c-64bfc662dff9" ||
+    recovery?.existingAssetMutated !== false ||
+    recovery?.durableOutboxAtRegistration !== true ||
+    recovery?.skipLockedLeaseWorker !== true ||
+    recovery?.boundedAttempts !== 5 ||
+    recovery?.independentFailureReceipt !== true ||
+    recovery?.trustedByteDecodeAndHash !== true ||
+    recovery?.endsAtPrivateVerification !== true ||
+    recovery?.canMakeAssetReady !== false ||
+    recovery?.providerCallAllowed !== false ||
+    recovery?.externalWriteAllowed !== false ||
+    recovery?.totalPixelCeilingRemovedAcrossEdge !== true ||
+    recovery?.keyTransition?.phase !== "dual_public_key_cutover" ||
+    recovery?.keyTransition?.dedicatedPrivateKeys !== 4 ||
+    recovery?.keyTransition?.legacyPrivateKeyFallback !== false ||
+    recovery?.keyTransition?.acceptedEdgePublicKeysPerFunction !== 2
+  ) failures.push("schema-12 durable recovery contract drifted");
+
+  if (
+    !migration.includes("momo_media_ingestion_outbox_v1") ||
+    !migration.includes("for update skip locked") ||
+    !migration.includes("limit 100") ||
+    !migration.includes("max_attempts integer not null default 5") ||
+    !migration.includes("veroxa_record_momo_media_intake_failure_v1") ||
+    !migration.includes("veroxa_complete_momo_media_ingestion_v1") ||
+    migration.includes("'advance_verified_asset'") ||
+    migration.includes("provider_writes = true") ||
+    migration.includes("external_write_allowed = true")
+  ) failures.push("schema-12 migration safety invariants drifted");
+
+  const mirroredPaths = [
+    "functions/_shared/momo-content-ai-lifecycle-contract.ts",
+    "functions/momo-content-ai-dispatch-lifecycle/index.ts",
+    "functions/momo-content-ai-lifecycle/index.ts",
+    "functions/momo-content-ai-webhook-lifecycle/index.ts",
+    "functions/momo-media-ai-lifecycle/index.ts",
+  ];
+  for (const path of mirroredPaths) {
+    if (read(`supabase/${path}`) !== read(`artifacts/veroxa-sites/supabase/${path}`)) {
+      failures.push(`schema-12 root/Sites Edge mirror drifted: ${path}`);
+    }
+  }
+  const lifecycleContract = read(
+    "supabase/functions/_shared/momo-content-ai-lifecycle-contract.ts",
+  );
+  if (
+    lifecycleContract.includes("16_777_216") ||
+    lifecycleContract.includes("16777216") ||
+    !lifecycleContract.includes(
+      "Number.isSafeInteger(Number(body.width) * Number(body.height))",
+    )
+  ) failures.push("schema-12 Edge high-resolution contract drifted");
+
+  const bridgePaths = [
+    "app/momo-content-ai-dispatch-bridge.ts",
+    "app/momo-content-ai-lifecycle-bridge.ts",
+    "app/momo-content-ai-webhook-bridge.ts",
+    "app/momo-media-ai-lifecycle-bridge.ts",
+  ];
+  const bridgeSource = bridgePaths
+    .map((path) => read(`artifacts/veroxa-sites/${path}`))
+    .join("\n");
+  for (const key of [
+    "VEROXA_MOMO_CONTENT_AI_DISPATCH_BRIDGE_PRIVATE_KEY",
+    "VEROXA_MOMO_CONTENT_AI_LIFECYCLE_BRIDGE_PRIVATE_KEY",
+    "VEROXA_MOMO_CONTENT_AI_WEBHOOK_BRIDGE_PRIVATE_KEY",
+    "VEROXA_MOMO_MEDIA_AI_LIFECYCLE_BRIDGE_PRIVATE_KEY",
+  ]) if (!bridgeSource.includes(key)) failures.push(`missing dedicated bridge key: ${key}`);
+  if (bridgeSource.includes("VEROXA_MEDIA_AI_BRIDGE_PRIVATE_KEY")) {
+    failures.push("legacy shared bridge private-key fallback remains in runtime source");
+  }
+
+  if (failures.length > 0) {
+    throw new Error(
+      "Unsafe schema-12 durable media-ingestion candidate: " +
+        failures.join("; "),
+    );
+  }
+}
+
 export function assertCurrentReconciliationManifest(
   manifest: DeploymentManifest,
 ): void {
@@ -2037,7 +2227,7 @@ export function assertCurrentReconciliationManifest(
     highResolutionRelease.migration?.filename !==
       "20260812214257_high_resolution_private_media_v1.sql" ||
     highResolutionRelease.migration?.sha256 !==
-      "3e8471bc4216a67fd591b5b611388be2873e44eb87c957934b280681d7bfe065" ||
+      "3e8476bc4216a67fd591b5b611388be2873e44eb87c957934b280681d7bfe065" ||
     highResolutionRelease.migration?.totalPixelConstraintRemoved !== true ||
     highResolutionRelease.migration?.finalizeRpcPixelCeilingRemoved !== true ||
     highResolutionRelease.privilegeRepair?.filename !== latestMigration ||
@@ -2078,6 +2268,10 @@ export function assertCurrentReconciliationManifest(
 export function assertUnreleasedLocalCandidateManifest(
   manifest: DeploymentManifest,
 ): void {
+  if (manifest.schemaVersion === 12) {
+    assertDurableMediaIngestionCandidateManifest(manifest);
+    return;
+  }
   if (manifest.schemaVersion === 11) {
     assertCurrentReconciliationManifest(manifest);
     return;
@@ -2094,6 +2288,10 @@ export function assertUnreleasedLocalCandidateManifest(
 export function assertReviewedLocalCandidateManifest(
   manifest: DeploymentManifest,
 ): void {
+  if (manifest.schemaVersion === 12) {
+    assertDurableMediaIngestionCandidateManifest(manifest);
+    return;
+  }
   if (manifest.schemaVersion === 11) {
     assertCurrentReconciliationManifest(manifest);
     const quality = manifest.applicationQualityEvidence;

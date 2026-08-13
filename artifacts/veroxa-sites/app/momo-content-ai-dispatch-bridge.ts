@@ -30,7 +30,7 @@ export function getMomoContentAiDispatchBridgeConfig(
   const publishableKey =
     environment.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim();
   const bridgePrivateKey =
-    environment.VEROXA_MEDIA_AI_BRIDGE_PRIVATE_KEY?.trim();
+    environment.VEROXA_MOMO_CONTENT_AI_DISPATCH_BRIDGE_PRIVATE_KEY?.trim();
   if (!rawUrl || !publishableKey?.startsWith("sb_publishable_") ||
     !bridgePrivateKey || !KEY_PATTERN.test(bridgePrivateKey)) return null;
   try {

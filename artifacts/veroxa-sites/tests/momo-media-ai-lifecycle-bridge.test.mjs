@@ -28,27 +28,27 @@ test("lifecycle bridge configuration is fail-closed and canonical", () => {
   assert.equal(getMomoMediaAiLifecycleBridgeConfig({
     NEXT_PUBLIC_SUPABASE_URL: "http://example.supabase.co",
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: publishableKey,
-    VEROXA_MEDIA_AI_BRIDGE_PRIVATE_KEY: bridgePrivateKey,
+    VEROXA_MOMO_MEDIA_AI_LIFECYCLE_BRIDGE_PRIVATE_KEY: bridgePrivateKey,
   }), null);
   assert.equal(getMomoMediaAiLifecycleBridgeConfig({
     NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co/path",
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: publishableKey,
-    VEROXA_MEDIA_AI_BRIDGE_PRIVATE_KEY: bridgePrivateKey,
+    VEROXA_MOMO_MEDIA_AI_LIFECYCLE_BRIDGE_PRIVATE_KEY: bridgePrivateKey,
   }), null);
   assert.equal(getMomoMediaAiLifecycleBridgeConfig({
     NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "not_publishable",
-    VEROXA_MEDIA_AI_BRIDGE_PRIVATE_KEY: bridgePrivateKey,
+    VEROXA_MOMO_MEDIA_AI_LIFECYCLE_BRIDGE_PRIVATE_KEY: bridgePrivateKey,
   }), null);
   assert.equal(getMomoMediaAiLifecycleBridgeConfig({
     NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: publishableKey,
-    VEROXA_MEDIA_AI_BRIDGE_PRIVATE_KEY: "too-short",
+    VEROXA_MOMO_MEDIA_AI_LIFECYCLE_BRIDGE_PRIVATE_KEY: "too-short",
   }), null);
   assert.deepEqual(getMomoMediaAiLifecycleBridgeConfig({
     NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: publishableKey,
-    VEROXA_MEDIA_AI_BRIDGE_PRIVATE_KEY: bridgePrivateKey,
+    VEROXA_MOMO_MEDIA_AI_LIFECYCLE_BRIDGE_PRIVATE_KEY: bridgePrivateKey,
   }), {
     endpoint:
       "https://example.supabase.co/functions/v1/momo-media-ai-lifecycle",
@@ -82,7 +82,7 @@ test("lifecycle bridge forwards one verified Team session without retry", async 
   const config = getMomoMediaAiLifecycleBridgeConfig({
     NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: publishableKey,
-    VEROXA_MEDIA_AI_BRIDGE_PRIVATE_KEY: bridgePrivateKey,
+    VEROXA_MOMO_MEDIA_AI_LIFECYCLE_BRIDGE_PRIVATE_KEY: bridgePrivateKey,
   });
   assert.ok(config);
   const result = await invokeMomoMediaAiLifecycleBridge(
@@ -152,7 +152,7 @@ test("lifecycle bridge rejects absent sessions and ambiguous responses", async (
   const config = getMomoMediaAiLifecycleBridgeConfig({
     NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: publishableKey,
-    VEROXA_MEDIA_AI_BRIDGE_PRIVATE_KEY: bridgePrivateKey,
+    VEROXA_MOMO_MEDIA_AI_LIFECYCLE_BRIDGE_PRIVATE_KEY: bridgePrivateKey,
   });
   assert.ok(config);
   const noSession = {
@@ -227,7 +227,7 @@ test("lifecycle bridge refreshes once before a provider-length operation", async
   const config = getMomoMediaAiLifecycleBridgeConfig({
     NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: publishableKey,
-    VEROXA_MEDIA_AI_BRIDGE_PRIVATE_KEY: bridgePrivateKey,
+    VEROXA_MOMO_MEDIA_AI_LIFECYCLE_BRIDGE_PRIVATE_KEY: bridgePrivateKey,
   });
   assert.ok(config);
   let refreshes = 0;
@@ -274,7 +274,7 @@ test("terminal lifecycle reconciliation retries the exact database tuple once", 
   const config = getMomoMediaAiLifecycleBridgeConfig({
     NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: publishableKey,
-    VEROXA_MEDIA_AI_BRIDGE_PRIVATE_KEY: bridgePrivateKey,
+    VEROXA_MOMO_MEDIA_AI_LIFECYCLE_BRIDGE_PRIVATE_KEY: bridgePrivateKey,
   });
   assert.ok(config);
   const client = {
@@ -343,7 +343,7 @@ test("Edge bridge proof rejects tampering, expiry, and unknown payload fields", 
   const config = getMomoMediaAiLifecycleBridgeConfig({
     NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: publishableKey,
-    VEROXA_MEDIA_AI_BRIDGE_PRIVATE_KEY: bridgePrivateKey,
+    VEROXA_MOMO_MEDIA_AI_LIFECYCLE_BRIDGE_PRIVATE_KEY: bridgePrivateKey,
   });
   assert.ok(config);
   let proof;

@@ -47,7 +47,7 @@ function config() {
   return getMomoContentAiDispatchBridgeConfig({
     NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: publishableKey,
-    VEROXA_MEDIA_AI_BRIDGE_PRIVATE_KEY: privateKey,
+    VEROXA_MOMO_CONTENT_AI_DISPATCH_BRIDGE_PRIVATE_KEY: privateKey,
   });
 }
 
@@ -74,17 +74,17 @@ test("dispatch bridge configuration is canonical and fail-closed", () => {
   assert.equal(getMomoContentAiDispatchBridgeConfig({
     NEXT_PUBLIC_SUPABASE_URL: "http://example.supabase.co",
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: publishableKey,
-    VEROXA_MEDIA_AI_BRIDGE_PRIVATE_KEY: privateKey,
+    VEROXA_MOMO_CONTENT_AI_DISPATCH_BRIDGE_PRIVATE_KEY: privateKey,
   }), null);
   assert.equal(getMomoContentAiDispatchBridgeConfig({
     NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co/path",
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: publishableKey,
-    VEROXA_MEDIA_AI_BRIDGE_PRIVATE_KEY: privateKey,
+    VEROXA_MOMO_CONTENT_AI_DISPATCH_BRIDGE_PRIVATE_KEY: privateKey,
   }), null);
   assert.equal(getMomoContentAiDispatchBridgeConfig({
     NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "not_publishable",
-    VEROXA_MEDIA_AI_BRIDGE_PRIVATE_KEY: privateKey,
+    VEROXA_MOMO_CONTENT_AI_DISPATCH_BRIDGE_PRIVATE_KEY: privateKey,
   }), null);
   assert.deepEqual(config(), {
     endpoint:

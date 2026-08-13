@@ -75,8 +75,9 @@ mkdirSync(ensureParentPath(output), { recursive: true });
 writeJson(output, {
   schemaVersion: 4,
   recordKind: "veroxa_ci_deployment_attestation",
-  attestationScope:
-    "exact_ci_schema11_live56_sites_v53_checkout_only_not_remote_or_runtime_parity",
+  attestationScope: manifest.schemaVersion === 12
+    ? "exact_ci_schema12_durable_media_recovery_candidate_checkout_only_not_merge_deploy_apply_or_runtime_parity"
+    : "exact_ci_schema11_live56_sites_v53_checkout_only_not_remote_or_runtime_parity",
   generatedAt: new Date().toISOString(),
   repository: manifest.canonicalRepository,
   ref: process.env.GITHUB_REF || null,

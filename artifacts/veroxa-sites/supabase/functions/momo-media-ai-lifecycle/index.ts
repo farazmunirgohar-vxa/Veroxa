@@ -6,9 +6,17 @@ import {
   validMomoMediaAiLifecycleRequest,
   verifyMomoMediaAiBridgeSignature,
 } from "../_shared/momo-media-ai-lifecycle-contract.ts";
+import { verifyExactBridgePublicKeyTransition } from
+  "../_shared/bridge-public-key-transition.ts";
 
 const BRIDGE_PUBLIC_KEY_SPKI_BASE64 =
+  "MCowBQYDK2VwAyEApQwivBwLHZudO4CJIyOHOuvikKrlGwdf26gQJ2MPQDM=";
+const BRIDGE_PREVIOUS_PUBLIC_KEY_SPKI_BASE64 =
   "MCowBQYDK2VwAyEAg/XOvj5uPdmqMKfWyh0jChnrtIoCHuaHODprsPRGo50=";
+const BRIDGE_TRANSITION_PUBLIC_KEYS_SPKI_BASE64 = [
+  BRIDGE_PUBLIC_KEY_SPKI_BASE64,
+  BRIDGE_PREVIOUS_PUBLIC_KEY_SPKI_BASE64,
+] as const;
 const MAX_REQUEST_BYTES = 16_384;
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -190,15 +198,20 @@ Deno.serve(async (request: Request): Promise<Response> => {
   const accessToken = authorization.slice("Bearer ".length);
   const rawBody = await rawRequestBody(request);
   if (!rawBody) return response({ error: "invalid_request" }, 400);
-  const bridgeVerified = await verifyMomoMediaAiBridgeSignature({
-    publicKeyBase64: BRIDGE_PUBLIC_KEY_SPKI_BASE64,
-    timestampMs:
-      request.headers.get("x-veroxa-media-ai-timestamp-ms")?.trim() || "",
-    nonce: request.headers.get("x-veroxa-media-ai-nonce")?.trim() || "",
-    accessToken,
-    body: rawBody,
-    signature: request.headers.get("x-veroxa-media-ai-signature")?.trim() || "",
-  });
+  const bridgeVerified = await verifyExactBridgePublicKeyTransition(
+    BRIDGE_TRANSITION_PUBLIC_KEYS_SPKI_BASE64,
+    (publicKeyBase64) => verifyMomoMediaAiBridgeSignature({
+      publicKeyBase64,
+      timestampMs:
+        request.headers.get("x-veroxa-media-ai-timestamp-ms")?.trim() || "",
+      nonce: request.headers.get("x-veroxa-media-ai-nonce")?.trim() || "",
+      accessToken,
+      body: rawBody,
+      signature: request.headers.get(
+        "x-veroxa-media-ai-signature",
+      )?.trim() || "",
+    }),
+  );
   if (!bridgeVerified) {
     return response({ error: "bridge_access_required" }, 403);
   }

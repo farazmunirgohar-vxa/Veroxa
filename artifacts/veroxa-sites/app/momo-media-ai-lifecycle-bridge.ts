@@ -20,7 +20,7 @@ type MomoMediaAiLifecycleBridgeEnvironment = {
   [key: string]: string | undefined;
   NEXT_PUBLIC_SUPABASE_URL?: string;
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?: string;
-  VEROXA_MEDIA_AI_BRIDGE_PRIVATE_KEY?: string;
+  VEROXA_MOMO_MEDIA_AI_LIFECYCLE_BRIDGE_PRIVATE_KEY?: string;
 };
 
 type MomoMediaAiLifecycleBridgeClient = Pick<SupabaseClient, "auth">;
@@ -97,7 +97,7 @@ export function getMomoMediaAiLifecycleBridgeConfig(
   const publishableKey =
     environment.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim();
   const bridgePrivateKey =
-    environment.VEROXA_MEDIA_AI_BRIDGE_PRIVATE_KEY?.trim();
+    environment.VEROXA_MOMO_MEDIA_AI_LIFECYCLE_BRIDGE_PRIVATE_KEY?.trim();
   if (
     !rawUrl
     || !publishableKey?.startsWith("sb_publishable_")

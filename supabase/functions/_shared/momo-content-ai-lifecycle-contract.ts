@@ -197,7 +197,6 @@ export function validMomoContentAiLifecycleRequest(body: JsonObject): body is Mo
       Number.isSafeInteger(body.width) && Number(body.width) >= 128 && Number(body.width) <= 12_000 &&
       Number.isSafeInteger(body.height) && Number(body.height) >= 128 && Number(body.height) <= 12_000 &&
       Number.isSafeInteger(Number(body.width) * Number(body.height)) &&
-      Number(body.width) * Number(body.height) <= 16_777_216 &&
       Number(body.width) / Number(body.height) >= 0.4 && Number(body.width) / Number(body.height) <= 2.5 &&
       typeof body.contentSha256 === "string" && SHA256.test(body.contentSha256) &&
       isPlainObject(body.verificationSnapshot) &&

@@ -7,9 +7,17 @@ import {
   type MomoContentAiWebhookIdentity,
   type MomoContentAiWebhookLifecycleRequest,
 } from "../_shared/momo-content-ai-webhook-lifecycle-contract.ts";
+import { verifyExactBridgePublicKeyTransition } from
+  "../_shared/bridge-public-key-transition.ts";
 
 const BRIDGE_PUBLIC_KEY_SPKI_BASE64 =
+  "MCowBQYDK2VwAyEA239rWPqMXC9X1l/w2AzXZUhrl68Sd3Jjh0TYI5jjjCQ=";
+const BRIDGE_PREVIOUS_PUBLIC_KEY_SPKI_BASE64 =
   "MCowBQYDK2VwAyEAg/XOvj5uPdmqMKfWyh0jChnrtIoCHuaHODprsPRGo50=";
+const BRIDGE_TRANSITION_PUBLIC_KEYS_SPKI_BASE64 = [
+  BRIDGE_PUBLIC_KEY_SPKI_BASE64,
+  BRIDGE_PREVIOUS_PUBLIC_KEY_SPKI_BASE64,
+] as const;
 const MAX_REQUEST_BYTES = 300_000;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 
@@ -129,13 +137,20 @@ Deno.serve(async (request: Request): Promise<Response> => {
   }
   const raw = await rawBody(request);
   if (!raw) return response({ error: "invalid_request" }, 400);
-  const verified = await verifyMomoContentAiWebhookBridgeSignature({
-    publicKeyBase64: BRIDGE_PUBLIC_KEY_SPKI_BASE64,
-    timestampMs: request.headers.get("x-veroxa-content-ai-timestamp-ms")?.trim() || "",
-    nonce: request.headers.get("x-veroxa-content-ai-nonce")?.trim() || "",
-    body: raw,
-    signature: request.headers.get("x-veroxa-content-ai-signature")?.trim() || "",
-  });
+  const verified = await verifyExactBridgePublicKeyTransition(
+    BRIDGE_TRANSITION_PUBLIC_KEYS_SPKI_BASE64,
+    (publicKeyBase64) => verifyMomoContentAiWebhookBridgeSignature({
+      publicKeyBase64,
+      timestampMs: request.headers.get(
+        "x-veroxa-content-ai-timestamp-ms",
+      )?.trim() || "",
+      nonce: request.headers.get("x-veroxa-content-ai-nonce")?.trim() || "",
+      body: raw,
+      signature: request.headers.get(
+        "x-veroxa-content-ai-signature",
+      )?.trim() || "",
+    }),
+  );
   if (!verified) return response({ error: "bridge_access_required" }, 403);
   const body = parse(raw);
   if (!body) return response({ error: "invalid_request" }, 400);

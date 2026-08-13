@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { filterMomoRoutineAiJobs } from "../app/momo-data.ts";
 
 test("Team v2 reads are scoped to open incidents, unscheduled Ready, and active legacy jobs", async () => {
   const [data, migration] = await Promise.all([
@@ -19,8 +20,32 @@ test("Team v2 reads are scoped to open incidents, unscheduled Ready, and active 
   assert.match(data, /table: "veroxa_momo_exception_events_v2"[\s\S]{0,900}limit: 200/);
   assert.match(data, /table: "veroxa_momo_ready_packages_v2"[\s\S]{0,1300}equals: \{ status: "veroxa_ready", external_write_allowed: false \}/);
   assert.match(data, /table: "veroxa_momo_ready_variants_v2"[\s\S]{0,700}equals: \{ status: "veroxa_ready", external_write_allowed: false \}/);
-  assert.match(data, /table: "veroxa_ai_jobs"[\s\S]{0,800}isNull: "superseded_by_job_id"/, "superseded legacy jobs must be history, not routine readback");
-  assert.match(data, /if \(definition\.isNull\) query = query\.is\(definition\.isNull, null\)/);
+  assert.match(data, /table: "veroxa_ai_jobs"[\s\S]{0,800}isNull: \["superseded_by_job_id", "superseded_at"\]/, "superseded legacy jobs must be history, not routine readback");
+  assert.match(data, /for \(const column of nullColumns\) query = query\.is\(column, null\)/);
+});
+
+test("routine AI job filtering retires only orphan media subjects", () => {
+  const active = {
+    id: "active", status: "queued", subject_type: "media_asset",
+    subject_id: "asset-live", superseded_by_job_id: null,
+    superseded_at: null,
+  };
+  const jobs = [
+    active,
+    { ...active, id: "orphan", subject_id: "asset-missing" },
+    { ...active, id: "cancelled", status: "cancelled" },
+    { ...active, id: "superseded", superseded_at: "2026-08-13T00:00:00Z" },
+    {
+      ...active,
+      id: "non-media",
+      subject_type: "content_item",
+      subject_id: "content-not-loaded-in-media-query",
+    },
+  ];
+  assert.deepEqual(
+    filterMomoRoutineAiJobs(jobs, [{ id: "asset-live" }]).map((job) => job.id),
+    ["active", "non-media"],
+  );
 });
 
 test("Team media supports assessment-only recognition and owns saved-instruction recovery", async () => {
@@ -89,7 +114,7 @@ test("Client copy presents safe outcomes without internal processing details", a
   assert.match(portal, /pipelineStatus === "veroxa_ready" &&[\s\S]*?workflow\.rightsConfirmed && restaurantContentEligible/);
   assert.match(portal, /exact image bytes[\s\S]*?duplicate upload and asset record for this restaurant[\s\S]*?SHA-256 hash[\s\S]*?audit evidence remain stored/);
   assert.match(portal, /item\.privateAssessmentStatus === null[\s\S]*?You do not need to start or retry anything/);
-  assert.match(portal, /item\.status === "uploaded"[\s\S]*?Team Faraz owns the exception[\s\S]*?You do not need to retry or upload another copy/, "A saved upload whose verification was interrupted must become a Team-owned exception after refresh");
+  assert.match(portal, /verificationPending[\s\S]*?saved and queued for secure recovery[\s\S]*?confirming its recovery status[\s\S]*?You do not need to retry or upload another copy/, "A saved upload whose verification was interrupted must remain queued without inventing a Team exception receipt");
   assert.doesNotMatch(portal, /Finish verification|Retry verification|Start private assessment|Record final association/);
   assert.doesNotMatch(portal, /retryMomoClientMediaVerification|assessMomoClientMedia|recordMomoMediaRestaurantAssociation/);
   assert.match(portal, /item\.privateAssessmentStatus === "failed"[\s\S]*?Team Faraz exception/);

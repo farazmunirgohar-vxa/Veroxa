@@ -43,7 +43,8 @@ test("private assessment intake accepts only its bounded JPEG and PNG envelope",
     { width: 128, height: 320 },
     { width: 300, height: 750 },
     { width: 750, height: 300 },
-    { width: 4_096, height: 4_096 },
+    { width: 8_064, height: 6_048 },
+    { width: 12_000, height: 12_000 },
   ]) {
     assert.equal(
       validMomoContentAiLifecycleRequest({ ...finalizeUpload(), ...supported }),
@@ -62,7 +63,6 @@ test("private assessment intake accepts only its bounded JPEG and PNG envelope",
     { height: 127 },
     { width: 12_001 },
     { height: 12_001 },
-    { width: 4_097, height: 4_096 },
     { width: 399, height: 1_000 },
     { width: 2_501, height: 1_000 },
   ]) {
