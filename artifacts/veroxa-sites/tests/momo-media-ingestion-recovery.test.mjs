@@ -492,6 +492,13 @@ test("route is service-role storage/RPC only and never invokes providers or exte
 });
 
 test("database contract is private, bounded, lease-based, and preserves external locks", () => {
+  assert.doesNotMatch(migrationSource, /pg_catalog\.extract\s*\(/iu);
+  assert.doesNotMatch(migrationSource, /pg_catalog\.(?:least|greatest)\s*\(/iu);
+  assert.equal(
+    migrationSource.match(/extract\(epoch from\s+pg_catalog\.clock_timestamp\(\)\)/giu)?.length,
+    2,
+  );
+  assert.equal(migrationSource.match(/\bleast\s*\(/giu)?.length, 4);
   for (const operation of ["claim", "complete", "fail"]) {
     const name = `veroxa_${operation}_momo_media_ingestion_v1`;
     assert.match(migrationSource, new RegExp(name, "u"));

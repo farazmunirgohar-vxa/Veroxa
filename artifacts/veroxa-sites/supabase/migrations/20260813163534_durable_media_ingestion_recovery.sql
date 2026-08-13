@@ -410,7 +410,7 @@ begin
      or p_lease_token = '00000000-0000-0000-0000-000000000000'::uuid
      or p_signed_at_ms is null
      or pg_catalog.abs(
-       pg_catalog.floor(pg_catalog.extract(epoch from
+       pg_catalog.floor(extract(epoch from
          pg_catalog.clock_timestamp()) * 1000)::bigint - p_signed_at_ms
      ) > 60000 then
     raise exception using errcode = '42501',
@@ -788,8 +788,8 @@ begin
   retry_at := case when durable_state = 'retry_wait'
     then pg_catalog.clock_timestamp() +
       pg_catalog.make_interval(secs =>
-        pg_catalog.least(900, 15 * (1 <<
-          pg_catalog.least(receipt.attempt_count - 1, 5))))
+        least(900, 15 * (1 <<
+          least(receipt.attempt_count - 1, 5))))
     else null end;
   update veroxa_private.momo_media_ingestion_outbox_v1 target
   set state = durable_state,
@@ -1050,8 +1050,8 @@ begin
         when outcome = 'unavailable' and
           target.attempt_count + 1 < target.max_attempts
           then pg_catalog.clock_timestamp() +
-            pg_catalog.make_interval(secs => pg_catalog.least(
-              900, 15 * (1 << pg_catalog.least(target.attempt_count, 5))
+            pg_catalog.make_interval(secs => least(
+              900, 15 * (1 << least(target.attempt_count, 5))
             ))
         else null
       end,
@@ -1181,7 +1181,7 @@ declare
   endpoint text;
   hmac_secret text;
   wake_nonce uuid := extensions.gen_random_uuid();
-  signed_at_ms bigint := pg_catalog.floor(pg_catalog.extract(epoch from
+  signed_at_ms bigint := pg_catalog.floor(extract(epoch from
     pg_catalog.clock_timestamp()) * 1000)::bigint;
   signature text;
   request_id bigint;
