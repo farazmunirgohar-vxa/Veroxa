@@ -22,13 +22,13 @@ try {
   failures.push(error instanceof Error ? error.message : String(error));
 }
 
-if (manifest.schemaVersion === 12) {
+if (manifest.schemaVersion === 13) {
   if (failures.length > 0) {
     for (const failure of failures) console.error("FAIL:", failure);
     process.exit(1);
   }
   console.log(
-    "PASS: schema-12 durable media-ingestion recovery candidate is locally reviewed, mirrored, externally locked, and pending remote release evidence.",
+    "PASS: schema-13 durable media-ingestion path repair is locally reviewed, mirrored, externally locked, and pending exact-head release evidence.",
   );
   process.exit(0);
 }

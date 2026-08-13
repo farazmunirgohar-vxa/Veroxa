@@ -1900,24 +1900,30 @@ export function assertDurableMediaIngestionCandidateManifest(
   );
   const latestMigration = rootMigrationTree.files.at(-1);
   const expectedMigration =
+    "20260813175640_durable_media_ingestion_path_regex_repair_v1.sql";
+  const foundationMigration =
     "20260813163534_durable_media_ingestion_recovery.sql";
   const latestMigrationSha256 = latestMigration
     ? sha256File(resolve(repoRoot, ROOT_MIGRATION_SOURCE_ROOT, latestMigration))
     : null;
   const read = (path: string): string =>
     readFileSync(resolve(repoRoot, path), "utf8");
-  const migration = read(`${ROOT_MIGRATION_SOURCE_ROOT}/${expectedMigration}`);
+  const migration = read(`${ROOT_MIGRATION_SOURCE_ROOT}/${foundationMigration}`);
+  const repairMigration = read(
+    `${ROOT_MIGRATION_SOURCE_ROOT}/${expectedMigration}`,
+  );
 
   if (
-    manifest.schemaVersion !== 12 ||
-    manifest.recordKind !== "veroxa_momo_durable_media_ingestion_candidate" ||
+    manifest.schemaVersion !== 13 ||
+    manifest.recordKind !==
+      "veroxa_momo_durable_media_ingestion_path_repair_candidate" ||
     manifest.releaseState !==
-      "reviewed_candidate_pending_merge_apply_and_publication" ||
+      "path_repair_candidate_pending_exact_head_gates_and_release" ||
     manifest.reviewedAt !== "2026-08-13" ||
     manifest.canonicalRepository !== "farazmunirgohar-vxa/Veroxa" ||
     manifest.canonicalBranch !== "main" ||
     manifest.candidateBranch !==
-      "agent/momo-media-durable-recovery-20260813" ||
+      "agent/momo-media-path-regex-repair-20260813" ||
     manifest.sitesProjectId !==
       "appgprj_6a53d07c7c28819182801cf35dfd30de"
   ) failures.push("schema-12 candidate identity drifted");
@@ -1925,9 +1931,14 @@ export function assertDurableMediaIngestionCandidateManifest(
   if (
     sourceTree.fileCount !== manifest.source.fileCount ||
     sourceTree.sha256 !== manifest.source.treeSha256 ||
+    sourceTree.fileCount !== 236 ||
+    sourceTree.sha256 !==
+      "946f6de95e5cf1971db6464cc7f4e69817c58f7bade2f9b85f89bc1e43e59124" ||
     sourceTree.fileCount !== candidate.sourceFileCount ||
     sourceTree.sha256 !== candidate.sourceTreeSha256 ||
-    rootMigrationTree.fileCount !== 57 ||
+    rootMigrationTree.fileCount !== 58 ||
+    rootMigrationTree.sha256 !==
+      "1bdc5997489c860f5c6098b5c1f0af340db39f35cc69c0dfb52b5fa33faf5f6a" ||
     rootMigrationTree.fileCount !== mirrorMigrationTree.fileCount ||
     rootMigrationTree.sha256 !== mirrorMigrationTree.sha256 ||
     JSON.stringify(rootMigrationTree.files) !==
@@ -1945,7 +1956,7 @@ export function assertDurableMediaIngestionCandidateManifest(
 
   if (
     candidate.basedOnGitHubMainCommit !==
-      "804f96f41fadf30e7ecca810c07fd176ab32f379" ||
+      "c41e6f71c7ffccf11d399d415046e3659e3bffd9" ||
     candidate.pullRequest !== null ||
     candidate.githubMerged !== false ||
     candidate.futureMergedGitHubCommit !== null ||
@@ -1956,9 +1967,82 @@ export function assertDurableMediaIngestionCandidateManifest(
     JSON.stringify(candidate.pendingMigrations) !==
       JSON.stringify([expectedMigration]) ||
     candidate.databaseMigrationApplied !== false ||
+    JSON.stringify(candidate.databaseMigrationsApplied) !==
+      JSON.stringify([foundationMigration]) ||
+    candidate.additionalDatabaseChangesRequired !== true ||
+    candidate.databaseApplyAuthorized !== false ||
     candidate.sitesPublished !== false ||
-    candidate.edgeDeployed !== false
+    candidate.sitesPublishAuthorized !== false ||
+    candidate.edgeDeployed !== false ||
+    candidate.edgeDeployAuthorized !== false ||
+    candidate.deploymentAuthorized !== false
   ) failures.push("schema-12 candidate overclaims remote release completion");
+
+  const production = manifest.currentProductionObservation as
+    Record<string, any>;
+  const review = manifest.databaseContractReview as
+    Record<string, any> | undefined;
+  const runtime = record.currentRuntimeIdentityObservation as
+    Record<string, any> | undefined;
+  if (
+    production.evidenceStatus !==
+      "sites_v53_database57_foundation_applied_path_boundary_ineffective_one_stranded_asset" ||
+    production.canonicalGitHubMainCommit !==
+      "c41e6f71c7ffccf11d399d415046e3659e3bffd9" ||
+    production.canonicalGitHubMainMergePullRequest !== 182 ||
+    production.sitesVersion !== 53 ||
+    production.sourceFileCount !== 227 ||
+    production.sourceTreeSha256 !==
+      "f36746fd569ee0b26c961c71e98dfc31308be4b5938a5902b145ecfbbd0c4348" ||
+    production.productionMigrationCount !== 57 ||
+    production.migrationTreeSha256 !==
+      "070e95261d26e9dd88b3fcfc69f98c55c5fe95185118566530f538d14475645f" ||
+    production.latestProductionMigration !== foundationMigration ||
+    production.generatedProductionMigrationVersion !== "20260813175512" ||
+    production.generatedProductionMigrationName !==
+      "durable_media_ingestion_recovery" ||
+    production.latestProductionMigrationByteLength !== 49_967 ||
+    production.latestProductionMigrationSha256 !==
+      "9c8178118ccea7b7bc51c39b4493b6e9dfa0fcf5c4f8bc1c5ebf25842c4a55f9" ||
+    production.fullReleaseGatePassed !== false
+  ) failures.push("schema-13 production foundation observation drifted");
+
+  if (
+    review?.forwardRepairRequired !== true ||
+    review?.functionalVerificationPassed !== false ||
+    review?.additionalDatabaseChangesRequired !== true ||
+    review?.localStaticReviewPassed !== true ||
+    review?.localParserPassed !== true ||
+    review?.hostedCleanChainApplyPassed !== false ||
+    review?.hostedFullPgTapPassed !== false ||
+    review?.hostedDatabaseExecutionPassed !== false ||
+    review?.databaseApplyAuthorized !== false ||
+    review?.foundationMigrationFilename !== foundationMigration ||
+    review?.foundationMigrationSha256 !==
+      "9c8178118ccea7b7bc51c39b4493b6e9dfa0fcf5c4f8bc1c5ebf25842c4a55f9" ||
+    review?.foundationGeneratedProductionVersion !== "20260813175512" ||
+    review?.repairMigrationFilename !== expectedMigration ||
+    review?.repairMigrationSha256 !== latestMigrationSha256 ||
+    review?.repairMigrationSha256 !==
+      "6bb6b50ec7e1980f65088062e4d6df95cdf5920c75528684fc86b71fbc998ed9" ||
+    review?.repairMigrationByteLength !== 4_530 ||
+    review?.futureProductionMigrationCount !== 58 ||
+    review?.futureProductionMigrationTreeSha256 !== rootMigrationTree.sha256
+  ) failures.push("schema-13 database repair review drifted");
+
+  if (
+    runtime?.evidenceScope !==
+      "read_only_production_observation_after_database57_before_path_repair" ||
+    runtime?.assetCount !== 1 ||
+    runtime?.storageObjectCount !== 1 ||
+    runtime?.exactAssetVerificationCount !== 0 ||
+    runtime?.exactAssetIntakeAttemptCount !== 0 ||
+    runtime?.exactAssetTeamIncidentCount !== 0 ||
+    runtime?.contentLifecycleInvocationCountLast24h !== 0 ||
+    runtime?.staleOrphanAiJobCount !== 0 ||
+    runtime?.strandedAssetOutboxReceiptCount !== 0 ||
+    runtime?.eligibleCanonicalPathAssetCount !== 1
+  ) failures.push("schema-13 runtime incident observation drifted");
 
   if (
     !quality ||
@@ -1980,7 +2064,7 @@ export function assertDurableMediaIngestionCandidateManifest(
   ) failures.push("schema-12 external-action hold or gate drifted");
 
   if (
-    recovery?.status !== "reviewed_source_pending_production_apply" ||
+    recovery?.status !== "foundation_applied_path_repair_pending" ||
     recovery?.strandedAssetId !==
       "05ab2303-f7ea-4056-8f75-9cd7e523a4f4" ||
     recovery?.storageObjectId !==
@@ -1988,7 +2072,11 @@ export function assertDurableMediaIngestionCandidateManifest(
     recovery?.storageObjectVersion !==
       "a6a293a9-4364-4867-878c-64bfc662dff9" ||
     recovery?.existingAssetMutated !== false ||
-    recovery?.durableOutboxAtRegistration !== true ||
+    recovery?.durableOutboxAtRegistrationImplemented !== true ||
+    recovery?.durableOutboxAtRegistrationEffectiveInProduction !== false ||
+    recovery?.pathBoundaryRepairApplied !== false ||
+    recovery?.strandedAssetOutboxReceiptPresent !== false ||
+    recovery?.foundationApplied !== true ||
     recovery?.skipLockedLeaseWorker !== true ||
     recovery?.boundedAttempts !== 5 ||
     recovery?.independentFailureReceipt !== true ||
@@ -1998,7 +2086,9 @@ export function assertDurableMediaIngestionCandidateManifest(
     recovery?.providerCallAllowed !== false ||
     recovery?.externalWriteAllowed !== false ||
     recovery?.totalPixelCeilingRemovedAcrossEdge !== true ||
-    recovery?.keyTransition?.phase !== "dual_public_key_cutover" ||
+    recovery?.keyTransition?.phase !==
+      "dual_public_key_cutover_source_merged_not_deployed" ||
+    recovery?.keyTransition?.deployed !== false ||
     recovery?.keyTransition?.dedicatedPrivateKeys !== 4 ||
     recovery?.keyTransition?.legacyPrivateKeyFallback !== false ||
     recovery?.keyTransition?.acceptedEdgePublicKeysPerFunction !== 2
@@ -2015,6 +2105,47 @@ export function assertDurableMediaIngestionCandidateManifest(
     migration.includes("provider_writes = true") ||
     migration.includes("external_write_allowed = true")
   ) failures.push("schema-12 migration safety invariants drifted");
+
+  const repairLockIndex = repairMigration.indexOf(
+    "lock table public.veroxa_media_assets in share row exclusive mode",
+  );
+  const repairAlterIndex = repairMigration.indexOf(
+    "alter table veroxa_private.momo_media_ingestion_outbox_v1",
+  );
+  const repairFunctionIndex = repairMigration.indexOf(
+    "create or replace function",
+  );
+  const repairBackfillIndex = repairMigration.indexOf("do $$");
+  if (
+    repairLockIndex < 0 ||
+    repairAlterIndex < 0 ||
+    repairAlterIndex >= repairLockIndex ||
+    repairLockIndex >= repairFunctionIndex ||
+    repairFunctionIndex >= repairBackfillIndex ||
+    !repairMigration.includes(
+      "momo_media_ingestion_outbox_storage_path_v2_check",
+    ) ||
+    !repairMigration.includes("[.](jpg|jpeg|png)$") ||
+    !repairMigration.includes(
+      "momo_media_ingestion_path_repair_backfill_incomplete_v1",
+    ) ||
+    /\\+\.\(jpg\|jpeg\|png\)/u.test(repairMigration) ||
+    repairMigration.includes("provider_writes = true") ||
+    repairMigration.includes("external_write_allowed = true")
+  ) failures.push("schema-12 forward path-repair invariants drifted");
+
+  const rootRepairTest = read(
+    "supabase/tests/momo_media_ingestion_path_regex_repair_v1.sql",
+  );
+  const sitesRepairTest = read(
+    "artifacts/veroxa-sites/supabase/tests/momo_media_ingestion_path_regex_repair_v1.sql",
+  );
+  if (
+    rootRepairTest !== sitesRepairTest ||
+    !rootRepairTest.includes("select plan(7)") ||
+    !rootRepairTest.includes("request.jwt.claim.sub") ||
+    !rootRepairTest.includes("external_write_allowed")
+  ) failures.push("schema-12 forward path-repair pgTAP mirror drifted");
 
   const mirroredPaths = [
     "functions/_shared/momo-content-ai-lifecycle-contract.ts",
@@ -2268,7 +2399,7 @@ export function assertCurrentReconciliationManifest(
 export function assertUnreleasedLocalCandidateManifest(
   manifest: DeploymentManifest,
 ): void {
-  if (manifest.schemaVersion === 12) {
+  if (manifest.schemaVersion === 13) {
     assertDurableMediaIngestionCandidateManifest(manifest);
     return;
   }
@@ -2288,7 +2419,7 @@ export function assertUnreleasedLocalCandidateManifest(
 export function assertReviewedLocalCandidateManifest(
   manifest: DeploymentManifest,
 ): void {
-  if (manifest.schemaVersion === 12) {
+  if (manifest.schemaVersion === 13) {
     assertDurableMediaIngestionCandidateManifest(manifest);
     return;
   }

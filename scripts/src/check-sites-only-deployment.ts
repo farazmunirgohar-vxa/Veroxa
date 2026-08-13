@@ -40,7 +40,7 @@ if (existsSync(sentinelPath)) {
   );
 }
 
-if (manifest.schemaVersion === 12) {
+if (manifest.schemaVersion === 13) {
   const recovery = (
     manifest as unknown as Record<string, any>
   ).durableMediaIngestionRecovery as Record<string, any> | undefined;
@@ -48,12 +48,12 @@ if (manifest.schemaVersion === 12) {
     manifest.currentProductionObservation.sitesVersion === 53 &&
       manifest.releaseCandidate.sitesPublished === false &&
       manifest.releaseCandidate.edgeDeployed === false &&
-      manifest.releaseCandidate.sitesPublishAuthorized === true &&
-      manifest.releaseCandidate.edgeDeployAuthorized === true &&
-      manifest.releaseCandidate.deploymentAuthorized === true &&
+      manifest.releaseCandidate.sitesPublishAuthorized === false &&
+      manifest.releaseCandidate.edgeDeployAuthorized === false &&
+      manifest.releaseCandidate.deploymentAuthorized === false &&
       manifest.deploymentFreeze.automaticDeploymentsAllowed === false &&
       manifest.fullReleaseGatePassed === false,
-    "Schema-12 candidate overclaims Sites/Edge publication or loses its reviewed release authorization.",
+    "Schema-12 repair candidate overclaims Sites/Edge publication or release authorization before exact-head gates.",
   );
   must(
     manifest.operationalHold?.providerWrites === false &&
@@ -89,17 +89,17 @@ if (manifest.schemaVersion === 12) {
     process.exit(1);
   }
   console.log(
-    "PASS: Sites remains the sole web target and the unpublished schema-12 Edge transition is exactly mirrored and externally locked.",
+    "PASS: Sites remains the sole web target and the unpublished schema-13 Edge transition is exactly mirrored and externally locked.",
   );
   process.exit(0);
 }
 
 // Schema-11 and older releases retain their historical exact-hash closure
 // guard in the commit that recorded those production observations. This
-// forward source is intentionally schema-12-only so new Edge bytes cannot be
+// forward source is intentionally schema-13-only so new Edge bytes cannot be
 // certified against superseded deployed hashes.
 failures.push(
-  "Current Sites-only deployment guard accepts only schema-12 candidate evidence.",
+  "Current Sites-only deployment guard accepts only schema-13 candidate evidence.",
 );
 for (const failure of failures) console.error("FAIL:", failure);
 process.exitCode = 1;
