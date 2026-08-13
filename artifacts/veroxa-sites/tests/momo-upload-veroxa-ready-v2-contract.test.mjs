@@ -541,7 +541,7 @@ test("legacy media fan-out is retired without deleting its historical rows", () 
   assert.doesNotMatch(replacement, /insert into public\.veroxa_ai_jobs/u);
 });
 
-test("the signed lifecycle performs finalize then advance and persists bounded intake failures", () => {
+test("finalize advances through the signed lifecycle and records failures independently", () => {
   const finalize = between(
     lifecycle,
     "if (body.operation === \"finalize_upload\")",
@@ -575,8 +575,15 @@ test("the signed lifecycle performs finalize then advance and persists bounded i
   assert.match(lifecycleContract, /JSON\.stringify\(body\.evidenceSnapshot\.reasonCodes\) === JSON\.stringify\(body\.reasonCodes\)/u);
 
   assert.match(finalizeRoute, /operation: "finalize_upload", \.\.\.input/u);
-  assert.match(finalizeRoute, /operation: "record_intake_attempt",[\s\S]*?\.\.\.input/u);
-  assert.match(finalizeCore, /\[\s*"media_verification_unavailable",\s*"media_verification_failed",\s*"media_not_platform_ready",\s*"media_not_assessable",\s*\]\.includes\(error\.code\)/u);
+  assert.match(
+    finalizeRoute,
+    /client\.rpc\(\s*"veroxa_record_momo_media_intake_failure_v1"/u,
+  );
+  const routeFailure = finalizeRoute.slice(finalizeRoute.indexOf(
+    "async recordFailure",
+  ));
+  assert.doesNotMatch(routeFailure, /invokeMomoContentAiLifecycleBridge/u);
+  assert.match(finalizeCore, /\[\s*"media_verification_unavailable",\s*"media_verification_failed",\s*"media_not_platform_ready",\s*"media_not_assessable",\s*\]\.includes\(publicError\.code\)/u);
   assert.match(finalizeCore, /`momo-intake-failure-v2:\$\{evidenceSha256\}`/u);
-  assert.match(finalizeCore, /recordedIntakeFailure\(recorded, input\.assetId\)[\s\S]*?media_verification_unavailable/u);
+  assert.match(finalizeCore, /recordedIntakeFailure\(recorded, input\.assetId\)[\s\S]*?team_exception_recorded/u);
 });

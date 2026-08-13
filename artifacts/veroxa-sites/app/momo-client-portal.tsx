@@ -25,6 +25,8 @@ import {
   type MomoClientRequest,
   type MomoClientSnapshot,
 } from "./momo-client-data";
+import type { MomoMediaFinalizeFailureReceipt } from
+  "./momo-media-finalize-contract";
 import { resolveMomoMediaWorkflow } from "./momo-media-guidance";
 import { hasStrongPrivateFoodEvidence } from "./veroxa-private-media-assessment";
 
@@ -291,8 +293,13 @@ function Setup({ snapshot, restaurantId, busy, run }: { snapshot: MomoClientSnap
   </div>;
 }
 
-function mediaUploadAttentionMessage(errorCode: string): string {
-  const handoff = " Your upload is complete. Veroxa and Team Faraz own the next step; you do not need to retry or upload another copy.";
+function mediaUploadAttentionMessage(
+  errorCode: string,
+  failureReceipt: MomoMediaFinalizeFailureReceipt | null,
+): string {
+  const handoff = failureReceipt?.status === "team_exception_recorded"
+    ? " The exception receipt is recorded, so Team Faraz owns the next step; you do not need to retry or upload another copy."
+    : " Your upload is saved and queued for private recovery. Veroxa is confirming its recovery status; do not upload another copy. Nothing was posted or connected.";
   if (errorCode === "media_not_platform_ready") {
     return `Your original and upload instruction were saved privately. Veroxa found a file-fit exception.${handoff}`;
   }
@@ -300,7 +307,7 @@ function mediaUploadAttentionMessage(errorCode: string): string {
     return `Your original and upload instruction were saved privately. Veroxa found a secure-check exception.${handoff}`;
   }
   if (errorCode === "media_registration_response_invalid") {
-    return `Your original was saved privately, but its upload receipt needs Team review.${handoff}`;
+    return `Your original was saved privately while Veroxa confirms its upload receipt.${handoff}`;
   }
   return `Your original and upload instruction were saved privately. Veroxa is handling a processing exception.${handoff} Nothing was posted or connected.`;
 }
@@ -341,7 +348,10 @@ function Media({ snapshot, restaurantId, busy, run }: { snapshot: MomoClientSnap
   };
   const finishUploadOutcome = (outcome: MomoClientMediaUploadOutcome): string => {
     if (outcome.status === "uploaded_but_needs_attention") {
-      const message = mediaUploadAttentionMessage(outcome.errorCode);
+      const message = mediaUploadAttentionMessage(
+        outcome.errorCode,
+        outcome.failureReceipt,
+      );
       setFile(null);
       setUploadKey((value) => value + 1);
       setRightsConfirmed(false);
@@ -356,7 +366,7 @@ function Media({ snapshot, restaurantId, busy, run }: { snapshot: MomoClientSnap
       return "Your image and upload instruction were saved. Veroxa is handling the remaining private assessment; you do not need to do anything. Nothing was posted or connected.";
     }
     if (!outcome.associationRecorded) {
-      return "Your image was assessed privately and its upload instruction is saved. Team Faraz owns any remaining exception; you do not need to do anything.";
+      return "Your image was assessed privately and its upload instruction is saved. Veroxa is confirming the remaining association record; you do not need to upload another copy.";
     }
     return outcome.assessment.reused
       ? "Veroxa reused the same byte-level assessment. This upload keeps its own permission and restaurant-association record. Nothing was posted."
@@ -505,10 +515,10 @@ function ClientMediaCard({
     {item.privateAssessment && <section className="client-private-assessment" aria-label={`Private visual assessment for ${item.displayFileName}`}><p className="eyebrow">VISIBLE EVIDENCE ONLY</p><strong>{item.privateAssessment.visualSummary}</strong><div className="momo-tag-row">{item.privateAssessment.tags.map((tag) => <span key={tag.slug} title={tag.uncertainty || "Directly visible"}>{tag.label} · {Math.round(tag.confidence * 100)}%</span>)}</div><small>{item.privateAssessment.uncertainties.join(" ")}</small></section>}
     {item.assessmentReusedFromId && <p className="momo-form-note">Identical bytes reused only the private visual assessment. This upload keeps separate permission and restaurant-association records.</p>}
     {item.exactDuplicate && !item.assessmentReusedFromId && <p className="momo-form-note">Veroxa recognized the same bytes. Permission and restaurant association remain separate for this upload.</p>}
-    {verificationPending && <div className="momo-warning"><strong>Your original is saved and Veroxa is handling its secure checks.</strong><p>{item.uploadInstruction ? `Your ${label(item.uploadInstruction).toLowerCase()} instruction is saved too. ` : "The association selection from this earlier attempt could not be confirmed. "}Team Faraz owns the exception. You do not need to retry or upload another copy.</p></div>}
+    {verificationPending && <div className="momo-warning"><strong>Your original is saved and queued for secure recovery.</strong><p>{item.uploadInstruction ? `Your ${label(item.uploadInstruction).toLowerCase()} instruction is saved too. ` : "The association selection from this earlier attempt could not be confirmed. "}Veroxa is confirming its recovery status. You do not need to retry or upload another copy.</p></div>}
     {!item.sourceMediaDiscarded && assessableImage && item.privateAssessmentStatus === null && !verificationPending && <p className="momo-form-note">Veroxa is continuing the private assessment. You do not need to start or retry anything.</p>}
     {!item.sourceMediaDiscarded && item.privateAssessmentStatus === "failed" && <p className="momo-warning">The private assessment stopped safely and is now a Team Faraz exception. You do not need to retry or upload another copy. Nothing was posted or connected.</p>}
-    {item.privateAssessmentStatus === "completed" && item.rightsId && item.sourceContentSha256 && (item.associationId ? <details className="client-media-permission"><summary><span>Restaurant association</span><strong>{label(item.restaurantAssociation || "not_for_restaurant")}</strong></summary><p>{item.sourceMediaDiscarded ? `This immutable association remains stored as evidence from ${when(item.associationRecordedAt)}. It cannot change the terminal exclusion from future content and Ready.` : <>This decision was recorded for the exact image bytes and permission record on {when(item.associationRecordedAt)}. It is immutable. To correct it, create a new permission record or <a href={clientRoutes.requests}>ask Veroxa for help</a>.</>}</p><small>Media rights and restaurant association remain separate. This record does not authorize posting, scheduling, or account connection.</small></details> : !item.sourceMediaDiscarded ? <div className="momo-warning"><strong>Your upload instruction is awaiting Veroxa resolution.</strong><p>Team Faraz owns this exception and will contact you only if restaurant facts or permission are genuinely needed.</p></div> : null)}
+    {item.privateAssessmentStatus === "completed" && item.rightsId && item.sourceContentSha256 && (item.associationId ? <details className="client-media-permission"><summary><span>Restaurant association</span><strong>{label(item.restaurantAssociation || "not_for_restaurant")}</strong></summary><p>{item.sourceMediaDiscarded ? `This immutable association remains stored as evidence from ${when(item.associationRecordedAt)}. It cannot change the terminal exclusion from future content and Ready.` : <>This decision was recorded for the exact image bytes and permission record on {when(item.associationRecordedAt)}. It is immutable. To correct it, create a new permission record or <a href={clientRoutes.requests}>ask Veroxa for help</a>.</>}</p><small>Media rights and restaurant association remain separate. This record does not authorize posting, scheduling, or account connection.</small></details> : !item.sourceMediaDiscarded ? <div className="momo-warning"><strong>Your upload instruction is awaiting Veroxa resolution.</strong><p>Veroxa is confirming the remaining association record and will contact you only if restaurant facts or permission are genuinely needed.</p></div> : null)}
     {v2Attention && <p className="momo-warning">Preparation stopped safely. {v2AttentionReasons.length ? v2AttentionReasons.map((reason) => clientAttentionMessage[reason]).join(" ") : "Team Faraz is reviewing it and will ask if you need to act."}</p>}
     {v2Preparing && restaurantContentEligible && <p className="momo-form-note">Eligible owner-associated JPEG · private factual preparation is in progress.</p>}
     {v2Ready && <p className="momo-callout"><strong>Veroxa Ready · unscheduled.</strong> This image is evidence-complete. Nothing was posted, scheduled, or connected.</p>}

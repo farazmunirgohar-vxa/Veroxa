@@ -23,6 +23,10 @@ import {
   decodeVeroxaPrivateMediaImage,
   type VeroxaPrivateMediaHostDecoder,
 } from "../../../veroxa-private-media-image-decode.ts";
+import { MomoContentAiLifecycleBridgeError } from
+  "../../../momo-content-ai-lifecycle-bridge.ts";
+import type { MomoMediaFinalizeFailureReceipt } from
+  "../../../momo-media-finalize-contract.ts";
 
 const MAX_BODY_BYTES = 2_048;
 const VERIFIER_VERSION = "veroxa-private-image-byte-verifier-2026-08-08-v1";
@@ -37,7 +41,15 @@ type ObjectInfo = {
   contentType: string;
 };
 type ParsedInput = { restaurantId: string; assetId: string; storagePath: string };
+type FinalizeCallContext = { correlationId: string };
+type IntakeFailureStage =
+  | "download"
+  | "storage_metadata"
+  | "byte_inspection"
+  | "trusted_decode"
+  | "finalize_bridge";
 type IntakeFailureObservation = {
+  failureStage: IntakeFailureStage | null;
   storageObjectId: string | null;
   storageObjectVersion: string | null;
   observedContentType: string | null;
@@ -69,17 +81,19 @@ export type MomoMediaFinalizeDependencies = {
     verificationCanonical: string;
     verificationSha256: string;
     idempotencyHash: string;
-  }): Promise<unknown>;
+  }, context: FinalizeCallContext): Promise<unknown>;
   recordFailure(input: {
     restaurantId: string;
     assetId: string;
+    failureStage: IntakeFailureStage;
+    errorCode: string;
     outcome: "rejected" | "unavailable";
     reasonCodes: string[];
     evidenceSnapshot: Record<string, unknown>;
     evidenceCanonical: string;
     evidenceSha256: string;
     idempotencySha256: string;
-  }): Promise<unknown>;
+  }, context: FinalizeCallContext): Promise<unknown>;
 };
 
 class PublicError extends Error {
@@ -92,11 +106,16 @@ class PublicError extends Error {
   }
 }
 
-function noStore(body: Record<string, unknown>, status: number): Response {
+function noStore(
+  body: Record<string, unknown>,
+  status: number,
+  correlationId: string,
+): Response {
   return Response.json(body, { status, headers: {
     "cache-control": "no-store, max-age=0",
     "content-security-policy": "default-src 'none'; frame-ancestors 'none'",
     "x-content-type-options": "nosniff",
+    "x-veroxa-correlation-id": correlationId,
   } });
 }
 
@@ -125,20 +144,50 @@ async function parse(request: Request): Promise<ParsedInput> {
   return { restaurantId: value.restaurantId.toLowerCase(), assetId: value.assetId.toLowerCase(), storagePath: value.storagePath };
 }
 
-function recordedIntakeFailure(value: unknown, assetId: string): boolean {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+function recordedIntakeFailure(
+  value: unknown,
+  assetId: string,
+): { attemptId: string; durableCorrelationId: string } | null {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return null;
   const result = value as Record<string, unknown>;
-  return Object.keys(result).sort().join(",") === "assetId,attemptId,status" &&
+  return Object.keys(result).sort().join(",") ===
+      "assetId,attemptId,durableCorrelationId,status" &&
     result.status === "recorded" && result.assetId === assetId &&
-    isMomoContentUuid(result.attemptId);
+    isMomoContentUuid(result.attemptId) &&
+    isMomoContentUuid(result.durableCorrelationId)
+    ? {
+      attemptId: result.attemptId.toLowerCase(),
+      durableCorrelationId: result.durableCorrelationId.toLowerCase(),
+    }
+    : null;
+}
+
+function unconfirmedFailureReceipt(
+  correlationId: string,
+): MomoMediaFinalizeFailureReceipt {
+  return {
+    status: "exception_recording_unconfirmed",
+    attemptId: null,
+    recoveryOwner: null,
+    clientActionRequired: false,
+    correlationId,
+    durableCorrelationId: null,
+  };
 }
 
 export function createMomoMediaFinalizeHandler(dependencies: MomoMediaFinalizeDependencies) {
   return async (request: Request): Promise<Response> => {
+    const requestedCorrelationId = request.headers.get(
+      "x-veroxa-correlation-id",
+    );
+    const correlationId = isMomoContentUuid(requestedCorrelationId)
+      ? requestedCorrelationId.toLowerCase()
+      : crypto.randomUUID();
     let actor: Actor | null = null;
     let input: ParsedInput | null = null;
     let recordable = false;
     const observed: IntakeFailureObservation = {
+      failureStage: null,
       storageObjectId: null,
       storageObjectVersion: null,
       observedContentType: null,
@@ -156,11 +205,13 @@ export function createMomoMediaFinalizeHandler(dependencies: MomoMediaFinalizeDe
       input = await parse(request);
       if (actor.restaurantId.toLowerCase() !== input.restaurantId) throw new PublicError("momo_access_required", 403);
       recordable = true;
+      observed.failureStage = "download";
       let blob: Blob;
       let info: ObjectInfo;
       try {
         [blob, info] = await Promise.all([dependencies.download(input.storagePath), dependencies.info(input.storagePath)]);
       } catch {
+        observed.failureStage = "download";
         throw new PublicError("media_verification_unavailable", 503);
       }
       observed.storageObjectId = isMomoContentUuid(info.id) ? info.id : null;
@@ -169,11 +220,16 @@ export function createMomoMediaFinalizeHandler(dependencies: MomoMediaFinalizeDe
       observed.observedContentType = info.contentType.slice(0, 160) || null;
       observed.declaredSize = Number.isSafeInteger(info.size) ? info.size : null;
       observed.downloadedSize = Number.isSafeInteger(blob.size) ? blob.size : null;
+      observed.failureStage = "storage_metadata";
       if (!isMomoContentUuid(info.id) || !info.version || info.version.length > 200 || info.bucketId !== "restaurant-media" ||
         info.name !== input.storagePath || !Number.isSafeInteger(info.size) ||
         info.size < VEROXA_PRIVATE_MEDIA_ASSESSMENT_MIN_SOURCE_BYTES ||
         info.size > VEROXA_PRIVATE_MEDIA_ASSESSMENT_MAX_SOURCE_BYTES ||
-        blob.size !== info.size) throw new PublicError("media_verification_failed", 422);
+        blob.size !== info.size) {
+        observed.failureStage = "storage_metadata";
+        throw new PublicError("media_verification_failed", 422);
+      }
+      observed.failureStage = "byte_inspection";
       const bytes = new Uint8Array(await blob.arrayBuffer());
       const inspection = await inspectMomoImageBytesFully(bytes);
       observed.detectedMime = inspection?.mimeType ?? null;
@@ -200,9 +256,11 @@ export function createMomoMediaFinalizeHandler(dependencies: MomoMediaFinalizeDe
         !(inspection.mimeType === "image/jpeg"
           ? /\.(jpg|jpeg)$/u.test(input.storagePath)
           : input.storagePath.endsWith(expectedExtension))) {
+        observed.failureStage = "byte_inspection";
         throw new PublicError("media_not_assessable", 422);
       }
       const detectedMime = inspection.mimeType as VeroxaPrivateMediaMimeType;
+      observed.failureStage = "trusted_decode";
       if (!await decodeVeroxaPrivateMediaImage({
         bytes,
         mimeType: detectedMime,
@@ -210,8 +268,10 @@ export function createMomoMediaFinalizeHandler(dependencies: MomoMediaFinalizeDe
         expectedHeight: inspection.height,
         hostDecoder: dependencies.decodeHighResolutionImage,
       })) {
+        observed.failureStage = "trusted_decode";
         throw new PublicError("media_not_assessable", 422);
       }
+      observed.failureStage = "byte_inspection";
       const contentSha256 = await momoBytesSha256(bytes);
       observed.contentSha256 = contentSha256;
       const verificationSnapshot = {
@@ -231,6 +291,7 @@ export function createMomoMediaFinalizeHandler(dependencies: MomoMediaFinalizeDe
       const verificationCanonical = momoCanonicalJson(verificationSnapshot);
       const verificationSha256 = await momoBytesSha256(new TextEncoder().encode(verificationCanonical));
       const idempotencyHash = await momoBytesSha256(new TextEncoder().encode(`${input.restaurantId}:${input.assetId}:${info.id}:${info.version}:${contentSha256}`));
+      observed.failureStage = "finalize_bridge";
       const finalized = parseMomoMediaFinalizeResult(await dependencies.finalize({
         restaurantId: input.restaurantId,
         assetId: input.assetId,
@@ -246,23 +307,39 @@ export function createMomoMediaFinalizeHandler(dependencies: MomoMediaFinalizeDe
         verificationCanonical,
         verificationSha256,
         idempotencyHash,
-      }), input.assetId);
-      if (!finalized) throw new PublicError("media_verification_unavailable", 503);
-      return noStore({ ...finalized, externalWriteAllowed: false }, 200);
+      }, { correlationId }), input.assetId);
+      if (!finalized) {
+        observed.failureStage = "finalize_bridge";
+        throw new PublicError("media_verification_unavailable", 503);
+      }
+      return noStore(
+        { ...finalized, externalWriteAllowed: false },
+        200,
+        correlationId,
+      );
     } catch (error) {
-      if (error instanceof PublicError && recordable && actor && input && [
+      const publicError = error instanceof PublicError
+        ? error
+        : new PublicError("media_verification_unavailable", 503);
+      if (error instanceof MomoContentAiLifecycleBridgeError) {
+        observed.failureStage = "finalize_bridge";
+      } else if (!observed.failureStage && !(error instanceof PublicError)) {
+        observed.failureStage = "finalize_bridge";
+      }
+      if (recordable && actor && input && [
         "media_verification_unavailable",
         "media_verification_failed",
         "media_not_platform_ready",
         "media_not_assessable",
-      ].includes(error.code)) {
-        const outcome = error.code === "media_verification_unavailable"
+      ].includes(publicError.code)) {
+        const outcome = publicError.code === "media_verification_unavailable"
           ? "unavailable" as const
           : "rejected" as const;
-        const reasonCodes = [error.code];
+        const reasonCodes = [publicError.code];
         const evidenceSnapshot = {
           schemaVersion: 2,
           verifierVersion: VERIFIER_VERSION,
+          correlationId,
           restaurantId: input.restaurantId,
           assetId: input.assetId,
           storagePath: input.storagePath,
@@ -281,23 +358,49 @@ export function createMomoMediaFinalizeHandler(dependencies: MomoMediaFinalizeDe
           const recorded = await dependencies.recordFailure({
             restaurantId: input.restaurantId,
             assetId: input.assetId,
+            failureStage: observed.failureStage ?? "finalize_bridge",
+            errorCode: publicError.code,
             outcome,
             reasonCodes,
             evidenceSnapshot,
             evidenceCanonical,
             evidenceSha256,
             idempotencySha256,
-          });
-          if (!recordedIntakeFailure(recorded, input.assetId)) {
-            return noStore({ error: "media_verification_unavailable" }, 503);
+          }, { correlationId });
+          const durableReceipt = recordedIntakeFailure(recorded, input.assetId);
+          if (!durableReceipt) {
+            return noStore({
+              error: "media_verification_unavailable",
+              receipt: unconfirmedFailureReceipt(correlationId),
+              externalWriteAllowed: false,
+            }, 503, correlationId);
           }
+          const receipt: MomoMediaFinalizeFailureReceipt = {
+            status: "team_exception_recorded",
+            attemptId: durableReceipt.attemptId,
+            recoveryOwner: "veroxa_team",
+            clientActionRequired: false,
+            correlationId,
+            durableCorrelationId: durableReceipt.durableCorrelationId,
+          };
+          return noStore({
+            error: publicError.code,
+            receipt,
+            externalWriteAllowed: false,
+          }, publicError.status, correlationId);
         } catch {
-          return noStore({ error: "media_verification_unavailable" }, 503);
+          return noStore({
+            error: "media_verification_unavailable",
+            receipt: unconfirmedFailureReceipt(correlationId),
+            externalWriteAllowed: false,
+          }, 503, correlationId);
         }
       }
-      return error instanceof PublicError
-        ? noStore({ error: error.code }, error.status)
-        : noStore({ error: "media_verification_unavailable" }, 503);
+      return noStore(
+        { error: publicError.code },
+        publicError.status,
+        correlationId,
+      );
     }
   };
 }

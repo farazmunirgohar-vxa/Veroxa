@@ -22,6 +22,17 @@ try {
   failures.push(error instanceof Error ? error.message : String(error));
 }
 
+if (manifest.schemaVersion === 12) {
+  if (failures.length > 0) {
+    for (const failure of failures) console.error("FAIL:", failure);
+    process.exit(1);
+  }
+  console.log(
+    "PASS: schema-12 durable media-ingestion recovery candidate is locally reviewed, mirrored, externally locked, and pending remote release evidence.",
+  );
+  process.exit(0);
+}
+
 if (manifest.schemaVersion === 11) {
   if (failures.length > 0) { for (const failure of failures) console.error("FAIL:", failure); process.exit(1); }
   console.log("PASS: schema-11 live56 purge, high-resolution acceptance, Sites v53, migration, and external-action locks are verified.");

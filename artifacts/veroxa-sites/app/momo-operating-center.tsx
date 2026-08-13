@@ -231,8 +231,8 @@ const MOMO_ACTION_ERROR_MESSAGES: Readonly<Record<string, string>> = {
   invalid_media_size: "Choose a JPG between 10 KB and 5 MB.",
   media_not_platform_ready: "Use a JPG from 320 × 250 px up to a 12,000 px maximum edge, with an aspect ratio from 4:5 to 1.91:1.",
   media_verification_failed: "The upload was stored privately, but server byte verification did not complete. It is not eligible for content preparation.",
-  media_verification_unavailable: "Secure verification is temporarily unavailable. The private upload is preserved; Team Faraz owns the exception and Momo does not need to retry or re-upload.",
-  media_instruction_awaiting_private_assessment: "The upload instruction is saved, but its private verification or assessment is not complete. Team Faraz owns that technical recovery; do not ask Momo to retry or re-upload.",
+  media_verification_unavailable: "Secure verification is temporarily unavailable. The private upload is preserved and queued for recovery; Momo does not need to retry or re-upload.",
+  media_instruction_awaiting_private_assessment: "The upload instruction is saved, but its private verification or assessment is not complete. Veroxa is confirming the recovery receipt; do not ask Momo to retry or re-upload.",
   media_instruction_needs_restaurant_fact_or_permission: "The upload instruction is saved, but applying it requires a real restaurant fact or permission. Contact Momo only for that specific fact or permission—not for verification or another upload.",
   media_instruction_processor_failed: "The saved upload instruction could not be applied from current evidence. Nothing was connected or posted; review the Team exception without asking Momo to retry.",
   content_ai_disabled: "Content preparation is paused. No AI call was started and nothing was marked Ready.",
@@ -1002,7 +1002,7 @@ function IntelligencePanel(props: PanelProps) {
       <span className="momo-setup-next"><strong>Next action</strong><small>{setupNextAction}</small></span>
       <em>Posting off</em>
     </section>}
-    <details className="momo-setup-disclosure" defaultOpen={role === "client"}>
+    <details className="momo-setup-disclosure" open={role === "client" ? true : undefined}>
       <summary><span><strong>Current restaurant information</strong><small>Business facts and owner-confirmation status.</small></span><b>{currentTruthFields.length}</b></summary>
       <div className="momo-setup-disclosure-body">
         {currentTruthFields.length === 0 ? <EmptyState title="No current restaurant truth has been recorded." detail="Use Profile to add facts. Unconfirmed facts remain absent." /> : <div className="momo-record-list">{currentTruthFields.map((field) => <article key={field.id}><div><strong>{labelStatus(field.field_key)}</strong><p>{valueText(field.value_json) || "Empty value"}</p><small>{labelStatus(field.section)} · {field.source} · Current record</small></div><StatusBadge status={field.status === "owner_confirmed" && !momoTruthFieldIsCurrentlyUsable(data, field.id) ? "owner_blocked" : field.status} /></article>)}</div>}
@@ -1057,7 +1057,8 @@ function OnboardingStepRow({ step, data, role, restaurantId, busy, run }: PanelP
   return <article><div><strong>{step.title}</strong><p>{step.blocker_reason || valueText(step.completion_evidence) || "No evidence recorded"}</p></div><StatusBadge status={pending ? "pending" : contraryOwnerIntent ? "owner_blocked" : step.status} />{role === "client" && <div className="momo-decision"><button type="button" disabled={busy || pending || !readyForOwnerConfirmation} onClick={() => void run(() => submitMomoConfirmation({ restaurantId, subjectType: "onboarding_step", subjectId: step.id, confirmationKind: "onboarding", decision: "confirm", proposedValue: { stepKey: step.step_key } }), "Onboarding step confirmation queued for Team review.")}>Confirm complete</button><button type="button" disabled={busy || pending} onClick={() => void run(() => submitMomoConfirmation({ restaurantId, subjectType: "onboarding_step", subjectId: step.id, confirmationKind: "onboarding", decision: "needs_help", notes: `Owner requested help with ${step.title}.` }), "Onboarding step marked as needing help.")}>Need help</button>{!readyForOwnerConfirmation && <small>Team evidence must reach Ready for review before completion can be confirmed.</small>}</div>}{role === "team" && <div className="momo-form momo-compact-form"><label>Status<select value={status} onChange={(event) => setStatus(event.target.value)}><option value="not_started">Not started</option><option value="foundation_ready">Foundation ready</option><option value="in_progress">In progress</option><option value="blocked">Blocked</option><option value="ready_for_review">Ready for review</option><option value="verified">Verified</option></select></label><label>Evidence, one item per line<textarea value={evidence} onChange={(event) => setEvidence(event.target.value)} rows={2} /></label><label>Blocker reason<input value={blockerReason} onChange={(event) => setBlockerReason(event.target.value)} /></label>{contraryOwnerIntent && <p className="momo-warning">The latest owner decision blocks verification until a newer exact owner confirmation is approved.</p>}<button type="button" disabled={busy || pending || contraryOwnerIntent || invalidVerified || invalidBlocked} onClick={() => void run(() => updateMomoOnboardingStep({ restaurantId, stepId: step.id, status: status as Parameters<typeof updateMomoOnboardingStep>[0]["status"], completionEvidence: evidenceItems, blockerReason, confirmationId: approvedConfirmation?.id }), "Onboarding evidence and status updated.")}>Save step review</button></div>}</article>;
 }
 
-function OnboardingStepDisclosure({ step, data, role, restaurantId, busy, run }: PanelProps & { step: MomoWorkspaceData["onboarding"][number] }) {
+function OnboardingStepDisclosure(props: PanelProps & { step: MomoWorkspaceData["onboarding"][number] }) {
+  const { step, data } = props;
   const latestOwnerDecision = latestSubjectConfirmation(data.confirmations, "onboarding_step", step.id);
   const status = latestOwnerDecision && ["pending", "in_review"].includes(latestOwnerDecision.status)
     ? "pending"
@@ -1069,7 +1070,7 @@ function OnboardingStepDisclosure({ step, data, role, restaurantId, busy, run }:
     : "No evidence recorded yet.");
   return <details className="momo-setup-item">
     <summary><span><strong>{step.title}</strong><small>{summary}</small></span><StatusBadge status={status} /></summary>
-    <div className="momo-setup-item-body"><OnboardingStepRow step={step} data={data} role={role} restaurantId={restaurantId} busy={busy} run={run} /></div>
+    <div className="momo-setup-item-body"><OnboardingStepRow {...props} /></div>
   </details>;
 }
 

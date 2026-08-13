@@ -16,14 +16,18 @@ export const decodeVeroxaPrivateMediaImageWithHost:
       __VEROXA_IMAGES__?: VeroxaImagesBinding;
     }).__VEROXA_IMAGES__;
     if (!images) return false;
+    const sourceBytes = input.bytes.buffer.slice(
+      input.bytes.byteOffset,
+      input.bytes.byteOffset + input.bytes.byteLength,
+    ) as ArrayBuffer;
     const info = await images.info(
-      new Blob([input.bytes], { type: input.mimeType }).stream(),
+      new Blob([sourceBytes], { type: input.mimeType }).stream(),
     );
     if (info.width !== input.expectedWidth ||
       info.height !== input.expectedHeight ||
       info.fileSize !== input.bytes.byteLength) return false;
     const result = await images
-      .input(new Blob([input.bytes], { type: input.mimeType }).stream())
+      .input(new Blob([sourceBytes], { type: input.mimeType }).stream())
       .transform({ width: 1, height: 1, fit: "fill" })
       .output({ format: "image/jpeg", quality: 1 });
     const response = result.response();

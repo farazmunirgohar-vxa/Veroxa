@@ -10,6 +10,7 @@ const [
   privilegeRepair,
   imageBytes,
   hostDecoder,
+  edgeContract,
 ] = await Promise.all([
   readFile(new URL("../app/momo-client-portal.tsx", import.meta.url), "utf8"),
   readFile(new URL("../app/api/media/finalize/core.ts", import.meta.url), "utf8"),
@@ -27,6 +28,10 @@ const [
     "../app/veroxa-private-media-host-image-decode.ts",
     import.meta.url,
   ), "utf8"),
+  readFile(new URL(
+    "../supabase/functions/_shared/momo-content-ai-lifecycle-contract.ts",
+    import.meta.url,
+  ), "utf8"),
 ]);
 
 test("the client and intake APIs no longer reject by total pixel count", () => {
@@ -35,6 +40,14 @@ test("the client and intake APIs no longer reject by total pixel count", () => {
   assert.doesNotMatch(finalize, /MAX_DECODED_PIXELS|16777216/u);
   assert.doesNotMatch(assessmentRoute, /MAX_DECODED_PIXELS|16777216/u);
   assert.doesNotMatch(imageBytes, /MAX_MOMO_DECODED_PNG_BYTES|134217728/u);
+  assert.doesNotMatch(
+    edgeContract,
+    /16_777_216|16777216|MAX_DECODED_PIXELS/u,
+  );
+  assert.match(edgeContract, /Number\.isSafeInteger\(Number\(body\.width\) \* Number\(body\.height\)\)/u);
+  assert.match(edgeContract, /Number\(body\.width\) <= 12_000/u);
+  assert.match(edgeContract, /Number\(body\.height\) <= 12_000/u);
+  assert.match(edgeContract, />= 0\.4[\s\S]*?<= 2\.5/u);
   assert.match(hostDecoder, /transform\(\{ width: 1, height: 1/u);
 });
 

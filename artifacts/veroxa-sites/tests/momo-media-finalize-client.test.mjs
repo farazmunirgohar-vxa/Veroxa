@@ -9,6 +9,7 @@ const RESTAURANT_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const ASSET_ID = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 const CANONICAL_ASSET_ID = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
 const VERIFICATION_ID = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
+const ATTEMPT_ID = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee";
 const STORAGE_PATH = `restaurants/${RESTAURANT_ID}/uploads/2026/08/eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee.jpg`;
 
 test("shared client finalizer posts one bounded same-origin request and accepts verified evidence", async () => {
@@ -27,9 +28,65 @@ test("shared client finalizer posts one bounded same-origin request and accepts 
   assert.equal(calls[0].url, "/api/media/finalize");
   assert.equal(calls[0].init.credentials, "same-origin");
   assert.equal(calls[0].init.cache, "no-store");
+  assert.match(
+    calls[0].init.headers["x-veroxa-correlation-id"],
+    /^[0-9a-f-]{36}$/u,
+  );
   assert.deepEqual(JSON.parse(calls[0].init.body), { restaurantId: RESTAURANT_ID, assetId: ASSET_ID, storagePath: STORAGE_PATH });
   assert.equal(result.status, "verified");
   assert.equal(result.externalWriteAllowed, false);
+});
+
+test("shared client accepts Team ownership only from a matching durable receipt", async () => {
+  await assert.rejects(
+    () => finalizeMomoMediaUpload({
+      restaurantId: RESTAURANT_ID,
+      assetId: ASSET_ID,
+      storagePath: STORAGE_PATH,
+    }, async (_url, init) => {
+      const correlationId = init.headers["x-veroxa-correlation-id"];
+      return Response.json({
+        error: "media_verification_unavailable",
+        receipt: {
+          status: "team_exception_recorded",
+          attemptId: ATTEMPT_ID,
+          recoveryOwner: "veroxa_team",
+          clientActionRequired: false,
+          correlationId,
+          durableCorrelationId: "ffffffff-ffff-4fff-8fff-ffffffffffff",
+        },
+        externalWriteAllowed: false,
+      }, {
+        status: 503,
+        headers: { "x-veroxa-correlation-id": correlationId },
+      });
+    }),
+    (error) => error instanceof MomoMediaFinalizeRequestError &&
+      error.receipt?.status === "team_exception_recorded" &&
+      error.receipt.attemptId === ATTEMPT_ID &&
+      error.correlationId === error.receipt.correlationId,
+  );
+
+  await assert.rejects(
+    () => finalizeMomoMediaUpload({
+      restaurantId: RESTAURANT_ID,
+      assetId: ASSET_ID,
+      storagePath: STORAGE_PATH,
+    }, async (_url, init) => Response.json({
+      error: "media_verification_unavailable",
+      receipt: {
+        status: "team_exception_recorded",
+        attemptId: ATTEMPT_ID,
+        recoveryOwner: "veroxa_team",
+        clientActionRequired: false,
+        correlationId: init.headers["x-veroxa-correlation-id"],
+        durableCorrelationId: "ffffffff-ffff-4fff-8fff-ffffffffffff",
+      },
+      externalWriteAllowed: false,
+    }, { status: 503 })),
+    (error) => error instanceof MomoMediaFinalizeRequestError &&
+      error.receipt === null && error.correlationId === null,
+  );
 });
 
 test("shared client finalizer preserves the authoritative canonical identity for a duplicate", async () => {

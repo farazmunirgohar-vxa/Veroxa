@@ -11,6 +11,22 @@ export type MomoMediaFinalizeApiResult = MomoMediaFinalizeResult & {
   externalWriteAllowed: false;
 };
 
+export type MomoMediaFinalizeFailureReceipt = {
+  status: "team_exception_recorded";
+  attemptId: string;
+  recoveryOwner: "veroxa_team";
+  clientActionRequired: false;
+  correlationId: string;
+  durableCorrelationId: string;
+} | {
+  status: "exception_recording_unconfirmed";
+  attemptId: null;
+  recoveryOwner: null;
+  clientActionRequired: false;
+  correlationId: string;
+  durableCorrelationId: null;
+};
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -69,4 +85,43 @@ export function parseMomoMediaFinalizeApiResult(
     duplicateAssetId: value.duplicateAssetId,
   }, requestedAssetId);
   return result ? { ...result, externalWriteAllowed: false } : null;
+}
+
+export function parseMomoMediaFinalizeFailureReceipt(
+  value: unknown,
+  responseCorrelationId?: string | null,
+): MomoMediaFinalizeFailureReceipt | null {
+  if (!isRecord(value) || !exactKeys(value, [
+    "status", "attemptId", "recoveryOwner", "clientActionRequired",
+    "correlationId", "durableCorrelationId",
+  ]) || value.clientActionRequired !== false ||
+    !isMomoContentUuid(value.correlationId) ||
+    (responseCorrelationId &&
+      value.correlationId !== responseCorrelationId.toLowerCase())) return null;
+  if (value.status === "team_exception_recorded") {
+    return isMomoContentUuid(value.attemptId) &&
+        value.recoveryOwner === "veroxa_team" &&
+        isMomoContentUuid(value.durableCorrelationId)
+      ? {
+        status: value.status,
+        attemptId: value.attemptId.toLowerCase(),
+        recoveryOwner: value.recoveryOwner,
+        clientActionRequired: false,
+        correlationId: value.correlationId.toLowerCase(),
+        durableCorrelationId: value.durableCorrelationId.toLowerCase(),
+      }
+      : null;
+  }
+  return value.status === "exception_recording_unconfirmed" &&
+      value.attemptId === null && value.recoveryOwner === null &&
+      value.durableCorrelationId === null
+    ? {
+      status: value.status,
+      attemptId: null,
+      recoveryOwner: null,
+      clientActionRequired: false,
+      correlationId: value.correlationId.toLowerCase(),
+      durableCorrelationId: null,
+    }
+    : null;
 }

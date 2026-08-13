@@ -5,7 +5,10 @@ import {
   finalizeMomoMediaUpload,
   MomoMediaFinalizeRequestError,
 } from "./momo-media-finalize-client.ts";
-import type { MomoMediaFinalizeApiResult } from "./momo-media-finalize-contract.ts";
+import type {
+  MomoMediaFinalizeApiResult,
+  MomoMediaFinalizeFailureReceipt,
+} from "./momo-media-finalize-contract.ts";
 import { updateHardenedVeroxaPassword } from "./veroxa-password-update.ts";
 import { getVeroxaSupabase } from "./veroxa-supabase.ts";
 import {
@@ -987,6 +990,7 @@ export type MomoClientMediaUploadOutcome = (MomoMediaFinalizeApiResult & {
   assetId: string | null;
   storagePath: string;
   errorCode: string;
+  failureReceipt: MomoMediaFinalizeFailureReceipt | null;
   externalWriteAllowed: false;
   rightsId?: string | null;
 };
@@ -1037,11 +1041,15 @@ function uploadAttention(
     : typeof error === "string" && /^[a-z][a-z0-9_]{2,80}$/u.test(error)
       ? error
       : "media_verification_unavailable";
+  const failureReceipt = error instanceof MomoMediaFinalizeRequestError
+    ? error.receipt
+    : null;
   return {
     status: "uploaded_but_needs_attention",
     assetId,
     storagePath,
     errorCode,
+    failureReceipt,
     externalWriteAllowed: false,
     rightsId,
   };

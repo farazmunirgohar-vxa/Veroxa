@@ -211,7 +211,7 @@ jobs:
           # disposable local database. Production must stage 20260808001210,
           # deploy and verify Sites v2, then apply 20260808001842; never
           # bulk-apply retire-v1 before the Sites v2 cutover is verified.
-          supabase migration up --local
+          supabase migration up --local --debug
 
           actual_versions="$(
             docker exec -i "$database_container" \

@@ -25,6 +25,54 @@ try {
   failures.push(error instanceof Error ? error.message : String(error));
 }
 
+if (manifest.schemaVersion === 12) {
+  must(
+    rr.schemaVersion === 17 &&
+      rr.recordKind === "veroxa_momo_durable_media_ingestion_checkpoint" &&
+      rr.status === manifest.releaseState &&
+      rr.reviewedAt === manifest.reviewedAt &&
+      rr.candidateRevision === manifest.candidateRevision,
+    "RR is not the schema-12 durable media-ingestion checkpoint.",
+  );
+  must(
+    rr.releaseCandidate?.manifest ===
+        "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json" &&
+      rr.releaseCandidate?.state === manifest.releaseCandidate.status &&
+      rr.releaseCandidate?.localReviewPassed === true &&
+      canonical(rr.releaseCandidate?.evidence) ===
+        canonical(manifest.releaseCandidate),
+    "RR schema-12 release candidate diverges from the manifest.",
+  );
+  for (const field of [
+    "currentProductionObservation",
+    "applicationQualityEvidence",
+    "databaseContractReview",
+    "operationalHold",
+    "durableMediaIngestionRecovery",
+  ]) {
+    must(
+      canonical(rr[field]) === canonical((manifest as JsonRecord)[field]),
+      "RR schema-12 field does not mirror manifest: " + field,
+    );
+  }
+  must(
+    rr.runtimeVerification?.providerCallObserved === false &&
+      rr.runtimeVerification?.realRecoveryObserved === false &&
+      rr.runtimeVerification?.readyDispositionObserved === false &&
+      rr.runtimeVerification?.externalProvidersConnected === false &&
+      rr.runtimeVerification?.externalPublishingEnabled === false,
+    "RR schema-12 overclaims production recovery or external action.",
+  );
+  if (failures.length > 0) {
+    for (const failure of failures) console.error("FAIL:", failure);
+    process.exit(1);
+  }
+  console.log(
+    "PASS: RR schema-12 checkpoint mirrors the reviewed, not-yet-published durable recovery candidate.",
+  );
+  process.exit(0);
+}
+
 if (manifest.schemaVersion === 11) {
   const rrCandidate = { ...rr.releaseCandidate };
   delete rrCandidate.manifest;

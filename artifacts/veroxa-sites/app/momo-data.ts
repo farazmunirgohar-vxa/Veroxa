@@ -816,7 +816,7 @@ type QueryDefinition = {
   secondaryAscending?: boolean;
   limit?: number;
   equals?: Record<string, string | boolean>;
-  isNull?: string;
+  isNull?: string | readonly string[];
 };
 
 const intelligenceQueries: QueryDefinition[] = [
@@ -838,7 +838,7 @@ const mediaQueries: QueryDefinition[] = [
   { key: "mediaIntake", table: "veroxa_momo_media_intake_verifications", columns: "id, restaurant_id, asset_id, detected_mime_type, file_size, width, height, content_sha256, verifier_version, status, verified_at", order: "verified_at", ascending: false },
   { key: "mediaIdentityLinksV2", table: "veroxa_momo_media_asset_identity_links_v2", columns: "id, restaurant_id, identity_id, asset_id, verification_id, canonical_asset_id, link_kind, content_sha256, rights_id, rights_attestation_sha256, created_at", order: "created_at", ascending: false, limit: 200 },
   { key: "contentAiRuns", table: "veroxa_momo_content_ai_runs", columns: "id, restaurant_id, source_asset_id, intake_verification_id, source_storage_path, source_storage_object_id, source_storage_object_version, source_mime_type, source_file_size, source_width, source_height, source_content_sha256, rights_id, rights_attestation_sha256, review_id, request_hash, target_platforms, truth_snapshot, truth_snapshot_sha256, status, model, prompt_version, validator_version, output_payload, output_sha256, validation_report, provider_error_code, provider_started_at, accounted_microusd, team_decided_at, decision_mode, automation_policy_version, automation_identity_id, automation_initiated_by, automation_retry_of_run_id, automation_retry_generation, requested_at, updated_at", order: "requested_at", ascending: false },
-  { key: "aiJobs", table: "veroxa_ai_jobs", columns: "id, restaurant_id, job_kind, subject_type, subject_id, status, provider_key, model_key, prompt_version, input_payload, output_payload, safety_flags, attempt_count, max_attempts, next_attempt_at, last_error, superseded_by_job_id, superseded_at, supersession_reason, created_at, updated_at", order: "created_at", ascending: false, isNull: "superseded_by_job_id" },
+  { key: "aiJobs", table: "veroxa_ai_jobs", columns: "id, restaurant_id, job_kind, subject_type, subject_id, status, provider_key, model_key, prompt_version, input_payload, output_payload, safety_flags, attempt_count, max_attempts, next_attempt_at, last_error, superseded_by_job_id, superseded_at, supersession_reason, created_at, updated_at", order: "created_at", ascending: false, isNull: ["superseded_by_job_id", "superseded_at"] },
   { key: "exceptionIncidentsV2", table: "veroxa_momo_exception_incidents_v2", columns: "id, restaurant_id, canonical_asset_id, stage, policy_version, blocker_set_sha256, status, blockers, warnings, evidence_sha256, occurrence_count, first_seen_at, last_seen_at, resolved_at, external_write_allowed", order: "last_seen_at", ascending: false, equals: { status: "open", external_write_allowed: false } },
   // Routine Team reads keep immutable lineage bounded and omit the large
   // evidence snapshot/canonical payload; hashes preserve audit correlation.
@@ -892,6 +892,20 @@ function queriesForSection(section: MomoWorkspaceSection): QueryDefinition[] {
   if (section === "operations") return [...operationsQueries, contentQueries.find((query) => query.key === "approvals")!];
   if (section === "readiness") return [...intelligenceQueries, ...operationsQueries.slice(6), ...readinessQueries];
   return [...intelligenceQueries, ...mediaQueries, ...contentQueries, ...operationsQueries, ...readinessQueries];
+}
+
+export function filterMomoRoutineAiJobs(
+  jobs: readonly MomoAiJob[],
+  media: readonly Pick<MomoMediaAsset, "id">[],
+): MomoAiJob[] {
+  const mediaAssetIds = new Set(media.map((asset) => asset.id));
+  return jobs.filter((job) =>
+    job.status !== "cancelled" &&
+    job.superseded_by_job_id === null &&
+    job.superseded_at === null &&
+    (job.subject_type !== "media_asset" ||
+      (typeof job.subject_id === "string" && mediaAssetIds.has(job.subject_id)))
+  );
 }
 
 export const MOMO_CLIENT_SNAPSHOT_UNKNOWN_STATUS = "unknown";
@@ -1320,7 +1334,10 @@ export async function loadMomoWorkspaceData(
   const responses = await Promise.all(definitions.map(async (definition) => {
     let query = client.from(definition.table).select(definition.columns).eq("restaurant_id", restaurantId);
     for (const [column, value] of Object.entries(definition.equals ?? {})) query = query.eq(column, value);
-    if (definition.isNull) query = query.is(definition.isNull, null);
+    const nullColumns = typeof definition.isNull === "string"
+      ? [definition.isNull]
+      : definition.isNull ?? [];
+    for (const column of nullColumns) query = query.is(column, null);
     if (definition.order) {
       query = query.order(definition.order, { ascending: definition.ascending ?? true });
     }
@@ -1337,6 +1354,7 @@ export async function loadMomoWorkspaceData(
     if (response.error) throw new Error("workspace_data_unavailable");
     (result[definition.key] as unknown[]) = response.data ?? [];
   }
+  result.aiJobs = filterMomoRoutineAiJobs(result.aiJobs, result.media);
   if (shouldLoadReadyVariantsV2 && result.veroxaReadyPackagesV2.length > 0) {
     const readyPackageIds = result.veroxaReadyPackagesV2.map((item) => item.id);
     const definition = contentQueries.find(

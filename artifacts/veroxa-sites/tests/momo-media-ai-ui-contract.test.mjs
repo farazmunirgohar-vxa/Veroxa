@@ -445,7 +445,10 @@ test("the Team UI requires a separately verified server runtime before a paid au
     status,
     /invokeMomoMediaAiLifecycleBridge[\s\S]*?operation: "preflight"[\s\S]*?restaurantId/,
   );
-  assert.match(bridge, /VEROXA_MEDIA_AI_BRIDGE_PRIVATE_KEY/);
+  assert.match(
+    bridge,
+    /VEROXA_MOMO_MEDIA_AI_LIFECYCLE_BRIDGE_PRIVATE_KEY/,
+  );
   assert.match(bridge, /authorization: `Bearer \$\{accessToken\}`/);
   assert.match(bridge, /crypto\.subtle\.sign/);
   assert.match(bridge, /"x-veroxa-media-ai-signature": signature/);

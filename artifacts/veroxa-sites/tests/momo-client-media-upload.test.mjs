@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { uploadMomoClientMediaWithDependencies } from "../app/momo-client-data.ts";
 import { MomoMediaFinalizeRequestError } from "../app/momo-media-finalize-client.ts";
@@ -7,6 +8,10 @@ const RESTAURANT_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const ASSET_ID = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 const OBJECT_ID = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
 const VERIFICATION_ID = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
+const portalSource = await readFile(new URL(
+  "../app/momo-client-portal.tsx",
+  import.meta.url,
+), "utf8");
 
 function image(type = "image/jpeg", size = 10 * 1024) {
   const value = new Blob([new Uint8Array(size)], { type });
@@ -161,6 +166,7 @@ test("registered originals remain saved and retryable when finalization needs at
     assetId: ASSET_ID,
     storagePath: calls.upload[0].path,
     errorCode: "media_not_platform_ready",
+    failureReceipt: null,
     externalWriteAllowed: false,
     rightsId: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
   });
@@ -168,6 +174,54 @@ test("registered originals remain saved and retryable when finalization needs at
   assert.equal(calls.rpc[0].name, "veroxa_register_momo_media_v3");
   assert.equal(calls.rpc[0].parameters.p_requested_association, "not_for_restaurant",
     "the upload instruction must be registered before finalization starts");
+});
+
+test("a durable finalize exception receipt survives the upload handoff", async () => {
+  const receipt = {
+    status: "team_exception_recorded",
+    attemptId: "77777777-7777-4777-8777-777777777777",
+    recoveryOwner: "veroxa_team",
+    clientActionRequired: false,
+    correlationId: "66666666-6666-4666-8666-666666666666",
+    durableCorrelationId: "55555555-5555-4555-8555-555555555555",
+  };
+  const { calls, dependencies } = harness({
+    finalize: async () => {
+      throw new MomoMediaFinalizeRequestError(
+        "media_verification_unavailable",
+        503,
+        receipt,
+        receipt.correlationId,
+      );
+    },
+  });
+  const result = await uploadMomoClientMediaWithDependencies({
+    restaurantId: RESTAURANT_ID,
+    file: image(),
+    usageScope: ["instagram"],
+    restaurantAssociation: "not_for_restaurant",
+    rightsAttested: true,
+  }, dependencies);
+  assert.equal(result.status, "uploaded_but_needs_attention");
+  assert.deepEqual(result.failureReceipt, receipt);
+  assert.equal(calls.remove.length, 0);
+});
+
+test("immediate upload copy claims Team ownership only for a durable receipt", () => {
+  const messageFunction = portalSource.slice(
+    portalSource.indexOf("function mediaUploadAttentionMessage"),
+    portalSource.indexOf("\n}\n\nfunction Media", portalSource.indexOf(
+      "function mediaUploadAttentionMessage",
+    )),
+  );
+  assert.match(
+    messageFunction,
+    /failureReceipt\?\.status === "team_exception_recorded"[\s\S]*?Team Faraz owns the next step/u,
+  );
+  assert.match(
+    messageFunction,
+    /: " Your upload is saved and queued for private recovery\./u,
+  );
 });
 
 test("registration rollback removes only the new unregistered object", async () => {
