@@ -494,6 +494,13 @@ test("route is service-role storage/RPC only and never invokes providers or exte
 test("database contract is private, bounded, lease-based, and preserves external locks", () => {
   assert.doesNotMatch(migrationSource, /pg_catalog\.extract\s*\(/iu);
   assert.doesNotMatch(migrationSource, /pg_catalog\.(?:least|greatest)\s*\(/iu);
+  assert.doesNotMatch(migrationSource, /candidate\.actor_id\s*=\s*actor_id\b/iu);
+  assert.doesNotMatch(migrationSource, /target\.idempotency_sha256\s*=\s*idempotency_sha256\b/iu);
+  assert.match(migrationSource, /candidate\.actor_id\s*=\s*v_actor_id\b/iu);
+  assert.match(
+    migrationSource,
+    /target\.idempotency_sha256\s*=\s*v_idempotency_sha256\b/iu,
+  );
   assert.equal(
     migrationSource.match(/extract\(epoch from\s+pg_catalog\.clock_timestamp\(\)\)/giu)?.length,
     2,

@@ -149,7 +149,7 @@ declare
   evidence_snapshot jsonb;
   evidence_canonical text;
   evidence_sha256 text;
-  idempotency_sha256 text;
+  v_idempotency_sha256 text;
   attempt public.veroxa_momo_media_intake_attempts_v2%rowtype;
   exception_snapshot jsonb;
   exception_canonical text;
@@ -163,7 +163,7 @@ begin
   evidence_snapshot := p_payload -> 'evidenceSnapshot';
   evidence_canonical := p_payload ->> 'evidenceCanonical';
   evidence_sha256 := p_payload ->> 'evidenceSha256';
-  idempotency_sha256 := p_payload ->> 'idempotencySha256';
+  v_idempotency_sha256 := p_payload ->> 'idempotencySha256';
   if receipt.id is null
      or not veroxa_private.momo_jsonb_exact_keys_v2(p_payload, array[
        'restaurantId','assetId','actorId','outcome','reasonCodes',
@@ -192,7 +192,7 @@ begin
          pg_catalog.convert_to(evidence_canonical, 'UTF8'), 'sha256'
        ), 'hex'
      )
-     or idempotency_sha256 !~ '^[0-9a-f]{64}$' then
+     or v_idempotency_sha256 !~ '^[0-9a-f]{64}$' then
     raise exception using errcode = '22023',
       message = 'invalid_momo_media_ingestion_attempt_v1';
   end if;
@@ -211,12 +211,12 @@ begin
   ) values (
     receipt.restaurant_id, receipt.asset_id, recovery_actor_id, outcome,
     reasons, evidence_snapshot, evidence_canonical, evidence_sha256,
-    idempotency_sha256
+    v_idempotency_sha256
   ) on conflict (restaurant_id, idempotency_sha256) do nothing;
   select * into strict attempt
   from public.veroxa_momo_media_intake_attempts_v2 target
   where target.restaurant_id = receipt.restaurant_id
-    and target.idempotency_sha256 = idempotency_sha256;
+    and target.idempotency_sha256 = v_idempotency_sha256;
   if attempt.source_asset_id is distinct from receipt.asset_id
      or attempt.outcome is distinct from outcome
      or attempt.evidence_sha256 is distinct from evidence_sha256 then
@@ -847,7 +847,7 @@ security definer
 set search_path = ''
 as $$
 declare
-  actor_id uuid := (select auth.uid());
+  v_actor_id uuid := (select auth.uid());
   asset public.veroxa_media_assets%rowtype;
   receipt veroxa_private.momo_media_ingestion_outbox_v1%rowtype;
   outcome text;
@@ -860,7 +860,7 @@ declare
   existing_attempt public.veroxa_momo_media_intake_attempts_v2%rowtype;
   result_incident_id uuid;
 begin
-  if actor_id is null
+  if v_actor_id is null
      or p_correlation_id is null
      or p_failure_stage not in (
        'download','storage_metadata','byte_inspection','trusted_decode',
@@ -876,7 +876,7 @@ begin
      or (p_outcome = 'rejected' and
        p_error_code = 'media_verification_unavailable')
      or not veroxa_private.momo_actor_has_operational_membership_v1(
-       p_restaurant_id, actor_id
+       p_restaurant_id, v_actor_id
      ) then
     raise exception using errcode = '22023',
       message = 'invalid_momo_media_intake_failure_v1';
@@ -886,7 +886,7 @@ begin
   from public.veroxa_media_assets candidate
   where candidate.id = p_asset_id
     and candidate.restaurant_id = p_restaurant_id
-    and candidate.uploaded_by = actor_id
+    and candidate.uploaded_by = v_actor_id
     and candidate.status = 'uploaded'
   for share;
   if not found then
@@ -897,7 +897,7 @@ begin
   from veroxa_private.momo_media_ingestion_outbox_v1 candidate
   where candidate.asset_id = asset.id
     and candidate.restaurant_id = asset.restaurant_id
-    and candidate.actor_id = actor_id
+    and candidate.actor_id = v_actor_id
     and candidate.storage_path = asset.storage_path
   for update;
   if not found
@@ -950,7 +950,7 @@ begin
     and candidate.idempotency_sha256 = idempotency_hash;
   if found then
     if existing_attempt.source_asset_id is distinct from receipt.asset_id
-       or existing_attempt.actor_id is distinct from actor_id
+       or existing_attempt.actor_id is distinct from v_actor_id
        or existing_attempt.outcome is distinct from outcome
        or existing_attempt.evidence_sha256 is distinct from evidence_hash then
       raise exception using errcode = '23505',

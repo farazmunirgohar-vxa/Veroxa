@@ -125,11 +125,11 @@
     "fullReleaseGatePassed": false,
     "fullReleaseGateScope": "local_source_static_security_build_type_lint_and_476_test_evidence_only",
     "sourceFileCount": 234,
-    "sourceTreeSha256": "ff5db26325c5f5496c4b259d428ffcc8e26e42a59d3b3f54f4572f26929b2d87",
+    "sourceTreeSha256": "ca23df0f26274f0afc4f2589d426fa97c9993f884d86e52ec18394e252eecf99",
     "migrationFileCount": 57,
-    "migrationTreeSha256": "8a70165155ed111acbe50544266c9710a2c67365383c822f989d0e8a5f7c167c",
+    "migrationTreeSha256": "070e95261d26e9dd88b3fcfc69f98c55c5fe95185118566530f538d14475645f",
     "latestCandidateMigration": "20260813163534_durable_media_ingestion_recovery.sql",
-    "latestCandidateMigrationSha256": "4ae9a2714b747482e3e82c59ed85b393c1ae74f317420aa9331061ed363e74fe",
+    "latestCandidateMigrationSha256": "9c8178118ccea7b7bc51c39b4493b6e9dfa0fcf5c4f8bc1c5ebf25842c4a55f9",
     "pendingMigrations": [
       "20260813163534_durable_media_ingestion_recovery.sql"
     ],
@@ -174,10 +174,10 @@
     "databaseApplyAuthorized": true,
     "evidenceScope": "source static review and worker contract tests; exact-head Supabase workflow must prove clean-chain apply",
     "repairMigrationFilename": "20260813163534_durable_media_ingestion_recovery.sql",
-    "repairMigrationSha256": "4ae9a2714b747482e3e82c59ed85b393c1ae74f317420aa9331061ed363e74fe",
-    "repairMigrationByteLength": 49945,
+    "repairMigrationSha256": "9c8178118ccea7b7bc51c39b4493b6e9dfa0fcf5c4f8bc1c5ebf25842c4a55f9",
+    "repairMigrationByteLength": 49967,
     "futureProductionMigrationCount": 57,
-    "futureProductionMigrationTreeSha256": "8a70165155ed111acbe50544266c9710a2c67365383c822f989d0e8a5f7c167c"
+    "futureProductionMigrationTreeSha256": "070e95261d26e9dd88b3fcfc69f98c55c5fe95185118566530f538d14475645f"
   },
   "source": {
     "evidenceScope": "exact deployable Sites candidate checkout",
@@ -185,7 +185,7 @@
     "mappingTarget": "Sites repository root candidate",
     "hashAlgorithm": "veroxa-path-null-content-null-sha256-v1",
     "fileCount": 234,
-    "treeSha256": "ff5db26325c5f5496c4b259d428ffcc8e26e42a59d3b3f54f4572f26929b2d87",
+    "treeSha256": "ca23df0f26274f0afc4f2589d426fa97c9993f884d86e52ec18394e252eecf99",
     "generatedPathExclusions": [
       ".git",
       ".next",
@@ -212,10 +212,10 @@
     "root": "supabase/migrations",
     "hashAlgorithm": "veroxa-path-null-content-null-sha256-v1",
     "fileCount": 57,
-    "treeSha256": "8a70165155ed111acbe50544266c9710a2c67365383c822f989d0e8a5f7c167c",
+    "treeSha256": "070e95261d26e9dd88b3fcfc69f98c55c5fe95185118566530f538d14475645f",
     "mirrorRoot": "artifacts/veroxa-sites/supabase/migrations",
     "mirrorFileCount": 57,
-    "mirrorTreeSha256": "8a70165155ed111acbe50544266c9710a2c67365383c822f989d0e8a5f7c167c"
+    "mirrorTreeSha256": "070e95261d26e9dd88b3fcfc69f98c55c5fe95185118566530f538d14475645f"
   },
   "deploymentFreeze": {
     "state": "reviewed_candidate_pending_exact_head_gates_and_ordered_release",
