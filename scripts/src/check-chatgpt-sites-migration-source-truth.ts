@@ -23,7 +23,7 @@ try {
 }
 
 
-if (manifest.schemaVersion === 12) {
+if (manifest.schemaVersion === 13) {
   const authorityDocs = [
     "AGENTS.md",
     "artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md",
@@ -45,24 +45,25 @@ if (manifest.schemaVersion === 12) {
     const current = start < 0 ? "" : text.slice(start, next < 0 ? undefined : next);
     for (const marker of [
       "GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY",
-      "durable media-ingestion recovery candidate",
-      "804f96f41fadf30e7ecca810c07fd176ab32f379",
-      "agent/momo-media-durable-recovery-20260813",
+      "durable media-ingestion path repair candidate",
+      "c41e6f71c7ffccf11d399d415046e3659e3bffd9",
+      "agent/momo-media-path-regex-repair-20260813",
       "20260813163534_durable_media_ingestion_recovery.sql",
+      "20260813175640_durable_media_ingestion_path_regex_repair_v1.sql",
       "Sites v53",
-      "live56",
+      "live57",
       "476/476",
       "05ab2303-f7ea-4056-8f75-9cd7e523a4f4",
-      "existing asset remains unmodified",
+      "exact asset remains unmodified",
       "does not make the asset Ready",
       "dual-public-key cutover",
       "Four dedicated private keys",
-      "no production recovery is claimed",
+      "no outbox, endpoint activation, or production recovery claimed",
       "External providers",
       "USD 0 incremental spend",
     ]) {
       const haystack = marker === "GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY" ? text : current;
-      must(haystack.includes(marker), path + " is missing schema-12 authority marker: " + marker);
+      must(haystack.includes(marker), path + " is missing schema-13 authority marker: " + marker);
     }
   }
   if (failures.length > 0) {
@@ -70,7 +71,7 @@ if (manifest.schemaVersion === 12) {
     process.exit(1);
   }
   console.log(
-    "PASS: schema-12 authority docs describe the reviewed durable recovery candidate without production overclaims.",
+    "PASS: schema-13 authority docs describe the reviewed durable path repair without production overclaims.",
   );
   process.exit(0);
 }

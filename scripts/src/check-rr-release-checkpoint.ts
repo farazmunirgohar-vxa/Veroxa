@@ -25,14 +25,15 @@ try {
   failures.push(error instanceof Error ? error.message : String(error));
 }
 
-if (manifest.schemaVersion === 12) {
+if (manifest.schemaVersion === 13) {
   must(
-    rr.schemaVersion === 17 &&
-      rr.recordKind === "veroxa_momo_durable_media_ingestion_checkpoint" &&
+    rr.schemaVersion === 18 &&
+      rr.recordKind ===
+        "veroxa_momo_durable_media_ingestion_path_repair_checkpoint" &&
       rr.status === manifest.releaseState &&
       rr.reviewedAt === manifest.reviewedAt &&
       rr.candidateRevision === manifest.candidateRevision,
-    "RR is not the schema-12 durable media-ingestion checkpoint.",
+    "RR is not the schema-13 durable media-ingestion path-repair checkpoint.",
   );
   must(
     rr.releaseCandidate?.manifest ===
@@ -41,7 +42,7 @@ if (manifest.schemaVersion === 12) {
       rr.releaseCandidate?.localReviewPassed === true &&
       canonical(rr.releaseCandidate?.evidence) ===
         canonical(manifest.releaseCandidate),
-    "RR schema-12 release candidate diverges from the manifest.",
+    "RR schema-13 release candidate diverges from the manifest.",
   );
   for (const field of [
     "currentProductionObservation",
@@ -49,26 +50,30 @@ if (manifest.schemaVersion === 12) {
     "databaseContractReview",
     "operationalHold",
     "durableMediaIngestionRecovery",
+    "currentRuntimeIdentityObservation",
+    "deploymentFreeze",
   ]) {
     must(
       canonical(rr[field]) === canonical((manifest as JsonRecord)[field]),
-      "RR schema-12 field does not mirror manifest: " + field,
+      "RR schema-13 field does not mirror manifest: " + field,
     );
   }
   must(
+    rr.fullReleaseGatePassed === false &&
+      rr.fullReleaseGateScope === manifest.fullReleaseGateScope &&
     rr.runtimeVerification?.providerCallObserved === false &&
       rr.runtimeVerification?.realRecoveryObserved === false &&
       rr.runtimeVerification?.readyDispositionObserved === false &&
       rr.runtimeVerification?.externalProvidersConnected === false &&
       rr.runtimeVerification?.externalPublishingEnabled === false,
-    "RR schema-12 overclaims production recovery or external action.",
+    "RR schema-13 overclaims production recovery or external action.",
   );
   if (failures.length > 0) {
     for (const failure of failures) console.error("FAIL:", failure);
     process.exit(1);
   }
   console.log(
-    "PASS: RR schema-12 checkpoint mirrors the reviewed, not-yet-published durable recovery candidate.",
+    "PASS: RR schema-13 checkpoint mirrors the reviewed, not-yet-released durable path repair.",
   );
   process.exit(0);
 }

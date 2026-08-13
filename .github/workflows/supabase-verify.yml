@@ -65,9 +65,19 @@ jobs:
           candidate_migration_count="$(
             printf '%s\n' "$expected_versions" | sed '/^$/d' | wc -l
           )"
+          repair_migration="20260813175640_durable_media_ingestion_path_regex_repair_v1.sql"
+          repair_version="20260813175640"
+          predecessor_version="20260813163534"
           test "$candidate_migration_count" -gt 1
           test "$(printf '%s\n' "$expected_versions" | uniq | wc -l)" \
             -eq "$candidate_migration_count"
+          test -f "supabase/migrations/$repair_migration"
+          test "$(printf '%s\n' "$expected_versions" | tail -n 1)" = "$repair_version"
+          test "$(printf '%s\n' "$expected_versions" | tail -n 2 | head -n 1)" \
+            = "$predecessor_version"
+          pre_repair_expected_versions="$(
+            printf '%s\n' "$expected_versions" | sed "/^${repair_version}\$/d"
+          )"
           pending_migration_count="$((candidate_migration_count - 1))"
           pending_dir="$(mktemp -d)"
           migration_checksums="$(mktemp)"
@@ -199,6 +209,110 @@ jobs:
           SQL
 
           restore_pending_migrations
+          mv "supabase/migrations/$repair_migration" "$pending_dir/"
+
+          # Applying the predecessor chain is allowed only in this
+          # disposable local database. Production must stage 20260808001210,
+          # deploy and verify Sites v2, then apply 20260808001842; never
+          # bulk-apply retire-v1 before the Sites v2 cutover is verified.
+          supabase migration up --local --debug
+
+          pre_repair_actual_versions="$(
+            docker exec -i "$database_container" \
+              psql --tuples-only --no-align --username postgres --dbname postgres \
+              --command 'select version from supabase_migrations.schema_migrations order by version'
+          )"
+          test "$pre_repair_actual_versions" = "$pre_repair_expected_versions"
+          test "$(printf '%s\n' "$pre_repair_actual_versions" | tail -n 1)" \
+            = "$predecessor_version"
+
+          # Seed a canonical upload while only the predecessor is present.
+          # The zero-receipt assertion proves the repair's backfill branch,
+          # rather than merely exercising the post-repair registration trigger.
+          docker exec -i "$database_container" \
+            psql --set ON_ERROR_STOP=1 --username postgres --dbname postgres <<'SQL'
+          begin;
+          select set_config(
+            'request.jwt.claim.sub',
+            '10000000-0000-4000-8000-000000000161',
+            true
+          );
+          select set_config('request.jwt.claim.role', 'authenticated', true);
+          do $seed_pre_repair_upload$
+          declare
+            fixture_restaurant_id constant uuid :=
+              '6386d7e3-7966-4498-a13e-8736590bd505';
+            fixture_client_id constant uuid :=
+              '10000000-0000-4000-8000-000000000161';
+            fixture_asset_id constant uuid :=
+              '30000000-0000-4000-8000-000000000162';
+            fixture_storage_path constant text :=
+              'restaurants/6386d7e3-7966-4498-a13e-8736590bd505/uploads/2026/08/40000000-0000-4000-8000-000000000162.jpg';
+          begin
+            if not veroxa_private.momo_actor_has_operational_membership_v1(
+              fixture_restaurant_id, fixture_client_id
+            ) then
+              raise exception 'ci_pre_repair_fixture_membership_invalid';
+            end if;
+            if (
+              select count(*)
+              from pg_catalog.pg_constraint constraint_record
+              where constraint_record.conrelid =
+                'veroxa_private.momo_media_ingestion_outbox_v1'::regclass
+                and constraint_record.conname =
+                  'momo_media_ingestion_outbox_v1_check'
+                and constraint_record.contype = 'c'
+            ) <> 1 then
+              raise exception 'ci_pre_repair_constraint_missing';
+            end if;
+            if exists (
+              select 1
+              from vault.secrets secret
+              where secret.name = 'momo_media_ingestion_recovery_endpoint_v1'
+            ) then
+              raise exception 'ci_pre_repair_recovery_endpoint_forbidden';
+            end if;
+
+            insert into public.veroxa_media_assets (
+              id, restaurant_id, storage_path, original_file_name, mime_type,
+              file_size, uploaded_by, status
+            ) values (
+              fixture_asset_id, fixture_restaurant_id, fixture_storage_path,
+              'ci-pre-repair-upload.jpg', 'image/jpeg', 12000,
+              fixture_client_id, 'uploaded'
+            );
+
+            if (
+              select count(*)
+              from public.veroxa_media_assets asset
+              where asset.id = fixture_asset_id
+                and asset.restaurant_id = fixture_restaurant_id
+                and asset.uploaded_by = fixture_client_id
+                and asset.storage_path = fixture_storage_path
+                and asset.status = 'uploaded'
+            ) <> 1 then
+              raise exception 'ci_pre_repair_asset_seed_failed';
+            end if;
+            if exists (
+              select 1
+              from public.veroxa_private_media_assessment_intakes_v1 intake
+              where intake.asset_id = fixture_asset_id
+            ) then
+              raise exception 'ci_pre_repair_intake_must_be_absent';
+            end if;
+            if exists (
+              select 1
+              from veroxa_private.momo_media_ingestion_outbox_v1 receipt
+              where receipt.asset_id = fixture_asset_id
+            ) then
+              raise exception 'ci_pre_repair_receipt_must_be_absent';
+            end if;
+          end
+          $seed_pre_repair_upload$;
+          commit;
+          SQL
+
+          restore_pending_migrations
           trap - EXIT
           rmdir "$pending_dir"
           test "$(find supabase/migrations -maxdepth 1 -type f -name '*.sql' | wc -l)" \
@@ -207,10 +321,8 @@ jobs:
           rm "$migration_checksums"
           git diff --exit-code -- supabase/migrations
 
-          # Applying the whole candidate chain is allowed only in this
-          # disposable local database. Production must stage 20260808001210,
-          # deploy and verify Sites v2, then apply 20260808001842; never
-          # bulk-apply retire-v1 before the Sites v2 cutover is verified.
+          # The forward repair must now backfill the stranded fixture exactly
+          # once and leave every external action fail-closed.
           supabase migration up --local --debug
 
           actual_versions="$(
@@ -234,6 +346,12 @@ jobs:
           declare
             fixture_restaurant_id constant uuid :=
               '6386d7e3-7966-4498-a13e-8736590bd505';
+            fixture_client_id constant uuid :=
+              '10000000-0000-4000-8000-000000000161';
+            fixture_asset_id constant uuid :=
+              '30000000-0000-4000-8000-000000000162';
+            fixture_storage_path constant text :=
+              'restaurants/6386d7e3-7966-4498-a13e-8736590bd505/uploads/2026/08/40000000-0000-4000-8000-000000000162.jpg';
           begin
             if (select count(*) from supabase_migrations.schema_migrations) <>
                current_setting('veroxa.ci_candidate_migration_count')::integer then
@@ -288,6 +406,56 @@ jobs:
             ) then
               raise exception 'ci_momo_media_wallet_invalid';
             end if;
+            if exists (
+              select 1
+              from pg_catalog.pg_constraint constraint_record
+              where constraint_record.conrelid =
+                'veroxa_private.momo_media_ingestion_outbox_v1'::regclass
+                and constraint_record.conname =
+                  'momo_media_ingestion_outbox_v1_check'
+            ) or (
+              select count(*)
+              from pg_catalog.pg_constraint constraint_record
+              where constraint_record.conrelid =
+                'veroxa_private.momo_media_ingestion_outbox_v1'::regclass
+                and constraint_record.conname =
+                  'momo_media_ingestion_outbox_storage_path_v2_check'
+                and constraint_record.contype = 'c'
+            ) <> 1 then
+              raise exception 'ci_media_ingestion_path_constraint_invalid';
+            end if;
+            if (
+              select count(*)
+              from veroxa_private.momo_media_ingestion_outbox_v1 receipt
+              where receipt.asset_id = fixture_asset_id
+                and receipt.restaurant_id = fixture_restaurant_id
+                and receipt.actor_id = fixture_client_id
+                and receipt.storage_path = fixture_storage_path
+                and receipt.declared_mime_type = 'image/jpeg'
+                and receipt.declared_file_size = 12000
+                and receipt.state = 'pending'
+                and receipt.attempt_count = 0
+                and receipt.max_attempts = 5
+                and receipt.next_attempt_at is null
+                and receipt.lease_token is null
+                and receipt.lease_expires_at is null
+                and receipt.correlation_id is not null
+                and not receipt.external_write_allowed
+            ) <> 1 then
+              raise exception 'ci_media_ingestion_path_backfill_invalid';
+            end if;
+            if (
+              select count(*)
+              from public.veroxa_media_assets asset
+              where asset.id = fixture_asset_id
+                and asset.status = 'uploaded'
+            ) <> 1 or exists (
+              select 1
+              from public.veroxa_private_media_assessment_intakes_v1 intake
+              where intake.asset_id = fixture_asset_id
+            ) then
+              raise exception 'ci_media_ingestion_path_backfill_mutated_asset';
+            end if;
             if exists (select 1 from public.veroxa_publish_queue)
                or exists (select 1 from public.veroxa_publish_attempts)
                or exists (select 1 from public.veroxa_content_calendar)
@@ -299,7 +467,8 @@ jobs:
                  where secret.name in (
                    'momo_content_ai_dispatch_endpoint_v1',
                    'momo_content_ai_recovery_endpoint_v1',
-                   'momo_content_ai_internal_hmac_v1'
+                   'momo_content_ai_internal_hmac_v1',
+                   'momo_media_ingestion_recovery_endpoint_v1'
                  )
                ) then
               raise exception 'ci_external_write_or_runtime_secret_fixture_forbidden';
@@ -334,6 +503,11 @@ jobs:
                  from veroxa_private.auth_identity_allowlist
                )
                or exists (select 1 from public.veroxa_restaurant_truth_fields)
+               or exists (select 1 from public.veroxa_media_assets)
+               or exists (
+                 select 1
+                 from veroxa_private.momo_media_ingestion_outbox_v1
+               )
                or exists (select 1 from public.veroxa_momo_runtime_controls)
                or exists (
                  select 1

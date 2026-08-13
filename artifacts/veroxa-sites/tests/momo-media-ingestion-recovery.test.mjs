@@ -23,13 +23,17 @@ const STORAGE_VERSION = "storage-version-1";
 const STORAGE_PATH =
   `restaurants/${RESTAURANT_ID}/uploads/2026/08/55555555-5555-4555-8555-555555555555.jpg`;
 
-const [routeSource, migrationSource] = await Promise.all([
+const [routeSource, migrationSource, pathRepairMigrationSource] = await Promise.all([
   readFile(new URL(
     "../app/api/internal/momo/media/recover/route.ts",
     import.meta.url,
   ), "utf8"),
   readFile(new URL(
     "../supabase/migrations/20260813163534_durable_media_ingestion_recovery.sql",
+    import.meta.url,
+  ), "utf8"),
+  readFile(new URL(
+    "../supabase/migrations/20260813175640_durable_media_ingestion_path_regex_repair_v1.sql",
     import.meta.url,
   ), "utf8"),
 ]);
@@ -528,4 +532,21 @@ test("database contract is private, bounded, lease-based, and preserves external
   assert.match(migrationSource, /limit 1000[\s\S]{0,180}delete from veroxa_private\.momo_media_ingestion_wake_nonces_v1/iu);
   assert.match(migrationSource, /recovery_actor_id := coalesce\(recovery_actor_id, receipt\.actor_id\)/iu);
   assert.match(migrationSource, /last_evidence_sha256 = attempt_sha256/iu);
+  assert.doesNotMatch(pathRepairMigrationSource, /\\+\.\(jpg\|jpeg\|png\)/u);
+  assert.equal(
+    pathRepairMigrationSource.split("[.](jpg|jpeg|png)").length - 1,
+    4,
+  );
+  assert.match(
+    pathRepairMigrationSource,
+    /lock table public\.veroxa_media_assets in share row exclusive mode/iu,
+  );
+  assert.match(
+    pathRepairMigrationSource,
+    /drop constraint momo_media_ingestion_outbox_v1_check/iu,
+  );
+  assert.match(
+    pathRepairMigrationSource,
+    /momo_media_ingestion_path_repair_backfill_incomplete_v1/iu,
+  );
 });

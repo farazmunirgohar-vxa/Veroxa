@@ -4,16 +4,17 @@ Status: highest-level current source-of-truth index. Read this file before relyi
 
 <!-- GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY -->
 
-## 2026-08-13 — durable media-ingestion recovery candidate; release pending (current authority)
+## 2026-08-13 — durable media-ingestion path repair candidate; database57 applied (current authority)
 
-Current reconciliation markers: durable media-ingestion recovery candidate; GitHub main 804f96f41fadf30e7ecca810c07fd176ab32f379; branch agent/momo-media-durable-recovery-20260813; Sites v53; live56; USD 0 incremental spend.
+Current reconciliation markers: durable media-ingestion path repair candidate; GitHub main c41e6f71c7ffccf11d399d415046e3659e3bffd9; branch agent/momo-media-path-regex-repair-20260813; Sites v53; live57; USD 0 incremental spend.
 
 - **Authority and scope:** `GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY` remains in force. External providers, publishing, review replies, website writes, and external scheduling remain disabled.
-- **Reviewed candidate:** `20260813163534_durable_media_ingestion_recovery.sql` adds a transactional private outbox, bounded SKIP LOCKED leases, independent failure receipts, signed recovery wakes, trusted byte decode/hash recovery, and stale orphan-job retirement. Root and Sites migration mirrors are byte-identical.
-- **Incident:** asset `05ab2303-f7ea-4056-8f75-9cd7e523a4f4` and its exact Storage object are preserved. At this candidate checkpoint the existing asset remains unmodified; no production recovery is claimed.
-- **Truth boundary:** recovery ends at private verification and does not make the asset Ready. The development-proxy, not-for-restaurant evidence still requires genuine owner rights and current-offering association.
-- **Bridge repair:** the stale Edge aggregate-pixel ceiling is removed. Four dedicated private keys replace the structurally impossible shared setting. A source-controlled dual-public-key cutover accepts only each function's old/new pair until the new Sites secrets are verified; a separate cleanup removes the previous keys.
-- **Quality evidence:** 476/476 application tests, production build, typecheck, lint, focused security review, and diff checks passed locally. Exact-head GitHub workflows, merge, database apply, Edge/Sites publication, recovery, and cleanup evidence remain pending.
+- **Applied foundation:** PR #182 merged at `c41e6f71c7ffccf11d399d415046e3659e3bffd9`; all four exact-head and post-merge workflows passed. `20260813163534_durable_media_ingestion_recovery.sql` is live as database57 and safely retired the orphan AI job.
+- **Fail-closed discovery:** the applied migration preserved two backslashes before the extension dot, so canonical Storage paths did not match. The exact asset remains unmodified with no outbox, endpoint activation, or production recovery claimed.
+- **Forward repair:** `20260813175640_durable_media_ingestion_path_regex_repair_v1.sql` atomically installs a backslash-independent `[.]` path constraint, replaces the registration trigger predicate, backfills eligible uploads, and fails if any eligible receipt is still missing. Root and Sites migration mirrors are byte-identical.
+- **Incident and truth boundary:** asset `05ab2303-f7ea-4056-8f75-9cd7e523a4f4` and its exact Storage object are preserved. Recovery ends at private verification and does not make the asset Ready; genuine owner rights and current-offering association remain required.
+- **Bridge repair:** Four dedicated private keys and the dual-public-key cutover are merged but not yet deployed. Edge and Sites publication wait for this forward database repair to pass exact-head review.
+- **Quality evidence:** 476/476 application tests, production build, typecheck, lint, focused PostgreSQL path/backfill execution, security review, and diff checks passed locally. The repair PR, hosted clean chain, pgTAP, database lint, Edge/Sites publication, recovery, and key cleanup remain pending.
 - **Cost and actions:** provider calls, Ready disposition, public actions, and incremental spend are unclaimed and remain blocked; USD 0 incremental spend.
 
 ## 2026-08-12 — legacy media purge; high-resolution private uploads; Sites v53 deployed (historical)
