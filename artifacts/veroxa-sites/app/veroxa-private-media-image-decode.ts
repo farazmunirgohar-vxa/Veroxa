@@ -109,10 +109,58 @@ export type VeroxaPrivateMediaHostInspection = {
   fileSize: number;
 };
 
+export const VEROXA_PRIVATE_MEDIA_HOST_INSPECTION_FAILURE_CODES = [
+  "images_binding_unavailable",
+  "images_source_buffer_failed",
+  "images_info_failed",
+  "images_info_dimensions_invalid",
+  "images_info_file_size_invalid",
+  "images_info_file_size_mismatch",
+  "images_input_failed",
+  "images_transform_failed",
+  "images_output_failed",
+  "images_response_failed",
+  "images_response_status_invalid",
+  "images_response_content_type_invalid",
+  "images_response_declared_size_invalid",
+  "images_response_body_failed",
+  "images_response_size_invalid",
+  "images_response_magic_invalid",
+] as const;
+
+export type VeroxaPrivateMediaHostInspectionFailureCode =
+  typeof VEROXA_PRIVATE_MEDIA_HOST_INSPECTION_FAILURE_CODES[number];
+
+export type VeroxaPrivateMediaHostInspectionDiagnostics = {
+  schemaVersion: 1;
+  status: "passed" | "failed";
+  stage: "binding" | "source" | "info" | "input" | "transform" | "output" |
+    "response" | "complete";
+  failureCode: VeroxaPrivateMediaHostInspectionFailureCode | null;
+  bindingAvailable: boolean;
+  info: {
+    width: number | null;
+    height: number | null;
+    fileSize: number | null;
+    format: string | null;
+  } | null;
+  output: {
+    httpStatus: number | null;
+    contentType: string | null;
+    declaredContentLength: number | null;
+    byteLength: number | null;
+  } | null;
+};
+
+export type VeroxaPrivateMediaHostInspectionResult = {
+  inspection: VeroxaPrivateMediaHostInspection | null;
+  diagnostics: VeroxaPrivateMediaHostInspectionDiagnostics;
+};
+
 export type VeroxaPrivateMediaHostInspector = (input: {
   bytes: Uint8Array;
   mimeType: VeroxaPrivateMediaFullDecodeMimeType;
-}) => Promise<VeroxaPrivateMediaHostInspection | null>;
+}) => Promise<VeroxaPrivateMediaHostInspectionResult>;
 
 /**
  * Requires a trusted decode for every accepted JPEG/PNG. High-resolution
