@@ -17,6 +17,13 @@ Current reconciliation markers: private media-recovery host-inspection diagnosti
 - **Quality and next gate:** 479/479 application tests and every required GitHub workflow passed. No retry remains authorized or pending. A separately reviewed binding configuration/wiring repair must precede any future retry.
 - **Cost and actions:** External providers remain blocked; `externalWriteAllowed=false`; incremental spend remains USD 0 incremental spend.
 
+## 2026-08-15 — Supabase Pro capacity and workflow direction (current operational guidance)
+
+- The connected Veroxa Dev Supabase organization reports plan \`pro\`; this is verified account state, not a claim that optional capabilities are already configured.
+- Read \`SUPABASE_PRO_CAPACITY_AND_WORKFLOW_DIRECTION.md\` before a Supabase capacity, branch, queue, cron, secret, backup/recovery, observability, or add-on decision.
+- Use the plan to strengthen durable, private, tenant-safe internal operations where a concrete need benefits; do not create paid, persistent, or complex surfaces merely because they are available.
+- Existing incremental-spend, production-release, tenant/RLS, lineage, Ready, and external-action gates remain controlling. Current external-action locks are unchanged.
+
 ## 2026-08-12 — legacy media purge; high-resolution private uploads; Sites v53 deployed (historical)
 
 Current reconciliation markers: content lifecycle v11; Sites v53; live56; USD 0 incremental spend.
