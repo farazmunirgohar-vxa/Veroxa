@@ -999,8 +999,10 @@ function readActiveMediaInspectionCandidateState():
       value.activeCandidate === null) return null;
     const candidate = value.activeCandidate as Record<string, unknown>;
     if (candidate.kind !== "media_inspection_runtime_repair" ||
-      candidate.state !==
-        "local_verified_pending_pr_review_and_production_preflight") {
+      ![
+        "local_verified_pending_pr_review_and_production_preflight",
+        "remote_ci_green_pending_independent_review_and_production_preflight",
+      ].includes(String(candidate.state))) {
       return null;
     }
     return value as unknown as ActiveMediaInspectionCandidateState;

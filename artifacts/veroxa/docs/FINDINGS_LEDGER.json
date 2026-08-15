@@ -191,21 +191,49 @@
         "PR #188 verification"
       ],
       "rootCause": "The CI and Veroxa Verify checkout steps relied on actions/checkout's depth-1 default while the active candidate guard intentionally requires the recorded main baseline commit.",
-      "correctiveAction": "Add fetch-depth: 0 only to CI and Veroxa Verify, and add a release-workflow-policy regression assertion requiring full history for both guard-running workflows.",
+      "correctiveAction": "Added fetch-depth: 0 only to CI and Veroxa Verify, plus a release-workflow-policy regression assertion requiring full history for both guard-running workflows.",
       "branch": "agent/repair-production-image-inspection-20260815",
       "pullRequest": 188,
-      "commit": null,
+      "commit": "8c685f566614c4e4877cc97883ea597febffea01",
       "migrationOrDeployment": null,
       "tests": [
         "local release workflow policy guard passed",
         "full local verify:veroxa suite passed",
-        "Git diff whitespace check passed"
+        "Git diff whitespace check passed",
+        "CI run 517, Sites Verify run 207, Supabase Verify run 177, and Veroxa Verify run 462 passed on the repaired PR head"
       ],
       "productionEvidence": [
         "no deployment, migration, provider call, or IMG_4257 retry occurred"
       ],
       "rollbackMethod": "Revert the two fetch-depth additions and the matching static guard together if the exact-candidate guard is retired under a separately reviewed replacement; do not weaken it merely to make CI pass.",
-      "finalStatus": "local_fix_verified_pending_updated_pr_ci"
+      "finalStatus": "corrected_remote_ci_green_pending_independent_review"
+    },
+    {
+      "findingId": "F-011",
+      "originalConcern": "The designated current-state file retained a local-only candidate-state label after the reviewed candidate reached an all-green remote PR head.",
+      "freshVerificationResult": "Verified after PR #188 remote commit 8c685f566614c4e4877cc97883ea597febffea01 passed all four required workflows. The existing release guard recognized only the local state label, which discouraged recording the accurate remote-review state.",
+      "severity": "medium",
+      "affectedSystems": [
+        "source-of-truth governance",
+        "release-manifest guard",
+        "PR #188 evidence"
+      ],
+      "rootCause": "The active-forward-candidate parser used one exact local-only state string even though the candidate transitions through a remote CI/review state before deployment.",
+      "correctiveAction": "Allow only two explicit candidate states: the original local-verified state and the remote-CI-green, independent-review-pending state. Update CURRENT_STATE to the latter without granting merge, deployment, migration, provider, or retry authority.",
+      "branch": "agent/repair-production-image-inspection-20260815",
+      "pullRequest": 188,
+      "commit": null,
+      "migrationOrDeployment": null,
+      "tests": [
+        "full local verify:veroxa suite passed before this state-label correction",
+        "fresh four-workflow PR CI is required for this checkpoint"
+      ],
+      "productionEvidence": [
+        "PR #188 remote head 8c685f566614c4e4877cc97883ea597febffea01 passed CI 517, Sites Verify 207, Supabase Verify 177, and Veroxa Verify 462",
+        "no production action occurred"
+      ],
+      "rollbackMethod": "Revert the state-label parser extension and restore the previous checkpoint only if the candidate is returned to a local-only review state; neither path authorizes a production change.",
+      "finalStatus": "local_source_of_truth_correction_pending_fresh_pr_ci"
     },
     {
       "findingId": "F-002",
