@@ -14,8 +14,8 @@
       "rootCause": "The worker requires a Cloudflare Images binding that the current Sites hosting declaration cannot supply.",
       "correctiveAction": "Local repair complete pending review/deployment: replace the unavailable runtime dependency with a private Supabase Storage image-transformation inspection path, source object/version parity, bounded 1px verified transform, signed create-only synthetic canary, private durable evidence, and regression tests.",
       "branch": "agent/repair-production-image-inspection-20260815",
-      "pullRequest": null,
-      "commit": null,
+      "pullRequest": 188,
+      "commit": "5a4d30f46f768dd78bcd1ab88ccb087750ada66f",
       "migrationOrDeployment": null,
       "tests": [
         "Sites TypeScript strict check passed",
@@ -32,7 +32,7 @@
         "bindingAvailable=false"
       ],
       "rollbackMethod": "Re-deploy Sites v56 and leave the IMG_4257 asset, object, and version unchanged. The new forward migration has no customer-data mutation; disable the scheduled canary job and retain its private evidence if rollback is required.",
-      "finalStatus": "local_fix_verified_pending_pr_review_and_production_preflight"
+      "finalStatus": "remote_draft_pr_open_pending_ci_review_and_production_preflight"
     },
     {
       "findingId": "F-004",
@@ -47,8 +47,8 @@
       "rootCause": "The first canary implementation bounded HMAC acceptance but had not yet bounded stale durable work states.",
       "correctiveAction": "Added expiry closure at the start of each hourly canary delivery: queued records older than three minutes become delivery_failed and running records older than five minutes become failed. HMAC acceptance is bounded to the pg_net two-minute request window.",
       "branch": "agent/repair-production-image-inspection-20260815",
-      "pullRequest": null,
-      "commit": null,
+      "pullRequest": 188,
+      "commit": "5a4d30f46f768dd78bcd1ab88ccb087750ada66f",
       "migrationOrDeployment": "20260815090000_media_inspection_preflight_canary_v1.sql (pending)",
       "tests": [
         "SQL state-machine review completed",
@@ -56,7 +56,7 @@
       ],
       "productionEvidence": [],
       "rollbackMethod": "Unschedule veroxa-media-inspection-preflight and retain private terminal records; no customer media or external write is involved.",
-      "finalStatus": "local_fix_verified_pending_pr_review_and_production_preflight"
+      "finalStatus": "remote_draft_pr_open_pending_ci_review_and_production_preflight"
     },
     {
       "findingId": "F-005",
@@ -71,8 +71,8 @@
       "rootCause": "The initial bounded-response implementation did not race Storage SDK metadata and signing promises against the same bounded deadline.",
       "correctiveAction": "Added a bounded timeout wrapper around pre-transform object info, signed transform URL creation, and post-transform object recheck; all timeout paths normalize to storage_transform_timeout without raw diagnostics.",
       "branch": "agent/repair-production-image-inspection-20260815",
-      "pullRequest": null,
-      "commit": null,
+      "pullRequest": 188,
+      "commit": "5a4d30f46f768dd78bcd1ab88ccb087750ada66f",
       "migrationOrDeployment": null,
       "tests": [
         "stalled metadata and signing regression test passed",
@@ -80,7 +80,7 @@
       ],
       "productionEvidence": [],
       "rollbackMethod": "Re-deploy Sites v56; no database data mutation or customer-media mutation is introduced by this application-only timeout control.",
-      "finalStatus": "local_fix_verified_pending_pr_review_and_production_preflight"
+      "finalStatus": "remote_draft_pr_open_pending_ci_review_and_production_preflight"
     },
     {
       "findingId": "F-006",
@@ -95,8 +95,8 @@
       "rootCause": "The compatibility condition used a permissive null branch instead of requiring a structurally compatible JPEG or PNG before accepting the independent transform decode.",
       "correctiveAction": "Require compatible source MIME and dimensions before accepting the trusted transform result; added a malformed JPEG-with-magic regression scenario that must dead-letter without completion.",
       "branch": "agent/repair-production-image-inspection-20260815",
-      "pullRequest": null,
-      "commit": null,
+      "pullRequest": 188,
+      "commit": "5a4d30f46f768dd78bcd1ab88ccb087750ada66f",
       "migrationOrDeployment": null,
       "tests": [
         "malformed JPEG magic-plus-host-result regression test passed",
@@ -104,7 +104,7 @@
       ],
       "productionEvidence": [],
       "rollbackMethod": "Re-deploy Sites v56; preserve the asset, original bytes, and durable exception records unchanged.",
-      "finalStatus": "local_fix_verified_pending_pr_review_and_production_preflight"
+      "finalStatus": "remote_draft_pr_open_pending_ci_review_and_production_preflight"
     },
     {
       "findingId": "F-007",
@@ -119,8 +119,8 @@
       "rootCause": "The temporary forward-candidate exception replaced the ordinary source-tree identity assertion without imposing a strict candidate diff allowlist.",
       "correctiveAction": "Added a base-commit-bound exact Git changed-path allowlist. The guard now rejects unexpected, missing, or deleted candidate paths before accepting the active forward candidate.",
       "branch": "agent/repair-production-image-inspection-20260815",
-      "pullRequest": null,
-      "commit": null,
+      "pullRequest": 188,
+      "commit": "5a4d30f46f768dd78bcd1ab88ccb087750ada66f",
       "migrationOrDeployment": null,
       "tests": [
         "candidate release-manifest guard passed for exact candidate paths",
@@ -129,7 +129,7 @@
       ],
       "productionEvidence": [],
       "rollbackMethod": "Revert the candidate branch or restore the schema-13 historical source-tree guard; no production state has changed.",
-      "finalStatus": "corrected_locally_security_reviewed_pending_pr_review_and_production_preflight"
+      "finalStatus": "remote_draft_pr_open_pending_ci_review_and_production_preflight"
     },
     {
       "findingId": "F-008",
@@ -144,8 +144,8 @@
       "rootCause": "Endpoint selection was hardcoded rather than gated by an allowlisted per-environment Vault configuration invariant.",
       "correctiveAction": "Added a Veroxa-named Vault accessor for a dedicated preflight endpoint and require an exact production endpoint match before pg_net delivery. Missing or mismatched configuration records a local delivery_failed state without a network request.",
       "branch": "agent/repair-production-image-inspection-20260815",
-      "pullRequest": null,
-      "commit": null,
+      "pullRequest": 188,
+      "commit": "5a4d30f46f768dd78bcd1ab88ccb087750ada66f",
       "migrationOrDeployment": "20260815090000_media_inspection_preflight_canary_v1.sql (pending)",
       "tests": [
         "root/Sites migration byte mirror verification passed",
@@ -154,12 +154,12 @@
       ],
       "productionEvidence": [],
       "rollbackMethod": "Do not install the forward migration or unschedule the canary job before disabling its Vault endpoint; no customer media is changed.",
-      "finalStatus": "corrected_locally_security_reviewed_pending_pr_review_and_production_preflight"
+      "finalStatus": "remote_draft_pr_open_pending_ci_review_and_production_preflight"
     },
     {
       "findingId": "F-009",
       "originalConcern": "The completed Phase 1 repair includes internal operational, deployment, migration, and evidence material that a protected push control classified as sensitive for the currently public repository.",
-      "freshVerificationResult": "Verified at the exact push attempt for local commit 2a197a577ce5192c272e00619ea8a109f55c59ce. The push was rejected before publication; no remote branch, PR, merge, deployment, migration, provider call, or IMG_4257 retry occurred.",
+      "freshVerificationResult": "The initial local Git push was rejected before publication because its credential was unavailable. Founder then explicitly approved public-repository PR review. The connected GitHub account recreated the reviewed file trees as remote commits 5a4d30f46f768dd78bcd1ab88ccb087750ada66f and 07823aa88a74581da4dd7b18104f114a836b7b42 and opened draft PR #188. No merge, deployment, migration, provider call, or IMG_4257 retry has occurred.",
       "severity": "high",
       "affectedSystems": [
         "GitHub public repository",
@@ -167,18 +167,18 @@
         "source-of-truth documentation"
       ],
       "rootCause": "The target repository is public and the candidate contains non-public operational and deployment evidence that requires an explicit disclosure decision beyond the general implementation authorization.",
-      "correctiveAction": "Preserve the exact local commit and request the smallest approval: authorize pushing this specific scoped commit and documentation to the public repository, or direct a safer non-public review destination. Do not bypass the protected push control.",
+      "correctiveAction": "Approval received and a scoped draft PR was opened. The PR body records local-to-remote commit and tree mapping. Keep the PR draft and unmerged until required CI and review pass.",
       "branch": "agent/repair-production-image-inspection-20260815",
-      "pullRequest": null,
-      "commit": "2a197a577ce5192c272e00619ea8a109f55c59ce",
+      "pullRequest": 188,
+      "commit": "07823aa88a74581da4dd7b18104f114a836b7b42",
       "migrationOrDeployment": null,
       "tests": [
-        "no remote write was performed after rejection",
-        "local Phase 1 verification evidence remains recorded"
+        "draft PR #188 created only after founder's exact authorization",
+        "PR body records the local-to-remote tree mapping and retained local verification evidence"
       ],
       "productionEvidence": [],
-      "rollbackMethod": "No remote state changed. Keep the local branch and commit unchanged; if disclosure approval is denied, remove or relocate sensitive material only with a separately approved review path.",
-      "finalStatus": "blocked_pending_explicit_public_repository_disclosure_approval"
+      "rollbackMethod": "Close draft PR #188 and delete only the scoped remote branch if review identifies an exposure, after preserving an audit record. Do not alter main, repository visibility, or Git history.",
+      "finalStatus": "resolved_to_remote_draft_pr_pending_ci_and_review"
     },
     {
       "findingId": "F-002",

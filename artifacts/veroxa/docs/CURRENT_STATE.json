@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "recordKind": "veroxa_current_state",
   "stateAuthority": "current_deployed_state_and_explicit_forward_candidate",
-  "updatedAt": "2026-08-15T05:34:49Z",
-  "phase": "phase_1_local_repair_verified_push_blocked_pending_explicit_public_repository_disclosure_approval",
+  "updatedAt": "2026-08-15T05:54:33Z",
+  "phase": "phase_1_remote_draft_pr_open_pending_ci_review",
   "production": {
     "github": {
       "repository": "farazmunirgohar-vxa/Veroxa",
@@ -19,6 +19,13 @@
           "head": "5db3429c919add9a62bedb964309bd04e066b0fa",
           "scope": "R2 media vault",
           "mergeLock": "must remain unmerged until all R2 gates pass"
+        },
+        {
+          "number": 188,
+          "state": "draft",
+          "head": "07823aa88a74581da4dd7b18104f114a836b7b42",
+          "scope": "production private image-inspection repair and preflight canary",
+          "mergeLock": "must remain unmerged until required CI and review pass; no deployment, migration, OpenAI call, or IMG_4257 retry is authorized before the deployed private preflight passes"
         }
       ]
     },
@@ -79,8 +86,8 @@
     "id": "F-001",
     "code": "images_binding_unavailable",
     "rootCause": "worker/index.ts assigns env.IMAGES to globalThis.__VEROXA_IMAGES__, but .openai/hosting.json declares only d1 and r2 and the deployed Sites runtime therefore supplies no Images binding",
-    "repairState": "Local replacement uses Supabase Storage image transformation with source object/version parity, exact signed-transform path binding, bounded operation/response timeouts, a 1px decode, signed create-only synthetic canary, private durable evidence, an environment-bound Vault endpoint, and no provider/external write path. Sites type/lint/build and 487 tests, root typecheck, root verification, release-guard regression, and byte-mirror verification pass locally. Fresh post-remediation Codex Security review c1788ef2-15bd-43a4-b4e4-2ae39436e0a1 reported zero findings across the 29 changed repair paths. The repair has not been reviewed in a PR, merged, migrated, or deployed.",
-    "nextGate": "obtain explicit approval to push commit 2a197a577ce5192c272e00619ea8a109f55c59ce and its internal operational/deployment/migration documentation to the currently public farazmunirgohar-vxa/Veroxa repository; then open the scoped PR and require green CI/review before deploying the exact reviewed commit, applying its forward migration, and passing the private synthetic trusted-image-inspection preflight before the one authorized IMG_4257 retry"
+    "repairState": "The scoped repair is in draft PR #188. It replaces the unavailable host Images binding with Supabase Storage image transformation while preserving source object/version parity, exact signed-transform path binding, bounded operation/response timeouts, a 1px decode, signed create-only synthetic canary, private durable evidence, an environment-bound Vault endpoint, and no provider/external write path. Local Sites type/lint/build and 487 tests, root typecheck, root verification, release-guard regression, and byte-mirror verification passed. Fresh post-remediation Codex Security review c1788ef2-15bd-43a4-b4e4-2ae39436e0a1 reported zero findings across the 29 changed repair paths. No merge, deployment, migration, provider call, or IMG_4257 retry has occurred.",
+    "nextGate": "wait for and inspect PR #188 CI and required review; merge only when green, deploy the exact reviewed commit, apply its forward migration with rollback prepared, and require a passed private synthetic trusted-image-inspection preflight before the one authorized IMG_4257 retry"
   },
   "activeCandidate": {
     "kind": "media_inspection_runtime_repair",
@@ -101,12 +108,27 @@
     "img4257RetryConsumed": false
   },
   "releaseBlocker": {
-    "kind": "public_repository_disclosure_approval_required",
-    "observedAt": "2026-08-15T05:34:49Z",
-    "commit": "2a197a577ce5192c272e00619ea8a109f55c59ce",
+    "kind": "green_ci_and_required_review_pending",
+    "observedAt": "2026-08-15T05:54:33Z",
     "repository": "farazmunirgohar-vxa/Veroxa",
-    "reason": "The protected push control rejected publishing internal implementation, deployment, migration, and operating-evidence material to the verified public repository. No push, PR, merge, deployment, migration, provider call, or IMG_4257 retry occurred.",
-    "smallestRequiredApproval": "Approve pushing this exact scoped commit and its associated internal operational documentation to the public repository, or direct a safer non-public review destination."
+    "approval": "Founder explicitly approved pushing the exact local commits to this repository for PR review.",
+    "draftPullRequest": 188,
+    "remoteCommitReconstruction": {
+      "reason": "Local Git credential was unavailable; the connected GitHub account recreated the reviewed file trees with the original parent sequence and commit messages.",
+      "localToRemote": [
+        {
+          "localCommit": "2a197a577ce5192c272e00619ea8a109f55c59ce",
+          "remoteCommit": "5a4d30f46f768dd78bcd1ab88ccb087750ada66f",
+          "tree": "46bdb19986733fa2336cbc61b790e962187d771e"
+        },
+        {
+          "localCommit": "b8b6810230ab4343a77e961eb90ee3b683c6c8c1",
+          "remoteCommit": "07823aa88a74581da4dd7b18104f114a836b7b42",
+          "tree": "010fa6a33f9074b52cd92854f833ec0e51bd2b97"
+        }
+      ]
+    },
+    "nextGate": "Inspect the draft PR's CI and independent review. Do not merge, deploy, migrate, invoke a provider, or retry IMG_4257 until the applicable gates pass."
   },
   "usage": {
     "workModeCheckpoint": "approximately_50_percent",
@@ -117,6 +139,8 @@
     "artifacts/veroxa/docs/FINDINGS_LEDGER.json",
     "codex-security scan 623563ae-5aad-4b0c-b6bb-9aa2f134137e (pre-remediation snapshot; F-007 and F-008),",
     "codex-security scan c1788ef2-15bd-43a4-b4e4-2ae39436e0a1 (post-remediation review of 29 changed repair paths; zero findings; unchanged legacy repository paths deferred)",
-    "local commit 2a197a577ce5192c272e00619ea8a109f55c59ce (push rejected by protected public-repository disclosure control)"
+    "local commits 2a197a577ce5192c272e00619ea8a109f55c59ce and b8b6810230ab4343a77e961eb90ee3b683c6c8c1 (reviewed source trees)",
+    "remote draft PR #188: https://github.com/farazmunirgohar-vxa/Veroxa/pull/188",
+    "remote reconstructed commits 5a4d30f46f768dd78bcd1ab88ccb087750ada66f and 07823aa88a74581da4dd7b18104f114a836b7b42"
   ]
 }
