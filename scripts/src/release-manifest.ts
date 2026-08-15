@@ -58,6 +58,24 @@ const ACTIVE_MEDIA_INSPECTION_CANDIDATE_ALLOWED_PATHS = new Set([
   "scripts/src/release-manifest.ts",
   "supabase/migrations/20260815090000_media_inspection_preflight_canary_v1.sql",
 ]);
+const ACTIVE_PRIVATE_MEDIA_VERIFIER_CONTRACT_CANDIDATE_BASE_COMMIT =
+  "921e197ee27d1d2cc673e7c75c79ae1770fa6d33";
+const ACTIVE_PRIVATE_MEDIA_VERIFIER_CONTRACT_CANDIDATE_BASE_TREE =
+  "6445d25718fee4fc4321b9336302d604ad623fc3";
+const ACTIVE_PRIVATE_MEDIA_VERIFIER_CONTRACT_CANDIDATE_ALLOWED_PATHS = new Set([
+  "artifacts/veroxa-sites/app/api/internal/momo/media/recover/core.ts",
+  "artifacts/veroxa-sites/tests/momo-media-ingestion-recovery.test.mjs",
+  "artifacts/veroxa/docs/CURRENT_MILESTONE.md",
+  "artifacts/veroxa/docs/CURRENT_STATE.json",
+  "artifacts/veroxa/docs/FINDINGS_LEDGER.json",
+  "artifacts/veroxa/docs/history/2026-08-15-phase-2-img4257-controlled-retry.json",
+  "scripts/src/check-chatgpt-sites-migration-source-truth.ts",
+  "scripts/src/check-deployment-manifest.ts",
+  "scripts/src/check-sites-only-deployment.ts",
+  "scripts/src/check-supabase-migration-ledger.ts",
+  "scripts/src/generate-deployment-attestation.ts",
+  "scripts/src/release-manifest.ts",
+]);
 
 export const TREE_HASH_ALGORITHM = "veroxa-path-null-content-null-sha256-v1";
 export const REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE =
@@ -1006,15 +1024,20 @@ function readActiveMediaInspectionCandidateState():
       value.stateAuthority !==
         "current_deployed_state_and_explicit_forward_candidate" ||
       typeof value.phase !== "string" ||
-      !value.phase.startsWith("phase_1_") ||
       typeof value.activeCandidate !== "object" ||
       value.activeCandidate === null) return null;
     const candidate = value.activeCandidate as Record<string, unknown>;
-    if (candidate.kind !== "media_inspection_runtime_repair" ||
-      ![
+    const isPreflightCandidate = value.phase.startsWith("phase_1_") &&
+      candidate.kind === "media_inspection_runtime_repair" && [
         "local_verified_pending_pr_review_and_production_preflight",
         "remote_ci_green_pending_independent_review_and_production_preflight",
-      ].includes(String(candidate.state))) {
+      ].includes(String(candidate.state));
+    const isVerifierContractCandidate = value.phase ===
+        "phase_2_img4257_retry_recorded_verifier_contract_repair_pending_pr_review" &&
+      candidate.kind === "private_media_verifier_contract_repair" &&
+      candidate.state ===
+        "local_focused_test_passed_pending_pr_review_and_synthetic_production_proof";
+    if (!isPreflightCandidate && !isVerifierContractCandidate) {
       return null;
     }
     return value as unknown as ActiveMediaInspectionCandidateState;
@@ -1094,6 +1117,89 @@ function assertActiveMediaInspectionCandidateDiffScope(): void {
   if (unexpected.length > 0 || missing.length > 0 || deletedPaths.length > 0) {
     throw new Error(
       "active media-inspection candidate Git scope drifted: " +
+        [
+          unexpected.length > 0 ? `unexpected=${unexpected.join(",")}` : null,
+          missing.length > 0 ? `missing=${missing.join(",")}` : null,
+          deletedPaths.length > 0 ? `deleted=${deletedPaths.join(",")}` : null,
+        ].filter(Boolean).join("; "),
+    );
+  }
+}
+
+function gitTreeSha(ref: string): string | null {
+  try {
+    return execFileSync("git", ["rev-parse", `${ref}^{tree}`], {
+      cwd: repoRoot,
+      encoding: "utf8",
+    }).trim().toLowerCase();
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The local reconstruction may have an equivalent source tree without the
+ * remote merge ancestry. In that case, permit only its exact equivalent base
+ * tree and its working/one-commit delta; CI still requires the canonical main
+ * commit as an ancestor.
+ */
+function assertActivePrivateMediaVerifierContractCandidateDiffScope(): void {
+  let comparisonRange: string | null = null;
+  try {
+    execFileSync("git", [
+      "merge-base",
+      "--is-ancestor",
+      ACTIVE_PRIVATE_MEDIA_VERIFIER_CONTRACT_CANDIDATE_BASE_COMMIT,
+      "HEAD",
+    ], { cwd: repoRoot, stdio: "ignore" });
+    comparisonRange =
+      `${ACTIVE_PRIVATE_MEDIA_VERIFIER_CONTRACT_CANDIDATE_BASE_COMMIT}...HEAD`;
+  } catch {
+    const equivalentBase = ["HEAD", "HEAD^"].find((ref) =>
+      gitTreeSha(ref) === ACTIVE_PRIVATE_MEDIA_VERIFIER_CONTRACT_CANDIDATE_BASE_TREE
+    );
+    if (!equivalentBase) {
+      throw new Error(
+        "active private-media verifier candidate lacks canonical main ancestry or its exact equivalent source tree",
+      );
+    }
+    if (equivalentBase === "HEAD^") comparisonRange = "HEAD^...HEAD";
+  }
+
+  let paths: string[];
+  let deletedPaths: string[];
+  try {
+    const committedPaths = comparisonRange
+      ? gitPathList(["diff", "--name-only", "--diff-filter=ACMRT", comparisonRange, "--"])
+      : [];
+    const committedDeletes = comparisonRange
+      ? gitPathList(["diff", "--name-only", "--diff-filter=D", comparisonRange, "--"])
+      : [];
+    paths = Array.from(new Set([
+      ...committedPaths,
+      ...gitPathList(["diff", "--name-only", "--diff-filter=ACMRT", "--"]),
+      ...gitPathList(["ls-files", "--others", "--exclude-standard"]),
+    ])).sort();
+    deletedPaths = Array.from(new Set([
+      ...committedDeletes,
+      ...gitPathList(["diff", "--name-only", "--diff-filter=D", "--"]),
+    ])).sort();
+  } catch (error) {
+    throw new Error(
+      "active private-media verifier candidate cannot verify its exact Git diff scope: " +
+        (error instanceof Error ? error.message : String(error)),
+    );
+  }
+
+  const unexpected = paths.filter(
+    (path) => !ACTIVE_PRIVATE_MEDIA_VERIFIER_CONTRACT_CANDIDATE_ALLOWED_PATHS.has(path),
+  );
+  const missing = Array.from(
+    ACTIVE_PRIVATE_MEDIA_VERIFIER_CONTRACT_CANDIDATE_ALLOWED_PATHS,
+  ).filter((path) => !paths.includes(path)).sort();
+  if (unexpected.length > 0 || missing.length > 0 || deletedPaths.length > 0) {
+    throw new Error(
+      "active private-media verifier candidate Git scope drifted: " +
         [
           unexpected.length > 0 ? `unexpected=${unexpected.join(",")}` : null,
           missing.length > 0 ? `missing=${missing.join(",")}` : null,
@@ -1225,6 +1331,136 @@ function assertActiveMediaInspectionForwardCandidate(
   if (failures.length > 0) {
     throw new Error(
       "Unsafe active media-inspection forward candidate: " +
+        failures.join("; "),
+    );
+  }
+}
+
+function assertActivePrivateMediaVerifierContractCandidate(
+  manifest: DeploymentManifest,
+  state: ActiveMediaInspectionCandidateState,
+): void {
+  const failures: string[] = [];
+  const must = (condition: boolean, message: string): void => {
+    if (!condition) failures.push(message);
+  };
+  const candidate = state.activeCandidate;
+  const migration = candidate?.migration;
+  const locks = state.externalActionLock ?? {};
+  const hold = manifest.operationalHold as Record<string, unknown> | undefined;
+  const rootMigrationTree = hashTree(
+    resolve(repoRoot, ROOT_MIGRATION_SOURCE_ROOT),
+    { suffix: ".sql" },
+  );
+  const mirrorMigrationTree = hashTree(
+    resolve(repoRoot, SITES_MIGRATION_MIRROR_ROOT),
+    { suffix: ".sql" },
+  );
+  const migrationPath = resolve(
+    repoRoot,
+    ROOT_MIGRATION_SOURCE_ROOT,
+    MEDIA_INSPECTION_PREFLIGHT_MIGRATION,
+  );
+  const core = readFileSync(resolve(
+    repoRoot,
+    "artifacts/veroxa-sites/app/api/internal/momo/media/recover/core.ts",
+  ), "utf8");
+  const recoveryTests = readFileSync(resolve(
+    repoRoot,
+    "artifacts/veroxa-sites/tests/momo-media-ingestion-recovery.test.mjs",
+  ), "utf8");
+
+  try {
+    assertActivePrivateMediaVerifierContractCandidateDiffScope();
+  } catch (error) {
+    failures.push(error instanceof Error ? error.message : String(error));
+  }
+
+  must(
+    manifest.schemaVersion === 13 &&
+      manifest.recordKind ===
+        "veroxa_momo_media_recovery_host_inspection_diagnostics_closeout",
+    "verifier-contract candidate requires the immutable schema-13 live baseline",
+  );
+  must(
+    state.phase ===
+        "phase_2_img4257_retry_recorded_verifier_contract_repair_pending_pr_review" &&
+      candidate?.kind === "private_media_verifier_contract_repair" &&
+      candidate?.branch === "agent/fix-media-verifier-contract-20260815" &&
+      candidate?.state ===
+        "local_focused_test_passed_pending_pr_review_and_synthetic_production_proof" &&
+      sameJson(candidate?.pendingMigrations, []) &&
+      candidate?.preflightMigrationStatus === "applied" &&
+      candidate?.externalActionLockRequired === true &&
+      candidate?.img4257RetryConsumed === true,
+    "verifier-contract candidate scope, migration state, or IMG_4257 retry authority drifted",
+  );
+  must(
+    migration?.filename === MEDIA_INSPECTION_PREFLIGHT_MIGRATION &&
+      migration?.sha256 === sha256File(migrationPath) &&
+      migration?.candidateMigrationCount === rootMigrationTree.fileCount &&
+      migration?.candidateMigrationTreeSha256 === rootMigrationTree.sha256 &&
+      rootMigrationTree.fileCount === mirrorMigrationTree.fileCount &&
+      rootMigrationTree.sha256 === mirrorMigrationTree.sha256 &&
+      sameJson(rootMigrationTree.files, mirrorMigrationTree.files) &&
+      rootMigrationTree.files.at(-1) === MEDIA_INSPECTION_PREFLIGHT_MIGRATION,
+    "verifier-contract candidate migration fingerprint or root/Sites mirror drifted",
+  );
+  must(
+    state.production.github?.mainCommit ===
+        ACTIVE_PRIVATE_MEDIA_VERIFIER_CONTRACT_CANDIDATE_BASE_COMMIT &&
+      state.production.github?.latestApplicationSourceCommit ===
+        ACTIVE_PRIVATE_MEDIA_VERIFIER_CONTRACT_CANDIDATE_BASE_COMMIT &&
+      state.production.sites?.version === 59 &&
+      state.production.sites?.versionId ===
+        "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_1341aa54d7448191b891b42d275d13d5" &&
+      state.production.sites?.sourceCommit ===
+        "02f536710d5493b4670684294210e76bcb05eb9d" &&
+      state.production.supabase?.migrationCount === rootMigrationTree.fileCount &&
+      state.production.supabase?.latestMigration ===
+        MEDIA_INSPECTION_PREFLIGHT_MIGRATION &&
+      state.production.supabase?.appliedMigrationVersion === "20260815062451",
+    "current-state production checkpoint does not match the deployed preflight repair evidence",
+  );
+  must(
+    state.asset?.authorizedRetriesRemaining === 0 &&
+      locks.publishing === false &&
+      locks.externalScheduling === false &&
+      locks.accountConnection === false &&
+      locks.customerMessaging === false &&
+      locks.outreach === false &&
+      locks.pricingChange === false &&
+      locks.repositoryVisibilityChange === false,
+    "verifier-contract candidate weakens retry or external-action controls",
+  );
+  must(
+    hold?.providerWrites === false && hold.reviewReplies === false &&
+      hold.websiteWrites === false && hold.externalScheduling === false &&
+      hold.externalPublishing === false,
+    "verifier-contract candidate weakens a historical external-action lock",
+  );
+  must(
+    core.includes("const VERIFIED_INTAKE_VERIFIER_VERSION") &&
+      core.includes("veroxa-private-image-byte-verifier-2026-08-08-v1") &&
+      core.includes("const RECOVERY_EVIDENCE_VERIFIER_VERSION") &&
+      core.includes("veroxa-private-image-byte-verifier-2026-08-15-v2") &&
+      core.includes("verifierVersion: VERIFIED_INTAKE_VERIFIER_VERSION") &&
+      core.includes("verifierVersion: RECOVERY_EVIDENCE_VERIFIER_VERSION") &&
+      !core.includes("const VERIFIER_VERSION ="),
+    "recovery success and diagnostic verifier contracts are not explicitly separated",
+  );
+  must(
+    recoveryTests.includes(
+      "the recovery success record must remain compatible with the persisted intake contract",
+    ) && recoveryTests.includes(
+      "diagnostic evidence may evolve without changing the immutable success contract",
+    ),
+    "verifier-contract regression coverage is missing",
+  );
+
+  if (failures.length > 0) {
+    throw new Error(
+      "Unsafe active private-media verifier contract candidate: " +
         failures.join("; "),
     );
   }
@@ -2202,10 +2438,21 @@ function assertMediaRecoveryByteInspectionCandidateManifest(
 ): void {
   const activeForwardCandidate = readActiveMediaInspectionCandidateState();
   if (activeForwardCandidate) {
-    assertActiveMediaInspectionForwardCandidate(
-      manifest,
-      activeForwardCandidate,
-    );
+    if (activeForwardCandidate.activeCandidate?.kind ===
+      "media_inspection_runtime_repair") {
+      assertActiveMediaInspectionForwardCandidate(
+        manifest,
+        activeForwardCandidate,
+      );
+    } else if (activeForwardCandidate.activeCandidate?.kind ===
+      "private_media_verifier_contract_repair") {
+      assertActivePrivateMediaVerifierContractCandidate(
+        manifest,
+        activeForwardCandidate,
+      );
+    } else {
+      throw new Error("unknown active media forward candidate kind");
+    }
     return;
   }
   const failures: string[] = [];

@@ -326,7 +326,7 @@
     {
       "findingId": "F-015",
       "originalConcern": "The valid production synthetic preflight reached the signed Storage transform request but recorded storage_transform_request_rejected without an HTTP response, so the image-inspection dependency is not yet proven.",
-      "freshVerificationResult": "Production run cc48e0cf-4ce0-450b-83c9-c10ec3fcde32 persisted/read back the valid fixture, then failed at stage request with bindingAvailable=true, output=null, and failure code storage_transform_request_rejected. The scheduler was unscheduled and an active-job query returned zero.",
+      "freshVerificationResult": "PR #190 deployed the redirect-manual repair as Sites version 59. Manual production run 659168f7-862f-46b2-9265-8e9ad697912a passed: bindingAvailable=true, complete stage, decoded 3x2 JPEG fixture, and transformed response status 200. IMG_4257 was not touched by the preflight.",
       "severity": "critical",
       "affectedSystems": [
         "Sites production runtime",
@@ -334,26 +334,60 @@
         "private image-inspection preflight",
         "Phase 1 image-inspection acceptance gate"
       ],
-      "rootCause": "Unconfirmed. The signed transform fetch threw before returning an HTTP response while configured with redirect:error. An unexpected redirect and disabled or unavailable Storage image transformations are both plausible but unproven.",
-      "correctiveAction": "Keep automatic preflights disarmed. Review a narrow adapter change that uses redirect:manual, does not follow redirects, and fails closed with the observed response status. Do not change provider, media, rights, Ready, or external-action logic.",
+      "rootCause": "The signed transform fetch used redirect:error, which could convert an unexpected redirect into an opaque request failure before the fail-closed adapter could classify it. The original failed request did not expose a response, so the prior redirect status was not independently recorded; the redirect-manual repair passed the same production preflight.",
+      "correctiveAction": "PR #190 uses redirect:manual. It does not follow redirects, treats every non-success response as failed, preserves source-object identity checks, and has a focused unexpected-redirect regression test. The scheduler remains unscheduled so preflight consumption remains manual and bounded.",
       "branch": "agent/fix-storage-transform-redirect-20260815",
-      "pullRequest": null,
-      "commit": null,
-      "migrationOrDeployment": "no new migration; Sites v58 is the failed production baseline",
+      "pullRequest": 190,
+      "commit": "921e197ee27d1d2cc673e7c75c79ae1770fa6d33",
+      "migrationOrDeployment": "no new migration; PR #190 is deployed as Sites version 59 from source 02f536710d5493b4670684294210e76bcb05eb9d",
       "tests": [
         "focused preflight suite passed 9/9, including the unexpected redirect fail-closed regression",
-        "Sites lint/build/full test suite passed 488/488",
+        "Sites lint/build/full test suite passed 488/488 before the current checkpoint update",
         "root typecheck and verify:veroxa passed with the exact candidate guard",
+        "PR #190 exact head passed CI 522, Sites Verify 212, Supabase Verify 182, and Veroxa Verify 467",
         "Codex Security scan c6e23f7d-ad46-4e78-98a8-8ae14fbfba70 completed with complete coverage of five executable diff surfaces and zero findings"
       ],
       "productionEvidence": [
-        "run cc48e0cf-4ce0-450b-83c9-c10ec3fcde32 failed at 2026-08-15T07:07:04.473520Z",
-        "fixture SHA-256 61d3065ea30c124958f1853e2714ad466f7de1ffb3b8d625908c2241e9b92e06 was persisted",
+        "manual run 659168f7-862f-46b2-9265-8e9ad697912a passed at 2026-08-15T07:37:26.780256Z",
+        "fixture SHA-256 61d3065ea30c124958f1853e2714ad466f7de1ffb3b8d625908c2241e9b92e06 was persisted, read back, and inspected through Storage transform",
         "scheduler active job count is 0",
-        "IMG_4257, provider calls, Ready, and external actions remain untouched"
+        "IMG_4257 was not touched by the preflight; provider calls, Ready, and external actions remain absent"
       ],
-      "rollbackMethod": "Retain the scheduler hold and deploy the saved Sites v58 source if the reviewed follow-up misbehaves. Do not reinstate recurring execution or touch IMG_4257.",
-      "finalStatus": "open_contained_pending_local_verification_pr_review_exact_deploy_and_one_manual_synthetic_preflight"
+      "rollbackMethod": "Retain the scheduler hold and deploy the saved Sites v58 source if the reviewed repair misbehaves. Do not reinstate recurring execution or touch IMG_4257.",
+      "finalStatus": "resolved_production_preflight_passed_with_manual_bounded_execution"
+    },
+    {
+      "findingId": "F-016",
+      "originalConcern": "The one authorized IMG_4257 retry reached the private completion RPC but failed before immutable verification persistence.",
+      "freshVerificationResult": "After the production Storage-transform preflight passed, attempt 4 read the unchanged IMG_4257 source object/version, completed MIME and trusted-image inspection, and called veroxa_complete_momo_media_ingestion_v1. Supabase recorded HTTP 400 for that RPC; the worker recorded media_recovery_completion_unavailable. The receipt was terminalized immediately to prevent an unauthorized fifth attempt.",
+      "severity": "critical",
+      "affectedSystems": [
+        "Sites production media recovery",
+        "Supabase private media intake validator",
+        "IMG_4257 controlled retry gate"
+      ],
+      "rootCause": "PR #185 made the recovery handler use verifier version 2026-08-15-v2 for both diagnostic evidence and the successful immutable verification snapshot. The successful snapshot is validated by the unchanged v1 database contract, so the completion RPC rejects it even though diagnostics may evolve independently.",
+      "correctiveAction": "Separate the two constants: successful intake remains verifier v1, while recovery diagnostic evidence remains v2. Add explicit focused tests for both values, require a scoped PR and exact production deployment, and use a synthetic fixture—not IMG_4257—to prove durable completion.",
+      "branch": "agent/fix-media-verifier-contract-20260815",
+      "pullRequest": null,
+      "commit": null,
+      "migrationOrDeployment": "no migration; current production baseline is Sites version 59",
+      "tests": [
+        "focused momo-media-ingestion-recovery suite passed 19/19",
+        "Sites lint, root typecheck, and verify:veroxa passed for the scoped candidate",
+        "the prior full Sites suite passed 488/488 after the handler and regression test change; the later guard/evidence changes are covered by verify:veroxa",
+        "focused security diff review completed with complete coverage and zero reportable findings",
+        "exact-head CI and synthetic production recovery completion remain required before closeout"
+      ],
+      "productionEvidence": [
+        "preflight run 659168f7-862f-46b2-9265-8e9ad697912a passed before the retry",
+        "IMG_4257 outbox 4f1259cf-8e8c-430c-a03d-2fa50c9117b9 executed attempt 4 only",
+        "attempt 0c663fca-10e4-43ca-9da3-7bc350625e37 recorded media_recovery_completion_unavailable",
+        "storage object 3df8b899-f438-41be-9e21-f15e6e7cb6c7 at version a6a293a9-4364-4867-878c-64bfc662dff9 remained unchanged",
+        "no provider call, Ready package, Team decision, publishing, scheduling, messaging, or external write occurred"
+      ],
+      "rollbackMethod": "Deploy saved Sites version 59 if the repair misbehaves; preserve IMG_4257 and all prior attempts. Never rearm this receipt.",
+      "finalStatus": "open_scoped_contract_repair_pending_pr_review_deployment_and_synthetic_completion_proof"
     },
     {
       "findingId": "F-002",

@@ -7,41 +7,44 @@ write:
 
 ## Current checkpoint
 
-PR #189 merged the fixture-integrity repair as
-`1c5db2ca1e03d1f8e09e63f171550cf6cd35df45` and Sites version 58 is live from
-private mirror source `12213194b7aae365c35c1524c715e3092454ce1e`. The next
-private synthetic preflight created and read back its valid 3×2 JPEG fixture,
-then failed at the signed Storage transform request with
-`storage_transform_request_rejected`. The durable diagnostics have no response
-status, so this is not proof that Storage transformations are unavailable and
-does not consume the IMG_4257 retry.
+PR #190 merged the Storage-transform redirect repair as
+`921e197ee27d1d2cc673e7c75c79ae1770fa6d33` and Sites version 59 is live from
+private mirror source `02f536710d5493b4670684294210e76bcb05eb9d`. The one
+manually controlled synthetic preflight passed with `bindingAvailable=true`, a
+private transformed JPEG response of 200, and durable completion evidence.
 
-The hourly trigger is disarmed. The only active change is a narrow
-fail-closed follow-up on `agent/fix-storage-transform-redirect-20260815`: use
-manual redirect handling so an unexpected redirect is recorded as a bounded
-non-success response instead of an opaque network exception. It does not follow
-redirects and it does not change media, rights, Ready, or external-action code.
+IMG_4257 then received its one permitted retry using the unchanged source
+object/version. The recovery path read the source, completed trusted image
+inspection, and invoked the private completion RPC. The RPC returned HTTP 400
+because the handler emitted a success verifier version added for diagnostics in
+PR #185, while the immutable intake validator still requires its original
+success-contract version. The receipt is terminal at attempt 4 to prevent an
+automatic fifth retry. No source bytes, provider state, Ready package, or
+external action changed.
+
+The only active change is a narrow contract separation on
+`agent/fix-media-verifier-contract-20260815`: successful intake records retain
+the persisted v1 verifier contract, while recovery diagnostic evidence retains
+its v2 version. It does not alter media, rights, Ready, provider, or
+external-action logic.
 
 ## Strict next sequence
 
-1. Open and review the scoped storage-transform follow-up PR; require exact-head CI,
+1. Open and review the scoped verifier-contract PR; require exact-head CI,
    source review, and no unrelated diff.
 2. Merge only when green; mirror the exact reviewed Sites application tree and
    deploy it.
-3. Run exactly one manually controlled private synthetic preflight. It must prove signed
-   delivery, create-only fixture storage, full byte readback, Storage transform
-   inspection, durable completion evidence, and fail-closed behavior.
-4. Only after that production preflight passes, perform the one permitted
-   IMG_4257 retry using the existing bytes/object/version.
-5. Preserve any truthful IMG_4257 exception. If technical proof of `Ready` is
-   still needed, use a clearly marked synthetic fixture rather than changing
-   IMG_4257.
-6. Complete the private Momo internal cycle before R2, broad portal work, or a
+3. Use a clearly labeled synthetic fixture to prove signed delivery, full byte
+   readback, Storage transform inspection, durable intake completion, and
+   fail-closed recovery behavior.
+4. Preserve IMG_4257's truthful terminal exception. Do not retry, replace, or
+   alter it. Use synthetic media for subsequent technical proof of `Ready`.
+5. Complete the private Momo internal cycle before R2, broad portal work, or a
    naming refactor.
 
 ## Non-negotiable controls
 
-- IMG_4257 must not be deleted, re-uploaded, replaced, or retried early.
+- IMG_4257 must not be deleted, re-uploaded, replaced, or retried again.
 - `Ready` remains separate from Team approval, schedule-ready, scheduling, and
   publication.
 - External publishing, scheduling, account connection, outreach, messaging,

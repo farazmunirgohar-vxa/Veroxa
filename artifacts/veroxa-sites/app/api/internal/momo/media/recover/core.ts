@@ -34,7 +34,12 @@ import {
 const CANONICAL_RECOVERY_BODY = '{"schemaVersion":1}';
 const RECOVERY_CONTEXT =
   "veroxa:momo-media-ingestion-recovery-wake:v1\nPOST\n/api/internal/momo/media/recover";
-const VERIFIER_VERSION = "veroxa-private-image-byte-verifier-2026-08-15-v2";
+// The successful intake record is validated by the durable database contract.
+// Diagnostics added to recovery must not silently change that immutable record.
+const VERIFIED_INTAKE_VERIFIER_VERSION =
+  "veroxa-private-image-byte-verifier-2026-08-08-v1";
+const RECOVERY_EVIDENCE_VERIFIER_VERSION =
+  "veroxa-private-image-byte-verifier-2026-08-15-v2";
 const UUID =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 const HMAC = /^[0-9a-f]{64}$/u;
@@ -619,7 +624,7 @@ export function createMomoMediaRecoveryHandler(
       observed.contentSha256 = contentSha256;
       const verificationSnapshot = {
         schemaVersion: 3,
-        verifierVersion: VERIFIER_VERSION,
+        verifierVersion: VERIFIED_INTAKE_VERIFIER_VERSION,
         restaurantId: claim.restaurantId,
         assetId: claim.assetId,
         storagePath: claim.storagePath,
@@ -680,7 +685,7 @@ export function createMomoMediaRecoveryHandler(
       const failure = processingError(error);
       const evidenceSnapshot = {
         schemaVersion: 2,
-        verifierVersion: VERIFIER_VERSION,
+        verifierVersion: RECOVERY_EVIDENCE_VERIFIER_VERSION,
         stage: observed.hostInspectionDiagnostics?.status === "failed"
           ? "host_image_inspection"
           : "worker",

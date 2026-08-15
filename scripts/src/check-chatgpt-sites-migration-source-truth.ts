@@ -31,7 +31,7 @@ if (activeForwardCandidate) {
     process.exit(1);
   }
   console.log(
-    "PASS: designated CURRENT_STATE is the active authority for the narrow media-inspection forward candidate; schema-13 closeout files remain historical evidence only.",
+    "PASS: designated CURRENT_STATE is the active authority for the private-media forward candidate; schema-13 closeout files remain historical evidence only.",
   );
   process.exit(0);
 }

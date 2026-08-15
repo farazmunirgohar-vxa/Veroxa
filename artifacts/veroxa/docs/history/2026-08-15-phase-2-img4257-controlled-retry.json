@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "recordKind": "veroxa_phase_2_img4257_controlled_retry",
+  "recordedAt": "2026-08-15T07:46:34Z",
+  "precondition": {
+    "productionSitesVersion": 59,
+    "productionMainCommit": "921e197ee27d1d2cc673e7c75c79ae1770fa6d33",
+    "passedPreflightRunId": "659168f7-862f-46b2-9265-8e9ad697912a",
+    "preflightResult": "passed_private_storage_transform_inspection"
+  },
+  "sourceAsset": {
+    "label": "IMG_4257",
+    "assetId": "05ab2303-f7ea-4056-8f75-9cd7e523a4f4",
+    "restaurantId": "6386d7e3-7966-4498-a13e-8736590bd505",
+    "storageObjectId": "3df8b899-f438-41be-9e21-f15e6e7cb6c7",
+    "storageObjectVersion": "a6a293a9-4364-4867-878c-64bfc662dff9",
+    "mimeType": "image/jpeg",
+    "bytes": 3969765,
+    "sourcePreserved": true
+  },
+  "controlledRetry": {
+    "outboxId": "4f1259cf-8e8c-430c-a03d-2fa50c9117b9",
+    "startingAttemptCount": 3,
+    "executedAttemptCount": 4,
+    "attemptId": "0c663fca-10e4-43ca-9da3-7bc350625e37",
+    "wakeDeliveryRequestId": 301,
+    "result": "retryable_completion_failure_terminalized_without_replay",
+    "failureCode": "media_recovery_completion_unavailable",
+    "finalOutboxState": "dead_letter",
+    "externalWriteAllowed": false
+  },
+  "verifiedRuntimePath": {
+    "storageInfoRead": true,
+    "fullSourceDownload": true,
+    "byteMimeRecognition": true,
+    "trustedImageInspection": true,
+    "privateCompletionRpcInvoked": true,
+    "completionHttpStatus": 400,
+    "verificationPersisted": false
+  },
+  "rootCause": {
+    "code": "private_media_verifier_contract_mismatch",
+    "detail": "The recovery success snapshot carried verifier v2 while the deployed immutable intake validator expects verifier v1. Diagnostic evidence and successful intake records shared one constant despite different persistence contracts."
+  },
+  "controls": {
+    "secondImgRetryAllowed": false,
+    "providerCallMade": false,
+    "readyCreated": false,
+    "teamDecisionMade": false,
+    "externalPublishing": false,
+    "externalScheduling": false,
+    "customerMessaging": false
+  },
+  "nextGate": "Deploy the independently reviewed verifier-contract repair, then prove durable completion with a synthetic fixture. IMG_4257 remains terminal and unchanged.",
+  "rollback": {
+    "asset": "Preserve the existing object, version, and immutable historical attempts.",
+    "application": "Deploy saved Sites version 59 if the contract-repair deployment misbehaves.",
+    "recovery": "Do not rearm the IMG_4257 receipt; its retry authority is exhausted."
+  }
+}

@@ -265,6 +265,11 @@ test("recovers the exact stored asset with byte, decode, canonical, and hash evi
     JSON.parse(finalized.verificationCanonical),
     finalized.verificationSnapshot,
   );
+  assert.equal(
+    finalized.verificationSnapshot.verifierVersion,
+    "veroxa-private-image-byte-verifier-2026-08-08-v1",
+    "the recovery success record must remain compatible with the persisted intake contract",
+  );
 });
 
 test("reports recovery ownership separately from an idempotent duplicate result", async () => {
@@ -584,6 +589,11 @@ test("completion outage is durably recorded and exact replay evidence stays idem
   assert.equal(
     outage.calls.fail[0].failureCode,
     "media_recovery_completion_unavailable",
+  );
+  assert.equal(
+    outage.calls.fail[0].evidenceSnapshot.verifierVersion,
+    "veroxa-private-image-byte-verifier-2026-08-15-v2",
+    "diagnostic evidence may evolve without changing the immutable success contract",
   );
 
   const replay = harness();
