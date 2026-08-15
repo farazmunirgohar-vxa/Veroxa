@@ -116,7 +116,8 @@ writeJson(output, {
     ? {
         state: "active_media_inspection_forward_candidate",
         currentStatePath: "artifacts/veroxa/docs/CURRENT_STATE.json",
-        pendingMigration: MEDIA_INSPECTION_PREFLIGHT_MIGRATION,
+        preflightMigration: MEDIA_INSPECTION_PREFLIGHT_MIGRATION,
+        productionMigrationApplyProvenByThisAttestation: false,
         historicalManifestReleaseCandidate: manifest.releaseCandidate,
       }
     : manifest.releaseCandidate,

@@ -93,7 +93,7 @@ if (manifest.schemaVersion === 13) {
   }
   console.log(
     activeForwardCandidate
-      ? "PASS: Sites remains the sole web target; the active candidate is limited to the designated private media-inspection repair and has no production or retry claim."
+      ? "PASS: Sites remains the sole web target; the active fixture-integrity repair has no deployment or IMG_4257 retry claim."
       : "PASS: Sites remains the sole web target; exact diagnostic source is live as v56 and all further deployment and retry activity is held.",
   );
   process.exit(0);

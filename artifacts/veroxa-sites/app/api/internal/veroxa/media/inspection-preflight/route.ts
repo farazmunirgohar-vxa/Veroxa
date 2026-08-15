@@ -10,6 +10,7 @@ import {
 } from "../../../../../veroxa-private-media-supabase-image-decode.ts";
 import {
   createMediaInspectionPreflightHandler,
+  MediaInspectionPreflightFailure,
   type MediaInspectionPreflightFixture,
 } from "./core.ts";
 
@@ -17,9 +18,9 @@ export const runtime = "edge";
 
 const HMAC_SECRET = /^[0-9a-f]{64}$/u;
 const FIXTURE_BASE64 =
-  "/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRQBAwQEBQQFCQUFCRQNCw0UFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFP/AABEIAAIAAwMBEQACEQEDEQH/xAGiAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgsQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+gEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoLEQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/APEP2g/+SpXv/Xhpv/pBb18NlH+5Q/7e/wDSmfZZl/vdT1P/2Q==";
+  "/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRQBAwQEBQQFCQUFCRQNCw0UFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFP/AABEIAAIAAwMBEQACEQEDEQH/xAGiAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgsQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+gEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoLEQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/AGV+Dn9Bn//Z";
 const FIXTURE_SHA256 =
-  "8e597e6ec4a639870aea7291a8e4c0cedbedc38377c8cf91704ef82a2673c865";
+  "61d3065ea30c124958f1853e2714ad466f7de1ffb3b8d625908c2241e9b92e06";
 const FIXTURE_PATH =
   `__veroxa_system/image-inspection-preflight/v1/${FIXTURE_SHA256}.jpg`;
 
@@ -119,7 +120,9 @@ async function ensureFixture(client: SupabaseClient): Promise<MediaInspectionPre
   const expected = await inspectMomoImageBytesFully(fixtureBytes);
   if (await momoBytesSha256(fixtureBytes) !== FIXTURE_SHA256 || !expected ||
     expected.mimeType !== "image/jpeg" || expected.width !== 3 || expected.height !== 2) {
-    throw new Error("media_inspection_fixture_integrity_invalid");
+    throw new MediaInspectionPreflightFailure(
+      "media_inspection_fixture_integrity_invalid",
+    );
   }
   const existing = await readFixture(client);
   if (existing) return existing;
@@ -135,10 +138,16 @@ async function ensureFixture(client: SupabaseClient): Promise<MediaInspectionPre
   // A concurrent canary may win the create-only race. In either case, only a
   // full metadata-and-byte readback is accepted as the fixture source.
   if (upload.error && !await readFixture(client)) {
-    throw new Error("media_inspection_fixture_create_failed");
+    throw new MediaInspectionPreflightFailure(
+      "media_inspection_fixture_create_failed",
+    );
   }
   const verified = await readFixture(client);
-  if (!verified) throw new Error("media_inspection_fixture_readback_failed");
+  if (!verified) {
+    throw new MediaInspectionPreflightFailure(
+      "media_inspection_fixture_readback_failed",
+    );
+  }
   return verified;
 }
 

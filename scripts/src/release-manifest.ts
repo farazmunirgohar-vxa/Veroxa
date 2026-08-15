@@ -46,6 +46,7 @@ const ACTIVE_MEDIA_INSPECTION_CANDIDATE_ALLOWED_PATHS = new Set([
   "artifacts/veroxa/docs/FINDINGS_LEDGER.json",
   "artifacts/veroxa/docs/PRODUCT_CONSTITUTION.md",
   "artifacts/veroxa/docs/history/2026-08-15-phase-0-baseline.json",
+  "artifacts/veroxa/docs/history/2026-08-15-phase-1-preflight-fixture-failure.json",
   "scripts/src/check-chatgpt-sites-migration-source-truth.ts",
   "scripts/src/check-deployment-manifest.ts",
   "scripts/src/check-release-workflow-policy.ts",
@@ -955,10 +956,19 @@ function sameJson(left: unknown, right: unknown): boolean {
 type ActiveMediaInspectionCandidateState = {
   phase: string;
   production: {
-    github?: { latestApplicationSourceCommit?: unknown };
+    github?: {
+      latestApplicationSourceCommit?: unknown;
+      mainCommit?: unknown;
+    };
+    sites?: {
+      version?: unknown;
+      versionId?: unknown;
+      sourceCommit?: unknown;
+    };
     supabase?: {
       migrationCount?: unknown;
       latestMigration?: unknown;
+      appliedMigrationVersion?: unknown;
     };
   };
   asset?: { authorizedRetriesRemaining?: unknown };
@@ -976,6 +986,7 @@ type ActiveMediaInspectionCandidateState = {
       productionBaselineMigrationCount?: unknown;
       productionBaselineMigrationTreeSha256?: unknown;
     };
+    preflightMigrationStatus?: unknown;
     externalActionLockRequired?: unknown;
     img4257RetryConsumed?: unknown;
   };
@@ -1013,6 +1024,11 @@ function readActiveMediaInspectionCandidateState():
 
 export function hasActiveMediaInspectionForwardCandidate(): boolean {
   return readActiveMediaInspectionCandidateState() !== null;
+}
+
+export function activeMediaInspectionPreflightMigrationIsApplied(): boolean {
+  const candidate = readActiveMediaInspectionCandidateState()?.activeCandidate;
+  return candidate?.preflightMigrationStatus === "applied";
 }
 
 function gitPathList(args: string[]): string[] {
@@ -1136,12 +1152,15 @@ function assertActiveMediaInspectionForwardCandidate(
     "forward candidate requires the immutable schema-13 live baseline",
   );
   must(
-    candidate?.branch === "agent/repair-production-image-inspection-20260815" &&
-      sameJson(pending, [MEDIA_INSPECTION_PREFLIGHT_MIGRATION]) &&
+    candidate?.branch === "agent/fix-preflight-fixture-integrity-20260815" &&
+      candidate?.state ===
+        "local_verified_pending_pr_review_and_production_preflight" &&
+      sameJson(pending, []) &&
       migration?.filename === MEDIA_INSPECTION_PREFLIGHT_MIGRATION &&
+      candidate?.preflightMigrationStatus === "applied" &&
       candidate?.externalActionLockRequired === true &&
       candidate.img4257RetryConsumed === false,
-    "forward candidate scope or IMG_4257 retry authority drifted",
+    "fixture-integrity candidate scope, migration state, or IMG_4257 retry authority drifted",
   );
   must(
     migration?.sha256 === sha256File(migrationPath) &&
@@ -1156,8 +1175,6 @@ function assertActiveMediaInspectionForwardCandidate(
   must(
     migration?.productionBaselineMigrationCount === liveMigrationTree.fileCount &&
       migration?.productionBaselineMigrationTreeSha256 === liveMigrationTree.sha256 &&
-      state.production.supabase?.migrationCount === liveMigrationTree.fileCount &&
-      state.production.supabase?.latestMigration === liveMigrationTree.files.at(-1) &&
       production.productionMigrationCount === liveMigrationTree.fileCount &&
       production.migrationTreeSha256 === liveMigrationTree.sha256 &&
       production.latestProductionMigration === liveMigrationTree.files.at(-1) &&
@@ -1167,12 +1184,26 @@ function assertActiveMediaInspectionForwardCandidate(
           ROOT_MIGRATION_SOURCE_ROOT,
           liveMigrationTree.files.at(-1) ?? "",
         )),
-    "forward candidate does not preserve the observed production migration ledger",
+    "forward candidate does not preserve the immutable pre-migration ledger baseline",
   );
   must(
-    state.production.github?.latestApplicationSourceCommit ===
-      production.canonicalGitHubMainCommit &&
-      state.asset?.authorizedRetriesRemaining === 1 &&
+    state.production.github?.mainCommit ===
+        "085263c39f76ad0710eb4a2a15042e3b31b40af4" &&
+      state.production.github?.latestApplicationSourceCommit ===
+        "085263c39f76ad0710eb4a2a15042e3b31b40af4" &&
+      state.production.sites?.version === 57 &&
+      state.production.sites?.versionId ===
+        "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_569d47d76e5c8191bfd339f91f61b967" &&
+      state.production.sites?.sourceCommit ===
+        "1cdb61082b11e12a067f37f0c7ade6253a715e64" &&
+      state.production.supabase?.migrationCount === rootMigrationTree.fileCount &&
+      state.production.supabase?.latestMigration ===
+        MEDIA_INSPECTION_PREFLIGHT_MIGRATION &&
+      state.production.supabase?.appliedMigrationVersion === "20260815062451",
+    "current-state production checkpoint does not match the applied Phase 1 repair evidence",
+  );
+  must(
+    state.asset?.authorizedRetriesRemaining === 1 &&
       locks.publishing === false &&
       locks.externalScheduling === false &&
       locks.accountConnection === false &&
