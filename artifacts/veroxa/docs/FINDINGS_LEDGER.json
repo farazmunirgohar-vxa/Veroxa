@@ -157,6 +157,30 @@
       "finalStatus": "corrected_locally_security_reviewed_pending_pr_review_and_production_preflight"
     },
     {
+      "findingId": "F-009",
+      "originalConcern": "The completed Phase 1 repair includes internal operational, deployment, migration, and evidence material that a protected push control classified as sensitive for the currently public repository.",
+      "freshVerificationResult": "Verified at the exact push attempt for local commit 2a197a577ce5192c272e00619ea8a109f55c59ce. The push was rejected before publication; no remote branch, PR, merge, deployment, migration, provider call, or IMG_4257 retry occurred.",
+      "severity": "high",
+      "affectedSystems": [
+        "GitHub public repository",
+        "release workflow",
+        "source-of-truth documentation"
+      ],
+      "rootCause": "The target repository is public and the candidate contains non-public operational and deployment evidence that requires an explicit disclosure decision beyond the general implementation authorization.",
+      "correctiveAction": "Preserve the exact local commit and request the smallest approval: authorize pushing this specific scoped commit and documentation to the public repository, or direct a safer non-public review destination. Do not bypass the protected push control.",
+      "branch": "agent/repair-production-image-inspection-20260815",
+      "pullRequest": null,
+      "commit": "2a197a577ce5192c272e00619ea8a109f55c59ce",
+      "migrationOrDeployment": null,
+      "tests": [
+        "no remote write was performed after rejection",
+        "local Phase 1 verification evidence remains recorded"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "No remote state changed. Keep the local branch and commit unchanged; if disclosure approval is denied, remove or relocate sensitive material only with a separately approved review path.",
+      "finalStatus": "blocked_pending_explicit_public_repository_disclosure_approval"
+    },
+    {
       "findingId": "F-002",
       "originalConcern": "Production runtime is attached to a Supabase project named Veroxa Dev, obscuring environment intent.",
       "freshVerificationResult": "Verified: Sites production variables point to the only connected healthy project mwqkhsvdezeykdpqhqec, named Veroxa Dev.",

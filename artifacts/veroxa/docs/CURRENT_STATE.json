@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "recordKind": "veroxa_current_state",
   "stateAuthority": "current_deployed_state_and_explicit_forward_candidate",
-  "updatedAt": "2026-08-15T05:32:11Z",
-  "phase": "phase_1_local_repair_verified_pending_pr_review_and_production_preflight",
+  "updatedAt": "2026-08-15T05:34:49Z",
+  "phase": "phase_1_local_repair_verified_push_blocked_pending_explicit_public_repository_disclosure_approval",
   "production": {
     "github": {
       "repository": "farazmunirgohar-vxa/Veroxa",
@@ -80,7 +80,7 @@
     "code": "images_binding_unavailable",
     "rootCause": "worker/index.ts assigns env.IMAGES to globalThis.__VEROXA_IMAGES__, but .openai/hosting.json declares only d1 and r2 and the deployed Sites runtime therefore supplies no Images binding",
     "repairState": "Local replacement uses Supabase Storage image transformation with source object/version parity, exact signed-transform path binding, bounded operation/response timeouts, a 1px decode, signed create-only synthetic canary, private durable evidence, an environment-bound Vault endpoint, and no provider/external write path. Sites type/lint/build and 487 tests, root typecheck, root verification, release-guard regression, and byte-mirror verification pass locally. Fresh post-remediation Codex Security review c1788ef2-15bd-43a4-b4e4-2ae39436e0a1 reported zero findings across the 29 changed repair paths. The repair has not been reviewed in a PR, merged, migrated, or deployed.",
-    "nextGate": "complete the fresh independent security scan, then open a scoped PR and require green CI/review before deploying the exact reviewed commit, applying its forward migration, and passing the private synthetic trusted-image-inspection preflight before the one authorized IMG_4257 retry"
+    "nextGate": "obtain explicit approval to push commit 2a197a577ce5192c272e00619ea8a109f55c59ce and its internal operational/deployment/migration documentation to the currently public farazmunirgohar-vxa/Veroxa repository; then open the scoped PR and require green CI/review before deploying the exact reviewed commit, applying its forward migration, and passing the private synthetic trusted-image-inspection preflight before the one authorized IMG_4257 retry"
   },
   "activeCandidate": {
     "kind": "media_inspection_runtime_repair",
@@ -100,6 +100,14 @@
     "externalActionLockRequired": true,
     "img4257RetryConsumed": false
   },
+  "releaseBlocker": {
+    "kind": "public_repository_disclosure_approval_required",
+    "observedAt": "2026-08-15T05:34:49Z",
+    "commit": "2a197a577ce5192c272e00619ea8a109f55c59ce",
+    "repository": "farazmunirgohar-vxa/Veroxa",
+    "reason": "The protected push control rejected publishing internal implementation, deployment, migration, and operating-evidence material to the verified public repository. No push, PR, merge, deployment, migration, provider call, or IMG_4257 retry occurred.",
+    "smallestRequiredApproval": "Approve pushing this exact scoped commit and its associated internal operational documentation to the public repository, or direct a safer non-public review destination."
+  },
   "usage": {
     "workModeCheckpoint": "approximately_50_percent",
     "assessment": "No reliable percentage meter is exposed. Discovery, deterministic local checks, a synthetic fixture, one local dependency install, TypeScript/lint/build, 487 Sites tests, and the root verification suite were used; no OpenAI/provider call or IMG_4257 retry has occurred."
@@ -108,6 +116,7 @@
     "artifacts/veroxa/docs/history/2026-08-15-phase-0-baseline.json",
     "artifacts/veroxa/docs/FINDINGS_LEDGER.json",
     "codex-security scan 623563ae-5aad-4b0c-b6bb-9aa2f134137e (pre-remediation snapshot; F-007 and F-008),",
-    "codex-security scan c1788ef2-15bd-43a4-b4e4-2ae39436e0a1 (post-remediation review of 29 changed repair paths; zero findings; unchanged legacy repository paths deferred)"
+    "codex-security scan c1788ef2-15bd-43a4-b4e4-2ae39436e0a1 (post-remediation review of 29 changed repair paths; zero findings; unchanged legacy repository paths deferred)",
+    "local commit 2a197a577ce5192c272e00619ea8a109f55c59ce (push rejected by protected public-repository disclosure control)"
   ]
 }
