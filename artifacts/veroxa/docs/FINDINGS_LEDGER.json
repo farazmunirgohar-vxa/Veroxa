@@ -181,6 +181,33 @@
       "finalStatus": "resolved_to_remote_draft_pr_pending_ci_and_review"
     },
     {
+      "findingId": "F-010",
+      "originalConcern": "The exact-candidate source-scope guard failed in PR CI even though the reviewed local candidate passed.",
+      "freshVerificationResult": "Verified from CI run 31868220623 and Veroxa Verify run 31868220628. Both workflows checked out only the generated PR merge commit with depth 1, so Git could not resolve baseline a28c4735b668775dbc54e3c920b409325ef8201d for the mandatory symmetric-difference scope check. The guard correctly failed closed; no production action occurred.",
+      "severity": "high",
+      "affectedSystems": [
+        "GitHub Actions",
+        "release-manifest guard",
+        "PR #188 verification"
+      ],
+      "rootCause": "The CI and Veroxa Verify checkout steps relied on actions/checkout's depth-1 default while the active candidate guard intentionally requires the recorded main baseline commit.",
+      "correctiveAction": "Add fetch-depth: 0 only to CI and Veroxa Verify, and add a release-workflow-policy regression assertion requiring full history for both guard-running workflows.",
+      "branch": "agent/repair-production-image-inspection-20260815",
+      "pullRequest": 188,
+      "commit": null,
+      "migrationOrDeployment": null,
+      "tests": [
+        "local release workflow policy guard passed",
+        "full local verify:veroxa suite passed",
+        "Git diff whitespace check passed"
+      ],
+      "productionEvidence": [
+        "no deployment, migration, provider call, or IMG_4257 retry occurred"
+      ],
+      "rollbackMethod": "Revert the two fetch-depth additions and the matching static guard together if the exact-candidate guard is retired under a separately reviewed replacement; do not weaken it merely to make CI pass.",
+      "finalStatus": "local_fix_verified_pending_updated_pr_ci"
+    },
+    {
       "findingId": "F-002",
       "originalConcern": "Production runtime is attached to a Supabase project named Veroxa Dev, obscuring environment intent.",
       "freshVerificationResult": "Verified: Sites production variables point to the only connected healthy project mwqkhsvdezeykdpqhqec, named Veroxa Dev.",

@@ -23,7 +23,9 @@ export const MEDIA_INSPECTION_PREFLIGHT_MIGRATION =
 const ACTIVE_MEDIA_INSPECTION_CANDIDATE_BASE_COMMIT =
   "a28c4735b668775dbc54e3c920b409325ef8201d";
 const ACTIVE_MEDIA_INSPECTION_CANDIDATE_ALLOWED_PATHS = new Set([
+  ".github/workflows/ci.yml",
   ".github/workflows/supabase-verify.yml",
+  ".github/workflows/veroxa-verify.yml",
   "artifacts/veroxa-sites/app/api/internal/momo/media/recover/core.ts",
   "artifacts/veroxa-sites/app/api/internal/momo/media/recover/route.ts",
   "artifacts/veroxa-sites/app/api/internal/veroxa/media/inspection-preflight/core.ts",
@@ -46,6 +48,7 @@ const ACTIVE_MEDIA_INSPECTION_CANDIDATE_ALLOWED_PATHS = new Set([
   "artifacts/veroxa/docs/history/2026-08-15-phase-0-baseline.json",
   "scripts/src/check-chatgpt-sites-migration-source-truth.ts",
   "scripts/src/check-deployment-manifest.ts",
+  "scripts/src/check-release-workflow-policy.ts",
   "scripts/src/check-rr-release-checkpoint.ts",
   "scripts/src/check-sites-only-deployment.ts",
   "scripts/src/check-supabase-migration-ledger.ts",

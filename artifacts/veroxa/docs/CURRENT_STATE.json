@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "recordKind": "veroxa_current_state",
   "stateAuthority": "current_deployed_state_and_explicit_forward_candidate",
-  "updatedAt": "2026-08-15T05:54:33Z",
-  "phase": "phase_1_remote_draft_pr_open_pending_ci_review",
+  "updatedAt": "2026-08-15T05:57:35Z",
+  "phase": "phase_1_pr_ci_shallow_checkout_repair_pending",
   "production": {
     "github": {
       "repository": "farazmunirgohar-vxa/Veroxa",
@@ -86,8 +86,8 @@
     "id": "F-001",
     "code": "images_binding_unavailable",
     "rootCause": "worker/index.ts assigns env.IMAGES to globalThis.__VEROXA_IMAGES__, but .openai/hosting.json declares only d1 and r2 and the deployed Sites runtime therefore supplies no Images binding",
-    "repairState": "The scoped repair is in draft PR #188. It replaces the unavailable host Images binding with Supabase Storage image transformation while preserving source object/version parity, exact signed-transform path binding, bounded operation/response timeouts, a 1px decode, signed create-only synthetic canary, private durable evidence, an environment-bound Vault endpoint, and no provider/external write path. Local Sites type/lint/build and 487 tests, root typecheck, root verification, release-guard regression, and byte-mirror verification passed. Fresh post-remediation Codex Security review c1788ef2-15bd-43a4-b4e4-2ae39436e0a1 reported zero findings across the 29 changed repair paths. No merge, deployment, migration, provider call, or IMG_4257 retry has occurred.",
-    "nextGate": "wait for and inspect PR #188 CI and required review; merge only when green, deploy the exact reviewed commit, apply its forward migration with rollback prepared, and require a passed private synthetic trusted-image-inspection preflight before the one authorized IMG_4257 retry"
+    "repairState": "The scoped repair is in draft PR #188. It replaces the unavailable host Images binding with Supabase Storage image transformation while preserving source object/version parity, exact signed-transform path binding, bounded operation/response timeouts, a 1px decode, signed create-only synthetic canary, private durable evidence, an environment-bound Vault endpoint, and no provider/external write path. Local Sites type/lint/build and 487 tests, root typecheck, root verification, release-guard regression, and byte-mirror verification passed. Fresh post-remediation Codex Security review c1788ef2-15bd-43a4-b4e4-2ae39436e0a1 reported zero findings across the 29 changed repair paths. PR CI and Veroxa Verify failed only because the depth-1 checkout did not contain the guard's recorded baseline commit; the verified follow-up makes those guard workflows fetch full history and statically enforces that requirement. No merge, deployment, migration, provider call, or IMG_4257 retry has occurred.",
+    "nextGate": "validate the narrow CI checkout repair locally, update draft PR #188, then require green CI and review before deploying the exact reviewed commit, applying its forward migration with rollback prepared, and passing the private synthetic trusted-image-inspection preflight before the one authorized IMG_4257 retry"
   },
   "activeCandidate": {
     "kind": "media_inspection_runtime_repair",
@@ -108,8 +108,8 @@
     "img4257RetryConsumed": false
   },
   "releaseBlocker": {
-    "kind": "green_ci_and_required_review_pending",
-    "observedAt": "2026-08-15T05:54:33Z",
+    "kind": "ci_checkout_history_repair_pending",
+    "observedAt": "2026-08-15T05:57:35Z",
     "repository": "farazmunirgohar-vxa/Veroxa",
     "approval": "Founder explicitly approved pushing the exact local commits to this repository for PR review.",
     "draftPullRequest": 188,
@@ -128,7 +128,7 @@
         }
       ]
     },
-    "nextGate": "Inspect the draft PR's CI and independent review. Do not merge, deploy, migrate, invoke a provider, or retry IMG_4257 until the applicable gates pass."
+    "nextGate": "Validate and push the narrow CI history repair to draft PR #188, then inspect fresh CI and independent review. Do not merge, deploy, migrate, invoke a provider, or retry IMG_4257 until the applicable gates pass."
   },
   "usage": {
     "workModeCheckpoint": "approximately_50_percent",
