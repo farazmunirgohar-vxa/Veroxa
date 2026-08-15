@@ -5,22 +5,42 @@ write:
 
 `upload → byte verification → canonical identity → private assessment → grounded package → Ready → Team decision → non-publishing evidence → client status → report`
 
-Strict next sequence:
+## Current checkpoint
 
-1. Replace the unavailable production Images dependency with a production-safe,
-   auditable trusted inspection path and deploy a private canary.
-2. Pass the deployed canary using a controlled synthetic fixture.
-3. Perform exactly one controlled retry of preserved IMG_4257.
-4. Preserve a truthful exception if IMG_4257 fails a real content, integrity,
-   rights, truth, or policy gate; use a marked synthetic fixture to prove Ready
-   only if the technical path needs it.
-5. Complete the internal Momo cycle before R2, broad portal, or naming work.
+The original image-inspection repair merged in PR #188 as
+`085263c39f76ad0710eb4a2a15042e3b31b40af4`, was mirrored to Sites version 57,
+and its forward Supabase migration was applied. The first private synthetic
+preflight run failed before fixture persistence because its embedded JPEG
+fixture was invalid. That result does **not** prove the repaired dependency and
+does not consume the IMG_4257 retry.
 
-Acceptance conditions for the first gate:
+The only active change is a narrow fixture-integrity repair on
+`agent/fix-preflight-fixture-integrity-20260815`. It replaces the invalid
+fixture with a valid deterministic 3×2 JPEG, verifies bytes/hash/MIME/dimensions
+in tests, and exposes only fixed non-secret fixture failure codes.
 
-- production runtime inspection passes with no Cloudflare Images binding;
-- failures are classified without secrets or private media in diagnostics;
-- image inspection is fail-closed and cannot create Ready on failure;
-- one private synthetic canary proves configuration, request, response,
-  persistence, and recovery behavior;
-- no external action is possible through the repair.
+## Strict next sequence
+
+1. Open and review the scoped fixture-integrity PR; require exact-head CI,
+   source review, and no unrelated diff.
+2. Merge only when green; mirror the exact reviewed Sites application tree and
+   deploy it.
+3. Run exactly one new private synthetic preflight. It must prove signed
+   delivery, create-only fixture storage, full byte readback, Storage transform
+   inspection, durable completion evidence, and fail-closed behavior.
+4. Only after that production preflight passes, perform the one permitted
+   IMG_4257 retry using the existing bytes/object/version.
+5. Preserve any truthful IMG_4257 exception. If technical proof of `Ready` is
+   still needed, use a clearly marked synthetic fixture rather than changing
+   IMG_4257.
+6. Complete the private Momo internal cycle before R2, broad portal work, or a
+   naming refactor.
+
+## Non-negotiable controls
+
+- IMG_4257 must not be deleted, re-uploaded, replaced, or retried early.
+- `Ready` remains separate from Team approval, schedule-ready, scheduling, and
+  publication.
+- External publishing, scheduling, account connection, outreach, messaging,
+  pricing changes, and repository-visibility changes remain locked.
+- The restaurant has no normal action after a valid upload.

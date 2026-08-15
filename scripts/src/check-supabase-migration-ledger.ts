@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import {
   MEDIA_INSPECTION_PREFLIGHT_MIGRATION,
   REPAIR_MIGRATION_EVIDENCE,
+  activeMediaInspectionPreflightMigrationIsApplied,
   assertReviewedLocalCandidateManifest,
   hasActiveMediaInspectionForwardCandidate,
   hashTree,
@@ -27,7 +28,9 @@ const rootTree = hashTree(rootDir, { suffix: ".sql" });
 const mirrorTree = hashTree(mirrorDir, { suffix: ".sql" });
 const manifest = readDeploymentManifest();
 const activeForwardCandidate = hasActiveMediaInspectionForwardCandidate();
-const pending = activeForwardCandidate
+const preflightMigrationApplied =
+  activeMediaInspectionPreflightMigrationIsApplied();
+const pending = activeForwardCandidate && !preflightMigrationApplied
   ? [MEDIA_INSPECTION_PREFLIGHT_MIGRATION]
   : manifest.releaseCandidate.pendingMigrations ?? [];
 const liveTree = hashTree(rootDir, { exclusions: pending, suffix: ".sql" });
@@ -51,12 +54,13 @@ must(
     manifest.releaseCandidate.candidateMigrationsMatchLiveLedger ===
       (pending.length === 0)
   )) &&
-    manifest.currentProductionObservation.productionMigrationCount ===
+    (activeForwardCandidate && preflightMigrationApplied ||
+      manifest.currentProductionObservation.productionMigrationCount ===
       liveTree.fileCount &&
     manifest.currentProductionObservation.migrationTreeSha256 ===
       liveTree.sha256 &&
     manifest.currentProductionObservation.latestProductionMigration ===
-      liveTree.files.at(-1),
+      liveTree.files.at(-1)),
   "Source and pending-migration split do not match the observed production ledger.",
 );
 for (const filename of rootNames) {
@@ -82,7 +86,9 @@ if (failures.length > 0) {
 } else {
   console.log(
     activeForwardCandidate
-      ? `PASS: exact mirrored ${rootTree.fileCount}-migration candidate preserves the observed ${liveTree.fileCount}-migration production ledger.`
+      ? preflightMigrationApplied
+        ? `PASS: exact mirrored ${rootTree.fileCount}-migration candidate records the applied preflight migration while the fixture-integrity repair remains pending.`
+        : `PASS: exact mirrored ${rootTree.fileCount}-migration candidate preserves the observed ${liveTree.fileCount}-migration production ledger.`
       : `PASS: exact mirrored source matches the reconciled ${rootTree.fileCount}-migration ledger.`,
   );
 }

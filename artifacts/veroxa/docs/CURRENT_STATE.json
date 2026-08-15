@@ -2,59 +2,45 @@
   "schemaVersion": 1,
   "recordKind": "veroxa_current_state",
   "stateAuthority": "current_deployed_state_and_explicit_forward_candidate",
-  "updatedAt": "2026-08-15T06:06:59Z",
-  "phase": "phase_1_pr_ci_green_pending_independent_review",
+  "updatedAt": "2026-08-15T06:42:58Z",
+  "phase": "phase_1_fixture_integrity_repair_pending_pr_review",
   "production": {
     "github": {
       "repository": "farazmunirgohar-vxa/Veroxa",
       "visibility": "public",
       "defaultBranch": "main",
-      "mainCommit": "a28c4735b668775dbc54e3c920b409325ef8201d",
-      "latestApplicationSourceCommit": "77dadd67505642353b431db3802d2ec365966869",
-      "mainProtectionEvidence": "branch listing reported protected=false; GitHub protection endpoint was inaccessible to the connected integration, so final policy state remains unverified",
-      "openPullRequests": [
-        {
-          "number": 187,
-          "state": "draft",
-          "head": "5db3429c919add9a62bedb964309bd04e066b0fa",
-          "scope": "R2 media vault",
-          "mergeLock": "must remain unmerged until all R2 gates pass"
-        },
-        {
-          "number": 188,
-          "state": "draft",
-          "head": "07823aa88a74581da4dd7b18104f114a836b7b42",
-          "scope": "production private image-inspection repair and preflight canary",
-          "mergeLock": "must remain unmerged until required CI and review pass; no deployment, migration, OpenAI call, or IMG_4257 retry is authorized before the deployed private preflight passes"
-        }
-      ]
+      "mainCommit": "085263c39f76ad0710eb4a2a15042e3b31b40af4",
+      "latestApplicationSourceCommit": "085263c39f76ad0710eb4a2a15042e3b31b40af4",
+      "latestMergedPullRequest": 188,
+      "mainProtectionEvidence": "branch listing previously reported protected=false; GitHub protection endpoint was inaccessible to the connected integration, so final policy state remains unverified"
     },
     "sites": {
       "projectId": "appgprj_6a53d07c7c28819182801cf35dfd30de",
       "slug": "veroxa-client-experience",
-      "version": 56,
-      "versionId": "appgver_0a84d383bba4819180548d99950817fd",
-      "deploymentId": "appgdep_6a7fcbb9276881918534df6883805dc9",
-      "sourceCheckout": "5306f279a70c7a7d4ecb1328fa17cbeb2f03af7f",
-      "environmentRevision": 22,
-      "domains": [
-        "veroxasystems.com",
-        "www.veroxasystems.com"
-      ],
-      "bindingState": "hosting declaration exposes D1 and R2 only; worker expects env.IMAGES and production has supplied no Images binding"
+      "version": 57,
+      "versionId": "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_569d47d76e5c8191bfd339f91f61b967",
+      "sourceCommit": "1cdb61082b11e12a067f37f0c7ade6253a715e64",
+      "applicationTreeSha256": "b0c73b7001880a0a4663329c911330ef8aeced25",
+      "deploymentStatus": "succeeded",
+      "productionUrl": "https://veroxasystems.com",
+      "bindingState": "the deployed path uses private Supabase Storage transform inspection rather than the unavailable Cloudflare Images binding"
     },
     "supabase": {
       "projectRef": "mwqkhsvdezeykdpqhqec",
       "projectName": "Veroxa Dev",
       "region": "us-east-2",
       "plan": "pro",
-      "migrationCount": 58,
-      "latestMigration": "20260813175640_durable_media_ingestion_path_regex_repair_v1.sql",
+      "migrationCount": 59,
+      "latestMigration": "20260815090000_media_inspection_preflight_canary_v1.sql",
+      "appliedMigrationVersion": "20260815062451",
+      "appliedMigrationName": "media_inspection_preflight_canary_v1",
+      "migrationHistoryDiscrepancy": "Supabase assigned platform version 20260815062451 when applying repository migration 20260815090000_media_inspection_preflight_canary_v1.sql; source bytes were applied, but the timestamped applied-history name differs and remains a Phase 5 reproducibility finding.",
       "environmentAmbiguity": "the production Sites runtime uses a project named Veroxa Dev; explicit dev/staging/production mapping is not yet established"
     },
     "openai": {
-      "liveCredentialVerification": "deferred until the required existing-key versus new-key decision under the OpenAI credential procedure",
-      "retentionBaseline": "official Responses guidance was checked; store:false remains the candidate least-retentive setting subject to live workflow validation"
+      "liveProviderCallsDuringPhase1": 0,
+      "retentionBaseline": "store:false remains the least-retentive candidate subject to later live workflow validation",
+      "providerStatus": "not required for the synthetic Storage transform preflight and not invoked"
     }
   },
   "asset": {
@@ -71,7 +57,8 @@
     "readyPackages": 0,
     "providerCalls": 0,
     "authorizedRetriesRemaining": 1,
-    "retryRule": "do not retry until the deployed private inspection canary passes; do not delete, re-upload, or replace source bytes"
+    "retryRule": "do not retry until the redeployed private synthetic inspection preflight passes; do not delete, re-upload, or replace source bytes",
+    "retryConsumedDuringThisProgram": false
   },
   "externalActionLock": {
     "publishing": false,
@@ -83,19 +70,18 @@
     "repositoryVisibilityChange": false
   },
   "criticalBlocker": {
-    "id": "F-001",
-    "code": "images_binding_unavailable",
-    "rootCause": "worker/index.ts assigns env.IMAGES to globalThis.__VEROXA_IMAGES__, but .openai/hosting.json declares only d1 and r2 and the deployed Sites runtime therefore supplies no Images binding",
-    "repairState": "The scoped repair is in draft PR #188. It replaces the unavailable host Images binding with Supabase Storage image transformation while preserving source object/version parity, exact signed-transform path binding, bounded operation/response timeouts, a 1px decode, signed create-only synthetic canary, private durable evidence, an environment-bound Vault endpoint, and no provider/external write path. Local Sites type/lint/build and 487 tests, root typecheck, root verification, release-guard regression, and byte-mirror verification passed. Fresh post-remediation Codex Security review c1788ef2-15bd-43a4-b4e4-2ae39436e0a1 reported zero findings across the 29 changed repair paths. The initial depth-1 CI failure was repaired by fetching full history in the two guard-running workflows; fresh CI run 517, Sites Verify run 207, Supabase Verify run 177, and Veroxa Verify run 462 all passed on remote commit 8c685f566614c4e4877cc97883ea597febffea01. No merge, deployment, migration, provider call, or IMG_4257 retry has occurred.",
-    "nextGate": "run the same four required workflows on this current-state checkpoint, then obtain independent PR review before merging the exact reviewed head, deploying it, applying its forward migration with rollback prepared, and passing the private synthetic trusted-image-inspection preflight before the one authorized IMG_4257 retry"
+    "id": "F-014",
+    "code": "media_inspection_fixture_integrity_invalid",
+    "rootCause": "The deployed signed preflight embedded an invalid synthetic JPEG constant whose byte hash did not match the declared fixture hash. The route failed before creating or inspecting the reserved synthetic object, so it did not yet prove the repaired production image-inspection dependency.",
+    "repairState": "A valid 3x2 JPEG fixture was generated deterministically, its exact SHA-256 is checked in code and regression tests, and its three fixed fixture failure classes remain sanitized. Local focused tests, the full 488-test Sites suite, lint, root TypeScript, root verification, and a sealed focused security diff review passed. The repair is local only until its new PR is green, merged, and mirrored to Sites.",
+    "nextGate": "open the scoped PR, require exact-head CI and review, deploy the exact reviewed Sites source, then run one new synthetic private preflight. IMG_4257 remains forbidden until that synthetic run passes."
   },
   "activeCandidate": {
     "kind": "media_inspection_runtime_repair",
-    "branch": "agent/repair-production-image-inspection-20260815",
-    "state": "remote_ci_green_pending_independent_review_and_production_preflight",
-    "pendingMigrations": [
-      "20260815090000_media_inspection_preflight_canary_v1.sql"
-    ],
+    "branch": "agent/fix-preflight-fixture-integrity-20260815",
+    "state": "local_verified_pending_pr_review_and_production_preflight",
+    "pendingMigrations": [],
+    "preflightMigrationStatus": "applied",
     "migration": {
       "filename": "20260815090000_media_inspection_preflight_canary_v1.sql",
       "sha256": "76e3bb0b441e2b36a04bf296af7dca6ea9a56ace9ab817d8f52a7d53551a1abb",
@@ -108,49 +94,27 @@
     "img4257RetryConsumed": false
   },
   "releaseBlocker": {
-    "kind": "independent_pr_review_pending",
-    "observedAt": "2026-08-15T06:06:59Z",
+    "kind": "synthetic_preflight_fixture_integrity_repair_pending_review",
+    "observedAt": "2026-08-15T06:25:50Z",
     "repository": "farazmunirgohar-vxa/Veroxa",
-    "approval": "Founder explicitly approved pushing the exact local commits to this repository for PR review.",
-    "draftPullRequest": 188,
-    "remoteCommitReconstruction": {
-      "reason": "Local Git credential was unavailable; the connected GitHub account recreated the reviewed file trees with the original parent sequence and commit messages.",
-      "localToRemote": [
-        {
-          "localCommit": "2a197a577ce5192c272e00619ea8a109f55c59ce",
-          "remoteCommit": "5a4d30f46f768dd78bcd1ab88ccb087750ada66f",
-          "tree": "46bdb19986733fa2336cbc61b790e962187d771e"
-        },
-        {
-          "localCommit": "b8b6810230ab4343a77e961eb90ee3b683c6c8c1",
-          "remoteCommit": "07823aa88a74581da4dd7b18104f114a836b7b42",
-          "tree": "010fa6a33f9074b52cd92854f833ec0e51bd2b97"
-        }
-      ]
-    },
-    "ciEvidence": {
-      "head": "8c685f566614c4e4877cc97883ea597febffea01",
-      "CI": 517,
-      "SitesVerify": 207,
-      "SupabaseVerify": 177,
-      "VeroxaVerify": 462,
-      "result": "all_green"
-    },
-    "nextGate": "Run fresh CI on this documentation checkpoint and obtain independent PR review. Do not merge, deploy, migrate, invoke a provider, or retry IMG_4257 until the applicable gates pass."
+    "approval": "Founder explicitly approved pushing scoped local commits to this repository for PR review; the repair remains subject to green CI and direct production verification.",
+    "priorMergedPullRequest": 188,
+    "failedSyntheticRun": "466741f6-f42b-4054-8979-420ef365414e",
+    "nextGate": "Create a new scoped fixture-integrity PR from this local branch. Do not invoke a provider or retry IMG_4257 before the exact reviewed commit is deployed and a new synthetic preflight passes."
   },
   "usage": {
-    "workModeCheckpoint": "approximately_50_percent",
-    "assessment": "No reliable percentage meter is exposed. Discovery, deterministic local checks, a synthetic fixture, one local dependency install, TypeScript/lint/build, 487 Sites tests, and the root verification suite were used; no OpenAI/provider call or IMG_4257 retry has occurred."
+    "workModeCheckpoint": "approximately_75_percent",
+    "assessment": "No reliable percentage meter is exposed. Work was concentrated on one deployed dependency repair, deterministic fixture validation, local/type/lint/full-test checks, a sealed focused security review, and read-only live reconciliation. No OpenAI/provider call and no IMG_4257 retry occurred."
   },
   "evidencePointers": [
     "artifacts/veroxa/docs/history/2026-08-15-phase-0-baseline.json",
+    "artifacts/veroxa/docs/history/2026-08-15-phase-1-preflight-fixture-failure.json",
     "artifacts/veroxa/docs/FINDINGS_LEDGER.json",
-    "codex-security scan 623563ae-5aad-4b0c-b6bb-9aa2f134137e (pre-remediation snapshot; F-007 and F-008),",
-    "codex-security scan c1788ef2-15bd-43a4-b4e4-2ae39436e0a1 (post-remediation review of 29 changed repair paths; zero findings; unchanged legacy repository paths deferred)",
-    "local commits 2a197a577ce5192c272e00619ea8a109f55c59ce and b8b6810230ab4343a77e961eb90ee3b683c6c8c1 (reviewed source trees)",
-    "remote draft PR #188: https://github.com/farazmunirgohar-vxa/Veroxa/pull/188",
-    "remote reconstructed commits 5a4d30f46f768dd78bcd1ab88ccb087750ada66f, 07823aa88a74581da4dd7b18104f114a836b7b42, 15ecbb81b2dcbbe2bfe6ee54ae0b3f9f468f9030, and 8c685f566614c4e4877cc97883ea597febffea01",
-    "PR #188 all-green workflow evidence: CI 517, Sites Verify 207, Supabase Verify 177, Veroxa Verify 462",
-    "Codex Security diff scan c3a28db8-499a-4b7b-bc7e-3f083780c5f5: 22 source paths reviewed; final report draft blocked by exclusion-schema validation and remains unsealed"
+    "GitHub merged PR #188: https://github.com/farazmunirgohar-vxa/Veroxa/pull/188",
+    "GitHub main merge 085263c39f76ad0710eb4a2a15042e3b31b40af4",
+    "Sites version 57 source 1cdb61082b11e12a067f37f0c7ade6253a715e64",
+    "Supabase production migration media_inspection_preflight_canary_v1 at version 20260815062451",
+    "Synthetic preflight run 466741f6-f42b-4054-8979-420ef365414e: failed before fixture persistence",
+    "Codex Security scan fbe83751-5190-4d38-8608-dcf688882ed3: complete working-tree diff review, zero reportable findings"
   ]
 }

@@ -4,23 +4,23 @@
     {
       "findingId": "F-001",
       "originalConcern": "Production media recovery fails with images_binding_unavailable before canonical identity, assessment, or Ready.",
-      "freshVerificationResult": "Verified from deployed exception evidence and source/runtime configuration. Storage object, MIME detection, rights record, and recovery dispatch are intact; env.IMAGES is absent at runtime.",
+      "freshVerificationResult": "The original root cause was verified and the repair merged/deployed in PR #188. Sites v57 reached the private preflight route, but its first synthetic run failed before fixture persistence because the embedded fixture was invalid. IMG_4257 was not accessed.",
       "severity": "critical",
       "affectedSystems": [
         "Sites production runtime",
         "private media recovery",
         "Supabase Storage"
       ],
-      "rootCause": "The worker requires a Cloudflare Images binding that the current Sites hosting declaration cannot supply.",
-      "correctiveAction": "Local repair complete pending review/deployment: replace the unavailable runtime dependency with a private Supabase Storage image-transformation inspection path, source object/version parity, bounded 1px verified transform, signed create-only synthetic canary, private durable evidence, and regression tests.",
+      "rootCause": "The previous worker required a Cloudflare Images binding that Sites did not supply. The repaired path instead uses a private Supabase Storage transform; the remaining proof blocker is separately tracked as F-014.",
+      "correctiveAction": "PR #188 replaced the unavailable runtime dependency with a private Supabase Storage image-transformation inspection path, source object/version parity, bounded 1px transform, signed create-only synthetic canary, private durable evidence, and regression tests. Deploy the narrowly corrected fixture before another synthetic preflight.",
       "branch": "agent/repair-production-image-inspection-20260815",
       "pullRequest": 188,
-      "commit": "5a4d30f46f768dd78bcd1ab88ccb087750ada66f",
-      "migrationOrDeployment": null,
+      "commit": "085263c39f76ad0710eb4a2a15042e3b31b40af4",
+      "migrationOrDeployment": "PR #188 merged; Supabase preflight migration applied at 20260815062451; Sites version 57 deployed from source 1cdb61082b11e12a067f37f0c7ade6253a715e64",
       "tests": [
         "Sites TypeScript strict check passed",
         "targeted recovery and preflight Node tests passed",
-        "full verified Sites suite passed (487 tests)",
+        "full verified Sites suite passed (487 tests before the fixture correction; 488 tests after it)",
         "Sites lint and verified build passed",
         "root workspace TypeScript and verify:veroxa suite passed",
         "Codex Security scan 623563ae-5aad-4b0c-b6bb-9aa2f134137e identified F-007 and F-008 in its pre-remediation snapshot",
@@ -29,10 +29,11 @@
       "productionEvidence": [
         "IMG_4257 exception stage host_image_inspection",
         "failure code images_binding_unavailable",
-        "bindingAvailable=false"
+        "bindingAvailable=false",
+        "first synthetic run 466741f6-f42b-4054-8979-420ef365414e failed before fixture persistence"
       ],
       "rollbackMethod": "Re-deploy Sites v56 and leave the IMG_4257 asset, object, and version unchanged. The new forward migration has no customer-data mutation; disable the scheduled canary job and retain its private evidence if rollback is required.",
-      "finalStatus": "remote_draft_pr_open_pending_ci_review_and_production_preflight"
+      "finalStatus": "partially_verified_repair_deployed_fixture_integrity_follow_up_pending"
     },
     {
       "findingId": "F-004",
@@ -49,14 +50,14 @@
       "branch": "agent/repair-production-image-inspection-20260815",
       "pullRequest": 188,
       "commit": "5a4d30f46f768dd78bcd1ab88ccb087750ada66f",
-      "migrationOrDeployment": "20260815090000_media_inspection_preflight_canary_v1.sql (pending)",
+      "migrationOrDeployment": "20260815090000_media_inspection_preflight_canary_v1.sql applied in production as Supabase version 20260815062451",
       "tests": [
         "SQL state-machine review completed",
         "migration mirror/source guard passed"
       ],
       "productionEvidence": [],
       "rollbackMethod": "Unschedule veroxa-media-inspection-preflight and retain private terminal records; no customer media or external write is involved.",
-      "finalStatus": "remote_draft_pr_open_pending_ci_review_and_production_preflight"
+      "finalStatus": "deployed_pending_successful_synthetic_preflight"
     },
     {
       "findingId": "F-005",
@@ -146,20 +147,20 @@
       "branch": "agent/repair-production-image-inspection-20260815",
       "pullRequest": 188,
       "commit": "5a4d30f46f768dd78bcd1ab88ccb087750ada66f",
-      "migrationOrDeployment": "20260815090000_media_inspection_preflight_canary_v1.sql (pending)",
+      "migrationOrDeployment": "20260815090000_media_inspection_preflight_canary_v1.sql applied in production as Supabase version 20260815062451",
       "tests": [
         "root/Sites migration byte mirror verification passed",
         "CI migration scenario asserts absent endpoint produces delivery_failed and no pg_net request",
         "post-remediation Codex Security review c1788ef2-15bd-43a4-b4e4-2ae39436e0a1 found no issue in the changed repair paths"
       ],
       "productionEvidence": [],
-      "rollbackMethod": "Do not install the forward migration or unschedule the canary job before disabling its Vault endpoint; no customer media is changed.",
-      "finalStatus": "remote_draft_pr_open_pending_ci_review_and_production_preflight"
+      "rollbackMethod": "Unschedule veroxa-media-inspection-preflight and retain private evidence; the migration is forward-only and no customer media is changed.",
+      "finalStatus": "deployed_pending_successful_synthetic_preflight"
     },
     {
       "findingId": "F-009",
       "originalConcern": "The completed Phase 1 repair includes internal operational, deployment, migration, and evidence material that a protected push control classified as sensitive for the currently public repository.",
-      "freshVerificationResult": "The initial local Git push was rejected before publication because its credential was unavailable. Founder then explicitly approved public-repository PR review. The connected GitHub account recreated the reviewed file trees as remote commits 5a4d30f46f768dd78bcd1ab88ccb087750ada66f and 07823aa88a74581da4dd7b18104f114a836b7b42 and opened draft PR #188. No merge, deployment, migration, provider call, or IMG_4257 retry has occurred.",
+      "freshVerificationResult": "Founder explicitly approved public-repository PR review. The connected GitHub account reconstructed the reviewed trees, PR #188 passed required CI and merged as 085263c39f76ad0710eb4a2a15042e3b31b40af4. The scoped fixture repair will receive its own review PR; no provider call or IMG_4257 retry has occurred.",
       "severity": "high",
       "affectedSystems": [
         "GitHub public repository",
@@ -167,7 +168,7 @@
         "source-of-truth documentation"
       ],
       "rootCause": "The target repository is public and the candidate contains non-public operational and deployment evidence that requires an explicit disclosure decision beyond the general implementation authorization.",
-      "correctiveAction": "Approval received and a scoped draft PR was opened. The PR body records local-to-remote commit and tree mapping. Keep the PR draft and unmerged until required CI and review pass.",
+      "correctiveAction": "Approval was used for PR #188 and remains applicable to scoped follow-up PR review. Keep new review branches narrow, green-only, and free of credentials or raw private media.",
       "branch": "agent/repair-production-image-inspection-20260815",
       "pullRequest": 188,
       "commit": "07823aa88a74581da4dd7b18104f114a836b7b42",
@@ -178,7 +179,7 @@
       ],
       "productionEvidence": [],
       "rollbackMethod": "Close draft PR #188 and delete only the scoped remote branch if review identifies an exposure, after preserving an audit record. Do not alter main, repository visibility, or Git history.",
-      "finalStatus": "resolved_to_remote_draft_pr_pending_ci_and_review"
+      "finalStatus": "resolved_for_pr188_follow_up_scope_remains_audited"
     },
     {
       "findingId": "F-010",
@@ -206,12 +207,12 @@
         "no deployment, migration, provider call, or IMG_4257 retry occurred"
       ],
       "rollbackMethod": "Revert the two fetch-depth additions and the matching static guard together if the exact-candidate guard is retired under a separately reviewed replacement; do not weaken it merely to make CI pass.",
-      "finalStatus": "corrected_remote_ci_green_pending_independent_review"
+      "finalStatus": "resolved_in_merged_pr188"
     },
     {
       "findingId": "F-011",
       "originalConcern": "The designated current-state file retained a local-only candidate-state label after the reviewed candidate reached an all-green remote PR head.",
-      "freshVerificationResult": "Verified after PR #188 remote commit 8c685f566614c4e4877cc97883ea597febffea01 passed all four required workflows. The existing release guard recognized only the local state label, which discouraged recording the accurate remote-review state.",
+      "freshVerificationResult": "PR #188 merged and deployed; the designated current state now records the actual deployed repair, applied migration, failed synthetic run, and the new local fixture-integrity candidate rather than a stale remote-review label.",
       "severity": "medium",
       "affectedSystems": [
         "source-of-truth governance",
@@ -219,7 +220,7 @@
         "PR #188 evidence"
       ],
       "rootCause": "The active-forward-candidate parser used one exact local-only state string even though the candidate transitions through a remote CI/review state before deployment.",
-      "correctiveAction": "Allow only two explicit candidate states: the original local-verified state and the remote-CI-green, independent-review-pending state. Update CURRENT_STATE to the latter without granting merge, deployment, migration, provider, or retry authority.",
+      "correctiveAction": "Keep the two explicit candidate states, add an applied-migration status, and require the current-state checkpoint to match the observed PR #188 merge, Sites v57 source, and production migration before a new fixture repair can pass CI.",
       "branch": "agent/repair-production-image-inspection-20260815",
       "pullRequest": 188,
       "commit": null,
@@ -233,7 +234,91 @@
         "no production action occurred"
       ],
       "rollbackMethod": "Revert the state-label parser extension and restore the previous checkpoint only if the candidate is returned to a local-only review state; neither path authorizes a production change.",
-      "finalStatus": "local_source_of_truth_correction_pending_fresh_pr_ci"
+      "finalStatus": "corrected_current_checkpoint_pending_fixture_repair_ci"
+    },
+    {
+      "findingId": "F-012",
+      "originalConcern": "Sites production deploys from a private source mirror rather than directly from the canonical GitHub repository, creating provenance and drift risk.",
+      "freshVerificationResult": "Verified: Sites v57 source commit 1cdb61082b11e12a067f37f0c7ade6253a715e64 is a private mirror commit, while GitHub main is 085263c39f76ad0710eb4a2a15042e3b31b40af4. Before v57 deployment, the exact Sites application subtree hash was checked against the reviewed GitHub tree. No uncontrolled direct Sites edit was used.",
+      "severity": "high",
+      "affectedSystems": [
+        "GitHub canonical source",
+        "Sites source mirror",
+        "deployment provenance"
+      ],
+      "rootCause": "The Sites platform owns a separate private source repository and cannot deploy a GitHub commit SHA directly.",
+      "correctiveAction": "For each deployed application change, mirror only the exact reviewed artifacts/veroxa-sites tree, verify the tree hash before checkpoint deployment, and record both GitHub and Sites commit identifiers. A durable one-way promotion/attestation path remains a Phase 6 governance task.",
+      "branch": null,
+      "pullRequest": 188,
+      "commit": "085263c39f76ad0710eb4a2a15042e3b31b40af4",
+      "migrationOrDeployment": "Sites v57 source 1cdb61082b11e12a067f37f0c7ade6253a715e64, exact reviewed application tree b0c73b7001880a0a4663329c911330ef8aeced25",
+      "tests": [
+        "reviewed GitHub/Sites application subtree equality check before v57 deployment",
+        "Sites version provenance readback confirms source commit 1cdb61082b11e12a067f37f0c7ade6253a715e64"
+      ],
+      "productionEvidence": [
+        "Sites v57 is active at https://veroxasystems.com",
+        "Sites reported version 57 source commit 1cdb61082b11e12a067f37f0c7ade6253a715e64"
+      ],
+      "rollbackMethod": "Deploy the prior saved Sites v56 version after confirming the target version; GitHub main and the private mirror history remain intact.",
+      "finalStatus": "controlled_manual_provenance_bridge_active_phase6_automation_pending"
+    },
+    {
+      "findingId": "F-013",
+      "originalConcern": "Production Supabase migration history assigned a platform timestamp that differs from the repository migration filename, reducing deterministic clean-environment reproducibility evidence.",
+      "freshVerificationResult": "Verified by production migration query: repository migration 20260815090000_media_inspection_preflight_canary_v1.sql was applied as version 20260815062451 with name media_inspection_preflight_canary_v1. The source SQL SHA-256 matches the reviewed file, but filename-to-applied-version identity is not one-to-one.",
+      "severity": "high",
+      "affectedSystems": [
+        "Supabase production migration history",
+        "clean bootstrap reproducibility",
+        "release evidence"
+      ],
+      "rootCause": "The connected migration application workflow assigns a generated platform version rather than preserving the repository filename timestamp.",
+      "correctiveAction": "Keep the observed source filename, applied version, applied name, and content hash together in the current-state record. Phase 5 must repair the supported clean bootstrap/migration method and prove forward and restore paths without rewriting production migration history.",
+      "branch": null,
+      "pullRequest": 188,
+      "commit": "085263c39f76ad0710eb4a2a15042e3b31b40af4",
+      "migrationOrDeployment": "repository 20260815090000_media_inspection_preflight_canary_v1.sql; production version 20260815062451; SHA-256 76e3bb0b441e2b36a04bf296af7dca6ea9a56ace9ab817d8f52a7d53551a1abb",
+      "tests": [
+        "root/Sites migration byte mirror test passed",
+        "production migration history query confirmed generated version and expected name"
+      ],
+      "productionEvidence": [
+        "production migration count is 59",
+        "latest production row is 20260815062451 media_inspection_preflight_canary_v1"
+      ],
+      "rollbackMethod": "Do not edit applied migration history. Use a reviewed forward migration or controlled restore plan only after Phase 5 reproducibility testing.",
+      "finalStatus": "open_phase5_reproducibility_and_history_reconciliation"
+    },
+    {
+      "findingId": "F-014",
+      "originalConcern": "The private production image-inspection preflight cannot prove the repaired dependency because its embedded synthetic JPEG fixture is invalid.",
+      "freshVerificationResult": "Verified from production run 466741f6-f42b-4054-8979-420ef365414e: state failed, attempt_count 1, generic execution failure, fixture_sha256 null, and no reserved fixture object. Local decode/hash analysis proved the deployed base64 constant did not form the declared 3x2 JPEG or declared SHA-256.",
+      "severity": "critical",
+      "affectedSystems": [
+        "Sites private preflight route",
+        "Supabase Storage synthetic fixture",
+        "Phase 1 image-inspection acceptance gate"
+      ],
+      "rootCause": "The fixture constant and declared SHA-256 were not generated and validated from the same JPEG byte sequence.",
+      "correctiveAction": "Replace the fixture with a freshly generated valid 3x2 JPEG, assert its hash/MIME/dimensions in the focused test, and map only fixed fixture-integrity failures into durable evidence. The real IMG_4257 asset remains untouched until the repaired deployment passes a new synthetic preflight.",
+      "branch": "agent/fix-preflight-fixture-integrity-20260815",
+      "pullRequest": null,
+      "commit": null,
+      "migrationOrDeployment": "no new migration; existing preflight migration is applied and v57 is the failed deployment baseline",
+      "tests": [
+        "focused preflight fixture integrity test passed",
+        "488/488 Sites tests passed",
+        "Sites lint passed",
+        "root typecheck and verify:veroxa passed before the current-state guard update",
+        "Codex Security scan fbe83751-5190-4d38-8608-dcf688882ed3 completed with zero reportable findings"
+      ],
+      "productionEvidence": [
+        "preflight run 466741f6-f42b-4054-8979-420ef365414e failed before fixture persistence",
+        "no IMG_4257 retry, provider call, Ready package, schedule, or publication occurred"
+      ],
+      "rollbackMethod": "If the repaired deployment misbehaves, redeploy Sites v56 or v57 as the verified saved baseline, retain the failed synthetic evidence, and do not touch IMG_4257.",
+      "finalStatus": "local_repair_verified_pending_pr_ci_review_exact_deploy_and_new_synthetic_preflight"
     },
     {
       "findingId": "F-002",

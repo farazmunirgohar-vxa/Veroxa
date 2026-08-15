@@ -6,10 +6,15 @@ import jpeg from "jpeg-js";
 
 import {
   createMediaInspectionPreflightHandler,
+  MediaInspectionPreflightFailure,
   mediaInspectionPreflightCanonicalBody,
   mediaInspectionPreflightPath,
   mediaInspectionPreflightWakeContext,
 } from "../app/api/internal/veroxa/media/inspection-preflight/core.ts";
+import {
+  inspectMomoImageBytesFully,
+  momoBytesSha256,
+} from "../app/momo-image-bytes.ts";
 import {
   createVeroxaPrivateMediaStorageImageInspector,
 } from "../app/veroxa-private-media-supabase-image-decode.ts";
@@ -155,6 +160,7 @@ function handlerHarness(options = {}) {
     },
     async ensureFixture() {
       calls.fixture += 1;
+      if (options.fixtureError) throw options.fixtureError;
       return fixture();
     },
     async inspect(input) {
@@ -443,6 +449,29 @@ test("signed preflight records a pass and does not expose fixture or dependency 
   }]);
 });
 
+test("embedded synthetic fixture is decodable and content-addressed", async () => {
+  const base64 = routeSource.match(
+    /const FIXTURE_BASE64 =\n\s*"([A-Za-z0-9+/=]+)";/u,
+  )?.[1];
+  const sha256 = routeSource.match(
+    /const FIXTURE_SHA256 =\n\s*"([0-9a-f]{64})";/u,
+  )?.[1];
+  assert.ok(base64);
+  assert.ok(sha256);
+  const bytes = new Uint8Array(Buffer.from(base64, "base64"));
+  const inspection = await inspectMomoImageBytesFully(bytes);
+  assert.equal(await momoBytesSha256(bytes), sha256);
+  assert.deepEqual(inspection && {
+    mimeType: inspection.mimeType,
+    width: inspection.width,
+    height: inspection.height,
+  }, {
+    mimeType: "image/jpeg",
+    width: 3,
+    height: 2,
+  });
+});
+
 test("signature failures, replays, and failed inspection remain fail-closed", async () => {
   const now = 1_770_000_000_000;
   const rejected = handlerHarness({ now });
@@ -486,6 +515,29 @@ test("signature failures, replays, and failed inspection remain fail-closed", as
     diagnostics: failed.calls.complete[0].diagnostics,
     fixtureSha256: SHA256,
   });
+
+  const fixtureFailure = handlerHarness({
+    now,
+    fixtureError: new MediaInspectionPreflightFailure(
+      "media_inspection_fixture_integrity_invalid",
+    ),
+  });
+  const fixtureResponse = await fixtureFailure.handler(
+    signedRequest({ timestamp: String(now) }),
+  );
+  assert.equal(fixtureResponse.status, 503);
+  assert.deepEqual(await fixtureResponse.json(), {
+    schemaVersion: 1,
+    state: "failed",
+    failureCode: "media_inspection_fixture_integrity_invalid",
+  });
+  assert.deepEqual(fixtureFailure.calls.complete, [{
+    runId: RUN_ID,
+    state: "failed",
+    failureCode: "media_inspection_fixture_integrity_invalid",
+    diagnostics: null,
+    fixtureSha256: null,
+  }]);
 });
 
 test("source-level guard replaces the broken Images-only production dependency with a private canary", () => {

@@ -193,7 +193,27 @@ function claimedRunId(value: unknown): string | null {
   return typeof id === "string" && UUID.test(id) ? id.toLowerCase() : null;
 }
 
-function failureCodeForException(): string {
+export type MediaInspectionPreflightFailureCode =
+  | "media_inspection_fixture_integrity_invalid"
+  | "media_inspection_fixture_create_failed"
+  | "media_inspection_fixture_readback_failed";
+
+/**
+ * Deliberately carries only a fixed, non-secret operational code. Runtime
+ * storage and decoder errors must never escape into the HTTP response or
+ * durable evidence record.
+ */
+export class MediaInspectionPreflightFailure extends Error {
+  readonly code: MediaInspectionPreflightFailureCode;
+
+  constructor(code: MediaInspectionPreflightFailureCode) {
+    super(code);
+    this.code = code;
+  }
+}
+
+function failureCodeForException(error: unknown): string {
+  if (error instanceof MediaInspectionPreflightFailure) return error.code;
   // The underlying exception deliberately stays server-side. The durable
   // record distinguishes a handler failure from a provider classification.
   return "media_inspection_preflight_execution_failed";
@@ -261,11 +281,11 @@ export function createMediaInspectionPreflightHandler(
         failureCode = result.diagnostics.failureCode ||
           "media_inspection_preflight_failed";
       }
-    } catch {
+    } catch (error) {
       // Never place thrown provider, storage, or configuration values in the
       // response or audit payload; diagnostics only contain vetted fields.
       state = "failed";
-      failureCode = failureCodeForException();
+      failureCode = failureCodeForException(error);
     }
 
     try {
