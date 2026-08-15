@@ -31,7 +31,7 @@ if (manifest.schemaVersion === 13) {
   }
   console.log(
     activeForwardCandidate
-      ? "PASS: immutable schema-13 baseline plus designated CURRENT_STATE validate the narrow storage-transform preflight follow-up without attesting its future deployment."
+      ? "PASS: immutable schema-13 baseline plus designated CURRENT_STATE validate the active private-media forward candidate without attesting its future deployment."
       : "PASS: schema-13 records the exact green PR #185 release, Sites v56 deployment, failed third attempt, and post-retry external-action hold.",
   );
   process.exit(0);
