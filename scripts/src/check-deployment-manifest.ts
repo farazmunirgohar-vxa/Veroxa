@@ -28,7 +28,7 @@ if (manifest.schemaVersion === 13) {
     process.exit(1);
   }
   console.log(
-    "PASS: schema-13 private media-recovery host-inspection diagnostics are locally reviewed, bound to v55/database58, externally locked, and pending exact-head release evidence.",
+    "PASS: schema-13 records the exact green PR #185 release, Sites v56 deployment, failed third attempt, and post-retry external-action hold.",
   );
   process.exit(0);
 }

@@ -29,11 +29,11 @@ if (manifest.schemaVersion === 13) {
   must(
     rr.schemaVersion === 19 &&
       rr.recordKind ===
-        "veroxa_momo_media_recovery_byte_inspection_repair_checkpoint" &&
+        "veroxa_momo_media_recovery_host_inspection_diagnostics_closeout_checkpoint" &&
       rr.status === manifest.releaseState &&
       rr.reviewedAt === manifest.reviewedAt &&
       rr.candidateRevision === manifest.candidateRevision,
-    "RR is not the schema-13 private media-recovery byte-inspection checkpoint.",
+    "RR is not the schema-13 private media-recovery host-inspection closeout checkpoint.",
   );
   must(
     rr.releaseCandidate?.manifest ===
@@ -68,14 +68,14 @@ if (manifest.schemaVersion === 13) {
       rr.runtimeVerification?.readyDispositionObserved === false &&
       rr.runtimeVerification?.externalProvidersConnected === false &&
       rr.runtimeVerification?.externalPublishingEnabled === false,
-    "RR schema-13 diverges from the observed second failed signed attempt or overclaims recovery/external action.",
+    "RR schema-13 diverges from the observed third failed signed attempt or overclaims recovery/external action.",
   );
   if (failures.length > 0) {
     for (const failure of failures) console.error("FAIL:", failure);
     process.exit(1);
   }
   console.log(
-    "PASS: RR schema-13 checkpoint mirrors the reviewed, not-yet-released private recovery host-inspection diagnostics.",
+    "PASS: RR schema-13 checkpoint mirrors the Sites v56 diagnostic release, consumed third attempt, and Images-binding blocker.",
   );
   process.exit(0);
 }

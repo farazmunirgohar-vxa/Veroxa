@@ -45,22 +45,23 @@ if (manifest.schemaVersion === 13) {
     const current = start < 0 ? "" : text.slice(start, next < 0 ? undefined : next);
     for (const marker of [
       "GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY",
-      "private media-recovery host-inspection diagnostic candidate",
-      "4a098ea98690ee9be6b86cc8fe783ef0cfc265ed",
+      "private media-recovery host-inspection diagnostic closeout",
+      "77dadd67505642353b431db3802d2ec365966869",
       "PR #185",
-      "agent/momo-media-inspection-diagnostics-20260815",
       "20260813175640_durable_media_ingestion_path_regex_repair_v1.sql",
-      "Sites v55",
+      "Sites v56",
       "database58",
       "environment revision 22",
       "479/479",
       "05ab2303-f7ea-4056-8f75-9cd7e523a4f4",
-      "request `296`",
+      "request `297`",
       "media_not_assessable",
       "dead_letter",
-      "exact asset bytes remain preserved",
+      "remain preserved and unchanged",
+      "images_binding_unavailable",
+      "bindingAvailable=false",
       "does not make the asset Ready",
-      "one additional controlled retry",
+      "No retry remains authorized",
       "External providers",
       "USD 0 incremental spend",
     ]) {
@@ -73,7 +74,7 @@ if (manifest.schemaVersion === 13) {
     process.exit(1);
   }
   console.log(
-    "PASS: schema-13 authority docs describe the reviewed private recovery diagnostics against verified v55/database58 truth without completion overclaims.",
+    "PASS: schema-13 authority docs describe the exact Sites v56 diagnostic closeout and the failed third attempt without recovery overclaims.",
   );
   process.exit(0);
 }

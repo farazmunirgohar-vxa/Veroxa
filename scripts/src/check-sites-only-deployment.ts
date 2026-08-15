@@ -45,16 +45,16 @@ if (manifest.schemaVersion === 13) {
     manifest as unknown as Record<string, any>
   ).durableMediaIngestionRecovery as Record<string, any> | undefined;
   must(
-    manifest.currentProductionObservation.sitesVersion === 55 &&
-      manifest.releaseCandidate.sitesPublished === false &&
+    manifest.currentProductionObservation.sitesVersion === 56 &&
+      manifest.releaseCandidate.sitesPublished === true &&
       manifest.releaseCandidate.edgeDeployRequired === false &&
       manifest.releaseCandidate.edgeDeployed === false &&
-      manifest.releaseCandidate.sitesPublishAuthorized === true &&
+      manifest.releaseCandidate.sitesPublishAuthorized === false &&
       manifest.releaseCandidate.edgeDeployAuthorized === false &&
-      manifest.releaseCandidate.deploymentAuthorized === true &&
+      manifest.releaseCandidate.deploymentAuthorized === false &&
       manifest.deploymentFreeze.automaticDeploymentsAllowed === false &&
       manifest.fullReleaseGatePassed === false,
-    "Schema-13 recovery diagnostics diverge from v55 production or the authorized post-gate Sites-only release boundary.",
+    "Schema-13 recovery diagnostics diverge from the completed v56 production release or the post-retry hold.",
   );
   must(
     manifest.operationalHold?.providerWrites === false &&
@@ -64,7 +64,7 @@ if (manifest.schemaVersion === 13) {
       manifest.operationalHold.externalPublishing === false &&
       recovery?.providerCallAllowed === false &&
       recovery?.externalWriteAllowed === false,
-    "Schema-13 Sites candidate overclaims an external action or provider call.",
+    "Schema-13 Sites closeout overclaims an external action or provider call.",
   );
   const mirroredClosure = [
     "supabase/functions/_shared/bridge-public-key-transition.ts",
@@ -90,7 +90,7 @@ if (manifest.schemaVersion === 13) {
     process.exit(1);
   }
   console.log(
-    "PASS: Sites remains the sole web target; v55 is the production baseline and only the exact post-gate recovery diagnostics are authorized for publication.",
+    "PASS: Sites remains the sole web target; exact diagnostic source is live as v56 and all further deployment and retry activity is held.",
   );
   process.exit(0);
 }
@@ -100,7 +100,7 @@ if (manifest.schemaVersion === 13) {
 // forward source is intentionally schema-13-only so new Edge bytes cannot be
 // certified against superseded deployed hashes.
 failures.push(
-  "Current Sites-only deployment guard accepts only schema-13 candidate evidence.",
+  "Current Sites-only deployment guard accepts only schema-13 closeout evidence.",
 );
 for (const failure of failures) console.error("FAIL:", failure);
 process.exitCode = 1;

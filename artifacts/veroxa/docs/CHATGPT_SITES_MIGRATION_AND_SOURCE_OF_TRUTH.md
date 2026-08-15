@@ -4,18 +4,18 @@ Status: active migration and deployment authority as of 2026-08-08.
 
 <!-- GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY -->
 
-## 2026-08-15 — private media-recovery host-inspection diagnostic candidate; Sites v55 and database58 live (current authority)
+## 2026-08-15 — private media-recovery host-inspection diagnostic closeout; Sites v56 and database58 live (current authority)
 
-Current reconciliation markers: private media-recovery host-inspection diagnostic candidate; GitHub main 4a098ea98690ee9be6b86cc8fe783ef0cfc265ed; PR #185; branch agent/momo-media-inspection-diagnostics-20260815; Sites v55; database58; environment revision 22; USD 0 incremental spend.
+Current reconciliation markers: private media-recovery host-inspection diagnostic closeout; GitHub application source 77dadd67505642353b431db3802d2ec365966869; PR #185; Sites v56; database58 through `20260813175640_durable_media_ingestion_path_regex_repair_v1.sql`; environment revision 22; USD 0 incremental spend.
 
-- **Authority and scope:** `GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY` remains in force. External providers, publishing, review replies, website writes, and external scheduling remain disabled.
-- **Verified production baseline:** PR #184 is merged in GitHub main at `4a098ea98690ee9be6b86cc8fe783ef0cfc265ed`. `20260813175640_durable_media_ingestion_path_regex_repair_v1.sql` remains live as database58, and exact Sites v55 is deployed from saved version `appgver_1068bd33c6188191a04911352179c917` with environment revision 22. An unsigned POST to the private route returns 403 JSON, proving route dispatch.
-- **Fail-closed production attempts:** the first wake was request `295`; the exact post-v55 retry was pg_net request `296`. Request `296` downloaded all 3,969,765 preserved bytes and detected `image/jpeg`, but trusted host inspection still returned no dimensions or hash. The receipt is `dead_letter` after attempt 2 with `media_not_assessable`, and no verification row exists.
-- **Diagnostic candidate:** PR #185 adds bounded, non-secret stage and failure-code evidence around the existing trusted-host inspection. It does not relax exact JPEG/PNG magic, MIME/path, immutable object identity/version/size, dimension/aspect limits, the bounded host decode, or original-byte hashing. The exact asset bytes remain preserved.
-- **Incident and truth boundary:** asset `05ab2303-f7ea-4056-8f75-9cd7e523a4f4`, object `3df8b899-f438-41be-9e21-f15e6e7cb6c7`, and version `a6a293a9-4364-4867-878c-64bfc662dff9` remain preserved. Recovery ends at private verification and does not make the asset Ready.
-- **Quality evidence:** 479/479 application tests, production build, typecheck, targeted lint, artifact validation, fail-closed diagnostic negatives, and exact-tree comparison passed locally. GitHub exact-head gates must all pass with zero unresolved review threads before merge or deployment.
-- **Retry boundary:** one additional controlled retry of only the existing IMG_4257 receipt is authorized after exact merged-source Sites deployment. No re-upload, deletion, provider call, Ready disposition, schedule, publication, or Momo contact is authorized.
-- **Cost and actions:** External providers remain blocked and incremental spend remains USD 0 incremental spend.
+- **Authority and scope:** `GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY` remains in force. External providers, publishing, review replies, website writes, external scheduling, re-upload, deletion, and Ready transition remain disabled.
+- **GitHub release evidence:** PR #185 exact head `105da4b16a961684987ab5f234de0df1e1fb2add` passed CI, Sites Verify, Supabase Verify, and Veroxa Verify with zero review threads, then merged as application-source commit `77dadd67505642353b431db3802d2ec365966869`.
+- **Verified production deployment:** exact 236-file source `e8a2c1b8c0308b98a03b8cf34a7400f92e3100a9c8c006dff9fa8a4f0fdfa871` is live as Sites v56, version `appgver_0a84d383bba4819180548d99950817fd`, deployment `appgdep_6a7fcbb9276881918534df6883805dc9`, checkout `5306f279a70c7a7d4ecb1328fa17cbeb2f03af7f`, and environment revision 22.
+- **Single authorized retry:** pg_net request `297` reached the deployed route as Worker request `a2b4b4caecc01709`, returned HTTP 200 JSON, and created immutable attempt `592be2cf-2263-4e17-92e5-5f1b271fffb3`. It downloaded all 3,969,765 bytes and detected `image/jpeg` before failing closed with `media_not_assessable`.
+- **Exact diagnosis:** bounded evidence records stage `host_image_inspection` and failure code `images_binding_unavailable`, with `bindingAvailable=false`. The current blocker is the absent runtime Images binding, not storage identity, MIME detection, file size, route dispatch, or database permissions.
+- **Incident and truth boundary:** asset `05ab2303-f7ea-4056-8f75-9cd7e523a4f4`, object `3df8b899-f438-41be-9e21-f15e6e7cb6c7`, and version `a6a293a9-4364-4867-878c-64bfc662dff9` remain preserved and unchanged. The receipt is `dead_letter` after attempt 3, verification count is 0, and recovery does not make the asset Ready.
+- **Quality and next gate:** 479/479 application tests and every required GitHub workflow passed. No retry remains authorized or pending. A separately reviewed binding configuration/wiring repair must precede any future retry.
+- **Cost and actions:** External providers remain blocked; `externalWriteAllowed=false`; incremental spend remains USD 0 incremental spend.
 
 ## 2026-08-12 — legacy media purge; high-resolution private uploads; Sites v53 deployed (historical)
 
