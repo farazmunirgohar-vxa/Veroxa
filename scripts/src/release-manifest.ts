@@ -47,6 +47,7 @@ const ACTIVE_MEDIA_INSPECTION_CANDIDATE_ALLOWED_PATHS = new Set([
   "artifacts/veroxa/docs/PRODUCT_CONSTITUTION.md",
   "artifacts/veroxa/docs/history/2026-08-15-phase-0-baseline.json",
   "artifacts/veroxa/docs/history/2026-08-15-phase-1-preflight-fixture-failure.json",
+  "artifacts/veroxa/docs/history/2026-08-15-phase-1-storage-transform-request-rejected.json",
   "scripts/src/check-chatgpt-sites-migration-source-truth.ts",
   "scripts/src/check-deployment-manifest.ts",
   "scripts/src/check-release-workflow-policy.ts",
@@ -1152,7 +1153,7 @@ function assertActiveMediaInspectionForwardCandidate(
     "forward candidate requires the immutable schema-13 live baseline",
   );
   must(
-    candidate?.branch === "agent/fix-preflight-fixture-integrity-20260815" &&
+    candidate?.branch === "agent/fix-storage-transform-redirect-20260815" &&
       candidate?.state ===
         "local_verified_pending_pr_review_and_production_preflight" &&
       sameJson(pending, []) &&
@@ -1160,7 +1161,7 @@ function assertActiveMediaInspectionForwardCandidate(
       candidate?.preflightMigrationStatus === "applied" &&
       candidate?.externalActionLockRequired === true &&
       candidate.img4257RetryConsumed === false,
-    "fixture-integrity candidate scope, migration state, or IMG_4257 retry authority drifted",
+    "storage-transform follow-up candidate scope, migration state, or IMG_4257 retry authority drifted",
   );
   must(
     migration?.sha256 === sha256File(migrationPath) &&
@@ -1188,14 +1189,14 @@ function assertActiveMediaInspectionForwardCandidate(
   );
   must(
     state.production.github?.mainCommit ===
-        "085263c39f76ad0710eb4a2a15042e3b31b40af4" &&
+        "1c5db2ca1e03d1f8e09e63f171550cf6cd35df45" &&
       state.production.github?.latestApplicationSourceCommit ===
-        "085263c39f76ad0710eb4a2a15042e3b31b40af4" &&
-      state.production.sites?.version === 57 &&
+        "1c5db2ca1e03d1f8e09e63f171550cf6cd35df45" &&
+      state.production.sites?.version === 58 &&
       state.production.sites?.versionId ===
-        "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_569d47d76e5c8191bfd339f91f61b967" &&
+        "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_b072808982dc81918be26cc59ae675ac" &&
       state.production.sites?.sourceCommit ===
-        "1cdb61082b11e12a067f37f0c7ade6253a715e64" &&
+        "12213194b7aae365c35c1524c715e3092454ce1e" &&
       state.production.supabase?.migrationCount === rootMigrationTree.fileCount &&
       state.production.supabase?.latestMigration ===
         MEDIA_INSPECTION_PREFLIGHT_MIGRATION &&

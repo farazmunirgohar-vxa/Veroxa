@@ -378,7 +378,10 @@ export function createVeroxaPrivateMediaStorageImageInspector(input: {
         headers: { accept: source.mimeType },
         cache: "no-store",
         credentials: "omit",
-        redirect: "error",
+        // Do not follow a signed URL to another origin. Manual handling keeps
+        // a redirect observable as a bounded, fail-closed response instead of
+        // collapsing it into an opaque network exception.
+        redirect: "manual",
         signal: controller.signal,
       });
     } catch (error) {

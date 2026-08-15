@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "recordKind": "veroxa_phase_1_synthetic_preflight_storage_transform_failure",
+  "recordedAt": "2026-08-15T07:14:35Z",
+  "predecessor": {
+    "pullRequest": 189,
+    "githubMainCommit": "1c5db2ca1e03d1f8e09e63f171550cf6cd35df45",
+    "sitesVersion": 58,
+    "sitesSourceCommit": "12213194b7aae365c35c1524c715e3092454ce1e"
+  },
+  "syntheticRun": {
+    "id": "cc48e0cf-4ce0-450b-83c9-c10ec3fcde32",
+    "queuedAt": "2026-08-15T07:07:00.036439Z",
+    "startedAt": "2026-08-15T07:07:02.538071Z",
+    "completedAt": "2026-08-15T07:07:04.473520Z",
+    "state": "failed",
+    "attemptCount": 1,
+    "failureCode": "storage_transform_request_rejected",
+    "fixtureSha256": "61d3065ea30c124958f1853e2714ad466f7de1ffb3b8d625908c2241e9b92e06",
+    "diagnosticSummary": {
+      "stage": "request",
+      "bindingAvailable": true,
+      "providerResponseCaptured": false
+    }
+  },
+  "verifiedBoundary": {
+    "fixtureCreatedAndReadBack": true,
+    "img4257Accessed": false,
+    "img4257RetryConsumed": false,
+    "providerCallMade": false,
+    "readyCreated": false,
+    "externalWriteMade": false
+  },
+  "containment": {
+    "preflightSchedule": "unscheduled",
+    "activeScheduleCount": 0,
+    "reason": "Prevent uncontrolled repeated synthetic attempts while the request-stage failure is reviewed."
+  },
+  "followUp": {
+    "candidateBranch": "agent/fix-storage-transform-redirect-20260815",
+    "change": "Use manual redirect handling for the signed transform fetch. Unexpected redirects remain non-followed and fail closed, but become observable bounded responses.",
+    "unverifiedHypotheses": [
+      "The signed transform endpoint returns an unexpected redirect.",
+      "Storage image transformations are unavailable in the production project configuration."
+    ],
+    "nextGate": "Review, merge, and deploy the exact scoped candidate, then invoke one manually controlled synthetic preflight before any IMG_4257 retry."
+  },
+  "rollback": {
+    "application": "Deploy the saved Sites version 58 source if the follow-up deployment misbehaves.",
+    "scheduler": "Keep the job unscheduled until a reviewed repair is deployed; do not restore recurring execution as part of this follow-up.",
+    "asset": "Preserve IMG_4257 source bytes, object, version, exception, and retry authority unchanged."
+  }
+}
