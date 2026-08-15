@@ -28,7 +28,7 @@ if (manifest.schemaVersion === 13) {
     process.exit(1);
   }
   console.log(
-    "PASS: schema-13 durable media-ingestion path repair is locally reviewed, mirrored, externally locked, and pending exact-head release evidence.",
+    "PASS: schema-13 private media-recovery byte-inspection repair is locally reviewed, bound to v54/database58, externally locked, and pending exact-head release evidence.",
   );
   process.exit(0);
 }

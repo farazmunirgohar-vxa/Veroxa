@@ -45,15 +45,16 @@ if (manifest.schemaVersion === 13) {
     manifest as unknown as Record<string, any>
   ).durableMediaIngestionRecovery as Record<string, any> | undefined;
   must(
-    manifest.currentProductionObservation.sitesVersion === 53 &&
+    manifest.currentProductionObservation.sitesVersion === 54 &&
       manifest.releaseCandidate.sitesPublished === false &&
+      manifest.releaseCandidate.edgeDeployRequired === false &&
       manifest.releaseCandidate.edgeDeployed === false &&
-      manifest.releaseCandidate.sitesPublishAuthorized === false &&
+      manifest.releaseCandidate.sitesPublishAuthorized === true &&
       manifest.releaseCandidate.edgeDeployAuthorized === false &&
-      manifest.releaseCandidate.deploymentAuthorized === false &&
+      manifest.releaseCandidate.deploymentAuthorized === true &&
       manifest.deploymentFreeze.automaticDeploymentsAllowed === false &&
       manifest.fullReleaseGatePassed === false,
-    "Schema-12 repair candidate overclaims Sites/Edge publication or release authorization before exact-head gates.",
+    "Schema-13 recovery repair diverges from v54 production or the authorized post-gate Sites-only release boundary.",
   );
   must(
     manifest.operationalHold?.providerWrites === false &&
@@ -63,7 +64,7 @@ if (manifest.schemaVersion === 13) {
       manifest.operationalHold.externalPublishing === false &&
       recovery?.providerCallAllowed === false &&
       recovery?.externalWriteAllowed === false,
-    "Schema-12 Sites/Edge candidate overclaims an external action or provider call.",
+    "Schema-13 Sites candidate overclaims an external action or provider call.",
   );
   const mirroredClosure = [
     "supabase/functions/_shared/bridge-public-key-transition.ts",
@@ -81,7 +82,7 @@ if (manifest.schemaVersion === 13) {
         existsSync(resolve(repoRoot, sitesPath)) &&
         sha256File(resolve(repoRoot, rootPath)) ===
           sha256File(resolve(repoRoot, sitesPath)),
-      `Schema-12 Edge root/Sites closure drifted: ${rootPath}`,
+      `Schema-13 Edge root/Sites closure drifted: ${rootPath}`,
     );
   }
   if (failures.length > 0) {
@@ -89,7 +90,7 @@ if (manifest.schemaVersion === 13) {
     process.exit(1);
   }
   console.log(
-    "PASS: Sites remains the sole web target and the unpublished schema-13 Edge transition is exactly mirrored and externally locked.",
+    "PASS: Sites remains the sole web target; v54 is the production baseline and only the exact post-gate recovery repair is authorized for publication.",
   );
   process.exit(0);
 }

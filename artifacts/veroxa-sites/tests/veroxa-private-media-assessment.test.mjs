@@ -20,6 +20,7 @@ import {
 } from "../app/veroxa-private-media-image-decode.ts";
 import {
   decodeVeroxaPrivateMediaImageWithHost,
+  inspectVeroxaPrivateMediaImageWithHost,
 } from "../app/veroxa-private-media-host-image-decode.ts";
 
 const ASSESSMENT_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
@@ -285,13 +286,24 @@ test("the host decoder binds native dimensions and consumes only a bounded one-p
     },
   };
   try {
+    assert.deepEqual(await inspectVeroxaPrivateMediaImageWithHost({
+      bytes: source,
+      mimeType: "image/jpeg",
+    }), {
+      width: 8064,
+      height: 6048,
+      fileSize: source.byteLength,
+    });
     assert.equal(await decodeVeroxaPrivateMediaImageWithHost({
       bytes: source,
       mimeType: "image/jpeg",
       expectedWidth: 8064,
       expectedHeight: 6048,
     }), true);
-    assert.deepEqual(transforms, [{ width: 1, height: 1, fit: "fill" }]);
+    assert.deepEqual(transforms, [
+      { width: 1, height: 1, fit: "fill" },
+      { width: 1, height: 1, fit: "fill" },
+    ]);
     assert.equal(await decodeVeroxaPrivateMediaImageWithHost({
       bytes: source,
       mimeType: "image/jpeg",
