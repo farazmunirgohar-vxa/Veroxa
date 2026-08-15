@@ -4,7 +4,21 @@ Status: Short index for Faraz, Codex, and future ChatGPT/Codex sessions.
 
 <!-- GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY -->
 
-## 2026-08-15 — private media-recovery byte-inspection repair candidate; Sites v54 and database58 live (current authority)
+## 2026-08-15 — quality-first private-media R2 vault candidate; Sites v54 and database58 live (current authority)
+
+Current reconciliation markers: quality-first private-media R2 vault candidate; GitHub main 4a098ea98690ee9be6b86cc8fe783ef0cfc265ed; branch agent/veroxa-r2-media-vault-20260815; pending migration 20260815013053_momo_private_media_r2_vault_v1.sql; Sites v54; database58; 486/486; USD 0 incremental spend.
+
+- **Authority and scope:** `GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY` remains in force. External providers, publishing, review replies, website writes, external scheduling, and production deployment of this candidate remain disabled.
+- **Verified production baseline:** PR #184 is merged in GitHub main at `4a098ea98690ee9be6b86cc8fe783ef0cfc265ed`. Sites v54 and database58 remain the live production baseline; the R2 binding, candidate59 migration, vault worker, and Ready gate are not deployed or applied.
+- **Quality-first vault candidate:** every verified full-resolution original receives a tenant-scoped, content-addressed R2 copy using atomic create-only semantics, an upload SHA-256, full byte readback, and a second SHA-256 verification. The Supabase original is never moved, rewritten, resized, or deleted.
+- **AI and automation boundary:** AI may run at the existing model, reasoning, resolution, and automation settings while vault work retries independently. Only final Veroxa Ready creation waits for an append-only verified vault receipt; there is no AI model downgrade, reasoning reduction, image-resolution reduction, provider call, schedule, or public write.
+- **Durability boundary:** the private worker is service-role-only, HMAC signed, leased, bounded to five attempts, and has retry/dead-letter and historical verified-media backfill paths. Provider-level R2 retention lock and a controlled synthetic restore drill are mandatory before production activation and remain unverified.
+- **Quality evidence:** 486/486 application tests, production build, typecheck, lint, artifact validation, exact-byte/no-overwrite negatives, source-hash drift negatives, and root/Sites migration mirror comparison pass locally. Hosted clean-chain database execution, pgTAP, exact-head GitHub gates, and zero unresolved review threads remain pending.
+- **Protected original:** IMG_4257 and all existing source bytes remain untouched. No re-upload, move, deletion, production vault copy, Ready disposition, Momo contact, or production deployment is claimed.
+- **Cost and actions:** incremental spend remains USD 0 incremental spend; production activation is held until retention lock, restore proof, hosted gates, and explicit deployment approval.
+
+
+## 2026-08-15 — private media-recovery byte-inspection repair candidate; Sites v54 and database58 live (historical)
 
 Current reconciliation markers: private media-recovery byte-inspection repair candidate; GitHub main 2528765a625f518100bad3dc534567c7c9623973; PR #184; branch agent/momo-media-byte-inspection-repair-20260815; Sites v54; database58; environment revision 22; USD 0 incremental spend.
 

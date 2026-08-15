@@ -12,7 +12,10 @@ This is the GitHub-synchronized ChatGPT Sites application for Veroxa. GitHub rem
 - `/team/audits` is the standalone Restaurant Audit Center for non-client restaurants.
 - Public audit intake is validated, consented, idempotent, HMAC-gated, rate-limited, and stored separately from operational client tables.
 - Audit records never create client accounts, onboarding, media/content workflows, publishing access, or operational workspaces automatically.
-- Sites D1/R2 remain unused so Supabase stays the single source of truth.
+- Supabase remains the application source of truth. The server-only Sites R2
+  binding stores an independent, content-addressed exact-byte vault copy of
+  every verified private original. AI work may continue while that copy
+  retries; final Veroxa Ready creation requires a verified R2 readback receipt.
 - Public marketing and audit-intake routes are anonymous. Protected portal data is never rendered from a public shell.
 
 Required hosted variables:
@@ -20,6 +23,9 @@ Required hosted variables:
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 - `AUDIT_INTAKE_HMAC_SECRET` (secret; must match the protected Supabase intake configuration)
+- `SUPABASE_SECRET_KEY` (server secret; private worker RPC and Storage access)
+- `VEROXA_MOMO_CONTENT_AI_DISPATCH_HMAC_SECRET` (server secret; signed private
+  lifecycle wakes, including the media-vault worker)
 
 ## Momo readiness model
 
@@ -56,7 +62,8 @@ Scripts that need writable project-scoped home, npm, XDG, and temporary paths us
 
 - edit site code under `app/`
 - `app/chatgpt-auth.ts` provides optional dispatch-owned ChatGPT sign-in helpers
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
+- `.openai/hosting.json` declares the server-only `BUCKET` R2 binding; it is not
+  a public asset origin and no R2 credential is exposed to the browser
 - `vite.config.ts` simulates declared bindings for local development
 - `db/index.ts` reads the D1 binding from the Cloudflare Worker environment
 - `db/schema.ts` starts intentionally empty

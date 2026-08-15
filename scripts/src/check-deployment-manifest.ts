@@ -22,6 +22,17 @@ try {
   failures.push(error instanceof Error ? error.message : String(error));
 }
 
+if (manifest.schemaVersion === 14) {
+  if (failures.length > 0) {
+    for (const failure of failures) console.error("FAIL:", failure);
+    process.exit(1);
+  }
+  console.log(
+    "PASS: schema-14 private-media R2 vault is locally reviewed, quality-preserving, externally locked, and pending hosted/exact-head gates.",
+  );
+  process.exit(0);
+}
+
 if (manifest.schemaVersion === 13) {
   if (failures.length > 0) {
     for (const failure of failures) console.error("FAIL:", failure);

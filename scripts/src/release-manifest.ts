@@ -1876,6 +1876,214 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
 }
 
 
+function assertPrivateMediaR2VaultCandidateManifest(
+  manifest: DeploymentManifest,
+): void {
+  const failures: string[] = [];
+  const record = manifest as unknown as Record<string, any>;
+  const candidate = manifest.releaseCandidate;
+  const production = manifest.currentProductionObservation;
+  const quality = manifest.applicationQualityEvidence;
+  const review = manifest.databaseContractReview;
+  const hold = manifest.operationalHold;
+  const vault = record.privateMediaVault as Record<string, any> | undefined;
+  const freeze = manifest.deploymentFreeze;
+  const pendingMigration =
+    "20260815013053_momo_private_media_r2_vault_v1.sql";
+  const liveMigration =
+    "20260813175640_durable_media_ingestion_path_regex_repair_v1.sql";
+  const sourceTree = hashTree(resolve(repoRoot, DEPLOYABLE_SITES_SOURCE_ROOT), {
+    exclusions: [...GENERATED_PATH_EXCLUSIONS],
+  });
+  const rootTree = hashTree(resolve(repoRoot, ROOT_MIGRATION_SOURCE_ROOT), {
+    suffix: ".sql",
+  });
+  const mirrorTree = hashTree(
+    resolve(repoRoot, SITES_MIGRATION_MIRROR_ROOT),
+    { suffix: ".sql" },
+  );
+  const liveTree = hashTree(resolve(repoRoot, ROOT_MIGRATION_SOURCE_ROOT), {
+    exclusions: [pendingMigration],
+    suffix: ".sql",
+  });
+  const latest = rootTree.files.at(-1);
+  const latestPath = resolve(
+    repoRoot,
+    ROOT_MIGRATION_SOURCE_ROOT,
+    pendingMigration,
+  );
+  const read = (path: string): string =>
+    readFileSync(resolve(repoRoot, path), "utf8");
+
+  if (
+    manifest.schemaVersion !== 14 ||
+    manifest.recordKind !== "veroxa_momo_private_media_r2_vault_candidate" ||
+    manifest.releaseState !==
+      "private_media_r2_vault_candidate_pending_exact_head_gates_and_release" ||
+    manifest.reviewedAt !== "2026-08-15" ||
+    manifest.candidateRevision !== "momo_private_media_r2_vault_2026-08-15" ||
+    manifest.canonicalRepository !== "farazmunirgohar-vxa/Veroxa" ||
+    manifest.canonicalBranch !== "main" ||
+    manifest.candidateBranch !== "agent/veroxa-r2-media-vault-20260815"
+  ) failures.push("schema-14 private-media vault identity drifted");
+
+  if (
+    sourceTree.fileCount !== manifest.source.fileCount ||
+    sourceTree.sha256 !== manifest.source.treeSha256 ||
+    sourceTree.fileCount !== candidate.sourceFileCount ||
+    sourceTree.sha256 !== candidate.sourceTreeSha256 ||
+    rootTree.fileCount !== 59 || mirrorTree.fileCount !== 59 ||
+    rootTree.sha256 !== mirrorTree.sha256 ||
+    JSON.stringify(rootTree.files) !== JSON.stringify(mirrorTree.files) ||
+    rootTree.fileCount !== manifest.migrations.fileCount ||
+    rootTree.sha256 !== manifest.migrations.treeSha256 ||
+    mirrorTree.fileCount !== manifest.migrations.mirrorFileCount ||
+    mirrorTree.sha256 !== manifest.migrations.mirrorTreeSha256 ||
+    rootTree.fileCount !== candidate.migrationFileCount ||
+    rootTree.sha256 !== candidate.migrationTreeSha256 ||
+    latest !== pendingMigration ||
+    candidate.latestCandidateMigration !== pendingMigration ||
+    candidate.latestCandidateMigrationSha256 !== sha256File(latestPath)
+  ) failures.push("schema-14 source or mirrored migration fingerprint drifted");
+
+  if (
+    production.canonicalGitHubMainCommit !==
+      "4a098ea98690ee9be6b86cc8fe783ef0cfc265ed" ||
+    production.canonicalGitHubMainMergePullRequest !== 184 ||
+    production.sitesVersion !== 54 ||
+    production.productionMigrationCount !== 58 ||
+    production.latestProductionMigration !== liveMigration ||
+    production.migrationTreeSha256 !== liveTree.sha256 ||
+    production.databaseAppliedThroughLatestObserved !== true ||
+    production.candidateMigrationsMatchLiveLedger !== false ||
+    production.fullReleaseGatePassed !== false
+  ) failures.push("schema-14 production baseline or live-ledger split drifted");
+
+  if (
+    candidate.basedOnGitHubMainCommit !==
+      "4a098ea98690ee9be6b86cc8fe783ef0cfc265ed" ||
+    candidate.pullRequest !== null || candidate.githubMerged !== false ||
+    candidate.reviewedLocally !== true ||
+    candidate.sourceReviewPassed !== true ||
+    candidate.qualityReviewPassed !== true ||
+    candidate.allFourWorkflowsGreen !== null ||
+    candidate.zeroUnresolvedReviewThreads !== null ||
+    JSON.stringify(candidate.pendingMigrations) !==
+      JSON.stringify([pendingMigration]) ||
+    candidate.databaseChangesRequired !== true ||
+    candidate.additionalDatabaseChangesRequired !== true ||
+    candidate.databaseMigrationApplied !== false ||
+    candidate.databaseApplyAuthorized !== false ||
+    candidate.sitesPublished !== false ||
+    candidate.sitesPublishAuthorized !== false ||
+    candidate.deploymentAuthorized !== false ||
+    candidate.edgeDeployRequired !== false ||
+    candidate.edgeDeployed !== false ||
+    candidate.fullReleaseGatePassed !== false
+  ) failures.push("schema-14 candidate or authorization boundary drifted");
+
+  if (
+    !quality || quality.testsPassed !== 486 || quality.testsTotal !== 486 ||
+    quality.testsFailed !== 0 || quality.buildExitCode !== 0 ||
+    quality.typecheckExitCode !== 0 || quality.lintExitCode !== 0 ||
+    quality.lintErrorCount !== 0 || quality.lintWarningCount !== 0 ||
+    quality.warningFree !== true || quality.diffCheckExitCode !== 0
+  ) failures.push("schema-14 local 486-test quality evidence drifted");
+
+  if (
+    review?.status !==
+      "candidate59_private_media_r2_vault_local_contract_verified_hosted_database_pending" ||
+    review?.forwardRepairRequired !== true ||
+    review?.functionalVerificationPassed !== false ||
+    review?.additionalDatabaseChangesRequired !== true ||
+    review?.localStaticReviewPassed !== true ||
+    review?.hostedCleanChainApplyPassed !== false ||
+    review?.hostedFullPgTapPassed !== false ||
+    review?.hostedDatabaseExecutionPassed !== false ||
+    review?.databaseApplyAuthorized !== false ||
+    review?.repairMigrationFilename !== pendingMigration ||
+    review?.repairMigrationSha256 !== sha256File(latestPath) ||
+    review?.repairMigrationByteLength !== statSync(latestPath).size ||
+    review?.futureProductionMigrationCount !== 59 ||
+    review?.futureProductionMigrationTreeSha256 !== rootTree.sha256
+  ) failures.push("schema-14 pending database review boundary drifted");
+
+  if (
+    hold?.providerWrites !== false || hold?.reviewReplies !== false ||
+    hold?.websiteWrites !== false || hold?.externalScheduling !== false ||
+    hold?.externalPublishing !== false ||
+    hold?.externalProvidersConnected !== false ||
+    hold?.incrementalSpendUsd !== 0 || manifest.fullReleaseGatePassed !== false
+  ) failures.push("schema-14 public/provider action hold drifted");
+
+  if (
+    vault?.status !== "local_candidate_verified_production_not_activated" ||
+    vault?.provider !== "cloudflare_r2_via_sites_server_binding" ||
+    vault?.binding !== "BUCKET" || vault?.publicAccessAllowed !== false ||
+    vault?.contentAddressed !== true || vault?.atomicCreateOnly !== true ||
+    vault?.uploadSha256Supplied !== true ||
+    vault?.fullReadbackSha256Verified !== true ||
+    vault?.sourceOriginalMutated !== false ||
+    vault?.sourceOriginalDeleted !== false ||
+    vault?.aiMayRunWhileBackupRetries !== true ||
+    vault?.readyRequiresVerifiedReceipt !== true ||
+    vault?.boundedAttempts !== 5 || vault?.deadLetterImplemented !== true ||
+    vault?.bucketRetentionLockRequiredBeforeProduction !== true ||
+    vault?.bucketRetentionLockVerified !== false ||
+    vault?.productionBucketProvisioned !== false ||
+    vault?.productionMigrationApplied !== false ||
+    vault?.productionRouteDeployed !== false ||
+    vault?.syntheticRestoreDrillPassed !== false ||
+    vault?.incrementalSpendUsd !== 0 || vault?.aiModelChanged !== false ||
+    vault?.aiReasoningEffortReduced !== false ||
+    vault?.imageResolutionReduced !== false ||
+    vault?.providerCallAllowed !== false ||
+    vault?.externalPublishingAllowed !== false
+  ) failures.push("schema-14 quality-first media-vault contract drifted");
+
+  if (
+    freeze.automaticDeploymentsAllowed !== false ||
+    freeze.databaseApplyAuthorized !== false ||
+    freeze.sitesPublishAuthorized !== false ||
+    freeze.edgeDeployAuthorized !== false ||
+    freeze.deploymentAuthorized !== false ||
+    !freeze.allowedDeployment.includes("none until") ||
+    !freeze.releaseCondition.includes("private R2 lock verified")
+  ) failures.push("schema-14 deployment hold drifted");
+
+  const vaultSource = read("artifacts/veroxa-sites/app/momo-media-vault.ts");
+  const routeSource = read(
+    "artifacts/veroxa-sites/app/api/internal/momo/media/vault/route.ts",
+  );
+  const migrationSource = read(
+    `${ROOT_MIGRATION_SOURCE_ROOT}/${pendingMigration}`,
+  );
+  const tests = read("artifacts/veroxa-sites/tests/momo-media-vault.test.mjs");
+  const hosting = JSON.parse(read(
+    "artifacts/veroxa-sites/.openai/hosting.json",
+  )) as Record<string, unknown>;
+  if (
+    hosting.r2 !== "BUCKET" ||
+    !vaultSource.includes('new Headers({ "if-none-match": "*" })') ||
+    !vaultSource.includes("sha256: bytesFromHex(input.contentSha256)") ||
+    !vaultSource.includes("await momoBytesSha256(storedBytes)") ||
+    !routeSource.includes('await import("cloudflare:workers")') ||
+    !migrationSource.includes(
+      "create trigger veroxa_require_momo_media_vault_before_ready_v1",
+    ) ||
+    !migrationSource.includes("before insert on public.veroxa_momo_ready_packages_v2") ||
+    !migrationSource.includes("to service_role") ||
+    !tests.includes("R2 vault creates once, sends SHA-256")
+  ) failures.push("schema-14 exact-byte implementation evidence drifted");
+
+  if (failures.length > 0) {
+    throw new Error(
+      "Unsafe schema-14 private-media R2 vault candidate: " +
+        failures.join("; "),
+    );
+  }
+}
+
 function assertMediaRecoveryByteInspectionCandidateManifest(
   manifest: DeploymentManifest,
 ): void {
@@ -2708,6 +2916,10 @@ export function assertCurrentReconciliationManifest(
 export function assertUnreleasedLocalCandidateManifest(
   manifest: DeploymentManifest,
 ): void {
+  if (manifest.schemaVersion === 14) {
+    assertPrivateMediaR2VaultCandidateManifest(manifest);
+    return;
+  }
   if (manifest.schemaVersion === 13) {
     assertDurableMediaIngestionCandidateManifest(manifest);
     return;
@@ -2728,6 +2940,10 @@ export function assertUnreleasedLocalCandidateManifest(
 export function assertReviewedLocalCandidateManifest(
   manifest: DeploymentManifest,
 ): void {
+  if (manifest.schemaVersion === 14) {
+    assertPrivateMediaR2VaultCandidateManifest(manifest);
+    return;
+  }
   if (manifest.schemaVersion === 13) {
     assertDurableMediaIngestionCandidateManifest(manifest);
     return;

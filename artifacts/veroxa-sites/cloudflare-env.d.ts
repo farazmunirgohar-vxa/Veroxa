@@ -30,6 +30,55 @@ interface D1Database {
   dump(): Promise<ArrayBuffer>;
 }
 
+interface R2Checksums {
+  md5?: ArrayBuffer;
+  sha1?: ArrayBuffer;
+  sha256?: ArrayBuffer;
+  sha384?: ArrayBuffer;
+  sha512?: ArrayBuffer;
+}
+
+interface R2Object {
+  key: string;
+  version: string;
+  size: number;
+  etag: string;
+  uploaded: Date;
+  httpMetadata?: {
+    contentType?: string;
+    contentDisposition?: string;
+    cacheControl?: string;
+  };
+  customMetadata?: Record<string, string>;
+  checksums: R2Checksums;
+}
+
+interface R2ObjectBody extends R2Object {
+  arrayBuffer(): Promise<ArrayBuffer>;
+}
+
+interface R2Bucket {
+  head(key: string): Promise<R2Object | null>;
+  get(key: string): Promise<R2ObjectBody | null>;
+  put(
+    key: string,
+    value: ArrayBuffer | ArrayBufferView | Blob | ReadableStream | string,
+    options?: {
+      onlyIf?: Headers | {
+        etagMatches?: string;
+        etagDoesNotMatch?: string;
+      };
+      httpMetadata?: {
+        contentType?: string;
+        contentDisposition?: string;
+        cacheControl?: string;
+      };
+      customMetadata?: Record<string, string>;
+      sha256?: ArrayBuffer | string;
+    },
+  ): Promise<R2Object | null>;
+}
+
 interface VeroxaImagesTransformResult {
   response(): Response;
 }
@@ -54,6 +103,7 @@ interface VeroxaImagesBinding {
 
 declare module "cloudflare:workers" {
   export const env: {
+    BUCKET?: R2Bucket;
     DB?: D1Database;
     IMAGES?: VeroxaImagesBinding;
   };

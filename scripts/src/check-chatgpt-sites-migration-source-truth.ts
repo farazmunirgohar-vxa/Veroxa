@@ -23,6 +23,60 @@ try {
 }
 
 
+if (manifest.schemaVersion === 14) {
+  const authorityDocs = [
+    "AGENTS.md",
+    "artifacts/veroxa/docs/ACTIVE_DOCS_INDEX.md",
+    "artifacts/veroxa/docs/CHATGPT_SITES_MIGRATION_AND_SOURCE_OF_TRUTH.md",
+    "artifacts/veroxa/docs/CURRENT_BUILD_STATUS.md",
+    "artifacts/veroxa/docs/README_CURRENT_STATE.md",
+    "artifacts/veroxa/docs/RR_CHECKPOINT.md",
+    "artifacts/veroxa/docs/VEROXA_CURRENT_MILESTONE.md",
+    "artifacts/veroxa/docs/VEROXA_LOCKED_OPERATING_MEMORY.md",
+  ];
+  for (const path of authorityDocs) {
+    const text = read(path);
+    must(!/^(<<<<<<<|=======|>>>>>>>)/mu.test(text), path + " contains merge markers.");
+    const headings = text.match(/^## .*?\(current authority\)$/gmu) ?? [];
+    must(headings.length === 1, path + " must contain exactly one current-authority heading.");
+    const heading = text.match(/^## .*?\(current authority\)$/mu);
+    const start = heading?.index ?? -1;
+    const next = start < 0 ? -1 : text.indexOf("\n## ", start + (heading?.[0].length ?? 0));
+    const current = start < 0 ? "" : text.slice(start, next < 0 ? undefined : next);
+    for (const marker of [
+      "GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY",
+      "quality-first private-media R2 vault candidate",
+      "4a098ea98690ee9be6b86cc8fe783ef0cfc265ed",
+      "agent/veroxa-r2-media-vault-20260815",
+      "20260815013053_momo_private_media_r2_vault_v1.sql",
+      "Sites v54",
+      "database58",
+      "486/486",
+      "atomic create-only",
+      "full byte readback",
+      "AI may run",
+      "Only final Veroxa Ready creation waits",
+      "retention lock",
+      "synthetic restore drill",
+      "IMG_4257",
+      "not deployed or applied",
+      "External providers",
+      "USD 0 incremental spend",
+    ]) {
+      const haystack = marker === "GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY" ? text : current;
+      must(haystack.includes(marker), path + " is missing schema-14 authority marker: " + marker);
+    }
+  }
+  if (failures.length > 0) {
+    for (const failure of failures) console.error("FAIL:", failure);
+    process.exit(1);
+  }
+  console.log(
+    "PASS: schema-14 authority docs describe the quality-first private-media R2 vault candidate against unchanged Sites v54/database58 production truth.",
+  );
+  process.exit(0);
+}
+
 if (manifest.schemaVersion === 13) {
   const authorityDocs = [
     "AGENTS.md",

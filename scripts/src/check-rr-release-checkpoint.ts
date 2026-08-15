@@ -25,6 +25,76 @@ try {
   failures.push(error instanceof Error ? error.message : String(error));
 }
 
+if (manifest.schemaVersion === 14) {
+  const vault = rr.privateMediaVaultCandidate;
+  must(
+    rr.schemaVersion === 20 &&
+      rr.recordKind === "veroxa_momo_private_media_r2_vault_checkpoint" &&
+      rr.status === manifest.releaseState &&
+      rr.reviewedAt === manifest.reviewedAt &&
+      rr.candidateRevision === manifest.candidateRevision,
+    "RR is not the schema-14 private-media R2 vault checkpoint.",
+  );
+  must(
+    vault?.manifest ===
+      "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json" &&
+      vault?.basedOnGitHubMainCommit ===
+        manifest.releaseCandidate.basedOnGitHubMainCommit &&
+      vault?.candidateBranch === manifest.candidateBranch &&
+      vault?.pendingMigration ===
+        manifest.releaseCandidate.pendingMigrations?.[0] &&
+      vault?.testsPassed === manifest.applicationQualityEvidence?.testsPassed &&
+      vault?.testsTotal === manifest.applicationQualityEvidence?.testsTotal &&
+      vault?.exactByteReadbackVerifiedLocally === true &&
+      vault?.aiQualityChanged === false &&
+      vault?.readyOnlyGateImplemented === true &&
+      vault?.retentionLockVerified === false &&
+      vault?.syntheticRestoreDrillPassed === false &&
+      vault?.productionApplied === false &&
+      vault?.productionDeployed === false &&
+      vault?.deploymentAuthorized === false &&
+      vault?.incrementalSpendUsd === 0 &&
+      rr.fullReleaseGatePassed === false,
+    "RR schema-14 vault evidence diverges from the manifest or overclaims production proof.",
+  );
+  must(
+    rr.releaseCandidate?.manifest ===
+        "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json" &&
+      rr.releaseCandidate?.state === manifest.releaseCandidate.status &&
+      rr.releaseCandidate?.localReviewPassed === true &&
+      canonical(rr.releaseCandidate?.evidence) ===
+        canonical(manifest.releaseCandidate),
+    "RR schema-14 release candidate does not exactly mirror the manifest.",
+  );
+  for (const field of [
+    "currentProductionObservation",
+    "applicationQualityEvidence",
+    "databaseContractReview",
+    "operationalHold",
+    "durableMediaIngestionRecovery",
+    "currentRuntimeIdentityObservation",
+    "deploymentFreeze",
+  ]) {
+    must(
+      canonical(rr[field]) === canonical((manifest as JsonRecord)[field]),
+      "RR schema-14 field does not mirror manifest: " + field,
+    );
+  }
+  must(
+    rr.fullReleaseGatePassed === manifest.fullReleaseGatePassed &&
+      rr.fullReleaseGateScope === manifest.fullReleaseGateScope,
+    "RR schema-14 full-release gate diverges from the manifest.",
+  );
+  if (failures.length > 0) {
+    for (const failure of failures) console.error("FAIL:", failure);
+    process.exit(1);
+  }
+  console.log(
+    "PASS: RR schema-14 checkpoint records the local quality-first R2 vault candidate without production or retention-lock overclaims.",
+  );
+  process.exit(0);
+}
+
 if (manifest.schemaVersion === 13) {
   must(
     rr.schemaVersion === 19 &&

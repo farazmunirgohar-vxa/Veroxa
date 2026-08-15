@@ -40,6 +40,41 @@ if (existsSync(sentinelPath)) {
   );
 }
 
+if (manifest.schemaVersion === 14) {
+  const vault = (
+    manifest as unknown as Record<string, any>
+  ).privateMediaVault as Record<string, any> | undefined;
+  must(
+    manifest.currentProductionObservation.sitesVersion === 54 &&
+      manifest.releaseCandidate.sitesPublished === false &&
+      manifest.releaseCandidate.databaseMigrationApplied === false &&
+      manifest.releaseCandidate.sitesPublishAuthorized === false &&
+      manifest.releaseCandidate.deploymentAuthorized === false &&
+      manifest.deploymentFreeze.automaticDeploymentsAllowed === false &&
+      manifest.fullReleaseGatePassed === false,
+    "Schema-14 vault candidate diverges from the unchanged v54/database58 production hold.",
+  );
+  must(
+    manifest.operationalHold?.providerWrites === false &&
+      manifest.operationalHold.reviewReplies === false &&
+      manifest.operationalHold.websiteWrites === false &&
+      manifest.operationalHold.externalScheduling === false &&
+      manifest.operationalHold.externalPublishing === false &&
+      vault?.publicAccessAllowed === false &&
+      vault?.providerCallAllowed === false &&
+      vault?.externalPublishingAllowed === false,
+    "Schema-14 vault candidate overclaims a public/provider action.",
+  );
+  if (failures.length > 0) {
+    for (const failure of failures) console.error("FAIL:", failure);
+    process.exit(1);
+  }
+  console.log(
+    "PASS: Sites remains the sole web target; the R2 vault candidate is private and production deployment remains unauthorized.",
+  );
+  process.exit(0);
+}
+
 if (manifest.schemaVersion === 13) {
   const recovery = (
     manifest as unknown as Record<string, any>

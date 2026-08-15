@@ -67,16 +67,22 @@ jobs:
           )"
           repair_migration="20260813175640_durable_media_ingestion_path_regex_repair_v1.sql"
           repair_version="20260813175640"
+          vault_migration="20260815013053_momo_private_media_r2_vault_v1.sql"
+          vault_version="20260815013053"
           predecessor_version="20260813163534"
           test "$candidate_migration_count" -gt 1
           test "$(printf '%s\n' "$expected_versions" | uniq | wc -l)" \
             -eq "$candidate_migration_count"
           test -f "supabase/migrations/$repair_migration"
-          test "$(printf '%s\n' "$expected_versions" | tail -n 1)" = "$repair_version"
+          test -f "supabase/migrations/$vault_migration"
+          test "$(printf '%s\n' "$expected_versions" | tail -n 1)" = "$vault_version"
           test "$(printf '%s\n' "$expected_versions" | tail -n 2 | head -n 1)" \
+            = "$repair_version"
+          test "$(printf '%s\n' "$expected_versions" | tail -n 3 | head -n 1)" \
             = "$predecessor_version"
           pre_repair_expected_versions="$(
-            printf '%s\n' "$expected_versions" | sed "/^${repair_version}\$/d"
+            printf '%s\n' "$expected_versions" \
+              | sed -e "/^${repair_version}\$/d" -e "/^${vault_version}\$/d"
           )"
           pending_migration_count="$((candidate_migration_count - 1))"
           pending_dir="$(mktemp -d)"
@@ -209,6 +215,7 @@ jobs:
           SQL
 
           restore_pending_migrations
+          mv "supabase/migrations/$vault_migration" "$pending_dir/"
           mv "supabase/migrations/$repair_migration" "$pending_dir/"
 
           # Applying the predecessor chain is allowed only in this
@@ -468,7 +475,8 @@ jobs:
                    'momo_content_ai_dispatch_endpoint_v1',
                    'momo_content_ai_recovery_endpoint_v1',
                    'momo_content_ai_internal_hmac_v1',
-                   'momo_media_ingestion_recovery_endpoint_v1'
+                   'momo_media_ingestion_recovery_endpoint_v1',
+                   'momo_private_media_vault_endpoint_v1'
                  )
                ) then
               raise exception 'ci_external_write_or_runtime_secret_fixture_forbidden';
