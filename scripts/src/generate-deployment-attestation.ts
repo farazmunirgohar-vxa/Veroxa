@@ -76,7 +76,7 @@ writeJson(output, {
   schemaVersion: 4,
   recordKind: "veroxa_ci_deployment_attestation",
   attestationScope: manifest.schemaVersion === 13
-    ? "exact_ci_schema13_private_media_recovery_host_inspection_diagnostics_candidate_checkout_only_not_merge_deploy_retry_or_runtime_parity"
+    ? "exact_ci_schema13_private_media_recovery_host_inspection_diagnostics_closeout_checkout_only_runtime_claims_from_canonical_evidence"
     : "exact_ci_schema11_live56_sites_v53_checkout_only_not_remote_or_runtime_parity",
   generatedAt: new Date().toISOString(),
   repository: manifest.canonicalRepository,
