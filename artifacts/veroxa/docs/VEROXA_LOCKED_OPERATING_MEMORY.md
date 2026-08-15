@@ -13,6 +13,15 @@ Current reconciliation markers: private media-recovery host-inspection diagnosti
 - **Quality and next gate:** 479/479 application tests and every required GitHub workflow passed. No retry remains authorized or pending. A separately reviewed binding configuration/wiring repair must precede any future retry.
 - **Cost and actions:** External providers remain blocked; `externalWriteAllowed=false`; incremental spend remains USD 0 incremental spend.
 
+## 2026-08-15 — Supabase Pro capacity and workflow direction (current durable operating guidance)
+
+- **Plan state:** the connected Veroxa Dev Supabase organization is on the \`pro\` plan. Treat this as available capacity to use deliberately, not a blanket instruction to enable every product feature or accept recurring usage.
+- **Product direction:** use Pro capabilities when they tangibly improve Veroxa's secure source of truth, private media lineage, Auth/RLS, server-side reliability, recovery, testing, or observability. The normal path is one stable production project with proportional, evidence-driven additions.
+- **Control rule:** preserve the Spend Cap and the existing per-build incremental-spend rule. Before a metered, persistent, or add-on surface is enabled, verify current billing/limits, expected use, owner, rollback/cancellation path, and post-change evidence. Short-lived isolated branches, private server queues, scheduled internal maintenance, and read-only status refresh are permitted only when their exact workflow justifies them.
+- **Non-default capacity:** PITR, read replicas, compute increases, log drains, extra persistent projects, production-data copying, and any recurring commitment remain separate cost/approval decisions. Do not conflate Pro eligibility with authorization.
+- **Safety remains absolute:** all current guarded internal-AI, tenant-isolation, immutable-lineage, exact-Ready, Team authority, and external-action locks remain unchanged. Supabase plan status never authorizes a provider call, publication, schedule, public write, re-upload, deletion, or Ready transition.
+- **Workflow authority:** \`SUPABASE_PRO_CAPACITY_AND_WORKFLOW_DIRECTION.md\` is the detailed current guide for capability selection, spend control, testing, release, observation, and cleanup.
+
 ## 2026-08-12 — legacy media purge; high-resolution private uploads; Sites v53 deployed (historical)
 
 Current reconciliation markers: content lifecycle v11; Sites v53; live56; USD 0 incremental spend.
