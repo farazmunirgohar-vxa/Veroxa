@@ -1,8 +1,8 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import {
-  decodeVeroxaPrivateMediaImageWithHost,
-  inspectVeroxaPrivateMediaImageWithHost,
-} from "../../../../../veroxa-private-media-host-image-decode.ts";
+  createVeroxaPrivateMediaStorageImageDecoder,
+  createVeroxaPrivateMediaStorageImageInspector,
+} from "../../../../../veroxa-private-media-supabase-image-decode.ts";
 import { createMomoMediaRecoveryHandler } from "./core.ts";
 
 export const runtime = "edge";
@@ -49,7 +49,16 @@ function adminClient(
 
 const wakeHmacSecret =
   process.env.VEROXA_MOMO_CONTENT_AI_DISPATCH_HMAC_SECRET?.trim() || "";
-const admin = adminClient(serverSupabaseConfig());
+const configuration = serverSupabaseConfig();
+const admin = adminClient(configuration);
+const decodeHighResolutionImage = createVeroxaPrivateMediaStorageImageDecoder({
+  client: admin,
+  supabaseUrl: configuration?.url,
+});
+const inspectImageWithHost = createVeroxaPrivateMediaStorageImageInspector({
+  client: admin,
+  supabaseUrl: configuration?.url,
+});
 
 function requireAdmin(): SupabaseClient {
   if (!admin) throw new Error("media_recovery_configuration_unavailable");
@@ -60,8 +69,8 @@ const handler = createMomoMediaRecoveryHandler({
   configured: Boolean(admin && HMAC_SECRET.test(wakeHmacSecret)),
   wakeHmacSecret,
   randomUUID: () => crypto.randomUUID(),
-  decodeHighResolutionImage: decodeVeroxaPrivateMediaImageWithHost,
-  inspectImageWithHost: inspectVeroxaPrivateMediaImageWithHost,
+  decodeHighResolutionImage,
+  inspectImageWithHost,
   async claim(input) {
     const { data, error } = await requireAdmin().rpc(
       "veroxa_claim_momo_media_ingestion_v1",

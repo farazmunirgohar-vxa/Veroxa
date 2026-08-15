@@ -101,6 +101,13 @@ export type VeroxaPrivateMediaHostDecoder = (input: {
   mimeType: VeroxaPrivateMediaFullDecodeMimeType;
   expectedWidth: number;
   expectedHeight: number;
+  /**
+   * The exact immutable Storage object is supplied when the trusted decoder
+   * uses the Storage transformation service rather than a Worker binding.
+   */
+  storagePath?: string;
+  storageObjectId?: string;
+  storageObjectVersion?: string;
 }) => Promise<boolean>;
 
 export type VeroxaPrivateMediaHostInspection = {
@@ -126,6 +133,23 @@ export const VEROXA_PRIVATE_MEDIA_HOST_INSPECTION_FAILURE_CODES = [
   "images_response_body_failed",
   "images_response_size_invalid",
   "images_response_magic_invalid",
+  "storage_transform_binding_unavailable",
+  "storage_transform_credential_unavailable",
+  "storage_transform_credential_rejected",
+  "storage_transform_path_invalid",
+  "storage_transform_source_mismatch",
+  "storage_transform_signing_failed",
+  "storage_transform_provider_unavailable",
+  "storage_transform_request_rejected",
+  "storage_transform_timeout",
+  "storage_transform_rate_limited",
+  "storage_transform_response_body_failed",
+  "storage_transform_response_content_type_invalid",
+  "storage_transform_response_declared_size_invalid",
+  "storage_transform_response_size_invalid",
+  "storage_transform_response_magic_invalid",
+  "storage_transform_response_decode_invalid",
+  "storage_transform_response_dimensions_invalid",
 ] as const;
 
 export type VeroxaPrivateMediaHostInspectionFailureCode =
@@ -134,8 +158,9 @@ export type VeroxaPrivateMediaHostInspectionFailureCode =
 export type VeroxaPrivateMediaHostInspectionDiagnostics = {
   schemaVersion: 1;
   status: "passed" | "failed";
-  stage: "binding" | "source" | "info" | "input" | "transform" | "output" |
-    "response" | "complete";
+  stage: "binding" | "credential" | "source" | "info" | "input" |
+    "transform" | "output" | "provider" | "request" | "timeout" |
+    "rate_limit" | "response" | "complete";
   failureCode: VeroxaPrivateMediaHostInspectionFailureCode | null;
   bindingAvailable: boolean;
   info: {
@@ -160,6 +185,9 @@ export type VeroxaPrivateMediaHostInspectionResult = {
 export type VeroxaPrivateMediaHostInspector = (input: {
   bytes: Uint8Array;
   mimeType: VeroxaPrivateMediaFullDecodeMimeType;
+  storagePath?: string;
+  storageObjectId?: string;
+  storageObjectVersion?: string;
 }) => Promise<VeroxaPrivateMediaHostInspectionResult>;
 
 /**
@@ -172,6 +200,9 @@ export async function decodeVeroxaPrivateMediaImage(input: {
   mimeType: VeroxaPrivateMediaMimeType;
   expectedWidth: number;
   expectedHeight: number;
+  storagePath?: string;
+  storageObjectId?: string;
+  storageObjectVersion?: string;
   hostDecoder?: VeroxaPrivateMediaHostDecoder;
 }): Promise<boolean> {
   if (!VEROXA_PRIVATE_MEDIA_FULL_DECODE_MIME_TYPES.includes(

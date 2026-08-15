@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "checkpoint": "phase_0_baseline",
+  "recordedAt": "2026-08-15T00:00:00Z",
+  "immutableSnapshot": true,
+  "githubMain": "a28c4735b668775dbc54e3c920b409325ef8201d",
+  "sites": {
+    "version": 56,
+    "versionId": "appgver_0a84d383bba4819180548d99950817fd",
+    "deploymentId": "appgdep_6a7fcbb9276881918534df6883805dc9",
+    "sourceCheckout": "5306f279a70c7a7d4ecb1328fa17cbeb2f03af7f"
+  },
+  "supabase": {
+    "projectRef": "mwqkhsvdezeykdpqhqec",
+    "migrationCount": 58,
+    "latestMigration": "20260813175640_durable_media_ingestion_path_regex_repair_v1.sql"
+  },
+  "img4257": {
+    "assetId": "05ab2303-f7ea-4056-8f75-9cd7e523a4f4",
+    "storageObjectId": "3df8b899-f438-41be-9e21-f15e6e7cb6c7",
+    "storageObjectVersion": "a6a293a9-4364-4867-878c-64bfc662dff9",
+    "bytes": 3969765,
+    "attemptsBeforeThisProgram": 3,
+    "status": "uploaded_with_exception",
+    "failure": "images_binding_unavailable",
+    "authorizedFutureRetries": 1
+  },
+  "nextGate": "private production image-inspection preflight using a synthetic fixture"
+}

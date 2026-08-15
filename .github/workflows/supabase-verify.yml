@@ -68,15 +68,22 @@ jobs:
           repair_migration="20260813175640_durable_media_ingestion_path_regex_repair_v1.sql"
           repair_version="20260813175640"
           predecessor_version="20260813163534"
+          preflight_migration="20260815090000_media_inspection_preflight_canary_v1.sql"
+          preflight_version="20260815090000"
           test "$candidate_migration_count" -gt 1
           test "$(printf '%s\n' "$expected_versions" | uniq | wc -l)" \
             -eq "$candidate_migration_count"
           test -f "supabase/migrations/$repair_migration"
-          test "$(printf '%s\n' "$expected_versions" | tail -n 1)" = "$repair_version"
+          test -f "supabase/migrations/$preflight_migration"
+          test "$(printf '%s\n' "$expected_versions" | tail -n 1)" = "$preflight_version"
           test "$(printf '%s\n' "$expected_versions" | tail -n 2 | head -n 1)" \
+            = "$repair_version"
+          test "$(printf '%s\n' "$expected_versions" | tail -n 3 | head -n 1)" \
             = "$predecessor_version"
           pre_repair_expected_versions="$(
-            printf '%s\n' "$expected_versions" | sed "/^${repair_version}\$/d"
+            printf '%s\n' "$expected_versions" \
+              | sed "/^${repair_version}\$/d" \
+              | sed "/^${preflight_version}\$/d"
           )"
           pending_migration_count="$((candidate_migration_count - 1))"
           pending_dir="$(mktemp -d)"
@@ -210,6 +217,7 @@ jobs:
 
           restore_pending_migrations
           mv "supabase/migrations/$repair_migration" "$pending_dir/"
+          mv "supabase/migrations/$preflight_migration" "$pending_dir/"
 
           # Applying the predecessor chain is allowed only in this
           # disposable local database. Production must stage 20260808001210,
@@ -357,6 +365,88 @@ jobs:
                current_setting('veroxa.ci_candidate_migration_count')::integer then
               raise exception 'ci_complete_migration_ledger_invalid';
             end if;
+            if not exists (
+              select 1
+              from pg_catalog.pg_class relation
+              where relation.oid =
+                'veroxa_private.media_inspection_preflight_runs_v1'::regclass
+                and relation.relrowsecurity and relation.relforcerowsecurity
+            ) or pg_catalog.has_table_privilege(
+              'anon',
+              'veroxa_private.media_inspection_preflight_runs_v1',
+              'select,insert,update,delete'
+            ) or pg_catalog.has_table_privilege(
+              'authenticated',
+              'veroxa_private.media_inspection_preflight_runs_v1',
+              'select,insert,update,delete'
+            ) or pg_catalog.has_table_privilege(
+              'service_role',
+              'veroxa_private.media_inspection_preflight_runs_v1',
+              'select,insert,update,delete'
+            ) then
+              raise exception 'ci_media_inspection_preflight_private_table_invalid';
+            end if;
+            if not pg_catalog.has_function_privilege(
+              'service_role',
+              'public.veroxa_claim_media_inspection_preflight_v1(uuid,bigint)',
+              'execute'
+            ) or not pg_catalog.has_function_privilege(
+              'service_role',
+              'public.veroxa_complete_media_inspection_preflight_v1(uuid,text,text,jsonb,text)',
+              'execute'
+            ) or pg_catalog.has_function_privilege(
+              'anon',
+              'public.veroxa_claim_media_inspection_preflight_v1(uuid,bigint)',
+              'execute'
+            ) or pg_catalog.has_function_privilege(
+              'authenticated',
+              'public.veroxa_claim_media_inspection_preflight_v1(uuid,bigint)',
+              'execute'
+            ) or pg_catalog.has_function_privilege(
+              'anon',
+              'public.veroxa_complete_media_inspection_preflight_v1(uuid,text,text,jsonb,text)',
+              'execute'
+            ) or pg_catalog.has_function_privilege(
+              'authenticated',
+              'public.veroxa_complete_media_inspection_preflight_v1(uuid,text,text,jsonb,text)',
+              'execute'
+            ) then
+              raise exception 'ci_media_inspection_preflight_rpc_grants_invalid';
+            end if;
+            if pg_catalog.has_function_privilege(
+              'anon',
+              'veroxa_private.media_inspection_preflight_runtime_secret_v1(text)',
+              'execute'
+            ) or pg_catalog.has_function_privilege(
+              'authenticated',
+              'veroxa_private.media_inspection_preflight_runtime_secret_v1(text)',
+              'execute'
+            ) or pg_catalog.has_function_privilege(
+              'service_role',
+              'veroxa_private.media_inspection_preflight_runtime_secret_v1(text)',
+              'execute'
+            ) then
+              raise exception 'ci_media_inspection_preflight_secret_accessor_grants_invalid';
+            end if;
+            if veroxa_private.media_inspection_preflight_runtime_secret_v1(
+              'veroxa_media_inspection_preflight_endpoint_v1'
+            ) is not null then
+              raise exception 'ci_media_inspection_preflight_endpoint_must_be_absent';
+            end if;
+            perform veroxa_private.deliver_media_inspection_preflight_v1();
+            if not exists (
+              select 1
+              from veroxa_private.media_inspection_preflight_runs_v1 preflight
+              where preflight.state = 'delivery_failed'
+                and preflight.failure_code =
+                  'media_inspection_preflight_configuration_unavailable'
+            ) then
+              raise exception 'ci_media_inspection_preflight_environment_fail_closed';
+            end if;
+            if exists (select 1 from net.http_request_queue)
+               or exists (select 1 from net._http_response) then
+              raise exception 'ci_media_inspection_preflight_must_not_send_without_endpoint';
+            end if;
             if (
               select count(*)
               from veroxa_private.operational_restaurant_scope scope
@@ -468,7 +558,8 @@ jobs:
                    'momo_content_ai_dispatch_endpoint_v1',
                    'momo_content_ai_recovery_endpoint_v1',
                    'momo_content_ai_internal_hmac_v1',
-                   'momo_media_ingestion_recovery_endpoint_v1'
+                   'momo_media_ingestion_recovery_endpoint_v1',
+                   'veroxa_media_inspection_preflight_endpoint_v1'
                  )
                ) then
               raise exception 'ci_external_write_or_runtime_secret_fixture_forbidden';

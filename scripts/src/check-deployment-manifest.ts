@@ -5,6 +5,7 @@ import {
   REPAIR_MIGRATION_EVIDENCE,
   assertReviewedLocalCandidateManifest,
   deploymentManifestPath,
+  hasActiveMediaInspectionForwardCandidate,
   readDeploymentManifest,
 } from "./release-manifest";
 
@@ -16,6 +17,7 @@ const raw = readFileSync(deploymentManifestPath, "utf8");
 must(!/^(<<<<<<<|=======|>>>>>>>)/mu.test(raw), "Manifest contains merge markers.");
 
 const manifest = readDeploymentManifest();
+const activeForwardCandidate = hasActiveMediaInspectionForwardCandidate();
 try {
   assertReviewedLocalCandidateManifest(manifest);
 } catch (error) {
@@ -28,7 +30,9 @@ if (manifest.schemaVersion === 13) {
     process.exit(1);
   }
   console.log(
-    "PASS: schema-13 records the exact green PR #185 release, Sites v56 deployment, failed third attempt, and post-retry external-action hold.",
+    activeForwardCandidate
+      ? "PASS: immutable schema-13 baseline plus designated CURRENT_STATE validate the narrow media-inspection forward candidate without a production claim."
+      : "PASS: schema-13 records the exact green PR #185 release, Sites v56 deployment, failed third attempt, and post-retry external-action hold.",
   );
   process.exit(0);
 }

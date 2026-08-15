@@ -5,6 +5,7 @@ import {
   MEDIA_UPLOAD_HANDOFF_EVIDENCE,
   REPAIR_MIGRATION_EVIDENCE,
   assertReviewedLocalCandidateManifest,
+  hasActiveMediaInspectionForwardCandidate,
   readDeploymentManifest,
   repoRoot,
 } from "./release-manifest";
@@ -16,12 +17,24 @@ const must = (condition: boolean, message: string): void => {
 const read = (relativePath: string): string =>
   readFileSync(resolve(repoRoot, relativePath), "utf8");
 const manifest = readDeploymentManifest();
+const activeForwardCandidate = hasActiveMediaInspectionForwardCandidate();
 try {
   assertReviewedLocalCandidateManifest(manifest);
 } catch (error) {
   failures.push(error instanceof Error ? error.message : String(error));
 }
 
+
+if (activeForwardCandidate) {
+  if (failures.length > 0) {
+    for (const failure of failures) console.error("FAIL:", failure);
+    process.exit(1);
+  }
+  console.log(
+    "PASS: designated CURRENT_STATE is the active authority for the narrow media-inspection forward candidate; schema-13 closeout files remain historical evidence only.",
+  );
+  process.exit(0);
+}
 
 if (manifest.schemaVersion === 13) {
   const authorityDocs = [

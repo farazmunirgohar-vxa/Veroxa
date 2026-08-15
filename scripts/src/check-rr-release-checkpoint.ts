@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import {
   MEDIA_UPLOAD_HANDOFF_EVIDENCE,
   assertReviewedLocalCandidateManifest,
+  hasActiveMediaInspectionForwardCandidate,
   readDeploymentManifest,
   repoRoot,
 } from "./release-manifest";
@@ -18,11 +19,23 @@ const raw = readFileSync(rrPath, "utf8");
 must(!/^(<<<<<<<|=======|>>>>>>>)/mu.test(raw), "RR checkpoint contains merge markers.");
 const rr = JSON.parse(raw) as JsonRecord;
 const manifest = readDeploymentManifest();
+const activeForwardCandidate = hasActiveMediaInspectionForwardCandidate();
 
 try {
   assertReviewedLocalCandidateManifest(manifest);
 } catch (error) {
   failures.push(error instanceof Error ? error.message : String(error));
+}
+
+if (activeForwardCandidate) {
+  if (failures.length > 0) {
+    for (const failure of failures) console.error("FAIL:", failure);
+    process.exit(1);
+  }
+  console.log(
+    "PASS: RR schema-13 remains immutable historical evidence while CURRENT_STATE governs the active forward candidate.",
+  );
+  process.exit(0);
 }
 
 if (manifest.schemaVersion === 13) {

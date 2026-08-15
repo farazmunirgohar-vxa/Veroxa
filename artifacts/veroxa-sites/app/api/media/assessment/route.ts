@@ -23,8 +23,8 @@ import {
   type VeroxaPrivateMediaAssessmentReservation,
 } from "./core";
 import {
-  decodeVeroxaPrivateMediaImageWithHost,
-} from "../../../veroxa-private-media-host-image-decode";
+  createVeroxaPrivateMediaStorageImageDecoder,
+} from "../../../veroxa-private-media-supabase-image-decode";
 
 export const runtime = "edge";
 
@@ -144,7 +144,10 @@ function dependencies(
   return {
     enabled: process.env.VEROXA_MOMO_CONTENT_AI_ENABLED === "true",
     providerConfigured: Boolean(openAiKey && bridgeConfig),
-    decodeHighResolutionImage: decodeVeroxaPrivateMediaImageWithHost,
+    decodeHighResolutionImage: createVeroxaPrivateMediaStorageImageDecoder({
+      client,
+      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    }),
     async authenticate() {
       return actor;
     },
