@@ -36,7 +36,7 @@ test("Client and Team request routes use the bounded private RPC contract", asyn
   assert.match(center, /role !== "team" \|\| !selected \|\| !transitionValid/, "Only Team UI may transition a request");
   assert.match(center, /\["acknowledged", "in_progress"\]\.includes\(selected\.status\)/, "Linked work must require an active acknowledged request");
   assert.match(center, /createMomoClientRequestWork\(/, "Request-linked work must use its transactional RPC adapter");
-  assert.match(center, /No Momo Client request has been persisted/, "The zero-request Team view must remain honest");
+  assert.match(center, /No \$\{restaurantName\} Client request has been persisted/, "The zero-request Team view must remain tenant-resolved and honest");
   assert.match(center, /sequence !== threadLoadSequence\.current/, "Stale thread responses must never replace the current request");
   assert.match(center, /threadRequestId === selectedId \? thread : \[\]/, "A previous request thread must be hidden immediately when selection changes");
   assert.match(data, /"request_thread_is_closed"/, "The adapter must preserve the closed-thread database error code");
@@ -68,7 +68,7 @@ test("request-linked work remains visible on the ordinary Momo work board", asyn
   assert.match(center, /Client request · \{item\.client_request_id\.slice\(0, 8\)\}/);
 });
 
-test("owner truth stays with Momo while Team requests remain linked and visible", async () => {
+test("owner truth stays with the active restaurant while Team requests remain linked and visible", async () => {
   const [data, center, migration, grants] = await Promise.all([
     readApp("momo-data.ts"),
     readApp("momo-operating-center.tsx"),
@@ -79,7 +79,7 @@ test("owner truth stays with Momo while Team requests remain linked and visible"
   assert.match(data, /veroxa_create_team_request_v1/);
   assert.match(data, /requestCategory/);
   assert.match(center, /Request owner change/);
-  assert.match(center, /Owner authority stays with Momo/);
+  assert.match(center, /Owner authority stays with \{restaurantName\}/);
   assert.match(center, /Messages &amp; requests/);
   assert.match(center, /Suggested correction, if known/);
   assert.doesNotMatch(center, /Approve and apply/);

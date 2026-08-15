@@ -1,6 +1,15 @@
 <!-- GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY -->
 
-## 2026-08-15 — private media-recovery host-inspection diagnostic closeout; Sites v56 and database58 live (current authority)
+## 2026-08-15 — pre-intervention acceptance reconciliation (current authority)
+
+- IMG_4257 (`05ab2303-f7ea-4056-8f75-9cd7e523a4f4`) is terminal at attempt 4 with `media_recovery_completion_unavailable`; zero retries remain and no Ready transition is permitted.
+- GitHub `main` is `7cb6173ce76cff840017b2b4ecfa37c31cb07a09` / tree `86afd2ac1a08d8486ea9d1bb30e8fff31478739e`. PR #191 exact-head CI passed, but its post-merge unresolved P1 thread leaves review incomplete.
+- Sites v59 deployment `appgdep_6a8016eee874819184f031daa896048c` is the last proven publish. Saved v60 is source-parity evidence only, not deployment evidence.
+- Supabase production is healthy at 59 migrations; successful verification, assessment, content-AI, and Ready counts are zero.
+- A scoped acceptance candidate is in progress for isolated synthetic tenancy, truthful current-offering upload instructions, replay idempotency, portal neutrality/mobile proof, and exact deployment evidence.
+- External write counts and enabled boundaries are zero. PR #187 remains deferred, draft, unmerged, and undeployed.
+
+## 2026-08-15 — private media-recovery host-inspection diagnostic closeout; Sites v56 and database58 live (historical, superseded)
 
 Current reconciliation markers: private media-recovery host-inspection diagnostic closeout; GitHub application source 77dadd67505642353b431db3802d2ec365966869; PR #185; Sites v56; database58 through `20260813175640_durable_media_ingestion_path_regex_repair_v1.sql`; environment revision 22; USD 0 incremental spend.
 

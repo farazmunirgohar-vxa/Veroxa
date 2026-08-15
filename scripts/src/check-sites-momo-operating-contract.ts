@@ -48,11 +48,13 @@ const v2UploadContract = read(
 );
 const combined = `${data}\n${ui}\n${manualCycle}\n${operatingGates}`;
 const oneStepClientUpload =
-  clientUi.includes("Confirm permission and upload") &&
-  clientUi.includes('restaurantAssociation: "not_for_restaurant"') &&
+  clientUi.includes("Confirm and upload") &&
+  clientUi.includes(
+    'restaurantAssociation: "represents_current_restaurant_offering"',
+  ) &&
   clientUi.includes("newestRestaurantContentEligible");
 const ownerAuthorityRequestOnly =
-  ui.includes("Owner authority stays with Momo") &&
+  ui.includes("Owner authority stays with {restaurantName}") &&
   ui.includes("Request owner change") &&
   !ui.includes("reviewMomoConfirmation(confirmation");
 const failures: string[] = [];
@@ -303,7 +305,9 @@ for (const marker of [
 for (const marker of [
   "usageScope: string[]",
   "p_usage_scope: usageScope",
-  '"veroxa_register_momo_media_v3"',
+  '"veroxa_begin_media_upload_v1"',
+  '"veroxa_commit_media_upload_v1"',
+  "p_original_sha256: originalSha256",
   "p_requested_association: input.restaurantAssociation",
 ]) {
   must(
@@ -311,10 +315,16 @@ for (const marker of [
     `Sites Client media adapter missing the one-step upload contract: ${marker}`,
   );
 }
-must(
-  !clientData.includes('"veroxa_register_momo_media_v2"'),
-  "Sites browser code still exposes the legacy upload instruction bypass",
-);
+for (const legacyRpc of [
+  '"veroxa_register_momo_media_v1"',
+  '"veroxa_register_momo_media_v2"',
+  '"veroxa_register_momo_media_v3"',
+]) {
+  must(
+    !clientData.includes(legacyRpc),
+    `Sites browser code still exposes the legacy upload bypass: ${legacyRpc}`,
+  );
+}
 
 for (const marker of [
   "submitMomoContentConfirmation",
@@ -599,17 +609,18 @@ must(
   "Team media review must require an explicit inspection attestation",
 );
 
-// Sites v50 keeps the one-step Client handoff while restoring the owner authority
-// required before the registration RPC may create confirmed platform-scoped rights.
-must(oneStepClientUpload, "Sites v50 must keep the one-step Client upload handoff.");
+// The Client handoff records both current-offering association and owner authority
+// before the upload-session RPC may create confirmed platform-scoped rights.
+must(oneStepClientUpload, "Sites must keep the one-step Client upload handoff.");
 for (const marker of [
   "MOMO_CLIENT_UPLOAD_SCOPE",
-  'restaurantAssociation: "not_for_restaurant"',
+  'restaurantAssociation: "represents_current_restaurant_offering"',
+  'associationNote: "Authenticated restaurant uploader attested that this image depicts a current restaurant offering."',
   "newestRestaurantContentEligible",
   "newestWorkflow.rightsConfirmed",
-  "rightsAttested: rightsConfirmed",
+  "rightsAttested: uploadAttested",
   "media_rights_attestation_required",
-  "I confirm I own this image or have permission to provide it for Instagram, Facebook, and Google Business content preparation",
+  "I confirm I own this image or have permission to provide it, and that it depicts a current offering from {restaurantName}, for Instagram, Facebook, and Google Business content preparation",
   "This attestation applies only to this upload and does not authorize posting or connect any account",
   "Nothing is posted or connected",
 ]) {
@@ -625,13 +636,13 @@ must(
 );
 mustMatch(
   clientData,
-  /input\.rightsAttested !== true[\s\S]*?throw new Error\("media_rights_attestation_required"\)[\s\S]*?storage\.from\("restaurant-media"\)\.upload/,
+  /if \(!teamAssessmentOnly && input\.rightsAttested !== true\) \{[\s\S]*?throw new Error\("media_rights_attestation_required"\)[\s\S]*?if \(teamAssessmentOnly\) \{[\s\S]*?\} else \{[\s\S]*?"veroxa_begin_media_upload_v1"[\s\S]*?\.from\("restaurant-media"\)[\s\S]*?\.upload/,
   "Owner attestation must be enforced before the Client upload reaches storage",
 );
 mustMatch(
   clientUi,
-  /type="checkbox" checked=\{rightsConfirmed\}[\s\S]*?required[\s\S]*?Instagram, Facebook, and Google Business content preparation/,
-  "The one-step Client UI must expose one required, scope-specific rights attestation",
+  /type="checkbox" checked=\{uploadAttested\}[\s\S]*?required[\s\S]*?current offering from \{restaurantName\}[\s\S]*?Instagram, Facebook, and Google Business content preparation/,
+  "The one-step Client UI must expose one required rights and current-offering attestation",
 );
 
 // Ready is a current-state computation: exact source lineage, owner scope,
@@ -813,12 +824,12 @@ for (const fixture of [
     (fixture ===
       "File, scope, expiry, and completed upload must invalidate the prior rights attestation" &&
       oneStepClientUpload &&
-      /const chooseFile = async[\s\S]*?setRightsConfirmed\(false\)/.test(clientUi) &&
-      /const finishUploadOutcome =[\s\S]*?setRightsConfirmed\(false\)[\s\S]*?setRightsConfirmed\(false\)/.test(clientUi) &&
-      clientUi.includes("rightsAttested: rightsConfirmed") &&
+      /const chooseFile = async[\s\S]*?setUploadAttested\(false\)/.test(clientUi) &&
+      /const finishUploadOutcome =[\s\S]*?setUploadAttested\(false\)[\s\S]*?setUploadAttested\(false\)/.test(clientUi) &&
+      clientUi.includes("rightsAttested: uploadAttested") &&
       mediaGuidanceTests.includes("MOMO_CLIENT_UPLOAD_SCOPE") &&
       mediaGuidanceTests.includes("fails closed for future, expired, malformed, or revoked rights") &&
-      mediaGuidanceTests.includes("explicit owner permission before creating scoped rights"));
+      mediaGuidanceTests.includes("explicitly attest rights and current-offering association before upload"));
   must(
     fixtureSatisfied,
     `Executable media safety fixture missing: ${fixture}`,

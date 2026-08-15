@@ -1,6 +1,17 @@
 <!-- GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY -->
 
-## 2026-08-15 — private media-recovery host-inspection diagnostic closeout; Sites v56 and database58 live (current authority)
+## 2026-08-15 — pre-intervention acceptance reconciliation (current authority)
+
+This checkpoint supersedes every earlier retry instruction. IMG_4257 (`05ab2303-f7ea-4056-8f75-9cd7e523a4f4`) is terminal at immutable attempt 4 with `media_recovery_completion_unavailable`; **zero retries remain**. Do not retry, reprocess, resubmit, move, replace, delete, re-upload, or transition it to Ready. Read-only evidence reconciliation is the only permitted access.
+
+- **GitHub:** `main` is PR #191 merge `7cb6173ce76cff840017b2b4ecfa37c31cb07a09`, tree `86afd2ac1a08d8486ea9d1bb30e8fff31478739e`. Its four exact-head workflows were green, but a post-merge unresolved P1 governance thread means it is not sufficient final review evidence by itself.
+- **Sites:** version 59 / deployment `appgdep_6a8016eee874819184f031daa896048c` is the last conclusively proven publish and predates PR #191. Saved version 60 has exact PR #191 application-source parity, but its live deployment identity is unproven. Do not infer deployment from a saved version.
+- **Supabase:** production is healthy with 59 applied migrations through repository migration `20260815090000_media_inspection_preflight_canary_v1.sql` (platform ledger version `20260815062451`). Completed intake verifications, canonical media identities, assessments, content-AI runs, and Ready packages all remain zero at this checkpoint.
+- **Current work:** use only a new, clearly labeled synthetic asset and a separate internally owned test restaurant. Repair the singleton-tenant, truthful current-offering, replay-idempotency, portal, and exact-release gaps through a scoped reviewed PR before any proof upload.
+- **External boundary:** provider writes, publishing, external scheduling, review replies, website writes, messages, outreach, and restaurant-account connections remain disabled. PR #187 remains draft, unmerged, undeployed, and deferred.
+- **Active sources:** read `artifacts/veroxa/docs/CURRENT_STATE.json` and `artifacts/veroxa/docs/CURRENT_MILESTONE.md` before the historical material below.
+
+## 2026-08-15 — private media-recovery host-inspection diagnostic closeout; Sites v56 and database58 live (historical, superseded)
 
 Current reconciliation markers: private media-recovery host-inspection diagnostic closeout; GitHub application source 77dadd67505642353b431db3802d2ec365966869; PR #185; Sites v56; database58 through `20260813175640_durable_media_ingestion_path_regex_repair_v1.sql`; environment revision 22; USD 0 incremental spend.
 

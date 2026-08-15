@@ -1,6 +1,15 @@
 <!-- GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY -->
 
-## 2026-08-15 — private media-recovery host-inspection diagnostic closeout; Sites v56 and database58 live (current authority)
+## 2026-08-15 — pre-intervention acceptance lock (current authority)
+
+- IMG_4257 (`05ab2303-f7ea-4056-8f75-9cd7e523a4f4`) is immutable terminal evidence after attempt 4 (`media_recovery_completion_unavailable`). Zero retries remain; never retry, replace, delete, re-upload, reprocess, or make it Ready.
+- Only a new, labeled synthetic asset and a separate internal test restaurant may be used for acceptance proof. Do not attach a second tenant to an existing Momo or Team identity.
+- `main` is PR #191 merge `7cb6173ce76cff840017b2b4ecfa37c31cb07a09`, but a post-merge unresolved P1 thread and unproven live Sites parity keep the release gate open.
+- Last proven hosting is Sites v59 deployment `appgdep_6a8016eee874819184f031daa896048c`; saved v60 is not deployment proof. Production Supabase is healthy at 59 migrations.
+- All publishing, external scheduling, provider/account connections, external messaging, review replies, website writes, outreach, and advertising/ordering writes remain prohibited and technically disabled.
+- PR #187 remains draft, unmerged, undeployed, and outside the acceptance path.
+
+## 2026-08-15 — private media-recovery host-inspection diagnostic closeout; Sites v56 and database58 live (historical, superseded)
 
 Current reconciliation markers: private media-recovery host-inspection diagnostic closeout; GitHub application source 77dadd67505642353b431db3802d2ec365966869; PR #185; Sites v56; database58 through `20260813175640_durable_media_ingestion_path_regex_repair_v1.sql`; environment revision 22; USD 0 incremental spend.
 

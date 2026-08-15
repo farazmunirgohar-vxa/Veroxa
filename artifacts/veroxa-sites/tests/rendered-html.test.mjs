@@ -12,7 +12,7 @@ import { updateHardenedVeroxaPassword } from "../app/veroxa-password-update.ts";
 const developmentPreviewMeta =
   /<meta(?=[^>]*\bname=["']codex-preview["'])(?=[^>]*\bcontent=["']development["'])[^>]*>/i;
 
-test("enforces the temporary Free-plan password policy", () => {
+test("enforces the hardened password policy", () => {
   assert.equal(getVeroxaPasswordIssue("Unique-Portal-Key-47!"), null);
   assert.match(getVeroxaPasswordIssue("Short1!") || "", /12 characters/);
   assert.match(getVeroxaPasswordIssue("NOLOWERCASE-47!") || "", /lowercase/);
@@ -322,6 +322,8 @@ test("audit UI keeps contact, draft-isolation, mutation, and mobile-navigation g
   assert.match(authCallback, /cookieStore\.get\(AUTH_RETURN_COOKIE\)/, "Auth callback must recover the validated return path from its short-lived cookie");
   assert.match(authCallback, /maxAge: 0/, "Auth callback must clear its short-lived return-path cookie");
   assert.match(page, /secure sign-in link may have been sent/, "Login must use one neutral, non-promissory delivery posture for non-configuration Auth outcomes");
+  assert.doesNotMatch(page, /Supabase Free|Free plan/, "Login and account-security copy must not claim a stale Supabase plan limitation");
+  assert.match(page, /Team Faraz or restaurant account/, "Login copy must remain restaurant-neutral");
   assert.doesNotMatch(page, /will be delivered when available/, "Login must not imply that failed Auth requests are queued for later delivery");
   assert.doesNotMatch(page, /Too many secure emails were requested during setup/, "Login must not reveal a distinct approved-account rate-limit state");
   assert.doesNotMatch(page, /momo-readiness-tracker\.json/, "The public client entry must not bundle the full Team readiness record");
@@ -346,7 +348,7 @@ test("audit UI keeps contact, draft-isolation, mutation, and mobile-navigation g
   assert.match(data, /\.upsert\(record,[\s\S]*?\.select\("id, audit_run_id"\)[\s\S]*?\.single\(\)/, "Report saves must prove one affected row");
 });
 
-test("Team stays Momo-focused and generated audits preview before atomic save", async () => {
+test("Team stays restaurant-scoped and generated audits preview before atomic save", async () => {
   const [page, center, data, css] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/audit-center.tsx", import.meta.url), "utf8"),
@@ -355,13 +357,13 @@ test("Team stays Momo-focused and generated audits preview before atomic save", 
   ]);
 
   for (const marker of [
-    "Momo’s House",
+    "restaurantName",
     "Upload → Veroxa Ready → Team decision",
     "Today",
     "Work",
     "Media",
     "Content",
-    "Momo profile",
+    "Restaurant profile",
     "READY-TO-POST MODE",
     "External posting is off",
     '"/team/momo/media"',
@@ -419,7 +421,7 @@ test("Team navigation exposes only live daily work while focused routes remain r
     readFile(new URL("../app/momo-operating-center.tsx", import.meta.url), "utf8"),
   ]);
 
-  assert.match(page, /const momoPrimaryNav[\s\S]*?label: "Today"[\s\S]*?label: "Work"[\s\S]*?label: "Media"[\s\S]*?label: "Content"[\s\S]*?label: "Momo profile"/, "The daily map must stay limited to five useful destinations");
+  assert.match(page, /const momoPrimaryNav[\s\S]*?label: "Today"[\s\S]*?label: "Work"[\s\S]*?label: "Media"[\s\S]*?label: "Content"[\s\S]*?label: "Restaurant profile"/, "The daily map must stay limited to five useful destinations");
   assert.match(page, /const teamPrimaryParent/, "Focused routes must return to a stable daily parent on mobile");
   assert.match(page, /value=\{teamPrimaryParent\[view\] \?\? view\}/, "Mobile navigation must remain valid on a focused task route");
   assert.doesNotMatch(page, /More workspace tools/, "The daily map must not expose advanced navigation");
@@ -447,7 +449,7 @@ test("Team navigation exposes only live daily work while focused routes remain r
 });
 
 test("Momo operating center uses live tenant data and exact production contracts", async () => {
-  const [page, center, data, clientData, migration, processorMigration, processorFix] = await Promise.all([
+  const [page, center, data, clientData, migration, processorMigration, processorFix, acceptanceMigration] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/momo-operating-center.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/momo-data.ts", import.meta.url), "utf8"),
@@ -455,6 +457,7 @@ test("Momo operating center uses live tenant data and exact production contracts
     readFile(new URL("../supabase/migrations/20260716035027_momo_preconnection_foundation.sql", import.meta.url), "utf8"),
     readFile(new URL("../supabase/migrations/20260809231409_momo_media_instruction_team_processing_v1.sql", import.meta.url), "utf8"),
     readFile(new URL("../supabase/migrations/20260809232154_momo_media_instruction_team_processor_fix_v1.sql", import.meta.url), "utf8"),
+    readFile(new URL("../supabase/migrations/20260815191500_veroxa_preintervention_acceptance_v1.sql", import.meta.url), "utf8"),
   ]);
 
   assert.match(page, /<MomoOperatingCenter/, "Protected routes must use the database-backed operating center");
@@ -505,8 +508,21 @@ test("Momo operating center uses live tenant data and exact production contracts
   assert.doesNotMatch(data, /\.rpc\("veroxa_apply_confirmation_v1"/, "Browser adapters must not apply owner decisions on Team's behalf");
   assert.match(data, /\.rpc\("veroxa_apply_approval_v1"/, "Team approval decisions must atomically update their subject");
   assert.match(data, /\.rpc\("veroxa_review_momo_media_v1"/, "Media review replacement and asset state must be atomic");
-  assert.match(clientData, /"veroxa_register_momo_media_v3"/, "Every authenticated Momo upload must save its instruction atomically");
+  assert.match(clientData, /"veroxa_begin_media_upload_v1"/, "Every authenticated client upload must reserve one replay-safe private object path");
+  assert.match(clientData, /"veroxa_commit_media_upload_v1"/, "Every authenticated client upload must atomically register its instruction and durable receipt");
+  assert.match(clientData, /p_original_sha256:\s*originalSha256/, "The durable upload session must bind the browser's full-file SHA-256");
+  assert.doesNotMatch(clientData, /"veroxa_register_momo_media_v1"/, "No browser adapter may call the original registration RPC directly");
   assert.doesNotMatch(clientData, /"veroxa_register_momo_media_v2"/, "No browser adapter may retain the legacy instruction-bypass registration path");
+  assert.doesNotMatch(clientData, /"veroxa_register_momo_media_v3"/, "No browser adapter may bypass the replay-safe begin/commit contract");
+  for (const legacyVersion of ["v1", "v2", "v3"]) {
+    assert.match(
+      acceptanceMigration,
+      new RegExp(`revoke execute on function public\\.veroxa_register_momo_media_${legacyVersion}\\([\\s\\S]{0,180}from authenticated;`),
+      `Authenticated Client registration must not retain the ${legacyVersion} direct-write RPC`,
+    );
+  }
+  assert.match(acceptanceMigration, /grant execute on function public\.veroxa_begin_media_upload_v1\([\s\S]{0,220}to authenticated;/, "Authenticated Client registration must enter through the durable begin RPC");
+  assert.match(acceptanceMigration, /grant execute on function public\.veroxa_commit_media_upload_v1\([\s\S]{0,120}to authenticated;/, "Authenticated Client registration must finish through the durable commit RPC");
   assert.match(clientData, /p_expires_on:\s*input\.expiresAt \|\| null/, "Rights expiry must be sent as a Momo-local calendar date, not browser-local timestamp");
   assert.match(data, /\.rpc\([\s\S]{0,80}"veroxa_apply_momo_media_upload_instruction_v1"/, "Team must apply the immutable saved instruction through the narrow processor");
   assert.match(processorMigration, /revoke all on function public\.veroxa_register_momo_media_v2\([\s\S]{0,180}from public, anon, authenticated, service_role;/, "The legacy browser bypass must be revoked");

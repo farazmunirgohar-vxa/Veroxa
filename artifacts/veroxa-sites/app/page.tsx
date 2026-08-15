@@ -104,7 +104,7 @@ const momoPrimaryNav: { id: View; label: string; icon: IconName; path: string }[
   { id: "team-work", label: "Work", icon: "grid", path: "/team/momo/work" },
   { id: "team-media", label: "Media", icon: "image", path: "/team/momo/media" },
   { id: "team-content", label: "Content", icon: "check", path: "/team/momo/content" },
-  { id: "team-intelligence", label: "Momo profile", icon: "spark", path: "/team/momo/intelligence" },
+  { id: "team-intelligence", label: "Restaurant profile", icon: "spark", path: "/team/momo/intelligence" },
 ];
 
 const momoFocusedTaskNav: { id: View; label: string; icon: IconName; path: string }[] = [
@@ -156,7 +156,15 @@ export default function Home() {
   return <VeroxaApp initialPath="/" />;
 }
 
-type AccessSeed = Pick<VeroxaAccess, "role" | "displayName" | "restaurantId">;
+type AccessSeed = Pick<VeroxaAccess, "role" | "displayName" | "restaurantName" | "restaurantId">;
+
+const workspaceInitials = (value: string) => value
+  .trim()
+  .split(/\s+/u)
+  .filter(Boolean)
+  .slice(0, 2)
+  .map((part) => part[0]?.toUpperCase())
+  .join("") || "R";
 
 export function VeroxaApp({
   initialPath,
@@ -257,10 +265,10 @@ export function VeroxaApp({
       : <LoginPage onNavigate={changeView} />;
   }
   if (!isSecurity && isTeam && access.status === "authenticated" && access.value.role !== "team") {
-    return <main className="login-shell"><section className="login-card"><p className="eyebrow">WORKSPACE BOUNDARY</p><h1>Team access required.</h1><p>This signed account belongs to the Momo client workspace and cannot open Team Faraz routes.</p><button className="primary-button" onClick={() => window.location.assign("/client/dashboard")}>Open Momo workspace</button></section></main>;
+    return <main className="login-shell"><section className="login-card"><p className="eyebrow">WORKSPACE BOUNDARY</p><h1>Team access required.</h1><p>This signed account belongs to the {access.value.restaurantName} client workspace and cannot open Team Faraz routes.</p><button className="primary-button" onClick={() => window.location.assign("/client/dashboard")}>Open restaurant workspace</button></section></main>;
   }
   if (!isSecurity && !isTeam && isProtected && access.status === "authenticated" && access.value.role !== "client") {
-    return <main className="login-shell"><section className="login-card"><p className="eyebrow">WORKSPACE BOUNDARY</p><h1>Momo client access required.</h1><p>This signed account belongs to Team Faraz and cannot enter a client route.</p><button className="primary-button" onClick={() => window.location.assign("/team/momo")}>Open Team workspace</button></section></main>;
+    return <main className="login-shell"><section className="login-card"><p className="eyebrow">WORKSPACE BOUNDARY</p><h1>Restaurant client access required.</h1><p>This signed account belongs to Team Faraz and cannot enter a client route.</p><button className="primary-button" onClick={() => window.location.assign("/team/momo")}>Open Team workspace</button></section></main>;
   }
   if (isSecurity && access.status === "authenticated") {
     return <PasswordSecurityPage
@@ -272,9 +280,12 @@ export function VeroxaApp({
   }
   const activeNav = isTeam ? teamNav : clientNav;
   const activeLabel = activeNav.find((item) => item.id === view)?.label ?? "Dashboard";
+  const restaurantName = access.status === "authenticated" ? access.value.restaurantName : "Restaurant";
+  const restaurantEyebrow = restaurantName.toLocaleUpperCase("en-US");
+  const restaurantAvatar = workspaceInitials(restaurantName);
 
   return (
-    <main className="app-shell" aria-label={isTeam ? "Secure Team route · Momo-only production boundary" : "Secure Momo client route"}>
+    <main className="app-shell" aria-label={isTeam ? `Secure Team route · ${restaurantName} production boundary` : `Secure ${restaurantName} client route`}>
       <aside className="sidebar">
         <Link className="brand" href={isTeam ? "/team/momo" : "/client/dashboard"} onClick={(event) => handleWorkspaceLink(event, isTeam ? "team" : "home")} aria-label="Veroxa home">
           <span className="brand-mark"><span>V</span></span>
@@ -282,14 +293,14 @@ export function VeroxaApp({
         </Link>
 
         <nav className={isTeam ? "main-nav team-main-nav" : "main-nav"} aria-label="Main navigation">
-          <p className="nav-label">{isTeam ? "MOMO’S HOUSE" : "CLIENT PORTAL"}</p>
+          <p className="nav-label">{isTeam ? restaurantEyebrow : "CLIENT PORTAL"}</p>
           {isTeam ? <>
             <div className="team-client-context" aria-label="Current client">
               <span className="team-folder-icon">M</span>
-              <span><strong>Momo’s House</strong><small>Upload → Veroxa Ready → Team decision</small></span>
+              <span><strong>{restaurantName}</strong><small>Upload → Veroxa Ready → Team decision</small></span>
               <em>Live</em>
             </div>
-            <div className="team-primary-navigation" aria-label="Momo operating sections">
+            <div className="team-primary-navigation" aria-label={`${restaurantName} operating sections`}>
               {momoPrimaryNav.map((item) => (
                 <Link key={item.id} href={item.path} onClick={(event) => handleWorkspaceLink(event, item.id)} className={view === item.id ? "nav-item active" : "nav-item"} aria-current={view === item.id ? "page" : undefined}>
                   <Icon name={item.icon} size={17}/><span>{item.label}</span>
@@ -307,12 +318,12 @@ export function VeroxaApp({
         {isTeam ? <div className="team-release-boundary"><span><i/> READY-TO-POST MODE</span><small>External posting is off</small></div> : <div className="help-card">
           <span className="help-icon"><Icon name="message" size={18}/></span>
           <strong>Need something?</strong>
-          <p>Verified Momo records will appear only after Team review and owner confirmation.</p>
+          <p>Verified {restaurantName} records will appear only after Team review and owner confirmation.</p>
           <button onClick={() => { setToast("Client workspace is safely waiting for verified records"); window.setTimeout(() => setToast(""), 2600); }}>View safe status <Icon name="arrow" size={15}/></button>
         </div>}
         <Link className="profile-card" href="/account/security" title="Account security">
-          <span className="avatar">{isTeam ? "FM" : "MK"}</span>
-          <span><strong>{access.status === "authenticated" ? access.value.displayName : isTeam ? "Team Faraz" : "Momo’s House"}</strong><small>Account security · password</small></span>
+          <span className="avatar">{isTeam ? "TF" : restaurantAvatar}</span>
+          <span><strong>{access.status === "authenticated" ? access.value.displayName : isTeam ? "Team Faraz" : "Restaurant account"}</strong><small>Account security · password</small></span>
           <Icon name="chevron" size={16}/>
         </Link>
       </aside>
@@ -320,17 +331,17 @@ export function VeroxaApp({
       <section className="workspace">
         <header className="topbar">
           <div className="mobile-brand"><span className="brand-mark"><span>V</span></span><strong>VEROXA</strong></div>
-          <div className="breadcrumbs">{isTeam ? view === "team-audits" ? <><span>Veroxa</span><b>/</b><strong>Restaurant audits</strong></> : <><span>Momo’s House</span><b>/</b><strong>{activeLabel}</strong></> : <><span>Client portal</span><b>/</b><strong>{activeLabel}</strong></>}</div>
+          <div className="breadcrumbs">{isTeam ? view === "team-audits" ? <><span>Veroxa</span><b>/</b><strong>Restaurant audits</strong></> : <><span>{restaurantName}</span><b>/</b><strong>{activeLabel}</strong></> : <><span>{restaurantName}</span><b>/</b><strong>{activeLabel}</strong></>}</div>
           <div className="top-actions">
-            <span className="live-pill"><i/> {isTeam ? "Momo live · posting off" : "Authenticated"}</span>
-            <Link className="top-avatar" href="/account/security" aria-label="Open account security" title="Account security">{isTeam ? "FM" : "MH"}</Link>
+            <span className="live-pill"><i/> {isTeam ? `${restaurantName} live · posting off` : "Authenticated"}</span>
+            <Link className="top-avatar" href="/account/security" aria-label="Open account security" title="Account security">{isTeam ? "TF" : restaurantAvatar}</Link>
             <button className="top-sign-out" onClick={() => void handleSignOut()} disabled={signOutBusy}>{signOutBusy ? "Signing out…" : "Sign out"}</button>
           </div>
         </header>
 
         {isTeam && <div className="team-mobile-workspace-bar">
           <label className="team-mobile-section-picker">
-            <span>Momo’s House</span>
+            <span>{restaurantName}</span>
             <select value={teamPrimaryParent[view] ?? view} onChange={(event) => changeView(event.target.value as View)} aria-label="Choose Team workspace section">
               {momoPrimaryNav.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
             </select>
@@ -416,7 +427,7 @@ function PublicHome({ onNavigate }: { onNavigate: (view: View) => void }) {
 
     <section className="public-modules">
       <article><span><Icon name="spark" size={23}/></span><p className="eyebrow">CLIENT EXPERIENCE</p><h2>Simple for the restaurant.</h2><p>Onboarding, media guidance, requests, weekly updates, reports, and connection status in one calm portal.</p></article>
-      <article><span><Icon name="grid" size={23}/></span><p className="eyebrow">TEAM FARAZ</p><h2>Operational behind the scenes.</h2><p>Restaurant intelligence, work queues, approvals, readiness, reporting, and safe next actions organized around Momo’s House.</p></article>
+      <article><span><Icon name="grid" size={23}/></span><p className="eyebrow">TEAM FARAZ</p><h2>Operational behind the scenes.</h2><p>Restaurant intelligence, work queues, approvals, readiness, reporting, and safe next actions organized for each restaurant.</p></article>
       <article><span><Icon name="shield" size={23}/></span><p className="eyebrow">CONTROLLED EXECUTION</p><h2>Honest by design.</h2><p>No invented results, unconfirmed business facts, or automatic public action. Veroxa prepares; the right person confirms and reviews.</p></article>
     </section>
 
@@ -623,7 +634,7 @@ function LoginPage({ onNavigate }: { onNavigate: (view: View) => void }) {
   return <main className="login-shell">
     <button className="brand login-brand" onClick={() => onNavigate("public")}><span className="brand-mark"><span>V</span></span><span className="brand-copy"><strong>VEROXA</strong><small>SECURE PORTAL ACCESS</small></span></button>
     <section className="login-card">
-      <p className="eyebrow">VEROXA ACCOUNT</p><h1>Welcome back.</h1><p>Sign in to your assigned Team Faraz or Momo’s House account. Role and workspace access are verified against the protected database.</p>
+      <p className="eyebrow">VEROXA ACCOUNT</p><h1>Welcome back.</h1><p>Sign in to your assigned Team Faraz or restaurant account. Role and workspace access are verified against the protected database.</p>
       <div className="auth-mode-switch" role="group" aria-label="Sign-in method">
         <button type="button" className={mode === "password" ? "active" : ""} onClick={() => switchMode("password")}>Password</button>
         <button type="button" className={mode === "magic-link" ? "active" : ""} onClick={() => switchMode("magic-link")}>Email link</button>
@@ -636,7 +647,7 @@ function LoginPage({ onNavigate }: { onNavigate: (view: View) => void }) {
         <button className="primary-button login-submit" type="submit" disabled={state === "submitting"}>{state === "submitting" ? (mode === "password" ? "Signing in…" : "Sending secure link…") : (mode === "password" ? "Sign in securely" : "Email me a secure sign-in link")} <Icon name="arrow" size={18}/></button>
         {mode === "password" && <button className="login-reset" type="button" onClick={() => switchMode("magic-link", true)}>Forgot or setting your password? Use a secure email link.</button>}
       </form>
-      <div className="login-lock"><Icon name="shield" size={17}/><span>Signed sessions and password verification are handled by Supabase Auth. Passwords require 12+ ASCII characters with uppercase, lowercase, number, and supported symbol. New passwords are checked against known leaks using a privacy-preserving partial hash; native Auth-boundary screening remains unavailable on the Free plan.</span></div>
+      <div className="login-lock"><Icon name="shield" size={17}/><span>Signed sessions and password verification are handled by Supabase Auth. Passwords require 12+ ASCII characters with uppercase, lowercase, number, and supported symbol. New passwords are also checked against known leaks using a privacy-preserving partial hash.</span></div>
     </section>
   </main>;
 }
@@ -701,7 +712,7 @@ function PasswordSecurityPage({
   return <main className="login-shell security-shell">
     <button className="brand login-brand" onClick={onBack}><span className="brand-mark"><span>V</span></span><span className="brand-copy"><strong>VEROXA</strong><small>ACCOUNT SECURITY</small></span></button>
     <section className="login-card security-card">
-      <p className="eyebrow">SIGNED IN · {access.role === "team" ? "TEAM FARAZ" : "MOMO’S HOUSE"}</p>
+      <p className="eyebrow">SIGNED IN · {access.role === "team" ? "TEAM FARAZ" : access.restaurantName.toLocaleUpperCase("en-US")}</p>
       <h1>Set or replace password.</h1>
       <p>Choose a unique password stored only as a secure Supabase Auth hash. Veroxa never stores or displays the plaintext password.</p>
       <form className="login-form" onSubmit={handlePasswordUpdate}>
@@ -713,7 +724,7 @@ function PasswordSecurityPage({
         <button className="primary-button login-submit" type="submit" disabled={state === "submitting"}>{state === "submitting" ? "Securing password…" : "Set or replace password"} <Icon name="shield" size={18}/></button>
       </form>
       <div className="security-actions"><button type="button" onClick={onBack}>Back to portal</button><button type="button" onClick={onSignOut} disabled={signOutBusy}>{signOutBusy ? "Signing out…" : "Sign out"}</button></div>
-      <div className="login-lock"><Icon name="shield" size={17}/><span>Veroxa checks the new password against known breach data using only a five-character hash prefix. This is defense in depth; Supabase Free does not provide native Auth-boundary leaked-password enforcement. A fresh email-link sign-in lets you replace it later.</span></div>
+      <div className="login-lock"><Icon name="shield" size={17}/><span>Veroxa checks the new password against known breach data using only a five-character hash prefix. A fresh email-link sign-in lets you replace it later.</span></div>
     </section>
   </main>;
 }

@@ -7,40 +7,45 @@ write:
 
 ## Current checkpoint
 
-PR #190 merged the Storage-transform redirect repair as
-`921e197ee27d1d2cc673e7c75c79ae1770fa6d33` and Sites version 59 is live from
-private mirror source `02f536710d5493b4670684294210e76bcb05eb9d`. The one
-manually controlled synthetic preflight passed with `bindingAvailable=true`, a
-private transformed JPEG response of 200, and durable completion evidence.
+GitHub `main` is PR #191 merge
+`7cb6173ce76cff840017b2b4ecfa37c31cb07a09`, with executable tree
+`86afd2ac1a08d8486ea9d1bb30e8fff31478739e`. Its exact-head CI, Sites Verify,
+Supabase Verify, and Veroxa Verify runs passed, but a post-merge unresolved P1
+governance thread prevents treating PR #191 as complete final-review evidence.
 
-IMG_4257 then received its one permitted retry using the unchanged source
-object/version. The recovery path read the source, completed trusted image
-inspection, and invoked the private completion RPC. The RPC returned HTTP 400
-because the handler emitted a success verifier version added for diagnostics in
-PR #185, while the immutable intake validator still requires its original
-success-contract version. The receipt is terminal at attempt 4 to prevent an
-automatic fifth retry. No source bytes, provider state, Ready package, or
-external action changed.
+Sites v59 deployment `appgdep_6a8016eee874819184f031daa896048c` is the last
+conclusively proven publish and predates PR #191. Saved Sites v60 has exact
+PR #191 application-tree parity, but no deployment ID currently binds it to the
+live worker. Production Supabase is healthy at 59 migrations through repository
+`20260815090000_media_inspection_preflight_canary_v1.sql`; successful intake,
+canonical identity, assessment, content-AI, and Ready counts are all zero.
 
-The only active change is a narrow contract separation on
-`agent/fix-media-verifier-contract-20260815`: successful intake records retain
-the persisted v1 verifier contract, while recovery diagnostic evidence retains
-its v2 version. It does not alter media, rights, Ready, provider, or
-external-action logic.
+IMG_4257 (`05ab2303-f7ea-4056-8f75-9cd7e523a4f4`) is immutable terminal
+evidence at attempt 4 with `media_recovery_completion_unavailable`. Zero retry
+authority remains. Read-only inspection is permitted; retry, reprocess,
+resubmit, move, replace, delete, re-upload, and Ready transition are prohibited.
+
+The active branch `agent/veroxa-pre-intervention-proof-20260815` is a scoped
+forward candidate for an expiring internal acceptance tenant, separate test
+identities, truthful current-offering upload attestation, content replay
+idempotency, generic authenticated portal copy, mobile proof, and exact release
+evidence. It introduces no external provider or publication authority. PR #187
+remains draft, unmerged, undeployed, and deferred.
 
 ## Strict next sequence
 
-1. Open and review the scoped verifier-contract PR; require exact-head CI,
-   source review, and no unrelated diff.
-2. Merge only when green; mirror the exact reviewed Sites application tree and
-   deploy it.
-3. Use a clearly labeled synthetic fixture to prove signed delivery, full byte
-   readback, Storage transform inspection, durable intake completion, and
-   fail-closed recovery behavior.
-4. Preserve IMG_4257's truthful terminal exception. Do not retry, replace, or
-   alter it. Use synthetic media for subsequent technical proof of `Ready`.
-5. Complete the private Momo internal cycle before R2, broad portal work, or a
-   naming refactor.
+1. Finish the narrow acceptance repair and focused regression coverage.
+2. Require exact-head CI, independent code/security review, and zero unresolved
+   review threads. Merge only the exact reviewed head.
+3. Apply only the reviewed forward migration, publish only the exact merged
+   application tree, and prove every live artifact identity.
+4. Create a separate labeled test restaurant and identities; use one new
+   synthetic success image through the authenticated production path.
+5. Prove natural Ready, exact replay idempotency, one controlled invalid
+   failure, both role-authenticated portals on desktop/mobile, RLS and role
+   isolation, and zero external writes.
+6. Ask Faraz for one fresh Momo image only after every acceptance gate is
+   evidenced. Keep PR #187 outside this path.
 
 ## Non-negotiable controls
 

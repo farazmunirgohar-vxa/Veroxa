@@ -260,7 +260,8 @@ export function createMediaInspectionPreflightHandler(
     }
 
     let state: "passed" | "failed" = "failed";
-    let failureCode: string | null = failureCodeForException();
+    let failureCode: string | null =
+      "media_inspection_preflight_execution_failed";
     let diagnostics: VeroxaPrivateMediaHostInspectionDiagnostics | null = null;
     let fixtureSha256: string | null = null;
     try {

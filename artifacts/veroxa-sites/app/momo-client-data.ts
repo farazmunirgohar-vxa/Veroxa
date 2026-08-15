@@ -1007,13 +1007,78 @@ export type MomoClientMediaUploadDependencies = {
     association: VeroxaMediaRestaurantAssociation;
     note: string;
   }) => Promise<MomoMediaAssociationResult>;
-  registrationRpc?:
-    | "veroxa_register_momo_media_v3"
-    | "veroxa_register_team_private_media_v1";
+  registrationRpc?: "veroxa_register_team_private_media_v1";
   skipAssociation?: boolean;
+  sha256?: (file: File) => Promise<string>;
   now?: () => Date;
   randomUuid?: () => string;
 };
+
+type MomoMediaUploadSession = {
+  uploadSessionId: string;
+  storagePath: string;
+  status: "initiated" | "registered";
+  assetId: string | null;
+  rightsId: string | null;
+};
+
+export async function sha256MomoClientMediaFile(file: File): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", await file.arrayBuffer());
+  return Array.from(new Uint8Array(digest), (byte) =>
+    byte.toString(16).padStart(2, "0")
+  ).join("");
+}
+
+function mediaUploadSession(
+  value: unknown,
+  restaurantId: string,
+  mimeType: string,
+  expectedOriginalSha256: string,
+): MomoMediaUploadSession | null {
+  const row = Array.isArray(value) ? value[0] : value;
+  if (!row || typeof row !== "object" || Array.isArray(row)) return null;
+  const record = row as {
+    upload_session_id?: unknown;
+    storage_path?: unknown;
+    session_status?: unknown;
+    asset_id?: unknown;
+    rights_id?: unknown;
+    original_sha256?: unknown;
+    external_write_allowed?: unknown;
+  };
+  const normalizedRestaurantId = restaurantId.toLowerCase();
+  const path = typeof record.storage_path === "string"
+    ? record.storage_path
+    : "";
+  const extensionValid = mimeType === "image/png"
+    ? path.endsWith(".png")
+    : path.endsWith(".jpg") || path.endsWith(".jpeg");
+  if (!isMomoContentUuid(record.upload_session_id)
+      || !path.startsWith(
+        `restaurants/${normalizedRestaurantId}/uploads/`,
+      )
+      || !extensionValid
+      || (record.session_status !== "initiated"
+        && record.session_status !== "registered")
+      || record.original_sha256 !== expectedOriginalSha256
+      || record.external_write_allowed !== false) return null;
+  const assetId = isMomoContentUuid(record.asset_id)
+    ? record.asset_id.toLowerCase()
+    : null;
+  const rightsId = isMomoContentUuid(record.rights_id)
+    ? record.rights_id.toLowerCase()
+    : null;
+  if (record.session_status === "registered" && (!assetId || !rightsId)) {
+    return null;
+  }
+  return {
+    uploadSessionId: record.upload_session_id.toLowerCase(),
+    storagePath: path,
+    status: record.session_status,
+    assetId,
+    rightsId,
+  };
+}
 
 function registrationIds(value: unknown): {
   assetId: string;
@@ -1075,6 +1140,7 @@ export async function uploadMomoClientMediaWithDependencies(input: {
   rightsAttested?: boolean;
   associationNote?: string;
   expiresAt?: string;
+  clientIdempotencyKey?: string;
 }, dependencies: MomoClientMediaUploadDependencies): Promise<MomoClientMediaUploadOutcome> {
   if (!isMomoContentUuid(input.restaurantId)) throw new Error("invalid_restaurant_id");
   if (!VEROXA_PRIVATE_MEDIA_MIME_TYPES.includes(
@@ -1102,50 +1168,115 @@ export async function uploadMomoClientMediaWithDependencies(input: {
   if (!scopeValid) {
     throw new Error("invalid_media_scope");
   }
-  const now = (dependencies.now ?? (() => new Date()))();
-  const objectId = (dependencies.randomUuid ?? (() => crypto.randomUUID()))();
-  if (!isMomoContentUuid(objectId)) throw new Error("media_upload_failed");
-  const extension = input.file.type === "image/png" ? "png" : "jpg";
-  const storagePath = `restaurants/${input.restaurantId.toLowerCase()}/uploads/${now.getUTCFullYear()}/${String(now.getUTCMonth() + 1).padStart(2, "0")}/${objectId.toLowerCase()}.${extension}`;
-  const uploaded = await dependencies.client.storage.from("restaurant-media").upload(storagePath, input.file, {
-    contentType: input.file.type,
-    upsert: false,
-  });
-  if (uploaded.error) throw new Error("media_upload_failed");
-  const registrationRpc = dependencies.registrationRpc ??
-    "veroxa_register_momo_media_v3";
-  const registrationParameters = registrationRpc ===
-      "veroxa_register_momo_media_v3"
-    ? {
-      p_restaurant_id: input.restaurantId.toLowerCase(),
-      p_storage_path: storagePath,
-      p_mime_type: input.file.type,
-      p_file_size: input.file.size,
-      p_original_file_name: input.file.name,
-      p_usage_scope: usageScope,
-      p_expires_on: input.expiresAt || null,
-      p_requested_association: input.restaurantAssociation,
-      p_association_note: input.associationNote?.trim() || null,
+  let storagePath: string;
+  let registered: { assetId: string; rightsId: string } | null;
+  if (teamAssessmentOnly) {
+    const now = (dependencies.now ?? (() => new Date()))();
+    const objectId = (dependencies.randomUuid ?? (() => crypto.randomUUID()))();
+    if (!isMomoContentUuid(objectId)) throw new Error("media_upload_failed");
+    const extension = input.file.type === "image/png" ? "png" : "jpg";
+    storagePath = `restaurants/${input.restaurantId.toLowerCase()}/uploads/${now.getUTCFullYear()}/${String(now.getUTCMonth() + 1).padStart(2, "0")}/${objectId.toLowerCase()}.${extension}`;
+    const uploaded = await dependencies.client.storage.from("restaurant-media")
+      .upload(storagePath, input.file, {
+        contentType: input.file.type,
+        upsert: false,
+      });
+    if (uploaded.error) throw new Error("media_upload_failed");
+    const registration = await dependencies.client.rpc(
+      "veroxa_register_team_private_media_v1",
+      {
+        p_restaurant_id: input.restaurantId.toLowerCase(),
+        p_storage_path: storagePath,
+        p_mime_type: input.file.type,
+        p_file_size: input.file.size,
+        p_original_file_name: input.file.name,
+        p_intake_notes: null,
+        p_usage_scope: usageScope,
+        p_expires_on: input.expiresAt || null,
+      },
+    );
+    if (registration.error || !registration.data) {
+      await dependencies.client.storage.from("restaurant-media")
+        .remove([storagePath]);
+      throw new Error("media_registration_failed");
     }
-    : {
-      p_restaurant_id: input.restaurantId.toLowerCase(),
-      p_storage_path: storagePath,
-      p_mime_type: input.file.type,
-      p_file_size: input.file.size,
-      p_original_file_name: input.file.name,
-      p_intake_notes: null,
-      p_usage_scope: usageScope,
-      p_expires_on: input.expiresAt || null,
+    registered = registrationIds(registration.data);
+  } else {
+    const originalSha256 = await (dependencies.sha256 ??
+      sha256MomoClientMediaFile)(input.file);
+    if (!/^[0-9a-f]{64}$/u.test(originalSha256)) {
+      throw new Error("media_upload_hash_failed");
+    }
+    const clientIdempotencyKey = input.clientIdempotencyKey ??
+      (dependencies.randomUuid ?? (() => crypto.randomUUID()))();
+    if (!isMomoContentUuid(clientIdempotencyKey)) {
+      throw new Error("media_upload_session_failed");
+    }
+    const begun = await dependencies.client.rpc(
+      "veroxa_begin_media_upload_v1",
+      {
+        p_restaurant_id: input.restaurantId.toLowerCase(),
+        p_client_idempotency_key: clientIdempotencyKey.toLowerCase(),
+        p_original_sha256: originalSha256,
+        p_mime_type: input.file.type,
+        p_file_size: input.file.size,
+        p_original_file_name: input.file.name,
+        p_usage_scope: usageScope,
+        p_expires_on: input.expiresAt || null,
+        p_requested_association: input.restaurantAssociation,
+        p_association_note: input.associationNote?.trim() || null,
+      },
+    );
+    if (begun.error || !begun.data) {
+      throw new Error("media_upload_session_failed");
+    }
+    const session = mediaUploadSession(
+      begun.data,
+      input.restaurantId,
+      input.file.type,
+      originalSha256,
+    );
+    if (!session) throw new Error("media_upload_session_response_invalid");
+    storagePath = session.storagePath;
+    let uploadFailed = false;
+    if (session.status === "initiated") {
+      const uploaded = await dependencies.client.storage
+        .from("restaurant-media").upload(storagePath, input.file, {
+          contentType: input.file.type,
+          upsert: false,
+        });
+      uploadFailed = Boolean(uploaded.error);
+    }
+    const committed = await dependencies.client.rpc(
+      "veroxa_commit_media_upload_v1",
+      { p_upload_session_id: session.uploadSessionId },
+    );
+    if (committed.error || !committed.data) {
+      // The durable session owns this private object. Leave it in place so an
+      // idempotent commit replay can finish registration without re-uploading.
+      throw new Error(uploadFailed
+        ? "media_upload_failed"
+        : "media_registration_failed");
+    }
+    const committedSession = mediaUploadSession(
+      committed.data,
+      input.restaurantId,
+      input.file.type,
+      originalSha256,
+    );
+    if (!committedSession
+        || committedSession.status !== "registered"
+        || committedSession.uploadSessionId !== session.uploadSessionId
+        || committedSession.storagePath !== session.storagePath
+        || !committedSession.assetId
+        || !committedSession.rightsId) {
+      throw new Error("media_registration_response_invalid");
+    }
+    registered = {
+      assetId: committedSession.assetId,
+      rightsId: committedSession.rightsId,
     };
-  const registration = await dependencies.client.rpc(
-    registrationRpc,
-    registrationParameters,
-  );
-  if (registration.error || !registration.data) {
-    await dependencies.client.storage.from("restaurant-media").remove([storagePath]);
-    throw new Error("media_registration_failed");
   }
-  const registered = registrationIds(registration.data);
   if (!registered) return uploadAttention(null, storagePath, "media_registration_response_invalid");
   const finalized = await finalizeRegisteredMomoClientMedia({
     restaurantId: input.restaurantId.toLowerCase(),
@@ -1203,6 +1334,7 @@ export async function uploadMomoClientMedia(input: {
   rightsAttested: boolean;
   associationNote?: string;
   expiresAt?: string;
+  clientIdempotencyKey?: string;
 }): Promise<MomoClientMediaUploadOutcome> {
   return uploadMomoClientMediaWithDependencies(input, { client: requiredClient() });
 }

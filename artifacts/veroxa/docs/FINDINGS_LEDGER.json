@@ -367,17 +367,18 @@
         "IMG_4257 controlled retry gate"
       ],
       "rootCause": "PR #185 made the recovery handler use verifier version 2026-08-15-v2 for both diagnostic evidence and the successful immutable verification snapshot. The successful snapshot is validated by the unchanged v1 database contract, so the completion RPC rejects it even though diagnostics may evolve independently.",
-      "correctiveAction": "Separate the two constants: successful intake remains verifier v1, while recovery diagnostic evidence remains v2. Add explicit focused tests for both values, require a scoped PR and exact production deployment, and use a synthetic fixture—not IMG_4257—to prove durable completion.",
+      "correctiveAction": "PR #191 separated the two constants: successful intake remains verifier v1 while recovery diagnostic evidence remains v2. The exact merged source must still be deployed and a new synthetic fixture—not IMG_4257—must prove durable completion.",
       "branch": "agent/fix-media-verifier-contract-20260815",
-      "pullRequest": null,
-      "commit": null,
-      "migrationOrDeployment": "no migration; current production baseline is Sites version 59",
+      "pullRequest": 191,
+      "commit": "7cb6173ce76cff840017b2b4ecfa37c31cb07a09",
+      "migrationOrDeployment": "PR #191 merged at tree 86afd2ac1a08d8486ea9d1bb30e8fff31478739e; the last conclusively proven Sites deployment remains version 59 and exact live PR #191 parity is not proven",
       "tests": [
         "focused momo-media-ingestion-recovery suite passed 19/19",
         "Sites lint, root typecheck, and verify:veroxa passed for the scoped candidate",
         "the prior full Sites suite passed 488/488 after the handler and regression test change; the later guard/evidence changes are covered by verify:veroxa",
         "focused security diff review completed with complete coverage and zero reportable findings",
-        "exact-head CI and synthetic production recovery completion remain required before closeout"
+        "PR #191 exact head aabb1efc72cfcc1ee649572dd033c7806a28dbb0 passed CI 31873987160, Sites Verify 31873987170, Supabase Verify 31873987150, and Veroxa Verify 31873987157",
+        "synthetic production recovery completion remains required before closeout"
       ],
       "productionEvidence": [
         "preflight run 659168f7-862f-46b2-9265-8e9ad697912a passed before the retry",
@@ -387,7 +388,156 @@
         "no provider call, Ready package, Team decision, publishing, scheduling, messaging, or external write occurred"
       ],
       "rollbackMethod": "Deploy saved Sites version 59 if the repair misbehaves; preserve IMG_4257 and all prior attempts. Never rearm this receipt.",
-      "finalStatus": "open_scoped_contract_repair_pending_pr_review_deployment_and_synthetic_completion_proof"
+      "finalStatus": "source_repair_merged_pr191_live_parity_and_new_synthetic_completion_unproven"
+    },
+    {
+      "findingId": "F-017",
+      "originalConcern": "The live Sites deployment was not conclusively proven to execute the reviewed PR #191 source tree.",
+      "freshVerificationResult": "GitHub main and PR #191 share tree 86afd2ac1a08d8486ea9d1bb30e8fff31478739e. The last proven live Sites deployment is v59 / appgdep_6a8016eee874819184f031daa896048c at older application tree 602b6c339c285b62667064ba5094f95359002ddd. Saved v60 has PR #191 application tree parity, but no live deployment identity proves it is serving production.",
+      "severity": "critical",
+      "affectedSystems": [
+        "GitHub release authority",
+        "Sites production deployment",
+        "private media recovery"
+      ],
+      "rootCause": "A saved Sites version is not sufficient deployment evidence, and the platform uses a separately promoted private source mirror.",
+      "correctiveAction": "Merge only an exact reviewed candidate head, promote only its exact application tree, and read back the Sites version, deployment ID, source identity, timestamp, and live route behavior before production proof.",
+      "branch": "agent/veroxa-pre-intervention-proof-20260815",
+      "pullRequest": null,
+      "commit": null,
+      "migrationOrDeployment": "pending; last proven Sites production remains v59",
+      "tests": [
+        "phase-1 GitHub tree comparison completed",
+        "phase-1 Sites saved-versus-live identity comparison completed"
+      ],
+      "productionEvidence": [
+        "last proven deployment appgdep_6a8016eee874819184f031daa896048c",
+        "saved v60 application tree 35a8ea7d8efc4723c65622675c177e77ee575138 has no proven live deployment ID"
+      ],
+      "rollbackMethod": "Keep serving the last proven Sites version until an exact reviewed candidate is ready; if the later promotion fails, redeploy the explicitly identified prior saved version.",
+      "finalStatus": "open_candidate_release_and_exact_live_parity_pending"
+    },
+    {
+      "findingId": "F-018",
+      "originalConcern": "The operational tenant and role helpers were Momo-singleton contracts, so an isolated synthetic acceptance restaurant could not traverse the normal production pipeline.",
+      "freshVerificationResult": "The local forward migration adds one immutable, postgres-provisioned internal acceptance scope with separate single-membership client and Team actors, target-scoped role checks, customer invisibility, and an explicit allowlist limited to intake, assessment, internal AI, Ready, and audit surfaces.",
+      "severity": "critical",
+      "affectedSystems": [
+        "Supabase tenant authorization",
+        "restaurant portal",
+        "Team portal",
+        "internal AI workflow"
+      ],
+      "rootCause": "Current generalized-looking functions ultimately delegated to Momo-only membership and row guards.",
+      "correctiveAction": "Apply the forward-only acceptance migration only after exact-head review and CI, provision a clearly labeled non-customer tenant through its postgres-only helper, and prove RLS and role isolation through real authenticated sessions.",
+      "branch": "agent/veroxa-pre-intervention-proof-20260815",
+      "pullRequest": null,
+      "commit": null,
+      "migrationOrDeployment": "pending migration 20260815191500_veroxa_preintervention_acceptance_v1.sql",
+      "tests": [
+        "mirrored pgTAP candidate added; hosted execution is unproven",
+        "local application tests passed before final exact-head review"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Do not apply the pending migration. If a reviewed forward repair is later required, use another forward-only migration; never edit an applied migration.",
+      "finalStatus": "local_candidate_pending_ci_review_apply_and_authenticated_live_proof"
+    },
+    {
+      "findingId": "F-019",
+      "originalConcern": "Replaying the same client upload could create a new storage path, original object, media asset, verification path, and actionable Team work.",
+      "freshVerificationResult": "The local candidate hashes the full client file before upload and reserves an immutable private upload session through begin/commit RPCs. Tenant, actor, and content SHA identify one canonical session; immutable idempotency-key aliases can replay it without creating another object, and a registered replay returns the same asset and rights IDs.",
+      "severity": "high",
+      "affectedSystems": [
+        "client upload adapter",
+        "private Storage",
+        "media registration",
+        "Team actionable queue"
+      ],
+      "rootCause": "The prior browser path generated a fresh object UUID before durable content identity existed.",
+      "correctiveAction": "Use the reviewed begin/upload/commit path, revoke authenticated execution of all historical direct registration stages, bind verifier completion to the expected SHA, and prove counts before and after a legitimate duplicate replay in production.",
+      "branch": "agent/veroxa-pre-intervention-proof-20260815",
+      "pullRequest": null,
+      "commit": null,
+      "migrationOrDeployment": "pending migration 20260815191500_veroxa_preintervention_acceptance_v1.sql and Sites source",
+      "tests": [
+        "local registered replay test reuses the same IDs",
+        "local initiated replay test commits an already-present reserved object",
+        "mirrored pgTAP asserts content uniqueness and immutable aliases; hosted execution is pending"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Do not apply or deploy the candidate. Preserve any later initiated session/object for legitimate commit replay rather than deleting immutable evidence.",
+      "finalStatus": "local_candidate_pending_ci_review_apply_deploy_and_duplicate_proof"
+    },
+    {
+      "findingId": "F-020",
+      "originalConcern": "Authenticated portal copy and upload metadata were Momo-specific, included stale Supabase-plan language, and recorded client uploads as not for the restaurant.",
+      "freshVerificationResult": "The local application candidate derives restaurant names from the authenticated tenant, removes stale Free-plan copy, and requires the client upload to record represents_current_restaurant_offering with an exact uploader attestation. Team and Client views retain role-specific data boundaries.",
+      "severity": "high",
+      "affectedSystems": [
+        "restaurant portal",
+        "Team portal",
+        "media truth association"
+      ],
+      "rootCause": "The founding-pilot presentation and placeholder upload metadata remained hardcoded after production auth was enabled.",
+      "correctiveAction": "Release the scoped portal and truth-association repair, then verify desktop and iPhone-sized authenticated states for separate restaurant and Team users before any manual Momo handoff.",
+      "branch": "agent/veroxa-pre-intervention-proof-20260815",
+      "pullRequest": null,
+      "commit": null,
+      "migrationOrDeployment": "pending exact reviewed Sites deployment",
+      "tests": [
+        "local lint and verified build passed",
+        "local full Sites suite passed before final exact-head review"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Retain the last proven Sites deployment until the candidate is reviewed; use the exact prior saved version if later portal verification fails.",
+      "finalStatus": "local_candidate_pending_ci_review_deployment_and_authenticated_portal_proof"
+    },
+    {
+      "findingId": "F-021",
+      "originalConcern": "The immutable schema-13 release guard did not yet recognize or bound the new pre-intervention acceptance candidate.",
+      "freshVerificationResult": "The local guard binds the candidate to PR #191 merge commit and tree, requires every legitimate changed path, rejects extra paths/deletions/renames/type changes/unmerged entries, verifies migration and pgTAP mirrors, and keeps every remote and production gate false.",
+      "severity": "high",
+      "affectedSystems": [
+        "release-manifest guard",
+        "source-truth checks",
+        "deployment attestation"
+      ],
+      "rootCause": "The prior guard recognized only the now-merged verifier-contract candidate and historical media-inspection candidates.",
+      "correctiveAction": "Retain the immutable deployment manifest and use CURRENT_STATE only as the bounded forward-candidate authority until exact release and production evidence exists.",
+      "branch": "agent/veroxa-pre-intervention-proof-20260815",
+      "pullRequest": null,
+      "commit": null,
+      "migrationOrDeployment": null,
+      "tests": [
+        "release/source-truth validators pending final candidate fingerprints"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Revert the candidate checkpoint and guard together; the immutable schema-13 manifest remains the fail-closed baseline.",
+      "finalStatus": "local_guard_implemented_pending_final_fingerprints_and_ci"
+    },
+    {
+      "findingId": "F-022",
+      "originalConcern": "Authenticated callers could still invoke historical direct media-registration RPC stages and bypass the new replay-safe begin/commit session boundary.",
+      "freshVerificationResult": "Independent local review found the bypass before release. The forward migration now revokes authenticated execute from v1, v2, and v3 registration RPCs; the security-definer commit function retains only its server-side reviewed call chain.",
+      "severity": "high",
+      "affectedSystems": [
+        "Supabase RPC authorization",
+        "client upload idempotency",
+        "private media registration"
+      ],
+      "rootCause": "Adding begin/commit RPCs did not automatically revoke grants from the pre-existing direct registration functions.",
+      "correctiveAction": "Require explicit authenticated revocation of every historical registration stage plus pgTAP coverage before merging or applying the candidate.",
+      "branch": "agent/veroxa-pre-intervention-proof-20260815",
+      "pullRequest": null,
+      "commit": null,
+      "migrationOrDeployment": "pending migration 20260815191500_veroxa_preintervention_acceptance_v1.sql",
+      "tests": [
+        "mirrored pgTAP revocation and alias/content-uniqueness assertions pending hosted execution",
+        "release guard checks the authenticated v3 revocation and immutable alias/content uniqueness markers"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Do not apply the candidate until the exact hosted ACL tests pass.",
+      "finalStatus": "local_security_repair_pending_ci_review_and_production_apply"
     },
     {
       "findingId": "F-002",

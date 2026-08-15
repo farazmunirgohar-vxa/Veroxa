@@ -123,7 +123,13 @@ const handler = createMomoMediaRecoveryHandler({
         p_idempotency_hash: input.idempotencyHash,
       },
     );
-    if (error) throw new Error("media_recovery_completion_rejected");
+    if (error) {
+      if (typeof error.message === "string" &&
+          error.message.includes("media_upload_expected_sha256_mismatch")) {
+        throw new Error("media_upload_expected_sha256_mismatch");
+      }
+      throw new Error("media_recovery_completion_rejected");
+    }
     return data;
   },
   async fail(input) {
