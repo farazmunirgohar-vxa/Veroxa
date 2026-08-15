@@ -4,32 +4,32 @@ Status: highest-level current source-of-truth index. Read this file before relyi
 
 <!-- GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY -->
 
-## 2026-08-15 — quality-first private-media R2 vault candidate; Sites v54 and database58 live (current authority)
+## 2026-08-15 — quality-first private-media R2 vault candidate; Sites v55 and database58 live (current authority)
 
-Current reconciliation markers: quality-first private-media R2 vault candidate; GitHub main 4a098ea98690ee9be6b86cc8fe783ef0cfc265ed; branch agent/veroxa-r2-media-vault-20260815; pending migration 20260815013053_momo_private_media_r2_vault_v1.sql; Sites v54; database58; 486/486; USD 0 incremental spend.
+Current reconciliation markers: quality-first private-media R2 vault candidate; GitHub main 77dadd67505642353b431db3802d2ec365966869; PR #187; branch agent/veroxa-r2-media-vault-20260815; pending migration 20260815013053_momo_private_media_r2_vault_v1.sql; Sites v55; database58; 487/487; USD 0 incremental spend.
 
 - **Authority and scope:** `GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY` remains in force. External providers, publishing, review replies, website writes, external scheduling, and production deployment of this candidate remain disabled.
-- **Verified production baseline:** PR #184 is merged in GitHub main at `4a098ea98690ee9be6b86cc8fe783ef0cfc265ed`. Sites v54 and database58 remain the live production baseline; the R2 binding, candidate59 migration, vault worker, and Ready gate are not deployed or applied.
+- **Verified production baseline:** GitHub main includes PR #185 at `77dadd67505642353b431db3802d2ec365966869`, while production Sites v55 remains the saved PR #184 source and database58 remains live. The diagnostic source, R2 binding, candidate59 migration, vault worker, and Ready gate are not deployed or applied.
 - **Quality-first vault candidate:** every verified full-resolution original receives a tenant-scoped, content-addressed R2 copy using atomic create-only semantics, an upload SHA-256, full byte readback, and a second SHA-256 verification. The Supabase original is never moved, rewritten, resized, or deleted.
 - **AI and automation boundary:** AI may run at the existing model, reasoning, resolution, and automation settings while vault work retries independently. Only final Veroxa Ready creation waits for an append-only verified vault receipt; there is no AI model downgrade, reasoning reduction, image-resolution reduction, provider call, schedule, or public write.
 - **Durability boundary:** the private worker is service-role-only, HMAC signed, leased, bounded to five attempts, and has retry/dead-letter and historical verified-media backfill paths. Provider-level R2 retention lock and a controlled synthetic restore drill are mandatory before production activation and remain unverified.
-- **Quality evidence:** 486/486 application tests, production build, typecheck, lint, artifact validation, exact-byte/no-overwrite negatives, source-hash drift negatives, and root/Sites migration mirror comparison pass locally. Hosted clean-chain database execution, pgTAP, exact-head GitHub gates, and zero unresolved review threads remain pending.
-- **Protected original:** IMG_4257 and all existing source bytes remain untouched. No re-upload, move, deletion, production vault copy, Ready disposition, Momo contact, or production deployment is claimed.
+- **Quality evidence:** 487/487 application tests, production build, typecheck, lint, artifact validation, diagnostic fail-closed coverage, exact-byte/no-overwrite negatives, source-hash drift negatives, and root/Sites migration mirror comparison pass locally. Hosted clean-chain database execution, pgTAP, exact-head GitHub gates, and zero unresolved review threads remain pending.
+- **Protected original:** IMG_4257 remains dead-lettered after its second recovery attempt and all source bytes remain untouched. No re-upload, move, deletion, production vault copy, Ready disposition, Momo contact, or production deployment is claimed.
 - **Cost and actions:** incremental spend remains USD 0 incremental spend; production activation is held until retention lock, restore proof, hosted gates, and explicit deployment approval.
 
 
-## 2026-08-15 — private media-recovery byte-inspection repair candidate; Sites v54 and database58 live (historical)
+## 2026-08-15 — host-inspection diagnostics merged in GitHub main; Sites v55 remains production (historical predecessor)
 
-Current reconciliation markers: private media-recovery byte-inspection repair candidate; GitHub main 2528765a625f518100bad3dc534567c7c9623973; PR #184; branch agent/momo-media-byte-inspection-repair-20260815; Sites v54; database58; environment revision 22; USD 0 incremental spend.
+Current reconciliation markers: private media-recovery host-inspection diagnostic candidate; GitHub main 4a098ea98690ee9be6b86cc8fe783ef0cfc265ed; PR #185; branch agent/momo-media-inspection-diagnostics-20260815; Sites v55; database58; environment revision 22; USD 0 incremental spend.
 
 - **Authority and scope:** `GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY` remains in force. External providers, publishing, review replies, website writes, and external scheduling remain disabled.
-- **Verified production baseline:** PR #183 is merged in GitHub main at `2528765a625f518100bad3dc534567c7c9623973`. `20260813175640_durable_media_ingestion_path_regex_repair_v1.sql` is live as database58, the exact backfill receipt exists, and saved Sites v54 is deployed with environment revision 22. An unsigned POST to the private route returns 403 JSON, proving route dispatch.
-- **Fail-closed production attempt:** exactly one authorized signed wake, pg_net request `295`, reached the route and downloaded all 3,969,765 preserved bytes. It returned `media_not_assessable` because the strict structural image parser produced no dimensions before trusted host inspection; the receipt is `dead_letter` after attempt 1 and no verification row exists.
-- **Repair candidate:** PR #184 adds a private-recovery-only compatibility boundary. Exact JPEG/PNG magic, declared MIME/path, immutable object identity/version/size, dimension/aspect limits, and a successful bounded trusted-host decode remain mandatory. The exact asset bytes remain preserved and are hashed unchanged on success.
+- **Verified production baseline:** PR #184 is merged in GitHub main at `4a098ea98690ee9be6b86cc8fe783ef0cfc265ed`. `20260813175640_durable_media_ingestion_path_regex_repair_v1.sql` remains live as database58, and exact Sites v55 is deployed from saved version `appgver_1068bd33c6188191a04911352179c917` with environment revision 22. An unsigned POST to the private route returns 403 JSON, proving route dispatch.
+- **Fail-closed production attempts:** the first wake was request `295`; the exact post-v55 retry was pg_net request `296`. Request `296` downloaded all 3,969,765 preserved bytes and detected `image/jpeg`, but trusted host inspection still returned no dimensions or hash. The receipt is `dead_letter` after attempt 2 with `media_not_assessable`, and no verification row exists.
+- **Diagnostic candidate:** PR #185 adds bounded, non-secret stage and failure-code evidence around the existing trusted-host inspection. It does not relax exact JPEG/PNG magic, MIME/path, immutable object identity/version/size, dimension/aspect limits, the bounded host decode, or original-byte hashing. The exact asset bytes remain preserved.
 - **Incident and truth boundary:** asset `05ab2303-f7ea-4056-8f75-9cd7e523a4f4`, object `3df8b899-f438-41be-9e21-f15e6e7cb6c7`, and version `a6a293a9-4364-4867-878c-64bfc662dff9` remain preserved. Recovery ends at private verification and does not make the asset Ready.
-- **Quality evidence:** 478/478 application tests, production build, typecheck, lint, artifact validation, fail-closed compatibility negatives, and exact-tree comparison passed locally. GitHub exact-head gates must all pass with zero unresolved review threads before merge or deployment.
-- **Retry boundary:** one controlled retry of only the existing IMG_4257 receipt is authorized after exact merged-source Sites deployment. No re-upload, deletion, provider call, Ready disposition, schedule, publication, or Momo contact is authorized.
-- **Cost and actions:** external actions remain blocked and incremental spend remains USD 0 incremental spend.
+- **Quality evidence:** 479/479 application tests, production build, typecheck, targeted lint, artifact validation, fail-closed diagnostic negatives, and exact-tree comparison passed locally. GitHub exact-head gates must all pass with zero unresolved review threads before merge or deployment.
+- **Retry boundary:** one additional controlled retry of only the existing IMG_4257 receipt is authorized after exact merged-source Sites deployment. No re-upload, deletion, provider call, Ready disposition, schedule, publication, or Momo contact is authorized.
+- **Cost and actions:** External providers remain blocked and incremental spend remains USD 0 incremental spend.
 
 ## 2026-08-12 — legacy media purge; high-resolution private uploads; Sites v53 deployed (historical)
 

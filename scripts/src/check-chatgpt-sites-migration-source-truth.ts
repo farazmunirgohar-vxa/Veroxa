@@ -46,12 +46,14 @@ if (manifest.schemaVersion === 14) {
     for (const marker of [
       "GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY",
       "quality-first private-media R2 vault candidate",
-      "4a098ea98690ee9be6b86cc8fe783ef0cfc265ed",
+      "77dadd67505642353b431db3802d2ec365966869",
+      "PR #187",
+      "PR #185",
       "agent/veroxa-r2-media-vault-20260815",
       "20260815013053_momo_private_media_r2_vault_v1.sql",
-      "Sites v54",
+      "Sites v55",
       "database58",
-      "486/486",
+      "487/487",
       "atomic create-only",
       "full byte readback",
       "AI may run",
@@ -72,7 +74,7 @@ if (manifest.schemaVersion === 14) {
     process.exit(1);
   }
   console.log(
-    "PASS: schema-14 authority docs describe the quality-first private-media R2 vault candidate against unchanged Sites v54/database58 production truth.",
+    "PASS: schema-14 authority docs describe the quality-first private-media R2 vault candidate against current Sites v55/database58 production truth.",
   );
   process.exit(0);
 }
@@ -99,22 +101,22 @@ if (manifest.schemaVersion === 13) {
     const current = start < 0 ? "" : text.slice(start, next < 0 ? undefined : next);
     for (const marker of [
       "GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY",
-      "private media-recovery byte-inspection repair candidate",
-      "2528765a625f518100bad3dc534567c7c9623973",
-      "PR #184",
-      "agent/momo-media-byte-inspection-repair-20260815",
+      "private media-recovery host-inspection diagnostic candidate",
+      "4a098ea98690ee9be6b86cc8fe783ef0cfc265ed",
+      "PR #185",
+      "agent/momo-media-inspection-diagnostics-20260815",
       "20260813175640_durable_media_ingestion_path_regex_repair_v1.sql",
-      "Sites v54",
+      "Sites v55",
       "database58",
       "environment revision 22",
-      "478/478",
+      "479/479",
       "05ab2303-f7ea-4056-8f75-9cd7e523a4f4",
-      "request `295`",
+      "request `296`",
       "media_not_assessable",
       "dead_letter",
       "exact asset bytes remain preserved",
       "does not make the asset Ready",
-      "one controlled retry",
+      "one additional controlled retry",
       "External providers",
       "USD 0 incremental spend",
     ]) {
@@ -127,7 +129,7 @@ if (manifest.schemaVersion === 13) {
     process.exit(1);
   }
   console.log(
-    "PASS: schema-13 authority docs describe the reviewed private recovery repair against verified v54/database58 truth without completion overclaims.",
+    "PASS: schema-13 authority docs describe the reviewed private recovery diagnostics against verified v55/database58 truth without completion overclaims.",
   );
   process.exit(0);
 }
