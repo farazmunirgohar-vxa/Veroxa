@@ -1,8 +1,10 @@
 import { readdirSync, statSync } from "node:fs";
 import { resolve } from "node:path";
 import {
+  MEDIA_INSPECTION_PREFLIGHT_MIGRATION,
   REPAIR_MIGRATION_EVIDENCE,
   assertReviewedLocalCandidateManifest,
+  hasActiveMediaInspectionForwardCandidate,
   hashTree,
   readDeploymentManifest,
   repoRoot,
@@ -24,7 +26,10 @@ const mirrorNames = releaseNames(mirrorDir);
 const rootTree = hashTree(rootDir, { suffix: ".sql" });
 const mirrorTree = hashTree(mirrorDir, { suffix: ".sql" });
 const manifest = readDeploymentManifest();
-const pending = manifest.releaseCandidate.pendingMigrations ?? [];
+const activeForwardCandidate = hasActiveMediaInspectionForwardCandidate();
+const pending = activeForwardCandidate
+  ? [MEDIA_INSPECTION_PREFLIGHT_MIGRATION]
+  : manifest.releaseCandidate.pendingMigrations ?? [];
 const liveTree = hashTree(rootDir, { exclusions: pending, suffix: ".sql" });
 
 try {
@@ -40,16 +45,18 @@ must(
   "Root/Sites migration trees are not exact mirrors.",
 );
 must(
+  (activeForwardCandidate || (
     rootTree.fileCount === manifest.migrations.fileCount &&
     rootTree.sha256 === manifest.migrations.treeSha256 &&
+    manifest.releaseCandidate.candidateMigrationsMatchLiveLedger ===
+      (pending.length === 0)
+  )) &&
     manifest.currentProductionObservation.productionMigrationCount ===
       liveTree.fileCount &&
     manifest.currentProductionObservation.migrationTreeSha256 ===
       liveTree.sha256 &&
     manifest.currentProductionObservation.latestProductionMigration ===
-      liveTree.files.at(-1) &&
-    manifest.releaseCandidate.candidateMigrationsMatchLiveLedger ===
-      (pending.length === 0),
+      liveTree.files.at(-1),
   "Source and pending-migration split do not match the observed production ledger.",
 );
 for (const filename of rootNames) {
@@ -74,6 +81,8 @@ if (failures.length > 0) {
   process.exitCode = 1;
 } else {
   console.log(
-    `PASS: exact mirrored source matches the reconciled ${rootTree.fileCount}-migration ledger.`,
+    activeForwardCandidate
+      ? `PASS: exact mirrored ${rootTree.fileCount}-migration candidate preserves the observed ${liveTree.fileCount}-migration production ledger.`
+      : `PASS: exact mirrored source matches the reconciled ${rootTree.fileCount}-migration ledger.`,
   );
 }

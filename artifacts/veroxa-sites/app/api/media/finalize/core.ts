@@ -266,6 +266,9 @@ export function createMomoMediaFinalizeHandler(dependencies: MomoMediaFinalizeDe
         mimeType: detectedMime,
         expectedWidth: inspection.width,
         expectedHeight: inspection.height,
+        storagePath: input.storagePath,
+        storageObjectId: info.id.toLowerCase(),
+        storageObjectVersion: info.version,
         hostDecoder: dependencies.decodeHighResolutionImage,
       })) {
         observed.failureStage = "trusted_decode";

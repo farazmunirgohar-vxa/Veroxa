@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import {
   existsSync,
   readdirSync,
@@ -13,6 +14,48 @@ export const deploymentManifestPath = resolve(
   repoRoot,
   "artifacts/veroxa/docs/VEROXA_DEPLOYMENT_MANIFEST.json",
 );
+export const currentStatePath = resolve(
+  repoRoot,
+  "artifacts/veroxa/docs/CURRENT_STATE.json",
+);
+export const MEDIA_INSPECTION_PREFLIGHT_MIGRATION =
+  "20260815090000_media_inspection_preflight_canary_v1.sql";
+const ACTIVE_MEDIA_INSPECTION_CANDIDATE_BASE_COMMIT =
+  "a28c4735b668775dbc54e3c920b409325ef8201d";
+const ACTIVE_MEDIA_INSPECTION_CANDIDATE_ALLOWED_PATHS = new Set([
+  ".github/workflows/ci.yml",
+  ".github/workflows/supabase-verify.yml",
+  ".github/workflows/veroxa-verify.yml",
+  "artifacts/veroxa-sites/app/api/internal/momo/media/recover/core.ts",
+  "artifacts/veroxa-sites/app/api/internal/momo/media/recover/route.ts",
+  "artifacts/veroxa-sites/app/api/internal/veroxa/media/inspection-preflight/core.ts",
+  "artifacts/veroxa-sites/app/api/internal/veroxa/media/inspection-preflight/route.ts",
+  "artifacts/veroxa-sites/app/api/media/assessment/core.ts",
+  "artifacts/veroxa-sites/app/api/media/assessment/route.ts",
+  "artifacts/veroxa-sites/app/api/media/finalize/core.ts",
+  "artifacts/veroxa-sites/app/api/media/finalize/route.ts",
+  "artifacts/veroxa-sites/app/momo-image-bytes.ts",
+  "artifacts/veroxa-sites/app/veroxa-private-media-image-decode.ts",
+  "artifacts/veroxa-sites/app/veroxa-private-media-supabase-image-decode.ts",
+  "artifacts/veroxa-sites/supabase/migrations/20260815090000_media_inspection_preflight_canary_v1.sql",
+  "artifacts/veroxa-sites/tests/momo-media-ingestion-recovery.test.mjs",
+  "artifacts/veroxa-sites/tests/veroxa-media-inspection-preflight.test.mjs",
+  "artifacts/veroxa-sites/worker/index.ts",
+  "artifacts/veroxa/docs/CURRENT_MILESTONE.md",
+  "artifacts/veroxa/docs/CURRENT_STATE.json",
+  "artifacts/veroxa/docs/FINDINGS_LEDGER.json",
+  "artifacts/veroxa/docs/PRODUCT_CONSTITUTION.md",
+  "artifacts/veroxa/docs/history/2026-08-15-phase-0-baseline.json",
+  "scripts/src/check-chatgpt-sites-migration-source-truth.ts",
+  "scripts/src/check-deployment-manifest.ts",
+  "scripts/src/check-release-workflow-policy.ts",
+  "scripts/src/check-rr-release-checkpoint.ts",
+  "scripts/src/check-sites-only-deployment.ts",
+  "scripts/src/check-supabase-migration-ledger.ts",
+  "scripts/src/generate-deployment-attestation.ts",
+  "scripts/src/release-manifest.ts",
+  "supabase/migrations/20260815090000_media_inspection_preflight_canary_v1.sql",
+]);
 
 export const TREE_HASH_ALGORITHM = "veroxa-path-null-content-null-sha256-v1";
 export const REVIEWED_LOCAL_CANDIDATE_RELEASE_STATE =
@@ -907,6 +950,252 @@ const AUTHENTICATED_READ_SIGNATURES = [
 
 function sameJson(left: unknown, right: unknown): boolean {
   return JSON.stringify(left) === JSON.stringify(right);
+}
+
+type ActiveMediaInspectionCandidateState = {
+  phase: string;
+  production: {
+    github?: { latestApplicationSourceCommit?: unknown };
+    supabase?: {
+      migrationCount?: unknown;
+      latestMigration?: unknown;
+    };
+  };
+  asset?: { authorizedRetriesRemaining?: unknown };
+  externalActionLock?: Record<string, unknown>;
+  activeCandidate?: {
+    kind?: unknown;
+    branch?: unknown;
+    state?: unknown;
+    pendingMigrations?: unknown;
+    migration?: {
+      filename?: unknown;
+      sha256?: unknown;
+      candidateMigrationCount?: unknown;
+      candidateMigrationTreeSha256?: unknown;
+      productionBaselineMigrationCount?: unknown;
+      productionBaselineMigrationTreeSha256?: unknown;
+    };
+    externalActionLockRequired?: unknown;
+    img4257RetryConsumed?: unknown;
+  };
+};
+
+function readActiveMediaInspectionCandidateState():
+  | ActiveMediaInspectionCandidateState
+  | null {
+  if (!existsSync(currentStatePath)) return null;
+  try {
+    const value = JSON.parse(readFileSync(currentStatePath, "utf8")) as
+      | Record<string, unknown>
+      | null;
+    if (!value || value.schemaVersion !== 1 ||
+      value.recordKind !== "veroxa_current_state" ||
+      value.stateAuthority !==
+        "current_deployed_state_and_explicit_forward_candidate" ||
+      typeof value.phase !== "string" ||
+      !value.phase.startsWith("phase_1_") ||
+      typeof value.activeCandidate !== "object" ||
+      value.activeCandidate === null) return null;
+    const candidate = value.activeCandidate as Record<string, unknown>;
+    if (candidate.kind !== "media_inspection_runtime_repair" ||
+      ![
+        "local_verified_pending_pr_review_and_production_preflight",
+        "remote_ci_green_pending_independent_review_and_production_preflight",
+      ].includes(String(candidate.state))) {
+      return null;
+    }
+    return value as unknown as ActiveMediaInspectionCandidateState;
+  } catch {
+    return null;
+  }
+}
+
+export function hasActiveMediaInspectionForwardCandidate(): boolean {
+  return readActiveMediaInspectionCandidateState() !== null;
+}
+
+function gitPathList(args: string[]): string[] {
+  const output = execFileSync("git", args, {
+    cwd: repoRoot,
+    encoding: "utf8",
+  });
+  return output.split("\n").map((path) => path.trim()).filter(Boolean);
+}
+
+/**
+ * The immutable schema-13 manifest can only be relaxed for this one exact
+ * candidate.  Require its complete diff scope rather than letting a state
+ * record accidentally turn off the normal source-tree identity check.
+ */
+function assertActiveMediaInspectionCandidateDiffScope(): void {
+  let paths: string[];
+  try {
+    paths = Array.from(new Set([
+      ...gitPathList([
+        "diff",
+        "--name-only",
+        "--diff-filter=ACMRT",
+        `${ACTIVE_MEDIA_INSPECTION_CANDIDATE_BASE_COMMIT}...HEAD`,
+        "--",
+      ]),
+      ...gitPathList(["diff", "--name-only", "--diff-filter=ACMRT", "--"]),
+      ...gitPathList(["ls-files", "--others", "--exclude-standard"]),
+    ])).sort();
+  } catch (error) {
+    throw new Error(
+      "active media-inspection candidate cannot verify its exact Git diff scope: " +
+        (error instanceof Error ? error.message : String(error)),
+    );
+  }
+
+  let deletedPaths: string[];
+  try {
+    deletedPaths = Array.from(new Set([
+      ...gitPathList([
+        "diff",
+        "--name-only",
+        "--diff-filter=D",
+        `${ACTIVE_MEDIA_INSPECTION_CANDIDATE_BASE_COMMIT}...HEAD`,
+        "--",
+      ]),
+      ...gitPathList(["diff", "--name-only", "--diff-filter=D", "--"]),
+    ])).sort();
+  } catch (error) {
+    throw new Error(
+      "active media-inspection candidate cannot verify deleted paths: " +
+        (error instanceof Error ? error.message : String(error)),
+    );
+  }
+
+  const unexpected = paths.filter(
+    (path) => !ACTIVE_MEDIA_INSPECTION_CANDIDATE_ALLOWED_PATHS.has(path),
+  );
+  const missing = Array.from(ACTIVE_MEDIA_INSPECTION_CANDIDATE_ALLOWED_PATHS)
+    .filter((path) => !paths.includes(path))
+    .sort();
+  if (unexpected.length > 0 || missing.length > 0 || deletedPaths.length > 0) {
+    throw new Error(
+      "active media-inspection candidate Git scope drifted: " +
+        [
+          unexpected.length > 0 ? `unexpected=${unexpected.join(",")}` : null,
+          missing.length > 0 ? `missing=${missing.join(",")}` : null,
+          deletedPaths.length > 0 ? `deleted=${deletedPaths.join(",")}` : null,
+        ].filter(Boolean).join("; "),
+    );
+  }
+}
+
+/**
+ * The versioned deployment manifest is immutable evidence for the last live
+ * release. A narrowly described forward candidate must not rewrite it before
+ * production evidence exists. This guard makes that one pending migration
+ * explicit and rejects any broadened migration or external-action scope.
+ */
+function assertActiveMediaInspectionForwardCandidate(
+  manifest: DeploymentManifest,
+  state: ActiveMediaInspectionCandidateState,
+): void {
+  const failures: string[] = [];
+  const must = (condition: boolean, message: string): void => {
+    if (!condition) failures.push(message);
+  };
+  const candidate = state.activeCandidate;
+  const migration = candidate?.migration;
+  const pending = candidate?.pendingMigrations;
+  const rootMigrationTree = hashTree(
+    resolve(repoRoot, ROOT_MIGRATION_SOURCE_ROOT),
+    { suffix: ".sql" },
+  );
+  const mirrorMigrationTree = hashTree(
+    resolve(repoRoot, SITES_MIGRATION_MIRROR_ROOT),
+    { suffix: ".sql" },
+  );
+  const liveMigrationTree = hashTree(
+    resolve(repoRoot, ROOT_MIGRATION_SOURCE_ROOT),
+    { exclusions: [MEDIA_INSPECTION_PREFLIGHT_MIGRATION], suffix: ".sql" },
+  );
+  const migrationPath = resolve(
+    repoRoot,
+    ROOT_MIGRATION_SOURCE_ROOT,
+    MEDIA_INSPECTION_PREFLIGHT_MIGRATION,
+  );
+  const locks = state.externalActionLock ?? {};
+  const production = manifest.currentProductionObservation;
+
+  try {
+    assertActiveMediaInspectionCandidateDiffScope();
+  } catch (error) {
+    failures.push(error instanceof Error ? error.message : String(error));
+  }
+
+  must(
+    manifest.schemaVersion === 13 &&
+      manifest.recordKind ===
+        "veroxa_momo_media_recovery_host_inspection_diagnostics_closeout",
+    "forward candidate requires the immutable schema-13 live baseline",
+  );
+  must(
+    candidate?.branch === "agent/repair-production-image-inspection-20260815" &&
+      sameJson(pending, [MEDIA_INSPECTION_PREFLIGHT_MIGRATION]) &&
+      migration?.filename === MEDIA_INSPECTION_PREFLIGHT_MIGRATION &&
+      candidate?.externalActionLockRequired === true &&
+      candidate.img4257RetryConsumed === false,
+    "forward candidate scope or IMG_4257 retry authority drifted",
+  );
+  must(
+    migration?.sha256 === sha256File(migrationPath) &&
+      migration?.candidateMigrationCount === rootMigrationTree.fileCount &&
+      migration?.candidateMigrationTreeSha256 === rootMigrationTree.sha256 &&
+      rootMigrationTree.fileCount === mirrorMigrationTree.fileCount &&
+      rootMigrationTree.sha256 === mirrorMigrationTree.sha256 &&
+      sameJson(rootMigrationTree.files, mirrorMigrationTree.files) &&
+      rootMigrationTree.files.at(-1) === MEDIA_INSPECTION_PREFLIGHT_MIGRATION,
+    "forward candidate migration fingerprint or root/Sites mirror drifted",
+  );
+  must(
+    migration?.productionBaselineMigrationCount === liveMigrationTree.fileCount &&
+      migration?.productionBaselineMigrationTreeSha256 === liveMigrationTree.sha256 &&
+      state.production.supabase?.migrationCount === liveMigrationTree.fileCount &&
+      state.production.supabase?.latestMigration === liveMigrationTree.files.at(-1) &&
+      production.productionMigrationCount === liveMigrationTree.fileCount &&
+      production.migrationTreeSha256 === liveMigrationTree.sha256 &&
+      production.latestProductionMigration === liveMigrationTree.files.at(-1) &&
+      production.latestProductionMigrationSha256 ===
+        sha256File(resolve(
+          repoRoot,
+          ROOT_MIGRATION_SOURCE_ROOT,
+          liveMigrationTree.files.at(-1) ?? "",
+        )),
+    "forward candidate does not preserve the observed production migration ledger",
+  );
+  must(
+    state.production.github?.latestApplicationSourceCommit ===
+      production.canonicalGitHubMainCommit &&
+      state.asset?.authorizedRetriesRemaining === 1 &&
+      locks.publishing === false &&
+      locks.externalScheduling === false &&
+      locks.accountConnection === false &&
+      locks.customerMessaging === false &&
+      locks.outreach === false &&
+      locks.pricingChange === false &&
+      locks.repositoryVisibilityChange === false,
+    "forward candidate current-state baseline or external-action lock drifted",
+  );
+  const hold = manifest.operationalHold as Record<string, unknown> | undefined;
+  must(
+    hold?.providerWrites === false && hold.reviewReplies === false &&
+      hold.websiteWrites === false && hold.externalScheduling === false &&
+      hold.externalPublishing === false,
+    "forward candidate weakens a historical external-action lock",
+  );
+
+  if (failures.length > 0) {
+    throw new Error(
+      "Unsafe active media-inspection forward candidate: " +
+        failures.join("; "),
+    );
+  }
 }
 
 function isNonEmptyString(value: unknown): value is string {
@@ -1879,6 +2168,14 @@ function assertSchema10HeldRepair(manifest: DeploymentManifest): void {
 function assertMediaRecoveryByteInspectionCandidateManifest(
   manifest: DeploymentManifest,
 ): void {
+  const activeForwardCandidate = readActiveMediaInspectionCandidateState();
+  if (activeForwardCandidate) {
+    assertActiveMediaInspectionForwardCandidate(
+      manifest,
+      activeForwardCandidate,
+    );
+    return;
+  }
   const failures: string[] = [];
   const record = manifest as unknown as Record<string, any>;
   const candidate = manifest.releaseCandidate;

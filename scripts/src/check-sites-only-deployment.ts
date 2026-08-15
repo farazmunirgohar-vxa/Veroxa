@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
   assertReviewedLocalCandidateManifest,
+  hasActiveMediaInspectionForwardCandidate,
   readDeploymentManifest,
   repoRoot,
   sha256File,
@@ -12,6 +13,7 @@ const must = (condition: boolean, message: string): void => {
   if (!condition) failures.push(message);
 };
 const manifest = readDeploymentManifest();
+const activeForwardCandidate = hasActiveMediaInspectionForwardCandidate();
 try {
   assertReviewedLocalCandidateManifest(manifest);
 } catch (error) {
@@ -90,7 +92,9 @@ if (manifest.schemaVersion === 13) {
     process.exit(1);
   }
   console.log(
-    "PASS: Sites remains the sole web target; exact diagnostic source is live as v56 and all further deployment and retry activity is held.",
+    activeForwardCandidate
+      ? "PASS: Sites remains the sole web target; the active candidate is limited to the designated private media-inspection repair and has no production or retry claim."
+      : "PASS: Sites remains the sole web target; exact diagnostic source is live as v56 and all further deployment and retry activity is held.",
   );
   process.exit(0);
 }

@@ -1,0 +1,286 @@
+{
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "findingId": "F-001",
+      "originalConcern": "Production media recovery fails with images_binding_unavailable before canonical identity, assessment, or Ready.",
+      "freshVerificationResult": "Verified from deployed exception evidence and source/runtime configuration. Storage object, MIME detection, rights record, and recovery dispatch are intact; env.IMAGES is absent at runtime.",
+      "severity": "critical",
+      "affectedSystems": [
+        "Sites production runtime",
+        "private media recovery",
+        "Supabase Storage"
+      ],
+      "rootCause": "The worker requires a Cloudflare Images binding that the current Sites hosting declaration cannot supply.",
+      "correctiveAction": "Local repair complete pending review/deployment: replace the unavailable runtime dependency with a private Supabase Storage image-transformation inspection path, source object/version parity, bounded 1px verified transform, signed create-only synthetic canary, private durable evidence, and regression tests.",
+      "branch": "agent/repair-production-image-inspection-20260815",
+      "pullRequest": 188,
+      "commit": "5a4d30f46f768dd78bcd1ab88ccb087750ada66f",
+      "migrationOrDeployment": null,
+      "tests": [
+        "Sites TypeScript strict check passed",
+        "targeted recovery and preflight Node tests passed",
+        "full verified Sites suite passed (487 tests)",
+        "Sites lint and verified build passed",
+        "root workspace TypeScript and verify:veroxa suite passed",
+        "Codex Security scan 623563ae-5aad-4b0c-b6bb-9aa2f134137e identified F-007 and F-008 in its pre-remediation snapshot",
+        "post-remediation Codex Security review c1788ef2-15bd-43a4-b4e4-2ae39436e0a1 found zero reportable issues in the 29 changed repair paths"
+      ],
+      "productionEvidence": [
+        "IMG_4257 exception stage host_image_inspection",
+        "failure code images_binding_unavailable",
+        "bindingAvailable=false"
+      ],
+      "rollbackMethod": "Re-deploy Sites v56 and leave the IMG_4257 asset, object, and version unchanged. The new forward migration has no customer-data mutation; disable the scheduled canary job and retain its private evidence if rollback is required.",
+      "finalStatus": "remote_draft_pr_open_pending_ci_review_and_production_preflight"
+    },
+    {
+      "findingId": "F-004",
+      "originalConcern": "A delayed pg_net wake or interrupted private handler could leave a preflight evidence record indefinitely queued/running.",
+      "freshVerificationResult": "Found during local security/recovery review before deployment. The initial canary state machine had no terminal expiry for a wake that never reached the route or a handler that stopped after claim.",
+      "severity": "medium",
+      "affectedSystems": [
+        "Supabase pg_cron",
+        "pg_net",
+        "private media inspection canary"
+      ],
+      "rootCause": "The first canary implementation bounded HMAC acceptance but had not yet bounded stale durable work states.",
+      "correctiveAction": "Added expiry closure at the start of each hourly canary delivery: queued records older than three minutes become delivery_failed and running records older than five minutes become failed. HMAC acceptance is bounded to the pg_net two-minute request window.",
+      "branch": "agent/repair-production-image-inspection-20260815",
+      "pullRequest": 188,
+      "commit": "5a4d30f46f768dd78bcd1ab88ccb087750ada66f",
+      "migrationOrDeployment": "20260815090000_media_inspection_preflight_canary_v1.sql (pending)",
+      "tests": [
+        "SQL state-machine review completed",
+        "migration mirror/source guard passed"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Unschedule veroxa-media-inspection-preflight and retain private terminal records; no customer media or external write is involved.",
+      "finalStatus": "remote_draft_pr_open_pending_ci_review_and_production_preflight"
+    },
+    {
+      "findingId": "F-005",
+      "originalConcern": "A Storage metadata or signed-URL request could stall before the transformed response timeout starts, leaving the health route without a bounded dependency failure.",
+      "freshVerificationResult": "Verified during the final local security review: the first adapter timeout covered the transformed fetch but not Storage info or signing operations.",
+      "severity": "medium",
+      "affectedSystems": [
+        "Supabase Storage",
+        "private media inspection",
+        "production canary"
+      ],
+      "rootCause": "The initial bounded-response implementation did not race Storage SDK metadata and signing promises against the same bounded deadline.",
+      "correctiveAction": "Added a bounded timeout wrapper around pre-transform object info, signed transform URL creation, and post-transform object recheck; all timeout paths normalize to storage_transform_timeout without raw diagnostics.",
+      "branch": "agent/repair-production-image-inspection-20260815",
+      "pullRequest": 188,
+      "commit": "5a4d30f46f768dd78bcd1ab88ccb087750ada66f",
+      "migrationOrDeployment": null,
+      "tests": [
+        "stalled metadata and signing regression test passed",
+        "stalled transformed-response regression test passed"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Re-deploy Sites v56; no database data mutation or customer-media mutation is introduced by this application-only timeout control.",
+      "finalStatus": "remote_draft_pr_open_pending_ci_review_and_production_preflight"
+    },
+    {
+      "findingId": "F-006",
+      "originalConcern": "A trusted decoder result could be accepted for a JPEG whose own structural compatibility parser produced no valid dimensions.",
+      "freshVerificationResult": "Verified in local code review before deployment: the compatibility branch allowed a null structural result when host dimensions matched.",
+      "severity": "high",
+      "affectedSystems": [
+        "private media recovery",
+        "trusted image decode",
+        "media integrity gates"
+      ],
+      "rootCause": "The compatibility condition used a permissive null branch instead of requiring a structurally compatible JPEG or PNG before accepting the independent transform decode.",
+      "correctiveAction": "Require compatible source MIME and dimensions before accepting the trusted transform result; added a malformed JPEG-with-magic regression scenario that must dead-letter without completion.",
+      "branch": "agent/repair-production-image-inspection-20260815",
+      "pullRequest": 188,
+      "commit": "5a4d30f46f768dd78bcd1ab88ccb087750ada66f",
+      "migrationOrDeployment": null,
+      "tests": [
+        "malformed JPEG magic-plus-host-result regression test passed",
+        "compatible trailing-byte JPEG recovery regression test passed"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Re-deploy Sites v56; preserve the asset, original bytes, and durable exception records unchanged.",
+      "finalStatus": "remote_draft_pr_open_pending_ci_review_and_production_preflight"
+    },
+    {
+      "findingId": "F-007",
+      "originalConcern": "The active media-inspection forward candidate could bypass the historical immutable application source-tree guard without an exact changed-path constraint.",
+      "freshVerificationResult": "Confirmed by completed Codex Security scan 623563ae-5aad-4b0c-b6bb-9aa2f134137e against its immutable local snapshot. The active-candidate early return validated migration and lock metadata but not the full candidate source scope.",
+      "severity": "high",
+      "affectedSystems": [
+        "release-manifest guard",
+        "deployment attestation",
+        "GitHub PR scope control"
+      ],
+      "rootCause": "The temporary forward-candidate exception replaced the ordinary source-tree identity assertion without imposing a strict candidate diff allowlist.",
+      "correctiveAction": "Added a base-commit-bound exact Git changed-path allowlist. The guard now rejects unexpected, missing, or deleted candidate paths before accepting the active forward candidate.",
+      "branch": "agent/repair-production-image-inspection-20260815",
+      "pullRequest": 188,
+      "commit": "5a4d30f46f768dd78bcd1ab88ccb087750ada66f",
+      "migrationOrDeployment": null,
+      "tests": [
+        "candidate release-manifest guard passed for exact candidate paths",
+        "deliberate unexpected-path regression was rejected by the guard",
+        "post-remediation Codex Security review c1788ef2-15bd-43a4-b4e4-2ae39436e0a1 found no issue in the changed repair paths"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Revert the candidate branch or restore the schema-13 historical source-tree guard; no production state has changed.",
+      "finalStatus": "remote_draft_pr_open_pending_ci_review_and_production_preflight"
+    },
+    {
+      "findingId": "F-008",
+      "originalConcern": "The new preflight migration selected a literal production endpoint, allowing a non-production project with a shared HMAC to emit a signed production-directed wake.",
+      "freshVerificationResult": "Confirmed by completed Codex Security scan 623563ae-5aad-4b0c-b6bb-9aa2f134137e against its immutable local snapshot. The route nonce claim reduced direct impact but did not establish environment-bound delivery.",
+      "severity": "medium",
+      "affectedSystems": [
+        "Supabase Vault",
+        "pg_net",
+        "private media inspection canary"
+      ],
+      "rootCause": "Endpoint selection was hardcoded rather than gated by an allowlisted per-environment Vault configuration invariant.",
+      "correctiveAction": "Added a Veroxa-named Vault accessor for a dedicated preflight endpoint and require an exact production endpoint match before pg_net delivery. Missing or mismatched configuration records a local delivery_failed state without a network request.",
+      "branch": "agent/repair-production-image-inspection-20260815",
+      "pullRequest": 188,
+      "commit": "5a4d30f46f768dd78bcd1ab88ccb087750ada66f",
+      "migrationOrDeployment": "20260815090000_media_inspection_preflight_canary_v1.sql (pending)",
+      "tests": [
+        "root/Sites migration byte mirror verification passed",
+        "CI migration scenario asserts absent endpoint produces delivery_failed and no pg_net request",
+        "post-remediation Codex Security review c1788ef2-15bd-43a4-b4e4-2ae39436e0a1 found no issue in the changed repair paths"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Do not install the forward migration or unschedule the canary job before disabling its Vault endpoint; no customer media is changed.",
+      "finalStatus": "remote_draft_pr_open_pending_ci_review_and_production_preflight"
+    },
+    {
+      "findingId": "F-009",
+      "originalConcern": "The completed Phase 1 repair includes internal operational, deployment, migration, and evidence material that a protected push control classified as sensitive for the currently public repository.",
+      "freshVerificationResult": "The initial local Git push was rejected before publication because its credential was unavailable. Founder then explicitly approved public-repository PR review. The connected GitHub account recreated the reviewed file trees as remote commits 5a4d30f46f768dd78bcd1ab88ccb087750ada66f and 07823aa88a74581da4dd7b18104f114a836b7b42 and opened draft PR #188. No merge, deployment, migration, provider call, or IMG_4257 retry has occurred.",
+      "severity": "high",
+      "affectedSystems": [
+        "GitHub public repository",
+        "release workflow",
+        "source-of-truth documentation"
+      ],
+      "rootCause": "The target repository is public and the candidate contains non-public operational and deployment evidence that requires an explicit disclosure decision beyond the general implementation authorization.",
+      "correctiveAction": "Approval received and a scoped draft PR was opened. The PR body records local-to-remote commit and tree mapping. Keep the PR draft and unmerged until required CI and review pass.",
+      "branch": "agent/repair-production-image-inspection-20260815",
+      "pullRequest": 188,
+      "commit": "07823aa88a74581da4dd7b18104f114a836b7b42",
+      "migrationOrDeployment": null,
+      "tests": [
+        "draft PR #188 created only after founder's exact authorization",
+        "PR body records the local-to-remote tree mapping and retained local verification evidence"
+      ],
+      "productionEvidence": [],
+      "rollbackMethod": "Close draft PR #188 and delete only the scoped remote branch if review identifies an exposure, after preserving an audit record. Do not alter main, repository visibility, or Git history.",
+      "finalStatus": "resolved_to_remote_draft_pr_pending_ci_and_review"
+    },
+    {
+      "findingId": "F-010",
+      "originalConcern": "The exact-candidate source-scope guard failed in PR CI even though the reviewed local candidate passed.",
+      "freshVerificationResult": "Verified from CI run 31868220623 and Veroxa Verify run 31868220628. Both workflows checked out only the generated PR merge commit with depth 1, so Git could not resolve baseline a28c4735b668775dbc54e3c920b409325ef8201d for the mandatory symmetric-difference scope check. The guard correctly failed closed; no production action occurred.",
+      "severity": "high",
+      "affectedSystems": [
+        "GitHub Actions",
+        "release-manifest guard",
+        "PR #188 verification"
+      ],
+      "rootCause": "The CI and Veroxa Verify checkout steps relied on actions/checkout's depth-1 default while the active candidate guard intentionally requires the recorded main baseline commit.",
+      "correctiveAction": "Added fetch-depth: 0 only to CI and Veroxa Verify, plus a release-workflow-policy regression assertion requiring full history for both guard-running workflows.",
+      "branch": "agent/repair-production-image-inspection-20260815",
+      "pullRequest": 188,
+      "commit": "8c685f566614c4e4877cc97883ea597febffea01",
+      "migrationOrDeployment": null,
+      "tests": [
+        "local release workflow policy guard passed",
+        "full local verify:veroxa suite passed",
+        "Git diff whitespace check passed",
+        "CI run 517, Sites Verify run 207, Supabase Verify run 177, and Veroxa Verify run 462 passed on the repaired PR head"
+      ],
+      "productionEvidence": [
+        "no deployment, migration, provider call, or IMG_4257 retry occurred"
+      ],
+      "rollbackMethod": "Revert the two fetch-depth additions and the matching static guard together if the exact-candidate guard is retired under a separately reviewed replacement; do not weaken it merely to make CI pass.",
+      "finalStatus": "corrected_remote_ci_green_pending_independent_review"
+    },
+    {
+      "findingId": "F-011",
+      "originalConcern": "The designated current-state file retained a local-only candidate-state label after the reviewed candidate reached an all-green remote PR head.",
+      "freshVerificationResult": "Verified after PR #188 remote commit 8c685f566614c4e4877cc97883ea597febffea01 passed all four required workflows. The existing release guard recognized only the local state label, which discouraged recording the accurate remote-review state.",
+      "severity": "medium",
+      "affectedSystems": [
+        "source-of-truth governance",
+        "release-manifest guard",
+        "PR #188 evidence"
+      ],
+      "rootCause": "The active-forward-candidate parser used one exact local-only state string even though the candidate transitions through a remote CI/review state before deployment.",
+      "correctiveAction": "Allow only two explicit candidate states: the original local-verified state and the remote-CI-green, independent-review-pending state. Update CURRENT_STATE to the latter without granting merge, deployment, migration, provider, or retry authority.",
+      "branch": "agent/repair-production-image-inspection-20260815",
+      "pullRequest": 188,
+      "commit": null,
+      "migrationOrDeployment": null,
+      "tests": [
+        "full local verify:veroxa suite passed before this state-label correction",
+        "fresh four-workflow PR CI is required for this checkpoint"
+      ],
+      "productionEvidence": [
+        "PR #188 remote head 8c685f566614c4e4877cc97883ea597febffea01 passed CI 517, Sites Verify 207, Supabase Verify 177, and Veroxa Verify 462",
+        "no production action occurred"
+      ],
+      "rollbackMethod": "Revert the state-label parser extension and restore the previous checkpoint only if the candidate is returned to a local-only review state; neither path authorizes a production change.",
+      "finalStatus": "local_source_of_truth_correction_pending_fresh_pr_ci"
+    },
+    {
+      "findingId": "F-002",
+      "originalConcern": "Production runtime is attached to a Supabase project named Veroxa Dev, obscuring environment intent.",
+      "freshVerificationResult": "Verified: Sites production variables point to the only connected healthy project mwqkhsvdezeykdpqhqec, named Veroxa Dev.",
+      "severity": "high",
+      "affectedSystems": [
+        "Sites",
+        "Supabase",
+        "deployment governance"
+      ],
+      "rootCause": "No explicit documented dev/staging/production environment mapping exists.",
+      "correctiveAction": "Deferred until the core upload-to-Ready proof; establish a safe staged mapping with rollback evidence.",
+      "branch": null,
+      "pullRequest": null,
+      "commit": null,
+      "migrationOrDeployment": null,
+      "tests": [],
+      "productionEvidence": [
+        "Sites environment revision 22",
+        "Supabase project mwqkhsvdezeykdpqhqec named Veroxa Dev"
+      ],
+      "rollbackMethod": "No change made.",
+      "finalStatus": "open_deferred_after_core_proof"
+    },
+    {
+      "findingId": "F-003",
+      "originalConcern": "Repository exposure and branch-protection state need verification without changing visibility.",
+      "freshVerificationResult": "Repository is public; branch listing reports main as unprotected, while the protection endpoint is not accessible through the connected integration. Secret/code scanning APIs were likewise not accessible.",
+      "severity": "high",
+      "affectedSystems": [
+        "GitHub",
+        "source governance"
+      ],
+      "rootCause": "Connected integration scope does not expose all GitHub security and protection settings.",
+      "correctiveAction": "Audit and harden after core proof; no visibility change or history rewrite is authorized in this run.",
+      "branch": null,
+      "pullRequest": null,
+      "commit": null,
+      "migrationOrDeployment": null,
+      "tests": [],
+      "productionEvidence": [
+        "farazmunirgohar-vxa/Veroxa is public",
+        "GitHub API protection request returned access-denied"
+      ],
+      "rollbackMethod": "No change made.",
+      "finalStatus": "open_deferred_after_core_proof"
+    }
+  ]
+}

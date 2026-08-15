@@ -24,6 +24,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # The release-manifest guard verifies the exact candidate diff
+          # against its recorded main baseline; a depth-1 PR merge checkout
+          # does not contain that baseline and must fail closed.
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4

@@ -63,6 +63,12 @@ function jpegWithTrailingBytes(width = 1200, height = 900) {
   return bytes;
 }
 
+function malformedJpegWithMagic(minimumBytes = 10 * 1024) {
+  const bytes = new Uint8Array(minimumBytes);
+  bytes.set([0xff, 0xd8, 0xff, 0xd9]);
+  return bytes;
+}
+
 function recoveryRequest({
   rawBody = momoMediaRecoveryWakeCanonicalBody,
   timestamp = Date.now().toString(),
@@ -327,6 +333,7 @@ test("recovers a declared JPEG through the trusted host when strict structural i
 
 test("host compatibility inspection remains fail-closed for wrong magic, decode failure, size drift, and unsafe dimensions", async () => {
   const compatible = jpegWithTrailingBytes();
+  const malformed = malformedJpegWithMagic();
   const scenarios = [
     {
       source: new Uint8Array(compatible.byteLength).fill(0x01),
@@ -344,6 +351,15 @@ test("host compatibility inspection remains fail-closed for wrong magic, decode 
         width: 1200,
         height: 900,
         fileSize: compatible.length - 1,
+      },
+      expectedHostCalls: 1,
+    },
+    {
+      source: malformed,
+      hostInspection: {
+        width: 1200,
+        height: 900,
+        fileSize: malformed.length,
       },
       expectedHostCalls: 1,
     },

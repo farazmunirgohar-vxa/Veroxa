@@ -6,8 +6,8 @@ import {
   momoContentAiLifecycleBridgeFailure,
 } from "../../../momo-content-ai-lifecycle-bridge";
 import {
-  decodeVeroxaPrivateMediaImageWithHost,
-} from "../../../veroxa-private-media-host-image-decode";
+  createVeroxaPrivateMediaStorageImageDecoder,
+} from "../../../veroxa-private-media-supabase-image-decode";
 import { getServerVeroxaContext } from "../../../veroxa-supabase-server";
 import { createMomoMediaFinalizeHandler } from "./core";
 
@@ -23,7 +23,10 @@ function dependencies(
 ) {
   const bridge = () => getMomoContentAiLifecycleBridgeConfig();
   return {
-    decodeHighResolutionImage: decodeVeroxaPrivateMediaImageWithHost,
+    decodeHighResolutionImage: createVeroxaPrivateMediaStorageImageDecoder({
+      client,
+      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    }),
     async authenticate() { return actor; },
     async download(storagePath: string) {
       const { data, error } = await client.storage.from("restaurant-media")

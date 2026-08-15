@@ -448,6 +448,9 @@ export function createVeroxaPrivateMediaAssessmentHandler(
             mimeType: reservation.sourceMimeType,
             expectedWidth: reservation.sourceWidth,
             expectedHeight: reservation.sourceHeight,
+            storagePath: reservation.sourceStoragePath,
+            storageObjectId: reservation.sourceStorageObjectId,
+            storageObjectVersion: reservation.sourceStorageObjectVersion,
             hostDecoder: dependencies.decodeHighResolutionImage,
           })) throw new Error();
       } catch {

@@ -1,5 +1,6 @@
 import {
   detectMomoImageMimeType,
+  inspectMomoImageBytesForTrustedCompatibility,
   inspectMomoImageBytesFully,
   momoBytesSha256,
 } from "../../../../../momo-image-bytes.ts";
@@ -553,13 +554,21 @@ export function createMomoMediaRecoveryHandler(
         const hostResult = await dependencies.inspectImageWithHost({
           bytes,
           mimeType: magicMime,
+          storagePath: claim.storagePath,
+          storageObjectId: info.id.toLowerCase(),
+          storageObjectVersion: info.version,
         });
         observed.hostInspectionDiagnostics = hostResult.diagnostics;
         const hostInspection = hostResult.inspection;
         if (hostInspection) {
           observed.width = hostInspection.width;
           observed.height = hostInspection.height;
-          if (hostInspection.fileSize === bytes.byteLength) {
+          const compatibility =
+            inspectMomoImageBytesForTrustedCompatibility(bytes);
+          if (hostInspection.fileSize === bytes.byteLength &&
+            compatibility?.mimeType === magicMime &&
+            compatibility.width === hostInspection.width &&
+            compatibility.height === hostInspection.height) {
             inspection = {
               mimeType: magicMime,
               width: hostInspection.width,
@@ -598,6 +607,9 @@ export function createMomoMediaRecoveryHandler(
         mimeType: detectedMime,
         expectedWidth: inspection.width,
         expectedHeight: inspection.height,
+        storagePath: claim.storagePath,
+        storageObjectId: info.id.toLowerCase(),
+        storageObjectVersion: info.version,
         hostDecoder: dependencies.decodeHighResolutionImage,
       })) {
         throw new RecoveryProcessingError("media_not_assessable", false);

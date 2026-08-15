@@ -162,7 +162,10 @@ function validPngHeader(
   };
 }
 
-function inspectPng(bytes: Uint8Array): PngInspection | null {
+function inspectPng(
+  bytes: Uint8Array,
+  allowTrailingBytes = false,
+): PngInspection | null {
   if (
     bytes.length < 57
     || PNG_SIGNATURE.some((byte, index) => bytes[index] !== byte)
@@ -249,7 +252,7 @@ function inspectPng(bytes: Uint8Array): PngInspection | null {
         || (zlibHeader[0] >> 4) > 7
         || ((zlibHeader[0] << 8) | zlibHeader[1]) % 31 !== 0
         || (zlibHeader[1] & 0x20) !== 0
-        || chunkEnd !== bytes.length
+        || (!allowTrailingBytes && chunkEnd !== bytes.length)
       ) return null;
       return { ...header, imageDataChunks };
     } else if ((bytes[typeOffset] & 0x20) === 0) {
@@ -414,7 +417,10 @@ function isJpegStartOfFrame(marker: number): boolean {
   ].includes(marker);
 }
 
-function inspectJpeg(bytes: Uint8Array): ImageDimensions | null {
+function inspectJpeg(
+  bytes: Uint8Array,
+  allowTrailingBytes = false,
+): ImageDimensions | null {
   if (
     bytes.length < 14
     || bytes[0] !== 0xff
@@ -437,7 +443,7 @@ function inspectJpeg(bytes: Uint8Array): ImageDimensions | null {
     offset += 1;
 
     if (marker === 0xd9) {
-      return dimensions && sawScan && offset === bytes.length
+      return dimensions && sawScan && (allowTrailingBytes || offset === bytes.length)
         ? dimensions
         : null;
     }
@@ -718,6 +724,27 @@ export async function inspectMomoImageBytesFully(
       : null;
   return mimeType && dimensions
     ? { mimeType, ...dimensions }
+    : null;
+}
+
+/**
+ * This is deliberately narrower than the normal byte verifier. It validates
+ * the structural header and dimensions of a JPEG/PNG that has a compatible
+ * trailer, then leaves actual image acceptance to a separately trusted
+ * decoder. It must never be used without that decoder: the default verifier
+ * remains exact and rejects trailing source bytes.
+ */
+export function inspectMomoImageBytesForTrustedCompatibility(
+  bytes: Uint8Array,
+): MomoImageInspection | null {
+  const mimeType = detectMomoImageMimeType(bytes);
+  const dimensions = mimeType === "image/png"
+    ? inspectPng(bytes, true)
+    : mimeType === "image/jpeg"
+      ? inspectJpeg(bytes, true)
+      : null;
+  return mimeType && dimensions
+    ? { mimeType, width: dimensions.width, height: dimensions.height }
     : null;
 }
 

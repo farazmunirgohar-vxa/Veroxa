@@ -48,6 +48,21 @@ for (const marker of [
   if (!ci.includes(marker)) failures.push(`CI must enforce release marker: ${marker}`);
 }
 
+// These two workflows execute the exact-candidate release-manifest guard.
+// It compares the checked-out PR merge commit with the recorded main baseline,
+// so their checkout must include that ancestor rather than a depth-1 clone.
+for (const [name, path] of [
+  ["CI", workflows.CI],
+  ["Veroxa Verify", workflows["Veroxa Verify"]],
+] as const) {
+  const source = readFileSync(resolve(root, path), "utf8");
+  if (!/uses:\s*actions\/checkout@v4\s*\n\s*with:\s*\n\s*(?:#[^\n]*\n\s*)*fetch-depth:\s*0\b/m.test(source)) {
+    failures.push(
+      `${path} must use fetch-depth: 0 because ${name} runs the exact-candidate release-manifest guard.`,
+    );
+  }
+}
+
 if (failures.length) {
   console.error("Four-workflow release policy guardrail failed:");
   for (const failure of failures) console.error(`- ${failure}`);
