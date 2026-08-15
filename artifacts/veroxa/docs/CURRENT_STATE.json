@@ -2,25 +2,26 @@
   "schemaVersion": 1,
   "recordKind": "veroxa_current_state",
   "stateAuthority": "current_deployed_state_and_explicit_forward_candidate",
-  "updatedAt": "2026-08-15T06:42:58Z",
-  "phase": "phase_1_fixture_integrity_repair_pending_pr_review",
+  "updatedAt": "2026-08-15T07:23:14Z",
+  "phase": "phase_1_storage_transform_redirect_probe_pending_pr_review",
   "production": {
     "github": {
       "repository": "farazmunirgohar-vxa/Veroxa",
       "visibility": "public",
       "defaultBranch": "main",
-      "mainCommit": "085263c39f76ad0710eb4a2a15042e3b31b40af4",
-      "latestApplicationSourceCommit": "085263c39f76ad0710eb4a2a15042e3b31b40af4",
-      "latestMergedPullRequest": 188,
+      "mainCommit": "1c5db2ca1e03d1f8e09e63f171550cf6cd35df45",
+      "latestApplicationSourceCommit": "1c5db2ca1e03d1f8e09e63f171550cf6cd35df45",
+      "latestMergedPullRequest": 189,
       "mainProtectionEvidence": "branch listing previously reported protected=false; GitHub protection endpoint was inaccessible to the connected integration, so final policy state remains unverified"
     },
     "sites": {
       "projectId": "appgprj_6a53d07c7c28819182801cf35dfd30de",
       "slug": "veroxa-client-experience",
-      "version": 57,
-      "versionId": "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_569d47d76e5c8191bfd339f91f61b967",
-      "sourceCommit": "1cdb61082b11e12a067f37f0c7ade6253a715e64",
-      "applicationTreeSha256": "b0c73b7001880a0a4663329c911330ef8aeced25",
+      "version": 58,
+      "versionId": "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_b072808982dc81918be26cc59ae675ac",
+      "deploymentId": "appgdep_6a800fc9d40081919f1bdb7272d036c2",
+      "sourceCommit": "12213194b7aae365c35c1524c715e3092454ce1e",
+      "applicationTreeGitSha1": "8ae16b4560416c04eea12706e43a4c2afae866fe",
       "deploymentStatus": "succeeded",
       "productionUrl": "https://veroxasystems.com",
       "bindingState": "the deployed path uses private Supabase Storage transform inspection rather than the unavailable Cloudflare Images binding"
@@ -35,7 +36,8 @@
       "appliedMigrationVersion": "20260815062451",
       "appliedMigrationName": "media_inspection_preflight_canary_v1",
       "migrationHistoryDiscrepancy": "Supabase assigned platform version 20260815062451 when applying repository migration 20260815090000_media_inspection_preflight_canary_v1.sql; source bytes were applied, but the timestamped applied-history name differs and remains a Phase 5 reproducibility finding.",
-      "environmentAmbiguity": "the production Sites runtime uses a project named Veroxa Dev; explicit dev/staging/production mapping is not yet established"
+      "environmentAmbiguity": "the production Sites runtime uses a project named Veroxa Dev; explicit dev/staging/production mapping is not yet established",
+      "preflightSchedulerState": "unscheduled after the failed synthetic Storage transform probe; active schedule count verified as zero"
     },
     "openai": {
       "liveProviderCallsDuringPhase1": 0,
@@ -70,15 +72,15 @@
     "repositoryVisibilityChange": false
   },
   "criticalBlocker": {
-    "id": "F-014",
-    "code": "media_inspection_fixture_integrity_invalid",
-    "rootCause": "The deployed signed preflight embedded an invalid synthetic JPEG constant whose byte hash did not match the declared fixture hash. The route failed before creating or inspecting the reserved synthetic object, so it did not yet prove the repaired production image-inspection dependency.",
-    "repairState": "A valid 3x2 JPEG fixture was generated deterministically, its exact SHA-256 is checked in code and regression tests, and its three fixed fixture failure classes remain sanitized. Local focused tests, the full 488-test Sites suite, lint, root TypeScript, root verification, and a sealed focused security diff review passed. The repair is local only until its new PR is green, merged, and mirrored to Sites.",
-    "nextGate": "open the scoped PR, require exact-head CI and review, deploy the exact reviewed Sites source, then run one new synthetic private preflight. IMG_4257 remains forbidden until that synthetic run passes."
+    "id": "F-015",
+    "code": "storage_transform_request_rejected",
+    "rootCause": "The valid synthetic fixture was created and read back, then the signed Storage transform fetch raised before producing an HTTP response while redirect mode was error. The exact provider cause remains unverified; an unexpected redirect and Storage image-transformation availability remain separate hypotheses.",
+    "repairState": "The scheduler is disarmed. A narrow candidate changes only the signed fetch redirect mode to manual, preserving cross-origin non-following behavior and failing closed on every non-success response. This makes a redirect observable without treating it as a successful inspection. Focused preflight tests, the 488-test Sites suite, lint/build, root typecheck/release guards, and a sealed five-surface security diff review passed locally.",
+    "nextGate": "open the scoped PR, require exact-head CI and review, deploy the exact reviewed Sites source, then run exactly one manually controlled synthetic private preflight. IMG_4257 remains forbidden until that synthetic run passes."
   },
   "activeCandidate": {
     "kind": "media_inspection_runtime_repair",
-    "branch": "agent/fix-preflight-fixture-integrity-20260815",
+    "branch": "agent/fix-storage-transform-redirect-20260815",
     "state": "local_verified_pending_pr_review_and_production_preflight",
     "pendingMigrations": [],
     "preflightMigrationStatus": "applied",
@@ -94,13 +96,16 @@
     "img4257RetryConsumed": false
   },
   "releaseBlocker": {
-    "kind": "synthetic_preflight_fixture_integrity_repair_pending_review",
-    "observedAt": "2026-08-15T06:25:50Z",
+    "kind": "synthetic_preflight_storage_transform_rejection_follow_up_pending_review",
+    "observedAt": "2026-08-15T07:07:04Z",
     "repository": "farazmunirgohar-vxa/Veroxa",
     "approval": "Founder explicitly approved pushing scoped local commits to this repository for PR review; the repair remains subject to green CI and direct production verification.",
-    "priorMergedPullRequest": 188,
-    "failedSyntheticRun": "466741f6-f42b-4054-8979-420ef365414e",
-    "nextGate": "Create a new scoped fixture-integrity PR from this local branch. Do not invoke a provider or retry IMG_4257 before the exact reviewed commit is deployed and a new synthetic preflight passes."
+    "priorMergedPullRequest": 189,
+    "failedSyntheticRuns": [
+      "466741f6-f42b-4054-8979-420ef365414e",
+      "cc48e0cf-4ce0-450b-83c9-c10ec3fcde32"
+    ],
+    "nextGate": "Create a new scoped storage-transform follow-up PR from this local branch. Do not invoke a provider or retry IMG_4257 before the exact reviewed commit is deployed and one manually controlled synthetic preflight passes."
   },
   "usage": {
     "workModeCheckpoint": "approximately_75_percent",
@@ -109,12 +114,17 @@
   "evidencePointers": [
     "artifacts/veroxa/docs/history/2026-08-15-phase-0-baseline.json",
     "artifacts/veroxa/docs/history/2026-08-15-phase-1-preflight-fixture-failure.json",
+    "artifacts/veroxa/docs/history/2026-08-15-phase-1-storage-transform-request-rejected.json",
     "artifacts/veroxa/docs/FINDINGS_LEDGER.json",
-    "GitHub merged PR #188: https://github.com/farazmunirgohar-vxa/Veroxa/pull/188",
-    "GitHub main merge 085263c39f76ad0710eb4a2a15042e3b31b40af4",
-    "Sites version 57 source 1cdb61082b11e12a067f37f0c7ade6253a715e64",
+    "GitHub merged PR #189: https://github.com/farazmunirgohar-vxa/Veroxa/pull/189",
+    "GitHub main merge 1c5db2ca1e03d1f8e09e63f171550cf6cd35df45",
+    "Sites version 58 source 12213194b7aae365c35c1524c715e3092454ce1e",
     "Supabase production migration media_inspection_preflight_canary_v1 at version 20260815062451",
     "Synthetic preflight run 466741f6-f42b-4054-8979-420ef365414e: failed before fixture persistence",
-    "Codex Security scan fbe83751-5190-4d38-8608-dcf688882ed3: complete working-tree diff review, zero reportable findings"
+    "Synthetic preflight run cc48e0cf-4ce0-450b-83c9-c10ec3fcde32: fixture persisted/read back, then signed Storage transform request failed before an HTTP response",
+    "Preflight scheduler active job count: 0 after containment",
+    "Codex Security scan fbe83751-5190-4d38-8608-dcf688882ed3: complete working-tree diff review, zero reportable findings",
+    "Codex Security scan 5ecf5b7c-89fe-4ef2-9d34-9af46e4a6eae: expanded checkpoint/guard review, zero reportable findings",
+    "Codex Security scan c6e23f7d-ad46-4e78-98a8-8ae14fbfba70: complete five-surface storage-transform follow-up review, zero findings"
   ]
 }

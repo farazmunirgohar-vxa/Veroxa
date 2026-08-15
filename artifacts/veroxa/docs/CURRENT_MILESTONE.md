@@ -7,25 +7,28 @@ write:
 
 ## Current checkpoint
 
-The original image-inspection repair merged in PR #188 as
-`085263c39f76ad0710eb4a2a15042e3b31b40af4`, was mirrored to Sites version 57,
-and its forward Supabase migration was applied. The first private synthetic
-preflight run failed before fixture persistence because its embedded JPEG
-fixture was invalid. That result does **not** prove the repaired dependency and
+PR #189 merged the fixture-integrity repair as
+`1c5db2ca1e03d1f8e09e63f171550cf6cd35df45` and Sites version 58 is live from
+private mirror source `12213194b7aae365c35c1524c715e3092454ce1e`. The next
+private synthetic preflight created and read back its valid 3×2 JPEG fixture,
+then failed at the signed Storage transform request with
+`storage_transform_request_rejected`. The durable diagnostics have no response
+status, so this is not proof that Storage transformations are unavailable and
 does not consume the IMG_4257 retry.
 
-The only active change is a narrow fixture-integrity repair on
-`agent/fix-preflight-fixture-integrity-20260815`. It replaces the invalid
-fixture with a valid deterministic 3×2 JPEG, verifies bytes/hash/MIME/dimensions
-in tests, and exposes only fixed non-secret fixture failure codes.
+The hourly trigger is disarmed. The only active change is a narrow
+fail-closed follow-up on `agent/fix-storage-transform-redirect-20260815`: use
+manual redirect handling so an unexpected redirect is recorded as a bounded
+non-success response instead of an opaque network exception. It does not follow
+redirects and it does not change media, rights, Ready, or external-action code.
 
 ## Strict next sequence
 
-1. Open and review the scoped fixture-integrity PR; require exact-head CI,
+1. Open and review the scoped storage-transform follow-up PR; require exact-head CI,
    source review, and no unrelated diff.
 2. Merge only when green; mirror the exact reviewed Sites application tree and
    deploy it.
-3. Run exactly one new private synthetic preflight. It must prove signed
+3. Run exactly one manually controlled private synthetic preflight. It must prove signed
    delivery, create-only fixture storage, full byte readback, Storage transform
    inspection, durable completion evidence, and fail-closed behavior.
 4. Only after that production preflight passes, perform the one permitted

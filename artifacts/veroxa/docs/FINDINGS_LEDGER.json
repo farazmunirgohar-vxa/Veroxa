@@ -4,19 +4,19 @@
     {
       "findingId": "F-001",
       "originalConcern": "Production media recovery fails with images_binding_unavailable before canonical identity, assessment, or Ready.",
-      "freshVerificationResult": "The original root cause was verified and the repair merged/deployed in PR #188. Sites v57 reached the private preflight route, but its first synthetic run failed before fixture persistence because the embedded fixture was invalid. IMG_4257 was not accessed.",
+      "freshVerificationResult": "The original missing Images-binding root cause was corrected in PR #188. PR #189 then deployed a valid fixture as Sites v58. The new synthetic run reached the signed Storage transform after verified fixture persistence/readback; its separate request-stage failure is tracked as F-015. IMG_4257 was not accessed.",
       "severity": "critical",
       "affectedSystems": [
         "Sites production runtime",
         "private media recovery",
         "Supabase Storage"
       ],
-      "rootCause": "The previous worker required a Cloudflare Images binding that Sites did not supply. The repaired path instead uses a private Supabase Storage transform; the remaining proof blocker is separately tracked as F-014.",
-      "correctiveAction": "PR #188 replaced the unavailable runtime dependency with a private Supabase Storage image-transformation inspection path, source object/version parity, bounded 1px transform, signed create-only synthetic canary, private durable evidence, and regression tests. Deploy the narrowly corrected fixture before another synthetic preflight.",
+      "rootCause": "The previous worker required a Cloudflare Images binding that Sites did not supply. The repaired path instead uses a private Supabase Storage transform; the remaining request-stage proof blocker is separately tracked as F-015.",
+      "correctiveAction": "PR #188 replaced the unavailable runtime dependency with a private Supabase Storage image-transformation inspection path, source object/version parity, bounded 1px transform, signed create-only synthetic canary, private durable evidence, and regression tests. PR #189 repaired the fixture and proved its persistence/readback in production.",
       "branch": "agent/repair-production-image-inspection-20260815",
       "pullRequest": 188,
       "commit": "085263c39f76ad0710eb4a2a15042e3b31b40af4",
-      "migrationOrDeployment": "PR #188 merged; Supabase preflight migration applied at 20260815062451; Sites version 57 deployed from source 1cdb61082b11e12a067f37f0c7ade6253a715e64",
+      "migrationOrDeployment": "PR #188 merged; Supabase preflight migration applied at 20260815062451; PR #189 deployed as Sites version 58 from source 12213194b7aae365c35c1524c715e3092454ce1e",
       "tests": [
         "Sites TypeScript strict check passed",
         "targeted recovery and preflight Node tests passed",
@@ -30,10 +30,11 @@
         "IMG_4257 exception stage host_image_inspection",
         "failure code images_binding_unavailable",
         "bindingAvailable=false",
-        "first synthetic run 466741f6-f42b-4054-8979-420ef365414e failed before fixture persistence"
+        "first synthetic run 466741f6-f42b-4054-8979-420ef365414e failed before fixture persistence",
+        "second synthetic run cc48e0cf-4ce0-450b-83c9-c10ec3fcde32 persisted/read back the valid fixture and reached the Storage transform request"
       ],
-      "rollbackMethod": "Re-deploy Sites v56 and leave the IMG_4257 asset, object, and version unchanged. The new forward migration has no customer-data mutation; disable the scheduled canary job and retain its private evidence if rollback is required.",
-      "finalStatus": "partially_verified_repair_deployed_fixture_integrity_follow_up_pending"
+      "rollbackMethod": "Deploy the saved Sites v58 source or a reviewed prior source and leave the IMG_4257 asset, object, and version unchanged. The forward migration has no customer-data mutation; keep the canary job unscheduled and retain its private evidence.",
+      "finalStatus": "resolved_missing_images_binding_replaced_with_storage_transform_path_follow_up_tracked_in_f015"
     },
     {
       "findingId": "F-004",
@@ -293,7 +294,7 @@
     {
       "findingId": "F-014",
       "originalConcern": "The private production image-inspection preflight cannot prove the repaired dependency because its embedded synthetic JPEG fixture is invalid.",
-      "freshVerificationResult": "Verified from production run 466741f6-f42b-4054-8979-420ef365414e: state failed, attempt_count 1, generic execution failure, fixture_sha256 null, and no reserved fixture object. Local decode/hash analysis proved the deployed base64 constant did not form the declared 3x2 JPEG or declared SHA-256.",
+      "freshVerificationResult": "PR #189 deployed the valid deterministic 3x2 JPEG as Sites v58. Production run cc48e0cf-4ce0-450b-83c9-c10ec3fcde32 recorded its expected fixture SHA-256 and reached the signed Storage transform request. IMG_4257 was not accessed.",
       "severity": "critical",
       "affectedSystems": [
         "Sites private preflight route",
@@ -301,24 +302,58 @@
         "Phase 1 image-inspection acceptance gate"
       ],
       "rootCause": "The fixture constant and declared SHA-256 were not generated and validated from the same JPEG byte sequence.",
-      "correctiveAction": "Replace the fixture with a freshly generated valid 3x2 JPEG, assert its hash/MIME/dimensions in the focused test, and map only fixed fixture-integrity failures into durable evidence. The real IMG_4257 asset remains untouched until the repaired deployment passes a new synthetic preflight.",
+      "correctiveAction": "Replace the fixture with a freshly generated valid 3x2 JPEG, assert its hash/MIME/dimensions in the focused test, and map only fixed fixture-integrity failures into durable evidence. The repaired source passed exact-head CI, merged in PR #189, and was deployed as Sites v58. The real IMG_4257 asset remains untouched until a synthetic preflight passes.",
       "branch": "agent/fix-preflight-fixture-integrity-20260815",
-      "pullRequest": null,
-      "commit": null,
-      "migrationOrDeployment": "no new migration; existing preflight migration is applied and v57 is the failed deployment baseline",
+      "pullRequest": 189,
+      "commit": "1c5db2ca1e03d1f8e09e63f171550cf6cd35df45",
+      "migrationOrDeployment": "no new migration; existing preflight migration remains applied and the PR #189 fixture repair is deployed as Sites v58 from source 12213194b7aae365c35c1524c715e3092454ce1e",
       "tests": [
         "focused preflight fixture integrity test passed",
         "488/488 Sites tests passed",
         "Sites lint passed",
         "root typecheck and verify:veroxa passed before the current-state guard update",
-        "Codex Security scan fbe83751-5190-4d38-8608-dcf688882ed3 completed with zero reportable findings"
+        "Codex Security scan fbe83751-5190-4d38-8608-dcf688882ed3 completed with zero reportable findings",
+        "PR #189 exact head passed CI 520, Sites Verify 210, Supabase Verify 180, and Veroxa Verify 465"
       ],
       "productionEvidence": [
         "preflight run 466741f6-f42b-4054-8979-420ef365414e failed before fixture persistence",
+        "preflight run cc48e0cf-4ce0-450b-83c9-c10ec3fcde32 recorded fixture SHA-256 61d3065ea30c124958f1853e2714ad466f7de1ffb3b8d625908c2241e9b92e06",
         "no IMG_4257 retry, provider call, Ready package, schedule, or publication occurred"
       ],
-      "rollbackMethod": "If the repaired deployment misbehaves, redeploy Sites v56 or v57 as the verified saved baseline, retain the failed synthetic evidence, and do not touch IMG_4257.",
-      "finalStatus": "local_repair_verified_pending_pr_ci_review_exact_deploy_and_new_synthetic_preflight"
+      "rollbackMethod": "If the repaired deployment misbehaves, deploy the saved Sites v58 source or a reviewed prior source, retain the synthetic evidence, and do not touch IMG_4257.",
+      "finalStatus": "resolved_fixture_integrity_repair_deployed_and_synthetic_fixture_verified"
+    },
+    {
+      "findingId": "F-015",
+      "originalConcern": "The valid production synthetic preflight reached the signed Storage transform request but recorded storage_transform_request_rejected without an HTTP response, so the image-inspection dependency is not yet proven.",
+      "freshVerificationResult": "Production run cc48e0cf-4ce0-450b-83c9-c10ec3fcde32 persisted/read back the valid fixture, then failed at stage request with bindingAvailable=true, output=null, and failure code storage_transform_request_rejected. The scheduler was unscheduled and an active-job query returned zero.",
+      "severity": "critical",
+      "affectedSystems": [
+        "Sites production runtime",
+        "Supabase Storage image transformations",
+        "private image-inspection preflight",
+        "Phase 1 image-inspection acceptance gate"
+      ],
+      "rootCause": "Unconfirmed. The signed transform fetch threw before returning an HTTP response while configured with redirect:error. An unexpected redirect and disabled or unavailable Storage image transformations are both plausible but unproven.",
+      "correctiveAction": "Keep automatic preflights disarmed. Review a narrow adapter change that uses redirect:manual, does not follow redirects, and fails closed with the observed response status. Do not change provider, media, rights, Ready, or external-action logic.",
+      "branch": "agent/fix-storage-transform-redirect-20260815",
+      "pullRequest": null,
+      "commit": null,
+      "migrationOrDeployment": "no new migration; Sites v58 is the failed production baseline",
+      "tests": [
+        "focused preflight suite passed 9/9, including the unexpected redirect fail-closed regression",
+        "Sites lint/build/full test suite passed 488/488",
+        "root typecheck and verify:veroxa passed with the exact candidate guard",
+        "Codex Security scan c6e23f7d-ad46-4e78-98a8-8ae14fbfba70 completed with complete coverage of five executable diff surfaces and zero findings"
+      ],
+      "productionEvidence": [
+        "run cc48e0cf-4ce0-450b-83c9-c10ec3fcde32 failed at 2026-08-15T07:07:04.473520Z",
+        "fixture SHA-256 61d3065ea30c124958f1853e2714ad466f7de1ffb3b8d625908c2241e9b92e06 was persisted",
+        "scheduler active job count is 0",
+        "IMG_4257, provider calls, Ready, and external actions remain untouched"
+      ],
+      "rollbackMethod": "Retain the scheduler hold and deploy the saved Sites v58 source if the reviewed follow-up misbehaves. Do not reinstate recurring execution or touch IMG_4257.",
+      "finalStatus": "open_contained_pending_local_verification_pr_review_exact_deploy_and_one_manual_synthetic_preflight"
     },
     {
       "findingId": "F-002",

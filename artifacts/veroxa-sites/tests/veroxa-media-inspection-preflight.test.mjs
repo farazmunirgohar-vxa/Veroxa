@@ -252,7 +252,7 @@ test("production transform adapter proves an immutable storage source through a 
         transform: { width: 1, height: 1, resize: "fill", format: "origin" },
       },
     });
-    assert.equal(calls.fetch[0].init.redirect, "error");
+    assert.equal(calls.fetch[0].init.redirect, "manual");
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -337,6 +337,24 @@ test("adapter classifies credential, provider, request, rate-limit, and malforme
     });
     assert.equal((await inspect(input)).diagnostics.failureCode,
       "storage_transform_request_rejected");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+
+  globalThis.fetch = async () => new Response(null, {
+    status: 302,
+    headers: { location: "https://unexpected.example/" },
+  });
+  try {
+    const inspect = createVeroxaPrivateMediaStorageImageInspector({
+      client: transformClient(source),
+      supabaseUrl: "https://mwqkhsvdezeykdpqhqec.supabase.co",
+    });
+    const result = await inspect(input);
+    assert.equal(result.inspection, null);
+    assert.equal(result.diagnostics.failureCode,
+      "storage_transform_request_rejected");
+    assert.equal(result.diagnostics.output?.httpStatus, 302);
   } finally {
     globalThis.fetch = originalFetch;
   }

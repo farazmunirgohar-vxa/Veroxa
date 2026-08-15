@@ -87,7 +87,7 @@ if (failures.length > 0) {
   console.log(
     activeForwardCandidate
       ? preflightMigrationApplied
-        ? `PASS: exact mirrored ${rootTree.fileCount}-migration candidate records the applied preflight migration while the fixture-integrity repair remains pending.`
+        ? `PASS: exact mirrored ${rootTree.fileCount}-migration candidate records the applied preflight migration while the scoped storage-transform follow-up remains pending.`
         : `PASS: exact mirrored ${rootTree.fileCount}-migration candidate preserves the observed ${liveTree.fileCount}-migration production ledger.`
       : `PASS: exact mirrored source matches the reconciled ${rootTree.fileCount}-migration ledger.`,
   );
