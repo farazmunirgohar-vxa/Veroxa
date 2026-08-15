@@ -45,20 +45,22 @@ if (manifest.schemaVersion === 13) {
     const current = start < 0 ? "" : text.slice(start, next < 0 ? undefined : next);
     for (const marker of [
       "GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY",
-      "durable media-ingestion path repair candidate",
-      "c41e6f71c7ffccf11d399d415046e3659e3bffd9",
-      "agent/momo-media-path-regex-repair-20260813",
-      "20260813163534_durable_media_ingestion_recovery.sql",
+      "private media-recovery byte-inspection repair candidate",
+      "2528765a625f518100bad3dc534567c7c9623973",
+      "PR #184",
+      "agent/momo-media-byte-inspection-repair-20260815",
       "20260813175640_durable_media_ingestion_path_regex_repair_v1.sql",
-      "Sites v53",
-      "live57",
-      "476/476",
+      "Sites v54",
+      "database58",
+      "environment revision 22",
+      "478/478",
       "05ab2303-f7ea-4056-8f75-9cd7e523a4f4",
-      "exact asset remains unmodified",
+      "request `295`",
+      "media_not_assessable",
+      "dead_letter",
+      "exact asset bytes remain preserved",
       "does not make the asset Ready",
-      "dual-public-key cutover",
-      "Four dedicated private keys",
-      "no outbox, endpoint activation, or production recovery claimed",
+      "one controlled retry",
       "External providers",
       "USD 0 incremental spend",
     ]) {
@@ -71,7 +73,7 @@ if (manifest.schemaVersion === 13) {
     process.exit(1);
   }
   console.log(
-    "PASS: schema-13 authority docs describe the reviewed durable path repair without production overclaims.",
+    "PASS: schema-13 authority docs describe the reviewed private recovery repair against verified v54/database58 truth without completion overclaims.",
   );
   process.exit(0);
 }

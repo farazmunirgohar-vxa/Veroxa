@@ -27,13 +27,13 @@ try {
 
 if (manifest.schemaVersion === 13) {
   must(
-    rr.schemaVersion === 18 &&
+    rr.schemaVersion === 19 &&
       rr.recordKind ===
-        "veroxa_momo_durable_media_ingestion_path_repair_checkpoint" &&
+        "veroxa_momo_media_recovery_byte_inspection_repair_checkpoint" &&
       rr.status === manifest.releaseState &&
       rr.reviewedAt === manifest.reviewedAt &&
       rr.candidateRevision === manifest.candidateRevision,
-    "RR is not the schema-13 durable media-ingestion path-repair checkpoint.",
+    "RR is not the schema-13 private media-recovery byte-inspection checkpoint.",
   );
   must(
     rr.releaseCandidate?.manifest ===
@@ -63,17 +63,19 @@ if (manifest.schemaVersion === 13) {
       rr.fullReleaseGateScope === manifest.fullReleaseGateScope &&
     rr.runtimeVerification?.providerCallObserved === false &&
       rr.runtimeVerification?.realRecoveryObserved === false &&
+      rr.runtimeVerification?.signedRecoveryAttemptObserved === true &&
+      rr.runtimeVerification?.privateVerificationObserved === false &&
       rr.runtimeVerification?.readyDispositionObserved === false &&
       rr.runtimeVerification?.externalProvidersConnected === false &&
       rr.runtimeVerification?.externalPublishingEnabled === false,
-    "RR schema-13 overclaims production recovery or external action.",
+    "RR schema-13 diverges from the observed failed signed attempt or overclaims recovery/external action.",
   );
   if (failures.length > 0) {
     for (const failure of failures) console.error("FAIL:", failure);
     process.exit(1);
   }
   console.log(
-    "PASS: RR schema-13 checkpoint mirrors the reviewed, not-yet-released durable path repair.",
+    "PASS: RR schema-13 checkpoint mirrors the reviewed, not-yet-released private recovery byte-inspection repair.",
   );
   process.exit(0);
 }

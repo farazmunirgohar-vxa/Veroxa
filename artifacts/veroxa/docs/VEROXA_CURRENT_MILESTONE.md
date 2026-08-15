@@ -6,18 +6,18 @@ Read this file first before planning, building, reviewing, merging, deploying, o
 
 <!-- GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY -->
 
-## 2026-08-13 — durable media-ingestion path repair candidate; database57 applied (current authority)
+## 2026-08-15 — private media-recovery byte-inspection repair candidate; Sites v54 and database58 live (current authority)
 
-Current reconciliation markers: durable media-ingestion path repair candidate; GitHub main c41e6f71c7ffccf11d399d415046e3659e3bffd9; branch agent/momo-media-path-regex-repair-20260813; Sites v53; live57; USD 0 incremental spend.
+Current reconciliation markers: private media-recovery byte-inspection repair candidate; GitHub main 2528765a625f518100bad3dc534567c7c9623973; PR #184; branch agent/momo-media-byte-inspection-repair-20260815; Sites v54; database58; environment revision 22; USD 0 incremental spend.
 
 - **Authority and scope:** `GUARDED_INTERNAL_AI_ROLLOUT_AUTHORITY` remains in force. External providers, publishing, review replies, website writes, and external scheduling remain disabled.
-- **Applied foundation:** PR #182 merged at `c41e6f71c7ffccf11d399d415046e3659e3bffd9`; all four exact-head and post-merge workflows passed. `20260813163534_durable_media_ingestion_recovery.sql` is live as database57 and safely retired the orphan AI job.
-- **Fail-closed discovery:** the applied migration preserved two backslashes before the extension dot, so canonical Storage paths did not match. The exact asset remains unmodified with no outbox, endpoint activation, or production recovery claimed.
-- **Forward repair:** `20260813175640_durable_media_ingestion_path_regex_repair_v1.sql` atomically installs a backslash-independent `[.]` path constraint, replaces the registration trigger predicate, backfills eligible uploads, and fails if any eligible receipt is still missing. Root and Sites migration mirrors are byte-identical.
-- **Incident and truth boundary:** asset `05ab2303-f7ea-4056-8f75-9cd7e523a4f4` and its exact Storage object are preserved. Recovery ends at private verification and does not make the asset Ready; genuine owner rights and current-offering association remain required.
-- **Bridge repair:** Four dedicated private keys and the dual-public-key cutover are merged but not yet deployed. Edge and Sites publication wait for this forward database repair to pass exact-head review.
-- **Quality evidence:** 476/476 application tests, production build, typecheck, lint, focused PostgreSQL path/backfill execution, security review, and diff checks passed locally. The repair PR, hosted clean chain, pgTAP, database lint, Edge/Sites publication, recovery, and key cleanup remain pending.
-- **Cost and actions:** provider calls, Ready disposition, public actions, and incremental spend are unclaimed and remain blocked; USD 0 incremental spend.
+- **Verified production baseline:** PR #183 is merged in GitHub main at `2528765a625f518100bad3dc534567c7c9623973`. `20260813175640_durable_media_ingestion_path_regex_repair_v1.sql` is live as database58, the exact backfill receipt exists, and saved Sites v54 is deployed with environment revision 22. An unsigned POST to the private route returns 403 JSON, proving route dispatch.
+- **Fail-closed production attempt:** exactly one authorized signed wake, pg_net request `295`, reached the route and downloaded all 3,969,765 preserved bytes. It returned `media_not_assessable` because the strict structural image parser produced no dimensions before trusted host inspection; the receipt is `dead_letter` after attempt 1 and no verification row exists.
+- **Repair candidate:** PR #184 adds a private-recovery-only compatibility boundary. Exact JPEG/PNG magic, declared MIME/path, immutable object identity/version/size, dimension/aspect limits, and a successful bounded trusted-host decode remain mandatory. The exact asset bytes remain preserved and are hashed unchanged on success.
+- **Incident and truth boundary:** asset `05ab2303-f7ea-4056-8f75-9cd7e523a4f4`, object `3df8b899-f438-41be-9e21-f15e6e7cb6c7`, and version `a6a293a9-4364-4867-878c-64bfc662dff9` remain preserved. Recovery ends at private verification and does not make the asset Ready.
+- **Quality evidence:** 478/478 application tests, production build, typecheck, lint, artifact validation, fail-closed compatibility negatives, and exact-tree comparison passed locally. GitHub exact-head gates must all pass with zero unresolved review threads before merge or deployment.
+- **Retry boundary:** one controlled retry of only the existing IMG_4257 receipt is authorized after exact merged-source Sites deployment. No re-upload, deletion, provider call, Ready disposition, schedule, publication, or Momo contact is authorized.
+- **Cost and actions:** external actions remain blocked and incremental spend remains USD 0 incremental spend.
 
 ## 2026-08-12 — legacy media purge; high-resolution private uploads; Sites v53 deployed (historical)
 
