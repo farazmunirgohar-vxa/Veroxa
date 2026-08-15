@@ -68,14 +68,14 @@ if (manifest.schemaVersion === 13) {
       rr.runtimeVerification?.readyDispositionObserved === false &&
       rr.runtimeVerification?.externalProvidersConnected === false &&
       rr.runtimeVerification?.externalPublishingEnabled === false,
-    "RR schema-13 diverges from the observed failed signed attempt or overclaims recovery/external action.",
+    "RR schema-13 diverges from the observed second failed signed attempt or overclaims recovery/external action.",
   );
   if (failures.length > 0) {
     for (const failure of failures) console.error("FAIL:", failure);
     process.exit(1);
   }
   console.log(
-    "PASS: RR schema-13 checkpoint mirrors the reviewed, not-yet-released private recovery byte-inspection repair.",
+    "PASS: RR schema-13 checkpoint mirrors the reviewed, not-yet-released private recovery host-inspection diagnostics.",
   );
   process.exit(0);
 }
