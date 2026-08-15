@@ -13,6 +13,14 @@ Current reconciliation markers: private media-recovery host-inspection diagnosti
 - **Quality and next gate:** 479/479 application tests and every required GitHub workflow passed. No retry remains authorized or pending. A separately reviewed binding configuration/wiring repair must precede any future retry.
 - **Cost and actions:** External providers remain blocked; `externalWriteAllowed=false`; incremental spend remains USD 0 incremental spend.
 
+## 2026-08-15 — Supabase Pro capacity and workflow direction (current operational guidance)
+
+- **Verified capacity:** the connected Veroxa Dev Supabase organization reports plan \`pro\`. This increases eligible capacity; it does not by itself change a live configuration, grant external-action authority, or approve an add-on.
+- **Required operating rule:** use Supabase Pro proportionately for durable state, private media, Auth/RLS, secure server work, observability, backups, and isolated testing when a concrete Veroxa need benefits. Do not activate every feature merely because it is eligible.
+- **Cost and safety:** preserve the existing incremental-spend ceiling and Spend Cap. Verify current billing/limits before creating a branch, resizing compute, enabling PITR, adding a read replica/log drain, or making another recurring commitment. Keep queues server-side, branches data-minimized and short-lived, and all secrets server-only.
+- **Workflow:** follow \`artifacts/veroxa/docs/SUPABASE_PRO_CAPACITY_AND_WORKFLOW_DIRECTION.md\` before any Supabase capacity, automation, recovery, branch, queue, secret, or observability decision. It complements this authority; it does not relax the guarded internal-AI rollout, tenant isolation, evidence, Ready, or external-write gates.
+- **Current hold unchanged:** external providers, publication, review replies, website writes, external scheduling, re-upload, deletion, and Ready transition remain disabled.
+
 ## 2026-08-12 — legacy media purge; high-resolution private uploads; Sites v53 deployed (historical)
 
 Current reconciliation markers: content lifecycle v11; Sites v53; live56; USD 0 incremental spend.
