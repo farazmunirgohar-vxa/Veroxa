@@ -1,4 +1,5 @@
 import {
+  detectMomoImageMimeType,
   inspectMomoImageBytesFully,
   momoBytesSha256,
 } from "../../../../../momo-image-bytes.ts";
@@ -25,6 +26,7 @@ import {
 import {
   decodeVeroxaPrivateMediaImage,
   type VeroxaPrivateMediaHostDecoder,
+  type VeroxaPrivateMediaHostInspector,
 } from "../../../../../veroxa-private-media-image-decode.ts";
 
 const CANONICAL_RECOVERY_BODY = '{"schemaVersion":1}';
@@ -80,6 +82,7 @@ export type MomoMediaRecoveryDependencies = {
   wakeHmacSecret: string;
   randomUUID(): string;
   decodeHighResolutionImage?: VeroxaPrivateMediaHostDecoder;
+  inspectImageWithHost?: VeroxaPrivateMediaHostInspector;
   claim(input: {
     wakeNonce: string;
     signedAtMs: number;
@@ -537,8 +540,30 @@ export function createMomoMediaRecoveryHandler(
           true,
         );
       }
-      const inspection = await inspectMomoImageBytesFully(bytes);
-      observed.detectedMime = inspection?.mimeType ?? null;
+      const magicMime = detectMomoImageMimeType(bytes);
+      observed.detectedMime = magicMime;
+      let inspection = await inspectMomoImageBytesFully(bytes);
+      let hostDecoded = false;
+      if (!inspection &&
+        (magicMime === "image/jpeg" || magicMime === "image/png") &&
+        dependencies.inspectImageWithHost) {
+        const hostInspection = await dependencies.inspectImageWithHost({
+          bytes,
+          mimeType: magicMime,
+        });
+        if (hostInspection) {
+          observed.width = hostInspection.width;
+          observed.height = hostInspection.height;
+          if (hostInspection.fileSize === bytes.byteLength) {
+            inspection = {
+              mimeType: magicMime,
+              width: hostInspection.width,
+              height: hostInspection.height,
+            };
+            hostDecoded = true;
+          }
+        }
+      }
       observed.width = inspection?.width ?? null;
       observed.height = inspection?.height ?? null;
       const aspectRatio = inspection ? inspection.width / inspection.height : 0;
@@ -563,7 +588,7 @@ export function createMomoMediaRecoveryHandler(
         throw new RecoveryProcessingError("media_not_assessable", false);
       }
       const detectedMime = inspection.mimeType as VeroxaPrivateMediaMimeType;
-      if (!await decodeVeroxaPrivateMediaImage({
+      if (!hostDecoded && !await decodeVeroxaPrivateMediaImage({
         bytes,
         mimeType: detectedMime,
         expectedWidth: inspection.width,

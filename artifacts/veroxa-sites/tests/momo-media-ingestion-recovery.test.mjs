@@ -55,6 +55,14 @@ function jpeg(width = 1200, height = 900, minimumBytes = 10 * 1024) {
   return bytes;
 }
 
+function jpegWithTrailingBytes(width = 1200, height = 900) {
+  const strict = jpeg(width, height);
+  const bytes = new Uint8Array(strict.byteLength + 4);
+  bytes.set(strict);
+  bytes.set([0x00, 0x00, 0x00, 0x00], strict.byteLength);
+  return bytes;
+}
+
 function recoveryRequest({
   rawBody = momoMediaRecoveryWakeCanonicalBody,
   timestamp = Date.now().toString(),
@@ -92,6 +100,7 @@ function harness(options = {}) {
     download: [],
     info: [],
     decode: [],
+    inspect: [],
     complete: [],
     fail: [],
   };
@@ -139,6 +148,11 @@ function harness(options = {}) {
     async decodeHighResolutionImage(input) {
       calls.decode.push(input);
       return options.decodeResult ?? true;
+    },
+    async inspectImageWithHost(input) {
+      calls.inspect.push(input);
+      if (options.inspectError) throw new Error("host inspection unavailable");
+      return options.hostInspection ?? null;
     },
     async complete(input) {
       calls.complete.push(input);
@@ -261,6 +275,77 @@ test("accepts high-resolution originals without an aggregate-pixel rejection", a
   assert.equal(calls.decode.length, 1);
   assert.equal(calls.decode[0].expectedWidth, 8064);
   assert.equal(calls.decode[0].expectedHeight, 6048);
+});
+
+test("recovers a declared JPEG through the trusted host when strict structural inspection rejects compatible trailing bytes", async () => {
+  const source = jpegWithTrailingBytes();
+  const { calls, handler } = harness({
+    source,
+    hostInspection: {
+      width: 1200,
+      height: 900,
+      fileSize: source.byteLength,
+    },
+  });
+  const response = await handler(recoveryRequest());
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).recoveryStatus, "recovered");
+  assert.equal(calls.inspect.length, 1);
+  assert.equal(calls.decode.length, 0,
+    "the host inspection already proves a complete bounded decode");
+  assert.equal(calls.complete.length, 1);
+  assert.equal(calls.complete[0].width, 1200);
+  assert.equal(calls.complete[0].height, 900);
+  assert.equal(calls.complete[0].fileSize, source.byteLength);
+  assert.equal(
+    calls.complete[0].contentSha256,
+    createHash("sha256").update(source).digest("hex"),
+    "hash the preserved original bytes, including the compatible trailer",
+  );
+});
+
+test("host compatibility inspection remains fail-closed for wrong magic, decode failure, size drift, and unsafe dimensions", async () => {
+  const compatible = jpegWithTrailingBytes();
+  const scenarios = [
+    {
+      source: new Uint8Array(compatible.byteLength).fill(0x01),
+      hostInspection: { width: 1200, height: 900, fileSize: compatible.length },
+      expectedHostCalls: 0,
+    },
+    {
+      source: compatible,
+      hostInspection: null,
+      expectedHostCalls: 1,
+    },
+    {
+      source: compatible,
+      hostInspection: {
+        width: 1200,
+        height: 900,
+        fileSize: compatible.length - 1,
+      },
+      expectedHostCalls: 1,
+    },
+    {
+      source: compatible,
+      hostInspection: {
+        width: 12_001,
+        height: 900,
+        fileSize: compatible.length,
+      },
+      expectedHostCalls: 1,
+    },
+  ];
+  for (const options of scenarios) {
+    const { calls, handler } = harness(options);
+    const response = await handler(recoveryRequest());
+    assert.equal(response.status, 200);
+    assert.equal((await response.json()).error, "media_not_assessable");
+    assert.equal(calls.inspect.length, options.expectedHostCalls);
+    assert.equal(calls.complete.length, 0);
+    assert.equal(calls.fail.length, 1);
+    assert.equal(calls.fail[0].retryable, false);
+  }
 });
 
 test("wake authentication rejects noncanonical, stale, tampered, wrong-path, and wrong-method requests before claim", async () => {

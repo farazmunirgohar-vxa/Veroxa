@@ -103,6 +103,17 @@ export type VeroxaPrivateMediaHostDecoder = (input: {
   expectedHeight: number;
 }) => Promise<boolean>;
 
+export type VeroxaPrivateMediaHostInspection = {
+  width: number;
+  height: number;
+  fileSize: number;
+};
+
+export type VeroxaPrivateMediaHostInspector = (input: {
+  bytes: Uint8Array;
+  mimeType: VeroxaPrivateMediaFullDecodeMimeType;
+}) => Promise<VeroxaPrivateMediaHostInspection | null>;
+
 /**
  * Requires a trusted decode for every accepted JPEG/PNG. High-resolution
  * originals fail closed unless the host can decode and resize them without

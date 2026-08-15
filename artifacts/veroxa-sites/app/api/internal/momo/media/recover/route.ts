@@ -1,6 +1,7 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import {
   decodeVeroxaPrivateMediaImageWithHost,
+  inspectVeroxaPrivateMediaImageWithHost,
 } from "../../../../../veroxa-private-media-host-image-decode.ts";
 import { createMomoMediaRecoveryHandler } from "./core.ts";
 
@@ -60,6 +61,7 @@ const handler = createMomoMediaRecoveryHandler({
   wakeHmacSecret,
   randomUUID: () => crypto.randomUUID(),
   decodeHighResolutionImage: decodeVeroxaPrivateMediaImageWithHost,
+  inspectImageWithHost: inspectVeroxaPrivateMediaImageWithHost,
   async claim(input) {
     const { data, error } = await requireAdmin().rpc(
       "veroxa_claim_momo_media_ingestion_v1",
