@@ -152,7 +152,28 @@ function harness(options = {}) {
     async inspectImageWithHost(input) {
       calls.inspect.push(input);
       if (options.inspectError) throw new Error("host inspection unavailable");
-      return options.hostInspection ?? null;
+      const inspection = options.hostInspection ?? null;
+      return {
+        inspection,
+        diagnostics: options.hostDiagnostics ?? {
+          schemaVersion: 1,
+          status: inspection ? "passed" : "failed",
+          stage: inspection ? "complete" : "info",
+          failureCode: inspection ? null : "images_info_failed",
+          bindingAvailable: true,
+          info: inspection
+            ? { ...inspection, format: "image/jpeg" }
+            : null,
+          output: inspection
+            ? {
+              httpStatus: 200,
+              contentType: "image/jpeg",
+              declaredContentLength: null,
+              byteLength: 24,
+            }
+            : null,
+        },
+      };
     },
     async complete(input) {
       calls.complete.push(input);
@@ -345,6 +366,17 @@ test("host compatibility inspection remains fail-closed for wrong magic, decode 
     assert.equal(calls.complete.length, 0);
     assert.equal(calls.fail.length, 1);
     assert.equal(calls.fail[0].retryable, false);
+    if (options.expectedHostCalls === 1) {
+      assert.equal(
+        calls.fail[0].evidenceSnapshot.stage,
+        options.hostInspection ? "worker" : "host_image_inspection",
+      );
+      assert.equal(
+        calls.fail[0].evidenceSnapshot.observed.hostInspectionDiagnostics
+          .failureCode,
+        options.hostInspection ? null : "images_info_failed",
+      );
+    }
   }
 });
 

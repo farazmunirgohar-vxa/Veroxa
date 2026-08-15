@@ -286,13 +286,33 @@ test("the host decoder binds native dimensions and consumes only a bounded one-p
     },
   };
   try {
-    assert.deepEqual(await inspectVeroxaPrivateMediaImageWithHost({
+    const inspected = await inspectVeroxaPrivateMediaImageWithHost({
       bytes: source,
       mimeType: "image/jpeg",
-    }), {
+    });
+    assert.deepEqual(inspected.inspection, {
       width: 8064,
       height: 6048,
       fileSize: source.byteLength,
+    });
+    assert.deepEqual(inspected.diagnostics, {
+      schemaVersion: 1,
+      status: "passed",
+      stage: "complete",
+      failureCode: null,
+      bindingAvailable: true,
+      info: {
+        width: 8064,
+        height: 6048,
+        fileSize: source.byteLength,
+        format: "image/jpeg",
+      },
+      output: {
+        httpStatus: 200,
+        contentType: "image/jpeg",
+        declaredContentLength: null,
+        byteLength: output.byteLength,
+      },
     });
     assert.equal(await decodeVeroxaPrivateMediaImageWithHost({
       bytes: source,
@@ -310,6 +330,131 @@ test("the host decoder binds native dimensions and consumes only a bounded one-p
       expectedWidth: 6048,
       expectedHeight: 8064,
     }), false, "host dimensions must match the immutable reservation");
+  } finally {
+    delete globalThis.__VEROXA_IMAGES__;
+  }
+});
+
+test("host inspection reports bounded stage diagnostics without raw errors", async () => {
+  const source = Uint8Array.from([0xff, 0xd8, 0xff, 0xd9]);
+  const jpegOutput = Uint8Array.from([
+    0xff, 0xd8,
+    ...new Uint8Array(20),
+    0xff, 0xd9,
+  ]);
+  const validInfo = {
+    width: 1200,
+    height: 900,
+    format: "image/jpeg",
+    fileSize: source.byteLength,
+  };
+  const binding = (options = {}) => ({
+    async info() {
+      if (options.infoError) throw new Error("provider-secret-detail");
+      return options.info ?? validInfo;
+    },
+    input() {
+      if (options.inputError) throw new Error("provider-secret-detail");
+      return {
+        transform() {
+          if (options.transformError) {
+            throw new Error("provider-secret-detail");
+          }
+          return this;
+        },
+        async output() {
+          if (options.outputError) throw new Error("provider-secret-detail");
+          return {
+            response() {
+              if (options.responseError) {
+                throw new Error("provider-secret-detail");
+              }
+              return new Response(options.body ?? jpegOutput, {
+                status: options.status ?? 200,
+                headers: {
+                  "content-type": options.contentType ?? "image/jpeg",
+                },
+              });
+            },
+          };
+        },
+      };
+    },
+  });
+  const scenarios = [
+    {
+      binding: undefined,
+      stage: "binding",
+      failureCode: "images_binding_unavailable",
+      bindingAvailable: false,
+    },
+    {
+      binding: binding({ infoError: true }),
+      stage: "info",
+      failureCode: "images_info_failed",
+      bindingAvailable: true,
+    },
+    {
+      binding: binding({ info: { ...validInfo, fileSize: 3 } }),
+      stage: "info",
+      failureCode: "images_info_file_size_mismatch",
+      bindingAvailable: true,
+    },
+    {
+      binding: binding({ transformError: true }),
+      stage: "transform",
+      failureCode: "images_transform_failed",
+      bindingAvailable: true,
+    },
+    {
+      binding: binding({ outputError: true }),
+      stage: "output",
+      failureCode: "images_output_failed",
+      bindingAvailable: true,
+    },
+    {
+      binding: binding({ status: 502 }),
+      stage: "response",
+      failureCode: "images_response_status_invalid",
+      bindingAvailable: true,
+    },
+    {
+      binding: binding({ contentType: "text/plain" }),
+      stage: "response",
+      failureCode: "images_response_content_type_invalid",
+      bindingAvailable: true,
+    },
+    {
+      binding: binding({ body: new Uint8Array(24) }),
+      stage: "response",
+      failureCode: "images_response_magic_invalid",
+      bindingAvailable: true,
+    },
+  ];
+  try {
+    for (const scenario of scenarios) {
+      if (scenario.binding) {
+        globalThis.__VEROXA_IMAGES__ = scenario.binding;
+      } else {
+        delete globalThis.__VEROXA_IMAGES__;
+      }
+      const result = await inspectVeroxaPrivateMediaImageWithHost({
+        bytes: source,
+        mimeType: "image/jpeg",
+      });
+      assert.equal(result.inspection, null);
+      assert.equal(result.diagnostics.status, "failed");
+      assert.equal(result.diagnostics.stage, scenario.stage);
+      assert.equal(result.diagnostics.failureCode, scenario.failureCode);
+      assert.equal(
+        result.diagnostics.bindingAvailable,
+        scenario.bindingAvailable,
+      );
+      assert.doesNotMatch(
+        JSON.stringify(result.diagnostics),
+        /provider-secret-detail/u,
+      );
+    }
   } finally {
     delete globalThis.__VEROXA_IMAGES__;
   }

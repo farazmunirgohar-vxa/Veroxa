@@ -26,13 +26,14 @@ import {
 import {
   decodeVeroxaPrivateMediaImage,
   type VeroxaPrivateMediaHostDecoder,
+  type VeroxaPrivateMediaHostInspectionDiagnostics,
   type VeroxaPrivateMediaHostInspector,
 } from "../../../../../veroxa-private-media-image-decode.ts";
 
 const CANONICAL_RECOVERY_BODY = '{"schemaVersion":1}';
 const RECOVERY_CONTEXT =
   "veroxa:momo-media-ingestion-recovery-wake:v1\nPOST\n/api/internal/momo/media/recover";
-const VERIFIER_VERSION = "veroxa-private-image-byte-verifier-2026-08-08-v1";
+const VERIFIER_VERSION = "veroxa-private-image-byte-verifier-2026-08-15-v2";
 const UUID =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 const HMAC = /^[0-9a-f]{64}$/u;
@@ -75,6 +76,7 @@ type FailureObservation = {
   width: number | null;
   height: number | null;
   contentSha256: string | null;
+  hostInspectionDiagnostics: VeroxaPrivateMediaHostInspectionDiagnostics | null;
 };
 
 export type MomoMediaRecoveryDependencies = {
@@ -483,6 +485,7 @@ export function createMomoMediaRecoveryHandler(
       width: null,
       height: null,
       contentSha256: null,
+      hostInspectionDiagnostics: null,
     };
     try {
       if (claim.storageObjectId === null ||
@@ -547,10 +550,12 @@ export function createMomoMediaRecoveryHandler(
       if (!inspection &&
         (magicMime === "image/jpeg" || magicMime === "image/png") &&
         dependencies.inspectImageWithHost) {
-        const hostInspection = await dependencies.inspectImageWithHost({
+        const hostResult = await dependencies.inspectImageWithHost({
           bytes,
           mimeType: magicMime,
         });
+        observed.hostInspectionDiagnostics = hostResult.diagnostics;
+        const hostInspection = hostResult.inspection;
         if (hostInspection) {
           observed.width = hostInspection.width;
           observed.height = hostInspection.height;
@@ -662,8 +667,11 @@ export function createMomoMediaRecoveryHandler(
     } catch (error) {
       const failure = processingError(error);
       const evidenceSnapshot = {
-        schemaVersion: 1,
+        schemaVersion: 2,
         verifierVersion: VERIFIER_VERSION,
+        stage: observed.hostInspectionDiagnostics?.status === "failed"
+          ? "host_image_inspection"
+          : "worker",
         outboxId: claim.outboxId,
         correlationId: claim.correlationId,
         restaurantId: claim.restaurantId,

@@ -45,7 +45,7 @@ if (manifest.schemaVersion === 13) {
     manifest as unknown as Record<string, any>
   ).durableMediaIngestionRecovery as Record<string, any> | undefined;
   must(
-    manifest.currentProductionObservation.sitesVersion === 54 &&
+    manifest.currentProductionObservation.sitesVersion === 55 &&
       manifest.releaseCandidate.sitesPublished === false &&
       manifest.releaseCandidate.edgeDeployRequired === false &&
       manifest.releaseCandidate.edgeDeployed === false &&
@@ -54,7 +54,7 @@ if (manifest.schemaVersion === 13) {
       manifest.releaseCandidate.deploymentAuthorized === true &&
       manifest.deploymentFreeze.automaticDeploymentsAllowed === false &&
       manifest.fullReleaseGatePassed === false,
-    "Schema-13 recovery repair diverges from v54 production or the authorized post-gate Sites-only release boundary.",
+    "Schema-13 recovery diagnostics diverge from v55 production or the authorized post-gate Sites-only release boundary.",
   );
   must(
     manifest.operationalHold?.providerWrites === false &&
@@ -90,7 +90,7 @@ if (manifest.schemaVersion === 13) {
     process.exit(1);
   }
   console.log(
-    "PASS: Sites remains the sole web target; v54 is the production baseline and only the exact post-gate recovery repair is authorized for publication.",
+    "PASS: Sites remains the sole web target; v55 is the production baseline and only the exact post-gate recovery diagnostics are authorized for publication.",
   );
   process.exit(0);
 }

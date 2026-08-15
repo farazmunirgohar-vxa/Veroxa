@@ -1920,12 +1920,12 @@ function assertMediaRecoveryByteInspectionCandidateManifest(
     manifest.recordKind !==
       "veroxa_momo_media_recovery_byte_inspection_repair_candidate" ||
     manifest.releaseState !==
-      "media_recovery_byte_inspection_repair_pending_exact_head_gates_and_release" ||
+      "media_recovery_host_inspection_diagnostics_pending_exact_head_gates_and_release" ||
     manifest.reviewedAt !== "2026-08-15" ||
     manifest.canonicalRepository !== "farazmunirgohar-vxa/Veroxa" ||
     manifest.canonicalBranch !== "main" ||
     manifest.candidateBranch !==
-      "agent/momo-media-byte-inspection-repair-20260815" ||
+      "agent/momo-media-inspection-diagnostics-20260815" ||
     manifest.sitesProjectId !==
       "appgprj_6a53d07c7c28819182801cf35dfd30de"
   ) failures.push("schema-13 media-recovery candidate identity drifted");
@@ -1933,7 +1933,7 @@ function assertMediaRecoveryByteInspectionCandidateManifest(
   if (
     sourceTree.fileCount !== 236 ||
     sourceTree.sha256 !==
-      "26d43eb06c29e8588af0d9bf195a3a931a2950ae6663d27249441f4d04667b49" ||
+      "e8a2c1b8c0308b98a03b8cf34a7400f92e3100a9c8c006dff9fa8a4f0fdfa871" ||
     sourceTree.fileCount !== manifest.source.fileCount ||
     sourceTree.sha256 !== manifest.source.treeSha256 ||
     sourceTree.fileCount !== candidate.sourceFileCount ||
@@ -1960,8 +1960,8 @@ function assertMediaRecoveryByteInspectionCandidateManifest(
 
   if (
     candidate.basedOnGitHubMainCommit !==
-      "2528765a625f518100bad3dc534567c7c9623973" ||
-    candidate.pullRequest !== 184 ||
+      "4a098ea98690ee9be6b86cc8fe783ef0cfc265ed" ||
+    candidate.pullRequest !== 185 ||
     candidate.githubMerged !== false ||
     candidate.futureMergedGitHubCommit !== null ||
     candidate.futureSitesVersion !== null ||
@@ -1993,22 +1993,22 @@ function assertMediaRecoveryByteInspectionCandidateManifest(
   if (
     production.observedAt !== "2026-08-15" ||
     production.evidenceStatus !==
-      "sites_v54_database58_private_route_live_first_signed_recovery_dead_lettered_media_not_assessable" ||
+      "sites_v55_database58_private_route_live_second_signed_recovery_dead_lettered_media_not_assessable" ||
     production.canonicalGitHubMainCommit !==
-      "2528765a625f518100bad3dc534567c7c9623973" ||
-    production.canonicalGitHubMainMergePullRequest !== 183 ||
+      "4a098ea98690ee9be6b86cc8fe783ef0cfc265ed" ||
+    production.canonicalGitHubMainMergePullRequest !== 184 ||
     production.githubParityVerifiedAtObservation !== true ||
-    production.sitesVersion !== 54 ||
+    production.sitesVersion !== 55 ||
     production.sitesVersionId !==
-      "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_697f8d289048819188e2853a8ec05ebf" ||
+      "appgprj_6a53d07c7c28819182801cf35dfd30de~appgver_1068bd33c6188191a04911352179c917" ||
     production.sitesCheckoutCommit !==
-      "eaf105b89e3a4ba1e1a302eb1669af129b2f8252" ||
+      "d8ee9cad4d47ac59680f9fe87e25cf5ff15c7c86" ||
     production.sitesEnvironmentRevision !== 22 ||
     production.sitesArchiveSha256 !==
-      "515c66e34e0490508c3e9f8df41e8a21bcac1c7a6129cde07bf85e18e72fd410" ||
+      "d1ca7181bbbc7fa214a9dbe60b892a9fe35209a4cf8f807576a0ff09741468f8" ||
     production.sourceFileCount !== 236 ||
     production.sourceTreeSha256 !==
-      "946f6de95e5cf1971db6464cc7f4e69817c58f7bade2f9b85f89bc1e43e59124" ||
+      "26d43eb06c29e8588af0d9bf195a3a931a2950ae6663d27249441f4d04667b49" ||
     production.productionMigrationCount !== 58 ||
     production.migrationTreeSha256 !== rootMigrationTree.sha256 ||
     production.latestProductionMigration !== repairMigration ||
@@ -2023,12 +2023,12 @@ function assertMediaRecoveryByteInspectionCandidateManifest(
     production.candidateSourceMatchesLiveSites !== false ||
     production.candidateMigrationsMatchLiveLedger !== true ||
     production.fullReleaseGatePassed !== false
-  ) failures.push("schema-13 verified v54/database58 baseline drifted");
+  ) failures.push("schema-13 verified v55/database58 baseline drifted");
 
   if (
     !quality ||
-    quality.testsPassed !== 478 ||
-    quality.testsTotal !== 478 ||
+    quality.testsPassed !== 479 ||
+    quality.testsTotal !== 479 ||
     quality.testsFailed !== 0 ||
     quality.buildExitCode !== 0 ||
     quality.typecheckExitCode !== 0 ||
@@ -2038,11 +2038,11 @@ function assertMediaRecoveryByteInspectionCandidateManifest(
     quality.lintWarningCount !== 0 ||
     quality.warningFree !== true ||
     quality.diffCheckExitCode !== 0
-  ) failures.push("schema-13 local 478-test quality evidence drifted");
+  ) failures.push("schema-13 local 479-test quality evidence drifted");
 
   if (
     review?.status !==
-      "live58_path_repair_verified_no_database_change_for_byte_inspection_candidate" ||
+      "live58_path_repair_verified_no_database_change_for_host_inspection_diagnostics_candidate" ||
     review?.forwardRepairRequired !== false ||
     review?.functionalVerificationPassed !== true ||
     review?.additionalDatabaseChangesRequired !== false ||
@@ -2076,7 +2076,7 @@ function assertMediaRecoveryByteInspectionCandidateManifest(
 
   if (
     recovery?.status !==
-      "live_signed_wake_failed_media_not_assessable_byte_inspection_repair_pending" ||
+      "live_signed_retry_failed_media_not_assessable_host_inspection_diagnostics_pending" ||
     recovery?.strandedAssetId !==
       "05ab2303-f7ea-4056-8f75-9cd7e523a4f4" ||
     recovery?.storageObjectId !==
@@ -2090,14 +2090,18 @@ function assertMediaRecoveryByteInspectionCandidateManifest(
     recovery?.strandedAssetOutboxReceiptPresent !== true ||
     recovery?.outboxId !== "4f1259cf-8e8c-430c-a03d-2fa50c9117b9" ||
     recovery?.outboxState !== "dead_letter" ||
-    recovery?.attemptCount !== 1 ||
+    recovery?.attemptCount !== 2 ||
     recovery?.lastFailureCode !== "media_not_assessable" ||
     recovery?.firstSignedWakeRequestId !== 295 ||
     recovery?.firstSignedWakeHttpStatus !== 200 ||
+    recovery?.secondSignedWakeRequestId !== 296 ||
+    recovery?.secondSignedWakeHttpStatus !== 200 ||
     recovery?.downloadedSize !== 3_969_765 ||
     recovery?.verificationCount !== 0 ||
     recovery?.singleRetryAuthorized !== true ||
-    recovery?.singleRetryPerformed !== false ||
+    recovery?.singleRetryPerformed !== true ||
+    recovery?.oneAdditionalRetryAuthorized !== true ||
+    recovery?.oneAdditionalRetryPerformed !== false ||
     recovery?.foundationApplied !== true ||
     recovery?.skipLockedLeaseWorker !== true ||
     recovery?.boundedAttempts !== 5 ||
@@ -2111,17 +2115,17 @@ function assertMediaRecoveryByteInspectionCandidateManifest(
 
   if (
     runtime?.evidenceScope !==
-      "production_observation_after_database58_sites_v54_and_first_signed_recovery_attempt" ||
+      "production_observation_after_database58_sites_v55_and_second_signed_recovery_attempt" ||
     runtime?.assetCount !== 1 ||
     runtime?.storageObjectCount !== 1 ||
     runtime?.exactAssetVerificationCount !== 0 ||
-    runtime?.exactAssetIntakeAttemptCount !== 1 ||
+    runtime?.exactAssetIntakeAttemptCount !== 2 ||
     runtime?.exactAssetTeamIncidentCount !== 1 ||
     runtime?.strandedAssetOutboxReceiptCount !== 1 ||
     runtime?.eligibleCanonicalPathAssetCount !== 1 ||
     runtime?.acceptedWakeNonceCount !== 1 ||
     runtime?.receiptState !== "dead_letter" ||
-    runtime?.receiptAttemptCount !== 1 ||
+    runtime?.receiptAttemptCount !== 2 ||
     runtime?.lastFailureCode !== "media_not_assessable"
   ) failures.push("schema-13 runtime incident observation drifted");
 
@@ -2134,8 +2138,8 @@ function assertMediaRecoveryByteInspectionCandidateManifest(
     freeze?.releaseCondition !==
       "all four exact-head workflows green and zero unresolved review threads" ||
     typeof freeze?.allowedDeployment !== "string" ||
-    !freeze.allowedDeployment.includes("PR #184 merges") ||
-    !freeze.allowedDeployment.includes("one controlled retry")
+    !freeze.allowedDeployment.includes("PR #185 merges") ||
+    !freeze.allowedDeployment.includes("one additional controlled retry")
   ) failures.push("schema-13 ordered release authorization drifted");
 
   const core = read(
@@ -2155,9 +2159,13 @@ function assertMediaRecoveryByteInspectionCandidateManifest(
     !core.includes("let inspection = await inspectMomoImageBytesFully(bytes)") ||
     !core.includes('(magicMime === "image/jpeg" || magicMime === "image/png")') ||
     !core.includes("dependencies.inspectImageWithHost") ||
-    !core.includes("hostInspection.fileSize === bytes.byteLength") ||
+    !core.includes("observed.hostInspectionDiagnostics = hostResult.diagnostics") ||
+    !core.includes('stage: observed.hostInspectionDiagnostics?.status === "failed"') ||
+    !core.includes('"host_image_inspection"') ||
     !core.includes("const contentSha256 = await momoBytesSha256(bytes)") ||
-    !host.includes("const info = await images.info") ||
+    !host.includes("rawInfo = await images.info") ||
+    !host.includes('"images_info_failed"') ||
+    !host.includes('status: "failed"') ||
     !host.includes('transform({ width: 1, height: 1, fit: "fill" })') ||
     !host.includes("info.fileSize !== input.bytes.byteLength") ||
     !recoveryTests.includes(
@@ -2167,8 +2175,11 @@ function assertMediaRecoveryByteInspectionCandidateManifest(
     !recoveryTests.includes("hash the preserved original bytes") ||
     !assessmentTests.includes(
       "the host decoder binds native dimensions and consumes only a bounded one-pixel result",
+    ) ||
+    !assessmentTests.includes(
+      "host inspection reports bounded stage diagnostics without raw errors",
     )
-  ) failures.push("schema-13 fail-closed byte-inspection repair drifted");
+  ) failures.push("schema-13 fail-closed host-inspection diagnostics drifted");
 
   if (failures.length > 0) {
     throw new Error(
